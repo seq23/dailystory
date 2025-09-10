@@ -171,1610 +171,1230 @@ const HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES = [
   "stunning ebony complexion with warm amber eyes, naturally full lips, high cheekbones, elegant nose bridge"
 ];
 
-// CLOTHING DETECTION SYSTEM - REGRESSION PREVENTION COMMENTS
-// 
-// CRITICAL: The current system uses detectClothingFromStory() to extract clothing from story text
-// This provides more contextual and story-appropriate clothing than hardcoded arrays
-// ALL CHARACTERS (regardless of ethnicity) use story-based clothing detection for better narrative consistency
-// 
-// HARDCODED_STANDARD_AMERICAN_CLOTHING exists below but is currently UNUSED - kept for potential future standardization
-// DO NOT CHANGE WITHOUT TESTING: Any modifications to clothing detection affect all character generation
-//
-// REMOVED LIMITED CULTURAL ARRAYS - LET RUNWARE DECIDE THEIR LOOK
-// Hispanic/Latino, Chinese/Asian, and Middle Eastern arrays removed
-// Only African American arrays maintained for detailed representation
-
-// STANDARD AMERICAN ARRAYS (Hair array removed - AI handles generation)
-
-
-const HARDCODED_STANDARD_AMERICAN_CLOTHING = [
-  'casual t-shirt and jeans', 'hoodie and sneakers', 'button-up shirt and khakis', 
-  'sweater and comfortable pants', 'polo shirt and shorts', 'flannel shirt and jeans',
-  'graphic tee and cargo shorts', 'pullover and joggers', 'camp shirt and chinos',
-  'tank top and denim shorts', 'long sleeve tee and leggings', 'sundress and sandals',
-  'blouse and skirt', 'cardigan and dress', 'tunic and leggings', 'romper and flats',
-  'striped shirt and overalls', 'peasant top and jeans', 'wrap dress and boots',
-  'knit top and wide leg pants', 'denim jacket and dress', 'crop top and high waisted jeans',
-  'oversized sweater and skinny jeans', 'off shoulder top and midi skirt', 'blazer and trousers',
-  'band tee and ripped jeans', 'vintage inspired outfit', 'bohemian style clothing',
-  'preppy casual wear', 'athletic wear and running shoes', 'cozy knit sweater and boots',
-  'plaid shirt and dark jeans', 'solid color tee and cargo pants', 'striped long sleeve and shorts',
-  'fleece jacket and sweatpants', 'henley shirt and khaki shorts', 'crew neck sweatshirt and jeans',
-  'v-neck tee and chino pants', 'quarter zip pullover and joggers', 'pocket tee and denim',
-  'thermal shirt and canvas pants', 'rugby shirt and twill shorts', 'mock turtleneck and corduroys',
-  'flannel pajama set', 'terry cloth robe and slippers', 'cotton nightgown', 'silk pajamas',
-  'jersey knit pajamas', 'plaid flannel pajama pants', 'soft cotton sleepwear', 'cozy night clothes',
-  'denim jacket and jeans', 'cardigan and slacks', 'henley shirt and chinos', 
-  'baseball cap and casual wear', 'sneakers and athletic socks', 'backpack and school clothes', 
-  'comfortable everyday outfit', 'playground-appropriate clothing', 'weekend casual wear', 
-  'school uniform alternatives', 'athletic wear and running shoes', 'layered casual look', 
-  'seasonal appropriate clothing', 'comfortable playtime outfit', 'trendy youth fashion', 
-  'classic American casual style', 'modern comfortable clothing', 'age-appropriate fashion'
-];
-
-// ============= NUCLEAR INDEPENDENT CORE FUNCTIONS =============
-
-// ============= SEEDED RANDOM FOR CONSISTENT VARIETY =============
-function seededRandom(seed) {
-  let hash = 0;
-  for (let i = 0; i < seed.length; i++) {
-    const char = seed.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32bit integer
-  }
-  return Math.abs(hash) / 2147483647;
-}
-
-function getSeededElement(array, seed) {
-  if (!array || array.length === 0) return '';
-  const index = Math.floor(seededRandom(seed) * array.length);
-  return array[index];
-}
-
-// ============= TIER 2.5 UNIFIED VOCABULARY - NUCLEAR INDEPENDENCE =============
-const TIER_25_UNIFIED_VOCABULARY = {
-  emotions: {
-    positive: [
-      'radiating joy', 'beaming with happiness', 'sparkling with delight', 'glowing with excitement', 
-      'filled with wonder', 'bubbling with enthusiasm', 'bright with curiosity', 'warm with contentment',
-      'shining with pride', 'dancing with glee', 'laughing with pure joy', 'smiling with genuine happiness',
-      'giggling with amusement', 'cheerful and bright', 'excited and eager', 'happy and carefree',
-      'joyful and playful', 'delighted and amazed', 'thrilled and energetic', 'content and peaceful',
-      'optimistic and hopeful', 'confident and bold', 'adventurous and brave', 'curious and engaged'
-    ],
-    contemplative: [
-      'deep in thought', 'lost in wonder', 'contemplating quietly', 'reflecting peacefully',
-      'pondering curiously', 'dreaming softly', 'thinking carefully', 'considering thoughtfully',
-      'absorbed in ideas', 'focused intently', 'concentrating deeply', 'studying attentively',
-      'observing quietly', 'listening carefully', 'watching with interest', 'examining closely',
-      'exploring mentally', 'discovering inwardly', 'understanding slowly', 'learning eagerly'
-    ],
-    gentle: [
-      'calm and serene', 'peaceful and quiet', 'gentle and kind', 'soft and tender',
-      'warm and caring', 'compassionate and loving', 'patient and understanding', 'nurturing and protective',
-      'comforting and soothing', 'healing and restorative', 'safe and secure', 'trusted and reliable',
-      'stable and grounded', 'balanced and centered', 'harmonious and unified', 'graceful and elegant'
-    ]
-  },
-  
-  actions: {
-    intensity: [
-      'energetically', 'enthusiastically', 'excitedly', 'vigorously', 'dynamically',
-      'gently', 'softly', 'quietly', 'peacefully', 'calmly', 'serenely',
-      'carefully', 'thoughtfully', 'deliberately', 'mindfully', 'attentively',
-      'boldly', 'confidently', 'bravely', 'courageously', 'determinedly',
-      'playfully', 'joyfully', 'cheerfully', 'lightheartedly', 'merrily',
-      'gracefully', 'elegantly', 'smoothly', 'fluidly', 'naturally'
-    ],
-    
-    bodyLanguage: [
-      'arms spread wide with excitement', 'hands raised in celebration', 'body bouncing with joy',
-      'head tilted thoughtfully', 'eyes sparkling with wonder', 'smile radiating warmth',
-      'posture relaxed and comfortable', 'stance confident and proud', 'shoulders squared with determination',
-      'hands clasped behind back thoughtfully', 'fingers interlaced peacefully', 'arms crossed contemplatively',
-      'hands on hips confidently', 'arms swinging naturally', 'body leaning forward with interest',
-      'sitting cross-legged comfortably', 'standing tall and proud', 'crouching down curiously',
-      'reaching out eagerly', 'gesturing expressively', 'moving rhythmically',
-      'stretching arms upward', 'rubbing eyes sleepily', 'yawning softly',
-      'looking ahead confidently', 'hands in pockets', 'hands resting on lap',
-      'smiling brightly', 'eyes twinkling with mischief', 'face glowing with happiness'
-    ],
-    
-    spatial: [
-      'positioned in the foreground', 'standing in the center', 'placed to the left', 'located on the right side',
-      'sitting in the background', 'crouched in the corner', 'hovering above', 'resting beneath',
-      'nestled between', 'balanced on top of', 'moving forward confidently', 'stepping carefully',
-      'striding purposefully', 'sitting up in bed', 'stretching in bed', 'lying peacefully',
-      'crouched down to play', 'kneeling on ground', 'seated for play', 'positioned playfully',
-      'positioned at desk', 'seated comfortably', 'sitting attentively', 'standing at attention',
-      'leaning against casually', 'perched on edge', 'sprawled out relaxed', 'tucked in safely'
-    ]
-  },
-  
-  settings: {
-    indoor: [
-      'cozy bedroom', 'comfortable living room', 'sunny kitchen', 'quiet study room', 'warm family room',
-      'peaceful library', 'cheerful playroom', 'organized classroom', 'inviting dining room', 'spacious hallway',
-      'bright bathroom', 'functional laundry room', 'creative art studio', 'musical practice room', 'cozy reading nook',
-      'modern office space', 'traditional family den', 'rustic cabin interior', 'elegant formal room', 'casual game room'
-    ],
-    
-    outdoor: [
-      'beautiful garden', 'local neighborhood park', 'sandy beach', 'green forest path', 'rolling countryside',
-      'city playground', 'suburban backyard', 'mountain meadow', 'peaceful lakeside', 'sunny farmyard',
-      'school courtyard', 'community garden', 'tree-lined street', 'open field', 'flower garden',
-      'sports field', 'walking trail', 'picnic area', 'nature preserve', 'outdoor market'
-    ],
-    
-    community: [
-      'neighborhood library', 'local school', 'community center', 'corner store', 'farmer\'s market',
-      'ice cream shop', 'pizza restaurant', 'barber shop', 'grocery store', 'toy store',
-      'bookstore', 'coffee shop', 'bakery', 'park pavilion', 'recreation center',
-      'youth club', 'sports facility', 'art gallery', 'music studio', 'dance studio'
-    ]
-  },
-  
-  objects: {
-    educational: [
-      'colorful books', 'art supplies', 'building blocks', 'science kit', 'musical instruments',
-      'learning games', 'educational puzzles', 'writing materials', 'craft supplies', 'math manipulatives',
-      'maps and globes', 'nature specimens', 'experiment tools', 'measurement devices', 'research materials'
-    ],
-    
-    recreational: [
-      'sports equipment', 'outdoor toys', 'board games', 'electronic devices', 'hobby collections',
-      'art projects', 'musical recordings', 'video games', 'outdoor gear', 'exercise equipment',
-      'creative tools', 'entertainment items', 'party supplies', 'seasonal decorations', 'comfort items'
-    ],
-    
-    everyday: [
-      'household items', 'kitchen utensils', 'cleaning supplies', 'storage containers', 'organizational tools',
-      'furniture pieces', 'lighting fixtures', 'decorative objects', 'practical tools', 'safety equipment',
-      'communication devices', 'transportation items', 'clothing accessories', 'personal care products', 'food items'
-    ]
-  },
-  
-  colors: {
-    warm: [
-      'warm sunshine yellow', 'rich golden orange', 'deep crimson red', 'soft coral pink',
-      'vibrant sunset orange', 'gentle peach tones', 'bold cherry red', 'warm amber glow',
-      'copper penny shine', 'rustic terra cotta', 'cozy fireplace orange', 'autumn leaf red'
-    ],
-    
-    cool: [
-      'ocean wave blue', 'forest canopy green', 'twilight purple', 'arctic ice blue',
-      'sage garden green', 'lavender field purple', 'stormy sky gray', 'mint leaf green',
-      'deep navy blue', 'emerald forest green', 'royal violet purple', 'misty morning blue'
-    ],
-    
-    neutral: [
-      'warm cream white', 'soft pearl gray', 'rich chocolate brown', 'sandy beige',
-      'charcoal pencil gray', 'ivory tower white', 'mushroom cap brown', 'dove feather gray',
-      'coffee bean brown', 'cloud cotton white', 'stone pathway gray', 'vanilla cream'
-    ],
-    
-    bright: [
-      'electric sunshine yellow', 'neon grass green', 'hot magenta pink', 'brilliant sky blue',
-      'vibrant lime green', 'bright cherry red', 'dazzling white', 'intense orange flame',
-      'pure crystal blue', 'electric purple', 'blazing yellow', 'luminous green'
-    ]
-  },
-  
-  atmospheres: [
-    'bathed in warm natural lighting', 'illuminated by soft golden hour light', 'glowing with cozy interior warmth',
-    'brightened by cheerful morning sunshine', 'enhanced by gentle afternoon light', 'warmed by inviting indoor lighting',
-    'lit by filtered window light', 'surrounded by comfortable ambient lighting', 'filled with bright daylight',
-    'creating a welcoming atmosphere', 'establishing a peaceful mood', 'radiating positive energy',
-    'fostering creativity and joy', 'encouraging exploration and wonder', 'promoting learning and growth',
-    'inspiring confidence and curiosity', 'nurturing safety and comfort', 'celebrating childhood innocence'
+// LATINO/HISPANIC ARRAYS (Nuclear Independence - Combined Features Only)
+const HARDCODED_LATINO_HAIRSTYLES = {
+  boys: [
+    'textured wavy hair', 'detailed curly hair', 'textured straight hair', 'detailed wavy fade',
+    'textured curly fade', 'detailed straight fade', 'textured pompadour', 'detailed quiff',
+    'textured side part', 'detailed slicked back', 'textured messy hair', 'detailed tousled hair',
+    'textured crew cut', 'detailed buzz cut', 'textured caesar cut', 'detailed faux hawk',
+    'textured undercut', 'detailed side swept', 'textured spiky hair', 'detailed layered cut'
   ],
-  
-  sensoryDetails: [
-    'filled with gentle sounds', 'touched by soft textures', 'scented with fresh aromas',
-    'warmed by comfortable temperatures', 'enhanced by natural sounds', 'enriched with tactile experiences',
-    'accompanied by melodic tones', 'surrounded by pleasant fragrances', 'textured with interesting surfaces',
-    'flavored with delicious tastes', 'vibrated with musical rhythms', 'felt through physical sensations'
-  ],
-  
-  compositions: [
-    'rule of thirds balance', 'centered composition focus', 'dynamic diagonal arrangement',
-    'symmetrical layout design', 'asymmetrical creative balance', 'leading lines guidance',
-    'frame within frame structure', 'golden ratio proportions', 'triangular arrangement',
-    'circular composition flow', 'horizontal line emphasis', 'vertical element strength',
-    'depth of field variation', 'foreground interest focus', 'background context support'
+  girls: [
+    'wearing long wavy hair with natural texture, flowing movement, dimensional waves, soft volume',
+    'wearing long straight hair with sleek finish, smooth texture, natural shine, flowing length',
+    'wearing long curly hair with defined curl pattern, bouncy texture, voluminous curls, natural movement',
+    'wearing medium wavy hair with soft waves, natural texture, gentle movement, dimensional styling',
+    'wearing medium straight hair with smooth finish, sleek texture, polished appearance, professional styling',
+    'wearing medium curly hair with defined curls, bouncy texture, soft volume, natural curl pattern',
+    'wearing a high ponytail with smooth edges, sleek finish, tight control, polished styling',
+    'wearing a low ponytail with natural texture, soft finish, gentle styling, flowing movement',
+    'wearing loose braids with natural texture, soft weaving, dimensional styling, flowing length',
+    'wearing a sleek bun with smooth edges, polished finish, professional styling, neat appearance'
   ]
 };
 
-// ============= TIER 2.5 ENHANCED VOCABULARY EXTRACTOR - INTELLIGENT CONTEXT DETECTION =============
+const HARDCODED_LATINO_SKIN_TONES = [
+  'light olive complexion', 'warm beige skin', 'golden tan complexion', 'medium olive skin',
+  'caramel complexion', 'bronze skin tone', 'warm brown complexion', 'honey-toned skin',
+  'light brown complexion', 'medium brown skin', 'rich tan complexion', 'golden brown skin'
+];
 
-class EnhancedVocabularyExtractor {
-  constructor(pageText) {
-    this.originalText = pageText;
-    this.lowerText = pageText.toLowerCase();
-    this.words = this.lowerText.split(/\s+/);
-  }
+const HARDCODED_LATINO_FACIAL_FEATURES = [
+  // Light Tones
+  "light olive skin tone with warm brown eyes, full lips, defined cheekbones, elegant nose shape",
+  "warm beige complexion with dark brown eyes, soft lips, high cheekbones, refined nose bridge",
+  "golden tan skin with hazel eyes, naturally full lips, sculpted cheekbones, authentic nose shape",
+  "light caramel complexion with amber eyes, expressive lips, defined facial structure, natural nose",
+  "honey-toned skin with golden brown eyes, full lips, prominent cheekbones, elegant nose bridge",
   
-  /**
-   * Check if the text has strong spatial positioning indicators
-   */
-  hasStrongSpatialIndicators() {
-    const strongSpatialIndicators = [
-      // Movement and positioning
-      'sit', 'sitting', 'stand', 'standing', 'walk', 'walking', 'run', 'running',
-      'lie', 'lying', 'sleep', 'sleeping', 'wake', 'waking', 'move', 'moving',
-      'jump', 'jumping', 'dance', 'dancing', 'stretch', 'stretching',
-      // Activity-based positioning
-      'play with', 'crouch', 'kneel', 'ground', 'desk', 'table',
-      // Explicit positional words
-      'center', 'middle', 'front', 'foreground', 'left', 'right', 'background',
-      'corner', 'above', 'over', 'under', 'beneath', 'between', 'on top'
-    ];
-    
-    return strongSpatialIndicators.some(indicator => this.lowerText.includes(indicator));
-  }
+  // Medium Tones
+  "medium olive skin tone with deep brown eyes, full lips, strong cheekbones, natural nose shape",
+  "caramel complexion with warm amber eyes, soft full lips, defined cheekbones, refined nose bridge",
+  "bronze skin tone with hazel-brown eyes, naturally full lips, sculpted cheekbones, elegant nose",
+  "warm brown complexion with golden eyes, expressive lips, prominent cheekbones, authentic nose shape",
+  "medium tan skin with dark brown eyes, full lips, high cheekbones, natural nose bridge",
   
-  /**
-   * Determine the scene type for context-aware processing
-   */
-  getSceneType() {
-    if (this.lowerText.includes('wake') || this.lowerText.includes('bed') || this.lowerText.includes('sleep')) {
-      return 'sleep_wake';
-    }
-    if (this.lowerText.includes('walk') || this.lowerText.includes('move') || this.lowerText.includes('step')) {
-      return 'movement';
-    }
-    if (this.lowerText.includes('play') || this.lowerText.includes('toy') || this.lowerText.includes('game')) {
-      return 'play';
-    }
-    if (this.lowerText.includes('sit') || this.lowerText.includes('seat')) {
-      return 'sitting';
-    }
-    if (this.lowerText.includes('stand') || this.lowerText.includes('standing')) {
-      return 'standing';
-    }
-    if (this.lowerText.includes('read') || this.lowerText.includes('book') || this.lowerText.includes('study')) {
-      return 'learning';
-    }
-    return 'general';
-  }
-  
-  /**
-   * Get contextually appropriate vocabulary for body language
-   */
-  getContextualBodyLanguage() {
-    const sceneType = this.getSceneType();
-    
-    const contextualMappings = {
-      sleep_wake: ['stretching arms upward', 'rubbing eyes sleepily', 'yawning softly'],
-      movement: ['looking ahead confidently', 'hands in pockets', 'arms swinging naturally'],
-      play: ['arms spread wide with excitement', 'hands raised in celebration', 'body bouncing with joy'],
-      sitting: ['sitting cross-legged', 'hands resting on lap'],
-      standing: ['standing tall', 'hands on hips'],
-      learning: ['head tilted thoughtfully', 'eyes sparkling with wonder'],
-      general: ['smiling brightly', 'standing tall']
-    };
-    
-    return contextualMappings[sceneType] || contextualMappings.general;
-  }
-  
-  /**
-   * Get contextually appropriate vocabulary for spatial positioning
-   */
-  getContextualSpatialPositioning() {
-    const sceneType = this.getSceneType();
-    
-    const contextualMappings = {
-      sleep_wake: ['sitting up in bed', 'stretching in bed', 'lying peacefully'],
-      movement: ['moving forward confidently', 'stepping carefully', 'striding purposefully'],
-      play: ['crouched down to play', 'kneeling on ground', 'positioned playfully'],
-      sitting: ['seated comfortably', 'sitting cross-legged'],
-      standing: ['standing in the center', 'positioned in the foreground'],
-      learning: ['positioned at desk', 'seated comfortably', 'sitting attentively'],
-      general: ['positioned in the foreground', 'standing in the center']
-    };
-    
-    return contextualMappings[sceneType] || contextualMappings.general;
-  }
-}
+  // Medium-Dark Tones
+  "rich brown skin tone with warm amber eyes, full lips, defined cheekbones, elegant nose shape",
+  "deep caramel complexion with golden brown eyes, soft full lips, strong cheekbones, refined nose",
+  "warm bronze skin with hazel eyes, naturally full lips, sculpted cheekbones, authentic nose bridge",
+  "medium brown complexion with amber eyes, expressive lips, prominent cheekbones, natural nose shape",
+  "golden brown skin tone with deep brown eyes, full lips, high cheekbones, elegant nose bridge"
+];
 
-// ============= ENHANCED ACTION SECTION EXTRACTION FUNCTIONS =============
+// ASIAN ARRAYS (Nuclear Independence - Combined Features Only)
+const HARDCODED_ASIAN_HAIRSTYLES = {
+  boys: [
+    'textured straight hair', 'detailed sleek hair', 'textured side part', 'detailed pompadour',
+    'textured undercut', 'detailed fade cut', 'textured crew cut', 'detailed buzz cut',
+    'textured quiff', 'detailed slicked back', 'textured messy hair', 'detailed tousled hair',
+    'textured spiky hair', 'detailed layered cut', 'textured caesar cut', 'detailed faux hawk',
+    'textured bowl cut', 'detailed mushroom cut', 'textured fringe', 'detailed bangs'
+  ],
+  girls: [
+    'wearing long straight hair with sleek finish, smooth texture, natural shine, flowing length',
+    'wearing long wavy hair with soft waves, natural movement, dimensional styling, gentle texture',
+    'wearing medium straight hair with smooth finish, polished appearance, sleek texture, professional styling',
+    'wearing medium wavy hair with natural waves, soft texture, flowing movement, dimensional styling',
+    'wearing a high ponytail with sleek finish, smooth edges, tight control, polished styling',
+    'wearing a low ponytail with natural texture, soft finish, gentle styling, flowing movement',
+    'wearing loose braids with natural texture, soft weaving, dimensional styling, flowing length',
+    'wearing a sleek bun with smooth edges, polished finish, professional styling, neat appearance',
+    'wearing bangs with straight hair, precise cutting, smooth texture, framing face styling',
+    'wearing side-swept bangs with natural texture, soft styling, flowing movement, dimensional finish'
+  ]
+};
 
-function extractActionIntensity(pageText) {
-  const lowerText = pageText.toLowerCase();
-  
-  // Check for intensity vocabulary (exact matches only)
-  for (const intensity of TIER_25_UNIFIED_VOCABULARY.actions.intensity) {
-    if (lowerText.includes(intensity)) {
-      return intensity;
-    }
-  }
-  
-  // Check for intensity indicators in text (only clear indicators)
-  if (lowerText.includes('quick') || lowerText.includes('fast') || lowerText.includes('rush')) return 'energetically';
-  if (lowerText.includes('slow') || lowerText.includes('soft') || lowerText.includes('quiet')) return 'gently';
-  if (lowerText.includes('excited') || lowerText.includes('eager') || lowerText.includes('enthusiastic')) return 'excitedly';
-  if (lowerText.includes('calm') || lowerText.includes('peace') || lowerText.includes('relax')) return 'peacefully';
-  if (lowerText.includes('careful') || lowerText.includes('cautious')) return 'carefully';
-  if (lowerText.includes('bold') || lowerText.includes('brave') || lowerText.includes('confident')) return 'boldly';
-  
-  // NO FALLBACK - Return empty string when no intensity detected
-  return '';
-}
+const HARDCODED_ASIAN_SKIN_TONES = [
+  'light porcelain complexion', 'warm ivory skin', 'golden beige complexion', 'light olive skin',
+  'honey-toned complexion', 'warm tan skin', 'light brown complexion', 'golden tan skin',
+  'medium olive complexion', 'warm beige skin', 'light caramel complexion', 'bronze skin tone'
+];
 
-function extractBodyLanguage(pageText) {
-  const lowerText = pageText.toLowerCase();
+const HARDCODED_ASIAN_FACIAL_FEATURES = [
+  // Light Tones
+  "light porcelain skin tone with dark brown eyes, soft lips, defined cheekbones, elegant nose bridge",
+  "warm ivory complexion with deep brown eyes, naturally full lips, high cheekbones, refined nose shape",
+  "golden beige skin with amber-brown eyes, soft expressive lips, sculpted cheekbones, authentic nose bridge",
+  "light olive complexion with warm brown eyes, full lips, defined facial structure, natural nose shape",
+  "honey-toned skin with golden brown eyes, soft lips, prominent cheekbones, elegant nose bridge",
   
-  // Check for body language vocabulary (exact matches)
-  for (const bodyLang of TIER_25_UNIFIED_VOCABULARY.actions.bodyLanguage) {
-    if (lowerText.includes(bodyLang.toLowerCase())) {
-      return bodyLang;
-    }
-  }
+  // Medium Tones
+  "warm tan skin tone with deep brown eyes, naturally full lips, strong cheekbones, refined nose shape",
+  "light brown complexion with amber eyes, soft expressive lips, defined cheekbones, authentic nose bridge",
+  "golden tan skin with dark brown eyes, full lips, sculpted cheekbones, natural nose shape",
+  "medium olive complexion with warm brown eyes, soft lips, prominent cheekbones, elegant nose bridge",
+  "warm beige skin tone with golden brown eyes, naturally full lips, high cheekbones, refined nose shape",
   
-  // CONTEXT-AWARE BODY LANGUAGE EXTRACTION - INTELLIGENT DETECTION
-  // Only provide body language when context is clear and meaningful
-  
-  // Sleeping/Waking context
-  if (lowerText.includes('wake') || lowerText.includes('waking') || lowerText.includes('woke')) {
-    if (lowerText.includes('stretch')) return 'stretching arms upward';
-    if (lowerText.includes('rub') || lowerText.includes('eyes')) return 'rubbing eyes sleepily';
-    if (lowerText.includes('yawn')) return 'yawning softly';
-    if (lowerText.includes('bed') || lowerText.includes('sleep')) return 'stretching arms upward';
-  }
-  
-  // Walking/Moving context with confidence indicators
-  if (lowerText.includes('walk') || lowerText.includes('walking') || lowerText.includes('move')) {
-    if (lowerText.includes('confident') || lowerText.includes('proud')) return 'looking ahead confidently';
-    if (lowerText.includes('pocket')) return 'hands in pockets';
-    if (lowerText.includes('school') || lowerText.includes('purpose')) return 'arms swinging naturally';
-  }
-  
-  // Playing/Active context with clear activity
-  if (lowerText.includes('play') || lowerText.includes('playing') || lowerText.includes('jump') || lowerText.includes('run')) {
-    if (lowerText.includes('excited') || lowerText.includes('happy')) return 'arms spread wide with excitement';
-    if (lowerText.includes('celebrate') || lowerText.includes('win')) return 'hands raised in celebration';
-    if (lowerText.includes('ball') || lowerText.includes('toy')) return 'body bouncing with joy';
-  }
-  
-  // Sitting context with specific details
-  if (lowerText.includes('sit') || lowerText.includes('sitting') || lowerText.includes('seat')) {
-    if (lowerText.includes('cross') || lowerText.includes('legs')) return 'sitting cross-legged';
-    if (lowerText.includes('comfortable') || lowerText.includes('relax')) return 'hands resting on lap';
-    if (lowerText.includes('quietly') || lowerText.includes('still')) return 'sitting cross-legged';
-  }
-  
-  // Standing context with purpose
-  if (lowerText.includes('stand') || lowerText.includes('standing')) {
-    if (lowerText.includes('tall') || lowerText.includes('proud')) return 'standing tall';
-    if (lowerText.includes('confident')) return 'hands on hips';
-  }
-  
-  // Strong emotional indicators only
-  if (lowerText.includes('smile') && (lowerText.includes('bright') || lowerText.includes('wide'))) return 'smiling brightly';
-  if (lowerText.includes('think') || lowerText.includes('wonder') || lowerText.includes('curious')) return 'head tilted thoughtfully';
-  if (lowerText.includes('excited') && lowerText.includes('eyes')) return 'eyes sparkling with wonder';
-  
-  // NO UNIVERSAL FALLBACK - Return empty string when context is insufficient
-  return '';
-}
+  // Medium-Dark Tones
+  "light caramel complexion with deep brown eyes, soft expressive lips, defined cheekbones, authentic nose bridge",
+  "bronze skin tone with amber-brown eyes, naturally full lips, strong cheekbones, refined nose shape",
+  "warm medium brown skin with golden eyes, soft lips, sculpted cheekbones, natural nose bridge",
+  "medium tan complexion with dark brown eyes, full lips, prominent cheekbones, elegant nose shape",
+  "golden brown skin tone with warm amber eyes, soft expressive lips, high cheekbones, refined nose bridge"
+];
 
-function extractSpatialPositioning(pageText) {
-  const lowerText = pageText.toLowerCase();
-  
-  // Check for spatial positioning vocabulary (exact matches)
-  for (const spatial of TIER_25_UNIFIED_VOCABULARY.actions.spatial) {
-    const spatialWords = spatial.toLowerCase().split(' ');
-    if (spatialWords.every(word => lowerText.includes(word))) {
-      return spatial;
-    }
-  }
-  
-  // CONTEXT-AWARE SPATIAL POSITIONING EXTRACTION - INTELLIGENT DETECTION
-  // Only provide positioning when context is clear and meaningful
-  
-  // Sleeping/Waking context - bed context provides clear positioning
-  if (lowerText.includes('wake') || lowerText.includes('waking') || lowerText.includes('woke') || 
-      lowerText.includes('sleep') || lowerText.includes('bed')) {
-    if (lowerText.includes('sit') || lowerText.includes('up')) return 'sitting up in bed';
-    if (lowerText.includes('stretch')) return 'stretching in bed';
-    if (lowerText.includes('lying') || lowerText.includes('lay')) return 'lying peacefully';
-    return 'sitting up in bed'; // Clear bed context justifies positioning
-  }
-  
-  // Walking/Moving context with directional indicators
-  if (lowerText.includes('walk') || lowerText.includes('walking') || lowerText.includes('move') || 
-      lowerText.includes('step') || lowerText.includes('stride')) {
-    if (lowerText.includes('to') || lowerText.includes('toward') || lowerText.includes('school')) return 'moving forward confidently';
-    if (lowerText.includes('careful') || lowerText.includes('slow')) return 'stepping carefully';
-    if (lowerText.includes('purpose') || lowerText.includes('determined')) return 'striding purposefully';
-  }
-  
-  // Playing context with specific activities  
-  if (lowerText.includes('play') || lowerText.includes('playing') || lowerText.includes('game') ||
-      lowerText.includes('toy') || lowerText.includes('fun')) {
-    if (lowerText.includes('crouch') || lowerText.includes('down')) return 'crouched down to play';
-    if (lowerText.includes('kneel') || lowerText.includes('ground')) return 'kneeling on ground';
-    if (lowerText.includes('sit') || lowerText.includes('seated')) return 'seated for play';
-    if (lowerText.includes('ball') || lowerText.includes('toy')) return 'positioned playfully';
-  }
-  
-  // Learning/Reading context with furniture/location indicators
-  if (lowerText.includes('read') || lowerText.includes('book') || lowerText.includes('study') ||
-      lowerText.includes('learn') || lowerText.includes('desk') || lowerText.includes('school')) {
-    if (lowerText.includes('desk') || lowerText.includes('table')) return 'positioned at desk';
-    if (lowerText.includes('comfortable') || lowerText.includes('cozy')) return 'seated comfortably';
-    if (lowerText.includes('attentive') || lowerText.includes('focus')) return 'sitting attentively';
-  }
-  
-  // Strong spatial indicators only
-  if (lowerText.includes('center') || lowerText.includes('middle')) return 'standing in the center';
-  if (lowerText.includes('front') || lowerText.includes('foreground')) return 'positioned in the foreground';
-  if (lowerText.includes('left')) return 'placed to the left';
-  if (lowerText.includes('right')) return 'located on the right side';
-  if (lowerText.includes('back') || lowerText.includes('background')) return 'sitting in the background';
-  if (lowerText.includes('corner')) return 'crouched in the corner';
-  if (lowerText.includes('above') || lowerText.includes('over')) return 'hovering above';
-  if (lowerText.includes('under') || lowerText.includes('beneath') || lowerText.includes('below')) return 'resting beneath';
-  if (lowerText.includes('between')) return 'nestled between';
-  if (lowerText.includes('on top') || lowerText.includes('upon')) return 'balanced on top of';
-  
-  // NO UNIVERSAL FALLBACK - Return empty string when context is insufficient
-  return '';
-}
+// CAUCASIAN ARRAYS (Nuclear Independence - Combined Features Only)
+const HARDCODED_CAUCASIAN_HAIRSTYLES = {
+  boys: [
+    'textured blonde hair', 'detailed brown hair', 'textured red hair', 'detailed black hair',
+    'textured wavy hair', 'detailed curly hair', 'textured straight hair', 'detailed crew cut',
+    'textured buzz cut', 'detailed fade cut', 'textured pompadour', 'detailed quiff',
+    'textured undercut', 'detailed side part', 'textured messy hair', 'detailed tousled hair',
+    'textured spiky hair', 'detailed layered cut', 'textured caesar cut', 'detailed faux hawk'
+  ],
+  girls: [
+    'wearing long blonde hair with natural texture, flowing movement, dimensional highlights, soft volume',
+    'wearing long brown hair with smooth finish, natural shine, flowing length, dimensional color',
+    'wearing long red hair with natural texture, vibrant color, flowing movement, soft waves',
+    'wearing long black hair with sleek finish, natural shine, smooth texture, flowing length',
+    'wearing medium blonde hair with soft waves, natural texture, dimensional styling, gentle movement',
+    'wearing medium brown hair with smooth finish, polished appearance, natural shine, professional styling',
+    'wearing medium red hair with natural waves, vibrant color, soft texture, flowing movement',
+    'wearing medium black hair with sleek finish, smooth texture, polished styling, natural shine',
+    'wearing a high ponytail with smooth edges, sleek finish, tight control, polished styling',
+    'wearing a low ponytail with natural texture, soft finish, gentle styling, flowing movement'
+  ]
+};
 
-function extractObjectInteraction(pageText, actionObjects) {
-  const lowerText = pageText.toLowerCase();
-  
-  // If we have meaningful action objects, enhance them with interaction details
-  if (actionObjects && actionObjects !== 'colorful items' && actionObjects.trim() !== '') {
-    // Check for specific interaction verbs
-    if (lowerText.includes('hold') || lowerText.includes('holding')) return `holding ${actionObjects}`;
-    if (lowerText.includes('carry') || lowerText.includes('carrying')) return `carrying ${actionObjects}`;
-    if (lowerText.includes('use') || lowerText.includes('using')) return `using ${actionObjects}`;
-    if (lowerText.includes('play') || lowerText.includes('playing')) return `playing with ${actionObjects}`;
-    if (lowerText.includes('touch') || lowerText.includes('touching')) return `touching ${actionObjects}`;
-    if (lowerText.includes('reach') || lowerText.includes('reaching')) return `reaching for ${actionObjects}`;
-    if (lowerText.includes('grab') || lowerText.includes('grabbing')) return `grabbing ${actionObjects}`;
-    if (lowerText.includes('pick') || lowerText.includes('picking')) return `picking up ${actionObjects}`;
-    
-    // If objects exist but no specific interaction verb, describe general interaction
-    return `interacting with ${actionObjects}`;
-  }
-  
-  // Check for specific objects mentioned in text (without actionObjects parameter)
-  if (lowerText.includes('book') && (lowerText.includes('hold') || lowerText.includes('read'))) return 'holding a book';
-  if (lowerText.includes('ball') && (lowerText.includes('play') || lowerText.includes('throw'))) return 'playing with a ball';
-  if (lowerText.includes('toy') && lowerText.includes('play')) return 'playing with toys';
-  if (lowerText.includes('food') && (lowerText.includes('eat') || lowerText.includes('hold'))) return 'holding food';
-  
-  // NO FALLBACK - Return empty string when no objects or interactions detected
-  return '';
-}
+const HARDCODED_CAUCASIAN_SKIN_TONES = [
+  'fair porcelain complexion', 'light ivory skin', 'warm peach complexion', 'light olive skin',
+  'rosy complexion', 'golden beige skin', 'light tan complexion', 'warm honey skin',
+  'peachy complexion', 'light bronze skin', 'warm ivory complexion', 'golden tan skin'
+];
 
-// ============= PHASE 4: SEEDED SELECTION FOR CONSISTENCY =============
-// Generate consistent seeded random for character selection across story pages
-function generateSeededRandom(seed) {
-  // Simple seeded random using string hash
-  let hash = 0;
-  for (let i = 0; i < seed.length; i++) {
-    const char = seed.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32-bit integer
-  }
-  // Convert to 0-1 range
-  return Math.abs(hash) / 2147483647;
-}
+const HARDCODED_CAUCASIAN_FACIAL_FEATURES = [
+  // Light Tones
+  "fair porcelain skin tone with blue eyes, soft pink lips, defined cheekbones, refined nose bridge",
+  "light ivory complexion with green eyes, naturally full lips, high cheekbones, elegant nose shape",
+  "warm peach skin with hazel eyes, soft expressive lips, sculpted cheekbones, authentic nose bridge",
+  "light olive complexion with brown eyes, full lips, defined facial structure, natural nose shape",
+  "rosy skin tone with gray eyes, soft lips, prominent cheekbones, refined nose bridge",
+  
+  // Medium Tones
+  "golden beige skin tone with amber eyes, naturally full lips, strong cheekbones, elegant nose shape",
+  "light tan complexion with blue-green eyes, soft expressive lips, defined cheekbones, refined nose bridge",
+  "warm honey skin with brown eyes, full lips, sculpted cheekbones, authentic nose shape",
+  "peachy complexion with hazel eyes, soft lips, prominent cheekbones, natural nose bridge",
+  "light bronze skin tone with green eyes, naturally full lips, high cheekbones, elegant nose shape",
+  
+  // Medium-Dark Tones
+  "warm ivory complexion with deep brown eyes, soft expressive lips, defined cheekbones, refined nose bridge",
+  "golden tan skin tone with amber eyes, naturally full lips, strong cheekbones, authentic nose shape",
+  "medium olive complexion with hazel-brown eyes, full lips, sculpted cheekbones, natural nose bridge",
+  "warm beige skin with blue eyes, soft lips, prominent cheekbones, elegant nose shape",
+  "light caramel complexion with green eyes, naturally full lips, high cheekbones, refined nose bridge"
+];
 
-// ============= SEEDED SECONDARY CHARACTER SYSTEM (REPLACES OLD extractSecondaryCharactersFromSentence) =============
-async function getSeededSecondaryCharacters(sentence, sessionId, pageNumber) {
-  console.log(`🔍 Seeded Secondary Character Detection - Processing: "${sentence}"`);
-  
-  if (!sessionId) {
-    console.log('⚠️ No sessionId provided, falling back to basic detection');
-    return await extractSecondaryCharactersFromSentence(sentence, sessionId, pageNumber);
-  }
-  
-  try {
-    // PHASE 1: Use SecondaryElementDetector for consistent detection
-    const { SecondaryElementDetector } = await import('../_shared/SecondaryElementDetector.js');
-    const secondaryElements = await SecondaryElementDetector.parseElements(
-      sessionId,
-      '', // primaryScene not available yet
-      sentence,
-      pageNumber || 1
-    );
-    
-    if (!secondaryElements || secondaryElements.length === 0) {
-      console.log('📝 No secondary elements detected by SecondaryElementDetector, using fallback');
-      return await extractSecondaryCharactersFromSentence(sentence, sessionId, pageNumber);
-    }
-    
-    // PHASE 2: Get seed-consistent descriptions for secondary characters (up to 4)
-    const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
-    const characterConsistencyService = new CharacterConsistencyService();
-    
-    const seededDescriptions = await Promise.all(
-      secondaryElements.slice(0, 4).map(async (el) => {
-        if (el.type === 'secondary_character') {
-          try {
-            const secondaryCharacterSeed = await characterConsistencyService.getSecondaryCharacterSeed(
-              sessionId, 
-              el.name, 
-              'secondary_character'
-            );
-            const seedDescription = characterConsistencyService.generateSecondaryCharacterDescription(
-              el.name, 
-              'secondary_character', 
-              secondaryCharacterSeed.seed
-            );
-            console.log(`👤 Tier 2.5A: Secondary character seed applied: ${el.name} -> ${seedDescription} (seed: ${secondaryCharacterSeed.seed})`);
-            return `${el.name}: ${seedDescription}`;
-          } catch (error) {
-            console.warn(`⚠️ Tier 2.5A: Secondary character seed failed for ${el.name}:`, error.message);
-            return `friendly ${el.name}`;
-          }
-        } else if (el.type === 'character_animal') {
-          return `${el.name} (${el.type})`;
-        }
-        return null;
-      })
-    );
-    
-    const validDescriptions = seededDescriptions.filter(desc => desc !== null);
-    
-    if (validDescriptions.length > 0) {
-      const result = validDescriptions.join(', ');
-      console.log(`✅ Tier 2.5A: Seeded secondary characters generated: ${result}`);
-      return result;
-    } else {
-      console.log('📝 No valid seeded descriptions, using fallback');
-      return await extractSecondaryCharactersFromSentence(sentence, sessionId, pageNumber);
-    }
-    
-  } catch (error) {
-    console.warn('⚠️ Tier 2.5A: Seeded secondary character detection failed, using fallback:', error.message);
-    return await extractSecondaryCharactersFromSentence(sentence, sessionId, pageNumber);
-  }
-}
+// MIDDLE EASTERN ARRAYS (Nuclear Independence - Combined Features Only)
+const HARDCODED_MIDDLE_EASTERN_HAIRSTYLES = {
+  boys: [
+    'textured dark hair', 'detailed black hair', 'textured brown hair', 'detailed wavy hair',
+    'textured curly hair', 'detailed straight hair', 'textured fade cut', 'detailed undercut',
+    'textured pompadour', 'detailed quiff', 'textured side part', 'detailed slicked back',
+    'textured crew cut', 'detailed buzz cut', 'textured caesar cut', 'detailed faux hawk',
+    'textured messy hair', 'detailed tousled hair', 'textured spiky hair', 'detailed layered cut'
+  ],
+  girls: [
+    'wearing long dark hair with natural texture, flowing movement, dimensional styling, soft volume',
+    'wearing long black hair with sleek finish, natural shine, smooth texture, flowing length',
+    'wearing long brown hair with natural waves, soft texture, flowing movement, dimensional color',
+    'wearing medium dark hair with smooth finish, polished appearance, natural shine, professional styling',
+    'wearing medium black hair with natural texture, soft waves, flowing movement, dimensional styling',
+    'wearing medium brown hair with sleek finish, smooth texture, polished styling, natural shine',
+    'wearing a high ponytail with smooth edges, sleek finish, tight control, polished styling',
+    'wearing a low ponytail with natural texture, soft finish, gentle styling, flowing movement',
+    'wearing loose braids with natural texture, soft weaving, dimensional styling, flowing length',
+    'wearing a sleek bun with smooth edges, polished finish, professional styling, neat appearance'
+  ]
+};
 
-async function extractSecondaryCharactersFromSentence(sentence, sessionId, pageNumber) {
-  console.log(`🔍 Enhanced Secondary Character Detection - Processing: "${sentence}"`);
-  
-  const lowerSentence = sentence.toLowerCase();
-  const detectedCharacterElements = [];
-  
-  // ============= PHASE 0: ANALYZE TEXT FOR VISUAL DETAILS FIRST =============
-  if (sessionId) {
-    await VisualDetailTracker.analyzeTextForDetails(sessionId, sentence, pageNumber || 1);
-  }
-  
-  // PHASE 1: PRIORITIZE PAGE TEXT NAME EXTRACTION WITH VISUAL ATTRIBUTES
-  const extractedNames = extractCharacterNamesFromPageText(sentence, sessionId);
-  if (extractedNames.length > 0) {
-    const enhancedNames = await Promise.all(extractedNames.slice(0, 3).map(async name => {
-      // Add descriptive attributes to character names
-      const enhancement = await getCharacterEnhancement(name, sessionId);
-      return `${name}: ${enhancement}`;
-    }));
-    detectedCharacterElements.push(...enhancedNames);
-  }
-  
-  // PHASE 2: RELATIONSHIP-BASED DETECTION WITH PROPER ENHANCEMENTS (only if we don't have enough named characters)
-  if (detectedCharacterElements.length < 2) {
-    const relationshipPairs = [
-      // Family relationships (most reliable for visual generation)
-      ['mother', 'loving mother with caring expression'], ['mom', 'friendly mom with warm smile'],
-      ['father', 'supportive father with gentle demeanor'], ['dad', 'kind dad with encouraging presence'],
-      ['sister', 'playful sister with bright energy'], ['brother', 'helpful brother with friendly attitude'],
-      ['grandmother', 'wise grandmother with kind eyes'], ['grandma', 'sweet grandma with gentle nature'],
-      ['grandfather', 'thoughtful grandfather with patient smile'], ['grandpa', 'caring grandpa with warm expression'],
-      
-      // Close friend relationships (reliable for group scenes)
-      ['friend', 'loyal friend with cheerful disposition'], ['best friend', 'best friend with excited expression'],
-      ['buddy', 'fun buddy with energetic presence'], ['pal', 'good pal with friendly manner'],
-      
-      // Authority figures (when context is appropriate)
-      ['teacher', 'helpful teacher with encouraging smile'], ['coach', 'supportive coach with motivating presence'],
-      ['librarian', 'knowledgeable librarian with patient demeanor']
-    ];
-    
-    const foundRelationships = [];
-    for (const [keyword, enhancement] of relationshipPairs) {
-      if (lowerSentence.includes(keyword) && !foundRelationships.some(found => found.includes(keyword))) {
-        foundRelationships.push(enhancement);
-        if (foundRelationships.length >= 2) break; // Limit to 2 relationships to avoid crowding
-      }
-    }
-    
-    detectedCharacterElements.push(...foundRelationships);
-  }
-  
-  // PHASE 3: ANIMAL CHARACTER DETECTION WITH SPECIES SPECIFICATION (only if scene supports it)
-  if (detectedCharacterElements.length < 3) {
-    const animalPairs = [
-      ['dog', 'friendly dog with wagging tail'], ['puppy', 'playful puppy with excited energy'],
-      ['cat', 'curious cat with alert expression'], ['kitten', 'adorable kitten with playful demeanor'],
-      ['bird', 'colorful bird with beautiful feathers'], ['rabbit', 'gentle rabbit with soft fur'],
-      ['hamster', 'cute hamster with tiny paws'], ['fish', 'swimming fish with shimmering scales']
-    ];
-    
-    for (const [keyword, enhancement] of animalPairs) {
-      if (lowerSentence.includes(keyword)) {
-        detectedCharacterElements.push(enhancement);
-        break; // Only add one animal to avoid complexity
-      }
-    }
-  }
-  
-  // PHASE 4: FORMAT AND RETURN RESULTS
-  if (detectedCharacterElements.length > 0) {
-    // Limit to 3 total characters for visual clarity
-    const limitedCharacters = detectedCharacterElements.slice(0, 3);
-    const result = limitedCharacters.join(', ');
-    console.log(`✅ Enhanced secondary characters detected: ${result}`);
-    return result;
-  }
-  
-  console.log('📝 No secondary characters detected in text');
-  return '';
-}
+const HARDCODED_MIDDLE_EASTERN_SKIN_TONES = [
+  'light olive complexion', 'warm beige skin', 'golden tan complexion', 'medium olive skin',
+  'honey-toned complexion', 'warm bronze skin', 'light brown complexion', 'caramel skin tone',
+  'medium tan complexion', 'golden brown skin', 'warm ivory complexion', 'light caramel skin'
+];
 
-// ============= CHARACTER NAME EXTRACTION WITH VISUAL ENHANCEMENT =============
-function extractCharacterNamesFromPageText(text, sessionId) {
-  // Simple name detection - look for capitalized words that could be names
-  const words = text.split(/\s+/);
-  const potentialNames = [];
+const HARDCODED_MIDDLE_EASTERN_FACIAL_FEATURES = [
+  // Light Tones
+  "light olive skin tone with dark brown eyes, full lips, defined cheekbones, elegant nose bridge",
+  "warm beige complexion with amber eyes, soft expressive lips, high cheekbones, refined nose shape",
+  "golden tan skin with hazel-brown eyes, naturally full lips, sculpted cheekbones, authentic nose bridge",
+  "medium olive complexion with deep brown eyes, full lips, defined facial structure, natural nose shape",
+  "honey-toned skin with golden brown eyes, soft lips, prominent cheekbones, elegant nose bridge",
   
-  // Look for capitalized words that could be names (exclude common words)
-  const excludeWords = ['I', 'The', 'A', 'An', 'This', 'That', 'Then', 'When', 'Where', 'What', 'Who', 'How', 'Why'];
+  // Medium Tones
+  "warm bronze skin tone with amber eyes, naturally full lips, strong cheekbones, refined nose shape",
+  "light brown complexion with dark brown eyes, soft expressive lips, defined cheekbones, authentic nose bridge",
+  "caramel skin tone with hazel eyes, full lips, sculpted cheekbones, natural nose shape",
+  "medium tan complexion with golden brown eyes, soft lips, prominent cheekbones, elegant nose bridge",
+  "golden brown skin with deep brown eyes, naturally full lips, high cheekbones, refined nose shape",
   
-  for (const word of words) {
-    const cleanWord = word.replace(/[^\w]/g, ''); // Remove punctuation
-    if (cleanWord.length >= 2 && 
-        cleanWord[0] === cleanWord[0].toUpperCase() && 
-        cleanWord.slice(1) === cleanWord.slice(1).toLowerCase() &&
-        !excludeWords.includes(cleanWord)) {
-      potentialNames.push(cleanWord);
-    }
-  }
-  
-  // Remove duplicates and limit to reasonable number
-  const uniqueNames = [...new Set(potentialNames)].slice(0, 3);
-  
-  if (uniqueNames.length > 0) {
-    console.log(`📛 Extracted potential character names: ${uniqueNames.join(', ')}`);
-  }
-  
-  return uniqueNames;
-}
+  // Medium-Dark Tones
+  "warm ivory complexion with amber-brown eyes, soft expressive lips, defined cheekbones, authentic nose bridge",
+  "light caramel skin tone with dark brown eyes, naturally full lips, strong cheekbones, refined nose shape",
+  "medium olive complexion with golden eyes, full lips, sculpted cheekbones, natural nose bridge",
+  "warm beige skin with hazel-brown eyes, soft lips, prominent cheekbones, elegant nose shape",
+  "bronze complexion with deep brown eyes, naturally full lips, high cheekbones, refined nose bridge"
+];
 
-// ============= CHARACTER ENHANCEMENT BASED ON CONTEXT =============
-async function getCharacterEnhancement(characterName, sessionId) {
-  // Simple enhancement based on name characteristics
-  const nameLength = characterName.length;
-  const firstLetter = characterName[0].toLowerCase();
+// NATIVE AMERICAN ARRAYS (Nuclear Independence - Combined Features Only)
+const HARDCODED_NATIVE_AMERICAN_HAIRSTYLES = {
+  boys: [
+    'textured long dark hair', 'detailed braided hair', 'textured traditional style', 'detailed modern cut',
+    'textured straight hair', 'detailed wavy hair', 'textured ponytail', 'detailed loose hair',
+    'textured crew cut', 'detailed fade cut', 'textured undercut', 'detailed side part',
+    'textured messy hair', 'detailed tousled hair', 'textured layered cut', 'detailed buzz cut',
+    'textured caesar cut', 'detailed faux hawk', 'textured spiky hair', 'detailed pompadour'
+  ],
+  girls: [
+    'wearing long dark hair with natural texture, flowing movement, traditional styling, cultural authenticity',
+    'wearing long black hair with sleek finish, natural shine, smooth texture, flowing length',
+    'wearing traditional braids with cultural styling, authentic weaving, dimensional texture, respectful representation',
+    'wearing long straight hair with natural texture, flowing movement, dimensional styling, soft volume',
+    'wearing medium dark hair with natural waves, soft texture, flowing movement, cultural authenticity',
+    'wearing medium black hair with smooth finish, polished appearance, natural shine, professional styling',
+    'wearing a high ponytail with natural texture, cultural styling, authentic appearance, respectful representation',
+    'wearing a low ponytail with traditional elements, soft finish, gentle styling, flowing movement',
+    'wearing loose hair with natural texture, cultural authenticity, flowing movement, dimensional styling',
+    'wearing traditional styling with cultural elements, authentic appearance, respectful representation, natural beauty'
+  ]
+};
+
+const HARDCODED_NATIVE_AMERICAN_SKIN_TONES = [
+  'warm bronze complexion', 'light copper skin', 'golden tan complexion', 'medium bronze skin',
+  'honey-toned complexion', 'warm brown skin', 'light brown complexion', 'caramel skin tone',
+  'medium tan complexion', 'golden brown skin', 'warm olive complexion', 'rich bronze skin'
+];
+
+const HARDCODED_NATIVE_AMERICAN_FACIAL_FEATURES = [
+  // Light Tones
+  "warm bronze skin tone with dark brown eyes, full lips, defined cheekbones, strong nose bridge",
+  "light copper complexion with deep brown eyes, naturally full lips, high cheekbones, authentic nose shape",
+  "golden tan skin with amber-brown eyes, soft expressive lips, sculpted cheekbones, traditional features",
+  "medium bronze complexion with dark eyes, full lips, defined facial structure, cultural authenticity",
+  "honey-toned skin with golden brown eyes, soft lips, prominent cheekbones, respectful representation",
   
-  // Basic visual enhancements based on name patterns
-  const enhancements = [
-    'friendly companion with warm smile',
-    'kind person with gentle expression',
-    'cheerful individual with bright energy',
-    'helpful character with caring demeanor',
-    'supportive friend with encouraging presence'
+  // Medium Tones
+  "warm brown skin tone with deep brown eyes, naturally full lips, strong cheekbones, authentic features",
+  "light brown complexion with amber eyes, soft expressive lips, defined cheekbones, cultural representation",
+  "caramel skin tone with dark brown eyes, full lips, sculpted cheekbones, traditional beauty",
+  "medium tan complexion with golden brown eyes, soft lips, prominent cheekbones, respectful styling",
+  "golden brown skin with deep brown eyes, naturally full lips, high cheekbones, authentic appearance",
+  
+  // Medium-Dark Tones
+  "warm olive complexion with amber-brown eyes, soft expressive lips, defined cheekbones, cultural authenticity",
+  "rich bronze skin tone with dark brown eyes, naturally full lips, strong cheekbones, traditional features",
+  "medium brown complexion with golden eyes, full lips, sculpted cheekbones, respectful representation",
+  "warm copper skin with hazel-brown eyes, soft lips, prominent cheekbones, authentic beauty",
+  "deep bronze complexion with dark brown eyes, naturally full lips, high cheekbones, cultural respect"
+];
+
+// MIXED RACE ARRAYS (Nuclear Independence - Combined Features Only)
+const HARDCODED_MIXED_RACE_HAIRSTYLES = {
+  boys: [
+    'textured curly hair', 'detailed wavy hair', 'textured straight hair', 'detailed coily hair',
+    'textured fade cut', 'detailed undercut', 'textured crew cut', 'detailed buzz cut',
+    'textured pompadour', 'detailed quiff', 'textured side part', 'detailed slicked back',
+    'textured messy hair', 'detailed tousled hair', 'textured spiky hair', 'detailed layered cut',
+    'textured caesar cut', 'detailed faux hawk', 'textured twist out', 'detailed natural texture'
+  ],
+  girls: [
+    'wearing long curly hair with natural texture, defined curl pattern, bouncy volume, mixed heritage beauty',
+    'wearing long wavy hair with soft waves, natural movement, dimensional styling, multicultural features',
+    'wearing long straight hair with sleek finish, natural shine, flowing length, diverse representation',
+    'wearing medium curly hair with defined curls, natural texture, soft volume, authentic mixed features',
+    'wearing medium wavy hair with natural waves, soft texture, flowing movement, multicultural beauty',
+    'wearing medium straight hair with smooth finish, polished appearance, diverse representation, natural shine',
+    'wearing a high ponytail with natural texture, mixed heritage styling, authentic appearance, cultural blend',
+    'wearing a low ponytail with soft finish, gentle styling, flowing movement, diverse beauty',
+    'wearing loose curls with natural texture, defined pattern, bouncy movement, mixed race authenticity',
+    'wearing natural styling with multicultural elements, authentic appearance, diverse representation, respectful beauty'
+  ]
+};
+
+const HARDCODED_MIXED_RACE_SKIN_TONES = [
+  'light caramel complexion', 'warm olive skin', 'golden beige complexion', 'medium tan skin',
+  'honey-bronze complexion', 'warm brown skin', 'light bronze complexion', 'caramel-olive skin',
+  'medium olive complexion', 'golden brown skin', 'warm caramel complexion', 'mixed heritage tone'
+];
+
+const HARDCODED_MIXED_RACE_FACIAL_FEATURES = [
+  // Light Mixed Tones
+  "light caramel skin tone with hazel eyes, full lips, defined cheekbones, mixed heritage features",
+  "warm olive complexion with amber-green eyes, naturally full lips, high cheekbones, multicultural beauty",
+  "golden beige skin with brown-green eyes, soft expressive lips, sculpted cheekbones, diverse features",
+  "medium tan complexion with golden brown eyes, full lips, defined facial structure, mixed race authenticity",
+  "honey-bronze skin with hazel-brown eyes, soft lips, prominent cheekbones, multicultural representation",
+  
+  // Medium Mixed Tones
+  "warm brown skin tone with amber eyes, naturally full lips, strong cheekbones, mixed heritage beauty",
+  "light bronze complexion with hazel eyes, soft expressive lips, defined cheekbones, diverse representation",
+  "caramel-olive skin with golden brown eyes, full lips, sculpted cheekbones, multicultural features",
+  "medium olive complexion with amber-brown eyes, soft lips, prominent cheekbones, mixed race authenticity",
+  "golden brown skin with hazel-green eyes, naturally full lips, high cheekbones, diverse beauty",
+  
+  // Medium-Dark Mixed Tones
+  "warm caramel complexion with deep brown eyes, soft expressive lips, defined cheekbones, mixed heritage features",
+  "mixed heritage tone with amber eyes, naturally full lips, strong cheekbones, multicultural beauty",
+  "medium bronze complexion with golden brown eyes, full lips, sculpted cheekbones, diverse representation",
+  "warm olive-brown skin with hazel eyes, soft lips, prominent cheekbones, mixed race authenticity",
+  "rich caramel skin tone with amber-brown eyes, naturally full lips, high cheekbones, multicultural respect"
+];
+
+// ============= NUCLEAR INDEPENDENCE - ETHNICITY DETECTION SYSTEM =============
+function detectEthnicityFromCharacterName(characterName) {
+  if (!characterName || typeof characterName !== 'string') {
+    console.log('🔍 No character name provided, defaulting to mixed');
+    return 'mixed';
+  }
+
+  const name = characterName.toLowerCase().trim();
+  console.log('🔍 Detecting ethnicity for character:', name);
+
+  // African American names
+  const africanAmericanNames = [
+    'aisha', 'malik', 'keisha', 'jamal', 'latoya', 'deshawn', 'tanisha', 'marcus',
+    'aaliyah', 'tyrone', 'shanice', 'devon', 'imani', 'terrell', 'jasmine', 'antoine',
+    'zara', 'khalil', 'nia', 'darius', 'amara', 'jalen', 'kendra', 'isaiah',
+    'maya', 'cameron', 'destiny', 'jordan', 'kiara', 'xavier', 'diamond', 'elijah'
   ];
-  
-  // Use first letter to create consistent enhancement for same name
-  const index = firstLetter.charCodeAt(0) % enhancements.length;
-  return enhancements[index];
-}
 
-// ============= NUCLEAR INDEPENDENT EXTRACTION FUNCTIONS =============
-
-function extractEmotion(pageText) {
-  const lowerText = pageText.toLowerCase();
-  
-  // Check for positive emotions first (most common in children's stories)
-  for (const emotion of TIER_25_UNIFIED_VOCABULARY.emotions.positive) {
-    if (lowerText.includes(emotion.split(' ')[0]) || lowerText.includes(emotion.split(' ')[1])) {
-      return emotion;
-    }
-  }
-  
-  // Check for contemplative emotions
-  for (const emotion of TIER_25_UNIFIED_VOCABULARY.emotions.contemplative) {
-    if (lowerText.includes(emotion.split(' ')[0]) || lowerText.includes(emotion.split(' ')[1])) {
-      return emotion;
-    }
-  }
-  
-  // Check for gentle emotions
-  for (const emotion of TIER_25_UNIFIED_VOCABULARY.emotions.gentle) {
-    if (lowerText.includes(emotion.split(' ')[0]) || lowerText.includes(emotion.split(' ')[1])) {
-      return emotion;
-    }
-  }
-  
-  // Simple keyword-based emotion mapping with full emotional descriptions
-  if (lowerText.includes('happy') || lowerText.includes('joy') || lowerText.includes('excited')) return 'radiating joy and happiness';
-  if (lowerText.includes('smile') || lowerText.includes('laugh') || lowerText.includes('giggle')) return 'beaming with delight';
-  if (lowerText.includes('wonder') || lowerText.includes('curious') || lowerText.includes('amaze')) return 'filled with wonder and curiosity';
-  if (lowerText.includes('think') || lowerText.includes('consider') || lowerText.includes('ponder')) return 'deep in thoughtful contemplation';
-  if (lowerText.includes('calm') || lowerText.includes('peace') || lowerText.includes('quiet')) return 'calm and serene';
-  if (lowerText.includes('confident') || lowerText.includes('proud') || lowerText.includes('brave')) return 'confident and proud';
-  if (lowerText.includes('surprise') || lowerText.includes('shock') || lowerText.includes('gasp')) return 'filled with delightful surprise';
-  
-  // Default to positive emotion for children's content
-  return 'bright and cheerful';
-}
-
-function extractSetting(pageText) {
-  const lowerText = pageText.toLowerCase();
-  
-  // Check indoor settings first
-  for (const setting of TIER_25_UNIFIED_VOCABULARY.settings.indoor) {
-    const settingWords = setting.toLowerCase().split(' ');
-    if (settingWords.some(word => lowerText.includes(word))) {
-      return setting;
-    }
-  }
-  
-  // Check outdoor settings
-  for (const setting of TIER_25_UNIFIED_VOCABULARY.settings.outdoor) {
-    const settingWords = setting.toLowerCase().split(' ');
-    if (settingWords.some(word => lowerText.includes(word))) {
-      return setting;
-    }
-  }
-  
-  // Check community settings
-  for (const setting of TIER_25_UNIFIED_VOCABULARY.settings.community) {
-    const settingWords = setting.toLowerCase().split(' ');
-    if (settingWords.some(word => lowerText.includes(word))) {
-      return setting;
-    }
-  }
-  
-  // Keyword-based setting detection with enhanced descriptions
-  if (lowerText.includes('bedroom') || lowerText.includes('bed')) return 'cozy bedroom with soft lighting';
-  if (lowerText.includes('kitchen')) return 'warm family kitchen';
-  if (lowerText.includes('living room') || lowerText.includes('family room')) return 'comfortable living room';
-  if (lowerText.includes('school') || lowerText.includes('classroom')) return 'bright school classroom';
-  if (lowerText.includes('park') || lowerText.includes('playground')) return 'sunny neighborhood park';
-  if (lowerText.includes('garden') || lowerText.includes('yard')) return 'beautiful garden setting';
-  if (lowerText.includes('library')) return 'quiet library with many books';
-  if (lowerText.includes('beach') || lowerText.includes('sand')) return 'sandy beach with gentle waves';
-  if (lowerText.includes('forest') || lowerText.includes('woods')) return 'peaceful forest path';
-  if (lowerText.includes('home') || lowerText.includes('house')) return 'comfortable family home';
-  
-  // Default settings based on context
-  if (lowerText.includes('outside') || lowerText.includes('outdoor')) return 'peaceful outdoor environment';
-  if (lowerText.includes('inside') || lowerText.includes('indoor')) return 'cozy indoor space';
-  
-  return 'comfortable everyday setting';
-}
-
-function extractAtmosphere(pageText) {
-  const lowerText = pageText.toLowerCase();
-  
-  // Check for atmosphere vocabulary
-  for (const atmosphere of TIER_25_UNIFIED_VOCABULARY.atmospheres) {
-    const atmosphereWords = atmosphere.toLowerCase().split(' ');
-    if (atmosphereWords.some(word => lowerText.includes(word))) {
-      return atmosphere;
-    }
-  }
-  
-  // Time-based atmosphere detection
-  if (lowerText.includes('morning') || lowerText.includes('dawn')) return 'brightened by cheerful morning sunshine';
-  if (lowerText.includes('afternoon') || lowerText.includes('day')) return 'enhanced by gentle afternoon light';
-  if (lowerText.includes('evening') || lowerText.includes('sunset')) return 'illuminated by soft golden hour light';
-  if (lowerText.includes('night') || lowerText.includes('dark')) return 'warmed by inviting indoor lighting';
-  
-  // Mood-based atmosphere
-  if (lowerText.includes('bright') || lowerText.includes('sunny')) return 'filled with bright natural light';
-  if (lowerText.includes('cozy') || lowerText.includes('warm')) return 'glowing with cozy interior warmth';
-  if (lowerText.includes('peaceful') || lowerText.includes('quiet')) return 'establishing a peaceful mood';
-  if (lowerText.includes('exciting') || lowerText.includes('fun')) return 'radiating positive energy';
-  
-  return 'bathed in warm natural lighting';
-}
-
-function extractActionObjects(pageText) {
-  const lowerText = pageText.toLowerCase();
-  
-  // Check for educational objects
-  for (const obj of TIER_25_UNIFIED_VOCABULARY.objects.educational) {
-    const objWords = obj.toLowerCase().split(' ');
-    if (objWords.some(word => lowerText.includes(word))) {
-      return obj;
-    }
-  }
-  
-  // Check for recreational objects
-  for (const obj of TIER_25_UNIFIED_VOCABULARY.objects.recreational) {
-    const objWords = obj.toLowerCase().split(' ');
-    if (objWords.some(word => lowerText.includes(word))) {
-      return obj;
-    }
-  }
-  
-  // Check for everyday objects
-  for (const obj of TIER_25_UNIFIED_VOCABULARY.objects.everyday) {
-    const objWords = obj.toLowerCase().split(' ');
-    if (objWords.some(word => lowerText.includes(word))) {
-      return obj;
-    }
-  }
-  
-  // Specific object detection
-  if (lowerText.includes('book') || lowerText.includes('read')) return 'colorful storybooks';
-  if (lowerText.includes('toy') || lowerText.includes('play')) return 'favorite toys';
-  if (lowerText.includes('ball') || lowerText.includes('sport')) return 'sports equipment';
-  if (lowerText.includes('art') || lowerText.includes('draw') || lowerText.includes('paint')) return 'art supplies';
-  if (lowerText.includes('music') || lowerText.includes('sing') || lowerText.includes('instrument')) return 'musical instruments';
-  if (lowerText.includes('game') || lowerText.includes('puzzle')) return 'educational games';
-  if (lowerText.includes('food') || lowerText.includes('eat') || lowerText.includes('lunch')) return 'delicious food items';
-  if (lowerText.includes('clothes') || lowerText.includes('dress') || lowerText.includes('wear')) return 'comfortable clothing';
-  
-  // Return generic colorful items if no specific objects detected
-  return 'colorful items';
-}
-
-function extractColoredObjects(pageText) {
-  const lowerText = pageText.toLowerCase();
-  
-  // Look for color + object combinations
-  const colorPatterns = [
-    'red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'white', 'black', 'brown',
-    'bright', 'dark', 'light', 'colorful', 'vibrant', 'soft', 'warm', 'cool'
+  // Latino/Hispanic names
+  const latinoNames = [
+    'sofia', 'diego', 'maria', 'carlos', 'isabella', 'miguel', 'camila', 'alejandro',
+    'lucia', 'fernando', 'valentina', 'ricardo', 'gabriela', 'antonio', 'natalia', 'jose',
+    'ana', 'luis', 'elena', 'pablo', 'carmen', 'rafael', 'rosa', 'manuel',
+    'esperanza', 'francisco', 'dolores', 'juan', 'mercedes', 'pedro', 'gloria', 'ramon'
   ];
-  
-  const objectPatterns = [
-    'book', 'toy', 'ball', 'shirt', 'dress', 'hat', 'shoes', 'bag', 'box', 'flower',
-    'chair', 'table', 'door', 'window', 'car', 'bike', 'blanket', 'pillow', 'cup', 'plate'
+
+  // Asian names
+  const asianNames = [
+    'mei', 'hiroshi', 'yuki', 'kenji', 'sakura', 'takeshi', 'akiko', 'ryu',
+    'li', 'chen', 'wang', 'zhang', 'liu', 'yang', 'huang', 'zhao',
+    'priya', 'raj', 'anita', 'vikram', 'kavya', 'arjun', 'deepika', 'rohit',
+    'kim', 'park', 'lee', 'choi', 'jung', 'kang', 'yoon', 'shin'
   ];
-  
-  for (const color of colorPatterns) {
-    for (const object of objectPatterns) {
-      if (lowerText.includes(color) && lowerText.includes(object)) {
-        return `${color} ${object}`;
-      }
-    }
+
+  // Middle Eastern names
+  const middleEasternNames = [
+    'omar', 'fatima', 'hassan', 'amal', 'ahmed', 'layla', 'mohammed', 'zara',
+    'ali', 'nadia', 'yusuf', 'sara', 'ibrahim', 'maryam', 'khalid', 'amina',
+    'tariq', 'yasmin', 'rashid', 'leila', 'samir', 'dina', 'karim', 'rania'
+  ];
+
+  // Native American names
+  const nativeAmericanNames = [
+    'aiyana', 'koda', 'nova', 'kai', 'luna', 'river', 'sage', 'phoenix',
+    'dakota', 'sierra', 'autumn', 'hunter', 'raven', 'storm', 'sky', 'bear',
+    'eagle', 'wolf', 'star', 'moon', 'sun', 'wind', 'rain', 'snow'
+  ];
+
+  // Caucasian names
+  const caucasianNames = [
+    'emma', 'liam', 'olivia', 'noah', 'ava', 'william', 'sophia', 'james',
+    'charlotte', 'benjamin', 'amelia', 'lucas', 'harper', 'henry', 'evelyn', 'alexander',
+    'abigail', 'michael', 'emily', 'ethan', 'elizabeth', 'daniel', 'mia', 'matthew',
+    'ella', 'jackson', 'madison', 'david', 'scarlett', 'joseph', 'victoria', 'samuel'
+  ];
+
+  // Check each ethnicity
+  if (africanAmericanNames.includes(name)) {
+    console.log('✅ Detected African American ethnicity');
+    return 'african_american';
   }
-  
-  // Check vocabulary colors
-  for (const colorType of Object.keys(TIER_25_UNIFIED_VOCABULARY.colors)) {
-    for (const color of TIER_25_UNIFIED_VOCABULARY.colors[colorType]) {
-      const colorWords = color.toLowerCase().split(' ');
-      if (colorWords.some(word => lowerText.includes(word))) {
-        return `items with ${color}`;
-      }
-    }
+  if (latinoNames.includes(name)) {
+    console.log('✅ Detected Latino ethnicity');
+    return 'latino';
   }
-  
-  // Default to generic colorful objects
-  return 'vibrant colorful objects';
+  if (asianNames.includes(name)) {
+    console.log('✅ Detected Asian ethnicity');
+    return 'asian';
+  }
+  if (middleEasternNames.includes(name)) {
+    console.log('✅ Detected Middle Eastern ethnicity');
+    return 'middle_eastern';
+  }
+  if (nativeAmericanNames.includes(name)) {
+    console.log('✅ Detected Native American ethnicity');
+    return 'native_american';
+  }
+  if (caucasianNames.includes(name)) {
+    console.log('✅ Detected Caucasian ethnicity');
+    return 'caucasian';
+  }
+
+  console.log('🔍 No specific ethnicity detected, defaulting to mixed');
+  return 'mixed';
 }
 
-function extractSensoryDetails(pageText) {
-  const lowerText = pageText.toLowerCase();
+// ============= NUCLEAR INDEPENDENCE - ETHNICITY-SPECIFIC FEATURE SELECTION =============
+function getEthnicitySpecificFeatures(ethnicity, gender) {
+  console.log(`🎨 Getting ${ethnicity} features for ${gender}`);
   
-  // Check for sensory vocabulary
-  for (const sensory of TIER_25_UNIFIED_VOCABULARY.sensoryDetails) {
-    const sensoryWords = sensory.toLowerCase().split(' ');
-    if (sensoryWords.some(word => lowerText.includes(word))) {
-      return sensory;
-    }
+  let hairstyles, skinTones, facialFeatures;
+  
+  switch (ethnicity) {
+    case 'african_american':
+      hairstyles = HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[gender] || HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.girls;
+      skinTones = HARDCODED_AFRICAN_AMERICAN_SKIN_TONES;
+      facialFeatures = HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES;
+      break;
+    case 'latino':
+      hairstyles = HARDCODED_LATINO_HAIRSTYLES[gender] || HARDCODED_LATINO_HAIRSTYLES.girls;
+      skinTones = HARDCODED_LATINO_SKIN_TONES;
+      facialFeatures = HARDCODED_LATINO_FACIAL_FEATURES;
+      break;
+    case 'asian':
+      hairstyles = HARDCODED_ASIAN_HAIRSTYLES[gender] || HARDCODED_ASIAN_HAIRSTYLES.girls;
+      skinTones = HARDCODED_ASIAN_SKIN_TONES;
+      facialFeatures = HARDCODED_ASIAN_FACIAL_FEATURES;
+      break;
+    case 'middle_eastern':
+      hairstyles = HARDCODED_MIDDLE_EASTERN_HAIRSTYLES[gender] || HARDCODED_MIDDLE_EASTERN_HAIRSTYLES.girls;
+      skinTones = HARDCODED_MIDDLE_EASTERN_SKIN_TONES;
+      facialFeatures = HARDCODED_MIDDLE_EASTERN_FACIAL_FEATURES;
+      break;
+    case 'native_american':
+      hairstyles = HARDCODED_NATIVE_AMERICAN_HAIRSTYLES[gender] || HARDCODED_NATIVE_AMERICAN_HAIRSTYLES.girls;
+      skinTones = HARDCODED_NATIVE_AMERICAN_SKIN_TONES;
+      facialFeatures = HARDCODED_NATIVE_AMERICAN_FACIAL_FEATURES;
+      break;
+    case 'caucasian':
+      hairstyles = HARDCODED_CAUCASIAN_HAIRSTYLES[gender] || HARDCODED_CAUCASIAN_HAIRSTYLES.girls;
+      skinTones = HARDCODED_CAUCASIAN_SKIN_TONES;
+      facialFeatures = HARDCODED_CAUCASIAN_FACIAL_FEATURES;
+      break;
+    case 'mixed':
+    default:
+      hairstyles = HARDCODED_MIXED_RACE_HAIRSTYLES[gender] || HARDCODED_MIXED_RACE_HAIRSTYLES.girls;
+      skinTones = HARDCODED_MIXED_RACE_SKIN_TONES;
+      facialFeatures = HARDCODED_MIXED_RACE_FACIAL_FEATURES;
+      break;
   }
-  
-  // Specific sensory detection
-  if (lowerText.includes('sound') || lowerText.includes('hear') || lowerText.includes('listen')) return 'filled with gentle sounds';
-  if (lowerText.includes('touch') || lowerText.includes('feel') || lowerText.includes('soft')) return 'touched by soft textures';
-  if (lowerText.includes('smell') || lowerText.includes('scent') || lowerText.includes('fragrant')) return 'scented with fresh aromas';
-  if (lowerText.includes('warm') || lowerText.includes('cool') || lowerText.includes('temperature')) return 'warmed by comfortable temperatures';
-  if (lowerText.includes('music') || lowerText.includes('song') || lowerText.includes('melody')) return 'accompanied by melodic tones';
-  if (lowerText.includes('taste') || lowerText.includes('flavor') || lowerText.includes('delicious')) return 'flavored with delicious tastes';
-  
-  return 'enhanced by natural sounds';
-}
 
-function extractSpatialComposition(pageText) {
-  const lowerText = pageText.toLowerCase();
-  
-  // Check for composition vocabulary
-  for (const composition of TIER_25_UNIFIED_VOCABULARY.compositions) {
-    const compositionWords = composition.toLowerCase().split(' ');
-    if (compositionWords.some(word => lowerText.includes(word))) {
-      return composition;
-    }
-  }
-  
-  // Positional composition detection
-  if (lowerText.includes('center') || lowerText.includes('middle')) return 'centered composition focus';
-  if (lowerText.includes('left') || lowerText.includes('right')) return 'asymmetrical creative balance';
-  if (lowerText.includes('front') || lowerText.includes('foreground')) return 'foreground interest focus';
-  if (lowerText.includes('back') || lowerText.includes('background')) return 'background context support';
-  if (lowerText.includes('above') || lowerText.includes('below')) return 'vertical element strength';
-  if (lowerText.includes('beside') || lowerText.includes('next')) return 'horizontal line emphasis';
-  
-  // Movement-based composition
-  if (lowerText.includes('walk') || lowerText.includes('move') || lowerText.includes('step')) return 'dynamic diagonal arrangement';
-  if (lowerText.includes('circle') || lowerText.includes('round') || lowerText.includes('around')) return 'circular composition flow';
-  if (lowerText.includes('line') || lowerText.includes('row') || lowerText.includes('straight')) return 'leading lines guidance';
-  
-  return 'rule of thirds balance';
-}
+  const selectedHair = hairstyles[Math.floor(Math.random() * hairstyles.length)];
+  const selectedSkinTone = skinTones[Math.floor(Math.random() * skinTones.length)];
+  const selectedFeatures = facialFeatures[Math.floor(Math.random() * facialFeatures.length)];
 
-// ============= NUCLEAR INDEPENDENT CHARACTER GENERATION =============
+  console.log(`✅ Selected features for ${ethnicity} ${gender}:`, {
+    hair: selectedHair.substring(0, 50) + '...',
+    skinTone: selectedSkinTone,
+    features: selectedFeatures.substring(0, 50) + '...'
+  });
 
-function getCharacterConsistencyData(sessionId, avatarIdentity) {
-  // Placeholder for character consistency - will be enhanced with actual implementation
-  if (!sessionId || !avatarIdentity) {
-    return null;
-  }
-  
-  // This would integrate with CharacterConsistencyService for real implementation
-  // For now, return basic structure
   return {
-    seed: `${sessionId}_${avatarIdentity.gender}_${avatarIdentity.skinTone}`,
-    characterDescription: null // Will be generated by character service
+    hair: selectedHair,
+    skinTone: selectedSkinTone,
+    features: selectedFeatures
   };
 }
 
-async function generateCharacterDescription(avatarIdentity, culturalProfile, difficulty, sessionId) {
-  console.log('🎭 Tier 2.5: Generating nuclear independent character description');
-  
-  if (!avatarIdentity) {
-    console.error('❌ Tier 2.5: No avatar identity provided');
-    return 'young child';
-  }
-  
-  try {
-    // PHASE 1: CHARACTER CONSISTENCY SERVICE INTEGRATION
-    if (sessionId) {
-      const characterConsistencyService = new CharacterConsistencyService();
-      const characterSeed = await characterConsistencyService.getCharacterSeed(
-        sessionId,
-        avatarIdentity,
-        'story_context', // storyContext
-        'premium', // sessionType
-        '' // pageTextClothing
-      );
-      
-      if (characterSeed && characterSeed.description) {
-        console.log(`✅ Tier 2.5: Character consistency service provided: ${characterSeed.description}`);
-        return characterSeed.description;
-      }
-    }
-    
-    // PHASE 2: NUCLEAR INDEPENDENT FALLBACK GENERATION
-    console.log('🔧 Tier 2.5: Using nuclear independent character generation');
-    
-    const gender = avatarIdentity.gender || 'child';
-    const skinTone = avatarIdentity.skinTone || 'medium';
-    
-    // Use seeded selection for consistency
-    const seed = sessionId ? `${sessionId}_${gender}_${skinTone}` : `${gender}_${skinTone}`;
-    
-    let characterParts = [];
-    
-    // Age determination based on difficulty
-    const ageMapping = {
-      'beginner': '5-year-old',
-      'easy': '6-year-old', 
-      'medium': '7-year-old',
-      'hard': '8-year-old',
-      'expert': '9-year-old'
-    };
-    const age = ageMapping[difficulty] || '7-year-old';
-    characterParts.push(age);
-    
-    // Cultural profile and ethnicity handling
-    if (culturalProfile === 'african_american' || 
-        (avatarIdentity.skinTone && ['dark brown', 'brown', 'deep brown'].some(tone => avatarIdentity.skinTone.includes(tone)))) {
-      
-      // African American character generation
-      characterParts.push('African American child');
-      
-      // Hair selection
-      const hairArray = gender === 'girl' ? 
-        HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.girls : 
-        HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.boys;
-      const selectedHair = getSeededElement(hairArray, seed + '_hair');
-      if (selectedHair) characterParts.push(selectedHair);
-      
-      // Facial features
-      const selectedFeatures = getSeededElement(HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES, seed + '_features');
-      if (selectedFeatures) characterParts.push(selectedFeatures);
-      
-    } else {
-      // Standard American character generation
-      characterParts.push(`${skinTone} complexion`);
-      
-      // Let AI handle hair generation for non-African American characters
-      const hairStyles = gender === 'girl' ? 
-        ['beautiful long hair', 'stylish medium-length hair', 'cute short hair', 'wavy hair', 'straight hair'] :
-        ['neat short hair', 'casual hair style', 'trendy haircut', 'natural hair', 'well-groomed hair'];
-      const selectedHair = getSeededElement(hairStyles, seed + '_hair');
-      characterParts.push(selectedHair);
-      
-      // Basic facial features
-      const basicFeatures = [
-        'bright sparkling eyes and gentle smile',
-        'kind eyes and cheerful expression', 
-        'expressive eyes and warm smile',
-        'friendly demeanor and happy face',
-        'gentle features and bright smile'
-      ];
-      const selectedFeatures = getSeededElement(basicFeatures, seed + '_features');
-      characterParts.push(selectedFeatures);
-    }
-    
-    const result = characterParts.join(', ');
-    console.log(`✅ Tier 2.5: Nuclear independent character generated: ${result}`);
-    return result;
-    
-  } catch (error) {
-    console.error('❌ Tier 2.5: Character generation error:', error.message);
-    return `${difficulty === 'beginner' ? '5-year-old' : '7-year-old'} child with friendly appearance`;
-  }
+// ============= NUCLEAR INDEPENDENCE - COMPREHENSIVE ARRAYS =============
+
+const AGES = ['5-year-old', '6-year-old', '7-year-old', '8-year-old', '9-year-old', '10-year-old'];
+
+const EMOTIONS = [
+  'happy', 'excited', 'curious', 'surprised', 'thoughtful', 'determined',
+  'joyful', 'amazed', 'confident', 'peaceful', 'playful', 'focused',
+  'cheerful', 'enthusiastic', 'wonder-filled', 'content', 'brave', 'gentle'
+];
+
+const SETTINGS = [
+  'magical forest', 'cozy bedroom', 'sunny playground', 'colorful classroom',
+  'beautiful garden', 'warm kitchen', 'peaceful park', 'enchanted meadow',
+  'friendly neighborhood', 'bright library', 'cheerful backyard', 'lovely beach',
+  'snowy winter scene', 'autumn forest', 'spring garden', 'summer field'
+];
+
+const ATMOSPHERES = [
+  'warm golden lighting', 'soft natural light', 'magical glow', 'bright cheerful ambiance',
+  'cozy atmosphere', 'dreamy lighting', 'gentle sunbeams', 'enchanting mood',
+  'peaceful ambiance', 'joyful atmosphere', 'serene lighting', 'whimsical glow'
+];
+
+const PROPS = [
+  'colorful toys', 'magical books', 'art supplies', 'musical instruments',
+  'building blocks', 'stuffed animals', 'board games', 'craft materials',
+  'sports equipment', 'gardening tools', 'cooking utensils', 'science kit'
+];
+
+const ACTION_OBJECTS = [
+  'playing with blocks', 'reading a book', 'drawing pictures', 'building something',
+  'exploring nature', 'helping others', 'learning new things', 'creating art',
+  'solving puzzles', 'making music', 'gardening', 'cooking together'
+];
+
+const COLORED_OBJECTS = [
+  'bright red apples', 'sunny yellow flowers', 'deep blue ocean', 'vibrant green trees',
+  'purple butterflies', 'orange pumpkins', 'pink cherry blossoms', 'rainbow colors',
+  'golden sunlight', 'silver stars', 'emerald grass', 'ruby red berries'
+];
+
+const SENSORY_DETAILS = [
+  'soft textures', 'gentle sounds', 'sweet aromas', 'warm feelings',
+  'smooth surfaces', 'melodic music', 'fresh air', 'cozy warmth',
+  'natural scents', 'peaceful sounds', 'comfortable spaces', 'pleasant sensations'
+];
+
+const COMMUNITY_CONTEXT = [
+  'with loving family', 'among good friends', 'in supportive community',
+  'with caring teachers', 'alongside helpful neighbors', 'with kind mentors',
+  'in welcoming group', 'with encouraging peers', 'among diverse friends',
+  'in inclusive environment', 'with understanding adults', 'in safe space'
+];
+
+const SECONDARY_CHARACTERS = [
+  'with a friendly pet', 'alongside a sibling', 'with a best friend',
+  'near a caring adult', 'with classmates', 'alongside family members',
+  'with a mentor figure', 'near helpful friends', 'with community members',
+  'alongside diverse peers', 'with supportive adults', 'near loving relatives'
+];
+
+const SPATIAL_POSITIONING = [
+  'centered in frame', 'slightly off-center', 'in foreground focus',
+  'naturally positioned', 'dynamically placed', 'harmoniously arranged',
+  'thoughtfully composed', 'balanced positioning', 'engaging placement',
+  'story-focused arrangement', 'character-centered', 'scene-appropriate positioning'
+];
+
+const OBJECT_INTERACTION = [
+  'actively engaging with', 'carefully handling', 'creatively using',
+  'thoughtfully exploring', 'gently touching', 'skillfully manipulating',
+  'curiously examining', 'playfully interacting with', 'learning from',
+  'discovering through', 'experimenting with', 'enjoying interaction with'
+];
+
+const BODY_LANGUAGE = [
+  'open and welcoming posture', 'confident stance', 'relaxed positioning',
+  'engaged body language', 'natural movement', 'expressive gestures',
+  'comfortable posture', 'active positioning', 'friendly demeanor',
+  'approachable stance', 'positive body language', 'authentic expression'
+];
+
+const SPATIAL_COMPOSITION = [
+  'rule of thirds composition', 'centered focal point', 'balanced arrangement',
+  'dynamic composition', 'harmonious layout', 'engaging framing',
+  'story-driven composition', 'character-focused framing', 'natural arrangement',
+  'visually pleasing layout', 'thoughtful positioning', 'compelling composition'
+];
+
+const ACTION_INTENSITY = [
+  'gentle movement', 'calm activity', 'peaceful action',
+  'moderate energy', 'focused activity', 'engaged participation',
+  'thoughtful action', 'careful movement', 'deliberate activity',
+  'natural motion', 'comfortable pace', 'appropriate energy level'
+];
+
+const CAMERA_DIRECTIVES = [
+  'medium shot with shallow depth of field',
+  'close-up with soft background blur',
+  'wide shot showing full scene context',
+  'three-quarter view with natural framing',
+  'eye-level perspective with warm lighting',
+  'slightly elevated angle with inclusive framing',
+  'natural perspective with story focus',
+  'character-centered framing with environmental context'
+];
+
+const ADJECTIVES = [
+  'vibrant', 'warm', 'soft', 'bright', 'gentle', 'cheerful',
+  'magical', 'peaceful', 'joyful', 'cozy', 'dreamy', 'enchanting',
+  'natural', 'harmonious', 'welcoming', 'comfortable', 'inspiring', 'uplifting'
+];
+
+// ============= NUCLEAR INDEPENDENCE - RANDOM SELECTION FUNCTIONS =============
+function getRandomElement(array) {
+  if (!array || array.length === 0) return '';
+  return array[Math.floor(Math.random() * array.length)];
 }
 
-// ============= NUCLEAR INDEPENDENT TEMPLATE FILLING =============
-
-async function fillPromptTemplate(template, pageText, avatarIdentity, culturalProfile, difficulty, sessionId, pageNumber) {
-  console.log('🔧 Tier 2.5: Nuclear independent template filling');
-  
-  try {
-    // Generate character description with consistency
-    const character = await generateCharacterDescription(avatarIdentity, culturalProfile, difficulty, sessionId);
-    
-    // Extract all placeholder values using intelligent extraction
-    const age = difficulty === 'beginner' ? '5-year-old' : difficulty === 'easy' ? '6-year-old' : '7-year-old';
-    const emotion = extractEmotion(pageText);
-    const setting = extractSetting(pageText);
-    const atmosphere = extractAtmosphere(pageText);
-    
-    // Enhanced action extraction
-    const actionIntensity = extractActionIntensity(pageText);
-    const bodyLanguage = extractBodyLanguage(pageText);
-    const spatialPositioning = extractSpatialPositioning(pageText);
-    
-    // Object and sensory extraction
-    const actionObjects = extractActionObjects(pageText);
-    const coloredObjects = extractColoredObjects(pageText);
-    const sensoryDetails = extractSensoryDetails(pageText);
-    const spatialComposition = extractSpatialComposition(pageText);
-    const objectInteraction = extractObjectInteraction(pageText, actionObjects);
-    
-    // Secondary characters with seeded consistency
-    const secondaryCharacters = await getSeededSecondaryCharacters(pageText, sessionId, pageNumber);
-    
-    // Cultural and community context
-    const communityContext = culturalProfile === 'african_american' ? 
-      'celebrating African American culture and heritage' : 
-      'celebrating diverse community values';
-    
-    // Get style settings for framework prompt
-    const styleSettings = NUCLEAR_STYLE_SETTINGS[difficulty] || NUCLEAR_STYLE_SETTINGS.medium;
-    const frameworkPrompt = styleSettings.frameworkPrompt;
-    
-    // Camera directive based on difficulty
-    const cameraDirectives = {
-      'beginner': 'medium shot with clear character focus',
-      'easy': 'medium shot with character and environment balance', 
-      'medium': 'dynamic composition with character prominence',
-      'hard': 'cinematic framing with detailed environment',
-      'expert': 'professional composition with artistic depth'
-    };
-    const cameraDirective = cameraDirectives[difficulty] || cameraDirectives.medium;
-    
-    // Fill template with extracted values
-    let filledTemplate = template
-      .replace(/{frameworkPrompt}/g, frameworkPrompt)
-      .replace(/{cameraDirective}/g, cameraDirective)
-      .replace(/{pageText}/g, pageText)
-      .replace(/{character}/g, character)
-      .replace(/{age}/g, age)
-      .replace(/{ethnicity}/g, culturalProfile === 'african_american' ? 'African American' : 'diverse background')
-      .replace(/{hair}/g, '') // Hair included in character description
-      .replace(/{features}/g, '') // Features included in character description  
-      .replace(/{emotion}/g, emotion)
-      .replace(/{scene}/g, `engaging in ${pageText.split(' ').slice(0, 8).join(' ')}...`)
-      .replace(/{action_intensity}/g, actionIntensity)
-      .replace(/{spatial_positioning}/g, spatialPositioning)
-      .replace(/{object_interaction}/g, objectInteraction)
-      .replace(/{body_language}/g, bodyLanguage)
-      .replace(/{spatial_composition}/g, spatialComposition)
-      .replace(/{setting}/g, setting)
-      .replace(/{atmosphere}/g, atmosphere)
-      .replace(/{props}/g, actionObjects)
-      .replace(/{action_objects}/g, actionObjects)
-      .replace(/{colored_objects}/g, coloredObjects)
-      .replace(/{sensory_details}/g, sensoryDetails)
-      .replace(/{community_context}/g, communityContext)
-      .replace(/{secondary_characters}/g, secondaryCharacters)
-      .replace(/{subject}/g, '') // Redundant with character
-      .replace(/{action}/g, '') // Covered by scene and body language
-      .replace(/{adjective}/g, 'vibrant'); // Generic adjective for basic templates
-    
-    // Clean up any remaining empty placeholders or double spaces
-    filledTemplate = filledTemplate
-      .replace(/\{\w+\}/g, '') // Remove any unfilled placeholders
-      .replace(/\s+/g, ' ') // Normalize spaces
-      .replace(/,\s*,/g, ',') // Remove double commas
-      .replace(/\.\s*\./g, '.') // Remove double periods
-      .trim();
-    
-    console.log(`✅ Tier 2.5: Template filled successfully (${filledTemplate.length} chars)`);
-    return filledTemplate;
-    
-  } catch (error) {
-    console.error('❌ Tier 2.5: Template filling error:', error.message);
-    // Return basic template with minimal placeholders
-    const basicTemplate = `${pageText}. Character: young child with ${difficulty} difficulty level.`;
-    return basicTemplate;
-  }
+function getRandomAge() {
+  return getRandomElement(AGES);
 }
 
-// ============= NUCLEAR INDEPENDENT PROMPT PROCESSOR =============
+function getRandomEmotion() {
+  return getRandomElement(EMOTIONS);
+}
 
-async function processCompletePrompt(pageText, avatarIdentity, culturalProfile, difficulty, sessionId, pageNumber, templateType = 'premium') {
-  console.log(`🎯 Tier 2.5: Processing complete prompt (${templateType} template)`);
+function getRandomSetting() {
+  return getRandomElement(SETTINGS);
+}
+
+function getRandomAtmosphere() {
+  return getRandomElement(ATMOSPHERES);
+}
+
+function getRandomProps() {
+  return getRandomElement(PROPS);
+}
+
+function getRandomActionObjects() {
+  return getRandomElement(ACTION_OBJECTS);
+}
+
+function getRandomColoredObjects() {
+  return getRandomElement(COLORED_OBJECTS);
+}
+
+function getRandomSensoryDetails() {
+  return getRandomElement(SENSORY_DETAILS);
+}
+
+function getRandomCommunityContext() {
+  return getRandomElement(COMMUNITY_CONTEXT);
+}
+
+function getRandomSecondaryCharacters() {
+  return getRandomElement(SECONDARY_CHARACTERS);
+}
+
+function getRandomSpatialPositioning() {
+  return getRandomElement(SPATIAL_POSITIONING);
+}
+
+function getRandomObjectInteraction() {
+  return getRandomElement(OBJECT_INTERACTION);
+}
+
+function getRandomBodyLanguage() {
+  return getRandomElement(BODY_LANGUAGE);
+}
+
+function getRandomSpatialComposition() {
+  return getRandomElement(SPATIAL_COMPOSITION);
+}
+
+function getRandomActionIntensity() {
+  return getRandomElement(ACTION_INTENSITY);
+}
+
+function getRandomCameraDirective() {
+  return getRandomElement(CAMERA_DIRECTIVES);
+}
+
+function getRandomAdjective() {
+  return getRandomElement(ADJECTIVES);
+}
+
+// ============= NUCLEAR INDEPENDENCE - GENDER DETECTION =============
+function detectGenderFromCharacterName(characterName) {
+  if (!characterName || typeof characterName !== 'string') {
+    console.log('🔍 No character name provided for gender detection, defaulting to girls');
+    return 'girls';
+  }
+
+  const name = characterName.toLowerCase().trim();
+  console.log('🔍 Detecting gender for character:', name);
+
+  // Common boy names
+  const boyNames = [
+    'liam', 'noah', 'william', 'james', 'benjamin', 'lucas', 'henry', 'alexander',
+    'mason', 'michael', 'ethan', 'daniel', 'jacob', 'logan', 'jackson', 'levi',
+    'sebastian', 'mateo', 'jack', 'owen', 'theodore', 'aiden', 'samuel', 'joseph',
+    'john', 'david', 'wyatt', 'matthew', 'luke', 'asher', 'carter', 'julian',
+    'grayson', 'leo', 'jayden', 'gabriel', 'isaac', 'lincoln', 'anthony', 'hudson',
+    'dylan', 'ezra', 'thomas', 'charles', 'christopher', 'jaxon', 'maverick', 'josiah',
+    'isaiah', 'andrew', 'elijah', 'joshua', 'nathan', 'caleb', 'ryan', 'adrian',
+    'miles', 'eli', 'nolan', 'christian', 'aaron', 'cameron', 'ezekiel', 'colton',
+    'malik', 'jamal', 'deshawn', 'marcus', 'tyrone', 'devon', 'terrell', 'antoine',
+    'khalil', 'darius', 'jalen', 'isaiah', 'cameron', 'jordan', 'xavier', 'elijah',
+    'diego', 'carlos', 'miguel', 'alejandro', 'fernando', 'ricardo', 'antonio', 'jose',
+    'luis', 'pablo', 'rafael', 'manuel', 'francisco', 'juan', 'pedro', 'ramon',
+    'hiroshi', 'kenji', 'takeshi', 'ryu', 'chen', 'wang', 'zhang', 'liu',
+    'yang', 'huang', 'zhao', 'raj', 'vikram', 'arjun', 'rohit', 'kim',
+    'park', 'lee', 'choi', 'jung', 'kang', 'yoon', 'shin', 'omar',
+    'hassan', 'ahmed', 'mohammed', 'ali', 'yusuf', 'ibrahim', 'khalid', 'tariq',
+    'rashid', 'samir', 'karim', 'koda', 'kai', 'river', 'phoenix', 'dakota',
+    'hunter', 'bear', 'eagle', 'wolf', 'storm', 'sun', 'wind'
+  ];
+
+  // Common girl names
+  const girlNames = [
+    'olivia', 'emma', 'ava', 'charlotte', 'sophia', 'amelia', 'isabella', 'mia',
+    'evelyn', 'harper', 'camila', 'gianna', 'abigail', 'luna', 'ella', 'elizabeth',
+    'sofia', 'emily', 'avery', 'mila', 'scarlett', 'eleanor', 'madison', 'layla',
+    'penelope', 'aria', 'chloe', 'grace', 'ellie', 'nora', 'hazel', 'zoey',
+    'riley', 'victoria', 'lily', 'aurora', 'violet', 'nova', 'hannah', 'emilia',
+    'zoe', 'stella', 'everly', 'isla', 'leah', 'lillian', 'addison', 'willow',
+    'lucy', 'paisley', 'natalie', 'naomi', 'maya', 'elena', 'caroline', 'anna',
+    'genesis', 'aaliyah', 'kennedy', 'kinsley', 'allison', 'claire', 'audrey', 'sadie',
+    'aisha', 'keisha', 'latoya', 'tanisha', 'aaliyah', 'shanice', 'imani', 'jasmine',
+    'zara', 'nia', 'amara', 'kendra', 'maya', 'destiny', 'kiara', 'diamond',
+    'sofia', 'maria', 'isabella', 'camila', 'lucia', 'valentina', 'gabriela', 'natalia',
+    'ana', 'elena', 'carmen', 'rosa', 'esperanza', 'dolores', 'mercedes', 'gloria',
+    'mei', 'yuki', 'sakura', 'akiko', 'li', 'priya', 'anita', 'kavya',
+    'deepika', 'fatima', 'amal', 'layla', 'zara', 'nadia', 'sara', 'maryam',
+    'yasmin', 'amina', 'leila', 'dina', 'rania', 'aiyana', 'nova', 'luna',
+    'sage', 'sierra', 'autumn', 'raven', 'sky', 'star', 'moon', 'rain', 'snow'
+  ];
+
+  if (boyNames.includes(name)) {
+    console.log('✅ Detected male gender');
+    return 'boys';
+  }
+  if (girlNames.includes(name)) {
+    console.log('✅ Detected female gender');
+    return 'girls';
+  }
+
+  console.log('🔍 No specific gender detected, defaulting to girls');
+  return 'girls';
+}
+
+// ============= NUCLEAR INDEPENDENCE - PROMPT BUILDING FUNCTIONS =============
+
+function buildPromptVariables(pageText, characterName, difficulty) {
+  console.log('🔧 Building prompt variables for:', { pageText: pageText?.substring(0, 50), characterName, difficulty });
+  
+  // Detect ethnicity and gender
+  const detectedEthnicity = detectEthnicityFromCharacterName(characterName);
+  const detectedGender = detectGenderFromCharacterName(characterName);
+  
+  // Get ethnicity-specific features
+  const ethnicFeatures = getEthnicitySpecificFeatures(detectedEthnicity, detectedGender);
+  
+  // Get style settings
+  const styleSettings = NUCLEAR_STYLE_SETTINGS[difficulty] || NUCLEAR_STYLE_SETTINGS.medium;
+  
+  const variables = {
+    // Core content
+    pageText: pageText || 'A child having a wonderful adventure',
+    character: characterName || 'child',
+    
+    // Ethnicity-specific features
+    ethnicity: detectedEthnicity,
+    hair: ethnicFeatures.hair,
+    features: ethnicFeatures.features,
+    
+    // Random selections
+    age: getRandomAge(),
+    emotion: getRandomEmotion(),
+    setting: getRandomSetting(),
+    atmosphere: getRandomAtmosphere(),
+    props: getRandomProps(),
+    action_objects: getRandomActionObjects(),
+    colored_objects: getRandomColoredObjects(),
+    sensory_details: getRandomSensoryDetails(),
+    community_context: getRandomCommunityContext(),
+    secondary_characters: getRandomSecondaryCharacters(),
+    spatial_positioning: getRandomSpatialPositioning(),
+    object_interaction: getRandomObjectInteraction(),
+    body_language: getRandomBodyLanguage(),
+    spatial_composition: getRandomSpatialComposition(),
+    action_intensity: getRandomActionIntensity(),
+    cameraDirective: getRandomCameraDirective(),
+    adjective: getRandomAdjective(),
+    
+    // Style framework
+    frameworkPrompt: styleSettings.frameworkPrompt,
+    
+    // Derived values
+    subject: `${detectedGender === 'boys' ? 'boy' : 'girl'}`,
+    scene: `${getRandomActionObjects()} in ${getRandomSetting()}`,
+    action: getRandomActionObjects()
+  };
+  
+  console.log('✅ Built prompt variables:', {
+    ethnicity: variables.ethnicity,
+    gender: detectedGender,
+    character: variables.character,
+    age: variables.age,
+    emotion: variables.emotion
+  });
+  
+  return variables;
+}
+
+function replaceTemplateVariables(template, variables) {
+  let result = template;
+  
+  // Replace all template variables
+  Object.keys(variables).forEach(key => {
+    const placeholder = `{${key}}`;
+    const value = variables[key] || '';
+    result = result.replace(new RegExp(placeholder.replace(/[{}]/g, '\\$&'), 'g'), value);
+  });
+  
+  // Clean up any remaining unreplaced variables
+  result = result.replace(/\{[^}]+\}/g, '');
+  
+  // Clean up extra spaces and punctuation
+  result = result.replace(/\s+/g, ' ').trim();
+  result = result.replace(/,\s*,/g, ',');
+  result = result.replace(/\.\s*\./g, '.');
+  
+  return result;
+}
+
+// ============= NUCLEAR INDEPENDENCE - MAIN PROMPT GENERATION =============
+function generatePrompt(pageText, characterName, difficulty, useBasicTemplate = false) {
+  console.log('🎨 Generating prompt:', { 
+    pageText: pageText?.substring(0, 50), 
+    characterName, 
+    difficulty, 
+    useBasicTemplate 
+  });
   
   try {
-    // Select template based on type and difficulty
-    const templateSource = templateType === 'premium' ? PREMIUM_PROMPT_TEMPLATES : BASIC_PROMPT_TEMPLATES;
-    const template = templateSource[difficulty] || templateSource.medium;
+    // Build variables
+    const variables = buildPromptVariables(pageText, characterName, difficulty);
     
-    console.log(`📋 Using ${templateType} template for ${difficulty} difficulty`);
+    // Select template
+    const templates = useBasicTemplate ? BASIC_PROMPT_TEMPLATES : PREMIUM_PROMPT_TEMPLATES;
+    const template = templates[difficulty] || templates.medium;
     
-    // Fill template with intelligent extraction
-    const filledPrompt = await fillPromptTemplate(
-      template, 
-      pageText, 
-      avatarIdentity, 
-      culturalProfile, 
-      difficulty, 
-      sessionId, 
-      pageNumber
-    );
+    // Generate prompt
+    const prompt = replaceTemplateVariables(template, variables);
     
-    console.log(`✅ Tier 2.5: Complete prompt generated (${filledPrompt.length} characters)`);
-    return filledPrompt;
+    console.log('✅ Generated prompt length:', prompt.length);
+    console.log('📝 Generated prompt preview:', prompt.substring(0, 200) + '...');
+    
+    return {
+      prompt,
+      variables,
+      template: useBasicTemplate ? 'basic' : 'premium'
+    };
     
   } catch (error) {
-    console.error('❌ Tier 2.5: Complete prompt processing error:', error.message);
+    console.error('❌ Error generating prompt:', error);
     
     // Emergency fallback
-    const emergencyPrompt = `${EMERGENCY_FALLBACK_FRAMEWORK}. Scene: ${pageText}. Character: child with friendly appearance.`;
-    console.log('🚨 Using emergency fallback prompt');
-    return emergencyPrompt;
+    const fallbackPrompt = `${EMERGENCY_FALLBACK_FRAMEWORK}. ${pageText || 'A child having a wonderful adventure'}. ${characterName || 'Child'} with happy expression in a magical setting.`;
+    
+    return {
+      prompt: fallbackPrompt,
+      variables: {},
+      template: 'emergency_fallback',
+      error: error.message
+    };
   }
 }
 
-// ============= SIMPLIFIED PROMPT PROCESSING FOR RUNWARE =============
+// ============= NUCLEAR INDEPENDENCE - RUNWARE API FUNCTIONS =============
 
-function processPromptForRunware(prompt, difficulty) {
-  // Simple prompt processing without complex truncation
-  // Just ensure reasonable length for Runware API
-  const maxLength = 1800; // Safe limit for Runware
+async function makeRunwareRequest(requestData, maxRetries = 3) {
+  const RUNWARE_API_KEY = Deno.env.get('RUNWARE_API_KEY');
   
-  if (prompt.length <= maxLength) {
-    return prompt;
+  if (!RUNWARE_API_KEY) {
+    throw new Error('RUNWARE_API_KEY environment variable is not set');
   }
-  
-  // Simple truncation at sentence boundary
-  const truncated = prompt.substring(0, maxLength);
-  const lastSentence = truncated.lastIndexOf('.');
-  
-  if (lastSentence > maxLength * 0.8) {
-    return truncated.substring(0, lastSentence + 1);
-  }
-  
-  return truncated + '...';
-}
 
-// ============= NUCLEAR INDEPENDENT CULTURAL DETECTION =============
+  console.log('🚀 Making Runware API request with data:', JSON.stringify(requestData, null, 2));
 
-function detectCulturalProfileFromAvatar(avatarIdentity) {
-  if (!avatarIdentity) return 'standard_american';
-  
-  // Check skin tone indicators
-  const skinTone = avatarIdentity.skinTone || '';
-  const language = avatarIdentity.language || 'en';
-  
-  // African American detection
-  if (skinTone.includes('dark brown') || 
-      skinTone.includes('deep brown') || 
-      skinTone.includes('ebony') || 
-      skinTone.includes('mahogany') ||
-      skinTone.includes('chocolate')) {
-    return 'african_american';
-  }
-  
-  if (skinTone.includes('brown') || skinTone.includes('caramel')) {
-    // Could be African American or other ethnicities
-    // Use additional context if available
-    if (language === 'en' || language === 'en-US') {
-      return 'african_american'; // Default assumption for brown skin + English
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`📡 Runware API attempt ${attempt}/${maxRetries}`);
+      
+      const response = await fetch('https://api.runware.ai/v1', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${RUNWARE_API_KEY}`
+        },
+        body: JSON.stringify(requestData)
+      });
+
+      console.log('📡 Runware API response status:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Runware API error response:', errorText);
+        throw new Error(`Runware API error: ${response.status} - ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Runware API success:', JSON.stringify(data, null, 2));
+      
+      return data;
+      
+    } catch (error) {
+      console.error(`❌ Runware API attempt ${attempt} failed:`, error.message);
+      
+      if (attempt === maxRetries) {
+        throw new Error(`Runware API failed after ${maxRetries} attempts: ${error.message}`);
+      }
+      
+      // Wait before retry
+      const delay = attempt * 1000;
+      console.log(`⏳ Waiting ${delay}ms before retry...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
-  
-  // Language-based cultural detection
-  if (language.startsWith('es')) return 'hispanic_latino';
-  if (language === 'zh' || language === 'zh-CN') return 'chinese';
-  if (language === 'ar') return 'middle_eastern';
-  
-  return 'standard_american';
 }
 
-// ============= MAIN TIER 2.5 NUCLEAR INDEPENDENCE FUNCTION =============
-
-serve(async (req) => {
-  console.log('🛡️ Tier 2.5: Nuclear Independence Edge Function Started');
-  
-  // Handle CORS preflight
-  if (req.method === 'OPTIONS') {
-    return createCorsOptionsResponse();
-  }
-  
-  if (req.method !== 'POST') {
-    return createCorsErrorResponse('Method not allowed', 405);
-  }
+async function generateImageWithRunware(prompt, difficulty) {
+  console.log('🎨 Generating image with Runware:', { 
+    promptLength: prompt.length, 
+    difficulty 
+  });
   
   try {
-    const requestData = await req.json();
-    console.log('🛡️ Tier 2.5: Processing request with nuclear independence');
+    // Get style settings
+    const styleSettings = NUCLEAR_STYLE_SETTINGS[difficulty] || NUCLEAR_STYLE_SETTINGS.medium;
     
-    // Extract request parameters with defaults
+    // Generate nuclear negative prompt
+    const negativePrompt = await generateNuclearNegativePrompt(prompt);
+    
+    console.log('🚫 Generated negative prompt:', negativePrompt.substring(0, 100) + '...');
+    
+    // Prepare request data
+    const requestData = {
+      taskType: "imageInference",
+      taskUUID: `runware-simple-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      positivePrompt: prompt,
+      negativePrompt: negativePrompt,
+      width: 1024,
+      height: 1024,
+      modelId: "runware:100@1",
+      numberResults: 1,
+      steps: styleSettings.steps,
+      CFGScale: styleSettings.CFGScale,
+      seed: Math.floor(Math.random() * 1000000),
+      scheduler: "DPM++ 2M Karras",
+      outputFormat: "WEBP",
+      outputType: "base64Data"
+    };
+    
+    console.log('📋 Runware request configuration:', {
+      modelId: requestData.modelId,
+      steps: requestData.steps,
+      CFGScale: requestData.CFGScale,
+      scheduler: requestData.scheduler,
+      dimensions: `${requestData.width}x${requestData.height}`,
+      seed: requestData.seed
+    });
+    
+    // Make API request
+    const response = await makeRunwareRequest(requestData);
+    
+    // Validate response
+    if (!response || !response.data || !Array.isArray(response.data) || response.data.length === 0) {
+      throw new Error('Invalid response structure from Runware API');
+    }
+    
+    const imageData = response.data[0];
+    
+    if (!imageData.imageBase64Data) {
+      throw new Error('No image data received from Runware API');
+    }
+    
+    console.log('✅ Image generated successfully');
+    console.log('📊 Image data size:', imageData.imageBase64Data.length, 'characters');
+    
+    return {
+      success: true,
+      imageBase64: imageData.imageBase64Data,
+      imageUrl: imageData.imageURL || null,
+      taskUUID: requestData.taskUUID,
+      seed: requestData.seed,
+      prompt: prompt,
+      negativePrompt: negativePrompt,
+      settings: {
+        steps: styleSettings.steps,
+        CFGScale: styleSettings.CFGScale,
+        model: requestData.modelId,
+        scheduler: requestData.scheduler
+      }
+    };
+    
+  } catch (error) {
+    console.error('❌ Runware image generation failed:', error.message);
+    
+    return {
+      success: false,
+      error: error.message,
+      prompt: prompt,
+      settings: NUCLEAR_STYLE_SETTINGS[difficulty] || NUCLEAR_STYLE_SETTINGS.medium
+    };
+  }
+}
+
+// ============= NUCLEAR INDEPENDENCE - SESSION MANAGEMENT =============
+
+function initializeSessionState(sessionId) {
+  console.log('🔄 Initializing session state for:', sessionId);
+  
+  try {
+    const sessionState = globalArcSessionManager.getSession(sessionId);
+    
+    if (!sessionState.visualDetailTracker) {
+      sessionState.visualDetailTracker = new VisualDetailTracker();
+      console.log('✅ Initialized VisualDetailTracker for session');
+    }
+    
+    if (!sessionState.characterConsistencyService) {
+      sessionState.characterConsistencyService = new CharacterConsistencyService();
+      console.log('✅ Initialized CharacterConsistencyService for session');
+    }
+    
+    if (!sessionState.exactWordExtractor) {
+      sessionState.exactWordExtractor = new ExactWordExtractor();
+      console.log('✅ Initialized ExactWordExtractor for session');
+    }
+    
+    globalArcSessionManager.updateSession(sessionId, sessionState);
+    
+    return sessionState;
+    
+  } catch (error) {
+    console.error('❌ Error initializing session state:', error.message);
+    
+    // Return minimal session state
+    return {
+      visualDetailTracker: new VisualDetailTracker(),
+      characterConsistencyService: new CharacterConsistencyService(),
+      exactWordExtractor: new ExactWordExtractor()
+    };
+  }
+}
+
+function updateSessionWithGeneration(sessionId, generationData) {
+  console.log('📝 Updating session with generation data for:', sessionId);
+  
+  try {
+    const sessionState = globalArcSessionManager.getSession(sessionId);
+    
+    // Track visual details
+    if (sessionState.visualDetailTracker && generationData.prompt) {
+      sessionState.visualDetailTracker.trackDetails(generationData.prompt);
+    }
+    
+    // Update character consistency
+    if (sessionState.characterConsistencyService && generationData.characterName) {
+      sessionState.characterConsistencyService.updateCharacterProfile(
+        generationData.characterName,
+        {
+          ethnicity: generationData.variables?.ethnicity,
+          hair: generationData.variables?.hair,
+          features: generationData.variables?.features,
+          lastUsed: new Date().toISOString()
+        }
+      );
+    }
+    
+    // Track generation history
+    if (!sessionState.generationHistory) {
+      sessionState.generationHistory = [];
+    }
+    
+    sessionState.generationHistory.push({
+      timestamp: new Date().toISOString(),
+      prompt: generationData.prompt?.substring(0, 200),
+      characterName: generationData.characterName,
+      difficulty: generationData.difficulty,
+      success: generationData.success
+    });
+    
+    // Keep only last 10 generations
+    if (sessionState.generationHistory.length > 10) {
+      sessionState.generationHistory = sessionState.generationHistory.slice(-10);
+    }
+    
+    globalArcSessionManager.updateSession(sessionId, sessionState);
+    
+    console.log('✅ Session updated successfully');
+    
+  } catch (error) {
+    console.error('❌ Error updating session:', error.message);
+  }
+}
+
+// ============= NUCLEAR INDEPENDENCE - MAIN HANDLER FUNCTION =============
+
+async function handleImageGeneration(requestData) {
+  console.log('🎯 Starting image generation process');
+  console.log('📋 Request data:', JSON.stringify(requestData, null, 2));
+  
+  try {
+    // Extract and validate request parameters
     const {
-      pageText = '',
-      avatarIdentity = null,
+      pageText,
+      characterName,
       difficulty = 'medium',
-      sessionId = crypto.randomUUID(),
-      pageNumber = 1,
-      templateType = 'premium'
+      sessionId = `session-${Date.now()}`,
+      useBasicTemplate = false,
+      maxRetries = 3
     } = requestData;
     
     // Validate required parameters
-    if (!pageText) {
-      return createCorsErrorResponse('Page text is required', 400);
+    if (!pageText || typeof pageText !== 'string' || pageText.trim().length === 0) {
+      throw new Error('pageText is required and must be a non-empty string');
     }
     
-    const startTime = Date.now();
-    let successfulTier = 'Tier 2.5 Nuclear Independence';
-    let tierPath = [successfulTier];
-    let attemptedTiers = [successfulTier];
-    let enhancementLevel = 'Nuclear Independent Processing';
-    let fallbackReason = 'Primary tier execution';
-    
-    // PHASE 1: CULTURAL PROFILE DETECTION
-    const culturalProfile = detectCulturalProfileFromAvatar(avatarIdentity);
-    console.log(`🌍 Tier 2.5: Cultural profile detected: ${culturalProfile}`);
-    
-    // PHASE 2: CHARACTER CONSISTENCY SETUP
-    let characterData = null;
-    let avatarMapping = null;
-    
-    try {
-      if (sessionId && avatarIdentity) {
-        console.log('🎭 Tier 2.5: Setting up character consistency');
-        characterData = getCharacterConsistencyData(sessionId, avatarIdentity);
-        
-        // Character mapping for consistency
-        avatarMapping = {
-          source: 'nuclear-independence',
-          culturalProfile: culturalProfile,
-          sessionId: sessionId,
-          enhanced: !!(characterData && characterData.seed)
-        };
-        
-        console.log(`✅ Tier 2.5: Character consistency established (${avatarMapping.enhanced ? 'enhanced' : 'basic'})`);
-      }
-    } catch (characterError) {
-      console.warn('⚠️ Tier 2.5: Character consistency setup failed:', characterError.message);
-      characterData = null;
-      avatarMapping = { source: 'fallback', enhanced: false };
+    if (!characterName || typeof characterName !== 'string' || characterName.trim().length === 0) {
+      throw new Error('characterName is required and must be a non-empty string');
     }
     
-    // PHASE 3: PROMPT GENERATION WITH NUCLEAR INDEPENDENCE
-    let prompt = '';
-    try {
-      prompt = await processCompletePrompt(
-        pageText,
-        avatarIdentity,
-        culturalProfile,
-        difficulty,
-        sessionId,
-        pageNumber,
-        templateType
-      );
-      console.log(`🎯 Tier 2.5: Prompt generated successfully (${prompt.length} chars)`);
-    } catch (promptError) {
-      console.error('❌ Tier 2.5: Prompt generation failed:', promptError.message);
-      prompt = `${EMERGENCY_FALLBACK_FRAMEWORK}. Scene: ${pageText}. Character: child with friendly appearance.`;
-      fallbackReason = 'Emergency prompt fallback due to processing error';
+    // Validate difficulty level
+    const validDifficulties = ['beginner', 'easy', 'medium', 'hard', 'expert'];
+    if (!validDifficulties.includes(difficulty)) {
+      throw new Error(`difficulty must be one of: ${validDifficulties.join(', ')}`);
     }
     
-    // PHASE 4: NEGATIVE PROMPT GENERATION
-    let negativePrompt = '';
-    try {
-      if (typeof generateNuclearNegativePrompt === 'function') {
-        negativePrompt = generateNuclearNegativePrompt(
-          culturalProfile,
-          avatarIdentity?.gender || 'child',
-          difficulty,
-          pageNumber || 1,
-          [] // secondaryCharacters array
-        );
-        console.log(`🚫 Tier 2.5: Nuclear negative prompt generated (${negativePrompt.length} chars)`);
-      } else {
-        throw new Error('Nuclear negative prompt function not available');
-      }
-    } catch (negativeError) {
-      console.warn('⚠️ Tier 2.5: Nuclear negative prompt failed:', negativeError.message);
-      negativePrompt = 'low quality, blurry, distorted, inappropriate content, adult themes, violence, scary content, dark themes, sad expressions, crying, unsafe situations, inappropriate clothing, adult characters, realistic photography, photorealistic, mature content, complex backgrounds that distract from character, cluttered scenes, poor lighting, harsh shadows, overexposed, underexposed';
-      fallbackReason = 'Negative prompt fallback applied';
+    console.log('✅ Request validation passed');
+    
+    // Initialize session state
+    const sessionState = initializeSessionState(sessionId);
+    
+    // Generate prompt
+    console.log('🎨 Generating prompt...');
+    const promptResult = generatePrompt(pageText, characterName, difficulty, useBasicTemplate);
+    
+    if (!promptResult.prompt) {
+      throw new Error('Failed to generate prompt');
     }
     
-    // PHASE 5: STYLE SETTINGS
-    const styleSettings = NUCLEAR_STYLE_SETTINGS[difficulty] || NUCLEAR_STYLE_SETTINGS.medium;
+    console.log('✅ Prompt generated successfully');
+    console.log('📝 Prompt preview:', promptResult.prompt.substring(0, 200) + '...');
     
-    // PHASE 6: RUNWARE API INTEGRATION
-    console.log('🚀 Tier 2.5: Connecting to Runware API...');
+    // Generate image with Runware
+    console.log('🖼️ Generating image with Runware...');
+    const imageResult = await generateImageWithRunware(promptResult.prompt, difficulty);
     
-    // Track objects and secondary characters for response
-    const objects = extractActionObjects(pageText);
-    const secondary_characters = await getSeededSecondaryCharacters(pageText, sessionId, pageNumber);
+    // Prepare response data
+    const responseData = {
+      success: imageResult.success,
+      sessionId: sessionId,
+      prompt: promptResult.prompt,
+      promptVariables: promptResult.variables,
+      templateType: promptResult.template,
+      difficulty: difficulty,
+      characterName: characterName,
+      pageText: pageText,
+      timestamp: new Date().toISOString()
+    };
     
-    return new Promise((resolve) => {
-      let isResolved = false;
-      const resolveOnce = (result) => {
-        if (!isResolved) {
-          isResolved = true;
-          resolve(result);
-        }
-      };
+    if (imageResult.success) {
+      // Success response
+      responseData.imageBase64 = imageResult.imageBase64;
+      responseData.imageUrl = imageResult.imageUrl;
+      responseData.taskUUID = imageResult.taskUUID;
+      responseData.seed = imageResult.seed;
+      responseData.negativePrompt = imageResult.negativePrompt;
+      responseData.settings = imageResult.settings;
       
-      let finalPrompt = prompt;
+      console.log('✅ Image generation successful');
       
-      const ws = new WebSocket('wss://ws-api.runware.ai/v1');
+    } else {
+      // Error response
+      responseData.error = imageResult.error;
+      responseData.settings = imageResult.settings;
       
-      ws.onopen = () => {
-        console.log('🛡️ Tier 2.5: WebSocket connected, authenticating...');
-        
-        const authMessage = [{
-          taskType: "authentication",
-          apiKey: Deno.env.get('RUNWARE_API_KEY')
-        }];
-        
-        ws.send(JSON.stringify(authMessage));
-      };
-      
-      ws.onmessage = (event) => {
-        try {
-          const response = JSON.parse(event.data);
-          console.log('🛡️ Tier 2.5: Received WebSocket response with error protection');
-          
-          if (!response || typeof response !== 'object') {
-            throw new Error('Invalid response format');
-          }
-          
-          if (response.error || response.errors) {
-            console.error('❌ Tier 2.5: API error:', response);
-            const errorMessage = response.errorMessage || response.errors?.[0]?.message || 'Unknown API error';
-            resolveOnce(createCorsErrorResponse(errorMessage, 500));
-            return;
-          }
-          
-          if (response.data) {
-            for (const item of response.data) {
-              if (item.taskType === "authentication") {
-                console.log('🛡️ Tier 2.5: Authentication successful, generating image...');
-                
-                // Apply simplified prompt processing (No complex truncation)
-                finalPrompt = processPromptForRunware(prompt, difficulty);
-                
-                // Send image generation request
-                const imageMessage = [{
-                  taskType: "imageInference",
-                  taskUUID: crypto.randomUUID(),
-                  positivePrompt: finalPrompt,
-                  negativePrompt: negativePrompt,
-                  width: 1024, // FIXED: Optimized image size
-                  height: 1024, // FIXED: Optimized image size
-                  model: "runware:100@1",
-                  numberResults: 1,
-                  outputFormat: "WEBP",
-                  steps: 30, // FIXED: Enhanced generation parameters  
-                  CFGScale: 10 // FIXED: Enhanced generation parameters
-                }];
-                
-                ws.send(JSON.stringify(imageMessage));
-                
-              } else if (item.taskType === "imageInference") {
-                console.log('🛡️ Tier 2.5: Image generation successful!');
-                
-                 const processingTime = Date.now() - startTime;
-                 console.log(`🎯 TIER CASCADE COMPLETE: ${successfulTier} succeeded in ${processingTime}ms`);
-                 console.log(`📊 Tier Path: [${tierPath.join(' → ')}]`);
-                 
-                 resolveOnce(createCorsResponse({
-                   success: true,
-                   imageURL: item.imageURL,
-                   prompt: finalPrompt,
-                   negativePrompt: negativePrompt,
-                   difficulty: difficulty,
-                   culturalProfile: culturalProfile,
-                   tier: '2.5 Nuclear Independence + Character Consistency',
-                   specificTier: successfulTier,
-                   templateType: templateType,
-                   tierPath: tierPath,
-                   enhancementLevel: enhancementLevel,
-                   fallbackReason: fallbackReason,
-                   processingTime: processingTime,
-                   attemptedTiers: attemptedTiers,
-                   placeholders: {
-                     objects: objects || 'none',
-                     secondary_characters: secondary_characters || 'none'
-                   },
-                   characterConsistency: {
-                     sessionId: sessionId,
-                     characterSeed: characterData?.seed || 'none',
-                     enhancementApplied: !!(characterData && characterData.seed),
-                     source: avatarMapping?.source || 'nuclear-mapping'
-                   }
-                 }));
-              }
-            }
-          }
-        } catch (parseError) {
-          console.error('❌ Tier 2.5: Response parsing error:', parseError);
-          resolveOnce(createCorsErrorResponse('Failed to parse API response', 500));
-        }
-      };
-      
-      ws.onerror = (error) => {
-        console.error('❌ Tier 2.5: WebSocket error:', error);
-        console.log('🔄 Tier 2.5: Attempting HTTP fallback...');
-        
-        // HTTP FALLBACK: Try Runware REST API
-        attemptHttpFallback(prompt, negativePrompt, styleSettings, sessionId, characterData, avatarMapping, difficulty, culturalProfile, objects, secondary_characters)
-          .then(result => {
-            if (result.success) {
-              resolveOnce(result);
-            } else {
-              resolveOnce(createCorsErrorResponse('WebSocket and HTTP fallback both failed', 500));
-            }
-          })
-          .catch(() => {
-            resolveOnce(createCorsErrorResponse('WebSocket connection failed and HTTP fallback unavailable', 500));
-          });
-      };
-      
-      ws.onclose = (event) => {
-        console.log('🛡️ Tier 2.5: WebSocket closed:', event.code, event.reason);
-        if (!isResolved) {
-          console.log('🔄 Tier 2.5: Attempting HTTP fallback due to unexpected close...');
-          
-          // HTTP FALLBACK: Try Runware REST API
-          attemptHttpFallback(prompt, negativePrompt, styleSettings, sessionId, characterData, avatarMapping, difficulty, culturalProfile, objects, secondary_characters)
-            .then(result => {
-              if (result.success) {
-                resolveOnce(result);
-              } else {
-                resolveOnce(createCorsErrorResponse('WebSocket closed and HTTP fallback failed', 500));
-              }
-            })
-            .catch(() => {
-              resolveOnce(createCorsErrorResponse('WebSocket connection closed and HTTP fallback unavailable', 500));
-            });
-        }
-      };
-      
-      // Timeout after 30 seconds
-      setTimeout(() => {
-        if (!isResolved) {
-          console.error('❌ Tier 2.5: Request timeout, trying HTTP fallback...');
-          
-          // HTTP FALLBACK: Try Runware REST API
-          attemptHttpFallback(prompt, negativePrompt, styleSettings, sessionId, characterData, avatarMapping, difficulty, culturalProfile, objects, secondary_characters)
-            .then(result => {
-              if (result.success) {
-                resolveOnce(result);
-              } else {
-                resolveOnce(createCorsErrorResponse('Request timeout and HTTP fallback failed', 408));
-              }
-            })
-            .catch(() => {
-              resolveOnce(createCorsErrorResponse('Request timeout', 408));
-            });
-        }
-      }, 30000);
-      
-      // HTTP FALLBACK FUNCTION
-      async function attemptHttpFallback(prompt, negativePrompt, styleSettings, sessionId, characterData, avatarMapping, difficulty, culturalProfile, objects, secondary_characters) {
-        try {
-          console.log('🌐 Tier 2.5: Attempting HTTP API fallback...');
-          
-          const httpResponse = await fetch('https://api.runware.ai/v1', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${Deno.env.get('RUNWARE_API_KEY')}`
-            },
-            body: JSON.stringify([
-              {
-                taskType: "authentication", 
-                apiKey: Deno.env.get('RUNWARE_API_KEY')
-              },
-              {
-                taskType: "imageInference",
-                taskUUID: crypto.randomUUID(),
-                positivePrompt: prompt,
-                negativePrompt: negativePrompt,
-                height: 1024, // FIXED: Enhanced image dimensions
-                width: 1024, // FIXED: Enhanced image dimensions
-                model: "runware:100@1",
-                steps: 30, // FIXED: Enhanced generation parameters
-                CFGScale: 10, // FIXED: Enhanced generation parameters
-                outputFormat: "WEBP"
-              }
-            ])
-          });
-          
-          if (!httpResponse.ok) {
-            throw new Error(`HTTP ${httpResponse.status}: ${httpResponse.statusText}`);
-          }
-          
-          const httpResult = await httpResponse.json();
-          const imageData = httpResult.data?.find(item => item.taskType === 'imageInference');
-          
-          if (imageData?.imageURL) {
-            const processingTime = Date.now() - startTime;
-            console.log(`✅ Tier 2.5: HTTP fallback successful! Final tier: ${successfulTier}`);
-            console.log(`📊 HTTP Fallback - Tier Path: [${tierPath.join(' → ')}]`);
-            
-            return createCorsResponse({
-              success: true,
-              imageURL: imageData.imageURL,
-              prompt: prompt,
-              negativePrompt: negativePrompt,
-              difficulty: difficulty,
-              culturalProfile: culturalProfile,
-              tier: '2.5 Nuclear Independence + Character Consistency (HTTP)',
-              specificTier: successfulTier,
-              templateType: templateType,
-              tierPath: tierPath,
-              enhancementLevel: enhancementLevel,
-              fallbackReason: fallbackReason,
-              processingTime: processingTime,
-              attemptedTiers: attemptedTiers,
-              placeholders: {
-                objects: objects || 'none',
-                secondary_characters: secondary_characters || 'none'
-              },
-              characterConsistency: {
-                sessionId: sessionId,
-                characterSeed: characterData?.seed || 'none',
-                enhancementApplied: !!(characterData && characterData.seed),
-                source: avatarMapping?.source || 'nuclear-mapping'
-              }
-            });
-          } else {
-            throw new Error('No image URL in HTTP response');
-          }
-          
-        } catch (httpError) {
-          console.error('❌ Tier 2.5: HTTP fallback failed:', httpError);
-          return { success: false, error: httpError.message };
-        }
-      }
+      console.error('❌ Image generation failed:', imageResult.error);
+    }
+    
+    // Update session with generation data
+    updateSessionWithGeneration(sessionId, {
+      ...responseData,
+      variables: promptResult.variables
     });
     
+    return responseData;
+    
   } catch (error) {
-    console.error('❌ Tier 2.5: Main function error:', error);
-    return createCorsErrorResponse(error.message || 'Internal server error', 500);
+    console.error('❌ Image generation process failed:', error.message);
+    
+    return {
+      success: false,
+      error: error.message,
+      timestamp: new Date().toISOString(),
+      sessionId: requestData.sessionId || `error-session-${Date.now()}`
+    };
   }
-});
+}
+
+// ============= NUCLEAR INDEPENDENCE - EDGE FUNCTION HANDLER =============
+
+async function handler(req) {
+  console.log('🚀 Runware Simple Fallback Edge Function - Request received');
+  console.log('📡 Request method:', req.method);
+  console.log('📡 Request URL:', req.url);
+  
+  // Handle CORS preflight
+  if (req.method === 'OPTIONS') {
+    console.log('✅ Handling CORS preflight request');
+    return createCorsOptionsResponse();
+  }
+  
+  // Only allow POST requests
+  if (req.method !== 'POST') {
+    console.error('❌ Method not allowed:', req.method);
+    return createCorsErrorResponse('Method not allowed. Use POST.', 405);
+  }
+  
+  try {
+    // Parse request body
+    console.log('📖 Parsing request body...');
+    const requestData = await req.json();
+    
+    console.log('📋 Parsed request data keys:', Object.keys(requestData));
+    
+    // Handle image generation
+    const result = await handleImageGeneration(requestData);
+    
+    // Return response
+    if (result.success) {
+      console.log('✅ Request completed successfully');
+      return createCorsResponse(result, 200);
+    } else {
+      console.error('❌ Request failed:', result.error);
+      return createCorsResponse(result, 400);
+    }
+    
+  } catch (error) {
+    console.error('❌ Edge function error:', error.message);
+    console.error('❌ Error stack:', error.stack);
+    
+    return createCorsErrorResponse(error, 500);
+  }
+}
+
+// ============= NUCLEAR INDEPENDENCE - EXPORT HANDLER =============
+console.log('🚀 Runware Simple Fallback Edge Function - Module loaded');
+console.log('📊 Available difficulty levels:', Object.keys(NUCLEAR_STYLE_SETTINGS));
+console.log('📊 Available ethnicities: african_american, latino, asian, middle_eastern, native_american, caucasian, mixed');
+console.log('✅ Edge function ready to serve requests');
+
+serve(handler);
