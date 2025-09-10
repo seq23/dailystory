@@ -757,6 +757,102 @@ async function generateWithRunwarePremium(
   }
 }
 
+// ============= ENHANCED PROMPT BUILDER =============
+function buildEnhancedPrompt(pageText, avatarIdentity, sessionId, pageNumber) {
+  console.log('🎯 Building enhanced prompt for Tier 1 generation');
+  
+  // Extract character name from page text or use avatar identity
+  const characterName = avatarIdentity?.name || 'the child';
+  
+  // Build character description based on avatar identity
+  let characterDescription = '';
+  
+  if (avatarIdentity?.skinTone === 'dark') {
+    // Use African American specific descriptions for dark skin tone
+    const genderKey = avatarIdentity.type === 'girl' ? 'girls' : 'boys';
+    const hairstyles = HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[genderKey];
+    const facialFeatures = HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES;
+    
+    // Seeded selection for consistency
+    const seed = `${sessionId}_${pageNumber}_${characterName}`;
+    let hash = 0;
+    for (let i = 0; i < seed.length; i++) {
+      hash = ((hash << 5) - hash + seed.charCodeAt(i)) & 0xffffffff;
+    }
+    
+    const hairstyleIndex = Math.abs(hash) % hairstyles.length;
+    const featureIndex = Math.abs(hash >> 8) % facialFeatures.length;
+    
+    characterDescription = `${facialFeatures[featureIndex]}, ${hairstyles[hairstyleIndex]}`;
+  } else if (avatarIdentity?.skinToneVariation) {
+    // Use skin tone variation for other ethnicities
+    characterDescription = avatarIdentity.skinToneVariation;
+  } else {
+    // Fallback description
+    characterDescription = `attractive child character with ${avatarIdentity?.skinTone || 'medium'} skin tone`;
+  }
+  
+  // Add regional authenticity for non-English speakers
+  const nativeLanguage = avatarIdentity?.nativeLanguage || 'english';
+  if (nativeLanguage !== 'english' && REGIONAL_AUTHENTICITY_STRINGS[nativeLanguage]) {
+    characterDescription += `, ${REGIONAL_AUTHENTICITY_STRINGS[nativeLanguage]}`;
+  }
+  
+  // Build scene description from page text
+  const sceneKeywords = extractSceneKeywords(pageText);
+  
+  // Construct positive prompt
+  const positivePrompt = `
+    Professional children's book illustration, ${characterDescription}, 
+    ${sceneKeywords}, 
+    vibrant colors, soft lighting, child-friendly art style, 
+    high quality digital art, detailed illustration, 
+    safe for children, wholesome content, 
+    storybook illustration style, warm and inviting atmosphere
+  `.replace(/\s+/g, ' ').trim();
+  
+  // Generate nuclear negative prompt
+  const negativePrompt = generateNuclearNegativePrompt(
+    detectCulturalProfileForNegatives(avatarIdentity?.culturalProfile, avatarIdentity?.nativeLanguage)
+  );
+  
+  console.log('🎯 Enhanced prompt built:', {
+    positiveLength: positivePrompt.length,
+    negativeLength: negativePrompt.length,
+    characterName,
+    skinTone: avatarIdentity?.skinTone
+  });
+  
+  return {
+    positive: positivePrompt,
+    negative: negativePrompt
+  };
+}
+
+// Helper function to extract scene keywords from page text
+function extractSceneKeywords(pageText) {
+  if (!pageText) return 'peaceful scene';
+  
+  // Simple keyword extraction - look for common scene elements
+  const sceneWords = [
+    'forest', 'garden', 'house', 'room', 'kitchen', 'bedroom', 'playground',
+    'school', 'park', 'beach', 'mountain', 'river', 'tree', 'flower',
+    'sunny', 'cloudy', 'rainy', 'snowy', 'morning', 'afternoon', 'evening',
+    'happy', 'sad', 'excited', 'surprised', 'running', 'walking', 'sitting',
+    'playing', 'reading', 'eating', 'sleeping', 'dancing', 'singing'
+  ];
+  
+  const foundWords = sceneWords.filter(word => 
+    pageText.toLowerCase().includes(word)
+  );
+  
+  if (foundWords.length > 0) {
+    return foundWords.slice(0, 3).join(', ');
+  }
+  
+  return 'peaceful scene';
+}
+
 // Phase 2: Enhanced Backend Orchestrator for All Image Generation Tiers
 // Now handles: AI Enhancement → Tier 1 → Tier 2 → Tier 2.5 → Tier 3 → Tier 4
 serve(async (req) => {
