@@ -11,7 +11,7 @@ import {
 } from "../_shared/validation-utils.ts";
 import { resolveAllPlaceholders } from '../_shared/placeholderResolver.ts';
 import { UnifiedValidator, type ValidationConfig } from '../_shared/unifiedValidator.ts';
-import { safeErrorMessage, safePropertyAccess, safeModelAccess } from '../_shared/errorPatterns.ts';
+import { safeErrorMessage, safePropertyAccess, safeModelAccess } from '../_shared/errorPatterns.js';
 import { classifyError, getRetryEnhancement, ErrorCategory } from './errorClassification.ts';
 
 // Phase 2: Cultural context now embedded in StaticDataCache (no external imports needed)
