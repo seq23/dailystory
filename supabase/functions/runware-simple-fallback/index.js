@@ -3540,7 +3540,87 @@ serve(async (req) => {
             });
         }
       }, 30000);
+      
+      // HTTP FALLBACK FUNCTION
+      async function attemptHttpFallback(prompt, negativePrompt, styleSettings, sessionId, characterData, avatarMapping, difficulty, culturalProfile, objects, secondary_characters) {
+        try {
+          console.log('🌐 Tier 2.5: Attempting HTTP API fallback...');
+          
+          const httpResponse = await fetch('https://api.runware.ai/v1', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${Deno.env.get('RUNWARE_API_KEY')}`
+            },
+            body: JSON.stringify([
+              {
+                taskType: "authentication", 
+                apiKey: Deno.env.get('RUNWARE_API_KEY')
+              },
+              {
+                taskType: "imageInference",
+                taskUUID: crypto.randomUUID(),
+                positivePrompt: prompt,
+                negativePrompt: negativePrompt,
+                height: 1024, // FIXED: Enhanced image dimensions
+                width: 1024, // FIXED: Enhanced image dimensions
+                model: "runware:100@1",
+                steps: 30, // FIXED: Enhanced generation parameters
+                CFGScale: 10, // FIXED: Enhanced generation parameters
+                outputFormat: "WEBP"
+              }
+            ])
+          });
+          
+          if (!httpResponse.ok) {
+            throw new Error(`HTTP ${httpResponse.status}: ${httpResponse.statusText}`);
+          }
+          
+          const httpResult = await httpResponse.json();
+          const imageData = httpResult.data?.find(item => item.taskType === 'imageInference');
+          
+          if (imageData?.imageURL) {
+            const processingTime = Date.now() - startTime;
+            console.log(`✅ Tier 2.5: HTTP fallback successful! Final tier: ${successfulTier}`);
+            console.log(`📊 HTTP Fallback - Tier Path: [${tierPath.join(' → ')}]`);
+            
+            return createCorsResponse({
+              success: true,
+              imageURL: imageData.imageURL,
+              prompt: prompt,
+              negativePrompt: negativePrompt,
+              difficulty: difficulty,
+              culturalProfile: culturalProfile,
+              tier: '2.5 Nuclear Independence + Character Consistency (HTTP)',
+              specificTier: successfulTier,
+              templateType: templateType,
+              tierPath: tierPath,
+              enhancementLevel: enhancementLevel,
+              fallbackReason: fallbackReason,
+              processingTime: processingTime,
+              attemptedTiers: attemptedTiers,
+              placeholders: {
+                objects: objects || 'none',
+                secondary_characters: secondary_characters || 'none'
+              },
+              characterConsistency: {
+                sessionId: sessionId,
+                characterSeed: characterData?.seed || 'none',
+                enhancementApplied: !!(characterData && characterData.seed),
+                source: avatarMapping?.source || 'nuclear-mapping'
+              }
+            });
+          } else {
+            throw new Error('No image URL in HTTP response');
+          }
+          
+        } catch (httpError) {
+          console.error('❌ Tier 2.5: HTTP fallback failed:', httpError);
+          return { success: false, error: httpError.message };
+        }
+      }
     });
+    
   } catch (error) {
     console.error('❌ Tier 2.5: Main function error:', error);
     return createCorsErrorResponse(error.message || 'Internal server error', 500);
