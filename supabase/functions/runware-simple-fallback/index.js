@@ -2591,6 +2591,396 @@ function generateEmergencyPrompt(userInfo) {
   return `An attractive ${gender} in a portrait style photo with main character focus. Beautiful children's book illustration, warm lighting, cheerful atmosphere, high quality, detailed art.`;
 }
 
+// ============= HELPER FUNCTIONS =============
+
+// ENHANCED CLOTHING DETECTION WITH COLOR SYSTEM
+function detectClothingFromStory(text) {
+  if (!text) return '';
+  
+  // Use unified clothing detection keywords (no local arrays)
+  
+  const lowerText = text.toLowerCase();
+  
+  // Try dynamic clothing + color detection first
+  const dynamicClothingColor = detectAndResolveClothingColor(text);
+  if (dynamicClothingColor) {
+    return dynamicClothingColor;
+  }
+  
+  // Fallback to basic clothing detection
+  for (const keyword of CLOTHING_DETECTION_KEYWORDS) {
+    if (lowerText.includes(keyword)) {
+      // Extract clothing context around the keyword
+      const sentences = text.split(/[.!?]+/);
+      for (const sentence of sentences) {
+        if (sentence.toLowerCase().includes(keyword)) {
+          // Add random color if no color specified
+          const randomColor = EXPANDED_COLOR_ARRAY[Math.floor(Math.random() * EXPANDED_COLOR_ARRAY.length)];
+          return `a ${randomColor} ${keyword}`;
+        }
+      }
+    }
+  }
+  
+  return '';
+}
+
+// DYNAMIC CLOTHING + COLOR DETECTION SYSTEM
+function detectAndResolveClothingColor(text) {
+  const lowerText = text.toLowerCase();
+  let detectedClothing = '';
+  let detectedColor = '';
+  
+  // Detect clothing type using unified keywords
+  for (const clothing of CLOTHING_DETECTION_KEYWORDS) {
+    if (lowerText.includes(clothing)) {
+      detectedClothing = clothing;
+      break;
+    }
+  }
+  
+  // Detect color
+  for (const color of EXPANDED_COLOR_ARRAY) {
+    if (lowerText.includes(color)) {
+      detectedColor = color;
+      break;
+    }
+  }
+  
+  // If both detected, combine them (no restrictions - allow any color for any clothing)
+  if (detectedClothing && detectedColor) {
+    return `a ${detectedColor} ${detectedClothing}`;
+  }
+  
+  // If only clothing detected, let Runware decide the color
+  if (detectedClothing) {
+    return `a ${detectedClothing}`;
+  }
+  
+  // If only color detected, let Runware decide what clothing to color
+  if (detectedColor) {
+    return '';
+  }
+  
+  return '';
+}
+
+function truncatePageText(text, difficulty) {
+  if (!text) return '';
+  
+  // Beginner/Easy: Use full pageText at beginning
+  if (difficulty === 'beginner' || difficulty === 'easy') {
+    return text;
+  }
+  
+  // Medium/Hard/Expert: Truncate pageText for end positioning
+  const maxLength = difficulty === 'medium' ? 100 : difficulty === 'hard' ? 80 : 60;
+  
+  if (text.length <= maxLength) {
+    return text;
+  }
+  
+  // Truncate at word boundary
+  const truncated = text.substring(0, maxLength);
+  const lastSpaceIndex = truncated.lastIndexOf(' ');
+  
+  if (lastSpaceIndex > maxLength * 0.7) { // Only truncate at word if it's not too short
+    return truncated.substring(0, lastSpaceIndex) + '...';
+  }
+  
+  return truncated + '...';
+}
+
+// ============= SIMPLIFIED PROMPT PROCESSING (No Complex Truncation) =============
+function processPromptForRunware(prompt, difficulty) {
+  if (!prompt) return prompt;
+  
+  console.log(`🛡️ Tier 2.5: Simplified processing - letting Runware handle final length (${prompt.length} chars for ${difficulty})`);
+  
+  // No truncation needed - smart sentence extraction already handled in template filling
+  // Total prompts should be ~800-1200 chars well under Runware's limits  
+  return prompt;
+}
+
+function getRandomItem(array) {
+  if (!array || array.length === 0) return 'default';
+  return array[Math.floor(Math.random() * array.length)];
+}
+
+function extractGenderFromCharacter(character) {
+  if (!character || typeof character !== 'string') return 'child';
+  const lowerChar = character.toLowerCase();
+  if (lowerChar.includes('girl')) return 'girl';
+  if (lowerChar.includes('boy')) return 'boy';
+  return 'child';
+}
+
+function getAgeFromDifficulty(difficulty) {
+  const ageMap = {
+    'beginner': 'age 5-6',
+    'easy': 'age 7-8', 
+    'medium': 'age 9-10',
+    'hard': 'age 11-12',
+    'expert': 'age 13-14'
+  };
+  return ageMap[difficulty] || 'age 9-10';
+}
+
+
+// MASTER PLAN PHASE 6: ENHANCED CULTURAL LANDMARK ARRAYS WITH INDOOR/OUTDOOR CONTEXT
+const CULTURAL_LANDMARKS = {
+  spanish: {
+    indoor: ["with Spanish tile patterns", "in Mediterranean style interior", "with Spanish cultural elements", "in warm villa setting", "with Spanish decor"],
+    outdoor: ["with Spanish villa backdrop", "near Mediterranean courtyard", "with Spanish architecture", "in colorful plaza", "with Spanish garden elements"]
+  },
+  french: {
+    indoor: ["in charming Parisian café", "with French interior design", "in elegant French setting", "with French cultural elements", "in cozy French environment"],
+    outdoor: ["near Eiffel Tower", "by Seine River", "near Louvre gardens", "in charming café district", "with Parisian park backdrop"]
+  },
+  chinese: {
+    indoor: ["with traditional Chinese interior", "in Chinese cultural setting", "with oriental design elements", "in pagoda-style building", "with Chinese architectural details"],
+    outdoor: ["with traditional pagodas", "near Great Wall", "with ancient temples", "in bamboo garden", "with oriental architecture"]
+  },
+  hindi: {
+    indoor: ["in Indian palace interior", "with traditional Indian patterns", "in colorful Indian setting", "with Indian cultural elements", "in ornate Indian room"],
+    outdoor: ["near Taj Mahal", "with palace elements", "in colorful market", "with Indian architecture", "in vibrant courtyard"]
+  },
+  arabic: {
+    indoor: ["in ornate Middle Eastern interior", "with Arabic architectural patterns", "in traditional Arabic setting", "with Middle Eastern design", "in elegant Arabic room"],
+    outdoor: ["with Middle Eastern domes", "in ornate courtyard", "with mosaic patterns", "near ancient architecture", "with desert oasis backdrop"]
+  },
+  portuguese: {
+    indoor: ["in Brazilian colonial interior", "with Portuguese cultural elements", "in warm Portuguese setting", "with Brazilian design details", "in Portuguese-style room", "with azulejo tile patterns", "in traditional Portuguese library", "with Portuguese maritime decor", "in colorful Portuguese kitchen", "with fado music ambiance", "in Portuguese cathedral interior", "with cork and wood elements", "in Manueline architectural style", "with Portuguese royal court design"],
+    outdoor: ["with Brazilian landscape", "near Portuguese architecture", "with tropical colonial backdrop", "in colorful Portuguese plaza", "with Brazilian coastal elements", "near Portuguese castles", "with cork oak trees", "in Portuguese vineyard setting", "with traditional Portuguese windmills", "near Douro River valley", "with Portuguese fishing village backdrop", "in Sintra palace gardens", "with Portuguese maritime port", "near Cliffs of Moher coastal views", "with Portuguese countryside hills"]
+  }
+};
+
+// ============= MASTER PLAN PHASE 6: CULTURAL ARRAY & ETHNICITY OPTIMIZATION =============
+function applyCulturalSettingEnhancement(baseSetting, userInfo, avatarIdentity) {
+  try {
+    const language = avatarIdentity?.nativeLanguage || userInfo?.language || 'en';
+    console.log(`🌍 Enhanced Cultural Setting Enhancement - Language: ${language}, Base Setting: "${baseSetting}"`);
+    
+    // ENHANCED: Context-aware cultural integration with indoor/outdoor detection
+    const isIndoorSetting = baseSetting.toLowerCase().includes('indoor') || 
+                           baseSetting.toLowerCase().includes('home') || 
+                           baseSetting.toLowerCase().includes('school') ||
+                           baseSetting.toLowerCase().includes('classroom') ||
+                           baseSetting.toLowerCase().includes('kitchen') ||
+                           baseSetting.toLowerCase().includes('bedroom');
+    
+    const isOutdoorSetting = baseSetting.toLowerCase().includes('outdoor') || 
+                            baseSetting.toLowerCase().includes('park') || 
+                            baseSetting.toLowerCase().includes('playground') ||
+                            baseSetting.toLowerCase().includes('garden') ||
+                            baseSetting.toLowerCase().includes('backyard');
+    
+    // Get cultural landmarks for the language with enhanced context awareness
+    const landmarks = getCulturalLandmarks(language, isIndoorSetting, isOutdoorSetting);
+    if (landmarks.length > 0) {
+      const randomLandmark = landmarks[Math.floor(Math.random() * landmarks.length)];
+      
+      // ENHANCED: Context-aware enhancement with better integration
+      if (baseSetting.toLowerCase().includes('park')) {
+        return baseSetting.replace('park', `park ${randomLandmark}`);
+      }
+      if (baseSetting.toLowerCase().includes('school')) {
+        return baseSetting.replace('school', `school ${randomLandmark}`);
+      }
+      if (baseSetting.toLowerCase().includes('home')) {
+        return baseSetting.replace('home', `home ${randomLandmark}`);
+      }
+      if (baseSetting.toLowerCase().includes('playground')) {
+        return baseSetting.replace('playground', `playground ${randomLandmark}`);
+      }
+      
+      // Enhanced generic enhancement with smart positioning
+      return `${baseSetting} ${randomLandmark}`;
+    }
+    
+    console.log(`🌍 No cultural enhancement available for language: ${language}`);
+    return baseSetting;
+    
+  } catch (error) {
+    console.warn('⚠️ Tier 2.5: Cultural setting enhancement error:', error);
+    return baseSetting;
+  }
+}
+
+// ============= RED X FIX 4: ENHANCED CONTEXT-AWARE ENHANCEMENT RULES =============
+// Preserve exact story words while adding appropriate visual descriptors
+function applyContextAwareEnhancement(currentValue, exactWord, type) {
+  if (!exactWord || !currentValue) return currentValue;
+  
+  try {
+    // Preserve exact story content first, enhance visually second
+    if (type === 'action') {
+      // Keep exact verb form, add minimal context-appropriate descriptors
+      if (exactWord.includes('roll')) return `${exactWord}`;
+      if (exactWord.includes('run')) return `${exactWord}`;
+      if (exactWord.includes('jump')) return `${exactWord}`;
+      if (exactWord.includes('play')) return `${exactWord}`;
+      if (exactWord.includes('bounce')) return `${exactWord}`;
+      if (exactWord.includes('fall')) return `${exactWord}`;
+      if (exactWord.includes('climb')) return `${exactWord}`;
+      if (exactWord.includes('swim')) return `${exactWord}`;
+      if (exactWord.includes('hide')) return `${exactWord}`;
+      if (exactWord.includes('slide')) return `${exactWord}`;
+      return exactWord; // Preserve exact word - no enhancement needed
+    }
+    
+    if (type === 'objects') {
+      // Keep exact object names, add minimal color descriptors only when beneficial
+      if (exactWord.includes('ball') && !exactWord.includes('red') && !exactWord.includes('blue')) {
+        return `colorful ${exactWord}`;
+      }
+      return exactWord; // Preserve exact object
+    }
+    
+    if (type === 'setting') {
+      // Keep exact location, add minimal atmospheric descriptors
+      if (exactWord.includes('hill')) return `${exactWord}`;
+      if (exactWord.includes('park')) return `${exactWord}`;
+      if (exactWord.includes('playground')) return `${exactWord}`;
+      if (exactWord.includes('slope')) return `${exactWord}`;
+      if (exactWord.includes('cliff')) return `${exactWord}`;
+      return exactWord; // Preserve exact setting
+    }
+    
+    return currentValue; // Fallback to current value
+    
+  } catch (error) {
+    console.warn('⚠️ Context-aware enhancement error:', error);
+    return currentValue; // Return original on error
+  }
+}
+
+// MASTER PLAN PHASE 6: ENHANCED CULTURAL LANDMARK FUNCTION WITH CONTEXT AWARENESS
+function getCulturalLandmarks(language, isIndoor = false, isOutdoor = false) {
+  console.log(`🌍 Enhanced cultural landmarks for ${language} - Indoor: ${isIndoor}, Outdoor: ${isOutdoor}`);
+  
+  let languageKey = '';
+  if (language === 'es' || language === 'spanish') languageKey = 'spanish';
+  else if (language === 'fr' || language === 'french') languageKey = 'french';  
+  else if (language === 'zh' || language === 'chinese') languageKey = 'chinese';
+  else if (language === 'hi' || language === 'hindi') languageKey = 'hindi';
+  else if (language === 'ar' || language === 'arabic') languageKey = 'arabic';
+  
+  if (!languageKey) {
+    console.log(`🌍 No cultural landmarks available for language: ${language}`);
+    return [];
+  }
+  
+  const landmarks = CULTURAL_LANDMARKS[languageKey];
+  if (!landmarks) return [];
+  
+  // ENHANCED: Context-aware landmark selection
+  if (isIndoor && landmarks.indoor) {
+    console.log(`🏠 Using indoor cultural landmarks for ${language}`);
+    return landmarks.indoor;
+  } else if (isOutdoor && landmarks.outdoor) {
+    console.log(`🌳 Using outdoor cultural landmarks for ${language}`);
+    return landmarks.outdoor;
+  } else {
+    // Default to outdoor if no specific context
+    console.log(`🌍 Using default outdoor cultural landmarks for ${language}`);
+    return landmarks.outdoor || landmarks.indoor || [];
+  }
+}
+
+function detectCulturalProfile(userInfo, avatarIdentity) {
+  try {
+    const language = avatarIdentity?.nativeLanguage || userInfo?.language || 'en';
+    const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || '';
+    
+    console.log(`🛡️ Tier 2.5: Detecting cultural profile - Language: ${language}, Skin: ${skinTone}`);
+    
+    // African American detection
+    if (skinTone.toLowerCase().includes('dark') || 
+        skinTone.toLowerCase().includes('brown') ||
+        skinTone.toLowerCase().includes('black') ||
+        skinTone.toLowerCase().includes('ebony') ||
+        skinTone.toLowerCase().includes('chocolate')) {
+      console.log('🛡️ Tier 2.5: African American profile detected via skin tone');
+      return 'African American';
+    }
+    
+    // Language-based detection with real ethnicities
+    if (language === 'es' || language === 'spanish') {
+      console.log('🛡️ Tier 2.5: Spanish/Latino ethnicity detected via language');
+      return 'Spanish/Latino ethnicity';
+    }
+    
+    if (language === 'fr' || language === 'french') {
+      console.log('🛡️ Tier 2.5: European ethnicity detected via language');
+      return 'European ethnicity';
+    }
+    
+    if (language === 'zh' || language === 'chinese') {
+      console.log('🛡️ Tier 2.5: East Asian ethnicity detected via language');
+      return 'East Asian ethnicity';
+    }
+    
+    if (language === 'hi' || language === 'hindi') {
+      console.log('🛡️ Tier 2.5: South Asian ethnicity detected via language');
+      return 'South Asian ethnicity';
+    }
+    
+    if (language === 'ar' || language === 'arabic') {
+      console.log('🛡️ Tier 2.5: Middle Eastern ethnicity detected via language');
+      return 'Middle Eastern ethnicity';
+    }
+    
+    if (language === 'pt' || language === 'portuguese') {
+      console.log('🛡️ Tier 2.5: Latin American ethnicity detected via language');
+      return 'Latin American ethnicity';
+    }
+    
+    console.log('🛡️ Tier 2.5: Standard American profile (default)');
+    return 'Standard American';
+    
+  } catch (error) {
+    console.warn('⚠️ Tier 2.5: Cultural detection error, using default:', error);
+    return 'Standard American';
+  }
+}
+
+function detectEmotionFromText(text) {
+  try {
+    if (!text || typeof text !== 'string') return ''; // Enhanced: Return empty string for fallback
+    
+    const lowerText = text.toLowerCase();
+    
+    // Positive emotions
+    if (lowerText.includes('happy') || lowerText.includes('joy') || lowerText.includes('excited') || 
+        lowerText.includes('celebration') || lowerText.includes('party') || lowerText.includes('fun')) {
+      return 'Cheerful and celebratory atmosphere';
+    }
+    
+    if (lowerText.includes('peaceful') || lowerText.includes('calm') || lowerText.includes('quiet') ||
+        lowerText.includes('serene') || lowerText.includes('tranquil')) {
+      return 'Peaceful and serene atmosphere';
+    }
+    
+    if (lowerText.includes('adventure') || lowerText.includes('explore') || lowerText.includes('discover') ||
+        lowerText.includes('journey') || lowerText.includes('quest')) {
+      return 'Adventurous and curious atmosphere';
+    }
+    
+    if (lowerText.includes('learn') || lowerText.includes('study') || lowerText.includes('school') ||
+        lowerText.includes('education') || lowerText.includes('knowledge')) {
+      return 'Educational and inspiring atmosphere';
+    }
+    
+    // Default positive
+    return 'Warm and welcoming atmosphere';
+    
+  } catch (error) {
+    console.warn('⚠️ Tier 2.5: Emotion detection error:', error);
+    return 'Positive and uplifting atmosphere';
+  }
+}
+
 // ============= MAIN EDGE FUNCTION =============
 
 serve(async (req) => {
@@ -3150,87 +3540,7 @@ serve(async (req) => {
             });
         }
       }, 30000);
-      
-      // HTTP FALLBACK FUNCTION
-      async function attemptHttpFallback(prompt, negativePrompt, styleSettings, sessionId, characterData, avatarMapping, difficulty, culturalProfile, objects, secondary_characters) {
-        try {
-          console.log('🌐 Tier 2.5: Attempting HTTP API fallback...');
-          
-          const httpResponse = await fetch('https://api.runware.ai/v1', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${Deno.env.get('RUNWARE_API_KEY')}`
-            },
-            body: JSON.stringify([
-              {
-                taskType: "authentication", 
-                apiKey: Deno.env.get('RUNWARE_API_KEY')
-              },
-              {
-                taskType: "imageInference",
-                taskUUID: crypto.randomUUID(),
-                positivePrompt: prompt,
-                negativePrompt: negativePrompt,
-                height: 1024, // FIXED: Enhanced image dimensions
-                width: 1024, // FIXED: Enhanced image dimensions
-                model: "runware:100@1",
-                steps: 30, // FIXED: Enhanced generation parameters
-                CFGScale: 10, // FIXED: Enhanced generation parameters
-                outputFormat: "WEBP"
-              }
-            ])
-          });
-          
-          if (!httpResponse.ok) {
-            throw new Error(`HTTP ${httpResponse.status}: ${httpResponse.statusText}`);
-          }
-          
-          const httpResult = await httpResponse.json();
-          const imageData = httpResult.data?.find(item => item.taskType === 'imageInference');
-          
-          if (imageData?.imageURL) {
-            const processingTime = Date.now() - startTime;
-            console.log(`✅ Tier 2.5: HTTP fallback successful! Final tier: ${successfulTier}`);
-            console.log(`📊 HTTP Fallback - Tier Path: [${tierPath.join(' → ')}]`);
-            
-            return createCorsResponse({
-              success: true,
-              imageURL: imageData.imageURL,
-              prompt: prompt,
-              negativePrompt: negativePrompt,
-              difficulty: difficulty,
-              culturalProfile: culturalProfile,
-              tier: '2.5 Nuclear Independence + Character Consistency (HTTP)',
-              specificTier: successfulTier,
-              templateType: templateType,
-              tierPath: tierPath,
-              enhancementLevel: enhancementLevel,
-              fallbackReason: fallbackReason,
-              processingTime: processingTime,
-              attemptedTiers: attemptedTiers,
-              placeholders: {
-                objects: objects || 'none',
-                secondary_characters: secondary_characters || 'none'
-              },
-              characterConsistency: {
-                sessionId: sessionId,
-                characterSeed: characterData?.seed || 'none',
-                enhancementApplied: !!(characterData && characterData.seed),
-                source: avatarMapping?.source || 'nuclear-mapping'
-              }
-            });
-          } else {
-            throw new Error('No image URL in HTTP response');
-          }
-          
-        } catch (httpError) {
-          console.error('❌ Tier 2.5: HTTP fallback failed:', httpError);
-          return { success: false, error: httpError.message };
-        }
-      }
     });
-    
   } catch (error) {
     console.error('❌ Tier 2.5: Main function error:', error);
     return createCorsErrorResponse(error.message || 'Internal server error', 500);
