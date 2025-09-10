@@ -1314,4 +1314,1016 @@ serve(async (req) => {
       function: 'runware-simple-fallback'
     }, 500);
   }
+}
+
+// ============= CHUNK 1 CONVERSION (Lines 1318-2318) =============
+
+      'fish': { 
+        outdoor: ['pond with lily pads', 'lake shore', 'stream with rocks', 'aquarium display'], 
+        indoor: ['aquarium room', 'pet store', 'home aquarium corner'], 
+        weight: 0.8 
+      },
+      'book': { 
+        indoor: ['cozy library', 'reading nook', 'bedroom with soft lighting', 'study room'], 
+        outdoor: ['park bench', 'garden reading spot'], 
+        weight: 0.8 
+      },
+      'flower': { 
+        outdoor: ['flower garden', 'meadow full of wildflowers', 'greenhouse', 'park with flower beds'], 
+        indoor: ['sunroom with plants', 'room with flower arrangements'], 
+        weight: 0.8 
+      },
+      'food': {
+        indoor: ['kitchen with warm lighting', 'dining room', 'restaurant', 'picnic area'], 
+        outdoor: ['outdoor picnic', 'garden party', 'backyard barbecue'], 
+        weight: 0.6 
+      }
+    };
+    
+    // Find matching object and select contextually appropriate setting
+    for (const [objectKey, settingOptions] of Object.entries(objectSettingMap)) {
+      if (objectsLower.includes(objectKey)) {
+        const isIndoorContext = pageTextLower.includes('inside') || pageTextLower.includes('room') || pageTextLower.includes('house');
+        const settingsArray = isIndoorContext ? settingOptions.indoor : settingOptions.outdoor;
+        
+        if (Math.random() < settingOptions.weight) {
+          const selectedSetting = getSeededRandomItem(settingsArray, seed + objectKey);
+          console.log(`🎯 Object-driven setting: "${objectKey}" → "${selectedSetting}" (${isIndoorContext ? 'indoor' : 'outdoor'} context)`);
+          return selectedSetting;
+        }
+      }
+    }
+    
+    return baseSetting;
+    
+  } catch (error) {
+    console.warn('⚠️ Contextual setting inference error:', error);
+    return baseSetting;
+  }
+}
+
+// 2. EXPAND ACTION WITH CONTEXT - Emotional action enhancement
+function expandActionWithContext(baseAction, objects, pageText, setting) {
+  try {
+    console.log(`🧠 Contextual Action Enhancement - Action: "${baseAction}", Objects: "${objects}"`);
+    
+    const objectsLower = objects.toLowerCase();
+    const pageTextLower = pageText.toLowerCase();
+    const seed = pageText + objects + baseAction;
+    
+    // Object-action contextual templates with emotional enhancement
+    const contextualActionTemplates = {
+      'bird': [
+        'points excitedly at the magnificent {object}',
+        'gazes in wonder at the beautiful {object}',
+        'watches with delighted curiosity as the {object} moves',
+        'smiles joyfully while observing the graceful {object}',
+        'discovers and admires the colorful {object}'
+      ],
+      'book': [
+        'carefully examines and explores the interesting {object}',
+        'discovers and opens the fascinating {object}',
+        'reads with focused concentration from the {object}',
+        'holds gently and studies the {object}',
+        'finds inspiration while reading the {object}'
+      ],
+      'fish': [
+        'watches with amazement as the {object} swims',
+        'observes carefully the graceful movements of the {object}',
+        'points with excitement at the shimmering {object}',
+        'gazes peacefully at the beautiful {object}',
+        'discovers and watches the colorful {object}'
+      ],
+      'flower': [
+        'stops to admire the beautiful {object}',
+        'gently touches and smells the fragrant {object}',
+        'discovers and examines the colorful {object}',
+        'picks carefully and holds the delicate {object}',
+        'smiles while looking at the pretty {object}'
+      ]
+    };
+    
+    // Find matching object and select contextual action template
+    for (const [objectKey, templates] of Object.entries(contextualActionTemplates)) {
+      if (objectsLower.includes(objectKey)) {
+        const selectedTemplate = getSeededRandomItem(templates, seed + objectKey);
+        const filledTemplate = selectedTemplate.replace('{object}', objectKey);
+        console.log(`🎯 Context-enhanced action: "${baseAction}" + "${objectKey}" → "${filledTemplate}"`);
+        return filledTemplate;
+      }
+    }
+    
+    // Fallback to original expansion system
+    return expandActionToPhrase(baseAction, objects, pageText);
+    
+  } catch (error) {
+    console.warn('⚠️ Contextual action enhancement error:', error);
+    return expandActionToPhrase(baseAction, objects, pageText);
+  }
+}
+
+// 3. GENERATE SPATIAL COMPOSITION - Character-object positioning
+function generateSpatialComposition(action, objects, setting, pageText) {
+  try {
+    console.log(`🧠 Spatial Composition Generation - Action: "${action}", Objects: "${objects}"`);
+    
+    if (!objects || !action) return '';
+    
+    const objectsLower = objects.toLowerCase();
+    const actionLower = action.toLowerCase();
+    const seed = pageText + objects + action;
+    
+    // Spatial composition templates based on interaction type and object size
+    const spatialTemplates = {
+      observation: [
+        'main character in foreground, {object} prominently featured in mid-frame',
+        '{object} in center focus, character positioned to the side observing',
+        'character and {object} sharing the frame with balanced composition',
+        'close-up perspective with character and {object} in intimate framing'
+      ],
+      interaction: [
+        'character in close proximity to {object}, showing direct interaction',
+        'hands-on composition with character and {object} in detailed focus',
+        'character positioned for natural interaction with {object}',
+        'intimate scene composition highlighting character-{object} connection'
+      ],
+      discovery: [
+        'character in moment of discovery, {object} as the focal point',
+        'composition showing character\'s surprised expression with {object} revealed',
+        'dynamic framing capturing the discovery of {object}',
+        'character\'s gaze leading viewer\'s eye to {object}'
+      ]
+    };
+    
+    // Determine interaction type from action
+    let interactionType = 'observation'; // default
+    if (actionLower.includes('touch') || actionLower.includes('hold') || actionLower.includes('pick')) {
+      interactionType = 'interaction';
+    } else if (actionLower.includes('discover') || actionLower.includes('find') || actionLower.includes('see')) {
+      interactionType = 'discovery';
+    }
+    
+    // Extract main object for template filling
+    const mainObject = objects.split(' ').find(obj => obj.length > 2) || 'object';
+    const templates = spatialTemplates[interactionType];
+    const selectedTemplate = getSeededRandomItem(templates, seed + interactionType);
+    const filledComposition = selectedTemplate.replace('{object}', mainObject);
+    
+    console.log(`🎯 Spatial composition: ${interactionType} → "${filledComposition}"`);
+    return filledComposition;
+    
+  } catch (error) {
+    console.warn('⚠️ Spatial composition generation error:', error);
+    return '';
+  }
+}
+
+// 4. INFER ATMOSPHERE FROM CONTEXT - Time/weather inference from story context
+function inferAtmosphereFromContext(pageText, setting, action) {
+  try {
+    console.log(`🧠 Atmosphere Context Mapping - Setting: "${setting}", Action: "${action}"`);
+    
+    const pageTextLower = pageText.toLowerCase();
+    const settingLower = setting.toLowerCase();
+    const seed = pageText + setting + action;
+    
+    // Context clues for time of day
+    const timeContextMap = {
+      morning: ['wake', 'breakfast', 'sunrise', 'early', 'dawn', 'morning'],
+      afternoon: ['lunch', 'school', 'play', 'sunny', 'bright', 'noon'],
+      evening: ['dinner', 'sunset', 'dusk', 'twilight', 'evening'],
+      night: ['sleep', 'bed', 'stars', 'moon', 'dark', 'night']
+    };
+    
+    // Context clues for weather/mood
+    const weatherContextMap = {
+      sunny: ['bright', 'happy', 'warm', 'cheerful', 'golden', 'sunny'],
+      cloudy: ['grey', 'overcast', 'soft', 'gentle', 'cloudy'],
+      rainy: ['rain', 'wet', 'puddle', 'umbrella', 'storm'],
+      magical: ['sparkle', 'glow', 'magic', 'enchant', 'mystical', 'wonder']
+    };
+    
+    // Detect time context
+    let timeOfDay = '';
+    for (const [time, keywords] of Object.entries(timeContextMap)) {
+      if (keywords.some(keyword => pageTextLower.includes(keyword))) {
+        timeOfDay = time;
+        break;
+      }
+    }
+    
+    // Detect weather/mood context
+    let weatherMood = '';
+    for (const [weather, keywords] of Object.entries(weatherContextMap)) {
+      if (keywords.some(keyword => pageTextLower.includes(keyword))) {
+        weatherMood = weather;
+        break;
+      }
+    }
+    
+    // Combine context clues with universal lighting arrays
+    const atmosphereOptions = [];
+    
+    if (timeOfDay) {
+      const lightingOptions = timeOfDay === 'morning' ? 
+        ['soft dawn light', 'golden morning glow', 'gentle sunrise lighting'] :
+        timeOfDay === 'evening' ? 
+        ['warm sunset light', 'golden hour glow', 'soft twilight atmosphere'] :
+        ['bright natural lighting', 'soft ambient light'];
+      
+      atmosphereOptions.push(...lightingOptions);
+    }
+    
+    if (weatherMood) {
+      const weatherOptions = weatherMood === 'sunny' ? 
+        ['bright cheerful atmosphere', 'warm golden lighting'] :
+        weatherMood === 'magical' ? 
+        ['mystical glowing atmosphere', 'enchanted sparkling light'] :
+        ['soft atmospheric lighting'];
+      
+      atmosphereOptions.push(...weatherOptions);
+    }
+    
+    if (atmosphereOptions.length === 0) {
+      // Use universal lighting as fallback
+      atmosphereOptions.push(...getSeededRandomItem([UNIVERSAL_LIGHTING_ARRAYS], seed).split(','));
+    }
+    
+    const selectedAtmosphere = getSeededRandomItem(atmosphereOptions, seed);
+    console.log(`🎯 Context-inferred atmosphere: Time "${timeOfDay}", Weather "${weatherMood}" → "${selectedAtmosphere}"`);
+    return selectedAtmosphere;
+    
+  } catch (error) {
+    console.warn('⚠️ Atmosphere context inference error:', error);
+    return getSeededRandomItem(UNIVERSAL_LIGHTING_ARRAYS, pageText + setting);
+  }
+}
+
+// ============= UNIVERSAL ACTION EXPANSION SYSTEM =============
+function expandActionToPhrase(action, detectedObjects, pageText) {
+  const actionWord = action.toLowerCase().trim();
+  const objectContext = (detectedObjects || '').toLowerCase();
+  const seed = pageText + action + objectContext;
+  
+  // ============= OBJECT-DRIVEN UNIVERSAL ACTION TEMPLATES =============
+  if (objectContext) {
+    // Extract the main object for template filling
+    const objects = objectContext.split(' ');
+    const mainObject = objects.find(obj => obj.length > 2) || 'thing';
+    
+    // Use universal action templates with object replacement
+    const selectedTemplate = getSeededRandomItem(UNIVERSAL_ACTION_TEMPLATES, seed);
+    const filledTemplate = selectedTemplate.replace('{object}', mainObject);
+    
+    console.log(`🎯 Universal action template: "${action}" + "${mainObject}" → "${filledTemplate}"`);
+    return filledTemplate;
+  }
+  
+  // ============= FALLBACK: LEGACY EXPANSION MAP =============
+  const expansionMap = {
+    'see': 'looks around and sees with curiosity',
+    'look': 'looks around with bright curious eyes', 
+    'watch': 'watches carefully with focused attention',
+    'sit': 'sits comfortably in a relaxed position',
+    'stand': 'stands tall with confident posture',
+    'walk': 'walks forward with steady confident steps',
+    'run': 'runs energetically with joyful enthusiasm',
+    'play': 'plays happily with creative imaginative energy',
+    'read': 'reads attentively with focused concentration',
+    'eat': 'eats carefully with mindful attention',
+    'sleep': 'sleeps peacefully in comfortable restful position',
+    'jump': 'jumps up high with athletic energy',
+    'dance': 'dances gracefully with rhythmic flowing movements',
+    'sing': 'sings melodiously with clear beautiful voice',
+    'laugh': 'laughs joyfully with genuine happy expression',
+    'smile': 'smiles warmly with genuine cheerful expression',
+    'cry': 'expresses emotions with natural heartfelt tears',
+    'think': 'thinks deeply with thoughtful contemplative expression',
+    'learn': 'learns eagerly with curious engaged attention',
+    'explore': 'explores surroundings with adventurous curious spirit',
+    'discover': 'discovers something new with excited wonder',
+    'find': 'finds something interesting with delighted surprise',
+    'create': 'creates something wonderful with artistic creativity',
+    'build': 'builds carefully with focused determined effort',
+    'draw': 'draws creatively with artistic skilled hands',
+    'write': 'writes thoughtfully with careful precise movements',
+    'listen': 'listens attentively with focused concentrated attention'
+  };
+  
+  const expanded = expansionMap[actionWord];
+  if (expanded) {
+    console.log(`🔄 Legacy action expanded: "${action}" → "${expanded}"`);
+    return expanded;
+  }
+  
+  // If no match, create a generic 5+ word phrase
+  const genericExpansion = `engages in ${action} with focused attention`;
+  console.log(`🔄 Generic action expansion: "${action}" → "${genericExpansion}"`);
+  return genericExpansion;
+}
+
+// ============= FANTASY-FRIENDLY VISUAL PRIORITY SCORING =============
+function calculateVisualPriority(elements) {
+  let score = 0;
+  
+  const visualPriorityWeights = {
+    actions: { 
+      visual: 4,      // "running", "flying", "sparkling"
+      sensory: 3,     // "seeing", "hearing", "feeling"  
+      fantasy: 4,     // "floating", "magical", "transforming"
+      abstract: 1     // "thinking", "understanding"
+    },
+    settings: { 
+      specific: 4,    // "enchanted forest", "crystal cave"
+      fantasy: 4,     // "magical castle", "floating island"
+      generic: 2      // "place", "area"
+    }
+  };
+  
+  // Score action visual priority
+  const action = elements.action.toLowerCase();
+  if (TIER_25_UNIFIED_VOCABULARY.actions.fantasy.includes(action)) {
+    score += visualPriorityWeights.actions.fantasy;
+  } else if (TIER_25_UNIFIED_VOCABULARY.actions.sensory.includes(action)) {
+    score += visualPriorityWeights.actions.sensory;
+  } else if (TIER_25_UNIFIED_VOCABULARY.actions.basic.includes(action)) {
+    score += visualPriorityWeights.actions.visual;
+  } else {
+    score += visualPriorityWeights.actions.abstract;
+  }
+  
+  // Score setting specificity
+  const setting = elements.setting.toLowerCase();
+  if (TIER_25_UNIFIED_VOCABULARY.settings.fantasy.includes(setting)) {
+    score += visualPriorityWeights.settings.fantasy;
+  } else if (TIER_25_UNIFIED_VOCABULARY.settings.specific.includes(setting)) {
+    score += visualPriorityWeights.settings.specific;
+  } else {
+    score += visualPriorityWeights.settings.generic;
+  }
+  
+  return score;
+}
+
+// ============= FANTASY BONUS SCORING (Boost Imaginative Combinations) =============
+function calculateFantasyBonus(elements) {
+  let bonus = 0;
+  
+  const action = elements.action.toLowerCase();
+  const setting = elements.setting.toLowerCase();
+  
+  // Magical action bonus
+  if (TIER_25_UNIFIED_VOCABULARY.actions.fantasy.includes(action)) {
+    bonus += 5; // "floating", "magical", "sparkling"
+  }
+  
+  // Fantasy setting bonus
+  if (TIER_25_UNIFIED_VOCABULARY.settings.fantasy.includes(setting)) {
+    bonus += 5; // "enchanted forest", "magical castle"
+  }
+  
+  // Sensory engagement bonus
+  if (TIER_25_UNIFIED_VOCABULARY.actions.sensory.includes(action)) {
+    bonus += 3; // "seeing", "hearing", "feeling"
+  }
+  
+  // Fantasy coherence combinations
+  if (action.includes('float') && (setting.includes('cloud') || setting.includes('sky'))) {
+    bonus += 5; // "floating" + "clouds" = imaginative & visual
+  }
+  
+  if (action.includes('magic') && setting.includes('castle')) {
+    bonus += 5; // "magical" + "castle" = fantasy coherent
+  }
+  
+  if (TIER_25_UNIFIED_VOCABULARY.actions.states.includes(action) && setting.includes('forest')) {
+    bonus += 3; // "wake" + "forest" = story moment
+  }
+  
+  return bonus;
+}
+
+// ============= FANTASY-FRIENDLY SEMANTIC COHERENCE (Visual Richness > Realism) =============
+function calculateFantasyFriendlyCoherence(elements) {
+  let score = 0;
+  
+  const action = elements.action.toLowerCase();
+  const setting = elements.setting.toLowerCase();
+  
+  // ✅ Boost Visual & Concrete Elements
+  if (action.includes('run') || action.includes('fly') || action.includes('sparkle')) {
+    score += 2; // Visual impact actions
+  }
+  
+  if (setting.includes('forest') || setting.includes('cave') || setting.includes('castle')) {
+    score += 2; // Concrete, imageable settings
+  }
+  
+  // ✅ Fantasy Story Combinations (Visual Richness > Physics)
+  if ((action.includes('float') && setting.includes('cloud')) || 
+      (action.includes('magic') && setting.includes('sparkle')) ||
+      (action.includes('glow') && setting.includes('crystal'))) {
+    score += 5; // Imaginative & visual combinations
+  }
+  
+  // ❌ Only Penalize Truly Bland/Non-Visual Descriptions
+  if (action.includes('think') && setting.includes('area')) {
+    score -= 2; // Abstract + vague = not visual
+  }
+  
+  if (action.includes('understand') && setting.includes('general')) {
+    score -= 2; // Conceptual + generic = boring
+  }
+  
+  return score;
+}
+
+// ============= MASTER PLAN: SMART PLURAL/STEM DETECTION SYSTEM =============
+// Automatically handles verb conjugations without manual arrays
+
+// ============= RED X FIX 3: MISSING PLURAL/SINGULAR DETECTION =============
+function detectPlural(word) {
+  const cleanWord = word.toLowerCase().trim();
+  
+  // Irregular plurals
+  const irregularPlurals = ['children', 'feet', 'teeth', 'mice', 'geese', 'deer', 'sheep', 'fish'];
+  if (irregularPlurals.includes(cleanWord)) return true;
+  
+  // Regular plurals (but exclude words that naturally end in 's')
+  const naturalSWords = ['was', 'is', 'has', 'this', 'yes', 'bus', 'class', 'glass', 'grass'];
+  if (naturalSWords.includes(cleanWord)) return false;
+  
+  return cleanWord.endsWith('s') || cleanWord.endsWith('es');
+}
+
+function preserveExactWordForm(detectedWord, originalText) {
+  const lowerOriginal = originalText.toLowerCase();
+  const pluralForm = detectedWord + 's';
+  const esPlural = detectedWord + 'es';
+  
+  // Check for exact word preservation
+  if (lowerOriginal.includes(pluralForm)) return pluralForm;
+  if (lowerOriginal.includes(esPlural)) return esPlural;
+  if (lowerOriginal.includes(detectedWord)) return detectedWord;
+  
+  return detectedWord; // Fallback to base form
+}
+
+// ============= RED X FIX 4: ENHANCED STEM DETECTION WITH IRREGULAR VERBS =============
+function detectActionStem(word) {
+  // Convert to lowercase and trim
+  const cleanWord = word.toLowerCase().trim();
+  
+  // Irregular verb mappings for exact preservation - COMPREHENSIVE RED X FIX
+  const irregularVerbs = {
+    // Current ones (keep)
+    'ran': 'run', 'threw': 'throw', 'caught': 'catch', 'swam': 'swim',
+    'flew': 'fly', 'drove': 'drive', 'rode': 'ride', 'wrote': 'write',
+    'sang': 'sing', 'rang': 'ring', 'drank': 'drink', 'sank': 'sink',
+    
+    // MISSING STORY VERBS (RED X FIX 1)
+    'went': 'go', 'came': 'come', 'saw': 'see', 'ate': 'eat',
+    'gave': 'give', 'took': 'take', 'said': 'say', 'made': 'make',
+    'got': 'get', 'did': 'do', 'had': 'have', 'was': 'be', 'were': 'be',
+    'fell': 'fall', 'slept': 'sleep', 'woke': 'wake', 'found': 'find'
+  };
+  
+  if (irregularVerbs[cleanWord]) {
+    return irregularVerbs[cleanWord];
+  }
+  
+  // Handle doubled consonants first (running → run, rolling → roll, sitting → sit)
+  const doubledConsonants = /(.+)([bcdfghjklmnpqrstvwxyz])\2(ing|ed)$/;
+  const doubledMatch = cleanWord.match(doubledConsonants);
+  if (doubledMatch) {
+    return doubledMatch[1] + doubledMatch[2]; // Extract base with single consonant
+  }
+  
+  // Handle common suffixes
+  if (cleanWord.endsWith('ies')) return cleanWord.slice(0, -3) + 'y'; // flies → fly
+  if (cleanWord.endsWith('ied')) return cleanWord.slice(0, -3) + 'y'; // tried → try
+  if (cleanWord.endsWith('ing')) return cleanWord.slice(0, -3); // running → run (after doubled check)
+  if (cleanWord.endsWith('ed')) return cleanWord.slice(0, -2); // played → play
+  if (cleanWord.endsWith('es')) return cleanWord.slice(0, -2); // goes → go
+  if (cleanWord.endsWith('s')) return cleanWord.slice(0, -1); // runs → run
+  
+  return cleanWord; // Return as-is if no suffix matches
+}
+
+function extractActionFromSentence(sentence, pageText) {
+  const lowerSentence = sentence.toLowerCase();
+  
+  // ============= ENHANCED STORY FLOW CONTEXT AWARENESS =============
+  // Consider both sentence and full pageText for better story flow understanding
+  const contextText = (pageText || sentence).toLowerCase();
+  
+  // ============= EMERGENCY RECOVERY: EXACT WORD PRESERVATION SYSTEM =============
+  // FIXED: Preserve exact words from story text, no enhancement additions
+  const actionMappings = [
+    // Level 0 Actions (Basic movements and activities) - EXACT WORD PRESERVATION
+    { stem: 'run', description: 'running' },
+    { stem: 'jump', description: 'jumping' },
+    { stem: 'play', description: 'playing' },
+    { stem: 'read', description: 'reading' },
+    { stem: 'write', description: 'writing' },
+    { stem: 'draw', description: 'drawing' },
+    { stem: 'build', description: 'building' },
+    { stem: 'walk', description: 'walking' },
+    { stem: 'sit', description: 'sitting' },
+    { stem: 'stand', description: 'standing' },
+    { stem: 'dance', description: 'dancing' },
+    { stem: 'sing', description: 'singing' },
+    { stem: 'laugh', description: 'laughing' },
+    { stem: 'smile', description: 'smiling' },
+    { stem: 'eat', description: 'eating' },
+    { stem: 'sleep', description: 'resting' },
+    { stem: 'help', description: 'helping' },
+    { stem: 'love', description: 'loving' },
+    { stem: 'call', description: 'calling' },
+    { stem: 'talk', description: 'talking' },
+    { stem: 'get', description: 'getting' },
+    { stem: 'put', description: 'putting' },
+    { stem: 'go', description: 'going' },
+    { stem: 'see', description: 'seeing' },
+    { stem: 'make', description: 'making' },
+    { stem: 'try', description: 'trying' },
+    { stem: 'throw', description: 'throwing' },
+    { stem: 'catch', description: 'catching' },
+    { stem: 'swing', description: 'swinging' },
+    
+    // Level 1 Actions (Exploration and learning) - EXACT WORD PRESERVATION
+    { stem: 'explore', description: 'exploring' },
+    { stem: 'discover', description: 'discovering' },
+    { stem: 'learn', description: 'learning' },
+    { stem: 'create', description: 'creating' },
+    { stem: 'plant', description: 'planting' },
+    { stem: 'water', description: 'watering' },
+    { stem: 'grow', description: 'growing' },
+    { stem: 'investigate', description: 'investigating' },
+    
+    // Level 2 Actions (Advanced activities) - EXACT WORD PRESERVATION
+    { stem: 'interview', description: 'interviewing' },
+    { stem: 'explain', description: 'explaining' },
+    { stem: 'share', description: 'sharing' },
+    { stem: 'return', description: 'returning' },
+    { stem: 'work', description: 'working' },
+    
+    // RED X FIX 2: MISSING ACTION PATTERNS - EXACT WORD PRESERVATION
+    { stem: 'roll', description: 'rolling' },
+    { stem: 'bounce', description: 'bouncing' },
+    { stem: 'fall', description: 'falling' },
+    { stem: 'kick', description: 'kicking' },
+    { stem: 'climb', description: 'climbing' },
+    { stem: 'swim', description: 'swimming' },
+    { stem: 'hide', description: 'hiding' },
+    { stem: 'slide', description: 'sliding' },
+    { stem: 'dig', description: 'digging' },
+    { stem: 'fly', description: 'flying' },
+    { stem: 'hop', description: 'hopping' },
+    { stem: 'skip', description: 'skipping' },
+    { stem: 'sleep', description: 'sleeping' },
+    { stem: 'drink', description: 'drinking' },
+    { stem: 'wake', description: 'waking' },
+    { stem: 'find', description: 'finding' },
+    { stem: 'give', description: 'giving' },
+    { stem: 'take', description: 'taking' },
+    { stem: 'say', description: 'saying' },
+    { stem: 'come', description: 'coming' },
+    { stem: 'see', description: 'seeing' }
+  ];
+  
+  // Split both sentence and context for comprehensive analysis
+  const words = lowerSentence.split(/\s+/);
+  const contextWords = contextText.split(/\s+/);
+  const allWords = [...new Set([...words, ...contextWords])]; // Deduplicate
+  
+  // Check each word against action stems using smart detection with story context
+  for (const word of allWords) {
+    const baseStem = detectActionStem(word);
+    
+    // Find matching action mapping
+    const actionMatch = actionMappings.find(action => action.stem === baseStem);
+    if (actionMatch) {
+      // Prefer words from the main sentence, fall back to context
+      const sourceText = words.includes(word) ? 'sentence' : 'story context';
+      console.log(`🎯 Enhanced Story Flow Detection: "${word}" → stem:"${baseStem}" → "${actionMatch.description}" (from ${sourceText})`);
+      return actionMatch.description;
+    }
+  }
+  
+  console.log('⚠️ No specific action detected, using context-aware fallback');
+  return getContextAwareFallbackScene(sentence);
+}
+
+// ============= CONTEXT-AWARE FALLBACK SYSTEM =============
+function getContextAwareFallbackScene(sentence) {
+  try {
+    if (!sentence || typeof sentence !== 'string') {
+      return getEmergencyFallbackScene();
+    }
+    
+    const lowerSentence = sentence.toLowerCase();
+    
+    // Contextual fallbacks based on detected content
+    if (lowerSentence.includes('kitchen') || lowerSentence.includes('cook') || lowerSentence.includes('food')) {
+      return 'preparing something in the kitchen';
+    }
+    
+    if (lowerSentence.includes('book') || lowerSentence.includes('read') || lowerSentence.includes('library')) {
+      return 'reading quietly';
+    }
+    
+    if (lowerSentence.includes('outside') || lowerSentence.includes('park') || lowerSentence.includes('playground')) {
+      return 'playing outside in the fresh air';
+    }
+    
+    if (lowerSentence.includes('friend') || lowerSentence.includes('together') || lowerSentence.includes('family')) {
+      return 'spending time with others';
+    }
+    
+    if (lowerSentence.includes('room') || lowerSentence.includes('home') || lowerSentence.includes('house')) {
+      return 'enjoying time at home';
+    }
+    
+    if (lowerSentence.includes('school') || lowerSentence.includes('learn') || lowerSentence.includes('study')) {
+      return 'learning something new';
+    }
+    
+    // Age-appropriate activity fallbacks
+    if (lowerSentence.includes('baby') || lowerSentence.includes('toddler')) {
+      return 'playing with colorful toys';
+    }
+    
+    if (lowerSentence.includes('child') || lowerSentence.includes('kid')) {
+      return 'exploring with curiosity';
+    }
+    
+    // Default contextual activity
+    return 'enjoying a peaceful moment';
+    
+  } catch (error) {
+    console.warn('⚠️ Context-aware fallback error:', error);
+    return getEmergencyFallbackScene();
+  }
+}
+
+// ============= EMERGENCY FALLBACK SYSTEM =============
+function getEmergencyFallbackScene() {
+  const emergencyScenes = [
+    'enjoying a bright cheerful moment',
+    'playing in a colorful environment',
+    'exploring with wonder and curiosity',
+    'spending time in a welcoming space',
+    'discovering something interesting'
+  ];
+  
+  try {
+    // Use current timestamp to pseudo-randomly select
+    const index = Date.now() % emergencyScenes.length;
+    return emergencyScenes[index];
+  } catch (error) {
+    console.warn('⚠️ Emergency fallback error:', error);
+    return 'enjoying a bright cheerful moment'; // Ultimate fallback
+  }
+}
+
+// ============= MASTER PLAN: ENHANCED SETTING EXTRACTION (Level 0-2 Template Analysis) =============
+function extractSettingFromSentence(sentence, previousSetting) {
+  try {
+    console.log('🔍 Setting extraction with silent failure protection');
+    
+    if (!sentence || typeof sentence !== 'string') {
+      console.log('⚠️ Invalid sentence input, using previousSetting or fallback');
+      return previousSetting || ' a welcoming colorful environment';
+    }
+    
+    const lowerSentence = sentence.toLowerCase();
+  
+  // ============= EXPANDED SETTING MAPPINGS FROM TEMPLATE ANALYSIS =============
+  const settingMappings = {
+    // Level 0 Settings (Basic locations)
+    'room': ' a cozy indoor room with comfortable space',
+    'house': ' a welcoming family house with homey atmosphere', 
+    'playground': ' a fun colorful playground with exciting equipment',
+    'school': ' a bright modern school with learning areas',
+    'library': ' a quiet peaceful library with rows of books',
+    'kitchen': ' a warm inviting kitchen with cooking areas',
+    'bedroom': ' a comfortable personal bedroom with cozy furnishings',
+    'garden': ' a beautiful blooming garden with colorful flowers',
+    'park': ' a vibrant community park with green spaces',
+    'store': ' a friendly neighborhood store with interesting items',
+    
+    // Level 1 Settings (Outdoor exploration)
+    'soil': ' rich garden soil with growing potential',
+    'flowers': ' a colorful flower garden with blooming beauty',
+    'outdoor': ' a beautiful outdoor setting with natural environment',
+    
+    // Level 2 Settings (Learning environments)  
+    'classroom': ' a bright engaging classroom with educational materials',
+    'stairs': ' a safe stairway with good lighting',
+    'reading': ' a cozy reading nook with comfortable seating',
+    
+    // MASTER PLAN FIX: Missing Settings from "Ball Rolls Down Hill" + Expanded
+    'hill': ' a scenic hill landscape with natural slopes', // 🎯 THE MISSING SETTING!
+    'valley': ' a peaceful valley with rolling meadows',
+    'pond': ' a tranquil pond with clear water',
+    'stream': ' a babbling stream with flowing water',
+    'farm': ' a working farm with animals and fields',
+    'barn': ' a rustic barn with farm atmosphere',
+    'hospital': ' a clean modern hospital with caring staff',
+    'restaurant': ' a friendly restaurant with delicious aromas',
+    'mall': ' a busy shopping mall with many stores',
+    'zoo': ' an exciting zoo with amazing animals',
+    'museum': ' an educational museum with fascinating exhibits',
+    'airport': ' a bustling airport with travel excitement',
+    'train station': ' a busy train station with transportation energy',
+    'beach': ' a sunny sandy beach with ocean waves',
+    'forest': ' a magical green forest with tall trees',
+    'mountain': ' a majestic mountain landscape with scenic views',
+    'city': ' a bustling vibrant city with urban energy',
+    'street': ' a friendly neighborhood street with community feel',
+    'backyard': ' a spacious family backyard with outdoor fun',
+    'living room': ' a comfortable living room with family seating',
+    'dining room': ' a welcoming dining room with eating space',
+    'bathroom': ' a clean bright bathroom with modern fixtures',
+    'garage': ' an organized garage with storage space',
+    'basement': ' a finished basement with recreation area',
+    'attic': ' a cozy attic with interesting discoveries',
+    'hallway': ' a bright hallway connecting different rooms',
+    'porch': ' a charming front porch with welcoming atmosphere',
+    'patio': ' a lovely outdoor patio with relaxation space',
+    
+    // RED X FIX 3: MISSING SETTING KEYWORDS
+    'slope': ' a gentle slope with natural terrain',
+    'cliff': ' a dramatic cliff with steep edges',  
+    'creek': ' a babbling creek with flowing water',
+    'river': ' a flowing river with clear water',
+    'stable': ' a rustic stable with farm atmosphere',
+    'field': ' an open field with natural grass',
+    'meadow': ' a peaceful meadow with wildflowers',
+    'store': ' a friendly store with helpful staff',
+    'shop': ' a welcoming shop with interesting items',
+    'market': ' a bustling market with fresh goods',
+    'cafe': ' a cozy cafe with warm atmosphere',
+    'diner': ' a classic diner with comfort food',
+    'clinic': ' a clean clinic with caring staff',
+    'aquarium': ' an amazing aquarium with sea life',
+    'museum': ' an educational museum with exhibits',
+    'deck': ' an elevated deck with outdoor entertainment area'
+  };
+  
+  // Check for specific settings first
+  for (const [setting, description] of Object.entries(settingMappings)) {
+    if (lowerSentence.includes(setting)) {
+      return description;
+    }
+  }
+  
+  // If no specific setting found, use indoor/outdoor classification
+  let isIndoor = false;
+  let isOutdoor = false;
+  
+  // Check for indoor keywords using unified vocabulary
+  for (const keyword of TIER_25_UNIFIED_VOCABULARY.contextDetection.indoor) {
+    if (lowerSentence.includes(keyword)) {
+      isIndoor = true;
+      break;
+    }
+  }
+  
+  // Check for outdoor keywords using unified vocabulary
+  if (!isIndoor) {
+    for (const keyword of TIER_25_UNIFIED_VOCABULARY.contextDetection.outdoor) {
+      if (lowerSentence.includes(keyword)) {
+        isOutdoor = true;
+        break;
+      }
+    }
+  }
+  
+  // Apply indoor/outdoor classification
+  if (isIndoor) {
+    return ' a comfortable indoor space with cozy atmosphere';
+  } else if (isOutdoor) {
+    return ' a beautiful outdoor setting with natural environment';
+  }
+  
+  // Nuclear-safe setting memory: Use previousSetting if available
+  if (previousSetting && previousSetting.trim().length > 0) {
+    console.log('🛡️ Tier 2.5: Using previous setting memory:', previousSetting);
+    return previousSetting;
+  }
+  
+  // Ultimate fallback
+  return ' indoor portrait style photo with main character focus';
+  } catch (error) {
+    console.warn('⚠️ Setting extraction error:', error);
+    return previousSetting || ' a welcoming colorful environment';
+  }
+}
+
+// ============= COMPREHENSIVE ENHANCED PRONOUN RESOLUTION SYSTEM =============
+
+// ============= TESTING & VALIDATION SUITE =============
+function testPronounResolutionSystem() {
+  console.log('🧪 Starting comprehensive pronoun resolution system test...');
+  
+  // Test 1: Object pronoun resolution
+  const test1 = resolvePronounsInSentence(
+    "She picks it up gently", 
+    "Emma sees a beautiful flower in the garden", 
+    [], 
+    "test-session", 
+    2
+  );
+  console.log(`Test 1 - Object resolution: "${test1}" (Expected: flower resolution)`);
+  
+  // Test 2: Character pronoun resolution  
+  const test2 = resolvePronounsInSentence(
+    "He helps with the cooking", 
+    "Dad is in the kitchen preparing dinner", 
+    ['dad'], 
+    "test-session", 
+    3
+  );
+  console.log(`Test 2 - Character resolution: "${test2}" (Expected: Dad resolution)`);
+  
+  // Test 3: Ambiguous case (should remain unchanged)
+  const test3 = resolvePronounsInSentence(
+    "She sees it near them", 
+    "Mom and dad watch the cat and dog playing with a ball", 
+    ['mom', 'dad'], 
+    "test-session", 
+    4
+  );
+  console.log(`Test 3 - Ambiguous case: "${test3}" (Expected: null - too ambiguous)`);
+  
+  // Test 4: Character name extraction
+  const test4 = extractCharacterNamesFromDescription("caring mother nearby");
+  console.log(`Test 4 - Character extraction: [${test4.join(', ')}] (Expected: ['mom'])`);
+  
+  // Test 5: Animal detection
+  const test5 = await extractSecondaryCharactersFromSentence("She plays with her dog Max", "test-session", 1);
+  console.log(`Test 5 - Animal detection: "${test5}" (Expected: dog companion)`);
+  
+  console.log('🧪 Pronoun resolution system testing complete!');
+}
+
+// Enhanced SessionStateManager integration with error handling
+function getPreviousResolvedContext(sessionId, pageNumber) {
+  try {
+    if (!sessionId || pageNumber <= 1) {
+      return { objects: [], characters: [] };
+    }
+    
+    const session = globalArcSessionManager.getSession(sessionId);
+    if (!session) {
+      console.log(`⚠️ No session found for ${sessionId}`);
+      return { objects: [], characters: [] };
+    }
+    
+    const imagePrompts = session.imagePrompts || [];
+    const previousPage = imagePrompts.find(p => p.pageNumber === pageNumber - 1);
+    
+    if (!previousPage || !previousPage.metadata) {
+      console.log(`⚠️ No metadata found for previous page ${pageNumber - 1}`);
+      return { objects: [], characters: [] };
+    }
+    
+    // Extract resolved objects and characters from metadata
+    const objects = previousPage.metadata.objects ? 
+      previousPage.metadata.objects.split(',').map(o => o.trim().toLowerCase()) : [];
+    const characters = previousPage.metadata.secondaryCharacters ? 
+      previousPage.metadata.secondaryCharacters.split(',').map(c => c.trim().toLowerCase()) : [];
+    
+    console.log(`🎯 Retrieved previous context: ${objects.length} objects, ${characters.length} characters`);
+    return { objects, characters };
+  } catch (error) {
+    console.warn('⚠️ Could not retrieve previous context:', error);
+    return { objects: [], characters: [] };
+  }
+}
+
+// Enhanced safe ambiguity detection with comprehensive context checking
+function countPotentialAntecedents(sentence, originalPageText, previousContext) {
+  const lowerSentence = sentence.toLowerCase();
+  const lowerPageText = originalPageText.toLowerCase();
+  
+  // Comprehensive candidate list including common story objects and characters
+  const allCandidates = [
+    // Story objects - common in children's stories
+    'tree', 'bird', 'dog', 'cat', 'butterfly', 'rabbit', 'squirrel', 'elephant', 'lion', 'tiger',
+    'book', 'toy', 'ball', 'flower', 'car', 'truck', 'bike', 'swing', 'slide', 'kite',
+    'rock', 'stone', 'stick', 'leaf', 'branch', 'shell', 'seed', 'apple', 'banana',
+    // Family members
+    'mom', 'dad', 'mother', 'father', 'sister', 'brother', 'friend',
+    // Previous page resolved context
+    ...previousContext.objects,
+    ...previousContext.characters
+  ];
+  
+  let count = 0;
+  for (const candidate of allCandidates) {
+    if (lowerPageText.includes(candidate) || lowerSentence.includes(candidate)) {
+      count++;
+    }
+  }
+  
+  console.log(`🔍 Ambiguity check: Found ${count} potential antecedents for pronouns`);
+  return count;
+}
+
+// Enhanced pronoun resolution with comprehensive safety checks and error handling
+function resolvePronounsInSentence(sentence, originalPageText, detectedCharacters = [], sessionId, pageNumber) {
+  try {
+    if (!originalPageText || !sentence) {
+      console.log('⚠️ Missing required parameters for pronoun resolution');
+      return null;
+    }
+    
+    const lowerSentence = sentence.toLowerCase();
+    const lowerPageText = originalPageText.toLowerCase();
+    
+    // COMPREHENSIVE: All pronouns with safety-first resolution
+    const pronouns = ['it', 'this', 'that', 'them', 'they', 'he', 'she', 'him', 'her', 'his', 'hers'];
+    
+    // EFFICIENCY OPTIMIZATION: Get resolved previous context with error handling
+    const previousContext = sessionId && pageNumber ? 
+      getPreviousResolvedContext(sessionId, pageNumber) : { objects: [], characters: [] };
+    
+    for (const pronoun of pronouns) {
+      if (lowerSentence.includes(pronoun)) {
+        // SAFETY CHECK: Count potential antecedents
+        const antecedentCount = countPotentialAntecedents(sentence, originalPageText, previousContext);
+        
+        // SMART FALLBACK: If ambiguous (multiple antecedents), leave as-is for safety
+        // MASTER PLAN PHASE 6: TUNED PRONOUN RESOLUTION - Confidence threshold lowered from 0.8 to 0.6
+        if (antecedentCount > 1.6) { // Adjusted threshold for broader resolution coverage
+          console.log(`🛡️ Tuned fallback: "${pronoun}" has ${antecedentCount} potential antecedents - leaving unchanged for safety`);
+          continue;
+        }
+        
+        // Human pronoun resolution with enhanced character mapping
+        if (['he', 'him', 'his'].includes(pronoun)) {
+          const maleCharacters = ['dad', 'father', 'papa', 'daddy', 'brother', 'bro'];
+          // Also check detected characters for male family members
+          const detectedMales = detectedCharacters.filter(c => maleCharacters.includes(c));
+          
+          for (const character of [...maleCharacters, ...detectedMales]) {
+            if (lowerPageText.includes(character) && antecedentCount <= 1.6) { // Tuned threshold
+              console.log(`🎯 Enhanced character pronoun resolution: "${pronoun}" → "${character}" from context (tuned confidence)`);
+              return sentence.replace(new RegExp(`\\b${pronoun}\\b`, 'gi'), character);
+            }
+          }
+        }
+        
+        if (['she', 'her', 'hers'].includes(pronoun)) {
+          const femaleCharacters = ['mom', 'mother', 'mama', 'mommy', 'sister', 'sis'];
+          // Also check detected characters for female family members
+          const detectedFemales = detectedCharacters.filter(c => femaleCharacters.includes(c));
+          
+          for (const character of [...femaleCharacters, ...detectedFemales]) {
+            if (lowerPageText.includes(character) && antecedentCount <= 1.6) { // Tuned threshold
+              console.log(`🎯 Enhanced character pronoun resolution: "${pronoun}" → "${character}" from context (tuned confidence)`);
+              return sentence.replace(new RegExp(`\\b${pronoun}\\b`, 'gi'), character);
+            }
+          }
+        }
+        
+        // Object/animal pronoun resolution with enhanced safety and animal support
+        const objects = [
+          // Animals - treat with 'it' pronouns
+          'tree', 'bird', 'dog', 'cat', 'butterfly', 'rabbit', 'squirrel', 'elephant', 'lion', 'tiger',
+          // Objects
+          'book', 'toy', 'ball', 'flower', 'car', 'truck', 'bike', 'swing', 'slide', 'kite',
+          // Nature objects
+          'rock', 'stone', 'stick', 'leaf', 'branch', 'shell', 'seed', 'apple', 'banana'
+        ];
+        
+        // Check current page objects first with enhanced word boundary matching
+        for (const obj of objects) {
+          if (lowerPageText.includes(obj) && !lowerSentence.includes(obj) && antecedentCount === 1) {
+            console.log(`🎯 Safe object pronoun resolution: "${pronoun}" → "${obj}" from current context`);
+            return sentence.replace(new RegExp(`\\b${pronoun}\\b`, 'gi'), obj);
+          }
+        }
+        
+        // EFFICIENCY OPTIMIZATION: Check previous page resolved context with safety
+        if (previousContext.objects.length === 1 && antecedentCount === 1) {
+          const prevObject = previousContext.objects[0];
+          console.log(`🎯 Efficient previous context resolution: "${pronoun}" → "${prevObject}" from resolved data (safe)`);
+          return sentence.replace(new RegExp(`\\b${pronoun}\\b`, 'gi'), prevObject);
+        }
+      }
+    }
+    
+    return null;
+  } catch (error) {
+    console.warn('⚠️ Enhanced pronoun resolution error:', error);
+    return null;
+  }
+}
+
+// ============= END CHUNK 1 CONVERSION =============
+
 });
