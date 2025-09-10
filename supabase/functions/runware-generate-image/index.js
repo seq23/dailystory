@@ -1,8 +1,8 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { createDynamicCorsOptionsResponse, createDynamicCorsResponse, createDynamicCorsErrorResponse } from "../_shared/corsAdvanced.ts";
-import { monitorRequest } from "../_shared/headerMonitor.ts";
-import { SessionStateManager } from "../_shared/SessionStateManager.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.js";
+import "https://deno.land/x/xhr@0.1.0/mod.js";
+import { createDynamicCorsOptionsResponse, createDynamicCorsResponse, createDynamicCorsErrorResponse } from "../_shared/corsAdvanced.js";
+import { monitorRequest } from "../_shared/headerMonitor.js";
+import { SessionStateManager } from "../_shared/SessionStateManager.js";
 import { SecurityValidator } from "../_shared/SecurityValidator.js";
 import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from "../_shared/NuclearNegativePrompts.js";
 import { DifficultyLevelMapper } from "../_shared/DifficultyLevelMapper.js";
@@ -164,6 +164,9 @@ class TierFailureTracker {
 }
 // ============= WEBSOCKET ERROR CLASSIFICATION =============
 class WebSocketError extends Error {
+  type;
+  isRetryable;
+  
   constructor(message, type, isRetryable = false){
     super(message);
     this.type = type;
