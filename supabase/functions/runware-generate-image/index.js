@@ -1,21 +1,3 @@
-Dependencies and Imports:
-- Deno standard HTTP server (serve): https://deno.land/std@0.168.0/http/server.ts
-- XHR polyfill for Deno: https://deno.land/x/xhr@0.1.0/mod.ts
-- Shared CORS utilities: ../_shared/corsAdvanced.ts
-- Header monitor: ../_shared/headerMonitor.ts
-- Session state manager: ../_shared/SessionStateManager.ts
-- Security validator: ../_shared/SecurityValidator.js
-- Nuclear negative prompts: ../_shared/NuclearNegativePrompts.js
-- Difficulty level mapper: ../_shared/DifficultyLevelMapper.js
-- Dynamic (runtime) imports used inside the code paths:
-  - Supabase client (ESM): https://esm.sh/@supabase/supabase-js@2
-  - Visual details tracker: ../_shared/VisualDetailTracker.ts
-  - Character consistency service: ../_shared/CharacterConsistencyService.ts
-  - Style frameworks: ../_shared/styleFrameworks.js
-  - Avatar consistency validator: ../_shared/avatarConsistency.js
-  - Secondary element detector: ../_shared/SecondaryElementDetector.ts
-  - Session state manager global accessor: ../_shared/SessionStateManager.ts
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { createDynamicCorsOptionsResponse, createDynamicCorsResponse, createDynamicCorsErrorResponse } from "../_shared/corsAdvanced.ts";
