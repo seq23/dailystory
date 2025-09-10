@@ -4,7 +4,7 @@
  * Includes all cultural arrays and detection logic from FrontendIntelligence
  */
 
-import { safeErrorMessage } from './errorPatterns.ts';
+import { safeErrorMessage } from './errorPatterns.js';
 
 export class CharacterConsistencyService {
   constructor() {
@@ -214,7 +214,7 @@ export class CharacterConsistencyService {
     let clothingStyle = '';
     if (sessionId) {
       try {
-        const { VisualDetailTracker } = await import('./VisualDetailTracker.ts');
+        const { VisualDetailTracker } = await import('./VisualDetailTracker.js');
         const detectedClothing = await VisualDetailTracker.buildClothingDescription(sessionId, characterName);
         if (detectedClothing) {
           clothingStyle = detectedClothing;

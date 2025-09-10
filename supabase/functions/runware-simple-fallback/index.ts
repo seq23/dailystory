@@ -3,7 +3,7 @@
 import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from "../_shared/NuclearNegativePrompts.ts";
 import { globalArcSessionManager } from "../_shared/sessionStateManager.js";
 import { ExactWordExtractor } from "../_shared/ExactWordExtractor.ts";
-import { VisualDetailTracker } from "../_shared/VisualDetailTracker.ts";
+import { VisualDetailTracker } from "../_shared/VisualDetailTracker.js";
 import { CharacterConsistencyService } from "../_shared/CharacterConsistencyService.js";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -2648,7 +2648,7 @@ function isIndoorContext(sentence: string): boolean {
 async function detectAndResolveObjectColorWithTracking(sentence: string, sessionId: string, pageNumber: number = 1, originalPageText?: string): Promise<string> {
   // First analyze the sentence for new visual details
   try {
-    const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.ts');
+    const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.js');
     await VisualDetailTracker.analyzeTextForDetails(sessionId, sentence, pageNumber);
     
     // Get all stored colored objects for this session
@@ -4595,7 +4595,7 @@ function fillPremiumTemplate(
     // ============= ANALYZE PAGE TEXT FOR VISUAL DETAILS =============
     // Add visual detail analysis for consistent object tracking across tiers
     try {
-      const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.ts');
+      const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.js');
       await VisualDetailTracker.analyzeTextForDetails(
         sessionId || 'tier25-session', 
         pageText || processedPageText, 
@@ -4891,7 +4891,7 @@ function enhanceSeededSecondaryCharacterPositioning(secondaryChars: string, page
     // ============= PAGE TEXT ANALYSIS FOR VISUAL DETAILS =============
     // Analyze current page text for visual details before building colored objects
     try {
-      const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.ts');
+      const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.js');
       await VisualDetailTracker.analyzeTextForDetails(
         sessionId || 'fallback-session', 
         pageText, 
@@ -4907,7 +4907,7 @@ function enhanceSeededSecondaryCharacterPositioning(secondaryChars: string, page
     // Add persistent colored objects from VisualDetailTracker BEFORE template processing
     let coloredObjects = '';
     try {
-      const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.ts');
+      const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.js');
       const storedObjects = await VisualDetailTracker.buildObjectDescription(sessionId || 'fallback-session');
       coloredObjects = storedObjects || '';
       
