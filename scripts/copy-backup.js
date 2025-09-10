@@ -10,11 +10,11 @@ const path = require('path');
 async function main() {
   try {
     console.log('🚀 Starting complete file copy operation');
-    console.log('🎯 Target: Copy complete index.backup.ts to index.backup2.ts');
+    console.log('🎯 Target: Copy complete arcManager.js to arcManager.ts');
     console.log('==========================================');
     
-    const inputPath = path.join(__dirname, '..', 'supabase', 'functions', 'runware-simple-fallback', 'index.backup.ts');
-    const outputPath = path.join(__dirname, '..', 'supabase', 'functions', 'runware-simple-fallback', 'index.backup2.ts');
+    const inputPath = path.join(__dirname, '..', 'supabase', 'functions', '_shared', 'arcManager.js');
+    const outputPath = path.join(__dirname, '..', 'supabase', 'functions', '_shared', 'arcManager.ts');
     
     console.log('Source:', inputPath);
     console.log('Target:', outputPath);
