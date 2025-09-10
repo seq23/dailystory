@@ -1813,6 +1813,792 @@ function extractProps(pageText, objects) {
   }
 }
 
+// ============= CHARACTER CONSISTENCY & AVATAR MAPPING SYSTEM =============
+
+function enhanceNuclearMappingWithConsistency(userInfo, difficulty, avatarIdentity, sessionId, characterData) {
+  try {
+    console.log('🎭 Tier 2.5: Starting character consistency enhancement');
+    
+    // STEP 1: Get nuclear mapping as baseline safety
+    const nuclearMapping = getNuclearAvatarMapping(userInfo, difficulty, avatarIdentity);
+    
+    if (!nuclearMapping) {
+      console.warn('⚠️ Tier 2.5: Nuclear mapping failed - using emergency fallback');
+      return generateEmergencyMapping(userInfo);
+    }
+    
+    // STEP 2: Check if character consistency data is available
+    if (!characterData || !characterData.seed) {
+      console.log('🛡️ Tier 2.5: No character data available - using nuclear mapping');
+      return nuclearMapping;
+    }
+    
+    // STEP 3: Enhance nuclear mapping with consistent traits
+    console.log('🎭 Tier 2.5: Enhancing nuclear mapping with consistent character data');
+    
+    const enhancedMapping = {
+      ...nuclearMapping, // Start with nuclear safety
+      
+      // Override with consistent traits when available
+      ...(characterData.consistentEyeColor && { eyeColor: characterData.consistentEyeColor }),
+      ...(characterData.consistentClothingStyle && { clothing: characterData.consistentClothingStyle }),
+      ...(characterData.consistentHairDescription && { hair: characterData.consistentHairDescription }),
+      
+      // Preserve nuclear safety features
+      seed: characterData.seed || avatarIdentity?.seed, // Use consistent seed
+      source: 'enhanced-nuclear-mapping'
+    };
+    
+    console.log('✅ Tier 2.5: Character consistency enhancement completed:', {
+      hasConsistentEyeColor: !!characterData.consistentEyeColor,
+      hasConsistentClothing: !!characterData.consistentClothingStyle,
+      hasConsistentHair: !!characterData.consistentHairDescription,
+      hasOrchestratorVariation: !!avatarIdentity?.skinToneVariation,
+      seed: characterData.seed || avatarIdentity?.seed,
+      sessionId: sessionId
+    });
+    
+    return enhancedMapping;
+    
+  } catch (error) {
+    console.warn('⚠️ Tier 2.5: Character consistency enhancement failed - falling back to nuclear mapping:', error);
+    // BULLETPROOF FALLBACK: Return nuclear mapping on any error
+    return getNuclearAvatarMapping(userInfo, difficulty, avatarIdentity);
+  }
+}
+
+function getNuclearAvatarMapping(userInfo, difficulty, avatarIdentity) {
+  try {
+    console.log('🛡️ Tier 2.5: Generating nuclear avatar mapping');
+    
+    const avatarType = userInfo?.avatar?.type || avatarIdentity?.type || 'child';
+    const seed = avatarIdentity?.seed || userInfo?.sessionId || 'default';
+    
+    console.log(`🎯 Avatar type: ${avatarType}, Seed: ${seed}`);
+    
+    // CULTURAL PROFILE DETECTION
+    const culturalProfile = detectCulturalProfile(userInfo, avatarIdentity);
+    console.log(`🌍 Cultural profile detected: ${culturalProfile}`);
+    
+    // AFRICAN AMERICAN SPECIALIZED MAPPING
+    if (culturalProfile === 'african_american') {
+      return generateAfricanAmericanMapping(avatarType, seed, userInfo, avatarIdentity);
+    }
+    
+    // STANDARD AMERICAN MAPPING (ALL OTHER ETHNICITIES)
+    return generateStandardAmericanMapping(avatarType, seed, userInfo, avatarIdentity);
+    
+  } catch (error) {
+    console.error('❌ Nuclear avatar mapping error:', error);
+    return generateEmergencyMapping(userInfo);
+  }
+}
+
+function generateAfricanAmericanMapping(avatarType, seed, userInfo, avatarIdentity) {
+  try {
+    console.log('🎨 Generating African American character mapping');
+    
+    const gender = avatarType === 'girl' ? 'girls' : 'boys';
+    
+    // HAIR SELECTION (Seeded for consistency)
+    const hairOptions = HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[gender] || HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.boys;
+    const selectedHair = getSeededRandomItem(hairOptions, seed + '_hair');
+    
+    // SKIN TONE SELECTION (Seeded for consistency)
+    const selectedSkinTone = getSeededRandomItem(HARDCODED_AFRICAN_AMERICAN_SKIN_TONES, seed + '_skin');
+    
+    // FACIAL FEATURES SELECTION (Seeded for consistency)
+    const selectedFeatures = getSeededRandomItem(HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES, seed + '_features');
+    
+    // CLOTHING DETECTION FROM STORY
+    const storyClothing = detectClothingFromStory(userInfo?.pageText || '');
+    const finalClothing = storyClothing || getSeededRandomItem(HARDCODED_STANDARD_AMERICAN_CLOTHING, seed + '_clothing');
+    
+    const mapping = {
+      character: `African American ${avatarType}`,
+      hair: selectedHair,
+      features: selectedFeatures,
+      clothing: finalClothing,
+      skinTone: selectedSkinTone,
+      age: getAgeFromDifficulty(userInfo?.difficulty || 'medium'),
+      ethnicity: 'depict character from African American background',
+      seed: seed,
+      source: 'african-american-nuclear-mapping'
+    };
+    
+    console.log('✅ African American mapping generated:', mapping);
+    return mapping;
+    
+  } catch (error) {
+    console.error('❌ African American mapping error:', error);
+    return generateEmergencyMapping(userInfo);
+  }
+}
+
+function generateStandardAmericanMapping(avatarType, seed, userInfo, avatarIdentity) {
+  try {
+    console.log('🎨 Generating Standard American character mapping');
+    
+    // CLOTHING DETECTION FROM STORY (Primary approach)
+    const storyClothing = detectClothingFromStory(userInfo?.pageText || '');
+    const finalClothing = storyClothing || getSeededRandomItem(HARDCODED_STANDARD_AMERICAN_CLOTHING, seed + '_clothing');
+    
+    // BASIC FEATURES (Let AI handle diversity)
+    const basicFeatures = [
+      'bright expressive eyes, cheerful smile, youthful appearance',
+      'sparkling eyes, friendly expression, natural features',
+      'warm smile, lively eyes, authentic child features',
+      'genuine expression, bright eyes, natural appearance'
+    ];
+    
+    const selectedFeatures = getSeededRandomItem(basicFeatures, seed + '_features');
+    
+    // ETHNICITY DETECTION (Multi-language support)
+    const ethnicityNote = getCharacterEthnicity(userInfo, avatarIdentity);
+    
+    const mapping = {
+      character: `${avatarType}`,
+      hair: 'natural hairstyle appropriate for character', // Let AI decide
+      features: selectedFeatures,
+      clothing: finalClothing,
+      age: getAgeFromDifficulty(userInfo?.difficulty || 'medium'),
+      ethnicity: ethnicityNote,
+      seed: seed,
+      source: 'standard-american-nuclear-mapping'
+    };
+    
+    console.log('✅ Standard American mapping generated:', mapping);
+    return mapping;
+    
+  } catch (error) {
+    console.error('❌ Standard American mapping error:', error);
+    return generateEmergencyMapping(userInfo);
+  }
+}
+
+function detectCulturalProfile(userInfo, avatarIdentity) {
+  try {
+    // DETECTION METHOD 1: Direct avatar skin tone analysis
+    const skinTone = userInfo?.avatar?.skinTone || avatarIdentity?.skinTone || '';
+    const skinToneLower = skinTone.toLowerCase();
+    
+    // African American skin tone indicators
+    const africanAmericanSkinTones = [
+      'dark', 'brown', 'black', 'ebony', 'chocolate', 'mahogany', 
+      'caramel', 'cocoa', 'bronze', 'deep brown', 'rich brown'
+    ];
+    
+    for (const tone of africanAmericanSkinTones) {
+      if (skinToneLower.includes(tone)) {
+        console.log(`🎯 African American profile detected via skin tone: ${tone}`);
+        return 'african_american';
+      }
+    }
+    
+    // DETECTION METHOD 2: Language-based cultural hints
+    const language = avatarIdentity?.nativeLanguage || userInfo?.language || 'en';
+    
+    // Spanish/Latino detection
+    if (language === 'es' || language === 'spanish') {
+      console.log(`🎯 Spanish/Latino profile detected via language: ${language}`);
+      return 'spanish_latino';
+    }
+    
+    // Other language-based profiles
+    const languageProfiles = {
+      'fr': 'french',
+      'french': 'french',
+      'zh': 'chinese',
+      'chinese': 'chinese',
+      'hi': 'hindi',
+      'hindi': 'hindi',
+      'ar': 'arabic',
+      'arabic': 'arabic',
+      'pt': 'portuguese',
+      'portuguese': 'portuguese'
+    };
+    
+    if (languageProfiles[language]) {
+      console.log(`🎯 Cultural profile detected via language: ${language} -> ${languageProfiles[language]}`);
+      return languageProfiles[language];
+    }
+    
+    // DETECTION METHOD 3: Story content analysis (future enhancement)
+    const storyText = userInfo?.pageText || '';
+    if (storyText) {
+      // Cultural context clues in story content could be analyzed here
+      // For now, keeping it simple
+    }
+    
+    // DEFAULT: Standard American
+    console.log('🎯 Default cultural profile: standard_american');
+    return 'standard_american';
+    
+  } catch (error) {
+    console.warn('⚠️ Cultural profile detection error:', error);
+    return 'standard_american';
+  }
+}
+
+function generateEmergencyMapping(userInfo) {
+  const avatarType = userInfo?.avatar?.type || 'child';
+  
+  return {
+    character: `friendly ${avatarType}`,
+    hair: 'natural hairstyle',
+    features: 'bright expressive eyes, cheerful smile',
+    clothing: 'comfortable everyday outfit',
+    age: 'age 9-10',
+    ethnicity: '',
+    seed: 'emergency',
+    source: 'emergency-fallback-mapping'
+  };
+}
+
+// ============= CULTURAL ENHANCEMENT FUNCTIONS =============
+
+function getCharacterEthnicity(userInfo, avatarIdentity) {
+  try {
+    const language = avatarIdentity?.nativeLanguage || userInfo?.language || 'en';
+    const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || '';
+    
+    // Multi-Language + Dark Skin Ethnicity Enhancement
+    const hasDarkSkin = skinTone.toLowerCase().includes('dark') || 
+                       skinTone.toLowerCase().includes('brown') ||
+                       skinTone.toLowerCase().includes('black') ||
+                       skinTone.toLowerCase().includes('ebony') ||
+                       skinTone.toLowerCase().includes('chocolate');
+    
+    if (hasDarkSkin) {
+      if (language === 'es' || language === 'spanish') {
+        return "depict character from Afro-Latino background";
+      }
+      if (language === 'fr' || language === 'french') {
+        return "depict character from African Francophone background";
+      }
+      // Fallback for other languages with dark skin
+      return "depict character from African American background";
+    }
+    
+    // Language-based ethnicity notes (for non-dark skin)
+    if (language === 'es' || language === 'spanish') {
+      return "depict character from Spanish/Latino background";
+    }
+    
+    if (language === 'fr' || language === 'french') {
+      return "depict character from European background";
+    }
+    
+    if (language === 'zh' || language === 'chinese') {
+      return "depict character from Asian background";
+    }
+    
+    if (language === 'hi' || language === 'hindi') {
+      return "child of Indian origin";
+    }
+    
+    if (language === 'ar' || language === 'arabic') {
+      return "depict character from Middle Eastern background";
+    }
+    
+    if (language === 'pt' || language === 'portuguese') {
+      return "depict character from Latin American background";
+    }
+    
+    // Default: no specific ethnicity note for English/Standard American
+    return "";
+    
+  } catch (error) {
+    console.warn('⚠️ Tier 2.5: Character ethnicity detection error:', error);
+    return "";
+  }
+}
+
+// ============= CULTURAL LANDMARKS SYSTEM =============
+const CULTURAL_LANDMARKS = {
+  spanish: {
+    indoor: ["with Spanish tile patterns", "in Mediterranean style interior", "with Spanish cultural elements", "in warm villa setting", "with Spanish decor"],
+    outdoor: ["with Spanish villa backdrop", "near Mediterranean courtyard", "with Spanish architecture", "in colorful plaza", "with Spanish garden elements"]
+  },
+  french: {
+    indoor: ["in charming Parisian café", "with French interior design", "in elegant French setting", "with French cultural elements", "in cozy French environment"],
+    outdoor: ["near Eiffel Tower", "by Seine River", "near Louvre gardens", "in charming café district", "with Parisian park backdrop"]
+  },
+  chinese: {
+    indoor: ["with traditional Chinese interior", "in Chinese cultural setting", "with oriental design elements", "in pagoda-style building", "with Chinese architectural details"],
+    outdoor: ["with traditional pagodas", "near Great Wall", "with ancient temples", "in bamboo garden", "with oriental architecture"]
+  },
+  hindi: {
+    indoor: ["in Indian palace interior", "with traditional Indian patterns", "in colorful Indian setting", "with Indian cultural elements", "in ornate Indian room"],
+    outdoor: ["near Taj Mahal", "with palace elements", "in colorful market", "with Indian architecture", "in vibrant courtyard"]
+  },
+  arabic: {
+    indoor: ["in ornate Middle Eastern interior", "with Arabic architectural patterns", "in traditional Arabic setting", "with Middle Eastern design", "in elegant Arabic room"],
+    outdoor: ["with Middle Eastern domes", "in ornate courtyard", "with mosaic patterns", "near ancient architecture", "with desert oasis backdrop"]
+  },
+  portuguese: {
+    indoor: ["in Brazilian colonial interior", "with Portuguese cultural elements", "in warm Portuguese setting", "with Brazilian design details", "in Portuguese-style room", "with azulejo tile patterns", "in traditional Portuguese library", "with Portuguese maritime decor", "in colorful Portuguese kitchen", "with fado music ambiance", "in Portuguese cathedral interior", "with cork and wood elements", "in Manueline architectural style", "with Portuguese royal court design"],
+    outdoor: ["with Brazilian landscape", "near Portuguese architecture", "with tropical colonial backdrop", "in colorful Portuguese plaza", "with Brazilian coastal elements", "near Portuguese castles", "with cork oak trees", "in Portuguese vineyard setting", "with traditional Portuguese windmills", "near Douro River valley", "with Portuguese fishing village backdrop", "in Sintra palace gardens", "with Portuguese maritime port", "near Cliffs of Moher coastal views", "with Portuguese countryside hills"]
+  }
+};
+
+function getCulturalLandmarks(language, isIndoor, isOutdoor) {
+  try {
+    const landmarks = CULTURAL_LANDMARKS[language];
+    if (!landmarks) return [];
+    
+    if (isIndoor && landmarks.indoor) {
+      return landmarks.indoor;
+    }
+    if (isOutdoor && landmarks.outdoor) {
+      return landmarks.outdoor;
+    }
+    
+    // Default: combine both indoor and outdoor
+    return [...(landmarks.indoor || []), ...(landmarks.outdoor || [])];
+    
+  } catch (error) {
+    console.warn('⚠️ Cultural landmarks error:', error);
+    return [];
+  }
+}
+
+function applyCulturalSettingEnhancement(baseSetting, userInfo, avatarIdentity) {
+  try {
+    const language = avatarIdentity?.nativeLanguage || userInfo?.language || 'en';
+    console.log(`🌍 Enhanced Cultural Setting Enhancement - Language: ${language}, Base Setting: "${baseSetting}"`);
+    
+    // ENHANCED: Context-aware cultural integration with indoor/outdoor detection
+    const isIndoorSetting = baseSetting.toLowerCase().includes('indoor') || 
+                           baseSetting.toLowerCase().includes('home') || 
+                           baseSetting.toLowerCase().includes('school') ||
+                           baseSetting.toLowerCase().includes('classroom') ||
+                           baseSetting.toLowerCase().includes('kitchen') ||
+                           baseSetting.toLowerCase().includes('bedroom');
+    
+    const isOutdoorSetting = baseSetting.toLowerCase().includes('outdoor') || 
+                            baseSetting.toLowerCase().includes('park') || 
+                            baseSetting.toLowerCase().includes('playground') ||
+                            baseSetting.toLowerCase().includes('garden') ||
+                            baseSetting.toLowerCase().includes('backyard');
+    
+    // Get cultural landmarks for the language with enhanced context awareness
+    const landmarks = getCulturalLandmarks(language, isIndoorSetting, isOutdoorSetting);
+    if (landmarks.length > 0) {
+      const randomLandmark = landmarks[Math.floor(Math.random() * landmarks.length)];
+      
+      // ENHANCED: Context-aware enhancement with better integration
+      if (baseSetting.toLowerCase().includes('park')) {
+        return baseSetting.replace('park', `park ${randomLandmark}`);
+      }
+      if (baseSetting.toLowerCase().includes('school')) {
+        return baseSetting.replace('school', `school ${randomLandmark}`);
+      }
+      if (baseSetting.toLowerCase().includes('home')) {
+        return baseSetting.replace('home', `home ${randomLandmark}`);
+      }
+      if (baseSetting.toLowerCase().includes('playground')) {
+        return baseSetting.replace('playground', `playground ${randomLandmark}`);
+      }
+      
+      // Enhanced generic enhancement with smart positioning
+      return `${baseSetting} ${randomLandmark}`;
+    }
+    
+    console.log(`🌍 No cultural enhancement available for language: ${language}`);
+    return baseSetting;
+    
+  } catch (error) {
+    console.warn('⚠️ Tier 2.5: Cultural setting enhancement error:', error);
+    return baseSetting;
+  }
+}
+
+// ============= CLOTHING DETECTION FUNCTIONS =============
+
+function detectClothingFromStory(text) {
+  if (!text) return '';
+  
+  const lowerText = text.toLowerCase();
+  
+  // Try dynamic clothing + color detection first
+  const dynamicClothingColor = detectAndResolveClothingColor(text);
+  if (dynamicClothingColor) {
+    return dynamicClothingColor;
+  }
+  
+  // Fallback to basic clothing detection
+  for (const keyword of CLOTHING_DETECTION_KEYWORDS) {
+    if (lowerText.includes(keyword)) {
+      // Extract clothing context around the keyword
+      const sentences = text.split(/[.!?]+/);
+      for (const sentence of sentences) {
+        if (sentence.toLowerCase().includes(keyword)) {
+          // Add random color if no color specified
+          const randomColor = EXPANDED_COLOR_ARRAY[Math.floor(Math.random() * EXPANDED_COLOR_ARRAY.length)];
+          return `a ${randomColor} ${keyword}`;
+        }
+      }
+    }
+  }
+  
+  return '';
+}
+
+function detectAndResolveClothingColor(text) {
+  const lowerText = text.toLowerCase();
+  let detectedClothing = '';
+  let detectedColor = '';
+  
+  // Detect clothing type using unified keywords
+  for (const clothing of CLOTHING_DETECTION_KEYWORDS) {
+    if (lowerText.includes(clothing)) {
+      detectedClothing = clothing;
+      break;
+    }
+  }
+  
+  // Detect color
+  for (const color of EXPANDED_COLOR_ARRAY) {
+    if (lowerText.includes(color)) {
+      detectedColor = color;
+      break;
+    }
+  }
+  
+  // If both detected, combine them (no restrictions - allow any color for any clothing)
+  if (detectedClothing && detectedColor) {
+    return `a ${detectedColor} ${detectedClothing}`;
+  }
+  
+  // If only clothing detected, let Runware decide the color
+  if (detectedClothing) {
+    return `a ${detectedClothing}`;
+  }
+  
+  // If only color detected, let Runware decide what clothing to color
+  if (detectedColor) {
+    return '';
+  }
+  
+  return '';
+}
+
+// ============= UTILITY FUNCTIONS =============
+
+function getAgeFromDifficulty(difficulty) {
+  const ageMap = {
+    'beginner': 'age 5-6',
+    'easy': 'age 7-8', 
+    'medium': 'age 9-10',
+    'hard': 'age 11-12',
+    'expert': 'age 13-14'
+  };
+  return ageMap[difficulty] || 'age 9-10';
+}
+
+function generateEmergencyPrompt(userInfo) {
+  const gender = userInfo?.avatar?.type === 'girl' ? 'girl' : 
+                userInfo?.avatar?.type === 'boy' ? 'boy' : 'child';
+  
+  return `An attractive ${gender} in a portrait style photo with main character focus. Beautiful children's book illustration, warm lighting, cheerful atmosphere, high quality, detailed art.`;
+}
+
+// ============= TEMPLATE FILLING FUNCTIONS =============
+
+function fillPremiumTemplate(template, placeholders) {
+  try {
+    console.log('🛡️ Tier 2.5A: Filling premium template with placeholders');
+    
+    let filledTemplate = template;
+    
+    // Fill all placeholders
+    for (const [key, value] of Object.entries(placeholders)) {
+      if (value !== undefined && value !== null && value !== '') {
+        const placeholder = `{${key}}`;
+        filledTemplate = filledTemplate.replace(new RegExp(placeholder, 'g'), value);
+        console.log(`✅ Filled ${key}: "${value}"`);
+      }
+    }
+    
+    // Clean up any remaining empty placeholders
+    filledTemplate = removeEmptySections(filledTemplate);
+    
+    console.log('✅ Premium template filled successfully');
+    return filledTemplate;
+    
+  } catch (error) {
+    console.error('❌ Premium template filling error:', error);
+    return template; // Return original template on error
+  }
+}
+
+function fillBasicTemplate(template, placeholders) {
+  try {
+    console.log('🛡️ Tier 2.5B: Filling basic template with placeholders');
+    
+    let filledTemplate = template;
+    
+    // Fill all placeholders
+    for (const [key, value] of Object.entries(placeholders)) {
+      if (value !== undefined && value !== null && value !== '') {
+        const placeholder = `{${key}}`;
+        filledTemplate = filledTemplate.replace(new RegExp(placeholder, 'g'), value);
+        console.log(`✅ Filled ${key}: "${value}"`);
+      }
+    }
+    
+    // Basic template cleanup (simpler than premium)
+    filledTemplate = filledTemplate
+      .replace(/\{\w+\}/g, '') // Remove any remaining placeholders
+      .replace(/\s+/g, ' ') // Clean up extra spaces
+      .trim();
+    
+    console.log('✅ Basic template filled successfully');
+    return filledTemplate;
+    
+  } catch (error) {
+    console.error('❌ Basic template filling error:', error);
+    return template; // Return original template on error
+  }
+}
+
+// ENHANCED REMOVE EMPTY SECTIONS - HANDLES ACTION SECTION DYNAMICALLY
+function removeEmptySections(template) {
+  console.log('🧹 Before cleaning:', template);
+  
+  let cleaned = template;
+  
+  // STEP 1: Handle Action section specifically - DYNAMIC PROCESSING
+  // Pattern: Action: {scene}, {action_intensity}, {spatial_positioning}, {object_interaction}, {body_language}
+  const actionRegex = /Action:\s*([^,]*),\s*([^,]*),\s*([^,]*),\s*([^,]*),\s*([^,.]*)(?=[.]\s|\s*\w+:)/g;
+  
+  cleaned = cleaned.replace(actionRegex, (match, scene, intensity, spatial, interaction, bodyLang) => {
+    const components = [];
+    
+    // Always include scene if present
+    if (scene && scene.trim() && !scene.includes('{')) {
+      components.push(scene.trim());
+    }
+    
+    // Include intensity only if not empty
+    if (intensity && intensity.trim() && !intensity.includes('{')) {
+      components.push(intensity.trim());
+    }
+    
+    // DYNAMIC: Include spatial_positioning only if meaningful (not empty)
+    if (spatial && spatial.trim() && !spatial.includes('{')) {
+      components.push(spatial.trim());
+    }
+    
+    // Include object_interaction only if not empty
+    if (interaction && interaction.trim() && !interaction.includes('{')) {
+      components.push(interaction.trim());
+    }
+    
+    // DYNAMIC: Include body_language only if meaningful (not empty)
+    if (bodyLang && bodyLang.trim() && !bodyLang.includes('{')) {
+      components.push(bodyLang.trim());
+    }
+    
+    // Build Action section dynamically - prioritize scene and action over positioning details
+    if (components.length > 0) {
+      return `Action: ${components.join(', ')}`;
+    } else {
+      return ''; // Remove entire Action section if no components
+    }
+  });
+  
+  // STEP 2: Remove other empty sections (original logic)
+  cleaned = cleaned
+    .replace(/\w+:\s*[,.](?=\s*\w+:)/g, '') // Remove empty sections in middle
+    .replace(/\w+:\s*[,.](?=\s*Technical:)/g, '') // Remove empty sections before Technical
+    .replace(/\w+:\s*[,.]$/g, '') // Remove empty sections at end
+    .replace(/,\s*,+/g, ',') // Fix multiple commas
+    .replace(/\.\s*\.+/g, '.') // Fix multiple periods
+    .replace(/\s+/g, ' ') // Clean up extra spaces
+    .replace(/\.\s*\w+:/g, '. ') // Fix periods before section labels
+    .trim();
+  
+  console.log('🧹 After cleaning:', cleaned);
+  return cleaned;
+}
+
+// ============= TEMPLATE VALIDATION FUNCTIONS =============
+
+function validateTemplateCompleteness(character, setting, scene, objects) {
+  const issues = [];
+  
+  if (!character || character.length < 3) issues.push('character missing/too short');
+  if (!setting || setting.length < 5) issues.push('setting missing/too short');  
+  if (!scene || scene.split(' ').length < 5) issues.push('action under 5 words');
+  
+  console.log(`🔍 Template validation - Issues: ${issues.length > 0 ? issues.join(', ') : 'none'}`);
+  
+  return issues.length === 0;
+}
+
+// NEW: Avatar validation - triggers 2.5B on failure
+function validateAvatarMapping(avatarMapping) {
+  const issues = [];
+  
+  if (!avatarMapping) {
+    issues.push('Avatar mapping is null/undefined');
+    return { isValid: false, issues: issues };
+  }
+  
+  if (!avatarMapping?.character || avatarMapping.character === 'a friendly child') {
+    issues.push('Generic character fallback detected');
+  }
+  
+  return {
+    isValid: issues.length === 0,
+    issues: issues
+  };
+}
+
+// NEW: Visual element validation - triggers 2.5B on failure  
+function validateVisualElements(sceneData, objects, setting) {
+  const issues = [];
+  
+  if (!sceneData?.spatialComposition || sceneData.spatialComposition === 'character prominently featured in foreground') {
+    issues.push('Generic spatial composition detected');
+  }
+  
+  if (!objects || objects === 'interesting colorful items') {
+    issues.push('Generic objects fallback detected');
+  }
+  
+  if (!sceneData?.atmosphereContext || sceneData.atmosphereContext === 'warm, inviting atmosphere') {
+    issues.push('Generic atmosphere fallback detected');
+  }
+  
+  if (!setting || setting === 'a welcoming colorful environment') {
+    issues.push('Generic setting fallback detected');
+  }
+  
+  return {
+    isValid: issues.length === 0,
+    issues: issues
+  };
+}
+
+// NEW: Scene complexity validation - triggers 2.5B on failure
+function validateSceneComplexity(sceneData, pageText) {
+  const issues = [];
+  
+  if (!sceneData?.contextualAction && pageText && pageText.length > 50) {
+    issues.push('No contextual action extracted from substantial text');
+  }
+  
+  if (!sceneData?.contextualSetting && pageText && pageText.length > 50) {
+    issues.push('No contextual setting extracted from substantial text');
+  }
+  
+  if (sceneData?.scene && sceneData.scene === 'enjoying a bright cheerful moment') {
+    issues.push('Generic scene fallback detected');
+  }
+  
+  return {
+    isValid: issues.length === 0,
+    issues: issues
+  };
+}
+
+// ============= PROMPT PROCESSING FUNCTIONS =============
+
+function processPromptForRunware(prompt, difficulty) {
+  if (!prompt) return prompt;
+  
+  console.log(`🛡️ Tier 2.5: Simplified processing - letting Runware handle final length (${prompt.length} chars for ${difficulty})`);
+  
+  // No truncation needed - smart sentence extraction already handled in template filling
+  // Total prompts should be ~800-1200 chars well under Runware's limits  
+  return prompt;
+}
+
+function truncatePageText(text, difficulty) {
+  if (!text) return '';
+  
+  // Beginner/Easy: Use full pageText at beginning
+  if (difficulty === 'beginner' || difficulty === 'easy') {
+    return text;
+  }
+  
+  // Medium/Hard/Expert: Truncate pageText for end positioning
+  const maxLength = difficulty === 'medium' ? 100 : difficulty === 'hard' ? 80 : 60;
+  
+  if (text.length <= maxLength) {
+    return text;
+  }
+  
+  // Truncate at word boundary
+  const truncated = text.substring(0, maxLength);
+  const lastSpaceIndex = truncated.lastIndexOf(' ');
+  
+  if (lastSpaceIndex > maxLength * 0.7) { // Only truncate at word if it's not too short
+    return truncated.substring(0, lastSpaceIndex) + '...';
+  }
+  
+  return truncated + '...';
+}
+
+// ============= CONTEXT-AWARE ENHANCEMENT FUNCTIONS =============
+
+function applyContextAwareEnhancement(currentValue, exactWord, type) {
+  if (!exactWord || !currentValue) return currentValue;
+  
+  try {
+    // Preserve exact story content first, enhance visually second
+    if (type === 'action') {
+      // Keep exact verb form, add minimal context-appropriate descriptors
+      if (exactWord.includes('roll')) return `${exactWord}`;
+      if (exactWord.includes('run')) return `${exactWord}`;
+      if (exactWord.includes('jump')) return `${exactWord}`;
+      if (exactWord.includes('play')) return `${exactWord}`;
+      if (exactWord.includes('bounce')) return `${exactWord}`;
+      
+      // For other actions, preserve the exact word and add appropriate context
+      return currentValue.includes(exactWord) ? currentValue : `${exactWord} ${currentValue}`;
+    }
+    
+    if (type === 'objects') {
+      // Preserve exact object names from story
+      return currentValue.includes(exactWord) ? currentValue : `${exactWord}, ${currentValue}`;
+    }
+    
+    if (type === 'setting') {
+      // Enhance setting while preserving story location
+      if (exactWord.includes('hill')) return `${exactWord} with natural terrain`;
+      if (exactWord.includes('park')) return `${exactWord} with green spaces`;
+      if (exactWord.includes('garden')) return `${exactWord} with beautiful plants`;
+      
+      return currentValue.includes(exactWord) ? currentValue : `${currentValue} near ${exactWord}`;
+    }
+    
+    return currentValue;
+    
+  } catch (error) {
+    console.warn(`⚠️ Context enhancement error for ${type}:`, error);
+    return currentValue;
+  }
+}
+
+// ============= UTILITY HELPER FUNCTIONS =============
+
+function getRandomItem(array) {
+  if (!array || array.length === 0) return 'default';
+  return array[Math.floor(Math.random() * array.length)];
+}
+
+function extractGenderFromCharacter(character) {
+  if (!character || typeof character !== 'string') return 'child';
+  const lowerChar = character.toLowerCase();
+  if (lowerChar.includes('girl')) return 'girl';
+  if (lowerChar.includes('boy')) return 'boy';
+  return 'child';
+}
+
 // ============= NUCLEAR INDEPENDENT TEMPLATE SYSTEM =============
 
 function getNuclearPromptTemplate(difficulty, templateType = 'premium') {
