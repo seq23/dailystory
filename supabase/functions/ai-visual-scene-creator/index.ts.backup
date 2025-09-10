@@ -11,7 +11,7 @@ const corsHeaders = {
   'Access-Control-Max-Age': '86400',
 };
 
-function createCorsResponse(data, status = 200) {
+function createCorsResponse(data: any, status = 200): Response {
   const headers = { 
     ...corsHeaders, 
     'Content-Type': 'application/json' 
@@ -20,7 +20,7 @@ function createCorsResponse(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers });
 }
 
-function createCorsErrorResponse(error, status = 500) {
+function createCorsErrorResponse(error: string | Error, status = 500): Response {
   const errorMessage = error instanceof Error ? error.message : error;
   console.error('Edge function error:', errorMessage);
   
@@ -30,7 +30,7 @@ function createCorsErrorResponse(error, status = 500) {
   }, status);
 }
 
-function createCorsOptionsResponse() {
+function createCorsOptionsResponse(): Response {
   return new Response(null, { headers: corsHeaders });
 }
 
@@ -63,19 +63,19 @@ const EdgeErrorHandler = {
 // Functional VisualDetailTracker placeholder with required methods
 const VisualDetailTracker = {
   enabled: true,
-  analyzeTextForDetails(sessionId, text, pageNumber) {
+  analyzeTextForDetails(sessionId: string, text: string, pageNumber: number): void {
     console.log(`VISUAL Visual details analyzed for session ${sessionId}, page ${pageNumber}`);
     // Functional placeholder - stores nothing but doesn't break
   },
-  getVisualDetailsForPrompt(sessionId) {
+  getVisualDetailsForPrompt(sessionId: string): string {
     console.log(`GET Getting visual details for session ${sessionId}`);
     return ''; // Return empty string for consistent prompts
   },
-  injectConsistentDetails(sessionId, text, pageNumber) {
+  injectConsistentDetails(sessionId: string, text: string, pageNumber: number): string {
     console.log(`INJECT Injecting consistent details for session ${sessionId}, page ${pageNumber}`);
     return text; // Return original text unchanged
   },
-  clearSessionDetails(sessionId) {
+  clearSessionDetails(sessionId: string): void {
     console.log(`CLEAR Clearing details for session ${sessionId}`);
     // Functional placeholder - clears nothing but doesn't break
   }
@@ -247,7 +247,7 @@ const AI_MODELS = [
   { name: 'gpt-4.1-2025-04-14', maxTokens: 'max_completion_tokens', supportsTemperature: false },
   { name: 'gpt-4o', maxTokens: 'max_tokens', supportsTemperature: true },
   { name: 'gpt-5-2025-08-07', maxTokens: 'max_completion_tokens', supportsTemperature: false }
-];
+] as const;
 
 // ============= AVATAR IDENTITY PROCESSING REMOVED =============
 // mapAvatarIdentity function removed - orchestrator provides processed avatarIdentity
@@ -255,16 +255,14 @@ const AI_MODELS = [
 // ============= ENHANCED CIRCUIT BREAKER SYSTEM WITH MONITORING =============
 // Bulletproof circuit breaker to prevent cascading failures
 class UnifiedCircuitBreaker {
-  constructor() {
-    this.failures = 0;
-    this.lastFailure = 0;
-    this.threshold = 2;
-    this.expertThreshold = 5; // Higher threshold for expert content
-    this.timeout = 15000; // 15 seconds
-    this.expertTimeout = 5000; // 5 seconds for expert content recovery
-  }
+  private failures = 0;
+  private lastFailure = 0;
+  private readonly threshold = 2;
+  private readonly expertThreshold = 5; // Higher threshold for expert content
+  private readonly timeout = 15000; // 15 seconds
+  private readonly expertTimeout = 5000; // 5 seconds for expert content recovery
   
-  isOpen(isExpertContent = false) {
+  isOpen(isExpertContent = false): boolean {
     const threshold = isExpertContent ? this.expertThreshold : this.threshold;
     const timeout = isExpertContent ? this.expertTimeout : this.timeout;
     const isCurrentlyOpen = this.failures >= threshold && (Date.now() - this.lastFailure < timeout);
@@ -290,7 +288,7 @@ class UnifiedCircuitBreaker {
     return false;
   }
   
-  recordSuccess() {
+  recordSuccess(): void {
     const wasOpen = this.failures >= this.threshold;
     this.failures = 0;
     
@@ -309,7 +307,7 @@ class UnifiedCircuitBreaker {
     });
   }
   
-  recordFailure(isExpertContent = false) {
+  recordFailure(isExpertContent = false): void {
     this.failures++;
     this.lastFailure = Date.now();
     const threshold = isExpertContent ? this.expertThreshold : this.threshold;
@@ -338,7 +336,7 @@ class UnifiedCircuitBreaker {
   }
   
   // Manual reset method for diagnostic purposes
-  manualReset() {
+  manualReset(): void {
     const wasOpen = this.failures >= this.threshold;
     this.failures = 0;
     this.lastFailure = 0;
@@ -356,7 +354,7 @@ class UnifiedCircuitBreaker {
   }
   
   // Get current status for diagnostics
-  getStatus(isExpertContent = false) {
+  getStatus(isExpertContent = false): { isOpen: boolean; failures: number; lastFailure: number; threshold: number; timeout: number; expertThreshold?: number; expertTimeout?: number } {
     return {
       isOpen: this.isOpen(isExpertContent),
       failures: this.failures,
@@ -549,7 +547,7 @@ function parseAIResponse(content, options = {}) {
   }
 }
 
-async function callOpenAIWithFallback(messages, timeout = 6000, requestId, avatarIdentity) {
+async function callOpenAIWithFallback(messages: any[], timeout = 6000, requestId?: string, avatarIdentity?: any) {
   const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
   
   // Circuit breaker check with expert content awareness - using avatarIdentity
@@ -577,7 +575,7 @@ async function callOpenAIWithFallback(messages, timeout = 6000, requestId, avata
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), timeout);
         
-        const requestBody = {
+        const requestBody: any = {
           model: model.name,
           messages,
           [model.maxTokens]: 600
