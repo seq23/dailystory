@@ -16,12 +16,15 @@ export class InteractiveWordAudioService {
    * Play word pronunciation directly without interference
    */
   static async hearWord(word: string, retryCount = 0): Promise<void> {
-    const requestId = `hear-${word}-${++this.requestCounter}`;
-    
-    if (this.processingRequests.has(requestId)) {
-      console.log(`🔒 Already processing hear request for: ${word}`);
+    // Debounce rapid clicks - check if any request for this word is already processing
+    const existingRequest = Array.from(this.processingRequests).find(id => id.includes(`hear-${word}-`));
+    if (existingRequest) {
+      console.log(`🔒 Debounced - already processing hear request for: ${word}`);
       return;
     }
+
+    const requestId = `hear-${word}-${++this.requestCounter}`;
+    this.processingRequests.add(requestId);
 
     this.processingRequests.add(requestId);
     console.log(`🔊 Direct HEAR request: "${word}" [Request: ${requestId}]`);
@@ -34,9 +37,9 @@ export class InteractiveWordAudioService {
         detail: { system: 'interactive-word', priority: 5, source: 'direct-button' } 
       }));
 
-      // Add 5-second timeout for interactive word requests
+      // Add 10-second timeout for interactive word requests (increased for reliability)
       const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Interactive word timeout - using browser fallback')), 5000);
+        setTimeout(() => reject(new Error('Interactive word timeout - using browser fallback')), 10000);
       });
 
       // Use direct TTS for fast response (2-3 seconds)
@@ -49,9 +52,9 @@ export class InteractiveWordAudioService {
     } catch (error) {
       console.error(`❌ Failed to play word "${word}":`, error);
       
-      if (retryCount < 2) {
+      if (retryCount < 1) {
         console.log(`🔄 Retrying hear word (attempt ${retryCount + 1})`);
-        setTimeout(() => this.hearWord(word, retryCount + 1), 500);
+        setTimeout(() => this.hearWord(word, retryCount + 1), 1000);
         return;
       }
       
@@ -108,9 +111,9 @@ export class InteractiveWordAudioService {
 
       console.log(`📖 Got definition for "${cleanWord}": ${definition.definition}`);
 
-      // Add 5-second timeout for explanations
+      // Add 10-second timeout for explanations (increased for reliability)
       const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Explain word timeout - using browser fallback')), 5000);
+        setTimeout(() => reject(new Error('Explain word timeout - using browser fallback')), 10000);
       });
 
       // Use direct TTS for fast response (3-4 seconds including dictionary lookup)
@@ -123,9 +126,9 @@ export class InteractiveWordAudioService {
     } catch (error) {
       console.error(`❌ Failed to explain word "${word}":`, error);
       
-      if (retryCount < 2) {
+      if (retryCount < 1) {
         console.log(`🔄 Retrying explain word (attempt ${retryCount + 1})`);
-        setTimeout(() => this.explainWord(word, userLanguage, retryCount + 1), 500);
+        setTimeout(() => this.explainWord(word, userLanguage, retryCount + 1), 1000);
         return;
       }
       
@@ -173,9 +176,9 @@ export class InteractiveWordAudioService {
       const syllableText = syllables.join(' - ');
       console.log(`🔤 Syllables for "${cleanWord}": ${syllableText}`);
 
-      // Add 5-second timeout for syllables
+      // Add 10-second timeout for syllables (increased for reliability)
       const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Syllables timeout - using browser fallback')), 5000);
+        setTimeout(() => reject(new Error('Syllables timeout - using browser fallback')), 10000);
       });
 
       // Use direct TTS for fast response (2-3 seconds)
@@ -188,9 +191,9 @@ export class InteractiveWordAudioService {
     } catch (error) {
       console.error(`❌ Failed to break word "${word}" into syllables:`, error);
       
-      if (retryCount < 2) {
+      if (retryCount < 1) {
         console.log(`🔄 Retrying syllables (attempt ${retryCount + 1})`);
-        setTimeout(() => this.syllableWord(word, retryCount + 1), 500);
+        setTimeout(() => this.syllableWord(word, retryCount + 1), 1000);
         return;
       }
       

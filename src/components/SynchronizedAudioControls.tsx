@@ -91,6 +91,20 @@ export const SynchronizedAudioControls: React.FC<SynchronizedAudioControlsProps>
       
       setError(errorMessage);
       setIsLoading(false);
+      setIsPlaying(false); // Ensure playing state is cleared
+      
+      // Clear any word highlighting on error
+      if (onWordHighlight) {
+        onWordHighlight(-1);
+      }
+      
+      // Notify parent component of state change
+      onPlayingChange?.(false);
+      
+      // Dispatch global state change event
+      window.dispatchEvent(new CustomEvent('audio:statechange', { 
+        detail: { isPlaying: false } 
+      }));
       
       toast({
         title: "Audio Error",

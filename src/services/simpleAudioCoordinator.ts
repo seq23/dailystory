@@ -27,13 +27,16 @@ class SimpleAudioCoordinator {
           this.lockTimeout = null;
         }
         
-        // Handle system priority - interactive-word has higher priority than hover events
+        // Handle system priority - Charlotte has higher priority for story reading
         const currentPriority = this.getSystemPriority(this.activeSystem);
         const requestPriority = this.getSystemPriority(system);
         
-        if (currentPriority >= requestPriority && event.detail?.priority !== 'high') {
-          console.log(`🔒 Audio Coordinator: Rejecting ${system} request (lower priority)`);
-          return;
+        // Always allow Charlotte to interrupt for story reading
+        if (system === 'charlotte' || (currentPriority >= requestPriority && event.detail?.priority !== 'high')) {
+          if (system !== 'charlotte' && currentPriority >= requestPriority) {
+            console.log(`🔒 Audio Coordinator: Rejecting ${system} request (lower priority)`);
+            return;
+          }
         }
         
         // Stop the other system if active
@@ -126,8 +129,8 @@ class SimpleAudioCoordinator {
    */
   private getSystemPriority(system: AudioSystem): number {
     const priorities = {
-      'interactive-word': 100,
-      'charlotte': 80,
+      'charlotte': 100,      // Highest priority for story reading
+      'interactive-word': 80, // High priority for user interactions
       'voice': 70,
       'simple': 50,
       'sync': 40
