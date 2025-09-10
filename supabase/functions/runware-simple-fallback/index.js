@@ -2848,6 +2848,544 @@ function generateContextualEnhancements(sceneText, userInfo = {}) {
 // END PHASE 3: ENHANCED SEMANTIC FUNCTIONS
 // ============================================================================
 
+// ============================================================================
+// PHASE 4: VALIDATION AND TEMPLATE SYSTEMS
+// Final validation, quality control, and template processing functions
+// ============================================================================
+
+// Template validation and quality control
+function validateTemplateStructure(template) {
+  if (!template) return { isValid: false, error: 'Template is null or undefined' };
+  
+  if (typeof template === 'string') {
+    // Simple string template
+    return {
+      isValid: template.length > 0 && template.length < 5000,
+      error: template.length === 0 ? 'Empty template' : template.length >= 5000 ? 'Template too long' : null,
+      type: 'string'
+    };
+  }
+  
+  if (Array.isArray(template)) {
+    // Array template
+    const validation = {
+      isValid: template.length > 0 && template.length <= 50,
+      error: null,
+      type: 'array',
+      pageCount: template.length
+    };
+    
+    if (template.length === 0) {
+      validation.error = 'Empty template array';
+      validation.isValid = false;
+    } else if (template.length > 50) {
+      validation.error = 'Template array too large';
+      validation.isValid = false;
+    }
+    
+    // Check individual pages
+    for (let i = 0; i < template.length; i++) {
+      if (!template[i] || typeof template[i] !== 'string' || template[i].length === 0) {
+        validation.isValid = false;
+        validation.error = `Invalid page at index ${i}`;
+        break;
+      }
+    }
+    
+    return validation;
+  }
+  
+  if (typeof template === 'object') {
+    // Structured template
+    const validation = {
+      isValid: true,
+      error: null,
+      type: 'structured'
+    };
+    
+    if (!template.pages || !Array.isArray(template.pages)) {
+      validation.isValid = false;
+      validation.error = 'Missing or invalid pages array';
+    } else if (template.pages.length === 0) {
+      validation.isValid = false;
+      validation.error = 'Empty pages array';
+    }
+    
+    return validation;
+  }
+  
+  return { isValid: false, error: 'Unknown template type', type: 'unknown' };
+}
+
+// Validate user information completeness and safety
+function validateUserInfo(userInfo) {
+  const validation = {
+    isValid: true,
+    warnings: [],
+    errors: [],
+    completeness: 0,
+    safetyFlags: []
+  };
+  
+  if (!userInfo) {
+    validation.isValid = false;
+    validation.errors.push('User information is required');
+    return validation;
+  }
+  
+  // Completeness scoring
+  const fields = ['name', 'age', 'grade', 'favoriteColor', 'favoriteAnimal', 'favoriteFood', 'hobbies'];
+  let completedFields = 0;
+  
+  fields.forEach(field => {
+    if (userInfo[field] && typeof userInfo[field] === 'string' && userInfo[field].trim().length > 0) {
+      completedFields++;
+    }
+  });
+  
+  validation.completeness = Math.round((completedFields / fields.length) * 100);
+  
+  // Safety checks
+  if (userInfo.name && typeof userInfo.name === 'string') {
+    if (userInfo.name.length > 50) {
+      validation.warnings.push('Name is unusually long');
+    }
+    // Check for potential personal information
+    if (userInfo.name.match(/\d{3}-\d{2}-\d{4}|\b\d{10}\b|@/)) {
+      validation.safetyFlags.push('Potential personal info in name');
+    }
+  }
+  
+  if (userInfo.specialRequest && typeof userInfo.specialRequest === 'string') {
+    if (userInfo.specialRequest.length > 500) {
+      validation.warnings.push('Special request is very long');
+    }
+    // Check for inappropriate content patterns
+    const inappropriatePatterns = ['kill', 'death', 'violence', 'scary', 'nightmare'];
+    inappropriatePatterns.forEach(pattern => {
+      if (userInfo.specialRequest.toLowerCase().includes(pattern)) {
+        validation.safetyFlags.push(`Potentially inappropriate content: ${pattern}`);
+      }
+    });
+  }
+  
+  // Age validation
+  if (userInfo.age) {
+    const age = parseInt(userInfo.age);
+    if (isNaN(age) || age < 3 || age > 17) {
+      validation.warnings.push('Age outside expected range (3-17)');
+    }
+  }
+  
+  return validation;
+}
+
+// Validate generated content for safety and appropriateness
+function validateGeneratedContent(content, userInfo = {}) {
+  const validation = {
+    isValid: true,
+    flags: [],
+    score: 100,
+    modifications: []
+  };
+  
+  if (!content || typeof content !== 'string') {
+    validation.isValid = false;
+    validation.flags.push('Invalid content type');
+    validation.score = 0;
+    return validation;
+  }
+  
+  const text = content.toLowerCase();
+  
+  // Safety patterns to check for
+  const safetyPatterns = {
+    violence: ['fight', 'hit', 'hurt', 'blood', 'weapon', 'gun', 'knife'],
+    scary: ['scary', 'monster', 'nightmare', 'ghost', 'demon', 'evil'],
+    inappropriate: ['hate', 'stupid', 'dumb', 'kill', 'die', 'death'],
+    personal: ['address', 'phone', 'email', 'password', 'social security']
+  };
+  
+  // Check each safety category
+  Object.entries(safetyPatterns).forEach(([category, patterns]) => {
+    patterns.forEach(pattern => {
+      if (text.includes(pattern)) {
+        validation.flags.push(`${category}: ${pattern}`);
+        validation.score -= 10;
+      }
+    });
+  });
+  
+  // Length validation
+  if (content.length > 5000) {
+    validation.flags.push('Content too long');
+    validation.score -= 5;
+  }
+  
+  if (content.length < 10) {
+    validation.flags.push('Content too short');
+    validation.score -= 15;
+  }
+  
+  // Age appropriateness based on user info
+  if (userInfo.age) {
+    const age = parseInt(userInfo.age);
+    if (age < 6) {
+      // Very simple language for younger children
+      const complexWords = text.match(/\b\w{8,}\b/g);
+      if (complexWords && complexWords.length > 3) {
+        validation.flags.push('Language may be too complex for age');
+        validation.score -= 5;
+      }
+    }
+  }
+  
+  validation.isValid = validation.score >= 70;
+  return validation;
+}
+
+// Process and clean template content
+function processTemplateContent(template, userInfo, options = {}) {
+  if (!template) return null;
+  
+  let processedTemplate = template;
+  
+  // Handle different template types
+  if (typeof template === 'string') {
+    processedTemplate = [template];
+  } else if (typeof template === 'object' && template.pages) {
+    processedTemplate = template.pages;
+  } else if (!Array.isArray(template)) {
+    console.error('Invalid template format for processing');
+    return null;
+  }
+  
+  // Process each page
+  const processedPages = processedTemplate.map((page, index) => {
+    let processedPage = page;
+    
+    // Apply length limits based on difficulty
+    const difficulty = userInfo?.difficulty || 'beginner';
+    const maxLength = getMaxPageLength(difficulty);
+    
+    if (processedPage.length > maxLength) {
+      processedPage = truncatePageContent(processedPage, maxLength);
+    }
+    
+    // Apply vocabulary filtering if requested
+    if (options.filterVocabulary) {
+      processedPage = filterComplexVocabulary(processedPage, difficulty);
+    }
+    
+    // Apply safety filtering
+    processedPage = applySafetyFiltering(processedPage);
+    
+    return processedPage;
+  });
+  
+  return processedPages;
+}
+
+// Get maximum page length based on difficulty level
+function getMaxPageLength(difficulty) {
+  const lengthLimits = {
+    'beginner': 150,
+    'easy': 200,
+    'medium': 300,
+    'hard': 400,
+    'expert': 500
+  };
+  
+  return lengthLimits[difficulty] || lengthLimits['beginner'];
+}
+
+// Truncate page content intelligently at sentence boundaries
+function truncatePageContent(content, maxLength) {
+  if (content.length <= maxLength) return content;
+  
+  // Try to truncate at sentence boundary
+  const sentences = content.split(/[.!?]+/);
+  let truncated = '';
+  
+  for (const sentence of sentences) {
+    const testLength = truncated.length + sentence.length + 1;
+    if (testLength > maxLength) break;
+    truncated += sentence + '.';
+  }
+  
+  // If no complete sentences fit, do word-based truncation
+  if (truncated.length === 0) {
+    const words = content.split(' ');
+    truncated = words.slice(0, Math.floor(maxLength / 6)).join(' ') + '.';
+  }
+  
+  return truncated.trim();
+}
+
+// Filter complex vocabulary based on difficulty level
+function filterComplexVocabulary(content, difficulty) {
+  // Simple word replacement for easier reading levels
+  const vocabularyMap = {
+    'beginner': {
+      'enormous': 'big',
+      'magnificent': 'beautiful',
+      'discovered': 'found',
+      'adventure': 'trip',
+      'incredible': 'amazing'
+    },
+    'easy': {
+      'enormous': 'huge',
+      'magnificent': 'wonderful',
+      'incredible': 'amazing'
+    }
+  };
+  
+  const replacements = vocabularyMap[difficulty];
+  if (!replacements) return content;
+  
+  let filtered = content;
+  Object.entries(replacements).forEach(([complex, simple]) => {
+    const regex = new RegExp(`\\b${complex}\\b`, 'gi');
+    filtered = filtered.replace(regex, simple);
+  });
+  
+  return filtered;
+}
+
+// Apply safety filtering to content
+function applySafetyFiltering(content) {
+  let filtered = content;
+  
+  // Replace potentially concerning words with safer alternatives
+  const safetyReplacements = {
+    'fight': 'play',
+    'hit': 'touch',
+    'hurt': 'feel sad',
+    'scary': 'surprising',
+    'monster': 'friendly creature',
+    'nightmare': 'strange dream'
+  };
+  
+  Object.entries(safetyReplacements).forEach(([unsafe, safe]) => {
+    const regex = new RegExp(`\\b${unsafe}\\b`, 'gi');
+    filtered = filtered.replace(regex, safe);
+  });
+  
+  return filtered;
+}
+
+// Quality assurance checks for final output
+function performQualityAssurance(pages, userInfo, processingMeta = {}) {
+  const qa = {
+    passed: true,
+    score: 100,
+    issues: [],
+    warnings: [],
+    recommendations: [],
+    metadata: processingMeta
+  };
+  
+  if (!pages || !Array.isArray(pages) || pages.length === 0) {
+    qa.passed = false;
+    qa.issues.push('No pages generated');
+    qa.score = 0;
+    return qa;
+  }
+  
+  // Check page count appropriateness
+  const expectedPageCount = getExpectedPageCount(userInfo?.difficulty || 'beginner');
+  if (pages.length < expectedPageCount.min) {
+    qa.warnings.push(`Fewer pages than expected (${pages.length} < ${expectedPageCount.min})`);
+    qa.score -= 10;
+  } else if (pages.length > expectedPageCount.max) {
+    qa.warnings.push(`More pages than expected (${pages.length} > ${expectedPageCount.max})`);
+    qa.score -= 5;
+  }
+  
+  // Check individual page quality
+  pages.forEach((page, index) => {
+    const pageValidation = validateGeneratedContent(page, userInfo);
+    if (!pageValidation.isValid) {
+      qa.issues.push(`Page ${index + 1}: ${pageValidation.flags.join(', ')}`);
+      qa.score -= 5;
+    }
+    
+    // Check for repetitive content
+    if (index > 0 && calculateSimilarity(page, pages[index - 1]) > 0.8) {
+      qa.warnings.push(`Page ${index + 1}: Very similar to previous page`);
+      qa.score -= 3;
+    }
+  });
+  
+  // Check story coherence
+  const coherenceScore = assessStoryCoherence(pages);
+  if (coherenceScore < 70) {
+    qa.warnings.push('Story coherence could be improved');
+    qa.score -= Math.floor((70 - coherenceScore) / 10);
+  }
+  
+  // Generate recommendations
+  if (qa.score < 85) {
+    qa.recommendations.push('Consider regenerating with different parameters');
+  }
+  if (qa.warnings.length > 3) {
+    qa.recommendations.push('Multiple quality issues detected - review settings');
+  }
+  
+  qa.passed = qa.score >= 70 && qa.issues.length === 0;
+  return qa;
+}
+
+// Get expected page count range for difficulty level
+function getExpectedPageCount(difficulty) {
+  const pageCounts = {
+    'beginner': { min: 3, max: 8 },
+    'easy': { min: 4, max: 10 },
+    'medium': { min: 5, max: 12 },
+    'hard': { min: 6, max: 15 },
+    'expert': { min: 8, max: 20 }
+  };
+  
+  return pageCounts[difficulty] || pageCounts['beginner'];
+}
+
+// Calculate similarity between two text strings
+function calculateSimilarity(text1, text2) {
+  if (!text1 || !text2) return 0;
+  
+  const words1 = text1.toLowerCase().split(/\s+/);
+  const words2 = text2.toLowerCase().split(/\s+/);
+  
+  const set1 = new Set(words1);
+  const set2 = new Set(words2);
+  
+  const intersection = new Set([...set1].filter(word => set2.has(word)));
+  const union = new Set([...set1, ...set2]);
+  
+  return intersection.size / union.size;
+}
+
+// Assess overall story coherence
+function assessStoryCoherence(pages) {
+  if (!pages || pages.length < 2) return 100;
+  
+  let coherenceScore = 100;
+  
+  // Check for character consistency
+  const characters = extractCharactersFromPages(pages);
+  if (characters.length === 0) {
+    coherenceScore -= 20;
+  }
+  
+  // Check for setting consistency
+  const settings = extractSettingsFromPages(pages);
+  if (settings.length > pages.length / 2) {
+    coherenceScore -= 10; // Too many setting changes
+  }
+  
+  // Check for narrative flow
+  const hasNarrativeFlow = checkNarrativeFlow(pages);
+  if (!hasNarrativeFlow) {
+    coherenceScore -= 15;
+  }
+  
+  return Math.max(0, coherenceScore);
+}
+
+// Extract character names from all pages
+function extractCharactersFromPages(pages) {
+  const characters = new Set();
+  const namePatterns = /\b[A-Z][a-z]+\b/g;
+  
+  pages.forEach(page => {
+    const matches = page.match(namePatterns) || [];
+    matches.forEach(match => {
+      if (match.length > 2 && !['The', 'And', 'But', 'When', 'Then'].includes(match)) {
+        characters.add(match);
+      }
+    });
+  });
+  
+  return Array.from(characters);
+}
+
+// Extract settings from all pages
+function extractSettingsFromPages(pages) {
+  const settings = new Set();
+  const settingWords = ['park', 'home', 'school', 'forest', 'beach', 'garden', 'playground', 'kitchen', 'bedroom'];
+  
+  pages.forEach(page => {
+    const lowercasePage = page.toLowerCase();
+    settingWords.forEach(setting => {
+      if (lowercasePage.includes(setting)) {
+        settings.add(setting);
+      }
+    });
+  });
+  
+  return Array.from(settings);
+}
+
+// Check for basic narrative flow
+function checkNarrativeFlow(pages) {
+  // Simple check for story progression indicators
+  const flowIndicators = ['then', 'next', 'after', 'finally', 'suddenly', 'meanwhile'];
+  let flowScore = 0;
+  
+  pages.forEach(page => {
+    const lowercasePage = page.toLowerCase();
+    flowIndicators.forEach(indicator => {
+      if (lowercasePage.includes(indicator)) {
+        flowScore++;
+      }
+    });
+  });
+  
+  return flowScore >= pages.length * 0.3; // At least 30% of pages should have flow indicators
+}
+
+// Final assembly and output formatting
+function assembleGenerationResult(pages, userInfo, processingData = {}) {
+  const qa = performQualityAssurance(pages, userInfo, processingData);
+  
+  const result = {
+    success: qa.passed,
+    pages: pages,
+    metadata: {
+      pageCount: pages.length,
+      difficulty: userInfo?.difficulty || 'beginner',
+      qualityScore: qa.score,
+      processingTime: processingData.processingTime || 'unknown',
+      tier: processingData.tier || 'unknown',
+      generationMethod: processingData.generationMethod || 'template',
+      timestamp: new Date().toISOString()
+    },
+    quality: {
+      score: qa.score,
+      passed: qa.passed,
+      issues: qa.issues,
+      warnings: qa.warnings,
+      recommendations: qa.recommendations
+    }
+  };
+  
+  // Add user information (safely)
+  if (userInfo) {
+    result.userContext = {
+      age: userInfo.age,
+      grade: userInfo.grade || userInfo.gradeLevel,
+      difficulty: userInfo.difficulty,
+      hasSpecialRequest: !!(userInfo.specialRequest && userInfo.specialRequest.trim())
+    };
+  }
+  
+  return result;
+}
+
+// ============================================================================
+// END PHASE 4: VALIDATION AND TEMPLATE SYSTEMS
+// ============================================================================
+
 
 // ============= PROMPT PROCESSING FUNCTIONS =============
 
