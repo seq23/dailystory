@@ -68,7 +68,7 @@ async function main() {
     console.log('🎯 Target: Complete 6,223-line runware-simple-fallback function');
     console.log('==========================================');
     
-    const inputPath = path.join(__dirname, '..', 'supabase', 'functions', 'runware-simple-fallback', 'index.backup.ts');
+    const inputPath = path.join(__dirname, '..', 'supabase', 'functions', 'runware-simple-fallback', 'index.backup2.ts');
     const outputPath = path.join(__dirname, '..', 'supabase', 'functions', 'runware-simple-fallback', 'index.js');
     
     console.log('Input:', inputPath);
