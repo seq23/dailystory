@@ -2505,6 +2505,350 @@ function validateSceneComplexity(sceneData, pageText) {
   };
 }
 
+// ============================================================================
+// PHASE 3: ENHANCED SEMANTIC FUNCTIONS
+// Enhanced semantic extraction and analysis functions
+// ============================================================================
+
+// Extract atmospheric conditions and mood from scene text
+function extractAtmosphere(sceneText) {
+  if (!sceneText || typeof sceneText !== 'string') return 'clear day';
+  
+  const text = sceneText.toLowerCase();
+  
+  // Weather patterns
+  const weatherPatterns = {
+    'sunny': ['sunny', 'bright', 'sunshine', 'warm light', 'golden hour'],
+    'cloudy': ['cloudy', 'overcast', 'gray sky', 'clouds'],
+    'rainy': ['rain', 'raining', 'drizzle', 'storm', 'wet'],
+    'snowy': ['snow', 'snowing', 'winter', 'cold', 'frost'],
+    'foggy': ['fog', 'mist', 'hazy', 'unclear'],
+    'windy': ['wind', 'windy', 'breeze', 'gusty']
+  };
+  
+  // Time of day patterns
+  const timePatterns = {
+    'dawn': ['dawn', 'sunrise', 'early morning', 'first light'],
+    'morning': ['morning', 'breakfast', 'start of day'],
+    'noon': ['noon', 'midday', 'lunch', 'bright sun'],
+    'afternoon': ['afternoon', 'late day', 'golden'],
+    'evening': ['evening', 'sunset', 'dusk', 'twilight'],
+    'night': ['night', 'dark', 'stars', 'moon', 'bedtime']
+  };
+  
+  // Mood patterns
+  const moodPatterns = {
+    'cheerful': ['happy', 'joy', 'laugh', 'smile', 'excited'],
+    'peaceful': ['calm', 'quiet', 'serene', 'peaceful', 'gentle'],
+    'mysterious': ['mystery', 'secret', 'hidden', 'unknown'],
+    'adventurous': ['adventure', 'explore', 'discover', 'journey'],
+    'magical': ['magic', 'magical', 'sparkle', 'enchant', 'wonder']
+  };
+  
+  // Check for weather
+  let weather = 'clear';
+  for (const [weatherType, patterns] of Object.entries(weatherPatterns)) {
+    if (patterns.some(pattern => text.includes(pattern))) {
+      weather = weatherType;
+      break;
+    }
+  }
+  
+  // Check for time of day
+  let timeOfDay = 'day';
+  for (const [time, patterns] of Object.entries(timePatterns)) {
+    if (patterns.some(pattern => text.includes(pattern))) {
+      timeOfDay = time;
+      break;
+    }
+  }
+  
+  // Check for mood
+  let mood = 'neutral';
+  for (const [moodType, patterns] of Object.entries(moodPatterns)) {
+    if (patterns.some(pattern => text.includes(pattern))) {
+      mood = moodType;
+      break;
+    }
+  }
+  
+  // Combine into atmosphere description
+  let atmosphere = weather;
+  if (timeOfDay !== 'day') {
+    atmosphere += ` ${timeOfDay}`;
+  }
+  if (mood !== 'neutral') {
+    atmosphere += ` ${mood} lighting`;
+  }
+  
+  return atmosphere;
+}
+
+// Extract physical props and objects from scene text
+function extractProps(sceneText) {
+  if (!sceneText || typeof sceneText !== 'string') return [];
+  
+  const text = sceneText.toLowerCase();
+  const props = [];
+  
+  // Common story props organized by category
+  const propCategories = {
+    toys: ['ball', 'doll', 'teddy bear', 'blocks', 'puzzle', 'game', 'toy car', 'book'],
+    furniture: ['chair', 'table', 'bed', 'sofa', 'desk', 'shelf', 'cupboard'],
+    outdoor: ['tree', 'flower', 'rock', 'stick', 'leaf', 'bench', 'swing', 'slide'],
+    kitchen: ['cup', 'plate', 'spoon', 'fork', 'bowl', 'pot', 'pan'],
+    clothing: ['hat', 'shoes', 'jacket', 'dress', 'shirt', 'pants'],
+    vehicles: ['car', 'bike', 'bus', 'train', 'airplane', 'boat'],
+    animals: ['dog', 'cat', 'bird', 'fish', 'bunny', 'horse', 'cow'],
+    nature: ['sun', 'moon', 'star', 'cloud', 'mountain', 'river', 'ocean'],
+    tools: ['hammer', 'brush', 'scissors', 'pencil', 'crayon', 'marker']
+  };
+  
+  // Extract props from each category
+  for (const [category, items] of Object.entries(propCategories)) {
+    for (const item of items) {
+      if (text.includes(item)) {
+        props.push({
+          name: item,
+          category: category,
+          importance: text.split(item).length - 1 // Count occurrences
+        });
+      }
+    }
+  }
+  
+  // Sort by importance (frequency) and return top 5
+  return props
+    .sort((a, b) => b.importance - a.importance)
+    .slice(0, 5)
+    .map(prop => prop.name);
+}
+
+// Extract community and social context from scene text
+function extractCommunityContext(sceneText) {
+  if (!sceneText || typeof sceneText !== 'string') return { setting: 'home', socialLevel: 'individual' };
+  
+  const text = sceneText.toLowerCase();
+  
+  // Setting patterns
+  const settingPatterns = {
+    'home': ['home', 'house', 'room', 'kitchen', 'bedroom', 'living room'],
+    'school': ['school', 'classroom', 'teacher', 'student', 'desk', 'lesson'],
+    'park': ['park', 'playground', 'swing', 'slide', 'grass', 'trees'],
+    'neighborhood': ['street', 'neighbor', 'sidewalk', 'block', 'community'],
+    'store': ['store', 'shop', 'market', 'buy', 'sell', 'cashier'],
+    'library': ['library', 'book', 'quiet', 'read', 'librarian'],
+    'outdoors': ['forest', 'beach', 'mountain', 'field', 'nature'],
+    'city': ['city', 'building', 'busy', 'traffic', 'urban']
+  };
+  
+  // Social level patterns
+  const socialPatterns = {
+    'individual': ['alone', 'by myself', 'solo', 'individual'],
+    'family': ['mom', 'dad', 'parent', 'brother', 'sister', 'family'],
+    'friends': ['friend', 'buddy', 'pal', 'together', 'play with'],
+    'class': ['class', 'students', 'everyone', 'group', 'team'],
+    'community': ['neighborhood', 'community', 'everyone', 'people', 'crowd']
+  };
+  
+  // Determine setting
+  let setting = 'home';
+  for (const [settingType, patterns] of Object.entries(settingPatterns)) {
+    if (patterns.some(pattern => text.includes(pattern))) {
+      setting = settingType;
+      break;
+    }
+  }
+  
+  // Determine social level
+  let socialLevel = 'individual';
+  for (const [level, patterns] of Object.entries(socialPatterns)) {
+    if (patterns.some(pattern => text.includes(pattern))) {
+      socialLevel = level;
+      break;
+    }
+  }
+  
+  return { setting, socialLevel };
+}
+
+// Extract sensory details from scene text
+function extractSensoryDetails(sceneText) {
+  if (!sceneText || typeof sceneText !== 'string') return {};
+  
+  const text = sceneText.toLowerCase();
+  const sensoryDetails = {};
+  
+  // Visual details
+  const visualPatterns = {
+    colors: ['red', 'blue', 'green', 'yellow', 'purple', 'pink', 'orange', 'black', 'white', 'brown'],
+    sizes: ['big', 'small', 'large', 'tiny', 'huge', 'little', 'giant'],
+    shapes: ['round', 'square', 'triangle', 'circle', 'long', 'short', 'tall', 'wide'],
+    textures: ['soft', 'hard', 'smooth', 'rough', 'bumpy', 'fuzzy', 'slippery']
+  };
+  
+  // Sound details
+  const soundPatterns = {
+    volume: ['loud', 'quiet', 'noisy', 'silent', 'whisper', 'shout'],
+    types: ['music', 'song', 'laugh', 'cry', 'bark', 'meow', 'chirp', 'buzz', 'ring']
+  };
+  
+  // Movement details
+  const movementPatterns = {
+    speed: ['fast', 'slow', 'quick', 'rapid', 'gentle', 'sudden'],
+    types: ['run', 'walk', 'jump', 'hop', 'skip', 'dance', 'fly', 'swim']
+  };
+  
+  // Extract visual details
+  const visual = {};
+  for (const [category, patterns] of Object.entries(visualPatterns)) {
+    const found = patterns.filter(pattern => text.includes(pattern));
+    if (found.length > 0) {
+      visual[category] = found;
+    }
+  }
+  if (Object.keys(visual).length > 0) {
+    sensoryDetails.visual = visual;
+  }
+  
+  // Extract sound details
+  const audio = {};
+  for (const [category, patterns] of Object.entries(soundPatterns)) {
+    const found = patterns.filter(pattern => text.includes(pattern));
+    if (found.length > 0) {
+      audio[category] = found;
+    }
+  }
+  if (Object.keys(audio).length > 0) {
+    sensoryDetails.audio = audio;
+  }
+  
+  // Extract movement details
+  const movement = {};
+  for (const [category, patterns] of Object.entries(movementPatterns)) {
+    const found = patterns.filter(pattern => text.includes(pattern));
+    if (found.length > 0) {
+      movement[category] = found;
+    }
+  }
+  if (Object.keys(movement).length > 0) {
+    sensoryDetails.movement = movement;
+  }
+  
+  return sensoryDetails;
+}
+
+// Enhanced text analysis for story depth and complexity
+function analyzeTextComplexity(text) {
+  if (!text || typeof text !== 'string') {
+    return {
+      complexity: 'simple',
+      wordCount: 0,
+      avgWordsPerSentence: 0,
+      uniqueWords: 0,
+      readabilityScore: 1
+    };
+  }
+  
+  const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+  const words = text.toLowerCase().match(/\b\w+\b/g) || [];
+  const uniqueWords = [...new Set(words)];
+  
+  const wordCount = words.length;
+  const avgWordsPerSentence = sentences.length > 0 ? wordCount / sentences.length : 0;
+  
+  // Calculate complexity based on multiple factors
+  let complexityScore = 0;
+  
+  // Word length factor
+  const avgWordLength = words.reduce((sum, word) => sum + word.length, 0) / words.length;
+  if (avgWordLength > 5) complexityScore += 2;
+  else if (avgWordLength > 4) complexityScore += 1;
+  
+  // Sentence length factor
+  if (avgWordsPerSentence > 15) complexityScore += 2;
+  else if (avgWordsPerSentence > 10) complexityScore += 1;
+  
+  // Vocabulary diversity factor
+  const vocabularyDiversity = uniqueWords.length / words.length;
+  if (vocabularyDiversity > 0.7) complexityScore += 2;
+  else if (vocabularyDiversity > 0.5) complexityScore += 1;
+  
+  // Determine complexity level
+  let complexity = 'simple';
+  if (complexityScore >= 5) complexity = 'advanced';
+  else if (complexityScore >= 3) complexity = 'intermediate';
+  
+  return {
+    complexity,
+    wordCount,
+    avgWordsPerSentence,
+    uniqueWords: uniqueWords.length,
+    vocabularyDiversity,
+    readabilityScore: Math.max(1, Math.min(10, 11 - complexityScore))
+  };
+}
+
+// Extract emotional tone and sentiment from scene text
+function extractEmotionalTone(sceneText) {
+  if (!sceneText || typeof sceneText !== 'string') return 'neutral';
+  
+  const text = sceneText.toLowerCase();
+  
+  const emotionPatterns = {
+    'joyful': ['happy', 'joy', 'excited', 'glad', 'cheerful', 'laugh', 'smile', 'fun', 'wonderful', 'amazing'],
+    'peaceful': ['calm', 'quiet', 'peaceful', 'serene', 'gentle', 'soft', 'relaxed', 'comfortable'],
+    'adventurous': ['adventure', 'explore', 'discover', 'journey', 'quest', 'exciting', 'brave', 'bold'],
+    'mysterious': ['mystery', 'secret', 'hidden', 'unknown', 'strange', 'curious', 'wonder'],
+    'caring': ['love', 'care', 'kind', 'help', 'friend', 'share', 'together', 'family'],
+    'determined': ['try', 'work', 'practice', 'learn', 'strong', 'brave', 'never give up'],
+    'sad': ['sad', 'cry', 'tears', 'lonely', 'miss', 'hurt', 'sorry'],
+    'worried': ['worried', 'scared', 'afraid', 'nervous', 'anxious', 'concern']
+  };
+  
+  // Count emotional indicators
+  const emotionScores = {};
+  for (const [emotion, patterns] of Object.entries(emotionPatterns)) {
+    emotionScores[emotion] = patterns.filter(pattern => text.includes(pattern)).length;
+  }
+  
+  // Find dominant emotion
+  const dominantEmotion = Object.entries(emotionScores)
+    .reduce((max, [emotion, score]) => score > max.score ? { emotion, score } : max, { emotion: 'neutral', score: 0 });
+  
+  return dominantEmotion.score > 0 ? dominantEmotion.emotion : 'neutral';
+}
+
+// Generate contextual enhancement based on extracted semantic data
+function generateContextualEnhancements(sceneText, userInfo = {}) {
+  if (!sceneText) return {};
+  
+  const atmosphere = extractAtmosphere(sceneText);
+  const props = extractProps(sceneText);
+  const community = extractCommunityContext(sceneText);
+  const sensory = extractSensoryDetails(sceneText);
+  const camera = generateCameraDirective(sceneText, userInfo.difficulty);
+  const complexity = analyzeTextComplexity(sceneText);
+  const emotion = extractEmotionalTone(sceneText);
+  
+  return {
+    atmosphere,
+    props,
+    community,
+    sensory,
+    camera,
+    complexity,
+    emotion,
+    enhancementLevel: userInfo.difficulty || 'beginner',
+    timestamp: new Date().toISOString()
+  };
+}
+
+// ============================================================================
+// END PHASE 3: ENHANCED SEMANTIC FUNCTIONS
+// ============================================================================
+
+
 // ============= PROMPT PROCESSING FUNCTIONS =============
 
 function processPromptForRunware(prompt, difficulty) {
