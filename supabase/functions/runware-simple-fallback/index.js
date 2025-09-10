@@ -1244,236 +1244,6 @@ async function generateNuclearImage(requestData) {
 // ============= NUCLEAR INDEPENDENT MAIN SERVER FUNCTION =============
 
 /**
- * MAIN SERVE FUNCTION - 4-TIER FALLBACK SYSTEM
- */
-serve(async (req) => {
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  };
-
-  // Handle CORS preflight
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
-
-  console.log(`[MAIN] Request received: ${req.method} ${req.url}`);
-  console.log('[MAIN] Starting 4-tier fallback system (2.5A → 2.5B → 2.5C → 2.5D)');
-
-  try {
-    const { 
-      prompt, 
-      userInfo = {}, 
-      pageCount = 5, 
-      difficulty = 'easy',
-      sessionId,
-      pageNumber = 1 
-    } = await req.json();
-
-    console.log(`[MAIN] Processing request: pageCount=${pageCount}, difficulty=${difficulty}, sessionId=${sessionId}`);
-
-    // TIER 2.5A: Premium Template System (Database + AI Enhanced)
-    try {
-      console.log('[TIER 2.5A] Attempting premium template with database integration...');
-      
-      const premiumResult = await processWithPremiumTemplate({
-        prompt,
-        userInfo,
-        pageCount,
-        difficulty,
-        sessionId,
-        pageNumber
-      });
-
-      if (premiumResult && premiumResult.success && premiumResult.pages && premiumResult.pages.length > 0) {
-        console.log(`[TIER 2.5A] ✅ SUCCESS - Generated ${premiumResult.pages.length} pages with premium system`);
-        
-        return new Response(JSON.stringify({
-          success: true,
-          pages: premiumResult.pages,
-          tier: "2.5A",
-          processingTime: Date.now(),
-          metadata: {
-            tier: "2.5A",
-            source: "premium_template_system",
-            culturalEnhancement: true,
-            characterConsistency: true,
-            templateProcessing: "advanced",
-            fallbackLevel: 0
-          }
-        }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        });
-      } else {
-        console.log('[TIER 2.5A] ❌ FAILED - No valid pages generated, falling back to Tier 2.5B');
-        throw new Error('Premium template system failed to generate valid pages');
-      }
-
-    } catch (tier2_5A_error) {
-      console.error('[TIER 2.5A] ERROR:', tier2_5A_error.message);
-    }
-
-    // TIER 2.5B: Advanced Template Fallback (Reduced Features)
-    try {
-      console.log('[TIER 2.5B] Attempting advanced template fallback...');
-      
-      const advancedResult = await processWithAdvancedTemplate({
-        prompt,
-        userInfo,
-        pageCount,
-        difficulty,
-        sessionId
-      });
-
-      if (advancedResult && advancedResult.success && advancedResult.pages && advancedResult.pages.length > 0) {
-        console.log(`[TIER 2.5B] ✅ SUCCESS - Generated ${advancedResult.pages.length} pages with advanced system`);
-        
-        return new Response(JSON.stringify({
-          success: true,
-          pages: advancedResult.pages,
-          tier: "2.5B",
-          processingTime: Date.now(),
-          metadata: {
-            tier: "2.5B",
-            source: "advanced_template_system",
-            culturalEnhancement: true,
-            characterConsistency: false,
-            templateProcessing: "standard",
-            fallbackLevel: 1
-          }
-        }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        });
-      } else {
-        console.log('[TIER 2.5B] ❌ FAILED - No valid pages generated, falling back to Tier 2.5C');
-        throw new Error('Advanced template system failed');
-      }
-
-    } catch (tier2_5B_error) {
-      console.error('[TIER 2.5B] ERROR:', tier2_5B_error.message);
-    }
-
-    // TIER 2.5C: Basic Template Fallback (Core Features Only)
-    try {
-      console.log('[TIER 2.5C] Attempting basic template fallback...');
-      
-      const basicResult = await processWithBasicTemplate({
-        prompt,
-        userInfo,
-        pageCount,
-        difficulty
-      });
-
-      if (basicResult && basicResult.success && basicResult.pages && basicResult.pages.length > 0) {
-        console.log(`[TIER 2.5C] ✅ SUCCESS - Generated ${basicResult.pages.length} pages with basic system`);
-        
-        return new Response(JSON.stringify({
-          success: true,
-          pages: basicResult.pages,
-          tier: "2.5C",
-          processingTime: Date.now(),
-          metadata: {
-            tier: "2.5C",
-            source: "basic_template_system",
-            culturalEnhancement: false,
-            characterConsistency: false,
-            templateProcessing: "basic",
-            fallbackLevel: 2
-          }
-        }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        });
-      } else {
-        console.log('[TIER 2.5C] ❌ FAILED - No valid pages generated, falling back to Tier 2.5D');
-        throw new Error('Basic template system failed');
-      }
-
-    } catch (tier2_5C_error) {
-      console.error('[TIER 2.5C] ERROR:', tier2_5C_error.message);
-    }
-
-    // TIER 2.5D: Nuclear Template Fallback (Guaranteed Success)
-    console.log('[TIER 2.5D] Applying nuclear template fallback - GUARANTEED SUCCESS');
-    
-    try {
-      const nuclearResult = processWithNuclearTemplate({
-        prompt,
-        userInfo,
-        pageCount,
-        difficulty
-      });
-
-      console.log(`[TIER 2.5D] ✅ NUCLEAR SUCCESS - Generated ${nuclearResult.pages.length} pages with nuclear system`);
-      
-      return new Response(JSON.stringify({
-        success: true,
-        pages: nuclearResult.pages,
-        tier: "2.5D",
-        processingTime: Date.now(),
-        metadata: {
-          tier: "2.5D",
-          source: "nuclear_template_system",
-          culturalEnhancement: false,
-          characterConsistency: false,
-          templateProcessing: "nuclear",
-          fallbackLevel: 3,
-          guaranteed: true
-        }
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-
-    } catch (nuclear_error) {
-      console.error('[TIER 2.5D] NUCLEAR ERROR (This should never happen):', nuclear_error);
-      
-      // Absolute last resort - hardcoded stories
-      const emergencyPages = generateEmergencyPages(pageCount, userInfo);
-      
-      return new Response(JSON.stringify({
-        success: true,
-        pages: emergencyPages,
-        tier: "2.5D-EMERGENCY",
-        processingTime: Date.now(),
-        metadata: {
-          tier: "2.5D-EMERGENCY",
-          source: "hardcoded_emergency_system",
-          culturalEnhancement: false,
-          characterConsistency: false,
-          templateProcessing: "emergency",
-          fallbackLevel: 4,
-          emergency: true
-        }
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-    }
-
-  } catch (global_error) {
-    console.error('[MAIN] GLOBAL ERROR:', global_error);
-    
-    // Ultimate failsafe
-    const emergencyPages = generateEmergencyPages(5, {});
-    
-    return new Response(JSON.stringify({
-      success: false,
-      error: "All tiers failed",
-      pages: emergencyPages,
-      tier: "EMERGENCY",
-      processingTime: Date.now(),
-      metadata: {
-        tier: "EMERGENCY",
-        source: "failsafe_system",
-        emergency: true,
-        error: global_error.message
-      }
-    }), {
-      status: 200, // Still return 200 to provide content
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    });
-  }
-});
-
-/**
  * TIER 2.5A: Process with Premium Template System
  */
 async function processWithPremiumTemplate({ prompt, userInfo, pageCount, difficulty, sessionId, pageNumber }) {
@@ -1934,6 +1704,891 @@ function detectEmotionFromText(text) {
     console.warn('⚠️ Tier 2.5: Emotion detection error:', error);
     return 'Positive and uplifting atmosphere';
   }
+}
+
+// ============= END ENHANCED TIER 2.5 SEMANTIC PLACEHOLDER EXTRACTION FUNCTIONS =============
+
+// ============= BASIC TEMPLATE EXTRACTION FUNCTIONS (TIER 1.5 / 2.5B) =============
+/**
+ * Limit pageText to maximum 3 sentences for basic templates
+ */
+function limitPageTextToThreeSentences(pageText) {
+  try {
+    if (!pageText || typeof pageText !== 'string') return '';
+    
+    // Split by sentence terminators and take first 3 sentences
+    const sentences = pageText.split(/[.!?]+/).filter(s => s.trim().length > 0);
+    return sentences.slice(0, 3).join('. ').trim() + (sentences.length > 0 ? '.' : '');
+  } catch (error) {
+    console.warn('⚠️ Page text limitation failed:', error);
+    return pageText?.substring(0, 200) || ''; // Fallback to character limit
+  }
+}
+
+/**
+ * Extract basic setting using simple regex patterns
+ */
+function extractBasicSetting(pageText) {
+  try {
+    if (!pageText || typeof pageText !== 'string') return 'a colorful place';
+    
+    // Simple regex to find "in/at [location]"
+    const settingMatch = pageText.match(/(?:in|at)\s+(?:the\s+)?([^,.!?]+)/i);
+    if (settingMatch && settingMatch[1]) {
+      return settingMatch[1].trim();
+    }
+    
+    // Fallback: check for common location words
+    const locationWords = ['home', 'school', 'park', 'garden', 'room', 'kitchen', 'playground', 'forest', 'beach'];
+    for (const word of locationWords) {
+      if (pageText.toLowerCase().includes(word)) {
+        return `a ${word}`;
+      }
+    }
+    
+    return 'a bright colorful environment';
+  } catch (error) {
+    console.warn('⚠️ Basic setting extraction failed:', error);
+    return 'a welcoming place';
+  }
+}
+
+/**
+ * Extract basic action using simple regex patterns
+ */
+function extractBasicAction(pageText) {
+  try {
+    if (!pageText || typeof pageText !== 'string') return 'enjoying a happy moment';
+    
+    // Simple regex to find action verbs
+    const actionMatch = pageText.match(/(?:played|playing|runs|running|walked|walking|danced|dancing)\s+([^,.!?]*)/i);
+    if (actionMatch && actionMatch[0]) {
+      return actionMatch[0].trim();
+    }
+    
+    // Fallback: check for basic action words
+    const actionWords = ['play', 'run', 'jump', 'dance', 'laugh', 'smile', 'explore', 'discover'];
+    for (const word of actionWords) {
+      if (pageText.toLowerCase().includes(word)) {
+        return `${word}ing happily`;
+      }
+    }
+    
+    return 'having a wonderful time';
+  } catch (error) {
+    console.warn('⚠️ Basic action extraction failed:', error);
+    return 'enjoying the moment';
+  }
+}
+
+/**
+ * Extract basic objects using simple regex patterns  
+ */
+function extractBasicObjects(pageText) {
+  try {
+    if (!pageText || typeof pageText !== 'string') return 'colorful items';
+    
+    // Simple regex to find "with [object]"
+    const objectMatch = pageText.match(/with\s+(?:his|her|their|a|an|the)?\s*([^,.!?]+)/i);
+    if (objectMatch && objectMatch[1]) {
+      return objectMatch[1].trim();
+    }
+    
+    // Fallback: check for common object words
+    const objectWords = ['toy', 'ball', 'book', 'friend', 'pet', 'bicycle', 'flowers', 'butterfly', 'treasure'];
+    for (const word of objectWords) {
+      if (pageText.toLowerCase().includes(word)) {
+        return word;
+      }
+    }
+    
+    return 'interesting things';
+  } catch (error) {
+    console.warn('⚠️ Basic objects extraction failed:', error);
+    return 'wonderful items';
+  }
+}
+
+/**
+ * Simple extraction function for secondary characters (Tier 2.5B - Nuclear Independence)
+ * Uses basic regex patterns with hardcoded fallbacks - NO complex dependencies
+ */
+function extractSimpleSecondaryCharacters(pageText) {
+  try {
+    if (!pageText || typeof pageText !== 'string') return '';
+    
+    const text = pageText.toLowerCase();
+    const found = [];
+    
+    // Simple regex patterns for common relationships
+    const patterns = [
+      /with (?:his|her|their) (\w+)/gi,
+      /and (?:his|her|their) (\w+)/gi,
+      /friend (\w+)/gi,
+      /(?:mom|mother|dad|father|sister|brother) (\w+)/gi,
+      /(?:dog|cat|pet) (?:named )?(\w+)/gi
+    ];
+    
+    patterns.forEach(pattern => {
+      const matches = [...pageText.matchAll(pattern)];
+      matches.forEach(match => {
+        if (match[1] && match[1].length > 1 && match[1] !== 'the') {
+          found.push(match[1]);
+        }
+      });
+    });
+    
+    // Remove duplicates and limit
+    const unique = [...new Set(found)].slice(0, 2);
+    return unique.length > 0 ? `with ${unique.join(' and ')}` : '';
+    
+  } catch (error) {
+    console.warn('⚠️ Simple secondary characters extraction failed:', error);
+    return ''; // Silent failure - nuclear independence
+  }
+}
+
+/**
+ * Fill basic template with simplified 3-section structure (Tier 1.5 / 2.5B)
+ * Following the example: "Tommy played with his friend Sequoia" → "A child playing with friend Sequoia in a garden"
+ */
+function fillBasicTemplate(
+  difficulty,
+  userInfo,
+  pageText,
+  localAvatarIdentity,
+  scene,
+  setting,
+  objects,
+  secondary_characters
+) {
+  console.log(`🛡️ Tier 1.5 (2.5B): Filling BASIC template with 3-section structure`);
+  
+  try {
+    // Validate input parameters with fallbacks
+    const safeDifficulty = difficulty || 'medium';
+    const safePageText = pageText || 'A child having a wonderful adventure';
+    
+    // Get basic template with fallback protection
+    let template;
+    try {
+      template = BASIC_PROMPT_TEMPLATES[safeDifficulty] || BASIC_PROMPT_TEMPLATES.medium || BASIC_PROMPT_TEMPLATES['medium'];
+      if (!template) {
+        throw new Error('No basic template found');
+      }
+    } catch (templateError) {
+      console.warn('⚠️ Basic template selection failed, falling back to emergency template:', templateError);
+      throw templateError; // Pass to next tier
+    }
+    
+    // Extract semantic components using unified vocabulary
+    const limitedPageText = limitPageTextToThreeSentences(safePageText);
+    const subject = extractSubject(safePageText);
+    const action = extractAction(safePageText);
+    const setting = extractSetting(safePageText);
+    const adjective = extractAdjective(safePageText);
+    const emotion = extractEmotion(safePageText);
+    
+    // Extract simple secondary characters using basic patterns only
+    const secondaryChars = secondary_characters || extractSimpleSecondaryCharacters(safePageText);
+    
+    // Get nuclear avatar mapping with error protection
+    let avatarMapping;
+    try {
+      avatarMapping = getNuclearAvatarMapping(userInfo, safeDifficulty);
+      console.log(`✅ Basic nuclear avatar mapping applied: ${avatarMapping.character}`);
+    } catch (avatarError) {
+      console.warn('⚠️ Basic avatar mapping failed, using fallback:', avatarError);
+      avatarMapping = { 
+        character: 'a friendly child',
+        age: 'young',
+        skin: 'medium skin tone',
+        hair: 'neat hair',
+        eyes: 'bright eyes',
+        face: 'cheerful expression',
+        clothing: 'comfortable clothes'
+      };
+    }
+    
+    // 🎨 NUCLEAR STYLE SETTINGS - NOW USING GLOBAL DEFINITION 🎨
+    console.log('✅ Tier 2.5: Using global NUCLEAR_STYLE_SETTINGS definition');
+
+    // Get framework prompt with fallback protection  
+    let frameworkPrompt;
+    try {
+      frameworkPrompt = NUCLEAR_STYLE_SETTINGS[safeDifficulty]?.frameworkPrompt || 
+                       NUCLEAR_STYLE_SETTINGS['medium']?.frameworkPrompt || 
+                       EMERGENCY_FALLBACK_FRAMEWORK ||
+                       'Children book style with vibrant colors, friendly character design, bright cheerful atmosphere';
+    } catch (frameworkError) {
+      console.warn('⚠️ Framework prompt failed, using hardcoded fallback:', frameworkError);
+      frameworkPrompt = 'Children book style with vibrant colors, friendly character design, bright cheerful atmosphere';
+    }
+    
+    // PHASE 3: Template Processing Function Updates - Include nuclear avatar placeholders
+    let filledTemplate = template
+      .replace(/{pageText}/g, limitedPageText)
+      .replace(/{character}/g, avatarMapping.character || 'child')
+      .replace(/{age}/g, avatarMapping.age || '7-year-old')
+      .replace(/{hair}/g, avatarMapping.hair || 'neat hair')
+      .replace(/{features}/g, avatarMapping.features || 'friendly features')
+      .replace(/{subject}/g, subject)
+      .replace(/{action}/g, action)
+      .replace(/{setting}/g, setting)
+      .replace(/{adjective}/g, adjective)
+      .replace(/{emotion}/g, emotion)
+      .replace(/{secondary_characters}/g, secondaryChars)
+      .replace(/{frameworkPrompt}/g, frameworkPrompt);
+    
+    // Clean up any remaining placeholders
+    filledTemplate = filledTemplate.replace(/{[^}]*}/g, '').replace(/\s+/g, ' ').trim();
+    
+    console.log('✅ Basic Template (Tier 1.5 / 2.5B) filled successfully');
+    console.log(`📝 Basic template result preview: ${filledTemplate.substring(0, 100)}...`);
+    
+    return filledTemplate;
+    
+  } catch (error) {
+    console.warn('⚠️ Basic template filling failed:', error);
+    throw error; // Pass to next fallback tier
+  }
+}
+
+// ============= END BASIC TEMPLATE EXTRACTION FUNCTIONS =============
+
+function fillPremiumTemplate(
+  difficulty,
+  userInfo,
+  scene,
+  setting,
+  objects,
+  secondary_characters,
+  emotion,
+  pageText,
+  avatarIdentity,
+  spatialComposition,
+  atmosphereContext
+) {
+  console.log(`🛡️ Tier 2.5: Filling template with comprehensive silent failure protection`);
+  
+  try {
+    // Validate input parameters with fallbacks
+    const safeDifficulty = difficulty || 'medium';
+    const safeScene = scene || 'enjoying a bright cheerful moment';
+    const safeSetting = setting || 'a welcoming colorful environment';
+    const safeObjects = objects || 'interesting colorful items';
+    const safeSecondaryCharacters = secondary_characters || '';
+    const safeEmotion = emotion || 'Positive and uplifting atmosphere';
+    
+    // Apply smart sentence extraction for pageText based on difficulty level
+    const processedPageText = extractFirstSentences(pageText || '', safeDifficulty);
+    
+    // ============= ANALYZE PAGE TEXT FOR VISUAL DETAILS =============
+    // Add visual detail analysis for consistent object tracking across tiers
+    try {
+      // Adapted to promise chain to avoid await in non-async function context
+      import('../_shared/VisualDetailTracker.js')
+        .then(({ VisualDetailTracker }) => VisualDetailTracker.analyzeTextForDetails(
+          sessionId || 'tier25-session', 
+          pageText || processedPageText, 
+          userInfo?.pageNumber || 1, 
+          finalMapping?.character || 'child'
+        ))
+        .then(() => {
+          console.log(`🔍 Tier 2.5A: Page text analyzed for visual details`);
+        })
+        .catch((error) => {
+          console.warn(`⚠️ Tier 2.5A: Visual detail analysis failed:`, error.message);
+        });
+    } catch (error) {
+      console.warn(`⚠️ Tier 2.5A: Visual detail analysis failed:`, error.message);
+    }
+    
+    console.log(`🛡️ Tier 2.5: Filling template for difficulty: ${safeDifficulty}`);
+    
+    // Get template with fallback protection
+    let template;
+    try {
+      template = PREMIUM_PROMPT_TEMPLATES[safeDifficulty] || PREMIUM_PROMPT_TEMPLATES.medium || PREMIUM_PROMPT_TEMPLATES['medium'];
+      if (!template) {
+        throw new Error('No template found');
+      }
+    } catch (templateError) {
+      console.warn('⚠️ Template selection failed, using emergency template:', templateError);
+      
+      // ============= CRITICAL REGRESSION PREVENTION: LINE 2054 =============
+      // 4-TIER FALLBACK IMPLEMENTATION: Raw PageText Function (Emergency Tier 2.5C)
+      // This line constructs emergency template using:
+      // 1. First 2500 characters of pageText (user's story content)
+      // 2. Plus frameworkPrompt from NUCLEAR_STYLE_SETTINGS array (defined at line 2167)
+      // 3. With multiple fallback levels for nuclear independence
+      // 
+      // CRITICAL DEPENDENCIES:
+      // - NUCLEAR_STYLE_SETTINGS must be defined BEFORE this line (currently at 2167)
+      // - pageText comes from function parameter (user story content)
+      // - safeDifficulty used as array key for style selection
+      //
+      // REGRESSION RISKS:
+      // - Moving NUCLEAR_STYLE_SETTINGS after this line will break fallback
+      // - Changing frameworkPrompt structure will break template generation
+      // - Removing any fallback level could cause undefined errors
+      //
+      // TESTING: Verify template generation when PREMIUM_PROMPT_TEMPLATES fails
+      // NOTE: This is now part of the 4-tier system as Emergency Template (Tier 2.5C)
+      // FALLBACK CHAIN: Premium (2.5A) → Basic (2.5B) → Emergency (2.5C) → Ultimate Emergency (2.5D)
+      template = (pageText || '').substring(0, 2500) + ' ' + (NUCLEAR_STYLE_SETTINGS[safeDifficulty]?.frameworkPrompt || NUCLEAR_STYLE_SETTINGS['medium']?.frameworkPrompt || EMERGENCY_FALLBACK_FRAMEWORK || 'Children book style with vibrant colors, friendly character design, bright cheerful atmosphere');
+    }
+    
+    // NUCLEAR AVATAR MAPPING with error protection
+    let avatarMapping;
+    try {
+      avatarMapping = getNuclearAvatarMapping(userInfo, safeDifficulty);
+      console.log(`✅ Nuclear avatar mapping applied: ${avatarMapping.character}`);
+    } catch (avatarError) {
+      console.warn('⚠️ Avatar mapping failed, using fallback:', avatarError);
+      avatarMapping = { 
+        character: 'a friendly child',
+        age: 'young',
+        skin: 'medium skin tone',
+        hair: 'neat hair',
+        eyes: 'bright eyes',
+        face: 'cheerful expression',
+        clothing: 'comfortable clothes'
+      };
+    }
+    
+    // Detect cultural contexts with error protection
+    let userLanguage, skinTone, isEnglishDarkSkin;
+    try {
+      userLanguage = avatarIdentity?.nativeLanguage || userInfo?.language || 'en';
+      skinTone = userInfo?.avatar?.skinTone || '';
+      isEnglishDarkSkin = (userLanguage === 'en' || userLanguage === 'english') && 
+                          (skinTone.toLowerCase().includes('dark') || 
+                           skinTone.toLowerCase().includes('brown') ||
+                           skinTone.toLowerCase().includes('black'));
+    } catch (culturalError) {
+      console.warn('⚠️ Cultural context detection failed, using defaults:', culturalError);
+      userLanguage = 'en';
+      skinTone = 'medium';
+      isEnglishDarkSkin = false;
+    }
+    
+    const isFrenchDarkSkin = (userLanguage === 'fr' || userLanguage === 'french') && 
+                             (skinTone.toLowerCase().includes('dark') || 
+                              skinTone.toLowerCase().includes('brown') ||
+                              skinTone.toLowerCase().includes('black'));
+    
+    const isSpanishDarkSkin = (userLanguage === 'es' || userLanguage === 'spanish') && 
+                              (skinTone.toLowerCase().includes('dark') || 
+                               skinTone.toLowerCase().includes('brown') ||
+                               skinTone.toLowerCase().includes('black'));
+    
+    const isPortugueseDarkSkin = (userLanguage === 'pt' || userLanguage === 'portuguese') && 
+                                 (skinTone.toLowerCase().includes('dark') || 
+                                  skinTone.toLowerCase().includes('brown') ||
+                                  skinTone.toLowerCase().includes('black'));
+    
+    let finalMapping = avatarMapping;
+    
+    // English + Dark Skin: African American hairstyles + facial features
+    if (isEnglishDarkSkin) {
+      console.log('🛡️ Tier 2.5: Using African American cultural arrays for English + dark skin');
+      
+      const character = avatarMapping.character === 'child' ? 'boy' : avatarMapping.character;
+      const extractedGender = extractGenderFromCharacter(character);
+      const genderKey = extractedGender === 'girl' ? 'girls' : 'boys';
+      
+      finalMapping = {
+        ...avatarMapping,
+        hair: getRandomItem(HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[genderKey]),
+        features: getRandomItem(HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES)
+      };
+    }
+    // French + Dark Skin: African American hairstyles + facial features  
+    else if (isFrenchDarkSkin) {
+      console.log('🛡️ Tier 2.5: Using African American cultural arrays for French + dark skin');
+      
+      const character = avatarMapping.character === 'child' ? 'boy' : avatarMapping.character;
+      const extractedGender = extractGenderFromCharacter(character);
+      const genderKey = extractedGender === 'girl' ? 'girls' : 'boys';
+      
+      finalMapping = {
+        ...avatarMapping,
+        hair: getRandomItem(HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[genderKey]),
+        features: getRandomItem(HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES)
+      };
+    }
+    // Spanish + Dark Skin: African American hairstyles + facial features
+    else if (isSpanishDarkSkin) {
+      console.log('🛡️ Tier 2.5: Using African American cultural arrays for Spanish + dark skin');
+      
+      const character = avatarMapping.character === 'child' ? 'boy' : avatarMapping.character;
+      const extractedGender = extractGenderFromCharacter(character);
+      const genderKey = extractedGender === 'girl' ? 'girls' : 'boys';
+      
+      finalMapping = {
+        ...avatarMapping,
+        hair: getRandomItem(HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[genderKey]),
+        features: getRandomItem(HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES)
+      };
+    }
+    // Portuguese + Dark Skin: African American hairstyles + facial features
+    else if (isPortugueseDarkSkin) {
+      console.log('🛡️ Tier 2.5: Using African American cultural arrays for Portuguese + dark skin');
+      
+      const character = avatarMapping.character === 'child' ? 'boy' : avatarMapping.character;
+      const extractedGender = extractGenderFromCharacter(character);
+      const genderKey = extractedGender === 'girl' ? 'girls' : 'boys';
+      
+      finalMapping = {
+        ...avatarMapping,
+        hair: getRandomItem(HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[genderKey]),
+        features: getRandomItem(HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES)
+      };
+    }
+    
+    // ============= MASTER PLAN PHASE 3: TEMPLATE VARIABLE SCOPE FIX =============
+    // Get style framework settings using nuclear independence - MOVED TO BEFORE TEMPLATE FILLING
+    // 
+    // ========== NUCLEAR STYLE SETTINGS - Enhanced Framework Prompts ==========
+    // CRITICAL: This array MUST be defined before line 2054 (Raw PageText Fallback)
+    // 
+    // ⚠️  REGRESSION PREVENTION - CRITICAL DEPENDENCIES ⚠️
+    // - Moving this after line 2054 breaks emergency template generation
+    // - Removing frameworkPrompt properties breaks template construction  
+    // - Changing difficulty keys affects template selection logic
+    // - Used by fillPremiumTemplate function (called at line 2842)
+    // - Used by emergency fallback system at line 2054
+    //
+    // 🎨 NUCLEAR STYLE SETTINGS MOVED TO TOP - DUPLICATED DEFINITION REMOVED 🎨
+    // (Main definition moved to line ~2565 for early access)
+    
+    const styleSettings = NUCLEAR_STYLE_SETTINGS[safeDifficulty] || NUCLEAR_STYLE_SETTINGS['medium'];
+    console.log('✅ Nuclear style settings applied - zero dependencies, bulletproof operation');
+
+    // Apply cultural setting enhancement
+    const enhancedSetting = applyCulturalSettingEnhancement(setting, userInfo, avatarIdentity);
+    
+    // ============= MASTER PLAN: CAMERA DIRECTIVE INTEGRATION (After scene extraction) =============
+    const cameraDirective = generateCameraDirective(difficulty, scene, enhancedSetting);
+    
+    // Get style framework settings using nuclear independence (defined below)
+    // const styleSettings = NUCLEAR_STYLE_SETTINGS[difficulty] || NUCLEAR_STYLE_SETTINGS['medium']; // MOVED TO AFTER DEFINITION
+    
+    // Conditional clothing detection from story text
+    const clothing = detectClothingFromStory(pageText || scene);
+    
+    // Use smart sentence extraction instead of full pageText (reuse processed text from above)
+    // const processedPageText = extractFirstSentences(pageText || '', safeDifficulty); // REMOVED: Already declared above
+    
+    // Get character ethnicity note
+    const ethnicity = getCharacterEthnicity(userInfo, avatarIdentity);
+    
+    // ============= PHASE 6 ENHANCED: ACTION-INTEGRATED OBJECT DESCRIPTIONS =============
+    // Convert objects into natural action-based descriptions
+    let actionObjects = '';
+    if (objects && objects.trim()) {
+      // Extract individual objects and integrate with actions
+      const objectList = objects.replace(/^,\s*/, '').split(',').map(obj => obj.trim()).filter(obj => obj);
+      if (objectList.length > 0) {
+        // Create natural action-object combinations
+        const actionIntegratedObjects = objectList.map(obj => {
+          // Remove leading articles and clean object name
+          const cleanObj = obj.replace(/^(with\s+|a\s+|an\s+|the\s+)/i, '');
+          
+          // Map objects to natural actions
+          if (cleanObj.match(/book|story|reading/i)) return ` reading with ${cleanObj}`;
+          if (cleanObj.match(/ball|toy|game/i)) return ` playing with ${cleanObj}`;
+          if (cleanObj.match(/art|paint|draw|crayon/i)) return ` creating art with ${cleanObj}`;
+          if (cleanObj.match(/music|instrument/i)) return ` making music with ${cleanObj}`;
+          if (cleanObj.match(/food|snack|lunch/i)) return ` enjoying ${cleanObj}`;
+          if (cleanObj.match(/bike|scooter|skateboard/i)) return ` riding ${cleanObj}`;
+          if (cleanObj.match(/puzzle|blocks|lego/i)) return ` building with ${cleanObj}`;
+          
+          // Default natural integration
+          return ` with ${cleanObj}`;
+        });
+        
+        actionObjects = actionIntegratedObjects.join('');
+      }
+    }
+    
+    // ============= PHASE 3: ADD NEW SEMANTIC PLACEHOLDERS =============
+    // 🚨 REGRESSION PREVENTION: All new placeholders must handle null/undefined gracefully
+    // Extract new semantic placeholders from story content
+    const atmosphere = extractAtmosphere(pageText, safeScene, enhancedSetting);
+    const props = extractProps(pageText, safeScene);
+    const communityContext = extractCommunityContext(pageText, enhancedSetting);
+    const sensoryDetails = extractSensoryDetails(pageText, safeScene);
+    
+    // ============= PHASE 4: Enhanced Null Safety System - Critical Placeholder Validation =============
+    // Check for critical placeholder failures that should trigger emergency template
+    const criticalPlaceholderFailure = (!finalMapping.character || finalMapping.character === 'undefined' || finalMapping.character === '') ||
+                                      (!safeScene || safeScene === 'undefined' || safeScene === '') ||
+                                      (!enhancedSetting || enhancedSetting === 'undefined' || enhancedSetting === '');
+    
+    if (criticalPlaceholderFailure) {
+      console.warn('🚨 Critical placeholder failure detected - triggering emergency template');
+      throw new Error('Critical placeholders failed: character, scene, or setting missing');
+    }
+
+    // ============= SEEDED SECONDARY CHARACTER POSITIONING (REPLACES enhanceSecondaryCharacterPositioning) =============
+    function enhanceSeededSecondaryCharacterPositioning(secondaryChars, pageText, scene, sessionId) {
+      if (!secondaryChars || secondaryChars.trim().length === 0) {
+        return '';
+      }
+      
+      console.log(`🎯 Tier 2.5A: Enhancing seeded secondary character positioning: "${secondaryChars}"`);
+      
+      // If already has seed descriptions (contains ':'), preserve them and add positioning
+      if (secondaryChars.includes(':')) {
+        const spatialPositions = [
+          'standing nearby', 'sitting close by', 'positioned to the left', 'positioned to the right',
+          'in the background', 'in the foreground', 'walking alongside', 'playing together',
+          'gathered around', 'sitting together', 'standing behind', 'positioned in front'
+        ];
+        
+        const seed = (sessionId || '') + secondaryChars + scene;
+        const randomPosition = getSeededRandomItem(spatialPositions, seed);
+        
+        const result = `${secondaryChars}, ${randomPosition}`;
+        console.log(`✅ Tier 2.5A: Seeded positioning applied: ${result}`);
+        return result;
+      }
+      
+      // Fallback: Use original enhanceSecondaryCharacterPositioning for backwards compatibility
+      return enhanceSecondaryCharacterPositioning(secondaryChars, pageText, scene);
+    }
+    
+    // PHASE 4: Cultural Authentication Fallbacks for {hair} and {features}
+    let safeFinalHair = finalMapping.hair;
+    let safeFinalFeatures = finalMapping.features;
+    
+    // Apply cultural authentication fallbacks if hair/features are missing
+    if (!safeFinalHair || safeFinalHair === 'undefined' || safeFinalHair === '') {
+      if (isEnglishDarkSkin || isFrenchDarkSkin || isSpanishDarkSkin || isPortugueseDarkSkin) {
+        safeFinalHair = 'authentic African American hairstyle';
+      } else {
+        // For other cultures, use generic fallback
+        safeFinalHair = 'neat natural hairstyle';
+      }
+      console.log('🛡️ Applied cultural hair fallback:', safeFinalHair);
+    }
+    
+    if (!safeFinalFeatures || safeFinalFeatures === 'undefined' || safeFinalFeatures === '') {
+      if (isEnglishDarkSkin || isFrenchDarkSkin || isSpanishDarkSkin || isPortugueseDarkSkin) {
+        safeFinalFeatures = 'authentic African American features';
+      } else {
+        // For other cultures, use generic fallback
+        safeFinalFeatures = 'warm friendly features';
+      }
+      console.log('🛡️ Applied cultural features fallback:', safeFinalFeatures);
+    }
+    
+    // ============= PAGE TEXT ANALYSIS FOR VISUAL DETAILS =============
+    // Analyze current page text for visual details before building colored objects
+    try {
+      // Adapted to promise chain to avoid await in non-async function context
+      import('../_shared/VisualDetailTracker.js')
+        .then(({ VisualDetailTracker }) => VisualDetailTracker.analyzeTextForDetails(
+          sessionId || 'fallback-session', 
+          pageText, 
+          1, // Default to page 1 for tier 2.5A
+          userInfo?.avatar?.type || 'child'
+        ))
+        .then(() => {
+          console.log(`🔍 Tier 2.5A: Page text analyzed for visual details`);
+        })
+        .catch((error) => {
+          console.warn(`⚠️ Tier 2.5A: Visual detail analysis failed:`, error.message);
+        });
+    } catch (error) {
+      console.warn(`⚠️ Tier 2.5A: Visual detail analysis failed:`, error.message);
+    }
+    
+    // ============= NEW: COLORED OBJECTS INTEGRATION =============
+    // Add persistent colored objects from VisualDetailTracker BEFORE template processing
+    let coloredObjects = '';
+    try {
+      // Adapted to promise chain to avoid await in non-async function context
+      import('../_shared/VisualDetailTracker.js')
+        .then(({ VisualDetailTracker }) => VisualDetailTracker.buildObjectDescription(sessionId || 'fallback-session'))
+        .then((storedObjects) => {
+          coloredObjects = storedObjects || '';
+          
+          if (coloredObjects) {
+            console.log(`🎨 Tier 2.5A: Integrated colored objects: ${coloredObjects}`);
+          }
+        })
+        .catch((error) => {
+          console.warn(`⚠️ Tier 2.5A: VisualDetailTracker integration failed:`, error.message);
+        });
+    } catch (error) {
+      console.warn(`⚠️ Tier 2.5A: VisualDetailTracker integration failed:`, error.message);
+    }
+    
+    let filledTemplate = template
+      .replace('{pageText}', processedPageText)
+      .replace('{character}', finalMapping.character)
+      .replace('{age}', finalMapping.age)
+      .replace('{ethnicity}', ethnicity) // PHASE 3: Moved ethnicity to character description
+      .replace('{hair}', safeFinalHair)
+      .replace('{features}', safeFinalFeatures)
+      .replace('{scene}', safeScene) // PHASE 1 FIX: Use safeScene instead of undefined enhancedScene
+      .replace('{setting}', enhancedSetting) // PHASE 1 FIX: Use enhancedSetting instead of undefined scopedEnhancedSetting
+      .replace('{action_objects}', actionObjects) // PHASE 6: Enhanced action-integrated objects
+      .replace('{secondary_characters}', enhanceSeededSecondaryCharacterPositioning(secondary_characters, pageText, safeScene, sessionId) || '') // ENHANCED: Seed-based spatial positioning integration
+      .replace('{colored_objects}', coloredObjects) // NEW: Colored objects from VisualDetailTracker
+      .replace('{emotion}', emotion)
+      .replace('{atmosphere}', atmosphereContext || atmosphere) // Use contextual atmosphere if available
+      .replace('{spatial_composition}', spatialComposition || 'character prominently featured in foreground') // New contextual placeholder
+      // ============= ENHANCED ACTION SECTION PLACEHOLDERS =============
+      .replace('{action_intensity}', extractActionIntensity(pageText))
+      .replace('{spatial_positioning}', extractSpatialPositioning(pageText))
+      .replace('{object_interaction}', extractObjectInteraction(pageText, actionObjects))
+      .replace('{body_language}', extractBodyLanguage(pageText))
+      // ============= END ENHANCED ACTION SECTION =============
+      .replace('{props}', props) // PHASE 3: New semantic placeholder
+      .replace('{community_context}', communityContext) // PHASE 3: New semantic placeholder
+      .replace('{sensory_details}', sensoryDetails) // PHASE 3: New semantic placeholder
+      .replace('{frameworkPrompt}', styleSettings.frameworkPrompt)
+      .replace('{cameraDirective}', cameraDirective); // PHASE 5: Camera directive moved to end
+    
+    // PHASE 4: Safe clothing detection with null safety
+    // Add clothing if detected - use safe variables
+    if (clothing) {
+      filledTemplate = filledTemplate.replace('{features}', `${safeFinalFeatures}, wearing ${clothing}`);
+    }
+    
+    // PHASE 7: TEMPLATE VALIDATION (Only checks for empty sections now)
+    const templateValidation = validateTemplateCompletion(filledTemplate);
+    if (!templateValidation.isValid) {
+      console.log(`🔄 Template has empty sections: ${templateValidation.issues.join(', ')} - Falling back to Tier 2.5B`);
+      return fillBasicTemplate(safeDifficulty, userInfo, pageText, avatarIdentity, safeScene, enhancedSetting, safeObjects, secondary_characters);
+    }
+    
+    // PHASE 8: REMOVE EMPTY SECTIONS 
+    filledTemplate = removeEmptySections(filledTemplate);
+    
+    console.log(`🛡️ Tier 2.5: Template filled successfully with nuclear mapping`);
+    return filledTemplate;
+    
+  } catch (error) {
+    console.error('❌ Tier 2.5: Template filling error:', error);
+    return generateEmergencyPrompt(userInfo);
+  }
+}
+
+// TEMPLATE VALIDATION SYSTEM
+function validateTemplateCompletion(template) {
+  const issues = [];
+  
+  // Only check for empty sections in template - ethnicity, generic settings, and action length don't matter anymore
+  const emptySectionPattern = /\w+:\s*[,.]|\w+:\s*\w+:\s*[,.]/g;
+  if (emptySectionPattern.test(template)) {
+    issues.push('Empty template sections detected');
+  }
+  
+  return {
+    isValid: issues.length === 0,
+    issues
+  };
+}
+
+// NEW: Character consistency validation - triggers 2.5B on failure
+function validateCharacterConsistency(characterData, avatarMapping) {
+  const issues = [];
+  
+  if (!characterData || !avatarMapping) {
+    issues.push('Missing character data or avatar mapping');
+  }
+  
+  if (avatarMapping?.source === 'emergency-fallback') {
+    issues.push('Character consistency service failed');
+  }
+  
+  if (!avatarMapping?.character || avatarMapping.character === 'a friendly child') {
+    issues.push('Generic character fallback detected');
+  }
+  
+  return {
+    isValid: issues.length === 0,
+    issues: issues
+  };
+}
+
+// NEW: Visual element validation - triggers 2.5B on failure  
+function validateVisualElements(sceneData, objects, setting) {
+  const issues = [];
+  
+  if (!sceneData?.spatialComposition || sceneData.spatialComposition === 'character prominently featured in foreground') {
+    issues.push('Generic spatial composition detected');
+  }
+  
+  if (!objects || objects === 'interesting colorful items') {
+    issues.push('Generic objects fallback detected');
+  }
+  
+  if (!sceneData?.atmosphereContext || sceneData.atmosphereContext === 'warm, inviting atmosphere') {
+    issues.push('Generic atmosphere fallback detected');
+  }
+  
+  if (!setting || setting === 'a welcoming colorful environment') {
+    issues.push('Generic setting fallback detected');
+  }
+  
+  return {
+    isValid: issues.length === 0,
+    issues: issues
+  };
+}
+
+// NEW: Scene complexity validation - triggers 2.5B on failure
+function validateSceneComplexity(sceneData, pageText) {
+  const issues = [];
+  
+  if (!sceneData?.contextualAction && pageText && pageText.length > 50) {
+    issues.push('No contextual action extracted from substantial text');
+  }
+  
+  if (!sceneData?.contextualSetting && pageText && pageText.length > 50) {
+    issues.push('No contextual setting extracted from substantial text');
+  }
+  
+  if (sceneData?.scene && sceneData.scene === 'enjoying a bright cheerful moment') {
+    issues.push('Generic scene fallback detected');
+  }
+  
+  return {
+    isValid: issues.length === 0,
+    issues: issues
+  };
+}
+
+// ENHANCED REMOVE EMPTY SECTIONS - HANDLES ACTION SECTION DYNAMICALLY
+function removeEmptySections(template) {
+  console.log('🧹 Before cleaning:', template);
+  
+  let cleaned = template;
+  
+  // STEP 1: Handle Action section specifically - DYNAMIC PROCESSING
+  // Pattern: Action: {scene}, {action_intensity}, {spatial_positioning}, {object_interaction}, {body_language}
+  const actionRegex = /Action:\s*([^,]*),\s*([^,]*),\s*([^,]*),\s*([^,]*),\s*([^,.]*)(?=[.]\s|\s*\w+:)/g;
+  
+  cleaned = cleaned.replace(actionRegex, (match, scene, intensity, spatial, interaction, bodyLang) => {
+    const components = [];
+    
+    // Always include scene if present
+    if (scene && scene.trim() && !scene.includes('{')) {
+      components.push(scene.trim());
+    }
+    
+    // Include intensity only if not empty
+    if (intensity && intensity.trim() && !intensity.includes('{')) {
+      components.push(intensity.trim());
+    }
+    
+    // DYNAMIC: Include spatial_positioning only if meaningful (not empty)
+    if (spatial && spatial.trim() && !spatial.includes('{')) {
+      components.push(spatial.trim());
+    }
+    
+    // Include object_interaction only if not empty
+    if (interaction && interaction.trim() && !interaction.includes('{')) {
+      components.push(interaction.trim());
+    }
+    
+    // DYNAMIC: Include body_language only if meaningful (not empty)
+    if (bodyLang && bodyLang.trim() && !bodyLang.includes('{')) {
+      components.push(bodyLang.trim());
+    }
+    
+    // Build Action section dynamically - prioritize scene and action over positioning details
+    if (components.length > 0) {
+      return `Action: ${components.join(', ')}`;
+    } else {
+      return ''; // Remove entire Action section if no components
+    }
+  });
+  
+  // STEP 2: Remove other empty sections (original logic)
+  cleaned = cleaned
+    .replace(/\w+:\s*[,.](?=\s*\w+:)/g, '') // Remove empty sections in middle
+    .replace(/\w+:\s*[,.](?=\s*Technical:)/g, '') // Remove empty sections before Technical
+    .replace(/\w+:\s*[,.]$/g, '') // Remove empty sections at end
+    .replace(/,\s*,+/g, ',') // Fix multiple commas
+    .replace(/\.\s*\.+/g, '.') // Fix multiple periods
+    .replace(/\s+/g, ' ') // Clean up extra spaces
+    .replace(/\.\s*\w+:/g, '. ') // Fix periods before section labels
+    .trim();
+  
+  console.log('🧹 After cleaning:', cleaned);
+  return cleaned;
+}
+
+function getCharacterEthnicity(userInfo, avatarIdentity) {
+  try {
+    const language = avatarIdentity?.nativeLanguage || userInfo?.language || 'en';
+    const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || '';
+    
+    // Multi-Language + Dark Skin Ethnicity Enhancement
+    const hasDarkSkin = skinTone.toLowerCase().includes('dark') || 
+                       skinTone.toLowerCase().includes('brown') ||
+                       skinTone.toLowerCase().includes('black') ||
+                       skinTone.toLowerCase().includes('ebony') ||
+                       skinTone.toLowerCase().includes('chocolate');
+    
+    if (hasDarkSkin) {
+      if (language === 'es' || language === 'spanish') {
+        return "depict character from Afro-Latino background";
+      }
+      if (language === 'fr' || language === 'french') {
+        return "depict character from African Francophone background";
+      }
+      // Fallback for other languages with dark skin
+      return "depict character from African American background";
+    }
+    
+    // Language-based ethnicity notes (for non-dark skin)
+    if (language === 'es' || language === 'spanish') {
+      return "depict character from Spanish/Latino background";
+    }
+    
+    if (language === 'fr' || language === 'french') {
+      return "depict character from European background";
+    }
+    
+    if (language === 'zh' || language === 'chinese') {
+      return "depict character from Asian background";
+    }
+    
+    if (language === 'hi' || language === 'hindi') {
+      return "child of Indian origin";
+    }
+    
+    if (language === 'ar' || language === 'arabic') {
+      return "depict character from Middle Eastern background";
+    }
+    
+    if (language === 'pt' || language === 'portuguese') {
+      return "depict character from Latin American background";
+    }
+    
+    // Default: no specific ethnicity note for English/Standard American
+    return "";
+    
+  } catch (error) {
+    console.warn('⚠️ Tier 2.5: Character ethnicity detection error:', error);
+    return "";
+  }
+}
+
+// AFTER line 805, ADD emergency prompt generator:
+function generateEmergencyPrompt(userInfo) {
+  const gender = userInfo?.avatar?.type === 'girl' ? 'girl' : 
+                userInfo?.avatar?.type === 'boy' ? 'boy' : 'child';
+  
+  return `An attractive ${gender} in a portrait style photo with main character focus. Beautiful children's book illustration, warm lighting, cheerful atmosphere, high quality, detailed art.`;
 }
 
 // ============= MAIN EDGE FUNCTION =============
