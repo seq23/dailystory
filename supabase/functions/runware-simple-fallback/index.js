@@ -91,16 +91,7 @@ const PREMIUM_PROMPT_TEMPLATES = {
 
 // ============= BASIC PROMPT TEMPLATES (TIER 1.5 / 2.5B) - SIMPLIFIED SEMANTIC STRUCTURE =============
 
-// Massive vocabulary arrays, character processing functions, template systems, etc.
-
-// Complete re-conversion implementing the full TIER 2.5 NUCLEAR INDEPENDENCE functionality
-// This will be processed in chunks to restore all 6,223+ lines of functionality
-
-
-// =======================================
-// COMPLETE CONVERSION BEGINS HERE  
-// =======================================
-// CHUNK 1: Basic prompt templates (lines 92-103)
+// ============= BASIC PROMPT TEMPLATES (TIER 1.5 / 2.5B) - SIMPLIFIED SEMANTIC STRUCTURE =============
 const BASIC_PROMPT_TEMPLATES = {
   // 3-SECTION STRUCTURE: PRIMARY SCENE → VISUAL COMPONENTS → BRAND SUFFIX
   beginner: "Primary Scene: {pageText}. Visual Components: {character} {age} with {hair}, {features} {subject} {action} with {emotion} {secondary_characters} with {colored_objects} in {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}",
@@ -109,6 +100,119 @@ const BASIC_PROMPT_TEMPLATES = {
   hard: "Primary Scene: {pageText}. Visual Components: {character} {age} with {hair}, {features} {subject} {action} with {emotion} {secondary_characters} with {colored_objects} in {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}",
   expert: "Primary Scene: {pageText}. Visual Components: {character} {age} with {hair}, {features} {subject} {action} with {emotion} {secondary_characters} with {colored_objects} in {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}"
 };
+
+// AFRICAN AMERICAN ARRAYS (Nuclear Independence - Combined Features Only)
+const HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES = {
+  boys: [
+    'textured buzz cut', 'detailed fade cut', 'textured taper fade', 'detailed high top fade', 
+    'textured low fade', 'detailed crew cut', 'textured caesar cut', 'detailed curly top fade', 
+    'textured curly high fade', 'detailed curly low fade', 'textured curly taper fade', 
+    'detailed curly high top', 'textured curly mohawk', 'detailed curly faux hawk', 
+    'textured curly undercut', 'detailed fade with curls on top', 'textured crop', 
+    'detailed curly fringe fade', 'textured twisted top fade', 'detailed undercut design', 
+    'textured hair tattoo', 'detailed geometric patterns', 'textured mini afro', 
+    'detailed medium afro', 'textured tapered afro', 'detailed wash and go', 
+    'textured finger coils', 'detailed two strand twists', 'textured flat twists', 
+    'detailed mini twists', 'textured locs', 'detailed starter locs', 'textured freeform locs', 
+    'detailed twisted locs', 'textured side part locs', 'detailed middle part locs', 
+    'textured ponytail with locs', 'detailed nape area tapered'
+  ],
+  girls: [
+    'wearing a detailed traditional afro hairstyle with natural coily hair texture, spherical volume shape, tight curl pattern definition, authentic Black hair structure, individual strand coils, dimensional texture depth, natural shine and movement',
+    'wearing detailed, photorealistic separated box braids with rectangular parting, each individual braid clearly distinct, multiple separate braided sections, geometric hair sectioning, individual strand definition per braid, occasionally with colorful strands, professional box braid styling',
+    'wearing detailed, photorealistic cornrows braided straight back in parallel rows, tight to scalp weaving, visible scalp parts between each row, traditional row braiding style, occasionally with colorful strands',
+    'wearing detailed, defined twist-out curls with natural curl pattern, bouncy texture, individual curl definition, soft volume, natural hair movement',
+    'wearing detailed afro puffs hairstyle with two symmetrical hair puffs positioned high on head, natural curly texture, rounded voluminous shape, authentic afro hair structure, defined curl clusters, bouncy texture depth',
+    'well-maintained dreadlocs with natural texture, individual strand definition, mature lock formation, photorealistic hair texture',
+    'wearing a natural wash-and-go curls with defined curl pattern, bouncy texture, individual curl strands, soft volume, natural movement, salon-quality finish',
+    'wearing detailed, photorealistic, traditional flat twists hairstyle, neat twisting pattern, detailed texture, individual strand definition',
+    'wearing detailed sleek bun with smooth edges sitting high on the head, neat hair, no loose hair, polished finish, professional styling',
+    'wearing sleek relaxed ponytail with smooth edges, straight hair texture, polished finish, tight hair control, professional styling, light reflection on hair',
+    'wearing detailed relaxed curved bob hairstyle with smooth inward styling, visible side part, salon shaping technique, sleek finish, dimensional movement, professional curved cutting, professional salon results'
+  ]
+};
+
+const HARDCODED_AFRICAN_AMERICAN_SKIN_TONES = [
+  'light brown complexion', 'medium brown skin', 'rich brown complexion', 'deep brown skin',
+  'warm caramel complexion', 'golden brown skin', 'mahogany complexion', 'dark chocolate skin',
+  'ebony complexion', 'honey-toned skin', 'bronze complexion', 'chestnut brown skin'
+];
+
+const HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES = [
+  // Light Tones
+  "light brown skin tone with warm amber eyes, full lips, defined cheekbones, natural nose bridge",
+  "caramel skin tone with deep brown eyes, soft full lips, high cheekbones, elegant nose shape",
+  "honey complexion with hazel-green eyes, naturally full lips, sculpted cheekbones, refined nose",
+  "warm beige skin with golden brown eyes, full expressive lips, defined facial structure, natural nose",
+  "light caramel complexion with bright hazel eyes, full lips, prominent cheekbones, authentic nose shape",
+  
+  // Medium Tones
+  "medium brown skin tone with golden amber eyes, full lips, strong cheekbones, natural nose bridge",
+  "cocoa skin tone with warm honey eyes, naturally full lips, defined cheekbones, elegant nose shape",
+  "warm brown complexion with bright amber eyes, full expressive lips, sculpted cheekbones, refined nose",
+  "chestnut skin tone with hazel-brown eyes, full lips, prominent cheekbones, authentic nose bridge",
+  "amber skin tone with deep brown eyes, soft full lips, high cheekbones, natural nose shape",
+  
+  // Medium-Dark Tones
+  "deep brown skin tone with golden amber eyes, full lips, defined cheekbones, natural nose bridge",
+  "rich chocolate complexion with warm honey eyes, naturally full lips, strong cheekbones, elegant nose",
+  "mahogany skin tone with bright hazel eyes, full expressive lips, sculpted cheekbones, refined nose shape",
+  "warm deep brown skin with golden brown eyes, full lips, prominent cheekbones, authentic nose bridge",
+  "bronze skin tone with light amber eyes, soft full lips, high cheekbones, natural nose shape",
+  
+  // Dark Tones
+  "dark brown skin tone with golden amber eyes, full lips, defined cheekbones, natural nose bridge",
+  "ebony skin tone with warm honey eyes, naturally full lips, strong cheekbones, elegant nose shape",
+  "deep mahogany complexion with bright amber eyes, full expressive lips, sculpted cheekbones, refined nose",
+  "rich dark chocolate skin with golden hazel eyes, full lips, prominent cheekbones, authentic nose bridge",
+  "beautiful dark brown skin with light amber eyes, soft full lips, high cheekbones, natural nose shape",
+  "deep ebony skin tone with warm golden eyes, naturally full lips, defined cheekbones, elegant nose bridge",
+  "dark mahogany complexion with honey-colored eyes, full expressive lips, strong cheekbones, refined nose shape",
+  "rich chocolate brown skin with bright hazel eyes, full lips, sculpted cheekbones, authentic nose bridge",
+  "beautiful deep brown skin with golden amber eyes, soft full lips, prominent cheekbones, natural nose shape",
+  "stunning ebony complexion with warm amber eyes, naturally full lips, high cheekbones, elegant nose bridge"
+];
+
+// CLOTHING DETECTION SYSTEM - REGRESSION PREVENTION COMMENTS
+// 
+// CRITICAL: The current system uses detectClothingFromStory() to extract clothing from story text
+// This provides more contextual and story-appropriate clothing than hardcoded arrays
+// ALL CHARACTERS (regardless of ethnicity) use story-based clothing detection for better narrative consistency
+// 
+// HARDCODED_STANDARD_AMERICAN_CLOTHING exists below but is currently UNUSED - kept for potential future standardization
+// DO NOT CHANGE WITHOUT TESTING: Any modifications to clothing detection affect all character generation
+//
+// REMOVED LIMITED CULTURAL ARRAYS - LET RUNWARE DECIDE THEIR LOOK
+// Hispanic/Latino, Chinese/Asian, and Middle Eastern arrays removed
+// Only African American arrays maintained for detailed representation
+
+// STANDARD AMERICAN ARRAYS (Hair array removed - AI handles generation)
+
+
+const HARDCODED_STANDARD_AMERICAN_CLOTHING = [
+  'casual t-shirt and jeans', 'hoodie and sneakers', 'button-up shirt and khakis', 
+  'sweater and comfortable pants', 'polo shirt and shorts', 'flannel shirt and jeans',
+  'graphic tee and cargo shorts', 'pullover and joggers', 'camp shirt and chinos',
+  'tank top and denim shorts', 'long sleeve tee and leggings', 'sundress and sandals',
+  'blouse and skirt', 'cardigan and dress', 'tunic and leggings', 'romper and flats',
+  'striped shirt and overalls', 'peasant top and jeans', 'wrap dress and boots',
+  'knit top and wide leg pants', 'denim jacket and dress', 'crop top and high waisted jeans',
+  'oversized sweater and skinny jeans', 'off shoulder top and midi skirt', 'blazer and trousers',
+  'band tee and ripped jeans', 'vintage inspired outfit', 'bohemian style clothing',
+  'preppy casual wear', 'athletic wear and running shoes', 'cozy knit sweater and boots',
+  'plaid shirt and dark jeans', 'solid color tee and cargo pants', 'striped long sleeve and shorts',
+  'fleece jacket and sweatpants', 'henley shirt and khaki shorts', 'crew neck sweatshirt and jeans',
+  'v-neck tee and chino pants', 'quarter zip pullover and joggers', 'pocket tee and denim',
+  'thermal shirt and canvas pants', 'rugby shirt and twill shorts', 'mock turtleneck and corduroys',
+  'flannel pajama set', 'terry cloth robe and slippers', 'cotton nightgown', 'silk pajamas',
+  'jersey knit pajamas', 'plaid flannel pajama pants', 'soft cotton sleepwear', 'cozy night clothes',
+  'denim jacket and jeans', 'cardigan and slacks', 'henley shirt and chinos', 
+  'baseball cap and casual wear', 'sneakers and athletic socks', 'backpack and school clothes', 
+  'comfortable everyday outfit', 'playground-appropriate clothing', 'weekend casual wear', 
+  'school uniform alternatives', 'athletic wear and running shoes', 'layered casual look', 
+  'seasonal appropriate clothing', 'comfortable playtime outfit', 'trendy youth fashion', 
+  'classic American casual style', 'modern comfortable clothing', 'age-appropriate fashion'
+];
 
 // TIER 25 NUCLEAR VOCABULARY - RUNWARE ALIGNED FOR VISUAL CONSISTENCY 🌟
 // THIS IS THE COMPLETE TIER 25 UNIFIED VOCABULARY SYSTEM
