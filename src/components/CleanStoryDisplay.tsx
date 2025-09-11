@@ -83,6 +83,7 @@ import "@/styles/storyDisplay.css";
 import { useWordHighlighting } from "@/hooks/useWordHighlighting";
 import { VoiceCommandController } from '@/components/VoiceCommandController';
 import { VoiceHoverController } from '@/components/VoiceHoverController';
+import { NetflixDebugMonitor } from '@/components/NetflixDebugMonitor';
 import { PremiumHoverController } from '@/components/PremiumHoverController';
 import { useVoiceIntegration } from '@/hooks/useVoiceIntegration';
 import { useGamification } from "@/hooks/useGamification";
@@ -4242,7 +4243,9 @@ const handleRestartTimer = () => {
       {/* Story Status Indicator - persistent backup/emergency mode indicator */}
       <StoryStatusIndicator />
       
-      </div>
+      {/* Netflix Debug Monitor for development */}
+      {process.env.NODE_ENV === 'development' && <NetflixDebugMonitor />}
+    </div>
     </ErrorBoundary>
     </GameContextProvider>
   );

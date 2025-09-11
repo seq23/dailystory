@@ -43,6 +43,7 @@ import { APP_CONFIG } from '@/config/appConfig';
 import { toast } from '@/hooks/use-toast';
 import { StoryQualityChecker } from '@/utils/storyQualityChecker';
 import { RepairService } from './repairService';
+import { NetflixRetryService } from './NetflixRetryService';
 
 export interface NetflixStoryResult {
   content: string[];
@@ -53,15 +54,24 @@ export interface NetflixStoryResult {
 
 export class NetflixStyleStoryService {
   /**
-   * Generate a complete story with AI-first preference
+   * Generate a complete story with AI-first preference and comprehensive debugging
    */
   static async generateStory(userInfo: UserInfo, vocabularyData?: any, sessionId?: string): Promise<NetflixStoryResult> {
-    console.log('📺 Netflix: Starting story generation for', userInfo.name);
+    const generationId = `gen-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    console.log(`📺 [${generationId}] Netflix: Starting story generation for ${userInfo.name}`);
+    console.log(`📺 [${generationId}] Netflix DEBUG: Full UserInfo:`, {
+      name: userInfo.name,
+      age: userInfo.age,
+      difficulty: userInfo.difficultyLevel,
+      avatar: userInfo.avatar,
+      specialRequest: userInfo.specialRequest,
+      sessionId: sessionId
+    });
     
     // Convert frontend difficulty to backend format for validation system
     const frontendDifficulty = userInfo.difficultyLevel || 'beginner';
     const difficulty: DifficultyLevel = DifficultyLevelMapper.toBackend(frontendDifficulty) as DifficultyLevel;
-    console.log(`🔄 Netflix: Difficulty mapping - Frontend: "${frontendDifficulty}" → Backend: "${difficulty}" for ${userInfo.name}`);
+    console.log(`🔄 [${generationId}] Netflix: Difficulty mapping - Frontend: "${frontendDifficulty}" → Backend: "${difficulty}" for ${userInfo.name}`);
 
     let promptConfig: any;
     let expertGradeLevel: ExpertGradeLevel | undefined;
@@ -71,159 +81,164 @@ export class NetflixStyleStoryService {
       const { ExpertDifficultyManager } = await import('@/services/expertDifficultyManager');
       expertGradeLevel = await ExpertDifficultyManager.getExpertGradeLevel(userInfo);
       promptConfig = getExpertStoryPrompt(expertGradeLevel);
-      console.log(`📚 Netflix: Using adaptive expert grade ${expertGradeLevel} for ${userInfo.name}`);
+      console.log(`📚 [${generationId}] Netflix: Using adaptive expert grade ${expertGradeLevel} for ${userInfo.name}`);
     } else {
       promptConfig = getStoryPrompt(difficulty);
     }
 
-    // Route through unified 4-tier system
-    try {
-      console.log('🤖 Netflix: Using unified 4-tier generation system');
-      
+    // Use NetflixRetryService for robust retry logic with circuit breaker
+    return await NetflixRetryService.executeWithRetry(async () => {
+      const attemptId = `attempt-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      console.log(`🔄 [${generationId}] Netflix: Starting AI generation attempt ${attemptId}`);
       const { StoryGenerationService } = await import('./storyGenerationService');
       
-      console.log(`🔍 Netflix: Calling unified system with:`, {
+      console.log(`🔍 [${generationId}] Netflix: Calling unified system with:`, {
         difficulty,
         expertGradeLevel,
         promptTokens: promptConfig?.tokens || 'unknown',
-        expectedPages: promptConfig?.expectedPages || 'unknown'
+        expectedPages: promptConfig?.expectedPages || 'unknown',
+        attemptId
       });
       
       const actualSessionId = sessionId || `netflix-${userInfo.name}-${Date.now()}`;
-      console.log(`🆔 Netflix: Session ID: ${actualSessionId}`);
+      console.log(`🆔 [${generationId}] Netflix: Session ID: ${actualSessionId}`);
       
-      const result = await StoryGenerationService.generateStory(userInfo, {
-        sessionType: 'free',
-        pageNumber: 1,
-        expertGradeLevel, // Pass expert grade level to unified system
-        difficulty, // Also pass the original difficulty
-        sessionId: actualSessionId
-      });
+      // Add timeout wrapper for AI generation
+      const result = await Promise.race([
+        StoryGenerationService.generateStory(userInfo, {
+          sessionType: 'free',
+          pageNumber: 1,
+          expertGradeLevel, // Pass expert grade level to unified system
+          difficulty, // Also pass the original difficulty
+          sessionId: actualSessionId
+        }),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('AI generation timeout after 45 seconds')), 45000)
+        )
+      ]) as any;
 
-      // DIAGNOSTIC LOGGING: Check exact result structure
-      console.log('🔍 Netflix: DETAILED RESULT ANALYSIS:', {
-        resultExists: !!result,
-        resultKeys: result ? Object.keys(result) : 'no result',
+      console.log(`🔍 [${generationId}] Netflix: Raw result received:`, {
         success: result?.success,
         hasPages: !!result?.pages,
-        pagesType: typeof result?.pages,
-        pagesIsArray: Array.isArray(result?.pages),
         pagesLength: result?.pages?.length,
-        pagesContent: result?.pages?.slice(0, 2), // Show first 2 pages for debugging
-        error: result?.error,
-        fullResult: result // Full object for complete diagnosis
+        hasStory: !!result?.story,
+        error: result?.error
       });
 
-      // Check for different possible response formats
+      // Validate result structure progressively with detailed logging
       if (!result) {
-        console.error('📺 Netflix: No result returned from StoryGenerationService');
-        return this.generateFallbackStory(userInfo, difficulty, 'no_result_returned');
+        throw new Error(`No result returned from StoryGenerationService`);
       }
 
       if (!result.success) {
-        console.error('📺 Netflix: StoryGenerationService returned success=false:', result.error);
-        return this.generateFallbackStory(userInfo, difficulty, 'generation_failed');
+        throw new Error(`AI generation returned success=false: ${result.error}`);
       }
 
       // Check for missing or empty pages array
       if (!result.pages) {
-        console.error('📺 Netflix: Result has no pages property');
-        return this.generateFallbackStory(userInfo, difficulty, 'no_pages_property');
+        throw new Error(`Result has no pages property`);
       }
 
       if (!Array.isArray(result.pages)) {
-        console.error('📺 Netflix: Pages is not an array:', typeof result.pages);
-        return this.generateFallbackStory(userInfo, difficulty, 'pages_not_array');
+        throw new Error(`Pages is not an array: ${typeof result.pages}`);
       }
 
       if (result.pages.length === 0) {
-        console.error('📺 Netflix: Pages array is empty');
-        return this.generateFallbackStory(userInfo, difficulty, 'empty_pages_array');
+        throw new Error(`Pages array is empty`);
       }
 
-      if (result.pages && Array.isArray(result.pages) && result.pages.length > 0) {
-        // Pages already cleaned by unified system
-        const cleanedPages = result.pages.filter((page: string) => page.length > 10);
-
-        // Backend now handles all validation - trust the response
-        console.log(`✅ Netflix: Story received from backend - ${cleanedPages.length} pages`);
-        
-        // Success: Return the validated content directly
-        const finalContent = cleanedPages;
-        
-        console.log(`✅ Netflix: AI generation successful - ${finalContent.length} pages`);
-        
-        // PHASE 4: Apply Netflix 6-page minimum validation to AI generation
-        const { validateNetflixStoryWithPageMinimum } = await import('../../supabase/functions/_shared/netflix-page-validation');
-        const { mapDifficultyToLevel } = await import('../../supabase/functions/_shared/validation-utils');
-        const validationLevel = mapDifficultyToLevel(expertGradeLevel || difficulty);
-        
-        // Apply Netflix validation to ensure 6-page minimum
-        const netflixValidation = validateNetflixStoryWithPageMinimum(
-          result.story || '',
-          validationLevel,
-          finalContent
-        );
-        
-        if (netflixValidation.isValid && netflixValidation.pages.length >= 6) {
-          console.log(`🎬 Netflix AI generation: Using ${netflixValidation.pages.length} pages (${netflixValidation.wasForceSplit ? 'force-split' : 'natural'})`);
-          const validatedContent = netflixValidation.pages;
-          const hasValidContent = validatedContent.length >= 6;
-          console.log(`🔍 Netflix validation result: ${validatedContent.length} pages, valid=${hasValidContent}`);
-          
-          if (hasValidContent) {
-            try {
-              (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';
-              console.log('✅ Confirmed Netflix AI-generated story content, setting source tracking');
-            } catch {}
-          } else {
-            console.log('⚠️ Netflix AI call succeeded but content insufficient, setting source to unknown');
-            try {
-              (globalThis as any).__LAST_STORY_SOURCE__ = 'unknown';
-              console.log('⚠️ Set Netflix source to unknown due to insufficient content');
-            } catch {}
-          }
-
-          // Emit story generation complete event
-          window.dispatchEvent(new CustomEvent('story:generation:complete'));
-
-          return {
-            content: validatedContent,
-            pageCount: validatedContent.length,
-            source: 'ai'
-          };
-        }
+      // SUCCESS CASE: Process valid AI result
+      console.log(`✅ [${generationId}] Netflix: Valid AI result received - processing...`);
+      
+      // Pages already cleaned by unified system
+      const cleanedPages = result.pages.filter((page: string) => page.length > 10);
+      console.log(`✅ [${generationId}] Netflix: AI story received - ${cleanedPages.length} pages`);
+      
+      // PHASE 4: Apply Netflix 6-page minimum validation to AI generation
+      const { validateNetflixStoryWithPageMinimum } = await import('../../supabase/functions/_shared/netflix-page-validation');
+      const { mapDifficultyToLevel } = await import('../../supabase/functions/_shared/validation-utils');
+      const validationLevel = mapDifficultyToLevel(expertGradeLevel || difficulty);
+      
+      // Apply Netflix validation to ensure 6-page minimum
+      const netflixValidation = validateNetflixStoryWithPageMinimum(
+        result.story || '',
+        validationLevel,
+        cleanedPages
+      );
+      
+      if (!netflixValidation.isValid || netflixValidation.pages.length < 6) {
+        throw new Error(`Netflix validation failed: ${netflixValidation.pages.length} pages, valid=${netflixValidation.isValid}`);
       }
+      
+      console.log(`🎬 [${generationId}] Netflix AI generation: Using ${netflixValidation.pages.length} pages (${netflixValidation.wasForceSplit ? 'force-split' : 'natural'})`);
+      const validatedContent = netflixValidation.pages;
+      
+      try {
+        (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';
+        console.log(`✅ [${generationId}] Confirmed Netflix AI-generated story content, setting source tracking`);
+      } catch {}
 
-      // Debug insufficient content 
-      console.log('📺 Netflix: AI generation returned insufficient content, using fallback');
-      return this.generateFallbackStory(userInfo, difficulty, 'insufficient_content');
+      // Emit story generation complete event
+      window.dispatchEvent(new CustomEvent('story:generation:complete'));
 
-    } catch (error) {
-      console.error('📺 Netflix: AI generation error:', error);
-      const wrappedError = ErrorHandler.handleError(error as Error, 'NetflixStyleStoryService.generateStory');
-      console.log(`🎯 Netflix Error Fallback: Using difficulty ${difficulty} for ${userInfo.name}`);
-      return this.generateFallbackStory(userInfo, difficulty, 'generation_error');
-    }
+      return {
+        content: validatedContent,
+        pageCount: validatedContent.length,
+        source: 'ai' as const
+      };
+      
+    }, `next-story-generation-${userInfo.name}`, {
+      maxRetries: 3,
+      initialDelay: 2000,
+      maxDelay: 8000
+    }).catch(async (error) => {
+      // All retries exhausted - fall back to templates with comprehensive error reporting
+      console.error(`💥 [${generationId}] Netflix: All AI generation attempts failed, using fallback`);
+      console.error(`💥 [${generationId}] Netflix: Final error:`, error);
+      const wrappedError = ErrorHandler.handleError(error || new Error('Unknown error'), 'NetflixStyleStoryService.generateStory');
+      console.log(`🎯 [${generationId}] Netflix Error Fallback: Using difficulty ${difficulty} for ${userInfo.name}`);
+      return this.generateFallbackStory(userInfo, difficulty, `ai_exhausted_all_attempts`);
+    });
   }
 
   /**
-   * Generate a fallback story using templates
+   * Generate a fallback story using templates with enhanced debugging
    */
   private static async generateFallbackStory(userInfo: UserInfo, difficulty: DifficultyLevel, reason: string): Promise<NetflixStoryResult> {
-    console.log(`📺 Netflix: Using fallback story generation (reason: ${reason})`);
+    const fallbackId = `fallback-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    console.log(`📺 [${fallbackId}] Netflix: Using fallback story generation (reason: ${reason})`);
+    console.log(`📺 [${fallbackId}] Netflix FALLBACK DEBUG: UserInfo:`, {
+      name: userInfo.name,
+      difficulty,
+      originalDifficulty: userInfo.difficultyLevel,
+      age: userInfo.age
+    });
     
-    // Show toast notification for template usage
+    // Show toast notification for template usage with more specific messaging
+    const toastMessage = reason.includes('ai_exhausted') ? 
+      "AI couldn't create your story after multiple tries. Using quality backup stories!" :
+      "AI is taking a break. You're reading quality backup stories! Parents: This is normal during high demand.";
+      
     toast({
-      title: "⚠️ Using Pre-Written Content",
-      description: "AI is taking a break. You're reading quality backup stories! Parents: This is normal during high demand.",
+      title: "⚠️ Using Pre-Written Content", 
+      description: toastMessage,
       variant: "warning",
       duration: 7000
     });
 
     try {
-      // Use template service for fallback
-      console.log(`🔧 Netflix: Calling template service with difficulty: ${difficulty}, pageCount: 5`);
+      // Use template service for fallback with enhanced error handling
+      console.log(`🔧 [${fallbackId}] Netflix: Calling template service with difficulty: ${difficulty}, pageCount: 12`);
+      console.log(`🔧 [${fallbackId}] Netflix: Template service call details:`, {
+        difficulty,
+        userInfo: {
+          name: userInfo.name,
+          age: userInfo.age,
+          difficultyLevel: userInfo.difficultyLevel
+        },
+        pageCount: 12,
+        templateIndex: 0
+      });
       
       const { data, error } = await supabase.functions.invoke('template-service', {
         body: {
@@ -234,12 +249,17 @@ export class NetflixStyleStoryService {
         }
       });
 
-      console.log(`🔧 Netflix: Template service response:`, {
+      console.log(`🔧 [${fallbackId}] Netflix: Template service response:`, {
         hasError: !!error,
         hasData: !!data,
         dataStructure: data ? Object.keys(data) : 'no data',
         pagesLength: data?.pages?.length || 0,
-        success: data?.success
+        success: data?.success,
+        errorDetails: error ? {
+          message: error.message,
+          code: error.code,
+          details: error.details
+        } : null
       });
 
       if (error) {
