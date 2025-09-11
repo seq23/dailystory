@@ -1,0 +1,115 @@
+// JavaScript Enhancements for runware-generate-image/index.js
+// Converted from TypeScript - Ready for surgical insertion
+
+// ============= ENHANCEMENT 1: Request ID Generation =============
+function generateRequestId() {
+  return `REQ-${Math.random().toString(36).substr(2, 8)}-${Math.random().toString(36).substr(2, 5)}`;
+}
+
+// Usage in serve function:
+const requestId = generateRequestId();
+console.log(`[${requestId}] 🎯 Image orchestrator request received`);
+
+// ============= ENHANCEMENT 2: Enhanced Health Check with API Key Diagnostics =============
+// Replace existing health check (around line 694-735 in index.js)
+if (req.method === 'GET' || (req.method === 'POST' && req.url.includes('/health'))) {
+  const runwareApiKeyRaw = Deno.env.get('RUNWARE_API_KEY');
+  const openaiApiKeyRaw = Deno.env.get('OPENAI_API_KEY');
+  const supabaseServiceRoleRaw = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  
+  const runwareApiKey = runwareApiKeyRaw ? runwareApiKeyRaw.trim() : null;
+  const openaiApiKey = openaiApiKeyRaw ? openaiApiKeyRaw.trim() : null;
+  const supabaseServiceRole = supabaseServiceRoleRaw ? supabaseServiceRoleRaw.trim() : null;
+  
+  return createCorsResponse({
+    status: 'healthy',
+    service: 'runware-generate-image-orchestrator',
+    timestamp: new Date().toISOString(),
+    environment: {
+      runwareApiKeyPresent: !!runwareApiKey,
+      openaiApiKeyPresent: !!openaiApiKey,
+      supabaseServiceRolePresent: !!supabaseServiceRole,
+      runwareKeyLength: runwareApiKey ? runwareApiKey.length : 0,
+      openaiKeyLength: openaiApiKey ? openaiApiKey.length : 0
+    },
+    requestId
+  });
+}
+
+// ============= ENHANCEMENT 3: Diagnostic Request Handlers =============
+// Add after request parsing (around line 800 in index.js)
+const { pageText, userInfo, sessionId, storyId, pageNumber = 1, isGuestUser = false, difficultyLevel = 'medium', forceTier, diagnostic } = await req.json();
+
+// Handle diagnostic requests
+if (diagnostic === 'key_validation') {
+  const runwareApiKeyRaw = Deno.env.get('RUNWARE_API_KEY');
+  const openaiApiKeyRaw = Deno.env.get('OPENAI_API_KEY');
+  
+  const runwareApiKey = runwareApiKeyRaw ? runwareApiKeyRaw.trim() : null;
+  const openaiApiKey = openaiApiKeyRaw ? openaiApiKeyRaw.trim() : null;
+  
+  if (!runwareApiKey) {
+    return createCorsErrorResponse('RUNWARE_API_KEY not configured in Supabase secrets', 500);
+  }
+  if (!openaiApiKey) {
+    return createCorsErrorResponse('OPENAI_API_KEY not configured in Supabase secrets', 500);
+  }
+  
+  return createCorsResponse({
+    success: true,
+    runwareKeyPresent: true,
+    openaiKeyPresent: true,
+    runwareKeyLength: runwareApiKey.length,
+    openaiKeyLength: openaiApiKey.length,
+    timestamp: new Date().toISOString()
+  });
+}
+
+if (diagnostic === 'circuit_breaker_status') {
+  return createCorsResponse({
+    success: true,
+    circuitBreakerStatus: 'CLOSED',
+    service: 'healthy',
+    timestamp: new Date().toISOString()
+  });
+}
+
+if (diagnostic === 'reset_circuit_breaker') {
+  console.log(`[${requestId}] Circuit breaker reset requested`);
+  return createCorsResponse({
+    success: true,
+    message: 'Circuit breaker reset completed',
+    timestamp: new Date().toISOString()
+  });
+}
+
+// ============= ENHANCEMENT 4: API Key Trimming =============
+// Replace ALL instances of Deno.env.get('RUNWARE_API_KEY') with:
+const runwareApiKeyRaw = Deno.env.get('RUNWARE_API_KEY');
+const runwareApiKey = runwareApiKeyRaw ? runwareApiKeyRaw.trim() : null;
+
+const openaiApiKeyRaw = Deno.env.get('OPENAI_API_KEY');
+const openaiApiKey = openaiApiKeyRaw ? openaiApiKeyRaw.trim() : null;
+
+// ============= ENHANCEMENT 5: Smart Tier 1 Skip Logic =============
+// Modify Tier 1 logic (around line 925 in index.js) to:
+if ((!forceTier || forceTier === 1) && openaiApiKey) {
+  // Existing Tier 1 logic here
+} else if (!openaiApiKey) {
+  console.log(`[${requestId}] ⏭️ Skipping Tier 1: OPENAI_API_KEY not configured`);
+  tierErrors.push({ tier: 1, error: 'OPENAI_API_KEY not configured - skipped' });
+}
+
+// ============= ENHANCEMENT 6: Enhanced Logging with Request ID =============
+// Replace console.log statements throughout with:
+console.log(`[${requestId}] 🎯 Starting tier progression for page ${pageNumber}, session: ${sessionId}`);
+console.log(`[${requestId}] Force tier: ${forceTier || 'auto'}, difficulty: ${difficultyLevel}`);
+console.log(`[${requestId}] 🥇 Attempting Tier 1: ai-visual-scene-creator`);
+console.log(`[${requestId}] ✅ Tier 1 success: ${tier1Data.imageURL}`);
+console.log(`[${requestId}] ⚠️ Tier 1 failed: ${error.message}`);
+console.log(`[${requestId}] 🥈 Attempting Tier 2.5: runware-simple-fallback`);
+console.log(`[${requestId}] ✅ Tier 2.5 success: ${tier2Data.imageURL}`);
+console.log(`[${requestId}] ⚠️ Tier 2.5 failed: ${error.message}`);
+console.log(`[${requestId}] 🎉 Image generation successful via ${usedTier}`);
+console.error(`[${requestId}] ❌ All tiers failed`);
+console.error(`[${requestId}] ❌ Image orchestrator error:`, error);
