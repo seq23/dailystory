@@ -3,13 +3,14 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Zap, Cable, ArrowRight, Bug, BarChart3, TrendingUp, Brain } from 'lucide-react';
+import { Zap, Cable, ArrowRight, Bug, BarChart3, TrendingUp, Brain, Layers } from 'lucide-react';
 import { StoryPromptTester } from '@/components/StoryPromptTester';
 import { RunwareConnectionTest } from '@/components/RunwareConnectionTest';
 import { DebugDataViewer } from '@/components/DebugDataViewer';
 import { AnalyticsDashboard } from '@/components/AnalyticsDashboard';
 import { AdvancedMonitoringDashboard } from '@/components/AdvancedMonitoringDashboard';
 import { VoiceCatalogTester } from '@/components/VoiceCatalogTester';
+import { ImageTierTester } from '@/components/ImageTierTester';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { errorSuppressionManager } from '@/utils/errorSuppression';
 
@@ -91,6 +92,19 @@ export default function PromptTesting() {
                   <h2 className="text-2xl font-semibold">Advanced Monitoring</h2>
                 </div>
                 <AdvancedMonitoringDashboard />
+              </section>
+
+              <Separator />
+
+              {/* Image Tier Testing */}
+              <section>
+                <div className="flex items-center gap-2 mb-4">
+                  <Layers className="w-5 h-5 text-primary" />
+                  <h2 className="text-2xl font-semibold">Image Tier Testing</h2>
+                </div>
+                <ErrorBoundary>
+                  <ImageTierTester />
+                </ErrorBoundary>
               </section>
 
               <Separator />
