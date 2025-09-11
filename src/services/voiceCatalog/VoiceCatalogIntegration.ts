@@ -4,7 +4,7 @@
  * NOT RELATED TO: User voice commands, audio playback, or microphone input
  */
 
-import { VoiceCatalogService, VoiceSelector, VoiceProcessor, DifficultyLevel } from './index';
+import { VoiceCatalogService, VoiceSelector, VoiceProcessor, DifficultyLevel, ThemeLibraryService } from './index';
 import type { UserInfo } from '@/types';
 import type { ProcessedVoice, VoiceSelectionResult } from './types';
 
@@ -40,13 +40,12 @@ export class VoiceCatalogIntegration {
 
     console.log(`🎭 Selecting voice for ${userInfo.name || 'user'} at ${difficulty} level`);
 
-    // 1. Process themes through library mapping for enhanced matching
-    // Note: Frontend version uses direct theme processing for now
+    // 1. Map themes using ThemeLibraryService for proper matching and synonyms
     const enhancedThemes = preferences?.themes 
-      ? preferences.themes.map(theme => theme.toLowerCase().trim()).filter(Boolean)
+      ? ThemeLibraryService.mapToLibrary(preferences.themes)
       : undefined;
 
-    console.log(`🎯 Theme processing: ${JSON.stringify(preferences?.themes)} → ${JSON.stringify(enhancedThemes)}`);
+    console.log(`🎯 Theme mapping: ${JSON.stringify(preferences?.themes)} → ${JSON.stringify(enhancedThemes)}`);
 
     // 2. Select the best voice using the new system with enhanced themes
     const voiceSelection: VoiceSelectionResult = await VoiceSelector.selectVoice(

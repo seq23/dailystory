@@ -6,12 +6,12 @@
 
 import { VoiceDefinition, VoiceOverride } from './types';
 
-// Import voice data from backend files
-import beginnerData from '../../../supabase/functions/_shared/voice-catalog/voices-beginner.v1.json';
-import easyOverrides from '../../../supabase/functions/_shared/voice-catalog/voices-easy.v1.json';
-import mediumData from '../../../supabase/functions/_shared/voice-catalog/voices-medium.v1.json';
-import hardData from '../../../supabase/functions/_shared/voice-catalog/voices-hard.v1.json';
-import expertData from '../../../supabase/functions/_shared/voice-catalog/voices-expert.v1.json';
+// Import voice data from local files
+import beginnerData from './voices-beginner.v1.json';
+import easyOverrides from './voices-easy.v1.json';
+import mediumData from './voices-medium.v1.json';
+import hardData from './voices-hard.v1.json';
+import expertData from './voices-expert.v1.json';
 
 /**
  * Voice Data Loader

@@ -1,0 +1,127 @@
+{
+  "schema":"avc.level.v1",
+  "v":"1.0.0",
+  "level":"expert",
+  "voices":[
+    {
+      "id":"academy_hidden_doors_exp_v1","pn":"Academy of Hidden Doors",
+      "vf":{"tone":[18,9],"cad":14,"var":4,"wp":[0,3],"fig":0.55,"hum":0.5,"warm":0.8,"nar":2},
+      "st":{"hk":[14],"tr":[10],"pz":[5],"ct":[4],"tw":[1,12,10,11],"en":[9]},
+      "ch":{"hp":[11,12,10],"pov":"third","dlg":[8,4],"arc":[9,11]},
+      "wd":{"set":[14,21,23],"sc":"grand","mor":"implied","lp":["legend_bleeds_present"],"rp":["three_trials","series_button"]},
+      "rd":{"rh":"none","aa":0,"ono":["whoosh","clang"],"sl":1},
+      "eg":{"dir":0,"lst":0,"ip":["solve_with_team"],"contr":0,"exag":0},
+      "th":["magic_school","found_family","responsibility"],"tg":[31,28,29],
+      "uig":{"aff":{"u":0.5,"c":0.3,"a":0.3,"f":0.2,"h":0.4},"rules":{"u":{"m":"subtle","max":1},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
+      "src":["Magic-Academy"]
+    },
+    {
+      "id":"compass_of_dust_exp_v1","pn":"Compass of Dust & Stars",
+      "vf":{"tone":[8,20],"cad":14,"var":4,"wp":[0],"fig":0.6,"hum":0.35,"warm":0.75,"nar":2},
+      "st":{"hk":[12,13],"tr":[10,12],"pz":[5,6],"ct":[4],"tw":[10,12,11],"en":[10,11]},
+      "ch":{"hp":[12,11,10],"pov":"third","dlg":[9,5],"arc":[9,10]},
+      "wd":{"set":[21,15],"sc":"grand","mor":"symbolic","lp":["artifact_awakens"],"rp":["clue_trial_reveal"]},
+      "rd":{"rh":"none","aa":0,"ono":["thrum"],"sl":1},
+      "eg":{"dir":0,"lst":0,"ip":["ethics_prompt"],"contr":0,"exag":0},
+      "th":["myth_adventure","identity","destiny"],"tg":[33,27,29],
+      "uig":{"aff":{"u":0.5,"c":0.3,"a":0.3,"f":0.2,"h":0.3},"rules":{"u":{"m":"subtle","max":1},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
+      "src":["Cosmic-Navigator"]
+    },
+    {
+      "id":"tesseract_voyager_exp_v1","pn":"Tesseract Voyager",
+      "vf":{"tone":[9,18],"cad":14,"var":4,"wp":[0],"fig":0.6,"hum":0.4,"warm":0.8,"nar":2},
+      "st":{"hk":[13],"tr":[10,12],"pz":[6],"ct":[4],"tw":[10,11],"en":[10]},
+      "ch":{"hp":[12,11],"pov":"third","dlg":[9,4],"arc":[9,11]},
+      "wd":{"set":[21,15],"sc":"grand","mor":"symbolic","lp":["artifact_awakens"],"rp":["three_trials"]},
+      "rd":{"rh":"none","aa":0,"ono":["whoosh"],"sl":1},
+      "eg":{"dir":0,"lst":0,"ip":["wonder_prompt"],"contr":0,"exag":0},
+      "th":["science-fantasy","family","courage"],"tg":[26,29],
+      "uig":{"aff":{"u":0.5,"c":0.3,"a":0.3,"f":0.2,"h":0.3},"rules":{"u":{"m":"subtle","max":1},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
+      "src":["Sci-Fantasy-Explorer"]
+    },
+    {
+      "id":"streetlight_como_exp_v1","pn":"Streetlight Coming-of-Age",
+      "vf":{"tone":[20,8],"cad":14,"var":3,"wp":[0],"fig":0.55,"hum":0.4,"warm":0.75,"nar":0},
+      "st":{"hk":[12],"tr":[6],"pz":[5],"ct":[5],"tw":[14],"en":[11]},
+      "ch":{"hp":[12,4],"pov":"first","dlg":[4,5],"arc":[10,11]},
+      "wd":{"set":[3,17],"sc":"everyday","mor":"implied","lp":[],"rp":[7]},
+      "rd":{"rh":"none","aa":0,"ono":[],"sl":1},
+      "eg":{"dir":0,"lst":0,"ip":["hard_choice_prompt"],"contr":0,"exag":0},
+      "th":["coming_of_age","identity","family"],"tg":[35,27,28],
+      "uig":{"aff":{"u":0.5,"c":0.2,"a":0.2,"f":0.2,"h":0.4},"rules":{"u":{"m":"subtle","max":1},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
+      "src":["Street-Realist"]
+    },
+    {
+      "id":"trail_survivor_exp_v1","pn":"Trail Survivor",
+      "vf":{"tone":[6,18],"cad":14,"var":4,"wp":[0],"fig":0.5,"hum":0.35,"warm":0.75,"nar":2},
+      "st":{"hk":[12],"tr":[12],"pz":[6],"ct":[4],"tw":[10,11],"en":[10]},
+      "ch":{"hp":[12,0],"pov":"third","dlg":[5,4],"arc":[11,12]},
+      "wd":{"set":[16,3],"sc":"grand","mor":"implied","lp":[],"rp":["three_trials"]},
+      "rd":{"rh":"none","aa":0,"ono":["thud","splash"],"sl":1},
+      "eg":{"dir":0,"lst":0,"ip":["survival_prompt"],"contr":0,"exag":0},
+      "th":["survival","courage","resourcefulness"],"tg":[31,29],
+      "uig":{"aff":{"u":0.4,"c":0.2,"a":0.2,"f":0.2,"h":0.4},"rules":{"u":{"m":"subtle","max":1},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
+      "src":["Wilderness-Guide"]
+    },
+    {
+      "id":"dragon_bond_exp_v1","pn":"Dragon Bond",
+      "vf":{"tone":[19,18],"cad":14,"var":4,"wp":[0],"fig":0.55,"hum":0.45,"warm":0.8,"nar":2},
+      "st":{"hk":[14,12],"tr":[12,10],"pz":[6],"ct":[4],"tw":[1,10,11],"en":[10,9]},
+      "ch":{"hp":[12,11,0],"pov":"third","dlg":[9,5],"arc":[9,11]},
+      "wd":{"set":[21,6],"sc":"grand","mor":"implied","lp":["artifact_awakens"],"rp":["three_trials"]},
+      "rd":{"rh":"none","aa":0,"ono":["whoosh","clang"],"sl":1},
+      "eg":{"dir":0,"lst":0,"ip":["bond_prompt"],"contr":0,"exag":0},
+      "th":["dragon","quest","destiny"],"tg":[36,26,29],
+      "uig":{"aff":{"u":0.4,"c":0.3,"a":0.3,"f":0.2,"h":0.3},"rules":{"u":{"m":"subtle","max":1},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
+      "src":["Dragon-Rider"]
+    },
+    {
+      "id":"steel_and_kindness_exp_v1","pn":"Steel & Kindness",
+      "vf":{"tone":[18,4],"cad":14,"var":4,"wp":[0],"fig":0.55,"hum":0.5,"warm":0.8,"nar":2},
+      "st":{"hk":[14],"tr":[10],"pz":[5],"ct":[4],"tw":[10,11],"en":[10]},
+      "ch":{"hp":[11,12],"pov":"third","dlg":[8,4],"arc":[9,11]},
+      "wd":{"set":[21,6,17],"sc":"grand","mor":"implied","lp":[],"rp":["three_trials"]},
+      "rd":{"rh":"none","aa":0,"ono":["clang"],"sl":1},
+      "eg":{"dir":0,"lst":0,"ip":["mentor_prompt"],"contr":0,"exag":0},
+      "th":["courage","responsibility","found_family"],"tg":[29,28],
+      "uig":{"aff":{"u":0.5,"c":0.3,"a":0.3,"f":0.2,"h":0.4},"rules":{"u":{"m":"subtle","max":1},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
+      "src":["Warrior-Heart"]
+    },
+    {
+      "id":"arena_of_courage_exp_v1","pn":"Arena of Courage",
+      "vf":{"tone":[18,21],"cad":14,"var":4,"wp":[0],"fig":0.55,"hum":0.45,"warm":0.75,"nar":0},
+      "st":{"hk":[12],"tr":[10,6],"pz":[6],"ct":[4],"tw":[10,12],"en":[9,11]},
+      "ch":{"hp":[12,11],"pov":"first","dlg":[8,3],"arc":[9,11]},
+      "wd":{"set":[3],"sc":"grand","mor":"implied","lp":[],"rp":["clue_trial_reveal"]},
+      "rd":{"rh":"none","aa":0,"ono":["whoom"],"sl":1},
+      "eg":{"dir":0,"lst":1,"ip":["tension_prompt"],"contr":0,"exag":0},
+      "th":["courage","responsibility","society"],"tg":[29],
+      "uig":{"aff":{"u":0.4,"c":0.2,"a":0.2,"f":0.2,"h":0.3},"rules":{"u":{"m":"subtle","max":1},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
+      "src":["Arena-Survivor"]
+    },
+    {
+      "id":"road_under_hill_exp_v1","pn":"Road Under the Hill",
+      "vf":{"tone":[21,18],"cad":14,"var":4,"wp":[0],"fig":0.55,"hum":0.5,"warm":0.85,"nar":2},
+      "st":{"hk":[14],"tr":[12,4],"pz":[6],"ct":[4],"tw":[15,11],"en":[10]},
+      "ch":{"hp":[12,0],"pov":"third","dlg":[5,9],"arc":[11]},
+      "wd":{"set":[21,7],"sc":"grand","mor":"implied","lp":[],"rp":["three_trials"]},
+      "rd":{"rh":"none","aa":0,"ono":["whoosh"],"sl":1},
+      "eg":{"dir":0,"lst":0,"ip":["song_prompt"],"contr":0,"exag":0},
+      "th":["quest","friendship","home"],"tg":[26,6],
+      "uig":{"aff":{"u":0.4,"c":0.2,"a":0.3,"f":0.2,"h":0.3},"rules":{"u":{"m":"subtle","max":1},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
+      "src":["Epic-Wanderer"]
+    },
+    {
+      "id":"ghost_detective_guild_exp_v1","pn":"Ghost Detective Guild",
+      "vf":{"tone":[15,18],"cad":14,"var":4,"wp":[0,3],"fig":0.5,"hum":0.5,"warm":0.75,"nar":0},
+      "st":{"hk":[12],"tr":[10],"pz":[5],"ct":[4],"tw":[14,15,1],"en":[9]},
+      "ch":{"hp":[11,12,10],"pov":"first","dlg":[8,3],"arc":[11]},
+      "wd":{"set":[3,21],"sc":"grand","mor":"implied","lp":[],"rp":["clue_trial_reveal","series_button"]},
+      "rd":{"rh":"none","aa":0,"ono":["shhh","thud"],"sl":1},
+      "eg":{"dir":0,"lst":1,"ip":["spot_the_clue"],"contr":0,"exag":0},
+      "th":["ghosts","detective","team"],"tg":[37,38,28],
+      "uig":{"aff":{"u":0.5,"c":0.3,"a":0.3,"f":0.2,"h":0.4},"rules":{"u":{"m":"subtle","max":1},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
+      "src":["Paranormal-Detective"]
+    }
+  ]
+}
