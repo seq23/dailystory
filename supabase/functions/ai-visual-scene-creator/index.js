@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.js";
 import { CharacterConsistencyService } from '../_shared/CharacterConsistencyService.js';
 import { SecondaryElementDetector } from '../_shared/SecondaryElementDetector.js';
 import { SessionStateManager } from '../_shared/SessionStateManager.js';

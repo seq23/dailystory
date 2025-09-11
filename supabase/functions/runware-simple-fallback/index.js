@@ -5,7 +5,7 @@ import { globalArcSessionManager } from "../_shared/SessionStateManager.js";
 import { ExactWordExtractor } from "../_shared/ExactWordExtractor.js";
 import { VisualDetailTracker } from "../_shared/VisualDetailTracker.js";
 import { CharacterConsistencyService } from "../_shared/CharacterConsistencyService.js";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.js";
 
 // Nuclear Independent CORS Headers
 const corsHeaders = {
