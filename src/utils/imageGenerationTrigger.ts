@@ -118,10 +118,8 @@ export class ImageGenerationTrigger {
       const result = await SimpleImageService.generateStoryImage(
         options.pageText,
         options.userInfo,
-        'medium' as any, // Default difficulty level
         sessionId,
         options.currentPage + 1,
-        sessionId,
         !options.isGuestUser // For analytics only - all users get same quality
       );
       

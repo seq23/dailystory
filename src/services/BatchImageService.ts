@@ -40,10 +40,8 @@ export class BatchImageService {
       const result = await SimpleImageService.generateStoryImage(
         pages[pageIndex],
         userInfo,
-        'medium', // Default difficulty for library recovery
-        undefined, // No session ID needed
-        pageIndex + 1,
         undefined, // No session ID for batch
+        pageIndex + 1,
         false // For analytics only - all users get Tier 1 quality regardless
       );
           

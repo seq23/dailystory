@@ -2059,10 +2059,8 @@ const initializeStory = async () => {
       const result = await SimpleImageService.generateStoryImage(
         pageText, // Use pageText instead of storyText for consistency 
         { ...userInfo, difficultyLevel: currentDifficulty }, 
-        currentDifficulty,
-        storyId,
-        currentPage + 1,
         characterSessionId,
+        currentPage + 1,
         isPremium
       );
       
@@ -2192,10 +2190,8 @@ const initializeStory = async () => {
       const result = await SimpleImageService.generateStoryImage(
         storyText,
         userInfo,
-        currentDifficulty,
-        storyId,
-        index + 1,
         sessionId,
+        index + 1,
         isPremium
       );
       if (result.success && result.url) {
