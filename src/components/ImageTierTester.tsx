@@ -95,14 +95,19 @@ export function ImageTierTester() {
       
       let result;
       
+      // Build proper avatarIdentity object that functions expect
+      const avatarIdentity = {
+        name: config.characterName,
+        age: config.age,
+        userName: config.userName
+      };
+
       if (tierType === 'Tier 1') {
         // Test Tier 1 via orchestrator
         result = await supabase.functions.invoke('runware-generate-image', {
           body: {
             storyText: config.storyText,
-            userName: config.userName,
-            characterName: config.characterName,
-            age: config.age,
+            avatarIdentity,
             sessionId: config.sessionId,
             forceOrchestrator: true
           }
@@ -112,9 +117,7 @@ export function ImageTierTester() {
         result = await supabase.functions.invoke('runware-simple-fallback', {
           body: {
             storyText: config.storyText,
-            userName: config.userName,
-            characterName: config.characterName,
-            age: config.age,
+            avatarIdentity,
             sessionId: config.sessionId,
             templateComplexity: templateComplexity || 'A',
             forceFallback: true
@@ -125,9 +128,7 @@ export function ImageTierTester() {
         result = await supabase.functions.invoke('runware-simple-fallback', {
           body: {
             storyText: config.storyText,
-            userName: config.userName,
-            characterName: config.characterName,
-            age: config.age,
+            avatarIdentity,
             sessionId: config.sessionId,
             forceSVG: true
           }
@@ -137,9 +138,7 @@ export function ImageTierTester() {
         result = await supabase.functions.invoke('ai-visual-scene-creator', {
           body: {
             storyText: config.storyText,
-            userName: config.userName,
-            characterName: config.characterName,
-            age: config.age,
+            avatarIdentity,
             sessionId: config.sessionId
           }
         });
