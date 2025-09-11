@@ -407,7 +407,7 @@ export function enhancedAutoSplitContent(content: string, level: ValidationLevel
 /**
  * Force split content into minimum required pages - CRITICAL FIX: Enhanced for Netflix 6-page minimum
  */
-function forceMinimumPageSplit(content: string, minPages: number): string[] {
+export function forceMinimumPageSplit(content: string, minPages: number): string[] {
   const sentences = content.split(/[.!?]+/).filter(s => s.trim());
   
   // CRITICAL FIX: If we don't have enough sentences, create meaningful content padding

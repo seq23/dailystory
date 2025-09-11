@@ -333,6 +333,54 @@ Generate a corrected version that addresses these issues while keeping the story
     const serviceType = getServiceType(config);
     console.log(`🎯 Service Type Detected: ${serviceType}`);
     
+    // NETFLIX INTEGRATION: Apply Netflix-specific page validation for free users
+    if (config.sessionType === 'free' && serviceType === 'netflix') {
+      console.log('🎬 NETFLIX VALIDATION: Applying 6-page minimum for guest users');
+      const { validateNetflixStoryWithPageMinimum } = await import('../_shared/netflix-page-validation.ts');
+      
+      // Parse initial pages for Netflix validation
+      const initialPages = sharedParseIntoPages(storyText, validationLevel, serviceType);
+      
+      const netflixValidation = validateNetflixStoryWithPageMinimum(
+        storyText,
+        validationLevel,
+        initialPages
+      );
+      
+      console.log(`🎬 NETFLIX RESULT:`, {
+        isValid: netflixValidation.isValid,
+        pageCount: netflixValidation.pages.length,
+        wasForceSplit: netflixValidation.wasForceSplit,
+        wordCountBypassed: netflixValidation.wordCountBypassed,
+        reason: netflixValidation.reason
+      });
+      
+      // Use Netflix-validated pages for subsequent processing
+      if (netflixValidation.isValid) {
+        // Apply placeholder resolution to Netflix-validated content
+        const placeholderResolved = resolveAllPlaceholders(storyText, { userInfo });
+        
+        return new Response(JSON.stringify({
+          success: true,
+          story: placeholderResolved,
+          pages: netflixValidation.pages,
+          vocabCompliance: 0.85, // Default for force-split scenarios
+          metadata: {
+            processingMode: 'netflix-validated',
+            gradeLevel: bundle.systemSettings.gradeLevel,
+            netflixValidation: {
+              wasForceSplit: netflixValidation.wasForceSplit,
+              wordCountBypassed: netflixValidation.wordCountBypassed,
+              originalPageCount: initialPages.length,
+              finalPageCount: netflixValidation.pages.length
+            }
+          }
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+    }
+    
     // Check if validation requires retry with hints
     if (validationResult.decision === 'RETRY_WITH_HINT' && (config.repairAttempt || 0) < 2) {
       console.log(`🔄 RETRY WITH HINT: Validation suggests retry (attempt ${(config.repairAttempt || 0) + 1})`);

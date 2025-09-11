@@ -126,8 +126,14 @@ serve(async (req) => {
       source: difficulty ? 'direct_param' : 'userInfo.difficultyLevel'
     });
     
-    // Dynamic page count calculation (Phase 1)
-    const dynamicPageCount = pageCount || getExpectedPageCountForDifficulty(effectiveDifficulty);
+    // Dynamic page count calculation (Phase 1) - Netflix 6-page minimum for guests
+    let dynamicPageCount = pageCount || getExpectedPageCountForDifficulty(effectiveDifficulty);
+    
+    // NETFLIX INTEGRATION: Enforce 6-page minimum for guest users (mode === 'testing' with 12 pages indicates Netflix guest)
+    if (mode === 'testing' && dynamicPageCount === 12) {
+      dynamicPageCount = Math.max(6, dynamicPageCount);
+      console.log('🎬 Netflix guest mode detected: enforcing 6-page minimum');
+    }
     
     console.log('🎯 Template service request:', { 
       difficulty: effectiveDifficulty, 

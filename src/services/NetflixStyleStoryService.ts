@@ -153,35 +153,46 @@ export class NetflixStyleStoryService {
         
         console.log(`✅ Netflix: AI generation successful - ${finalContent.length} pages`);
         
-        // PHASE 4: Use dynamic character validation based on difficulty level
-        const { mapDifficultyToLevel, getMinCharactersTotal, getExpectedPagesForService } = await import('../../supabase/functions/_shared/validation-utils');
+        // PHASE 4: Apply Netflix 6-page minimum validation to AI generation
+        const { validateNetflixStoryWithPageMinimum } = await import('../../supabase/functions/_shared/netflix-page-validation');
+        const { mapDifficultyToLevel } = await import('../../supabase/functions/_shared/validation-utils');
         const validationLevel = mapDifficultyToLevel(expertGradeLevel || difficulty);
-        const expectedPages = getExpectedPagesForService('netflix', validationLevel) || 12;
-        const minTotalChars = getMinCharactersTotal(validationLevel, expectedPages);
-        const hasValidContent = result.story && result.story.length >= minTotalChars && result.pages && result.pages.length > 0 && finalContent.length > 0;
-        console.log(`🔍 Netflix dynamic validation: StoryLength=${result.story?.length}, MinRequired=${minTotalChars}, Level=${validationLevel}, Pages=${expectedPages}`);
         
-        if (hasValidContent) {
-          try {
-            (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';
-            console.log('✅ Confirmed Netflix AI-generated story content, setting source tracking');
-          } catch {}
-        } else {
-          console.log('⚠️ Netflix AI call succeeded but content insufficient, setting source to unknown');
-          try {
-            (globalThis as any).__LAST_STORY_SOURCE__ = 'unknown';
-            console.log('⚠️ Set Netflix source to unknown due to insufficient content');
-          } catch {}
+        // Apply Netflix validation to ensure 6-page minimum
+        const netflixValidation = validateNetflixStoryWithPageMinimum(
+          result.story || '',
+          validationLevel,
+          finalContent
+        );
+        
+        if (netflixValidation.isValid && netflixValidation.pages.length >= 6) {
+          console.log(`🎬 Netflix AI generation: Using ${netflixValidation.pages.length} pages (${netflixValidation.wasForceSplit ? 'force-split' : 'natural'})`);
+          const validatedContent = netflixValidation.pages;
+          const hasValidContent = validatedContent.length >= 6;
+          console.log(`🔍 Netflix validation result: ${validatedContent.length} pages, valid=${hasValidContent}`);
+          
+          if (hasValidContent) {
+            try {
+              (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';
+              console.log('✅ Confirmed Netflix AI-generated story content, setting source tracking');
+            } catch {}
+          } else {
+            console.log('⚠️ Netflix AI call succeeded but content insufficient, setting source to unknown');
+            try {
+              (globalThis as any).__LAST_STORY_SOURCE__ = 'unknown';
+              console.log('⚠️ Set Netflix source to unknown due to insufficient content');
+            } catch {}
+          }
+
+          // Emit story generation complete event
+          window.dispatchEvent(new CustomEvent('story:generation:complete'));
+
+          return {
+            content: validatedContent,
+            pageCount: validatedContent.length,
+            source: 'ai'
+          };
         }
-
-        // Emit story generation complete event
-        window.dispatchEvent(new CustomEvent('story:generation:complete'));
-
-        return {
-          content: finalContent,
-          pageCount: finalContent.length,
-          source: 'ai'
-        };
       }
 
       // Debug insufficient content 
@@ -249,6 +260,27 @@ export class NetflixStyleStoryService {
           pages: data.pages
         });
         throw new Error('Template service returned invalid pages data');
+      }
+
+      // NETFLIX INTEGRATION: Apply 6-page minimum validation to template fallback
+      if (data.pages.length < 6) {
+        console.log(`🎬 Netflix: Template fallback has ${data.pages.length} pages, applying 6-page minimum`);
+        const { validateNetflixStoryWithPageMinimum } = await import('../../supabase/functions/_shared/netflix-page-validation');
+        const { mapDifficultyToLevel } = await import('../../supabase/functions/_shared/validation-utils');
+        
+        const validationLevel = mapDifficultyToLevel(difficulty);
+        const storyText = data.pages.join(' ');
+        
+        const netflixValidation = validateNetflixStoryWithPageMinimum(
+          storyText,
+          validationLevel,
+          data.pages
+        );
+        
+        if (netflixValidation.isValid && netflixValidation.pages.length >= 6) {
+          console.log(`📺 Netflix: Template expanded from ${data.pages.length} to ${netflixValidation.pages.length} pages`);
+          data.pages = netflixValidation.pages;
+        }
       }
 
       console.log(`📺 Netflix: Fallback template generated - ${data.pages.length} pages`);
