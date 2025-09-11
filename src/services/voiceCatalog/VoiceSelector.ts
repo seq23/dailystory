@@ -10,6 +10,10 @@ import type { UserInfo } from '@/types';
 import { safeThemeJoin } from "@/lib/utils";
 
 export class VoiceSelector {
+  // Novelty scoring for variety
+  private static voiceSelectionHistory: Map<string, { voiceId: string; timestamp: number }[]> = new Map();
+  private static readonly NOVELTY_PENALTY = 0.15;
+  private static readonly RANDOM_VARIANCE = 0.05;
 
   /**
    * Select the best voice for a user and difficulty level with enhanced theme matching
@@ -34,10 +38,14 @@ export class VoiceSelector {
       let voices = await VoiceCatalogService.getVoicesForLevel(difficulty);
       let bestMatch = await this.findBestVoiceMatch(voices, userInfo, preferences, enhancedThemes);
       
+      // Record selection for novelty tracking
+      this.recordVoiceSelection(bestMatch.voice.id, userInfo.name || 'anonymous');
+      
       // If theme matching is poor and themes are provided, try cross-level search
       if (bestMatch.compatibilityScore < 0.6 && enhancedThemes && enhancedThemes.length > 0) {
         console.log(`🔄 Cross-level search triggered for themes: ${safeThemeJoin(enhancedThemes)}`);
         bestMatch = await this.performCrossLevelSearch(userInfo, preferences, enhancedThemes, difficulty);
+        this.recordVoiceSelection(bestMatch.voice.id, userInfo.name || 'anonymous');
       }
       
       return bestMatch;
@@ -96,7 +104,7 @@ export class VoiceSelector {
   }
 
   /**
-   * Perform cross-level search for better theme matching
+   * Perform cross-level search for better theme matching with age restrictions
    */
   private static async performCrossLevelSearch(
     userInfo: UserInfo,
@@ -104,13 +112,27 @@ export class VoiceSelector {
     enhancedThemes: string[],
     originalDifficulty: DifficultyLevel
   ): Promise<VoiceSelectionResult> {
-    const levels: DifficultyLevel[] = ['beginner', 'easy', 'medium', 'hard', 'expert'];
-    const otherLevels = levels.filter(level => level !== originalDifficulty);
+    // Age boundary validation - block very young users from cross-level
+    const userAge = userInfo.age || 8;
+    
+    if (userAge <= 6) {
+      console.log('🚫 Cross-level search blocked for very young users');
+      const voices = await VoiceCatalogService.getVoicesForLevel(originalDifficulty);
+      return this.findBestVoiceMatch(voices, userInfo, preferences, enhancedThemes);
+    }
+    
+    // Limit to adjacent levels only for safety
+    const levelOrder: DifficultyLevel[] = ['beginner', 'easy', 'medium', 'hard', 'expert'];
+    const currentIndex = levelOrder.indexOf(originalDifficulty);
+    const adjacentLevels = [
+      levelOrder[currentIndex - 1],
+      levelOrder[currentIndex + 1]
+    ].filter(level => level !== undefined);
     
     let bestOverallMatch: VoiceSelectionResult | null = null;
     let bestScore = 0;
 
-    for (const level of otherLevels) {
+    for (const level of adjacentLevels) {
       try {
         const voices = await VoiceCatalogService.getVoicesForLevel(level);
         const match = await this.findBestVoiceMatch(voices, userInfo, preferences, enhancedThemes);
@@ -164,7 +186,7 @@ export class VoiceSelector {
   }
 
   /**
-   * Calculate compatibility score between voice and user
+   * Calculate compatibility score with dynamic weighting system
    */
   private static calculateCompatibilityScore(
     voice: ProcessedVoice,
@@ -173,53 +195,48 @@ export class VoiceSelector {
     enhancedThemes?: string[]
   ): number {
     let score = 0.5; // Base score
-
-    // Enhanced theme matching (highest priority)
-    if (enhancedThemes && enhancedThemes.length > 0 && voice.resolvedElements.themes) {
-      const voiceThemes = voice.resolvedElements.themes.map(t => t.toLowerCase());
+    
+    // Determine scoring mode based on theme specificity
+    const isExplicitRequest = enhancedThemes && enhancedThemes.length > 0;
+    
+    if (isExplicitRequest) {
+      // INTENT-FOCUSED SCORING (60% theme weight for explicit requests)
+      const themeScore = this.calculateThemeScore(voice, enhancedThemes);
+      score += themeScore * 0.6; // HIGH theme weight for explicit user requests
       
-      const themeMatches = enhancedThemes.filter(theme => 
-        voiceThemes.some(voiceTheme => 
-          voiceTheme.includes(theme.toLowerCase()) || theme.toLowerCase().includes(voiceTheme)
-        )
-      ).length;
+      const ageScore = this.getAgeAppropriatenessScore(voice, parseInt(userInfo.gradeLevel?.replace(/\D/g, '') || '0'));
+      score += ageScore * 0.2; // Reduced age weight when themes are specified
       
-      if (themeMatches > 0) {
-        score += (themeMatches / enhancedThemes.length) * 0.4; // Heavy weight for theme matching
+      const readingScore = userInfo.readingLevel ? this.getReadingLevelScore(voice, userInfo.readingLevel) : 0.5;
+      score += readingScore * 0.1; // Reduced reading level weight
+      
+    } else {
+      // BALANCED DISCOVERY SCORING (no explicit themes)
+      const ageScore = this.getAgeAppropriatenessScore(voice, parseInt(userInfo.gradeLevel?.replace(/\D/g, '') || '0'));
+      score += ageScore * 0.35; // Higher age weight for general discovery
+      
+      const readingScore = userInfo.readingLevel ? this.getReadingLevelScore(voice, userInfo.readingLevel) : 0.5;
+      score += readingScore * 0.25; // Higher reading level weight
+      
+      // Profile themes from interests (legacy compatibility)
+      if (userInfo.interests && voice.resolvedElements.themes) {
+        const profileThemeScore = this.calculateProfileThemeScore(voice, userInfo.interests);
+        score += profileThemeScore * 0.2;
       }
     }
-
-    // Legacy theme matching (for backward compatibility)
-    if (userInfo.interests && voice.resolvedElements.themes) {
-      const userInterests = userInfo.interests.map(i => i.toLowerCase());
-      const voiceThemes = voice.resolvedElements.themes.map(t => t.toLowerCase());
-      
-      const themeMatches = userInterests.filter(interest => 
-        voiceThemes.some(theme => 
-          theme.includes(interest) || interest.includes(theme)
-        )
-      ).length;
-      
-      score += themeMatches * 0.1;
-    }
-
-    // Age appropriateness (based on grade level)
-    const gradeLevel = parseInt(userInfo.gradeLevel?.replace(/\D/g, '') || '0');
-    const ageScore = this.getAgeAppropriatenessScore(voice, gradeLevel);
-    score += ageScore * 0.25;
-
-    // Reading level compatibility
-    if (userInfo.readingLevel) {
-      const readingScore = this.getReadingLevelScore(voice, userInfo.readingLevel);
-      score += readingScore * 0.15;
-    }
-
-    // User input integration preferences
+    
+    // NOVELTY SCORING (session-based variety)
+    const noveltyScore = this.calculateNoveltyScore(voice.id, userInfo.name || 'anonymous');
+    score += noveltyScore * 0.1;
+    
+    // Add small random variance to break ties and ensure variety
+    score += (Math.random() - 0.5) * this.RANDOM_VARIANCE;
+    
+    // User input integration preferences (minor weight)
     const inputScore = this.getUserInputScore(voice, userInfo);
-    score += inputScore * 0.1;
-
-
-    // Preferences matching
+    score += inputScore * 0.05;
+    
+    // Voice preference matching (warmth, humor)
     if (preferences) {
       if (preferences.warmthPreference !== undefined) {
         const warmthDiff = Math.abs(voice.vf.warm - preferences.warmthPreference);
@@ -234,6 +251,65 @@ export class VoiceSelector {
 
     // Ensure score stays within bounds
     return Math.max(0, Math.min(1, score));
+  }
+  
+  /**
+   * Calculate theme matching score for explicit theme requests
+   */
+  private static calculateThemeScore(voice: ProcessedVoice, enhancedThemes: string[]): number {
+    if (!voice.resolvedElements.themes || enhancedThemes.length === 0) return 0;
+    
+    const voiceThemes = voice.resolvedElements.themes.map(t => t.toLowerCase());
+    const matches = enhancedThemes.filter(theme => 
+      voiceThemes.some(voiceTheme => 
+        voiceTheme.includes(theme.toLowerCase()) || theme.toLowerCase().includes(voiceTheme)
+      )
+    ).length;
+    
+    return matches / enhancedThemes.length;
+  }
+  
+  /**
+   * Calculate profile-based theme score from user interests
+   */
+  private static calculateProfileThemeScore(voice: ProcessedVoice, userInterests: string[]): number {
+    if (!voice.resolvedElements.themes || userInterests.length === 0) return 0;
+    
+    const voiceThemes = voice.resolvedElements.themes.map(t => t.toLowerCase());
+    const userInterestsLower = userInterests.map(i => i.toLowerCase());
+    
+    const matches = userInterestsLower.filter(interest => 
+      voiceThemes.some(theme => 
+        theme.includes(interest) || interest.includes(theme)
+      )
+    ).length;
+    
+    return matches / userInterests.length;
+  }
+  
+  /**
+   * Calculate novelty score based on recent selection history
+   */
+  private static calculateNoveltyScore(voiceId: string, userId: string): number {
+    const userHistory = this.voiceSelectionHistory.get(userId) || [];
+    const now = Date.now();
+    
+    // Clean old history (older than 24 hours)
+    const recentHistory = userHistory.filter(entry => now - entry.timestamp < 24 * 60 * 60 * 1000);
+    this.voiceSelectionHistory.set(userId, recentHistory);
+    
+    // Apply penalties for recently used voices
+    const recentUses = recentHistory.filter(entry => entry.voiceId === voiceId).length;
+    return Math.max(0, 1 - (recentUses * this.NOVELTY_PENALTY));
+  }
+  
+  /**
+   * Record voice selection for novelty tracking
+   */
+  private static recordVoiceSelection(voiceId: string, userId: string): void {
+    const userHistory = this.voiceSelectionHistory.get(userId) || [];
+    userHistory.push({ voiceId, timestamp: Date.now() });
+    this.voiceSelectionHistory.set(userId, userHistory);
   }
 
 

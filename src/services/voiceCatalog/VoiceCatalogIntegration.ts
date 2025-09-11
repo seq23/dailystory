@@ -40,11 +40,19 @@ export class VoiceCatalogIntegration {
 
     console.log(`🎭 Selecting voice for ${userInfo.name || 'user'} at ${difficulty} level`);
 
-    // 1. Select the best voice using the new system
+    // 1. Process themes through library mapping for enhanced matching
+    // Note: Frontend version uses direct theme processing for now
+    const enhancedThemes = preferences?.themes;
+
+    console.log(`🎯 Theme processing: ${JSON.stringify(preferences?.themes)} → ${JSON.stringify(enhancedThemes)}`);
+
+    // 2. Select the best voice using the new system with enhanced themes
     const voiceSelection: VoiceSelectionResult = await VoiceSelector.selectVoice(
       userInfo,
       difficulty,
-      preferences
+      preferences,
+      enhancedThemes, // <-- CRITICAL: Pass enhanced themes for proper weighting
+      { failSoft: true, timeout: 150 }
     );
 
     // 2. Create story bundle from processed voice

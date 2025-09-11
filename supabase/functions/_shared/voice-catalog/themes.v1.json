@@ -42,6 +42,11 @@
     {"id":"coming_of_age","tags":["change","choice"],"suggested_levers":{"hooks":["ordinary_until"],"twists":["ordinary_is_special","home_is_key"],"endings":["bittersweet_end","quiet_pride"]},"safety":{"peril":"illusory_ok","horror":0}},
     {"id":"dragon","tags":["creature","bond"],"suggested_levers":{"hooks":["map_found","door_not_there"],"twists":["ally_is_opponent"],"endings":["open_series_hook","return_home_door_remains"]},"safety":{"peril":"illusory_ok","horror":0}},
     {"id":"ghosts","tags":["spooky_safe","mystery"],"suggested_levers":{"hooks":["by_midnight_trouble"],"twists":["red_herring"],"endings":["calm_return","open_series_hook"]},"safety":{"peril":"spooky_safe","horror":1}},
-    {"id":"detective","tags":["clues","logic"],"suggested_levers":{"hooks":["letter_arrived"],"twists":["red_herring","ally_is_opponent"],"endings":["open_series_hook"]},"safety":{"peril":"illusory_ok","horror":0}}
+    {"id":"detective","tags":["clues","logic"],"suggested_levers":{"hooks":["letter_arrived"],"twists":["red_herring","ally_is_opponent"],"endings":["open_series_hook"]},"safety":{"peril":"illusory_ok","horror":0}},
+    {"id":"superhero","tags":["hero","powers","justice"],"suggested_levers":{"hooks":["ordinary_until"],"twists":["power_has_cost"],"endings":["quiet_pride"]},"safety":{"peril":"illusory_ok","horror":0}},
+    {"id":"princess","tags":["royal","kindness","courage"],"suggested_levers":{"hooks":["letter_arrived"],"twists":["ordinary_is_special"],"endings":["quiet_pride"]},"safety":{"peril":"none","horror":0}},
+    {"id":"underwater","tags":["ocean","exploration","friendship"],"suggested_levers":{"hooks":["door_not_there"],"twists":["home_is_key"],"endings":["return_home_door_remains"]},"safety":{"peril":"none","horror":0}},
+    {"id":"space_adventure","tags":["exploration","wonder","teamwork"],"suggested_levers":{"hooks":["map_found"],"twists":["ally_is_opponent"],"endings":["open_series_hook"]},"safety":{"peril":"illusory_ok","horror":0}},
+    {"id":"pirate","tags":["adventure","treasure","friendship"],"suggested_levers":{"hooks":["map_found"],"twists":["red_herring"],"endings":["group_celebration"]},"safety":{"peril":"illusory_ok","horror":0}}
   ]
 }
