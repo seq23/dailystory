@@ -12,6 +12,7 @@ export { VoiceProcessor } from './VoiceProcessor';
 export { VoiceCatalogService, type DifficultyLevel } from './VoiceCatalogService';
 export { VoiceSelector } from './VoiceSelector';
 export { VoiceCatalogIntegration } from './VoiceCatalogIntegration';
+export { ThemeLibraryService } from './ThemeLibraryService';
 
 export type {
   GlobalCodebook,

@@ -1,0 +1,115 @@
+{
+  "schema": "avc.level.delta.v1",
+  "v": "1.0.0",
+  "level": "easy",
+  "overrides": [
+    {
+      "ref": "meadow_tales_beg_v1",
+      "id": "meadow_tales_easy_v1",
+      "vf": { "cad": 10 },
+      "uig": { "rules": { "u": { "m": "enthusiastic", "max": 5 }, "c": { "m": "bright", "max": 4 }, "a": { "m": "playful", "max": 3 }, "f": { "m": "direct", "max": 1 }, "h": { "m": "direct", "max": 1 } } }
+    },
+    {
+      "ref": "goodnight_whisper_beg_v1",
+      "id": "goodnight_whisper_easy_v1",
+      "vf": { "cad": 9 },
+      "uig": { "rules": { "u": { "m": "soothing", "max": 5 }, "c": { "m": "soft", "max": 3 }, "a": { "m": "cuddly", "max": 2 }, "f": { "m": "direct", "max": 0 }, "h": { "m": "direct", "max": 0 } } }
+    },
+    {
+      "ref": "bear_and_bee_beg_v1",
+      "id": "bear_and_bee_easy_v1",
+      "vf": { "cad": 11 },
+      "uig": { "rules": { "u": { "m": "enthusiastic", "max": 4 }, "c": { "m": "bright", "max": 3 }, "a": { "m": "playful", "max": 3 }, "f": { "m": "direct", "max": 1 }, "h": { "m": "direct", "max": 1 } } }
+    },
+    {
+      "ref": "bright_shapes_beg_v1",
+      "id": "bright_shapes_easy_v1",
+      "vf": { "cad": 9 },
+      "uig": { "rules": { "u": { "m": "investigative", "max": 4 }, "c": { "m": "descriptive", "max": 4 }, "a": { "m": "helper", "max": 2 }, "f": { "m": "direct", "max": 0 }, "h": { "m": "direct", "max": 0 } } }
+    },
+    {
+      "ref": "city_snow_beg_v1",
+      "id": "city_snow_easy_v1",
+      "vf": { "cad": 11 },
+      "uig": { "rules": { "u": { "m": "encouraging", "max": 4 }, "c": { "m": "bright", "max": 3 }, "a": { "m": "loyal", "max": 2 }, "f": { "m": "direct", "max": 1 }, "h": { "m": "direct", "max": 1 } } }
+    },
+    {
+      "ref": "paper_mice_beg_v1",
+      "id": "paper_mice_easy_v1",
+      "vf": { "cad": 11 },
+      "uig": { "rules": { "u": { "m": "creative", "max": 3 }, "c": { "m": "vivid", "max": 4 }, "a": { "m": "magical", "max": 2 }, "f": { "m": "direct", "max": 0 }, "h": { "m": "direct", "max": 1 } } }
+    },
+    {
+      "ref": "folktale_frost_beg_v1",
+      "id": "folktale_frost_easy_v1",
+      "vf": { "cad": 12 },
+      "uig": { "rules": { "u": { "m": "harmonious", "max": 4 }, "c": { "m": "earthy", "max": 3 }, "a": { "m": "wild", "max": 2 }, "f": { "m": "direct", "max": 1 }, "h": { "m": "direct", "max": 1 } } }
+    },
+    {
+      "ref": "oops_and_fix_beg_v1",
+      "id": "oops_and_fix_easy_v1",
+      "vf": { "cad": 10 },
+      "uig": { "rules": { "u": { "m": "investigative", "max": 5 }, "c": { "m": "descriptive", "max": 3 }, "a": { "m": "helper", "max": 3 }, "f": { "m": "direct", "max": 1 }, "h": { "m": "direct", "max": 1 } } }
+    },
+    {
+      "ref": "curious_trouble_beg_v1",
+      "id": "curious_trouble_easy_v1",
+      "vf": { "cad": 12 },
+      "uig": { "rules": { "u": { "m": "encouraging", "max": 4 }, "c": { "m": "bright", "max": 3 }, "a": { "m": "loyal", "max": 2 }, "f": { "m": "direct", "max": 1 }, "h": { "m": "direct", "max": 1 } } }
+    },
+    {
+      "ref": "lost_teddy_beg_v1",
+      "id": "lost_teddy_easy_v1",
+      "vf": { "cad": 11 },
+      "uig": { "rules": { "u": { "m": "creative", "max": 3 }, "c": { "m": "vivid", "max": 4 }, "a": { "m": "magical", "max": 2 }, "f": { "m": "direct", "max": 0 }, "h": { "m": "direct", "max": 0 } } }
+    },
+    {
+      "ref": "if_you_give_beg_v1",
+      "id": "if_you_give_easy_v1",
+      "vf": { "cad": 11 },
+      "uig": { "rules": { "u": { "m": "harmonious", "max": 4 }, "c": { "m": "earthy", "max": 3 }, "a": { "m": "wild", "max": 2 }, "f": { "m": "direct", "max": 2 }, "h": { "m": "direct", "max": 1 } } }
+    },
+    {
+      "ref": "bear_family_beg_v1",
+      "id": "bear_family_easy_v1",
+      "vf": { "cad": 12 },
+      "uig": { "rules": { "u": { "m": "investigative", "max": 4 }, "c": { "m": "descriptive", "max": 3 }, "a": { "m": "helper", "max": 2 }, "f": { "m": "direct", "max": 1 }, "h": { "m": "direct", "max": 1 } } }
+    },
+    {
+      "ref": "button_mouse_beg_v1",
+      "id": "button_mouse_easy_v1",
+      "vf": { "cad": 11 },
+      "uig": { "rules": { "u": { "m": "encouraging", "max": 4 }, "c": { "m": "bright", "max": 3 }, "a": { "m": "loyal", "max": 2 }, "f": { "m": "direct", "max": 1 }, "h": { "m": "direct", "max": 1 } } }
+    },
+    {
+      "ref": "barnyard_bop_beg_v1",
+      "id": "barnyard_bop_easy_v1",
+      "vf": { "cad": 9 },
+      "uig": { "rules": { "u": { "m": "creative", "max": 5 }, "c": { "m": "vivid", "max": 3 }, "a": { "m": "magical", "max": 3 }, "f": { "m": "direct", "max": 1 }, "h": { "m": "direct", "max": 1 } } }
+    },
+    {
+      "ref": "city_cartoon_beg_v1",
+      "id": "city_cartoon_easy_v1",
+      "vf": { "cad": 11 },
+      "uig": { "rules": { "u": { "m": "harmonious", "max": 4 }, "c": { "m": "earthy", "max": 3 }, "a": { "m": "wild", "max": 2 }, "f": { "m": "direct", "max": 1 }, "h": { "m": "direct", "max": 1 } } }
+    },
+    {
+      "ref": "two_friends_beg_v1",
+      "id": "two_friends_easy_v1",
+      "vf": { "cad": 11 },
+      "uig": { "rules": { "u": { "m": "investigative", "max": 4 }, "c": { "m": "descriptive", "max": 3 }, "a": { "m": "helper", "max": 2 }, "f": { "m": "direct", "max": 0 }, "h": { "m": "direct", "max": 0 } } }
+    },
+    {
+      "ref": "peek_and_find_beg_v1",
+      "id": "peek_and_find_easy_v1",
+      "vf": { "cad": 9 },
+      "uig": { "rules": { "u": { "m": "encouraging", "max": 3 }, "c": { "m": "bright", "max": 3 }, "a": { "m": "loyal", "max": 2 }, "f": { "m": "direct", "max": 0 }, "h": { "m": "direct", "max": 0 } } }
+    },
+    {
+      "ref": "list_poet_beg_v1",
+      "id": "list_poet_easy_v1",
+      "vf": { "cad": 11 },
+      "uig": { "rules": { "u": { "m": "creative", "max": 4 }, "c": { "m": "vivid", "max": 3 }, "a": { "m": "magical", "max": 2 }, "f": { "m": "direct", "max": 1 }, "h": { "m": "direct", "max": 1 } } }
+    }
+  ]
+}
