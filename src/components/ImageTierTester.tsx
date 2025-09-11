@@ -103,13 +103,12 @@ export function ImageTierTester() {
       };
 
       if (tierType === 'Tier 1') {
-        // Test Tier 1 via orchestrator
-        result = await supabase.functions.invoke('runware-generate-image', {
+        // Test Tier 1: AI-powered visual scene creator
+        result = await supabase.functions.invoke('ai-visual-scene-creator', {
           body: {
             storyText: config.storyText,
             avatarIdentity,
-            sessionId: config.sessionId,
-            forceOrchestrator: true
+            sessionId: config.sessionId
           }
         });
       } else if (tierType.startsWith('Tier 2.5')) {
@@ -131,15 +130,6 @@ export function ImageTierTester() {
             avatarIdentity,
             sessionId: config.sessionId,
             forceSVG: true
-          }
-        });
-      } else if (tierType === 'AI Enhancement') {
-        // Test AI visual scene creator
-        result = await supabase.functions.invoke('ai-visual-scene-creator', {
-          body: {
-            storyText: config.storyText,
-            avatarIdentity,
-            sessionId: config.sessionId
           }
         });
       }
@@ -203,8 +193,7 @@ export function ImageTierTester() {
       { type: 'Tier 2.5', complexity: 'B' },
       { type: 'Tier 2.5', complexity: 'C' },
       { type: 'Tier 2.5', complexity: 'D' },
-      { type: 'Tier 4' },
-      { type: 'AI Enhancement' }
+      { type: 'Tier 4' }
     ];
     
     const allResults: TierTestResult[] = [];
@@ -370,16 +359,6 @@ export function ImageTierTester() {
             >
               <ImageIcon className="w-4 h-4" />
               {activeTest === 'Tier 4' ? <Clock className="w-4 h-4 animate-spin" /> : 'Tier 4'}
-            </Button>
-            
-            <Button
-              onClick={() => runSingleTest('AI Enhancement')}
-              disabled={isLoading}
-              variant="outline"
-              className="flex items-center gap-2"
-            >
-              <Settings className="w-4 h-4" />
-              {activeTest === 'AI Enhancement' ? <Clock className="w-4 h-4 animate-spin" /> : 'AI Enhance'}
             </Button>
           </div>
 
