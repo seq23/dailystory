@@ -164,6 +164,32 @@ export const ResponsiveStoryHeader = ({
     };
   }, [isTablet]);
 
+  // Measure overlay height on mobile/tablet when overlaying PremiumHeader
+  const overlayRef = React.useRef<HTMLDivElement | null>(null);
+  const [overlayHeight, setOverlayHeight] = useState(0);
+
+  useEffect(() => {
+    if (!isMobileOrTablet || !isPremium) return;
+    const el = overlayRef.current;
+    if (!el) return;
+    let frame = 0;
+    const measure = () => {
+      frame = requestAnimationFrame(() => {
+        const h = el.getBoundingClientRect().height;
+        setOverlayHeight(prev => (Math.abs(prev - h) > 1 ? h : prev));
+      });
+    };
+    measure();
+    const ro = new ResizeObserver(() => measure());
+    try { ro.observe(el); } catch {}
+    window.addEventListener('resize', measure);
+    return () => {
+      cancelAnimationFrame(frame);
+      try { ro.disconnect(); } catch {}
+      window.removeEventListener('resize', measure);
+    };
+  }, [isMobileOrTablet, isPremium]);
+
   const getDifficultyColor = (difficulty: string) => {
     // Normalize to backend format for consistent mapping
     const backendLevel = DifficultyLevelMapper.normalizeLevel(difficulty);
