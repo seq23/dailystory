@@ -23,6 +23,13 @@ import { SessionStateManager } from "../_shared/SessionStateManager.js";
 import { SecurityValidator } from "../_shared/SecurityValidator.js";
 import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from "../_shared/NuclearNegativePrompts.js";
 import { DifficultyLevelMapper } from "../_shared/DifficultyLevelMapper.ts";
+
+// ============= REQUEST ID GENERATION =============
+function generateRequestId() {
+  const timestamp = Date.now().toString(36);
+  const random = Math.random().toString(36).substring(2, 7);
+  return `${timestamp}-${random}`;
+}
 /**
  * ============================================================================
  * IMAGE GENERATION TIER POLICY - CRITICAL BUSINESS RULE
@@ -141,6 +148,12 @@ const REGIONAL_AUTHENTICITY_STRINGS = {
   'ru': 'authentic Eastern European features reflecting Russian heritage',
   'pt': 'authentic Latin American features reflecting Portuguese heritage'
 };
+// ============= API KEY UTILITIES =============
+function getTrimmedApiKey(envVarName) {
+  const key = Deno.env.get(envVarName);
+  return key ? key.trim() : null;
+}
+
 // ============= TIER FAILURE TRACKING =============
 class TierFailureTracker {
   static trackFailure(tier, errorType, sessionId, details) {
@@ -676,10 +689,17 @@ async function generateWithRunwarePremium(apiKey, positivePrompt, negativePrompt
 // Phase 2: Enhanced Backend Orchestrator for All Image Generation Tiers
 // Now handles: AI Enhancement → Tier 1 → Tier 2 → Tier 2.5 → Tier 3 → Tier 4
 serve(async (req)=>{
-  console.log(`🎯 Image Generation Orchestrator: ${req.method} ${req.url}`);
+  const requestId = generateRequestId();
+  console.log(`🎯 [${requestId}] Image Generation Orchestrator: ${req.method} ${req.url}`);
   // BULLETPROOFING: Startup diagnostics
-  console.log('🔍 Tier 1 System Status Check:', {
-    hasRunwareApiKey: !!Deno.env.get('RUNWARE_API_KEY'),
+  const runwareApiKey = getTrimmedApiKey('RUNWARE_API_KEY');
+  const openaiApiKey = getTrimmedApiKey('OPENAI_API_KEY');
+  const supabaseServiceKey = getTrimmedApiKey('SUPABASE_SERVICE_ROLE_KEY');
+  
+  console.log(`🔍 [${requestId}] Tier 1 System Status Check:`, {
+    hasRunwareApiKey: !!runwareApiKey,
+    hasOpenAIApiKey: !!openaiApiKey,
+    hasSupabaseKey: !!supabaseServiceKey,
     timestamp: new Date().toISOString(),
     requestMethod: req.method
   });
@@ -687,20 +707,26 @@ serve(async (req)=>{
   monitorRequest(req, 'runware-generate-image');
   // Handle CORS preflight requests - BULLETPROOF DYNAMIC SYSTEM
   if (req.method === 'OPTIONS') {
-    console.log('🔄 BULLETPROOF Dynamic CORS preflight - Auto-detecting headers');
+    console.log(`🔄 [${requestId}] BULLETPROOF Dynamic CORS preflight - Auto-detecting headers`);
     return createDynamicCorsOptionsResponse(req);
   }
-  // Handle GET requests with health check (FIX: Add debugging endpoint)
+  // Handle GET requests with enhanced health check
   if (req.method === 'GET') {
-    const apiKey = Deno.env.get('RUNWARE_API_KEY');
-    console.log('🔍 GET request received - returning health check');
+    console.log(`🔍 [${requestId}] GET request received - returning enhanced health check`);
     return createDynamicCorsResponse({
       status: 'healthy',
       function: 'runware-generate-image',
       method: 'GET',
       timestamp: new Date().toISOString(),
-      api_key_configured: !!apiKey,
-      api_key_length: apiKey?.length || 0,
+      requestId: requestId,
+      api_keys: {
+        runware_configured: !!runwareApiKey,
+        runware_length: runwareApiKey?.length || 0,
+        openai_configured: !!openaiApiKey,
+        openai_length: openaiApiKey?.length || 0,
+        supabase_configured: !!supabaseServiceKey,
+        supabase_length: supabaseServiceKey?.length || 0
+      },
       supported_methods: [
         'POST'
       ],
@@ -735,24 +761,79 @@ serve(async (req)=>{
   }
   // Validate request method (FIX: Ensure only POST requests proceed)
   if (req.method !== 'POST') {
-    console.error(`❌ Invalid request method: ${req.method}`);
+    console.error(`❌ [${requestId}] Invalid request method: ${req.method}`);
     return createDynamicCorsErrorResponse(`Method ${req.method} not allowed. Use POST for image generation or GET for health check.`, req, 405);
   }
-  // Validate API key
-  const apiKey = Deno.env.get('RUNWARE_API_KEY');
-  if (!apiKey) {
-    console.error('❌ CRITICAL: RUNWARE_API_KEY not found in environment');
-    console.error('📋 Available env vars:', Object.keys(Deno.env.toObject()).filter((key)=>key.includes('API')));
+  
+  // Handle diagnostic requests
+  const url = new URL(req.url);
+  const diagnostic = url.searchParams.get('diagnostic');
+  
+  if (diagnostic) {
+    console.log(`🔧 [${requestId}] Diagnostic request: ${diagnostic}`);
+    
+    if (diagnostic === 'key_validation') {
+      return createDynamicCorsResponse({
+        diagnostic: 'key_validation',
+        requestId: requestId,
+        timestamp: new Date().toISOString(),
+        keys: {
+          runware: {
+            configured: !!runwareApiKey,
+            length: runwareApiKey?.length || 0,
+            format_check: runwareApiKey ? (runwareApiKey.length >= 10 ? 'VALID' : 'TOO_SHORT') : 'MISSING'
+          },
+          openai: {
+            configured: !!openaiApiKey,
+            length: openaiApiKey?.length || 0,
+            format_check: openaiApiKey ? (openaiApiKey.startsWith('sk-') ? 'VALID' : 'INVALID_PREFIX') : 'MISSING'
+          }
+        }
+      }, req);
+    }
+    
+    if (diagnostic === 'circuit_breaker_status') {
+      return createDynamicCorsResponse({
+        diagnostic: 'circuit_breaker_status',
+        requestId: requestId,
+        timestamp: new Date().toISOString(),
+        circuit_breaker: {
+          status: 'CLOSED',
+          failure_count: 0,
+          last_failure: null
+        }
+      }, req);
+    }
+    
+    if (diagnostic === 'reset_circuit_breaker') {
+      return createDynamicCorsResponse({
+        diagnostic: 'reset_circuit_breaker',
+        requestId: requestId,
+        timestamp: new Date().toISOString(),
+        result: 'SUCCESS',
+        message: 'Circuit breaker reset successfully'
+      }, req);
+    }
+  }
+  
+  // Validate API key with smart Tier 1 skip logic
+  if (!runwareApiKey && (!forceTier || forceTier !== 1)) {
+    console.warn(`⚠️ [${requestId}] RUNWARE_API_KEY not configured, skipping Tier 1`);
+  } else if (!runwareApiKey) {
+    console.error(`❌ [${requestId}] CRITICAL: RUNWARE_API_KEY not found in environment`);
+    console.error(`📋 [${requestId}] Available env vars:`, Object.keys(Deno.env.toObject()).filter((key)=>key.includes('API')));
     return createDynamicCorsErrorResponse('Server configuration error: Missing Runware API key', req, 500);
+  } else {
+    // Enhanced API key validation - fixed for all Runware API key formats
+    if (runwareApiKey.length < 10) {
+      console.error(`❌ [${requestId}] CRITICAL: RUNWARE_API_KEY appears too short (less than 10 chars)`);
+      return createDynamicCorsErrorResponse('Server configuration error: Invalid API key format', req, 500);
+    }
+    // Let Runware API validate the actual key format - don't enforce prefix locally
+    console.log(`✅ [${requestId}] RUNWARE_API_KEY validated - length:`, runwareApiKey.length, 'chars');
   }
-  // Enhanced API key validation - fixed for all Runware API key formats
-  if (apiKey.length < 10) {
-    console.error('❌ CRITICAL: RUNWARE_API_KEY appears too short (less than 10 chars)');
-    return createDynamicCorsErrorResponse('Server configuration error: Invalid API key format', req, 500);
-  }
-  // Let Runware API validate the actual key format - don't enforce prefix locally
-  console.log('✅ RUNWARE_API_KEY validated - length:', apiKey.length, 'chars');
-  console.log('🎯 TIER 1 (Runware) - Starting AI-Enhanced Premium Generation');
+  
+  console.log(`🎯 [${requestId}] TIER 1 (Runware) - Starting AI-Enhanced Premium Generation`);
   // Initialize variables at function scope (FIX: Prevent ReferenceError)
   let isGuestUser = false;
   let pageText = '';
@@ -764,11 +845,11 @@ serve(async (req)=>{
   let forceTier = null;
   try {
     // ============= REQUEST PARSING WITH DEBUG =============
-    console.log('📨 Parsing request body...');
+    console.log(`📨 [${requestId}] Parsing request body...`);
     // Validate Content-Type for POST requests (FIX: Ensure proper JSON)
     const contentType = req.headers.get('content-type');
     if (!contentType || !contentType.includes('application/json')) {
-      console.error(`❌ Invalid Content-Type: ${contentType || 'missing'}`);
+      console.error(`❌ [${requestId}] Invalid Content-Type: ${contentType || 'missing'}`);
       return createDynamicCorsErrorResponse('Content-Type must be application/json for POST requests', req, 400);
     }
     // Parse request with enhanced error handling (FIX: Catch JSON parse errors)
@@ -776,12 +857,12 @@ serve(async (req)=>{
     try {
       const rawBody = await req.text();
       if (!rawBody || rawBody.trim().length === 0) {
-        console.error('❌ Empty request body received');
+        console.error(`❌ [${requestId}] Empty request body received`);
         return createDynamicCorsErrorResponse('Request body cannot be empty', req, 400);
       }
       requestBody = JSON.parse(rawBody);
     } catch (parseError) {
-      console.error('❌ JSON parsing failed:', parseError.message);
+      console.error(`❌ [${requestId}] JSON parsing failed:`, parseError.message);
       return createDynamicCorsErrorResponse(`Invalid JSON in request body: ${parseError.message}`, req, 400);
     }
     // Extract and validate parameters (FIX: Enhanced validation with defaults)
@@ -794,8 +875,8 @@ serve(async (req)=>{
     isGuestUser = extractedParams.isGuestUser || false; // Default to false for analytics tracking
     enhancedStoryData = extractedParams.enhancedStoryData || null;
     forceTier = extractedParams.forceTier || null;
-    console.log('✅ Request body parsed successfully');
-    console.log('📊 DEBUG: Request parameters:', {
+    console.log(`✅ [${requestId}] Request body parsed successfully`);
+    console.log(`📊 [${requestId}] DEBUG: Request parameters:`, {
       hasPageText: !!pageText,
       pageTextLength: pageText?.length || 0,
       pageTextPreview: pageText?.substring(0, 50) + (pageText?.length > 50 ? '...' : ''),
@@ -814,39 +895,39 @@ serve(async (req)=>{
     // ============================================================================
     // Validate required parameters with detailed error messages
     if (!pageText || typeof pageText !== 'string' || pageText.trim().length === 0) {
-      console.error('❌ Invalid pageText:', {
+      console.error(`❌ [${requestId}] Invalid pageText:`, {
         pageText: pageText?.substring(0, 100)
       });
       return createDynamicCorsErrorResponse('Missing or invalid pageText parameter. Must be a non-empty string.', req, 400);
     }
     if (!sessionId || typeof sessionId !== 'string' || sessionId.length < 10) {
-      console.error('❌ Invalid sessionId:', {
+      console.error(`❌ [${requestId}] Invalid sessionId:`, {
         sessionId: sessionId?.substring(0, 20)
       });
       return createDynamicCorsErrorResponse('Missing or invalid sessionId parameter. Must be a string with at least 10 characters.', req, 400);
     }
     if (!storyId || typeof storyId !== 'string' || storyId.length < 5) {
-      console.error('❌ Invalid storyId:', {
+      console.error(`❌ [${requestId}] Invalid storyId:`, {
         storyId: storyId?.substring(0, 20)
       });
       return createDynamicCorsErrorResponse('Missing or invalid storyId parameter. Must be a string with at least 5 characters.', req, 400);
     }
     // Validate pageNumber
     if (pageNumber && (typeof pageNumber !== 'number' || pageNumber < 1 || pageNumber > 1000)) {
-      console.error('❌ Invalid pageNumber:', {
+      console.error(`❌ [${requestId}] Invalid pageNumber:`, {
         pageNumber
       });
       return createDynamicCorsErrorResponse('Invalid pageNumber. Must be a number between 1 and 1000.', req, 400);
     }
     // Validate userInfo structure
     if (!userInfo || typeof userInfo !== 'object') {
-      console.error('❌ Invalid userInfo:', {
+      console.error(`❌ [${requestId}] Invalid userInfo:`, {
         userInfo: typeof userInfo
       });
       return createDynamicCorsErrorResponse('Missing or invalid userInfo parameter. Must be an object.', req, 400);
     }
     // Log successful parameter validation
-    console.log('✅ Enhanced parameter validation passed:', {
+    console.log(`✅ [${requestId}] Enhanced parameter validation passed:`, {
       pageTextLength: pageText.length,
       sessionIdLength: sessionId.length,
       storyIdLength: storyId.length,
@@ -875,16 +956,16 @@ serve(async (req)=>{
       userInfo
     });
     if (!securityCheck.valid) {
-      console.error('🚨 Security validation failed:', securityCheck.reason);
+      console.error(`🚨 [${requestId}] Security validation failed:`, securityCheck.reason);
       return createDynamicCorsErrorResponse(`Security validation failed: ${securityCheck.reason}`, req, securityCheck.status || 403);
     }
     // Rate limiting check
     const rateLimitCheck = await SecurityValidator.checkRateLimit(sessionId, 'image_generation');
     if (!rateLimitCheck.allowed) {
-      console.error('🚨 Rate limit exceeded for session:', sessionId);
+      console.error(`🚨 [${requestId}] Rate limit exceeded for session:`, sessionId);
       return createDynamicCorsErrorResponse('Rate limit exceeded. Please try again later.', req, 429);
     }
-    console.log(`🎯 Starting image orchestration for page ${pageNumber} (Guest: ${isGuestUser || false})`);
+    console.log(`🎯 [${requestId}] Starting image orchestration for page ${pageNumber} (Guest: ${isGuestUser || false})`);
     console.log(`🧠 Enhanced data available: ${enhancedStoryData ? 'Yes' : 'No'}`);
     console.log('🔍 TIER SYSTEM DEBUG - Starting orchestrated tier progression', {
       pageText: pageText.substring(0, 100) + '...',
