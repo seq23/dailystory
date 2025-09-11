@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { DebugLogger } from '@/services/DebugLogger';
 import { MobileKeyboardHandler } from "@/components/MobileKeyboardHandler";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -45,7 +46,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
   const [currentPageImages, setCurrentPageImages] = useState<Record<number, string>>({});
   
   useEffect(() => {
-    console.log('👤 AuthenticatedApp loading state:', loading);
+    DebugLogger.log('auth', 'AuthenticatedApp loading state:', loading);
   }, [loading]);
   
   // Initialize security monitoring
@@ -242,8 +243,8 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
 
   const handleProfileUpdate = async (updatedUserInfo: UserInfo) => {
     try {
-      console.log('🔄 Profile update started for user:', user.id);
-      console.log('📝 Updated user info:', JSON.stringify(updatedUserInfo, null, 2));
+      DebugLogger.log('auth', 'Profile update started for user:', user.id);
+      DebugLogger.log('auth', 'Updated user info:', JSON.stringify(updatedUserInfo, null, 2));
       
       const birthYear = new Date().getFullYear() - updatedUserInfo.age;
       const dateOfBirth = `${birthYear}-01-01`;
@@ -265,7 +266,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
         interests: updatedUserInfo.interests || []
       };
 
-      console.log('💾 Payload to save:', JSON.stringify(payload, null, 2));
+      DebugLogger.log('auth', 'Payload to save:', JSON.stringify(payload, null, 2));
 
       const { data: existing, error: fetchErr } = await supabase
         .from('profiles')
@@ -279,11 +280,11 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
         throw fetchErr;
       }
 
-      console.log('📋 Existing profile check:', existing ? 'Found existing profile' : 'No existing profile');
+      DebugLogger.log('auth', 'Existing profile check:', existing ? 'Found existing profile' : 'No existing profile');
 
       let error;
       if (existing?.id) {
-        console.log('🔄 Updating existing profile...');
+        DebugLogger.log('auth', 'Updating existing profile...');
         const { error: updateErr } = await supabase
           .from('profiles')
           .update(payload)
@@ -291,7 +292,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
         error = updateErr;
         
         if (!updateErr) {
-          console.log('✅ Profile updated successfully');
+          DebugLogger.log('auth', 'Profile updated successfully');
         }
       } else {
         console.log('➕ Creating new profile...');

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { DebugLogger } from '@/services/DebugLogger';
 import { Button } from '@/components/ui/button';
 import { Play, Square } from 'lucide-react';
 import { SimpleAudioEngine } from '@/services/SimpleAudioEngine';
@@ -107,8 +108,8 @@ export const AudioControls: React.FC<AudioControlsProps> = ({ text, contentHash,
     }, delay);
   };
   const onStop = () => {
-    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
-      console.log('🛑 AudioControls: Stop button pressed');
+    if (DebugLogger.isDebugEnabled()) {
+      DebugLogger.log('audio', 'AudioControls: Stop button pressed');
     }
     
     const engine = SimpleAudioEngine.getInstance();
@@ -119,8 +120,8 @@ export const AudioControls: React.FC<AudioControlsProps> = ({ text, contentHash,
       const audioSyncService = (window as any).__audioSyncService;
       if (audioSyncService) {
         audioSyncService.stopAudio();
-        if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
-          console.log('🛑 Also stopped AudioSyncService');
+        if (DebugLogger.isDebugEnabled()) {
+          DebugLogger.log('audio', 'Also stopped AudioSyncService');
         }
       }
     } catch {}

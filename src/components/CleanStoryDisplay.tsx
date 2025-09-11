@@ -286,7 +286,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
         setVocabularyData(vocabData);
         DebugLogger.log('story', 'Vocabulary data pre-fetched successfully:', vocabData);
       } catch (error) {
-        console.warn('⚠️ Failed to pre-fetch vocabulary data:', error);
+        DebugLogger.warn('story', 'Failed to pre-fetch vocabulary data:', error);
         // Set empty vocabulary data as fallback
         setVocabularyData({
           userSpecified: { formWords: [], specialRequestWords: [], teacherWords: [] },
@@ -306,7 +306,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
       try {
       // Check if this is a saved story being loaded
       if (currentStory?.isFromSavedStory && currentStory.segments) {
-        console.log('📖 Loading saved story with cached content');
+        DebugLogger.log('story', 'Loading saved story with cached content');
         const storyPages = currentStory.segments.map((s: any) => s.text);
         StoryContentLogger.logStoryChange('saved_story_load', 'before', storyPages, { 
           source: 'saved story segments',
@@ -341,7 +341,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
           if (Object.keys(validatedImages).length > 0) {
             setPageImages(validatedImages);
             onPageImagesUpdate?.(validatedImages); // CRITICAL: Notify parent of image updates
-            console.log('✅ Saved story: Valid images loaded', validatedImages);
+            DebugLogger.log('image', 'Saved story: Valid images loaded', validatedImages);
           }
         }
         
@@ -594,7 +594,7 @@ useEffect(() => {
       // Reset audio UI state immediately
       setIsAudioPlaying(false);
       
-      console.log('🧹 Cleared audio state for page change:', currentPage + 1);
+      DebugLogger.log('audio', 'Cleared audio state for page change:', currentPage + 1);
     } catch (error) {
       console.warn('Failed to clear audio state on page change:', error);
     }
@@ -802,17 +802,17 @@ useEffect(() => {
   useEffect(() => {
     // Start timer immediately when story is stable and not manually paused
     if (isStoryStable && story.length > 0 && !isTimerRunning && !isTimerCanceled && !userPausedTimer && timerEnabled) {
-      console.log('⏰ FIXED: Auto-starting timer at 20:00 - story is now stable');
+      DebugLogger.log('performance', 'FIXED: Auto-starting timer at 20:00 - story is now stable');
       setIsTimerRunning(true);
     } else if (isStoryStable && story.length > 0 && userPausedTimer) {
-      console.log('⏸️ Timer auto-start blocked - user has manually paused');
+      DebugLogger.log('performance', 'Timer auto-start blocked - user has manually paused');
     }
   }, [isStoryStable, story.length, isTimerRunning, isTimerCanceled, userPausedTimer, timerEnabled]);
 
   // CRITICAL: Show long-press instruction immediately when story is stable on mobile/tablet
   useEffect(() => {
     if (isStoryStable && story.length > 0 && (isMobileOrTablet || hasTouchCapability)) {
-      console.log('📱 Story stable - showing long-press instruction for mobile/tablet users');
+      DebugLogger.log('ui', 'Story stable - showing long-press instruction for mobile/tablet users');
       // Immediate notification trigger for all mobile/tablet users
       showLongPressInstruction();
     }
@@ -946,7 +946,7 @@ const [highlightSave, setHighlightSave] = useState(false);
   // Event-based story stability - listen for actual completion
   useEffect(() => {
     const handleStoryComplete = () => {
-      console.log('📚 Story generation completed - setting stability immediately');
+      DebugLogger.log('story', 'Story generation completed - setting stability immediately');
       setIsStoryStable(true);
       // NOTE: Removed immediate story:stabilized dispatch to fix race condition
       // story:stabilized will be dispatched by the story-state-aware useEffect below
@@ -965,11 +965,11 @@ const [highlightSave, setHighlightSave] = useState(false);
       return; // Wait for both conditions
     }
 
-    console.log('🎯 BULLETPROOF: Both conditions met - isStoryStable=true AND story.length=' + story.length);
+    DebugLogger.log('story', 'BULLETPROOF: Both conditions met - isStoryStable=true AND story.length=' + story.length);
     
     // Debounce for rapid updates (100ms)
     const timeoutId = setTimeout(() => {
-      console.log('🔗 BULLETPROOF: Dispatching story:stabilized with fresh story data');
+      DebugLogger.log('story', 'BULLETPROOF: Dispatching story:stabilized with fresh story data');
       window.dispatchEvent(new CustomEvent('story:stabilized'));
     }, 100);
 
@@ -1001,7 +1001,7 @@ const [highlightSave, setHighlightSave] = useState(false);
       
       // Emit hash change event if hash actually changed
       if (previousHash !== contentHash && contentHash) {
-        console.log(`🔄 Content hash changed: ${previousHash?.slice(0,10)} → ${contentHash?.slice(0,10)}`);
+        DebugLogger.log('story', `Content hash changed: ${previousHash?.slice(0,10)} → ${contentHash?.slice(0,10)}`);
         console.log('📊 Hash Change Analysis:', {
           hashLengthChange: (contentHash?.length || 0) - (previousHash?.length || 0),
           textSource: 'effectiveAudioText',
@@ -1068,7 +1068,7 @@ useEffect(() => {
   useEffect(() => {
     const handleImageGenerated = async (event: CustomEvent) => {
       const { pageIndex, imageUrl } = event.detail;
-      console.log('🖼️ Auto-generated image received:', { pageIndex, imageUrl });
+      DebugLogger.log('image', 'Auto-generated image received:', { pageIndex, imageUrl });
       
       setPageImages(prev => {
         const updated = { ...prev, [pageIndex]: imageUrl };
@@ -1095,7 +1095,7 @@ useEffect(() => {
                   imageArray,
                   avatarType
                 );
-                console.log('✅ Premium image cached:', { pageIndex, userId: user.id });
+                DebugLogger.log('image', 'Premium image cached:', { pageIndex, userId: user.id });
               }
             } else if (story && userInfo) {
               const avatarType = userInfo.avatar?.type;
@@ -1105,7 +1105,7 @@ useEffect(() => {
               }));
               
               StorySessionCache.updatePages('guest', story, currentPage, imageArray, avatarType);
-              console.log('✅ Guest image cached:', { pageIndex, avatarType });
+              DebugLogger.log('image', 'Guest image cached:', { pageIndex, avatarType });
             }
           } catch (error) {
             console.error('❌ Cache persistence failed:', error);
@@ -1219,7 +1219,7 @@ useEffect(() => {
     userId: userInfo.name,
     enablePersistence: isPremium, // Only persist for premium users
     onAchievementUnlocked: (achievement) => {
-      console.log('🏆 Achievement unlocked:', achievement.title || achievement.id);
+      DebugLogger.log('story', 'Achievement unlocked:', achievement.title || achievement.id);
     }
   });
 
@@ -1398,7 +1398,7 @@ useEffect(() => {
       );
       
       if (cachedImageUrl) {
-        console.log(`🖼️ Page ${currentPage}: Found cached image, using it`);
+        DebugLogger.log('image', `Page ${currentPage}: Found cached image, using it`);
         setPageImages(prev => ({ ...prev, [currentPage]: cachedImageUrl }));
         onPageImagesUpdate?.({ ...pageImages, [currentPage]: cachedImageUrl });
         return;
@@ -1407,7 +1407,7 @@ useEffect(() => {
       // No cached image, trigger generation if page is within allowed range
       const maxAllowedPage = isPremium ? (story.length - 1) : 5; // Premium: all pages, Guest: pages 0-5
       if (currentPage <= maxAllowedPage) {
-        console.log(`🖼️ Page ${currentPage}: No cached image, triggering generation`);
+        DebugLogger.log('image', `Page ${currentPage}: No cached image, triggering generation`);
         try {
           const { ImageGenerationTrigger } = await import('@/utils/imageGenerationTrigger');
           ImageGenerationTrigger.triggerAutoGeneration({
