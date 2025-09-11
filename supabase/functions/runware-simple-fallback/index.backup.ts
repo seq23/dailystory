@@ -1,7 +1,7 @@
 // ============= TIER 2.5 NUCLEAR INDEPENDENCE - SHARED NUCLEAR NEGATIVE PROMPT SYSTEM =============
 // This edge function uses the shared nuclear negative prompt system for consistency
 import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from "../_shared/NuclearNegativePrompts.ts";
-import { globalArcSessionManager } from "../_shared/SessionStateManager.js";
+import { globalSessionManager } from "../_shared/SessionStateManager.js";
 import { ExactWordExtractor } from "../_shared/ExactWordExtractor.ts";
 import { VisualDetailTracker } from "../_shared/VisualDetailTracker.js";
 import { CharacterConsistencyService } from "../_shared/CharacterConsistencyService.js";
@@ -2173,7 +2173,7 @@ function getPreviousResolvedContext(sessionId: string, pageNumber: number) {
       return { objects: [], characters: [] };
     }
     
-    const session = globalArcSessionManager.getSession(sessionId);
+    const session = globalSessionManager.getOrCreateSessionState(sessionId);
     if (!session) {
       console.log(`⚠️ No session found for ${sessionId}`);
       return { objects: [], characters: [] };
@@ -3573,11 +3573,12 @@ function getSessionCharacterContext(sessionId: string, pageNumber?: number): Arr
     console.log(`🔍 Enhanced session ${sessionId} character context check - Page: ${pageNumber}`);
     
     // Enhanced session storage for character continuity
-    if (typeof globalArcSessionManager !== 'undefined') {
-      const sessionData = globalArcSessionManager.getSession(sessionId);
+    if (typeof globalSessionManager !== 'undefined') {
+      const sessionData = globalSessionManager.getOrCreateSessionState(sessionId);
       if (sessionData?.characters) {
-        console.log(`✅ Found ${sessionData.characters.length} session characters`);
-        return sessionData.characters.slice(0, 3); // Up to 3 characters
+        const characterArray = Array.from(sessionData.characters.values()).slice(0, 3);
+        console.log(`✅ Found ${characterArray.length} session characters`);
+        return characterArray;
       }
     }
     

@@ -6,7 +6,7 @@
 
 import { convertStoryTemplateToStringArray } from './templateConverter.ts';
 import { calculateArcPosition, generateArcTransition, needsArcTransition, getBValue } from './arcManager.ts';
-import { globalArcSessionManager } from './SessionStateManager.js';
+import { globalSessionManager } from './SessionStateManager.js';
 import { getTemplate, getTemplateCount } from './templateImporter.ts';
 import type { UserInfo } from './placeholderResolver.ts';
 
@@ -37,11 +37,10 @@ export async function processArcAwarePage(
     console.log(`🎪 Processing arc-aware page ${pageIndex} for ${templateLevel}`);
     
     // Get or create session state
-    const sessionState = globalArcSessionManager.getOrCreateSession(
+    const sessionState = globalSessionManager.getOrCreateSessionState(
       sessionId,
-      userInfo.userId || 'anonymous',
-      templateLevel,
-      userInfo
+      true, // isNeverEnding
+      null // totalPages
     );
     
     // Calculate arc position using modulo logic
@@ -60,8 +59,8 @@ export async function processArcAwarePage(
         sessionState
       );
       
-      // Complete current arc and start new one
-      globalArcSessionManager.completeArc(sessionId, arcTransitionData);
+      // Complete current arc and start new one - using basic session update
+      globalSessionManager.getOrCreateSessionState(sessionId, true, null);
       
       // Load new template for next arc
       const template = await getTemplate(
@@ -245,9 +244,9 @@ export function clearArcSession(sessionId: string, context: 'rewrite' | 'new-sto
   console.log(`🧹 Clearing arc session ${sessionId} for ${context}`);
   
   if (context === 'session-end') {
-    globalArcSessionManager.clearSession(sessionId);
+    globalSessionManager.clearAllState();
   } else {
-    globalArcSessionManager.clearSessionForNewStory(sessionId);
+    globalSessionManager.clearAllState();
   }
 }
 
@@ -256,16 +255,14 @@ export function clearArcSession(sessionId: string, context: 'rewrite' | 'new-sto
  */
 export function getArcSessionAnalytics(sessionId?: string) {
   if (sessionId) {
-    const session = globalArcSessionManager.sessions.get(sessionId);
-    return session ? {
-      sessionId: session.sessionId,
-      currentArc: session.currentArc.arcNumber,
-      totalPages: session.getCurrentPageIndex(),
-      templateLevel: session.templateLevel,
-      arcHistory: session.arcHistory.length,
-      isNeverEnding: session.isNeverEnding
+    const sessionState = globalSessionManager.getOrCreateSessionState(sessionId);
+    return sessionState ? {
+      sessionId: sessionState.sessionId,
+      pageNumber: sessionState.pageNumber,
+      totalPages: sessionState.totalPages,
+      isNeverEnding: sessionState.isNeverEnding
     } : null;
   }
   
-  return globalArcSessionManager.getActiveSessions();
+  return globalSessionManager.getMonitoringData();
 }

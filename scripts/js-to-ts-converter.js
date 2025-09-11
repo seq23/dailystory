@@ -700,8 +700,8 @@ async function main() {
     const converter = new JSToTSConverter();
     
     // Define input and output paths
-    const inputPath = path.join(__dirname, '..', 'supabase', 'functions', '_shared', 'arcManager.js');
-    const outputPath = path.join(__dirname, '..', 'supabase', 'functions', '_shared', 'arcManager.ts');
+    const inputPath = path.join(__dirname, '..', 'supabase', 'functions', '_shared', 'SessionStateManager.js.temp');
+    const outputPath = path.join(__dirname, '..', 'supabase', 'functions', '_shared', 'SessionStateManager.ts');
     
     console.log('🔄 JavaScript to TypeScript Converter');
     console.log('=====================================');
