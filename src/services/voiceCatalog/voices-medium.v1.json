@@ -11,7 +11,7 @@
       "wd":{"set":[18,4,5],"sc":"everyday","mor":"implied","lp":[],"rp":[9]},
       "rd":{"rh":"none","aa":1,"ono":[16],"sl":1},
       "eg":{"dir":0,"lst":1,"ip":["what_would_you_do"],"contr":0,"exag":0},
-      "th":["friendship","school day","small wins"],"tg":[6,15],
+      "th":["friendship","school day","small wins","magic_school","fantasy","adventure"],"tg":[6,15],
       "uig":{"aff":{"u":0.8,"c":0.4,"a":0.3,"f":0.3,"h":0.5},"rules":{"u":{"m":"subtle","max":2},"c":{"m":"subtle","max":2},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
       "src":["Realistic-Neighbor"]
     },
@@ -23,7 +23,7 @@
       "wd":{"set":[17,3,5],"sc":"everyday","mor":"implied","lp":[],"rp":[7]},
       "rd":{"rh":"none","aa":0,"ono":[],"sl":1},
       "eg":{"dir":0,"lst":0,"ip":["reflect_prompt"],"contr":0,"exag":0},
-      "th":["feelings","friendships","identity"],"tg":[22,27],
+      "th":["feelings","friendships","identity","magic_school","fantasy","adventure"],"tg":[22,27],
       "uig":{"aff":{"u":0.7,"c":0.3,"a":0.2,"f":0.2,"h":0.5},"rules":{"u":{"m":"subtle","max":2},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":0},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
       "src":["Emotional-Realist"]
     },
@@ -35,7 +35,7 @@
       "wd":{"set":[7,6,5],"sc":"everyday","mor":"humor_hidden","lp":[3],"rp":[2]},
       "rd":{"rh":"none","aa":1,"ono":["whizz","thud"],"sl":0},
       "eg":{"dir":0,"lst":1,"ip":["spot_the_prank"],"contr":1,"exag":1},
-      "th":["mischief","surprise","justice-with-a-wink"],"tg":[6,30],
+      "th":["mischief","surprise","justice-with-a-wink","magic_school","wizardry","fantasy"],"tg":[6,30],
       "uig":{"aff":{"u":0.7,"c":0.4,"a":0.3,"f":0.4,"h":0.6},"rules":{"u":{"m":"subtle","max":2},"c":{"m":"subtle","max":2},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
       "src":["Mischief-Maker"]
     },
@@ -47,7 +47,7 @@
       "wd":{"set":[17,7],"sc":"everyday","mor":"implied","lp":[],"rp":[7]},
       "rd":{"rh":"none","aa":1,"ono":["splash"],"sl":1},
       "eg":{"dir":0,"lst":0,"ip":["notice_the_small"],"contr":0,"exag":0},
-      "th":["nature","friendship","quiet courage"],"tg":[10,27],
+      "th":["nature","friendship","quiet courage","magic_school","fantasy","adventure"],"tg":[10,27],
       "uig":{"aff":{"u":0.7,"c":0.4,"a":0.3,"f":0.2,"h":0.3},"rules":{"u":{"m":"subtle","max":2},"c":{"m":"subtle","max":2},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
       "src":["Nature-Friend"]
     },
@@ -59,7 +59,7 @@
       "wd":{"set":[18,8,19],"sc":"everyday","mor":"implied","lp":["artifact_awakens"],"rp":["clue_trial_reveal"]},
       "rd":{"rh":"none","aa":1,"ono":["whoosh"],"sl":0},
       "eg":{"dir":0,"lst":1,"ip":["predict_next_place"],"contr":0,"exag":0},
-      "th":["quest","history","teamwork"],"tg":[26,31],
+      "th":["quest","history","teamwork","magic_school","wizardry","fantasy"],"tg":[26,31],
       "uig":{"aff":{"u":0.8,"c":0.4,"a":0.3,"f":0.2,"h":0.5},"rules":{"u":{"m":"subtle","max":2},"c":{"m":"subtle","max":2},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
       "src":["Time-Traveler"]
     },
@@ -71,7 +71,7 @@
       "wd":{"set":[4,5,3],"sc":"everyday","mor":"humor_hidden","lp":[3],"rp":["running_gag"]},
       "rd":{"rh":"none","aa":1,"ono":["whoom","whizz"],"sl":0},
       "eg":{"dir":1,"lst":1,"ip":["say_it_fast"],"contr":1,"exag":1},
-      "th":["fun-with-rules","friendship"],"tg":[6,7],
+      "th":["fun-with-rules","friendship","magic_school","fantasy","adventure"],"tg":[6,7],
       "uig":{"aff":{"u":0.8,"c":0.5,"a":0.5,"f":0.6,"h":0.6},"rules":{"u":{"m":"subtle","max":2},"c":{"m":"subtle","max":2},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
       "src":["Comic-Captain"]
     },
@@ -83,7 +83,7 @@
       "wd":{"set":[17,7,5],"sc":"everyday","mor":"symbolic","lp":[0],"rp":[0]},
       "rd":{"rh":"none","aa":1,"ono":["thrum"],"sl":1},
       "eg":{"dir":0,"lst":0,"ip":["soft_reflection"],"contr":0,"exag":0},
-      "th":["kindness","hope","found family"],"tg":[20,28],
+      "th":["kindness","hope","found family","magic_school","fantasy","adventure"],"tg":[20,28],
       "uig":{"aff":{"u":0.8,"c":0.4,"a":0.3,"f":0.2,"h":0.4},"rules":{"u":{"m":"subtle","max":2},"c":{"m":"subtle","max":2},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
       "src":["Gentle-Fabulist"]
     },
@@ -95,7 +95,7 @@
       "wd":{"set":[5,4,3],"sc":"everyday","mor":"overt","lp":[9],"rp":[9]},
       "rd":{"rh":"none","aa":0,"ono":["clack","ding"],"sl":0},
       "eg":{"dir":0,"lst":1,"ip":["what_would_team_do"],"contr":0,"exag":0},
-      "th":["family/school planning","helping","teamwork"],"tg":[14,15,28],
+      "th":["family/school planning","helping","teamwork","magic_school","fantasy","adventure"],"tg":[14,15,28],
       "uig":{"aff":{"u":0.8,"c":0.4,"a":0.3,"f":0.4,"h":0.4},"rules":{"u":{"m":"subtle","max":2},"c":{"m":"subtle","max":2},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
       "src":["Team-Planner"]
     },
@@ -107,7 +107,7 @@
       "wd":{"set":[17,7,18],"sc":"everyday","mor":"implied","lp":["legend_bleeds_present"],"rp":["clue_trial_reveal"]},
       "rd":{"rh":"none","aa":1,"ono":["whoosh"],"sl":0},
       "eg":{"dir":0,"lst":1,"ip":["spot_the_clue"],"contr":0,"exag":0},
-      "th":["mystery","friendship","adventure"],"tg":[30,6,26],
+      "th":["mystery","friendship","adventure","magic_school","wizardry","fantasy"],"tg":[30,6,26],
       "uig":{"aff":{"u":0.8,"c":0.4,"a":0.3,"f":0.2,"h":0.5},"rules":{"u":{"m":"subtle","max":2},"c":{"m":"subtle","max":2},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
       "src":["Mystery-Squad"]
     },
@@ -119,7 +119,7 @@
       "wd":{"set":[17,7,22],"sc":"everyday","mor":"implied","lp":[],"rp":[0]},
       "rd":{"rh":"none","aa":1,"ono":["whoosh"],"sl":1},
       "eg":{"dir":0,"lst":0,"ip":["try_something_brave"],"contr":0,"exag":0},
-      "th":["independence","kindness","adventure"],"tg":[27,28,26],
+      "th":["independence","kindness","adventure","magic_school","fantasy","wizardry"],"tg":[27,28,26],
       "uig":{"aff":{"u":0.8,"c":0.4,"a":0.3,"f":0.2,"h":0.5},"rules":{"u":{"m":"subtle","max":2},"c":{"m":"subtle","max":2},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
       "src":["Independent-Spirit"]
     },
@@ -131,7 +131,7 @@
       "wd":{"set":[17,5,3],"sc":"everyday","mor":"implied","lp":[],"rp":[7]},
       "rd":{"rh":"none","aa":0,"ono":[],"sl":1},
       "eg":{"dir":0,"lst":0,"ip":["notice_kindness"],"contr":0,"exag":0},
-      "th":["empathy","identity","kind bravery"],"tg":[27,28],
+      "th":["empathy","identity","kind bravery","magic_school","fantasy","adventure"],"tg":[27,28],
       "uig":{"aff":{"u":0.7,"c":0.3,"a":0.2,"f":0.2,"h":0.5},"rules":{"u":{"m":"subtle","max":2},"c":{"m":"subtle","max":1},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
       "src":["Empathy-Teacher"]
     },
@@ -143,7 +143,7 @@
       "wd":{"set":[3,12,18,20],"sc":"everyday","mor":"implied","lp":["artifact_awakens"],"rp":["running_gag"]},
       "rd":{"rh":"none","aa":1,"ono":["whoosh","clack"],"sl":0},
       "eg":{"dir":1,"lst":1,"ip":["spot_the_pun"],"contr":1,"exag":1},
-      "th":["travel","school humor","problem solving"],"tg":[10,15,26],
+      "th":["travel","school humor","problem solving","magic_school","fantasy","adventure"],"tg":[10,15,26],
       "uig":{"aff":{"u":0.8,"c":0.5,"a":0.4,"f":0.3,"h":0.5},"rules":{"u":{"m":"subtle","max":2},"c":{"m":"subtle","max":2},"a":{"m":"subtle","max":1},"f":{"m":"subtle","max":1},"h":{"m":"subtle","max":1}}},
       "src":["Flat-Adventurer"]
     }

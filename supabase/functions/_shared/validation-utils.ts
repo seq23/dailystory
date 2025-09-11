@@ -800,7 +800,7 @@ export function parseIntoPages(content: string, level: ValidationLevel, service:
     console.log(`✅ Page splitting: Found ${pages.length} pages using '${detectedPattern}' markers`);
     
     // MINIMUM PAGE GUARANTEE FOR FREE USERS: If insufficient pages but sufficient content, force split
-    if (service === 'netflix' && pages.length < 6 && content.length > 4000) {
+    if (service === 'netflix' && pages.length < 6) {
       console.log(`🚨 MINIMUM PAGE GUARANTEE: Found ${pages.length} pages via markers but content is ${content.length} chars, force-splitting to 6 pages`);
       const forcedPages = forceMinimumPageSplit(content, 6);
       return forcedPages.length > 12 ? forcedPages.slice(0, 12) : forcedPages;

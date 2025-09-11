@@ -12,8 +12,8 @@ import { safeThemeJoin } from "@/lib/utils";
 export class VoiceSelector {
   // Novelty scoring for variety
   private static voiceSelectionHistory: Map<string, { voiceId: string; timestamp: number }[]> = new Map();
-  private static readonly NOVELTY_PENALTY = 0.15;
-  private static readonly RANDOM_VARIANCE = 0.05;
+  private static readonly NOVELTY_PENALTY = 0.3;
+  private static readonly RANDOM_VARIANCE = 0.2;
 
   /**
    * Select the best voice for a user and difficulty level with enhanced theme matching
