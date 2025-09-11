@@ -1,6 +1,8 @@
 project_id = "cpzeuogomaixamrtnnmj"
 
 # Add function configurations
+[functions.edge-connectivity-test]
+verify_jwt = false
 [functions.template-service]
 verify_jwt = false
 [functions.ai-visual-scene-creator]

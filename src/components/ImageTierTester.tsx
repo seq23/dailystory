@@ -40,6 +40,52 @@ export function ImageTierTester() {
   const [results, setResults] = useState<TierTestResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTest, setActiveTest] = useState<string | null>(null);
+  const [connectivityStatus, setConnectivityStatus] = useState<'idle' | 'testing' | 'success' | 'failed'>('idle');
+
+  const testConnectivity = async () => {
+    setConnectivityStatus('testing');
+    try {
+      const startTime = Date.now();
+      const { data, error } = await supabase.functions.invoke('edge-connectivity-test');
+      const processingTime = Date.now() - startTime;
+      
+      if (error) {
+        console.error('Connectivity test error:', error);
+        setConnectivityStatus('failed');
+        return false;
+      }
+      
+      console.log('Connectivity test response:', data);
+      setConnectivityStatus('success');
+      
+      // Add connectivity test to results
+      const connectivityResult: TierTestResult = {
+        tier: 'Connectivity Test',
+        success: data?.success || false,
+        imageUrl: undefined,
+        processingTime,
+        error: data?.success ? undefined : 'Connectivity test failed'
+      };
+      
+      setResults(prev => [connectivityResult, ...prev]);
+      return data?.success || false;
+      
+    } catch (err) {
+      console.error('Connectivity test exception:', err);
+      setConnectivityStatus('failed');
+      
+      const connectivityResult: TierTestResult = {
+        tier: 'Connectivity Test',
+        success: false,
+        imageUrl: undefined,
+        processingTime: 0,
+        error: err instanceof Error ? err.message : 'Unknown connectivity error'
+      };
+      
+      setResults(prev => [connectivityResult, ...prev]);
+      return false;
+    }
+  };
 
   const testTier = async (tierType: string, templateComplexity?: string): Promise<TierTestResult> => {
     const startTime = Date.now();
@@ -178,6 +224,7 @@ export function ImageTierTester() {
 
   const clearResults = () => {
     setResults([]);
+    setConnectivityStatus('idle');
     console.log('🧹 Cleared all tier test results');
   };
 
@@ -231,6 +278,38 @@ export function ImageTierTester() {
         {/* Testing Controls */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Tier Testing Controls</h3>
+          
+          {/* Connectivity Test */}
+          <div className="flex gap-3 mb-4">
+            <Button 
+              onClick={testConnectivity}
+              disabled={isLoading}
+              variant={connectivityStatus === 'success' ? 'default' : connectivityStatus === 'failed' ? 'destructive' : 'outline'}
+              className="flex items-center gap-2"
+            >
+              {connectivityStatus === 'testing' ? (
+                <>
+                  <Clock className="w-4 h-4 animate-spin" />
+                  Testing...
+                </>
+              ) : connectivityStatus === 'success' ? (
+                <>
+                  <CheckCircle className="w-4 h-4" />
+                  ✓ Connected
+                </>
+              ) : connectivityStatus === 'failed' ? (
+                <>
+                  <XCircle className="w-4 h-4" />
+                  ✗ Failed
+                </>
+              ) : (
+                <>
+                  <Settings className="w-4 h-4" />
+                  Test Connectivity
+                </>
+              )}
+            </Button>
+          </div>
           
           {/* Individual Tier Tests */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
