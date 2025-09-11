@@ -24,7 +24,7 @@ import { CharacterConsistencyService } from '../_shared/CharacterConsistencyServ
 import { SecondaryElementDetector } from '../_shared/SecondaryElementDetector.js';
 import { SessionStateManager } from '../_shared/SessionStateManager.js';
 
-// Inline CORS utilities to fix boot failure
+// CORS Headers
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -753,10 +753,62 @@ serve(async (req) => {
     return createCorsOptionsResponse();
   }
 
+  // Handle health check requests
+  if (req.method === 'GET' || req.url.includes('/health')) {
+    const openaiApiKey = Deno.env.get('OPENAI_API_KEY')?.trim();
+    
+    return createCorsResponse({
+      status: 'healthy',
+      service: 'ai-visual-scene-creator',
+      tier: '1',
+      timestamp: new Date().toISOString(),
+      openaiApiKeyPresent: !!openaiApiKey,
+      openaiKeyLength: openaiApiKey ? openaiApiKey.length : 0
+    });
+  }
+
   return EdgeErrorHandler.withPerformanceTracking(
     'ai-visual-scene-creator',
     'fallback-chain',
     async () => {
+      try {
+        const { pageText, userInfo, sessionId, storyId, pageNumber = 1, isGuestUser = false, difficultyLevel = 'medium', diagnostic } = await req.json();
+        
+        // Handle diagnostic requests
+        if (diagnostic === 'tier_health_check') {
+          const openaiApiKey = Deno.env.get('OPENAI_API_KEY')?.trim();
+          
+          if (!openaiApiKey) {
+            return createCorsErrorResponse('OPENAI_API_KEY not configured for Tier 1', 500);
+          }
+          
+          return createCorsResponse({
+            success: true,
+            tier: '1',
+            service: 'ai-visual-scene-creator',
+            openaiApiKeyPresent: true,
+            openaiKeyLength: openaiApiKey.length,
+            circuitBreakerStatus: circuitBreaker.getStatus(),
+            timestamp: new Date().toISOString()
+          });
+        }
+
+        // Handle circuit breaker reset requests
+        if (diagnostic === 'reset_circuit_breaker') {
+          circuitBreaker.manualReset();
+          return createCorsResponse({
+            success: true,
+            message: 'Circuit breaker reset completed',
+            status: circuitBreaker.getStatus(),
+            timestamp: new Date().toISOString()
+          });
+        }
+
+        if (!pageText) {
+          return createCorsErrorResponse('pageText is required', 400);
+        }
+        
+        console.log(`🥇 Tier 1: Processing page ${pageNumber} for session ${sessionId}`);
       // Check for diagnostic mode first - consume body only once
       let requestBody;
       try {

@@ -32,53 +32,51 @@ export const ApiKeyDiagnostic: React.FC = () => {
     addResult('warning', '🔍 Starting comprehensive API key diagnostics...');
     
     try {
-      // Test 1: Basic API key validation via AI Story Enhancer
-      addResult('warning', '🔧 Testing basic API key validation...');
-      const { data: keyValidation, error: keyError } = await supabase.functions.invoke('ai-visual-scene-creator', {
-        body: { test: true, diagnostic: 'key_validation' }
+      // Test 1: Orchestrator health check with secrets presence
+      addResult('warning', '🔧 Testing orchestrator health and secrets presence...');
+      const { data: healthData, error: healthError } = await supabase.functions.invoke('runware-generate-image', {
+        method: 'GET'
       });
       
-      if (keyError) {
-        if (keyError.message?.includes('OPENAI_API_KEY')) {
-          addResult('error', '❌ OpenAI API key is NOT configured in Supabase secrets', keyError);
-          return;
-        } else if (keyError.message?.includes('Circuit breaker')) {
-          addResult('warning', '⚠️ Circuit breaker is open - service temporarily degraded', keyError);
-        } else {
-          addResult('error', `❌ API Key validation failed: ${keyError.message}`, keyError);
-        }
+      if (healthError) {
+        addResult('error', `❌ Orchestrator health check failed: ${healthError.message}`, healthError);
       } else {
-        addResult('success', '✅ OpenAI API key is properly configured and valid', keyValidation);
+        const env = healthData.environment || {};
+        addResult('success', '✅ Orchestrator is healthy', healthData);
+        addResult(env.runwareApiKeyPresent ? 'success' : 'error', 
+          `${env.runwareApiKeyPresent ? '✅' : '❌'} RUNWARE_API_KEY: ${env.runwareApiKeyPresent ? 'Present' : 'Missing'} (${env.runwareKeyLength || 0} chars)`);
+        addResult(env.openaiApiKeyPresent ? 'success' : 'warning', 
+          `${env.openaiApiKeyPresent ? '✅' : '⚠️'} OPENAI_API_KEY: ${env.openaiApiKeyPresent ? 'Present' : 'Missing'} (${env.openaiKeyLength || 0} chars)`);
+        addResult(env.supabaseServiceRolePresent ? 'success' : 'error', 
+          `${env.supabaseServiceRolePresent ? '✅' : '❌'} SUPABASE_SERVICE_ROLE_KEY: ${env.supabaseServiceRolePresent ? 'Present' : 'Missing'}`);
       }
 
-      // Test 2: Circuit breaker status check
-      addResult('warning', '🔄 Checking circuit breaker status...');
-      const { data: cbStatus, error: cbError } = await supabase.functions.invoke('ai-visual-scene-creator', {
-        body: { test: true, diagnostic: 'circuit_breaker_status' }
-      });
+      // Test 2: WebSocket authentication test
+      addResult('warning', '🔐 Testing Runware WebSocket authentication...');
+      const { data: wsTest, error: wsError } = await supabase.functions.invoke('test-runware-api');
       
-      if (cbError) {
-        if (cbError.message?.includes('Circuit breaker')) {
-          addResult('warning', '⚠️ AI Visual Scene Creator circuit breaker is OPEN - using fallback tiers', cbError);
-        } else {
-          addResult('error', `❌ Circuit breaker check failed: ${cbError.message}`, cbError);
-        }
+      if (wsError) {
+        addResult('error', `❌ WebSocket auth test failed: ${wsError.message}`, wsError);
       } else {
-        addResult('success', '✅ AI Visual Scene Creator circuit breaker is CLOSED - service healthy', cbStatus);
+        if (wsTest.success && wsTest.authenticationSuccessful) {
+          addResult('success', '✅ Runware WebSocket authentication successful', wsTest);
+        } else {
+          addResult('error', '❌ Runware WebSocket authentication failed', wsTest);
+        }
       }
 
       // Test 3: Individual tier testing
       addResult('warning', '🎯 Testing individual image generation tiers...');
       
       const tiers = [
-        { name: 'Tier 1 (AI Visual Scene Creator)', function: 'ai-visual-scene-creator' },
-        { name: 'Tier 3 (OpenAI DALL-E)', function: 'openai-image' }
+        { name: 'Tier 1 (AI Visual Scene Creator)', function: 'ai-visual-scene-creator', body: { diagnostic: 'tier_health_check' } },
+        { name: 'Tier 2.5 (Runware Simple)', function: 'runware-simple-fallback', body: { diagnostic: 'tier_health_check' } }
       ];
 
       for (const tier of tiers) {
         try {
           const { data: tierData, error: tierError } = await supabase.functions.invoke(tier.function, {
-            body: { test: true, diagnostic: 'tier_health_check' }
+            body: tier.body
           });
           
           if (tierError) {
@@ -96,6 +94,36 @@ export const ApiKeyDiagnostic: React.FC = () => {
     } catch (error) {
       console.error('Diagnostic error:', error);
       addResult('error', `❌ Diagnostic test failed: ${error.message}`, error);
+    } finally {
+      setIsChecking(false);
+    }
+  };
+
+  const forceTier25Test = async () => {
+    setIsChecking(true);
+    
+    try {
+      addResult('warning', '🎯 Testing Tier 2.5 in isolation...');
+      
+      const { data, error } = await supabase.functions.invoke('runware-generate-image', {
+        body: {
+          pageText: 'A happy child playing in a colorful playground',
+          userInfo: { name: 'Test', age: 8, ethnicity: 'diverse' },
+          sessionId: 'test-session',
+          pageNumber: 1,
+          forceTier: 2.5
+        }
+      });
+      
+      if (error) {
+        addResult('error', `❌ Tier 2.5 isolated test failed: ${error.message}`, error);
+      } else if (data.success && data.imageURL) {
+        addResult('success', `✅ Tier 2.5 isolated test successful - Used: ${data.usedTier}`, data);
+      } else {
+        addResult('error', '❌ Tier 2.5 test returned no image URL', data);
+      }
+    } catch (error) {
+      addResult('error', `❌ Tier 2.5 test failed: ${error.message}`, error);
     } finally {
       setIsChecking(false);
     }
@@ -138,12 +166,12 @@ export const ApiKeyDiagnostic: React.FC = () => {
         <CardTitle className="text-sm">🔑 OpenAI API Key & Service Diagnostic</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Button 
             onClick={checkApiKey} 
             disabled={isChecking}
             size="sm"
-            className="flex-1"
+            className="flex-1 min-w-[120px]"
           >
             {isChecking ? 'Running Diagnostics...' : 'Run Full Diagnostic'}
           </Button>
@@ -152,9 +180,18 @@ export const ApiKeyDiagnostic: React.FC = () => {
             disabled={isResettingCircuitBreaker || isChecking}
             size="sm"
             variant="outline"
-            className="flex-1"
+            className="flex-1 min-w-[120px]"
           >
             {isResettingCircuitBreaker ? 'Resetting...' : 'Reset Circuit Breaker'}
+          </Button>
+          <Button 
+            onClick={forceTier25Test} 
+            disabled={isChecking}
+            size="sm"
+            variant="secondary"
+            className="flex-1 min-w-[120px]"
+          >
+            {isChecking ? 'Testing...' : 'Force Tier 2.5 Test'}
           </Button>
         </div>
         

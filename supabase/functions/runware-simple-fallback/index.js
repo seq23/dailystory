@@ -7,13 +7,10 @@ import { VisualDetailTracker } from "../_shared/VisualDetailTracker.js";
 import { CharacterConsistencyService } from "../_shared/CharacterConsistencyService.js";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-// Import comprehensive CORS baseline
-import { COMPREHENSIVE_HEADER_BASELINE } from "../_shared/corsAdvanced.js";
-
-// Nuclear Independent CORS Headers with comprehensive baseline
+// Nuclear Independent CORS Headers 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': COMPREHENSIVE_HEADER_BASELINE.join(', '),
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   'Access-Control-Max-Age': '86400',
 };
@@ -5777,6 +5774,44 @@ serve(async (req) => {
 
   // Handle health check requests
   if (req.method === 'GET' || req.url.includes('/health')) {
+    const runwareApiKey = Deno.env.get('RUNWARE_API_KEY')?.trim();
+    
+    return createCorsResponse({
+      status: 'healthy',
+      service: 'runware-simple-fallback',
+      tier: '2.5',
+      timestamp: new Date().toISOString(),
+      runwareApiKeyPresent: !!runwareApiKey,
+      runwareKeyLength: runwareApiKey ? runwareApiKey.length : 0
+    });
+  }
+
+  try {
+    const { pageText, userInfo, sessionId, storyId, pageNumber = 1, isGuestUser = false, difficultyLevel = 'medium', diagnostic } = await req.json();
+    
+    // Handle diagnostic requests
+    if (diagnostic === 'tier_health_check') {
+      const runwareApiKey = Deno.env.get('RUNWARE_API_KEY')?.trim();
+      
+      if (!runwareApiKey) {
+        return createCorsErrorResponse('RUNWARE_API_KEY not configured for Tier 2.5', 500);
+      }
+      
+      return createCorsResponse({
+        success: true,
+        tier: '2.5',
+        service: 'runware-simple-fallback',
+        runwareApiKeyPresent: true,
+        runwareKeyLength: runwareApiKey.length,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    if (!pageText) {
+      return createCorsErrorResponse('pageText is required', 400);
+    }
+    
+    console.log(`🛡️ Tier 2.5: Processing page ${pageNumber} for session ${sessionId}`);
     const runwareApiKey = Deno.env.get('RUNWARE_API_KEY');
     return createCorsResponse({
       status: 'healthy',
@@ -6407,13 +6442,12 @@ serve(async (req) => {
           const httpResponse = await fetch('https://api.runware.ai/v1', {
             method: 'POST',
             headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${Deno.env.get('RUNWARE_API_KEY')}`
+              'Content-Type': 'application/json'
             },
             body: JSON.stringify([
               {
                 taskType: "authentication", 
-                apiKey: Deno.env.get('RUNWARE_API_KEY')
+                apiKey: Deno.env.get('RUNWARE_API_KEY')?.trim()
               },
               {
                 taskType: "imageInference",
