@@ -22,7 +22,7 @@ import { monitorRequest } from "../_shared/headerMonitor.js";
 import { SessionStateManager } from "../_shared/SessionStateManager.js";
 import { SecurityValidator } from "../_shared/SecurityValidator.js";
 import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from "../_shared/NuclearNegativePrompts.js";
-import { DifficultyLevelMapper } from "../_shared/DifficultyLevelMapper.js";
+import { DifficultyLevelMapper } from "../_shared/DifficultyLevelMapper.ts";
 /**
  * ============================================================================
  * IMAGE GENERATION TIER POLICY - CRITICAL BUSINESS RULE
@@ -1521,7 +1521,7 @@ serve(async (req)=>{
       }
       
       // Get proper difficulty mapping
-      const { DifficultyLevelMapper } = await import('../_shared/DifficultyLevelMapper.js');
+      const { DifficultyLevelMapper } = await import('../_shared/DifficultyLevelMapper.ts');
       const mappedDifficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
       
       // Additional validation - ensure critical parameters are not empty

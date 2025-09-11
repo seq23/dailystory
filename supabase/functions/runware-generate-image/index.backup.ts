@@ -1,3 +1,16 @@
+/**
+ * ⚠️  DEPRECATED BACKUP ORCHESTRATOR - NOT IN ACTIVE USE
+ * ============================================================================
+ * This file is a backup copy of the image generation orchestrator.
+ * 
+ * ACTIVE VERSION: runware-generate-image/index.js
+ * STATUS: Backup only - not deployed or actively used
+ * 
+ * This backup is kept for emergency rollback purposes only.
+ * Do not use this file for new development.
+ * ============================================================================
+ */
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { createDynamicCorsOptionsResponse, createDynamicCorsResponse, createDynamicCorsErrorResponse } from "../_shared/corsAdvanced.ts";
@@ -5,7 +18,7 @@ import { monitorRequest } from "../_shared/headerMonitor.ts";
 import { SessionStateManager } from "../_shared/SessionStateManager.ts";
 import { SecurityValidator } from "../_shared/SecurityValidator.js";
 import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from "../_shared/NuclearNegativePrompts.js";
-import { DifficultyLevelMapper } from "../_shared/DifficultyLevelMapper.js";
+import { DifficultyLevelMapper } from "../_shared/DifficultyLevelMapper.ts";
 /**
  * ============================================================================
  * IMAGE GENERATION TIER POLICY - CRITICAL BUSINESS RULE
@@ -1508,7 +1521,7 @@ serve(async (req)=>{
           throw new Error('Critical orchestrator error: avatarIdentity is undefined');
         }
         // TIER 2.5: Get proper difficulty mapping (same as Tier 1 & 2)
-        const { DifficultyLevelMapper } = await import('../_shared/DifficultyLevelMapper.js');
+        const { DifficultyLevelMapper } = await import('../_shared/DifficultyLevelMapper.ts');
         const mappedDifficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
         // Enhanced parameter validation with detailed logging
         console.log('🔍 TIER 2.5 ENHANCED VALIDATION - Complete parameter analysis:', {

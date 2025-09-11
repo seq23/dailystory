@@ -1,3 +1,15 @@
+/**
+ * ⚠️  DEPRECATED - USE TypeScript VERSION INSTEAD
+ * ============================================================================
+ * This .js version is DEPRECATED and will be removed in future versions.
+ * 
+ * Please use: ../DifficultyLevelMapper.ts for all new implementations
+ * 
+ * MIGRATION STATUS: All edge functions are being migrated to .ts version
+ * KEPT FOR: Legacy compatibility during transition period only
+ * ============================================================================
+ */
+
 // Difficulty Level Mapping Service
 // Handles frontend ↔ backend difficulty level translation
 

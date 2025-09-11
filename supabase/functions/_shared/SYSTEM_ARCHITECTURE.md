@@ -71,7 +71,7 @@ Unified 4-tier story generation system with 2-attempt AI generation, vocabulary 
 - Session management
 - Performance optimization
 
-#### Difficulty Level Mapper (`_shared/DifficultyLevelMapper.js`)
+#### Difficulty Level Mapper (`_shared/DifficultyLevelMapper.ts`)
 - Age-appropriate content mapping
 - Complexity level adjustment
 
