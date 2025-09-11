@@ -18,6 +18,8 @@ interface NuclearSessionState {
     sceneIndex: number;
     environmentalState: Record<string, any>;
     swappableElements: Record<string, any>;
+    templateIndex: number;
+    totalPages: number;
   };
   templateLevel: string;
   lastActivity: number;
@@ -110,7 +112,14 @@ class LocalStorageBackup {
       sessionId: compressed.id,
       userId: compressed.uid,
       arcHistory: compressed.ah || [],
-      currentArc: compressed.ca || { arcNumber: 0, sceneIndex: 0, environmentalState: {}, swappableElements: {} },
+      currentArc: compressed.ca || { 
+        arcNumber: 0, 
+        sceneIndex: 0, 
+        environmentalState: {}, 
+        swappableElements: {},
+        templateIndex: 0,
+        totalPages: 0
+      },
       templateLevel: compressed.tl || 'level1',
       lastActivity: compressed.la || Date.now(),
       backupVersion: compressed.bv || 1
@@ -145,7 +154,9 @@ export function getNuclearSession(sessionId: string, templateLevel: string = 'le
       arcNumber: 0,
       sceneIndex: 0,
       environmentalState: {},
-      swappableElements: {}
+      swappableElements: {},
+      templateIndex: 0,
+      totalPages: 0
     },
     templateLevel,
     lastActivity: Date.now(),
@@ -203,7 +214,9 @@ export function completeNuclearArc(sessionId: string, arcData: any): NuclearSess
     arcNumber: session.currentArc.arcNumber + 1,
     sceneIndex: 0,
     environmentalState: arcRecord.environmentalState, // Carry forward environment
-    swappableElements: {} // Reset swappable elements for variety
+    swappableElements: {}, // Reset swappable elements for variety
+    templateIndex: 0, // Reset template index for new arc
+    totalPages: 0 // Reset page count for new arc
   };
   
   return updateNuclearSession(sessionId, session);
@@ -299,6 +312,41 @@ export function getNuclearSystemHealth(): {
     backupQueueSize: sessionBackupQueue.size,
     memoryPressure,
     oldestSession: now - oldestActivity
+  };
+}
+
+/**
+ * Update current arc with specific properties
+ */
+export function updateCurrentArc(sessionId: string, updates: Partial<{
+  sceneIndex: number;
+  totalPages: number;
+  templateIndex: number;
+  environmentalState: Record<string, any>;
+  swappableElements: Record<string, any>;
+}>): NuclearSessionState {
+  const session = getNuclearSession(sessionId);
+  
+  // Apply updates to currentArc
+  Object.assign(session.currentArc, updates);
+  
+  return updateNuclearSession(sessionId, { currentArc: session.currentArc });
+}
+
+/**
+ * Serialize session to JSON for transport
+ */
+export function sessionToJSON(sessionId: string): any {
+  const session = getNuclearSession(sessionId);
+  
+  return {
+    sessionId: session.sessionId,
+    userId: session.userId,
+    arcHistory: session.arcHistory,
+    currentArc: session.currentArc,
+    templateLevel: session.templateLevel,
+    lastActivity: session.lastActivity,
+    backupVersion: session.backupVersion
   };
 }
 

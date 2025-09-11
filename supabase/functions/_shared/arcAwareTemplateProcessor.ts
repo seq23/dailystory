@@ -6,7 +6,7 @@
 
 import { convertStoryTemplateToStringArray } from './templateConverter.ts';
 import { calculateArcPosition, generateArcTransition, needsArcTransition, getBValue } from './arcManager.ts';
-import { globalSessionManager } from './SessionStateManager.ts';
+import { getNuclearSession, updateCurrentArc, sessionToJSON } from './nuclearSessionManager.ts';
 import { getTemplate, getTemplateCount } from './templateImporter.ts';
 import type { UserInfo } from './placeholderResolver.ts';
 
@@ -36,12 +36,8 @@ export async function processArcAwarePage(
     
     console.log(`🎪 Processing arc-aware page ${pageIndex} for ${templateLevel}`);
     
-    // Get or create session state
-    const sessionState = globalSessionManager.getOrCreateSessionState(
-      sessionId,
-      true, // isNeverEnding
-      null // totalPages
-    );
+    // Get or create nuclear session state
+    const sessionState = getNuclearSession(sessionId, templateLevel);
     
     // Calculate arc position using modulo logic
     const arcPosition = calculateArcPosition(pageIndex, templateLevel);
@@ -59,8 +55,11 @@ export async function processArcAwarePage(
         sessionState
       );
       
-      // Complete current arc and start new one - using basic session update
-      globalSessionManager.getOrCreateSessionState(sessionId, true, null);
+      // Complete current arc and start new one - using nuclear session
+      updateCurrentArc(sessionId, { 
+        sceneIndex: 0, 
+        templateIndex: arcTransitionData.nextTemplateIndex 
+      });
       
       // Load new template for next arc
       const template = await getTemplate(
@@ -97,7 +96,7 @@ export async function processArcAwarePage(
       return {
         pages: Array.isArray(pages) ? pages : pages.pages,
         arcTransition: arcTransitionData,
-        sessionState: sessionState.toJSON(),
+        sessionState: sessionToJSON(sessionId),
         metadata: {
           arcNumber: arcPosition.arcNumber,
           isArcTransition: true,
@@ -140,14 +139,14 @@ export async function processArcAwarePage(
     );
     
     // Update session state
-    sessionState.updateCurrentArc({
+    updateCurrentArc(sessionId, {
       sceneIndex: arcPosition.sceneIndex,
       totalPages: sessionState.currentArc.totalPages + 1
     });
     
     return {
       pages: Array.isArray(pages) ? pages : pages.pages,
-      sessionState: sessionState.toJSON(),
+      sessionState: sessionToJSON(sessionId),
       metadata: {
         arcNumber: arcPosition.arcNumber,
         sceneIndex: arcPosition.sceneIndex,
@@ -243,11 +242,10 @@ export async function batchProcessArcAwarePages(
 export function clearArcSession(sessionId: string, context: 'rewrite' | 'new-story' | 'session-end' = 'session-end') {
   console.log(`🧹 Clearing arc session ${sessionId} for ${context}`);
   
-  if (context === 'session-end') {
-    globalSessionManager.clearAllState();
-  } else {
-    globalSessionManager.clearAllState();
-  }
+  // Import clearNuclearSession dynamically to avoid circular imports
+  import('./nuclearSessionManager.ts').then(({ clearNuclearSession }) => {
+    clearNuclearSession(sessionId);
+  });
 }
 
 /**
@@ -255,14 +253,18 @@ export function clearArcSession(sessionId: string, context: 'rewrite' | 'new-sto
  */
 export function getArcSessionAnalytics(sessionId?: string) {
   if (sessionId) {
-    const sessionState = globalSessionManager.getOrCreateSessionState(sessionId);
+    const sessionState = getNuclearSession(sessionId);
     return sessionState ? {
       sessionId: sessionState.sessionId,
-      pageNumber: sessionState.pageNumber,
-      totalPages: sessionState.totalPages,
-      isNeverEnding: sessionState.isNeverEnding
+      currentArc: sessionState.currentArc,
+      arcHistory: sessionState.arcHistory,
+      templateLevel: sessionState.templateLevel,
+      lastActivity: sessionState.lastActivity
     } : null;
   }
   
-  return globalSessionManager.getMonitoringData();
+  // Import and return system health for global monitoring
+  import('./nuclearSessionManager.ts').then(({ getNuclearSystemHealth }) => {
+    return getNuclearSystemHealth();
+  });
 }
