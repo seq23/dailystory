@@ -42,7 +42,9 @@ export class VoiceCatalogIntegration {
 
     // 1. Process themes through library mapping for enhanced matching
     // Note: Frontend version uses direct theme processing for now
-    const enhancedThemes = preferences?.themes;
+    const enhancedThemes = preferences?.themes 
+      ? preferences.themes.map(theme => theme.toLowerCase().trim()).filter(Boolean)
+      : undefined;
 
     console.log(`🎯 Theme processing: ${JSON.stringify(preferences?.themes)} → ${JSON.stringify(enhancedThemes)}`);
 
