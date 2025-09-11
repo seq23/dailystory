@@ -7,7 +7,7 @@
 import { createCorsResponse, createCorsErrorResponse } from "./cors.ts";
 
 // Comprehensive baseline of all known browser and Supabase client headers
-const COMPREHENSIVE_HEADER_BASELINE = [
+export const COMPREHENSIVE_HEADER_BASELINE = [
   // Authentication & API
   'authorization', 'apikey', 'x-client-info', 'x-supabase-info',
   

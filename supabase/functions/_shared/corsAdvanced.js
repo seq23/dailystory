@@ -1,13 +1,16 @@
 // Advanced CORS Utilities for Dynamic Edge Function Responses
 // Provides comprehensive CORS handling with request monitoring
 
+// Import the comprehensive header baseline from the TypeScript version
+import { COMPREHENSIVE_HEADER_BASELINE } from './corsAdvanced.ts';
+
 /**
  * Creates a dynamic CORS OPTIONS response based on request headers
  */
 export function createDynamicCorsOptionsResponse(req) {
   const requestOrigin = req.headers.get('origin') || '*';
   const requestMethod = req.headers.get('access-control-request-method') || 'GET,POST,OPTIONS';
-  const requestHeaders = req.headers.get('access-control-request-headers') || 'authorization, x-client-info, apikey, content-type';
+  const requestHeaders = req.headers.get('access-control-request-headers') || COMPREHENSIVE_HEADER_BASELINE.join(', ');
   
   return new Response(null, {
     status: 200,
@@ -30,7 +33,7 @@ export function createDynamicCorsResponse(data, req = null, status = 200) {
     status,
     headers: {
       'Access-Control-Allow-Origin': requestOrigin,
-      'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+      'Access-Control-Allow-Headers': COMPREHENSIVE_HEADER_BASELINE.join(', '),
       'Content-Type': 'application/json',
     }
   });
@@ -51,7 +54,7 @@ export function createDynamicCorsErrorResponse(error, req = null, status = 500) 
     status,
     headers: {
       'Access-Control-Allow-Origin': requestOrigin,
-      'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+      'Access-Control-Allow-Headers': COMPREHENSIVE_HEADER_BASELINE.join(', '),
       'Content-Type': 'application/json',
     }
   });
@@ -60,5 +63,5 @@ export function createDynamicCorsErrorResponse(error, req = null, status = 500) 
 // Standard CORS headers for backward compatibility
 export const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': COMPREHENSIVE_HEADER_BASELINE.join(', '),
 };
