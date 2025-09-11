@@ -63,8 +63,6 @@ const learningGoalOptions = [
   { value: 'learn-english-language', label: 'Learn English Language' },
   { value: 'both', label: 'Both' }
 ] as const;
-const difficultyOptions = ['pre-reader', 'beginner', 'developing', 'independent', 'advanced'] as const;
-
 const defaultUserProfile: UserInfo = {
   name: 'Test User',
   age: 8,
@@ -79,7 +77,7 @@ const defaultUserProfile: UserInfo = {
   hobbies: 'reading, playing',
   specialRequest: 'I love fun stories with adventure',
   interests: ['adventure', 'friendship'],
-  difficultyLevel: 'developing'
+  difficultyLevel: 'easy'
 };
 
 const presetProfiles = [
@@ -91,7 +89,7 @@ const presetProfiles = [
       age: 5,
       grade: 'PreK' as const,
       gradeLevel: 'PreK' as const,
-      difficultyLevel: 'pre-reader',
+      difficultyLevel: 'beginner',
       favoriteAnimal: 'bunny',
       hobbies: 'coloring, puzzles',
       specialRequest: 'I like stories with animals',
@@ -106,7 +104,7 @@ const presetProfiles = [
       age: 8,
       grade: '3rd' as const,
       gradeLevel: '3rd' as const,
-      difficultyLevel: 'developing',
+      difficultyLevel: 'easy',
       favoriteColor: 'green',
       favoriteAnimal: 'cat',
       hobbies: 'soccer, drawing',
@@ -122,7 +120,7 @@ const presetProfiles = [
       age: 12,
       grade: '6th+' as const,
       gradeLevel: '6th+' as const,
-      difficultyLevel: 'independent',
+      difficultyLevel: 'medium',
       favoriteColor: 'purple',
       favoriteAnimal: 'dragon',
       favoriteFood: 'tacos',
@@ -139,13 +137,30 @@ const presetProfiles = [
       age: 15,
       grade: '6th+' as const,
       gradeLevel: '6th+' as const,
-      difficultyLevel: 'advanced',
+      difficultyLevel: 'hard',
       favoriteColor: 'black',
       favoriteAnimal: 'wolf',
       favoriteFood: 'sushi',
       hobbies: 'writing, music',
       specialRequest: 'I want complex stories with deep themes',
       interests: ['science', 'philosophy', 'adventure']
+    }
+  },
+  {
+    name: 'Expert Reader',
+    profile: {
+      ...defaultUserProfile,
+      name: 'Maya',
+      age: 17,
+      grade: '6th+' as const,
+      gradeLevel: '6th+' as const,
+      difficultyLevel: 'expert',
+      favoriteColor: 'crimson',
+      favoriteAnimal: 'phoenix',
+      favoriteFood: 'ramen',
+      hobbies: 'creative writing, philosophy',
+      specialRequest: 'I enjoy sophisticated narratives with complex themes',
+      interests: ['literature', 'psychology', 'world-building']
     }
   }
 ];
@@ -700,7 +715,7 @@ export function VoiceCatalogTester() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {difficultyOptions.map((diff) => (
+                          {difficultyLevels.map((diff) => (
                             <SelectItem key={diff} value={diff}>{diff}</SelectItem>
                           ))}
                         </SelectContent>
