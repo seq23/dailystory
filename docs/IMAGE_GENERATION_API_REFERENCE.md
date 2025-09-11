@@ -1,505 +1,291 @@
 # Image Generation API Reference
 
-## Overview
-
-Complete API reference for the Image Generation System, including all endpoints, parameters, responses, and integration patterns.
-
 ## Core Endpoints
 
-### Frontend Service Layer
+### Frontend Entry Point
 
 #### `SimpleImageService.generateStoryImage()`
-**Purpose**: Main entry point for image generation from frontend
+Frontend service method that handles all image generation requests.
 
-**Method**: Static method call
 **Location**: `src/services/SimpleImageService.ts`
 
+**Method Signature**:
+```typescript
+async generateStoryImage(
+  storyText: string,
+  userInfo: {
+    name: string;
+    age: number;
+    userName: string;
+  },
+  pageNumber?: number,
+  sessionId?: string
+): Promise<string>
+```
+
 **Parameters**:
-```typescript
-static async generateStoryImage(
-  pageText: string,           // Required: Story text to visualize
-  userInfo: UserInfo,         // Required: User avatar and preferences
-  difficulty: string,         // Optional: Frontend difficulty level (default: 'developing')
-  storyId?: string,          // Optional: Story identifier for tracking
-  pageNumber?: number,       // Optional: Page number for consistency
-  sessionId?: string,        // Optional: Session identifier
-  isPremium?: boolean        // Optional: For analytics only - does NOT affect quality
-): Promise<ImageResult>
-```
+- `storyText`: The story content to generate an image for
+- `userInfo`: Avatar identity information
+- `pageNumber`: Current page number (optional)
+- `sessionId`: Story session identifier (optional)
 
-**UserInfo Interface**:
-```typescript
-interface UserInfo {
-  name?: string;
-  nativeLanguage?: string;
-  avatar?: {
-    type: 'boy' | 'girl' | 'neutral';
-    skinTone: 'pale' | 'light' | 'medium' | 'olive' | 'dark';
-  };
-}
-```
+**Returns**: Image URL (data URL, blob URL, or fallback SVG)
 
-**Response - ImageResult Interface**:
-```typescript
-interface ImageResult {
-  url: string;              // Generated image URL or data URI
-  success: boolean;         // Generation success status
-  provider?: string;        // Provider used ('runware', 'openai', 'svg')
-  model?: string;          // Model identifier
-  cost?: number;           // Estimated cost in USD
-  seed?: number;           // Generation seed for reproducibility
-  error?: string;          // Error message if failed
-  prompt?: string;         // Final prompt used
-  metadata?: {
-    tier: number;          // Tier used (1, 2.5, or 4)
-    enhancementLevel: string; // 'ai_enhanced', 'template_based', 'placeholder'
-    qualityScore?: number; // AI quality score (0-5)
-    orchestrated: boolean; // Whether backend orchestrator was used
-    [key: string]: any;   // Additional metadata
-  };
-}
-```
+**Flow**:
+1. Calls main orchestrator (`runware-generate-image`)
+2. On orchestrator failure, attempts Tier 2.5 directly
+3. On all failures, returns SVG placeholder
 
-**Example Usage**:
-```typescript
-const result = await SimpleImageService.generateStoryImage(
-  "A young girl reading a magical book in her bedroom",
-  {
-    name: "Emma",
-    nativeLanguage: "en",
-    avatar: {
-      type: "girl",
-      skinTone: "light"
-    }
-  },
-  "developing",
-  "story_123",
-  1,
-  "session_456",
-  false // Guest user - still gets Tier 1 images
-);
+---
 
-if (result.success) {
-  console.log(`Generated with Tier ${result.metadata?.tier}: ${result.url}`);
-} else {
-  console.error(`Generation failed: ${result.error}`);
-}
-```
+### Main Orchestrator
 
-### Backend Orchestrator
-
-#### `/functions/v1/runware-generate-image`
-**Purpose**: Main orchestration hub with tier management
-
-**Method**: POST
-**Authentication**: Public (no JWT required)
-**CORS**: Full support for cross-origin requests
+#### `POST /functions/v1/runware-generate-image`
+Primary backend orchestrator that manages tier progression and fallback logic.
 
 **Request Body**:
-```typescript
+```json
 {
-  pageText: string,          // Required: Story text to visualize
-  userInfo: UserInfo,        // Required: User information and avatar
-  sessionId?: string,        // Optional: Session identifier
-  pageNumber?: number,       // Optional: Page number for consistency
-  storyId?: string,         // Optional: Story identifier
-  isGuestUser?: boolean,    // Optional: For analytics only - does NOT affect quality
-  difficultyLevel?: string  // Optional: Backend difficulty level
-}
-```
-
-**Response Format**:
-```typescript
-{
-  success: boolean,
-  imageURL?: string,        // Generated image URL
-  tier?: number,            // Tier used (1, 2.5, or 4)
-  provider?: string,        // Provider identifier
-  model?: string,          // Model used
-  cost?: number,           // Generation cost in USD
-  seed?: number,           // Generation seed
-  enhancementLevel?: string, // Enhancement type applied
-  qualityScore?: number,   // AI validation score
-  metadata?: {
-    requestId: string,     // Correlation ID for debugging
-    processingTime: number, // Total processing time (ms)
-    avatarIdentity: object, // Processed avatar data
-    culturalProfile: string, // Cultural processing applied
-    [key: string]: any    // Additional metadata
+  "storyText": "string (required)",
+  "avatarIdentity": {
+    "name": "string",
+    "age": "number", 
+    "userName": "string"
   },
-  error?: string           // Error message if failed
+  "sessionId": "string (optional)",
+  "pageNumber": "number (optional)",
+  "forceOrchestrator": "boolean (optional)"
 }
 ```
 
-**Example Request**:
-```bash
-curl -X POST 'https://your-project.supabase.co/functions/v1/runware-generate-image' \
-  -H 'Content-Type: application/json' \
-  -H 'Authorization: Bearer YOUR_ANON_KEY' \
-  -d '{
-    "pageText": "A curious boy exploring a mysterious forest",
-    "userInfo": {
-      "name": "Alex",
-      "nativeLanguage": "en",
-      "avatar": {
-        "type": "boy",
-        "skinTone": "medium"
-      }
-    },
-    "sessionId": "session_789",
-    "pageNumber": 1,
-    "isGuestUser": true,
-    "difficultyLevel": "medium"
-  }'
+**Response**:
+```json
+{
+  "success": true,
+  "imageUrl": "string",
+  "tier": "1 | 2.5 | 4",
+  "requestId": "string",
+  "processingTime": "number"
+}
 ```
 
-### AI Enhancement Layer
+**Error Response**:
+```json
+{
+  "success": false,
+  "error": "string",
+  "tier": "string",
+  "requestId": "string"
+}
+```
 
-#### `/functions/v1/ai-visual-scene-creator`
-**Purpose**: Advanced AI processing for visual scene enhancement
+---
 
-**Method**: POST
-**Authentication**: Public (no JWT required)
-**Internal Use**: Called by backend orchestrator
+### Tier 1: AI Visual Scene Creator
+
+#### `POST /functions/v1/ai-visual-scene-creator`
+AI-powered visual scene enhancement using OpenAI + Runware.
 
 **Request Body**:
-```typescript
+```json
 {
-  storyText: string,        // Required: Story text for AI processing
-  userInfo: UserInfo,       // Required: User information
-  sessionId?: string,       // Optional: Session correlation
-  pageNumber?: number,      // Optional: Page number
-  requestId?: string       // Optional: Request correlation ID
+  "storyText": "string (required)",
+  "avatarIdentity": {
+    "name": "string",
+    "age": "number",
+    "userName": "string"
+  },
+  "sessionId": "string (optional)",
+  "pageNumber": "number (optional)"
 }
 ```
 
-**Response Format**:
-```typescript
+**Response**:
+```json
 {
-  success: boolean,
-  enhancedStoryData?: {
-    culturalContext?: string,      // Cultural context analysis
-    characterDetails?: object,     // Character consistency data
-    enhancedNarrative?: string,   // AI-enhanced narrative
-    primaryScene?: string,        // Main visual scene description
-    characters?: string[],        // Character list
-    visualComponents?: string[],  // Visual elements identified
-    extractionMethod?: string     // Method used for data extraction
-  },
-  processingTime?: number,        // AI processing time (ms)
-  metadata?: {
-    requestId: string,           // Correlation ID
-    modelUsed: string,          // AI model used
-    qualityScore: number,       // Validation score (0-5)
-    circuitBreakerState: string, // Circuit breaker status
-    [key: string]: any         // Additional metadata
-  },
-  error?: string                // Error message if failed
+  "success": true,
+  "imageUrl": "string",
+  "enhancedScene": "string",
+  "characterSeed": "number",
+  "requestId": "string",
+  "processingTime": "number"
 }
 ```
 
-### Nuclear Template Fallback
+**Features**:
+- AI scene analysis and enhancement
+- Character consistency via database-backed seeds
+- Cultural intelligence for appropriate representation
+- Visual detail extraction and integration
 
-#### `/functions/v1/runware-simple-fallback`
-**Purpose**: Guaranteed generation with template system
+---
 
-**Method**: POST  
-**Authentication**: Public (no JWT required)
-**Nuclear Independence**: Zero external dependencies
+### Tier 2.5: Template Fallback
+
+#### `POST /functions/v1/runware-simple-fallback`
+Template-based fallback with multiple complexity levels.
 
 **Request Body**:
-```typescript
+```json
 {
-  pageText: string,         // Required: Story text
-  userInfo: UserInfo,       // Required: User information
-  sessionId?: string,       // Optional: Session ID
-  pageNumber?: number,      // Optional: Page number  
-  difficultyLevel?: string, // Optional: Difficulty level
-  requestId?: string       // Optional: Request correlation
+  "storyText": "string (required)",
+  "avatarIdentity": {
+    "name": "string",
+    "age": "number",
+    "userName": "string"
+  },
+  "sessionId": "string (optional)",
+  "complexity": "A | B | C | D (optional, defaults to A)"
 }
 ```
 
-**Response Format**:
-```typescript
+**Response**:
+```json
 {
-  success: boolean,
-  imageURL?: string,        // Generated image URL
-  prompt?: string,         // Final constructed prompt
-  tier: 2.5,              // Always Tier 2.5
-  provider: "runware",    // Always Runware
-  model: "runware:100@1", // Template-based generation
-  cost?: number,          // Generation cost
-  seed?: number,          // Generation seed
-  metadata?: {
-    template: string,      // Template used
-    culturalProcessing: object, // Cultural arrays applied
-    pronounResolution: object,  // Pronoun resolution details
-    nuclearIndependence: true, // Confirms zero dependencies
-    [key: string]: any    // Additional metadata
-  },
-  error?: string          // Error message if failed
+  "success": true,
+  "imageUrl": "string",
+  "complexity": "A | B | C | D",
+  "templateUsed": "string",
+  "requestId": "string",
+  "processingTime": "number"
 }
 ```
+
+**Complexity Levels**:
+- **A**: Full character consistency + cultural intelligence
+- **B**: Basic character consistency
+- **C**: Simplified generation
+- **D**: Minimal generation
+
+---
 
 ## Error Handling
 
-### Standardized Error Responses
-
-All endpoints return consistent error formats:
-
-```typescript
+### Standard Error Format
+```json
 {
-  success: false,
-  error: string,           // Human-readable error message
-  details?: string,        // Detailed technical information
-  timestamp: string,       // ISO timestamp
-  functionName: string,    // Function that generated error
-  requestId?: string,      // Correlation ID for debugging
-  tier?: number,          // Tier where error occurred
-  retryable?: boolean,    // Whether request can be retried
-  circuitBreakerOpen?: boolean // Whether circuit breaker is triggered
+  "success": false,
+  "error": "string",
+  "details": "string (optional)",
+  "requestId": "string",
+  "tier": "string (optional)",
+  "retryable": "boolean"
 }
 ```
 
 ### Error Categories
 
-#### WebSocket Errors (Tier 1)
-```typescript
-{
-  "error": "WebSocket connection failed",
-  "details": "Connection timeout after 30000ms", 
-  "type": "TIMEOUT",
-  "retryable": true,
-  "tier": 1
-}
-```
+#### Tier 1 Errors
+- `OPENAI_TIMEOUT`: OpenAI API timeout
+- `RUNWARE_CONNECTION`: WebSocket connection failed
+- `CHARACTER_CONSISTENCY`: Database character storage failed
+- `SCENE_GENERATION`: AI scene analysis failed
 
-#### AI Processing Errors (Enhancement Layer)
-```typescript
-{
-  "error": "AI enhancement failed",
-  "details": "Circuit breaker open: 3 consecutive failures",
-  "type": "CIRCUIT_BREAKER",
-  "retryable": false,
-  "circuitBreakerOpen": true
-}
-```
+#### Tier 2.5 Errors
+- `TEMPLATE_SELECTION`: Template selection failed
+- `RUNWARE_API`: Runware API error
+- `COMPLEXITY_FALLBACK`: Complexity level fallback triggered
 
-#### Template Processing Errors (Tier 2.5)
-```typescript
-{
-  "error": "Template processing failed",
-  "details": "Nuclear fallback system error",
-  "type": "TEMPLATE_ERROR", 
-  "retryable": false,
-  "tier": 2.5
-}
-```
+#### System Errors
+- `ORCHESTRATOR_FAILURE`: Main orchestrator completely failed
+- `VALIDATION_ERROR`: Request validation failed
+- `UNKNOWN_ERROR`: Unexpected system error
 
-## Rate Limiting & Quotas
+---
 
-### Frontend Rate Limiting
-- **User Rate**: 2 requests per second per user
-- **Daily Cost Ceiling**: $50 USD per user
-- **Estimated Cost**: $0.002 per image
-- **Throttling**: Exponential backoff on limits
+## Authentication & CORS
 
-### Backend Rate Limiting
-- **Runware API**: Provider-specific limits
-- **OpenAI API**: Provider-specific limits  
-- **Circuit Breaker**: 2 failures = 15s timeout
+### Authentication
+All image generation endpoints are **public** (`verify_jwt = false`) to ensure accessibility.
 
-## Authentication & Security
-
-### Public Access
-All image generation endpoints are configured with `verify_jwt = false` for public access:
-
-```toml
-[functions.runware-generate-image]
-verify_jwt = false
-
-[functions.ai-visual-scene-creator]
-verify_jwt = false
-
-[functions.runware-simple-fallback]
-verify_jwt = false
-```
-
-### Security Headers
-```typescript
+### CORS Headers
+```javascript
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Max-Age': '86400'
-};
-```
-
-### Input Validation
-- Text sanitization (removes special characters)
-- Parameter validation (required fields, types)
-- Cost tracking and limits
-- Request throttling
-
-## Integration Patterns
-
-### Frontend Integration
-```typescript
-import { SimpleImageService } from '@/services/SimpleImageService';
-
-// Basic usage
-const result = await SimpleImageService.generateStoryImage(
-  storyText, 
-  userInfo, 
-  difficulty
-);
-
-// Advanced usage with all parameters
-const result = await SimpleImageService.generateStoryImage(
-  storyText,
-  userInfo,
-  difficulty,
-  storyId,
-  pageNumber,
-  sessionId,
-  isPremium
-);
-
-// Handle result
-if (result.success) {
-  setImageUrl(result.url);
-  console.log(`Tier ${result.metadata?.tier} image generated`);
-} else {
-  console.error('Generation failed:', result.error);
-  // Result still contains fallback SVG placeholder
-  setImageUrl(result.url); // Safe to use - always has fallback
 }
-```
-
-### Direct Backend Call
-```typescript
-import { supabase } from '@/integrations/supabase/client';
-
-const { data, error } = await supabase.functions.invoke('runware-generate-image', {
-  body: {
-    pageText: "A magical adventure begins",
-    userInfo: userInfo,
-    sessionId: sessionId,
-    pageNumber: 1,
-    isGuestUser: !isPremium
-  }
-});
-```
-
-### Batch Processing
-```typescript
-// Generate multiple images with proper throttling
-const results = await Promise.allSettled([
-  SimpleImageService.generateStoryImage(text1, userInfo, difficulty),
-  SimpleImageService.generateStoryImage(text2, userInfo, difficulty),
-  SimpleImageService.generateStoryImage(text3, userInfo, difficulty)
-]);
-
-results.forEach((result, index) => {
-  if (result.status === 'fulfilled' && result.value.success) {
-    console.log(`Image ${index + 1} generated: Tier ${result.value.metadata?.tier}`);
-  }
-});
-```
-
-## Debugging & Monitoring
-
-### Request Correlation
-**Phase 5 Enhancement**: All requests include correlation IDs for cross-function tracking
-
-```typescript
-const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-```
-
-### Debug Parameters
-Add debug parameters to see internal processing:
-
-```bash
-# Enable debug logging
-curl -X POST 'https://your-project.supabase.co/functions/v1/runware-generate-image' \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "pageText": "debug test",
-    "userInfo": {...},
-    "debug": true,
-    "debugLevel": "verbose"
-  }'
-```
-
-### Health Check
-```bash
-# Check system health
-curl 'https://your-project.supabase.co/functions/v1/runware-generate-image' \
-  -X OPTIONS
-```
-
-### Performance Monitoring
-```typescript
-// Monitor generation performance
-console.log('Performance Metrics:', {
-  totalTime: result.metadata?.processingTime,
-  tier: result.metadata?.tier,
-  enhancementLevel: result.metadata?.enhancementLevel,
-  qualityScore: result.metadata?.qualityScore,
-  cost: result.cost
-});
-```
-
-## Best Practices
-
-### Error Handling
-```typescript
-try {
-  const result = await SimpleImageService.generateStoryImage(...);
-  
-  // Always check success flag
-  if (result.success) {
-    // Use generated image
-    setImageUrl(result.url);
-  } else {
-    // Log error but still use fallback
-    console.error('Generation failed:', result.error);
-    setImageUrl(result.url); // Contains SVG fallback
-  }
-} catch (error) {
-  // Handle network/system errors
-  console.error('System error:', error);
-  // Implement your own fallback
-}
-```
-
-### Performance Optimization
-```typescript
-// Pre-generate images for better UX
-const preloadImages = async (texts: string[]) => {
-  const promises = texts.slice(0, 3).map(text => // Limit concurrent requests
-    SimpleImageService.generateStoryImage(text, userInfo, difficulty)
-  );
-  
-  return Promise.allSettled(promises);
-};
-```
-
-### Cultural Sensitivity
-```typescript
-// Ensure proper user information for cultural authenticity
-const userInfo = {
-  name: user.name,
-  nativeLanguage: user.language || 'en',
-  avatar: {
-    type: user.avatar.type,
-    skinTone: user.avatar.skinTone // Critical for cultural processing
-  }
-};
 ```
 
 ---
 
-**Last Updated**: December 2024  
-**API Version**: 2.0  
-**Status**: Production Ready
+## Request Correlation
+
+### Request ID Pattern
+- Format: `[req-{8char}]-{timestamp}`
+- Example: `req-mferghcd-e98ij`
+- Used across all tiers for debugging
+
+### Logging
+All functions log with structured format:
+```
+[PHASE] [REQ-{requestId}] {message}: {data}
+```
+
+---
+
+## Rate Limiting
+
+### Frontend Limits
+- Max 10 requests per second per user
+- Circuit breaker protection on repeated failures
+
+### Backend Limits
+- Per-function rate limiting via Supabase
+- OpenAI API rate limits respected
+- Automatic backoff on service failures
+
+---
+
+## Integration Examples
+
+### Basic Frontend Usage
+```typescript
+import { SimpleImageService } from '@/services/SimpleImageService';
+
+const imageService = new SimpleImageService();
+const imageUrl = await imageService.generateStoryImage(
+  "A magical forest adventure begins",
+  { name: "Maya", age: 8, userName: "User123" },
+  1,
+  "session-abc123"
+);
+```
+
+### Direct Backend Call
+```typescript
+const { data, error } = await supabase.functions.invoke('runware-generate-image', {
+  body: {
+    storyText: "A young explorer discovers a hidden cave",
+    avatarIdentity: { name: "Alex", age: 10, userName: "Explorer" },
+    sessionId: "session-xyz789"
+  }
+});
+```
+
+### Testing Specific Tiers
+```typescript
+// Test Tier 1 directly
+const tier1Result = await supabase.functions.invoke('ai-visual-scene-creator', {
+  body: { storyText, avatarIdentity, sessionId }
+});
+
+// Test Tier 2.5 with specific complexity
+const tier25Result = await supabase.functions.invoke('runware-simple-fallback', {
+  body: { storyText, avatarIdentity, complexity: 'B' }
+});
+```
+
+---
+
+## Performance Metrics
+
+### Target Response Times
+- **Tier 1**: 3-8 seconds (AI processing)
+- **Tier 2.5**: 2-5 seconds (template-based)
+- **Tier 4**: <100ms (local SVG)
+
+### Success Rate Targets
+- **Tier 1**: 85-90%
+- **Tier 2.5**: 95-99%
+- **Tier 4**: 100%
+- **Overall**: 100% (guaranteed via fallbacks)
