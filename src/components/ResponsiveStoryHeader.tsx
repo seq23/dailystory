@@ -332,7 +332,7 @@ export const ResponsiveStoryHeader = ({
     return (
       <div className={cn(
         "relative bg-white/90 backdrop-blur-sm border-b border-gray-200/50 z-20",
-        isMobileOrTablet && "sticky top-[--app-header-height]"
+        isMobileOrTablet && "sticky top-[var(--app-header-height,56px)]"
       )}>
         {/* Breadcrumb Navigation - Desktop/Tablet Premium Only */}
         {storyTitle && !isMobile && (

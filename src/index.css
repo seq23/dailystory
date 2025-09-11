@@ -123,6 +123,9 @@ All colors MUST be HSL.
 
     --radius: 1rem;
     
+    /* Header height for layout calculations */
+    --app-header-height: 56px;
+    
     /* Touch target sizes for mobile accessibility - WCAG AA compliant */
     --touch-target-min: 44px; /* iOS and Android minimum */
     --touch-target-comfortable: 48px; /* More comfortable target size */
