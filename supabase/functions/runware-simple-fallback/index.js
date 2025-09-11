@@ -3099,6 +3099,180 @@ function getMaxPageLength(difficulty) {
   return lengthLimits[difficulty] || lengthLimits['beginner'];
 }
 
+// ============= ENHANCED ACTION SECTION EXTRACTION FUNCTIONS =============
+
+function extractActionIntensity(pageText) {
+  const lowerText = pageText.toLowerCase();
+  
+  // Check for intensity vocabulary (exact matches only)
+  for (const intensity of TIER_25_UNIFIED_VOCABULARY.actions.intensity) {
+    if (lowerText.includes(intensity)) {
+      return intensity;
+    }
+  }
+  
+  // Check for intensity indicators in text (only clear indicators)
+  if (lowerText.includes('quick') || lowerText.includes('fast') || lowerText.includes('rush')) return 'energetically';
+  if (lowerText.includes('slow') || lowerText.includes('soft') || lowerText.includes('quiet')) return 'gently';
+  if (lowerText.includes('excited') || lowerText.includes('eager') || lowerText.includes('enthusiastic')) return 'excitedly';
+  if (lowerText.includes('calm') || lowerText.includes('peace') || lowerText.includes('relax')) return 'peacefully';
+  if (lowerText.includes('careful') || lowerText.includes('cautious')) return 'carefully';
+  if (lowerText.includes('bold') || lowerText.includes('brave') || lowerText.includes('confident')) return 'boldly';
+  
+  // NO FALLBACK - Return empty string when no intensity detected
+  return '';
+}
+
+function extractBodyLanguage(pageText) {
+  const lowerText = pageText.toLowerCase();
+  
+  // Check for body language vocabulary (exact matches)
+  for (const bodyLang of TIER_25_UNIFIED_VOCABULARY.actions.bodyLanguage) {
+    if (lowerText.includes(bodyLang.toLowerCase())) {
+      return bodyLang;
+    }
+  }
+  
+  // CONTEXT-AWARE BODY LANGUAGE EXTRACTION - INTELLIGENT DETECTION
+  // Only provide body language when context is clear and meaningful
+  
+  // Sleeping/Waking context
+  if (lowerText.includes('wake') || lowerText.includes('waking') || lowerText.includes('woke')) {
+    if (lowerText.includes('stretch')) return 'stretching arms upward';
+    if (lowerText.includes('rub') || lowerText.includes('eyes')) return 'rubbing eyes sleepily';
+    if (lowerText.includes('yawn')) return 'yawning softly';
+    if (lowerText.includes('bed') || lowerText.includes('sleep')) return 'stretching arms upward';
+  }
+  
+  // Walking/Moving context with confidence indicators
+  if (lowerText.includes('walk') || lowerText.includes('walking') || lowerText.includes('move')) {
+    if (lowerText.includes('confident') || lowerText.includes('proud')) return 'looking ahead confidently';
+    if (lowerText.includes('pocket')) return 'hands in pockets';
+    if (lowerText.includes('school') || lowerText.includes('purpose')) return 'arms swinging naturally';
+  }
+  
+  // Playing/Active context with clear activity
+  if (lowerText.includes('play') || lowerText.includes('playing') || lowerText.includes('jump') || lowerText.includes('run')) {
+    if (lowerText.includes('excited') || lowerText.includes('happy')) return 'arms spread wide with excitement';
+    if (lowerText.includes('celebrate') || lowerText.includes('win')) return 'hands raised in celebration';
+    if (lowerText.includes('ball') || lowerText.includes('toy')) return 'body bouncing with joy';
+  }
+  
+  // Sitting context with specific details
+  if (lowerText.includes('sit') || lowerText.includes('sitting') || lowerText.includes('seat')) {
+    if (lowerText.includes('cross') || lowerText.includes('legs')) return 'sitting cross-legged';
+    if (lowerText.includes('comfortable') || lowerText.includes('relax')) return 'hands resting on lap';
+    if (lowerText.includes('quietly') || lowerText.includes('still')) return 'sitting cross-legged';
+  }
+  
+  // Standing context with purpose
+  if (lowerText.includes('stand') || lowerText.includes('standing')) {
+    if (lowerText.includes('tall') || lowerText.includes('proud')) return 'standing tall';
+    if (lowerText.includes('confident')) return 'hands on hips';
+  }
+  
+  // Strong emotional indicators only
+  if (lowerText.includes('smile') && (lowerText.includes('bright') || lowerText.includes('wide'))) return 'smiling brightly';
+  if (lowerText.includes('think') || lowerText.includes('wonder') || lowerText.includes('curious')) return 'head tilted thoughtfully';
+  if (lowerText.includes('excited') && lowerText.includes('eyes')) return 'eyes sparkling with wonder';
+  
+  // NO UNIVERSAL FALLBACK - Return empty string when context is insufficient
+  return '';
+}
+
+function extractSpatialPositioning(pageText) {
+  const lowerText = pageText.toLowerCase();
+  
+  // Check for spatial positioning vocabulary (exact matches)
+  for (const spatial of TIER_25_UNIFIED_VOCABULARY.actions.spatial) {
+    const spatialWords = spatial.toLowerCase().split(' ');
+    if (spatialWords.every(word => lowerText.includes(word))) {
+      return spatial;
+    }
+  }
+  
+  // CONTEXT-AWARE SPATIAL POSITIONING EXTRACTION - INTELLIGENT DETECTION
+  // Only provide positioning when context is clear and meaningful
+  
+  // Sleeping/Waking context - bed context provides clear positioning
+  if (lowerText.includes('wake') || lowerText.includes('waking') || lowerText.includes('woke') || 
+      lowerText.includes('sleep') || lowerText.includes('bed')) {
+    if (lowerText.includes('sit') || lowerText.includes('up')) return 'sitting up in bed';
+    if (lowerText.includes('stretch')) return 'stretching in bed';
+    if (lowerText.includes('lying') || lowerText.includes('lay')) return 'lying peacefully';
+    return 'sitting up in bed'; // Clear bed context justifies positioning
+  }
+  
+  // Walking/Moving context with directional indicators
+  if (lowerText.includes('walk') || lowerText.includes('walking') || lowerText.includes('move') || 
+      lowerText.includes('step') || lowerText.includes('stride')) {
+    if (lowerText.includes('to') || lowerText.includes('toward') || lowerText.includes('school')) return 'moving forward confidently';
+    if (lowerText.includes('careful') || lowerText.includes('slow')) return 'stepping carefully';
+    if (lowerText.includes('purpose') || lowerText.includes('determined')) return 'striding purposefully';
+  }
+  
+  // Playing context with specific activities  
+  if (lowerText.includes('play') || lowerText.includes('playing') || lowerText.includes('game') ||
+      lowerText.includes('toy') || lowerText.includes('fun')) {
+    if (lowerText.includes('crouch') || lowerText.includes('down')) return 'crouched down to play';
+    if (lowerText.includes('kneel') || lowerText.includes('ground')) return 'kneeling on ground';
+    if (lowerText.includes('sit') || lowerText.includes('seated')) return 'seated for play';
+    if (lowerText.includes('ball') || lowerText.includes('toy')) return 'positioned playfully';
+  }
+  
+  // Learning/Reading context with furniture/location indicators
+  if (lowerText.includes('read') || lowerText.includes('book') || lowerText.includes('study') ||
+      lowerText.includes('learn') || lowerText.includes('desk') || lowerText.includes('school')) {
+    if (lowerText.includes('desk') || lowerText.includes('table')) return 'positioned at desk';
+    if (lowerText.includes('comfortable') || lowerText.includes('cozy')) return 'seated comfortably';
+    if (lowerText.includes('attentive') || lowerText.includes('focus')) return 'sitting attentively';
+  }
+  
+  // Strong spatial indicators only
+  if (lowerText.includes('center') || lowerText.includes('middle')) return 'standing in the center';
+  if (lowerText.includes('front') || lowerText.includes('foreground')) return 'positioned in the foreground';
+  if (lowerText.includes('left')) return 'placed to the left';
+  if (lowerText.includes('right')) return 'located on the right side';
+  if (lowerText.includes('back') || lowerText.includes('background')) return 'sitting in the background';
+  if (lowerText.includes('corner')) return 'crouched in the corner';
+  if (lowerText.includes('above') || lowerText.includes('over')) return 'hovering above';
+  if (lowerText.includes('under') || lowerText.includes('beneath') || lowerText.includes('below')) return 'resting beneath';
+  if (lowerText.includes('between')) return 'nestled between';
+  if (lowerText.includes('on top') || lowerText.includes('upon')) return 'balanced on top of';
+  
+  // NO UNIVERSAL FALLBACK - Return empty string when context is insufficient
+  return '';
+}
+
+function extractObjectInteraction(pageText, actionObjects) {
+  const lowerText = pageText.toLowerCase();
+  
+  // If we have meaningful action objects, enhance them with interaction details
+  if (actionObjects && actionObjects !== 'colorful items' && actionObjects.trim() !== '') {
+    // Check for specific interaction verbs
+    if (lowerText.includes('hold') || lowerText.includes('holding')) return `holding ${actionObjects}`;
+    if (lowerText.includes('carry') || lowerText.includes('carrying')) return `carrying ${actionObjects}`;
+    if (lowerText.includes('use') || lowerText.includes('using')) return `using ${actionObjects}`;
+    if (lowerText.includes('play') || lowerText.includes('playing')) return `playing with ${actionObjects}`;
+    if (lowerText.includes('touch') || lowerText.includes('touching')) return `touching ${actionObjects}`;
+    if (lowerText.includes('reach') || lowerText.includes('reaching')) return `reaching for ${actionObjects}`;
+    if (lowerText.includes('grab') || lowerText.includes('grabbing')) return `grabbing ${actionObjects}`;
+    if (lowerText.includes('pick') || lowerText.includes('picking')) return `picking up ${actionObjects}`;
+    
+    // If objects exist but no specific interaction verb, describe general interaction
+    return `interacting with ${actionObjects}`;
+  }
+  
+  // Check for specific objects mentioned in text (without actionObjects parameter)
+  if (lowerText.includes('book') && (lowerText.includes('hold') || lowerText.includes('read'))) return 'holding a book';
+  if (lowerText.includes('ball') && (lowerText.includes('play') || lowerText.includes('throw'))) return 'playing with a ball';
+  if (lowerText.includes('toy') && lowerText.includes('play')) return 'playing with toys';
+  if (lowerText.includes('food') && (lowerText.includes('eat') || lowerText.includes('hold'))) return 'holding food';
+  
+  // NO FALLBACK - Return empty string when no objects or interactions detected
+  return '';
+}
+
 // Truncate page content intelligently at sentence boundaries
 function truncatePageContent(content, maxLength) {
   if (content.length <= maxLength) return content;
