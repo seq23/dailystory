@@ -398,12 +398,29 @@ export class SimpleImageService {
         }, 150000);
       });
 
-      // ROLLBACK: Use stable fail-open chain instead of runware-generate-image
-      console.log('🔄 Rolling back to stable fail-open image generation chain');
+      // CORRECT TIER PROGRESSION: Tier 1 → Tier 2.5 → Tier 4
+      console.log('🎯 Starting correct tier progression: ai-visual-scene-creator (Tier 1) → runware-simple-fallback (Tier 2.5) → ImageFallbackService (Tier 4)');
       
       let requestPromise;
+      let tier1Failed = false;
+      
       try {
-        // Try runware-simple-fallback first (HTTP-first, stable)
+        // Try ai-visual-scene-creator FIRST (Tier 1 - highest quality)
+        console.log('🥇 Attempting Tier 1: ai-visual-scene-creator');
+        requestPromise = supabase.functions.invoke('ai-visual-scene-creator', {
+          body: {
+            pageText: cleanScene,
+            userInfo,
+            sessionId,
+            pageNumber,
+            isGuestUser: !isPremium,
+            difficultyLevel: backendDifficulty
+          }
+        });
+      } catch (tier1Error) {
+        console.warn('🥈 Tier 1 failed, falling back to Tier 2.5: runware-simple-fallback');
+        tier1Failed = true;
+        // Fallback to runware-simple-fallback (Tier 2.5)
         requestPromise = supabase.functions.invoke('runware-simple-fallback', {
           body: {
             pageText: cleanScene,
@@ -415,17 +432,6 @@ export class SimpleImageService {
             difficultyLevel: backendDifficulty
           }
         });
-      } catch (fallbackError) {
-        console.warn('Primary fallback failed, trying ai-visual-scene-creator');
-        // If that fails, try ai-visual-scene-creator (Tier 1 text-only prep path)
-        requestPromise = supabase.functions.invoke('ai-visual-scene-creator', {
-          body: {
-            pageText: cleanScene,
-            userInfo,
-            sessionId,
-            pageNumber
-          }
-        });
       }
 
       // Race between request and timeout
@@ -433,28 +439,71 @@ export class SimpleImageService {
       
       clearTimeout(timeoutId); // Clear timeout on successful response
 
+      // If first tier failed, check if we can try next tier
+      if (error && !tier1Failed) {
+        console.warn('🥈 Tier 1 failed, attempting Tier 2.5: runware-simple-fallback');
+        try {
+          const tier2Response = await Promise.race([
+            supabase.functions.invoke('runware-simple-fallback', {
+              body: {
+                pageText: cleanScene,
+                userInfo,
+                storyId,
+                sessionId,
+                pageNumber,
+                isGuestUser: !isPremium,
+                difficultyLevel: backendDifficulty
+              }
+            }),
+            timeoutPromise
+          ]);
+
+          if (tier2Response.data?.success) {
+            console.log(`✅ Tier 2.5 succeeded: ${tier2Response.data.enhancementLevel}`);
+            const result: ImageResult = {
+              url: tier2Response.data.imageURL,
+              success: true,
+              provider: tier2Response.data.provider || 'tier-2.5',
+              model: tier2Response.data.metadata?.model || 'runware-template',
+              cost: tier2Response.data.cost || this.ESTIMATED_COST_PER_IMAGE_USD,
+              seed: tier2Response.data.seed,
+              metadata: {
+                tier: '2.5',
+                enhancementLevel: tier2Response.data.enhancementLevel,
+                qualityScore: tier2Response.data.qualityScore,
+                fallbackFromTier1: true,
+                ...tier2Response.data.metadata
+              }
+            };
+            await this.recordUsage(result, userInfo?.name);
+            return result;
+          }
+        } catch (tier2Error) {
+          console.warn('🥉 Tier 2.5 also failed, proceeding to Tier 4 fallback');
+        }
+      }
+
       if (error) {
-        throw new Error(`Backend orchestrator error: ${error.message}`);
+        throw new Error(`Image generation failed: ${error.message}`);
       }
 
       if (!data?.success) {
-        throw new Error(data?.error || 'Backend image generation failed');
+        throw new Error(data?.error || 'Image generation failed');
       }
 
-      console.log(`✅ Backend orchestrator succeeded (Tier ${data.tier}): ${data.enhancementLevel}`);
+      console.log(`✅ Image generation succeeded (Tier ${data.tier || '1'}): ${data.enhancementLevel || 'enhanced'}`);
 
       const result: ImageResult = {
         url: data.imageURL,
         success: true,
-        provider: data.provider || 'backend-orchestrator',
-        model: data.metadata?.model || 'orchestrated',
+        provider: data.provider || 'ai-visual-scene-creator',
+        model: data.metadata?.model || 'enhanced',
         cost: data.cost || this.ESTIMATED_COST_PER_IMAGE_USD,
         seed: data.seed,
         metadata: {
-          tier: data.tier,
+          tier: data.tier || '1',
           enhancementLevel: data.enhancementLevel,
           qualityScore: data.qualityScore,
-          orchestrated: true,
           ...data.metadata
         }
       };
@@ -486,91 +535,6 @@ export class SimpleImageService {
         }
       };
       
-      return result;
-      if (timeoutId && !requestAborted) {
-        clearTimeout(timeoutId);
-      }
-      
-      // Enhanced error logging with 503 detection
-      let shouldTryTier25 = false;
-      
-      if (error instanceof Error) {
-        if (error.message.includes('Request timeout')) {
-          console.error('❌ Frontend timeout: Request exceeded 150 seconds');
-        } else if (error.message.includes('timeout')) {
-          console.error('❌ Network timeout: Request timed out');
-        } else if (error.message.includes('fetch') || error.message.includes('503') || error.message.includes('Function not found') || error.message.includes('boot')) {
-          console.error('❌ Tier 1 Boot Failure: Edge function failed to start - routing to Tier 2.5');
-          shouldTryTier25 = true;
-        } else {
-          console.error('❌ Backend orchestration failed:', error.message);
-        }
-        console.error('Full error details:', error);
-      } else {
-        console.error('❌ Backend orchestration failed with unknown error:', error);
-      }
-      
-      // EMERGENCY FALLBACK: Try Tier 2.5 if Tier 1 fails
-      if (shouldTryTier25) {
-        console.log('🚨 EMERGENCY FALLBACK: Attempting Tier 2.5 (runware-simple-fallback)');
-        
-        try {
-          const tier25Response = await supabase.functions.invoke('runware-simple-fallback', {
-            body: {
-              pageText: cleanScene,
-              userInfo,
-              difficultyLevel: backendDifficulty,
-              sessionId,
-              pageNumber
-            }
-          });
-          
-          if (tier25Response.data?.success) {
-            const specificTier = tier25Response.data.specificTier || '2.5-unknown';
-            const tierPath = tier25Response.data.tierPath || ['unknown'];
-            const enhancementLevel = tier25Response.data.enhancementLevel || 'nuclear-fallback';
-            
-            console.log(`✅ EMERGENCY FALLBACK SUCCESS: Tier ${specificTier} succeeded`);
-            console.log(`📊 Emergency Fallback - Tier Path: [${tierPath.join(' → ')}]`);
-            console.log(`🎨 Enhancement Level: ${enhancementLevel}`);
-            
-            const result: ImageResult = {
-              url: tier25Response.data.imageURL,
-              success: true,
-              provider: `tier-${specificTier}-emergency`,
-              model: tier25Response.data.metadata?.model || 'nuclear-template',
-              cost: tier25Response.data.cost || this.ESTIMATED_COST_PER_IMAGE_USD,
-              seed: tier25Response.data.seed,
-              metadata: {
-                tier: `${specificTier}-emergency`,
-                specificTier: specificTier,
-                templateType: tier25Response.data.templateType,
-                tierPath: tierPath,
-                enhancementLevel: enhancementLevel,
-                fallbackReason: tier25Response.data.fallbackReason,
-                processingTime: tier25Response.data.processingTime,
-                attemptedTiers: tier25Response.data.attemptedTiers,
-                qualityScore: tier25Response.data.qualityScore,
-                emergencyFallback: true,
-                originalTier1Error: error.message,
-                ...tier25Response.data.metadata
-              }
-            };
-
-            await this.recordUsage(result, userInfo?.name);
-            return result;
-          } else {
-            console.error('❌ EMERGENCY FALLBACK FAILED: Tier 2.5 returned error:', tier25Response.data?.error);
-          }
-        } catch (tier25Error) {
-          console.error('❌ EMERGENCY FALLBACK FAILED: Tier 2.5 threw error:', tier25Error);
-        }
-      }
-      
-      console.log('🎨 Falling back to local SVG placeholder');
-      
-      // Final fallback - generate SVG placeholder locally
-      return this.generateSVGPlaceholder(cleanScene, userInfo);
     }
   }
 
