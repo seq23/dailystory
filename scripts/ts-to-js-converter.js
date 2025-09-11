@@ -164,8 +164,8 @@ class TSToJSConverter {
 // Run the conversion
 async function main() {
   const converter = new TSToJSConverter();
-  const inputPath = 'supabase/functions/runware-generate-image/index.backup.ts';
-  const outputPath = 'supabase/functions/runware-generate-image/index.js';
+  const inputPath = 'supabase/functions/_shared/ExactWordExtractor.js.temp';
+  const outputPath = 'supabase/functions/_shared/ExactWordExtractor.js';
   
   try {
     await converter.convertFile(inputPath, outputPath);

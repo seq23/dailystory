@@ -10,11 +10,11 @@ const path = require('path');
 async function main() {
   try {
     console.log('🚀 Starting complete file copy operation');
-    console.log('🎯 Target: Copy complete arcManager.js to arcManager.ts');
+    console.log('🎯 Target: Copy complete ExactWordExtractor.ts to ExactWordExtractor.js.temp');
     console.log('==========================================');
     
-    const inputPath = path.join(__dirname, '..', 'supabase', 'functions', '_shared', 'arcManager.js');
-    const outputPath = path.join(__dirname, '..', 'supabase', 'functions', '_shared', 'arcManager.ts');
+    const inputPath = path.join(__dirname, '..', 'supabase', 'functions', '_shared', 'ExactWordExtractor.ts');
+    const outputPath = path.join(__dirname, '..', 'supabase', 'functions', '_shared', 'ExactWordExtractor.js.temp');
     
     console.log('Source:', inputPath);
     console.log('Target:', outputPath);
