@@ -398,20 +398,21 @@ export class SimpleImageService {
         }, 150000);
       });
 
-      // CORRECT TIER PROGRESSION: Tier 1 → Tier 2.5 → Tier 4
-      console.log('🎯 Starting correct tier progression: ai-visual-scene-creator (Tier 1) → runware-simple-fallback (Tier 2.5) → ImageFallbackService (Tier 4)');
+      // CORRECT TIER PROGRESSION: SimpleImageService → Orchestrator → Tier 1 → Tier 2.5 → Tier 4
+      console.log('🎯 Using proper orchestrator flow: runware-generate-image (orchestrator) → ai-visual-scene-creator (Tier 1) → fallback tiers');
       
       let requestPromise;
       let tier1Failed = false;
       
       try {
-        // Try ai-visual-scene-creator FIRST (Tier 1 - highest quality)
-        console.log('🥇 Attempting Tier 1: ai-visual-scene-creator');
-        requestPromise = supabase.functions.invoke('ai-visual-scene-creator', {
+        // Call the main orchestrator (runware-generate-image) which handles all tiers
+        console.log('🎯 Calling main orchestrator: runware-generate-image');
+        requestPromise = supabase.functions.invoke('runware-generate-image', {
           body: {
             pageText: cleanScene,
             userInfo,
             sessionId,
+            storyId: sessionId, // Use sessionId as storyId for consistency
             pageNumber,
             isGuestUser: !isPremium,
             difficultyLevel: backendDifficulty
