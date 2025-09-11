@@ -1139,4 +1139,28 @@ export const LEVEL_0_TEMPLATES = [
   ]
 ];
 
+/**
+ * Get Level 0 template by index or random selection
+ * @param {number|null|undefined} templateIndex - Index of template to get (0-99), or null/undefined for random
+ * @returns {string[]} Array of 6 story sentences
+ */
+export function getLevel0Template(templateIndex) {
+  // Validate input and return specific template if valid index provided
+  if (templateIndex !== null && templateIndex !== undefined && 
+      typeof templateIndex === 'number' && 
+      templateIndex >= 0 && templateIndex < LEVEL_0_TEMPLATES.length) {
+    return LEVEL_0_TEMPLATES[templateIndex];
+  }
+  
+  // Return random template if no valid index provided
+  const randomIndex = Math.floor(Math.random() * LEVEL_0_TEMPLATES.length);
+  return LEVEL_0_TEMPLATES[randomIndex];
+}
+
+/**
+ * Get count of Level 0 templates
+ * @returns {number} Total number of Level 0 templates (100)
+ */
+export function getLevel0TemplateCount() {
+  return LEVEL_0_TEMPLATES.length;
 }
