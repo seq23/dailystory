@@ -1033,20 +1033,12 @@ serve(async (req)=>{
                 // Store new cultural selections in character consistency
                 if (!characterData?.selectedCulturalFeatures && !characterData?.selectedCulturalHair) {
                   try {
-                    import('../_shared/CharacterConsistencyService.ts').then(({ CharacterConsistencyService })=>{
-                      try {
-                        const characterService = new CharacterConsistencyService();
-                        const characterName = avatarIdentity?.name || userInfo?.name || 'child';
-                        const cacheKey = `${sessionId}_${characterName}`;
-                        return characterService.updateCulturalSelections(sessionId, cacheKey, hairstyle, features);
-                      } catch (error) {
-                        throw error;
-                      }
-                    }).then(()=>{
-                      console.log(`💾 [${requestId}] Stored cultural selections for future consistency`);
-                    }).catch((error)=>{
-                      console.warn(`⚠️ [${requestId}] Failed to store cultural selections:`, error);
-                    });
+                    const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.ts');
+                    const characterService = new CharacterConsistencyService();
+                    const characterName = avatarIdentity?.name || userInfo?.name || 'child';
+                    const cacheKey = `${sessionId}_${characterName}`;
+                    await characterService.updateCulturalSelections(sessionId, cacheKey, hairstyle, features);
+                    console.log(`💾 [${requestId}] Stored cultural selections for future consistency`);
                   } catch (error) {
                     console.warn(`⚠️ [${requestId}] Failed to store cultural selections:`, error);
                   }
