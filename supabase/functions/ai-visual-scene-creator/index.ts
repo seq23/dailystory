@@ -1,3 +1,21 @@
+/**
+ * ============================================================================
+ * 🚨 DEPRECATION NOTICE 🚨
+ * ============================================================================
+ * 
+ * This edge function has been MOVED to /index.js as part of the image 
+ * generation consolidation effort.
+ * 
+ * STATUS: DEPRECATED - Will be removed after migration verification
+ * MOVED TO: /index.js
+ * SAFE TO DELETE: After confirming /index.js handles all functionality
+ * 
+ * This file is kept temporarily for safety during the transition period.
+ * DO NOT make new changes to this file - update /index.js instead.
+ * 
+ * ============================================================================
+ */
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { CharacterConsistencyService } from '../_shared/CharacterConsistencyService.js';
 import { SecondaryElementDetector } from '../_shared/SecondaryElementDetector.js';
