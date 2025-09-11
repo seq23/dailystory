@@ -331,7 +331,7 @@ export const ResponsiveStoryHeader = ({
   if (isPremium) {
     return (
       <div className={cn(
-        "relative bg-white/90 backdrop-blur-sm border-b border-gray-200/50 z-20",
+        "relative bg-white/90 backdrop-blur-sm border-b border-gray-200/50 z-40",
         isMobileOrTablet && "sticky top-[var(--app-header-height,56px)]"
       )}>
         {/* Breadcrumb Navigation - Desktop/Tablet Premium Only */}
