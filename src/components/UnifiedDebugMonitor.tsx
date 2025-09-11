@@ -1,41 +1,131 @@
 import React, { useState, useEffect } from 'react';
 import { DebugLogger, DebugLogEntry, DebugCategory } from '@/services/DebugLogger';
+import { NetflixRetryService } from '@/services/NetflixRetryService';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
-import { X, Download, Trash2, Search } from 'lucide-react';
+import { X, Download, Trash2, Search, Play, Square, RotateCcw } from 'lucide-react';
 
-// Unified Debug Monitor - Consolidates all debug modes into single ?debug=1 interface
+interface NetflixDebugLog {
+  timestamp: number;
+  level: 'info' | 'warn' | 'error';
+  message: string;
+  context?: string;
+  source: string;
+}
+
+// Enhanced Unified Debug Monitor - Combines Netflix monitoring with general debug system
 export const UnifiedDebugMonitor: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [logs, setLogs] = useState<DebugLogEntry[]>([]);
+  const [netflixLogs, setNetflixLogs] = useState<NetflixDebugLog[]>([]);
   const [activeTab, setActiveTab] = useState('console');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<DebugCategory | 'all'>('all');
+  const [isRecording, setIsRecording] = useState(false);
+  const [circuitBreakerStatus, setCircuitBreakerStatus] = useState<any>({});
 
+  // Netflix monitoring setup
   useEffect(() => {
-    // Only show if debug mode is enabled
     if (!DebugLogger.isDebugEnabled()) return;
 
-    // Subscribe to log updates
+    let originalConsole: any = {};
+    
+    if (isRecording) {
+      // Intercept console methods for Netflix-specific logging
+      ['log', 'warn', 'error'].forEach(method => {
+        originalConsole[method] = console[method as keyof Console];
+        (console as any)[method] = (...args: any[]) => {
+          originalConsole[method](...args);
+          
+          const message = args.map(arg => 
+            typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+          ).join(' ');
+          
+          // Capture Netflix-related messages
+          if (message.includes('Netflix') || message.includes('netflix') || 
+              message.includes('circuit') || message.includes('retry') ||
+              message.includes('🎬') || message.includes('🔄') || message.includes('❌')) {
+            
+            const logEntry: NetflixDebugLog = {
+              timestamp: Date.now(),
+              level: method as 'info' | 'warn' | 'error',
+              message,
+              source: 'Netflix Debug'
+            };
+            
+            setNetflixLogs(prev => [...prev.slice(-99), logEntry]); // Keep last 100
+          }
+        };
+      });
+    }
+
+    return () => {
+      // Restore original console methods
+      Object.keys(originalConsole).forEach(method => {
+        (console as any)[method] = originalConsole[method];
+      });
+    };
+  }, [isRecording]);
+
+  // Subscribe to general debug logger
+  useEffect(() => {
+    if (!DebugLogger.isDebugEnabled()) return;
+
     const unsubscribe = DebugLogger.subscribe((newLogs) => {
       setLogs(newLogs);
     });
 
-    // Initialize with existing logs
     setLogs(DebugLogger.getLogs());
-
     return unsubscribe;
   }, []);
+
+  // Circuit breaker monitoring
+  useEffect(() => {
+    if (!DebugLogger.isDebugEnabled()) return;
+
+    const updateCircuitBreakerStatus = () => {
+      try {
+        const status = NetflixRetryService.getCircuitBreakerStatus();
+        setCircuitBreakerStatus(status);
+      } catch (error) {
+        console.warn('Failed to get circuit breaker status:', error);
+      }
+    };
+
+    updateCircuitBreakerStatus();
+    const interval = setInterval(updateCircuitBreakerStatus, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const startRecording = () => setIsRecording(true);
+  const stopRecording = () => setIsRecording(false);
+  const clearLogs = () => {
+    DebugLogger.clearLogs();
+    setNetflixLogs([]);
+  };
+
+  const resetCircuitBreakers = () => {
+    try {
+      NetflixRetryService.resetAllCircuitBreakers();
+      DebugLogger.log('performance', 'All circuit breakers reset');
+    } catch (error) {
+      DebugLogger.error('performance', 'Failed to reset circuit breakers', error);
+    }
+  };
 
   const filteredLogs = logs.filter(log => {
     const matchesSearch = log.message.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          log.category.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || log.category === selectedCategory;
     return matchesSearch && matchesCategory;
-  }).slice(-100); // Show last 100 logs
+  }).slice(-100);
+
+  const filteredNetflixLogs = netflixLogs.filter(log => 
+    log.message.toLowerCase().includes(searchTerm.toLowerCase())
+  ).slice(-100);
 
   const getLogCount = (category: DebugCategory) => {
     return logs.filter(log => log.category === category).length;
@@ -44,7 +134,9 @@ export const UnifiedDebugMonitor: React.FC = () => {
   const exportLogs = () => {
     const data = {
       timestamp: new Date().toISOString(),
-      logs: logs,
+      generalLogs: logs,
+      netflixLogs: netflixLogs,
+      circuitBreakerStatus: circuitBreakerStatus,
       performance: {
         memory: (performance as any).memory ? {
           used: Math.round(((performance as any).memory.usedJSHeapSize / 1024 / 1024)),
@@ -94,67 +186,72 @@ export const UnifiedDebugMonitor: React.FC = () => {
     return colors[category];
   };
 
+  const getCircuitBreakerColor = (state: string) => {
+    switch (state) {
+      case 'OPEN': return 'bg-red-500/20 text-red-300';
+      case 'HALF_OPEN': return 'bg-yellow-500/20 text-yellow-300';
+      case 'CLOSED': return 'bg-green-500/20 text-green-300';
+      default: return 'bg-gray-500/20 text-gray-300';
+    }
+  };
+
   if (!DebugLogger.isDebugEnabled() || !isVisible) {
     return DebugLogger.isDebugEnabled() ? (
       <button
         onClick={() => setIsVisible(true)}
-        className="fixed bottom-4 right-4 z-[9999] bg-background/90 border border-muted rounded-lg px-3 py-2 text-xs font-medium shadow-lg hover:bg-accent"
+        className="fixed bottom-4 right-4 z-[9999] bg-background/90 border border-muted rounded-lg px-3 py-2 text-xs font-medium shadow-lg hover:bg-accent backdrop-blur-sm"
       >
-        🐛 Debug Monitor ({logs.length})
+        🐛 Debug Monitor ({logs.length + netflixLogs.length})
       </button>
     ) : null;
   }
 
   return (
-    <div className="fixed inset-4 z-[9999] bg-background/95 backdrop-blur-sm border border-muted rounded-lg shadow-2xl flex flex-col max-h-[80vh]">
+    <div className="fixed inset-4 z-[9999] bg-background/95 backdrop-blur-sm border border-muted rounded-lg shadow-2xl flex flex-col max-h-[85vh]">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-muted">
-        <h2 className="text-lg font-semibold">🐛 Debug Monitor</h2>
+      <div className="flex items-center justify-between p-4 border-b border-muted bg-background/90 backdrop-blur-sm">
+        <h2 className="text-lg font-semibold">🐛 Enhanced Debug Monitor</h2>
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={exportLogs}
-            className="h-8"
-          >
+          {!isRecording ? (
+            <Button variant="outline" size="sm" onClick={startRecording} className="h-8">
+              <Play className="h-4 w-4 mr-1" />
+              Start Recording
+            </Button>
+          ) : (
+            <Button variant="outline" size="sm" onClick={stopRecording} className="h-8">
+              <Square className="h-4 w-4 mr-1" />
+              Stop Recording
+            </Button>
+          )}
+          <Button variant="outline" size="sm" onClick={resetCircuitBreakers} className="h-8">
+            <RotateCcw className="h-4 w-4 mr-1" />
+            Reset CB
+          </Button>
+          <Button variant="outline" size="sm" onClick={exportLogs} className="h-8">
             <Download className="h-4 w-4 mr-1" />
             Export
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => DebugLogger.clearLogs()}
-            className="h-8"
-          >
+          <Button variant="outline" size="sm" onClick={clearLogs} className="h-8">
             <Trash2 className="h-4 w-4 mr-1" />
             Clear
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsVisible(false)}
-            className="h-8 w-8 p-0"
-          >
+          <Button variant="ghost" size="sm" onClick={() => setIsVisible(false)} className="h-8 w-8 p-0">
             <X className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-        <TabsList className="grid w-full grid-cols-3 m-4 mb-2">
-          <TabsTrigger value="console">
-            Console ({logs.length})
-          </TabsTrigger>
-          <TabsTrigger value="categories">
-            Categories
-          </TabsTrigger>
-          <TabsTrigger value="performance">
-            Performance
-          </TabsTrigger>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
+        <TabsList className="grid w-full grid-cols-5 m-4 mb-2">
+          <TabsTrigger value="console">Console ({logs.length})</TabsTrigger>
+          <TabsTrigger value="netflix">Netflix ({netflixLogs.length})</TabsTrigger>
+          <TabsTrigger value="categories">Categories</TabsTrigger>
+          <TabsTrigger value="circuit-breaker">Circuit Breakers</TabsTrigger>
+          <TabsTrigger value="performance">Performance</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="console" className="flex-1 flex flex-col px-4 pb-4">
+        <TabsContent value="console" className="flex-1 flex flex-col px-4 pb-4 min-h-0">
           {/* Search and Filter */}
           <div className="flex gap-2 mb-3">
             <div className="relative flex-1">
@@ -169,7 +266,7 @@ export const UnifiedDebugMonitor: React.FC = () => {
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value as DebugCategory | 'all')}
-              className="h-8 px-2 rounded border border-input bg-background text-sm"
+              className="h-8 px-2 rounded border border-input bg-background text-sm z-[20] relative"
             >
               <option value="all">All Categories</option>
               <option value="auth">Auth</option>
@@ -183,39 +280,83 @@ export const UnifiedDebugMonitor: React.FC = () => {
             </select>
           </div>
 
-          {/* Log List */}
-          <ScrollArea className="flex-1 border border-muted rounded-md">
-            <div className="p-2 space-y-1">
-              {filteredLogs.map((log) => (
-                <div key={log.id} className="text-xs font-mono border-b border-muted/50 pb-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-muted-foreground">{formatTime(log.timestamp)}</span>
-                    <Badge variant="outline" className={`h-5 text-xs ${getCategoryColor(log.category)}`}>
-                      {log.category}
-                    </Badge>
-                    <span className={getLevelColor(log.level)}>{log.level.toUpperCase()}</span>
+          {/* Log List with Proper Scrolling */}
+          <div className="flex-1 border border-muted rounded-md bg-background/50 backdrop-blur-sm min-h-0">
+            <ScrollArea className="h-full max-h-[60vh]">
+              <div className="p-3 space-y-2">
+                {filteredLogs.map((log) => (
+                  <div key={log.id} className="text-xs font-mono border-b border-muted/30 pb-2 last:border-b-0">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <span className="text-muted-foreground font-medium">{formatTime(log.timestamp)}</span>
+                      <Badge variant="outline" className={`h-5 text-xs ${getCategoryColor(log.category)}`}>
+                        {log.category}
+                      </Badge>
+                      <span className={`${getLevelColor(log.level)} font-medium uppercase text-xs`}>
+                        {log.level}
+                      </span>
+                    </div>
+                    <div className="text-foreground leading-relaxed break-words">{log.message}</div>
+                    {log.data && (
+                      <pre className="text-muted-foreground mt-2 text-xs bg-muted/20 p-2 rounded overflow-x-auto max-w-full whitespace-pre-wrap">
+                        {typeof log.data === 'string' ? log.data : JSON.stringify(log.data, null, 2)}
+                      </pre>
+                    )}
                   </div>
-                  <div className="text-foreground">{log.message}</div>
-                  {log.data && (
-                    <pre className="text-muted-foreground mt-1 text-xs bg-muted/30 p-1 rounded overflow-x-auto">
-                      {typeof log.data === 'string' ? log.data : JSON.stringify(log.data, null, 2)}
-                    </pre>
-                  )}
-                </div>
-              ))}
-              {filteredLogs.length === 0 && (
-                <div className="text-center text-muted-foreground py-8">
-                  No logs match your search criteria
-                </div>
-              )}
-            </div>
-          </ScrollArea>
+                ))}
+                {filteredLogs.length === 0 && (
+                  <div className="text-center text-muted-foreground py-8">
+                    No logs match your search criteria
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+          </div>
         </TabsContent>
 
-        <TabsContent value="categories" className="flex-1 px-4 pb-4">
+        <TabsContent value="netflix" className="flex-1 flex flex-col px-4 pb-4 min-h-0">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Badge variant={isRecording ? "default" : "secondary"}>
+                {isRecording ? "Recording" : "Stopped"}
+              </Badge>
+              <span className="text-sm text-muted-foreground">
+                Netflix Debug Logs ({netflixLogs.length})
+              </span>
+            </div>
+          </div>
+
+          {/* Netflix Log List with Proper Scrolling */}
+          <div className="flex-1 border border-muted rounded-md bg-background/50 backdrop-blur-sm min-h-0">
+            <ScrollArea className="h-full max-h-[60vh]">
+              <div className="p-3 space-y-2">
+                {filteredNetflixLogs.map((log, index) => (
+                  <div key={`${log.timestamp}-${index}`} className="text-xs font-mono border-b border-muted/30 pb-2 last:border-b-0">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <span className="text-muted-foreground font-medium">{formatTime(log.timestamp)}</span>
+                      <Badge className="bg-orange-500/20 text-orange-300 h-5 text-xs">
+                        Netflix
+                      </Badge>
+                      <span className={`${getLevelColor(log.level)} font-medium uppercase text-xs`}>
+                        {log.level}
+                      </span>
+                    </div>
+                    <div className="text-foreground leading-relaxed break-words whitespace-pre-wrap">{log.message}</div>
+                  </div>
+                ))}
+                {filteredNetflixLogs.length === 0 && (
+                  <div className="text-center text-muted-foreground py-8">
+                    {isRecording ? "Waiting for Netflix debug messages..." : "Start recording to capture Netflix debug logs"}
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="categories" className="flex-1 px-4 pb-4 overflow-auto">
           <div className="grid grid-cols-2 gap-3">
             {(['auth', 'story', 'audio', 'image', 'performance', 'network', 'ui', 'error'] as DebugCategory[]).map((category) => (
-              <div key={category} className="border border-muted rounded-lg p-3">
+              <div key={category} className="border border-muted rounded-lg p-3 bg-background/30 backdrop-blur-sm">
                 <div className="flex items-center justify-between">
                   <Badge className={getCategoryColor(category)}>
                     {category}
@@ -227,10 +368,37 @@ export const UnifiedDebugMonitor: React.FC = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="performance" className="flex-1 px-4 pb-4">
+        <TabsContent value="circuit-breaker" className="flex-1 px-4 pb-4 overflow-auto">
+          <div className="space-y-3">
+            {Object.entries(circuitBreakerStatus).map(([service, status]: [string, any]) => (
+              <div key={service} className="border border-muted rounded-lg p-3 bg-background/30 backdrop-blur-sm">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-medium">{service}</span>
+                  <Badge className={getCircuitBreakerColor(status.state)}>
+                    {status.state}
+                  </Badge>
+                </div>
+                <div className="text-sm space-y-1 text-muted-foreground">
+                  <div>Failures: {status.failures || 0}</div>
+                  <div>Success Rate: {((status.successes || 0) / Math.max((status.successes || 0) + (status.failures || 0), 1) * 100).toFixed(1)}%</div>
+                  {status.nextAttempt && (
+                    <div>Next Attempt: {new Date(status.nextAttempt).toLocaleTimeString()}</div>
+                  )}
+                </div>
+              </div>
+            ))}
+            {Object.keys(circuitBreakerStatus).length === 0 && (
+              <div className="text-center text-muted-foreground py-8">
+                No circuit breaker data available
+              </div>
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="performance" className="flex-1 px-4 pb-4 overflow-auto">
           <div className="space-y-3">
             {(performance as any).memory && (
-              <div className="border border-muted rounded-lg p-3">
+              <div className="border border-muted rounded-lg p-3 bg-background/30 backdrop-blur-sm">
                 <h3 className="font-medium mb-2">Memory Usage</h3>
                 <div className="text-sm space-y-1">
                   <div>Used: {Math.round(((performance as any).memory.usedJSHeapSize / 1024 / 1024))} MB</div>
@@ -239,10 +407,12 @@ export const UnifiedDebugMonitor: React.FC = () => {
                 </div>
               </div>
             )}
-            <div className="border border-muted rounded-lg p-3">
+            <div className="border border-muted rounded-lg p-3 bg-background/30 backdrop-blur-sm">
               <h3 className="font-medium mb-2">Debug Stats</h3>
               <div className="text-sm space-y-1">
-                <div>Total Logs: {logs.length}</div>
+                <div>General Logs: {logs.length}</div>
+                <div>Netflix Logs: {netflixLogs.length}</div>
+                <div>Recording: {isRecording ? 'Active' : 'Inactive'}</div>
                 <div>Session Start: {logs.length > 0 ? formatTime(logs[0].timestamp) : 'N/A'}</div>
                 <div>Debug Mode: {DebugLogger.isDebugEnabled() ? 'Enabled' : 'Disabled'}</div>
               </div>
