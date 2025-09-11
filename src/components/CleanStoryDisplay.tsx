@@ -1,4 +1,5 @@
 import React from 'react';
+import { DebugLogger } from '@/services/DebugLogger';
 /*
  * ============================================================================
  * BUSINESS MODEL DOCUMENTATION - CLEAN STORY DISPLAY
@@ -220,7 +221,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
 
 
   useEffect(() => {
-    console.log('📥 CleanStoryDisplay isLoading changed:', isLoading);
+    DebugLogger.log('story', 'isLoading changed:', isLoading);
   }, [isLoading]);
   
   // Cache user ID for performance - update when auth state changes
@@ -281,7 +282,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   useEffect(() => {
     (async () => {
       try {
-        console.log('📚 Pre-fetching vocabulary data for', userInfo.name);
+        DebugLogger.log('story', 'Pre-fetching vocabulary data for', userInfo.name);
         const vocabData = await VocabularyService.fetchAllVocabulary(userInfo);
         setVocabularyData(vocabData);
         console.log('✅ Vocabulary data pre-fetched successfully:', vocabData);
@@ -605,7 +606,7 @@ useEffect(() => {
 
 // Debug userInfo avatar data when component mounts/updates (Fix #1 - CRITICAL)
 useEffect(() => {
-  console.log('🔍 [DEBUG] CleanStoryDisplay userInfo avatar check:', {
+  DebugLogger.log('story', 'userInfo avatar check:', {
     hasUserInfo: !!userInfo,
     name: userInfo?.name,
     avatar: userInfo?.avatar,
@@ -1367,11 +1368,11 @@ useEffect(() => {
   // Check if current page needs an image
   const hasCurrentPageImage = pageImages[currentPage];
   if (hasCurrentPageImage) {
-    console.log(`🖼️ Page ${currentPage}: Image already exists, skipping generation`);
+    DebugLogger.log('image', `Page ${currentPage}: Image already exists, skipping generation`);
     return;
   }
   
-  console.log(`🖼️ Page ${currentPage}: No image found, checking cache then generating...`);
+  DebugLogger.log('image', `Page ${currentPage}: No image found, checking cache then generating...`);
   
   // Check cache first - import dynamically to avoid module issues
   const checkCacheAndGenerate = async () => {
@@ -1559,7 +1560,7 @@ const initializeStory = async () => {
       } catch (e) { console.warn('Failed to restore premium cached session', e); }
 
       // Premium: Live generation - start with first page
-      console.log('🎯 Premium user: Starting live generation');
+      DebugLogger.log('story', 'Premium user: Starting live generation');
       const result = await LiveGenerationService.generateFirstPage(effectiveUser, undefined, vocabularyData);
       
       if (result.error) {
@@ -1696,7 +1697,7 @@ const initializeStory = async () => {
       } catch (e) { console.warn('Failed to restore cached guest session', e); }
 
       // Free: Netflix-style - generate complete story upfront
-      console.log('🎬 Free user: Generating complete story', { isPremium, userInfo });
+      DebugLogger.log('story', 'Free user: Generating complete story', { isPremium, userInfo: userInfo?.name });
       console.log('🔍 DIAGNOSTIC: CleanStoryDisplay calling NetflixStyleStoryService', {
         userName: userInfo.name,
         difficulty: userInfo.difficultyLevel,

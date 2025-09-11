@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { DebugLogger } from '@/services/DebugLogger';
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -172,19 +173,30 @@ export const ResponsiveStoryHeader = ({
     if (!isMobileOrTablet || !isPremium) return;
     const el = overlayRef.current;
     if (!el) return;
-    let frame = 0;
+    
+    // Use single measurement function with throttling to prevent performance issues
+    let timeout: NodeJS.Timeout;
     const measure = () => {
-      frame = requestAnimationFrame(() => {
-        const h = el.getBoundingClientRect().height;
-        setOverlayHeight(prev => (Math.abs(prev - h) > 1 ? h : prev));
-      });
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        requestAnimationFrame(() => {
+          const h = el.getBoundingClientRect().height;
+          setOverlayHeight(prev => (Math.abs(prev - h) > 1 ? h : prev));
+        });
+      }, 16); // Throttle to ~60fps
     };
+    
     measure();
-    const ro = new ResizeObserver(() => measure());
-    try { ro.observe(el); } catch {}
+    const ro = new ResizeObserver(measure);
+    try { 
+      ro.observe(el); 
+    } catch (error) {
+      DebugLogger.warn('ui', 'Failed to observe overlay element', error);
+    }
+    
     window.addEventListener('resize', measure);
     return () => {
-      cancelAnimationFrame(frame);
+      clearTimeout(timeout);
       try { ro.disconnect(); } catch {}
       window.removeEventListener('resize', measure);
     };

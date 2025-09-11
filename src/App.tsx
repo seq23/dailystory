@@ -23,10 +23,12 @@ import VoiceHUD from "./components/VoiceHUD";
 import { AudioFallbackNotification } from "./components/AudioFallbackNotification";
 import { VoiceCommands } from "./components/VoiceCommands";
 import { VoiceHoverController } from "./components/VoiceHoverController";
+import { UnifiedDebugMonitor } from "./components/UnifiedDebugMonitor";
 // Import new services for global availability
 import "./services/AdvancedPerformanceMonitor";
 import "./services/ABTestingFramework";
 import { LoggerService } from "./services/LoggerService";
+import { DebugLogger } from "./services/DebugLogger";
 import { initializeViteLogGrouper, cleanupViteLogGrouper } from "./utils/viteLogGrouper";
 
 const queryClient = new QueryClient({
@@ -43,8 +45,8 @@ const queryClient = new QueryClient({
 const App = () => {
   // Initialize development tools
   React.useEffect(() => {
-    // Log milestone once per mount (prevents React Strict Mode duplicates)
-    LoggerService.milestone("App component loaded successfully", "DEPLOYMENT_TEST");
+    // Migrate console logging to DebugLogger
+    DebugLogger.log('performance', 'App component loaded successfully');
     
     // Initialize Vite log grouper in development
     initializeViteLogGrouper();
@@ -80,6 +82,7 @@ const App = () => {
             <VoiceHUD />
             <FloatingFeedback />
             <AudioFallbackNotification />
+            <UnifiedDebugMonitor />
           </BrowserRouter>
         </MobileWrapper>
       </TooltipProvider>
