@@ -6,8 +6,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { supabase } from '@/integrations/supabase/client';
 import { CheckCircle, XCircle, Clock, Image as ImageIcon, Zap, Settings, Target, Layers } from 'lucide-react';
+import type { SkinTone, AvatarType, LanguageCode } from '@/types';
 
 interface TierTestResult {
   tier: string;
@@ -26,6 +29,9 @@ interface TestConfig {
   characterName: string;
   age: number;
   sessionId: string;
+  skinTone: SkinTone;
+  avatarType: AvatarType;
+  nativeLanguage: LanguageCode;
 }
 
 export function ImageTierTester() {
@@ -34,7 +40,10 @@ export function ImageTierTester() {
     userName: 'TestUser',
     characterName: 'Maya',
     age: 8,
-    sessionId: `test-${Date.now()}`
+    sessionId: `test-${Date.now()}`,
+    skinTone: 'medium',
+    avatarType: 'prefer-not-to-answer',
+    nativeLanguage: 'en'
   });
 
   const [results, setResults] = useState<TierTestResult[]>([]);
@@ -95,11 +104,16 @@ export function ImageTierTester() {
       
       let result;
       
-      // Build proper avatarIdentity object that functions expect
-      const avatarIdentity = {
+      // Build proper userInfo object that functions expect
+      const userInfo = {
         name: config.characterName,
         age: config.age,
-        userName: config.userName
+        userName: config.userName,
+        avatar: {
+          type: config.avatarType,
+          skinTone: config.skinTone
+        },
+        nativeLanguage: config.nativeLanguage
       };
 
       if (tierType === 'Tier 1') {
@@ -107,7 +121,7 @@ export function ImageTierTester() {
         result = await supabase.functions.invoke('ai-visual-scene-creator', {
           body: {
             storyText: config.storyText,
-            avatarIdentity,
+            avatarIdentity: userInfo,
             sessionId: config.sessionId
           }
         });
@@ -116,7 +130,7 @@ export function ImageTierTester() {
         result = await supabase.functions.invoke('runware-simple-fallback', {
           body: {
             storyText: config.storyText,
-            avatarIdentity,
+            avatarIdentity: userInfo,
             sessionId: config.sessionId,
             templateComplexity: templateComplexity || 'A',
             forceFallback: true
@@ -127,7 +141,7 @@ export function ImageTierTester() {
         result = await supabase.functions.invoke('runware-simple-fallback', {
           body: {
             storyText: config.storyText,
-            avatarIdentity,
+            avatarIdentity: userInfo,
             sessionId: config.sessionId,
             forceSVG: true
           }
@@ -240,22 +254,93 @@ export function ImageTierTester() {
               />
             </div>
             <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="characterName">Character Name</Label>
-                <Input
-                  id="characterName"
-                  value={config.characterName}
-                  onChange={(e) => setConfig(prev => ({ ...prev, characterName: e.target.value }))}
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="characterName">Character Name</Label>
+                  <Input
+                    id="characterName"
+                    value={config.characterName}
+                    onChange={(e) => setConfig(prev => ({ ...prev, characterName: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="age">Age</Label>
+                  <Input
+                    id="age"
+                    type="number"
+                    value={config.age}
+                    onChange={(e) => setConfig(prev => ({ ...prev, age: parseInt(e.target.value) || 8 }))}
+                  />
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="age">Age</Label>
-                <Input
-                  id="age"
-                  type="number"
-                  value={config.age}
-                  onChange={(e) => setConfig(prev => ({ ...prev, age: parseInt(e.target.value) || 8 }))}
-                />
+              
+              {/* Avatar Configuration */}
+              <div className="space-y-3">
+                <Label>Avatar Configuration</Label>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="avatarType" className="text-sm">Avatar Type</Label>
+                  <RadioGroup
+                    value={config.avatarType}
+                    onValueChange={(value) => setConfig(prev => ({ ...prev, avatarType: value as AvatarType }))}
+                    className="flex gap-4"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="boy" id="boy" />
+                      <Label htmlFor="boy" className="text-sm">Boy</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="girl" id="girl" />
+                      <Label htmlFor="girl" className="text-sm">Girl</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="prefer-not-to-answer" id="prefer" />
+                      <Label htmlFor="prefer" className="text-sm">Neutral</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="skinTone" className="text-sm">Skin Tone</Label>
+                    <Select 
+                      value={config.skinTone} 
+                      onValueChange={(value) => setConfig(prev => ({ ...prev, skinTone: value as SkinTone }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pale">Pale</SelectItem>
+                        <SelectItem value="light">Light</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="olive">Olive</SelectItem>
+                        <SelectItem value="dark">Dark</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="nativeLanguage" className="text-sm">Language</Label>
+                    <Select 
+                      value={config.nativeLanguage} 
+                      onValueChange={(value) => setConfig(prev => ({ ...prev, nativeLanguage: value as LanguageCode }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="en">English</SelectItem>
+                        <SelectItem value="es">Spanish</SelectItem>
+                        <SelectItem value="fr">French</SelectItem>
+                        <SelectItem value="ar">Arabic</SelectItem>
+                        <SelectItem value="zh">Chinese</SelectItem>
+                        <SelectItem value="hi">Hindi</SelectItem>
+                        <SelectItem value="pt">Portuguese</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
