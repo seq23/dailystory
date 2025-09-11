@@ -1,17 +1,16 @@
 /**
  * ============================================================================
- * 🚨 DEPRECATION NOTICE 🚨
+ * RUNWARE IMAGE GENERATION - ACTIVE ORCHESTRATOR
  * ============================================================================
  * 
- * This edge function has been MOVED to /index.js as part of the image 
- * generation consolidation effort.
+ * This is the main image generation orchestrator that handles:
+ * - Tier 1: AI-Enhanced Premium (runware:100@1 with full enhancement)
+ * - Tier 2.5: Template fallbacks (various complexities)  
+ * - Tier 4: SVG placeholder (guaranteed success)
  * 
- * STATUS: DEPRECATED - Will be removed after migration verification
- * MOVED TO: /index.js
- * SAFE TO DELETE: After confirming /index.js handles all functionality
- * 
- * This file is kept temporarily for safety during the transition period.
- * DO NOT make new changes to this file - update /index.js instead.
+ * STATUS: ACTIVE - Primary image generation function
+ * CALLED BY: SimpleImageService.ts (frontend)
+ * CALLS: ai-visual-scene-creator for prompt enhancement
  * 
  * ============================================================================
  */

@@ -1,17 +1,16 @@
 /**
  * ============================================================================
- * 🚨 DEPRECATION NOTICE 🚨
+ * AI VISUAL SCENE CREATOR - ACTIVE PROMPT ENHANCEMENT
  * ============================================================================
  * 
- * This edge function has been MOVED to /index.js as part of the image 
- * generation consolidation effort.
+ * This function provides AI-powered prompt enhancement for image generation:
+ * - Scene analysis and character consistency
+ * - Cultural authenticity processing
+ * - Visual element extraction and enhancement
  * 
- * STATUS: DEPRECATED - Will be removed after migration verification
- * MOVED TO: /index.js
- * SAFE TO DELETE: After confirming /index.js handles all functionality
- * 
- * This file is kept temporarily for safety during the transition period.
- * DO NOT make new changes to this file - update /index.js instead.
+ * STATUS: ACTIVE - Used by runware-generate-image orchestrator
+ * CALLED BY: runware-generate-image for Tier 1 prompt enhancement
+ * PURPOSE: Convert story text into detailed visual prompts
  * 
  * ============================================================================
  */

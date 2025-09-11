@@ -1,17 +1,15 @@
 /**
  * ============================================================================
- * 🚨 DEPRECATION NOTICE 🚨
+ * DEBUG RECENT IMAGE PROMPTS - ACTIVE DEBUG TOOL
  * ============================================================================
  * 
- * This edge function has been MOVED to /index.js as part of the image 
- * generation consolidation effort.
+ * This debug function provides visibility into recent image prompt generation:
+ * - Session prompt history
+ * - AI enhancement results
+ * - Tier progression tracking
  * 
- * STATUS: DEPRECATED - Will be removed after migration verification
- * MOVED TO: /index.js
- * SAFE TO DELETE: After confirming /index.js handles all functionality
- * 
- * This file is kept temporarily for safety during the transition period.
- * DO NOT make new changes to this file - update /index.js instead.
+ * STATUS: ACTIVE - Used for debugging image generation issues
+ * PURPOSE: Troubleshooting and monitoring prompt enhancement pipeline
  * 
  * ============================================================================
  */
