@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { LoadingSpinner } from "@/components/LoadingStates";
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface AdaptiveEnhancedLoadingProps {
   isPremium: boolean;
@@ -34,22 +35,22 @@ export function AdaptiveEnhancedLoading({ isPremium, userName, message }: Adapti
           : t("auth.loading.title", { defaultValue: "Getting things ready..." })
       ));
 
-  if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("debug") === "1") {
-    console.log("🔤 AdaptiveEnhancedLoading text", { title, userName });
+  if (DebugLogger.isDebugEnabled()) {
+    DebugLogger.log('ui', 'AdaptiveEnhancedLoading text', { title, userName });
   }
 
   const containerRef = useRef<HTMLDivElement>(null);
   
 
   useEffect(() => {
-    console.log("🌀 AdaptiveEnhancedLoading mounted", { isPremium, userName });
+    DebugLogger.log('ui', 'AdaptiveEnhancedLoading mounted', { isPremium, userName });
     requestAnimationFrame(() => {
       const rect = containerRef.current?.getBoundingClientRect();
       if (rect && rect.height > 0 && rect.width > 0) {
-        console.log("✅ Enhanced loader visible", { width: rect.width, height: rect.height });
+        DebugLogger.log('ui', 'Enhanced loader visible', { width: rect.width, height: rect.height });
       }
     });
-    return () => console.log("🌀 AdaptiveEnhancedLoading unmounted");
+    return () => DebugLogger.log('ui', 'AdaptiveEnhancedLoading unmounted');
   }, [isPremium, userName]);
 
   return (

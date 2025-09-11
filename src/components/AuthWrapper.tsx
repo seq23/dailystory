@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { DebugLogger } from '@/services/DebugLogger';
 import { AuthenticatedApp } from "@/components/AuthenticatedApp";
 import { GuestExperience } from "@/components/GuestExperience";
 import { AdaptiveEnhancedLoading } from "@/components/AdaptiveEnhancedLoading";
@@ -32,7 +33,7 @@ export const AuthWrapper = () => {
       );
       
       if (!hasActiveSession) {
-        console.log('📍 AuthWrapper: Clearing orphaned story URL parameters');
+        DebugLogger.log('auth', 'Clearing orphaned story URL parameters');
         window.history.replaceState(null, '', '/');
       }
     }
@@ -117,11 +118,11 @@ export const AuthWrapper = () => {
 
       // If user doesn't have discount activated, try to activate SEQUOIA90
       if (!subscriber?.discount_activated && !subscriber?.override_premium) {
-        console.log('🎯 Attempting to activate SEQUOIA90 discount code for user...');
+        DebugLogger.log('auth', 'Attempting to activate SEQUOIA90 discount code for user');
         const result = await activateSequoiaDiscount();
         
         if (result.success && result.activated) {
-          console.log('✅ SEQUOIA90 discount activated:', result.message);
+          DebugLogger.log('auth', 'SEQUOIA90 discount activated:', result.message);
           // Force refresh subscription status
           await EnhancedSubscriptionManager.forceRefresh();
           return;
@@ -129,12 +130,12 @@ export const AuthWrapper = () => {
       }
 
       if (subscriber?.discount_code_pending && !subscriber.discount_activated) {
-        console.log('Found pending discount code, activating...');
+        DebugLogger.log('auth', 'Found pending discount code, activating');
         
         const { data, error } = await supabase.functions.invoke('activate-discount-code');
         
         if (!error && data?.activated) {
-          console.log('Discount code activated:', data.message);
+          DebugLogger.log('auth', 'Discount code activated:', data.message);
           // Show success toast
           setTimeout(() => {
             (window as any).__showDiscountActivationToast?.(data.message);

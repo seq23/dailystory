@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useConversation } from '@11labs/react';
 import { supabase } from '@/integrations/supabase/client';
 import { SimpleAudioEngine } from '@/services/SimpleAudioEngine';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface VoiceCommandsProps {
   agentId?: string; // If provided, will override the backend default
@@ -25,13 +26,13 @@ export const VoiceCommands: React.FC<VoiceCommandsProps> = ({ agentId: initialAg
     // Voice Command: "read", "start reading", "play" -> play tool
     play: async () => {
       if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
-        console.log('🎤 VOICE COMMAND: play tool called');
+        DebugLogger.log('audio', 'VOICE COMMAND: play tool called');
       }
       const text = (window as any).__lastNarrationText || (window as any).__pageContentString || '';
       const hash = (window as any).__pageContentHash || undefined;
       
-      if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
-        console.log('🎤 Content check:', {
+      if (DebugLogger.isDebugEnabled()) {
+        DebugLogger.log('audio', 'Content check:', {
           hasLastNarrationText: !!(window as any).__lastNarrationText,
           hasPageContentString: !!(window as any).__pageContentString,
           hasContentHash: !!(window as any).__pageContentHash,
@@ -41,8 +42,8 @@ export const VoiceCommands: React.FC<VoiceCommandsProps> = ({ agentId: initialAg
       }
       
       if (!text) {
-        if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
-          console.log('🎤 ERROR: No text content available for reading');
+        if (DebugLogger.isDebugEnabled()) {
+          DebugLogger.error('audio', 'No text content available for reading');
         }
         return 'no_text';
       }
@@ -53,7 +54,7 @@ export const VoiceCommands: React.FC<VoiceCommandsProps> = ({ agentId: initialAg
           contentHash: hash,
           voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
         });
-        console.log('🎤 SUCCESS: Audio playback started');
+        DebugLogger.log('audio', 'SUCCESS: Audio playback started');
         return 'ok';
       } catch (error) {
         console.error('🎤 ERROR: Audio playback failed:', error);
@@ -63,10 +64,10 @@ export const VoiceCommands: React.FC<VoiceCommandsProps> = ({ agentId: initialAg
     
     // Voice Command: "stop", "stop reading" -> stop tool
     stop: async () => {
-      console.log('🎤 VOICE COMMAND: stop tool called');
+      DebugLogger.log('audio', 'VOICE COMMAND: stop tool called');
       try {
         engine.stop();
-        console.log('🎤 SUCCESS: Audio stopped');
+        DebugLogger.log('audio', 'SUCCESS: Audio stopped');
         return 'ok';
       } catch (error) {
         console.error('🎤 ERROR: Stop failed:', error);

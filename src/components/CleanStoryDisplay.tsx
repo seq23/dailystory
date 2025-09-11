@@ -181,9 +181,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const preferMobileModal = forceDesktopModal || isMobile || (isTablet && (hasTouchCapability || runtimeTouch));
   const { layout, fallbackToClassic, overrideLayout, lowEnd, reason, isDevelopment } = useReaderLayout();
   
-  // DEBUG: Layout detection logging
   useEffect(() => {
-    console.log(`🖥️ Desktop Image Debug - Layout Changed:`, {
+    DebugLogger.log('ui', 'Desktop Image Debug - Layout Changed:', {
       layout,
       lowEnd,
       reason,
@@ -270,11 +269,11 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   // ImageGenerationTrigger lifecycle management
   useEffect(() => {
     ImageGenerationTrigger.startMonitoring();
-    console.log('🖼️ ImageGenerationTrigger monitoring started');
+    DebugLogger.log('image', 'ImageGenerationTrigger monitoring started');
     
     return () => {
       ImageGenerationTrigger.stopMonitoring();
-      console.log('🖼️ ImageGenerationTrigger monitoring stopped');
+      DebugLogger.log('image', 'ImageGenerationTrigger monitoring stopped');
     };
   }, []);
   
@@ -285,7 +284,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
         DebugLogger.log('story', 'Pre-fetching vocabulary data for', userInfo.name);
         const vocabData = await VocabularyService.fetchAllVocabulary(userInfo);
         setVocabularyData(vocabData);
-        console.log('✅ Vocabulary data pre-fetched successfully:', vocabData);
+        DebugLogger.log('story', 'Vocabulary data pre-fetched successfully:', vocabData);
       } catch (error) {
         console.warn('⚠️ Failed to pre-fetch vocabulary data:', error);
         // Set empty vocabulary data as fallback
@@ -400,12 +399,12 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     const handleOnline = () => {
       setIsNetworkAvailable(true);
       setLastImageError(null);
-      console.log('🌐 Network restored - image generation available');
+      DebugLogger.log('network', 'Network restored - image generation available');
     };
     
     const handleOffline = () => {
       setIsNetworkAvailable(false);
-      console.log('🌐 Network offline - image generation unavailable');
+      DebugLogger.log('network', 'Network offline - image generation unavailable');
     };
 
     window.addEventListener('online', handleOnline);
@@ -424,7 +423,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   
   // Helper function to clear ending-related tracking variables
   const clearEndingTracking = useCallback(() => {
-    console.log('🧹 Clearing ending tracking variables');
+    DebugLogger.log('story', 'Clearing ending tracking variables');
     setOriginalStoryLength(null);
     setLastEndingPageIndex(null);
     // Clear global pagination variables
@@ -518,7 +517,7 @@ const handleImageFallbackUsed = useCallback((isUsingFallback: boolean) => {
       // Track the toast for potential dismissal
       currentToastRef.current = toastResult;
       fallbackToastShownRef.current = true;
-      console.log('🍞 Fallback toast shown for story session');
+      DebugLogger.log('story', 'Fallback toast shown for story session');
     }
   }
 }, [currentPage, pageImages, fallbackToClassic, toast]);
@@ -531,11 +530,11 @@ const handleImageRegeneration = useCallback(async () => {
   const maxAllowedPage = isPremium ? (story.length - 1) : 5;
   
   if (currentPage > maxAllowedPage) {
-    console.log(`🖼️ Page ${currentPage}: Beyond allowed generation limit`);
+    DebugLogger.log('image', `Page ${currentPage}: Beyond allowed generation limit`);
     return;
   }
   
-  console.log(`🖼️ Page ${currentPage}: Starting image regeneration...`);
+  DebugLogger.log('image', `Page ${currentPage}: Starting image regeneration...`);
   setIsGeneratingImage(true);
   setIsPreparingImage(true);
   
