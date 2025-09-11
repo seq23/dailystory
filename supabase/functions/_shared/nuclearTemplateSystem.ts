@@ -119,6 +119,61 @@ function canAttempt(key: string): boolean {
 }
 
 /**
+ * Reset Circuit Breaker - Manual Recovery
+ */
+export function resetCircuitBreaker(key: string): void {
+  const state = getCircuitBreakerState(key);
+  state.failures = 0;
+  state.isOpen = false;
+  state.halfOpenAttempts = 0;
+  state.lastFailure = 0;
+  console.log(`🔄 Circuit breaker MANUALLY RESET for ${key}`);
+}
+
+/**
+ * Get Circuit Breaker Status
+ */
+export function getCircuitBreakerStatus(key: string): {
+  isOpen: boolean;
+  failures: number;
+  lastFailure: number;
+  timeSinceLastFailure: number;
+  canAttempt: boolean;
+} {
+  const state = getCircuitBreakerState(key);
+  const now = Date.now();
+  const timeSinceLastFailure = now - state.lastFailure;
+  
+  return {
+    isOpen: state.isOpen,
+    failures: state.failures,
+    lastFailure: state.lastFailure,
+    timeSinceLastFailure,
+    canAttempt: canAttempt(key)
+  };
+}
+
+/**
+ * Level 0 Recovery Logic - Test if Level 0 templates are working
+ */
+async function testLevel0Recovery(): Promise<boolean> {
+  try {
+    console.log('🧪 Testing Level 0 template recovery...');
+    const { getLevel0Template } = await import('./templates/level0.js');
+    const testTemplate = getLevel0Template(0);
+    
+    if (validateTemplateIntegrity(testTemplate)) {
+      console.log('✅ Level 0 template recovery test PASSED');
+      return true;
+    }
+  } catch (error) {
+    console.log('❌ Level 0 template recovery test FAILED:', error.message);
+  }
+  
+  return false;
+}
+
+/**
  * Template Preloading System
  */
 export async function preloadPopularTemplates(): Promise<void> {
@@ -176,6 +231,23 @@ export async function nuclearLoadTemplate(level: string, templateIndex?: number)
   const preloadKey = `${level}_${templateIndex ?? 'random'}`;
   const circuitKey = `template_${level}`;
   
+  // Log circuit breaker status for Level 0
+  if (level === 'level0') {
+    const status = getCircuitBreakerStatus(circuitKey);
+    console.log(`🔍 Level 0 circuit breaker status:`, status);
+    
+    // Automatic recovery for Level 0 if circuit has been open for > 60 seconds
+    if (status.isOpen && status.timeSinceLastFailure > 60000) {
+      console.log('🔄 Level 0 circuit breaker has been open for >60s, attempting recovery...');
+      const recoverySuccess = await testLevel0Recovery();
+      
+      if (recoverySuccess) {
+        console.log('✅ Level 0 recovery successful, resetting circuit breaker');
+        resetCircuitBreaker(circuitKey);
+      }
+    }
+  }
+  
   // Stage 1: Preload cache (instant)
   if (preloadCache.has(preloadKey) && integrityCache.get(preloadKey)) {
     console.log(`⚡ Instant preload hit: ${preloadKey}`);
@@ -190,14 +262,25 @@ export async function nuclearLoadTemplate(level: string, templateIndex?: number)
   
   // Stage 3: Dynamic loading with circuit breaker protection
   try {
-    const { loadTemplate } = await import('./dynamicTemplateLoader.ts');
-    const template = await Promise.race([
-      loadTemplate(level, templateIndex),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
-    ]);
+    let template;
+    
+    // Special handling for Level 0 templates (static import)
+    if (level === 'level0') {
+      console.log('📚 Loading Level 0 template directly...');
+      const { getLevel0Template } = await import('./templates/level0.js');
+      template = getLevel0Template(templateIndex);
+    } else {
+      // Use dynamic loader for other levels
+      const { loadTemplate } = await import('./dynamicTemplateLoader.ts');
+      template = await Promise.race([
+        loadTemplate(level, templateIndex),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
+      ]);
+    }
     
     if (validateTemplateIntegrity(template)) {
       recordSuccess(circuitKey);
+      console.log(`✅ Successfully loaded ${level} template`);
       // Cache successful load
       preloadCache.set(preloadKey, template);
       integrityCache.set(preloadKey, true);
