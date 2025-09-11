@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { DebugLogger, DebugLogEntry, DebugCategory } from '@/services/DebugLogger';
 import { NetflixRetryService } from '@/services/NetflixRetryService';
+import { NetworkDebugger, NetworkRequest } from '@/services/NetworkDebugger';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -21,19 +22,31 @@ export const UnifiedDebugMonitor: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [logs, setLogs] = useState<DebugLogEntry[]>([]);
   const [netflixLogs, setNetflixLogs] = useState<NetflixDebugLog[]>([]);
+  const [networkRequests, setNetworkRequests] = useState<NetworkRequest[]>([]);
   const [activeTab, setActiveTab] = useState('console');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<DebugCategory | 'all'>('all');
   const [isRecording, setIsRecording] = useState(false);
   const [circuitBreakerStatus, setCircuitBreakerStatus] = useState<any>({});
 
-  // Netflix monitoring setup
+  // Netflix monitoring setup with proper state management
   useEffect(() => {
     if (!DebugLogger.isDebugEnabled()) return;
 
     let originalConsole: any = {};
     
     if (isRecording) {
+      // Batch log updates to prevent setState during render
+      const pendingLogs: NetflixDebugLog[] = [];
+      let flushTimer: NodeJS.Timeout;
+
+      const flushLogs = () => {
+        if (pendingLogs.length > 0) {
+          setNetflixLogs(prev => [...prev.slice(-(100 - pendingLogs.length)), ...pendingLogs]);
+          pendingLogs.length = 0;
+        }
+      };
+
       // Intercept console methods for Netflix-specific logging
       ['log', 'warn', 'error'].forEach(method => {
         originalConsole[method] = console[method as keyof Console];
@@ -44,30 +57,42 @@ export const UnifiedDebugMonitor: React.FC = () => {
             typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
           ).join(' ');
           
-          // Capture Netflix-related messages
+          // Capture debug-related messages
           if (message.includes('Netflix') || message.includes('netflix') || 
               message.includes('circuit') || message.includes('retry') ||
-              message.includes('🎬') || message.includes('🔄') || message.includes('❌')) {
+              message.includes('🎬') || message.includes('🔄') || message.includes('❌') ||
+              message.includes('Failed to fetch') || message.includes('TypeError: Failed to fetch') ||
+              message.includes('504') || message.includes('api.zilliqa.com')) {
             
             const logEntry: NetflixDebugLog = {
               timestamp: Date.now(),
               level: method as 'info' | 'warn' | 'error',
               message,
-              source: 'Netflix Debug'
+              source: 'Debug Capture'
             };
             
-            setNetflixLogs(prev => [...prev.slice(-99), logEntry]); // Keep last 100
+            pendingLogs.push(logEntry);
+            
+            // Batch updates using requestAnimationFrame
+            clearTimeout(flushTimer);
+            flushTimer = setTimeout(() => {
+              requestAnimationFrame(flushLogs);
+            }, 16);
           }
         };
       });
-    }
 
-    return () => {
-      // Restore original console methods
-      Object.keys(originalConsole).forEach(method => {
-        (console as any)[method] = originalConsole[method];
-      });
-    };
+      return () => {
+        // Restore original console methods and flush remaining logs
+        Object.keys(originalConsole).forEach(method => {
+          (console as any)[method] = originalConsole[method];
+        });
+        clearTimeout(flushTimer);
+        if (pendingLogs.length > 0) {
+          requestAnimationFrame(flushLogs);
+        }
+      };
+    }
   }, [isRecording]);
 
   // Subscribe to general debug logger
@@ -80,6 +105,20 @@ export const UnifiedDebugMonitor: React.FC = () => {
 
     setLogs(DebugLogger.getLogs());
     return unsubscribe;
+  }, []);
+
+  // Network request monitoring
+  useEffect(() => {
+    if (!DebugLogger.isDebugEnabled()) return;
+
+    const updateNetworkRequests = () => {
+      const requests = NetworkDebugger.getRequests(50); // Get last 50 requests
+      setNetworkRequests(requests);
+    };
+
+    updateNetworkRequests();
+    const interval = setInterval(updateNetworkRequests, 2000);
+    return () => clearInterval(interval);
   }, []);
 
   // Circuit breaker monitoring
@@ -105,6 +144,8 @@ export const UnifiedDebugMonitor: React.FC = () => {
   const clearLogs = () => {
     DebugLogger.clearLogs();
     setNetflixLogs([]);
+    NetworkDebugger.clearRequests();
+    setNetworkRequests([]);
   };
 
   const resetCircuitBreakers = () => {
@@ -201,7 +242,7 @@ export const UnifiedDebugMonitor: React.FC = () => {
         onClick={() => setIsVisible(true)}
         className="fixed bottom-4 right-4 z-[9999] bg-background/90 border border-muted rounded-lg px-3 py-2 text-xs font-medium shadow-lg hover:bg-accent backdrop-blur-sm"
       >
-        🐛 Debug Monitor ({logs.length + netflixLogs.length})
+        🐛 Debug Monitor ({logs.length + netflixLogs.length + networkRequests.length})
       </button>
     ) : null;
   }
@@ -243,8 +284,9 @@ export const UnifiedDebugMonitor: React.FC = () => {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
-        <TabsList className="grid w-full grid-cols-5 m-4 mb-2">
+        <TabsList className="grid w-full grid-cols-6 m-4 mb-2">
           <TabsTrigger value="console">Console ({logs.length})</TabsTrigger>
+          <TabsTrigger value="network">Network ({networkRequests.length})</TabsTrigger>
           <TabsTrigger value="netflix">Netflix ({netflixLogs.length})</TabsTrigger>
           <TabsTrigger value="categories">Categories</TabsTrigger>
           <TabsTrigger value="circuit-breaker">Circuit Breakers</TabsTrigger>
@@ -306,6 +348,60 @@ export const UnifiedDebugMonitor: React.FC = () => {
                 {filteredLogs.length === 0 && (
                   <div className="text-center text-muted-foreground py-8">
                     No logs match your search criteria
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="network" className="flex-1 flex flex-col px-4 pb-4 min-h-0">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary">
+                Network Requests ({networkRequests.length})
+              </Badge>
+              <span className="text-sm text-muted-foreground">
+                Failed: {NetworkDebugger.getFailedRequests().length}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex-1 border border-muted rounded-md bg-background/50 backdrop-blur-sm min-h-0">
+            <ScrollArea className="h-full max-h-[60vh]">
+              <div className="p-3 space-y-2">
+                {networkRequests.map((req) => (
+                  <div key={req.id} className="text-xs font-mono border-b border-muted/30 pb-2 last:border-b-0">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <span className="text-muted-foreground font-medium">{formatTime(req.timestamp)}</span>
+                      <Badge className={`h-5 text-xs ${req.type === 'edge-function' ? 'bg-purple-500/20 text-purple-300' : req.type === 'supabase' ? 'bg-blue-500/20 text-blue-300' : 'bg-gray-500/20 text-gray-300'}`}>
+                        {req.type}
+                      </Badge>
+                      <span className={`font-medium text-xs ${req.error || (req.status && req.status >= 400) ? 'text-red-400' : req.status && req.status < 400 ? 'text-green-400' : 'text-yellow-400'}`}>
+                        {req.method}
+                      </span>
+                      {req.status && (
+                        <span className={`text-xs ${req.status >= 400 ? 'text-red-400' : 'text-green-400'}`}>
+                          {req.status}
+                        </span>
+                      )}
+                      {req.duration && (
+                        <span className="text-xs text-muted-foreground">
+                          {req.duration}ms
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-foreground leading-relaxed break-words">{req.url}</div>
+                    {req.error && (
+                      <div className="text-red-400 mt-1 text-xs">
+                        Error: {req.error}
+                      </div>
+                    )}
+                  </div>
+                ))}
+                {networkRequests.length === 0 && (
+                  <div className="text-center text-muted-foreground py-8">
+                    No network requests captured yet
                   </div>
                 )}
               </div>

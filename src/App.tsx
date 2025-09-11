@@ -29,6 +29,7 @@ import "./services/AdvancedPerformanceMonitor";
 import "./services/ABTestingFramework";
 import { LoggerService } from "./services/LoggerService";
 import { DebugLogger } from "./services/DebugLogger";
+import { NetworkDebugger } from "./services/NetworkDebugger";
 import { initializeViteLogGrouper, cleanupViteLogGrouper } from "./utils/viteLogGrouper";
 
 const queryClient = new QueryClient({
@@ -45,6 +46,9 @@ const queryClient = new QueryClient({
 const App = () => {
   // Initialize development tools
   React.useEffect(() => {
+    // Initialize network debugging
+    NetworkDebugger; // This initializes the singleton
+    
     // Migrate console logging to DebugLogger
     DebugLogger.log('performance', 'App component loaded successfully');
     
