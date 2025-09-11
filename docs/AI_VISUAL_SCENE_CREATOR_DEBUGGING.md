@@ -43,6 +43,18 @@ Each function provides specific debugging information tied to the request ID.
 
 ---
 
+## DEPRECATED TYPESCRIPT FUNCTIONS ⚠️
+
+**CRITICAL: DO NOT DELETE UNTIL USER IS COMFORTABLE WITH NEW .JS FILES**
+
+The following TypeScript edge functions are **DEPRECATED** and should not be edited:
+- `ai-visual-scene-creator/index.ts` (ACTIVE BUT NEEDS JS MIGRATION)
+- `runware-generate-image/index.ts` (DEPRECATED - DO NOT EDIT)
+- `runware-simple-fallback/index.backup.ts` (BACKUP - DO NOT DELETE) 
+- Plus 2 other deprecated functions (see [IMAGE_FUNCTIONS_DEPRECATION.md](IMAGE_FUNCTIONS_DEPRECATION.md))
+
+---
+
 ## FUNCTION-SPECIFIC DEBUGGING
 
 ### AI Visual Scene Creator (`ai-visual-scene-creator/index.ts`)

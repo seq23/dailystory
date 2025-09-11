@@ -1,16 +1,20 @@
 /**
  * ============================================================================
- * AI VISUAL SCENE CREATOR - ACTIVE PROMPT ENHANCEMENT
+ * 🚨 DEPRECATED TYPESCRIPT FILE - DO NOT EDIT 🚨
  * ============================================================================
  * 
- * This function provides AI-powered prompt enhancement for image generation:
- * - Scene analysis and character consistency
- * - Cultural authenticity processing
- * - Visual element extraction and enhancement
+ * ⚠️  WARNING: This TypeScript (.ts) file is DEPRECATED
+ * ⚠️  DO NOT DELETE until user confirms new .js files are working
+ * ⚠️  DO NOT EDIT - Migration to JavaScript (.js) in progress
  * 
- * STATUS: ACTIVE - Used by runware-generate-image orchestrator
- * CALLED BY: runware-generate-image for Tier 1 prompt enhancement
- * PURPOSE: Convert story text into detailed visual prompts
+ * DEPRECATION STATUS: ACTIVE BUT NEEDS JS MIGRATION
+ * MIGRATION TARGET: ai-visual-scene-creator/index.js (JavaScript)
+ * USER INSTRUCTION: Keep until comfortable with new .js files
+ * 
+ * Original Function: AI-powered prompt enhancement for image generation
+ * - Scene analysis and character consistency
+ * - Cultural authenticity processing  
+ * - Visual element extraction and enhancement
  * 
  * ============================================================================
  */

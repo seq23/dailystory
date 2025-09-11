@@ -1,5 +1,18 @@
 # Image Generation Deployment Guide
 
+⚠️ **DEPRECATED TYPESCRIPT FUNCTIONS - DO NOT EDIT** ⚠️
+
+**CRITICAL: DO NOT DELETE UNTIL USER IS COMFORTABLE WITH NEW .JS FILES**
+
+The following TypeScript edge functions are deprecated:
+- `runware-generate-image/index.ts` (DEPRECATED)
+- `ai-visual-scene-creator/index.ts` (ACTIVE BUT NEEDS JS MIGRATION)  
+- `runware-simple-fallback/index.backup.ts` (BACKUP - DO NOT DELETE)
+- `prompt-studio/index.ts` (DEPRECATED)
+- `runware-diagnostic/index.ts` (DEPRECATED)
+
+See [docs/IMAGE_FUNCTIONS_DEPRECATION.md](IMAGE_FUNCTIONS_DEPRECATION.md) for complete deprecation details.
+
 ## Overview
 
 This guide covers deployment, configuration, and monitoring of the image generation system's edge functions and associated services.

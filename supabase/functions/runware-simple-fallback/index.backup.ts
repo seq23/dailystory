@@ -1,3 +1,18 @@
+// ============================================================================
+// 🚨 DEPRECATED TYPESCRIPT BACKUP FILE - DO NOT EDIT 🚨
+// ============================================================================
+// 
+// ⚠️  WARNING: This TypeScript (.ts) backup file is DEPRECATED
+// ⚠️  DO NOT DELETE until user confirms new .js files are working
+// ⚠️  DO NOT EDIT - Migration to JavaScript (.js) in progress
+// 
+// DEPRECATION STATUS: BACKUP - DO NOT DELETE
+// MIGRATION TARGET: runware-simple-fallback/index.js (JavaScript)
+// USER INSTRUCTION: Keep until comfortable with new .js files
+// 
+// Original Purpose: Tier 2.5 nuclear independence fallback system
+// ============================================================================
+
 // ============= TIER 2.5 NUCLEAR INDEPENDENCE - SHARED NUCLEAR NEGATIVE PROMPT SYSTEM =============
 // This edge function uses the shared nuclear negative prompt system for consistency
 import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from "../_shared/NuclearNegativePrompts.ts";
