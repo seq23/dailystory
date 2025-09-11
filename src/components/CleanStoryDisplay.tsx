@@ -3335,7 +3335,7 @@ const handleRestartTimer = () => {
 
   const progress = displayedStory.length > 0 ? ((currentPage + 1) / displayedStory.length) * 100 : 0;
   const isShortPage = countWords(currentStoryText || "") <= 8;
-  const controlsBlocked = (!isPremium && timeRemaining <= 0) || (isPremium && timerEnabled && !isTimerCanceled && timeRemaining <= 0);
+  const controlsBlocked = !isPremium && timeRemaining <= 0;
 
   // Desktop card height calculation for perfect mirroring
   const { heightStyle, containerClassName } = useDesktopCardHeight({
