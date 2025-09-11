@@ -271,16 +271,47 @@ export class LiveGenerationService {
       const actualSessionId = sessionId || `live-ending-${context.userInfo.name}-${Date.now()}`;
       console.log(`🆔 LiveGen: Ending Page Session ID: ${actualSessionId}`);
       
-      const result = await StoryGenerationService.generateStory(endingUserInfo, {
+      // Wrap with 35-45s Promise.race timeout for robust timeout handling
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Ending page generation timeout (40s)')), 40000);
+      });
+      
+      const generationPromise = StoryGenerationService.generateStory(endingUserInfo, {
         sessionType: 'premium', 
         pageNumber: nextPageNumber,
         existingStory: (context.storyContext || []).join('\n\n'),
         sessionId: actualSessionId,
         isEndingPage: true
       });
+      
+      const result = await Promise.race([generationPromise, timeoutPromise]);
 
       if (!result.success || !result.pages || result.pages.length === 0) {
         console.error('🚀 Live Generation: 4-tier ending failed:', result.error);
+        // On timeout or failure, immediately call template-service fallback
+        try {
+          const { data, error } = await supabase.functions.invoke('template-service', {
+            body: {
+              difficulty: DifficultyLevelMapper.toBackend(context.difficulty),
+              userInfo: endingUserInfo,
+              pageCount: 1,
+              templateIndex: 0
+            }
+          });
+
+          if (!error && data?.pages?.length) {
+            const fallbackContent = data.pages[0];
+            console.log('✅ Template-service fallback succeeded for ending page');
+            return {
+              content: fallbackContent,
+              isComplete: true,
+              nextContext: undefined
+            };
+          }
+        } catch (fallbackError) {
+          console.error('Template fallback also failed for ending:', fallbackError);
+        }
+        
         return this.generateFallbackNextPage(context, nextPageNumber, 'unified_system_error', true);
       }
 
