@@ -1,5 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { COMPREHENSIVE_HEADER_BASELINE } from "../_shared/corsAdvanced.js";
+
+// Inline CORS headers to avoid import issues
+const COMPREHENSIVE_HEADER_BASELINE = [
+  'authorization', 'apikey', 'x-client-info', 'x-supabase-info',
+  'content-type', 'content-length', 'accept', 'accept-encoding',
+  'user-agent', 'origin', 'x-requested-with'
+];
 
 // Comprehensive CORS Headers
 const corsHeaders = {

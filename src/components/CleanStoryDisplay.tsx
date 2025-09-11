@@ -215,6 +215,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [originalStoryLength, setOriginalStoryLength] = useState<number | null>(null);
   const [isNetworkAvailable, setIsNetworkAvailable] = useState(navigator.onLine);
   // For free users, limit displayed pages to 6 maximum
+  // ROLLBACK FIX: Use story.length for premium logic, displayedStory only for visual pages list
   const displayedStory = !isPremium ? story.slice(0, 6) : story;
 
 
@@ -2291,8 +2292,24 @@ const initializeStory = async () => {
     
     if (isPremium && !isStoryComplete && currentPage === story.length - 1) {
       // Premium: generate next page, append, then advance
+      // Add 40s watchdog to prevent UI getting stuck
+      setIsLoadingNextPage(true);
+      const nextPageWatchdog = setTimeout(() => {
+        console.warn('⏰ Next page watchdog triggered (40s)');
+        setIsLoadingNextPage(false);
+        setJustAdvanced(false);
+        toast({
+          title: "Continuing with story navigation",
+          description: "Page generation may complete shortly...",
+          variant: "default",
+          duration: 5000
+        });
+      }, 40000);
+
       setJustAdvanced(true);
       const result = await generateNextPage();
+      clearTimeout(nextPageWatchdog);
+      
       if (result && !result.error) {
         const pageContent = Array.isArray(result.content) ? result.content[0] : result.content;
         StoryContentLogger.logStoryChange('premium_next_page', 'before', [...story, pageContent], {
@@ -2323,13 +2340,16 @@ const initializeStory = async () => {
         // DEBOUNCED: Re-stabilize on error with delay to prevent flickering
         setIsStoryStable(true);
       }
+      setIsLoadingNextPage(false);
       setTimeout(() => setJustAdvanced(false), 600);
-    } else if (currentPage < displayedStory.length - 1) {
+    } else if (currentPage < (isPremium ? story.length - 1 : displayedStory.length - 1)) {
+      // ROLLBACK FIX: Use story.length for premium logic, displayedStory.length only for free users
       // Navigate to next existing page
       setCurrentPage(currentPage + 1);
       // DEBOUNCED: Re-stabilize immediately for existing content
       setIsStoryStable(true);
-    } else if (!isPremium && currentPage < 5 && displayedStory.length >= 5) {
+    } else if (!isPremium && currentPage < 5 && story.length >= 6) {
+      // ROLLBACK FIX: Use story.length to check if we have 6+ pages, not displayedStory.length
       // Free user: allow advancement to page 6 (currentPage 5)
       setCurrentPage(currentPage + 1);
       setIsStoryStable(true);
@@ -2583,7 +2603,8 @@ const handleDockCoach = () => {
       timeSpent,
       wordsRead: totalWordsRead,
       pagesRead: pagesRead,
-      storyCompleted: currentPage === displayedStory.length - 1,
+      // ROLLBACK FIX: For premium, use story.length to avoid artificial limitations  
+      storyCompleted: isPremium ? (currentPage === story.length - 1) : (currentPage === displayedStory.length - 1),
       readingSpeed: wpm
     });
     
@@ -3018,21 +3039,26 @@ const handleRestartTimer = () => {
       console.warn('⚠️ Failed to preserve character state for sequel');
     }
     
-    // Use original story for sequel context (exclude ending pages)
-    const originalStoryPages = originalStoryLength !== null ? story.slice(0, originalStoryLength) : story;
-    console.log('📖 Using original story context for sequel:', {
+    // ROLLBACK FIX: Use full story for sequel context unless ending pages are explicitly present
+    // This restores yesterday's behavior where the sequel just worked
+    const sequelContextPages = originalStoryLength !== null && originalStoryLength < story.length 
+      ? story.slice(0, originalStoryLength)  // Only if we explicitly have ending pages to exclude
+      : story;  // Otherwise use full story (yesterday's working behavior)
+      
+    console.log('📖 Using sequel context for continuation:', {
       totalStoryPages: story.length,
       originalStoryLength,
-      contextPages: originalStoryPages.length
+      contextPages: sequelContextPages.length,
+      hasExplicitEnding: originalStoryLength !== null
     });
     
     const newContext: LiveGenerationContext = {
       userInfo: { ...userInfo, difficultyLevel: currentDifficulty },
       difficulty: currentDifficulty,
       expertGradeLevel: currentDifficulty === 'advanced' ? (liveContext?.expertGradeLevel || expertGradeLevel) : undefined,
-      storyContext: originalStoryPages,
-      currentPage: originalStoryPages.length,
-      totalExpectedPages: Math.max(originalStoryPages.length + 1, 6),
+      storyContext: sequelContextPages,  // Use the sequel context we calculated
+      currentPage: sequelContextPages.length,
+      totalExpectedPages: Math.max(sequelContextPages.length + 1, 6),
       characters: [userInfo.name, userInfo.favoriteAnimal || 'friend']
     };
     setLiveContext(newContext);
@@ -3044,8 +3070,30 @@ const handleRestartTimer = () => {
   const handleGenerateEndingPage = async () => {
     if (!isPremium || !liveContext || isGeneratingEnding) return;
     setIsGeneratingEnding(true);
+    
+    // Add 40s watchdog for ending generation
+    const watchdogTimeout = setTimeout(() => {
+      console.warn('⏰ Ending generation watchdog triggered (40s)');
+      setIsGeneratingEnding(false);
+      toast({
+        title: "Continuing with story progression",
+        description: "Story ending may appear shortly...",
+        variant: "default",
+        duration: 5000
+      });
+    }, 40000);
+    
     try {
-      const result = await LiveGenerationService.generateEndingPage(liveContext);
+      // Wrap with 35s Promise.race timeout for robust timeout handling
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Ending generation timeout (35s)')), 35000);
+      });
+      
+      const generationPromise = LiveGenerationService.generateEndingPage(liveContext);
+      const result = await Promise.race([generationPromise, timeoutPromise]);
+      
+      clearTimeout(watchdogTimeout);
+      
       if (result && !result.error) {
         StoryContentLogger.logStoryChange('premium_ending_page', 'before', [...story], {
           contentPreview: Array.isArray(result.content) ? result.content[0]?.substring(0, 100) : result.content?.substring(0, 100),
@@ -3097,12 +3145,46 @@ const handleRestartTimer = () => {
         // Show expanded "Finish Story" CTA on the ending page only
         finishExpandedOnPageRef.current = lastEndingPageIndex;
         setFinishCTAExpanded(true);
-
         setHighlightSave(true);
       }
     } catch (e) {
+      clearTimeout(watchdogTimeout);
       console.error('Failed to generate ending page', e);
-      toast({ title: "Ending failed", description: "Please try again.", variant: "destructive" });
+      
+      // Fall back to template service on timeout or error
+      try {
+        const { data, error } = await supabase.functions.invoke('template-service', {
+          body: {
+            difficulty: DifficultyLevelMapper.toBackend(currentDifficulty),
+            userInfo: { ...userInfo, difficultyLevel: currentDifficulty },
+            pageCount: 1,
+            templateIndex: 0,
+            isEnding: true
+          }
+        });
+
+        if (!error && data?.pages?.length) {
+          const endingContent = data.pages[0];
+          setOriginalStoryLength(story.length);
+          setStory(prev => [...prev, endingContent]);
+          setIsStoryComplete(true);
+          setLiveContext(null);
+          setCurrentPage(prev => prev + 1);
+          setJustAdvanced(true);
+          setTimeout(() => setJustAdvanced(false), 600);
+          
+          toast({
+            title: "Story concluded",
+            description: "Using backup ending due to service timeout",
+            variant: "default",
+            duration: 5000
+          });
+        } else {
+          throw new Error('Template fallback failed');
+        }
+      } catch (fallbackError) {
+        toast({ title: "Ending failed", description: "Please try again.", variant: "destructive" });
+      }
     } finally {
       setIsGeneratingEnding(false);
     }
@@ -3637,7 +3719,7 @@ const handleRestartTimer = () => {
 
                   {/* Bottom Half: Text - Fixed size to prevent layout shifts */}
                   <div className="flex-[0.4] w-full rounded-2xl shadow-2xl bg-card overflow-hidden flex flex-col relative">
-                    {isPremium && isLoadingNextPage && currentPage === displayedStory.length - 1 && !isStoryComplete && (
+                     {isPremium && isLoadingNextPage && currentPage === story.length - 1 && !isStoryComplete && (
                       <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/60 backdrop-blur-sm pointer-events-none">
                         <div className="rounded-xl px-4 py-3 bg-card/90 shadow-lg border border-primary/20 animate-enter">
                           <div className="flex items-center gap-2">
@@ -3723,7 +3805,7 @@ const handleRestartTimer = () => {
                   {/* Text Content - RIGHT SIDE - Equal size on desktop */}
                   <div className="xl:order-2 flex flex-col" style={heightStyle}>
                     <div className={`${containerClassName} w-full min-h-0 rounded-2xl overflow-hidden shadow-2xl bg-card relative`}>
-                      {isPremium && isLoadingNextPage && currentPage === displayedStory.length - 1 && !isStoryComplete && (
+                      {isPremium && isLoadingNextPage && currentPage === story.length - 1 && !isStoryComplete && (
                         <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/60 backdrop-blur-sm pointer-events-none">
                           <div className="rounded-xl px-4 py-3 bg-card/90 shadow-lg border border-primary/20 animate-enter">
                             <div className="flex items-center gap-2">
@@ -3855,7 +3937,7 @@ const handleRestartTimer = () => {
                 )}
 
                 {/* Free User Magic Wand - visible only for free users on page 6 with time left */}
-                {!isPremium && currentPage === 5 && displayedStory.length >= 5 && timeRemaining > 0 && (
+                {!isPremium && currentPage === 5 && story.length >= 6 && timeRemaining > 0 && (
                   <div className="text-center relative">
                     <div className="relative">
                       <SparkleAnimation 

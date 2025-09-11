@@ -2,6 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 import type { UserInfo, DifficultyLevel } from '@/types';
 import { ErrorHandler } from '@/utils/errorHandling';
 import { DifficultyLevelMapper } from '@/services/DifficultyLevelMapper';
+import { ImageFallbackService } from '@/services/ImageFallbackService';
 
 // Simple service configuration
 interface ImageGenerationConfig {
@@ -397,18 +398,35 @@ export class SimpleImageService {
         }, 150000);
       });
 
-      // Create the actual request promise
-      const requestPromise = supabase.functions.invoke('runware-generate-image', {
-        body: {
-          pageText: cleanScene,
-          userInfo,
-          storyId,
-          sessionId,
-          pageNumber,
-          isGuestUser: !isPremium, // For analytics/tracking only - all users get Tier 1
-          difficultyLevel: backendDifficulty
-        }
-      });
+      // ROLLBACK: Use stable fail-open chain instead of runware-generate-image
+      console.log('🔄 Rolling back to stable fail-open image generation chain');
+      
+      let requestPromise;
+      try {
+        // Try runware-simple-fallback first (HTTP-first, stable)
+        requestPromise = supabase.functions.invoke('runware-simple-fallback', {
+          body: {
+            pageText: cleanScene,
+            userInfo,
+            storyId,
+            sessionId,
+            pageNumber,
+            isGuestUser: !isPremium,
+            difficultyLevel: backendDifficulty
+          }
+        });
+      } catch (fallbackError) {
+        console.warn('Primary fallback failed, trying ai-visual-scene-creator');
+        // If that fails, try ai-visual-scene-creator (Tier 1 text-only prep path)
+        requestPromise = supabase.functions.invoke('ai-visual-scene-creator', {
+          body: {
+            pageText: cleanScene,
+            userInfo,
+            sessionId,
+            pageNumber
+          }
+        });
+      }
 
       // Race between request and timeout
       const { data, error } = await Promise.race([requestPromise, timeoutPromise]);
@@ -448,6 +466,27 @@ export class SimpleImageService {
 
     } catch (error) {
       // Clear timeout if error occurs
+      if (timeoutId) clearTimeout(timeoutId);
+      
+      // FAIL-OPEN: Always return placeholder instead of throwing
+      console.warn('🖼️ Image generation failed, returning placeholder:', error.message);
+      
+      const fallbackUrl = ImageFallbackService.generateStoryPlaceholder(cleanScene, pageNumber || 1);
+      
+      const result: ImageResult = {
+        url: fallbackUrl,
+        success: true, // Mark as success so UI never stalls
+        provider: 'fallback-service',
+        model: 'svg-placeholder',
+        cost: 0,
+        metadata: {
+          isFallback: true,
+          originalError: error.message,
+          tier: 'fallback'
+        }
+      };
+      
+      return result;
       if (timeoutId && !requestAborted) {
         clearTimeout(timeoutId);
       }

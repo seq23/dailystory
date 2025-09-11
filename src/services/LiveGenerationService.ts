@@ -154,15 +154,52 @@ export class LiveGenerationService {
       const actualSessionId = sessionId || `live-next-${context.userInfo.name}-${Date.now()}`;
       console.log(`🆔 LiveGen: Next Page Session ID: ${actualSessionId}`);
       
-      const result = await StoryGenerationService.generateStory(contextualUserInfo, {
+      // Wrap with 35-45s Promise.race timeout for robust timeout handling
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Next page generation timeout (40s)')), 40000);
+      });
+      
+      const generationPromise = StoryGenerationService.generateStory(contextualUserInfo, {
         sessionType: 'premium',
         pageNumber: nextPageNumber,
         existingStory: (context.storyContext || []).join('\n\n'),
         sessionId: actualSessionId
       });
+      
+      const result = await Promise.race([generationPromise, timeoutPromise]);
 
       if (!result.success || !result.pages || result.pages.length === 0) {
         console.error('🚀 Live Generation: 4-tier continuation failed:', result.error);
+        // On timeout or failure, immediately call template-service fallback
+        try {
+          const { data, error } = await supabase.functions.invoke('template-service', {
+            body: {
+              difficulty: DifficultyLevelMapper.toBackend(context.difficulty),
+              userInfo: context.userInfo,
+              pageCount: 1,
+              templateIndex: 0
+            }
+          });
+
+          if (!error && data?.pages?.length) {
+            const fallbackContent = data.pages[0];
+            const updatedContext: LiveGenerationContext = {
+              ...context,
+              storyContext: [...(context.storyContext || []), fallbackContent],
+              currentPage: nextPageNumber,
+              totalExpectedPages: context.totalExpectedPages
+            };
+
+            return {
+              content: fallbackContent,
+              isComplete: shouldConclude,
+              nextContext: shouldConclude ? undefined : updatedContext
+            };
+          }
+        } catch (fallbackError) {
+          console.error('Template fallback also failed:', fallbackError);
+        }
+        
         return this.generateFallbackNextPage(context, nextPageNumber, 'unified_system_error', userRequestedEnding);
       }
 
