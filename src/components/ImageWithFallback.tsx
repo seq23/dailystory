@@ -66,7 +66,7 @@ export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
       />
       {isUsingFallback && (
         <div className="absolute top-2 right-2 bg-background/80 rounded px-2 py-1 text-xs text-muted-foreground">
-          Generated
+          Fallback
         </div>
       )}
       {error && !isDebugMode && (

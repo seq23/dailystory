@@ -19,7 +19,7 @@ class ImageLoadingManagerClass {
   // Circuit breaker: stop retrying after consecutive failures from same domain
   private readonly FAILURE_THRESHOLD = 5;
   private readonly FAILURE_WINDOW = 30000; // 30 seconds
-  private readonly FAST_FAIL_TIMEOUT = 3000; // 3 seconds for debug mode
+  private readonly FAST_FAIL_TIMEOUT = 10000; // 10 seconds for debug mode
   private readonly CASCADE_FAILURE_THRESHOLD = 10; // Stop after 10 cascade failures
   
   static getInstance(): ImageLoadingManagerClass {

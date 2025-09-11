@@ -43,7 +43,7 @@ export const useImageWithFallback = (
 
     // Use ImageLoadingManager for deduplication and circuit breaking with session context
     const success = await ImageLoadingManager.loadImage(url, {
-      timeout: isDebugMode ? 3000 : 8000, // Faster timeout in debug mode
+      timeout: isDebugMode ? 12000 : 8000, // Longer timeout in debug mode to reduce false fallbacks
       isDebugMode,
       sessionId, // Pass session context for proper isolation
       onProgress: (stage) => debugLog(stage, { url: url.substring(0, 50) + '...' })

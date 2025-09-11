@@ -117,12 +117,22 @@ export function ImageTierTester() {
       };
 
       if (tierType === 'Tier 1') {
-        // Test Tier 1: AI-powered visual scene creator
+        // Test Tier 1: AI-powered visual scene creator (text-only)
         result = await supabase.functions.invoke('ai-visual-scene-creator', {
           body: {
             storyText: config.storyText,
             avatarIdentity: userInfo,
             sessionId: config.sessionId
+          }
+        });
+      } else if (tierType === 'Tier 1 (Image Orchestrator)') {
+        // Test Tier 1: Full image orchestrator
+        result = await supabase.functions.invoke('runware-generate-image', {
+          body: {
+            pageText: config.storyText,
+            userInfo: userInfo,
+            sessionId: config.sessionId,
+            pageNumber: 1
           }
         });
       } else if (tierType.startsWith('Tier 2.5')) {
@@ -203,6 +213,7 @@ export function ImageTierTester() {
     
     const testSequence = [
       { type: 'Tier 1' },
+      { type: 'Tier 1 (Image Orchestrator)' },
       { type: 'Tier 2.5', complexity: 'A' },
       { type: 'Tier 2.5', complexity: 'B' },
       { type: 'Tier 2.5', complexity: 'C' },
@@ -393,7 +404,17 @@ export function ImageTierTester() {
               className="flex items-center gap-2"
             >
               <Zap className="w-4 h-4" />
-              {activeTest === 'Tier 1' ? <Clock className="w-4 h-4 animate-spin" /> : 'Tier 1'}
+              {activeTest === 'Tier 1' ? <Clock className="w-4 h-4 animate-spin" /> : 'Scene Creator (Tier 1)'}
+            </Button>
+            
+            <Button
+              onClick={() => runSingleTest('Tier 1 (Image Orchestrator)')}
+              disabled={isLoading}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <ImageIcon className="w-4 h-4" />
+              {activeTest === 'Tier 1 (Image Orchestrator)' ? <Clock className="w-4 h-4 animate-spin" /> : 'Tier 1 (Full)'}
             </Button>
             
             <Button
