@@ -1,5 +1,8 @@
 # API Reference Guide
 
+⚠️ **DEPRECATED FUNCTIONS - DO NOT USE** ⚠️  
+The following edge functions are **DEPRECATED**: `runware-generate-image`, `runware-diagnostic`, and `prompt-studio`. Use `runware-simple-fallback` instead. See [IMAGE_FUNCTIONS_DEPRECATION.md](IMAGE_FUNCTIONS_DEPRECATION.md) for details.
+
 ## Core Endpoints
 
 ### AI Story Enhancer

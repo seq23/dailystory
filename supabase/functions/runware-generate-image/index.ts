@@ -1,3 +1,23 @@
+/**
+ * ============================================================================
+ * 🚨 DEPRECATED — DO NOT EDIT 🚨
+ * ============================================================================
+ * 
+ * This legacy image generation function is no longer used in production.
+ * 
+ * Replacement: supabase/functions/runware-simple-fallback/index.js
+ * Documentation: docs/IMAGE_FUNCTIONS_DEPRECATION.md
+ * Deprecated on: 2025-09-11
+ * 
+ * Reason: Consolidated image generation to a single HTTP-first path to reduce 
+ * edge runtime issues and fragmentation.
+ * 
+ * ⚠️  DO NOT MODIFY: Changes won't affect production and may cause confusion.
+ * ⚠️  USE INSTEAD: runware-simple-fallback/index.js for all image generation
+ * 
+ * ============================================================================
+ */
+
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { COMPREHENSIVE_HEADER_BASELINE } from "../_shared/corsAdvanced.js";
