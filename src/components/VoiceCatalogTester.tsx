@@ -46,40 +46,107 @@ interface DifficultyTestResult extends TestResult {
 
 const difficultyLevels = ['beginner', 'easy', 'medium', 'hard', 'expert'] as const;
 
-const sampleUsers: UserInfo[] = [
+const gradeOptions = ['PreK', 'K', '1st', '2nd', '3rd', '4th', '5th', '6th+'] as const;
+const skinToneOptions = ['pale', 'light', 'medium', 'olive', 'dark'] as const;
+const avatarTypeOptions = ['boy', 'girl', 'prefer-not-to-answer'] as const;
+const languageOptions = [
+  { value: 'en', label: 'English' },
+  { value: 'es', label: 'Spanish' },
+  { value: 'fr', label: 'French' },
+  { value: 'ar', label: 'Arabic' },
+  { value: 'zh', label: 'Chinese' },
+  { value: 'hi', label: 'Hindi' },
+  { value: 'pt', label: 'Portuguese' }
+] as const;
+const learningGoalOptions = [
+  { value: 'improve-english-reading', label: 'Improve English Reading' },
+  { value: 'learn-english-language', label: 'Learn English Language' },
+  { value: 'both', label: 'Both' }
+] as const;
+const difficultyOptions = ['pre-reader', 'beginner', 'developing', 'independent', 'advanced'] as const;
+
+const defaultUserProfile: UserInfo = {
+  name: 'Test User',
+  age: 8,
+  grade: '3rd',
+  gradeLevel: '3rd',
+  nativeLanguage: 'en',
+  learningGoal: 'improve-english-reading',
+  avatar: { type: 'prefer-not-to-answer', skinTone: 'medium' },
+  favoriteColor: 'blue',
+  favoriteAnimal: 'dog',
+  favoriteFood: 'pizza',
+  hobbies: 'reading, playing',
+  specialRequest: 'I love fun stories with adventure',
+  interests: ['adventure', 'friendship'],
+  difficultyLevel: 'developing'
+};
+
+const presetProfiles = [
   {
-    name: 'Emma',
-    age: 8,
-    grade: '3rd',
-    gradeLevel: '3rd',
-    nativeLanguage: 'en',
-    learningGoal: 'improve-english-reading',
-    avatar: { type: 'girl', skinTone: 'light' },
-    favoriteColor: 'purple',
-    favoriteAnimal: 'cat',
-    favoriteFood: 'pizza',
-    hobbies: 'painting, reading',
-    specialRequest: 'I love adventures with magic',
-    interests: ['magic', 'art', 'friendship'],
-    readingLevel: 'medium',
-    difficultyLevel: 'medium'
+    name: 'Young Beginner',
+    profile: {
+      ...defaultUserProfile,
+      name: 'Emma',
+      age: 5,
+      grade: 'PreK' as const,
+      gradeLevel: 'PreK' as const,
+      difficultyLevel: 'pre-reader',
+      favoriteAnimal: 'bunny',
+      hobbies: 'coloring, puzzles',
+      specialRequest: 'I like stories with animals',
+      interests: ['animals', 'colors']
+    }
   },
   {
-    name: 'Alex',
-    age: 12,
-    grade: '6th+',
-    gradeLevel: '6th+',
-    nativeLanguage: 'en',
-    learningGoal: 'learn-english-language',
-    avatar: { type: 'boy', skinTone: 'medium' },
-    favoriteColor: 'blue',
-    favoriteAnimal: 'dragon',
-    favoriteFood: 'tacos',
-    hobbies: 'gaming, sports',
-    specialRequest: 'I want stories with technology and adventure',
-    interests: ['technology', 'adventure', 'mystery'],
-    readingLevel: 'hard',
-    difficultyLevel: 'hard'
+    name: 'Elementary Student',
+    profile: {
+      ...defaultUserProfile,
+      name: 'Alex',
+      age: 8,
+      grade: '3rd' as const,
+      gradeLevel: '3rd' as const,
+      difficultyLevel: 'developing',
+      favoriteColor: 'green',
+      favoriteAnimal: 'cat',
+      hobbies: 'soccer, drawing',
+      specialRequest: 'I want stories about school and friends',
+      interests: ['friendship', 'school', 'sports']
+    }
+  },
+  {
+    name: 'Middle School',
+    profile: {
+      ...defaultUserProfile,
+      name: 'Jordan',
+      age: 12,
+      grade: '6th+' as const,
+      gradeLevel: '6th+' as const,
+      difficultyLevel: 'independent',
+      favoriteColor: 'purple',
+      favoriteAnimal: 'dragon',
+      favoriteFood: 'tacos',
+      hobbies: 'gaming, reading',
+      specialRequest: 'I love fantasy and mystery stories',
+      interests: ['fantasy', 'mystery', 'technology']
+    }
+  },
+  {
+    name: 'Advanced Reader',
+    profile: {
+      ...defaultUserProfile,
+      name: 'Sam',
+      age: 15,
+      grade: '6th+' as const,
+      gradeLevel: '6th+' as const,
+      difficultyLevel: 'advanced',
+      favoriteColor: 'black',
+      favoriteAnimal: 'wolf',
+      favoriteFood: 'sushi',
+      hobbies: 'writing, music',
+      specialRequest: 'I want complex stories with deep themes',
+      interests: ['science', 'philosophy', 'adventure']
+    }
   }
 ];
 
@@ -95,9 +162,10 @@ export function VoiceCatalogTester() {
   const [alternativesTest, setAlternativesTest] = useState<TestResult>({ status: 'idle' });
   const [fullSystemTest, setFullSystemTest] = useState<TestResult>({ status: 'idle' });
   
-  const [selectedUser, setSelectedUser] = useState<UserInfo>(sampleUsers[0]);
-  const [customUser, setCustomUser] = useState<Partial<UserInfo>>({});
+  const [selectedUser, setSelectedUser] = useState<UserInfo>(defaultUserProfile);
+  const [customUser, setCustomUser] = useState<UserInfo>(defaultUserProfile);
   const [alternativesCount, setAlternativesCount] = useState(3);
+  const [interestsInput, setInterestsInput] = useState<string>('adventure, friendship');
 
   // Performance monitoring setup
   useEffect(() => {
@@ -527,96 +595,337 @@ export function VoiceCatalogTester() {
 
         {/* User Testing Tab */}
         <TabsContent value="users" className="space-y-4">
+          {/* Preset Profiles */}
           <Card>
             <CardHeader>
-              <CardTitle>User Scenario Testing</CardTitle>
+              <CardTitle>Quick Test Profiles</CardTitle>
               <CardDescription>
-                Test voice selection with different user profiles
+                Test with pre-configured user profiles representing different age groups and reading levels
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {sampleUsers.map((user, index) => (
+                {presetProfiles.map((preset, index) => (
                   <Card key={index} className="p-4">
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <div>
-                          <h4 className="font-medium">{user.name}</h4>
+                          <h4 className="font-medium">{preset.profile.name}</h4>
                           <p className="text-sm text-muted-foreground">
-                            Age {user.age}, {user.grade} grade, {user.difficultyLevel}
+                            Age {preset.profile.age}, {preset.profile.grade} grade, {preset.profile.difficultyLevel}
                           </p>
                         </div>
-                        <Button
-                          size="sm"
-                          onClick={() => runUserTest(user)}
-                          disabled={userTests.status === 'running'}
-                        >
-                          Test
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setCustomUser(preset.profile)}
+                          >
+                            Load
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={() => runUserTest(preset.profile)}
+                            disabled={userTests.status === 'running'}
+                          >
+                            Test
+                          </Button>
+                        </div>
                       </div>
                       
                       <div className="text-xs text-muted-foreground">
-                        <div>Interests: {user.interests?.join(', ')}</div>
-                        <div>Request: {user.specialRequest}</div>
+                        <div>Interests: {preset.profile.interests?.join(', ')}</div>
+                        <div>Request: {preset.profile.specialRequest}</div>
                       </div>
                     </div>
                   </Card>
                 ))}
               </div>
+            </CardContent>
+          </Card>
 
-              {userTests.status !== 'idle' && (
-                <Card className="p-4">
+          {/* Custom User Builder */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Custom User Profile Builder</CardTitle>
+              <CardDescription>
+                Create and test custom user profiles with specific preferences and characteristics
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Basic Info */}
+                <div className="space-y-4">
+                  <h4 className="font-medium text-sm">Basic Information</h4>
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-medium">Latest Test Result</h4>
-                      {renderTestStatus(userTests)}
+                    <div>
+                      <Label htmlFor="name">Name</Label>
+                      <Input
+                        id="name"
+                        value={customUser.name}
+                        onChange={(e) => setCustomUser(prev => ({ ...prev, name: e.target.value }))}
+                        placeholder="Enter name"
+                      />
                     </div>
-                    
-                    {userTests.data && (
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label htmlFor="age">Age</Label>
+                        <Input
+                          id="age"
+                          type="number"
+                          min="3"
+                          max="18"
+                          value={customUser.age}
+                          onChange={(e) => setCustomUser(prev => ({ ...prev, age: parseInt(e.target.value) || 5 }))}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="grade">Grade</Label>
+                        <Select value={customUser.grade} onValueChange={(value) => setCustomUser(prev => ({ ...prev, grade: value as any, gradeLevel: value as any }))}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {gradeOptions.map((grade) => (
+                              <SelectItem key={grade} value={grade}>{grade}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="difficulty">Reading Level</Label>
+                      <Select value={customUser.difficultyLevel} onValueChange={(value) => setCustomUser(prev => ({ ...prev, difficultyLevel: value }))}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {difficultyOptions.map((diff) => (
+                            <SelectItem key={diff} value={diff}>{diff}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Avatar & Language */}
+                <div className="space-y-4">
+                  <h4 className="font-medium text-sm">Avatar & Language</h4>
+                  <div className="space-y-3">
+                    <div>
+                      <Label htmlFor="avatarType">Avatar Type</Label>
+                      <Select value={customUser.avatar?.type} onValueChange={(value) => setCustomUser(prev => ({ ...prev, avatar: { ...prev.avatar, type: value as any, skinTone: prev.avatar?.skinTone || 'medium' } }))}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {avatarTypeOptions.map((type) => (
+                            <SelectItem key={type} value={type}>{type}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="skinTone">Skin Tone</Label>
+                      <Select value={customUser.avatar?.skinTone} onValueChange={(value) => setCustomUser(prev => ({ ...prev, avatar: { ...prev.avatar, skinTone: value as any, type: prev.avatar?.type || 'prefer-not-to-answer' } }))}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {skinToneOptions.map((tone) => (
+                            <SelectItem key={tone} value={tone}>{tone}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="nativeLanguage">Native Language</Label>
+                      <Select value={customUser.nativeLanguage} onValueChange={(value) => setCustomUser(prev => ({ ...prev, nativeLanguage: value as any }))}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {languageOptions.map((lang) => (
+                            <SelectItem key={lang.value} value={lang.value}>{lang.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="learningGoal">Learning Goal</Label>
+                      <Select value={customUser.learningGoal} onValueChange={(value) => setCustomUser(prev => ({ ...prev, learningGoal: value as any }))}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {learningGoalOptions.map((goal) => (
+                            <SelectItem key={goal.value} value={goal.value}>{goal.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Preferences */}
+                <div className="space-y-4">
+                  <h4 className="font-medium text-sm">Preferences</h4>
+                  <div className="space-y-3">
+                    <div>
+                      <Label htmlFor="favoriteColor">Favorite Color</Label>
+                      <Input
+                        id="favoriteColor"
+                        value={customUser.favoriteColor}
+                        onChange={(e) => setCustomUser(prev => ({ ...prev, favoriteColor: e.target.value }))}
+                        placeholder="e.g. blue, purple"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="favoriteAnimal">Favorite Animal</Label>
+                      <Input
+                        id="favoriteAnimal"
+                        value={customUser.favoriteAnimal}
+                        onChange={(e) => setCustomUser(prev => ({ ...prev, favoriteAnimal: e.target.value }))}
+                        placeholder="e.g. cat, dragon"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="favoriteFood">Favorite Food</Label>
+                      <Input
+                        id="favoriteFood"
+                        value={customUser.favoriteFood}
+                        onChange={(e) => setCustomUser(prev => ({ ...prev, favoriteFood: e.target.value }))}
+                        placeholder="e.g. pizza, tacos"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="hobbies">Hobbies</Label>
+                      <Input
+                        id="hobbies"
+                        value={customUser.hobbies}
+                        onChange={(e) => setCustomUser(prev => ({ ...prev, hobbies: e.target.value }))}
+                        placeholder="e.g. reading, gaming"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Story Preferences */}
+              <div className="space-y-4">
+                <h4 className="font-medium text-sm">Story Preferences</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="interests">Interests (comma-separated)</Label>
+                    <Input
+                      id="interests"
+                      value={interestsInput}
+                      onChange={(e) => {
+                        setInterestsInput(e.target.value);
+                        setCustomUser(prev => ({ 
+                          ...prev, 
+                          interests: e.target.value.split(',').map(s => s.trim()).filter(Boolean) 
+                        }));
+                      }}
+                      placeholder="e.g. adventure, magic, friendship"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="specialRequest">Special Request</Label>
+                    <Textarea
+                      id="specialRequest"
+                      value={customUser.specialRequest}
+                      onChange={(e) => setCustomUser(prev => ({ ...prev, specialRequest: e.target.value }))}
+                      placeholder="Describe what kind of stories they love"
+                      className="h-20"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Test Actions */}
+              <div className="flex flex-wrap gap-3 pt-4 border-t">
+                <Button 
+                  onClick={() => runUserTest(customUser)}
+                  disabled={userTests.status === 'running'}
+                  className="flex items-center gap-2"
+                >
+                  <Play className="w-4 h-4" />
+                  Test Custom Profile
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => {
+                    setCustomUser(defaultUserProfile);
+                    setInterestsInput('adventure, friendship');
+                  }}
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  Reset to Default
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => setSelectedUser(customUser)}
+                >
+                  Use for Alternatives Test
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Test Results */}
+          {userTests.status !== 'idle' && (
+            <Card className="p-4">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-medium">Latest Test Result</h4>
+                  {renderTestStatus(userTests)}
+                </div>
+                
+                {userTests.data && (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary">
+                        {userTests.data.result.selectedVoice.pn}
+                      </Badge>
+                      <span className="text-sm text-muted-foreground">
+                        Score: {userTests.data.result.compatibilityScore.toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="text-sm">
+                      <strong>Reasoning:</strong> {userTests.data.result.selectionReasoning}
+                    </div>
+                    {userTests.data.result.controlLine && (
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
-                          <Badge variant="secondary">
-                            {userTests.data.result.selectedVoice.pn}
-                          </Badge>
-                          <span className="text-sm text-muted-foreground">
-                            Score: {userTests.data.result.compatibilityScore.toFixed(2)}
-                          </span>
+                          <Label className="text-sm font-medium">Control Line:</Label>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => copyToClipboard(userTests.data.result.controlLine)}
+                          >
+                            <Copy className="w-3 h-3" />
+                          </Button>
                         </div>
-                        <div className="text-sm">
-                          <strong>Reasoning:</strong> {userTests.data.result.selectionReasoning}
-                        </div>
-                        {userTests.data.result.controlLine && (
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2">
-                              <Label className="text-sm font-medium">Control Line:</Label>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => copyToClipboard(userTests.data.result.controlLine)}
-                              >
-                                <Copy className="w-3 h-3" />
-                              </Button>
-                            </div>
-                            <ScrollArea className="h-20 w-full">
-                              <pre className="text-xs p-2 bg-muted rounded-md whitespace-pre-wrap">
-                                {userTests.data.result.controlLine}
-                              </pre>
-                            </ScrollArea>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    
-                    {userTests.error && (
-                      <div className="text-sm text-red-600 p-3 bg-red-50 rounded-md">
-                        {userTests.error}
+                        <ScrollArea className="h-20 w-full">
+                          <pre className="text-xs p-2 bg-muted rounded-md whitespace-pre-wrap">
+                            {userTests.data.result.controlLine}
+                          </pre>
+                        </ScrollArea>
                       </div>
                     )}
                   </div>
-                </Card>
-              )}
-            </CardContent>
-          </Card>
+                )}
+                
+                {userTests.error && (
+                  <div className="text-sm text-red-600 p-3 bg-red-50 rounded-md">
+                    {userTests.error}
+                  </div>
+                )}
+              </div>
+            </Card>
+          )}
         </TabsContent>
 
         {/* Alternatives Tab */}
@@ -633,18 +942,21 @@ export function VoiceCatalogTester() {
                 <div>
                   <Label>User Profile</Label>
                   <Select value={selectedUser.name} onValueChange={(name) => {
-                    const user = sampleUsers.find(u => u.name === name);
-                    if (user) setSelectedUser(user);
+                    const preset = presetProfiles.find(p => p.profile.name === name);
+                    if (preset) setSelectedUser(preset.profile);
                   }}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {sampleUsers.map((user) => (
-                        <SelectItem key={user.name} value={user.name}>
-                          {user.name} (Age {user.age})
+                      {presetProfiles.map((preset) => (
+                        <SelectItem key={preset.profile.name} value={preset.profile.name}>
+                          {preset.profile.name} (Age {preset.profile.age})
                         </SelectItem>
                       ))}
+                      <SelectItem value={customUser.name}>
+                        {customUser.name} (Custom - Age {customUser.age})
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
