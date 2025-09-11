@@ -1,10 +1,49 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
-import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
+import { COMPREHENSIVE_HEADER_BASELINE } from "../_shared/corsAdvanced.js";
+
+// Comprehensive CORS Headers  
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': COMPREHENSIVE_HEADER_BASELINE.join(', '),
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Max-Age': '86400',
+};
+
+function createCorsResponse(data: any, status = 200) {
+  const headers = { 
+    ...corsHeaders, 
+    'Content-Type': 'application/json' 
+  };
+  return new Response(JSON.stringify(data), { status, headers });
+}
+
+function createCorsErrorResponse(error: any, status = 500) {
+  const errorMessage = error instanceof Error ? error.message : error;
+  console.error('Edge function error:', errorMessage);
+  return createCorsResponse({ 
+    success: false, 
+    error: errorMessage,
+    timestamp: new Date().toISOString()
+  }, status);
+}
+
+function createCorsOptionsResponse() {
+  return new Response(null, { headers: corsHeaders });
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return createCorsOptionsResponse();
+  }
+
+  // Handle health check requests
+  if (req.method === 'GET' || req.body?.healthCheck) {
+    return createCorsResponse({
+      status: 'healthy',
+      service: 'test-runware-api',
+      timestamp: new Date().toISOString()
+    });
   }
 
   try {

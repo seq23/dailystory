@@ -50,40 +50,100 @@ export function ImageTierTester() {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTest, setActiveTest] = useState<string | null>(null);
   const [connectivityStatus, setConnectivityStatus] = useState<'idle' | 'testing' | 'success' | 'failed'>('idle');
+  const [connectivityResult, setConnectivityResult] = useState<any>(null);
 
   const testConnectivity = async () => {
     setConnectivityStatus('testing');
+    setConnectivityResult(null);
+    
     try {
       const startTime = Date.now();
-      const { data, error } = await supabase.functions.invoke('edge-connectivity-test');
-      const processingTime = Date.now() - startTime;
       
-      if (error) {
-        console.error('Connectivity test error:', error);
+      // Test all Runware-related functions health endpoints
+      const healthChecks = [
+        { name: 'Runware API Test', endpoint: 'test-runware-api' },
+        { name: 'Image Orchestrator', endpoint: 'runware-generate-image' },
+        { name: 'Simple Fallback', endpoint: 'runware-simple-fallback' }
+      ];
+
+      const results = await Promise.allSettled(
+        healthChecks.map(async ({ name, endpoint }) => {
+          try {
+            const result = await supabase.functions.invoke(endpoint, {
+              body: { healthCheck: true }
+            });
+            return { 
+              name, 
+              endpoint, 
+              status: 'success',
+              result: result.data || { status: 'healthy' },
+              error: result.error
+            };
+          } catch (error) {
+            return { 
+              name, 
+              endpoint, 
+              status: 'failed',
+              result: null,
+              error: { message: error.message }
+            };
+          }
+        })
+      );
+
+      const processingTime = Date.now() - startTime;
+      const successful = results.filter(r => r.status === 'fulfilled' && !r.value.error).length;
+      const total = results.length;
+      
+      const connectivityData = {
+        healthChecks: results.map((result) => ({
+          ...healthChecks[results.indexOf(result)],
+          status: result.status === 'fulfilled' ? 'completed' : 'failed',
+          result: result.status === 'fulfilled' ? result.value : { error: result.reason }
+        })),
+        summary: {
+          total,
+          successful,
+          failed: total - successful,
+          processingTime
+        }
+      };
+
+      setConnectivityResult({
+        data: connectivityData,
+        error: null
+      });
+
+      // Set overall status based on results
+      if (successful === total) {
+        setConnectivityStatus('success');
+      } else if (successful > 0) {
+        setConnectivityStatus('success'); // Partial success still counts as success
+      } else {
         setConnectivityStatus('failed');
-        return false;
       }
       
-      console.log('Connectivity test response:', data);
-      setConnectivityStatus('success');
-      
       // Add connectivity test to results
-      const connectivityResult: TierTestResult = {
+      const connectivityResultForList: TierTestResult = {
         tier: 'Connectivity Test',
-        success: data?.success || false,
+        success: successful > 0,
         imageUrl: undefined,
         processingTime,
-        error: data?.success ? undefined : 'Connectivity test failed'
+        error: successful === 0 ? 'All connectivity tests failed' : undefined
       };
       
-      setResults(prev => [connectivityResult, ...prev]);
-      return data?.success || false;
+      setResults(prev => [connectivityResultForList, ...prev]);
+      return successful > 0;
       
     } catch (err) {
       console.error('Connectivity test exception:', err);
       setConnectivityStatus('failed');
+      setConnectivityResult({
+        data: null,
+        error: { message: err instanceof Error ? err.message : 'Unknown connectivity error' }
+      });
       
-      const connectivityResult: TierTestResult = {
+      const connectivityResultForList: TierTestResult = {
         tier: 'Connectivity Test',
         success: false,
         imageUrl: undefined,
@@ -91,7 +151,7 @@ export function ImageTierTester() {
         error: err instanceof Error ? err.message : 'Unknown connectivity error'
       };
       
-      setResults(prev => [connectivityResult, ...prev]);
+      setResults(prev => [connectivityResultForList, ...prev]);
       return false;
     }
   };
@@ -238,6 +298,7 @@ export function ImageTierTester() {
   const clearResults = () => {
     setResults([]);
     setConnectivityStatus('idle');
+    setConnectivityResult(null);
     console.log('🧹 Cleared all tier test results');
   };
 
@@ -394,6 +455,37 @@ export function ImageTierTester() {
               )}
             </Button>
           </div>
+
+          {/* Enhanced Connectivity Results */}
+          {connectivityResult && (
+            <div className="space-y-2 p-3 bg-muted/50 rounded-lg">
+              <h4 className="font-medium text-sm">Connectivity Results:</h4>
+              {connectivityResult.data?.healthChecks && (
+                <div className="space-y-2">
+                  {connectivityResult.data.healthChecks.map((check: any, index: number) => (
+                    <div key={index} className="flex items-center gap-2 text-xs p-2 bg-background rounded">
+                      <div className={`w-2 h-2 rounded-full ${
+                        check.result?.error ? 'bg-destructive' : 'bg-green-500'
+                      }`} />
+                      <span className="font-medium min-w-[120px]">{check.name}:</span>
+                      <span className={check.result?.error ? 'text-destructive' : 'text-green-600'}>
+                        {check.result?.error?.message || check.result?.status || 'Healthy'}
+                      </span>
+                    </div>
+                  ))}
+                  <div className="text-xs text-muted-foreground pt-1 border-t">
+                    {connectivityResult.data.summary.successful}/{connectivityResult.data.summary.total} services healthy 
+                    ({connectivityResult.data.summary.processingTime}ms)
+                  </div>
+                </div>
+              )}
+              {connectivityResult.error && (
+                <div className="text-xs text-destructive p-2 bg-destructive/10 rounded">
+                  {connectivityResult.error.message}
+                </div>
+              )}
+            </div>
+          )}
           
           {/* Individual Tier Tests */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">

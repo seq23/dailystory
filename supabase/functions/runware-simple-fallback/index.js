@@ -5,12 +5,15 @@ import { globalSessionManager } from "../_shared/SessionStateManager.js";
 import { ExactWordExtractor } from "../_shared/ExactWordExtractor.js";
 import { VisualDetailTracker } from "../_shared/VisualDetailTracker.js";
 import { CharacterConsistencyService } from "../_shared/CharacterConsistencyService.js";
-import { serve } from "https://deno.land/std@0.168.0/http/server.js";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-// Nuclear Independent CORS Headers
+// Import comprehensive CORS baseline
+import { COMPREHENSIVE_HEADER_BASELINE } from "../_shared/corsAdvanced.js";
+
+// Nuclear Independent CORS Headers with comprehensive baseline
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': COMPREHENSIVE_HEADER_BASELINE.join(', '),
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   'Access-Control-Max-Age': '86400',
 };
@@ -5767,6 +5770,47 @@ function detectEmotionFromText(text) {
 serve(async (req) => {
   console.log(`🛡️ Tier 2.5: ${req.method} ${req.url}`);
   
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return createCorsOptionsResponse();
+  }
+
+  // Handle health check requests
+  if (req.method === 'GET' || req.url.includes('/health')) {
+    const runwareApiKey = Deno.env.get('RUNWARE_API_KEY');
+    return createCorsResponse({
+      status: 'healthy',
+      service: 'runware-simple-fallback',
+      timestamp: new Date().toISOString(),
+      apiKeyPresent: !!runwareApiKey,
+      version: '2.5-nuclear-independence'
+    });
+  }
+
+  // Handle health check in POST body
+  try {
+    const body = await req.json();
+    if (body?.healthCheck) {
+      const runwareApiKey = Deno.env.get('RUNWARE_API_KEY');
+      return createCorsResponse({
+        status: 'healthy',
+        service: 'runware-simple-fallback',
+        timestamp: new Date().toISOString(),
+        apiKeyPresent: !!runwareApiKey,
+        version: '2.5-nuclear-independence'
+      });
+    }
+    
+    // Restore body for normal processing
+    req = new Request(req.url, {
+      method: req.method,
+      headers: req.headers,
+      body: JSON.stringify(body)
+    });
+  } catch (err) {
+    // Not JSON, continue normally
+  }
+  
   // ============= TIER TRACKING VARIABLES =============
   let attemptedTiers = [];
   let successfulTier = null;
@@ -6133,9 +6177,26 @@ serve(async (req) => {
     // Now apply style settings to template filling (moved from line 1698)
     // This ensures NUCLEAR_STYLE_SETTINGS is defined before use
     
-    console.log('🛡️ Tier 2.5: Connecting to Runware API via WebSocket with comprehensive error protection...');
+    console.log('🛡️ Tier 2.5: Attempting HTTP-first approach with WebSocket fallback...');
     
-    // COMPREHENSIVE WEBSOCKET ERROR PROTECTION
+    // HTTP-FIRST APPROACH: Try HTTP API first for better edge function compatibility
+    try {
+      console.log('🌐 Tier 2.5: Attempting HTTP API first...');
+      
+      const httpResult = await attemptHttpFallback(prompt, negativePrompt, styleSettings, sessionId, characterData, avatarMapping, difficulty, culturalProfile, objects, secondary_characters);
+      
+      if (httpResult.success) {
+        console.log('✅ Tier 2.5: HTTP-first approach successful!');
+        return httpResult;
+      } else {
+        console.log('🔄 Tier 2.5: HTTP failed, falling back to WebSocket...');
+      }
+    } catch (httpError) {
+      console.log('🔄 Tier 2.5: HTTP failed with error, falling back to WebSocket:', httpError.message);
+    }
+    
+    // WEBSOCKET FALLBACK: Continue with original WebSocket logic if HTTP failed
+    console.log('🛡️ Tier 2.5: Using WebSocket fallback with comprehensive error protection...');
     let connectionTimeout, operationTimeout;
     
     // Connect to Runware WebSocket API with error boundaries
