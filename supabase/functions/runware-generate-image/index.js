@@ -21,9 +21,10 @@ import { DifficultyLevelMapper } from "../_shared/DifficultyLevelMapper.js";
  * 
  * TIER PROGRESSION FOR ALL USERS:
  * - Tier 1: AI-Enhanced Premium (runware:100@1 with full enhancement pipeline)
- * - Tier 2: Template-Based Fallback (structured templates)
- * - Tier 2.5: Nuclear Hardcoded Fallback (guaranteed generation)
- * - Tier 3: OpenAI DALL-E Fallback (external provider)
+ * - Tier 2.5A: Expert Template Fallback (complex structured templates)
+ * - Tier 2.5B: Hard Template Fallback (advanced templates)
+ * - Tier 2.5C: Medium Template Fallback (standard templates)
+ * - Tier 2.5D: Easy Template Fallback (simple templates, minimal requirements)
  * - Tier 4: SVG Placeholder (100% guaranteed success)
  * 
  * IMPORTANT: The `isGuestUser` parameter is for analytics/tracking only
@@ -1468,10 +1469,10 @@ serve(async (req)=>{
             }
           }, req);
         }
-        console.log('⚠️ Tier 1 failed, falling back to Tier 2.5');
+        console.log('⚠️ Tier 1 failed, falling back to Tier 2.5A-D progression');
         console.log('🔍 TIER 1 FAILURE DEBUG - Generation failed but no error thrown');
       } catch (error) {
-        console.log('⚠️ Tier 1 error, falling back to Tier 2.5:', error.message);
+        console.log('⚠️ Tier 1 error, falling back to Tier 2.5A-D progression:', error.message);
         console.log('🔍 TIER 1 ERROR DEBUG - Full error:', {
           message: error.message,
           stack: error.stack?.substring(0, 200) || 'no stack'
@@ -1487,139 +1488,93 @@ serve(async (req)=>{
         }
       }
     }
-    // TIER 2.5: Nuclear Hardcoded Fallback
+    // TIER 2.5A-D: Sequential Template Complexity Fallback
     if (!forceTier || forceTier === 2.5) {
-      try {
-        console.log('🔧 Starting Tier 2.5: Nuclear Hardcoded Fallback');
-        console.log('🔍 TIER 2.5 DEBUG - Calling runware-simple-fallback function (ENHANCED VERSION)');
-        console.log('🛡️ TIER 2.5 PRE-CALL VALIDATION - Comprehensive parameter check');
-        // ORCHESTRATOR PARAMETER RESOLUTION - Ensure all parameters are valid before tier calls
-        console.log('🛡️ Orchestrator: Resolving parameters before Tier 2.5 call');
-        // Resolve characterData - if undefined, set to null for nuclear independence
-        let resolvedCharacterData = characterData;
-        if (characterData === undefined) {
-          resolvedCharacterData = null;
-          console.log('⚠️ Orchestrator: characterData was undefined, resolved to null for nuclear independence');
-        } else {
-          console.log('✅ Orchestrator: characterData is valid, passing through');
-        }
-        // Ensure avatarIdentity is valid
-        if (!avatarIdentity) {
-          console.error('❌ Orchestrator: avatarIdentity is missing - this should never happen');
-          throw new Error('Critical orchestrator error: avatarIdentity is undefined');
-        }
-        // TIER 2.5: Get proper difficulty mapping (same as Tier 1 & 2)
-        const { DifficultyLevelMapper } = await import('../_shared/DifficultyLevelMapper.js');
-        const mappedDifficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
-        // Enhanced parameter validation with detailed logging
-        console.log('🔍 TIER 2.5 ENHANCED VALIDATION - Complete parameter analysis:', {
-          hasPageText: !!pageText,
-          pageTextLength: pageText?.length || 0,
-          pageTextValid: pageText && pageText.trim().length > 0,
-          hasUserInfo: !!userInfo,
-          userInfoValid: userInfo && typeof userInfo === 'object',
-          hasDifficulty: !!mappedDifficulty,
-          difficultyValue: mappedDifficulty,
-          hasAvatarIdentity: !!avatarIdentity,
-          avatarIdentityValid: avatarIdentity && avatarIdentity.name,
-          avatarName: avatarIdentity?.name || 'none',
-          characterDataStatus: resolvedCharacterData ? 'valid' : 'null (nuclear)',
-          hasSessionId: !!sessionId,
-          sessionIdValid: sessionId && sessionId.length > 0,
-          allParametersValid: !!(pageText && userInfo && mappedDifficulty && avatarIdentity && sessionId),
-          timestamp: new Date().toISOString()
-        });
-        // Additional validation - ensure critical parameters are not empty
-        if (!pageText || pageText.trim().length === 0) {
-          throw new Error('TIER 2.5 VALIDATION ERROR: pageText is empty or invalid');
-        }
-        if (!sessionId || sessionId.trim().length === 0) {
-          throw new Error('TIER 2.5 VALIDATION ERROR: sessionId is empty or invalid');
-        }
-        console.log('🚀 TIER 2.5 CALLING - All validations passed, invoking function...');
-        const tier25Result = await callTierFunction('runware-simple-fallback', {
-          pageText,
-          userInfo,
-          difficultyLevel: mappedDifficulty,
-          avatarIdentity,
-          characterData: resolvedCharacterData,
-          sessionId
-        });
-        console.log('🔍 TIER 2.5 RESULT ANALYSIS - Comprehensive response evaluation:', {
-          success: tier25Result?.success || false,
-          hasImageURL: !!tier25Result?.imageURL,
-          imageURLLength: tier25Result?.imageURL?.length || 0,
-          imageURLValid: tier25Result?.imageURL && tier25Result.imageURL.startsWith('http'),
-          error: tier25Result?.error || 'none',
-          errorType: typeof tier25Result?.error,
-          tier: '2.5 (CHARACTER CONSISTENCY ENHANCED)',
-          provider: tier25Result?.provider || 'unknown',
-          enhancementLevel: tier25Result?.enhancementLevel || 'unknown',
-          characterConsistency: tier25Result?.characterConsistency || {},
-          hasMetadata: !!tier25Result?.metadata,
-          responseSize: JSON.stringify(tier25Result || {}).length,
-          timestamp: new Date().toISOString()
-        });
-        if (tier25Result?.success && tier25Result?.imageURL) {
-          console.log('✅ TIER 2.5 SUCCESS - Nuclear Hardcoded fallback succeeded');
-          console.log('🎯 TIER 2.5 FINAL SUCCESS METRICS:', {
-            imageURL: tier25Result.imageURL.substring(0, 50) + '...',
-            provider: tier25Result.provider,
-            tier: 2.5,
-            enhancementLevel: tier25Result.enhancementLevel,
-            fallbackSuccess: true,
-            totalFallbackTime: Date.now() - (req.headers.get('x-request-start') || Date.now()),
-            timestamp: new Date().toISOString()
+      // Resolve characterData - if undefined, set to null for nuclear independence
+      let resolvedCharacterData = characterData;
+      if (characterData === undefined) {
+        resolvedCharacterData = null;
+        console.log('⚠️ Orchestrator: characterData was undefined, resolved to null for nuclear independence');
+      }
+      
+      // Ensure avatarIdentity is valid
+      if (!avatarIdentity) {
+        console.error('❌ Orchestrator: avatarIdentity is missing - this should never happen');
+        throw new Error('Critical orchestrator error: avatarIdentity is undefined');
+      }
+      
+      // Get proper difficulty mapping
+      const { DifficultyLevelMapper } = await import('../_shared/DifficultyLevelMapper.js');
+      const mappedDifficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
+      
+      // Additional validation - ensure critical parameters are not empty
+      if (!pageText || pageText.trim().length === 0) {
+        throw new Error('TIER 2.5 VALIDATION ERROR: pageText is empty or invalid');
+      }
+      if (!sessionId || sessionId.trim().length === 0) {
+        throw new Error('TIER 2.5 VALIDATION ERROR: sessionId is empty or invalid');
+      }
+      
+      // Sequential fallback through template complexity levels
+      const complexityLevels = ['expert', 'hard', 'medium', 'easy'];
+      
+      for (let i = 0; i < complexityLevels.length; i++) {
+        const complexity = complexityLevels[i];
+        const subTier = `2.5${String.fromCharCode(65 + i)}`; // 2.5A, 2.5B, 2.5C, 2.5D
+        
+        try {
+          console.log(`🔧 Starting Tier ${subTier}: ${complexity.toUpperCase()} Template Fallback`);
+          console.log(`🔍 TIER ${subTier} DEBUG - Calling runware-simple-fallback with templateComplexity: ${complexity}`);
+          
+          const tierResult = await callTierFunction('runware-simple-fallback', {
+            pageText,
+            userInfo,
+            difficultyLevel: mappedDifficulty,
+            avatarIdentity,
+            characterData: resolvedCharacterData,
+            sessionId,
+            templateComplexity: complexity
           });
-          return createDynamicCorsResponse({
-            success: true,
-            imageURL: tier25Result.imageURL,
-            seed: tier25Result.seed,
-            provider: 'runware-orchestrator',
-            tier: 2.5,
-            enhancementLevel: 'nuclear-hardcoded',
-            metadata: {
-              orchestrated: true,
-              fallbackTier: 2.5
-            }
-          }, req);
+          
+          console.log(`🔍 TIER ${subTier} RESULT ANALYSIS:`, {
+            success: tierResult?.success || false,
+            hasImageURL: !!tierResult?.imageURL,
+            error: tierResult?.error || 'none',
+            complexity,
+            subTier
+          });
+          
+          if (tierResult?.success && tierResult?.imageURL) {
+            console.log(`✅ TIER ${subTier} SUCCESS - ${complexity} template fallback succeeded`);
+            return createDynamicCorsResponse({
+              success: true,
+              imageURL: tierResult.imageURL,
+              seed: tierResult.seed,
+              provider: 'runware-orchestrator',
+              tier: parseFloat(subTier.replace('2.5', '2.5')),
+              enhancementLevel: `template-${complexity}`,
+              metadata: {
+                orchestrated: true,
+                fallbackTier: subTier,
+                templateComplexity: complexity
+              }
+            }, req);
+          }
+          
+          console.log(`⚠️ Tier ${subTier} failed, progressing to next complexity level`);
+          
+        } catch (error) {
+          console.error(`🚨 TIER ${subTier} EXCEPTION:`, error.message);
+          // Continue to next complexity level
         }
-        // Enhanced error analysis for failed Tier 2.5
-        console.error('❌ TIER 2.5 FAILURE ANALYSIS - Detailed failure breakdown:', {
-          success: tier25Result?.success,
-          hasResult: !!tier25Result,
-          error: tier25Result?.error,
-          errorLength: tier25Result?.error?.length || 0,
-          responseKeys: tier25Result ? Object.keys(tier25Result) : [],
-          resultType: typeof tier25Result,
-          hasImageURL: !!tier25Result?.imageURL,
-          imageURLType: typeof tier25Result?.imageURL,
-          timestamp: new Date().toISOString()
-        });
-        // Check for specific parsing errors that should skip retries
-        const isParsinerError = tier25Result?.error?.includes('Failed to parse') || tier25Result?.error?.includes('finalPrompt is not defined') || tier25Result?.error?.includes('ReferenceError');
-        if (isParsinerError) {
-          console.log('🚫 Tier 2.5 parsing error detected - skipping retries and falling directly to Tier 4:', tier25Result.error);
-        } else {
-          console.log('⚠️ Tier 2.5 failed with non-parsing error - falling back to Tier 4:', tier25Result?.error || 'Unknown error');
+      }
+      // Enhanced error analysis for failed Tier 2.5A-D
+      console.error('❌ ALL TIER 2.5 SUB-TIERS FAILED - Falling back to Tier 4');
+    }
         }
       } catch (error) {
-        // Enhanced error handling with detailed logging
-        console.error('🚨 TIER 2.5 EXCEPTION CAUGHT - Critical failure analysis:', {
-          errorMessage: error.message,
-          errorName: error.name,
-          errorType: typeof error,
-          errorStack: error.stack?.substring(0, 300),
-          isParsingError: error.message?.includes('Failed to parse') || error.message?.includes('finalPrompt is not defined') || error.message?.includes('ReferenceError'),
-          timestamp: new Date().toISOString(),
-          fallbackPlan: 'Proceeding to Tier 4'
-        });
-        // Check if it's a parsing/scoping error to provide better logging
-        const isParsinerError = error.message?.includes('Failed to parse') || error.message?.includes('finalPrompt is not defined') || error.message?.includes('ReferenceError');
-        if (isParsinerError) {
-          console.log('🚫 Tier 2.5 parsing/scoping error caught - falling directly to Tier 4:', error.message);
-        } else {
-          console.log('⚠️ Tier 2.5 error, falling back to Tier 4:', error.message);
+        console.error('🚨 TIER 2.5A-D ORCHESTRATION EXCEPTION:', error.message);
+        console.log('⚠️ All Tier 2.5 sub-tiers (A-D) failed, falling back to Tier 4');
         }
       }
     }

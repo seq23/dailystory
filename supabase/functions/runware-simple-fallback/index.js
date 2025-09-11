@@ -942,8 +942,19 @@ function generateAtmosphereFromStory(pageText, seed) {
 
 // ============= NUCLEAR INDEPENDENT SCENE EXTRACTION FUNCTIONS =============
 
-function mapDifficultyInline(userInfo, fallbackLevel = 'medium') {
+function mapDifficultyInline(userInfo, fallbackLevel = 'medium', orchestratorComplexity = null) {
   try {
+    // ORCHESTRATOR OVERRIDE: If templateComplexity is provided by orchestrator, use it
+    if (orchestratorComplexity) {
+      const validLevels = ['beginner', 'easy', 'medium', 'hard', 'expert'];
+      if (validLevels.includes(orchestratorComplexity)) {
+        console.log(`🎯 Tier 2.5: Using orchestrator templateComplexity: ${orchestratorComplexity}`);
+        return orchestratorComplexity;
+      } else {
+        console.warn(`⚠️ Tier 2.5: Invalid orchestrator templateComplexity "${orchestratorComplexity}", falling back to user mapping`);
+      }
+    }
+    
     const rawLevel = userInfo?.readingLevel || userInfo?.difficultyLevel || userInfo?.gradeLevel;
     const validLevels = ['beginner', 'easy', 'medium', 'hard', 'expert'];
     
@@ -5781,8 +5792,13 @@ serve(async (req) => {
   
   try {
     console.log('📨 Tier 2.5: Parsing request body...');
-    let { pageText, userInfo, characterData, sessionId } = await req.json();
-    console.log('✅ Tier 2.5: Request parsed, keys:', Object.keys({ pageText, userInfo, characterData, sessionId }));
+    let { pageText, userInfo, characterData, sessionId, templateComplexity } = await req.json();
+    console.log('✅ Tier 2.5: Request parsed, keys:', Object.keys({ pageText, userInfo, characterData, sessionId, templateComplexity }));
+    
+    // Log templateComplexity parameter for orchestrator support
+    if (templateComplexity) {
+      console.log('🎯 Tier 2.5: Orchestrator provided templateComplexity:', templateComplexity);
+    }
     
     // COMPREHENSIVE PARAMETER VALIDATION - Add missing defaults
     if (!pageText) {
@@ -5822,7 +5838,7 @@ serve(async (req) => {
       // BUILD LOCAL AVATAR IDENTITY: Create enhanced avatar identity from user data
       let localAvatarIdentity;
       try {
-        localAvatarIdentity = getNuclearAvatarMapping(userInfo, mapDifficultyInline(userInfo) || 'medium');
+        localAvatarIdentity = getNuclearAvatarMapping(userInfo, mapDifficultyInline(userInfo, 'medium', templateComplexity) || 'medium');
         console.log('✅ Local avatar identity built successfully:', localAvatarIdentity.character);
       } catch (avatarError) {
         console.warn('⚠️ Avatar identity building failed, using fallback:', avatarError);
@@ -5863,7 +5879,7 @@ serve(async (req) => {
     // Map difficulty level with fallback protection
     let difficulty;
     try {
-      difficulty = mapDifficultyInline(userInfo);
+      difficulty = mapDifficultyInline(userInfo, 'medium', templateComplexity);
       console.log('✅ Difficulty mapping successful:', difficulty);
     } catch (difficultyError) {
       console.warn('⚠️ Difficulty mapping failed, using medium default:', difficultyError);
