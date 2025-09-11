@@ -2931,27 +2931,8 @@ const handleRestartTimer = () => {
         });
         
         const result = await NetflixStyleStoryService.generateCompleteStory(refreshUserInfo);
-        
-        // FIXED: Only slice for rewrites, use full story for new stories
-        const newStory = isRewrite 
-          ? result.content.slice(0, originalPageCount || result.content.length)
-          : result.content; // Use full new story content for "Next Story"
-        
-        StoryContentLogger.logStoryChange(isRewrite ? 'free_story_rewrite' : 'free_new_story', 'before', newStory, {
-          originalPageCount: originalPageCount,
-          totalGeneratedPages: result.content.length,
-          slicedToCount: newStory.length,
-          userInfo: refreshUserInfo.name,
-          isRewrite: isRewrite
-        });
-        
+        const newStory = result.content;
         setStory(newStory);
-        
-        StoryContentLogger.logStoryChange(isRewrite ? 'free_story_rewrite' : 'free_new_story', 'after', newStory, {
-          currentPage: 0,
-          isRewrite: isRewrite
-        });
-        
         setCurrentPage(0);
       }
     } catch (error) {
