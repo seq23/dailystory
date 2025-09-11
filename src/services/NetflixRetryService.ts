@@ -31,9 +31,10 @@ export class NetflixRetryService {
   };
 
   private static readonly circuitBreakerConfig = {
-    failureThreshold: 5,
-    timeoutMs: 60000, // 1 minute
-    halfOpenRetryDelay: 30000 // 30 seconds
+    failureThreshold: 3, // More forgiving for "next story" scenarios
+    timeoutMs: 45000, // Reduced timeout for faster recovery
+    halfOpenRetryDelay: 15000, // Faster retry for better UX
+    nextStoryThreshold: 2 // Special threshold for subsequent stories
   };
 
   /**
@@ -46,11 +47,23 @@ export class NetflixRetryService {
   ): Promise<T> {
     const finalConfig = { ...this.defaultConfig, ...config };
     const circuitKey = `netflix-${operationName}`;
+    const isNextStory = operationName.includes('next-story');
     
-    // Check circuit breaker
+    console.log(`🔄 [NETFLIX-RETRY] Starting ${operationName} with config:`, {
+      maxRetries: finalConfig.maxRetries,
+      isNextStory,
+      circuitKey
+    });
+    
+    // Check circuit breaker with special handling for next story
     if (this.isCircuitOpen(circuitKey)) {
-      logger.warn(`Circuit breaker open for ${operationName}, failing fast`);
-      throw new Error(`Circuit breaker open for ${operationName}`);
+      if (isNextStory) {
+        console.log(`🔄 [NETFLIX-RETRY] Circuit breaker open for next story - attempting reset`);
+        this.resetCircuitBreaker(circuitKey);
+      } else {
+        logger.warn(`Circuit breaker open for ${operationName}, failing fast`);
+        throw new Error(`Circuit breaker open for ${operationName}`);
+      }
     }
 
     let lastError: Error | null = null;
@@ -156,10 +169,17 @@ export class NetflixRetryService {
     state.failures++;
     state.lastFailureTime = Date.now();
     
+    const isNextStory = circuitKey.includes('next-story');
+    const threshold = isNextStory ? 
+      this.circuitBreakerConfig.nextStoryThreshold : 
+      this.circuitBreakerConfig.failureThreshold;
+    
+    console.log(`🔄 [NETFLIX-RETRY] Recording failure for ${circuitKey}: ${state.failures}/${threshold} (next story: ${isNextStory})`);
+    
     // Open circuit if threshold exceeded
-    if (state.failures >= this.circuitBreakerConfig.failureThreshold) {
+    if (state.failures >= threshold) {
       state.state = 'open';
-      logger.warn(`Circuit breaker ${circuitKey} opened after ${state.failures} failures`);
+      logger.warn(`Circuit breaker ${circuitKey} opened after ${state.failures} failures (threshold: ${threshold})`);
     }
   }
 

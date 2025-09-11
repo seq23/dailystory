@@ -44,6 +44,7 @@ import { toast } from '@/hooks/use-toast';
 import { StoryQualityChecker } from '@/utils/storyQualityChecker';
 import { RepairService } from './repairService';
 import { NetflixRetryService } from './NetflixRetryService';
+import { NetflixSessionManager } from './NetflixSessionManager';
 
 export interface NetflixStoryResult {
   content: string[];
@@ -100,8 +101,11 @@ export class NetflixStyleStoryService {
         attemptId
       });
       
-      const actualSessionId = sessionId || `netflix-${userInfo.name}-${Date.now()}`;
-      console.log(`🆔 [${generationId}] Netflix: Session ID: ${actualSessionId}`);
+      // Use managed session system for consistency
+      const actualSessionId = sessionId || NetflixSessionManager.getOrCreateSession(userInfo.name);
+      const operationKey = `next-story-generation-${userInfo.name}`;
+      
+      console.log(`🆔 [${generationId}] Netflix: Managed Session ID: ${actualSessionId}`);
       
       // Add timeout wrapper for AI generation
       const result = await Promise.race([
@@ -189,8 +193,9 @@ export class NetflixStyleStoryService {
       
     }, `next-story-generation-${userInfo.name}`, {
       maxRetries: 3,
-      initialDelay: 2000,
-      maxDelay: 8000
+      initialDelay: 1500, // Faster initial retry for next story
+      maxDelay: 6000,     // Lower max delay for better UX
+      backoffMultiplier: 1.5 // Gentler backoff
     }).catch(async (error) => {
       // All retries exhausted - fall back to templates with comprehensive error reporting
       console.error(`💥 [${generationId}] Netflix: All AI generation attempts failed, using fallback`);
