@@ -1496,7 +1496,7 @@ const initializeStory = async () => {
         if (resumeEnabled) {
           const cached = StorySessionCache.getCachedStorySession(cacheId);
           if (cached && cached.pages?.length) {
-            console.log('♻️ Restoring premium story from cache');
+            DebugLogger.log('story', 'Restoring premium story from cache');
             
             // Robust page restoration logic - preserve progress, don't reset to 0
             const cachedPage = cached.currentPage || 0;
@@ -1542,9 +1542,9 @@ const initializeStory = async () => {
             if (convertedImages && Object.keys(convertedImages).length > 0) {
               setPageImages(convertedImages);
               onPageImagesUpdate?.(convertedImages);
-              console.log('🖼️ Premium cache restoration: Images loaded from session cache', convertedImages);
+              DebugLogger.log('image', 'Premium cache restoration: Images loaded from session cache', convertedImages);
             } else {
-              console.log('🖼️ Premium cache restoration: No cached images found, will generate new ones');
+              DebugLogger.log('image', 'Premium cache restoration: No cached images found, will generate new ones');
             }
             
             setIsStoryStable(true);
@@ -1597,7 +1597,7 @@ const initializeStory = async () => {
         });
       }
       const srcPremium = (window as any).__LAST_STORY_SOURCE__ || 'unknown';
-      console.log('🧭 UI SOURCE', { source: srcPremium, tier: 'premium' });
+      DebugLogger.log('ui', 'UI SOURCE', { source: srcPremium, tier: 'premium' });
       setStorySource(srcPremium);
       
       // Persist premium story start
@@ -1626,7 +1626,7 @@ const initializeStory = async () => {
           const avatarType = userInfo?.avatar?.type === 'prefer-not-to-answer' ? 'neutral' : userInfo?.avatar?.type;
           const cached = StorySessionCache.getCachedStorySession('guest', avatarType);
           if (cached && cached.pages?.length) {
-            console.log(`♻️ Restoring guest story from cache (avatar: ${avatarType}) - CONTENT LOCKED AFTER RESTORE`);
+            DebugLogger.log('story', `Restoring guest story from cache (avatar: ${avatarType}) - CONTENT LOCKED AFTER RESTORE`);
             
             // Robust page restoration logic for free users - handle page 6 scenario specifically
             const cachedPage = cached.currentPage || 0;
@@ -1636,7 +1636,7 @@ const initializeStory = async () => {
             // Special handling for free users on page 6 (last page)
             if (cachedPage === 5 && cached.pages.length >= 6) {
               restoredPage = 5; // Preserve page 6 progress for free users
-              console.log('📚 Free user page 6 preserved:', { cachedPage, pagesLength: cached.pages.length });
+              DebugLogger.log('story', 'Free user page 6 preserved:', { cachedPage, pagesLength: cached.pages.length });
             }
             
             console.log('📄 Free user page restoration details:', {
@@ -1745,7 +1745,7 @@ const initializeStory = async () => {
       });
 
       // PHASE 1: STORY STABILIZATION LOADING STATE - Process in background, show loading until complete
-      console.log('📝 PHASE 1: Processing story content in background - users will see loading state until complete...');
+      DebugLogger.log('story', 'PHASE 1: Processing story content in background - users will see loading state until complete...');
       
       // Basic content cleanup (full processing now handled by unified edge function)
       const processedPages = result.content.map((page: string) => {
@@ -1765,7 +1765,7 @@ const initializeStory = async () => {
           false,
           false
         );
-        console.log(`✅ Initialized character context for ${userInfo.name} directly via StoryVisualStateManager`);
+        DebugLogger.log('story', `Initialized character context for ${userInfo.name} directly via StoryVisualStateManager`);
       } catch (error) {
         console.warn('Failed to initialize character context:', error);
       }
@@ -1783,7 +1783,7 @@ const initializeStory = async () => {
       });
       
       // BUFFERED UPDATE: Prevent flickering by updating in single batch
-      console.log('📚 Setting story content via buffer to prevent flickering...');
+      DebugLogger.log('story', 'Setting story content via buffer to prevent flickering...');
       
       // Token validation for guest users (6-page story limit)
       // Backend now handles all validation - remove frontend re-validation
@@ -1817,7 +1817,7 @@ const initializeStory = async () => {
         finalSource: srcFree,
         storyTitle: `Story for ${effectiveUser.name}`
       });
-      console.log('🧭 UI SOURCE', { source: srcFree, tier: 'free' });
+      DebugLogger.log('ui', 'UI SOURCE', { source: srcFree, tier: 'free' });
       setStorySource(srcFree as any);
 
       // Persist guest story for refresh-resume with avatar-aware cache key
@@ -1834,7 +1834,7 @@ const initializeStory = async () => {
           undefined,
           avatarType
         );
-        console.log(`📚 Guest story cached with processed pages and avatar type: ${avatarType}`);
+        DebugLogger.log('story', `Guest story cached with processed pages and avatar type: ${avatarType}`);
       } catch (e) { console.warn('Story cache failed', e); }
 
       // 🔧 FIX: Dispatch stability event with PROCESSED content for image generation
@@ -1851,7 +1851,7 @@ const initializeStory = async () => {
           }
         });
         window.dispatchEvent(stableEvent);
-        console.log('📸 Story stability event dispatched with processed content for image generation');
+        DebugLogger.log('story', 'Story stability event dispatched with processed content for image generation');
       }, 500);
     }
     
@@ -1869,7 +1869,7 @@ const initializeStory = async () => {
       storyPagesGenerated: story.length 
     });
     
-    console.log('✅ Story generation completed successfully');
+    DebugLogger.log('story', 'Story generation completed successfully');
     
     // DEBOUNCED STABILITY: Prevent rapid toggling that causes flickering
     const storyElapsed = Date.now() - loaderStartRef.current;
@@ -1886,7 +1886,7 @@ const initializeStory = async () => {
         setIsLoading(false);
         // Debounced stability to prevent flickering
       setIsStoryStable(true);
-      console.log('📚 PHASE 6: Story is now stable and locked - timer can start, images can generate');
+      DebugLogger.log('story', 'PHASE 6: Story is now stable and locked - timer can start, images can generate');
         
         // Show touch device instruction after story loads
         setTimeout(() => {

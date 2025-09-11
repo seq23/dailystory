@@ -40,6 +40,7 @@
  */
 
 import { useState, useEffect } from "react";
+import { DebugLogger } from '@/services/DebugLogger';
 import { WelcomeHero } from "@/components/WelcomeHero";
 import { UserInfoForm } from "@/components/UserInfoForm";
 import { FreeReadingSession } from "@/components/FreeReadingSession";
@@ -146,11 +147,11 @@ const handleFormSubmit = (info: UserInfo) => {
   // Add avatar validation and fallback handling (Fix #4)
   if (!info.avatar || !info.avatar.type) {
     console.warn('⚠️ [DEBUG] Avatar data missing or corrupted, applying fallback');
-    console.log('🔍 [DEBUG] BEFORE fallback - avatar:', info.avatar);
+    DebugLogger.log('auth', 'BEFORE fallback - avatar:', info.avatar);
     info.avatar = { type: "prefer-not-to-answer", skinTone: "medium" };
-    console.log('🔍 [DEBUG] AFTER fallback - avatar:', info.avatar);
+    DebugLogger.log('auth', 'AFTER fallback - avatar:', info.avatar);
   } else {
-    console.log('✅ [DEBUG] Avatar validation passed - no fallback needed');
+    DebugLogger.log('auth', 'Avatar validation passed - no fallback needed');
   }
 
   console.log('🔍 [DEBUG] Final userInfo being set:', {
@@ -164,14 +165,14 @@ const handleFormSubmit = (info: UserInfo) => {
   try { guestSession.setActive(true); guestSession.saveUserInfo(info); } catch {}
   // Clear all caches with new unified cache manager to ensure clean separation
   const avatarType = info.avatar?.type === 'prefer-not-to-answer' ? 'neutral' : info.avatar?.type;
-  console.log('🔥 [GUEST DEBUG] About to clear cache with SessionCacheManager.clearOnNextStory:', { 
+  DebugLogger.log('story', '[GUEST DEBUG] About to clear cache with SessionCacheManager.clearOnNextStory:', { 
     userId: 'guest', 
     avatarType,
     infoAvatar: info.avatar 
   });
   try { 
     SessionCacheManager.clearOnNextStory('guest', avatarType); 
-    console.log('✅ [GUEST DEBUG] SessionCacheManager.clearOnNextStory completed successfully');
+    DebugLogger.log('story', '[GUEST DEBUG] SessionCacheManager.clearOnNextStory completed successfully');
   } catch (error) {
     console.error('❌ [GUEST DEBUG] SessionCacheManager.clearOnNextStory failed:', error);
   }
