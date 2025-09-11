@@ -602,6 +602,48 @@ export type Database = {
         }
         Relationships: []
       }
+      security_monitoring: {
+        Row: {
+          created_at: string
+          details: Json | null
+          event_type: string
+          id: string
+          ip_address: unknown | null
+          operation: string | null
+          risk_level: string | null
+          sensitive_data_accessed: boolean | null
+          table_name: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          details?: Json | null
+          event_type: string
+          id?: string
+          ip_address?: unknown | null
+          operation?: string | null
+          risk_level?: string | null
+          sensitive_data_accessed?: boolean | null
+          table_name?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          details?: Json | null
+          event_type?: string
+          id?: string
+          ip_address?: unknown | null
+          operation?: string | null
+          risk_level?: string | null
+          sensitive_data_accessed?: boolean | null
+          table_name?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       stories: {
         Row: {
           age_group: string
@@ -1018,6 +1060,22 @@ export type Database = {
       }
       detect_suspicious_patterns: {
         Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      get_security_dashboard: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      log_enhanced_security_event: {
+        Args: {
+          details_param?: Json
+          event_type_param: string
+          operation_param?: string
+          risk_level_param?: string
+          sensitive_data_param?: boolean
+          table_name_param?: string
+          user_id_param?: string
+        }
         Returns: undefined
       }
       log_security_enhancement_completion: {
