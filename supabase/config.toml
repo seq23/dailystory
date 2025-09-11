@@ -1,1 +1,13 @@
 project_id = "cpzeuogomaixamrtnnmj"
+
+[functions.runware-generate-image]
+verify_jwt = false
+
+[functions.ai-visual-scene-creator] 
+verify_jwt = false
+
+[functions.runware-simple-fallback]
+verify_jwt = false
+
+[functions.generate-adaptive-story]
+verify_jwt = false

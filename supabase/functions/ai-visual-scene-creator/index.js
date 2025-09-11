@@ -734,6 +734,16 @@ serve(async (req) => {
     return createCorsOptionsResponse();
   }
 
+  // Handle health check endpoint
+  if (req.method === 'GET' && new URL(req.url).pathname.endsWith('/health')) {
+    return createCorsResponse({
+      status: 'healthy',
+      service: 'ai-visual-scene-creator',
+      timestamp: new Date().toISOString(),
+      version: '2.1.5-tier-fallback-system'
+    });
+  }
+
   return EdgeErrorHandler.withPerformanceTracking(
     'ai-visual-scene-creator',
     'fallback-chain',

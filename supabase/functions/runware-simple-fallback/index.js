@@ -5782,6 +5782,17 @@ serve(async (req) => {
     return createCorsOptionsResponse();
   }
   
+  // Handle health check endpoint
+  if (req.method === 'GET' && new URL(req.url).pathname.endsWith('/health')) {
+    return createCorsResponse({
+      status: 'healthy',
+      service: 'runware-simple-fallback',
+      tier: '2.5-nuclear-independence',
+      timestamp: new Date().toISOString(),
+      version: '3.0.1-tier-cascade-system'
+    });
+  }
+  
   // 🔑 DEBUG: API Key Validation
   const runwareApiKey = Deno.env.get('RUNWARE_API_KEY');
   if (!runwareApiKey) {
