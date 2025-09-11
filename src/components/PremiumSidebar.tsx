@@ -119,8 +119,8 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
   const { state, toggleSidebar } = useSidebar();
   const location = useLocation();
   const collapsed = state === "collapsed";
-  const { isMobile } = useIsMobile();
-  const effectiveCollapsed = collapsed && !isMobile;
+  const { isMobileOrTablet } = useIsMobile();
+  const effectiveCollapsed = collapsed && !isMobileOrTablet;
   const [timerEnabled, setTimerEnabled] = useState<boolean>(() => {
     try { return localStorage.getItem('readingTimerEnabled') !== '0'; } catch { return true; }
   });
@@ -206,24 +206,18 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
             </>
           )}
           
-          {isMobile && (
+          {isMobileOrTablet && (
             <Button
-              aria-label={isMobile ? "Close navigation" : state === "expanded" ? "Collapse sidebar" : "Expand sidebar"}
+              aria-label="Close navigation"
               onClick={(e) => {
                 e.stopPropagation();
                 toggleSidebar();
               }}
               size="icon"
               variant="secondary"
-              className={`absolute z-50 rounded-full shadow-sm ${isMobile ? "top-2 right-2 h-8 w-8" : effectiveCollapsed ? "top-1 right-1 h-4 w-4" : "top-2 right-2 h-8 w-8"}`}
+              className="absolute z-50 rounded-full shadow-sm top-2 right-2 h-8 w-8"
             >
-              {isMobile ? (
-                <X className="h-4 w-4" />
-              ) : state === "expanded" ? (
-                <ChevronLeft className={effectiveCollapsed ? "h-3.5 w-3.5" : "h-4 w-4"} />
-              ) : (
-                <ChevronRight className={effectiveCollapsed ? "h-3.5 w-3.5" : "h-4 w-4"} />
-              )}
+              <X className="h-4 w-4" />
             </Button>
           )}
 

@@ -104,7 +104,7 @@ export const PremiumHeader = ({
   };
 
   return (
-    <header ref={headerRef} className="bg-white/95 backdrop-blur-sm shadow-sm border-b sticky top-0 z-50">
+    <header ref={headerRef} className="bg-white/95 backdrop-blur-sm shadow-sm border-b sticky top-0 z-[70]">
       <div className="container mx-auto px-4 pr-[env(safe-area-inset-right)] py-3">
         <div className="flex justify-between items-center gap-2 min-w-0">
           {/* Logo and Title */}
@@ -193,7 +193,7 @@ export const PremiumHeader = ({
                   </Button>
                 </DropdownMenuTrigger>
                 
-                <DropdownMenuContent align="end" className="w-56 z-50 bg-popover shadow-md">
+                <DropdownMenuContent align="end" className="w-56 z-[75] bg-popover shadow-md">
                   <div className="px-3 py-2">
                     <div className="flex items-center justify-between">
                       <div>
