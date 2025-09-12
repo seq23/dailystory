@@ -225,7 +225,7 @@ export function ImageTierTester() {
         return {
           tier: tierType + (templateComplexity ? ` (${templateComplexity})` : ''),
           success: true,
-          imageUrl: result.data.imageUrl,
+          imageUrl: result.data.imageURL || result.data.imageUrl,
           processingTime,
           metadata: result.data.metadata,
           enhancementDetails: result.data.enhancementDetails,

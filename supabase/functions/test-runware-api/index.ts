@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
-import { COMPREHENSIVE_HEADER_BASELINE } from "../_shared/corsAdvanced.js";
+import { COMPREHENSIVE_HEADER_BASELINE } from "../_shared/corsAdvanced.ts";
 
 // Comprehensive CORS Headers  
 const corsHeaders = {
@@ -37,8 +37,16 @@ serve(async (req) => {
     return createCorsOptionsResponse();
   }
 
+  // Parse body for health check detection
+  let body: any = null;
+  try {
+    body = await req.json();
+  } catch (_) {
+    body = null;
+  }
+
   // Handle health check requests
-  if (req.method === 'GET' || req.body?.healthCheck) {
+  if (req.method === 'GET' || body?.healthCheck) {
     return createCorsResponse({
       status: 'healthy',
       service: 'test-runware-api',
