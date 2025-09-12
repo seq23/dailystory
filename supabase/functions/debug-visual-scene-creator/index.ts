@@ -63,7 +63,7 @@ serve(async (req) => {
         success: !error && !!data,
         hasEnhancedData: !!(data?.enhancedStoryData),
         characterCount: data?.enhancedStoryData?.characters?.length || 0,
-        hasEmotions: data?.enhancedStoryData?.characters?.some(c => c.emotions) || false
+        hasEmotions: Array.isArray(data?.enhancedStoryData?.characters) && data.enhancedStoryData.characters.some(c => c.emotions) || false
       });
 
     } catch (callError) {
@@ -88,7 +88,7 @@ serve(async (req) => {
         data: testResult,
         error: testError,
         hasValidResponse: !testError && !!testResult,
-        hasEmotionalData: testResult?.aiSchema?.characters?.some(c => c.emotions) || testResult?.enhancedStoryData?.characters?.some(c => c.emotions) || false
+        hasEmotionalData: (Array.isArray(testResult?.aiSchema?.characters) && testResult.aiSchema.characters.some(c => c.emotions)) || (Array.isArray(testResult?.enhancedStoryData?.characters) && testResult.enhancedStoryData.characters.some(c => c.emotions)) || false
       },
       timestamp: new Date().toISOString()
     };

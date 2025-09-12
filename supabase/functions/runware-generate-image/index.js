@@ -646,39 +646,9 @@ function mapAvatarIdentity(userInfo, sessionId) {
   return mappedIdentity;
 }
 // ============= KID-FRIENDLY PLACEHOLDER GENERATOR =============
-function generateKidFriendlyPlaceholder(pageText) {
-  // Consistent broken wand fallback design matching frontend
-  const svgContent = `
-    <svg width="400" height="400" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
-      <!-- Background -->
-      <rect width="100%" height="100%" fill="#f8f9fa" stroke="#e5e7eb" stroke-width="1"/>
-      
-      <!-- User's Magic Wand Image -->
-      <image 
-        x="100" 
-        y="50" 
-        width="200" 
-        height="150" 
-        href="/lovable-uploads/30e11866-c281-4957-818d-724155f38846.png"
-        preserveAspectRatio="xMidYMid meet"
-      />
-      
-      <!-- Main message - Positioned higher to stay visible in small containers -->
-      <text x="200" y="170" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="500" fill="#374151">
-        Images not working right now
-      </text>
-      <text x="200" y="190" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#6b7280">
-        Please try again later
-      </text>
-    </svg>
-  `;
-  // Convert to data URL for consistent display
-  const dataUrl = `data:image/svg+xml;base64,${btoa(svgContent)}`;
-  console.log('📸 [TIER-4] Generated kid-friendly placeholder with broken wand design');
-  return {
-    url: dataUrl,
-    success: true
-  };
+function generateKidFriendlyPlaceholder(pageText, pageNumber = 1) {
+  // Use the same character placeholder system for consistency
+  return generateCharacterPlaceholder(pageText, pageNumber);
 }
 // ============= TIER 1 RUNWARE PREMIUM GENERATION =============
 async function generateWithRunwarePremium(apiKey, positivePrompt, negativePrompt, seed, sessionId, pageNumber, requestId) {
@@ -746,7 +716,7 @@ serve(async (req)=>{
       requestId: requestId,
       api_keys: {
         runware_configured: !!runwareApiKey,
-        runware_length: runwareApiKey?.length || 0,
+        runware_length: runwareApiKey ? runwareApiKey.length : 0,
         openai_configured: !!openaiApiKey,
         openai_length: openaiApiKey?.length || 0,
         supabase_configured: !!supabaseServiceKey,
@@ -1698,7 +1668,7 @@ serve(async (req)=>{
     }
     // TIER 4: Kid-Friendly Placeholder (Ultimate Fallback)
     console.log('📝 Generating Tier 4: Kid-Friendly Placeholder');
-    const placeholderResult = generateKidFriendlyPlaceholder(pageText);
+    const placeholderResult = generateKidFriendlyPlaceholder(pageText, pageNumber);
     // PHASE 1: Store Tier 4 placeholder prompt with DEBUG
     console.log('📸 DEBUG: Storing Tier 4 placeholder prompt...');
     try {
