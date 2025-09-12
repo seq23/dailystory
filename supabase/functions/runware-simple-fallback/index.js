@@ -103,12 +103,12 @@ async function getSessionManager() {
   }
 }
 
-async function getVisualTracker() {
+async function getCharacterConsistencyService() {
   try {
-    const { VisualDetailTracker } = await import("../_shared/VisualDetailTracker.js");
-    return VisualDetailTracker;
+    const { characterConsistencyService } = await import("../../../src/services/CharacterConsistencyService.ts");
+    return characterConsistencyService;
   } catch (error) {
-    console.warn('VisualTracker lazy load failed:', error);
+    console.warn('CharacterConsistencyService lazy load failed:', error);
     return null;
   }
 }
@@ -1100,9 +1100,9 @@ async function extractSecondaryCharactersFromSentence(sentence, sessionId, pageN
   // ============= PHASE 0: ANALYZE TEXT FOR VISUAL DETAILS FIRST =============
   if (sessionId) {
     try {
-      const VisualTracker = await getVisualTracker();
-      if (VisualTracker) {
-        await VisualTracker.analyzeTextForDetails(sessionId, sentence, pageNumber || 1);
+      const CharacterService = await getCharacterConsistencyService();
+      if (CharacterService) {
+        await CharacterService.analyzeVisualDetails(sessionId, sentence, pageNumber || 1);
       }
     } catch (error) {
       console.warn('⚠️ Visual detail tracking failed:', error);
@@ -1221,33 +1221,36 @@ function generateCameraDirective(pageText, scene, setting) {
   }
 }
 
-// ============= ATMOSPHERE EXTRACTION =============
-function extractAtmosphere(pageText, setting) {
-  try {
-    const text = (pageText + ' ' + setting).toLowerCase();
-    const seed = pageText + setting;
-    
-    // Check for specific atmospheric cues in text
-    if (text.includes('sunny') || text.includes('bright')) {
-      return getSeededRandomItem(['with bright golden lighting', 'with cheerful sunshine', 'with warm daylight'], seed + '_sunny');
+// ============= LEAN ATMOSPHERE EXTRACTION - NO FALLBACKS =============
+function extractAtmosphere(pageText, setting = '') {
+  const text = (pageText + ' ' + setting).toLowerCase();
+  
+  // Extract exact descriptive words from text
+  const atmosphericWords = extractDescriptiveWords(text);
+  
+  return atmosphericWords.length > 0 ? atmosphericWords.join(' ') : '';
+}
+
+// Helper to extract descriptive atmospheric words from text
+function extractDescriptiveWords(text) {
+  const descriptiveWords = [];
+  
+  // Atmospheric adjectives and nouns
+  const atmosphericPatterns = [
+    /\b(sunny|bright|dark|misty|foggy|stormy|peaceful|magical|mysterious|cozy|warm|cold|cheerful|gloomy|golden|silver|sparkling|shimmering)\b/g,
+    /\b(twilight|dawn|midnight|moonlight|sunlight|starlight|candlelight)\b/g,
+    /\b(windy|humid|crisp|steamy|fresh|cool|gentle)\b/g
+  ];
+  
+  atmosphericPatterns.forEach(pattern => {
+    const matches = text.matchAll(pattern);
+    for (const match of matches) {
+      descriptiveWords.push(match[0]);
     }
-    if (text.includes('evening') || text.includes('sunset')) {
-      return getSeededRandomItem(['with warm evening glow', 'with golden sunset lighting', 'with dusky atmosphere'], seed + '_evening');
-    }
-    if (text.includes('morning')) {
-      return getSeededRandomItem(['with gentle morning light', 'with fresh morning atmosphere', 'with bright morning rays'], seed + '_morning');
-    }
-    if (text.includes('cozy') || text.includes('warm')) {
-      return getSeededRandomItem(['with cozy warm atmosphere', 'with inviting ambiance', 'with comfortable lighting'], seed + '_cozy');
-    }
-    
-    // Fallback to universal lighting arrays
-    return getSeededRandomItem(VOCAB.UNIVERSAL_LIGHTING_ARRAYS, seed + '_fallback');
-    
-  } catch (error) {
-    console.warn('⚠️ Atmosphere extraction error:', error);
-    return 'with warm, inviting atmosphere';
-  }
+  });
+  
+  // Remove duplicates and return first 3
+  return [...new Set(descriptiveWords)].slice(0, 3);
 }
 
 // ============= DUPLICATE FUNCTION REMOVED - USING CONSOLIDATED extractStoryProps =============
@@ -1894,79 +1897,6 @@ function validateSceneComplexity(sceneData, pageText) {
 // Enhanced semantic extraction and analysis functions
 // ============================================================================
 
-// Extract atmospheric conditions and mood from scene text
-function extractAtmosphere(sceneText) {
-  if (!sceneText || typeof sceneText !== 'string') return 'clear day';
-  
-  const text = sceneText.toLowerCase();
-  
-  // Weather patterns
-  const weatherPatterns = {
-    'sunny': ['sunny', 'bright', 'sunshine', 'warm light', 'golden hour'],
-    'cloudy': ['cloudy', 'overcast', 'gray sky', 'clouds'],
-    'rainy': ['rain', 'raining', 'drizzle', 'storm', 'wet'],
-    'snowy': ['snow', 'snowing', 'winter', 'cold', 'frost'],
-    'foggy': ['fog', 'mist', 'hazy', 'unclear'],
-    'windy': ['wind', 'windy', 'breeze', 'gusty']
-  };
-  
-  // Time of day patterns
-  const timePatterns = {
-    'dawn': ['dawn', 'sunrise', 'early morning', 'first light'],
-    'morning': ['morning', 'breakfast', 'start of day'],
-    'noon': ['noon', 'midday', 'lunch', 'bright sun'],
-    'afternoon': ['afternoon', 'late day', 'golden'],
-    'evening': ['evening', 'sunset', 'dusk', 'twilight'],
-    'night': ['night', 'dark', 'stars', 'moon', 'bedtime']
-  };
-  
-  // Mood patterns
-  const moodPatterns = {
-    'cheerful': ['happy', 'joy', 'laugh', 'smile', 'excited'],
-    'peaceful': ['calm', 'quiet', 'serene', 'peaceful', 'gentle'],
-    'mysterious': ['mystery', 'secret', 'hidden', 'unknown'],
-    'adventurous': ['adventure', 'explore', 'discover', 'journey'],
-    'magical': ['magic', 'magical', 'sparkle', 'enchant', 'wonder']
-  };
-  
-  // Check for weather
-  let weather = 'clear';
-  for (const [weatherType, patterns] of Object.entries(weatherPatterns)) {
-    if (patterns.some(pattern => text.includes(pattern))) {
-      weather = weatherType;
-      break;
-    }
-  }
-  
-  // Check for time of day
-  let timeOfDay = 'day';
-  for (const [time, patterns] of Object.entries(timePatterns)) {
-    if (patterns.some(pattern => text.includes(pattern))) {
-      timeOfDay = time;
-      break;
-    }
-  }
-  
-  // Check for mood
-  let mood = 'neutral';
-  for (const [moodType, patterns] of Object.entries(moodPatterns)) {
-    if (patterns.some(pattern => text.includes(pattern))) {
-      mood = moodType;
-      break;
-    }
-  }
-  
-  // Combine into atmosphere description
-  let atmosphere = weather;
-  if (timeOfDay !== 'day') {
-    atmosphere += ` ${timeOfDay}`;
-  }
-  if (mood !== 'neutral') {
-    atmosphere += ` ${mood} lighting`;
-  }
-  
-  return atmosphere;
-}
 
 // ============= CONSOLIDATED extractStoryProps FUNCTION =============
 // Unified props extraction function (consolidating two duplicate versions)
@@ -4050,19 +3980,15 @@ async function fillPremiumTemplate(
     // ============= ANALYZE PAGE TEXT FOR VISUAL DETAILS =============
     // Add visual detail analysis for consistent object tracking across tiers
     try {
-      const VisualTracker = await getVisualTracker();
-      if (VisualTracker) {
-        try {
-          await VisualTracker.analyzeTextForDetails(
-            sessionId || 'tier25-session', 
-            pageText || processedPageText, 
-            userInfo?.pageNumber || 1, 
-            finalMapping?.character || 'child'
-          );
-          console.log(`🔍 Tier 2.5A: Page text analyzed for visual details`);
-        } catch (error) {
-          console.warn(`⚠️ Tier 2.5A: Visual detail analysis failed:`, error.message);
-        }
+      const CharacterService = await getCharacterConsistencyService();
+      if (CharacterService) {
+        await CharacterService.analyzeVisualDetails(
+          sessionId || 'tier25-session', 
+          pageText || processedPageText, 
+          userInfo?.pageNumber || 1,
+          finalMapping?.character || 'child'
+        );
+        console.log(`🔍 Tier 2.5A: Page text analyzed for visual details`);
       }
     } catch (error) {
       console.warn(`⚠️ Tier 2.5A: Visual detail analysis failed:`, error.message);
@@ -4354,43 +4280,35 @@ async function fillPremiumTemplate(
     // ============= PAGE TEXT ANALYSIS FOR VISUAL DETAILS =============
     // Analyze current page text for visual details before building colored objects
     try {
-      const VisualTracker = await getVisualTracker();
-      if (VisualTracker) {
-        try {
-          await VisualTracker.analyzeTextForDetails(
-            sessionId || 'fallback-session', 
-            pageText, 
-            1, // Default to page 1 for tier 2.5A
-            userInfo?.avatar?.type || 'child'
-          );
-          console.log(`🔍 Tier 2.5A: Page text analyzed for visual details`);
-        } catch (error) {
-          console.warn(`⚠️ Tier 2.5A: Visual detail analysis failed:`, error.message);
-        }
+      const CharacterService = await getCharacterConsistencyService();
+      if (CharacterService) {
+        await CharacterService.analyzeVisualDetails(
+          sessionId || 'fallback-session', 
+          pageText, 
+          1, // Default to page 1 for tier 2.5A
+          userInfo?.avatar?.type || 'child'
+        );
+        console.log(`🔍 Tier 2.5A: Page text analyzed for visual details`);
       }
     } catch (error) {
       console.warn(`⚠️ Tier 2.5A: Visual detail analysis failed:`, error.message);
     }
     
     // ============= NEW: COLORED OBJECTS INTEGRATION =============
-    // Add persistent colored objects from VisualDetailTracker BEFORE template processing
+    // Add persistent colored objects from CharacterConsistencyService
     let coloredObjects = '';
     try {
-      const VisualTracker = await getVisualTracker();
-      if (VisualTracker) {
-        try {
-          const storedObjects = await VisualTracker.buildObjectDescription(sessionId || 'fallback-session');
-          coloredObjects = storedObjects || '';
-          
-          if (coloredObjects) {
-            console.log(`🎨 Tier 2.5A: Integrated colored objects: ${coloredObjects}`);
-          }
-        } catch (error) {
-          console.warn(`⚠️ Tier 2.5A: VisualDetailTracker integration failed:`, error.message);
+      const CharacterService = await getCharacterConsistencyService();
+      if (CharacterService) {
+        await CharacterService.analyzeVisualDetails(sessionId || 'fallback-session', pageText, pageNumber);
+        coloredObjects = await CharacterService.getColoredObjects(sessionId || 'fallback-session');
+        
+        if (coloredObjects) {
+          console.log(`🎨 Tier 2.5A: Integrated colored objects: ${coloredObjects}`);
         }
       }
     } catch (error) {
-      console.warn(`⚠️ Tier 2.5A: VisualDetailTracker integration failed:`, error.message);
+      console.warn(`⚠️ Tier 2.5A: CharacterConsistencyService integration failed:`, error.message);
     }
     
     let filledTemplate = template
@@ -4405,7 +4323,7 @@ async function fillPremiumTemplate(
       .replace('{setting}', enhancedSetting) // PHASE 1 FIX: Use enhancedSetting instead of undefined scopedEnhancedSetting
       .replace('{action_objects}', actionObjects) // PHASE 6: Enhanced action-integrated objects
       .replace('{secondary_characters}', enhanceSeededSecondaryCharacterPositioning(secondary_characters, pageText, safeScene, sessionId) || '') // ENHANCED: Seed-based spatial positioning integration
-      .replace('{colored_objects}', coloredObjects) // NEW: Colored objects from VisualDetailTracker
+      .replace('{colored_objects}', coloredObjects) // NEW: Colored objects from CharacterConsistencyService
       .replace('{emotion}', emotion)
       .replace('{atmosphere}', atmosphereContext || atmosphere) // Use contextual atmosphere if available
       .replace('{spatial_composition}', spatialComposition || 'character prominently featured in foreground') // New contextual placeholder
