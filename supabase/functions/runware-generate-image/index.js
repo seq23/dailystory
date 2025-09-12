@@ -727,11 +727,7 @@ serve(async (req)=>{
         supabase_configured: !!supabaseServiceKey,
         supabase_length: supabaseServiceKey?.length || 0
       },
-      supported_methods: ['GET', 'POST']
-    }, req);
-  }
-        'POST'
-      ],
+      supported_methods: ['GET', 'POST'],
       health_check: 'OK',
       deployment_info: {
         tier_system: '5-tier fallback (1->2->2.5->3->4)',

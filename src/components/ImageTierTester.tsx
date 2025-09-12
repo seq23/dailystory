@@ -77,7 +77,7 @@ export function ImageTierTester() {
               });
             } else {
               // Use GET for health checks on main functions
-              result = await supabase.functions.invoke(endpoint);
+              result = await supabase.functions.invoke(endpoint, { method: 'GET' });
             }
             
             return { 
@@ -206,6 +206,7 @@ export function ImageTierTester() {
             body: {
               pageText: config.storyText,
               userInfo: userInfo,
+              sessionId: config.sessionId,
               storyId: config.sessionId,
               pageNumber: 1
             }
@@ -221,6 +222,7 @@ export function ImageTierTester() {
             body: {
               pageText: config.storyText,
               userInfo: userInfo,
+              sessionId: config.sessionId,
               storyId: config.sessionId,
               templateComplexity: templateComplexity || 'A'
             }
@@ -236,6 +238,7 @@ export function ImageTierTester() {
             body: {
               pageText: config.storyText,
               userInfo: userInfo,
+              sessionId: config.sessionId,
               storyId: config.sessionId,
               forceTier: 4
             }
