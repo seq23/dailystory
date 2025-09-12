@@ -5792,33 +5792,48 @@ serve(async (req) => {
     return createCorsErrorResponse('Method not allowed. Use GET for health checks or POST for image generation.', 405);
   }
 
+  // Parse JSON body once
+  let pageText, userInfo, sessionId, storyId, pageNumber, isGuestUser, difficultyLevel, diagnostic, characterData, templateComplexity;
   try {
-    const { pageText, userInfo, sessionId, storyId, pageNumber = 1, isGuestUser = false, difficultyLevel = 'medium', diagnostic } = await req.json();
-    
-    // Handle diagnostic requests
-    if (diagnostic === 'tier_health_check') {
-      const runwareApiKey = Deno.env.get('RUNWARE_API_KEY')?.trim();
-      
-      if (!runwareApiKey) {
-        return createCorsErrorResponse('RUNWARE_API_KEY not configured for Tier 2.5', 500);
-      }
-      
-      return createCorsResponse({
-        success: true,
-        tier: '2.5',
-        service: 'runware-simple-fallback',
-        runwareApiKeyPresent: true,
-        runwareKeyLength: runwareApiKey.length,
-        timestamp: new Date().toISOString()
-      });
-    }
-
-    if (!pageText) {
-      return createCorsErrorResponse('pageText is required', 400);
-    }
-    
-    console.log(`🛡️ Tier 2.5: Processing page ${pageNumber} for session ${sessionId}`);
+    const bodyText = await req.text();
+    const body = bodyText ? JSON.parse(bodyText) : {};
+    pageText = body.pageText;
+    userInfo = body.userInfo;
+    sessionId = body.sessionId;
+    storyId = body.storyId;
+    pageNumber = body.pageNumber ?? 1;
+    isGuestUser = body.isGuestUser ?? false;
+    difficultyLevel = body.difficultyLevel ?? 'medium';
+    diagnostic = body.diagnostic;
+    characterData = body.characterData;
+    templateComplexity = body.templateComplexity;
+  } catch (parseErr) {
+    return createCorsErrorResponse('Invalid JSON body', 400);
   }
+
+  // Handle diagnostic requests
+  if (diagnostic === 'tier_health_check') {
+    const runwareApiKey = Deno.env.get('RUNWARE_API_KEY')?.trim();
+    
+    if (!runwareApiKey) {
+      return createCorsErrorResponse('RUNWARE_API_KEY not configured for Tier 2.5', 500);
+    }
+    
+    return createCorsResponse({
+      success: true,
+      tier: '2.5',
+      service: 'runware-simple-fallback',
+      runwareApiKeyPresent: true,
+      runwareKeyLength: runwareApiKey.length,
+      timestamp: new Date().toISOString()
+    });
+  }
+
+  if (!pageText) {
+    return createCorsErrorResponse('pageText is required', 400);
+  }
+  
+  console.log(`🛡️ Tier 2.5: Processing page ${pageNumber} for session ${sessionId}`);
   
   // ============= TIER TRACKING VARIABLES =============
   let attemptedTiers = [];
@@ -5830,7 +5845,6 @@ serve(async (req) => {
   
   console.log('🎯 TIER 2.5 CASCADE: Initializing tier tracking system');
   
-  
   // 🔑 DEBUG: API Key Validation
   const runwareApiKey = Deno.env.get('RUNWARE_API_KEY');
   if (!runwareApiKey) {
@@ -5840,14 +5854,6 @@ serve(async (req) => {
   console.log('✅ Tier 2.5: RUNWARE_API_KEY validated:', runwareApiKey.substring(0, 10) + '...');
   
   try {
-    console.log('📨 Tier 2.5: Parsing request body...');
-    let { pageText, userInfo, characterData, sessionId, templateComplexity } = await req.json();
-    console.log('✅ Tier 2.5: Request parsed, keys:', Object.keys({ pageText, userInfo, characterData, sessionId, templateComplexity }));
-    
-    // Log templateComplexity parameter for orchestrator support
-    if (templateComplexity) {
-      console.log('🎯 Tier 2.5: Orchestrator provided templateComplexity:', templateComplexity);
-    }
     
     // COMPREHENSIVE PARAMETER VALIDATION - Add missing defaults
     if (!pageText) {
