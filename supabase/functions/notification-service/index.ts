@@ -16,9 +16,14 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Force deployment sync - 2025-01-30
+
   try {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    const { operation, email, childName, parentName, incidentDetails, coppaDetails } = await req.json();
+    const { operation, email, parentEmail, childName, parentName, incidentDetails, coppaDetails } = await req.json();
+    
+    // Support both email formats for backward compatibility
+    const targetEmail = email || parentEmail;
 
     console.log(`Notification Service - Operation: ${operation}`);
 
@@ -31,16 +36,16 @@ serve(async (req) => {
 
     switch (operation) {
       case 'parental-notification': {
-        if (!email || !childName) {
+        if (!targetEmail || !childName) {
           return new Response(
-            JSON.stringify({ error: 'Email and childName are required' }),
+            JSON.stringify({ error: 'Email (or parentEmail) and childName are required' }),
             { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
 
         const emailContent = {
           from: 'StoryForge <notifications@storyforge.app>',
-          to: email,
+          to: targetEmail,
           subject: `Important: Activity Alert for ${childName}`,
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -75,7 +80,7 @@ serve(async (req) => {
           .insert({
             event_type: 'parental_notification_sent',
             details: {
-              email,
+              email: targetEmail,
               childName,
               notificationId: result.id,
               incidentDetails
@@ -83,22 +88,26 @@ serve(async (req) => {
           });
 
         return new Response(
-          JSON.stringify({ sent: true, notificationId: result.id }),
+          JSON.stringify({ 
+            sent: true, 
+            notificationId: result.id,
+            messageId: result.id // Backward compatibility
+          }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
       case 'coppa-notification': {
-        if (!email) {
+        if (!targetEmail) {
           return new Response(
-            JSON.stringify({ error: 'Email is required' }),
+            JSON.stringify({ error: 'Email (or parentEmail) is required' }),
             { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
 
         const emailContent = {
           from: 'StoryForge Privacy <privacy@storyforge.app>',
-          to: email,
+          to: targetEmail,
           subject: 'COPPA Compliance Notification - Child Privacy Protection',
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -146,7 +155,7 @@ serve(async (req) => {
           .insert({
             event_type: 'coppa_notification_sent',
             details: {
-              email,
+              email: targetEmail,
               notificationId: result.id,
               coppaDetails,
               compliance: 'COPPA'
@@ -154,7 +163,11 @@ serve(async (req) => {
           });
 
         return new Response(
-          JSON.stringify({ sent: true, notificationId: result.id }),
+          JSON.stringify({ 
+            sent: true, 
+            notificationId: result.id,
+            messageId: result.id // Backward compatibility
+          }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
