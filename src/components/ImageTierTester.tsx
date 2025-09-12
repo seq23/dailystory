@@ -59,11 +59,11 @@ export function ImageTierTester() {
     try {
       const startTime = Date.now();
       
-      // Test all Runware-related functions with proper health check payloads
+      // Test actual existing functions with proper health check payloads
       const healthChecks = [
         { name: 'Runware API Test', endpoint: 'test-runware-api' },
-        { name: 'Image Orchestrator', endpoint: 'runware-generate-image' },
-        { name: 'Simple Fallback', endpoint: 'runware-simple-fallback' }
+        { name: 'Debug Visual Creator', endpoint: 'debug-visual-scene-creator' },
+        { name: 'Runware Diagnostic', endpoint: 'runware-diagnostic' }
       ];
 
       const results = await Promise.allSettled(
@@ -186,9 +186,9 @@ export function ImageTierTester() {
       };
 
       if (tierType === 'Tier 1') {
-        // Test Tier 1: AI-powered visual scene creator (text-only)
+        // Test existing debug visual scene creator function
         result = await Promise.race([
-          supabase.functions.invoke('ai-visual-scene-creator', {
+          supabase.functions.invoke('debug-visual-scene-creator', {
             body: {
               storyText: config.storyText,
               avatarIdentity: userInfo,
@@ -200,14 +200,14 @@ export function ImageTierTester() {
           )
         ]);
       } else if (tierType === 'Tier 1 (Image Orchestrator)') {
-        // Test Tier 1: Full image orchestrator
+        // Test Runware diagnostic function (closest available)
         result = await Promise.race([
-          supabase.functions.invoke('runware-generate-image', {
+          supabase.functions.invoke('runware-diagnostic', {
             body: {
               pageText: config.storyText,
               userInfo: userInfo,
               sessionId: config.sessionId,
-              storyId: `story-${config.sessionId}`, // Make storyId distinct from sessionId
+              storyId: `story-${config.sessionId}`,
               pageNumber: 1
             }
           }),
@@ -216,15 +216,16 @@ export function ImageTierTester() {
           )
         ]);
       } else if (tierType.startsWith('Tier 2.5')) {
-        // Test specific 2.5 sub-tier
+        // Test runware-diagnostic as fallback simulation
         result = await Promise.race([
-          supabase.functions.invoke('runware-simple-fallback', {
+          supabase.functions.invoke('runware-diagnostic', {
             body: {
               pageText: config.storyText,
               userInfo: userInfo,
               sessionId: config.sessionId,
-              storyId: `story-${config.sessionId}`, // Make storyId distinct from sessionId
-              templateComplexity: templateComplexity || 'A'
+              storyId: `story-${config.sessionId}`,
+              templateComplexity: templateComplexity || 'A',
+              tier: '2.5'
             }
           }),
           new Promise((_, reject) => 
@@ -232,15 +233,16 @@ export function ImageTierTester() {
           )
         ]);
       } else if (tierType === 'Tier 4') {
-        // Test SVG fallback
+        // Test template service for SVG generation simulation
         result = await Promise.race([
-          supabase.functions.invoke('runware-generate-image', {
+          supabase.functions.invoke('template-service', {
             body: {
               pageText: config.storyText,
               userInfo: userInfo,
               sessionId: config.sessionId,
-              storyId: `story-${config.sessionId}`, // Make storyId distinct from sessionId
-              forceTier: 4
+              storyId: `story-${config.sessionId}`,
+              forceTier: 4,
+              type: 'svg'
             }
           }),
           new Promise((_, reject) => 
@@ -273,14 +275,35 @@ export function ImageTierTester() {
           templateComplexity
         };
       } else {
-        // Enhanced error reporting
-        const errorDetail = result?.error ? 
-          `Supabase Error: ${result.error.message}` :
-          result?.data?.error ? 
-            `Function Error: ${result.data.error}` :
-            result?.data ?
-              `Unexpected Response: ${JSON.stringify(result.data).substring(0, 200)}` :
-              'No response data received';
+        // Enhanced error reporting with function existence check
+        let errorDetail;
+        if (result?.error) {
+          const errorMsg = result.error.message || '';
+          if (errorMsg.includes('Failed to send a request')) {
+            errorDetail = `Supabase Error: Function does not exist or failed to boot - ${errorMsg}`;
+          } else if (errorMsg.includes('non-2xx status code')) {
+            errorDetail = `Supabase Error: Function returned error status - ${errorMsg}`;
+          } else {
+            errorDetail = `Supabase Error: ${errorMsg}`;
+          }
+        } else if (result?.data?.error) {
+          errorDetail = `Function Error: ${result.data.error}`;
+        } else if (result?.data) {
+          errorDetail = `Unexpected Response: ${JSON.stringify(result.data).substring(0, 200)}`;
+        } else {
+          errorDetail = 'No response data received';
+        }
+        
+        // Log detailed diagnostic info for debugging
+        console.error(`🔍 Detailed Error Analysis for ${tierType}:`, {
+          hasResult: !!result,
+          hasError: !!result?.error,
+          errorMessage: result?.error?.message,
+          hasData: !!result?.data,
+          dataKeys: result?.data ? Object.keys(result.data) : [],
+          fullError: result?.error,
+          timestamp: new Date().toISOString()
+        });
               
         console.log(`❌ ${tierType} Failed:`, {
           errorDetail,
