@@ -1,3 +1,4 @@
+import { supabase } from '@/integrations/supabase/client';
 /**
  * Image Fallback Service - Provides placeholder images when generation fails
  */
@@ -37,6 +38,43 @@ export class ImageFallbackService {
 
   private static debugLog(message: string, data?: any) {
     console.log(`🖼️ ImageFallback: ${message}`, data || '');
+  }
+
+  // Dynamic generation state for AI-based fallbacks
+  private static generated = false;
+  private static generating = false;
+  private static generationError: string | null = null;
+
+  /**
+   * Triggers the Supabase Edge Function to generate base64 fallback images
+   * and embeds them into this service for future use.
+   */
+  static async ensureGenerated(): Promise<void> {
+    if (this.generated || this.generating) return;
+    this.generating = true;
+    try {
+      this.debugLog('Requesting generated fallback images from edge function...');
+      const { data, error } = await supabase.functions.invoke('generate-fallback-images');
+      if (error) throw error;
+
+      const images: { base64: string }[] = (data as any)?.images || [];
+      if (!images.length) throw new Error('No images returned from generator');
+
+      // Replace placeholders with real base64 images
+      const formatted = images.map((img) => `data:image/png;base64,${img.base64}`);
+      this.FALLBACK_IMAGES_BASE64.splice(0, this.FALLBACK_IMAGES_BASE64.length, ...formatted);
+      this.generated = true;
+      this.debugLog('Fallback images generated and embedded', { count: images.length });
+
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('fallback-images-ready'));
+      }
+    } catch (err: any) {
+      this.generationError = err?.message || String(err);
+      this.debugLog('Failed to generate fallback images', this.generationError);
+    } finally {
+      this.generating = false;
+    }
   }
 
   /**
@@ -201,6 +239,8 @@ export class ImageFallbackService {
    * Returns the best fallback - always use embedded SVG for reliability
    */
   static getBestFallback(config: Partial<FallbackImageConfig> = {}): string {
+    // Kick off async generation of richer fallbacks (non-blocking)
+    try { void this.ensureGenerated(); } catch {}
     // Always use the embedded base64 SVG fallback for maximum reliability
     return this.generatePlaceholderSVG(config);
   }
