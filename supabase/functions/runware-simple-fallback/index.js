@@ -21,6 +21,15 @@ function getUltimateFallbackImage(pageNumber = 1) {
 
 // ============= LAZY LOADING FUNCTIONS FOR HEAVY DEPENDENCIES =============
 
+// Lazy vocabulary initialization
+let VOCAB = null;
+async function initVocabulary() {
+  if (VOCAB) return;
+  const mod = await import("../_shared/tier25Vocabulary.js");
+  VOCAB = mod.default;
+  console.log('🧠 Tier 2.5 vocabulary initialized');
+}
+
 async function getCharacterService() {
   try {
     const { CharacterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
@@ -318,63 +327,6 @@ const HARDCODED_STANDARD_AMERICAN_CLOTHING = [
   'classic American casual style', 'modern comfortable clothing', 'age-appropriate fashion'
 ];
 
-// ============= TIER 2.5 UNIFIED VOCABULARY - NUCLEAR INDEPENDENCE =============
-const TIER_25_UNIFIED_VOCABULARY = {
-  actions: {
-    basic: ['playing', 'running', 'jumping', 'walking', 'sitting', 'standing', 'looking', 'smiling'],
-    creative: ['drawing', 'painting', 'building', 'creating', 'crafting', 'making', 'designing'],
-    sensory: ['listening', 'watching', 'touching', 'smelling', 'tasting', 'feeling', 'sensing'],
-    states: ['thinking', 'wondering', 'dreaming', 'imagining', 'remembering', 'learning'],
-    fantasy: ['flying', 'floating', 'glowing', 'sparkling', 'shimmering', 'dancing'],
-    social: ['talking', 'laughing', 'sharing', 'helping', 'caring', 'loving'],
-    intensity: ['gently', 'carefully', 'excitedly', 'peacefully', 'energetically', 'boldly'],
-    bodyLanguage: ['smiling brightly', 'standing tall', 'sitting cross-legged', 'arms spread wide', 'head tilted thoughtfully'],
-    spatial: ['positioned in foreground', 'standing in center', 'sitting comfortably', 'moving forward confidently']
-  },
-  settings: {
-    indoor: ['room', 'house', 'school', 'library', 'kitchen', 'bedroom', 'classroom'],
-    outdoor: ['park', 'garden', 'playground', 'forest', 'beach', 'field', 'yard'],
-    specific: ['cozy corner', 'sunny spot', 'quiet place', 'bright area', 'comfortable space'],
-    fantasy: ['magical place', 'enchanted garden', 'dreamy landscape', 'wonder-filled space']
-  },
-  environments: {
-    atmosphere: ['sunny', 'bright', 'warm', 'cheerful', 'peaceful', 'cozy', 'magical'],
-    lighting: ['golden hour', 'soft lighting', 'natural light', 'warm glow', 'bright illumination'],
-    weather: ['clear skies', 'gentle breeze', 'perfect weather', 'pleasant atmosphere']
-  },
-  objectCategories: {
-    toys: ['toy', 'ball', 'doll', 'game', 'puzzle', 'blocks'],
-    nature: ['flower', 'tree', 'leaf', 'rock', 'butterfly', 'bird'],
-    books: ['book', 'story', 'journal', 'notebook', 'paper'],
-    food: ['apple', 'snack', 'lunch', 'treat', 'cookie', 'fruit']
-  },
-  contextDetection: {
-    indoor: ['inside', 'room', 'house', 'home', 'indoor', 'kitchen', 'bedroom'],
-    outdoor: ['outside', 'park', 'garden', 'playground', 'outdoor', 'yard', 'field']
-  }
-};
-
-// ============= ENHANCED COLOR DETECTION ARRAYS =============
-const EXPANDED_COLOR_ARRAY = [
-  // Primary Colors
-  'red', 'blue', 'yellow', 'green', 'orange', 'purple', 'pink', 'brown', 'black', 'white',
-  // Extended Colors  
-  'turquoise', 'coral', 'lavender', 'mint', 'peach', 'gold', 'silver', 'bronze',
-  'maroon', 'navy', 'teal', 'lime', 'magenta', 'cyan', 'beige', 'tan',
-  // Descriptive Colors
-  'bright red', 'deep blue', 'sunny yellow', 'forest green', 'soft pink', 'rich purple',
-  'warm orange', 'sky blue', 'grass green', 'snow white', 'charcoal black'
-];
-
-// ============= CLOTHING DETECTION KEYWORDS =============
-const CLOTHING_DETECTION_KEYWORDS = [
-  'shirt', 'dress', 'pants', 'shorts', 'skirt', 'jacket', 'sweater', 'hoodie',
-  'jeans', 'overalls', 'uniform', 'costume', 'pajamas', 'robe', 'coat',
-  'blouse', 'tunic', 'cardigan', 'vest', 'tank top', 'polo', 'turtleneck'
-];
-
-// ============= NUCLEAR INDEPENDENT CORE FUNCTIONS =============
-
 // ============= SEEDED RANDOM FOR CONSISTENT VARIETY =============
 
 function getSeededRandomItem(array, seed) {
@@ -392,402 +344,6 @@ function getSeededRandomItem(array, seed) {
   return array[index];
 }
 
-// ============= UNIVERSAL ATMOSPHERE ARRAYS (PURE LIGHTING/WEATHER) =============
-const UNIVERSAL_LIGHTING_ARRAYS = [
-  // Golden Hour & Warm Light (30+ options)
-  'with bright golden lighting', 'with warm afternoon sunlight', 'with cheerful morning rays',
-  'with dazzling sunshine', 'with golden hour glow', 'with brilliant daylight',
-  'with soft warm illumination', 'with gentle golden beams', 'with radiant natural light',
-  'with luminous golden atmosphere', 'with warm glowing ambiance', 'with sunny radiance',
-  'with honeyed lighting tones', 'with amber-tinted illumination', 'with sunset-golden glow',
-  'with buttery warm light', 'with caramel-toned brightness', 'with bronze lighting effects',
-  'with copper-hued illumination', 'with harvest-gold radiance', 'with champagne lighting',
-  'with peachy warm glow', 'with apricot-tinted light', 'with coral lighting tones',
-  'with rose-gold illumination', 'with blush-pink warm light', 'with dusty-rose glow',
-  'with salmon-colored brightness', 'with terracotta lighting', 'with russet warm tones',
-
-  // Cool & Soft Light (20+ options)  
-  'with soft diffused lighting', 'with gentle morning light', 'with cool blue illumination',
-  'with silver-toned brightness', 'with pearl-white glow', 'with icy-blue radiance',
-  'with moonbeam lighting', 'with starlight illumination', 'with crystalline brightness',
-  'with opal-tinted light', 'with platinum glow', 'with diamond-bright radiance',
-  'with arctic-blue lighting', 'with glacier-white illumination', 'with snow-bright glow',
-  'with mint-green lighting', 'with seafoam illumination', 'with aqua-tinted brightness',
-  'with turquoise lighting effects', 'with teal-colored glow', 'with sage-green radiance',
-
-  // Evening & Atmospheric (15+ options)
-  'with warm evening glow', 'with gentle moonlight', 'with dusky purple lighting',
-  'with twilight illumination', 'with candlelit ambiance', 'with firelight glow',
-  'with lantern lighting', 'with fairy-light sparkle', 'with string-light ambiance',
-  'with campfire radiance', 'with hearth-warm glow', 'with ember lighting',
-  'with torch-light illumination', 'with lighthouse beaming', 'with aurora lighting'
-];
-
-const UNIVERSAL_WEATHER_ARRAYS = [
-  // Clear & Pleasant (20+ options)
-  'in cheerful clear weather', 'in peaceful sunny atmosphere', 'in bright pleasant conditions',
-  'in crystal-clear skies', 'in perfect weather conditions', 'in delightful sunshine',
-  'in gorgeous clear atmosphere', 'in beautiful sunny weather', 'in ideal outdoor conditions',
-  'in magnificent clear skies', 'in spectacular weather', 'in wonderful sunny atmosphere',
-  'in glorious clear conditions', 'in perfect blue-sky weather', 'in heavenly sunshine',
-  'in pristine clear atmosphere', 'in radiant sunny conditions', 'in blissful weather',
-  'in serene clear skies', 'in tranquil sunny atmosphere',
-
-  // Gentle Weather (15+ options)  
-  'in gentle rain atmosphere', 'in peaceful snowy atmosphere', 'in fresh spring atmosphere',
-  'in cheerful summer atmosphere', 'in soft misty conditions', 'in light drizzle weather',
-  'in floating cloud atmosphere', 'in gentle breeze conditions', 'in mild weather patterns',
-  'in comfortable atmospheric conditions', 'in pleasant seasonal weather', 'in gentle wind atmosphere',
-  'in soft atmospheric conditions', 'in calm weather patterns', 'in soothing atmospheric environment'
-];
-
-// ============= UNIVERSAL SETTING ARRAYS (50+ INDOOR, 50+ OUTDOOR) =============
-const UNIVERSAL_INDOOR_SETTINGS = [
-  // Educational & Learning Spaces (15)
-  'cozy library with warm lighting', 'bright classroom with colorful displays', 'quiet study area with soft chairs',
-  'cheerful reading corner with pillows', 'modern computer lab with screens', 'creative art studio with supplies',
-  'music room with instruments', 'science lab with experiments', 'workshop area with tools',
-  'maker space with projects', 'tutoring room with whiteboards', 'quiet study hall with desks',
-  'language learning center', 'STEM laboratory space', 'creative writing room',
-
-  // Home & Family Spaces (15)
-  'warm family kitchen with island', 'cozy living room with fireplace', 'comfortable bedroom with toys',
-  'playful kids bedroom with decorations', 'sunny dining room with table', 'welcoming home office',
-  'cheerful bathroom with colorful tiles', 'basement playroom with games', 'attic hideaway with treasures',
-  'garage workshop with projects', 'mudroom with storage', 'pantry with organized shelves',
-  'laundry room with folding space', 'sunroom with plants', 'guest room with books',
-
-  // Community & Public Spaces (15)
-  'bustling community center with activities', 'quiet museum gallery with displays', 'lively children\'s theater',
-  'welcoming doctor\'s office with toys', 'colorful dentist office with games', 'cheerful hair salon with mirrors',
-  'busy grocery store with aisles', 'cozy bookstore with reading nooks', 'fun toy store with displays',
-  'modern mall with bright lights', 'comfortable waiting room with magazines', 'busy restaurant kitchen',
-  'quiet hospital room with flowers', 'lively gym with equipment', 'peaceful yoga studio',
-
-  // Creative & Activity Spaces (5)
-  'art gallery with colorful paintings', 'dance studio with mirrors', 'pottery studio with clay',
-  'photography studio with lights', 'recording studio with equipment'
-];
-
-const UNIVERSAL_OUTDOOR_SETTINGS = [
-  // Natural Environments (20)
-  'sunny backyard garden with flowering bushes', 'peaceful neighborhood park with tall trees', 'quiet forest clearing with dappled sunlight',
-  'open meadow field with wildflowers', 'sparkling pond with lily pads', 'babbling creek with smooth stones',
-  'rolling hills with green grass', 'sandy beach with gentle waves', 'mountain trail with scenic views',
-  'desert landscape with cacti', 'tropical jungle with exotic plants', 'alpine meadow with snow-capped peaks',
-  'rocky cliff overlooking ocean', 'peaceful lake with clear water', 'rushing waterfall with mist',
-  'wildflower field with butterflies', 'autumn forest with colorful leaves', 'spring orchard with blossoms',
-  'summer meadow with tall grass', 'winter wonderland with snow',
-
-  // Urban & Community Spaces (15)
-  'school playground with swings', 'residential street with leafy branches', 'busy city park with pathways',
-  'quiet suburban neighborhood', 'bustling town square with fountain', 'peaceful cemetery with old trees',
-  'lively farmers market with vendors', 'outdoor concert venue with stage', 'community garden with vegetables',
-  'local playground with colorful equipment', 'neighborhood basketball court', 'public swimming pool area',
-  'outdoor café with umbrellas', 'street festival with decorations', 'parking lot with painted lines',
-
-  // Activity & Sports Areas (10)
-  'soccer field with goal posts', 'baseball diamond with bases', 'tennis court with nets',
-  'skate park with ramps', 'bike path through woods', 'hiking trail with markers',
-  'campground with fire pits', 'picnic area with tables', 'outdoor gym with equipment',
-  'adventure playground with obstacles',
-
-  // Transportation & Travel (5)
-  'train station platform with benches', 'airport terminal with windows', 'bus stop with shelter',
-  'car parking garage with levels', 'boat dock with wooden planks'
-];
-
-// ============= UNIVERSAL ACTION TEMPLATE ARRAYS (100+ FLEXIBLE TEMPLATES) =============
-const UNIVERSAL_ACTION_TEMPLATES = [
-  // Observation & Discovery Actions (15)
-  'points excitedly at the {object}', 'gazes in wonder at the colorful {object}', 'discovers and watches the magnificent {object}',
-  'spots and admires the graceful {object}', 'notices and smiles at the lovely {object}', 'observes the {object} with curious eyes',
-  'finds and examines the interesting {object}', 'looks closely at the detailed {object}', 'studies the fascinating {object}',
-  'peers at the mysterious {object}', 'investigates the unusual {object}', 'explores around the hidden {object}',
-  'searches for the special {object}', 'hunts for the elusive {object}', 'seeks out the rare {object}',
-
-  // Interaction & Play Actions (20)
-  'plays happily with the delightful {object}', 'gently touches the soft {object}', 'carefully holds the precious {object}',
-  'lovingly pets the friendly {object}', 'feeds treats to the hungry {object}', 'shares toys with the playful {object}',
-  'chases after the quick {object}', 'follows behind the leading {object}', 'dances around the musical {object}',
-  'sings songs to the listening {object}', 'reads stories about the magical {object}', 'draws pictures of the beautiful {object}',
-  'builds castles near the patient {object}', 'creates art inspired by the {object}', 'makes friends with the kind {object}',
-  'helps care for the needy {object}', 'protects the vulnerable {object}', 'rescues the trapped {object}',
-  'guides the lost {object}', 'teaches tricks to the clever {object}',
-
-  // Movement & Energy Actions (15)
-  'runs toward the exciting {object}', 'jumps over the small {object}', 'climbs up to reach the high {object}',
-  'slides down beside the smooth {object}', 'swings near the hanging {object}', 'bounces around the bouncy {object}',
-  'rolls with the round {object}', 'spins around the central {object}', 'marches behind the leading {object}',
-  'skips alongside the cheerful {object}', 'hops toward the inviting {object}', 'gallops with the fast {object}',
-  'crawls under the low {object}', 'stretches to touch the tall {object}', 'bends down to see the tiny {object}',
-
-  // Creative & Learning Actions (20)
-  'learns new things from the wise {object}', 'practices skills with the helpful {object}', 'experiments safely with the scientific {object}',
-  'builds towers using the sturdy {object}', 'paints portraits of the colorful {object}', 'writes stories about the adventurous {object}',
-  'composes songs about the musical {object}', 'crafts decorations inspired by the {object}', 'designs patterns like the geometric {object}',
-  'solves puzzles featuring the challenging {object}', 'measures dimensions of the large {object}', 'counts quantities of the numerous {object}',
-  'sorts collections of the varied {object}', 'organizes groups of the similar {object}', 'compares features of the different {object}',
-  'studies behaviors of the active {object}', 'researches facts about the mysterious {object}', 'documents findings about the rare {object}',
-  'records observations of the changing {object}', 'analyzes patterns in the complex {object}',
-
-  // Care & Nurturing Actions (15)
-  'gently cares for the delicate {object}', 'lovingly tends to the growing {object}', 'carefully waters the thirsty {object}',
-  'warmly hugs the cuddly {object}', 'softly brushes the fluffy {object}', 'kindly feeds the hungry {object}',
-  'patiently trains the learning {object}', 'quietly comforts the scared {object}', 'gently heals the injured {object}',
-  'thoughtfully prepares food for the {object}', 'carefully cleans the dirty {object}', 'lovingly decorates the plain {object}',
-  'tenderly wraps the cold {object}', 'gently fixes the broken {object}', 'carefully transports the fragile {object}',
-
-  // Adventure & Exploration Actions (15)
-  'bravely approaches the mysterious {object}', 'courageously explores around the unknown {object}', 'adventurously investigates the hidden {object}',
-  'boldly discovers the secret {object}', 'fearlessly examines the strange {object}', 'confidently handles the challenging {object}',
-  'enthusiastically searches for the lost {object}', 'excitedly hunts for the treasure {object}', 'eagerly pursues the fleeing {object}',
-  'determinedly tracks the elusive {object}', 'persistently follows the trail of the {object}', 'carefully navigates around the dangerous {object}',
-  'skillfully avoids the tricky {object}', 'cleverly outsmarts the cunning {object}', 'successfully captures the quick {object}'
-];
-
-// DRAMATICALLY EXPANDED COLOR AND SIZE ARRAY FOR TIER 2.5
-const EXPANDED_COLOR_ARRAY = [
-  // Basic Colors
-  'red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'black', 'white', 'brown', 'gray', 'grey',
-  // Vibrant Colors
-  'bright red', 'bright blue', 'bright green', 'bright yellow', 'bright orange', 'bright purple', 'bright pink',
-  'vibrant red', 'vibrant blue', 'vibrant green', 'electric blue', 'neon green', 'hot pink', 'lime green',
-  // Pastel Colors
-  'light blue', 'light pink', 'light green', 'light yellow', 'soft blue', 'soft pink', 'soft purple',
-  'pastel blue', 'pastel pink', 'pastel yellow', 'pale blue', 'pale green', 'pale yellow',
-  // Dark Colors
-  'dark blue', 'dark green', 'dark red', 'dark purple', 'navy blue', 'forest green', 'burgundy',
-  // Metallic & Special Colors
-  'silver', 'gold', 'metallic blue', 'shiny red', 'sparkly pink', 'glittery purple', 'rainbow',
-  // Natural Colors
-  'sky blue', 'ocean blue', 'grass green', 'sunset orange', 'sunshine yellow', 'cherry red'
-];
-
-// SIZE ADJECTIVES FOR OBJECT DETECTION
-const SIZE_ADJECTIVES = [
-  'big', 'small', 'tiny', 'huge', 'large', 'little', 'giant', 'enormous', 
-  'mini', 'massive', 'microscopic', 'colossal', 'petite', 'immense'
-];
-
-// UNIFIED CLOTHING DETECTION KEYWORDS - SINGLE SOURCE OF TRUTH
-// Comprehensive clothing array used by both detectClothingFromStory() and detectAndResolveClothingColor()
-// DO NOT CREATE DUPLICATE ARRAYS - This prevents clothing detection inconsistencies
-const CLOTHING_DETECTION_KEYWORDS = [
-  // Core clothing items (from both previous arrays, deduplicated)
-  'shirt', 'dress', 'shoes', 'hat', 'jacket', 'sweater', 'pants', 'jeans',
-  'skirt', 'uniform', 'pajamas', 'coat', 'scarf', 'boots', 'sneakers',
-  'hoodie', 'shorts', 'socks', 'blouse', 'tie', 'apron', 'gloves',
-  'cap', 'helmet', 'vest', 'cardigan', 'blazer', 'overalls', 'romper',
-  'tunic', 'polo', 'turtleneck', 'tank top', 'sandals', 'slippers',
-  'belt', 'suspenders', 'bandana', 'headband', 'mittens', 'raincoat'
-];
-
-
-// ============= TIER 2.5 UNIFIED VOCABULARY SYSTEM =============
-// Nuclear Independence: Single source of truth for all scene detection and object processing
-// 
-// ✅ CONSOLIDATION COMPLETE:
-// - Eliminated ENHANCED_INDOOR_KEYWORDS (41 items) → contextDetection.indoor (25 items)
-// - Eliminated ENHANCED_OUTDOOR_KEYWORDS (50 items) → contextDetection.outdoor (25 items)
-// - Maintained EXPANDED_OBJECT_ARRAY functionality → objectCategories (400+ items)
-// - Created unified detectSceneContext() function
-// - Maintained backward compatibility with isIndoorContext()
-//
-// 📊 OPTIMIZATION RESULTS:
-// - 44% reduction in keyword arrays (91 → 50 essential items)
-// - Single source of truth for all vocabulary
-// - Improved maintainability and consistency
-// - Zero external dependencies preserved
-//
-const TIER_25_UNIFIED_VOCABULARY = {
-  // ============= UNIFIED ACTION VOCABULARY =============
-  // Consolidated from nuclear independence (23 items) + runware-simple-fallback (65+ items)
-  actions: {
-    // Basic physical actions (with all verb forms)
-    basic: [
-      'run', 'runs', 'ran', 'running', 'jump', 'jumps', 'jumped', 'jumping', 
-      'walk', 'walks', 'walked', 'walking', 'play', 'plays', 'played', 'playing',
-      'dance', 'dances', 'danced', 'dancing', 'climb', 'climbs', 'climbed', 'climbing',
-      'throw', 'throws', 'threw', 'throwing', 'catch', 'catches', 'caught', 'catching',
-      'swim', 'swims', 'swam', 'swimming', 'slide', 'slides', 'slid', 'sliding',
-      'roll', 'rolls', 'rolled', 'rolling', 'hide', 'hides', 'hid', 'hiding',
-      'dig', 'digs', 'dug', 'digging', 'kick', 'kicks', 'kicked', 'kicking'
-    ],
-    
-    // Creative & academic actions  
-    creative: [
-      'draw', 'draws', 'drew', 'drawing', 'write', 'writes', 'wrote', 'writing',
-      'build', 'builds', 'built', 'building', 'create', 'creates', 'created', 'creating',
-      'paint', 'paints', 'painted', 'painting', 'read', 'reads', 'reading',
-      'cook', 'cooks', 'cooked', 'cooking', 'study', 'studies', 'studied', 'studying'
-    ],
-    
-    // NEW: Sensory & state actions (missing from current system)
-    sensory: [
-      'see', 'sees', 'saw', 'seeing', 'hear', 'hears', 'heard', 'hearing',
-      'feel', 'feels', 'felt', 'feeling', 'smell', 'smells', 'smelled', 'smelling',
-      'taste', 'tastes', 'tasted', 'tasting', 'touch', 'touches', 'touched', 'touching'
-    ],
-    
-    // NEW: State & position actions  
-    states: [
-      'wake', 'wakes', 'woke', 'waking', 'sleep', 'sleeps', 'slept', 'sleeping',
-      'lay', 'lays', 'laid', 'laying', 'sit', 'sits', 'sat', 'sitting',
-      'stand', 'stands', 'stood', 'standing', 'lie', 'lies', 'lying'
-    ],
-    
-    // NEW: Fantasy & magical actions (for fantasy stories)
-    fantasy: [
-      'fly', 'flies', 'flew', 'flying', 'float', 'floats', 'floated', 'floating',
-      'magic', 'magical', 'transform', 'transforms', 'transformed', 'transforming',
-      'disappear', 'disappears', 'disappeared', 'disappearing', 'sparkle', 'sparkles', 'sparkling',
-      'glow', 'glows', 'glowed', 'glowing', 'enchant', 'enchants', 'enchanted', 'enchanting'
-    ],
-    
-    // Social & emotional actions
-    social: [
-      'help', 'helps', 'helped', 'helping', 'share', 'shares', 'shared', 'sharing',
-      'laugh', 'laughs', 'laughed', 'laughing', 'smile', 'smiles', 'smiled', 'smiling',
-      'hug', 'hugs', 'hugged', 'hugging', 'explore', 'explores', 'explored', 'exploring'
-    ],
-    
-    // ============= ENHANCED ACTION SECTION VOCABULARY =============
-    // NEW: Action intensity vocabulary for enhanced Action section
-    intensity: [
-      'energetically', 'gently', 'excitedly', 'peacefully', 'eagerly', 'carefully',
-      'boldly', 'quietly', 'joyfully', 'thoughtfully', 'confidently', 'gracefully',
-      'enthusiastically', 'calmly', 'playfully', 'determinedly', 'curiously', 'lovingly'
-    ],
-    
-    // NEW: Body language vocabulary for enhanced Action section (CONTEXT-AWARE EXPANSION)
-    bodyLanguage: [
-      // Basic postures
-      'arms outstretched', 'hands on hips', 'finger pointing', 'arms crossed',
-      'hands behind back', 'palms open', 'hands clasped', 'reaching upward',
-      
-      // Dynamic expressions  
-      'leaning forward eagerly', 'tilting head curiously', 'shoulders squared confidently',
-      'bouncing on toes excitedly', 'crouching down carefully', 'standing tall proudly',
-      'kneeling beside gently', 'bending over attentively'
-    ]
-  },
-
-  // ============= UNIFIED OBJECT VOCABULARY =============
-  // Consolidation of EXPANDED_OBJECT_ARRAY (400+ items) into organized categories
-  // Maintains all functionality while improving organization and searchability
-  objectCategories: {
-    // Living creatures (75+ items)
-    animals: [
-      'puppy', 'dog', 'cat', 'kitten', 'bunny', 'rabbit', 'hamster', 'guinea pig',
-      'bird', 'parrot', 'duck', 'chicken', 'horse', 'pony', 'cow', 'pig',
-      'sheep', 'goat', 'turtle', 'fish', 'frog', 'butterfly', 'bee', 'ladybug',
-      'squirrel', 'mouse', 'chipmunk', 'raccoon', 'deer', 'fox', 'owl', 'robin',
-      'cardinal', 'blue jay', 'eagle', 'dolphin', 'whale', 'seal', 'penguin',
-      'bear', 'lion', 'tiger', 'elephant', 'giraffe', 'zebra', 'monkey', 'kangaroo'
-    ],
-    
-    nature: [
-      'tree', 'flower', 'rose', 'sunflower', 'tulip', 'daisy', 'lily', 'bush',
-      'grass', 'leaf', 'branch', 'rock', 'stone', 'mountain', 'hill', 'cloud',
-      'rainbow', 'sun', 'moon', 'star', 'pond', 'river', 'ocean', 'beach'
-    ],
-
-    // Toys & play items (60+ items)
-    toys: [
-      'ball', 'doll', 'teddy bear', 'toy car', 'truck', 'train', 'airplane',
-      'blocks', 'puzzle', 'crayons', 'markers', 'paints', 'clay', 'book',
-      'game', 'bike', 'scooter', 'swing', 'slide', 'seesaw', 'kite',
-      'balloon', 'bubbles', 'frisbee', 'jump rope', 'hula hoop', 'marbles'
-    ],
-
-    // Food & kitchen items (40+ items) 
-    food: [
-      'apple', 'banana', 'orange', 'cookie', 'cake', 'ice cream', 'pizza',
-      'sandwich', 'milk', 'juice', 'water', 'bread', 'cheese', 'yogurt',
-      'carrots', 'broccoli', 'pasta', 'soup', 'cereal', 'muffin', 'pie'
-    ],
-
-    // Household items (60+ items)
-    household: [
-      'chair', 'table', 'bed', 'lamp', 'pillow', 'blanket', 'cup', 'plate',
-      'bowl', 'spoon', 'fork', 'knife', 'pot', 'pan', 'oven', 'fridge',
-      'door', 'window', 'mirror', 'clock', 'phone', 'computer', 'TV'
-    ],
-
-    // Transportation (25+ items)
-    vehicles: [
-      'car', 'bus', 'truck', 'train', 'airplane', 'boat', 'ship', 'bike',
-      'scooter', 'skateboard', 'motorcycle', 'helicopter', 'rocket', 'taxi',
-      'fire truck', 'police car', 'ambulance', 'school bus', 'van'
-    ],
-
-    // School & learning items (30+ items)
-    school: [
-      'pencil', 'pen', 'paper', 'notebook', 'book', 'backpack', 'desk',
-      'whiteboard', 'chalkboard', 'eraser', 'ruler', 'scissors', 'glue',
-      'computer', 'tablet', 'calculator', 'globe', 'map', 'calendar'
-    ],
-
-    // Sports & activities (25+ items)
-    sports: [
-      'ball', 'bat', 'glove', 'helmet', 'sneakers', 'uniform', 'goal',
-      'net', 'racket', 'paddle', 'skates', 'skateboard', 'surfboard'
-    ],
-
-    // Musical instruments (15+ items)
-    music: [
-      'piano', 'guitar', 'drums', 'violin', 'flute', 'trumpet', 'saxophone',
-      'harmonica', 'xylophone', 'tambourine', 'maracas', 'recorder'
-    ]
-  },
-
-  // ============= UNIFIED CONTEXT DETECTION VOCABULARY =============
-  // Replaces ENHANCED_INDOOR_KEYWORDS + ENHANCED_OUTDOOR_KEYWORDS
-  // Optimized for better scene context detection
-  contextDetection: {
-    // Indoor context indicators (25 essential items)
-    indoor: [
-      'kitchen', 'bedroom', 'bathroom', 'living room', 'classroom', 'library',
-      'office', 'hospital', 'store', 'restaurant', 'gym', 'theater',
-      'museum', 'house', 'home', 'school', 'building', 'room',
-      'inside', 'indoors', 'ceiling', 'floor', 'wall', 'furniture', 'table'
-    ],
-    
-    // Outdoor context indicators (25 essential items) 
-    outdoor: [
-      'park', 'garden', 'playground', 'beach', 'forest', 'mountain', 'lake',
-      'river', 'field', 'yard', 'street', 'road', 'path', 'trail',
-      'outside', 'outdoors', 'sky', 'clouds', 'trees', 'grass',
-      'flowers', 'nature', 'weather', 'sunshine', 'rain'
-    ]
-  },
-
-  // ============= ENHANCED SETTINGS VOCABULARY =============  
-  // NEW: Enhanced environment vocabulary for richer Setting section
-  environments: {
-    // Time-based settings
-    timeOfDay: [
-      'morning', 'afternoon', 'evening', 'night', 'dawn', 'dusk', 'midnight',
-      'sunrise', 'sunset', 'noon', 'twilight', 'early morning', 'late night'
-    ],
-    
-    // Weather & atmosphere  
-    atmosphere: [
-      'sunny', 'cloudy', 'rainy', 'snowy', 'windy', 'foggy', 'misty',
-      'bright', 'dark', 'warm', 'cool', 'peaceful', 'lively', 'quiet',
-      'busy', 'serene', 'magical', 'mysterious', 'cheerful', 'cozy'
-    ],
-    
-    // Lighting conditions
-    lighting: [
-      'bright sunlight', 'soft lamplight', 'golden hour glow', 'moonlight',
-      'candlelight', 'firelight', 'starlight', 'fluorescent lighting',
-      'natural light', 'artificial light', 'dim lighting', 'harsh lighting'
-    ]
-  }
-};
-
 // ============= NUCLEAR INDEPENDENT DETECTION FUNCTIONS =============
 
 function detectSceneContext(pageText) {
@@ -796,11 +352,11 @@ function detectSceneContext(pageText) {
   const lowerText = pageText.toLowerCase();
   
   // Count indoor vs outdoor indicators using unified vocabulary
-  const indoorScore = TIER_25_UNIFIED_VOCABULARY.contextDetection.indoor.reduce((score, keyword) => 
+  const indoorScore = VOCAB.TIER_25_UNIFIED_VOCABULARY.contextDetection.indoor.reduce((score, keyword) => 
     score + (lowerText.includes(keyword) ? 1 : 0), 0
   );
   
-  const outdoorScore = TIER_25_UNIFIED_VOCABULARY.contextDetection.outdoor.reduce((score, keyword) => 
+  const outdoorScore = VOCAB.TIER_25_UNIFIED_VOCABULARY.contextDetection.outdoor.reduce((score, keyword) => 
     score + (lowerText.includes(keyword) ? 1 : 0), 0
   );
   
@@ -954,7 +510,7 @@ function detectAndResolveClothingColor(pageText, baseclothing) {
   const lowerText = pageText.toLowerCase();
   
   // Find color mentions in story text
-  for (const color of EXPANDED_COLOR_ARRAY) {
+  for (const color of VOCAB.EXPANDED_COLOR_ARRAY) {
     if (lowerText.includes(color) && lowerText.includes(baseclothing)) {
       console.log(`🎨 Detected clothing color: ${color} ${baseclothing}`);
       return `${color} ${baseclothing}`;
@@ -973,7 +529,7 @@ function detectObjectsFromStory(pageText, seed) {
   const detectedObjects = [];
   
   // Search through all object categories using unified vocabulary
-  Object.values(TIER_25_UNIFIED_VOCABULARY.objectCategories).forEach(category => {
+  Object.values(VOCAB.TIER_25_UNIFIED_VOCABULARY.objectCategories).forEach(category => {
     category.forEach(object => {
       if (lowerText.includes(object)) {
         detectedObjects.push(object);
@@ -997,7 +553,7 @@ function detectActionsFromStory(pageText, seed) {
   const lowerText = pageText.toLowerCase();
   
   // Search through all action categories using unified vocabulary
-  const allActions = Object.values(TIER_25_UNIFIED_VOCABULARY.actions).flat();
+  const allActions = Object.values(VOCAB.TIER_25_UNIFIED_VOCABULARY.actions).flat();
   
   for (const action of allActions) {
     if (lowerText.includes(action)) {
@@ -1015,25 +571,25 @@ function generateSettingFromContext(pageText, seed) {
   const context = detectSceneContext(pageText);
   
   if (context === 'indoor') {
-    return getSeededRandomItem(UNIVERSAL_INDOOR_SETTINGS, seed + 'setting');
+    return getSeededRandomItem(VOCAB.UNIVERSAL_INDOOR_SETTINGS, seed + 'setting');
   } else if (context === 'outdoor') {
-    return getSeededRandomItem(UNIVERSAL_OUTDOOR_SETTINGS, seed + 'setting');
+    return getSeededRandomItem(VOCAB.UNIVERSAL_OUTDOOR_SETTINGS, seed + 'setting');
   }
   
   // Mixed or unknown context - choose randomly
-  const allSettings = [...UNIVERSAL_INDOOR_SETTINGS, ...UNIVERSAL_OUTDOOR_SETTINGS];
+  const allSettings = [...VOCAB.UNIVERSAL_INDOOR_SETTINGS, ...VOCAB.UNIVERSAL_OUTDOOR_SETTINGS];
   return getSeededRandomItem(allSettings, seed + 'setting');
 }
 
 function generateAtmosphereFromStory(pageText, seed) {
   if (!pageText || typeof pageText !== 'string') {
-    return getSeededRandomItem(UNIVERSAL_LIGHTING_ARRAYS, seed + 'atmosphere');
+    return getSeededRandomItem(VOCAB.UNIVERSAL_LIGHTING_ARRAYS, seed + 'atmosphere');
   }
   
   const lowerText = pageText.toLowerCase();
   
   // Detect time-based atmosphere cues
-  const atmosphereKeywords = TIER_25_UNIFIED_VOCABULARY.environments.atmosphere;
+  const atmosphereKeywords = VOCAB.TIER_25_UNIFIED_VOCABULARY.environments.atmosphere;
   
   for (const keyword of atmosphereKeywords) {
     if (lowerText.includes(keyword)) {
@@ -1043,7 +599,7 @@ function generateAtmosphereFromStory(pageText, seed) {
   }
   
   // Fallback to lighting arrays
-  return getSeededRandomItem(UNIVERSAL_LIGHTING_ARRAYS, seed + 'atmosphere');
+  return getSeededRandomItem(VOCAB.UNIVERSAL_LIGHTING_ARRAYS, seed + 'atmosphere');
 }
 
 // ============= NUCLEAR INDEPENDENT SCENE EXTRACTION FUNCTIONS =============
@@ -1271,10 +827,10 @@ function extractElementsFromSentenceUnified(sentence, fullText) {
   const isIndoorScene = isIndoorContext(sentence);
   
   if (isIndoorScene) {
-    result.setting = getSeededRandomItem(UNIVERSAL_INDOOR_SETTINGS, seed + '_indoor');
+    result.setting = getSeededRandomItem(VOCAB.UNIVERSAL_INDOOR_SETTINGS, seed + '_indoor');
     console.log(`🏠 Universal indoor setting selected: ${result.setting}`);
   } else {
-    result.setting = getSeededRandomItem(UNIVERSAL_OUTDOOR_SETTINGS, seed + '_outdoor');
+    result.setting = getSeededRandomItem(VOCAB.UNIVERSAL_OUTDOOR_SETTINGS, seed + '_outdoor');
     console.log(`🌳 Universal outdoor setting selected: ${result.setting}`);
   }
   
@@ -6079,6 +5635,9 @@ serve(async (req) => {
   if (req.method !== 'POST') {
     return createCorsErrorResponse('Method not allowed. Use GET for health checks or POST for image generation.', 405);
   }
+
+  // Initialize vocabulary for POST requests only
+  await initVocabulary();
 
   // Parse JSON body once
   let pageText, userInfo, sessionId, storyId, pageNumber, isGuestUser, difficultyLevel, diagnostic, characterData, templateComplexity;
