@@ -24,8 +24,8 @@ async function getSecondaryDetector() {
 
 async function getSessionManager() {
   try {
-    const { SessionStateManager } = await import("../_shared/SessionStateManager.js");
-    return SessionStateManager;
+    const { globalSessionManager } = await import("../_shared/SessionStateManager.js");
+    return globalSessionManager;
   } catch (error) {
     console.warn('SessionManager lazy load failed:', error);
     return null;

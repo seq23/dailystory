@@ -1680,6 +1680,12 @@ async function getSeededSecondaryCharacters(sentence, sessionId, pageNumber) {
           secondaryElements.slice(0, 4).map(async (el) => {
             if (el.type === 'secondary_character') {
           try {
+            const CharacterService = await getCharacterService();
+            if (!CharacterService) {
+              console.warn('CharacterService not available for secondary character');
+              return `${el.name} (fallback)`;
+            }
+            const characterConsistencyService = new CharacterService();
             const secondaryCharacterSeed = await characterConsistencyService.getSecondaryCharacterSeed(
               sessionId, 
               el.name, 
@@ -5031,14 +5037,15 @@ function fillPremiumTemplate(
     // ============= ANALYZE PAGE TEXT FOR VISUAL DETAILS =============
     // Add visual detail analysis for consistent object tracking across tiers
     try {
-      // Adapted to promise chain to avoid await in non-async function context
-      import('../_shared/VisualDetailTracker.js')
-        .then(({ VisualDetailTracker }) => VisualDetailTracker.analyzeTextForDetails(
+      const VisualTracker = await getVisualTracker();
+      if (VisualTracker) {
+        VisualTracker.analyzeTextForDetails(
           sessionId || 'tier25-session', 
           pageText || processedPageText, 
           userInfo?.pageNumber || 1, 
           finalMapping?.character || 'child'
-        ))
+        );
+      }
         .then(() => {
           console.log(`🔍 Tier 2.5A: Page text analyzed for visual details`);
         })
@@ -5333,14 +5340,15 @@ function fillPremiumTemplate(
     // ============= PAGE TEXT ANALYSIS FOR VISUAL DETAILS =============
     // Analyze current page text for visual details before building colored objects
     try {
-      // Adapted to promise chain to avoid await in non-async function context
-      import('../_shared/VisualDetailTracker.js')
-        .then(({ VisualDetailTracker }) => VisualDetailTracker.analyzeTextForDetails(
+      const VisualTracker = await getVisualTracker();
+      if (VisualTracker) {
+        VisualTracker.analyzeTextForDetails(
           sessionId || 'fallback-session', 
           pageText, 
           1, // Default to page 1 for tier 2.5A
           userInfo?.avatar?.type || 'child'
-        ))
+        );
+      }
         .then(() => {
           console.log(`🔍 Tier 2.5A: Page text analyzed for visual details`);
         })
@@ -5355,14 +5363,13 @@ function fillPremiumTemplate(
     // Add persistent colored objects from VisualDetailTracker BEFORE template processing
     let coloredObjects = '';
     try {
-      // Adapted to promise chain to avoid await in non-async function context
-      import('../_shared/VisualDetailTracker.js')
-        .then(({ VisualDetailTracker }) => VisualDetailTracker.buildObjectDescription(sessionId || 'fallback-session'))
-        .then((storedObjects) => {
-          coloredObjects = storedObjects || '';
-          
-          if (coloredObjects) {
-            console.log(`🎨 Tier 2.5A: Integrated colored objects: ${coloredObjects}`);
+      const VisualTracker = await getVisualTracker();
+      if (VisualTracker) {
+        const storedObjects = await VisualTracker.buildObjectDescription(sessionId || 'fallback-session');
+        coloredObjects = storedObjects || '';
+        
+        if (coloredObjects) {
+          console.log(`🎨 Tier 2.5A: Integrated colored objects: ${coloredObjects}`);
           }
         })
         .catch((error) => {
