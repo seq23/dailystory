@@ -1,13 +1,14 @@
-// Redeploy touch: 2025-09-12T18:45:32Z - Force complete rebuild
-console.log("[runware-simple-fallback] Loaded: 2025-09-12T18:45:32Z");
-// ============= TIER 2.5 NUCLEAR INDEPENDENCE - HARDCODED NEGATIVE PROMPT SYSTEM =============
-// Nuclear independence achieved - all dependencies removed, hardcoded arrays implemented
+// ============= TIER 2.5 NUCLEAR TEMPLATE SYSTEM =============
+// Documentation: docs/IMAGE_GENERATION_SYSTEM_OVERVIEW.md
+// Regression Guide: docs/RUNWARE_FALLBACK_REGRESSION_PREVENTION.md
+// API Reference: docs/IMAGE_GENERATION_API_REFERENCE.md
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.js";
 import { getStyleFramework } from '../_shared/styleFrameworks.js';
 import { CULTURAL_LANDMARKS, getCulturalLandmarks } from '../_shared/culturalLandmarks.js';
 
 
-// ============= CONSOLIDATED CULTURAL ARRAYS IMPORT WITH DEFENSIVE LOADING =============
+// Cultural arrays with defensive loading
 let CULTURAL_ARRAYS = null;
 let culturalArraysPromise = null;
 
@@ -15,8 +16,7 @@ let culturalArraysPromise = null;
 function getCulturalArrays() {
   if (CULTURAL_ARRAYS) return CULTURAL_ARRAYS;
   
-  // If arrays haven't been loaded yet, return a basic fallback
-  console.warn('⚠️ CULTURAL_ARRAYS not loaded yet, using basic fallback');
+  console.warn('CULTURAL_ARRAYS not loaded yet, using basic fallback');
   return { 
     HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES: { girls: [], boys: [] },
     HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES: [],
@@ -33,10 +33,10 @@ async function initCulturalArrays() {
     try {
       const mod = await import('../_shared/tier25Vocabulary.js');
       CULTURAL_ARRAYS = mod.CULTURAL_ARRAYS;
-      console.log('✅ CULTURAL_ARRAYS loaded successfully');
+      console.log('CULTURAL_ARRAYS loaded successfully');
       return CULTURAL_ARRAYS;
     } catch (error) {
-      console.warn('⚠️ Failed to load CULTURAL_ARRAYS, using fallback:', error);
+      console.warn('Failed to load CULTURAL_ARRAYS, using fallback:', error);
       CULTURAL_ARRAYS = { 
         HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES: { girls: [], boys: [] },
         HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES: [],
@@ -57,18 +57,16 @@ const CULTURAL_ARRAYS_GETTER = new Proxy({}, {
   }
 });
 
-// ============= LAZY LOADING FUNCTIONS FOR HEAVY DEPENDENCIES =============
-
-// Lazy vocabulary initialization with defensive loading
+// Lazy loading functions
 let VOCAB = null;
 async function initVocabulary() {
   if (VOCAB) return;
   try {
     const mod = await import("../_shared/tier25Vocabulary.js");
     VOCAB = mod.default;
-    console.log('✅ Tier 2.5 vocabulary initialized');
+    console.log('Tier 2.5 vocabulary initialized');
   } catch (error) {
-    console.warn('⚠️ Failed to load vocabulary, using minimal fallback:', error);
+    console.warn('Failed to load vocabulary, using minimal fallback:', error);
     VOCAB = { basic: 'fallback' }; // Minimal fallback to prevent crashes
   }
 }
@@ -143,31 +141,20 @@ function createCorsOptionsResponse() {
   return new Response(null, { headers: corsHeaders });
 }
 
-// ============= TIER 2.5 NUCLEAR INDEPENDENCE - ALL CONSTANTS FIRST =============
-// All style settings and negative prompts are now imported from _shared/styleFrameworks.js
-
-// ============= RUNWARE-ALIGNED TEMPLATE STRUCTURE - RUNWARE OPTIMAL + STORY LENGTH OPTIMAL =============
+// Template structures - see docs/RUNWARE_FALLBACK_REGRESSION_PREVENTION.md
 const PREMIUM_PROMPT_TEMPLATES = {
-  // 🚨 REGRESSION PREVENTION: NEVER CHANGE THIS ORDER FOR LEVELS 0-1
-  // RUNWARE OPTIMAL: Technical first for better processing
-  // STORY LENGTH OPTIMAL: Narrative early for simpler stories
-  // DO NOT MODIFY this order for beginner/easy levels
-  // {preserved_words} - Exact words from pageText preserved using word boundaries
+  // Template order critical for performance - see docs/REGRESSION_PREVENTION_GUIDE.md
   beginner: "Technical: {frameworkPrompt}, {cameraDirective}. Narrative: {pageText}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion}. Action: {scene}, {action_intensity}, {spatial_positioning}, {object_interaction}, {body_language}. Composition: {spatial_composition}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {colored_objects}, {sensory_details}. Context: {community_context}, {secondary_characters}. Preserved: {preserved_words}",
   easy: "Technical: {frameworkPrompt}, {cameraDirective}. Narrative: {pageText}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion}. Action: {scene}, {action_intensity}, {spatial_positioning}, {object_interaction}, {body_language}. Composition: {spatial_composition}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {colored_objects}, {sensory_details}. Context: {community_context}, {secondary_characters}. Preserved: {preserved_words}",
   
-  // 🚨 REGRESSION PREVENTION: NEVER CHANGE THIS ORDER FOR LEVELS 2-4
-  // RUNWARE OPTIMAL: Technical first, narrative last for complex stories
-  // STORY LENGTH OPTIMAL: Technical setup before complex narrative
-  // DO NOT MODIFY this order for medium/hard/expert levels
+  // Advanced levels use technical-first order
   medium: "Technical: {frameworkPrompt}, {cameraDirective}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion}. Action: {scene}, {action_intensity}, {spatial_positioning}, {object_interaction}, {body_language}. Composition: {spatial_composition}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {colored_objects}, {sensory_details}. Context: {community_context}, {secondary_characters}. Preserved: {preserved_words}. Narrative: {pageText}",
   hard: "Technical: {frameworkPrompt}, {cameraDirective}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion}. Action: {scene}, {action_intensity}, {spatial_positioning}, {object_interaction}, {body_language}. Composition: {spatial_composition}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {colored_objects}, {sensory_details}. Context: {community_context}, {secondary_characters}. Preserved: {preserved_words}. Narrative: {pageText}",
   expert: "Technical: {frameworkPrompt}, {cameraDirective}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion}. Action: {scene}, {action_intensity}, {spatial_positioning}, {object_interaction}, {body_language}. Composition: {spatial_composition}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {colored_objects}, {sensory_details}. Context: {community_context}, {secondary_characters}. Preserved: {preserved_words}. Narrative: {pageText}"
 };
 
-// ============= BASIC PROMPT TEMPLATES (TIER 1.5 / 2.5B) - SIMPLIFIED SEMANTIC STRUCTURE =============
+// Basic prompt templates
 const BASIC_PROMPT_TEMPLATES = {
-  // 3-SECTION STRUCTURE: PRIMARY SCENE → VISUAL COMPONENTS → BRAND SUFFIX
   beginner: "Primary Scene: {pageText}. Visual Components: {character} {age} with {hair}, {features} {subject} {action} with {emotion} {secondary_characters} with {colored_objects} in {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}",
   easy: "Primary Scene: {pageText}. Visual Components: {character} {age} with {hair}, {features} {subject} {action} with {emotion} {secondary_characters} with {colored_objects} in {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}",
   medium: "Primary Scene: {pageText}. Visual Components: {character} {age} with {hair}, {features} {subject} {action} with {emotion} {secondary_characters} with {colored_objects} in {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}",
@@ -178,18 +165,7 @@ const BASIC_PROMPT_TEMPLATES = {
 // AFRICAN AMERICAN ARRAYS - Now using consolidated source from tier25Vocabulary.js
 // Note: Arrays moved to CULTURAL_ARRAYS for single source of truth
 
-// CLOTHING DETECTION SYSTEM - REGRESSION PREVENTION COMMENTS
-// 
-// CRITICAL: The current system uses detectClothingFromStory() to extract clothing from story text
-// This provides more contextual and story-appropriate clothing than hardcoded arrays
-// ALL CHARACTERS (regardless of ethnicity) use story-based clothing detection for better narrative consistency
-// 
-// HARDCODED_STANDARD_AMERICAN_CLOTHING exists below but is currently UNUSED - kept for potential future standardization
-// DO NOT CHANGE WITHOUT TESTING: Any modifications to clothing detection affect all character generation
-//
-// REMOVED LIMITED CULTURAL ARRAYS - LET RUNWARE DECIDE THEIR LOOK
-// Hispanic/Latino, Chinese/Asian, and Middle Eastern arrays removed
-// Only African American arrays maintained for detailed representation
+// Clothing detection uses story-based extraction for narrative consistency
 
 // STANDARD AMERICAN ARRAYS (Hair array removed - AI handles generation)
 
@@ -278,7 +254,7 @@ function generateAfricanAmericanCharacter(gender, seed, difficulty, pageText) {
   const features = getSeededRandomItem(CULTURAL_ARRAYS_GETTER.HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES, seed + 'features');
   const emotion = getSeededRandomItem(VOCAB.UNIVERSAL_EMOTION_ARRAYS, seed + 'emotion');
   
-  console.log('✅ African American character generated successfully');
+  console.log('African American character generated successfully');
   
   return {
     character: gender === 'boy' ? 'boy' : 'girl',
@@ -301,7 +277,7 @@ function generateStandardAmericanCharacter(gender, seed, difficulty, pageText) {
   const hair = 'with natural hair';  
   const features = 'with friendly features';
   
-  console.log('✅ Standard American character generated successfully');
+  console.log('Standard American character generated successfully');
   
   return {
     character: gender === 'boy' ? 'boy' : 'girl', 
@@ -775,7 +751,7 @@ function inferContextualSetting(baseSetting, objects, pageText, sessionId) {
     return baseSetting;
     
   } catch (error) {
-    console.warn('⚠️ Contextual setting inference error:', error);
+    console.warn('Contextual setting inference error:', error);
     return baseSetting;
   }
 }
@@ -835,7 +811,7 @@ function expandActionWithContext(baseAction, objects, pageText, setting) {
     return expandActionToPhrase(baseAction, objects, pageText);
     
   } catch (error) {
-    console.warn('⚠️ Contextual action enhancement error:', error);
+    console.warn('Contextual action enhancement error:', error);
     return expandActionToPhrase(baseAction, objects, pageText);
   }
 }
@@ -854,7 +830,7 @@ function generateSpatialComposition(action, objects, setting, pageText) {
     const seed = action + objects + setting + pageText;
     return getSeededRandomItem(spatialTemplates, seed);
   } catch (error) {
-    console.warn('⚠️ Spatial composition generation error:', error);
+    console.warn('Spatial composition generation error:', error);
     return 'character prominently featured in foreground';
   }
 }
@@ -873,7 +849,7 @@ function inferAtmosphereFromContext(pageText, setting, action) {
     const seed = pageText + setting + action;
     return getSeededRandomItem(atmosphereTemplates, seed);
   } catch (error) {
-    console.warn('⚠️ Atmosphere inference error:', error);
+    console.warn('Atmosphere inference error:', error);
     return 'warm, inviting atmosphere';
   }
 }
@@ -4138,21 +4114,7 @@ async function fillPremiumTemplate(
       };
     }
     
-    // ============= MASTER PLAN PHASE 3: TEMPLATE VARIABLE SCOPE FIX =============
-    // Get style framework settings using nuclear independence - MOVED TO BEFORE TEMPLATE FILLING
-    // 
-    // ========== NUCLEAR STYLE SETTINGS - Enhanced Framework Prompts ==========
-    // CRITICAL: This array MUST be defined before line 2054 (Raw PageText Fallback)
-    // 
-    // ⚠️  REGRESSION PREVENTION - CRITICAL DEPENDENCIES ⚠️
-    // - Moving this after line 2054 breaks emergency template generation
-    // - Removing frameworkPrompt properties breaks template construction  
-    // - Changing difficulty keys affects template selection logic
-    // - Used by fillPremiumTemplate function (called at line 2842)
-    // - Used by emergency fallback system at line 2054
-    //
-    // 🎨 NUCLEAR STYLE SETTINGS MOVED TO TOP - DUPLICATED DEFINITION REMOVED 🎨
-    // (Main definition moved to line ~2565 for early access)
+    // Style framework settings
     
     const styleFramework = getStyleFramework(safeDifficulty);
     console.log('✅ Style framework applied from shared source:', styleFramework.name);
@@ -4205,8 +4167,7 @@ async function fillPremiumTemplate(
       }
     }
     
-    // ============= PHASE 3: ADD NEW SEMANTIC PLACEHOLDERS =============
-    // 🚨 REGRESSION PREVENTION: All new placeholders must handle null/undefined gracefully
+    // Extract semantic placeholders
     // Extract new semantic placeholders from story content
     const atmosphere = extractAtmosphere(pageText, safeScene, enhancedSetting);
     const props = extractProps(pageText, safeScene);

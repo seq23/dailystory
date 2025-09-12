@@ -1,7 +1,5 @@
-/**
- * Character Consistency Service
- * Handles character generation, visual detail tracking, and consistency management
- */
+// ============= CHARACTER CONSISTENCY SERVICE =============
+// See: docs/IMAGE_GENERATION_SYSTEM_OVERVIEW.md
 
 export class CharacterConsistencyService {
   private static instance: CharacterConsistencyService;
@@ -34,9 +32,9 @@ export class CharacterConsistencyService {
         timestamp: Date.now()
       });
 
-      console.log(`🎨 Visual details analyzed for page ${pageNumber}:`, details);
+      console.log(`Visual details analyzed for page ${pageNumber}:`, details);
     } catch (error) {
-      console.warn('⚠️ Visual detail analysis failed:', error);
+      console.warn('Visual detail analysis failed:', error);
     }
   }
 
@@ -60,7 +58,7 @@ export class CharacterConsistencyService {
       const uniqueObjects = [...new Set(sessionObjects)];
       return uniqueObjects.slice(0, 3).join(', '); // Limit to 3 objects
     } catch (error) {
-      console.warn('⚠️ Colored objects retrieval failed:', error);
+      console.warn('Colored objects retrieval failed:', error);
       return '';
     }
   }
@@ -122,7 +120,7 @@ export class CharacterConsistencyService {
     });
 
     keysToDelete.forEach(key => this.visualDetailCache.delete(key));
-    console.log(`🧹 Cleared visual details for session: ${sessionId}`);
+    console.log(`Cleared visual details for session: ${sessionId}`);
   }
 
   /**
