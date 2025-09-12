@@ -21,18 +21,31 @@ function getUltimateFallbackImage(pageNumber = 1) {
   return selectedImage;
 }
 
-// ============= CONSOLIDATED CULTURAL ARRAYS IMPORT =============
-import { CULTURAL_ARRAYS } from '../_shared/tier25Vocabulary.js';
+// ============= CONSOLIDATED CULTURAL ARRAYS IMPORT WITH DEFENSIVE LOADING =============
+let CULTURAL_ARRAYS = null;
+try {
+  const mod = await import('../_shared/tier25Vocabulary.js');
+  CULTURAL_ARRAYS = mod.CULTURAL_ARRAYS;
+  console.log('✅ CULTURAL_ARRAYS loaded successfully');
+} catch (error) {
+  console.warn('⚠️ Failed to load CULTURAL_ARRAYS, using fallback:', error);
+  CULTURAL_ARRAYS = { AFRICAN_AMERICAN_FEATURES: [] }; // Minimal fallback
+}
 
 // ============= LAZY LOADING FUNCTIONS FOR HEAVY DEPENDENCIES =============
 
-// Lazy vocabulary initialization
+// Lazy vocabulary initialization with defensive loading
 let VOCAB = null;
 async function initVocabulary() {
   if (VOCAB) return;
-  const mod = await import("../_shared/tier25Vocabulary.js");
-  VOCAB = mod.default;
-  console.log('🧠 Tier 2.5 vocabulary initialized');
+  try {
+    const mod = await import("../_shared/tier25Vocabulary.js");
+    VOCAB = mod.default;
+    console.log('✅ Tier 2.5 vocabulary initialized');
+  } catch (error) {
+    console.warn('⚠️ Failed to load vocabulary, using minimal fallback:', error);
+    VOCAB = { basic: 'fallback' }; // Minimal fallback to prevent crashes
+  }
 }
 
 async function getCharacterService() {

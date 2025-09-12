@@ -752,17 +752,33 @@ async function callOpenAIWithFallback(messages, timeout = 6000, requestId, avata
 serve(async (req) => {
   const requestId = Math.random().toString(36).substring(2, 10);
   console.log(`🚀 [${requestId}] ai-visual-scene-creator: ${req.method} ${req.url}`);
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     console.log(`✅ [${requestId}] CORS preflight handled`);
     return createCorsOptionsResponse();
   }
 
-  // Handle health check requests
+  // Handle GET health check BEFORE any JSON parsing
+  if (req.method === 'GET' || req.url.includes('/health')) {
+    console.log(`🩺 [${requestId}] GET health check request`);
+    const openaiApiKey = Deno.env.get('OPENAI_API_KEY')?.trim();
+    return createCorsResponse({
+      status: 'healthy',
+      service: 'ai-visual-scene-creator',
+      tier: '1',
+      timestamp: new Date().toISOString(),
+      version: '2.1.5-tier-fallback-system',
+      openaiApiKeyPresent: !!openaiApiKey,
+      openaiKeyLength: openaiApiKey ? openaiApiKey.length : 0
+    });
+  }
+
+  // Handle POST health check requests with JSON body
   try {
     const body = await req.json().catch(() => ({}));
     if (body.healthCheck || body.diagnosticMode) {
-      console.log(`🩺 [${requestId}] Health check request received`, body);
+      console.log(`🩺 [${requestId}] POST health check request received`, body);
       return createCorsResponse({
         healthy: true,
         service: 'ai-visual-scene-creator',
@@ -778,20 +794,6 @@ serve(async (req) => {
     
     // Continue with normal request processing
     const { storyText, userInfo, avatarIdentity, sessionId } = body;
-
-  // Handle health check endpoint with OpenAI diagnostics
-  if (req.method === 'GET' || req.url.includes('/health')) {
-    const openaiApiKey = Deno.env.get('OPENAI_API_KEY')?.trim();
-    return createCorsResponse({
-      status: 'healthy',
-      service: 'ai-visual-scene-creator',
-      tier: '1',
-      timestamp: new Date().toISOString(),
-      version: '2.1.5-tier-fallback-system',
-      openaiApiKeyPresent: !!openaiApiKey,
-      openaiKeyLength: openaiApiKey ? openaiApiKey.length : 0
-    });
-  }
 
   return EdgeErrorHandler.withPerformanceTracking(
     'ai-visual-scene-creator',
