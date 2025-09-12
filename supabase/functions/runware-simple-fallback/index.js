@@ -5818,38 +5818,6 @@ serve(async (req) => {
     }
     
     console.log(`🛡️ Tier 2.5: Processing page ${pageNumber} for session ${sessionId}`);
-    const runwareApiKey = Deno.env.get('RUNWARE_API_KEY');
-    return createCorsResponse({
-      status: 'healthy',
-      service: 'runware-simple-fallback',
-      timestamp: new Date().toISOString(),
-      apiKeyPresent: !!runwareApiKey,
-      version: '2.5-nuclear-independence'
-    });
-  }
-
-  // Handle health check in POST body
-  try {
-    const body = await req.json();
-    if (body?.healthCheck) {
-      const runwareApiKey = Deno.env.get('RUNWARE_API_KEY');
-      return createCorsResponse({
-        status: 'healthy',
-        service: 'runware-simple-fallback',
-        timestamp: new Date().toISOString(),
-        apiKeyPresent: !!runwareApiKey,
-        version: '2.5-nuclear-independence'
-      });
-    }
-    
-    // Restore body for normal processing
-    req = new Request(req.url, {
-      method: req.method,
-      headers: req.headers,
-      body: JSON.stringify(body)
-    });
-  } catch (err) {
-    // Not JSON, continue normally
   }
   
   // ============= TIER TRACKING VARIABLES =============
@@ -5862,21 +5830,6 @@ serve(async (req) => {
   
   console.log('🎯 TIER 2.5 CASCADE: Initializing tier tracking system');
   
-  // Handle CORS preflight
-  if (req.method === 'OPTIONS') {
-    return createCorsOptionsResponse();
-  }
-  
-  // Handle health check endpoint
-  if (req.method === 'GET' && new URL(req.url).pathname.endsWith('/health')) {
-    return createCorsResponse({
-      status: 'healthy',
-      service: 'runware-simple-fallback',
-      tier: '2.5-nuclear-independence',
-      timestamp: new Date().toISOString(),
-      version: '3.0.1-tier-cascade-system'
-    });
-  }
   
   // 🔑 DEBUG: API Key Validation
   const runwareApiKey = Deno.env.get('RUNWARE_API_KEY');
