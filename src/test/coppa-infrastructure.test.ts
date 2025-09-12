@@ -92,13 +92,13 @@ describe('COPPA Infrastructure', () => {
 
       expect(response.success).toBe(true);
       expect(supabase.functions.invoke).toHaveBeenCalledWith(
-        'notification-service',
+        'send-coppa-notification',
         expect.objectContaining({
           body: expect.objectContaining({
-            operation: 'coppa-notification',
             parentEmail: 'parent@test.com',
             childName: 'Test Child',
-            violations: ['personal_info_name', 'personal_info_location']
+            violations: ['personal_info_name', 'personal_info_location'],
+            timestamp: expect.any(String)
           })
         })
       );
@@ -151,10 +151,9 @@ describe('COPPA Infrastructure', () => {
 
       expect(response.success).toBe(true);
       expect(supabase.functions.invoke).toHaveBeenCalledWith(
-        'notification-service',
+        'send-parental-notification',
         expect.objectContaining({
           body: expect.objectContaining({
-            operation: 'parental-notification',
             reportType: 'daily',
             incidentCount: 3
           })
