@@ -1680,12 +1680,6 @@ async function getSeededSecondaryCharacters(sentence, sessionId, pageNumber) {
           secondaryElements.slice(0, 4).map(async (el) => {
             if (el.type === 'secondary_character') {
           try {
-            const CharacterService = await getCharacterService();
-            if (!CharacterService) {
-              console.warn('CharacterService not available for secondary character');
-              return `${el.name} (fallback)`;
-            }
-            const characterConsistencyService = new CharacterService();
             const secondaryCharacterSeed = await characterConsistencyService.getSecondaryCharacterSeed(
               sessionId, 
               el.name, 
@@ -2417,7 +2411,7 @@ function generateEmergencyPrompt(userInfo) {
 
 // ============= TEMPLATE FILLING FUNCTIONS =============
 
-function fillPremiumTemplate(template, placeholders) {
+function fillBasicTemplate(template, placeholders) {
   try {
     console.log('🛡️ Tier 2.5A: Filling premium template with placeholders');
     
@@ -4308,7 +4302,7 @@ async function processWithPremiumTemplate({ prompt, userInfo, pageCount, difficu
       console.log(`[TIER 2.5A] Retrieved premium template with ${templateData.scenes.length} scenes`);
       
       // Use premium template processor
-      const pages = fillPremiumTemplate(templateData, userInfo, pageCount);
+      const pages = fillBasicTemplate(templateData, userInfo, pageCount);
       
       if (pages && pages.length > 0) {
         return {
@@ -5007,7 +5001,7 @@ function fillBasicTemplate(
 
 // ============= END BASIC TEMPLATE EXTRACTION FUNCTIONS =============
 
-function fillPremiumTemplate(
+async function fillPremiumTemplate(
   difficulty,
   userInfo,
   scene,
@@ -5039,19 +5033,18 @@ function fillPremiumTemplate(
     try {
       const VisualTracker = await getVisualTracker();
       if (VisualTracker) {
-        VisualTracker.analyzeTextForDetails(
-          sessionId || 'tier25-session', 
-          pageText || processedPageText, 
-          userInfo?.pageNumber || 1, 
-          finalMapping?.character || 'child'
-        );
-      }
-        .then(() => {
+        try {
+          await VisualTracker.analyzeTextForDetails(
+            sessionId || 'tier25-session', 
+            pageText || processedPageText, 
+            userInfo?.pageNumber || 1, 
+            finalMapping?.character || 'child'
+          );
           console.log(`🔍 Tier 2.5A: Page text analyzed for visual details`);
-        })
-        .catch((error) => {
+        } catch (error) {
           console.warn(`⚠️ Tier 2.5A: Visual detail analysis failed:`, error.message);
-        });
+        }
+      }
     } catch (error) {
       console.warn(`⚠️ Tier 2.5A: Visual detail analysis failed:`, error.message);
     }
@@ -5342,19 +5335,18 @@ function fillPremiumTemplate(
     try {
       const VisualTracker = await getVisualTracker();
       if (VisualTracker) {
-        VisualTracker.analyzeTextForDetails(
-          sessionId || 'fallback-session', 
-          pageText, 
-          1, // Default to page 1 for tier 2.5A
-          userInfo?.avatar?.type || 'child'
-        );
-      }
-        .then(() => {
+        try {
+          await VisualTracker.analyzeTextForDetails(
+            sessionId || 'fallback-session', 
+            pageText, 
+            1, // Default to page 1 for tier 2.5A
+            userInfo?.avatar?.type || 'child'
+          );
           console.log(`🔍 Tier 2.5A: Page text analyzed for visual details`);
-        })
-        .catch((error) => {
+        } catch (error) {
           console.warn(`⚠️ Tier 2.5A: Visual detail analysis failed:`, error.message);
-        });
+        }
+      }
     } catch (error) {
       console.warn(`⚠️ Tier 2.5A: Visual detail analysis failed:`, error.message);
     }
@@ -5365,16 +5357,17 @@ function fillPremiumTemplate(
     try {
       const VisualTracker = await getVisualTracker();
       if (VisualTracker) {
-        const storedObjects = await VisualTracker.buildObjectDescription(sessionId || 'fallback-session');
-        coloredObjects = storedObjects || '';
-        
-        if (coloredObjects) {
-          console.log(`🎨 Tier 2.5A: Integrated colored objects: ${coloredObjects}`);
+        try {
+          const storedObjects = await VisualTracker.buildObjectDescription(sessionId || 'fallback-session');
+          coloredObjects = storedObjects || '';
+          
+          if (coloredObjects) {
+            console.log(`🎨 Tier 2.5A: Integrated colored objects: ${coloredObjects}`);
           }
-        })
-        .catch((error) => {
+        } catch (error) {
           console.warn(`⚠️ Tier 2.5A: VisualDetailTracker integration failed:`, error.message);
-        });
+        }
+      }
     } catch (error) {
       console.warn(`⚠️ Tier 2.5A: VisualDetailTracker integration failed:`, error.message);
     }
@@ -6278,7 +6271,7 @@ serve(async (req) => {
         console.warn('⚠️ Character consistency integration failed, using nuclear mapping:', characterError);
       }
       
-      prompt = fillPremiumTemplate(difficulty, userInfo, scene, setting, objects, secondary_characters, emotion, pageText, enhancedAvatarIdentity, contextualData.spatialComposition, contextualData.atmosphereContext);
+      prompt = await fillPremiumTemplate(difficulty, userInfo, scene, setting, objects, secondary_characters, emotion, pageText, enhancedAvatarIdentity, contextualData.spatialComposition, contextualData.atmosphereContext);
       console.log('✅ Tier 2.5A: SUCCESS (Premium Template + Character Consistency + Cultural Intelligence)');
       successfulTier = '2.5A';
       tierPath[tierPath.length - 1] = '2.5A-success';

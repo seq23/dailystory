@@ -934,8 +934,7 @@ serve(async (req) => {
           if (pageNumber > 1) {
             const SessionManager = await getSessionManager();
             if (SessionManager) {
-              const sessionManager = new SessionManager();
-              previousScene = await sessionManager.getPreviousAIScene(sessionId);
+              previousScene = await SessionManager.getPreviousAIScene(sessionId);
               console.log(`SCENE Previous scene for consistency: ${previousScene ? 'Found' : 'None'}`);
             }
           }
@@ -1160,11 +1159,12 @@ RULES:
           let updatedPrimaryScene = primaryScene;
           
           if (VisualTracker) {
-            VisualTracker.analyzeTextForDetails(sessionId, primaryScene, pageNumber);
+            await VisualTracker.analyzeTextForDetails(sessionId, primaryScene, pageNumber);
             
-            // PHASE 1.3c: Inject Consistent Visual Details into Scene
-            updatedPrimaryScene = VisualTracker.injectConsistentDetails(sessionId, primaryScene, pageNumber);
-            if (updatedPrimaryScene !== primaryScene) {
+            // PHASE 1.3c: Get Consistent Visual Details for Scene Enhancement
+            const storedDetails = await VisualTracker.getVisualDetailsForPrompt(sessionId);
+            if (storedDetails) {
+              updatedPrimaryScene = `${primaryScene}, ${storedDetails}`;
               console.log('UPDATE PHASE 1.3c: Primary scene updated with consistent visual details');
               primaryScene = updatedPrimaryScene;
             }
