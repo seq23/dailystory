@@ -60,11 +60,9 @@ export const BackendTierChecker: React.FC<BackendTierCheckerProps> = ({ onTierFo
       }
     };
 
-    // Check immediately and then every 30 seconds (reduced from 3s)
+    // EMERGENCY: Check only once on mount - no polling to prevent quota burn
     checkRecentImageCalls();
-    const interval = setInterval(checkRecentImageCalls, 30000);
-    
-    return () => clearInterval(interval);
+    // Auto-polling disabled - use manual debugging instead
   }, [onTierFound]);
 
   // This component is invisible - just for debugging

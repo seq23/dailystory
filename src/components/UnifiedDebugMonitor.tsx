@@ -116,9 +116,9 @@ export const UnifiedDebugMonitor: React.FC = () => {
       setNetworkRequests(requests);
     };
 
+    // EMERGENCY: Manual refresh only to prevent quota burn
     updateNetworkRequests();
-    const interval = setInterval(updateNetworkRequests, 2000);
-    return () => clearInterval(interval);
+    // Auto-polling disabled - use manual refresh buttons instead
   }, []);
 
   // Circuit breaker monitoring
@@ -134,9 +134,9 @@ export const UnifiedDebugMonitor: React.FC = () => {
       }
     };
 
+    // EMERGENCY: Manual refresh only to prevent quota burn  
     updateCircuitBreakerStatus();
-    const interval = setInterval(updateCircuitBreakerStatus, 5000);
-    return () => clearInterval(interval);
+    // Auto-polling disabled - use manual refresh buttons instead
   }, []);
 
   const startRecording = () => setIsRecording(true);

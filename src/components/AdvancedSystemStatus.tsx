@@ -1,7 +1,8 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, AlertTriangle, Zap, TrendingUp } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { CheckCircle, AlertTriangle, Zap, TrendingUp, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 export function AdvancedSystemStatus() {
@@ -12,31 +13,37 @@ export function AdvancedSystemStatus() {
     cultural: 'monitoring'
   });
 
-  React.useEffect(() => {
-    // Get monitoring data from backend
-    const checkSystems = async () => {
-      try {
-        const { data } = await supabase.functions.invoke('get-monitoring-data');
-        
-        if (data?.success) {
-          const { performanceMetrics, characterSeeds, activeTests } = data.data;
-          
-          setStatus({
-            performance: performanceMetrics.cacheStats.hitRate > 0.5 ? 'healthy' : 'warning',
-            character: characterSeeds.total > 0 ? 'active' : 'idle',
-            testing: activeTests.length > 0 ? 'running' : 'idle',
-            cultural: 'monitoring'
-          });
-        }
-      } catch (error) {
-        console.warn('System status check failed:', error);
-      }
-    };
+  const [manualRefreshEnabled, setManualRefreshEnabled] = React.useState(false);
 
+  const checkSystems = async () => {
+    try {
+      const { data } = await supabase.functions.invoke('get-monitoring-data');
+      
+      if (data?.success) {
+        const { performanceMetrics, characterSeeds, activeTests } = data.data;
+        
+        setStatus({
+          performance: performanceMetrics.cacheStats.hitRate > 0.5 ? 'healthy' : 'warning',
+          character: characterSeeds.total > 0 ? 'active' : 'idle',
+          testing: activeTests.length > 0 ? 'running' : 'idle',
+          cultural: 'monitoring'
+        });
+      }
+    } catch (error) {
+      console.warn('System status check failed:', error);
+    }
+  };
+
+  React.useEffect(() => {
+    // Initial check only - no auto-refresh to prevent quota burn
     checkSystems();
-    const interval = setInterval(checkSystems, 30000);
-    return () => clearInterval(interval);
-  }, []);
+    
+    // EMERGENCY: Auto-refresh disabled by default - only enable if explicitly requested and page is visible
+    if (manualRefreshEnabled && document.visibilityState === 'visible') {
+      const interval = setInterval(checkSystems, 120000); // 2 minutes if enabled
+      return () => clearInterval(interval);
+    }
+  }, [manualRefreshEnabled]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -103,10 +110,32 @@ export function AdvancedSystemStatus() {
           {getStatusBadge(status.cultural)}
         </div>
         
-        <div className="pt-2 border-t">
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <TrendingUp className="h-3 w-3" />
-            <span>All systems operational</span>
+        <div className="pt-2 border-t space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <TrendingUp className="h-3 w-3" />
+              <span>All systems operational</span>
+            </div>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={checkSystems}
+              className="h-6 px-2 text-xs"
+            >
+              <RefreshCw className="h-3 w-3 mr-1" />
+              Refresh
+            </Button>
+          </div>
+          <div className="flex items-center gap-2 text-xs">
+            <label className="flex items-center gap-1">
+              <input 
+                type="checkbox" 
+                checked={manualRefreshEnabled}
+                onChange={(e) => setManualRefreshEnabled(e.target.checked)}
+                className="w-3 h-3"
+              />
+              Live updates (2min)
+            </label>
           </div>
         </div>
       </CardContent>

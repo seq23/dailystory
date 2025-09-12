@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Download, Trash2, Shield, AlertTriangle } from 'lucide-react';
+import { Download, Trash2, Shield, AlertTriangle, RefreshCw } from 'lucide-react';
 import { useSecurityMonitoring } from '@/hooks/useSecurityMonitoring';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -21,16 +21,23 @@ export const SecurityDashboard: React.FC = () => {
   
   const { getEvents, getCriticalEvents, exportEvents, clearEvents } = useSecurityMonitoring();
 
-  useEffect(() => {
-    const refreshEvents = () => {
-      setEvents(getEvents());
-      setCriticalEvents(getCriticalEvents());
-    };
+  const [autoRefresh, setAutoRefresh] = useState(false);
 
+  const refreshEvents = () => {
+    setEvents(getEvents());
+    setCriticalEvents(getCriticalEvents());
+  };
+
+  useEffect(() => {
+    // Initial load only - no auto-refresh to prevent quota burn
     refreshEvents();
-    const interval = setInterval(refreshEvents, 5000);
-    return () => clearInterval(interval);
-  }, [getEvents, getCriticalEvents]);
+    
+    // EMERGENCY: Only auto-refresh if explicitly enabled and page is visible
+    if (autoRefresh && document.visibilityState === 'visible') {
+      const interval = setInterval(refreshEvents, 60000); // 1 minute if enabled
+      return () => clearInterval(interval);
+    }
+  }, [getEvents, getCriticalEvents, autoRefresh]);
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
@@ -131,6 +138,22 @@ export const SecurityDashboard: React.FC = () => {
               </span>
             </div>
           ))}
+        </div>
+
+        {/* Auto-refresh Control */}
+        <div className="flex items-center gap-2 text-xs border-t pt-2">
+          <label className="flex items-center gap-1">
+            <input 
+              type="checkbox" 
+              checked={autoRefresh}
+              onChange={(e) => setAutoRefresh(e.target.checked)}
+              className="w-3 h-3"
+            />
+            Live updates (1min)
+          </label>
+          <Button variant="ghost" size="sm" onClick={refreshEvents} className="ml-auto h-6 px-2">
+            <RefreshCw className="h-3 w-3" />
+          </Button>
         </div>
 
         {/* Actions */}

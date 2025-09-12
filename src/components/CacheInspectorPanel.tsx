@@ -33,14 +33,21 @@ export const CacheInspectorPanel: React.FC<CacheInspectorPanelProps> = ({
     setLastRefresh(new Date());
   };
 
-  // Auto-refresh every 5 seconds when panel is open
+  const [autoRefresh, setAutoRefresh] = useState(false);
+
+  // EMERGENCY: Auto-refresh disabled by default to prevent quota burn
   useEffect(() => {
     if (isOpen) {
+      // Initial data load only
       refreshCacheData();
-      const interval = setInterval(refreshCacheData, 5000);
-      return () => clearInterval(interval);
+      
+      // Only auto-refresh if explicitly enabled and page is visible
+      if (autoRefresh && document.visibilityState === 'visible') {
+        const interval = setInterval(refreshCacheData, 30000); // 30 seconds if enabled
+        return () => clearInterval(interval);
+      }
     }
-  }, [isOpen, userId, sessionId]);
+  }, [isOpen, userId, sessionId, autoRefresh]);
 
   const clearAllCaches = () => {
     CacheDebugger.clearAllCachesWithLogging('manual-debug-clear', sessionId);
@@ -67,25 +74,40 @@ export const CacheInspectorPanel: React.FC<CacheInspectorPanelProps> = ({
             <CardContent className="pt-0 max-h-96 overflow-y-auto">
               <div className="space-y-4">
                 {/* Control Buttons */}
-                <div className="flex gap-2">
-                  <Button 
-                    onClick={refreshCacheData} 
-                    size="sm" 
-                    variant="outline"
-                    className="flex items-center gap-1"
-                  >
-                    <RefreshCw className="h-3 w-3" />
-                    Refresh
-                  </Button>
-                  <Button 
-                    onClick={clearAllCaches} 
-                    size="sm" 
-                    variant="destructive"
-                    className="flex items-center gap-1"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                    Clear All
-                  </Button>
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <Button 
+                      onClick={refreshCacheData} 
+                      size="sm" 
+                      variant="outline"
+                      className="flex items-center gap-1"
+                    >
+                      <RefreshCw className="h-3 w-3" />
+                      Refresh
+                    </Button>
+                    <Button 
+                      onClick={clearAllCaches} 
+                      size="sm" 
+                      variant="destructive"
+                      className="flex items-center gap-1"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                      Clear All
+                    </Button>
+                  </div>
+                  
+                  {/* Auto-refresh Control */}
+                  <div className="flex items-center gap-2 text-xs">
+                    <label className="flex items-center gap-1">
+                      <input 
+                        type="checkbox" 
+                        checked={autoRefresh}
+                        onChange={(e) => setAutoRefresh(e.target.checked)}
+                        className="w-3 h-3"
+                      />
+                      Live updates (30s)
+                    </label>
+                  </div>
                 </div>
 
                 {/* Session Info */}

@@ -11,7 +11,8 @@ export interface MonitoringData {
 export function useAdvancedMonitoring(options?: { autoRefresh?: boolean; refreshInterval?: number }) {
   const [monitoringData, setMonitoringData] = useState<MonitoringData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { autoRefresh = true, refreshInterval = 60000 } = options || {};
+  // EMERGENCY: Disabled auto-refresh by default to prevent edge function quota burn
+  const { autoRefresh = false, refreshInterval = 300000 } = options || {}; // 5 minutes default
 
   const loadMonitoringData = async () => {
     try {
