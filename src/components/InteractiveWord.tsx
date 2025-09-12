@@ -523,10 +523,12 @@ export const InteractiveWord = ({
       // Removed unnecessary loading toast
       
       // Create a translation request to Supabase function
-      const { data, error } = await supabase.functions.invoke('translate-word', {
+      const { data, error } = await supabase.functions.invoke('translation-service', {
         body: {
+          operation: 'translate-word',
           word: cleanWord,
-          targetLanguage: userNativeLanguage,
+          toLanguage: userNativeLanguage,
+          fromLanguage: 'en',
           context: sentenceContext
         }
       });
@@ -1364,18 +1366,21 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
         wordData.sampleSentence || `This is the word: ${word}`
       ];
       
-      const response = await supabase.functions.invoke('translate-batch', {
+      const response = await supabase.functions.invoke('translation-service', {
         body: {
-          texts: textsToTranslate,
-          targetLanguage: userLanguage,
-          sourceLanguage: 'en',
+          operation: 'translate-batch',
+          words: textsToTranslate,
+          toLanguage: userLanguage,
+          fromLanguage: 'en',
           context: 'word_explanation'
         }
       });
       
       if (response.data?.translations) {
         const [translatedDefinition, translatedExample] = response.data.translations;
-        return `${word}. ${translatedDefinition.translatedText}. ${translatedExample.translatedText}`;
+        const defText = translatedDefinition.translatedText ?? translatedDefinition.translation ?? translatedDefinition;
+        const exText = translatedExample.translatedText ?? translatedExample.translation ?? translatedExample;
+        return `${word}. ${defText}. ${exText}`;
       }
     } catch (error) {
       console.log('Translation failed, using simple format:', error);

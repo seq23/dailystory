@@ -229,7 +229,7 @@ export class StoryContentLogger {
   static async fetchRecentImagePrompts() {
     try {
       const supabaseUrl = "https://cpzeuogomaixamrtnnmj.supabase.co";
-      const response = await fetch(`${supabaseUrl}/functions/v1/debug-recent-image-prompts?global=true&limit=6`, {
+      const response = await fetch(`${supabaseUrl}/functions/v1/unified-debug-service?operation=recent-image-prompts&global=true&limit=6`, {
         headers: {
           'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino`,
           'Content-Type': 'application/json'

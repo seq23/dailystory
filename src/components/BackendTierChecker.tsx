@@ -14,7 +14,7 @@ export const BackendTierChecker: React.FC<BackendTierCheckerProps> = ({ onTierFo
     const checkRecentImageCalls = async () => {
       try {
         // Check recent edge function calls for image generation using URL parameters
-        const { data, error } = await supabase.functions.invoke('debug-recent-image-prompts?global=true&limit=5');
+        const { data, error } = await supabase.functions.invoke('unified-debug-service?operation=recent-image-prompts&global=true&limit=5');
 
         if (data && !error) {
           if (isDebugMode) {
@@ -74,7 +74,7 @@ export const BackendTierChecker: React.FC<BackendTierCheckerProps> = ({ onTierFo
 // Helper function to manually check tier success in console
 (window as any).checkImageTier = async () => {
   try {
-    const { data, error } = await supabase.functions.invoke('debug-recent-image-prompts?global=true&limit=10');
+    const { data, error } = await supabase.functions.invoke('unified-debug-service?operation=recent-image-prompts&global=true&limit=10');
 
     if (data && !error) {
       console.log('🔍 MANUAL TIER CHECK - Recent image calls:', data);

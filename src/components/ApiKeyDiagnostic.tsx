@@ -53,7 +53,7 @@ export const ApiKeyDiagnostic: React.FC = () => {
 
       // Test 2: WebSocket authentication test
       addResult('warning', '🔐 Testing Runware WebSocket authentication...');
-      const { data: wsTest, error: wsError } = await supabase.functions.invoke('test-runware-api');
+      const { data: wsTest, error: wsError } = await supabase.functions.invoke('system-diagnostics?operation=test-runware-api');
       
       if (wsError) {
         addResult('error', `❌ WebSocket auth test failed: ${wsError.message}`, wsError);

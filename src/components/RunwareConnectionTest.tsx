@@ -24,7 +24,7 @@ export const RunwareConnectionTest: React.FC = () => {
       // Test 1: Basic WebSocket Connection
       console.log('🔍 Testing basic Runware WebSocket connection...');
       try {
-        const { data, error } = await supabase.functions.invoke('test-runware-debug');
+        const { data, error } = await supabase.functions.invoke('system-diagnostics?operation=test-runware-api');
         
         if (error) {
           testResults.push({
@@ -60,7 +60,7 @@ export const RunwareConnectionTest: React.FC = () => {
       // Test 2: Comprehensive Diagnostic
       console.log('🔍 Running comprehensive Runware diagnostic...');
       try {
-        const { data, error } = await supabase.functions.invoke('runware-diagnostic');
+        const { data, error } = await supabase.functions.invoke('system-diagnostics?operation=runware-diagnostic');
         
         if (error) {
           testResults.push({

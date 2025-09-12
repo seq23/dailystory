@@ -14,7 +14,7 @@ export const InfrastructureDiagnostic: React.FC = () => {
     try {
       console.log('🔍 Running infrastructure diagnostic...');
       
-      const { data, error } = await supabase.functions.invoke('debug-visual-scene-creator');
+      const { data, error } = await supabase.functions.invoke('unified-debug-service?operation=visual-scene-debug');
       
       if (error) {
         setResult(`❌ Diagnostic failed: ${error.message}`);

@@ -82,13 +82,7 @@ export function DebugDataViewer() {
     console.log('🔍 [DEBUG-FRONTEND] Fetching data for session:', sessionId.trim());
     
     try {
-      const { data, error } = await supabase.functions.invoke('debug-prompt-history', {
-        body: {
-          sessionId: sessionId.trim(),
-          type: 'ai',
-          limit: 10
-        }
-      });
+      const { data, error } = await supabase.functions.invoke(`unified-debug-service?operation=prompt-history&sessionId=${encodeURIComponent(sessionId.trim())}&limit=10`);
 
       console.log('🔍 [DEBUG-FRONTEND] Response received:', { data, error });
 
