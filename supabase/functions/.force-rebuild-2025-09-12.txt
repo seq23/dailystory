@@ -1,4 +1,5 @@
-Cache buster sentinel file - Forces fresh packaging of supabase/functions folder
-Created: 2025-09-12T19:55:00Z
-Purpose: Add health check endpoints and enhanced logging to image generation functions
-Target: Improved diagnostics and request correlation across all image generation tiers
+DIAGNOSTIC DEPLOYMENT CACHE BUSTER - Forces fresh packaging of supabase/functions folder
+Created: 2025-01-23T03:00:00Z  
+Purpose: Fix translate-universal deployment packaging issue via root-level cache bust
+Target: Ensure translate-universal/index.ts is included in deployment bundle
+Status: ROOT-LEVEL + FUNCTION-LEVEL cache busting active

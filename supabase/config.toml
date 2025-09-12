@@ -1,5 +1,5 @@
 project_id = "cpzeuogomaixamrtnnmj"
-# Redeploy touch: 2025-09-12T19:26:30Z - Fix translate-universal deployment cache
+# DIAGNOSTIC DEPLOYMENT: 2025-01-23T03:00:00Z - Force translate-universal inclusion
 
 # Redeploy complete: 2025-09-12T19:25:00Z - Consolidated translation functions
 # The following functions ARE PRESENT on disk and will deploy successfully:
@@ -136,6 +136,9 @@ verify_jwt = true
 
 [functions.log-personal-info-incident]
 verify_jwt = true
+
+[functions.deployment-manifest]
+verify_jwt = false
 
 [functions.elevenlabs-tts-smart]
 verify_jwt = false

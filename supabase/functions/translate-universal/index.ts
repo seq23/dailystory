@@ -1,5 +1,5 @@
-// Redeploy touch: 2025-09-12T19:26:30Z - Fix deployment cache issue
-console.log("[translate-universal] Loaded: 2025-09-12T19:26:30Z");
+// DIAGNOSTIC REDEPLOY: 2025-01-23T03:00:00Z - Force packaging inclusion
+console.log("[translate-universal] DIAGNOSTIC LOADED: 2025-01-23T03:00:00Z");
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
 const corsHeaders = {
