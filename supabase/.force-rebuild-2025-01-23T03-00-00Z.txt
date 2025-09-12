@@ -1,5 +1,0 @@
-Package cache buster sentinel file - Forces complete repackaging of supabase/ directory
-Created: 2025-01-23T03:00:00Z
-Purpose: Diagnose and fix translate-universal/index.ts deployment packaging issue
-Target: Force clean bundling of ALL edge functions including translate-universal
-Status: Root-level cache bust to ensure complete directory inclusion

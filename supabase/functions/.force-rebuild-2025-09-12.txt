@@ -1,5 +1,0 @@
-DENO STDLIB IMPORT STANDARDIZATION - Forces fresh packaging of supabase/functions folder
-Created: 2025-01-23T03:15:00Z  
-Purpose: Fix template-service deployment by reverting incorrect .ts stdlib import back to .js
-Target: Resolve "Entrypoint path does not exist" error - Deno stdlib imports must use .js extensions
-Status: Corrected stdlib import extensions - template-service should deploy correctly
