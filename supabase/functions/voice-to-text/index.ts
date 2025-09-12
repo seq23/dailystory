@@ -41,6 +41,8 @@ serve(async (req) => {
     return new Response("ok", { headers: corsHeaders });
   }
 
+  // Force deployment sync - 2025-01-30
+
   try {
     const { audio, mimeType } = await req.json();
 

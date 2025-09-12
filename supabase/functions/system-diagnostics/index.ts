@@ -16,6 +16,8 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Force deployment sync - 2025-01-30
+
   try {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const url = new URL(req.url);
