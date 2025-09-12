@@ -273,34 +273,6 @@ const BASIC_PROMPT_TEMPLATES = {
 
 // AFRICAN AMERICAN ARRAYS - Now using consolidated source from tier25Vocabulary.js
 // Note: Arrays moved to CULTURAL_ARRAYS for single source of truth
-  "light caramel complexion with bright hazel eyes, full lips, prominent cheekbones, authentic nose shape",
-  
-  // Medium Tones
-  "medium brown skin tone with golden amber eyes, full lips, strong cheekbones, natural nose bridge",
-  "cocoa skin tone with warm honey eyes, naturally full lips, defined cheekbones, elegant nose shape",
-  "warm brown complexion with bright amber eyes, full expressive lips, sculpted cheekbones, refined nose",
-  "chestnut skin tone with hazel-brown eyes, full lips, prominent cheekbones, authentic nose bridge",
-  "amber skin tone with deep brown eyes, soft full lips, high cheekbones, natural nose shape",
-  
-  // Medium-Dark Tones
-  "deep brown skin tone with golden amber eyes, full lips, defined cheekbones, natural nose bridge",
-  "rich chocolate complexion with warm honey eyes, naturally full lips, strong cheekbones, elegant nose",
-  "mahogany skin tone with bright hazel eyes, full expressive lips, sculpted cheekbones, refined nose shape",
-  "warm deep brown skin with golden brown eyes, full lips, prominent cheekbones, authentic nose bridge",
-  "bronze skin tone with light amber eyes, soft full lips, high cheekbones, natural nose shape",
-  
-  // Dark Tones
-  "dark brown skin tone with golden amber eyes, full lips, defined cheekbones, natural nose bridge",
-  "ebony skin tone with warm honey eyes, naturally full lips, strong cheekbones, elegant nose shape",
-  "deep mahogany complexion with bright amber eyes, full expressive lips, sculpted cheekbones, refined nose",
-  "rich dark chocolate skin with golden hazel eyes, full lips, prominent cheekbones, authentic nose bridge",
-  "beautiful dark brown skin with light amber eyes, soft full lips, high cheekbones, natural nose shape",
-  "deep ebony skin tone with warm golden eyes, naturally full lips, defined cheekbones, elegant nose bridge",
-  "dark mahogany complexion with honey-colored eyes, full expressive lips, strong cheekbones, refined nose shape",
-  "rich chocolate brown skin with bright hazel eyes, full lips, sculpted cheekbones, authentic nose bridge",
-  "beautiful deep brown skin with golden amber eyes, soft full lips, prominent cheekbones, natural nose shape",
-  "stunning ebony complexion with warm amber eyes, naturally full lips, high cheekbones, elegant nose bridge"
-];
 
 // CLOTHING DETECTION SYSTEM - REGRESSION PREVENTION COMMENTS
 // 
@@ -318,30 +290,8 @@ const BASIC_PROMPT_TEMPLATES = {
 // STANDARD AMERICAN ARRAYS (Hair array removed - AI handles generation)
 
 
-const HARDCODED_STANDARD_AMERICAN_CLOTHING = [
-  'casual t-shirt and jeans', 'hoodie and sneakers', 'button-up shirt and khakis', 
-  'sweater and comfortable pants', 'polo shirt and shorts', 'flannel shirt and jeans',
-  'graphic tee and cargo shorts', 'pullover and joggers', 'camp shirt and chinos',
-  'tank top and denim shorts', 'long sleeve tee and leggings', 'sundress and sandals',
-  'blouse and skirt', 'cardigan and dress', 'tunic and leggings', 'romper and flats',
-  'striped shirt and overalls', 'peasant top and jeans', 'wrap dress and boots',
-  'knit top and wide leg pants', 'denim jacket and dress', 'crop top and high waisted jeans',
-  'oversized sweater and skinny jeans', 'off shoulder top and midi skirt', 'blazer and trousers',
-  'band tee and ripped jeans', 'vintage inspired outfit', 'bohemian style clothing',
-  'preppy casual wear', 'athletic wear and running shoes', 'cozy knit sweater and boots',
-  'plaid shirt and dark jeans', 'solid color tee and cargo pants', 'striped long sleeve and shorts',
-  'fleece jacket and sweatpants', 'henley shirt and khaki shorts', 'crew neck sweatshirt and jeans',
-  'v-neck tee and chino pants', 'quarter zip pullover and joggers', 'pocket tee and denim',
-  'thermal shirt and canvas pants', 'rugby shirt and twill shorts', 'mock turtleneck and corduroys',
-  'flannel pajama set', 'terry cloth robe and slippers', 'cotton nightgown', 'silk pajamas',
-  'jersey knit pajamas', 'plaid flannel pajama pants', 'soft cotton sleepwear', 'cozy night clothes',
-  'denim jacket and jeans', 'cardigan and slacks', 'henley shirt and chinos', 
-  'baseball cap and casual wear', 'sneakers and athletic socks', 'backpack and school clothes', 
-  'comfortable everyday outfit', 'playground-appropriate clothing', 'weekend casual wear', 
-  'school uniform alternatives', 'athletic wear and running shoes', 'layered casual look', 
-  'seasonal appropriate clothing', 'comfortable playtime outfit', 'trendy youth fashion', 
-  'classic American casual style', 'modern comfortable clothing', 'age-appropriate fashion'
-];
+// CLOTHING ARRAYS - Now using detectClothingFromStory() for narrative consistency
+// Removed HARDCODED_STANDARD_AMERICAN_CLOTHING - all clothing comes from story detection or VOCAB
 
 // ============= SEEDED RANDOM FOR CONSISTENT VARIETY =============
 
@@ -433,7 +383,7 @@ function generateAfricanAmericanCharacter(gender, seed, difficulty, pageText) {
     hair,
     features,
     emotion,
-    clothing: detectClothingFromStory(pageText) || getSeededRandomItem(HARDCODED_STANDARD_AMERICAN_CLOTHING, seed + 'clothing')
+    clothing: detectClothingFromStory(pageText) || 'comfortable casual clothing'
   };
 }
 
@@ -456,7 +406,7 @@ function generateStandardAmericanCharacter(gender, seed, difficulty, pageText) {
     hair,
     features,
     emotion,
-    clothing: detectClothingFromStory(pageText) || getSeededRandomItem(HARDCODED_STANDARD_AMERICAN_CLOTHING, seed + 'clothing')
+    clothing: detectClothingFromStory(pageText) || 'comfortable casual clothing'
   };
 }
 
@@ -474,7 +424,7 @@ function getNuclearFallbackCharacter(seed, pageText) {
     hair: 'with natural hair',
     features: 'with friendly features', 
     emotion,
-    clothing: detectClothingFromStory(pageText) || getSeededRandomItem(HARDCODED_STANDARD_AMERICAN_CLOTHING, seed + 'clothing')
+    clothing: detectClothingFromStory(pageText) || 'comfortable casual clothing'
   };
 }
 
@@ -1582,7 +1532,7 @@ function generateAfricanAmericanMapping(avatarType, seed, userInfo, avatarIdenti
     
     // CLOTHING DETECTION FROM STORY
     const storyClothing = detectClothingFromStory(userInfo?.pageText || '');
-    const finalClothing = storyClothing || getSeededRandomItem(HARDCODED_STANDARD_AMERICAN_CLOTHING, seed + '_clothing');
+    const finalClothing = storyClothing || 'comfortable casual clothing';
     
     const mapping = {
       character: `African American ${avatarType}`,
@@ -1611,7 +1561,7 @@ function generateStandardAmericanMapping(avatarType, seed, userInfo, avatarIdent
     
     // CLOTHING DETECTION FROM STORY (Primary approach)
     const storyClothing = detectClothingFromStory(userInfo?.pageText || '');
-    const finalClothing = storyClothing || getSeededRandomItem(HARDCODED_STANDARD_AMERICAN_CLOTHING, seed + '_clothing');
+    const finalClothing = storyClothing || 'comfortable casual clothing';
     
     // BASIC FEATURES (Let AI handle diversity)
     const basicFeatures = [
@@ -5219,7 +5169,7 @@ function detectClothingFromStory(text) {
   }
   
   // Fallback to basic clothing detection
-  for (const keyword of CLOTHING_DETECTION_KEYWORDS) {
+  for (const keyword of VOCAB.CLOTHING_DETECTION_KEYWORDS) {
     if (lowerText.includes(keyword)) {
       // Extract clothing context around the keyword
       const sentences = text.split(/[.!?]+/);
