@@ -759,7 +759,12 @@ serve(async (req) => {
     return createCorsOptionsResponse();
   }
 
-  // Handle GET health check BEFORE any JSON parsing
+  // Handle health check BEFORE any JSON parsing
+  if (req.method === 'HEAD') {
+    console.log(`🩺 [${requestId}] HEAD health check`);
+    return new Response(null, { headers: corsHeaders });
+  }
+
   if (req.method === 'GET' || req.url.includes('/health')) {
     console.log(`🩺 [${requestId}] GET health check request`);
     const openaiApiKey = Deno.env.get('OPENAI_API_KEY')?.trim();
@@ -805,6 +810,8 @@ serve(async (req) => {
       }
 
       // DIAGNOSTIC MODE - Handle diagnostic requests
+      const diagnostic = body?.diagnostic;
+      const test = body?.test;
       if (diagnostic || test) {
         console.log('DEBUG AI Story Enhancer DIAGNOSTIC MODE:', diagnostic || 'basic_test');
         
@@ -901,8 +908,8 @@ serve(async (req) => {
           };
         }
 
-        // Use already parsed requestBody (avoid double consumption)
-        if (!requestBody || Object.keys(requestBody).length === 0) {
+        // Use already parsed body (avoid double consumption)
+        if (!body || Object.keys(body).length === 0) {
           console.error('ERROR Request parsing failed: Body is empty or not parsed');
           throw {
             type: 'VALIDATION_ERROR',
@@ -913,26 +920,26 @@ serve(async (req) => {
         console.log('REQUEST Incoming Request Structure:', {
           method: req.method,
           headers: Object.fromEntries(req.headers.entries()),
-          bodyKeys: Object.keys(requestBody || {}),
-          bodyTypes: Object.fromEntries(Object.entries(requestBody || {}).map(([k, v]) => [k, typeof v])),
-          storyTextLength: requestBody?.storyText?.length || 0,
-          hasAvatarIdentity: !!requestBody?.avatarIdentity,
-          hasSessionId: !!requestBody?.sessionId,
-          pageInfo: `${requestBody?.pageNumber}/${requestBody?.totalPages || 'unlimited'}`
+          bodyKeys: Object.keys(body || {}),
+          bodyTypes: Object.fromEntries(Object.entries(body || {}).map(([k, v]) => [k, typeof v])),
+          storyTextLength: body?.storyText?.length || 0,
+          hasAvatarIdentity: !!body?.avatarIdentity,
+          hasSessionId: !!body?.sessionId,
+          pageInfo: `${body?.pageNumber}/${body?.totalPages || 'unlimited'}`
         });
 
         // Extract parameters with comprehensive validation and logging
-        if (!requestBody) {
+        if (!body) {
           throw {
             type: 'VALIDATION_ERROR',
             message: 'Request body is null or undefined'
           };
         }
         
-        ({ storyText, sessionId, pageNumber, totalPages, avatarIdentity, storyId, enhancedStoryData } = requestBody);
+        ({ storyText, sessionId, pageNumber, totalPages, avatarIdentity, storyId, enhancedStoryData } = body);
         
         // ✅ PHASE 1 FALLBACK - Handle both storyText and pageText parameters
-        storyText = storyText || requestBody.pageText;
+        storyText = storyText || body.pageText;
         
         console.log('PARAMS Parameter Validation:', {
           storyText: storyText ? `SUCCESS Present (${storyText.length} chars)` : 'ERROR Missing',
@@ -942,7 +949,7 @@ serve(async (req) => {
           avatarIdentity: avatarIdentity ? `SUCCESS Present (${Object.keys(avatarIdentity).length} properties)` : 'ERROR Missing avatar identity (REQUIRED)',
           storyId: storyId ? `SUCCESS Present (${storyId})` : 'WARNING Missing story ID',
           enhancedStoryData: enhancedStoryData ? 'SUCCESS Present (pre-enhanced)' : 'WARNING Will process with OpenAI',
-          fallbackUsed: requestBody.storyText ? 'No (storyText provided)' : requestBody.pageText ? 'Yes (pageText → storyText)' : 'No fallback available'
+          fallbackUsed: body.storyText ? 'No (storyText provided)' : body.pageText ? 'Yes (pageText → storyText)' : 'No fallback available'
         });
 
         if (!storyText) {
@@ -1367,7 +1374,7 @@ RULES:
         console.error('ERROR AI Story Enhancer failed - returning error to Orchestrator:', {
           errorMessage: error.message,
           errorStack: error.stack,
-          requestData: requestBody ? Object.keys(requestBody) : 'no-request-body',
+          requestData: body ? Object.keys(body) : 'no-request-body',
           dependencyStatus: importResults
         });
         
@@ -1376,7 +1383,7 @@ RULES:
           error: error.message,
           errorType: 'ai-enhancement-failed',
           processingMethod: 'openai-failed',
-          requestId: requestBody?.sessionId || 'unknown-session'
+          requestId: body?.sessionId || 'unknown-session'
         }), {
           status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }

@@ -5608,8 +5608,12 @@ serve(async (req) => {
   }
 
   // ✅ FAST HEALTH CHECK PATH - bypasses heavy modules
+  if (req.method === 'HEAD') {
+    console.log('💚 HEAD health check requested - fast response');
+    return new Response(null, { headers: corsHeaders });
+  }
   if (req.method === 'GET' || req.url.includes('/health')) {
-    console.log('💚 Health check requested - returning fast response');
+    console.log('💚 GET health check requested - returning fast response');
     const runwareApiKey = Deno.env.get('RUNWARE_API_KEY')?.trim();
     
     return createCorsResponse({
@@ -5621,7 +5625,7 @@ serve(async (req) => {
       lazy_loading: 'enabled',
       runwareApiKeyPresent: !!runwareApiKey,
       runwareKeyLength: runwareApiKey ? runwareApiKey.length : 0,
-      supported_methods: ['GET', 'POST']
+      supported_methods: ['GET', 'POST', 'HEAD']
     });
   }
 
@@ -5662,24 +5666,19 @@ serve(async (req) => {
   // Initialize vocabulary for POST requests only
   await initVocabulary();
 
-  // Parse JSON body once
+  // Extract request fields from parsed payload
   let pageText, userInfo, sessionId, storyId, pageNumber, isGuestUser, difficultyLevel, diagnostic, characterData, templateComplexity;
-  try {
-    const bodyText = await req.text();
-    const body = bodyText ? JSON.parse(bodyText) : {};
-    pageText = body.pageText;
-    userInfo = body.userInfo;
-    sessionId = body.sessionId;
-    storyId = body.storyId;
-    pageNumber = body.pageNumber ?? 1;
-    isGuestUser = body.isGuestUser ?? false;
-    difficultyLevel = body.difficultyLevel ?? 'medium';
-    diagnostic = body.diagnostic;
-    characterData = body.characterData;
-    templateComplexity = body.templateComplexity;
-  } catch (parseErr) {
-    return createCorsErrorResponse('Invalid JSON body', 400);
-  }
+  const body = payload || {};
+  pageText = body.pageText;
+  userInfo = body.userInfo;
+  sessionId = body.sessionId;
+  storyId = body.storyId;
+  pageNumber = body.pageNumber ?? 1;
+  isGuestUser = body.isGuestUser ?? false;
+  difficultyLevel = body.difficultyLevel ?? 'medium';
+  diagnostic = body.diagnostic;
+  characterData = body.characterData;
+  templateComplexity = body.templateComplexity;
 
   // Handle diagnostic requests
   if (diagnostic === 'tier_health_check') {
