@@ -8,6 +8,7 @@ const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
 };
 
 serve(async (req) => {
@@ -56,7 +57,7 @@ serve(async (req) => {
           createdAt: prompt.created_at
         })) || [];
 
-        return createCorsResponse({ aiPrompts }, 200);
+        return createCorsResponse({ data: aiPrompts }, 200);
       }
 
       case 'prompt-history': {
@@ -76,7 +77,7 @@ serve(async (req) => {
           return createCorsErrorResponse('Failed to fetch prompt history', 500);
         }
 
-        return createCorsResponse({ prompts: prompts || [] }, 200);
+        return createCorsResponse({ data: prompts || [] }, 200);
       }
 
       case 'recent-image-prompts': {
@@ -92,7 +93,7 @@ serve(async (req) => {
           return createCorsErrorResponse('Failed to fetch recent image prompts', 500);
         }
 
-        return createCorsResponse({ prompts: prompts || [] }, 200);
+        return createCorsResponse({ data: prompts || [] }, 200);
       }
 
       case 'story-processing': {
@@ -142,7 +143,7 @@ serve(async (req) => {
           return createCorsErrorResponse('Failed to fetch story processing logs', 500);
         }
 
-        return createCorsResponse({ logs: logs || [] }, 200);
+        return createCorsResponse({ data: logs || [] }, 200);
       }
 
       case 'visual-scene-debug': {

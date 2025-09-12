@@ -16,12 +16,12 @@ export class DebugConsole {
         ? `unified-debug-service?operation=recent-image-prompts&sessionId=${sessionId}&${params}`
         : `unified-debug-service?operation=recent-image-prompts&global=true&${params}`;
       
-      const { data, error } = await supabase.functions.invoke(url.split('?')[0]);
+      const { data, error } = await supabase.functions.invoke(url);
       
       if (error) throw error;
       
       console.log('🖼️ Full Image Prompts Retrieved:', data);
-      console.table(data.imagePrompts?.map((p: any) => ({
+      console.table(data.data?.map((p: any) => ({
         Tier: p.tier,
         Page: p.pageNumber,
         Success: p.success,
@@ -42,14 +42,12 @@ export class DebugConsole {
    */
   static async getAIPrompts(sessionId: string, limit = 10) {
     try {
-      const { data, error } = await supabase.functions.invoke('unified-debug-service?operation=ai-prompts', {
-        body: { sessionId, limit }
-      });
+      const { data, error } = await supabase.functions.invoke(`unified-debug-service?operation=ai-prompts&sessionId=${sessionId}&limit=${limit}`);
       
       if (error) throw error;
       
       console.log('🧠 AI Prompts Retrieved:', data);
-      console.table(data.aiPrompts?.map((p: any) => ({
+      console.table(data.data?.map((p: any) => ({
         Model: p.model,
         Page: p.pageNumber,
         Success: p.success,
@@ -60,7 +58,7 @@ export class DebugConsole {
       })));
       
       // Show full prompts in expandable groups
-      data.aiPrompts?.forEach((prompt: any, index: number) => {
+      data.data?.forEach((prompt: any, index: number) => {
         console.groupCollapsed(`🧠 AI Prompt ${index + 1} - Page ${prompt.pageNumber}`);
         console.log('System Prompt:', prompt.systemPrompt);
         console.log('User Prompt:', prompt.userPrompt);
@@ -80,9 +78,7 @@ export class DebugConsole {
    */
   static async trackStoryGeneration(sessionId: string) {
     try {
-      const { data, error } = await supabase.functions.invoke('unified-debug-service?operation=story-processing', {
-        body: { sessionId }
-      });
+      const { data, error } = await supabase.functions.invoke(`unified-debug-service?operation=story-processing&sessionId=${sessionId}`);
       
       if (error) throw error;
       
