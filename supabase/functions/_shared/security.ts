@@ -4,8 +4,6 @@
  * Provides JWT validation, rate limiting, security headers, and audit logging
  */
 
-// Redeploy touch: 2025-09-12T18:45:32Z - Force complete rebuild
-console.log("[_shared/security] Loaded: 2025-09-12T18:45:32Z");
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.55.0";
 
 // Enhanced CORS headers with security policies

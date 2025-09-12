@@ -1,5 +1,3 @@
-// Redeploy touch: 2025-09-12T18:45:32Z - Force complete rebuild
-console.log("[apply-discount-code] Loaded: 2025-09-12T18:45:32Z");
 import { serve } from "https://deno.land/std@0.190.0/http/server.js";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.js";

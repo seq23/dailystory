@@ -1,5 +1,3 @@
-// Redeploy touch: 2025-09-12T18:45:32Z - Force complete rebuild
-console.log("[send-coppa-notification] Loaded: 2025-09-12T18:45:32Z");
 import { serve } from "https://deno.land/std@0.190.0/http/server.js";
 import { Resend } from "npm:resend@2.0.0";
 
@@ -25,7 +23,7 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Force deployment sync - 2025-01-30
+  
 
   try {
     const { 

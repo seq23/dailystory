@@ -1,5 +1,3 @@
-// Redeploy touch: 2025-09-12T18:45:32Z - Force complete rebuild
-console.log("[model-performance-monitor] Loaded: 2025-09-12T18:45:32Z");
 import { serve } from "https://deno.land/std@0.168.0/http/server.js";
 import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
 import { EdgeErrorHandler } from "../_shared/errorHandling.ts";
@@ -31,7 +29,7 @@ serve(async (req) => {
     return createCorsOptionsResponse();
   }
 
-  // Force deployment sync - 2025-01-30
+  
 
   try {
     const { action, timeRange = '24h', models = ['gpt-4o-mini', 'gpt-4o'] } = await req.json();

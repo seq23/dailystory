@@ -1,5 +1,3 @@
-// Redeploy touch: 2025-09-12T18:45:32Z - Force complete rebuild
-console.log("[elevenlabs-dictionary-manager] Loaded: 2025-09-12T18:45:32Z");
 import "https://deno.land/x/xhr@0.1.0/mod.js";
 import { serve } from "https://deno.land/std@0.168.0/http/server.js";
 import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.js";
@@ -15,7 +13,7 @@ serve(async (req) => {
     return createCorsOptionsResponse();
   }
 
-  // Force deployment sync - 2025-01-30
+  
 
   try {
     const elevenLabsApiKey = Deno.env.get('ELEVENLABS_API_KEY');

@@ -1,5 +1,3 @@
-// Redeploy touch: 2025-09-12T18:45:32Z - Force complete rebuild
-console.log("[validate-discount-code] Loaded: 2025-09-12T18:45:32Z");
 import { serve } from "https://deno.land/std@0.190.0/http/server.js";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
@@ -9,7 +7,7 @@ serve(async (req) => {
     return createCorsOptionsResponse();
   }
 
-  // Force deployment sync - 2025-01-30
+  
 
   try {
     const { code } = await req.json();

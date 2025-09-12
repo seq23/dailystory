@@ -1,5 +1,3 @@
-// Redeploy touch: 2025-09-12T18:45:32Z - Force complete rebuild
-console.log("[check-subscription] Loaded: 2025-09-12T18:45:32Z");
 import { serve } from "https://deno.land/std@0.190.0/http/server.js";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
@@ -20,7 +18,7 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Force deployment sync - 2025-01-30
+  
 
   // Use the service role key to perform writes (upsert) in Supabase
   const supabaseClient = createClient(

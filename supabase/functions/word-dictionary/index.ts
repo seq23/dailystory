@@ -1,5 +1,3 @@
-// Redeploy touch: 2025-09-12T18:45:32Z - Force complete rebuild
-console.log("[word-dictionary] Loaded: 2025-09-12T18:45:32Z");
 import "https://deno.land/x/xhr@0.1.0/mod.js";
 import { serve } from "https://deno.land/std@0.168.0/http/server.js";
 
@@ -28,7 +26,7 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Force deployment sync - 2025-01-30
+  
 
   let userLanguage = 'en'; // Default fallback
   try {

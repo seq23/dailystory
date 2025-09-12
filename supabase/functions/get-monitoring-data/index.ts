@@ -1,5 +1,3 @@
-// Redeploy touch: 2025-09-12T18:45:32Z - Force complete rebuild
-console.log("[get-monitoring-data] Loaded: 2025-09-12T18:45:32Z");
 import { serve } from "https://deno.land/std@0.168.0/http/server.js";
 
 // Inline CORS headers to avoid import issues
@@ -57,7 +55,7 @@ serve(async (req) => {
     return createCorsOptionsResponse();
   }
 
-  // Force deployment sync - 2025-01-30
+  
 
   try {
     console.log('📊 Monitoring Data Export Request');

@@ -1,5 +1,3 @@
-// Redeploy touch: 2025-09-12T19:10:00Z - Force complete rebuild
-console.log("[elevenlabs-tts-smart] Loaded: 2025-09-12T19:10:00Z");
 import "https://deno.land/x/xhr@0.1.0/mod.js";
 import { serve } from "https://deno.land/std@0.168.0/http/server.js";
 // Lazy import to avoid bundling/circular deps
@@ -388,7 +386,7 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Force deployment sync - 2025-01-30
+  
 
   try {
     console.log('🔧 ElevenLabs TTS Smart function started');

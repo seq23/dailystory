@@ -1,10 +1,8 @@
-// Redeploy touch: 2025-09-12T18:45:32Z - Force complete rebuild
-console.log("[edge-connectivity-test] Loaded: 2025-09-12T18:45:32Z");
 import { createCorsResponse, createCorsOptionsResponse } from '../_shared/cors.js';
 
 console.log('Edge connectivity test function starting...');
 
-// Force deployment sync - 2025-01-30
+
 
 Deno.serve(async (req) => {
   console.log(`Connectivity test request: ${req.method} ${req.url}`);
