@@ -207,7 +207,7 @@ export function ImageTierTester() {
               pageText: config.storyText,
               userInfo: userInfo,
               sessionId: config.sessionId,
-              storyId: config.sessionId,
+              storyId: `story-${config.sessionId}`, // Make storyId distinct from sessionId
               pageNumber: 1
             }
           }),
@@ -223,7 +223,7 @@ export function ImageTierTester() {
               pageText: config.storyText,
               userInfo: userInfo,
               sessionId: config.sessionId,
-              storyId: config.sessionId,
+              storyId: `story-${config.sessionId}`, // Make storyId distinct from sessionId
               templateComplexity: templateComplexity || 'A'
             }
           }),
@@ -239,7 +239,7 @@ export function ImageTierTester() {
               pageText: config.storyText,
               userInfo: userInfo,
               sessionId: config.sessionId,
-              storyId: config.sessionId,
+              storyId: `story-${config.sessionId}`, // Make storyId distinct from sessionId
               forceTier: 4
             }
           }),

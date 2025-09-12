@@ -5787,6 +5787,11 @@ serve(async (req) => {
     });
   }
 
+  // Only parse JSON for POST requests
+  if (req.method !== 'POST') {
+    return createCorsErrorResponse('Method not allowed. Use GET for health checks or POST for image generation.', 405);
+  }
+
   try {
     const { pageText, userInfo, sessionId, storyId, pageNumber = 1, isGuestUser = false, difficultyLevel = 'medium', diagnostic } = await req.json();
     
