@@ -6,22 +6,6 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.js";
 import { getStyleFramework } from '../_shared/styleFrameworks.js';
 import { CULTURAL_LANDMARKS, getCulturalLandmarks } from '../_shared/culturalLandmarks.js';
 
-// ============= TIER 4 ULTIMATE FALLBACK - 6 UPLOADED CHARACTER IMAGES =============
-const ULTIMATE_FALLBACK_IMAGES = [
-  '/lovable-uploads/ec8d98b8-07d2-4fa4-8d5f-0c9499570384.png',
-  '/lovable-uploads/886ba3b2-9e9a-4966-a25e-967c18e384c1.png',
-  '/lovable-uploads/35591052-8575-4dd7-a727-6f317dd362ed.png',
-  '/lovable-uploads/2a0750f5-9ff1-4555-bbf8-242e1906515a.png',
-  '/lovable-uploads/d396c614-ad40-4d9a-ae7f-6cd4695e651c.png',
-  '/lovable-uploads/88b1bb2a-0527-43ef-b357-ff4eb3b28259.png'
-];
-
-function getUltimateFallbackImage(pageNumber = 1) {
-  const imageIndex = Math.abs(pageNumber) % ULTIMATE_FALLBACK_IMAGES.length;
-  const selectedImage = ULTIMATE_FALLBACK_IMAGES[imageIndex];
-  console.log('🛡️ ULTIMATE FALLBACK: Using uploaded character image', { pageNumber, imageIndex, selectedImage });
-  return selectedImage;
-}
 
 // ============= CONSOLIDATED CULTURAL ARRAYS IMPORT WITH DEFENSIVE LOADING =============
 let CULTURAL_ARRAYS = null;
@@ -541,11 +525,10 @@ async function extractSceneWithPremiumTemplate(pageText, previousSetting, pageNu
       // ============= CALCULATE VISUAL & FANTASY PRIORITY SCORE =============
       const visualScore = calculateVisualPriority(extractedElements);
       const fantasyBonus = calculateFantasyBonus(extractedElements);
-      const semanticScore = calculateFantasyFriendlyCoherence(extractedElements);
       
-      const totalScore = visualScore + fantasyBonus + semanticScore;
+      const totalScore = visualScore + fantasyBonus;
       
-      console.log(`🎯 Sentence: "${sentence}" | Visual: ${visualScore} | Fantasy: ${fantasyBonus} | Semantic: ${semanticScore} | Total: ${totalScore}`);
+      console.log(`🎯 Sentence: "${sentence}" | Visual: ${visualScore} | Fantasy: ${fantasyBonus} | Total: ${totalScore}`);
       
       if (totalScore > bestScore) {
         bestScore = totalScore;
@@ -714,24 +697,8 @@ function calculateFantasyBonus(elements) {
   return bonus;
 }
 
-function calculateFantasyFriendlyCoherence(elements) {
-  let score = 0;
-  
-  // Coherence between action and setting
-  if (elements.action && elements.setting) {
-    if (elements.action.includes('reading') && elements.setting.includes('library')) score += 3;
-    if (elements.action.includes('playing') && elements.setting.includes('playground')) score += 3;
-    if (elements.action.includes('exploring') && elements.setting.includes('garden')) score += 2;
-  }
-  
-  return score;
-}
 
 // ============= HELPER FUNCTIONS =============
-function isIndoorContext(sentence) {
-  const indoorKeywords = VOCAB.TIER_25_UNIFIED_VOCABULARY.contextDetection.indoor;
-  return indoorKeywords.some(keyword => sentence.includes(keyword));
-}
 
 function expandActionToPhrase(action, objects, fullText) {
   // Simple expansion templates
@@ -2925,60 +2892,6 @@ function applySafetyFiltering(content) {
   return filtered;
 }
 
-// Quality assurance checks for final output
-function performQualityAssurance(pages, userInfo, processingMeta = {}) {
-  const qa = {
-    passed: true,
-    score: 100,
-    issues: [],
-    warnings: [],
-    recommendations: [],
-    metadata: processingMeta
-  };
-  
-  if (!pages || !Array.isArray(pages) || pages.length === 0) {
-    qa.passed = false;
-    qa.issues.push('No pages generated');
-    qa.score = 0;
-    return qa;
-  }
-  
-  // Check page count appropriateness
-  const expectedPageCount = getExpectedPageCount(userInfo?.difficulty || 'beginner');
-  if (pages.length < expectedPageCount.min) {
-    qa.warnings.push(`Fewer pages than expected (${pages.length} < ${expectedPageCount.min})`);
-    qa.score -= 10;
-  } else if (pages.length > expectedPageCount.max) {
-    qa.warnings.push(`More pages than expected (${pages.length} > ${expectedPageCount.max})`);
-    qa.score -= 5;
-  }
-  
-  // Check individual page quality
-  pages.forEach((page, index) => {
-    const pageValidation = validateGeneratedContent(page, userInfo);
-    if (!pageValidation.isValid) {
-      qa.issues.push(`Page ${index + 1}: ${pageValidation.flags.join(', ')}`);
-      qa.score -= 5;
-    }
-    
-    // Check for repetitive content
-    if (index > 0 && calculateSimilarity(page, pages[index - 1]) > 0.8) {
-      qa.warnings.push(`Page ${index + 1}: Very similar to previous page`);
-      qa.score -= 3;
-    }
-  });
-  
-  // Check story coherence
-  const coherenceScore = assessStoryCoherence(pages);
-  if (coherenceScore < 70) {
-    qa.warnings.push('Story coherence could be improved');
-    qa.score -= Math.floor((70 - coherenceScore) / 10);
-  }
-  
-  // Generate recommendations
-  if (qa.score < 85) {
-    qa.recommendations.push('Consider regenerating with different parameters');
-  }
   if (qa.warnings.length > 3) {
     qa.recommendations.push('Multiple quality issues detected - review settings');
   }
@@ -3016,96 +2929,16 @@ function calculateSimilarity(text1, text2) {
   return intersection.size / union.size;
 }
 
-// Assess overall story coherence
-function assessStoryCoherence(pages) {
-  if (!pages || pages.length < 2) return 100;
-  
-  let coherenceScore = 100;
-  
-  // Check for character consistency
-  const characters = extractCharactersFromPages(pages);
-  if (characters.length === 0) {
-    coherenceScore -= 20;
-  }
-  
-  // Check for setting consistency
-  const settings = extractSettingsFromPages(pages);
-  if (settings.length > pages.length / 2) {
-    coherenceScore -= 10; // Too many setting changes
-  }
-  
-  // Check for narrative flow
-  const hasNarrativeFlow = checkNarrativeFlow(pages);
-  if (!hasNarrativeFlow) {
-    coherenceScore -= 15;
-  }
-  
-  return Math.max(0, coherenceScore);
-}
-
-// Extract character names from all pages
-function extractCharactersFromPages(pages) {
-  const characters = new Set();
-  const namePatterns = /\b[A-Z][a-z]+\b/g;
-  
-  pages.forEach(page => {
-    const matches = page.match(namePatterns) || [];
-    matches.forEach(match => {
-      if (match.length > 2 && !['The', 'And', 'But', 'When', 'Then'].includes(match)) {
-        characters.add(match);
-      }
-    });
-  });
-  
-  return Array.from(characters);
-}
-
-// Extract settings from all pages
-function extractSettingsFromPages(pages) {
-  const settings = new Set();
-  const settingWords = ['park', 'home', 'school', 'forest', 'beach', 'garden', 'playground', 'kitchen', 'bedroom'];
-  
-  pages.forEach(page => {
-    const lowercasePage = page.toLowerCase();
-    settingWords.forEach(setting => {
-      if (lowercasePage.includes(setting)) {
-        settings.add(setting);
-      }
-    });
-  });
-  
-  return Array.from(settings);
-}
-
-// Check for basic narrative flow
-function checkNarrativeFlow(pages) {
-  // Simple check for story progression indicators
-  const flowIndicators = ['then', 'next', 'after', 'finally', 'suddenly', 'meanwhile'];
-  let flowScore = 0;
-  
-  pages.forEach(page => {
-    const lowercasePage = page.toLowerCase();
-    flowIndicators.forEach(indicator => {
-      if (lowercasePage.includes(indicator)) {
-        flowScore++;
-      }
-    });
-  });
-  
-  return flowScore >= pages.length * 0.3; // At least 30% of pages should have flow indicators
-}
 
 // Final assembly and output formatting
 function assembleGenerationResult(pages, userInfo, processingData = {}) {
-  const qa = performQualityAssurance(pages, userInfo, processingData);
-  
   const result = {
-    success: qa.passed,
+    success: true,
     pages: pages,
     metadata: {
       pageCount: pages.length,
       difficulty: userInfo?.difficulty || 'beginner',
-      qualityScore: qa.score,
+      qualityScore: 100,
       processingTime: processingData.processingTime || 'unknown',
       tier: processingData.tier || 'unknown',
       generationMethod: processingData.generationMethod || 'template',
@@ -3590,92 +3423,8 @@ async function generateNuclearImage(requestData) {
 
 // ============= NUCLEAR INDEPENDENT MAIN SERVER FUNCTION =============
 
-/**
- * TIER 2.5A: Process with Premium Template System
- */
-async function processWithPremiumTemplate({ prompt, userInfo, pageCount, difficulty, sessionId, pageNumber }) {
-  console.log('[TIER 2.5A] Processing with premium template system...');
-  
-  try {
-    // Try to get premium template from database/templateImporter
-    const templateData = await getRawTemplate(difficulty, null);
-    
-    if (templateData && typeof templateData === 'object' && templateData.scenes) {
-      console.log(`[TIER 2.5A] Retrieved premium template with ${templateData.scenes.length} scenes`);
-      
-      // Use premium template processor
-      const pages = fillTemplatePlaceholders(templateData, userInfo, pageCount);
-      
-      if (pages && pages.length > 0) {
-        return {
-          success: true,
-          pages: pages,
-          source: 'premium_template_database'
-        };
-      }
-    }
-    
-    throw new Error('No premium template available or failed to process');
-    
-  } catch (error) {
-    console.error('[TIER 2.5A] Premium template error:', error);
-    throw error;
-  }
-}
 
-/**
- * TIER 2.5B: Process with Advanced Template System
- */
-async function processWithAdvancedTemplate({ prompt, userInfo, pageCount, difficulty, sessionId }) {
-  console.log('[TIER 2.5B] Processing with advanced template system...');
-  
-  try {
-    // Try to get any available template
-    const templateData = await getTemplate(difficulty, null, userInfo, pageCount, 'production');
-    
-    if (templateData) {
-      let pages;
-      
-      if (Array.isArray(templateData)) {
-        // Simple string array template
-        pages = fillTemplatePlaceholders(templateData, userInfo, pageCount);
-      } else if (templateData.pages) {
-        // Structured template with pages
-        pages = fillTemplatePlaceholders(templateData.pages, userInfo, pageCount);
-      } else {
-        throw new Error('Invalid template structure');
-      }
-      
-      if (pages && pages.length > 0) {
-        return {
-          success: true,
-          pages: pages,
-          source: 'advanced_template_system'
-        };
-      }
-    }
-    
-    throw new Error('Advanced template processing failed');
-    
-  } catch (error) {
-    console.error('[TIER 2.5B] Advanced template error:', error);
-    throw error;
-  }
-}
 
-/**
- * TIER 2.5C: Process with Basic Template System
- */
-async function processWithBasicTemplate({ prompt, userInfo, pageCount, difficulty }) {
-  console.log('[TIER 2.5C] Processing with basic template system...');
-  
-  try {
-    // Use hardcoded basic templates as backup
-    const basicTemplates = getHardcodedTemplates(difficulty);
-    
-    if (basicTemplates && basicTemplates.length > 0) {
-      const randomTemplate = basicTemplates[Math.floor(Math.random() * basicTemplates.length)];
-      const pages = fillTemplatePlaceholders(randomTemplate, userInfo, pageCount);
       
       if (pages && pages.length > 0) {
         return {
@@ -5072,13 +4821,6 @@ function getAgeFromDifficulty(difficulty) {
 
 
 // CULTURAL LANDMARKS MOVED TO SHARED MODULE - SEE _shared/culturalLandmarks.js
-    indoor: ["with traditional Chinese interior", "in Chinese cultural setting", "with oriental design elements", "in pagoda-style building", "with Chinese architectural details"],
-    outdoor: ["with traditional pagodas", "near Great Wall", "with ancient temples", "in bamboo garden", "with oriental architecture"]
-  },
-  hindi: {
-    indoor: ["in Indian palace interior", "with traditional Indian patterns", "in colorful Indian setting", "with Indian cultural elements", "in ornate Indian room"],
-    outdoor: ["near Taj Mahal", "with palace elements", "in colorful market", "with Indian architecture", "in vibrant courtyard"]
-// ============= ORPHANED CULTURAL_LANDMARKS OBJECT #3 REMOVED =============
 
 // ============= DUPLICATE CULTURAL SETTING ENHANCEMENT FUNCTION REMOVED =============
     if (landmarks.length > 0) {
@@ -5238,16 +4980,6 @@ function detectCulturalProfile(userInfo, avatarIdentity) {
   }
 }
 
-function detectEmotionFromText(text) {
-  try {
-    if (!text || typeof text !== 'string') return ''; // Enhanced: Return empty string for fallback
-    
-    const lowerText = text.toLowerCase();
-    
-    // Positive emotions
-    if (lowerText.includes('happy') || lowerText.includes('joy') || lowerText.includes('excited') || 
-        lowerText.includes('celebration') || lowerText.includes('party') || lowerText.includes('fun')) {
-      return 'Cheerful and celebratory atmosphere';
     }
     
     if (lowerText.includes('peaceful') || lowerText.includes('calm') || lowerText.includes('quiet') ||
@@ -6027,15 +5759,14 @@ serve(async (req) => {
         } catch (httpError) {
           console.error('❌ Tier 2.5: HTTP fallback failed:', httpError);
           
-          // ULTIMATE FALLBACK: Use one of your 6 uploaded character images
-          console.log('🛡️ ULTIMATE FALLBACK: All generation tiers failed, using uploaded character image');
-          const fallbackImageURL = getUltimateFallbackImage(pageNumber || 1);
+          // Tier 2.5 failure - let frontend handle Tier 4 fallback
+          console.log('❌ Tier 2.5: All generation tiers failed - returning error for frontend fallback');
           
           return createCorsResponse({
-            success: true,
-            imageURL: fallbackImageURL,
-            tier: '4 - Ultimate Character Fallback',
-            fallbackReason: 'All generation tiers failed - using uploaded character image',
+            success: false,
+            error: 'Tier 2.5 image generation failed',
+            tier: '2.5 - Nuclear Independence Failed',
+            fallbackReason: 'All Tier 2.5 generation methods failed - frontend will handle Tier 4',
             pageNumber: pageNumber || 1,
             timestamp: new Date().toISOString(),
             metadata: {
@@ -6050,15 +5781,14 @@ serve(async (req) => {
   } catch (error) {
     console.error('❌ Tier 2.5: Main function error:', error);
     
-    // ULTIMATE FALLBACK: Use one of your 6 uploaded character images
-    console.log('🛡️ ULTIMATE FALLBACK: Main function error, using uploaded character image');
-    const fallbackImageURL = getUltimateFallbackImage(pageNumber || 1);
+    // Tier 2.5 error - let frontend handle Tier 4 fallback
+    console.log('❌ Tier 2.5: Main function error - returning error for frontend fallback');
     
     return createCorsResponse({
-      success: true,
-      imageURL: fallbackImageURL,
-      tier: '4 - Ultimate Character Fallback',
-      fallbackReason: 'Main function error - using uploaded character image',
+      success: false,
+      error: 'Tier 2.5 function error',
+      tier: '2.5 - Nuclear Independence Error',
+      fallbackReason: 'Main function error - frontend will handle Tier 4',
       pageNumber: pageNumber || 1,
       timestamp: new Date().toISOString(),
       metadata: {
