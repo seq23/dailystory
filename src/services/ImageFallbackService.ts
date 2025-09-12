@@ -81,10 +81,15 @@ export class ImageFallbackService {
   }
 
   /**
-   * Generate a simple SVG placeholder image with multiple fallback formats
+   * Generate a simple SVG placeholder image with your 6 character images embedded
    */
-  static generatePlaceholderSVG(config: Partial<FallbackImageConfig> = {}): string {
+  static generatePlaceholderSVG(config: Partial<FallbackImageConfig> & { pageNumber?: number } = {}): string {
     const finalConfig = { ...this.DEFAULT_CONFIG, ...config };
+    
+    // Use pageNumber to rotate through your 6 uploaded images
+    const pageNumber = config.pageNumber || 0;
+    const imageIndex = Math.abs(pageNumber) % this.FALLBACK_IMAGES.length;
+    const selectedImage = this.FALLBACK_IMAGES[imageIndex];
     
     const svg = `
       <svg 
@@ -97,13 +102,13 @@ export class ImageFallbackService {
         <!-- Background -->
         <rect width="100%" height="100%" fill="#f8f9fa" stroke="#e5e7eb" stroke-width="1"/>
         
-        <!-- User's Magic Wand Image -->
+        <!-- One of Your 6 Character Images -->
         <image 
           x="100" 
           y="50" 
           width="200" 
           height="150" 
-          href="/lovable-uploads/30e11866-c281-4957-818d-724155f38846.png"
+          href="${selectedImage}"
           preserveAspectRatio="xMidYMid meet"
         />
         

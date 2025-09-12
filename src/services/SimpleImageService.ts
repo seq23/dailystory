@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { ImageFallbackService } from './ImageFallbackService';
 
 // ============= TYPES =============
 
@@ -272,14 +273,14 @@ export class SimpleImageService {
         });
       }
 
-      // TIER 4: Final SVG fallback
-      console.warn('🎨 All backend tiers failed, using local SVG fallback');
-      const svgFallback = this.generateSVGPlaceholder(cleanScene, userInfo);
+      // TIER 4: Final fallback - use one of your 6 uploaded images
+      console.warn('🎨 All backend tiers failed, using ImageFallbackService with your 6 character images');
+      const fallbackUrl = ImageFallbackService.generateStoryPlaceholder(cleanScene, pageNumber);
       
       return {
         success: true,
-        url: svgFallback.url,
-        imageURL: svgFallback.url,
+        url: fallbackUrl,
+        imageURL: fallbackUrl,
         generatedAt: new Date().toISOString(),
         tier: 'SVG Fallback',
         metadata: {

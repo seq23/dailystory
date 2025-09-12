@@ -17,6 +17,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.js";
 import "https://deno.land/x/xhr@0.1.0/mod.js";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
 import { createDynamicCorsOptionsResponse, createDynamicCorsResponse, createDynamicCorsErrorResponse } from "../_shared/corsAdvanced.js";
 import { monitorRequest } from "../_shared/headerMonitor.js";
 import { SessionStateManager } from "../_shared/SessionStateManager.js";
@@ -30,6 +31,11 @@ function generateRequestId() {
   const random = Math.random().toString(36).substring(2, 7);
   return `${timestamp}-${random}`;
 }
+
+// ============= SUPABASE CLIENT INITIALIZATION =============
+const supabaseUrl = Deno.env.get('SUPABASE_URL') || 'https://cpzeuogomaixamrtnnmj.supabase.co';
+const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY');
+const supabase = createClient(supabaseUrl, supabaseKey);
 /**
  * ============================================================================
  * IMAGE GENERATION TIER POLICY - CRITICAL BUSINESS RULE
@@ -205,31 +211,6 @@ class WebSocketError extends Error {
     this.name = 'WebSocketError';
   }
 }
-// ============= GUARANTEED CHARACTER PLACEHOLDER FALLBACK =============
-function generateCharacterPlaceholder(pageText = '', pageNumber = 1) {
-  // 6 uploaded character images for "IMAGES NOT WORKING" scenarios
-  const CHARACTER_IMAGES = [
-    '/lovable-uploads/ec8d98b8-07d2-4fa4-8d5f-0c9499570384.png',
-    '/lovable-uploads/886ba3b2-9e9a-4966-a25e-967c18e384c1.png',
-    '/lovable-uploads/35591052-8575-4dd7-a727-6f317dd362ed.png',
-    '/lovable-uploads/2a0750f5-9ff1-4555-bbf8-242e1906515a.png',
-    '/lovable-uploads/d396c614-ad40-4d9a-ae7f-6cd4695e651c.png',
-    '/lovable-uploads/88b1bb2a-0527-43ef-b357-ff4eb3b28259.png'
-  ];
-  
-  // Use page number for rotation to ensure consistent image per page
-  const imageIndex = Math.abs(pageNumber || 1) % CHARACTER_IMAGES.length;
-  const selectedImage = CHARACTER_IMAGES[imageIndex];
-  
-  console.log('🎭 Generated character placeholder:', { pageNumber, imageIndex, selectedImage });
-  return {
-    url: selectedImage,
-    type: 'character-fallback',
-    pageNumber,
-    imageIndex
-  };
-}
-
 // ============= ENHANCED WEBSOCKET MANAGER =============
 class RunwareWebSocketManager {
   static MAX_RETRIES = 3;
@@ -651,27 +632,37 @@ function generateKidFriendlyPlaceholder(pageText, pageNumber = 1) {
   return generateCharacterPlaceholder(pageText, pageNumber);
 }
 
-// ============= GUARANTEED FALLBACK RESPONSE =============
-function guaranteedFallbackResponse(pageText, pageNumber, sessionId, req, reason = 'Validation failed') {
-  console.log(`🛡️ GUARANTEED FALLBACK: ${reason}`);
+// ============= TIER 4 SIMPLE FALLBACK - CALL TO DEDICATED FUNCTION =============
+async function callTier4SimpleFallback(pageText, pageNumber, sessionId, req, reason = 'Fallback needed') {
+  console.log(`🛡️ TIER 4: Calling dedicated simple fallback function - ${reason}`);
   
-  const placeholderResult = generateCharacterPlaceholder(pageText || 'Story page', pageNumber || 1);
-  
-  return createDynamicCorsResponse({
-    success: true,
-    imageURL: placeholderResult.url,
-    provider: 'runware-orchestrator',
-    tier: 4,
-    enhancementLevel: 'character-placeholder',
-    metadata: {
-      orchestrated: true,
-      fallbackReason: reason,
-      imageIndex: placeholderResult.imageIndex,
-      pageNumber: placeholderResult.pageNumber,
-      timestamp: new Date().toISOString()
+  try {
+    const { data: tier4Result, error: tier4Error } = await supabase.functions.invoke('runware-simple-fallback', {
+      body: { pageText, pageNumber, sessionId }
+    });
+    
+    if (tier4Error || !tier4Result?.success) {
+      console.error('❌ Tier 4 simple fallback failed:', tier4Error);
+      // Return error response to trigger frontend fallback
+      return createDynamicCorsErrorResponse(new Error(reason), 500, req);
     }
-  }, req);
+    
+    return createDynamicCorsResponse({
+      success: true,
+      imageURL: tier4Result.imageURL,
+      provider: 'tier4-simple-fallback',
+      tier: 4,
+      metadata: {
+        fallbackReason: reason,
+        timestamp: new Date().toISOString()
+      }
+    }, req);
+  } catch (error) {
+    console.error('❌ Failed to call Tier 4 simple fallback:', error);
+    return createDynamicCorsErrorResponse(error, 500, req);
+  }
 }
+
 // ============= TIER 1 RUNWARE PREMIUM GENERATION =============
 async function generateWithRunwarePremium(apiKey, positivePrompt, negativePrompt, seed, sessionId, pageNumber, requestId) {
   console.log(`🚀 [${requestId || 'unknown'}] Starting Runware Premium Generation:`, {
@@ -777,7 +768,7 @@ serve(async (req)=>{
   // Validate request method (FIX: Ensure only POST requests proceed)
   if (req.method !== 'POST') {
     console.error(`❌ [${requestId}] Invalid request method: ${req.method}`);
-    return guaranteedFallbackResponse('', 1, '', req, `Method ${req.method} not allowed - returning fallback image`);
+    return callTier4SimpleFallback('', 1, '', req, `Method ${req.method} not allowed`);
   }
   
   // Handle diagnostic requests
@@ -848,7 +839,7 @@ serve(async (req)=>{
     const contentType = req.headers.get('content-type');
     if (!contentType || !contentType.includes('application/json')) {
       console.error(`❌ [${requestId}] Invalid Content-Type: ${contentType || 'missing'}`);
-      return guaranteedFallbackResponse('', 1, '', req, 'Invalid Content-Type - returning fallback image');
+      return callTier4SimpleFallback('', 1, '', req, 'Invalid Content-Type');
     }
     // Parse request with enhanced error handling (FIX: Catch JSON parse errors)
     let requestBody;
@@ -856,12 +847,12 @@ serve(async (req)=>{
       const rawBody = await req.text();
       if (!rawBody || rawBody.trim().length === 0) {
         console.error(`❌ [${requestId}] Empty request body received`);
-        return guaranteedFallbackResponse('', 1, '', req, 'Empty request body - returning fallback image');
+        return callTier4SimpleFallback('', 1, '', req, 'Empty request body');
       }
       requestBody = JSON.parse(rawBody);
     } catch (parseError) {
       console.error(`❌ [${requestId}] JSON parsing failed:`, parseError.message);
-      return guaranteedFallbackResponse('', 1, '', req, `JSON parsing failed - returning fallback image`);
+      return callTier4SimpleFallback('', 1, '', req, 'JSON parsing failed');
     }
     // Extract and validate parameters (FIX: Enhanced validation with defaults)
     const extractedParams = requestBody || {};
@@ -880,7 +871,7 @@ serve(async (req)=>{
     } else if (!runwareApiKey) {
       console.error(`❌ [${requestId}] CRITICAL: RUNWARE_API_KEY not found in environment`);
       console.error(`📋 [${requestId}] Available env vars:`, Object.keys(Deno.env.toObject()).filter((key)=>key.includes('API')));
-      return guaranteedFallbackResponse(pageText, pageNumber, sessionId, req, 'Missing API key - returning fallback image');
+      return callTier4SimpleFallback(pageText, pageNumber, sessionId, req, 'Missing API key');
     }
     
     console.log(`✅ [${requestId}] Request body parsed successfully`);
@@ -906,33 +897,33 @@ serve(async (req)=>{
       console.error(`❌ [${requestId}] Invalid pageText:`, {
         pageText: pageText?.substring(0, 100)
       });
-      return guaranteedFallbackResponse('Default story page', pageNumber, sessionId, req, 'Invalid pageText parameter - using default');
+      return callTier4SimpleFallback('Default story page', pageNumber, sessionId, req, 'Invalid pageText parameter');
     }
     if (!sessionId || typeof sessionId !== 'string' || sessionId.length < 10) {
       console.error(`❌ [${requestId}] Invalid sessionId:`, {
         sessionId: sessionId?.substring(0, 20)
       });
-      return guaranteedFallbackResponse(pageText, pageNumber, 'default-session', req, 'Invalid sessionId parameter - using default');
+      return callTier4SimpleFallback(pageText, pageNumber, 'default-session', req, 'Invalid sessionId parameter');
     }
     if (!storyId || typeof storyId !== 'string' || storyId.length < 5) {
       console.error(`❌ [${requestId}] Invalid storyId:`, {
         storyId: storyId?.substring(0, 20)
       });
-      return guaranteedFallbackResponse(pageText, pageNumber, sessionId, req, 'Invalid storyId parameter - continuing with fallback');
+      return callTier4SimpleFallback(pageText, pageNumber, sessionId, req, 'Invalid storyId parameter');
     }
     // Validate pageNumber
     if (pageNumber && (typeof pageNumber !== 'number' || pageNumber < 1 || pageNumber > 1000)) {
       console.error(`❌ [${requestId}] Invalid pageNumber:`, {
         pageNumber
       });
-      return guaranteedFallbackResponse(pageText, 1, sessionId, req, 'Invalid pageNumber - using page 1');
+      return callTier4SimpleFallback(pageText, 1, sessionId, req, 'Invalid pageNumber');
     }
     // Validate userInfo structure
     if (!userInfo || typeof userInfo !== 'object') {
       console.error(`❌ [${requestId}] Invalid userInfo:`, {
         userInfo: typeof userInfo
       });
-      return guaranteedFallbackResponse(pageText, pageNumber, sessionId, req, 'Invalid userInfo parameter - using default');
+      return callTier4SimpleFallback(pageText, pageNumber, sessionId, req, 'Invalid userInfo parameter');
     }
     // Log successful parameter validation
     console.log(`✅ [${requestId}] Enhanced parameter validation passed:`, {
@@ -948,13 +939,13 @@ serve(async (req)=>{
     // ============================================================================
     // Validate required parameters
     if (!pageText) {
-      return guaranteedFallbackResponse('Default story page', pageNumber, sessionId, req, 'Missing pageText - using default');
+      return callTier4SimpleFallback('Default story page', pageNumber, sessionId, req, 'Missing pageText');
     }
     if (!sessionId) {
-      return guaranteedFallbackResponse(pageText, pageNumber, 'default-session', req, 'Missing sessionId - using default');
+      return callTier4SimpleFallback(pageText, pageNumber, 'default-session', req, 'Missing sessionId');
     }
     if (!storyId) {
-      return guaranteedFallbackResponse(pageText, pageNumber, sessionId, req, 'Missing storyId - continuing anyway');
+      return callTier4SimpleFallback(pageText, pageNumber, sessionId, req, 'Missing storyId');
     }
     // Security validation
     const securityCheck = await SecurityValidator.validateImageRequest(req, {
@@ -965,13 +956,13 @@ serve(async (req)=>{
     });
     if (!securityCheck.valid) {
       console.error(`🚨 [${requestId}] Security validation failed:`, securityCheck.reason);
-      return guaranteedFallbackResponse(pageText, pageNumber, sessionId, req, `Security validation failed - returning safe fallback`);
+      return callTier4SimpleFallback(pageText, pageNumber, sessionId, req, 'Security validation failed');
     }
     // Rate limiting check
     const rateLimitCheck = await SecurityValidator.checkRateLimit(sessionId, 'image_generation');
     if (!rateLimitCheck.allowed) {
       console.error(`🚨 [${requestId}] Rate limit exceeded for session:`, sessionId);
-      return guaranteedFallbackResponse(pageText, pageNumber, sessionId, req, 'Rate limit exceeded - returning cached fallback');
+      return callTier4SimpleFallback(pageText, pageNumber, sessionId, req, 'Rate limit exceeded');
     }
     console.log(`🎯 [${requestId}] Starting image orchestration for page ${pageNumber} (Guest: ${isGuestUser || false})`);
     console.log(`🧠 Enhanced data available: ${enhancedStoryData ? 'Yes' : 'No'}`);

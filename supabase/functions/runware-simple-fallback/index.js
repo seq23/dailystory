@@ -2,6 +2,23 @@
 // Nuclear independence achieved - all dependencies removed, hardcoded arrays implemented
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
+// ============= TIER 4 ULTIMATE FALLBACK - 6 UPLOADED CHARACTER IMAGES =============
+const ULTIMATE_FALLBACK_IMAGES = [
+  '/lovable-uploads/ec8d98b8-07d2-4fa4-8d5f-0c9499570384.png',
+  '/lovable-uploads/886ba3b2-9e9a-4966-a25e-967c18e384c1.png',
+  '/lovable-uploads/35591052-8575-4dd7-a727-6f317dd362ed.png',
+  '/lovable-uploads/2a0750f5-9ff1-4555-bbf8-242e1906515a.png',
+  '/lovable-uploads/d396c614-ad40-4d9a-ae7f-6cd4695e651c.png',
+  '/lovable-uploads/88b1bb2a-0527-43ef-b357-ff4eb3b28259.png'
+];
+
+function getUltimateFallbackImage(pageNumber = 1) {
+  const imageIndex = Math.abs(pageNumber) % ULTIMATE_FALLBACK_IMAGES.length;
+  const selectedImage = ULTIMATE_FALLBACK_IMAGES[imageIndex];
+  console.log('🛡️ ULTIMATE FALLBACK: Using uploaded character image', { pageNumber, imageIndex, selectedImage });
+  return selectedImage;
+}
+
 // ============= LAZY LOADING FUNCTIONS FOR HEAVY DEPENDENCIES =============
 
 async function getCharacterService() {
@@ -6747,13 +6764,45 @@ serve(async (req) => {
           
         } catch (httpError) {
           console.error('❌ Tier 2.5: HTTP fallback failed:', httpError);
-          return { success: false, error: httpError.message };
+          
+          // ULTIMATE FALLBACK: Use one of your 6 uploaded character images
+          console.log('🛡️ ULTIMATE FALLBACK: All generation tiers failed, using uploaded character image');
+          const fallbackImageURL = getUltimateFallbackImage(pageNumber || 1);
+          
+          return createCorsResponse({
+            success: true,
+            imageURL: fallbackImageURL,
+            tier: '4 - Ultimate Character Fallback',
+            fallbackReason: 'All generation tiers failed - using uploaded character image',
+            pageNumber: pageNumber || 1,
+            timestamp: new Date().toISOString(),
+            metadata: {
+              ultimateFallback: true,
+              originalError: httpError.message
+            }
+          });
         }
       }
     });
     
   } catch (error) {
     console.error('❌ Tier 2.5: Main function error:', error);
-    return createCorsErrorResponse(error.message || 'Internal server error', 500);
+    
+    // ULTIMATE FALLBACK: Use one of your 6 uploaded character images
+    console.log('🛡️ ULTIMATE FALLBACK: Main function error, using uploaded character image');
+    const fallbackImageURL = getUltimateFallbackImage(pageNumber || 1);
+    
+    return createCorsResponse({
+      success: true,
+      imageURL: fallbackImageURL,
+      tier: '4 - Ultimate Character Fallback',
+      fallbackReason: 'Main function error - using uploaded character image',
+      pageNumber: pageNumber || 1,
+      timestamp: new Date().toISOString(),
+      metadata: {
+        ultimateFallback: true,
+        originalError: error.message
+      }
+    });
   }
 });
