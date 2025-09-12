@@ -69,10 +69,16 @@ export function ImageTierTester() {
       const results = await Promise.allSettled(
         healthChecks.map(async ({ name, endpoint }) => {
           try {
-            // Use POST with health check payload for all functions
-            const result = await supabase.functions.invoke(endpoint, {
-              body: { healthCheck: true }
-            });
+            let result;
+            // Use GET for orchestrator and fallback functions, POST for API test
+            if (endpoint === 'test-runware-api') {
+              result = await supabase.functions.invoke(endpoint, {
+                body: { healthCheck: true }
+              });
+            } else {
+              // Use GET for health checks on main functions
+              result = await supabase.functions.invoke(endpoint);
+            }
             
             return { 
               name, 
