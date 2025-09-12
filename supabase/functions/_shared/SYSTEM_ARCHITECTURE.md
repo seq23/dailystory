@@ -156,3 +156,7 @@ Centralized error handling through `_shared/errorHandling.ts` with:
 - Standardized error responses
 - Performance tracking
 - CORS compliance
+
+## Deployment Notes (2025-09-12)
+- elevenlabs-tts and elevenlabs-tts-smart now lazy-load DifficultyLevelMapper to avoid bundler/circular import issues.
+- Added redeploy touch timestamps in function headers and config.toml to force clean rebuild.

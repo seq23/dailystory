@@ -1,8 +1,17 @@
-// Redeploy touch: 2025-09-12T18:45:32Z - Force complete rebuild
-console.log("[elevenlabs-tts] Loaded: 2025-09-12T18:45:32Z");
+// Redeploy touch: 2025-09-12T19:10:00Z - Force complete rebuild
+console.log("[elevenlabs-tts] Loaded: 2025-09-12T19:10:00Z");
 import "https://deno.land/x/xhr@0.1.0/mod.js";
 import { serve } from "https://deno.land/std@0.168.0/http/server.js";
-import { DifficultyLevelMapper } from "../_shared/DifficultyLevelMapper.ts";
+// Lazy import to avoid bundling/circular deps
+async function getDifficultyMapper() {
+  try {
+    const mod = await import("../_shared/DifficultyLevelMapper.ts");
+    return mod.DifficultyLevelMapper;
+  } catch (error) {
+    console.warn("DifficultyLevelMapper lazy load failed:", error);
+    return null;
+  }
+}
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -42,8 +51,13 @@ serve(async (req) => {
     
     // Log difficulty mapping for consistency with other functions
     if (userInfo) {
-      const difficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
-      console.log(`🎯 Mapped user info to difficulty: ${difficulty} for TTS generation`);
+      const Mapper = await getDifficultyMapper();
+      if (Mapper) {
+        const difficulty = Mapper.mapToImageDifficulty(userInfo);
+        console.log(`🎯 Mapped user info to difficulty: ${difficulty} for TTS generation`);
+      } else {
+        console.warn('DifficultyLevelMapper unavailable for TTS');
+      }
     }
     
     console.log('TTS Request details:', {
