@@ -1,4 +1,5 @@
-// Force clean redeployment: 2025-01-23T02:45:01Z - Import fix attempt
+// Redeploy touch: 2025-09-12T19:20:00Z - Cache bust for entrypoint fix
+console.log("[create-premium-subscription] Loaded: 2025-09-12T19:20:00Z");
 import { serve } from "https://deno.land/std@0.168.0/http/server.js"
 import Stripe from "https://esm.sh/stripe@14.21.0"
 import { withSecurity, SecurityMiddleware } from "../_shared/security.ts"

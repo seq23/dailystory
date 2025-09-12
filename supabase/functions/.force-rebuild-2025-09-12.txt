@@ -1,4 +1,4 @@
 Cache buster sentinel file - Forces fresh packaging of supabase/functions folder
-Created: 2025-09-12T19:15:00Z
+Created: 2025-09-12T19:20:00Z
 Purpose: Invalidate stale builder cache causing "Entrypoint path does not exist" errors
 Target: image-proxy and any other failing functions
