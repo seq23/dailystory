@@ -1,11 +1,11 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
+import { createDynamicCorsResponse, createDynamicCorsErrorResponse, createDynamicCorsOptionsResponse } from "../_shared/corsAdvanced.js";
 
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return createCorsOptionsResponse();
+    return createDynamicCorsOptionsResponse(req);
   }
 
   try {
@@ -94,10 +94,10 @@ serve(async (req) => {
     };
 
     console.log('✅ Diagnostic completed successfully');
-    return createCorsResponse(result);
+    return createDynamicCorsResponse(result, req);
 
   } catch (error) {
     console.error('❌ Diagnostic failed:', error);
-    return createCorsErrorResponse(`Diagnostic failed: ${error.message}`, 500);
+    return createDynamicCorsErrorResponse(`Diagnostic failed: ${error.message}`, req, 500);
   }
 });

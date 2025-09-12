@@ -6030,15 +6030,28 @@ function detectEmotionFromText(text) {
 // ============= MAIN EDGE FUNCTION =============
 
 serve(async (req) => {
+  // ✅ EARLY BOOT LOGGING - Phase 2 Boot Stabilization
+  console.log('🚀 Tier 2.5 runware-simple-fallback starting...');
   console.log(`🛡️ Tier 2.5: ${req.method} ${req.url}`);
   
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
+    console.log('✅ CORS preflight handled successfully');
     return createCorsOptionsResponse();
   }
 
-  // Handle health check requests
+  // ✅ FAST HEALTH CHECK PATH - bypasses heavy modules
   if (req.method === 'GET' || req.url.includes('/health')) {
+    console.log('💚 Health check requested - returning fast response');
+    return createCorsResponse({ 
+      healthy: true, 
+      tier: '2.5',
+      provider: 'runware-simple-fallback',
+      timestamp: new Date().toISOString(),
+      boot_status: 'healthy',
+      lazy_loading: 'enabled'
+    });
+  }
     const runwareApiKey = Deno.env.get('RUNWARE_API_KEY')?.trim();
     
     return createCorsResponse({
