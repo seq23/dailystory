@@ -48,9 +48,6 @@ verify_jwt = true
 [functions.debug-ai-prompts]
 verify_jwt = false
 
-[functions.debug-recent-image-prompts]
-verify_jwt = false
-
 [functions.debug-story-processing]
 verify_jwt = false
 
