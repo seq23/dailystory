@@ -429,38 +429,7 @@ function getNuclearFallbackCharacter(seed, pageText) {
 }
 
 // ============= STORY-BASED CLOTHING DETECTION =============
-
-function detectClothingFromStory(pageText) {
-  if (!pageText || typeof pageText !== 'string') return null;
-  
-  const lowerText = pageText.toLowerCase();
-  
-  // Find clothing mentions in story text using unified keywords
-  for (const clothing of CLOTHING_DETECTION_KEYWORDS) {
-    if (lowerText.includes(clothing)) {
-      console.log(`👔 Detected clothing from story: ${clothing}`);
-      return clothing;
-    }
-  }
-  
-  return null;
-}
-
-function detectAndResolveClothingColor(pageText, baseclothing) {
-  if (!pageText || !baseclothing) return baseclothing;
-  
-  const lowerText = pageText.toLowerCase();
-  
-  // Find color mentions in story text
-  for (const color of VOCAB.EXPANDED_COLOR_ARRAY) {
-    if (lowerText.includes(color) && lowerText.includes(baseclothing)) {
-      console.log(`🎨 Detected clothing color: ${color} ${baseclothing}`);
-      return `${color} ${baseclothing}`;
-    }
-  }
-  
-  return baseclothing;
-}
+// Functions moved to consolidated section below to avoid duplication
 
 // ============= NUCLEAR INDEPENDENT SCENE ANALYSIS =============
 
@@ -1865,44 +1834,7 @@ function detectClothingFromStory(text) {
   return '';
 }
 
-function detectAndResolveClothingColor(text) {
-  const lowerText = text.toLowerCase();
-  let detectedClothing = '';
-  let detectedColor = '';
-  
-  // Detect clothing type using unified keywords
-  for (const clothing of CLOTHING_DETECTION_KEYWORDS) {
-    if (lowerText.includes(clothing)) {
-      detectedClothing = clothing;
-      break;
-    }
-  }
-  
-  // Detect color
-  for (const color of VOCAB.EXPANDED_COLOR_ARRAY) {
-    if (lowerText.includes(color)) {
-      detectedColor = color;
-      break;
-    }
-  }
-  
-  // If both detected, combine them (no restrictions - allow any color for any clothing)
-  if (detectedClothing && detectedColor) {
-    return `a ${detectedColor} ${detectedClothing}`;
-  }
-  
-  // If only clothing detected, let Runware decide the color
-  if (detectedClothing) {
-    return `a ${detectedClothing}`;
-  }
-  
-  // If only color detected, let Runware decide what clothing to color
-  if (detectedColor) {
-    return '';
-  }
-  
-  return '';
-}
+// DUPLICATE FUNCTION REMOVED - consolidated at end of file
 
 // ============= UTILITY FUNCTIONS =============
 
@@ -5186,22 +5118,24 @@ function detectClothingFromStory(text) {
   return '';
 }
 
+// ============= CONSOLIDATED CLOTHING DETECTION FUNCTIONS =============
+
 // DYNAMIC CLOTHING + COLOR DETECTION SYSTEM
 function detectAndResolveClothingColor(text) {
   const lowerText = text.toLowerCase();
   let detectedClothing = '';
   let detectedColor = '';
   
-  // Detect clothing type using unified keywords
-  for (const clothing of CLOTHING_DETECTION_KEYWORDS) {
+  // Detect clothing type using unified keywords from VOCAB
+  for (const clothing of (VOCAB?.CLOTHING_DETECTION_KEYWORDS || [])) {
     if (lowerText.includes(clothing)) {
       detectedClothing = clothing;
       break;
     }
   }
   
-  // Detect color
-  for (const color of VOCAB.EXPANDED_COLOR_ARRAY) {
+  // Detect color using VOCAB
+  for (const color of (VOCAB?.EXPANDED_COLOR_ARRAY || [])) {
     if (lowerText.includes(color)) {
       detectedColor = color;
       break;
@@ -5221,6 +5155,36 @@ function detectAndResolveClothingColor(text) {
   // If only color detected, let Runware decide what clothing to color
   if (detectedColor) {
     return '';
+  }
+  
+  return '';
+}
+
+// ENHANCED CLOTHING DETECTION WITH COLOR SYSTEM
+function detectClothingFromStory(text) {
+  if (!text) return '';
+  
+  const lowerText = text.toLowerCase();
+  
+  // Try dynamic clothing + color detection first
+  const dynamicClothingColor = detectAndResolveClothingColor(text);
+  if (dynamicClothingColor) {
+    return dynamicClothingColor;
+  }
+  
+  // Fallback to basic clothing detection using VOCAB
+  for (const keyword of (VOCAB?.CLOTHING_DETECTION_KEYWORDS || [])) {
+    if (lowerText.includes(keyword)) {
+      // Extract clothing context around the keyword
+      const sentences = text.split(/[.!?]+/);
+      for (const sentence of sentences) {
+        if (sentence.toLowerCase().includes(keyword)) {
+          // Add random color if no color specified
+          const randomColor = (VOCAB?.EXPANDED_COLOR_ARRAY || ['blue'])[Math.floor(Math.random() * (VOCAB?.EXPANDED_COLOR_ARRAY?.length || 1))];
+          return `a ${randomColor} ${keyword}`;
+        }
+      }
+    }
   }
   
   return '';
