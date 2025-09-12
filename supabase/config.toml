@@ -30,8 +30,6 @@ verify_jwt = false
 [functions.security-alert]
 verify_jwt = true
 
-[functions.debug-prompt-history]
-verify_jwt = false
 
 [functions.secure-debug-access]
 verify_jwt = true
