@@ -13,12 +13,10 @@ export class DebugConsole {
       params.append('limit', limit.toString());
       
       let url = sessionId 
-        ? `debug-recent-image-prompts?${params}`
-        : `debug-recent-image-prompts?global=true&${params}`;
+        ? `unified-debug-service?operation=recent-image-prompts&sessionId=${sessionId}&${params}`
+        : `unified-debug-service?operation=recent-image-prompts&global=true&${params}`;
       
-      const { data, error } = await supabase.functions.invoke(url.split('?')[0], {
-        body: Object.fromEntries(params)
-      });
+      const { data, error } = await supabase.functions.invoke(url.split('?')[0]);
       
       if (error) throw error;
       
@@ -44,7 +42,7 @@ export class DebugConsole {
    */
   static async getAIPrompts(sessionId: string, limit = 10) {
     try {
-      const { data, error } = await supabase.functions.invoke('debug-ai-prompts', {
+      const { data, error } = await supabase.functions.invoke('unified-debug-service?operation=ai-prompts', {
         body: { sessionId, limit }
       });
       
@@ -82,7 +80,7 @@ export class DebugConsole {
    */
   static async trackStoryGeneration(sessionId: string) {
     try {
-      const { data, error } = await supabase.functions.invoke('debug-story-processing', {
+      const { data, error } = await supabase.functions.invoke('unified-debug-service?operation=story-processing', {
         body: { sessionId }
       });
       
@@ -109,7 +107,7 @@ export class DebugConsole {
    */
   static logStoryProcessing(sessionId: string, phase: string, textBefore: string, textAfter: string, pageNumber?: number) {
     // Send to debug endpoint for tracking
-    supabase.functions.invoke('debug-story-processing', {
+    supabase.functions.invoke('unified-debug-service?operation=story-processing', {
       body: {
         sessionId,
         phase,

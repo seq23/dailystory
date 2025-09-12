@@ -234,10 +234,11 @@ export const FormStep3Personalization = ({
           let processedValue = sanitizedValue;
           if (formData.nativeLanguage !== 'en' && sanitizedValue.trim()) {
             try {
-              const { data: translationData, error: translationError } = await supabase.functions.invoke('translate-to-english', {
+              const { data: translationData, error: translationError } = await supabase.functions.invoke('translation-service', {
                 body: { 
+                  operation: 'translate-to-english',
                   text: sanitizedValue,
-                  sourceLanguage: formData.nativeLanguage
+                  fromLanguage: 'auto'
                 }
               });
               

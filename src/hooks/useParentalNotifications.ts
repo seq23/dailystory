@@ -15,8 +15,11 @@ interface ParentalNotificationData {
 export const useParentalNotifications = () => {
   const sendParentalNotification = async (data: ParentalNotificationData) => {
     try {
-      const { data: result, error } = await supabase.functions.invoke('send-parental-notification', {
-        body: data
+      const { data: result, error } = await supabase.functions.invoke('notification-service', {
+        body: {
+          operation: 'parental-notification',
+          ...data
+        }
       });
 
       if (error) {

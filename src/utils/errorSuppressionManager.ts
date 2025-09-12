@@ -178,8 +178,9 @@ class ErrorSuppressionManager {
         fullMessage.includes('tier success found') ||
         fullMessage.includes('tier success identified') ||
         fullMessage.includes('fallback to classic') ||
-        fullMessage.includes('runware-generate-image') ||
-        fullMessage.includes('debug-recent-image-prompts')) {
+        fullMessage.includes('unified-debug-service') ||
+        fullMessage.includes('system-diagnostics') ||
+        fullMessage.includes('translation-service')) {
       this.incrementErrorCount('Image Generation Retries');
       return true;
     }

@@ -10,8 +10,9 @@ interface COPPANotificationData {
 export const useCOPPANotification = () => {
   const sendCOPPANotification = async (data: COPPANotificationData) => {
     try {
-      const { data: result, error } = await supabase.functions.invoke('send-coppa-notification', {
+      const { data: result, error } = await supabase.functions.invoke('notification-service', {
         body: {
+          operation: 'coppa-notification',
           ...data,
           timestamp: new Date().toISOString()
         }

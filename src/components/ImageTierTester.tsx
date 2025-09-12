@@ -61,23 +61,22 @@ export function ImageTierTester() {
       
       // Test actual existing functions with proper health check payloads
       const healthChecks = [
-        { name: 'Runware API Test', endpoint: 'test-runware-api' },
-        { name: 'Debug Visual Creator', endpoint: 'debug-visual-scene-creator' },
-        { name: 'Runware Diagnostic', endpoint: 'runware-diagnostic' }
+        { name: 'Runware API Test', endpoint: 'system-diagnostics?operation=test-runware-api' },
+        { name: 'Debug Visual Creator', endpoint: 'unified-debug-service?operation=visual-scene-debug' },
+        { name: 'Runware Diagnostic', endpoint: 'system-diagnostics?operation=runware-diagnostic' }
       ];
 
       const results = await Promise.allSettled(
         healthChecks.map(async ({ name, endpoint }) => {
           try {
             let result;
-            // Use GET for orchestrator and fallback functions, POST for API test
-            if (endpoint === 'test-runware-api') {
+            // Use GET for consolidated functions with query params
+            if (endpoint.includes('?operation=')) {
+              result = await supabase.functions.invoke(endpoint);
+            } else {
               result = await supabase.functions.invoke(endpoint, {
                 body: { healthCheck: true }
               });
-            } else {
-              // Use GET for health checks on main functions
-              result = await supabase.functions.invoke(endpoint, { method: 'GET' });
             }
             
             return { 
