@@ -51,42 +51,54 @@ export const ApiKeyDiagnostic: React.FC = () => {
           `${env.supabaseServiceRolePresent ? '✅' : '❌'} SUPABASE_SERVICE_ROLE_KEY: ${env.supabaseServiceRolePresent ? 'Present' : 'Missing'}`);
       }
 
-      // Test 2: WebSocket authentication test
-      addResult('warning', '🔐 Testing Runware WebSocket authentication...');
-      const { data: wsTest, error: wsError } = await supabase.functions.invoke('system-diagnostics?operation=test-runware-api');
-      
-      if (wsError) {
-        addResult('error', `❌ WebSocket auth test failed: ${wsError.message}`, wsError);
-      } else {
-        if (wsTest.success && wsTest.authenticationSuccessful) {
-          addResult('success', '✅ Runware WebSocket authentication successful', wsTest);
-        } else {
-          addResult('error', '❌ Runware WebSocket authentication failed', wsTest);
+      // Test 2: Template services health check
+      addResult('warning', '🔐 Testing Runware template services...');
+      const templateServices = [
+        { name: 'Simple Templates', endpoint: 'runware-template-simple' },
+        { name: 'Advanced Templates', endpoint: 'runware-template-advanced' }
+      ];
+
+      for (const service of templateServices) {
+        try {
+          const response = await fetch(`https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/${service.endpoint}`, {
+            method: 'GET',
+            headers: {
+              'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino'
+            }
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            addResult('success', `✅ ${service.name} - ${data.status} (Tier ${data.tier})`, data);
+          } else {
+            addResult('error', `❌ ${service.name} - HTTP ${response.status}`, { status: response.status });
+          }
+        } catch (err) {
+          addResult('error', `❌ ${service.name} - Connection failed: ${err.message}`, err);
         }
       }
 
       // Test 3: Individual tier testing
       addResult('warning', '🎯 Testing individual image generation tiers...');
       
-      const tiers = [
-        { name: 'Tier 1 (AI Visual Scene Creator)', function: 'ai-visual-scene-creator', body: { diagnostic: 'tier_health_check' } },
-        { name: 'Tier 2.5 (Runware Simple)', function: 'runware-simple-fallback', body: { diagnostic: 'tier_health_check' } }
-      ];
-
-      for (const tier of tiers) {
-        try {
-          const { data: tierData, error: tierError } = await supabase.functions.invoke(tier.function, {
-            body: tier.body
-          });
-          
-          if (tierError) {
-            addResult('warning', `⚠️ ${tier.name} - ${tierError.message}`, tierError);
-          } else {
-            addResult('success', `✅ ${tier.name} - Healthy`, tierData);
+      // Test 3: AI Visual Scene Creator health
+      addResult('warning', '🎯 Testing AI Visual Scene Creator...');
+      try {
+        const response = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/ai-visual-scene-creator', {
+          method: 'GET',
+          headers: {
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino'
           }
-        } catch (err) {
-          addResult('error', `❌ ${tier.name} - Test failed: ${err.message}`, err);
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          addResult('success', `✅ AI Visual Scene Creator - ${data.status} (Tier ${data.tier})`, data);
+        } else {
+          addResult('warning', `⚠️ AI Visual Scene Creator - HTTP ${response.status}`, { status: response.status });
         }
+      } catch (err) {
+        addResult('error', `❌ AI Visual Scene Creator - Test failed: ${err.message}`, err);
       }
 
       addResult('success', '🎉 Diagnostic complete! Check results above for any issues.');

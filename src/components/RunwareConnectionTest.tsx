@@ -21,76 +21,85 @@ export const RunwareConnectionTest: React.FC = () => {
     const testResults: TestResult[] = [];
 
     try {
-      // Test 1: Basic WebSocket Connection
-      console.log('🔍 Testing basic Runware WebSocket connection...');
+      // Test 1: Main Orchestrator Health Check
+      console.log('🔍 Testing main image orchestrator health...');
       try {
-        const { data, error } = await supabase.functions.invoke('system-diagnostics?operation=test-runware-api');
+        const { data, error } = await supabase.functions.invoke('runware-generate-image', {
+          method: 'GET'
+        });
         
         if (error) {
           testResults.push({
-            name: 'Basic WebSocket Test',
+            name: 'Main Orchestrator Health',
             status: 'error',
-            message: `Connection failed: ${error.message}`,
+            message: `Health check failed: ${error.message}`,
             details: error
           });
-        } else if (data?.success) {
+        } else if (data?.status === 'healthy') {
+          const env = data.environment || {};
           testResults.push({
-            name: 'Basic WebSocket Test',
+            name: 'Main Orchestrator Health',
             status: 'success',
-            message: `Connection successful. API Key: ${data.apiKeyPreview || 'Present'}`,
+            message: `✅ Healthy | Runware API: ${env.runwareApiKeyPresent ? 'Present' : 'Missing'}`,
             details: data
           });
         } else {
           testResults.push({
-            name: 'Basic WebSocket Test',
+            name: 'Main Orchestrator Health',
             status: 'warning',
-            message: data?.message || 'Unknown response',
+            message: data?.message || 'Service not responding properly',
             details: data
           });
         }
       } catch (error) {
         testResults.push({
-          name: 'Basic WebSocket Test',
+          name: 'Main Orchestrator Health',
           status: 'error',
           message: `Test failed: ${error.message}`,
           details: error
         });
       }
 
-      // Test 2: Comprehensive Diagnostic
-      console.log('🔍 Running comprehensive Runware diagnostic...');
-      try {
-        const { data, error } = await supabase.functions.invoke('system-diagnostics?operation=runware-diagnostic');
-        
-        if (error) {
+      // Test 2: Template Services Health
+      console.log('🔍 Testing Runware template services...');
+      const templateServices = [
+        { name: 'Simple Templates', endpoint: 'runware-template-simple' },
+        { name: 'Advanced Templates', endpoint: 'runware-template-advanced' }
+      ];
+
+      for (const service of templateServices) {
+        try {
+          const response = await fetch(`https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/${service.endpoint}`, {
+            method: 'GET',
+            headers: {
+              'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino'
+            }
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            testResults.push({
+              name: service.name,
+              status: 'success',
+              message: `✅ ${data.status || 'healthy'} | Tier: ${data.tier || 'unknown'}`,
+              details: data
+            });
+          } else {
+            testResults.push({
+              name: service.name,
+              status: 'error',
+              message: `❌ HTTP ${response.status}: ${response.statusText}`,
+              details: { status: response.status, statusText: response.statusText }
+            });
+          }
+        } catch (error) {
           testResults.push({
-            name: 'Comprehensive Diagnostic',
+            name: service.name,
             status: 'error',
-            message: `Diagnostic failed: ${error.message}`,
+            message: `❌ Connection failed: ${error.message}`,
             details: error
           });
-        } else if (data?.success) {
-          testResults.push({
-            name: 'Comprehensive Diagnostic',
-            status: 'success',
-            message: `All tests passed. WebSocket: ${data.websocketConnection ? '✅' : '❌'}, Auth: ${data.authentication ? '✅' : '❌'}`,
-            details: data
-          });
-        } else {
-          testResults.push({
-            name: 'Comprehensive Diagnostic',
-            status: 'warning',
-            message: data?.message || 'Diagnostic completed with issues',
-            details: data
-          });
         }
-      } catch (error) {
-        testResults.push({
-          name: 'Comprehensive Diagnostic',
-          status: 'error', 
-          message: `Diagnostic failed: ${error.message}`,
-          details: error
-        });
       }
 
     } catch (error) {

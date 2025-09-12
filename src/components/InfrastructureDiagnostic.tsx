@@ -14,23 +14,27 @@ export const InfrastructureDiagnostic: React.FC = () => {
     try {
       console.log('🔍 Running infrastructure diagnostic...');
       
-      const { data, error } = await supabase.functions.invoke('unified-debug-service?operation=visual-scene-debug');
+      // Test the main image orchestrator function health
+      const { data, error } = await supabase.functions.invoke('runware-generate-image', {
+        method: 'GET'
+      });
       
       if (error) {
-        setResult(`❌ Diagnostic failed: ${error.message}`);
+        setResult(`❌ Infrastructure diagnostic failed: ${error.message}`);
         return;
       }
       
-      if (data?.success) {
+      if (data?.status === 'healthy') {
+        const env = data.environment || {};
         setResult(`✅ Infrastructure diagnostic completed successfully
-Environment: OpenAI ${data.environment.openAIConfigured ? '✅' : '❌'}, Supabase ${data.environment.supabaseConfigured ? '✅' : '❌'}
-Timestamp: ${data.timestamp}`);
+Environment: OpenAI ${env.openaiApiKeyPresent ? '✅' : '❌'}, Runware ${env.runwareApiKeyPresent ? '✅' : '❌'}, Supabase ${env.supabaseServiceRolePresent ? '✅' : '❌'}
+Service: ${data.service} | Timestamp: ${data.timestamp}`);
       } else {
-        setResult(`⚠️ Diagnostic completed with issues: ${data?.message || 'Unknown error'}`);
+        setResult(`⚠️ Infrastructure check completed with issues: ${data?.message || 'Service not healthy'}`);
       }
     } catch (error) {
       console.error('Diagnostic error:', error);
-      setResult(`❌ Test failed: ${error.message}`);
+      setResult(`❌ Infrastructure test failed: ${error.message}`);
     } finally {
       setIsRunning(false);
     }
