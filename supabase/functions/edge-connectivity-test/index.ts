@@ -2,6 +2,8 @@ import { createCorsResponse, createCorsOptionsResponse } from '../_shared/cors.j
 
 console.log('Edge connectivity test function starting...');
 
+// Force deployment sync - 2025-01-30
+
 Deno.serve(async (req) => {
   console.log(`Connectivity test request: ${req.method} ${req.url}`);
   

@@ -55,6 +55,8 @@ serve(async (req) => {
     return createCorsOptionsResponse();
   }
 
+  // Force deployment sync - 2025-01-30
+
   try {
     console.log('📊 Monitoring Data Export Request');
     const monitoringData = MonitoringDashboard.exportMonitoringData();

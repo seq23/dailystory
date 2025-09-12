@@ -377,6 +377,8 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Force deployment sync - 2025-01-30
+
   try {
     console.log('🔧 ElevenLabs TTS Smart function started');
     

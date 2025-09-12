@@ -7,6 +7,8 @@ serve(async (req) => {
     return createCorsOptionsResponse();
   }
 
+  // Force deployment sync - 2025-01-30
+
   try {
     const { code } = await req.json();
     

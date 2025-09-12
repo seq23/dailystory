@@ -132,8 +132,6 @@ verify_jwt = false
 [functions.customer-portal]
 verify_jwt = true
 
-[functions.notification-service]
-verify_jwt = false
 
 [functions.log-personal-info-incident]
 verify_jwt = true

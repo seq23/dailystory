@@ -26,6 +26,8 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Force deployment sync - 2025-01-30
+
   let userLanguage = 'en'; // Default fallback
   try {
     const { word, userLevel = 'easy', userLanguage: reqUserLanguage = 'en' } = await req.json();

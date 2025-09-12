@@ -29,6 +29,8 @@ serve(async (req) => {
     return createCorsOptionsResponse();
   }
 
+  // Force deployment sync - 2025-01-30
+
   try {
     const { action, timeRange = '24h', models = ['gpt-4o-mini', 'gpt-4o'] } = await req.json();
 

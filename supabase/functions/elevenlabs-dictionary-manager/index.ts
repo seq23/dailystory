@@ -13,6 +13,8 @@ serve(async (req) => {
     return createCorsOptionsResponse();
   }
 
+  // Force deployment sync - 2025-01-30
+
   try {
     const elevenLabsApiKey = Deno.env.get('ELEVENLABS_API_KEY');
     if (!elevenLabsApiKey) {

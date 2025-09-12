@@ -28,6 +28,8 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders })
   }
 
+  // Force deployment sync - 2025-01-30
+
   try {
     // Use database-backed CharacterConsistencyService with lazy loading
     const CharacterConsistencyService = await getCharacterService();

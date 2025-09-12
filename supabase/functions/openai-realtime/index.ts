@@ -13,6 +13,8 @@ serve(async (req) => {
     return new Response('ok', { headers: corsHeaders });
   }
 
+  // Force deployment sync - 2025-01-30
+
   const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
   if (!openaiApiKey) {
     console.error('❌ OpenAI API key not found');

@@ -32,6 +32,8 @@ serve(async (req) => {
     return new Response('ok', { headers: corsHeaders });
   }
 
+  // Force deployment sync - 2025-01-30
+
   try {
     console.log('ElevenLabs TTS function called');
     const { text, voice, model, userInfo } = await req.json();

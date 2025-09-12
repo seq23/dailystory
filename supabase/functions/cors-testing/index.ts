@@ -23,6 +23,8 @@ serve(async (req) => {
     console.log('🔄 CORS Testing - OPTIONS preflight request');
     return createDynamicCorsOptionsResponse(req);
   }
+
+  // Force deployment sync - 2025-01-30
   
   try {
     const url = new URL(req.url);
