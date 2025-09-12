@@ -19,6 +19,15 @@ export class ImageFallbackService {
     text: '📖 Story Illustration'
   };
 
+  private static readonly FALLBACK_IMAGES = [
+    '/lovable-uploads/ec8d98b8-07d2-4fa4-8d5f-0c9499570384.png',
+    '/lovable-uploads/886ba3b2-9e9a-4966-a25e-967c18e384c1.png',
+    '/lovable-uploads/35591052-8575-4dd7-a727-6f317dd362ed.png',
+    '/lovable-uploads/2a0750f5-9ff1-4555-bbf8-242e1906515a.png',
+    '/lovable-uploads/d396c614-ad40-4d9a-ae7f-6cd4695e651c.png',
+    '/lovable-uploads/88b1bb2a-0527-43ef-b357-ff4eb3b28259.png'
+  ];
+
   private static debugLog(message: string, data?: any) {
     console.log(`🖼️ ImageFallback: ${message}`, data || '');
   }
@@ -166,63 +175,44 @@ export class ImageFallbackService {
    * Get the best fallback image format for current environment
    */
   static getBestFallback(config: Partial<FallbackImageConfig> = {}): string {
-    const env = this.getEnvironmentInfo();
+    // Use uploaded character images with rotation based on page number
+    const pageNumber = (config as any).pageNumber || 0;
+    const imageIndex = Math.abs(pageNumber) % this.FALLBACK_IMAGES.length;
+    const selectedImage = this.FALLBACK_IMAGES[imageIndex];
     
-    // Always prefer data URLs for better compatibility
-    // Blob URLs can be problematic with CSP and cleanup
-    try {
-      return this.generatePlaceholderSVG(config);
-    } catch (error) {
-      this.debugLog('Data URL generation failed, trying blob URL', error);
-      
-      // Only try blob URL as last resort
-      if (!env.hasCSPBlocking) {
-        try {
-          return this.generateBlobSVG(config);
-        } catch {
-          // Return a simple text-based fallback
-          return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjMwMCI+PHRleHQ+SW1hZ2UgTm90IEF2YWlsYWJsZTwvdGV4dD48L3N2Zz4=';
-        }
-      }
-      
-      // Final fallback - simple encoded SVG
-      return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjMwMCI+PHRleHQ+SW1hZ2UgTm90IEF2YWlsYWJsZTwvdGV4dD48L3N2Zz4=';
-    }
+    this.debugLog('Using uploaded character image as fallback', { pageNumber, imageIndex, selectedImage });
+    return selectedImage;
   }
 
   /**
    * Generate a story-specific placeholder with page context
    */
   static generateStoryPlaceholder(storyText: string, pageNumber: number): string {
-    // Extract key elements from story text for placeholder
-    const words = storyText.split(' ').slice(0, 10);
-    const truncatedText = words.length === 10 ? words.join(' ') + '...' : words.join(' ');
+    // Use uploaded character images with page-based rotation
+    const imageIndex = Math.abs(pageNumber) % this.FALLBACK_IMAGES.length;
+    const selectedImage = this.FALLBACK_IMAGES[imageIndex];
     
-    return this.generatePlaceholderSVG({
-      text: `📖 Page ${pageNumber}`,
-      backgroundColor: '#fef3c7', // Warm yellow
-      textColor: '#92400e' // Amber text
-    });
+    this.debugLog('Story placeholder using character image', { pageNumber, imageIndex, selectedImage });
+    return selectedImage;
   }
 
   /**
    * Check if a URL is a fallback image
    */
   static isFallbackImage(url: string): boolean {
-    return url.startsWith('data:image/svg+xml;base64,');
+    return url.startsWith('data:image/svg+xml;base64,') || this.FALLBACK_IMAGES.includes(url);
   }
 
   /**
    * Get a character-themed placeholder
    */
   static generateCharacterPlaceholder(characterName: string, pageNumber: number): string {
-    const emojis = ['🧒', '👧', '👦', '🧑', '👨', '👩'];
-    const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+    // Use character name hash + page number for consistent but varied selection
+    const nameHash = characterName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const imageIndex = Math.abs(nameHash + pageNumber) % this.FALLBACK_IMAGES.length;
+    const selectedImage = this.FALLBACK_IMAGES[imageIndex];
     
-    return this.generatePlaceholderSVG({
-      text: `${randomEmoji} ${characterName}`,
-      backgroundColor: '#ecfdf5', // Light green
-      textColor: '#047857' // Green text
-    });
+    this.debugLog('Character placeholder using uploaded image', { characterName, pageNumber, imageIndex, selectedImage });
+    return selectedImage;
   }
 }
