@@ -4,6 +4,7 @@ console.log("[runware-simple-fallback] Loaded: 2025-09-12T18:45:32Z");
 // Nuclear independence achieved - all dependencies removed, hardcoded arrays implemented
 import { serve } from "https://deno.land/std@0.168.0/http/server.js";
 import { getStyleFramework } from '../_shared/styleFrameworks.js';
+import { CULTURAL_LANDMARKS, getCulturalLandmarks } from '../_shared/culturalLandmarks.js';
 
 // ============= TIER 4 ULTIMATE FALLBACK - 6 UPLOADED CHARACTER IMAGES =============
 const ULTIMATE_FALLBACK_IMAGES = [
@@ -1282,17 +1283,7 @@ function extractAtmosphere(pageText, setting) {
   }
 }
 
-// ============= PROPS EXTRACTION =============
-function extractProps(pageText, objects) {
-  try {
-    const lowerText = pageText.toLowerCase();
-    const detectedProps = [];
-    
-    // Common story props
-    const storyProps = [
-      'backpack', 'notebook', 'pencil', 'crayon', 'lunch box', 'water bottle',
-      'blanket', 'pillow', 'umbrella', 'hat', 'shoes', 'jacket',
-      'basket', 'bag', 'box', 'container', 'cup', 'plate'
+// ============= DUPLICATE FUNCTION REMOVED - USING CONSOLIDATED extractStoryProps =============
     ];
     
     for (const prop of storyProps) {
@@ -1622,54 +1613,9 @@ function getCharacterEthnicity(userInfo, avatarIdentity) {
   }
 }
 
-// ============= CULTURAL LANDMARKS SYSTEM =============
-const CULTURAL_LANDMARKS = {
-  spanish: {
-    indoor: ["with Spanish tile patterns", "in Mediterranean style interior", "with Spanish cultural elements", "in warm villa setting", "with Spanish decor"],
-    outdoor: ["with Spanish villa backdrop", "near Mediterranean courtyard", "with Spanish architecture", "in colorful plaza", "with Spanish garden elements"]
-  },
-  french: {
-    indoor: ["in charming Parisian café", "with French interior design", "in elegant French setting", "with French cultural elements", "in cozy French environment"],
-    outdoor: ["near Eiffel Tower", "by Seine River", "near Louvre gardens", "in charming café district", "with Parisian park backdrop"]
-  },
-  chinese: {
-    indoor: ["with traditional Chinese interior", "in Chinese cultural setting", "with oriental design elements", "in pagoda-style building", "with Chinese architectural details"],
-    outdoor: ["with traditional pagodas", "near Great Wall", "with ancient temples", "in bamboo garden", "with oriental architecture"]
-  },
-  hindi: {
-    indoor: ["in Indian palace interior", "with traditional Indian patterns", "in colorful Indian setting", "with Indian cultural elements", "in ornate Indian room"],
-    outdoor: ["near Taj Mahal", "with palace elements", "in colorful market", "with Indian architecture", "in vibrant courtyard"]
-  },
-  arabic: {
-    indoor: ["in ornate Middle Eastern interior", "with Arabic architectural patterns", "in traditional Arabic setting", "with Middle Eastern design", "in elegant Arabic room"],
-    outdoor: ["with Middle Eastern domes", "in ornate courtyard", "with mosaic patterns", "near ancient architecture", "with desert oasis backdrop"]
-  },
-  portuguese: {
-    indoor: ["in Brazilian colonial interior", "with Portuguese cultural elements", "in warm Portuguese setting", "with Brazilian design details", "in Portuguese-style room", "with azulejo tile patterns", "in traditional Portuguese library", "with Portuguese maritime decor", "in colorful Portuguese kitchen", "with fado music ambiance", "in Portuguese cathedral interior", "with cork and wood elements", "in Manueline architectural style", "with Portuguese royal court design"],
-    outdoor: ["with Brazilian landscape", "near Portuguese architecture", "with tropical colonial backdrop", "in colorful Portuguese plaza", "with Brazilian coastal elements", "near Portuguese castles", "with cork oak trees", "in Portuguese vineyard setting", "with traditional Portuguese windmills", "near Douro River valley", "with Portuguese fishing village backdrop", "in Sintra palace gardens", "with Portuguese maritime port", "near Cliffs of Moher coastal views", "with Portuguese countryside hills"]
-  }
-};
+// ============= CULTURAL LANDMARKS MOVED TO SHARED MODULE =============
 
-function getCulturalLandmarks(language, isIndoor, isOutdoor) {
-  try {
-    const landmarks = CULTURAL_LANDMARKS[language];
-    if (!landmarks) return [];
-    
-    if (isIndoor && landmarks.indoor) {
-      return landmarks.indoor;
-    }
-    if (isOutdoor && landmarks.outdoor) {
-      return landmarks.outdoor;
-    }
-    
-    // Default: combine both indoor and outdoor
-    return [...(landmarks.indoor || []), ...(landmarks.outdoor || [])];
-    
-  } catch (error) {
-    console.warn('⚠️ Cultural landmarks error:', error);
-    return [];
-  }
-}
+// ============= getCulturalLandmarks FUNCTION MOVED TO SHARED MODULE =============
 
 function applyCulturalSettingEnhancement(baseSetting, userInfo, avatarIdentity) {
   try {
@@ -1691,7 +1637,7 @@ function applyCulturalSettingEnhancement(baseSetting, userInfo, avatarIdentity) 
                             baseSetting.toLowerCase().includes('backyard');
     
     // Get cultural landmarks for the language with enhanced context awareness
-    const landmarks = getCulturalLandmarks(language, isIndoorSetting, isOutdoorSetting);
+    const landmarks = getCulturalLandmarks(language, isIndoorSetting);
     if (landmarks.length > 0) {
       const randomLandmark = landmarks[Math.floor(Math.random() * landmarks.length)];
       
@@ -2055,12 +2001,13 @@ function extractAtmosphere(sceneText) {
   return atmosphere;
 }
 
-// Extract physical props and objects from scene text
-function extractProps(sceneText) {
-  if (!sceneText || typeof sceneText !== 'string') return [];
+// ============= CONSOLIDATED extractStoryProps FUNCTION =============
+// Unified props extraction function (consolidating two duplicate versions)
+function extractStoryProps(pageText, objects) {
+  if (!pageText || typeof pageText !== 'string') return [];
   
-  const text = sceneText.toLowerCase();
-  const props = [];
+  const lowerText = pageText.toLowerCase();
+  const detectedProps = [];
   
   // Common story props organized by category
   const propCategories = {
@@ -3845,19 +3792,7 @@ function getHardcodedTemplates(difficulty) {
   return templates[difficulty] || templates['easy'];
 }
 
-/**
- * Generate emergency pages as absolute last resort
- */
-function generateEmergencyPages(pageCount, userInfo = {}) {
-  const userName = userInfo.userName || userInfo.name || "the child";
-  
-  const emergencyTemplate = [
-    `${userName} began a wonderful adventure.`,
-    `${userName} met friendly characters along the way.`,
-    `${userName} learned something important.`,
-    `${userName} helped others and made new friends.`,
-    `${userName} felt happy and proud of the journey.`
-  ];
+// ============= EMERGENCY FUNCTIONS REMOVED - UNUSED CODE =============
   
   let pages = [];
   for (let i = 0; i < pageCount; i++) {
@@ -3870,15 +3805,7 @@ function generateEmergencyPages(pageCount, userInfo = {}) {
 
 // ============= END COMPLETE INTEGRATION =============
 
-  arabic: {
-    indoor: ["in ornate Middle Eastern interior", "with Arabic architectural patterns", "in traditional Arabic setting", "with Middle Eastern design", "in elegant Arabic room"],
-    outdoor: ["with Middle Eastern domes", "in ornate courtyard", "with mosaic patterns", "near ancient architecture", "with desert oasis backdrop"]
-  },
-  portuguese: {
-    indoor: ["in Brazilian colonial interior", "with Portuguese cultural elements", "in warm Portuguese setting", "with Brazilian design details", "in Portuguese-style room", "with azulejo tile patterns", "in traditional Portuguese library", "with Portuguese maritime decor", "in colorful Portuguese kitchen", "with fado music ambiance", "in Portuguese cathedral interior", "with cork and wood elements", "in Manueline architectural style", "with Portuguese royal court design"],
-    outdoor: ["with Brazilian landscape", "near Portuguese architecture", "with tropical colonial backdrop", "in colorful Portuguese plaza", "with Brazilian coastal elements", "near Portuguese castles", "with cork oak trees", "in Portuguese vineyard setting", "with traditional Portuguese windmills", "near Douro River valley", "with Portuguese fishing village backdrop", "in Sintra palace gardens", "with Portuguese maritime port", "near Cliffs of Moher coastal views", "with Portuguese countryside hills"]
-  }
-};
+// ============= ORPHANED CULTURAL_LANDMARKS OBJECT #2 REMOVED =============
 
 // ============= MASTER PLAN PHASE 6: CULTURAL ARRAY & ETHNICITY OPTIMIZATION =============
 function applyCulturalSettingEnhancement(baseSetting, userInfo, avatarIdentity) {
@@ -3901,7 +3828,7 @@ function applyCulturalSettingEnhancement(baseSetting, userInfo, avatarIdentity) 
                             baseSetting.toLowerCase().includes('backyard');
     
     // Get cultural landmarks for the language with enhanced context awareness
-    const landmarks = getCulturalLandmarks(language, isIndoorSetting, isOutdoorSetting);
+    const landmarks = getCulturalLandmarks(language, isIndoorSetting);
     if (landmarks.length > 0) {
       const randomLandmark = landmarks[Math.floor(Math.random() * landmarks.length)];
       
@@ -3932,18 +3859,7 @@ function applyCulturalSettingEnhancement(baseSetting, userInfo, avatarIdentity) 
   }
 }
 
-// ============= RED X FIX 4: ENHANCED CONTEXT-AWARE ENHANCEMENT RULES =============
-// Preserve exact story words while adding appropriate visual descriptors
-function applyContextAwareEnhancement(currentValue, exactWord, type) {
-  if (!exactWord || !currentValue) return currentValue;
-  
-  try {
-    // Preserve exact story content first, enhance visually second
-    if (type === 'action') {
-      // Keep exact verb form, add minimal context-appropriate descriptors
-      if (exactWord.includes('roll')) return `${exactWord}`;
-      if (exactWord.includes('run')) return `${exactWord}`;
-      if (exactWord.includes('jump')) return `${exactWord}`;
+// ============= DUPLICATE FUNCTION REMOVED - KEEPING FIRST INSTANCE =============
       if (exactWord.includes('play')) return `${exactWord}`;
       if (exactWord.includes('bounce')) return `${exactWord}`;
       if (exactWord.includes('fall')) return `${exactWord}`;
@@ -4572,8 +4488,9 @@ async function fillPremiumTemplate(
     // ============= MASTER PLAN: CAMERA DIRECTIVE INTEGRATION (After scene extraction) =============
     const cameraDirective = generateCameraDirective(difficulty, scene, enhancedSetting);
     
-    // Get style framework settings using nuclear independence (defined below)
-    // const styleSettings = NUCLEAR_STYLE_SETTINGS[difficulty] || NUCLEAR_STYLE_SETTINGS['medium']; // MOVED TO AFTER DEFINITION
+    // Get style framework settings from shared module
+    const styleFramework = getStyleFramework(difficulty);
+    const styleSettings = { steps: 4, CFGScale: styleFramework.CFGScale || 1 };
     
     // Conditional clothing detection from story text
     const clothing = detectClothingFromStory(pageText || scene);
@@ -4984,13 +4901,7 @@ function getCharacterEthnicity(userInfo, avatarIdentity) {
   }
 }
 
-// AFTER line 805, ADD emergency prompt generator:
-function generateEmergencyPrompt(userInfo) {
-  const gender = userInfo?.avatar?.type === 'girl' ? 'girl' : 
-                userInfo?.avatar?.type === 'boy' ? 'boy' : 'child';
-  
-  return `An attractive ${gender} in a portrait style photo with main character focus. Beautiful children's book illustration, warm lighting, cheerful atmosphere, high quality, detailed art.`;
-}
+// ============= DUPLICATE EMERGENCY PROMPT GENERATOR REMOVED =============
 
 // ============= HELPER FUNCTIONS =============
 
@@ -5160,56 +5071,16 @@ function getAgeFromDifficulty(difficulty) {
 }
 
 
-// MASTER PLAN PHASE 6: ENHANCED CULTURAL LANDMARK ARRAYS WITH INDOOR/OUTDOOR CONTEXT
-const CULTURAL_LANDMARKS = {
-  spanish: {
-    indoor: ["with Spanish tile patterns", "in Mediterranean style interior", "with Spanish cultural elements", "in warm villa setting", "with Spanish decor"],
-    outdoor: ["with Spanish villa backdrop", "near Mediterranean courtyard", "with Spanish architecture", "in colorful plaza", "with Spanish garden elements"]
-  },
-  french: {
-    indoor: ["in charming Parisian café", "with French interior design", "in elegant French setting", "with French cultural elements", "in cozy French environment"],
-    outdoor: ["near Eiffel Tower", "by Seine River", "near Louvre gardens", "in charming café district", "with Parisian park backdrop"]
-  },
-  chinese: {
+// CULTURAL LANDMARKS MOVED TO SHARED MODULE - SEE _shared/culturalLandmarks.js
     indoor: ["with traditional Chinese interior", "in Chinese cultural setting", "with oriental design elements", "in pagoda-style building", "with Chinese architectural details"],
     outdoor: ["with traditional pagodas", "near Great Wall", "with ancient temples", "in bamboo garden", "with oriental architecture"]
   },
   hindi: {
     indoor: ["in Indian palace interior", "with traditional Indian patterns", "in colorful Indian setting", "with Indian cultural elements", "in ornate Indian room"],
     outdoor: ["near Taj Mahal", "with palace elements", "in colorful market", "with Indian architecture", "in vibrant courtyard"]
-  },
-  arabic: {
-    indoor: ["in ornate Middle Eastern interior", "with Arabic architectural patterns", "in traditional Arabic setting", "with Middle Eastern design", "in elegant Arabic room"],
-    outdoor: ["with Middle Eastern domes", "in ornate courtyard", "with mosaic patterns", "near ancient architecture", "with desert oasis backdrop"]
-  },
-  portuguese: {
-    indoor: ["in Brazilian colonial interior", "with Portuguese cultural elements", "in warm Portuguese setting", "with Brazilian design details", "in Portuguese-style room", "with azulejo tile patterns", "in traditional Portuguese library", "with Portuguese maritime decor", "in colorful Portuguese kitchen", "with fado music ambiance", "in Portuguese cathedral interior", "with cork and wood elements", "in Manueline architectural style", "with Portuguese royal court design"],
-    outdoor: ["with Brazilian landscape", "near Portuguese architecture", "with tropical colonial backdrop", "in colorful Portuguese plaza", "with Brazilian coastal elements", "near Portuguese castles", "with cork oak trees", "in Portuguese vineyard setting", "with traditional Portuguese windmills", "near Douro River valley", "with Portuguese fishing village backdrop", "in Sintra palace gardens", "with Portuguese maritime port", "near Cliffs of Moher coastal views", "with Portuguese countryside hills"]
-  }
-};
+// ============= ORPHANED CULTURAL_LANDMARKS OBJECT #3 REMOVED =============
 
-// ============= MASTER PLAN PHASE 6: CULTURAL ARRAY & ETHNICITY OPTIMIZATION =============
-function applyCulturalSettingEnhancement(baseSetting, userInfo, avatarIdentity) {
-  try {
-    const language = avatarIdentity?.nativeLanguage || userInfo?.language || 'en';
-    console.log(`🌍 Enhanced Cultural Setting Enhancement - Language: ${language}, Base Setting: "${baseSetting}"`);
-    
-    // ENHANCED: Context-aware cultural integration with indoor/outdoor detection
-    const isIndoorSetting = baseSetting.toLowerCase().includes('indoor') || 
-                           baseSetting.toLowerCase().includes('home') || 
-                           baseSetting.toLowerCase().includes('school') ||
-                           baseSetting.toLowerCase().includes('classroom') ||
-                           baseSetting.toLowerCase().includes('kitchen') ||
-                           baseSetting.toLowerCase().includes('bedroom');
-    
-    const isOutdoorSetting = baseSetting.toLowerCase().includes('outdoor') || 
-                            baseSetting.toLowerCase().includes('park') || 
-                            baseSetting.toLowerCase().includes('playground') ||
-                            baseSetting.toLowerCase().includes('garden') ||
-                            baseSetting.toLowerCase().includes('backyard');
-    
-    // Get cultural landmarks for the language with enhanced context awareness
-    const landmarks = getCulturalLandmarks(language, isIndoorSetting, isOutdoorSetting);
+// ============= DUPLICATE CULTURAL SETTING ENHANCEMENT FUNCTION REMOVED =============
     if (landmarks.length > 0) {
       const randomLandmark = landmarks[Math.floor(Math.random() * landmarks.length)];
       
@@ -5240,18 +5111,7 @@ function applyCulturalSettingEnhancement(baseSetting, userInfo, avatarIdentity) 
   }
 }
 
-// ============= RED X FIX 4: ENHANCED CONTEXT-AWARE ENHANCEMENT RULES =============
-// Preserve exact story words while adding appropriate visual descriptors
-function applyContextAwareEnhancement(currentValue, exactWord, type) {
-  if (!exactWord || !currentValue) return currentValue;
-  
-  try {
-    // Preserve exact story content first, enhance visually second
-    if (type === 'action') {
-      // Keep exact verb form, add minimal context-appropriate descriptors
-      if (exactWord.includes('roll')) return `${exactWord}`;
-      if (exactWord.includes('run')) return `${exactWord}`;
-      if (exactWord.includes('jump')) return `${exactWord}`;
+// ============= DUPLICATE FUNCTION REMOVED - USING FIRST INSTANCE =============
       if (exactWord.includes('play')) return `${exactWord}`;
       if (exactWord.includes('bounce')) return `${exactWord}`;
       if (exactWord.includes('fall')) return `${exactWord}`;
