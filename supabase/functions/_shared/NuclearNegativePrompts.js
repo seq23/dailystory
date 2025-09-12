@@ -2,13 +2,8 @@
 // Shared module for both Tier 1 (Orchestrator) and Tier 2.5 (Nuclear Fallback)
 // Nuclear Independence: 90%+ hardcoded arrays for comprehensive safety filtering
 
-// NUCLEAR BASE NEGATIVE PROMPT (Consolidated for Efficiency)
-export const NUCLEAR_BASE_NEGATIVE_PROMPT = [
-  // Core Quality & Safety
-  'low quality', 'blurry', 'distorted', 'bad anatomy', 'extra limbs', 'bad hands', 
-  'close-up shot', 'cropped image', 'partial view', 'no text', 'adult content', 
-  'artifacts', 'cartoon style', 'anime style'
-];
+// UNIFIED NEGATIVE PROMPT (Hardcoded Base for All Characters)
+export const NUCLEAR_BASE_NEGATIVE_PROMPT = "NO TEXT, no words, no letters, no writing, no captions, no watermarks, no signatures, no logos, no adult features, no mature faces, no wrinkles, no facial hair, no makeup, no weapons, no scary features, no distorted faces, no asymmetrical features, no blurry faces, no low quality, no pixelated, no grainy, no artifacts, no noise, no overexposed, no underexposed, no harsh shadows, no dramatic lighting, no neon colors, no oversaturated, no desaturated, no black and white, no sepia, no vintage effects, no filters, no borders, no frames, no split screen, no collage, no montage, no duplicate faces, no extra limbs, no missing limbs, no missing body, no deformed hands, no extra fingers, no missing fingers, no anatomical errors, no unrealistic proportions, no cartoon exaggeration, no anime style, no manga style, no abstract art, no surreal elements, no photorealistic adults, no teenagers, no infants, no babies";
 
 // NUCLEAR OPPOSITE GENDER NEGATIVE PROMPT 
 export const NUCLEAR_OPPOSITE_GENDER_NEGATIVES = {
@@ -84,15 +79,16 @@ export const NUCLEAR_CULTURAL_SENSITIVITY_NEGATIVES = [
 ];
 
 /**
- * Generate comprehensive nuclear negative prompt for both Tier 1 and Tier 2.5
+ * Generate comprehensive nuclear negative prompt for Tier 1 only
  * Enhanced with multi-character consistency support
+ * Note: Tier 2.5 uses hardcoded arrays directly for nuclear independence
  */
 export function generateNuclearNegativePrompt(culturalProfile, avatarType, difficulty, pageNumber = 1, secondaryCharacters = []) {
   console.log(`🛡️ Nuclear Negative: Generating for ${avatarType} with cultural profile: ${culturalProfile}`);
   console.log(`🛡️ Nuclear Negative: Secondary characters:`, secondaryCharacters);
   
-  // Start with nuclear base negative prompt
-  let negativeComponents = [...NUCLEAR_BASE_NEGATIVE_PROMPT];
+  // Start with nuclear base negative prompt (now a string, not array)
+  let negativeComponents = [NUCLEAR_BASE_NEGATIVE_PROMPT];
   
   // ============= PHASE 5 ENHANCEMENT: MULTI-CHARACTER GENDER CONSISTENCY =============
   // Primary character gender filtering
