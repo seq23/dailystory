@@ -37,8 +37,6 @@ verify_jwt = false
 verify_jwt = true
 
 
-[functions.secure-debug-access]
-verify_jwt = true
 
 [functions.send-coppa-notification]
 verify_jwt = true
@@ -65,8 +63,6 @@ verify_jwt = false
 [functions.correct-spelling]
 verify_jwt = false
 
-[functions.cors-testing]
-verify_jwt = false
 
 
 [functions.image-proxy]
@@ -85,11 +81,6 @@ verify_jwt = false
 verify_jwt = false
 
 
-[functions.test-runware-api]
-verify_jwt = false
-
-[functions.test-runware-debug]
-verify_jwt = false
 
 [functions.elevenlabs-dictionary-manager]
 verify_jwt = false

@@ -1,7 +1,5 @@
-// Redeploy touch: 2025-09-12T18:45:32Z - Force complete rebuild
-console.log("[openai-realtime] Loaded: 2025-09-12T18:45:32Z");
-import "https://deno.land/x/xhr@0.1.0/mod.js";
-import { serve } from "https://deno.land/std@0.168.0/http/server.js";
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,7 +13,7 @@ serve(async (req) => {
     return new Response('ok', { headers: corsHeaders });
   }
 
-  // Force deployment sync - 2025-01-30
+  
 
   const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
   if (!openaiApiKey) {

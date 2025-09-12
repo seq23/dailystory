@@ -1,5 +1,3 @@
-// Redeploy touch: 2025-09-12T18:45:32Z - Force complete rebuild
-console.log("[system-diagnostics] Loaded: 2025-09-12T18:45:32Z");
 import { serve } from "https://deno.land/std@0.168.0/http/server.js";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -17,8 +15,6 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
-
-  // Force deployment sync - 2025-01-30
 
   try {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -126,63 +122,6 @@ serve(async (req) => {
         );
       }
 
-      case 'test-runware-api': {
-        if (!runwareApiKey) {
-          return new Response(
-            JSON.stringify({ error: 'Runware API key not configured' }),
-            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
-
-        const testPayload = {
-          taskType: "imageInference",
-          taskUUID: crypto.randomUUID(),
-          outputType: "URL",
-          outputFormat: "JPEG",
-          positivePrompt: "a simple test image, digital art",
-          model: "runware:100@1",
-          numberResults: 1,
-          imageInitialization: false,
-          width: 512,
-          height: 512
-        };
-
-        const response = await fetch('https://api.runware.ai/v1', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${runwareApiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify([testPayload])
-        });
-
-        const result = await response.json();
-
-        return new Response(
-          JSON.stringify({
-            test_successful: response.ok,
-            status_code: response.status,
-            api_response: result,
-            test_payload: testPayload,
-            timestamp: new Date().toISOString()
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      case 'cors-testing': {
-        // Simple CORS test
-        return new Response(
-          JSON.stringify({
-            cors_test: 'successful',
-            headers_present: true,
-            timestamp: new Date().toISOString(),
-            request_method: req.method,
-            request_headers: Object.fromEntries(req.headers.entries())
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
 
       case 'health-check':
       default: {
