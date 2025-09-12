@@ -6,7 +6,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.js";
 
 async function getDifficultyMapper() {
   try {
-    const { DifficultyLevelMapper } = await import("../_shared/DifficultyLevelMapper.js");
+    const { DifficultyLevelMapper } = await import("../_shared/DifficultyLevelMapper.ts");
     return DifficultyLevelMapper;
   } catch (error) {
     console.warn('DifficultyLevelMapper lazy load failed:', error);

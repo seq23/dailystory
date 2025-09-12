@@ -1,7 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.js";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.55.0';
-import { DifficultyLevelMapper } from '../_shared/DifficultyLevelMapper.js';
+import { DifficultyLevelMapper } from '../_shared/DifficultyLevelMapper.ts';
 import { getPerPageTokenLimit, getStoryPrompt, formatUserPrompt, resolvePromptPlaceholders } from '../_shared/storyPrompts.ts';
 import { ENHANCED_LEVEL_0_VOCABULARY } from '../_shared/vocabulary/dolchPrePrimer.ts';
 import { handleStreamlinedGeneration } from './streamlined-handler.ts';

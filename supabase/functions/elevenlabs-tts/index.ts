@@ -1,6 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.js";
-import { DifficultyLevelMapper } from "../_shared/DifficultyLevelMapper.js";
+import { DifficultyLevelMapper } from "../_shared/DifficultyLevelMapper.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
