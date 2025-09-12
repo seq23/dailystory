@@ -1,16 +1,21 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.55.0';
-import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+};
 
 serve(async (req) => {
   console.log(`🔍 Debug: Prompt History Request: ${req.method} ${req.url}`);
 
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return createCorsOptionsResponse();
+    return new Response(null, { headers: corsHeaders });
   }
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -20,7 +25,10 @@ serve(async (req) => {
 
     if (!sessionId) {
       console.log('❌ No session ID provided');
-      return createCorsErrorResponse('Session ID is required', 400);
+      return new Response(JSON.stringify({ error: 'Session ID is required' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
     }
 
     console.log(`🔍 Fetching debug data for session: ${sessionId}, type: ${type}, limit: ${limit}`);
@@ -35,10 +43,10 @@ serve(async (req) => {
 
     if (dbError) {
       console.error('❌ Database error:', dbError);
-      return createCorsErrorResponse(
-        `Database query failed: ${dbError.message}`,
-        500
-      );
+      return new Response(JSON.stringify({ error: `Database query failed: ${dbError.message}` }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
     }
 
     console.log(`✅ Found ${debugLogs?.length || 0} debug entries for session ${sessionId}`);
@@ -79,13 +87,15 @@ serve(async (req) => {
 
     console.log(`🎯 Returning ${aiPrompts.length} debug entries for session ${sessionId}`);
 
-    return createCorsResponse(response);
+    return new Response(JSON.stringify(response), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
 
   } catch (error) {
     console.error('❌ Error in debug-prompt-history function:', error);
-    return createCorsErrorResponse(
-      `Debug retrieval failed: ${error.message}`,
-      500
-    );
+    return new Response(JSON.stringify({ error: `Debug retrieval failed: ${error.message}` }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
   }
 });
