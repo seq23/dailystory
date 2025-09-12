@@ -1,6 +1,6 @@
 // Redeploy touch: 2025-09-12T19:26:30Z - Fix deployment cache issue
 console.log("[translate-universal] Loaded: 2025-09-12T19:26:30Z");
-import { serve } from "https://deno.land/std@0.168.0/http/server.js"
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
