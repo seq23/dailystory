@@ -1,5 +1,20 @@
 # Business Logic Documentation
 
+## 🚨 CRITICAL: Edge Function Management
+
+### Emergency Throttling Status
+**ACTIVE** - Due to quota exceeded (2.98M invocations), emergency throttling implemented:
+- All monitoring auto-refresh **DISABLED** by default
+- Manual refresh controls added to all monitoring components  
+- Polling intervals increased 5-10x when live updates enabled
+- Expected 95% reduction in edge function usage
+
+### Current Edge Function Usage Guidelines
+1. **Default to manual refresh** for all monitoring features
+2. **Enable live updates sparingly** - only when actively debugging
+3. **Use conservative intervals** (5+ minutes) for auto-refresh when needed
+4. **Monitor usage regularly** via Supabase dashboard to prevent future overages
+
 ## Core Business Model
 
 ### User Types and Capabilities
@@ -174,14 +189,50 @@
 ## Configuration Management
 
 ### Environment-Specific Settings
-- **Development**: Relaxed limits, verbose logging
-- **Staging**: Production-like limits, moderate logging  
-- **Production**: Strict limits, essential logging only
+- **Development**: Relaxed limits, verbose logging, debug monitoring enabled
+- **Staging**: Production-like limits, moderate logging, limited monitoring
+- **Production**: Strict limits, essential logging only, manual monitoring only
 
 ### Feature Flags
 - **Premium Features**: Toggle advanced capabilities
-- **Experimental Content**: A/B testing new story types
+- **Experimental Content**: A/B testing new story types  
 - **Emergency Modes**: Fallback-only operation during incidents
+- **Monitoring Controls**: Auto-refresh permissions, polling interval limits
+
+### Current App Configuration
+**Monitoring System**: Emergency throttling active
+- `useAdvancedMonitoring`: Manual refresh, 5min intervals if enabled
+- `AdvancedSystemStatus`: Manual refresh, 2min intervals if enabled
+- `SecurityDashboard`: Manual refresh, 1min intervals if enabled
+- `CacheInspectorPanel`: Manual refresh, 30sec intervals if enabled
+- `UnifiedDebugMonitor`: Manual refresh only, no auto-polling
+- `BackendTierChecker`: Manual refresh only, single mount check
+
+**Session Management**: Enhanced cache control
+- `resumeOnRefresh`: Disabled for both premium and guest users
+- Cache clearing triggers optimized for reliability
+- Session state persistence improved for stability
+
+**Image Generation**: Dual-provider system
+- Primary: Runware Flux (configurable models, optimized settings)
+- Fallback: OpenAI DALL-E 3 (reliable backup)
+- Provider priority: Runware → OpenAI → Placeholder
+
+## Emergency Procedures
+
+### Edge Function Quota Management
+If approaching quota limits:
+1. **Immediately disable** all auto-refresh features
+2. **Switch to manual-only** monitoring
+3. **Increase polling intervals** to maximum (5+ minutes)
+4. **Monitor usage** via Supabase analytics dashboard
+5. **Document changes** in emergency throttling documentation
+
+### Service Degradation Protocol
+1. **AI Generation Failure**: Fall back to template service
+2. **Image Generation Failure**: Use cached images or placeholders
+3. **Monitoring Failure**: Switch to manual debugging tools
+4. **Database Issues**: Enable read-only mode, preserve user sessions
 
 Last Updated: January 2025
-Version: 2.0
+Version: 3.0 (Emergency Throttling Edition)

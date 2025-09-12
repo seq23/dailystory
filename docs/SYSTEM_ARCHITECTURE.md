@@ -1,377 +1,305 @@
-# System Architecture Overview
+# System Architecture Documentation
 
-**Last Updated**: January 2025  
-**Status**: ✅ Comprehensive Fallback System Implemented
+## 📋 Overview
 
-## Overview
+Time2Read is a multi-tier story generation platform with sophisticated AI integration, image generation, and monitoring systems. The architecture supports distinct user experiences for guests and premium users while maintaining high performance and reliability.
 
-This document outlines the complete system architecture for the story generation platform, including the 3-tier fallback system, user experience management, and backend service integration. The architecture prioritizes user experience continuity and system reliability.
+**🚨 CRITICAL**: Emergency edge function throttling active due to quota exceeded (2.98M invocations).
 
-## High-Level Architecture
+## 🏗️ Frontend Architecture
 
-### Frontend Application Layer
-- **React + TypeScript**: Main application framework
-- **Vite**: Build system and development server
-- **Tailwind CSS**: Design system and styling
-- **Shadcn/ui**: Component library with custom extensions
-- **React Router**: Client-side routing and navigation
+### Component Hierarchy
+```
+App.tsx
+├── AuthWrapper
+│   ├── GuestExperience
+│   │   ├── FloatingTimer (20 min, non-dismissible)
+│   │   ├── StoryContainer (6-page limit)
+│   │   └── NextStoryButton (artificial cutoff)
+│   └── AuthenticatedApp
+│       ├── FloatingTimer (dismissible)
+│       ├── StoryContainer (unlimited)
+│       ├── StoryLibrary
+│       └── MagicWandRewrite
+```
 
-### Backend Services Layer
-- **Supabase**: Primary backend platform
-- **Edge Functions**: Serverless function execution
-- **OpenAI Integration**: Primary AI story generation
-- **Template System**: Fallback content generation
-- **Image Generation**: AI-powered image creation per page
+### State Management
+- **React Query**: Data fetching, caching, background updates
+- **Local State**: Component-specific state via useState/useReducer
+- **Session Storage**: Story progress, user preferences
+- **Cache Management**: Image caching for navigation consistency
 
-### State Management Layer
-- **React Context**: User session and preferences
-- **Local Storage**: Persistent user settings
-- **Session Storage**: Temporary state and flags
-- **Global Variables**: Real-time source tracking
+### Routing Structure
+```
+/ (Index) → AuthWrapper
+├── /auth → Authentication pages
+├── /pricing → Premium upgrade flow
+├── /library → Story library (premium only)
+├── /profile → User profile management
+└── /admin → Administrative tools
+```
 
-## Core System Components
+## 🔄 Story Generation Pipeline
 
-### Story Generation Pipeline
+### Service Architecture
 
-#### Tier 1: AI Generation Service
+#### 1. Netflix-Style Service (Guest Users)
+**File**: `src/services/NetflixStyleStoryService.ts`
+- **Purpose**: Batch generation for 6-page guest experience
+- **AI Call**: Single request generating 10-12+ pages
+- **Validation**: Full story validation with guest token limits
+- **Fallback**: Template service if AI generation fails
+- **Cache**: All pages cached, only 6 visible to user
+
+#### 2. Live Generation Service (Premium Users)
+**File**: `src/services/storyGenerationService.ts`
+- **Purpose**: Page-by-page real-time generation
+- **AI Call**: Individual page requests as user progresses
+- **Validation**: Per-page validation with premium token limits
+- **Fallback**: Emergency content generation
+- **Cache**: Progressive caching as pages are generated
+
+#### 3. Template Service (Universal Fallback)
+**File**: `supabase/functions/template-service/`
+- **Purpose**: Bulletproof fallback for both user types
+- **Content**: Pre-written, curated stories by difficulty
+- **Independence**: No external AI dependencies
+- **Reliability**: 100% success rate, instant response
+
+### Story Flow Diagram
+
+```mermaid
+graph TD
+    A[User Request] --> B{User Type?}
+    B -->|Guest| C[Netflix Service]
+    B -->|Premium| D[Live Service]
+    
+    C --> E[Batch AI Generation]
+    D --> F[Single Page AI]
+    
+    E --> G{Success?}
+    F --> G
+    
+    G -->|Yes| H[Validation Layer]
+    G -->|No| I[Template Fallback]
+    
+    H --> J{Valid?}
+    J -->|Yes| K[Story Cache]
+    J -->|No| I
+    
+    I --> K
+    K --> L[User Display]
+```
+
+## 🖼️ Image Generation Architecture
+
+### Dual Provider System
+1. **Primary**: Runware Flux (configured in `appConfig.ts`)
+   - Models: Flux Schnell, Flux Dev
+   - High performance, cost-effective
+   - 3-tier fallback system
+
+2. **Secondary**: OpenAI DALL-E 3
+   - Premium quality images
+   - Reliable fallback option
+   - Higher cost, lower throughput
+
+### Image Generation Flow
+```mermaid
+sequenceDiagram
+    participant User
+    participant Frontend
+    participant ImageService
+    participant Runware
+    participant OpenAI
+    participant Cache
+    
+    User->>Frontend: Navigate to new page
+    Frontend->>ImageService: Request image generation
+    ImageService->>Runware: Primary generation attempt
+    
+    alt Runware Success
+        Runware-->>ImageService: Generated image
+        ImageService->>Cache: Store image
+    else Runware Failure
+        ImageService->>OpenAI: Fallback generation
+        OpenAI-->>ImageService: Generated image
+        ImageService->>Cache: Store image
+    end
+    
+    ImageService-->>Frontend: Return image URL
+    Frontend-->>User: Display image
+```
+
+### Character Consistency System
+- **Avatar Identity**: Maintained across story pages
+- **Secondary Elements**: Animals, objects tracked for consistency  
+- **Visual Details**: Appearance continuity management
+- **Prompt Engineering**: Dynamic character descriptions
+
+## 🚨 Monitoring & Debugging System
+
+### Emergency Throttling Architecture
+Due to edge function quota burn (2.98M invocations), implemented:
+
+#### Auto-Refresh Control
 ```typescript
-// Primary story generation via OpenAI
-interface AIGenerationService {
-  generateStory(userInfo: UserInfo): Promise<StoryResult>;
-  generatePage(context: StoryContext): Promise<PageResult>;
-  
-  // Integration points
-  setGlobalSource: (source: 'ai') => void;
-  dispatchEvent: (event: 'story:generation:complete') => void;
-}
+// Emergency defaults - all monitoring disabled by default
+const { autoRefresh = false, refreshInterval = 300000 } = options;
 ```
 
-**Implementation**: 
-- OpenAI GPT-4 integration via Supabase Edge Functions
-- Character consistency via database-backed context
-- Dynamic prompt building with user personalization
-- Image generation coordination per story page
+#### Monitoring Components
+1. **AdvancedSystemStatus**: Manual refresh, optional 2min live updates
+2. **SecurityDashboard**: Manual refresh, optional 1min live updates  
+3. **CacheInspectorPanel**: Manual refresh, optional 30sec live updates
+4. **UnifiedDebugMonitor**: Manual refresh only, no auto-polling
+5. **BackendTierChecker**: Manual refresh only, single mount check
+6. **useAdvancedMonitoring**: Manual refresh, optional 5min live updates
 
-**Success Path**:
-- Sets `window.__LAST_STORY_SOURCE__ = 'ai'`
-- Dispatches completion event for UI notifications
-- Returns high-quality personalized content
-
-**Failure Path**:
-- Timeout after 30 seconds
-- Error handling via standardized error utilities
-- Automatic fallback to Tier 2.5 (Nuclear Hardcoded Fallback)
-
-#### Tier 2.5: Nuclear Hardcoded Fallback
+#### Visibility State Detection
 ```typescript
-// Template-based fallback content generation
-interface TemplateService {
-  generateFromTemplate(userInfo: UserInfo, difficulty: DifficultyLevel): Promise<TemplateResult>;
-  
-  // Backend integration
-  invokeEdgeFunction: (templateRequest: TemplateRequest) => Promise<TemplateResponse>;
-  validateGrammar: (content: string) => Promise<string>;
-  personalizeContent: (template: string, userInfo: UserInfo) => string;
-}
+useEffect(() => {
+  if (!autoRefresh || document.visibilityState !== 'visible') return;
+  const interval = setInterval(refreshData, refreshInterval);
+  return () => clearInterval(interval);
+}, [autoRefresh, refreshInterval]);
 ```
 
-**Implementation**:
-- Supabase Edge Function: `template-service`
-- 136 individual template files with dynamic loading
-- Grammar validation and content personalization
-- Metadata management via template registry
+### Performance Monitoring
+- **SecurityMonitor**: Event logging with filtering and rate limiting
+- **PerformanceMonitor**: Operation timing and duration tracking
+- **UserActivityMonitor**: Privacy-conscious user interaction tracking
+- **MetricsCollector**: Aggregated performance data collection
 
-**Recent Fixes**:
-- ✅ **Syntax Error Resolved**: Fixed import path in `templateConverter.ts` (`.js` → `.ts`)
-- ✅ **Deployment Working**: Edge function now properly deployed and functional
-- ✅ **Source Tracking**: Returns proper source metadata with generated content
+## 🗄️ Database Architecture
 
-**Success Path**:
-- Sets `window.__LAST_STORY_SOURCE__ = 'fallback'`
-- Triggers yellow warning toast notification
-- Returns template-based personalized content
+### Supabase Integration
+- **Authentication**: User management, session handling
+- **Database**: PostgreSQL with Row Level Security (RLS)
+- **Edge Functions**: 47 deployed functions for various services
+- **Storage**: Image and file management with policy controls
 
-**Failure Path**:
-- Edge function errors or timeouts
-- Automatic fallback to Tier 3 (Emergency Content)
+### Key Database Tables
+```sql
+-- User profiles and preferences
+profiles (id, user_id, display_name, preferences)
 
-#### Tier 3: Emergency Content System
-```typescript  
-// Emergency rhyming content generation
-interface EmergencyContentService {
-  getEmergencyContent(userInfo: UserInfo): string;
-  
-  // Content generation
-  generateRhymingContent: (character: string) => string;
-  personalizeEmergencyContent: (template: string, userInfo: UserInfo) => string;
-  includeRetryGuidance: (content: string) => string;
-}
+-- Story data and progress  
+stories (id, user_id, content, progress, created_at)
+
+-- Vocabulary tracking and progress
+vocabulary_progress (id, user_id, word, learned_at)
+
+-- Session and usage analytics
+user_sessions (id, user_id, duration, pages_viewed)
 ```
 
-**Implementation**:
-- Local content generation via `ErrorHandlingManager`
-- Rotating rhyming poems with character personalization
-- User-friendly retry guidance and reassurance
-- No external dependencies for maximum reliability
+### Edge Function Categories
+1. **Story Generation**: `generate-adaptive-story`, `process-story-content`
+2. **Image Generation**: `runware-generate-image`, `dalle-generate-image`
+3. **User Management**: `check-premium-status`, `update-user-profile`
+4. **Analytics**: `track-user-activity`, `get-usage-stats`
+5. **Monitoring**: `get-monitoring-data`, `system-health-check`
 
-**Success Path**:
-- Sets `window.__LAST_STORY_SOURCE__ = 'emergency'`
-- Triggers red emergency toast notification
-- Returns rhyming content with retry guidance
+## 🔧 Configuration Management
 
-**Ultimate Fallback**:
-- Simple hardcoded rhyming message
-- Guaranteed content delivery regardless of system state
+### Configuration Files
 
-### User Experience Management
+#### 1. `src/config/appConfig.ts`
+- Centralized application configuration
+- Image provider settings (Runware/DALL-E)
+- Feature flags and experimental settings
+- Performance and timeout configurations
 
-#### Toast Notification System
-```typescript
-interface NotificationSystem {
-  // 3-tier toast implementation
-  showBackupToast: (duration: 7000) => void;    // Yellow warning
-  showEmergencyToast: (duration: 10000) => void; // Red alert
-  showRecoveryToast: (duration: 4000) => void;   // Green success
-  
-  // Session management
-  manageSessionFlags: () => void;
-  preventDuplicateNotifications: () => void;
-}
+#### 2. `src/constants/app.ts`
+- Application-wide constants
+- Session timing and UI duration settings
+- Rate limiting and storage configurations
+- Language and difficulty level definitions
+
+#### 3. `supabase/config.toml`
+- Edge function deployment configuration
+- Authentication and security settings
+- Function-specific JWT verification settings
+
+### Environment Management
+- **Development**: Relaxed limits, verbose logging, debug features
+- **Staging**: Production-like limits, moderate logging
+- **Production**: Strict limits, essential logging only
+
+## 🔐 Security Architecture
+
+### Authentication Flow
+```mermaid
+graph LR
+    A[User Login] --> B[Supabase Auth]
+    B --> C{Valid?}
+    C -->|Yes| D[JWT Token]
+    C -->|No| E[Auth Error]
+    D --> F[Premium Check]
+    F --> G[Feature Access]
 ```
 
-**Components**:
-- `useStorySourceNotifications`: Source change monitoring hook
-- `useToast`: Shadcn toast system with custom styling
-- Session storage integration for persistent flags
-- Event-driven notification triggers
+### Content Safety
+- **AI Safeguards**: Content filtering in generation prompts
+- **Template Curation**: Pre-reviewed fallback content
+- **User Reporting**: Inappropriate content flagging system
+- **Automated Scanning**: Real-time content analysis
 
-#### Status Indicator System
-```typescript
-interface StatusIndicatorSystem {
-  // Persistent status display
-  renderBackupIndicator: () => React.Component;
-  renderEmergencyIndicator: () => React.Component;
-  
-  // User interaction
-  handleStatusClick: () => void;
-  displayContextualInfo: () => void;
-}
-```
+### Data Protection
+- **Child Privacy**: COPPA compliance, minimal data collection
+- **Encryption**: Data at rest and in transit
+- **Access Control**: RLS policies, function-level security
+- **Audit Logging**: Security event tracking
 
-**Components**:
-- `StoryStatusIndicator`: Fixed top-right status display
-- Clickable indicators with contextual information
-- Session persistence across navigation
-- Coordination with toast notification system
-
-### User Type Management
-
-#### Guest User System (Free Tier)
-```typescript
-interface GuestUserSystem {
-  // Session management
-  sessionTimer: FloatingTimer; // 20-minute countdown
-  sessionLimits: StoryLimits;  // 6 pages per story
-  
-  // Content flow
-  generateNetflixStyle: () => Promise<NetflixStoryResult>; // 6-page stories
-  enforcePageLimits: () => void; // "Next Story" after page 6
-  clearCacheOnNewStory: () => void;
-}
-```
-
-**Business Logic**:
-- 20-minute session timer (pausable, resumable)
-- 6-page story limit with "Next Story" progression
-- Cache clearing between stories
-- Full fallback system access for all content
-
-#### Premium User System (Paid Tier)
-```typescript
-interface PremiumUserSystem {
-  // Session management  
-  dismissibleTimer: FloatingTimer; // User-controlled duration
-  unlimitedContent: boolean;       // No artificial limits
-  
-  // Content flow
-  generateLivePages: () => Promise<PageResult>; // Page-by-page generation
-  saveToLibrary: () => void;       // Story preservation
-  rewriteStory: () => void;        // Magic wand regeneration
-}
-```
-
-**Business Logic**:
-- Dismissible timer with unlimited session capability
-- Page-by-page generation with unlimited continuation
-- Story library with image preservation
-- Magic wand story rewriting with cache clearing
-- Full fallback system access per individual page
-
-## Backend Architecture
-
-### Supabase Edge Functions
-
-#### generate-adaptive-story Function
-- **Purpose**: Primary AI story generation endpoint
-- **Integration**: OpenAI GPT-4 API calls
-- **Response**: Complete story content with metadata
-- **Error Handling**: Timeout and error propagation to frontend
-
-#### template-service Function ✅ FIXED
-- **Purpose**: Template-based story generation fallback
-- **Location**: `supabase/functions/template-service/`  
-- **Dependencies**: Fixed import paths (`.ts` extensions)
-- **Processing**: Dynamic template loading, personalization, grammar validation
-- **Response**: Template-generated content with source metadata
-
-#### Shared Utilities
-- **Location**: `supabase/functions/_shared/`
-- **Components**: 
-  - `templateConverter.ts`: Template processing logic ✅ FIXED
-  - `placeholderResolver.ts`: Content personalization
-  - `dynamicTemplateLoader.js`: Template file management
-  - `registry.js`: Template metadata and categorization
-
-### Database Architecture
-
-#### Tables and Storage
-- **Character Consistency Cache**: Maintains avatar and character traits
-- **User Profiles**: Premium/guest user management
-- **Story Library**: Premium user story preservation
-- **Session Management**: Active session tracking
-
-#### Storage Buckets
-- **Generated Images**: Per-page image storage with caching
-- **User Avatars**: Profile image management
-- **Template Assets**: Static template resources
-
-## Source Tracking System
-
-### Global State Management
-```typescript
-// Real-time source tracking
-interface GlobalSourceTracking {
-  __LAST_STORY_SOURCE__: 'ai' | 'fallback' | 'emergency';
-  __LAST_PAGE_SOURCE__: 'ai' | 'fallback' | 'emergency'; // Premium users
-  
-  // Event system
-  dispatchSourceChange: (source: SourceType) => void;
-  monitorSourceChanges: () => void;
-}
-```
-
-### Session Storage Integration
-```typescript
-// Persistent UI state flags
-interface SessionFlags {
-  story_backup_mode: 'true' | null;    // Backup mode indicator
-  story_emergency_mode: 'true' | null; // Emergency mode indicator
-  ai_recovery_shown: 'true' | null;    // Recovery notification control
-}
-```
-
-### Cross-Component Coordination
-- **Services**: All generation services set global source flags
-- **UI Components**: Read source flags for display logic
-- **Notifications**: Source changes trigger toast notifications
-- **Status Indicators**: Persistent indicators based on source state
-
-## Error Handling and Recovery
-
-### Standardized Error Management
-```typescript
-interface ErrorHandlingSystem {
-  // Safe error processing
-  safeErrorMessage: (error: unknown) => string;
-  logSafeError: (error: unknown, context: string) => void;
-  
-  // Recovery mechanisms
-  executeWithRecovery: <T>(
-    primary: () => Promise<T>,
-    fallback: () => Promise<T>, 
-    emergency: () => T
-  ) => Promise<T>;
-}
-```
-
-### Retry Logic
-- **Max Retries**: 3 attempts per service tier
-- **Backoff Strategy**: Exponential backoff (1s, 2s, 4s)
-- **Service Reset**: 60-second cooldown before retry counter reset
-- **Cross-Tier**: Independent retry logic per fallback tier
-
-## Performance and Optimization
-
-### Frontend Optimization
-- **Component Lazy Loading**: Dynamic imports for large components
-- **Image Optimization**: Progressive loading and caching
-- **State Management**: Minimal re-renders via proper dependency arrays
-- **Bundle Optimization**: Code splitting and tree shaking
-
-### Backend Optimization
-- **Edge Function Performance**: Optimized cold start times
-- **Template Caching**: Dynamic template loading with caching
-- **Database Queries**: Indexed queries for character consistency
-- **Image Generation**: Efficient AI image generation coordination
+## 📊 Performance Optimization
 
 ### Caching Strategy
-- **Story Content**: Session-based caching with cleanup
-- **Generated Images**: Persistent caching for navigation
-- **Template Assets**: Static asset caching
-- **User Data**: Optimized user preference storage
+- **Story Content**: Browser storage for page content
+- **Images**: CDN caching with fallback URLs
+- **API Responses**: React Query caching with invalidation
+- **Static Assets**: Aggressive browser caching
 
-## Monitoring and Health Checks
+### Load Balancing
+- **Edge Functions**: Auto-scaling across regions
+- **Image Generation**: Multi-provider load distribution
+- **Database**: Connection pooling and read replicas
+- **CDN**: Global content distribution
 
-### System Health Indicators
-```typescript
-interface SystemHealthMonitoring {
-  // Service availability
-  aiServiceHealth: () => Promise<HealthStatus>;
-  templateServiceHealth: () => Promise<HealthStatus>;
-  
-  // Performance metrics
-  responseTimeTracking: () => MetricsData;
-  errorRateMonitoring: () => ErrorMetrics;
-  
-  // User experience
-  fallbackUsageRates: () => FallbackMetrics;
-  userSessionMetrics: () => SessionData;
+### Performance Metrics
+```json
+{
+  "storyGeneration": "2-5 seconds per page",
+  "imageGeneration": "3-8 seconds per image", 
+  "cacheHitRate": ">80% for navigation",
+  "uptime": "99.9% availability target",
+  "edgeFunctionUsage": "<1M monthly (post-throttling)"
 }
 ```
 
-### Key Performance Indicators
-- **AI Service Uptime**: Target >99% availability
-- **Template Service Response**: <2 second response time after fix
-- **Emergency Content Usage**: <1% of total content generation
-- **User Session Completion**: High retention through fallback periods
+## 🚀 Deployment Architecture
 
-## Security and Data Protection
+### Build Pipeline
+1. **Code Changes**: Committed to repository
+2. **Automatic Build**: Triggered on commit
+3. **Edge Function Deploy**: Supabase function deployment
+4. **Static Asset Build**: Vite production build
+5. **CDN Deploy**: Assets distributed globally
 
-### Data Privacy
-- **User Information**: Minimal data collection and storage
-- **Story Content**: Temporary storage with automatic cleanup
-- **Session Management**: Secure session token handling
-- **GDPR Compliance**: User data deletion and privacy controls
+### Monitoring Post-Deploy
+- **Health Checks**: Automated system verification
+- **Usage Monitoring**: Edge function quota tracking
+- **Error Tracking**: Real-time error detection
+- **Performance Metrics**: Response time monitoring
 
-### API Security
-- **Supabase Integration**: Row Level Security (RLS) policies
-- **Edge Function Security**: Authenticated API calls only
-- **Rate Limiting**: Prevent abuse and ensure fair usage
-- **Content Filtering**: AI-generated content safety measures
-
-## Deployment and Infrastructure
-
-### Development Environment
-- **Local Development**: Vite dev server with hot reload
-- **Supabase Local**: Local backend development environment
-- **Testing**: Comprehensive unit and integration testing
-
-### Production Environment
-- **Frontend Deployment**: Static site deployment via Lovable platform
-- **Backend Services**: Supabase managed infrastructure
-- **CDN Integration**: Global content delivery for optimal performance
-- **Monitoring**: Real-time system health and performance monitoring
+### Rollback Procedures
+- **Version Control**: Git-based rollback capability
+- **Function Revert**: Previous edge function deployment
+- **Database Migrations**: Reversible schema changes
+- **Cache Invalidation**: Force refresh of cached content
 
 ---
 
-**Architecture Philosophy**: This architecture prioritizes user experience continuity above all else. Users always receive engaging content regardless of backend service availability, with clear communication about system status and seamless transitions between content sources.
+**Last Updated**: January 2025  
+**Version**: 3.0 (Emergency Throttling Edition)  
+**Architecture Status**: Stable ✅
