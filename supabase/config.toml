@@ -45,14 +45,6 @@ verify_jwt = true
 [functions.send-parental-notification]
 verify_jwt = true
 
-[functions.debug-ai-prompts]
-verify_jwt = false
-
-[functions.debug-story-processing]
-verify_jwt = false
-
-[functions.debug-visual-scene-creator]
-verify_jwt = false
 
 [functions.translate-batch]
 verify_jwt = false
@@ -78,8 +70,6 @@ verify_jwt = false
 [functions.cors-testing]
 verify_jwt = false
 
-[functions.edge-connectivity-test]
-verify_jwt = false
 
 [functions.image-proxy]
 verify_jwt = false
