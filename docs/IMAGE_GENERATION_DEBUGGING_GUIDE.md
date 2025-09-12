@@ -25,10 +25,15 @@ Navigate to `/prompt-testing?debug=1` to access the tier testing interface.
 
 ### Available Tests
 
+#### Connectivity Tests
+- **GET Health Checks**: Tests endpoint reachability using lightweight GET requests
+- **API Key Status**: Shows presence of required API keys (OpenAI, Runware) per endpoint
+- **Status Display**: "healthy" (2xx + keys present), "non-2xx (status)", or "unreachable"
+
 #### Individual Tier Tests
 - **Tier 1**: Tests `ai-visual-scene-creator` directly
 - **Tier 2.5A-D**: Tests `runware-simple-fallback` with different complexity levels
-- **Tier 4**: Tests SVG fallback generation
+- **Tier 4**: Uses local placeholder generation (no edge function dependency)
 
 #### Batch Testing
 - **Run All Tiers**: Tests complete fallback chain
@@ -58,6 +63,7 @@ Look for these prefixes in browser console:
 - `SIMPLE IMAGE SERVICE`: Service method calls
 - `TIER FALLBACK`: Fallback progression
 - `CACHE MANAGEMENT`: Image caching operations
+- `CONNECTIVITY TEST`: GET-based health check results showing endpoint status and API key presence
 
 #### Backend Logs
 Monitor edge function logs in Supabase Dashboard:

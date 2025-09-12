@@ -54,7 +54,7 @@ export function ImageTierTester() {
 
   const testConnectivity = async () => {
     const requestId = `REQ-${Math.random().toString(36).substring(2, 10)}-${Math.random().toString(36).substring(2, 7)}`;
-    console.log(`🔍 [${requestId}] Starting connectivity diagnostics...`);
+    console.log(`🔍 [${requestId}] Starting connectivity diagnostics with GET health checks...`);
     
     setConnectivityStatus('testing');
     setConnectivityResult(null);
@@ -62,47 +62,62 @@ export function ImageTierTester() {
     try {
       const startTime = Date.now();
       
-      // Test actual existing functions with proper health check payloads
+      // Test actual existing functions with GET health checks
       const healthChecks = [
         { name: 'AI Visual Scene Creator', endpoint: 'ai-visual-scene-creator' },
         { name: 'Runware Image Orchestrator', endpoint: 'runware-generate-image' },
         { name: 'Runware Simple Fallback', endpoint: 'runware-simple-fallback' }
       ];
 
-      console.log(`🔧 [${requestId}] Testing ${healthChecks.length} endpoints...`);
+      console.log(`🔧 [${requestId}] Testing ${healthChecks.length} endpoints via GET...`);
 
       const results = await Promise.allSettled(
         healthChecks.map(async ({ name, endpoint }) => {
           try {
-            console.log(`🩺 [${requestId}] Health check: ${name} (${endpoint})`);
+            console.log(`🩺 [${requestId}] GET health check: ${name} (${endpoint})`);
             
-            // Send proper health check payload
-            const result = await supabase.functions.invoke(endpoint, {
-              body: { 
-                healthCheck: true,
-                requestId,
-                diagnosticMode: true
+            // Use GET request with proper headers
+            const response = await fetch(`https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/${endpoint}`, {
+              method: 'GET',
+              headers: {
+                'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino',
+                'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino',
+                'Content-Type': 'application/json'
               }
             });
+
+            const data = await response.json();
             
-            console.log(`✅ [${requestId}] ${name}: Health check completed`, {
-              success: !!result.data,
-              hasError: !!result.error,
-              status: result.data?.healthy || result.data?.status
-            });
+            let statusDetail = '';
+            let keyStatus = '';
             
-            // Treat any response (even with errors) as reachable
-            const isReachable = true; // Got a response from the function
-            const statusDetail = result.error ? 'reachable (non-2xx)' : 'reachable (ok)';
+            if (response.ok) {
+              // Extract key presence info based on endpoint
+              if (endpoint === 'ai-visual-scene-creator' && data.openaiApiKeyPresent !== undefined) {
+                keyStatus = ` (OpenAI: ${data.openaiApiKeyPresent ? '✓' : '✗'})`;
+              } else if (endpoint === 'runware-generate-image' && data.api_keys) {
+                const openai = data.api_keys.openai_configured ? '✓' : '✗';
+                const runware = data.api_keys.runware_configured ? '✓' : '✗';
+                keyStatus = ` (OpenAI: ${openai}, Runware: ${runware})`;
+              } else if (endpoint === 'runware-simple-fallback' && data.runwareApiKeyPresent !== undefined) {
+                keyStatus = ` (Runware: ${data.runwareApiKeyPresent ? '✓' : '✗'})`;
+              }
+              
+              statusDetail = `healthy${keyStatus}`;
+            } else {
+              statusDetail = `non-2xx (${response.status})`;
+            }
+            
+            console.log(`✅ [${requestId}] ${name}: ${statusDetail}`);
             
             return { 
               name, 
               endpoint, 
               status: 'success',
-              reachable: isReachable,
+              reachable: true,
               statusDetail,
-              result: result.data || { status: 'responded' },
-              error: result.error
+              result: response.ok ? data : { status: response.status, error: data },
+              error: response.ok ? null : { message: `HTTP ${response.status}` }
             };
           } catch (error) {
             console.error(`❌ [${requestId}] ${name}: Health check failed`, {
@@ -110,16 +125,15 @@ export function ImageTierTester() {
               endpoint
             });
             
-            // Check if this is a network failure vs function error
+            // Network or connection failure
             const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-            const isNetworkFailure = errorMsg.includes('Failed to send a request') || errorMsg.includes('fetch');
             
             return { 
               name, 
               endpoint, 
               status: 'failed',
-              reachable: !isNetworkFailure,
-              statusDetail: isNetworkFailure ? 'unreachable' : 'reachable (error)',
+              reachable: false,
+              statusDetail: 'unreachable',
               result: null,
               error: { message: errorMsg }
             };
@@ -129,7 +143,7 @@ export function ImageTierTester() {
 
       const processingTime = Date.now() - startTime;
       const reachable = results.filter(r => r.status === 'fulfilled' && r.value.reachable).length;
-      const successful = results.filter(r => r.status === 'fulfilled' && !r.value.error).length;
+      const healthy = results.filter(r => r.status === 'fulfilled' && r.value.statusDetail.includes('healthy')).length;
       const total = results.length;
       
       const connectivityData = {
@@ -141,8 +155,9 @@ export function ImageTierTester() {
         summary: {
           total,
           reachable,
-          successful,
-          failed: total - successful,
+          healthy,
+          unhealthy: reachable - healthy,
+          unreachable: total - reachable,
           processingTime
         }
       };
@@ -152,7 +167,7 @@ export function ImageTierTester() {
         error: null
       });
 
-      // Set overall status based on results - use reachability as primary metric
+      // Set overall status based on results
       if (reachable === total) {
         setConnectivityStatus('success');
       } else if (reachable > 0) {
@@ -167,7 +182,8 @@ export function ImageTierTester() {
         success: reachable > 0,
         imageUrl: undefined,
         processingTime,
-        error: reachable === 0 ? 'All endpoints unreachable' : undefined
+        error: reachable === 0 ? 'All endpoints unreachable' : undefined,
+        metadata: { healthy, reachable, total }
       };
       
       setResults(prev => [connectivityResultForList, ...prev]);
