@@ -72,7 +72,7 @@ Deno.serve(async (req) => {
                 body: {
                   pageText,
                   userInfo: storyData.userInfo || { name: 'Background', age: 8 },
-                  sessionId: `bg_${story.id}`,
+                  storyId: `bg_${story.id}`,
                   pageNumber: pageIndex + 1,
                   totalPages: storyData.pages.length
                 }
