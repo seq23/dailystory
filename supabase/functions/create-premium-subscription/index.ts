@@ -1,7 +1,10 @@
-// Force clean redeployment: 2025-01-23T02:45:00Z
+// Force clean redeployment: 2025-01-23T02:45:01Z - Import fix attempt
 import { serve } from "https://deno.land/std@0.168.0/http/server.js"
 import Stripe from "https://esm.sh/stripe@14.21.0"
-import { withSecurity, SecurityMiddleware, AuthenticatedUser } from "../_shared/security.ts"
+import { withSecurity, SecurityMiddleware } from "../_shared/security.ts"
+import type { AuthenticatedUser } from "../_shared/security.ts"
+
+console.log("[create-premium-subscription] Function loaded successfully");
 
 const handler = async (req: Request, user?: AuthenticatedUser): Promise<Response> => {
   const security = new SecurityMiddleware();

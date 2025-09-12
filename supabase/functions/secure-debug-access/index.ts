@@ -1,7 +1,10 @@
-// Force clean redeployment: 2025-01-23T02:45:00Z
+// Force clean redeployment: 2025-01-23T02:45:01Z - Import fix attempt
 import { serve } from "https://deno.land/std@0.190.0/http/server.js";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.55.0";
-import { withSecurity, SecurityMiddleware, AuthenticatedUser } from "../_shared/security.ts";
+import { withSecurity, SecurityMiddleware } from "../_shared/security.ts";
+import type { AuthenticatedUser } from "../_shared/security.ts";
+
+console.log("[secure-debug-access] Function loaded successfully");
 
 const supabase = createClient(
   Deno.env.get("SUPABASE_URL") ?? "",
@@ -24,7 +27,7 @@ const handler = async (req: Request, user?: AuthenticatedUser): Promise<Response
   
   try {
     // Only allow premium users or service role to access debug functions
-    if (!user?.premium && req.headers.get('authorization')?.includes('service_role')) {
+    if (!user?.isPremium && !req.headers.get('authorization')?.includes('service_role')) {
       throw new Error('Debug access requires premium subscription or admin privileges');
     }
 
@@ -84,7 +87,7 @@ const handler = async (req: Request, user?: AuthenticatedUser): Promise<Response
 
       case 'view_users':
         // Get user profiles with privacy protection (admin only)
-        if (req.headers.get('authorization')?.includes('service_role')) {
+        if (!req.headers.get('authorization')?.includes('service_role')) {
           throw new Error('User data access requires admin privileges');
         }
 
