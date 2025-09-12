@@ -3,6 +3,7 @@ console.log("[runware-simple-fallback] Loaded: 2025-09-12T18:45:32Z");
 // ============= TIER 2.5 NUCLEAR INDEPENDENCE - HARDCODED NEGATIVE PROMPT SYSTEM =============
 // Nuclear independence achieved - all dependencies removed, hardcoded arrays implemented
 import { serve } from "https://deno.land/std@0.168.0/http/server.js";
+import { getStyleFramework } from '../_shared/styleFrameworks.js';
 
 // ============= TIER 4 ULTIMATE FALLBACK - 6 UPLOADED CHARACTER IMAGES =============
 const ULTIMATE_FALLBACK_IMAGES = [
@@ -157,90 +158,8 @@ function createCorsOptionsResponse() {
   return new Response(null, { headers: corsHeaders });
 }
 
-// ============= HARDCODED NEGATIVE PROMPT ARRAYS - NUCLEAR INDEPENDENCE =============
-
-// UNIFIED NEGATIVE PROMPT - Base quality and safety controls
-const UNIFIED_NEGATIVE_PROMPT = [
-  "NO TEXT", "no words", "no letters", "no writing", "no captions", "no watermarks", 
-  "no signatures", "no logos", "no adult features", "no mature faces", "no wrinkles", 
-  "no facial hair", "no makeup", "no weapons", "no scary features", "no distorted faces", 
-  "no asymmetrical features", "no blurry faces", "no low quality", "no pixelated", 
-  "no grainy", "no artifacts", "no noise", "no overexposed", "no underexposed", 
-  "no harsh shadows", "no dramatic lighting", "no neon colors", "no oversaturated", 
-  "no desaturated", "no black and white", "no sepia", "no vintage effects", "no filters", 
-  "no borders", "no frames", "no split screen", "no collage", "no montage", 
-  "no duplicate faces", "no extra limbs", "no missing limbs", "no missing body", 
-  "no deformed hands", "no extra fingers", "no missing fingers", "no anatomical errors", 
-  "no unrealistic proportions", "no cartoon exaggeration", "no anime style", "no manga style", 
-  "no abstract art", "no surreal elements", "no photorealistic adults", "no teenagers", 
-  "no infants", "no babies"
-];
-
-// AFRICAN AMERICAN CHARACTERS NEGATIVE PROMPT - Cultural sensitivity
-const AFRICAN_AMERICAN_NEGATIVE_PROMPT = [
-  "whitewashed skin", "pale complexion", "overexposed lighting", "washed out skin tones", 
-  "incorrect facial features", "straight hair", "harsh lighting", "blown highlights", 
-  "ashy skin", "stereotypical representations", "poor contrast", "underexposed shadows", 
-  "cool lighting", "inadequate fill light"
-];
-
-// GENDER NEUTRAL NEGATIVE PROMPT - No gender indicators
-const GENDER_NEUTRAL_NEGATIVE_PROMPT = [
-  "no overtly masculine features", "no overtly feminine features", "no gender-specific clothing like dresses or suits", 
-  "no gender-specific hairstyles", "no makeup", "no jewelry", "no accessories that indicate gender", 
-  "no pink or blue color schemes that suggest gender", "no stereotypical gendered poses", 
-  "no adult features", "no mature faces", "no wrinkles", "no facial hair", "no props", 
-  "no toys that suggest gender"
-];
-
-// BOYS NEGATIVE PROMPT - Prevent feminine features
-const BOYS_NEGATIVE_PROMPT = [
-  "no feminine features", "no makeup", "no jewelry", "no earrings", 
-  "no hair accessories like bows or ribbons", "no dresses", "no skirts", "no pink clothing", 
-  "no overly delicate features", "no long eyelashes", "no adult features", "no mature faces", 
-  "no wrinkles", "no facial hair"
-];
-
-// GIRLS NEGATIVE PROMPT - Prevent masculine features  
-const GIRLS_NEGATIVE_PROMPT = [
-  "no masculine features", "no angular jawlines", "no thick eyebrows", "no short buzz cuts", 
-  "no suits", "no ties", "no overly masculine clothing", "no rough or weathered skin", 
-  "no adult features", "no mature faces", "no wrinkles", "no facial hair"
-];
-
 // ============= TIER 2.5 NUCLEAR INDEPENDENCE - ALL CONSTANTS FIRST =============
-
-// 🎨 NUCLEAR STYLE SETTINGS - GLOBAL SCOPE FOR FUNCTION ACCESS 🎨
-const NUCLEAR_STYLE_SETTINGS = {
-  'beginner': {
-    frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality',
-    steps: 20,
-    CFGScale: 7
-  },
-  'easy': {
-    frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality',
-    steps: 22,
-    CFGScale: 7.5
-  },
-  'medium': {
-    frameworkPrompt: '2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation, warm natural lighting',
-    steps: 25,
-    CFGScale: 8
-  },
-  'hard': {
-    frameworkPrompt: '2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation, warm natural lighting',
-    steps: 28,
-    CFGScale: 9
-  },
-  'expert': {
-    frameworkPrompt: '2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation, warm natural lighting',
-    steps: 30,
-    CFGScale: 10
-  }
-};
-
-// 🚨 ULTIMATE FALLBACK FRAMEWORK PROMPT - EMERGENCY USE ONLY 🚨
-const EMERGENCY_FALLBACK_FRAMEWORK = '2.5D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation, warm natural lighting';
+// All style settings and negative prompts are now imported from _shared/styleFrameworks.js
 
 // ============= RUNWARE-ALIGNED TEMPLATE STRUCTURE - RUNWARE OPTIMAL + STORY LENGTH OPTIMAL =============
 const PREMIUM_PROMPT_TEMPLATES = {
@@ -2450,23 +2369,12 @@ function preserveExactWords(pageText) {
 // ============= INLINE NEGATIVE PROMPT STRING JOINER =============
 // Replaces generateNuclearNegativePrompt with inline nuclear independence
 function joinNegativePromptStrings(culturalProfile, avatarType, difficulty, pageNumber, secondaryCharacterList) {
-  // Start with unified base negatives
-  let allNegatives = [...UNIFIED_NEGATIVE_PROMPT];
+  // Get negative prompt from shared style framework
+  const styleFramework = getStyleFramework(difficulty);
+  const negativePrompt = styleFramework?.negativePrompt || '';
   
-  // Add cultural sensitivity negatives for African American characters
-  if (culturalProfile?.skinTone && ['dark', 'brown', 'black'].some(tone => culturalProfile.skinTone.includes(tone))) {
-    allNegatives = allNegatives.concat(AFRICAN_AMERICAN_NEGATIVE_PROMPT);
-  }
-  
-  // Add gender-specific negatives based on avatar type
-  if (avatarType?.includes('male') || avatarType?.includes('boy')) {
-    allNegatives = allNegatives.concat(BOYS_NEGATIVE_PROMPT);
-  } else if (avatarType?.includes('female') || avatarType?.includes('girl')) {
-    allNegatives = allNegatives.concat(GIRLS_NEGATIVE_PROMPT);
-  } else {
-    // Default to gender neutral for ambiguous cases
-    allNegatives = allNegatives.concat(GENDER_NEUTRAL_NEGATIVE_PROMPT);
-  }
+  // Convert to array for processing
+  let allNegatives = negativePrompt.split(', ').filter(Boolean);
   
   return allNegatives.join(', ');
 }
@@ -3628,10 +3536,10 @@ async function generateNuclearImage(requestData) {
     const actionSection = generateEnhancedActionSection(pageText, detectedObjects, seed);
     console.log('🎬 Action section:', actionSection);
 
-    // Get nuclear style settings
+    // Get style settings from shared framework
     const difficulty = userInfo?.difficulty || 'easy';
-    const styleSettings = NUCLEAR_STYLE_SETTINGS[difficulty] || NUCLEAR_STYLE_SETTINGS['easy'];
-    console.log('🎨 Style settings for', difficulty, ':', styleSettings);
+    const styleFramework = getStyleFramework(difficulty);
+    console.log('🎨 Style framework for', difficulty, ':', styleFramework.name);
 
     // Get prompt template
     const templateType = ['beginner', 'easy'].includes(difficulty) ? 'basic' : 'premium';
@@ -3644,7 +3552,7 @@ async function generateNuclearImage(requestData) {
 
     // Build prompt using template
     const promptVariables = {
-      frameworkPrompt: styleSettings.frameworkPrompt,
+      frameworkPrompt: styleFramework.frameworkPrompt,
       cameraDirective: 'medium shot, centered composition',
       pageText: pageText,
       character: characterDetails.character,
@@ -3697,8 +3605,8 @@ async function generateNuclearImage(requestData) {
       model: 'runware:100@1',
       width: 1024,
       height: 1024,
-      steps: styleSettings.steps,
-      CFGScale: styleSettings.CFGScale
+      steps: 20, // Default steps for runware
+      CFGScale: 7 // Default CFG scale for runware
     });
 
     console.log('🖼️ Nuclear image generation completed');
@@ -3719,8 +3627,8 @@ async function generateNuclearImage(requestData) {
       },
       metadata: {
         model: 'runware:100@1',
-        steps: styleSettings.steps,
-        CFGScale: styleSettings.CFGScale,
+        steps: 20,
+        CFGScale: 7,
         difficulty: difficulty,
         templateType: templateType,
         generationTimestamp: new Date().toISOString()
@@ -4408,9 +4316,8 @@ function fillBasicTemplate(
     // Get framework prompt with fallback protection  
     let frameworkPrompt;
     try {
-      frameworkPrompt = NUCLEAR_STYLE_SETTINGS[safeDifficulty]?.frameworkPrompt || 
-                       NUCLEAR_STYLE_SETTINGS['medium']?.frameworkPrompt || 
-                       EMERGENCY_FALLBACK_FRAMEWORK ||
+      const styleFramework = getStyleFramework(safeDifficulty);
+      frameworkPrompt = styleFramework?.frameworkPrompt || 
                        'Children book style with vibrant colors, friendly character design, bright cheerful atmosphere';
     } catch (frameworkError) {
       console.warn('⚠️ Framework prompt failed, using hardcoded fallback:', frameworkError);
@@ -4528,7 +4435,8 @@ async function fillPremiumTemplate(
       // TESTING: Verify template generation when PREMIUM_PROMPT_TEMPLATES fails
       // NOTE: This is now part of the 4-tier system as Emergency Template (Tier 2.5C)
       // FALLBACK CHAIN: Premium (2.5A) → Basic (2.5B) → Emergency (2.5C) → Ultimate Emergency (2.5D)
-      template = (pageText || '').substring(0, 2500) + ' ' + (NUCLEAR_STYLE_SETTINGS[safeDifficulty]?.frameworkPrompt || NUCLEAR_STYLE_SETTINGS['medium']?.frameworkPrompt || EMERGENCY_FALLBACK_FRAMEWORK || 'Children book style with vibrant colors, friendly character design, bright cheerful atmosphere');
+      const styleFramework = getStyleFramework(safeDifficulty);
+      template = (pageText || '').substring(0, 2500) + ' ' + (styleFramework?.frameworkPrompt || 'Children book style with vibrant colors, friendly character design, bright cheerful atmosphere');
     }
     
     // NUCLEAR AVATAR MAPPING with error protection
@@ -4655,8 +4563,8 @@ async function fillPremiumTemplate(
     // 🎨 NUCLEAR STYLE SETTINGS MOVED TO TOP - DUPLICATED DEFINITION REMOVED 🎨
     // (Main definition moved to line ~2565 for early access)
     
-    const styleSettings = NUCLEAR_STYLE_SETTINGS[safeDifficulty] || NUCLEAR_STYLE_SETTINGS['medium'];
-    console.log('✅ Nuclear style settings applied - zero dependencies, bulletproof operation');
+    const styleFramework = getStyleFramework(safeDifficulty);
+    console.log('✅ Style framework applied from shared source:', styleFramework.name);
 
     // Apply cultural setting enhancement
     const enhancedSetting = applyCulturalSettingEnhancement(setting, userInfo, avatarIdentity);
@@ -4844,7 +4752,7 @@ async function fillPremiumTemplate(
       .replace('{props}', props) // PHASE 3: New semantic placeholder
       .replace('{community_context}', communityContext) // PHASE 3: New semantic placeholder
       .replace('{sensory_details}', sensoryDetails) // PHASE 3: New semantic placeholder
-      .replace('{frameworkPrompt}', styleSettings.frameworkPrompt)
+      .replace('{frameworkPrompt}', styleFramework.frameworkPrompt)
       .replace('{cameraDirective}', cameraDirective); // PHASE 5: Camera directive moved to end
     
     // PHASE 4: Safe clothing detection with null safety
@@ -5833,9 +5741,8 @@ serve(async (req) => {
           attemptedTiers.push('2.5C');
           tierPath.push('2.5C-attempting');
           
-          const emergencyFramework = NUCLEAR_STYLE_SETTINGS[difficulty]?.frameworkPrompt || 
-                                    NUCLEAR_STYLE_SETTINGS['medium']?.frameworkPrompt || 
-                                    EMERGENCY_FALLBACK_FRAMEWORK || 
+          const styleFramework = getStyleFramework(difficulty);
+          const emergencyFramework = styleFramework?.frameworkPrompt || 
                                     'Children book style with vibrant colors, friendly character design, bright cheerful atmosphere';
           
           prompt = (pageText || '').substring(0, 2500) + ' ' + emergencyFramework;
@@ -5960,8 +5867,8 @@ serve(async (req) => {
     // 🔄 REFERENCE: Primary NUCLEAR_STYLE_SETTINGS is at line ~2185-2220
     // 🔄 All template logic uses the primary array only
     
-    const styleSettings = NUCLEAR_STYLE_SETTINGS[difficulty] || NUCLEAR_STYLE_SETTINGS['medium'];
-    console.log('✅ Nuclear style settings applied - zero dependencies, bulletproof operation');
+    const styleFramework = getStyleFramework(difficulty);
+    console.log('✅ Style framework applied from shared source:', styleFramework.name);
 
     // Now apply style settings to template filling (moved from line 1698)
     // This ensures NUCLEAR_STYLE_SETTINGS is defined before use
