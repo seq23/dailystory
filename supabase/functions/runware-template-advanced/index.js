@@ -4,9 +4,6 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.js";
 
-// Import shared utilities
-import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/corsAdvanced.js";
-
 console.log("[runware-template-advanced] Loaded: 2025-09-12T19:00:00Z - C-D Complexity Handler");
 
 // Lazy loading for heavy dependencies
@@ -242,6 +239,19 @@ serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
+  }
+  
+  // Handle health checks (GET/HEAD requests)
+  if (req.method === 'GET' || req.method === 'HEAD') {
+    console.log('🏥 Template Advanced: Health check request');
+    return createResponse({
+      status: 'healthy',
+      service: 'runware-template-advanced',
+      tier: '2.5B',
+      complexity: 'C-D',
+      timestamp: new Date().toISOString(),
+      runwareApiKeyPresent: !!Deno.env.get('RUNWARE_API_KEY')
+    });
   }
   
   try {
