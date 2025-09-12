@@ -23,3 +23,6 @@ verify_jwt = false
 
 [functions.template-service]
 verify_jwt = false
+
+[functions.security-alert]
+verify_jwt = true
