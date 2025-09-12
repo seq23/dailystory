@@ -1,5 +1,5 @@
-// Redeploy touch: 2025-09-12T19:25:00Z - Unified translation function
-console.log("[translate-universal] Loaded: 2025-09-12T19:25:00Z");
+// Redeploy touch: 2025-09-12T19:26:30Z - Fix deployment cache issue
+console.log("[translate-universal] Loaded: 2025-09-12T19:26:30Z");
 import { serve } from "https://deno.land/std@0.168.0/http/server.js"
 
 const corsHeaders = {
