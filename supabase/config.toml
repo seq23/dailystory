@@ -24,6 +24,12 @@ verify_jwt = false
 [functions.runware-simple-fallback]
 verify_jwt = false
 
+[functions.runware-template-simple]
+verify_jwt = false
+
+[functions.runware-template-advanced]
+verify_jwt = false
+
 [functions.unified-debug-service]
 verify_jwt = false
 

@@ -1,5 +1,4 @@
-// Redeploy touch: 2025-09-12T18:45:32Z - Force complete rebuild
-console.log("[ai-visual-scene-creator] Loaded: 2025-09-12T18:45:32Z");
+console.log("[ai-visual-scene-creator] Loaded: 2025-09-12T19:00:00Z - Cleaned & Optimized");
 import { serve } from "https://deno.land/std@0.168.0/http/server.js";
 
 // ============= LAZY LOADING FUNCTIONS FOR HEAVY DEPENDENCIES =============
@@ -143,8 +142,8 @@ function checkPrimarySceneCriteria(data) {
     return { primaryScene: false, passCount: 0, details: 'missing_or_invalid' };
   }
 
-  // PHASE 3: Detailed validation with regex match examples (RELAXED FOR TIER 1 PREFERENCE)
-  const lengthTest = scene.length >= 15; // RELAXED: Reduced from 30 to 15 characters
+  // Validation with regex match examples
+  const lengthTest = scene.length >= 15;
   const characterRegex = /\b(child|character|person|they|he|she|avatar)\b/i;
   const actionRegex = /\b(playing|reading|building|walking|running|sitting|standing|holding|looking|smiling)\b/i;
   const settingRegex = /\b(room|classroom|garden|playground|library|home|indoor|outdoor|table|floor)\b/i;
@@ -161,10 +160,9 @@ function checkPrimarySceneCriteria(data) {
   const hasDescriptiveWords = !!descriptiveMatch;
 
   const qualityScore = [lengthTest, hasCharacter, hasAction, hasSetting, hasDescriptiveWords].filter(Boolean).length;
-  const isPrimarySceneValid = qualityScore >= 1; // RELAXED: Reduced from 2 to 1 criteria (more lenient)
+  const isPrimarySceneValid = qualityScore >= 1;
 
-  // PHASE 3: Enhanced validation logging with relaxed thresholds
-  console.log('DEBUG TIER 1 VALIDATION DEBUG: Primary Scene Criteria Analysis (RELAXED):', {
+  console.log('TIER 1 VALIDATION: Primary Scene Criteria Analysis:', {
     sceneLength: scene.length,
     lengthTest: `${lengthTest} (>= 15 chars - RELAXED)`,
     characterTest: `${hasCharacter} ${characterMatch ? `(matched: "${characterMatch[0]}")` : '(no match)'}`,

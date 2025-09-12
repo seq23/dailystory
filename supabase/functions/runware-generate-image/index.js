@@ -1,5 +1,4 @@
-// Redeploy touch: 2025-09-12T18:45:32Z - Force complete rebuild
-console.log("[runware-generate-image] Loaded: 2025-09-12T18:45:32Z");
+console.log("[runware-generate-image] Loaded: 2025-09-12T19:00:00Z - Optimized Orchestrator");
 /**
  * ============================================================================
  * RUNWARE IMAGE GENERATION - ACTIVE ORCHESTRATOR
@@ -1534,48 +1533,55 @@ serve(async (req)=>{
         throw new Error('TIER 2.5 VALIDATION ERROR: sessionId is empty or invalid');
       }
       
-      // Sequential fallback through template complexity levels
-      const complexityLevels = ['expert', 'hard', 'medium', 'easy'];
+      // Sequential fallback through template complexity levels with new split functions
+      const complexityConfigs = [
+        { level: 'A', func: 'runware-template-simple', name: 'Basic Shapes' },
+        { level: 'B', func: 'runware-template-simple', name: 'Simple Scenes' },
+        { level: 'C', func: 'runware-template-advanced', name: 'Detailed Scenes' },
+        { level: 'D', func: 'runware-template-advanced', name: 'Complex Narratives' }
+      ];
       
-      for (let i = 0; i < complexityLevels.length; i++) {
-        const complexity = complexityLevels[i];
-        const subTier = `2.5${String.fromCharCode(65 + i)}`; // 2.5A, 2.5B, 2.5C, 2.5D
+      for (let i = 0; i < complexityConfigs.length; i++) {
+        const config = complexityConfigs[i];
+        const subTier = `2.5${config.level}`;
         
         try {
-          console.log(`🔧 Starting Tier ${subTier}: ${complexity.toUpperCase()} Template Fallback`);
-          console.log(`🔍 TIER ${subTier} DEBUG - Calling runware-simple-fallback with templateComplexity: ${complexity}`);
+          console.log(`🔧 Starting Tier ${subTier}: ${config.name} (${config.func})`);
+          console.log(`🔍 TIER ${subTier} DEBUG - Calling ${config.func} with templateComplexity: ${config.level}`);
           
-          const tierResult = await callTierFunction('runware-simple-fallback', {
-            pageText,
+          const tierResult = await callTierFunction(config.func, {
+            storyText: pageText,
             userInfo,
-            difficultyLevel: mappedDifficulty,
             avatarIdentity,
-            characterData: resolvedCharacterData,
+            templateComplexity: config.level,
             sessionId,
-            templateComplexity: complexity
+            pageNumber
           });
           
           console.log(`🔍 TIER ${subTier} RESULT ANALYSIS:`, {
             success: tierResult?.success || false,
             hasImageURL: !!tierResult?.imageURL,
             error: tierResult?.error || 'none',
-            complexity,
+            complexity: config.level,
+            functionUsed: config.func,
             subTier
           });
           
           if (tierResult?.success && tierResult?.imageURL) {
-            console.log(`✅ TIER ${subTier} SUCCESS - ${complexity} template fallback succeeded`);
+            console.log(`✅ TIER ${subTier} SUCCESS - ${config.name} (${config.func}) succeeded`);
             return createDynamicCorsResponse({
               success: true,
               imageURL: tierResult.imageURL,
               seed: tierResult.seed,
               provider: 'runware-orchestrator',
               tier: parseFloat(subTier.replace('2.5', '2.5')),
-              enhancementLevel: `template-${complexity}`,
+              enhancementLevel: tierResult.enhancementLevel || `template-${config.level}`,
               metadata: {
                 orchestrated: true,
                 fallbackTier: subTier,
-                templateComplexity: complexity
+                templateComplexity: config.level,
+                functionUsed: config.func,
+                templateType: tierResult.templateType
               }
             }, req);
           }
@@ -1583,7 +1589,7 @@ serve(async (req)=>{
           console.log(`⚠️ Tier ${subTier} failed, progressing to next complexity level`);
           
         } catch (error) {
-          console.error(`🚨 TIER ${subTier} EXCEPTION:`, error.message);
+          console.error(`🚨 TIER ${subTier} (${config.func}) EXCEPTION:`, error.message);
           // Continue to next complexity level
         }
       }
