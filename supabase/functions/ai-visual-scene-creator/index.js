@@ -734,13 +734,17 @@ serve(async (req) => {
     return createCorsOptionsResponse();
   }
 
-  // Handle health check endpoint
-  if (req.method === 'GET' && new URL(req.url).pathname.endsWith('/health')) {
+  // Handle health check endpoint with OpenAI diagnostics
+  if (req.method === 'GET' || req.url.includes('/health')) {
+    const openaiApiKey = Deno.env.get('OPENAI_API_KEY')?.trim();
     return createCorsResponse({
       status: 'healthy',
       service: 'ai-visual-scene-creator',
+      tier: '1',
       timestamp: new Date().toISOString(),
-      version: '2.1.5-tier-fallback-system'
+      version: '2.1.5-tier-fallback-system',
+      openaiApiKeyPresent: !!openaiApiKey,
+      openaiKeyLength: openaiApiKey ? openaiApiKey.length : 0
     });
   }
 
