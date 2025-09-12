@@ -3,13 +3,13 @@
 // ============================================================================
 // Comprehensive CORS testing and debugging utilities
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from "https://deno.land/std@0.168.0/http/server.js"
 import { 
   createDynamicCorsOptionsResponse, 
   createDynamicCorsResponse, 
   generateCorsTestingInfo,
   getCorsMonitoringStats 
-} from "../_shared/corsAdvanced.ts";
+} from "../_shared/corsAdvanced.js";
 import { monitorRequest, globalHeaderMonitor } from "../_shared/headerMonitor.ts";
 
 serve(async (req) => {

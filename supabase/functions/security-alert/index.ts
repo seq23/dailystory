@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.190.0/http/server.js";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.55.0";
 import { withSecurity, SecurityMiddleware, AuthenticatedUser } from "../_shared/security.ts";
 

@@ -1,4 +1,4 @@
-import { createCorsResponse, createCorsOptionsResponse } from '../_shared/cors.ts';
+import { createCorsResponse, createCorsOptionsResponse } from '../_shared/cors.js';
 
 console.log('Edge connectivity test function starting...');
 

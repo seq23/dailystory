@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.js";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { createCorsOptionsResponse, createCorsResponse, createCorsErrorResponse } from "https://deno.land/x/cors@v1.2.2/mod.ts";
 
