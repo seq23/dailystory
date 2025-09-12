@@ -523,12 +523,11 @@ export const InteractiveWord = ({
       // Removed unnecessary loading toast
       
       // Create a translation request to Supabase function
-      const { data, error } = await supabase.functions.invoke('translation-service', {
+      const { data, error } = await supabase.functions.invoke('translate-word', {
         body: {
-          operation: 'translate-word',
           word: cleanWord,
-          toLanguage: userNativeLanguage,
-          fromLanguage: 'en',
+          targetLanguage: userNativeLanguage,
+          sourceLanguage: 'en',
           context: sentenceContext
         }
       });
@@ -1366,12 +1365,11 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
         wordData.sampleSentence || `This is the word: ${word}`
       ];
       
-      const response = await supabase.functions.invoke('translation-service', {
+      const response = await supabase.functions.invoke('translate-batch', {
         body: {
-          operation: 'translate-batch',
-          words: textsToTranslate,
-          toLanguage: userLanguage,
-          fromLanguage: 'en',
+          texts: textsToTranslate,
+          targetLanguage: userLanguage,
+          sourceLanguage: 'en',
           context: 'word_explanation'
         }
       });

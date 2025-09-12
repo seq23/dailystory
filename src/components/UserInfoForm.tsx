@@ -214,11 +214,10 @@ export const LegacyUserInfoForm = ({ onSubmit, onBack, isPremium = false }: User
           if (formData.nativeLanguage !== 'en' && sanitizedValue.trim()) {
             try {
               console.log(`🌍 Translating from ${formData.nativeLanguage} to English:`, sanitizedValue);
-              const { data: translationData, error: translationError } = await supabase.functions.invoke('translation-service', {
+              const { data: translationData, error: translationError } = await supabase.functions.invoke('translate-to-english', {
                 body: { 
-                  operation: 'translate-to-english',
                   text: sanitizedValue,
-                  fromLanguage: formData.nativeLanguage
+                  sourceLanguage: formData.nativeLanguage
                 }
               });
               
