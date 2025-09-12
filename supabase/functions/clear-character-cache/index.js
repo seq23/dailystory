@@ -1,10 +1,24 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { CharacterConsistencyService } from '../_shared/CharacterConsistencyService.js';
+import { serve } from "https://deno.land/std@0.168.0/http/server.js";
 
+// ============= LAZY LOADING FUNCTIONS FOR HEAVY DEPENDENCIES =============
+
+async function getCharacterService() {
+  try {
+    const { CharacterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
+    return CharacterConsistencyService;
+  } catch (error) {
+    console.warn('CharacterService lazy load failed:', error);
+    return null;
+  }
+}
+
+// Inline CORS utilities to fix boot failure
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Max-Age': '86400',
+};
 
 serve(async (req) => {
   console.log(`🗑️ Clear Character Cache: ${req.method} ${req.url}`)
@@ -15,7 +29,12 @@ serve(async (req) => {
   }
 
   try {
-    // Use database-backed CharacterConsistencyService
+    // Use database-backed CharacterConsistencyService with lazy loading
+    const CharacterConsistencyService = await getCharacterService();
+    if (!CharacterConsistencyService) {
+      throw new Error('CharacterConsistencyService not available');
+    }
+
     const characterService = new CharacterConsistencyService();
     const result = await characterService.clearServerState();
     
