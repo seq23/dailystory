@@ -186,9 +186,9 @@ export function ImageTierTester() {
       };
 
       if (tierType === 'Tier 1') {
-        // Test existing debug visual scene creator function
+        // Test AI visual scene creator function
         result = await Promise.race([
-          supabase.functions.invoke('debug-visual-scene-creator', {
+          supabase.functions.invoke('ai-visual-scene-creator', {
             body: {
               storyText: config.storyText,
               avatarIdentity: userInfo,
@@ -200,9 +200,9 @@ export function ImageTierTester() {
           )
         ]);
       } else if (tierType === 'Tier 1 (Image Orchestrator)') {
-        // Test Runware diagnostic function (closest available)
+        // Test runware image generation orchestrator
         result = await Promise.race([
-          supabase.functions.invoke('runware-diagnostic', {
+          supabase.functions.invoke('runware-generate-image', {
             body: {
               pageText: config.storyText,
               userInfo: userInfo,
@@ -216,9 +216,9 @@ export function ImageTierTester() {
           )
         ]);
       } else if (tierType.startsWith('Tier 2.5')) {
-        // Test runware-diagnostic as fallback simulation
+        // Test runware simple fallback for nuclear independent generation
         result = await Promise.race([
-          supabase.functions.invoke('runware-diagnostic', {
+          supabase.functions.invoke('runware-simple-fallback', {
             body: {
               pageText: config.storyText,
               userInfo: userInfo,
