@@ -371,32 +371,8 @@ function isIndoorContext(pageText) {
   return detectSceneContext(pageText) === 'indoor';
 }
 
-// ============= UNIVERSAL EMOTION ARRAYS =============
-const UNIVERSAL_EMOTION_ARRAYS = [
-  // Positive emotions (high energy)
-  'excited', 'thrilled', 'delighted', 'overjoyed', 'ecstatic', 'jubilant', 'elated',
-  'energetic', 'enthusiastic', 'animated', 'vibrant', 'lively', 'spirited',
-  
-  // Positive emotions (calm)  
-  'happy', 'content', 'peaceful', 'serene', 'relaxed', 'calm', 'tranquil',
-  'satisfied', 'pleased', 'cheerful', 'joyful', 'blissful', 'grateful',
-  
-  // Curious & engaged emotions
-  'curious', 'interested', 'fascinated', 'intrigued', 'engaged', 'attentive',
-  'focused', 'absorbed', 'captivated', 'mesmerized', 'wonder-filled',
-  
-  // Gentle & nurturing emotions
-  'gentle', 'caring', 'loving', 'tender', 'affectionate', 'warm', 'kind',
-  'compassionate', 'protective', 'nurturing', 'supportive',
-  
-  // Confident & determined emotions  
-  'confident', 'brave', 'courageous', 'determined', 'bold', 'strong',
-  'proud', 'accomplished', 'successful', 'triumphant', 'victorious',
-  
-  // Playful & fun emotions
-  'playful', 'silly', 'giggly', 'mischievous', 'fun-loving', 'carefree',
-  'lighthearted', 'whimsical', 'jovial', 'bubbly', 'bouncy'
-];
+// ============= NUCLEAR INDEPENDENT CHARACTER SYSTEM =============
+// (UNIVERSAL_EMOTION_ARRAYS moved to _shared/tier25Vocabulary.js for lazy loading)
 
 // ============= NUCLEAR INDEPENDENT CHARACTER SYSTEM =============
 
@@ -430,7 +406,7 @@ function generateAfricanAmericanCharacter(gender, seed, difficulty, pageText) {
   const age = getSeededRandomItem(['child', 'young child', 'little child'], seed + 'age');
   const hair = getSeededRandomItem(HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[gender + 's'] || HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.girls, seed + 'hair');
   const features = getSeededRandomItem(HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES, seed + 'features');
-  const emotion = getSeededRandomItem(UNIVERSAL_EMOTION_ARRAYS, seed + 'emotion');
+  const emotion = getSeededRandomItem(VOCAB.UNIVERSAL_EMOTION_ARRAYS, seed + 'emotion');
   
   console.log('✅ African American character generated successfully');
   
@@ -449,7 +425,7 @@ function generateStandardAmericanCharacter(gender, seed, difficulty, pageText) {
   console.log('🇺🇸 Generating Standard American character');
   
   const age = getSeededRandomItem(['child', 'young child', 'little child'], seed + 'age');
-  const emotion = getSeededRandomItem(UNIVERSAL_EMOTION_ARRAYS, seed + 'emotion');
+  const emotion = getSeededRandomItem(VOCAB.UNIVERSAL_EMOTION_ARRAYS, seed + 'emotion');
   
   // Let AI generate natural hair for standard American
   const hair = 'with natural hair';  
@@ -473,7 +449,7 @@ function getNuclearFallbackCharacter(seed, pageText) {
   
   const gender = getSeededRandomItem(['boy', 'girl'], seed);
   const age = getSeededRandomItem(['child', 'young child', 'little child'], seed + 'age');
-  const emotion = getSeededRandomItem(UNIVERSAL_EMOTION_ARRAYS, seed + 'emotion');
+  const emotion = getSeededRandomItem(VOCAB.UNIVERSAL_EMOTION_ARRAYS, seed + 'emotion');
   
   return {
     character: gender,
@@ -804,12 +780,12 @@ function extractElementsFromSentenceUnified(sentence, fullText) {
   
   // ============= Extract Actions from Unified Vocabulary with Expansion =============
   const allActions = [
-    ...TIER_25_UNIFIED_VOCABULARY.actions.basic,
-    ...TIER_25_UNIFIED_VOCABULARY.actions.creative,
-    ...TIER_25_UNIFIED_VOCABULARY.actions.sensory,
-    ...TIER_25_UNIFIED_VOCABULARY.actions.states,
-    ...TIER_25_UNIFIED_VOCABULARY.actions.fantasy,
-    ...TIER_25_UNIFIED_VOCABULARY.actions.social
+    ...VOCAB.TIER_25_UNIFIED_VOCABULARY.actions.basic,
+    ...VOCAB.TIER_25_UNIFIED_VOCABULARY.actions.creative,
+    ...VOCAB.TIER_25_UNIFIED_VOCABULARY.actions.sensory,
+    ...VOCAB.TIER_25_UNIFIED_VOCABULARY.actions.states,
+    ...VOCAB.TIER_25_UNIFIED_VOCABULARY.actions.fantasy,
+    ...VOCAB.TIER_25_UNIFIED_VOCABULARY.actions.social
   ];
   
   for (const action of allActions) {
@@ -836,10 +812,10 @@ function extractElementsFromSentenceUnified(sentence, fullText) {
   
   // Fallback: Check for specific settings from vocabulary
   const allSettings = [
-    ...TIER_25_UNIFIED_VOCABULARY.settings.indoor,
-    ...TIER_25_UNIFIED_VOCABULARY.settings.outdoor, 
-    ...TIER_25_UNIFIED_VOCABULARY.settings.specific,
-    ...TIER_25_UNIFIED_VOCABULARY.settings.fantasy
+    ...VOCAB.TIER_25_UNIFIED_VOCABULARY.settings.indoor,
+    ...VOCAB.TIER_25_UNIFIED_VOCABULARY.settings.outdoor, 
+    ...VOCAB.TIER_25_UNIFIED_VOCABULARY.settings.specific,
+    ...VOCAB.TIER_25_UNIFIED_VOCABULARY.settings.fantasy
   ];
   
   for (const setting of allSettings) {
@@ -898,7 +874,7 @@ function calculateFantasyFriendlyCoherence(elements) {
 
 // ============= HELPER FUNCTIONS =============
 function isIndoorContext(sentence) {
-  const indoorKeywords = TIER_25_UNIFIED_VOCABULARY.contextDetection.indoor;
+  const indoorKeywords = VOCAB.TIER_25_UNIFIED_VOCABULARY.contextDetection.indoor;
   return indoorKeywords.some(keyword => sentence.includes(keyword));
 }
 
@@ -1134,8 +1110,8 @@ function extractObjectsFromSentence(sentence, originalPageText, pageNumber, sess
   const detectedObjects = [];
   
   // Check for objects with colors
-  for (const color of EXPANDED_COLOR_ARRAY) {
-    for (const category of Object.values(TIER_25_UNIFIED_VOCABULARY.objectCategories)) {
+  for (const color of VOCAB.EXPANDED_COLOR_ARRAY) {
+    for (const category of Object.values(VOCAB.TIER_25_UNIFIED_VOCABULARY.objectCategories)) {
       for (const object of category) {
         if (lowerSentence.includes(`${color} ${object}`) || lowerSentence.includes(`${object} is ${color}`)) {
           detectedObjects.push(`${color} ${object}`);
@@ -1146,7 +1122,7 @@ function extractObjectsFromSentence(sentence, originalPageText, pageNumber, sess
   }
   
   // Check for standalone objects
-  for (const category of Object.values(TIER_25_UNIFIED_VOCABULARY.objectCategories)) {
+  for (const category of Object.values(VOCAB.TIER_25_UNIFIED_VOCABULARY.objectCategories)) {
     for (const object of category) {
       if (lowerSentence.includes(object) && !detectedObjects.some(detected => detected.includes(object))) {
         detectedObjects.push(object);
@@ -1444,7 +1420,7 @@ function extractAtmosphere(pageText, setting) {
     }
     
     // Fallback to universal lighting arrays
-    return getSeededRandomItem(UNIVERSAL_LIGHTING_ARRAYS, seed + '_fallback');
+    return getSeededRandomItem(VOCAB.UNIVERSAL_LIGHTING_ARRAYS, seed + '_fallback');
     
   } catch (error) {
     console.warn('⚠️ Atmosphere extraction error:', error);
@@ -1913,7 +1889,7 @@ function detectClothingFromStory(text) {
       for (const sentence of sentences) {
         if (sentence.toLowerCase().includes(keyword)) {
           // Add random color if no color specified
-          const randomColor = EXPANDED_COLOR_ARRAY[Math.floor(Math.random() * EXPANDED_COLOR_ARRAY.length)];
+          const randomColor = VOCAB.EXPANDED_COLOR_ARRAY[Math.floor(Math.random() * VOCAB.EXPANDED_COLOR_ARRAY.length)];
           return `a ${randomColor} ${keyword}`;
         }
       }
@@ -1937,7 +1913,7 @@ function detectAndResolveClothingColor(text) {
   }
   
   // Detect color
-  for (const color of EXPANDED_COLOR_ARRAY) {
+  for (const color of VOCAB.EXPANDED_COLOR_ARRAY) {
     if (lowerText.includes(color)) {
       detectedColor = color;
       break;
@@ -2540,21 +2516,21 @@ function preserveExactWords(pageText) {
   
   // Extract exact matches from all vocabulary categories using word boundaries
   const allVocabulary = [
-    ...TIER_25_UNIFIED_VOCABULARY.actions.basic,
-    ...TIER_25_UNIFIED_VOCABULARY.actions.creative,
-    ...TIER_25_UNIFIED_VOCABULARY.actions.sensory,
-    ...TIER_25_UNIFIED_VOCABULARY.actions.states,
-    ...TIER_25_UNIFIED_VOCABULARY.actions.fantasy,
-    ...TIER_25_UNIFIED_VOCABULARY.actions.social,
-    ...Object.values(TIER_25_UNIFIED_VOCABULARY.objectCategories).flat(),
-    ...TIER_25_UNIFIED_VOCABULARY.settings.indoor,
-    ...TIER_25_UNIFIED_VOCABULARY.settings.outdoor,
-    ...TIER_25_UNIFIED_VOCABULARY.settings.specific,
-    ...TIER_25_UNIFIED_VOCABULARY.settings.fantasy,
-    ...TIER_25_UNIFIED_VOCABULARY.descriptive.colors,
-    ...TIER_25_UNIFIED_VOCABULARY.descriptive.sizes,
-    ...TIER_25_UNIFIED_VOCABULARY.descriptive.emotions,
-    ...TIER_25_UNIFIED_VOCABULARY.descriptive.qualities
+    ...VOCAB.TIER_25_UNIFIED_VOCABULARY.actions.basic,
+    ...VOCAB.TIER_25_UNIFIED_VOCABULARY.actions.creative,
+    ...VOCAB.TIER_25_UNIFIED_VOCABULARY.actions.sensory,
+    ...VOCAB.TIER_25_UNIFIED_VOCABULARY.actions.states,
+    ...VOCAB.TIER_25_UNIFIED_VOCABULARY.actions.fantasy,
+    ...VOCAB.TIER_25_UNIFIED_VOCABULARY.actions.social,
+    ...Object.values(VOCAB.TIER_25_UNIFIED_VOCABULARY.objectCategories).flat(),
+    ...VOCAB.TIER_25_UNIFIED_VOCABULARY.settings.indoor,
+    ...VOCAB.TIER_25_UNIFIED_VOCABULARY.settings.outdoor,
+    ...VOCAB.TIER_25_UNIFIED_VOCABULARY.settings.specific,
+    ...VOCAB.TIER_25_UNIFIED_VOCABULARY.settings.fantasy,
+    ...VOCAB.TIER_25_UNIFIED_VOCABULARY.descriptive.colors,
+    ...VOCAB.TIER_25_UNIFIED_VOCABULARY.descriptive.sizes,
+    ...VOCAB.TIER_25_UNIFIED_VOCABULARY.descriptive.emotions,
+    ...VOCAB.TIER_25_UNIFIED_VOCABULARY.descriptive.qualities
   ];
   
   // Use word boundary regex to prevent partial matches (e.g., "cat" won't match "caterpillar")
@@ -2621,12 +2597,12 @@ function extractAction(pageText) {
   const text = pageText.toLowerCase();
   // Search all action categories from unified vocabulary
   const allActions = [
-    ...TIER_25_UNIFIED_VOCABULARY.actions.basic,
-    ...TIER_25_UNIFIED_VOCABULARY.actions.creative,
-    ...TIER_25_UNIFIED_VOCABULARY.actions.sensory,
-    ...TIER_25_UNIFIED_VOCABULARY.actions.states,
-    ...TIER_25_UNIFIED_VOCABULARY.actions.fantasy,
-    ...TIER_25_UNIFIED_VOCABULARY.actions.social
+    ...VOCAB.TIER_25_UNIFIED_VOCABULARY.actions.basic,
+    ...VOCAB.TIER_25_UNIFIED_VOCABULARY.actions.creative,
+    ...VOCAB.TIER_25_UNIFIED_VOCABULARY.actions.sensory,
+    ...VOCAB.TIER_25_UNIFIED_VOCABULARY.actions.states,
+    ...VOCAB.TIER_25_UNIFIED_VOCABULARY.actions.fantasy,
+    ...VOCAB.TIER_25_UNIFIED_VOCABULARY.actions.social
   ];
   
   // Find first matching action using word boundaries
@@ -2644,10 +2620,10 @@ function extractSetting(pageText) {
   const text = pageText.toLowerCase();
   // Search all setting categories
   const allSettings = [
-    ...TIER_25_UNIFIED_VOCABULARY.settings.indoor,
-    ...TIER_25_UNIFIED_VOCABULARY.settings.outdoor,
-    ...TIER_25_UNIFIED_VOCABULARY.settings.specific,
-    ...TIER_25_UNIFIED_VOCABULARY.settings.fantasy
+    ...VOCAB.TIER_25_UNIFIED_VOCABULARY.settings.indoor,
+    ...VOCAB.TIER_25_UNIFIED_VOCABULARY.settings.outdoor,
+    ...VOCAB.TIER_25_UNIFIED_VOCABULARY.settings.specific,
+    ...VOCAB.TIER_25_UNIFIED_VOCABULARY.settings.fantasy
   ];
   
   // Find first matching setting using word boundaries
@@ -2665,10 +2641,10 @@ function extractAdjective(pageText) {
   const text = pageText.toLowerCase();
   // Search descriptive categories
   const allAdjectives = [
-    ...TIER_25_UNIFIED_VOCABULARY.descriptive.colors,
-    ...TIER_25_UNIFIED_VOCABULARY.descriptive.sizes,
-    ...TIER_25_UNIFIED_VOCABULARY.descriptive.emotions,
-    ...TIER_25_UNIFIED_VOCABULARY.descriptive.qualities
+    ...VOCAB.TIER_25_UNIFIED_VOCABULARY.descriptive.colors,
+    ...VOCAB.TIER_25_UNIFIED_VOCABULARY.descriptive.sizes,
+    ...VOCAB.TIER_25_UNIFIED_VOCABULARY.descriptive.emotions,
+    ...VOCAB.TIER_25_UNIFIED_VOCABULARY.descriptive.qualities
   ];
   
   // Find first matching adjective using word boundaries
@@ -2685,7 +2661,7 @@ function extractEmotion(pageText) {
   
   const text = pageText.toLowerCase();
   // Search emotion vocabulary
-  const emotions = TIER_25_UNIFIED_VOCABULARY.descriptive.emotions;
+  const emotions = VOCAB.TIER_25_UNIFIED_VOCABULARY.descriptive.emotions;
   
   // Find first matching emotion using word boundaries
   for (const emotion of emotions) {
@@ -2953,7 +2929,7 @@ function extractActionIntensity(pageText) {
   const lowerText = pageText.toLowerCase();
   
   // Check for intensity vocabulary (exact matches only)
-  for (const intensity of TIER_25_UNIFIED_VOCABULARY.actions.intensity) {
+  for (const intensity of VOCAB.TIER_25_UNIFIED_VOCABULARY.actions.intensity) {
     if (lowerText.includes(intensity)) {
       return intensity;
     }
@@ -2975,7 +2951,7 @@ function extractBodyLanguage(pageText) {
   const lowerText = pageText.toLowerCase();
   
   // Check for body language vocabulary (exact matches)
-  for (const bodyLang of TIER_25_UNIFIED_VOCABULARY.actions.bodyLanguage) {
+  for (const bodyLang of VOCAB.TIER_25_UNIFIED_VOCABULARY.actions.bodyLanguage) {
     if (lowerText.includes(bodyLang.toLowerCase())) {
       return bodyLang;
     }
@@ -3032,7 +3008,7 @@ function extractSpatialPositioning(pageText) {
   const lowerText = pageText.toLowerCase();
   
   // Check for spatial positioning vocabulary (exact matches)
-  for (const spatial of TIER_25_UNIFIED_VOCABULARY.actions.spatial) {
+  for (const spatial of VOCAB.TIER_25_UNIFIED_VOCABULARY.actions.spatial) {
     const spatialWords = spatial.toLowerCase().split(' ');
     if (spatialWords.every(word => lowerText.includes(word))) {
       return spatial;
@@ -3515,8 +3491,8 @@ function getNuclearPromptTemplate(difficulty, templateType = 'premium') {
 
 function generateEnhancedActionSection(pageText, objects, seed) {
   const action = detectActionsFromStory(pageText, seed);
-  const intensity = getSeededRandomItem(TIER_25_UNIFIED_VOCABULARY.actions.intensity, seed + 'intensity');
-  const bodyLanguage = getSeededRandomItem(TIER_25_UNIFIED_VOCABULARY.actions.bodyLanguage, seed + 'body');
+  const intensity = getSeededRandomItem(VOCAB.TIER_25_UNIFIED_VOCABULARY.actions.intensity, seed + 'intensity');
+  const bodyLanguage = getSeededRandomItem(VOCAB.TIER_25_UNIFIED_VOCABULARY.actions.bodyLanguage, seed + 'body');
   
   const mainObject = objects.length > 0 ? objects[0] : 'toy';
   const spatialPositioning = `positioned near the ${mainObject}`;
@@ -3538,7 +3514,7 @@ function generateColoredObjectsFromStory(pageText, objects, seed) {
   const lowerText = pageText ? pageText.toLowerCase() : '';
   
   // Detect colors from story
-  EXPANDED_COLOR_ARRAY.forEach(color => {
+  VOCAB.EXPANDED_COLOR_ARRAY.forEach(color => {
     if (lowerText.includes(color)) {
       colors.push(color);
     }
@@ -3546,7 +3522,7 @@ function generateColoredObjectsFromStory(pageText, objects, seed) {
   
   // If no colors found, use seeded selection
   if (colors.length === 0) {
-    colors.push(getSeededRandomItem(EXPANDED_COLOR_ARRAY, seed + 'color'));
+    colors.push(getSeededRandomItem(VOCAB.EXPANDED_COLOR_ARRAY, seed + 'color'));
   }
   
   const selectedColor = colors[0];
@@ -5234,7 +5210,7 @@ function detectClothingFromStory(text) {
       for (const sentence of sentences) {
         if (sentence.toLowerCase().includes(keyword)) {
           // Add random color if no color specified
-          const randomColor = EXPANDED_COLOR_ARRAY[Math.floor(Math.random() * EXPANDED_COLOR_ARRAY.length)];
+          const randomColor = VOCAB.EXPANDED_COLOR_ARRAY[Math.floor(Math.random() * VOCAB.EXPANDED_COLOR_ARRAY.length)];
           return `a ${randomColor} ${keyword}`;
         }
       }
@@ -5259,7 +5235,7 @@ function detectAndResolveClothingColor(text) {
   }
   
   // Detect color
-  for (const color of EXPANDED_COLOR_ARRAY) {
+  for (const color of VOCAB.EXPANDED_COLOR_ARRAY) {
     if (lowerText.includes(color)) {
       detectedColor = color;
       break;
