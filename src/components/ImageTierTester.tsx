@@ -59,7 +59,7 @@ export function ImageTierTester() {
     try {
       const startTime = Date.now();
       
-      // Test all Runware-related functions health endpoints
+      // Test all Runware-related functions with proper health check payloads
       const healthChecks = [
         { name: 'Runware API Test', endpoint: 'test-runware-api' },
         { name: 'Image Orchestrator', endpoint: 'runware-generate-image' },
@@ -69,9 +69,11 @@ export function ImageTierTester() {
       const results = await Promise.allSettled(
         healthChecks.map(async ({ name, endpoint }) => {
           try {
+            // Use POST with health check payload for all functions
             const result = await supabase.functions.invoke(endpoint, {
-              method: 'GET'
+              body: { healthCheck: true }
             });
+            
             return { 
               name, 
               endpoint, 
@@ -80,12 +82,13 @@ export function ImageTierTester() {
               error: result.error
             };
           } catch (error) {
+            console.error(`Health check failed for ${name}:`, error);
             return { 
               name, 
               endpoint, 
               status: 'failed',
               result: null,
-              error: { message: error.message }
+              error: { message: error instanceof Error ? error.message : 'Unknown error' }
             };
           }
         })
@@ -178,46 +181,76 @@ export function ImageTierTester() {
 
       if (tierType === 'Tier 1') {
         // Test Tier 1: AI-powered visual scene creator (text-only)
-        result = await supabase.functions.invoke('ai-visual-scene-creator', {
-          body: {
-            storyText: config.storyText,
-            avatarIdentity: userInfo,
-            sessionId: config.sessionId
-          }
-        });
+        result = await Promise.race([
+          supabase.functions.invoke('ai-visual-scene-creator', {
+            body: {
+              storyText: config.storyText,
+              avatarIdentity: userInfo,
+              sessionId: config.sessionId
+            }
+          }),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Request timeout after 60s')), 60000)
+          )
+        ]);
       } else if (tierType === 'Tier 1 (Image Orchestrator)') {
         // Test Tier 1: Full image orchestrator
-        result = await supabase.functions.invoke('runware-generate-image', {
-          body: {
-            pageText: config.storyText,
-            userInfo: userInfo,
-            storyId: config.sessionId,
-            pageNumber: 1
-          }
-        });
+        result = await Promise.race([
+          supabase.functions.invoke('runware-generate-image', {
+            body: {
+              pageText: config.storyText,
+              userInfo: userInfo,
+              storyId: config.sessionId,
+              pageNumber: 1
+            }
+          }),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Request timeout after 90s')), 90000)
+          )
+        ]);
       } else if (tierType.startsWith('Tier 2.5')) {
         // Test specific 2.5 sub-tier
-        result = await supabase.functions.invoke('runware-simple-fallback', {
-          body: {
-            pageText: config.storyText,
-            userInfo: userInfo,
-            storyId: config.sessionId,
-            templateComplexity: templateComplexity || 'A'
-          }
-        });
+        result = await Promise.race([
+          supabase.functions.invoke('runware-simple-fallback', {
+            body: {
+              pageText: config.storyText,
+              userInfo: userInfo,
+              storyId: config.sessionId,
+              templateComplexity: templateComplexity || 'A'
+            }
+          }),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Request timeout after 60s')), 60000)
+          )
+        ]);
       } else if (tierType === 'Tier 4') {
         // Test SVG fallback
-        result = await supabase.functions.invoke('runware-generate-image', {
-          body: {
-            pageText: config.storyText,
-            userInfo: userInfo,
-            storyId: config.sessionId,
-            forceTier: 4
-          }
-        });
+        result = await Promise.race([
+          supabase.functions.invoke('runware-generate-image', {
+            body: {
+              pageText: config.storyText,
+              userInfo: userInfo,
+              storyId: config.sessionId,
+              forceTier: 4
+            }
+          }),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Request timeout after 30s')), 30000)
+          )
+        ]);
       }
 
       const processingTime = Date.now() - startTime;
+      
+      // Enhanced response parsing with detailed error logging
+      console.log(`📊 ${tierType} Response Analysis:`, {
+        hasData: !!result?.data,
+        hasError: !!result?.error,
+        dataKeys: result?.data ? Object.keys(result.data) : [],
+        success: result?.data?.success,
+        imageUrl: result?.data?.imageURL || result?.data?.imageUrl,
+        errorMessage: result?.error?.message || result?.data?.error
+      });
       
       if (result?.data?.success) {
         console.log(`✅ ${tierType} Success:`, result.data);
@@ -231,12 +264,26 @@ export function ImageTierTester() {
           templateComplexity
         };
       } else {
-        console.log(`❌ ${tierType} Failed:`, result?.data || result?.error);
+        // Enhanced error reporting
+        const errorDetail = result?.error ? 
+          `Supabase Error: ${result.error.message}` :
+          result?.data?.error ? 
+            `Function Error: ${result.data.error}` :
+            result?.data ?
+              `Unexpected Response: ${JSON.stringify(result.data).substring(0, 200)}` :
+              'No response data received';
+              
+        console.log(`❌ ${tierType} Failed:`, {
+          errorDetail,
+          fullResult: result,
+          processingTime
+        });
+        
         return {
           tier: tierType + (templateComplexity ? ` (${templateComplexity})` : ''),
           success: false,
           processingTime,
-          error: result?.data?.error || result?.error?.message || 'Unknown error',
+          error: errorDetail,
           templateComplexity
         };
       }
