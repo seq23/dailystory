@@ -2438,9 +2438,9 @@ function fillBasicTemplate_V1(template, placeholders) {
   }
 }
 
-function fillBasicTemplate(template, placeholders) {
+function fillTemplatePlaceholders(template, placeholders) {
   try {
-    console.log('🛡️ Tier 2.5B: Filling basic template with placeholders');
+    console.log('🛡️ Tier 2.5B: Filling template placeholders');
     
     let filledTemplate = template;
     
@@ -4302,7 +4302,7 @@ async function processWithPremiumTemplate({ prompt, userInfo, pageCount, difficu
       console.log(`[TIER 2.5A] Retrieved premium template with ${templateData.scenes.length} scenes`);
       
       // Use premium template processor
-      const pages = fillBasicTemplate(templateData, userInfo, pageCount);
+      const pages = fillTemplatePlaceholders(templateData, userInfo, pageCount);
       
       if (pages && pages.length > 0) {
         return {
@@ -4336,10 +4336,10 @@ async function processWithAdvancedTemplate({ prompt, userInfo, pageCount, diffic
       
       if (Array.isArray(templateData)) {
         // Simple string array template
-        pages = fillBasicTemplate(templateData, userInfo, pageCount);
+        pages = fillTemplatePlaceholders(templateData, userInfo, pageCount);
       } else if (templateData.pages) {
         // Structured template with pages
-        pages = fillBasicTemplate(templateData.pages, userInfo, pageCount);
+        pages = fillTemplatePlaceholders(templateData.pages, userInfo, pageCount);
       } else {
         throw new Error('Invalid template structure');
       }
@@ -4373,7 +4373,7 @@ async function processWithBasicTemplate({ prompt, userInfo, pageCount, difficult
     
     if (basicTemplates && basicTemplates.length > 0) {
       const randomTemplate = basicTemplates[Math.floor(Math.random() * basicTemplates.length)];
-      const pages = fillBasicTemplate(randomTemplate, userInfo, pageCount);
+      const pages = fillTemplatePlaceholders(randomTemplate, userInfo, pageCount);
       
       if (pages && pages.length > 0) {
         return {

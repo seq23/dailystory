@@ -191,6 +191,7 @@ export function ImageTierTester() {
           supabase.functions.invoke('ai-visual-scene-creator', {
             body: {
               storyText: config.storyText,
+              userInfo: userInfo,
               avatarIdentity: userInfo,
               sessionId: config.sessionId
             }

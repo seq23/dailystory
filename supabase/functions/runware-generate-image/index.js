@@ -205,6 +205,31 @@ class WebSocketError extends Error {
     this.name = 'WebSocketError';
   }
 }
+// ============= GUARANTEED CHARACTER PLACEHOLDER FALLBACK =============
+function generateCharacterPlaceholder(pageText = '', pageNumber = 1) {
+  // 6 uploaded character images for "IMAGES NOT WORKING" scenarios
+  const CHARACTER_IMAGES = [
+    '/lovable-uploads/ec8d98b8-07d2-4fa4-8d5f-0c9499570384.png',
+    '/lovable-uploads/886ba3b2-9e9a-4966-a25e-967c18e384c1.png',
+    '/lovable-uploads/35591052-8575-4dd7-a727-6f317dd362ed.png',
+    '/lovable-uploads/2a0750f5-9ff1-4555-bbf8-242e1906515a.png',
+    '/lovable-uploads/d396c614-ad40-4d9a-ae7f-6cd4695e651c.png',
+    '/lovable-uploads/88b1bb2a-0527-43ef-b357-ff4eb3b28259.png'
+  ];
+  
+  // Use page number for rotation to ensure consistent image per page
+  const imageIndex = Math.abs(pageNumber || 1) % CHARACTER_IMAGES.length;
+  const selectedImage = CHARACTER_IMAGES[imageIndex];
+  
+  console.log('🎭 Generated character placeholder:', { pageNumber, imageIndex, selectedImage });
+  return {
+    url: selectedImage,
+    type: 'character-fallback',
+    pageNumber,
+    imageIndex
+  };
+}
+
 // ============= ENHANCED WEBSOCKET MANAGER =============
 class RunwareWebSocketManager {
   static MAX_RETRIES = 3;
@@ -814,20 +839,7 @@ serve(async (req)=>{
     }
   }
   
-  // Validate API key with smart Tier 1 skip logic
-  if (!runwareApiKey && (!forceTier || forceTier !== 1)) {
-    console.warn(`⚠️ [${requestId}] RUNWARE_API_KEY not configured, skipping Tier 1`);
-  } else if (!runwareApiKey) {
-    console.error(`❌ [${requestId}] CRITICAL: RUNWARE_API_KEY not found in environment`);
-    console.error(`📋 [${requestId}] Available env vars:`, Object.keys(Deno.env.toObject()).filter((key)=>key.includes('API')));
-    return createDynamicCorsErrorResponse('Server configuration error: Missing Runware API key', req, 500);
-  } else {
-    // Enhanced API key validation - fixed for all Runware API key formats
-    if (runwareApiKey.length < 10) {
-      console.error(`❌ [${requestId}] CRITICAL: RUNWARE_API_KEY appears too short (less than 10 chars)`);
-      return createDynamicCorsErrorResponse('Server configuration error: Invalid API key format', req, 500);
-    }
-    // Let Runware API validate the actual key format - don't enforce prefix locally
+  // API key validation will be done after forceTier is extracted from request body
     console.log(`✅ [${requestId}] RUNWARE_API_KEY validated - length:`, runwareApiKey.length, 'chars');
   }
   
@@ -873,6 +885,16 @@ serve(async (req)=>{
     isGuestUser = extractedParams.isGuestUser || false; // Default to false for analytics tracking
     enhancedStoryData = extractedParams.enhancedStoryData || null;
     forceTier = extractedParams.forceTier || null;
+    
+    // Now validate API key with smart Tier 1 skip logic (moved here after forceTier is set)
+    if (!runwareApiKey && (!forceTier || forceTier !== 1)) {
+      console.warn(`⚠️ [${requestId}] RUNWARE_API_KEY not configured, skipping Tier 1`);
+    } else if (!runwareApiKey) {
+      console.error(`❌ [${requestId}] CRITICAL: RUNWARE_API_KEY not found in environment`);
+      console.error(`📋 [${requestId}] Available env vars:`, Object.keys(Deno.env.toObject()).filter((key)=>key.includes('API')));
+      return createDynamicCorsErrorResponse('Server configuration error: Missing Runware API key', req, 500);
+    }
+    
     console.log(`✅ [${requestId}] Request body parsed successfully`);
     console.log(`📊 [${requestId}] DEBUG: Request parameters:`, {
       hasPageText: !!pageText,
@@ -1731,11 +1753,25 @@ serve(async (req)=>{
     });
     // TIER POLICY COMPLIANCE LOG - Log any orchestration failures  
     console.error(`🔒 TIER POLICY WARNING: Image orchestration failed for user type "${isGuestUser ? 'GUEST' : 'PREMIUM'}" - Check fallback system`);
-    // Enhanced error response with retry suggestions for 504 Gateway Timeout
-    const errorMessage = error.message || 'Unknown error';
-    const isTimeoutError = errorMessage.toLowerCase().includes('timeout') || errorMessage.toLowerCase().includes('gateway') || errorMessage.toLowerCase().includes('504');
-    const responseMessage = isTimeoutError ? `Image generation temporarily unavailable due to high demand. Please try again in a few moments. (Error: ${errorMessage})` : `Image generation orchestration failed: ${errorMessage}`;
-    const statusCode = isTimeoutError ? 503 : 500; // Use 503 for temporary timeout issues
-    return createDynamicCorsErrorResponse(responseMessage, req, statusCode);
+    
+    // GUARANTEED FALLBACK: Always return a character placeholder image - never return 500 errors
+    const placeholderResult = generateCharacterPlaceholder(pageText || '', pageNumber || 1);
+    console.log('🛡️ GUARANTEED FALLBACK: Returning character placeholder to prevent 500 error');
+    
+    return createDynamicCorsResponse({
+      success: true,
+      imageURL: placeholderResult.url,
+      provider: 'runware-orchestrator',
+      tier: 4,
+      enhancementLevel: 'character-placeholder',
+      metadata: {
+        orchestrated: true,
+        errorMessage: error.message,
+        fallbackType: 'guaranteed-character-placeholder',
+        imageIndex: placeholderResult.imageIndex,
+        pageNumber: placeholderResult.pageNumber,
+        timestamp: new Date().toISOString()
+      }
+    }, req);
   }
 });

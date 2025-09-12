@@ -88,7 +88,7 @@ serve(async (req) => {
         data: testResult,
         error: testError,
         hasValidResponse: !testError && !!testResult,
-        hasEmotionalData: testResult?.enhancedStoryData?.characters?.some(c => c.emotions)
+        hasEmotionalData: testResult?.aiSchema?.characters?.some(c => c.emotions) || testResult?.enhancedStoryData?.characters?.some(c => c.emotions) || false
       },
       timestamp: new Date().toISOString()
     };
