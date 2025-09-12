@@ -70,7 +70,7 @@ export function ImageTierTester() {
         healthChecks.map(async ({ name, endpoint }) => {
           try {
             const result = await supabase.functions.invoke(endpoint, {
-              body: { healthCheck: true }
+              method: 'GET'
             });
             return { 
               name, 
@@ -191,7 +191,7 @@ export function ImageTierTester() {
           body: {
             pageText: config.storyText,
             userInfo: userInfo,
-            sessionId: config.sessionId,
+            storyId: config.sessionId,
             pageNumber: 1
           }
         });
@@ -199,21 +199,20 @@ export function ImageTierTester() {
         // Test specific 2.5 sub-tier
         result = await supabase.functions.invoke('runware-simple-fallback', {
           body: {
-            storyText: config.storyText,
-            avatarIdentity: userInfo,
-            sessionId: config.sessionId,
-            templateComplexity: templateComplexity || 'A',
-            forceFallback: true
+            pageText: config.storyText,
+            userInfo: userInfo,
+            storyId: config.sessionId,
+            templateComplexity: templateComplexity || 'A'
           }
         });
       } else if (tierType === 'Tier 4') {
         // Test SVG fallback
-        result = await supabase.functions.invoke('runware-simple-fallback', {
+        result = await supabase.functions.invoke('runware-generate-image', {
           body: {
-            storyText: config.storyText,
-            avatarIdentity: userInfo,
-            sessionId: config.sessionId,
-            forceSVG: true
+            pageText: config.storyText,
+            userInfo: userInfo,
+            storyId: config.sessionId,
+            forceTier: 4
           }
         });
       }
