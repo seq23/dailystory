@@ -214,10 +214,12 @@ export const SpecialRequestDialog: React.FC<SpecialRequestDialogProps> = ({
         const hasNonEnglish = /[^\x00-\x7F]/.test(newValue);
         if (hasNonEnglish) {
           try {
-              const { data: translationData, error: translationError } = await supabase.functions.invoke('translate-to-english', {
+              const { data: translationData, error: translationError } = await supabase.functions.invoke('translate-universal', {
                 body: { 
                   text: newValue,
-                  sourceLanguage: 'auto'
+                  sourceLanguage: 'auto',
+                  targetLanguage: 'en',
+                  mode: 'to-english'
                 }
               });
             

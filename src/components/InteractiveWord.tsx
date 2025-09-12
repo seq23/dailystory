@@ -523,12 +523,13 @@ export const InteractiveWord = ({
       // Removed unnecessary loading toast
       
       // Create a translation request to Supabase function
-      const { data, error } = await supabase.functions.invoke('translate-word', {
+      const { data, error } = await supabase.functions.invoke('translate-universal', {
         body: {
           word: cleanWord,
           targetLanguage: userNativeLanguage,
           sourceLanguage: 'en',
-          context: sentenceContext
+          context: sentenceContext,
+          mode: 'word'
         }
       });
 
@@ -1365,12 +1366,13 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
         wordData.sampleSentence || `This is the word: ${word}`
       ];
       
-      const response = await supabase.functions.invoke('translate-batch', {
+      const response = await supabase.functions.invoke('translate-universal', {
         body: {
           texts: textsToTranslate,
           targetLanguage: userLanguage,
           sourceLanguage: 'en',
-          context: 'word_explanation'
+          context: 'word_explanation',
+          mode: 'batch'
         }
       });
       

@@ -1,7 +1,7 @@
-# Redeploy touch: 2025-09-12T19:20:00Z - Fix create-premium-subscription entrypoint
+# Redeploy touch: 2025-09-12T19:25:00Z - Consolidate translation functions
 project_id = "cpzeuogomaixamrtnnmj"
 
-# Redeploy complete: 2025-09-12T19:10:00Z - Confirmed disk presence
+# Redeploy complete: 2025-09-12T19:25:00Z - Consolidated translation functions
 # The following functions ARE PRESENT on disk and will deploy successfully:
 # ai-visual-scene-creator (index.js) - confirmed on disk
 # runware-generate-image (index.js) - confirmed on disk  
@@ -53,13 +53,7 @@ verify_jwt = true
 verify_jwt = true
 
 
-[functions.translate-batch]
-verify_jwt = false
-
-[functions.translate-to-english]
-verify_jwt = false
-
-[functions.translate-word]
+[functions.translate-universal]
 verify_jwt = false
 
 [functions.apply-discount-code]
