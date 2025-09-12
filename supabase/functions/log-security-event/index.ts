@@ -1,3 +1,5 @@
+// Redeploy touch: 2025-09-12T18:45:32Z - Force complete rebuild
+console.log("[log-security-event] Loaded: 2025-09-12T18:45:32Z");
 // Force redeploy to resolve deployment cache issue - 2025-01-15
 import { serve } from "https://deno.land/std@0.190.0/http/server.js";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.55.0";

@@ -1,3 +1,5 @@
+// Redeploy touch: 2025-09-12T18:45:32Z - Force complete rebuild
+console.log("[edge-connectivity-test] Loaded: 2025-09-12T18:45:32Z");
 import { createCorsResponse, createCorsOptionsResponse } from '../_shared/cors.js';
 
 console.log('Edge connectivity test function starting...');

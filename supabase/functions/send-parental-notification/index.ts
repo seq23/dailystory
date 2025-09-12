@@ -1,3 +1,5 @@
+// Redeploy touch: 2025-09-12T18:45:32Z - Force complete rebuild
+console.log("[send-parental-notification] Loaded: 2025-09-12T18:45:32Z");
 import { serve } from "https://deno.land/std@0.190.0/http/server.js";
 import { Resend } from "npm:resend@2.0.0";
 

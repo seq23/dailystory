@@ -1,3 +1,5 @@
+// Redeploy touch: 2025-09-12T18:45:32Z - Force complete rebuild
+console.log("[runware-diagnostic] Loaded: 2025-09-12T18:45:32Z");
 /**
  * ============================================================================
  * 🚨 DEPRECATED — DO NOT EDIT 🚨

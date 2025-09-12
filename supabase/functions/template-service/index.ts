@@ -1,4 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.js";
+// Redeploy touch: 2025-09-12T18:45:32Z - Force complete rebuild
+console.log("[template-service] Loaded: 2025-09-12T18:45:32Z");
 import { serve } from "https://deno.land/std@0.168.0/http/server.js";
 import { corsHeaders } from '../_shared/cors.ts';
 

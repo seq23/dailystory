@@ -1,3 +1,5 @@
+// Redeploy touch: 2025-09-12T18:45:32Z - Force complete rebuild
+console.log("[runware-simple-fallback] Loaded: 2025-09-12T18:45:32Z");
 // ============= TIER 2.5 NUCLEAR INDEPENDENCE - HARDCODED NEGATIVE PROMPT SYSTEM =============
 // Nuclear independence achieved - all dependencies removed, hardcoded arrays implemented
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
