@@ -1,33 +1,43 @@
 // Phase 4: Background pre-generation cron job
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { DifficultyLevelMapper } from '../_shared/DifficultyLevelMapper.ts';
+import { serve } from "https://deno.land/std@0.168.0/http/server.js";
+
+// ============= LAZY LOADING FUNCTIONS FOR HEAVY DEPENDENCIES =============
+
+async function getDifficultyMapper() {
+  try {
+    const { DifficultyLevelMapper } = await import("../_shared/DifficultyLevelMapper.js");
+    return DifficultyLevelMapper;
+  } catch (error) {
+    console.warn('DifficultyLevelMapper lazy load failed:', error);
+    return null;
+  }
+}
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Max-Age': '86400',
 }
 
-interface StoredStory {
-  id: string;
-  story_data: {
-    pages: string[];
-    userInfo: any;
-    difficulty: string;
-  };
-  has_images: boolean;
-}
-
-Deno.serve(async (req) => {
+serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     console.log('🤖 Starting background image pre-generation...');
+
+    // Get DifficultyLevelMapper with lazy loading
+    const DifficultyLevelMapper = await getDifficultyMapper();
+    if (!DifficultyLevelMapper) {
+      throw new Error('DifficultyLevelMapper not available');
+    }
 
     // Find stories without images (limit to 5 per run to avoid overload)
     const { data: stories, error } = await supabase
@@ -58,7 +68,7 @@ Deno.serve(async (req) => {
     for (let i = 0; i < stories.length; i += maxConcurrent) {
       const batch = stories.slice(i, i + maxConcurrent);
       
-      await Promise.allSettled(batch.map(async (story: StoredStory) => {
+      await Promise.allSettled(batch.map(async (story) => {
         try {
           const storyData = story.story_data;
           if (!storyData?.pages?.length) return;
@@ -66,12 +76,21 @@ Deno.serve(async (req) => {
           console.log(`🎨 Pre-generating images for story ${story.id}`);
 
           // Generate images for each page using existing edge function
-          const imagePromises = storyData.pages.map(async (pageText: string, pageIndex: number) => {
+          const imagePromises = storyData.pages.map(async (pageText, pageIndex) => {
             try {
+              // Properly construct userInfo with normalized difficulty
+              const normalizedDifficulty = DifficultyLevelMapper.normalizeLevel(storyData.difficulty || 'easy');
+              const userInfo = {
+                ...storyData.userInfo,
+                difficultyLevel: normalizedDifficulty,
+                name: storyData.userInfo?.name || 'Background',
+                age: storyData.userInfo?.age || 8
+              };
+
               const { data: result } = await supabase.functions.invoke('runware-generate-image', {
                 body: {
                   pageText,
-                  userInfo: storyData.userInfo || { name: 'Background', age: 8 },
+                  userInfo,
                   storyId: `bg_${story.id}`,
                   pageNumber: pageIndex + 1,
                   totalPages: storyData.pages.length
