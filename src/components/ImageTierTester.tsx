@@ -66,7 +66,8 @@ export function ImageTierTester() {
       const healthChecks = [
         { name: 'AI Visual Scene Creator', endpoint: 'ai-visual-scene-creator' },
         { name: 'Runware Image Orchestrator', endpoint: 'runware-generate-image' },
-        { name: 'Runware Simple Fallback', endpoint: 'runware-simple-fallback' }
+        { name: 'Runware Template Simple', endpoint: 'runware-template-simple' },
+        { name: 'Runware Template Advanced', endpoint: 'runware-template-advanced' }
       ];
 
       console.log(`🔧 [${requestId}] Testing ${healthChecks.length} endpoints via GET...`);
@@ -99,7 +100,7 @@ export function ImageTierTester() {
                 const openai = data.api_keys.openai_configured ? '✓' : '✗';
                 const runware = data.api_keys.runware_configured ? '✓' : '✗';
                 keyStatus = ` (OpenAI: ${openai}, Runware: ${runware})`;
-              } else if (endpoint === 'runware-simple-fallback' && data.runwareApiKeyPresent !== undefined) {
+              } else if ((endpoint === 'runware-template-simple' || endpoint === 'runware-template-advanced') && data.runwareApiKeyPresent !== undefined) {
                 keyStatus = ` (Runware: ${data.runwareApiKeyPresent ? '✓' : '✗'})`;
               }
               
@@ -271,17 +272,52 @@ export function ImageTierTester() {
           )
         ]);
       } else if (tierType.startsWith('Tier 2.5')) {
-        // Test runware simple fallback for nuclear independent generation
-        console.log(`🎯 [${requestId}] Calling runware-simple-fallback with complexity ${templateComplexity}...`);
+        // Route to appropriate template function based on complexity
+        const isAdvanced = templateComplexity === 'C' || templateComplexity === 'D';
+        const functionName = isAdvanced ? 'runware-template-advanced' : 'runware-template-simple';
+        
+        console.log(`🎯 [${requestId}] Calling ${functionName} with complexity ${templateComplexity}...`);
         result = await Promise.race([
-          supabase.functions.invoke('runware-simple-fallback', {
+          supabase.functions.invoke(functionName, {
             body: {
-              pageText: config.storyText,
+              storyText: config.storyText,
               userInfo: userInfo,
-              sessionId: config.sessionId,
-              storyId: `story-${config.sessionId}`,
+              avatarIdentity: userInfo,
               templateComplexity: templateComplexity || 'A',
-              tier: '2.5',
+              requestId
+            }
+          }),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error(`[${requestId}] Request timeout after 60s`)), 60000)
+          )
+        ]);
+      } else if (tierType === 'Template Simple') {
+        // Test runware-template-simple function directly
+        console.log(`🎯 [${requestId}] Calling runware-template-simple directly with complexity ${templateComplexity}...`);
+        result = await Promise.race([
+          supabase.functions.invoke('runware-template-simple', {
+            body: {
+              storyText: config.storyText,
+              userInfo: userInfo,
+              avatarIdentity: userInfo,
+              templateComplexity: templateComplexity || 'A',
+              requestId
+            }
+          }),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error(`[${requestId}] Request timeout after 60s`)), 60000)
+          )
+        ]);
+      } else if (tierType === 'Template Advanced') {
+        // Test runware-template-advanced function directly
+        console.log(`🎯 [${requestId}] Calling runware-template-advanced directly with complexity ${templateComplexity}...`);
+        result = await Promise.race([
+          supabase.functions.invoke('runware-template-advanced', {
+            body: {
+              storyText: config.storyText,
+              userInfo: userInfo,
+              avatarIdentity: userInfo,
+              templateComplexity: templateComplexity || 'C',
               requestId
             }
           }),
