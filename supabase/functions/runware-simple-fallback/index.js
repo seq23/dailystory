@@ -1882,18 +1882,9 @@ function extractStoryProps(pageText, objects) {
   const lowerText = pageText.toLowerCase();
   const detectedProps = [];
   
-  // Common story props organized by category
-  const propCategories = {
-    toys: ['ball', 'doll', 'teddy bear', 'blocks', 'puzzle', 'game', 'toy car', 'book'],
-    furniture: ['chair', 'table', 'bed', 'sofa', 'desk', 'shelf', 'cupboard'],
-    outdoor: ['tree', 'flower', 'rock', 'stick', 'leaf', 'bench', 'swing', 'slide'],
-    kitchen: ['cup', 'plate', 'spoon', 'fork', 'bowl', 'pot', 'pan'],
-    clothing: ['hat', 'shoes', 'jacket', 'dress', 'shirt', 'pants'],
-    vehicles: ['car', 'bike', 'bus', 'train', 'airplane', 'boat'],
-    animals: ['dog', 'cat', 'bird', 'fish', 'bunny', 'horse', 'cow'],
-    nature: ['sun', 'moon', 'star', 'cloud', 'mountain', 'river', 'ocean'],
-    tools: ['hammer', 'brush', 'scissors', 'pencil', 'crayon', 'marker']
-  };
+  // Import semantic extraction vocabulary
+  const { SEMANTIC_EXTRACTION } = await import('./tier25Vocabulary.js');
+  const propCategories = SEMANTIC_EXTRACTION.propCategories;
   
   // Extract props from each category
   for (const [category, items] of Object.entries(propCategories)) {
@@ -1921,26 +1912,10 @@ function extractCommunityContext(sceneText) {
   
   const text = sceneText.toLowerCase();
   
-  // Setting patterns
-  const settingPatterns = {
-    'home': ['home', 'house', 'room', 'kitchen', 'bedroom', 'living room'],
-    'school': ['school', 'classroom', 'teacher', 'student', 'desk', 'lesson'],
-    'park': ['park', 'playground', 'swing', 'slide', 'grass', 'trees'],
-    'neighborhood': ['street', 'neighbor', 'sidewalk', 'block', 'community'],
-    'store': ['store', 'shop', 'market', 'buy', 'sell', 'cashier'],
-    'library': ['library', 'book', 'quiet', 'read', 'librarian'],
-    'outdoors': ['forest', 'beach', 'mountain', 'field', 'nature'],
-    'city': ['city', 'building', 'busy', 'traffic', 'urban']
-  };
-  
-  // Social level patterns
-  const socialPatterns = {
-    'individual': ['alone', 'by myself', 'solo', 'individual'],
-    'family': ['mom', 'dad', 'parent', 'brother', 'sister', 'family'],
-    'friends': ['friend', 'buddy', 'pal', 'together', 'play with'],
-    'class': ['class', 'students', 'everyone', 'group', 'team'],
-    'community': ['neighborhood', 'community', 'everyone', 'people', 'crowd']
-  };
+  // Import semantic extraction vocabulary
+  const { SEMANTIC_EXTRACTION } = await import('./tier25Vocabulary.js');
+  const settingPatterns = SEMANTIC_EXTRACTION.settingPatterns;
+  const socialPatterns = SEMANTIC_EXTRACTION.socialPatterns;
   
   // Determine setting
   let setting = 'home';
@@ -1970,25 +1945,11 @@ function extractSensoryDetails(sceneText) {
   const text = sceneText.toLowerCase();
   const sensoryDetails = {};
   
-  // Visual details
-  const visualPatterns = {
-    colors: ['red', 'blue', 'green', 'yellow', 'purple', 'pink', 'orange', 'black', 'white', 'brown'],
-    sizes: ['big', 'small', 'large', 'tiny', 'huge', 'little', 'giant'],
-    shapes: ['round', 'square', 'triangle', 'circle', 'long', 'short', 'tall', 'wide'],
-    textures: ['soft', 'hard', 'smooth', 'rough', 'bumpy', 'fuzzy', 'slippery']
-  };
-  
-  // Sound details
-  const soundPatterns = {
-    volume: ['loud', 'quiet', 'noisy', 'silent', 'whisper', 'shout'],
-    types: ['music', 'song', 'laugh', 'cry', 'bark', 'meow', 'chirp', 'buzz', 'ring']
-  };
-  
-  // Movement details
-  const movementPatterns = {
-    speed: ['fast', 'slow', 'quick', 'rapid', 'gentle', 'sudden'],
-    types: ['run', 'walk', 'jump', 'hop', 'skip', 'dance', 'fly', 'swim']
-  };
+  // Import semantic extraction vocabulary
+  const { SEMANTIC_EXTRACTION } = await import('./tier25Vocabulary.js');
+  const visualPatterns = SEMANTIC_EXTRACTION.visualPatterns;
+  const soundPatterns = SEMANTIC_EXTRACTION.soundPatterns;
+  const movementPatterns = SEMANTIC_EXTRACTION.movementPatterns;
   
   // Extract visual details
   const visual = {};
@@ -2086,16 +2047,9 @@ function extractEmotionalTone(sceneText) {
   
   const text = sceneText.toLowerCase();
   
-  const emotionPatterns = {
-    'joyful': ['happy', 'joy', 'excited', 'glad', 'cheerful', 'laugh', 'smile', 'fun', 'wonderful', 'amazing'],
-    'peaceful': ['calm', 'quiet', 'peaceful', 'serene', 'gentle', 'soft', 'relaxed', 'comfortable'],
-    'adventurous': ['adventure', 'explore', 'discover', 'journey', 'quest', 'exciting', 'brave', 'bold'],
-    'mysterious': ['mystery', 'secret', 'hidden', 'unknown', 'strange', 'curious', 'wonder'],
-    'caring': ['love', 'care', 'kind', 'help', 'friend', 'share', 'together', 'family'],
-    'determined': ['try', 'work', 'practice', 'learn', 'strong', 'brave', 'never give up'],
-    'sad': ['sad', 'cry', 'tears', 'lonely', 'miss', 'hurt', 'sorry'],
-    'worried': ['worried', 'scared', 'afraid', 'nervous', 'anxious', 'concern']
-  };
+  // Import semantic extraction vocabulary
+  const { SEMANTIC_EXTRACTION } = await import('./tier25Vocabulary.js');
+  const emotionPatterns = SEMANTIC_EXTRACTION.emotionPatterns;
   
   // Count emotional indicators
   const emotionScores = {};
@@ -2410,8 +2364,8 @@ function validateUserInfo(userInfo) {
     if (userInfo.specialRequest.length > 500) {
       validation.warnings.push('Special request is very long');
     }
-    // Check for inappropriate content patterns
-    const inappropriatePatterns = ['kill', 'death', 'violence', 'scary', 'nightmare'];
+    // Check for inappropriate content patterns (essential safety only)
+    const inappropriatePatterns = ['kill', 'death', 'violence'];
     inappropriatePatterns.forEach(pattern => {
       if (userInfo.specialRequest.toLowerCase().includes(pattern)) {
         validation.safetyFlags.push(`Potentially inappropriate content: ${pattern}`);
@@ -2448,10 +2402,9 @@ function validateGeneratedContent(content, userInfo = {}) {
   
   const text = content.toLowerCase();
   
-  // Safety patterns to check for
+  // Safety patterns to check for (essential only)
   const safetyPatterns = {
     violence: ['fight', 'hit', 'hurt', 'blood', 'weapon', 'gun', 'knife'],
-    scary: ['scary', 'monster', 'nightmare', 'ghost', 'demon', 'evil'],
     inappropriate: ['hate', 'stupid', 'dumb', 'kill', 'die', 'death'],
     personal: ['address', 'phone', 'email', 'password', 'social security']
   };
@@ -2776,18 +2729,15 @@ function filterComplexVocabulary(content, difficulty) {
   return filtered;
 }
 
-// Apply safety filtering to content
+// Apply essential safety filtering to content
 function applySafetyFiltering(content) {
   let filtered = content;
   
-  // Replace potentially concerning words with safer alternatives
+  // Replace only genuinely concerning words with safer alternatives
   const safetyReplacements = {
     'fight': 'play',
     'hit': 'touch',
-    'hurt': 'feel sad',
-    'scary': 'surprising',
-    'monster': 'friendly creature',
-    'nightmare': 'strange dream'
+    'hurt': 'feel sad'
   };
   
   Object.entries(safetyReplacements).forEach(([unsafe, safe]) => {
@@ -3403,49 +3353,7 @@ function processWithNuclearTemplate({ prompt, userInfo, pageCount, difficulty })
   }
 }
 
-/**
- * Get hardcoded templates for basic fallback
- */
-function getHardcodedTemplates(difficulty) {
-  const templates = {
-    'easy': [
-      [
-        "{userName} found a magical {favoriteColor} book in the library.",
-        "The book opened to show pictures of a friendly {favoriteAnimal}.",
-        "{userName} and the {favoriteAnimal} became best friends.",
-        "They played together in a beautiful garden full of {favoriteColor} flowers.",
-        "At the end of the day, {userName} felt very happy about this new friendship."
-      ],
-      [
-        "One sunny morning, {userName} decided to go on an adventure.",
-        "They packed their favorite {favoriteFood} for a snack.",
-        "Along the way, {userName} met a helpful {favoriteAnimal} who needed help.",
-        "Together they solved the problem and shared the {favoriteFood}.",
-        "{userName} learned that helping others makes adventures even better."
-      ]
-    ],
-    'medium': [
-      [
-        "{userName} discovered a mysterious {favoriteColor} door in their backyard.",
-        "Behind the door was a wonderful world where {favoriteAnimal}s could talk.",
-        "A wise old {favoriteAnimal} invited {userName} to join their community.",
-        "They worked together to solve a puzzle that would help everyone.",
-        "{userName} returned home with new wisdom and lasting friendships."
-      ]
-    ],
-    'hard': [
-      [
-        "{userName} inherited a special compass that always pointed toward adventure.",
-        "Following the compass led to an ancient forest where animals needed help.",
-        "The forest was losing its {favoriteColor} magic, and only kindness could restore it.",
-        "{userName} organized the animals to work together, sharing {favoriteFood} and stories.",
-        "Through teamwork and friendship, they restored the forest's magic and learned valuable lessons."
-      ]
-    ]
-  };
-  
-  return templates[difficulty] || templates['easy'];
-}
+// getHardcodedTemplates function removed - using proper tier fallback flow
 
 // ============= EMERGENCY FUNCTIONS REMOVED - UNUSED CODE =============
   
