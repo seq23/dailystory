@@ -23,14 +23,53 @@ function getUltimateFallbackImage(pageNumber = 1) {
 
 // ============= CONSOLIDATED CULTURAL ARRAYS IMPORT WITH DEFENSIVE LOADING =============
 let CULTURAL_ARRAYS = null;
-try {
-  const mod = await import('../_shared/tier25Vocabulary.js');
-  CULTURAL_ARRAYS = mod.CULTURAL_ARRAYS;
-  console.log('✅ CULTURAL_ARRAYS loaded successfully');
-} catch (error) {
-  console.warn('⚠️ Failed to load CULTURAL_ARRAYS, using fallback:', error);
-  CULTURAL_ARRAYS = { AFRICAN_AMERICAN_FEATURES: [] }; // Minimal fallback
+let culturalArraysPromise = null;
+
+// Synchronous getter that returns cached result or throws error if not loaded
+function getCulturalArrays() {
+  if (CULTURAL_ARRAYS) return CULTURAL_ARRAYS;
+  
+  // If arrays haven't been loaded yet, return a basic fallback
+  console.warn('⚠️ CULTURAL_ARRAYS not loaded yet, using basic fallback');
+  return { 
+    HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES: { girls: [], boys: [] },
+    HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES: [],
+    HARDCODED_AFRICAN_AMERICAN_SKIN_TONES: []
+  };
 }
+
+// Async initializer that should be called at the start of main functions
+async function initCulturalArrays() {
+  if (CULTURAL_ARRAYS) return CULTURAL_ARRAYS;
+  if (culturalArraysPromise) return culturalArraysPromise;
+  
+  culturalArraysPromise = (async () => {
+    try {
+      const mod = await import('../_shared/tier25Vocabulary.js');
+      CULTURAL_ARRAYS = mod.CULTURAL_ARRAYS;
+      console.log('✅ CULTURAL_ARRAYS loaded successfully');
+      return CULTURAL_ARRAYS;
+    } catch (error) {
+      console.warn('⚠️ Failed to load CULTURAL_ARRAYS, using fallback:', error);
+      CULTURAL_ARRAYS = { 
+        HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES: { girls: [], boys: [] },
+        HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES: [],
+        HARDCODED_AFRICAN_AMERICAN_SKIN_TONES: []
+      };
+      return CULTURAL_ARRAYS;
+    }
+  })();
+  
+  return culturalArraysPromise;
+}
+
+// Update all direct CULTURAL_ARRAYS references to use the getter
+const CULTURAL_ARRAYS_GETTER = new Proxy({}, {
+  get: (target, prop) => {
+    const arrays = getCulturalArrays();
+    return arrays[prop];
+  }
+});
 
 // ============= LAZY LOADING FUNCTIONS FOR HEAVY DEPENDENCIES =============
 
@@ -381,8 +420,8 @@ function generateAfricanAmericanCharacter(gender, seed, difficulty, pageText) {
   console.log('🌍 Generating African American character');
   
   const age = getSeededRandomItem(['child', 'young child', 'little child'], seed + 'age');
-  const hair = getSeededRandomItem(CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[gender + 's'] || CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.girls, seed + 'hair');
-  const features = getSeededRandomItem(CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES, seed + 'features');
+  const hair = getSeededRandomItem(CULTURAL_ARRAYS_GETTER.HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[gender + 's'] || CULTURAL_ARRAYS_GETTER.HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.girls, seed + 'hair');
+  const features = getSeededRandomItem(CULTURAL_ARRAYS_GETTER.HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES, seed + 'features');
   const emotion = getSeededRandomItem(VOCAB.UNIVERSAL_EMOTION_ARRAYS, seed + 'emotion');
   
   console.log('✅ African American character generated successfully');
@@ -1532,14 +1571,14 @@ function generateAfricanAmericanMapping(avatarType, seed, userInfo, avatarIdenti
     const gender = avatarType === 'girl' ? 'girls' : 'boys';
     
     // HAIR SELECTION (Seeded for consistency)
-    const hairOptions = CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[gender] || CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.boys;
+    const hairOptions = CULTURAL_ARRAYS_GETTER.HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[gender] || CULTURAL_ARRAYS_GETTER.HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.boys;
     const selectedHair = getSeededRandomItem(hairOptions, seed + '_hair');
     
     // SKIN TONE SELECTION (Seeded for consistency)
-    const selectedSkinTone = getSeededRandomItem(CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_SKIN_TONES, seed + '_skin');
+    const selectedSkinTone = getSeededRandomItem(CULTURAL_ARRAYS_GETTER.HARDCODED_AFRICAN_AMERICAN_SKIN_TONES, seed + '_skin');
     
     // FACIAL FEATURES SELECTION (Seeded for consistency)
-    const selectedFeatures = getSeededRandomItem(CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES, seed + '_features');
+    const selectedFeatures = getSeededRandomItem(CULTURAL_ARRAYS_GETTER.HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES, seed + '_features');
     
     // CLOTHING DETECTION FROM STORY
     const storyClothing = detectClothingFromStory(userInfo?.pageText || '');
@@ -4671,8 +4710,8 @@ async function fillPremiumTemplate(
       
       finalMapping = {
         ...avatarMapping,
-        hair: getRandomItem(CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[genderKey]),
-        features: getRandomItem(CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES)
+        hair: getRandomItem(CULTURAL_ARRAYS_GETTER.HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[genderKey]),
+        features: getRandomItem(CULTURAL_ARRAYS_GETTER.HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES)
       };
     }
     // French + Dark Skin: African American hairstyles + facial features  
@@ -4685,8 +4724,8 @@ async function fillPremiumTemplate(
       
       finalMapping = {
         ...avatarMapping,
-        hair: getRandomItem(CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[genderKey]),
-        features: getRandomItem(CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES)
+        hair: getRandomItem(CULTURAL_ARRAYS_GETTER.HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[genderKey]),
+        features: getRandomItem(CULTURAL_ARRAYS_GETTER.HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES)
       };
     }
     // Spanish + Dark Skin: African American hairstyles + facial features
@@ -4699,8 +4738,8 @@ async function fillPremiumTemplate(
       
       finalMapping = {
         ...avatarMapping,
-        hair: getRandomItem(CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[genderKey]),
-        features: getRandomItem(CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES)
+        hair: getRandomItem(CULTURAL_ARRAYS_GETTER.HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[genderKey]),
+        features: getRandomItem(CULTURAL_ARRAYS_GETTER.HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES)
       };
     }
     // Portuguese + Dark Skin: African American hairstyles + facial features
@@ -4713,8 +4752,8 @@ async function fillPremiumTemplate(
       
       finalMapping = {
         ...avatarMapping,
-        hair: getRandomItem(CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[genderKey]),
-        features: getRandomItem(CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES)
+        hair: getRandomItem(CULTURAL_ARRAYS_GETTER.HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[genderKey]),
+        features: getRandomItem(CULTURAL_ARRAYS_GETTER.HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES)
       };
     }
     

@@ -774,40 +774,35 @@ serve(async (req) => {
     });
   }
 
-  // Handle POST health check requests with JSON body
-  try {
-    const body = await req.json().catch(() => ({}));
-    if (body.healthCheck || body.diagnosticMode) {
-      console.log(`🩺 [${requestId}] POST health check request received`, body);
-      return createCorsResponse({
-        healthy: true,
-        service: 'ai-visual-scene-creator',
-        status: 'ready',
-        timestamp: new Date().toISOString(),
-        requestId,
-        dependencies: {
-          openai: !!Deno.env.get('OPENAI_API_KEY'),
-          circuitBreaker: 'initialized'
-        }
-      });
-    }
-    
-    // Continue with normal request processing
-    const { storyText, userInfo, avatarIdentity, sessionId } = body;
-
+  // For POST requests, use EdgeErrorHandler to wrap the entire request processing
   return EdgeErrorHandler.withPerformanceTracking(
     'ai-visual-scene-creator',
     'fallback-chain',
     async () => {
-      // Check for diagnostic mode first - consume body only once
-      let requestBody;
+      // Parse JSON body once
+      let body;
       try {
-        requestBody = await req.json();
+        body = await req.json();
       } catch (e) {
-        requestBody = {};
+        console.log(`⚠️ [${requestId}] Failed to parse JSON body:`, e.message);
+        body = {};
       }
 
-      const { diagnostic, test } = requestBody;
+      // Handle POST health check requests
+      if (body.healthCheck || body.diagnosticMode) {
+        console.log(`🩺 [${requestId}] POST health check request received`, body);
+        return createCorsResponse({
+          healthy: true,
+          service: 'ai-visual-scene-creator',
+          status: 'ready',
+          timestamp: new Date().toISOString(),
+          requestId,
+          dependencies: {
+            openai: !!Deno.env.get('OPENAI_API_KEY'),
+            circuitBreaker: 'initialized'
+          }
+        });
+      }
 
       // DIAGNOSTIC MODE - Handle diagnostic requests
       if (diagnostic || test) {
