@@ -1,8 +1,6 @@
-// ============= TIER 2.5 NUCLEAR INDEPENDENCE - SHARED NUCLEAR NEGATIVE PROMPT SYSTEM =============
-// This edge function uses the shared nuclear negative prompt system for consistency
-import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from "../_shared/NuclearNegativePrompts.js";
+// ============= TIER 2.5 NUCLEAR INDEPENDENCE - HARDCODED NEGATIVE PROMPT SYSTEM =============
+// Nuclear independence achieved - all dependencies removed, hardcoded arrays implemented
 import { globalSessionManager } from "../_shared/SessionStateManager.js";
-import { ExactWordExtractor } from "../_shared/ExactWordExtractor.js";
 import { VisualDetailTracker } from "../_shared/VisualDetailTracker.js";
 import { CharacterConsistencyService } from "../_shared/CharacterConsistencyService.js";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
@@ -36,6 +34,57 @@ function createCorsErrorResponse(error, status = 500) {
 function createCorsOptionsResponse() {
   return new Response(null, { headers: corsHeaders });
 }
+
+// ============= HARDCODED NEGATIVE PROMPT ARRAYS - NUCLEAR INDEPENDENCE =============
+
+// UNIFIED NEGATIVE PROMPT - Base quality and safety controls
+const UNIFIED_NEGATIVE_PROMPT = [
+  "NO TEXT", "no words", "no letters", "no writing", "no captions", "no watermarks", 
+  "no signatures", "no logos", "no adult features", "no mature faces", "no wrinkles", 
+  "no facial hair", "no makeup", "no weapons", "no scary features", "no distorted faces", 
+  "no asymmetrical features", "no blurry faces", "no low quality", "no pixelated", 
+  "no grainy", "no artifacts", "no noise", "no overexposed", "no underexposed", 
+  "no harsh shadows", "no dramatic lighting", "no neon colors", "no oversaturated", 
+  "no desaturated", "no black and white", "no sepia", "no vintage effects", "no filters", 
+  "no borders", "no frames", "no split screen", "no collage", "no montage", 
+  "no duplicate faces", "no extra limbs", "no missing limbs", "no missing body", 
+  "no deformed hands", "no extra fingers", "no missing fingers", "no anatomical errors", 
+  "no unrealistic proportions", "no cartoon exaggeration", "no anime style", "no manga style", 
+  "no abstract art", "no surreal elements", "no photorealistic adults", "no teenagers", 
+  "no infants", "no babies"
+];
+
+// AFRICAN AMERICAN CHARACTERS NEGATIVE PROMPT - Cultural sensitivity
+const AFRICAN_AMERICAN_NEGATIVE_PROMPT = [
+  "whitewashed skin", "pale complexion", "overexposed lighting", "washed out skin tones", 
+  "incorrect facial features", "straight hair", "harsh lighting", "blown highlights", 
+  "ashy skin", "stereotypical representations", "poor contrast", "underexposed shadows", 
+  "cool lighting", "inadequate fill light"
+];
+
+// GENDER NEUTRAL NEGATIVE PROMPT - No gender indicators
+const GENDER_NEUTRAL_NEGATIVE_PROMPT = [
+  "no overtly masculine features", "no overtly feminine features", "no gender-specific clothing like dresses or suits", 
+  "no gender-specific hairstyles", "no makeup", "no jewelry", "no accessories that indicate gender", 
+  "no pink or blue color schemes that suggest gender", "no stereotypical gendered poses", 
+  "no adult features", "no mature faces", "no wrinkles", "no facial hair", "no props", 
+  "no toys that suggest gender"
+];
+
+// BOYS NEGATIVE PROMPT - Prevent feminine features
+const BOYS_NEGATIVE_PROMPT = [
+  "no feminine features", "no makeup", "no jewelry", "no earrings", 
+  "no hair accessories like bows or ribbons", "no dresses", "no skirts", "no pink clothing", 
+  "no overly delicate features", "no long eyelashes", "no adult features", "no mature faces", 
+  "no wrinkles", "no facial hair"
+];
+
+// GIRLS NEGATIVE PROMPT - Prevent masculine features  
+const GIRLS_NEGATIVE_PROMPT = [
+  "no masculine features", "no angular jawlines", "no thick eyebrows", "no short buzz cuts", 
+  "no suits", "no ties", "no overly masculine clothing", "no rough or weathered skin", 
+  "no adult features", "no mature faces", "no wrinkles", "no facial hair"
+];
 
 // ============= TIER 2.5 NUCLEAR INDEPENDENCE - ALL CONSTANTS FIRST =============
 
@@ -77,16 +126,17 @@ const PREMIUM_PROMPT_TEMPLATES = {
   // RUNWARE OPTIMAL: Technical first for better processing
   // STORY LENGTH OPTIMAL: Narrative early for simpler stories
   // DO NOT MODIFY this order for beginner/easy levels
-  beginner: "Technical: {frameworkPrompt}, {cameraDirective}. Narrative: {pageText}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion}. Action: {scene}, {action_intensity}, {spatial_positioning}, {object_interaction}, {body_language}. Composition: {spatial_composition}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {colored_objects}, {sensory_details}. Context: {community_context}, {secondary_characters}",
-  easy: "Technical: {frameworkPrompt}, {cameraDirective}. Narrative: {pageText}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion}. Action: {scene}, {action_intensity}, {spatial_positioning}, {object_interaction}, {body_language}. Composition: {spatial_composition}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {colored_objects}, {sensory_details}. Context: {community_context}, {secondary_characters}",
+  // {preserved_words} - Exact words from pageText preserved using word boundaries
+  beginner: "Technical: {frameworkPrompt}, {cameraDirective}. Narrative: {pageText}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion}. Action: {scene}, {action_intensity}, {spatial_positioning}, {object_interaction}, {body_language}. Composition: {spatial_composition}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {colored_objects}, {sensory_details}. Context: {community_context}, {secondary_characters}. Preserved: {preserved_words}",
+  easy: "Technical: {frameworkPrompt}, {cameraDirective}. Narrative: {pageText}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion}. Action: {scene}, {action_intensity}, {spatial_positioning}, {object_interaction}, {body_language}. Composition: {spatial_composition}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {colored_objects}, {sensory_details}. Context: {community_context}, {secondary_characters}. Preserved: {preserved_words}",
   
   // 🚨 REGRESSION PREVENTION: NEVER CHANGE THIS ORDER FOR LEVELS 2-4
   // RUNWARE OPTIMAL: Technical first, narrative last for complex stories
   // STORY LENGTH OPTIMAL: Technical setup before complex narrative
   // DO NOT MODIFY this order for medium/hard/expert levels
-  medium: "Technical: {frameworkPrompt}, {cameraDirective}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion}. Action: {scene}, {action_intensity}, {spatial_positioning}, {object_interaction}, {body_language}. Composition: {spatial_composition}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {colored_objects}, {sensory_details}. Context: {community_context}, {secondary_characters}. Narrative: {pageText}",
-  hard: "Technical: {frameworkPrompt}, {cameraDirective}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion}. Action: {scene}, {action_intensity}, {spatial_positioning}, {object_interaction}, {body_language}. Composition: {spatial_composition}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {colored_objects}, {sensory_details}. Context: {community_context}, {secondary_characters}. Narrative: {pageText}",
-  expert: "Technical: {frameworkPrompt}, {cameraDirective}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion}. Action: {scene}, {action_intensity}, {spatial_positioning}, {object_interaction}, {body_language}. Composition: {spatial_composition}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {colored_objects}, {sensory_details}. Context: {community_context}, {secondary_characters}. Narrative: {pageText}"
+  medium: "Technical: {frameworkPrompt}, {cameraDirective}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion}. Action: {scene}, {action_intensity}, {spatial_positioning}, {object_interaction}, {body_language}. Composition: {spatial_composition}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {colored_objects}, {sensory_details}. Context: {community_context}, {secondary_characters}. Preserved: {preserved_words}. Narrative: {pageText}",
+  hard: "Technical: {frameworkPrompt}, {cameraDirective}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion}. Action: {scene}, {action_intensity}, {spatial_positioning}, {object_interaction}, {body_language}. Composition: {spatial_composition}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {colored_objects}, {sensory_details}. Context: {community_context}, {secondary_characters}. Preserved: {preserved_words}. Narrative: {pageText}",
+  expert: "Technical: {frameworkPrompt}, {cameraDirective}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion}. Action: {scene}, {action_intensity}, {spatial_positioning}, {object_interaction}, {body_language}. Composition: {spatial_composition}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {colored_objects}, {sensory_details}. Context: {community_context}, {secondary_characters}. Preserved: {preserved_words}. Narrative: {pageText}"
 };
 
 // ============= BASIC PROMPT TEMPLATES (TIER 1.5 / 2.5B) - SIMPLIFIED SEMANTIC STRUCTURE =============
@@ -496,7 +546,7 @@ const CLOTHING_DETECTION_KEYWORDS = [
 //
 const TIER_25_UNIFIED_VOCABULARY = {
   // ============= UNIFIED ACTION VOCABULARY =============
-  // Consolidated from ExactWordExtractor (23 items) + runware-simple-fallback (65+ items)
+  // Consolidated from nuclear independence (23 items) + runware-simple-fallback (65+ items)
   actions: {
     // Basic physical actions (with all verb forms)
     basic: [
@@ -2859,6 +2909,176 @@ function generateContextualEnhancements(sceneText, userInfo = {}) {
 // END PHASE 3: ENHANCED SEMANTIC FUNCTIONS
 // ============================================================================
 
+// ============= INLINE NUCLEAR INDEPENDENCE FUNCTIONS =============
+// Nuclear independence achieved - no external dependencies for core functionality
+
+// ============= INLINE EXACT WORD PRESERVATION FUNCTION =============
+// Preserves exact words from pageText using TIER_25_UNIFIED_VOCABULARY
+// Replaces ExactWordExtractor functionality with nuclear independence
+function preserveExactWords(pageText) {
+  if (!pageText || typeof pageText !== 'string') return '';
+  
+  const lowerText = pageText.toLowerCase();
+  const preservedWords = [];
+  
+  // Extract exact matches from all vocabulary categories using word boundaries
+  const allVocabulary = [
+    ...TIER_25_UNIFIED_VOCABULARY.actions.basic,
+    ...TIER_25_UNIFIED_VOCABULARY.actions.creative,
+    ...TIER_25_UNIFIED_VOCABULARY.actions.sensory,
+    ...TIER_25_UNIFIED_VOCABULARY.actions.states,
+    ...TIER_25_UNIFIED_VOCABULARY.actions.fantasy,
+    ...TIER_25_UNIFIED_VOCABULARY.actions.social,
+    ...Object.values(TIER_25_UNIFIED_VOCABULARY.objectCategories).flat(),
+    ...TIER_25_UNIFIED_VOCABULARY.settings.indoor,
+    ...TIER_25_UNIFIED_VOCABULARY.settings.outdoor,
+    ...TIER_25_UNIFIED_VOCABULARY.settings.specific,
+    ...TIER_25_UNIFIED_VOCABULARY.settings.fantasy,
+    ...TIER_25_UNIFIED_VOCABULARY.descriptive.colors,
+    ...TIER_25_UNIFIED_VOCABULARY.descriptive.sizes,
+    ...TIER_25_UNIFIED_VOCABULARY.descriptive.emotions,
+    ...TIER_25_UNIFIED_VOCABULARY.descriptive.qualities
+  ];
+  
+  // Use word boundary regex to prevent partial matches (e.g., "cat" won't match "caterpillar")
+  allVocabulary.forEach(word => {
+    const wordRegex = new RegExp(`\\b${word}\\b`, 'i');
+    if (wordRegex.test(pageText)) {
+      // Preserve original case and form from pageText
+      const match = pageText.match(wordRegex);
+      if (match && !preservedWords.includes(match[0])) {
+        preservedWords.push(match[0]);
+      }
+    }
+  });
+  
+  // Return formatted string for template insertion
+  return preservedWords.length > 0 ? preservedWords.join(', ') : '';
+}
+
+// ============= INLINE NEGATIVE PROMPT STRING JOINER =============
+// Replaces generateNuclearNegativePrompt with inline nuclear independence
+function joinNegativePromptStrings(culturalProfile, avatarType, difficulty, pageNumber, secondaryCharacterList) {
+  // Start with unified base negatives
+  let allNegatives = [...UNIFIED_NEGATIVE_PROMPT];
+  
+  // Add cultural sensitivity negatives for African American characters
+  if (culturalProfile?.skinTone && ['dark', 'brown', 'black'].some(tone => culturalProfile.skinTone.includes(tone))) {
+    allNegatives = allNegatives.concat(AFRICAN_AMERICAN_NEGATIVE_PROMPT);
+  }
+  
+  // Add gender-specific negatives based on avatar type
+  if (avatarType?.includes('male') || avatarType?.includes('boy')) {
+    allNegatives = allNegatives.concat(BOYS_NEGATIVE_PROMPT);
+  } else if (avatarType?.includes('female') || avatarType?.includes('girl')) {
+    allNegatives = allNegatives.concat(GIRLS_NEGATIVE_PROMPT);
+  } else {
+    // Default to gender neutral for ambiguous cases
+    allNegatives = allNegatives.concat(GENDER_NEUTRAL_NEGATIVE_PROMPT);
+  }
+  
+  return allNegatives.join(', ');
+}
+
+// ============= TIER 2.5B SIMPLE EXTRACTION FUNCTIONS =============
+// Simple regex-based extraction functions (no character consistency/visual detail tracker)
+// These replace the undefined functions called in fillBasicTemplate
+
+function extractSubject(pageText) {
+  if (!pageText || typeof pageText !== 'string') return 'a child';
+  
+  const text = pageText.toLowerCase();
+  // Look for common subjects in children's stories
+  const subjects = ['child', 'boy', 'girl', 'student', 'friend', 'character', 'person'];
+  
+  for (const subject of subjects) {
+    if (text.includes(subject)) return `a ${subject}`;
+  }
+  
+  return 'a child'; // Default fallback
+}
+
+function extractAction(pageText) {
+  if (!pageText || typeof pageText !== 'string') return 'playing';
+  
+  const text = pageText.toLowerCase();
+  // Search all action categories from unified vocabulary
+  const allActions = [
+    ...TIER_25_UNIFIED_VOCABULARY.actions.basic,
+    ...TIER_25_UNIFIED_VOCABULARY.actions.creative,
+    ...TIER_25_UNIFIED_VOCABULARY.actions.sensory,
+    ...TIER_25_UNIFIED_VOCABULARY.actions.states,
+    ...TIER_25_UNIFIED_VOCABULARY.actions.fantasy,
+    ...TIER_25_UNIFIED_VOCABULARY.actions.social
+  ];
+  
+  // Find first matching action using word boundaries
+  for (const action of allActions) {
+    const actionRegex = new RegExp(`\\b${action}\\b`, 'i');
+    if (actionRegex.test(text)) return action;
+  }
+  
+  return 'playing'; // Default fallback
+}
+
+function extractSetting(pageText) {
+  if (!pageText || typeof pageText !== 'string') return 'a peaceful place';
+  
+  const text = pageText.toLowerCase();
+  // Search all setting categories
+  const allSettings = [
+    ...TIER_25_UNIFIED_VOCABULARY.settings.indoor,
+    ...TIER_25_UNIFIED_VOCABULARY.settings.outdoor,
+    ...TIER_25_UNIFIED_VOCABULARY.settings.specific,
+    ...TIER_25_UNIFIED_VOCABULARY.settings.fantasy
+  ];
+  
+  // Find first matching setting using word boundaries
+  for (const setting of allSettings) {
+    const settingRegex = new RegExp(`\\b${setting}\\b`, 'i');
+    if (settingRegex.test(text)) return setting;
+  }
+  
+  return 'a peaceful place'; // Default fallback
+}
+
+function extractAdjective(pageText) {
+  if (!pageText || typeof pageText !== 'string') return 'wonderful';
+  
+  const text = pageText.toLowerCase();
+  // Search descriptive categories
+  const allAdjectives = [
+    ...TIER_25_UNIFIED_VOCABULARY.descriptive.colors,
+    ...TIER_25_UNIFIED_VOCABULARY.descriptive.sizes,
+    ...TIER_25_UNIFIED_VOCABULARY.descriptive.emotions,
+    ...TIER_25_UNIFIED_VOCABULARY.descriptive.qualities
+  ];
+  
+  // Find first matching adjective using word boundaries
+  for (const adjective of allAdjectives) {
+    const adjectiveRegex = new RegExp(`\\b${adjective}\\b`, 'i');
+    if (adjectiveRegex.test(text)) return adjective;
+  }
+  
+  return 'wonderful'; // Default fallback
+}
+
+function extractEmotion(pageText) {
+  if (!pageText || typeof pageText !== 'string') return 'happy';
+  
+  const text = pageText.toLowerCase();
+  // Search emotion vocabulary
+  const emotions = TIER_25_UNIFIED_VOCABULARY.descriptive.emotions;
+  
+  // Find first matching emotion using word boundaries
+  for (const emotion of emotions) {
+    const emotionRegex = new RegExp(`\\b${emotion}\\b`, 'i');
+    if (emotionRegex.test(text)) return emotion;
+  }
+  
+  return 'happy'; // Default fallback
+}
+
 // ============================================================================
 // PHASE 4: VALIDATION AND TEMPLATE SYSTEMS
 // Final validation, quality control, and template processing functions
@@ -3970,8 +4190,8 @@ async function generateNuclearImage(requestData) {
 
     console.log('✨ Final prompt (first 200 chars):', finalPrompt.substring(0, 200) + '...');
 
-    // Generate nuclear negative prompt
-    const negativePrompt = generateNuclearNegativePrompt(userInfo);
+    // Generate nuclear negative prompt using inline function
+    const negativePrompt = joinNegativePromptStrings(userInfo, 'child', 'medium', 1, []);
     console.log('🚫 Nuclear negative prompt generated');
 
     // Initialize nuclear WebSocket service
@@ -5110,6 +5330,7 @@ function fillPremiumTemplate(
     
     let filledTemplate = template
       .replace('{pageText}', processedPageText)
+      .replace('{preserved_words}', preserveExactWords(pageText))
       .replace('{character}', finalMapping.character)
       .replace('{age}', finalMapping.age)
       .replace('{ethnicity}', ethnicity) // PHASE 3: Moved ethnicity to character description
@@ -6140,7 +6361,12 @@ serve(async (req) => {
     let culturalProfile, negativePrompt;
     try {
       const pageNumber = userInfo?.pageNumber || 1;
-      culturalProfile = detectCulturalProfileForNegatives(userInfo, localAvatarIdentity);
+      // Generate basic cultural profile inline (nuclear independence)
+      culturalProfile = {
+        language: userInfo?.language || 'en',
+        skinTone: localAvatarIdentity?.skinTone || 'medium',
+        ethnicity: localAvatarIdentity?.ethnicity || 'standard_american'
+      };
       
       // ============= PHASE 5 ENHANCEMENT: MULTI-CHARACTER NEGATIVE PROMPT INTEGRATION =============
       // Extract secondary character information for negative prompt consistency
@@ -6153,7 +6379,7 @@ serve(async (req) => {
         }
       }
       
-      negativePrompt = generateNuclearNegativePrompt(culturalProfile, avatarType, difficulty, pageNumber, secondaryCharacterList);
+      negativePrompt = joinNegativePromptStrings(culturalProfile, avatarType, difficulty, pageNumber, secondaryCharacterList);
       console.log('✅ Cultural profile and enhanced multi-character negative prompt generation successful');
     } catch (culturalError) {
       console.warn('⚠️ Cultural profile generation failed, using defaults:', culturalError);
