@@ -3699,7 +3699,7 @@ const handleRestartTimer = () => {
         <ImageWithFallback
           src={currentImage}
           alt={`Story illustration for page ${currentPage + 1}: ${displayedStory[currentPage]?.substring(0, 100)}...`}
-          className="relative z-10 h-full w-full object-contain"
+          className="relative z-10 h-80 w-80 mx-auto object-contain"
           fallbackText={`📖 Page ${currentPage + 1}`}
           onLoadingChange={handleImageLoadingChange}
           onFallbackUsed={handleImageFallbackUsed}
@@ -3783,7 +3783,7 @@ const handleRestartTimer = () => {
           <ImageWithFallback
             src={currentImage} 
             alt={`Story illustration for page ${currentPage + 1}: ${displayedStory[currentPage]?.substring(0, 100)}...`}
-            className="w-full h-full object-cover"
+            className="w-80 h-80 mx-auto object-contain"
             fallbackText={`📖 Page ${currentPage + 1}`}
             onLoadingChange={handleImageLoadingChange}
             onFallbackUsed={handleImageFallbackUsed}
