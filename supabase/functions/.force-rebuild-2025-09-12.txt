@@ -1,4 +1,4 @@
 Cache buster sentinel file - Forces fresh packaging of supabase/functions folder
-Created: 2025-09-12T19:26:30Z
-Purpose: Fix translate-universal deployment cache issue - config.toml structure corrected
-Target: Clean deployment with project_id on line 1 and fresh function packaging
+Created: 2025-09-12T19:47:00Z
+Purpose: Remove deprecated runware-diagnostic and force clean deploy
+Target: Clean deployment without runware-diagnostic and fresh function packaging

@@ -87,8 +87,6 @@ verify_jwt = false
 [functions.process-story-content]
 verify_jwt = false
 
-[functions.runware-diagnostic]
-verify_jwt = false
 
 [functions.test-runware-api]
 verify_jwt = false
