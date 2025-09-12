@@ -907,6 +907,10 @@ serve(async (req) => {
         }
         
         ({ storyText, sessionId, pageNumber, totalPages, avatarIdentity, storyId, enhancedStoryData } = requestBody);
+        
+        // ✅ PHASE 1 FALLBACK - Handle both storyText and pageText parameters
+        storyText = storyText || requestBody.pageText;
+        
         console.log('PARAMS Parameter Validation:', {
           storyText: storyText ? `SUCCESS Present (${storyText.length} chars)` : 'ERROR Missing',
           sessionId: sessionId ? `SUCCESS Present (${sessionId})` : 'ERROR Missing',
@@ -914,13 +918,14 @@ serve(async (req) => {
           totalPages: totalPages ? `SUCCESS Present (${totalPages})` : 'WARNING Undefined (infinite story)',
           avatarIdentity: avatarIdentity ? `SUCCESS Present (${Object.keys(avatarIdentity).length} properties)` : 'ERROR Missing avatar identity (REQUIRED)',
           storyId: storyId ? `SUCCESS Present (${storyId})` : 'WARNING Missing story ID',
-          enhancedStoryData: enhancedStoryData ? 'SUCCESS Present (pre-enhanced)' : 'WARNING Will process with OpenAI'
+          enhancedStoryData: enhancedStoryData ? 'SUCCESS Present (pre-enhanced)' : 'WARNING Will process with OpenAI',
+          fallbackUsed: requestBody.storyText ? 'No (storyText provided)' : requestBody.pageText ? 'Yes (pageText → storyText)' : 'No fallback available'
         });
 
         if (!storyText) {
           throw {
             type: 'VALIDATION_ERROR',
-            message: 'Missing required parameter: storyText'
+            message: 'Missing required parameter: storyText or pageText'
           };
         }
 

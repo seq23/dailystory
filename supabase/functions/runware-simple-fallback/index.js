@@ -6043,22 +6043,15 @@ serve(async (req) => {
   // ✅ FAST HEALTH CHECK PATH - bypasses heavy modules
   if (req.method === 'GET' || req.url.includes('/health')) {
     console.log('💚 Health check requested - returning fast response');
-    return createCorsResponse({ 
+    const runwareApiKey = Deno.env.get('RUNWARE_API_KEY')?.trim();
+    
+    return createCorsResponse({
       healthy: true, 
       tier: '2.5',
       provider: 'runware-simple-fallback',
       timestamp: new Date().toISOString(),
       boot_status: 'healthy',
-      lazy_loading: 'enabled'
-    });
-  }
-    const runwareApiKey = Deno.env.get('RUNWARE_API_KEY')?.trim();
-    
-    return createCorsResponse({
-      status: 'healthy',
-      service: 'runware-simple-fallback',
-      tier: '2.5',
-      timestamp: new Date().toISOString(),
+      lazy_loading: 'enabled',
       runwareApiKeyPresent: !!runwareApiKey,
       runwareKeyLength: runwareApiKey ? runwareApiKey.length : 0,
       supported_methods: ['GET', 'POST']
