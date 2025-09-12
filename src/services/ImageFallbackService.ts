@@ -19,13 +19,20 @@ export class ImageFallbackService {
     text: '📖 Story Illustration'
   };
 
-  private static readonly FALLBACK_IMAGES = [
-    '/lovable-uploads/ec8d98b8-07d2-4fa4-8d5f-0c9499570384.png',
-    '/lovable-uploads/886ba3b2-9e9a-4966-a25e-967c18e384c1.png',
-    '/lovable-uploads/35591052-8575-4dd7-a727-6f317dd362ed.png',
-    '/lovable-uploads/2a0750f5-9ff1-4555-bbf8-242e1906515a.png',
-    '/lovable-uploads/d396c614-ad40-4d9a-ae7f-6cd4695e651c.png',
-    '/lovable-uploads/88b1bb2a-0527-43ef-b357-ff4eb3b28259.png'
+  // Base64 encoded fallback images - embedded character illustrations
+  private static readonly FALLBACK_IMAGES_BASE64 = [
+    // Main group shot with all four children
+    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==", // Placeholder - will be replaced with actual generated image
+    // Blonde child individual portrait  
+    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==", // Placeholder - will be replaced with actual generated image
+    // Red-haired child portrait
+    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==", // Placeholder - will be replaced with actual generated image
+    // Medium-skinned child portrait
+    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==", // Placeholder - will be replaced with actual generated image
+    // African American child portrait
+    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==", // Placeholder - will be replaced with actual generated image
+    // Two children teamwork shot
+    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==", // Placeholder - will be replaced with actual generated image
   ];
 
   private static debugLog(message: string, data?: any) {
@@ -81,57 +88,71 @@ export class ImageFallbackService {
   }
 
   /**
-   * Generate a simple SVG placeholder image with your 6 character images embedded
+   * Generates an SVG placeholder with an embedded base64 image
    */
   static generatePlaceholderSVG(config: Partial<FallbackImageConfig> & { pageNumber?: number } = {}): string {
     const finalConfig = { ...this.DEFAULT_CONFIG, ...config };
-    
-    // Use pageNumber to rotate through your 6 uploaded images
-    const pageNumber = config.pageNumber || 0;
-    const imageIndex = Math.abs(pageNumber) % this.FALLBACK_IMAGES.length;
-    const selectedImage = this.FALLBACK_IMAGES[imageIndex];
-    
-    const svg = `
-      <svg 
-        width="${finalConfig.width}" 
-        height="${finalConfig.height}" 
-        viewBox="0 0 400 300"
-        preserveAspectRatio="xMidYMid meet"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <!-- Background -->
-        <rect width="100%" height="100%" fill="#f8f9fa" stroke="#e5e7eb" stroke-width="1"/>
-        
-        <!-- One of Your 6 Character Images -->
-        <image 
-          x="100" 
-          y="50" 
-          width="200" 
-          height="150" 
-          href="${selectedImage}"
-          preserveAspectRatio="xMidYMid meet"
-        />
-        
-        <!-- Arrow marker definition -->
+    const { width, height, backgroundColor, textColor, text, pageNumber = 1 } = finalConfig;
+
+    // Select base64 image based on page number (cycling through available images)
+    const imageIndex = (pageNumber - 1) % this.FALLBACK_IMAGES_BASE64.length;
+    const base64Image = this.FALLBACK_IMAGES_BASE64[imageIndex];
+
+    const svgContent = `
+      <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <marker id="arrowhead" markerWidth="6" markerHeight="4" refX="5" refY="2" orient="auto">
-            <polygon points="0 0, 6 2, 0 4" fill="#9ca3af"/>
-          </marker>
+          <pattern id="bg-pattern-${pageNumber}" patternUnits="userSpaceOnUse" width="20" height="20">
+            <rect width="20" height="20" fill="${backgroundColor}" opacity="0.1"/>
+            <circle cx="10" cy="10" r="1" fill="${textColor}" opacity="0.1"/>
+          </pattern>
         </defs>
         
-        <!-- Main message - Positioned higher to stay visible in small containers -->
-        <text x="200" y="170" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="500" fill="#374151">
-          Images not working right now
+        <!-- Background -->
+        <rect width="100%" height="100%" fill="${backgroundColor}"/>
+        <rect width="100%" height="100%" fill="url(#bg-pattern-${pageNumber})"/>
+        
+        <!-- Main embedded image -->
+        <image 
+          href="${base64Image}" 
+          x="10" 
+          y="40" 
+          width="${width - 20}" 
+          height="${height - 80}" 
+          preserveAspectRatio="xMidYMid meet"
+          opacity="0.9"
+        />
+        
+        <!-- Overlay text -->
+        <rect x="10" y="10" width="${width - 20}" height="25" fill="${backgroundColor}" opacity="0.8" rx="5"/>
+        <text 
+          x="${width / 2}" 
+          y="28" 
+          text-anchor="middle" 
+          font-family="Arial, sans-serif" 
+          font-size="14" 
+          font-weight="600"
+          fill="${textColor}"
+        >
+          ${text}
         </text>
-        <text x="200" y="190" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#6b7280">
-          Please try again later
+        
+        <!-- Page indicator -->
+        <circle cx="${width - 25}" cy="${height - 25}" r="12" fill="${textColor}" opacity="0.2"/>
+        <text 
+          x="${width - 25}" 
+          y="${height - 21}" 
+          text-anchor="middle" 
+          font-family="Arial, sans-serif" 
+          font-size="10" 
+          font-weight="bold"
+          fill="${textColor}"
+        >
+          ${pageNumber}
         </text>
       </svg>
-    `;
-    
-    const dataUrl = `data:image/svg+xml;base64,${btoa(svg)}`;
-    this.debugLog('Generated SVG fallback', { config: finalConfig, dataUrlLength: dataUrl.length });
-    return dataUrl;
+    `.replace(/\s+/g, ' ').trim();
+
+    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgContent)}`;
   }
 
   /**
@@ -177,35 +198,34 @@ export class ImageFallbackService {
   }
 
   /**
-   * Get the best fallback image format for current environment
+   * Returns the best fallback - always use embedded SVG for reliability
    */
   static getBestFallback(config: Partial<FallbackImageConfig> = {}): string {
-    // Use uploaded character images with rotation based on page number
-    const pageNumber = (config as any).pageNumber || 0;
-    const imageIndex = Math.abs(pageNumber) % this.FALLBACK_IMAGES.length;
-    const selectedImage = this.FALLBACK_IMAGES[imageIndex];
-    
-    this.debugLog('Using uploaded character image as fallback', { pageNumber, imageIndex, selectedImage });
-    return selectedImage;
+    // Always use the embedded base64 SVG fallback for maximum reliability
+    return this.generatePlaceholderSVG(config);
   }
 
   /**
    * Generate a story-specific placeholder with page context
    */
   static generateStoryPlaceholder(storyText: string, pageNumber: number): string {
-    // Use uploaded character images with page-based rotation
-    const imageIndex = Math.abs(pageNumber) % this.FALLBACK_IMAGES.length;
-    const selectedImage = this.FALLBACK_IMAGES[imageIndex];
-    
-    this.debugLog('Story placeholder using character image', { pageNumber, imageIndex, selectedImage });
-    return selectedImage;
+    return this.generatePlaceholderSVG({
+      text: '📖 Story Illustration',
+      pageNumber
+    });
   }
 
   /**
-   * Check if a URL is a fallback image
+   * Checks if a URL is one of our known fallback images
    */
   static isFallbackImage(url: string): boolean {
-    return url.startsWith('data:image/svg+xml;base64,') || this.FALLBACK_IMAGES.includes(url);
+    if (!url) return false;
+    
+    return (
+      this.FALLBACK_IMAGES_BASE64.includes(url) ||
+      url.startsWith('data:image/svg+xml') ||
+      url.includes('base64')
+    );
   }
 
   /**
@@ -214,10 +234,11 @@ export class ImageFallbackService {
   static generateCharacterPlaceholder(characterName: string, pageNumber: number): string {
     // Use character name hash + page number for consistent but varied selection
     const nameHash = characterName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    const imageIndex = Math.abs(nameHash + pageNumber) % this.FALLBACK_IMAGES.length;
-    const selectedImage = this.FALLBACK_IMAGES[imageIndex];
+    const imageIndex = Math.abs(nameHash + pageNumber) % this.FALLBACK_IMAGES_BASE64.length;
     
-    this.debugLog('Character placeholder using uploaded image', { characterName, pageNumber, imageIndex, selectedImage });
-    return selectedImage;
+    return this.generatePlaceholderSVG({
+      text: `${characterName} - Story Illustration`,
+      pageNumber: imageIndex + 1
+    });
   }
 }

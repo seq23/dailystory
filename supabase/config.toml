@@ -1,5 +1,8 @@
 project_id = "cpzeuogomaixamrtnnmj"
 
+[functions.generate-fallback-images]
+verify_jwt = false
+
 [functions.security-dashboard]
 verify_jwt = true
 

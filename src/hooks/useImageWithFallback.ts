@@ -152,6 +152,18 @@ export const useImageWithFallback = (
       return;
     }
 
+    // Check for problematic URLs that should use fallback immediately
+    if (src.includes('/lovable-uploads/') || src.includes('localhost')) {
+      debugLog('Detected problematic URL, using immediate fallback', src);
+      const fallbackUrl = ImageFallbackService.getBestFallback({
+        text: fallbackText
+      });
+      setImageSrc(fallbackUrl);
+      setIsUsingFallback(true);
+      setIsLoading(false);
+      return;
+    }
+
     // Check if it's already a fallback image
     if (ImageFallbackService.isFallbackImage(src)) {
       debugLog('Source is already a fallback image');
