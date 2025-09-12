@@ -5543,6 +5543,8 @@ function detectEmotionFromText(text) {
 // ============= MAIN EDGE FUNCTION =============
 
 serve(async (req) => {
+  const requestId = Math.random().toString(36).substring(2, 10);
+  console.log(`🚀 [${requestId}] runware-simple-fallback: ${req.method} ${req.url}`);
   // ✅ EARLY BOOT LOGGING - Phase 2 Boot Stabilization
   console.log('🚀 Tier 2.5 runware-simple-fallback starting...');
   console.log(`🛡️ Tier 2.5: ${req.method} ${req.url}`);
@@ -5575,6 +5577,35 @@ serve(async (req) => {
   if (req.method !== 'POST') {
     return createCorsErrorResponse('Method not allowed. Use GET for health checks or POST for image generation.', 405);
   }
+  
+  // Parse request body for POST requests  
+  let payload;
+  try {
+    payload = await req.json();
+    console.log(`📥 [${requestId}] Request payload parsed:`, {
+      hasPageText: !!payload.pageText,
+      hasUserInfo: !!payload.userInfo,
+      hasSessionId: !!payload.sessionId,
+      requestId: payload.requestId || 'not_provided'
+    });
+
+    // Handle health check requests for POST method
+    if (payload.healthCheck || payload.diagnosticMode) {
+      console.log(`🩺 [${requestId}] Health check request received via POST`, payload);
+      const runwareApiKey = Deno.env.get('RUNWARE_API_KEY')?.trim();
+      return createCorsResponse({
+        healthy: true,
+        service: 'runware-simple-fallback',
+        tier: '2.5',
+        status: 'ready',
+        timestamp: new Date().toISOString(),
+        requestId,
+        dependencies: {
+          runware: !!runwareApiKey,
+          templates: 'hardcoded_available'
+        }
+      });
+    }
 
   // Initialize vocabulary for POST requests only
   await initVocabulary();

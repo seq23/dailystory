@@ -750,10 +750,34 @@ async function callOpenAIWithFallback(messages, timeout = 6000, requestId, avata
 }
 
 serve(async (req) => {
+  const requestId = Math.random().toString(36).substring(2, 10);
+  console.log(`🚀 [${requestId}] ai-visual-scene-creator: ${req.method} ${req.url}`);
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
+    console.log(`✅ [${requestId}] CORS preflight handled`);
     return createCorsOptionsResponse();
   }
+
+  // Handle health check requests
+  try {
+    const body = await req.json().catch(() => ({}));
+    if (body.healthCheck || body.diagnosticMode) {
+      console.log(`🩺 [${requestId}] Health check request received`, body);
+      return createCorsResponse({
+        healthy: true,
+        service: 'ai-visual-scene-creator',
+        status: 'ready',
+        timestamp: new Date().toISOString(),
+        requestId,
+        dependencies: {
+          openai: !!Deno.env.get('OPENAI_API_KEY'),
+          circuitBreaker: 'initialized'
+        }
+      });
+    }
+    
+    // Continue with normal request processing
+    const { storyText, userInfo, avatarIdentity, sessionId } = body;
 
   // Handle health check endpoint with OpenAI diagnostics
   if (req.method === 'GET' || req.url.includes('/health')) {

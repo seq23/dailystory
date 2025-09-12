@@ -53,6 +53,9 @@ export function ImageTierTester() {
   const [connectivityResult, setConnectivityResult] = useState<any>(null);
 
   const testConnectivity = async () => {
+    const requestId = `REQ-${Math.random().toString(36).substring(2, 10)}-${Math.random().toString(36).substring(2, 7)}`;
+    console.log(`🔍 [${requestId}] Starting connectivity diagnostics...`);
+    
     setConnectivityStatus('testing');
     setConnectivityResult(null);
     
@@ -61,33 +64,46 @@ export function ImageTierTester() {
       
       // Test actual existing functions with proper health check payloads
       const healthChecks = [
-        { name: 'Runware API Test', endpoint: 'system-diagnostics?operation=test-runware-api' },
-        { name: 'Debug Visual Creator', endpoint: 'unified-debug-service?operation=visual-scene-debug' },
-        { name: 'Runware Diagnostic', endpoint: 'system-diagnostics?operation=runware-diagnostic' }
+        { name: 'AI Visual Scene Creator', endpoint: 'ai-visual-scene-creator' },
+        { name: 'Runware Image Orchestrator', endpoint: 'runware-generate-image' },
+        { name: 'Runware Simple Fallback', endpoint: 'runware-simple-fallback' },
+        { name: 'Template Service', endpoint: 'template-service' }
       ];
+
+      console.log(`🔧 [${requestId}] Testing ${healthChecks.length} endpoints...`);
 
       const results = await Promise.allSettled(
         healthChecks.map(async ({ name, endpoint }) => {
           try {
-            let result;
-            // Use GET for consolidated functions with query params
-            if (endpoint.includes('?operation=')) {
-              result = await supabase.functions.invoke(endpoint);
-            } else {
-              result = await supabase.functions.invoke(endpoint, {
-                body: { healthCheck: true }
-              });
-            }
+            console.log(`🩺 [${requestId}] Health check: ${name} (${endpoint})`);
+            
+            // Send proper health check payload
+            const result = await supabase.functions.invoke(endpoint, {
+              body: { 
+                healthCheck: true,
+                requestId,
+                diagnosticMode: true
+              }
+            });
+            
+            console.log(`✅ [${requestId}] ${name}: Health check completed`, {
+              success: !!result.data,
+              hasError: !!result.error,
+              status: result.data?.healthy || result.data?.status
+            });
             
             return { 
               name, 
               endpoint, 
               status: 'success',
-              result: result.data || { status: 'healthy' },
+              result: result.data || { status: 'responded' },
               error: result.error
             };
           } catch (error) {
-            console.error(`Health check failed for ${name}:`, error);
+            console.error(`❌ [${requestId}] ${name}: Health check failed`, {
+              error: error instanceof Error ? error.message : 'Unknown error',
+              endpoint
+            });
             return { 
               name, 
               endpoint, 
@@ -165,10 +181,15 @@ export function ImageTierTester() {
   };
 
   const testTier = async (tierType: string, templateComplexity?: string): Promise<TierTestResult> => {
+    const requestId = `REQ-${Math.random().toString(36).substring(2, 10)}-${Math.random().toString(36).substring(2, 7)}`;
     const startTime = Date.now();
     
     try {
-      console.log(`🧪 Testing ${tierType}${templateComplexity ? ` (${templateComplexity})` : ''}`, config);
+      console.log(`🧪 [${requestId}] Testing ${tierType}${templateComplexity ? ` (${templateComplexity})` : ''}`, {
+        config,
+        requestId,
+        timestamp: new Date().toISOString()
+      });
       
       let result;
       
@@ -186,21 +207,24 @@ export function ImageTierTester() {
 
       if (tierType === 'Tier 1') {
         // Test AI visual scene creator function
+        console.log(`🎯 [${requestId}] Calling ai-visual-scene-creator...`);
         result = await Promise.race([
           supabase.functions.invoke('ai-visual-scene-creator', {
             body: {
               storyText: config.storyText,
               userInfo: userInfo,
               avatarIdentity: userInfo,
-              sessionId: config.sessionId
+              sessionId: config.sessionId,
+              requestId
             }
           }),
           new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Request timeout after 60s')), 60000)
+            setTimeout(() => reject(new Error(`[${requestId}] Request timeout after 60s`)), 60000)
           )
         ]);
       } else if (tierType === 'Tier 1 (Image Orchestrator)') {
         // Test runware image generation orchestrator
+        console.log(`🎯 [${requestId}] Calling runware-generate-image...`);
         result = await Promise.race([
           supabase.functions.invoke('runware-generate-image', {
             body: {
@@ -208,15 +232,17 @@ export function ImageTierTester() {
               userInfo: userInfo,
               sessionId: config.sessionId,
               storyId: `story-${config.sessionId}`,
-              pageNumber: 1
+              pageNumber: 1,
+              requestId
             }
           }),
           new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Request timeout after 90s')), 90000)
+            setTimeout(() => reject(new Error(`[${requestId}] Request timeout after 90s`)), 90000)
           )
         ]);
       } else if (tierType.startsWith('Tier 2.5')) {
         // Test runware simple fallback for nuclear independent generation
+        console.log(`🎯 [${requestId}] Calling runware-simple-fallback with complexity ${templateComplexity}...`);
         result = await Promise.race([
           supabase.functions.invoke('runware-simple-fallback', {
             body: {
@@ -225,15 +251,17 @@ export function ImageTierTester() {
               sessionId: config.sessionId,
               storyId: `story-${config.sessionId}`,
               templateComplexity: templateComplexity || 'A',
-              tier: '2.5'
+              tier: '2.5',
+              requestId
             }
           }),
           new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Request timeout after 60s')), 60000)
+            setTimeout(() => reject(new Error(`[${requestId}] Request timeout after 60s`)), 60000)
           )
         ]);
       } else if (tierType === 'Tier 4') {
         // Test template service for SVG generation simulation
+        console.log(`🎯 [${requestId}] Calling template-service...`);
         result = await Promise.race([
           supabase.functions.invoke('template-service', {
             body: {
@@ -242,11 +270,12 @@ export function ImageTierTester() {
               sessionId: config.sessionId,
               storyId: `story-${config.sessionId}`,
               forceTier: 4,
-              type: 'svg'
+              type: 'svg',
+              requestId
             }
           }),
           new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Request timeout after 30s')), 30000)
+            setTimeout(() => reject(new Error(`[${requestId}] Request timeout after 30s`)), 30000)
           )
         ]);
       }
@@ -254,17 +283,26 @@ export function ImageTierTester() {
       const processingTime = Date.now() - startTime;
       
       // Enhanced response parsing with detailed error logging
-      console.log(`📊 ${tierType} Response Analysis:`, {
+      console.log(`📊 [${requestId}] ${tierType} Response Analysis:`, {
+        processingTime,
         hasData: !!result?.data,
         hasError: !!result?.error,
         dataKeys: result?.data ? Object.keys(result.data) : [],
         success: result?.data?.success,
         imageUrl: result?.data?.imageURL || result?.data?.imageUrl,
-        errorMessage: result?.error?.message || result?.data?.error
+        errorMessage: result?.error?.message || result?.data?.error,
+        tierType,
+        templateComplexity: templateComplexity || 'none'
       });
       
       if (result?.data?.success) {
-        console.log(`✅ ${tierType} Success:`, result.data);
+        console.log(`✅ [${requestId}] ${tierType} Success:`, {
+          success: result.data.success,
+          imagePresent: !!(result.data.imageURL || result.data.imageUrl),
+          processingTime,
+          metadata: !!result.data.metadata
+        });
+        
         return {
           tier: tierType + (templateComplexity ? ` (${templateComplexity})` : ''),
           success: true,
@@ -280,35 +318,41 @@ export function ImageTierTester() {
         if (result?.error) {
           const errorMsg = result.error.message || '';
           if (errorMsg.includes('Failed to send a request')) {
-            errorDetail = `Supabase Error: Function does not exist or failed to boot - ${errorMsg}`;
+            errorDetail = `Function Boot Error: ${errorMsg}`;
           } else if (errorMsg.includes('non-2xx status code')) {
-            errorDetail = `Supabase Error: Function returned error status - ${errorMsg}`;
+            errorDetail = `Function Error Response: ${errorMsg}`;
+          } else if (errorMsg.includes('timeout')) {
+            errorDetail = `Timeout Error: ${errorMsg}`;
           } else {
-            errorDetail = `Supabase Error: ${errorMsg}`;
+            errorDetail = `Network Error: ${errorMsg}`;
           }
         } else if (result?.data?.error) {
           errorDetail = `Function Error: ${result.data.error}`;
         } else if (result?.data) {
-          errorDetail = `Unexpected Response: ${JSON.stringify(result.data).substring(0, 200)}`;
+          errorDetail = `Invalid Response: ${JSON.stringify(result.data).substring(0, 200)}`;
         } else {
-          errorDetail = 'No response data received';
+          errorDetail = 'No response received';
         }
         
         // Log detailed diagnostic info for debugging
-        console.error(`🔍 Detailed Error Analysis for ${tierType}:`, {
+        console.error(`🔍 [${requestId}] Detailed Error Analysis for ${tierType}:`, {
+          errorCategory: result?.error ? 'SUPABASE_ERROR' : result?.data?.error ? 'FUNCTION_ERROR' : 'UNKNOWN_ERROR',
           hasResult: !!result,
           hasError: !!result?.error,
           errorMessage: result?.error?.message,
           hasData: !!result?.data,
+          dataSuccess: result?.data?.success,
           dataKeys: result?.data ? Object.keys(result.data) : [],
           fullError: result?.error,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          requestId,
+          processingTime
         });
               
-        console.log(`❌ ${tierType} Failed:`, {
+        console.log(`❌ [${requestId}] ${tierType} Failed:`, {
           errorDetail,
-          fullResult: result,
-          processingTime
+          processingTime,
+          templateComplexity: templateComplexity || 'none'
         });
         
         return {
@@ -321,7 +365,16 @@ export function ImageTierTester() {
       }
     } catch (error) {
       const processingTime = Date.now() - startTime;
-      console.error(`❌ ${tierType} Exception:`, error);
+      console.error(`❌ [${requestId}] ${tierType} Exception:`, {
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+        errorName: error instanceof Error ? error.name : 'Unknown',
+        processingTime,
+        tierType,
+        templateComplexity: templateComplexity || 'none',
+        requestId,
+        timestamp: new Date().toISOString()
+      });
+      
       return {
         tier: tierType + (templateComplexity ? ` (${templateComplexity})` : ''),
         success: false,
@@ -344,10 +397,11 @@ export function ImageTierTester() {
   };
 
   const runAllTests = async () => {
+    const testSessionId = `BATCH-${Date.now()}`;
+    console.log(`🚀 [${testSessionId}] Starting comprehensive tier testing...`);
+    
     setIsLoading(true);
     setResults([]);
-    
-    console.log('🚀 Starting comprehensive tier testing...');
     
     const testSequence = [
       { type: 'Tier 1' },
@@ -360,15 +414,36 @@ export function ImageTierTester() {
     ];
     
     const allResults: TierTestResult[] = [];
+    let successCount = 0;
+    let failureCount = 0;
     
     for (const test of testSequence) {
-      setActiveTest(test.type + (test.complexity || ''));
+      const testName = test.type + (test.complexity || '');
+      console.log(`📋 [${testSessionId}] Testing ${testName} (${allResults.length + 1}/${testSequence.length})`);
+      
+      setActiveTest(testName);
       const result = await testTier(test.type, test.complexity);
       allResults.push(result);
+      
+      if (result.success) {
+        successCount++;
+        console.log(`✅ [${testSessionId}] ${testName}: Success (${result.processingTime}ms)`);
+      } else {
+        failureCount++;
+        console.log(`❌ [${testSessionId}] ${testName}: Failed - ${result.error}`);
+      }
+      
       setResults([...allResults]);
     }
     
-    console.log('✅ All tier testing complete:', allResults);
+    console.log(`🏁 [${testSessionId}] All tier testing complete:`, {
+      total: testSequence.length,
+      successful: successCount,
+      failed: failureCount,
+      successRate: `${Math.round((successCount / testSequence.length) * 100)}%`,
+      results: allResults.map(r => ({ tier: r.tier, success: r.success, time: r.processingTime }))
+    });
+    
     setIsLoading(false);
     setActiveTest(null);
   };
