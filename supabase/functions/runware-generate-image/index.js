@@ -71,91 +71,11 @@ const supabase = createClient(supabaseUrl, supabaseKey);
  * 
  * EMERGENCY CORS FIX TIMESTAMP: 2025-01-09 00:00:00 UTC
  * Fixed Tier 1 success responses to use createDynamicCorsResponse
- */ // ============= CULTURAL DESCRIPTION ARRAYS =============
-// African American Arrays - Standardized with debug-tier-2-5-templates
-const HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES = {
-  boys: [
-    'textured buzz cut',
-    'detailed fade cut',
-    'textured taper fade',
-    'detailed high top fade',
-    'textured low fade',
-    'detailed crew cut',
-    'textured caesar cut',
-    'detailed curly top fade',
-    'textured curly high fade',
-    'detailed curly low fade',
-    'textured curly taper fade',
-    'detailed curly high top',
-    'textured curly mohawk',
-    'detailed curly faux hawk',
-    'textured curly undercut',
-    'detailed fade with curls on top',
-    'textured crop',
-    'detailed curly fringe fade',
-    'textured twisted top fade',
-    'detailed undercut design'
-  ],
-  girls: [
-    'wearing a detailed traditional afro hairstyle with natural coily hair texture, spherical volume shape, tight curl pattern definition, authentic Black hair structure, individual strand coils, dimensional texture depth, natural shine and movement',
-    'wearing detailed, photorealistic separated box braids with rectangular parting, each individual braid clearly distinct, multiple separate braided sections, geometric hair sectioning, individual strand definition per braid, occasionally with colorful strands, professional box braid styling',
-    'wearing detailed, photorealistic cornrows braided straight back in parallel rows, tight to scalp weaving, visible scalp parts between each row, traditional row braiding style, occasionally with colorful strands',
-    'wearing detailed, defined twist-out curls with natural curl pattern, bouncy texture, individual curl definition, soft volume, natural hair movement',
-    'wearing detailed afro puffs hairstyle with two symmetrical hair puffs positioned high on head, natural curly texture, rounded voluminous shape, authentic afro hair structure, defined curl clusters, bouncy texture depth',
-    'well-maintained dreadlocs with natural texture, individual strand definition, mature lock formation, photorealistic hair texture',
-    'wearing a natural wash-and-go curls with defined curl pattern, bouncy texture, individual curl strands, soft volume, natural movement, salon-quality finish',
-    'wearing detailed, photorealistic, traditional flat twists hairstyle, neat twisting pattern, detailed texture, individual strand definition',
-    'wearing detailed sleek bun with smooth edges sitting high on the head, neat hair, no loose hair, polished finish, professional styling',
-    'wearing sleek relaxed ponytail with smooth edges, straight hair texture, polished finish, tight hair control, professional styling, light reflection on hair',
-    'wearing detailed relaxed curved bob hairstyle with smooth inward styling, visible side part, salon shaping technique, sleek finish, dimensional movement, professional curved cutting, professional salon results'
-  ]
-};
-const HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES = [
-  // Light Tones
-  "light brown skin tone with warm amber eyes, full lips, defined cheekbones, natural nose bridge",
-  "caramel skin tone with deep brown eyes, soft full lips, high cheekbones, elegant nose shape",
-  "honey complexion with hazel-green eyes, naturally full lips, sculpted cheekbones, refined nose",
-  "warm beige skin with golden brown eyes, full expressive lips, defined facial structure, natural nose",
-  "light caramel complexion with bright hazel eyes, full lips, prominent cheekbones, authentic nose shape",
-  // Medium Tones
-  "medium brown skin tone with golden amber eyes, full lips, strong cheekbones, natural nose bridge",
-  "cocoa skin tone with warm honey eyes, naturally full lips, defined cheekbones, elegant nose shape",
-  "warm brown complexion with bright amber eyes, full expressive lips, sculpted cheekbones, refined nose",
-  "chestnut skin tone with hazel-brown eyes, full lips, prominent cheekbones, authentic nose bridge",
-  "amber skin tone with deep brown eyes, soft full lips, high cheekbones, natural nose shape",
-  // Medium-Dark Tones
-  "deep brown skin tone with golden amber eyes, full lips, defined cheekbones, natural nose bridge",
-  "rich chocolate complexion with warm honey eyes, naturally full lips, strong cheekbones, elegant nose",
-  "mahogany skin tone with bright hazel eyes, full expressive lips, sculpted cheekbones, refined nose shape",
-  "warm deep brown skin with golden brown eyes, full lips, prominent cheekbones, authentic nose bridge",
-  "bronze skin tone with light amber eyes, soft full lips, high cheekbones, natural nose shape",
-  // Dark Tones
-  "dark brown skin tone with golden amber eyes, full lips, defined cheekbones, natural nose bridge",
-  "ebony skin tone with warm honey eyes, naturally full lips, strong cheekbones, elegant nose shape",
-  "deep mahogany complexion with bright amber eyes, full expressive lips, sculpted cheekbones, refined nose",
-  "rich dark chocolate skin with golden hazel eyes, full lips, prominent cheekbones, authentic nose bridge",
-  "beautiful dark brown skin with light amber eyes, soft full lips, high cheekbones, natural nose shape",
-  "deep ebony skin tone with warm golden eyes, naturally full lips, defined cheekbones, elegant nose bridge",
-  "dark mahogany complexion with honey-colored eyes, full expressive lips, strong cheekbones, refined nose shape",
-  "rich chocolate brown skin with bright hazel eyes, full lips, sculpted cheekbones, authentic nose bridge",
-  "beautiful deep brown skin with golden amber eyes, soft full lips, prominent cheekbones, natural nose shape",
-  "stunning ebony complexion with warm amber eyes, naturally full lips, high cheekbones, elegant nose bridge"
-];
-// Hispanic/Latino arrays removed for template unification
-// Only African American arrays remain for dark skin users
-// AI handles other ethnicities naturally
-// Regional Authenticity Strings for Non-English Speakers
-const REGIONAL_AUTHENTICITY_STRINGS = {
-  'zh': 'authentic East Asian features reflecting Chinese heritage',
-  'hi': 'authentic South Asian features reflecting Indian heritage',
-  'ar': 'authentic Middle Eastern features reflecting Arabic heritage',
-  'ja': 'authentic East Asian features reflecting Japanese heritage',
-  'ko': 'authentic East Asian features reflecting Korean heritage',
-  'fr': 'authentic European features reflecting French heritage',
-  'de': 'authentic European features reflecting German heritage',
-  'ru': 'authentic Eastern European features reflecting Russian heritage',
-  'pt': 'authentic Latin American features reflecting Portuguese heritage'
-};
+ */
+
+// ============= CONSOLIDATED CULTURAL ARRAYS IMPORT =============
+import { CULTURAL_ARRAYS } from '../_shared/tier25Vocabulary.js';
+// Cultural arrays now imported from consolidated source - see tier25Vocabulary.js
 // ============= API KEY UTILITIES =============
 function getTrimmedApiKey(envVarName) {
   const key = Deno.env.get(envVarName);
@@ -1116,9 +1036,9 @@ serve(async (req)=>{
           if (skinTone === 'dark' && (nativeLanguage === 'en' || nativeLanguage === 'fr' || nativeLanguage === 'es' || nativeLanguage === 'pt')) {
             try {
               const isGirl = avatarIdentity?.type?.toLowerCase().includes('girl') || avatarIdentity?.type?.toLowerCase().includes('female');
-              const hairstyles = isGirl ? HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.girls : HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.boys;
+              const hairstyles = isGirl ? CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.girls : CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.boys;
               // Attempt to access detailed arrays
-              if (hairstyles && hairstyles.length > 0 && HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES && HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES.length > 0) {
+              if (hairstyles && hairstyles.length > 0 && CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES && CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES.length > 0) {
                 // Use stored selections if available, otherwise make random selection and store
                 let features, hairstyle;
                 if (characterData?.selectedCulturalFeatures && characterData?.selectedCulturalHair) {
@@ -1126,7 +1046,7 @@ serve(async (req)=>{
                   hairstyle = characterData.selectedCulturalHair;
                   console.log(`🌍 [${requestId}] Using stored cultural selections - Hair: ${hairstyle.substring(0, 30)}..., Features: ${features.substring(0, 30)}...`);
                 } else {
-                  features = HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES[Math.floor(Math.random() * HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES.length)];
+                  features = CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES[Math.floor(Math.random() * CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES.length)];
                   hairstyle = hairstyles[Math.floor(Math.random() * hairstyles.length)];
                   console.log(`🎲 [${requestId}] Generated new cultural selections - Hair: ${hairstyle.substring(0, 30)}..., Features: ${features.substring(0, 30)}...`);
                 }

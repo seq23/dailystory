@@ -5,6 +5,7 @@
  */
 
 import { safeErrorMessage } from './errorPatterns.js';
+import { CULTURAL_ARRAYS } from './tier25Vocabulary.js';
 
 export class CharacterConsistencyService {
   constructor() {
@@ -443,4 +444,27 @@ export class CharacterConsistencyService {
       return currentSeed / 233280;
     };
   }
+
+  /**
+   * Get African American hairstyles from consolidated cultural arrays
+   */
+  getAfricanAmericanHairStyles() {
+    return CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES;
+  }
+
+  /**
+   * Get African American facial features from consolidated cultural arrays
+   */
+  getAfricanAmericanFacialFeatures() {
+    return CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES;
+  }
+
+  /**
+   * Get regional authenticity strings from consolidated cultural arrays
+   */
+  getRegionalAuthenticity() {
+    return CULTURAL_ARRAYS.REGIONAL_AUTHENTICITY_STRINGS;
+  }
+
+  // Note: African American skin tones have been consolidated into facial features array as of 2025-09-12
 }

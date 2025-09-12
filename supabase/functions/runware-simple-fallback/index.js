@@ -21,6 +21,9 @@ function getUltimateFallbackImage(pageNumber = 1) {
   return selectedImage;
 }
 
+// ============= CONSOLIDATED CULTURAL ARRAYS IMPORT =============
+import { CULTURAL_ARRAYS } from '../_shared/tier25Vocabulary.js';
+
 // ============= LAZY LOADING FUNCTIONS FOR HEAVY DEPENDENCIES =============
 
 // Lazy vocabulary initialization
@@ -216,49 +219,8 @@ const BASIC_PROMPT_TEMPLATES = {
   expert: "Primary Scene: {pageText}. Visual Components: {character} {age} with {hair}, {features} {subject} {action} with {emotion} {secondary_characters} with {colored_objects} in {setting} with {adjective} colors. Brand Suffix: {frameworkPrompt}"
 };
 
-// AFRICAN AMERICAN ARRAYS (Nuclear Independence - Combined Features Only)
-const HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES = {
-  boys: [
-    'textured buzz cut', 'detailed fade cut', 'textured taper fade', 'detailed high top fade', 
-    'textured low fade', 'detailed crew cut', 'textured caesar cut', 'detailed curly top fade', 
-    'textured curly high fade', 'detailed curly low fade', 'textured curly taper fade', 
-    'detailed curly high top', 'textured curly mohawk', 'detailed curly faux hawk', 
-    'textured curly undercut', 'detailed fade with curls on top', 'textured crop', 
-    'detailed curly fringe fade', 'textured twisted top fade', 'detailed undercut design', 
-    'textured hair tattoo', 'detailed geometric patterns', 'textured mini afro', 
-    'detailed medium afro', 'textured tapered afro', 'detailed wash and go', 
-    'textured finger coils', 'detailed two strand twists', 'textured flat twists', 
-    'detailed mini twists', 'textured locs', 'detailed starter locs', 'textured freeform locs', 
-    'detailed twisted locs', 'textured side part locs', 'detailed middle part locs', 
-    'textured ponytail with locs', 'detailed nape area tapered'
-  ],
-  girls: [
-    'wearing a detailed traditional afro hairstyle with natural coily hair texture, spherical volume shape, tight curl pattern definition, authentic Black hair structure, individual strand coils, dimensional texture depth, natural shine and movement',
-    'wearing detailed, photorealistic separated box braids with rectangular parting, each individual braid clearly distinct, multiple separate braided sections, geometric hair sectioning, individual strand definition per braid, occasionally with colorful strands, professional box braid styling',
-    'wearing detailed, photorealistic cornrows braided straight back in parallel rows, tight to scalp weaving, visible scalp parts between each row, traditional row braiding style, occasionally with colorful strands',
-    'wearing detailed, defined twist-out curls with natural curl pattern, bouncy texture, individual curl definition, soft volume, natural hair movement',
-    'wearing detailed afro puffs hairstyle with two symmetrical hair puffs positioned high on head, natural curly texture, rounded voluminous shape, authentic afro hair structure, defined curl clusters, bouncy texture depth',
-    'well-maintained dreadlocs with natural texture, individual strand definition, mature lock formation, photorealistic hair texture',
-    'wearing a natural wash-and-go curls with defined curl pattern, bouncy texture, individual curl strands, soft volume, natural movement, salon-quality finish',
-    'wearing detailed, photorealistic, traditional flat twists hairstyle, neat twisting pattern, detailed texture, individual strand definition',
-    'wearing detailed sleek bun with smooth edges sitting high on the head, neat hair, no loose hair, polished finish, professional styling',
-    'wearing sleek relaxed ponytail with smooth edges, straight hair texture, polished finish, tight hair control, professional styling, light reflection on hair',
-    'wearing detailed relaxed curved bob hairstyle with smooth inward styling, visible side part, salon shaping technique, sleek finish, dimensional movement, professional curved cutting, professional salon results'
-  ]
-};
-
-const HARDCODED_AFRICAN_AMERICAN_SKIN_TONES = [
-  'light brown complexion', 'medium brown skin', 'rich brown complexion', 'deep brown skin',
-  'warm caramel complexion', 'golden brown skin', 'mahogany complexion', 'dark chocolate skin',
-  'ebony complexion', 'honey-toned skin', 'bronze complexion', 'chestnut brown skin'
-];
-
-const HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES = [
-  // Light Tones
-  "light brown skin tone with warm amber eyes, full lips, defined cheekbones, natural nose bridge",
-  "caramel skin tone with deep brown eyes, soft full lips, high cheekbones, elegant nose shape",
-  "honey complexion with hazel-green eyes, naturally full lips, sculpted cheekbones, refined nose",
-  "warm beige skin with golden brown eyes, full expressive lips, defined facial structure, natural nose",
+// AFRICAN AMERICAN ARRAYS - Now using consolidated source from tier25Vocabulary.js
+// Note: Arrays moved to CULTURAL_ARRAYS for single source of truth
   "light caramel complexion with bright hazel eyes, full lips, prominent cheekbones, authentic nose shape",
   
   // Medium Tones
@@ -406,8 +368,8 @@ function generateAfricanAmericanCharacter(gender, seed, difficulty, pageText) {
   console.log('🌍 Generating African American character');
   
   const age = getSeededRandomItem(['child', 'young child', 'little child'], seed + 'age');
-  const hair = getSeededRandomItem(HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[gender + 's'] || HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.girls, seed + 'hair');
-  const features = getSeededRandomItem(HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES, seed + 'features');
+  const hair = getSeededRandomItem(CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[gender + 's'] || CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.girls, seed + 'hair');
+  const features = getSeededRandomItem(CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES, seed + 'features');
   const emotion = getSeededRandomItem(VOCAB.UNIVERSAL_EMOTION_ARRAYS, seed + 'emotion');
   
   console.log('✅ African American character generated successfully');
@@ -1557,14 +1519,14 @@ function generateAfricanAmericanMapping(avatarType, seed, userInfo, avatarIdenti
     const gender = avatarType === 'girl' ? 'girls' : 'boys';
     
     // HAIR SELECTION (Seeded for consistency)
-    const hairOptions = HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[gender] || HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.boys;
+    const hairOptions = CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[gender] || CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.boys;
     const selectedHair = getSeededRandomItem(hairOptions, seed + '_hair');
     
     // SKIN TONE SELECTION (Seeded for consistency)
-    const selectedSkinTone = getSeededRandomItem(HARDCODED_AFRICAN_AMERICAN_SKIN_TONES, seed + '_skin');
+    const selectedSkinTone = getSeededRandomItem(CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_SKIN_TONES, seed + '_skin');
     
     // FACIAL FEATURES SELECTION (Seeded for consistency)
-    const selectedFeatures = getSeededRandomItem(HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES, seed + '_features');
+    const selectedFeatures = getSeededRandomItem(CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES, seed + '_features');
     
     // CLOTHING DETECTION FROM STORY
     const storyClothing = detectClothingFromStory(userInfo?.pageText || '');
@@ -4696,8 +4658,8 @@ async function fillPremiumTemplate(
       
       finalMapping = {
         ...avatarMapping,
-        hair: getRandomItem(HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[genderKey]),
-        features: getRandomItem(HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES)
+        hair: getRandomItem(CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[genderKey]),
+        features: getRandomItem(CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES)
       };
     }
     // French + Dark Skin: African American hairstyles + facial features  
@@ -4710,8 +4672,8 @@ async function fillPremiumTemplate(
       
       finalMapping = {
         ...avatarMapping,
-        hair: getRandomItem(HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[genderKey]),
-        features: getRandomItem(HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES)
+        hair: getRandomItem(CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[genderKey]),
+        features: getRandomItem(CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES)
       };
     }
     // Spanish + Dark Skin: African American hairstyles + facial features
@@ -4724,8 +4686,8 @@ async function fillPremiumTemplate(
       
       finalMapping = {
         ...avatarMapping,
-        hair: getRandomItem(HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[genderKey]),
-        features: getRandomItem(HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES)
+        hair: getRandomItem(CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[genderKey]),
+        features: getRandomItem(CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES)
       };
     }
     // Portuguese + Dark Skin: African American hairstyles + facial features
@@ -4738,8 +4700,8 @@ async function fillPremiumTemplate(
       
       finalMapping = {
         ...avatarMapping,
-        hair: getRandomItem(HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[genderKey]),
-        features: getRandomItem(HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES)
+        hair: getRandomItem(CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[genderKey]),
+        features: getRandomItem(CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES)
       };
     }
     
