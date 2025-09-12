@@ -26,3 +26,15 @@ verify_jwt = false
 
 [functions.security-alert]
 verify_jwt = true
+
+[functions.elevenlabs-dictionary-manager]
+verify_jwt = false
+
+[functions.elevenlabs-agent-signed-url]
+verify_jwt = false
+
+[functions.elevenlabs-tts]
+verify_jwt = false
+
+[functions.word-dictionary]
+verify_jwt = false
