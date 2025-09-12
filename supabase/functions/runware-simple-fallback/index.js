@@ -5782,7 +5782,8 @@ serve(async (req) => {
       tier: '2.5',
       timestamp: new Date().toISOString(),
       runwareApiKeyPresent: !!runwareApiKey,
-      runwareKeyLength: runwareApiKey ? runwareApiKey.length : 0
+      runwareKeyLength: runwareApiKey ? runwareApiKey.length : 0,
+      supported_methods: ['GET', 'POST']
     });
   }
 

@@ -727,7 +727,9 @@ serve(async (req)=>{
         supabase_configured: !!supabaseServiceKey,
         supabase_length: supabaseServiceKey?.length || 0
       },
-      supported_methods: [
+      supported_methods: ['GET', 'POST']
+    }, req);
+  }
         'POST'
       ],
       health_check: 'OK',
