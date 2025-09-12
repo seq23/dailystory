@@ -33,6 +33,81 @@ verify_jwt = true
 [functions.debug-prompt-history]
 verify_jwt = false
 
+[functions.secure-debug-access]
+verify_jwt = true
+
+[functions.send-coppa-notification]
+verify_jwt = true
+
+[functions.send-custom-auth-email]
+verify_jwt = true
+
+[functions.send-parental-notification]
+verify_jwt = true
+
+[functions.debug-ai-prompts]
+verify_jwt = false
+
+[functions.debug-recent-image-prompts]
+verify_jwt = false
+
+[functions.debug-story-processing]
+verify_jwt = false
+
+[functions.debug-visual-scene-creator]
+verify_jwt = false
+
+[functions.translate-batch]
+verify_jwt = false
+
+[functions.translate-to-english]
+verify_jwt = false
+
+[functions.translate-word]
+verify_jwt = false
+
+[functions.apply-discount-code]
+verify_jwt = false
+
+[functions.background-image-pregeneration]
+verify_jwt = false
+
+[functions.clear-character-cache]
+verify_jwt = false
+
+[functions.correct-spelling]
+verify_jwt = false
+
+[functions.cors-testing]
+verify_jwt = false
+
+[functions.edge-connectivity-test]
+verify_jwt = false
+
+[functions.image-proxy]
+verify_jwt = false
+
+[functions.model-performance-monitor]
+verify_jwt = false
+
+[functions.openai-realtime]
+verify_jwt = false
+
+[functions.openai-tts]
+verify_jwt = false
+
+[functions.process-story-content]
+verify_jwt = false
+
+[functions.runware-diagnostic]
+verify_jwt = false
+
+[functions.test-runware-api]
+verify_jwt = false
+
+[functions.test-runware-debug]
+verify_jwt = false
+
 [functions.elevenlabs-dictionary-manager]
 verify_jwt = false
 
