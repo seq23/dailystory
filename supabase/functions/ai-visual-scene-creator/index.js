@@ -1,7 +1,46 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.js";
-import { CharacterConsistencyService } from '../_shared/CharacterConsistencyService.js';
-import { SecondaryElementDetector } from '../_shared/SecondaryElementDetector.js';
-import { SessionStateManager } from '../_shared/SessionStateManager.js';
+
+// ============= LAZY LOADING FUNCTIONS FOR HEAVY DEPENDENCIES =============
+
+async function getCharacterService() {
+  try {
+    const { CharacterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
+    return CharacterConsistencyService;
+  } catch (error) {
+    console.warn('CharacterService lazy load failed:', error);
+    return null;
+  }
+}
+
+async function getSecondaryDetector() {
+  try {
+    const { SecondaryElementDetector } = await import("../_shared/SecondaryElementDetector.js");
+    return SecondaryElementDetector;
+  } catch (error) {
+    console.warn('SecondaryDetector lazy load failed:', error);
+    return null;
+  }
+}
+
+async function getSessionManager() {
+  try {
+    const { SessionStateManager } = await import("../_shared/SessionStateManager.js");
+    return SessionStateManager;
+  } catch (error) {
+    console.warn('SessionManager lazy load failed:', error);
+    return null;
+  }
+}
+
+async function getVisualTracker() {
+  try {
+    const { VisualDetailTracker } = await import("../_shared/VisualDetailTracker.js");
+    return VisualDetailTracker;
+  } catch (error) {
+    console.warn('VisualTracker lazy load failed:', error);
+    return null;
+  }
+}
 
 // Inline CORS utilities to fix boot failure
 const corsHeaders = {
@@ -60,26 +99,6 @@ const EdgeErrorHandler = {
   }
 };
 
-// Functional VisualDetailTracker placeholder with required methods
-const VisualDetailTracker = {
-  enabled: true,
-  analyzeTextForDetails(sessionId, text, pageNumber) {
-    console.log(`VISUAL Visual details analyzed for session ${sessionId}, page ${pageNumber}`);
-    // Functional placeholder - stores nothing but doesn't break
-  },
-  getVisualDetailsForPrompt(sessionId) {
-    console.log(`GET Getting visual details for session ${sessionId}`);
-    return ''; // Return empty string for consistent prompts
-  },
-  injectConsistentDetails(sessionId, text, pageNumber) {
-    console.log(`INJECT Injecting consistent details for session ${sessionId}, page ${pageNumber}`);
-    return text; // Return original text unchanged
-  },
-  clearSessionDetails(sessionId) {
-    console.log(`CLEAR Clearing details for session ${sessionId}`);
-    // Functional placeholder - clears nothing but doesn't break
-  }
-};
 
 // Inline implementations for missing tierFailureMonitoring functions
 const TierFailureLogger = {
@@ -913,9 +932,12 @@ serve(async (req) => {
         let previousScene = null;
         try {
           if (pageNumber > 1) {
-            const sessionManager = new SessionStateManager();
-            previousScene = await sessionManager.getPreviousAIScene(sessionId);
-            console.log(`SCENE Previous scene for consistency: ${previousScene ? 'Found' : 'None'}`);
+            const SessionManager = await getSessionManager();
+            if (SessionManager) {
+              const sessionManager = new SessionManager();
+              previousScene = await sessionManager.getPreviousAIScene(sessionId);
+              console.log(`SCENE Previous scene for consistency: ${previousScene ? 'Found' : 'None'}`);
+            }
           }
         } catch (error) {
           console.warn('WARNING Failed to get previous scene (non-critical):', error);
@@ -945,16 +967,27 @@ serve(async (req) => {
         // PHASE 1.1: Enhanced Character Description using CharacterConsistencyService
         console.log('CHARACTER PHASE 1.1: Using CharacterConsistencyService for database-backed character consistency');
         
-        const characterConsistencyService = new CharacterConsistencyService();
+        const CharacterService = await getCharacterService();
+        let characterData = null;
         
-        // Get or create character seed with database persistence
-        const characterData = await characterConsistencyService.getCharacterSeed(
-          sessionId,
-          avatarIdentity,
-          storyText,
-          'continuing', // session type
-          null // page text clothing
-        );
+        if (CharacterService) {
+          const characterConsistencyService = new CharacterService();
+          
+          // Get or create character seed with database persistence
+          characterData = await characterConsistencyService.getCharacterSeed(
+            sessionId,
+            avatarIdentity,
+            storyText,
+            'continuing', // session type
+            null // page text clothing
+          );
+        } else {
+          console.warn('CharacterService not available, using fallback character data');
+          characterData = {
+            seed: Math.floor(Math.random() * 1000000),
+            characterDescription: `${avatarIdentity.name} is a child age ${avatarIdentity?.age || '6-8'}`
+          };
+        }
         
         const enhancedCharacterDescription = characterData.characterDescription || 
           `${avatarIdentity.name} is a child age ${avatarIdentity?.age || '6-8'}`;
@@ -971,17 +1004,20 @@ serve(async (req) => {
         console.log('DEBUG PHASE 1.1b: Detecting secondary characters using SecondaryElementDetector');
         let secondaryElements = [];
         try {
-          secondaryElements = await SecondaryElementDetector.parseElements(
-            sessionId,
-            '', // primaryScene not available yet
-            storyText,
-            pageNumber
-          );
-          
-          console.log('SECONDARY PHASE 1.1b: Secondary elements detected:', {
-            count: secondaryElements.length,
-            elements: secondaryElements.map(e => `${e.name} (${e.type})`)
-          });
+          const SecondaryDetector = await getSecondaryDetector();
+          if (SecondaryDetector) {
+            secondaryElements = await SecondaryDetector.parseElements(
+              sessionId,
+              '', // primaryScene not available yet
+              storyText,
+              pageNumber
+            );
+            
+            console.log('SECONDARY PHASE 1.1b: Secondary elements detected:', {
+              count: secondaryElements.length,
+              elements: secondaryElements.map(e => `${e.name} (${e.type})`)
+            });
+          }
         } catch (error) {
           console.warn('WARNING SecondaryElementDetector failed (non-critical):', error.message);
           secondaryElements = []; // Continue with empty array
@@ -989,8 +1025,14 @@ serve(async (req) => {
         
         // PHASE 1.1c: Track Visual Details
         console.log('ART PHASE 1.1c: Analyzing visual details using VisualDetailTracker');
-        VisualDetailTracker.analyzeTextForDetails(sessionId, storyText, pageNumber);
-        const visualDetails = VisualDetailTracker.getVisualDetailsForPrompt(sessionId);
+        
+        const VisualTracker = await getVisualTracker();
+        let visualDetails = '';
+        
+        if (VisualTracker) {
+          VisualTracker.analyzeTextForDetails(sessionId, storyText, pageNumber);
+          visualDetails = VisualTracker.getVisualDetailsForPrompt(sessionId);
+        }
         
         console.log('IMAGE PHASE 1.1c: Visual details tracked:', {
           visualDetailsCount: visualDetails.length,
@@ -1113,13 +1155,19 @@ RULES:
           
           // PHASE 1.3b: Update Visual Details with Generated Scene
           console.log('UPDATE PHASE 1.3b: Updating visual details with generated primary scene');
-          VisualDetailTracker.analyzeTextForDetails(sessionId, primaryScene, pageNumber);
           
-          // PHASE 1.3c: Inject Consistent Visual Details into Scene
-          const updatedPrimaryScene = VisualDetailTracker.injectConsistentDetails(sessionId, primaryScene, pageNumber);
-          if (updatedPrimaryScene !== primaryScene) {
-            console.log('UPDATE PHASE 1.3c: Primary scene updated with consistent visual details');
-            primaryScene = updatedPrimaryScene;
+          const VisualTracker = await getVisualTracker();
+          let updatedPrimaryScene = primaryScene;
+          
+          if (VisualTracker) {
+            VisualTracker.analyzeTextForDetails(sessionId, primaryScene, pageNumber);
+            
+            // PHASE 1.3c: Inject Consistent Visual Details into Scene
+            updatedPrimaryScene = VisualTracker.injectConsistentDetails(sessionId, primaryScene, pageNumber);
+            if (updatedPrimaryScene !== primaryScene) {
+              console.log('UPDATE PHASE 1.3c: Primary scene updated with consistent visual details');
+              primaryScene = updatedPrimaryScene;
+            }
           }
           
         } catch (error) {
@@ -1153,15 +1201,18 @@ RULES:
         
         // Store current AI scene for next page consistency
         try {
-          const sessionManager = new SessionStateManager();
-          await sessionManager.storePreviousAIScene(sessionId, {
-            primaryScene: primaryScene,
-            setting: setting,
-            action: action,
-            mood: mood,
-            pose: pose
-          });
-          console.log(`SCENE Current scene stored for next page consistency`);
+          const SessionManager = await getSessionManager();
+          if (SessionManager) {
+            const sessionManager = new SessionManager();
+            await sessionManager.storePreviousAIScene(sessionId, {
+              primaryScene: primaryScene,
+              setting: setting,
+              action: action,
+              mood: mood,
+              pose: pose
+            });
+            console.log(`SCENE Current scene stored for next page consistency`);
+          }
         } catch (error) {
           console.warn('WARNING Failed to store scene for next page (non-critical):', error);
         }

@@ -1,9 +1,48 @@
 // ============= TIER 2.5 NUCLEAR INDEPENDENCE - HARDCODED NEGATIVE PROMPT SYSTEM =============
 // Nuclear independence achieved - all dependencies removed, hardcoded arrays implemented
-import { globalSessionManager } from "../_shared/SessionStateManager.js";
-import { VisualDetailTracker } from "../_shared/VisualDetailTracker.js";
-import { CharacterConsistencyService } from "../_shared/CharacterConsistencyService.js";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+
+// ============= LAZY LOADING FUNCTIONS FOR HEAVY DEPENDENCIES =============
+
+async function getCharacterService() {
+  try {
+    const { CharacterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
+    return CharacterConsistencyService;
+  } catch (error) {
+    console.warn('CharacterService lazy load failed:', error);
+    return null;
+  }
+}
+
+async function getSecondaryDetector() {
+  try {
+    const { SecondaryElementDetector } = await import("../_shared/SecondaryElementDetector.js");
+    return SecondaryElementDetector;
+  } catch (error) {
+    console.warn('SecondaryDetector lazy load failed:', error);
+    return null;
+  }
+}
+
+async function getSessionManager() {
+  try {
+    const { globalSessionManager } = await import("../_shared/SessionStateManager.js");
+    return globalSessionManager;
+  } catch (error) {
+    console.warn('SessionManager lazy load failed:', error);
+    return null;
+  }
+}
+
+async function getVisualTracker() {
+  try {
+    const { VisualDetailTracker } = await import("../_shared/VisualDetailTracker.js");
+    return VisualDetailTracker;
+  } catch (error) {
+    console.warn('VisualTracker lazy load failed:', error);
+    return null;
+  }
+}
 
 // Nuclear Independent CORS Headers 
 const corsHeaders = {
@@ -1618,26 +1657,28 @@ async function getSeededSecondaryCharacters(sentence, sessionId, pageNumber) {
   
   try {
     // PHASE 1: Use SecondaryElementDetector for consistent detection
-    const { SecondaryElementDetector } = await import('../_shared/SecondaryElementDetector.js');
-    const secondaryElements = await SecondaryElementDetector.parseElements(
-      sessionId,
-      '', // primaryScene not available yet
-      sentence,
-      pageNumber || 1
-    );
-    
-    if (!secondaryElements || secondaryElements.length === 0) {
-      console.log('📝 No secondary elements detected by SecondaryElementDetector, using fallback');
-      return await extractSecondaryCharactersFromSentence(sentence, sessionId, pageNumber);
-    }
-    
-    // PHASE 2: Get seed-consistent descriptions for secondary characters (up to 4)
-    const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
-    const characterConsistencyService = new CharacterConsistencyService();
-    
-    const seededDescriptions = await Promise.all(
-      secondaryElements.slice(0, 4).map(async (el) => {
-        if (el.type === 'secondary_character') {
+    const SecondaryDetector = await getSecondaryDetector();
+    if (SecondaryDetector) {
+      const secondaryElements = await SecondaryDetector.parseElements(
+        sessionId,
+        '', // primaryScene not available yet
+        sentence,
+        pageNumber || 1
+      );
+      
+      if (!secondaryElements || secondaryElements.length === 0) {
+        console.log('📝 No secondary elements detected by SecondaryElementDetector, using fallback');
+        return await extractSecondaryCharactersFromSentence(sentence, sessionId, pageNumber);
+      }
+      
+      // PHASE 2: Get seed-consistent descriptions for secondary characters (up to 4)
+      const CharacterService = await getCharacterService();
+      if (CharacterService) {
+        const characterConsistencyService = new CharacterService();
+        
+        const seededDescriptions = await Promise.all(
+          secondaryElements.slice(0, 4).map(async (el) => {
+            if (el.type === 'secondary_character') {
           try {
             const secondaryCharacterSeed = await characterConsistencyService.getSecondaryCharacterSeed(
               sessionId, 
@@ -1688,7 +1729,10 @@ async function extractSecondaryCharactersFromSentence(sentence, sessionId, pageN
   // ============= PHASE 0: ANALYZE TEXT FOR VISUAL DETAILS FIRST =============
   if (sessionId) {
     try {
-      await VisualDetailTracker.analyzeTextForDetails(sessionId, sentence, pageNumber || 1);
+      const VisualTracker = await getVisualTracker();
+      if (VisualTracker) {
+        await VisualTracker.analyzeTextForDetails(sessionId, sentence, pageNumber || 1);
+      }
     } catch (error) {
       console.warn('⚠️ Visual detail tracking failed:', error);
     }
@@ -6202,15 +6246,16 @@ serve(async (req) => {
       // Integrate Character Consistency Service
       let enhancedAvatarIdentity = localAvatarIdentity;
       try {
-        const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
-        const characterConsistencyService = new CharacterConsistencyService();
-        const characterSeed = await characterConsistencyService.getCharacterSeed(
-          sessionId, 
-          'main_character', 
-          pageText, 
-          'premium', 
-          sceneData?.clothing || ''
-        );
+        const CharacterService = await getCharacterService();
+        if (CharacterService) {
+          const characterConsistencyService = new CharacterService();
+          const characterSeed = await characterConsistencyService.getCharacterSeed(
+            sessionId, 
+            'main_character', 
+            pageText, 
+            'premium', 
+            sceneData?.clothing || ''
+          );
         
         if (characterSeed) {
           console.log('🎭 Enhanced character consistency integration successful');
