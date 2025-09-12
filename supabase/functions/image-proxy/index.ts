@@ -1,5 +1,5 @@
-// Redeploy touch: 2025-09-12T18:45:32Z - Force complete rebuild
-console.log("[image-proxy] Loaded: 2025-09-12T18:45:32Z");
+// Redeploy touch: 2025-09-12T19:15:00Z - Force complete rebuild
+console.log("[image-proxy] Loaded: 2025-09-12T19:15:00Z");
 import { serve } from "https://deno.land/std@0.168.0/http/server.js"
 
 const corsHeaders = {
