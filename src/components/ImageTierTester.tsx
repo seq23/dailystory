@@ -67,7 +67,7 @@ export function ImageTierTester() {
         { name: 'AI Visual Scene Creator', endpoint: 'ai-visual-scene-creator' },
         { name: 'Runware Image Orchestrator', endpoint: 'runware-generate-image' },
         { name: 'Runware Simple Fallback', endpoint: 'runware-simple-fallback' },
-        { name: 'Template Service', endpoint: 'template-service' }
+        { name: 'Fallback Images Generator', endpoint: 'generate-fallback-images' }
       ];
 
       console.log(`🔧 [${requestId}] Testing ${healthChecks.length} endpoints...`);
@@ -260,17 +260,15 @@ export function ImageTierTester() {
           )
         ]);
       } else if (tierType === 'Tier 4') {
-        // Test template service for SVG generation simulation
-        console.log(`🎯 [${requestId}] Calling template-service...`);
+        // Test fallback images generator for OpenAI-based fallback generation
+        console.log(`🎯 [${requestId}] Calling generate-fallback-images...`);
         result = await Promise.race([
-          supabase.functions.invoke('template-service', {
+          supabase.functions.invoke('generate-fallback-images', {
             body: {
               pageText: config.storyText,
               userInfo: userInfo,
               sessionId: config.sessionId,
               storyId: `story-${config.sessionId}`,
-              forceTier: 4,
-              type: 'svg',
               requestId
             }
           }),
@@ -709,7 +707,7 @@ export function ImageTierTester() {
               className="flex items-center gap-2"
             >
               <ImageIcon className="w-4 h-4" />
-              {activeTest === 'Tier 4' ? <Clock className="w-4 h-4 animate-spin" /> : 'Tier 4'}
+              {activeTest === 'Tier 4' ? <Clock className="w-4 h-4 animate-spin" /> : 'Tier 4 (Fallback Images)'}
             </Button>
           </div>
 
