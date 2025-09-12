@@ -1208,8 +1208,7 @@ RULES:
         try {
           const SessionManager = await getSessionManager();
           if (SessionManager) {
-            const sessionManager = new SessionManager();
-            await sessionManager.storePreviousAIScene(sessionId, {
+            await SessionManager.storePreviousAIScene(sessionId, {
               primaryScene: primaryScene,
               setting: setting,
               action: action,

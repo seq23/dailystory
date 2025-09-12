@@ -2411,7 +2411,7 @@ function generateEmergencyPrompt(userInfo) {
 
 // ============= TEMPLATE FILLING FUNCTIONS =============
 
-function fillBasicTemplate(template, placeholders) {
+function fillBasicTemplate_V1(template, placeholders) {
   try {
     console.log('🛡️ Tier 2.5A: Filling premium template with placeholders');
     
@@ -6618,61 +6618,58 @@ serve(async (req) => {
         }
       };
       
-      ws.onerror = (error) => {
+      ws.onerror = async (error) => {
         console.error('❌ Tier 2.5: WebSocket error:', error);
         console.log('🔄 Tier 2.5: Attempting HTTP fallback...');
         
         // HTTP FALLBACK: Try Runware REST API
-        attemptHttpFallback(prompt, negativePrompt, styleSettings, sessionId, characterData, avatarMapping, difficulty, culturalProfile, objects, secondary_characters)
-          .then(result => {
-            if (result.success) {
-              resolveOnce(result);
-            } else {
-              resolveOnce(createCorsErrorResponse('WebSocket and HTTP fallback both failed', 500));
-            }
-          })
-          .catch(() => {
-            resolveOnce(createCorsErrorResponse('WebSocket connection failed and HTTP fallback unavailable', 500));
-          });
+        try {
+          const result = await attemptHttpFallback(prompt, negativePrompt, styleSettings, sessionId, characterData, avatarMapping, difficulty, culturalProfile, objects, secondary_characters);
+          if (result.success) {
+            resolveOnce(result);
+          } else {
+            resolveOnce(createCorsErrorResponse('WebSocket and HTTP fallback both failed', 500));
+          }
+        } catch (error) {
+          resolveOnce(createCorsErrorResponse('WebSocket connection failed and HTTP fallback unavailable', 500));
+        }
       };
       
-      ws.onclose = (event) => {
+      ws.onclose = async (event) => {
         console.log('🛡️ Tier 2.5: WebSocket closed:', event.code, event.reason);
         if (!isResolved) {
           console.log('🔄 Tier 2.5: Attempting HTTP fallback due to unexpected close...');
           
           // HTTP FALLBACK: Try Runware REST API
-          attemptHttpFallback(prompt, negativePrompt, styleSettings, sessionId, characterData, avatarMapping, difficulty, culturalProfile, objects, secondary_characters)
-            .then(result => {
-              if (result.success) {
-                resolveOnce(result);
-              } else {
-                resolveOnce(createCorsErrorResponse('WebSocket closed and HTTP fallback failed', 500));
-              }
-            })
-            .catch(() => {
-              resolveOnce(createCorsErrorResponse('WebSocket connection closed and HTTP fallback unavailable', 500));
-            });
+          try {
+            const result = await attemptHttpFallback(prompt, negativePrompt, styleSettings, sessionId, characterData, avatarMapping, difficulty, culturalProfile, objects, secondary_characters);
+            if (result.success) {
+              resolveOnce(result);
+            } else {
+              resolveOnce(createCorsErrorResponse('WebSocket closed and HTTP fallback failed', 500));
+            }
+          } catch (error) {
+            resolveOnce(createCorsErrorResponse('WebSocket connection closed and HTTP fallback unavailable', 500));
+          }
         }
       };
       
       // Timeout after 30 seconds
-      setTimeout(() => {
+      setTimeout(async () => {
         if (!isResolved) {
           console.error('❌ Tier 2.5: Request timeout, trying HTTP fallback...');
           
           // HTTP FALLBACK: Try Runware REST API
-          attemptHttpFallback(prompt, negativePrompt, styleSettings, sessionId, characterData, avatarMapping, difficulty, culturalProfile, objects, secondary_characters)
-            .then(result => {
-              if (result.success) {
-                resolveOnce(result);
-              } else {
-                resolveOnce(createCorsErrorResponse('Request timeout and HTTP fallback failed', 408));
-              }
-            })
-            .catch(() => {
-              resolveOnce(createCorsErrorResponse('Request timeout', 408));
-            });
+          try {
+            const result = await attemptHttpFallback(prompt, negativePrompt, styleSettings, sessionId, characterData, avatarMapping, difficulty, culturalProfile, objects, secondary_characters);
+            if (result.success) {
+              resolveOnce(result);
+            } else {
+              resolveOnce(createCorsErrorResponse('Request timeout and HTTP fallback failed', 408));
+            }
+          } catch (error) {
+            resolveOnce(createCorsErrorResponse('Request timeout', 408));
+          }
         }
       }, 30000);
       
