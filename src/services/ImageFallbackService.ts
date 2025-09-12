@@ -1,6 +1,5 @@
-import { supabase } from '@/integrations/supabase/client';
 /**
- * Image Fallback Service - Provides placeholder images when generation fails
+ * Simple Static Image Fallback Service - No dynamic generation, just embedded base64 images
  */
 
 export interface FallbackImageConfig {
@@ -15,244 +14,65 @@ export class ImageFallbackService {
   private static readonly DEFAULT_CONFIG: FallbackImageConfig = {
     width: 1024,
     height: 1024,
-    backgroundColor: '#f0f9ff', // Light blue background
-    textColor: '#1e40af', // Blue text
+    backgroundColor: '#f0f9ff',
+    textColor: '#1e40af',
     text: '📖 Story Illustration'
   };
 
-  // Base64 encoded fallback images - embedded character illustrations
+  // Static base64 encoded fallback images - 6 variations of "Images Not Working"
   private static readonly FALLBACK_IMAGES_BASE64 = [
-    // Main group shot with all four children
-    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==", // Placeholder - will be replaced with actual generated image
-    // Blonde child individual portrait  
-    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==", // Placeholder - will be replaced with actual generated image
-    // Red-haired child portrait
-    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==", // Placeholder - will be replaced with actual generated image
-    // Medium-skinned child portrait
-    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==", // Placeholder - will be replaced with actual generated image
-    // African American child portrait
-    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==", // Placeholder - will be replaced with actual generated image
-    // Two children teamwork shot
-    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==", // Placeholder - will be replaced with actual generated image
+    // Main fallback - friendly book illustration
+    "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJiZyIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMTAwJSI+PHN0b3Agb2Zmc2V0PSIwJSIgc3R5bGU9InN0b3AtY29sb3I6I2YwZjlmZjtzdG9wLW9wYWNpdHk6MSIgLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiNlMGY3ZmE7c3RvcC1vcGFjaXR5OjEiIC8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNiZykiLz48Y2lyY2xlIGN4PSIyNTYiIGN5PSIyMDAiIHI9IjgwIiBmaWxsPSIjMWU0MGFmIiBvcGFjaXR5PSIwLjEiLz48dGV4dCB4PSIyNTYiIHk9IjE4MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjcyIiBmaWxsPSIjMWU0MGFmIj7wn5OWPC90ZXh0Pjx0ZXh0IHg9IjI1NiIgeT0iMjgwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMzIiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiMxZTQwYWYiPkltYWdlcyBOb3QgV29ya2luZzwvdGV4dD48dGV4dCB4PSIyNTYiIHk9IjMzMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE4IiBmaWxsPSIjMWU0MGFmIiBvcGFjaXR5PSIwLjciPlN0b3J5IGlsbHVzdHJhdGlvbiB3aWxsIGFwcGVhciBoZXJlPC90ZXh0PjwvdXZnPg==",
+    
+    // Character portrait variation
+    "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJiZzIiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiNmZmY3ZWQ7c3RvcC1vcGFjaXR5OjEiIC8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojZmVmM2M3O3N0b3Atb3BhY2l0eToxIiAvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjYmcyKSIvPjxjaXJjbGUgY3g9IjI1NiIgY3k9IjE4MCIgcj0iNjAiIGZpbGw9IiNkOTc3MDYiIG9wYWNpdHk9IjAuMiIvPjx0ZXh0IHg9IjI1NiIgeT0iMTYwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNDgiIGZpbGw9IiNkOTc3MDYiPvCfkKQ8L3RleHQ+PHRleHQgeD0iMjU2IiB5PSIyNjAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyOCIgZm9udC13ZWlnaHQ9IjYwMCIgZmlsbD0iI2Q5NzcwNiI+SW1hZ2VzIE5vdCBXb3JraW5nPC90ZXh0Pjx0ZXh0IHg9IjI1NiIgeT0iMzEwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiNkOTc3MDYiIG9wYWNpdHk9IjAuNyI+Q2hhcmFjdGVyIGlsbHVzdHJhdGlvbiB3aWxsIGFwcGVhciBoZXJlPC90ZXh0PjwvdXZnPg==",
+    
+    // Scene illustration variation
+    "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJiZzMiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiNmMGZkZjQ7c3RvcC1vcGFjaXR5OjEiIC8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojZGNmY2U3O3N0b3Atb3BhY2l0eToxIiAvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjYmczKSIvPjxjaXJjbGUgY3g9IjE4MCIgY3k9IjE2MCIgcj0iNDAiIGZpbGw9IiMxNjczNGYiIG9wYWNpdHk9IjAuMTUiLz48Y2lyY2xlIGN4PSIzMzAiIGN5PSIyMDAiIHI9IjMwIiBmaWxsPSIjMTY3MzRmIiBvcGFjaXR5PSIwLjEiLz48dGV4dCB4PSIyNTYiIHk9IjE2MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjQ4IiBmaWxsPSIjMTY3MzRmIj7wn4yzPC90ZXh0Pjx0ZXh0IHg9IjI1NiIgeT0iMjYwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjgiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiMxNjczNGYiPkltYWdlcyBOb3QgV29ya2luZzwvdGV4dD48dGV4dCB4PSIyNTYiIHk9IjMxMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjMTY3MzRmIiBvcGFjaXR5PSIwLjciPlNjZW5lIGlsbHVzdHJhdGlvbiB3aWxsIGFwcGVhciBoZXJlPC90ZXh0PjwvdXZnPg==",
+    
+    // Adventure variation 
+    "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJiZzQiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiNmZGY0ZmY7c3RvcC1vcGFjaXR5OjEiIC8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojZjNlOGZmO3N0b3Atb3BhY2l0eToxIiAvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjYmc0KSIvPjxjaXJjbGUgY3g9IjI1NiIgY3k9IjE4MCIgcj0iNzAiIGZpbGw9IiM3YzNhZWQiIG9wYWNpdHk9IjAuMTUiLz48dGV4dCB4PSIyNTYiIHk9IjE2MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjU2IiBmaWxsPSIjN2MzYWVkIj7wn5OAPC90ZXh0Pjx0ZXh0IHg9IjI1NiIgeT0iMjYwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjgiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiM3YzNhZWQiPkltYWdlcyBOb3QgV29ya2luZzwvdGV4dD48dGV4dCB4PSIyNTYiIHk9IjMxMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiBmaWxsPSIjN2MzYWVkIiBvcGFjaXR5PSIwLjciPkFkdmVudHVyZSBpbGx1c3RyYXRpb24gd2lsbCBhcHBlYXIgaGVyZTwvdGV4dD48L3N2Zz4=",
+    
+    // Magic variation
+    "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJiZzUiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiNmZWY3ZmY7c3RvcC1vcGFjaXR5OjEiIC8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojZmFmYWZhO3N0b3Atb3BhY2l0eToxIiAvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjYmc1KSIvPjxjaXJjbGUgY3g9IjIwMCIgY3k9IjE2MCIgcj0iMjAiIGZpbGw9IiNlYzQ4OTkiIG9wYWNpdHk9IjAuMiIvPjxjaXJjbGUgY3g9IjMxMCIgY3k9IjE4MCIgcj0iMTUiIGZpbGw9IiNlYzQ4OTkiIG9wYWNpdHk9IjAuMTUiLz48Y2lyY2xlIGN4PSIyODAiIGN5PSIxNDAiIHI9IjEwIiBmaWxsPSIjZWM0ODk5IiBvcGFjaXR5PSIwLjEiLz48dGV4dCB4PSIyNTYiIHk9IjE2MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjQ4IiBmaWxsPSIjZWM0ODk5Ij7inajvuI88L3RleHQ+PHRleHQgeD0iMjU2IiB5PSIyNjAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyOCIgZm9udC13ZWlnaHQ9IjYwMCIgZmlsbD0iI2VjNDg5OSI+SW1hZ2VzIE5vdCBXb3JraW5nPC90ZXh0Pjx0ZXh0IHg9IjI1NiIgeT0iMzEwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiNlYzQ4OTkiIG9wYWNpdHk9IjAuNyI+TWFnaWNhbCBpbGx1c3RyYXRpb24gd2lsbCBhcHBlYXIgaGVyZTwvdGV4dD48L3N2Zz4=",
+    
+    // Friends variation
+    "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJiZzYiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiNmZmY1ZjU7c3RvcC1vcGFjaXR5OjEiIC8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojZmVlMmUyO3N0b3Atb3BhY2l0eToxIiAvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjYmc2KSIvPjxjaXJjbGUgY3g9IjIwMCIgY3k9IjE2MCIgcj0iMzAiIGZpbGw9IiNkYzI2MjYiIG9wYWNpdHk9IjAuMTUiLz48Y2lyY2xlIGN4PSIzMTAiIGN5PSIxODAiIHI9IjI1IiBmaWxsPSIjZGMyNjI2IiBvcGFjaXR5PSIwLjEiLz48dGV4dCB4PSIyNTYiIHk9IjE2MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjQ4IiBmaWxsPSIjZGMyNjI2Ij7wn5GL8J+RoTwvdGV4dD48dGV4dCB4PSIyNTYiIHk9IjI2MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjI4IiBmb250LXdlaWdodD0iNjAwIiBmaWxsPSIjZGMyNjI2Ij5JbWFnZXMgTm90IFdvcmtpbmc8L3RleHQ+PHRleHQgeD0iMjU2IiB5PSIzMTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0iI2RjMjYyNiIgb3BhY2l0eT0iMC43Ij5GcmllbmRzaGlwIGlsbHVzdHJhdGlvbiB3aWxsIGFwcGVhciBoZXJlPC90ZXh0Pjwvc3ZnPg=="
   ];
 
-  private static debugLog(message: string, data?: any) {
-    console.log(`🖼️ ImageFallback: ${message}`, data || '');
-  }
-
-  // Dynamic generation state for AI-based fallbacks
-  private static generated = false;
-  private static generating = false;
-  private static generationError: string | null = null;
-
   /**
-   * Triggers the Supabase Edge Function to generate base64 fallback images
-   * and embeds them into this service for future use.
+   * Get a fallback image by index (0-5)
    */
-  static async ensureGenerated(): Promise<void> {
-    if (this.generated || this.generating) return;
-    this.generating = true;
-    try {
-      this.debugLog('Requesting generated fallback images from edge function...');
-      const { data, error } = await supabase.functions.invoke('generate-fallback-images');
-      if (error) throw error;
-
-      const images: { base64: string }[] = (data as any)?.images || [];
-      if (!images.length) throw new Error('No images returned from generator');
-
-      // Replace placeholders with real base64 images
-      const formatted = images.map((img) => `data:image/png;base64,${img.base64}`);
-      this.FALLBACK_IMAGES_BASE64.splice(0, this.FALLBACK_IMAGES_BASE64.length, ...formatted);
-      this.generated = true;
-      this.debugLog('Fallback images generated and embedded', { count: images.length });
-
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('fallback-images-ready'));
-      }
-    } catch (err: any) {
-      this.generationError = err?.message || String(err);
-      this.debugLog('Failed to generate fallback images', this.generationError);
-    } finally {
-      this.generating = false;
-    }
+  static getFallbackImage(index: number = 0): string {
+    const safeIndex = Math.abs(index) % this.FALLBACK_IMAGES_BASE64.length;
+    return this.FALLBACK_IMAGES_BASE64[safeIndex];
   }
 
   /**
-   * Detect if CSP blocks data URLs or blob URLs
-   */
-  static detectCSPIssues(): boolean {
-    // Check if we're in a restricted environment
-    if (typeof window === 'undefined') return false;
-    
-    try {
-      // Try to create a simple data URL image
-      const testDataUrl = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMSIgaGVpZ2h0PSIxIj48L3N2Zz4=';
-      const testImg = document.createElement('img');
-      
-      // Set up a quick test - if CSP blocks it, it won't load
-      let cspBlocked = false;
-      testImg.onerror = () => { cspBlocked = true; };
-      testImg.src = testDataUrl;
-      
-      // Also check for blob URL support
-      try {
-        const blob = new Blob(['<svg></svg>'], { type: 'image/svg+xml' });
-        const blobUrl = URL.createObjectURL(blob);
-        URL.revokeObjectURL(blobUrl);
-      } catch {
-        this.debugLog('Blob URLs not supported');
-        return true;
-      }
-      
-      return cspBlocked;
-    } catch (error) {
-      this.debugLog('CSP detection failed, assuming blocked', error);
-      return true;
-    }
-  }
-
-  /**
-   * Get environment info for debugging
-   */
-  static getEnvironmentInfo() {
-    const info = {
-      isPreview: window.location.href.includes('preview'),
-      userAgent: navigator.userAgent,
-      hasCSPBlocking: this.detectCSPIssues(),
-      currentURL: window.location.href
-    };
-    this.debugLog('Environment detection', info);
-    return info;
-  }
-
-  /**
-   * Generates an SVG placeholder with an embedded base64 image
-   */
-  static generatePlaceholderSVG(config: Partial<FallbackImageConfig> & { pageNumber?: number } = {}): string {
-    const finalConfig = { ...this.DEFAULT_CONFIG, ...config };
-    const { width, height, backgroundColor, textColor, text, pageNumber = 1 } = finalConfig;
-
-    // Select base64 image based on page number (cycling through available images)
-    const imageIndex = (pageNumber - 1) % this.FALLBACK_IMAGES_BASE64.length;
-    const base64Image = this.FALLBACK_IMAGES_BASE64[imageIndex];
-
-    const svgContent = `
-      <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <pattern id="bg-pattern-${pageNumber}" patternUnits="userSpaceOnUse" width="20" height="20">
-            <rect width="20" height="20" fill="${backgroundColor}" opacity="0.1"/>
-            <circle cx="10" cy="10" r="1" fill="${textColor}" opacity="0.1"/>
-          </pattern>
-        </defs>
-        
-        <!-- Background -->
-        <rect width="100%" height="100%" fill="${backgroundColor}"/>
-        <rect width="100%" height="100%" fill="url(#bg-pattern-${pageNumber})"/>
-        
-        <!-- Main embedded image -->
-        <image 
-          href="${base64Image}" 
-          x="10" 
-          y="40" 
-          width="${width - 20}" 
-          height="${height - 80}" 
-          preserveAspectRatio="xMidYMid meet"
-          opacity="0.9"
-        />
-        
-        <!-- Overlay text -->
-        <rect x="10" y="10" width="${width - 20}" height="25" fill="${backgroundColor}" opacity="0.8" rx="5"/>
-        <text 
-          x="${width / 2}" 
-          y="28" 
-          text-anchor="middle" 
-          font-family="Arial, sans-serif" 
-          font-size="14" 
-          font-weight="600"
-          fill="${textColor}"
-        >
-          ${text}
-        </text>
-        
-        <!-- Page indicator -->
-        <circle cx="${width - 25}" cy="${height - 25}" r="12" fill="${textColor}" opacity="0.2"/>
-        <text 
-          x="${width - 25}" 
-          y="${height - 21}" 
-          text-anchor="middle" 
-          font-family="Arial, sans-serif" 
-          font-size="10" 
-          font-weight="bold"
-          fill="${textColor}"
-        >
-          ${pageNumber}
-        </text>
-      </svg>
-    `.replace(/\s+/g, ' ').trim();
-
-    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgContent)}`;
-  }
-
-  /**
-   * Generate a blob URL as CSP-safe alternative
-   */
-  static generateBlobSVG(config: Partial<FallbackImageConfig> = {}): string {
-    try {
-      const finalConfig = { ...this.DEFAULT_CONFIG, ...config };
-      
-      const svgContent = `
-        <svg width="${finalConfig.width}" height="${finalConfig.height}" viewBox="0 0 ${finalConfig.width} ${finalConfig.height}" xmlns="http://www.w3.org/2000/svg">
-          <rect width="100%" height="100%" fill="${finalConfig.backgroundColor}"/>
-          <circle cx="${finalConfig.width/2}" cy="${finalConfig.height/2 - 100}" r="80" fill="${finalConfig.textColor}" opacity="0.1"/>
-          <text x="${finalConfig.width/2}" y="${finalConfig.height/2}" 
-                text-anchor="middle" 
-                dominant-baseline="middle" 
-                fill="${finalConfig.textColor}" 
-                font-family="Arial, sans-serif" 
-                font-size="48" 
-                font-weight="500">
-            ${finalConfig.text}
-          </text>
-          <text x="${finalConfig.width/2}" y="${finalConfig.height/2 + 80}" 
-                text-anchor="middle" 
-                dominant-baseline="middle" 
-                fill="${finalConfig.textColor}" 
-                font-family="Arial, sans-serif" 
-                font-size="24" 
-                opacity="0.7">
-            Illustration will appear here
-          </text>
-        </svg>
-      `;
-      
-      const blob = new Blob([svgContent], { type: 'image/svg+xml' });
-      const blobUrl = URL.createObjectURL(blob);
-      this.debugLog('Generated blob SVG fallback', { blobUrl });
-      return blobUrl;
-    } catch (error) {
-      this.debugLog('Failed to generate blob SVG', error);
-      return this.generatePlaceholderSVG(config);
-    }
-  }
-
-  /**
-   * Returns the best fallback - always use embedded SVG for reliability
+   * Get the best fallback - now simply returns a static embedded image
    */
   static getBestFallback(config: Partial<FallbackImageConfig> = {}): string {
-    // Kick off async generation of richer fallbacks (non-blocking)
-    try { void this.ensureGenerated(); } catch {}
-    // Always use the embedded base64 SVG fallback for maximum reliability
-    return this.generatePlaceholderSVG(config);
+    // Always return the first fallback image for consistency
+    return this.FALLBACK_IMAGES_BASE64[0];
   }
 
   /**
    * Generate a story-specific placeholder with page context
    */
   static generateStoryPlaceholder(storyText: string, pageNumber: number): string {
-    return this.generatePlaceholderSVG({
-      text: '📖 Story Illustration',
-      pageNumber
-    });
+    // Use page number to cycle through the 6 fallback images
+    const imageIndex = (pageNumber - 1) % this.FALLBACK_IMAGES_BASE64.length;
+    return this.FALLBACK_IMAGES_BASE64[imageIndex];
+  }
+
+  /**
+   * Get a character-themed placeholder
+   */
+  static generateCharacterPlaceholder(characterName: string, pageNumber: number): string {
+    // Use character name hash + page number for consistent but varied selection
+    const nameHash = characterName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const imageIndex = Math.abs(nameHash + pageNumber) % this.FALLBACK_IMAGES_BASE64.length;
+    return this.FALLBACK_IMAGES_BASE64[imageIndex];
   }
 
   /**
@@ -263,22 +83,7 @@ export class ImageFallbackService {
     
     return (
       this.FALLBACK_IMAGES_BASE64.includes(url) ||
-      url.startsWith('data:image/svg+xml') ||
-      url.includes('base64')
+      url.startsWith('data:image/svg+xml;base64,')
     );
-  }
-
-  /**
-   * Get a character-themed placeholder
-   */
-  static generateCharacterPlaceholder(characterName: string, pageNumber: number): string {
-    // Use character name hash + page number for consistent but varied selection
-    const nameHash = characterName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    const imageIndex = Math.abs(nameHash + pageNumber) % this.FALLBACK_IMAGES_BASE64.length;
-    
-    return this.generatePlaceholderSVG({
-      text: `${characterName} - Story Illustration`,
-      pageNumber: imageIndex + 1
-    });
   }
 }

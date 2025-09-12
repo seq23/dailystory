@@ -177,17 +177,7 @@ export const useImageWithFallback = (
   }, [src, fallbackText, loadImageWithRetry, debugLog]);
 
 
-  // Refresh fallback image when richer generated fallbacks become available
-  useEffect(() => {
-    const handler = () => {
-      if (isUsingFallback) {
-        const fallbackUrl = ImageFallbackService.getBestFallback({ text: fallbackText });
-        setImageSrc(fallbackUrl);
-      }
-    };
-    window.addEventListener('fallback-images-ready', handler as any);
-    return () => window.removeEventListener('fallback-images-ready', handler as any);
-  }, [isUsingFallback, fallbackText]);
+  // No longer need dynamic fallback updates - everything is static now
 
   return {
     imageSrc,

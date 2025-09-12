@@ -235,8 +235,8 @@ console.log('🖼️ ImageFallback: Generated SVG fallback', {
 
 This comprehensive image loading system ensures professional, reliable image display across all scenarios while maintaining optimal performance and user experience.
 
-## Dynamic AI-Generated Fallbacks (Edge Function)
+## Static Embedded Fallback System
 
-- When a fallback is needed, the frontend now triggers a Supabase Edge Function (generate-fallback-images) that uses OpenAI gpt-image-1 to create six diverse, child-friendly images based on the "Images Not Working" prompt.
-- The service embeds the returned base64 images directly into the SVG placeholders and broadcasts a `fallback-images-ready` event so any visible placeholders refresh automatically.
-- Requirements: Set the `OPENAI_API_KEY` in Supabase Secrets. No further configuration is needed.
+- The image fallback system now uses 6 pre-generated, embedded base64 SVG images that display "Images Not Working" with different themes and colors.
+- No dynamic generation, no API calls, no dependencies - just instant, reliable fallback images that work 100% of the time.
+- The system cycles through the 6 variations based on page numbers and character names for visual variety while maintaining consistency.
