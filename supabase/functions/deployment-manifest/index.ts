@@ -2,7 +2,7 @@
 // Created: 2025-01-23T03:00:00Z
 console.log("[deployment-manifest] Diagnostic function loaded");
 
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.190.0/http/server.js";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
