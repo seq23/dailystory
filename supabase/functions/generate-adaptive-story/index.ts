@@ -133,28 +133,84 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Health check endpoint
+  if (req.method === 'GET' || req.method === 'HEAD') {
+    console.log('📊 Health check requested');
+    return new Response(JSON.stringify({ status: 'healthy' }), {
+      status: 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+
+  // Log request diagnostics
+  const contentType = req.headers.get('content-type') || 'unknown';
+  const contentLength = req.headers.get('content-length') || 'unknown';
+  console.log('📨 REQUEST DIAGNOSTICS:', {
+    method: req.method,
+    contentType,
+    contentLength,
+    timestamp: new Date().toISOString()
+  });
+
+  // Safe request body parsing
   let requestBody = null;
   
   try {
-    requestBody = await req.json();
+    // Get raw body text first
+    const rawBody = await req.text();
+    
+    // Check for empty body
+    if (!rawBody || rawBody.trim().length === 0) {
+      console.warn('⚠️ Empty request body received');
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Empty body; expected JSON with { bundle, config }'
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Parse JSON safely
+    try {
+      requestBody = JSON.parse(rawBody);
+      console.log('✅ Request body parsed successfully', {
+        hasBundle: !!requestBody.bundle,
+        hasConfig: !!requestBody.config
+      });
+    } catch (jsonError) {
+      console.error('❌ Invalid JSON in request body:', jsonError.message);
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Invalid JSON'
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
     
     // UNIFIED 4-TIER ARCHITECTURE: Handle pre-processed bundles from StoryGenerationService
     if (requestBody.bundle) {
+      console.log('🎯 Processing bundle request');
       return await handleStreamlinedGeneration(requestBody);
     }
     
-    // LEGACY SUPPORT: Deprecated - all new requests should use bundle format
-    
+    // Missing bundle - proper error message
+    console.warn('⚠️ Request missing bundle parameter');
     return new Response(JSON.stringify({
       success: false,
-      error: 'Legacy direct calls deprecated. Please use unified 4-tier system via bundle format.'
+      error: 'Legacy direct calls deprecated. Please send { bundle, config }'
     }), {
       status: 400,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
     
   } catch (error) {
-    console.error('Story generation error:', error);
+    console.error('💥 Story generation error:', {
+      message: error.message,
+      stack: error.stack,
+      timestamp: new Date().toISOString()
+    });
     return new Response(JSON.stringify({
       success: false,
       error: error.message || 'Story generation failed'
