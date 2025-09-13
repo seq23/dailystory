@@ -84,18 +84,26 @@ export const ApiKeyDiagnostic: React.FC = () => {
       // Test 3: AI Visual Scene Creator health
       addResult('warning', '🎯 Testing AI Visual Scene Creator...');
       try {
-        const response = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/ai-visual-scene-creator', {
-          method: 'GET',
-          headers: {
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino'
-          }
+        // Try GET health check using proper Supabase client method
+        const { data: healthData, error: getError } = await supabase.functions.invoke('ai-visual-scene-creator', {
+          method: 'GET'
         });
 
-        if (response.ok) {
-          const data = await response.json();
-          addResult('success', `✅ AI Visual Scene Creator - ${data.status} (Tier ${data.tier})`, data);
+        if (!getError && healthData) {
+          addResult('success', `✅ AI Visual Scene Creator - ${healthData.status || 'healthy'} (Tier ${healthData.tier || 'N/A'})`, healthData);
         } else {
-          addResult('warning', `⚠️ AI Visual Scene Creator - HTTP ${response.status}`, { status: response.status });
+          // Fallback to POST health check if GET fails
+          addResult('warning', '⚠️ GET health check failed, trying POST health check...');
+          
+          const { data: postHealthData, error: postError } = await supabase.functions.invoke('ai-visual-scene-creator', {
+            body: { diagnostic: 'health_check' }
+          });
+          
+          if (!postError && postHealthData) {
+            addResult('success', `✅ AI Visual Scene Creator (POST) - ${postHealthData.status || 'healthy'}`, postHealthData);
+          } else {
+            addResult('warning', `⚠️ AI Visual Scene Creator - Health check inconclusive: ${getError?.message || postError?.message || 'Unknown issue'}`, { getError, postError });
+          }
         }
       } catch (err) {
         addResult('error', `❌ AI Visual Scene Creator - Test failed: ${err.message}`, err);
