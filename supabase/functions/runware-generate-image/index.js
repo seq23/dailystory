@@ -1098,18 +1098,37 @@ serve(async (req)=>{
           storyContext: '',
           brandSuffix: ''
         };
-        // 1. PRIMARY SCENE (First - establishes main visual context)
-        if (aiSchema.primaryScene) {
-          promptSections.primaryScene = aiSchema.primaryScene;
-          console.log(`🎯 [${requestId}] Section 1 - Primary Scene Added:`, {
-            length: aiSchema.primaryScene.length,
-            preview: aiSchema.primaryScene.substring(0, 150) + '...',
-            source: 'AI-enhanced primaryScene'
+        // ORCHESTRATOR LEVEL: Check for primary scene existence
+        if (!aiSchema?.primaryScene || aiSchema.primaryScene.length < 30) {
+          console.warn(`⚠️ [${requestId}] Missing or insufficient primaryScene from AI schema - Routing to Tier 2.5A`);
+          console.log('🔄 Orchestrator: No primary scene detected, routing to Tier 2.5A template fallback');
+          
+          // Route directly to Tier 2.5A
+          const tier25AResult = await callTierFunction('runware-template-ab', {
+            templateComplexity: 'A',
+            storyText: pageText,
+            userInfo,
+            sessionId,
+            pageNumber,
+            avatarIdentity,
+            enhancedStoryData
           });
-        } else {
-          console.warn(`⚠️ [${requestId}] Missing primaryScene from AI schema - Triggering Tier 2.5 fallback`);
-          throw new Error('PRIMARY_SCENE_MISSING - Triggering Tier 2.5 fallback');
+          
+          if (tier25AResult.success) {
+            console.log('✅ Tier 2.5A succeeded after primary scene validation failure');
+            return createDynamicCorsResponse(tier25AResult, 200);
+          } else {
+            throw new Error('Tier 2.5A failed after primary scene validation failure');
+          }
         }
+
+        // 1. PRIMARY SCENE (First - establishes main visual context)
+        promptSections.primaryScene = aiSchema.primaryScene;
+        console.log(`🎯 [${requestId}] Section 1 - Primary Scene Added:`, {
+          length: aiSchema.primaryScene.length,
+          preview: aiSchema.primaryScene.substring(0, 150) + '...',
+          source: 'AI-enhanced primaryScene'
+        });
         // 2. CHARACTER (Character + Cultural Context unified)
         let characterSection = '';
         if (characterData.characterDescription) {
@@ -1121,7 +1140,10 @@ serve(async (req)=>{
             source: 'CharacterConsistencyService'
           });
         } else {
-          console.warn(`⚠️ [${requestId}] Missing character description`);
+          // Use avatar validation ONLY for character description generation
+          console.warn(`⚠️ [${requestId}] Missing character description, using avatar fallback`);
+          characterSection = validateAvatarConsistency('', avatarIdentity, userInfo);
+          console.log(`🔍 [${requestId}] Avatar fallback character description generated:`, characterSection);
         }
         const culturalContext = await generateCulturalContext(avatarIdentity, userInfo, requestId, characterData);
         if (culturalContext) {
@@ -1322,31 +1344,26 @@ serve(async (req)=>{
             ...aiEnhancerResult.metadata
           }
         };
-        // PHASE 4: Detailed avatar validation with before/after comparison
-        console.log(`🔍 [${requestId}] Avatar Validation Phase - Before:`, {
+        // PHASE 4: Final prompt is ready - NO avatar validation override
+        console.log(`🔍 [${requestId}] Final Prompt Assembly Complete:`, {
           promptLength: enhancedPrompt.length,
           avatarIdentityType: avatarIdentity.type,
           avatarIdentitySkinTone: avatarIdentity.skinTone,
-          promptPreview: enhancedPrompt.substring(0, 150) + '...'
+          promptPreview: enhancedPrompt.substring(0, 150) + '...',
+          note: 'Avatar validation was used only for character section, not full prompt override'
         });
-        const validatedPrompt = validateAvatarConsistency(enhancedPrompt, avatarIdentity, userInfo);
-        console.log(`🔍 [${requestId}] Avatar Validation Phase - After:`, {
-          originalLength: enhancedPrompt.length,
-          validatedLength: validatedPrompt.length,
-          changed: enhancedPrompt !== validatedPrompt,
-          lengthDifference: validatedPrompt.length - enhancedPrompt.length,
-          validatedPreview: validatedPrompt.substring(0, 150) + '...',
-          validationApplied: enhancedPrompt !== validatedPrompt ? 'YES - fallback used' : 'NO - passed validation'
-        });
-        console.log(`🎨 [${requestId}] Final Tier 1 Prompt Ready for Runware (${validatedPrompt.length} chars):`, validatedPrompt.substring(0, 200) + (validatedPrompt.length > 200 ? '...' : ''));
+        
+        // Use the rich AI-generated prompt directly - no full prompt validation override
+        const finalPrompt = enhancedPrompt;
+        console.log(`🎨 [${requestId}] Final Tier 1 Prompt Ready for Runware (${finalPrompt.length} chars):`, finalPrompt.substring(0, 200) + (finalPrompt.length > 200 ? '...' : ''));
         // CRITICAL: Log prompt flow for debugging 
         console.log('🔍 [PROMPT-FLOW] RUNWARE: Final prompt being sent to Runware API', {
           sessionId,
           pageNumber,
-          promptPreview: validatedPrompt.substring(0, 100) + '...',
+          promptPreview: finalPrompt.substring(0, 100) + '...',
           stage: 'runware',
           metadata: {
-            promptLength: validatedPrompt.length,
+            promptLength: finalPrompt.length,
             negativePromptLength: negativePrompt.length,
             characterSeed: characterData.seed,
             tier: 1
@@ -1355,13 +1372,13 @@ serve(async (req)=>{
         // PHASE 4: Generate with Runware Tier 1 (Premium) with enhanced logging
         console.log(`🚀 [${requestId}] Initiating Runware Premium Generation:`, {
           apiKeyPresent: !!runwareApiKey,
-          promptLength: validatedPrompt.length,
+          promptLength: finalPrompt.length,
           negativePromptLength: negativePrompt.length,
           characterSeed: characterData.seed,
           sessionId: sessionId,
           pageNumber: pageNumber
         });
-        const tier1Result = await generateWithRunwarePremium(runwareApiKey, validatedPrompt, negativePrompt, characterData.seed, sessionId, pageNumber, requestId // PHASE 5: Pass requestId for correlation
+        const tier1Result = await generateWithRunwarePremium(runwareApiKey, finalPrompt, negativePrompt, characterData.seed, sessionId, pageNumber, requestId // PHASE 5: Pass requestId for correlation
         );
         if (tier1Result.success) {
           console.log('✅ Tier 1 AI-Enhanced succeeded');
@@ -1371,7 +1388,7 @@ serve(async (req)=>{
           if (sessionId && characterData?.seed) {
             try {
               const sessionManager = new SessionStateManager(sessionId);
-              await sessionManager.addSuccessfulPrompt(validatedPrompt, enhancementResult.metadata, characterData.seed, tier1Result.imageURL, pageNumber);
+              await sessionManager.addSuccessfulPrompt(finalPrompt, enhancementResult.metadata, characterData.seed, tier1Result.imageURL, pageNumber);
             } catch (error) {
               // NOTE: This is genuinely non-critical - visual state storage is optional for consistency
               console.warn('⚠️ Failed to store visual state (non-critical):', error);
@@ -1383,10 +1400,10 @@ serve(async (req)=>{
           try {
             globalSessionManager.storeImagePrompt(sessionId, {
               tier: '1',
-              promptText: validatedPrompt,
+              promptText: finalPrompt,
               negativePrompt: enhancementResult.negativePrompt || '',
               originalPageText: pageText,
-              enhancedPrompt: validatedPrompt,
+              enhancedPrompt: finalPrompt,
               pageNumber: pageNumber,
               success: true,
               imageURL: tier1Result.imageURL,

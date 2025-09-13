@@ -39,21 +39,18 @@ export const AVATAR_FALLBACK_DESCRIPTIONS = {
   "default": "{name} is a young child with a bright smile and cheerful demeanor, with no gender specific characteristics"
 };
 
-// Avatar consistency validation function for all tiers
+// Character description generation function - ONLY FOR CHARACTER SECTION
 export function validateAvatarConsistency(prompt, avatarIdentity, userInfo) {
   const userName = userInfo?.name || 'child';
+  
+  // This function now ONLY returns character descriptions, not full prompt validation
+  console.log('🔍 AVATAR VALIDATION: Generating character description only');
   
   // If no avatar identity provided, use fallback
   if (!avatarIdentity) {
     console.log('🔍 AVATAR VALIDATION: No avatarIdentity provided, using fallback');
     const avatarType = userInfo?.avatar?.type || 'child';
     const skinTone = userInfo?.avatar?.skinTone;
-    console.log('🎭 [FALLBACK DEBUG] Avatar consistency check:', { 
-      avatarType, 
-      skinTone,
-      hasAvatarIdentity: !!avatarIdentity,
-      hasVisualDescription: false 
-    });
     
     if (!skinTone) {
       console.error('🚨 CRITICAL: No skinTone available for fallback!', {
@@ -68,38 +65,15 @@ export function validateAvatarConsistency(prompt, avatarIdentity, userInfo) {
     console.log(`🔍 AVATAR VALIDATION: Applied fallback ${fallbackKey} for missing identity`);
     return fallbackDescription.replace('{name}', userName);
   }
+
+  // Always return appropriate character description based on avatar identity
+  const avatarType = avatarIdentity.type || 'child';
+  const skinTone = avatarIdentity.skinTone || 'medium';
+  const fallbackKey = `${avatarType}/${skinTone}`;
+  const characterDescription = AVATAR_FALLBACK_DESCRIPTIONS[fallbackKey] || AVATAR_FALLBACK_DESCRIPTIONS["default"];
   
-  // Check if prompt contains generic descriptions
-  const genericPatterns = [
-    `${userName} is a young child`,
-    `${userName} is a child`,
-    'young child with',
-    'child with'
-  ];
-  
-  // Ensure prompt is a string before processing
-  const promptString = typeof prompt === 'string' ? prompt : JSON.stringify(prompt);
-  
-  const isGeneric = genericPatterns.some(pattern => 
-    promptString.toLowerCase().includes(pattern.toLowerCase())
-  );
-  
-  if (isGeneric) {
-    console.log('🔍 AVATAR VALIDATION: Generic description detected, using enhanced fallback');
-    const avatarType = avatarIdentity.type || 'child';
-    const skinTone = avatarIdentity.skinTone || 'medium';
-    const fallbackKey = `${avatarType}/${skinTone}`;
-    const fallbackDescription = AVATAR_FALLBACK_DESCRIPTIONS[fallbackKey] || AVATAR_FALLBACK_DESCRIPTIONS["default"];
-    console.log(`🔍 AVATAR VALIDATION: Applied fallback ${fallbackKey}: ${fallbackDescription}`);
-    return fallbackDescription.replace('{name}', userName);
-  }
-  
-  // Replace {name} placeholder if present and return original prompt
-  console.log('🔍 AVATAR VALIDATION: Prompt passed validation, using provided description');
-  
-  // Ensure prompt is a string before calling replace
-  const promptStr = typeof prompt === 'string' ? prompt : String(prompt || '');
-  return promptStr.replace('{name}', userName);
+  console.log(`🔍 AVATAR VALIDATION: Generated character description for ${fallbackKey}`);
+  return characterDescription.replace('{name}', userName);
 }
 
 // Quality-based avatar validation for fallback trigger
