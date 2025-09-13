@@ -1,5 +1,5 @@
 console.log("[ai-visual-scene-creator] Loaded: 2025-09-12T19:00:00Z - Cleaned & Optimized");
-import { serve } from "https://deno.land/std@0.168.0/http/server.js";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // ============= LAZY LOADING FUNCTIONS FOR HEAVY DEPENDENCIES =============
 

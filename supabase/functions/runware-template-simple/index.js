@@ -2,7 +2,7 @@
 // Handles Level A (basic shapes/colors) and Level B (simple scenes)
 // Lightweight, fast deployment - optimized for simple template generation
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.js";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 console.log("[runware-template-simple] Loaded: 2025-09-12T19:00:00Z - A-B Complexity Handler");
 

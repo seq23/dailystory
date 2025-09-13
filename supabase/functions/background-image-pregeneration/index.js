@@ -2,7 +2,7 @@
 console.log("[background-image-pregeneration] Loaded: 2025-09-12T18:45:32Z");
 // Phase 4: Background pre-generation cron job
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { serve } from "https://deno.land/std@0.168.0/http/server.js";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // ============= LAZY LOADING FUNCTIONS FOR HEAVY DEPENDENCIES =============
 

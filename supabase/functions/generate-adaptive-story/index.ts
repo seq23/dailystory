@@ -1,5 +1,5 @@
 import "https://deno.land/x/xhr@0.1.0/mod.js";
-import { serve } from "https://deno.land/std@0.168.0/http/server.js";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.55.0';
 import { DifficultyLevelMapper } from '../_shared/DifficultyLevelMapper.ts';
 import { getPerPageTokenLimit, getStoryPrompt, formatUserPrompt, resolvePromptPlaceholders } from '../_shared/storyPrompts.ts';

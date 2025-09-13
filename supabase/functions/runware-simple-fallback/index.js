@@ -3,7 +3,7 @@
 // Regression Guide: docs/RUNWARE_FALLBACK_REGRESSION_PREVENTION.md
 // API Reference: docs/IMAGE_GENERATION_API_REFERENCE.md
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.js";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getStyleFramework } from '../_shared/styleFrameworks.js';
 import { CULTURAL_LANDMARKS, getCulturalLandmarks } from '../_shared/culturalLandmarks.js';
 

@@ -1,5 +1,5 @@
 import "https://deno.land/x/xhr@0.1.0/mod.js";
-import { serve } from "https://deno.land/std@0.168.0/http/server.js";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // Import the sophisticated template system components
 import { resolveAllPlaceholders, type MicroContext, type UserInfo } from "../_shared/placeholderResolver.ts";

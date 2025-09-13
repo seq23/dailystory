@@ -1,6 +1,6 @@
 // Redeploy touch: 2025-09-12T18:45:32Z - Force complete rebuild
 console.log("[clear-character-cache] Loaded: 2025-09-12T18:45:32Z");
-import { serve } from "https://deno.land/std@0.168.0/http/server.js";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // ============= LAZY LOADING FUNCTIONS FOR HEAVY DEPENDENCIES =============
 
