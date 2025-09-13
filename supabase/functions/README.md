@@ -73,6 +73,13 @@ All functions use `index.ts` as their entry point. JavaScript-only functions hav
 3. **Deployment**: Functions auto-deploy when code is committed
 4. **Entry Files**: JavaScript-only functions use TypeScript shim files that import the JavaScript implementation
 
+## Forced Redeploy History
+
+**2025-01-30T20:17:15Z** - Emergency redeploy to fix boot failures in:
+- `ai-visual-scene-creator`: Boot failure "failed to determine entrypoint"  
+- `runware-generate-image`: Module not found error for index.js
+- Resolution: Updated DEPLOY_MARKER timestamps to force fresh deployment snapshot
+
 ## Sync Status
 
 - **GitHub Functions**: 41 (canonical)
