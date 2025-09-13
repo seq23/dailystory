@@ -35,16 +35,22 @@ If the main orchestrator fails completely, the frontend attempts Tier 2.5 direct
 - **Quality**: Highest - AI-generated images with scene analysis
 - **Available To**: All users (guest and premium)
 
-### Tier 2.5: Nuclear Template Fallback
-- **Function**: `runware-simple-fallback`
+### Tier 2.5: Nuclear Template Fallback  
 - **Success Rate**: ~95-99%
-- **Technology**: Template-based generation with 4 complexity levels (A, B, C, D)
+- **Technology**: Template-based generation with split architecture
 - **Quality**: High - Reliable template-based images
-- **Complexity Levels**:
-  - **A**: Full character consistency + cultural intelligence
-  - **B**: Basic character consistency
-  - **C**: Simplified generation
-  - **D**: Minimal generation
+
+#### Tier 2.5A: Template with Shared Services  
+- **Function**: `runware-template-simple`
+- **Dependencies**: CharacterService, SessionManager (shared services)
+- **Complexity**: A, B (basic to moderate templates)
+- **Features**: Character consistency + session management
+
+#### Tier 2.5B-D: Nuclear Independence Templates
+- **Function**: `runware-template-advanced`  
+- **Dependencies**: ZERO (nuclear independence)
+- **Complexity**: C, D (advanced to emergency templates)
+- **Features**: Self-contained template system
 
 ### Tier 4: SVG Placeholder
 - **Function**: Embedded in `SimpleImageService.ts`

@@ -957,8 +957,7 @@ serve(async (req)=>{
         const storyFramework = getStyleFramework(difficulty);
         // 3. Avatar Validation - Fix parameter order
         const validatedAvatar = validateAvatarConsistency('', avatarIdentity, userInfo);
-        // PHASE 5: Generate unique request ID for cross-function correlation
-        const requestId = `IMG-${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 5)}`;
+        // PHASE 5: Use main function requestId for cross-function correlation 
         console.log(`🎯 [${requestId}] Starting Runware prompt assembly phase`);
         // PHASE 4: Enhanced 5-Section Architecture prompt construction
         // Helper function to detect if user is Level 0-1 (beginner/easy)

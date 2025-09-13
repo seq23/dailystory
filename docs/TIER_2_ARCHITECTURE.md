@@ -52,11 +52,19 @@ Tier 2 uses enhanced pipeline with advanced capabilities:
 - **Approach**: Dynamic orchestration of multiple AI services
 - **Complexity**: HIGH (imports, database calls, service coordination)
 
-**TIER 2.5: Premium Template System** 
-- **Function**: `runware-simple-fallback`
-- **Dependencies**: ZERO (nuclear independence)
+**TIER 2.5: Premium Template System (Split Architecture)**
+
+**TIER 2.5A: Template with Shared Services**
+- **Function**: `runware-template-simple`  
+- **Dependencies**: CharacterService, SessionManager (shared services)
+- **Approach**: Templates with character consistency and session management
+- **Complexity**: A-B (basic to moderate templates)
+
+**TIER 2.5B-D: Nuclear Independence Templates**
+- **Function**: `runware-template-advanced`
+- **Dependencies**: ZERO (nuclear independence) 
 - **Approach**: Hardcoded templates with placeholder filling
-- **Complexity**: LOW (self-contained template system)
+- **Complexity**: C-D (advanced to emergency templates)
 
 ## Fallback Chain
 ```

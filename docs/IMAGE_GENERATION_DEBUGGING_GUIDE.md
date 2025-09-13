@@ -105,6 +105,27 @@ Search: "REQ-mferghcd-e98ij"
 
 ## Common Issues & Solutions
 
+### RequestId Initialization Issues
+
+#### Shadowing RequestId Variable Bug
+**Symptoms**:
+- RequestId initialization errors in orchestrator
+- Functions failing during technical assembly phase
+- Inconsistent request tracking across logs
+
+**Debug Steps**:
+1. Check for duplicate `const requestId` declarations in function scope
+2. Verify main function requestId is being used throughout
+3. Ensure proper requestId propagation from main function (line 566)
+4. Test requestId correlation across all tiers
+
+**Log Examples**:
+```
+ERROR RequestId initialization failed during technical assembly
+WARNING [undefined] Starting Runware prompt assembly phase
+ERROR Cannot read properties of undefined (reading 'requestId')
+```
+
 ### Tier 1 Issues
 
 #### OpenAI API Timeouts
