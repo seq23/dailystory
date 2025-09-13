@@ -73,9 +73,6 @@ const supabase = createClient(supabaseUrl, supabaseKey);
  * Fixed Tier 1 success responses to use createDynamicCorsResponse
  */
 
-// ============= CONSOLIDATED CULTURAL ARRAYS IMPORT =============
-import { CULTURAL_ARRAYS } from '../_shared/tier25Vocabulary.js';
-// Cultural arrays now imported from consolidated source - see tier25Vocabulary.js
 // ============= API KEY UTILITIES =============
 function getTrimmedApiKey(envVarName) {
   const key = Deno.env.get(envVarName);
