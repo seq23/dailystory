@@ -1,10 +1,10 @@
-// ============= TIER 2.5A: RUNWARE TEMPLATE SIMPLE (A-B COMPLEXITY) =============
+// ============= TIER 2.5A-B: RUNWARE TEMPLATE AB (A-B COMPLEXITY) =============
 // Handles Level A (basic shapes/colors) and Level B (simple scenes)
-// Lightweight, fast deployment - optimized for simple template generation
+// Lightweight, fast deployment - optimized for simple template generation with character consistency
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-console.log(`INIT runware-template-simple boot at ${new Date().toISOString()} | std@0.168.0`);
+console.log(`INIT runware-template-ab boot at ${new Date().toISOString()} | std@0.168.0`);
 
 // ============= LAZY LOADING FUNCTIONS FOR HEAVY DEPENDENCIES =============
 
@@ -54,7 +54,7 @@ function createResponse(data, status = 200) {
 }
 
 function createErrorResponse(error, status = 500) {
-  console.error('Template Simple Error:', error);
+  console.error('Template AB Error:', error);
   return createResponse({ 
     success: false, 
     error: error instanceof Error ? error.message : error 
@@ -67,7 +67,7 @@ function getComplexityLevel(userInfo, templateComplexity) {
   const validLevels = ['A', 'B'];
   
   if (templateComplexity && validLevels.includes(templateComplexity)) {
-    console.log(`🎯 Template Simple: Using provided complexity: ${templateComplexity}`);
+    console.log(`🎯 Template AB: Using provided complexity: ${templateComplexity}`);
     return templateComplexity;
   }
   
@@ -96,32 +96,34 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
     const VisualTracker = await getVisualTracker();
     
     if (CharacterService && sessionId && avatarIdentity) {
-      console.log('🎭 Template Simple: Getting character consistency data');
-      const characterSeed = await CharacterService.getCharacterSeed(
-        sessionId,
-        avatarIdentity,
-        storyText,
-        'simple_template',
-        ''
-      );
+      console.log('🎭 Template AB: Getting character consistency data');
       
-      if (characterSeed) {
-        // Use simplified character description for A-B complexity
-        const basicTraits = characterSeed.split(',').slice(0, 2).join(', ');
-        characterDescription = basicTraits || `${childName} with ${favoriteColor} clothes`;
+      // Use the correct method name from the service
+      if (CharacterService.getInstance) {
+        const serviceInstance = CharacterService.getInstance();
+        if (serviceInstance.analyzeVisualDetails) {
+          await serviceInstance.analyzeVisualDetails(sessionId, storyText, pageNumber, childName);
+          const coloredObjects = serviceInstance.getColoredObjects(sessionId);
+          if (coloredObjects) {
+            characterDescription = `${childName} with consistent appearance`;
+          }
+        }
       }
     }
     
     if (VisualTracker && sessionId && storyText) {
-      console.log('👁️ Template Simple: Tracking visual details');
-      await VisualTracker.trackVisualDetails(sessionId, pageNumber, storyText);
-      const coloredObjects = VisualTracker.getColoredObjects(sessionId);
-      if (coloredObjects) {
-        visualDetails = coloredObjects.split(',').slice(0, 2).join(', '); // Keep it simple
+      console.log('👁️ Template AB: Tracking visual details');
+      // Use the correct method name from the service
+      if (VisualTracker.analyzeVisualDetails) {
+        await VisualTracker.analyzeVisualDetails(sessionId, storyText, pageNumber);
+        const coloredObjects = VisualTracker.getColoredObjects(sessionId);
+        if (coloredObjects) {
+          visualDetails = coloredObjects.split(',').slice(0, 2).join(', '); // Keep it simple
+        }
       }
     }
   } catch (error) {
-    console.warn('⚠️ Template Simple: Character consistency unavailable:', error);
+    console.warn('⚠️ Template AB: Character consistency unavailable:', error);
   }
   
   // Build simple prompts with character consistency when available
@@ -168,7 +170,7 @@ async function callRunwareAPI(prompt, negativePrompt) {
     throw new Error('RUNWARE_API_KEY not configured');
   }
   
-  console.log('🎨 Template Simple: Calling Runware API');
+  console.log('🎨 Template AB: Calling Runware API');
   
   const payload = [
     {
@@ -214,7 +216,7 @@ async function callRunwareAPI(prompt, negativePrompt) {
 
 // ============= MAIN HANDLER =============
 serve(async (req) => {
-  console.log(`🎯 Template Simple: ${req.method} ${req.url}`);
+  console.log(`🎯 Template AB: ${req.method} ${req.url}`);
   
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -223,14 +225,14 @@ serve(async (req) => {
   
   // Handle health checks (GET/HEAD requests)
   if (req.method === 'GET' || req.method === 'HEAD') {
-    console.log('🏥 Template Simple: Health check request');
+    console.log('🏥 Template AB: Health check request');
     return createResponse({
       healthy: true,
       status: 'healthy',
-      functionName: 'runware-template-simple',
-      service: 'runware-template-simple',
+      functionName: 'runware-template-ab',
+      service: 'runware-template-ab',
       projectId: 'cpzeuogomaixamrtnnmj',
-      tier: '2.5A',
+      tier: '2.5A-B',
       complexity: 'A-B',
       timestamp: new Date().toISOString(),
       runwareApiKeyPresent: !!Deno.env.get('RUNWARE_API_KEY')
@@ -247,7 +249,7 @@ serve(async (req) => {
       pageNumber 
     } = await req.json();
     
-    console.log('📝 Template Simple: Processing request', {
+    console.log('📝 Template AB: Processing request', {
       templateComplexity,
       sessionId,
       pageNumber,
@@ -259,29 +261,29 @@ serve(async (req) => {
     try {
       const SessionManager = await getSessionManager();
       if (SessionManager && sessionId) {
-        console.log('📋 Template Simple: Updating session state');
+        console.log('📋 Template AB: Updating session state');
         SessionManager.updateSession(sessionId, {
           lastActivity: Date.now(),
-          currentFunction: 'runware-template-simple',
+          currentFunction: 'runware-template-ab',
           pageNumber: pageNumber
         });
       }
     } catch (error) {
-      console.warn('⚠️ Template Simple: Session management unavailable:', error);
+      console.warn('⚠️ Template AB: Session management unavailable:', error);
     }
     
     // Determine complexity level
     const complexity = getComplexityLevel(userInfo, templateComplexity);
     
     if (!['A', 'B'].includes(complexity)) {
-      console.log(`⚠️ Template Simple: Complexity ${complexity} not handled by this function - use Advanced template`);
-      return createErrorResponse(`Complexity ${complexity} not supported by Simple template. Use Advanced template.`, 400);
+      console.log(`⚠️ Template AB: Complexity ${complexity} not handled by this function - use CD template`);
+      return createErrorResponse(`Complexity ${complexity} not supported by AB template. Use CD template.`, 400);
     }
     
     // Generate template with character consistency
     const template = await generateSimpleTemplate(complexity, storyText, userInfo, avatarIdentity, sessionId, pageNumber);
     
-    console.log('🎨 Template Simple: Generated template', {
+    console.log('🎨 Template AB: Generated template', {
       complexity,
       templateType: template.templateType,
       promptLength: template.positivePrompt.length
@@ -290,14 +292,14 @@ serve(async (req) => {
     // Call Runware API
     const imageData = await callRunwareAPI(template.positivePrompt, template.negativePrompt);
     
-    console.log('✅ Template Simple: Image generated successfully');
+    console.log('✅ Template AB: Image generated successfully');
     
     return createResponse({
       success: true,
       imageURL: imageData.imageURL,
       prompt: template.positivePrompt,
       negativePrompt: template.negativePrompt,
-      tier: '2.5A - Template Simple',
+      tier: '2.5A-B - Template AB',
       complexity: complexity,
       templateType: template.templateType,
       enhancementLevel: template.enhancementLevel,
@@ -307,7 +309,7 @@ serve(async (req) => {
     });
     
   } catch (error) {
-    console.error('❌ Template Simple: Error', error);
+    console.error('❌ Template AB: Error', error);
     return createErrorResponse(error.message, 500);
   }
 });

@@ -105,25 +105,25 @@ Search: "REQ-mferghcd-e98ij"
 
 ## Common Issues & Solutions
 
-### RequestId Initialization Issues
+### Template AB Service Method Issues
 
-#### Shadowing RequestId Variable Bug
+#### Broken Character Consistency Method Calls
 **Symptoms**:
-- RequestId initialization errors in orchestrator
-- Functions failing during technical assembly phase
-- Inconsistent request tracking across logs
+- Template AB (complexity A-B) generating generic templates
+- Character consistency not working despite cached data
+- Method not found errors in shared services
 
 **Debug Steps**:
-1. Check for duplicate `const requestId` declarations in function scope
-2. Verify main function requestId is being used throughout
-3. Ensure proper requestId propagation from main function (line 566)
-4. Test requestId correlation across all tiers
+1. Check `CharacterService.getCharacterSeed()` method exists and is exported
+2. Verify `VisualTracker.trackVisualDetails()` method signature
+3. Ensure proper service initialization in template AB function
+4. Test character consistency flow with correct method names
 
 **Log Examples**:
 ```
-ERROR RequestId initialization failed during technical assembly
-WARNING [undefined] Starting Runware prompt assembly phase
-ERROR Cannot read properties of undefined (reading 'requestId')
+WARNING Template AB: Character consistency unavailable: TypeError: CharacterService.getCharacterSeed is not a function
+ERROR Template AB: VisualTracker method not found
+INFO Template AB: Falling back to basic template without character consistency
 ```
 
 ### Tier 1 Issues

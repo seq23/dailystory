@@ -499,7 +499,7 @@ async function callTier4SimpleFallback(pageText, pageNumber, sessionId, req, rea
   console.log(`🛡️ TIER 4: Calling dedicated simple fallback function - ${reason}`);
   
   try {
-    const { data: tier4Result, error: tier4Error } = await supabase.functions.invoke('runware-template-advanced', {
+    const { data: tier4Result, error: tier4Error } = await supabase.functions.invoke('runware-template-cd', {
       body: { 
         storyText: pageText, 
         userInfo: { difficulty: 'easy' },
@@ -1477,12 +1477,12 @@ serve(async (req)=>{
         throw new Error('TIER 2.5 VALIDATION ERROR: sessionId is empty or invalid');
       }
       
-      // Sequential fallback through template complexity levels with new split functions
+      // Sequential fallback through template complexity levels with renamed functions
       const complexityConfigs = [
-        { level: 'A', func: 'runware-template-simple', name: 'Basic Shapes' },
-        { level: 'B', func: 'runware-template-simple', name: 'Simple Scenes' },
-        { level: 'C', func: 'runware-template-advanced', name: 'Detailed Scenes' },
-        { level: 'D', func: 'runware-template-advanced', name: 'Complex Narratives' }
+        { level: 'A', func: 'runware-template-ab', name: 'Basic Shapes' },
+        { level: 'B', func: 'runware-template-ab', name: 'Simple Scenes' },
+        { level: 'C', func: 'runware-template-cd', name: 'Detailed Scenes' },
+        { level: 'D', func: 'runware-template-cd', name: 'Complex Narratives' }
       ];
       
       for (let i = 0; i < complexityConfigs.length; i++) {

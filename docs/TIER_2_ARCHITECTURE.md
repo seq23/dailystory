@@ -54,14 +54,14 @@ Tier 2 uses enhanced pipeline with advanced capabilities:
 
 **TIER 2.5: Premium Template System (Split Architecture)**
 
-**TIER 2.5A: Template with Shared Services**
-- **Function**: `runware-template-simple`  
+**TIER 2.5A-B: Template with Shared Services**
+- **Function**: `runware-template-ab`  
 - **Dependencies**: CharacterService, SessionManager (shared services)
 - **Approach**: Templates with character consistency and session management
 - **Complexity**: A-B (basic to moderate templates)
 
-**TIER 2.5B-D: Nuclear Independence Templates**
-- **Function**: `runware-template-advanced`
+**TIER 2.5C-D: Nuclear Independence Templates**
+- **Function**: `runware-template-cd`
 - **Dependencies**: ZERO (nuclear independence) 
 - **Approach**: Hardcoded templates with placeholder filling
 - **Complexity**: C-D (advanced to emergency templates)

@@ -79,10 +79,10 @@ verify_jwt = false
 verify_jwt = false
 
 
-[functions.runware-template-advanced]
+[functions.runware-template-ab]
 verify_jwt = false
 
-[functions.runware-template-simple]
+[functions.runware-template-cd]
 verify_jwt = false
 
 [functions.security-alert]

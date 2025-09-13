@@ -40,14 +40,14 @@ If the main orchestrator fails completely, the frontend attempts Tier 2.5 direct
 - **Technology**: Template-based generation with split architecture
 - **Quality**: High - Reliable template-based images
 
-#### Tier 2.5A: Template with Shared Services  
-- **Function**: `runware-template-simple`
+#### Tier 2.5A-B: Template with Shared Services  
+- **Function**: `runware-template-ab`
 - **Dependencies**: CharacterService, SessionManager (shared services)
 - **Complexity**: A, B (basic to moderate templates)
 - **Features**: Character consistency + session management
 
-#### Tier 2.5B-D: Nuclear Independence Templates
-- **Function**: `runware-template-advanced`  
+#### Tier 2.5C-D: Nuclear Independence Templates
+- **Function**: `runware-template-cd`  
 - **Dependencies**: ZERO (nuclear independence)
 - **Complexity**: C, D (advanced to emergency templates)
 - **Features**: Self-contained template system

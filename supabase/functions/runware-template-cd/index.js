@@ -1,4 +1,4 @@
-// ============= RUNWARE TEMPLATE ADVANCED: TIER 2.5C & 2.5D =============
+// ============= RUNWARE TEMPLATE CD: TIER 2.5C & 2.5D =============
 // Implementation of complexity levels C and D for advanced template generation
 // NO character consistency, NO shared functions beyond styleFrameworks
 // Pure pageText + style framework (C) or hardcoded template (D)
@@ -23,7 +23,7 @@ function createResponse(data, status = 200) {
 }
 
 function createErrorResponse(error, status = 500) {
-  console.error('Advanced Template Error:', error);
+  console.error('Template CD Error:', error);
   return createResponse({
     success: false,
     error: error instanceof Error ? error.message : error
@@ -53,6 +53,8 @@ function generateTier25C(storyText, userInfo) {
   
   const difficulty = userInfo?.difficulty || 'medium';
   const styleFramework = getStyleFramework(difficulty);
+  
+  console.log('🎨 Retrieved', styleFramework.name, 'style framework for difficulty:', difficulty);
   
   // Take first 2500 characters of pageText + style framework
   const truncatedText = (storyText || '').substring(0, 2500);
@@ -147,7 +149,7 @@ async function callRunwareAPI(positivePrompt, negativePrompt) {
 
 // Main handler
 serve(async (req) => {
-  console.log('📨 Advanced Template Request:', req.method);
+  console.log('📨 Template CD Request:', req.method);
 
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -156,7 +158,12 @@ serve(async (req) => {
 
   // Health check
   if (req.method === 'GET' || req.method === 'HEAD') {
-    return createResponse({ status: 'healthy' });
+    return createResponse({ 
+      status: 'healthy',
+      functionName: 'runware-template-cd',
+      tier: '2.5C-D',
+      complexity: 'C-D'
+    });
   }
 
   // Only handle POST requests for generation
@@ -207,7 +214,7 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('💥 Advanced Template Error:', error);
+    console.error('💥 Template CD Error:', error);
     return createErrorResponse(error.message || 'Template generation failed', 500);
   }
 });
