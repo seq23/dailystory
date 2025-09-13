@@ -6,6 +6,7 @@ import { Separator } from '@/components/ui/separator';
 import { Zap, Cable, ArrowRight, Bug, BarChart3, TrendingUp, Brain, Layers } from 'lucide-react';
 import { StoryPromptTester } from '@/components/StoryPromptTester';
 import { RunwareConnectionTest } from '@/components/RunwareConnectionTest';
+import { ApiKeyDiagnostic } from '@/components/ApiKeyDiagnostic';
 import { DebugDataViewer } from '@/components/DebugDataViewer';
 import { AnalyticsDashboard } from '@/components/AnalyticsDashboard';
 import { AdvancedMonitoringDashboard } from '@/components/AdvancedMonitoringDashboard';
@@ -143,9 +144,14 @@ export default function PromptTesting() {
               <Cable className="w-5 h-5 text-primary" />
               <h2 className="text-2xl font-semibold">Infrastructure Testing</h2>
             </div>
-            <ErrorBoundary>
-              <RunwareConnectionTest />
-            </ErrorBoundary>
+            <div className="space-y-6">
+              <ErrorBoundary>
+                <ApiKeyDiagnostic />
+              </ErrorBoundary>
+              <ErrorBoundary>
+                <RunwareConnectionTest />
+              </ErrorBoundary>
+            </div>
           </section>
         </div>
       </div>

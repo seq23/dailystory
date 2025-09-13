@@ -120,6 +120,7 @@ Search: "REQ-mferghcd-e98ij"
 1. Test A: Use `forceTier = 1` with short prompt - should no longer show "apiKey is not defined" error
 2. Test B: Auto mode with missing `RUNWARE_API_KEY` - should skip Tier 1 cleanly without error
 3. Use new "Tier 1 Smoke Test" button in ApiKeyDiagnostic for easy testing
+   - Available on Prompt Testing page (`/prompt-testing?debug=1`) in the Infrastructure Testing section
 
 ### Template AB Service Method Issues
 
