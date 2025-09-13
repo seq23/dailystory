@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.js"
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import Stripe from "https://esm.sh/stripe@14.21.0"
 import { withSecurity, SecurityMiddleware } from "../_shared/security.ts"
 import type { AuthenticatedUser } from "../_shared/security.ts"

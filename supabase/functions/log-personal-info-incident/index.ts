@@ -1,5 +1,5 @@
 // Force clean redeployment: 2025-01-23T02:45:01Z - Import fix attempt
-import { serve } from "https://deno.land/std@0.190.0/http/server.js";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.55.0";
 import { withSecurity, SecurityMiddleware } from "../_shared/security.ts";
 import type { AuthenticatedUser } from "../_shared/security.ts";
