@@ -5,6 +5,7 @@ verify_jwt = true
 
 [functions.ai-visual-scene-creator]
 verify_jwt = false
+entry_point = "index.js"
 
 [functions.apply-discount-code]
 verify_jwt = true
@@ -77,15 +78,18 @@ verify_jwt = false
 
 [functions.runware-generate-image]
 verify_jwt = false
+entry_point = "index.js"
 
 [functions.runware-simple-fallback]
 verify_jwt = false
 
 [functions.runware-template-advanced]
 verify_jwt = false
+entry_point = "index.js"
 
 [functions.runware-template-simple]
 verify_jwt = false
+entry_point = "index.js"
 
 [functions.security-alert]
 verify_jwt = true
