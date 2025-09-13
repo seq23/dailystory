@@ -24,7 +24,8 @@ import { monitorRequest } from "../_shared/headerMonitor.js";
 import { SessionStateManager } from "../_shared/SessionStateManager.js";
 import { SecurityValidator } from "../_shared/SecurityValidator.js";
 import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from "../_shared/NuclearNegativePrompts.js";
-import { DifficultyLevelMapper } from "../_shared/DifficultyLevelMapper.ts";
+import { DifficultyLevelMapper } from "../_shared/DifficultyLevelMapper.js";
+import { CULTURAL_ARRAYS } from "../_shared/tier25Vocabulary.js";
 
 // ============= REQUEST ID GENERATION =============
 function generateRequestId() {
@@ -921,7 +922,7 @@ serve(async (req)=>{
         console.log('🔧 Orchestrator: Starting direct technical assembly');
         // 0. VISUAL DETAIL ANALYSIS FIRST - Must run before character building
         try {
-          const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.ts');
+          const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.js');
           const characterName = avatarIdentity?.name || userInfo?.name || 'child';
           await VisualDetailTracker.analyzeTextForDetails(sessionId, pageText, pageNumber || 1, characterName);
           console.log(`🎨 [${requestId}] Visual details analyzed before character building`);
@@ -929,7 +930,7 @@ serve(async (req)=>{
           console.log(`⚠️ [${requestId}] Visual detail analysis failed:`, error.message);
         }
         // Import services for direct assembly
-        const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.ts');
+        const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
         const { getStyleFramework } = await import('../_shared/styleFrameworks.js');
         const { validateAvatarConsistency } = await import('../_shared/avatarConsistency.js');
         // Initialize character consistency service
@@ -968,7 +969,7 @@ serve(async (req)=>{
         // CRITICAL CULTURAL CONTEXT GENERATOR
         // REGRESSION PREVENTION: This function handles cultural representation for diverse users
         // DO NOT MODIFY the cultural detection logic without comprehensive testing
-        const generateCulturalContext = (avatarIdentity, userInfo, requestId, characterData)=>{
+        const generateCulturalContext = async (avatarIdentity, userInfo, requestId, characterData)=>{
           const skinTone = avatarIdentity?.skinTone;
           const nativeLanguage = avatarIdentity?.nativeLanguage || userInfo?.native_language || 'en';
           // AFRICAN DIASPORA CULTURAL DETECTION SYSTEM
@@ -1028,9 +1029,9 @@ serve(async (req)=>{
           // OTHER LANGUAGE USERS (any skin tone, non-English languages)
           if (nativeLanguage !== 'en') {
             try {
-              if (REGIONAL_AUTHENTICITY_STRINGS && REGIONAL_AUTHENTICITY_STRINGS[nativeLanguage]) {
+              if (CULTURAL_ARRAYS.REGIONAL_AUTHENTICITY_STRINGS && CULTURAL_ARRAYS.REGIONAL_AUTHENTICITY_STRINGS[nativeLanguage]) {
                 console.log(`🌍 [${requestId}] Regional authenticity context applied for ${nativeLanguage}`);
-                return REGIONAL_AUTHENTICITY_STRINGS[nativeLanguage];
+                return CULTURAL_ARRAYS.REGIONAL_AUTHENTICITY_STRINGS[nativeLanguage];
               }
             } catch (error) {
               console.warn(`⚠️ [${requestId}] Regional authenticity strings failed for ${nativeLanguage}:`, error);
@@ -1125,7 +1126,7 @@ serve(async (req)=>{
         } else {
           console.warn(`⚠️ [${requestId}] Missing character description`);
         }
-        const culturalContext = generateCulturalContext(avatarIdentity, userInfo, requestId, characterData);
+        const culturalContext = await generateCulturalContext(avatarIdentity, userInfo, requestId, characterData);
         if (culturalContext) {
           characterSection += characterSection ? `, ${culturalContext}` : culturalContext;
           console.log(`🌍 [${requestId}] Section 2 - Cultural Context Unified:`, {
@@ -1144,11 +1145,11 @@ serve(async (req)=>{
         let sceneDetailsSection = '';
         // 3.1. Secondary Elements
         try {
-          const { SecondaryElementDetector } = await import('../_shared/SecondaryElementDetector.ts');
+          const { SecondaryElementDetector } = await import('../_shared/SecondaryElementDetector.js');
           const secondaryElements = await SecondaryElementDetector.parseElements(sessionId, promptSections.primaryScene, pageText, pageNumber || 1);
           if (secondaryElements && secondaryElements.length > 0) {
             // PHASE 3.1b: Get seed-consistent descriptions for secondary characters
-            const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.ts');
+            const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
             const characterConsistencyService = new CharacterConsistencyService();
             const seededSecondaryDescriptions = await Promise.all(secondaryElements.slice(0, 4).map(async (el)=>{
               if (el.type === 'secondary_character') {
@@ -1180,7 +1181,7 @@ serve(async (req)=>{
         // ============= ANALYZE PAGE TEXT FOR VISUAL DETAILS =============
         // Add visual detail analysis for consistent object tracking
         try {
-          const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.ts');
+          const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.js');
           await VisualDetailTracker.analyzeTextForDetails(sessionId, pageText, pageNumber || 1, characterData?.characterName || 'child');
           console.log(`🔍 [${requestId}] Page text analyzed for visual details`);
         } catch (error) {
@@ -1188,7 +1189,7 @@ serve(async (req)=>{
         }
         // 3.2. Visual Details & Colored Objects (automatically integrated from database)
         try {
-          const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.ts');
+          const { VisualDetailTracker } = await import('../_shared/VisualDetailTracker.js');
           // Get general visual consistency details
           const visualDetails = await VisualDetailTracker.getVisualDetailsForPrompt(sessionId);
           if (visualDetails) {
@@ -1381,7 +1382,7 @@ serve(async (req)=>{
           }
           // PHASE 1: Store successful Tier 1 image prompt with DEBUG  
           console.log('📸 DEBUG: Storing Tier 1 image prompt...');
-          const { globalSessionManager } = await import('../_shared/SessionStateManager.ts');
+          const { globalSessionManager } = await import('../_shared/SessionStateManager.js');
           try {
             globalSessionManager.storeImagePrompt(sessionId, {
               tier: '1',
@@ -1469,7 +1470,7 @@ serve(async (req)=>{
       }
       
       // Get proper difficulty mapping
-      const { DifficultyLevelMapper } = await import('../_shared/DifficultyLevelMapper.ts');
+      const { DifficultyLevelMapper } = await import('../_shared/DifficultyLevelMapper.js');
       const mappedDifficulty = DifficultyLevelMapper.mapToImageDifficulty(userInfo);
       
       // Additional validation - ensure critical parameters are not empty
@@ -1549,7 +1550,7 @@ serve(async (req)=>{
     // PHASE 1: Store Tier 4 placeholder prompt with DEBUG
     console.log('📸 DEBUG: Storing Tier 4 placeholder prompt...');
     try {
-      const { globalSessionManager } = await import('../_shared/SessionStateManager.ts');
+      const { globalSessionManager } = await import('../_shared/SessionStateManager.js');
       globalSessionManager.storeImagePrompt(sessionId, {
         tier: '4',
         promptText: `Kid-Friendly Placeholder: ${pageText.substring(0, 100)}...`,
