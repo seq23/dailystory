@@ -497,6 +497,24 @@ export const CULTURAL_ARRAYS = {
   }
 };
 
+// ============= MISSING CONSTANTS DEFINITIONS =============
+const UNIVERSAL_EMOTION_MODIFIERS = [
+  'happily', 'joyfully', 'excitedly', 'cheerfully', 'playfully', 'curiously', 'confidently',
+  'gently', 'carefully', 'thoughtfully', 'peacefully', 'calmly', 'quietly', 'softly',
+  'enthusiastically', 'eagerly', 'boldly', 'gracefully', 'lovingly', 'warmly'
+];
+
+const UNIVERSAL_INTERACTION_TEMPLATES = [
+  'interacting with {object}', 'playing with {object}', 'holding {object}', 'looking at {object}',
+  'touching {object}', 'exploring {object}', 'discovering {object}', 'enjoying {object}',
+  'sharing {object}', 'showing {object}', 'using {object}', 'creating with {object}'
+];
+
+const UNIVERSAL_OBJECT_INTERACTION = [
+  'holds', 'touches', 'plays with', 'examines', 'discovers', 'enjoys', 'shares', 'shows',
+  'uses', 'creates with', 'explores', 'interacts with', 'points to', 'reaches for'
+];
+
 // ============= NUCLEAR INDEPENDENCE EXPORTS FOR EDGE FUNCTION COMPATIBILITY =============
 export const TIER_25_NUCLEAR_VOCABULARY = TIER_25_UNIFIED_VOCABULARY_EXTENDED;
 export const TIER_25_NUCLEAR_COLORS = EXPANDED_COLOR_ARRAY;
