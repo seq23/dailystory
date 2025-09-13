@@ -288,7 +288,7 @@ const UNIVERSAL_INDOOR_SETTINGS = [
   'sunny dining room with family table', 'peaceful nursery with gentle colors', 'fun basement rec room',
   'welcoming entryway with coat hooks', 'organized garage workshop space', 'attic storage with treasures',
   'porch with rocking chairs', 'sunroom with plants', 'family room with entertainment center',
-  'guest room with welcoming decor', 'master suite with luxury touches', 'kids' room with colorful decorations',
+  'guest room with welcoming decor', 'master suite with luxury touches', 'kids\' room with colorful decorations',
   
   // Community & Public Spaces (20)
   'bustling shopping mall with stores', 'quiet museum with exhibits', 'lively community center with activities',
