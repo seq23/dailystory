@@ -351,206 +351,175 @@ async function callTierFunction(functionName, payload) {
   }
 }
 // ============================================================================
-// AVATAR IDENTITY MAPPER - RESTORED WORKING VERSION
+// STATICDATACACHE INTEGRATION - PHASE 8 AVATAR IDENTITY PROCESSING
 // ============================================================================
-// CRITICAL: This function maps UI avatar data to AI generation parameters
 
-function mapAvatarIdentity(userInfo, sessionId) {
-  console.log('🔍 Avatar mapping: Processing user avatar data');
+/**
+ * Process avatar identity using StaticDataCache with binary validation and tier routing
+ * Single source of truth for all avatar mapping logic
+ */
+async function processAvatarIdentityWithStaticDataCache(userInfo, sessionId, requestId) {
+  console.log(`🔍 [${requestId}] PHASE 8: Processing avatar identity via StaticDataCache`);
   
-  // REGRESSION PREVENTION: Default fallback identity
-  const defaultIdentity = {
+  try {
+    // Call generate-adaptive-story's StaticDataCache for avatar processing
+    const { data: avatarResult, error: avatarError } = await supabase.functions.invoke('generate-adaptive-story', {
+      body: {
+        action: 'processAvatarIdentity',
+        userInfo,
+        sessionId,
+        requestId
+      }
+    });
+    
+    if (avatarError) {
+      console.warn(`⚠️ [${requestId}] StaticDataCache call failed:`, avatarError);
+      return createFallbackAvatarIdentity(userInfo, sessionId, requestId, 'staticdatacache_unavailable');
+    }
+    
+    if (!avatarResult || !avatarResult.success) {
+      console.warn(`⚠️ [${requestId}] StaticDataCache returned unsuccessful result`);
+      return createFallbackAvatarIdentity(userInfo, sessionId, requestId, 'staticdatacache_failed');
+    }
+    
+    const processedAvatar = avatarResult.avatarIdentity;
+    
+    // Binary validation: all-or-none completeness check
+    const completenessValidation = validateAvatarCompleteness(processedAvatar, requestId);
+    
+    // Add validation results to avatar identity
+    processedAvatar.completenessValidation = completenessValidation;
+    
+    // Determine tier routing based on binary validation
+    const tierRouting = determineTierRouting(completenessValidation, requestId);
+    processedAvatar.tierRouting = tierRouting;
+    
+    console.log(`✅ [${requestId}] PHASE 8: Avatar processed via StaticDataCache - ${completenessValidation.isComplete ? 'COMPLETE' : 'INCOMPLETE'}`);
+    
+    return processedAvatar;
+    
+  } catch (error) {
+    console.error(`❌ [${requestId}] StaticDataCache integration failed:`, error);
+    return createFallbackAvatarIdentity(userInfo, sessionId, requestId, 'integration_error');
+  }
+}
+
+/**
+ * Binary validation: all-or-none avatar completeness check
+ */
+function validateAvatarCompleteness(avatarIdentity, requestId) {
+  console.log(`🔍 [${requestId}] PHASE 8: Binary validation check`);
+  
+  const requiredFields = ['type', 'skinTone', 'culturalProfile', 'nativeLanguage', 'name'];
+  const missingFields = requiredFields.filter(field => !avatarIdentity[field]);
+  
+  const isComplete = missingFields.length === 0;
+  
+  const validation = {
+    isComplete,
+    missingFields,
+    completeness: isComplete ? 'COMPLETE' : 'INCOMPLETE',
+    source: 'StaticDataCache'
+  };
+  
+  console.log(`🎯 [${requestId}] Binary validation result: ${validation.completeness}`, {
+    missingFields: missingFields.length ? missingFields : 'none'
+  });
+  
+  return validation;
+}
+
+/**
+ * Determine tier routing based on binary validation results
+ */
+function determineTierRouting(completenessValidation, requestId) {
+  let suggestedTier, reason;
+  
+  if (completenessValidation.isComplete) {
+    suggestedTier = '1'; // Proceed with Tier 1 (AI-Enhanced Premium)
+    reason = 'complete_avatar_identity';
+  } else {
+    suggestedTier = '2.5C'; // Route to template fallbacks
+    reason = 'incomplete_avatar_identity';
+  }
+  
+  const routing = {
+    suggestedTier,
+    reason,
+    binaryResult: completenessValidation.completeness
+  };
+  
+  console.log(`🎯 [${requestId}] Tier routing determined: ${suggestedTier} (${reason})`);
+  
+  return routing;
+}
+
+/**
+ * Create fallback avatar identity when StaticDataCache is unavailable
+ */
+function createFallbackAvatarIdentity(userInfo, sessionId, requestId, fallbackReason) {
+  console.log(`🛡️ [${requestId}] Creating fallback avatar identity - reason: ${fallbackReason}`);
+  
+  const fallbackIdentity = {
     type: 'child',
     skinTone: 'medium',
     culturalProfile: 'general',
     nativeLanguage: 'en',
     name: userInfo?.name || 'the child',
-    hairColor: null
-  };
-  
-  // If no avatar info provided, return default
-  if (!userInfo?.avatar) {
-    console.log('🔄 Avatar mapping: No avatar data provided, using default identity');
-    return defaultIdentity;
-  }
-  
-  // REGRESSION PREVENTION: Avatar type mapping
-  const avatarTypeMap = {
-    'boy': 'boy',
-    'girl': 'girl',
-    'child': 'child',
-    'kid': 'child',
-    'prefer-not-to-answer': 'prefer-not-to-answer'
-  };
-  
-  // CRITICAL SKIN TONE MAPPING - DO NOT MODIFY THESE 5 MAPPINGS
-  const skinToneMap = {
-    'pale': 'pale',
-    'light': 'light',
-    'medium': 'medium',
-    'olive': 'olive',
-    'dark': 'dark'
-  };
-  
-  // Hair color mapping for English speakers only
-  const hairColorMap = {
-    'pale': 'red hair',
-    'light': 'blonde hair', 
-    'medium': 'brown hair',
-    'olive': 'black hair',
-    'dark': 'textured natural hair'
-  };
-  
-  // Process avatar identity
-  const avatarType = avatarTypeMap[userInfo.avatar.type] || defaultIdentity.type;
-  const skinTone = skinToneMap[userInfo.avatar.skinTone] || defaultIdentity.skinTone;
-  
-  // Generate character seed for consistency
-  const characterSeed = Math.abs(
-    Array.from(sessionId + (userInfo?.name || 'child')).reduce((acc, char) => {
-      return acc + char.charCodeAt(0);
-    }, 0)
-  ) % 100000;
-  
-  // Cultural profile detection
-  let culturalProfile = 'general';
-  const nativeLanguage = userInfo?.nativeLanguage || userInfo?.native_language || 'en';
-  
-  if (nativeLanguage !== 'en') {
-    culturalProfile = nativeLanguage;
-  } else if (skinTone === 'dark') {
-    culturalProfile = 'african-american';
-  }
-  
-  const mappedIdentity = {
-    type: avatarType,
-    skinTone: skinTone,
-    culturalProfile: culturalProfile,
-    nativeLanguage: nativeLanguage,
-    name: userInfo?.name || defaultIdentity.name,
-    hairColor: hairColorMap[skinTone] || null,
-    seed: characterSeed
-  };
-  
-  console.log('✅ Avatar mapping completed:', {
-    input: `${userInfo.avatar.type}/${userInfo.avatar.skinTone}`,
-    output: `${mappedIdentity.type}/${mappedIdentity.skinTone}`
-  });
-  
-  return mappedIdentity;
-}
-  // CRITICAL SKIN TONE MAPPING - DO NOT MODIFY THESE 5 MAPPINGS
-  // These correspond to the exact 5 skin tone options in the UI:
-  // REGRESSION WARNING: Removing ANY of these 5 mappings will break avatar generation
-  // - 'pale': Very light skin tones (Northern European, etc.)
-  // - 'light': Light skin tones (General European, etc.)  
-  // - 'medium': Medium skin tones (Mediterranean, Mixed, etc.)
-  // - 'olive': Olive skin tones (Middle Eastern, Southern European, etc.)
-  // - 'dark': Dark skin tones (African, African diaspora, etc.)
-  // The old incorrect mapping 'tan': 'medium' was REMOVED - do not re-add it
-  const skinToneMap = {
-    'pale': 'pale',
-    'light': 'light',
-    'medium': 'medium',
-    'olive': 'olive',
-    'dark': 'dark' // REQUIRED: Maps to UI dark option
-  };
-  // ENHANCED SKIN TONE VARIATION ARRAYS - FOR IMAGE GENERATION ONLY
-  // REGRESSION PREVENTION: This provides detailed skin tone variations for character generation
-  // DO NOT MODIFY without understanding cultural representation impact
-  // This system ensures rich, varied character descriptions for image generation
-  const SKIN_TONE_VARIATIONS = {
-    'pale': [
-      "attractive child character with porcelain white skin with cool undertones",
-      "attractive child character with alabaster complexion with subtle pink flush",
-      "attractive child character with fair ivory skin with delicate translucency",
-      "attractive child character with cream-colored skin with soft warmth",
-      "attractive child character with light peachy-pink complexion",
-      "attractive child character with fair skin with gentle rosy undertones",
-      "attractive child character with soft beige-pink skin with natural glow",
-      "attractive child character with warm ivory complexion with subtle golden hints"
-    ],
-    'light': [
-      "attractive child character with light ivory skin with golden undertones",
-      "attractive child character with soft vanilla complexion with warm highlights",
-      "attractive child character with honey-beige skin with natural radiance",
-      "attractive child character with light golden skin with peachy undertones",
-      "attractive child character with warm sand-colored complexion",
-      "attractive child character with light tan skin with golden glow",
-      "attractive child character with sun-kissed beige with bronze hints",
-      "attractive child character with golden-light skin with warm depth"
-    ],
-    'medium': [
-      "attractive child character with light caramel skin with golden undertones",
-      "attractive child character with warm wheat-colored complexion",
-      "attractive child character with honey-gold skin with amber highlights",
-      "attractive child character with medium tan with bronze undertones",
-      "attractive child character with rich caramel complexion with golden depth",
-      "attractive child character with warm amber-toned skin with natural shine",
-      "attractive child character with golden brown skin with copper highlights",
-      "attractive child character with rich tan with deep bronze undertones"
-    ],
-    'olive': [
-      "attractive child character with light olive skin with golden undertones",
-      "attractive child character with soft olive-beige complexion",
-      "attractive child character with warm olive-gold skin with neutral depth",
-      "attractive child character with medium olive complexion with bronze hints",
-      "attractive child character with rich olive skin with golden-green undertones",
-      "attractive child character with deep olive complexion with warm bronze",
-      "attractive child character with Mediterranean olive skin with copper highlights",
-      "attractive child character with rich olive-tan with natural golden depth"
-    ],
-    'dark': [
-      "attractive child authentic african american features with textured natural hair" // Enhanced cultural specificity
-    ]
-  };
-  // CRITICAL HAIR COLOR MAPPING FOR STORY GENERATION ONLY
-  // This provides simple hair descriptions for story text (NOT image generation)
-  const hairColorMap = {
-    'pale': 'red hair',
-    'light': 'blonde hair',
-    'medium': 'brown hair',
-    'olive': 'black hair',
-    'dark': 'textured natural hair' // African diaspora heritage - includes natural textures
-  };
-  // Seeded random selection for consistent skin tone variations
-  function getSeededSkinToneVariation(skinTone, seed) {
-    const variations = SKIN_TONE_VARIATIONS[skinTone];
-    if (!variations || variations.length === 0) return '';
-    if (variations.length === 1) return variations[0];
-    // Create consistent hash from seed
-    let hash = 0;
-    const seedStr = String(seed || '');
-    for(let i = 0; i < seedStr.length; i++){
-      hash = (hash << 5) - hash + seedStr.charCodeAt(i) & 0xffffffff;
+    hairColor: null,
+    completenessValidation: {
+      isComplete: false,
+      missingFields: ['all'],
+      completeness: 'INCOMPLETE',
+      source: 'fallback'
+    },
+    tierRouting: {
+      suggestedTier: '2.5D',
+      reason: fallbackReason,
+      binaryResult: 'INCOMPLETE'
     }
-    const index = Math.abs(hash) % variations.length;
-    return variations[index];
-  }
-  const skinTone = skinToneMap[userInfo.avatar.skinTone] || defaultIdentity.skinTone;
-  // Generate consistent seed for character variations
-  const characterSeed = `${userInfo.name || 'user'}_${skinTone}_${sessionId || 'session'}`;
-  // Build enhanced mapped identity
-  const mappedIdentity = {
-    type: avatarTypeMap[userInfo.avatar.type] || defaultIdentity.type,
-    skinTone: skinTone,
-    culturalProfile: userInfo.avatar.culturalProfile || defaultIdentity.culturalProfile,
-    nativeLanguage: userInfo.avatar.nativeLanguage || defaultIdentity.nativeLanguage,
-    name: userInfo.name || defaultIdentity.name,
-    hairColor: hairColorMap[skinTone] || null,
-    skinToneVariation: getSeededSkinToneVariation(skinTone, characterSeed),
-    seed: characterSeed // For tier consistency
   };
-  console.log('🔄 Avatar mapping completed:', {
-    input: userInfo.avatar,
-    output: mappedIdentity
-  });
-  return mappedIdentity;
+  
+  console.log(`🔄 [${requestId}] Fallback avatar identity created - routing to Tier 2.5D`);
+  
+  return fallbackIdentity;
 }
 // ============= KID-FRIENDLY PLACEHOLDER GENERATOR =============
 function generateKidFriendlyPlaceholder(pageText, pageNumber = 1) {
   // Use the same character placeholder system for consistency
   return generateCharacterPlaceholder(pageText, pageNumber);
+}
+
+// ============= CHARACTER PLACEHOLDER GENERATOR =============
+function generateCharacterPlaceholder(pageText, pageNumber = 1) {
+  // Generate a simple SVG placeholder for the character
+  const svgContent = `
+    <svg width="1024" height="1024" xmlns="http://www.w3.org/2000/svg">
+      <rect width="1024" height="1024" fill="#f0f8ff"/>
+      <circle cx="512" cy="300" r="80" fill="#ffcc99"/>
+      <circle cx="480" cy="280" r="8" fill="#333"/>
+      <circle cx="544" cy="280" r="8" fill="#333"/>
+      <path d="M 470 320 Q 512 340 554 320" stroke="#333" stroke-width="3" fill="none"/>
+      <rect x="450" y="380" width="124" height="200" fill="#4a90e2" rx="20"/>
+      <rect x="430" y="580" width="40" height="160" fill="#8b4513" rx="20"/>
+      <rect x="554" y="580" width="40" height="160" fill="#8b4513" rx="20"/>
+      <rect x="410" y="400" width="40" height="120" fill="#ffcc99" rx="20"/>
+      <rect x="574" y="400" width="40" height="120" fill="#ffcc99" rx="20"/>
+      <text x="512" y="850" text-anchor="middle" font-family="Arial" font-size="24" fill="#666">
+        Page ${pageNumber}
+      </text>
+    </svg>
+  `;
+  
+  const base64Svg = btoa(svgContent);
+  const dataUrl = `data:image/svg+xml;base64,${base64Svg}`;
+  
+  return {
+    url: dataUrl,
+    success: true,
+    provider: 'character-placeholder',
+    tier: 4
+  };
 }
 
 // ============= TIER 4 SIMPLE FALLBACK - CALL TO DEDICATED FUNCTION =============
@@ -905,7 +874,7 @@ serve(async (req)=>{
     // ============================================================================
     
     // Process avatar identity using StaticDataCache (single source of truth)
-    const avatarIdentity = mapAvatarIdentity(userInfo, sessionId);
+    const avatarIdentity = await processAvatarIdentityWithStaticDataCache(userInfo, sessionId, requestId);
     console.log(`👤 PHASE 8: Avatar Identity Processed: ${avatarIdentity.type}/${avatarIdentity.skinTone} - Cultural: ${avatarIdentity.culturalProfile}`);
     
     // Binary tier routing based on avatar identity completeness
