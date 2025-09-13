@@ -17,7 +17,7 @@ console.log("[runware-generate-image] Loaded: 2025-09-12T19:00:00Z - Optimized O
  */
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import "https://deno.land/x/xhr@0.1.0/mod.js";
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
 import { createDynamicCorsOptionsResponse, createDynamicCorsResponse, createDynamicCorsErrorResponse } from "../_shared/corsAdvanced.js";
 import { monitorRequest } from "../_shared/headerMonitor.js";
