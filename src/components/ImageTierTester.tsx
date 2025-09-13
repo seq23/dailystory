@@ -66,8 +66,8 @@ export function ImageTierTester() {
       const healthChecks = [
         { name: 'AI Visual Scene Creator', endpoint: 'ai-visual-scene-creator' },
         { name: 'Runware Image Orchestrator', endpoint: 'runware-generate-image' },
-        { name: 'Runware Template Simple', endpoint: 'runware-template-simple' },
-        { name: 'Runware Template Advanced', endpoint: 'runware-template-advanced' }
+        { name: 'Runware Template AB', endpoint: 'runware-template-ab' },
+        { name: 'Runware Template CD', endpoint: 'runware-template-cd' }
       ];
 
       console.log(`🔧 [${requestId}] Testing ${healthChecks.length} endpoints via GET...`);
@@ -95,7 +95,7 @@ export function ImageTierTester() {
                 const openai = data.api_keys.openai_configured ? '✓' : '✗';
                 const runware = data.api_keys.runware_configured ? '✓' : '✗';
                 keyStatus = ` (OpenAI: ${openai}, Runware: ${runware})`;
-              } else if ((endpoint === 'runware-template-simple' || endpoint === 'runware-template-advanced') && data.runwareApiKeyPresent !== undefined) {
+              } else if ((endpoint === 'runware-template-ab' || endpoint === 'runware-template-cd') && data.runwareApiKeyPresent !== undefined) {
                 keyStatus = ` (Runware: ${data.runwareApiKeyPresent ? '✓' : '✗'})`;
               }
               
@@ -269,7 +269,7 @@ export function ImageTierTester() {
       } else if (tierType.startsWith('Tier 2.5')) {
         // Route to appropriate template function based on complexity
         const isAdvanced = templateComplexity === 'C' || templateComplexity === 'D';
-        const functionName = isAdvanced ? 'runware-template-advanced' : 'runware-template-simple';
+        const functionName = isAdvanced ? 'runware-template-cd' : 'runware-template-ab';
         
         console.log(`🎯 [${requestId}] Calling ${functionName} with complexity ${templateComplexity}...`);
         result = await Promise.race([
@@ -286,11 +286,11 @@ export function ImageTierTester() {
             setTimeout(() => reject(new Error(`[${requestId}] Request timeout after 60s`)), 60000)
           )
         ]);
-      } else if (tierType === 'Template Simple') {
-        // Test runware-template-simple function directly
-        console.log(`🎯 [${requestId}] Calling runware-template-simple directly with complexity ${templateComplexity}...`);
+      } else if (tierType === 'Template AB') {
+        // Test runware-template-ab function directly
+        console.log(`🎯 [${requestId}] Calling runware-template-ab directly with complexity ${templateComplexity}...`);
         result = await Promise.race([
-          supabase.functions.invoke('runware-template-simple', {
+          supabase.functions.invoke('runware-template-ab', {
             body: {
               storyText: config.storyText,
               userInfo: userInfo,
@@ -303,11 +303,11 @@ export function ImageTierTester() {
             setTimeout(() => reject(new Error(`[${requestId}] Request timeout after 60s`)), 60000)
           )
         ]);
-      } else if (tierType === 'Template Advanced') {
-        // Test runware-template-advanced function directly
-        console.log(`🎯 [${requestId}] Calling runware-template-advanced directly with complexity ${templateComplexity}...`);
+      } else if (tierType === 'Template CD') {
+        // Test runware-template-cd function directly
+        console.log(`🎯 [${requestId}] Calling runware-template-cd directly with complexity ${templateComplexity}...`);
         result = await Promise.race([
-          supabase.functions.invoke('runware-template-advanced', {
+          supabase.functions.invoke('runware-template-cd', {
             body: {
               storyText: config.storyText,
               userInfo: userInfo,

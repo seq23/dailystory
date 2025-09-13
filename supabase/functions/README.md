@@ -39,8 +39,8 @@ This directory contains all Edge Functions for the project. GitHub is the source
 - `image-proxy` - JWT: false
 - `runware-generate-image` - JWT: false (JS only)
 
-- `runware-template-advanced` - JWT: false (JS only)
-- `runware-template-simple` - JWT: false (JS only)
+- `runware-template-ab` - JWT: false (JS only)
+- `runware-template-cd` - JWT: false (JS only)
 
 ### Security & Monitoring Functions
 - `log-personal-info-incident` - JWT: true
@@ -62,8 +62,8 @@ This directory contains all Edge Functions for the project. GitHub is the source
 All functions use `index.ts` as their entry point. JavaScript-only functions have TypeScript shim files that import their `index.js` implementations:
 - `ai-visual-scene-creator` - Shim: `index.ts` → Implementation: `index.js`
 - `runware-generate-image` - Shim: `index.ts` → Implementation: `index.js`
-- `runware-template-advanced` - Shim: `index.ts` → Implementation: `index.js`
-- `runware-template-simple` - Shim: `index.ts` → Implementation: `index.js`
+- `runware-template-ab` - Shim: `index.ts` → Implementation: `index.js`
+- `runware-template-cd` - Shim: `index.ts` → Implementation: `index.js`
 - `background-image-pregeneration` - Shim: `index.ts` → Implementation: `index.js`
 
 ## Maintenance Notes

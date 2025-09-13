@@ -1,7 +1,7 @@
 # API Reference Guide
 
 ⚠️ **DEPRECATED FUNCTIONS - DO NOT USE** ⚠️  
-The following edge functions are **DEPRECATED**: `runware-generate-image` and `prompt-studio`. Use `runware-template-simple` or `runware-template-advanced` instead. See [IMAGE_FUNCTIONS_DEPRECATION.md](IMAGE_FUNCTIONS_DEPRECATION.md) for details.
+The following edge functions are **DEPRECATED**: `runware-generate-image` and `prompt-studio`. Use `runware-template-ab` or `runware-template-cd` instead. See [IMAGE_FUNCTIONS_DEPRECATION.md](IMAGE_FUNCTIONS_DEPRECATION.md) for details.
 
 ## Core Endpoints
 

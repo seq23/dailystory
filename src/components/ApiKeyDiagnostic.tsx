@@ -54,8 +54,8 @@ export const ApiKeyDiagnostic: React.FC = () => {
       // Test 2: Template services health check
       addResult('warning', '🔐 Testing Runware template services...');
       const templateServices = [
-        { name: 'Simple Templates', endpoint: 'runware-template-simple' },
-        { name: 'Advanced Templates', endpoint: 'runware-template-advanced' }
+        { name: 'AB Templates', endpoint: 'runware-template-ab' },
+        { name: 'CD Templates', endpoint: 'runware-template-cd' }
       ];
 
       for (const service of templateServices) {
