@@ -105,6 +105,22 @@ Search: "REQ-mferghcd-e98ij"
 
 ## Common Issues & Solutions
 
+### Tier 1 Undefined apiKey Variable (FIXED)
+
+**Issue**: 
+- The `runware-generate-image` function was referencing an undefined `apiKey` variable instead of `runwareApiKey`
+- This caused "apiKey is not defined" errors and forced fallback to Tier 2.5
+
+**Fix Applied**:
+- Fixed line 1356: Changed `apiKeyPresent: !!apiKey` to `apiKeyPresent: !!runwareApiKey`
+- Fixed line 1363: Changed `generateWithRunwarePremium(apiKey, ...)` to `generateWithRunwarePremium(runwareApiKey, ...)`
+- Added guard condition: Tier 1 now only executes if `runwareApiKey` is present, unless `forceTier === 1`
+
+**Validation Steps**:
+1. Test A: Use `forceTier = 1` with short prompt - should no longer show "apiKey is not defined" error
+2. Test B: Auto mode with missing `RUNWARE_API_KEY` - should skip Tier 1 cleanly without error
+3. Use new "Tier 1 Smoke Test" button in ApiKeyDiagnostic for easy testing
+
 ### Template AB Service Method Issues
 
 #### Broken Character Consistency Method Calls

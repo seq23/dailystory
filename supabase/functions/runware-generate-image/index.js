@@ -868,7 +868,8 @@ serve(async (req)=>{
     // ============================================================================
     // CRITICAL: This tier is available to BOTH guest and premium users
     // The isGuestUser flag is for analytics/tracking ONLY, not tier restrictions
-    if (!forceTier || forceTier === 1) {
+    // GUARD: Only enter Tier 1 if runwareApiKey is present, unless forceTier === 1
+    if ((!forceTier || forceTier === 1) && (runwareApiKey || forceTier === 1)) {
       try {
         console.log('🧠 Starting Tier 1: AI-Enhanced High-Quality Generation');
         console.log('🔍 TIER 1 DEBUG - Calling ai-visual-scene-creator directly (clean architecture)');
@@ -1353,14 +1354,14 @@ serve(async (req)=>{
         });
         // PHASE 4: Generate with Runware Tier 1 (Premium) with enhanced logging
         console.log(`🚀 [${requestId}] Initiating Runware Premium Generation:`, {
-          apiKeyPresent: !!apiKey,
+          apiKeyPresent: !!runwareApiKey,
           promptLength: validatedPrompt.length,
           negativePromptLength: negativePrompt.length,
           characterSeed: characterData.seed,
           sessionId: sessionId,
           pageNumber: pageNumber
         });
-        const tier1Result = await generateWithRunwarePremium(apiKey, validatedPrompt, negativePrompt, characterData.seed, sessionId, pageNumber, requestId // PHASE 5: Pass requestId for correlation
+        const tier1Result = await generateWithRunwarePremium(runwareApiKey, validatedPrompt, negativePrompt, characterData.seed, sessionId, pageNumber, requestId // PHASE 5: Pass requestId for correlation
         );
         if (tier1Result.success) {
           console.log('✅ Tier 1 AI-Enhanced succeeded');

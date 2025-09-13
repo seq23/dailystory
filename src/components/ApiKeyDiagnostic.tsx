@@ -12,7 +12,7 @@ interface DiagnosticResult {
 
 export const ApiKeyDiagnostic: React.FC = () => {
   const [isChecking, setIsChecking] = useState(false);
-  const [results, setResults] = useState<DiagnosticResult[]>([]);
+    const [results, setResults] = useState<DiagnosticResult[]>([]);
   const [isResettingCircuitBreaker, setIsResettingCircuitBreaker] = useState(false);
 
   const addResult = (status: DiagnosticResult['status'], message: string, details?: any) => {
@@ -171,6 +171,40 @@ export const ApiKeyDiagnostic: React.FC = () => {
     }
   };
 
+  const runTier1SmokeTest = async () => {
+    setIsChecking(true);
+    
+    try {
+      addResult('warning', '🧪 Running Tier 1 smoke test (forced)...');
+      
+      const { data, error } = await supabase.functions.invoke('runware-generate-image', {
+        body: {
+          pageText: "A brave child explorer discovers a magical forest filled with glowing trees and friendly creatures.",
+          sessionId: `smoke-test-${Date.now()}`,
+          pageNumber: 1,
+          userInfo: {
+            name: "TestChild",
+            gradeLevel: "3",
+            avatar: { type: "child", skinTone: "medium" }
+          },
+          forceTier: 1
+        }
+      });
+
+      if (error) {
+        addResult('error', `❌ Tier 1 smoke test failed: ${error.message}`, error);
+      } else if (data?.success && data?.tier === 1) {
+        addResult('success', `✅ Tier 1 smoke test passed - Generated ${data.provider} image`, data);
+      } else {
+        addResult('warning', `⚠️ Tier 1 smoke test returned unexpected result`, data);
+      }
+    } catch (error) {
+      addResult('error', `❌ Tier 1 smoke test error: ${error.message}`, error);
+    } finally {
+      setIsChecking(false);
+    }
+  };
+
   const getStatusColor = (status: DiagnosticResult['status']) => {
     switch (status) {
       case 'success': return 'text-green-600 dark:text-green-400';
@@ -212,6 +246,15 @@ export const ApiKeyDiagnostic: React.FC = () => {
             className="flex-1 min-w-[120px]"
           >
             {isChecking ? 'Testing...' : 'Force Tier 2.5 Test'}
+          </Button>
+          <Button 
+            onClick={runTier1SmokeTest} 
+            disabled={isChecking}
+            size="sm"
+            variant="secondary"
+            className="flex-1 min-w-[120px]"
+          >
+            {isChecking ? 'Testing...' : 'Tier 1 Smoke Test'}
           </Button>
         </div>
         
