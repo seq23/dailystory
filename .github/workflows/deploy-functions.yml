@@ -19,3 +19,27 @@ jobs:
       - run: supabase functions deploy --project-ref $SUPABASE_PROJECT_ID
       - name: Force deploy runware-template-ab specifically
         run: supabase functions deploy runware-template-ab --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy ai-visual-scene-creator specifically
+        run: supabase functions deploy ai-visual-scene-creator --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy security-dashboard specifically
+        run: supabase functions deploy security-dashboard --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy validate-discount-code specifically
+        run: supabase functions deploy validate-discount-code --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy openai-tts specifically
+        run: supabase functions deploy openai-tts --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy voice-to-text specifically
+        run: supabase functions deploy voice-to-text --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy log-personal-info-incident specifically
+        run: supabase functions deploy log-personal-info-incident --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy log-security-event specifically
+        run: supabase functions deploy log-security-event --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy send-coppa-notification specifically
+        run: supabase functions deploy send-coppa-notification --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy system-diagnostics specifically
+        run: supabase functions deploy system-diagnostics --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy send-parental-notification specifically
+        run: supabase functions deploy send-parental-notification --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy process-story-content specifically
+        run: supabase functions deploy process-story-content --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy security-alert specifically
+        run: supabase functions deploy security-alert --project-ref $SUPABASE_PROJECT_ID
