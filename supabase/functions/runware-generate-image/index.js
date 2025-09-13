@@ -365,41 +365,30 @@ async function processAvatarIdentityWithStaticDataCache(userInfo, sessionId, req
   console.log(`🔍 [${requestId}] PHASE 8: Processing avatar identity via StaticDataCache`);
   
   try {
-    // Call generate-adaptive-story's StaticDataCache for avatar processing
-    const { data: avatarResult, error: avatarError } = await supabase.functions.invoke('generate-adaptive-story', {
-      body: {
-        action: 'processAvatarIdentity',
-        userInfo,
-        sessionId,
-        requestId
-      }
+    // Process avatar identity directly using StaticDataCache
+    // Note: Direct import prevents HTTP 400 errors from deprecated API calls
+    const avatarResult = processAvatarIdentityFromCache(userInfo);
+    
+    if (!avatarResult) {
+      console.warn(`⚠️ [${requestId}] StaticDataCache processing failed - binary validation failed`);
+      return createFallbackAvatarIdentity(userInfo, sessionId, requestId, 'staticdatacache_binary_validation_failed');
+    }
+
+    console.log(`✅ [${requestId}] StaticDataCache avatar processing successful:`, {
+      avatarType: avatarResult.type,
+      culturalProfile: avatarResult.culturalProfile,
+      skinTone: avatarResult.skinTone
     });
-    
-    if (avatarError) {
-      console.warn(`⚠️ [${requestId}] StaticDataCache call failed:`, avatarError);
-      return createFallbackAvatarIdentity(userInfo, sessionId, requestId, 'staticdatacache_unavailable');
-    }
-    
-    if (!avatarResult || !avatarResult.success) {
-      console.warn(`⚠️ [${requestId}] StaticDataCache returned unsuccessful result`);
-      return createFallbackAvatarIdentity(userInfo, sessionId, requestId, 'staticdatacache_failed');
-    }
-    
-    const processedAvatar = avatarResult.avatarIdentity;
-    
+
     // Binary validation: all-or-none completeness check
-    const completenessValidation = validateAvatarCompleteness(processedAvatar, requestId);
+    const completenessValidation = validateAvatarCompleteness(avatarResult, requestId);
     
     // Add validation results to avatar identity
-    processedAvatar.completenessValidation = completenessValidation;
-    
-    // Determine tier routing based on binary validation
-    const tierRouting = determineTierRouting(completenessValidation, requestId);
-    processedAvatar.tierRouting = tierRouting;
-    
+    avatarResult.completenessValidation = completenessValidation;
+
     console.log(`✅ [${requestId}] PHASE 8: Avatar processed via StaticDataCache - ${completenessValidation.isComplete ? 'COMPLETE' : 'INCOMPLETE'}`);
     
-    return processedAvatar;
+    return avatarResult;
     
   } catch (error) {
     console.error(`❌ [${requestId}] StaticDataCache integration failed:`, error);
@@ -826,17 +815,6 @@ serve(async (req)=>{
     // ============================================================================
     // PHASE 4: CRITICAL SECURITY VALIDATION
     // ============================================================================
-    // ============================================================================
-    // Validate required parameters
-    if (!pageText) {
-      return callTier4SimpleFallback('Default story page', pageNumber, sessionId, req, 'Missing pageText');
-    }
-    if (!sessionId) {
-      return callTier4SimpleFallback(pageText, pageNumber, 'default-session', req, 'Missing sessionId');
-    }
-    if (!storyId) {
-      return callTier4SimpleFallback(pageText, pageNumber, sessionId, req, 'Missing storyId');
-    }
     // Security validation
     const securityCheck = await SecurityValidator.validateImageRequest(req, {
       pageText,
