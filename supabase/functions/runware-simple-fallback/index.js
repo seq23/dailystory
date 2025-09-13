@@ -1,3 +1,4 @@
+// Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
 // ============= TIER 2.5 NUCLEAR TEMPLATE SYSTEM =============
 // Documentation: docs/IMAGE_GENERATION_SYSTEM_OVERVIEW.md
 // Regression Guide: docs/RUNWARE_FALLBACK_REGRESSION_PREVENTION.md

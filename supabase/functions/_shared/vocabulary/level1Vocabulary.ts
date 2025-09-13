@@ -1,3 +1,4 @@
+// Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
 // Level 1 Vocabulary (Ages 5-7) - Cumulative through 1st Grade Dolch
 // Includes all Level 0 words plus 1st grade Dolch sight words
 

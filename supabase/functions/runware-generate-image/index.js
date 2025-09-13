@@ -1,4 +1,4 @@
-console.log("[runware-generate-image] Loaded: 2025-09-12T19:00:00Z - Optimized Orchestrator");
+// Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
 /**
  * ============================================================================
  * RUNWARE IMAGE GENERATION - ACTIVE ORCHESTRATOR

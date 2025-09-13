@@ -1,4 +1,4 @@
-// Redeploy touch: 2025-09-12T18:45:32Z - Force complete rebuild
+// Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
 console.log("[clear-character-cache] Loaded: 2025-09-12T18:45:32Z");
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
