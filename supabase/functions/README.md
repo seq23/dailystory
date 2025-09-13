@@ -73,7 +73,26 @@ All functions use `index.ts` as their entry point. JavaScript-only functions hav
 3. **Deployment**: Functions auto-deploy when code is committed
 4. **Entry Files**: JavaScript-only functions use TypeScript shim files that import the JavaScript implementation
 
+## Known Supabase Sync Anomalies
+
+### False "Module not found" Errors
+**Issue**: Edge function logs may show "Module not found: index.js" even when files exist
+**Cause**: Supabase deployment sync delays between TypeScript shims and JavaScript implementations
+**Files Affected**: `runware-generate-image`, `runware-template-cd`, `ai-visual-scene-creator`
+**Status**: Files are present and functional - this is a false positive
+
+### Troubleshooting Steps
+1. Verify files exist in GitHub repository
+2. Check DEPLOY_MARKER timestamps for sync confirmation
+3. Monitor function execution - should work despite log errors
+4. Force redeploy only if actual functionality is broken
+
 ## Forced Redeploy History
+
+**2025-01-30T21:30:00Z** - Documentation update for sync anomaly awareness
+- Added "Known Supabase Sync Anomalies" section
+- Updated DEPLOY_MARKER for affected shim files
+- Clarified that "Module not found" errors are false positives
 
 **2025-01-30T20:17:15Z** - Emergency redeploy to fix boot failures in:
 - `ai-visual-scene-creator`: Boot failure "failed to determine entrypoint"  

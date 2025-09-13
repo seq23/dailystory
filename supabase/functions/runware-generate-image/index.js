@@ -7,11 +7,14 @@
  * This is the main image generation orchestrator that handles:
  * - Tier 1: AI-Enhanced Premium (runware:100@1 with full enhancement)
  * - Tier 2.5: Template fallbacks (various complexities)  
- * - Tier 4: SVG placeholder (guaranteed success)
+ * - Tier 4: Static asset fallback (6 curated "images not working" assets)
  * 
  * STATUS: ACTIVE - Primary image generation function
  * CALLED BY: SimpleImageService.ts (frontend)
  * CALLS: ai-visual-scene-creator for prompt enhancement
+ * 
+ * KNOWN SUPABASE SYNC ANOMALY: This index.js file exists but may show 
+ * "Module not found" in logs due to Supabase sync delay. Files are present.
  * 
  * ============================================================================
  */

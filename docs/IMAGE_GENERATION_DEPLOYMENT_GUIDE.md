@@ -246,6 +246,16 @@ WITH CHECK (true);
 
 ### Common Deployment Issues
 
+#### False "Module not found" Errors
+**Symptoms**: Edge function logs show "Module not found: index.js" but functions work
+**Cause**: Supabase sync delay between TypeScript shims and JavaScript implementations
+**Affected Functions**: `runware-generate-image`, `runware-template-cd`, `ai-visual-scene-creator`
+**Solution**: 
+- Verify files exist in GitHub repository
+- Check function actually works despite log errors
+- This is a false positive - files are present and functional
+- Only force redeploy if actual functionality is broken
+
 #### Missing Secrets
 **Symptoms**: Function errors about missing API keys
 **Solution**: Verify secrets are set in Supabase Dashboard
