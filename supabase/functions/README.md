@@ -59,19 +59,19 @@ This directory contains all Edge Functions for the project. GitHub is the source
 
 ## Entry File Requirements
 
-Most functions use `index.ts` as their entry point. However, these 5 functions MUST use `index.js` only:
-- `ai-visual-scene-creator`
-- `runware-generate-image`
-
-- `runware-template-advanced`
-- `runware-template-simple`
+All functions use `index.ts` as their entry point. JavaScript-only functions have TypeScript shim files that import their `index.js` implementations:
+- `ai-visual-scene-creator` - Shim: `index.ts` → Implementation: `index.js`
+- `runware-generate-image` - Shim: `index.ts` → Implementation: `index.js`
+- `runware-template-advanced` - Shim: `index.ts` → Implementation: `index.js`
+- `runware-template-simple` - Shim: `index.ts` → Implementation: `index.js`
+- `background-image-pregeneration` - Shim: `index.ts` → Implementation: `index.js`
 
 ## Maintenance Notes
 
 1. **Source of Truth**: GitHub repository contains the canonical list of functions
 2. **Supabase Dashboard**: Manually remove any functions not in this list
 3. **Deployment**: Functions auto-deploy when code is committed
-4. **Entry Files**: Never create both `.js` and `.ts` entry files for the same function
+4. **Entry Files**: JavaScript-only functions use TypeScript shim files that import the JavaScript implementation
 
 ## Sync Status
 
