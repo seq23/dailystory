@@ -1543,13 +1543,6 @@ serve(async (req)=>{
       // Enhanced error analysis for failed Tier 2.5A-D
       console.error('❌ ALL TIER 2.5 SUB-TIERS FAILED - Falling back to Tier 4');
     }
-        }
-      } catch (error) {
-        console.error('🚨 TIER 2.5A-D ORCHESTRATION EXCEPTION:', error.message);
-        console.log('⚠️ All Tier 2.5 sub-tiers (A-D) failed, falling back to Tier 4');
-        }
-      }
-    }
     // TIER 4: Kid-Friendly Placeholder (Ultimate Fallback)
     console.log('📝 Generating Tier 4: Kid-Friendly Placeholder');
     const placeholderResult = generateKidFriendlyPlaceholder(pageText, pageNumber);
