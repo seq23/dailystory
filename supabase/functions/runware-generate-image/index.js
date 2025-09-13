@@ -492,32 +492,25 @@ function generateKidFriendlyPlaceholder(pageText, pageNumber = 1) {
 
 // ============= CHARACTER PLACEHOLDER GENERATOR =============
 function generateCharacterPlaceholder(pageText, pageNumber = 1) {
-  // Generate a simple SVG placeholder for the character
-  const svgContent = `
-    <svg width="1024" height="1024" xmlns="http://www.w3.org/2000/svg">
-      <rect width="1024" height="1024" fill="#f0f8ff"/>
-      <circle cx="512" cy="300" r="80" fill="#ffcc99"/>
-      <circle cx="480" cy="280" r="8" fill="#333"/>
-      <circle cx="544" cy="280" r="8" fill="#333"/>
-      <path d="M 470 320 Q 512 340 554 320" stroke="#333" stroke-width="3" fill="none"/>
-      <rect x="450" y="380" width="124" height="200" fill="#4a90e2" rx="20"/>
-      <rect x="430" y="580" width="40" height="160" fill="#8b4513" rx="20"/>
-      <rect x="554" y="580" width="40" height="160" fill="#8b4513" rx="20"/>
-      <rect x="410" y="400" width="40" height="120" fill="#ffcc99" rx="20"/>
-      <rect x="574" y="400" width="40" height="120" fill="#ffcc99" rx="20"/>
-      <text x="512" y="850" text-anchor="middle" font-family="Arial" font-size="24" fill="#666">
-        Page ${pageNumber}
-      </text>
-    </svg>
-  `;
+  // Static image URLs - match frontend ImageFallbackService
+  const FALLBACK_IMAGES = [
+    "/assets/images-not-working-1.webp",
+    "/assets/images-not-working-2.webp", 
+    "/assets/images-not-working-3.webp",
+    "/assets/images-not-working-5.webp",
+    "/assets/images-not-working-6.webp",
+    "/assets/images-not-working-7.webp"
+  ];
   
-  const base64Svg = btoa(svgContent);
-  const dataUrl = `data:image/svg+xml;base64,${base64Svg}`;
+  // Use pageText hash + page number for consistent but varied selection (matches frontend logic)
+  const textHash = (pageText || '').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const imageIndex = Math.abs(textHash + pageNumber) % FALLBACK_IMAGES.length;
+  const selectedImage = FALLBACK_IMAGES[imageIndex];
   
   return {
-    url: dataUrl,
+    url: selectedImage,
     success: true,
-    provider: 'character-placeholder',
+    provider: 'static-fallback',
     tier: 4
   };
 }
