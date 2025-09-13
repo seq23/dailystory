@@ -4,7 +4,39 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-console.log("[runware-template-simple] Loaded: 2025-09-12T19:00:00Z - A-B Complexity Handler");
+console.log("[runware-template-simple] Loaded: 2025-09-13T12:00:00Z - A-B Complexity Handler with Character Consistency");
+
+// ============= LAZY LOADING FUNCTIONS FOR HEAVY DEPENDENCIES =============
+
+async function getCharacterService() {
+  try {
+    const { CharacterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
+    return CharacterConsistencyService;
+  } catch (error) {
+    console.warn('CharacterService lazy load failed:', error);
+    return null;
+  }
+}
+
+async function getSessionManager() {
+  try {
+    const { globalSessionManager } = await import("../_shared/SessionStateManager.js");
+    return globalSessionManager;
+  } catch (error) {
+    console.warn('SessionManager lazy load failed:', error);
+    return null;
+  }
+}
+
+async function getVisualTracker() {
+  try {
+    const { VisualDetailTracker } = await import("../_shared/VisualDetailTracker.js");
+    return VisualDetailTracker;
+  } catch (error) {
+    console.warn('VisualTracker lazy load failed:', error);
+    return null;
+  }
+}
 
 // ============= CORS HEADERS =============
 const corsHeaders = {
@@ -50,15 +82,56 @@ function getComplexityLevel(userInfo, templateComplexity) {
   return 'B'; // Simple scenes
 }
 
-// ============= SIMPLE TEMPLATE GENERATION =============
-function generateSimpleTemplate(complexity, storyText, userInfo, avatarIdentity) {
+// ============= ENHANCED SIMPLE TEMPLATE GENERATION WITH CHARACTER CONSISTENCY =============
+async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIdentity, sessionId, pageNumber) {
   const childName = userInfo?.childName || 'child';
   const favoriteColor = userInfo?.favoriteColor || 'blue';
   
+  // Try to get character consistency data
+  let characterDescription = '';
+  let visualDetails = '';
+  
+  try {
+    const CharacterService = await getCharacterService();
+    const VisualTracker = await getVisualTracker();
+    
+    if (CharacterService && sessionId && avatarIdentity) {
+      console.log('🎭 Template Simple: Getting character consistency data');
+      const characterSeed = await CharacterService.getCharacterSeed(
+        sessionId,
+        avatarIdentity,
+        storyText,
+        'simple_template',
+        ''
+      );
+      
+      if (characterSeed) {
+        // Use simplified character description for A-B complexity
+        const basicTraits = characterSeed.split(',').slice(0, 2).join(', ');
+        characterDescription = basicTraits || `${childName} with ${favoriteColor} clothes`;
+      }
+    }
+    
+    if (VisualTracker && sessionId && storyText) {
+      console.log('👁️ Template Simple: Tracking visual details');
+      await VisualTracker.trackVisualDetails(sessionId, pageNumber, storyText);
+      const coloredObjects = VisualTracker.getColoredObjects(sessionId);
+      if (coloredObjects) {
+        visualDetails = coloredObjects.split(',').slice(0, 2).join(', '); // Keep it simple
+      }
+    }
+  } catch (error) {
+    console.warn('⚠️ Template Simple: Character consistency unavailable:', error);
+  }
+  
+  // Build simple prompts with character consistency when available
+  const characterPart = characterDescription ? `${characterDescription}, ` : `${childName}, `;
+  const visualPart = visualDetails ? `with ${visualDetails}, ` : '';
+  
   if (complexity === 'A') {
-    // Level A: Basic shapes and colors
+    // Level A: Basic shapes and colors with character consistency
     return {
-      positivePrompt: `A simple, colorful illustration showing ${childName} with basic shapes and ${favoriteColor} colors. Clean, minimal, child-friendly cartoon style.`,
+      positivePrompt: `A simple, colorful illustration showing ${characterPart}${visualPart}basic shapes and ${favoriteColor} colors. Clean, minimal, child-friendly cartoon style.`,
       negativePrompt: 'complex details, realistic, adult themes, scary, dark',
       templateType: 'basic-shapes',
       difficulty: 'A',
@@ -67,10 +140,10 @@ function generateSimpleTemplate(complexity, storyText, userInfo, avatarIdentity)
   }
   
   if (complexity === 'B') {
-    // Level B: Simple scenes
+    // Level B: Simple scenes with character consistency
     const simpleScene = storyText.substring(0, 100); // First 100 chars for context
     return {
-      positivePrompt: `A simple cartoon illustration of ${childName} in a ${favoriteColor} themed scene. ${simpleScene}. Clean, bright, child-friendly art style.`,
+      positivePrompt: `A simple cartoon illustration of ${characterPart}${visualPart}in a ${favoriteColor} themed scene. ${simpleScene}. Clean, bright, child-friendly art style.`,
       negativePrompt: 'complex backgrounds, realistic details, adult themes, scary elements',
       templateType: 'simple-scene',
       difficulty: 'B', 
@@ -78,9 +151,9 @@ function generateSimpleTemplate(complexity, storyText, userInfo, avatarIdentity)
     };
   }
   
-  // Fallback to basic
+  // Fallback to basic with character consistency
   return {
-    positivePrompt: `A simple, happy illustration of ${childName} with ${favoriteColor} colors. Child-friendly cartoon style.`,
+    positivePrompt: `A simple, happy illustration of ${characterPart}${visualPart}with ${favoriteColor} colors. Child-friendly cartoon style.`,
     negativePrompt: 'complex, realistic, adult, scary',
     templateType: 'fallback-basic',
     difficulty: 'A',
@@ -179,6 +252,21 @@ serve(async (req) => {
       hasUserInfo: !!userInfo
     });
     
+    // Initialize session manager if available
+    try {
+      const SessionManager = await getSessionManager();
+      if (SessionManager && sessionId) {
+        console.log('📋 Template Simple: Updating session state');
+        SessionManager.updateSession(sessionId, {
+          lastActivity: Date.now(),
+          currentFunction: 'runware-template-simple',
+          pageNumber: pageNumber
+        });
+      }
+    } catch (error) {
+      console.warn('⚠️ Template Simple: Session management unavailable:', error);
+    }
+    
     // Determine complexity level
     const complexity = getComplexityLevel(userInfo, templateComplexity);
     
@@ -187,8 +275,8 @@ serve(async (req) => {
       return createErrorResponse(`Complexity ${complexity} not supported by Simple template. Use Advanced template.`, 400);
     }
     
-    // Generate template
-    const template = generateSimpleTemplate(complexity, storyText, userInfo, avatarIdentity);
+    // Generate template with character consistency
+    const template = await generateSimpleTemplate(complexity, storyText, userInfo, avatarIdentity, sessionId, pageNumber);
     
     console.log('🎨 Template Simple: Generated template', {
       complexity,
