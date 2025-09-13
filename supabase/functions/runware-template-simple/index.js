@@ -4,7 +4,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-console.log("[runware-template-simple] Loaded: 2025-09-13T12:00:00Z - A-B Complexity Handler with Character Consistency");
+console.log(`INIT runware-template-simple boot at ${new Date().toISOString()} | std@0.168.0`);
 
 // ============= LAZY LOADING FUNCTIONS FOR HEAVY DEPENDENCIES =============
 
@@ -225,8 +225,11 @@ serve(async (req) => {
   if (req.method === 'GET' || req.method === 'HEAD') {
     console.log('🏥 Template Simple: Health check request');
     return createResponse({
+      healthy: true,
       status: 'healthy',
+      functionName: 'runware-template-simple',
       service: 'runware-template-simple',
+      projectId: 'cpzeuogomaixamrtnnmj',
       tier: '2.5A',
       complexity: 'A-B',
       timestamp: new Date().toISOString(),
