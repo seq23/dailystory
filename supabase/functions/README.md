@@ -38,7 +38,7 @@ This directory contains all Edge Functions for the project. GitHub is the source
 ### Image Generation Functions
 - `image-proxy` - JWT: false
 - `runware-generate-image` - JWT: false (JS only)
-- `runware-simple-fallback` - JWT: false
+- `runware-simple-fallback` - JWT: false (JS only)
 - `runware-template-advanced` - JWT: false (JS only)
 - `runware-template-simple` - JWT: false (JS only)
 
@@ -59,9 +59,10 @@ This directory contains all Edge Functions for the project. GitHub is the source
 
 ## Entry File Requirements
 
-Most functions use `index.ts` as their entry point. However, these 4 functions MUST use `index.js` only:
+Most functions use `index.ts` as their entry point. However, these 5 functions MUST use `index.js` only:
 - `ai-visual-scene-creator`
 - `runware-generate-image`
+- `runware-simple-fallback`
 - `runware-template-advanced`
 - `runware-template-simple`
 
