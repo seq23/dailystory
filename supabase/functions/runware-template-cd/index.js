@@ -56,14 +56,23 @@ function generateTier25C(storyText, userInfo) {
   
   console.log('🎨 Retrieved', styleFramework.name, 'style framework for difficulty:', difficulty);
   
-  // Take first 2500 characters of pageText + style framework
-  const truncatedText = (storyText || '').substring(0, 2500);
+  // Take first 2000 characters of pageText + style framework
+  const truncatedText = (storyText || '').substring(0, 2000);
   const emergencyFramework = styleFramework.frameworkPrompt;
   
-  const positivePrompt = truncatedText + ' ' + emergencyFramework;
+  // Extract avatar information with static headers
+  const avatarInfo = `
+CHARACTER DETAILS:
+Name: ${userInfo?.name || 'Child'}
+Age: ${userInfo?.age || 8} years old
+Gender: ${userInfo?.avatar?.type || 'prefer-not-to-answer'}
+Skin Tone: ${userInfo?.avatar?.skinTone || 'medium'}
+  `;
+  
+  const positivePrompt = truncatedText + ' ' + avatarInfo + ' ' + emergencyFramework;
   const negativePrompt = styleFramework.negativePrompt;
   
-  console.log('✅ Tier 2.5C: Emergency Framework Template generated');
+  console.log('✅ Tier 2.5C: Emergency Framework Template generated with avatar details');
   
   return {
     positivePrompt,
