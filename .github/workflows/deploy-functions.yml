@@ -17,3 +17,5 @@ jobs:
         with:
           version: 1.200.3
       - run: supabase functions deploy --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy runware-template-ab specifically
+        run: supabase functions deploy runware-template-ab --project-ref $SUPABASE_PROJECT_ID

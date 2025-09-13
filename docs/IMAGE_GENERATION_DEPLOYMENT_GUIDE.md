@@ -27,9 +27,16 @@ The image generation system requires these Supabase edge functions:
 2. **`ai-visual-scene-creator`** - Tier 1 AI enhancement  
 3. **`runware-simple-fallback`** - Tier 2.5 template fallback
 
+### Function Deployment Architecture
+- **Primary Functions**: Use TypeScript shims (`index.ts`) that import JavaScript implementations (`index.js`)
+- **Problematic Functions**: `runware-template-ab` may require pure JavaScript deployment (no TypeScript shim)
+- **Deployment Strategy**: GitHub Actions performs bulk deployment + individual function deployment for reliability
+
 ### Deployment
 
-Edge functions are automatically deployed when code is pushed to the repository. No manual deployment steps required.
+Edge functions are automatically deployed when code is pushed to the repository. The deployment workflow includes:
+1. Bulk deployment of all functions
+2. Individual deployment of `runware-template-ab` for reliability
 
 #### Manual Deployment (if needed)
 ```bash
