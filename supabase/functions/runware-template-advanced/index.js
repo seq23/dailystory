@@ -1,5 +1,5 @@
 // ============= RUNWARE TEMPLATE ADVANCED: TIER 2.5C & 2.5D =============
-// Simplified implementation of complexity levels C and D from runware-simple-fallback
+// Implementation of complexity levels C and D for advanced template generation
 // NO character consistency, NO shared functions beyond styleFrameworks
 // Pure pageText + style framework (C) or hardcoded template (D)
 

@@ -78,8 +78,6 @@ verify_jwt = false
 [functions.runware-generate-image]
 verify_jwt = false
 
-[functions.runware-simple-fallback]
-verify_jwt = false
 
 [functions.runware-template-advanced]
 verify_jwt = false

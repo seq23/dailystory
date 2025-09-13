@@ -320,26 +320,6 @@ async function callTierFunction(functionName, payload) {
       sessionId: payload.sessionId?.substring(0, 15) + '...' || 'none'
     });
     // Enhanced Tier 2.5 debugging - log detailed payload for fallback function
-    if (functionName === 'runware-simple-fallback') {
-      console.log(`🔧 TIER 2.5 ENHANCED DEBUG - Detailed payload analysis:`, {
-        hasPageText: !!payload.pageText && payload.pageText.length > 0,
-        pageTextLength: payload.pageText?.length || 0,
-        pageTextPreview: payload.pageText?.substring(0, 100) || 'none',
-        hasUserInfo: !!payload.userInfo,
-        userInfoKeys: payload.userInfo ? Object.keys(payload.userInfo) : [],
-        hasDifficulty: !!payload.difficultyLevel,
-        difficulty: payload.difficultyLevel,
-        hasAvatarIdentity: !!payload.avatarIdentity,
-        avatarIdentityKeys: payload.avatarIdentity ? Object.keys(payload.avatarIdentity) : [],
-        avatarName: payload.avatarIdentity?.name || 'none',
-        hasCharacterData: !!payload.characterData,
-        characterDataType: typeof payload.characterData,
-        hasSessionId: !!payload.sessionId,
-        sessionIdLength: payload.sessionId?.length || 0,
-        callingTier: '2.5',
-        timestamp: new Date().toISOString()
-      });
-    }
     // Use proper Supabase client for edge function calls - FIX FOR AUTHENTICATION ISSUES
     const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
     const supabase = createClient(Deno.env.get('SUPABASE_URL') || 'https://cpzeuogomaixamrtnnmj.supabase.co', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY'));
@@ -351,20 +331,6 @@ async function callTierFunction(functionName, payload) {
     if (invokeError) {
       console.error(`❌ ${functionName} Supabase invoke error:`, invokeError);
       // Enhanced debugging for Tier 2.5 failures
-      if (functionName === 'runware-simple-fallback') {
-        console.error(`🔍 TIER 2.5 SUPABASE INVOKE FAILURE:`, {
-          error: invokeError,
-          errorMessage: invokeError.message,
-          errorCode: invokeError.code,
-          errorDetails: invokeError.details,
-          payloadSessionId: payload.sessionId,
-          hasAvatarIdentity: !!payload.avatarIdentity,
-          hasUserInfo: !!payload.userInfo,
-          hasPageText: !!payload.pageText,
-          errorType: 'SUPABASE_INVOKE_ERROR',
-          timestamp: new Date().toISOString()
-        });
-      }
       throw new Error(`${functionName} failed: ${invokeError.message}`);
     }
     console.log(`🔍 DEBUG: ${functionName} response:`, {
@@ -378,34 +344,11 @@ async function callTierFunction(functionName, payload) {
       throw new Error(`${functionName} returned no data`);
     }
     // Enhanced Tier 2.5 success debugging
-    if (functionName === 'runware-simple-fallback') {
-      console.log(`🎯 TIER 2.5 SUCCESS ANALYSIS:`, {
-        success: result.success,
-        hasImageURL: !!result.imageURL,
-        imageURLPreview: result.imageURL?.substring(0, 50) + '...' || 'none',
-        provider: result.provider,
-        tier: result.tier,
-        seed: result.seed,
-        enhancementLevel: result.enhancementLevel,
-        metadata: result.metadata,
-        timestamp: new Date().toISOString()
-      });
-    }
     console.log(`✅ ${functionName} completed successfully via Supabase client`);
     return result;
   } catch (error) {
     console.error(`❌ ${functionName} failed:`, error);
     // Enhanced error logging for Tier 2.5
-    if (functionName === 'runware-simple-fallback') {
-      console.error(`🚨 TIER 2.5 CRITICAL FAILURE:`, {
-        errorMessage: error.message,
-        errorName: error.name,
-        errorStack: error.stack?.substring(0, 500),
-        functionName,
-        timestamp: new Date().toISOString(),
-        fallbackStatus: 'FAILED - Proceeding to Tier 4'
-      });
-    }
     throw error;
   }
 }
@@ -558,8 +501,12 @@ async function callTier4SimpleFallback(pageText, pageNumber, sessionId, req, rea
   console.log(`🛡️ TIER 4: Calling dedicated simple fallback function - ${reason}`);
   
   try {
-    const { data: tier4Result, error: tier4Error } = await supabase.functions.invoke('runware-simple-fallback', {
-      body: { pageText, pageNumber, sessionId }
+    const { data: tier4Result, error: tier4Error } = await supabase.functions.invoke('runware-template-advanced', {
+      body: { 
+        storyText: pageText, 
+        userInfo: { difficulty: 'easy' },
+        templateComplexity: 'D'
+      }
     });
     
     if (tier4Error || !tier4Result?.success) {

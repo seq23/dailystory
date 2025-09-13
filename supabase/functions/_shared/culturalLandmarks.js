@@ -1,5 +1,5 @@
 // ============= CULTURAL LANDMARKS SHARED MODULE =============
-// Moved from runware-simple-fallback to prevent duplication
+// Shared cultural landmarks for template functions
 
 export const CULTURAL_LANDMARKS = {
   spanish: {
