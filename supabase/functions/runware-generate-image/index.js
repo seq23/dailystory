@@ -999,7 +999,7 @@ serve(async (req)=>{
                 // Store new cultural selections in character consistency
                 if (!characterData?.selectedCulturalFeatures && !characterData?.selectedCulturalHair) {
                   try {
-                    const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.ts');
+                    const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
                     const characterService = new CharacterConsistencyService();
                     const characterName = avatarIdentity?.name || userInfo?.name || 'child';
                     const cacheKey = `${sessionId}_${characterName}`;
