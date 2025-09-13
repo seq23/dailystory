@@ -64,14 +64,55 @@ export class CharacterConsistencyService {
   }
 
   /**
-   * Extract visual details from page text
+   * PHASE 8: Extract visual details including character appearance from page text
    */
-  private extractVisualDetails(pageText: string): any {
-    if (!pageText) return { coloredObjects: [], atmosphericWords: [] };
+  private extractVisualDetails(pageText: string, characterName?: string): any {
+    if (!pageText) return { 
+      coloredObjects: [], 
+      atmosphericWords: [], 
+      characterAppearance: null 
+    };
 
     const text = pageText.toLowerCase();
     const coloredObjects: string[] = [];
     const atmosphericWords: string[] = [];
+    let characterAppearance: string | null = null;
+
+    // PHASE 8: Character appearance extraction (story text priority)
+    if (characterName) {
+      const nameLower = characterName.toLowerCase();
+      
+      // Appearance patterns for character descriptions
+      const appearancePatterns = [
+        // Hair descriptions
+        new RegExp(`${nameLower}.*?(with|has|sports?|shows?)\\s+([^.!?]*hair[^.!?]*?)(?=[.!?]|$)`, 'i'),
+        // Skin/complexion descriptions
+        new RegExp(`${nameLower}.*?(with|has)\\s+([^.!?]*skin[^.!?]*?)(?=[.!?]|$)`, 'i'),
+        // Eye descriptions  
+        new RegExp(`${nameLower}.*?(with|has)\\s+([^.!?]*eyes?[^.!?]*?)(?=[.!?]|$)`, 'i'),
+        // Clothing descriptions
+        new RegExp(`${nameLower}.*?(wearing|dressed in|in)\\s+([^.!?]+?)(?=[.!?]|$)`, 'i'),
+        // General appearance
+        new RegExp(`${nameLower}.*?(looks?|appears?|seems?)\\s+([^.!?]+?)(?=[.!?]|$)`, 'i')
+      ];
+      
+      const appearances: string[] = [];
+      
+      for (const pattern of appearancePatterns) {
+        const match = pageText.match(pattern);
+        if (match && match[2]) {
+          const description = match[2].trim();
+          if (description.length > 3 && description.length < 100) {
+            appearances.push(description);
+          }
+        }
+      }
+      
+      if (appearances.length > 0) {
+        characterAppearance = appearances.join(', ').replace(/[.!?]+$/, '');
+        console.log('✅ CHARACTER APPEARANCE EXTRACTED:', characterAppearance);
+      }
+    }
 
     // Color patterns with objects
     const colorObjectPatterns = [
@@ -103,8 +144,38 @@ export class CharacterConsistencyService {
 
     return {
       coloredObjects: [...new Set(coloredObjects)].slice(0, 3),
-      atmosphericWords: [...new Set(atmosphericWords)].slice(0, 3)
+      atmosphericWords: [...new Set(atmosphericWords)].slice(0, 3),
+      characterAppearance: characterAppearance
     };
+  }
+
+  /**
+   * PHASE 8: Get character appearance from story text with caching
+   */
+  async getCharacterAppearanceFromStory(sessionId: string, characterName?: string): Promise<string | null> {
+    try {
+      let combinedAppearance: string | null = null;
+      const appearances: string[] = [];
+      
+      // Collect appearance details from all cached pages
+      this.visualDetailCache.forEach((details, key) => {
+        if (key.startsWith(sessionId) && details.characterAppearance) {
+          appearances.push(details.characterAppearance);
+        }
+      });
+      
+      if (appearances.length > 0) {
+        // Combine and deduplicate appearance details
+        const uniqueAppearances = [...new Set(appearances)];
+        combinedAppearance = uniqueAppearances.join(', ');
+        console.log('✅ STORY APPEARANCE RETRIEVED:', combinedAppearance);
+      }
+      
+      return combinedAppearance;
+    } catch (error) {
+      console.warn('Character appearance extraction failed:', error);
+      return null;
+    }
   }
 
   /**

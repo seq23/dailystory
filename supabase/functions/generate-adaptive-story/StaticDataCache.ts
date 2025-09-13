@@ -264,17 +264,115 @@ export const getGenderPronounMapping = () => {
   return mapping;
 };
 
-// Enhanced avatar info processor - UNIVERSAL coverage (no language restriction)
+// ============================================================================
+// PHASE 8: UNIFIED AVATAR IDENTITY PROCESSOR - SINGLE SOURCE OF TRUTH
+// ============================================================================
+// This function creates complete avatar identity bundles with binary validation
+// Replaces all distributed avatar mapping logic across the system
+
+// Enhanced skin tone variation arrays for cultural accuracy
+const CULTURAL_SKIN_TONE_VARIATIONS = {
+  pale: [
+    'very fair skin with warm undertones',
+    'porcelain skin with neutral undertones', 
+    'fair skin with cool undertones',
+    'light peachy skin',
+    'alabaster skin with golden hints'
+  ],
+  light: [
+    'light skin with warm golden undertones',
+    'fair skin with peachy undertones',
+    'ivory skin with neutral tones',
+    'light beige skin',
+    'cream-colored skin with subtle warmth'
+  ],
+  medium: [
+    'warm medium brown skin',
+    'olive-toned medium skin',
+    'golden medium skin',
+    'honey-colored skin',
+    'medium tan skin with warm undertones'
+  ],
+  olive: [
+    'rich olive skin with golden undertones',
+    'Mediterranean olive skin',
+    'warm olive-toned skin',
+    'golden olive complexion',
+    'deep olive skin with bronze hints'
+  ],
+  dark: [
+    'beautiful rich dark skin',
+    'deep ebony skin with natural glow',
+    'warm dark brown skin',
+    'rich mahogany skin tone',
+    'gorgeous dark complexion with golden undertones'
+  ]
+};
+
+// Cultural profile detection for enhanced representation
+export const detectCulturalProfile = (userInfo: any): string => {
+  const nativeLanguage = userInfo?.nativeLanguage || 'en';
+  const skinTone = userInfo?.avatar?.skinTone || 'medium';
+  
+  // Enhanced cultural profile mapping
+  const culturalProfiles = {
+    'ar': 'middle-eastern',
+    'es': skinTone === 'dark' ? 'afro-latina' : 'latina',
+    'zh': 'east-asian',
+    'hi': 'south-asian',
+    'pt': skinTone === 'dark' ? 'afro-brazilian' : 'brazilian',
+    'fr': skinTone === 'dark' ? 'francophone-african' : 'european',
+    'en': skinTone === 'dark' ? 'african-american' : 'general'
+  };
+  
+  return culturalProfiles[nativeLanguage] || 'general';
+};
+
+// Binary avatar identity validation - ALL OR NONE principle
+export const validateAvatarIdentityCompleteness = (userInfo: any): { isComplete: boolean; missing: string[] } => {
+  const required = ['type', 'skinTone', 'name'];
+  const missing: string[] = [];
+  
+  if (!userInfo?.avatar?.type && !userInfo?.avatarType) missing.push('type');
+  if (!userInfo?.avatar?.skinTone) missing.push('skinTone');
+  if (!userInfo?.name) missing.push('name');
+  
+  return {
+    isComplete: missing.length === 0,
+    missing
+  };
+};
+
+// Enhanced avatar identity processor with binary validation
 export const processAvatarIdentityFromCache = (userInfo: any) => {
+  console.log('🔍 PHASE 8: Processing avatar identity with binary validation');
+  
+  // Step 1: Binary completeness validation
+  const validation = validateAvatarIdentityCompleteness(userInfo);
+  if (!validation.isComplete) {
+    console.warn('❌ BINARY VALIDATION FAILED: Missing required fields:', validation.missing);
+    return null; // Binary failure - return null for incomplete identity
+  }
+  
+  // Step 2: Extract and process avatar data
   const hairMapping = getHairColorMapping();
   const genderMapping = getGenderPronounMapping();
   
-  // Hair color processing - randomly select from available options
+  // Core avatar properties with fallbacks
+  const avatarType = userInfo?.avatarType || userInfo?.avatar?.type || 'child';
   const skinTone = userInfo?.avatar?.skinTone || 'medium';
-  const hairOptions = hairMapping[skinTone] || hairMapping['medium'];
+  const userName = userInfo?.name || 'Child';
+  const nativeLanguage = userInfo?.nativeLanguage || 'en';
   
-  // Filter out gendered hairstyles for gender-neutral avatars
-  const avatarType = userInfo?.avatarType || userInfo?.avatar?.type || 'prefer-not-to-answer';
+  // Step 3: Cultural profile detection
+  const culturalProfile = detectCulturalProfile(userInfo);
+  
+  // Step 4: Enhanced skin tone variation selection
+  const skinToneVariations = CULTURAL_SKIN_TONE_VARIATIONS[skinTone] || CULTURAL_SKIN_TONE_VARIATIONS['medium'];
+  const skinToneVariation = skinToneVariations[Math.floor(Math.random() * skinToneVariations.length)];
+  
+  // Step 5: Hair color processing with cultural awareness
+  const hairOptions = hairMapping[skinTone] || hairMapping['medium'];
   const filteredHairOptions = avatarType === 'prefer-not-to-answer' 
     ? hairOptions.filter(hair => !hair.toLowerCase().includes('pigtails') && 
                                  !hair.toLowerCase().includes('ponytail') && 
@@ -284,18 +382,82 @@ export const processAvatarIdentityFromCache = (userInfo: any) => {
   
   const hairColor = filteredHairOptions[Math.floor(Math.random() * filteredHairOptions.length)];
   
-  // Gender/pronoun processing  
-  console.log('Processing avatar identity - avatarType:', avatarType, 'userInfo structure:', { avatarType: userInfo?.avatarType, avatarNestedType: userInfo?.avatar?.type });
-  const pronoun = genderMapping.pronouns[avatarType];
-  const completeGenderInfo = genderMapping.completeInfo[avatarType];
+  // Step 6: Gender/pronoun processing
+  const pronoun = genderMapping.pronouns[avatarType] || 'they';
+  const completeGenderInfo = genderMapping.completeInfo[avatarType] || genderMapping.fallbacks.completeInfo;
   
+  // Step 7: Create complete avatar identity bundle
+  const avatarIdentity = {
+    // Core identity fields (required for enhanced processing)
+    type: avatarType,
+    skinTone: skinTone,
+    skinToneVariation: skinToneVariation,
+    hairColor: hairColor,
+    culturalProfile: culturalProfile,
+    nativeLanguage: nativeLanguage,
+    name: userName,
+    
+    // Processed fields for image generation
+    pronoun: pronoun,
+    completeGenderInfo: completeGenderInfo,
+    
+    // Enhanced visual description for consistency
+    visualDescription: `${userName} is a ${avatarType} with ${skinToneVariation} and ${hairColor}`,
+    
+    // Metadata for tier routing
+    completenessValidation: validation,
+    processingTimestamp: Date.now()
+  };
+  
+  console.log('✅ PHASE 8: Complete avatar identity processed:', {
+    type: avatarIdentity.type,
+    skinTone: avatarIdentity.skinTone,
+    culturalProfile: avatarIdentity.culturalProfile,
+    visualDescriptionLength: avatarIdentity.visualDescription.length
+  });
+  
+  return avatarIdentity;
+};
+
+// Service health validation for consistency services
+export const validateConsistencyServices = (): { available: boolean; missing: string[] } => {
+  // This would check if character consistency and visual tracking services are operational
+  // For now, return true as services are embedded in the same function
   return {
-    hairColor,
-    pronoun, 
-    completeGenderInfo,
-    avatarType,
-    skinTone,
-    userName: userInfo?.name || 'Child'
+    available: true,
+    missing: []
+  };
+};
+
+// Binary tier routing based on avatar identity and service availability
+export const determineImageGenerationTier = (userInfo: any): { tier: string; reason: string; avatarIdentity: any } => {
+  // Step 1: Validate avatar identity completeness
+  const avatarIdentity = processAvatarIdentityFromCache(userInfo);
+  
+  if (!avatarIdentity) {
+    return {
+      tier: '2.5C',
+      reason: 'Incomplete avatar identity - missing required fields',
+      avatarIdentity: null
+    };
+  }
+  
+  // Step 2: Validate consistency services availability
+  const serviceValidation = validateConsistencyServices();
+  
+  if (!serviceValidation.available) {
+    return {
+      tier: '2.5B',
+      reason: 'Complete avatar identity but consistency services unavailable',
+      avatarIdentity: avatarIdentity
+    };
+  }
+  
+  // Step 3: Enhanced processing available
+  return {
+    tier: '1',
+    reason: 'Complete avatar identity and all services available',
+    avatarIdentity: avatarIdentity
   };
 };
 

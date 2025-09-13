@@ -39,16 +39,31 @@ export const AVATAR_FALLBACK_DESCRIPTIONS = {
   "default": "{name} is a young child with a bright smile and cheerful demeanor, with no gender specific characteristics"
 };
 
-// Character description generation function - ONLY FOR CHARACTER SECTION
-export function validateAvatarConsistency(prompt, avatarIdentity, userInfo) {
+// ============================================================================
+// PHASE 8: BINARY AVATAR VALIDATION WITH STORY TEXT PRIORITY
+// ============================================================================
+
+// Character description generation with story text priority
+export function validateAvatarConsistency(prompt, avatarIdentity, userInfo, storyTextAppearance = null) {
   const userName = userInfo?.name || 'child';
   
-  // This function now ONLY returns character descriptions, not full prompt validation
-  console.log('🔍 AVATAR VALIDATION: Generating character description only');
+  console.log('🔍 PHASE 8: Avatar validation with story text priority');
   
-  // If no avatar identity provided, use fallback
+  // PRIORITY 1: Story text appearance overrides everything
+  if (storyTextAppearance && storyTextAppearance.length > 0) {
+    console.log('✅ STORY TEXT PRIORITY: Using appearance from story text');
+    return `${userName} ${storyTextAppearance}`;
+  }
+  
+  // PRIORITY 2: Complete avatar identity from StaticDataCache
+  if (avatarIdentity && avatarIdentity.visualDescription) {
+    console.log('✅ AVATAR IDENTITY: Using complete processed identity');
+    return avatarIdentity.visualDescription;
+  }
+  
+  // PRIORITY 3: Binary validation failure - use fallback descriptions
   if (!avatarIdentity) {
-    console.log('🔍 AVATAR VALIDATION: No avatarIdentity provided, using fallback');
+    console.log('🔍 BINARY FAILURE: No complete avatarIdentity, using fallback system');
     const avatarType = userInfo?.avatar?.type || 'child';
     const skinTone = userInfo?.avatar?.skinTone;
     
@@ -62,31 +77,63 @@ export function validateAvatarConsistency(prompt, avatarIdentity, userInfo) {
     
     const fallbackKey = `${avatarType}/${skinTone}`;
     const fallbackDescription = AVATAR_FALLBACK_DESCRIPTIONS[fallbackKey] || AVATAR_FALLBACK_DESCRIPTIONS["default"];
-    console.log(`🔍 AVATAR VALIDATION: Applied fallback ${fallbackKey} for missing identity`);
+    console.log(`🔍 FALLBACK APPLIED: ${fallbackKey} for incomplete identity`);
     return fallbackDescription.replace('{name}', userName);
   }
 
-  // Always return appropriate character description based on avatar identity
+  // PRIORITY 4: Partial avatar identity - construct from available data
   const avatarType = avatarIdentity.type || 'child';
   const skinTone = avatarIdentity.skinTone || 'medium';
   const fallbackKey = `${avatarType}/${skinTone}`;
   const characterDescription = AVATAR_FALLBACK_DESCRIPTIONS[fallbackKey] || AVATAR_FALLBACK_DESCRIPTIONS["default"];
   
-  console.log(`🔍 AVATAR VALIDATION: Generated character description for ${fallbackKey}`);
+  console.log(`🔍 PARTIAL IDENTITY: Generated description for ${fallbackKey}`);
   return characterDescription.replace('{name}', userName);
 }
 
-// Quality-based avatar validation for fallback trigger
-export function validateAvatarQuality(prompt, avatarIdentity, userInfo) {
+// ============================================================================
+// PHASE 8: BINARY QUALITY VALIDATION FOR TIER ROUTING
+// ============================================================================
+
+// Enhanced quality validation with binary logic
+export function validateAvatarQuality(prompt, avatarIdentity, userInfo, tierInfo = null) {
   const userName = userInfo?.name || 'child';
   
-  // Missing avatar identity - quality failure
+  console.log('🔍 PHASE 8: Binary quality validation for tier routing');
+  
+  // BINARY CHECK 1: Avatar identity completeness
   if (!avatarIdentity) {
-    console.log('🔍 QUALITY CHECK: Missing avatar identity - triggering fallback');
-    return { isQualityAcceptable: false, reason: 'missing_avatar_identity' };
+    console.log('❌ BINARY FAILURE: Missing complete avatar identity - routing to Tier 2.5C');
+    return { 
+      isQualityAcceptable: false, 
+      reason: 'missing_complete_avatar_identity',
+      suggestedTier: '2.5C'
+    };
   }
   
-  // Generic or low-quality patterns
+  // BINARY CHECK 2: Avatar identity validation metadata
+  if (avatarIdentity.completenessValidation && !avatarIdentity.completenessValidation.isComplete) {
+    console.log('❌ BINARY FAILURE: Avatar identity failed completeness validation - routing to Tier 2.5C');
+    return { 
+      isQualityAcceptable: false, 
+      reason: 'incomplete_avatar_fields',
+      suggestedTier: '2.5C',
+      missingFields: avatarIdentity.completenessValidation.missing
+    };
+  }
+  
+  // BINARY CHECK 3: Visual description quality
+  if (!avatarIdentity.visualDescription || avatarIdentity.visualDescription.length < 20) {
+    console.log('❌ BINARY FAILURE: Insufficient visual description - routing to Tier 2.5B');
+    return { 
+      isQualityAcceptable: false, 
+      reason: 'insufficient_visual_description',
+      suggestedTier: '2.5B'
+    };
+  }
+  
+  // BINARY CHECK 4: Prompt quality patterns (legacy check)
+  const promptString = typeof prompt === 'string' ? prompt : JSON.stringify(prompt);
   const lowQualityPatterns = [
     `${userName} is a young child`,
     `${userName} is a child`,
@@ -97,24 +144,61 @@ export function validateAvatarQuality(prompt, avatarIdentity, userInfo) {
     'null'
   ];
   
-  // Ensure prompt is a string before processing
-  const promptString = typeof prompt === 'string' ? prompt : JSON.stringify(prompt);
-  
   const hasLowQuality = lowQualityPatterns.some(pattern => 
     promptString.toLowerCase().includes(pattern.toLowerCase())
   );
   
   if (hasLowQuality) {
-    console.log('🔍 QUALITY CHECK: Low quality avatar description - triggering fallback');
-    return { isQualityAcceptable: false, reason: 'generic_description' };
+    console.log('⚠️ QUALITY WARNING: Low quality patterns detected but avatar identity complete');
+    // Don't fail here if avatar identity is complete - just log warning
   }
   
-  // Missing visual description from avatar identity
-  if (!avatarIdentity.visualDescription || avatarIdentity.visualDescription.length < 20) {
-    console.log('🔍 QUALITY CHECK: Insufficient visual description - triggering fallback');
-    return { isQualityAcceptable: false, reason: 'insufficient_visual_description' };
+  console.log('✅ BINARY SUCCESS: Avatar quality acceptable for enhanced processing');
+  return { 
+    isQualityAcceptable: true, 
+    reason: 'quality_passed',
+    suggestedTier: tierInfo?.tier || '1'
+  };
+}
+
+// New function: Extract appearance details from story text
+export function extractAppearanceFromStoryText(storyText, characterName) {
+  if (!storyText || !characterName) return null;
+  
+  console.log('🔍 EXTRACTING: Appearance details from story text');
+  
+  // Appearance patterns to look for
+  const appearancePatterns = [
+    // Hair descriptions
+    new RegExp(`${characterName}.*?(with|has)\\s+([^.!?]+hair[^.!?]*[.!?])`, 'i'),
+    // Skin/complexion descriptions  
+    new RegExp(`${characterName}.*?(with|has)\\s+([^.!?]*skin[^.!?]*[.!?])`, 'i'),
+    // Eye descriptions
+    new RegExp(`${characterName}.*?(with|has)\\s+([^.!?]*eyes?[^.!?]*[.!?])`, 'i'),
+    // Clothing descriptions
+    new RegExp(`${characterName}.*?(wearing|in)\\s+([^.!?]+[.!?])`, 'i'),
+    // General appearance
+    new RegExp(`${characterName}.*?(looks?|appears?)\\s+([^.!?]+[.!?])`, 'i')
+  ];
+  
+  const appearances = [];
+  
+  for (const pattern of appearancePatterns) {
+    const match = storyText.match(pattern);
+    if (match && match[2]) {
+      const description = match[2].trim();
+      if (description.length > 3) {
+        appearances.push(description);
+      }
+    }
   }
   
-  console.log('🔍 QUALITY CHECK: Avatar quality acceptable');
-  return { isQualityAcceptable: true, reason: 'quality_passed' };
+  if (appearances.length > 0) {
+    const combinedAppearance = appearances.join(' ').replace(/[.!?]+/g, '');
+    console.log('✅ EXTRACTED: Story appearance details:', combinedAppearance);
+    return combinedAppearance;
+  }
+  
+  console.log('🔍 NO EXTRACTION: No specific appearance details found in story text');
+  return null;
 }

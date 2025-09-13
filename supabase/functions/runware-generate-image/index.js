@@ -350,27 +350,68 @@ async function callTierFunction(functionName, payload) {
     throw error;
   }
 }
-// ============= AVATAR IDENTITY MAPPER =============
-// CRITICAL: This function maps UI avatar data to AI generation parameters
-// DO NOT MODIFY without understanding the full avatar pipeline impact
+// ============================================================================
+// PHASE 8: AVATAR IDENTITY INTEGRATION WITH STATICDATACACHE  
+// ============================================================================
+// This function now uses StaticDataCache as single source of truth
+
 function mapAvatarIdentity(userInfo, sessionId) {
-  // REGRESSION PREVENTION: Default fallback identity
-  // - skinTone: 'medium' is the statistically most common and balanced default
-  // - DO NOT change to 'light' as this creates bias toward lighter skin tones
-  // - 'medium' ensures better representation across all user demographics
-  const defaultIdentity = {
-    type: 'child',
-    skinTone: 'medium',
-    culturalProfile: 'general',
-    nativeLanguage: 'english',
-    name: userInfo?.name || 'the child',
-    hairColor: null
-  };
-  // If no avatar info provided, return default
-  if (!userInfo?.avatar) {
-    console.log('🔄 Avatar mapping: No avatar data provided, using default identity');
-    return defaultIdentity;
+  console.log('🔍 PHASE 8: Using StaticDataCache for avatar identity processing');
+  
+  // Import StaticDataCache functions dynamically
+  try {
+    // Use StaticDataCache for binary avatar identity processing
+    const { processAvatarIdentityFromCache, determineImageGenerationTier } = require('../generate-adaptive-story/StaticDataCache.ts');
+    
+    // Get complete avatar identity with binary validation
+    const avatarIdentity = processAvatarIdentityFromCache(userInfo);
+    
+    if (!avatarIdentity) {
+      console.warn('❌ PHASE 8: Binary validation failed - returning minimal identity for Tier 2.5C+');
+      
+      // Return minimal identity for lower tier processing
+      return {
+        type: userInfo?.avatar?.type || 'child',
+        skinTone: userInfo?.avatar?.skinTone || 'medium',
+        culturalProfile: 'general',
+        nativeLanguage: 'en',
+        name: userInfo?.name || 'the child',
+        hairColor: null,
+        // Metadata for tier routing
+        tierRouting: {
+          suggestedTier: '2.5C',
+          reason: 'incomplete_avatar_identity'
+        }
+      };
+    }
+    
+    console.log('✅ PHASE 8: Complete avatar identity from StaticDataCache:', {
+      type: avatarIdentity.type,
+      skinTone: avatarIdentity.skinTone,
+      culturalProfile: avatarIdentity.culturalProfile
+    });
+    
+    return avatarIdentity;
+    
+  } catch (error) {
+    console.error('❌ PHASE 8: StaticDataCache import failed, using fallback logic:', error);
+    
+    // Fallback to minimal processing if StaticDataCache unavailable
+    return {
+      type: userInfo?.avatar?.type || 'child',
+      skinTone: userInfo?.avatar?.skinTone || 'medium',
+      culturalProfile: 'general',
+      nativeLanguage: 'en',
+      name: userInfo?.name || 'the child',
+      hairColor: null,
+      // Metadata for tier routing
+      tierRouting: {
+        suggestedTier: '2.5D',
+        reason: 'staticdatacache_unavailable'
+      }
+    };
   }
+}
   // REGRESSION PREVENTION: Avatar type mapping
   // This maps UI avatar type values to AI generation parameters
   const avatarTypeMap = {
@@ -841,9 +882,36 @@ serve(async (req)=>{
       forceTier: forceTier || 'auto',
       timestamp: new Date().toISOString()
     });
-    // PHASE 1: Avatar Identity Mapper - Process user avatar data once at orchestrator level
+    // ============================================================================
+    // PHASE 8: AVATAR IDENTITY PROCESSING WITH BINARY TIER ROUTING
+    // ============================================================================
+    
+    // Process avatar identity using StaticDataCache (single source of truth)
     const avatarIdentity = mapAvatarIdentity(userInfo, sessionId);
-    console.log(`👤 Avatar Identity Mapped: ${avatarIdentity.type}/${avatarIdentity.skinTone} - Cultural: ${avatarIdentity.culturalProfile}`);
+    console.log(`👤 PHASE 8: Avatar Identity Processed: ${avatarIdentity.type}/${avatarIdentity.skinTone} - Cultural: ${avatarIdentity.culturalProfile}`);
+    
+    // Binary tier routing based on avatar identity completeness
+    console.log('🔍 PHASE 8: Evaluating binary tier routing');
+    
+    if (avatarIdentity?.tierRouting) {
+      const suggestedTier = avatarIdentity.tierRouting.suggestedTier;
+      const routingReason = avatarIdentity.tierRouting.reason;
+      
+      console.log(`🎯 PHASE 8: Binary routing suggests ${suggestedTier} (${routingReason})`);
+      
+      if (suggestedTier === '2.5C') {
+        console.log('🔄 PHASE 8: Routing to Tier 2.5C - incomplete avatar identity');
+        forceTier = 2.5; // Force to template fallbacks
+      } else if (suggestedTier === '2.5D') {
+        console.log('🔄 PHASE 8: Routing to Tier 2.5D - StaticDataCache unavailable');
+        forceTier = 2.5; // Force to template fallbacks
+      }
+    } else if (avatarIdentity?.completenessValidation?.isComplete === false) {
+      console.log('❌ PHASE 8: Avatar identity incomplete - routing to Tier 2.5C');
+      forceTier = 2.5; // Route to template fallbacks for incomplete identity
+    } else {
+      console.log('✅ PHASE 8: Complete avatar identity - proceeding with enhanced processing');
+    }
     // ORCHESTRATOR SCOPE: Initialize shared variables for nuclear independence
     let characterData = null; // Safe default - will be populated by Tier 1 if successful
     console.log('🛡️ Orchestrator: Initialized characterData to null for nuclear scope safety');
@@ -956,8 +1024,13 @@ serve(async (req)=>{
         };
         const difficulty = gradeLevelToDifficulty(userInfo.gradeLevel || 'K');
         const storyFramework = getStyleFramework(difficulty);
-        // 3. Avatar Validation - Fix parameter order
-        const validatedAvatar = validateAvatarConsistency('', avatarIdentity, userInfo);
+        // 3. Avatar Validation with PHASE 8 Story Text Priority
+        // Extract character appearance from story text first (story text wins)
+        const { extractAppearanceFromStoryText } = await import('../_shared/avatarConsistency.js');
+        const characterName = avatarIdentity?.name || userInfo?.name || 'child';
+        const storyTextAppearance = extractAppearanceFromStoryText(pageText, characterName);
+        
+        const validatedAvatar = validateAvatarConsistency('', avatarIdentity, userInfo, storyTextAppearance);
         // PHASE 5: Use main function requestId for cross-function correlation 
         console.log(`🎯 [${requestId}] Starting Runware prompt assembly phase`);
         // PHASE 4: Enhanced 5-Section Architecture prompt construction
@@ -1140,10 +1213,16 @@ serve(async (req)=>{
             source: 'CharacterConsistencyService'
           });
         } else {
-          // Use avatar validation ONLY for character description generation
-          console.warn(`⚠️ [${requestId}] Missing character description, using avatar fallback`);
-          characterSection = validateAvatarConsistency('', avatarIdentity, userInfo);
-          console.log(`🔍 [${requestId}] Avatar fallback character description generated:`, characterSection);
+          // PHASE 8: Use avatar validation with story text priority for character description
+          console.warn(`⚠️ [${requestId}] Missing character description, using PHASE 8 avatar fallback with story priority`);
+          
+          // Extract appearance from story text (priority system)
+          const { extractAppearanceFromStoryText } = await import('../_shared/avatarConsistency.js');
+          const characterName = avatarIdentity?.name || userInfo?.name || 'child';
+          const storyTextAppearance = extractAppearanceFromStoryText(pageText, characterName);
+          
+          characterSection = validateAvatarConsistency('', avatarIdentity, userInfo, storyTextAppearance);
+          console.log(`🔍 [${requestId}] PHASE 8 avatar fallback with story priority generated:`, characterSection);
         }
         const culturalContext = await generateCulturalContext(avatarIdentity, userInfo, requestId, characterData);
         if (culturalContext) {
