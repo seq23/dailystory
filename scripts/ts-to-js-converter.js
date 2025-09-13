@@ -164,8 +164,8 @@ class TSToJSConverter {
 // Run the conversion
 async function main() {
   const converter = new TSToJSConverter();
-  const inputPath = 'supabase/functions/_shared/ExactWordExtractor.js.temp';
-  const outputPath = 'supabase/functions/_shared/ExactWordExtractor.js';
+  const inputPath = 'StaticDataCache.ts.temp';
+  const outputPath = 'StaticDataCache.js.temp';
   
   try {
     await converter.convertFile(inputPath, outputPath);
