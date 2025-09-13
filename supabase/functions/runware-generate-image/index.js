@@ -351,69 +351,30 @@ async function callTierFunction(functionName, payload) {
   }
 }
 // ============================================================================
-// PHASE 8: AVATAR IDENTITY INTEGRATION WITH STATICDATACACHE  
+// AVATAR IDENTITY MAPPER - RESTORED WORKING VERSION
 // ============================================================================
-// This function now uses StaticDataCache as single source of truth
+// CRITICAL: This function maps UI avatar data to AI generation parameters
 
 function mapAvatarIdentity(userInfo, sessionId) {
-  console.log('🔍 PHASE 8: Using StaticDataCache for avatar identity processing');
+  console.log('🔍 Avatar mapping: Processing user avatar data');
   
-  // Import StaticDataCache functions dynamically
-  try {
-    // Use StaticDataCache for binary avatar identity processing
-    const { processAvatarIdentityFromCache, determineImageGenerationTier } = require('../generate-adaptive-story/StaticDataCache.ts');
-    
-    // Get complete avatar identity with binary validation
-    const avatarIdentity = processAvatarIdentityFromCache(userInfo);
-    
-    if (!avatarIdentity) {
-      console.warn('❌ PHASE 8: Binary validation failed - returning minimal identity for Tier 2.5C+');
-      
-      // Return minimal identity for lower tier processing
-      return {
-        type: userInfo?.avatar?.type || 'child',
-        skinTone: userInfo?.avatar?.skinTone || 'medium',
-        culturalProfile: 'general',
-        nativeLanguage: 'en',
-        name: userInfo?.name || 'the child',
-        hairColor: null,
-        // Metadata for tier routing
-        tierRouting: {
-          suggestedTier: '2.5C',
-          reason: 'incomplete_avatar_identity'
-        }
-      };
-    }
-    
-    console.log('✅ PHASE 8: Complete avatar identity from StaticDataCache:', {
-      type: avatarIdentity.type,
-      skinTone: avatarIdentity.skinTone,
-      culturalProfile: avatarIdentity.culturalProfile
-    });
-    
-    return avatarIdentity;
-    
-  } catch (error) {
-    console.error('❌ PHASE 8: StaticDataCache import failed, using fallback logic:', error);
-    
-    // Fallback to minimal processing if StaticDataCache unavailable
-    return {
-      type: userInfo?.avatar?.type || 'child',
-      skinTone: userInfo?.avatar?.skinTone || 'medium',
-      culturalProfile: 'general',
-      nativeLanguage: 'en',
-      name: userInfo?.name || 'the child',
-      hairColor: null,
-      // Metadata for tier routing
-      tierRouting: {
-        suggestedTier: '2.5D',
-        reason: 'staticdatacache_unavailable'
-      }
-    };
+  // REGRESSION PREVENTION: Default fallback identity
+  const defaultIdentity = {
+    type: 'child',
+    skinTone: 'medium',
+    culturalProfile: 'general',
+    nativeLanguage: 'en',
+    name: userInfo?.name || 'the child',
+    hairColor: null
+  };
+  
+  // If no avatar info provided, return default
+  if (!userInfo?.avatar) {
+    console.log('🔄 Avatar mapping: No avatar data provided, using default identity');
+    return defaultIdentity;
   }
-}
+  
   // REGRESSION PREVENTION: Avatar type mapping
-  // This maps UI avatar type values to AI generation parameters
   const avatarTypeMap = {
     'boy': 'boy',
     'girl': 'girl',
@@ -421,6 +382,63 @@ function mapAvatarIdentity(userInfo, sessionId) {
     'kid': 'child',
     'prefer-not-to-answer': 'prefer-not-to-answer'
   };
+  
+  // CRITICAL SKIN TONE MAPPING - DO NOT MODIFY THESE 5 MAPPINGS
+  const skinToneMap = {
+    'pale': 'pale',
+    'light': 'light',
+    'medium': 'medium',
+    'olive': 'olive',
+    'dark': 'dark'
+  };
+  
+  // Hair color mapping for English speakers only
+  const hairColorMap = {
+    'pale': 'red hair',
+    'light': 'blonde hair', 
+    'medium': 'brown hair',
+    'olive': 'black hair',
+    'dark': 'textured natural hair'
+  };
+  
+  // Process avatar identity
+  const avatarType = avatarTypeMap[userInfo.avatar.type] || defaultIdentity.type;
+  const skinTone = skinToneMap[userInfo.avatar.skinTone] || defaultIdentity.skinTone;
+  
+  // Generate character seed for consistency
+  const characterSeed = Math.abs(
+    Array.from(sessionId + (userInfo?.name || 'child')).reduce((acc, char) => {
+      return acc + char.charCodeAt(0);
+    }, 0)
+  ) % 100000;
+  
+  // Cultural profile detection
+  let culturalProfile = 'general';
+  const nativeLanguage = userInfo?.nativeLanguage || userInfo?.native_language || 'en';
+  
+  if (nativeLanguage !== 'en') {
+    culturalProfile = nativeLanguage;
+  } else if (skinTone === 'dark') {
+    culturalProfile = 'african-american';
+  }
+  
+  const mappedIdentity = {
+    type: avatarType,
+    skinTone: skinTone,
+    culturalProfile: culturalProfile,
+    nativeLanguage: nativeLanguage,
+    name: userInfo?.name || defaultIdentity.name,
+    hairColor: hairColorMap[skinTone] || null,
+    seed: characterSeed
+  };
+  
+  console.log('✅ Avatar mapping completed:', {
+    input: `${userInfo.avatar.type}/${userInfo.avatar.skinTone}`,
+    output: `${mappedIdentity.type}/${mappedIdentity.skinTone}`
+  });
+  
+  return mappedIdentity;
+}
   // CRITICAL SKIN TONE MAPPING - DO NOT MODIFY THESE 5 MAPPINGS
   // These correspond to the exact 5 skin tone options in the UI:
   // REGRESSION WARNING: Removing ANY of these 5 mappings will break avatar generation
