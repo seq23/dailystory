@@ -17,29 +17,83 @@ jobs:
         with:
           version: 1.200.3
       - run: supabase functions deploy --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy runware-template-ab specifically
-        run: supabase functions deploy runware-template-ab --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy activate-discount-code specifically
+        run: supabase functions deploy activate-discount-code --project-ref $SUPABASE_PROJECT_ID
       - name: Force deploy ai-visual-scene-creator specifically
         run: supabase functions deploy ai-visual-scene-creator --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy security-dashboard specifically
-        run: supabase functions deploy security-dashboard --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy validate-discount-code specifically
-        run: supabase functions deploy validate-discount-code --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy openai-tts specifically
-        run: supabase functions deploy openai-tts --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy voice-to-text specifically
-        run: supabase functions deploy voice-to-text --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy apply-discount-code specifically
+        run: supabase functions deploy apply-discount-code --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy background-image-pregeneration specifically
+        run: supabase functions deploy background-image-pregeneration --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy check-subscription specifically
+        run: supabase functions deploy check-subscription --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy clear-character-cache specifically
+        run: supabase functions deploy clear-character-cache --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy correct-spelling specifically
+        run: supabase functions deploy correct-spelling --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy create-checkout specifically
+        run: supabase functions deploy create-checkout --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy create-premium-subscription specifically
+        run: supabase functions deploy create-premium-subscription --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy customer-portal specifically
+        run: supabase functions deploy customer-portal --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy elevenlabs-agent-signed-url specifically
+        run: supabase functions deploy elevenlabs-agent-signed-url --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy elevenlabs-dictionary-manager specifically
+        run: supabase functions deploy elevenlabs-dictionary-manager --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy elevenlabs-tts-smart specifically
+        run: supabase functions deploy elevenlabs-tts-smart --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy elevenlabs-tts specifically
+        run: supabase functions deploy elevenlabs-tts --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy generate-adaptive-story specifically
+        run: supabase functions deploy generate-adaptive-story --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy generate-fallback-images specifically
+        run: supabase functions deploy generate-fallback-images --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy get-monitoring-data specifically
+        run: supabase functions deploy get-monitoring-data --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy image-proxy specifically
+        run: supabase functions deploy image-proxy --project-ref $SUPABASE_PROJECT_ID
       - name: Force deploy log-personal-info-incident specifically
         run: supabase functions deploy log-personal-info-incident --project-ref $SUPABASE_PROJECT_ID
       - name: Force deploy log-security-event specifically
         run: supabase functions deploy log-security-event --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy send-coppa-notification specifically
-        run: supabase functions deploy send-coppa-notification --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy system-diagnostics specifically
-        run: supabase functions deploy system-diagnostics --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy send-parental-notification specifically
-        run: supabase functions deploy send-parental-notification --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy model-performance-monitor specifically
+        run: supabase functions deploy model-performance-monitor --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy notification-service specifically
+        run: supabase functions deploy notification-service --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy openai-realtime specifically
+        run: supabase functions deploy openai-realtime --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy openai-tts specifically
+        run: supabase functions deploy openai-tts --project-ref $SUPABASE_PROJECT_ID
       - name: Force deploy process-story-content specifically
         run: supabase functions deploy process-story-content --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy runware-generate-image specifically
+        run: supabase functions deploy runware-generate-image --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy runware-template-ab specifically
+        run: supabase functions deploy runware-template-ab --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy runware-template-cd specifically
+        run: supabase functions deploy runware-template-cd --project-ref $SUPABASE_PROJECT_ID
       - name: Force deploy security-alert specifically
         run: supabase functions deploy security-alert --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy security-dashboard specifically
+        run: supabase functions deploy security-dashboard --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy send-coppa-notification specifically
+        run: supabase functions deploy send-coppa-notification --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy send-custom-auth-email specifically
+        run: supabase functions deploy send-custom-auth-email --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy send-parental-notification specifically
+        run: supabase functions deploy send-parental-notification --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy system-diagnostics specifically
+        run: supabase functions deploy system-diagnostics --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy template-service specifically
+        run: supabase functions deploy template-service --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy translate-universal specifically
+        run: supabase functions deploy translate-universal --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy unified-debug-service specifically
+        run: supabase functions deploy unified-debug-service --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy validate-discount-code specifically
+        run: supabase functions deploy validate-discount-code --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy voice-to-text specifically
+        run: supabase functions deploy voice-to-text --project-ref $SUPABASE_PROJECT_ID
+      - name: Force deploy word-dictionary specifically
+        run: supabase functions deploy word-dictionary --project-ref $SUPABASE_PROJECT_ID
