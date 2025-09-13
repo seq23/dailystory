@@ -132,11 +132,56 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
+  
+  // Handle health checks (GET/HEAD requests)
+  if (req.method === 'GET' || req.method === 'HEAD') {
+    console.log('🏥 Health check request');
+    return new Response(JSON.stringify({
+      status: 'healthy',
+      service: 'generate-adaptive-story',
+      timestamp: new Date().toISOString(),
+      openaiApiKeyPresent: !!Deno.env.get('OPENAI_API_KEY')
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+
+  // Log basic request diagnostics
+  console.log('📊 Request diagnostics:', {
+    method: req.method,
+    contentType: req.headers.get('content-type'),
+    contentLength: req.headers.get('content-length')
+  });
 
   let requestBody = null;
   
   try {
-    requestBody = await req.json();
+    // Robust JSON parsing - get raw text first
+    const rawText = await req.text();
+    
+    if (!rawText || rawText.trim() === '') {
+      console.warn('⚠️ Empty request body received');
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Request body is empty. Please provide a valid JSON payload.'
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+    
+    try {
+      requestBody = JSON.parse(rawText);
+    } catch (parseError) {
+      console.warn('⚠️ Invalid JSON received:', parseError.message);
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Invalid JSON format in request body.'
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
     
     // UNIFIED 4-TIER ARCHITECTURE: Handle pre-processed bundles from StoryGenerationService
     if (requestBody.bundle) {
@@ -144,7 +189,7 @@ serve(async (req) => {
     }
     
     // LEGACY SUPPORT: Deprecated - all new requests should use bundle format
-    
+    console.warn('⚠️ Legacy direct call attempted');
     return new Response(JSON.stringify({
       success: false,
       error: 'Legacy direct calls deprecated. Please use unified 4-tier system via bundle format.'

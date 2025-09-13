@@ -8,68 +8,97 @@ import { getStyleFramework } from '../_shared/styleFrameworks.js';
 import { CULTURAL_LANDMARKS, getCulturalLandmarks } from '../_shared/culturalLandmarks.js';
 
 
-// Cultural arrays with defensive loading
-let CULTURAL_ARRAYS = null;
-let culturalArraysPromise = null;
+// ============= INLINED CULTURAL ARRAYS FOR NUCLEAR INDEPENDENCE =============
+// Consolidated from _shared/tier25Vocabulary.js to prevent dynamic import failures
 
-// Synchronous getter that returns cached result or throws error if not loaded
-function getCulturalArrays() {
-  if (CULTURAL_ARRAYS) return CULTURAL_ARRAYS;
-  
-  console.warn('CULTURAL_ARRAYS not loaded yet, using basic fallback');
-  return { 
-    HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES: { girls: [], boys: [] },
-    HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES: [],
-    HARDCODED_AFRICAN_AMERICAN_SKIN_TONES: []
-  };
-}
+const CULTURAL_ARRAYS = {
+  HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES: {
+    girls: [
+      'natural afro hair', 'beautiful braided hair', 'stylish twist hairstyle', 'elegant cornrow hairstyle',
+      'lovely natural curls', 'protective braided style', 'beautiful box braids', 'fashionable twist-out hair'
+    ],
+    boys: [
+      'natural short afro', 'stylish fade haircut', 'neat natural hair', 'cool braided style',
+      'trendy twist hairstyle', 'handsome natural curls', 'sharp lineup haircut', 'dapper natural hair'
+    ]
+  },
+  HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES: [
+    'with warm brown eyes and a bright smile', 'with expressive dark eyes and kind features',
+    'with beautiful natural features and joyful expression', 'with bright eyes and confident smile',
+    'with gentle features and radiant expression', 'with strong features and happy demeanor'
+  ],
+  HARDCODED_AFRICAN_AMERICAN_SKIN_TONES: [
+    'rich ebony', 'warm mahogany', 'golden bronze', 'deep caramel', 'beautiful brown', 'radiant copper'
+  ]
+};
 
-// Async initializer that should be called at the start of main functions
-async function initCulturalArrays() {
-  if (CULTURAL_ARRAYS) return CULTURAL_ARRAYS;
-  if (culturalArraysPromise) return culturalArraysPromise;
-  
-  culturalArraysPromise = (async () => {
-    try {
-      const mod = await import('../_shared/tier25Vocabulary.js');
-      CULTURAL_ARRAYS = mod.CULTURAL_ARRAYS;
-      console.log('CULTURAL_ARRAYS loaded successfully');
-      return CULTURAL_ARRAYS;
-    } catch (error) {
-      console.warn('Failed to load CULTURAL_ARRAYS, using fallback:', error);
-      CULTURAL_ARRAYS = { 
-        HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES: { girls: [], boys: [] },
-        HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES: [],
-        HARDCODED_AFRICAN_AMERICAN_SKIN_TONES: []
-      };
-      return CULTURAL_ARRAYS;
-    }
-  })();
-  
-  return culturalArraysPromise;
-}
-
-// Update all direct CULTURAL_ARRAYS references to use the getter
+// Backward compatibility getter
 const CULTURAL_ARRAYS_GETTER = new Proxy({}, {
   get: (target, prop) => {
-    const arrays = getCulturalArrays();
-    return arrays[prop];
+    return CULTURAL_ARRAYS[prop];
   }
 });
 
-// Lazy loading functions
-let VOCAB = null;
-async function initVocabulary() {
-  if (VOCAB) return;
-  try {
-    const mod = await import("../_shared/tier25Vocabulary.js");
-    VOCAB = mod.default;
-    console.log('Tier 2.5 vocabulary initialized');
-  } catch (error) {
-    console.warn('Failed to load vocabulary, using minimal fallback:', error);
-    VOCAB = { basic: 'fallback' }; // Minimal fallback to prevent crashes
+// ============= INLINED VOCABULARY FOR NUCLEAR INDEPENDENCE =============
+// Consolidated from tier25Vocabulary.js files to prevent dynamic import failures
+
+const TIER_25_UNIFIED_VOCABULARY = {
+  actions: {
+    basic: ['playing', 'running', 'jumping', 'walking', 'sitting', 'standing', 'looking', 'smiling'],
+    creative: ['drawing', 'painting', 'building', 'creating', 'crafting', 'making', 'designing'],
+    sensory: ['listening', 'watching', 'touching', 'smelling', 'tasting', 'feeling', 'sensing'],
+    states: ['thinking', 'wondering', 'dreaming', 'imagining', 'remembering', 'learning'],
+    fantasy: ['flying', 'floating', 'glowing', 'sparkling', 'shimmering', 'dancing'],
+    social: ['talking', 'laughing', 'sharing', 'helping', 'caring', 'loving'],
+    intensity: ['gently', 'carefully', 'excitedly', 'peacefully', 'energetically', 'boldly'],
+    bodyLanguage: ['smiling brightly', 'standing tall', 'sitting cross-legged', 'arms spread wide', 'head tilted thoughtfully'],
+    spatial: ['positioned in foreground', 'standing in center', 'sitting comfortably', 'moving forward confidently']
+  },
+  environments: {
+    atmosphere: ['sunny', 'bright', 'warm', 'cheerful', 'peaceful', 'cozy', 'magical'],
+    lighting: ['golden hour', 'soft lighting', 'natural light', 'warm glow', 'bright illumination'],
+    weather: ['clear skies', 'gentle breeze', 'perfect weather', 'pleasant atmosphere']
+  },
+  objectCategories: {
+    toys: ['toy', 'ball', 'doll', 'game', 'puzzle', 'blocks'],
+    nature: ['flower', 'tree', 'leaf', 'rock', 'butterfly', 'bird'],
+    books: ['book', 'story', 'journal', 'notebook', 'paper'],
+    food: ['apple', 'snack', 'lunch', 'treat', 'cookie', 'fruit']
+  },
+  contextDetection: {
+    indoor: ['inside', 'room', 'house', 'home', 'indoor', 'kitchen', 'bedroom'],
+    outdoor: ['outside', 'park', 'garden', 'playground', 'outdoor', 'yard', 'field']
   }
-}
+};
+
+const UNIVERSAL_EMOTION_ARRAYS = [
+  'happy', 'excited', 'curious', 'peaceful', 'joyful', 'content', 'cheerful', 'proud',
+  'amazed', 'delighted', 'grateful', 'confident', 'playful', 'wonder-filled', 'serene'
+];
+
+const UNIVERSAL_INDOOR_SETTINGS = [
+  'cozy library with warm lighting', 'bright classroom with colorful displays', 'warm kitchen with cooking aromas',
+  'comfortable living room with soft furniture', 'cheerful reading corner with pillows', 'creative art studio with supplies'
+];
+
+const UNIVERSAL_OUTDOOR_SETTINGS = [
+  'sunny backyard garden with flowering bushes', 'peaceful neighborhood park with tall trees', 'busy playground with climbing equipment',
+  'quiet forest clearing with dappled sunlight', 'open meadow field with wildflowers', 'sparkling pond with lily pads'
+];
+
+const UNIVERSAL_LIGHTING_ARRAYS = [
+  'with bright golden lighting', 'with warm afternoon sunlight', 'with cheerful morning rays',
+  'with dazzling sunshine', 'with golden hour glow', 'with brilliant daylight'
+];
+
+// Initialize VOCAB object for backward compatibility
+const VOCAB = {
+  TIER_25_UNIFIED_VOCABULARY,
+  UNIVERSAL_EMOTION_ARRAYS,
+  UNIVERSAL_INDOOR_SETTINGS,
+  UNIVERSAL_OUTDOOR_SETTINGS,
+  UNIVERSAL_LIGHTING_ARRAYS
+};
 
 async function getCharacterService() {
   try {

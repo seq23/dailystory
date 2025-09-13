@@ -4,7 +4,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.js";
 
-console.log("[runware-template-advanced] Loaded: 2025-09-12T19:00:00Z - C-D Complexity Handler");
+console.log("[runware-template-advanced] Loaded: 2025-09-13T02:15:00Z - C-D Complexity Handler");
 
 // Lazy loading for heavy dependencies
 let CULTURAL_ARRAYS = null;
