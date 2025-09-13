@@ -1541,7 +1541,20 @@ serve(async (req)=>{
           
           if (tier25AResult.success) {
             console.log('✅ Tier 2.5A succeeded after primary scene validation failure');
-            return createDynamicCorsResponse(tier25AResult, 200);
+            // Add routing metadata to the response
+            const responseWithRouting = {
+              ...tier25AResult,
+              routingMetadata: {
+                attemptedTier: '1',
+                executedTier: '2.5A',
+                fallbackReason: 'missing_or_insufficient_primary_scene',
+                skippedTiers: ['1'],
+                routingDecisions: ['Tier 1 attempted', 'Primary scene validation failed', 'Routed to Tier 2.5A', 'Tier 2.5A succeeded'],
+                binaryValidation: 'BYPASSED',
+                avatarCompleteness: 'BYPASSED'
+              }
+            };
+            return createDynamicCorsResponse(responseWithRouting, req);
           } else {
             throw new Error('Tier 2.5A failed after primary scene validation failure');
           }
@@ -2027,6 +2040,16 @@ serve(async (req)=>{
       provider: 'runware-orchestrator',
       tier: 4,
       enhancementLevel: 'kid-friendly-placeholder',
+      // ROUTING METADATA - Tier 4 Fallback
+      routingMetadata: {
+        attemptedTier: '1',
+        executedTier: '4',
+        fallbackReason: 'all_image_generation_tiers_failed',
+        skippedTiers: ['1', '2.5A', '2.5B', '2.5C', '2.5D'],
+        routingDecisions: ['All tiers failed', 'Guaranteed Tier 4 fallback executed'],
+        binaryValidation: 'BYPASSED',
+        avatarCompleteness: 'BYPASSED'
+      },
       metadata: {
         orchestrated: true
       }
@@ -2057,6 +2080,16 @@ serve(async (req)=>{
       provider: 'runware-orchestrator',
       tier: 4,
       enhancementLevel: 'character-placeholder',
+      // ROUTING METADATA - Error Fallback
+      routingMetadata: {
+        attemptedTier: '1',
+        executedTier: '4',
+        fallbackReason: 'orchestration_error',
+        skippedTiers: ['1', '2.5A', '2.5B', '2.5C', '2.5D'],
+        routingDecisions: ['Orchestration error occurred', 'Guaranteed error fallback executed'],
+        binaryValidation: 'ERROR',
+        avatarCompleteness: 'ERROR'
+      },
       metadata: {
         orchestrated: true,
         errorMessage: error.message,

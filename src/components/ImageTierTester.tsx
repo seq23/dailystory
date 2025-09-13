@@ -21,6 +21,16 @@ interface TierTestResult {
   metadata?: any;
   enhancementDetails?: any;
   templateComplexity?: string;
+  // NEW: Real orchestration flow fields
+  routingMetadata?: {
+    attemptedTier: string;
+    executedTier: string;
+    fallbackReason?: string;
+    skippedTiers: string[];
+    routingDecisions: string[];
+    binaryValidation: string;
+    avatarCompleteness: string;
+  };
 }
 
 interface TestConfig {
@@ -42,7 +52,7 @@ export function ImageTierTester() {
     age: 8,
     sessionId: `test-${Date.now()}`,
     skinTone: 'medium',
-    avatarType: 'prefer-not-to-answer',
+    avatarType: 'girl', // Changed from 'prefer-not-to-answer' to 'girl' for complete avatar testing
     nativeLanguage: 'en'
   });
 
@@ -251,6 +261,24 @@ export function ImageTierTester() {
             setTimeout(() => reject(new Error(`[${requestId}] Request timeout after 60s`)), 60000)
           )
         ]);
+      } else if (tierType === 'Real Flow Test') {
+        // Test the actual orchestration flow - this is what happens in reality
+        console.log(`🎯 [${requestId}] Testing Real Orchestration Flow via runware-generate-image...`);
+        result = await Promise.race([
+          supabase.functions.invoke('runware-generate-image', {
+            body: {
+              pageText: config.storyText,
+              userInfo: userInfo,
+              sessionId: config.sessionId,
+              storyId: `story-${config.sessionId}`,
+              pageNumber: 1,
+              requestId
+            }
+          }),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error(`[${requestId}] Request timeout after 90s`)), 90000)
+          )
+        ]);
       } else if (tierType === 'Tier 1 (Image Orchestrator)') {
         // Test runware image generation orchestrator
         console.log(`🎯 [${requestId}] Calling runware-generate-image...`);
@@ -364,7 +392,8 @@ export function ImageTierTester() {
           success: result.data.success,
           imagePresent: !!(result.data.imageURL || result.data.imageUrl),
           processingTime,
-          metadata: !!result.data.metadata
+          metadata: !!result.data.metadata,
+          routingMetadata: !!result.data.routingMetadata
         });
         
         return {
@@ -374,7 +403,8 @@ export function ImageTierTester() {
           processingTime,
           metadata: result.data.metadata,
           enhancementDetails: result.data.enhancementDetails,
-          templateComplexity
+          templateComplexity,
+          routingMetadata: result.data.routingMetadata
         };
       } else {
         // Enhanced error reporting with function existence check
@@ -424,7 +454,8 @@ export function ImageTierTester() {
           success: false,
           processingTime,
           error: errorDetail,
-          templateComplexity
+          templateComplexity,
+          routingMetadata: result?.data?.routingMetadata
         };
       }
     } catch (error) {
@@ -439,13 +470,14 @@ export function ImageTierTester() {
         timestamp: new Date().toISOString()
       });
       
-      return {
-        tier: tierType + (templateComplexity ? ` (${templateComplexity})` : ''),
-        success: false,
-        processingTime,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        templateComplexity
-      };
+        return {
+          tier: tierType + (templateComplexity ? ` (${templateComplexity})` : ''),
+          success: false,
+          processingTime,
+          error: error instanceof Error ? error.message : 'Unknown error',
+          templateComplexity,
+          routingMetadata: null
+        };
     }
   };
 
@@ -712,8 +744,47 @@ export function ImageTierTester() {
             </div>
           )}
           
+          {/* Real Orchestration Flow Test */}
+          <div className="mb-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
+            <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">Real Orchestration Flow</h4>
+            <p className="text-xs text-blue-700 dark:text-blue-200 mb-3">
+              Test the actual routing logic with fallback cascade - shows what happens in production.
+            </p>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => runSingleTest('Real Flow Test')}
+                disabled={isLoading}
+                variant="default"
+                className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              >
+                <Layers className="w-4 h-4" />
+                {activeTest === 'Real Flow Test' ? <Clock className="w-4 h-4 animate-spin" /> : 'Test Real Flow'}
+              </Button>
+              <Button
+                onClick={() => {
+                  // Temporarily set incomplete avatar identity for fallback testing
+                  const originalConfig = { ...config };
+                  setConfig(prev => ({ ...prev, avatarType: 'prefer-not-to-answer', characterName: '' }));
+                  setTimeout(() => {
+                    runSingleTest('Real Flow Test');
+                    // Restore original config after test
+                    setTimeout(() => setConfig(originalConfig), 1000);
+                  }, 100);
+                }}
+                disabled={isLoading}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <Target className="w-4 h-4" />
+                Test Fallback Route
+              </Button>
+            </div>
+          </div>
+
           {/* Individual Tier Tests */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="space-y-2">
+            <h4 className="text-sm font-semibold text-muted-foreground">Force Individual Tiers (Bypass Routing)</h4>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <Button
               onClick={() => runSingleTest('Tier 1')}
               disabled={isLoading}
@@ -721,7 +792,7 @@ export function ImageTierTester() {
               className="flex items-center gap-2"
             >
               <Zap className="w-4 h-4" />
-              {activeTest === 'Tier 1' ? <Clock className="w-4 h-4 animate-spin" /> : 'Scene Creator (Tier 1)'}
+              {activeTest === 'Tier 1' ? <Clock className="w-4 h-4 animate-spin" /> : 'Force AI Scene Creator'}
             </Button>
             
             <Button
@@ -731,7 +802,7 @@ export function ImageTierTester() {
               className="flex items-center gap-2"
             >
               <ImageIcon className="w-4 h-4" />
-              {activeTest === 'Tier 1 (Image Orchestrator)' ? <Clock className="w-4 h-4 animate-spin" /> : 'Tier 1 (Full)'}
+              {activeTest === 'Tier 1 (Image Orchestrator)' ? <Clock className="w-4 h-4 animate-spin" /> : 'Force Tier 1 (Full)'}
             </Button>
             
             <Button
@@ -741,7 +812,7 @@ export function ImageTierTester() {
               className="flex items-center gap-2"
             >
               <Target className="w-4 h-4" />
-              {activeTest === 'Tier 2.5A' ? <Clock className="w-4 h-4 animate-spin" /> : '2.5A'}
+              {activeTest === 'Tier 2.5A' ? <Clock className="w-4 h-4 animate-spin" /> : 'Force 2.5A'}
             </Button>
             
             <Button
@@ -751,7 +822,7 @@ export function ImageTierTester() {
               className="flex items-center gap-2"
             >
               <Target className="w-4 h-4" />
-              {activeTest === 'Tier 2.5B' ? <Clock className="w-4 h-4 animate-spin" /> : '2.5B'}
+              {activeTest === 'Tier 2.5B' ? <Clock className="w-4 h-4 animate-spin" /> : 'Force 2.5B'}
             </Button>
             
             <Button
@@ -761,7 +832,7 @@ export function ImageTierTester() {
               className="flex items-center gap-2"
             >
               <Target className="w-4 h-4" />
-              {activeTest === 'Tier 2.5C' ? <Clock className="w-4 h-4 animate-spin" /> : '2.5C'}
+              {activeTest === 'Tier 2.5C' ? <Clock className="w-4 h-4 animate-spin" /> : 'Force 2.5C'}
             </Button>
             
             <Button
@@ -771,7 +842,7 @@ export function ImageTierTester() {
               className="flex items-center gap-2"
             >
               <Target className="w-4 h-4" />
-              {activeTest === 'Tier 2.5D' ? <Clock className="w-4 h-4 animate-spin" /> : '2.5D'}
+              {activeTest === 'Tier 2.5D' ? <Clock className="w-4 h-4 animate-spin" /> : 'Force 2.5D'}
             </Button>
             
             <Button
@@ -781,8 +852,9 @@ export function ImageTierTester() {
               className="flex items-center gap-2"
             >
               <ImageIcon className="w-4 h-4" />
-              {activeTest === 'Tier 4' ? <Clock className="w-4 h-4 animate-spin" /> : 'Tier 4 (Local Placeholder)'}
+              {activeTest === 'Tier 4' ? <Clock className="w-4 h-4 animate-spin" /> : 'Force Tier 4'}
             </Button>
+          </div>
           </div>
 
           {/* Comprehensive Testing Controls */}
@@ -829,8 +901,56 @@ export function ImageTierTester() {
                       </Badge>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-3">
-                    {result.success && result.imageUrl && (
+                   <CardContent className="space-y-3">
+                     {/* Routing Metadata Display - NEW */}
+                     {result.routingMetadata && (
+                       <div className="p-3 bg-blue-50 dark:bg-blue-950/20 rounded-md border border-blue-200 dark:border-blue-800">
+                         <h5 className="text-xs font-semibold text-blue-900 dark:text-blue-100 mb-2">Routing Flow</h5>
+                         <div className="space-y-1 text-xs">
+                           <div className="grid grid-cols-2 gap-2">
+                             <span className="text-muted-foreground">Attempted:</span>
+                             <span className="font-mono">Tier {result.routingMetadata.attemptedTier}</span>
+                           </div>
+                           <div className="grid grid-cols-2 gap-2">
+                             <span className="text-muted-foreground">Executed:</span>
+                             <span className="font-mono text-green-600 dark:text-green-400">Tier {result.routingMetadata.executedTier}</span>
+                           </div>
+                           {result.routingMetadata.fallbackReason && (
+                             <div className="grid grid-cols-2 gap-2">
+                               <span className="text-muted-foreground">Reason:</span>
+                               <span className="text-orange-600 dark:text-orange-400">{result.routingMetadata.fallbackReason.replace(/_/g, ' ')}</span>
+                             </div>
+                           )}
+                           {result.routingMetadata.skippedTiers.length > 0 && (
+                             <div className="grid grid-cols-2 gap-2">
+                               <span className="text-muted-foreground">Skipped:</span>
+                               <span className="text-red-500 dark:text-red-400 font-mono">{result.routingMetadata.skippedTiers.join(', ')}</span>
+                             </div>
+                           )}
+                           <div className="grid grid-cols-2 gap-2">
+                             <span className="text-muted-foreground">Avatar:</span>
+                             <span className={`font-mono ${result.routingMetadata.avatarCompleteness === 'COMPLETE' ? 'text-green-600 dark:text-green-400' : 'text-orange-600 dark:text-orange-400'}`}>
+                               {result.routingMetadata.avatarCompleteness}
+                             </span>
+                           </div>
+                         </div>
+                         {result.routingMetadata.routingDecisions.length > 0 && (
+                           <div className="mt-2 pt-2 border-t border-blue-200 dark:border-blue-700">
+                             <h6 className="text-xs font-medium text-blue-800 dark:text-blue-200 mb-1">Decision Chain:</h6>
+                             <div className="space-y-1">
+                               {result.routingMetadata.routingDecisions.map((decision, idx) => (
+                                 <div key={idx} className="text-xs text-blue-700 dark:text-blue-300 flex items-center gap-1">
+                                   <span className="w-1 h-1 bg-blue-400 rounded-full"></span>
+                                   {decision}
+                                 </div>
+                               ))}
+                             </div>
+                           </div>
+                         )}
+                       </div>
+                     )}
+
+                     {result.success && result.imageUrl && (
                       <div className="aspect-square bg-muted rounded-md overflow-hidden">
                         <img
                           src={result.imageUrl}
