@@ -39,66 +39,78 @@ const CULTURAL_ARRAYS_GETTER = new Proxy({}, {
   }
 });
 
-// ============= INLINED VOCABULARY FOR NUCLEAR INDEPENDENCE =============
-// Consolidated from tier25Vocabulary.js files to prevent dynamic import failures
+// ============= VOCABULARY IMPORTS - SHARED SOURCE OF TRUTH =============
+// Import from consolidated _shared/tier25Vocabulary.js for consistency
 
-const TIER_25_UNIFIED_VOCABULARY = {
-  actions: {
-    basic: ['playing', 'running', 'jumping', 'walking', 'sitting', 'standing', 'looking', 'smiling'],
-    creative: ['drawing', 'painting', 'building', 'creating', 'crafting', 'making', 'designing'],
-    sensory: ['listening', 'watching', 'touching', 'smelling', 'tasting', 'feeling', 'sensing'],
-    states: ['thinking', 'wondering', 'dreaming', 'imagining', 'remembering', 'learning'],
-    fantasy: ['flying', 'floating', 'glowing', 'sparkling', 'shimmering', 'dancing'],
-    social: ['talking', 'laughing', 'sharing', 'helping', 'caring', 'loving'],
-    intensity: ['gently', 'carefully', 'excitedly', 'peacefully', 'energetically', 'boldly'],
-    bodyLanguage: ['smiling brightly', 'standing tall', 'sitting cross-legged', 'arms spread wide', 'head tilted thoughtfully'],
-    spatial: ['positioned in foreground', 'standing in center', 'sitting comfortably', 'moving forward confidently']
-  },
-  environments: {
-    atmosphere: ['sunny', 'bright', 'warm', 'cheerful', 'peaceful', 'cozy', 'magical'],
-    lighting: ['golden hour', 'soft lighting', 'natural light', 'warm glow', 'bright illumination'],
-    weather: ['clear skies', 'gentle breeze', 'perfect weather', 'pleasant atmosphere']
-  },
-  objectCategories: {
-    toys: ['toy', 'ball', 'doll', 'game', 'puzzle', 'blocks'],
-    nature: ['flower', 'tree', 'leaf', 'rock', 'butterfly', 'bird'],
-    books: ['book', 'story', 'journal', 'notebook', 'paper'],
-    food: ['apple', 'snack', 'lunch', 'treat', 'cookie', 'fruit']
-  },
-  contextDetection: {
-    indoor: ['inside', 'room', 'house', 'home', 'indoor', 'kitchen', 'bedroom'],
-    outdoor: ['outside', 'park', 'garden', 'playground', 'outdoor', 'yard', 'field']
+let TIER_25_UNIFIED_VOCABULARY = null;
+let SEMANTIC_EXTRACTION = null;
+
+async function getTier25Vocabulary() {
+  if (TIER_25_UNIFIED_VOCABULARY) return { TIER_25_UNIFIED_VOCABULARY, SEMANTIC_EXTRACTION };
+  
+  try {
+    const { TIER_25_UNIFIED_VOCABULARY: vocabImport, SEMANTIC_EXTRACTION: semanticImport } = await import("../_shared/tier25Vocabulary.js");
+    TIER_25_UNIFIED_VOCABULARY = vocabImport;
+    SEMANTIC_EXTRACTION = semanticImport;
+    return { TIER_25_UNIFIED_VOCABULARY, SEMANTIC_EXTRACTION };
+  } catch (error) {
+    console.warn('Vocabulary lazy load failed, using fallback:', error);
+    // Fallback vocabulary for nuclear independence
+    TIER_25_UNIFIED_VOCABULARY = {
+      actions: {
+        basic: ['playing', 'running', 'jumping', 'walking', 'sitting', 'standing', 'looking', 'smiling'],
+        creative: ['drawing', 'painting', 'building', 'creating', 'crafting', 'making', 'designing'],
+        sensory: ['listening', 'watching', 'touching', 'smelling', 'tasting', 'feeling', 'sensing'],
+        states: ['thinking', 'wondering', 'dreaming', 'imagining', 'remembering', 'learning'],
+        fantasy: ['flying', 'floating', 'glowing', 'sparkling', 'shimmering', 'dancing'],
+        social: ['talking', 'laughing', 'sharing', 'helping', 'caring', 'loving'],
+        intensity: ['gently', 'carefully', 'excitedly', 'peacefully', 'energetically', 'boldly'],
+        bodyLanguage: ['smiling brightly', 'standing tall', 'sitting cross-legged', 'arms spread wide', 'head tilted thoughtfully'],
+        spatial: ['positioned in foreground', 'standing in center', 'sitting comfortably', 'moving forward confidently']
+      },
+      environments: {
+        atmosphere: ['sunny', 'bright', 'warm', 'cheerful', 'peaceful', 'cozy', 'magical'],
+        lighting: ['golden hour', 'soft lighting', 'natural light', 'warm glow', 'bright illumination'],
+        weather: ['clear skies', 'gentle breeze', 'perfect weather', 'pleasant atmosphere']
+      },
+      objectCategories: {
+        toys: ['toy', 'ball', 'doll', 'game', 'puzzle', 'blocks'],
+        nature: ['flower', 'tree', 'leaf', 'rock', 'butterfly', 'bird'],
+        books: ['book', 'story', 'journal', 'notebook', 'paper'],
+        food: ['apple', 'snack', 'lunch', 'treat', 'cookie', 'fruit']
+      },
+      contextDetection: {
+        indoor: ['inside', 'room', 'house', 'home', 'indoor', 'kitchen', 'bedroom'],
+        outdoor: ['outside', 'park', 'garden', 'playground', 'outdoor', 'yard', 'field']
+      }
+    };
+    SEMANTIC_EXTRACTION = {
+      EMOTIONS: { happy: ['happy', 'joy', 'smile'], sad: ['sad', 'cry'], scared: ['scared', 'afraid'] },
+      ACTIONS: { movement: ['run', 'walk', 'jump'], creative: ['draw', 'paint', 'build'] },
+      SETTINGS: { indoor: ['inside', 'room'], outdoor: ['outside', 'park'] }
+    };
+    return { TIER_25_UNIFIED_VOCABULARY, SEMANTIC_EXTRACTION };
   }
-};
+}
 
-const UNIVERSAL_EMOTION_ARRAYS = [
-  'happy', 'excited', 'curious', 'peaceful', 'joyful', 'content', 'cheerful', 'proud',
-  'amazed', 'delighted', 'grateful', 'confident', 'playful', 'wonder-filled', 'serene'
-];
+// Initialize VOCAB object for backward compatibility with lazy loading
+let VOCAB = null;
 
-const UNIVERSAL_INDOOR_SETTINGS = [
-  'cozy library with warm lighting', 'bright classroom with colorful displays', 'warm kitchen with cooking aromas',
-  'comfortable living room with soft furniture', 'cheerful reading corner with pillows', 'creative art studio with supplies'
-];
-
-const UNIVERSAL_OUTDOOR_SETTINGS = [
-  'sunny backyard garden with flowering bushes', 'peaceful neighborhood park with tall trees', 'busy playground with climbing equipment',
-  'quiet forest clearing with dappled sunlight', 'open meadow field with wildflowers', 'sparkling pond with lily pads'
-];
-
-const UNIVERSAL_LIGHTING_ARRAYS = [
-  'with bright golden lighting', 'with warm afternoon sunlight', 'with cheerful morning rays',
-  'with dazzling sunshine', 'with golden hour glow', 'with brilliant daylight'
-];
-
-// Initialize VOCAB object for backward compatibility
-const VOCAB = {
-  TIER_25_UNIFIED_VOCABULARY,
-  UNIVERSAL_EMOTION_ARRAYS,
-  UNIVERSAL_INDOOR_SETTINGS,
-  UNIVERSAL_OUTDOOR_SETTINGS,
-  UNIVERSAL_LIGHTING_ARRAYS
-};
+async function getVocab() {
+  if (VOCAB) return VOCAB;
+  
+  const { TIER_25_UNIFIED_VOCABULARY, UNIVERSAL_EMOTION_ARRAYS, UNIVERSAL_INDOOR_SETTINGS, UNIVERSAL_OUTDOOR_SETTINGS, UNIVERSAL_LIGHTING_ARRAYS } = await getTier25Vocabulary();
+  
+  VOCAB = {
+    TIER_25_UNIFIED_VOCABULARY,
+    UNIVERSAL_EMOTION_ARRAYS,
+    UNIVERSAL_INDOOR_SETTINGS,
+    UNIVERSAL_OUTDOOR_SETTINGS,
+    UNIVERSAL_LIGHTING_ARRAYS
+  };
+  
+  return VOCAB;
+}
 
 async function getCharacterService() {
   try {
@@ -221,17 +233,18 @@ function getSeededRandomItem(array, seed) {
 
 // ============= NUCLEAR INDEPENDENT DETECTION FUNCTIONS =============
 
-function detectSceneContext(pageText) {
+async function detectSceneContext(pageText) {
   if (!pageText || typeof pageText !== 'string') return 'unknown';
   
   const lowerText = pageText.toLowerCase();
+  const vocab = await getVocab();
   
   // Count indoor vs outdoor indicators using unified vocabulary
-  const indoorScore = VOCAB.TIER_25_UNIFIED_VOCABULARY.contextDetection.indoor.reduce((score, keyword) => 
+  const indoorScore = vocab.TIER_25_UNIFIED_VOCABULARY.contextDetection.indoor.reduce((score, keyword) => 
     score + (lowerText.includes(keyword) ? 1 : 0), 0
   );
   
-  const outdoorScore = VOCAB.TIER_25_UNIFIED_VOCABULARY.contextDetection.outdoor.reduce((score, keyword) => 
+  const outdoorScore = vocab.TIER_25_UNIFIED_VOCABULARY.contextDetection.outdoor.reduce((score, keyword) => 
     score + (lowerText.includes(keyword) ? 1 : 0), 0
   );
   
@@ -242,8 +255,8 @@ function detectSceneContext(pageText) {
 }
 
 // Backward compatibility function (maintain existing API)
-function isIndoorContext(pageText) {
-  return detectSceneContext(pageText) === 'indoor';
+async function isIndoorContext(pageText) {
+  return await detectSceneContext(pageText) === 'indoor';
 }
 
 // ============= NUCLEAR INDEPENDENT CHARACTER SYSTEM =============
@@ -342,14 +355,15 @@ function getNuclearFallbackCharacter(seed, pageText) {
 
 // ============= NUCLEAR INDEPENDENT SCENE ANALYSIS =============
 
-function detectObjectsFromStory(pageText, seed) {
+async function detectObjectsFromStory(pageText, seed) {
   if (!pageText || typeof pageText !== 'string') return [];
   
   const lowerText = pageText.toLowerCase();
   const detectedObjects = [];
+  const vocab = await getVocab();
   
   // Search through all object categories using unified vocabulary
-  Object.values(VOCAB.TIER_25_UNIFIED_VOCABULARY.objectCategories).forEach(category => {
+  Object.values(vocab.TIER_25_UNIFIED_VOCABULARY.objectCategories).forEach(category => {
     category.forEach(object => {
       if (lowerText.includes(object)) {
         detectedObjects.push(object);
@@ -367,13 +381,14 @@ function detectObjectsFromStory(pageText, seed) {
   return detectedObjects.slice(0, 3); // Limit to top 3
 }
 
-function detectActionsFromStory(pageText, seed) {
+async function detectActionsFromStory(pageText, seed) {
   if (!pageText || typeof pageText !== 'string') return 'playing';
   
   const lowerText = pageText.toLowerCase();
+  const vocab = await getVocab();
   
   // Search through all action categories using unified vocabulary
-  const allActions = Object.values(VOCAB.TIER_25_UNIFIED_VOCABULARY.actions).flat();
+  const allActions = Object.values(vocab.TIER_25_UNIFIED_VOCABULARY.actions).flat();
   
   for (const action of allActions) {
     if (lowerText.includes(action)) {
@@ -383,6 +398,9 @@ function detectActionsFromStory(pageText, seed) {
   }
   
   // Seeded fallback
+  console.log(`🎲 Using seeded fallback action`);
+  return getSeededRandomItem(vocab.TIER_25_UNIFIED_VOCABULARY.actions.basic, seed + 'action');
+}
   const fallbackActions = ['playing', 'exploring', 'discovering', 'learning'];
   return getSeededRandomItem(fallbackActions, seed + 'action');
 }
@@ -4825,8 +4843,13 @@ function detectCulturalProfile(userInfo, avatarIdentity) {
 // ============= MAIN EDGE FUNCTION =============
 
 serve(async (req) => {
+  const BUILD_VERSION = '2025-01-09-v2.1.0';
   const requestId = Math.random().toString(36).substring(2, 10);
-  console.log(`🚀 [${requestId}] runware-simple-fallback: ${req.method} ${req.url}`);
+  console.log(`🚀 [${requestId}] runware-simple-fallback: ${req.method} ${req.url} [v${BUILD_VERSION}]`);
+  
+  // Pre-load vocabulary on first request for performance
+  await getVocab();
+  
   // ✅ EARLY BOOT LOGGING - Phase 2 Boot Stabilization
   console.log('🚀 Tier 2.5 runware-simple-fallback starting...');
   console.log(`🛡️ Tier 2.5: ${req.method} ${req.url}`);

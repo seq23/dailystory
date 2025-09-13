@@ -128,6 +128,8 @@ function getHairColorForSkinTone(skinTone: string | undefined): string | null {
 // Removed: getFallbackTemplate and getEnhancedFallbackPages - replaced by template-service calls
 
 serve(async (req) => {
+  const BUILD_VERSION = '2025-01-09-v1.2.0';
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -139,10 +141,15 @@ serve(async (req) => {
     return new Response(JSON.stringify({
       status: 'healthy',
       service: 'generate-adaptive-story',
+      buildVersion: BUILD_VERSION,
       timestamp: new Date().toISOString(),
       openaiApiKeyPresent: !!Deno.env.get('OPENAI_API_KEY')
     }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      headers: { 
+        ...corsHeaders, 
+        'Content-Type': 'application/json',
+        'X-Function-Version': BUILD_VERSION
+      }
     });
   }
 
