@@ -1477,12 +1477,12 @@ serve(async (req)=>{
         throw new Error('TIER 2.5 VALIDATION ERROR: sessionId is empty or invalid');
       }
       
-      // Sequential fallback through template complexity levels with renamed functions
+      // Sequential fallback through template complexity levels with failure-scenario based names
       const complexityConfigs = [
-        { level: 'A', func: 'runware-template-ab', name: 'Basic Shapes' },
-        { level: 'B', func: 'runware-template-ab', name: 'Simple Scenes' },
-        { level: 'C', func: 'runware-template-cd', name: 'Detailed Scenes' },
-        { level: 'D', func: 'runware-template-cd', name: 'Complex Narratives' }
+        { level: 'A', func: 'runware-template-ab', name: 'AI Failure Fallback' },
+        { level: 'B', func: 'runware-template-ab', name: 'Shared Services Fallback' },
+        { level: 'C', func: 'runware-template-cd', name: 'Avatar Identity Fallback' },
+        { level: 'D', func: 'runware-template-cd', name: 'Dynamic Prompt Fallback' }
       ];
       
       for (let i = 0; i < complexityConfigs.length; i++) {

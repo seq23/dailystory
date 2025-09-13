@@ -87,80 +87,79 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
   const childName = userInfo?.childName || 'child';
   const favoriteColor = userInfo?.favoriteColor || 'blue';
   
-  // Try to get character consistency data
-  let characterDescription = '';
-  let visualDetails = '';
-  
-  try {
-    const CharacterService = await getCharacterService();
-    const VisualTracker = await getVisualTracker();
-    
-    if (CharacterService && sessionId && avatarIdentity) {
-      console.log('🎭 Template AB: Getting character consistency data');
-      
-      // Use the correct method name from the service
-      if (CharacterService.getInstance) {
-        const serviceInstance = CharacterService.getInstance();
-        if (serviceInstance.analyzeVisualDetails) {
-          await serviceInstance.analyzeVisualDetails(sessionId, storyText, pageNumber, childName);
-          const coloredObjects = serviceInstance.getColoredObjects(sessionId);
-          if (coloredObjects) {
-            characterDescription = `${childName} with consistent appearance`;
-          }
-        }
-      }
-    }
-    
-    if (VisualTracker && sessionId && storyText) {
-      console.log('👁️ Template AB: Tracking visual details');
-      // Use the correct method name from the service
-      if (VisualTracker.analyzeVisualDetails) {
-        await VisualTracker.analyzeVisualDetails(sessionId, storyText, pageNumber);
-        const coloredObjects = VisualTracker.getColoredObjects(sessionId);
-        if (coloredObjects) {
-          visualDetails = coloredObjects.split(',').slice(0, 2).join(', '); // Keep it simple
-        }
-      }
-    }
-  } catch (error) {
-    console.warn('⚠️ Template AB: Character consistency unavailable:', error);
-  }
-  
-  // Build simple prompts with character consistency when available
-  const characterPart = characterDescription ? `${characterDescription}, ` : `${childName}, `;
-  const visualPart = visualDetails ? `with ${visualDetails}, ` : '';
-  
   if (complexity === 'A') {
-    // Level A: Basic shapes and colors with character consistency
+    console.log('🎯 Template AB: Processing Tier 2.5A - AI Failure Fallback with shared services');
+    
+    // Tier 2.5A: Use shared services (exists because AI/Tier 1 might fail)
+    let characterDescription = '';
+    let visualDetails = '';
+    
+    try {
+      const CharacterService = await getCharacterService();
+      const VisualTracker = await getVisualTracker();
+      
+      if (CharacterService && sessionId && avatarIdentity) {
+        console.log('🎭 Template AB: Getting character consistency data');
+        const characterConsistencyService = new CharacterService();
+        const charData = await characterConsistencyService.getCharacterSeed(sessionId, avatarIdentity, storyText, 'standard', storyText);
+        if (charData) {
+          characterDescription = `${childName} with consistent appearance`;
+        }
+      }
+      
+      if (VisualTracker && sessionId && storyText) {
+        console.log('👁️ Template AB: Tracking visual details');
+        await VisualTracker.analyzeTextForDetails(sessionId, storyText, pageNumber, childName);
+        const objectDescription = await VisualTracker.buildObjectDescription(sessionId);
+        if (objectDescription) {
+          visualDetails = objectDescription.split(',').slice(0, 2).join(', '); // Keep it simple
+        }
+      }
+    } catch (error) {
+      console.error('❌ Template AB Tier 2.5A: Shared services failed, escalating to Tier 2.5B');
+      throw new Error(`Tier 2.5A shared services failed: ${error.message}`);
+    }
+    
+    // Build simple prompts with shared service data
+    const characterPart = characterDescription ? `${characterDescription}, ` : `${childName}, `;
+    const visualPart = visualDetails ? `with ${visualDetails}, ` : '';
+    
+    console.log('✅ Template AB Tier 2.5A: Successfully using shared services');
     return {
       positivePrompt: `A simple, colorful illustration showing ${characterPart}${visualPart}basic shapes and ${favoriteColor} colors. Clean, minimal, child-friendly cartoon style.`,
       negativePrompt: 'complex details, realistic, adult themes, scary, dark',
-      templateType: 'basic-shapes',
+      templateType: 'ai-failure-fallback',
       difficulty: 'A',
       enhancementLevel: 'minimal'
     };
   }
   
   if (complexity === 'B') {
-    // Level B: Simple scenes with character consistency
-    const simpleScene = storyText.substring(0, 100); // First 100 chars for context
-    return {
-      positivePrompt: `A simple cartoon illustration of ${characterPart}${visualPart}in a ${favoriteColor} themed scene. ${simpleScene}. Clean, bright, child-friendly art style.`,
-      negativePrompt: 'complex backgrounds, realistic details, adult themes, scary elements',
-      templateType: 'simple-scene',
-      difficulty: 'B', 
-      enhancementLevel: 'basic'
-    };
+    console.log('🎯 Template AB: Processing Tier 2.5B - Shared Services Fallback with nuclear independence');
+    
+    // Tier 2.5B: Nuclear independence (exists because shared services might fail)
+    // NO shared services - pure nuclear template logic
+    try {
+      const characterPart = `${childName}, `;
+      const colorPart = favoriteColor ? `${favoriteColor} themed ` : '';
+      const simpleScene = storyText.substring(0, 100); // First 100 chars for context
+      
+      console.log('✅ Template AB Tier 2.5B: Successfully using nuclear independence');
+      return {
+        positivePrompt: `A simple cartoon illustration of ${characterPart}in a ${colorPart}scene. ${simpleScene}. Clean, bright, child-friendly art style.`,
+        negativePrompt: 'complex backgrounds, realistic details, adult themes, scary elements',
+        templateType: 'shared-services-fallback',
+        difficulty: 'B', 
+        enhancementLevel: 'basic'
+      };
+    } catch (error) {
+      console.error('❌ Template AB Tier 2.5B: Nuclear independence failed, escalating to Tier 2.5C');
+      throw new Error(`Tier 2.5B nuclear independence failed: ${error.message}`);
+    }
   }
   
-  // Fallback to basic with character consistency
-  return {
-    positivePrompt: `A simple, happy illustration of ${characterPart}${visualPart}with ${favoriteColor} colors. Child-friendly cartoon style.`,
-    negativePrompt: 'complex, realistic, adult, scary',
-    templateType: 'fallback-basic',
-    difficulty: 'A',
-    enhancementLevel: 'minimal'
-  };
+  // Should never reach here - throw error to escalate to next tier
+  throw new Error(`Unsupported complexity level: ${complexity}. Template AB only handles A and B.`);
 }
 
 // ============= RUNWARE API CALL =============
