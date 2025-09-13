@@ -8,108 +8,67 @@ import { getStyleFramework } from '../_shared/styleFrameworks.js';
 import { CULTURAL_LANDMARKS, getCulturalLandmarks } from '../_shared/culturalLandmarks.js';
 
 
-// ============= INLINED CULTURAL ARRAYS FOR NUCLEAR INDEPENDENCE =============
-// Consolidated from _shared/tier25Vocabulary.js to prevent dynamic import failures
+// Cultural arrays with defensive loading
+let CULTURAL_ARRAYS = null;
+let culturalArraysPromise = null;
 
-const CULTURAL_ARRAYS = {
-  HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES: {
-    girls: [
-      'natural afro hair', 'beautiful braided hair', 'stylish twist hairstyle', 'elegant cornrow hairstyle',
-      'lovely natural curls', 'protective braided style', 'beautiful box braids', 'fashionable twist-out hair'
-    ],
-    boys: [
-      'natural short afro', 'stylish fade haircut', 'neat natural hair', 'cool braided style',
-      'trendy twist hairstyle', 'handsome natural curls', 'sharp lineup haircut', 'dapper natural hair'
-    ]
-  },
-  HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES: [
-    'with warm brown eyes and a bright smile', 'with expressive dark eyes and kind features',
-    'with beautiful natural features and joyful expression', 'with bright eyes and confident smile',
-    'with gentle features and radiant expression', 'with strong features and happy demeanor'
-  ],
-  HARDCODED_AFRICAN_AMERICAN_SKIN_TONES: [
-    'rich ebony', 'warm mahogany', 'golden bronze', 'deep caramel', 'beautiful brown', 'radiant copper'
-  ]
-};
+// Synchronous getter that returns cached result or throws error if not loaded
+function getCulturalArrays() {
+  if (CULTURAL_ARRAYS) return CULTURAL_ARRAYS;
+  
+  console.warn('CULTURAL_ARRAYS not loaded yet, using basic fallback');
+  return { 
+    HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES: { girls: [], boys: [] },
+    HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES: [],
+    HARDCODED_AFRICAN_AMERICAN_SKIN_TONES: []
+  };
+}
 
-// Backward compatibility getter
+// Async initializer that should be called at the start of main functions
+async function initCulturalArrays() {
+  if (CULTURAL_ARRAYS) return CULTURAL_ARRAYS;
+  if (culturalArraysPromise) return culturalArraysPromise;
+  
+  culturalArraysPromise = (async () => {
+    try {
+      const mod = await import('../_shared/tier25Vocabulary.js');
+      CULTURAL_ARRAYS = mod.CULTURAL_ARRAYS;
+      console.log('CULTURAL_ARRAYS loaded successfully');
+      return CULTURAL_ARRAYS;
+    } catch (error) {
+      console.warn('Failed to load CULTURAL_ARRAYS, using fallback:', error);
+      CULTURAL_ARRAYS = { 
+        HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES: { girls: [], boys: [] },
+        HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES: [],
+        HARDCODED_AFRICAN_AMERICAN_SKIN_TONES: []
+      };
+      return CULTURAL_ARRAYS;
+    }
+  })();
+  
+  return culturalArraysPromise;
+}
+
+// Update all direct CULTURAL_ARRAYS references to use the getter
 const CULTURAL_ARRAYS_GETTER = new Proxy({}, {
   get: (target, prop) => {
-    return CULTURAL_ARRAYS[prop];
+    const arrays = getCulturalArrays();
+    return arrays[prop];
   }
 });
 
-// ============= VOCABULARY IMPORTS - SHARED SOURCE OF TRUTH =============
-// Import from consolidated _shared/tier25Vocabulary.js for consistency
-
-let TIER_25_UNIFIED_VOCABULARY = null;
-let SEMANTIC_EXTRACTION = null;
-
-async function getTier25Vocabulary() {
-  if (TIER_25_UNIFIED_VOCABULARY) return { TIER_25_UNIFIED_VOCABULARY, SEMANTIC_EXTRACTION };
-  
-  try {
-    const { TIER_25_UNIFIED_VOCABULARY: vocabImport, SEMANTIC_EXTRACTION: semanticImport } = await import("../_shared/tier25Vocabulary.js");
-    TIER_25_UNIFIED_VOCABULARY = vocabImport;
-    SEMANTIC_EXTRACTION = semanticImport;
-    return { TIER_25_UNIFIED_VOCABULARY, SEMANTIC_EXTRACTION };
-  } catch (error) {
-    console.warn('Vocabulary lazy load failed, using fallback:', error);
-    // Fallback vocabulary for nuclear independence
-    TIER_25_UNIFIED_VOCABULARY = {
-      actions: {
-        basic: ['playing', 'running', 'jumping', 'walking', 'sitting', 'standing', 'looking', 'smiling'],
-        creative: ['drawing', 'painting', 'building', 'creating', 'crafting', 'making', 'designing'],
-        sensory: ['listening', 'watching', 'touching', 'smelling', 'tasting', 'feeling', 'sensing'],
-        states: ['thinking', 'wondering', 'dreaming', 'imagining', 'remembering', 'learning'],
-        fantasy: ['flying', 'floating', 'glowing', 'sparkling', 'shimmering', 'dancing'],
-        social: ['talking', 'laughing', 'sharing', 'helping', 'caring', 'loving'],
-        intensity: ['gently', 'carefully', 'excitedly', 'peacefully', 'energetically', 'boldly'],
-        bodyLanguage: ['smiling brightly', 'standing tall', 'sitting cross-legged', 'arms spread wide', 'head tilted thoughtfully'],
-        spatial: ['positioned in foreground', 'standing in center', 'sitting comfortably', 'moving forward confidently']
-      },
-      environments: {
-        atmosphere: ['sunny', 'bright', 'warm', 'cheerful', 'peaceful', 'cozy', 'magical'],
-        lighting: ['golden hour', 'soft lighting', 'natural light', 'warm glow', 'bright illumination'],
-        weather: ['clear skies', 'gentle breeze', 'perfect weather', 'pleasant atmosphere']
-      },
-      objectCategories: {
-        toys: ['toy', 'ball', 'doll', 'game', 'puzzle', 'blocks'],
-        nature: ['flower', 'tree', 'leaf', 'rock', 'butterfly', 'bird'],
-        books: ['book', 'story', 'journal', 'notebook', 'paper'],
-        food: ['apple', 'snack', 'lunch', 'treat', 'cookie', 'fruit']
-      },
-      contextDetection: {
-        indoor: ['inside', 'room', 'house', 'home', 'indoor', 'kitchen', 'bedroom'],
-        outdoor: ['outside', 'park', 'garden', 'playground', 'outdoor', 'yard', 'field']
-      }
-    };
-    SEMANTIC_EXTRACTION = {
-      EMOTIONS: { happy: ['happy', 'joy', 'smile'], sad: ['sad', 'cry'], scared: ['scared', 'afraid'] },
-      ACTIONS: { movement: ['run', 'walk', 'jump'], creative: ['draw', 'paint', 'build'] },
-      SETTINGS: { indoor: ['inside', 'room'], outdoor: ['outside', 'park'] }
-    };
-    return { TIER_25_UNIFIED_VOCABULARY, SEMANTIC_EXTRACTION };
-  }
-}
-
-// Initialize VOCAB object for backward compatibility with lazy loading
+// Lazy loading functions
 let VOCAB = null;
-
-async function getVocab() {
-  if (VOCAB) return VOCAB;
-  
-  const { TIER_25_UNIFIED_VOCABULARY, UNIVERSAL_EMOTION_ARRAYS, UNIVERSAL_INDOOR_SETTINGS, UNIVERSAL_OUTDOOR_SETTINGS, UNIVERSAL_LIGHTING_ARRAYS } = await getTier25Vocabulary();
-  
-  VOCAB = {
-    TIER_25_UNIFIED_VOCABULARY,
-    UNIVERSAL_EMOTION_ARRAYS,
-    UNIVERSAL_INDOOR_SETTINGS,
-    UNIVERSAL_OUTDOOR_SETTINGS,
-    UNIVERSAL_LIGHTING_ARRAYS
-  };
-  
-  return VOCAB;
+async function initVocabulary() {
+  if (VOCAB) return;
+  try {
+    const mod = await import("../_shared/tier25Vocabulary.js");
+    VOCAB = mod.default;
+    console.log('Tier 2.5 vocabulary initialized');
+  } catch (error) {
+    console.warn('Failed to load vocabulary, using minimal fallback:', error);
+    VOCAB = { basic: 'fallback' }; // Minimal fallback to prevent crashes
+  }
 }
 
 async function getCharacterService() {
@@ -233,18 +192,17 @@ function getSeededRandomItem(array, seed) {
 
 // ============= NUCLEAR INDEPENDENT DETECTION FUNCTIONS =============
 
-async function detectSceneContext(pageText) {
+function detectSceneContext(pageText) {
   if (!pageText || typeof pageText !== 'string') return 'unknown';
   
   const lowerText = pageText.toLowerCase();
-  const vocab = await getVocab();
   
   // Count indoor vs outdoor indicators using unified vocabulary
-  const indoorScore = vocab.TIER_25_UNIFIED_VOCABULARY.contextDetection.indoor.reduce((score, keyword) => 
+  const indoorScore = VOCAB.TIER_25_UNIFIED_VOCABULARY.contextDetection.indoor.reduce((score, keyword) => 
     score + (lowerText.includes(keyword) ? 1 : 0), 0
   );
   
-  const outdoorScore = vocab.TIER_25_UNIFIED_VOCABULARY.contextDetection.outdoor.reduce((score, keyword) => 
+  const outdoorScore = VOCAB.TIER_25_UNIFIED_VOCABULARY.contextDetection.outdoor.reduce((score, keyword) => 
     score + (lowerText.includes(keyword) ? 1 : 0), 0
   );
   
@@ -255,8 +213,8 @@ async function detectSceneContext(pageText) {
 }
 
 // Backward compatibility function (maintain existing API)
-async function isIndoorContext(pageText) {
-  return await detectSceneContext(pageText) === 'indoor';
+function isIndoorContext(pageText) {
+  return detectSceneContext(pageText) === 'indoor';
 }
 
 // ============= NUCLEAR INDEPENDENT CHARACTER SYSTEM =============
@@ -355,15 +313,14 @@ function getNuclearFallbackCharacter(seed, pageText) {
 
 // ============= NUCLEAR INDEPENDENT SCENE ANALYSIS =============
 
-async function detectObjectsFromStory(pageText, seed) {
+function detectObjectsFromStory(pageText, seed) {
   if (!pageText || typeof pageText !== 'string') return [];
   
   const lowerText = pageText.toLowerCase();
   const detectedObjects = [];
-  const vocab = await getVocab();
   
   // Search through all object categories using unified vocabulary
-  Object.values(vocab.TIER_25_UNIFIED_VOCABULARY.objectCategories).forEach(category => {
+  Object.values(VOCAB.TIER_25_UNIFIED_VOCABULARY.objectCategories).forEach(category => {
     category.forEach(object => {
       if (lowerText.includes(object)) {
         detectedObjects.push(object);
@@ -381,14 +338,13 @@ async function detectObjectsFromStory(pageText, seed) {
   return detectedObjects.slice(0, 3); // Limit to top 3
 }
 
-async function detectActionsFromStory(pageText, seed) {
+function detectActionsFromStory(pageText, seed) {
   if (!pageText || typeof pageText !== 'string') return 'playing';
   
   const lowerText = pageText.toLowerCase();
-  const vocab = await getVocab();
   
   // Search through all action categories using unified vocabulary
-  const allActions = Object.values(vocab.TIER_25_UNIFIED_VOCABULARY.actions).flat();
+  const allActions = Object.values(VOCAB.TIER_25_UNIFIED_VOCABULARY.actions).flat();
   
   for (const action of allActions) {
     if (lowerText.includes(action)) {
@@ -398,9 +354,6 @@ async function detectActionsFromStory(pageText, seed) {
   }
   
   // Seeded fallback
-  console.log(`🎲 Using seeded fallback action`);
-  return getSeededRandomItem(vocab.TIER_25_UNIFIED_VOCABULARY.actions.basic, seed + 'action');
-}
   const fallbackActions = ['playing', 'exploring', 'discovering', 'learning'];
   return getSeededRandomItem(fallbackActions, seed + 'action');
 }
@@ -4843,13 +4796,8 @@ function detectCulturalProfile(userInfo, avatarIdentity) {
 // ============= MAIN EDGE FUNCTION =============
 
 serve(async (req) => {
-  const BUILD_VERSION = '2025-01-09-v2.1.0';
   const requestId = Math.random().toString(36).substring(2, 10);
-  console.log(`🚀 [${requestId}] runware-simple-fallback: ${req.method} ${req.url} [v${BUILD_VERSION}]`);
-  
-  // Pre-load vocabulary on first request for performance
-  await getVocab();
-  
+  console.log(`🚀 [${requestId}] runware-simple-fallback: ${req.method} ${req.url}`);
   // ✅ EARLY BOOT LOGGING - Phase 2 Boot Stabilization
   console.log('🚀 Tier 2.5 runware-simple-fallback starting...');
   console.log(`🛡️ Tier 2.5: ${req.method} ${req.url}`);
