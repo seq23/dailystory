@@ -171,18 +171,47 @@ const processAvatarIdentityFromCache = (userInfo) => {
   
   // Gender/pronoun processing  
   const avatarType = userInfo?.avatarType || userInfo?.avatar?.type || 'prefer-not-to-answer';
-  console.log('Processing avatar identity - avatarType:', avatarType, 'userInfo structure:', { avatarType: userInfo?.avatarType, avatarNestedType: userInfo?.avatar?.type });
+  console.log('🔍 AVATAR MAPPING DEBUG: Processing avatar identity', {
+    input: {
+      userInfoAvatar: userInfo?.avatar,
+      userInfoName: userInfo?.name,
+      userInfoId: userInfo?.id
+    },
+    derived: {
+      avatarType,
+      skinTone,
+      nativeLanguage: userInfo?.nativeLanguage
+    }
+  });
+  
   const pronoun = genderMapping.pronouns[avatarType];
   const completeGenderInfo = genderMapping.completeInfo[avatarType];
   
-  return {
-    hairColor,
-    pronoun, 
+  // Build complete avatarIdentity object matching expected structure
+  const avatarIdentity = {
+    type: avatarType,
+    skinTone: skinTone,
+    hairColor: hairColor,
+    culturalProfile: userInfo?.culturalProfile || (userInfo?.nativeLanguage !== 'en' ? userInfo?.nativeLanguage : undefined),
+    nativeLanguage: userInfo?.nativeLanguage || 'en',
+    name: userInfo?.name || 'Child',
+    pronoun,
     completeGenderInfo,
-    avatarType,
-    skinTone,
-    userName: userInfo?.name || 'Child'
+    userName: userInfo?.userName || userInfo?.name || 'Child'
   };
+  
+  console.log('✅ AVATAR IDENTITY PROCESSED:', {
+    completeness: {
+      type: !!avatarIdentity.type,
+      skinTone: !!avatarIdentity.skinTone,
+      culturalProfile: !!avatarIdentity.culturalProfile,
+      nativeLanguage: !!avatarIdentity.nativeLanguage,
+      name: !!avatarIdentity.name
+    },
+    result: avatarIdentity
+  });
+  
+  return avatarIdentity;
 };
 
 // Cache system settings
@@ -1225,6 +1254,16 @@ serve(async (req)=>{
     }
     console.log(`🎯 [${requestId}] Starting image orchestration for page ${pageNumber} (Guest: ${isGuestUser || false})`);
     console.log(`🧠 Enhanced data available: ${enhancedStoryData ? 'Yes' : 'No'}`);
+    
+    // ============= ROUTING DECISION COLLECTION =============
+    const routingDecisions = [];
+    const skippedTiers = [];
+    let attemptedTier = 'Tier 1';
+    let executedTier = null;
+    let fallbackReason = null;
+    let binaryValidation = null;
+    let avatarCompleteness = null;
+    
     console.log('🔍 TIER SYSTEM DEBUG - Starting orchestrated tier progression', {
       pageText: pageText.substring(0, 100) + '...',
       userInfo: !!userInfo,
@@ -1242,6 +1281,16 @@ serve(async (req)=>{
     const avatarIdentity = await processAvatarIdentityWithStaticDataCache(userInfo, sessionId, requestId);
     console.log(`👤 PHASE 8: Avatar Identity Processed: ${avatarIdentity.type}/${avatarIdentity.skinTone} - Cultural: ${avatarIdentity.culturalProfile}`);
     
+    // Set avatar completeness from validation result
+    if (avatarIdentity?.completenessValidation) {
+      binaryValidation = avatarIdentity.completenessValidation.completeness;
+      avatarCompleteness = `${avatarIdentity.completenessValidation.missingFields ? avatarIdentity.completenessValidation.missingFields.length : 0} fields missing`;
+      
+      if (!avatarIdentity.completenessValidation.isComplete) {
+        fallbackReason = `Avatar identity incomplete (missing: ${avatarIdentity.completenessValidation.missingFields?.join(', ') || 'unknown fields'})`;
+      }
+    }
+    
     // Binary tier routing based on avatar identity completeness
     console.log('🔍 PHASE 8: Evaluating binary tier routing');
     
@@ -1250,19 +1299,27 @@ serve(async (req)=>{
       const routingReason = avatarIdentity.tierRouting.reason;
       
       console.log(`🎯 PHASE 8: Binary routing suggests ${suggestedTier} (${routingReason})`);
+      routingDecisions.push(`Binary routing suggests ${suggestedTier}: ${routingReason}`);
       
       if (suggestedTier === '2.5C') {
         console.log('🔄 PHASE 8: Routing to Tier 2.5C - incomplete avatar identity');
         forceTier = 2.5; // Force to template fallbacks
+        skippedTiers.push('Tier 1');
+        routingDecisions.push('Routing to Tier 2.5C: incomplete avatar identity');
       } else if (suggestedTier === '2.5D') {
         console.log('🔄 PHASE 8: Routing to Tier 2.5D - StaticDataCache unavailable');
         forceTier = 2.5; // Force to template fallbacks
+        skippedTiers.push('Tier 1');
+        routingDecisions.push('Routing to Tier 2.5D: StaticDataCache unavailable');
       }
     } else if (avatarIdentity?.completenessValidation?.isComplete === false) {
-      console.log('❌ PHASE 8: Avatar identity incomplete - routing to Tier 2.5C');
+      console.log('❌ PHASE 8: Avatar identity incomplete - routing to Tier 2.5A');
       forceTier = 2.5; // Route to template fallbacks for incomplete identity
+      skippedTiers.push('Tier 1');
+      routingDecisions.push('Avatar identity incomplete - routing to Tier 2.5A');
     } else {
       console.log('✅ PHASE 8: Complete avatar identity - proceeding with enhanced processing');
+      routingDecisions.push('Complete avatar identity - proceeding with Tier 1');
     }
     // ORCHESTRATOR SCOPE: Initialize shared variables for nuclear independence
     let characterData = null; // Safe default - will be populated by Tier 1 if successful

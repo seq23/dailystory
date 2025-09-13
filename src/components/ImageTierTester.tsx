@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { supabase } from '@/integrations/supabase/client';
-import { CheckCircle, XCircle, Clock, Image as ImageIcon, Zap, Settings, Target, Layers } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Image as ImageIcon, Zap, Settings, Target, Layers, ArrowRight, AlertTriangle, Bug } from 'lucide-react';
 import type { SkinTone, AvatarType, LanguageCode } from '@/types';
 
 interface TierTestResult {
@@ -21,7 +21,6 @@ interface TierTestResult {
   metadata?: any;
   enhancementDetails?: any;
   templateComplexity?: string;
-  // NEW: Real orchestration flow fields
   routingMetadata?: {
     attemptedTier: string;
     executedTier: string;
@@ -30,6 +29,11 @@ interface TierTestResult {
     routingDecisions: string[];
     binaryValidation: string;
     avatarCompleteness: string;
+    avatarIdentity?: {
+      complete: boolean;
+      missingFields: string[];
+      provided: string[];
+    };
   };
 }
 
@@ -52,7 +56,7 @@ export function ImageTierTester() {
     age: 8,
     sessionId: `test-${Date.now()}`,
     skinTone: 'medium',
-    avatarType: 'girl', // Changed from 'prefer-not-to-answer' to 'girl' for complete avatar testing
+    avatarType: 'girl',
     nativeLanguage: 'en'
   });
 
@@ -72,7 +76,6 @@ export function ImageTierTester() {
     try {
       const startTime = Date.now();
       
-      // Test actual existing functions with GET health checks
       const healthChecks = [
         { name: 'AI Visual Scene Creator', endpoint: 'ai-visual-scene-creator' },
         { name: 'Runware Image Orchestrator', endpoint: 'runware-generate-image' },
@@ -87,7 +90,6 @@ export function ImageTierTester() {
           try {
             console.log(`🩺 [${requestId}] GET health check: ${name} (${endpoint})`);
             
-            // GET request with apikey header for Supabase edge function authentication
             const response = await fetch(`https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/${endpoint}`, {
               method: 'GET',
               headers: {
@@ -101,7 +103,6 @@ export function ImageTierTester() {
             let keyStatus = '';
             
             if (response.ok) {
-              // Extract key presence info based on endpoint
               if (endpoint === 'ai-visual-scene-creator' && data.openaiApiKeyPresent !== undefined) {
                 keyStatus = ` (OpenAI: ${data.openaiApiKeyPresent ? '✓' : '✗'})`;
               } else if (endpoint === 'runware-generate-image' && data.api_keys) {
@@ -134,7 +135,6 @@ export function ImageTierTester() {
               endpoint
             });
             
-            // Network or connection failure
             const errorMsg = error instanceof Error ? error.message : 'Unknown error';
             
             return { 
@@ -176,16 +176,14 @@ export function ImageTierTester() {
         error: null
       });
 
-      // Set overall status based on results
       if (reachable === total) {
         setConnectivityStatus('success');
       } else if (reachable > 0) {
-        setConnectivityStatus('success'); // Partial reachability still counts as success
+        setConnectivityStatus('success');
       } else {
         setConnectivityStatus('failed');
       }
       
-      // Add connectivity test to results
       const connectivityResultForList: TierTestResult = {
         tier: 'Connectivity Test',
         success: reachable > 0,
@@ -244,24 +242,7 @@ export function ImageTierTester() {
         nativeLanguage: config.nativeLanguage
       };
 
-      if (tierType === 'Tier 1') {
-        // Test AI visual scene creator function
-        console.log(`🎯 [${requestId}] Calling ai-visual-scene-creator...`);
-        result = await Promise.race([
-          supabase.functions.invoke('ai-visual-scene-creator', {
-            body: {
-              storyText: config.storyText,
-              userInfo: userInfo,
-              avatarIdentity: userInfo,
-              sessionId: config.sessionId,
-              requestId
-            }
-          }),
-          new Promise((_, reject) => 
-            setTimeout(() => reject(new Error(`[${requestId}] Request timeout after 60s`)), 60000)
-          )
-        ]);
-      } else if (tierType === 'Real Flow Test') {
+      if (tierType === 'Debug Real Routing') {
         // Test the actual orchestration flow - this is what happens in reality
         console.log(`🎯 [${requestId}] Testing Real Orchestration Flow via runware-generate-image...`);
         result = await Promise.race([
@@ -279,14 +260,25 @@ export function ImageTierTester() {
             setTimeout(() => reject(new Error(`[${requestId}] Request timeout after 90s`)), 90000)
           )
         ]);
-      } else if (tierType === 'Tier 1 (Image Orchestrator)') {
-        // Test runware image generation orchestrator
-        console.log(`🎯 [${requestId}] Calling runware-generate-image...`);
+      } else if (tierType === 'Avatar Debug Mode') {
+        // Test with incomplete avatar to trigger fallback
+        const incompleteUserInfo = {
+          name: config.characterName,
+          age: config.age,
+          userName: config.userName,
+          avatar: {
+            type: config.avatarType,
+            skinTone: config.skinTone
+          },
+          // Missing nativeLanguage to trigger incomplete avatar
+        };
+        
+        console.log(`🎯 [${requestId}] Testing Avatar Debug Mode with incomplete avatar...`);
         result = await Promise.race([
           supabase.functions.invoke('runware-generate-image', {
             body: {
               pageText: config.storyText,
-              userInfo: userInfo,
+              userInfo: incompleteUserInfo,
               sessionId: config.sessionId,
               storyId: `story-${config.sessionId}`,
               pageNumber: 1,
@@ -297,7 +289,24 @@ export function ImageTierTester() {
             setTimeout(() => reject(new Error(`[${requestId}] Request timeout after 90s`)), 90000)
           )
         ]);
-      } else if (tierType.startsWith('Tier 2.5')) {
+      } else if (tierType === 'Force Tier 1 (AI Scene)') {
+        // Test AI visual scene creator function directly
+        console.log(`🎯 [${requestId}] Calling ai-visual-scene-creator...`);
+        result = await Promise.race([
+          supabase.functions.invoke('ai-visual-scene-creator', {
+            body: {
+              storyText: config.storyText,
+              userInfo: userInfo,
+              avatarIdentity: userInfo,
+              sessionId: config.sessionId,
+              requestId
+            }
+          }),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error(`[${requestId}] Request timeout after 60s`)), 60000)
+          )
+        ]);
+      } else if (tierType.startsWith('Force Tier 2.5')) {
         // Route to appropriate template function based on complexity
         const isAdvanced = templateComplexity === 'C' || templateComplexity === 'D';
         const functionName = isAdvanced ? 'runware-template-cd' : 'runware-template-ab';
@@ -317,48 +326,12 @@ export function ImageTierTester() {
             setTimeout(() => reject(new Error(`[${requestId}] Request timeout after 60s`)), 60000)
           )
         ]);
-      } else if (tierType === 'Template AB') {
-        // Test runware-template-ab function directly
-        console.log(`🎯 [${requestId}] Calling runware-template-ab directly with complexity ${templateComplexity}...`);
-        result = await Promise.race([
-          supabase.functions.invoke('runware-template-ab', {
-            body: {
-              storyText: config.storyText,
-              userInfo: userInfo,
-              avatarIdentity: userInfo,
-              templateComplexity: templateComplexity || 'A',
-              requestId
-            }
-          }),
-          new Promise((_, reject) => 
-            setTimeout(() => reject(new Error(`[${requestId}] Request timeout after 60s`)), 60000)
-          )
-        ]);
-      } else if (tierType === 'Template CD') {
-        // Test runware-template-cd function directly
-        console.log(`🎯 [${requestId}] Calling runware-template-cd directly with complexity ${templateComplexity}...`);
-        result = await Promise.race([
-          supabase.functions.invoke('runware-template-cd', {
-            body: {
-              storyText: config.storyText,
-              userInfo: userInfo,
-              avatarIdentity: userInfo,
-              templateComplexity: templateComplexity || 'C',
-              requestId
-            }
-          }),
-          new Promise((_, reject) => 
-            setTimeout(() => reject(new Error(`[${requestId}] Request timeout after 60s`)), 60000)
-          )
-        ]);
-      } else if (tierType === 'Tier 4') {
+      } else if (tierType === 'Force Tier 4') {
         // Use local placeholder - no backend dependency
         console.log(`🎯 [${requestId}] Generating local placeholder for Tier 4...`);
         
-        // Simulate processing time for realistic testing
         await new Promise(resolve => setTimeout(resolve, 100));
         
-        // Create a placeholder response matching expected format
         result = {
           data: {
             success: true,
@@ -374,7 +347,6 @@ export function ImageTierTester() {
 
       const processingTime = Date.now() - startTime;
       
-      // Enhanced response parsing with detailed error logging
       console.log(`📊 [${requestId}] ${tierType} Response Analysis:`, {
         processingTime,
         hasData: !!result?.data,
@@ -384,7 +356,8 @@ export function ImageTierTester() {
         imageUrl: result?.data?.imageURL || result?.data?.imageUrl,
         errorMessage: result?.error?.message || result?.data?.error,
         tierType,
-        templateComplexity: templateComplexity || 'none'
+        templateComplexity: templateComplexity || 'none',
+        routingMetadata: !!result?.data?.routingMetadata
       });
       
       if (result?.data?.success) {
@@ -407,7 +380,6 @@ export function ImageTierTester() {
           routingMetadata: result.data.routingMetadata
         };
       } else {
-        // Enhanced error reporting with function existence check
         let errorDetail;
         if (result?.error) {
           const errorMsg = result.error.message || '';
@@ -428,30 +400,18 @@ export function ImageTierTester() {
           errorDetail = 'No response received';
         }
         
-        // Log detailed diagnostic info for debugging
         console.error(`🔍 [${requestId}] Detailed Error Analysis for ${tierType}:`, {
-          errorCategory: result?.error ? 'SUPABASE_ERROR' : result?.data?.error ? 'FUNCTION_ERROR' : 'UNKNOWN_ERROR',
-          hasResult: !!result,
-          hasError: !!result?.error,
-          errorMessage: result?.error?.message,
-          hasData: !!result?.data,
-          dataSuccess: result?.data?.success,
-          dataKeys: result?.data ? Object.keys(result.data) : [],
-          fullError: result?.error,
-          timestamp: new Date().toISOString(),
-          requestId,
-          processingTime
-        });
-              
-        console.log(`❌ [${requestId}] ${tierType} Failed:`, {
-          errorDetail,
           processingTime,
-          templateComplexity: templateComplexity || 'none'
+          error: errorDetail,
+          result,
+          tierType,
+          templateComplexity
         });
         
         return {
           tier: tierType + (templateComplexity ? ` (${templateComplexity})` : ''),
           success: false,
+          imageUrl: undefined,
           processingTime,
           error: errorDetail,
           templateComplexity,
@@ -460,532 +420,478 @@ export function ImageTierTester() {
       }
     } catch (error) {
       const processingTime = Date.now() - startTime;
-      console.error(`❌ [${requestId}] ${tierType} Exception:`, {
-        errorMessage: error instanceof Error ? error.message : 'Unknown error',
-        errorName: error instanceof Error ? error.name : 'Unknown',
+      console.error(`❌ [${requestId}] Exception in ${tierType}:`, error);
+      
+      return {
+        tier: tierType + (templateComplexity ? ` (${templateComplexity})` : ''),
+        success: false,
+        imageUrl: undefined,
         processingTime,
-        tierType,
-        templateComplexity: templateComplexity || 'none',
-        requestId,
-        timestamp: new Date().toISOString()
+        error: error instanceof Error ? error.message : 'Unknown error',
+        templateComplexity
+      };
+    }
+  };
+
+  const runTierTest = async (tierType: string, templateComplexity?: string) => {
+    setIsLoading(true);
+    setActiveTest(tierType);
+    
+    try {
+      console.log(`🚀 Starting ${tierType} test...`);
+      
+      const result = await testTier(tierType, templateComplexity);
+      
+      console.log(`✅ ${tierType} test completed:`, {
+        success: result.success,
+        processingTime: result.processingTime,
+        hasImage: !!result.imageUrl,
+        error: result.error
       });
       
-        return {
-          tier: tierType + (templateComplexity ? ` (${templateComplexity})` : ''),
-          success: false,
-          processingTime,
-          error: error instanceof Error ? error.message : 'Unknown error',
-          templateComplexity,
-          routingMetadata: null
-        };
+      setResults(prev => [result, ...prev]);
+    } catch (error) {
+      console.error(`❌ ${tierType} test failed:`, error);
+      
+      const errorResult: TierTestResult = {
+        tier: tierType,
+        success: false,
+        imageUrl: undefined,
+        processingTime: 0,
+        error: error instanceof Error ? error.message : 'Test execution failed'
+      };
+      
+      setResults(prev => [errorResult, ...prev]);
+    } finally {
+      setIsLoading(false);
+      setActiveTest(null);
     }
-  };
-
-  const runSingleTest = async (tierType: string, templateComplexity?: string) => {
-    setIsLoading(true);
-    setActiveTest(tierType + (templateComplexity || ''));
-    
-    const result = await testTier(tierType, templateComplexity);
-    setResults(prev => [...prev.filter(r => r.tier !== result.tier), result]);
-    
-    setIsLoading(false);
-    setActiveTest(null);
-  };
-
-  const runAllTests = async () => {
-    const testSessionId = `BATCH-${Date.now()}`;
-    console.log(`🚀 [${testSessionId}] Starting comprehensive tier testing...`);
-    
-    setIsLoading(true);
-    setResults([]);
-    
-    const testSequence = [
-      { type: 'Tier 1' },
-      { type: 'Tier 1 (Image Orchestrator)' },
-      { type: 'Tier 2.5', complexity: 'A' },
-      { type: 'Tier 2.5', complexity: 'B' },
-      { type: 'Tier 2.5', complexity: 'C' },
-      { type: 'Tier 2.5', complexity: 'D' },
-      { type: 'Tier 4' }
-    ];
-    
-    const allResults: TierTestResult[] = [];
-    let successCount = 0;
-    let failureCount = 0;
-    
-    for (const test of testSequence) {
-      const testName = test.type + (test.complexity || '');
-      console.log(`📋 [${testSessionId}] Testing ${testName} (${allResults.length + 1}/${testSequence.length})`);
-      
-      setActiveTest(testName);
-      const result = await testTier(test.type, test.complexity);
-      allResults.push(result);
-      
-      if (result.success) {
-        successCount++;
-        console.log(`✅ [${testSessionId}] ${testName}: Success (${result.processingTime}ms)`);
-      } else {
-        failureCount++;
-        console.log(`❌ [${testSessionId}] ${testName}: Failed - ${result.error}`);
-      }
-      
-      setResults([...allResults]);
-    }
-    
-    console.log(`🏁 [${testSessionId}] All tier testing complete:`, {
-      total: testSequence.length,
-      successful: successCount,
-      failed: failureCount,
-      successRate: `${Math.round((successCount / testSequence.length) * 100)}%`,
-      results: allResults.map(r => ({ tier: r.tier, success: r.success, time: r.processingTime }))
-    });
-    
-    setIsLoading(false);
-    setActiveTest(null);
   };
 
   const clearResults = () => {
     setResults([]);
-    setConnectivityStatus('idle');
     setConnectivityResult(null);
-    console.log('🧹 Cleared all tier test results');
+    setConnectivityStatus('idle');
   };
 
-  return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Layers className="w-5 h-5 text-primary" />
-          Image Tier Testing Debug Panel
-          <Badge variant="outline">Console Mode</Badge>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Configuration Section */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Test Configuration</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="storyText">Story Text</Label>
-              <Textarea
-                id="storyText"
-                value={config.storyText}
-                onChange={(e) => setConfig(prev => ({ ...prev, storyText: e.target.value }))}
-                rows={3}
-              />
-            </div>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <Label htmlFor="characterName">Character Name</Label>
-                  <Input
-                    id="characterName"
-                    value={config.characterName}
-                    onChange={(e) => setConfig(prev => ({ ...prev, characterName: e.target.value }))}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="age">Age</Label>
-                  <Input
-                    id="age"
-                    type="number"
-                    value={config.age}
-                    onChange={(e) => setConfig(prev => ({ ...prev, age: parseInt(e.target.value) || 8 }))}
-                  />
-                </div>
-              </div>
-              
-              {/* Avatar Configuration */}
-              <div className="space-y-3">
-                <Label>Avatar Configuration</Label>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="avatarType" className="text-sm">Avatar Type</Label>
-                  <RadioGroup
-                    value={config.avatarType}
-                    onValueChange={(value) => setConfig(prev => ({ ...prev, avatarType: value as AvatarType }))}
-                    className="flex gap-4"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="boy" id="boy" />
-                      <Label htmlFor="boy" className="text-sm">Boy</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="girl" id="girl" />
-                      <Label htmlFor="girl" className="text-sm">Girl</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="prefer-not-to-answer" id="prefer" />
-                      <Label htmlFor="prefer" className="text-sm">Neutral</Label>
-                    </div>
-                  </RadioGroup>
-                </div>
+  const renderRoutingFlow = (result: TierTestResult) => {
+    if (!result.routingMetadata) return null;
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-2">
-                    <Label htmlFor="skinTone" className="text-sm">Skin Tone</Label>
-                    <Select 
-                      value={config.skinTone} 
-                      onValueChange={(value) => setConfig(prev => ({ ...prev, skinTone: value as SkinTone }))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="pale">Pale</SelectItem>
-                        <SelectItem value="light">Light</SelectItem>
-                        <SelectItem value="medium">Medium</SelectItem>
-                        <SelectItem value="olive">Olive</SelectItem>
-                        <SelectItem value="dark">Dark</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+    const { attemptedTier, executedTier, fallbackReason, skippedTiers, routingDecisions, binaryValidation, avatarCompleteness, avatarIdentity } = result.routingMetadata;
 
-                  <div className="space-y-2">
-                    <Label htmlFor="nativeLanguage" className="text-sm">Language</Label>
-                    <Select 
-                      value={config.nativeLanguage} 
-                      onValueChange={(value) => setConfig(prev => ({ ...prev, nativeLanguage: value as LanguageCode }))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="en">English</SelectItem>
-                        <SelectItem value="es">Spanish</SelectItem>
-                        <SelectItem value="fr">French</SelectItem>
-                        <SelectItem value="ar">Arabic</SelectItem>
-                        <SelectItem value="zh">Chinese</SelectItem>
-                        <SelectItem value="hi">Hindi</SelectItem>
-                        <SelectItem value="pt">Portuguese</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <Separator />
-
-        {/* Testing Controls */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Tier Testing Controls</h3>
-          
-          {/* Connectivity Test */}
-          <div className="flex gap-3 mb-4">
-            <Button 
-              onClick={testConnectivity}
-              disabled={isLoading}
-              variant={connectivityStatus === 'success' ? 'default' : connectivityStatus === 'failed' ? 'destructive' : 'outline'}
-              className="flex items-center gap-2"
-            >
-              {connectivityStatus === 'testing' ? (
-                <>
-                  <Clock className="w-4 h-4 animate-spin" />
-                  Testing...
-                </>
-              ) : connectivityStatus === 'success' ? (
-                <>
-                  <CheckCircle className="w-4 h-4" />
-                  ✓ Connected
-                </>
-              ) : connectivityStatus === 'failed' ? (
-                <>
-                  <XCircle className="w-4 h-4" />
-                  ✗ Failed
-                </>
-              ) : (
-                <>
-                  <Settings className="w-4 h-4" />
-                  Test Connectivity
-                </>
-              )}
-            </Button>
-          </div>
-
-          {/* Enhanced Connectivity Results */}
-          {connectivityResult && (
-            <div className="space-y-2 p-3 bg-muted/50 rounded-lg">
-              <h4 className="font-medium text-sm">Connectivity Results:</h4>
-              {connectivityResult.data?.healthChecks && (
-                <div className="space-y-2">
-                  {connectivityResult.data.healthChecks.map((check: any, index: number) => (
-                     <div key={index} className="flex items-center gap-2 text-xs p-2 bg-background rounded">
-                      <div className={`w-2 h-2 rounded-full ${
-                        !check.result?.reachable ? 'bg-destructive' : 
-                        check.result?.error ? 'bg-yellow-500' : 'bg-green-500'
-                      }`} />
-                      <span className="font-medium min-w-[120px]">{check.name}:</span>
-                      <span className={
-                        !check.result?.reachable ? 'text-destructive' :
-                        check.result?.error ? 'text-yellow-600' : 'text-green-600'
-                      }>
-                        {check.result?.statusDetail || 
-                         check.result?.error?.message || 
-                         check.result?.status || 
-                         'Healthy'}
-                      </span>
-                    </div>
-                  ))}
-                  <div className="text-xs text-muted-foreground pt-1 border-t">
-                    Reachable: {connectivityResult.data.summary.reachable}/{connectivityResult.data.summary.total} • 
-                    Healthy: {connectivityResult.data.summary.successful}/{connectivityResult.data.summary.total} 
-                    ({connectivityResult.data.summary.processingTime}ms)
-                  </div>
-                </div>
-              )}
-              {connectivityResult.error && (
-                <div className="text-xs text-destructive p-2 bg-destructive/10 rounded">
-                  {connectivityResult.error.message}
-                </div>
-              )}
-            </div>
+    return (
+      <div className="mt-4 p-4 bg-muted rounded-lg">
+        <h4 className="font-semibold mb-3 flex items-center gap-2">
+          <Bug className="w-4 h-4" />
+          Routing Flow Analysis
+        </h4>
+        
+        {/* Main Routing Flow */}
+        <div className="flex items-center gap-2 mb-3">
+          <Badge variant="outline">{attemptedTier}</Badge>
+          <ArrowRight className="w-4 h-4" />
+          <Badge variant={executedTier === attemptedTier ? "default" : "destructive"}>
+            {executedTier}
+          </Badge>
+          {fallbackReason && (
+            <>
+              <AlertTriangle className="w-4 h-4 text-yellow-500" />
+              <span className="text-sm text-muted-foreground">{fallbackReason}</span>
+            </>
           )}
-          
-          {/* Real Orchestration Flow Test */}
-          <div className="mb-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
-            <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">Real Orchestration Flow</h4>
-            <p className="text-xs text-blue-700 dark:text-blue-200 mb-3">
-              Test the actual routing logic with fallback cascade - shows what happens in production.
-            </p>
-            <div className="flex gap-2">
-              <Button
-                onClick={() => runSingleTest('Real Flow Test')}
-                disabled={isLoading}
-                variant="default"
-                className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-              >
-                <Layers className="w-4 h-4" />
-                {activeTest === 'Real Flow Test' ? <Clock className="w-4 h-4 animate-spin" /> : 'Test Real Flow'}
-              </Button>
-              <Button
-                onClick={() => {
-                  // Temporarily set incomplete avatar identity for fallback testing
-                  const originalConfig = { ...config };
-                  setConfig(prev => ({ ...prev, avatarType: 'prefer-not-to-answer', characterName: '' }));
-                  setTimeout(() => {
-                    runSingleTest('Real Flow Test');
-                    // Restore original config after test
-                    setTimeout(() => setConfig(originalConfig), 1000);
-                  }, 100);
-                }}
-                disabled={isLoading}
-                variant="outline"
-                className="flex items-center gap-2"
-              >
-                <Target className="w-4 h-4" />
-                Test Fallback Route
-              </Button>
+        </div>
+
+        {/* Avatar Debug Panel */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+          <div>
+            <h5 className="font-medium mb-2">Avatar Validation</h5>
+            <div className="flex items-center gap-2">
+              <Badge variant={binaryValidation === 'COMPLETE' ? 'default' : 'destructive'}>
+                {binaryValidation}
+              </Badge>
+              <span className="text-sm text-muted-foreground">{avatarCompleteness}</span>
             </div>
+            
+            {avatarIdentity && (
+              <div className="mt-2 text-sm">
+                <div className="text-green-600">
+                  Provided: {avatarIdentity.provided.join(', ')}
+                </div>
+                {avatarIdentity.missingFields.length > 0 && (
+                  <div className="text-red-600">
+                    Missing: {avatarIdentity.missingFields.join(', ')}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
-          {/* Individual Tier Tests */}
-          <div className="space-y-2">
-            <h4 className="text-sm font-semibold text-muted-foreground">Force Individual Tiers (Bypass Routing)</h4>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <Button
-              onClick={() => runSingleTest('Tier 1')}
-              disabled={isLoading}
-              variant="outline"
-              className="flex items-center gap-2"
-            >
-              <Zap className="w-4 h-4" />
-              {activeTest === 'Tier 1' ? <Clock className="w-4 h-4 animate-spin" /> : 'Force AI Scene Creator'}
-            </Button>
-            
-            <Button
-              onClick={() => runSingleTest('Tier 1 (Image Orchestrator)')}
-              disabled={isLoading}
-              variant="outline"
-              className="flex items-center gap-2"
-            >
-              <ImageIcon className="w-4 h-4" />
-              {activeTest === 'Tier 1 (Image Orchestrator)' ? <Clock className="w-4 h-4 animate-spin" /> : 'Force Tier 1 (Full)'}
-            </Button>
-            
-            <Button
-              onClick={() => runSingleTest('Tier 2.5', 'A')}
-              disabled={isLoading}
-              variant="outline"
-              className="flex items-center gap-2"
-            >
-              <Target className="w-4 h-4" />
-              {activeTest === 'Tier 2.5A' ? <Clock className="w-4 h-4 animate-spin" /> : 'Force 2.5A'}
-            </Button>
-            
-            <Button
-              onClick={() => runSingleTest('Tier 2.5', 'B')}
-              disabled={isLoading}
-              variant="outline"
-              className="flex items-center gap-2"
-            >
-              <Target className="w-4 h-4" />
-              {activeTest === 'Tier 2.5B' ? <Clock className="w-4 h-4 animate-spin" /> : 'Force 2.5B'}
-            </Button>
-            
-            <Button
-              onClick={() => runSingleTest('Tier 2.5', 'C')}
-              disabled={isLoading}
-              variant="outline"
-              className="flex items-center gap-2"
-            >
-              <Target className="w-4 h-4" />
-              {activeTest === 'Tier 2.5C' ? <Clock className="w-4 h-4 animate-spin" /> : 'Force 2.5C'}
-            </Button>
-            
-            <Button
-              onClick={() => runSingleTest('Tier 2.5', 'D')}
-              disabled={isLoading}
-              variant="outline"
-              className="flex items-center gap-2"
-            >
-              <Target className="w-4 h-4" />
-              {activeTest === 'Tier 2.5D' ? <Clock className="w-4 h-4 animate-spin" /> : 'Force 2.5D'}
-            </Button>
-            
-            <Button
-              onClick={() => runSingleTest('Tier 4')}
-              disabled={isLoading}
-              variant="outline"
-              className="flex items-center gap-2"
-            >
-              <ImageIcon className="w-4 h-4" />
-              {activeTest === 'Tier 4' ? <Clock className="w-4 h-4 animate-spin" /> : 'Force Tier 4'}
-            </Button>
-          </div>
-          </div>
-
-          {/* Comprehensive Testing Controls */}
-          <div className="flex gap-3">
-            <Button
-              onClick={runAllTests}
-              disabled={isLoading}
-              className="flex items-center gap-2"
-            >
-              {isLoading ? <Clock className="w-4 h-4 animate-spin" /> : <Layers className="w-4 h-4" />}
-              Test All Tiers
-            </Button>
-            
-            <Button
-              onClick={clearResults}
-              disabled={isLoading}
-              variant="outline"
-            >
-              Clear Results
-            </Button>
+          <div>
+            <h5 className="font-medium mb-2">Routing Decisions</h5>
+            <div className="space-y-1">
+              {routingDecisions.map((decision, index) => (
+                <div key={index} className="text-sm text-muted-foreground">
+                  • {decision}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
-        <Separator />
-
-        {/* Results Section */}
-        {results.length > 0 && (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Test Results ({results.length})</h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {results.map((result, index) => (
-                <Card key={index} className={`border ${result.success ? 'border-green-500/50' : 'border-red-500/50'}`}>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm flex items-center gap-2">
-                      {result.success ? (
-                        <CheckCircle className="w-4 h-4 text-green-500" />
-                      ) : (
-                        <XCircle className="w-4 h-4 text-red-500" />
-                      )}
-                      {result.tier}
-                      <Badge variant={result.success ? "default" : "destructive"} className="ml-auto">
-                        {result.processingTime}ms
-                      </Badge>
-                    </CardTitle>
-                  </CardHeader>
-                   <CardContent className="space-y-3">
-                     {/* Routing Metadata Display - NEW */}
-                     {result.routingMetadata && (
-                       <div className="p-3 bg-blue-50 dark:bg-blue-950/20 rounded-md border border-blue-200 dark:border-blue-800">
-                         <h5 className="text-xs font-semibold text-blue-900 dark:text-blue-100 mb-2">Routing Flow</h5>
-                         <div className="space-y-1 text-xs">
-                           <div className="grid grid-cols-2 gap-2">
-                             <span className="text-muted-foreground">Attempted:</span>
-                             <span className="font-mono">Tier {result.routingMetadata.attemptedTier}</span>
-                           </div>
-                           <div className="grid grid-cols-2 gap-2">
-                             <span className="text-muted-foreground">Executed:</span>
-                             <span className="font-mono text-green-600 dark:text-green-400">Tier {result.routingMetadata.executedTier}</span>
-                           </div>
-                           {result.routingMetadata.fallbackReason && (
-                             <div className="grid grid-cols-2 gap-2">
-                               <span className="text-muted-foreground">Reason:</span>
-                               <span className="text-orange-600 dark:text-orange-400">{result.routingMetadata.fallbackReason.replace(/_/g, ' ')}</span>
-                             </div>
-                           )}
-                           {result.routingMetadata.skippedTiers.length > 0 && (
-                             <div className="grid grid-cols-2 gap-2">
-                               <span className="text-muted-foreground">Skipped:</span>
-                               <span className="text-red-500 dark:text-red-400 font-mono">{result.routingMetadata.skippedTiers.join(', ')}</span>
-                             </div>
-                           )}
-                           <div className="grid grid-cols-2 gap-2">
-                             <span className="text-muted-foreground">Avatar:</span>
-                             <span className={`font-mono ${result.routingMetadata.avatarCompleteness === 'COMPLETE' ? 'text-green-600 dark:text-green-400' : 'text-orange-600 dark:text-orange-400'}`}>
-                               {result.routingMetadata.avatarCompleteness}
-                             </span>
-                           </div>
-                         </div>
-                         {result.routingMetadata.routingDecisions.length > 0 && (
-                           <div className="mt-2 pt-2 border-t border-blue-200 dark:border-blue-700">
-                             <h6 className="text-xs font-medium text-blue-800 dark:text-blue-200 mb-1">Decision Chain:</h6>
-                             <div className="space-y-1">
-                               {result.routingMetadata.routingDecisions.map((decision, idx) => (
-                                 <div key={idx} className="text-xs text-blue-700 dark:text-blue-300 flex items-center gap-1">
-                                   <span className="w-1 h-1 bg-blue-400 rounded-full"></span>
-                                   {decision}
-                                 </div>
-                               ))}
-                             </div>
-                           </div>
-                         )}
-                       </div>
-                     )}
-
-                     {result.success && result.imageUrl && (
-                      <div className="aspect-square bg-muted rounded-md overflow-hidden">
-                        <img
-                          src={result.imageUrl}
-                          alt={`${result.tier} result`}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            console.error(`Failed to load ${result.tier} image:`, result.imageUrl);
-                            (e.target as HTMLImageElement).style.display = 'none';
-                          }}
-                        />
-                      </div>
-                    )}
-                    
-                    {result.error && (
-                      <div className="text-sm text-red-500 bg-red-50 dark:bg-red-950/20 p-2 rounded">
-                        {result.error}
-                      </div>
-                    )}
-                    
-                    {result.metadata && (
-                      <div className="text-xs text-muted-foreground">
-                        <div>Enhancement: {result.metadata.enhancementLevel || 'None'}</div>
-                        <div>Cultural: {result.metadata.culturalProcessing ? 'Yes' : 'No'}</div>
-                        {result.templateComplexity && (
-                          <div>Template: {result.templateComplexity}</div>
-                        )}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+        {/* Skipped Tiers */}
+        {skippedTiers.length > 0 && (
+          <div>
+            <h5 className="font-medium mb-2">Skipped Tiers</h5>
+            <div className="flex flex-wrap gap-2">
+              {skippedTiers.map((tier, index) => (
+                <Badge key={index} variant="secondary">
+                  {tier} - SKIPPED
+                </Badge>
               ))}
             </div>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    );
+  };
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <ImageIcon className="w-5 h-5" />
+            Image Generation Tier Testing & Debugging
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Test Configuration */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="story-text">Story Text</Label>
+              <Textarea
+                id="story-text"
+                placeholder="Enter story text to test..."
+                value={config.storyText}
+                onChange={(e) => setConfig(prev => ({ ...prev, storyText: e.target.value }))}
+                className="min-h-[100px]"
+              />
+            </div>
+            
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="character-name">Character Name</Label>
+                  <Input
+                    id="character-name"
+                    value={config.characterName}
+                    onChange={(e) => setConfig(prev => ({ ...prev, characterName: e.target.value }))}
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="user-name">User Name</Label>
+                  <Input
+                    id="user-name"
+                    value={config.userName}
+                    onChange={(e) => setConfig(prev => ({ ...prev, userName: e.target.value }))}
+                  />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="age">Age</Label>
+                  <Input
+                    id="age"
+                    type="number"
+                    min="3"
+                    max="17"
+                    value={config.age}
+                    onChange={(e) => setConfig(prev => ({ ...prev, age: parseInt(e.target.value) || 8 }))}
+                  />
+                </div>
+                
+                <div>
+                  <Label>Skin Tone</Label>
+                  <Select value={config.skinTone} onValueChange={(value: SkinTone) => setConfig(prev => ({ ...prev, skinTone: value }))}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pale">Pale</SelectItem>
+                      <SelectItem value="light">Light</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="olive">Olive</SelectItem>
+                      <SelectItem value="dark">Dark</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <Label>Language</Label>
+                  <Select value={config.nativeLanguage} onValueChange={(value: LanguageCode) => setConfig(prev => ({ ...prev, nativeLanguage: value }))}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="en">English</SelectItem>
+                      <SelectItem value="es">Spanish</SelectItem>
+                      <SelectItem value="fr">French</SelectItem>
+                      <SelectItem value="hi">Hindi</SelectItem>
+                      <SelectItem value="zh">Chinese</SelectItem>
+                      <SelectItem value="ar">Arabic</SelectItem>
+                      <SelectItem value="pt">Portuguese</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <div>
+                <Label>Avatar Type</Label>
+                <RadioGroup value={config.avatarType} onValueChange={(value: AvatarType) => setConfig(prev => ({ ...prev, avatarType: value }))}>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="boy" id="boy" />
+                    <Label htmlFor="boy">Boy</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="girl" id="girl" />
+                    <Label htmlFor="girl">Girl</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="prefer-not-to-answer" id="prefer-not-to-answer" />
+                    <Label htmlFor="prefer-not-to-answer">Prefer not to answer</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Real Orchestration Debug Tests */}
+          <div>
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <Bug className="w-5 h-5" />
+              Real Orchestration Debugging
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <Button
+                onClick={() => runTierTest('Debug Real Routing')}
+                disabled={isLoading}
+                className="h-auto p-4 justify-start"
+              >
+                <div className="flex items-center gap-2">
+                  <Target className="w-4 h-4" />
+                  <div className="text-left">
+                    <div className="font-medium">Debug Real Routing</div>
+                    <div className="text-sm opacity-70">Shows actual tier cascade & fallback reasons</div>
+                  </div>
+                </div>
+              </Button>
+
+              <Button
+                onClick={() => runTierTest('Avatar Debug Mode')}
+                disabled={isLoading}
+                variant="secondary"
+                className="h-auto p-4 justify-start"
+              >
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4" />
+                  <div className="text-left">
+                    <div className="font-medium">Avatar Debug Mode</div>
+                    <div className="text-sm opacity-70">Test incomplete avatar routing behavior</div>
+                  </div>
+                </div>
+              </Button>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Force Tier Tests */}
+          <div>
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <Zap className="w-5 h-5" />
+              Force Tier Tests (Bypass Routing)
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              <Button
+                onClick={() => runTierTest('Force Tier 1 (AI Scene)')}
+                disabled={isLoading}
+                variant="outline"
+                className={`h-auto p-3 ${activeTest === 'Force Tier 1 (AI Scene)' ? 'animate-pulse' : ''}`}
+              >
+                <div className="flex items-center gap-2">
+                  <Layers className="w-4 h-4" />
+                  <div className="text-left">
+                    <div className="font-medium">Force Tier 1</div>
+                    <div className="text-sm opacity-70">AI Scene Creator</div>
+                  </div>
+                </div>
+              </Button>
+
+              <Button
+                onClick={() => runTierTest('Force Tier 2.5A', 'A')}
+                disabled={isLoading}
+                variant="outline"
+                className={`h-auto p-3 ${activeTest === 'Force Tier 2.5A' ? 'animate-pulse' : ''}`}
+              >
+                <div className="flex items-center gap-2">
+                  <Settings className="w-4 h-4" />
+                  <div className="text-left">
+                    <div className="font-medium">Force Tier 2.5A</div>
+                    <div className="text-sm opacity-70">Template AB (A)</div>
+                  </div>
+                </div>
+              </Button>
+
+              <Button
+                onClick={() => runTierTest('Force Tier 2.5B', 'B')}
+                disabled={isLoading}
+                variant="outline"
+                className={`h-auto p-3 ${activeTest === 'Force Tier 2.5B' ? 'animate-pulse' : ''}`}
+              >
+                <div className="flex items-center gap-2">
+                  <Settings className="w-4 h-4" />
+                  <div className="text-left">
+                    <div className="font-medium">Force Tier 2.5B</div>
+                    <div className="text-sm opacity-70">Template AB (B)</div>
+                  </div>
+                </div>
+              </Button>
+
+              <Button
+                onClick={() => runTierTest('Force Tier 2.5C', 'C')}
+                disabled={isLoading}
+                variant="outline"
+                className={`h-auto p-3 ${activeTest === 'Force Tier 2.5C' ? 'animate-pulse' : ''}`}
+              >
+                <div className="flex items-center gap-2">
+                  <Settings className="w-4 h-4" />
+                  <div className="text-left">
+                    <div className="font-medium">Force Tier 2.5C</div>
+                    <div className="text-sm opacity-70">Template CD (C)</div>
+                  </div>
+                </div>
+              </Button>
+
+              <Button
+                onClick={() => runTierTest('Force Tier 2.5D', 'D')}
+                disabled={isLoading}
+                variant="outline"
+                className={`h-auto p-3 ${activeTest === 'Force Tier 2.5D' ? 'animate-pulse' : ''}`}
+              >
+                <div className="flex items-center gap-2">
+                  <Settings className="w-4 h-4" />
+                  <div className="text-left">
+                    <div className="font-medium">Force Tier 2.5D</div>
+                    <div className="text-sm opacity-70">Template CD (D)</div>
+                  </div>
+                </div>
+              </Button>
+
+              <Button
+                onClick={() => runTierTest('Force Tier 4')}
+                disabled={isLoading}
+                variant="outline"
+                className={`h-auto p-3 ${activeTest === 'Force Tier 4' ? 'animate-pulse' : ''}`}
+              >
+                <div className="flex items-center gap-2">
+                  <ImageIcon className="w-4 h-4" />
+                  <div className="text-left">
+                    <div className="font-medium">Force Tier 4</div>
+                    <div className="text-sm opacity-70">Local Placeholder</div>
+                  </div>
+                </div>
+              </Button>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Connectivity Test */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold">System Connectivity</h3>
+              <p className="text-sm text-muted-foreground">Test API key configuration and function availability</p>
+            </div>
+            <Button onClick={testConnectivity} disabled={isLoading} variant="secondary">
+              <Clock className="w-4 h-4 mr-2" />
+              Test Connectivity
+            </Button>
+          </div>
+
+          {/* Clear Results */}
+          <div className="flex justify-end">
+            <Button onClick={clearResults} variant="outline" size="sm">
+              Clear Results
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Results Display */}
+      {results.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Test Results</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {results.map((result, index) => (
+                <div key={index} className="border rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      {result.success ? (
+                        <CheckCircle className="w-5 h-5 text-green-500" />
+                      ) : (
+                        <XCircle className="w-5 h-5 text-red-500" />
+                      )}
+                      <h4 className="font-semibold">{result.tier}</h4>
+                      <Badge variant={result.success ? 'default' : 'destructive'}>
+                        {result.success ? 'Success' : 'Failed'}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Clock className="w-4 h-4" />
+                      {result.processingTime}ms
+                    </div>
+                  </div>
+
+                  {result.error && (
+                    <div className="mb-2 p-2 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
+                      {result.error}
+                    </div>
+                  )}
+
+                  {result.imageUrl && (
+                    <div className="mb-2">
+                      <img 
+                        src={result.imageUrl} 
+                        alt="Generated" 
+                        className="max-w-full h-auto rounded border"
+                        style={{ maxHeight: '200px' }}
+                      />
+                    </div>
+                  )}
+
+                  {renderRoutingFlow(result)}
+                  
+                  {result.metadata && (
+                    <details className="mt-2">
+                      <summary className="cursor-pointer text-sm font-medium">Technical Details</summary>
+                      <pre className="mt-2 p-2 bg-gray-50 rounded text-xs overflow-x-auto">
+                        {JSON.stringify(result.metadata, null, 2)}
+                      </pre>
+                    </details>
+                  )}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 }
