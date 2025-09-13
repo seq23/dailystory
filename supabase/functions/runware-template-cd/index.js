@@ -1,3 +1,4 @@
+// DEPLOY_MARKER: 2025-01-30T20:17:15Z - FORCED REDEPLOY TO FIX BOOT FAILURES
 // ============= RUNWARE TEMPLATE CD: TIER 2.5C & 2.5D =============
 // Implementation of complexity levels C and D for advanced template generation
 // NO character consistency, NO shared functions beyond styleFrameworks
