@@ -1,3 +1,4 @@
-// DEPLOY_MARKER: 2025-01-30T20:17:15Z - FORCED REDEPLOY TO FIX BOOT FAILURES
-// TypeScript shim file - imports the actual JavaScript implementation
+// CRASH-PROOF ORCHESTRATOR v2.0 - TypeScript Entry Point
+// This file imports the crash-proof JavaScript implementation
+// Rollback available at: index.js.backup
 import './index.js';
