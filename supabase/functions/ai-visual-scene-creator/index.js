@@ -898,7 +898,7 @@ serve(async (req) => {
       
       console.log('DEBUG REORGANIZED TIER 1: Starting Request Analysis');
       
-      try {
+      {
         const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
         // Validate OpenAI API key is present
         if (!openAIApiKey) {
@@ -1359,25 +1359,6 @@ RULES:
 
         return createCorsResponse(result);
 
-      } catch (error) {
-        // OpenAI FAILURE -> Return error to Orchestrator (no internal fallback)
-        console.error('ERROR AI Story Enhancer failed - returning error to Orchestrator:', {
-          errorMessage: error.message,
-          errorStack: error.stack,
-          requestData: body ? Object.keys(body) : 'no-request-body',
-          dependencyStatus: importResults
-        });
-        
-        return new Response(JSON.stringify({
-          success: false,
-          error: error.message,
-          errorType: 'ai-enhancement-failed',
-          processingMethod: 'openai-failed',
-          requestId: body?.sessionId || 'unknown-session'
-        }), {
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        });
       }
     }
   );
