@@ -846,17 +846,7 @@ serve(async (req) => {
         if (diagnostic === 'tier_health_check') {
           const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
           if (!openAIApiKey) {
-            return new Response(
-              JSON.stringify({ 
-                error: 'OPENAI_API_KEY not configured',
-                diagnostic: true,
-                type: 'api_key_missing' 
-              }),
-              { 
-                status: 500, 
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-              }
-            );
+            return createCorsErrorResponse('OPENAI_API_KEY not configured', 500);
           }
           
           const cbStatus = circuitBreaker.getStatus();
