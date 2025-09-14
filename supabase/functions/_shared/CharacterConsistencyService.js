@@ -11,6 +11,7 @@ import { CULTURAL_ARRAYS } from './tier25Vocabulary.js';
 export class CharacterConsistencyService {
   constructor() {
     console.log('🎭 CharacterConsistencyService initialized with database-backed consistency');
+    this.visualDetailCache = new Map();
   }
 
   /**
@@ -473,5 +474,168 @@ export class CharacterConsistencyService {
     return CULTURAL_ARRAYS.REGIONAL_AUTHENTICITY_STRINGS;
   }
 
+  /**
+   * Analyze visual details from page text and cache them using session and page number
+   */
+  async analyzeVisualDetails(sessionId, pageText, pageNumber, characterName) {
+    console.log(`👁️ Analyzing visual details for session ${sessionId}, page ${pageNumber}`);
+    
+    try {
+      const visualDetails = this.extractVisualDetails(pageText, characterName);
+      const cacheKey = `${sessionId}-page-${pageNumber}`;
+      this.visualDetailCache.set(cacheKey, visualDetails);
+      
+      console.log(`👁️ Cached visual details for ${cacheKey}:`, visualDetails);
+      return visualDetails;
+    } catch (error) {
+      console.error('❌ Visual detail analysis failed:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Get colored objects across all cached pages for a session (limit to first 3)
+   */
+  async getColoredObjects(sessionId) {
+    console.log(`🎨 Getting colored objects for session ${sessionId}`);
+    
+    const coloredObjectsSet = new Set();
+    
+    // Iterate through all cached pages for this session
+    for (const [key, details] of this.visualDetailCache.entries()) {
+      if (key.startsWith(sessionId)) {
+        if (details.coloredObjects && Array.isArray(details.coloredObjects)) {
+          details.coloredObjects.forEach(obj => coloredObjectsSet.add(obj));
+        }
+      }
+    }
+    
+    const uniqueObjects = Array.from(coloredObjectsSet).slice(0, 3);
+    console.log(`🎨 Found ${uniqueObjects.length} unique colored objects:`, uniqueObjects);
+    
+    return uniqueObjects.join(', ');
+  }
+
+  /**
+   * Extract visual details from text using regex patterns
+   */
+  extractVisualDetails(pageText, characterName) {
+    if (!pageText) {
+      return { coloredObjects: [], atmosphericWords: [], characterAppearance: [] };
+    }
+
+    const coloredObjects = [];
+    const atmosphericWords = [];
+    const characterAppearance = [];
+
+    // Extract colored objects (color + noun combinations)
+    const coloredObjectPatterns = [
+      /\b(red|blue|green|yellow|purple|pink|orange|black|white|brown|gray|grey|gold|silver)\s+(\w+)\b/gi,
+      /\b(\w+)\s+(red|blue|green|yellow|purple|pink|orange|black|white|brown|gray|grey|gold|silver)\b/gi
+    ];
+
+    coloredObjectPatterns.forEach(pattern => {
+      const matches = pageText.match(pattern);
+      if (matches) {
+        matches.forEach(match => {
+          const cleaned = match.trim().toLowerCase();
+          if (!coloredObjects.includes(cleaned)) {
+            coloredObjects.push(cleaned);
+          }
+        });
+      }
+    });
+
+    // Extract atmospheric/mood words
+    const atmosphericPatterns = [
+      /\b(bright|dark|sunny|cloudy|rainy|stormy|peaceful|calm|exciting|scary|magical|mysterious|cheerful|gloomy)\b/gi,
+      /\b(sparkling|glowing|shimmering|twinkling|rustling|whispers|echoing|silence)\b/gi
+    ];
+
+    atmosphericPatterns.forEach(pattern => {
+      const matches = pageText.match(pattern);
+      if (matches) {
+        matches.forEach(match => {
+          const cleaned = match.trim().toLowerCase();
+          if (!atmosphericWords.includes(cleaned)) {
+            atmosphericWords.push(cleaned);
+          }
+        });
+      }
+    });
+
+    // Extract character appearance if characterName is provided
+    if (characterName) {
+      const characterPatterns = [
+        new RegExp(`${characterName}.*?(wearing|dressed|has|with).*?(\\.|\n|$)`, 'gi'),
+        new RegExp(`(wearing|dressed|has|with).*?${characterName}.*?(\\.|\n|$)`, 'gi'),
+        /\b(hair|eyes|wearing|dressed|shirt|pants|dress|jacket|coat|hat|shoes)\s+[^.]*?\b/gi
+      ];
+
+      characterPatterns.forEach(pattern => {
+        const matches = pageText.match(pattern);
+        if (matches) {
+          matches.forEach(match => {
+            const cleaned = match.trim();
+            if (cleaned.length > 3 && !characterAppearance.includes(cleaned)) {
+              characterAppearance.push(cleaned);
+            }
+          });
+        }
+      });
+    }
+
+    return {
+      coloredObjects,
+      atmosphericWords,
+      characterAppearance
+    };
+  }
+
+  /**
+   * Get character appearance description from all cached pages for a session
+   */
+  async getCharacterAppearanceFromStory(sessionId, characterName) {
+    console.log(`👤 Getting character appearance for ${characterName} in session ${sessionId}`);
+    
+    const appearanceDetails = [];
+    
+    // Collect character appearance from all cached pages
+    for (const [key, details] of this.visualDetailCache.entries()) {
+      if (key.startsWith(sessionId)) {
+        if (details.characterAppearance && Array.isArray(details.characterAppearance)) {
+          appearanceDetails.push(...details.characterAppearance);
+        }
+      }
+    }
+    
+    // Remove duplicates and join
+    const uniqueAppearance = [...new Set(appearanceDetails)];
+    const combinedAppearance = uniqueAppearance.join(' ');
+    
+    console.log(`👤 Character appearance for ${characterName}:`, combinedAppearance);
+    return combinedAppearance || null;
+  }
+
+  /**
+   * Clear visual detail cache for a session
+   */
+  clearSession(sessionId) {
+    console.log(`🧹 Clearing visual detail cache for session ${sessionId}`);
+    
+    const keysToDelete = [];
+    for (const key of this.visualDetailCache.keys()) {
+      if (key.startsWith(sessionId)) {
+        keysToDelete.push(key);
+      }
+    }
+    
+    keysToDelete.forEach(key => this.visualDetailCache.delete(key));
+    console.log(`🧹 Cleared ${keysToDelete.length} cache entries for session ${sessionId}`);
+  }
+
   // Note: African American skin tones have been consolidated into facial features array as of 2025-09-12
 }
+
+// Export singleton instance for consistent state management
+export const CharacterService = new CharacterConsistencyService();
