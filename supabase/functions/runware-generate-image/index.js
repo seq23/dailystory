@@ -286,13 +286,44 @@ class DeploymentValidator {
   }
 }
 
+// ============= TIER SELECTION LOGIC =============
+function determineTemplateComplexity(userInfo, avatarIdentity) {
+  if (avatarIdentity && avatarIdentity.visualDescription && avatarIdentity.culturalContext) {
+    return 'A'; // Full avatar + character consistency
+  } else if (avatarIdentity && (avatarIdentity.visualDescription || avatarIdentity.culturalContext)) {
+    return 'B'; // Partial avatar data
+  } else {
+    return 'C'; // No avatar - nuclear independence
+  }
+}
+
 // ============= CORE IMAGE GENERATION LOGIC =============
-async function generateWithRunware(apiKey, prompt, sessionId, requestId) {
-  console.log(`🚀 [${requestId}] Starting Runware generation`);
+async function generateWithRunware(apiKey, prompt, sessionId, requestId, userInfo, avatarIdentity, pageNumber) {
+  console.log(`🚀 [${requestId}] Starting Runware generation with session data`);
   
   if (!apiKey || apiKey.length < 10) {
     throw new Error('Invalid Runware API key');
   }
+
+  // Enhanced Tier 1 Prompt Engineering with Session Data
+  let enhancedPrompt = prompt;
+  
+  if (userInfo) {
+    // Add character consistency and cultural context
+    const characterDesc = avatarIdentity?.visualDescription || `${userInfo.gradeLevel || 'young'} child`;
+    const culturalContext = avatarIdentity?.culturalContext || 'diverse and inclusive';
+    
+    enhancedPrompt = `Create a beautiful children's book illustration showing: ${prompt}
+
+Character Description: ${characterDesc}
+Cultural Context: ${culturalContext}
+Art Style: Contemporary children's book illustration, warm and inviting, soft lighting, vibrant but gentle colors
+Quality: Ultra high resolution, detailed artwork suitable for children's literature
+
+The illustration should be engaging for ${userInfo.gradeLevel || 'young'} readers and maintain visual consistency with previous scenes.`;
+  }
+  
+  console.log(`🎨 [${requestId}] Enhanced prompt length: ${enhancedPrompt.length} chars`);
   
   // Simplified WebSocket connection with proper timeout
   const ws = new WebSocket("wss://ws-api.runware.ai/v1");
@@ -329,7 +360,7 @@ async function generateWithRunware(apiKey, prompt, sessionId, requestId) {
               ws.send(JSON.stringify([{
                 taskType: "imageInference",
                 taskUUID: crypto.randomUUID(),
-                positivePrompt: prompt,
+                positivePrompt: enhancedPrompt,
                 model: "runware:100@1",
                 width: 1024,
                 height: 1024,
@@ -557,7 +588,7 @@ serve(async (req) => {
     // Handle POST requests (image generation)
     if (req.method === 'POST') {
       const body = await req.json();
-      const { pageText, userInfo, sessionId, pageNumber } = body;
+      const { pageText, userInfo, sessionId, pageNumber, avatarIdentity } = body;
       
       console.log(`📸 [${requestId}] Image generation request - Page ${pageNumber}, Session ${sessionId}`);
       
@@ -583,7 +614,7 @@ serve(async (req) => {
         try {
           console.log(`🚀 [${requestId}] Attempting Tier 1: Runware Premium`);
           result = await CoreUtils.withTimeout(
-            generateWithRunware(runwareService.key, pageText, sessionId, requestId),
+            generateWithRunware(runwareService.key, pageText, sessionId, requestId, userInfo, avatarIdentity, pageNumber),
             25000,
             'Runware generation'
           );
@@ -594,9 +625,71 @@ serve(async (req) => {
         }
       }
       
-      // Fallback to Tier 2.5: Enhanced smart fallback
+      // Get Supabase client for tier functions
+      const supabase = CrashProofBootSystem.getService('supabase')?.client;
+      
+      // Tier 2.5A-B: Template with avatar consistency
       if (!result || !result.success) {
-        console.log(`🎨 [${requestId}] Using Tier 2.5: Enhanced fallback`);
+        const templateComplexity = determineTemplateComplexity(userInfo, avatarIdentity);
+        console.log(`🎨 [${requestId}] Attempting Tier 2.5A-B with complexity ${templateComplexity}`);
+        
+        try {
+          const templateResult = await CoreUtils.withTimeout(
+            supabase.functions.invoke('runware-template-ab', {
+              body: {
+                storyText: pageText,
+                userInfo,
+                avatarIdentity,
+                templateComplexity,
+                sessionId,
+                pageNumber
+              }
+            }),
+            20000,
+            'Template AB generation'
+          );
+          
+          if (templateResult.data && templateResult.data.success) {
+            result = templateResult.data;
+            console.log(`✅ [${requestId}] Tier 2.5A-B succeeded`);
+          }
+        } catch (error) {
+          console.warn(`⚠️ [${requestId}] Tier 2.5A-B failed:`, error.message);
+        }
+      }
+
+      // Tier 2.5C-D: Nuclear independence template
+      if (!result || !result.success) {
+        console.log(`🎨 [${requestId}] Attempting Tier 2.5C-D (nuclear independence)`);
+        
+        try {
+          const nuclearResult = await CoreUtils.withTimeout(
+            supabase.functions.invoke('runware-template-cd', {
+              body: {
+                storyText: pageText,
+                userInfo,
+                avatarIdentity,
+                templateComplexity: 'C',
+                sessionId,
+                pageNumber
+              }
+            }),
+            15000,
+            'Template CD generation'
+          );
+          
+          if (nuclearResult.data && nuclearResult.data.success) {
+            result = nuclearResult.data;
+            console.log(`✅ [${requestId}] Tier 2.5C-D succeeded`);
+          }
+        } catch (error) {
+          console.warn(`⚠️ [${requestId}] Tier 2.5C-D failed:`, error.message);
+        }
+      }
+
+      // Tier 4: Enhanced fallback (guaranteed success)
+      if (!result || !result.success) {
+        console.log(`🎨 [${requestId}] Using Tier 4: Enhanced fallback (guaranteed)`);
         result = await EdgeErrorHandler.withPerformanceTracking(
           `enhanced-fallback-${requestId}`,
           () => Promise.resolve(generateEnhancedFallback(pageText, pageNumber || 1, requestId))
