@@ -4,6 +4,7 @@
 // Lightweight, fast deployment - optimized for simple template generation with character consistency
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { getStyleFramework } from '../_shared/styleFrameworks.js';
 
 console.log(`INIT runware-template-ab boot at ${new Date().toISOString()} | std@0.168.0`);
 
@@ -396,7 +397,7 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
     // Tier 2.5A: PREMIUM templates + Full cultural intelligence + Shared services
     let characterData = null;
     let visualDetails = null;
-    let secondaryCharacters = '';
+    let secondaryCharactersA = '';
     
     if (serviceHealth.characterService && avatarIdentity) {
       try {
@@ -427,11 +428,15 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
       }
     }
 
+    // Get framework prompt using unified style framework system
+    const difficulty = userInfo?.difficulty || 'medium';
+    const styleFramework = getStyleFramework(difficulty);
+    const frameworkPrompt = styleFramework.frameworkPrompt;
+    
+    console.log('🎨 Tier 2.5A: Using unified style framework:', styleFramework.name, 'for difficulty:', difficulty);
+    
     // Get secondary characters with tier-specific processing
     const secondaryCharactersStr = await processSecondaryCharacters('A', storyText, sessionId, pageNumber, serviceHealth);
-    
-    // Get framework prompt (style)
-    const frameworkPrompt = 'vibrant children\'s book illustration, digital art style';
     
     // Use PREMIUM template with full cultural intelligence
     const template = PREMIUM_PROMPT_TEMPLATES[difficultyLevel];
@@ -453,7 +458,7 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
       nativeLanguage: avatarIdentity?.nativeLanguage || userInfo?.nativeLanguage,
       skinTone: avatarIdentity?.skinTone || userInfo?.avatar?.skinTone,
       usingChildsRealName: userInfo?.name || userInfo?.childName,
-      secondaryCharacterCount: secondaryCharacters.split(',').filter(c => c.trim()).length
+      secondaryCharacterCount: secondaryCharactersA.split(',').filter(c => c.trim()).length
     });
     
     console.log('✅ Template AB Tier 2.5A: Successfully using PREMIUM templates with cultural intelligence');
@@ -464,7 +469,7 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
       difficulty: 'A',
       enhancementLevel: 'premium',
       difficultyLevel,
-      secondaryCharacters: secondaryCharacters || 'none'
+      secondaryCharacters: secondaryCharactersA || 'none'
     };
   }
   
@@ -475,10 +480,14 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
     console.log('☢️ PHASE 4: Nuclear Independence Mode - Zero external dependencies');
     
     // Get secondary characters with limited processing for nuclear independence
-    const secondaryCharacters = await processSecondaryCharacters('B', storyText, sessionId, pageNumber, serviceHealth);
+    const secondaryCharactersB = await processSecondaryCharacters('B', storyText, sessionId, pageNumber, serviceHealth);
     
-    // Tier 2.5B: BASIC templates + Limited cultural intelligence + Nuclear independence
-    const frameworkPrompt = 'simple cartoon illustration style';
+    // Get framework prompt using unified style framework system
+    const difficulty = userInfo?.difficulty || 'medium';
+    const styleFramework = getStyleFramework(difficulty);
+    const frameworkPrompt = styleFramework.frameworkPrompt;
+    
+    console.log('🎨 Tier 2.5B: Using unified style framework:', styleFramework.name, 'for difficulty:', difficulty);
     
     // Use BASIC template with GUARANTEED nuclear independence
     const template = BASIC_PROMPT_TEMPLATES[difficultyLevel];
@@ -489,7 +498,7 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
       null, // No characterData for nuclear independence
       null, // No visualDetails for nuclear independence  
       frameworkPrompt,
-      secondaryCharacters
+      secondaryCharactersB
     );
     
     // PHASE 4: Always use fallback resolution for nuclear independence
@@ -499,7 +508,7 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
     console.log('✅ Template AB Tier 2.5B: Nuclear Independence template generated');
     console.log('🔍 Nuclear independence elements:', {
       hasAvatarIdentity: !!avatarIdentity,
-      secondaryCharacterCount: secondaryCharacters.split(',').filter(c => c.trim()).length,
+      secondaryCharacterCount: secondaryCharactersB.split(',').filter(c => c.trim()).length,
       nuclearIndependence: true,
       zeroExternalDependencies: true,
       guaranteedOperation: true
@@ -512,7 +521,7 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
       difficulty: 'B', 
       enhancementLevel: 'nuclear-independent',
       difficultyLevel,
-      secondaryCharacters: secondaryCharacters || 'none',
+      secondaryCharacters: secondaryCharactersB || 'none',
       nuclearIndependent: true,
       serviceHealthRequired: false
     };

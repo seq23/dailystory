@@ -1,3 +1,8 @@
+// ⚠️ DEPRECATED - NEVER DELETE ⚠️
+// DEPRECATION WARNING: This function is DEPRECATED as of 2025-09-14
+// REASON: Switching to Runware-only approach, OpenAI gpt-image-1 no longer used in runtime
+// STATUS: Preserved as emergency backup, DO NOT USE in production
+// NEVER DELETE: Keep as fallback until user confirms Runware system is stable
 // Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";

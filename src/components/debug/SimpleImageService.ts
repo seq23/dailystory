@@ -30,6 +30,12 @@ export interface ImageGenerationResponse {
   imageUrl?: string;
   error?: string;
   metadata?: any;
+  provider?: string;
+  tier?: string;
+  templateType?: string;
+  positivePrompt?: string;
+  negativePrompt?: string;
+  enhancementLevel?: string;
   routingMetadata?: {
     attemptedTier: string;
     executedTier: string;
@@ -133,6 +139,53 @@ export class SimpleImageService {
           exception: true
         }
       };
+    }
+  }
+
+  /**
+   * EMERGENCY FALLBACK: Direct Tier 2.5C call bypassing orchestrator
+   * Used when main orchestrator fails - calls runware-template-cd directly
+   */
+  static async emergencyFallbackTier25C(request: ImageGenerationRequest): Promise<ImageGenerationResponse> {
+    console.log('🚨 EMERGENCY: Attempting direct Tier 2.5C fallback');
+    
+    try {
+      const { data: emergencyResult, error: emergencyError } = await supabase.functions.invoke('runware-template-cd', {
+        body: {
+          ...request,
+          templateComplexity: 'C',
+          emergencyMode: true
+        }
+      });
+
+      if (emergencyError) {
+        console.error('❌ Emergency Tier 2.5C failed:', emergencyError);
+        throw new Error(`Emergency fallback failed: ${emergencyError.message}`);
+      }
+
+      if (!emergencyResult?.success) {
+        throw new Error('Emergency fallback returned unsuccessful result');
+      }
+
+      console.log('✅ EMERGENCY: Tier 2.5C fallback successful');
+      return {
+        success: true,
+        imageURL: emergencyResult.imageURL,
+        provider: 'runware-template-cd',
+        tier: emergencyResult.tier,
+        templateType: emergencyResult.templateType,
+        positivePrompt: emergencyResult.positivePrompt,
+        negativePrompt: emergencyResult.negativePrompt,
+        enhancementLevel: 'emergency-fallback',
+        metadata: {
+          emergencyFallback: true,
+          directTierCall: true,
+          bypassedOrchestrator: true
+        }
+      };
+    } catch (error) {
+      console.error('💥 Emergency Tier 2.5C fallback failed:', error);
+      throw error;
     }
   }
 

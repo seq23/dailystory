@@ -229,10 +229,22 @@ const processAvatarIdentityFromCache = (userInfo) => {
   const hairMapping = getHairColorMapping();
   const genderMapping = getGenderPronounMapping();
   
-  // Hair color processing - randomly select from available options
+  // Hair color processing - DETERMINISTIC selection for avatar identity guarantee
   const skinTone = userInfo?.avatar?.skinTone || 'medium';
   const hairOptions = hairMapping[skinTone] || hairMapping['medium'];
-  const hairColor = hairOptions[Math.floor(Math.random() * hairOptions.length)];
+  
+  // DETERMINISTIC hair selection based on user name for consistency
+  const avatarSeed = userInfo?.name ? userInfo.name.charCodeAt(0) + userInfo.name.length : 42;
+  const hairIndex = avatarSeed % hairOptions.length;
+  const hairColor = hairOptions[hairIndex];
+  
+  console.log('🎯 DETERMINISTIC AVATAR: Hair selection guaranteed consistent', {
+    skinTone, 
+    avatarSeed, 
+    hairIndex, 
+    selectedHair: hairColor,
+    nativeLanguage: userInfo?.nativeLanguage
+  });
   
   // Gender/pronoun processing  
   const avatarType = userInfo?.avatarType || userInfo?.avatar?.type || 'prefer-not-to-answer';
@@ -257,7 +269,8 @@ const processAvatarIdentityFromCache = (userInfo) => {
     type: avatarType,
     skinTone: skinTone,
     hairColor: hairColor,
-    culturalProfile: userInfo?.culturalProfile || (userInfo?.nativeLanguage !== 'en' ? userInfo?.nativeLanguage : undefined),
+    // CRITICAL AVATAR IDENTITY FIX: Native English speakers get "american" culturalProfile
+    culturalProfile: userInfo?.culturalProfile || (userInfo?.nativeLanguage === 'en' ? 'american' : userInfo?.nativeLanguage),
     nativeLanguage: userInfo?.nativeLanguage || 'en',
     name: userInfo?.name || 'Child',
     pronoun,

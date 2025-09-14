@@ -50,47 +50,51 @@ function getComplexityLevel(userInfo, templateComplexity) {
 
 // Generate Tier 2.5C template (Emergency templates + Light cultural intelligence)
 async function generateTier25C(storyText, userInfo, avatarIdentity) {
-  console.log('🎯 Tier 2.5C: Generating Emergency Framework Template with LIGHT Cultural Intelligence');
+  console.log('🎯 Tier 2.5C: Generating Emergency Framework Template with UNIFIED Style Framework');
   
   const difficulty = userInfo?.difficulty || 'medium';
   const styleFramework = getStyleFramework(difficulty);
   
   console.log('🎨 Retrieved', styleFramework.name, 'style framework for difficulty:', difficulty);
   
-  // Fallback to basic template
+  // Fallback to basic template using unified style framework
   const childName = userInfo?.name || userInfo?.childName || 'child';
   const age = userInfo?.age || 8;
   const truncatedText = (storyText || '').substring(0, 500);
-  const emergencyFramework = styleFramework.frameworkPrompt;
-  const basicCharacterInfo = `${childName}, age ${age}`;
   
-  const positivePrompt = `${emergencyFramework}. ${basicCharacterInfo} in scene: ${truncatedText}. Simple children's illustration style.`;
+  // Use the unified style framework system
+  const positivePrompt = `${styleFramework.frameworkPrompt}. ${childName}, age ${age} in scene: ${truncatedText}. Simple children's illustration style.`;
   const negativePrompt = styleFramework.negativePrompt + ', photorealistic, adult themes, complex details';
   
   return {
     positivePrompt,
     negativePrompt,
-    templateType: 'Emergency Framework Template - Basic Fallback',
+    templateType: 'Emergency Framework Template - Unified Style Framework',
     tier: '2.5C',
-    culturalIntelligence: false
+    culturalIntelligence: false,
+    styleFrameworkUsed: styleFramework.name
   };
 }
 
-// Generate Tier 2.5D template (hardcoded emergency)
+// Generate Tier 2.5D template (hardcoded emergency with unified style)
 function generateTier25D() {
-  console.log('🎯 Tier 2.5D: Generating Ultimate Emergency Fallback');
+  console.log('🎯 Tier 2.5D: Generating Ultimate Emergency Fallback with Unified Style Framework');
   
-  const positivePrompt = "A diverse group of four beautiful child characters with graceful features and charming expressions, each holding colorful hand-drawn signs that say 'IMAGES ARE DOWN' in playful, child-friendly lettering. 2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI featuring: one blonde child with fair porcelain skin, bright blue eyes, and silky straight platinum blonde hair with natural shine; one red-haired child with fair skin dotted with gentle freckles, warm green eyes, and vibrant curly copper-red hair with individual strand definition; one medium-skinned child with warm caramel complexion, expressive brown eyes, and wavy chestnut brown hair with rich texture; one African American child with beautiful rich deep brown skin tone, bright expressive dark eyes, defined facial bone structure, and natural coily hair texture with dimensional volume. Semi-realistic digital art with photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions. The children display resilient smiles despite the technical difficulty, showing positivity and teamwork. Child-friendly aesthetic with diverse representation, warm expressions, and bright vibrant colors optimized for young audiences.";
+  // Use the unified style framework even for hardcoded emergency
+  const styleFramework = getStyleFramework('medium');
   
-  const negativePrompt = "blurry, low quality, dark, scary, violent, inappropriate, adult content, realistic photo, 3d render";
+  const positivePrompt = `${styleFramework.frameworkPrompt}. A diverse group of four beautiful child characters with graceful features and charming expressions, each holding colorful hand-drawn signs that say 'IMAGES ARE DOWN' in playful, child-friendly lettering. The children display resilient smiles despite the technical difficulty, showing positivity and teamwork. Child-friendly aesthetic with diverse representation, warm expressions, and bright vibrant colors optimized for young audiences.`;
   
-  console.log('✅ Tier 2.5D: Ultimate Emergency Template generated');
+  const negativePrompt = styleFramework.negativePrompt + ', blurry, low quality, dark, scary, violent, inappropriate, adult content';
+  
+  console.log('✅ Tier 2.5D: Ultimate Emergency Template with unified style framework generated');
   
   return {
     positivePrompt,
     negativePrompt,
-    templateType: 'Ultimate Emergency Fallback Template',
-    tier: '2.5D'
+    templateType: 'Ultimate Emergency Fallback Template - Unified Style Framework',
+    tier: '2.5D',
+    styleFrameworkUsed: styleFramework.name
   };
 }
 

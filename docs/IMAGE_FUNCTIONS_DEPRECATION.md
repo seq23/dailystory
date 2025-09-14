@@ -31,6 +31,13 @@ The following TypeScript edge functions are **DEPRECATED** and should not be edi
 - **Purpose**: Tier 2.5 nuclear independence fallback system (backup copy)
 - **Migration Status**: Backup file preserved until JS migration complete
 
+### 6. generate-fallback-images/index.ts
+- **Status**: DEPRECATED - NEVER DELETE
+- **Purpose**: OpenAI gpt-image-1 fallback image generation (unused in runtime)
+- **Deprecation Date**: 2025-09-14
+- **Reason**: Switching to Runware-only approach per user requirements
+- **Migration Status**: Preserved as emergency backup, not used in production
+
 ## Developer Guidelines
 
 ### 🚨 DO NOT DELETE UNTIL USER IS COMFORTABLE WITH NEW .JS FILES 🚨
