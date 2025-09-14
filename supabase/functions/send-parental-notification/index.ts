@@ -46,7 +46,7 @@ const handler = async (req: Request): Promise<Response> => {
     ).join('');
 
     const emailResponse = await resend.emails.send({
-      from: "DailyStory Safety <safety@time-2-read.com>",
+      from: "Time2Read Safety <safety@time-2-read.com>",
       to: [parentEmail],
       subject: `📋 ${reportType.charAt(0).toUpperCase() + reportType.slice(1)} Privacy Report for ${childName}`,
       html: `
@@ -59,7 +59,7 @@ const handler = async (req: Request): Promise<Response> => {
 
           <p>Dear Parent/Guardian,</p>
 
-          <p>This is your ${reportType} summary of privacy-related activity for <strong>${childName}</strong>'s DailyStory account.</p>
+          <p>This is your ${reportType} summary of privacy-related activity for <strong>${childName}</strong>'s Time2Read account.</p>
 
           <div style="background: #dbeafe; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2563eb;">
             <h3 style="margin-top: 0; color: #1e40af;">Summary</h3>
@@ -91,7 +91,7 @@ const handler = async (req: Request): Promise<Response> => {
 
           <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; margin-top: 20px;">
             <p style="margin: 0; font-size: 14px; color: #6b7280;">
-              This ${reportType} report was generated automatically by DailyStory's privacy protection system. 
+              This ${reportType} report was generated automatically by Time2Read's privacy protection system. 
               We're committed to keeping your child safe online and complying with COPPA regulations.
               <a href="https://www.ftc.gov/legal-library/browse/rules/childrens-online-privacy-protection-rule-coppa" style="color: #2563eb;">Learn more about COPPA</a>
             </p>
@@ -99,7 +99,7 @@ const handler = async (req: Request): Promise<Response> => {
 
           <p style="margin-top: 30px;">
             Best regards,<br>
-            <strong>The DailyStory Safety Team</strong>
+            <strong>The Time2Read Safety Team</strong>
           </p>
         </div>
       `,

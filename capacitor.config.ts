@@ -2,10 +2,10 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'app.lovable.592147a710504b6caf2b895053e775df',
-  appName: 'dailystory',
+  appName: 'time-2-read',
   webDir: 'dist',
   server: {
-    url: 'https://preview--dailystory.lovable.app/?forceHideBadge=true&debug=1&ttsdebug=1&storydebug=1',
+    url: 'https://592147a7-1050-4b6c-af2b-895053e775df.lovableproject.com?forceHideBadge=true&debug=1&ttsdebug=1&storydebug=1',
     cleartext: true
   },
   plugins: {

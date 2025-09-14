@@ -125,7 +125,7 @@ Search: "REQ-mferghcd-e98ij"
 
 **Log Examples**:
 ```
-ERROR worker boot error: Module not found: file:///home/runner/work/dailystory/dailystory/supabase/functions/runware-generate-image/index.js
+ERROR worker boot error: Module not found: file:///home/runner/work/time-2-read/time-2-read/supabase/functions/runware-generate-image/index.js
 INFO ✅ runware-template-ab completed successfully via Supabase client
 ```
 

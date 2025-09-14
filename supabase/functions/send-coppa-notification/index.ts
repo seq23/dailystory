@@ -38,7 +38,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Sending COPPA notification to:", parentEmail);
 
     const emailResponse = await resend.emails.send({
-      from: "DailyStory Safety <safety@time-2-read.com>",
+      from: "Time2Read Safety <safety@time-2-read.com>",
       to: [parentEmail],
       subject: `🛡️ Privacy Alert: Content Review Needed for ${childName}`,
       html: `
@@ -77,14 +77,14 @@ const handler = async (req: Request): Promise<Response> => {
 
           <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; margin-top: 20px;">
             <p style="margin: 0; font-size: 14px; color: #6b7280;">
-              This is an automated safety notification from DailyStory. We're committed to protecting your child's privacy and complying with COPPA regulations. 
+              This is an automated safety notification from Time2Read. We're committed to protecting your child's privacy and complying with COPPA regulations. 
               <a href="https://www.ftc.gov/legal-library/browse/rules/childrens-online-privacy-protection-rule-coppa" style="color: #2563eb;">Learn more about COPPA</a>
             </p>
           </div>
 
           <p style="margin-top: 30px;">
             Best regards,<br>
-            <strong>The DailyStory Safety Team</strong>
+            <strong>The Time2Read Safety Team</strong>
           </p>
         </div>
       `,
