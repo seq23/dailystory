@@ -2623,6 +2623,6 @@ async function processImageGenerationRequest(req, requestId, signal) {
       500
     );
   }
-}
+});
 
 // ============= END OF MAIN PROCESSING FUNCTION =============
