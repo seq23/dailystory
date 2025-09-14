@@ -7,20 +7,20 @@ console.log('BOOT ai-visual-scene-creator module loaded');
 
 async function getCharacterService() {
   try {
-    const { CharacterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
-    return new CharacterConsistencyService();
+    const { characterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
+    return characterConsistencyService; // Return singleton instance directly
   } catch (error) {
     console.warn('CharacterService lazy load failed:', error);
     return null;
   }
 }
 
-async function getSecondaryDetector() {
+async function getEnhancedAnimalDetector() {
   try {
-    const { SecondaryElementDetector } = await import("../_shared/SecondaryElementDetector.js");
-    return SecondaryElementDetector;
+    const { enhancedAnimalDetector } = await import("../_shared/EnhancedAnimalDetector.js");
+    return enhancedAnimalDetector;
   } catch (error) {
-    console.warn('SecondaryDetector lazy load failed:', error);
+    console.warn('EnhancedAnimalDetector lazy load failed:', error);
     return null;
   }
 }
@@ -271,19 +271,6 @@ class SimpleCircuitBreaker {
     this.lastFailure = Date.now();
   }
   
-  getStatus() {
-    return {
-      isOpen: this.isOpen(),
-      failures: this.failures,
-      threshold: this.threshold
-    };
-  }
-  
-  manualReset() {
-    this.failures = 0;
-    this.lastFailure = 0;
-    console.log('Circuit breaker reset');
-  }
 }
 
 const circuitBreaker = new SimpleCircuitBreaker();
@@ -467,9 +454,10 @@ serve(async (req) => {
         });
       }
       // Extract and validate parameters
-      let { storyText, sessionId, pageNumber, avatarIdentity, storyId, enhancedStoryData } = body;
+      let { storyText, sessionId, pageNumber, avatarIdentity, storyId, enhancedStoryData, totalPages } = body;
       
       storyText = storyText || body.pageText;
+      totalPages = totalPages || body.totalPages || null;
       
       if (!avatarIdentity && body.userInfo) {
         avatarIdentity = {
@@ -505,13 +493,14 @@ serve(async (req) => {
           console.warn('WARNING Failed to get previous scene (non-critical):', error);
         }
 
-        // Detect secondary characters for conditional schema
-        function detectMultipleCharacters(storyText) {
-          const multiCharacterWords = ['friend', 'friends', 'mom', 'dad', 'parent', 'teacher', 'sibling', 'brother', 'sister', 'grandmother', 'grandfather', 'with'];
-          return multiCharacterWords.some(word => storyText.toLowerCase().includes(word));
+        // Debug gate for console logging
+        const debugMode = req.url.includes('debug=1') || req.url.includes('debug=true');
+        
+        function debugLog(...args) {
+          if (debugMode) {
+            console.log(...args);
+          }
         }
-
-        const hasMultipleCharacters = detectMultipleCharacters(storyText);
         
 
         
@@ -525,10 +514,9 @@ serve(async (req) => {
         let characterData = null;
         
         if (CharacterService) {
-          const characterConsistencyService = new CharacterService();
           
           // Get or create character seed with database persistence
-          characterData = await characterConsistencyService.getCharacterSeed(
+          characterData = await CharacterService.getCharacterSeed(
             sessionId,
             avatarIdentity,
             storyText,
@@ -554,11 +542,40 @@ serve(async (req) => {
           avatarSource: 'orchestrator-provided'
         });
         
-        // PHASE 1.1b: Secondary Characters - REMOVED TO PREVENT DOUBLE PROCESSING
-        // Secondary characters are now processed in the template system (runware-template-ab/cd)
-        // to prevent duplicate processing and ensure proper tier-specific handling
-        console.log('DEBUG PHASE 1.1b: Secondary character processing moved to template system');
-        const secondaryElements = []; // Empty - processed in templates now
+        // PHASE 1.1b: Secondary Characters - TIER 1 DIRECT DETECTION
+        debugLog('SECONDARY PHASE 1.1b: Detecting secondary characters for Tier 1');
+        let secondaryElements = [];
+        
+        try {
+          const AnimalDetector = await getEnhancedAnimalDetector();
+          if (AnimalDetector) {
+            const detectionResult = await AnimalDetector.detectAllCharacters(storyText, {
+              sessionId,
+              pageNumber,
+              userInfo: avatarIdentity
+            });
+            
+            if (detectionResult?.secondaryCharacters?.length > 0) {
+              secondaryElements = detectionResult.secondaryCharacters.map(char => ({
+                name: char.name || 'character',
+                relation: char.relation || 'friend',
+                description: char.description || 'friendly character'
+              }));
+              
+              debugLog('SECONDARY Found secondary characters:', secondaryElements.length);
+              
+              // Store in CharacterConsistencyService for cross-page consistency
+              if (CharacterService) {
+                for (const char of secondaryElements) {
+                  await CharacterService.analyzeVisualDetails(sessionId, `${char.name}: ${char.description}`, pageNumber, char.name);
+                }
+              }
+            }
+          }
+        } catch (error) {
+          console.warn('Secondary character detection failed (non-critical):', error);
+          secondaryElements = [];
+        }
         
         // PHASE 1.1c: Track Visual Details
         console.log('ART PHASE 1.1c: Analyzing visual details using VisualDetailTracker');
@@ -747,7 +764,19 @@ RULES:
             pageNumber,
             phase: 'PHASE_1_AI_CALL'
           });
-          return createCorsErrorResponse(`Tier 1 AI generation failed: ${error.message}`, 500);
+          
+          // PHASE 1.4: Primary Scene Validation & Tier 2.5A Trigger
+          debugLog('VALIDATION PHASE 1.4: AI failed, triggering Tier 2.5A fallback');
+          return createCorsResponse({
+            success: true,
+            aiSchema: null,
+            metadata: {
+              routing: {
+                forceTier: '2.5A',
+                reason: 'tier_1_ai_failure'
+              }
+            }
+          });
         }
         
         // =================== PHASE 2: POST-AI PROMPT CONSTRUCTION ===================
@@ -793,6 +822,36 @@ RULES:
           primarySceneLength: primaryScene.length
         });
         
+        // PHASE 2.6: Primary Scene Validation & Tier 2.5A Trigger
+        debugLog('VALIDATION PHASE 2.6: Validating primary scene for Tier 1 quality');
+        
+        const tempEnhancedData = {
+          primaryScene: primaryScene,
+          setting: setting,
+          action: action,
+          mood: mood,
+          pose: pose
+        };
+        
+        const validationResult = validateAndEnhanceContent(tempEnhancedData, storyText);
+        
+        if (validationResult.useTier2) {
+          debugLog('VALIDATION Failed: Triggering Tier 2.5A fallback');
+          return createCorsResponse({
+            success: true,
+            aiSchema: null,
+            metadata: {
+              routing: {
+                forceTier: '2.5A',
+                reason: 'primary_scene_validation_failed'
+              },
+              validation: validationResult.fieldCheck
+            }
+          });
+        }
+        
+        debugLog('VALIDATION Passed: Proceeding with Tier 1');
+        
         // Create enhanced story data for return with character consistency
         enhancedStoryData = {
           primaryScene: primaryScene,
@@ -822,7 +881,7 @@ RULES:
           }
         };
         
-        console.log(`SUCCESS SCENE CREATOR: Scene data with character consistency ready for orchestrator`);
+        debugLog(`SUCCESS SCENE CREATOR: Scene data with character consistency ready for orchestrator`);
         
         
         // =================== VALIDATION & RETURN RESULTS ===================
@@ -836,7 +895,7 @@ RULES:
           }
         };
         
-        console.log(`SUCCESS ENHANCED TIER 1: Validation passed - all phases complete with character consistency`);
+        debugLog(`SUCCESS ENHANCED TIER 1: Validation passed - all phases complete with character consistency`);
         
         // Return enhanced data with assembled prompts for Runware
         const result = {
@@ -884,7 +943,7 @@ RULES:
           enhancedStoryData: enhancedStoryData || {}
         };
 
-        console.log(`SUCCESS SCENE CREATOR: Complete - Phases: AI Scene + Character DB + Secondary + Visual(SUCCESS) -> Secondary Characters(SUCCESS) - Scene data ready for orchestrator`);
+        debugLog(`SUCCESS SCENE CREATOR: Complete - Phases: AI Scene + Character DB + Secondary + Visual(SUCCESS) -> Secondary Characters(SUCCESS) - Scene data ready for orchestrator`);
 
         return createCorsResponse(result);
       }
