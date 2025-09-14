@@ -30,7 +30,7 @@ import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from
 import { DifficultyLevelMapper } from "../_shared/DifficultyLevelMapper.js";
 import { CULTURAL_ARRAYS } from "../_shared/tier25Vocabulary.js";
 // ============= PHASE 7: NAME HANDLING CLARIFICATION =============
-import { NameHandlingService } from "../_shared/NameHandlingService.js";
+
 
 // ============= PHASE 4: SERVICE HEALTH MONITORING INTEGRATION =============
 async function getServiceHealthMonitor() {
@@ -265,13 +265,14 @@ const processAvatarIdentityFromCache = (userInfo) => {
     userName: userInfo?.userName || userInfo?.name || 'Child'
   };
   
-  // ============= PHASE 7: NAME HANDLING CLARIFICATION =============
+  // ============= SIMPLE NAME VALIDATION =============
   // Ensure image generation uses child's real name only
-  const validatedAvatarIdentity = NameHandlingService.validateAvatarIdentityName(
-    avatarIdentity, 
-    userInfo, 
-    'image-generation'
-  );
+  if (userInfo?.name) {
+    avatarIdentity.name = userInfo.name.trim();
+  } else {
+    avatarIdentity.name = 'Child';
+  }
+  const validatedAvatarIdentity = avatarIdentity;
   
   console.log('✅ AVATAR IDENTITY PROCESSED:', {
     completeness: {
@@ -285,7 +286,7 @@ const processAvatarIdentityFromCache = (userInfo) => {
     nameValidation: {
       purpose: 'image-generation',
       finalName: validatedAvatarIdentity.name,
-      source: 'NameHandlingService'
+      source: 'userInfo.name'
     }
   });
   

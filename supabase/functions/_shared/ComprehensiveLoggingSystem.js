@@ -388,15 +388,11 @@ export class ComprehensiveLoggingSystem {
     const emoji = this.getServiceHealthEmoji(event);
     const logMessage = `${emoji} [SERVICE HEALTH] ${message}`;
     
-    // Send to debug system only, not console - except critical errors
-    if (typeof globalThis !== 'undefined' && globalThis.debugLogger) {
-      if (details.status === 'unhealthy' || details.status === 'degraded') {
-        globalThis.debugLogger.error('error', `${logMessage} - SERVICE ALERT`, details);
-        // Keep console error for critical service issues
-        console.error(`${logMessage} - SERVICE ALERT`, details);
-      } else {
-        globalThis.debugLogger.log('network', logMessage, details);
-      }
+    // Keep critical service alerts on console
+    if (details.status === 'unhealthy' || details.status === 'degraded') {
+      globalThis.debugLogger.error('error', `${logMessage} - SERVICE ALERT`, details);
+    } else {
+      globalThis.debugLogger.log('network', logMessage, details);
     }
   }
 

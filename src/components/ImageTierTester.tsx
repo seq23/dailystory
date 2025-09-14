@@ -512,7 +512,7 @@ export function ImageTierTester() {
               <span className="text-sm text-muted-foreground">{avatarCompleteness}</span>
             </div>
             
-            {avatarIdentity && (
+            {avatarIdentity && avatarIdentity.provided && avatarIdentity.missingFields && (
               <div className="mt-2 text-sm">
                 <div className="text-green-600">
                   Provided: {avatarIdentity.provided.join(', ')}
@@ -529,17 +529,21 @@ export function ImageTierTester() {
           <div>
             <h5 className="font-medium mb-2">Routing Decisions</h5>
             <div className="space-y-1">
-              {routingDecisions.map((decision, index) => (
+              {routingDecisions?.map((decision, index) => (
                 <div key={index} className="text-sm text-muted-foreground">
                   • {decision}
                 </div>
-              ))}
+              )) || (
+                <div className="text-sm text-muted-foreground">
+                  No routing decisions recorded
+                </div>
+              )}
             </div>
           </div>
         </div>
 
         {/* Skipped Tiers */}
-        {skippedTiers.length > 0 && (
+        {skippedTiers && skippedTiers.length > 0 && (
           <div>
             <h5 className="font-medium mb-2">Skipped Tiers</h5>
             <div className="flex flex-wrap gap-2">
@@ -551,6 +555,89 @@ export function ImageTierTester() {
             </div>
           </div>
         )}
+      </div>
+    );
+  };
+
+    return (
+      <div className="mt-4 p-4 bg-muted rounded-lg">
+        <h4 className="font-semibold mb-3 flex items-center gap-2">
+          <Bug className="w-4 h-4" />
+          Routing Flow Analysis
+        </h4>
+        
+        {/* Main Routing Flow */}
+        <div className="flex items-center gap-2 mb-3">
+          <Badge variant="outline">{attemptedTier}</Badge>
+          <ArrowRight className="w-4 h-4" />
+          <Badge variant={executedTier === attemptedTier ? "default" : "destructive"}>
+            {executedTier}
+          </Badge>
+          {fallbackReason && (
+            <>
+              <AlertTriangle className="w-4 h-4 text-yellow-500" />
+              <span className="text-sm text-muted-foreground">{fallbackReason}</span>
+            </>
+          )}
+        </div>
+
+        {/* Avatar Debug Panel */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+          <div>
+            <h5 className="font-medium mb-2">Avatar Validation</h5>
+            <div className="flex items-center gap-2">
+              <Badge variant={binaryValidation === 'COMPLETE' ? 'default' : 'destructive'}>
+                {binaryValidation}
+              </Badge>
+              <span className="text-sm text-muted-foreground">{avatarCompleteness}</span>
+            </div>
+            
+            {avatarIdentity && avatarIdentity.provided && avatarIdentity.missingFields && (
+              <div className="mt-2 text-sm">
+                <div className="text-green-600">
+                  Provided: {avatarIdentity.provided.join(', ')}
+                </div>
+                {avatarIdentity.missingFields.length > 0 && (
+                  <div className="text-red-600">
+                    Missing: {avatarIdentity.missingFields.join(', ')}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div>
+            <h5 className="font-medium mb-2">Routing Decisions</h5>
+            <div className="space-y-1">
+              {routingDecisions?.map((decision, index) => (
+                <div key={index} className="text-sm text-muted-foreground">
+                  • {decision}
+                </div>
+              )) || (
+                <div className="text-sm text-muted-foreground">
+                  No routing decisions recorded
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Skipped Tiers */}
+        {skippedTiers && skippedTiers.length > 0 && (
+          <div>
+            <h5 className="font-medium mb-2">Skipped Tiers</h5>
+            <div className="flex flex-wrap gap-2">
+              {skippedTiers.map((tier, index) => (
+                <Badge key={index} variant="secondary">
+                  {tier} - SKIPPED
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
       </div>
     );
   };

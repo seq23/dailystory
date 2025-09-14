@@ -33,7 +33,10 @@ export class CulturalTriggerDetector {
       profile.enhancementStrength = 'strong';
       profile.hasCulturalFeatures = true;
       
-      console.log(`🌍 Cultural Trigger: Non-English speaker detected (${nativeLanguage})`);
+      // Route to DebugLogger instead of console
+      if (typeof globalThis !== 'undefined' && globalThis.debugLogger) {
+        globalThis.debugLogger.log('story', `🌍 Cultural Trigger: Non-English speaker detected (${nativeLanguage})`);
+      }
       return profile;
     }
 
@@ -44,7 +47,10 @@ export class CulturalTriggerDetector {
       profile.enhancementStrength = 'strong';
       profile.hasCulturalFeatures = true;
       
-      console.log(`🌍 Cultural Trigger: African American features detected (English + dark skin)`);
+      // Route to DebugLogger instead of console
+      if (typeof globalThis !== 'undefined' && globalThis.debugLogger) {
+        globalThis.debugLogger.log('story', `🌍 Cultural Trigger: African American features detected (English + dark skin)`);
+      }
       return profile;
     }
 
@@ -55,11 +61,17 @@ export class CulturalTriggerDetector {
       profile.enhancementStrength = 'light';
       profile.hasCulturalFeatures = true;
       
-      console.log(`🌍 Cultural Trigger: Diverse features detected (English + medium skin)`);
+      // Route to DebugLogger instead of console
+      if (typeof globalThis !== 'undefined' && globalThis.debugLogger) {
+        globalThis.debugLogger.log('story', `🌍 Cultural Trigger: Diverse features detected (English + medium skin)`);
+      }
       return profile;
     }
 
-    console.log(`🌍 Cultural Trigger: No cultural enhancement (English + light skin)`);
+    // Route to DebugLogger instead of console
+    if (typeof globalThis !== 'undefined' && globalThis.debugLogger) {
+      globalThis.debugLogger.log('story', `🌍 Cultural Trigger: No cultural enhancement (English + light skin)`);
+    }
     return profile;
   }
 
@@ -249,18 +261,24 @@ export class UniversalPlaceholderResolver {
     this.culturalProfile = CulturalTriggerDetector.detectCulturalProfile(userInfo, avatarIdentity);
     this.culturalArrays = CulturalTriggerDetector.getCulturalArrays(this.culturalProfile.culturalType);
     
-    console.log('🎯 Universal Placeholder Resolver initialized:', {
-      culturalType: this.culturalProfile.culturalType,
-      enhancementStrength: this.culturalProfile.enhancementStrength,
-      hasCulturalFeatures: this.culturalProfile.hasCulturalFeatures
-    });
+    // Route to DebugLogger instead of console
+    if (typeof globalThis !== 'undefined' && globalThis.debugLogger) {
+      globalThis.debugLogger.log('story', '🎯 Universal Placeholder Resolver initialized:', {
+        culturalType: this.culturalProfile.culturalType,
+        enhancementStrength: this.culturalProfile.enhancementStrength,
+        hasCulturalFeatures: this.culturalProfile.hasCulturalFeatures
+      });
+    }
   }
 
   /**
    * Main resolution method - resolves all placeholders in a template
    */
   resolve(template, additionalData = {}) {
-    console.log('🔧 Resolving placeholders in template:', template.substring(0, 100) + '...');
+    // Route to DebugLogger instead of console
+    if (typeof globalThis !== 'undefined' && globalThis.debugLogger) {
+      globalThis.debugLogger.log('story', '🔧 Resolving placeholders in template:', template.substring(0, 100) + '...');
+    }
     
     let resolvedTemplate = template;
     
@@ -302,7 +320,10 @@ export class UniversalPlaceholderResolver {
     // Clean up template
     resolvedTemplate = this.cleanTemplate(resolvedTemplate);
     
-    console.log('✅ Template resolved successfully with cultural enhancement level:', this.culturalProfile.enhancementStrength);
+    // Route to DebugLogger instead of console
+    if (typeof globalThis !== 'undefined' && globalThis.debugLogger) {
+      globalThis.debugLogger.log('story', '✅ Template resolved successfully with cultural enhancement level:', this.culturalProfile.enhancementStrength);
+    }
     
     return resolvedTemplate;
   }
@@ -505,7 +526,10 @@ export class UniversalPlaceholderResolver {
    * Fixed to maintain story integrity - no fictional content generation
    */
   static strictResolve(template, userInfo = {}, storyText = '') {
-    console.log('🔒 [STRICT] Initiating strict resolution (no fictional content)');
+    // Route to DebugLogger instead of console
+    if (typeof globalThis !== 'undefined' && globalThis.debugLogger) {
+      globalThis.debugLogger.log('story', '🔒 [STRICT] Initiating strict resolution (no fictional content)');
+    }
     
     try {
       // Primary resolution attempt
@@ -513,21 +537,33 @@ export class UniversalPlaceholderResolver {
       const resolvedTemplate = resolver.resolve(template);
       
       if (resolvedTemplate && resolvedTemplate.length > 20) {
-        console.log('✅ [STRICT] Primary resolution successful');
+        // Route to DebugLogger instead of console
+        if (typeof globalThis !== 'undefined' && globalThis.debugLogger) {
+          globalThis.debugLogger.log('story', '✅ [STRICT] Primary resolution successful');
+        }
         return resolvedTemplate;
       }
     } catch (error) {
-      console.warn('⚠️ [STRICT] Primary resolution failed:', error.message);
+      // Route to DebugLogger instead of console
+      if (typeof globalThis !== 'undefined' && globalThis.debugLogger) {
+        globalThis.debugLogger.warn('story', '⚠️ [STRICT] Primary resolution failed:', error.message);
+      }
     }
     
     // Extract pageText when available (maintains story integrity)
     if (storyText && storyText.trim().length > 10) {
-      console.log('📄 [STRICT] Using exact pageText for story integrity');
+      // Route to DebugLogger instead of console
+      if (typeof globalThis !== 'undefined' && globalThis.debugLogger) {
+        globalThis.debugLogger.log('story', '📄 [STRICT] Using exact pageText for story integrity');
+      }
       return this.createPageTextTemplate(storyText, userInfo);
     }
     
     // Resolve as empty (better than making things up)
-    console.log('🔳 [STRICT] Resolving with minimal template (no fictional content)');
+    // Route to DebugLogger instead of console
+    if (typeof globalThis !== 'undefined' && globalThis.debugLogger) {
+      globalThis.debugLogger.log('story', '🔳 [STRICT] Resolving with minimal template (no fictional content)');
+    }
     return this.createMinimalTemplate(userInfo);
   }
 
