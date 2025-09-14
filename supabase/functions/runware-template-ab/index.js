@@ -39,6 +39,17 @@ async function getVisualTracker() {
   }
 }
 
+// ============= PHASE 4: SERVICE HEALTH MONITORING =============
+async function getServiceHealthMonitor() {
+  try {
+    const { serviceHealthMonitor } = await import("../_shared/ServiceHealthMonitor.js");
+    return serviceHealthMonitor;
+  } catch (error) {
+    console.warn('ServiceHealthMonitor not available:', error);
+    return null;
+  }
+}
+
 // ============= CORS HEADERS =============
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -290,11 +301,40 @@ async function prepareTemplateData(storyText, userInfo, avatarIdentity, characte
     frameworkPrompt: frameworkPrompt || 'children\'s book illustration style'
   };
 }
+// ============= PHASE 4: ENHANCED SERVICE HEALTH CHECK WITH MONITORING =============
 async function checkServiceHealth() {
+  console.log('🏥 Phase 4: Checking service health with ServiceHealthMonitor');
+  
+  // Try to use ServiceHealthMonitor for comprehensive health checking
+  try {
+    const healthMonitor = await getServiceHealthMonitor();
+    if (healthMonitor) {
+      console.log('🏥 Using ServiceHealthMonitor for comprehensive health check');
+      const healthResults = await healthMonitor.checkAllServicesHealth();
+      
+      return {
+        characterService: healthResults.services.CharacterConsistencyService?.status === 'HEALTHY',
+        visualTracker: healthResults.services.VisualDetailTracker?.status === 'HEALTHY',
+        sessionManager: healthResults.services.SessionStateManager?.status === 'HEALTHY',
+        universalResolver: healthResults.services.UniversalPlaceholderResolver?.status === 'HEALTHY',
+        overallHealth: healthResults.overall,
+        availableTiers: healthResults.availableTiers,
+        healthResults: healthResults
+      };
+    }
+  } catch (error) {
+    console.warn('ServiceHealthMonitor unavailable, using fallback health check:', error);
+  }
+  
+  // Fallback to basic health check if ServiceHealthMonitor is unavailable
+  console.log('🏥 Using fallback health check method');
   const services = {
     characterService: false,
     visualTracker: false,
-    sessionManager: false
+    sessionManager: false,
+    universalResolver: false,
+    overallHealth: 'UNKNOWN',
+    availableTiers: ['2.5B', '2.5D'] // Nuclear independence tiers always available
   };
 
   try {
@@ -317,6 +357,23 @@ async function checkServiceHealth() {
   } catch (error) {
     console.warn('SessionManager health check failed:', error.message);
   }
+
+  try {
+    const UniversalResolver = await getUniversalResolver();
+    services.universalResolver = !!UniversalResolver;
+  } catch (error) {
+    console.warn('UniversalResolver health check failed:', error.message);
+  }
+
+  // Determine available tiers based on service health
+  const availableTiers = ['2.5B', '2.5D']; // Nuclear independence always available
+  
+  if (services.characterService && services.universalResolver) {
+    availableTiers.unshift('2.5A');
+  }
+  
+  services.availableTiers = availableTiers;
+  services.overallHealth = services.characterService && services.universalResolver ? 'HEALTHY' : 'DEGRADED';
 
   return services;
 }
@@ -412,7 +469,10 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
   }
   
   if (complexity === 'B') {
-    console.log('🎯 Template AB: Processing Tier 2.5B - Nuclear Independence with basic templates');
+    console.log('🎯 Template AB: Processing Tier 2.5B - Nuclear Independence (PHASE 4)');
+    
+    // PHASE 4: Nuclear Independence - NO external service dependencies
+    console.log('☢️ PHASE 4: Nuclear Independence Mode - Zero external dependencies');
     
     // Get secondary characters with limited processing for nuclear independence
     const secondaryCharacters = await processSecondaryCharacters('B', storyText, sessionId, pageNumber, serviceHealth);
@@ -420,35 +480,41 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
     // Tier 2.5B: BASIC templates + Limited cultural intelligence + Nuclear independence
     const frameworkPrompt = 'simple cartoon illustration style';
     
-    // Use BASIC template with limited cultural intelligence
+    // Use BASIC template with GUARANTEED nuclear independence
     const template = BASIC_PROMPT_TEMPLATES[difficultyLevel];
     const templateData = await prepareTemplateData(
       storyText, 
       userInfo, 
       avatarIdentity, 
       null, // No characterData for nuclear independence
-      null, // No visualDetails for nuclear independence
+      null, // No visualDetails for nuclear independence  
       frameworkPrompt,
       secondaryCharacters
     );
     
-    const positivePrompt = await resolvePlaceholders(template, templateData, true);
+    // PHASE 4: Always use fallback resolution for nuclear independence
+    console.log('☢️ Nuclear Independence: Using guaranteed fallback resolution');
+    const positivePrompt = await resolvePlaceholdersFallback(template, templateData);
     
-    console.log('✅ Template AB Tier 2.5B: Successfully using BASIC templates with limited cultural intelligence');
+    console.log('✅ Template AB Tier 2.5B: Nuclear Independence template generated');
     console.log('🔍 Nuclear independence elements:', {
       hasAvatarIdentity: !!avatarIdentity,
       secondaryCharacterCount: secondaryCharacters.split(',').filter(c => c.trim()).length,
-      nuclearIndependence: true
+      nuclearIndependence: true,
+      zeroExternalDependencies: true,
+      guaranteedOperation: true
     });
     
     return {
       positivePrompt,
       negativePrompt: 'complex details, photorealistic, adult themes, scary',
-      templateType: 'basic-with-limited-cultural',
+      templateType: 'nuclear-independence-basic',
       difficulty: 'B', 
-      enhancementLevel: 'basic',
+      enhancementLevel: 'nuclear-independent',
       difficultyLevel,
-      secondaryCharacters: secondaryCharacters || 'none'
+      secondaryCharacters: secondaryCharacters || 'none',
+      nuclearIndependent: true,
+      serviceHealthRequired: false
     };
   }
   
@@ -516,9 +582,13 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
   
-  // Handle health checks (GET/HEAD requests)
+    // Handle health checks (GET/HEAD requests)
   if (req.method === 'GET' || req.method === 'HEAD') {
-    console.log('🏥 Template AB: Health check request');
+    console.log('🏥 Template AB: Health check request (Phase 4)');
+    
+    // PHASE 4: Enhanced health check with service monitoring
+    const serviceHealth = await checkServiceHealth();
+    
     return createResponse({
       healthy: true,
       status: 'healthy',
@@ -528,7 +598,22 @@ serve(async (req) => {
       tier: '2.5A-B',
       complexity: 'A-B',
       timestamp: new Date().toISOString(),
-      runwareApiKeyPresent: !!Deno.env.get('RUNWARE_API_KEY')
+      runwareApiKeyPresent: !!Deno.env.get('RUNWARE_API_KEY'),
+      // PHASE 4: Service health monitoring data
+      serviceHealth: {
+        characterService: serviceHealth.characterService,
+        visualTracker: serviceHealth.visualTracker,
+        sessionManager: serviceHealth.sessionManager,
+        universalResolver: serviceHealth.universalResolver,
+        overallHealth: serviceHealth.overallHealth,
+        availableTiers: serviceHealth.availableTiers
+      },
+      capabilities: {
+        nuclearIndependence: true,
+        tierASupport: serviceHealth.characterService && serviceHealth.universalResolver,
+        tierBSupport: true, // Always available due to nuclear independence
+        smartRouting: !!serviceHealth.healthResults
+      }
     });
   }
   

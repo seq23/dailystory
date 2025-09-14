@@ -30,6 +30,17 @@ import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from
 import { DifficultyLevelMapper } from "../_shared/DifficultyLevelMapper.js";
 import { CULTURAL_ARRAYS } from "../_shared/tier25Vocabulary.js";
 
+// ============= PHASE 4: SERVICE HEALTH MONITORING INTEGRATION =============
+async function getServiceHealthMonitor() {
+  try {
+    const { serviceHealthMonitor } = await import("../_shared/ServiceHealthMonitor.js");
+    return serviceHealthMonitor;
+  } catch (error) {
+    console.warn('ServiceHealthMonitor not available:', error);
+    return null;
+  }
+}
+
 // ============= REQUEST ID GENERATION =============
 function generateRequestId() {
   const timestamp = Date.now().toString(36);
@@ -1941,7 +1952,7 @@ serve(async (req)=>{
         }
       }
     }
-    // TIER 2.5A-D: Sequential Template Complexity Fallback
+    // TIER 2.5A-D: Sequential Template Complexity Fallback with PHASE 4 Service Health Monitoring
     if (!forceTier || forceTier === 2.5) {
       // Resolve characterData - if undefined, set to null for nuclear independence
       let resolvedCharacterData = characterData;
@@ -1968,13 +1979,71 @@ serve(async (req)=>{
         throw new Error('TIER 2.5 VALIDATION ERROR: sessionId is empty or invalid');
       }
       
+      // PHASE 4: Smart routing based on service health
+      console.log('🏥 Phase 4: Checking service health for smart tier routing');
+      const healthMonitor = await getServiceHealthMonitor();
+      let smartRoutingOrder = null;
+      
+      if (healthMonitor) {
+        try {
+          const healthResults = await healthMonitor.checkAllServicesHealth();
+          console.log('🏥 Service Health Results:', {
+            overall: healthResults.overall,
+            availableTiers: healthResults.availableTiers
+          });
+          
+          // Get smart routing recommendation based on user complexity and service health
+          const recommendedTier = healthMonitor.recommendTier(userInfo, healthResults.services);
+          console.log('🎯 Smart routing recommendation:', recommendedTier);
+          
+          // Create smart routing order based on health and user needs
+          smartRoutingOrder = healthMonitor.getPreferredTierOrder(
+            healthMonitor.getUserComplexityLevel(userInfo)
+          ).filter(tier => healthResults.availableTiers.includes(tier));
+          
+          console.log('🔄 Phase 4: Smart routing order:', smartRoutingOrder);
+          
+        } catch (error) {
+          console.warn('⚠️ ServiceHealthMonitor failed, using fallback routing:', error);
+        }
+      }
+      
       // Sequential fallback through template complexity levels with failure-scenario based names
-      const complexityConfigs = [
+      // PHASE 4: Use smart routing order if available, otherwise fall back to default order
+      const defaultComplexityConfigs = [
         { level: 'A', func: 'runware-template-ab', name: 'AI Failure Fallback' },
-        { level: 'B', func: 'runware-template-ab', name: 'Shared Services Fallback' },
+        { level: 'B', func: 'runware-template-ab', name: 'Nuclear Independence Fallback' },
         { level: 'C', func: 'runware-template-cd', name: 'Avatar Identity Fallback' },
         { level: 'D', func: 'runware-template-cd', name: 'Dynamic Prompt Fallback' }
       ];
+      
+      let complexityConfigs = defaultComplexityConfigs;
+      
+      // PHASE 4: Reorder configs based on smart routing if available
+      if (smartRoutingOrder && smartRoutingOrder.length > 0) {
+        console.log('🎯 Phase 4: Applying smart routing order');
+        const smartConfigs = [];
+        
+        for (const tier of smartRoutingOrder) {
+          const config = defaultComplexityConfigs.find(c => c.level === tier);
+          if (config) {
+            smartConfigs.push({
+              ...config,
+              name: `${config.name} (Smart Routed)`
+            });
+          }
+        }
+        
+        // Add any missing configs at the end
+        for (const config of defaultComplexityConfigs) {
+          if (!smartConfigs.find(c => c.level === config.level)) {
+            smartConfigs.push(config);
+          }
+        }
+        
+        complexityConfigs = smartConfigs;
+        console.log('✅ Phase 4: Smart routing configuration applied');
+      }
       
       for (let i = 0; i < complexityConfigs.length; i++) {
         const config = complexityConfigs[i];
