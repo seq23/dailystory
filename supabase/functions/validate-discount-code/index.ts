@@ -1,11 +1,11 @@
 // Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
+import { createDynamicCorsResponse, createDynamicCorsErrorResponse, createDynamicCorsOptionsResponse } from "../_shared/corsAdvanced.js";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return createCorsOptionsResponse();
+    return createDynamicCorsOptionsResponse(req);
   }
 
   
@@ -14,7 +14,7 @@ serve(async (req) => {
     const { code } = await req.json();
     
     if (!code || typeof code !== 'string') {
-      return createCorsErrorResponse('Discount code is required', 400);
+      return createDynamicCorsErrorResponse('Discount code is required', null, 400);
     }
 
     // Create Supabase client with service role for discount code access
@@ -50,10 +50,10 @@ serve(async (req) => {
     // Check usage limits if set
     if (discountCode.max_uses && discountCode.current_uses >= discountCode.max_uses) {
       console.log(`[Validate Discount] Code usage limit reached: ${code}`);
-      return createCorsResponse({ 
-        valid: false, 
-        message: 'This discount code has reached its usage limit' 
-      });
+      return createDynamicCorsResponse({
+        valid: false,
+        message: 'This discount code has reached its usage limit'
+      }, null);
     }
 
     console.log(`[Validate Discount] Code valid: ${code} - ${discountCode.description}`);
@@ -68,6 +68,6 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('[Validate Discount] Error:', error);
-    return createCorsErrorResponse(error.message || 'Internal server error', 500);
+    return createDynamicCorsErrorResponse(error.message || 'Internal server error', null, 500);
   }
 });

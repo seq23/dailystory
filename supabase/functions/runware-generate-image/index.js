@@ -23,7 +23,6 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
 import { createDynamicCorsOptionsResponse, createDynamicCorsResponse, createDynamicCorsErrorResponse } from "../_shared/corsAdvanced.js";
-import { monitorRequest } from "../_shared/headerMonitor.js";
 import { SessionStateManager } from "../_shared/SessionStateManager.js";
 import { SecurityValidator } from "../_shared/SecurityValidator.js";
 import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from "../_shared/NuclearNegativePrompts.js";
@@ -44,16 +43,6 @@ async function getServiceHealthMonitor() {
 }
 
 // ============= PHASE 5: DATA FLOW OPTIMIZATION INTEGRATION =============
-async function getDataFlowOptimizer() {
-  try {
-    const { dataFlowOptimizer } = await import("../_shared/DataFlowOptimizer.js");
-    return dataFlowOptimizer;
-  } catch (error) {
-    console.warn('DataFlowOptimizer not available:', error);
-    return null;
-  }
-}
-
 async function getDataFlowValidator() {
   try {
     const { dataFlowValidator } = await import("../_shared/DataFlowValidator.js");
@@ -888,31 +877,27 @@ async function callTierFunction(functionName, payload) {
     
     try {
       // Try to get data flow services
-      const dataFlowOptimizer = await getDataFlowOptimizer();
       const dataFlowValidator = await getDataFlowValidator();
       
-      if (dataFlowOptimizer && dataFlowValidator) {
-        console.log(`⚡ Phase 5: Optimizing payload for ${functionName}`);
+      if (dataFlowValidator) {
+        console.log(`⚡ Phase 5: Validating payload for ${functionName}`);
         
-        // Validate and optimize based on function type
+        // Validate based on function type
         if (functionName === 'ai-visual-scene-creator') {
           const validation = dataFlowValidator.validateAISceneCreatorInput(payload);
           if (!validation.isValid) {
             console.warn(`⚠️ Phase 5: AI scene creator input validation failed:`, validation.errors);
           }
-          optimizedPayload = dataFlowOptimizer.optimizeAISceneCreatorInput(payload);
           
         } else if (functionName.includes('template')) {
           const validation = dataFlowValidator.validateTemplateServiceInput(payload, functionName);
           if (!validation.isValid) {
             console.warn(`⚠️ Phase 5: Template service input validation failed:`, validation.errors);
           }
-          optimizedPayload = dataFlowOptimizer.optimizeTemplateServiceInput(payload, functionName);
         }
         
-        console.log(`✅ Phase 5: Payload optimized for ${functionName}`);
+        console.log(`✅ Phase 5: Payload validated for ${functionName}`);
         validator = dataFlowValidator;
-        optimizer = dataFlowOptimizer;
       }
     } catch (dataFlowError) {
       console.warn(`⚠️ Phase 5: Data flow optimization failed, using original payload:`, dataFlowError.message);
@@ -1293,17 +1278,15 @@ serve(async (req) => {
     console.warn('⚠️ Phase 6: Error handling/logging systems not available:', error);
   }
   
-  // ============= PHASE 5: DATA FLOW OPTIMIZATION =============
-  console.log('⚡ Phase 5: Initializing data flow optimization');
-  let dataFlowOptimizer = null;
+  // ============= PHASE 5: DATA FLOW VALIDATION =============
+  console.log('⚡ Phase 5: Initializing data flow validation');
   let dataFlowValidator = null;
   
   try {
-    dataFlowOptimizer = await getDataFlowOptimizer();
     dataFlowValidator = await getDataFlowValidator();
-    console.log('✅ Phase 5: Data flow optimization services initialized');
+    console.log('✅ Phase 5: Data flow validation service initialized');
   } catch (error) {
-    console.warn('⚠️ Phase 5: Data flow optimization not available, using fallback:', error);
+    console.warn('⚠️ Phase 5: Data flow validation not available, using fallback:', error);
   }
   
   // BULLETPROOFING: Startup diagnostics
@@ -2362,7 +2345,7 @@ serve(async (req) => {
               currentTier: 'orchestrator',
               targetTier: subTier,
               routingReason: config.name.toLowerCase().replace(/\s+/g, '_'),
-              userComplexity: userInfo ? dataFlowOptimizer?.computeUserComplexity(userInfo) : 'unknown',
+              userComplexity: userInfo ? 'available' : 'unavailable',
               serviceHealth: smartRoutingOrder ? 'smart_routing_applied' : 'default_routing',
               processingTime: Date.now()
             });

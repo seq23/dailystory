@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { DebugLogger } from '@/services/DebugLogger';
-import { Sparkles, Zap, Network, Search, Camera, RefreshCw, RotateCcw } from 'lucide-react';
+import { Sparkles, Zap, Network, Search, Camera, RefreshCw, RotateCcw, Clock, AlertTriangle, CheckCircle } from 'lucide-react';
 
 interface TestResult {
   tier: string;
@@ -18,6 +18,8 @@ interface TestResult {
     requestId?: string;
     error?: string;
     testType?: 'REAL' | 'FORCED' | 'CONNECTIVITY'; // Add test type
+    timeoutTest?: boolean; // Add timeout test flag
+    abortReason?: string; // Add abort reason
     // AI Scene Creator specific
     sceneGenerationOnly?: boolean;
     primaryScene?: string;
@@ -55,6 +57,8 @@ interface TestResult {
       error?: string;
       responseTime?: number;
       humanReadableReason?: string;
+      timeoutTest?: boolean;
+      abortReason?: string;
     }>;
   };
 }
@@ -65,6 +69,10 @@ export const ImageTierTester = () => {
   const [testStoryText, setTestStoryText] = useState(
     "Emma walked through the magical forest where the golden sunlight danced between the emerald leaves. She wore her favorite blue dress and carried a small brown backpack filled with adventure supplies."
   );
+  
+  // Timeout testing configuration
+  const [timeoutDuration, setTimeoutDuration] = useState(30000); // 30 seconds default
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // User Info Section - Editable fields
   const [userName, setUserName] = useState('Emma');
@@ -96,6 +104,182 @@ export const ImageTierTester = () => {
     setAvatarType('girl');
     setSkinTone('light');
     setNativeLanguage('en');
+  };
+
+  // Enhanced test function with timeout and AbortController support
+  const testWithTimeout = async (testName: string, testFunction: () => Promise<void>) => {
+    setIsLoading(true);
+    setResults([]);
+    
+    // Create AbortController for timeout handling
+    abortControllerRef.current = new AbortController();
+    const timeoutId = setTimeout(() => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    }, timeoutDuration);
+    
+    try {
+      await testFunction();
+      clearTimeout(timeoutId);
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error.name === 'AbortError') {
+        setResults([{
+          tier: `${testName}-timeout`,
+          success: false,
+          imageURL: null,
+          details: {
+            error: `Test timed out after ${timeoutDuration}ms`,
+            testType: 'REAL',
+            timeoutTest: true,
+            abortReason: 'Timeout exceeded'
+          }
+        }]);
+      } else {
+        throw error;
+      }
+    } finally {
+      setIsLoading(false);
+      abortControllerRef.current = null;
+    }
+  };
+
+  // Batch timeout testing for all tiers
+  const batchTimeoutTest = async () => {
+    setIsLoading(true);
+    setResults([]);
+    
+    const timeoutVariations = [5000, 10000, 15000, 30000]; // 5s, 10s, 15s, 30s
+    const endpoints = ['ai-visual-scene-creator', 'runware-generate-image', 'runware-template-ab', 'runware-template-cd'];
+    
+    const allResults: TestResult[] = [];
+    
+    for (const timeout of timeoutVariations) {
+      for (const endpoint of endpoints) {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), timeout);
+          
+          const startTime = Date.now();
+          const response = await supabase.functions.invoke(endpoint, {
+            body: {
+              storyText: testStoryText.substring(0, 100), // Shorter for batch testing
+              userInfo: buildUserInfo(),
+              pageNumber: 1,
+              sessionId: crypto.randomUUID()
+            }
+          });
+          
+          clearTimeout(timeoutId);
+          const processingTime = Date.now() - startTime;
+          
+          allResults.push({
+            tier: `${endpoint}-${timeout}ms`,
+            success: !response.error && response.data?.success,
+            imageURL: response.data?.imageURL,
+            details: {
+              processingTime,
+              testType: 'REAL',
+              timeoutTest: true,
+              requestId: response.data?.requestId,
+              error: response.error?.message || response.data?.error
+            }
+          });
+        } catch (error) {
+          allResults.push({
+            tier: `${endpoint}-${timeout}ms-error`,
+            success: false,
+            imageURL: null,
+            details: {
+              error: error.name === 'AbortError' ? `Timeout at ${timeout}ms` : error.message,
+              testType: 'REAL',
+              timeoutTest: true,
+              abortReason: error.name === 'AbortError' ? 'Timeout' : 'Error'
+            }
+          });
+        }
+      }
+    }
+    
+    setResults(allResults);
+    setIsLoading(false);
+  };
+
+  // Resilience testing with progressive degradation
+  const resilienceTest = async () => {
+    setIsLoading(true);
+    setResults([]);
+    
+    const resilientResults: TestResult[] = [];
+    
+    // Test 1: Network interruption simulation
+    try {
+      const controller = new AbortController();
+      setTimeout(() => controller.abort(), 2000); // Abort after 2s to simulate network issue
+      
+      await supabase.functions.invoke('runware-generate-image', {
+        body: {
+          storyText: testStoryText,
+          userInfo: buildUserInfo(),
+          pageNumber: 1,
+          sessionId: crypto.randomUUID()
+        }
+      });
+    } catch (error) {
+      resilientResults.push({
+        tier: 'network-interruption-test',
+        success: false,
+        imageURL: null,
+        details: {
+          error: 'Simulated network interruption',
+          testType: 'REAL',
+          timeoutTest: true,
+          abortReason: 'Simulated interruption'
+        }
+      });
+    }
+    
+    // Test 2: Rapid successive calls (stress test)
+    const rapidCalls = Array.from({ length: 3 }, (_, i) => 
+      supabase.functions.invoke('ai-visual-scene-creator', {
+        body: {
+          storyText: `Test ${i + 1}: ${testStoryText.substring(0, 50)}`,
+          userInfo: buildUserInfo(),
+          pageNumber: i + 1,
+          sessionId: crypto.randomUUID()
+        }
+      })
+    );
+    
+    try {
+      const rapidResults = await Promise.allSettled(rapidCalls);
+      rapidResults.forEach((result, index) => {
+        resilientResults.push({
+          tier: `rapid-call-${index + 1}`,
+          success: result.status === 'fulfilled' && !result.value.error,
+          imageURL: result.status === 'fulfilled' ? result.value.data?.imageURL : null,
+          details: {
+            testType: 'REAL',
+            error: result.status === 'rejected' ? result.reason.message : 
+                   (result.status === 'fulfilled' && result.value.error ? result.value.error.message : undefined)
+          }
+        });
+      });
+    } catch (error) {
+      resilientResults.push({
+        tier: 'rapid-calls-batch-error',
+        success: false,
+        imageURL: null,
+        details: {
+          error: error.message,
+          testType: 'REAL'
+        }
+      });
+    }
+    
+    setResults(resilientResults);
+    setIsLoading(false);
   };
 
   // Test AI Scene Creator (scene generation only, no image)

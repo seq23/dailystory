@@ -1,11 +1,11 @@
 // Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { createCorsResponse, createCorsErrorResponse, createCorsOptionsResponse } from "../_shared/cors.ts";
+import { createDynamicCorsResponse, createDynamicCorsErrorResponse, createDynamicCorsOptionsResponse } from "../_shared/corsAdvanced.js";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return createCorsOptionsResponse();
+    return createDynamicCorsOptionsResponse(req);
   }
 
   try {
@@ -18,14 +18,14 @@ serve(async (req) => {
     // Get user from auth header
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
-      return createCorsErrorResponse('Authorization required', 401);
+      return createDynamicCorsErrorResponse('Authorization required', null, 401);
     }
 
     const token = authHeader.replace("Bearer ", "");
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
     
     if (authError || !user) {
-      return createCorsErrorResponse('Invalid authentication', 401);
+      return createDynamicCorsErrorResponse('Invalid authentication', null, 401);
     }
 
     console.log(`[Apply Discount] Processing for user: ${user.id}`);
@@ -46,21 +46,21 @@ serve(async (req) => {
 
     if (subError) {
       console.error('[Apply Discount] Error fetching subscriber:', subError);
-      return createCorsErrorResponse('Error checking subscription status', 500);
+      return createDynamicCorsErrorResponse('Error checking subscription status', null, 500);
     }
 
     if (!subscriber?.discount_code_pending) {
-      return createCorsResponse({ 
+      return createDynamicCorsResponse({ 
         activated: false, 
         message: 'No pending discount code found' 
-      });
+      }, null);
     }
 
     if (subscriber.discount_activated) {
-      return createCorsResponse({ 
+      return createDynamicCorsResponse({ 
         activated: false, 
         message: 'Discount code already activated' 
-      });
+      }, null);
     }
 
     const discountCode = subscriber.discount_code_pending;
@@ -76,7 +76,7 @@ serve(async (req) => {
 
     if (codeError || !codeDetails) {
       console.error('[Apply Discount] Error fetching code details:', codeError);
-      return createCorsErrorResponse('Invalid discount code', 400);
+      return createDynamicCorsErrorResponse('Invalid discount code', null, 400);
     }
 
     // Calculate end date (duration_days from now)
@@ -104,7 +104,7 @@ serve(async (req) => {
 
     if (updateError) {
       console.error('[Apply Discount] Error updating subscriber:', updateError);
-      return createCorsErrorResponse('Error activating discount', 500);
+      return createDynamicCorsErrorResponse('Error activating discount', null, 500);
     }
 
     // Update discount code usage count
@@ -123,7 +123,7 @@ serve(async (req) => {
 
     console.log(`[Apply Discount] Successfully activated ${discountCode} for user ${user.id} until ${endDate.toISOString()}`);
 
-    return createCorsResponse({
+    return createDynamicCorsResponse({
       activated: true,
       message: `Welcome! Your ${codeDetails.duration_days} days of free premium starts now!`,
       code: discountCode,
@@ -131,10 +131,10 @@ serve(async (req) => {
       duration_days: codeDetails.duration_days,
       activation_date: activationDate.toISOString(),
       end_date: endDate.toISOString()
-    });
+    }, null);
 
   } catch (error) {
     console.error('[Apply Discount] Error:', error);
-    return createCorsErrorResponse(error.message || 'Internal server error', 500);
+    return createDynamicCorsErrorResponse(error.message || 'Internal server error', null, 500);
   }
 });

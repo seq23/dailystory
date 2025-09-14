@@ -539,7 +539,7 @@ const CLOTHING_DETECTION_KEYWORDS = [
 ];
 
 // ============= CULTURAL ARRAYS - CONSOLIDATED SOURCE OF TRUTH =============
-export const CULTURAL_ARRAYS = {
+const CULTURAL_ARRAYS_EXTENDED = {
   // African American Hairstyles
   HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES: {
     boys: [
