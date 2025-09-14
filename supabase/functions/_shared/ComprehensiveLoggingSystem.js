@@ -1,47 +1,55 @@
-// ============= COMPREHENSIVE LOGGING SYSTEM =============
-// Phase 6: Detailed logging for tier routing, cultural resolution, and secondary character processing
-// Provides comprehensive observability across the entire image generation pipeline
+// ============= COMPREHENSIVE LOGGING SYSTEM - PHASE 6 IMPLEMENTATION =============
+// 7-category logging system for complete observability and debugging
+// Routes to DebugLogger instead of console to prevent log clogging
 
+/**
+ * Comprehensive Logging System for Image Generation Pipeline
+ * Routes all logs through DebugLogger service for better organization
+ * Categories: tier routing, cultural resolution, secondary characters, 
+ *            error recovery, performance, data flow, service health
+ */
 export class ComprehensiveLoggingSystem {
   constructor() {
     this.logs = new Map();
-    this.logCategories = [
+    this.maxLogsPerCategory = 100;
+    this.categories = [
       'TIER_ROUTING',
       'CULTURAL_RESOLUTION', 
-      'SECONDARY_CHARACTERS',
+      'SECONDARY_CHARACTER_PROCESSING',
       'ERROR_RECOVERY',
-      'PERFORMANCE',
-      'DATA_FLOW',
-      'SERVICE_HEALTH'
+      'PERFORMANCE_MONITORING',
+      'DATA_FLOW_VALIDATION',
+      'SERVICE_HEALTH_MONITORING'
     ];
-    this.maxLogsPerCategory = 1000;
+    
     this.initializeLogging();
   }
 
-  // ============= LOGGING INITIALIZATION =============
-
   initializeLogging() {
     // Initialize log storage for each category
-    for (const category of this.logCategories) {
+    this.categories.forEach(category => {
       this.logs.set(category, []);
-    }
-    
-    console.log('✅ Phase 6: Comprehensive logging system initialized');
-    this.logEvent('TIER_ROUTING', 'SYSTEM_INIT', 'Logging system started', {
-      categories: this.logCategories.length,
-      maxLogsPerCategory: this.maxLogsPerCategory
     });
+    
+    // Route to DebugLogger instead of console
+    if (typeof globalThis !== 'undefined' && globalThis.debugLogger) {
+      globalThis.debugLogger.log('performance', '🚀 [SYSTEM] ComprehensiveLoggingSystem initialized', {
+        categories: this.categories,
+        maxLogsPerCategory: this.maxLogsPerCategory
+      });
+    }
   }
 
   // ============= TIER ROUTING LOGGING =============
 
-  // Log tier routing decisions with detailed context
+  // Log detailed tier routing decisions
   logTierRouting(event, details = {}) {
+    const message = `Tier routing event: ${event}`;
     const tierLog = {
-      timestamp: new Date().toISOString(),
-      event,
-      sessionId: details.sessionId?.substring(0, 15) + '...' || 'unknown',
-      requestId: details.requestId || 'unknown',
+      id: `tier-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      timestamp: Date.now(),
+      event: event,
+      sessionId: details.sessionId || 'unknown',
       currentTier: details.currentTier || 'unknown',
       targetTier: details.targetTier || 'unknown',
       routingReason: details.routingReason || 'unknown',
@@ -54,15 +62,29 @@ export class ComprehensiveLoggingSystem {
 
     this.addLog('TIER_ROUTING', tierLog);
     
-    console.log(`🎯 Phase 6 Tier Routing: ${event}`, {
-      tier: `${tierLog.currentTier} → ${tierLog.targetTier}`,
-      reason: tierLog.routingReason,
-      session: tierLog.sessionId
-    });
+    // Route to DebugLogger instead of console
+    const emoji = this.getEventEmoji(event);
+    const logMessage = `${emoji} [TIER ROUTING] ${message}`;
+    
+    // Send to debug system only, not console
+    if (typeof globalThis !== 'undefined' && globalThis.debugLogger) {
+      globalThis.debugLogger.log('performance', logMessage, details);
+    }
   }
 
   // Log tier transition success/failure
   logTierTransition(fromTier, toTier, success, details = {}) {
+    const message = `Tier transition: ${fromTier} → ${toTier} (${success ? 'SUCCESS' : 'FAILED'})`;
+    
+    // Route to DebugLogger instead of console
+    const emoji = success ? '✅' : '❌';
+    const logMessage = `${emoji} [TIER TRANSITION] ${message}`;
+    
+    // Send to debug system only, not console
+    if (typeof globalThis !== 'undefined' && globalThis.debugLogger) {
+      globalThis.debugLogger.log('performance', logMessage, details);
+    }
+
     this.logTierRouting('TIER_TRANSITION', {
       ...details,
       currentTier: fromTier,
@@ -75,6 +97,16 @@ export class ComprehensiveLoggingSystem {
 
   // Log tier degradation events
   logTierDegradation(originalTier, degradedTier, reason, details = {}) {
+    const message = `Tier degradation: ${originalTier} → ${degradedTier} (Reason: ${reason})`;
+    
+    // Route to DebugLogger instead of console
+    const logMessage = `⬇️ [TIER DEGRADATION] ${message}`;
+    
+    // Send to debug system only, not console
+    if (typeof globalThis !== 'undefined' && globalThis.debugLogger) {
+      globalThis.debugLogger.warn('performance', logMessage, details);
+    }
+
     this.logTierRouting('TIER_DEGRADATION', {
       ...details,
       currentTier: originalTier,
@@ -89,113 +121,148 @@ export class ComprehensiveLoggingSystem {
 
   // Log cultural placeholder resolution activities
   logCulturalResolution(event, details = {}) {
+    const message = `Cultural resolution event: ${event}`;
     const culturalLog = {
-      timestamp: new Date().toISOString(),
-      event,
-      sessionId: details.sessionId?.substring(0, 15) + '...' || 'unknown',
-      requestId: details.requestId || 'unknown',
-      placeholderType: details.placeholderType || 'unknown',
-      culturalTriggers: details.culturalTriggers || [],
+      id: `cultural-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      timestamp: Date.now(),
+      event: event,
+      sessionId: details.sessionId || 'unknown',
+      culturalType: details.culturalType || 'default',
       enhancementLevel: details.enhancementLevel || 'none',
-      nativeLanguage: details.nativeLanguage || 'en',
-      culturalBackground: details.culturalBackground || 'general',
-      resolvedContent: details.resolvedContent?.substring(0, 100) + '...' || 'empty',
-      processingTime: details.processingTime || 0,
-      cacheHit: details.cacheHit || false,
-      fallbackUsed: details.fallbackUsed || false
+      placeholders: details.placeholders || [],
+      resolvedPlaceholders: details.resolvedPlaceholders || [],
+      culturalTriggers: details.culturalTriggers || [],
+      processingTime: details.processingTime || 0
     };
 
     this.addLog('CULTURAL_RESOLUTION', culturalLog);
     
-    console.log(`🌍 Phase 6 Cultural Resolution: ${event}`, {
-      type: culturalLog.placeholderType,
-      triggers: culturalLog.culturalTriggers.length,
-      enhancement: culturalLog.enhancementLevel,
-      language: culturalLog.nativeLanguage
-    });
+    // Route to DebugLogger instead of console
+    const emoji = this.getCulturalEmoji(event);
+    const logMessage = `${emoji} [CULTURAL] ${message}`;
+    
+    // Send to debug system only, not console
+    if (typeof globalThis !== 'undefined' && globalThis.debugLogger) {
+      globalThis.debugLogger.log('story', logMessage, details);
+    }
   }
 
   // Log cultural trigger detection
   logCulturalTriggerDetection(triggers, userInfo, details = {}) {
+    const message = `Cultural triggers detected: ${triggers.join(', ')}`;
+    
+    // Route to DebugLogger instead of console
+    const logMessage = `🎯 [CULTURAL TRIGGERS] Cultural triggers detected: ${triggers.join(', ')}`;
+    
+    // Send to debug system only, not console
+    if (typeof globalThis !== 'undefined' && globalThis.debugLogger) {
+      globalThis.debugLogger.log('story', logMessage, { triggers, userInfo, details });
+    }
+
     this.logCulturalResolution('TRIGGER_DETECTION', {
       ...details,
-      placeholderType: 'trigger_analysis',
       culturalTriggers: triggers,
-      nativeLanguage: userInfo?.nativeLanguage,
-      culturalBackground: userInfo?.culturalBackground,
-      triggerCount: triggers.length,
-      detectionAlgorithm: details.algorithm || 'default'
+      userLanguage: userInfo?.nativeLanguage || 'unknown',
+      skinTone: userInfo?.avatar?.skinTone || userInfo?.skinTone || 'unknown'
     });
   }
 
   // Log cultural enhancement application
   logCulturalEnhancement(placeholderType, originalContent, enhancedContent, details = {}) {
+    const message = `Enhanced ${placeholderType}: ${originalContent} → ${enhancedContent}`;
+    
+    // Route to DebugLogger instead of console
+    const logMessage = `🌈 [CULTURAL ENHANCEMENT] Enhanced ${placeholderType}: ${originalContent} → ${enhancedContent}`;
+    
+    // Send to debug system only, not console
+    if (typeof globalThis !== 'undefined' && globalThis.debugLogger) {
+      globalThis.debugLogger.log('story', logMessage, details);
+    }
+
     this.logCulturalResolution('ENHANCEMENT_APPLIED', {
       ...details,
       placeholderType,
-      originalLength: originalContent?.length || 0,
-      enhancedLength: enhancedContent?.length || 0,
-      enhancementRatio: enhancedContent?.length / (originalContent?.length || 1),
-      resolvedContent: enhancedContent,
-      enhancementFeatures: details.features || []
+      originalContent,
+      enhancedContent,
+      enhancementType: details.enhancementType || 'cultural'
     });
   }
 
-  // ============= SECONDARY CHARACTER LOGGING =============
+  // ============= SECONDARY CHARACTER PROCESSING LOGGING =============
 
-  // Log secondary character processing activities
+  // Log secondary character processing activities  
   logSecondaryCharacterProcessing(event, details = {}) {
+    const message = `Secondary character processing: ${event}`;
     const characterLog = {
-      timestamp: new Date().toISOString(),
-      event,
-      sessionId: details.sessionId?.substring(0, 15) + '...' || 'unknown',
-      requestId: details.requestId || 'unknown',
-      tier: details.tier || 'unknown',
-      charactersDetected: details.charactersDetected || [],
-      charactersProcessed: details.charactersProcessed || [],
+      id: `character-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      timestamp: Date.now(),
+      event: event,
+      sessionId: details.sessionId || 'unknown',
+      detectedCharacters: details.detectedCharacters || [],
+      characterCount: details.characterCount || 0,
+      consistencyScore: details.consistencyScore || 0,
       processingMethod: details.processingMethod || 'unknown',
-      serviceAvailability: details.serviceAvailability || {},
-      processingTime: details.processingTime || 0,
-      cacheHits: details.cacheHits || 0,
-      generatedDescriptions: details.generatedDescriptions || 0,
-      fallbacksUsed: details.fallbacksUsed || 0
+      storyLength: details.storyLength || 0,
+      processingTime: details.processingTime || 0
     };
 
-    this.addLog('SECONDARY_CHARACTERS', characterLog);
+    this.addLog('SECONDARY_CHARACTER_PROCESSING', characterLog);
     
-    console.log(`🎭 Phase 6 Secondary Characters: ${event}`, {
-      tier: characterLog.tier,
-      detected: characterLog.charactersDetected.length,
-      processed: characterLog.charactersProcessed.length,
-      method: characterLog.processingMethod
-    });
+    // Route to DebugLogger instead of console
+    const emoji = this.getSecondaryCharacterEmoji(event);
+    const logMessage = `${emoji} [SECONDARY CHAR] ${message}`;
+    
+    // Send to debug system only, not console
+    if (typeof globalThis !== 'undefined' && globalThis.debugLogger) {
+      globalThis.debugLogger.log('story', logMessage, details);
+    }
   }
 
   // Log character detection phase
   logCharacterDetection(storyText, detectedCharacters, method, details = {}) {
+    const message = `Found ${detectedCharacters.length} characters using ${method}`;
+    
+    // Route to DebugLogger instead of console
+    const logMessage = `🔍 [CHARACTER DETECTION] Found ${detectedCharacters.length} characters using ${method}`;
+    
+    // Send to debug system only, not console
+    if (typeof globalThis !== 'undefined' && globalThis.debugLogger) {
+      globalThis.debugLogger.log('story', logMessage, { 
+        storyText: storyText.substring(0, 100) + '...', 
+        detectedCharacters, 
+        method, 
+        details 
+      });
+    }
+
     this.logSecondaryCharacterProcessing('CHARACTER_DETECTION', {
       ...details,
-      charactersDetected: detectedCharacters,
+      detectedCharacters,
+      characterCount: detectedCharacters.length,
       processingMethod: method,
-      storyTextLength: storyText?.length || 0,
-      detectionAlgorithm: details.algorithm || 'regex',
-      confidenceScores: details.confidenceScores || []
+      storyLength: storyText.length
     });
   }
 
   // Log character consistency processing
   logCharacterConsistency(characterName, consistencyData, success, details = {}) {
-    this.logSecondaryCharacterProcessing('CONSISTENCY_PROCESSING', {
+    const message = `${characterName} consistency ${success ? 'maintained' : 'issues detected'}`;
+    
+    // Route to DebugLogger instead of console
+    const emoji = success ? '✅' : '⚠️';
+    const logMessage = `${emoji} [CHARACTER CONSISTENCY] ${characterName} consistency ${success ? 'maintained' : 'issues detected'}`;
+    
+    // Send to debug system only, not console
+    if (typeof globalThis !== 'undefined' && globalThis.debugLogger) {
+      globalThis.debugLogger.log('story', logMessage, { characterName, consistencyData, success, details });
+    }
+
+    this.logSecondaryCharacterProcessing('CONSISTENCY_CHECK', {
       ...details,
-      charactersProcessed: [characterName],
-      processingMethod: 'character_consistency_service',
-      consistencyData: {
-        hasVisualDescription: !!consistencyData?.visualDescription,
-        hasPersonalityTraits: !!consistencyData?.personalityTraits,
-        cacheHit: consistencyData?.fromCache || false
-      },
-      processingSuccess: success,
-      errorMessage: details.error?.message || null
+      characterName,
+      consistencyData,
+      consistencyScore: success ? 1.0 : 0.5,
+      processingSuccess: success
     });
   }
 
@@ -203,59 +270,64 @@ export class ComprehensiveLoggingSystem {
 
   // Log error recovery attempts and outcomes
   logErrorRecovery(event, details = {}) {
+    const message = `Error recovery event: ${event}`;
     const errorLog = {
-      timestamp: new Date().toISOString(),
-      event,
-      sessionId: details.sessionId?.substring(0, 15) + '...' || 'unknown',
-      requestId: details.requestId || 'unknown',
+      id: `error-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      timestamp: Date.now(),
+      event: event,
+      sessionId: details.sessionId || 'unknown',
       errorType: details.errorType || 'unknown',
-      errorMessage: details.errorMessage?.substring(0, 200) || 'no-message',
-      service: details.service || 'unknown',
-      recoveryStrategy: details.recoveryStrategy || 'unknown',
+      errorMessage: details.error?.message || details.errorMessage || 'unknown',
+      recoveryAttempt: details.recoveryAttempt || 1,
+      recoveryMethod: details.recoveryMethod || 'unknown',
       recoverySuccess: details.recoverySuccess || false,
-      fallbackUsed: details.fallbackUsed || false,
-      processingTime: details.processingTime || 0,
-      retryAttempts: details.retryAttempts || 0,
-      circuitBreakerState: details.circuitBreakerState || 'unknown'
+      fallbackTier: details.fallbackTier || null,
+      processingTime: details.processingTime || 0
     };
 
     this.addLog('ERROR_RECOVERY', errorLog);
     
-    console.log(`🚨 Phase 6 Error Recovery: ${event}`, {
-      error: errorLog.errorType,
-      service: errorLog.service,
-      strategy: errorLog.recoveryStrategy,
-      success: errorLog.recoverySuccess
-    });
+    // Route to DebugLogger instead of console
+    const emoji = this.getErrorRecoveryEmoji(event);
+    const logMessage = `${emoji} [ERROR RECOVERY] ${message}`;
+    
+    // Send to debug system only, not console
+    if (typeof globalThis !== 'undefined' && globalThis.debugLogger) {
+      globalThis.debugLogger.log('error', logMessage, details);
+    }
   }
 
   // ============= PERFORMANCE LOGGING =============
 
   // Log performance metrics and timing data
   logPerformance(event, details = {}) {
+    const message = `Performance event: ${event}`;
     const performanceLog = {
-      timestamp: new Date().toISOString(),
-      event,
-      sessionId: details.sessionId?.substring(0, 15) + '...' || 'unknown',
-      requestId: details.requestId || 'unknown',
-      service: details.service || 'unknown',
-      operation: details.operation || 'unknown',
+      id: `perf-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      timestamp: Date.now(),
+      event: event,
+      sessionId: details.sessionId || 'unknown',
       duration: details.duration || 0,
       memoryUsage: details.memoryUsage || 0,
-      cacheHitRate: details.cacheHitRate || 0,
-      dataSize: details.dataSize || 0,
-      optimizationRatio: details.optimizationRatio || 1,
-      throughput: details.throughput || 0
+      tier: details.tier || 'unknown',
+      operationType: details.operationType || 'unknown',
+      success: details.success !== false,
+      errorCount: details.errorCount || 0
     };
 
-    this.addLog('PERFORMANCE', performanceLog);
+    this.addLog('PERFORMANCE_MONITORING', performanceLog);
     
-    if (performanceLog.duration > 5000) { // Log slow operations
-      console.warn(`⏱️ Phase 6 Performance Warning: ${event}`, {
-        service: performanceLog.service,
-        duration: performanceLog.duration + 'ms',
-        operation: performanceLog.operation
-      });
+    // Route to DebugLogger instead of console
+    const emoji = details.duration && details.duration > 5000 ? '🐌' : '⚡';
+    const logMessage = `${emoji} [PERFORMANCE] ${message}`;
+    
+    // Send to debug system only, not console
+    if (typeof globalThis !== 'undefined' && globalThis.debugLogger) {
+      if (details.duration && details.duration > 5000) {
+        globalThis.debugLogger.warn('performance', `${logMessage} - SLOW OPERATION`, details);
+      } else {
+        globalThis.debugLogger.log('performance', logMessage, details);
+      }
     }
   }
 
@@ -263,30 +335,33 @@ export class ComprehensiveLoggingSystem {
 
   // Log data flow validation and optimization events
   logDataFlow(event, details = {}) {
+    const message = `Data flow event: ${event}`;
     const dataFlowLog = {
-      timestamp: new Date().toISOString(),
-      event,
-      sessionId: details.sessionId?.substring(0, 15) + '...' || 'unknown',
-      requestId: details.requestId || 'unknown',
-      sourceService: details.sourceService || 'unknown',
-      targetService: details.targetService || 'unknown',
-      validationPassed: details.validationPassed || false,
-      dataPreserved: details.dataPreserved || false,
-      optimizationApplied: details.optimizationApplied || false,
+      id: `data-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      timestamp: Date.now(),
+      event: event,
+      sessionId: details.sessionId || 'unknown',
+      dataSize: details.dataSize || 0,
       compressionRatio: details.compressionRatio || 1,
-      processingTime: details.processingTime || 0,
-      errors: details.errors || [],
-      warnings: details.warnings || []
+      validationStatus: details.validationStatus || 'unknown',
+      optimizationApplied: details.optimizationApplied || false,
+      dataLoss: details.dataLoss || false,
+      processingTime: details.processingTime || 0
     };
 
-    this.addLog('DATA_FLOW', dataFlowLog);
+    this.addLog('DATA_FLOW_VALIDATION', dataFlowLog);
     
-    if (!dataFlowLog.dataPreserved) {
-      console.warn(`📊 Phase 6 Data Flow Warning: ${event}`, {
-        source: dataFlowLog.sourceService,
-        target: dataFlowLog.targetService,
-        preserved: dataFlowLog.dataPreserved
-      });
+    // Route to DebugLogger instead of console
+    const emoji = this.getDataFlowEmoji(event);
+    const logMessage = `${emoji} [DATA FLOW] ${message}`;
+    
+    // Send to debug system only, not console
+    if (typeof globalThis !== 'undefined' && globalThis.debugLogger) {
+      if (details.dataLoss || details.validation === 'failed') {
+        globalThis.debugLogger.warn('network', `${logMessage} - DATA INTEGRITY ISSUE`, details);
+      } else {
+        globalThis.debugLogger.log('network', logMessage, details);
+      }
     }
   }
 
@@ -294,27 +369,34 @@ export class ComprehensiveLoggingSystem {
 
   // Log service health monitoring events
   logServiceHealth(event, details = {}) {
+    const message = `Service health event: ${event}`;
     const healthLog = {
-      timestamp: new Date().toISOString(),
-      event,
-      service: details.service || 'unknown',
-      healthStatus: details.healthStatus || 'unknown',
+      id: `health-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      timestamp: Date.now(),
+      event: event,
+      serviceName: details.serviceName || 'unknown',
+      status: details.status || 'unknown',
       responseTime: details.responseTime || 0,
-      availability: details.availability || 0,
       errorRate: details.errorRate || 0,
-      capabilities: details.capabilities || [],
-      lastHealthCheck: details.lastHealthCheck || null,
-      degradationLevel: details.degradationLevel || 'OPTIMAL'
+      availability: details.availability || 100,
+      lastHealthCheck: details.lastHealthCheck || Date.now()
     };
 
-    this.addLog('SERVICE_HEALTH', healthLog);
+    this.addLog('SERVICE_HEALTH_MONITORING', healthLog);
     
-    if (healthLog.healthStatus !== 'HEALTHY') {
-      console.warn(`🏥 Phase 6 Service Health Alert: ${event}`, {
-        service: healthLog.service,
-        status: healthLog.healthStatus,
-        responseTime: healthLog.responseTime + 'ms'
-      });
+    // Route to DebugLogger instead of console  
+    const emoji = this.getServiceHealthEmoji(event);
+    const logMessage = `${emoji} [SERVICE HEALTH] ${message}`;
+    
+    // Send to debug system only, not console - except critical errors
+    if (typeof globalThis !== 'undefined' && globalThis.debugLogger) {
+      if (details.status === 'unhealthy' || details.status === 'degraded') {
+        globalThis.debugLogger.error('error', `${logMessage} - SERVICE ALERT`, details);
+        // Keep console error for critical service issues
+        console.error(`${logMessage} - SERVICE ALERT`, details);
+      } else {
+        globalThis.debugLogger.log('network', logMessage, details);
+      }
     }
   }
 
@@ -323,52 +405,51 @@ export class ComprehensiveLoggingSystem {
   // Add log entry to specific category
   addLog(category, logEntry) {
     if (!this.logs.has(category)) {
-      console.warn(`⚠️ Phase 6: Unknown log category: ${category}`);
-      return;
+      this.logs.set(category, []);
     }
 
     const categoryLogs = this.logs.get(category);
     categoryLogs.push(logEntry);
 
-    // Maintain max log limit per category
+    // Maintain max logs per category
     if (categoryLogs.length > this.maxLogsPerCategory) {
       categoryLogs.shift(); // Remove oldest log
     }
-
-    this.logs.set(category, categoryLogs);
   }
 
-  // Generic log event method
+  // Generic event logging method
   logEvent(category, event, message, details = {}) {
     const logEntry = {
-      timestamp: new Date().toISOString(),
-      event,
-      message,
-      details
+      id: `${category.toLowerCase()}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      timestamp: Date.now(),
+      event: event,
+      message: message,
+      details: details
     };
 
     this.addLog(category, logEntry);
-    console.log(`📝 Phase 6 ${category}: ${event} - ${message}`);
   }
 
-  // ============= LOG RETRIEVAL AND ANALYSIS =============
+  // ============= LOG RETRIEVAL =============
 
   // Get logs by category
   getLogsByCategory(category, limit = 50) {
-    const categoryLogs = this.logs.get(category) || [];
-    return categoryLogs.slice(-limit);
+    const logs = this.logs.get(category) || [];
+    return limit ? logs.slice(-limit) : logs;
   }
 
   // Get recent logs across all categories
   getRecentLogs(limit = 100) {
     const allLogs = [];
     
-    for (const [category, logs] of this.logs.entries()) {
-      allLogs.push(...logs.map(log => ({ category, ...log })));
+    for (const [category, logs] of this.logs) {
+      logs.forEach(log => {
+        allLogs.push({ ...log, category });
+      });
     }
     
     return allLogs
-      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+      .sort((a, b) => b.timestamp - a.timestamp)
       .slice(0, limit);
   }
 
@@ -376,73 +457,59 @@ export class ComprehensiveLoggingSystem {
   getLoggingStats() {
     const stats = {
       totalLogs: 0,
-      logsByCategory: {},
-      recentActivity: {},
-      systemHealth: 'HEALTHY'
+      categoryCounts: {},
+      recentActivity: {
+        lastHour: 0,
+        lastMinute: 0
+      }
     };
 
     const now = Date.now();
     const oneHourAgo = now - (60 * 60 * 1000);
+    const oneMinuteAgo = now - (60 * 1000);
 
-    for (const [category, logs] of this.logs.entries()) {
+    for (const [category, logs] of this.logs) {
       stats.totalLogs += logs.length;
-      stats.logsByCategory[category] = logs.length;
-      
-      // Count recent activity
-      const recentLogs = logs.filter(log => 
-        new Date(log.timestamp).getTime() > oneHourAgo
-      );
-      stats.recentActivity[category] = recentLogs.length;
-    }
+      stats.categoryCounts[category] = logs.length;
 
-    // Determine system health based on error logs
-    const errorLogs = this.logs.get('ERROR_RECOVERY') || [];
-    const recentErrors = errorLogs.filter(log => 
-      new Date(log.timestamp).getTime() > oneHourAgo
-    );
-    
-    if (recentErrors.length > 10) {
-      stats.systemHealth = 'DEGRADED';
-    } else if (recentErrors.length > 20) {
-      stats.systemHealth = 'CRITICAL';
+      logs.forEach(log => {
+        if (log.timestamp > oneHourAgo) {
+          stats.recentActivity.lastHour++;
+        }
+        if (log.timestamp > oneMinuteAgo) {
+          stats.recentActivity.lastMinute++;
+        }
+      });
     }
 
     return stats;
   }
 
-  // Search logs by criteria
+  // Search logs based on criteria
   searchLogs(criteria = {}) {
     const results = [];
     
-    for (const [category, logs] of this.logs.entries()) {
+    for (const [category, logs] of this.logs) {
       const filteredLogs = logs.filter(log => {
-        // Filter by category
         if (criteria.category && category !== criteria.category) {
           return false;
         }
         
-        // Filter by event
         if (criteria.event && log.event !== criteria.event) {
           return false;
         }
         
-        // Filter by session ID
-        if (criteria.sessionId && !log.sessionId?.includes(criteria.sessionId)) {
-          return false;
-        }
-        
-        // Filter by service
-        if (criteria.service && log.service !== criteria.service) {
-          return false;
-        }
-        
-        // Filter by time range
-        if (criteria.startTime || criteria.endTime) {
-          const logTime = new Date(log.timestamp).getTime();
-          if (criteria.startTime && logTime < criteria.startTime) {
+        if (criteria.timeRange) {
+          const { start, end } = criteria.timeRange;
+          if (log.timestamp < start || log.timestamp > end) {
             return false;
           }
-          if (criteria.endTime && logTime > criteria.endTime) {
+        }
+        
+        if (criteria.text) {
+          const searchText = criteria.text.toLowerCase();
+          const logText = JSON.stringify(log).toLowerCase();
+          if (!logText.includes(searchText)) {
             return false;
           }
         }
@@ -450,56 +517,130 @@ export class ComprehensiveLoggingSystem {
         return true;
       });
       
-      results.push(...filteredLogs.map(log => ({ category, ...log })));
+      filteredLogs.forEach(log => {
+        results.push({ ...log, category });
+      });
     }
     
-    return results.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    return results.sort((a, b) => b.timestamp - a.timestamp);
   }
 
-  // Clear logs for memory management
+  // Clear logs
   clearLogs(category = null) {
     if (category) {
       this.logs.set(category, []);
-      console.log(`🧹 Phase 6: Cleared logs for category ${category}`);
     } else {
-      for (const cat of this.logCategories) {
+      this.categories.forEach(cat => {
         this.logs.set(cat, []);
-      }
-      console.log('🧹 Phase 6: All logs cleared');
+      });
     }
   }
 
-  // Export logs for analysis
+  // Export logs
   exportLogs(category = null, format = 'json') {
-    const logsToExport = category ? 
-      { [category]: this.logs.get(category) } : 
-      Object.fromEntries(this.logs.entries());
-    
-    if (format === 'json') {
-      return JSON.stringify(logsToExport, null, 2);
-    } else if (format === 'csv') {
-      // Simple CSV export for analysis
+    const logsToExport = category 
+      ? { [category]: this.logs.get(category) || [] }
+      : Object.fromEntries(this.logs);
+
+    if (format === 'csv') {
+      // Convert to CSV format
       const allLogs = [];
       for (const [cat, logs] of Object.entries(logsToExport)) {
-        allLogs.push(...logs.map(log => ({ category: cat, ...log })));
+        logs.forEach(log => {
+          allLogs.push({ ...log, category: cat });
+        });
       }
       
-      const headers = ['category', 'timestamp', 'event', 'service', 'message'];
-      const csvLines = [headers.join(',')];
+      const headers = ['timestamp', 'category', 'event', 'message'];
+      const csvContent = [
+        headers.join(','),
+        ...allLogs.map(log => [
+          log.timestamp,
+          log.category,
+          log.event,
+          `"${JSON.stringify(log).replace(/"/g, '""')}"`
+        ].join(','))
+      ].join('\n');
       
-      allLogs.forEach(log => {
-        const row = headers.map(header => 
-          JSON.stringify(log[header] || '')
-        );
-        csvLines.push(row.join(','));
-      });
-      
-      return csvLines.join('\n');
+      return csvContent;
     }
     
-    return logsToExport;
+    return JSON.stringify(logsToExport, null, 2);
+  }
+
+  // ============= EMOJI HELPERS =============
+
+  getEventEmoji(event) {
+    const emojiMap = {
+      'TIER_SELECTION': '🎯',
+      'TIER_EVALUATION': '🔍',
+      'TIER_TRANSITION': '🔄',
+      'TIER_DEGRADATION': '⬇️',
+      'TIER_RECOVERY': '⬆️',
+      'ROUTING_DECISION': '🚦',
+      'LOAD_BALANCING': '⚖️'
+    };
+    return emojiMap[event] || '📊';
+  }
+
+  getCulturalEmoji(event) {
+    const emojiMap = {
+      'TRIGGER_DETECTION': '🎯',
+      'ENHANCEMENT_APPLIED': '🌈',
+      'CULTURAL_MAPPING': '🗺️',
+      'AUTHENTICITY_CHECK': '✅',
+      'FALLBACK_TRIGGERED': '🔄'
+    };
+    return emojiMap[event] || '🌍';
+  }
+
+  getSecondaryCharacterEmoji(event) {
+    const emojiMap = {
+      'CHARACTER_DETECTION': '🔍',
+      'CONSISTENCY_CHECK': '⚖️',
+      'CHARACTER_MAPPING': '🗺️',
+      'RELATIONSHIP_ANALYSIS': '🔗',
+      'NARRATIVE_INTEGRATION': '📚'
+    };
+    return emojiMap[event] || '👥';
+  }
+
+  getErrorRecoveryEmoji(event) {
+    const emojiMap = {
+      'ERROR_DETECTED': '🚨',
+      'RECOVERY_INITIATED': '🔄',
+      'FALLBACK_ACTIVATED': '🛡️',
+      'RECOVERY_SUCCESS': '✅',
+      'RECOVERY_FAILED': '❌',
+      'CIRCUIT_BREAKER_OPEN': '⚡'
+    };
+    return emojiMap[event] || '🔧';
+  }
+
+  getDataFlowEmoji(event) {
+    const emojiMap = {
+      'DATA_VALIDATION': '✅',
+      'COMPRESSION_APPLIED': '🗜️',
+      'OPTIMIZATION_SUCCESSFUL': '⚡',
+      'DATA_LOSS_DETECTED': '⚠️',
+      'INTEGRITY_CHECK': '🔍',
+      'FLOW_OPTIMIZATION': '🌊'
+    };
+    return emojiMap[event] || '📊';
+  }
+
+  getServiceHealthEmoji(event) {
+    const emojiMap = {
+      'HEALTH_CHECK': '❤️',
+      'SERVICE_HEALTHY': '✅',
+      'SERVICE_DEGRADED': '⚠️',
+      'SERVICE_UNHEALTHY': '❌',
+      'RECOVERY_INITIATED': '🔄',
+      'MONITORING_ACTIVE': '👁️'
+    };
+    return emojiMap[event] || '🏥';
   }
 }
 
-// Create singleton instance
+// Export singleton instance
 export const comprehensiveLoggingSystem = new ComprehensiveLoggingSystem();

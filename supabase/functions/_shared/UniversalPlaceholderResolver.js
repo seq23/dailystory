@@ -501,19 +501,56 @@ export class UniversalPlaceholderResolver {
   }
 
   /**
-   * Get cultural enhancement level for template complexity decisions
+   * PHASE 3.3: STRICT RESOLUTION SYSTEM (NO FALLBACKS THAT MAKE THINGS UP)
+   * Fixed to maintain story integrity - no fictional content generation
    */
-  getCulturalEnhancementLevel() {
-    return this.culturalProfile.enhancementStrength;
+  static strictResolve(template, userInfo = {}, storyText = '') {
+    console.log('🔒 [STRICT] Initiating strict resolution (no fictional content)');
+    
+    try {
+      // Primary resolution attempt
+      const resolver = new UniversalPlaceholderResolver(userInfo, null, storyText);
+      const resolvedTemplate = resolver.resolve(template);
+      
+      if (resolvedTemplate && resolvedTemplate.length > 20) {
+        console.log('✅ [STRICT] Primary resolution successful');
+        return resolvedTemplate;
+      }
+    } catch (error) {
+      console.warn('⚠️ [STRICT] Primary resolution failed:', error.message);
+    }
+    
+    // Extract pageText when available (maintains story integrity)
+    if (storyText && storyText.trim().length > 10) {
+      console.log('📄 [STRICT] Using exact pageText for story integrity');
+      return this.createPageTextTemplate(storyText, userInfo);
+    }
+    
+    // Resolve as empty (better than making things up)
+    console.log('🔳 [STRICT] Resolving with minimal template (no fictional content)');
+    return this.createMinimalTemplate(userInfo);
   }
 
   /**
-   * Check if cultural features should be applied
+   * Create template using exact pageText (maintains story integrity)
    */
-  shouldApplyCulturalFeatures() {
-    return this.culturalProfile.hasCulturalFeatures;
+  static createPageTextTemplate(storyText, userInfo) {
+    const childName = userInfo?.name || userInfo?.childName || 'the child';
+    
+    // Use actual story content without adding fictional elements
+    return `A children's book illustration depicting: ${storyText.substring(0, 200)}. Show ${childName} in this exact scene with a warm, child-friendly illustration style.`;
   }
-}
+
+  /**
+   * Create minimal template without fictional content
+   */
+  static createMinimalTemplate(userInfo) {
+    const childName = userInfo?.name || userInfo?.childName || 'child';
+    const age = userInfo?.age ? `, age ${userInfo.age}` : '';
+    
+    // Minimal template that doesn't add fictional story elements
+    return `A children's book illustration featuring ${childName}${age}. Warm, child-friendly art style with bright colors.`;
+  }
 
 // Export for backward compatibility and convenience
 export default UniversalPlaceholderResolver;

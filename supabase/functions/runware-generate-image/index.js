@@ -78,6 +78,16 @@ async function getErrorRecoverySystem() {
 async function getComprehensiveLoggingSystem() {
   try {
     const { comprehensiveLoggingSystem } = await import("../_shared/ComprehensiveLoggingSystem.js");
+    
+    // Set up global debugLogger for ComprehensiveLoggingSystem to use
+    if (!globalThis.debugLogger) {
+      globalThis.debugLogger = {
+        log: (category, message, data) => console.log(`[${category.toUpperCase()}]`, message, data || ''),
+        warn: (category, message, data) => console.warn(`[${category.toUpperCase()}]`, message, data || ''),
+        error: (category, message, data) => console.error(`[${category.toUpperCase()}]`, message, data || '')
+      };
+    }
+    
     return comprehensiveLoggingSystem;
   } catch (error) {
     console.warn('ComprehensiveLoggingSystem not available:', error);

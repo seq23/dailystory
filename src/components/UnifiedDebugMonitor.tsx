@@ -284,8 +284,9 @@ export const UnifiedDebugMonitor: React.FC = () => {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
-        <TabsList className="grid w-full grid-cols-6 m-4 mb-2">
+        <TabsList className="grid w-full grid-cols-7 m-4 mb-2">
           <TabsTrigger value="console">Console ({logs.length})</TabsTrigger>
+          <TabsTrigger value="system">System Logs</TabsTrigger>
           <TabsTrigger value="network">Network ({networkRequests.length})</TabsTrigger>
           <TabsTrigger value="netflix">Netflix ({netflixLogs.length})</TabsTrigger>
           <TabsTrigger value="categories">Categories</TabsTrigger>
@@ -402,6 +403,61 @@ export const UnifiedDebugMonitor: React.FC = () => {
                 {networkRequests.length === 0 && (
                   <div className="text-center text-muted-foreground py-8">
                     No network requests captured yet
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="system" className="flex-1 flex flex-col px-4 pb-4 min-h-0">
+          <div className="flex items-center justify-between mb-3">
+            <Badge variant="secondary">
+              System Logs (Comprehensive Logging)
+            </Badge>
+          </div>
+
+          <div className="flex-1 border border-muted rounded-md bg-background/50 backdrop-blur-sm min-h-0">
+            <ScrollArea className="h-full max-h-[60vh]">
+              <div className="p-3 space-y-2">
+                {logs.filter(log => 
+                  log.message.includes('[TIER') || 
+                  log.message.includes('[CULTURAL') || 
+                  log.message.includes('[SECONDARY') || 
+                  log.message.includes('[ERROR RECOVERY') || 
+                  log.message.includes('[PERFORMANCE') || 
+                  log.message.includes('[DATA FLOW') || 
+                  log.message.includes('[SERVICE HEALTH')
+                ).slice(-50).map((log) => (
+                  <div key={log.id} className="text-xs font-mono border-b border-muted/30 pb-2 last:border-b-0">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <span className="text-muted-foreground font-medium">{formatTime(log.timestamp)}</span>
+                      <Badge variant="outline" className="h-5 text-xs bg-purple-500/20 text-purple-300">
+                        SYSTEM
+                      </Badge>
+                      <span className={`${getLevelColor(log.level)} font-medium uppercase text-xs`}>
+                        {log.level}
+                      </span>
+                    </div>
+                    <div className="text-foreground leading-relaxed break-words">{log.message}</div>
+                    {log.data && (
+                      <pre className="text-muted-foreground mt-2 text-xs bg-muted/20 p-2 rounded overflow-x-auto max-w-full whitespace-pre-wrap">
+                        {typeof log.data === 'string' ? log.data : JSON.stringify(log.data, null, 2)}
+                      </pre>
+                    )}
+                  </div>
+                ))}
+                {logs.filter(log => 
+                  log.message.includes('[TIER') || 
+                  log.message.includes('[CULTURAL') || 
+                  log.message.includes('[SECONDARY') || 
+                  log.message.includes('[ERROR RECOVERY') || 
+                  log.message.includes('[PERFORMANCE') || 
+                  log.message.includes('[DATA FLOW') || 
+                  log.message.includes('[SERVICE HEALTH')
+                ).length === 0 && (
+                  <div className="text-center text-muted-foreground py-8">
+                    No system logs captured yet
                   </div>
                 )}
               </div>
