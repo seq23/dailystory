@@ -1113,10 +1113,6 @@ RULES:
           
           return content;
         }
-}`;
-          } else {
-            content = `Story text: "${storyText}"`;
-          }
           
           // NOTE: Secondary elements processing removed - now handled in template system
           // to prevent double processing and ensure proper tier-specific handling
