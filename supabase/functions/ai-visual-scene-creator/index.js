@@ -1051,13 +1051,32 @@ serve(async (req) => {
         let visualDetails = '';
         
         if (VisualTracker) {
-          VisualTracker.analyzeTextForDetails(sessionId, storyText, pageNumber);
-          visualDetails = VisualTracker.getVisualDetailsForPrompt(sessionId);
+          // Track visual details (cache-based for now)
+          try {
+            await VisualTracker.trackVisualDetail({
+              user_id: avatarIdentity?.userName || 'unknown',
+              session_id: sessionId,
+              character_name: avatarIdentity?.name || 'character',
+              image_url: '',
+              visual_elements: {
+                backgroundColor: 'auto',
+                lighting: 'natural',
+                composition: 'scene',
+                setting: 'story',
+                mood: 'neutral',
+                style: 'children_book'
+              },
+              page_number: pageNumber
+            });
+            console.log('✅ Visual detail tracked successfully');
+          } catch (error) {
+            console.warn('⚠️ Visual detail tracking failed (non-critical):', error);
+          }
         }
         
         console.log('IMAGE PHASE 1.1c: Visual details tracked:', {
-          visualDetailsCount: visualDetails.length,
-          details: visualDetails
+          visualDetailsCount: visualDetails ? visualDetails.length : 0,
+          details: visualDetails || 'none'
         });
         
         // PHASE 1.2: Minimal AI Prompt (NO cultural features, NO complex prompts)
@@ -1184,27 +1203,39 @@ RULES:
           let updatedPrimaryScene = primaryScene;
           
           if (VisualTracker) {
-            await VisualTracker.analyzeTextForDetails(sessionId, primaryScene, pageNumber);
-            
-            // PHASE 1.3c: Get Consistent Visual Details for Scene Enhancement
-            const storedDetails = await VisualTracker.getVisualDetailsForPrompt(sessionId);
-            if (storedDetails) {
-              updatedPrimaryScene = `${primaryScene}, ${storedDetails}`;
-              console.log('UPDATE PHASE 1.3c: Primary scene updated with consistent visual details');
-              primaryScene = updatedPrimaryScene;
+            // Track the generated scene for consistency
+            try {
+              await VisualTracker.trackVisualDetail({
+                user_id: avatarIdentity?.userName || 'unknown',
+                session_id: sessionId,
+                character_name: avatarIdentity?.name || 'character',
+                image_url: '',
+                visual_elements: {
+                  backgroundColor: 'auto',
+                  lighting: 'natural',
+                  composition: 'scene',
+                  setting: setting || 'story',
+                  mood: mood || 'neutral',
+                  style: 'children_book'
+                },
+                page_number: pageNumber
+              });
+              console.log('✅ Generated scene tracked for consistency');
+            } catch (error) {
+              console.warn('⚠️ Scene tracking failed (non-critical):', error);
             }
           }
           
         } catch (error) {
           console.error(`ERROR [${requestId}] PHASE 1.3: AI call failed:`, error.message);
-          // Return error to trigger Tier 2
+          // Return CORS-wrapped error to trigger Tier 2
           TierFailureLogger.logTier1OpenAIFailure(error, {
             sessionId,
             storyId,
             pageNumber,
             phase: 'PHASE_1_AI_CALL'
           });
-          return createCorsErrorResponse(`Phase 1 AI call failed: ${error.message}`, 422);
+          return createCorsErrorResponse(`Tier 1 AI generation failed: ${error.message}`, 500);
         }
         
         // =================== PHASE 2: POST-AI PROMPT CONSTRUCTION ===================
