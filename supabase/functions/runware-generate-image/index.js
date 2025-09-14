@@ -697,17 +697,25 @@ class RunwareWebSocketManager {
       throw wsError;
     }
   }
-  static attemptConnection(apiKey, positivePrompt, negativePrompt, seed, sessionId, pageNumber, requestId) {
+  static attemptConnection(apiKey, positivePrompt, negativePrompt, seed, sessionId, pageNumber, requestId, abortController = null) {
     return new Promise((resolve, reject)=>{
       let ws;
       let connectionTimeout;
       let generationTimeout;
       let isResolved = false;
+      
+      // Handle AbortController cancellation
+      if (abortController?.signal.aborted) {
+        reject(new WebSocketError('Operation was cancelled', 'CANCELLED', false));
+        return;
+      }
+      
       const cleanup = ()=>{
         if (connectionTimeout) clearTimeout(connectionTimeout);
         if (generationTimeout) clearTimeout(generationTimeout);
         if (ws && ws.readyState === WebSocket.OPEN) ws.close();
       };
+      
       const safeReject = (error)=>{
         if (!isResolved) {
           isResolved = true;
@@ -715,6 +723,7 @@ class RunwareWebSocketManager {
           reject(error);
         }
       };
+      
       const safeResolve = (result)=>{
         if (!isResolved) {
           isResolved = true;
@@ -722,6 +731,13 @@ class RunwareWebSocketManager {
           resolve(result);
         }
       };
+      
+      // Listen for abort signal
+      if (abortController) {
+        abortController.signal.addEventListener('abort', () => {
+          safeReject(new WebSocketError('Operation was cancelled by timeout', 'TIMEOUT', false));
+        });
+      }
       try {
         const logPrefix1 = requestId ? `[${requestId}]` : '';
         console.log(`🔌 ${logPrefix1} Attempting WebSocket connection to Runware`);
@@ -849,7 +865,12 @@ class RunwareWebSocketManager {
   }
 }
 // ============= PHASE 5: ENHANCED TIER FUNCTION CALLER WITH DATA FLOW & ERROR RECOVERY =============
-async function callTierFunction(functionName, payload) {
+async function callTierFunction(functionName, payload, abortController = null) {
+  // Check if operation was cancelled
+  if (abortController?.signal.aborted) {
+    throw new Error('Operation was cancelled due to timeout');
+  }
+  
   try {
     console.log(`📞 Calling ${functionName} with payload keys:`, Object.keys(payload));
     console.log(`🔍 DEBUG: ${functionName} request details:`, {
@@ -866,6 +887,14 @@ async function callTierFunction(functionName, payload) {
     try {
       errorRecoverySystem = await getErrorRecoverySystem();
       loggingSystem = await getComprehensiveLoggingSystem();
+      
+      if (loggingSystem) {
+        loggingSystem.logEvent('TIER_ROUTING', 'FUNCTION_CALL_START', `Calling ${functionName}`, {
+          functionName,
+          payloadKeys: Object.keys(payload),
+          hasAbortController: !!abortController
+        });
+      }
     } catch (error) {
       console.warn('⚠️ Phase 6: Error systems not available:', error.message);
     }
@@ -1232,7 +1261,7 @@ async function generateWithRunwarePremium(apiKey, positivePrompt, negativePrompt
   console.log(`🎨 [${requestId || 'unknown'}] FULL Runware Prompt (${positivePrompt.length} chars):`, positivePrompt.substring(0, 200) + (positivePrompt.length > 200 ? '...' : ''));
   console.log(`🚫 [${requestId || 'unknown'}] NEGATIVE Prompt (${negativePrompt.length} chars):`, negativePrompt.substring(0, 100) + (negativePrompt.length > 100 ? '...' : ''));
   try {
-    const result = await RunwareWebSocketManager.connectWithRetry(apiKey, positivePrompt, negativePrompt, seed, sessionId, pageNumber, 1, requestId);
+    const result = await RunwareWebSocketManager.connectWithRetry(apiKey, positivePrompt, negativePrompt, seed, sessionId, pageNumber, 1, requestId, abortController);
     console.log(`✅ [${requestId || 'unknown'}] Runware Premium Generation Success:`, {
       sessionId,
       pageNumber,
@@ -1255,6 +1284,14 @@ async function generateWithRunwarePremium(apiKey, positivePrompt, negativePrompt
 serve(async (req) => {
   const requestId = generateRequestId();
   console.log(`🎯 [${requestId}] Image Generation Orchestrator: ${req.method} ${req.url}`);
+  
+  // ============= PHASE 4.5: ABORTCONTROLLER TIMEOUT INTEGRATION =============
+  const abortController = new AbortController();
+  const timeoutId = setTimeout(() => {
+    abortController.abort();
+  }, 30000); // 30 second timeout
+  
+  try {
   
   // ============= PHASE 6: ERROR HANDLING & LOGGING INITIALIZATION =============
   console.log('🚨 Phase 6: Initializing error handling and logging systems');
@@ -1301,8 +1338,7 @@ serve(async (req) => {
     timestamp: new Date().toISOString(),
     requestMethod: req.method
   });
-  // Monitor request for header analytics
-  monitorRequest(req, 'runware-generate-image');
+  
   // Handle CORS preflight requests - BULLETPROOF DYNAMIC SYSTEM
   if (req.method === 'OPTIONS') {
     console.log(`🔄 [${requestId}] BULLETPROOF Dynamic CORS preflight - Auto-detecting headers`);
@@ -2523,5 +2559,10 @@ serve(async (req) => {
       error: 'Complete system failure',
       tier: 'error'
     }, req);
+  } finally {
+    // ============= PHASE 4.5: CLEANUP ABORTCONTROLLER =============
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
   }
 });

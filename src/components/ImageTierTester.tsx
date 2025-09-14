@@ -1063,16 +1063,6 @@ export const ImageTierTester = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
             <Button
-              onClick={testIndividualTiers}
-              disabled={isLoading}
-              variant="default"
-              className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
-            >
-              <CheckCircle className="h-4 w-4" />
-              Test Individual Tiers (Health)
-            </Button>
-            
-            <Button
               onClick={testAISceneCreator}
               disabled={isLoading}
               className="flex items-center gap-2"
