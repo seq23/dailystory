@@ -20,6 +20,7 @@ export type Database = {
           attempt: number
           bundle_data: Json
           created_at: string
+          details: Json | null
           id: string
           model: string
           page_number: number
@@ -35,6 +36,7 @@ export type Database = {
           attempt?: number
           bundle_data?: Json
           created_at?: string
+          details?: Json | null
           id?: string
           model?: string
           page_number?: number
@@ -50,6 +52,7 @@ export type Database = {
           attempt?: number
           bundle_data?: Json
           created_at?: string
+          details?: Json | null
           id?: string
           model?: string
           page_number?: number

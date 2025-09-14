@@ -28,6 +28,7 @@ import { SecurityValidator } from "../_shared/SecurityValidator.js";
 import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from "../_shared/NuclearNegativePrompts.js";
 import { DifficultyLevelMapper } from "../_shared/DifficultyLevelMapper.js";
 import { CULTURAL_ARRAYS } from "../_shared/tier25Vocabulary.js";
+import { enhancedTimeoutSystem } from "../_shared/EnhancedTimeoutSystem.js";
 // ============= PHASE 7: NAME HANDLING CLARIFICATION =============
 
 
@@ -1292,6 +1293,37 @@ serve(async (req) => {
   }, 30000); // 30 second timeout
   
   try {
+    // ============= PHASE 1: BOOT VALIDATION SYSTEM =============
+    console.log('🔍 Boot Validation: Starting system checks');
+    const bootValidation = await bootValidationService.validateSystemStartup('runware-generate-image');
+    
+    if (bootValidation.overallStatus === 'critical_failure') {
+      console.error('❌ Boot validation failed - system cannot start safely');
+      return createDynamicCorsErrorResponse(
+        new Error('System startup validation failed'), 
+        req, 
+        500
+      );
+    }
+    
+    if (bootValidation.overallStatus === 'degraded') {
+      console.warn('⚠️ Boot validation shows degraded performance - continuing with fallbacks');
+    }
+    
+    console.log(`✅ Boot validation complete - Status: ${bootValidation.overallStatus}`);
+    
+    // ============= BOOT VALIDATION SYSTEM =============
+    const runwareApiKey = getTrimmedApiKey('RUNWARE_API_KEY');
+    const openaiApiKey = getTrimmedApiKey('OPENAI_API_KEY');
+    const supabaseServiceKey = getTrimmedApiKey('SUPABASE_SERVICE_ROLE_KEY');
+    
+    console.log(`🔍 [${requestId}] Tier 1 System Status Check:`, {
+      hasRunwareApiKey: !!runwareApiKey,
+      hasOpenAIApiKey: !!openaiApiKey,
+      hasSupabaseKey: !!supabaseServiceKey,
+      timestamp: new Date().toISOString(),
+      requestMethod: req.method
+    });
   
   // ============= PHASE 6: ERROR HANDLING & LOGGING INITIALIZATION =============
   console.log('🚨 Phase 6: Initializing error handling and logging systems');
@@ -1301,16 +1333,7 @@ serve(async (req) => {
   try {
     errorRecoverySystem = await getErrorRecoverySystem();
     loggingSystem = await getComprehensiveLoggingSystem();
-    
-    if (loggingSystem) {
-      loggingSystem.logEvent('TIER_ROUTING', 'ORCHESTRATOR_START', 'Image generation orchestrator started', {
-        requestId,
-        method: req.method,
-        url: req.url
-      });
-    }
-    
-    console.log('✅ Phase 6: Error handling and logging systems initialized');
+    console.log('✅ Phase 6: Error recovery strategies initialized');
   } catch (error) {
     console.warn('⚠️ Phase 6: Error handling/logging systems not available:', error);
   }
@@ -1326,28 +1349,24 @@ serve(async (req) => {
     console.warn('⚠️ Phase 5: Data flow validation not available, using fallback:', error);
   }
   
-  // BULLETPROOFING: Startup diagnostics
-  const runwareApiKey = getTrimmedApiKey('RUNWARE_API_KEY');
-  const openaiApiKey = getTrimmedApiKey('OPENAI_API_KEY');
-  const supabaseServiceKey = getTrimmedApiKey('SUPABASE_SERVICE_ROLE_KEY');
-  
-  console.log(`🔍 [${requestId}] Tier 1 System Status Check:`, {
-    hasRunwareApiKey: !!runwareApiKey,
-    hasOpenAIApiKey: !!openaiApiKey,
-    hasSupabaseKey: !!supabaseServiceKey,
-    timestamp: new Date().toISOString(),
-    requestMethod: req.method
-  });
+  // Startup diagnostics already handled above
   
   // Handle CORS preflight requests - BULLETPROOF DYNAMIC SYSTEM
   if (req.method === 'OPTIONS') {
-    console.log(`🔄 [${requestId}] BULLETPROOF Dynamic CORS preflight - Auto-detecting headers`);
-    return createDynamicCorsOptionsResponse(req);
+    try {
+      console.log(`🔄 [${requestId}] BULLETPROOF Dynamic CORS preflight - Auto-detecting headers`);
+      return createDynamicCorsOptionsResponse(req);
+    } catch (corsError) {
+      console.error(`❌ [${requestId}] CORS preflight error:`, corsError);
+      return createDynamicCorsErrorResponse(corsError, req, 500);
+    }
   }
+  
   // Handle GET requests with enhanced health check
   if (req.method === 'GET') {
-    console.log(`🔍 [${requestId}] GET request received - returning enhanced health check`);
-    return createDynamicCorsResponse({
+    try {
+      console.log(`🔍 [${requestId}] GET request received - returning enhanced health check`);
+      return createDynamicCorsResponse({
       status: 'healthy',
       function: 'runware-generate-image',
       method: 'GET',
@@ -1393,8 +1412,13 @@ serve(async (req) => {
   }
   // Validate request method (FIX: Ensure only POST requests proceed)
   if (req.method !== 'POST') {
-    console.error(`❌ [${requestId}] Invalid request method: ${req.method}`);
-    return callTier4SimpleFallback('', 1, '', req, `Method ${req.method} not allowed`);
+    try {
+      console.error(`❌ [${requestId}] Invalid request method: ${req.method}`);
+      return await callTier4SimpleFallback('', 1, '', req, `Method ${req.method} not allowed`);
+    } catch (methodError) {
+      console.error(`❌ [${requestId}] Method validation error:`, methodError);
+      return createDynamicCorsErrorResponse(methodError, req, 405);
+    }
   }
   
   // Handle diagnostic requests
@@ -1449,6 +1473,38 @@ serve(async (req) => {
   }
   
   console.log(`🎯 [${requestId}] TIER 1 (Runware) - Starting AI-Enhanced Premium Generation`);
+  
+  // ============= PHASE 7: COMPREHENSIVE REQUEST PROCESSING WITH ENHANCED TIMEOUT =============
+  const mainOperationId = `image-generation-${requestId}`;
+  
+  try {
+    const result = await enhancedTimeoutSystem.withTimeout(
+      mainOperationId,
+      async (signal) => {
+        return await processImageGenerationRequest(req, requestId, signal);
+      },
+      {
+        timeoutLevel: 'extended',
+        retries: 1,
+        fallback: async () => {
+          console.log(`🆘 [${requestId}] Main processing failed - using emergency fallback`);
+          return await callTier4SimpleFallback('', 1, '', req, 'Main processing timeout');
+        }
+      }
+    );
+    
+    return result;
+    
+  } catch (mainError) {
+    console.error(`❌ [${requestId}] Main processing failed:`, mainError);
+    return createDynamicCorsErrorResponse(mainError, req, 500);
+  }
+}
+
+// ============= EXTRACTED MAIN PROCESSING FUNCTION =============
+async function processImageGenerationRequest(req, requestId, signal) {
+  console.log(`🎯 [${requestId}] TIER 1 (Runware) - Starting AI-Enhanced Premium Generation`);
+  
   // Initialize variables at function scope (FIX: Prevent ReferenceError)
   let isGuestUser = false;
   let pageText = '';
@@ -1462,24 +1518,31 @@ serve(async (req) => {
   try {
     // ============= REQUEST PARSING WITH DEBUG =============
     console.log(`📨 [${requestId}] Parsing request body...`);
+    
+    // Check for abort signal
+    if (signal?.aborted) {
+      throw new Error('Request processing aborted');
+    }
+    
     // Validate Content-Type for POST requests (FIX: Ensure proper JSON)
     const contentType = req.headers.get('content-type');
     if (!contentType || !contentType.includes('application/json')) {
       console.error(`❌ [${requestId}] Invalid Content-Type: ${contentType || 'missing'}`);
-      return callTier4SimpleFallback('', 1, '', req, 'Invalid Content-Type');
+      return await callTier4SimpleFallback('', 1, '', req, 'Invalid Content-Type');
     }
+    
     // Parse request with enhanced error handling (FIX: Catch JSON parse errors)
     let requestBody;
     try {
       const rawBody = await req.text();
       if (!rawBody || rawBody.trim().length === 0) {
         console.error(`❌ [${requestId}] Empty request body received`);
-        return callTier4SimpleFallback('', 1, '', req, 'Empty request body');
+        return await callTier4SimpleFallback('', 1, '', req, 'Empty request body');
       }
       requestBody = JSON.parse(rawBody);
     } catch (parseError) {
       console.error(`❌ [${requestId}] JSON parsing failed:`, parseError.message);
-      return callTier4SimpleFallback('', 1, '', req, 'JSON parsing failed');
+      return await callTier4SimpleFallback('', 1, '', req, 'JSON parsing failed');
     }
     // Extract and validate parameters (FIX: Enhanced validation with defaults)
     const extractedParams = requestBody || {};
@@ -2554,15 +2617,12 @@ serve(async (req) => {
     }, req);
   } catch (finalError) {
     console.error('❌ Final fallback error:', finalError);
-    return createDynamicCorsResponse({
-      success: false,
-      error: 'Complete system failure',
-      tier: 'error'
-    }, req);
-  } finally {
-    // ============= PHASE 4.5: CLEANUP ABORTCONTROLLER =============
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-    }
+    return createDynamicCorsErrorResponse(
+      finalError,
+      req,
+      500
+    );
   }
-});
+}
+
+// ============= END OF MAIN PROCESSING FUNCTION =============
