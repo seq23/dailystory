@@ -1415,7 +1415,8 @@ serve(async (req) => {
   let enhancedStoryData = null;
   let forceTier = null;
   
-  // ============= REQUEST PARSING WITH DEBUG =============
+  try {
+    // ============= REQUEST PARSING WITH DEBUG =============
     console.log(`📨 [${requestId}] Parsing request body...`);
     // Validate Content-Type for POST requests (FIX: Ensure proper JSON)
     const contentType = req.headers.get('content-type');
