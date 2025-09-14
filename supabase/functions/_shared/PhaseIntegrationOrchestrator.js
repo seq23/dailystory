@@ -4,12 +4,14 @@
  * with the existing image generation pipeline
  */
 
-import { characterConsistencyService } from './CharacterConsistencyService.js';
-import { visualDetailTracker } from './VisualDetailTracker.js';
+import { CharacterConsistencyService } from './CharacterConsistencyService.js';
+import { VisualDetailTracker } from './VisualDetailTracker.js';
 
 export class PhaseIntegrationOrchestrator {
   constructor() {
     this.initialized = false;
+    this.characterConsistencyService = new CharacterConsistencyService();
+    this.visualDetailTracker = new VisualDetailTracker();
   }
 
   /**
@@ -27,12 +29,12 @@ export class PhaseIntegrationOrchestrator {
       const userId = userInfo?.id || userInfo?.userId || 'anonymous';
       const characterName = userInfo?.name || userInfo?.childName || 'Child';
 
-      const existingTraits = await characterConsistencyService.getCharacterFromDatabase(sessionId, `traits_${characterName}`) || {};
+      const existingTraits = await this.characterConsistencyService.getCharacterFromDatabase(sessionId, `traits_${characterName}`) || {};
       const secondaryCharacters = [];
 
       // Phase 2: Load visual history for consistency  
-      const visualHistory = await visualDetailTracker.getVisualHistory(userId, characterName);
-      const consistencyRecommendations = await visualDetailTracker.getConsistencyRecommendations(userId, characterName);
+      const visualHistory = await this.visualDetailTracker.getVisualHistory(userId, characterName);
+      const consistencyRecommendations = await this.visualDetailTracker.getConsistencyRecommendations(userId, characterName);
 
       this.initialized = true;
 
@@ -84,14 +86,14 @@ export class PhaseIntegrationOrchestrator {
       });
 
       // Extract traits from story text
-      const extractedTraits = await characterConsistencyService.saveCharacterToDatabase(
+      const extractedTraits = await this.characterConsistencyService.saveCharacterToDatabase(
         sessionId, 
         `traits_${characterName}`, 
         { extractedFromText: storyText, timestamp: Date.now() }
       );
 
       // Generate consistent visual description
-      const visualDescription = await characterConsistencyService.buildCharacterDescription(
+      const visualDescription = await this.characterConsistencyService.buildCharacterDescription(
         { characterName, age: '6-8' }, 
         storyText, 
         null, 
@@ -138,7 +140,7 @@ export class PhaseIntegrationOrchestrator {
       });
 
       // Track visual detail (Phase 2.1)
-      const visualId = await visualDetailTracker.trackVisualDetail({
+      const visualId = await this.visualDetailTracker.trackVisualDetail({
         user_id: userId,
         character_name: characterName,
         session_id: sessionId,
@@ -198,8 +200,8 @@ export class PhaseIntegrationOrchestrator {
       });
 
       // Phase 1: Get character consistency data
-      const existingTraits = await characterConsistencyService.getCharacterFromDatabase(sessionId, `traits_${characterName}`) || {};
-      const visualDescription = await characterConsistencyService.buildCharacterDescription(
+      const existingTraits = await this.characterConsistencyService.getCharacterFromDatabase(sessionId, `traits_${characterName}`) || {};
+      const visualDescription = await this.characterConsistencyService.buildCharacterDescription(
         { characterName, age: '6-8' }, 
         '', 
         null, 

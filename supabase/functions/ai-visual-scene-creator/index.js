@@ -8,7 +8,7 @@ console.log('BOOT ai-visual-scene-creator module loaded');
 async function getCharacterService() {
   try {
     const { CharacterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
-    return CharacterConsistencyService;
+    return new CharacterConsistencyService();
   } catch (error) {
     console.warn('CharacterService lazy load failed:', error);
     return null;
@@ -38,7 +38,7 @@ async function getSessionManager() {
 async function getVisualTracker() {
   try {
     const { VisualDetailTracker } = await import("../_shared/VisualDetailTracker.js");
-    return VisualDetailTracker;
+    return new VisualDetailTracker();
   } catch (error) {
     console.warn('VisualTracker lazy load failed:', error);
     return null;

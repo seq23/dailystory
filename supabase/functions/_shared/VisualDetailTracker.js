@@ -57,17 +57,19 @@ const UNIFIED_OBJECT_CATEGORIES = [
 ];
 
 export class VisualDetailTracker {
-  // Initialize Supabase client for database operations
-  static supabase = createClient(
-    Deno.env.get('SUPABASE_URL') ?? '',
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-  );
+  constructor() {
+    // Initialize Supabase client for database operations
+    this.supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+  }
 
   /**
    * Analyze text for visual details and store them in database for consistency
    * Enhanced with character-specific clothing detection and secondary character visual details
    */
-  static async analyzeTextForDetails(sessionId, text, pageNumber, characterName = null) {
+  async analyzeTextForDetails(sessionId, text, pageNumber, characterName = null) {
     console.log(`🎨 VisualDetailTracker - Analyzing text for session ${sessionId}, page ${pageNumber}`);
     
     if (!sessionId || !text) return;
@@ -230,7 +232,7 @@ export class VisualDetailTracker {
   /**
    * Save visual detail to database
    */
-  static async saveDetailToDatabase(sessionId, characterName, detailType, detailKey, detailValue, pageNumber) {
+  async saveDetailToDatabase(sessionId, characterName, detailType, detailKey, detailValue, pageNumber) {
     try {
       // Check if detail already exists
       const { data: existing } = await this.supabase
@@ -286,7 +288,7 @@ export class VisualDetailTracker {
   /**
    * Get character clothing from database
    */
-  static async getCharacterClothing(sessionId, characterName) {
+  async getCharacterClothing(sessionId, characterName) {
     try {
       const { data, error } = await this.supabase
         .from('visual_details_cache')
@@ -314,41 +316,99 @@ export class VisualDetailTracker {
   }
 
   /**
-   * Get all visual details for a character
+   * Get visual history for consistency - matches frontend interface
    */
-  static async getCharacterDetails(sessionId, characterName) {
+  async getVisualHistory(userId, characterName, limit = 10) {
     try {
       const { data, error } = await this.supabase
         .from('visual_details_cache')
         .select('*')
-        .eq('session_id', sessionId)
-        .eq('character_name', characterName.toLowerCase());
+        .eq('character_name', characterName.toLowerCase())
+        .order('updated_at', { ascending: false })
+        .limit(limit);
 
       if (error) {
-        console.error('Error fetching character details:', error);
-        return {};
+        console.error('Error fetching visual history:', error);
+        return [];
       }
 
-      const details = {};
-      data?.forEach(detail => {
-        if (!details[detail.detail_type]) {
-          details[detail.detail_type] = {};
-        }
-        details[detail.detail_type][detail.detail_key] = detail.detail_value;
-      });
-
-      return details;
+      return data || [];
     } catch (error) {
-      console.error('Database error in getCharacterDetails:', error);
-      return {};
+      console.error('Database error in getVisualHistory:', error);
+      return [];
     }
   }
 
   /**
-   * Build clothing description for character prompt
+   * Get consistency recommendations - matches frontend interface
    */
+  async getConsistencyRecommendations(userId, characterName) {
+    try {
+      const history = await this.getVisualHistory(userId, characterName);
+      
+      // Simple consistency score based on visual detail consistency
+      const consistencyScore = history.length > 0 ? 1.0 : 0.5;
+      
+      return {
+        recommendations: history.length > 0 
+          ? [`Use established visual details for ${characterName}`]
+          : [`No visual history found for ${characterName} - building new details`],
+        consistencyScore
+      };
+    } catch (error) {
+      console.error('Error getting consistency recommendations:', error);
+      return { recommendations: [], consistencyScore: 0.5 };
+    }
+  }
+
+  /**
+   * Track visual detail - matches frontend interface
+   */
+  async trackVisualDetail(detail) {
+    const { user_id, character_name, session_id, page_number, image_url, visual_elements } = detail;
+    
+    try {
+      const { data, error } = await this.supabase
+        .from('visual_details_cache')
+        .insert({
+          session_id,
+          character_name: character_name.toLowerCase(),
+          detail_type: 'tracked_visual',
+          detail_key: 'image_url',
+          detail_value: image_url,
+          page_first_seen: page_number,
+          page_last_seen: page_number,
+          visual_elements: visual_elements
+        })
+        .select('id')
+        .single();
+
+      if (error) {
+        console.error('Error tracking visual detail:', error);
+        return null;
+      }
+
+      return data?.id || null;
+    } catch (error) {
+      console.error('Database error in trackVisualDetail:', error);
+      return null;
+    }
+  }
+
+  // Legacy static methods for backward compatibility
+  static async analyzeTextForDetails(sessionId, text, pageNumber, characterName = null) {
+    const tracker = new VisualDetailTracker();
+    return tracker.analyzeTextForDetails(sessionId, text, pageNumber, characterName);
+  }
+
+  static async getCharacterClothing(sessionId, characterName) {
+    const tracker = new VisualDetailTracker();
+    return tracker.getCharacterClothing(sessionId, characterName);
+  }
+
   static async buildClothingDescription(sessionId, characterName) {
-    const clothing = await this.getCharacterClothing(sessionId, characterName);
+    const tracker = new VisualDetailTracker();
+    const clothing = await tracker.getCharacterClothing(sessionId, characterName);
     
     if (Object.keys(clothing).length === 0) {
       return null; // No specific clothing detected
@@ -358,12 +418,10 @@ export class VisualDetailTracker {
     return `wearing ${clothingItems.join(', ')}`;
   }
 
-  /**
-   * Get all visual details for a session as prompt addition
-   */
   static async getVisualDetailsForPrompt(sessionId) {
+    const tracker = new VisualDetailTracker();
     try {
-      const { data, error } = await this.supabase
+      const { data, error } = await tracker.supabase
         .from('visual_details_cache')
         .select('*')
         .eq('session_id', sessionId);
@@ -382,208 +440,7 @@ export class VisualDetailTracker {
       return '';
     }
   }
-
-  /**
-   * Get secondary character visual details for enriched descriptions
-   */
-  static async getSecondaryCharacterVisuals(sessionId, characterName) {
-    try {
-      const { data, error } = await this.supabase
-        .from('visual_details_cache')
-        .select('*')
-        .eq('session_id', sessionId)
-        .eq('character_name', characterName.toLowerCase());
-
-      if (error || !data) {
-        return null;
-      }
-
-      const visuals = {};
-      data.forEach(detail => {
-        if (!visuals[detail.detail_type]) {
-          visuals[detail.detail_type] = {};
-        }
-        visuals[detail.detail_type][detail.detail_key] = detail.detail_value;
-      });
-
-      return visuals;
-    } catch (error) {
-      console.error('Database error in getSecondaryCharacterVisuals:', error);
-      return null;
-    }
-  }
-
-  /**
-   * Build enriched secondary character description with visual details
-   */
-  static async buildEnrichedSecondaryCharacter(sessionId, characterType, baseDescription) {
-    const characterName = this.extractCharacterNameFromDescription(characterType);
-    const visuals = await this.getSecondaryCharacterVisuals(sessionId, characterName);
-    
-    if (!visuals || Object.keys(visuals).length === 0) {
-      // Return base description with seeded visual fallback
-      return this.addFallbackVisuals(characterType, baseDescription, sessionId);
-    }
-
-    // Build enriched description with actual visual details
-    let enrichedDescription = baseDescription;
-    
-    // Add appearance details
-    if (visuals.appearance) {
-      const appearanceDetails = Object.values(visuals.appearance).join(', ');
-      enrichedDescription = `${baseDescription} with ${appearanceDetails}`;
-    }
-    
-    // Add clothing details
-    if (visuals.clothing) {
-      const clothingDetails = Object.values(visuals.clothing).join(', ');
-      enrichedDescription = `${enrichedDescription} wearing ${clothingDetails}`;
-    }
-
-    console.log(`✨ Enriched secondary character: ${characterType} → ${enrichedDescription}`);
-    return enrichedDescription;
-  }
-
-  /**
-   * Extract character name from character type (e.g., "caring mother" → "mom")
-   */
-  static extractCharacterNameFromDescription(characterType) {
-    const lowerType = characterType.toLowerCase();
-    if (lowerType.includes('mother') || lowerType.includes('mom')) return 'mom';
-    if (lowerType.includes('father') || lowerType.includes('dad')) return 'dad';
-    if (lowerType.includes('dog') || lowerType.includes('puppy')) return 'dog';
-    if (lowerType.includes('cat') || lowerType.includes('kitten')) return 'cat';
-    if (lowerType.includes('friend')) return 'friend';
-    if (lowerType.includes('sister')) return 'sister';
-    if (lowerType.includes('brother')) return 'brother';
-    if (lowerType.includes('grandmother') || lowerType.includes('grandma')) return 'grandma';
-    if (lowerType.includes('grandfather') || lowerType.includes('grandpa')) return 'grandpa';
-    if (lowerType.includes('teacher')) return 'teacher';
-    return characterType.split(' ').pop(); // Last word as fallback
-  }
-
-  /**
-   * Add consistent fallback visuals using seeded randomization
-   * Simplified to use single, emotionally-contextual descriptors (50-60% token reduction)
-   */
-  static addFallbackVisuals(characterType, baseDescription, sessionId) {
-    const characterName = this.extractCharacterNameFromDescription(characterType);
-    const seed = `${sessionId}_${characterName}`;
-    
-    // Define single, emotionally-contextual descriptors for token efficiency
-    const fallbackVisuals = {
-      mom: [
-        'with warm smile',
-        'with caring expression',
-        'with gentle eyes',
-        'with kind face'
-      ],
-      dad: [
-        'with friendly smile',
-        'with warm demeanor',
-        'with gentle manner',
-        'with caring look'
-      ],
-      dog: [
-        'golden retriever',
-        'friendly labrador',
-        'playful companion',
-        'loyal pet'
-      ],
-      cat: [
-        'curious tabby',
-        'sleepy feline',
-        'gentle companion',
-        'playful kitten'
-      ],
-      friend: [
-        'with bright smile',
-        'with cheerful expression',
-        'with friendly manner',
-        'with kind demeanor'
-      ],
-      grandma: [
-        'with gentle smile',
-        'with wise eyes',
-        'with warm expression',
-        'with loving look'
-      ],
-      grandpa: [
-        'with kind smile',
-        'with twinkling eyes',
-        'with warm demeanor',
-        'with gentle manner'
-      ]
-    };
-
-    const options = fallbackVisuals[characterName] || ['with cheerful expression'];
-    const selectedVisual = this.getSeededRandomItem(options, seed);
-    
-    console.log(`🎨 Added simplified fallback visual for ${characterType}: ${selectedVisual}`);
-    return `${baseDescription} ${selectedVisual}`;
-  }
-
-  /**
-   * Seeded random selection for consistent results
-   */
-  static getSeededRandomItem(array, seed) {
-    let hash = 0;
-    for (let i = 0; i < seed.length; i++) {
-      const char = seed.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash;
-    }
-    const index = Math.abs(hash) % array.length;
-    return array[index];
-  }
-
-  /**
-   * ============= NEW: BUILD OBJECT DESCRIPTION FOR TEMPLATES =============
-   * Gets all colored objects for a session and formats them for template integration
-   */
-  static async buildObjectDescription(sessionId) {
-    try {
-      const { data, error } = await this.supabase
-        .from('visual_details_cache')
-        .select('*')
-        .eq('session_id', sessionId)
-        .eq('character_name', 'general')
-        .eq('detail_type', 'colored_object');
-
-      if (error || !data || data.length === 0) {
-        console.log(`📋 No colored objects found for session ${sessionId}`);
-        return '';
-      }
-
-      // Create rich object descriptions
-      const objectDescriptions = data.map(detail => detail.detail_value);
-      const result = objectDescriptions.join(', ');
-      
-      console.log(`🎨 Built object description for session ${sessionId}: ${result}`);
-      return result;
-    } catch (error) {
-      console.error('Database error in buildObjectDescription:', error);
-      return '';
-    }
-  }
-
-  /**
-   * Clear all details for a session from database
-   */
-  static async clearSessionDetails(sessionId) {
-    try {
-      const { error } = await this.supabase
-        .from('visual_details_cache')
-        .delete()
-        .eq('session_id', sessionId);
-
-      if (error) {
-        console.error('Error clearing session details:', error);
-      } else {
-        console.log(`🧹 Cleared visual details for session ${sessionId}`);
-      }
-    } catch (error) {
-      console.error('Database error in clearSessionDetails:', error);
-    }
-  }
 }
+
+// Export singleton instance for consistent access
+export const visualDetailTracker = new VisualDetailTracker();
