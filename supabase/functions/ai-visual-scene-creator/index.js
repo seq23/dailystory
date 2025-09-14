@@ -1360,6 +1360,5 @@ RULES:
         return createCorsResponse(result);
 
       }
-    }
   );
 });
