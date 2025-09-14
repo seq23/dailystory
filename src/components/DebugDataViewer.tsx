@@ -7,7 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Search, Download, CheckCircle, XCircle, Database, HardDrive } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { DebugGateway } from '@/services/DebugGateway';
 import { useToast } from '@/hooks/use-toast';
 
 interface AIPromptData {
@@ -44,6 +44,12 @@ interface DebugResponse {
 }
 
 export function DebugDataViewer() {
+  // Only show in debug mode
+  const isDebugMode = typeof window !== 'undefined' && window.location.search.includes('debug=1');
+  
+  if (!isDebugMode) {
+    return null;
+  }
   const [sessionId, setSessionId] = useState('');
   const [debugData, setDebugData] = useState<DebugResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -82,17 +88,19 @@ export function DebugDataViewer() {
     console.log('🔍 [DEBUG-FRONTEND] Fetching data for session:', sessionId.trim());
     
     try {
-      const { data, error } = await supabase.functions.invoke(`unified-debug-service?operation=prompt-history&sessionId=${encodeURIComponent(sessionId.trim())}&limit=10`);
+      const { data } = await DebugGateway.getPromptHistory(sessionId.trim(), 10);
 
-      console.log('🔍 [DEBUG-FRONTEND] Response received:', { data, error });
-
-      if (error) {
-        console.error('🔍 [DEBUG-FRONTEND] Supabase function error:', error);
-        throw error;
-      }
+      console.log('🔍 [DEBUG-FRONTEND] Response received:', { data });
 
       if (!data) {
-        throw new Error('No data received from debug function');
+        // Show service unavailable message instead of error
+        setLastError('Debug service temporarily unavailable. Try again later.');
+        toast({
+          title: "Service Unavailable",
+          description: "Debug service temporarily unavailable. This doesn't affect app functionality.",
+          variant: "default",
+        });
+        return;
       }
 
       console.log('🔍 [DEBUG-FRONTEND] Debug info:', data.debugInfo);

@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { DebugLogger, DebugLogEntry, DebugCategory } from '@/services/DebugLogger';
 import { NetflixRetryService } from '@/services/NetflixRetryService';
 import { NetworkDebugger, NetworkRequest } from '@/services/NetworkDebugger';
+import { DebugGateway } from '@/services/DebugGateway';
+import { DebugDataViewer } from '@/components/DebugDataViewer';
+import { BackendTierChecker } from '@/components/BackendTierChecker';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -284,7 +287,7 @@ export const UnifiedDebugMonitor: React.FC = () => {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
-        <TabsList className="grid w-full grid-cols-7 m-4 mb-2">
+        <TabsList className="grid w-full grid-cols-9 m-4 mb-2">
           <TabsTrigger value="console">Console ({logs.length})</TabsTrigger>
           <TabsTrigger value="system">System Logs</TabsTrigger>
           <TabsTrigger value="network">Network ({networkRequests.length})</TabsTrigger>
@@ -292,6 +295,8 @@ export const UnifiedDebugMonitor: React.FC = () => {
           <TabsTrigger value="categories">Categories</TabsTrigger>
           <TabsTrigger value="circuit-breaker">Circuit Breakers</TabsTrigger>
           <TabsTrigger value="performance">Performance</TabsTrigger>
+          <TabsTrigger value="debug-data">Debug Data</TabsTrigger>
+          <TabsTrigger value="tier-checker">Tier Checker</TabsTrigger>
         </TabsList>
 
         <TabsContent value="console" className="flex-1 flex flex-col px-4 pb-4 min-h-0">
@@ -569,6 +574,81 @@ export const UnifiedDebugMonitor: React.FC = () => {
                 <div>Debug Mode: {DebugLogger.isDebugEnabled() ? 'Enabled' : 'Disabled'}</div>
               </div>
             </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="debug-data" className="flex-1 flex flex-col px-4 pb-4 min-h-0">
+          <div className="flex items-center justify-between mb-3">
+            <Badge variant="secondary">
+              Debug Data Viewer
+            </Badge>
+          </div>
+
+          <div className="flex-1 min-h-0">
+            <DebugDataViewer />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="tier-checker" className="flex-1 flex flex-col px-4 pb-4 min-h-0">
+          <div className="flex items-center justify-between mb-3">
+            <Badge variant="secondary">
+              Backend Tier Checker
+            </Badge>
+          </div>
+
+          <div className="flex-1 border border-muted rounded-md bg-background/50 backdrop-blur-sm min-h-0 p-4">
+            <div className="space-y-4">
+              <div className="text-sm text-muted-foreground">
+                The tier checker runs automatically in the background to detect which image generation tier succeeded for recent calls.
+              </div>
+              
+              <div className="space-y-2">
+                <div className="text-xs font-mono">
+                  <strong>Gateway Status:</strong>
+                </div>
+                <pre className="text-xs bg-muted/20 p-2 rounded overflow-x-auto">
+                  {JSON.stringify(DebugGateway.getStatus(), null, 2)}
+                </pre>
+              </div>
+
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    try {
+                      (window as any).checkImageTier?.();
+                    } catch (error) {
+                      console.log('Manual tier check not available');
+                    }
+                  }}
+                  className="h-8"
+                >
+                  Manual Tier Check
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => DebugGateway.reset()}
+                  className="h-8"
+                >
+                  Reset Gateway
+                </Button>
+              </div>
+
+              <div className="text-xs text-muted-foreground">
+                Open browser console to see tier check results. Use <code>window.checkImageTier()</code> for manual checks.
+              </div>
+            </div>
+
+            {/* Hidden tier checker component */}
+            <BackendTierChecker 
+              onTierFound={(tier, details) => {
+                if (DebugLogger.isDebugEnabled()) {
+                  console.log('🎯 Tier found in debug monitor:', { tier, details });
+                }
+              }} 
+            />
           </div>
         </TabsContent>
       </Tabs>

@@ -1,5 +1,6 @@
 // Story Content Logging Utility for Flickering Debug
 import { SecurityMonitor } from '@/utils/monitoring';
+import { DebugGateway } from '@/services/DebugGateway';
 
 export class StoryContentLogger {
   private static sequenceNumber = 0;
@@ -227,45 +228,15 @@ export class StoryContentLogger {
   }
 
   static async fetchRecentImagePrompts() {
-    try {
-      const supabaseUrl = "https://cpzeuogomaixamrtnnmj.supabase.co";
-      const response = await fetch(`${supabaseUrl}/functions/v1/unified-debug-service?operation=recent-image-prompts&global=true&limit=6`, {
-        headers: {
-          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        this.imagePromptCache = data.imagePrompts || [];
-        this.lastImagePromptFetch = Date.now();
-        
-        // Log new prompts since last fetch
-        const newPrompts = this.imagePromptCache.filter(prompt => 
-          prompt.timestamp > this.lastImagePromptFetch - 10000 // Within last 10 seconds
-        );
-        
-        newPrompts.forEach(prompt => {
-          console.log(`[IMAGE-DEBUG] 📸 NEW TIER-${prompt.tier} PROMPT:`, {
-            tier: prompt.tier,
-            page: prompt.pageNumber,
-            success: prompt.success,
-            provider: prompt.provider,
-            promptLength: prompt.textLengths?.enhanced || 0,
-            prompt: prompt.enhancedPrompt?.substring(0, 200) + '...',
-            timestamp: prompt.readableTime
-          });
-        });
-        
-        if (newPrompts.length > 0) {
-          console.log(`[IMAGE-DEBUG] 📊 Recent prompts by tier:`, data.tierSummary);
-          console.log(`[IMAGE-DEBUG] ✅ Success rate: ${data.successRate}`);
-        }
-      }
-    } catch (error) {
-      console.warn('[IMAGE-DEBUG] ⚠️ Failed to fetch image prompts:', error.message);
+    // Use the gateway for silent error handling  
+    const { data } = await DebugGateway.getRecentImagePrompts(6);
+    
+    if (data && data.imagePrompts) {
+      console.log('🔍 Recent image prompts:', data.imagePrompts.length, 'found');
+      return data.imagePrompts;
     }
+    
+    return [];
   }
 
   static exportImagePrompts() {

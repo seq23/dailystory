@@ -1,27 +1,18 @@
 // Comprehensive debugging console functions for prompt and story analysis
 import { supabase } from '@/integrations/supabase/client';
+import { DebugGateway } from '@/services/DebugGateway';
 
 export class DebugConsole {
   /**
    * Get full prompts for any tier from the last 6 images
    */
   static async getFullPrompts(sessionId?: string, tier?: string, limit = 6) {
-    try {
-      const params = new URLSearchParams();
-      if (sessionId) params.append('sessionId', sessionId);
-      if (tier) params.append('tiers', tier);
-      params.append('limit', limit.toString());
-      
-      let url = sessionId 
-        ? `unified-debug-service?operation=recent-image-prompts&sessionId=${sessionId}&${params}`
-        : `unified-debug-service?operation=recent-image-prompts&global=true&${params}`;
-      
-      const { data, error } = await supabase.functions.invoke(url);
-      
-      if (error) throw error;
-      
+    // Use the gateway for silent error handling
+    const { data } = await DebugGateway.getRecentImagePrompts(limit);
+    
+    if (data && data.imagePrompts) {
       console.log('🖼️ Full Image Prompts Retrieved:', data);
-      console.table(data.data?.map((p: any) => ({
+      console.table(data.imagePrompts?.map((p: any) => ({
         Tier: p.tier,
         Page: p.pageNumber,
         Success: p.success,
@@ -30,22 +21,20 @@ export class DebugConsole {
         ImageURL: p.imageURL ? '✅' : '❌'
       })));
       
-      return data;
-    } catch (error) {
-      console.error('❌ Failed to get full prompts:', error);
-      return null;
+      return { data: data.imagePrompts };
     }
+    
+    return null;
   }
   
   /**
    * Get AI prompts (system/user prompts sent to OpenAI)
    */
   static async getAIPrompts(sessionId: string, limit = 10) {
-    try {
-      const { data, error } = await supabase.functions.invoke(`unified-debug-service?operation=ai-prompts&sessionId=${sessionId}&limit=${limit}`);
-      
-      if (error) throw error;
-      
+    // Use the gateway for silent error handling
+    const { data } = await DebugGateway.getAiPrompts(sessionId, limit);
+    
+    if (data && data.data) {
       console.log('🧠 AI Prompts Retrieved:', data);
       console.table(data.data?.map((p: any) => ({
         Model: p.model,
@@ -67,21 +56,22 @@ export class DebugConsole {
       });
       
       return data;
-    } catch (error) {
-      console.error('❌ Failed to get AI prompts:', error);
-      return null;
     }
+    
+    return null;
   }
   
   /**
    * Track story generation pipeline for flicker detection
    */
   static async trackStoryGeneration(sessionId: string) {
-    try {
-      const { data, error } = await supabase.functions.invoke(`unified-debug-service?operation=story-processing&sessionId=${sessionId}`);
-      
-      if (error) throw error;
-      
+    // Use the gateway for silent error handling
+    const { data } = await DebugGateway.callDebugService({
+      operation: 'story-processing',
+      sessionId
+    });
+    
+    if (data && data.data) {
       console.log('📚 Story Processing Log:', data);
       
       if (data.flickerDetected) {
@@ -92,27 +82,22 @@ export class DebugConsole {
       }
       
       return data;
-    } catch (error) {
-      console.error('❌ Failed to track story generation:', error);
-      return null;
     }
+    
+    return null;
   }
   
   /**
    * Check text stability by logging story processing events
    */
   static logStoryProcessing(sessionId: string, phase: string, textBefore: string, textAfter: string, pageNumber?: number) {
-    // Send to debug endpoint for tracking
-    supabase.functions.invoke('unified-debug-service?operation=story-processing', {
-      body: {
-        sessionId,
-        phase,
-        textBefore,
-        textAfter,
-        pageNumber
-      }
-    }).catch(error => {
-      console.warn('⚠️ Failed to log story processing:', error);
+    // Silent logging through gateway - no errors thrown
+    DebugGateway.callDebugService({
+      operation: 'story-processing'
+    }).then(() => {
+      // Story processing logged silently
+    }).catch(() => {
+      // Silent failure - no console spam
     });
     
     // Local logging
