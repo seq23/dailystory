@@ -83,83 +83,296 @@ function getComplexityLevel(userInfo, templateComplexity) {
   return 'B'; // Simple scenes
 }
 
-// ============= ENHANCED SIMPLE TEMPLATE GENERATION WITH CHARACTER CONSISTENCY =============
+// ============= EXACT TEMPLATE STRUCTURES FROM MASTER PLAN =============
+
+const PREMIUM_PROMPT_TEMPLATES = {
+  'level_0-1': 'Narrative: {pageText}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion}. Action: {scene}. Composition: {spatial_composition}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {sensory_details}. Context: {community_context}, {secondary_characters}. Technical: {frameworkPrompt}, {cameraDirective}',
+  
+  'level_2-4': 'Technical: {frameworkPrompt}, {cameraDirective}. Narrative: {pageText}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion}. Action: {scene}. Composition: {spatial_composition}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {sensory_details}. Context: {community_context}, {secondary_characters}'
+};
+
+const BASIC_PROMPT_TEMPLATES = {
+  'level_0-1': 'Subject: {character} {age}, {ethnicity}. Action: {scene}. Environment: {setting}. Technical: {frameworkPrompt}',
+  
+  'level_2-4': 'Technical: {frameworkPrompt}. Subject: {character} {age}, {ethnicity}. Action: {scene}. Environment: {setting}'
+};
+
+// ============= CULTURAL INTELLIGENCE INTEGRATION =============
+async function getCulturalArrays() {
+  try {
+    const { CULTURAL_ARRAYS } = await import("../_shared/tier25Vocabulary.js");
+    return CULTURAL_ARRAYS;
+  } catch (error) {
+    console.warn('Cultural arrays unavailable:', error);
+    return null;
+  }
+}
+
+// ============= PLACEHOLDER RESOLUTION SYSTEM =============
+async function resolvePlaceholders(template, data, hasCulturalIntelligence) {
+  const { 
+    storyText, 
+    userInfo, 
+    avatarIdentity, 
+    characterData, 
+    visualDetails, 
+    secondaryCharacters,
+    frameworkPrompt 
+  } = data;
+
+  const childName = userInfo?.name || userInfo?.childName || 'child';
+  
+  // Build character description with cultural intelligence
+  let characterDescription = childName;
+  let ethnicity = '';
+  let hair = '';
+  let features = '';
+  
+  if (hasCulturalIntelligence && avatarIdentity) {
+    console.log('🌍 Applying cultural intelligence for avatarIdentity:', avatarIdentity);
+    
+    // Use avatarIdentity for cultural elements
+    const culturalArrays = await getCulturalArrays();
+    
+    if (culturalArrays) {
+      // Handle English + dark skin tone scenario (African American features)
+      const nativeLanguage = avatarIdentity.nativeLanguage || userInfo?.nativeLanguage || 'en';
+      const skinTone = avatarIdentity.skinTone || userInfo?.avatar?.skinTone;
+      const avatarType = avatarIdentity.type || userInfo?.avatar?.type;
+      
+      if (nativeLanguage === 'en' && (skinTone === 'dark' || skinTone === 'medium')) {
+        // Apply African American cultural features
+        console.log('🌍 Applying African American cultural features');
+        
+        if (culturalArrays.HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES.length > 0) {
+          const randomFeature = culturalArrays.HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES[
+            Math.floor(Math.random() * culturalArrays.HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES.length)
+          ];
+          features = randomFeature;
+        }
+        
+        if (culturalArrays.HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES) {
+          const genderKey = (avatarType === 'girl') ? 'girls' : 'boys';
+          const hairStyles = culturalArrays.HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[genderKey];
+          if (hairStyles && hairStyles.length > 0) {
+            hair = hairStyles[Math.floor(Math.random() * hairStyles.length)];
+          }
+        }
+        
+        ethnicity = 'African American';
+      } else if (nativeLanguage !== 'en' && culturalArrays.REGIONAL_AUTHENTICITY_STRINGS[nativeLanguage]) {
+        // Apply regional authenticity for non-English speakers
+        console.log(`🌍 Applying regional authenticity for language: ${nativeLanguage}`);
+        ethnicity = culturalArrays.REGIONAL_AUTHENTICITY_STRINGS[nativeLanguage];
+      } else {
+        // Default cultural baseline
+        ethnicity = 'diverse multicultural';
+        hair = 'well-styled hair';
+        features = 'expressive features';
+      }
+    } else {
+      console.warn('⚠️ Cultural arrays not available, using default features');
+      ethnicity = 'diverse';
+      hair = 'styled hair';
+      features = 'friendly features';
+    }
+  } else {
+    console.log('🚫 No cultural intelligence applied');
+  }
+
+  // Framework prompt (style)
+  const framework = frameworkPrompt || 'children\'s book illustration style';
+  
+  // Placeholder mapping
+  const placeholders = {
+    pageText: storyText || '',
+    character: characterDescription,
+    age: userInfo?.age ? `age ${userInfo.age}` : '',
+    ethnicity: ethnicity,
+    hair: hair,
+    features: features,
+    emotion: 'happy and engaged',
+    scene: storyText?.substring(0, 50) || 'playing',
+    spatial_composition: 'centered composition',
+    setting: 'bright, colorful environment',
+    atmosphere: 'cheerful and warm',
+    props: visualDetails?.objects || '',
+    action_objects: visualDetails?.actionObjects || '',
+    sensory_details: visualDetails?.sensoryDetails || '',
+    community_context: hasCulturalIntelligence && ethnicity ? `${ethnicity} community setting` : '',
+    secondary_characters: secondaryCharacters || '',
+    frameworkPrompt: framework,
+    cameraDirective: 'medium shot, eye level'
+  };
+
+  // Replace placeholders in template
+  let resolvedTemplate = template;
+  Object.entries(placeholders).forEach(([key, value]) => {
+    const placeholder = `{${key}}`;
+    resolvedTemplate = resolvedTemplate.replace(new RegExp(placeholder, 'g'), value || '');
+  });
+
+  // Clean up extra spaces and commas
+  resolvedTemplate = resolvedTemplate
+    .replace(/,\s*,/g, ',')
+    .replace(/,\s*\./g, '.')
+    .replace(/\s+/g, ' ')
+    .replace(/,\s*$/g, '')
+    .trim();
+
+  console.log('✅ Template resolved with cultural intelligence:', hasCulturalIntelligence);
+  return resolvedTemplate;
+}
+
+// ============= TIER ROUTING WITH SERVICE HEALTH CHECKS =============
+async function checkServiceHealth() {
+  const services = {
+    characterService: false,
+    visualTracker: false,
+    sessionManager: false
+  };
+
+  try {
+    const CharacterService = await getCharacterService();
+    services.characterService = !!CharacterService;
+  } catch (error) {
+    console.warn('CharacterService health check failed:', error.message);
+  }
+
+  try {
+    const VisualTracker = await getVisualTracker();
+    services.visualTracker = !!VisualTracker;
+  } catch (error) {
+    console.warn('VisualTracker health check failed:', error.message);
+  }
+
+  try {
+    const SessionManager = await getSessionManager();
+    services.sessionManager = !!SessionManager;
+  } catch (error) {
+    console.warn('SessionManager health check failed:', error.message);
+  }
+
+  return services;
+}
+
+// ============= ENHANCED TEMPLATE GENERATION WITH EXACT STRUCTURES =============
 async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIdentity, sessionId, pageNumber) {
-  const childName = userInfo?.childName || 'child';
-  const favoriteColor = userInfo?.favoriteColor || 'blue';
+  console.log(`🎯 Template AB: Processing complexity ${complexity} with exact template structures`);
+  
+  // Determine difficulty level for template selection
+  const age = userInfo?.age || 5;
+  const gradeLevel = userInfo?.gradeLevel || 'K';
+  const difficultyLevel = (gradeLevel === 'K' || gradeLevel === '1' || age <= 6) ? 'level_0-1' : 'level_2-4';
+  
+  // Check service health for tier routing
+  const serviceHealth = await checkServiceHealth();
   
   if (complexity === 'A') {
     console.log('🎯 Template AB: Processing Tier 2.5A - AI Failure Fallback with shared services');
     
-    // Tier 2.5A: Use shared services (exists because AI/Tier 1 might fail)
-    let characterDescription = '';
-    let visualDetails = '';
+    // Tier 2.5A: PREMIUM templates + Full cultural intelligence + Shared services
+    let characterData = null;
+    let visualDetails = null;
+    let secondaryCharacters = '';
     
-    try {
-      const CharacterService = await getCharacterService();
-      const VisualTracker = await getVisualTracker();
-      
-      if (CharacterService && sessionId && avatarIdentity) {
+    if (serviceHealth.characterService && avatarIdentity) {
+      try {
         console.log('🎭 Template AB: Getting character consistency data');
+        const CharacterService = await getCharacterService();
         const characterConsistencyService = new CharacterService();
-        const charData = await characterConsistencyService.getCharacterSeed(sessionId, avatarIdentity, storyText, 'standard', storyText);
-        if (charData) {
-          characterDescription = `${childName} with consistent appearance`;
-        }
+        characterData = await characterConsistencyService.getCharacterSeed(sessionId, avatarIdentity, storyText, 'standard', storyText);
+      } catch (error) {
+        console.warn('Character service failed:', error);
       }
-      
-      if (VisualTracker && sessionId && storyText) {
-        console.log('👁️ Template AB: Tracking visual details');
-        await VisualTracker.analyzeTextForDetails(sessionId, storyText, pageNumber, childName);
-        const objectDescription = await VisualTracker.buildObjectDescription(sessionId);
-        if (objectDescription) {
-          visualDetails = objectDescription.split(',').slice(0, 2).join(', '); // Keep it simple
-        }
-      }
-    } catch (error) {
-      console.error('❌ Template AB Tier 2.5A: Shared services failed, escalating to Tier 2.5B');
-      throw new Error(`Tier 2.5A shared services failed: ${error.message}`);
     }
     
-    // Build simple prompts with shared service data
-    const characterPart = characterDescription ? `${characterDescription}, ` : `${childName}, `;
-    const visualPart = visualDetails ? `with ${visualDetails}, ` : '';
+    if (serviceHealth.visualTracker && sessionId) {
+      try {
+        console.log('👁️ Template AB: Tracking visual details');
+        const VisualTracker = await getVisualTracker();
+        await VisualTracker.analyzeTextForDetails(sessionId, storyText, pageNumber, userInfo?.name);
+        const objDescription = await VisualTracker.buildObjectDescription(sessionId);
+        const coloredObjects = await VisualTracker.getColoredObjectsForSession(sessionId);
+        
+        visualDetails = {
+          objects: objDescription?.substring(0, 100) || '',
+          actionObjects: coloredObjects?.slice(0, 2).join(', ') || '',
+          sensoryDetails: 'bright, vivid colors'
+        };
+      } catch (error) {
+        console.warn('Visual tracker failed:', error);
+      }
+    }
+
+    // Get framework prompt (style)
+    const frameworkPrompt = 'vibrant children\'s book illustration, digital art style';
     
-    console.log('✅ Template AB Tier 2.5A: Successfully using shared services');
+    // Use PREMIUM template with full cultural intelligence
+    const template = PREMIUM_PROMPT_TEMPLATES[difficultyLevel];
+    const templateData = {
+      storyText,
+      userInfo,
+      avatarIdentity,
+      characterData,
+      visualDetails,
+      secondaryCharacters,
+      frameworkPrompt
+    };
+    
+    const positivePrompt = await resolvePlaceholders(template, templateData, true);
+    
+    console.log('✅ Template AB Tier 2.5A: PREMIUM template with cultural intelligence applied');
+    console.log('🔍 Cultural elements detected:', {
+      hasAvatarIdentity: !!avatarIdentity,
+      nativeLanguage: avatarIdentity?.nativeLanguage || userInfo?.nativeLanguage,
+      skinTone: avatarIdentity?.skinTone || userInfo?.avatar?.skinTone,
+      usingChildsRealName: userInfo?.name || userInfo?.childName
+    });
+    
+    console.log('✅ Template AB Tier 2.5A: Successfully using PREMIUM templates with cultural intelligence');
     return {
-      positivePrompt: `A simple, colorful illustration showing ${characterPart}${visualPart}basic shapes and ${favoriteColor} colors. Clean, minimal, child-friendly cartoon style.`,
-      negativePrompt: 'complex details, realistic, adult themes, scary, dark',
-      templateType: 'ai-failure-fallback',
+      positivePrompt,
+      negativePrompt: 'photorealistic, adult themes, scary, dark, violent, inappropriate',
+      templateType: 'premium-with-cultural-intelligence',
       difficulty: 'A',
-      enhancementLevel: 'minimal'
+      enhancementLevel: 'premium',
+      difficultyLevel
     };
   }
   
   if (complexity === 'B') {
-    console.log('🎯 Template AB: Processing Tier 2.5B - Shared Services Fallback with nuclear independence');
+    console.log('🎯 Template AB: Processing Tier 2.5B - Nuclear Independence with basic templates');
     
-    // Tier 2.5B: Nuclear independence (exists because shared services might fail)
-    // NO shared services - pure nuclear template logic
-    try {
-      const characterPart = `${childName}, `;
-      const colorPart = favoriteColor ? `${favoriteColor} themed ` : '';
-      const simpleScene = storyText.substring(0, 100); // First 100 chars for context
-      
-      console.log('✅ Template AB Tier 2.5B: Successfully using nuclear independence');
-      return {
-        positivePrompt: `A simple cartoon illustration of ${characterPart}in a ${colorPart}scene. ${simpleScene}. Clean, bright, child-friendly art style.`,
-        negativePrompt: 'complex backgrounds, realistic details, adult themes, scary elements',
-        templateType: 'shared-services-fallback',
-        difficulty: 'B', 
-        enhancementLevel: 'basic'
-      };
-    } catch (error) {
-      console.error('❌ Template AB Tier 2.5B: Nuclear independence failed, escalating to Tier 2.5C');
-      throw new Error(`Tier 2.5B nuclear independence failed: ${error.message}`);
-    }
+    // Tier 2.5B: BASIC templates + Limited cultural intelligence + Nuclear independence
+    const frameworkPrompt = 'simple cartoon illustration style';
+    
+    // Use BASIC template with limited cultural intelligence
+    const template = BASIC_PROMPT_TEMPLATES[difficultyLevel];
+    const templateData = {
+      storyText,
+      userInfo,
+      avatarIdentity,
+      characterData: null,
+      visualDetails: null,
+      secondaryCharacters: '',
+      frameworkPrompt
+    };
+    
+    const positivePrompt = await resolvePlaceholders(template, templateData, true);
+    
+    console.log('✅ Template AB Tier 2.5B: Successfully using BASIC templates with limited cultural intelligence');
+    return {
+      positivePrompt,
+      negativePrompt: 'complex details, photorealistic, adult themes, scary',
+      templateType: 'basic-with-limited-cultural',
+      difficulty: 'B', 
+      enhancementLevel: 'basic',
+      difficultyLevel
+    };
   }
   
-  // Should never reach here - throw error to escalate to next tier
+  // Should never reach here - escalate to next tier
   throw new Error(`Unsupported complexity level: ${complexity}. Template AB only handles A and B.`);
 }
 

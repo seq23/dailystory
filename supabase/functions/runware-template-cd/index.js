@@ -48,38 +48,39 @@ function getComplexityLevel(userInfo, templateComplexity) {
   return 'C';
 }
 
-// Generate Tier 2.5C template (pageText + style framework)
+// Generate Tier 2.5C template (Emergency templates + NO cultural intelligence)
 function generateTier25C(storyText, userInfo) {
-  console.log('🎯 Tier 2.5C: Generating Emergency Framework Template');
+  console.log('🎯 Tier 2.5C: Generating Emergency Framework Template - NO CULTURAL INTELLIGENCE');
   
   const difficulty = userInfo?.difficulty || 'medium';
   const styleFramework = getStyleFramework(difficulty);
   
   console.log('🎨 Retrieved', styleFramework.name, 'style framework for difficulty:', difficulty);
   
-  // Take first 2000 characters of pageText + style framework
-  const truncatedText = (storyText || '').substring(0, 2000);
+  // CORRECTED: Tier 2.5C gets NO avatarIdentity, NO cultural intelligence
+  // Only basic userInfo: name, age (no ethnicity, no cultural elements)
+  const childName = userInfo?.name || userInfo?.childName || 'child';
+  const age = userInfo?.age || 8;
+  
+  // Emergency template with NO cultural intelligence
+  const truncatedText = (storyText || '').substring(0, 500); // Shorter for emergency
   const emergencyFramework = styleFramework.frameworkPrompt;
   
-  // Extract avatar information with static headers
-  const avatarInfo = `
-CHARACTER DETAILS:
-Name: ${userInfo?.name || 'Child'}
-Age: ${userInfo?.age || 8} years old
-Gender: ${userInfo?.avatar?.type || 'prefer-not-to-answer'}
-Skin Tone: ${userInfo?.avatar?.skinTone || 'medium'}
-  `;
+  // Basic character info WITHOUT cultural elements
+  const basicCharacterInfo = `${childName}, age ${age}`;
   
-  const positivePrompt = truncatedText + ' ' + avatarInfo + ' ' + emergencyFramework;
-  const negativePrompt = styleFramework.negativePrompt;
+  // Emergency template structure (simple concatenation, no placeholders)
+  const positivePrompt = `${emergencyFramework}. ${basicCharacterInfo} in scene: ${truncatedText}. Simple children's illustration style.`;
+  const negativePrompt = styleFramework.negativePrompt + ', photorealistic, adult themes, complex details';
   
-  console.log('✅ Tier 2.5C: Emergency Framework Template generated with avatar details');
+  console.log('✅ Tier 2.5C: Emergency Template generated WITHOUT cultural intelligence');
   
   return {
     positivePrompt,
     negativePrompt,
-    templateType: 'Emergency Framework Template',
-    tier: '2.5C'
+    templateType: 'Emergency Framework Template - No Cultural Intelligence',
+    tier: '2.5C',
+    culturalIntelligence: false
   };
 }
 
