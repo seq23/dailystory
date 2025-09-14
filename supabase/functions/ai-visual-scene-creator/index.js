@@ -941,6 +941,20 @@ serve(async (req) => {
         // ✅ PHASE 1 FALLBACK - Handle both storyText and pageText parameters
         storyText = storyText || body.pageText;
         
+        // ✅ AVATAR IDENTITY FALLBACK - Handle userInfo → avatarIdentity conversion for testing
+        if (!avatarIdentity && body.userInfo) {
+          console.log('INFO Converting userInfo to avatarIdentity for compatibility');
+          avatarIdentity = {
+            name: body.userInfo.name || 'Child',
+            age: body.userInfo.age || '6-8',
+            type: body.userInfo.avatarType || 'prefer-not-to-answer',
+            skinTone: body.userInfo.avatar?.skinTone || 'medium',
+            culturalProfile: body.userInfo.culturalProfile || 'american',
+            nativeLanguage: body.userInfo.nativeLanguage || 'en',
+            difficultyLevel: body.userInfo.difficulty || 'medium'
+          };
+        }
+        
         console.log('PARAMS Parameter Validation:', {
           storyText: storyText ? `SUCCESS Present (${storyText.length} chars)` : 'ERROR Missing',
           sessionId: sessionId ? `SUCCESS Present (${sessionId})` : 'ERROR Missing',

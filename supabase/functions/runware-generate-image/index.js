@@ -652,8 +652,7 @@ class RunwareWebSocketManager {
   static MAX_DELAY = 8000;
   static CONNECTION_TIMEOUT = 90000;
   static IMAGE_GENERATION_TIMEOUT = 120000;
-  static async connectWithRetry(apiKey, positivePrompt, negativePrompt, seed, sessionId, pageNumber, attempt = 1, requestId// PHASE 5: Cross-function correlation
-  ) {
+  static async connectWithRetry(apiKey, positivePrompt, negativePrompt, seed, sessionId, pageNumber, attempt = 1, requestId) {
     try {
       return await this.attemptConnection(apiKey, positivePrompt, negativePrompt, seed, sessionId, pageNumber, requestId);
     } catch (error) {
@@ -670,8 +669,7 @@ class RunwareWebSocketManager {
       throw wsError;
     }
   }
-  static attemptConnection(apiKey, positivePrompt, negativePrompt, seed, sessionId, pageNumber, requestId// PHASE 5: Cross-function correlation
-  ) {
+  static attemptConnection(apiKey, positivePrompt, negativePrompt, seed, sessionId, pageNumber, requestId) {
     return new Promise((resolve, reject)=>{
       let ws;
       let connectionTimeout;

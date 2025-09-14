@@ -241,7 +241,8 @@ export const ImageTierTester = () => {
           storyText: testStoryText,
           userInfo: buildUserInfo(),
           pageNumber: 1,
-          sessionId: crypto.randomUUID()
+          sessionId: crypto.randomUUID(),
+          skipTier25: true // Force Tier 1 testing
         }
       });
 
