@@ -17,9 +17,18 @@ interface TestResult {
     processingTime?: number;
     requestId?: string;
     error?: string;
-    testType?: 'REAL' | 'FORCED' | 'CONNECTIVITY'; // Add test type
-    timeoutTest?: boolean; // Add timeout test flag
-    abortReason?: string; // Add abort reason
+    probableCause?: string; // NEW: Specific probable cause instead of generic error
+    errorCategory?: 'NETWORK' | 'TIMEOUT' | 'AUTH' | 'CONFIG' | 'INTERNAL' | 'UNKNOWN' | 'SUCCESS'; // NEW: Error categorization
+    healthCheck?: {
+      endpoint: string;
+      available: boolean;
+      responseTime?: number;
+      status?: number;
+      triageResult?: string;
+    }; // NEW: Health check results
+    testType?: 'REAL' | 'FORCED' | 'CONNECTIVITY' | 'HEALTH' | 'TRIAGE'; // Enhanced test types
+    timeoutTest?: boolean;
+    abortReason?: string;
     // AI Scene Creator specific
     sceneGenerationOnly?: boolean;
     primaryScene?: string;
@@ -59,6 +68,8 @@ interface TestResult {
       humanReadableReason?: string;
       timeoutTest?: boolean;
       abortReason?: string;
+      probableCause?: string; // NEW: Specific cause per endpoint
+      errorCategory?: string; // NEW: Category per endpoint
     }>;
   };
 }
@@ -94,6 +105,101 @@ export const ImageTierTester = () => {
     // Conditionally add culturalProfile for completeness
     culturalProfile: nativeLanguage !== 'en' ? nativeLanguage : undefined
   });
+
+  // Error categorization helper
+  const categorizeError = (error: any, context?: string): { category: string; probableCause: string } => {
+    const errorMsg = error?.message || error?.toString() || 'Unknown error';
+    
+    // Network-related errors
+    if (errorMsg.includes('fetch') || errorMsg.includes('network') || errorMsg.includes('connection')) {
+      return {
+        category: 'NETWORK',
+        probableCause: 'Network connectivity issue or service unavailable'
+      };
+    }
+    
+    // Timeout errors
+    if (errorMsg.includes('timeout') || errorMsg.includes('abort') || error.name === 'AbortError') {
+      return {
+        category: 'TIMEOUT', 
+        probableCause: `Request exceeded time limit (${timeoutDuration}ms)`
+      };
+    }
+    
+    // Authentication errors
+    if (errorMsg.includes('401') || errorMsg.includes('unauthorized') || errorMsg.includes('auth')) {
+      return {
+        category: 'AUTH',
+        probableCause: 'Authentication failed - check API keys or user permissions'
+      };
+    }
+    
+    // Configuration errors
+    if (errorMsg.includes('404') || errorMsg.includes('not found') || errorMsg.includes('config')) {
+      return {
+        category: 'CONFIG',
+        probableCause: 'Service endpoint not found or misconfigured'
+      };
+    }
+    
+    // Internal server errors
+    if (errorMsg.includes('500') || errorMsg.includes('internal') || errorMsg.includes('server')) {
+      return {
+        category: 'INTERNAL',
+        probableCause: 'Internal server error - service may be overloaded or down'
+      };
+    }
+    
+    return {
+      category: 'UNKNOWN',
+      probableCause: `Unclassified error: ${errorMsg.substring(0, 100)}`
+    };
+  };
+
+  // Lightweight triage function - GET health check before POST attempts
+  const performTriageCheck = async (endpoint: string): Promise<{
+    endpoint: string;
+    available: boolean;
+    responseTime?: number;
+    status?: number;
+    triageResult: string;
+  }> => {
+    const startTime = Date.now();
+    
+    try {
+      // Simple GET request to check endpoint availability using environment variables
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://cpzeuogomaixamrtnnmj.supabase.co';
+      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino';
+      
+      const response = await fetch(`${supabaseUrl}/functions/v1/${endpoint}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${supabaseAnonKey}`,
+          'apikey': supabaseAnonKey
+        }
+      });
+      
+      const responseTime = Date.now() - startTime;
+      
+      return {
+        endpoint,
+        available: response.ok,
+        responseTime,
+        status: response.status,
+        triageResult: response.ok ? 
+          `✅ Endpoint responsive (${responseTime}ms)` : 
+          `⚠️ Endpoint returned ${response.status} ${response.statusText}`
+      };
+    } catch (error) {
+      const responseTime = Date.now() - startTime;
+      return {
+        endpoint,
+        available: false,
+        responseTime,
+        triageResult: `❌ Endpoint unreachable: ${error.message}`
+      };
+    }
+  };
 
   // Reset function to clear results and set defaults
   const resetTester = () => {
@@ -206,7 +312,98 @@ export const ImageTierTester = () => {
     setIsLoading(false);
   };
 
-  // Resilience testing with progressive degradation
+  // NEW: Individual Tier Testing with Health Checks
+  const testIndividualTiers = async () => {
+    setIsLoading(true);
+    setResults([]);
+    
+    const tiers = [
+      { name: 'AI Scene Creator', endpoint: 'ai-visual-scene-creator', tier: 'tier-0' },
+      { name: 'Runware Image Generation', endpoint: 'runware-generate-image', tier: 'tier-1' },
+      { name: 'Runware Template AB', endpoint: 'runware-template-ab', tier: 'tier-2' },
+      { name: 'Runware Template CD', endpoint: 'runware-template-cd', tier: 'tier-3' }
+    ];
+    
+    const tierResults: TestResult[] = [];
+    
+    for (const tierConfig of tiers) {
+      try {
+        // Step 1: Perform lightweight triage check first
+        const triageCheck = await performTriageCheck(tierConfig.endpoint);
+        
+        // Step 2: Only proceed with POST if triage passes
+        if (triageCheck.available) {
+          const startTime = Date.now();
+          const response = await supabase.functions.invoke(tierConfig.endpoint, {
+            body: {
+              storyText: testStoryText.substring(0, 200), // Shorter for individual tests
+              userInfo: buildUserInfo(),
+              pageNumber: 1,
+              sessionId: crypto.randomUUID(),
+              forceTier: tierConfig.tier
+            }
+          });
+          
+          const processingTime = Date.now() - startTime;
+          const { category, probableCause } = !response.error ? 
+            { category: 'SUCCESS', probableCause: 'Request completed successfully' } :
+            categorizeError(response.error);
+          
+          tierResults.push({
+            tier: tierConfig.name,
+            success: !response.error && response.data?.success,
+            imageURL: response.data?.imageURL,
+            details: {
+              processingTime,
+              requestId: response.data?.requestId,
+              testType: 'HEALTH',
+              healthCheck: triageCheck,
+              errorCategory: category as any,
+              probableCause,
+              error: response.error?.message || response.data?.error,
+              tier: tierConfig.tier,
+              provider: response.data?.provider
+            }
+          });
+        } else {
+          // Triage failed - don't attempt POST
+          const { category, probableCause } = categorizeError(new Error(triageCheck.triageResult));
+          
+          tierResults.push({
+            tier: `${tierConfig.name} (Triage Failed)`,
+            success: false,
+            imageURL: null,
+            details: {
+              testType: 'TRIAGE',
+              healthCheck: triageCheck,
+              errorCategory: category as any,
+              probableCause,
+              error: `Triage check failed: ${triageCheck.triageResult}`
+            }
+          });
+        }
+      } catch (error) {
+        const { category, probableCause } = categorizeError(error, tierConfig.endpoint);
+        
+        tierResults.push({
+          tier: `${tierConfig.name} (Error)`,
+          success: false,
+          imageURL: null,
+          details: {
+            testType: 'HEALTH',
+            errorCategory: category as any,
+            probableCause,
+            error: error.message
+          }
+        });
+      }
+    }
+    
+    setResults(tierResults);
+    setIsLoading(false);
+  };
+
+  // Enhanced Resilience testing with better error categorization
   const resilienceTest = async () => {
     setIsLoading(true);
     setResults([]);
@@ -227,6 +424,8 @@ export const ImageTierTester = () => {
         }
       });
     } catch (error) {
+      const { category, probableCause } = categorizeError(error);
+      
       resilientResults.push({
         tier: 'network-interruption-test',
         success: false,
@@ -235,7 +434,9 @@ export const ImageTierTester = () => {
           error: 'Simulated network interruption',
           testType: 'REAL',
           timeoutTest: true,
-          abortReason: 'Simulated interruption'
+          abortReason: 'Simulated interruption',
+          errorCategory: category as any,
+          probableCause
         }
       });
     }
@@ -255,25 +456,35 @@ export const ImageTierTester = () => {
     try {
       const rapidResults = await Promise.allSettled(rapidCalls);
       rapidResults.forEach((result, index) => {
+        const error = result.status === 'rejected' ? result.reason : 
+                     (result.status === 'fulfilled' && result.value.error ? result.value.error : null);
+        const { category, probableCause } = error ? categorizeError(error) : 
+                                           { category: 'SUCCESS', probableCause: 'Request completed successfully' };
+        
         resilientResults.push({
           tier: `rapid-call-${index + 1}`,
           success: result.status === 'fulfilled' && !result.value.error,
           imageURL: result.status === 'fulfilled' ? result.value.data?.imageURL : null,
           details: {
             testType: 'REAL',
-            error: result.status === 'rejected' ? result.reason.message : 
-                   (result.status === 'fulfilled' && result.value.error ? result.value.error.message : undefined)
+            errorCategory: category as any,
+            probableCause,
+            error: error?.message
           }
         });
       });
     } catch (error) {
+      const { category, probableCause } = categorizeError(error);
+      
       resilientResults.push({
         tier: 'rapid-calls-batch-error',
         success: false,
         imageURL: null,
         details: {
           error: error.message,
-          testType: 'REAL'
+          testType: 'REAL',
+          errorCategory: category as any,
+          probableCause
         }
       });
     }
@@ -310,6 +521,10 @@ export const ImageTierTester = () => {
         hasAiSchema: !!response.data?.aiSchema
       });
 
+      const { category, probableCause } = !response.error ? 
+        { category: 'SUCCESS', probableCause: 'Scene generation completed successfully' } :
+        categorizeError(response.error);
+
       setResults([{
         tier: 'ai-scene-creator',
         success: !response.error && response.data?.success,
@@ -324,12 +539,16 @@ export const ImageTierTester = () => {
           mood: response.data?.aiSchema?.mood,
           pose: response.data?.aiSchema?.pose,
           sceneGenerationOnly: true,
-          testType: 'REAL', // This is a real test
+          testType: 'REAL',
+          errorCategory: category as any,
+          probableCause,
           error: response.error?.message || response.data?.error
         }
       }]);
     } catch (error) {
       DebugLogger.error('image', '❌ AI Scene Creator test failed', { error });
+      const { category, probableCause } = categorizeError(error);
+      
       setResults([{
         tier: 'ai-scene-creator-error',
         success: false,
@@ -337,7 +556,9 @@ export const ImageTierTester = () => {
         details: { 
           error: error.message, 
           sceneGenerationOnly: true,
-          testType: 'REAL'
+          testType: 'REAL',
+          errorCategory: category as any,
+          probableCause
         }
       }]);
     } finally {
@@ -375,6 +596,10 @@ export const ImageTierTester = () => {
         hasImage: !!response.data?.imageURL
       });
 
+      const { category, probableCause } = !response.error ? 
+        { category: 'SUCCESS', probableCause: 'Tier 1 full prompt flow completed successfully' } :
+        categorizeError(response.error);
+
       setResults([{
         tier: 'tier-1-full',
         success: !response.error && response.data?.success,
@@ -387,12 +612,16 @@ export const ImageTierTester = () => {
           provider: response.data?.provider,
           forcedTier: 'tier-1',
           fullPromptFlow: true,
-          testType: 'FORCED', // This is a forced test
+          testType: 'FORCED',
+          errorCategory: category as any,
+          probableCause,
           error: response.error?.message || response.data?.error
         }
       }]);
     } catch (error) {
       DebugLogger.error('image', '❌ Force Tier 1 (Full Prompt) failed', { error });
+      const { category, probableCause } = categorizeError(error);
+      
       setResults([{
         tier: 'tier-1-full-error',
         success: false,
@@ -401,7 +630,9 @@ export const ImageTierTester = () => {
           error: error.message, 
           forcedTier: 'tier-1', 
           fullPromptFlow: true,
-          testType: 'FORCED'
+          testType: 'FORCED',
+          errorCategory: category as any,
+          probableCause
         }
       }]);
     } finally {
@@ -832,6 +1063,16 @@ export const ImageTierTester = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
             <Button
+              onClick={testIndividualTiers}
+              disabled={isLoading}
+              variant="default"
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+            >
+              <CheckCircle className="h-4 w-4" />
+              Test Individual Tiers (Health)
+            </Button>
+            
+            <Button
               onClick={testAISceneCreator}
               disabled={isLoading}
               className="flex items-center gap-2"
@@ -1088,6 +1329,66 @@ export const ImageTierTester = () => {
                       <div className="text-sm">
                         <span className="font-medium text-red-600">Error:</span>
                         <div className="text-red-600 text-xs mt-1">{result.details.error}</div>
+                      </div>
+                    )}
+                    
+                    {/* NEW: Enhanced Error Categorization and Probable Cause */}
+                    {result.details.errorCategory && result.details.errorCategory !== 'SUCCESS' && (
+                      <div className="text-sm">
+                        <span className="font-medium text-orange-600">Error Category:</span>
+                        <Badge variant="outline" className="ml-1 text-xs">
+                          {result.details.errorCategory}
+                        </Badge>
+                      </div>
+                    )}
+                    
+                    {result.details.probableCause && (
+                      <div className="text-sm">
+                        <span className="font-medium text-blue-600">Probable Cause:</span>
+                        <div className="text-blue-700 text-xs mt-1 bg-blue-50 p-2 rounded border-l-2 border-blue-200">
+                          {result.details.probableCause}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* NEW: Health Check Results Display */}
+                    {result.details.healthCheck && (
+                      <div className="text-sm">
+                        <span className="font-medium text-purple-600">Health Check Results:</span>
+                        <div className="text-xs mt-1 bg-purple-50 p-2 rounded">
+                          <div className="flex items-center justify-between">
+                            <span>Endpoint: {result.details.healthCheck.endpoint}</span>
+                            <Badge variant={result.details.healthCheck.available ? 'default' : 'destructive'}>
+                              {result.details.healthCheck.available ? 'AVAILABLE' : 'UNAVAILABLE'}
+                            </Badge>
+                          </div>
+                          {result.details.healthCheck.responseTime && (
+                            <div>Response Time: {result.details.healthCheck.responseTime}ms</div>
+                          )}
+                          {result.details.healthCheck.status && (
+                            <div>HTTP Status: {result.details.healthCheck.status}</div>
+                          )}
+                          <div>Triage Result: {result.details.healthCheck.triageResult}</div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Test Type Indicator with color coding */}
+                    {result.details.testType && (
+                      <div className="text-sm">
+                        <span className="font-medium">Test Type:</span>
+                        <Badge 
+                          variant="outline" 
+                          className={`ml-1 text-xs ${
+                            result.details.testType === 'HEALTH' ? 'bg-green-50 text-green-700' :
+                            result.details.testType === 'TRIAGE' ? 'bg-purple-50 text-purple-700' :
+                            result.details.testType === 'FORCED' ? 'bg-yellow-50 text-yellow-700' :
+                            result.details.testType === 'REAL' ? 'bg-blue-50 text-blue-700' :
+                            'bg-gray-50 text-gray-700'
+                          }`}
+                        >
+                          {result.details.testType}
+                        </Badge>
                       </div>
                     )}
                   </div>
