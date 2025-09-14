@@ -1039,6 +1039,11 @@ async function processAvatarIdentityWithStaticDataCache(userInfo, sessionId, req
 
     console.log(`✅ [${requestId}] PHASE 8: Avatar processed via StaticDataCache - ${completenessValidation.isComplete ? 'COMPLETE' : 'INCOMPLETE'}`);
     
+    // FIXED FALLBACK LOGIC: Incomplete avatar should route to 2.5C (not 2.5A)
+    if (!completenessValidation.isComplete) {
+      console.log(`🔄 [${requestId}] ROUTING FIX: Incomplete avatar will route to 2.5C/2.5D (skipping 2.5A/2.5B)`);
+    }
+    
     return avatarResult;
     
   } catch (error) {
