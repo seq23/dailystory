@@ -18,9 +18,6 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
 
 // ============= PHASE B5: CENTRALIZED ERROR HANDLING =============
 class EdgeErrorHandler {
-  static errorCounts = new Map();
-  static performanceMetrics = [];
-  
   static handleError(error, functionName, context = {}) {
     const edgeError = {
       type: error.type || 'unknown',
@@ -92,12 +89,12 @@ class EdgeErrorHandler {
   }
 }
 
+// Initialize EdgeErrorHandler static fields after class definition
+EdgeErrorHandler.errorCounts = new Map();
+EdgeErrorHandler.performanceMetrics = [];
+
 // ============= PHASE A: CRASH-PROOF BOOT GATE =============
 class CrashProofBootSystem {
-  static bootStatus = null;
-  static criticalServices = new Map();
-  static nonCriticalServices = new Map();
-  
   static async validateBoot() {
     if (this.bootStatus !== null) return this.bootStatus;
     
@@ -157,10 +154,13 @@ class CrashProofBootSystem {
   }
 }
 
+// Initialize CrashProofBootSystem static fields after class definition
+CrashProofBootSystem.bootStatus = null;
+CrashProofBootSystem.criticalServices = new Map();
+CrashProofBootSystem.nonCriticalServices = new Map();
+
 // ============= PHASE B: LAZY-LOADED UTILITIES =============
 class LazyServiceLoader {
-  static services = new Map();
-  
   static async load(serviceName, importPath) {
     if (this.services.has(serviceName)) {
       return this.services.get(serviceName);
@@ -187,6 +187,9 @@ class LazyServiceLoader {
     return await this.load('sessionManager', '../_shared/SessionStateManager.js');
   }
 }
+
+// Initialize LazyServiceLoader static fields after class definition
+LazyServiceLoader.services = new Map();
 
 // ============= PHASE C: CENTRALIZED UTILITIES (ZERO DUPLICATION) =============
 class CoreUtils {
