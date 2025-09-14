@@ -41,6 +41,27 @@ async function getServiceHealthMonitor() {
   }
 }
 
+// ============= PHASE 5: DATA FLOW OPTIMIZATION INTEGRATION =============
+async function getDataFlowOptimizer() {
+  try {
+    const { dataFlowOptimizer } = await import("../_shared/DataFlowOptimizer.js");
+    return dataFlowOptimizer;
+  } catch (error) {
+    console.warn('DataFlowOptimizer not available:', error);
+    return null;
+  }
+}
+
+async function getDataFlowValidator() {
+  try {
+    const { dataFlowValidator } = await import("../_shared/DataFlowValidator.js");
+    return dataFlowValidator;
+  } catch (error) {
+    console.warn('DataFlowValidator not available:', error);
+    return null;
+  }
+}
+
 // ============= REQUEST ID GENERATION =============
 function generateRequestId() {
   const timestamp = Date.now().toString(36);
@@ -742,6 +763,7 @@ class RunwareWebSocketManager {
   }
 }
 // ============= TIER FUNCTION CALLER - ENHANCED DEBUGGING & PROPER SUPABASE CLIENT =============
+// PHASE 5: Enhanced with data flow validation and optimization
 async function callTierFunction(functionName, payload) {
   try {
     console.log(`📞 Calling ${functionName} with payload keys:`, Object.keys(payload));
@@ -751,6 +773,44 @@ async function callTierFunction(functionName, payload) {
       timestamp: new Date().toISOString(),
       sessionId: payload.sessionId?.substring(0, 15) + '...' || 'none'
     });
+    
+    // ============= PHASE 5: DATA FLOW OPTIMIZATION =============
+    let optimizedPayload = payload;
+    let validator = null;
+    let optimizer = null;
+    
+    try {
+      // Try to get data flow services
+      const dataFlowOptimizer = await getDataFlowOptimizer();
+      const dataFlowValidator = await getDataFlowValidator();
+      
+      if (dataFlowOptimizer && dataFlowValidator) {
+        console.log(`⚡ Phase 5: Optimizing payload for ${functionName}`);
+        
+        // Validate and optimize based on function type
+        if (functionName === 'ai-visual-scene-creator') {
+          const validation = dataFlowValidator.validateAISceneCreatorInput(payload);
+          if (!validation.isValid) {
+            console.warn(`⚠️ Phase 5: AI scene creator input validation failed:`, validation.errors);
+          }
+          optimizedPayload = dataFlowOptimizer.optimizeAISceneCreatorInput(payload);
+          
+        } else if (functionName.includes('template')) {
+          const validation = dataFlowValidator.validateTemplateServiceInput(payload, functionName);
+          if (!validation.isValid) {
+            console.warn(`⚠️ Phase 5: Template service input validation failed:`, validation.errors);
+          }
+          optimizedPayload = dataFlowOptimizer.optimizeTemplateServiceInput(payload, functionName);
+        }
+        
+        console.log(`✅ Phase 5: Payload optimized for ${functionName}`);
+        validator = dataFlowValidator;
+        optimizer = dataFlowOptimizer;
+      }
+    } catch (dataFlowError) {
+      console.warn(`⚠️ Phase 5: Data flow optimization failed, using original payload:`, dataFlowError.message);
+      optimizedPayload = payload;
+    }
     // Enhanced Tier 2.5 debugging - log detailed payload for fallback function
     // Use proper Supabase client for edge function calls - FIX FOR AUTHENTICATION ISSUES
     const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
@@ -1006,9 +1066,23 @@ async function generateWithRunwarePremium(apiKey, positivePrompt, negativePrompt
 }
 // Phase 2: Enhanced Backend Orchestrator for All Image Generation Tiers
 // Now handles: AI Enhancement → Tier 1 → Tier 2 → Tier 2.5 → Tier 3 → Tier 4
-serve(async (req)=>{
+serve(async (req) => {
   const requestId = generateRequestId();
   console.log(`🎯 [${requestId}] Image Generation Orchestrator: ${req.method} ${req.url}`);
+  
+  // ============= PHASE 5: DATA FLOW OPTIMIZATION =============
+  console.log('⚡ Phase 5: Initializing data flow optimization');
+  let dataFlowOptimizer = null;
+  let dataFlowValidator = null;
+  
+  try {
+    dataFlowOptimizer = await getDataFlowOptimizer();
+    dataFlowValidator = await getDataFlowValidator();
+    console.log('✅ Phase 5: Data flow optimization services initialized');
+  } catch (error) {
+    console.warn('⚠️ Phase 5: Data flow optimization not available, using fallback:', error);
+  }
+  
   // BULLETPROOFING: Startup diagnostics
   const runwareApiKey = getTrimmedApiKey('RUNWARE_API_KEY');
   const openaiApiKey = getTrimmedApiKey('OPENAI_API_KEY');
