@@ -248,7 +248,8 @@ serve(async (req) => {
       hasUserInfo: !!body.userInfo,
       templateComplexity: body.templateComplexity,
       sessionId: body.sessionId,
-      pageNumber: body.pageNumber
+      pageNumber: body.pageNumber,
+      hasEnhancedStoryData: !!body.enhancedStoryData
     });
 
     // PHASE 4: Session data received via parameters only
@@ -259,14 +260,16 @@ serve(async (req) => {
       templateComplexity = null,
       sessionId,
       pageNumber,
-      emergencyMode = false
+      emergencyMode = false,
+      enhancedStoryData = null // PHASE 4: Enhanced data from orchestrator
     } = body;
 
     console.log('📝 Template CD: Processing with parameter-based session data', {
       sessionId,
       pageNumber,
       emergencyMode,
-      sessionDataReceived: !!(sessionId && pageNumber)
+      sessionDataReceived: !!(sessionId && pageNumber),
+      hasEnhancedStoryData: !!enhancedStoryData
     });
 
     // Determine complexity level

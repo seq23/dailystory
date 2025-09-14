@@ -183,8 +183,8 @@ class LazyServiceLoader {
     return await this.load('corsUtils', '../_shared/corsAdvanced.js');
   }
   
-  static async getSessionManager() {
-    return await this.load('sessionManager', '../_shared/SessionStateManager.js');
+  static async getPhaseIntegrationOrchestrator() {
+    return await this.load('phaseOrchestrator', '../_shared/PhaseIntegrationOrchestrator.js');
   }
 }
 
@@ -298,17 +298,18 @@ function determineTemplateComplexity(userInfo, avatarIdentity) {
 }
 
 // ============= CORE IMAGE GENERATION LOGIC =============
-async function generateWithRunware(apiKey, prompt, sessionId, requestId, userInfo, avatarIdentity, pageNumber) {
-  console.log(`🚀 [${requestId}] Starting Runware generation with session data`);
+async function generateWithRunware(apiKey, prompt, sessionId, requestId, userInfo, avatarIdentity, pageNumber, enhancedStoryData) {
+  console.log(`🚀 [${requestId}] Starting Runware generation with enhanced story data`);
   
   if (!apiKey || apiKey.length < 10) {
     throw new Error('Invalid Runware API key');
   }
 
-  // Enhanced Tier 1 Prompt Engineering with Session Data
-  let enhancedPrompt = prompt;
+  // PHASE 4: Use enhanced prompt from Phase Integration Orchestrator if available
+  let enhancedPrompt = enhancedStoryData?.enhancedPrompt || prompt;
   
-  if (userInfo) {
+  // Fallback to traditional enhancement if no enhanced data available
+  if (!enhancedStoryData?.enhancedPrompt && userInfo) {
     // Add character consistency and cultural context
     const characterDesc = avatarIdentity?.visualDescription || `${userInfo.gradeLevel || 'young'} child`;
     const culturalContext = avatarIdentity?.culturalContext || 'diverse and inclusive';
@@ -324,6 +325,11 @@ The illustration should be engaging for ${userInfo.gradeLevel || 'young'} reader
   }
   
   console.log(`🎨 [${requestId}] Enhanced prompt length: ${enhancedPrompt.length} chars`);
+  console.log(`🎨 [${requestId}] Using enhanced data:`, {
+    hasEnhancedPrompt: !!enhancedStoryData?.enhancedPrompt,
+    hasCharacterConsistency: !!enhancedStoryData?.characterConsistency,
+    hasVisualConsistency: !!enhancedStoryData?.visualConsistency
+  });
   
   // Simplified WebSocket connection with proper timeout
   const ws = new WebSocket("wss://ws-api.runware.ai/v1");
@@ -607,6 +613,52 @@ serve(async (req) => {
       }
       
       let result;
+      let enhancedStoryData = null;
+      
+      // PHASE 4: Get enhanced prompt data from Phase Integration Orchestrator
+      try {
+        const phaseOrchestrator = await LazyServiceLoader.getPhaseIntegrationOrchestrator();
+        if (phaseOrchestrator?.phaseIntegrationOrchestrator) {
+          console.log(`🔮 [${requestId}] Getting enhanced prompt from Phase Integration Orchestrator`);
+          const enhancementResult = await phaseOrchestrator.phaseIntegrationOrchestrator.getEnhancedPrompt(
+            userInfo,
+            pageText,
+            pageText,
+            sessionId
+          );
+          
+          enhancedStoryData = {
+            enhancedPrompt: enhancementResult.enhancedPrompt,
+            characterConsistency: enhancementResult.characterConsistency,
+            visualConsistency: enhancementResult.visualConsistency,
+            previousScene: null // Will be populated for page 2+
+          };
+          
+          // PHASE 4: Get previous scene data for page 2+
+          if (pageNumber > 1) {
+            try {
+              const previousSceneData = await phaseOrchestrator.phaseIntegrationOrchestrator.characterConsistencyService.getCharacterFromDatabase(
+                sessionId, 
+                `scene_page_${pageNumber - 1}`
+              );
+              if (previousSceneData) {
+                enhancedStoryData.previousScene = previousSceneData;
+                console.log(`🎬 [${requestId}] Retrieved previous scene data for page ${pageNumber}`);
+              }
+            } catch (sceneError) {
+              console.warn(`⚠️ [${requestId}] Failed to get previous scene:`, sceneError.message);
+            }
+          }
+          
+          console.log(`✨ [${requestId}] Enhanced data prepared:`, {
+            hasEnhancedPrompt: !!enhancedStoryData.enhancedPrompt,
+            hasCharacterData: !!enhancedStoryData.characterConsistency,
+            hasVisualData: !!enhancedStoryData.visualConsistency
+          });
+        }
+      } catch (enhancementError) {
+        console.warn(`⚠️ [${requestId}] Phase orchestrator enhancement failed:`, enhancementError.message);
+      }
       
       // Try Tier 1: Runware Premium
       const runwareService = CrashProofBootSystem.getService('runware');
@@ -614,7 +666,7 @@ serve(async (req) => {
         try {
           console.log(`🚀 [${requestId}] Attempting Tier 1: Runware Premium`);
           result = await CoreUtils.withTimeout(
-            generateWithRunware(runwareService.key, pageText, sessionId, requestId, userInfo, avatarIdentity, pageNumber),
+            generateWithRunware(runwareService.key, pageText, sessionId, requestId, userInfo, avatarIdentity, pageNumber, enhancedStoryData),
             25000,
             'Runware generation'
           );
@@ -642,7 +694,8 @@ serve(async (req) => {
                 avatarIdentity,
                 templateComplexity,
                 sessionId,
-                pageNumber
+                pageNumber,
+                enhancedStoryData // PHASE 4: Pass enhanced data to tier functions
               }
             }),
             20000,
@@ -671,7 +724,8 @@ serve(async (req) => {
                 avatarIdentity,
                 templateComplexity: 'C',
                 sessionId,
-                pageNumber
+                pageNumber,
+                enhancedStoryData // PHASE 4: Pass enhanced data to tier functions
               }
             }),
             15000,
@@ -696,20 +750,33 @@ serve(async (req) => {
         );
       }
       
-      // Store result in session (lazy-loaded)
-      try {
-        const sessionManager = await LazyServiceLoader.getSessionManager();
-        if (sessionManager?.globalSessionManager) {
-          sessionManager.globalSessionManager.storeImagePrompt(sessionId, {
-            ...result,
-            pageNumber,
-            pageText: pageText.substring(0, 100) + '...',
-            timestamp: new Date().toISOString()
-          });
+      // PHASE 4: Session storage handled by database-backed services
+      // Store current scene data for next page continuity
+      if (result?.success && enhancedStoryData && pageNumber) {
+        try {
+          const phaseOrchestrator = await LazyServiceLoader.getPhaseIntegrationOrchestrator();
+          if (phaseOrchestrator?.phaseIntegrationOrchestrator) {
+            // Extract scene data from result metadata or construct from available data
+            const currentSceneData = {
+              pageNumber: pageNumber,
+              prompt: result.metadata?.originalPrompt || pageText?.substring(0, 200),
+              imageURL: result.imageURL,
+              timestamp: new Date().toISOString(),
+              tier: result.tier
+            };
+            
+            await phaseOrchestrator.phaseIntegrationOrchestrator.characterConsistencyService.storeCharacterInDatabase(
+              sessionId,
+              `scene_page_${pageNumber}`,
+              currentSceneData
+            );
+            console.log(`🎬 [${requestId}] Stored current scene data for page ${pageNumber}`);
+          }
+        } catch (storeError) {
+          console.warn(`⚠️ [${requestId}] Failed to store current scene data:`, storeError.message);
         }
-      } catch (storeError) {
-        console.warn(`⚠️ [${requestId}] Failed to store session data:`, storeError.message);
       }
+      console.log(`✅ [${requestId}] Image generated successfully, database persistence handled by services`);
       
       // Success response
       return new Response(JSON.stringify({

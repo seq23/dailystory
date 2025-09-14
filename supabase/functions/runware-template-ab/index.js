@@ -378,8 +378,14 @@ async function checkServiceHealth() {
 }
 
 // ============= ENHANCED TEMPLATE GENERATION WITH EXACT STRUCTURES =============
-async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIdentity, sessionId, pageNumber) {
-  console.log(`🎯 Template AB: Processing complexity ${complexity} with exact template structures`);
+async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIdentity, sessionId, pageNumber, enhancedStoryData) {
+  console.log(`🎯 Template AB: Processing complexity ${complexity} with enhanced story data`);
+  console.log(`🎨 Enhanced data available:`, {
+    hasEnhancedPrompt: !!enhancedStoryData?.enhancedPrompt,
+    hasCharacterConsistency: !!enhancedStoryData?.characterConsistency,
+    hasVisualConsistency: !!enhancedStoryData?.visualConsistency,
+    hasPreviousScene: !!enhancedStoryData?.previousScene
+  });
   
   // Determine difficulty level for template selection
   const age = userInfo?.age || 5;
@@ -636,7 +642,8 @@ serve(async (req) => {
       avatarIdentity, 
       templateComplexity,
       sessionId,
-      pageNumber 
+      pageNumber,
+      enhancedStoryData // PHASE 4: Enhanced story data from orchestrator
     } = await req.json();
     
     console.log('📝 Template AB: Processing request', {
@@ -644,7 +651,8 @@ serve(async (req) => {
       sessionId,
       pageNumber,
       hasStoryText: !!storyText,
-      hasUserInfo: !!userInfo
+      hasUserInfo: !!userInfo,
+      hasEnhancedStoryData: !!enhancedStoryData
     });
     
     // PHASE 4: Session management centralized in orchestrator
@@ -663,8 +671,8 @@ serve(async (req) => {
       return createErrorResponse(`Complexity ${complexity} not supported by AB template. Use CD template.`, 400);
     }
     
-    // Generate template with character consistency
-    const template = await generateSimpleTemplate(complexity, storyText, userInfo, avatarIdentity, sessionId, pageNumber);
+    // Generate template with character consistency and enhanced data
+    const template = await generateSimpleTemplate(complexity, storyText, userInfo, avatarIdentity, sessionId, pageNumber, enhancedStoryData);
     
     console.log('🎨 Template AB: Generated template', {
       complexity,
