@@ -288,12 +288,6 @@ class SimpleCircuitBreaker {
 
 const circuitBreaker = new SimpleCircuitBreaker();
 
-// Simple model detection for prompt optimization
-function getModelFamily() {
-  const primaryModel = AI_MODELS[0]?.name || '';
-  const isNewModel = primaryModel.includes('gpt-5') || primaryModel.includes('gpt-4.1');
-  return { useSimplifiedPrompt: isNewModel };
-}
 
 // ============= ROBUST JSON PARSING WITH FALLBACKS =============
 
@@ -519,15 +513,7 @@ serve(async (req) => {
 
         const hasMultipleCharacters = detectMultipleCharacters(storyText);
         
-        // Generate conditional secondary character fields
-        const secondaryCharacterFields = hasMultipleCharacters ? `
-    "secondaryCharacters": "with friend/parent/teacher",
-    "secondaryCharacterRelation": "sibling/friend/adult/classmate", 
-    "secondaryCharacterAppearance": "visual description for image generation",
-    "secondaryCharacterAction": "what they're doing",` : '';
 
-        // Model-specific prompt optimization
-        const { useSimplifiedPrompt } = getModelFamily();
         
         // =================== PHASE 1: MINIMAL AI REQUEST (Scene Generation Only) ===================
         console.log('START PHASE 1: Minimal AI Request (Scene Generation Only)');
@@ -838,20 +824,6 @@ RULES:
         
         console.log(`SUCCESS SCENE CREATOR: Scene data with character consistency ready for orchestrator`);
         
-        // =================== DEBUG OUTPUT ===================
-        // Check if debug mode is enabled via any debug parameter
-        const debugMode = req.url.includes('debug=1') || req.url.includes('debug=true');
-        
-        if (debugMode) {
-          console.log(`ART AI DEBUG OUTPUT:`);
-          console.log(`TARGET Primary Scene: "${primaryScene}"`);
-          console.log(`HOUSE Setting: ${setting || 'null'}`);
-          console.log(`ACTION Action: ${action || 'null'}`);
-          console.log(`MOOD Mood: ${mood || 'null'}`);
-          console.log(`POSE Pose: ${pose || 'null'}`);
-          console.log(`CHAR Character: ${characterData?.name || 'Unknown'} (seed: ${characterData?.seed || 'none'})`);
-          console.log(`STATS Processing: 3-phase enhanced with ${secondaryElements.length} secondary characters`);
-        }
         
         // =================== VALIDATION & RETURN RESULTS ===================
         // No complex validation needed since we built the prompts ourselves
@@ -916,6 +888,5 @@ RULES:
 
         return createCorsResponse(result);
       }
-    )
   );
 });
