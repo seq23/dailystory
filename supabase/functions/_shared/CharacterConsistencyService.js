@@ -15,6 +15,16 @@ export class CharacterConsistencyService {
   }
 
   /**
+   * Singleton pattern - return the shared instance
+   */
+  static getInstance() {
+    if (!CharacterConsistencyService.instance) {
+      CharacterConsistencyService.instance = new CharacterConsistencyService();
+    }
+    return CharacterConsistencyService.instance;
+  }
+
+  /**
    * Save character data to database
    */
   async saveCharacterToDatabase(sessionId, characterKey, characterData) {

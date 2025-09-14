@@ -4,7 +4,7 @@
  * Replaces scattered placeholder logic with centralized system
  */
 
-import { VOCABULARY, PLACEHOLDER_POOLS, pick, getCulturalSelection } from './tier25Vocabulary.js';
+import { VOCABULARY, PLACEHOLDER_POOLS, CULTURAL_ARRAYS, pick, getCulturalSelection, createSeededRandom } from './tier25Vocabulary.js';
 
 export class UnifiedPlaceholderResolver {
   constructor() {
@@ -37,7 +37,11 @@ export class UnifiedPlaceholderResolver {
       // 4. CULTURAL PLACEHOLDERS (cultural-aware)
       processedText = this.resolveCulturalPlaceholders(processedText, userInfo);
       
-      // 5. CLEANUP AND GRAMMAR FIXES
+      // 5. CULTURAL ENHANCEMENTS (bundle.culturalEnhancements)
+      const culturalEnhancements = this.resolveCulturalEnhancements(userInfo, sessionId);
+      processedText = processedText.replace(/\{bundle\.culturalEnhancements\}/g, culturalEnhancements);
+      
+      // 6. CLEANUP AND GRAMMAR FIXES
       processedText = this.cleanup(processedText);
 
       console.log(`🔧 [UnifiedPlaceholderResolver] Resolved placeholders for session ${sessionId}`);
@@ -179,8 +183,15 @@ export class UnifiedPlaceholderResolver {
   }
 
   detectCulturalContext(userInfo) {
-    // Simple cultural detection - can be enhanced with user preferences
-    return 'european'; // Default fallback
+    // Enhanced cultural detection for dark skin tones
+    const skinTone = userInfo?.skinTone || userInfo?.avatarIdentity?.skinTone;
+    
+    if (skinTone === 'dark' || skinTone === 'darker') {
+      return 'african'; // Map ANY dark skin to african cultural arrays
+    }
+    
+    // Default for light skin tones
+    return 'european';
   }
 
   applyPronounGrammarFixes(text, pronoun) {
@@ -193,6 +204,64 @@ export class UnifiedPlaceholderResolver {
     }
 
     return fixed;
+  }
+
+  /**
+   * CULTURAL ENHANCEMENT RESOLVER - For ${bundle.culturalEnhancements}
+   */
+  resolveCulturalEnhancements(userInfo, sessionId) {
+    const culturalType = this.detectCulturalContext(userInfo);
+    
+    // Only apply enhancements for detected cultural contexts (dark skin users)
+    if (culturalType !== 'african') {
+      return ''; // Light skin users get empty string
+    }
+    
+    // Generate user-specific seed for consistency
+    const userName = userInfo?.name || userInfo?.childName || 'child';
+    const culturalSeed = this.generateCulturalSeed(userName, sessionId);
+    
+    // Use seeded random to select from CULTURAL_ARRAYS.african
+    const selectedHair = getCulturalSelection('african', 'hair', culturalSeed);
+    const selectedFeatures = getCulturalSelection('african', 'features', culturalSeed + 1);
+    
+    // Combine into enhancement string
+    const enhancements = [selectedHair, selectedFeatures].filter(Boolean).join(', ');
+    
+    console.log(`🌍 Cultural enhancements for ${userName} (${culturalType}): ${enhancements}`);
+    return enhancements ? `with ${enhancements}` : '';
+  }
+
+  /**
+   * Generate consistent seed for cultural features
+   */
+  generateCulturalSeed(userName, sessionId) {
+    const combined = `${userName}-${sessionId}-cultural`;
+    let hash = 0;
+    
+    for (let i = 0; i < combined.length; i++) {
+      const char = combined.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash;
+    }
+    
+    return Math.abs(hash % 999999) + 1;
+  }
+
+  /**
+   * Get cultural enhancement level for monitoring
+   */
+  getCulturalEnhancementLevel() {
+    // This can be called by Template AB for logging
+    return 'UNIVERSAL_CULTURAL_INTELLIGENCE';
+  }
+
+  /**
+   * Check if cultural features should be applied
+   */
+  shouldApplyCulturalFeatures(userInfo) {
+    const culturalType = this.detectCulturalContext(userInfo);
+    return culturalType === 'african';
   }
 
   cleanup(text) {

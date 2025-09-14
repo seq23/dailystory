@@ -91,15 +91,15 @@ function getComplexityLevel(userInfo, templateComplexity) {
 // ============= PHASE 3: ENHANCED TEMPLATE STRUCTURES WITH ADVANCED PLACEHOLDERS =============
 
 const PREMIUM_PROMPT_TEMPLATES = {
-  'level_0-1': 'Narrative: {pageText}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion}. Action: {scene}. Composition: {spatial_composition}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {sensory_details}. Context: {cultural_context}, {community_context}, {secondary_characters}. Technical: {frameworkPrompt}, {cameraDirective}',
+  'level_0-1': 'Narrative: {pageText}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion} {bundle.culturalEnhancements}. Action: {scene}. Composition: {spatial_composition}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {sensory_details}. Context: {cultural_context}, {community_context}, {secondary_characters}. Technical: {frameworkPrompt}, {cameraDirective}',
   
-  'level_2-4': 'Technical: {frameworkPrompt}, {cameraDirective}. Narrative: {pageText}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion}. Action: {scene}. Composition: {spatial_composition}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {sensory_details}. Context: {cultural_context}, {community_context}, {secondary_characters}'
+  'level_2-4': 'Technical: {frameworkPrompt}, {cameraDirective}. Narrative: {pageText}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion} {bundle.culturalEnhancements}. Action: {scene}. Composition: {spatial_composition}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {sensory_details}. Context: {cultural_context}, {community_context}, {secondary_characters}'
 };
 
 const BASIC_PROMPT_TEMPLATES = {
-  'level_0-1': 'Subject: {character} {age}, {ethnicity}. Action: {scene}. Environment: {setting}. Context: {cultural_context}. Technical: {frameworkPrompt}',
+  'level_0-1': 'Subject: {character} {age}, {ethnicity} {bundle.culturalEnhancements}. Action: {scene}. Environment: {setting}. Context: {cultural_context}. Technical: {frameworkPrompt}',
   
-  'level_2-4': 'Technical: {frameworkPrompt}. Subject: {character} {age}, {ethnicity}. Action: {scene}. Environment: {setting}. Context: {cultural_context}'
+  'level_2-4': 'Technical: {frameworkPrompt}. Subject: {character} {age}, {ethnicity} {bundle.culturalEnhancements}. Action: {scene}. Environment: {setting}. Context: {cultural_context}'
 };
 
 // ============= PHASE 3: UNIVERSAL PLACEHOLDER RESOLUTION INTEGRATION =============
@@ -232,10 +232,10 @@ async function processSecondaryCharacters(complexity, storyText, sessionId, page
       try {
         // Use CharacterConsistencyService for secondary character detection and processing
         const CharacterService = await getCharacterService();
-        const characterService = new CharacterService();
+        const characterService = CharacterService.getInstance();
         
         // Detect secondary characters from story text
-        const detectedCharacters = characterService.detectSecondaryCharacters(storyText);
+        const detectedCharacters = await characterService.detectSecondaryCharacters(sessionId, storyText, pageNumber);
         
         if (detectedCharacters.length > 0) {
           console.log(`🎭 Detected ${detectedCharacters.length} secondary characters:`, detectedCharacters);
@@ -290,6 +290,16 @@ async function processSecondaryCharacters(complexity, storyText, sessionId, page
 
 // Enhanced template data preparation with secondary characters
 async function prepareTemplateData(storyText, userInfo, avatarIdentity, characterData, visualDetails, frameworkPrompt, secondaryCharacters) {
+  // Resolve cultural enhancements using UniversalPlaceholderResolver
+  let culturalEnhancements = '';
+  try {
+    const resolver = await getUniversalResolver();
+    culturalEnhancements = resolver.resolveCulturalEnhancements(userInfo, userInfo?.sessionId);
+  } catch (error) {
+    console.warn('Cultural enhancements resolution failed:', error);
+    culturalEnhancements = '';
+  }
+
   return {
     storyText,
     userInfo,
@@ -297,7 +307,8 @@ async function prepareTemplateData(storyText, userInfo, avatarIdentity, characte
     characterData,
     visualDetails,
     secondaryCharacters: secondaryCharacters || '',
-    frameworkPrompt: frameworkPrompt || 'children\'s book illustration style'
+    frameworkPrompt: frameworkPrompt || 'children\'s book illustration style',
+    culturalEnhancements
   };
 }
 // ============= PHASE 4: ENHANCED SERVICE HEALTH CHECK WITH MONITORING =============
@@ -403,7 +414,7 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
       try {
         console.log('🎭 Template AB: Getting character consistency data');
         const CharacterService = await getCharacterService();
-        const characterConsistencyService = new CharacterService();
+        const characterConsistencyService = CharacterService.getInstance();
         characterData = await characterConsistencyService.getCharacterSeed(sessionId, avatarIdentity, storyText, 'standard', storyText);
       } catch (error) {
         console.warn('Character service failed:', error);
@@ -414,9 +425,9 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
       try {
         console.log('👁️ Template AB: Tracking visual details');
         const visualTracker = await getVisualTracker();
-        await visualTracker.analyzeTextForDetails(sessionId, storyText, pageNumber, userInfo?.name);
-        const objDescription = await visualTracker.buildObjectDescription(sessionId);
-        const coloredObjects = await visualTracker.getColoredObjectsForSession(sessionId);
+        await visualTracker.analyzeVisualDetails(sessionId, storyText, pageNumber, userInfo?.name);
+        const objDescription = await visualTracker.getVisualDetailsForPrompt(sessionId);
+        const coloredObjects = await visualTracker.getColoredObjects(sessionId);
         
         visualDetails = {
           objects: objDescription?.substring(0, 100) || '',

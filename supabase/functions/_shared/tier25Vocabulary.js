@@ -121,17 +121,37 @@ export const PLACEHOLDER_POOLS = {
 };
 
 // ============= UTILITY FUNCTIONS =============
-export function pick(arr) {
+export function pick(arr, seed) {
   if (!Array.isArray(arr) || arr.length === 0) return '';
+  
+  if (seed !== undefined) {
+    // Use seeded random for consistency
+    const seededRandom = createSeededRandom(seed);
+    return arr[Math.floor(seededRandom() * arr.length)];
+  }
+  
+  // Fallback to Math.random for backward compatibility
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-export function getCulturalSelection(culturalType, feature) {
+export function createSeededRandom(seed) {
+  let currentSeed = seed;
+  return function() {
+    currentSeed = (currentSeed * 9301 + 49297) % 233280;
+    return currentSeed / 233280;
+  };
+}
+
+export function getCulturalSelection(culturalType, feature, seed) {
   const cultural = CULTURAL_ARRAYS[culturalType];
   if (!cultural || !cultural[feature]) return '';
-  return pick(cultural[feature]);
+  return pick(cultural[feature], seed);
 }
-const TIER_25_UNIFIED_VOCABULARY = {
+// ============= EXPORTS FOR UNIFIED PLACEHOLDER RESOLVER =============
+export const VOCABULARY = TIER_25_UNIFIED_VOCABULARY_EXTENDED;
+
+// Legacy export compatibility
+export const CULTURAL_ARRAYS_EXTENDED = TIER_25_UNIFIED_VOCABULARY_EXTENDED;
   actions: {
     basic: ['playing', 'running', 'jumping', 'walking', 'sitting', 'standing', 'looking', 'smiling'],
     creative: ['drawing', 'painting', 'building', 'creating', 'crafting', 'making', 'designing'],
@@ -767,3 +787,9 @@ export default {
   ATMOSPHERE_OPTIONS,
   VIVID_COLORS
 };
+
+// ============= EXPORTS FOR UNIFIED PLACEHOLDER RESOLVER =============
+export const VOCABULARY = TIER_25_UNIFIED_VOCABULARY_EXTENDED;
+
+// Legacy export compatibility
+export const CULTURAL_ARRAYS_EXTENDED = TIER_25_UNIFIED_VOCABULARY_EXTENDED;
