@@ -428,7 +428,7 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
     }
 
     // Get secondary characters with tier-specific processing
-    const secondaryCharacters = await processSecondaryCharacters('A', storyText, sessionId, pageNumber, serviceHealth);
+    const secondaryCharactersStr = await processSecondaryCharacters('A', storyText, sessionId, pageNumber, serviceHealth);
     
     // Get framework prompt (style)
     const frameworkPrompt = 'vibrant children\'s book illustration, digital art style';
@@ -442,7 +442,7 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
       characterData, 
       visualDetails, 
       frameworkPrompt,
-      secondaryCharacters
+      secondaryCharactersStr
     );
     
     const positivePrompt = await resolvePlaceholders(template, templateData, true);

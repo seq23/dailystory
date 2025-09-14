@@ -89,6 +89,12 @@ export class CharacterConsistencyService {
    * Get or create character seed with full consistency support (DATABASE-BACKED)
    */
   async getCharacterSeed(sessionId, avatarIdentity, storyContext, sessionType = 'new', pageTextClothing = null) {
+    // Add null check to prevent crashes when avatarIdentity is undefined
+    if (!avatarIdentity) {
+      console.warn('⚠️ CharacterConsistencyService: avatarIdentity is undefined, using fallback');
+      avatarIdentity = { name: 'child' };
+    }
+    
     const characterName = avatarIdentity.name || 'child';
     const cacheKey = `${sessionId}_${characterName}`;
     

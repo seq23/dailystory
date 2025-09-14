@@ -1019,12 +1019,12 @@ serve(async (req) => {
           console.warn('CharacterService not available, using fallback character data');
           characterData = {
             seed: Math.floor(Math.random() * 1000000),
-            characterDescription: `${avatarIdentity.name} is a child age ${avatarIdentity?.age || '6-8'}`
+            characterDescription: `${avatarIdentity?.name || 'child'} is a child age ${avatarIdentity?.age || '6-8'}`
           };
         }
         
         const enhancedCharacterDescription = characterData.characterDescription || 
-          `${avatarIdentity.name} is a child age ${avatarIdentity?.age || '6-8'}`;
+          `${avatarIdentity?.name || 'child'} is a child age ${avatarIdentity?.age || '6-8'}`;
         
         console.log('CHAR PHASE 1.1: Enhanced Character Description:', {
           avatarIdentity: avatarIdentity,
