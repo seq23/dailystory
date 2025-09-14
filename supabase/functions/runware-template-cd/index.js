@@ -196,28 +196,48 @@ async function callRunwareAPI(positivePrompt, negativePrompt) {
   }
 }
 
-// Main handler
+// Main handler - PHASE 4: Session Architecture Update
 serve(async (req) => {
   console.log('📨 Template CD Request:', req.method);
 
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'POST, GET, OPTIONS'
+  };
+
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { 
+      status: 200, 
+      headers: corsHeaders 
+    });
   }
 
   // Health check
   if (req.method === 'GET' || req.method === 'HEAD') {
-    return createResponse({ 
+    return new Response(JSON.stringify({ 
       status: 'healthy',
       functionName: 'runware-template-cd',
       tier: '2.5C-D',
-      complexity: 'C-D'
+      complexity: 'C-D',
+      timestamp: new Date().toISOString(),
+      sessionArchitecture: 'parameter-based' // PHASE 4: Parameter-based session handling
+    }), {
+      status: 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }
 
   // Only handle POST requests for generation
   if (req.method !== 'POST') {
-    return createErrorResponse('Method not allowed', 405);
+    return new Response(JSON.stringify({
+      success: false,
+      error: 'Method not allowed'
+    }), {
+      status: 405,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
   }
 
   try {
@@ -226,15 +246,28 @@ serve(async (req) => {
     console.log('📋 Request body received:', {
       hasStoryText: !!body.storyText,
       hasUserInfo: !!body.userInfo,
-      templateComplexity: body.templateComplexity
+      templateComplexity: body.templateComplexity,
+      sessionId: body.sessionId,
+      pageNumber: body.pageNumber
     });
 
+    // PHASE 4: Session data received via parameters only
     const {
       storyText = '',
       userInfo = {},
       avatarIdentity = null,
-      templateComplexity = null
+      templateComplexity = null,
+      sessionId,
+      pageNumber,
+      emergencyMode = false
     } = body;
+
+    console.log('📝 Template CD: Processing with parameter-based session data', {
+      sessionId,
+      pageNumber,
+      emergencyMode,
+      sessionDataReceived: !!(sessionId && pageNumber)
+    });
 
     // Determine complexity level
     const complexity = getComplexityLevel(userInfo, templateComplexity);
@@ -252,7 +285,7 @@ serve(async (req) => {
     const imageURL = await callRunwareAPI(template.positivePrompt, template.negativePrompt);
 
     // Return successful response
-    return createResponse({
+    return new Response(JSON.stringify({
       success: true,
       imageURL: imageURL,
       positivePrompt: template.positivePrompt,
@@ -260,11 +293,25 @@ serve(async (req) => {
       templateType: template.templateType,
       tier: template.tier,
       complexity: complexity,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      sessionId,
+      pageNumber,
+      sessionArchitecture: 'parameter-based' // PHASE 4: Confirm parameter-based approach
+    }), {
+      status: 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
 
   } catch (error) {
     console.error('💥 Template CD Error:', error);
-    return createErrorResponse(error.message || 'Template generation failed', 500);
+    return new Response(JSON.stringify({
+      success: false,
+      error: error instanceof Error ? error.message : 'Template generation failed',
+      timestamp: new Date().toISOString(),
+      sessionArchitecture: 'parameter-based' // PHASE 4: Even in errors, show parameter-based approach
+    }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
   }
 });

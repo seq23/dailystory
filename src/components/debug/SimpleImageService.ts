@@ -54,12 +54,13 @@ export interface ImageGenerationResponse {
 
 export class SimpleImageService {
   /**
-   * Generate image using the image generation pipeline
+   * Generate image using the enhanced image generation pipeline with proper fallback chain
+   * Orchestrator → Tier 2.5C → Tier 4 (SVG)
    */
   static async generateImage(request: ImageGenerationRequest): Promise<ImageGenerationResponse> {
     const requestId = request.requestId || `REQ-${Math.random().toString(36).substring(2, 10)}-${Math.random().toString(36).substring(2, 7)}`;
     
-    DebugLogger.log('image', `🖼️ SimpleImageService: Starting image generation`, {
+    DebugLogger.log('image', `🖼️ SimpleImageService: Starting enhanced image generation`, {
       requestId,
       hasUserInfo: !!request.userInfo,
       userName: request.userInfo?.name,
@@ -68,6 +69,9 @@ export class SimpleImageService {
 
     try {
       const startTime = Date.now();
+      
+      // PHASE 3: Enhanced fallback chain - try orchestrator first
+      DebugLogger.log('image', `🎯 Attempting Orchestrator (main pipeline)`, { requestId });
       
       const response = await supabase.functions.invoke('runware-generate-image', {
         body: {
@@ -78,26 +82,9 @@ export class SimpleImageService {
 
       const processingTime = Date.now() - startTime;
 
-      if (response.error) {
-        DebugLogger.error('image', `❌ SimpleImageService: Function invocation failed`, {
-          requestId,
-          error: response.error,
-          processingTime
-        });
-
-        return {
-          success: false,
-          error: response.error.message || 'Function invocation failed',
-          metadata: {
-            requestId,
-            processingTime,
-            source: 'SimpleImageService'
-          }
-        };
-      }
-
-      if (response.data?.success) {
-        DebugLogger.log('image', `✅ SimpleImageService: Image generation successful`, {
+      // If orchestrator succeeds, return result
+      if (!response.error && response.data?.success) {
+        DebugLogger.log('image', `✅ Orchestrator succeeded`, {
           requestId,
           hasImage: !!(response.data.imageURL || response.data.imageUrl),
           processingTime,
@@ -110,36 +97,89 @@ export class SimpleImageService {
           metadata: response.data.metadata,
           routingMetadata: response.data.routingMetadata
         };
-      } else {
-        DebugLogger.warn('image', `⚠️ SimpleImageService: Generation failed`, {
-          requestId,
-          error: response.data?.error,
-          processingTime
-        });
-
-        return {
-          success: false,
-          error: response.data?.error || 'Image generation failed',
-          metadata: response.data?.metadata,
-          routingMetadata: response.data?.routingMetadata
-        };
       }
+
+      // PHASE 3: If orchestrator fails, try direct Tier 2.5C fallback
+      DebugLogger.warn('image', `⚠️ Orchestrator failed, attempting Tier 2.5C fallback`, {
+        requestId,
+        orchestratorError: response.error?.message || response.data?.error,
+        processingTime
+      });
+
+      const tier25CResult = await this.emergencyFallbackTier25C(request);
+      
+      if (tier25CResult.success) {
+        DebugLogger.log('image', `✅ Tier 2.5C fallback succeeded`, { requestId });
+        return tier25CResult;
+      }
+
+      // PHASE 3: If Tier 2.5C fails, use Tier 4 (SVG fallback)
+      DebugLogger.warn('image', `⚠️ Tier 2.5C failed, using Tier 4 (SVG fallback)`, { requestId });
+      
+      return {
+        success: true,
+        imageURL: this.generateTier4SVGFallback(request.pageText, request.pageNumber),
+        provider: 'svg-fallback',
+        tier: '4',
+        templateType: 'svg-emergency',
+        metadata: {
+          requestId,
+          source: 'SimpleImageService',
+          emergencyFallback: true,
+          tier: 4,
+          fallbackReason: 'All backend tiers failed'
+        }
+      };
+
     } catch (error) {
-      DebugLogger.error('image', `💥 SimpleImageService: Exception occurred`, {
+      DebugLogger.error('image', `💥 SimpleImageService: Critical exception, using Tier 4 SVG`, {
         requestId,
         error: error instanceof Error ? error.message : 'Unknown error'
       });
 
+      // PHASE 3: Always return a working fallback, never fail completely
       return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error occurred',
+        success: true,
+        imageURL: this.generateTier4SVGFallback(request.pageText, request.pageNumber),
+        provider: 'svg-fallback',
+        tier: '4',
+        templateType: 'svg-emergency',
         metadata: {
           requestId,
           source: 'SimpleImageService',
-          exception: true
+          exception: true,
+          tier: 4,
+          fallbackReason: 'Critical system exception'
         }
       };
     }
+  }
+
+  /**
+   * Generate Tier 4 SVG fallback - guaranteed to work
+   */
+  private static generateTier4SVGFallback(pageText: string, pageNumber: number): string {
+    // Simple SVG generation based on story content
+    const hasCharacter = /\b(child|person|character|they|he|she|avatar)\b/i.test(pageText);
+    const hasOutdoor = /\b(outside|outdoor|garden|playground|park|forest|beach)\b/i.test(pageText);
+    const hasActivity = /\b(playing|running|walking|reading|building|creating)\b/i.test(pageText);
+    
+    const backgroundColor = hasOutdoor ? '#87CEEB' : '#f8f9fa';
+    const groundColor = hasOutdoor ? '#90EE90' : '#e5e7eb';
+    
+    const svg = `
+      <svg width="1024" height="1024" xmlns="http://www.w3.org/2000/svg">
+        <rect width="1024" height="1024" fill="${backgroundColor}"/>
+        <rect x="0" y="800" width="1024" height="224" fill="${groundColor}"/>
+        ${hasCharacter ? '<circle cx="512" cy="600" r="80" fill="#FFB6C1" stroke="#333" stroke-width="4"/>' : ''}
+        ${hasActivity ? '<rect x="400" y="700" width="224" height="100" fill="#FFA500" rx="20"/>' : ''}
+        <text x="512" y="150" text-anchor="middle" font-family="Arial, sans-serif" font-size="48" fill="#333">
+          Story Scene ${pageNumber}
+        </text>
+      </svg>
+    `;
+
+    return `data:image/svg+xml;base64,${btoa(svg)}`;
   }
 
   /**

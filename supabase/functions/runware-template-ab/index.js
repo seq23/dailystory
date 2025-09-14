@@ -20,15 +20,8 @@ async function getCharacterService() {
   }
 }
 
-async function getSessionManager() {
-  try {
-    const { globalSessionManager } = await import("../_shared/SessionStateManager.js");
-    return globalSessionManager;
-  } catch (error) {
-    console.warn('SessionManager lazy load failed:', error);
-    return null;
-  }
-}
+// PHASE 4: Session management removed - orchestrator handles all session state
+// Session data flows via function parameters only
 
 async function getVisualTracker() {
   try {
@@ -654,25 +647,13 @@ serve(async (req) => {
       hasUserInfo: !!userInfo
     });
     
-    // Initialize session manager if available
-    try {
-      const SessionManager = await getSessionManager();
-      if (SessionManager && sessionId) {
-        console.log('📋 Template AB: Updating session state');
-        // Check if updateSession method exists before calling
-        if (SessionManager && typeof SessionManager.updateSession === 'function') {
-          SessionManager.updateSession(sessionId, {
-            lastActivity: Date.now(),
-            currentFunction: 'runware-template-ab',
-            pageNumber: pageNumber
-          });
-        } else if (SessionManager) {
-          console.warn('⚠️ Template AB: SessionManager.updateSession method not available');
-        }
-      }
-    } catch (error) {
-      console.warn('⚠️ Template AB: Session management unavailable:', error);
-    }
+    // PHASE 4: Session management centralized in orchestrator
+    // All session data received via parameters, no direct session imports
+    console.log('📋 Template AB: Session data received via parameters', {
+      sessionId,
+      pageNumber,
+      sessionDataReceived: !!(sessionId && pageNumber)
+    });
     
     // Determine complexity level
     const complexity = getComplexityLevel(userInfo, templateComplexity);

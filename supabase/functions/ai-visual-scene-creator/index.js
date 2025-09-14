@@ -25,15 +25,8 @@ async function getEnhancedAnimalDetector() {
   }
 }
 
-async function getSessionManager() {
-  try {
-    const { globalSessionManager } = await import("../_shared/SessionStateManager.js");
-    return globalSessionManager;
-  } catch (error) {
-    console.warn('SessionManager lazy load failed:', error);
-    return null;
-  }
-}
+// PHASE 4: Session management removed - orchestrator handles all session state
+// Session data flows via function parameters only
 
 async function getVisualTracker() {
   try {
