@@ -113,11 +113,11 @@ const BASIC_PROMPT_TEMPLATES = {
 // Import the comprehensive Universal Placeholder Resolver
 async function getUniversalResolver() {
   try {
-    const { UniversalPlaceholderResolver } = await import("../_shared/UniversalPlaceholderResolver.js");
-    return UniversalPlaceholderResolver;
+    const { unifiedPlaceholderResolver } = await import("../_shared/UnifiedPlaceholderResolver.js");
+    return unifiedPlaceholderResolver; // Use singleton instance
   } catch (error) {
-    console.error('Universal Placeholder Resolver unavailable:', error);
-    throw new Error('Critical: Universal Placeholder Resolver failed to load');
+    console.error('Unified Placeholder Resolver unavailable:', error);
+    throw new Error('Critical: Unified Placeholder Resolver failed to load');
   }
 }
 
@@ -136,9 +136,8 @@ async function resolvePlaceholders(template, data, hasCulturalIntelligence) {
   console.log('🎯 Phase 3: Using Universal Placeholder Resolver with cultural intelligence');
   
   try {
-    // Use the Universal Placeholder Resolver (Phase 3.2)
-    const UniversalResolver = await getUniversalResolver();
-    const resolver = new UniversalResolver(userInfo, avatarIdentity, storyText);
+    // Use the Unified Placeholder Resolver singleton (Phase 3.2)
+    const resolver = await getUniversalResolver();
     
     // Prepare additional data for advanced placeholders
     const additionalData = {
@@ -148,7 +147,13 @@ async function resolvePlaceholders(template, data, hasCulturalIntelligence) {
       characterData: characterData
     };
     
-    const resolvedTemplate = resolver.resolve(template, additionalData);
+    const resolution = resolver.resolveAllPlaceholders(template, {
+      userInfo,
+      seed: additionalData,
+      sessionId: userInfo?.sessionId,
+      pageNumber: userInfo?.pageNumber
+    });
+    const resolvedTemplate = resolution.resolvedText;
     
     console.log('✅ Phase 3: Template resolved with Universal Placeholder Resolver');
     console.log('🌍 Cultural Enhancement Level:', resolver.getCulturalEnhancementLevel());
@@ -413,10 +418,10 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
     if (serviceHealth.visualTracker && sessionId) {
       try {
         console.log('👁️ Template AB: Tracking visual details');
-        const VisualTracker = await getVisualTracker();
-        await VisualTracker.analyzeTextForDetails(sessionId, storyText, pageNumber, userInfo?.name);
-        const objDescription = await VisualTracker.buildObjectDescription(sessionId);
-        const coloredObjects = await VisualTracker.getColoredObjectsForSession(sessionId);
+        const visualTracker = await getVisualTracker();
+        await visualTracker.analyzeTextForDetails(sessionId, storyText, pageNumber, userInfo?.name);
+        const objDescription = await visualTracker.buildObjectDescription(sessionId);
+        const coloredObjects = await visualTracker.getColoredObjectsForSession(sessionId);
         
         visualDetails = {
           objects: objDescription?.substring(0, 100) || '',
@@ -436,7 +441,7 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
     console.log('🎨 Tier 2.5A: Using unified style framework:', styleFramework.name, 'for difficulty:', difficulty);
     
     // Get secondary characters with tier-specific processing
-    const secondaryCharactersStr = await processSecondaryCharacters('A', storyText, sessionId, pageNumber, serviceHealth);
+    const secondaryCharacters = await processSecondaryCharacters('A', storyText, sessionId, pageNumber, serviceHealth);
     
     // Use PREMIUM template with full cultural intelligence
     const template = PREMIUM_PROMPT_TEMPLATES[difficultyLevel];
@@ -447,7 +452,7 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
       characterData, 
       visualDetails, 
       frameworkPrompt,
-      secondaryCharactersStr
+      secondaryCharacters
     );
     
     const positivePrompt = await resolvePlaceholders(template, templateData, true);
@@ -458,7 +463,7 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
       nativeLanguage: avatarIdentity?.nativeLanguage || userInfo?.nativeLanguage,
       skinTone: avatarIdentity?.skinTone || userInfo?.avatar?.skinTone,
       usingChildsRealName: userInfo?.name || userInfo?.childName,
-      secondaryCharacterCount: secondaryCharactersA.split(',').filter(c => c.trim()).length
+      secondaryCharacterCount: secondaryCharacters.split(',').filter(c => c.trim()).length
     });
     
     console.log('✅ Template AB Tier 2.5A: Successfully using PREMIUM templates with cultural intelligence');
@@ -531,55 +536,60 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
   throw new Error(`Unsupported complexity level: ${complexity}. Template AB only handles A and B.`);
 }
 
-// ============= RUNWARE API CALL =============
+// ============= RUNWARE API CALL WITH ENHANCED ERROR HANDLING =============
 async function callRunwareAPI(prompt, negativePrompt) {
   const RUNWARE_API_KEY = Deno.env.get('RUNWARE_API_KEY');
   if (!RUNWARE_API_KEY) {
     throw new Error('RUNWARE_API_KEY not configured');
   }
   
-  console.log('🎨 Template AB: Calling Runware API');
-  
-  const payload = [
-    {
-      taskType: "authentication",
-      apiKey: RUNWARE_API_KEY
-    },
-    {
-      taskType: "imageInference",
-      taskUUID: crypto.randomUUID(),
-      positivePrompt: prompt,
-      negativePrompt: negativePrompt,
-      width: 1024,
-      height: 1024,
-      model: "runware:100@1",
-      numberResults: 1,
-      outputFormat: "WEBP",
-      CFGScale: 1,
-      scheduler: "FlowMatchEulerDiscreteScheduler"
+  try {
+    console.log('🎨 Template AB: Calling Runware API');
+    
+    const payload = [
+      {
+        taskType: "authentication",
+        apiKey: RUNWARE_API_KEY
+      },
+      {
+        taskType: "imageInference",
+        taskUUID: crypto.randomUUID(),
+        positivePrompt: prompt,
+        negativePrompt: negativePrompt,
+        width: 1024,
+        height: 1024,
+        model: "runware:100@1",
+        numberResults: 1,
+        outputFormat: "WEBP",
+        CFGScale: 1,
+        scheduler: "FlowMatchEulerDiscreteScheduler"
+      }
+    ];
+    
+    const response = await fetch('https://api.runware.ai/v1', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload)
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Runware API error: ${response.status} ${response.statusText}`);
     }
-  ];
-  
-  const response = await fetch('https://api.runware.ai/v1', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(payload)
-  });
-  
-  if (!response.ok) {
-    throw new Error(`Runware API error: ${response.status}`);
+    
+    const result = await response.json();
+    const imageData = result.data?.find(item => item.taskType === 'imageInference');
+    
+    if (!imageData?.imageURL) {
+      throw new Error('No image URL in Runware response');
+    }
+    
+    return imageData;
+  } catch (error) {
+    console.error('❌ Template AB: Runware API call failed:', error);
+    throw error;
   }
-  
-  const result = await response.json();
-  const imageData = result.data?.find(item => item.taskType === 'imageInference');
-  
-  if (!imageData?.imageURL) {
-    throw new Error('No image URL in Runware response');
-  }
-  
-  return imageData;
 }
 
 // ============= MAIN HANDLER =============
@@ -649,11 +659,16 @@ serve(async (req) => {
       const SessionManager = await getSessionManager();
       if (SessionManager && sessionId) {
         console.log('📋 Template AB: Updating session state');
-        SessionManager.updateSession(sessionId, {
-          lastActivity: Date.now(),
-          currentFunction: 'runware-template-ab',
-          pageNumber: pageNumber
-        });
+        // Check if updateSession method exists before calling
+        if (typeof SessionManager.updateSession === 'function') {
+          SessionManager.updateSession(sessionId, {
+            lastActivity: Date.now(),
+            currentFunction: 'runware-template-ab',
+            pageNumber: pageNumber
+          });
+        } else {
+          console.warn('⚠️ Template AB: SessionManager.updateSession method not available');
+        }
       }
     } catch (error) {
       console.warn('⚠️ Template AB: Session management unavailable:', error);

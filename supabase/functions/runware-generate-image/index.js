@@ -103,8 +103,16 @@ function generateRequestId() {
 }
 
 // ============= SUPABASE CLIENT INITIALIZATION =============
-const supabaseUrl = Deno.env.get('SUPABASE_URL') || 'https://cpzeuogomaixamrtnnmj.supabase.co';
+const supabaseUrl = Deno.env.get('SUPABASE_URL');
 const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY');
+
+if (!supabaseUrl) {
+  throw new Error('SUPABASE_URL environment variable is required');
+}
+if (!supabaseKey) {
+  throw new Error('SUPABASE_SERVICE_ROLE_KEY or SUPABASE_ANON_KEY environment variable is required');
+}
+
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // ============================================================================
@@ -117,7 +125,28 @@ class StaticCache {
   cache = new Map();
   CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours TTL for static data - optimization
 
-  constructor() {}
+  constructor() {
+    // Initialize cache cleanup interval
+    setInterval(() => {
+      this.cleanupExpiredEntries();
+    }, 60 * 60 * 1000); // Cleanup every hour
+  }
+
+  cleanupExpiredEntries() {
+    const now = Date.now();
+    let cleanedCount = 0;
+    
+    for (const [key, entry] of this.cache.entries()) {
+      if (now - entry.timestamp > this.CACHE_TTL) {
+        this.cache.delete(key);
+        cleanedCount++;
+      }
+    }
+    
+    if (cleanedCount > 0) {
+      console.log(`🧹 StaticCache: Cleaned ${cleanedCount} expired entries`);
+    }
+  }
 
   static getInstance() {
     if (!StaticCache.instance) {
@@ -233,9 +262,19 @@ const processAvatarIdentityFromCache = (userInfo) => {
   const skinTone = userInfo?.avatar?.skinTone || 'medium';
   const hairOptions = hairMapping[skinTone] || hairMapping['medium'];
   
-  // DETERMINISTIC hair selection based on user name for consistency
-  const avatarSeed = userInfo?.name ? userInfo.name.charCodeAt(0) + userInfo.name.length : 42;
-  const hairIndex = avatarSeed % hairOptions.length;
+  // Use improved deterministic seed that includes more user-specific data
+  const userName = userInfo?.name || 'DefaultChild';
+  const userId = userInfo?.id || userInfo?.userId || 'anonymous';
+  const avatarType = userInfo?.avatarType || 'child';
+  
+  // Create more robust seed combining multiple user attributes
+  const combinedSeed = `${userName}_${userId}_${avatarType}_${skinTone}`;
+  let avatarSeed = 0;
+  for (let i = 0; i < combinedSeed.length; i++) {
+    avatarSeed = (avatarSeed * 31 + combinedSeed.charCodeAt(i)) % 1000000;
+  }
+  
+  const hairIndex = Math.abs(avatarSeed) % hairOptions.length;
   const hairColor = hairOptions[hairIndex];
   
   console.log('🎯 DETERMINISTIC AVATAR: Hair selection guaranteed consistent', {
@@ -555,37 +594,37 @@ const StaticDataCache = {
 
 /**
  * ============================================================================
- * IMAGE GENERATION TIER POLICY - CRITICAL BUSINESS RULE
+ * IMAGE GENERATION TIER POLICY - UPDATED BUSINESS RULE
  * ============================================================================
  * 
- * ALL USERS (GUEST AND PREMIUM) RECEIVE TIER 1 IMAGES
+ * TIER PROGRESSION BASED ON USER TYPE:
  * 
- * This is a fundamental business decision to ensure:
- * - 100% image generation success rate through comprehensive fallback system
- * - Consistent high-quality user experience regardless of subscription status  
- * - Premium value proposition focused on other features (unlimited time, saves, etc.)
- * - Simplified architecture without subscription-based image quality tiers
+ * GUEST USERS (Free/Non-paid):
+ * - 20 minute session timer (starts on page load)
+ * - Can pause, reduce time, end session from floating timer
+ * - Netflix-style story generation (10+ pages generated at once)
+ * - Can read up to 6 pages per story, then see "Next Story" button
+ * - Fresh image generated for each of the 6 pages
+ * - Can navigate backward to re-view same images within 6-page limit
+ * - "Next Story" clears cache and starts new 6-page story cycle
+ * - Session ends when 20 minutes expire, cache cleared
  * 
- * TIER PROGRESSION FOR ALL USERS:
- * - Tier 1: AI-Enhanced Premium (runware:100@1 with full enhancement pipeline)
- * - Tier 2.5A: Expert Template Fallback (complex structured templates)
- * - Tier 2.5B: Hard Template Fallback (advanced templates)
- * - Tier 2.5C: Medium Template Fallback (standard templates)
- * - Tier 2.5D: Easy Template Fallback (simple templates, minimal requirements)
- * - Tier 4: SVG Placeholder (100% guaranteed success)
+ * PREMIUM USERS (Paid):
+ * - Live page-by-page story generation (1 page at a time)
+ * - Same timer but can dismiss and continue indefinitely
+ * - Fresh image for every page, backward navigation shows same images
+ * - Can push "Finish Story" for AI-generated ending
+ * - Can continue with Part II, Part III, etc.
+ * - Can save stories to library with all original images cached
+ * - Can re-write story using magic wand (clears cache, regenerates images)
+ * - Session ends when manually ended, cache cleared
  * 
- * IMPORTANT: The `isGuestUser` parameter is for analytics/tracking only
- * DO NOT use it for tier selection or image quality degradation
- * 
- * REGRESSION PREVENTION:
- * - Never implement subscription-based tier restrictions
- * - All users must start with Tier 1 premium image generation
- * - Fallbacks exist for reliability, not subscription enforcement
+ * BOTH USER TYPES:
+ * - Never-ending stories (AI never naturally concludes)
+ * - Same image generation quality and fallback system
+ * - Tier 1 → Tier 2.5A/B/C/D → Tier 4 progression for reliability
  * 
  * ============================================================================
- * 
- * EMERGENCY CORS FIX TIMESTAMP: 2025-01-09 00:00:00 UTC
- * Fixed Tier 1 success responses to use createDynamicCorsResponse
  */
 
 // ============= API KEY UTILITIES =============

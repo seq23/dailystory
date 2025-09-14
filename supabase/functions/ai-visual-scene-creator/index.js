@@ -37,8 +37,8 @@ async function getSessionManager() {
 
 async function getVisualTracker() {
   try {
-    const { VisualDetailTracker } = await import("../_shared/VisualDetailTracker.js");
-    return new VisualDetailTracker();
+    const { visualDetailTracker } = await import("../_shared/VisualDetailTracker.js");
+    return visualDetailTracker; // Use singleton instance
   } catch (error) {
     console.warn('VisualTracker lazy load failed:', error);
     return null;
@@ -263,11 +263,11 @@ function validateAndEnhanceContent(enhancedStoryData, storyText) {
   return { enhancedData: enhancedStoryData, fieldCheck };
 }
 
-// AI Model Fallback Chain Configuration - UPDATED TO USER REQUESTED ORDER
+// AI Model Fallback Chain Configuration - CORRECT USER REQUESTED ORDER
 const AI_MODELS = [
+  { name: 'gpt-5-2025-08-07', maxTokens: 'max_completion_tokens', supportsTemperature: false },
   { name: 'gpt-4.1-2025-04-14', maxTokens: 'max_completion_tokens', supportsTemperature: false },
-  { name: 'gpt-4o', maxTokens: 'max_tokens', supportsTemperature: true },
-  { name: 'gpt-5-2025-08-07', maxTokens: 'max_completion_tokens', supportsTemperature: false }
+  { name: 'gpt-4o', maxTokens: 'max_tokens', supportsTemperature: true }
 ];
 
 // ============= AVATAR IDENTITY PROCESSING REMOVED =============
@@ -416,7 +416,8 @@ function detectModelFamily() {
   console.log('MODEL Model Family Detection:', {
     primaryModel,
     isNewModel,
-    useSimplifiedPrompt: isNewModel
+    useSimplifiedPrompt: isNewModel,
+    availableModels: AI_MODELS.map(m => m.name)
   });
   
   return {
@@ -593,16 +594,22 @@ async function callOpenAIWithFallback(messages, timeout = 6000, requestId, avata
     const logPrefix = requestId ? `[${requestId}]` : '';
     console.log(`MODEL ${logPrefix} Trying model ${modelIndex + 1}/${AI_MODELS.length}: ${model.name}`);
     
-    for (let attempt = 1; attempt <= 1; attempt++) {
+    for (let attempt = 1; attempt <= 3; attempt++) {
       try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), timeout);
         
         const requestBody = {
           model: model.name,
-          messages,
-          [model.maxTokens]: 600
+          messages
         };
+        
+        // Set the correct token parameter based on model
+        if (model.maxTokens === 'max_completion_tokens') {
+          requestBody.max_completion_tokens = 600;
+        } else {
+          requestBody.max_tokens = 600;
+        }
         
         // Only add temperature for models that support it
         if (model.supportsTemperature) {
@@ -658,13 +665,14 @@ async function callOpenAIWithFallback(messages, timeout = 6000, requestId, avata
               failureType: 'empty_content'
             });
             
-            // Continue to next attempt/model instead of returning empty result
+            // Continue to next attempt instead of returning empty result
             if (attempt < 3) {
-              const backoffDelay = 500; // Reduced from exponential to 500ms for faster fallbacks
+              const backoffDelay = Math.min(500 * attempt, 2000); // Exponential backoff, capped at 2s
               console.log(`ATTEMPT Retrying after ${backoffDelay}ms due to empty content...`);
               await new Promise(resolve => setTimeout(resolve, backoffDelay));
               continue;
             } else {
+              console.warn(`WARNING All ${attempt} attempts failed for model ${model.name}, trying next model`);
               break; // Try next model
             }
           }
@@ -685,8 +693,15 @@ async function callOpenAIWithFallback(messages, timeout = 6000, requestId, avata
             retryable: true
           });
           
-          // Skip retries - go to next model immediately
-          break;
+          // For retryable errors, continue with retry logic
+          if (attempt < 3) {
+            const backoffDelay = Math.min(1000 * attempt, 3000);
+            console.log(`ATTEMPT Retrying ${model.name} after ${backoffDelay}ms due to ${response.status} error...`);
+            await new Promise(resolve => setTimeout(resolve, backoffDelay));
+            continue;
+          } else {
+            break; // Try next model after all attempts exhausted
+          }
         } else {
           const errorText = await response.text();
           console.error(`ERROR Model ${model.name} failed with status ${response.status}: ${errorText}`);
@@ -720,12 +735,19 @@ async function callOpenAIWithFallback(messages, timeout = 6000, requestId, avata
           });
         }
         
-        // Skip retries - go to next model immediately
-        break;
+        // For network/timeout errors, retry with backoff
+        if (attempt < 3) {
+          const backoffDelay = Math.min(1000 * attempt, 3000);
+          console.log(`ATTEMPT Retrying ${model.name} after ${backoffDelay}ms due to ${error.name} error...`);
+          await new Promise(resolve => setTimeout(resolve, backoffDelay));
+          continue;
+        } else {
+          break; // Try next model after all attempts exhausted
+        }
       }
     }
     
-    console.warn(`ERROR Model ${model.name} failed after 3 attempts, trying next model...`);
+    console.warn(`ERROR Model ${model.name} failed after ${3} attempts, trying next model...`);
     circuitBreaker.recordFailure(isExpertContent);
     
     // Log model exhaustion
