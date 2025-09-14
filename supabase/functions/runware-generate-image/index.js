@@ -1585,10 +1585,12 @@ serve(async (req) => {
         routingDecisions.push('Routing to Tier 2.5D: StaticDataCache unavailable');
       }
     } else if (avatarIdentity?.completenessValidation?.isComplete === false) {
-      console.log('❌ PHASE 8: Avatar identity incomplete - routing to Tier 2.5A');
+      console.log('❌ PHASE 8: Avatar identity incomplete - routing to Tier 2.5C');
       forceTier = 2.5; // Route to template fallbacks for incomplete identity
       skippedTiers.push('Tier 1');
-      routingDecisions.push('Avatar identity incomplete - routing to Tier 2.5A');
+      skippedTiers.push('Tier 2.5A');
+      skippedTiers.push('Tier 2.5B');
+      routingDecisions.push('Avatar identity incomplete - routing to Tier 2.5C (skipping 2.5A/2.5B)');
     } else {
       console.log('✅ PHASE 8: Complete avatar identity - proceeding with enhanced processing');
       routingDecisions.push('Complete avatar identity - proceeding with Tier 1');
