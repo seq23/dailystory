@@ -297,146 +297,33 @@ function getModelFamily() {
 
 // ============= ROBUST JSON PARSING WITH FALLBACKS =============
 
-function parseAIResponse(content, options = {}) {
-  // PHASE 2: Enhanced parsing debug with detailed analysis
-  console.log('DEBUG PARSING DEBUG: Robust JSON Analysis:', {
-    contentLength: content.length,
-    modelFamily: options.modelFamily,
-    contentType: typeof content,
-    firstLine: content.split('\n')[0] || '',
-    lastLine: content.split('\n').pop() || '',
-    hasJsonStart: content.trim().startsWith('{'),
-    hasJsonEnd: content.trim().endsWith('}'),
-    firstChars: content.substring(0, 100),
-    lastChars: content.substring(content.length - 50)
-  });
-  
-  // Strategy 1: Try direct JSON parsing (most common)
+function parseAIResponse(content) {
   try {
-    const parsed = JSON.parse(content);
-    console.log('SUCCESS PARSING SUCCESS: Direct JSON parsing successful', {
-      parsedKeys: Object.keys(parsed || {}),
-      primarySceneLength: parsed.primaryScene?.length || 0,
-      hasPrimaryScene: !!parsed.primaryScene
-    });
-    return parsed;
+    return JSON.parse(content);
   } catch (directError) {
-    console.log('WARNING PARSING ATTEMPT 1 FAILED: Direct parsing failed, trying extraction methods:', {
-      errorMessage: directError instanceof Error ? directError.message : String(directError),
-      contentStructure: {
-        hasCodeBlocks: content.includes('```'),
-        hasJsonKeywords: /["'][a-zA-Z]+["']\s*:/.test(content),
-        curlyBraceCount: (content.match(/\{/g) || []).length,
-        straightBraceCount: (content.match(/\}/g) || []).length
-      }
-    });
-  }
-  
-  // Strategy 2: Extract JSON from text (for models that add reasoning)
-  try {
-    // Look for JSON blocks in various formats
-    const jsonPatterns = [
-      /```json\s*(\{[\s\S]*?\})\s*```/i,
-      /```\s*(\{[\s\S]*?\})\s*```/i,
-      /(\{[\s\S]*?\})/,
-      /"?(\{[\s\S]*?\})"?/
-    ];
+    // Try extracting JSON from code blocks
+    const match = content.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/i) || 
+                  content.match(/(\{[\s\S]*?\})/);
     
-    for (let i = 0; i < jsonPatterns.length; i++) {
-      const pattern = jsonPatterns[i];
-      const match = content.match(pattern);
-      console.log(`DEBUG PARSING ATTEMPT ${i + 2}: Pattern ${i + 1}`, {
-        patternMatched: !!match,
-        matchedContent: match ? match[1]?.substring(0, 100) + '...' : 'none'
-      });
-      
-      if (match && match[1]) {
-        try {
-          const extracted = JSON.parse(match[1].trim());
-          console.log(`SUCCESS PARSING SUCCESS: JSON extraction successful with pattern ${i + 1}`, {
-            extractedKeys: Object.keys(extracted || {}),
-            primarySceneLength: extracted.primaryScene?.length || 0,
-            extractedFrom: `Pattern ${i + 1}`,
-            originalLength: content.length,
-            extractedLength: match[1].length
-          });
-          return extracted;
-        } catch (e) {
-          console.log(`WARNING Pattern ${i + 1} matched but parse failed:`, e.message);
-          continue;
-        }
-      }
-    }
-    
-    throw new Error('No valid JSON found, attempting fallback extraction');
-  } catch (extractionError) {
-    // Strategy 3: FALLBACK - Extract just primaryScene if possible
-    console.log('FALLBACK FALLBACK STRATEGY: Attempting primaryScene extraction from text');
-    try {
-      // Look for primaryScene content in various patterns
-      const primaryScenePatterns = [
-        /"primaryScene"\s*:\s*"([^"]+)"/i,
-        /'primaryScene'\s*:\s*'([^']+)'/i,
-        /primaryScene\s*:\s*"([^"]+)"/i,
-        /primaryScene\s*:\s*'([^']+)'/i,
-        /"primaryScene"\s*:\s*`([^`]+)`/i
-      ];
-      
-      for (const pattern of primaryScenePatterns) {
-        const match = content.match(pattern);
-        if (match && match[1] && match[1].length >= 30) {
-          const primaryScene = match[1].trim();
-          console.log('SUCCESS FALLBACK SUCCESS: Extracted primaryScene from text', {
-            primarySceneLength: primaryScene.length,
-            extractedContent: primaryScene.substring(0, 100) + '...'
-          });
+    if (match?.[1]) {
+      try {
+        return JSON.parse(match[1].trim());
+      } catch (e) {
+        // Extract just primaryScene as fallback
+        const sceneMatch = content.match(/"primaryScene"\s*:\s*"([^"]+)"/i);
+        if (sceneMatch?.[1]) {
           return {
-            primaryScene: primaryScene,
+            primaryScene: sceneMatch[1].trim(),
             setting: null,
             action: null,
             mood: null,
-            pose: null,
-            extractionMethod: 'fallback_text_extraction'
+            pose: null
           };
         }
       }
-      
-      // Strategy 4: LAST RESORT - Use the entire content as primaryScene if it's descriptive enough
-      if (content.length >= 30 && /\b(child|character|room|playing|sitting|standing|holding|looking)\b/i.test(content)) {
-        console.log('SUCCESS LAST RESORT SUCCESS: Using entire content as primaryScene', {
-          contentLength: content.length,
-          extractionMethod: 'full_content_fallback'
-        });
-        return {
-          primaryScene: content.trim(),
-          setting: null,
-          action: null,
-          mood: null,
-          pose: null,
-          extractionMethod: 'full_content_fallback'
-        };
-      }
-      
-      throw new Error('No extractable primaryScene content found');
-    } catch (fallbackError) {
-      console.error('ERROR PARSING COMPLETE FAILURE: All strategies exhausted including fallbacks:', {
-        directParseError: 'Invalid JSON syntax',
-        extractionError: extractionError.message,
-        fallbackError: fallbackError.message,
-        contentAnalysis: {
-          length: content.length,
-          lines: content.split('\n').length,
-          hasOpeningBrace: content.includes('{'),
-          hasClosingBrace: content.includes('}'),
-          suspectedJsonStart: content.indexOf('{'),
-          suspectedJsonEnd: content.lastIndexOf('}')
-        },
-        contentSample: content.substring(0, 300) + (content.length > 300 ? '...' : ''),
-        allStrategiesAttempted: jsonPatterns.length + 4 // JSON patterns + fallback strategies
-      });
-      
-      throw new Error(`All parsing strategies failed: ${fallbackError.message}`);
     }
+    
+    throw new Error('Could not parse AI response');
   }
 }
 
@@ -480,20 +367,7 @@ async function callOpenAIWithFallback(messages, timeout = 6000, requestId, avata
           requestBody.temperature = 0.3;
         }
         
-        // PHASE 1: Detailed OpenAI request logging
-        console.log(`MODEL ${logPrefix} OpenAI Request Configuration:`, {
-          model: model.name,
-          maxTokensParam: model.maxTokens,
-          maxTokensValue: 600,
-          supportsTemperature: model.supportsTemperature,
-          temperature: model.supportsTemperature ? 0.3 : 'not supported',
-          timeout: timeout,
-          attempt: `${attempt}/3`,
-          messagesCount: messages.length,
-          totalPromptLength: messages.reduce((sum, msg) => sum + msg.content.length, 0)
-        });
-        
-        console.log(`ATTEMPT ${logPrefix} Attempting ${model.name} (attempt ${attempt}/3, timeout: ${timeout}ms)`);
+        console.log(`Attempting ${model.name} (attempt ${attempt}/3)`);
         
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
@@ -510,116 +384,39 @@ async function callOpenAIWithFallback(messages, timeout = 6000, requestId, avata
         if (response.ok) {
           const result = await response.json();
           
-          // Enhanced content validation
           const content = result?.choices?.[0]?.message?.content;
-          if (!content || content.trim() === '') {
-            console.error(`ERROR Model ${model.name} returned empty content on attempt ${attempt}:`, {
-              hasChoices: !!result?.choices,
-              choicesLength: result?.choices?.length,
-              hasMessage: !!result?.choices?.[0]?.message,
-              contentType: typeof content,
-              contentValue: JSON.stringify(content)
-            });
-            
-            console.error('ALERT Tier 1 OpenAI Failure:', new Error(`Empty content from ${model.name}`), {
-              model: model.name,
-              attempt,
-              failureType: 'empty_content'
-            });
-            
-            // Continue to next attempt instead of returning empty result
+          if (!content?.trim()) {
             if (attempt < 3) {
-              const backoffDelay = Math.min(500 * attempt, 2000); // Exponential backoff, capped at 2s
-              console.log(`ATTEMPT Retrying after ${backoffDelay}ms due to empty content...`);
-              await new Promise(resolve => setTimeout(resolve, backoffDelay));
+              await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
               continue;
-            } else {
-              console.warn(`WARNING All 3 attempts failed for model ${model.name}, trying next model`);
-              break; // Try next model
             }
+            break;
           }
           
-          console.log(`SUCCESS Model ${model.name} succeeded on attempt ${attempt} with valid content`);
           circuitBreaker.recordSuccess();
           return result;
         } else if (response.status === 503 || response.status === 429 || response.status === 502) {
-          const errorText = await response.text();
-          console.warn(`WARNING Model ${model.name} returned ${response.status} on attempt ${attempt}: ${errorText}`);
-          
-          console.error('ALERT Tier 1 OpenAI Failure:', new Error(`${response.status}: ${errorText}`), {
-            model: model.name,
-            attempt,
-            status: response.status,
-            retryable: true
-          });
-          
-          // For retryable errors, continue with retry logic
           if (attempt < 3) {
-            const backoffDelay = Math.min(1000 * attempt, 3000);
-            console.log(`ATTEMPT Retrying ${model.name} after ${backoffDelay}ms due to ${response.status} error...`);
-            await new Promise(resolve => setTimeout(resolve, backoffDelay));
+            await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
             continue;
-          } else {
-            break; // Try next model after all attempts exhausted
           }
+          break;
         } else {
-          const errorText = await response.text();
-          console.error(`ERROR Model ${model.name} failed with status ${response.status}: ${errorText}`);
-          
-          console.error('ALERT Tier 1 OpenAI Failure:', new Error(`${response.status}: ${errorText}`), {
-            model: model.name,
-            attempt,
-            status: response.status,
-            retryable: false
-          });
-          
-          break; // Don't retry on non-transient errors
+          break;
         }
       } catch (error) {
-        if (error.name === 'AbortError') {
-          console.warn(`TIMEOUT ${model.name} timed out after ${timeout}ms on attempt ${attempt}`);
-        } else {
-          console.error(`ERROR ${model.name} error on attempt ${attempt}:`, error instanceof Error ? error.message : String(error));
-        }
-        
-        console.error('ALERT Tier 1 OpenAI Failure:', error, {
-          model: model.name,
-          attempt,
-          errorType: error.name === 'AbortError' ? 'timeout' : 'network_or_unknown'
-        });
-        
-        // For network/timeout errors, retry with backoff
         if (attempt < 3) {
-          const backoffDelay = Math.min(1000 * attempt, 3000);
-          console.log(`ATTEMPT Retrying ${model.name} after ${backoffDelay}ms due to ${error.name} error...`);
-          await new Promise(resolve => setTimeout(resolve, backoffDelay));
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
           continue;
-        } else {
-          break; // Try next model after all attempts exhausted
         }
+        break;
       }
     }
     
-    console.warn(`ERROR Model ${model.name} failed after 3 attempts, trying next model...`);
     circuitBreaker.recordFailure();
-    
-    console.error('ALERT Tier 1 OpenAI Failure:', new Error(`Model ${model.name} exhausted`), {
-      model: model.name,
-      totalAttempts: 3,
-      failureType: 'model_exhausted'
-    });
   }
   
-  console.error('BLOCKED All AI models exhausted');
-  
-  const error = new Error('All AI models failed - service degraded');
-  console.error('ALERT Tier 1 OpenAI Failure:', error, {
-    models: AI_MODELS.map(m => m.name),
-    totalModels: AI_MODELS.length,
-    failureType: 'all_models_exhausted'
-  });
-  
-  throw error;
+  throw new Error('All AI models failed');
 }
 
 serve(async (req) => {
@@ -666,179 +463,39 @@ serve(async (req) => {
         body = {};
       }
 
-      // Handle POST health check requests
-      if (body.healthCheck || body.diagnosticMode) {
-        console.log(`🩺 [${requestId}] POST health check request received`, body);
+      // Handle health check and diagnostic requests
+      if (body.healthCheck || body.diagnostic === 'tier_health_check') {
         return createCorsResponse({
           healthy: true,
           service: 'ai-visual-scene-creator',
           status: 'ready',
-          timestamp: new Date().toISOString(),
-          requestId,
-          dependencies: {
-            openai: !!Deno.env.get('OPENAI_API_KEY'),
-            circuitBreaker: 'initialized'
-          }
+          openai: !!Deno.env.get('OPENAI_API_KEY')
         });
       }
-
-      // DIAGNOSTIC MODE - Handle diagnostic requests
-      const diagnostic = body?.diagnostic;
-      const test = body?.test;
-      if (diagnostic || test) {
-        console.log('DEBUG AI Story Enhancer DIAGNOSTIC MODE:', diagnostic || 'basic_test');
-        
-        if (diagnostic === 'circuit_breaker_status') {
-          const status = circuitBreaker.getStatus();
-          return createCorsResponse({
-            success: true,
-            diagnostic: true,
-            circuitBreakerStatus: status,
-            message: status.isOpen ? 
-              `Circuit breaker is OPEN (${status.failures}/${status.threshold} failures)` :
-              `Circuit breaker is CLOSED (${status.failures}/${status.threshold} failures)`,
-            timestamp: new Date().toISOString()
-          });
-        }
-        
-        if (diagnostic === 'reset_circuit_breaker') {
-          const oldStatus = circuitBreaker.getStatus();
-          circuitBreaker.manualReset();
-          const newStatus = circuitBreaker.getStatus();
-          
-          return createCorsResponse({
-            success: true,
-            diagnostic: true,
-            message: 'Circuit breaker reset successfully',
-            before: oldStatus,
-            after: newStatus,
-            timestamp: new Date().toISOString()
-          });
-        }
-        
-        if (diagnostic === 'tier_health_check') {
-          const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-          if (!openAIApiKey) {
-            return createCorsErrorResponse('OPENAI_API_KEY not configured', 500);
-          }
-          
-          const cbStatus = circuitBreaker.getStatus();
-          return createCorsResponse({
-            success: true,
-            diagnostic: true,
-            message: 'AI Story Enhancer health check passed',
-            apiKeyConfigured: true,
-            circuitBreakerStatus: cbStatus,
-            timestamp: new Date().toISOString()
-          });
-        }
-        
-        // Basic test mode
-        return createCorsResponse({
-          success: true,
-          diagnostic: true,
-          message: 'AI Story Enhancer diagnostic test passed',
-          timestamp: new Date().toISOString()
-        });
+      // Extract and validate parameters
+      let { storyText, sessionId, pageNumber, avatarIdentity, storyId, enhancedStoryData } = body;
+      
+      storyText = storyText || body.pageText;
+      
+      if (!avatarIdentity && body.userInfo) {
+        avatarIdentity = {
+          name: body.userInfo.name || 'Child',
+          age: body.userInfo.age || '6-8',
+          type: body.userInfo.avatarType || 'prefer-not-to-answer',
+          skinTone: body.userInfo.avatar?.skinTone || 'medium',
+          culturalProfile: body.userInfo.culturalProfile || 'american',
+          nativeLanguage: body.userInfo.nativeLanguage || 'en',
+          difficultyLevel: body.userInfo.difficulty || 'medium'
+        };
       }
-        // =================== REORGANIZED TIER 1: 3-PHASE SYSTEM ===================
-        // PHASE 1: MINIMAL AI REQUEST (Scene Generation Only)
-        // PHASE 2: POST-AI PROMPT CONSTRUCTION  
-        // PHASE 3: STORY TEXT ATTACHMENT (Levels 0-1)
-        
-      let storyText, sessionId, pageNumber, totalPages, avatarIdentity, storyId, enhancedStoryData;
-      let pageText = '';
-      const importResults = {};
-      
-      console.log('REORG REORGANIZED TIER 1: Starting 3-Phase System');
-      
-      // Static imports are already loaded at module level
-      importResults.cors = 'SUCCESS SUCCESS (static)';
-      importResults.errorHandling = 'SUCCESS SUCCESS (static)';
-      importResults.characterConsistency = 'SUCCESS SUCCESS (static)';
-      
-      console.log('STATS Dependency Verification Results:', importResults);
-      
-      console.log('DEBUG REORGANIZED TIER 1: Starting Request Analysis');
-      
-      {
-        const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-        // Validate OpenAI API key is present
-        if (!openAIApiKey) {
-          throw {
-            type: 'VALIDATION_ERROR',
-            message: 'OPENAI_API_KEY not configured'
-          };
-        }
 
-        // Use already parsed body (avoid double consumption)
-        if (!body || Object.keys(body).length === 0) {
-          console.error('ERROR Request parsing failed: Body is empty or not parsed');
-          throw {
-            type: 'VALIDATION_ERROR',
-            message: 'Request parsing failed: Body already consumed'
-          };
-        }
-        
-        console.log('REQUEST Incoming Request Structure:', {
-          method: req.method,
-          headers: Object.fromEntries(req.headers.entries()),
-          bodyKeys: Object.keys(body || {}),
-          bodyTypes: Object.fromEntries(Object.entries(body || {}).map(([k, v]) => [k, typeof v])),
-          storyTextLength: body?.storyText?.length || 0,
-          hasAvatarIdentity: !!body?.avatarIdentity,
-          hasSessionId: !!body?.sessionId,
-          pageInfo: `${body?.pageNumber}/${body?.totalPages || 'unlimited'}`
-        });
+      if (!storyText) {
+        return createCorsErrorResponse('Missing required parameter: storyText or pageText', 400);
+      }
 
-        // Extract parameters with comprehensive validation and logging
-        if (!body) {
-          throw {
-            type: 'VALIDATION_ERROR',
-            message: 'Request body is null or undefined'
-          };
-        }
-        
-        ({ storyText, sessionId, pageNumber, totalPages, avatarIdentity, storyId, enhancedStoryData } = body);
-        
-        // ✅ PHASE 1 FALLBACK - Handle both storyText and pageText parameters
-        storyText = storyText || body.pageText;
-        
-        // ✅ AVATAR IDENTITY FALLBACK - Handle userInfo → avatarIdentity conversion for testing
-        if (!avatarIdentity && body.userInfo) {
-          console.log('INFO Converting userInfo to avatarIdentity for compatibility');
-          avatarIdentity = {
-            name: body.userInfo.name || 'Child',
-            age: body.userInfo.age || '6-8',
-            type: body.userInfo.avatarType || 'prefer-not-to-answer',
-            skinTone: body.userInfo.avatar?.skinTone || 'medium',
-            culturalProfile: body.userInfo.culturalProfile || 'american',
-            nativeLanguage: body.userInfo.nativeLanguage || 'en',
-            difficultyLevel: body.userInfo.difficulty || 'medium'
-          };
-        }
-        
-        console.log('PARAMS Parameter Validation:', {
-          storyText: storyText ? `SUCCESS Present (${storyText.length} chars)` : 'ERROR Missing',
-          sessionId: sessionId ? `SUCCESS Present (${sessionId})` : 'ERROR Missing',
-          pageNumber: pageNumber ? `SUCCESS Present (${pageNumber})` : 'ERROR Missing',
-          totalPages: totalPages ? `SUCCESS Present (${totalPages})` : 'WARNING Undefined (infinite story)',
-          avatarIdentity: avatarIdentity ? `SUCCESS Present (${Object.keys(avatarIdentity).length} properties)` : 'ERROR Missing avatar identity (REQUIRED)',
-          storyId: storyId ? `SUCCESS Present (${storyId})` : 'WARNING Missing story ID',
-          enhancedStoryData: enhancedStoryData ? 'SUCCESS Present (pre-enhanced)' : 'WARNING Will process with OpenAI',
-          fallbackUsed: body.storyText ? 'No (storyText provided)' : body.pageText ? 'Yes (pageText → storyText)' : 'No fallback available'
-        });
-
-        if (!storyText) {
-          throw {
-            type: 'VALIDATION_ERROR',
-            message: 'Missing required parameter: storyText or pageText'
-          };
-        }
-
-        // Set up pageText for consistent usage throughout the function
-        pageText = totalPages ? `page ${pageNumber} of ${totalPages}` : `page ${pageNumber} of ongoing story`;
-        console.log(`AI AI Story Enhancer: Processing ${pageText} for session ${sessionId}`);
+      if (!avatarIdentity) {
+        return createCorsErrorResponse('Missing required parameter: avatarIdentity', 400);
+      }
 
         // Get previous AI scene for visual consistency (new approach)
         let previousScene = null;
