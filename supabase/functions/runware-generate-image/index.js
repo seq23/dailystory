@@ -1131,8 +1131,8 @@ serve(async (req)=>{
   let pageNumber = 1;
   let enhancedStoryData = null;
   let forceTier = null;
-  try {
-    // ============= REQUEST PARSING WITH DEBUG =============
+  
+  // ============= REQUEST PARSING WITH DEBUG =============
     console.log(`📨 [${requestId}] Parsing request body...`);
     // Validate Content-Type for POST requests (FIX: Ensure proper JSON)
     const contentType = req.headers.get('content-type');
@@ -2103,51 +2103,4 @@ serve(async (req)=>{
         orchestrated: true
       }
     }, req);
-
-  } catch (error) {
-    console.error('❌ Image orchestration failed:', error);
-    // Enhanced error logging with request context (FIX: Variables now in scope)
-    console.error('🔍 ORCHESTRATION ERROR DEBUG:', {
-      errorMessage: error.message,
-      errorType: error.constructor.name,
-      userType: isGuestUser ? 'GUEST' : 'PREMIUM',
-      sessionId: sessionId?.substring(0, 15) + '...' || 'none',
-      pageNumber,
-      timestamp: new Date().toISOString(),
-      hasPageText: !!pageText,
-      pageTextLength: pageText?.length || 0
-    });
-    // TIER POLICY COMPLIANCE LOG - Log any orchestration failures  
-    console.error(`🔒 TIER POLICY WARNING: Image orchestration failed for user type "${isGuestUser ? 'GUEST' : 'PREMIUM'}" - Check fallback system`);
-    
-    // GUARANTEED FALLBACK: Always return a character placeholder image - never return 500 errors
-    const placeholderResult = generateCharacterPlaceholder(pageText || '', pageNumber || 1);
-    console.log('🛡️ GUARANTEED FALLBACK: Returning character placeholder to prevent 500 error');
-    
-    return createDynamicCorsResponse({
-      success: true,
-      imageURL: placeholderResult.url,
-      provider: 'runware-orchestrator',
-      tier: 4,
-      enhancementLevel: 'character-placeholder',
-      // ROUTING METADATA - Error Fallback
-      routingMetadata: {
-        attemptedTier: '1',
-        executedTier: '4',
-        fallbackReason: 'orchestration_error',
-        skippedTiers: ['1', '2.5A', '2.5B', '2.5C', '2.5D'],
-        routingDecisions: ['Orchestration error occurred', 'Guaranteed error fallback executed'],
-        binaryValidation: 'ERROR',
-        avatarCompleteness: 'ERROR'
-      },
-      metadata: {
-        orchestrated: true,
-        errorMessage: error.message,
-        fallbackType: 'guaranteed-character-placeholder',
-        imageIndex: placeholderResult.imageIndex,
-        pageNumber: placeholderResult.pageNumber,
-        timestamp: new Date().toISOString()
-      }
-    }, req);
-  }
 });
