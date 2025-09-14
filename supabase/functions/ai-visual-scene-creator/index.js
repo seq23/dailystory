@@ -472,18 +472,11 @@ serve(async (req) => {
         return createCorsErrorResponse('Missing required parameter: avatarIdentity', 400);
       }
 
-        // Get previous AI scene for visual consistency (new approach)
+        // PHASE 4: Previous scene data comes from orchestrator via parameters
         let previousScene = null;
-        try {
-          if (pageNumber > 1) {
-            const SessionManager = await getSessionManager();
-            if (SessionManager) {
-              previousScene = await SessionManager.getPreviousAIScene(sessionId);
-              console.log(`SCENE Previous scene for consistency: ${previousScene ? 'Found' : 'None'}`);
-            }
-          }
-        } catch (error) {
-          console.warn('WARNING Failed to get previous scene (non-critical):', error);
+        if (pageNumber > 1 && enhancedStoryData?.previousScene) {
+          previousScene = enhancedStoryData.previousScene;
+          console.log(`SCENE Retrieved previous scene from orchestrator:`, previousScene ? 'found' : 'not found');
         }
 
         // Debug gate for console logging
@@ -789,22 +782,14 @@ RULES:
         console.log('STORAGE PHASE 2.5: Character consistency stored in database via CharacterConsistencyService');
         console.log(`CHARACTER Character seed ${characterData.seed} persisted for session ${sessionId}`);
         
-        // Store current AI scene for next page consistency
-        try {
-          const SessionManager = await getSessionManager();
-          if (SessionManager) {
-            await SessionManager.storePreviousAIScene(sessionId, {
-              primaryScene: primaryScene,
-              setting: setting,
-              action: action,
-              mood: mood,
-              pose: pose
-            });
-            console.log(`SCENE Current scene stored for next page consistency`);
-          }
-        } catch (error) {
-          console.warn('WARNING Failed to store scene for next page (non-critical):', error);
-        }
+        // PHASE 4: Scene storage handled by orchestrator - no local storage needed
+        console.log(`SCENE Current scene data available for orchestrator:`, {
+          primaryScene: primaryScene?.substring(0, 50) + '...',
+          setting: setting,
+          action: action,
+          mood: mood,
+          pose: pose
+        });
         
         
         
