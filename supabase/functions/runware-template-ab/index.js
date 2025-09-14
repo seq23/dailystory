@@ -199,7 +199,6 @@ async function resolvePlaceholders(template, data, hasCulturalIntelligence) {
     props: visualDetails?.objects || '',
     action_objects: visualDetails?.actionObjects || '',
     sensory_details: visualDetails?.sensoryDetails || '',
-    community_context: hasCulturalIntelligence && ethnicity ? `${ethnicity} community setting` : '',
     secondary_characters: secondaryCharacters || '',
     frameworkPrompt: framework,
     cameraDirective: 'medium shot, eye level'
@@ -224,7 +223,88 @@ async function resolvePlaceholders(template, data, hasCulturalIntelligence) {
   return resolvedTemplate;
 }
 
-// ============= TIER ROUTING WITH SERVICE HEALTH CHECKS =============
+// ============= PHASE 2: SECONDARY CHARACTER ENHANCEMENT =============
+
+// Enhanced secondary character processing for tier-specific support
+async function processSecondaryCharacters(complexity, storyText, sessionId, pageNumber, serviceHealth) {
+  console.log(`🎭 Processing secondary characters for complexity ${complexity}`);
+  
+  // Tier-specific secondary character support
+  if (complexity === 'A') {
+    console.log('🎭 Tier 2.5A: Full secondary character support with individual descriptions');
+    
+    if (serviceHealth.characterService) {
+      try {
+        // Use CharacterConsistencyService for secondary character detection and processing
+        const CharacterService = await getCharacterService();
+        const characterService = new CharacterService();
+        
+        // Detect secondary characters from story text
+        const detectedCharacters = characterService.detectSecondaryCharacters(storyText);
+        
+        if (detectedCharacters.length > 0) {
+          console.log(`🎭 Detected ${detectedCharacters.length} secondary characters:`, detectedCharacters);
+          
+          // Generate consistent descriptions for each secondary character
+          const secondaryDescriptions = [];
+          for (const characterName of detectedCharacters.slice(0, 3)) { // Limit to 3 for performance
+            try {
+              const secondaryData = await characterService.getSecondaryCharacterSeed(
+                sessionId, 
+                characterName, 
+                'secondary_character'
+              );
+              if (secondaryData && secondaryData.characterDescription) {
+                secondaryDescriptions.push(secondaryData.characterDescription);
+              }
+            } catch (error) {
+              console.warn(`Failed to get secondary character data for ${characterName}:`, error);
+            }
+          }
+          
+          return secondaryDescriptions.join(', ');
+        }
+      } catch (error) {
+        console.warn('Secondary character processing failed in Tier 2.5A:', error);
+      }
+    }
+    
+    return ''; // No secondary characters or service unavailable
+  }
+  
+  if (complexity === 'B') {
+    console.log('🎭 Tier 2.5B: Limited secondary character support (names only)');
+    
+    // Simple name-only detection without service dependencies (nuclear independence)
+    const nameMatches = storyText.match(/\b[A-Z][a-z]{2,12}\b/g) || [];
+    const uniqueNames = [...new Set(nameMatches)]
+      .filter(name => name.length > 2 && name !== 'The' && name !== 'And')
+      .slice(0, 2); // Limit to 2 for simplicity
+    
+    if (uniqueNames.length > 0) {
+      return uniqueNames.map(name => `${name} (friend)`).join(', ');
+    }
+    
+    return '';
+  }
+  
+  // Tier 2.5C and 2.5D: No secondary characters (nuclear independence)
+  console.log(`🎭 Tier ${complexity}: No secondary character support (nuclear independence)`);
+  return '';
+}
+
+// Enhanced template data preparation with secondary characters
+async function prepareTemplateData(storyText, userInfo, avatarIdentity, characterData, visualDetails, frameworkPrompt, secondaryCharacters) {
+  return {
+    storyText,
+    userInfo,
+    avatarIdentity,
+    characterData,
+    visualDetails,
+    secondaryCharacters: secondaryCharacters || '',
+    frameworkPrompt: frameworkPrompt || 'children\'s book illustration style'
+  };
+}
 async function checkServiceHealth() {
   const services = {
     characterService: false,
@@ -305,20 +385,23 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
       }
     }
 
+    // Get secondary characters with tier-specific processing
+    const secondaryCharacters = await processSecondaryCharacters('A', storyText, sessionId, pageNumber, serviceHealth);
+    
     // Get framework prompt (style)
     const frameworkPrompt = 'vibrant children\'s book illustration, digital art style';
     
     // Use PREMIUM template with full cultural intelligence
     const template = PREMIUM_PROMPT_TEMPLATES[difficultyLevel];
-    const templateData = {
-      storyText,
-      userInfo,
-      avatarIdentity,
-      characterData,
-      visualDetails,
-      secondaryCharacters,
-      frameworkPrompt
-    };
+    const templateData = await prepareTemplateData(
+      storyText, 
+      userInfo, 
+      avatarIdentity, 
+      characterData, 
+      visualDetails, 
+      frameworkPrompt,
+      secondaryCharacters
+    );
     
     const positivePrompt = await resolvePlaceholders(template, templateData, true);
     
@@ -327,7 +410,8 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
       hasAvatarIdentity: !!avatarIdentity,
       nativeLanguage: avatarIdentity?.nativeLanguage || userInfo?.nativeLanguage,
       skinTone: avatarIdentity?.skinTone || userInfo?.avatar?.skinTone,
-      usingChildsRealName: userInfo?.name || userInfo?.childName
+      usingChildsRealName: userInfo?.name || userInfo?.childName,
+      secondaryCharacterCount: secondaryCharacters.split(',').filter(c => c.trim()).length
     });
     
     console.log('✅ Template AB Tier 2.5A: Successfully using PREMIUM templates with cultural intelligence');
@@ -337,38 +421,49 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
       templateType: 'premium-with-cultural-intelligence',
       difficulty: 'A',
       enhancementLevel: 'premium',
-      difficultyLevel
+      difficultyLevel,
+      secondaryCharacters: secondaryCharacters || 'none'
     };
   }
   
   if (complexity === 'B') {
     console.log('🎯 Template AB: Processing Tier 2.5B - Nuclear Independence with basic templates');
     
+    // Get secondary characters with limited processing for nuclear independence
+    const secondaryCharacters = await processSecondaryCharacters('B', storyText, sessionId, pageNumber, serviceHealth);
+    
     // Tier 2.5B: BASIC templates + Limited cultural intelligence + Nuclear independence
     const frameworkPrompt = 'simple cartoon illustration style';
     
     // Use BASIC template with limited cultural intelligence
     const template = BASIC_PROMPT_TEMPLATES[difficultyLevel];
-    const templateData = {
-      storyText,
-      userInfo,
-      avatarIdentity,
-      characterData: null,
-      visualDetails: null,
-      secondaryCharacters: '',
-      frameworkPrompt
-    };
+    const templateData = await prepareTemplateData(
+      storyText, 
+      userInfo, 
+      avatarIdentity, 
+      null, // No characterData for nuclear independence
+      null, // No visualDetails for nuclear independence
+      frameworkPrompt,
+      secondaryCharacters
+    );
     
     const positivePrompt = await resolvePlaceholders(template, templateData, true);
     
     console.log('✅ Template AB Tier 2.5B: Successfully using BASIC templates with limited cultural intelligence');
+    console.log('🔍 Nuclear independence elements:', {
+      hasAvatarIdentity: !!avatarIdentity,
+      secondaryCharacterCount: secondaryCharacters.split(',').filter(c => c.trim()).length,
+      nuclearIndependence: true
+    });
+    
     return {
       positivePrompt,
       negativePrompt: 'complex details, photorealistic, adult themes, scary',
       templateType: 'basic-with-limited-cultural',
       difficulty: 'B', 
       enhancementLevel: 'basic',
-      difficultyLevel
+      difficultyLevel,
+      secondaryCharacters: secondaryCharacters || 'none'
     };
   }
   
@@ -518,7 +613,7 @@ serve(async (req) => {
       enhancementLevel: template.enhancementLevel,
       sessionId: sessionId,
       pageNumber: pageNumber,
-      processingTime: Date.now()
+      secondaryCharacters: template.secondaryCharacters || 'none',
     });
     
   } catch (error) {

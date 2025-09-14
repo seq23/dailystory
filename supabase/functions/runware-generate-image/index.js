@@ -1663,12 +1663,11 @@ serve(async (req)=>{
         }
         // 3. SCENE DETAILS (Secondary Elements)
         let sceneDetailsSection = '';
-        // 3.1. Secondary Elements
-        try {
-          const { SecondaryElementDetector } = await import('../_shared/SecondaryElementDetector.js');
-          const secondaryElements = await SecondaryElementDetector.parseElements(sessionId, promptSections.primaryScene, pageText, pageNumber || 1);
-          if (secondaryElements && secondaryElements.length > 0) {
-            // PHASE 3.1b: Get seed-consistent descriptions for secondary characters
+        // 3.1. Secondary Elements - REMOVED TO PREVENT DOUBLE PROCESSING
+        // Secondary character processing now happens in template system (runware-template-ab/cd)
+        // to ensure proper tier-specific handling and prevent data loss
+        console.log('🎭 Secondary character processing handled by template system');
+        const seededSecondaryDescriptions = []; // Empty - processed in templates now
             const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
             const characterConsistencyService = new CharacterConsistencyService();
             const seededSecondaryDescriptions = await Promise.all(secondaryElements.slice(0, 4).map(async (el)=>{
@@ -1686,18 +1685,11 @@ serve(async (req)=>{
                 return `${el.name} (${el.type})`;
               }
             }));
-            const secondaryDescription = seededSecondaryDescriptions.join(', ');
-            sceneDetailsSection = `Secondary characters and elements: ${secondaryDescription}`;
-            console.log(`👥 [${requestId}] Section 3 - Seeded Secondary Elements Added:`, {
-              content: secondaryDescription,
-              count: secondaryElements.length,
-              seedsApplied: seededSecondaryDescriptions.filter((desc)=>desc.includes(':')).length,
-              source: 'SecondaryElementDetector + CharacterConsistencyService'
-            });
-          }
         } catch (error) {
-          console.log(`⚠️ [${requestId}] Secondary elements detection failed:`, error.message);
+          console.log(`⚠️ [${requestId}] Secondary elements processing disabled (handled in template system):`, error.message);
         }
+        
+        // NOTE: Secondary character processing moved to template system for proper tier handling
         // ============= ANALYZE PAGE TEXT FOR VISUAL DETAILS =============
         // Add visual detail analysis for consistent object tracking
         try {

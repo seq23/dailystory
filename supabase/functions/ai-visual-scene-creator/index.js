@@ -1034,28 +1034,11 @@ serve(async (req) => {
           avatarSource: 'orchestrator-provided'
         });
         
-        // PHASE 1.1b: Detect Secondary Characters  
-        console.log('DEBUG PHASE 1.1b: Detecting secondary characters using SecondaryElementDetector');
-        let secondaryElements = [];
-        try {
-          const SecondaryDetector = await getSecondaryDetector();
-          if (SecondaryDetector) {
-            secondaryElements = await SecondaryDetector.parseElements(
-              sessionId,
-              '', // primaryScene not available yet
-              storyText,
-              pageNumber
-            );
-            
-            console.log('SECONDARY PHASE 1.1b: Secondary elements detected:', {
-              count: secondaryElements.length,
-              elements: secondaryElements.map(e => `${e.name} (${e.type})`)
-            });
-          }
-        } catch (error) {
-          console.warn('WARNING SecondaryElementDetector failed (non-critical):', error.message);
-          secondaryElements = []; // Continue with empty array
-        }
+        // PHASE 1.1b: Secondary Characters - REMOVED TO PREVENT DOUBLE PROCESSING
+        // Secondary characters are now processed in the template system (runware-template-ab/cd)
+        // to prevent duplicate processing and ensure proper tier-specific handling
+        console.log('DEBUG PHASE 1.1b: Secondary character processing moved to template system');
+        const secondaryElements = []; // Empty - processed in templates now
         
         // PHASE 1.1c: Track Visual Details
         console.log('ART PHASE 1.1c: Analyzing visual details using VisualDetailTracker');
@@ -1110,7 +1093,7 @@ RULES:
           }
         ];
         
-        // Helper function to build user content safely with regional ethnicity enhancement
+        // Helper function to build user content safely (secondary characters now handled in templates)
         function buildUserContent(previousScene, storyText, secondaryElements) {
           let content = '';
           
@@ -1120,12 +1103,23 @@ RULES:
   "currentText": "${storyText}"
 }`;
           } else {
+            content = `{
+  "currentText": "${storyText}"
+}`;
+          }
+          
+          // NOTE: Secondary elements are now processed in the template system
+          // to prevent double processing and ensure proper tier-specific handling
+          
+          return content;
+        }
+}`;
+          } else {
             content = `Story text: "${storyText}"`;
           }
           
-          if (secondaryElements && secondaryElements.length > 0) {
-            content += `\nAdditional elements: ${secondaryElements.map(e => e.name).join(', ')}`;
-          }
+          // NOTE: Secondary elements processing removed - now handled in template system
+          // to prevent double processing and ensure proper tier-specific handling
           
           // Add optional cultural inspiration for non-English languages - AI should feel free to enhance settings creatively
           const userLanguage = req.headers.get('Accept-Language')?.split(',')[0]?.split('-')[0] || 'en';
