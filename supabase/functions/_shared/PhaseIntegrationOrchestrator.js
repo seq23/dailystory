@@ -31,8 +31,8 @@ export class PhaseIntegrationOrchestrator {
       const secondaryCharacters = [];
 
       // Phase 2: Load visual history for consistency  
-      const visualHistory = await VisualDetailTracker.getCharacterDetails(sessionId, characterName);
-      const consistencyRecommendations = { recommendations: [], consistencyScore: 1.0 };
+      const visualHistory = await visualDetailTracker.getVisualHistory(userId, characterName);
+      const consistencyRecommendations = await visualDetailTracker.getConsistencyRecommendations(userId, characterName);
 
       this.initialized = true;
 
@@ -138,12 +138,14 @@ export class PhaseIntegrationOrchestrator {
       });
 
       // Track visual detail (Phase 2.1)
-      const visualId = await VisualDetailTracker.analyzeTextForDetails(
-        sessionId,
-        JSON.stringify(visualData),
-        visualData.pageNumber || 1,
-        characterName
-      );
+      const visualId = await visualDetailTracker.trackVisualDetail({
+        user_id: userId,
+        character_name: characterName,
+        session_id: sessionId,
+        page_number: visualData.pageNumber || 1,
+        image_url: imageUrl,
+        visual_elements: visualData
+      });
 
       // Detect appearance conflicts (Phase 2.3) - placeholder for future enhancement
       const conflicts = [];

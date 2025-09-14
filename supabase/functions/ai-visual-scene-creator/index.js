@@ -1386,7 +1386,7 @@ RULES:
         console.log(`SUCCESS SCENE CREATOR: Complete - Phases: AI Scene + Character DB + Secondary + Visual(SUCCESS) -> Secondary Characters(SUCCESS) - Scene data ready for orchestrator`);
 
         return createCorsResponse(result);
-
       }
+    )
   );
 });
