@@ -29,6 +29,7 @@ import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from
 import { DifficultyLevelMapper } from "../_shared/DifficultyLevelMapper.js";
 import { CULTURAL_ARRAYS } from "../_shared/tier25Vocabulary.js";
 import { enhancedTimeoutSystem } from "../_shared/EnhancedTimeoutSystem.js";
+import { bootValidationService } from "../_shared/BootValidationService.js";
 // ============= PHASE 7: NAME HANDLING CLARIFICATION =============
 
 
@@ -681,9 +682,9 @@ class RunwareWebSocketManager {
   static MAX_DELAY = 8000;
   static CONNECTION_TIMEOUT = 90000;
   static IMAGE_GENERATION_TIMEOUT = 120000;
-  static async connectWithRetry(apiKey, positivePrompt, negativePrompt, seed, sessionId, pageNumber, attempt = 1, requestId) {
+static async connectWithRetry(apiKey, positivePrompt, negativePrompt, seed, sessionId, pageNumber, attempt = 1, requestId, abortController = null) {
     try {
-      return await this.attemptConnection(apiKey, positivePrompt, negativePrompt, seed, sessionId, pageNumber, requestId);
+      return await this.attemptConnection(apiKey, positivePrompt, negativePrompt, seed, sessionId, pageNumber, requestId, abortController);
     } catch (error) {
       const wsError = error;
       const logPrefix1 = requestId ? `[${requestId}]` : '';
@@ -692,7 +693,7 @@ class RunwareWebSocketManager {
         const delay = Math.min(this.BASE_DELAY * Math.pow(2, attempt - 1), this.MAX_DELAY);
         console.warn(`🔄 ${logPrefix1} WebSocket attempt ${attempt} failed, retrying in ${delay}ms: ${wsError.message}`);
         await new Promise((resolve)=>setTimeout(resolve, delay));
-        return this.connectWithRetry(apiKey, positivePrompt, negativePrompt, seed, sessionId, pageNumber, attempt + 1, requestId);
+        return this.connectWithRetry(apiKey, positivePrompt, negativePrompt, seed, sessionId, pageNumber, attempt + 1, requestId, abortController);
       }
       console.error(`❌ ${logPrefix1} WebSocket failed after ${attempt} attempts: ${wsError.message}`);
       throw wsError;
@@ -1230,7 +1231,7 @@ async function callTier4SimpleFallback(pageText, pageNumber, sessionId, req, rea
     if (tier4Error || !tier4Result?.success) {
       console.error('❌ Tier 4 simple fallback failed:', tier4Error);
       // Return error response to trigger frontend fallback
-      return createDynamicCorsErrorResponse(new Error(reason), 500, req);
+      return createDynamicCorsErrorResponse(new Error(reason), req, 500);
     }
     
     return createDynamicCorsResponse({
@@ -1245,12 +1246,12 @@ async function callTier4SimpleFallback(pageText, pageNumber, sessionId, req, rea
     }, req);
   } catch (error) {
     console.error('❌ Failed to call Tier 4 simple fallback:', error);
-    return createDynamicCorsErrorResponse(error, 500, req);
+    return createDynamicCorsErrorResponse(error, req, 500);
   }
 }
 
 // ============= TIER 1 RUNWARE PREMIUM GENERATION =============
-async function generateWithRunwarePremium(apiKey, positivePrompt, negativePrompt, seed, sessionId, pageNumber, requestId) {
+async function generateWithRunwarePremium(apiKey, positivePrompt, negativePrompt, seed, sessionId, pageNumber, requestId, abortController = null) {
   console.log(`🚀 [${requestId || 'unknown'}] Starting Runware Premium Generation:`, {
     sessionId,
     pageNumber,
@@ -2245,7 +2246,7 @@ async function processImageGenerationRequest(req, requestId, signal) {
           sessionId: sessionId,
           pageNumber: pageNumber
         });
-        const tier1Result = await generateWithRunwarePremium(runwareApiKey, finalPrompt, negativePrompt, characterData.seed, sessionId, pageNumber, requestId // PHASE 5: Pass requestId for correlation
+const tier1Result = await generateWithRunwarePremium(runwareApiKey, finalPrompt, negativePrompt, characterData.seed, sessionId, pageNumber, requestId, null // PHASE 5: Pass requestId for correlation
         );
         if (tier1Result.success) {
           console.log('✅ Tier 1 AI-Enhanced succeeded');
