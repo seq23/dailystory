@@ -814,24 +814,12 @@ class RunwareWebSocketManager {
           }
         };
       } catch (error) {
-        console.error(`❌ ${logPrefix} WebSocket setup error:`, error);
+        console.error(`❌ ${logPrefix1} WebSocket setup error:`, error);
         safeReject(new WebSocketError(`Setup failed: ${error.message}`, 'CONNECTION', true));
       }
     });
   }
 }
-// ============= TIER FUNCTION CALLER - ENHANCED DEBUGGING & PROPER SUPABASE CLIENT =============
-// PHASE 5: Enhanced with data flow validation and optimization
-async function callTierFunction(functionName, payload) {
-  try {
-    console.log(`📞 Calling ${functionName} with payload keys:`, Object.keys(payload));
-    console.log(`🔍 DEBUG: ${functionName} request details:`, {
-      functionName,
-      payloadSize: JSON.stringify(payload).length,
-      timestamp: new Date().toISOString(),
-      sessionId: payload.sessionId?.substring(0, 15) + '...' || 'none'
-    });
-    
 // ============= PHASE 5: ENHANCED TIER FUNCTION CALLER WITH DATA FLOW & ERROR RECOVERY =============
 async function callTierFunction(functionName, payload) {
   try {
