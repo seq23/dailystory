@@ -119,6 +119,33 @@ export type Database = {
         }
         Relationships: []
       }
+      character_traits: {
+        Row: {
+          character_name: string
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+          visual_traits: Json
+        }
+        Insert: {
+          character_name: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+          visual_traits?: Json
+        }
+        Update: {
+          character_name?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+          visual_traits?: Json
+        }
+        Relationships: []
+      }
       child_profiles: {
         Row: {
           avatar: Json | null
@@ -922,6 +949,39 @@ export type Database = {
           session_token_hash?: string
           user_agent?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      visual_details: {
+        Row: {
+          character_name: string
+          generated_at: string
+          id: string
+          image_url: string
+          page_number: number
+          session_id: string
+          user_id: string
+          visual_elements: Json
+        }
+        Insert: {
+          character_name: string
+          generated_at?: string
+          id?: string
+          image_url: string
+          page_number?: number
+          session_id: string
+          user_id: string
+          visual_elements?: Json
+        }
+        Update: {
+          character_name?: string
+          generated_at?: string
+          id?: string
+          image_url?: string
+          page_number?: number
+          session_id?: string
+          user_id?: string
+          visual_elements?: Json
         }
         Relationships: []
       }

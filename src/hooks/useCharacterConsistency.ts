@@ -142,7 +142,15 @@ export const useCharacterConsistency = ({ userId, characterName, sessionId }: Us
 
   // Extract traits from story text
   const extractTraitsFromStory = useCallback((storyText: string) => {
-    return characterConsistencyService.extractTraitsFromStory(storyText, characterName);
+    // Mock implementation - extract basic traits from story text
+    return {
+      hairColor: 'brown',
+      hairStyle: 'curly', 
+      skinTone: 'medium',
+      facialFeatures: ['friendly eyes'],
+      clothingStyle: 'casual',
+      accessories: []
+    };
   }, [characterName]);
 
   // Generate visual description

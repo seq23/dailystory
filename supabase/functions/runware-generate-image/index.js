@@ -977,7 +977,7 @@ async function callTierFunction(functionName, payload) {
     const supabase = createClient(Deno.env.get('SUPABASE_URL') || 'https://cpzeuogomaixamrtnnmj.supabase.co', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY'));
     console.log(`🔌 Using Supabase client to invoke ${functionName}`);
     // Use Supabase client function invocation for proper authentication
-    const { data: result, error: invokeError } = await supabase.functions.invoke(functionName, {
+    const { data: functionResult, error: invokeError } = await supabase.functions.invoke(functionName, {
       body: payload
     });
     if (invokeError) {
@@ -986,18 +986,18 @@ async function callTierFunction(functionName, payload) {
       throw new Error(`${functionName} failed: ${invokeError.message}`);
     }
     console.log(`🔍 DEBUG: ${functionName} response:`, {
-      resultKeys: Object.keys(result || {}),
-      success: result?.success,
-      hasImageURL: !!result?.imageURL,
-      tier: result?.tier || 'unknown',
-      provider: result?.provider || 'unknown'
+      resultKeys: Object.keys(functionResult || {}),
+      success: functionResult?.success,
+      hasImageURL: !!functionResult?.imageURL,
+      tier: functionResult?.tier || 'unknown',
+      provider: functionResult?.provider || 'unknown'
     });
-    if (!result) {
+    if (!functionResult) {
       throw new Error(`${functionName} returned no data`);
     }
     // Enhanced Tier 2.5 success debugging
     console.log(`✅ ${functionName} completed successfully via Supabase client`);
-    return result;
+    return functionResult;
   } catch (error) {
     console.error(`❌ ${functionName} failed:`, error);
     // Enhanced error logging for Tier 2.5

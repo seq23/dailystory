@@ -195,19 +195,59 @@ export class CharacterConsistencyService {
   }
 
   /**
-   * Get session statistics for monitoring
+   * PHASE 1: Extract traits from story text analysis
    */
-  getSessionStats(sessionId: string): any {
-    const sessionKeys = Array.from(this.visualDetailCache.keys()).filter(key => 
-      key.startsWith(sessionId)
-    );
-
-    return {
-      totalPages: sessionKeys.length,
-      lastActivity: sessionKeys.length > 0 ? Math.max(
-        ...sessionKeys.map(key => this.visualDetailCache.get(key)?.timestamp || 0)
-      ) : 0
+  extractTraitsFromStory(storyText: string, characterName?: string): any {
+    if (!storyText) return {
+      hairColor: 'brown',
+      hairStyle: 'curly',
+      skinTone: 'medium', 
+      facialFeatures: ['friendly eyes'],
+      clothingStyle: 'casual',
+      accessories: []
     };
+
+    // Basic trait extraction patterns
+    const text = storyText.toLowerCase();
+    const traits = {
+      hairColor: 'brown',
+      hairStyle: 'curly',
+      skinTone: 'medium',
+      facialFeatures: ['friendly eyes'],
+      clothingStyle: 'casual', 
+      accessories: []
+    };
+
+    // Hair color extraction
+    if (text.includes('blonde') || text.includes('golden hair')) traits.hairColor = 'blonde';
+    if (text.includes('red hair') || text.includes('ginger')) traits.hairColor = 'red';
+    if (text.includes('black hair') || text.includes('dark hair')) traits.hairColor = 'black';
+
+    // Clothing style extraction  
+    if (text.includes('dress') || text.includes('formal')) traits.clothingStyle = 'formal';
+    if (text.includes('sports') || text.includes('athletic')) traits.clothingStyle = 'athletic';
+
+    return traits;
+  }
+
+  /**
+   * PHASE 1: Generate visual description from traits
+   */
+  generateVisualDescription(traits: any, characterName?: string): string {
+    if (!traits) return '';
+    
+    const parts = [];
+    if (traits.hairColor && traits.hairStyle) {
+      parts.push(`${traits.hairColor} ${traits.hairStyle} hair`);
+    }
+    if (traits.skinTone) {
+      parts.push(`${traits.skinTone} skin tone`);
+    }
+    if (traits.clothingStyle) {
+      parts.push(`${traits.clothingStyle} clothing`);
+    }
+    
+    return parts.join(', ');
   }
 }
 
