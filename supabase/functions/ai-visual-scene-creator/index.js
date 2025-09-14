@@ -1099,53 +1099,55 @@ RULES:
 6. Use null (no quotes) for unclear components
 7. primaryScene must be 30+ characters and visually descriptive
 8. Use previousScene to keep characters, objects, and animals visually consistent. Only update details if currentText introduces a clear change.`
-          },
-          {
-            role: 'user', 
-            content: buildUserContent(previousScene, storyText, secondaryElements)
-
-          }
-        ];
+        },
         
         // Helper function to build user content safely (secondary characters now handled in templates)
-        function buildUserContent(previousScene, storyText, secondaryElements) {
-          let content = '';
-          
-          if (previousScene) {
-            content = `{
+        (() => {
+          function buildUserContent(previousScene, storyText, secondaryElements) {
+            let content = '';
+            
+            if (previousScene) {
+              content = `{
   "previousScene": ${JSON.stringify(previousScene)},
   "currentText": "${storyText}"
 }`;
-          } else {
-            content = `{
+            } else {
+              content = `{
   "currentText": "${storyText}"
 }`;
+            }
+            
+            // NOTE: Secondary elements are now processed in the template system
+            // to prevent double processing and ensure proper tier-specific handling
+            
+            // Add optional cultural inspiration for non-English languages - AI should feel free to enhance settings creatively
+            const userLanguage = req.headers.get('Accept-Language')?.split(',')[0]?.split('-')[0] || 'en';
+            const regionalContext = {
+              'es': 'Spanish/Latino cultural elements (plazas, courtyards, warm architecture)',
+              'fr': 'French cultural elements (Parisian architecture, gardens, cafes)',
+              'de': 'German cultural elements (castles, forests, traditional buildings)',
+              'it': 'Italian cultural elements (piazzas, fountains, Mediterranean settings)',
+              'pt': 'Portuguese/Brazilian cultural elements (colorful buildings, beaches, tropical)',
+              'ja': 'Japanese cultural elements (gardens, traditional architecture, cherry blossoms)',
+              'ko': 'Korean cultural elements (palaces, mountains, modern architecture)',
+              'zh': 'Chinese cultural elements (gardens, traditional buildings, landscapes)',
+              'ar': 'Arabic cultural elements (courtyards, geometric patterns, desert landscapes)',
+              'hi': 'Indian cultural elements (temples, gardens, vibrant colors)'
+            };
+            
+            if (regionalContext[userLanguage] && userLanguage !== 'en') {
+              content += `\nOptional cultural inspiration (enhance settings creatively with regional architecture/landmarks): ${regionalContext[userLanguage]}`;
+            }
+            
+            return content;
           }
           
-          // NOTE: Secondary elements are now processed in the template system
-          // to prevent double processing and ensure proper tier-specific handling
-          
-          // Add optional cultural inspiration for non-English languages - AI should feel free to enhance settings creatively
-          const userLanguage = req.headers.get('Accept-Language')?.split(',')[0]?.split('-')[0] || 'en';
-          const regionalContext = {
-            'es': 'Spanish/Latino cultural elements (plazas, courtyards, warm architecture)',
-            'fr': 'French cultural elements (Parisian architecture, gardens, cafes)',
-            'de': 'German cultural elements (castles, forests, traditional buildings)',
-            'it': 'Italian cultural elements (piazzas, fountains, Mediterranean settings)',
-            'pt': 'Portuguese/Brazilian cultural elements (colorful buildings, beaches, tropical)',
-            'ja': 'Japanese cultural elements (gardens, traditional architecture, cherry blossoms)',
-            'ko': 'Korean cultural elements (palaces, mountains, modern architecture)',
-            'zh': 'Chinese cultural elements (gardens, traditional buildings, landscapes)',
-            'ar': 'Arabic cultural elements (courtyards, geometric patterns, desert landscapes)',
-            'hi': 'Indian cultural elements (temples, gardens, vibrant colors)'
+          return {
+            role: 'user', 
+            content: buildUserContent(previousScene, storyText, secondaryElements)
           };
-          
-          if (regionalContext[userLanguage] && userLanguage !== 'en') {
-            content += `\nOptional cultural inspiration (enhance settings creatively with regional architecture/landmarks): ${regionalContext[userLanguage]}`;
-          }
-          
-          return content;
-        }
+        })()
+      ];
         
         console.log(`AI [${requestId}] PHASE 1.2: Enhanced prompt constructed:`, {
           systemPromptLength: minimalMessages[0].content.length,
