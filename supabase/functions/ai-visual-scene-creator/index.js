@@ -1125,12 +1125,6 @@ RULES:
           // NOTE: Secondary elements are now processed in the template system
           // to prevent double processing and ensure proper tier-specific handling
           
-          return content;
-        }
-          
-          // NOTE: Secondary elements processing removed - now handled in template system
-          // to prevent double processing and ensure proper tier-specific handling
-          
           // Add optional cultural inspiration for non-English languages - AI should feel free to enhance settings creatively
           const userLanguage = req.headers.get('Accept-Language')?.split(',')[0]?.split('-')[0] || 'en';
           const regionalContext = {
