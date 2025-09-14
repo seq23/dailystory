@@ -78,55 +78,25 @@ function createCorsOptionsResponse() {
 
 // AI VISUAL SCENE CREATOR - FOR IMAGE GENERATION ONLY - NEVER DISCUSS IN STORY GENERATION CONTEXT
 
-// Inline EdgeErrorHandler replacement
-const EdgeErrorHandler = {
-  handleError(error, functionName, context = {}) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error(`ERROR ${functionName} Error:`, errorMessage, context);
-    return createCorsErrorResponse(errorMessage, 500);
-  },
+// Simple error handling and logging utilities
+function handleError(error, functionName, context = {}) {
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  console.error(`ERROR ${functionName}:`, errorMessage, context);
+  return createCorsErrorResponse(errorMessage, 500);
+}
+
+function withPerformanceTracking(functionName, model, operation) {
+  const startTime = Date.now();
+  console.log(`START ${functionName} with model: ${model}`);
   
-  withPerformanceTracking(functionName, model, operation) {
-    const startTime = Date.now();
-    console.log(`START ${functionName} starting with model: ${model}`);
-    
-    return operation().then(result => {
-      const duration = Date.now() - startTime;
-      console.log(`SUCCESS ${functionName} completed in ${duration}ms`);
-      return result;
-    }).catch(error => {
-      const duration = Date.now() - startTime;
-      console.error(`ERROR ${functionName} failed after ${duration}ms:`, error);
-      throw error;
-    });
-  }
-};
-
-
-// Inline implementations for missing tierFailureMonitoring functions
-const TierFailureLogger = {
-  logTier1OpenAIFailure(error, details) {
-    console.error('ALERT Tier 1 OpenAI Failure:', error, details);
-  },
-  logTier1ValidationFailure(error, details) {
-    console.error('ALERT Tier 1 Validation Failure:', error, details);
-  }
-};
-
-const CircuitBreakerMonitor = {
-  trackCircuitBreakerState(serviceName, state, details) {
-    console.log(`CIRCUIT Circuit Breaker [${serviceName}]: ${state}`, details);
-  },
-  trackServiceHealth(serviceName, status, details) {
-    console.log(`HEALTH Service Health [${serviceName}]: ${status}`, details);
-  }
-};
-
-const QualityGateMonitor = {
-  trackQualityGate(gate, status, details) {
-    console.log(`QUALITY Quality Gate [${gate}]: ${status}`, details);
-  }
-};
+  return operation().then(result => {
+    console.log(`SUCCESS ${functionName} completed in ${Date.now() - startTime}ms`);
+    return result;
+  }).catch(error => {
+    console.error(`ERROR ${functionName} failed after ${Date.now() - startTime}ms:`, error);
+    throw error;
+  });
+}
 
 // ============= INLINE VALIDATION FUNCTIONS (from SimpleContentValidator.js) =============
 
@@ -273,157 +243,56 @@ const AI_MODELS = [
 // ============= AVATAR IDENTITY PROCESSING REMOVED =============
 // mapAvatarIdentity function removed - orchestrator provides processed avatarIdentity
 
-// ============= ENHANCED CIRCUIT BREAKER SYSTEM WITH MONITORING =============
-// Bulletproof circuit breaker to prevent cascading failures
-class UnifiedCircuitBreaker {
+// Simple circuit breaker for API reliability
+class SimpleCircuitBreaker {
   constructor() {
     this.failures = 0;
     this.lastFailure = 0;
-    this.threshold = 2;
-    this.expertThreshold = 5; // Higher threshold for expert content
-    this.timeout = 15000; // 15 seconds
-    this.expertTimeout = 5000; // 5 seconds for expert content recovery
+    this.threshold = 3;
+    this.timeout = 30000; // 30 seconds
   }
   
-  isOpen(isExpertContent = false) {
-    const threshold = isExpertContent ? this.expertThreshold : this.threshold;
-    const timeout = isExpertContent ? this.expertTimeout : this.timeout;
-    const isCurrentlyOpen = this.failures >= threshold && (Date.now() - this.lastFailure < timeout);
-    
-    if (this.failures >= threshold) {
-      if (Date.now() - this.lastFailure < timeout) {
-        // Log circuit breaker state
-        CircuitBreakerMonitor.trackCircuitBreakerState('OPENAI_API', 'OPEN', {
-          failures: this.failures,
-          threshold: isExpertContent ? this.expertThreshold : this.threshold,
-          timeoutRemaining: timeout - (Date.now() - this.lastFailure),
-          expertContent: isExpertContent
-        });
-        return true;
-      }
-      // Reset circuit breaker after timeout
-      this.failures = 0;
-      CircuitBreakerMonitor.trackCircuitBreakerState('OPENAI_API', 'CLOSED', {
-        event: 'timeout_reset',
-        failures: this.failures
-      });
+  isOpen() {
+    if (this.failures >= this.threshold && (Date.now() - this.lastFailure < this.timeout)) {
+      return true;
+    }
+    if (this.failures >= this.threshold && (Date.now() - this.lastFailure >= this.timeout)) {
+      this.failures = 0; // Reset after timeout
     }
     return false;
   }
   
   recordSuccess() {
-    const wasOpen = this.failures >= this.threshold;
     this.failures = 0;
-    
-    if (wasOpen) {
-      CircuitBreakerMonitor.trackCircuitBreakerState('OPENAI_API', 'CLOSED', {
-        event: 'success_recovery',
-        failures: this.failures
-      });
-    }
-    
-    // Track service health on success
-    CircuitBreakerMonitor.trackServiceHealth('OPENAI_API', {
-      status: 'healthy',
-      failures: this.failures,
-      lastSuccess: Date.now()
-    });
   }
   
-  recordFailure(isExpertContent = false) {
+  recordFailure() {
     this.failures++;
     this.lastFailure = Date.now();
-    const threshold = isExpertContent ? this.expertThreshold : this.threshold;
-    
-    if (this.failures >= threshold) {
-      CircuitBreakerMonitor.trackCircuitBreakerState('OPENAI_API', 'OPEN', {
-        failures: this.failures,
-        threshold,
-        event: 'threshold_exceeded',
-        expertContent: isExpertContent
-      });
-    } else {
-      CircuitBreakerMonitor.trackCircuitBreakerState('OPENAI_API', 'HALF_OPEN', {
-        failures: this.failures,
-        threshold,
-        expertContent: isExpertContent
-      });
-    }
-    
-    // Track service health on failure
-    CircuitBreakerMonitor.trackServiceHealth('OPENAI_API', {
-      status: 'degraded',
-      failures: this.failures,
-      lastFailure: this.lastFailure
-    });
   }
   
-  // Manual reset method for diagnostic purposes
+  getStatus() {
+    return {
+      isOpen: this.isOpen(),
+      failures: this.failures,
+      threshold: this.threshold
+    };
+  }
+  
   manualReset() {
-    const wasOpen = this.failures >= this.threshold;
     this.failures = 0;
     this.lastFailure = 0;
-    
-    CircuitBreakerMonitor.trackCircuitBreakerState('OPENAI_API', 'CLOSED', {
-      event: 'manual_reset',
-      wasOpen,
-      timestamp: Date.now()
-    });
-    
-    console.log('RESET Circuit breaker manually reset', {
-      wasOpen,
-      resetTimestamp: new Date().toISOString()
-    });
-  }
-  
-  // Get current status for diagnostics
-  getStatus(isExpertContent = false) {
-    return {
-      isOpen: this.isOpen(isExpertContent),
-      failures: this.failures,
-      lastFailure: this.lastFailure,
-      threshold: this.threshold,
-      timeout: this.timeout,
-      expertThreshold: this.expertThreshold,
-      expertTimeout: this.expertTimeout
-    };
+    console.log('Circuit breaker reset');
   }
 }
 
-const circuitBreaker = new UnifiedCircuitBreaker();
-console.log('INIT Enhanced circuit breaker with monitoring initialized');
+const circuitBreaker = new SimpleCircuitBreaker();
 
-// Orchestration functions removed - all cultural processing handled by runware-generate-image orchestrator
-
-// Initialize circuit breaker state tracking
-CircuitBreakerMonitor.trackCircuitBreakerState('OPENAI_API', 'CLOSED', {
-  event: 'initialization',
-  threshold: 2,
-  timeout: 15000
-});
-
-// ============= MODEL-SPECIFIC PROMPT OPTIMIZATION =============
-
-function detectModelFamily() {
-  // Detect which model family we're likely to hit first
+// Simple model detection for prompt optimization
+function getModelFamily() {
   const primaryModel = AI_MODELS[0]?.name || '';
-  
-  const isNewModel = primaryModel.includes('gpt-5') || 
-                     primaryModel.includes('gpt-4.1') || 
-                     primaryModel.includes('o3') || 
-                     primaryModel.includes('o4');
-                     
-  console.log('MODEL Model Family Detection:', {
-    primaryModel,
-    isNewModel,
-    useSimplifiedPrompt: isNewModel,
-    availableModels: AI_MODELS.map(m => m.name)
-  });
-  
-  return {
-    modelFamily: isNewModel ? 'GPT-5_FAMILY' : 'LEGACY_FAMILY',
-    useSimplifiedPrompt: isNewModel
-  };
+  const isNewModel = primaryModel.includes('gpt-5') || primaryModel.includes('gpt-4.1');
+  return { useSimplifiedPrompt: isNewModel };
 }
 
 // ============= ROBUST JSON PARSING WITH FALLBACKS =============
@@ -574,16 +443,11 @@ function parseAIResponse(content, options = {}) {
 async function callOpenAIWithFallback(messages, timeout = 6000, requestId, avatarIdentity) {
   const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
   
-  // Circuit breaker check with expert content awareness - using avatarIdentity
-  const isExpertContent = avatarIdentity?.difficultyLevel === 'expert' || avatarIdentity?.expertGradeLevel || 
-                         ['6th', '7th', '8th', '9th', '10th'].includes(avatarIdentity?.readingLevel);
-  
-  if (circuitBreaker.isOpen(isExpertContent)) {
-    console.warn(`BLOCKED Circuit breaker is open for ${isExpertContent ? 'expert' : 'regular'} content, skipping OpenAI - using Tier 2 immediately`);
+  if (circuitBreaker.isOpen()) {
+    console.warn('Circuit breaker is open, skipping OpenAI');
     const error = new Error('Circuit breaker open - service degraded');
-    TierFailureLogger.logTier1OpenAIFailure(error, { 
+    console.error('ALERT Tier 1 OpenAI Failure:', error, { 
       reason: 'circuit_breaker_open',
-      timeout: 12000,
       models: AI_MODELS.map(m => m.name)
     });
     throw error;
@@ -657,9 +521,7 @@ async function callOpenAIWithFallback(messages, timeout = 6000, requestId, avata
               contentValue: JSON.stringify(content)
             });
             
-            // Log as OpenAI content validation failure
-            const error = new Error(`OpenAI returned empty content for model ${model.name}`);
-            TierFailureLogger.logTier1OpenAIFailure(error, {
+            console.error('ALERT Tier 1 OpenAI Failure:', new Error(`Empty content from ${model.name}`), {
               model: model.name,
               attempt,
               failureType: 'empty_content'
@@ -684,9 +546,7 @@ async function callOpenAIWithFallback(messages, timeout = 6000, requestId, avata
           const errorText = await response.text();
           console.warn(`WARNING Model ${model.name} returned ${response.status} on attempt ${attempt}: ${errorText}`);
           
-          // Log service-specific failures
-          const error = new Error(`${response.status}: ${errorText}`);
-          TierFailureLogger.logTier1OpenAIFailure(error, {
+          console.error('ALERT Tier 1 OpenAI Failure:', new Error(`${response.status}: ${errorText}`), {
             model: model.name,
             attempt,
             status: response.status,
@@ -706,9 +566,7 @@ async function callOpenAIWithFallback(messages, timeout = 6000, requestId, avata
           const errorText = await response.text();
           console.error(`ERROR Model ${model.name} failed with status ${response.status}: ${errorText}`);
           
-          // Log non-retryable failures
-          const error = new Error(`${response.status}: ${errorText}`);
-          TierFailureLogger.logTier1OpenAIFailure(error, {
+          console.error('ALERT Tier 1 OpenAI Failure:', new Error(`${response.status}: ${errorText}`), {
             model: model.name,
             attempt,
             status: response.status,
@@ -719,21 +577,16 @@ async function callOpenAIWithFallback(messages, timeout = 6000, requestId, avata
         }
       } catch (error) {
         if (error.name === 'AbortError') {
-          console.warn(`TIMEOUT Model ${model.name} timed out after ${timeout}ms on attempt ${attempt}`);
-          TierFailureLogger.logTier1OpenAIFailure(error, {
-            model: model.name,
-            attempt,
-            timeout,
-            errorType: 'timeout'
-          });
+          console.warn(`TIMEOUT ${model.name} timed out after ${timeout}ms on attempt ${attempt}`);
         } else {
-          console.error(`ERROR Model ${model.name} error on attempt ${attempt}:`, error instanceof Error ? error.message : String(error));
-          TierFailureLogger.logTier1OpenAIFailure(error, {
-            model: model.name,
-            attempt,
-            errorType: 'network_or_unknown'
-          });
+          console.error(`ERROR ${model.name} error on attempt ${attempt}:`, error instanceof Error ? error.message : String(error));
         }
+        
+        console.error('ALERT Tier 1 OpenAI Failure:', error, {
+          model: model.name,
+          attempt,
+          errorType: error.name === 'AbortError' ? 'timeout' : 'network_or_unknown'
+        });
         
         // For network/timeout errors, retry with backoff
         if (attempt < 3) {
@@ -748,21 +601,19 @@ async function callOpenAIWithFallback(messages, timeout = 6000, requestId, avata
     }
     
     console.warn(`ERROR Model ${model.name} failed after 3 attempts, trying next model...`);
-    circuitBreaker.recordFailure(isExpertContent);
+    circuitBreaker.recordFailure();
     
-    // Log model exhaustion
-    TierFailureLogger.logTier1OpenAIFailure(new Error(`Model ${model.name} exhausted after 3 attempts`), {
+    console.error('ALERT Tier 1 OpenAI Failure:', new Error(`Model ${model.name} exhausted`), {
       model: model.name,
       totalAttempts: 3,
       failureType: 'model_exhausted'
     });
   }
   
-  console.error('BLOCKED All AI models exhausted - circuit breaker will activate if failures continue');
+  console.error('BLOCKED All AI models exhausted');
   
-  // Log complete model chain failure
-  const error = new Error('All AI models failed after multiple attempts - service may be degraded');
-  TierFailureLogger.logTier1OpenAIFailure(error, {
+  const error = new Error('All AI models failed - service degraded');
+  console.error('ALERT Tier 1 OpenAI Failure:', error, {
     models: AI_MODELS.map(m => m.name),
     totalModels: AI_MODELS.length,
     failureType: 'all_models_exhausted'
@@ -801,8 +652,8 @@ serve(async (req) => {
     });
   }
 
-  // For POST requests, use EdgeErrorHandler to wrap the entire request processing
-  return EdgeErrorHandler.withPerformanceTracking(
+  // For POST requests, wrap with performance tracking
+  return withPerformanceTracking(
     'ai-visual-scene-creator',
     'fallback-chain',
     async () => {
@@ -1018,8 +869,8 @@ serve(async (req) => {
     "secondaryCharacterAppearance": "visual description for image generation",
     "secondaryCharacterAction": "what they're doing",` : '';
 
-        // Model-specific prompt optimization with OPTIMIZED SCHEMA
-        const { modelFamily, useSimplifiedPrompt } = detectModelFamily();
+        // Model-specific prompt optimization
+        const { useSimplifiedPrompt } = getModelFamily();
         
         // =================== PHASE 1: MINIMAL AI REQUEST (Scene Generation Only) ===================
         console.log('START PHASE 1: Minimal AI Request (Scene Generation Only)');
@@ -1247,8 +1098,7 @@ RULES:
           
         } catch (error) {
           console.error(`ERROR [${aiRequestId}] PHASE 1.3: AI call failed:`, error.message);
-          // Return CORS-wrapped error to trigger Tier 2
-          TierFailureLogger.logTier1OpenAIFailure(error, {
+          console.error('ALERT Tier 1 OpenAI Failure:', error, {
             sessionId,
             storyId,
             pageNumber,
