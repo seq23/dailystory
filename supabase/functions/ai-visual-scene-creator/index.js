@@ -624,12 +624,12 @@ async function callOpenAIWithFallback(messages, timeout = 6000, requestId, avata
           supportsTemperature: model.supportsTemperature,
           temperature: model.supportsTemperature ? 0.3 : 'not supported',
           timeout: timeout,
-          attempt: `${attempt}/1`,
+          attempt: `${attempt}/3`,
           messagesCount: messages.length,
           totalPromptLength: messages.reduce((sum, msg) => sum + msg.content.length, 0)
         });
         
-        console.log(`ATTEMPT ${logPrefix} Attempting ${model.name} (attempt ${attempt}/1, timeout: ${timeout}ms)`);
+        console.log(`ATTEMPT ${logPrefix} Attempting ${model.name} (attempt ${attempt}/3, timeout: ${timeout}ms)`);
         
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
@@ -672,7 +672,7 @@ async function callOpenAIWithFallback(messages, timeout = 6000, requestId, avata
               await new Promise(resolve => setTimeout(resolve, backoffDelay));
               continue;
             } else {
-              console.warn(`WARNING All ${attempt} attempts failed for model ${model.name}, trying next model`);
+              console.warn(`WARNING All 3 attempts failed for model ${model.name}, trying next model`);
               break; // Try next model
             }
           }
@@ -747,7 +747,7 @@ async function callOpenAIWithFallback(messages, timeout = 6000, requestId, avata
       }
     }
     
-    console.warn(`ERROR Model ${model.name} failed after ${3} attempts, trying next model...`);
+    console.warn(`ERROR Model ${model.name} failed after 3 attempts, trying next model...`);
     circuitBreaker.recordFailure(isExpertContent);
     
     // Log model exhaustion

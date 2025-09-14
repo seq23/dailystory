@@ -286,7 +286,7 @@ const processAvatarIdentityFromCache = (userInfo) => {
   });
   
   // Gender/pronoun processing  
-  const avatarType = userInfo?.avatarType || userInfo?.avatar?.type || 'prefer-not-to-answer';
+  const avatarTypeVar = userInfo?.avatarType || userInfo?.avatar?.type || 'prefer-not-to-answer';
   console.log('🔍 AVATAR MAPPING DEBUG: Processing avatar identity', {
     input: {
       userInfoAvatar: userInfo?.avatar,
@@ -300,12 +300,12 @@ const processAvatarIdentityFromCache = (userInfo) => {
     }
   });
   
-  const pronoun = genderMapping.pronouns[avatarType];
-  const completeGenderInfo = genderMapping.completeInfo[avatarType];
+  const pronoun = genderMapping.pronouns[avatarTypeVar];
+  const completeGenderInfo = genderMapping.completeInfo[avatarTypeVar];
   
   // Build complete avatarIdentity object matching expected structure
   const avatarIdentity = {
-    type: avatarType,
+    type: avatarTypeVar,
     skinTone: skinTone,
     hairColor: hairColor,
     // CRITICAL AVATAR IDENTITY FIX: Native English speakers get "american" culturalProfile
@@ -1010,9 +1010,7 @@ async function callTierFunction(functionName, payload) {
     
     console.timeEnd(`${functionName}_call_duration`);
     // Enhanced Tier 2.5 debugging - log detailed payload for fallback function
-    // Use proper Supabase client for edge function calls - FIX FOR AUTHENTICATION ISSUES
-    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
-    const supabase = createClient(Deno.env.get('SUPABASE_URL') || 'https://cpzeuogomaixamrtnnmj.supabase.co', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY'));
+    // Use existing Supabase client for edge function calls
     console.log(`🔌 Using Supabase client to invoke ${functionName}`);
     // Use Supabase client function invocation for proper authentication
     const { data: functionResult, error: invokeError } = await supabase.functions.invoke(functionName, {

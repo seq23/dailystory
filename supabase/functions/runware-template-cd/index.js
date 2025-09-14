@@ -91,7 +91,7 @@ function getComplexityLevel(userInfo, templateComplexity) {
 }
 
 // Generate Tier 2.5C template (Emergency templates + Light cultural intelligence)
-async function generateTier25C(storyText, userInfo, avatarIdentity) {
+function generateTier25C(storyText, userInfo, avatarIdentity) {
   console.log('🎯 Tier 2.5C: Generating Emergency Framework Template with UNIFIED Style Framework');
   
   const difficulty = userInfo?.difficulty || 'medium';

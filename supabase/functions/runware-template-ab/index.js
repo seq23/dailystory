@@ -660,13 +660,13 @@ serve(async (req) => {
       if (SessionManager && sessionId) {
         console.log('📋 Template AB: Updating session state');
         // Check if updateSession method exists before calling
-        if (typeof SessionManager.updateSession === 'function') {
+        if (SessionManager && typeof SessionManager.updateSession === 'function') {
           SessionManager.updateSession(sessionId, {
             lastActivity: Date.now(),
             currentFunction: 'runware-template-ab',
             pageNumber: pageNumber
           });
-        } else {
+        } else if (SessionManager) {
           console.warn('⚠️ Template AB: SessionManager.updateSession method not available');
         }
       }
