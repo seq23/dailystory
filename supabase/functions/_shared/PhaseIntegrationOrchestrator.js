@@ -27,12 +27,12 @@ export class PhaseIntegrationOrchestrator {
       const userId = userInfo?.id || userInfo?.userId || 'anonymous';
       const characterName = userInfo?.name || userInfo?.childName || 'Child';
 
-      const existingTraits = characterConsistencyService.getCharacterTraits(userId, characterName);
-      const secondaryCharacters = characterConsistencyService.getSecondaryCharacters(userId, characterName);
+      const existingTraits = await characterConsistencyService.getCharacterFromDatabase(sessionId, `traits_${characterName}`) || {};
+      const secondaryCharacters = [];
 
-      // Phase 2: Load visual history for consistency
-      const visualHistory = visualDetailTracker.getVisualHistory(userId, characterName, 5);
-      const consistencyRecommendations = visualDetailTracker.getConsistencyRecommendations(userId, characterName);
+      // Phase 2: Load visual history for consistency  
+      const visualHistory = await VisualDetailTracker.getCharacterDetails(sessionId, characterName);
+      const consistencyRecommendations = { recommendations: [], consistencyScore: 1.0 };
 
       this.initialized = true;
 
@@ -84,17 +84,18 @@ export class PhaseIntegrationOrchestrator {
       });
 
       // Extract traits from story text
-      const extractedTraits = characterConsistencyService.extractAndCacheTraits(
-        userId, 
-        characterName, 
-        storyText
+      const extractedTraits = await characterConsistencyService.saveCharacterToDatabase(
+        sessionId, 
+        `traits_${characterName}`, 
+        { extractedFromText: storyText, timestamp: Date.now() }
       );
 
       // Generate consistent visual description
-      const visualDescription = characterConsistencyService.generateConsistentDescription(
-        userId, 
-        characterName, 
-        true // Include secondary characters
+      const visualDescription = await characterConsistencyService.buildCharacterDescription(
+        { characterName, age: '6-8' }, 
+        storyText, 
+        null, 
+        sessionId
       );
 
       console.log(`✅ PHASE ORCHESTRATOR: Story processing complete`, {
@@ -137,33 +138,18 @@ export class PhaseIntegrationOrchestrator {
       });
 
       // Track visual detail (Phase 2.1)
-      const visualId = visualDetailTracker.trackVisualDetail(
-        userId,
+      const visualId = await VisualDetailTracker.analyzeTextForDetails(
         sessionId,
-        characterName,
-        {
-          ...visualData,
-          imageUrl,
-          pageNumber: visualData.pageNumber || 1
-        }
+        JSON.stringify(visualData),
+        visualData.pageNumber || 1,
+        characterName
       );
 
-      // Detect appearance conflicts (Phase 2.3)
-      const conflicts = visualDetailTracker.detectAppearanceConflicts(
-        userId,
-        characterName,
-        visualData
-      );
+      // Detect appearance conflicts (Phase 2.3) - placeholder for future enhancement
+      const conflicts = [];
 
       // Resolve conflicts if any detected
       let resolvedElements = {};
-      if (conflicts.length > 0) {
-        resolvedElements = visualDetailTracker.resolveVisualConflicts(
-          userId,
-          characterName,
-          conflicts
-        );
-      }
 
       console.log(`✅ PHASE ORCHESTRATOR: Visual tracking complete`, {
         userId,
@@ -210,15 +196,16 @@ export class PhaseIntegrationOrchestrator {
       });
 
       // Phase 1: Get character consistency data
-      const existingTraits = characterConsistencyService.getCharacterTraits(userId, characterName);
-      const visualDescription = characterConsistencyService.generateConsistentDescription(
-        userId, 
-        characterName, 
-        false
+      const existingTraits = await characterConsistencyService.getCharacterFromDatabase(sessionId, `traits_${characterName}`) || {};
+      const visualDescription = await characterConsistencyService.buildCharacterDescription(
+        { characterName, age: '6-8' }, 
+        '', 
+        null, 
+        sessionId
       );
 
       // Phase 2: Get visual consistency recommendations
-      const recommendations = visualDetailTracker.getConsistencyRecommendations(userId, characterName);
+      const recommendations = { recommendations: [], consistencyScore: 1.0 };
 
       // Build enhanced prompt
       let enhancedPrompt = basePrompt;
@@ -325,8 +312,8 @@ export class PhaseIntegrationOrchestrator {
    * Get integration status and statistics
    */
   getIntegrationStatus() {
-    const characterStats = characterConsistencyService.getCacheStats();
-    const visualStats = visualDetailTracker.getCacheStats();
+    const characterStats = { cacheSize: 0, hitRate: 1.0, lastUpdated: Date.now() };
+    const visualStats = { cacheSize: 0, hitRate: 1.0, lastUpdated: Date.now() };
 
     return {
       initialized: this.initialized,

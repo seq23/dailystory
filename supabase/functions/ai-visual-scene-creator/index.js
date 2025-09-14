@@ -1083,33 +1083,6 @@ serve(async (req) => {
         const aiRequestId = `REQ-${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 5)}`;
         console.log(`AI [${aiRequestId}] PHASE 1.2: Constructing Minimal AI Prompt`);
         
-        const minimalMessages = [
-          {
-            role: 'system',
-content: `Generate a primary scene description for image generation.
-
-OBJECTIVE: Return a primary scene description of 30+ characters with structured metadata.
-
-JSON RESPONSE:
-{
-  "primaryScene": "Concise, descriptive visual scene for image generation",
-  "setting": "Location (bedroom, playground, etc.) or null",
-  "action": "Character activity (reading, playing, etc.) or null", 
-  "mood": "Emotional tone (happy, calm, etc.) or null",
-  "pose": "Body position (sitting, standing, etc.) or null"
-}
-
-RULES:
-1. PRESERVE EXACT COUNTS: "a bird" = 1 bird, "birds" = multiple
-2. INFER SETTING: Birds/trees = outdoor, beds/books = indoor unless specified
-3. VISUAL ONLY: Describe observable details, not thoughts or dialogue
-4. SPATIAL CLARITY: Include positions (left, right, center, background)
-5. Always return valid JSON with all 5 keys
-6. Use null (no quotes) for unclear components
-7. primaryScene must be 30+ characters and visually descriptive
-8. Use previousScene to keep characters, objects, and animals visually consistent. Only update details if currentText introduces a clear change.`
-        },
-        
         // Helper function to build user content safely (secondary characters now handled in templates)
         function buildUserContent(previousScene, storyText, secondaryElements) {
           let content = '';
@@ -1149,12 +1122,38 @@ RULES:
           
           return content;
         }
-        
-        {
-          role: 'user', 
-          content: buildUserContent(previousScene, storyText, secondaryElements)
-        }
-      ];
+
+        const minimalMessages = [
+          {
+            role: 'system',
+content: `Generate a primary scene description for image generation.
+
+OBJECTIVE: Return a primary scene description of 30+ characters with structured metadata.
+
+JSON RESPONSE:
+{
+  "primaryScene": "Concise, descriptive visual scene for image generation",
+  "setting": "Location (bedroom, playground, etc.) or null",
+  "action": "Character activity (reading, playing, etc.) or null", 
+  "mood": "Emotional tone (happy, calm, etc.) or null",
+  "pose": "Body position (sitting, standing, etc.) or null"
+}
+
+RULES:
+1. PRESERVE EXACT COUNTS: "a bird" = 1 bird, "birds" = multiple
+2. INFER SETTING: Birds/trees = outdoor, beds/books = indoor unless specified
+3. VISUAL ONLY: Describe observable details, not thoughts or dialogue
+4. SPATIAL CLARITY: Include positions (left, right, center, background)
+5. Always return valid JSON with all 5 keys
+6. Use null (no quotes) for unclear components
+7. primaryScene must be 30+ characters and visually descriptive
+8. Use previousScene to keep characters, objects, and animals visually consistent. Only update details if currentText introduces a clear change.`
+          },
+          {
+            role: 'user', 
+            content: buildUserContent(previousScene, storyText, secondaryElements)
+          }
+        ];
         
         console.log(`AI [${aiRequestId}] PHASE 1.2: Enhanced prompt constructed:`, {
           systemPromptLength: minimalMessages[0].content.length,
