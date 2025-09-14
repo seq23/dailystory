@@ -62,6 +62,27 @@ async function getDataFlowValidator() {
   }
 }
 
+// ============= PHASE 6: ERROR HANDLING & LOGGING INTEGRATION =============
+async function getErrorRecoverySystem() {
+  try {
+    const { errorRecoverySystem } = await import("../_shared/ErrorRecoverySystem.js");
+    return errorRecoverySystem;
+  } catch (error) {
+    console.warn('ErrorRecoverySystem not available:', error);
+    return null;
+  }
+}
+
+async function getComprehensiveLoggingSystem() {
+  try {
+    const { comprehensiveLoggingSystem } = await import("../_shared/ComprehensiveLoggingSystem.js");
+    return comprehensiveLoggingSystem;
+  } catch (error) {
+    console.warn('ComprehensiveLoggingSystem not available:', error);
+    return null;
+  }
+}
+
 // ============= REQUEST ID GENERATION =============
 function generateRequestId() {
   const timestamp = Date.now().toString(36);
@@ -774,6 +795,28 @@ async function callTierFunction(functionName, payload) {
       sessionId: payload.sessionId?.substring(0, 15) + '...' || 'none'
     });
     
+// ============= PHASE 5: ENHANCED TIER FUNCTION CALLER WITH DATA FLOW & ERROR RECOVERY =============
+async function callTierFunction(functionName, payload) {
+  try {
+    console.log(`📞 Calling ${functionName} with payload keys:`, Object.keys(payload));
+    console.log(`🔍 DEBUG: ${functionName} request details:`, {
+      functionName,
+      payloadSize: JSON.stringify(payload).length,
+      timestamp: new Date().toISOString(),
+      sessionId: payload.sessionId?.substring(0, 15) + '...' || 'none'
+    });
+    
+    // ============= PHASE 6: GET ERROR RECOVERY AND LOGGING SYSTEMS =============
+    let errorRecoverySystem = null;
+    let loggingSystem = null;
+    
+    try {
+      errorRecoverySystem = await getErrorRecoverySystem();
+      loggingSystem = await getComprehensiveLoggingSystem();
+    } catch (error) {
+      console.warn('⚠️ Phase 6: Error systems not available:', error.message);
+    }
+    
     // ============= PHASE 5: DATA FLOW OPTIMIZATION =============
     let optimizedPayload = payload;
     let validator = null;
@@ -811,6 +854,97 @@ async function callTierFunction(functionName, payload) {
       console.warn(`⚠️ Phase 5: Data flow optimization failed, using original payload:`, dataFlowError.message);
       optimizedPayload = payload;
     }
+    
+    // Enhanced Tier 2.5 debugging - log detailed payload for fallback function
+    if (functionName.includes('runware-template')) {
+      console.log(`🔧 TEMPLATE DEBUG: Enhanced logging for ${functionName}:`, {
+        templateComplexity: optimizedPayload.templateComplexity,
+        storyTextLength: optimizedPayload.storyText?.length || 0,
+        storyTextPreview: optimizedPayload.storyText?.substring(0, 50) || 'none',
+        hasUserInfo: !!optimizedPayload.userInfo,
+        userInfoKeys: optimizedPayload.userInfo ? Object.keys(optimizedPayload.userInfo) : [],
+        hasAvatarIdentity: !!optimizedPayload.avatarIdentity,
+        sessionId: optimizedPayload.sessionId?.substring(0, 15) + '...' || 'none',
+        pageNumber: optimizedPayload.pageNumber || 'none',
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    console.log(`🌐 Invoking Supabase function: ${functionName}`);
+    console.time(`${functionName}_call_duration`);
+    
+    // ============= PHASE 6: ENHANCED ERROR HANDLING WITH RECOVERY =============
+    const executeCall = async () => {
+      const { data, error } = await supabase.functions.invoke(functionName, {
+        body: optimizedPayload
+      });
+      
+      if (error) {
+        throw new Error(`${functionName} invoke error: ${error.message}`);
+      }
+      
+      return data;
+    };
+    
+    // Setup error recovery context
+    const recoveryContext = {
+      service: functionName,
+      sessionId: payload.sessionId,
+      retryFunction: executeCall,
+      data: optimizedPayload,
+      normalizeFunction: async (data) => {
+        if (optimizer) {
+          return optimizer.optimizeTemplateServiceInput(data, functionName);
+        }
+        return data;
+      }
+    };
+    
+    let result;
+    try {
+      result = await executeCall();
+    } catch (error) {
+      console.error(`❌ ${functionName} call failed:`, error.message);
+      
+      // ============= PHASE 6: APPLY ERROR RECOVERY =============
+      if (errorRecoverySystem) {
+        console.log(`🚨 Phase 6: Applying error recovery for ${functionName}`);
+        
+        if (loggingSystem) {
+          loggingSystem.logErrorRecovery('FUNCTION_CALL_ERROR', {
+            sessionId: payload.sessionId,
+            requestId: payload.requestId,
+            errorType: errorRecoverySystem.classifyError(error),
+            errorMessage: error.message,
+            service: functionName,
+            recoveryStrategy: 'attempting_recovery'
+          });
+        }
+        
+        const recoveryResult = await errorRecoverySystem.handleError(error, recoveryContext);
+        
+        if (recoveryResult.success) {
+          console.log(`✅ Phase 6: Error recovery successful for ${functionName}`);
+          result = recoveryResult.result;
+          
+          if (loggingSystem) {
+            loggingSystem.logErrorRecovery('RECOVERY_SUCCESS', {
+              sessionId: payload.sessionId,
+              service: functionName,
+              recoveryMethod: recoveryResult.recoveryMethod,
+              recoverySuccess: true
+            });
+          }
+        } else {
+          console.error(`❌ Phase 6: Error recovery failed for ${functionName}`);
+          throw error;
+        }
+      } else {
+        throw error;
+      }
+    }
+    
+    console.timeEnd(`${functionName}_call_duration`);
     // Enhanced Tier 2.5 debugging - log detailed payload for fallback function
     // Use proper Supabase client for edge function calls - FIX FOR AUTHENTICATION ISSUES
     const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
@@ -1069,6 +1203,28 @@ async function generateWithRunwarePremium(apiKey, positivePrompt, negativePrompt
 serve(async (req) => {
   const requestId = generateRequestId();
   console.log(`🎯 [${requestId}] Image Generation Orchestrator: ${req.method} ${req.url}`);
+  
+  // ============= PHASE 6: ERROR HANDLING & LOGGING INITIALIZATION =============
+  console.log('🚨 Phase 6: Initializing error handling and logging systems');
+  let errorRecoverySystem = null;
+  let loggingSystem = null;
+  
+  try {
+    errorRecoverySystem = await getErrorRecoverySystem();
+    loggingSystem = await getComprehensiveLoggingSystem();
+    
+    if (loggingSystem) {
+      loggingSystem.logEvent('TIER_ROUTING', 'ORCHESTRATOR_START', 'Image generation orchestrator started', {
+        requestId,
+        method: req.method,
+        url: req.url
+      });
+    }
+    
+    console.log('✅ Phase 6: Error handling and logging systems initialized');
+  } catch (error) {
+    console.warn('⚠️ Phase 6: Error handling/logging systems not available:', error);
+  }
   
   // ============= PHASE 5: DATA FLOW OPTIMIZATION =============
   console.log('⚡ Phase 5: Initializing data flow optimization');
@@ -2127,6 +2283,21 @@ serve(async (req) => {
           console.log(`🔧 Starting Tier ${subTier}: ${config.name} (${config.func})`);
           console.log(`🔍 TIER ${subTier} DEBUG - Calling ${config.func} with templateComplexity: ${config.level}`);
           
+          // ============= PHASE 6: LOG TIER ROUTING DECISION =============
+          if (loggingSystem) {
+            loggingSystem.logTierRouting('TIER_ATTEMPT', {
+              requestId,
+              sessionId,
+              currentTier: 'orchestrator',
+              targetTier: subTier,
+              routingReason: config.name.toLowerCase().replace(/\s+/g, '_'),
+              userComplexity: userInfo ? dataFlowOptimizer?.computeUserComplexity(userInfo) : 'unknown',
+              serviceHealth: smartRoutingOrder ? 'smart_routing_applied' : 'default_routing',
+              processingTime: Date.now()
+            });
+          }
+          
+          const startTime = Date.now();
           const tierResult = await callTierFunction(config.func, {
             storyText: pageText,
             userInfo,
@@ -2135,6 +2306,30 @@ serve(async (req) => {
             sessionId,
             pageNumber
           });
+          const processingTime = Date.now() - startTime;
+          
+          // ============= PHASE 6: LOG TIER TRANSITION RESULT =============
+          if (loggingSystem) {
+            loggingSystem.logTierTransition('orchestrator', subTier, !!tierResult?.success, {
+              requestId,
+              sessionId,
+              processingTime,
+              templateComplexity: config.level,
+              functionUsed: config.func,
+              error: tierResult?.error || null
+            });
+            
+            if (loggingSystem) {
+              loggingSystem.logPerformance('TIER_PROCESSING', {
+                requestId,
+                sessionId,
+                service: config.func,
+                operation: `tier_${config.level}_processing`,
+                duration: processingTime,
+                dataSize: JSON.stringify(tierResult || {}).length
+              });
+            }
+          }
           
           console.log(`🔍 TIER ${subTier} RESULT ANALYSIS:`, {
             success: tierResult?.success || false,
@@ -2142,11 +2337,25 @@ serve(async (req) => {
             error: tierResult?.error || 'none',
             complexity: config.level,
             functionUsed: config.func,
-            subTier
+            subTier,
+            processingTime: processingTime + 'ms'
           });
           
           if (tierResult?.success && tierResult?.imageURL) {
             console.log(`✅ TIER ${subTier} SUCCESS - ${config.name} (${config.func}) succeeded`);
+            
+            // ============= PHASE 6: LOG SUCCESSFUL TIER COMPLETION =============
+            if (loggingSystem) {
+              loggingSystem.logTierRouting('TIER_SUCCESS', {
+                requestId,
+                sessionId,
+                currentTier: 'orchestrator',
+                targetTier: subTier,
+                routingReason: 'successful_completion',
+                processingTime
+              });
+            }
+            
             return createDynamicCorsResponse({
               success: true,
               imageURL: tierResult.imageURL,
@@ -2159,15 +2368,42 @@ serve(async (req) => {
                 fallbackTier: subTier,
                 templateComplexity: config.level,
                 functionUsed: config.func,
-                templateType: tierResult.templateType
+                templateType: tierResult.templateType,
+                processingTime: processingTime
               }
             }, req);
           }
           
           console.log(`⚠️ Tier ${subTier} failed, progressing to next complexity level`);
           
+          // ============= PHASE 6: LOG TIER FAILURE =============
+          if (loggingSystem) {
+            loggingSystem.logTierRouting('TIER_FAILED', {
+              requestId,
+              sessionId,
+              currentTier: 'orchestrator',
+              targetTier: subTier,
+              routingReason: 'tier_processing_failed',
+              errorMessage: tierResult?.error || 'unknown_failure',
+              processingTime
+            });
+          }
+          
         } catch (error) {
           console.error(`🚨 TIER ${subTier} (${config.func}) EXCEPTION:`, error.message);
+          
+          // ============= PHASE 6: APPLY ERROR RECOVERY =============
+          if (errorRecoverySystem && loggingSystem) {
+            loggingSystem.logErrorRecovery('TIER_EXCEPTION', {
+              requestId,
+              sessionId,
+              errorType: errorRecoverySystem.classifyError(error),
+              errorMessage: error.message,
+              service: config.func,
+              recoveryStrategy: 'continue_to_next_tier'
+            });
+          }
+          
           // Continue to next complexity level
         }
       }
