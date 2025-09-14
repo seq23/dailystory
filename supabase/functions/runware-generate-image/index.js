@@ -1668,26 +1668,6 @@ serve(async (req)=>{
         // to ensure proper tier-specific handling and prevent data loss
         console.log('🎭 Secondary character processing handled by template system');
         const seededSecondaryDescriptions = []; // Empty - processed in templates now
-            const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
-            const characterConsistencyService = new CharacterConsistencyService();
-            const seededSecondaryDescriptions = await Promise.all(secondaryElements.slice(0, 4).map(async (el)=>{
-              if (el.type === 'secondary_character') {
-                try {
-                  const secondaryCharacterSeed = await characterConsistencyService.getSecondaryCharacterSeed(sessionId, el.name, 'secondary_character');
-                  const seedDescription = await characterConsistencyService.generateSecondaryCharacterDescription(el.name, 'secondary_character', secondaryCharacterSeed);
-                  console.log(`👤 [${requestId}] Secondary character seed applied: ${el.name} -> ${seedDescription} (seed: ${secondaryCharacterSeed})`);
-                  return `${el.name}: ${seedDescription}`;
-                } catch (error) {
-                  console.warn(`⚠️ [${requestId}] Secondary character seed failed for ${el.name}:`, error.message);
-                  return `${el.name} (${el.type})`;
-                }
-              } else {
-                return `${el.name} (${el.type})`;
-              }
-            }));
-        } catch (error) {
-          console.log(`⚠️ [${requestId}] Secondary elements processing disabled (handled in template system):`, error.message);
-        }
         
         // NOTE: Secondary character processing moved to template system for proper tier handling
         // ============= ANALYZE PAGE TEXT FOR VISUAL DETAILS =============
@@ -1912,7 +1892,7 @@ serve(async (req)=>{
                 characterConsistency: true,
                 avatarValidated: true,
                 orchestrated: true,
-                validationApplied: validatedPrompt !== enhancedPrompt,
+                validationApplied: finalPrompt !== enhancedPrompt,
                 segmentCount: promptParts.length,
                 qualityScore: enhancementResult.qualityScore || 95
               }
@@ -1931,12 +1911,12 @@ serve(async (req)=>{
             qualityScore: enhancementResult.qualityScore || 95,
             metadata: {
               model: "runware:100@1",
-              promptLength: validatedPrompt.length,
+              promptLength: finalPrompt.length,
               sessionId: sessionId || 'unknown',
               pageNumber,
               isGuestUser: isGuestUser,
               orchestrated: true,
-              validationApplied: validatedPrompt !== enhancedPrompt,
+              validationApplied: finalPrompt !== enhancedPrompt,
               segmentCount: promptParts.length,
               characterSeed: characterData?.seed || 'fallback-seed'
             }
