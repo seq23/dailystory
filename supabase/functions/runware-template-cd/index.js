@@ -48,40 +48,64 @@ function getComplexityLevel(userInfo, templateComplexity) {
   return 'C';
 }
 
-// Generate Tier 2.5C template (Emergency templates + NO cultural intelligence)
-function generateTier25C(storyText, userInfo) {
-  console.log('🎯 Tier 2.5C: Generating Emergency Framework Template - NO CULTURAL INTELLIGENCE');
+// ============= PHASE 3 INTEGRATION: EMERGENCY TEMPLATE WITH LIGHT CULTURAL CONTEXT =============
+// Generate Tier 2.5C template (Emergency templates + Light cultural intelligence)
+async function generateTier25C(storyText, userInfo, avatarIdentity) {
+  console.log('🎯 Tier 2.5C: Generating Emergency Framework Template with LIGHT Cultural Intelligence');
   
   const difficulty = userInfo?.difficulty || 'medium';
   const styleFramework = getStyleFramework(difficulty);
   
   console.log('🎨 Retrieved', styleFramework.name, 'style framework for difficulty:', difficulty);
   
-  // CORRECTED: Tier 2.5C gets NO avatarIdentity, NO cultural intelligence
-  // Only basic userInfo: name, age (no ethnicity, no cultural elements)
-  const childName = userInfo?.name || userInfo?.childName || 'child';
-  const age = userInfo?.age || 8;
-  
-  // Emergency template with NO cultural intelligence
-  const truncatedText = (storyText || '').substring(0, 500); // Shorter for emergency
-  const emergencyFramework = styleFramework.frameworkPrompt;
-  
-  // Basic character info WITHOUT cultural elements
-  const basicCharacterInfo = `${childName}, age ${age}`;
-  
-  // Emergency template structure (simple concatenation, no placeholders)
-  const positivePrompt = `${emergencyFramework}. ${basicCharacterInfo} in scene: ${truncatedText}. Simple children's illustration style.`;
-  const negativePrompt = styleFramework.negativePrompt + ', photorealistic, adult themes, complex details';
-  
-  console.log('✅ Tier 2.5C: Emergency Template generated WITHOUT cultural intelligence');
-  
-  return {
-    positivePrompt,
-    negativePrompt,
-    templateType: 'Emergency Framework Template - No Cultural Intelligence',
-    tier: '2.5C',
-    culturalIntelligence: false
-  };
+  try {
+    // PHASE 3: Use Universal Placeholder Resolver for emergency templates
+    const { UniversalPlaceholderResolver } = await import("../_shared/UniversalPlaceholderResolver.js");
+    const resolver = new UniversalPlaceholderResolver(userInfo, avatarIdentity, storyText);
+    
+    // Emergency template with basic placeholders
+    const emergencyTemplate = `{frameworkPrompt}. {character} {age}, {ethnicity} in scene: {scene}. Context: {cultural_context}. Simple children's illustration style.`;
+    
+    const additionalData = {
+      frameworkPrompt: styleFramework.frameworkPrompt
+    };
+    
+    const positivePrompt = resolver.resolve(emergencyTemplate, additionalData);
+    const negativePrompt = styleFramework.negativePrompt + ', photorealistic, adult themes, complex details';
+    
+    console.log('✅ Tier 2.5C: Emergency Template generated with Universal Placeholder Resolver');
+    console.log('🌍 Cultural Enhancement Level:', resolver.getCulturalEnhancementLevel());
+    
+    return {
+      positivePrompt,
+      negativePrompt,
+      templateType: 'Emergency Framework Template - Light Cultural Intelligence',
+      tier: '2.5C',
+      culturalIntelligence: true,
+      enhancementLevel: resolver.getCulturalEnhancementLevel()
+    };
+    
+  } catch (error) {
+    console.warn('⚠️ Universal Placeholder Resolver failed, using basic emergency template:', error);
+    
+    // Fallback to basic template
+    const childName = userInfo?.name || userInfo?.childName || 'child';
+    const age = userInfo?.age || 8;
+    const truncatedText = (storyText || '').substring(0, 500);
+    const emergencyFramework = styleFramework.frameworkPrompt;
+    const basicCharacterInfo = `${childName}, age ${age}`;
+    
+    const positivePrompt = `${emergencyFramework}. ${basicCharacterInfo} in scene: ${truncatedText}. Simple children's illustration style.`;
+    const negativePrompt = styleFramework.negativePrompt + ', photorealistic, adult themes, complex details';
+    
+    return {
+      positivePrompt,
+      negativePrompt,
+      templateType: 'Emergency Framework Template - Basic Fallback',
+      tier: '2.5C',
+      culturalIntelligence: false
+    };
+  }
 }
 
 // Generate Tier 2.5D template (hardcoded emergency)
@@ -194,6 +218,7 @@ serve(async (req) => {
     const {
       storyText = '',
       userInfo = {},
+      avatarIdentity = null,
       templateComplexity = null
     } = body;
 
@@ -206,7 +231,7 @@ serve(async (req) => {
     if (complexity === 'D') {
       template = generateTier25D();
     } else {
-      template = generateTier25C(storyText, userInfo);
+      template = await generateTier25C(storyText, userInfo, avatarIdentity);
     }
 
     // Call Runware API

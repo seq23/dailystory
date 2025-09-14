@@ -83,32 +83,33 @@ function getComplexityLevel(userInfo, templateComplexity) {
   return 'B'; // Simple scenes
 }
 
-// ============= EXACT TEMPLATE STRUCTURES FROM MASTER PLAN =============
+// ============= PHASE 3: ENHANCED TEMPLATE STRUCTURES WITH ADVANCED PLACEHOLDERS =============
 
 const PREMIUM_PROMPT_TEMPLATES = {
-  'level_0-1': 'Narrative: {pageText}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion}. Action: {scene}. Composition: {spatial_composition}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {sensory_details}. Context: {community_context}, {secondary_characters}. Technical: {frameworkPrompt}, {cameraDirective}',
+  'level_0-1': 'Narrative: {pageText}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion}. Action: {scene}. Composition: {spatial_composition}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {sensory_details}. Context: {cultural_context}, {community_context}, {secondary_characters}. Technical: {frameworkPrompt}, {cameraDirective}',
   
-  'level_2-4': 'Technical: {frameworkPrompt}, {cameraDirective}. Narrative: {pageText}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion}. Action: {scene}. Composition: {spatial_composition}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {sensory_details}. Context: {community_context}, {secondary_characters}'
+  'level_2-4': 'Technical: {frameworkPrompt}, {cameraDirective}. Narrative: {pageText}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion}. Action: {scene}. Composition: {spatial_composition}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {sensory_details}. Context: {cultural_context}, {community_context}, {secondary_characters}'
 };
 
 const BASIC_PROMPT_TEMPLATES = {
-  'level_0-1': 'Subject: {character} {age}, {ethnicity}. Action: {scene}. Environment: {setting}. Technical: {frameworkPrompt}',
+  'level_0-1': 'Subject: {character} {age}, {ethnicity}. Action: {scene}. Environment: {setting}. Context: {cultural_context}. Technical: {frameworkPrompt}',
   
-  'level_2-4': 'Technical: {frameworkPrompt}. Subject: {character} {age}, {ethnicity}. Action: {scene}. Environment: {setting}'
+  'level_2-4': 'Technical: {frameworkPrompt}. Subject: {character} {age}, {ethnicity}. Action: {scene}. Environment: {setting}. Context: {cultural_context}'
 };
 
-// ============= CULTURAL INTELLIGENCE INTEGRATION =============
-async function getCulturalArrays() {
+// ============= PHASE 3: UNIVERSAL PLACEHOLDER RESOLUTION INTEGRATION =============
+// Import the comprehensive Universal Placeholder Resolver
+async function getUniversalResolver() {
   try {
-    const { CULTURAL_ARRAYS } = await import("../_shared/tier25Vocabulary.js");
-    return CULTURAL_ARRAYS;
+    const { UniversalPlaceholderResolver } = await import("../_shared/UniversalPlaceholderResolver.js");
+    return UniversalPlaceholderResolver;
   } catch (error) {
-    console.warn('Cultural arrays unavailable:', error);
-    return null;
+    console.error('Universal Placeholder Resolver unavailable:', error);
+    throw new Error('Critical: Universal Placeholder Resolver failed to load');
   }
 }
 
-// ============= PLACEHOLDER RESOLUTION SYSTEM =============
+// ============= ENHANCED PLACEHOLDER RESOLUTION SYSTEM =============
 async function resolvePlaceholders(template, data, hasCulturalIntelligence) {
   const { 
     storyText, 
@@ -120,86 +121,71 @@ async function resolvePlaceholders(template, data, hasCulturalIntelligence) {
     frameworkPrompt 
   } = data;
 
-  const childName = userInfo?.name || userInfo?.childName || 'child';
+  console.log('🎯 Phase 3: Using Universal Placeholder Resolver with cultural intelligence');
   
-  // Build character description with cultural intelligence
-  let characterDescription = childName;
-  let ethnicity = '';
-  let hair = '';
-  let features = '';
-  
-  if (hasCulturalIntelligence && avatarIdentity) {
-    console.log('🌍 Applying cultural intelligence for avatarIdentity:', avatarIdentity);
+  try {
+    // Use the Universal Placeholder Resolver (Phase 3.2)
+    const UniversalResolver = await getUniversalResolver();
+    const resolver = new UniversalResolver(userInfo, avatarIdentity, storyText);
     
-    // Use avatarIdentity for cultural elements
-    const culturalArrays = await getCulturalArrays();
+    // Prepare additional data for advanced placeholders
+    const additionalData = {
+      frameworkPrompt: frameworkPrompt || 'children\'s book illustration style',
+      secondaryCharacters: secondaryCharacters || '',
+      visualDetails: visualDetails,
+      characterData: characterData
+    };
     
-    if (culturalArrays) {
-      // Handle English + dark skin tone scenario (African American features)
-      const nativeLanguage = avatarIdentity.nativeLanguage || userInfo?.nativeLanguage || 'en';
-      const skinTone = avatarIdentity.skinTone || userInfo?.avatar?.skinTone;
-      const avatarType = avatarIdentity.type || userInfo?.avatar?.type;
-      
-      if (nativeLanguage === 'en' && (skinTone === 'dark' || skinTone === 'medium')) {
-        // Apply African American cultural features
-        console.log('🌍 Applying African American cultural features');
-        
-        if (culturalArrays.HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES.length > 0) {
-          const randomFeature = culturalArrays.HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES[
-            Math.floor(Math.random() * culturalArrays.HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES.length)
-          ];
-          features = randomFeature;
-        }
-        
-        if (culturalArrays.HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES) {
-          const genderKey = (avatarType === 'girl') ? 'girls' : 'boys';
-          const hairStyles = culturalArrays.HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES[genderKey];
-          if (hairStyles && hairStyles.length > 0) {
-            hair = hairStyles[Math.floor(Math.random() * hairStyles.length)];
-          }
-        }
-        
-        ethnicity = 'African American';
-      } else if (nativeLanguage !== 'en' && culturalArrays.REGIONAL_AUTHENTICITY_STRINGS[nativeLanguage]) {
-        // Apply regional authenticity for non-English speakers
-        console.log(`🌍 Applying regional authenticity for language: ${nativeLanguage}`);
-        ethnicity = culturalArrays.REGIONAL_AUTHENTICITY_STRINGS[nativeLanguage];
-      } else {
-        // Default cultural baseline
-        ethnicity = 'diverse multicultural';
-        hair = 'well-styled hair';
-        features = 'expressive features';
-      }
-    } else {
-      console.warn('⚠️ Cultural arrays not available, using default features');
-      ethnicity = 'diverse';
-      hair = 'styled hair';
-      features = 'friendly features';
-    }
-  } else {
-    console.log('🚫 No cultural intelligence applied');
+    const resolvedTemplate = resolver.resolve(template, additionalData);
+    
+    console.log('✅ Phase 3: Template resolved with Universal Placeholder Resolver');
+    console.log('🌍 Cultural Enhancement Level:', resolver.getCulturalEnhancementLevel());
+    console.log('🎨 Cultural Features Applied:', resolver.shouldApplyCulturalFeatures());
+    
+    return resolvedTemplate;
+    
+  } catch (error) {
+    console.error('❌ Universal Placeholder Resolver failed, using fallback:', error);
+    
+    // Fallback to basic resolution if Universal Resolver fails
+    return await resolvePlaceholdersFallback(template, data);
   }
+}
 
-  // Framework prompt (style)
+// ============= FALLBACK RESOLUTION SYSTEM =============
+async function resolvePlaceholdersFallback(template, data) {
+  console.log('⚠️ Using fallback placeholder resolution');
+  
+  const { 
+    storyText, 
+    userInfo, 
+    avatarIdentity, 
+    frameworkPrompt,
+    secondaryCharacters
+  } = data;
+
+  const childName = userInfo?.name || userInfo?.childName || 'child';
   const framework = frameworkPrompt || 'children\'s book illustration style';
   
-  // Placeholder mapping
+  // Basic placeholder mapping for fallback
   const placeholders = {
     pageText: storyText || '',
-    character: characterDescription,
+    character: childName,
     age: userInfo?.age ? `age ${userInfo.age}` : '',
-    ethnicity: ethnicity,
-    hair: hair,
-    features: features,
+    ethnicity: 'diverse background',
+    hair: 'styled hair',
+    features: 'friendly features',
     emotion: 'happy and engaged',
     scene: storyText?.substring(0, 50) || 'playing',
     spatial_composition: 'centered composition',
     setting: 'bright, colorful environment',
     atmosphere: 'cheerful and warm',
-    props: visualDetails?.objects || '',
-    action_objects: visualDetails?.actionObjects || '',
-    sensory_details: visualDetails?.sensoryDetails || '',
-    secondary_characters: secondaryCharacters || '',
+    props: 'colorful props',
+    action_objects: 'engaging objects',
+    sensory_details: 'vibrant details',
+    cultural_context: 'inclusive community',
+    community_context: 'welcoming environment',
+    secondary_characters: secondaryCharacters || 'friendly companions',
     frameworkPrompt: framework,
     cameraDirective: 'medium shot, eye level'
   };
@@ -211,7 +197,7 @@ async function resolvePlaceholders(template, data, hasCulturalIntelligence) {
     resolvedTemplate = resolvedTemplate.replace(new RegExp(placeholder, 'g'), value || '');
   });
 
-  // Clean up extra spaces and commas
+  // Clean up template
   resolvedTemplate = resolvedTemplate
     .replace(/,\s*,/g, ',')
     .replace(/,\s*\./g, '.')
@@ -219,7 +205,6 @@ async function resolvePlaceholders(template, data, hasCulturalIntelligence) {
     .replace(/,\s*$/g, '')
     .trim();
 
-  console.log('✅ Template resolved with cultural intelligence:', hasCulturalIntelligence);
   return resolvedTemplate;
 }
 
