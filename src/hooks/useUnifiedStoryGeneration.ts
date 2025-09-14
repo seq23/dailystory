@@ -33,7 +33,7 @@ export const useUnifiedStoryGeneration = (): UseUnifiedStoryGenerationResult => 
     setError(null);
 
     try {
-      console.log('🚀 Using simplified 3-layer story generation pipeline');
+      console.log('🚀 Using token-optimized 3-layer story generation pipeline with bundled character logic');
 
       // Process vocabulary (for debugging/display purposes)
       try {
@@ -49,10 +49,12 @@ export const useUnifiedStoryGeneration = (): UseUnifiedStoryGenerationResult => 
         sessionId: config.sessionId || `unified-${userInfo.name}-${Date.now()}`
       });
       
-      console.log('✅ Simplified generation complete:', {
+      console.log('✅ Token-optimized generation complete:', {
         success: result.success,
         pagesGenerated: result.pages?.length || 0,
-        processingTime: result.metadata?.processingTime
+        processingTime: result.metadata?.processingTime,
+        characterConsistency: (result.metadata as any)?.characterConsistency,
+        secondaryCharacters: (result.metadata as any)?.secondaryCharacters
       });
 
       return result;

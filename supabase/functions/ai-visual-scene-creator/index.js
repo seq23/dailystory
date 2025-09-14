@@ -528,39 +528,18 @@ serve(async (req) => {
           avatarSource: 'orchestrator-provided'
         });
         
-        // PHASE 1.1b: Secondary Characters - TIER 1 DIRECT DETECTION
+        // PHASE 1.1b: Secondary Characters - Using Bundled CharacterConsistencyService
         debugLog('SECONDARY PHASE 1.1b: Detecting secondary characters for Tier 1');
-        let secondaryElements = [];
+        let fallbackSecondaryElements = [];
         
         try {
-          const AnimalDetector = await getEnhancedAnimalDetector();
-          if (AnimalDetector) {
-            const detectionResult = await AnimalDetector.detectAllCharacters(storyText, {
-              sessionId,
-              pageNumber,
-              userInfo: avatarIdentity
-            });
-            
-            if (detectionResult?.secondaryCharacters?.length > 0) {
-              secondaryElements = detectionResult.secondaryCharacters.map(char => ({
-                name: char.name || 'character',
-                relation: char.relation || 'friend',
-                description: char.description || 'friendly character'
-              }));
-              
-              debugLog('SECONDARY Found secondary characters:', secondaryElements.length);
-              
-              // Store in CharacterConsistencyService for cross-page consistency
-              if (CharacterService) {
-                for (const char of secondaryElements) {
-                  await CharacterService.analyzeVisualDetails(sessionId, `${char.name}: ${char.description}`, pageNumber, char.name);
-                }
-              }
-            }
+          if (CharacterService) {
+            fallbackSecondaryElements = await CharacterService.detectSecondaryCharacters(sessionId, storyText, pageNumber);
+            debugLog('SECONDARY Found secondary characters:', fallbackSecondaryElements.length);
           }
         } catch (error) {
           console.warn('Secondary character detection failed (non-critical):', error);
-          secondaryElements = [];
+          fallbackSecondaryElements = [];
         }
         
         // PHASE 1.1c: Track Visual Details
@@ -602,41 +581,28 @@ serve(async (req) => {
         const aiRequestId = `REQ-${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 5)}`;
         console.log(`AI [${aiRequestId}] PHASE 1.2: Constructing Minimal AI Prompt`);
         
-        // Helper function to build user content safely (secondary characters now handled in templates)
-        function buildUserContent(previousScene, storyText, secondaryElements) {
+        // Enhanced user content with avatar information
+        function buildUserContent(previousScene, storyText, avatarIdentity) {
           let content = '';
+          
+          // Include avatar context for better scene generation
+          const avatarInfo = {
+            name: avatarIdentity?.name || 'child',
+            age: avatarIdentity?.age || '6-8',
+            region: avatarIdentity?.culturalProfile || 'american'
+          };
           
           if (previousScene) {
             content = `{
   "previousScene": ${JSON.stringify(previousScene)},
-  "currentText": "${storyText}"
+  "currentText": "${storyText}",
+  "avatarContext": ${JSON.stringify(avatarInfo)}
 }`;
           } else {
             content = `{
-  "currentText": "${storyText}"
+  "currentText": "${storyText}",
+  "avatarContext": ${JSON.stringify(avatarInfo)}
 }`;
-          }
-          
-          // NOTE: Secondary elements are now processed in the template system
-          // to prevent double processing and ensure proper tier-specific handling
-          
-          // Add optional cultural inspiration for non-English languages - AI should feel free to enhance settings creatively
-          const userLanguage = req.headers.get('Accept-Language')?.split(',')[0]?.split('-')[0] || 'en';
-          const regionalContext = {
-            'es': 'Spanish/Latino cultural elements (plazas, courtyards, warm architecture)',
-            'fr': 'French cultural elements (Parisian architecture, gardens, cafes)',
-            'de': 'German cultural elements (castles, forests, traditional buildings)',
-            'it': 'Italian cultural elements (piazzas, fountains, Mediterranean settings)',
-            'pt': 'Portuguese/Brazilian cultural elements (colorful buildings, beaches, tropical)',
-            'ja': 'Japanese cultural elements (gardens, traditional architecture, cherry blossoms)',
-            'ko': 'Korean cultural elements (palaces, mountains, modern architecture)',
-            'zh': 'Chinese cultural elements (gardens, traditional buildings, landscapes)',
-            'ar': 'Arabic cultural elements (courtyards, geometric patterns, desert landscapes)',
-            'hi': 'Indian cultural elements (temples, gardens, vibrant colors)'
-          };
-          
-          if (regionalContext[userLanguage] && userLanguage !== 'en') {
-            content += `\nOptional cultural inspiration (enhance settings creatively with regional architecture/landmarks): ${regionalContext[userLanguage]}`;
           }
           
           return content;
@@ -645,32 +611,42 @@ serve(async (req) => {
         const minimalMessages = [
           {
             role: 'system',
-content: `Generate a primary scene description for image generation.
+content: `Generate a visual scene for image generation.
 
-OBJECTIVE: Return a primary scene description of 30+ characters with structured metadata.
+OBJECTIVE: Analyze story text sentence-by-sentence to find the primary visual moment and extract precise visual components. Return a primary scene description of 30+ characters with structured metadata.
 
 JSON RESPONSE:
 {
-  "primaryScene": "Concise, descriptive visual scene for image generation",
-  "setting": "Location (bedroom, playground, etc.) or null",
-  "action": "Character activity (reading, playing, etc.) or null", 
-  "mood": "Emotional tone (happy, calm, etc.) or null",
-  "pose": "Body position (sitting, standing, etc.) or null"
+  "primaryScene": "Detailed visual scene for image generation",
+  "secondaryCharacters": [
+    {
+      "name": "string",
+      "type": "string", 
+      "relationship": "string",
+      "disambiguation": "string"
+    }
+  ]
 }
 
 RULES:
-1. PRESERVE EXACT COUNTS: "a bird" = 1 bird, "birds" = multiple
-2. INFER SETTING: Birds/trees = outdoor, beds/books = indoor unless specified
-3. VISUAL ONLY: Describe observable details, not thoughts or dialogue
+1. FIND PRIMARY ACTION: Identify the sentence with strongest visual action
+2. PRESERVE COUNTS: "a bird" = 1 bird, "birds" = multiple
+3. VISUAL ONLY: Observable details, not thoughts/dialogue
 4. SPATIAL CLARITY: Include positions (left, right, center, background)
-5. Always return valid JSON with all 5 keys
-6. Use null (no quotes) for unclear components
-7. primaryScene must be 30+ characters and visually descriptive
-8. Use previousScene to keep characters, objects, and animals visually consistent. Only update details if currentText introduces a clear change.`
+5. ENVIRONMENTAL DETAIL: Use setting clues to establish lighting, indoor/outdoor, time of day
+6. CHARACTER CONSISTENCY: Use previousScene to maintain visual continuity
+7. DO NOT INVENT: Only use explicitly given names/descriptions
+8. REGIONAL ENHANCEMENT: Use avatar context for setting details
+9. 30+ characters minimum for primaryScene
+10. Return valid JSON only
+
+EXAMPLES:
+"Sarah wakes up" → "Sarah sitting upright in bed, arms stretching, sunlight streaming through bedroom window"
+"Sarah kisses mom goodbye" → "Sarah standing by open front door, leaning up to kiss mom, morning light from doorway"`
           },
           {
             role: 'user', 
-            content: buildUserContent(previousScene, storyText, secondaryElements)
+            content: buildUserContent(previousScene, storyText, avatarIdentity)
           }
         ];
         
@@ -678,14 +654,14 @@ RULES:
           systemPromptLength: minimalMessages[0].content.length,
           userPromptLength: minimalMessages[1].content.length,
           enhancedCharacterDescription: enhancedCharacterDescription,
-          secondaryElementsCount: secondaryElements.length,
+          fallbackSecondaryElementsCount: fallbackSecondaryElements.length,
           visualDetailsIncluded: !!visualDetails,
           storyTextLength: storyText.length
         });
         
-        // PHASE 1.3: AI Call for Primary Scene ONLY
+        // PHASE 1.3: AI Call for Primary Scene with Secondary Characters
         let primaryScene;
-        let setting, action, mood, pose; // Declare scope variables for later use
+        let secondaryCharacters = []; // New structured array
         try {
           console.log(`AI [${aiRequestId}] PHASE 1.3: Calling OpenAI for primary scene...`);
           const aiResult = await callOpenAIWithFallback(minimalMessages, 6000, aiRequestId, avatarIdentity);
@@ -697,19 +673,27 @@ RULES:
           
           const parsedResult = parseAIResponse(content.trim(), { requestId: aiRequestId });
           primaryScene = parsedResult.primaryScene;
+          secondaryCharacters = parsedResult.secondaryCharacters || [];
           
-          setting = parsedResult.setting || null;
-          action = parsedResult.action || null;
-          mood = parsedResult.mood || null;
-          pose = parsedResult.pose || null;
-          
+          // Simple validation with immediate tier escalation
           if (!primaryScene || primaryScene.length < 30) {
-            throw new Error(`Primary scene validation failed: length ${primaryScene?.length || 0} < 30`);
+            console.log(`TIER ESCALATION: primaryScene too short (${primaryScene?.length || 0} < 30 chars)`);
+            return createCorsResponse({
+              success: true,
+              aiSchema: null,
+              metadata: {
+                routing: {
+                  forceTier: '2.5A',
+                  reason: 'primary_scene_validation_failed'
+                }
+              }
+            });
           }
           
           console.log(`SUCCESS [${aiRequestId}] PHASE 1.3: Primary scene generated successfully:`, {
             primarySceneLength: primaryScene.length,
-            primaryScenePreview: primaryScene.substring(0, 100) + '...'
+            primaryScenePreview: primaryScene.substring(0, 100) + '...',
+            secondaryCharactersCount: secondaryCharacters.length
           });
           
           // PHASE 1.3b: Update Visual Details with Generated Scene
@@ -785,104 +769,60 @@ RULES:
         // PHASE 4: Scene storage handled by orchestrator - no local storage needed
         console.log(`SCENE Current scene data available for orchestrator:`, {
           primaryScene: primaryScene?.substring(0, 50) + '...',
-          setting: setting,
-          action: action,
-          mood: mood,
-          pose: pose
+          secondaryCharactersCount: secondaryCharacters.length
         });
         
-        
-        
         console.log('BUILD SCENE DATA ASSEMBLY: Character Consistency + Scene Data Ready', {
-          hasSecondaryCharacters: secondaryElements.length > 0,
+          hasSecondaryCharacters: secondaryCharacters.length > 0,
           hasVisualDetails: !!visualDetails,
           characterSeed: characterData.seed,
           primarySceneLength: primaryScene.length
         });
         
-        // PHASE 2.6: Primary Scene Validation & Tier 2.5A Trigger
-        debugLog('VALIDATION PHASE 2.6: Validating primary scene for Tier 1 quality');
+        // Simple validation - no fallback enhancement logic needed
+        console.log('VALIDATION PHASE: Simple primaryScene validation');
         
-        const tempEnhancedData = {
-          primaryScene: primaryScene,
-          setting: setting,
-          action: action,
-          mood: mood,
-          pose: pose
-        };
-        
-        const validationResult = validateAndEnhanceContent(tempEnhancedData, storyText);
-        
-        if (validationResult.useTier2) {
-          debugLog('VALIDATION Failed: Triggering Tier 2.5A fallback');
-          return createCorsResponse({
-            success: true,
-            aiSchema: null,
-            metadata: {
-              routing: {
-                forceTier: '2.5A',
-                reason: 'primary_scene_validation_failed'
-              },
-              validation: validationResult.fieldCheck
-            }
-          });
-        }
-        
-        debugLog('VALIDATION Passed: Proceeding with Tier 1');
-        
-        // Create enhanced story data for return with character consistency
-        enhancedStoryData = {
+        const enhancedStoryData = {
           primaryScene: primaryScene,
           characters: baseCharacterDescription,
-          secondaryCharacters: secondaryElements,
+          secondaryCharacters: secondaryCharacters,
           visualDetails: visualDetails,
           characterSeed: characterData.seed,
-          // Conditionally include visual components only if they exist
-          ...(typeof setting !== 'undefined' && { 
-            visualComponents: {
-              setting: setting || null,
-              action: action || null,
-              mood: mood || null,
-              pose: pose || null
-            }
-          }),
-          enhancedTier1: true, // Updated from reorganizedTier1
+          enhancedTier1: true,
           characterConsistency: {
             databaseBacked: true,
             characterSeed: characterData.seed,
-            secondaryCharactersCount: secondaryElements.length,
+            secondaryCharactersCount: secondaryCharacters.length,
             visualDetailsTracked: !!visualDetails
           },
           phases: {
             phase1: 'AI scene generation + character DB + secondary detection + visual tracking',
-            phase2: 'Secondary character descriptions'
+            phase2: 'Token-optimized prompt with avatar context'
           }
         };
         
         debugLog(`SUCCESS SCENE CREATOR: Scene data with character consistency ready for orchestrator`);
         
-        
         // =================== VALIDATION & RETURN RESULTS ===================
-        // No complex validation needed since we built the prompts ourselves
         
-        debugLog(`SUCCESS ENHANCED TIER 1: Validation passed - all phases complete with character consistency`);
+        debugLog(`SUCCESS ENHANCED TIER 1: Token-optimized system with character consistency complete`);
         
         // Return enhanced data with assembled prompts for Runware
         const result = {
           success: true,
           aiSchema: enhancedStoryData,
           metadata: {
-            enhancedTier1: true, // Updated from reorganizedTier1
+            enhancedTier1: true,
             characterConsistency: {
               databaseBacked: true,
               characterSeed: characterData.seed,
-              secondaryCharactersDetected: secondaryElements.length,
+              secondaryCharactersDetected: secondaryCharacters.length,
               visualDetailsTracked: !!visualDetails
             },
             validation: {
-              fieldsPresent: 5, // Updated count
+              fieldsPresent: 2, // primaryScene + secondaryCharacters
               fieldsPassed: true,
-              processingMethod: '3-phase-enhanced-with-consistency',
+              processingMethod: 'token-optimized-with-consistency',
               modelUsed: 'openai-enhanced'
             },
             extractedElements: {
@@ -903,17 +843,17 @@ RULES:
               sceneType: 'illustration',
               lighting: 'natural',
               mood: 'cheerful',
-              schemaVersion: '3-phase-reorganized'
+              schemaVersion: 'token-optimized'
             },
             phases: {
               phase1: 'AI scene generation + character DB + secondary detection + visual tracking',
-              phase2: 'Secondary character descriptions'
+              phase2: 'Token-optimized prompt with avatar context'
             }
           },
           enhancedStoryData: enhancedStoryData || {}
         };
 
-        debugLog(`SUCCESS SCENE CREATOR: Complete - Phases: AI Scene + Character DB + Secondary + Visual(SUCCESS) -> Secondary Characters(SUCCESS) - Scene data ready for orchestrator`);
+        debugLog(`SUCCESS SCENE CREATOR: Complete - Token-optimized system with bundled secondary character logic ready`);
 
         return createCorsResponse(result);
       }

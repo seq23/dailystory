@@ -350,12 +350,8 @@ async function checkServiceHealth() {
     console.warn('VisualTracker health check failed:', error.message);
   }
 
-  try {
-    const SessionManager = await getSessionManager();
-    services.sessionManager = !!SessionManager;
-  } catch (error) {
-    console.warn('SessionManager health check failed:', error.message);
-  }
+  // SessionManager removed - orchestrator handles all session state
+  services.sessionManager = false;
 
   try {
     const UniversalResolver = await getUniversalResolver();

@@ -4,6 +4,7 @@
 export class CharacterConsistencyService {
   private static instance: CharacterConsistencyService;
   private visualDetailCache = new Map<string, any>();
+  private secondaryCharacterCache = new Map<string, any[]>();
 
   private constructor() {}
 
@@ -179,6 +180,82 @@ export class CharacterConsistencyService {
   }
 
   /**
+   * Detect secondary characters using bundled SecondaryElementDetector logic
+   */
+  async detectSecondaryCharacters(sessionId: string, pageText: string, pageNumber: number): Promise<any[]> {
+    try {
+      const cacheKey = `${sessionId}_${pageNumber}`;
+      
+      // Check if already processed for this page
+      if (this.secondaryCharacterCache.has(cacheKey)) {
+        return this.secondaryCharacterCache.get(cacheKey) || [];
+      }
+      
+      const detectedCharacters = this.parseSecondaryCharacters(pageText);
+      
+      // Store in cache
+      this.secondaryCharacterCache.set(cacheKey, detectedCharacters);
+      
+      console.log(`Detected ${detectedCharacters.length} secondary characters on page ${pageNumber}:`, detectedCharacters);
+      return detectedCharacters;
+    } catch (error) {
+      console.warn('Secondary character detection failed:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Parse secondary characters from text using relationship patterns
+   */
+  private parseSecondaryCharacters(pageText: string): any[] {
+    if (!pageText) return [];
+    
+    const detectedCharacters: any[] = [];
+    const lowercaseText = pageText.toLowerCase();
+    
+    // Relationship patterns for character detection
+    const relationshipPatterns = {
+      family_mother: ['mom', 'mother', 'mommy', 'mama'],
+      family_father: ['dad', 'father', 'daddy', 'papa'], 
+      family_sister: ['sister', 'sis'],
+      family_brother: ['brother', 'bro'],
+      family_grandmother: ['grandma', 'grandmother', 'nana'],
+      family_grandfather: ['grandpa', 'grandfather', 'gramps'],
+      community_friend: ['friend', 'buddy', 'pal'],
+      community_teacher: ['teacher', 'instructor'],
+      animal_pet: ['dog', 'cat', 'puppy', 'kitten', 'pet']
+    };
+    
+    // Detect characters using patterns
+    Object.entries(relationshipPatterns).forEach(([type, patterns]) => {
+      patterns.forEach(pattern => {
+        if (lowercaseText.includes(pattern)) {
+          // Look for names near relationship words
+          const regex = new RegExp(`(\\b[A-Z][a-z]{2,12}\\b)\\s*(?:the\\s+)?${pattern}|${pattern}\\s+(\\b[A-Z][a-z]{2,12}\\b)`, 'gi');
+          const matches = pageText.matchAll(regex);
+          
+          for (const match of matches) {
+            const name = match[1] || match[2] || pattern;
+            const relationship = type.replace('_', ' ');
+            
+            // Avoid duplicates
+            if (!detectedCharacters.some(char => char.name === name)) {
+              detectedCharacters.push({
+                name: name,
+                type: type.startsWith('animal_') ? 'animal' : 'secondary_character',
+                relationship: relationship,
+                disambiguation: `${relationship} character`
+              });
+            }
+          }
+        }
+      });
+    });
+    
+    return detectedCharacters.slice(0, 3); // Limit to 3 for performance
+  }
+
+  /**
    * Clear all cached data for a session
    */
   clearSession(sessionId: string): void {
@@ -189,9 +266,18 @@ export class CharacterConsistencyService {
         keysToDelete.push(key);
       }
     });
+    
+    this.secondaryCharacterCache.forEach((_, key) => {
+      if (key.startsWith(sessionId)) {
+        keysToDelete.push(key);
+      }
+    });
 
-    keysToDelete.forEach(key => this.visualDetailCache.delete(key));
-    console.log(`Cleared visual details for session: ${sessionId}`);
+    keysToDelete.forEach(key => {
+      this.visualDetailCache.delete(key);
+      this.secondaryCharacterCache.delete(key);
+    });
+    console.log(`Cleared visual details and secondary characters for session: ${sessionId}`);
   }
 
   /**
