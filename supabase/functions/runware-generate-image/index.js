@@ -29,6 +29,8 @@ import { SecurityValidator } from "../_shared/SecurityValidator.js";
 import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from "../_shared/NuclearNegativePrompts.js";
 import { DifficultyLevelMapper } from "../_shared/DifficultyLevelMapper.js";
 import { CULTURAL_ARRAYS } from "../_shared/tier25Vocabulary.js";
+// ============= PHASE 7: NAME HANDLING CLARIFICATION =============
+import { NameHandlingService } from "../_shared/NameHandlingService.js";
 
 // ============= PHASE 4: SERVICE HEALTH MONITORING INTEGRATION =============
 async function getServiceHealthMonitor() {
@@ -253,18 +255,31 @@ const processAvatarIdentityFromCache = (userInfo) => {
     userName: userInfo?.userName || userInfo?.name || 'Child'
   };
   
+  // ============= PHASE 7: NAME HANDLING CLARIFICATION =============
+  // Ensure image generation uses child's real name only
+  const validatedAvatarIdentity = NameHandlingService.validateAvatarIdentityName(
+    avatarIdentity, 
+    userInfo, 
+    'image-generation'
+  );
+  
   console.log('✅ AVATAR IDENTITY PROCESSED:', {
     completeness: {
-      type: !!avatarIdentity.type,
-      skinTone: !!avatarIdentity.skinTone,
-      culturalProfile: !!avatarIdentity.culturalProfile,
-      nativeLanguage: !!avatarIdentity.nativeLanguage,
-      name: !!avatarIdentity.name
+      type: !!validatedAvatarIdentity.type,
+      skinTone: !!validatedAvatarIdentity.skinTone,
+      culturalProfile: !!validatedAvatarIdentity.culturalProfile,
+      nativeLanguage: !!validatedAvatarIdentity.nativeLanguage,
+      name: !!validatedAvatarIdentity.name
     },
-    result: avatarIdentity
+    result: validatedAvatarIdentity,
+    nameValidation: {
+      purpose: 'image-generation',
+      finalName: validatedAvatarIdentity.name,
+      source: 'NameHandlingService'
+    }
   });
   
-  return avatarIdentity;
+  return validatedAvatarIdentity;
 };
 
 // Cache system settings
@@ -1575,9 +1590,10 @@ serve(async (req) => {
       output: {
         type: avatarIdentity.type,
         skinTone: avatarIdentity.skinTone,
-        culturalProfile: avatarIdentity.culturalProfile,
-        nativeLanguage: avatarIdentity.nativeLanguage,
-        name: avatarIdentity.name
+      culturalProfile: avatarIdentity.culturalProfile,
+      nativeLanguage: avatarIdentity.nativeLanguage,
+      name: avatarIdentity.name,
+      nameSource: 'image-generation' // PHASE 7: Clarify this is for images
       },
       mapping: `${userInfo?.avatar?.type || 'unknown'}/${userInfo?.avatar?.skinTone || 'unknown'} → ${avatarIdentity.type}/${avatarIdentity.skinTone}`
     });
