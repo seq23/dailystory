@@ -2103,6 +2103,7 @@ serve(async (req)=>{
         orchestrated: true
       }
     }, req);
+
   } catch (error) {
     console.error('❌ Image orchestration failed:', error);
     // Enhanced error logging with request context (FIX: Variables now in scope)
