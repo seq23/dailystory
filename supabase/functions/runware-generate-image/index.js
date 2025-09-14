@@ -2507,4 +2507,12 @@ serve(async (req) => {
         orchestrated: true
       }
     }, req);
+  } catch (finalError) {
+    console.error('❌ Final fallback error:', finalError);
+    return createDynamicCorsResponse({
+      success: false,
+      error: 'Complete system failure',
+      tier: 'error'
+    }, req);
+  }
 });
