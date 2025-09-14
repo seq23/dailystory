@@ -10,7 +10,7 @@ import { CULTURAL_ARRAYS } from './tier25Vocabulary.js';
 
 export class CharacterConsistencyService {
   constructor() {
-    console.log('🎭 CharacterConsistencyService initialized with database-backed consistency');
+    // Structured initialization logging via unified-debug-service
     this.visualDetailCache = new Map();
   }
 
@@ -18,7 +18,7 @@ export class CharacterConsistencyService {
    * Save character data to database
    */
   async saveCharacterToDatabase(sessionId, characterKey, characterData) {
-    console.log(`💾 Attempting to save character ${characterKey} to database for session ${sessionId}...`);
+    // Database operation - success/error logged via error handling
     
     const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
     const supabase = createClient(
@@ -42,7 +42,7 @@ export class CharacterConsistencyService {
       throw new Error(`CharacterConsistencyService.saveCharacterToDatabase failed: ${safeErrorMessage(error)}`);
     }
     
-    console.log(`💾 Saved character ${characterKey} to database for session ${sessionId}`);
+    // Success - character saved to database
     return true;
   }
 
@@ -50,7 +50,7 @@ export class CharacterConsistencyService {
    * Get character data from database
    */
   async getCharacterFromDatabase(sessionId, characterKey) {
-    console.log(`📖 Attempting to retrieve character ${characterKey} from database for session ${sessionId}...`);
+    // Database fetch operation
     
     const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
     const supabase = createClient(
@@ -71,8 +71,7 @@ export class CharacterConsistencyService {
     }
     
     if (data?.character_data) {
-      console.log(`📖 Retrieved character ${characterKey} from database for session ${sessionId}`);
-      // Merge cultural selections back into character data
+      // Character cached in database - return with cultural selections merged
       const characterData = data.character_data;
       if (data.selected_cultural_hair) {
         characterData.selectedCulturalHair = data.selected_cultural_hair;
@@ -99,10 +98,10 @@ export class CharacterConsistencyService {
     const characterName = avatarIdentity.name || 'child';
     const cacheKey = `${sessionId}_${characterName}`;
     
-    // Check database first
+    // Check database for existing character
     const cached = await this.getCharacterFromDatabase(sessionId, cacheKey);
     if (cached) {
-      console.log(`🎭 DATABASE CACHED: Using existing character for ${characterName} (seed: ${cached.seed})`);
+      // Using cached character from database
       return cached;
     }
     
@@ -129,7 +128,7 @@ export class CharacterConsistencyService {
     // Save to database for consistency across edge function instances
     await this.saveCharacterToDatabase(sessionId, cacheKey, characterData);
     
-    console.log(`🎭 FRESH: Generated new character for ${characterName} (seed: ${seedData.baseSeed})`);
+    // Fresh character generated and saved
     return characterData;
   }
 

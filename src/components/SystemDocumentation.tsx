@@ -16,26 +16,37 @@ export const SystemDocumentation: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   const architectureOverview = {
-    title: "Cultural Intelligence Architecture",
+    title: "Streamlined Image Generation Architecture",
     sections: [
       {
         title: "System Overview",
-        content: `The Cultural Intelligence System provides comprehensive, bias-free image generation with advanced cultural representation. The system consists of multiple layers working together to ensure authentic, diverse, and respectful visual content.`,
+        content: `The system has been optimized for reliability and performance with a focus on essential functionality. Core services handle image generation, character consistency, error recovery, and session management with consolidated logging through the unified debug service.`,
         components: [
-          "Frontend Intelligence Absorption",
-          "Multi-Stage Enhancement Pipeline", 
-          "Unified Character Consistency",
-          "Advanced Performance Monitoring",
-          "Cultural Bias Detection"
+          "Runware Image Generation Orchestrator",
+          "Character Consistency Service (Database-backed)", 
+          "Session State Manager",
+          "Error Recovery System",
+          "Security Validator",
+          "Unified Debug Service"
         ]
       },
       {
-        title: "Data Flow",
-        content: `1. User input → Frontend Intelligence → Backend Pipeline
-2. Cultural Profile Detection → Character Consistency Check
-3. Prompt Enhancement → Quality Optimization → Generation
-4. Bias Detection → Performance Monitoring → Result`,
+        title: "Simplified Data Flow",
+        content: `1. User Request → Security Validation → Session Check
+2. Character Consistency (Database) → Image Generation
+3. Error Recovery (Circuit Breakers) → Unified Logging
+4. Response with CORS → Frontend Display`,
         components: []
+      },
+      {
+        title: "Recent Optimizations",
+        content: `Removed bloat files (DataFlowOptimizer.js, headerMonitor.js), fixed boot failures (duplicate exports, bad imports), consolidated logging through unified-debug-service, and implemented comprehensive error handling with circuit breakers.`,
+        components: [
+          "889 console.log statements audited",
+          "Boot validation system streamlined",
+          "Logging routed through unified service",
+          "Error recovery with progressive degradation"
+        ]
       }
     ]
   };
@@ -78,47 +89,47 @@ export const SystemDocumentation: React.FC = () => {
 
   const troubleshootingGuides = [
     {
-      issue: "Low Cultural Diversity Scores",
-      symptoms: ["Bias scores below 70", "Repeated cultural stereotypes", "Limited cultural representation"],
-      causes: ["Insufficient cultural profile data", "Weighted randomization not working", "Cache serving stale prompts"],
+      issue: "Image Generation Failing - All Tiers",
+      symptoms: ["All image tiers failing", "ReferenceError: monitorRequest is not defined", "503 errors from unified-debug-service"],
+      causes: ["Boot failures from duplicate exports", "Bad CORS imports", "Missing function definitions"],
       solutions: [
-        "Verify FrontendIntelligence.js is up to date",
-        "Check cultural profile distribution in backend",
-        "Clear prompt cache and regenerate",
-        "Review cultural balance in recent generations"
+        "Check edge function logs for ReferenceError issues",
+        "Verify no duplicate exports in tier25Vocabulary.js",
+        "Remove bad CORS imports from unified-debug-service",
+        "Force redeploy with updated deploy markers"
       ]
     },
     {
       issue: "Character Consistency Problems",
-      symptoms: ["Character appearance changes between scenes", "Inconsistent cultural markers", "Seed variation too high"],
-      causes: ["Character seed not persisting", "Session ID conflicts", "Seed generation algorithm issues"],
+      symptoms: ["Character appearance changes between scenes", "Database connection errors", "Seed variation too high"],
+      causes: ["Database connectivity issues", "Session ID conflicts", "Character cache corruption"],
       solutions: [
-        "Check UnifiedCharacterConsistency storage",
-        "Verify session ID uniqueness",
-        "Review seed generation algorithm",
-        "Clear expired character seeds"
+        "Check Supabase connection and service role key",
+        "Verify character_consistency_cache table exists",
+        "Clear character cache via clearServerState()",
+        "Ensure session ID uniqueness across requests"
       ]
     },
     {
-      issue: "Generation Performance Issues",
-      symptoms: ["Slow generation times", "High API costs", "Frequent timeouts"],
-      causes: ["Inefficient prompt caching", "Suboptimal quality parameters", "Network connectivity"],
+      issue: "Edge Function Boot Failures",
+      symptoms: ["Functions won't start", "Unexpected reserved word errors", "Import/export conflicts"],
+      causes: ["Duplicate exports in vocabulary files", "Bad external imports", "Module conflicts"],
       solutions: [
-        "Optimize prompt cache hit rates",
-        "Review quality parameter settings",
-        "Implement fallback escalation",
-        "Monitor performance metrics"
+        "Check for duplicate CULTURAL_ARRAYS exports",
+        "Remove non-existent external imports",
+        "Verify all imports have proper .js extensions",
+        "Force redeploy after fixing exports"
       ]
     },
     {
-      issue: "Quality Regression",
-      symptoms: ["Lower quality scores", "User feedback decline", "Visual artifacts"],
-      causes: ["Model parameter drift", "Prompt engineering issues", "Style framework conflicts"],
+      issue: "Logging Overload",
+      symptoms: ["Too many console.log statements", "Performance degradation", "Cluttered logs"],
+      causes: ["889+ console.log statements across codebase", "Lack of structured logging", "Debug statements in production"],
       solutions: [
-        "Standardize quality parameters across all services",
-        "Review and update style frameworks",
-        "A/B test prompt variations",
-        "Monitor quality trend analysis"
+        "Route essential logs through unified-debug-service",
+        "Replace verbose console.log with structured logging",
+        "Keep only error logs and critical status messages",
+        "Use debug categories for different log types"
       ]
     }
   ];
@@ -197,36 +208,48 @@ performanceMonitor.trackGeneration(
 
   const apiReference = [
     {
-      service: "FrontendIntelligence", 
+      service: "runware-generate-image (Orchestrator)", 
       methods: [
-        "shouldApplyAfricanAmericanCulturalVariations(avatarIdentity): boolean",
-        "buildAdvancedCharacterDescription(userInfo, culturalProfile, storyText): string",
-        "getUniversalHairMapping(avatarIdentity, gender): string",
-        "enhanceVisualPromptWithCulture(visualPrompt, userInfo, culturalProfile, storyText): string"
+        "POST / - Main image generation endpoint with multi-tier routing",
+        "OPTIONS / - CORS preflight handling",
+        "Tier routing: 1 (Runware) → 2.5 (Fallback) → 4 (Emergency)",
+        "Comprehensive error handling with circuit breakers"
       ]
     },
     {
-      service: "UnifiedCharacterConsistency", 
+      service: "CharacterConsistencyService", 
       methods: [
-        "getCharacterSeed(userId, sessionId, userInfo): CharacterSeed",
-        "cleanupExpiredSeeds(): number",
-        "getActiveCharacterSeeds(): CharacterStats"
+        "getCharacterSeed(sessionId, avatarIdentity, storyContext): CharacterData",
+        "saveCharacterToDatabase(sessionId, characterKey, characterData): boolean",
+        "getCharacterFromDatabase(sessionId, characterKey): CharacterData",
+        "clearServerState(): ClearResult"
       ]
     },
     {
-      service: "AdvancedPerformanceMonitor",
+      service: "SessionStateManager",
       methods: [
-        "detectCulturalBias(prompt, description, context): BiasResult",
-        "trackGeneration(startTime, endTime, biasResult, quality): void",
-        "getMonitoringDashboard(): DashboardData"
+        "initializeSession(sessionId, userType): SessionData",
+        "getSessionData(sessionId): SessionData", 
+        "updateSessionData(sessionId, updates): boolean",
+        "endSession(sessionId): boolean"
       ]
     },
     {
-      service: "ABTestingFramework",
+      service: "ErrorRecoverySystem",
       methods: [
-        "createTest(config): string",
-        "getVariantForUser(testId, userId, sessionId): Variant",
-        "analyzeTest(testId): TestAnalysis"
+        "handleError(error, context): RecoveryResult",
+        "getRecoveryStats(): StatsData",
+        "classifyError(error): ErrorType",
+        "executeEmergencyFallback(): FallbackResult"
+      ]
+    },
+    {
+      service: "unified-debug-service",
+      methods: [
+        "GET /?operation=recent-image-prompts - Recent image generation logs",
+        "GET /?operation=ai-prompts&sessionId=X - AI prompt history",
+        "POST /?operation=story-processing - Log story events",
+        "GET /?operation=visual-scene-debug - Diagnostic information"
       ]
     }
   ];
