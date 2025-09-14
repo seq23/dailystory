@@ -1080,8 +1080,8 @@ serve(async (req) => {
         });
         
         // PHASE 1.2: Minimal AI Prompt (NO cultural features, NO complex prompts)
-        const requestId = `REQ-${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 5)}`;
-        console.log(`AI [${requestId}] PHASE 1.2: Constructing Minimal AI Prompt`);
+        const aiRequestId = `REQ-${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 5)}`;
+        console.log(`AI [${aiRequestId}] PHASE 1.2: Constructing Minimal AI Prompt`);
         
         const minimalMessages = [
           {
@@ -1111,54 +1111,52 @@ RULES:
         },
         
         // Helper function to build user content safely (secondary characters now handled in templates)
-        (() => {
-          function buildUserContent(previousScene, storyText, secondaryElements) {
-            let content = '';
-            
-            if (previousScene) {
-              content = `{
+        function buildUserContent(previousScene, storyText, secondaryElements) {
+          let content = '';
+          
+          if (previousScene) {
+            content = `{
   "previousScene": ${JSON.stringify(previousScene)},
   "currentText": "${storyText}"
 }`;
-            } else {
-              content = `{
+          } else {
+            content = `{
   "currentText": "${storyText}"
 }`;
-            }
-            
-            // NOTE: Secondary elements are now processed in the template system
-            // to prevent double processing and ensure proper tier-specific handling
-            
-            // Add optional cultural inspiration for non-English languages - AI should feel free to enhance settings creatively
-            const userLanguage = req.headers.get('Accept-Language')?.split(',')[0]?.split('-')[0] || 'en';
-            const regionalContext = {
-              'es': 'Spanish/Latino cultural elements (plazas, courtyards, warm architecture)',
-              'fr': 'French cultural elements (Parisian architecture, gardens, cafes)',
-              'de': 'German cultural elements (castles, forests, traditional buildings)',
-              'it': 'Italian cultural elements (piazzas, fountains, Mediterranean settings)',
-              'pt': 'Portuguese/Brazilian cultural elements (colorful buildings, beaches, tropical)',
-              'ja': 'Japanese cultural elements (gardens, traditional architecture, cherry blossoms)',
-              'ko': 'Korean cultural elements (palaces, mountains, modern architecture)',
-              'zh': 'Chinese cultural elements (gardens, traditional buildings, landscapes)',
-              'ar': 'Arabic cultural elements (courtyards, geometric patterns, desert landscapes)',
-              'hi': 'Indian cultural elements (temples, gardens, vibrant colors)'
-            };
-            
-            if (regionalContext[userLanguage] && userLanguage !== 'en') {
-              content += `\nOptional cultural inspiration (enhance settings creatively with regional architecture/landmarks): ${regionalContext[userLanguage]}`;
-            }
-            
-            return content;
           }
           
-          return {
-            role: 'user', 
-            content: buildUserContent(previousScene, storyText, secondaryElements)
+          // NOTE: Secondary elements are now processed in the template system
+          // to prevent double processing and ensure proper tier-specific handling
+          
+          // Add optional cultural inspiration for non-English languages - AI should feel free to enhance settings creatively
+          const userLanguage = req.headers.get('Accept-Language')?.split(',')[0]?.split('-')[0] || 'en';
+          const regionalContext = {
+            'es': 'Spanish/Latino cultural elements (plazas, courtyards, warm architecture)',
+            'fr': 'French cultural elements (Parisian architecture, gardens, cafes)',
+            'de': 'German cultural elements (castles, forests, traditional buildings)',
+            'it': 'Italian cultural elements (piazzas, fountains, Mediterranean settings)',
+            'pt': 'Portuguese/Brazilian cultural elements (colorful buildings, beaches, tropical)',
+            'ja': 'Japanese cultural elements (gardens, traditional architecture, cherry blossoms)',
+            'ko': 'Korean cultural elements (palaces, mountains, modern architecture)',
+            'zh': 'Chinese cultural elements (gardens, traditional buildings, landscapes)',
+            'ar': 'Arabic cultural elements (courtyards, geometric patterns, desert landscapes)',
+            'hi': 'Indian cultural elements (temples, gardens, vibrant colors)'
           };
-        })()
+          
+          if (regionalContext[userLanguage] && userLanguage !== 'en') {
+            content += `\nOptional cultural inspiration (enhance settings creatively with regional architecture/landmarks): ${regionalContext[userLanguage]}`;
+          }
+          
+          return content;
+        }
+        
+        {
+          role: 'user', 
+          content: buildUserContent(previousScene, storyText, secondaryElements)
+        }
       ];
         
-        console.log(`AI [${requestId}] PHASE 1.2: Enhanced prompt constructed:`, {
+        console.log(`AI [${aiRequestId}] PHASE 1.2: Enhanced prompt constructed:`, {
           systemPromptLength: minimalMessages[0].content.length,
           userPromptLength: minimalMessages[1].content.length,
           enhancedCharacterDescription: enhancedCharacterDescription,
@@ -1171,15 +1169,15 @@ RULES:
         let primaryScene;
         let setting, action, mood, pose; // Declare scope variables for later use
         try {
-          console.log(`AI [${requestId}] PHASE 1.3: Calling OpenAI for primary scene...`);
-          const aiResult = await callOpenAIWithFallback(minimalMessages, 6000, requestId, avatarIdentity);
+          console.log(`AI [${aiRequestId}] PHASE 1.3: Calling OpenAI for primary scene...`);
+          const aiResult = await callOpenAIWithFallback(minimalMessages, 6000, aiRequestId, avatarIdentity);
           
           const content = aiResult.choices?.[0]?.message?.content;
           if (!content) {
             throw new Error('OpenAI returned no content');
           }
           
-          const parsedResult = parseAIResponse(content.trim(), { requestId });
+          const parsedResult = parseAIResponse(content.trim(), { requestId: aiRequestId });
           primaryScene = parsedResult.primaryScene;
           
           setting = parsedResult.setting || null;
@@ -1191,7 +1189,7 @@ RULES:
             throw new Error(`Primary scene validation failed: length ${primaryScene?.length || 0} < 30`);
           }
           
-          console.log(`SUCCESS [${requestId}] PHASE 1.3: Primary scene generated successfully:`, {
+          console.log(`SUCCESS [${aiRequestId}] PHASE 1.3: Primary scene generated successfully:`, {
             primarySceneLength: primaryScene.length,
             primaryScenePreview: primaryScene.substring(0, 100) + '...'
           });
@@ -1227,7 +1225,7 @@ RULES:
           }
           
         } catch (error) {
-          console.error(`ERROR [${requestId}] PHASE 1.3: AI call failed:`, error.message);
+          console.error(`ERROR [${aiRequestId}] PHASE 1.3: AI call failed:`, error.message);
           // Return CORS-wrapped error to trigger Tier 2
           TierFailureLogger.logTier1OpenAIFailure(error, {
             sessionId,

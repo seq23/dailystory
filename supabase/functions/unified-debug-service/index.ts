@@ -1,6 +1,27 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { createCorsOptionsResponse, createCorsResponse, createCorsErrorResponse } from "https://deno.land/x/cors@v1.2.2/mod.ts";
+
+// Inline CORS helpers to avoid external dependencies
+function createCorsResponse(data: any, status = 200): Response {
+  const headers = { 
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Content-Type': 'application/json' 
+  };
+  
+  return new Response(JSON.stringify(data), { status, headers });
+}
+
+function createCorsErrorResponse(error: string | Error, status = 500): Response {
+  const errorMessage = error instanceof Error ? error.message : error;
+  console.error('Edge function error:', errorMessage);
+  
+  return createCorsResponse({ 
+    success: false, 
+    error: errorMessage 
+  }, status);
+}
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
