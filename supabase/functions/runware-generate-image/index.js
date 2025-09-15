@@ -20,9 +20,9 @@ import { getStyleFramework } from '../_shared/styleFrameworks.js';
 import { generateNuclearNegativePrompt } from '../_shared/NuclearNegativePrompts.js';
 // Direct imports for character consistency and visual tracking
 import { phaseIntegrationOrchestrator } from '../_shared/PhaseIntegrationOrchestrator.js';
-import { characterConsistencyService } from '../_shared/CharacterConsistencyService.js';
+import { CharacterService } from '../_shared/CharacterConsistencyService.js';
 import { visualDetailTracker } from '../_shared/VisualDetailTracker.js';
-import { tier25Vocabulary } from '../_shared/tier25Vocabulary.js';
+import { CULTURAL_ARRAYS } from '../_shared/tier25Vocabulary.js';
 
 // ============= PHASE B5: CENTRALIZED ERROR HANDLING =============
 class EdgeErrorHandler {
@@ -340,18 +340,18 @@ async function buildTier1EnhancedPrompt(prompt, userInfo, avatarIdentity, styleF
     avatarIdentity_str = `${characterName}, ${age}`;
     
     // Get character traits using direct imports
-    if (characterConsistencyService && sessionId) {
+    if (CharacterService && sessionId) {
       try {
-        const existingAppearance = await characterConsistencyService.getCharacterAppearanceFromStory(sessionId, characterName);
+        const existingAppearance = await CharacterService.getCharacterAppearanceFromStory(sessionId, characterName);
         if (existingAppearance) {
           previousAppearance = existingAppearance;
           console.log(`✅ [${requestId}] Found existing character appearance`);
         }
         
         // Extract traits from current story
-        const storyTraits = characterConsistencyService.extractTraitsFromStory(prompt, characterName);
+        const storyTraits = CharacterService.extractTraitsFromStory(prompt, characterName);
         if (storyTraits && Object.keys(storyTraits).length > 0) {
-          consistencyDetails = characterConsistencyService.generateVisualDescription(storyTraits, characterName);
+          consistencyDetails = CharacterService.generateVisualDescription(storyTraits, characterName);
           console.log(`✅ [${requestId}] Generated visual traits consistency`);
         }
       } catch (error) {
@@ -669,8 +669,7 @@ serve(async (req) => {
       });
     }
     
-    // Load CORS utilities lazily
-    const corsUtils = await LazyServiceLoader.getCorsUtils();
+    // CORS utilities handled directly - no lazy loading needed
     
     // Handle CORS preflight
     if (req.method === 'OPTIONS') {
@@ -819,12 +818,11 @@ serve(async (req) => {
       let result;
       let enhancedStoryData = null;
       
-      // PHASE 4: Get enhanced prompt data from Phase Integration Orchestrator
+      // PHASE 4: Get enhanced prompt data from Phase Integration Orchestrator using direct imports
       try {
-        const phaseOrchestrator = await LazyServiceLoader.getPhaseIntegrationOrchestrator();
-        if (phaseOrchestrator?.phaseIntegrationOrchestrator) {
+        if (phaseIntegrationOrchestrator) {
           console.log(`🔮 [${requestId}] Getting enhanced prompt from Phase Integration Orchestrator`);
-          const enhancementResult = await phaseOrchestrator.phaseIntegrationOrchestrator.getEnhancedPrompt(
+          const enhancementResult = await phaseIntegrationOrchestrator.getEnhancedPrompt(
             userInfo,
             pageText,
             pageText,
@@ -841,7 +839,7 @@ serve(async (req) => {
           // PHASE 4: Get previous scene data for page 2+
           if (pageNumber > 1) {
             try {
-              const previousSceneData = await phaseOrchestrator.phaseIntegrationOrchestrator.characterConsistencyService.getCharacterFromDatabase(
+              const previousSceneData = await phaseIntegrationOrchestrator.characterConsistencyService.getCharacterFromDatabase(
                 sessionId, 
                 `scene_page_${pageNumber - 1}`
               );
@@ -959,12 +957,11 @@ serve(async (req) => {
         );
       }
       
-      // PHASE 4: Session storage handled by database-backed services
+      // PHASE 4: Session storage handled by database-backed services using direct imports
       // Store current scene data for next page continuity
       if (result?.success && enhancedStoryData && pageNumber) {
         try {
-          const phaseOrchestrator = await LazyServiceLoader.getPhaseIntegrationOrchestrator();
-          if (phaseOrchestrator?.phaseIntegrationOrchestrator) {
+          if (phaseIntegrationOrchestrator) {
             // Extract scene data from result metadata or construct from available data
             const currentSceneData = {
               pageNumber: pageNumber,
@@ -974,7 +971,7 @@ serve(async (req) => {
               tier: result.tier
             };
             
-            await phaseOrchestrator.phaseIntegrationOrchestrator.characterConsistencyService.storeCharacterInDatabase(
+            await phaseIntegrationOrchestrator.characterConsistencyService.storeCharacterInDatabase(
               sessionId,
               `scene_page_${pageNumber}`,
               currentSceneData
