@@ -168,6 +168,229 @@ function getComplexityLevel(userInfo, templateComplexity) {
   return 'B'; // Simple scenes
 }
 
+// ============= SCENE/SETTING EXTRACTION FUNCTIONS =============
+
+// Scene extraction - critical for story visualization
+function extractSimpleScene(storyText) {
+  if (!storyText || typeof storyText !== 'string') return null;
+  
+  console.log('🔍 Extracting scene from story text');
+  
+  // Common action patterns for children's stories
+  const actionPatterns = [
+    /\b(playing?|plays?)\s+(?:with\s+)?([^.,!?]*)/i,
+    /\b(running?|runs?)\s+([^.,!?]*)/i,
+    /\b(reading?|reads?)\s+([^.,!?]*)/i,
+    /\b(eating?|eats?)\s+([^.,!?]*)/i,
+    /\b(jumping?|jumps?)\s+([^.,!?]*)/i,
+    /\b(dancing?|dances?)\s+([^.,!?]*)/i,
+    /\b(singing?|sings?)\s+([^.,!?]*)/i,
+    /\b(walking?|walks?)\s+([^.,!?]*)/i,
+    /\b(cooking?|cooks?)\s+([^.,!?]*)/i,
+    /\b(sleeping?|sleeps?)\s+([^.,!?]*)/i,
+    /\b(drawing?|draws?)\s+([^.,!?]*)/i,
+    /\b(building?|builds?)\s+([^.,!?]*)/i
+  ];
+  
+  for (const pattern of actionPatterns) {
+    const match = storyText.match(pattern);
+    if (match) {
+      const action = match[1];
+      const object = match[2] ? match[2].trim() : '';
+      const scene = object ? `${action} with ${object}` : action;
+      console.log(`✅ Scene extracted: "${scene}"`);
+      return scene;
+    }
+  }
+  
+  // Look for simple object mentions that suggest activity
+  const objectPatterns = [
+    /\b(ball|toy|book|game|puzzle|blocks?)\b/i,
+    /\b(swing|slide|seesaw)\b/i,
+    /\b(bicycle|bike|scooter)\b/i,
+    /\b(doll|teddy|stuffed animal)\b/i
+  ];
+  
+  for (const pattern of objectPatterns) {
+    const match = storyText.match(pattern);
+    if (match) {
+      const object = match[1];
+      const scene = `playing with ${object}`;
+      console.log(`✅ Scene inferred from object: "${scene}"`);
+      return scene;
+    }
+  }
+  
+  console.warn('⚠️ No scene could be extracted from story text');
+  return null; // Trigger 2.5C failure
+}
+
+// Setting extraction with scene-based inference
+function extractSimpleSetting(storyText, scene) {
+  if (!storyText || typeof storyText !== 'string') {
+    return inferSettingFromScene(scene);
+  }
+  
+  console.log('🏠 Extracting setting from story text');
+  
+  // Explicit setting patterns
+  const settingPatterns = [
+    /\b(park|playground|garden|yard|outside|outdoor)\b/i,
+    /\b(kitchen|bedroom|living room|house|home|inside|indoor)\b/i,
+    /\b(school|classroom|library|gym)\b/i,
+    /\b(beach|forest|field|mountain|lake)\b/i,
+    /\b(store|shop|restaurant|cafe)\b/i
+  ];
+  
+  for (const pattern of settingPatterns) {
+    const match = storyText.match(pattern);
+    if (match) {
+      const setting = match[1];
+      console.log(`✅ Setting extracted: "${setting}"`);
+      return setting;
+    }
+  }
+  
+  // No explicit setting found, infer from scene
+  return inferSettingFromScene(scene);
+}
+
+// Infer setting from scene context
+function inferSettingFromScene(scene) {
+  if (!scene) return 'indoors'; // Basic fallback
+  
+  const sceneText = scene.toLowerCase();
+  
+  // Outdoor activities
+  if (sceneText.includes('ball') || sceneText.includes('running') || 
+      sceneText.includes('jumping') || sceneText.includes('bicycle') ||
+      sceneText.includes('swing') || sceneText.includes('slide')) {
+    console.log('🌳 Setting inferred as "outdoors" from scene');
+    return 'outdoors';
+  }
+  
+  // Indoor activities  
+  if (sceneText.includes('reading') || sceneText.includes('sleeping') ||
+      sceneText.includes('cooking') || sceneText.includes('drawing')) {
+    console.log('🏠 Setting inferred as "indoors" from scene');
+    return 'indoors';
+  }
+  
+  // Kitchen activities
+  if (sceneText.includes('eating') || sceneText.includes('cooking')) {
+    console.log('🍳 Setting inferred as "kitchen" from scene');
+    return 'kitchen';
+  }
+  
+  // Default to outdoors for children's activities
+  console.log('🌳 Setting defaulted to "outdoors"');
+  return 'outdoors';
+}
+
+// ============= BULLETPROOF BASIC TEMPLATE GENERATION =============
+
+// Error types for tier downgrade
+class SceneExtractionError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'SCENE_EXTRACTION_FAILED';
+  }
+}
+
+class BasicTemplateError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'BASIC_TEMPLATE_FAILED';
+  }
+}
+
+class Tier25CompleteFailureError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'TIER_2_5_COMPLETE_FAILURE';
+  }
+}
+
+// Bulletproof basic template data preparation
+function prepareBasicTemplateData(storyText, userInfo, avatarIdentity, frameworkPrompt) {
+  console.log('🔧 Preparing bulletproof basic template data');
+  
+  // Extract scene - critical, no fallback allowed
+  const scene = extractSimpleScene(storyText);
+  if (!scene) {
+    throw new SceneExtractionError('Cannot extract scene from story text - triggering 2.5C');
+  }
+  
+  // Extract/infer setting
+  const setting = extractSimpleSetting(storyText, scene);
+  
+  // Guaranteed non-null character data
+  const character = userInfo?.name || userInfo?.childName || 'child';
+  const age = userInfo?.age || 6;
+  
+  // Cultural context (optional)
+  const ethnicity = avatarIdentity?.ethnicity || '';
+  const cultural_context = avatarIdentity?.skinTone === 'dark' ? 'with authentic representation' : '';
+  
+  return {
+    character,
+    age: `age ${age}`,
+    ethnicity,
+    scene,
+    setting,
+    cultural_context,
+    frameworkPrompt: frameworkPrompt || 'contemporary children\'s book illustration style'
+  };
+}
+
+// Bulletproof basic template generation with direct string replacement
+function generateBasicTemplate(storyText, userInfo, avatarIdentity, frameworkPrompt, difficultyLevel = 'level_0-1') {
+  console.log('🛡️ Generating bulletproof basic template');
+  
+  try {
+    // Get bulletproof template data
+    const templateData = prepareBasicTemplateData(storyText, userInfo, avatarIdentity, frameworkPrompt);
+    
+    // Get basic template
+    const template = BASIC_PROMPT_TEMPLATES[difficultyLevel];
+    if (!template) {
+      throw new BasicTemplateError(`Invalid difficulty level: ${difficultyLevel}`);
+    }
+    
+    // Direct string replacement - no complex resolvers
+    let result = template
+      .replace(/{character}/g, templateData.character)
+      .replace(/{age}/g, templateData.age)
+      .replace(/{ethnicity}/g, templateData.ethnicity)
+      .replace(/{scene}/g, templateData.scene)
+      .replace(/{setting}/g, templateData.setting)
+      .replace(/{cultural_context}/g, templateData.cultural_context)
+      .replace(/{frameworkPrompt}/g, templateData.frameworkPrompt)
+      .replace(/{bundle\.culturalEnhancements}/g, ''); // Remove bundle placeholder
+    
+    // Clean up result
+    result = result
+      .replace(/,\s*,/g, ',')
+      .replace(/,\s*\./g, '.')
+      .replace(/\s+/g, ' ')
+      .replace(/,\s*$/g, '')
+      .trim();
+    
+    if (!result || result.length === 0) {
+      throw new BasicTemplateError('Generated template is empty');
+    }
+    
+    console.log('✅ Bulletproof basic template generated successfully');
+    return result;
+    
+  } catch (error) {
+    if (error instanceof SceneExtractionError) {
+      throw error; // Re-throw to trigger 2.5C
+    }
+    throw new BasicTemplateError(`Basic template generation failed: ${error.message}`);
+  }
+}
+
 // ============= PHASE 3: ENHANCED TEMPLATE STRUCTURES WITH ADVANCED PLACEHOLDERS =============
 
 const PREMIUM_PROMPT_TEMPLATES = {
@@ -212,22 +435,22 @@ async function getUniversalResolver() {
 
 // ============= ENHANCED PLACEHOLDER RESOLUTION SYSTEM =============
 async function resolvePlaceholders(template, data, hasCulturalIntelligence) {
-  const { 
-    storyText = pageText, // Accept pageText as fallback for storyText
-    pageText,
-    userInfo,
-    avatarIdentity, 
-    characterData, 
-    visualDetails, 
-    secondaryCharacters,
-    frameworkPrompt 
-  } = data;
+  // Fix TDZ issue - normalize input data first
+  const body = data || {};
+  const storyText = body.storyText || body.pageText || '';
+  const pageText = body.pageText || null;
+  const userInfo = body.userInfo || {};
+  const avatarIdentity = body.avatarIdentity || null;
+  const characterData = body.characterData || null;
+  const visualDetails = body.visualDetails || null;
+  const secondaryCharacters = body.secondaryCharacters || '';
+  const frameworkPrompt = body.frameworkPrompt || 'children\'s book illustration style';
 
-  
   // Safety: Clamp storyText length to prevent oversized inputs
-  if (storyText && storyText.length > 2000) {
-    console.log(`📏 Clamping storyText from ${storyText.length} to 2000 characters for safety`);
-    storyText = storyText.substring(0, 2000);
+  let normalizedStoryText = storyText;
+  if (normalizedStoryText && normalizedStoryText.length > 2000) {
+    console.log(`📏 Clamping storyText from ${normalizedStoryText.length} to 2000 characters for safety`);
+    normalizedStoryText = normalizedStoryText.substring(0, 2000);
   }
 
   console.log('🎯 Phase 3: Using Universal Placeholder Resolver with cultural intelligence');
@@ -238,35 +461,42 @@ async function resolvePlaceholders(template, data, hasCulturalIntelligence) {
     
     // Prepare additional data for advanced placeholders
     const additionalData = {
-      frameworkPrompt: frameworkPrompt || 'children\'s book illustration style',
-      secondaryCharacters: secondaryCharacters || '',
-      visualDetails: visualDetails,
-      characterData: characterData,
+      frameworkPrompt,
+      secondaryCharacters,
+      visualDetails,
+      characterData,
       characterSeed: characterData?.seed // Include character seed for consistency
     };
     
     const resolution = await resolver.resolveAllPlaceholders(template, {
       userInfo,
       seed: additionalData,
-      sessionId: data.sessionId,
+      sessionId: body.sessionId,
       pageNumber: userInfo?.pageNumber
     });
+    
+    // Fix data type mismatch - check resolution success
+    if (!resolution.success) {
+      console.warn('⚠️ Universal Resolver resolution failed, using fallback');
+      throw new Error('Universal resolver returned failure status');
+    }
+    
     const resolvedTemplate = resolution.resolvedText;
     
     console.log('✅ Phase 3: Template resolved with Universal Placeholder Resolver');
     console.log('🌍 Cultural Enhancement Level:', resolver.getCulturalEnhancementLevel());
     console.log('🎨 Cultural Features Applied:', resolver.shouldApplyCulturalFeatures());
     
-    // Safety: Ensure we always have a valid positive prompt 
+    // Validate resolved template - no generic fallbacks
     if (!resolvedTemplate || typeof resolvedTemplate !== 'string' || resolvedTemplate.trim().length === 0) {
-      console.warn('⚠️ Universal Resolver returned empty/invalid result, applying emergency fallback');
-      resolvedTemplate = `A young child named ${userInfo?.name || 'child'} age ${userInfo?.age || 8}, ${frameworkPrompt}`;
+      console.warn('⚠️ Universal Resolver returned empty/invalid result, triggering tier downgrade');
+      throw new Error('Universal resolver returned empty result');
     }
     
     return resolvedTemplate;
     
   } catch (error) {
-    console.error('❌ Universal Placeholder Resolver failed, using fallback:', error);
+    console.warn('❌ Universal Placeholder Resolver failed, using fallback:', error);
     
     // Fallback to basic resolution if Universal Resolver fails
     return await resolvePlaceholdersFallback(template, data);
@@ -277,17 +507,17 @@ async function resolvePlaceholders(template, data, hasCulturalIntelligence) {
 async function resolvePlaceholdersFallback(template, data) {
   console.log('⚠️ Using fallback placeholder resolution');
   
-  const { 
-    storyText = pageText, // Accept pageText as fallback for storyText 
-    pageText,
-    userInfo,
-    avatarIdentity, 
-    frameworkPrompt,
-    secondaryCharacters
-  } = data;
+  // Fix TDZ issue - normalize input data first
+  const body = data || {};
+  const storyText = body.storyText || body.pageText || '';
+  const pageText = body.pageText || null;
+  const userInfo = body.userInfo || {};
+  const avatarIdentity = body.avatarIdentity || null;
+  const frameworkPrompt = body.frameworkPrompt || 'children\'s book illustration style';
+  const secondaryCharacters = body.secondaryCharacters || '';
 
   const childName = userInfo?.name || userInfo?.childName || 'child';
-  const framework = frameworkPrompt || 'children\'s book illustration style';
+  const framework = frameworkPrompt;
   
   // Enhanced data processing using StaticDataCache for fallbacks
   const { getCulturalBundle, shouldApplyCulturalEnhancements, getHairBySkintone, getSkinBySkintone } = await import('../_shared/StaticDataCache.js');
@@ -297,14 +527,14 @@ async function resolvePlaceholdersFallback(template, data) {
   
   if (shouldApplyCulturalEnhancements(userInfo)) {
     console.log('🎨 Template AB: Applying cultural enhancements via StaticDataCache');
-    const culturalBundle = getCulturalBundle(userInfo, data.sessionId);
+    const culturalBundle = getCulturalBundle(userInfo, body.sessionId);
     hairFallback = culturalBundle.hair;
     featuresFallback = culturalBundle.features;
     ethnicityFallback = 'diverse cultural background';
   } else {
     console.log('🎨 Template AB: Using StaticDataCache generic fallbacks');
-    hairFallback = getHairBySkintone(userInfo?.skinTone || 'medium', data.sessionId);
-    featuresFallback = getSkinBySkintone(userInfo?.skinTone || 'medium', data.sessionId);
+    hairFallback = getHairBySkintone(userInfo?.skinTone || 'medium', body.sessionId);
+    featuresFallback = getSkinBySkintone(userInfo?.skinTone || 'medium', body.sessionId);
     ethnicityFallback = 'diverse background';
   }
   
@@ -349,10 +579,15 @@ async function resolvePlaceholdersFallback(template, data) {
     .replace(/,\s*$/g, '')
     .trim();
 
-  // Safety: Ensure we always return a valid string with 1:1 parity to BASIC template
+  // Remove generic fallback - if fallback fails, use bulletproof basic template or trigger tier downgrade
   if (!resolvedTemplate || resolvedTemplate.length === 0) {
-    console.warn('⚠️ Fallback resolver failed, applying emergency BASIC template fallback');
-    resolvedTemplate = `A young child named ${childName} age ${userInfo?.age || 8}, ${framework}`;
+    console.warn('⚠️ Fallback resolver failed, attempting bulletproof basic template');
+    try {
+      return generateBasicTemplate(storyText, userInfo, avatarIdentity, framework);
+    } catch (error) {
+      console.error('❌ Bulletproof basic template also failed, triggering tier downgrade');
+      throw new Tier25CompleteFailureError('Both fallback and basic template generation failed');
+    }
   }
 
   return resolvedTemplate;
@@ -686,20 +921,47 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
     
     // Use BASIC template with GUARANTEED nuclear independence
     const template = BASIC_PROMPT_TEMPLATES[difficultyLevel];
-    const templateData = await prepareTemplateData(
-      storyText, 
-      userInfo, 
-      avatarIdentity, 
-      null, // No characterData for nuclear independence
-      null, // No visualDetails for nuclear independence  
-      frameworkPrompt,
-      secondaryCharactersB,
-      sessionId
-    );
     
-    // Use UnifiedPlaceholderResolver for cultural logic (includes {hair} and {features} mapping)
-    console.log('☢️ Nuclear Independence: Using cultural logic via UnifiedPlaceholderResolver');
-    const positivePrompt = await resolvePlaceholders(template, templateData, true);
+    try {
+      // Use UnifiedPlaceholderResolver for cultural logic (includes {hair} and {features} mapping)
+      console.log('☢️ Nuclear Independence: Using cultural logic via UnifiedPlaceholderResolver');
+      
+      const templateData = await prepareTemplateData(
+        storyText, 
+        userInfo, 
+        avatarIdentity, 
+        null, // No characterData for nuclear independence
+        null, // No visualDetails for nuclear independence  
+        frameworkPrompt,
+        secondaryCharactersB,
+        sessionId
+      );
+      
+      const positivePrompt = await resolvePlaceholders(template, templateData, true);
+      
+      // Validate result
+      if (!positivePrompt || typeof positivePrompt !== 'string' || positivePrompt.trim().length === 0) {
+        throw new Error('UnifiedPlaceholderResolver returned empty result');
+      }
+      
+      var resolvedPositivePrompt = positivePrompt;
+      
+    } catch (error) {
+      console.warn('⚠️ Nuclear Independence: UnifiedPlaceholderResolver failed, using bulletproof basic template:', error);
+      
+      // Fallback to bulletproof basic template generation
+      try {
+        var resolvedPositivePrompt = generateBasicTemplate(storyText, userInfo, avatarIdentity, frameworkPrompt, difficultyLevel);
+      } catch (basicError) {
+        console.error('❌ Bulletproof basic template also failed:', basicError);
+        
+        if (basicError instanceof SceneExtractionError) {
+          throw new Tier25CompleteFailureError('Scene extraction failed - triggering 2.5C');
+        }
+        
+        throw new Tier25CompleteFailureError('All Tier 2.5B template generation methods failed - triggering 2.5C');
+      }
+    }
     
     console.log('✅ Template AB Tier 2.5B: Nuclear Independence with Cultural Logic template generated');
     console.log('🔍 Nuclear independence elements:', {
@@ -729,7 +991,7 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
     const negativePrompt = generateInlineNuclearNegative(culturalProfile, avatarType, 'B');
     
     return {
-      positivePrompt,
+      positivePrompt: resolvedPositivePrompt,
       negativePrompt,
       templateType: 'nuclear-independence-basic',
       difficulty: 'B', 
@@ -848,17 +1110,17 @@ serve(async (req) => {
   }
   
   try {
-    const { 
-      storyText = pageText, // Accept pageText as fallback for storyText
-      pageText,
-      userInfo,
-      avatarIdentity, 
-      templateComplexity,
-      sessionId,
-      pageNumber,
-      enhancedStoryData, // PHASE 4: Enhanced story data from orchestrator
-      failedTierData = {}
-    } = await req.json();
+    // Fix TDZ issue - parse body first, then destructure
+    const body = await req.json();
+    const storyText = body.storyText || body.pageText || '';
+    const pageText = body.pageText || null;
+    const userInfo = body.userInfo || {};
+    const avatarIdentity = body.avatarIdentity || null;
+    const templateComplexity = body.templateComplexity || null;
+    const sessionId = body.sessionId || null;
+    const pageNumber = body.pageNumber || 1;
+    const enhancedStoryData = body.enhancedStoryData || null; // PHASE 4: Enhanced story data from orchestrator
+    const failedTierData = body.failedTierData || {};
     
     console.log('📝 Template AB: Processing request', {
       templateComplexity,
@@ -892,12 +1154,22 @@ serve(async (req) => {
     }
     
     // Generate template with character consistency and enhanced data
-    const template = await generateSimpleTemplate(complexity, storyText, userInfo, avatarIdentity, sessionId, pageNumber, enhancedStoryData);
+    let template;
+    try {
+      template = await generateSimpleTemplate(complexity, storyText, userInfo, avatarIdentity, sessionId, pageNumber, enhancedStoryData);
+    } catch (error) {
+      // Handle tier downgrade errors
+      if (error instanceof SceneExtractionError || error instanceof BasicTemplateError || error instanceof Tier25CompleteFailureError) {
+        console.error(`❌ Template AB: ${error.name} - ${error.message}`);
+        return createErrorResponse(`Tier 2.5A/B failed: ${error.message}. Please try 2.5C template.`, 400);
+      }
+      throw error; // Re-throw other errors
+    }
     
-    // Safety: Ensure template has valid positivePrompt before logging/using
+    // Final validation - should not happen with bulletproof generation
     if (!template.positivePrompt || typeof template.positivePrompt !== 'string' || template.positivePrompt.trim().length === 0) {
-      console.error('❌ Template AB: Generated template has invalid positivePrompt, applying emergency fallback');
-      template.positivePrompt = `A young child named ${userInfo?.name || 'child'} age ${userInfo?.age || 8}, children's book illustration style`;
+      console.error('❌ Template AB: Generated template has invalid positivePrompt - this should not happen with bulletproof generation');
+      return createErrorResponse('Template generation produced invalid result. Please try 2.5C template.', 500);
     }
     
     console.log('🎨 Template AB: Generated template', {
