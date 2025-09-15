@@ -103,9 +103,25 @@ function getComplexityLevel(userInfo, templateComplexity) {
 // ============= PHASE 3: ENHANCED TEMPLATE STRUCTURES WITH ADVANCED PLACEHOLDERS =============
 
 const PREMIUM_PROMPT_TEMPLATES = {
-  'level_0-1': 'Narrative: {pageText}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion} {bundle.culturalEnhancements}. Action: {scene}. Composition: {spatial_composition}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {sensory_details}. Context: {cultural_context}, {community_context}, {secondary_characters}. Technical: {frameworkPrompt}, {cameraDirective}',
+  'level_0-1': `Narrative: {pageText}. 
+Character Description: {character} {age}, {ethnicity}, {hair}, {features} {bundle.culturalEnhancements}. 
+Scene: {semantic_scene} {props}, {action_objects}, {activity}, {emotion} {sensory_details}.
+Composition: {spatial_composition}. 
+Secondary elements: {secondary_characters}. 
+Environment: {setting}, {atmosphere}. 
+Consistency: {visual_consistency_elements}.  
+Context: {cultural_context}, {community_context}.
+Technical: {frameworkPrompt}, {cameraDirective}.`,
   
-  'level_2-4': 'Technical: {frameworkPrompt}, {cameraDirective}. Narrative: {pageText}. Subject: {character} {age}, {ethnicity}, {hair}, {features}, {emotion} {bundle.culturalEnhancements}. Action: {scene}. Composition: {spatial_composition}. Environment: {setting}, {atmosphere}. Elements: {props}, {action_objects}, {sensory_details}. Context: {cultural_context}, {community_context}, {secondary_characters}'
+  'level_2-4': `Character Description: {character} {age}, {ethnicity}, {hair}, {features} {bundle.culturalEnhancements}. 
+Scene: {semantic_scene} {props}, {action_objects}, {activity}, {emotion} {sensory_details}.
+Composition: {spatial_composition}. 
+Secondary elements: {secondary_characters}. 
+Environment: {setting}, {atmosphere}. 
+Consistency: {visual_consistency_elements}.  
+Context: {cultural_context}, {community_context}.
+Technical: {frameworkPrompt}, {cameraDirective}.
+Narrative: {pageText}.`
 };
 
 const BASIC_PROMPT_TEMPLATES = {

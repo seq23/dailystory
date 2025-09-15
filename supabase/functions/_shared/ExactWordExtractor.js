@@ -5,6 +5,8 @@
  * Converted from TypeScript to JavaScript for Supabase Edge Functions
  */
 
+import { TIER_25_UNIFIED_VOCABULARY_EXTENDED } from './tier25Vocabulary.js';
+
 export class ExactWordExtractor {
   /**
    * Main extraction method that identifies exact action, objects, and setting from text
@@ -101,31 +103,17 @@ export class ExactWordExtractor {
   /**
    * Extracts the primary action verb from predefined list
    */
-  static async extractExactAction(text) {
-    try {
-      const { PLACEHOLDER_POOLS } = await import("./tier25Vocabulary.js");
-      const actionWords = PLACEHOLDER_POOLS.activities || [
-        'running', 'jumping', 'flying', 'swimming', 'dancing', 'singing', 'laughing',
-        'crying', 'walking', 'skipping', 'hopping', 'crawling', 'climbing', 'sliding',
-        'rolling', 'spinning', 'twirling', 'bouncing', 'wiggling', 'giggling',
-        'playing', 'hiding', 'seeking', 'chasing', 'catching', 'throwing', 'kicking',
-        'pushing', 'pulling', 'lifting', 'carrying', 'holding', 'hugging', 'kissing',
-        'waving', 'pointing', 'clapping', 'stomping', 'marching', 'tiptoeing',
-        'sneaking', 'peeking', 'watching', 'looking', 'staring', 'blinking',
-        'sleeping', 'dreaming', 'yawning', 'stretching', 'eating', 'drinking',
-        'cooking', 'baking', 'reading', 'writing', 'drawing', 'painting',
-        'building', 'digging', 'planting', 'watering', 'picking', 'collecting'
-      ];
+  static extractExactAction(text) {
+    const actionWords = TIER_25_UNIFIED_VOCABULARY_EXTENDED.actions.movement
+      .concat(TIER_25_UNIFIED_VOCABULARY_EXTENDED.actions.physical)
+      .concat(TIER_25_UNIFIED_VOCABULARY_EXTENDED.actions.emotional);
 
-      // Look for exact action word matches
-      for (const action of actionWords) {
-        const regex = new RegExp(`\\b${action}\\b`, 'i');
-        if (regex.test(text)) {
-          return action;
-        }
+    // Look for exact action word matches
+    for (const action of actionWords) {
+      const regex = new RegExp(`\\b${action}\\b`, 'i');
+      if (regex.test(text)) {
+        return action;
       }
-    } catch (error) {
-      console.warn('Failed to load tier25Vocabulary for actions:', error);
     }
 
     return 'moving';
@@ -134,85 +122,55 @@ export class ExactWordExtractor {
   /**
    * Extracts objects including color-object combinations from predefined list
    */
-  static async extractExactObjects(text) {
-    try {
-      const { PLACEHOLDER_POOLS } = await import("./tier25Vocabulary.js");
-      const objectWords = PLACEHOLDER_POOLS.animals?.concat(PLACEHOLDER_POOLS.foods || []) || [
-        'ball', 'toy', 'book', 'flower', 'tree', 'rock', 'stone', 'stick', 'leaf',
-        'butterfly', 'bird', 'cat', 'dog', 'rabbit', 'squirrel', 'fish', 'frog',
-        'bear', 'elephant', 'lion', 'tiger', 'monkey', 'giraffe', 'zebra',
-        'house', 'castle', 'bridge', 'tower', 'gate', 'door', 'window',
-        'car', 'truck', 'boat', 'plane', 'train', 'bicycle', 'wagon',
-        'apple', 'banana', 'orange', 'strawberry', 'cherry', 'grape',
-        'sun', 'moon', 'star', 'cloud', 'rainbow', 'mountain', 'hill',
-        'pond', 'lake', 'river', 'ocean', 'beach', 'forest', 'garden',
-        'hat', 'dress', 'shirt', 'shoes', 'crown', 'necklace', 'ring'
-      ];
-
-      const colors = PLACEHOLDER_POOLS.colors || [
-        'red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown',
-        'black', 'white', 'gray', 'silver', 'gold', 'rainbow', 'colorful'
-      ];
-
-      const foundObjects = [];
-
-      // Look for color-object combinations first
-      for (const color of colors) {
-        for (const object of objectWords) {
-          const colorObjectRegex = new RegExp(`\\b${color}\\s+${object}\\b`, 'i');
-          if (colorObjectRegex.test(text)) {
-            foundObjects.push(`${color} ${object}`);
-          }
-        }
-      }
-
-      // Then look for standalone objects
-      for (const object of objectWords) {
-        const regex = new RegExp(`\\b${object}\\b`, 'i');
-        if (regex.test(text) && !foundObjects.some(found => found.includes(object))) {
-          foundObjects.push(object);
-        }
-      }
-
-      return foundObjects.length > 0 ? foundObjects : ['something special'];
+  static extractExactObjects(text) {
+    const objectWords = TIER_25_UNIFIED_VOCABULARY_EXTENDED.objects.toys
+      .concat(TIER_25_UNIFIED_VOCABULARY_EXTENDED.objects.nature)
+      .concat(TIER_25_UNIFIED_VOCABULARY_EXTENDED.objects.household)
+      .concat(TIER_25_UNIFIED_VOCABULARY_EXTENDED.objects.animals);
       
-    } catch (error) {
-      console.warn('Failed to load tier25Vocabulary for objects:', error);
-      return ['something special'];
+    const colors = TIER_25_UNIFIED_VOCABULARY_EXTENDED.colors.basic
+      .concat(TIER_25_UNIFIED_VOCABULARY_EXTENDED.colors.advanced);
+
+    const foundObjects = [];
+
+    // Look for color-object combinations first
+    for (const color of colors) {
+      for (const object of objectWords) {
+        const colorObjectRegex = new RegExp(`\\b${color}\\s+${object}\\b`, 'i');
+        if (colorObjectRegex.test(text)) {
+          foundObjects.push(`${color} ${object}`);
+        }
+      }
     }
+
+    // Then look for standalone objects
+    for (const object of objectWords) {
+      const regex = new RegExp(`\\b${object}\\b`, 'i');
+      if (regex.test(text) && !foundObjects.some(found => found.includes(object))) {
+        foundObjects.push(object);
+      }
+    }
+
+    return foundObjects.length > 0 ? foundObjects : ['something special'];
   }
 
   /**
    * Extracts location-based setting words from predefined list
    */
-  static async extractExactSetting(text) {
-    try {
-      const { PLACEHOLDER_POOLS } = await import("./tier25Vocabulary.js");
-      const settingWords = PLACEHOLDER_POOLS.settings || [
-        'forest', 'woods', 'jungle', 'garden', 'park', 'playground', 'backyard',
-        'field', 'meadow', 'farm', 'barn', 'stable', 'cottage', 'house', 'castle',
-        'village', 'town', 'city', 'street', 'road', 'path', 'trail',
-        'beach', 'shore', 'ocean', 'sea', 'lake', 'pond', 'river', 'stream',
-        'mountain', 'hill', 'valley', 'cave', 'cliff', 'desert', 'island',
-        'sky', 'clouds', 'space', 'moon', 'stars', 'rainbow',
-        'classroom', 'library', 'kitchen', 'bedroom', 'attic', 'basement',
-        'bridge', 'tower', 'treehouse', 'nest', 'burrow', 'den'
-      ];
+  static extractExactSetting(text) {
+    const settingWords = TIER_25_UNIFIED_VOCABULARY_EXTENDED.environments.outdoor
+      .concat(TIER_25_UNIFIED_VOCABULARY_EXTENDED.environments.indoor)
+      .concat(TIER_25_UNIFIED_VOCABULARY_EXTENDED.environments.fantasy);
 
-      // Look for exact setting word matches
-      for (const setting of settingWords) {
-        const regex = new RegExp(`\\b${setting}\\b`, 'i');
-        if (regex.test(text)) {
-          return setting;
-        }
+    // Look for exact setting word matches
+    for (const setting of settingWords) {
+      const regex = new RegExp(`\\b${setting}\\b`, 'i');
+      if (regex.test(text)) {
+        return setting;
       }
-
-      return 'magical place';
-      
-    } catch (error) {
-      console.warn('Failed to load tier25Vocabulary for settings:', error);
-      return 'magical place';
     }
+
+    return 'magical place';
   }
 
   /**

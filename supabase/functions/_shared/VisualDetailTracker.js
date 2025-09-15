@@ -5,30 +5,7 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-// ============= UNIFIED VOCABULARY IMPORT FOR ENHANCED OBJECT DETECTION =============
-// Import comprehensive vocabulary from Tier 2.5A for consistent color/size detection
-const EXPANDED_COLOR_ARRAY = [
-  // Basic Colors
-  'red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'black', 'white', 'brown', 'gray', 'grey',
-  // Vibrant Colors
-  'bright red', 'bright blue', 'bright green', 'bright yellow', 'bright orange', 'bright purple', 'bright pink',
-  'vibrant red', 'vibrant blue', 'vibrant green', 'electric blue', 'neon green', 'hot pink', 'lime green',
-  // Pastel Colors
-  'light blue', 'light pink', 'light green', 'light yellow', 'soft blue', 'soft pink', 'soft purple',
-  'pastel blue', 'pastel pink', 'pastel yellow', 'pale blue', 'pale green', 'pale yellow',
-  // Dark Colors
-  'dark blue', 'dark green', 'dark red', 'dark purple', 'navy blue', 'forest green', 'burgundy',
-  // Metallic & Special Colors
-  'silver', 'gold', 'metallic blue', 'shiny red', 'sparkly pink', 'glittery purple', 'rainbow',
-  // Natural Colors
-  'sky blue', 'ocean blue', 'grass green', 'sunset orange', 'sunshine yellow', 'cherry red'
-];
-
-const SIZE_ADJECTIVES = [
-  'big', 'small', 'tiny', 'huge', 'large', 'little', 'giant', 'enormous', 
-  'mini', 'massive', 'microscopic', 'colossal', 'petite', 'immense'
-];
+import { EXPANDED_COLOR_ARRAY, TIER_25_UNIFIED_VOCABULARY_EXTENDED } from './tier25Vocabulary.js';
 
 const CLOTHING_DETECTION_KEYWORDS = [
   'shirt', 'dress', 'shoes', 'hat', 'jacket', 'sweater', 'pants', 'jeans',
@@ -37,23 +14,6 @@ const CLOTHING_DETECTION_KEYWORDS = [
   'cap', 'helmet', 'vest', 'cardigan', 'blazer', 'overalls', 'romper',
   'tunic', 'polo', 'turtleneck', 'tank top', 'sandals', 'slippers',
   'belt', 'suspenders', 'bandana', 'headband', 'mittens', 'raincoat'
-];
-
-const UNIFIED_OBJECT_CATEGORIES = [
-  // Food Items
-  'apple', 'banana', 'sandwich', 'cookie', 'cake', 'pizza', 'ice cream', 'cupcake', 'donut', 'bread',
-  // Animals & Pets
-  'dog', 'cat', 'rabbit', 'hamster', 'bird', 'fish', 'turtle', 'horse', 'cow', 'pig', 'sheep', 'chicken',
-  // Vehicles & Transportation
-  'car', 'truck', 'bus', 'train', 'airplane', 'helicopter', 'boat', 'ship', 'bicycle', 'scooter',
-  // Toys & Games
-  'ball', 'doll', 'teddy bear', 'blocks', 'puzzle', 'kite', 'toy car', 'toy train', 'frisbee', 'bubbles',
-  // Tools & Instruments
-  'hammer', 'paintbrush', 'scissors', 'ruler', 'magnifying glass', 'telescope', 'camera', 'phone',
-  // Nature & Outdoor
-  'tree', 'flower', 'leaf', 'rock', 'shell', 'stick', 'feather', 'crystal', 'butterfly', 'rainbow',
-  // Sports & Recreation
-  'soccer ball', 'basketball', 'football', 'baseball', 'tennis ball', 'skateboard', 'helmet', 'bicycle'
 ];
 
 export class VisualDetailTracker {
@@ -99,8 +59,12 @@ export class VisualDetailTracker {
     // ============= ENHANCED COLOR AND SIZE PATTERNS WITH UNIFIED VOCABULARY =============
     // Use expanded color array for comprehensive color detection
     const expandedColorWords = EXPANDED_COLOR_ARRAY.join('|').replace(/\s+/g, '\\s+');
-    const sizeWords = SIZE_ADJECTIVES.join('|');
-    const objectWords = UNIFIED_OBJECT_CATEGORIES.join('|').replace(/\s+/g, '\\s+');
+    const sizeWords = TIER_25_UNIFIED_VOCABULARY_EXTENDED.descriptors.size.join('|');
+    const objectWords = TIER_25_UNIFIED_VOCABULARY_EXTENDED.objects.toys
+      .concat(TIER_25_UNIFIED_VOCABULARY_EXTENDED.objects.nature)
+      .concat(TIER_25_UNIFIED_VOCABULARY_EXTENDED.objects.household)
+      .concat(TIER_25_UNIFIED_VOCABULARY_EXTENDED.objects.animals)
+      .join('|').replace(/\s+/g, '\\s+');
     
     const colorPattern = new RegExp(`(${expandedColorWords})\\s+(${objectWords})`, 'gi');
     const sizePattern = new RegExp(`(${sizeWords})\\s+(${objectWords})`, 'gi');

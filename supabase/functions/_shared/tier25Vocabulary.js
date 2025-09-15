@@ -274,8 +274,7 @@ const TIER_25_UNIFIED_VOCABULARY_EXTENDED = {
     // Weather & atmosphere  
     atmosphere: [
       'sunny', 'cloudy', 'rainy', 'snowy', 'windy', 'foggy', 'misty',
-      'bright', 'dark', 'warm', 'cool', 'peaceful', 'lively', 'quiet',
-      'busy', 'serene', 'magical', 'mysterious', 'cheerful', 'cozy'
+      'bright', 'dark', 'warm', 'cool'
     ],
     
     // Lighting conditions

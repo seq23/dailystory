@@ -9,6 +9,7 @@ import { enhancedAnimalDetector } from './EnhancedAnimalDetector.js';
 import { coloredObjectTracker } from './ColoredObjectTracker.js';
 import { templateConsistencyEnforcer } from './TemplateConsistencyEnforcer.js';
 import { visualDetailTracker } from './VisualDetailTracker.js';
+import { EXPANDED_COLOR_ARRAY } from './tier25Vocabulary.js';
 
 export class CrossPageConsistencyIntelligence {
   constructor() {

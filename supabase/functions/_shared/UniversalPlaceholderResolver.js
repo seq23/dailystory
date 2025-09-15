@@ -2,7 +2,7 @@
 // Comprehensive placeholder resolution system with cultural intelligence and semantic enhancement
 // Supports both template systems (runware-template-ab and runware-template-cd)
 
-import { CULTURAL_ARRAYS, SEMANTIC_EXTRACTION } from './tier25Vocabulary.js';
+import { CULTURAL_ARRAYS, SEMANTIC_EXTRACTION, TIER_25_UNIFIED_VOCABULARY_EXTENDED } from './tier25Vocabulary.js';
 
 /**
  * PHASE 3.1: Cultural Trigger Detection System
@@ -210,7 +210,7 @@ export class SemanticEnhancer {
   }
 
   static getColorDescriptor() {
-    const colors = ['bright', 'colorful', 'vibrant', 'cheerful', 'sunny', 'playful'];
+    const colors = TIER_25_UNIFIED_VOCABULARY_EXTENDED.colors.basic;
     return colors[Math.floor(Math.random() * colors.length)];
   }
 
@@ -274,10 +274,15 @@ export class UniversalPlaceholderResolver {
   /**
    * Main resolution method - resolves all placeholders in a template
    */
-  resolve(template, additionalData = {}) {
+  resolve(template, additionalData = {}, sessionId = null) {
+    // Pass sessionId to cultural detection methods for stable seeding
+    if (sessionId) {
+      this.sessionId = sessionId;
+    }
+    
     // Route to DebugLogger instead of console
     if (typeof globalThis !== 'undefined' && globalThis.debugLogger) {
-      globalThis.debugLogger.log('story', '🔧 Resolving placeholders in template:', template.substring(0, 100) + '...');
+      globalThis.debugLogger.log('story', '🔧 Resolving placeholders with session ID:', sessionId);
     }
     
     let resolvedTemplate = template;
@@ -306,7 +311,8 @@ export class UniversalPlaceholderResolver {
       '{action_objects}': () => this.resolveActionObjects(),
       '{sensory_details}': () => this.resolveSensoryDetails(),
       '{spatial_composition}': () => this.resolveSpatialComposition(),
-      '{cameraDirective}': () => this.resolveCameraDirective()
+      '{cameraDirective}': () => this.resolveCameraDirective(),
+      '{semantic_scene}': () => this.resolveSemanticScene()
     };
 
     // Apply all resolvers
@@ -492,6 +498,16 @@ export class UniversalPlaceholderResolver {
       'wide establishing shot', 'intimate medium-close shot', 'dynamic three-quarter angle'
     ];
     return directives[Math.floor(Math.random() * directives.length)];
+  }
+
+  resolveSemanticScene() {
+    // Generate semantic scene description based on story text
+    if (this.storyText && this.storyText.length > 10) {
+      const sceneElements = SemanticEnhancer.extractPropsAndObjects(this.storyText);
+      const emotionalTone = SemanticEnhancer.extractEmotionalTone(this.storyText);
+      return `engaging in ${sceneElements} with ${emotionalTone} expression`;
+    }
+    return 'participating in an engaging, age-appropriate activity';
   }
 
   // ============= UTILITY METHODS =============

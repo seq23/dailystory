@@ -4,6 +4,8 @@
  * NEVER blocks tiers or crashes system - purely for monitoring
  */
 
+import { TIER_25_UNIFIED_VOCABULARY_EXTENDED } from './tier25Vocabulary.js';
+
 export class UnifiedDebugValidator {
   constructor() {
     this.validationHistory = [];
@@ -117,7 +119,8 @@ export class UnifiedDebugValidator {
       };
 
       // Simple object detection patterns
-      const colorPattern = /(red|blue|green|yellow|orange|purple|pink|brown|black|white)\s+(ball|car|house|tree|flower)/gi;
+      const colors = TIER_25_UNIFIED_VOCABULARY_EXTENDED.colors.basic.join('|');
+      const colorPattern = new RegExp(`(${colors})\\s+(ball|car|house|tree|flower)`, 'gi');
       const sizePattern = /(big|small|tiny|huge|large|little)\s+(ball|car|house|tree|flower)/gi;
 
       let match;
