@@ -873,7 +873,7 @@ serve(async (req) => {
       // Handle dryRun mode - return prompt info without generation
       if (dryRun) {
         const difficulty = userInfo?.difficulty || userInfo?.gradeLevel || 'medium';
-        const styleFramework = getStyleFramework(difficulty);
+        const styleFramework = getNuclearStyleFramework(difficulty);
         const enhancedPrompt = await buildTier1EnhancedPrompt(pageText, userInfo, avatarIdentity, styleFramework);
         const negativePrompt = generateInlineNuclearNegative(
           `${userInfo?.nativeLanguage || 'en'}_${userInfo?.avatar?.skinTone || 'light'}`,
