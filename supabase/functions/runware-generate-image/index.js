@@ -18,6 +18,11 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
 import { getStyleFramework } from '../_shared/styleFrameworks.js';
 import { generateNuclearNegativePrompt } from '../_shared/NuclearNegativePrompts.js';
+// Direct imports for character consistency and visual tracking
+import { phaseIntegrationOrchestrator } from '../_shared/PhaseIntegrationOrchestrator.js';
+import { characterConsistencyService } from '../_shared/CharacterConsistencyService.js';
+import { visualDetailTracker } from '../_shared/VisualDetailTracker.js';
+import { tier25Vocabulary } from '../_shared/tier25Vocabulary.js';
 
 // ============= PHASE B5: CENTRALIZED ERROR HANDLING =============
 class EdgeErrorHandler {
@@ -187,7 +192,8 @@ class LazyServiceLoader {
   }
   
   static async getPhaseIntegrationOrchestrator() {
-    return await this.load('phaseOrchestrator', '../_shared/PhaseIntegrationOrchestrator.js');
+    // Return direct import instead of lazy loading
+    return phaseIntegrationOrchestrator;
   }
 }
 
@@ -300,14 +306,17 @@ function determineTemplateComplexity(userInfo, avatarIdentity) {
   }
 }
 
-// ============= ENHANCED PROMPT BUILDER =============
-function buildTier1EnhancedPrompt(prompt, userInfo, avatarIdentity, styleFramework) {
-  const difficulty = userInfo?.difficulty || userInfo?.gradeLevel || 'medium';
+// ============= ENHANCED PROMPT BUILDER WITH CHARACTER CONSISTENCY =============
+async function buildTier1EnhancedPrompt(prompt, userInfo, avatarIdentity, styleFramework, sessionId, requestId) {
+  console.log(`🎯 [${requestId}] Building COMPLETE_TIER_1 enhanced prompt with character consistency`);
   
-  // Primary scene description from story text
+  const difficulty = userInfo?.difficulty || userInfo?.gradeLevel || 'medium';
+  const supabase = CrashProofBootSystem.getService('supabase')?.client;
+  
+  // PRIMARY SCENE: Direct from story text
   const primaryScene = prompt;
   
-  // Character description with cultural sensitivity
+  // CHARACTER DESCRIPTION: Build with avatar identity and fallback
   let characterDescription = '';
   if (avatarIdentity?.visualDescription) {
     characterDescription = avatarIdentity.visualDescription;
@@ -315,16 +324,73 @@ function buildTier1EnhancedPrompt(prompt, userInfo, avatarIdentity, styleFramewo
     const { skinTone = 'medium', hairColor = 'brown', type = 'girl' } = userInfo.avatar;
     characterDescription = `A beautiful ${type} with ${skinTone} skin and ${hairColor} hair, with graceful features and charming expressions`;
   } else {
-    // Default Emma character
     characterDescription = 'A beautiful girl with graceful features, charming expressions, and an adventurous spirit';
   }
   
-  // Cultural enhancements
-  let culturalContext = '';
-  if (avatarIdentity?.culturalContext) {
-    culturalContext = avatarIdentity.culturalContext;
-  } else if (userInfo?.nativeLanguage && userInfo.nativeLanguage !== 'en') {
-    culturalContext = `Culturally appropriate representation for ${userInfo.nativeLanguage} audience`;
+  // CHARACTER CONSISTENCY: Use direct imports for real character consistency
+  let avatarIdentity_str = '';
+  let consistencyDetails = '';
+  let previousAppearance = '';
+  let culturalEnhancements = '';
+  
+  try {
+    // Extract avatar identity (name, age)
+    const characterName = userInfo?.displayName || userInfo?.name || 'Emma';
+    const age = userInfo?.age || '8 years old';
+    avatarIdentity_str = `${characterName}, ${age}`;
+    
+    // Get character traits using direct imports
+    if (characterConsistencyService && sessionId) {
+      try {
+        const existingAppearance = await characterConsistencyService.getCharacterAppearanceFromStory(sessionId, characterName);
+        if (existingAppearance) {
+          previousAppearance = existingAppearance;
+          console.log(`✅ [${requestId}] Found existing character appearance`);
+        }
+        
+        // Extract traits from current story
+        const storyTraits = characterConsistencyService.extractTraitsFromStory(prompt, characterName);
+        if (storyTraits && Object.keys(storyTraits).length > 0) {
+          consistencyDetails = characterConsistencyService.generateVisualDescription(storyTraits, characterName);
+          console.log(`✅ [${requestId}] Generated visual traits consistency`);
+        }
+      } catch (error) {
+        console.warn(`⚠️ [${requestId}] Character consistency failed:`, error.message);
+      }
+    }
+    
+    // Get visual history using direct imports
+    if (visualDetailTracker && sessionId) {
+      try {
+        const visualHistory = await visualDetailTracker.getVisualHistory(userInfo?.id, characterName, 5);
+        if (visualHistory && visualHistory.length > 0) {
+          const recentVisuals = visualHistory.map(v => v.visual_elements).join(', ');
+          if (recentVisuals) {
+            consistencyDetails += consistencyDetails ? `, ${recentVisuals}` : recentVisuals;
+            console.log(`✅ [${requestId}] Added visual history consistency`);
+          }
+        }
+      } catch (error) {
+        console.warn(`⚠️ [${requestId}] Visual tracking failed:`, error.message);
+      }
+    }
+    
+    // Cultural enhancements using embedded logic
+    const getCulturalEnhancements = (userInfo) => {
+      const language = userInfo?.nativeLanguage || userInfo?.language || 'en';
+      const skinTone = userInfo?.skinTone || userInfo?.avatar?.skinTone || 'light';
+      
+      if ((skinTone === 'dark' || skinTone === 'darker') && 
+          ['en', 'fr', 'es', 'pt'].includes(language.toLowerCase())) {
+        return 'with culturally appropriate African features and natural hair texture';
+      }
+      return '';
+    };
+    
+    culturalEnhancements = getCulturalEnhancements(userInfo);
+    
+  } catch (error) {
+    console.warn(`⚠️ [${requestId}] Character consistency setup failed:`, error.message);
   }
   
   // Style framework integration
@@ -333,16 +399,21 @@ function buildTier1EnhancedPrompt(prompt, userInfo, avatarIdentity, styleFramewo
   // Brand suffix for consistency
   const brandSuffix = 'Optimized for young audiences, diverse representation, warm expressions, bright vibrant colors, child-friendly aesthetic';
   
-  // Construct the full enhanced template
-  const enhancedTemplate = [
-    frameworkPrompt,
-    primaryScene,
-    characterDescription,
-    culturalContext,
-    brandSuffix
-  ].filter(Boolean).join('. ');
+  // Build COMPLETE_TIER_1 structured template (matching PhaseIntegrationOrchestrator format)
+  const enhancedPrompt = [
+    `PRIMARY SCENE: ${primaryScene}`,
+    `CHARACTER DESCRIPTION: ${characterDescription}`,
+    `CHARACTER CONSISTENCY:`,
+    avatarIdentity_str ? `- Avatar Identity: ${avatarIdentity_str}` : '',
+    consistencyDetails ? `- Visual Traits: ${consistencyDetails}` : '',
+    previousAppearance ? `- Previous Appearance: ${previousAppearance}` : '',
+    culturalEnhancements ? `- Cultural Enhancements: ${culturalEnhancements}` : '',
+    `BRAND SUFFIX: ${brandSuffix}`,
+    `CONTEXT: ${prompt}`
+  ].filter(Boolean).join('\n');
   
-  return enhancedTemplate;
+  console.log(`✅ [${requestId}] Built COMPLETE_TIER_1 structured template: ${enhancedPrompt.length} chars`);
+  return enhancedPrompt;
 }
 
 // ============= CORE IMAGE GENERATION LOGIC =============
@@ -372,9 +443,9 @@ async function generateWithRunware(apiKey, prompt, sessionId, requestId, userInf
     enhancedPrompt = enhancedStoryData.enhancedPrompt;
     console.log(`🎯 [${requestId}] Using PhaseIntegrationOrchestrator enhanced prompt: ${enhancedPrompt.length} chars`);
   } else {
-    // Build enhanced prompt using fallback builder
-    enhancedPrompt = buildTier1EnhancedPrompt(prompt, userInfo, avatarIdentity, styleFramework);
-    console.log(`🎯 [${requestId}] Built fallback enhanced prompt: ${enhancedPrompt.length} chars`);
+    // Build enhanced prompt using COMPLETE_TIER_1 fallback with real character consistency
+    enhancedPrompt = await buildTier1EnhancedPrompt(prompt, userInfo, avatarIdentity, styleFramework, sessionId, requestId);
+    console.log(`🎯 [${requestId}] Built COMPLETE_TIER_1 fallback enhanced prompt: ${enhancedPrompt.length} chars`);
   }
   
   // Check for force tier or skip tier options
