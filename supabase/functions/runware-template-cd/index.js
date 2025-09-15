@@ -127,14 +127,23 @@ function generateTier25C(storyText, userInfo, avatarIdentity, failedTierData = {
     hasEnhancedSceneData: !!failedTierData.enhancedSceneData
   });
   
-  // Component 1: Scene (1500 character limit)
-  const sceneText = storyText ? storyText.substring(0, 1500) : 'child exploring magical world';
+  // Component 1: Scene (1500 character limit) - NO FALLBACKS, trigger 2.5D immediately
+  if (!storyText) {
+    console.log('🚨 Nuclear 2.5C: No storyText provided - triggering Tier 2.5D immediately');
+    return generateTier25D(storyText, userInfo, avatarIdentity, failedTierData);
+  }
+  const sceneText = storyText.substring(0, 1500);
   
-  // Component 2: Character Description (name/age/skin tone + 'complexion')
+  // Component 2: Character Description (name/age/skin tone + conditional African features)
   const characterName = userInfo?.name || userInfo?.childName || 'child';
   const age = userInfo?.age || 8;
   const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'diverse';
-  const characterDesc = `${characterName} ${age}, ${skinTone} complexion`;
+  
+  // Add conditional African features for dark skin tones ONLY
+  let characterDesc = `${characterName} ${age}, ${skinTone} complexion`;
+  if (skinTone === 'dark' || skinTone === 'medium-dark' || skinTone === 'brown') {
+    characterDesc += ' with culturally appropriate African features and natural hair texture';
+  }
   
   // Component 3: Catch-All Failed Tier Information
   const catchAllElements = [
@@ -149,8 +158,8 @@ function generateTier25C(storyText, userInfo, avatarIdentity, failedTierData = {
   const difficulty = userInfo?.difficulty || 'medium';
   const hardcodedFramework = getNuclearStyleFramework(difficulty);
   
-  // NUCLEAR CONCATENATION - NO placeholders, NO resolution, NO fallback
-  const positivePrompt = `scene: ${sceneText}. character description: ${characterDesc}. ${catchAllInfo}. brand suffix: ${hardcodedFramework.frameworkPrompt}`;
+  // NUCLEAR CONCATENATION - NO placeholders, NO resolution, NO fallback, WITH LINE BREAKS
+  const positivePrompt = `scene: ${sceneText}.\n\ncharacter description: ${characterDesc}.\n\n${catchAllInfo}.\n\nbrand suffix: ${hardcodedFramework.frameworkPrompt}`;
   
   // Generate nuclear negative prompt
   const culturalProfileType = inlineDetectCultural(userInfo, avatarIdentity);

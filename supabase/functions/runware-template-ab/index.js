@@ -103,31 +103,31 @@ function getComplexityLevel(userInfo, templateComplexity) {
 // ============= PHASE 3: ENHANCED TEMPLATE STRUCTURES WITH ADVANCED PLACEHOLDERS =============
 
 const PREMIUM_PROMPT_TEMPLATES = {
-  'level_0-1': `Narrative: {pageText}. 
-Character Description: {character} {age}, {ethnicity}, {hair}, {features} {bundle.culturalEnhancements}. 
+  'level_0-1': `Narrative: {pageText}.
+Character Description: {character} {age}, {ethnicity}, {hair}, {features} {bundle.culturalEnhancements}.
 Scene: {semantic_scene} {props}, {action_objects}, {activity}, {emotion} {sensory_details}.
-Composition: {spatial_composition}. 
-Secondary elements: {secondary_characters}. 
-Environment: {setting}, {atmosphere}. 
-Consistency: {visual_consistency_elements}.  
+Composition: {spatial_composition}.
+Secondary elements: {secondary_characters}.
+Environment: {setting}, {atmosphere}.
+Consistency: {visual_consistency_elements}.
 Context: {cultural_context}, {community_context}.
 Technical: {frameworkPrompt}, {cameraDirective}.`,
   
-  'level_2-4': `Character Description: {character} {age}, {ethnicity}, {hair}, {features} {bundle.culturalEnhancements}. 
+  'level_2-4': `Character Description: {character} {age}, {ethnicity}, {hair}, {features} {bundle.culturalEnhancements}.
 Scene: {semantic_scene} {props}, {action_objects}, {activity}, {emotion} {sensory_details}.
-Composition: {spatial_composition}. 
-Secondary elements: {secondary_characters}. 
-Environment: {setting}, {atmosphere}. 
-Consistency: {visual_consistency_elements}.  
+Composition: {spatial_composition}.
+Secondary elements: {secondary_characters}.
+Environment: {setting}, {atmosphere}.
+Consistency: {visual_consistency_elements}.
 Context: {cultural_context}, {community_context}.
 Technical: {frameworkPrompt}, {cameraDirective}.
 Narrative: {pageText}.`
 };
 
 const BASIC_PROMPT_TEMPLATES = {
-  'level_0-1': 'Subject: {character} {age}, {ethnicity} {bundle.culturalEnhancements}. Action: {scene}. Environment: {setting}. Context: {cultural_context}. Technical: {frameworkPrompt}',
+  'level_0-1': 'Subject: {character} {age}, {ethnicity} {bundle.culturalEnhancements}.\nAction: {scene}.\nEnvironment: {setting}.\nContext: {cultural_context}.\nTechnical: {frameworkPrompt}',
   
-  'level_2-4': 'Technical: {frameworkPrompt}. Subject: {character} {age}, {ethnicity} {bundle.culturalEnhancements}. Action: {scene}. Environment: {setting}. Context: {cultural_context}'
+  'level_2-4': 'Technical: {frameworkPrompt}.\nSubject: {character} {age}, {ethnicity} {bundle.culturalEnhancements}.\nAction: {scene}.\nEnvironment: {setting}.\nContext: {cultural_context}'
 };
 
 // ============= PHASE 3: UNIVERSAL PLACEHOLDER RESOLUTION INTEGRATION =============
