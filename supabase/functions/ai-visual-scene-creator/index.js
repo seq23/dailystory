@@ -782,7 +782,7 @@ EXAMPLES:
         // Simple validation - no fallback enhancement logic needed
         console.log('VALIDATION PHASE: Simple primaryScene validation');
         
-        const enhancedStoryData = {
+        const processedStoryData = {
           primaryScene: primaryScene,
           characters: baseCharacterDescription,
           secondaryCharacters: secondaryCharacters,
@@ -810,7 +810,7 @@ EXAMPLES:
         // Return enhanced data with assembled prompts for Runware
         const result = {
           success: true,
-          aiSchema: enhancedStoryData,
+          aiSchema: processedStoryData,
           metadata: {
             enhancedTier1: true,
             characterConsistency: {
@@ -850,7 +850,7 @@ EXAMPLES:
               phase2: 'Token-optimized prompt with avatar context'
             }
           },
-          enhancedStoryData: enhancedStoryData || {}
+          enhancedStoryData: processedStoryData || {}
         };
 
         debugLog(`SUCCESS SCENE CREATOR: Complete - Token-optimized system with bundled secondary character logic ready`);
