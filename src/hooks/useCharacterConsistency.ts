@@ -6,7 +6,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { DebugLogger } from '@/services/DebugLogger';
 import { characterConsistencyService } from '@/services/CharacterConsistencyService';
-import { visualDetailTracker, type VisualDetail, type AppearanceConflict } from '@/services/VisualDetailTracker';
+import { type VisualDetail, type AppearanceConflict } from '@/types/visualDetailTypes';
 
 interface CharacterTraits {
   visual_traits: {

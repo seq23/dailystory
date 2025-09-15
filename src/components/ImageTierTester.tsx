@@ -672,7 +672,9 @@ export const ImageTierTester = () => {
           error: response.error?.message || response.data?.error,
           // NEW: Include prompt metadata if available
           originalPrompt: response.data?.metadata?.originalPrompt,
-          enhancedPrompt: response.data?.metadata?.enhancedPrompt
+          enhancedPrompt: response.data?.metadata?.enhancedPrompt,
+          positivePrompt: response.data?.metadata?.positivePrompt,
+          negativePrompt: response.data?.metadata?.negativePrompt
         }
       }]);
     } catch (error) {
