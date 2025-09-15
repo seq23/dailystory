@@ -103,7 +103,7 @@ export function createSeededRandom(seed) {
 
 
 // ============= UNIFIED VOCABULARY - EXTENDED VERSION =============
-const TIER_25_UNIFIED_VOCABULARY_EXTENDED = {
+export const TIER_25_UNIFIED_VOCABULARY_EXTENDED = {
   // ============= UNIFIED ACTION VOCABULARY =============
   actions: {
     // Basic physical actions (with all verb forms)
@@ -281,7 +281,7 @@ const TIER_25_UNIFIED_VOCABULARY_EXTENDED = {
 };
 
 // ============= ENHANCED COLOR DETECTION ARRAYS =============
-const EXPANDED_COLOR_ARRAY = [
+export const EXPANDED_COLOR_ARRAY = [
   // Primary Colors
   'red', 'blue', 'yellow', 'green', 'orange', 'purple', 'pink', 'brown', 'black', 'white',
   // Extended Colors  
