@@ -300,8 +300,53 @@ function determineTemplateComplexity(userInfo, avatarIdentity) {
   }
 }
 
+// ============= ENHANCED PROMPT BUILDER =============
+function buildTier1EnhancedPrompt(prompt, userInfo, avatarIdentity, styleFramework) {
+  const difficulty = userInfo?.difficulty || userInfo?.gradeLevel || 'medium';
+  
+  // Primary scene description from story text
+  const primaryScene = prompt;
+  
+  // Character description with cultural sensitivity
+  let characterDescription = '';
+  if (avatarIdentity?.visualDescription) {
+    characterDescription = avatarIdentity.visualDescription;
+  } else if (userInfo?.avatar) {
+    const { skinTone = 'medium', hairColor = 'brown', type = 'girl' } = userInfo.avatar;
+    characterDescription = `A beautiful ${type} with ${skinTone} skin and ${hairColor} hair, with graceful features and charming expressions`;
+  } else {
+    // Default Emma character
+    characterDescription = 'A beautiful girl with graceful features, charming expressions, and an adventurous spirit';
+  }
+  
+  // Cultural enhancements
+  let culturalContext = '';
+  if (avatarIdentity?.culturalContext) {
+    culturalContext = avatarIdentity.culturalContext;
+  } else if (userInfo?.nativeLanguage && userInfo.nativeLanguage !== 'en') {
+    culturalContext = `Culturally appropriate representation for ${userInfo.nativeLanguage} audience`;
+  }
+  
+  // Style framework integration
+  const frameworkPrompt = styleFramework?.frameworkPrompt || 'High-quality, child-friendly illustration style';
+  
+  // Brand suffix for consistency
+  const brandSuffix = 'Optimized for young audiences, diverse representation, warm expressions, bright vibrant colors, child-friendly aesthetic';
+  
+  // Construct the full enhanced template
+  const enhancedTemplate = [
+    frameworkPrompt,
+    primaryScene,
+    characterDescription,
+    culturalContext,
+    brandSuffix
+  ].filter(Boolean).join('. ');
+  
+  return enhancedTemplate;
+}
+
 // ============= CORE IMAGE GENERATION LOGIC =============
-async function generateWithRunware(apiKey, prompt, sessionId, requestId, userInfo, avatarIdentity, pageNumber, enhancedStoryData) {
+async function generateWithRunware(apiKey, prompt, sessionId, requestId, userInfo, avatarIdentity, pageNumber, enhancedStoryData, options = {}) {
   console.log(`🚀 [${requestId}] Starting Runware generation with enhanced story data`);
   
   if (!apiKey || apiKey.length < 10) {
@@ -318,14 +363,23 @@ async function generateWithRunware(apiKey, prompt, sessionId, requestId, userInf
   
   console.log(`🎨 [${requestId}] Using style framework: ${styleFramework?.name || 'fallback'} for difficulty: ${difficulty}`);
   
-  // PHASE 4: Use enhanced prompt from Phase Integration Orchestrator if available
-  let enhancedPrompt = enhancedStoryData?.enhancedPrompt || prompt;
+  // PHASE 4: Build enhanced prompt with fallback builder
+  let enhancedPrompt;
   let basePrompt = prompt;
   
-  // If no complete enhanced prompt available, skip Tier 1 and go to Template AB
-  if (!enhancedStoryData?.enhancedPrompt || enhancedStoryData?.templateStructure !== 'COMPLETE_TIER_1') {
-    console.log(`🎯 [${requestId}] No complete Tier 1 template available, skipping to Template AB`);
-    throw new Error('SKIP_TO_TEMPLATE_AB: No complete enhanced prompt template');
+  if (enhancedStoryData?.enhancedPrompt && enhancedStoryData?.templateStructure === 'COMPLETE_TIER_1') {
+    // Use PhaseIntegrationOrchestrator enhanced prompt
+    enhancedPrompt = enhancedStoryData.enhancedPrompt;
+    console.log(`🎯 [${requestId}] Using PhaseIntegrationOrchestrator enhanced prompt: ${enhancedPrompt.length} chars`);
+  } else {
+    // Build enhanced prompt using fallback builder
+    enhancedPrompt = buildTier1EnhancedPrompt(prompt, userInfo, avatarIdentity, styleFramework);
+    console.log(`🎯 [${requestId}] Built fallback enhanced prompt: ${enhancedPrompt.length} chars`);
+  }
+  
+  // Check for force tier or skip tier options
+  if (options.skipTier25 && !enhancedPrompt) {
+    throw new Error('SKIP_TO_TEMPLATE_AB: skipTier25 flag set but no enhanced prompt available');
   }
   
   // PHASE 2: Generate comprehensive negative prompt
@@ -410,6 +464,7 @@ async function generateWithRunware(apiKey, prompt, sessionId, requestId, userInf
                 originalPrompt: basePrompt,
                 basePrompt: basePrompt,
                 enhancedPrompt: enhancedPrompt,
+                positivePrompt: enhancedPrompt,
                 negativePrompt: negativePrompt,
                 styleFramework: styleFramework?.name || 'fallback',
                 promptLengths: {
@@ -629,7 +684,7 @@ serve(async (req) => {
     if (req.method === 'POST') {
       const body = await req.json();
       // Accept both pageText and storyText (for backward compatibility)
-      let { pageText, storyText, userInfo, sessionId, pageNumber, avatarIdentity } = body;
+      let { pageText, storyText, userInfo, sessionId, pageNumber, avatarIdentity, forceTier, skipTier25, dryRun } = body;
       
       // Use storyText as fallback alias for pageText
       if (!pageText && storyText) {
@@ -637,7 +692,44 @@ serve(async (req) => {
         console.log(`📝 [${requestId}] Using storyText as pageText fallback`);
       }
       
-      console.log(`📸 [${requestId}] Image generation request - Page ${pageNumber}, Session ${sessionId}`);
+      console.log(`📸 [${requestId}] Image generation request - Page ${pageNumber}, Session ${sessionId}`, {
+        forceTier, skipTier25, dryRun
+      });
+      
+      // Handle dryRun mode - return prompt info without generation
+      if (dryRun) {
+        const difficulty = userInfo?.difficulty || userInfo?.gradeLevel || 'medium';
+        const styleFramework = getStyleFramework(difficulty);
+        const enhancedPrompt = buildTier1EnhancedPrompt(pageText, userInfo, avatarIdentity, styleFramework);
+        const negativePrompt = generateNuclearNegativePrompt(
+          `${userInfo?.nativeLanguage || 'en'}_${userInfo?.avatar?.skinTone || 'light'}`,
+          userInfo?.avatar?.type || 'girl',
+          difficulty,
+          pageNumber || 1,
+          []
+        );
+        
+        return new Response(JSON.stringify({
+          success: true,
+          dryRun: true,
+          metadata: {
+            originalPrompt: pageText,
+            enhancedPrompt: enhancedPrompt,
+            positivePrompt: enhancedPrompt,
+            negativePrompt: negativePrompt,
+            promptLengths: {
+              original: pageText.length,
+              enhanced: enhancedPrompt.length,
+              negative: negativePrompt.length
+            }
+          }
+        }), {
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          }
+        });
+      }
       
       // Input validation
       if (!pageText || !sessionId) {
@@ -701,19 +793,24 @@ serve(async (req) => {
         console.warn(`⚠️ [${requestId}] Phase orchestrator enhancement failed:`, enhancementError.message);
       }
       
-      // Try Tier 1: Runware Premium
+      // Try Tier 1: Runware Premium (unless force tier excludes it)
       const runwareService = CrashProofBootSystem.getService('runware');
-      if (runwareService?.status === 'configured') {
+      if (runwareService?.status === 'configured' && (!forceTier || forceTier === 'tier-1')) {
         try {
           console.log(`🚀 [${requestId}] Attempting Tier 1: Runware Premium`);
           result = await CoreUtils.withTimeout(
-            generateWithRunware(runwareService.key, pageText, sessionId, requestId, userInfo, avatarIdentity, pageNumber, enhancedStoryData),
+            generateWithRunware(runwareService.key, pageText, sessionId, requestId, userInfo, avatarIdentity, pageNumber, enhancedStoryData, { skipTier25 }),
             25000,
             'Runware generation'
           );
           console.log(`✅ [${requestId}] Tier 1 succeeded`);
         } catch (error) {
           console.warn(`⚠️ [${requestId}] Tier 1 failed:`, error.message);
+          
+          if (skipTier25) {
+            throw new Error(`Tier 1 failed and skipTier25 flag set: ${error.message}`);
+          }
+          
           result = null;
         }
       }
@@ -721,8 +818,8 @@ serve(async (req) => {
       // Get Supabase client for tier functions
       const supabase = CrashProofBootSystem.getService('supabase')?.client;
       
-      // Tier 2.5A-B: Template with avatar consistency
-      if (!result || !result.success) {
+      // Tier 2.5A-B: Template with avatar consistency (unless skipTier25 is set)
+      if ((!result || !result.success) && !skipTier25 && (!forceTier || forceTier === 'tier-2.5')) {
         const templateComplexity = determineTemplateComplexity(userInfo, avatarIdentity);
         console.log(`🎨 [${requestId}] Attempting Tier 2.5A-B with complexity ${templateComplexity}`);
         
@@ -752,8 +849,8 @@ serve(async (req) => {
         }
       }
 
-      // Tier 2.5C-D: Nuclear independence template
-      if (!result || !result.success) {
+      // Tier 2.5C-D: Nuclear independence template (unless skipTier25 is set)
+      if ((!result || !result.success) && !skipTier25 && (!forceTier || forceTier === 'tier-2.5')) {
         console.log(`🎨 [${requestId}] Attempting Tier 2.5C-D (nuclear independence)`);
         
         try {
@@ -782,8 +879,8 @@ serve(async (req) => {
         }
       }
 
-      // Tier 4: Enhanced fallback (guaranteed success)
-      if (!result || !result.success) {
+      // Tier 4: Enhanced fallback (guaranteed success) (unless specific tier is forced)
+      if ((!result || !result.success) && !forceTier) {
         console.log(`🎨 [${requestId}] Using Tier 4: Enhanced fallback (guaranteed)`);
         result = await EdgeErrorHandler.withPerformanceTracking(
           `enhanced-fallback-${requestId}`,

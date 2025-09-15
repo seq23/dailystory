@@ -625,7 +625,8 @@ export const ImageTierTester = () => {
           userInfo: buildUserInfo(),
           pageNumber: 1,
           sessionId: crypto.randomUUID(),
-          forceTier: 'tier-1' // Force complete Tier 1 flow
+          forceTier: 'tier-1', // Force complete Tier 1 flow
+          skipTier25: true // Skip fallback tiers
         }
       });
 
