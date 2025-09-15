@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-01-30T20:18:45Z - FORCED REDEPLOY VIA PURE JS - REMOVED TS SHIM
+// DEPLOY_MARKER: 2025-09-15T00:12:00Z - FORCE REDEPLOY PRIORITY
 // ============= TIER 2.5A-B: RUNWARE TEMPLATE AB (A-B COMPLEXITY) =============
 // Handles Level A (basic shapes/colors) and Level B (simple scenes)
 // Lightweight, fast deployment - optimized for simple template generation with character consistency

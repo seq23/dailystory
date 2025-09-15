@@ -4,7 +4,11 @@ on:
   push:
     branches: [ main ]
   workflow_dispatch:
-
+    inputs:
+      priority_functions:
+        description: 'Comma-separated function names to deploy first'
+        required: false
+        default: ''
 # Prevent concurrent deployments to avoid rate limiting
 concurrency:
   group: deploy-functions
@@ -16,6 +20,7 @@ jobs:
     env:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+      PRIORITY_FUNCTIONS: ${{ github.event.inputs.priority_functions }}
     steps:
       - uses: actions/checkout@v4
       
@@ -60,55 +65,102 @@ jobs:
           SUCCESS_COUNT=0
           FAILED_FUNCTIONS=()
           
-          echo "🚀 Starting deployment of $TOTAL_FUNCTIONS functions in batches of $BATCH_SIZE..."
+          # Parse PRIORITY_FUNCTIONS (comma-separated) and filter to discovered functions
+          PRIORITY_RAW="${PRIORITY_FUNCTIONS:-}"
+          PRIORITY_LIST=()
+          if [ -n "$PRIORITY_RAW" ]; then
+            echo "🚩 Priority functions requested: $PRIORITY_RAW"
+            IFS=',' read -ra PARR <<< "$PRIORITY_RAW"
+            for pf in "${PARR[@]}"; do
+              pf_trim=$(echo "$pf" | xargs)
+              if echo "$FUNCTIONS" | grep -qx "$pf_trim"; then
+                # Avoid duplicates
+                if [[ ! " ${PRIORITY_LIST[*]} " =~ " ${pf_trim} " ]]; then
+                  PRIORITY_LIST+=("$pf_trim")
+                fi
+              else
+                echo "  ⚠️  Priority function '$pf_trim' not found among discovered functions"
+              fi
+            done
+          fi
           
-          # Deploy functions in batches with rate limiting
-          for ((i=0; i<$TOTAL_FUNCTIONS; i+=BATCH_SIZE)); do
+          # Helper: deploy a single function with retries
+          deploy_with_retries() {
+            local FUNC_NAME="$1"
+            local MAX_RETRIES="$2"
+            local BASE_WAIT="$3" # seconds
+            local RETRY_COUNT=0
+            local DEPLOY_SUCCESS=false
+            
+            echo "⚡ Deploying $FUNC_NAME..."
+            while [ $RETRY_COUNT -lt $MAX_RETRIES ] && [ "$DEPLOY_SUCCESS" = false ]; do
+              if [ $RETRY_COUNT -gt 0 ]; then
+                WAIT_TIME=$(( (2 ** RETRY_COUNT) * BASE_WAIT ))
+                echo "  ⏳ Retry $RETRY_COUNT after ${WAIT_TIME}s (rate limit backoff)..."
+                sleep $WAIT_TIME
+              fi
+              if supabase functions deploy "$FUNC_NAME" --project-ref "$SUPABASE_PROJECT_ID" 2>&1; then
+                echo "  ✅ $FUNC_NAME deployed successfully"
+                SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
+                DEPLOY_SUCCESS=true
+              else
+                RETRY_COUNT=$((RETRY_COUNT + 1))
+                if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+                  echo "  ⚠️  $FUNC_NAME deployment failed, retrying..."
+                else
+                  echo "  ❌ $FUNC_NAME deployment failed after $MAX_RETRIES attempts"
+                  FAILED_FUNCTIONS+=("$FUNC_NAME")
+                fi
+              fi
+            done
+          }
+          
+          echo "🚀 Starting prioritized deployment (if any)..."
+          # Deploy priority functions first, sequentially, with stronger backoff (5 retries, 30s base)
+          if [ ${#PRIORITY_LIST[@]} -gt 0 ]; then
+            for FUNC_NAME in "${PRIORITY_LIST[@]}"; do
+              deploy_with_retries "$FUNC_NAME" 5 30
+              # Small delay between priority functions to avoid rate limiting
+              sleep 10
+            done
+          fi
+          
+          # Build remaining function list (exclude priority)
+          REMAINING_FUNCTIONS=()
+          for f in "${FUNC_ARRAY[@]}"; do
+            skip=false
+            for p in "${PRIORITY_LIST[@]}"; do
+              if [ "$f" = "$p" ]; then
+                skip=true
+                break
+              fi
+            done
+            if [ "$skip" = false ]; then
+              REMAINING_FUNCTIONS+=("$f")
+            fi
+          done
+          
+          TOTAL_REMAINING=${#REMAINING_FUNCTIONS[@]}
+          echo "🚀 Starting deployment of $TOTAL_REMAINING remaining functions in batches of $BATCH_SIZE..."
+          
+          # Deploy remaining functions in batches with existing rate limiting
+          for ((i=0; i<$TOTAL_REMAINING; i+=BATCH_SIZE)); do
             BATCH_END=$((i + BATCH_SIZE - 1))
-            if [ $BATCH_END -ge $TOTAL_FUNCTIONS ]; then
-              BATCH_END=$((TOTAL_FUNCTIONS - 1))
+            if [ $BATCH_END -ge $TOTAL_REMAINING ]; then
+              BATCH_END=$((TOTAL_REMAINING - 1))
             fi
             
             echo "📦 Processing batch $((i/BATCH_SIZE + 1)): functions $((i+1))-$((BATCH_END+1))"
             
-            # Deploy each function in the batch
-            for ((j=i; j<=BATCH_END && j<TOTAL_FUNCTIONS; j++)); do
-              FUNC_NAME="${FUNC_ARRAY[$j]}"
-              echo "⚡ Deploying $FUNC_NAME..."
-              
-              # Retry logic with exponential backoff
-              MAX_RETRIES=3
-              RETRY_COUNT=0
-              DEPLOY_SUCCESS=false
-              
-              while [ $RETRY_COUNT -lt $MAX_RETRIES ] && [ "$DEPLOY_SUCCESS" = false ]; do
-                if [ $RETRY_COUNT -gt 0 ]; then
-                  WAIT_TIME=$((2 ** RETRY_COUNT * 10))  # 20s, 40s, 80s
-                  echo "  ⏳ Retry $RETRY_COUNT after ${WAIT_TIME}s (rate limit backoff)..."
-                  sleep $WAIT_TIME
-                fi
-                
-                if supabase functions deploy "$FUNC_NAME" --project-ref "$SUPABASE_PROJECT_ID" 2>&1; then
-                  echo "  ✅ $FUNC_NAME deployed successfully"
-                  SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
-                  DEPLOY_SUCCESS=true
-                else
-                  RETRY_COUNT=$((RETRY_COUNT + 1))
-                  if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
-                    echo "  ⚠️  $FUNC_NAME deployment failed, retrying..."
-                  else
-                    echo "  ❌ $FUNC_NAME deployment failed after $MAX_RETRIES attempts"
-                    FAILED_FUNCTIONS+=("$FUNC_NAME")
-                  fi
-                fi
-              done
-              
+            for ((j=i; j<=BATCH_END && j<TOTAL_REMAINING; j++)); do
+              FUNC_NAME="${REMAINING_FUNCTIONS[$j]}"
+              deploy_with_retries "$FUNC_NAME" 3 10
               # Small delay between functions to avoid rate limiting
               sleep 5
             done
             
             # Longer delay between batches to ensure rate limit recovery
-            if [ $((BATCH_END + 1)) -lt $TOTAL_FUNCTIONS ]; then
+            if [ $((BATCH_END + 1)) -lt $TOTAL_REMAINING ]; then
               echo "  ⏸️  Waiting 30s before next batch..."
               sleep 30
             fi

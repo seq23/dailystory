@@ -110,3 +110,13 @@ All functions use `index.ts` as their entry point. JavaScript-only functions hav
 1. Remove extra functions from Supabase dashboard
 2. Verify all 40 functions deploy correctly
 3. Monitor logs for any deployment issues
+
+## Targeted redeploys (priority)
+
+You can priority-deploy specific functions without waiting for the full batch:
+
+- From GitHub Actions → Deploy Edge Functions → Run workflow → set "priority_functions" to a comma-separated list, e.g.: `runware-generate-image,ai-visual-scene-creator,runware-template-ab`
+- The workflow will deploy these first with stronger backoff (5 retries; 30s, 60s, 120s, 240s)
+- Then it continues with the normal batched deployment for the rest
+
+Force a fresh deploy for any function by bumping the DEPLOY_MARKER comment at the top of its index.ts or index.js.

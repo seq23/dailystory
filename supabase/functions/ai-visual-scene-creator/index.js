@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-01-30T22:20:15Z - FORCING CLEAN REDEPLOY FOR BOOT FIX
+// DEPLOY_MARKER: 2025-09-15T00:12:00Z - FORCE REDEPLOY PRIORITY
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 console.log('BOOT ai-visual-scene-creator module loaded');
