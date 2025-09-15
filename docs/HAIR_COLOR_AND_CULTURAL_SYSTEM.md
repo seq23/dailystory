@@ -1,15 +1,17 @@
-# Hair Color and Cultural Enhancement System Documentation
+# Hair Color Assignment and Cultural Enhancement System
 
-## ⚠️ CRITICAL: DO NOT "FIX" THIS SYSTEM - IT WORKS AS INTENDED
+This document outlines the intentional design of a hair color assignment and cultural enhancement system for avatar-based character generation. The system prioritizes comprehensive representation of all children's hair colors and authentic cultural context through skin-tone based cultural detection.
 
-This document explains the intentional design of our hair color assignment and cultural enhancement system. **This is NOT a bug to be fixed** - it ensures comprehensive representation of ALL children's hair colors and authentic cultural context.
+## System Architecture Overview
+The system operates through two primary components:
+1. **Hair Color Assignment**: Maps specific skin tones to hair colors for diversity
+2. **Cultural Enhancement**: Applies rich cultural context for dark-skinned children (regardless of language)
 
-## System Overview
-
-Our avatar-based character generation system ensures every child can see themselves represented through:
-1. **Avatar Diversity**: Complete hair color spectrum through skin tone mapping
-2. **Cultural Enhancement**: Rich cultural context for specific demographics
-3. **Comprehensive Representation**: ALL hair colors represented (red, blonde, brown, black, textured)
+## Current Implementation Status ✅
+- **Primary Service**: `UnifiedPlaceholderResolver.js` 
+- **Cultural Detection**: Skin-tone based (dark skin → African features)
+- **Integration**: `runware-template-ab/index.js` via `{bundle.culturalEnhancements}`
+- **Arrays Location**: `tier25Vocabulary.js` → `CULTURAL_ARRAYS.african`
 
 ## Hair Color Assignment System
 
@@ -56,35 +58,37 @@ const hairMap = {
 - Could assign inappropriate combinations (e.g., very pale skin + black hair)
 - Would reduce authentic representation
 
-## Cultural Enhancement System
+## Cultural Enhancement System ✅ UPDATED
 
-### Trigger Logic (INTENTIONAL - DO NOT CHANGE)
+The cultural enhancement system provides rich, authentic representation for dark-skinned children through sophisticated skin-tone detection and content application.
 
-Located in: `supabase/functions/_shared/FrontendIntelligence.js`
+### Trigger Logic ✅ CURRENT
+The system applies cultural enhancements when **skin tone condition** is met:
+1. **Skin Tone**: User has `dark` or `darker` skin tone
+2. **Language**: Irrelevant - ALL dark-skinned users get enhancements regardless of language
 
-```javascript
-static shouldApplyAfricanAmericanCulturalVariations(avatarIdentity) {
-  return avatarIdentity?.nativeLanguage === 'en' && avatarIdentity?.skinTone === 'dark';
-}
-```
+### Enhancement Types
+When the trigger condition is satisfied, the system applies:
+- **Cultural Hairstyles**: Afros, braids, cornrows, dreadlocks, protective styles
+- **Facial Features**: Full lips, broad nose, high cheekbones, warm brown eyes
+- **Seeded Consistency**: Same user gets same features across all pages
+- **Template Integration**: Via `{bundle.culturalEnhancements}` placeholder
 
-### Why This Trigger is Specific
+### Implementation Details ✅ CURRENT
+- Enhancements are applied through `UnifiedPlaceholderResolver.js`
+- Cultural arrays in `tier25Vocabulary.js` → `CULTURAL_ARRAYS.african`
+- System uses seeded random for character consistency
+- Content integrated into all premium and basic prompt templates
+- Example output: `"with beautiful braids, warm brown eyes"`
 
-- **English + Dark skin**: Targets Black American children specifically
-- **English + Non-dark skin**: NO cultural enhancements applied (hair mapping only)
-- **Non-English + Any skin**: Native language cultural profile applied
-- **Provides rich cultural context**: Adds expanded African American arrays for appropriate demographics only
-- **Additive enhancement**: Doesn't restrict other users, only adds for specific demographic
-- **Authentic representation**: Ensures Black American children see authentic cultural elements while preventing inappropriate cultural assignments
-
-### Enhanced Arrays Applied
-
-When triggered, adds these cultural elements:
-
-1. **Expanded Hairstyles**: Natural textures, braids, locs, twist-outs
-2. **Cultural Settings**: Churches, barbershops, family cookouts, community events  
-3. **Cultural Pride Elements**: Heritage symbols, community strength, family traditions
-4. **Authentic Details**: Soul food, gospel music, extended family gatherings
+### Language Support Matrix ✅ NEW
+| Language | Code | Regional Authenticity | Cultural Features |
+|----------|------|---------------------|-------------------|
+| English  | en   | Standard            | Dark skin only    |
+| French   | fr   | French authenticity | Dark skin only    |
+| Spanish  | es   | Hispanic authenticity| Dark skin only    |
+| Portuguese| pt  | Brazilian authenticity| Dark skin only   |
+| Chinese  | zh   | Asian authenticity  | Dark skin only    |
 
 ## System Architecture Flow
 

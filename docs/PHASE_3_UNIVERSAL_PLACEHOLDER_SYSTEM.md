@@ -11,29 +11,31 @@ Phase 3 implements a comprehensive Universal Placeholder Resolution system that 
 
 ---
 
-## PHASE 3.1: CULTURAL INTELLIGENCE INTEGRATION
+## PHASE 3.1: CULTURAL INTELLIGENCE INTEGRATION ✅ UPDATED
 
-### Cultural Trigger Detection System
+### Cultural Enhancement Logic ✅ CURRENT
+The `UnifiedPlaceholderResolver` analyzes user skin tone to determine cultural enhancement application:
 
-The `CulturalTriggerDetector` class analyzes user information to determine cultural enhancements:
+- **Dark Skin Detection**: Applied when user has `dark` or `darker` skin tone
+- **Cultural Features**: ALL dark-skinned users get African cultural enhancements
+- **Language Independence**: Skin tone is the ONLY trigger (language irrelevant)
 
-#### Cultural Triggers:
-1. **Non-English Speakers**: Strong cultural enhancement for users with `nativeLanguage !== 'en'`
-2. **African American Features**: Strong enhancement for English speakers with dark skin tone
-3. **Diverse Features**: Light enhancement for English speakers with medium skin tone
-4. **Default**: No cultural enhancement for English speakers with light skin tone
+### Cultural Arrays Integration ✅ CURRENT
+Direct integration with `CULTURAL_ARRAYS.african` from tier25Vocabulary.js:
+- **Hair Styles**: Afros, braids, cornrows, protective styles (38+ options)
+- **Facial Features**: Full lips, broad nose, high cheekbones, warm brown eyes (20+ options)
+- **Seeded Consistency**: User-specific seeds ensure same features across sessions
+- **Template Integration**: Via `{bundle.culturalEnhancements}` placeholder
 
-#### Cultural Enhancement Levels:
-- **Strong**: Full cultural arrays applied (hairstyles, facial features, authenticity strings)
-- **Light**: Basic diversity features applied
-- **None**: Standard multicultural approach
+### Language Support Enhancement ✅ CURRENT
+While cultural features are skin-tone based, language affects regional authenticity:
+- **English (en)**: Standard regional context
+- **French (fr)**: French regional authenticity strings
+- **Spanish (es)**: Hispanic regional authenticity strings  
+- **Portuguese (pt)**: Brazilian regional authenticity strings
+- **Chinese (zh)**: Asian regional authenticity strings
 
-### Cultural Arrays Integration
-
-Direct integration with `CULTURAL_ARRAYS` from tier25Vocabulary.js:
-- **African American Hairstyles**: 38+ boys styles, 11 detailed girls styles
-- **Facial Features**: 20+ authentic facial feature descriptions with skin tones
-- **Regional Authenticity**: Authentic features for Chinese, Indian, Arabic, French, Portuguese speakers
+The cultural detection works through `detectCulturalContext()` method that maps dark skin tones to 'african' cultural arrays, with seeded random selection for consistency.
 
 ---
 
