@@ -414,12 +414,26 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
     
     if (serviceHealth.characterService && avatarIdentity) {
       try {
-        console.log('🎭 Template AB: Getting character consistency data');
+        console.log('🎭 Template AB Tier 2.5A: Attempting CharacterConsistencyService integration');
         const CharacterService = await getCharacterService();
         const characterConsistencyService = CharacterService.getInstance();
-        characterData = await characterConsistencyService.getCharacterSeed(sessionId, avatarIdentity, storyText, 'standard', storyText);
+        
+        // Integrate with cultural logic - analyze visual details with cultural context
+        await characterConsistencyService.analyzeVisualDetails(sessionId, storyText, pageNumber, userInfo?.name);
+        
+        // Get character appearance from story (includes cultural features if applicable)
+        const characterAppearance = await characterConsistencyService.getCharacterAppearanceFromStory(sessionId, userInfo?.name);
+        
+        characterData = {
+          appearance: characterAppearance || '',
+          culturalIntegration: true,
+          source: 'CharacterConsistencyService'
+        };
+        
+        console.log('✅ Template AB Tier 2.5A: CharacterConsistencyService integration successful');
       } catch (error) {
-        console.warn('Character service failed:', error);
+        console.warn('⚠️ Template AB Tier 2.5A: CharacterConsistencyService failed, will fallback to 2.5B:', error);
+        characterData = null; // This will trigger fallback to 2.5B
       }
     }
     
@@ -486,8 +500,14 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
     };
   }
   
+  // Check if 2.5A failed (no character data despite service being available)
+  if (complexity === 'A' && serviceHealth.characterService && !characterData) {
+    console.log('⚠️ Template AB: 2.5A CharacterConsistencyService failed, falling back to 2.5B nuclear independence');
+    complexity = 'B'; // Fall back to nuclear independence
+  }
+  
   if (complexity === 'B') {
-    console.log('🎯 Template AB: Processing Tier 2.5B - Nuclear Independence (PHASE 4)');
+    console.log('🎯 Template AB: Processing Tier 2.5B - Nuclear Independence with Cultural Logic (fallback or primary)');
     
     // PHASE 4: Nuclear Independence - NO external service dependencies
     console.log('☢️ PHASE 4: Nuclear Independence Mode - Zero external dependencies');
@@ -514,11 +534,11 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
       secondaryCharactersB
     );
     
-    // PHASE 4: Always use fallback resolution for nuclear independence
-    console.log('☢️ Nuclear Independence: Using guaranteed fallback resolution');
-    const positivePrompt = await resolvePlaceholdersFallback(template, templateData);
+    // Use UnifiedPlaceholderResolver for cultural logic (includes {hair} and {features} mapping)
+    console.log('☢️ Nuclear Independence: Using cultural logic via UnifiedPlaceholderResolver');
+    const positivePrompt = await resolvePlaceholders(template, templateData, true);
     
-    console.log('✅ Template AB Tier 2.5B: Nuclear Independence template generated');
+    console.log('✅ Template AB Tier 2.5B: Nuclear Independence with Cultural Logic template generated');
     console.log('🔍 Nuclear independence elements:', {
       hasAvatarIdentity: !!avatarIdentity,
       secondaryCharacterCount: secondaryCharactersB.split(',').filter(c => c.trim()).length,

@@ -752,5 +752,4 @@ export default {
 // ============= EXPORTS FOR UNIFIED PLACEHOLDER RESOLVER =============
 export const VOCABULARY = TIER_25_UNIFIED_VOCABULARY_EXTENDED;
 
-// Legacy export compatibility - Export extended cultural arrays as CULTURAL_ARRAYS
-export { CULTURAL_ARRAYS_EXTENDED as CULTURAL_ARRAYS };
+// Legacy export compatibility - CULTURAL_ARRAYS already exported above at line 6

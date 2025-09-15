@@ -115,6 +115,25 @@ export class UnifiedPlaceholderResolver {
     resolved = resolved.replace(/\{emotion\}/g, getSeededValue('emotion', PLACEHOLDER_POOLS.emotions));
     resolved = resolved.replace(/\{object\}/g, getSeededValue('object', PLACEHOLDER_POOLS.activities)); // Fallback to activities
 
+    // Map {hair} to cultural hair logic for Template 2.5B nuclear independence
+    const culturalType = this.detectCulturalContext(userInfo);
+    resolved = resolved.replace(/\{hair\}/g, () => {
+      if (culturalType === 'african') {
+        const characterSeed = userInfo?.sessionId ? this.generateCulturalSeed(userInfo.name, userInfo.sessionId) : undefined;
+        return getCulturalSelection('african', 'hair', characterSeed) || '';
+      }
+      return ''; // No hair description for non-African users
+    });
+
+    // Map {features} to cultural features logic for Template 2.5B nuclear independence  
+    resolved = resolved.replace(/\{features\}/g, () => {
+      if (culturalType === 'african') {
+        const characterSeed = userInfo?.sessionId ? this.generateCulturalSeed(userInfo.name, userInfo.sessionId) + 1 : undefined;
+        return getCulturalSelection('african', 'features', characterSeed) || '';
+      }
+      return ''; // No features description for non-African users
+    });
+
     // Apply pronoun-based grammar fixes
     const pronoun = this.derivePronoun(userInfo);
     resolved = this.applyPronounGrammarFixes(resolved, pronoun);
