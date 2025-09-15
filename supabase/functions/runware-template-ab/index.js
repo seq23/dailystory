@@ -118,8 +118,9 @@ async function getUniversalResolver() {
 // ============= ENHANCED PLACEHOLDER RESOLUTION SYSTEM =============
 async function resolvePlaceholders(template, data, hasCulturalIntelligence) {
   const { 
-    storyText, 
-    userInfo, 
+    storyText = pageText, // Accept pageText as fallback for storyText
+    pageText,
+    userInfo,
     avatarIdentity, 
     characterData, 
     visualDetails, 
@@ -169,8 +170,9 @@ async function resolvePlaceholdersFallback(template, data) {
   console.log('⚠️ Using fallback placeholder resolution');
   
   const { 
-    storyText, 
-    userInfo, 
+    storyText = pageText, // Accept pageText as fallback for storyText 
+    pageText,
+    userInfo,
     avatarIdentity, 
     frameworkPrompt,
     secondaryCharacters
@@ -667,8 +669,9 @@ serve(async (req) => {
   
   try {
     const { 
-      storyText, 
-      userInfo, 
+      storyText = pageText, // Accept pageText as fallback for storyText
+      pageText,
+      userInfo,
       avatarIdentity, 
       templateComplexity,
       sessionId,

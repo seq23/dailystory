@@ -294,7 +294,8 @@ export const ImageTierTester = () => {
           const startTime = Date.now();
             const response = await supabase.functions.invoke(endpoint, {
             body: {
-              pageText: testStoryText.substring(0, 100), // Fixed: use pageText instead of storyText
+              storyText: testStoryText.substring(0, 100), // Template AB expects storyText
+              pageText: testStoryText.substring(0, 100), // Template CD compatibility
               userInfo: buildUserInfo(),
               pageNumber: 1,
               sessionId: crypto.randomUUID()
@@ -360,7 +361,8 @@ export const ImageTierTester = () => {
           const startTime = Date.now();
           const response = await supabase.functions.invoke(tierConfig.endpoint, {
             body: {
-              pageText: testStoryText.substring(0, 200), // Fixed: use pageText instead of storyText
+              storyText: testStoryText.substring(0, 200), // Template AB expects storyText
+              pageText: testStoryText.substring(0, 200), // Template CD compatibility
               userInfo: buildUserInfo(),
               pageNumber: 1,
               sessionId: crypto.randomUUID(),
@@ -441,7 +443,8 @@ export const ImageTierTester = () => {
       
         await supabase.functions.invoke('runware-generate-image', {
         body: {
-          pageText: testStoryText, // Fixed: use pageText instead of storyText
+          storyText: testStoryText, // Template AB expects storyText
+          pageText: testStoryText, // Template CD compatibility
           userInfo: buildUserInfo(),
           pageNumber: 1,
           sessionId: crypto.randomUUID()
@@ -469,7 +472,8 @@ export const ImageTierTester = () => {
     const rapidCalls = Array.from({ length: 3 }, (_, i) => 
       supabase.functions.invoke('ai-visual-scene-creator', {
         body: {
-          pageText: `Test ${i + 1}: ${testStoryText.substring(0, 50)}`, // Fixed: use pageText instead of storyText
+          storyText: `Test ${i + 1}: ${testStoryText.substring(0, 50)}`, // Template AB expects storyText
+          pageText: `Test ${i + 1}: ${testStoryText.substring(0, 50)}`, // Template CD compatibility
           userInfo: buildUserInfo(),
           pageNumber: i + 1,
           sessionId: crypto.randomUUID()
@@ -530,7 +534,8 @@ export const ImageTierTester = () => {
       const startTime = Date.now();
       const response = await supabase.functions.invoke('ai-visual-scene-creator', {
         body: {
-          pageText: testStoryText, // Fixed: use pageText instead of storyText
+          storyText: testStoryText, // Template AB expects storyText
+          pageText: testStoryText, // Template CD compatibility
           userInfo: buildUserInfo(),
           pageNumber: 1,
           sessionId: crypto.randomUUID()
@@ -610,7 +615,8 @@ export const ImageTierTester = () => {
       const startTime = Date.now();
       const response = await supabase.functions.invoke('runware-generate-image', {
         body: {
-          pageText: testStoryText, // Fixed: use pageText instead of storyText
+          storyText: testStoryText, // Template AB expects storyText
+          pageText: testStoryText, // Template CD compatibility
           userInfo: buildUserInfo(),
           pageNumber: 1,
           sessionId: crypto.randomUUID(),
@@ -699,7 +705,8 @@ export const ImageTierTester = () => {
       const startTime = Date.now();
       const response = await supabase.functions.invoke('runware-generate-image', {
         body: {
-          pageText: testStoryText, // Fixed: use pageText instead of storyText
+          storyText: testStoryText, // Template AB expects storyText
+          pageText: testStoryText, // Template CD compatibility
           userInfo: buildUserInfo(),
           pageNumber: 1,
           sessionId: crypto.randomUUID(),
@@ -841,7 +848,8 @@ export const ImageTierTester = () => {
 
       const response = await supabase.functions.invoke(functionMap[tier], {
         body: {
-          pageText: testStoryText, // Fixed: use pageText instead of storyText
+          storyText: testStoryText, // Template AB expects storyText
+          pageText: testStoryText, // Template CD compatibility
           userInfo: buildUserInfo(),
           templateComplexity: templateMap[tier],
           pageNumber: 1,

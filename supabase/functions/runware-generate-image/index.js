@@ -322,23 +322,11 @@ async function generateWithRunware(apiKey, prompt, sessionId, requestId, userInf
   let enhancedPrompt = enhancedStoryData?.enhancedPrompt || prompt;
   let basePrompt = prompt;
   
-  // Fallback to traditional enhancement if no enhanced data available
-  if (!enhancedStoryData?.enhancedPrompt && userInfo) {
-    // Add character consistency and cultural context
-    const characterDesc = avatarIdentity?.visualDescription || `${userInfo.gradeLevel || 'young'} child`;
-    const culturalContext = avatarIdentity?.culturalContext || 'diverse and inclusive';
-    
-    // Use style framework if available
-    const stylePrompt = styleFramework?.frameworkPrompt || 'Contemporary children\'s book illustration, warm and inviting, soft lighting, vibrant but gentle colors';
-    
-    enhancedPrompt = `Create a beautiful children's book illustration showing: ${prompt}
-
-Character Description: ${characterDesc}
-Cultural Context: ${culturalContext}
-Art Style: ${stylePrompt}
-Quality: Ultra high resolution, detailed artwork suitable for children's literature
-
-The illustration should be engaging for ${userInfo.gradeLevel || 'young'} readers and maintain visual consistency with previous scenes.`;
+  // If no enhanced data available, force Tier 2.5A fallback instead of manual override
+  if (!enhancedStoryData?.enhancedPrompt) {
+    console.log(`🎯 [${requestId}] No enhanced data available, forcing Tier 2.5A fallback`);
+    // Don't create manual prompt - let tier system handle it
+    enhancedPrompt = prompt; // Keep original for tier functions
   }
   
   // PHASE 2: Generate comprehensive negative prompt
@@ -775,7 +763,7 @@ serve(async (req) => {
           const nuclearResult = await CoreUtils.withTimeout(
             supabase.functions.invoke('runware-template-cd', {
               body: {
-                pageText: pageText, // Use pageText consistently
+                storyText: pageText, // Template CD expects storyText parameter
                 userInfo,
                 avatarIdentity,
                 templateComplexity: 'C',

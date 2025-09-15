@@ -5,7 +5,40 @@
 // Pure pageText + style framework (C) or hardcoded template (D)
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { generateNuclearNegativePrompt } from '../_shared/NuclearNegativePrompts.js';
+// Inline cultural detection for emergency independence (no imports)
+function inlineDetectCultural(userInfo, avatarIdentity) {
+  const culturalProfile = {
+    nativeLanguage: userInfo?.nativeLanguage || 'en',
+    skinTone: userInfo?.avatar?.skinTone || avatarIdentity?.skinTone || 'light',
+    includes: function(term) {
+      return this.nativeLanguage === term || this.skinTone === term;
+    }
+  };
+  
+  if (culturalProfile.nativeLanguage !== 'en' || 
+      ['dark', 'medium-dark', 'brown'].includes(culturalProfile.skinTone)) {
+    return 'african-american';
+  }
+  return 'general';
+}
+
+function generateInlineNuclearNegative(culturalProfile, avatarType, difficulty) {
+  const base = 'ugly, deformed, blurry, bad anatomy, wrong proportions, text, watermark, signature';
+  
+  if (culturalProfile === 'african-american') {
+    return base + ', whitewashing, pale skin, incorrect ethnicity, cultural misrepresentation';
+  }
+  
+  if (avatarType && avatarType.includes('boy')) {
+    return base + ', feminine features, girl, female clothing, pink, dresses';
+  }
+  
+  if (avatarType && avatarType.includes('girl')) {
+    return base + ', masculine features, boy, male clothing, facial hair';
+  }
+  
+  return base + ', inappropriate content, violence, scary elements';
+}
 
 // ============= INLINED STYLE FRAMEWORKS =============
 // Inlined to make edge function self-contained
@@ -140,7 +173,8 @@ function generateTier25C(storyText, userInfo, avatarIdentity) {
     };
     const avatarType = userInfo?.avatar?.type || 'child';
     
-    negativePrompt = generateNuclearNegativePrompt(culturalProfile, avatarType, difficulty, 1, []);
+    const culturalProfileType = inlineDetectCultural(userInfo, avatarIdentity);
+    negativePrompt = generateInlineNuclearNegative(culturalProfileType, 'child', difficulty);
     console.log(`🎨 Tier 2.5C: Generated comprehensive negative prompt: ${negativePrompt.length} chars`);
   } catch (error) {
     console.warn('⚠️ Tier 2.5C: Failed to generate nuclear negative prompt, using fallback:', error.message);
@@ -173,8 +207,8 @@ function generateTier25D() {
   // PHASE 5: Use comprehensive negative prompt for Tier 2.5D
   let negativePrompt;
   try {
-    const culturalProfile = { nativeLanguage: 'en', skinTone: 'diverse' };
-    negativePrompt = generateNuclearNegativePrompt(culturalProfile, 'child', 'medium', 1, []);
+    const culturalProfileType = inlineDetectCultural({nativeLanguage: 'en'}, {skinTone: 'diverse'});
+    negativePrompt = generateInlineNuclearNegative(culturalProfileType, 'child', 'medium');
     console.log(`🎨 Tier 2.5D: Generated comprehensive negative prompt: ${negativePrompt.length} chars`);
   } catch (error) {
     console.warn('⚠️ Tier 2.5D: Failed to generate nuclear negative prompt, using fallback:', error.message);
@@ -297,7 +331,7 @@ serve(async (req) => {
     // Parse request body
     const body = await req.json();
     console.log('📋 Request body received:', {
-      hasStoryText: !!body.storyText,
+      hasStoryText: !!(body.storyText || body.pageText),
       hasUserInfo: !!body.userInfo,
       templateComplexity: body.templateComplexity,
       sessionId: body.sessionId,
@@ -307,7 +341,8 @@ serve(async (req) => {
 
     // PHASE 4: Session data received via parameters only
     const {
-      storyText = '',
+      storyText = body.pageText || '', // Accept pageText as storyText
+      pageText = body.pageText || '',
       userInfo = {},
       avatarIdentity = null,
       templateComplexity = null,
