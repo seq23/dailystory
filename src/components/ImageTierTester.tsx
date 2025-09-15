@@ -1473,11 +1473,32 @@ export const ImageTierTester = () => {
                            </details>
                          )}
                          
-                         {result.details.styleFramework && (
-                           <div className="mt-2 text-xs">
-                             <strong>Style Framework:</strong> {result.details.styleFramework}
-                           </div>
-                         )}
+                          {result.details.styleFramework && (
+                            <div className="mt-2 text-xs">
+                              <strong>Style Framework:</strong> {result.details.styleFramework}
+                            </div>
+                          )}
+                          
+                          {/* NEW: Prompt Length Statistics */}
+                          {result.details.promptLengths && (
+                            <div className="mt-2 text-xs bg-gray-50 p-2 rounded">
+                              <strong>Prompt Length Statistics:</strong>
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-1">
+                                {result.details.promptLengths.original && (
+                                  <div><span className="font-medium">Original:</span> {result.details.promptLengths.original}</div>
+                                )}
+                                {result.details.promptLengths.enhanced && (
+                                  <div><span className="font-medium">Enhanced:</span> {result.details.promptLengths.enhanced}</div>
+                                )}
+                                {result.details.promptLengths.negative && (
+                                  <div><span className="font-medium">Negative:</span> {result.details.promptLengths.negative}</div>
+                                )}
+                                {result.details.promptLengths.positive && (
+                                  <div><span className="font-medium">Positive:</span> {result.details.promptLengths.positive}</div>
+                                )}
+                              </div>
+                            </div>
+                          )}
                        </div>
                      )}
                     

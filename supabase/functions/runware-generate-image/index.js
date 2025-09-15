@@ -15,6 +15,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
+import { getStyleFramework } from '../_shared/styleFrameworks.js';
+import { generateNuclearNegativePrompt } from '../_shared/NuclearNegativePrompts.js';
 
 // ============= PHASE B5: CENTRALIZED ERROR HANDLING =============
 class EdgeErrorHandler {
@@ -306,8 +308,8 @@ async function generateWithRunware(apiKey, prompt, sessionId, requestId, userInf
   }
 
   // PHASE 2: Load style framework and negative prompts
-  const getStyleFrameworkFn = await getStyleFramework();
-  const generateNuclearNegativePromptFn = await getNuclearNegativePrompt();
+  const getStyleFrameworkFn = getStyleFramework;
+  const generateNuclearNegativePromptFn = generateNuclearNegativePrompt;
   
   // Get difficulty from userInfo for style framework selection
   const difficulty = userInfo?.difficulty || userInfo?.gradeLevel || 'medium';
