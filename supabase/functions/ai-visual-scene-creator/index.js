@@ -811,6 +811,12 @@ EXAMPLES:
         const result = {
           success: true,
           aiSchema: processedStoryData,
+          requestId: requestId,
+          positivePrompt: positivePrompt || null,
+          negativePrompt: negativePrompt || null,
+          styleFrameworkUsed: styleFramework?.name || null,
+          difficultyLevel: avatarIdentity?.difficultyLevel || 'medium',
+          tier: 'ai-visual-scene-creator',
           metadata: {
             enhancedTier1: true,
             characterConsistency: {

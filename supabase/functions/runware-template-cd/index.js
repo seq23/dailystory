@@ -287,7 +287,7 @@ serve(async (req) => {
     // Call Runware API
     const imageURL = await callRunwareAPI(template.positivePrompt, template.negativePrompt);
 
-    // Return successful response
+    // Return successful response with enhanced prompt tracing
     return new Response(JSON.stringify({
       success: true,
       imageURL: imageURL,
@@ -296,10 +296,12 @@ serve(async (req) => {
       templateType: template.templateType,
       tier: template.tier,
       complexity: complexity,
+      styleFrameworkUsed: template.styleFrameworkUsed,
+      difficultyLevel: userInfo?.difficulty || 'medium',
       timestamp: new Date().toISOString(),
       sessionId,
       pageNumber,
-      sessionArchitecture: 'parameter-based' // PHASE 4: Confirm parameter-based approach
+      sessionArchitecture: 'parameter-based'
     }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }

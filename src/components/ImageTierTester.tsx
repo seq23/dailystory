@@ -55,6 +55,10 @@ interface TestResult {
     enhancementLevel?: string;
     provider?: string;
     templateComplexity?: string;
+    // Prompt and template specific
+    positivePrompt?: string;
+    negativePrompt?: string;
+    styleFramework?: string;
     // Connectivity specific
     successfulConnections?: number;
     totalEndpoints?: number;
@@ -91,6 +95,7 @@ export const ImageTierTester = () => {
   const [avatarType, setAvatarType] = useState('girl');
   const [skinTone, setSkinTone] = useState('light');
   const [nativeLanguage, setNativeLanguage] = useState('en');
+  const [difficultyLevel, setDifficultyLevel] = useState('medium');
 
   // Build dynamic user info from form inputs
   const buildUserInfo = () => ({
@@ -102,6 +107,7 @@ export const ImageTierTester = () => {
       skinTone: skinTone
     },
     nativeLanguage: nativeLanguage,
+    difficulty: difficultyLevel,
     // Conditionally add culturalProfile for completeness
     culturalProfile: nativeLanguage !== 'en' ? nativeLanguage : undefined
   });
@@ -210,6 +216,7 @@ export const ImageTierTester = () => {
     setAvatarType('girl');
     setSkinTone('light');
     setNativeLanguage('en');
+    setDifficultyLevel('medium');
   };
 
   // Enhanced test function with timeout and AbortController support
@@ -538,6 +545,9 @@ export const ImageTierTester = () => {
           action: response.data?.aiSchema?.action,
           mood: response.data?.aiSchema?.mood,
           pose: response.data?.aiSchema?.pose,
+          positivePrompt: response.data?.positivePrompt,
+          negativePrompt: response.data?.negativePrompt,
+          styleFramework: response.data?.styleFrameworkUsed,
           sceneGenerationOnly: true,
           testType: 'REAL',
           errorCategory: category as any,
@@ -820,6 +830,9 @@ export const ImageTierTester = () => {
           requestId: response.data?.requestId,
           tier: response.data?.tier,
           templateComplexity: templateMap[tier],
+          positivePrompt: response.data?.positivePrompt,
+          negativePrompt: response.data?.negativePrompt,
+          styleFramework: response.data?.styleFrameworkUsed,
           forcedTier: tier,
           testType: 'FORCED', // This is a forced tier test
           error: response.error?.message || response.data?.error
@@ -1048,6 +1061,69 @@ export const ImageTierTester = () => {
                   </SelectContent>
                 </Select>
               </div>
+              
+              <div>
+                <label className="text-sm font-medium mb-2 block">Difficulty Level</label>
+                <Select value={difficultyLevel} onValueChange={setDifficultyLevel}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Difficulty Level" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="beginner">Beginner (0-2)</SelectItem>
+                    <SelectItem value="easy">Easy (0-2)</SelectItem>
+                    <SelectItem value="medium">Medium (0-2)</SelectItem>
+                    <SelectItem value="hard">Hard (3-4)</SelectItem>
+                    <SelectItem value="expert">Expert (3-4)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Style Framework Preview */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Camera className="h-4 w-4" />
+                Style Framework Preview
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="font-medium">Selected Difficulty:</span>
+                  <Badge variant="outline" className="text-sm">
+                    {difficultyLevel} ({['beginner', 'easy', 'medium'].includes(difficultyLevel) ? '0-2' : '3-4'})
+                  </Badge>
+                </div>
+                
+                <div className="space-y-2">
+                  <span className="font-medium">Framework Name:</span>
+                  <div className="text-sm bg-blue-50 p-2 rounded">
+                    {['beginner', 'easy', 'medium'].includes(difficultyLevel) 
+                      ? 'Contemporary Children\'s Book Illustration' 
+                      : '2.9D Rendered Illustration'}
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <span className="font-medium">Framework Category:</span>
+                  <div className="text-sm">
+                    {['beginner', 'easy', 'medium'].includes(difficultyLevel) 
+                      ? '🎨 Levels 0-2: Traditional children\'s book style with contemporary elements' 
+                      : '🎯 Levels 3-4: Semi-realistic 2.9D rendering with advanced lighting'}
+                  </div>
+                </div>
+                
+                <details className="border rounded p-2">
+                  <summary className="cursor-pointer font-medium">Framework Prompt Preview</summary>
+                  <div className="mt-2 text-xs bg-gray-50 p-2 rounded max-h-24 overflow-y-auto">
+                    {['beginner', 'easy', 'medium'].includes(difficultyLevel) 
+                      ? 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality, warm natural lighting'
+                      : '2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation, warm natural lighting'}
+                  </div>
+                </details>
+              </div>
             </CardContent>
           </Card>
 
@@ -1151,7 +1227,79 @@ export const ImageTierTester = () => {
       </Card>
 
       {/* Results Display */}
-      {results.length > 0 && (
+          {/* Data Flow Trace Visualization */}
+          {results.length > 0 && (
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Network className="h-4 w-4" />
+                  Data Flow Trace
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="text-sm text-muted-foreground">
+                    End-to-end tracing of the last test execution showing data transformation and routing decisions.
+                  </div>
+                  
+                  <div className="bg-blue-50 p-4 rounded border">
+                    <h4 className="font-medium mb-2">1. User Input</h4>
+                    <div className="text-xs space-y-1">
+                      <div><strong>Story Text:</strong> {testStoryText.substring(0, 100)}...</div>
+                      <div><strong>User Name:</strong> {userName}</div>
+                      <div><strong>Age:</strong> {userAge}</div>
+                      <div><strong>Difficulty:</strong> {difficultyLevel}</div>
+                      <div><strong>Avatar:</strong> {avatarType} ({skinTone})</div>
+                      <div><strong>Language:</strong> {nativeLanguage}</div>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-green-50 p-4 rounded border">
+                    <h4 className="font-medium mb-2">2. Style Framework Selection</h4>
+                    <div className="text-xs space-y-1">
+                      <div><strong>Selected Framework:</strong> {['beginner', 'easy', 'medium'].includes(difficultyLevel) 
+                        ? 'Contemporary Children\'s Book Illustration' 
+                        : '2.9D Rendered Illustration'}</div>
+                      <div><strong>Level Category:</strong> {['beginner', 'easy', 'medium'].includes(difficultyLevel) ? '0-2' : '3-4'}</div>
+                      <div><strong>Framework Choice Reason:</strong> Based on difficulty level "{difficultyLevel}"</div>
+                    </div>
+                  </div>
+                  
+                  {results[0] && (
+                    <div className="bg-purple-50 p-4 rounded border">
+                      <h4 className="font-medium mb-2">3. Processing Pipeline</h4>
+                      <div className="text-xs space-y-1">
+                        <div><strong>Executed Tier:</strong> {results[0].tier}</div>
+                        <div><strong>Success:</strong> {results[0].success ? '✅ Yes' : '❌ No'}</div>
+                        <div><strong>Processing Time:</strong> {results[0].details.processingTime}ms</div>
+                        {results[0].details.testType && (
+                          <div><strong>Test Type:</strong> {results[0].details.testType}</div>
+                        )}
+                        {results[0].details.styleFramework && (
+                          <div><strong>Style Framework Used:</strong> {results[0].details.styleFramework}</div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {results[0] && results[0].imageURL && (
+                    <div className="bg-yellow-50 p-4 rounded border">
+                      <h4 className="font-medium mb-2">4. Final Output</h4>
+                      <div className="text-xs space-y-1">
+                        <div><strong>Image Generated:</strong> ✅ Yes</div>
+                        <div><strong>Image URL:</strong> <span className="font-mono">{results[0].imageURL.substring(0, 50)}...</span></div>
+                        {results[0].details.positivePrompt && (
+                          <div><strong>Prompt Length:</strong> {results[0].details.positivePrompt.length} characters</div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {results.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>Test Results</CardTitle>
@@ -1213,17 +1361,66 @@ export const ImageTierTester = () => {
                         <div className="text-xs mt-1 bg-blue-50 p-2 rounded">{result.details.primaryScene}</div>
                       </div>
                     )}
-                    {result.details.aiSchema && (
-                      <div className="text-sm">
-                        <span className="font-medium">AI Schema Details:</span>
-                        <div className="text-xs mt-1 space-y-1">
-                          {result.details.setting && <div><strong>Setting:</strong> {result.details.setting}</div>}
-                          {result.details.action && <div><strong>Action:</strong> {result.details.action}</div>}
-                          {result.details.mood && <div><strong>Mood:</strong> {result.details.mood}</div>}
-                          {result.details.pose && <div><strong>Pose:</strong> {result.details.pose}</div>}
-                        </div>
-                      </div>
-                    )}
+                     {result.details.aiSchema && (
+                       <div className="text-sm">
+                         <span className="font-medium">AI Schema Details:</span>
+                         <div className="text-xs mt-1 space-y-1">
+                           {result.details.setting && <div><strong>Setting:</strong> {result.details.setting}</div>}
+                           {result.details.action && <div><strong>Action:</strong> {result.details.action}</div>}
+                           {result.details.mood && <div><strong>Mood:</strong> {result.details.mood}</div>}
+                           {result.details.pose && <div><strong>Pose:</strong> {result.details.pose}</div>}
+                         </div>
+                       </div>
+                     )}
+
+                     {/* Full Schema Output Expandable Section */}
+                     {result.details.aiSchema && (
+                       <details className="text-sm border rounded p-2 bg-gray-50">
+                         <summary className="cursor-pointer font-medium text-blue-600 hover:text-blue-700">
+                           Full Schema Output (Expandable)
+                         </summary>
+                         <div className="mt-2">
+                           <pre className="text-xs bg-white p-2 rounded border overflow-x-auto max-h-48 overflow-y-auto">
+                             {JSON.stringify(result.details.aiSchema, null, 2)}
+                           </pre>
+                         </div>
+                       </details>
+                     )}
+
+                     {/* Prompt Display Section */}
+                     {(result.details.positivePrompt || result.details.negativePrompt) && (
+                       <div className="text-sm border rounded p-2 bg-green-50">
+                         <span className="font-medium text-green-700">Generated Prompts Used:</span>
+                         
+                         {result.details.positivePrompt && (
+                           <details className="mt-2">
+                             <summary className="cursor-pointer text-xs font-medium text-green-600">
+                               Positive Prompt ({result.details.positivePrompt.length} chars)
+                             </summary>
+                             <div className="mt-1 text-xs bg-white p-2 rounded border max-h-32 overflow-y-auto">
+                               {result.details.positivePrompt}
+                             </div>
+                           </details>
+                         )}
+                         
+                         {result.details.negativePrompt && (
+                           <details className="mt-2">
+                             <summary className="cursor-pointer text-xs font-medium text-red-600">
+                               Negative Prompt ({result.details.negativePrompt.length} chars)
+                             </summary>
+                             <div className="mt-1 text-xs bg-white p-2 rounded border max-h-32 overflow-y-auto">
+                               {result.details.negativePrompt}
+                             </div>
+                           </details>
+                         )}
+                         
+                         {result.details.styleFramework && (
+                           <div className="mt-2 text-xs">
+                             <strong>Style Framework:</strong> {result.details.styleFramework}
+                           </div>
+                         )}
+                       </div>
+                     )}
                     
                     {/* Enhanced Routing Analysis */}
                     {result.details.realRoutingFlow && (
