@@ -2,7 +2,7 @@
 
 This directory contains all Edge Functions for the project. GitHub is the source of truth - any functions not listed below should be removed from the Supabase dashboard.
 
-## Canonical Function List (41 Functions)
+## Canonical Function List (40 Functions)
 
 ### Authentication & Subscription Functions
 - `activate-discount-code` - JWT: true
@@ -55,7 +55,6 @@ This directory contains all Edge Functions for the project. GitHub is the source
 - `get-monitoring-data` - JWT: false
 - `model-performance-monitor` - JWT: false
 - `system-diagnostics` - JWT: false
-- `unified-debug-service` - JWT: false
 
 ## Entry File Requirements
 
@@ -102,12 +101,12 @@ All functions use `index.ts` as their entry point. JavaScript-only functions hav
 
 ## Sync Status
 
-- **GitHub Functions**: 41 (canonical)
+- **GitHub Functions**: 40 (canonical)
 - **Supabase Dashboard**: Should match GitHub after cleanup
 - **Last Sync**: Manual cleanup required for 23 extra functions
 
 ## Next Steps
 
 1. Remove extra functions from Supabase dashboard
-2. Verify all 41 functions deploy correctly
+2. Verify all 40 functions deploy correctly
 3. Monitor logs for any deployment issues

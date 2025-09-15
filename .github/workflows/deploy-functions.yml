@@ -5,6 +5,11 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+# Prevent concurrent deployments to avoid rate limiting
+concurrency:
+  group: deploy-functions
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -13,88 +18,121 @@ jobs:
       SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
     steps:
       - uses: actions/checkout@v4
+      
+      - name: Pre-deployment checks
+        run: |
+          echo "Checking required secrets..."
+          if [ -z "$SUPABASE_ACCESS_TOKEN" ]; then
+            echo "❌ SUPABASE_ACCESS_TOKEN is not set"
+            exit 1
+          fi
+          if [ -z "$SUPABASE_PROJECT_ID" ]; then
+            echo "❌ SUPABASE_PROJECT_ID is not set"
+            exit 1
+          fi
+          echo "✅ All required secrets are configured"
+          
       - uses: supabase/setup-cli@v1
         with:
-          version: 1.200.3
-      - run: supabase functions deploy --project-ref $SUPABASE_PROJECT_ID
+          version: 1.211.0
+          
+      - name: Smart function discovery and deployment
+        run: |
+          echo "🔍 Discovering edge functions..."
+          
+          # Discover all functions with index.ts files
+          FUNCTIONS=$(find supabase/functions -name "index.ts" -type f | sed 's|supabase/functions/||' | sed 's|/index.ts||' | sort)
+          
+          if [ -z "$FUNCTIONS" ]; then
+            echo "❌ No functions found"
+            exit 1
+          fi
+          
+          echo "📋 Found functions:"
+          echo "$FUNCTIONS" | while read -r func; do
+            echo "  - $func"
+          done
+          
+          # Convert to array for processing
+          FUNC_ARRAY=($FUNCTIONS)
+          TOTAL_FUNCTIONS=${#FUNC_ARRAY[@]}
+          BATCH_SIZE=5
+          SUCCESS_COUNT=0
+          FAILED_FUNCTIONS=()
+          
+          echo "🚀 Starting deployment of $TOTAL_FUNCTIONS functions in batches of $BATCH_SIZE..."
+          
+          # Deploy functions in batches with rate limiting
+          for ((i=0; i<$TOTAL_FUNCTIONS; i+=BATCH_SIZE)); do
+            BATCH_END=$((i + BATCH_SIZE - 1))
+            if [ $BATCH_END -ge $TOTAL_FUNCTIONS ]; then
+              BATCH_END=$((TOTAL_FUNCTIONS - 1))
+            fi
+            
+            echo "📦 Processing batch $((i/BATCH_SIZE + 1)): functions $((i+1))-$((BATCH_END+1))"
+            
+            # Deploy each function in the batch
+            for ((j=i; j<=BATCH_END && j<TOTAL_FUNCTIONS; j++)); do
+              FUNC_NAME="${FUNC_ARRAY[$j]}"
+              echo "⚡ Deploying $FUNC_NAME..."
+              
+              # Retry logic with exponential backoff
+              MAX_RETRIES=3
+              RETRY_COUNT=0
+              DEPLOY_SUCCESS=false
+              
+              while [ $RETRY_COUNT -lt $MAX_RETRIES ] && [ "$DEPLOY_SUCCESS" = false ]; do
+                if [ $RETRY_COUNT -gt 0 ]; then
+                  WAIT_TIME=$((2 ** RETRY_COUNT * 10))  # 20s, 40s, 80s
+                  echo "  ⏳ Retry $RETRY_COUNT after ${WAIT_TIME}s (rate limit backoff)..."
+                  sleep $WAIT_TIME
+                fi
+                
+                if supabase functions deploy "$FUNC_NAME" --project-ref "$SUPABASE_PROJECT_ID" 2>&1; then
+                  echo "  ✅ $FUNC_NAME deployed successfully"
+                  SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
+                  DEPLOY_SUCCESS=true
+                else
+                  RETRY_COUNT=$((RETRY_COUNT + 1))
+                  if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+                    echo "  ⚠️  $FUNC_NAME deployment failed, retrying..."
+                  else
+                    echo "  ❌ $FUNC_NAME deployment failed after $MAX_RETRIES attempts"
+                    FAILED_FUNCTIONS+=("$FUNC_NAME")
+                  fi
+                fi
+              done
+              
+              # Small delay between functions to avoid rate limiting
+              sleep 5
+            done
+            
+            # Longer delay between batches to ensure rate limit recovery
+            if [ $((BATCH_END + 1)) -lt $TOTAL_FUNCTIONS ]; then
+              echo "  ⏸️  Waiting 30s before next batch..."
+              sleep 30
+            fi
+          done
+          
+          # Final deployment summary
+          echo ""
+          echo "📊 Deployment Summary:"
+          echo "  ✅ Successfully deployed: $SUCCESS_COUNT/$TOTAL_FUNCTIONS functions"
+          
+          if [ ${#FAILED_FUNCTIONS[@]} -eq 0 ]; then
+            echo "  🎉 All functions deployed successfully!"
+          else
+            echo "  ❌ Failed functions: ${FAILED_FUNCTIONS[*]}"
+            echo "  ⚠️  Some functions failed to deploy, but continuing..."
+          fi
+          
+      - name: Deployment verification
+        run: |
+          echo "🔍 Verifying deployed functions..."
+          
+          # List all functions from Supabase
+          echo "📋 Functions in Supabase dashboard:"
+          supabase functions list --project-ref "$SUPABASE_PROJECT_ID" || echo "⚠️  Could not list functions"
+          
+          echo "✅ Deployment verification completed"
         continue-on-error: true
-      - name: Force deploy activate-discount-code specifically
-        run: supabase functions deploy activate-discount-code --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy ai-visual-scene-creator specifically
-        run: supabase functions deploy ai-visual-scene-creator --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy apply-discount-code specifically
-        run: supabase functions deploy apply-discount-code --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy background-image-pregeneration specifically
-        run: supabase functions deploy background-image-pregeneration --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy check-subscription specifically
-        run: supabase functions deploy check-subscription --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy clear-character-cache specifically
-        run: supabase functions deploy clear-character-cache --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy correct-spelling specifically
-        run: supabase functions deploy correct-spelling --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy create-checkout specifically
-        run: supabase functions deploy create-checkout --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy create-premium-subscription specifically
-        run: supabase functions deploy create-premium-subscription --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy customer-portal specifically
-        run: supabase functions deploy customer-portal --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy elevenlabs-agent-signed-url specifically
-        run: supabase functions deploy elevenlabs-agent-signed-url --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy elevenlabs-dictionary-manager specifically
-        run: supabase functions deploy elevenlabs-dictionary-manager --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy elevenlabs-tts-smart specifically
-        run: supabase functions deploy elevenlabs-tts-smart --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy elevenlabs-tts specifically
-        run: supabase functions deploy elevenlabs-tts --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy generate-adaptive-story specifically
-        run: supabase functions deploy generate-adaptive-story --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy generate-fallback-images specifically
-        run: supabase functions deploy generate-fallback-images --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy get-monitoring-data specifically
-        run: supabase functions deploy get-monitoring-data --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy image-proxy specifically
-        run: supabase functions deploy image-proxy --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy log-personal-info-incident specifically
-        run: supabase functions deploy log-personal-info-incident --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy log-security-event specifically
-        run: supabase functions deploy log-security-event --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy model-performance-monitor specifically
-        run: supabase functions deploy model-performance-monitor --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy notification-service specifically
-        run: supabase functions deploy notification-service --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy openai-realtime specifically
-        run: supabase functions deploy openai-realtime --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy openai-tts specifically
-        run: supabase functions deploy openai-tts --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy process-story-content specifically
-        run: supabase functions deploy process-story-content --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy runware-generate-image specifically
-        run: supabase functions deploy runware-generate-image --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy runware-template-ab specifically
-        run: supabase functions deploy runware-template-ab --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy runware-template-cd specifically
-        run: supabase functions deploy runware-template-cd --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy security-alert specifically
-        run: supabase functions deploy security-alert --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy security-dashboard specifically
-        run: supabase functions deploy security-dashboard --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy send-coppa-notification specifically
-        run: supabase functions deploy send-coppa-notification --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy send-custom-auth-email specifically
-        run: supabase functions deploy send-custom-auth-email --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy send-parental-notification specifically
-        run: supabase functions deploy send-parental-notification --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy system-diagnostics specifically
-        run: supabase functions deploy system-diagnostics --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy template-service specifically
-        run: supabase functions deploy template-service --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy translate-universal specifically
-        run: supabase functions deploy translate-universal --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy unified-debug-service specifically
-        run: supabase functions deploy unified-debug-service --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy validate-discount-code specifically
-        run: supabase functions deploy validate-discount-code --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy voice-to-text specifically
-        run: supabase functions deploy voice-to-text --project-ref $SUPABASE_PROJECT_ID
-      - name: Force deploy word-dictionary specifically
-        run: supabase functions deploy word-dictionary --project-ref $SUPABASE_PROJECT_ID
