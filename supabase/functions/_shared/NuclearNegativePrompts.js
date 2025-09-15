@@ -5,50 +5,13 @@
 // NUCLEAR UNIFIED NEGATIVE PROMPT BASE (Word-for-Word as Specified)
 export const NUCLEAR_BASE_NEGATIVE_PROMPT = "NO TEXT, no words, no letters, no writing, no captions, no watermarks, no signatures, no logos, bad anatomy, deformed, blurry, low quality, distorted face, extra limbs, malformed hands, poorly drawn, artifacts, noise, oversaturated, underexposed, overexposed, duplicate, cropped, watermark, signature, text, logo, bad lighting, flat lighting, plastic skin, waxy skin, artificial look, uncanny valley";
 
-// NUCLEAR OPPOSITE GENDER NEGATIVE PROMPT 
-export const NUCLEAR_OPPOSITE_GENDER_NEGATIVES = {
-  boy: [
-    // Exclude feminine characteristics for boys
-    'makeup', 'lipstick', 'mascara', 'nail polish', 'jewelry', 'earrings', 'necklace', 
-    'bracelet', 'rings', 'feminine hairstyles', 'long flowing hair', 'curled hair', 
-    'braided hair', 'ponytails', 'pigtails', 'hair bows', 'hair ribbons', 'feminine clothing',
-    'dress', 'skirt', 'blouse', 'feminine tops', 'high heels', 'ballet shoes', 
-    'feminine accessories', 'purse', 'handbag', 'feminine colors', 'pink clothing',
-    'feminine poses', 'feminine gestures', 'feminine expressions', 'delicate features',
-    'soft feminine features', 'feminine body language'
-  ],
-  girl: [
-    // Exclude masculine characteristics for girls  
-    'facial hair', 'beard', 'mustache', 'masculine haircut', 'buzz cut', 'crew cut',
-    'masculine clothing', 'suit', 'tie', 'masculine shirt', 'baggy clothing', 
-    'masculine shoes', 'work boots', 'masculine accessories', 'masculine colors',
-    'masculine poses', 'masculine gestures', 'masculine expressions', 'rugged features',
-    'angular features', 'masculine body language', 'broad shoulders', 'masculine build',
-    'deep voice indicators', 'masculine stance'
-  ]
-};
+// NUCLEAR GENDER-SPECIFIC NEGATIVE PROMPTS (Word-for-Word as Specified)
+export const NUCLEAR_GIRLS_NEGATIVE_PROMPT = "NO masculine features, facial hair, male anatomy, boy clothing, short masculine haircuts, broad shoulders, angular jaw, masculine body structure, male proportions, masculine expressions, boy toys, male-coded activities exclusively";
 
+export const NUCLEAR_BOYS_NEGATIVE_PROMPT = "NO feminine features, makeup, female anatomy, girl clothing, long feminine hairstyles, feminine accessories, narrow shoulders, feminine body structure, female proportions, feminine expressions, girl toys, female-coded activities exclusively";
 
-// NUCLEAR GENDER NEUTRAL NEGATIVE PROMPT (Excludes ALL gendered characteristics)
-export const NUCLEAR_GENDER_NEUTRAL_NEGATIVES = [
-  // Exclude ALL masculine characteristics
-  'facial hair', 'beard', 'mustache', 'masculine haircut', 'buzz cut', 'crew cut',
-  'masculine clothing', 'suit', 'tie', 'masculine shirt', 'masculine shoes', 
-  'work boots', 'masculine accessories', 'masculine poses', 'masculine gestures', 
-  'rugged features', 'angular features', 'masculine body language', 'broad shoulders',
-  
-  // Exclude ALL feminine characteristics  
-  'makeup', 'lipstick', 'mascara', 'nail polish', 'jewelry', 'earrings', 'necklace',
-  'bracelet', 'rings', 'feminine hairstyles', 'long flowing hair', 'curled hair',
-  'braided hair', 'ponytails', 'pigtails', 'hair bows', 'hair ribbons', 'feminine clothing',
-  'dress', 'skirt', 'blouse', 'high heels', 'ballet shoes', 'feminine accessories',
-  'purse', 'handbag', 'feminine poses', 'feminine gestures', 'delicate features',
-  'soft feminine features', 'feminine body language',
-  
-  // Gender-neutral enhancement
-  'gendered clothing', 'gendered accessories', 'gendered hairstyles', 'gendered poses',
-  'gendered expressions', 'gendered colors', 'gendered toys', 'gendered activities'
-];
+export const NUCLEAR_GENDER_NEUTRAL_NEGATIVE_PROMPT = "NO overly gendered features, extreme masculine traits, extreme feminine traits, gender-specific clothing, highly gendered toys, overly masculine expressions, overly feminine expressions, binary gender stereotypes, gendered color schemes exclusively";
+
 
 // NUCLEAR AFRICAN AMERICAN NEGATIVE PROMPT (Protection against whitewashing/lightening)
 export const NUCLEAR_AFRICAN_AMERICAN_NEGATIVES = [
@@ -95,17 +58,17 @@ export function generateNuclearNegativePrompt(culturalProfile, avatarType, diffi
   // Start with nuclear base negative prompt (now a string, not array)
   let negativeComponents = [NUCLEAR_BASE_NEGATIVE_PROMPT];
   
-  // ============= PHASE 5 ENHANCEMENT: MULTI-CHARACTER GENDER CONSISTENCY =============
-  // Primary character gender filtering
+  // ============= UPDATED: GENDER-BASED NEGATIVE PROMPTS (Word-for-Word) =============
+  // Primary character gender filtering using exact user-specified negative prompts
   if (avatarType === 'boy') {
-    negativeComponents.push(...NUCLEAR_OPPOSITE_GENDER_NEGATIVES.boy);
-    console.log('🛡️ Nuclear Negative: Added opposite gender negatives for primary boy character');
+    negativeComponents.push(NUCLEAR_BOYS_NEGATIVE_PROMPT);
+    console.log('🛡️ Nuclear Negative: Added boys negative prompt for primary boy character');
   } else if (avatarType === 'girl') {
-    negativeComponents.push(...NUCLEAR_OPPOSITE_GENDER_NEGATIVES.girl);
-    console.log('🛡️ Nuclear Negative: Added opposite gender negatives for primary girl character');
+    negativeComponents.push(NUCLEAR_GIRLS_NEGATIVE_PROMPT);
+    console.log('🛡️ Nuclear Negative: Added girls negative prompt for primary girl character');
   } else if (avatarType === 'prefer-not-to-answer' || avatarType === 'neutral' || avatarType === 'child') {
-    negativeComponents.push(...NUCLEAR_GENDER_NEUTRAL_NEGATIVES);
-    console.log('🛡️ Nuclear Negative: Added gender-neutral negatives for primary character');
+    negativeComponents.push(NUCLEAR_GENDER_NEUTRAL_NEGATIVE_PROMPT);
+    console.log('🛡️ Nuclear Negative: Added gender-neutral negative prompt for primary character');
   }
   
   // ============= NEW: SECONDARY CHARACTER GENDER CONSISTENCY =============
@@ -144,12 +107,6 @@ export function generateNuclearNegativePrompt(culturalProfile, avatarType, diffi
   
   // Always add cultural sensitivity negatives
   negativeComponents.push(...NUCLEAR_CULTURAL_SENSITIVITY_NEGATIVES);
-  
-  // Emma-Specific Appendage for Girl Characters
-  if (avatarType === 'girl') {
-    negativeComponents.push(', (especially for Emma)');
-    console.log('🛡️ Nuclear Negative: Added Emma appendage for girl character');
-  }
   
   // Framework-Specific Negative Prompts (hardcoded by difficulty)
   if (difficulty === 'beginner' || difficulty === 'easy') {
