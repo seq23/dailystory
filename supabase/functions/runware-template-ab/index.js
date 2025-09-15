@@ -223,6 +223,13 @@ async function resolvePlaceholders(template, data, hasCulturalIntelligence) {
     frameworkPrompt 
   } = data;
 
+  
+  // Safety: Clamp storyText length to prevent oversized inputs
+  if (storyText && storyText.length > 2000) {
+    console.log(`📏 Clamping storyText from ${storyText.length} to 2000 characters for safety`);
+    storyText = storyText.substring(0, 2000);
+  }
+
   console.log('🎯 Phase 3: Using Universal Placeholder Resolver with cultural intelligence');
   
   try {
@@ -238,7 +245,7 @@ async function resolvePlaceholders(template, data, hasCulturalIntelligence) {
       characterSeed: characterData?.seed // Include character seed for consistency
     };
     
-    const resolution = resolver.resolveAllPlaceholders(template, {
+    const resolution = await resolver.resolveAllPlaceholders(template, {
       userInfo,
       seed: additionalData,
       sessionId: data.sessionId,
@@ -249,6 +256,12 @@ async function resolvePlaceholders(template, data, hasCulturalIntelligence) {
     console.log('✅ Phase 3: Template resolved with Universal Placeholder Resolver');
     console.log('🌍 Cultural Enhancement Level:', resolver.getCulturalEnhancementLevel());
     console.log('🎨 Cultural Features Applied:', resolver.shouldApplyCulturalFeatures());
+    
+    // Safety: Ensure we always have a valid positive prompt 
+    if (!resolvedTemplate || typeof resolvedTemplate !== 'string' || resolvedTemplate.trim().length === 0) {
+      console.warn('⚠️ Universal Resolver returned empty/invalid result, applying emergency fallback');
+      resolvedTemplate = `A young child named ${userInfo?.name || 'child'} age ${userInfo?.age || 8}, ${frameworkPrompt}`;
+    }
     
     return resolvedTemplate;
     
@@ -335,6 +348,12 @@ async function resolvePlaceholdersFallback(template, data) {
     .replace(/\s+/g, ' ')
     .replace(/,\s*$/g, '')
     .trim();
+
+  // Safety: Ensure we always return a valid string with 1:1 parity to BASIC template
+  if (!resolvedTemplate || resolvedTemplate.length === 0) {
+    console.warn('⚠️ Fallback resolver failed, applying emergency BASIC template fallback');
+    resolvedTemplate = `A young child named ${childName} age ${userInfo?.age || 8}, ${framework}`;
+  }
 
   return resolvedTemplate;
 }
@@ -875,10 +894,17 @@ serve(async (req) => {
     // Generate template with character consistency and enhanced data
     const template = await generateSimpleTemplate(complexity, storyText, userInfo, avatarIdentity, sessionId, pageNumber, enhancedStoryData);
     
+    // Safety: Ensure template has valid positivePrompt before logging/using
+    if (!template.positivePrompt || typeof template.positivePrompt !== 'string' || template.positivePrompt.trim().length === 0) {
+      console.error('❌ Template AB: Generated template has invalid positivePrompt, applying emergency fallback');
+      template.positivePrompt = `A young child named ${userInfo?.name || 'child'} age ${userInfo?.age || 8}, children's book illustration style`;
+    }
+    
     console.log('🎨 Template AB: Generated template', {
       complexity,
       templateType: template.templateType,
-      promptLength: template.positivePrompt.length
+      promptLength: template.positivePrompt?.length || 0,
+      hasPrompt: !!template.positivePrompt
     });
     
     // Call Runware API with retry logic
