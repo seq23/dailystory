@@ -884,6 +884,14 @@ serve(async (req) => {
         }
       }
       
+      // Collect failed Tier 1 data
+      let failedTierData = {
+        characterConsistency: enhancedStoryData?.characterConsistency || '',
+        visualConsistency: enhancedStoryData?.visualConsistency || '', 
+        culturalEnhancements: enhancedStoryData ? (phaseIntegrationOrchestrator ? phaseIntegrationOrchestrator.getCulturalEnhancements(userInfo) : '') : '',
+        enhancedSceneData: enhancedStoryData?.enhancedPrompt || ''
+      };
+      
       // Get Supabase client for tier functions
       const supabase = CrashProofBootSystem.getService('supabase')?.client;
       
@@ -902,7 +910,8 @@ serve(async (req) => {
                 templateComplexity,
                 sessionId,
                 pageNumber,
-                enhancedStoryData // PHASE 4: Pass enhanced data to tier functions
+                enhancedStoryData, // PHASE 4: Pass enhanced data to tier functions
+                failedTierData // NEW: Pass failed tier data to 2.5B
               }
             }),
             20000,
@@ -915,6 +924,12 @@ serve(async (req) => {
           }
         } catch (error) {
           console.warn(`⚠️ [${requestId}] Tier 2.5A-B failed:`, error.message);
+          
+          // Update failedTierData with 2.5A-B information
+          if (enhancedStoryData) {
+            failedTierData.tier25ABAttempted = true;
+            failedTierData.tier25ABComplexity = templateComplexity;
+          }
         }
       }
 
@@ -932,7 +947,8 @@ serve(async (req) => {
                 templateComplexity: 'C',
                 sessionId,
                 pageNumber,
-                enhancedStoryData // PHASE 4: Pass enhanced data to tier functions
+                enhancedStoryData, // PHASE 4: Pass enhanced data to tier functions
+                failedTierData // NEW: Pass failed tier data to 2.5C
               }
             }),
             15000,

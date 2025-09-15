@@ -744,7 +744,8 @@ serve(async (req) => {
       templateComplexity,
       sessionId,
       pageNumber,
-      enhancedStoryData // PHASE 4: Enhanced story data from orchestrator
+      enhancedStoryData, // PHASE 4: Enhanced story data from orchestrator
+      failedTierData = {}
     } = await req.json();
     
     console.log('📝 Template AB: Processing request', {
@@ -754,6 +755,12 @@ serve(async (req) => {
       hasStoryText: !!storyText,
       hasUserInfo: !!userInfo,
       hasEnhancedStoryData: !!enhancedStoryData
+    });
+    
+    console.log('📊 Template AB: Received failed tier data', {
+      hasCharacterConsistency: !!failedTierData.characterConsistency,
+      hasVisualConsistency: !!failedTierData.visualConsistency,
+      hasCulturalEnhancements: !!failedTierData.culturalEnhancements
     });
     
     // PHASE 4: Session management centralized in orchestrator

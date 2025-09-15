@@ -42,46 +42,37 @@ function generateInlineNuclearNegative(culturalProfile, avatarType, difficulty) 
   return negativeComponents.join(', ');
 }
 
-// ============= INLINED STYLE FRAMEWORKS =============
-// Inlined to make edge function self-contained
-const COMPREHENSIVE_STYLE_FRAMEWORKS = {
+// ============= NUCLEAR HARDCODED STYLE FRAMEWORKS =============
+// Nuclear independence - hardcoded with exact user specifications
+const NUCLEAR_HARDCODED_STYLE_FRAMEWORKS = {
   'beginner': {
     name: 'Contemporary Children\'s Book Illustration',
-    frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality, warm natural lighting',
-    negativePrompt: 'NO TEXT, NO CHARACTER NAMES, bad anatomy, head only, missing body, deformed limbs, extra fingers, missing fingers, blurry, low quality, distorted face, asymmetrical eyes, bad proportions, extra limbs, malformed hands, poorly drawn, artifacts, noise, oversaturated, underexposed, overexposed, duplicate, cropped, watermark, signature, text, logo, bad lighting, flat lighting, plastic skin, waxy skin, artificial look, uncanny valley'
+    frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality'
   },
-  
   'easy': {
-    name: 'Contemporary Children\'s Book Illustration',
-    frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality, warm natural lighting',
-    negativePrompt: 'NO TEXT, NO CHARACTER NAMES, bad anatomy, head only, missing body, deformed limbs, extra fingers, missing fingers, blurry, low quality, distorted face, asymmetrical eyes, bad proportions, extra limbs, malformed hands, poorly drawn, artifacts, noise, oversaturated, underexposed, overexposed, duplicate, cropped, watermark, signature, text, logo, bad lighting, flat lighting, plastic skin, waxy skin, artificial look, uncanny valley'
+    name: 'Contemporary Children\'s Book Illustration', 
+    frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality'
   },
-  
   'medium': {
     name: 'Contemporary Children\'s Book Illustration',
-    frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality, warm natural lighting',
-    negativePrompt: 'NO TEXT, NO CHARACTER NAMES, bad anatomy, head only, missing body, deformed limbs, extra fingers, missing fingers, blurry, low quality, distorted face, asymmetrical eyes, bad proportions, extra limbs, malformed hands, poorly drawn, artifacts, noise, oversaturated, underexposed, overexposed, duplicate, cropped, watermark, signature, text, logo, bad lighting, flat lighting, plastic skin, waxy skin, artificial look, uncanny valley'
+    frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality'
   },
-  
   'hard': {
     name: '2.9D Rendered Illustration',
-    frameworkPrompt: '2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation, warm natural lighting',
-    negativePrompt: 'NO TEXT, NO CHARACTER NAMES, bad anatomy, head only, missing body, deformed limbs, extra fingers, missing fingers, blurry, low quality, distorted face, asymmetrical eyes, bad proportions, extra limbs, malformed hands, poorly drawn, artifacts, noise, oversaturated, underexposed, overexposed, duplicate, cropped, watermark, signature, text, logo, bad lighting, flat lighting, plastic skin, waxy skin, artificial look, uncanny valley'
+    frameworkPrompt: '2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation'
   },
-  
   'expert': {
     name: '2.9D Rendered Illustration',
-    frameworkPrompt: '2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation, warm natural lighting',
-    negativePrompt: 'NO TEXT, NO CHARACTER NAMES, bad anatomy, head only, missing body, deformed limbs, extra fingers, missing fingers, blurry, low quality, distorted face, asymmetrical eyes, bad proportions, extra limbs, malformed hands, poorly drawn, artifacts, noise, oversaturated, underexposed, overexposed, duplicate, cropped, watermark, signature, text, logo, bad lighting, flat lighting, plastic skin, waxy skin, artificial look, uncanny valley'
+    frameworkPrompt: '2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation'
   }
 };
 
-// Helper function to get style framework by difficulty
-function getStyleFramework(difficulty) {
+// Nuclear helper function to get style framework by difficulty
+function getNuclearStyleFramework(difficulty) {
   const normalizedDifficulty = difficulty?.toLowerCase() || 'medium';
-  const framework = COMPREHENSIVE_STYLE_FRAMEWORKS[normalizedDifficulty] || COMPREHENSIVE_STYLE_FRAMEWORKS['medium'];
+  const framework = NUCLEAR_HARDCODED_STYLE_FRAMEWORKS[normalizedDifficulty] || NUCLEAR_HARDCODED_STYLE_FRAMEWORKS['medium'];
   
-  console.log(`🎨 Retrieved ${framework.name} style framework for difficulty: ${normalizedDifficulty}`);
+  console.log(`🎨 Nuclear Retrieved ${framework.name} style framework for difficulty: ${normalizedDifficulty}`);
   return framework;
 }
 
@@ -126,123 +117,54 @@ function getComplexityLevel(userInfo, templateComplexity) {
   return 'C';
 }
 
-// Generate Tier 2.5C template (Emergency templates + Light cultural intelligence + NEW ARCHITECTURE)
-async function generateTier25C(storyText, userInfo, avatarIdentity) {
-  console.log('🎯 Tier 2.5C: Generating Emergency Framework Template with UNIFIED Style Framework');
+// Generate Tier 2.5C template - NUCLEAR HARDCODED VERSION
+function generateTier25C(storyText, userInfo, avatarIdentity, failedTierData = {}) {
+  console.log('🚀 Nuclear Tier 2.5C: Pure hardcoded template - NO imports, NO dependencies');
+  console.log('📊 Nuclear 2.5C: Received failed tier data', {
+    hasCharacterConsistency: !!failedTierData.characterConsistency,
+    hasVisualConsistency: !!failedTierData.visualConsistency,
+    hasCulturalEnhancements: !!failedTierData.culturalEnhancements,
+    hasEnhancedSceneData: !!failedTierData.enhancedSceneData
+  });
   
-  // PHASE 5: Enhanced pageText validation and fallback logic
-  const pageTextLength = (storyText || '').trim().length;
-  const hasValidPageText = pageTextLength >= 50;
+  // Component 1: Scene (1500 character limit)
+  const sceneText = storyText ? storyText.substring(0, 1500) : 'child exploring magical world';
   
-  if (!hasValidPageText) {
-    console.log('⚠️ Tier 2.5C: Insufficient pageText, falling back to Tier 2.5D');
-    return {
-      ...generateTier25D(),
-      fallbackReason: `pageText too short (${pageTextLength} chars, minimum 50)`,
-      autoFallback: true
-    };
-  }
-  
-  const difficulty = userInfo?.difficulty || 'medium';
-  const styleFramework = getStyleFramework(difficulty);
-  
-  console.log('🎨 Retrieved', styleFramework.name, 'style framework for difficulty:', difficulty);
-  
-  // PHASE 5: Enhanced user info processing with cultural context
-  const childName = userInfo?.name || userInfo?.childName || 'child';
+  // Component 2: Character Description (name/age/skin tone + 'complexion')
+  const characterName = userInfo?.name || userInfo?.childName || 'child';
   const age = userInfo?.age || 8;
   const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'diverse';
-  const culturalContext = userInfo?.nativeLanguage !== 'en' ? 'culturally appropriate' : 'diverse and inclusive';
+  const characterDesc = `${characterName} ${age}, ${skinTone} complexion`;
   
-  // NEW ARCHITECTURE: Use improved template structure with semantic_scene
-  const gradeLevel = userInfo?.difficulty || 'medium';
-  const difficultyLevel = ['beginner', 'easy'].includes(gradeLevel) ? 'level_0-1' : 'level_2-4';
+  // Component 3: Catch-All Failed Tier Information
+  const catchAllElements = [
+    failedTierData.characterConsistency || '',
+    failedTierData.visualConsistency || '',
+    failedTierData.culturalEnhancements || '',
+    failedTierData.enhancedSceneData || ''
+  ].filter(Boolean);
+  const catchAllInfo = catchAllElements.length > 0 ? catchAllElements.join(', ') : 'enhanced story details';
   
-  // NEW: Enhanced template with semantic_scene placeholder
-  const template = difficultyLevel === 'level_0-1' 
-    ? 'Subject: {character} {age}, {ethnicity} {bundle.culturalEnhancements}. Action: {semantic_scene}. Environment: {setting}, {atmosphere}. Context: {cultural_context}. Technical: {frameworkPrompt}'
-    : 'Technical: {frameworkPrompt}. Subject: {character} {age}, {ethnicity} {bundle.culturalEnhancements}. Action: {semantic_scene}. Environment: {setting}, {atmosphere}. Context: {cultural_context}';
+  // Component 4: Brand Suffix (hardcoded framework - ALWAYS LAST)
+  const difficulty = userInfo?.difficulty || 'medium';
+  const hardcodedFramework = getNuclearStyleFramework(difficulty);
   
-  // NEW ARCHITECTURE: Create template data with semantic processing
-  const templateData = {
-    pageText: storyText,
-    character: childName,
-    age: age.toString(),
-    ethnicity: '', // Let cultural system handle this
-    setting: '', // Let semantic system handle this
-    atmosphere: '', // Will be detected from pageText
-    cultural_context: culturalContext,
-    frameworkPrompt: styleFramework.frameworkPrompt,
-    // NEW: Add bundle.culturalEnhancements placeholder
-    'bundle.culturalEnhancements': '', // Will be resolved by UnifiedPlaceholderResolver
-    // NEW: Add semantic_scene placeholder
-    semantic_scene: '' // Will be generated from pageText
-  };
+  // NUCLEAR CONCATENATION - NO placeholders, NO resolution, NO fallback
+  const positivePrompt = `scene: ${sceneText}. character description: ${characterDesc}. ${catchAllInfo}. brand suffix: ${hardcodedFramework.frameworkPrompt}`;
   
-  // NEW ARCHITECTURE: Use UnifiedPlaceholderResolver for intelligent processing
-  let positivePrompt;
-  try {
-    // Import UnifiedPlaceholderResolver for intelligent placeholder resolution
-    const { unifiedPlaceholderResolver } = await import("../_shared/UnifiedPlaceholderResolver.js");
-    
-    const context = {
-      userInfo,
-      avatarIdentity,
-      pageText: storyText,
-      sessionId: userInfo?.sessionId || 'temp_session',
-      pageNumber: 1
-    };
-    
-    const result = await unifiedPlaceholderResolver.resolveAllPlaceholders(template, context);
-    positivePrompt = result.resolvedText || result.text || template;
-    
-    console.log('✅ Tier 2.5C: Used UnifiedPlaceholderResolver for intelligent processing');
-  } catch (error) {
-    console.warn('⚠️ Tier 2.5C: UnifiedPlaceholderResolver failed, using basic substitution:', error.message);
-    
-    // Fallback to basic substitution
-    positivePrompt = template
-      .replace(/\{character\}/g, childName)
-      .replace(/\{age\}/g, age.toString())
-      .replace(/\{ethnicity\}/g, '')
-      .replace(/\{semantic_scene\}/g, `engaging in ${storyText.substring(0, 100)}`)
-      .replace(/\{setting\}/g, '')
-      .replace(/\{atmosphere\}/g, '')
-      .replace(/\{cultural_context\}/g, culturalContext)
-      .replace(/\{frameworkPrompt\}/g, styleFramework.frameworkPrompt)
-      .replace(/\{bundle\.culturalEnhancements\}/g, '');
-  }
+  // Generate nuclear negative prompt
+  const culturalProfileType = inlineDetectCultural(userInfo, avatarIdentity);
+  const negativePrompt = generateInlineNuclearNegative(culturalProfileType, 'child', difficulty);
   
-  // PHASE 5: Generate comprehensive negative prompt
-  let negativePrompt;
-  try {
-    const culturalProfile = {
-      nativeLanguage: userInfo?.nativeLanguage || 'en',
-      skinTone: skinTone
-    };
-    const avatarType = userInfo?.avatar?.type || 'child';
-    
-    const culturalProfileType = inlineDetectCultural(userInfo, avatarIdentity);
-    negativePrompt = generateInlineNuclearNegative(culturalProfileType, 'child', difficulty);
-    console.log(`🎨 Tier 2.5C: Generated comprehensive negative prompt: ${negativePrompt.length} chars`);
-  } catch (error) {
-    console.warn('⚠️ Tier 2.5C: Failed to generate nuclear negative prompt, using fallback:', error.message);
-    negativePrompt = styleFramework.negativePrompt + ', photorealistic, adult themes, complex details';
-  }
+  console.log('✅ Nuclear 2.5C: Template generated with zero dependencies');
   
   return {
     positivePrompt,
     negativePrompt,
-    templateType: 'Emergency Framework Template - Enhanced with NEW Architecture + Cultural Intelligence',
-    tier: '2.5C',
-    culturalIntelligence: true,
-    styleFrameworkUsed: styleFramework.name,
-    pageTextLength: pageTextLength,
-    truncationStatus: storyText.length > 2000 ? 'truncated' : 'full',
-    culturalContext: culturalContext,
-    userInfoUsed: true,
-    newArchitecture: true,
-    semanticSceneUsed: true
+    templateType: 'Nuclear Hardcoded Template - Zero Dependencies',
+    tier: 'NUCLEAR_2.5C',
+    styleFrameworkUsed: hardcodedFramework.name,
+    failedTierDataUsed: catchAllElements.length > 0
   };
 }
 
@@ -250,8 +172,8 @@ async function generateTier25C(storyText, userInfo, avatarIdentity) {
 function generateTier25D() {
   console.log('🎯 Tier 2.5D: Generating Ultimate Emergency Fallback with Unified Style Framework');
   
-  // Use the unified style framework even for hardcoded emergency
-  const styleFramework = getStyleFramework('medium');
+  // Use the nuclear style framework even for hardcoded emergency
+  const styleFramework = getNuclearStyleFramework('medium');
   
   const positivePrompt = `${styleFramework.frameworkPrompt}. A diverse group of four beautiful child characters with graceful features and charming expressions, each holding colorful hand-drawn signs that say 'IMAGES ARE DOWN' in playful, child-friendly lettering. The children display resilient smiles despite the technical difficulty, showing positivity and teamwork. Child-friendly aesthetic with diverse representation, warm expressions, and bright vibrant colors optimized for young audiences.`;
   
@@ -410,7 +332,8 @@ serve(async (req) => {
       sessionId,
       pageNumber,
       emergencyMode = false,
-      enhancedStoryData = null // PHASE 4: Enhanced data from orchestrator
+      enhancedStoryData = null, // PHASE 4: Enhanced data from orchestrator
+      failedTierData = {}
     } = body;
 
     console.log('📝 Template CD: Processing with parameter-based session data', {
@@ -419,6 +342,12 @@ serve(async (req) => {
       emergencyMode,
       sessionDataReceived: !!(sessionId && pageNumber),
       hasEnhancedStoryData: !!enhancedStoryData
+    });
+    
+    console.log('📊 Template CD: Received failed tier data', {
+      hasCharacterConsistency: !!failedTierData.characterConsistency,
+      hasVisualConsistency: !!failedTierData.visualConsistency,
+      hasCulturalEnhancements: !!failedTierData.culturalEnhancements
     });
 
     // Determine complexity level
@@ -430,7 +359,7 @@ serve(async (req) => {
     if (complexity === 'D') {
       template = generateTier25D();
     } else {
-      template = await generateTier25C(storyText, userInfo, avatarIdentity);
+      template = generateTier25C(storyText, userInfo, avatarIdentity, failedTierData);
     }
 
     // Call Runware API
