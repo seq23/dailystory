@@ -662,6 +662,7 @@ EXAMPLES:
         // PHASE 1.3: AI Call for Primary Scene with Secondary Characters
         let primaryScene;
         let secondaryCharacters = []; // New structured array
+        let rawAIResponse = null; // Store raw OpenAI response
         try {
           console.log(`AI [${aiRequestId}] PHASE 1.3: Calling OpenAI for primary scene...`);
           const aiResult = await callOpenAIWithFallback(minimalMessages, 6000, aiRequestId, avatarIdentity);
@@ -670,6 +671,14 @@ EXAMPLES:
           if (!content) {
             throw new Error('OpenAI returned no content');
           }
+          
+          // Store raw response for debugging
+          rawAIResponse = {
+            model: aiResult.model,
+            usage: aiResult.usage,
+            rawContent: content,
+            timestamp: new Date().toISOString()
+          };
           
           const parsedResult = parseAIResponse(content.trim(), { requestId: aiRequestId });
           primaryScene = parsedResult.primaryScene;
@@ -807,14 +816,22 @@ EXAMPLES:
         
         debugLog(`SUCCESS ENHANCED TIER 1: Token-optimized system with character consistency complete`);
         
-        // Return enhanced data with assembled prompts for Runware
+        // Return enhanced data with primary scene prominently displayed
         const result = {
           success: true,
+          
+          // ====== PRIMARY SCENE (MAIN OUTPUT) ======
+          primaryScene: primaryScene,
+          primarySceneLength: primaryScene?.length || 0,
+          
+          // ====== COMPLETE AI SCHEMA ======
           aiSchema: processedStoryData,
+          
+          // ====== RAW OPENAI RESPONSE ======
+          rawAIResponse: rawAIResponse,
+          
+          // ====== TEST METADATA ======
           requestId: requestId,
-          positivePrompt: positivePrompt || null,
-          negativePrompt: negativePrompt || null,
-          styleFrameworkUsed: styleFramework?.name || null,
           difficultyLevel: avatarIdentity?.difficultyLevel || 'medium',
           tier: 'ai-visual-scene-creator',
           metadata: {
