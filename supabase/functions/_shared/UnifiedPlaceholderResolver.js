@@ -147,29 +147,37 @@ export class UnifiedPlaceholderResolver {
   resolveVocabularyPlaceholders(text, context) {
     let resolved = text;
 
-    // Replace vocabulary-specific placeholders
-    Object.entries(PLACEHOLDER_POOLS).forEach(([category, pool]) => {
-      const regex = new RegExp(`\\{${category}\\}`, 'g');
-      resolved = resolved.replace(regex, () => {
-        const characterSeed = context.seed?.characterSeed || context.seed?.seed;
-        return pick(pool, characterSeed);
+    // Replace vocabulary-specific placeholders - with safety checks
+    if (PLACEHOLDER_POOLS && typeof PLACEHOLDER_POOLS === 'object') {
+      Object.entries(PLACEHOLDER_POOLS).forEach(([category, pool]) => {
+        if (Array.isArray(pool) && pool.length > 0) {
+          const regex = new RegExp(`\\{${category}\\}`, 'g');
+          resolved = resolved.replace(regex, () => {
+            const characterSeed = context.seed?.characterSeed || context.seed?.seed;
+            return pick(pool, characterSeed);
+          });
+        }
       });
-    });
+    }
 
-    // Special combined placeholders
-    resolved = resolved.replace(/\{colorful\.object\}/g, () => {
-      const characterSeed = context.seed?.characterSeed || context.seed?.seed;
-      const color = pick(PLACEHOLDER_POOLS.colors, characterSeed);
-      const object = pick(PLACEHOLDER_POOLS.activities, characterSeed + 1); // Use activities as objects
-      return `${color} ${object}`;
-    });
+    // Special combined placeholders - with safety checks
+    if (PLACEHOLDER_POOLS?.colors && PLACEHOLDER_POOLS?.activities) {
+      resolved = resolved.replace(/\{colorful\.object\}/g, () => {
+        const characterSeed = context.seed?.characterSeed || context.seed?.seed;
+        const color = pick(PLACEHOLDER_POOLS.colors, characterSeed);
+        const object = pick(PLACEHOLDER_POOLS.activities, characterSeed + 1); // Use activities as objects
+        return `${color} ${object}`;
+      });
+    }
 
-    resolved = resolved.replace(/\{sized\.animal\}/g, () => {
-      const characterSeed = context.seed?.characterSeed || context.seed?.seed;
-      const size = pick(PLACEHOLDER_POOLS.sizes, characterSeed);
-      const animal = pick(PLACEHOLDER_POOLS.animals, characterSeed + 1);
-      return `${size} ${animal}`;
-    });
+    if (PLACEHOLDER_POOLS?.sizes && PLACEHOLDER_POOLS?.animals) {
+      resolved = resolved.replace(/\{sized\.animal\}/g, () => {
+        const characterSeed = context.seed?.characterSeed || context.seed?.seed;
+        const size = pick(PLACEHOLDER_POOLS.sizes, characterSeed);
+        const animal = pick(PLACEHOLDER_POOLS.animals, characterSeed + 1);
+        return `${size} ${animal}`;
+      });
+    }
 
     return resolved;
   }

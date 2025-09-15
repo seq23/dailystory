@@ -2,8 +2,8 @@
 // Shared module for both Tier 1 (Orchestrator) and Tier 2.5 (Nuclear Fallback)
 // Nuclear Independence: 90%+ hardcoded arrays for comprehensive safety filtering
 
-// UNIFIED NEGATIVE PROMPT (Hardcoded Base for All Characters)
-export const NUCLEAR_BASE_NEGATIVE_PROMPT = "NO TEXT, no words, no letters, no writing, no captions, no watermarks, no signatures, no logos, no adult features, no mature faces, no wrinkles, no facial hair, no makeup, no weapons, no scary features, no distorted faces, no asymmetrical features, no blurry faces, no low quality, no pixelated, no grainy, no artifacts, no noise, no overexposed, no underexposed, no harsh shadows, no dramatic lighting, no neon colors, no oversaturated, no desaturated, no black and white, no sepia, no vintage effects, no filters, no borders, no frames, no split screen, no collage, no montage, no duplicate faces, no extra limbs, no missing limbs, no missing body, no deformed hands, no extra fingers, no missing fingers, no anatomical errors, no unrealistic proportions, no cartoon exaggeration, no anime style, no manga style, no abstract art, no surreal elements, no photorealistic adults, no teenagers, no infants, no babies";
+// NUCLEAR UNIFIED NEGATIVE PROMPT BASE (Word-for-Word as Specified)
+export const NUCLEAR_BASE_NEGATIVE_PROMPT = "NO TEXT, no words, no letters, no writing, no captions, no watermarks, no signatures, no logos, bad anatomy, deformed, blurry, low quality, distorted face, extra limbs, malformed hands, poorly drawn, artifacts, noise, oversaturated, underexposed, overexposed, duplicate, cropped, watermark, signature, text, logo, bad lighting, flat lighting, plastic skin, waxy skin, artificial look, uncanny valley";
 
 // NUCLEAR OPPOSITE GENDER NEGATIVE PROMPT 
 export const NUCLEAR_OPPOSITE_GENDER_NEGATIVES = {
@@ -84,7 +84,12 @@ export const NUCLEAR_CULTURAL_SENSITIVITY_NEGATIVES = [
  * Note: Tier 2.5 uses hardcoded arrays directly for nuclear independence
  */
 export function generateNuclearNegativePrompt(culturalProfile, avatarType, difficulty, pageNumber = 1, secondaryCharacters = []) {
-  console.log(`🛡️ Nuclear Negative: Generating for ${avatarType} with cultural profile: ${culturalProfile}`);
+  // Convert cultural profile to string if it's an object
+  const culturalProfileStr = typeof culturalProfile === 'object' ? 
+    (culturalProfile?.nativeLanguage || culturalProfile?.skinTone || 'general') : 
+    (culturalProfile || 'general');
+    
+  console.log(`🛡️ Nuclear Negative: Generating for ${avatarType} with cultural profile: ${culturalProfileStr}`);
   console.log(`🛡️ Nuclear Negative: Secondary characters:`, secondaryCharacters);
   
   // Start with nuclear base negative prompt (now a string, not array)
@@ -128,17 +133,23 @@ export function generateNuclearNegativePrompt(culturalProfile, avatarType, diffi
   }
   
   // Add African American protection for ALL dark-skinned users
-  if (culturalProfile === 'african-american' || 
-      culturalProfile === 'African American' ||
-      (culturalProfile && culturalProfile.includes('dark')) || 
-      (culturalProfile && culturalProfile.includes('african')) ||
-      (culturalProfile && culturalProfile.includes('black'))) {
+  if (culturalProfileStr === 'african-american' || 
+      culturalProfileStr === 'African American' ||
+      (culturalProfileStr && culturalProfileStr.includes && culturalProfileStr.includes('dark')) || 
+      (culturalProfileStr && culturalProfileStr.includes && culturalProfileStr.includes('african')) ||
+      (culturalProfileStr && culturalProfileStr.includes && culturalProfileStr.includes('black'))) {
     negativeComponents.push(...NUCLEAR_AFRICAN_AMERICAN_NEGATIVES);
     console.log('🛡️ Nuclear Negative: Added African American protection negatives (anti-whitewashing)');
   }
   
   // Always add cultural sensitivity negatives
   negativeComponents.push(...NUCLEAR_CULTURAL_SENSITIVITY_NEGATIVES);
+  
+  // Emma-Specific Appendage for Girl Characters
+  if (avatarType === 'girl') {
+    negativeComponents.push(', (especially for Emma)');
+    console.log('🛡️ Nuclear Negative: Added Emma appendage for girl character');
+  }
   
   // Framework-Specific Negative Prompts (hardcoded by difficulty)
   if (difficulty === 'beginner' || difficulty === 'easy') {

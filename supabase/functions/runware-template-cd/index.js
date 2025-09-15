@@ -23,21 +23,23 @@ function inlineDetectCultural(userInfo, avatarIdentity) {
 }
 
 function generateInlineNuclearNegative(culturalProfile, avatarType, difficulty) {
-  const base = 'ugly, deformed, blurry, bad anatomy, wrong proportions, text, watermark, signature';
+  const base = 'NO TEXT, no words, no letters, no writing, no captions, no watermarks, no signatures, no logos, bad anatomy, deformed, blurry, low quality, distorted face, extra limbs, malformed hands, poorly drawn, artifacts, noise, oversaturated, underexposed, overexposed, duplicate, cropped, watermark, signature, text, logo, bad lighting, flat lighting, plastic skin, waxy skin, artificial look, uncanny valley';
+  
+  let negativeComponents = [base];
   
   if (culturalProfile === 'african-american') {
-    return base + ', whitewashing, pale skin, incorrect ethnicity, cultural misrepresentation';
+    negativeComponents.push('skin lightening', 'whitewashing', 'pale skin', 'light skin', 'caucasian features', 'cultural stereotypes');
   }
   
   if (avatarType && avatarType.includes('boy')) {
-    return base + ', feminine features, girl, female clothing, pink, dresses';
+    negativeComponents.push('makeup', 'lipstick', 'feminine hairstyles', 'dress', 'skirt', 'feminine clothing', 'feminine accessories', 'feminine poses');
   }
   
   if (avatarType && avatarType.includes('girl')) {
-    return base + ', masculine features, boy, male clothing, facial hair';
+    negativeComponents.push('facial hair', 'beard', 'mustache', 'masculine clothing', 'suit', 'tie', 'masculine accessories', 'masculine poses', '(especially for Emma)');
   }
   
-  return base + ', inappropriate content, violence, scary elements';
+  return negativeComponents.join(', ');
 }
 
 // ============= INLINED STYLE FRAMEWORKS =============
@@ -227,8 +229,8 @@ function generateTier25D() {
   };
 }
 
-// Call Runware API
-async function callRunwareAPI(positivePrompt, negativePrompt) {
+// Call Runware API with retry logic
+async function callRunwareAPI(positivePrompt, negativePrompt, retries = 2) {
   const apiKey = Deno.env.get('RUNWARE_API_KEY');
   if (!apiKey) {
     throw new Error('RUNWARE_API_KEY not configured');
@@ -236,50 +238,60 @@ async function callRunwareAPI(positivePrompt, negativePrompt) {
 
   console.log('🌐 Calling Runware API...');
   
-  try {
-    const response = await fetch('https://api.runware.ai/v1', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify([
-        {
-          taskType: "authentication",
-          apiKey: apiKey.trim()
+  for (let attempt = 1; attempt <= retries + 1; attempt++) {
+    try {
+      const response = await fetch('https://api.runware.ai/v1', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
         },
-        {
-          taskType: "imageInference",
-          taskUUID: crypto.randomUUID(),
-          positivePrompt: positivePrompt,
-          negativePrompt: negativePrompt,
-          width: 1024,
-          height: 1024,
-          model: "runware:100@1",
-          numberResults: 1,
-          outputFormat: "WEBP",
-          steps: 30,
-          CFGScale: 10
-        }
-      ])
-    });
+        body: JSON.stringify([
+          {
+            taskType: "authentication",
+            apiKey: apiKey.trim()
+          },
+          {
+            taskType: "imageInference",
+            taskUUID: crypto.randomUUID(),
+            positivePrompt: positivePrompt,
+            negativePrompt: negativePrompt,
+            width: 1024,
+            height: 1024,
+            model: "runware:100@1",
+            numberResults: 1,
+            outputFormat: "WEBP",
+            steps: 30,
+            CFGScale: 10
+          }
+        ])
+      });
 
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      const imageData = result.data?.find(item => item.taskType === 'imageInference');
+
+      if (!imageData?.imageURL) {
+        throw new Error('No image URL in API response');
+      }
+
+      console.log('✅ Runware API call successful');
+      return imageData.imageURL;
+
+    } catch (error) {
+      console.error(`❌ Runware API attempt ${attempt}/${retries + 1} failed:`, error);
+      
+      if (attempt <= retries) {
+        const delay = attempt * 1000; // Progressive delay
+        console.log(`⏳ Retrying in ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        continue;
+      }
+      
+      throw error;
     }
-
-    const result = await response.json();
-    const imageData = result.data?.find(item => item.taskType === 'imageInference');
-
-    if (!imageData?.imageURL) {
-      throw new Error('No image URL in API response');
-    }
-
-    console.log('✅ Runware API call successful');
-    return imageData.imageURL;
-
-  } catch (error) {
-    console.error('❌ Runware API call failed:', error);
-    throw error;
   }
 }
 

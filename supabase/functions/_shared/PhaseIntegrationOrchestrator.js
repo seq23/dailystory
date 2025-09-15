@@ -186,14 +186,14 @@ export class PhaseIntegrationOrchestrator {
   }
 
   /**
-   * Get enhanced prompt with Phase 1 & 2 data
+   * Get enhanced prompt with Phase 1 & 2 data using the EXACT Tier 1 template structure
    */
   async getEnhancedPrompt(userInfo, basePrompt, storyText, sessionId) {
     try {
       const userId = userInfo?.id || userInfo?.userId || 'anonymous';
       const characterName = userInfo?.name || userInfo?.childName || 'Child';
 
-      console.log(`🎨 PHASE ORCHESTRATOR: Generating enhanced prompt`, {
+      console.log(`🎨 PHASE ORCHESTRATOR: Generating Tier 1 enhanced prompt template`, {
         userId,
         characterName,
         basePromptLength: basePrompt?.length || 0
@@ -203,7 +203,7 @@ export class PhaseIntegrationOrchestrator {
       const existingTraits = await this.characterConsistencyService.getCharacterFromDatabase(sessionId, `traits_${characterName}`) || {};
       const visualDescription = await this.characterConsistencyService.buildCharacterDescription(
         { characterName, age: '6-8' }, 
-        '', 
+        storyText || '', 
         null, 
         sessionId
       );
@@ -211,48 +211,96 @@ export class PhaseIntegrationOrchestrator {
       // Phase 2: Get visual consistency recommendations
       const recommendations = { recommendations: [], consistencyScore: 1.0 };
 
-      // Build enhanced prompt
-      let enhancedPrompt = basePrompt;
+      // Get style framework for brand suffix
+      const difficulty = userInfo?.difficulty || userInfo?.gradeLevel || 'medium';
+      const styleFrameworks = {
+        'beginner': 'Contemporary Children\'s Book Illustration with sharp facial definition, refined features',
+        'easy': 'Contemporary Children\'s Book Illustration with sharp facial definition, refined features', 
+        'medium': 'Contemporary Children\'s Book Illustration with sharp facial definition, refined features',
+        'hard': '2.9D Rendered Illustration with golden hour volumetric lighting',
+        'expert': '2.9D Rendered Illustration with golden hour volumetric lighting'
+      };
+      const brandSuffix = styleFrameworks[difficulty] || styleFrameworks['medium'];
 
-      // Add character consistency if available
-      if (existingTraits && visualDescription) {
-        enhancedPrompt += ` Focus on: ${visualDescription}.`;
-      }
+      // Build the EXACT Tier 1 template structure
+      const primaryScene = basePrompt || 'A beautiful children\'s story scene';
+      
+      // Avatar Identity and Regional Context
+      const avatarIdentity = `${characterName}, age ${userInfo?.age || 6}`;
+      const regionalContext = userInfo?.nativeLanguage !== 'en' ? 'culturally appropriate' : 'diverse and inclusive';
+      
+      // Cultural Enhancements
+      const culturalEnhancements = this.getCulturalEnhancements(userInfo);
+      
+      // Consistency Details
+      const consistencyDetails = visualDescription || 'consistent character design';
+      
+      // Character Description
+      const characterDescription = [avatarIdentity, regionalContext, culturalEnhancements, consistencyDetails]
+        .filter(Boolean).join(', ');
 
-      // Add visual consistency guidance
-      if (recommendations.consistencyScore < 0.8 && recommendations.recommendations.length > 0) {
-        const topRecommendation = recommendations.recommendations[0];
-        enhancedPrompt += ` Visual consistency: ${topRecommendation.suggestion}.`;
-      }
+      // Previous Appearance Data
+      const previousAppearance = existingTraits ? 'maintains visual consistency from previous pages' : '';
+      
+      // Build complete Tier 1 enhanced prompt template
+      const enhancedPrompt = [
+        `PRIMARY SCENE: ${primaryScene}`,
+        `CHARACTER DESCRIPTION: ${characterDescription}`,
+        `CHARACTER CONSISTENCY:`,
+        `- Avatar Identity: ${avatarIdentity}`,
+        `- Visual Traits: ${consistencyDetails}`,
+        previousAppearance ? `- Previous Appearance: ${previousAppearance}` : '',
+        culturalEnhancements ? `- Cultural Enhancements: ${culturalEnhancements}` : '',
+        `BRAND SUFFIX: ${brandSuffix}`,
+        `CONTEXT: ${storyText || basePrompt}`
+      ].filter(Boolean).join('\n');
 
-      console.log(`✅ PHASE ORCHESTRATOR: Enhanced prompt generated`, {
+      console.log(`✅ PHASE ORCHESTRATOR: Complete Tier 1 template generated`, {
         userId,
         characterName,
         hasTraits: !!existingTraits,
-        consistencyScore: recommendations.consistencyScore,
-        enhancedLength: enhancedPrompt.length
+        enhancedLength: enhancedPrompt.length,
+        templateComponents: 6
       });
 
       return {
         enhancedPrompt,
         characterConsistency: {
           hasTraits: !!existingTraits,
-          visualDescription
+          visualDescription: consistencyDetails
         },
         visualConsistency: {
           score: recommendations.consistencyScore,
-          recommendationCount: recommendations.recommendations.length
+          previousAppearance: previousAppearance
         },
-        enhancementSuccessful: true
+        enhancementSuccessful: true,
+        templateStructure: 'COMPLETE_TIER_1'
       };
     } catch (error) {
-      console.error(`❌ PHASE ORCHESTRATOR: Prompt enhancement failed`, { error });
+      console.error(`❌ PHASE ORCHESTRATOR: Tier 1 template generation failed`, { error });
       return {
         enhancedPrompt: basePrompt,
         enhancementSuccessful: false,
-        error: error.message
+        error: error.message,
+        templateStructure: 'FAILED'
       };
     }
+  }
+
+  /**
+   * Get cultural enhancements based on user profile
+   */
+  getCulturalEnhancements(userInfo) {
+    const language = userInfo?.nativeLanguage || userInfo?.language || 'en';
+    const skinTone = userInfo?.skinTone || userInfo?.avatar?.skinTone || 'light';
+    
+    // Apply cultural enhancements for dark-skinned users with supported languages
+    if ((skinTone === 'dark' || skinTone === 'darker') && 
+        ['en', 'fr', 'es', 'pt'].includes(language.toLowerCase())) {
+      return 'with culturally appropriate African features and natural hair texture';
+    }
+    
+    return '';
   }
 
   /**

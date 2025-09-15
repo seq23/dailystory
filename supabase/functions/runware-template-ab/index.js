@@ -6,6 +6,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getStyleFramework } from '../_shared/styleFrameworks.js';
 import { generateNuclearNegativePrompt } from '../_shared/NuclearNegativePrompts.js';
+import { callRunwareAPIWithRetry } from './callRunwareAPIWithRetry.js';
 
 console.log(`INIT runware-template-ab boot at ${new Date().toISOString()} | std@0.168.0`);
 
@@ -713,8 +714,8 @@ serve(async (req) => {
       promptLength: template.positivePrompt.length
     });
     
-    // Call Runware API
-    const imageData = await callRunwareAPI(template.positivePrompt, template.negativePrompt);
+    // Call Runware API with retry logic
+    const imageData = await callRunwareAPIWithRetry(template.positivePrompt, template.negativePrompt);
     
     console.log('✅ Template AB: Image generated successfully');
     

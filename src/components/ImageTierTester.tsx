@@ -58,15 +58,20 @@ interface TestResult {
     // Prompt and template specific
     positivePrompt?: string;
     negativePrompt?: string;
+    fullNegativePrompt?: string; // NEW: Complete negative prompt display
     styleFramework?: string;
     originalPrompt?: string;    // NEW: Original prompt from Tier 1
     basePrompt?: string;        // NEW: Base prompt from Tier 1
     enhancedPrompt?: string;    // NEW: Enhanced prompt from Tier 1
+    fullEnhancedPrompt?: string; // NEW: Complete enhanced prompt structure
+    templateStructure?: string; // NEW: Template structure indicator
+    noTextIndicator?: boolean;  // NEW: Show if NO TEXT is in negative prompt
     promptLengths?: {           // NEW: Prompt length statistics
       original?: number;
       enhanced?: number;
       negative?: number;
       positive?: number;
+      full?: number;
     };
     // Connectivity specific
     successfulConnections?: number;
@@ -1450,15 +1455,41 @@ export const ImageTierTester = () => {
                             </details>
                           )}
 
-                          {/* Negative Prompt */}
+                          {/* Enhanced Negative Prompt with NO TEXT badge */}
                           {result.details.negativePrompt && (
                             <details className="mt-2">
-                              <summary className="cursor-pointer text-xs font-medium text-red-600">
+                              <summary className="cursor-pointer text-xs font-medium text-red-600 flex items-center gap-2">
                                 🛡️ Negative Prompt ({result.details.negativePrompt.length} chars) - Nuclear Negative
+                                {result.details.negativePrompt.includes('NO TEXT') && (
+                                  <Badge variant="destructive" className="text-xs">NO TEXT</Badge>
+                                )}
+                                {result.details.negativePrompt.includes('(especially for Emma)') && (
+                                  <Badge variant="secondary" className="text-xs">EMMA</Badge>
+                                )}
                               </summary>
                               <div className="mt-1">
                                 <pre className="text-xs bg-red-50 p-2 rounded border overflow-x-auto max-h-32 overflow-y-auto whitespace-pre-wrap">
                                   {result.details.negativePrompt}
+                                </pre>
+                              </div>
+                            </details>
+                          )}
+
+                          {/* Enhanced Prompt Structure Display */}
+                          {result.details.enhancedPrompt && (
+                            <details className="mt-2">
+                              <summary className="cursor-pointer text-xs font-medium text-green-600 flex items-center gap-2">
+                                📝 Enhanced Prompt ({result.details.enhancedPrompt.length} chars)
+                                {result.details.templateStructure === 'COMPLETE_TIER_1' && (
+                                  <Badge variant="default" className="text-xs bg-green-600">TIER 1 COMPLETE</Badge>
+                                )}
+                                {result.details.templateStructure === 'FAILED' && (
+                                  <Badge variant="destructive" className="text-xs">TEMPLATE FAILED</Badge>
+                                )}
+                              </summary>
+                              <div className="mt-1">
+                                <pre className="text-xs bg-green-50 p-2 rounded border overflow-x-auto max-h-40 overflow-y-auto whitespace-pre-wrap">
+                                  {result.details.enhancedPrompt}
                                 </pre>
                               </div>
                             </details>

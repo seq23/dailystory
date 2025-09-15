@@ -322,24 +322,21 @@ async function generateWithRunware(apiKey, prompt, sessionId, requestId, userInf
   let enhancedPrompt = enhancedStoryData?.enhancedPrompt || prompt;
   let basePrompt = prompt;
   
-  // If no enhanced data available, force Tier 2.5A fallback instead of manual override
-  if (!enhancedStoryData?.enhancedPrompt) {
-    console.log(`🎯 [${requestId}] No enhanced data available, forcing Tier 2.5A fallback`);
-    // Don't create manual prompt - let tier system handle it
-    enhancedPrompt = prompt; // Keep original for tier functions
+  // If no complete enhanced prompt available, skip Tier 1 and go to Template AB
+  if (!enhancedStoryData?.enhancedPrompt || enhancedStoryData?.templateStructure !== 'COMPLETE_TIER_1') {
+    console.log(`🎯 [${requestId}] No complete Tier 1 template available, skipping to Template AB`);
+    throw new Error('SKIP_TO_TEMPLATE_AB: No complete enhanced prompt template');
   }
   
   // PHASE 2: Generate comprehensive negative prompt
   let negativePrompt = '';
   if (generateNuclearNegativePromptFn && userInfo) {
     try {
-      const culturalProfile = {
-        nativeLanguage: userInfo.nativeLanguage || 'en',
-        skinTone: userInfo.avatar?.skinTone || avatarIdentity?.skinTone || 'light'
-      };
-      const avatarType = userInfo.avatar?.type || avatarIdentity?.type || 'child';
+      // Pass cultural profile as string, not object
+      const culturalProfileStr = `${userInfo.nativeLanguage || 'en'}_${userInfo.avatar?.skinTone || avatarIdentity?.skinTone || 'light'}`;
+      const avatarType = userInfo.avatar?.type || avatarIdentity?.type || 'girl'; // Default to 'girl' for Emma
       
-      negativePrompt = generateNuclearNegativePromptFn(culturalProfile, avatarType, difficulty, pageNumber, []);
+      negativePrompt = generateNuclearNegativePromptFn(culturalProfileStr, avatarType, difficulty, pageNumber, []);
       console.log(`🎨 [${requestId}] Generated comprehensive negative prompt: ${negativePrompt.length} chars`);
     } catch (error) {
       console.warn(`⚠️ [${requestId}] Failed to generate nuclear negative prompt:`, error.message);
