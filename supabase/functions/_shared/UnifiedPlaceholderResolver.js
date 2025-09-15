@@ -166,13 +166,15 @@ export class UnifiedPlaceholderResolver {
 
     // Cultural hair and features
     resolved = resolved.replace(/\{cultural\.hair\}/g, () => {
+      if (culturalType === 'none') return '';
       const characterSeed = userInfo?.sessionId ? this.generateCulturalSeed(userInfo.name, userInfo.sessionId) : undefined;
-      return getCulturalSelection(culturalType, 'hair', characterSeed) || pick(CULTURAL_ARRAYS.european.hair, characterSeed);
+      return getCulturalSelection(culturalType, 'hair', characterSeed) || '';
     });
 
     resolved = resolved.replace(/\{cultural\.features\}/g, () => {
+      if (culturalType === 'none') return '';
       const characterSeed = userInfo?.sessionId ? this.generateCulturalSeed(userInfo.name, userInfo.sessionId) + 1 : undefined;
-      return getCulturalSelection(culturalType, 'features', characterSeed) || pick(CULTURAL_ARRAYS.european.features, characterSeed);
+      return getCulturalSelection(culturalType, 'features', characterSeed) || '';
     });
 
     return resolved;
@@ -192,15 +194,21 @@ export class UnifiedPlaceholderResolver {
   }
 
   detectCulturalContext(userInfo) {
-    // Enhanced cultural detection for dark skin tones
+    // Enhanced cultural detection for dark skin tones with language validation
     const skinTone = userInfo?.skinTone || userInfo?.avatarIdentity?.skinTone;
+    const language = userInfo?.language || 'en';
     
+    // Only dark skin users with supported languages get cultural enhancements
     if (skinTone === 'dark' || skinTone === 'darker') {
-      return 'african'; // Map ANY dark skin to african cultural arrays
+      // Only EN/FR/ES/PT languages supported for African cultural features
+      const supportedLanguages = ['en', 'fr', 'es', 'pt'];
+      if (supportedLanguages.includes(language.toLowerCase())) {
+        return 'african';
+      }
     }
     
-    // Default for light skin tones
-    return 'european';
+    // All other users (light skin + any language, or dark skin + unsupported language)
+    return 'none';
   }
 
   applyPronounGrammarFixes(text, pronoun) {
