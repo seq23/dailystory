@@ -910,7 +910,7 @@ serve(async (req) => {
       let failedTierData = {
         characterConsistency: enhancedStoryData?.characterConsistency || '',
         visualConsistency: enhancedStoryData?.visualConsistency || '', 
-        culturalEnhancements: enhancedStoryData ? (phaseIntegrationOrchestrator ? phaseIntegrationOrchestrator.getCulturalEnhancements(userInfo) : '') : '',
+        culturalEnhancements: enhancedStoryData ? (phaseIntegrationOrchestrator ? await phaseIntegrationOrchestrator.getCulturalEnhancements(userInfo) : '') : '',
         enhancedSceneData: enhancedStoryData?.enhancedPrompt || ''
       };
       

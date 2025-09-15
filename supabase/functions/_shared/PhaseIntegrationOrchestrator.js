@@ -231,7 +231,7 @@ export class PhaseIntegrationOrchestrator {
       const regionalContext = userInfo?.nativeLanguage !== 'en' ? 'culturally appropriate' : 'diverse and inclusive';
       
       // Cultural Enhancements
-      const culturalEnhancements = this.getCulturalEnhancements(userInfo, sessionId);
+      const culturalEnhancements = await this.getCulturalEnhancements(userInfo, sessionId);
       
       // Consistency Details
       const consistencyDetails = visualDescription || 'consistent character design';
@@ -291,7 +291,7 @@ export class PhaseIntegrationOrchestrator {
   /**
    * Get cultural enhancements based on user profile with seeded selection
    */
-  getCulturalEnhancements(userInfo, sessionId) {
+  async getCulturalEnhancements(userInfo, sessionId) {
     const language = userInfo?.nativeLanguage || userInfo?.language || 'en';
     const skinTone = userInfo?.skinTone || userInfo?.avatar?.skinTone || 'light';
     
