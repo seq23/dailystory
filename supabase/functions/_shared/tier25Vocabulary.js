@@ -13,6 +13,9 @@ export const PLACEHOLDER_POOLS = {
   colors: ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown', 'black', 'white'],
   sizes: ['big', 'small', 'tiny', 'huge', 'large', 'little', 'giant', 'enormous'],
   
+  // NEW: Clothing styles for character consistency
+  clothingStyles: ['casual', 'colorful', 'comfortable', 'neat', 'playful', 'stylish', 'fun', 'vibrant'],
+  
   // Story elements
   foods: [
     'apples', 'bananas', 'cookies', 'cake', 'pizza', 'ice cream', 'sandwiches', 'fruit',
@@ -43,6 +46,23 @@ export const PLACEHOLDER_POOLS = {
   family: [
     'mom', 'dad', 'sister', 'brother', 'grandma', 'grandpa', 'aunt', 'uncle',
     'cousin', 'family', 'parents', 'siblings', 'relatives'
+  ],
+
+  // NEW: Pattern arrays for character consistency detection
+  coloredObjectPatterns: [
+    /\b(red|blue|green|yellow|purple|pink|orange|black|white|brown|gray|grey|gold|silver)\s+(\w+)\b/gi,
+    /\b(\w+)\s+(red|blue|green|yellow|purple|pink|orange|black|white|brown|gray|grey|gold|silver)\b/gi
+  ],
+
+  atmosphericPatterns: [
+    /\b(bright|dark|sunny|cloudy|rainy|stormy|peaceful|calm|exciting|scary|magical|mysterious|cheerful|gloomy)\b/gi,
+    /\b(sparkling|glowing|shimmering|twinkling|rustling|whispers|echoing|silence)\b/gi
+  ],
+
+  characterPatterns: [
+    /\b(friend|buddy|pal|companion|classmate|teammate|neighbor|sibling|sister|brother|cousin)\b/gi,
+    /\b([A-Z][a-z]+)\s+(said|says|asked|tells|told|replied|answered|whispered|shouted|called|smiled|laughed|ran|walked|jumped)\b/g,
+    /\b(he|she|they)\s+(is|was|are|were|has|had|does|did|can|could|will|would|should|must)\b/gi
   ]
 };
 

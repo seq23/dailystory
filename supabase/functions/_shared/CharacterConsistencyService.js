@@ -157,8 +157,9 @@ export class CharacterConsistencyService {
     
     // Eye color handling removed - let avatar descriptions handle naturally
     
-    // Generate consistent clothing style for this character
-    const clothingStyles = ['casual', 'colorful', 'comfortable', 'neat', 'playful'];
+    // Generate consistent clothing style for this character using tier25Vocabulary
+    const { PLACEHOLDER_POOLS } = await import("./tier25Vocabulary.js");
+    const clothingStyles = PLACEHOLDER_POOLS.clothingStyles || ['casual', 'colorful', 'comfortable', 'neat', 'playful'];
     const consistentClothingStyle = clothingStyles[Math.floor(seededRandom() * clothingStyles.length)];
 
     return {
@@ -382,11 +383,17 @@ export class CharacterConsistencyService {
     const detectedCharacters = [];
     const text = pageText.toLowerCase();
     
-    // Common secondary character patterns
-    const characterPatterns = [
-      // Named characters (proper nouns)
+    // Common secondary character patterns using tier25Vocabulary
+    const { PLACEHOLDER_POOLS } = await import("./tier25Vocabulary.js");
+    const characterPatterns = PLACEHOLDER_POOLS.characterPatterns || [
       /\b([A-Z][a-z]+)\b/g,
       // Family relationships
+      /\b(mom|mother|dad|father|brother|sister|grandma|grandmother|grandpa|grandfather|aunt|uncle|cousin)\b/gi,
+      // Friends and companions
+      /\b(friend|buddy|pal|companion|classmate|teammate|neighbor)\b/gi,
+      // Titles and roles
+      /\b(teacher|doctor|nurse|police|firefighter|mailman|baker|farmer)\b/gi
+    ];
       /\b(mom|mother|dad|father|grandma|grandpa|sister|brother|uncle|aunt)\b/g,
       // Community roles
       /\b(teacher|doctor|nurse|mailman|neighbor|friend|classmate)\b/g,
@@ -537,8 +544,9 @@ export class CharacterConsistencyService {
     const atmosphericWords = [];
     const characterAppearance = [];
 
-    // Extract colored objects (color + noun combinations)
-    const coloredObjectPatterns = [
+    // Extract colored objects (color + noun combinations) using tier25Vocabulary patterns
+    const { PLACEHOLDER_POOLS } = await import("./tier25Vocabulary.js");
+    const coloredObjectPatterns = PLACEHOLDER_POOLS.coloredObjectPatterns || [
       /\b(red|blue|green|yellow|purple|pink|orange|black|white|brown|gray|grey|gold|silver)\s+(\w+)\b/gi,
       /\b(\w+)\s+(red|blue|green|yellow|purple|pink|orange|black|white|brown|gray|grey|gold|silver)\b/gi
     ];
@@ -555,8 +563,8 @@ export class CharacterConsistencyService {
       }
     });
 
-    // Extract atmospheric/mood words
-    const atmosphericPatterns = [
+    // Extract atmospheric/mood words using tier25Vocabulary patterns
+    const atmosphericPatterns = PLACEHOLDER_POOLS.atmosphericPatterns || [
       /\b(bright|dark|sunny|cloudy|rainy|stormy|peaceful|calm|exciting|scary|magical|mysterious|cheerful|gloomy)\b/gi,
       /\b(sparkling|glowing|shimmering|twinkling|rustling|whispers|echoing|silence)\b/gi
     ];

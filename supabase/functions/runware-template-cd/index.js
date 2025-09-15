@@ -126,8 +126,8 @@ function getComplexityLevel(userInfo, templateComplexity) {
   return 'C';
 }
 
-// Generate Tier 2.5C template (Emergency templates + Light cultural intelligence)
-function generateTier25C(storyText, userInfo, avatarIdentity) {
+// Generate Tier 2.5C template (Emergency templates + Light cultural intelligence + NEW ARCHITECTURE)
+async function generateTier25C(storyText, userInfo, avatarIdentity) {
   console.log('🎯 Tier 2.5C: Generating Emergency Framework Template with UNIFIED Style Framework');
   
   // PHASE 5: Enhanced pageText validation and fallback logic
@@ -154,17 +154,64 @@ function generateTier25C(storyText, userInfo, avatarIdentity) {
   const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'diverse';
   const culturalContext = userInfo?.nativeLanguage !== 'en' ? 'culturally appropriate' : 'diverse and inclusive';
   
-  // PHASE 5: Support up to 2000 characters of pageText
-  const maxTextLength = 2000;
-  const truncatedText = storyText.length > maxTextLength ? 
-    storyText.substring(0, maxTextLength) + '...' : 
-    storyText;
+  // NEW ARCHITECTURE: Use improved template structure with semantic_scene
+  const gradeLevel = userInfo?.difficulty || 'medium';
+  const difficultyLevel = ['beginner', 'easy'].includes(gradeLevel) ? 'level_0-1' : 'level_2-4';
   
-  // Enhanced character description with cultural context
-  const characterDescription = `${childName}, age ${age}, ${skinTone} complexion`;
+  // NEW: Enhanced template with semantic_scene placeholder
+  const template = difficultyLevel === 'level_0-1' 
+    ? 'Subject: {character} {age}, {ethnicity} {bundle.culturalEnhancements}. Action: {semantic_scene}. Environment: {setting}, {atmosphere}. Context: {cultural_context}. Technical: {frameworkPrompt}'
+    : 'Technical: {frameworkPrompt}. Subject: {character} {age}, {ethnicity} {bundle.culturalEnhancements}. Action: {semantic_scene}. Environment: {setting}, {atmosphere}. Context: {cultural_context}';
   
-  // Use the unified style framework system with cultural enhancements
-  const positivePrompt = `${styleFramework.frameworkPrompt}. ${characterDescription} in the following scene: ${truncatedText}. ${culturalContext} representation, engaging children's illustration.`;
+  // NEW ARCHITECTURE: Create template data with semantic processing
+  const templateData = {
+    pageText: storyText,
+    character: childName,
+    age: age.toString(),
+    ethnicity: '', // Let cultural system handle this
+    setting: '', // Let semantic system handle this
+    atmosphere: '', // Will be detected from pageText
+    cultural_context: culturalContext,
+    frameworkPrompt: styleFramework.frameworkPrompt,
+    // NEW: Add bundle.culturalEnhancements placeholder
+    'bundle.culturalEnhancements': '', // Will be resolved by UnifiedPlaceholderResolver
+    // NEW: Add semantic_scene placeholder
+    semantic_scene: '' // Will be generated from pageText
+  };
+  
+  // NEW ARCHITECTURE: Use UnifiedPlaceholderResolver for intelligent processing
+  let positivePrompt;
+  try {
+    // Import UnifiedPlaceholderResolver for intelligent placeholder resolution
+    const { unifiedPlaceholderResolver } = await import("../_shared/UnifiedPlaceholderResolver.js");
+    
+    const context = {
+      userInfo,
+      avatarIdentity,
+      pageText: storyText,
+      sessionId: userInfo?.sessionId || 'temp_session',
+      pageNumber: 1
+    };
+    
+    const result = await unifiedPlaceholderResolver.resolveAllPlaceholders(template, context);
+    positivePrompt = result.resolvedText || result.text || template;
+    
+    console.log('✅ Tier 2.5C: Used UnifiedPlaceholderResolver for intelligent processing');
+  } catch (error) {
+    console.warn('⚠️ Tier 2.5C: UnifiedPlaceholderResolver failed, using basic substitution:', error.message);
+    
+    // Fallback to basic substitution
+    positivePrompt = template
+      .replace(/\{character\}/g, childName)
+      .replace(/\{age\}/g, age.toString())
+      .replace(/\{ethnicity\}/g, '')
+      .replace(/\{semantic_scene\}/g, `engaging in ${storyText.substring(0, 100)}`)
+      .replace(/\{setting\}/g, '')
+      .replace(/\{atmosphere\}/g, '')
+      .replace(/\{cultural_context\}/g, culturalContext)
+      .replace(/\{frameworkPrompt\}/g, styleFramework.frameworkPrompt)
+      .replace(/\{bundle\.culturalEnhancements\}/g, '');
+  }
   
   // PHASE 5: Generate comprehensive negative prompt
   let negativePrompt;
@@ -186,14 +233,16 @@ function generateTier25C(storyText, userInfo, avatarIdentity) {
   return {
     positivePrompt,
     negativePrompt,
-    templateType: 'Emergency Framework Template - Enhanced with Cultural Intelligence',
+    templateType: 'Emergency Framework Template - Enhanced with NEW Architecture + Cultural Intelligence',
     tier: '2.5C',
     culturalIntelligence: true,
     styleFrameworkUsed: styleFramework.name,
     pageTextLength: pageTextLength,
-    truncationStatus: storyText.length > maxTextLength ? 'truncated' : 'full',
+    truncationStatus: storyText.length > 2000 ? 'truncated' : 'full',
     culturalContext: culturalContext,
-    userInfoUsed: true
+    userInfoUsed: true,
+    newArchitecture: true,
+    semanticSceneUsed: true
   };
 }
 
