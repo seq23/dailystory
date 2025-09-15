@@ -151,15 +151,18 @@ function generateTier25C(storyText, userInfo, avatarIdentity, failedTierData = {
   }
   const sceneText = storyText.substring(0, 1500);
   
-  // Component 2: Character Description (name/age/skin tone + conditional African features)
+  // Component 2: Character Description with static template format
   const characterName = userInfo?.name || userInfo?.childName || 'child';
   const age = userInfo?.age || 8;
-  const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'diverse';
+  const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'diverse'; 
+  const avatarType = userInfo?.avatar?.type || 'child';
   
-  // Add conditional African features for dark skin tones ONLY
-  let characterDesc = `${characterName} ${age}, ${skinTone} complexion`;
+  // Base template: "A young $(avatar type) named $(name) age $(age) $(skintone) skin complexion"
+  let characterDesc = `A young ${avatarType} named ${characterName} age ${age} ${skinTone} skin complexion`;
+  
+  // Add alternative string for dark skin ONLY
   if (skinTone === 'dark' || skinTone === 'medium-dark' || skinTone === 'brown') {
-    characterDesc += ' with culturally appropriate African features and natural hair texture';
+    characterDesc += ' with culturally appropriate African American features and natural hair texture';
   }
   
   // Component 3: Catch-All Failed Tier Information
