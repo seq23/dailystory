@@ -22,6 +22,16 @@ async function getCharacterService() {
   }
 }
 
+async function getUnifiedPlaceholderResolver() {
+  try {
+    const { unifiedPlaceholderResolver } = await import("../_shared/UnifiedPlaceholderResolver.js");
+    return unifiedPlaceholderResolver;
+  } catch (error) {
+    console.warn('UnifiedPlaceholderResolver lazy load failed:', error);
+    return null;
+  }
+}
+
 // PHASE 4: Session management removed - orchestrator handles all session state
 // Session data flows via function parameters only
 
@@ -494,6 +504,18 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
     
     console.log('✅ Template AB Tier 2.5A: Successfully using PREMIUM templates with cultural intelligence');
     
+    // Add missing calls that Template AB expects
+    const styleFrameworkUsed = styleFramework.name;
+    const shouldApplyCulturalFeatures = await (async () => {
+      try {
+        const placeholderResolver = await getUnifiedPlaceholderResolver();
+        return placeholderResolver ? placeholderResolver.shouldApplyCulturalFeatures(userInfo) : false;
+      } catch (error) {
+        console.warn('shouldApplyCulturalFeatures check failed:', error);
+        return false;
+      }
+    })();
+    
     // Generate nuclear negative prompt with mixed-gender consistency filters
     const culturalProfile = avatarIdentity?.nativeLanguage || avatarIdentity?.skinTone || userInfo?.nativeLanguage || 'general';
     const avatarType = userInfo?.avatar?.type || userInfo?.avatarType || 'child';
@@ -507,7 +529,9 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
       difficulty: 'A',
       enhancementLevel: 'premium',
       difficultyLevel,
-      secondaryCharacters: secondaryCharactersA || 'none'
+      secondaryCharacters: secondaryCharactersA || 'none',
+      styleFrameworkUsed,
+      shouldApplyCulturalFeatures
     };
   }
   
@@ -558,6 +582,18 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
       guaranteedOperation: true
     });
     
+    // Add missing calls that Template AB expects
+    const styleFrameworkUsed = styleFramework.name;
+    const shouldApplyCulturalFeatures = await (async () => {
+      try {
+        const placeholderResolver = await getUnifiedPlaceholderResolver();
+        return placeholderResolver ? placeholderResolver.shouldApplyCulturalFeatures(userInfo) : false;
+      } catch (error) {
+        console.warn('shouldApplyCulturalFeatures check failed:', error);
+        return false;
+      }
+    })();
+    
     // Generate nuclear negative prompt with mixed-gender consistency filters
     const culturalProfile = avatarIdentity?.nativeLanguage || avatarIdentity?.skinTone || userInfo?.nativeLanguage || 'general';
     const avatarType = userInfo?.avatar?.type || userInfo?.avatarType || 'child';
@@ -573,7 +609,9 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
       difficultyLevel,
       secondaryCharacters: secondaryCharactersB || 'none',
       nuclearIndependent: true,
-      serviceHealthRequired: false
+      serviceHealthRequired: false,
+      styleFrameworkUsed,
+      shouldApplyCulturalFeatures
     };
   }
   

@@ -13,43 +13,84 @@ export class UnifiedPlaceholderResolver {
   }
 
   /**
-   * MASTER PLACEHOLDER RESOLUTION
-   * Resolves all types of placeholders in a unified way
+   * MASTER PLACEHOLDER RESOLUTION - 4-TIER PRIORITY SYSTEM
+   * Tier 1: Character Consistency (from backend service)  
+   * Tier 2: Smart Semantic Processing (contextual intelligence)
+   * Tier 3: Cultural Processing (skin-tone based)
+   * Tier 4: Basic Processing (vocabulary + user data) + Honest Fallbacks
    */
-  resolveAllPlaceholders(text, context = {}) {
+  async resolveAllPlaceholders(text, context = {}) {
     const { userInfo = {}, seed = {}, sessionId, pageNumber } = context;
     
     if (!text || typeof text !== 'string') return text;
 
     let processedText = text;
     const resolutions = [];
+    const initialCount = (text.match(/\{[^}]+\}/g) || []).length;
 
     try {
-      // 1. CANONICAL PLACEHOLDERS (user-specific)
-      processedText = this.resolveCanonicalPlaceholders(processedText, userInfo);
+      console.log(`🔄 Unified Placeholder Resolution starting with ${initialCount} placeholders`);
       
-      // 2. MICRO PLACEHOLDERS (story-specific with seed)
-      processedText = this.resolveMicroPlaceholders(processedText, { userInfo, seed });
+      // TIER 1: Character Consistency (highest priority - from backend service)
+      try {
+        processedText = await this.resolveCharacterConsistencyPlaceholders(processedText, context);
+        const afterTier1 = (processedText.match(/\{[^}]+\}/g) || []).length;
+        console.log(`✅ Tier 1 (Character Consistency): Resolved ${initialCount - afterTier1} placeholders`);
+      } catch (error) {
+        console.warn('Tier 1 Character Consistency failed:', error);
+      }
       
-      // 3. VOCABULARY PLACEHOLDERS (from tier25Vocabulary)
-      processedText = this.resolveVocabularyPlaceholders(processedText, context);
+      // TIER 2: Smart Semantic Processing (contextual intelligence)  
+      try {
+        const beforeTier2 = (processedText.match(/\{[^}]+\}/g) || []).length;
+        processedText = this.resolveSmartSemanticPlaceholders(processedText, context);
+        const afterTier2 = (processedText.match(/\{[^}]+\}/g) || []).length;
+        console.log(`✅ Tier 2 (Smart Semantic): Resolved ${beforeTier2 - afterTier2} placeholders`);
+      } catch (error) {
+        console.warn('Tier 2 Smart Semantic failed:', error);
+      }
       
-      // 4. CULTURAL PLACEHOLDERS (cultural-aware)
-      processedText = this.resolveCulturalPlaceholders(processedText, userInfo);
+      // TIER 3: Cultural Processing (skin-tone based cultural intelligence)
+      try {
+        const beforeTier3 = (processedText.match(/\{[^}]+\}/g) || []).length;
+        processedText = this.resolveCulturalPlaceholders(processedText, userInfo);
+        const afterTier3 = (processedText.match(/\{[^}]+\}/g) || []).length;
+        console.log(`✅ Tier 3 (Cultural Processing): Resolved ${beforeTier3 - afterTier3} placeholders`);
+      } catch (error) {
+        console.warn('Tier 3 Cultural Processing failed:', error);
+      }
       
-      // 5. CULTURAL ENHANCEMENTS (bundle.culturalEnhancements)
-      const culturalEnhancements = this.resolveCulturalEnhancements(userInfo, sessionId);
-      processedText = processedText.replace(/\{bundle\.culturalEnhancements\}/g, culturalEnhancements);
+      // TIER 4: Basic Processing (vocabulary + user data)
+      try {
+        const beforeTier4 = (processedText.match(/\{[^}]+\}/g) || []).length;
+        processedText = this.resolveCanonicalPlaceholders(processedText, userInfo);
+        processedText = this.resolveMicroPlaceholders(processedText, { userInfo, seed });
+        processedText = this.resolveVocabularyPlaceholders(processedText, context);
+        const afterTier4 = (processedText.match(/\{[^}]+\}/g) || []).length;
+        console.log(`✅ Tier 4 (Basic Processing): Resolved ${beforeTier4 - afterTier4} placeholders`);
+      } catch (error) {
+        console.warn('Tier 4 Basic Processing failed:', error);
+      }
       
-      // 6. CLEANUP AND GRAMMAR FIXES
+      // FINAL: Fill missing placeholders with honest fallbacks
+      const beforeFinal = (processedText.match(/\{[^}]+\}/g) || []).length;
+      processedText = this.fillMissingPlaceholders(processedText, context);
+      const afterFinal = (processedText.match(/\{[^}]+\}/g) || []).length;
+      console.log(`✅ Final (Honest Fallbacks): Processed ${beforeFinal - afterFinal} remaining placeholders`);
+
+      // CLEANUP AND GRAMMAR FIXES
       processedText = this.cleanup(processedText);
 
-      console.log(`🔧 [UnifiedPlaceholderResolver] Resolved placeholders for session ${sessionId}`);
-      
+      const finalCount = (processedText.match(/\{[^}]+\}/g) || []).length;
+      const totalResolved = initialCount - finalCount;
+      console.log(`🎯 Placeholder Resolution Complete: ${totalResolved}/${initialCount} resolved`);
+
       return {
         resolvedText: processedText,
         resolutions,
-        success: true
+        success: true,
+        resolvedCount: totalResolved,
+        remainingPlaceholders: finalCount
       };
 
     } catch (error) {
@@ -76,8 +117,8 @@ export class UnifiedPlaceholderResolver {
     resolved = resolved.replace(/\{character\.name\}/g, name);
 
     // User preferences
-    resolved = resolved.replace(/\{user\.favoriteColor\}/g, userInfo?.favoriteColor || pick(VOCABULARY.colors));
-    resolved = resolved.replace(/\{user\.favoriteAnimal\}/g, userInfo?.favoriteAnimal || pick(VOCABULARY.animals.domestic));
+    resolved = resolved.replace(/\{user\.favoriteColor\}/g, userInfo?.favoriteColor || pick(PLACEHOLDER_POOLS.colors));
+    resolved = resolved.replace(/\{user\.favoriteAnimal\}/g, userInfo?.favoriteAnimal || pick(PLACEHOLDER_POOLS.animals));
     resolved = resolved.replace(/\{user\.age\}/g, userInfo?.age || '6');
 
     // User interests
@@ -222,8 +263,8 @@ export class UnifiedPlaceholderResolver {
 
   detectCulturalContext(userInfo) {
     // Enhanced cultural detection for dark skin tones with language validation
-    const skinTone = userInfo?.skinTone || userInfo?.avatarIdentity?.skinTone;
-    const language = userInfo?.language || 'en';
+    const skinTone = userInfo?.skinTone || userInfo?.avatarIdentity?.skinTone || userInfo?.avatar?.skinTone;
+    const language = userInfo?.nativeLanguage || userInfo?.language || 'en';
     
     // Only dark skin users with supported languages get cultural enhancements
     if (skinTone === 'dark' || skinTone === 'darker') {
@@ -346,6 +387,139 @@ export class UnifiedPlaceholderResolver {
 
   clearCache() {
     this.resolvedCache.clear();
+  }
+
+  /**
+   * NEW ARCHITECTURE METHODS FOR PHASE 8+
+   */
+
+  /**
+   * Generate semantic scene description from page text
+   */
+  generateSemanticScene(pageText, context) {
+    if (!pageText || typeof pageText !== 'string') return '';
+    
+    const text = pageText.toLowerCase();
+    
+    // Extract action verbs and key elements
+    const actionWords = text.match(/\b(running|jumping|playing|exploring|discovering|building|cooking|reading|singing|dancing|helping)\b/g) || [];
+    const locationWords = text.match(/\b(park|forest|school|home|garden|beach|kitchen|playground|library|zoo)\b/g) || [];
+    const objectWords = text.match(/\b(ball|book|tree|flower|toy|game|puzzle|instrument|food|animal)\b/g) || [];
+    
+    // Build semantic scene
+    const components = [];
+    if (actionWords.length > 0) components.push(actionWords[0]);
+    if (locationWords.length > 0) components.push(`in the ${locationWords[0]}`);
+    if (objectWords.length > 0) components.push(`with ${objectWords[0]}`);
+    
+    return components.length > 0 ? components.join(' ') : '';
+  }
+
+  /**
+   * Resolve character consistency placeholders using backend service
+   */
+  async resolveCharacterConsistencyPlaceholders(text, context) {
+    let resolved = text;
+    const { sessionId, userInfo } = context;
+    
+    if (!sessionId) return resolved;
+    
+    try {
+      // This would be called by Template AB with character service data
+      const characterData = context.characterData;
+      
+      if (characterData) {
+        resolved = resolved.replace(/\{character\.appearance\}/g, characterData.appearance || '');
+        resolved = resolved.replace(/\{character\.consistency\}/g, characterData.visualDescription || '');
+        resolved = resolved.replace(/\{secondary\.characters\}/g, characterData.secondaryCharacters || '');
+      }
+    } catch (error) {
+      console.warn('Character consistency placeholder resolution failed:', error);
+    }
+    
+    return resolved;
+  }
+
+  /**
+   * Resolve smart semantic placeholders with contextual intelligence
+   */
+  resolveSmartSemanticPlaceholders(text, context) {
+    let resolved = text;
+    const { pageText, userInfo, sessionId } = context;
+    
+    // Semantic scene generation
+    resolved = resolved.replace(/\{semantic_scene\}/g, () => {
+      return this.generateSemanticScene(pageText, context);
+    });
+    
+    // Smart atmosphere detection
+    resolved = resolved.replace(/\{atmosphere\}/g, () => {
+      return this.detectAtmosphere(pageText);
+    });
+    
+    // Cultural enhancements for bundle.culturalEnhancements
+    resolved = resolved.replace(/\{bundle\.culturalEnhancements\}/g, () => {
+      return this.resolveCulturalEnhancements(userInfo, sessionId);
+    });
+    
+    return resolved;
+  }
+
+  /**
+   * Detect atmosphere from page text (indoor/outdoor)
+   */
+  detectAtmosphere(pageText) {
+    if (!pageText || typeof pageText !== 'string') return '';
+    
+    const text = pageText.toLowerCase();
+    
+    // Indoor keywords
+    const indoorWords = ['house', 'home', 'room', 'kitchen', 'bedroom', 'bathroom', 'living room', 'school', 'classroom', 'library', 'store', 'restaurant', 'inside'];
+    // Outdoor keywords  
+    const outdoorWords = ['park', 'garden', 'forest', 'beach', 'playground', 'yard', 'street', 'outside', 'sky', 'sun', 'grass', 'tree', 'flowers'];
+    
+    const indoorMatches = indoorWords.filter(word => text.includes(word)).length;
+    const outdoorMatches = outdoorWords.filter(word => text.includes(word)).length;
+    
+    if (outdoorMatches > indoorMatches) return 'outdoor';
+    if (indoorMatches > outdoorMatches) return 'indoor';
+    return ''; // Ambiguous, leave empty
+  }
+
+  /**
+   * Fill missing placeholders with honest fallbacks
+   */
+  fillMissingPlaceholders(text, context) {
+    const safeMap = {
+      character: context.userInfo?.name || 'the child',
+      age: context.userInfo?.age || '6',
+      ethnicity: '', // Leave empty - no lies
+      scene: '', // Leave empty since we have {semantic_scene}  
+      spatial_composition: 'centered in frame',
+      setting: '', // Leave empty - better than lies
+      atmosphere: this.detectAtmosphere(context.pageText), // Smart detection
+      props: '', // Leave empty - no lies about props
+      action_objects: '', // Leave empty - no lies about objects
+      sensory_details: '', // Leave empty - no lies about senses
+      cultural_context: '', // Leave empty - handled by cultural system
+      community_context: '', // Leave empty - no lies about community
+      secondary_characters: '', // Leave empty - handled by character service
+      frameworkPrompt: 'Contemporary children\'s book illustration with warm natural lighting and known for diverse representation', // FALLBACK only
+      cameraDirective: 'warm perspective'
+    };
+    
+    let resolved = text;
+    Object.entries(safeMap).forEach(([key, value]) => {
+      const pattern = new RegExp(`\\{${key}\\}`, 'g');
+      if (pattern.test(resolved) && value !== '') {
+        resolved = resolved.replace(pattern, value);
+      } else if (pattern.test(resolved)) {
+        // Remove empty placeholders completely
+        resolved = resolved.replace(pattern, '');
+      }
+    });
+    
+    return resolved;
   }
 
   /**
