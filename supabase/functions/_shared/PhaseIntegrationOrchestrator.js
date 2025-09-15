@@ -6,7 +6,7 @@
 
 import { CharacterConsistencyService } from './CharacterConsistencyService.js';
 import { VisualDetailTracker } from './VisualDetailTracker.js';
-import { getCulturalSelection } from './tier25Vocabulary.js';
+import { getCulturalBundle } from './StaticDataCache.js';
 
 export class PhaseIntegrationOrchestrator {
   constructor() {

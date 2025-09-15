@@ -4,7 +4,8 @@
  * Replaces scattered placeholder logic with centralized system
  */
 
-import { VOCABULARY, PLACEHOLDER_POOLS, CULTURAL_ARRAYS, pick, getCulturalSelection, createSeededRandom } from './tier25Vocabulary.js';
+import { VOCABULARY, PLACEHOLDER_POOLS, CULTURAL_ARRAYS, pick, createSeededRandom } from './tier25Vocabulary.js';
+import { getCulturalBundle } from './StaticDataCache.js';
 
 export class UnifiedPlaceholderResolver {
   constructor() {
@@ -168,8 +169,8 @@ export class UnifiedPlaceholderResolver {
     const culturalType = this.detectCulturalContext(userInfo);
     resolved = resolved.replace(/\{hair\}/g, () => {
       if (culturalType === 'african') {
-        const characterSeed = userInfo?.sessionId ? this.generateCulturalSeed(userInfo.name, userInfo.sessionId) : undefined;
-        return getCulturalSelection('african', 'hair', characterSeed) || '';
+        const culturalBundle = getCulturalBundle(userInfo, userInfo?.sessionId || 'default');
+        return culturalBundle.hair || '';
       }
       return ''; // No hair description for non-African users
     });
@@ -177,8 +178,8 @@ export class UnifiedPlaceholderResolver {
     // Map {features} to cultural features logic for Template 2.5B nuclear independence  
     resolved = resolved.replace(/\{features\}/g, () => {
       if (culturalType === 'african') {
-        const characterSeed = userInfo?.sessionId ? this.generateCulturalSeed(userInfo.name, userInfo.sessionId) + 1 : undefined;
-        return getCulturalSelection('african', 'features', characterSeed) || '';
+        const culturalBundle = getCulturalBundle(userInfo, userInfo?.sessionId || 'default');
+        return culturalBundle.features || '';
       }
       return ''; // No features description for non-African users
     });
@@ -243,14 +244,14 @@ export class UnifiedPlaceholderResolver {
     // Cultural hair and features
     resolved = resolved.replace(/\{cultural\.hair\}/g, () => {
       if (culturalType === 'none') return '';
-      const characterSeed = userInfo?.sessionId ? this.generateCulturalSeed(userInfo.name, userInfo.sessionId) : undefined;
-      return getCulturalSelection(culturalType, 'hair', characterSeed) || '';
+      const culturalBundle = getCulturalBundle(userInfo, userInfo?.sessionId || 'default');
+      return culturalBundle.hair || '';
     });
 
     resolved = resolved.replace(/\{cultural\.features\}/g, () => {
       if (culturalType === 'none') return '';
-      const characterSeed = userInfo?.sessionId ? this.generateCulturalSeed(userInfo.name, userInfo.sessionId) + 1 : undefined;
-      return getCulturalSelection(culturalType, 'features', characterSeed) || '';
+      const culturalBundle = getCulturalBundle(userInfo, userInfo?.sessionId || 'default');
+      return culturalBundle.features || '';
     });
 
     return resolved;
@@ -314,11 +315,10 @@ export class UnifiedPlaceholderResolver {
     const userName = userInfo?.name || userInfo?.childName || 'child';
     const culturalSeed = this.generateCulturalSeed(userName, sessionId);
     
-    // Cultural context detection - Only returns 'african' or 'none'
-    // All other cultural arrays have been removed as they were never used
-    // Use seeded random to select from CULTURAL_ARRAYS.african
-    const selectedHair = getCulturalSelection('african', 'hair', culturalSeed);
-    const selectedFeatures = getCulturalSelection('african', 'features', culturalSeed + 1);
+    // Use seeded random to select from StaticDataCache cultural bundle
+    const culturalBundle = getCulturalBundle(userInfo, sessionId);
+    const selectedHair = culturalBundle.hair;
+    const selectedFeatures = culturalBundle.features;
     
     // Combine into enhancement string
     const enhancements = [selectedHair, selectedFeatures].filter(Boolean).join(', ');

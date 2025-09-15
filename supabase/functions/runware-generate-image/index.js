@@ -90,7 +90,8 @@ function generateInlineNuclearNegative(culturalProfile, avatarType, difficulty) 
 import { phaseIntegrationOrchestrator } from '../_shared/PhaseIntegrationOrchestrator.js';
 import { CharacterConsistencyService } from '../_shared/CharacterConsistencyService.js';
 import { visualDetailTracker } from '../_shared/VisualDetailTracker.js';
-import { CULTURAL_ARRAYS, getCulturalSelection, createSeededRandom } from '../_shared/tier25Vocabulary.js';
+import { CULTURAL_ARRAYS, createSeededRandom } from '../_shared/tier25Vocabulary.js';
+import { getCulturalBundle } from '../_shared/StaticDataCache.js';
 
 // ============= PHASE B5: CENTRALIZED ERROR HANDLING =============
 class EdgeErrorHandler {
@@ -482,8 +483,9 @@ async function buildTier1EnhancedPrompt(prompt, userInfo, avatarIdentity, styleF
       const culturalSeedNumber = Math.abs(hash % 999999) + 1;
       
       // Get seeded cultural selections
-      const selectedHair = getCulturalSelection('african', 'hair', culturalSeedNumber);
-      const selectedFeatures = getCulturalSelection('african', 'features', culturalSeedNumber + 1);
+      const culturalBundle = getCulturalBundle(userInfo, sessionId);
+      const selectedHair = culturalBundle.hair;
+      const selectedFeatures = culturalBundle.features;
       
       if (selectedHair && selectedFeatures) {
         culturalEnhancements = `with ${selectedHair}, ${selectedFeatures}`;
