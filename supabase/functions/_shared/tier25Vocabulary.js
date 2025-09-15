@@ -101,28 +101,6 @@ export function createSeededRandom(seed) {
   };
 }
 
-export function getCulturalSelection(culturalType, feature, seed) {
-  // Route to StaticDataCache.js for cultural selections
-  if (culturalType === 'african') {
-    // Import and use StaticDataCache functions
-    try {
-      if (feature === 'hair') {
-        const { getAfricanAmericanHair } = await import('./StaticDataCache.js');
-        return getAfricanAmericanHair('boy', seed); // Default to boy, should be enhanced with gender
-      }
-      if (feature === 'features') {
-        const { getAfricanAmericanFeatures } = await import('./StaticDataCache.js');
-        return getAfricanAmericanFeatures(seed);
-      }
-    } catch (error) {
-      console.warn('StaticDataCache import failed, using empty fallback:', error);
-      return '';
-    }
-  }
-  
-  // All other cultural types return empty (no longer supported)
-  return '';
-}
 
 // ============= UNIFIED VOCABULARY - EXTENDED VERSION =============
 const TIER_25_UNIFIED_VOCABULARY_EXTENDED = {

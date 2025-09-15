@@ -4,7 +4,27 @@
  * 1:1 parity with frontend src/services/StaticDataCache.ts
  */
 
-import { pick, createSeededRandom } from './tier25Vocabulary.js';
+// Local helper functions to avoid circular imports
+function pick(arr, seed) {
+  if (!Array.isArray(arr) || arr.length === 0) return '';
+  
+  if (seed !== undefined) {
+    // Use seeded random for consistency
+    const seededRandom = createSeededRandom(seed);
+    return arr[Math.floor(seededRandom() * arr.length)];
+  }
+  
+  // Fallback to Math.random for backward compatibility
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function createSeededRandom(seed) {
+  let currentSeed = seed;
+  return function() {
+    currentSeed = (currentSeed * 9301 + 49297) % 233280;
+    return currentSeed / 233280;
+  };
+}
 
 // ============= HAIR BY SKIN TONE MAPPING - 73 VARIATIONS =============
 // Complete hair color mapping system for all skin tones

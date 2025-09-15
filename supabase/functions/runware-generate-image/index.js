@@ -745,15 +745,6 @@ serve(async (req) => {
     } else {
       console.log(`✅ [${requestId}] Pre-flight check passed`);
     }
-        requestId
-      }), {
-        status: 503,
-        headers: { 
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        }
-      });
-    }
     
     // PHASE A: Mandatory boot validation
     const bootResult = await CrashProofBootSystem.validateBoot();
