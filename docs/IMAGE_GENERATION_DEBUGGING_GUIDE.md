@@ -169,6 +169,39 @@ ERROR Template AB: VisualTracker method not found
 INFO Template AB: Falling back to basic template without character consistency
 ```
 
+### Schema Validation Issues (NEW)
+
+#### pageText vs storyText Validation Error
+**Symptoms**:
+- ImageTierTester showing "Edge Function returned a non-2xx status code"
+- Force Tier 1 Full Flow test failing with generic error message
+- Error category: VALIDATION
+- Probable cause: "Validation error: required pageText missing (payload used storyText)"
+
+**Root Cause**: 
+- `runware-generate-image` function expects `pageText` parameter
+- `ImageTierTester` was sending `storyText` parameter instead
+- This causes a 400 validation error but `supabase.functions.invoke` hides the detailed error
+
+**Debug Steps**:
+1. Check tester payload in browser dev tools network tab
+2. Look for "pageText vs storyText" in edge function logs
+3. Use preflight GET probe to verify endpoint health before POST
+4. Check requestId correlation across frontend and backend logs
+
+**Fix Applied**:
+1. Updated `ImageTierTester.tsx` to use `pageText` instead of `storyText` in all function calls
+2. Added `storyText` fallback alias support in `runware-generate-image` function
+3. Enhanced error categorization with preflight GET probe
+4. Added VALIDATION error category with specific probable cause hints
+
+**Log Examples**:
+```
+INFO 📝 [REQ-abc123] Using storyText as pageText fallback
+ERROR Edge Function returned a non-2xx status code
+VALIDATION Validation error: required pageText missing (payload used storyText)
+```
+
 ### Tier 1 Issues
 
 #### OpenAI API Timeouts

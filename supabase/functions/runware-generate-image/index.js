@@ -594,14 +594,21 @@ serve(async (req) => {
     // Handle POST requests (image generation)
     if (req.method === 'POST') {
       const body = await req.json();
-      const { pageText, userInfo, sessionId, pageNumber, avatarIdentity } = body;
+      // Accept both pageText and storyText (for backward compatibility)
+      let { pageText, storyText, userInfo, sessionId, pageNumber, avatarIdentity } = body;
+      
+      // Use storyText as fallback alias for pageText
+      if (!pageText && storyText) {
+        pageText = storyText;
+        console.log(`📝 [${requestId}] Using storyText as pageText fallback`);
+      }
       
       console.log(`📸 [${requestId}] Image generation request - Page ${pageNumber}, Session ${sessionId}`);
       
       // Input validation
       if (!pageText || !sessionId) {
         return new Response(JSON.stringify({
-          error: 'Missing required fields: pageText, sessionId',
+          error: 'Missing required fields: pageText (or storyText), sessionId',
           requestId
         }), {
           status: 400,
@@ -689,7 +696,7 @@ serve(async (req) => {
           const templateResult = await CoreUtils.withTimeout(
             supabase.functions.invoke('runware-template-ab', {
               body: {
-                storyText: pageText,
+                pageText: pageText, // Use pageText consistently
                 userInfo,
                 avatarIdentity,
                 templateComplexity,
@@ -719,7 +726,7 @@ serve(async (req) => {
           const nuclearResult = await CoreUtils.withTimeout(
             supabase.functions.invoke('runware-template-cd', {
               body: {
-                storyText: pageText,
+                pageText: pageText, // Use pageText consistently
                 userInfo,
                 avatarIdentity,
                 templateComplexity: 'C',
@@ -779,12 +786,20 @@ serve(async (req) => {
       console.log(`✅ [${requestId}] Image generated successfully, database persistence handled by services`);
       
       // Success response
-      return new Response(JSON.stringify({
+        // Enhanced metadata with prompt information for Tier 1
+        const enhancedMetadata = {
+          ...result.metadata || {},
+          // Add original and enhanced prompts if available
+          originalPrompt: pageText?.substring(0, 200),
+          enhancedPrompt: enhancedStoryData?.enhancedPrompt?.substring(0, 200)
+        };
+        
+        return new Response(JSON.stringify({
         success: true,
         imageURL: result.imageURL,
         provider: result.provider,
         tier: result.tier,
-        metadata: result.metadata || {},
+        metadata: enhancedMetadata,
         requestId
       }), {
         status: 200,

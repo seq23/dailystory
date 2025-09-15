@@ -18,7 +18,7 @@ interface TestResult {
     requestId?: string;
     error?: string;
     probableCause?: string; // NEW: Specific probable cause instead of generic error
-    errorCategory?: 'NETWORK' | 'TIMEOUT' | 'AUTH' | 'CONFIG' | 'INTERNAL' | 'UNKNOWN' | 'SUCCESS'; // NEW: Error categorization
+    errorCategory?: 'NETWORK' | 'TIMEOUT' | 'AUTH' | 'CONFIG' | 'INTERNAL' | 'UNKNOWN' | 'SUCCESS' | 'VALIDATION'; // NEW: Error categorization with validation
     healthCheck?: {
       endpoint: string;
       available: boolean;
@@ -59,6 +59,8 @@ interface TestResult {
     positivePrompt?: string;
     negativePrompt?: string;
     styleFramework?: string;
+    originalPrompt?: string;    // NEW: Original prompt from Tier 1
+    enhancedPrompt?: string;    // NEW: Enhanced prompt from Tier 1
     // Connectivity specific
     successfulConnections?: number;
     totalEndpoints?: number;
@@ -121,6 +123,14 @@ export const ImageTierTester = () => {
       return {
         category: 'NETWORK',
         probableCause: 'Network connectivity issue or service unavailable'
+      };
+    }
+    
+    // Validation errors (400 responses)
+    if (errorMsg.includes('400') || errorMsg.includes('Missing required fields') || errorMsg.includes('non-2xx status code')) {
+      return {
+        category: 'VALIDATION',
+        probableCause: 'Validation error: required pageText missing (payload used storyText)'
       };
     }
     
@@ -275,9 +285,9 @@ export const ImageTierTester = () => {
           const timeoutId = setTimeout(() => controller.abort(), timeout);
           
           const startTime = Date.now();
-          const response = await supabase.functions.invoke(endpoint, {
+            const response = await supabase.functions.invoke(endpoint, {
             body: {
-              storyText: testStoryText.substring(0, 100), // Shorter for batch testing
+              pageText: testStoryText.substring(0, 100), // Fixed: use pageText instead of storyText
               userInfo: buildUserInfo(),
               pageNumber: 1,
               sessionId: crypto.randomUUID()
@@ -343,7 +353,7 @@ export const ImageTierTester = () => {
           const startTime = Date.now();
           const response = await supabase.functions.invoke(tierConfig.endpoint, {
             body: {
-              storyText: testStoryText.substring(0, 200), // Shorter for individual tests
+              pageText: testStoryText.substring(0, 200), // Fixed: use pageText instead of storyText
               userInfo: buildUserInfo(),
               pageNumber: 1,
               sessionId: crypto.randomUUID(),
@@ -422,9 +432,9 @@ export const ImageTierTester = () => {
       const controller = new AbortController();
       setTimeout(() => controller.abort(), 2000); // Abort after 2s to simulate network issue
       
-      await supabase.functions.invoke('runware-generate-image', {
+        await supabase.functions.invoke('runware-generate-image', {
         body: {
-          storyText: testStoryText,
+          pageText: testStoryText, // Fixed: use pageText instead of storyText
           userInfo: buildUserInfo(),
           pageNumber: 1,
           sessionId: crypto.randomUUID()
@@ -452,7 +462,7 @@ export const ImageTierTester = () => {
     const rapidCalls = Array.from({ length: 3 }, (_, i) => 
       supabase.functions.invoke('ai-visual-scene-creator', {
         body: {
-          storyText: `Test ${i + 1}: ${testStoryText.substring(0, 50)}`,
+          pageText: `Test ${i + 1}: ${testStoryText.substring(0, 50)}`, // Fixed: use pageText instead of storyText
           userInfo: buildUserInfo(),
           pageNumber: i + 1,
           sessionId: crypto.randomUUID()
@@ -513,7 +523,7 @@ export const ImageTierTester = () => {
       const startTime = Date.now();
       const response = await supabase.functions.invoke('ai-visual-scene-creator', {
         body: {
-          storyText: testStoryText,
+          pageText: testStoryText, // Fixed: use pageText instead of storyText
           userInfo: buildUserInfo(),
           pageNumber: 1,
           sessionId: crypto.randomUUID()
@@ -582,14 +592,18 @@ export const ImageTierTester = () => {
     setResults([]);
     
     try {
+      // Step 1: Perform preflight GET probe
+      const triageCheck = await performTriageCheck('runware-generate-image');
+      
       DebugLogger.log('image', '🎯 Forcing complete Tier 1 flow (AI scene + image generation)', {
-        forceTier: 'tier-1'
+        forceTier: 'tier-1',
+        triageResult: triageCheck.triageResult
       });
 
       const startTime = Date.now();
       const response = await supabase.functions.invoke('runware-generate-image', {
         body: {
-          storyText: testStoryText,
+          pageText: testStoryText, // Fixed: use pageText instead of storyText
           userInfo: buildUserInfo(),
           pageNumber: 1,
           sessionId: crypto.randomUUID(),
@@ -606,9 +620,20 @@ export const ImageTierTester = () => {
         hasImage: !!response.data?.imageURL
       });
 
-      const { category, probableCause } = !response.error ? 
-        { category: 'SUCCESS', probableCause: 'Tier 1 full prompt flow completed successfully' } :
-        categorizeError(response.error);
+      // Enhanced error categorization with preflight context
+      let category, probableCause;
+      if (!response.error) {
+        category = 'SUCCESS';
+        probableCause = 'Tier 1 full prompt flow completed successfully';
+      } else if (triageCheck.available && triageCheck.status === 200) {
+        // GET passed but POST failed - likely validation issue
+        category = 'VALIDATION';
+        probableCause = 'Validation error: required pageText missing (payload used storyText)';
+      } else {
+        const errorResult = categorizeError(response.error);
+        category = errorResult.category;
+        probableCause = errorResult.probableCause;
+      }
 
       setResults([{
         tier: 'tier-1-full',
@@ -623,9 +648,13 @@ export const ImageTierTester = () => {
           forcedTier: 'tier-1',
           fullPromptFlow: true,
           testType: 'FORCED',
+          healthCheck: triageCheck,
           errorCategory: category as any,
           probableCause,
-          error: response.error?.message || response.data?.error
+          error: response.error?.message || response.data?.error,
+          // NEW: Include prompt metadata if available
+          originalPrompt: response.data?.metadata?.originalPrompt,
+          enhancedPrompt: response.data?.metadata?.enhancedPrompt
         }
       }]);
     } catch (error) {
@@ -663,7 +692,7 @@ export const ImageTierTester = () => {
       const startTime = Date.now();
       const response = await supabase.functions.invoke('runware-generate-image', {
         body: {
-          storyText: testStoryText,
+          pageText: testStoryText, // Fixed: use pageText instead of storyText
           userInfo: buildUserInfo(),
           pageNumber: 1,
           sessionId: crypto.randomUUID(),
@@ -805,7 +834,7 @@ export const ImageTierTester = () => {
 
       const response = await supabase.functions.invoke(functionMap[tier], {
         body: {
-          storyText: testStoryText,
+          pageText: testStoryText, // Fixed: use pageText instead of storyText
           userInfo: buildUserInfo(),
           templateComplexity: templateMap[tier],
           pageNumber: 1,
@@ -1388,9 +1417,32 @@ export const ImageTierTester = () => {
                      )}
 
                      {/* Prompt Display Section */}
-                     {(result.details.positivePrompt || result.details.negativePrompt) && (
+                     {(result.details.positivePrompt || result.details.negativePrompt || result.details.originalPrompt || result.details.enhancedPrompt) && (
                        <div className="text-sm border rounded p-2 bg-green-50">
                          <span className="font-medium text-green-700">Generated Prompts Used:</span>
+                         
+                         {/* NEW: Tier 1 Prompt Metadata */}
+                         {result.details.originalPrompt && (
+                           <details className="mt-2">
+                             <summary className="cursor-pointer text-xs font-medium text-blue-600">
+                               Original Prompt ({result.details.originalPrompt.length} chars)
+                             </summary>
+                             <div className="mt-1 text-xs bg-white p-2 rounded border max-h-32 overflow-y-auto">
+                               {result.details.originalPrompt}
+                             </div>
+                           </details>
+                         )}
+                         
+                         {result.details.enhancedPrompt && (
+                           <details className="mt-2">
+                             <summary className="cursor-pointer text-xs font-medium text-purple-600">
+                               Enhanced Prompt ({result.details.enhancedPrompt.length} chars)
+                             </summary>
+                             <div className="mt-1 text-xs bg-white p-2 rounded border max-h-32 overflow-y-auto">
+                               {result.details.enhancedPrompt}
+                             </div>
+                           </details>
+                         )}
                          
                          {result.details.positivePrompt && (
                            <details className="mt-2">
