@@ -6,7 +6,7 @@
  */
 
 import { safeErrorMessage } from './errorPatterns.js';
-import { CULTURAL_ARRAYS } from './tier25Vocabulary.js';
+import { CULTURAL_ARRAYS, PLACEHOLDER_POOLS } from './tier25Vocabulary.js';
 
 export class CharacterConsistencyService {
   constructor() {
@@ -158,7 +158,6 @@ export class CharacterConsistencyService {
     // Eye color handling removed - let avatar descriptions handle naturally
     
     // Generate consistent clothing style for this character using tier25Vocabulary
-    const { PLACEHOLDER_POOLS } = await import("./tier25Vocabulary.js");
     const clothingStyles = PLACEHOLDER_POOLS.clothingStyles || ['casual', 'colorful', 'comfortable', 'neat', 'playful'];
     const consistentClothingStyle = clothingStyles[Math.floor(seededRandom() * clothingStyles.length)];
 
@@ -541,7 +540,6 @@ export class CharacterConsistencyService {
     const characterAppearance = [];
 
     // Extract colored objects (color + noun combinations) using tier25Vocabulary patterns
-    const { PLACEHOLDER_POOLS } = await import("./tier25Vocabulary.js");
     const coloredObjectPatterns = PLACEHOLDER_POOLS.coloredObjectPatterns || [
       /\b(red|blue|green|yellow|purple|pink|orange|black|white|brown|gray|grey|gold|silver)\s+(\w+)\b/gi,
       /\b(\w+)\s+(red|blue|green|yellow|purple|pink|orange|black|white|brown|gray|grey|gold|silver)\b/gi

@@ -6,6 +6,7 @@
 
 import { CharacterConsistencyService } from './CharacterConsistencyService.js';
 import { VisualDetailTracker } from './VisualDetailTracker.js';
+import { getCulturalSelection } from './tier25Vocabulary.js';
 
 export class PhaseIntegrationOrchestrator {
   constructor() {
@@ -230,7 +231,7 @@ export class PhaseIntegrationOrchestrator {
       const regionalContext = userInfo?.nativeLanguage !== 'en' ? 'culturally appropriate' : 'diverse and inclusive';
       
       // Cultural Enhancements
-      const culturalEnhancements = this.getCulturalEnhancements(userInfo);
+      const culturalEnhancements = this.getCulturalEnhancements(userInfo, sessionId);
       
       // Consistency Details
       const consistencyDetails = visualDescription || 'consistent character design';
@@ -288,16 +289,19 @@ export class PhaseIntegrationOrchestrator {
   }
 
   /**
-   * Get cultural enhancements based on user profile
+   * Get cultural enhancements based on user profile with seeded selection
    */
-  getCulturalEnhancements(userInfo) {
+  getCulturalEnhancements(userInfo, sessionId) {
     const language = userInfo?.nativeLanguage || userInfo?.language || 'en';
     const skinTone = userInfo?.skinTone || userInfo?.avatar?.skinTone || 'light';
     
-    // Apply cultural enhancements for dark-skinned users with supported languages
+    // Apply seeded cultural enhancements for dark-skinned users with supported languages
     if ((skinTone === 'dark' || skinTone === 'darker') && 
         ['en', 'fr', 'es', 'pt'].includes(language.toLowerCase())) {
-      return 'with culturally appropriate African features and natural hair texture';
+      
+      // Use seeded selection for consistent cultural arrays
+      const culturalBundle = getCulturalSelection('african', sessionId || 'default');
+      return `${culturalBundle.hair}, ${culturalBundle.features}`;
     }
     
     return '';

@@ -173,7 +173,7 @@ async function resolvePlaceholders(template, data, hasCulturalIntelligence) {
     const resolution = resolver.resolveAllPlaceholders(template, {
       userInfo,
       seed: additionalData,
-      sessionId: sessionId,
+      sessionId: data.sessionId,
       pageNumber: userInfo?.pageNumber
     });
     const resolvedTemplate = resolution.resolvedText;
@@ -237,6 +237,9 @@ async function resolvePlaceholdersFallback(template, data) {
     const placeholder = `{${key}}`;
     resolvedTemplate = resolvedTemplate.replace(new RegExp(placeholder, 'g'), value || '');
   });
+  
+  // Explicitly handle bundle.culturalEnhancements placeholder
+  resolvedTemplate = resolvedTemplate.replace(/\{bundle\.culturalEnhancements\}/g, '');
 
   // Clean up template
   resolvedTemplate = resolvedTemplate
@@ -340,7 +343,8 @@ async function prepareTemplateData(storyText, userInfo, avatarIdentity, characte
     secondaryCharacters: secondaryCharacters || '',
     frameworkPrompt: frameworkPrompt || 'children\'s book illustration style',
     culturalEnhancements,
-    characterSeed: characterData?.seed // Include character seed for consistency
+    characterSeed: characterData?.seed, // Include character seed for consistency
+    sessionId
   };
 }
 // ============= PHASE 4: ENHANCED SERVICE HEALTH CHECK WITH MONITORING =============
