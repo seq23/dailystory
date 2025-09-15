@@ -147,41 +147,6 @@ export function getCulturalSelection(culturalType, feature, seed) {
   if (!cultural || !cultural[feature]) return '';
   return pick(cultural[feature], seed);
 }
-// ============= TEMP VOCABULARY FOR COMPATIBILITY =============
-const TEMP_VOCABULARY_ACTIONS = {
-  actions: {
-    basic: ['playing', 'running', 'jumping', 'walking', 'sitting', 'standing', 'looking', 'smiling'],
-    creative: ['drawing', 'painting', 'building', 'creating', 'crafting', 'making', 'designing'],
-    sensory: ['listening', 'watching', 'touching', 'smelling', 'tasting', 'feeling', 'sensing'],
-    states: ['thinking', 'wondering', 'dreaming', 'imagining', 'remembering', 'learning'],
-    fantasy: ['flying', 'floating', 'glowing', 'sparkling', 'shimmering', 'dancing'],
-    social: ['talking', 'laughing', 'sharing', 'helping', 'caring', 'loving'],
-    intensity: ['gently', 'carefully', 'excitedly', 'peacefully', 'energetically', 'boldly'],
-    bodyLanguage: ['smiling brightly', 'standing tall', 'sitting cross-legged', 'arms spread wide', 'head tilted thoughtfully'],
-    spatial: ['positioned in foreground', 'standing in center', 'sitting comfortably', 'moving forward confidently']
-  },
-  settings: {
-    indoor: ['room', 'house', 'school', 'library', 'kitchen', 'bedroom', 'classroom'],
-    outdoor: ['park', 'garden', 'playground', 'forest', 'beach', 'field', 'yard'],
-    specific: ['cozy corner', 'sunny spot', 'quiet place', 'bright area', 'comfortable space'],
-    fantasy: ['magical place', 'enchanted garden', 'dreamy landscape', 'wonder-filled space']
-  },
-  environments: {
-    atmosphere: ['sunny', 'bright', 'warm', 'cheerful', 'peaceful', 'cozy', 'magical'],
-    lighting: ['golden hour', 'soft lighting', 'natural light', 'warm glow', 'bright illumination'],
-    weather: ['clear skies', 'gentle breeze', 'perfect weather', 'pleasant atmosphere']
-  },
-  objectCategories: {
-    toys: ['toy', 'ball', 'doll', 'game', 'puzzle', 'blocks'],
-    nature: ['flower', 'tree', 'leaf', 'rock', 'butterfly', 'bird'],
-    books: ['book', 'story', 'journal', 'notebook', 'paper'],
-    food: ['apple', 'snack', 'lunch', 'treat', 'cookie', 'fruit']
-  },
-  contextDetection: {
-    indoor: ['inside', 'room', 'house', 'home', 'indoor', 'kitchen', 'bedroom'],
-    outdoor: ['outside', 'park', 'garden', 'playground', 'outdoor', 'yard', 'field']
-  }
-};
 
 // ============= UNIFIED VOCABULARY - EXTENDED VERSION =============
 const TIER_25_UNIFIED_VOCABULARY_EXTENDED = {
@@ -768,7 +733,6 @@ export const TIER_25_NUCLEAR_OBJECT_INTERACTION = UNIVERSAL_OBJECT_INTERACTION;
 
 // ============= DEFAULT EXPORT - COMPREHENSIVE =============
 export default {
-  TIER_25_UNIFIED_VOCABULARY,
   TIER_25_UNIFIED_VOCABULARY_EXTENDED,
   EXPANDED_COLOR_ARRAY,
   CLOTHING_DETECTION_KEYWORDS,
@@ -788,5 +752,5 @@ export default {
 // ============= EXPORTS FOR UNIFIED PLACEHOLDER RESOLVER =============
 export const VOCABULARY = TIER_25_UNIFIED_VOCABULARY_EXTENDED;
 
-// Legacy export compatibility
-export const CULTURAL_ARRAYS_EXTENDED = TIER_25_UNIFIED_VOCABULARY_EXTENDED;
+// Legacy export compatibility - Export the cultural arrays object specifically
+export { CULTURAL_ARRAYS };
