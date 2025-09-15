@@ -1,6 +1,17 @@
 /**
  * React hook for character consistency management
- * Note: Requires database migration for character_traits and visual_details tables
+ * 
+ * **CURRENT STATUS**: Mock implementation - actual functionality handled by backend
+ * 
+ * **Backend Implementation**: 
+ * - Visual detail tracking: supabase/functions/_shared/VisualDetailTracker.js
+ * - Character consistency: supabase/functions/_shared/CharacterConsistencyService.js
+ * - Database schema: character_traits and visual_details tables
+ * 
+ * **Frontend CharacterConsistencyService**: DEPRECATED - do not use
+ * 
+ * This hook provides mock data until full backend integration is complete.
+ * Real character consistency is handled server-side for security and performance.
  */
 
 import { useState, useEffect, useCallback } from 'react';

@@ -38,6 +38,16 @@ The following TypeScript edge functions are **DEPRECATED** and should not be edi
 - **Reason**: Switching to Runware-only approach per user requirements
 - **Migration Status**: Preserved as emergency backup, not used in production
 
+## Deprecated Frontend Services
+
+### 7. src/services/CharacterConsistencyService.ts
+- **Status**: DEPRECATED - NON-FUNCTIONAL
+- **Purpose**: Frontend character consistency caching (replaced by backend)
+- **Deprecation Date**: 2025-09-15
+- **Reason**: Moved to backend edge functions for security and database integration
+- **Replacement**: Backend `CharacterConsistencyService.js` + `VisualDetailTracker.js`
+- **Migration Status**: Frontend service is mock-only, backend handles all functionality
+
 ## Developer Guidelines
 
 ### 🚨 DO NOT DELETE UNTIL USER IS COMFORTABLE WITH NEW .JS FILES 🚨

@@ -27,38 +27,49 @@ Premium features focus on **experience enhancement**, not image quality:
 
 ## Technical Implementation
 
-### Tier Architecture
+### Current JavaScript Architecture (2025)
 
 ```
 All Users (Guest + Premium)
     ↓
-Tier 1: AI-Enhanced Premium (85-90% success)
+Tier 1: ai-visual-scene-creator/index.js (85-90% success)
     ↓ (on failure)
-Tier 2.5: Template Fallback (95-99% success)  
+Tier 2.5A-B: runware-template-ab/index.js (95-99% success)
+    ↓ (on failure)  
+Tier 2.5C-D: runware-template-cd/index.js (99.9% success)
     ↓ (on failure)
-Tier 4: SVG Placeholder (100% success)
+Tier 4: Frontend SVG Placeholder (100% success)
 ```
+
+**Backend Support**: CharacterConsistencyService.js + VisualDetailTracker.js + Database Integration
 
 ### Quality Standards
 
-#### Tier 1: AI-Enhanced Premium
-- **Technology**: OpenAI + Runware API
+#### Tier 1: AI-Enhanced Premium (JavaScript Implementation)
+- **Function**: `ai-visual-scene-creator/index.js`
+- **Technology**: OpenAI + Runware API with backend integration
 - **Features**: 
   - AI scene analysis and enhancement
-  - Character consistency across pages
-  - Cultural intelligence for appropriate representation
-  - High-resolution, detailed imagery
+  - Database-backed character consistency via `CharacterConsistencyService.js`
+  - Visual detail tracking via `VisualDetailTracker.js`
+  - Cultural intelligence with deterministic profiles
+  - High-resolution, detailed imagery with style framework
 - **Target**: 85-90% success rate
 - **Available To**: **All users**
+- **Database Integration**: `character_traits` and `visual_details` tables
 
-#### Tier 2.5: Nuclear Template Fallback
-- **Technology**: Template-based generation with cultural arrays
+#### Tier 2.5: Nuclear Template Fallback (4-Tier System)
+- **Technology**: JavaScript template-based generation with unified style framework
+- **Sub-Tiers**:
+  - **2.5A-B** (`runware-template-ab/index.js`): Template + shared services
+  - **2.5C-D** (`runware-template-cd/index.js`): Nuclear independence (zero dependencies)
 - **Features**:
   - 4 complexity levels (A, B, C, D)
-  - Character consistency (levels A & B)
-  - Reliable, consistent output
-  - Cultural appropriateness
-- **Target**: 95-99% success rate
+  - Character consistency (A & B via backend services, C & D embedded)
+  - Unified style framework across all difficulty levels
+  - Cultural appropriateness with embedded cultural arrays
+  - Deterministic avatar generation
+- **Target**: 95-99.9% combined success rate
 - **Fallback Only**: When Tier 1 fails
 
 #### Tier 4: SVG Placeholder
