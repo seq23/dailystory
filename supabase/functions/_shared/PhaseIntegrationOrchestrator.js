@@ -300,7 +300,8 @@ export class PhaseIntegrationOrchestrator {
         ['en', 'fr', 'es', 'pt'].includes(language.toLowerCase())) {
       
       // Use seeded selection for consistent cultural arrays
-      const culturalBundle = getCulturalSelection('african', sessionId || 'default');
+      const { getCulturalBundle } = await import('./StaticDataCache.js');
+      const culturalBundle = getCulturalBundle(userInfo, sessionId || 'default');
       return `${culturalBundle.hair}, ${culturalBundle.features}`;
     }
     

@@ -78,6 +78,14 @@ export class UnifiedPlaceholderResolver {
       const afterFinal = (processedText.match(/\{[^}]+\}/g) || []).length;
       console.log(`✅ Final (Honest Fallbacks): Processed ${beforeFinal - afterFinal} remaining placeholders`);
 
+      // CATCH-ALL PLACEHOLDER CLEANUP: Remove any remaining unresolved placeholders
+      const beforeCatchAll = (processedText.match(/\{[^}]+\}/g) || []).length;
+      if (beforeCatchAll > 0) {
+        const unresolvedPlaceholders = processedText.match(/\{[^}]+\}/g);
+        console.warn(`⚠️ Catch-all cleanup removing ${beforeCatchAll} unresolved placeholders:`, unresolvedPlaceholders);
+        processedText = processedText.replace(/\{[^}]+\}/g, '');
+      }
+
       // CLEANUP AND GRAMMAR FIXES
       processedText = this.cleanup(processedText);
 
@@ -394,10 +402,22 @@ export class UnifiedPlaceholderResolver {
    */
 
   /**
-   * Generate semantic scene description from page text
+   * Generate semantic scene description from page text with fallback
    */
   generateSemanticScene(pageText, context) {
-    if (!pageText || typeof pageText !== 'string') return '';
+    if (!pageText || typeof pageText !== 'string' || pageText.trim().length === 0) {
+      // FALLBACK: Use action_objects from PLACEHOLDER_POOLS when pageText is empty
+      console.log('📝 {semantic_scene} fallback: Using action_objects from PLACEHOLDER_POOLS');
+      const { sessionId } = context;
+      
+      if (PLACEHOLDER_POOLS?.actions?.basic && PLACEHOLDER_POOLS?.objectCategories?.toys) {
+        const action = pick(PLACEHOLDER_POOLS.actions.basic, sessionId);
+        const object = pick(PLACEHOLDER_POOLS.objectCategories.toys, sessionId + 1);
+        return `${action} with ${object}`;
+      }
+      
+      return 'playing with colorful toys'; // Ultimate fallback
+    }
     
     const text = pageText.toLowerCase();
     
@@ -406,13 +426,27 @@ export class UnifiedPlaceholderResolver {
     const locationWords = text.match(/\b(park|forest|school|home|garden|beach|kitchen|playground|library|zoo)\b/g) || [];
     const objectWords = text.match(/\b(ball|book|tree|flower|toy|game|puzzle|instrument|food|animal)\b/g) || [];
     
-    // Build semantic scene
+    // Build semantic scene from pageText (primary source)
     const components = [];
     if (actionWords.length > 0) components.push(actionWords[0]);
     if (locationWords.length > 0) components.push(`in the ${locationWords[0]}`);
     if (objectWords.length > 0) components.push(`with ${objectWords[0]}`);
     
-    return components.length > 0 ? components.join(' ') : '';
+    if (components.length > 0) {
+      return components.join(' ');
+    }
+    
+    // Fallback if pageText doesn't yield meaningful components
+    console.log('📝 {semantic_scene} fallback: pageText extraction yielded no components');
+    const { sessionId } = context;
+    
+    if (PLACEHOLDER_POOLS?.actions?.basic && PLACEHOLDER_POOLS?.objectCategories?.toys) {
+      const action = pick(PLACEHOLDER_POOLS.actions.basic, sessionId);
+      const object = pick(PLACEHOLDER_POOLS.objectCategories.toys, sessionId + 1);
+      return `${action} with ${object}`;
+    }
+    
+    return 'engaging in fun activities'; // Ultimate fallback
   }
 
   /**

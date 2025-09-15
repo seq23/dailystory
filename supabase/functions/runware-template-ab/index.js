@@ -208,14 +208,32 @@ async function resolvePlaceholdersFallback(template, data) {
   const childName = userInfo?.name || userInfo?.childName || 'child';
   const framework = frameworkPrompt || 'children\'s book illustration style';
   
-  // Basic placeholder mapping for fallback
+  // Enhanced data processing using StaticDataCache for fallbacks
+  const { getCulturalBundle, shouldApplyCulturalEnhancements, getHairBySkintone, getSkinBySkintone } = await import('../_shared/StaticDataCache.js');
+  
+  // Get cultural enhancements if applicable
+  let hairFallback = 'styled hair';
+  let featuresFallback = 'friendly features';
+  
+  if (shouldApplyCulturalEnhancements(userInfo)) {
+    console.log('🎨 Template AB: Applying cultural enhancements via StaticDataCache');
+    const culturalBundle = getCulturalBundle(userInfo, data.sessionId);
+    hairFallback = culturalBundle.hair;
+    featuresFallback = culturalBundle.features;
+  } else {
+    console.log('🎨 Template AB: Using StaticDataCache generic fallbacks');
+    hairFallback = getHairBySkintone(userInfo?.skinTone || 'medium', data.sessionId);
+    featuresFallback = getSkinBySkintone(userInfo?.skinTone || 'medium', data.sessionId);
+  }
+  
+  // Enhanced placeholder mapping using StaticDataCache fallbacks
   const placeholders = {
     pageText: storyText || '',
     character: childName,
     age: userInfo?.age ? `age ${userInfo.age}` : '',
     ethnicity: 'diverse background',
-    hair: 'styled hair',
-    features: 'friendly features',
+    hair: hairFallback,
+    features: featuresFallback,
     emotion: 'happy and engaged',
     scene: storyText?.substring(0, 50) || 'playing',
     spatial_composition: 'centered composition',

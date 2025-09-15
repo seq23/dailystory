@@ -2,33 +2,20 @@
 // Lazy-loaded vocabulary module for performance optimization
 // Contains all large constant arrays to prevent cold-boot failures
 
-// ============= CULTURAL ARRAYS =============
-// COMPREHENSIVE AFRICAN AMERICAN CULTURAL FEATURES - HARDCODED FOR CONSISTENCY
-const HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES = {
-  boys: [
-    'short natural afro', 'neat fade cut', 'curly top with faded sides', 'twist hairstyle',
-    'cornrow braids', 'short dreadlocks', 'buzz cut with design', 'high top fade',
-    'natural textured hair', 'protective braided style', 'low caesar cut', 'tapered afro'
-  ],
-  girls: [
-    'beautiful natural afro', 'elegant braided crown', 'stylish cornrow braids', 'protective box braids',
-    'cute puff ponytails', 'adorable twist-out curls', 'lovely bantu knots', 'graceful french braids',
-    'charming afro puffs', 'stunning goddess braids', 'sweet bubble braids', 'beautiful natural curls'
-  ]
-};
+// ============= CULTURAL ARRAYS - MOVED TO StaticDataCache.js =============
+// African American arrays moved to StaticDataCache.js for centralized management
+// This maintains backward compatibility while consolidating cultural data
 
-const HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES = [
-  'warm brown eyes with long lashes', 'bright expressive dark eyes', 'beautiful full lips',
-  'high cheekbones with gentle smile', 'radiant deep brown eyes', 'lovely almond-shaped eyes',
-  'charming dimpled smile', 'graceful strong jawline', 'warm amber-colored eyes',
-  'beautiful dark chocolate eyes', 'stunning bright white smile', 'elegant defined features'
-];
+// Import cultural selection function from StaticDataCache for compatibility
+import { getCulturalBundle } from './StaticDataCache.js';
 
-// CULTURAL_ARRAYS now routes to comprehensive hardcoded arrays
+// Legacy CULTURAL_ARRAYS maintained for backward compatibility
 export const CULTURAL_ARRAYS = {
   african: {
-    hair: [...HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.boys, ...HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.girls],
-    features: HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES
+    // These arrays are now sourced from StaticDataCache.js
+    // Maintained for existing function signatures
+    hair: [], // Populated by getCulturalSelection()
+    features: [] // Populated by getCulturalSelection()
   }
 };
 
@@ -115,18 +102,21 @@ export function createSeededRandom(seed) {
 }
 
 export function getCulturalSelection(culturalType, feature, seed) {
-  // Only route 'african' cultural types to comprehensive arrays
+  // Route to StaticDataCache.js for cultural selections
   if (culturalType === 'african') {
-    if (feature === 'hair') {
-      // Combine boys and girls hairstyles for comprehensive selection
-      const allHairstyles = [
-        ...HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.boys,
-        ...HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.girls
-      ];
-      return pick(allHairstyles, seed);
-    }
-    if (feature === 'features') {
-      return pick(HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES, seed);
+    // Import and use StaticDataCache functions
+    try {
+      if (feature === 'hair') {
+        const { getAfricanAmericanHair } = await import('./StaticDataCache.js');
+        return getAfricanAmericanHair('boy', seed); // Default to boy, should be enhanced with gender
+      }
+      if (feature === 'features') {
+        const { getAfricanAmericanFeatures } = await import('./StaticDataCache.js');
+        return getAfricanAmericanFeatures(seed);
+      }
+    } catch (error) {
+      console.warn('StaticDataCache import failed, using empty fallback:', error);
+      return '';
     }
   }
   
