@@ -72,6 +72,7 @@ All functions use `index.ts` as their entry point. JavaScript-only functions hav
 2. **Supabase Dashboard**: Manually remove any functions not in this list
 3. **Deployment**: Functions auto-deploy when code is committed
 4. **Entry Files**: JavaScript-only functions use TypeScript shim files that import the JavaScript implementation
+5. **CI Resilience**: Generic deploy step uses `continue-on-error: true` to ensure explicit per-function deploys always run even if bundling fails
 
 ## Known Supabase Sync Anomalies
 

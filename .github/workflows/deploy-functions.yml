@@ -17,6 +17,7 @@ jobs:
         with:
           version: 1.200.3
       - run: supabase functions deploy --project-ref $SUPABASE_PROJECT_ID
+        continue-on-error: true
       - name: Force deploy activate-discount-code specifically
         run: supabase functions deploy activate-discount-code --project-ref $SUPABASE_PROJECT_ID
       - name: Force deploy ai-visual-scene-creator specifically
