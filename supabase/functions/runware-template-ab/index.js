@@ -5,6 +5,12 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { callRunwareAPIWithRetry } from './callRunwareAPIWithRetry.js';
+import { 
+  getHairBySkintone, 
+  getAfricanAmericanHair, 
+  getAfricanAmericanFeatures, 
+  shouldApplyCulturalEnhancements 
+} from '../_shared/StaticDataCache.js';
 
 // ============= NUCLEAR INDEPENDENCE: COMPLETE STYLE FRAMEWORKS =============
 const NUCLEAR_HARDCODED_STYLE_FRAMEWORKS = {
@@ -311,8 +317,25 @@ class Tier25CompleteFailureError extends Error {
   }
 }
 
+// Summarize page text to 2 sentences max
+function summarizePageText(storyText) {
+  if (!storyText || typeof storyText !== 'string') {
+    return '';
+  }
+  
+  // Split into sentences and take first 2
+  const sentences = storyText.split(/[.!?]+/).filter(s => s.trim().length > 0);
+  const firstTwoSentences = sentences.slice(0, 2);
+  
+  if (firstTwoSentences.length === 0) {
+    return '';
+  }
+  
+  return firstTwoSentences.join('. ').trim() + (firstTwoSentences.length > 0 ? '.' : '');
+}
+
 // Bulletproof basic template data preparation
-function prepareBasicTemplateData(storyText, userInfo, avatarIdentity, frameworkPrompt) {
+function prepareBasicTemplateData(storyText, userInfo, avatarIdentity, frameworkPrompt, sessionId) {
   console.log('🔧 Preparing bulletproof basic template data');
   
   // Extract scene - critical, no fallback allowed
@@ -322,15 +345,43 @@ function prepareBasicTemplateData(storyText, userInfo, avatarIdentity, framework
   }
   
   // Extract/infer setting
-  const setting = extractSimpleSetting(storyText, scene);
+  const setting = inferSettingFromScene(scene);
+  
+  // Summarize story text to 2 sentences max
+  const pageText = summarizePageText(storyText);
   
   // Guaranteed non-null character data
   const character = userInfo?.name || userInfo?.childName || 'child';
   const age = userInfo?.age || 6;
-  
-  // Cultural context (optional)
   const ethnicity = avatarIdentity?.ethnicity || '';
-  const cultural_context = avatarIdentity?.skinTone === 'dark' ? 'with authentic representation' : '';
+  
+  // Cultural enhancement logic using seeded session ID
+  const seedValue = sessionId ? sessionId.split('-')[0] : Date.now().toString();
+  const numericSeed = parseInt(seedValue.replace(/[^0-9]/g, ''), 10) || Date.now();
+  
+  let hairDescription = '';
+  let facialFeatures = '';
+  let cultural_context = '';
+  
+  if (shouldApplyCulturalEnhancements(userInfo)) {
+    // Apply African American hair and facial features for dark skin tones
+    const gender = userInfo?.avatar?.type || (userInfo?.name?.toLowerCase().includes('a') ? 'girl' : 'boy');
+    hairDescription = getAfricanAmericanHair(gender, numericSeed);
+    facialFeatures = getAfricanAmericanFeatures(numericSeed + 1);
+    cultural_context = 'with authentic cultural representation';
+    console.log('🌍 Applied African American cultural enhancements');
+  } else {
+    // Regular hair mapping for non-dark skin users
+    const skinTone = userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium';
+    hairDescription = getHairBySkintone(skinTone, numericSeed);
+    facialFeatures = 'friendly facial features with warm expressive eyes';
+    cultural_context = '';
+    console.log('🎨 Applied standard hair mapping for skin tone:', skinTone);
+  }
+  
+  // Construct full framework prompt with hardcoded style
+  const hardcodedStyle = 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality';
+  const fullFrameworkPrompt = frameworkPrompt ? `${frameworkPrompt}, ${hardcodedStyle}` : hardcodedStyle;
   
   return {
     character,
@@ -338,18 +389,21 @@ function prepareBasicTemplateData(storyText, userInfo, avatarIdentity, framework
     ethnicity,
     scene,
     setting,
+    pageText,
+    hairDescription,
+    facialFeatures,
     cultural_context,
-    frameworkPrompt: frameworkPrompt || 'contemporary children\'s book illustration style'
+    fullFrameworkPrompt
   };
 }
 
 // Bulletproof basic template generation with direct string replacement
-function generateBasicTemplate(storyText, userInfo, avatarIdentity, frameworkPrompt, difficultyLevel = 'level_0-1') {
+function generateBasicTemplate(storyText, userInfo, avatarIdentity, frameworkPrompt, difficultyLevel = 'level_0-1', sessionId) {
   console.log('🛡️ Generating bulletproof basic template');
   
   try {
     // Get bulletproof template data
-    const templateData = prepareBasicTemplateData(storyText, userInfo, avatarIdentity, frameworkPrompt);
+    const templateData = prepareBasicTemplateData(storyText, userInfo, avatarIdentity, frameworkPrompt, sessionId);
     
     // Get basic template
     const template = BASIC_PROMPT_TEMPLATES[difficultyLevel];
@@ -357,23 +411,29 @@ function generateBasicTemplate(storyText, userInfo, avatarIdentity, frameworkPro
       throw new BasicTemplateError(`Invalid difficulty level: ${difficultyLevel}`);
     }
     
-    // Direct string replacement - no complex resolvers
+    // Direct string replacement with all new placeholders
     let result = template
-      .replace(/{character}/g, templateData.character)
-      .replace(/{age}/g, templateData.age)
-      .replace(/{ethnicity}/g, templateData.ethnicity)
-      .replace(/{scene}/g, templateData.scene)
-      .replace(/{setting}/g, templateData.setting)
-      .replace(/{cultural_context}/g, templateData.cultural_context)
-      .replace(/{frameworkPrompt}/g, templateData.frameworkPrompt)
+      .replace(/{character}/g, templateData.character || '')
+      .replace(/{age}/g, templateData.age || '')
+      .replace(/{ethnicity}/g, templateData.ethnicity || '')
+      .replace(/{scene}/g, templateData.scene || '')
+      .replace(/{setting}/g, templateData.setting || '')
+      .replace(/{pageText}/g, templateData.pageText || '')
+      .replace(/{hairDescription}/g, templateData.hairDescription || '')
+      .replace(/{facialFeatures}/g, templateData.facialFeatures || '')
+      .replace(/{cultural_context}/g, templateData.cultural_context || '')
+      .replace(/{fullFrameworkPrompt}/g, templateData.fullFrameworkPrompt || '')
+      .replace(/{frameworkPrompt}/g, templateData.frameworkPrompt || '') // Fallback
       .replace(/{bundle\.culturalEnhancements}/g, ''); // Remove bundle placeholder
     
-    // Clean up result
+    // Clean up result - handle empty values and comma issues
     result = result
-      .replace(/,\s*,/g, ',')
-      .replace(/,\s*\./g, '.')
-      .replace(/\s+/g, ' ')
-      .replace(/,\s*$/g, '')
+      .replace(/,\s*,/g, ',') // Double commas
+      .replace(/,\s*\./g, '.') // Comma before period
+      .replace(/\.\s*,/g, '.') // Period before comma
+      .replace(/,\s*$/g, '') // Trailing comma
+      .replace(/\s+/g, ' ') // Multiple spaces
+      .replace(/,\s*([A-Z])/g, '. $1') // Fix sentence transitions
       .trim();
     
     if (!result || result.length === 0) {
@@ -416,9 +476,9 @@ Narrative: {pageText}.`
 };
 
 const BASIC_PROMPT_TEMPLATES = {
-  'level_0-1': 'Subject: {character} {age}, {ethnicity} {bundle.culturalEnhancements}.\nAction: {scene}.\nEnvironment: {setting}.\nContext: {cultural_context}.\nTechnical: {frameworkPrompt}',
+  'level_0-1': 'Story: {pageText}. Subject: {character}, {age}, {ethnicity}, {hairDescription}, {facialFeatures}. Action: {scene}. Environment: {setting}. Context: {cultural_context}. Technical: {fullFrameworkPrompt}',
   
-  'level_2-4': 'Technical: {frameworkPrompt}.\nSubject: {character} {age}, {ethnicity} {bundle.culturalEnhancements}.\nAction: {scene}.\nEnvironment: {setting}.\nContext: {cultural_context}'
+  'level_2-4': 'Subject: {character}, {age}, {ethnicity}, {hairDescription}, {facialFeatures}. Action: {scene}. Environment: {setting}. Context: {cultural_context}. Technical: {fullFrameworkPrompt}. Story: {pageText}'
 };
 
 // ============= PHASE 3: UNIVERSAL PLACEHOLDER RESOLUTION INTEGRATION =============
@@ -583,7 +643,7 @@ async function resolvePlaceholdersFallback(template, data) {
   if (!resolvedTemplate || resolvedTemplate.length === 0) {
     console.warn('⚠️ Fallback resolver failed, attempting bulletproof basic template');
     try {
-      return generateBasicTemplate(storyText, userInfo, avatarIdentity, framework);
+      return generateBasicTemplate(storyText, userInfo, avatarIdentity, framework, difficultyLevel, sessionId);
     } catch (error) {
       console.error('❌ Bulletproof basic template also failed, triggering tier downgrade');
       throw new Tier25CompleteFailureError('Both fallback and basic template generation failed');
@@ -951,7 +1011,7 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
       
       // Fallback to bulletproof basic template generation
       try {
-        var resolvedPositivePrompt = generateBasicTemplate(storyText, userInfo, avatarIdentity, frameworkPrompt, difficultyLevel);
+        var resolvedPositivePrompt = generateBasicTemplate(storyText, userInfo, avatarIdentity, frameworkPrompt, difficultyLevel, sessionId);
       } catch (basicError) {
         console.error('❌ Bulletproof basic template also failed:', basicError);
         
