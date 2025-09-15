@@ -305,8 +305,19 @@ async function generateWithRunware(apiKey, prompt, sessionId, requestId, userInf
     throw new Error('Invalid Runware API key');
   }
 
+  // PHASE 2: Load style framework and negative prompts
+  const getStyleFrameworkFn = await getStyleFramework();
+  const generateNuclearNegativePromptFn = await getNuclearNegativePrompt();
+  
+  // Get difficulty from userInfo for style framework selection
+  const difficulty = userInfo?.difficulty || userInfo?.gradeLevel || 'medium';
+  const styleFramework = getStyleFrameworkFn ? getStyleFrameworkFn(difficulty) : null;
+  
+  console.log(`🎨 [${requestId}] Using style framework: ${styleFramework?.name || 'fallback'} for difficulty: ${difficulty}`);
+  
   // PHASE 4: Use enhanced prompt from Phase Integration Orchestrator if available
   let enhancedPrompt = enhancedStoryData?.enhancedPrompt || prompt;
+  let basePrompt = prompt;
   
   // Fallback to traditional enhancement if no enhanced data available
   if (!enhancedStoryData?.enhancedPrompt && userInfo) {
@@ -314,14 +325,37 @@ async function generateWithRunware(apiKey, prompt, sessionId, requestId, userInf
     const characterDesc = avatarIdentity?.visualDescription || `${userInfo.gradeLevel || 'young'} child`;
     const culturalContext = avatarIdentity?.culturalContext || 'diverse and inclusive';
     
+    // Use style framework if available
+    const stylePrompt = styleFramework?.frameworkPrompt || 'Contemporary children\'s book illustration, warm and inviting, soft lighting, vibrant but gentle colors';
+    
     enhancedPrompt = `Create a beautiful children's book illustration showing: ${prompt}
 
 Character Description: ${characterDesc}
 Cultural Context: ${culturalContext}
-Art Style: Contemporary children's book illustration, warm and inviting, soft lighting, vibrant but gentle colors
+Art Style: ${stylePrompt}
 Quality: Ultra high resolution, detailed artwork suitable for children's literature
 
 The illustration should be engaging for ${userInfo.gradeLevel || 'young'} readers and maintain visual consistency with previous scenes.`;
+  }
+  
+  // PHASE 2: Generate comprehensive negative prompt
+  let negativePrompt = '';
+  if (generateNuclearNegativePromptFn && userInfo) {
+    try {
+      const culturalProfile = {
+        nativeLanguage: userInfo.nativeLanguage || 'en',
+        skinTone: userInfo.avatar?.skinTone || avatarIdentity?.skinTone || 'light'
+      };
+      const avatarType = userInfo.avatar?.type || avatarIdentity?.type || 'child';
+      
+      negativePrompt = generateNuclearNegativePromptFn(culturalProfile, avatarType, difficulty, pageNumber, []);
+      console.log(`🎨 [${requestId}] Generated comprehensive negative prompt: ${negativePrompt.length} chars`);
+    } catch (error) {
+      console.warn(`⚠️ [${requestId}] Failed to generate nuclear negative prompt:`, error.message);
+      negativePrompt = 'bad anatomy, deformed, blurry, low quality, distorted face, extra limbs, malformed hands, poorly drawn, artifacts, noise, oversaturated';
+    }
+  } else {
+    negativePrompt = 'bad anatomy, deformed, blurry, low quality, distorted face, extra limbs, malformed hands, poorly drawn, artifacts, noise, oversaturated';
   }
   
   console.log(`🎨 [${requestId}] Enhanced prompt length: ${enhancedPrompt.length} chars`);
@@ -362,11 +396,12 @@ The illustration should be engaging for ${userInfo.gradeLevel || 'young'} reader
         if (response.data) {
           for (const item of response.data) {
             if (item.taskType === "authentication") {
-              // Send image generation request
+              // Send image generation request with negative prompt
               ws.send(JSON.stringify([{
                 taskType: "imageInference",
                 taskUUID: crypto.randomUUID(),
                 positivePrompt: enhancedPrompt,
+                negativePrompt: negativePrompt,
                 model: "runware:100@1",
                 width: 1024,
                 height: 1024,
@@ -382,7 +417,18 @@ The illustration should be engaging for ${userInfo.gradeLevel || 'young'} reader
                 success: true,
                 imageURL: item.imageURL,
                 provider: 'runware',
-                tier: 1
+                tier: 1,
+                // PHASE 3: Add comprehensive metadata
+                originalPrompt: basePrompt,
+                basePrompt: basePrompt,
+                enhancedPrompt: enhancedPrompt,
+                negativePrompt: negativePrompt,
+                styleFramework: styleFramework?.name || 'fallback',
+                promptLengths: {
+                  original: basePrompt.length,
+                  enhanced: enhancedPrompt.length,
+                  negative: negativePrompt.length
+                }
               });
             }
           }
@@ -790,8 +836,8 @@ serve(async (req) => {
         const enhancedMetadata = {
           ...result.metadata || {},
           // Add original and enhanced prompts if available
-          originalPrompt: pageText?.substring(0, 200),
-          enhancedPrompt: enhancedStoryData?.enhancedPrompt?.substring(0, 200)
+          originalPrompt: pageText, // PHASE 3: Return full original prompt
+          enhancedPrompt: enhancedStoryData?.enhancedPrompt
         };
         
         return new Response(JSON.stringify({

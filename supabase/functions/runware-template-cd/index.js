@@ -5,6 +5,7 @@
 // Pure pageText + style framework (C) or hardcoded template (D)
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { generateNuclearNegativePrompt } from '../_shared/NuclearNegativePrompts.js';
 
 // ============= INLINED STYLE FRAMEWORKS =============
 // Inlined to make edge function self-contained
@@ -94,27 +95,69 @@ function getComplexityLevel(userInfo, templateComplexity) {
 function generateTier25C(storyText, userInfo, avatarIdentity) {
   console.log('🎯 Tier 2.5C: Generating Emergency Framework Template with UNIFIED Style Framework');
   
+  // PHASE 5: Enhanced pageText validation and fallback logic
+  const pageTextLength = (storyText || '').trim().length;
+  const hasValidPageText = pageTextLength >= 50;
+  
+  if (!hasValidPageText) {
+    console.log('⚠️ Tier 2.5C: Insufficient pageText, falling back to Tier 2.5D');
+    return {
+      ...generateTier25D(),
+      fallbackReason: `pageText too short (${pageTextLength} chars, minimum 50)`,
+      autoFallback: true
+    };
+  }
+  
   const difficulty = userInfo?.difficulty || 'medium';
   const styleFramework = getStyleFramework(difficulty);
   
   console.log('🎨 Retrieved', styleFramework.name, 'style framework for difficulty:', difficulty);
   
-  // Fallback to basic template using unified style framework
+  // PHASE 5: Enhanced user info processing with cultural context
   const childName = userInfo?.name || userInfo?.childName || 'child';
   const age = userInfo?.age || 8;
-  const truncatedText = (storyText || '').substring(0, 500);
+  const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'diverse';
+  const culturalContext = userInfo?.nativeLanguage !== 'en' ? 'culturally appropriate' : 'diverse and inclusive';
   
-  // Use the unified style framework system
-  const positivePrompt = `${styleFramework.frameworkPrompt}. ${childName}, age ${age} in scene: ${truncatedText}. Simple children's illustration style.`;
-  const negativePrompt = styleFramework.negativePrompt + ', photorealistic, adult themes, complex details';
+  // PHASE 5: Support up to 2000 characters of pageText
+  const maxTextLength = 2000;
+  const truncatedText = storyText.length > maxTextLength ? 
+    storyText.substring(0, maxTextLength) + '...' : 
+    storyText;
+  
+  // Enhanced character description with cultural context
+  const characterDescription = `${childName}, age ${age}, ${skinTone} complexion`;
+  
+  // Use the unified style framework system with cultural enhancements
+  const positivePrompt = `${styleFramework.frameworkPrompt}. ${characterDescription} in the following scene: ${truncatedText}. ${culturalContext} representation, engaging children's illustration.`;
+  
+  // PHASE 5: Generate comprehensive negative prompt
+  let negativePrompt;
+  try {
+    const culturalProfile = {
+      nativeLanguage: userInfo?.nativeLanguage || 'en',
+      skinTone: skinTone
+    };
+    const avatarType = userInfo?.avatar?.type || 'child';
+    
+    negativePrompt = generateNuclearNegativePrompt(culturalProfile, avatarType, difficulty, 1, []);
+    console.log(`🎨 Tier 2.5C: Generated comprehensive negative prompt: ${negativePrompt.length} chars`);
+  } catch (error) {
+    console.warn('⚠️ Tier 2.5C: Failed to generate nuclear negative prompt, using fallback:', error.message);
+    negativePrompt = styleFramework.negativePrompt + ', photorealistic, adult themes, complex details';
+  }
   
   return {
     positivePrompt,
     negativePrompt,
-    templateType: 'Emergency Framework Template - Unified Style Framework',
+    templateType: 'Emergency Framework Template - Enhanced with Cultural Intelligence',
     tier: '2.5C',
-    culturalIntelligence: false,
-    styleFrameworkUsed: styleFramework.name
+    culturalIntelligence: true,
+    styleFrameworkUsed: styleFramework.name,
+    pageTextLength: pageTextLength,
+    truncationStatus: storyText.length > maxTextLength ? 'truncated' : 'full',
+    culturalContext: culturalContext,
+    userInfoUsed: true
   };
 }
 
@@ -127,16 +170,26 @@ function generateTier25D() {
   
   const positivePrompt = `${styleFramework.frameworkPrompt}. A diverse group of four beautiful child characters with graceful features and charming expressions, each holding colorful hand-drawn signs that say 'IMAGES ARE DOWN' in playful, child-friendly lettering. The children display resilient smiles despite the technical difficulty, showing positivity and teamwork. Child-friendly aesthetic with diverse representation, warm expressions, and bright vibrant colors optimized for young audiences.`;
   
-  const negativePrompt = styleFramework.negativePrompt + ', blurry, low quality, dark, scary, violent, inappropriate, adult content';
+  // PHASE 5: Use comprehensive negative prompt for Tier 2.5D
+  let negativePrompt;
+  try {
+    const culturalProfile = { nativeLanguage: 'en', skinTone: 'diverse' };
+    negativePrompt = generateNuclearNegativePrompt(culturalProfile, 'child', 'medium', 1, []);
+    console.log(`🎨 Tier 2.5D: Generated comprehensive negative prompt: ${negativePrompt.length} chars`);
+  } catch (error) {
+    console.warn('⚠️ Tier 2.5D: Failed to generate nuclear negative prompt, using fallback:', error.message);
+    negativePrompt = styleFramework.negativePrompt + ', blurry, low quality, dark, scary, violent, inappropriate, adult content';
+  }
   
   console.log('✅ Tier 2.5D: Ultimate Emergency Template with unified style framework generated');
   
   return {
     positivePrompt,
     negativePrompt,
-    templateType: 'Ultimate Emergency Fallback Template - Unified Style Framework',
+    templateType: 'Ultimate Emergency Fallback Template - Enhanced with Nuclear Safety',
     tier: '2.5D',
-    styleFrameworkUsed: styleFramework.name
+    styleFrameworkUsed: styleFramework.name,
+    emergencyMode: true
   };
 }
 
@@ -298,6 +351,18 @@ serve(async (req) => {
       complexity: complexity,
       styleFrameworkUsed: template.styleFrameworkUsed,
       difficultyLevel: userInfo?.difficulty || 'medium',
+      // PHASE 5: Enhanced metadata return
+      pageTextLength: template.pageTextLength,
+      truncationStatus: template.truncationStatus,
+      culturalContext: template.culturalContext,
+      userInfoUsed: template.userInfoUsed,
+      fallbackReason: template.fallbackReason,
+      autoFallback: template.autoFallback,
+      emergencyMode: template.emergencyMode,
+      promptLengths: {
+        positive: template.positivePrompt.length,
+        negative: template.negativePrompt.length
+      },
       timestamp: new Date().toISOString(),
       sessionId,
       pageNumber,

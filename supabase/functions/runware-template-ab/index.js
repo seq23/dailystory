@@ -5,6 +5,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getStyleFramework } from '../_shared/styleFrameworks.js';
+import { generateNuclearNegativePrompt } from '../_shared/NuclearNegativePrompts.js';
 
 console.log(`INIT runware-template-ab boot at ${new Date().toISOString()} | std@0.168.0`);
 
@@ -272,7 +273,7 @@ async function processSecondaryCharacters(complexity, storyText, sessionId, page
     console.log('🎭 Tier 2.5B: Limited secondary character support (names only)');
     
     // Simple name-only detection without service dependencies (nuclear independence)
-    const nameMatches = storyText.match(/\b[A-Z][a-z]{2,12}\b/g) || [];
+    const nameMatches = (storyText || '').match(/\b[A-Z][a-z]{2,12}\b/g) || [];
     const uniqueNames = [...new Set(nameMatches)]
       .filter(name => name.length > 2 && name !== 'The' && name !== 'And')
       .slice(0, 2); // Limit to 2 for simplicity
@@ -718,12 +719,16 @@ serve(async (req) => {
       success: true,
       imageURL: imageData.imageURL,
       positivePrompt: template.positivePrompt,
-      negativePrompt: template.negativePrompt,
+      negativePrompt: template.negativePrompt, // PHASE 4: Add negative prompt to response
+      styleFramework: template.styleFrameworkUsed, // PHASE 4: Add style framework info
+      templateType: template.templateType,
       tier: '2.5A-B - Template AB',
       complexity: complexity,
-      templateType: template.templateType,
       enhancementLevel: template.enhancementLevel,
-      styleFrameworkUsed: template.styleFrameworkUsed,
+      promptLengths: { // PHASE 4: Add prompt length statistics
+        positive: template.positivePrompt.length,
+        negative: template.negativePrompt?.length || 0
+      },
       difficultyLevel: userInfo?.difficulty || 'medium',
       sessionId: sessionId,
       pageNumber: pageNumber,

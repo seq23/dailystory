@@ -60,7 +60,14 @@ interface TestResult {
     negativePrompt?: string;
     styleFramework?: string;
     originalPrompt?: string;    // NEW: Original prompt from Tier 1
+    basePrompt?: string;        // NEW: Base prompt from Tier 1
     enhancedPrompt?: string;    // NEW: Enhanced prompt from Tier 1
+    promptLengths?: {           // NEW: Prompt length statistics
+      original?: number;
+      enhanced?: number;
+      negative?: number;
+      positive?: number;
+    };
     // Connectivity specific
     successfulConnections?: number;
     totalEndpoints?: number;
