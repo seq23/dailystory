@@ -99,19 +99,21 @@ export class UnifiedPlaceholderResolver {
     // Use seeded values if available, otherwise pick from vocabulary
     const getSeededValue = (key, fallbackArray) => {
       if (seed[key]) return seed[key];
-      return pick(fallbackArray);
+      // Use character seed for consistency if available
+      const characterSeed = seed.characterSeed || seed.seed;
+      return pick(fallbackArray, characterSeed);
     };
 
     // Story elements
-    resolved = resolved.replace(/\{animal\}/g, getSeededValue('animal', VOCABULARY.animals.domestic));
-    resolved = resolved.replace(/\{pet\}/g, getSeededValue('pet', VOCABULARY.animals.domestic));
-    resolved = resolved.replace(/\{color\}/g, getSeededValue('color', VOCABULARY.colors));
-    resolved = resolved.replace(/\{size\}/g, getSeededValue('size', VOCABULARY.sizes));
+    resolved = resolved.replace(/\{animal\}/g, getSeededValue('animal', PLACEHOLDER_POOLS.animals));
+    resolved = resolved.replace(/\{pet\}/g, getSeededValue('pet', PLACEHOLDER_POOLS.animals));
+    resolved = resolved.replace(/\{color\}/g, getSeededValue('color', PLACEHOLDER_POOLS.colors));
+    resolved = resolved.replace(/\{size\}/g, getSeededValue('size', PLACEHOLDER_POOLS.sizes));
     resolved = resolved.replace(/\{food\}/g, getSeededValue('food', PLACEHOLDER_POOLS.foods));
     resolved = resolved.replace(/\{setting\}/g, getSeededValue('setting', PLACEHOLDER_POOLS.settings));
     resolved = resolved.replace(/\{activity\}/g, getSeededValue('activity', PLACEHOLDER_POOLS.activities));
     resolved = resolved.replace(/\{emotion\}/g, getSeededValue('emotion', PLACEHOLDER_POOLS.emotions));
-    resolved = resolved.replace(/\{object\}/g, getSeededValue('object', VOCABULARY.objects));
+    resolved = resolved.replace(/\{object\}/g, getSeededValue('object', PLACEHOLDER_POOLS.activities)); // Fallback to activities
 
     // Apply pronoun-based grammar fixes
     const pronoun = this.derivePronoun(userInfo);
@@ -129,19 +131,24 @@ export class UnifiedPlaceholderResolver {
     // Replace vocabulary-specific placeholders
     Object.entries(PLACEHOLDER_POOLS).forEach(([category, pool]) => {
       const regex = new RegExp(`\\{${category}\\}`, 'g');
-      resolved = resolved.replace(regex, () => pick(pool));
+      resolved = resolved.replace(regex, () => {
+        const characterSeed = context.seed?.characterSeed || context.seed?.seed;
+        return pick(pool, characterSeed);
+      });
     });
 
     // Special combined placeholders
     resolved = resolved.replace(/\{colorful\.object\}/g, () => {
-      const color = pick(VOCABULARY.colors);
-      const object = pick(VOCABULARY.objects);
+      const characterSeed = context.seed?.characterSeed || context.seed?.seed;
+      const color = pick(PLACEHOLDER_POOLS.colors, characterSeed);
+      const object = pick(PLACEHOLDER_POOLS.activities, characterSeed + 1); // Use activities as objects
       return `${color} ${object}`;
     });
 
     resolved = resolved.replace(/\{sized\.animal\}/g, () => {
-      const size = pick(VOCABULARY.sizes);
-      const animal = pick(VOCABULARY.animals.domestic);
+      const characterSeed = context.seed?.characterSeed || context.seed?.seed;
+      const size = pick(PLACEHOLDER_POOLS.sizes, characterSeed);
+      const animal = pick(PLACEHOLDER_POOLS.animals, characterSeed + 1);
       return `${size} ${animal}`;
     });
 
@@ -159,11 +166,13 @@ export class UnifiedPlaceholderResolver {
 
     // Cultural hair and features
     resolved = resolved.replace(/\{cultural\.hair\}/g, () => {
-      return getCulturalSelection(culturalType, 'hair') || pick(VOCABULARY.cultural.european.hair);
+      const characterSeed = userInfo?.sessionId ? this.generateCulturalSeed(userInfo.name, userInfo.sessionId) : undefined;
+      return getCulturalSelection(culturalType, 'hair', characterSeed) || pick(CULTURAL_ARRAYS.european.hair, characterSeed);
     });
 
     resolved = resolved.replace(/\{cultural\.features\}/g, () => {
-      return getCulturalSelection(culturalType, 'features') || pick(VOCABULARY.cultural.european.features);
+      const characterSeed = userInfo?.sessionId ? this.generateCulturalSeed(userInfo.name, userInfo.sessionId) + 1 : undefined;
+      return getCulturalSelection(culturalType, 'features', characterSeed) || pick(CULTURAL_ARRAYS.european.features, characterSeed);
     });
 
     return resolved;

@@ -147,11 +147,8 @@ export function getCulturalSelection(culturalType, feature, seed) {
   if (!cultural || !cultural[feature]) return '';
   return pick(cultural[feature], seed);
 }
-// ============= EXPORTS FOR UNIFIED PLACEHOLDER RESOLVER =============
-export const VOCABULARY = TIER_25_UNIFIED_VOCABULARY_EXTENDED;
-
-// Legacy export compatibility
-export const CULTURAL_ARRAYS_EXTENDED = TIER_25_UNIFIED_VOCABULARY_EXTENDED;
+// ============= TEMP VOCABULARY FOR COMPATIBILITY =============
+const TEMP_VOCABULARY_ACTIONS = {
   actions: {
     basic: ['playing', 'running', 'jumping', 'walking', 'sitting', 'standing', 'looking', 'smiling'],
     creative: ['drawing', 'painting', 'building', 'creating', 'crafting', 'making', 'designing'],

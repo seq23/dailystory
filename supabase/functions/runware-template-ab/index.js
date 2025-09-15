@@ -137,7 +137,8 @@ async function resolvePlaceholders(template, data, hasCulturalIntelligence) {
       frameworkPrompt: frameworkPrompt || 'children\'s book illustration style',
       secondaryCharacters: secondaryCharacters || '',
       visualDetails: visualDetails,
-      characterData: characterData
+      characterData: characterData,
+      characterSeed: characterData?.seed // Include character seed for consistency
     };
     
     const resolution = resolver.resolveAllPlaceholders(template, {
@@ -308,7 +309,8 @@ async function prepareTemplateData(storyText, userInfo, avatarIdentity, characte
     visualDetails,
     secondaryCharacters: secondaryCharacters || '',
     frameworkPrompt: frameworkPrompt || 'children\'s book illustration style',
-    culturalEnhancements
+    culturalEnhancements,
+    characterSeed: characterData?.seed // Include character seed for consistency
   };
 }
 // ============= PHASE 4: ENHANCED SERVICE HEALTH CHECK WITH MONITORING =============
