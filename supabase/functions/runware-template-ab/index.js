@@ -173,7 +173,7 @@ async function resolvePlaceholders(template, data, hasCulturalIntelligence) {
     const resolution = resolver.resolveAllPlaceholders(template, {
       userInfo,
       seed: additionalData,
-      sessionId: userInfo?.sessionId,
+      sessionId: sessionId,
       pageNumber: userInfo?.pageNumber
     });
     const resolvedTemplate = resolution.resolvedText;
@@ -320,12 +320,12 @@ async function processSecondaryCharacters(complexity, storyText, sessionId, page
 }
 
 // Enhanced template data preparation with secondary characters
-async function prepareTemplateData(storyText, userInfo, avatarIdentity, characterData, visualDetails, frameworkPrompt, secondaryCharacters) {
+async function prepareTemplateData(storyText, userInfo, avatarIdentity, characterData, visualDetails, frameworkPrompt, secondaryCharacters, sessionId) {
   // Resolve cultural enhancements using UniversalPlaceholderResolver
   let culturalEnhancements = '';
   try {
     const resolver = await getUniversalResolver();
-    culturalEnhancements = resolver.resolveCulturalEnhancements(userInfo, userInfo?.sessionId);
+    culturalEnhancements = resolver.resolveCulturalEnhancements(userInfo, sessionId);
   } catch (error) {
     console.warn('Cultural enhancements resolution failed:', error);
     culturalEnhancements = '';
@@ -504,7 +504,8 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
       characterData, 
       visualDetails, 
       frameworkPrompt,
-      secondaryCharacters
+      secondaryCharacters,
+      sessionId
     );
     
     const positivePrompt = await resolvePlaceholders(template, templateData, true);
@@ -582,7 +583,8 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
       null, // No characterData for nuclear independence
       null, // No visualDetails for nuclear independence  
       frameworkPrompt,
-      secondaryCharactersB
+      secondaryCharactersB,
+      sessionId
     );
     
     // Use UnifiedPlaceholderResolver for cultural logic (includes {hair} and {features} mapping)

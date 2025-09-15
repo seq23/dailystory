@@ -383,18 +383,14 @@ export class CharacterConsistencyService {
     const detectedCharacters = [];
     const text = pageText.toLowerCase();
     
-    // Common secondary character patterns using tier25Vocabulary
-    const { PLACEHOLDER_POOLS } = await import("./tier25Vocabulary.js");
-    const characterPatterns = PLACEHOLDER_POOLS.characterPatterns || [
-      /\b([A-Z][a-z]+)\b/g,
+    // Common secondary character patterns - fixed syntax error (removed await import)
+    const characterPatterns = [
       // Family relationships
       /\b(mom|mother|dad|father|brother|sister|grandma|grandmother|grandpa|grandfather|aunt|uncle|cousin)\b/gi,
       // Friends and companions
       /\b(friend|buddy|pal|companion|classmate|teammate|neighbor)\b/gi,
       // Titles and roles
-      /\b(teacher|doctor|nurse|police|firefighter|mailman|baker|farmer)\b/gi
-    ];
-      /\b(mom|mother|dad|father|grandma|grandpa|sister|brother|uncle|aunt)\b/g,
+      /\b(teacher|doctor|nurse|police|firefighter|mailman|baker|farmer)\b/gi,
       // Community roles
       /\b(teacher|doctor|nurse|mailman|neighbor|friend|classmate)\b/g,
       // Animals

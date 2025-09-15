@@ -20,9 +20,9 @@ import { getStyleFramework } from '../_shared/styleFrameworks.js';
 import { generateNuclearNegativePrompt } from '../_shared/NuclearNegativePrompts.js';
 // Direct imports for character consistency and visual tracking
 import { phaseIntegrationOrchestrator } from '../_shared/PhaseIntegrationOrchestrator.js';
-import { CharacterService } from '../_shared/CharacterConsistencyService.js';
+import { CharacterConsistencyService } from '../_shared/CharacterConsistencyService.js';
 import { visualDetailTracker } from '../_shared/VisualDetailTracker.js';
-import { CULTURAL_ARRAYS } from '../_shared/tier25Vocabulary.js';
+import { CULTURAL_ARRAYS, getCulturalSelection, createSeededRandom } from '../_shared/tier25Vocabulary.js';
 
 // ============= PHASE B5: CENTRALIZED ERROR HANDLING =============
 class EdgeErrorHandler {
@@ -340,18 +340,19 @@ async function buildTier1EnhancedPrompt(prompt, userInfo, avatarIdentity, styleF
     avatarIdentity_str = `${characterName}, ${age}`;
     
     // Get character traits using direct imports
-    if (CharacterService && sessionId) {
+    if (CharacterConsistencyService && sessionId) {
       try {
-        const existingAppearance = await CharacterService.getCharacterAppearanceFromStory(sessionId, characterName);
+        const characterService = CharacterConsistencyService.getInstance();
+        const existingAppearance = await characterService.getCharacterAppearanceFromStory(sessionId, characterName);
         if (existingAppearance) {
           previousAppearance = existingAppearance;
           console.log(`✅ [${requestId}] Found existing character appearance`);
         }
         
         // Extract traits from current story
-        const storyTraits = CharacterService.extractTraitsFromStory(prompt, characterName);
+        const storyTraits = characterService.extractTraitsFromStory(prompt, characterName);
         if (storyTraits && Object.keys(storyTraits).length > 0) {
-          consistencyDetails = CharacterService.generateVisualDescription(storyTraits, characterName);
+          consistencyDetails = characterService.generateVisualDescription(storyTraits, characterName);
           console.log(`✅ [${requestId}] Generated visual traits consistency`);
         }
       } catch (error) {
@@ -375,19 +376,40 @@ async function buildTier1EnhancedPrompt(prompt, userInfo, avatarIdentity, styleF
       }
     }
     
-    // Cultural enhancements using embedded logic
-    const getCulturalEnhancements = (userInfo) => {
-      const language = userInfo?.nativeLanguage || userInfo?.language || 'en';
+    // Cultural enhancements using seeded selection from tier25Vocabulary
+    const detectCulturalContext = (userInfo) => {
       const skinTone = userInfo?.skinTone || userInfo?.avatar?.skinTone || 'light';
       
-      if ((skinTone === 'dark' || skinTone === 'darker') && 
-          ['en', 'fr', 'es', 'pt'].includes(language.toLowerCase())) {
-        return 'with culturally appropriate African features and natural hair texture';
+      if (skinTone === 'dark' || skinTone === 'darker') {
+        return 'african'; // ALL dark skin users get African cultural features
       }
-      return '';
+      
+      return 'none'; // Light skin users get no cultural enhancements
     };
     
-    culturalEnhancements = getCulturalEnhancements(userInfo);
+    const culturalContext = detectCulturalContext(userInfo);
+    if (culturalContext === 'african' && sessionId) {
+      // Generate seeded cultural selections for consistency
+      const userName = userInfo?.displayName || userInfo?.name || 'User';
+      const culturalSeed = `${userName}_${sessionId}_cultural`;
+      
+      // Generate seeded hash for cultural consistency
+      let hash = 0;
+      for (let i = 0; i < culturalSeed.length; i++) {
+        hash = ((hash << 5) - hash) + culturalSeed.charCodeAt(i);
+        hash = hash & hash;
+      }
+      const culturalSeedNumber = Math.abs(hash % 999999) + 1;
+      
+      // Get seeded cultural selections
+      const selectedHair = getCulturalSelection('african', 'hair', culturalSeedNumber);
+      const selectedFeatures = getCulturalSelection('african', 'features', culturalSeedNumber + 1);
+      
+      if (selectedHair && selectedFeatures) {
+        culturalEnhancements = `with ${selectedHair}, ${selectedFeatures}`;
+        console.log(`🎨 [${requestId}] Generated seeded cultural bundle: ${culturalEnhancements}`);
+      }
+    }
     
   } catch (error) {
     console.warn(`⚠️ [${requestId}] Character consistency setup failed:`, error.message);

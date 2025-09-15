@@ -3,8 +3,34 @@
 // Contains all large constant arrays to prevent cold-boot failures
 
 // ============= CULTURAL ARRAYS =============
-// CULTURAL_ARRAYS now empty - all routing goes to HARDCODED_AFRICAN_AMERICAN_* comprehensive arrays
-export const CULTURAL_ARRAYS = {};
+// COMPREHENSIVE AFRICAN AMERICAN CULTURAL FEATURES - HARDCODED FOR CONSISTENCY
+const HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES = {
+  boys: [
+    'short natural afro', 'neat fade cut', 'curly top with faded sides', 'twist hairstyle',
+    'cornrow braids', 'short dreadlocks', 'buzz cut with design', 'high top fade',
+    'natural textured hair', 'protective braided style', 'low caesar cut', 'tapered afro'
+  ],
+  girls: [
+    'beautiful natural afro', 'elegant braided crown', 'stylish cornrow braids', 'protective box braids',
+    'cute puff ponytails', 'adorable twist-out curls', 'lovely bantu knots', 'graceful french braids',
+    'charming afro puffs', 'stunning goddess braids', 'sweet bubble braids', 'beautiful natural curls'
+  ]
+};
+
+const HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES = [
+  'warm brown eyes with long lashes', 'bright expressive dark eyes', 'beautiful full lips',
+  'high cheekbones with gentle smile', 'radiant deep brown eyes', 'lovely almond-shaped eyes',
+  'charming dimpled smile', 'graceful strong jawline', 'warm amber-colored eyes',
+  'beautiful dark chocolate eyes', 'stunning bright white smile', 'elegant defined features'
+];
+
+// CULTURAL_ARRAYS now routes to comprehensive hardcoded arrays
+export const CULTURAL_ARRAYS = {
+  african: {
+    hair: [...HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.boys, ...HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.girls],
+    features: HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES
+  }
+};
 
 // ============= PLACEHOLDER POOLS =============
 export const PLACEHOLDER_POOLS = {
