@@ -23,21 +23,38 @@ function inlineDetectCultural(userInfo, avatarIdentity) {
 }
 
 function generateInlineNuclearNegative(culturalProfile, avatarType, difficulty) {
+  // NUCLEAR UNIFIED BASE - Word-for-Word as Specified
   const base = 'NO TEXT, no words, no letters, no writing, no captions, no watermarks, no signatures, no logos, bad anatomy, deformed, blurry, low quality, distorted face, extra limbs, malformed hands, poorly drawn, artifacts, noise, oversaturated, underexposed, overexposed, duplicate, cropped, watermark, signature, text, logo, bad lighting, flat lighting, plastic skin, waxy skin, artificial look, uncanny valley';
+  
+  // GENDER-SPECIFIC NEGATIVES - Word-for-Word as Specified  
+  const boysNegative = 'NO feminine features, makeup, female anatomy, girl clothing, long feminine hairstyles, feminine accessories, narrow shoulders, feminine body structure, female proportions, feminine expressions, girl toys, female-coded activities exclusively';
+  const girlsNegative = 'NO masculine features, facial hair, male anatomy, boy clothing, short masculine haircuts, broad shoulders, angular jaw, masculine body structure, male proportions, masculine expressions, boy toys, male-coded activities exclusively';
+  const genderNeutralNegative = 'NO overly gendered features, extreme masculine traits, extreme feminine traits, gender-specific clothing, highly gendered toys, overly masculine expressions, overly feminine expressions, binary gender stereotypes, gendered color schemes exclusively';
+  
+  // COMPREHENSIVE AFRICAN AMERICAN PROTECTION (Complete 25+ Item List)
+  const africanAmericanNegativeBlock = 'skin lightening, whitewashing, pale skin, light skin, caucasian features, european features, fair complexion, light complexion, white skin tone, bleached skin, lightened skin, washed out skin, faded skin tone, stereotypes, caricature, exaggerated features, cultural appropriation, offensive stereotypes, racial caricature, minstrel imagery, tokenism, straight hair texture, caucasian hair, european hair texture, fine hair texture, silky straight hair, pin straight hair, unnaturally straight hair, narrow nose, thin lips, small features, delicate bone structure, european bone structure, caucasian facial structure, non-African features';
+  
+  // UNIVERSAL CULTURAL SENSITIVITY 
+  const culturalSensitivityNegativeBlock = 'cultural stereotypes, racial stereotypes, ethnic stereotypes, cultural caricature, offensive imagery, discriminatory content, prejudicial representation, cultural mockery, insensitive portrayal, appropriative elements, tokenistic representation, oversimplified culture, cultural reduction';
   
   let negativeComponents = [base];
   
-  if (culturalProfile === 'african-american') {
-    negativeComponents.push('skin lightening', 'whitewashing', 'pale skin', 'light skin', 'caucasian features', 'cultural stereotypes');
-  }
-  
+  // Apply gender-specific negatives
   if (avatarType && avatarType.includes('boy')) {
-    negativeComponents.push('makeup', 'lipstick', 'feminine hairstyles', 'dress', 'skirt', 'feminine clothing', 'feminine accessories', 'feminine poses');
+    negativeComponents.push(boysNegative);
+  } else if (avatarType && avatarType.includes('girl')) {
+    negativeComponents.push(girlsNegative);
+  } else {
+    negativeComponents.push(genderNeutralNegative);
   }
   
-  if (avatarType && avatarType.includes('girl')) {
-    negativeComponents.push('facial hair', 'beard', 'mustache', 'masculine clothing', 'suit', 'tie', 'masculine accessories', 'masculine poses', '(especially for Emma)');
+  // Apply African American protection
+  if (culturalProfile === 'african-american') {
+    negativeComponents.push(africanAmericanNegativeBlock);
   }
+  
+  // Always apply cultural sensitivity
+  negativeComponents.push(culturalSensitivityNegativeBlock);
   
   return negativeComponents.join(', ');
 }

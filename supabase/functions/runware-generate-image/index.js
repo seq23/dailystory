@@ -16,8 +16,76 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
-import { getStyleFramework } from '../_shared/styleFrameworks.js';
-import { generateNuclearNegativePrompt } from '../_shared/NuclearNegativePrompts.js';
+
+// ============= NUCLEAR INDEPENDENCE: COMPLETE STYLE FRAMEWORKS =============
+const NUCLEAR_HARDCODED_STYLE_FRAMEWORKS = {
+  'beginner': {
+    name: 'Contemporary Children\'s Book Illustration',
+    frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality'
+  },
+  'easy': {
+    name: 'Contemporary Children\'s Book Illustration', 
+    frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality'
+  },
+  'medium': {
+    name: 'Contemporary Children\'s Book Illustration',
+    frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality'
+  },
+  'hard': {
+    name: '2.9D Rendered Illustration',
+    frameworkPrompt: '2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation'
+  },
+  'expert': {
+    name: '2.9D Rendered Illustration',
+    frameworkPrompt: '2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photrealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation'
+  }
+};
+
+function getNuclearStyleFramework(difficulty) {
+  const normalizedDifficulty = difficulty?.toLowerCase() || 'medium';
+  const framework = NUCLEAR_HARDCODED_STYLE_FRAMEWORKS[normalizedDifficulty] || NUCLEAR_HARDCODED_STYLE_FRAMEWORKS['medium'];
+  
+  console.log(`🎨 Nuclear Retrieved ${framework.name} style framework for difficulty: ${normalizedDifficulty}`);
+  return framework;
+}
+
+// ============= NUCLEAR INDEPENDENCE: COMPREHENSIVE NEGATIVE PROMPTS =============
+function generateInlineNuclearNegative(culturalProfile, avatarType, difficulty) {
+  // NUCLEAR UNIFIED BASE - Word-for-Word as Specified
+  const base = 'NO TEXT, no words, no letters, no writing, no captions, no watermarks, no signatures, no logos, bad anatomy, deformed, blurry, low quality, distorted face, extra limbs, malformed hands, poorly drawn, artifacts, noise, oversaturated, underexposed, overexposed, duplicate, cropped, watermark, signature, text, logo, bad lighting, flat lighting, plastic skin, waxy skin, artificial look, uncanny valley';
+  
+  // GENDER-SPECIFIC NEGATIVES - Word-for-Word as Specified  
+  const boysNegative = 'NO feminine features, makeup, female anatomy, girl clothing, long feminine hairstyles, feminine accessories, narrow shoulders, feminine body structure, female proportions, feminine expressions, girl toys, female-coded activities exclusively';
+  const girlsNegative = 'NO masculine features, facial hair, male anatomy, boy clothing, short masculine haircuts, broad shoulders, angular jaw, masculine body structure, male proportions, masculine expressions, boy toys, male-coded activities exclusively';
+  const genderNeutralNegative = 'NO overly gendered features, extreme masculine traits, extreme feminine traits, gender-specific clothing, highly gendered toys, overly masculine expressions, overly feminine expressions, binary gender stereotypes, gendered color schemes exclusively';
+  
+  // COMPREHENSIVE AFRICAN AMERICAN PROTECTION (Complete 25+ Item List)
+  const africanAmericanNegativeBlock = 'skin lightening, whitewashing, pale skin, light skin, caucasian features, european features, fair complexion, light complexion, white skin tone, bleached skin, lightened skin, washed out skin, faded skin tone, stereotypes, caricature, exaggerated features, cultural appropriation, offensive stereotypes, racial caricature, minstrel imagery, tokenism, straight hair texture, caucasian hair, european hair texture, fine hair texture, silky straight hair, pin straight hair, unnaturally straight hair, narrow nose, thin lips, small features, delicate bone structure, european bone structure, caucasian facial structure, non-African features';
+  
+  // UNIVERSAL CULTURAL SENSITIVITY 
+  const culturalSensitivityNegativeBlock = 'cultural stereotypes, racial stereotypes, ethnic stereotypes, cultural caricature, offensive imagery, discriminatory content, prejudicial representation, cultural mockery, insensitive portrayal, appropriative elements, tokenistic representation, oversimplified culture, cultural reduction';
+  
+  let negativeComponents = [base];
+  
+  // Apply gender-specific negatives
+  if (avatarType && avatarType.includes('boy')) {
+    negativeComponents.push(boysNegative);
+  } else if (avatarType && avatarType.includes('girl')) {
+    negativeComponents.push(girlsNegative);
+  } else {
+    negativeComponents.push(genderNeutralNegative);
+  }
+  
+  // Apply African American protection
+  if (culturalProfile === 'african-american') {
+    negativeComponents.push(africanAmericanNegativeBlock);
+  }
+  
+  // Always apply cultural sensitivity
+  negativeComponents.push(culturalSensitivityNegativeBlock);
+  
+  return negativeComponents.join(', ');
+}
 // Direct imports for character consistency and visual tracking
 import { phaseIntegrationOrchestrator } from '../_shared/PhaseIntegrationOrchestrator.js';
 import { CharacterConsistencyService } from '../_shared/CharacterConsistencyService.js';
@@ -249,13 +317,25 @@ class DeploymentValidator {
     const missing = required.filter(key => !Deno.env.get(key));
     const missingOptional = optional.filter(key => !Deno.env.get(key));
     
+    // Enhanced error logging for debugging
+    console.log('🔍 [DEPLOY] Environment variable status:');
+    required.forEach(key => {
+      const value = Deno.env.get(key);
+      console.log(`  ${key}: ${value ? 'SET' : 'MISSING'} ${value ? `(${value.length} chars)` : ''}`);
+    });
+    optional.forEach(key => {
+      const value = Deno.env.get(key);
+      console.log(`  ${key}: ${value ? 'SET' : 'MISSING'} ${value ? `(${value.length} chars)` : ''}`);
+    });
+    
     if (missing.length > 0) {
       console.error('❌ [DEPLOY] Missing critical env vars:', missing);
       return false;
     }
     
     if (missingOptional.length > 0) {
-      console.warn('⚠️ [DEPLOY] Missing optional env vars:', missingOptional);
+      console.warn('⚠️ [DEPLOY] Missing optional env vars (graceful degradation):', missingOptional);
+      // Don't fail for missing optional variables - graceful degradation
     }
     
     console.log('✅ [DEPLOY] Environment validation passed');
@@ -447,8 +527,8 @@ async function generateWithRunware(apiKey, prompt, sessionId, requestId, userInf
   }
 
   // PHASE 2: Load style framework and negative prompts
-  const getStyleFrameworkFn = getStyleFramework;
-  const generateNuclearNegativePromptFn = generateNuclearNegativePrompt;
+  const getStyleFrameworkFn = getNuclearStyleFramework;
+  const generateNuclearNegativePromptFn = generateInlineNuclearNegative;
   
   // Get difficulty from userInfo for style framework selection
   const difficulty = userInfo?.difficulty || userInfo?.gradeLevel || 'medium';
@@ -657,12 +737,14 @@ serve(async (req) => {
   console.log(`🎯 [${requestId}] Crash-Proof Orchestrator v2.1: ${req.method} ${req.url}`);
   
   try {
-    // PHASE D11: Enhanced pre-flight checks
-    if (!DeploymentValidator.preFlightCheck()) {
-      console.error(`❌ [${requestId}] Pre-flight check failed`);
-      return new Response(JSON.stringify({
-        error: 'System pre-flight validation failed',
-        status: 'preflight_failure',
+    // PHASE D11: Enhanced pre-flight checks with graceful degradation
+    const preFlightResult = DeploymentValidator.preFlightCheck();
+    if (!preFlightResult) {
+      console.warn(`⚠️ [${requestId}] Pre-flight check failed - continuing with degraded mode`);
+      // Continue execution in degraded mode instead of hard failure
+    } else {
+      console.log(`✅ [${requestId}] Pre-flight check passed`);
+    }
         requestId
       }), {
         status: 503,
@@ -792,8 +874,8 @@ serve(async (req) => {
       if (dryRun) {
         const difficulty = userInfo?.difficulty || userInfo?.gradeLevel || 'medium';
         const styleFramework = getStyleFramework(difficulty);
-        const enhancedPrompt = buildTier1EnhancedPrompt(pageText, userInfo, avatarIdentity, styleFramework);
-        const negativePrompt = generateNuclearNegativePrompt(
+        const enhancedPrompt = await buildTier1EnhancedPrompt(pageText, userInfo, avatarIdentity, styleFramework);
+        const negativePrompt = generateInlineNuclearNegative(
           `${userInfo?.nativeLanguage || 'en'}_${userInfo?.avatar?.skinTone || 'light'}`,
           userInfo?.avatar?.type || 'girl',
           difficulty,

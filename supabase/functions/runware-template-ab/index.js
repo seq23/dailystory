@@ -4,9 +4,77 @@
 // Lightweight, fast deployment - optimized for simple template generation with character consistency
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { getStyleFramework } from '../_shared/styleFrameworks.js';
-import { generateNuclearNegativePrompt } from '../_shared/NuclearNegativePrompts.js';
 import { callRunwareAPIWithRetry } from './callRunwareAPIWithRetry.js';
+
+// ============= NUCLEAR INDEPENDENCE: COMPLETE STYLE FRAMEWORKS =============
+const NUCLEAR_HARDCODED_STYLE_FRAMEWORKS = {
+  'beginner': {
+    name: 'Contemporary Children\'s Book Illustration',
+    frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality'
+  },
+  'easy': {
+    name: 'Contemporary Children\'s Book Illustration', 
+    frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality'
+  },
+  'medium': {
+    name: 'Contemporary Children\'s Book Illustration',
+    frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality'
+  },
+  'hard': {
+    name: '2.9D Rendered Illustration',
+    frameworkPrompt: '2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation'
+  },
+  'expert': {
+    name: '2.9D Rendered Illustration',
+    frameworkPrompt: '2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation'
+  }
+};
+
+function getNuclearStyleFramework(difficulty) {
+  const normalizedDifficulty = difficulty?.toLowerCase() || 'medium';
+  const framework = NUCLEAR_HARDCODED_STYLE_FRAMEWORKS[normalizedDifficulty] || NUCLEAR_HARDCODED_STYLE_FRAMEWORKS['medium'];
+  
+  console.log(`🎨 Nuclear Retrieved ${framework.name} style framework for difficulty: ${normalizedDifficulty}`);
+  return framework;
+}
+
+// ============= NUCLEAR INDEPENDENCE: COMPREHENSIVE NEGATIVE PROMPTS =============
+function generateInlineNuclearNegative(culturalProfile, avatarType, difficulty) {
+  // NUCLEAR UNIFIED BASE - Word-for-Word as Specified
+  const base = 'NO TEXT, no words, no letters, no writing, no captions, no watermarks, no signatures, no logos, bad anatomy, deformed, blurry, low quality, distorted face, extra limbs, malformed hands, poorly drawn, artifacts, noise, oversaturated, underexposed, overexposed, duplicate, cropped, watermark, signature, text, logo, bad lighting, flat lighting, plastic skin, waxy skin, artificial look, uncanny valley';
+  
+  // GENDER-SPECIFIC NEGATIVES - Word-for-Word as Specified  
+  const boysNegative = 'NO feminine features, makeup, female anatomy, girl clothing, long feminine hairstyles, feminine accessories, narrow shoulders, feminine body structure, female proportions, feminine expressions, girl toys, female-coded activities exclusively';
+  const girlsNegative = 'NO masculine features, facial hair, male anatomy, boy clothing, short masculine haircuts, broad shoulders, angular jaw, masculine body structure, male proportions, masculine expressions, boy toys, male-coded activities exclusively';
+  const genderNeutralNegative = 'NO overly gendered features, extreme masculine traits, extreme feminine traits, gender-specific clothing, highly gendered toys, overly masculine expressions, overly feminine expressions, binary gender stereotypes, gendered color schemes exclusively';
+  
+  // COMPREHENSIVE AFRICAN AMERICAN PROTECTION (Complete 25+ Item List)
+  const africanAmericanNegativeBlock = 'skin lightening, whitewashing, pale skin, light skin, caucasian features, european features, fair complexion, light complexion, white skin tone, bleached skin, lightened skin, washed out skin, faded skin tone, stereotypes, caricature, exaggerated features, cultural appropriation, offensive stereotypes, racial caricature, minstrel imagery, tokenism, straight hair texture, caucasian hair, european hair texture, fine hair texture, silky straight hair, pin straight hair, unnaturally straight hair, narrow nose, thin lips, small features, delicate bone structure, european bone structure, caucasian facial structure, non-African features';
+  
+  // UNIVERSAL CULTURAL SENSITIVITY 
+  const culturalSensitivityNegativeBlock = 'cultural stereotypes, racial stereotypes, ethnic stereotypes, cultural caricature, offensive imagery, discriminatory content, prejudicial representation, cultural mockery, insensitive portrayal, appropriative elements, tokenistic representation, oversimplified culture, cultural reduction';
+  
+  let negativeComponents = [base];
+  
+  // Apply gender-specific negatives
+  if (avatarType && avatarType.includes('boy')) {
+    negativeComponents.push(boysNegative);
+  } else if (avatarType && avatarType.includes('girl')) {
+    negativeComponents.push(girlsNegative);
+  } else {
+    negativeComponents.push(genderNeutralNegative);
+  }
+  
+  // Apply African American protection
+  if (culturalProfile === 'african-american') {
+    negativeComponents.push(africanAmericanNegativeBlock);
+  }
+  
+  // Always apply cultural sensitivity
+  negativeComponents.push(culturalSensitivityNegativeBlock);
+  
+  return negativeComponents.join(', ');
+}
 
 console.log(`INIT runware-template-ab boot at ${new Date().toISOString()} | std@0.168.0`);
 
@@ -510,7 +578,7 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
 
     // Get framework prompt using unified style framework system
     const difficulty = userInfo?.difficulty || 'medium';
-    const styleFramework = getStyleFramework(difficulty);
+    const styleFramework = getNuclearStyleFramework(difficulty);
     const frameworkPrompt = styleFramework.frameworkPrompt;
     
     console.log('🎨 Tier 2.5A: Using unified style framework:', styleFramework.name, 'for difficulty:', difficulty);
@@ -560,7 +628,7 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
     const culturalProfile = avatarIdentity?.nativeLanguage || avatarIdentity?.skinTone || userInfo?.nativeLanguage || 'general';
     const avatarType = userInfo?.avatar?.type || userInfo?.avatarType || 'child';
     const secondaryCharactersArray = secondaryCharacters ? secondaryCharacters.split(',').map(c => c.trim()).filter(c => c) : [];
-    const negativePrompt = generateNuclearNegativePrompt(culturalProfile, avatarType, 'A', pageNumber, secondaryCharactersArray);
+    const negativePrompt = generateInlineNuclearNegative(culturalProfile, avatarType, 'A');
     
     return {
       positivePrompt,
@@ -592,7 +660,7 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
     
     // Get framework prompt using unified style framework system
     const difficulty = userInfo?.difficulty || 'medium';
-    const styleFramework = getStyleFramework(difficulty);
+    const styleFramework = getNuclearStyleFramework(difficulty);
     const frameworkPrompt = styleFramework.frameworkPrompt;
     
     console.log('🎨 Tier 2.5B: Using unified style framework:', styleFramework.name, 'for difficulty:', difficulty);
@@ -639,7 +707,7 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
     const culturalProfile = avatarIdentity?.nativeLanguage || avatarIdentity?.skinTone || userInfo?.nativeLanguage || 'general';
     const avatarType = userInfo?.avatar?.type || userInfo?.avatarType || 'child';
     const secondaryCharactersArray = secondaryCharactersB ? secondaryCharactersB.split(',').map(c => c.trim()).filter(c => c) : [];
-    const negativePrompt = generateNuclearNegativePrompt(culturalProfile, avatarType, 'B', pageNumber, secondaryCharactersArray);
+    const negativePrompt = generateInlineNuclearNegative(culturalProfile, avatarType, 'B');
     
     return {
       positivePrompt,
