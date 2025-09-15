@@ -257,6 +257,8 @@ export class UnifiedPlaceholderResolver {
     const userName = userInfo?.name || userInfo?.childName || 'child';
     const culturalSeed = this.generateCulturalSeed(userName, sessionId);
     
+    // Cultural context detection - Only returns 'african' or 'none'
+    // All other cultural arrays have been removed as they were never used
     // Use seeded random to select from CULTURAL_ARRAYS.african
     const selectedHair = getCulturalSelection('african', 'hair', culturalSeed);
     const selectedFeatures = getCulturalSelection('african', 'features', culturalSeed + 1);

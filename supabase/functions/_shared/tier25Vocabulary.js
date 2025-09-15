@@ -3,82 +3,8 @@
 // Contains all large constant arrays to prevent cold-boot failures
 
 // ============= CULTURAL ARRAYS =============
-export const CULTURAL_ARRAYS = {
-  // European/Western features
-  european: {
-    hair: [
-      'blonde wavy hair', 'light brown curls', 'straight golden hair', 'auburn waves',
-      'honey blonde braids', 'sandy brown ponytail', 'platinum blonde bob',
-      'strawberry blonde curls', 'light brown pigtails', 'golden highlights'
-    ],
-    features: [
-      'bright blue eyes and fair skin', 'green eyes with freckles', 'hazel eyes and rosy cheeks',
-      'gray eyes and pale complexion', 'blue-green eyes', 'amber eyes and light skin'
-    ]
-  },
-
-  // African features  
-  african: {
-    hair: [
-      'beautiful braids', 'natural afro curls', 'twisted hair', 'cornrow braids',
-      'kinky curls', 'dreadlock style', 'protective braids', 'twist-out curls',
-      'bantu knots', 'coily natural hair'
-    ],
-    features: [
-      'warm brown eyes and rich dark skin', 'deep brown eyes and beautiful dark complexion',
-      'bright smile and dark skin', 'expressive brown eyes', 'radiant dark skin',
-      'gorgeous melanin-rich skin and brown eyes'
-    ]
-  },
-
-  // Asian features
-  asian: {
-    hair: [
-      'straight black hair', 'sleek dark hair', 'silky black braids', 'straight dark ponytail',
-      'glossy black hair', 'neat black bob', 'long straight dark hair', 'black hair with bangs'
-    ],
-    features: [
-      'dark brown eyes and warm skin tone', 'almond-shaped brown eyes', 'gentle brown eyes',
-      'expressive dark eyes and golden skin', 'beautiful brown eyes', 'warm golden complexion'
-    ]
-  },
-
-  // Hispanic/Latino features
-  hispanic: {
-    hair: [
-      'wavy dark brown hair', 'curly black hair', 'thick dark waves', 'long dark curls',
-      'beautiful dark hair', 'wavy brunette locks', 'rich brown curls', 'flowing dark hair'
-    ],
-    features: [
-      'warm brown eyes and olive skin', 'dark eyes and tan complexion', 'beautiful brown eyes',
-      'golden brown skin and dark eyes', 'olive complexion and brown eyes', 'warm skin tone'
-    ]
-  },
-
-  // Middle Eastern features
-  middleEastern: {
-    hair: [
-      'thick dark hair', 'wavy black hair', 'curvy dark locks', 'rich brown waves',
-      'beautiful dark curls', 'lustrous black hair', 'wavy brunette hair'
-    ],
-    features: [
-      'deep brown eyes and olive skin', 'dark expressive eyes', 'warm olive complexion',
-      'beautiful brown eyes and tan skin', 'golden olive skin tone'
-    ]
-  },
-
-  // Native American features
-  nativeAmerican: {
-    hair: [
-      'long straight black hair', 'braided dark hair', 'flowing black locks',
-      'traditional braids', 'sleek dark hair', 'long dark hair'
-    ],
-    features: [
-      'dark brown eyes and bronze skin', 'warm brown eyes and tan complexion',
-      'beautiful dark eyes', 'golden bronze skin tone', 'rich brown eyes'
-    ]
-  }
-};
+// CULTURAL_ARRAYS now empty - all routing goes to HARDCODED_AFRICAN_AMERICAN_* comprehensive arrays
+export const CULTURAL_ARRAYS = {};
 
 // ============= PLACEHOLDER POOLS =============
 export const PLACEHOLDER_POOLS = {
@@ -143,9 +69,23 @@ export function createSeededRandom(seed) {
 }
 
 export function getCulturalSelection(culturalType, feature, seed) {
-  const cultural = CULTURAL_ARRAYS[culturalType];
-  if (!cultural || !cultural[feature]) return '';
-  return pick(cultural[feature], seed);
+  // Only route 'african' cultural types to comprehensive arrays
+  if (culturalType === 'african') {
+    if (feature === 'hair') {
+      // Combine boys and girls hairstyles for comprehensive selection
+      const allHairstyles = [
+        ...HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.boys,
+        ...HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES.girls
+      ];
+      return pick(allHairstyles, seed);
+    }
+    if (feature === 'features') {
+      return pick(HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES, seed);
+    }
+  }
+  
+  // All other cultural types return empty (no longer supported)
+  return '';
 }
 
 // ============= UNIFIED VOCABULARY - EXTENDED VERSION =============

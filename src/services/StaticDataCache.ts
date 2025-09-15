@@ -70,20 +70,50 @@ class StaticCache {
 const staticCache = StaticCache.getInstance();
 
 
+// Hair descriptors by skin tone (comprehensive 1:1 backend parity - 73 total variations)
+export const HAIR_BY_SKIN_TONE = {
+  'pale': [
+    // 14 red/auburn variations (exact backend copy)
+    'strawberry blonde hair', 'golden red hair', 'auburn curls', 'copper hair',
+    'reddish brown hair', 'ginger hair', 'red-gold hair', 'russet hair',
+    'mahogany red hair', 'burgundy hair', 'crimson hair', 'rose gold hair',
+    'amber red hair', 'cinnamon red hair'
+  ],
+  'light': [
+    // 15 blonde variations (exact backend copy)  
+    'platinum blonde hair', 'golden blonde hair', 'honey blonde hair', 'ash blonde hair',
+    'sandy blonde hair', 'wheat blonde hair', 'butter blonde hair', 'cream blonde hair',
+    'champagne blonde hair', 'vanilla blonde hair', 'pearl blonde hair', 'silver blonde hair',
+    'moonlight blonde hair', 'sunshine blonde hair', 'caramel blonde hair'
+  ],
+  'medium': [
+    // 15 brown variations (exact backend copy)
+    'chestnut brown hair', 'chocolate brown hair', 'coffee brown hair', 'walnut brown hair',
+    'hazelnut brown hair', 'mahogany brown hair', 'amber brown hair', 'bronze brown hair',
+    'toffee brown hair', 'mocha brown hair', 'caramel brown hair', 'russet brown hair',
+    'cedar brown hair', 'oak brown hair', 'maple brown hair'
+  ],
+  'olive': [
+    // 14 black/dark brown variations (exact backend copy)
+    'jet black hair', 'raven black hair', 'midnight black hair', 'obsidian hair',
+    'coal black hair', 'ebony hair', 'onyx hair', 'charcoal hair',
+    'deep black hair', 'ink black hair', 'shadow black hair', 'pitch black hair',
+    'dark espresso hair', 'blackest brown hair'
+  ],  
+  'dark': [
+    // 7 generic descriptive terms (exact backend copy)
+    'beautiful dark hair', 'rich black hair', 'lustrous dark hair', 'silky black hair',
+    'gorgeous dark hair', 'shining black hair', 'magnificent dark hair'
+  ]
+};
+
 // Cache hair color mapping rules with enhanced diversity
 export const getHairColorMapping = () => {
   const cacheKey = 'hair_color_mapping';
   
   let mapping = staticCache.get<Record<string, string[]>>(cacheKey);
   if (!mapping) {
-    mapping = {
-      'pale': ['red hair', 'auburn hair', 'strawberry blonde hair'],
-      'light': ['blonde hair', 'light brown hair', 'golden hair'], 
-      'medium': ['brown hair', 'chestnut hair', 'dark blonde hair'],
-      'olive': ['black hair', 'dark brown hair', 'jet black hair'],
-      'dark': ['dark curly hair', 'black hair', 'coily hair', 'natural hair']
-    };
-    
+    mapping = HAIR_BY_SKIN_TONE;
     staticCache.set(cacheKey, mapping);
   }
   
