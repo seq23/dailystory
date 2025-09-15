@@ -835,12 +835,17 @@ serve(async (req) => {
       console.log(`✅ [${requestId}] Image generated successfully, database persistence handled by services`);
       
       // Success response
-        // Enhanced metadata with prompt information for Tier 1
+        // Enhanced metadata with actual prompts sent to Runware
         const enhancedMetadata = {
           ...result.metadata || {},
-          // Add original and enhanced prompts if available
-          originalPrompt: pageText, // PHASE 3: Return full original prompt
-          enhancedPrompt: enhancedStoryData?.enhancedPrompt
+          // Use actual prompts from Runware generation result
+          originalPrompt: result.originalPrompt || pageText,
+          basePrompt: result.basePrompt || pageText,
+          enhancedPrompt: result.enhancedPrompt || result.originalPrompt,
+          positivePrompt: result.enhancedPrompt || result.originalPrompt, // What actually gets sent to Runware
+          negativePrompt: result.negativePrompt || '',
+          styleFramework: result.styleFramework || 'unknown',
+          promptLengths: result.promptLengths || { original: pageText.length }
         };
         
         return new Response(JSON.stringify({

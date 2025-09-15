@@ -1423,84 +1423,86 @@ export const ImageTierTester = () => {
                        </details>
                      )}
 
-                     {/* Prompt Display Section */}
-                     {(result.details.positivePrompt || result.details.negativePrompt || result.details.originalPrompt || result.details.enhancedPrompt) && (
-                       <div className="text-sm border rounded p-2 bg-green-50">
-                         <span className="font-medium text-green-700">Generated Prompts Used:</span>
-                         
-                         {/* NEW: Tier 1 Prompt Metadata */}
-                         {result.details.originalPrompt && (
-                           <details className="mt-2">
-                             <summary className="cursor-pointer text-xs font-medium text-blue-600">
-                               Original Prompt ({result.details.originalPrompt.length} chars)
+                      {/* Runware Prompt Display Section */}
+                      {(result.details.positivePrompt || result.details.negativePrompt || result.details.enhancedPrompt || result.details.originalPrompt) && (
+                        <div className="text-sm border rounded p-2 bg-green-50">
+                          <span className="font-medium text-green-700">Actual Runware Prompts:</span>
+                          
+                          {/* Positive Prompt (Enhanced Prompt sent to Runware) */}
+                          {result.details.positivePrompt && (
+                            <details className="mt-2">
+                              <summary className="cursor-pointer text-xs font-medium text-blue-600">
+                                ✨ Positive Prompt ({result.details.positivePrompt.length} chars) - Sent to Runware
+                              </summary>
+                              <div className="mt-1">
+                                <pre className="text-xs bg-blue-50 p-2 rounded border overflow-x-auto max-h-32 overflow-y-auto whitespace-pre-wrap">
+                                  {result.details.positivePrompt}
+                                </pre>
+                              </div>
+                            </details>
+                          )}
+
+                          {/* Negative Prompt */}
+                          {result.details.negativePrompt && (
+                            <details className="mt-2">
+                              <summary className="cursor-pointer text-xs font-medium text-red-600">
+                                🛡️ Negative Prompt ({result.details.negativePrompt.length} chars) - Nuclear Negative
+                              </summary>
+                              <div className="mt-1">
+                                <pre className="text-xs bg-red-50 p-2 rounded border overflow-x-auto max-h-32 overflow-y-auto whitespace-pre-wrap">
+                                  {result.details.negativePrompt}
+                                </pre>
+                              </div>
+                            </details>
+                          )}
+
+                          {/* Style Framework */}
+                          {result.details.styleFramework && (
+                            <div className="mt-2 text-xs">
+                              <span className="font-medium text-purple-600">🎨 Style Framework:</span>
+                              <span className="ml-2 bg-purple-100 px-2 py-1 rounded text-purple-700">
+                                {result.details.styleFramework}
+                              </span>
+                            </div>
+                          )}
+
+                          {/* Prompt Length Stats */}
+                          {result.details.promptLengths && (
+                            <div className="mt-2 text-xs">
+                              <span className="font-medium text-gray-600">📊 Prompt Stats:</span>
+                              <div className="ml-2 mt-1 flex flex-wrap gap-2">
+                                {result.details.promptLengths.original && (
+                                  <span className="bg-gray-100 px-2 py-1 rounded text-gray-700">
+                                    Original: {result.details.promptLengths.original} chars
+                                  </span>
+                                )}
+                                {result.details.promptLengths.enhanced && (
+                                  <span className="bg-blue-100 px-2 py-1 rounded text-blue-700">
+                                    Enhanced: {result.details.promptLengths.enhanced} chars
+                                  </span>
+                                )}
+                                {result.details.promptLengths.negative && (
+                                  <span className="bg-red-100 px-2 py-1 rounded text-red-700">
+                                    Negative: {result.details.promptLengths.negative} chars
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* Fallback: Original Prompt (for backwards compatibility) */}
+                          {!result.details.positivePrompt && result.details.originalPrompt && (
+                            <details className="mt-2">
+                              <summary className="cursor-pointer text-xs font-medium text-gray-600">
+                                📝 Original Input ({result.details.originalPrompt.length} chars)
                              </summary>
                              <div className="mt-1 text-xs bg-white p-2 rounded border max-h-32 overflow-y-auto">
                                {result.details.originalPrompt}
                              </div>
                            </details>
                          )}
-                         
-                         {result.details.enhancedPrompt && (
-                           <details className="mt-2">
-                             <summary className="cursor-pointer text-xs font-medium text-purple-600">
-                               Enhanced Prompt ({result.details.enhancedPrompt.length} chars)
-                             </summary>
-                             <div className="mt-1 text-xs bg-white p-2 rounded border max-h-32 overflow-y-auto">
-                               {result.details.enhancedPrompt}
-                             </div>
-                           </details>
-                         )}
-                         
-                         {result.details.positivePrompt && (
-                           <details className="mt-2">
-                             <summary className="cursor-pointer text-xs font-medium text-green-600">
-                               Positive Prompt ({result.details.positivePrompt.length} chars)
-                             </summary>
-                             <div className="mt-1 text-xs bg-white p-2 rounded border max-h-32 overflow-y-auto">
-                               {result.details.positivePrompt}
-                             </div>
-                           </details>
-                         )}
-                         
-                         {result.details.negativePrompt && (
-                           <details className="mt-2">
-                             <summary className="cursor-pointer text-xs font-medium text-red-600">
-                               Negative Prompt ({result.details.negativePrompt.length} chars)
-                             </summary>
-                             <div className="mt-1 text-xs bg-white p-2 rounded border max-h-32 overflow-y-auto">
-                               {result.details.negativePrompt}
-                             </div>
-                           </details>
-                         )}
-                         
-                          {result.details.styleFramework && (
-                            <div className="mt-2 text-xs">
-                              <strong>Style Framework:</strong> {result.details.styleFramework}
-                            </div>
-                          )}
-                          
-                          {/* NEW: Prompt Length Statistics */}
-                          {result.details.promptLengths && (
-                            <div className="mt-2 text-xs bg-gray-50 p-2 rounded">
-                              <strong>Prompt Length Statistics:</strong>
-                              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-1">
-                                {result.details.promptLengths.original && (
-                                  <div><span className="font-medium">Original:</span> {result.details.promptLengths.original}</div>
-                                )}
-                                {result.details.promptLengths.enhanced && (
-                                  <div><span className="font-medium">Enhanced:</span> {result.details.promptLengths.enhanced}</div>
-                                )}
-                                {result.details.promptLengths.negative && (
-                                  <div><span className="font-medium">Negative:</span> {result.details.promptLengths.negative}</div>
-                                )}
-                                {result.details.promptLengths.positive && (
-                                  <div><span className="font-medium">Positive:</span> {result.details.promptLengths.positive}</div>
-                                )}
-                              </div>
-                            </div>
-                          )}
-                       </div>
-                     )}
+                        </div>
+                      )}
                     
                     {/* Enhanced Routing Analysis */}
                     {result.details.realRoutingFlow && (
