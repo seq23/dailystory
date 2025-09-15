@@ -508,12 +508,7 @@ const CULTURAL_ARRAYS_EXTENDED = {
   // Reference: docs/AFRICAN_AMERICAN_ARRAYS_DO_NOT_TOUCH.md
   // ============= END WARNING =============
 
-  // African American Skin Tones (preserved for legacy compatibility)
-  HARDCODED_AFRICAN_AMERICAN_SKIN_TONES: [
-    'light brown complexion', 'medium brown skin', 'rich brown complexion', 'deep brown skin',
-    'warm caramel complexion', 'golden brown skin', 'mahogany complexion', 'dark chocolate skin',
-    'ebony complexion', 'honey-toned skin', 'bronze complexion', 'chestnut brown skin'
-  ],
+  // African American arrays migrated to StaticDataCache.js for better organization
 
   // Regional Authenticity Strings for Non-English Speakers
   REGIONAL_AUTHENTICITY_STRINGS: {
