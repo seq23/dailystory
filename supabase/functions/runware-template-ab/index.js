@@ -493,9 +493,16 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
     });
     
     console.log('✅ Template AB Tier 2.5A: Successfully using PREMIUM templates with cultural intelligence');
+    
+    // Generate nuclear negative prompt with mixed-gender consistency filters
+    const culturalProfile = avatarIdentity?.nativeLanguage || avatarIdentity?.skinTone || userInfo?.nativeLanguage || 'general';
+    const avatarType = userInfo?.avatar?.type || userInfo?.avatarType || 'child';
+    const secondaryCharactersArray = secondaryCharacters ? secondaryCharacters.split(',').map(c => c.trim()).filter(c => c) : [];
+    const negativePrompt = generateNuclearNegativePrompt(culturalProfile, avatarType, 'A', pageNumber, secondaryCharactersArray);
+    
     return {
       positivePrompt,
-      negativePrompt: 'photorealistic, adult themes, scary, dark, violent, inappropriate',
+      negativePrompt,
       templateType: 'premium-with-cultural-intelligence',
       difficulty: 'A',
       enhancementLevel: 'premium',
@@ -551,9 +558,15 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
       guaranteedOperation: true
     });
     
+    // Generate nuclear negative prompt with mixed-gender consistency filters
+    const culturalProfile = avatarIdentity?.nativeLanguage || avatarIdentity?.skinTone || userInfo?.nativeLanguage || 'general';
+    const avatarType = userInfo?.avatar?.type || userInfo?.avatarType || 'child';
+    const secondaryCharactersArray = secondaryCharactersB ? secondaryCharactersB.split(',').map(c => c.trim()).filter(c => c) : [];
+    const negativePrompt = generateNuclearNegativePrompt(culturalProfile, avatarType, 'B', pageNumber, secondaryCharactersArray);
+    
     return {
       positivePrompt,
-      negativePrompt: 'complex details, photorealistic, adult themes, scary',
+      negativePrompt,
       templateType: 'nuclear-independence-basic',
       difficulty: 'B', 
       enhancementLevel: 'nuclear-independent',
