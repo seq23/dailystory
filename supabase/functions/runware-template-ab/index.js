@@ -455,16 +455,12 @@ serve(async (req) => {
     const culturalProfile = needsCulturalEnhancements ? 'african-american' : 'standard';
     const negativePrompt = generateInlineNuclearNegative(culturalProfile, avatarType, userInfo.difficulty);
     
-    // Call Runware API
-    const imageResult = await callRunwareAPIWithRetry({
-      positivePrompt: resolution.resolvedText,
-      negativePrompt,
-      model: 'runware:100@1',
-      width: 1024,
-      height: 1024,
-      numberResults: 1,
-      outputFormat: 'WEBP'
-    });
+    // Call Runware API - FIX: Use correct function signature
+    console.log(`🔧 [TEMPLATE-AB] Calling Runware API with CFGScale=8, steps=25`);
+    const imageResult = await callRunwareAPIWithRetry(
+      resolution.resolvedText,
+      negativePrompt
+    );
     
     return createResponse({
       success: true,

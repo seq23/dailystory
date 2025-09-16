@@ -505,7 +505,8 @@ async function generateWithRunware(apiKey, prompt, sessionId, requestId, userInf
                 height: 1024,
                 numberResults: 1,
                 outputFormat: "WEBP",
-                CFGScale: 1,
+                steps: 25,
+                CFGScale: 8,
                 scheduler: "FlowMatchEulerDiscreteScheduler"
               }]));
             } else if (item.taskType === "imageInference") {

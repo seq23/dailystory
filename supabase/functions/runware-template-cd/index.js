@@ -260,8 +260,8 @@ async function callRunwareAPI(positivePrompt, negativePrompt, retries = 2) {
             model: "runware:100@1",
             numberResults: 1,
             outputFormat: "WEBP",
-            steps: 30,
-            CFGScale: 10
+            steps: 25,
+            CFGScale: 8
           }
         ])
       });

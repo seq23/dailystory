@@ -71,8 +71,8 @@ export const APP_CONFIG: AppConfig = {
       width: 1024,
       height: 1024,
       outputFormat: 'WEBP',
-      steps: 3,
-      CFGScale: 1.5
+      steps: 25,
+      CFGScale: 8
     },
     dalle: {
       model: 'dall-e-3',

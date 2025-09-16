@@ -64,8 +64,8 @@ export function PromptStudio() {
     parameters: {
       width: 1024,
       height: 1024,
-      cfgScale: 3,
-      steps: 8,
+      cfgScale: 8,
+      steps: 25,
       model: 'runware:100@1',
       outputFormat: 'WEBP',
       seed: null,
@@ -378,7 +378,7 @@ export function PromptStudio() {
                 </div>
 
                 <div>
-                  <Label>CFG Scale: {state.parameters.cfgScale} (Optimal: 3-4)</Label>
+                  <Label>CFG Scale: {state.parameters.cfgScale} (System standard: 8)</Label>
                   <Slider
                     value={[state.parameters.cfgScale]}
                     onValueChange={([value]) => updateParameters({ cfgScale: value })}
@@ -387,26 +387,26 @@ export function PromptStudio() {
                     step={0.5}
                     className="mt-2"
                   />
-                  {(state.parameters.cfgScale < 3 || state.parameters.cfgScale > 4) && (
+                  {state.parameters.cfgScale !== 8 && (
                     <p className="text-xs text-warning mt-1">
-                      ⚠️ For best children's book style consistency, use CFG Scale 3-4
+                      ⚠️ System standard is CFG Scale 8 for consistency
                     </p>
                   )}
                 </div>
 
                 <div>
-                  <Label>Steps: {state.parameters.steps} (Optimal: 8-12)</Label>
+                  <Label>Steps: {state.parameters.steps} (System standard: 25)</Label>
                   <Slider
                     value={[state.parameters.steps]}
                     onValueChange={([value]) => updateParameters({ steps: value })}
                     min={1}
-                    max={20}
+                    max={50}
                     step={1}
                     className="mt-2"
                   />
-                  {(state.parameters.steps < 8 || state.parameters.steps > 12) && (
+                  {state.parameters.steps !== 25 && (
                     <p className="text-xs text-warning mt-1">
-                      ⚠️ For optimal quality/speed balance, use 8-12 steps
+                      ⚠️ System standard is 25 steps for optimal quality
                     </p>
                   )}
                 </div>
@@ -481,23 +481,23 @@ export function PromptStudio() {
                   <Label className="text-sm font-medium">Quality Presets</Label>
                   <div className="grid grid-cols-1 gap-1">
                     <Button
-                      onClick={() => updateParameters({ cfgScale: 3.5, steps: 10 })}
+                      onClick={() => updateParameters({ cfgScale: 8, steps: 25 })}
                       variant="outline"
                       size="sm"
                       className="text-xs"
                     >
-                      📚 Optimal for Characters
+                      🎯 System Standard (8/25)
                     </Button>
                     <Button
-                      onClick={() => updateParameters({ cfgScale: 3, steps: 12 })}
+                      onClick={() => updateParameters({ cfgScale: 6, steps: 20 })}
                       variant="outline"
                       size="sm"
                       className="text-xs"
                     >
-                      🎨 Best for Scenes
+                      🚀 Fast Mode (6/20)
                     </Button>
                     <Button
-                      onClick={() => updateParameters({ cfgScale: 4, steps: 10 })}
+                      onClick={() => updateParameters({ cfgScale: 10, steps: 30 })}
                       variant="outline"
                       size="sm"
                       className="text-xs"

@@ -48,7 +48,7 @@ export function RunwareQualityControls({
 
   const getParameterStatus = () => {
     const { cfgScale, steps } = currentParameters;
-    const isOptimal = (cfgScale >= 3 && cfgScale <= 4) && (steps >= 8 && steps <= 12);
+    const isOptimal = (cfgScale === 8) && (steps === 25);
     
     if (isOptimal) {
       return { status: 'optimal', color: 'default', icon: CheckCircle };
@@ -59,8 +59,8 @@ export function RunwareQualityControls({
 
   const applyOptimalSettings = () => {
     onParametersChange({
-      cfgScale: 3.5,
-      steps: 10
+      cfgScale: 8,
+      steps: 25
     });
   };
 
@@ -112,14 +112,14 @@ export function RunwareQualityControls({
         {parameterStatus.status === 'suboptimal' && (
           <div className="p-3 bg-muted rounded-lg">
             <p className="text-sm text-muted-foreground mb-2">
-              For best children's book quality, use CFG Scale 3-4 and Steps 8-12
+              System standard: CFG Scale 8 and Steps 25 for optimal quality
             </p>
             <Button
               onClick={applyOptimalSettings}
               size="sm"
               className="w-full"
             >
-              Apply Optimal Settings
+              Apply System Standard (8/25)
             </Button>
           </div>
         )}
