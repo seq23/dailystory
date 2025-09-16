@@ -16,15 +16,15 @@ import {
 const NUCLEAR_HARDCODED_STYLE_FRAMEWORKS = {
   'beginner': {
     name: 'Contemporary Children\'s Book Illustration',
-    frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality'
+    frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, warm natural lighting'
   },
   'easy': {
     name: 'Contemporary Children\'s Book Illustration', 
-    frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality'
+    frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, warm natural lighting'
   },
   'medium': {
     name: 'Contemporary Children\'s Book Illustration',
-    frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality'
+    frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, warm natural lighting'
   },
   'hard': {
     name: '2.9D Rendered Illustration',
@@ -104,6 +104,47 @@ async function getUnifiedPlaceholderResolver() {
     console.warn('UnifiedPlaceholderResolver lazy load failed:', error);
     return null;
   }
+}
+
+// ============= REGIONAL ETHNICITY DERIVATION =============
+function deriveRegionalEthnicity(userInfo, avatarIdentity) {
+  // Primary: Use avatar ethnicity if available
+  if (avatarIdentity?.ethnicity) {
+    return avatarIdentity.ethnicity;
+  }
+  
+  // Secondary: Derive from language and skin tone
+  const nativeLanguage = userInfo?.nativeLanguage || userInfo?.language || 'en';
+  const skinTone = userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium';
+  
+  // Language-based ethnicity mapping
+  const languageEthnicityMap = {
+    'es': 'Hispanic',
+    'pt': 'Portuguese',
+    'fr': 'French',
+    'it': 'Italian',
+    'de': 'German',
+    'zh': 'Chinese',
+    'ja': 'Japanese',
+    'ko': 'Korean',
+    'ar': 'Arabic',
+    'hi': 'Indian',
+    'ru': 'Russian'
+  };
+  
+  // For dark skin tones, consider regional context
+  if (skinTone === 'dark' || skinTone === 'darker') {
+    if (['en', 'fr'].includes(nativeLanguage)) {
+      return 'African American';
+    } else if (nativeLanguage === 'pt') {
+      return 'Afro-Brazilian';
+    } else if (nativeLanguage === 'es') {
+      return 'Afro-Latino';
+    }
+  }
+  
+  // Use language mapping for other cases
+  return languageEthnicityMap[nativeLanguage] || 'diverse background';
 }
 
 // PHASE 4: Session management removed - orchestrator handles all session state
@@ -373,7 +414,7 @@ function prepareBasicTemplateData(storyText, userInfo, avatarIdentity, framework
   // Guaranteed non-null character data
   const character = userInfo?.name || userInfo?.childName || 'child';
   const age = userInfo?.age || 6;
-  const ethnicity = avatarIdentity?.ethnicity || '';
+  const ethnicity = deriveRegionalEthnicity(userInfo, avatarIdentity);
   
   // Cultural enhancement logic using seeded session ID
   const seedValue = sessionId ? sessionId.split('-')[0] : Date.now().toString();
@@ -443,7 +484,6 @@ function generateBasicTemplate(storyText, userInfo, avatarIdentity, frameworkPro
       .replace(/{facialFeatures}/g, templateData.facialFeatures || '')
       .replace(/{cultural_context}/g, templateData.cultural_context || '')
       .replace(/{fullFrameworkPrompt}/g, templateData.fullFrameworkPrompt || '')
-      .replace(/{frameworkPrompt}/g, templateData.frameworkPrompt || '') // Fallback
       .replace(/{bundle\.culturalEnhancements}/g, ''); // Remove bundle placeholder
     
     // Clean up result - handle empty values and comma issues
@@ -972,7 +1012,7 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
         fullFrameworkPrompt: frameworkPrompt,
         character: userInfo?.name || userInfo?.childName || 'the main character',
         age: `${userInfo?.age || 8} years old`,
-        ethnicity: avatarIdentity?.skinTone || 'diverse',
+        ethnicity: deriveRegionalEthnicity(userInfo, avatarIdentity),
         hairDescription: avatarIdentity?.hair || 'natural hair',
         facialFeatures: avatarIdentity?.features || 'friendly features',
         scene: 'engaging in the story activities',
@@ -996,20 +1036,10 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
       var resolvedPositivePrompt = positivePrompt;
       
     } catch (error) {
-      console.warn('⚠️ Nuclear Independence: UnifiedPlaceholderResolver failed, using bulletproof basic template:', error);
+      console.warn('⚠️ Nuclear Independence: UnifiedPlaceholderResolver failed, escalating directly to 2.5C:', error);
       
-      // Fallback to bulletproof basic template generation
-      try {
-        var resolvedPositivePrompt = generateBasicTemplate(storyText, userInfo, avatarIdentity, frameworkPrompt, difficultyLevel, sessionId);
-      } catch (basicError) {
-        console.error('❌ Bulletproof basic template also failed:', basicError);
-        
-        if (basicError instanceof SceneExtractionError) {
-          throw new Tier25CompleteFailureError('Scene extraction failed - triggering 2.5C');
-        }
-        
-        throw new Tier25CompleteFailureError(`All Tier 2.5B methods failed - Scene extraction: ${basicError instanceof SceneExtractionError}, Template resolution: ${resolvedPositivePrompt ? 'success' : 'failed'}, Nuclear independence: compromised`);
-      }
+      // Direct escalation to 2.5C - no more fallback chains
+      throw new Tier25CompleteFailureError('UnifiedPlaceholderResolver failed - direct escalation to 2.5C');
     }
     
     console.log('✅ Template AB Tier 2.5B: Nuclear Independence with Cultural Logic template generated');

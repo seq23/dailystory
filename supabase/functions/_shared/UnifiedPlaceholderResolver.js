@@ -7,6 +7,47 @@
 import { VOCABULARY, PLACEHOLDER_POOLS, CULTURAL_ARRAYS, pick, createSeededRandom } from './tier25Vocabulary.js';
 import { getCulturalBundle, getHairBySkintone, shouldApplyCulturalEnhancements, getSkinBySkintone } from './StaticDataCache.js';
 
+// ============= REGIONAL ETHNICITY DERIVATION =============
+function deriveRegionalEthnicity(userInfo, avatarIdentity) {
+  // Primary: Use avatar ethnicity if available
+  if (avatarIdentity?.ethnicity) {
+    return avatarIdentity.ethnicity;
+  }
+  
+  // Secondary: Derive from language and skin tone
+  const nativeLanguage = userInfo?.nativeLanguage || userInfo?.language || 'en';
+  const skinTone = userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium';
+  
+  // Language-based ethnicity mapping
+  const languageEthnicityMap = {
+    'es': 'Hispanic',
+    'pt': 'Portuguese', 
+    'fr': 'French',
+    'it': 'Italian',
+    'de': 'German',
+    'zh': 'Chinese',
+    'ja': 'Japanese',
+    'ko': 'Korean',
+    'ar': 'Arabic',
+    'hi': 'Indian',
+    'ru': 'Russian'
+  };
+  
+  // For dark skin tones, consider regional context
+  if (skinTone === 'dark' || skinTone === 'darker') {
+    if (['en', 'fr'].includes(nativeLanguage)) {
+      return 'African American';
+    } else if (nativeLanguage === 'pt') {
+      return 'Afro-Brazilian';
+    } else if (nativeLanguage === 'es') {
+      return 'Afro-Latino';
+    }
+  }
+  
+  // Use language mapping for other cases
+  return languageEthnicityMap[nativeLanguage] || 'diverse background';
+}
+
 export class UnifiedPlaceholderResolver {
   constructor() {
     this.resolvedCache = new Map();
