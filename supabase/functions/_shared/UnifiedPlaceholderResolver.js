@@ -90,6 +90,9 @@ export class UnifiedPlaceholderResolver {
       // CLEANUP AND GRAMMAR FIXES
       processedText = this.cleanup(processedText);
 
+      // CRITICAL VALIDATION - Check for escalation conditions
+      this.validateCriticalResolution(processedText, context);
+
       const finalCount = (processedText.match(/\{[^}]+\}/g) || []).length;
       const totalResolved = initialCount - finalCount;
       console.log(`🎯 Placeholder Resolution Complete: ${totalResolved}/${initialCount} resolved`);
@@ -524,11 +527,34 @@ export class UnifiedPlaceholderResolver {
    * Fill missing placeholders with honest fallbacks
    */
   fillMissingPlaceholders(text, context) {
+    let resolved = text;
+    
+    // Handle new 2.5A/2.5B placeholders
+    resolved = resolved.replace(/\{pageText\}/g, () => {
+      return this.summarizePageText(context.pageText, context);
+    });
+    
+    resolved = resolved.replace(/\{hairDescription\}/g, () => {
+      return this.getCulturalHairDescription(context.userInfo, context.sessionId, context.tierType);
+    });
+    
+    resolved = resolved.replace(/\{facialFeatures\}/g, () => {
+      return this.getCulturalFacialFeatures(context.userInfo, context.sessionId, context.tierType);
+    });
+    
+    resolved = resolved.replace(/\{fullFrameworkPrompt\}/g, () => {
+      return this.getFullFrameworkPrompt(context);
+    });
+    
+    resolved = resolved.replace(/\{scene\}/g, () => {
+      return this.generateSemanticScene(context.pageText, context);
+    });
+    
+    // Existing safe fallbacks
     const safeMap = {
       character: context.userInfo?.name || 'the child',
       age: context.userInfo?.age || '6',
       ethnicity: '', // Leave empty - no lies
-      scene: '', // Leave empty since we have {semantic_scene}  
       spatial_composition: 'centered in frame',
       setting: '', // Leave empty - better than lies
       atmosphere: this.detectAtmosphere(context.pageText), // Smart detection
@@ -542,7 +568,7 @@ export class UnifiedPlaceholderResolver {
       cameraDirective: 'warm perspective'
     };
     
-    let resolved = text;
+    // Apply safe fallbacks for remaining placeholders
     Object.entries(safeMap).forEach(([key, value]) => {
       const pattern = new RegExp(`\\{${key}\\}`, 'g');
       if (pattern.test(resolved) && value !== '') {
@@ -554,6 +580,145 @@ export class UnifiedPlaceholderResolver {
     });
     
     return resolved;
+  }
+
+  /**
+   * NEW METHODS FOR 2.5A/2.5B TIER IMPLEMENTATION
+   */
+
+  /**
+   * Summarize page text with smart extraction and fallback
+   */
+  summarizePageText(pageText, context) {
+    if (!pageText || typeof pageText !== 'string' || pageText.trim().length === 0) {
+      return '';
+    }
+    
+    try {
+      const text = pageText.trim();
+      // Smart extraction logic here
+      const sentences = text.match(/[^.!?]+[.!?]+/g) || [];
+      if (sentences.length >= 2) {
+        return sentences.slice(0, 2).join(' ').trim();
+      }
+      
+      // Fallback: first 100 characters
+      return text.substring(0, 100).trim();
+    } catch (error) {
+      console.warn('Smart pageText extraction failed, using first 2 sentences fallback:', error);
+      // FALLBACK: Extract first 2 sentences
+      const sentences = pageText.match(/[^.!?]+[.!?]+/g) || [];
+      if (sentences.length >= 2) {
+        return sentences.slice(0, 2).join(' ').trim();
+      }
+      return pageText.substring(0, 100).trim();
+    }
+  }
+
+  /**
+   * Get cultural hair description with StaticDataCache integration
+   */
+  getCulturalHairDescription(userInfo, sessionId, tierType) {
+    try {
+      // Import StaticDataCache functions
+      const { getHairBySkintone, getCulturalBundle, shouldApplyCulturalEnhancements } = getCulturalBundle;
+      
+      if (shouldApplyCulturalEnhancements(userInfo)) {
+        // Dark skin users - get cultural arrays from StaticDataCache
+        if (tierType === '2.5A') {
+          // Premium: StaticDataCache + character consistency (when available)
+          const culturalBundle = getCulturalBundle(userInfo, sessionId);
+          return culturalBundle.hair || 'with authentic African American features';
+        } else {
+          // Basic: Just StaticDataCache
+          const culturalBundle = getCulturalBundle(userInfo, sessionId);
+          return culturalBundle.hair || 'with authentic African American features';
+        }
+      } else {
+        // Non-dark skin users - get hair mappings from StaticDataCache
+        return getHairBySkintone(userInfo?.skinTone || 'medium', sessionId);
+      }
+    } catch (error) {
+      console.warn('getCulturalHairDescription failed, using hardcoded fallbacks:', error);
+      // Hardcoded fallbacks - never escalate tier on this failure
+      if (this.shouldApplyCulturalFeatures(userInfo)) {
+        return 'with authentic African American features';
+      }
+      return ''; // Non-dark skin gets empty if StaticDataCache fails
+    }
+  }
+
+  /**
+   * Get cultural facial features with StaticDataCache integration
+   */
+  getCulturalFacialFeatures(userInfo, sessionId, tierType) {
+    try {
+      // Import StaticDataCache functions
+      const { getSkinBySkintone, getCulturalBundle, shouldApplyCulturalEnhancements } = getCulturalBundle;
+      
+      if (shouldApplyCulturalEnhancements(userInfo)) {
+        // Dark skin users - get cultural arrays from StaticDataCache
+        if (tierType === '2.5A') {
+          // Premium: StaticDataCache + character consistency (when available)
+          const culturalBundle = getCulturalBundle(userInfo, sessionId);
+          return culturalBundle.features || 'with photorealistic African features natural hair texture';
+        } else {
+          // Basic: Just StaticDataCache
+          const culturalBundle = getCulturalBundle(userInfo, sessionId);
+          return culturalBundle.features || 'with photorealistic African features natural hair texture';
+        }
+      } else {
+        // Non-dark skin users - get skin mappings from StaticDataCache
+        return getSkinBySkintone(userInfo?.skinTone || 'medium', sessionId);
+      }
+    } catch (error) {
+      console.warn('getCulturalFacialFeatures failed, using hardcoded fallbacks:', error);
+      // Hardcoded fallbacks - never escalate tier on this failure
+      if (this.shouldApplyCulturalFeatures(userInfo)) {
+        return 'with photorealistic African features natural hair texture';
+      }
+      return ''; // Non-dark skin gets empty if StaticDataCache fails
+    }
+  }
+
+  /**
+   * Get full framework prompt with fallback
+   */
+  getFullFrameworkPrompt(context) {
+    const { frameworkPrompt } = context;
+    return frameworkPrompt || 'Contemporary children\'s book illustration with warm natural lighting and known for diverse representation';
+  }
+
+  /**
+   * Critical validation with updated escalation rules
+   */
+  validateCriticalResolution(resolvedText, context) {
+    // Rule 1: Missing or empty pageText -> Escalate to 2.5D  
+    if (!context.pageText || context.pageText.trim().length === 0) {
+      console.error('❌ ESCALATION TO 2.5D: pageText is missing or empty');
+      throw new Error('ESCALATE_TO_25D: Missing pageText');
+    }
+    
+    // Rule 2: Unresolved pageText placeholder -> Escalate to 2.5D
+    if (resolvedText.includes('{pageText}')) {
+      console.error('❌ ESCALATION TO 2.5D: {pageText} placeholder unresolved');
+      throw new Error('ESCALATE_TO_25D: Unresolved pageText placeholder');
+    }
+    
+    // Rule 3: Both scene AND semantic_scene unresolved -> Escalate to 2.5C
+    if (resolvedText.includes('{scene}') && resolvedText.includes('{semantic_scene}')) {
+      console.error('❌ ESCALATION TO 2.5C: Both {scene} and {semantic_scene} unresolved');
+      throw new Error('ESCALATE_TO_25C: Critical scene placeholders unresolved');
+    }
+    
+    // Rule 4: Resolved template essentially empty -> Escalate to 2.5C
+    const meaningfulContent = resolvedText.replace(/\{[^}]*\}/g, '').trim();
+    if (meaningfulContent.length < 10) {
+      console.error('❌ ESCALATION TO 2.5C: Resolved template essentially empty');
+      throw new Error('ESCALATE_TO_25C: Empty resolved template');
+    }
+    
+    console.log('✅ Critical validation passed - no escalation needed');
   }
 
   /**

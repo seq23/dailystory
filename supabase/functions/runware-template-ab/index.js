@@ -532,7 +532,10 @@ async function resolvePlaceholders(template, data, hasCulturalIntelligence) {
       userInfo,
       seed: additionalData,
       sessionId: body.sessionId,
-      pageNumber: userInfo?.pageNumber
+      pageNumber: userInfo?.pageNumber,
+      pageText: body.pageText || body.storyText || '',
+      tierType: '2.5A', // Template AB is always premium tier
+      frameworkPrompt
     });
     
     // Fix data type mismatch - check resolution success
@@ -556,9 +559,19 @@ async function resolvePlaceholders(template, data, hasCulturalIntelligence) {
     return resolvedTemplate;
     
   } catch (error) {
+    // Check for specific escalation errors
+    if (error.message && error.message.includes('ESCALATE_TO_25D')) {
+      console.error('❌ Escalating to tier 2.5D due to missing pageText');
+      throw new Error('ESCALATE_TO_25D');
+    }
+    if (error.message && error.message.includes('ESCALATE_TO_25C')) {
+      console.error('❌ Escalating to tier 2.5C due to critical failure');
+      throw new Error('ESCALATE_TO_25C');
+    }
+    
     console.warn('❌ Universal Placeholder Resolver failed, triggering tier escalation:', error);
     
-    // No fallback - throw to escalate to next tier (2.5C)
+    // General UnifiedPlaceholderResolver failure - escalate to 2.5C
     throw new Error(`UnifiedPlaceholderResolver failed: ${error.message}`);
   }
 }
