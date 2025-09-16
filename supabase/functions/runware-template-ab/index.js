@@ -413,7 +413,7 @@ function summarizePageText(storyText) {
 }
 
 // Bulletproof basic template data preparation
-function prepareBasicTemplateData(storyText, userInfo, avatarIdentity, frameworkPrompt, sessionId) {
+function prepareBasicTemplateData(storyText, userInfo, avatarIdentity, frameworkPrompt, sessionId, failedTierData = {}) {
   console.log('🔧 Preparing bulletproof basic template data');
   
   // Extract scene - critical, no fallback allowed
@@ -459,6 +459,29 @@ function prepareBasicTemplateData(storyText, userInfo, avatarIdentity, framework
     console.log('🎨 Applied complete hair + skin descriptions for skin tone:', skinTone);
   }
   
+  // Process failed tier data for Context category
+  let failed_tier_data = '';
+  if (failedTierData && Object.keys(failedTierData).length > 0) {
+    console.log('🔄 Tier 2.5B: Processing failed tier data for Context category:', failedTierData);
+    const failedElements = [];
+    
+    if (failedTierData.characterConsistency) {
+      failedElements.push(`character consistency from upper tier: ${JSON.stringify(failedTierData.characterConsistency)}`);
+    }
+    if (failedTierData.visualConsistency) {
+      failedElements.push(`visual details from upper tier: ${JSON.stringify(failedTierData.visualConsistency)}`);
+    }
+    if (failedTierData.culturalEnhancements) {
+      failedElements.push(`cultural context from upper tier: ${JSON.stringify(failedTierData.culturalEnhancements)}`);
+    }
+    if (failedTierData.enhancedSceneData) {
+      failedElements.push(`scene data from upper tier: ${JSON.stringify(failedTierData.enhancedSceneData)}`);
+    }
+    
+    failed_tier_data = failedElements.join(', ');
+    console.log('✅ Tier 2.5B: Failed tier data processed for Context category');
+  }
+
   // Construct full framework prompt with hardcoded style
   const hardcodedStyle = 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality, warm natural lighting';
   const fullFrameworkPrompt = frameworkPrompt ? `${frameworkPrompt}, ${hardcodedStyle}` : hardcodedStyle;
@@ -473,17 +496,18 @@ function prepareBasicTemplateData(storyText, userInfo, avatarIdentity, framework
     hairDescription,
     facialFeatures,
     cultural_context,
+    failed_tier_data,
     fullFrameworkPrompt
   };
 }
 
 // Bulletproof basic template generation with direct string replacement
-function generateBasicTemplate(storyText, userInfo, avatarIdentity, frameworkPrompt, difficultyLevel = 'level_0-1', sessionId) {
+function generateBasicTemplate(storyText, userInfo, avatarIdentity, frameworkPrompt, difficultyLevel = 'level_0-1', sessionId, failedTierData = {}) {
   console.log('🛡️ Generating bulletproof basic template');
   
   try {
     // Get bulletproof template data
-    const templateData = prepareBasicTemplateData(storyText, userInfo, avatarIdentity, frameworkPrompt, sessionId);
+    const templateData = prepareBasicTemplateData(storyText, userInfo, avatarIdentity, frameworkPrompt, sessionId, failedTierData);
     
     // Get basic template
     const template = BASIC_PROMPT_TEMPLATES[difficultyLevel];
@@ -573,7 +597,7 @@ Subject: {character}, {age}, {ethnicity}, {hairDescription}, {facialFeatures}.
 
 Action: {scene}.
 
-Context: {cultural_context}.
+Context: {cultural_context}, {failed_tier_data}.
 
 Brand Suffix: {fullFrameworkPrompt}`,
   
@@ -583,7 +607,7 @@ Subject: {character}, {age}, {ethnicity}, {hairDescription}, {facialFeatures}.
 
 Action: {scene}.
 
-Context: {cultural_context}.
+Context: {cultural_context}, {failed_tier_data}.
 
 Brand Suffix: {fullFrameworkPrompt}`
 };
@@ -757,7 +781,7 @@ async function processSecondaryCharacters(complexity, storyText, sessionId, page
 }
 
 // Enhanced template data preparation with secondary characters
-async function prepareTemplateData(storyText, userInfo, avatarIdentity, characterData, visualDetails, frameworkPrompt, secondaryCharacters, sessionId) {
+async function prepareTemplateData(storyText, userInfo, avatarIdentity, characterData, visualDetails, frameworkPrompt, secondaryCharacters, sessionId, failedTierData = {}) {
   // Resolve cultural enhancements using UniversalPlaceholderResolver
   let culturalEnhancements = '';
   try {
@@ -766,6 +790,29 @@ async function prepareTemplateData(storyText, userInfo, avatarIdentity, characte
   } catch (error) {
     console.warn('Cultural enhancements resolution failed:', error);
     culturalEnhancements = '';
+  }
+
+  // Process failed tier data for Consistency category
+  let visual_consistency_elements = '';
+  if (failedTierData && Object.keys(failedTierData).length > 0) {
+    console.log('🔄 Tier 2.5A: Processing failed tier data for Consistency category:', failedTierData);
+    const consistencyElements = [];
+    
+    if (failedTierData.characterConsistency) {
+      consistencyElements.push(`maintain character consistency: ${JSON.stringify(failedTierData.characterConsistency)}`);
+    }
+    if (failedTierData.visualConsistency) {
+      consistencyElements.push(`preserve visual elements: ${JSON.stringify(failedTierData.visualConsistency)}`);
+    }
+    if (failedTierData.culturalEnhancements) {
+      consistencyElements.push(`cultural continuity: ${JSON.stringify(failedTierData.culturalEnhancements)}`);
+    }
+    if (failedTierData.enhancedSceneData) {
+      consistencyElements.push(`scene consistency: ${JSON.stringify(failedTierData.enhancedSceneData)}`);
+    }
+    
+    visual_consistency_elements = consistencyElements.join(', ');
+    console.log('✅ Tier 2.5A: Failed tier data processed for Consistency category');
   }
 
   return {
@@ -790,7 +837,8 @@ async function prepareTemplateData(storyText, userInfo, avatarIdentity, characte
     semantic_scene: '', // Will be resolved by UnifiedPlaceholderResolver
     ethnicity: '',
     props: '',
-    action_objects: ''
+    action_objects: '',
+    visual_consistency_elements
   };
 }
 // ============= PHASE 4: ENHANCED SERVICE HEALTH CHECK WITH MONITORING =============
@@ -867,7 +915,7 @@ async function checkServiceHealth() {
 }
 
 // ============= ENHANCED TEMPLATE GENERATION WITH EXACT STRUCTURES =============
-async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIdentity, sessionId, pageNumber, enhancedStoryData) {
+async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIdentity, sessionId, pageNumber, enhancedStoryData, failedTierData = {}) {
   console.log(`🎯 Template AB: Processing complexity ${complexity} with enhanced story data`);
   console.log(`🎨 Enhanced data available:`, {
     hasEnhancedPrompt: !!enhancedStoryData?.enhancedPrompt,
@@ -973,7 +1021,8 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
       visualDetails, 
       frameworkPrompt,
       secondaryCharacters,
-      sessionId
+      sessionId,
+      failedTierData
     );
     
     const positivePrompt = await resolvePlaceholders(template, templateData, true);
@@ -1050,6 +1099,29 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
       console.log('☢️ Nuclear Independence: Using cultural logic via UnifiedPlaceholderResolver');
       
       // TRUE nuclear independence - no external service calls
+      // Process failed tier data for Context category
+      let failed_tier_data = '';
+      if (failedTierData && Object.keys(failedTierData).length > 0) {
+        console.log('🔄 Tier 2.5B: Processing failed tier data for Context category:', failedTierData);
+        const failedElements = [];
+        
+        if (failedTierData.characterConsistency) {
+          failedElements.push(`character data from upper tier: ${JSON.stringify(failedTierData.characterConsistency)}`);
+        }
+        if (failedTierData.visualConsistency) {
+          failedElements.push(`visual elements from upper tier: ${JSON.stringify(failedTierData.visualConsistency)}`);
+        }
+        if (failedTierData.culturalEnhancements) {
+          failedElements.push(`cultural context from upper tier: ${JSON.stringify(failedTierData.culturalEnhancements)}`);
+        }
+        if (failedTierData.enhancedSceneData) {
+          failedElements.push(`scene data from upper tier: ${JSON.stringify(failedTierData.enhancedSceneData)}`);
+        }
+        
+        failed_tier_data = failedElements.join(', ');
+        console.log('✅ Tier 2.5B: Failed tier data processed for Context category');
+      }
+
       const templateData = {
         storyText,
         pageText: storyText,
@@ -1067,7 +1139,8 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
         facialFeatures: avatarIdentity?.features || 'friendly features',
         scene: 'engaging in the story activities',
         setting: 'story appropriate environment',
-        cultural_context: avatarIdentity?.nativeLanguage ? `${avatarIdentity.nativeLanguage} cultural context` : 'multicultural setting'
+        cultural_context: avatarIdentity?.nativeLanguage ? `${avatarIdentity.nativeLanguage} cultural context` : 'multicultural setting',
+        failed_tier_data
       };
       
       const positivePrompt = await resolvePlaceholders(template, templateData, true);
@@ -1295,7 +1368,7 @@ serve(async (req) => {
     // Generate template with character consistency and enhanced data
     let template;
     try {
-      template = await generateSimpleTemplate(complexity, storyText, userInfo, avatarIdentity, sessionId, pageNumber, enhancedStoryData);
+      template = await generateSimpleTemplate(complexity, storyText, userInfo, avatarIdentity, sessionId, pageNumber, enhancedStoryData, failedTierData);
     } catch (error) {
       // Handle tier downgrade errors
       if (error instanceof SceneExtractionError || error instanceof BasicTemplateError || error instanceof Tier25CompleteFailureError) {
