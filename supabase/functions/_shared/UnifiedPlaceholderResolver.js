@@ -452,11 +452,9 @@ export class UnifiedPlaceholderResolver {
    */
   extractSemanticScene(pageText, context) {
     if (!pageText || typeof pageText !== 'string' || pageText.trim().length === 0) {
-      console.log('📝 Semantic scene fallback: Using PLACEHOLDER_POOLS');
-      const { userInfo, sessionId } = context;
-      const action = pick(PLACEHOLDER_POOLS?.actions?.basic || ['playing'], sessionId);
-      const object = pick(PLACEHOLDER_POOLS?.objectCategories?.toys || ['toys'], sessionId + 1);
-      return `${action} with ${object} outdoors`;
+      // Return empty string to maintain page text integrity
+      console.log('📝 No semantic scene extractable - maintaining text integrity');
+      return '';
     }
 
     // Use summarized pageText first (2 sentences max), fallback to full text
@@ -505,47 +503,113 @@ export class UnifiedPlaceholderResolver {
   /**
    * ADVANCED ACTION VERB RESOLUTION AND NORMALIZATION
    */
-  extractAndNormalizeAction(text) {
-    // Action verb patterns with normalization mapping
+   extractAndNormalizeAction(text) {
+    // Enhanced Level 0 action detection using tier25Vocabulary
+    const level0Actions = PLACEHOLDER_POOLS?.level0Actions || [];
+    
+    // First check for Level 0 specific action patterns
+    for (const action of level0Actions) {
+      if (text.includes(action)) {
+        // Normalize Level 0 actions with intelligent inference
+        if (action.includes('wakes up') || action.includes('waking up')) {
+          return 'sitting up in bed with arms stretched';
+        }
+        if (action.includes('sleeps') || action.includes('sleeping')) {
+          return 'lying peacefully in bed';
+        }
+        if (action.includes('eats') || action.includes('eating')) {
+          return 'sitting at table eating';
+        }
+        if (action.includes('plays') || action.includes('playing')) {
+          return 'playing happily';
+        }
+        if (action.includes('runs') || action.includes('running')) {
+          return 'running energetically';
+        }
+        if (action.includes('jumps') || action.includes('jumping')) {
+          return 'jumping excitedly';
+        }
+        if (action.includes('cleans') || action.includes('cleaning')) {
+          return 'helping to clean up';
+        }
+        if (action.includes('reads') || action.includes('reading')) {
+          return 'sitting comfortably reading';
+        }
+        if (action.includes('draws') || action.includes('drawing')) {
+          return 'sitting at table drawing';
+        }
+        if (action.includes('helps') || action.includes('helping')) {
+          return 'standing ready to help';
+        }
+        // Default Level 0 action with pose
+        return `${action} cheerfully`;
+      }
+    }
+
+    // Action verb patterns with enhanced normalization mapping
     const actionNormalizationMap = {
       'walked': 'walking through',
-      'woke up': 'sitting up in bed',
-      'cooking': 'standing over stove',
+      'woke up': 'sitting up in bed with arms stretched',
+      'cooking': 'standing at stove cooking',
       'walked through': 'walking through',
-      'running around': 'running in',
-      'jumped on': 'jumping on',
-      'sat down': 'sitting in',
-      'lying down': 'lying in'
+      'running around': 'running happily in',
+      'jumped on': 'jumping excitedly on',
+      'sat down': 'sitting comfortably in',
+      'lying down': 'lying peacefully in'
     };
 
-    // Try direct mappings first
+    // Try enhanced mappings
     for (const [pattern, normalized] of Object.entries(actionNormalizationMap)) {
       if (text.includes(pattern)) {
         return normalized;
       }
     }
 
-    // Extract action verbs from text
-    const actionMatch = text.match(/\b(walked?|running?|jumping?|playing?|exploring?|discovering?|building?|cooking?|reading?|singing?|dancing?|helping?|sitting?|standing?|lying?|sleeping?|eating?|drawing?|writing?|climbing?|swimming?)\b/);
+    // Enhanced action verb extraction with Level 0 coverage
+    const actionMatch = text.match(/\b(wake|wakes|woke|waking|sleep|sleeps|slept|sleeping|eat|eats|ate|eating|play|plays|played|playing|walk|walks|walked|walking|run|runs|ran|running|jump|jumps|jumped|jumping|help|helps|helped|helping|clean|cleans|cleaned|cleaning|read|reads|reading|draw|draws|drew|drawing|sing|sings|sang|singing|dance|dances|danced|dancing|build|builds|built|building|climb|climbs|climbed|climbing|sit|sits|sat|sitting|stand|stands|stood|standing|go|goes|went|going|come|comes|came|coming|look|looks|looked|looking|see|sees|saw|seeing)\b/);
     
     if (actionMatch) {
       let action = actionMatch[1];
-      // Normalize to present continuous
+      
+      // Enhanced Level 0 specific normalizations with poses
+      if (action === 'wake' || action === 'wakes' || action === 'woke') {
+        return 'sitting up in bed with arms stretched';
+      }
+      if (action === 'sleep' || action === 'sleeps' || action === 'slept') {
+        return 'lying peacefully in bed';
+      }
+      if (action === 'eat' || action === 'eats' || action === 'ate') {
+        return 'sitting at table eating';
+      }
+      
+      // Normalize to present continuous with intelligent inference
       if (action.endsWith('ed')) {
         action = action.slice(0, -2) + 'ing';
       }
       if (action.endsWith('s') && !action.endsWith('ing')) {
         action = action.slice(0, -1) + 'ing';
       }
+      
+      // Add Level 0 appropriate descriptors
+      if (action === 'playing') return 'playing happily';
+      if (action === 'running') return 'running energetically';
+      if (action === 'jumping') return 'jumping excitedly';
+      if (action === 'helping') return 'standing ready to help';
+      if (action === 'reading') return 'sitting comfortably reading';
+      if (action === 'drawing') return 'sitting at table drawing';
+      
       return action;
     }
 
-    // Special case handling
-    if (text.includes('ball is red') || text.includes('the ball is')) {
-      return 'holding red ball, sitting outside';
+    // Intelligent inference for Level 0 common patterns
+    if (text.includes('ball is red') || text.includes('red ball')) {
+      return 'holding red ball cheerfully';
+    }
+    if (text.includes('ball is') || text.includes('the ball')) {
+      return 'playing with ball happily';
     }
 
-    return 'playing';
+    return 'playing cheerfully';
   }
 
   /**
@@ -569,15 +633,34 @@ export class UnifiedPlaceholderResolver {
    * INFER LOCATION FROM CONTEXT
    */
   inferLocationFromContext(text) {
-    if (text.includes('kitchen') || text.includes('cooking') || text.includes('stove')) return 'kitchen';
-    if (text.includes('bedroom') || text.includes('bed') || text.includes('woke up')) return 'bedroom';
-    if (text.includes('park') || text.includes('playground')) return 'park';
-    if (text.includes('beach') || text.includes('sand')) return 'beach';
-    if (text.includes('forest') || text.includes('trees')) return 'forest';
-    if (text.includes('school') || text.includes('classroom')) return 'school';
-    if (text.includes('outside') || text.includes('outdoors')) return 'outdoors';
-    if (text.includes('inside') || text.includes('indoors') || text.includes('home')) return 'indoors';
-    return 'outdoors'; // Default for children's activities
+    // Enhanced Level 0 location detection using tier25Vocabulary
+    const level0Locations = PLACEHOLDER_POOLS?.level0Locations || [];
+    
+    // Check for Level 0 specific locations first
+    for (const location of level0Locations) {
+      if (text.includes(location)) {
+        // Return intelligent inference based on Level 0 context
+        if (location === 'bed' || location === 'bedroom') return 'cozy bedroom';
+        if (location === 'kitchen') return 'bright kitchen';
+        if (location === 'park' || location === 'playground') return 'sunny park';
+        if (location === 'home' || location === 'house') return 'comfortable home';
+        if (location === 'school') return 'cheerful school';
+        return location;
+      }
+    }
+    
+    // Enhanced context-based inference
+    if (text.includes('kitchen') || text.includes('cooking') || text.includes('stove') || text.includes('eating')) return 'bright kitchen';
+    if (text.includes('bedroom') || text.includes('bed') || text.includes('woke up') || text.includes('sleep')) return 'cozy bedroom';
+    if (text.includes('park') || text.includes('playground') || text.includes('swing')) return 'sunny park';
+    if (text.includes('beach') || text.includes('sand') || text.includes('ocean')) return 'beautiful beach';
+    if (text.includes('forest') || text.includes('trees') || text.includes('woods')) return 'magical forest';
+    if (text.includes('school') || text.includes('classroom') || text.includes('teacher')) return 'cheerful school';
+    if (text.includes('outside') || text.includes('outdoors') || text.includes('garden')) return 'sunny outdoors';
+    if (text.includes('inside') || text.includes('indoors') || text.includes('home') || text.includes('room')) return 'comfortable indoors';
+    
+    // Return empty string if no clear location - maintain text integrity
+    return '';
   }
 
   /**

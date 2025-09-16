@@ -76,6 +76,72 @@ export const PLACEHOLDER_POOLS = {
     /\b(friend|buddy|pal|companion|classmate|teammate|neighbor|sibling|sister|brother|cousin)\b/gi,
     /\b([A-Z][a-z]+)\s+(said|says|asked|tells|told|replied|answered|whispered|shouted|called|smiled|laughed|ran|walked|jumped)\b/g,
     /\b(he|she|they)\s+(is|was|are|were|has|had|does|did|can|could|will|would|should|must)\b/gi
+  ],
+
+  // NEW: Level 0 Template Coverage Arrays
+  level0Actions: [
+    // Daily routine actions from Level 0 templates
+    'wakes up', 'waking up', 'wake up', 'gets up', 'getting up', 'sleeps', 'sleeping', 'sleep',
+    'eats', 'eating', 'eat', 'drinks', 'drinking', 'drink', 'plays', 'playing', 'play',
+    'goes', 'going', 'go', 'comes', 'coming', 'come', 'sits', 'sitting', 'sit',
+    'stands', 'standing', 'stand', 'runs', 'running', 'run', 'walks', 'walking', 'walk',
+    'jumps', 'jumping', 'jump', 'climbs', 'climbing', 'climb', 'swings', 'swinging', 'swing',
+    // Care activities
+    'cleans', 'cleaning', 'clean', 'helps', 'helping', 'help', 'makes', 'making', 'make',
+    'puts', 'putting', 'put', 'takes', 'taking', 'take', 'gives', 'giving', 'give',
+    'gets', 'getting', 'get', 'looks', 'looking', 'look', 'sees', 'seeing', 'see',
+    // Creative activities
+    'draws', 'drawing', 'draw', 'reads', 'reading', 'read', 'sings', 'singing', 'sing',
+    'dances', 'dancing', 'dance', 'builds', 'building', 'build', 'creates', 'creating', 'create'
+  ],
+
+  level0Locations: [
+    // Indoor locations from Level 0 templates
+    'bed', 'bedroom', 'kitchen', 'home', 'house', 'room', 'bathroom', 'living room',
+    'dining room', 'playroom', 'inside', 'indoors',
+    // Outdoor locations
+    'park', 'playground', 'garden', 'yard', 'outside', 'outdoors', 'beach', 'forest',
+    'field', 'street', 'road', 'path', 'tree', 'grass',
+    // Community locations
+    'school', 'store', 'shop', 'library', 'hospital', 'farm', 'zoo'
+  ],
+
+  level0Objects: [
+    // From Level 0 templates - toys and play items
+    'toys', 'toy', 'ball', 'doll', 'teddy bear', 'blocks', 'puzzle', 'book', 'crayons',
+    'markers', 'bicycle', 'bike', 'swing', 'slide', 'sandbox', 'bucket', 'shovel',
+    // Food items
+    'food', 'cookie', 'cookies', 'cake', 'apple', 'banana', 'milk', 'juice', 'water',
+    'bread', 'sandwich', 'snack', 'treats',
+    // Clothing items
+    'shirt', 'dress', 'pants', 'shoes', 'hat', 'coat', 'clothes',
+    // Household items
+    'chair', 'table', 'cup', 'plate', 'bowl', 'spoon', 'fork', 'towel', 'blanket'
+  ],
+
+  level0CharacterPoses: [
+    // Character poses for Level 0 activities mapped to actions
+    'sitting up in bed', 'lying in bed', 'standing tall', 'sitting at table',
+    'running happily', 'jumping excitedly', 'walking carefully', 'climbing safely',
+    'sitting cross-legged', 'standing with hands on hips', 'reaching up high',
+    'kneeling down', 'crouching low', 'leaning forward', 'stretching arms wide',
+    'holding hands out', 'looking up curiously', 'tilting head thoughtfully',
+    'bouncing on toes', 'marching in place', 'spinning around', 'dancing joyfully',
+    'hugging tightly', 'waving hello', 'clapping hands', 'pointing excitedly'
+  ],
+
+  level0SecondaryCharacters: [
+    // Family and community members from Level 0 templates
+    'mom', 'mommy', 'mother', 'dad', 'daddy', 'father', 'grandma', 'grandpa',
+    'sister', 'brother', 'family', 'friend', 'friends', 'teacher', 'doctor',
+    'nurse', 'helper', 'neighbor', 'grown-up', 'adult', 'people'
+  ],
+
+  level0Animals: [
+    // Animals commonly referenced in Level 0 templates
+    'dog', 'puppy', 'cat', 'kitten', 'bird', 'fish', 'rabbit', 'bunny',
+    'horse', 'cow', 'pig', 'sheep', 'chicken', 'duck', 'frog', 'butterfly',
+    'bee', 'ladybug', 'turtle', 'bear', 'elephant', 'lion', 'monkey'
   ]
 };
 

@@ -219,24 +219,88 @@ function getComplexityLevel(userInfo, templateComplexity) {
 
 // ============= SCENE/SETTING EXTRACTION FUNCTIONS =============
 
-// TIER 2.5B: SIMPLIFIED SCENE EXTRACTION (Basic Regex)
-// Extracts: Action + Object + Location with action verb normalization
+// TIER 2.5B: SIMPLIFIED SCENE EXTRACTION (Enhanced for Level 0)
+// Extracts: Action + Object + Location with comprehensive Level 0 coverage
 function extractSimpleScene(storyText) {
-  if (!storyText || typeof storyText !== 'string') return 'playing outdoors';
+  if (!storyText || typeof storyText !== 'string') return '';
   
   console.log('🔍 Simple regex scene extraction from story text');
   
   const text = storyText.toLowerCase();
   
-  // ACTION VERB NORMALIZATION MAPPING
+  // ENHANCED LEVEL 0 ACTION DETECTION PATTERNS
+  const level0ActionPatterns = [
+    // Wake up patterns
+    { regex: /\b(wake|wakes|woke|waking)\s+up\b/i, result: 'sitting up in bed with arms stretched' },
+    { regex: /\b(get|gets|getting)\s+up\b/i, result: 'getting up from bed cheerfully' },
+    
+    // Sleep patterns  
+    { regex: /\b(sleep|sleeps|sleeping|slept)\b/i, result: 'lying peacefully in bed' },
+    { regex: /\bbed\s+time\b/i, result: 'getting ready for bed' },
+    
+    // Eating patterns
+    { regex: /\b(eat|eats|eating|ate)\b/i, result: 'sitting at table eating happily' },
+    { regex: /\btime\s+to\s+eat\b/i, result: 'sitting down for mealtime' },
+    
+    // Playing patterns
+    { regex: /\b(play|plays|playing|played)\b/i, result: 'playing joyfully' },
+    { regex: /\bwith\s+(ball|toy|doll|blocks)\b/i, result: 'playing with favorite toy' },
+    
+    // Movement patterns
+    { regex: /\b(run|runs|running|ran)\b/i, result: 'running energetically' },
+    { regex: /\b(jump|jumps|jumping|jumped)\b/i, result: 'jumping excitedly' },
+    { regex: /\b(walk|walks|walking|walked)\b/i, result: 'walking happily' },
+    { regex: /\b(climb|climbs|climbing|climbed)\b/i, result: 'climbing carefully' },
+    { regex: /\b(swing|swings|swinging)\b/i, result: 'swinging back and forth' },
+    { regex: /\b(slide|slides|sliding)\b/i, result: 'going down the slide' },
+    
+    // Helping patterns
+    { regex: /\b(help|helps|helping|helped)\b/i, result: 'standing ready to help' },
+    { regex: /\b(clean|cleans|cleaning|cleaned)\b/i, result: 'helping to clean up' },
+    { regex: /\b(make|makes|making|made)\b/i, result: 'helping to make something' },
+    
+    // Creative patterns
+    { regex: /\b(read|reads|reading)\b/i, result: 'sitting comfortably reading' },
+    { regex: /\b(draw|draws|drawing|drew)\b/i, result: 'sitting at table drawing' },
+    { regex: /\b(sing|sings|singing|sang)\b/i, result: 'singing happily' },
+    { regex: /\b(dance|dances|dancing|danced)\b/i, result: 'dancing joyfully' },
+    { regex: /\b(build|builds|building|built)\b/i, result: 'building with blocks' },
+    
+    // Care activities
+    { regex: /\b(put|puts|putting)\s+(on|away)\b/i, result: 'putting things in place' },
+    { regex: /\b(take|takes|taking|took)\b/i, result: 'taking something carefully' },
+    { regex: /\b(give|gives|giving|gave)\b/i, result: 'giving something kindly' },
+    { regex: /\bget\s+(in|out|on|off)\b/i, result: 'moving carefully' },
+    
+    // Looking/seeing patterns
+    { regex: /\b(look|looks|looking|looked)\b/i, result: 'looking curiously' },
+    { regex: /\b(see|sees|seeing|saw)\b/i, result: 'seeing something interesting' },
+    { regex: /\b(watch|watches|watching|watched)\b/i, result: 'watching attentively' }
+  ];
+
+  // Try Level 0 specific patterns first
+  for (const pattern of level0ActionPatterns) {
+    if (pattern.regex.test(storyText)) {
+      const location = extractLocationFromText(text);
+      const locationPhrase = location ? ` in the ${location}` : '';
+      console.log(`✅ Level 0 action pattern matched: "${pattern.result}${locationPhrase}"`);
+      return `${pattern.result}${locationPhrase}`;
+    }
+  }
+
+  // Enhanced ACTION VERB NORMALIZATION MAPPING
   const actionNormalizationMap = {
-    'walked': 'walking',
-    'woke up': 'sitting up in bed',
-    'cooking': 'standing over stove',
-    'walked through': 'walking through'
+    'walked': 'walking happily',
+    'woke up': 'sitting up in bed with arms stretched',
+    'cooking': 'standing at stove cooking',
+    'walked through': 'walking through',
+    'running around': 'running energetically',
+    'jumped on': 'jumping excitedly on',
+    'sat down': 'sitting comfortably',
+    'lying down': 'lying peacefully'
   };
 
-  // Try direct mappings first
+  // Try enhanced mappings
   for (const [pattern, normalized] of Object.entries(actionNormalizationMap)) {
     if (text.includes(pattern)) {
       // Build complete scene with normalized action
@@ -283,19 +347,34 @@ function extractSimpleScene(storyText) {
     }
   }
 
-  // Special case handling
-  if (text.includes('ball is red') || text.includes('the ball is')) {
-    return 'holding red ball, sitting outside';
+  // INTELLIGENT INFERENCE for Level 0 patterns (maintains text integrity)
+  if (text.includes('ball is red') || text.includes('red ball')) {
+    const location = extractLocationFromText(text);
+    return location ? `holding red ball cheerfully in the ${location}` : 'holding red ball cheerfully outside';
   }
   
-  // Fallback to basic activity detection
-  if (text.includes('beach')) return 'playing at the beach';
-  if (text.includes('park')) return 'playing in the park';
-  if (text.includes('kitchen')) return 'helping in the kitchen';
-  if (text.includes('bedroom')) return 'playing in the bedroom';
+  if (text.includes('ball is') || text.includes('the ball')) {
+    const location = extractLocationFromText(text);
+    return location ? `playing with ball happily in the ${location}` : 'playing with ball happily outside';
+  }
   
-  console.log('✅ Simple scene fallback: generic activity');
-  return 'playing outdoors';
+  // Level 0 location-based intelligent inference
+  if (text.includes('beach')) return 'playing joyfully at the sunny beach';
+  if (text.includes('park')) return 'playing happily in the park';
+  if (text.includes('kitchen')) return 'helping cheerfully in the bright kitchen';
+  if (text.includes('bedroom')) return 'playing quietly in the cozy bedroom';
+  if (text.includes('school')) return 'learning happily at school';
+  if (text.includes('home')) return 'playing contentedly at home';
+  
+  // Enhanced object-based inference
+  if (text.includes('toy') || text.includes('toys')) return 'playing happily with toys';
+  if (text.includes('food') || text.includes('cookie') || text.includes('apple')) return 'enjoying delicious food';
+  if (text.includes('book') || text.includes('read')) return 'reading a wonderful book';
+  if (text.includes('friend') || text.includes('family')) return 'spending time with loved ones';
+  
+  // Return empty string if no extraction possible - maintains text integrity
+  console.log('✅ No simple scene extractable - maintaining text integrity');
+  return '';
 }
 
 // Helper function to extract location from text
