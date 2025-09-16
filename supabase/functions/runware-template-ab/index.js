@@ -556,102 +556,15 @@ async function resolvePlaceholders(template, data, hasCulturalIntelligence) {
     return resolvedTemplate;
     
   } catch (error) {
-    console.warn('❌ Universal Placeholder Resolver failed, using fallback:', error);
+    console.warn('❌ Universal Placeholder Resolver failed, triggering tier escalation:', error);
     
-    // Fallback to basic resolution if Universal Resolver fails
-    return await resolvePlaceholdersFallback(template, data);
+    // No fallback - throw to escalate to next tier (2.5C)
+    throw new Error(`UnifiedPlaceholderResolver failed: ${error.message}`);
   }
 }
 
-// ============= FALLBACK RESOLUTION SYSTEM =============
-async function resolvePlaceholdersFallback(template, data) {
-  console.log('⚠️ Using fallback placeholder resolution');
-  
-  // Fix TDZ issue - normalize input data first
-  const body = data || {};
-  const storyText = body.storyText || body.pageText || '';
-  const pageText = body.pageText || null;
-  const userInfo = body.userInfo || {};
-  const avatarIdentity = body.avatarIdentity || null;
-  const frameworkPrompt = body.frameworkPrompt || 'children\'s book illustration style';
-  const secondaryCharacters = body.secondaryCharacters || '';
-
-  const childName = userInfo?.name || userInfo?.childName || 'child';
-  const framework = frameworkPrompt;
-  
-  // Enhanced data processing using StaticDataCache for fallbacks
-  const { getCulturalBundle, shouldApplyCulturalEnhancements, getHairBySkintone, getSkinBySkintone } = await import('../_shared/StaticDataCache.js');
-  
-  // Get cultural enhancements if applicable
-  let hairFallback, featuresFallback, ethnicityFallback;
-  
-  if (shouldApplyCulturalEnhancements(userInfo)) {
-    console.log('🎨 Template AB: Applying cultural enhancements via StaticDataCache');
-    const culturalBundle = getCulturalBundle(userInfo, body.sessionId);
-    hairFallback = culturalBundle.hair;
-    featuresFallback = culturalBundle.features;
-    ethnicityFallback = 'diverse cultural background';
-  } else {
-    console.log('🎨 Template AB: Using StaticDataCache generic fallbacks');
-    hairFallback = getHairBySkintone(userInfo?.skinTone || 'medium', body.sessionId);
-    featuresFallback = getSkinBySkintone(userInfo?.skinTone || 'medium', body.sessionId);
-    ethnicityFallback = 'diverse background';
-  }
-  
-  // Enhanced placeholder mapping using StaticDataCache fallbacks
-  const placeholders = {
-    pageText: storyText || '',
-    character: childName,
-    age: userInfo?.age ? `age ${userInfo.age}` : '',
-    ethnicity: ethnicityFallback,
-    hair: hairFallback,
-    features: featuresFallback,
-    emotion: 'happy and engaged',
-    scene: storyText?.substring(0, 50) || 'playing',
-    spatial_composition: 'centered composition',
-    setting: 'bright, colorful environment',
-    atmosphere: 'cheerful and warm',
-    props: 'colorful props',
-    action_objects: 'engaging objects',
-    sensory_details: 'vibrant details',
-    cultural_context: 'inclusive community',
-    community_context: 'welcoming environment',
-    secondary_characters: secondaryCharacters || 'friendly companions',
-    frameworkPrompt: framework,
-    cameraDirective: 'medium shot, eye level'
-  };
-
-  // Replace placeholders in template
-  let resolvedTemplate = template;
-  Object.entries(placeholders).forEach(([key, value]) => {
-    const placeholder = `{${key}}`;
-    resolvedTemplate = resolvedTemplate.replace(new RegExp(placeholder, 'g'), value || '');
-  });
-  
-  // Explicitly handle bundle.culturalEnhancements placeholder
-  resolvedTemplate = resolvedTemplate.replace(/\{bundle\.culturalEnhancements\}/g, '');
-
-  // Clean up template
-  resolvedTemplate = resolvedTemplate
-    .replace(/,\s*,/g, ',')
-    .replace(/,\s*\./g, '.')
-    .replace(/\s+/g, ' ')
-    .replace(/,\s*$/g, '')
-    .trim();
-
-  // Remove generic fallback - if fallback fails, use bulletproof basic template or trigger tier downgrade
-  if (!resolvedTemplate || resolvedTemplate.length === 0) {
-    console.warn('⚠️ Fallback resolver failed, attempting bulletproof basic template');
-    try {
-      return generateBasicTemplate(storyText, userInfo, avatarIdentity, framework, difficultyLevel, sessionId);
-    } catch (error) {
-      console.error('❌ Bulletproof basic template also failed, triggering tier downgrade');
-      throw new Tier25CompleteFailureError('Both fallback and basic template generation failed');
-    }
-  }
-
-  return resolvedTemplate;
-}
+// ============= NO FALLBACK SYSTEM - BULLETPROOF OR ESCALATE =============
+// Removed old generic fallbacks - if UnifiedPlaceholderResolver fails, we escalate to tier 2.5C
 
 // ============= PHASE 2: SECONDARY CHARACTER ENHANCEMENT =============
 
