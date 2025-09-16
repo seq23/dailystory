@@ -813,6 +813,11 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
         };
       } catch (error) {
         console.warn('Visual tracker failed:', error);
+        // Check if visual tracking failed but was expected to work
+        if (serviceHealth.visualTracker) {
+          console.log('⚠️ Template AB: Visual Detail Tracker available but failed, noting for diagnostics');
+          // Note: We keep 2.5A since visual details are optional enhancement
+        }
       }
     }
 
@@ -912,22 +917,38 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
       // Use UnifiedPlaceholderResolver for cultural logic (includes {hair} and {features} mapping)
       console.log('☢️ Nuclear Independence: Using cultural logic via UnifiedPlaceholderResolver');
       
-      const templateData = await prepareTemplateData(
-        storyText, 
-        userInfo, 
-        avatarIdentity, 
-        null, // No characterData for nuclear independence
-        null, // No visualDetails for nuclear independence  
+      // TRUE nuclear independence - no external service calls
+      const templateData = {
+        storyText,
+        pageText: storyText,
+        userInfo,
+        avatarIdentity,
+        characterData: null, // Nuclear independence
+        visualDetails: null, // Nuclear independence
         frameworkPrompt,
-        secondaryCharactersB,
-        sessionId
-      );
+        secondaryCharacters: secondaryCharactersB,
+        fullFrameworkPrompt: frameworkPrompt,
+        character: userInfo?.name || userInfo?.childName || 'the main character',
+        age: `${userInfo?.age || 8} years old`,
+        ethnicity: avatarIdentity?.skinTone || 'diverse',
+        hairDescription: avatarIdentity?.hair || 'natural hair',
+        facialFeatures: avatarIdentity?.features || 'friendly features',
+        scene: 'engaging in the story activities',
+        setting: 'story appropriate environment',
+        cultural_context: avatarIdentity?.nativeLanguage ? `${avatarIdentity.nativeLanguage} cultural context` : 'multicultural setting'
+      };
       
       const positivePrompt = await resolvePlaceholders(template, templateData, true);
       
-      // Validate result
+      // Validate result with detailed diagnostics
       if (!positivePrompt || typeof positivePrompt !== 'string' || positivePrompt.trim().length === 0) {
-        throw new Error('UnifiedPlaceholderResolver returned empty result');
+        console.error('❌ Nuclear Independence: Template resolution failed:', {
+          hasTemplate: !!template,
+          hasTemplateData: !!templateData,
+          resolverResponse: typeof positivePrompt,
+          templateDataKeys: Object.keys(templateData || {})
+        });
+        throw new Error('UnifiedPlaceholderResolver returned empty result - template resolution failed');
       }
       
       var resolvedPositivePrompt = positivePrompt;
@@ -945,7 +966,7 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
           throw new Tier25CompleteFailureError('Scene extraction failed - triggering 2.5C');
         }
         
-        throw new Tier25CompleteFailureError('All Tier 2.5B template generation methods failed - triggering 2.5C');
+        throw new Tier25CompleteFailureError(`All Tier 2.5B methods failed - Scene extraction: ${basicError instanceof SceneExtractionError}, Template resolution: ${resolvedPositivePrompt ? 'success' : 'failed'}, Nuclear independence: compromised`);
       }
     }
     
@@ -1133,6 +1154,16 @@ serve(async (req) => {
     
     // Determine complexity level
     const complexity = getComplexityLevel(userInfo, templateComplexity);
+    
+    // Log tier decision reasoning
+    console.log(`🎯 Tier routing decision: 2.5${complexity} selected based on:`, {
+      characterService: enhancedStoryData?.characterConsistency ? true : false,
+      characterData: !!enhancedStoryData?.characterConsistency,
+      avatarIdentity: !!avatarIdentity,
+      visualTracker: enhancedStoryData?.visualConsistency ? true : false,
+      visualDetails: !!enhancedStoryData?.visualConsistency,
+      nuclear_independence_triggered: complexity === 'B'
+    });
     
     if (!['A', 'B'].includes(complexity)) {
       console.log(`⚠️ Template AB: Complexity ${complexity} not handled by this function - use CD template`);

@@ -994,6 +994,14 @@ serve(async (req) => {
       
       // Tier 2.5A-B: Template with avatar consistency (unless skipTier25 is set)
       if ((!result || !result.success) && !skipTier25 && (!forceTier || forceTier === 'tier-2.5')) {
+        // Enhanced tier determination with service health
+        const serviceHealthDiagnostics = {
+          characterService: true, // We'll assume available unless proven otherwise
+          visualTracker: true     // We'll assume available unless proven otherwise
+        };
+        
+        console.log(`🔍 Service health for Tier 2.5: Character=${serviceHealthDiagnostics.characterService}, Visual=${serviceHealthDiagnostics.visualTracker}`);
+        
         const templateComplexity = determineTemplateComplexity(userInfo, avatarIdentity);
         console.log(`🎨 [${requestId}] Attempting Tier 2.5A-B with complexity ${templateComplexity}`);
         
