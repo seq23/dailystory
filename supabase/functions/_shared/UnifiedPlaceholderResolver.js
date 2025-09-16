@@ -5,7 +5,7 @@
  */
 
 import { VOCABULARY, PLACEHOLDER_POOLS, CULTURAL_ARRAYS, pick, createSeededRandom } from './tier25Vocabulary.js';
-import { getCulturalBundle } from './StaticDataCache.js';
+import { getCulturalBundle, getHairBySkintone, shouldApplyCulturalEnhancements, getSkinBySkintone } from './StaticDataCache.js';
 
 export class UnifiedPlaceholderResolver {
   constructor() {
@@ -620,8 +620,6 @@ export class UnifiedPlaceholderResolver {
    */
   getCulturalHairDescription(userInfo, sessionId, tierType) {
     try {
-      // Import StaticDataCache functions
-      const { getHairBySkintone, shouldApplyCulturalEnhancements } = await import('./StaticDataCache.js');
       
       if (shouldApplyCulturalEnhancements(userInfo)) {
         // Dark skin users - get cultural arrays from StaticDataCache
@@ -653,8 +651,6 @@ export class UnifiedPlaceholderResolver {
    */
   getCulturalFacialFeatures(userInfo, sessionId, tierType) {
     try {
-      // Import StaticDataCache functions
-      const { getSkinBySkintone, shouldApplyCulturalEnhancements } = await import('./StaticDataCache.js');
       
       if (shouldApplyCulturalEnhancements(userInfo)) {
         // Dark skin users - get cultural arrays from StaticDataCache
