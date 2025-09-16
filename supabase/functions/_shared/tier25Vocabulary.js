@@ -668,6 +668,72 @@ export const SEMANTIC_EXTRACTION = {
 // ============= ATMOSPHERE OPTIONS =============
 // Moved from Phase 3 Enhanced Semantic Functions for centralized management
 
+// ============= AVATAR TYPES =============
+export const AVATAR_TYPES = {
+  boy: 'boy',
+  girl: 'girl', 
+  child: 'child',
+  neutral: 'child'
+};
+
+// ============= REGIONAL ETHNICITY MAPPINGS =============
+export const REGIONAL_ETHNICITY_MAPPINGS = {
+  'en': {
+    'light': 'Caucasian',
+    'medium': 'Caucasian',
+    'dark': 'African American',
+    'darker': 'African American'
+  },
+  'es': {
+    'light': 'Hispanic',
+    'medium': 'Hispanic',
+    'dark': 'Hispanic',
+    'darker': 'Afro-Hispanic'
+  },
+  'pt': {
+    'light': 'Portuguese',
+    'medium': 'Brazilian',
+    'dark': 'Afro-Brazilian',
+    'darker': 'Afro-Brazilian'
+  },
+  'fr': {
+    'light': 'French',
+    'medium': 'French',
+    'dark': 'African French',
+    'darker': 'African French'
+  },
+  'zh': {
+    'light': 'Chinese',
+    'medium': 'Chinese',
+    'dark': 'Chinese',
+    'darker': 'Chinese'
+  },
+  'ar': {
+    'light': 'Arabic',
+    'medium': 'Arabic',
+    'dark': 'Arabic',
+    'darker': 'Arabic'
+  },
+  'hi': {
+    'light': 'Indian',
+    'medium': 'Indian',
+    'dark': 'Indian',
+    'darker': 'Indian'
+  }
+};
+
+// ============= REGIONAL CULTURAL CONTEXTS =============
+// Language-based cultural contexts for settings, clothing, food, and surroundings
+export const REGIONAL_CULTURAL_CONTEXTS = {
+  'en': '', // No cultural context for English (American default)
+  'es': 'with vibrant Hispanic cultural elements, colorful textiles, traditional foods, and warm community settings',
+  'pt': 'with rich Brazilian cultural elements, tropical colors, traditional cuisine, and lively neighborhood settings',
+  'fr': 'with elegant French cultural elements, sophisticated style, classic cuisine, and charming village settings',
+  'zh': 'with authentic Chinese cultural elements, traditional architecture, cultural foods, and harmonious garden settings',
+  'ar': 'with traditional Arabic cultural elements, geometric patterns, regional cuisine, and desert or oasis settings',
+  'hi': 'with vibrant Indian cultural elements, colorful fabrics, traditional spices and foods, and ornate temple settings'
+};
+
 export const ATMOSPHERE_OPTIONS = [
   "magical", "enchanted", "mystical", "fantastical", "whimsical",
   "peaceful", "serene", "tranquil", "calm", "soothing",

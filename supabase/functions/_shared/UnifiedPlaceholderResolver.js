@@ -4,7 +4,7 @@
  * Replaces scattered placeholder logic with centralized system
  */
 
-import { VOCABULARY, PLACEHOLDER_POOLS, CULTURAL_ARRAYS, pick, createSeededRandom } from './tier25Vocabulary.js';
+import { VOCABULARY, PLACEHOLDER_POOLS, CULTURAL_ARRAYS, pick, createSeededRandom, REGIONAL_CULTURAL_CONTEXTS } from './tier25Vocabulary.js';
 import { getCulturalBundle, getHairBySkintone, shouldApplyCulturalEnhancements, getSkinBySkintone } from './StaticDataCache.js';
 
 // ============= REGIONAL ETHNICITY DERIVATION =============
@@ -180,6 +180,10 @@ export class UnifiedPlaceholderResolver {
     resolved = resolved.replace(/\{user\.interest\}/g, primaryInterest);
     resolved = resolved.replace(/\{user\.hobby\}/g, primaryInterest);
 
+    // Ethnicity resolution using existing deriveRegionalEthnicity function
+    const ethnicity = deriveRegionalEthnicity(userInfo, userInfo?.avatarIdentity);
+    resolved = resolved.replace(/\{ethnicity\}/g, ethnicity);
+
     return resolved;
   }
 
@@ -210,13 +214,15 @@ export class UnifiedPlaceholderResolver {
     resolved = resolved.replace(/\{object\}/g, getSeededValue('object', PLACEHOLDER_POOLS.activities)); // Fallback to activities
 
     // Map {hair} to cultural hair logic for Template 2.5B nuclear independence
-    const culturalType = this.detectCulturalContext(userInfo);
+    const culturalLanguage = this.detectCulturalContext(userInfo);
     resolved = resolved.replace(/\{hair\}/g, () => {
-      if (culturalType === 'african') {
+      // Only dark skin users get cultural hair (backward compatibility)
+      const skinTone = userInfo?.skinTone || userInfo?.avatarIdentity?.skinTone || userInfo?.avatar?.skinTone;
+      if (skinTone === 'dark' || skinTone === 'darker') {
         const culturalBundle = getCulturalBundle(userInfo, userInfo?.sessionId || 'default');
         return culturalBundle.hair || '';
       }
-      return ''; // No hair description for non-African users
+      return ''; // No hair description for non-dark skin users
     });
 
     // Map {features} to cultural features logic for Template 2.5B nuclear independence  
@@ -282,21 +288,26 @@ export class UnifiedPlaceholderResolver {
   resolveCulturalPlaceholders(text, userInfo) {
     let resolved = text;
 
-    // Detect cultural context from user info
-    const culturalType = this.detectCulturalContext(userInfo);
+    // Detect cultural context from user info (language-based)
+    const culturalLanguage = this.detectCulturalContext(userInfo);
 
-    // Cultural hair and features
+    // Cultural hair and features (still skin-tone based for backward compatibility)
     resolved = resolved.replace(/\{cultural\.hair\}/g, () => {
-      if (culturalType === 'none') return '';
+      const skinTone = userInfo?.skinTone || userInfo?.avatarIdentity?.skinTone || userInfo?.avatar?.skinTone;
+      if (skinTone !== 'dark' && skinTone !== 'darker') return '';
       const culturalBundle = getCulturalBundle(userInfo, userInfo?.sessionId || 'default');
       return culturalBundle.hair || '';
     });
 
     resolved = resolved.replace(/\{cultural\.features\}/g, () => {
-      if (culturalType === 'none') return '';
+      const skinTone = userInfo?.skinTone || userInfo?.avatarIdentity?.skinTone || userInfo?.avatar?.skinTone;
+      if (skinTone !== 'dark' && skinTone !== 'darker') return '';
       const culturalBundle = getCulturalBundle(userInfo, userInfo?.sessionId || 'default');
       return culturalBundle.features || '';
     });
+
+    // Cultural context is now language-based
+    resolved = resolved.replace(/\{cultural_context\}/g, REGIONAL_CULTURAL_CONTEXTS[culturalLanguage] || '');
 
     return resolved;
   }
@@ -315,21 +326,13 @@ export class UnifiedPlaceholderResolver {
   }
 
   detectCulturalContext(userInfo) {
-    // Enhanced cultural detection for dark skin tones with language validation
-    const skinTone = userInfo?.skinTone || userInfo?.avatarIdentity?.skinTone || userInfo?.avatar?.skinTone;
+    // Language-based cultural detection (not skin-tone based)
     const language = userInfo?.nativeLanguage || userInfo?.language || 'en';
     
-    // Only dark skin users with supported languages get cultural enhancements
-    if (skinTone === 'dark' || skinTone === 'darker') {
-      // Only EN/FR/ES/PT languages supported for African cultural features
-      const supportedLanguages = ['en', 'fr', 'es', 'pt'];
-      if (supportedLanguages.includes(language.toLowerCase())) {
-        return 'african';
-      }
-    }
-    
-    // All other users (light skin + any language, or dark skin + unsupported language)
-    return 'none';
+    // Return language for cultural context mapping
+    // English gets no cultural context (American default)
+    // Other languages get their specific cultural contexts
+    return language.toLowerCase();
   }
 
   applyPronounGrammarFixes(text, pronoun) {
@@ -864,7 +867,7 @@ export class UnifiedPlaceholderResolver {
       props: '', // Leave empty - no lies about props
       action_objects: '', // Leave empty - no lies about objects
       sensory_details: '', // Leave empty - no lies about senses
-      cultural_context: '', // Leave empty - handled by cultural system
+      cultural_context: REGIONAL_CULTURAL_CONTEXTS[context.userInfo?.nativeLanguage || context.userInfo?.language || 'en'] || '', // Language-based cultural context
       community_context: '', // Leave empty - no lies about community
       secondary_characters: '', // Leave empty - handled by character service
       frameworkPrompt: context.frameworkPrompt || 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality, warm natural lighting', // Use context first, then nuclear fallback with warm natural lighting

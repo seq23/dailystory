@@ -262,7 +262,9 @@ export class CharacterConsistencyService {
       }
     }
     
-    return `${characterName} is a child age ${age}${clothingStyle ? ' ' + clothingStyle : ''}`;
+    // Use actual avatar type from seedData instead of hardcoded "child"
+    const avatarType = seedData.avatarType || seedData.type || 'child';
+    return `${characterName} is a ${avatarType} age ${age}${clothingStyle ? ' ' + clothingStyle : ''}`;
   }
 
   /**
