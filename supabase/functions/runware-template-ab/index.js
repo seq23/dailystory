@@ -7,6 +7,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { callRunwareAPIWithRetry } from './callRunwareAPIWithRetry.js';
 import { 
   getHairBySkintone, 
+  getSkinBySkintone,
   getAfricanAmericanHair, 
   getAfricanAmericanFeatures, 
   shouldApplyCulturalEnhancements,
@@ -448,12 +449,14 @@ function prepareBasicTemplateData(storyText, userInfo, avatarIdentity, framework
     cultural_context = 'with authentic cultural representation';
     console.log('🌍 Applied seeded African American cultural enhancements via getCulturalBundle');
   } else {
-    // Regular hair mapping for non-dark skin users
+    // Complete hair and skin descriptions for non-dark skin users
     const skinTone = userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium';
-    hairDescription = getHairBySkintone(skinTone, numericSeed);
-    facialFeatures = 'friendly facial features with warm expressive eyes';
+    const hairDesc = getHairBySkintone(skinTone, numericSeed);
+    const skinDesc = getSkinBySkintone(skinTone, numericSeed);
+    hairDescription = `${hairDesc}, ${skinDesc}`;
+    facialFeatures = `${skinDesc} with ${hairDesc}`;
     cultural_context = '';
-    console.log('🎨 Applied standard hair mapping for skin tone:', skinTone);
+    console.log('🎨 Applied complete hair + skin descriptions for skin tone:', skinTone);
   }
   
   // Construct full framework prompt with hardcoded style

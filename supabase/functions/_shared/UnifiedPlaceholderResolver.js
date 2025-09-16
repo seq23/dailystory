@@ -853,8 +853,11 @@ export class UnifiedPlaceholderResolver {
           return culturalBundle.hair || 'with authentic African American features';
         }
       } else {
-        // Non-dark skin users - get hair mappings from StaticDataCache
-        return getHairBySkintone(userInfo?.skinTone || 'medium', sessionId);
+        // Non-dark skin users - get combined hair and skin descriptions
+        const skinTone = userInfo?.skinTone || 'medium';
+        const hairDesc = getHairBySkintone(skinTone, sessionId);
+        const skinDesc = getSkinBySkintone(skinTone, sessionId);
+        return `${hairDesc}, ${skinDesc}`;
       }
     } catch (error) {
       console.warn('getCulturalHairDescription failed, using hardcoded fallbacks:', error);
@@ -884,8 +887,11 @@ export class UnifiedPlaceholderResolver {
           return culturalBundle.features || 'with photorealistic African features natural hair texture';
         }
       } else {
-        // Non-dark skin users - get skin mappings from StaticDataCache
-        return getSkinBySkintone(userInfo?.skinTone || 'medium', sessionId);
+        // Non-dark skin users - get combined skin and hair descriptions
+        const skinTone = userInfo?.skinTone || 'medium';
+        const skinDesc = getSkinBySkintone(skinTone, sessionId);
+        const hairDesc = getHairBySkintone(skinTone, sessionId);
+        return `${skinDesc} with ${hairDesc}`;
       }
     } catch (error) {
       console.warn('getCulturalFacialFeatures failed, using hardcoded fallbacks:', error);

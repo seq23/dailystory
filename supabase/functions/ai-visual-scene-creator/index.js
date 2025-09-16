@@ -1,5 +1,11 @@
 // DEPLOY_MARKER: 2025-09-15T00:12:00Z - FORCE REDEPLOY PRIORITY
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { 
+  getHairBySkintone, 
+  getSkinBySkintone, 
+  getCulturalBundle, 
+  shouldApplyCulturalEnhancements 
+} from '../_shared/StaticDataCache.js';
 
 console.log('BOOT ai-visual-scene-creator module loaded');
 
@@ -517,8 +523,28 @@ serve(async (req) => {
           };
         }
         
-        const enhancedCharacterDescription = characterData.characterDescription || 
+        // Enhanced character description with hair and skin integration
+        let enhancedCharacterDescription = characterData.characterDescription || 
           `${avatarIdentity?.name || 'child'} is a child age ${avatarIdentity?.age || '6-8'}`;
+        
+        // Add hair and skin details using StaticDataCache
+        try {
+          const userInfo = { skinTone: avatarIdentity?.skinTone || 'medium', language: avatarIdentity?.language };
+          if (shouldApplyCulturalEnhancements(userInfo)) {
+            // Dark skin users - get rich African American descriptions
+            const culturalBundle = getCulturalBundle(userInfo, sessionId);
+            const hairAndSkin = `${culturalBundle.hair || 'natural textured hair'}, ${culturalBundle.features || 'authentic African features'}`;
+            enhancedCharacterDescription += ` with ${hairAndSkin}`;
+          } else {
+            // Pale/Light/Medium/Olive users - combine hair and skin descriptions
+            const skinTone = userInfo.skinTone || 'medium';
+            const hairDesc = getHairBySkintone(skinTone, characterData.seed);
+            const skinDesc = getSkinBySkintone(skinTone, characterData.seed);
+            enhancedCharacterDescription += ` with ${hairDesc}, ${skinDesc}`;
+          }
+        } catch (error) {
+          console.warn('Failed to enhance character description with hair/skin details:', error);
+        }
         
         console.log('CHAR PHASE 1.1: Enhanced Character Description:', {
           avatarIdentity: avatarIdentity,
