@@ -492,7 +492,7 @@ function summarizePageText(storyText) {
 }
 
 // Bulletproof basic template data preparation
-function prepareBasicTemplateData(storyText, userInfo, avatarIdentity, frameworkPrompt, sessionId, failedTierData = {}) {
+async function prepareBasicTemplateData(storyText, userInfo, avatarIdentity, frameworkPrompt, sessionId, failedTierData = {}) {
   console.log('🔧 Preparing bulletproof basic template data');
   
   // Extract scene - critical, no fallback allowed
@@ -586,12 +586,12 @@ function prepareBasicTemplateData(storyText, userInfo, avatarIdentity, framework
 }
 
 // Bulletproof basic template generation with direct string replacement
-function generateBasicTemplate(storyText, userInfo, avatarIdentity, frameworkPrompt, difficultyLevel = 'level_0-1', sessionId, failedTierData = {}) {
+async function generateBasicTemplate(storyText, userInfo, avatarIdentity, frameworkPrompt, difficultyLevel = 'level_0-1', sessionId, failedTierData = {}) {
   console.log('🛡️ Generating bulletproof basic template');
   
   try {
     // Get bulletproof template data
-    const templateData = prepareBasicTemplateData(storyText, userInfo, avatarIdentity, frameworkPrompt, sessionId, failedTierData);
+    const templateData = await prepareBasicTemplateData(storyText, userInfo, avatarIdentity, frameworkPrompt, sessionId, failedTierData);
     
     // Get basic template
     const template = BASIC_PROMPT_TEMPLATES[difficultyLevel];
