@@ -100,6 +100,68 @@ export const AFRICAN_AMERICAN_HAIRSTYLES = {
   ]
 };
 
+// ============= SKIN TONE VARIATIONS =============
+
+const PALE_SKIN_TONES = [
+  "porcelain skin with cool undertones",
+  "fair ivory complexion with pink undertones",
+  "alabaster skin with neutral undertones",
+  "creamy pale skin with warm undertones",
+  "pearl white complexion with subtle pink flush",
+  "milky white skin with cool undertones",
+  "fair skin with peachy undertones",
+  "pale rose-tinted complexion",
+  "translucent fair skin with blue undertones",
+  "cream-colored skin with golden undertones",
+  "snow white complexion with neutral base",
+  "fair skin with subtle yellow undertones"
+];
+
+const LIGHT_SKIN_TONES = [
+  "light peachy skin tone with warm glow",
+  "soft beige complexion with pink undertones",
+  "warm vanilla skin with golden undertones",
+  "light cream complexion with neutral base",
+  "pale golden skin with honey undertones",
+  "light rose-beige skin tone",
+  "champagne-colored complexion",
+  "light ivory skin with warm peachy glow",
+  "soft bisque skin tone with pink flush",
+  "light caramel undertones with creamy base",
+  "warm light tan with golden highlights",
+  "light sand-colored skin with neutral undertones"
+];
+
+const MEDIUM_SKIN_TONES = [
+  "warm peachy medium skin tone",
+  "golden medium complexion with honey undertones",
+  "medium beige skin with warm caramel highlights",
+  "soft medium tan with golden glow",
+  "medium caramel skin tone with warm undertones",
+  "warm medium brown with peachy undertones",
+  "medium golden skin with bronze highlights",
+  "caramel medium complexion with honey base",
+  "medium wheat-colored skin with warm glow",
+  "golden medium tan with amber undertones",
+  "medium olive-beige with warm undertones",
+  "warm medium skin with cinnamon undertones"
+];
+
+const OLIVE_SKIN_TONES = [
+  "light olive complexion with green undertones",
+  "warm olive skin with golden undertones",
+  "medium olive with bronze highlights",
+  "golden olive complexion with warm glow",
+  "olive-beige skin with neutral undertones",
+  "warm olive-tan with amber undertones",
+  "deep olive with rich warm undertones",
+  "olive-brown complexion with golden base",
+  "Mediterranean olive skin with sun-kissed glow",
+  "olive-caramel with warm honey undertones",
+  "rich olive complexion with bronze undertones",
+  "dark olive skin with deep golden highlights"
+];
+
 export const AFRICAN_AMERICAN_FACIAL_FEATURES = [
   // Light to Medium Tones (12 entries)
   "light brown skin tone with warm brown eyes and a bright infectious smile",
@@ -172,16 +234,24 @@ export function getHairBySkintone(skinTone, sessionId) {
  * Get seeded skin tone description based on skin tone
  */
 export function getSkinBySkintone(skinTone, sessionId) {
-  // Use African American features for dark skin tones, generic descriptions for others
-  if (skinTone === 'dark' || skinTone === 'darker') {
+  const normalizedSkinTone = skinTone?.toLowerCase() || 'medium';
+  
+  // Use African American features for dark skin tones
+  if (normalizedSkinTone === 'dark' || normalizedSkinTone === 'darker') {
     return pick(AFRICAN_AMERICAN_FACIAL_FEATURES, sessionId);
   }
   
-  const genericFeatures = [
-    'friendly facial features', 'warm expressive eyes', 'cheerful smile',
-    'bright animated features', 'gentle friendly expression', 'kind warm features'
-  ];
-  return pick(genericFeatures, sessionId);
+  // Use specific skin tone descriptions for other tones
+  if (normalizedSkinTone === 'pale') {
+    return pick(PALE_SKIN_TONES, sessionId);
+  } else if (['light', 'lighter', 'fair'].includes(normalizedSkinTone)) {
+    return pick(LIGHT_SKIN_TONES, sessionId);
+  } else if (normalizedSkinTone === 'olive') {
+    return pick(OLIVE_SKIN_TONES, sessionId);
+  } else {
+    // Default to medium for any unmapped tones
+    return pick(MEDIUM_SKIN_TONES, sessionId);
+  }
 }
 
 /**
