@@ -201,25 +201,56 @@ function createErrorResponse(error, status = 500) {
   }, status);
 }
 
-// ============= COMPLEXITY LEVEL DETECTION =============
-function getComplexityLevel(userInfo, templateComplexity) {
-  // Handle A-B complexity levels only
-  const validLevels = ['A', 'B'];
+// ============= TEMPLATE SELECTION LOGIC =============
+function selectTemplate(effectiveTierType) {
+  if (effectiveTierType === '2.5A') {
+    return TIER_25A_TEMPLATE;
+  } else {
+    return TIER_25B_TEMPLATE;
+  }
+}
+
+// ============= ENHANCED SCENE EXTRACTION FOR TIER 2.5A =============
+function extractSemanticScene(storyText) {
+  if (!storyText || typeof storyText !== 'string') return 'playing happily';
   
-  if (templateComplexity && validLevels.includes(templateComplexity)) {
-    console.log(`🎯 Template AB: Using provided complexity: ${templateComplexity}`);
-    return templateComplexity;
+  // Advanced scene extraction with semantic understanding
+  const text = storyText.toLowerCase();
+  
+  const semanticPatterns = [
+    { regex: /character.*?(\w+ing).*?(with|in|at)\s+([^.,!?]+)/i, transform: (m) => `${m[1]} ${m[2]} ${m[3]}` },
+    { regex: /(\w+ing)\s+.*?(happily|sadly|excitedly|carefully|quietly)/i, transform: (m) => `${m[1]} ${m[2]}` },
+    { regex: /character.*?(discovers|finds|sees)\s+([^.,!?]+)/i, transform: (m) => `discovering ${m[2]}` }
+  ];
+  
+  for (const pattern of semanticPatterns) {
+    const match = storyText.match(pattern.regex);
+    if (match) {
+      return pattern.transform(match);
+    }
   }
   
-  // Map user info to A-B complexity
-  const gradeLevel = userInfo?.gradeLevel || 'K';
-  const age = userInfo?.age || 5;
+  // Fallback to simple scene extraction
+  return extractSimpleScene(storyText) || 'engaging in story activity';
+}
+
+// ============= CULTURAL CONTEXT DERIVATION =============
+function deriveNonEnglishCulturalContext(userInfo) {
+  const language = userInfo?.nativeLanguage || userInfo?.language || 'en';
   
-  if (gradeLevel === 'K' || gradeLevel === '1' || age <= 6) {
-    return 'A'; // Basic shapes and colors
-  }
+  // Only return cultural context for non-English languages
+  if (language === 'en') return '';
   
-  return 'B'; // Simple scenes
+  const culturalContextMap = {
+    'es': 'Hispanic cultural setting',
+    'pt': 'Portuguese cultural environment',
+    'fr': 'French cultural atmosphere',
+    'zh': 'Chinese cultural background',
+    'ja': 'Japanese cultural setting',
+    'ar': 'Arabic cultural environment'
+  };
+  
+  return culturalContextMap[language] || '';
 }
 
 // ============= SCENE/SETTING EXTRACTION FUNCTIONS =============
@@ -386,15 +417,23 @@ function extractLocationFromText(text) {
 }
 
 // Continue with rest of existing implementation...
-const NUCLEAR_HARDCODED_PREMIUM_TEMPLATES = {
-  A: `{character}, {ethnicity}, {hair}, {features}, {semantic_scene}, {frameworkPrompt}`,
-  B: `{character}, {ethnicity}, {hair}, {features}, {scene}, {frameworkPrompt}`
-};
+// ============= TIER 2.5A/B TEMPLATES - CATEGORY-BASED WITH LINE BREAKS =============
+const TIER_25A_TEMPLATE = `Narrative: {pageText}.
+Character Description: {character} {age}, {ethnicity}, {hair}, {features} {bundle.culturalEnhancements}.
+Action: {semantic_scene}.
+Secondary elements: {secondary_characters}.
+Consistency: {visual_consistency_elements}.
+Context: {cultural_context}, {community_context}.
+Brand Suffix: {frameworkPrompt}, {cameraDirective}.`;
 
-const NUCLEAR_HARDCODED_BASIC_TEMPLATES = {
-  A: `{character}, {hairDescription}, {semantic_scene}, {frameworkPrompt}`,
-  B: `{character}, {hairDescription}, {scene}, {frameworkPrompt}`
-};
+const TIER_25B_TEMPLATE = `Narrative: {pageText}.
+Subject: {character}, {age}, {ethnicity}, {hairDescription}, {facialFeatures}.
+Action: {scene}
+Context: {cultural_context} {leftover data}.
+Brand Suffix: {fullFrameworkPrompt},`;
+
+// ============= EXPORT TEMPLATES FOR VALIDATION =============
+export { TIER_25A_TEMPLATE, TIER_25B_TEMPLATE };
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -408,90 +447,105 @@ serve(async (req) => {
       status: 'healthy',
       functionName: 'runware-template-ab',
       tier: '2.5A-B',
-      complexity: 'A-B',
-      timestamp: new Date().toISOString(),
-      sessionArchitecture: 'parameter-based'
+      timestamp: new Date().toISOString()
     });
   }
 
   try {
-    const { pageText, userInfo, sessionId, pageNumber, totalPages, avatarIdentity } = await req.json();
+    const { bundle, config } = await req.json();
+    console.log('🎯 Template AB Core Engine:', { bundle, config });
 
-    if (!pageText || !userInfo) {
-      return createErrorResponse('Missing required parameters: pageText and userInfo', 400);
+    // Basic validation
+    if (!bundle || !config) {
+      throw new Error('Missing bundle or config parameters');
     }
 
-    // Derive ethnicity properly
-    const ethnicity = deriveRegionalEthnicity(userInfo, avatarIdentity);
-    
-    // Get complexity level
-    const complexityLevel = getComplexityLevel(userInfo);
-    
-    // Get style framework
-    const framework = getNuclearStyleFramework(userInfo.difficulty || 'medium');
-    
-    // Determine if user needs cultural enhancements (dark skin)
-    const needsCulturalEnhancements = shouldApplyCulturalEnhancements(userInfo);
-    
-    // Select template type based on cultural needs
-    const templateSet = needsCulturalEnhancements ? NUCLEAR_HARDCODED_PREMIUM_TEMPLATES : NUCLEAR_HARDCODED_BASIC_TEMPLATES;
-    const promptTemplate = templateSet[complexityLevel];
-    
-    // Get placeholder resolver
+    // PHASE 2: Determine tier type (2.5A vs 2.5B)
+    const userInfo = bundle.userInfo || {};
+    const skinTone = userInfo.skinTone || userInfo?.avatar?.skinTone || 'medium';
+    const effectiveTierType = (skinTone === 'dark' || skinTone === 'darker') ? '2.5A' : '2.5B';
+    console.log(`🎯 Effective tier type: ${effectiveTierType} (skin: ${skinTone})`);
+
+    // PHASE 3: Select appropriate template
+    const templateString = selectTemplate(effectiveTierType);
+    console.log(`📄 Selected template: ${templateString.substring(0, 100)}...`);
+
+    // Phase 4: Load services
+    const characterService = effectiveTierType === '2.5A' ? await getCharacterService() : null;
     const resolver = await getUnifiedPlaceholderResolver();
+    
     if (!resolver) {
-      return createErrorResponse('Placeholder resolver not available', 500);
+      throw new Error('[Template AB] UnifiedPlaceholderResolver service failed to load');
     }
-    
-    // Prepare context for placeholder resolution
-    const context = {
-      userInfo: {
-        ...userInfo,
-        ethnicity // Include fixed ethnicity
-      },
-      pageText,
-      sessionId,
-      pageNumber,
-      frameworkPrompt: framework.frameworkPrompt
+
+    // PHASE 5: Prepare context for resolution with storyText fallback
+    const pageText = bundle.pageText || bundle.storyText || '';
+    const resolutionContext = {
+      userInfo,
+      seed: bundle.seed || {},
+      sessionId: bundle.sessionId || 'default',
+      pageNumber: bundle.pageNumber || 1,
+      templateLevel: bundle.templateLevel || '0',
+      effectiveTierType,
+      characterService
     };
-    
-    // Resolve all placeholders
-    const resolution = await resolver.resolveAllPlaceholders(promptTemplate, context);
-    
-    if (!resolution.success) {
-      return createErrorResponse('Placeholder resolution failed', 500);
+
+    // PHASE 6: Build enhanced context object
+    const fullContext = {
+      ...bundle,
+      ...resolutionContext,
+      pageText,
+      ethnicity: deriveRegionalEthnicity(userInfo, userInfo?.avatarIdentity),
+      hair: getHair(skinTone),
+      features: getFeatures(skinTone),
+      hairDescription: getHair(skinTone),
+      facialFeatures: getFeatures(skinTone),
+      scene: extractSimpleScene(pageText),
+      semantic_scene: effectiveTierType === '2.5A' ? extractSemanticScene(pageText) : extractSimpleScene(pageText),
+      secondary_characters: effectiveTierType === '2.5A' && characterService 
+        ? await characterService.detectSecondaryCharacters(bundle.sessionId, pageText, bundle.pageNumber || 1) 
+        : '',
+      visual_consistency_elements: effectiveTierType === '2.5A' && characterService
+        ? await characterService.getCharacterAppearanceFromStory(bundle.sessionId)
+        : '',
+      cultural_context: deriveNonEnglishCulturalContext(userInfo),
+      community_context: '',
+      character: bundle.characterData?.name || userInfo?.name || userInfo?.childName || 'child',
+      age: userInfo?.age || '6',
+      leftover_data: bundle.leftoverData || '',
+      cameraDirective: 'medium shot',
+      frameworkPrompt: getNuclearStyleFramework(bundle.templateLevel || 'medium').frameworkPrompt,
+      fullFrameworkPrompt: getNuclearStyleFramework(bundle.templateLevel || 'medium').frameworkPrompt
+    };
+
+    // PHASE 7: Resolve placeholders
+    const result = await resolver.resolveAllPlaceholders(templateString, fullContext);
+
+    // PHASE 8: Handle template resolution failure - escalation logic
+    if (!result.success || result.remainingPlaceholders > 0) {
+      console.warn(`⚠️ Template resolution failed for ${effectiveTierType}, attempting escalation`);
+      
+      if (effectiveTierType === '2.5A') {
+        // Escalate to 2.5B as fallback
+        console.log('🔄 Escalating from 2.5A to 2.5B template');
+        const fallbackTemplate = selectTemplate('2.5B');
+        result = await resolver.resolveAllPlaceholders(fallbackTemplate, fullContext);
+      }
     }
-    
-    // Generate negative prompt
-    const avatarType = userInfo.avatarType || resolver.deriveAvatarType(userInfo);
-    const culturalProfile = needsCulturalEnhancements ? 'african-american' : 'standard';
-    const negativePrompt = generateInlineNuclearNegative(culturalProfile, avatarType, userInfo.difficulty);
-    
-    // Call Runware API - FIX: Use correct function signature
-    console.log(`🔧 [TEMPLATE-AB] Calling Runware API with CFGScale=8, steps=25`);
-    const imageResult = await callRunwareAPIWithRetry(
-      resolution.resolvedText,
-      negativePrompt
-    );
-    
+
+    console.log(`🔧 [Template AB] Resolution completed successfully`);
+
     return createResponse({
       success: true,
-      // Schema alignment with tester and CD function
-      imageURL: imageResult.imageURL,
-      imageUrl: imageResult.imageURL, // backward-compat
-      positivePrompt: resolution.resolvedText,
-      prompt: resolution.resolvedText, // backward-compat
-      negativePrompt,
-      tier: complexityLevel === 'A' ? '2.5A' : '2.5B',
-      complexity: complexityLevel,
-      styleFrameworkUsed: framework.name,
-      culturalProfile,
-      ethnicity,
-      resolution
+      prompt: result.resolvedText,
+      negative: generateInlineNuclearNegative(effectiveTierType === '2.5A' ? 'enhanced' : 'basic', userInfo?.avatar?.type || 'child', bundle.templateLevel),
+      templateUsed: `${effectiveTierType}: ${templateString.substring(0, 50)}...`,
+      resolutionDetails: result,
+      tierType: effectiveTierType
     });
 
   } catch (error) {
-    console.error('Template AB Error:', error);
-    return createErrorResponse(error.message, 500);
+    console.error('❌ [Template AB] Error:', error);
+    return createErrorResponse(error);
   }
 });
