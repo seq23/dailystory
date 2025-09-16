@@ -476,14 +476,18 @@ serve(async (req) => {
     
     return createResponse({
       success: true,
-      imageUrl: imageResult.imageURL,
-      prompt: resolution.resolvedText,
+      // Schema alignment with tester and CD function
+      imageURL: imageResult.imageURL,
+      imageUrl: imageResult.imageURL, // backward-compat
+      positivePrompt: resolution.resolvedText,
+      prompt: resolution.resolvedText, // backward-compat
       negativePrompt,
-      tier: '2.5A',
+      tier: complexityLevel === 'A' ? '2.5A' : '2.5B',
       complexity: complexityLevel,
+      styleFrameworkUsed: framework.name,
       culturalProfile,
       ethnicity,
-      resolution: resolution
+      resolution
     });
 
   } catch (error) {
