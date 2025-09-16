@@ -227,11 +227,12 @@ export class UnifiedPlaceholderResolver {
 
     // Map {features} to cultural features logic for Template 2.5B nuclear independence  
     resolved = resolved.replace(/\{features\}/g, () => {
-      if (culturalType === 'african') {
+      const skinTone = userInfo?.skinTone || userInfo?.avatarIdentity?.skinTone || userInfo?.avatar?.skinTone;
+      if (skinTone === 'dark' || skinTone === 'darker') {
         const culturalBundle = getCulturalBundle(userInfo, userInfo?.sessionId || 'default');
         return culturalBundle.features || '';
       }
-      return ''; // No features description for non-African users
+      return ''; // No features description for non-dark skin users
     });
 
     // Apply pronoun-based grammar fixes
@@ -412,8 +413,12 @@ export class UnifiedPlaceholderResolver {
     // Preserve intentional line breaks, collapse other spaces
     cleaned = cleaned.replace(/[ \t]+/g, ' ').replace(/\n\s*\n/g, '\n');
     
-    // Fix punctuation
+    // Fix punctuation and normalize commas
     cleaned = cleaned.replace(/\s+([,.!?])/g, '$1');
+    cleaned = cleaned.replace(/,+/g, ','); // Remove duplicate commas
+    cleaned = cleaned.replace(/,\s*,/g, ','); // Remove comma sequences
+    cleaned = cleaned.replace(/,\s*\./g, '.'); // Fix comma before period
+    cleaned = cleaned.replace(/,\s*$/gm, ''); // Remove trailing commas
     
     // Remove duplicate words
     cleaned = cleaned.replace(/\b(\w+)\s+\1\b/g, '$1');
@@ -471,9 +476,9 @@ export class UnifiedPlaceholderResolver {
     // ADVANCED ACTION VERB RESOLUTION with normalization
     let extractedAction = this.extractAndNormalizeAction(text);
     
-    // Extract Object (what they're interacting with)
-    const objectMatch = text.match(/\b(?:with|holding|carrying|using|playing with|reading|eating|building|drawing)\s+(?:a|an|the|some)?\s*([a-zA-Z]+(?:\s+[a-zA-Z]+)?)/);
-    const extractedObject = objectMatch ? objectMatch[1] : this.inferObjectFromAction(extractedAction);
+    // Extract Object (what they're interacting with) - improved regex to capture full phrases
+    const objectMatch = text.match(/\b(?:with|holding|carrying|using|playing with|reading|eating|building|drawing)\s+(?:a|an|the|some)?\s*([a-zA-Z][a-zA-Z\s]*?)(?:\s+(?:in|at|on|through|where|and|,|\.|!|\?)|$)/);
+    const extractedObject = objectMatch ? objectMatch[1].trim() : this.inferObjectFromAction(extractedAction);
     
     // Extract Location 
     const locationMatch = text.match(/\b(?:in|at|on|near|by|inside|outside|through)\s+(?:the|a|an)?\s*([a-zA-Z]+(?:\s+[a-zA-Z]+)?)/);
@@ -510,9 +515,10 @@ export class UnifiedPlaceholderResolver {
     // Enhanced Level 0 action detection using tier25Vocabulary
     const level0Actions = PLACEHOLDER_POOLS?.level0Actions || [];
     
-    // First check for Level 0 specific action patterns
+    // First check for Level 0 specific action patterns with word boundaries
     for (const action of level0Actions) {
-      if (text.includes(action)) {
+      const actionRegex = new RegExp(`\\b${action.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+      if (actionRegex.test(text)) {
         // Normalize Level 0 actions with intelligent inference
         if (action.includes('wakes up') || action.includes('waking up')) {
           return 'sitting up in bed with arms stretched';
@@ -874,6 +880,17 @@ export class UnifiedPlaceholderResolver {
   fillMissingPlaceholders(text, context) {
     let resolved = text;
     
+    // Fill hair and features for light-skinned users if still missing
+    resolved = resolved.replace(/\{hair\}/g, () => {
+      const skinTone = context.userInfo?.skinTone || context.userInfo?.avatarIdentity?.skinTone || context.userInfo?.avatar?.skinTone || 'medium';
+      return getHairBySkintone(skinTone, context.userInfo?.sessionId || 'default') || '';
+    });
+    
+    resolved = resolved.replace(/\{features\}/g, () => {
+      const skinTone = context.userInfo?.skinTone || context.userInfo?.avatarIdentity?.skinTone || context.userInfo?.avatar?.skinTone || 'medium';
+      return getSkinBySkintone(skinTone, context.userInfo?.sessionId || 'default') || '';
+    });
+    
     // Handle new 2.5A/2.5B placeholders
     resolved = resolved.replace(/\{pageText\}/g, () => {
       return this.summarizePageText(context.pageText, context);
@@ -895,10 +912,16 @@ export class UnifiedPlaceholderResolver {
       return this.generateSemanticScene(context.pageText, context);
     });
     
+    // Add avatar type to character if missing
+    const name = context.userInfo?.name || context.userInfo?.childName || 'the child';
+    const age = context.userInfo?.age || '6';
+    const avatarType = this.deriveAvatarType(context.userInfo);
+    const characterWithAvatar = avatarType ? `${name} ${age}-year-old ${avatarType}` : `${name} ${age}`;
+    
     // Existing safe fallbacks
     const safeMap = {
-      character: context.userInfo?.name || 'the child',
-      age: context.userInfo?.age || '6',
+      character: characterWithAvatar,
+      age: age,
       ethnicity: '', // Leave empty - no lies
       spatial_composition: 'centered in frame',
       setting: '', // Leave empty - better than lies
@@ -925,6 +948,38 @@ export class UnifiedPlaceholderResolver {
     });
     
     return resolved;
+  }
+
+  /**
+   * Derive avatar type from user info
+   */
+  deriveAvatarType(userInfo) {
+    // Try to get from avatar identity first
+    if (userInfo?.avatarIdentity?.type) {
+      return userInfo.avatarIdentity.type;
+    }
+    
+    // Try to get from avatar object
+    if (userInfo?.avatar?.type) {
+      return userInfo.avatar.type;
+    }
+    
+    // Fallback based on name patterns or default to gender-neutral
+    const name = userInfo?.name || userInfo?.childName || '';
+    if (name) {
+      // Simple gender inference - can be improved
+      const maleNames = ['alex', 'sam', 'jordan', 'taylor', 'casey', 'riley', 'jamie', 'avery', 'morgan', 'quinn'];
+      const femaleNames = ['emma', 'sophia', 'olivia', 'ava', 'isabella', 'mia', 'charlotte', 'amelia', 'harper', 'evelyn'];
+      
+      const lowerName = name.toLowerCase();
+      if (femaleNames.includes(lowerName)) {
+        return 'girl';
+      } else if (maleNames.some(n => lowerName.includes(n))) {
+        return 'child'; // gender-neutral for ambiguous names
+      }
+    }
+    
+    return 'child'; // Default to gender-neutral
   }
 
   /**
