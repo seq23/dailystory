@@ -706,8 +706,8 @@ export class UnifiedPlaceholderResolver {
   }
 
   /**
-   * TIER 2.5B: SIMPLIFIED SCENE EXTRACTION (Basic Regex)
-   * Extracts: Action + Object + Location with action verb normalization
+   * TIER 2.5B: SIMPLIFIED SCENE EXTRACTION (Basic Regex) - FIXED
+   * Extracts: Action + Object + Location with proper preposition handling
    */
   extractSimpleScene(storyText) {
     if (!storyText || typeof storyText !== 'string') return 'playing outdoors';
@@ -716,25 +716,64 @@ export class UnifiedPlaceholderResolver {
     
     const text = storyText.toLowerCase();
     
-    // BASIC ACTION VERB NORMALIZATION (same as semantic but simpler)
-    let extractedAction = this.extractAndNormalizeAction(text);
+    // ENHANCED ACTION EXTRACTION with preposition preservation
+    let extractedAction = '';
     
-    // Basic object extraction
-    const objectMatch = text.match(/\b(?:with|playing with|holding|using)\s+(?:a|an|the)?\s*([a-zA-Z]+)/);
-    const extractedObject = objectMatch ? objectMatch[1] : '';
+    // First check for action + preposition patterns (like "walked through")
+    const actionWithPrepMatch = text.match(/\b(walked|running|going|moving)\s+(through|in|across|around|over|under)\b/);
+    if (actionWithPrepMatch) {
+      const baseAction = actionWithPrepMatch[1];
+      const preposition = actionWithPrepMatch[2];
+      // Normalize to present continuous
+      if (baseAction === 'walked') {
+        extractedAction = `walking ${preposition}`;
+      } else if (baseAction === 'running') {
+        extractedAction = `running ${preposition}`;
+      } else if (baseAction === 'going') {
+        extractedAction = `going ${preposition}`;
+      } else if (baseAction === 'moving') {
+        extractedAction = `moving ${preposition}`;
+      }
+    }
     
-    // Basic location extraction
-    const locationMatch = text.match(/\b(?:in|at|on|outside|inside)\s+(?:the)?\s*([a-zA-Z]+)/);
-    const extractedLocation = locationMatch ? locationMatch[1] : this.inferLocationFromContext(text);
+    // Fallback to basic action normalization if no preposition pattern found
+    if (!extractedAction) {
+      extractedAction = this.extractAndNormalizeAction(text);
+    }
     
-    // Build simple scene with action verb leading
-    const sceneComponents = [
-      extractedAction,
-      extractedObject ? extractedObject : '',
-      extractedLocation ? `in the ${extractedLocation}` : ''
-    ].filter(Boolean);
+    // Enhanced object extraction (suppress for walking scenes to avoid noise)
+    let extractedObject = '';
+    if (!extractedAction.includes('walking') && !extractedAction.includes('running')) {
+      const objectMatch = text.match(/\b(?:carrying|holding|with|playing with|using)\s+(?:a|an|the|some)?\s*([a-zA-Z]+(?:\s+[a-zA-Z]+)*)/);
+      extractedObject = objectMatch ? objectMatch[1] : '';
+    }
     
-    const simpleScene = sceneComponents.join(' ');
+    // Enhanced location extraction with multiple prepositions
+    const locationMatch = text.match(/\b(?:through|in|at|on|outside|inside|near|by)\s+(?:the|a)?\s*([a-zA-Z]+(?:\s+[a-zA-Z]+)?)/);
+    let extractedLocation = locationMatch ? locationMatch[1] : this.inferLocationFromContext(text);
+    
+    // Build scene avoiding preposition duplication
+    const sceneComponents = [];
+    
+    // Add action (may already include preposition)
+    sceneComponents.push(extractedAction);
+    
+    // Add object if present and not redundant
+    if (extractedObject && !extractedAction.includes(extractedObject)) {
+      sceneComponents.push(`with ${extractedObject}`);
+    }
+    
+    // Add location with smart preposition handling
+    if (extractedLocation) {
+      // If action already has preposition, don't add another one
+      if (extractedAction.includes('through') || extractedAction.includes('in') || extractedAction.includes('across')) {
+        sceneComponents.push(`the ${extractedLocation}`);
+      } else {
+        sceneComponents.push(`in the ${extractedLocation}`);
+      }
+    }
+    
+    const simpleScene = sceneComponents.join(', ').replace(/,\s*,/g, ',').trim();
     console.log(`✅ Simple scene extracted: "${simpleScene}"`);
     return simpleScene;
   }

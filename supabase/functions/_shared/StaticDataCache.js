@@ -213,6 +213,7 @@ export const AFRICAN_AMERICAN_FACIAL_FEATURES = [
  */
 export function getHairBySkintone(skinTone, sessionId) {
   const normalizedSkinTone = skinTone?.toLowerCase() || 'medium';
+  console.log(`🔍 DEBUG getHairBySkintone: input skinTone="${skinTone}" normalized to "${normalizedSkinTone}"`);
   
   // Map skin tone variations to our 5 categories - now handles all skin tones
   let mappedTone = 'medium';
@@ -225,9 +226,13 @@ export function getHairBySkintone(skinTone, sessionId) {
   } else if (['dark', 'darker', 'deep', 'rich'].includes(normalizedSkinTone)) {
     mappedTone = 'dark';
   }
+  console.log(`🔍 DEBUG getHairBySkintone: mapped to tone category "${mappedTone}"`);
   
   const hairOptions = HAIR_BY_SKIN_TONE[mappedTone];
-  return pick(hairOptions, sessionId);
+  console.log(`🔍 DEBUG getHairBySkintone: hairOptions for "${mappedTone}":`, hairOptions?.slice(0, 3), '...');
+  const selectedHair = pick(hairOptions, sessionId);
+  console.log(`🔍 DEBUG getHairBySkintone: selected "${selectedHair}" using sessionId "${sessionId}"`);
+  return selectedHair;
 }
 
 /**

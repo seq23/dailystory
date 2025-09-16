@@ -508,7 +508,10 @@ async function prepareBasicTemplateData(storyText, userInfo, avatarIdentity, fra
   const pageText = summarizePageText(storyText);
   
   // Guaranteed non-null character data
+  // Character name with avatar type
   const character = userInfo?.name || userInfo?.childName || 'child';
+  const avatarType = userInfo?.avatar?.type || userInfo?.avatarType || 'child';
+  const characterWithType = `${character}, ${avatarType}`;
   const age = userInfo?.age || 6;
   const ethnicity = deriveRegionalEthnicity(userInfo, avatarIdentity);
   
@@ -534,8 +537,12 @@ async function prepareBasicTemplateData(storyText, userInfo, avatarIdentity, fra
   } else {
     // Complete hair and skin descriptions for non-dark skin users
     const skinTone = userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium';
+    console.log(`🔍 DEBUG: Input skinTone="${skinTone}" for user:`, userInfo?.name);
+    console.log(`🔍 DEBUG: numericSeed="${numericSeed}"`);
     const hairDesc = getHairBySkintone(skinTone, numericSeed);
     const skinDesc = getSkinBySkintone(skinTone, numericSeed);
+    console.log(`🔍 DEBUG: getHairBySkintone("${skinTone}", ${numericSeed}) returned: "${hairDesc}"`);
+    console.log(`🔍 DEBUG: getSkinBySkintone("${skinTone}", ${numericSeed}) returned: "${skinDesc}"`);
     hairDescription = `${hairDesc}, ${skinDesc}`;
     facialFeatures = `${skinDesc} with ${hairDesc}`;
     console.log('🎨 Applied complete hair + skin descriptions for skin tone:', skinTone);
@@ -571,7 +578,7 @@ async function prepareBasicTemplateData(storyText, userInfo, avatarIdentity, fra
   const fullFrameworkPrompt = frameworkPrompt ? `${frameworkPrompt}, ${hardcodedStyle}` : hardcodedStyle;
   
   return {
-    character,
+    character: characterWithType,
     age: `age ${age}`,
     ethnicity,
     scene,
