@@ -402,6 +402,18 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Handle health check requests (GET/HEAD)
+  if (req.method === 'GET' || req.method === 'HEAD') {
+    return createResponse({
+      status: 'healthy',
+      functionName: 'runware-template-ab',
+      tier: '2.5A-B',
+      complexity: 'A-B',
+      timestamp: new Date().toISOString(),
+      sessionArchitecture: 'parameter-based'
+    });
+  }
+
   try {
     const { pageText, userInfo, sessionId, pageNumber, totalPages, avatarIdentity } = await req.json();
 
