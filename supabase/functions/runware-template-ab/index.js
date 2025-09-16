@@ -153,8 +153,8 @@ function deriveRegionalEthnicity(userInfo, avatarIdentity) {
 
 async function getVisualTracker() {
   try {
-    const { VisualDetailTracker } = await import("../_shared/VisualDetailTracker.js");
-    return VisualDetailTracker;
+    const { visualDetailTracker } = await import("../_shared/VisualDetailTracker.js");
+    return visualDetailTracker; // Use singleton instance
   } catch (error) {
     console.warn('VisualTracker lazy load failed:', error);
     return null;

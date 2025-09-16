@@ -279,7 +279,6 @@ export class PhaseIntegrationOrchestrator {
         `- Visual Traits: ${visualDescription || 'consistent character design'}`,
         culturalEnhancements ? `- Cultural Enhancements: ${culturalEnhancements}` : '',
         visualHistory ? `- Visual History: ${visualHistory}` : '',
-        crossPageConsistency ? `- Cross-Page Consistency: ${crossPageConsistency}` : '',
         coloredObjects ? `- Colored Objects: ${coloredObjects}` : '',
         visualConsistencyDetails ? `- Visual Consistency Details: ${visualConsistencyDetails}` : '',
         `BRAND SUFFIX: ${styleFramework}, child-friendly aesthetic, diverse representation`,
@@ -293,7 +292,7 @@ export class PhaseIntegrationOrchestrator {
         hasTraits: !!existingTraits,
         enhancedLength: enhancedPrompt.length,
         templateComponents: 6,
-        hasMultiPageData: !!(visualHistory || crossPageConsistency)
+        hasMultiPageData: !!(visualHistory)
       });
 
       return {
@@ -307,7 +306,6 @@ export class PhaseIntegrationOrchestrator {
         },
         visualConsistency: {
           visualHistory,
-          crossPageConsistency,
           coloredObjects,
           visualConsistencyDetails
         },
