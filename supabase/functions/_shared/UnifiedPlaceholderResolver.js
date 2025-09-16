@@ -446,51 +446,219 @@ export class UnifiedPlaceholderResolver {
    */
 
   /**
-   * Generate semantic scene description from page text with fallback
+   * TIER 2.5A: SOPHISTICATED SEMANTIC SCENE EXTRACTION (6-COMPONENT ANALYSIS)
+   * Extracts: Action + Object + Location + Atmosphere + Character Mood + Inferred Pose
+   * Uses summarized pageText first, fallback to entire pageText
+   */
+  extractSemanticScene(pageText, context) {
+    if (!pageText || typeof pageText !== 'string' || pageText.trim().length === 0) {
+      console.log('📝 Semantic scene fallback: Using PLACEHOLDER_POOLS');
+      const { userInfo, sessionId } = context;
+      const action = pick(PLACEHOLDER_POOLS?.actions?.basic || ['playing'], sessionId);
+      const object = pick(PLACEHOLDER_POOLS?.objectCategories?.toys || ['toys'], sessionId + 1);
+      return `${action} with ${object} outdoors`;
+    }
+
+    // Use summarized pageText first (2 sentences max), fallback to full text
+    let textToAnalyze = this.summarizePageText(pageText, context);
+    if (!textToAnalyze || textToAnalyze.length < 10) {
+      textToAnalyze = pageText;
+    }
+
+    const text = textToAnalyze.toLowerCase();
+    
+    // ADVANCED ACTION VERB RESOLUTION with normalization
+    let extractedAction = this.extractAndNormalizeAction(text);
+    
+    // Extract Object (what they're interacting with)
+    const objectMatch = text.match(/\b(?:with|holding|carrying|using|playing with|reading|eating|building|drawing)\s+(?:a|an|the|some)?\s*([a-zA-Z]+(?:\s+[a-zA-Z]+)?)/);
+    const extractedObject = objectMatch ? objectMatch[1] : this.inferObjectFromAction(extractedAction);
+    
+    // Extract Location 
+    const locationMatch = text.match(/\b(?:in|at|on|near|by|inside|outside|through)\s+(?:the|a|an)?\s*([a-zA-Z]+(?:\s+[a-zA-Z]+)?)/);
+    const extractedLocation = locationMatch ? locationMatch[1] : this.inferLocationFromContext(text);
+    
+    // Extract Atmosphere (indoor/outdoor, time of day, weather)
+    const atmosphere = this.extractAtmosphere(text);
+    
+    // Infer Character Mood from context
+    const characterMood = this.inferCharacterMood(text);
+    
+    // Infer Character Pose from action
+    const characterPose = this.inferCharacterPose(extractedAction, extractedObject);
+    
+    // Build comprehensive semantic scene with action verb leading
+    const sceneComponents = [
+      extractedAction,
+      extractedObject ? `with ${extractedObject}` : '',
+      extractedLocation ? `in the ${extractedLocation}` : '',
+      atmosphere,
+      characterMood,
+      characterPose
+    ].filter(Boolean);
+    
+    const semanticScene = sceneComponents.join(', ');
+    console.log(`✅ Sophisticated semantic scene extracted: "${semanticScene}"`);
+    return semanticScene;
+  }
+
+  /**
+   * ADVANCED ACTION VERB RESOLUTION AND NORMALIZATION
+   */
+  extractAndNormalizeAction(text) {
+    // Action verb patterns with normalization mapping
+    const actionNormalizationMap = {
+      'walked': 'walking through',
+      'woke up': 'sitting up in bed',
+      'cooking': 'standing over stove',
+      'walked through': 'walking through',
+      'running around': 'running in',
+      'jumped on': 'jumping on',
+      'sat down': 'sitting in',
+      'lying down': 'lying in'
+    };
+
+    // Try direct mappings first
+    for (const [pattern, normalized] of Object.entries(actionNormalizationMap)) {
+      if (text.includes(pattern)) {
+        return normalized;
+      }
+    }
+
+    // Extract action verbs from text
+    const actionMatch = text.match(/\b(walked?|running?|jumping?|playing?|exploring?|discovering?|building?|cooking?|reading?|singing?|dancing?|helping?|sitting?|standing?|lying?|sleeping?|eating?|drawing?|writing?|climbing?|swimming?)\b/);
+    
+    if (actionMatch) {
+      let action = actionMatch[1];
+      // Normalize to present continuous
+      if (action.endsWith('ed')) {
+        action = action.slice(0, -2) + 'ing';
+      }
+      if (action.endsWith('s') && !action.endsWith('ing')) {
+        action = action.slice(0, -1) + 'ing';
+      }
+      return action;
+    }
+
+    // Special case handling
+    if (text.includes('ball is red') || text.includes('the ball is')) {
+      return 'holding red ball, sitting outside';
+    }
+
+    return 'playing';
+  }
+
+  /**
+   * INFER OBJECT FROM ACTION CONTEXT
+   */
+  inferObjectFromAction(action) {
+    const actionObjectMap = {
+      'cooking': 'food',
+      'standing over stove': 'cooking utensils',
+      'reading': 'book',
+      'drawing': 'crayons',
+      'writing': 'pencil',
+      'playing': 'toys',
+      'building': 'blocks',
+      'swimming': 'pool toys'
+    };
+    return actionObjectMap[action] || '';
+  }
+
+  /**
+   * INFER LOCATION FROM CONTEXT
+   */
+  inferLocationFromContext(text) {
+    if (text.includes('kitchen') || text.includes('cooking') || text.includes('stove')) return 'kitchen';
+    if (text.includes('bedroom') || text.includes('bed') || text.includes('woke up')) return 'bedroom';
+    if (text.includes('park') || text.includes('playground')) return 'park';
+    if (text.includes('beach') || text.includes('sand')) return 'beach';
+    if (text.includes('forest') || text.includes('trees')) return 'forest';
+    if (text.includes('school') || text.includes('classroom')) return 'school';
+    if (text.includes('outside') || text.includes('outdoors')) return 'outdoors';
+    if (text.includes('inside') || text.includes('indoors') || text.includes('home')) return 'indoors';
+    return 'outdoors'; // Default for children's activities
+  }
+
+  /**
+   * EXTRACT ATMOSPHERE (enhanced from previous version)
+   */
+  extractAtmosphere(text) {
+    if (text.includes('sunny') || text.includes('bright')) return 'bright sunny day';
+    if (text.includes('rainy') || text.includes('cloudy')) return 'cloudy day';
+    if (text.includes('morning')) return 'morning light';
+    if (text.includes('evening') || text.includes('sunset')) return 'evening atmosphere';
+    if (text.includes('night')) return 'nighttime setting';
+    return 'warm natural lighting';
+  }
+
+  /**
+   * INFER CHARACTER MOOD FROM TEXT CONTEXT
+   */
+  inferCharacterMood(text) {
+    if (text.includes('happy') || text.includes('excited') || text.includes('joyful')) return 'happy expression';
+    if (text.includes('sad') || text.includes('crying')) return 'sad expression';
+    if (text.includes('angry') || text.includes('mad')) return 'frustrated expression';
+    if (text.includes('surprised') || text.includes('amazed')) return 'surprised expression';
+    if (text.includes('scared') || text.includes('afraid')) return 'worried expression';
+    return 'cheerful expression';
+  }
+
+  /**
+   * INFER CHARACTER POSE FROM ACTION AND OBJECT
+   */
+  inferCharacterPose(action, object) {
+    if (action.includes('sitting')) return 'sitting pose';
+    if (action.includes('standing')) return 'standing pose';
+    if (action.includes('running')) return 'running pose';
+    if (action.includes('jumping')) return 'mid-jump pose';
+    if (action.includes('lying') || action.includes('sleeping')) return 'lying down';
+    if (action.includes('cooking') || action.includes('stove')) return 'standing at counter';
+    if (action.includes('reading')) return 'sitting comfortably';
+    if (action.includes('drawing') || action.includes('writing')) return 'seated at table';
+    return 'natural active pose';
+  }
+
+  /**
+   * TIER 2.5B: SIMPLIFIED SCENE EXTRACTION (Basic Regex)
+   * Extracts: Action + Object + Location with action verb normalization
+   */
+  extractSimpleScene(storyText) {
+    if (!storyText || typeof storyText !== 'string') return 'playing outdoors';
+    
+    console.log('🔍 Simple scene extraction from story text');
+    
+    const text = storyText.toLowerCase();
+    
+    // BASIC ACTION VERB NORMALIZATION (same as semantic but simpler)
+    let extractedAction = this.extractAndNormalizeAction(text);
+    
+    // Basic object extraction
+    const objectMatch = text.match(/\b(?:with|playing with|holding|using)\s+(?:a|an|the)?\s*([a-zA-Z]+)/);
+    const extractedObject = objectMatch ? objectMatch[1] : '';
+    
+    // Basic location extraction
+    const locationMatch = text.match(/\b(?:in|at|on|outside|inside)\s+(?:the)?\s*([a-zA-Z]+)/);
+    const extractedLocation = locationMatch ? locationMatch[1] : this.inferLocationFromContext(text);
+    
+    // Build simple scene with action verb leading
+    const sceneComponents = [
+      extractedAction,
+      extractedObject ? extractedObject : '',
+      extractedLocation ? `in the ${extractedLocation}` : ''
+    ].filter(Boolean);
+    
+    const simpleScene = sceneComponents.join(' ');
+    console.log(`✅ Simple scene extracted: "${simpleScene}"`);
+    return simpleScene;
+  }
+
+  /**
+   * Generate semantic scene description from page text with fallback (legacy method)
    */
   generateSemanticScene(pageText, context) {
-    if (!pageText || typeof pageText !== 'string' || pageText.trim().length === 0) {
-      // FALLBACK: Use action_objects from PLACEHOLDER_POOLS when pageText is empty
-      console.log('📝 {semantic_scene} fallback: Using action_objects from PLACEHOLDER_POOLS');
-      const { sessionId } = context;
-      
-      if (PLACEHOLDER_POOLS?.actions?.basic && PLACEHOLDER_POOLS?.objectCategories?.toys) {
-        const action = pick(PLACEHOLDER_POOLS.actions.basic, sessionId);
-        const object = pick(PLACEHOLDER_POOLS.objectCategories.toys, sessionId + 1);
-        return `${action} with ${object}`;
-      }
-      
-      return 'playing with colorful toys'; // Ultimate fallback
-    }
-    
-    const text = pageText.toLowerCase();
-    
-    // Extract action verbs and key elements
-    const actionWords = text.match(/\b(running|jumping|playing|exploring|discovering|building|cooking|reading|singing|dancing|helping)\b/g) || [];
-    const locationWords = text.match(/\b(park|forest|school|home|garden|beach|kitchen|playground|library|zoo)\b/g) || [];
-    const objectWords = text.match(/\b(ball|book|tree|flower|toy|game|puzzle|instrument|food|animal)\b/g) || [];
-    
-    // Build semantic scene from pageText (primary source)
-    const components = [];
-    if (actionWords.length > 0) components.push(actionWords[0]);
-    if (locationWords.length > 0) components.push(`in the ${locationWords[0]}`);
-    if (objectWords.length > 0) components.push(`with ${objectWords[0]}`);
-    
-    if (components.length > 0) {
-      return components.join(' ');
-    }
-    
-    // Fallback if pageText doesn't yield meaningful components
-    console.log('📝 {semantic_scene} fallback: pageText extraction yielded no components');
-    const { sessionId } = context;
-    
-    if (PLACEHOLDER_POOLS?.actions?.basic && PLACEHOLDER_POOLS?.objectCategories?.toys) {
-      const action = pick(PLACEHOLDER_POOLS.actions.basic, sessionId);
-      const object = pick(PLACEHOLDER_POOLS.objectCategories.toys, sessionId + 1);
-      return `${action} with ${object}`;
-    }
-    
-    return 'engaging in fun activities'; // Ultimate fallback
+    // Delegate to the new sophisticated extraction for 2.5A
+    return this.extractSemanticScene(pageText, context);
   }
 
   /**
@@ -531,9 +699,14 @@ export class UnifiedPlaceholderResolver {
     let resolved = text;
     const { pageText, userInfo, sessionId } = context;
     
-    // Semantic scene generation
+    // Semantic scene generation (sophisticated for 2.5A)
     resolved = resolved.replace(/\{semantic_scene\}/g, () => {
-      return this.generateSemanticScene(pageText, context);
+      return this.extractSemanticScene(pageText, context);
+    });
+
+    // Simple scene generation (basic for 2.5B)  
+    resolved = resolved.replace(/\{scene\}/g, () => {
+      return this.extractSimpleScene(pageText);
     });
     
     // Smart atmosphere detection

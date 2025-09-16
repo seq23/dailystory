@@ -9,7 +9,8 @@ import {
   getHairBySkintone, 
   getAfricanAmericanHair, 
   getAfricanAmericanFeatures, 
-  shouldApplyCulturalEnhancements 
+  shouldApplyCulturalEnhancements,
+  getCulturalBundle 
 } from '../_shared/StaticDataCache.js';
 
 // ============= NUCLEAR INDEPENDENCE: COMPLETE STYLE FRAMEWORKS =============
@@ -217,35 +218,50 @@ function getComplexityLevel(userInfo, templateComplexity) {
 
 // ============= SCENE/SETTING EXTRACTION FUNCTIONS =============
 
-// Scene extraction - critical for story visualization
+// TIER 2.5B: SIMPLIFIED SCENE EXTRACTION (Basic Regex)
+// Extracts: Action + Object + Location with action verb normalization
 function extractSimpleScene(storyText) {
-  if (!storyText || typeof storyText !== 'string') return null;
+  if (!storyText || typeof storyText !== 'string') return 'playing outdoors';
   
-  console.log('🔍 Optimal scene extraction from story text');
+  console.log('🔍 Simple regex scene extraction from story text');
   
   const text = storyText.toLowerCase();
   
-  // OPTIMAL: Direct action + object + location extraction in single pass
-  const actionLocationPatterns = [
-    // Past tense: "collected seashells along the beach"
-    /(\w+ed)\s+([^.,!?]*?)\s+(?:along|at|on|in|near|by)\s+(?:the\s+)?([^.,!?]*)/i,
-    // Present continuous: "collecting seashells on the beach"  
-    /(\w+ing)\s+([^.,!?]*?)\s+(?:along|at|on|in|near|by)\s+(?:the\s+)?([^.,!?]*)/i,
-    // Simple past: "found shells at the shore"
-    /(found|saw|picked|took|grabbed|got)\s+([^.,!?]*?)\s+(?:along|at|on|in|near|by)\s+(?:the\s+)?([^.,!?]*)/i,
-    // Present tense: "finds shells on the beach"
-    /(\w+s)\s+([^.,!?]*?)\s+(?:along|at|on|in|near|by)\s+(?:the\s+)?([^.,!?]*)/i
+  // ACTION VERB NORMALIZATION MAPPING
+  const actionNormalizationMap = {
+    'walked': 'walking',
+    'woke up': 'sitting up in bed',
+    'cooking': 'standing over stove',
+    'walked through': 'walking through'
+  };
+
+  // Try direct mappings first
+  for (const [pattern, normalized] of Object.entries(actionNormalizationMap)) {
+    if (text.includes(pattern)) {
+      // Build complete scene with normalized action
+      const location = extractLocationFromText(text);
+      return location ? `${normalized} in the ${location}` : normalized;
+    }
+  }
+
+  // Basic action + object + location patterns
+  const actionPatterns = [
+    // Present continuous: "playing with ball"
+    /(\w+ing)\s+(?:with\s+)?([^.,!?]*?)(?:\s+(?:in|at|on)\s+(?:the\s+)?([^.,!?]*))?/i,
+    // Past tense: "played with ball"
+    /(\w+ed)\s+(?:with\s+)?([^.,!?]*?)(?:\s+(?:in|at|on)\s+(?:the\s+)?([^.,!?]*))?/i,
+    // Simple verbs: "runs in park"
+    /(runs?|jumps?|sits?|stands?)\s+(?:in|at|on|with)?\s*([^.,!?]*)/i
   ];
   
-  // Try action + location patterns first (most complete)
-  for (const pattern of actionLocationPatterns) {
+  for (const pattern of actionPatterns) {
     const match = storyText.match(pattern);
     if (match) {
       let action = match[1].trim();
-      const object = match[2].trim();
-      const location = match[3].trim();
+      const object = match[2] ? match[2].trim() : '';
+      const location = match[3] ? match[3].trim() : extractLocationFromText(text);
       
-      // Normalize to present continuous for consistency
+      // Normalize action verb
       if (action.endsWith('ed')) {
         action = action.slice(0, -2) + 'ing';
       }
@@ -253,43 +269,43 @@ function extractSimpleScene(storyText) {
         action = action.slice(0, -1) + 'ing';
       }
       
-      const scene = `${action} ${object} on the ${location}`;
-      console.log(`✅ Optimal scene extracted: "${scene}"`);
+      // Build scene components with action verb leading
+      const sceneComponents = [
+        action,
+        object,
+        location ? `in the ${location}` : ''
+      ].filter(Boolean);
+      
+      const scene = sceneComponents.join(' ');
+      console.log(`✅ Simple scene extracted: "${scene}"`);
       return scene;
     }
   }
+
+  // Special case handling
+  if (text.includes('ball is red') || text.includes('the ball is')) {
+    return 'holding red ball, sitting outside';
+  }
   
-  // Fallback: Action + object only (no location)
-  const actionPatterns = [
-    /(collected|collecting|found|finding|picked|picking|gathered|gathering)\s+([^.,!?]*)/i,
-    /(playing|running|reading|eating|jumping|dancing|singing|walking|cooking|sleeping|drawing|building)\s+([^.,!?]*)/i,
-    /(\w+ed|\w+ing)\s+([^.,!?]*)/i
-  ];
+  // Fallback to basic activity detection
+  if (text.includes('beach')) return 'playing at the beach';
+  if (text.includes('park')) return 'playing in the park';
+  if (text.includes('kitchen')) return 'helping in the kitchen';
+  if (text.includes('bedroom')) return 'playing in the bedroom';
   
-  for (const pattern of actionPatterns) {
-    const match = storyText.match(pattern);
-    if (match) {
-      let action = match[1];
-      const object = match[2] ? match[2].trim() : '';
-      
-      // Normalize to present continuous
-      if (action.endsWith('ed')) {
-        action = action.slice(0, -2) + 'ing';
-      }
-      
-      const scene = object ? `${action} ${object}` : action;
-      console.log(`✅ Scene extracted: "${scene}"`);
-      return scene;
+  console.log('✅ Simple scene fallback: generic activity');
+  return 'playing outdoors';
+}
+
+// Helper function to extract location from text
+function extractLocationFromText(text) {
+  const locationWords = ['park', 'beach', 'kitchen', 'bedroom', 'garden', 'school', 'playground', 'forest', 'home'];
+  for (const location of locationWords) {
+    if (text.includes(location)) {
+      return location;
     }
   }
-  
-  // Ultra fallback: Just look for key activities
-  if (text.includes('beach') || text.includes('seashell') || text.includes('shell')) {
-    return 'exploring the beach';
-  }
-  
-  console.log('⚠️ No scene pattern matched, using generic fallback');
-  return 'playing and exploring';
+  return 'outdoors'; // Default location
 }
 
 // Setting extraction with scene-based inference
@@ -425,12 +441,12 @@ function prepareBasicTemplateData(storyText, userInfo, avatarIdentity, framework
   let cultural_context = '';
   
   if (shouldApplyCulturalEnhancements(userInfo)) {
-    // Apply African American hair and facial features for dark skin tones
-    const gender = userInfo?.avatar?.type || (userInfo?.name?.toLowerCase().includes('a') ? 'girl' : 'boy');
-    hairDescription = getAfricanAmericanHair(gender, numericSeed);
-    facialFeatures = getAfricanAmericanFeatures(numericSeed + 1);
+    // Use getCulturalBundle for seeded random selections from African American arrays
+    const culturalBundle = getCulturalBundle(userInfo, sessionId);
+    hairDescription = culturalBundle.hair || 'natural textured hair';
+    facialFeatures = culturalBundle.features || 'authentic African features';
     cultural_context = 'with authentic cultural representation';
-    console.log('🌍 Applied African American cultural enhancements');
+    console.log('🌍 Applied seeded African American cultural enhancements via getCulturalBundle');
   } else {
     // Regular hair mapping for non-dark skin users
     const skinTone = userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium';
@@ -515,39 +531,57 @@ function generateBasicTemplate(storyText, userInfo, avatarIdentity, frameworkPro
 
 const PREMIUM_PROMPT_TEMPLATES = {
   'level_0-1': `Narrative: {pageText}.
+
 Character Description: {character} {age}, {ethnicity}, {hair}, {features} {bundle.culturalEnhancements}.
-Scene: {semantic_scene} {props}, {action_objects}, {activity}, {emotion} {sensory_details}.
+
+Action: {semantic_scene} {props}, {action_objects}, {activity}, {emotion} {sensory_details}.
+
 Composition: {spatial_composition}.
+
 Secondary elements: {secondary_characters}.
-Setting: {setting}, {atmosphere}.
+
 Consistency: {visual_consistency_elements}.
+
 Context: {cultural_context}, {community_context}.
+
 Brand Suffix: {frameworkPrompt}, {cameraDirective}.`,
   
   'level_2-4': `Character Description: {character} {age}, {ethnicity}, {hair}, {features} {bundle.culturalEnhancements}.
-Scene: {semantic_scene} {props}, {action_objects}, {activity}, {emotion} {sensory_details}.
+
+Action: {semantic_scene} {props}, {action_objects}, {activity}, {emotion} {sensory_details}.
+
 Composition: {spatial_composition}.
+
 Secondary elements: {secondary_characters}.
-Setting: {setting}, {atmosphere}.
+
 Consistency: {visual_consistency_elements}.
+
 Context: {cultural_context}, {community_context}.
+
 Brand Suffix: {frameworkPrompt}, {cameraDirective}.
+
 Narrative: {pageText}.`
 };
 
 const BASIC_PROMPT_TEMPLATES = {
   'level_0-1': `Story: {pageText}.
+
 Subject: {character}, {age}, {ethnicity}, {hairDescription}, {facialFeatures}.
+
 Action: {scene}.
-Setting: {setting}.
+
 Context: {cultural_context}.
+
 Brand Suffix: {fullFrameworkPrompt}`,
   
   'level_2-4': `Subject: {character}, {age}, {ethnicity}, {hairDescription}, {facialFeatures}.
+
 Action: {scene}.
-Setting: {setting}.
+
 Context: {cultural_context}.
+
 Brand Suffix: {fullFrameworkPrompt}.
+
 Story: {pageText}`
 };
 
@@ -867,8 +901,21 @@ async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIde
         // Get character appearance from story (includes cultural features if applicable)
         const characterAppearance = await characterConsistencyService.getCharacterAppearanceFromStory(sessionId, userInfo?.name);
         
+        // Add seeded character data with hair/skin variations for dark-skinned users
+        let seededCharacterData = {};
+        if (shouldApplyCulturalEnhancements(userInfo)) {
+          const culturalBundle = getCulturalBundle(userInfo, sessionId);
+          seededCharacterData = {
+            hair: culturalBundle.hair,
+            features: culturalBundle.features,
+            culturalEnhancements: true
+          };
+          console.log('🎨 2.5A: Added seeded cultural character data:', seededCharacterData);
+        }
+        
         characterData = {
           appearance: characterAppearance || '',
+          seededData: seededCharacterData,
           culturalIntegration: true,
           source: 'CharacterConsistencyService'
         };
