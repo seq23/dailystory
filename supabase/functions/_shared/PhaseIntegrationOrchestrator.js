@@ -347,18 +347,17 @@ export class PhaseIntegrationOrchestrator {
    */
   async getCulturalEnhancements(userInfo, sessionId) {
     const language = userInfo?.nativeLanguage || userInfo?.language || 'en';
-    const skinTone = userInfo?.skinTone || userInfo?.avatar?.skinTone || 'light';
     
-    // Apply seeded cultural enhancements for dark-skinned users with supported languages
-    if ((skinTone === 'dark' || skinTone === 'darker') && 
-        ['en', 'fr', 'es', 'pt'].includes(language.toLowerCase())) {
-      
-      // Use seeded selection for consistent cultural arrays
-      const culturalBundle = getCulturalBundle(userInfo, sessionId || 'default');
-      return `${culturalBundle.hair}, ${culturalBundle.features}`;
-    }
+    // Import REGIONAL_CULTURAL_CONTEXTS from tier25Vocabulary.js
+    const { REGIONAL_CULTURAL_CONTEXTS } = await import('./tier25Vocabulary.js');
     
-    return '';
+    // Use language-based cultural context (English gets empty string)
+    const culturalContext = REGIONAL_CULTURAL_CONTEXTS[language.toLowerCase()] || '';
+    
+    console.log(`🌍 Cultural Enhancement Level: LANGUAGE_BASED for language: ${language}`);
+    console.log(`🎨 Cultural Context Applied: ${culturalContext ? 'YES' : 'NO (English default)'}`);
+    
+    return culturalContext;
   }
 
   /**

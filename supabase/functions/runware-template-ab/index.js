@@ -512,7 +512,7 @@ function prepareBasicTemplateData(storyText, userInfo, avatarIdentity, framework
   const age = userInfo?.age || 6;
   const ethnicity = deriveRegionalEthnicity(userInfo, avatarIdentity);
   
-  // Cultural enhancement logic using seeded session ID
+  // Cultural enhancement logic using seeded session ID AND language-based cultural context
   const seedValue = sessionId ? sessionId.split('-')[0] : Date.now().toString();
   const numericSeed = parseInt(seedValue.replace(/[^0-9]/g, ''), 10) || Date.now();
   
@@ -520,12 +520,16 @@ function prepareBasicTemplateData(storyText, userInfo, avatarIdentity, framework
   let facialFeatures = '';
   let cultural_context = '';
   
+  // Use language-based cultural context from tier25Vocabulary.js
+  const language = userInfo?.nativeLanguage || userInfo?.language || 'en';
+  const { REGIONAL_CULTURAL_CONTEXTS } = await import('../_shared/tier25Vocabulary.js');
+  cultural_context = REGIONAL_CULTURAL_CONTEXTS[language.toLowerCase()] || '';
+  
   if (shouldApplyCulturalEnhancements(userInfo)) {
     // Use getCulturalBundle for seeded random selections from African American arrays
     const culturalBundle = getCulturalBundle(userInfo, sessionId);
     hairDescription = culturalBundle.hair || 'natural textured hair';
     facialFeatures = culturalBundle.features || 'authentic African features';
-    cultural_context = 'with authentic cultural representation';
     console.log('🌍 Applied seeded African American cultural enhancements via getCulturalBundle');
   } else {
     // Complete hair and skin descriptions for non-dark skin users
@@ -534,9 +538,10 @@ function prepareBasicTemplateData(storyText, userInfo, avatarIdentity, framework
     const skinDesc = getSkinBySkintone(skinTone, numericSeed);
     hairDescription = `${hairDesc}, ${skinDesc}`;
     facialFeatures = `${skinDesc} with ${hairDesc}`;
-    cultural_context = '';
     console.log('🎨 Applied complete hair + skin descriptions for skin tone:', skinTone);
   }
+  
+  console.log(`🌍 Language-based cultural context for ${language}:`, cultural_context ? 'APPLIED' : 'NONE (English default)');
   
   // Process failed tier data for Context category
   let failed_tier_data = '';
