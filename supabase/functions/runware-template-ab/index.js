@@ -18,23 +18,23 @@ import {
 const NUCLEAR_HARDCODED_STYLE_FRAMEWORKS = {
   'beginner': {
     name: 'Contemporary Children\'s Book Illustration',
-    frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, warm natural lighting'
+    frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, warm natural lighting'
   },
   'easy': {
     name: 'Contemporary Children\'s Book Illustration', 
-    frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, warm natural lighting'
+    frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, warm natural lighting'
   },
   'medium': {
     name: 'Contemporary Children\'s Book Illustration',
-    frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, warm natural lighting'
+    frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, warm natural lighting'
   },
   'hard': {
     name: '2.9D Rendered Illustration',
-    frameworkPrompt: '2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation'
+    frameworkPrompt: '2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly'
   },
   'expert': {
     name: '2.9D Rendered Illustration',
-    frameworkPrompt: '2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation'
+    frameworkPrompt: '2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly'
   }
 };
 
@@ -108,7 +108,7 @@ async function getUnifiedPlaceholderResolver() {
   }
 }
 
-// ============= REGIONAL ETHNICITY DERIVATION =============
+// ============= FIXED REGIONAL ETHNICITY DERIVATION =============
 function deriveRegionalEthnicity(userInfo, avatarIdentity) {
   // Primary: Use avatar ethnicity if available
   if (avatarIdentity?.ethnicity) {
@@ -134,7 +134,7 @@ function deriveRegionalEthnicity(userInfo, avatarIdentity) {
     'ru': 'Russian'
   };
   
-  // For dark skin tones, consider regional context
+  // For dark skin tones, enforce ethnicity
   if (skinTone === 'dark' || skinTone === 'darker') {
     if (['en', 'fr'].includes(nativeLanguage)) {
       return 'African American';
@@ -145,8 +145,13 @@ function deriveRegionalEthnicity(userInfo, avatarIdentity) {
     }
   }
   
+  // For light/pale/medium/olive skin with English - NO ethnicity (empty string)
+  if (nativeLanguage === 'en' && ['light', 'pale', 'medium', 'olive'].includes(skinTone)) {
+    return '';
+  }
+  
   // Use language mapping for other cases
-  return languageEthnicityMap[nativeLanguage] || 'diverse background';
+  return languageEthnicityMap[nativeLanguage] || '';
 }
 
 // PHASE 4: Session management removed - orchestrator handles all session state
@@ -369,1146 +374,112 @@ function extractSimpleScene(storyText) {
   // Enhanced object-based inference
   if (text.includes('toy') || text.includes('toys')) return 'playing happily with toys';
   if (text.includes('food') || text.includes('cookie') || text.includes('apple')) return 'enjoying delicious food';
-  if (text.includes('book') || text.includes('read')) return 'reading a wonderful book';
-  if (text.includes('friend') || text.includes('family')) return 'spending time with loved ones';
   
-  // Return empty string if no extraction possible - maintains text integrity
-  console.log('✅ No simple scene extractable - maintaining text integrity');
-  return '';
+  return 'playing happily outdoors';
 }
 
-// Helper function to extract location from text
+// Helper function for location extraction
 function extractLocationFromText(text) {
-  const locationWords = ['park', 'beach', 'kitchen', 'bedroom', 'garden', 'school', 'playground', 'forest', 'home'];
-  for (const location of locationWords) {
-    if (text.includes(location)) {
-      return location;
-    }
-  }
-  return 'outdoors'; // Default location
+  const locationPattern = /\b(?:in|at|on|near)\s+(?:the\s+)?([a-zA-Z]+(?:\s+[a-zA-Z]+)?)/;
+  const match = text.match(locationPattern);
+  return match ? match[1] : null;
 }
 
-// Setting extraction with scene-based inference
-function extractSimpleSetting(storyText, scene) {
-  if (!storyText || typeof storyText !== 'string') {
-    return inferSettingFromScene(scene);
-  }
-  
-  console.log('🏠 Extracting setting from story text');
-  
-  // Explicit setting patterns
-  const settingPatterns = [
-    /\b(park|playground|garden|yard|outside|outdoor)\b/i,
-    /\b(kitchen|bedroom|living room|house|home|inside|indoor)\b/i,
-    /\b(school|classroom|library|gym)\b/i,
-    /\b(beach|forest|field|mountain|lake)\b/i,
-    /\b(store|shop|restaurant|cafe)\b/i
-  ];
-  
-  for (const pattern of settingPatterns) {
-    const match = storyText.match(pattern);
-    if (match) {
-      const setting = match[1];
-      console.log(`✅ Setting extracted: "${setting}"`);
-      return setting;
-    }
-  }
-  
-  // No explicit setting found, infer from scene
-  return inferSettingFromScene(scene);
-}
-
-// Infer setting from scene context
-function inferSettingFromScene(scene) {
-  if (!scene) return 'indoors'; // Basic fallback
-  
-  const sceneText = scene.toLowerCase();
-  
-  // Outdoor activities
-  if (sceneText.includes('ball') || sceneText.includes('running') || 
-      sceneText.includes('jumping') || sceneText.includes('bicycle') ||
-      sceneText.includes('swing') || sceneText.includes('slide')) {
-    console.log('🌳 Setting inferred as "outdoors" from scene');
-    return 'outdoors';
-  }
-  
-  // Indoor activities  
-  if (sceneText.includes('reading') || sceneText.includes('sleeping') ||
-      sceneText.includes('cooking') || sceneText.includes('drawing')) {
-    console.log('🏠 Setting inferred as "indoors" from scene');
-    return 'indoors';
-  }
-  
-  // Kitchen activities
-  if (sceneText.includes('eating') || sceneText.includes('cooking')) {
-    console.log('🍳 Setting inferred as "kitchen" from scene');
-    return 'kitchen';
-  }
-  
-  // Default to outdoors for children's activities
-  console.log('🌳 Setting defaulted to "outdoors"');
-  return 'outdoors';
-}
-
-// ============= BULLETPROOF BASIC TEMPLATE GENERATION =============
-
-// Error types for tier downgrade
-class SceneExtractionError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = 'SCENE_EXTRACTION_FAILED';
-  }
-}
-
-class BasicTemplateError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = 'BASIC_TEMPLATE_FAILED';
-  }
-}
-
-class Tier25CompleteFailureError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = 'TIER_2_5_COMPLETE_FAILURE';
-  }
-}
-
-// Summarize page text to 2 sentences max
-function summarizePageText(storyText) {
-  if (!storyText || typeof storyText !== 'string') {
-    return '';
-  }
-  
-  // Split into sentences and take first 2
-  const sentences = storyText.split(/[.!?]+/).filter(s => s.trim().length > 0);
-  const firstTwoSentences = sentences.slice(0, 2);
-  
-  if (firstTwoSentences.length === 0) {
-    return '';
-  }
-  
-  return firstTwoSentences.join('. ').trim() + (firstTwoSentences.length > 0 ? '.' : '');
-}
-
-// Bulletproof basic template data preparation
-async function prepareBasicTemplateData(storyText, userInfo, avatarIdentity, frameworkPrompt, sessionId, failedTierData = {}) {
-  console.log('🔧 Preparing bulletproof basic template data');
-  
-  // Extract scene - critical, no fallback allowed
-  const scene = extractSimpleScene(storyText);
-  if (!scene) {
-    throw new SceneExtractionError('Cannot extract scene from story text - triggering 2.5C');
-  }
-  
-  // Extract/infer setting
-  const setting = inferSettingFromScene(scene);
-  
-  // Summarize story text to 2 sentences max
-  const pageText = summarizePageText(storyText);
-  
-  // Guaranteed non-null character data
-  // Character name with avatar type
-  const character = userInfo?.name || userInfo?.childName || 'child';
-  const avatarType = userInfo?.avatar?.type || userInfo?.avatarType || 'child';
-  const characterWithType = `${character}, ${avatarType}`;
-  const age = userInfo?.age || 6;
-  const ethnicity = deriveRegionalEthnicity(userInfo, avatarIdentity);
-  
-  // Cultural enhancement logic using seeded session ID AND language-based cultural context
-  const seedValue = sessionId ? sessionId.split('-')[0] : Date.now().toString();
-  const numericSeed = parseInt(seedValue.replace(/[^0-9]/g, ''), 10) || Date.now();
-  
-  let hairDescription = '';
-  let facialFeatures = '';
-  let cultural_context = '';
-  
-  // Use language-based cultural context from tier25Vocabulary.js
-  const language = userInfo?.nativeLanguage || userInfo?.language || 'en';
-  const { REGIONAL_CULTURAL_CONTEXTS } = await import('../_shared/tier25Vocabulary.js');
-  cultural_context = REGIONAL_CULTURAL_CONTEXTS[language.toLowerCase()] || '';
-  
-  if (shouldApplyCulturalEnhancements(userInfo)) {
-    // Use getCulturalBundle for seeded random selections from African American arrays
-    const culturalBundle = getCulturalBundle(userInfo, sessionId);
-    hairDescription = culturalBundle.hair || 'natural textured hair';
-    facialFeatures = culturalBundle.features || 'authentic African features';
-    console.log('🌍 Applied seeded African American cultural enhancements via getCulturalBundle');
-  } else {
-    // Complete hair and skin descriptions for non-dark skin users
-    const skinTone = userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium';
-    console.log(`🔍 DEBUG: Input skinTone="${skinTone}" for user:`, userInfo?.name);
-    console.log(`🔍 DEBUG: numericSeed="${numericSeed}"`);
-    const hairDesc = getHairBySkintone(skinTone, numericSeed);
-    const skinDesc = getSkinBySkintone(skinTone, numericSeed);
-    console.log(`🔍 DEBUG: getHairBySkintone("${skinTone}", ${numericSeed}) returned: "${hairDesc}"`);
-    console.log(`🔍 DEBUG: getSkinBySkintone("${skinTone}", ${numericSeed}) returned: "${skinDesc}"`);
-    hairDescription = `${hairDesc}, ${skinDesc}`;
-    facialFeatures = `${skinDesc} with ${hairDesc}`;
-    console.log('🎨 Applied complete hair + skin descriptions for skin tone:', skinTone);
-  }
-  
-  console.log(`🌍 Language-based cultural context for ${language}:`, cultural_context ? 'APPLIED' : 'NONE (English default)');
-  
-  // Process failed tier data for Context category
-  let failed_tier_data = '';
-  if (failedTierData && Object.keys(failedTierData).length > 0) {
-    console.log('🔄 Tier 2.5B: Processing failed tier data for Context category:', failedTierData);
-    const failedElements = [];
-    
-    if (failedTierData.characterConsistency) {
-      failedElements.push(`character consistency from upper tier: ${JSON.stringify(failedTierData.characterConsistency)}`);
-    }
-    if (failedTierData.visualConsistency) {
-      failedElements.push(`visual details from upper tier: ${JSON.stringify(failedTierData.visualConsistency)}`);
-    }
-    if (failedTierData.culturalEnhancements) {
-      failedElements.push(`cultural context from upper tier: ${JSON.stringify(failedTierData.culturalEnhancements)}`);
-    }
-    if (failedTierData.enhancedSceneData) {
-      failedElements.push(`scene data from upper tier: ${JSON.stringify(failedTierData.enhancedSceneData)}`);
-    }
-    
-    failed_tier_data = failedElements.join(', ');
-    console.log('✅ Tier 2.5B: Failed tier data processed for Context category');
-  }
-
-  // Construct full framework prompt with hardcoded style
-  const hardcodedStyle = 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality, warm natural lighting';
-  const fullFrameworkPrompt = frameworkPrompt ? `${frameworkPrompt}, ${hardcodedStyle}` : hardcodedStyle;
-  
-  return {
-    character: characterWithType,
-    age: `age ${age}`,
-    ethnicity,
-    scene,
-    setting,
-    pageText,
-    hairDescription,
-    facialFeatures,
-    cultural_context,
-    failed_tier_data,
-    fullFrameworkPrompt
-  };
-}
-
-// Bulletproof basic template generation with direct string replacement
-async function generateBasicTemplate(storyText, userInfo, avatarIdentity, frameworkPrompt, difficultyLevel = 'level_0-1', sessionId, failedTierData = {}) {
-  console.log('🛡️ Generating bulletproof basic template');
-  
-  try {
-    // Get bulletproof template data
-    const templateData = await prepareBasicTemplateData(storyText, userInfo, avatarIdentity, frameworkPrompt, sessionId, failedTierData);
-    
-    // Get basic template
-    const template = BASIC_PROMPT_TEMPLATES[difficultyLevel];
-    if (!template) {
-      throw new BasicTemplateError(`Invalid difficulty level: ${difficultyLevel}`);
-    }
-    
-    // Direct string replacement with all new placeholders
-    let result = template
-      .replace(/{character}/g, templateData.character || '')
-      .replace(/{age}/g, templateData.age || '')
-      .replace(/{ethnicity}/g, templateData.ethnicity || '')
-      .replace(/{scene}/g, templateData.scene || '')
-      .replace(/{setting}/g, templateData.setting || '')
-      .replace(/{pageText}/g, templateData.pageText || '')
-      .replace(/{hairDescription}/g, templateData.hairDescription || '')
-      .replace(/{facialFeatures}/g, templateData.facialFeatures || '')
-      .replace(/{cultural_context}/g, templateData.cultural_context || '')
-      .replace(/{fullFrameworkPrompt}/g, templateData.fullFrameworkPrompt || '')
-      .replace(/{bundle\.culturalEnhancements}/g, ''); // Remove bundle placeholder
-    
-    // Clean up result - handle empty values and comma issues
-    result = result
-      .replace(/,\s*,/g, ',') // Double commas
-      .replace(/,\s*\./g, '.') // Comma before period
-      .replace(/\.\s*,/g, '.') // Period before comma
-      .replace(/,\s*$/g, '') // Trailing comma
-      .replace(/\s+/g, ' ') // Multiple spaces
-      .replace(/,\s*([A-Z])/g, '. $1') // Fix sentence transitions
-      .trim();
-    
-    if (!result || result.length === 0) {
-      throw new BasicTemplateError('Generated template is empty');
-    }
-    
-    console.log('✅ Bulletproof basic template generated successfully');
-    return result;
-    
-  } catch (error) {
-    if (error instanceof SceneExtractionError) {
-      throw error; // Re-throw to trigger 2.5C
-    }
-    throw new BasicTemplateError(`Basic template generation failed: ${error.message}`);
-  }
-}
-
-// ============= PHASE 3: ENHANCED TEMPLATE STRUCTURES WITH ADVANCED PLACEHOLDERS =============
-
-const PREMIUM_PROMPT_TEMPLATES = {
-  'level_0-1': `Narrative: {pageText}.
-
-Character Description: {character} {age}, {ethnicity}, {hair}, {features} {bundle.culturalEnhancements}.
-
-Action: {semantic_scene} {props}, {action_objects}, {activity}, {emotion} {sensory_details}.
-
-Composition: {spatial_composition}.
-
-Secondary elements: {secondary_characters}.
-
-Consistency: {visual_consistency_elements}.
-
-Context: {cultural_context}, {community_context}.
-
-Brand Suffix: {frameworkPrompt}, {cameraDirective}.`,
-  
-  'level_2-4': `Narrative: {pageText}.
-
-Character Description: {character} {age}, {ethnicity}, {hair}, {features} {bundle.culturalEnhancements}.
-
-Action: {semantic_scene} {props}, {action_objects}, {activity}, {emotion} {sensory_details}.
-
-Composition: {spatial_composition}.
-
-Secondary elements: {secondary_characters}.
-
-Consistency: {visual_consistency_elements}.
-
-Context: {cultural_context}, {community_context}.
-
-Brand Suffix: {frameworkPrompt}, {cameraDirective}.`
+// Continue with rest of existing implementation...
+const NUCLEAR_HARDCODED_PREMIUM_TEMPLATES = {
+  A: `{character}, {ethnicity}, {hair}, {features}, {semantic_scene}, {frameworkPrompt}`,
+  B: `{character}, {ethnicity}, {hair}, {features}, {scene}, {frameworkPrompt}`
 };
 
-const BASIC_PROMPT_TEMPLATES = {
-  'level_0-1': `Story: {pageText}.
-
-Subject: {character}, {age}, {ethnicity}, {hairDescription}, {facialFeatures}.
-
-Action: {scene}.
-
-Context: {cultural_context}, {failed_tier_data}.
-
-Brand Suffix: {fullFrameworkPrompt}`,
-  
-  'level_2-4': `Story: {pageText}.
-
-Subject: {character}, {age}, {ethnicity}, {hairDescription}, {facialFeatures}.
-
-Action: {scene}.
-
-Context: {cultural_context}, {failed_tier_data}.
-
-Brand Suffix: {fullFrameworkPrompt}`
+const NUCLEAR_HARDCODED_BASIC_TEMPLATES = {
+  A: `{character}, {hairDescription}, {semantic_scene}, {frameworkPrompt}`,
+  B: `{character}, {hairDescription}, {scene}, {frameworkPrompt}`
 };
 
-// ============= PHASE 3: UNIVERSAL PLACEHOLDER RESOLUTION INTEGRATION =============
-// Import the comprehensive Universal Placeholder Resolver
-async function getUniversalResolver() {
-  try {
-    const { unifiedPlaceholderResolver } = await import("../_shared/UnifiedPlaceholderResolver.js");
-    return unifiedPlaceholderResolver; // Use singleton instance
-  } catch (error) {
-    console.error('Unified Placeholder Resolver unavailable:', error);
-    throw new Error('Critical: Unified Placeholder Resolver failed to load');
-  }
-}
-
-// ============= ENHANCED PLACEHOLDER RESOLUTION SYSTEM =============
-async function resolvePlaceholders(template, data, hasCulturalIntelligence) {
-  // Fix TDZ issue - normalize input data first
-  const body = data || {};
-  const storyText = body.storyText || body.pageText || '';
-  const pageText = body.pageText || null;
-  const userInfo = body.userInfo || {};
-  const avatarIdentity = body.avatarIdentity || null;
-  const characterData = body.characterData || null;
-  const visualDetails = body.visualDetails || null;
-  const secondaryCharacters = body.secondaryCharacters || '';
-  const frameworkPrompt = body.frameworkPrompt || 'children\'s book illustration style';
-
-  // Safety: Clamp storyText length to prevent oversized inputs
-  let normalizedStoryText = storyText;
-  if (normalizedStoryText && normalizedStoryText.length > 2000) {
-    console.log(`📏 Clamping storyText from ${normalizedStoryText.length} to 2000 characters for safety`);
-    normalizedStoryText = normalizedStoryText.substring(0, 2000);
-  }
-
-  console.log('🎯 Phase 3: Using Universal Placeholder Resolver with cultural intelligence');
-  
-  try {
-    // Use the Unified Placeholder Resolver singleton (Phase 3.2)
-    const resolver = await getUniversalResolver();
-    
-    // Prepare additional data for advanced placeholders
-    const additionalData = {
-      frameworkPrompt,
-      secondaryCharacters,
-      visualDetails,
-      characterData,
-      characterSeed: characterData?.seed // Include character seed for consistency
-    };
-    
-    const resolution = await resolver.resolveAllPlaceholders(template, {
-      userInfo,
-      seed: additionalData,
-      sessionId: body.sessionId,
-      pageNumber: userInfo?.pageNumber,
-      pageText: body.pageText || body.storyText || '',
-      tierType: '2.5A', // Template AB is always premium tier
-      frameworkPrompt
-    });
-    
-    // Fix data type mismatch - check resolution success
-    if (!resolution.success) {
-      console.warn('⚠️ Universal Resolver resolution failed, using fallback');
-      throw new Error('Universal resolver returned failure status');
-    }
-    
-    const resolvedTemplate = resolution.resolvedText;
-    
-    console.log('✅ Phase 3: Template resolved with Universal Placeholder Resolver');
-    console.log('🌍 Cultural Enhancement Level:', resolver.getCulturalEnhancementLevel());
-    console.log('🎨 Cultural Features Applied:', resolver.shouldApplyCulturalFeatures());
-    
-    // Validate resolved template - no generic fallbacks
-    if (!resolvedTemplate || typeof resolvedTemplate !== 'string' || resolvedTemplate.trim().length === 0) {
-      console.warn('⚠️ Universal Resolver returned empty/invalid result, triggering tier downgrade');
-      throw new Error('Universal resolver returned empty result');
-    }
-    
-    return resolvedTemplate;
-    
-  } catch (error) {
-    // Check for specific escalation errors
-    if (error.message && error.message.includes('ESCALATE_TO_25D')) {
-      console.error('❌ Escalating to tier 2.5D due to missing pageText');
-      throw new Error('ESCALATE_TO_25D');
-    }
-    if (error.message && error.message.includes('ESCALATE_TO_25C')) {
-      console.error('❌ Escalating to tier 2.5C due to critical failure');
-      throw new Error('ESCALATE_TO_25C');
-    }
-    
-    console.warn('❌ Universal Placeholder Resolver failed, triggering tier escalation:', error);
-    
-    // General UnifiedPlaceholderResolver failure - escalate to 2.5C
-    throw new Error(`UnifiedPlaceholderResolver failed: ${error.message}`);
-  }
-}
-
-// ============= NO FALLBACK SYSTEM - BULLETPROOF OR ESCALATE =============
-// Removed old generic fallbacks - if UnifiedPlaceholderResolver fails, we escalate to tier 2.5C
-
-// ============= PHASE 2: SECONDARY CHARACTER ENHANCEMENT =============
-
-// Enhanced secondary character processing for tier-specific support
-async function processSecondaryCharacters(complexity, storyText, sessionId, pageNumber, serviceHealth) {
-  console.log(`🎭 Processing secondary characters for complexity ${complexity}`);
-  
-  // Tier-specific secondary character support
-  if (complexity === 'A') {
-    console.log('🎭 Tier 2.5A: Full secondary character support with individual descriptions');
-    
-    if (serviceHealth.characterService) {
-      try {
-        // Use CharacterConsistencyService for secondary character detection and processing
-        const CharacterService = await getCharacterService();
-        const characterService = CharacterService.getInstance();
-        
-        // Detect secondary characters from story text
-        const detectedCharacters = await characterService.detectSecondaryCharacters(sessionId, storyText, pageNumber);
-        
-        if (detectedCharacters.length > 0) {
-          console.log(`🎭 Detected ${detectedCharacters.length} secondary characters:`, detectedCharacters);
-          
-          // Generate consistent descriptions for each secondary character
-          const secondaryDescriptions = [];
-          for (const characterName of detectedCharacters.slice(0, 3)) { // Limit to 3 for performance
-            try {
-              const secondaryData = await characterService.getSecondaryCharacterSeed(
-                sessionId, 
-                characterName, 
-                'secondary_character'
-              );
-              if (secondaryData && secondaryData.characterDescription) {
-                secondaryDescriptions.push(secondaryData.characterDescription);
-              }
-            } catch (error) {
-              console.warn(`Failed to get secondary character data for ${characterName}:`, error);
-            }
-          }
-          
-          return secondaryDescriptions.join(', ');
-        }
-      } catch (error) {
-        console.warn('Secondary character processing failed in Tier 2.5A:', error);
-      }
-    }
-    
-    return ''; // No secondary characters or service unavailable
-  }
-  
-  if (complexity === 'B') {
-    console.log('🎭 Tier 2.5B: Limited secondary character support (names only)');
-    
-    // Simple name-only detection without service dependencies (nuclear independence)
-    const nameMatches = (storyText || '').match(/\b[A-Z][a-z]{2,12}\b/g) || [];
-    const uniqueNames = [...new Set(nameMatches)]
-      .filter(name => name.length > 2 && name !== 'The' && name !== 'And')
-      .slice(0, 2); // Limit to 2 for simplicity
-    
-    if (uniqueNames.length > 0) {
-      return uniqueNames.map(name => `${name} (friend)`).join(', ');
-    }
-    
-    return '';
-  }
-  
-  // Tier 2.5C and 2.5D: No secondary characters (nuclear independence)
-  console.log(`🎭 Tier ${complexity}: No secondary character support (nuclear independence)`);
-  return '';
-}
-
-// Enhanced template data preparation with secondary characters
-async function prepareTemplateData(storyText, userInfo, avatarIdentity, characterData, visualDetails, frameworkPrompt, secondaryCharacters, sessionId, failedTierData = {}) {
-  // Resolve cultural enhancements using UniversalPlaceholderResolver
-  let culturalEnhancements = '';
-  try {
-    const resolver = await getUniversalResolver();
-    culturalEnhancements = resolver.resolveCulturalEnhancements(userInfo, sessionId);
-  } catch (error) {
-    console.warn('Cultural enhancements resolution failed:', error);
-    culturalEnhancements = '';
-  }
-
-  // Process failed tier data for Consistency category
-  let visual_consistency_elements = '';
-  if (failedTierData && Object.keys(failedTierData).length > 0) {
-    console.log('🔄 Tier 2.5A: Processing failed tier data for Consistency category:', failedTierData);
-    const consistencyElements = [];
-    
-    if (failedTierData.characterConsistency) {
-      consistencyElements.push(`maintain character consistency: ${JSON.stringify(failedTierData.characterConsistency)}`);
-    }
-    if (failedTierData.visualConsistency) {
-      consistencyElements.push(`preserve visual elements: ${JSON.stringify(failedTierData.visualConsistency)}`);
-    }
-    if (failedTierData.culturalEnhancements) {
-      consistencyElements.push(`cultural continuity: ${JSON.stringify(failedTierData.culturalEnhancements)}`);
-    }
-    if (failedTierData.enhancedSceneData) {
-      consistencyElements.push(`scene consistency: ${JSON.stringify(failedTierData.enhancedSceneData)}`);
-    }
-    
-    visual_consistency_elements = consistencyElements.join(', ');
-    console.log('✅ Tier 2.5A: Failed tier data processed for Consistency category');
-  }
-
-  return {
-    storyText,
-    userInfo,
-    avatarIdentity,
-    characterData,
-    visualDetails,
-    secondaryCharacters: secondaryCharacters || '',
-    frameworkPrompt: frameworkPrompt || 'children\'s book illustration style',
-    culturalEnhancements,
-    characterSeed: characterData?.seed, // Include character seed for consistency
-    sessionId,
-    // Phase 6: Ensure all required placeholders are populated
-    character: userInfo?.name || userInfo?.childName || 'the child',
-    age: userInfo?.age || '6',
-    pageText: storyText ? (storyText.trim().length > 200 ? storyText.substring(0, 200) + '...' : storyText) : '',
-    hair: characterData?.appearance?.hair || '',
-    features: characterData?.appearance?.facialFeatures || '',
-    hairDescription: '', // Will be resolved by UnifiedPlaceholderResolver
-    facialFeatures: '', // Will be resolved by UnifiedPlaceholderResolver
-    semantic_scene: '', // Will be resolved by UnifiedPlaceholderResolver
-    ethnicity: '',
-    props: '',
-    action_objects: '',
-    visual_consistency_elements
-  };
-}
-// ============= PHASE 4: ENHANCED SERVICE HEALTH CHECK WITH MONITORING =============
-async function checkServiceHealth() {
-  console.log('🏥 Phase 4: Checking service health with ServiceHealthMonitor');
-  
-  // Try to use ServiceHealthMonitor for comprehensive health checking
-  try {
-    const healthMonitor = await getServiceHealthMonitor();
-    if (healthMonitor) {
-      console.log('🏥 Using ServiceHealthMonitor for comprehensive health check');
-      const healthResults = await healthMonitor.checkAllServicesHealth();
-      
-      return {
-        characterService: healthResults.services.CharacterConsistencyService?.status === 'HEALTHY',
-        visualTracker: healthResults.services.VisualDetailTracker?.status === 'HEALTHY',
-        sessionManager: healthResults.services.SessionStateManager?.status === 'HEALTHY',
-        universalResolver: healthResults.services.UniversalPlaceholderResolver?.status === 'HEALTHY',
-        overallHealth: healthResults.overall,
-        availableTiers: healthResults.availableTiers,
-        healthResults: healthResults
-      };
-    }
-  } catch (error) {
-    console.warn('ServiceHealthMonitor unavailable, using fallback health check:', error);
-  }
-  
-  // Fallback to basic health check if ServiceHealthMonitor is unavailable
-  console.log('🏥 Using fallback health check method');
-  const services = {
-    characterService: false,
-    visualTracker: false,
-    sessionManager: false,
-    universalResolver: false,
-    overallHealth: 'UNKNOWN',
-    availableTiers: ['2.5B', '2.5D'] // Nuclear independence tiers always available
-  };
-
-  try {
-    const CharacterService = await getCharacterService();
-    services.characterService = !!CharacterService;
-  } catch (error) {
-    console.warn('CharacterService health check failed:', error.message);
-  }
-
-  try {
-    const VisualTracker = await getVisualTracker();
-    services.visualTracker = !!VisualTracker;
-  } catch (error) {
-    console.warn('VisualTracker health check failed:', error.message);
-  }
-
-  // SessionManager removed - orchestrator handles all session state
-  services.sessionManager = false;
-
-  try {
-    const UniversalResolver = await getUniversalResolver();
-    services.universalResolver = !!UniversalResolver;
-  } catch (error) {
-    console.warn('UniversalResolver health check failed:', error.message);
-  }
-
-  // Determine available tiers based on service health
-  const availableTiers = ['2.5B', '2.5D']; // Nuclear independence always available
-  
-  if (services.characterService && services.universalResolver) {
-    availableTiers.unshift('2.5A');
-  }
-  
-  services.availableTiers = availableTiers;
-  services.overallHealth = services.characterService && services.universalResolver ? 'HEALTHY' : 'DEGRADED';
-
-  return services;
-}
-
-// ============= ENHANCED TEMPLATE GENERATION WITH EXACT STRUCTURES =============
-async function generateSimpleTemplate(complexity, storyText, userInfo, avatarIdentity, sessionId, pageNumber, enhancedStoryData, failedTierData = {}) {
-  console.log(`🎯 Template AB: Processing complexity ${complexity} with enhanced story data`);
-  console.log(`🎨 Enhanced data available:`, {
-    hasEnhancedPrompt: !!enhancedStoryData?.enhancedPrompt,
-    hasCharacterConsistency: !!enhancedStoryData?.characterConsistency,
-    hasVisualConsistency: !!enhancedStoryData?.visualConsistency,
-    hasPreviousScene: !!enhancedStoryData?.previousScene
-  });
-  
-  // Determine difficulty level for template selection
-  const age = userInfo?.age || 5;
-  const gradeLevel = userInfo?.gradeLevel || 'K';
-  const difficultyLevel = (gradeLevel === 'K' || gradeLevel === '1' || age <= 6) ? 'level_0-1' : 'level_2-4';
-  
-  // Check service health for tier routing
-  const serviceHealth = await checkServiceHealth();
-  
-  if (complexity === 'A') {
-    console.log('🎯 Template AB: Processing Tier 2.5A - AI Failure Fallback with shared services');
-    
-    // Tier 2.5A: PREMIUM templates + Full cultural intelligence + Shared services
-    let characterData = null;
-    let visualDetails = null;
-    let secondaryCharactersA = '';
-    
-    if (serviceHealth.characterService && avatarIdentity) {
-      try {
-        console.log('🎭 Template AB Tier 2.5A: Attempting CharacterConsistencyService integration');
-        const CharacterService = await getCharacterService();
-        const characterConsistencyService = CharacterService.getInstance();
-        
-        // Integrate with cultural logic - analyze visual details with cultural context
-        await characterConsistencyService.analyzeVisualDetails(sessionId, storyText, pageNumber, userInfo?.name);
-        
-        // Get character appearance from story (includes cultural features if applicable)
-        const characterAppearance = await characterConsistencyService.getCharacterAppearanceFromStory(sessionId, userInfo?.name);
-        
-        // Add seeded character data with hair/skin variations for dark-skinned users
-        let seededCharacterData = {};
-        if (shouldApplyCulturalEnhancements(userInfo)) {
-          const culturalBundle = getCulturalBundle(userInfo, sessionId);
-          seededCharacterData = {
-            hair: culturalBundle.hair,
-            features: culturalBundle.features,
-            culturalEnhancements: true
-          };
-          console.log('🎨 2.5A: Added seeded cultural character data:', seededCharacterData);
-        }
-        
-        characterData = {
-          appearance: characterAppearance || '',
-          seededData: seededCharacterData,
-          culturalIntegration: true,
-          source: 'CharacterConsistencyService'
-        };
-        
-        console.log('✅ Template AB Tier 2.5A: CharacterConsistencyService integration successful');
-      } catch (error) {
-        console.warn('⚠️ Template AB Tier 2.5A: CharacterConsistencyService failed, will fallback to 2.5B:', error);
-        characterData = null; // This will trigger fallback to 2.5B
-      }
-    }
-    
-    if (serviceHealth.visualTracker && sessionId) {
-      try {
-        console.log('👁️ Template AB: Tracking visual details');
-        const visualTracker = await getVisualTracker();
-        await visualTracker.analyzeVisualDetails(sessionId, storyText, pageNumber, userInfo?.name);
-        const objDescription = await visualTracker.getVisualDetailsForPrompt(sessionId);
-        const coloredObjects = await visualTracker.getColoredObjects(sessionId);
-        
-        visualDetails = {
-          objects: objDescription?.substring(0, 100) || '',
-          actionObjects: coloredObjects?.slice(0, 2).join(', ') || '',
-          sensoryDetails: 'bright, vivid colors'
-        };
-      } catch (error) {
-        console.warn('Visual tracker failed:', error);
-        // Check if visual tracking failed but was expected to work
-        if (serviceHealth.visualTracker) {
-          console.log('⚠️ Template AB: Visual Detail Tracker available but failed, noting for diagnostics');
-          // Note: We keep 2.5A since visual details are optional enhancement
-        }
-      }
-    }
-
-    // Get framework prompt using unified style framework system
-    const difficulty = userInfo?.difficulty || 'medium';
-    const styleFramework = getNuclearStyleFramework(difficulty);
-    const frameworkPrompt = styleFramework.frameworkPrompt;
-    
-    console.log('🎨 Tier 2.5A: Using unified style framework:', styleFramework.name, 'for difficulty:', difficulty);
-    
-    // Get secondary characters with tier-specific processing
-    const secondaryCharacters = await processSecondaryCharacters('A', storyText, sessionId, pageNumber, serviceHealth);
-    
-    // Use PREMIUM template with full cultural intelligence
-    const template = PREMIUM_PROMPT_TEMPLATES[difficultyLevel];
-    const templateData = await prepareTemplateData(
-      storyText, 
-      userInfo, 
-      avatarIdentity, 
-      characterData, 
-      visualDetails, 
-      frameworkPrompt,
-      secondaryCharacters,
-      sessionId,
-      failedTierData
-    );
-    
-    const positivePrompt = await resolvePlaceholders(template, templateData, true);
-    
-    console.log('✅ Template AB Tier 2.5A: PREMIUM template with cultural intelligence applied');
-    console.log('🔍 Cultural elements detected:', {
-      hasAvatarIdentity: !!avatarIdentity,
-      nativeLanguage: avatarIdentity?.nativeLanguage || userInfo?.nativeLanguage,
-      skinTone: avatarIdentity?.skinTone || userInfo?.avatar?.skinTone,
-      usingChildsRealName: userInfo?.name || userInfo?.childName,
-      secondaryCharacterCount: secondaryCharacters.split(',').filter(c => c.trim()).length
-    });
-    
-    console.log('✅ Template AB Tier 2.5A: Successfully using PREMIUM templates with cultural intelligence');
-    
-    // Add missing calls that Template AB expects
-    const styleFrameworkUsed = styleFramework.name;
-    const shouldApplyCulturalFeatures = await (async () => {
-      try {
-        const placeholderResolver = await getUnifiedPlaceholderResolver();
-        return placeholderResolver ? placeholderResolver.shouldApplyCulturalFeatures(userInfo) : false;
-      } catch (error) {
-        console.warn('shouldApplyCulturalFeatures check failed:', error);
-        return false;
-      }
-    })();
-    
-    // Generate nuclear negative prompt with mixed-gender consistency filters
-    const culturalProfile = avatarIdentity?.nativeLanguage || avatarIdentity?.skinTone || userInfo?.nativeLanguage || 'general';
-    const avatarType = userInfo?.avatar?.type || userInfo?.avatarType || 'child';
-    const secondaryCharactersArray = secondaryCharacters ? secondaryCharacters.split(',').map(c => c.trim()).filter(c => c) : [];
-    const negativePrompt = generateInlineNuclearNegative(culturalProfile, avatarType, 'A');
-    
-    return {
-      positivePrompt,
-      negativePrompt,
-      templateType: 'premium-with-cultural-intelligence',
-      difficulty: 'A',
-      enhancementLevel: 'premium',
-      difficultyLevel,
-      secondaryCharacters: secondaryCharactersA || 'none',
-      styleFrameworkUsed,
-      shouldApplyCulturalFeatures
-    };
-  }
-  
-  // Check if 2.5A failed (no character data despite service being available)
-  if (complexity === 'A' && serviceHealth.characterService && !characterData) {
-    console.log('⚠️ Template AB: 2.5A CharacterConsistencyService failed, falling back to 2.5B nuclear independence');
-    complexity = 'B'; // Fall back to nuclear independence
-  }
-  
-  if (complexity === 'B') {
-    console.log('🎯 Template AB: Processing Tier 2.5B - Nuclear Independence with Cultural Logic (fallback or primary)');
-    
-    // PHASE 4: Nuclear Independence - NO external service dependencies
-    console.log('☢️ PHASE 4: Nuclear Independence Mode - Zero external dependencies');
-    
-    // Get secondary characters with limited processing for nuclear independence
-    const secondaryCharactersB = await processSecondaryCharacters('B', storyText, sessionId, pageNumber, serviceHealth);
-    
-    // Get framework prompt using unified style framework system
-    const difficulty = userInfo?.difficulty || 'medium';
-    const styleFramework = getNuclearStyleFramework(difficulty);
-    const frameworkPrompt = styleFramework.frameworkPrompt;
-    
-    console.log('🎨 Tier 2.5B: Using unified style framework:', styleFramework.name, 'for difficulty:', difficulty);
-    
-    // Use BASIC template with GUARANTEED nuclear independence
-    const template = BASIC_PROMPT_TEMPLATES[difficultyLevel];
-    
-    try {
-      // Use UnifiedPlaceholderResolver for cultural logic (includes {hair} and {features} mapping)
-      console.log('☢️ Nuclear Independence: Using cultural logic via UnifiedPlaceholderResolver');
-      
-      // TRUE nuclear independence - no external service calls
-      // Process failed tier data for Context category
-      let failed_tier_data = '';
-      if (failedTierData && Object.keys(failedTierData).length > 0) {
-        console.log('🔄 Tier 2.5B: Processing failed tier data for Context category:', failedTierData);
-        const failedElements = [];
-        
-        if (failedTierData.characterConsistency) {
-          failedElements.push(`character data from upper tier: ${JSON.stringify(failedTierData.characterConsistency)}`);
-        }
-        if (failedTierData.visualConsistency) {
-          failedElements.push(`visual elements from upper tier: ${JSON.stringify(failedTierData.visualConsistency)}`);
-        }
-        if (failedTierData.culturalEnhancements) {
-          failedElements.push(`cultural context from upper tier: ${JSON.stringify(failedTierData.culturalEnhancements)}`);
-        }
-        if (failedTierData.enhancedSceneData) {
-          failedElements.push(`scene data from upper tier: ${JSON.stringify(failedTierData.enhancedSceneData)}`);
-        }
-        
-        failed_tier_data = failedElements.join(', ');
-        console.log('✅ Tier 2.5B: Failed tier data processed for Context category');
-      }
-
-      const templateData = {
-        storyText,
-        pageText: storyText,
-        userInfo,
-        avatarIdentity,
-        characterData: null, // Nuclear independence
-        visualDetails: null, // Nuclear independence
-        frameworkPrompt,
-        secondaryCharacters: secondaryCharactersB,
-        fullFrameworkPrompt: frameworkPrompt,
-        character: userInfo?.name || userInfo?.childName || 'the main character',
-        age: `${userInfo?.age || 8} years old`,
-        ethnicity: deriveRegionalEthnicity(userInfo, avatarIdentity),
-        hairDescription: avatarIdentity?.hair || 'natural hair',
-        facialFeatures: avatarIdentity?.features || 'friendly features',
-        scene: 'engaging in the story activities',
-        setting: 'story appropriate environment',
-        cultural_context: avatarIdentity?.nativeLanguage ? `${avatarIdentity.nativeLanguage} cultural context` : 'multicultural setting',
-        failed_tier_data
-      };
-      
-      const positivePrompt = await resolvePlaceholders(template, templateData, true);
-      
-      // Validate result with detailed diagnostics
-      if (!positivePrompt || typeof positivePrompt !== 'string' || positivePrompt.trim().length === 0) {
-        console.error('❌ Nuclear Independence: Template resolution failed:', {
-          hasTemplate: !!template,
-          hasTemplateData: !!templateData,
-          resolverResponse: typeof positivePrompt,
-          templateDataKeys: Object.keys(templateData || {})
-        });
-        throw new Error('UnifiedPlaceholderResolver returned empty result - template resolution failed');
-      }
-      
-      var resolvedPositivePrompt = positivePrompt;
-      
-    } catch (error) {
-      console.warn('⚠️ Nuclear Independence: UnifiedPlaceholderResolver failed, escalating directly to 2.5C:', error);
-      
-      // Direct escalation to 2.5C - no more fallback chains
-      throw new Tier25CompleteFailureError('UnifiedPlaceholderResolver failed - direct escalation to 2.5C');
-    }
-    
-    console.log('✅ Template AB Tier 2.5B: Nuclear Independence with Cultural Logic template generated');
-    console.log('🔍 Nuclear independence elements:', {
-      hasAvatarIdentity: !!avatarIdentity,
-      secondaryCharacterCount: secondaryCharactersB.split(',').filter(c => c.trim()).length,
-      nuclearIndependence: true,
-      zeroExternalDependencies: true,
-      guaranteedOperation: true
-    });
-    
-    // Add missing calls that Template AB expects
-    const styleFrameworkUsed = styleFramework.name;
-    const shouldApplyCulturalFeatures = await (async () => {
-      try {
-        const placeholderResolver = await getUnifiedPlaceholderResolver();
-        return placeholderResolver ? placeholderResolver.shouldApplyCulturalFeatures(userInfo) : false;
-      } catch (error) {
-        console.warn('shouldApplyCulturalFeatures check failed:', error);
-        return false;
-      }
-    })();
-    
-    // Generate nuclear negative prompt with mixed-gender consistency filters
-    const culturalProfile = avatarIdentity?.nativeLanguage || avatarIdentity?.skinTone || userInfo?.nativeLanguage || 'general';
-    const avatarType = userInfo?.avatar?.type || userInfo?.avatarType || 'child';
-    const secondaryCharactersArray = secondaryCharactersB ? secondaryCharactersB.split(',').map(c => c.trim()).filter(c => c) : [];
-    const negativePrompt = generateInlineNuclearNegative(culturalProfile, avatarType, 'B');
-    
-    return {
-      positivePrompt: resolvedPositivePrompt,
-      negativePrompt,
-      templateType: 'nuclear-independence-basic',
-      difficulty: 'B', 
-      enhancementLevel: 'nuclear-independent',
-      difficultyLevel,
-      secondaryCharacters: secondaryCharactersB || 'none',
-      nuclearIndependent: true,
-      serviceHealthRequired: false,
-      styleFrameworkUsed,
-      shouldApplyCulturalFeatures
-    };
-  }
-  
-  // Should never reach here - escalate to next tier
-  throw new Error(`Unsupported complexity level: ${complexity}. Template AB only handles A and B.`);
-}
-
-// ============= RUNWARE API CALL WITH ENHANCED ERROR HANDLING =============
-async function callRunwareAPI(prompt, negativePrompt) {
-  const RUNWARE_API_KEY = Deno.env.get('RUNWARE_API_KEY');
-  if (!RUNWARE_API_KEY) {
-    throw new Error('RUNWARE_API_KEY not configured');
-  }
-  
-  try {
-    console.log('🎨 Template AB: Calling Runware API');
-    
-    const payload = [
-      {
-        taskType: "authentication",
-        apiKey: RUNWARE_API_KEY
-      },
-      {
-        taskType: "imageInference",
-        taskUUID: crypto.randomUUID(),
-        positivePrompt: prompt,
-        negativePrompt: negativePrompt,
-        width: 1024,
-        height: 1024,
-        model: "runware:100@1",
-        numberResults: 1,
-        outputFormat: "WEBP",
-        CFGScale: 1,
-        scheduler: "FlowMatchEulerDiscreteScheduler"
-      }
-    ];
-    
-    const response = await fetch('https://api.runware.ai/v1', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload)
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Runware API error: ${response.status} ${response.statusText}`);
-    }
-    
-    const result = await response.json();
-    const imageData = result.data?.find(item => item.taskType === 'imageInference');
-    
-    if (!imageData?.imageURL) {
-      throw new Error('No image URL in Runware response');
-    }
-    
-    return imageData;
-  } catch (error) {
-    console.error('❌ Template AB: Runware API call failed:', error);
-    throw error;
-  }
-}
-
-// ============= MAIN HANDLER =============
 serve(async (req) => {
-  console.log(`🎯 Template AB: ${req.method} ${req.url}`);
-  
-  // Handle CORS preflight
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
-  
-    // Handle health checks (GET/HEAD requests)
-  if (req.method === 'GET' || req.method === 'HEAD') {
-    console.log('🏥 Template AB: Health check request (Phase 4)');
-    
-    // PHASE 4: Enhanced health check with service monitoring
-    const serviceHealth = await checkServiceHealth();
-    
-    return createResponse({
-      healthy: true,
-      status: 'healthy',
-      functionName: 'runware-template-ab',
-      service: 'runware-template-ab',
-      projectId: 'cpzeuogomaixamrtnnmj',
-      tier: '2.5A-B',
-      complexity: 'A-B',
-      timestamp: new Date().toISOString(),
-      runwareApiKeyPresent: !!Deno.env.get('RUNWARE_API_KEY'),
-      // PHASE 4: Service health monitoring data
-      serviceHealth: {
-        characterService: serviceHealth.characterService,
-        visualTracker: serviceHealth.visualTracker,
-        sessionManager: serviceHealth.sessionManager,
-        universalResolver: serviceHealth.universalResolver,
-        overallHealth: serviceHealth.overallHealth,
-        availableTiers: serviceHealth.availableTiers
-      },
-      capabilities: {
-        nuclearIndependence: true,
-        tierASupport: serviceHealth.characterService && serviceHealth.universalResolver,
-        tierBSupport: true, // Always available due to nuclear independence
-        smartRouting: !!serviceHealth.healthResults
-      }
-    });
-  }
-  
+
   try {
-    // Fix TDZ issue - parse body first, then destructure
-    const body = await req.json();
-    const storyText = body.storyText || body.pageText || '';
-    const pageText = body.pageText || null;
-    const userInfo = body.userInfo || {};
-    const avatarIdentity = body.avatarIdentity || null;
-    const templateComplexity = body.templateComplexity || null;
-    const sessionId = body.sessionId || null;
-    const pageNumber = body.pageNumber || 1;
-    const enhancedStoryData = body.enhancedStoryData || null; // PHASE 4: Enhanced story data from orchestrator
-    const failedTierData = body.failedTierData || {};
+    const { pageText, userInfo, sessionId, pageNumber, totalPages, avatarIdentity } = await req.json();
+
+    if (!pageText || !userInfo) {
+      return createErrorResponse('Missing required parameters: pageText and userInfo', 400);
+    }
+
+    // Derive ethnicity properly
+    const ethnicity = deriveRegionalEthnicity(userInfo, avatarIdentity);
     
-    console.log('📝 Template AB: Processing request', {
-      templateComplexity,
+    // Get complexity level
+    const complexityLevel = getComplexityLevel(userInfo);
+    
+    // Get style framework
+    const framework = getNuclearStyleFramework(userInfo.difficulty || 'medium');
+    
+    // Determine if user needs cultural enhancements (dark skin)
+    const needsCulturalEnhancements = shouldApplyCulturalEnhancements(userInfo);
+    
+    // Select template type based on cultural needs
+    const templateSet = needsCulturalEnhancements ? NUCLEAR_HARDCODED_PREMIUM_TEMPLATES : NUCLEAR_HARDCODED_BASIC_TEMPLATES;
+    const promptTemplate = templateSet[complexityLevel];
+    
+    // Get placeholder resolver
+    const resolver = await getUnifiedPlaceholderResolver();
+    if (!resolver) {
+      return createErrorResponse('Placeholder resolver not available', 500);
+    }
+    
+    // Prepare context for placeholder resolution
+    const context = {
+      userInfo: {
+        ...userInfo,
+        ethnicity // Include fixed ethnicity
+      },
+      pageText,
       sessionId,
       pageNumber,
-      hasStoryText: !!storyText,
-      hasUserInfo: !!userInfo,
-      hasEnhancedStoryData: !!enhancedStoryData
-    });
+      frameworkPrompt: framework.frameworkPrompt
+    };
     
-    console.log('📊 Template AB: Received failed tier data', {
-      hasCharacterConsistency: !!failedTierData.characterConsistency,
-      hasVisualConsistency: !!failedTierData.visualConsistency,
-      hasCulturalEnhancements: !!failedTierData.culturalEnhancements
-    });
+    // Resolve all placeholders
+    const resolution = await resolver.resolveAllPlaceholders(promptTemplate, context);
     
-    // PHASE 4: Session management centralized in orchestrator
-    // All session data received via parameters, no direct session imports
-    console.log('📋 Template AB: Session data received via parameters', {
-      sessionId,
-      pageNumber,
-      sessionDataReceived: !!(sessionId && pageNumber)
-    });
-    
-    // Determine complexity level
-    const complexity = getComplexityLevel(userInfo, templateComplexity);
-    
-    // Log tier decision reasoning
-    console.log(`🎯 Tier routing decision: 2.5${complexity} selected based on:`, {
-      characterService: enhancedStoryData?.characterConsistency ? true : false,
-      characterData: !!enhancedStoryData?.characterConsistency,
-      avatarIdentity: !!avatarIdentity,
-      visualTracker: enhancedStoryData?.visualConsistency ? true : false,
-      visualDetails: !!enhancedStoryData?.visualConsistency,
-      nuclear_independence_triggered: complexity === 'B'
-    });
-    
-    if (!['A', 'B'].includes(complexity)) {
-      console.log(`⚠️ Template AB: Complexity ${complexity} not handled by this function - use CD template`);
-      return createErrorResponse(`Complexity ${complexity} not supported by AB template. Use CD template.`, 400);
+    if (!resolution.success) {
+      return createErrorResponse('Placeholder resolution failed', 500);
     }
     
-    // Generate template with character consistency and enhanced data
-    let template;
-    try {
-      template = await generateSimpleTemplate(complexity, storyText, userInfo, avatarIdentity, sessionId, pageNumber, enhancedStoryData, failedTierData);
-    } catch (error) {
-      // Handle tier downgrade errors
-      if (error instanceof SceneExtractionError || error instanceof BasicTemplateError || error instanceof Tier25CompleteFailureError) {
-        console.error(`❌ Template AB: ${error.name} - ${error.message}`);
-        return createErrorResponse(`Tier 2.5A/B failed: ${error.message}. Please try 2.5C template.`, 400);
-      }
-      throw error; // Re-throw other errors
-    }
+    // Generate negative prompt
+    const avatarType = userInfo.avatarType || resolver.deriveAvatarType(userInfo);
+    const culturalProfile = needsCulturalEnhancements ? 'african-american' : 'standard';
+    const negativePrompt = generateInlineNuclearNegative(culturalProfile, avatarType, userInfo.difficulty);
     
-    // Final validation - should not happen with bulletproof generation
-    if (!template.positivePrompt || typeof template.positivePrompt !== 'string' || template.positivePrompt.trim().length === 0) {
-      console.error('❌ Template AB: Generated template has invalid positivePrompt - this should not happen with bulletproof generation');
-      return createErrorResponse('Template generation produced invalid result. Please try 2.5C template.', 500);
-    }
-    
-    console.log('🎨 Template AB: Generated template', {
-      complexity,
-      templateType: template.templateType,
-      promptLength: template.positivePrompt?.length || 0,
-      hasPrompt: !!template.positivePrompt
+    // Call Runware API
+    const imageResult = await callRunwareAPIWithRetry({
+      positivePrompt: resolution.resolvedText,
+      negativePrompt,
+      model: 'runware:100@1',
+      width: 1024,
+      height: 1024,
+      numberResults: 1,
+      outputFormat: 'WEBP'
     });
-    
-    // Call Runware API with retry logic
-    const imageData = await callRunwareAPIWithRetry(template.positivePrompt, template.negativePrompt);
-    
-    console.log('✅ Template AB: Image generated successfully');
     
     return createResponse({
       success: true,
-      imageURL: imageData.imageURL,
-      positivePrompt: template.positivePrompt,
-      negativePrompt: template.negativePrompt, // PHASE 4: Add negative prompt to response
-      styleFramework: template.styleFrameworkUsed, // PHASE 4: Add style framework info
-      templateType: template.templateType,
-      tier: '2.5A-B - Template AB',
-      complexity: complexity,
-      enhancementLevel: template.enhancementLevel,
-      promptLengths: { // PHASE 4: Add prompt length statistics
-        positive: template.positivePrompt.length,
-        negative: template.negativePrompt?.length || 0
-      },
-      difficultyLevel: userInfo?.difficulty || 'medium',
-      sessionId: sessionId,
-      pageNumber: pageNumber,
-      secondaryCharacters: template.secondaryCharacters || 'none',
+      imageUrl: imageResult.imageURL,
+      prompt: resolution.resolvedText,
+      negativePrompt,
+      tier: '2.5A',
+      complexity: complexityLevel,
+      culturalProfile,
+      ethnicity,
+      resolution: resolution
     });
-    
+
   } catch (error) {
-    console.error('❌ Template AB: Error', error);
+    console.error('Template AB Error:', error);
     return createErrorResponse(error.message, 500);
   }
 });

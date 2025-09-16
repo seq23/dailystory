@@ -7,7 +7,7 @@
 import { VOCABULARY, PLACEHOLDER_POOLS, CULTURAL_ARRAYS, pick, createSeededRandom, REGIONAL_CULTURAL_CONTEXTS } from './tier25Vocabulary.js';
 import { getCulturalBundle, getHairBySkintone, shouldApplyCulturalEnhancements, getSkinBySkintone } from './StaticDataCache.js';
 
-// ============= REGIONAL ETHNICITY DERIVATION =============
+// ============= FIXED REGIONAL ETHNICITY DERIVATION =============
 function deriveRegionalEthnicity(userInfo, avatarIdentity) {
   // Primary: Use avatar ethnicity if available
   if (avatarIdentity?.ethnicity) {
@@ -33,7 +33,7 @@ function deriveRegionalEthnicity(userInfo, avatarIdentity) {
     'ru': 'Russian'
   };
   
-  // For dark skin tones, consider regional context
+  // For dark skin tones, enforce ethnicity
   if (skinTone === 'dark' || skinTone === 'darker') {
     if (['en', 'fr'].includes(nativeLanguage)) {
       return 'African American';
@@ -44,8 +44,13 @@ function deriveRegionalEthnicity(userInfo, avatarIdentity) {
     }
   }
   
+  // For light/pale/medium/olive skin with English - NO ethnicity (empty string)
+  if (nativeLanguage === 'en' && ['light', 'pale', 'medium', 'olive'].includes(skinTone)) {
+    return '';
+  }
+  
   // Use language mapping for other cases
-  return languageEthnicityMap[nativeLanguage] || 'diverse background';
+  return languageEthnicityMap[nativeLanguage] || '';
 }
 
 export class UnifiedPlaceholderResolver {
@@ -180,7 +185,7 @@ export class UnifiedPlaceholderResolver {
     resolved = resolved.replace(/\{user\.interest\}/g, primaryInterest);
     resolved = resolved.replace(/\{user\.hobby\}/g, primaryInterest);
 
-    // Ethnicity resolution using existing deriveRegionalEthnicity function
+    // FIXED: Ethnicity resolution using existing deriveRegionalEthnicity function
     const ethnicity = deriveRegionalEthnicity(userInfo, userInfo?.avatarIdentity);
     resolved = resolved.replace(/\{ethnicity\}/g, ethnicity);
 
@@ -413,15 +418,21 @@ export class UnifiedPlaceholderResolver {
     // Preserve intentional line breaks, collapse other spaces
     cleaned = cleaned.replace(/[ \t]+/g, ' ').replace(/\n\s*\n/g, '\n');
     
-    // Fix punctuation and normalize commas
+    // ENHANCED: Fix punctuation and normalize commas more aggressively
     cleaned = cleaned.replace(/\s+([,.!?])/g, '$1');
     cleaned = cleaned.replace(/,+/g, ','); // Remove duplicate commas
-    cleaned = cleaned.replace(/,\s*,/g, ','); // Remove comma sequences
+    cleaned = cleaned.replace(/,\s*,+/g, ','); // Remove multiple comma sequences
     cleaned = cleaned.replace(/,\s*\./g, '.'); // Fix comma before period
     cleaned = cleaned.replace(/,\s*$/gm, ''); // Remove trailing commas
+    cleaned = cleaned.replace(/,\s*!/g, '!'); // Fix comma before exclamation
+    cleaned = cleaned.replace(/,\s*\?/g, '?'); // Fix comma before question mark
     
     // Remove duplicate words
     cleaned = cleaned.replace(/\b(\w+)\s+\1\b/g, '$1');
+    
+    // Remove empty sections between commas
+    cleaned = cleaned.replace(/,\s*,/g, ',');
+    cleaned = cleaned.replace(/^,|,$/, ''); // Remove leading/trailing commas
     
     // Trim
     cleaned = cleaned.trim();
@@ -476,8 +487,8 @@ export class UnifiedPlaceholderResolver {
     // ADVANCED ACTION VERB RESOLUTION with normalization
     let extractedAction = this.extractAndNormalizeAction(text);
     
-    // Extract Object (what they're interacting with) - improved regex to capture full phrases
-    const objectMatch = text.match(/\b(?:with|holding|carrying|using|playing with|reading|eating|building|drawing)\s+(?:a|an|the|some)?\s*([a-zA-Z][a-zA-Z\s]*?)(?:\s+(?:in|at|on|through|where|and|,|\.|!|\?)|$)/);
+    // FIXED: Extract Object (what they're interacting with) - fixed regex to prevent character dropping
+    const objectMatch = text.match(/\b(?:with|holding|carrying|using|playing with|reading|eating|building|drawing)\s+(?:a|an|the|some)?\s*([a-zA-Z]+(?:\s+[a-zA-Z]+)*?)(?:\s+(?:in|at|on|through|where|and|,|\.|!|\?)|$)/);
     const extractedObject = objectMatch ? objectMatch[1].trim() : this.inferObjectFromAction(extractedAction);
     
     // Extract Location 
@@ -574,8 +585,8 @@ export class UnifiedPlaceholderResolver {
       }
     }
 
-    // Enhanced action verb extraction with Level 0 coverage
-    const actionMatch = text.match(/\b(wake|wakes|woke|waking|sleep|sleeps|slept|sleeping|eat|eats|ate|eating|play|plays|played|playing|walk|walks|walked|walking|run|runs|ran|running|jump|jumps|jumped|jumping|help|helps|helped|helping|clean|cleans|cleaned|cleaning|read|reads|reading|draw|draws|drew|drawing|sing|sings|sang|singing|dance|dances|danced|dancing|build|builds|built|building|climb|climbs|climbed|climbing|sit|sits|sat|sitting|stand|stands|stood|standing|go|goes|went|going|come|comes|came|coming|look|looks|looked|looking|see|sees|saw|seeing)\b/);
+    // FIXED: Enhanced action verb extraction with proper word boundaries to prevent false positives
+    const actionMatch = text.match(/\b(wake|wakes|woke|waking|sleep|sleeps|slept|sleeping|eat|eats|ate|eating|play|plays|played|playing|walk|walks|walked|walking|run|runs|ran|running|jump|jumps|jumped|jumping|help|helps|helped|helping|clean|cleans|cleaned|cleaning|read|reads|reading|draw|draws|drew|drawing|sing|sings|sang|singing|dance|dances|danced|dancing|build|builds|built|building|climb|climbs|climbed|climbing|sit|sits|sat|sitting|stand|stands|stood|standing|come|comes|came|coming|look|looks|looked|looking|see|sees|saw|seeing)\b/);
     
     if (actionMatch) {
       let action = actionMatch[1];
@@ -880,14 +891,22 @@ export class UnifiedPlaceholderResolver {
   fillMissingPlaceholders(text, context) {
     let resolved = text;
     
-    // Fill hair and features for light-skinned users if still missing
+    // FIXED: Fill hair and features for PREMIUM templates (use {hair} and {features})
     resolved = resolved.replace(/\{hair\}/g, () => {
       const skinTone = context.userInfo?.skinTone || context.userInfo?.avatarIdentity?.skinTone || context.userInfo?.avatar?.skinTone || 'medium';
+      if (skinTone === 'dark' || skinTone === 'darker') {
+        const culturalBundle = getCulturalBundle(context.userInfo, context.userInfo?.sessionId || 'default');
+        return culturalBundle.hair || '';
+      }
       return getHairBySkintone(skinTone, context.userInfo?.sessionId || 'default') || '';
     });
     
     resolved = resolved.replace(/\{features\}/g, () => {
       const skinTone = context.userInfo?.skinTone || context.userInfo?.avatarIdentity?.skinTone || context.userInfo?.avatar?.skinTone || 'medium';
+      if (skinTone === 'dark' || skinTone === 'darker') {
+        const culturalBundle = getCulturalBundle(context.userInfo, context.userInfo?.sessionId || 'default');
+        return culturalBundle.features || '';
+      }
       return getSkinBySkintone(skinTone, context.userInfo?.sessionId || 'default') || '';
     });
     
@@ -912,17 +931,18 @@ export class UnifiedPlaceholderResolver {
       return this.generateSemanticScene(context.pageText, context);
     });
     
-    // Add avatar type to character if missing
+    // FIXED: Add avatar type to character and enforce ethnicity derivation
     const name = context.userInfo?.name || context.userInfo?.childName || 'the child';
     const age = context.userInfo?.age || '6';
     const avatarType = this.deriveAvatarType(context.userInfo);
     const characterWithAvatar = avatarType ? `${name} ${age}-year-old ${avatarType}` : `${name} ${age}`;
+    const ethnicity = deriveRegionalEthnicity(context.userInfo, context.userInfo?.avatarIdentity);
     
     // Existing safe fallbacks
     const safeMap = {
       character: characterWithAvatar,
       age: age,
-      ethnicity: '', // Leave empty - no lies
+      ethnicity: ethnicity, // FIXED: Use derived ethnicity instead of empty string
       spatial_composition: 'centered in frame',
       setting: '', // Leave empty - better than lies
       atmosphere: this.detectAtmosphere(context.pageText), // Smart detection
@@ -964,16 +984,18 @@ export class UnifiedPlaceholderResolver {
       return userInfo.avatar.type;
     }
     
-    // Fallback based on name patterns or default to gender-neutral
+    // ENHANCED: Fallback based on name patterns with better inference
     const name = userInfo?.name || userInfo?.childName || '';
     if (name) {
-      // Simple gender inference - can be improved
-      const maleNames = ['alex', 'sam', 'jordan', 'taylor', 'casey', 'riley', 'jamie', 'avery', 'morgan', 'quinn'];
-      const femaleNames = ['emma', 'sophia', 'olivia', 'ava', 'isabella', 'mia', 'charlotte', 'amelia', 'harper', 'evelyn'];
+      // Enhanced gender inference with more names
+      const maleNames = ['alex', 'sam', 'jordan', 'taylor', 'casey', 'riley', 'jamie', 'avery', 'morgan', 'quinn', 'charlie', 'drew'];
+      const femaleNames = ['emma', 'sophia', 'olivia', 'ava', 'isabella', 'mia', 'charlotte', 'amelia', 'harper', 'evelyn', 'grace', 'lily'];
       
       const lowerName = name.toLowerCase();
       if (femaleNames.includes(lowerName)) {
         return 'girl';
+      } else if (maleNames.includes(lowerName)) {
+        return 'boy';
       } else if (maleNames.some(n => lowerName.includes(n))) {
         return 'child'; // gender-neutral for ambiguous names
       }
