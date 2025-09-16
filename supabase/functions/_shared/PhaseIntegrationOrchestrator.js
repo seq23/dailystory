@@ -189,7 +189,7 @@ export class PhaseIntegrationOrchestrator {
   /**
    * Get enhanced prompt with Phase 1 & 2 data using the EXACT Tier 1 template structure
    */
-  async getEnhancedPrompt(userInfo, basePrompt, storyText, sessionId) {
+  async getEnhancedPrompt(userInfo, basePrompt, storyText, sessionId, enhancedStoryData = null) {
     try {
       const userId = userInfo?.id || userInfo?.userId || 'anonymous';
       const characterName = userInfo?.name || userInfo?.childName || 'Child';
@@ -209,51 +209,67 @@ export class PhaseIntegrationOrchestrator {
         sessionId
       );
 
-      // Phase 2: Get visual consistency recommendations
-      const recommendations = { recommendations: [], consistencyScore: 1.0 };
+      // Phase 2: Get visual consistency data for multi-page support
+      const visualHistory = await this.visualDetailTracker.getVisualHistory(sessionId) || '';
+      const crossPageConsistency = await this.visualDetailTracker.getConsistencyAnalysis(sessionId) || '';
+      const coloredObjects = await this.visualDetailTracker.getColoredObjects(sessionId) || '';
+      const visualConsistencyDetails = await this.visualDetailTracker.getVisualDetails(sessionId) || '';
 
-      // Get style framework for brand suffix
+      // Get ethnicity for cultural representation
+      const { deriveRegionalEthnicity } = await import('./StaticDataCache.js');
+      const ethnicity = deriveRegionalEthnicity(userInfo) || 'diverse background';
+
+      // Get hair variations based on skin tone
+      const { getHairBySkintone } = await import('./StaticDataCache.js');
+      const hairVariations = getHairBySkintone(userInfo?.avatar?.skinTone || userInfo?.skinTone || 'light') || '';
+
+      // Get style framework with warm natural lighting
       const difficulty = userInfo?.difficulty || userInfo?.gradeLevel || 'medium';
       const styleFrameworks = {
-        'beginner': 'Contemporary Children\'s Book Illustration with sharp facial definition, refined features',
-        'easy': 'Contemporary Children\'s Book Illustration with sharp facial definition, refined features', 
-        'medium': 'Contemporary Children\'s Book Illustration with sharp facial definition, refined features',
-        'hard': '2.9D Rendered Illustration with golden hour volumetric lighting',
-        'expert': '2.9D Rendered Illustration with golden hour volumetric lighting'
+        'beginner': 'Contemporary Children\'s Book Illustration with warm natural lighting, sharp facial definition, refined features',
+        'easy': 'Contemporary Children\'s Book Illustration with warm natural lighting, sharp facial definition, refined features', 
+        'medium': 'Contemporary Children\'s Book Illustration with warm natural lighting, sharp facial definition, refined features',
+        'hard': '2.9D Rendered Illustration with warm natural lighting, golden hour volumetric lighting',
+        'expert': '2.9D Rendered Illustration with warm natural lighting, golden hour volumetric lighting'
       };
-      const brandSuffix = styleFrameworks[difficulty] || styleFrameworks['medium'];
+      const styleFramework = styleFrameworks[difficulty] || styleFrameworks['medium'];
 
-      // Build the EXACT Tier 1 template structure
-      const primaryScene = basePrompt || 'A beautiful children\'s story scene';
+      // Use AI-generated primaryScene from enhanced data or build from base prompt
+      const primaryScene = enhancedStoryData?.primaryScene || this.generatePrimaryScene(basePrompt, storyText);
+      
+      // Generate 1-2 sentence context summary instead of full text
+      const contextSummary = this.generateContextSummary(storyText || basePrompt);
       
       // Avatar Identity and Regional Context
       const avatarIdentity = `${characterName}, age ${userInfo?.age || 6}`;
-      const regionalContext = userInfo?.nativeLanguage !== 'en' ? 'culturally appropriate' : 'diverse and inclusive';
       
       // Cultural Enhancements
       const culturalEnhancements = await this.getCulturalEnhancements(userInfo, sessionId);
       
-      // Consistency Details
-      const consistencyDetails = visualDescription || 'consistent character design';
-      
-      // Character Description
-      const characterDescription = [avatarIdentity, regionalContext, culturalEnhancements, consistencyDetails]
-        .filter(Boolean).join(', ');
+      // Enhanced character description with hair variations
+      const characterDescription = [
+        avatarIdentity, 
+        ethnicity,
+        hairVariations,
+        culturalEnhancements
+      ].filter(Boolean).join(', ');
 
-      // Previous Appearance Data
-      const previousAppearance = existingTraits ? 'maintains visual consistency from previous pages' : '';
-      
-      // Build complete Tier 1 enhanced prompt template
+      // Build complete 6-section Tier 1 enhanced prompt template
       const enhancedPrompt = [
         `PRIMARY SCENE: ${primaryScene}`,
         `CHARACTER DESCRIPTION: ${characterDescription}`,
         `CHARACTER CONSISTENCY:`,
         `- Avatar Identity: ${avatarIdentity}`,
-        `- Visual Traits: ${consistencyDetails}`,
-        previousAppearance ? `- Previous Appearance: ${previousAppearance}` : '',
+        `- Ethnicity: ${ethnicity}`,
+        `- Visual Traits: ${visualDescription || 'consistent character design'}`,
         culturalEnhancements ? `- Cultural Enhancements: ${culturalEnhancements}` : '',
-        `BRAND SUFFIX: ${brandSuffix}`,
-        `CONTEXT: ${storyText || basePrompt}`
+        visualHistory ? `- Visual History: ${visualHistory}` : '',
+        crossPageConsistency ? `- Cross-Page Consistency: ${crossPageConsistency}` : '',
+        coloredObjects ? `- Colored Objects: ${coloredObjects}` : '',
+        visualConsistencyDetails ? `- Visual Consistency Details: ${visualConsistencyDetails}` : '',
+        `BRAND SUFFIX: ${styleFramework}, child-friendly aesthetic, diverse representation`,
+        `CONTEXT: ${contextSummary}`,
+        `STYLE FRAMEWORKS: ${styleFramework}`
       ].filter(Boolean).join('\n');
 
       console.log(`✅ PHASE ORCHESTRATOR: Complete Tier 1 template generated`, {
@@ -261,18 +277,24 @@ export class PhaseIntegrationOrchestrator {
         characterName,
         hasTraits: !!existingTraits,
         enhancedLength: enhancedPrompt.length,
-        templateComponents: 6
+        templateComponents: 6,
+        hasMultiPageData: !!(visualHistory || crossPageConsistency)
       });
 
       return {
         enhancedPrompt,
+        primaryScene,
         characterConsistency: {
           hasTraits: !!existingTraits,
-          visualDescription: consistencyDetails
+          visualDescription: visualDescription || 'consistent character design',
+          ethnicity,
+          hairVariations
         },
         visualConsistency: {
-          score: recommendations.consistencyScore,
-          previousAppearance: previousAppearance
+          visualHistory,
+          crossPageConsistency,
+          coloredObjects,
+          visualConsistencyDetails
         },
         enhancementSuccessful: true,
         templateStructure: 'COMPLETE_TIER_1'
@@ -286,6 +308,24 @@ export class PhaseIntegrationOrchestrator {
         templateStructure: 'FAILED'
       };
     }
+  }
+
+  // Helper method to generate AI-rich primary scene
+  generatePrimaryScene(basePrompt, storyText) {
+    const sceneText = storyText || basePrompt || 'A beautiful children\'s story scene';
+    // Extract key elements and enhance for visual richness
+    return `Rich, detailed scene: ${sceneText.slice(0, 200)}...`;
+  }
+
+  // Helper method to generate context summary (1-2 sentences)
+  generateContextSummary(text) {
+    if (!text) return 'Children\'s story scene with engaging characters.';
+    
+    const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+    if (sentences.length >= 2) {
+      return sentences.slice(0, 2).join('. ') + '.';
+    }
+    return sentences[0]?.trim() + '.' || 'Children\'s story scene.';
   }
 
   /**

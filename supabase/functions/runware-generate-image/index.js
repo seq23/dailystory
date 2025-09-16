@@ -391,133 +391,125 @@ function determineTemplateComplexity(userInfo, avatarIdentity) {
 async function buildTier1EnhancedPrompt(prompt, userInfo, avatarIdentity, styleFramework, sessionId, requestId) {
   console.log(`🎯 [${requestId}] Building COMPLETE_TIER_1 enhanced prompt with character consistency`);
   
-  const difficulty = userInfo?.difficulty || userInfo?.gradeLevel || 'medium';
-  const supabase = CrashProofBootSystem.getService('supabase')?.client;
-  
-  // PRIMARY SCENE: Direct from story text
-  const primaryScene = prompt;
-  
-  // CHARACTER DESCRIPTION: Build with avatar identity and fallback
-  let characterDescription = '';
-  if (avatarIdentity?.visualDescription) {
-    characterDescription = avatarIdentity.visualDescription;
-  } else if (userInfo?.avatar) {
-    const { skinTone = 'medium', hairColor = 'brown', type = 'girl' } = userInfo.avatar;
-    characterDescription = `A beautiful ${type} with ${skinTone} skin and ${hairColor} hair, with graceful features and charming expressions`;
-  } else {
-    characterDescription = 'A beautiful girl with graceful features, charming expressions, and an adventurous spirit';
-  }
-  
-  // CHARACTER CONSISTENCY: Use direct imports for real character consistency
-  let avatarIdentity_str = '';
-  let consistencyDetails = '';
-  let previousAppearance = '';
-  let culturalEnhancements = '';
+  let characterAppearance = '';
+  let visualHistory = '';
+  let crossPageConsistency = '';
+  let coloredObjects = '';
+  let visualConsistencyDetails = '';
+  let ethnicity = '';
+  let hairVariations = '';
   
   try {
-    // Extract avatar identity (name, age)
-    const characterName = userInfo?.displayName || userInfo?.name || 'Emma';
-    const age = userInfo?.age || '8 years old';
-    avatarIdentity_str = `${characterName}, ${age}`;
+    // Import character services
+    const phaseIntegrationOrchestrator = await LazyServiceLoader.load('PhaseIntegrationOrchestrator', '../_shared/PhaseIntegrationOrchestrator.js');
     
-    // Get character traits using direct imports
-    if (CharacterConsistencyService && sessionId) {
+    // Get character consistency data
+    let characterName = userInfo?.name || userInfo?.childName || 'Emma';
+    console.log(`👤 Getting character appearance for ${characterName} in session ${sessionId}`);
+    
+    const characterService = phaseIntegrationOrchestrator?.characterConsistencyService;
+    if (characterService && typeof characterService.extractTraitsFromStory === 'function') {
       try {
-        const characterService = CharacterConsistencyService.getInstance();
-        const existingAppearance = await characterService.getCharacterAppearanceFromStory(sessionId, characterName);
-        if (existingAppearance) {
-          previousAppearance = existingAppearance;
-          console.log(`✅ [${requestId}] Found existing character appearance`);
-        }
-        
-        // Extract traits from current story
-        const storyTraits = characterService.extractTraitsFromStory(prompt, characterName);
-        if (storyTraits && Object.keys(storyTraits).length > 0) {
-          consistencyDetails = characterService.generateVisualDescription(storyTraits, characterName);
-          console.log(`✅ [${requestId}] Generated visual traits consistency`);
-        }
+        await characterService.extractTraitsFromStory(sessionId, prompt, 1, characterName);
+        console.log(`👤 Character traits extracted and stored for ${characterName}`);
       } catch (error) {
-        console.warn(`⚠️ [${requestId}] Character consistency failed:`, error.message);
+        console.warn(`⚠️ Character trait extraction failed:`, error.message);
       }
     }
     
-    // Get visual history using direct imports
-    if (visualDetailTracker && sessionId) {
-      try {
-        const visualHistory = await visualDetailTracker.getVisualHistory(userInfo?.id, characterName, 5);
-        if (visualHistory && visualHistory.length > 0) {
-          const recentVisuals = visualHistory.map(v => v.visual_elements).join(', ');
-          if (recentVisuals) {
-            consistencyDetails += consistencyDetails ? `, ${recentVisuals}` : recentVisuals;
-            console.log(`✅ [${requestId}] Added visual history consistency`);
-          }
-        }
-      } catch (error) {
-        console.warn(`⚠️ [${requestId}] Visual tracking failed:`, error.message);
-      }
+    characterAppearance = characterService ? 
+      await characterService.getCharacterAppearanceFromStory(sessionId, characterName) : '';
+    console.log(`👤 Character appearance for ${characterName}: ${characterAppearance}`);
+    
+    // Get multi-page visual consistency data
+    const visualTracker = phaseIntegrationOrchestrator?.visualDetailTracker;
+    if (visualTracker) {
+      visualHistory = await visualTracker.getVisualHistory(sessionId) || '';
+      crossPageConsistency = await visualTracker.getConsistencyAnalysis(sessionId) || '';
+      coloredObjects = await visualTracker.getColoredObjects(sessionId) || '';
+      visualConsistencyDetails = await visualTracker.getVisualDetails(sessionId) || '';
     }
     
-    // Cultural enhancements using seeded selection from tier25Vocabulary
-    const detectCulturalContext = (userInfo) => {
-      const skinTone = userInfo?.skinTone || userInfo?.avatar?.skinTone || 'light';
-      
-      if (skinTone === 'dark' || skinTone === 'darker') {
-        return 'african'; // ALL dark skin users get African cultural features
-      }
-      
-      return 'none'; // Light skin users get no cultural enhancements
-    };
+    // Get ethnicity and hair variations
+    const { deriveRegionalEthnicity, getHairBySkintone } = await import('../_shared/StaticDataCache.js');
+    ethnicity = deriveRegionalEthnicity(userInfo) || 'diverse background';
+    hairVariations = getHairBySkintone(userInfo?.avatar?.skinTone || userInfo?.skinTone || 'light') || '';
     
-    const culturalContext = detectCulturalContext(userInfo);
-    if (culturalContext === 'african' && sessionId) {
-      // Generate seeded cultural selections for consistency
-      const userName = userInfo?.displayName || userInfo?.name || 'User';
-      const culturalSeed = `${userName}_${sessionId}_cultural`;
-      
-      // Generate seeded hash for cultural consistency
-      let hash = 0;
-      for (let i = 0; i < culturalSeed.length; i++) {
-        hash = ((hash << 5) - hash) + culturalSeed.charCodeAt(i);
-        hash = hash & hash;
-      }
-      const culturalSeedNumber = Math.abs(hash % 999999) + 1;
-      
-      // Get seeded cultural selections
-      const culturalBundle = getCulturalBundle(userInfo, sessionId);
-      const selectedHair = culturalBundle.hair;
-      const selectedFeatures = culturalBundle.features;
-      
-      if (selectedHair && selectedFeatures) {
-        culturalEnhancements = `with ${selectedHair}, ${selectedFeatures}`;
-        console.log(`🎨 [${requestId}] Generated seeded cultural bundle: ${culturalEnhancements}`);
-      }
-    }
+    // Get clothing information
+    const clothingService = phaseIntegrationOrchestrator?.clothingService;
+    const clothing = clothingService ? 
+      await clothingService.getClothingData(sessionId, characterName, 1) : {};
+    console.log(`👕 Retrieved clothing for ${characterName}:`, clothing);
     
   } catch (error) {
-    console.warn(`⚠️ [${requestId}] Character consistency setup failed:`, error.message);
+    console.warn(`⚠️ [${requestId}] Character consistency failed:`, error.message);
   }
   
-  // Style framework integration
-  const frameworkPrompt = styleFramework?.frameworkPrompt || 'High-quality, child-friendly illustration style';
+  // Use AI-generated primary scene if available, otherwise enhance the original prompt
+  const primaryScene = `Rich, detailed scene: ${prompt || 'A beautiful children\'s story scene'}`;
+  
+  // Generate 1-2 sentence context summary
+  const contextSummary = generateContextSummary(prompt);
+  
+  // Avatar and character information
+  const characterName = userInfo?.name || userInfo?.childName || 'Emma';
+  const avatarIdentity_str = avatarIdentity ? 
+    `${characterName}, age ${avatarIdentity.age || userInfo?.age || 6}` : 
+    `${characterName}, age ${userInfo?.age || 6}`;
+  
+  // Cultural profile for enhancements
+  const culturalProfile = `${userInfo?.nativeLanguage || 'en'}_${userInfo?.avatar?.skinTone || 'light'}`;
+  const shouldApplyEnhancements = culturalProfile.includes('dark') && 
+    ['en', 'fr', 'es', 'pt'].includes(userInfo?.nativeLanguage || 'en');
+  
+  // Build enhanced character description
+  let characterDescription = [avatarIdentity_str, ethnicity, hairVariations].filter(Boolean).join(', ');
+  if (shouldApplyEnhancements) {
+    const { getCulturalBundle } = await import('../_shared/StaticDataCache.js');
+    const culturalFeatures = getCulturalBundle(userInfo, sessionId || 'default');
+    characterDescription += `, ${culturalFeatures.hair}, ${culturalFeatures.features}`;
+  }
+  
+  // Cultural enhancements
+  const culturalEnhancements = shouldApplyEnhancements ? 'culturally authentic representation' : '';
+  
+  // Style framework with warm natural lighting
+  const frameworkPrompt = styleFramework?.frameworkPrompt || 'Contemporary Children\'s Book Illustration with warm natural lighting';
   
   // Brand suffix for consistency
-  const brandSuffix = 'Optimized for young audiences, diverse representation, warm expressions, bright vibrant colors, child-friendly aesthetic';
+  const brandSuffix = `${frameworkPrompt}, child-friendly aesthetic, diverse representation`;
   
-  // Build COMPLETE_TIER_1 structured template (matching PhaseIntegrationOrchestrator format)
+  // Build complete 6-section COMPLETE_TIER_1 structured template
   const enhancedPrompt = [
     `PRIMARY SCENE: ${primaryScene}`,
     `CHARACTER DESCRIPTION: ${characterDescription}`,
     `CHARACTER CONSISTENCY:`,
-    avatarIdentity_str ? `- Avatar Identity: ${avatarIdentity_str}` : '',
-    consistencyDetails ? `- Visual Traits: ${consistencyDetails}` : '',
-    previousAppearance ? `- Previous Appearance: ${previousAppearance}` : '',
+    `- Avatar Identity: ${avatarIdentity_str}`,
+    `- Ethnicity: ${ethnicity}`,
+    `- Visual Traits: ${characterAppearance || 'consistent character design'}`,
     culturalEnhancements ? `- Cultural Enhancements: ${culturalEnhancements}` : '',
+    visualHistory ? `- Visual History: ${visualHistory}` : '',
+    crossPageConsistency ? `- Cross-Page Consistency: ${crossPageConsistency}` : '',
+    coloredObjects ? `- Colored Objects: ${coloredObjects}` : '',
+    visualConsistencyDetails ? `- Visual Consistency Details: ${visualConsistencyDetails}` : '',
     `BRAND SUFFIX: ${brandSuffix}`,
-    `CONTEXT: ${prompt}`
+    `CONTEXT: ${contextSummary}`,
+    `STYLE FRAMEWORKS: ${frameworkPrompt}`
   ].filter(Boolean).join('\n');
   
-  console.log(`✅ [${requestId}] Built COMPLETE_TIER_1 structured template: ${enhancedPrompt.length} chars`);
+  console.log(`✅ [${requestId}] Built COMPLETE_TIER_1 fallback enhanced prompt: ${enhancedPrompt.length} chars`);
   return enhancedPrompt;
+}
+
+// Helper function for context summary generation
+function generateContextSummary(text) {
+  if (!text) return 'Children\'s story scene with engaging characters.';
+  
+  const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+  if (sentences.length >= 2) {
+    return sentences.slice(0, 2).join('. ') + '.';
+  }
+  return sentences[0]?.trim() + '.' || 'Children\'s story scene.';
 }
 
 // ============= CORE IMAGE GENERATION LOGIC =============
@@ -959,6 +951,14 @@ serve(async (req) => {
         console.warn(`⚠️ [${requestId}] Phase orchestrator enhancement failed:`, enhancementError.message);
       }
       
+      // Collect failed Tier 1 data structure first
+      let failedTierData = {
+        characterConsistency: enhancedStoryData?.characterConsistency || '',
+        visualConsistency: enhancedStoryData?.visualConsistency || '', 
+        culturalEnhancements: enhancedStoryData ? (phaseIntegrationOrchestrator ? await phaseIntegrationOrchestrator.getCulturalEnhancements(userInfo) : '') : '',
+        enhancedSceneData: enhancedStoryData?.enhancedPrompt || ''
+      };
+      
       // Try Tier 1: Runware Premium (unless force tier excludes it)
       const runwareService = CrashProofBootSystem.getService('runware');
       if (runwareService?.status === 'configured' && (!forceTier || forceTier === 'tier-1')) {
@@ -977,17 +977,15 @@ serve(async (req) => {
             throw new Error(`Tier 1 failed and skipTier25 flag set: ${error.message}`);
           }
           
+          // Check if this is a character consistency failure
+          if (error.message.includes('character') || error.message.includes('consistency')) {
+            console.log(`🔄 [${requestId}] Character consistency failure detected - escalating to Tier 2.5A first`);
+            failedTierData.characterConsistencyFailure = true;
+          }
+          
           result = null;
         }
       }
-      
-      // Collect failed Tier 1 data
-      let failedTierData = {
-        characterConsistency: enhancedStoryData?.characterConsistency || '',
-        visualConsistency: enhancedStoryData?.visualConsistency || '', 
-        culturalEnhancements: enhancedStoryData ? (phaseIntegrationOrchestrator ? await phaseIntegrationOrchestrator.getCulturalEnhancements(userInfo) : '') : '',
-        enhancedSceneData: enhancedStoryData?.enhancedPrompt || ''
-      };
       
       // Get Supabase client for tier functions
       const supabase = CrashProofBootSystem.getService('supabase')?.client;
@@ -1003,7 +1001,7 @@ serve(async (req) => {
         console.log(`🔍 Service health for Tier 2.5: Character=${serviceHealthDiagnostics.characterService}, Visual=${serviceHealthDiagnostics.visualTracker}`);
         
         const templateComplexity = determineTemplateComplexity(userInfo, avatarIdentity);
-        console.log(`🎨 [${requestId}] Attempting Tier 2.5A-B with complexity ${templateComplexity}`);
+        console.log(`🎨 [${requestId}] Attempting Tier 2.5A (${templateComplexity}) with character consistency retry`);
         
         try {
           const templateResult = await CoreUtils.withTimeout(
@@ -1016,7 +1014,7 @@ serve(async (req) => {
                 sessionId,
                 pageNumber,
                 enhancedStoryData, // PHASE 4: Pass enhanced data to tier functions
-                failedTierData // NEW: Pass failed tier data to 2.5B
+                failedTierData // NEW: Pass failed tier data to 2.5A
               }
             }),
             20000,
@@ -1025,57 +1023,81 @@ serve(async (req) => {
           
           if (templateResult.data && templateResult.data.success) {
             result = templateResult.data;
-            console.log(`✅ [${requestId}] Tier 2.5A-B succeeded`);
+            console.log(`✅ [${requestId}] Tier 2.5A succeeded`);
           }
         } catch (error) {
-          console.warn(`⚠️ [${requestId}] Tier 2.5A-B failed:`, error.message);
+          console.warn(`⚠️ [${requestId}] Tier 2.5A failed:`, error.message);
           
-          // Update failedTierData with 2.5A-B information
-          if (enhancedStoryData) {
-            failedTierData.tier25ABAttempted = true;
-            failedTierData.tier25ABComplexity = templateComplexity;
+          // Update failedTierData with 2.5A information for escalation to 2.5C
+          failedTierData.tier25AAttempted = true;
+          failedTierData.tier25AComplexity = templateComplexity;
+          failedTierData.tier25AError = error.message;
+          
+          // If character consistency was the original failure, escalate directly to 2.5C
+          if (failedTierData.characterConsistencyFailure) {
+            console.log(`🔄 [${requestId}] Character consistency failure persists - escalating to Tier 2.5C`);
           }
         }
       }
 
-      // Tier 2.5C-D: Nuclear independence template (unless skipTier25 is set)
+      // Tier 2.5C-D: Nuclear independence template (only if 2.5A failed or character consistency issue)
       if ((!result || !result.success) && !skipTier25 && (!forceTier || forceTier === 'tier-2.5')) {
-        console.log(`🎨 [${requestId}] Attempting Tier 2.5C-D (nuclear independence)`);
-        
-        try {
-          const nuclearResult = await CoreUtils.withTimeout(
-            supabase.functions.invoke('runware-template-cd', {
-              body: {
-                storyText: pageText, // Template CD expects storyText parameter
-                userInfo,
-                avatarIdentity,
-                templateComplexity: 'C',
-                sessionId,
-                pageNumber,
-                enhancedStoryData, // PHASE 4: Pass enhanced data to tier functions
-                failedTierData // NEW: Pass failed tier data to 2.5C
-              }
-            }),
-            15000,
-            'Template CD generation'
-          );
+        // Only attempt 2.5C if 2.5A was attempted or character consistency failure
+        if (failedTierData.tier25AAttempted || failedTierData.characterConsistencyFailure) {
+          console.log(`🎨 [${requestId}] Attempting Tier 2.5C-D (nuclear independence) after 2.5A failure`);
           
-          if (nuclearResult.data && nuclearResult.data.success) {
-            result = nuclearResult.data;
-            console.log(`✅ [${requestId}] Tier 2.5C-D succeeded`);
+          try {
+            const nuclearResult = await CoreUtils.withTimeout(
+              supabase.functions.invoke('runware-template-cd', {
+                body: {
+                  storyText: pageText, // Template CD expects storyText parameter
+                  userInfo,
+                  avatarIdentity,
+                  templateComplexity: 'C',
+                  sessionId,
+                  pageNumber,
+                  enhancedStoryData, // PHASE 4: Pass enhanced data to tier functions
+                  failedTierData // NEW: Pass failed tier data to 2.5C
+                }
+              }),
+              15000,
+              'Template CD generation'
+            );
+            
+            if (nuclearResult.data && nuclearResult.data.success) {
+              result = nuclearResult.data;
+              console.log(`✅ [${requestId}] Tier 2.5C-D succeeded`);
+            }
+          } catch (error) {
+            console.warn(`⚠️ [${requestId}] Tier 2.5C-D failed:`, error.message);
           }
-        } catch (error) {
-          console.warn(`⚠️ [${requestId}] Tier 2.5C-D failed:`, error.message);
+        } else {
+          console.log(`🎨 [${requestId}] Skipping Tier 2.5C-D - no 2.5A attempt or character consistency failure`);
         }
       }
 
       // Tier 4: Enhanced fallback (guaranteed success) (unless specific tier is forced)
       if ((!result || !result.success) && !forceTier) {
         console.log(`🎨 [${requestId}] Using Tier 4: Enhanced fallback (guaranteed)`);
+        
+        // Add failure messaging when using fallback
+        if (failedTierData.characterConsistencyFailure) {
+          console.warn(`⚠️ [${requestId}] Character consistency failed across all tiers - using fallback`);
+        } else if (failedTierData.tier25AAttempted) {
+          console.warn(`⚠️ [${requestId}] All premium tiers failed - using fallback`);
+        }
+        
         result = await EdgeErrorHandler.withPerformanceTracking(
           `enhanced-fallback-${requestId}`,
           () => Promise.resolve(generateEnhancedFallback(pageText, pageNumber || 1, requestId))
         );
+        
+        // Add metadata about fallback usage
+        if (result && result.metadata) {
+          result.metadata.fallbackReason = failedTierData.characterConsistencyFailure ? 
+            'Character consistency failure' : 'All premium tiers failed';
+          result.metadata.failedTiers = Object.keys(failedTierData).filter(k => failedTierData[k]);
+        }
       }
       
       // PHASE 4: Session storage handled by database-backed services using direct imports
