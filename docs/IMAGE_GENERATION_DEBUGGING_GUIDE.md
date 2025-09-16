@@ -405,4 +405,25 @@ Monitor external service status:
 - Update fallback thresholds based on data
 - Maintain debug logging clarity
 
+## Recent Updates
+
+### Backend Robustness (Template AB)
+- `runware-template-ab` now accepts `storyText` as a fallback for `pageText`
+- Function honors `templateComplexity` parameter for forced tier testing
+- Returns both `imageURL`/`imageUrl` and `positivePrompt`/`prompt` for compatibility
+
+### Image Tier Tester Improvements
+- Enhanced error categorization for Tier 1 failures
+- Specific detection of missing `RUNWARE_API_KEY` (shows in AUTH/CONFIG category)
+- Context-aware probable causes for forced Tier 1 flow with `skipTier25=true`
+- Safe fallbacks for image display: checks `imageURL`, `imageUrl`
+- Safe fallbacks for positive prompt: checks `positivePrompt`, `prompt`, `metadata.enhancedPrompt`
+- Bulletproof display for 2.5A/B forced tests
+
+### Key Debugging Features
+- Request ID correlation across frontend and backend logs
+- Preflight GET probe before POST attempts to distinguish connectivity vs. validation errors
+- Enhanced error categorization: NETWORK, AUTH/CONFIG, VALIDATION, TIMEOUT, INTERNAL
+- Deep probe functionality to determine API key configuration status
+
 This debugging guide provides comprehensive coverage of the image generation system's debugging capabilities and common troubleshooting scenarios.

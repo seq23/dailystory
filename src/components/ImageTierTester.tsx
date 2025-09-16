@@ -130,6 +130,14 @@ export const ImageTierTester = () => {
   const categorizeError = (error: any, context?: string): { category: string; probableCause: string } => {
     const errorMsg = error?.message || error?.toString() || 'Unknown error';
     
+    // API Key and authentication specific errors
+    if (errorMsg.includes('RUNWARE_API_KEY') || errorMsg.includes('apiKey is not defined') || errorMsg.includes('Missing API key')) {
+      return {
+        category: 'AUTH',
+        probableCause: 'RUNWARE_API_KEY not configured in Supabase Edge Function Secrets'
+      };
+    }
+    
     // Network-related errors
     if (errorMsg.includes('fetch') || errorMsg.includes('network') || errorMsg.includes('connection')) {
       return {
@@ -138,11 +146,34 @@ export const ImageTierTester = () => {
       };
     }
     
-    // Validation errors (400 responses)
-    if (errorMsg.includes('400') || errorMsg.includes('Missing required fields') || errorMsg.includes('non-2xx status code')) {
+    // Validation / request-shape errors
+    if (errorMsg.includes('Missing required parameters: pageText') || errorMsg.includes('Missing required parameters: pageText/storyText')) {
       return {
         category: 'VALIDATION',
-        probableCause: 'Validation error: required pageText missing (payload used storyText)'
+        probableCause: 'Template requires pageText or storyText; ensure the payload includes one of them'
+      };
+    }
+    
+    // Edge function returned non-2xx but health GET is OK
+    if (errorMsg.includes('non-2xx status code')) {
+      // Special-case Tier 1 forced flow where skipTier25=true
+      if (context?.includes('runware-generate-image:forced-tier1')) {
+        return {
+          category: 'VALIDATION',
+          probableCause: 'Tier 1 image generation failed while skipTier25=true (no escalation allowed). Not a pageText issue'
+        };
+      }
+      return {
+        category: 'INTERNAL',
+        probableCause: 'Edge Function returned non-2xx. Check function logs for precise error'
+      };
+    }
+    
+    // Escalation signals from placeholder validation
+    if (errorMsg.includes('ESCALATE_TO_25')) {
+      return {
+        category: 'INTERNAL',
+        probableCause: 'Placeholder validation triggered escalation (not a request validation error)'
       };
     }
     
@@ -645,11 +676,12 @@ export const ImageTierTester = () => {
         category = 'SUCCESS';
         probableCause = 'Tier 1 full prompt flow completed successfully';
       } else if (triageCheck.available && triageCheck.status === 200) {
-        // GET passed but POST failed - likely validation issue
-        category = 'VALIDATION';
-        probableCause = 'Validation error: required pageText missing (payload used storyText)';
+        // GET passed but POST failed - surface a more precise cause for Tier 1 forced flow with skipTier25=true
+        const errorResult = categorizeError(response.error, 'runware-generate-image:forced-tier1');
+        category = errorResult.category;
+        probableCause = errorResult.probableCause || 'Tier 1 image generation failed while skipTier25=true (no escalation allowed)';
       } else {
-        const errorResult = categorizeError(response.error);
+        const errorResult = categorizeError(response.error, 'runware-generate-image');
         category = errorResult.category;
         probableCause = errorResult.probableCause;
       }
@@ -873,16 +905,23 @@ export const ImageTierTester = () => {
         hasImage: !!response.data?.imageURL
       });
 
+      const safeImageURL = response.data?.imageURL || response.data?.imageUrl || null;
+      const safePositive = response.data?.positivePrompt
+        || response.data?.prompt
+        || response.data?.metadata?.enhancedPrompt
+        || response.data?.metadata?.positivePrompt
+        || null;
+
       setResults([{
         tier: `tier-${tier}-forced`,
         success: !response.error && response.data?.success,
-        imageURL: response.data?.imageURL,
+        imageURL: safeImageURL,
         details: {
           processingTime,
           requestId: response.data?.requestId,
           tier: response.data?.tier,
           templateComplexity: templateMap[tier],
-          positivePrompt: response.data?.positivePrompt,
+          positivePrompt: safePositive,
           negativePrompt: response.data?.negativePrompt,
           styleFramework: response.data?.styleFrameworkUsed,
           forcedTier: tier,
