@@ -31,7 +31,7 @@ Used for users without enhanced cultural features (light/medium/olive skin tones
 Narrative: {pageText}.
 Subject: {character}, {age}, {ethnicity}, {hairDescription}, {facialFeatures}.
 Action: {scene}
-Context: {cultural_context} {leftover data}.
+Context: {cultural_context} {leftover_data}.
 Brand Suffix: {fullFrameworkPrompt},
 ```
 
