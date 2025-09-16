@@ -1009,7 +1009,7 @@ serve(async (req) => {
               tier: result.tier
             };
             
-            await phaseIntegrationOrchestrator.characterConsistencyService.storeCharacterInDatabase(
+            await phaseIntegrationOrchestrator.characterConsistencyService.saveCharacterToDatabase(
               sessionId,
               `scene_page_${pageNumber}`,
               currentSceneData

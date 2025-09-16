@@ -6,13 +6,24 @@
 
 import { CharacterConsistencyService } from './CharacterConsistencyService.js';
 import { VisualDetailTracker } from './VisualDetailTracker.js';
-import { getCulturalBundle, deriveRegionalEthnicity, getHairBySkintone } from './StaticDataCache.js';
+import { getCulturalBundle } from './UnifiedPlaceholderResolver.js';
 
 export class PhaseIntegrationOrchestrator {
   constructor() {
     this.initialized = false;
     this.characterConsistencyService = new CharacterConsistencyService();
     this.visualDetailTracker = new VisualDetailTracker();
+  }
+
+  /**
+   * Local helper for regional ethnicity derivation
+   * Based on cultural profile and avatar type
+   */
+  deriveRegionalEthnicity(culturalProfile, avatarType) {
+    if (!culturalProfile || culturalProfile === 'general') {
+      return avatarType === 'child' ? 'child-general' : 'adult-general';
+    }
+    return `${avatarType}-${culturalProfile}`;
   }
 
   /**
@@ -34,8 +45,8 @@ export class PhaseIntegrationOrchestrator {
       const secondaryCharacters = [];
 
       // Phase 2: Load visual history for consistency  
-      const visualHistory = await this.visualDetailTracker.getVisualHistory(userId, characterName);
-      const consistencyRecommendations = await this.visualDetailTracker.getConsistencyRecommendations(userId, characterName);
+      const visualHistory = await this.visualDetailTracker.getVisualHistory(sessionId);
+      const consistencyRecommendations = await this.visualDetailTracker.getConsistencyRecommendations(sessionId);
 
       this.initialized = true;
 
@@ -216,10 +227,14 @@ export class PhaseIntegrationOrchestrator {
       const visualConsistencyDetails = await this.visualDetailTracker.getVisualDetails(sessionId) || '';
 
       // Get ethnicity for cultural representation
-      const ethnicity = deriveRegionalEthnicity(userInfo) || 'diverse background';
+      const ethnicity = this.deriveRegionalEthnicity(userInfo?.culturalProfile || 'general', userInfo?.avatar?.type || 'child');
 
-      // Get hair variations based on skin tone
-      const hairVariations = getHairBySkintone(userInfo?.avatar?.skinTone || userInfo?.skinTone || 'light') || '';
+      // Get hair variations based on skin tone with seeded selection
+      const culturalBundle = getCulturalBundle(userInfo?.culturalProfile || 'general');
+      const seedValue = sessionId ? sessionId.slice(-8) : '12345678';
+      const seedNumber = parseInt(seedValue, 16) || 12345;
+      const hairIndex = seedNumber % (culturalBundle?.hair?.length || 73);
+      const selectedHair = culturalBundle?.hair?.[hairIndex] || 'short brown hair';
 
       // Get style framework with warm natural lighting
       const difficulty = userInfo?.difficulty || userInfo?.gradeLevel || 'medium';
@@ -248,7 +263,7 @@ export class PhaseIntegrationOrchestrator {
       const characterDescription = [
         avatarIdentity, 
         ethnicity,
-        hairVariations,
+        selectedHair,
         culturalEnhancements
       ].filter(Boolean).join(', ');
 
@@ -286,7 +301,7 @@ export class PhaseIntegrationOrchestrator {
           hasTraits: !!existingTraits,
           visualDescription: visualDescription || 'consistent character design',
           ethnicity,
-          hairVariations
+          selectedHair
         },
         visualConsistency: {
           visualHistory,
@@ -301,6 +316,7 @@ export class PhaseIntegrationOrchestrator {
       console.error(`❌ PHASE ORCHESTRATOR: Tier 1 template generation failed`, { error });
       return {
         enhancedPrompt: basePrompt,
+        primaryScene: basePrompt,
         enhancementSuccessful: false,
         error: error.message,
         templateStructure: 'FAILED'
