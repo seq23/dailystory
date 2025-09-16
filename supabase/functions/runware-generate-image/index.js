@@ -813,7 +813,8 @@ serve(async (req) => {
             enhancedPrompt: enhancementResult.enhancedPrompt,
             characterConsistency: enhancementResult.characterConsistency,
             visualConsistency: enhancementResult.visualConsistency,
-            previousScene: null // Will be populated for page 2+
+            previousScene: null, // Will be populated for page 2+
+            templateStructure: 'COMPLETE_TIER_1'
           };
           
           // PHASE 4: Get previous scene data for page 2+
