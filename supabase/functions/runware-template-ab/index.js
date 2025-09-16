@@ -546,7 +546,9 @@ Context: {cultural_context}, {community_context}.
 
 Brand Suffix: {frameworkPrompt}, {cameraDirective}.`,
   
-  'level_2-4': `Character Description: {character} {age}, {ethnicity}, {hair}, {features} {bundle.culturalEnhancements}.
+  'level_2-4': `Narrative: {pageText}.
+
+Character Description: {character} {age}, {ethnicity}, {hair}, {features} {bundle.culturalEnhancements}.
 
 Action: {semantic_scene} {props}, {action_objects}, {activity}, {emotion} {sensory_details}.
 
@@ -558,9 +560,7 @@ Consistency: {visual_consistency_elements}.
 
 Context: {cultural_context}, {community_context}.
 
-Brand Suffix: {frameworkPrompt}, {cameraDirective}.
-
-Narrative: {pageText}.`
+Brand Suffix: {frameworkPrompt}, {cameraDirective}.`
 };
 
 const BASIC_PROMPT_TEMPLATES = {
@@ -574,15 +574,15 @@ Context: {cultural_context}.
 
 Brand Suffix: {fullFrameworkPrompt}`,
   
-  'level_2-4': `Subject: {character}, {age}, {ethnicity}, {hairDescription}, {facialFeatures}.
+  'level_2-4': `Story: {pageText}.
+
+Subject: {character}, {age}, {ethnicity}, {hairDescription}, {facialFeatures}.
 
 Action: {scene}.
 
 Context: {cultural_context}.
 
-Brand Suffix: {fullFrameworkPrompt}.
-
-Story: {pageText}`
+Brand Suffix: {fullFrameworkPrompt}`
 };
 
 // ============= PHASE 3: UNIVERSAL PLACEHOLDER RESOLUTION INTEGRATION =============
