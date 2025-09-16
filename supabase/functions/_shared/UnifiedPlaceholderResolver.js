@@ -570,7 +570,7 @@ export class UnifiedPlaceholderResolver {
       cultural_context: '', // Leave empty - handled by cultural system
       community_context: '', // Leave empty - no lies about community
       secondary_characters: '', // Leave empty - handled by character service
-      frameworkPrompt: context.frameworkPrompt || 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality', // Use context first, then nuclear fallback
+      frameworkPrompt: context.frameworkPrompt || 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality, warm natural lighting', // Use context first, then nuclear fallback with warm natural lighting
       cameraDirective: 'warm perspective'
     };
     
