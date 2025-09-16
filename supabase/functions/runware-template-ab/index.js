@@ -441,7 +441,7 @@ Brand Suffix: {frameworkPrompt}, {cameraDirective}.`;
 const TIER_25B_TEMPLATE = `Narrative: {pageText}.
 Subject: {character}, {age}, {ethnicity}, {hairDescription}, {facialFeatures}.
 Action: {scene}
-Context: {cultural_context} {leftover data}.
+Context: {cultural_context} {leftover_data}.
 Brand Suffix: {fullFrameworkPrompt},`;
 
 // ============= EXPORT TEMPLATES FOR VALIDATION =============
