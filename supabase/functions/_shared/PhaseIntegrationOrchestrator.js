@@ -6,7 +6,7 @@
 
 import { CharacterConsistencyService } from './CharacterConsistencyService.js';
 import { VisualDetailTracker } from './VisualDetailTracker.js';
-import { getCulturalBundle } from './StaticDataCache.js';
+import { getCulturalBundle, deriveRegionalEthnicity, getHairBySkintone } from './StaticDataCache.js';
 
 export class PhaseIntegrationOrchestrator {
   constructor() {
@@ -216,11 +216,9 @@ export class PhaseIntegrationOrchestrator {
       const visualConsistencyDetails = await this.visualDetailTracker.getVisualDetails(sessionId) || '';
 
       // Get ethnicity for cultural representation
-      const { deriveRegionalEthnicity } = await import('./StaticDataCache.js');
       const ethnicity = deriveRegionalEthnicity(userInfo) || 'diverse background';
 
       // Get hair variations based on skin tone
-      const { getHairBySkintone } = await import('./StaticDataCache.js');
       const hairVariations = getHairBySkintone(userInfo?.avatar?.skinTone || userInfo?.skinTone || 'light') || '';
 
       // Get style framework with warm natural lighting
@@ -340,7 +338,6 @@ export class PhaseIntegrationOrchestrator {
         ['en', 'fr', 'es', 'pt'].includes(language.toLowerCase())) {
       
       // Use seeded selection for consistent cultural arrays
-      const { getCulturalBundle } = await import('./StaticDataCache.js');
       const culturalBundle = getCulturalBundle(userInfo, sessionId || 'default');
       return `${culturalBundle.hair}, ${culturalBundle.features}`;
     }

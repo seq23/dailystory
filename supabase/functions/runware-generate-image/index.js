@@ -387,119 +387,9 @@ function determineTemplateComplexity(userInfo, avatarIdentity) {
   }
 }
 
-// ============= ENHANCED PROMPT BUILDER WITH CHARACTER CONSISTENCY =============
-async function buildTier1EnhancedPrompt(prompt, userInfo, avatarIdentity, styleFramework, sessionId, requestId) {
-  console.log(`🎯 [${requestId}] Building COMPLETE_TIER_1 enhanced prompt with character consistency`);
-  
-  let characterAppearance = '';
-  let visualHistory = '';
-  let crossPageConsistency = '';
-  let coloredObjects = '';
-  let visualConsistencyDetails = '';
-  let ethnicity = '';
-  let hairVariations = '';
-  
-  try {
-    // Import character services
-    const phaseIntegrationOrchestrator = await LazyServiceLoader.load('PhaseIntegrationOrchestrator', '../_shared/PhaseIntegrationOrchestrator.js');
-    
-    // Get character consistency data
-    let characterName = userInfo?.name || userInfo?.childName || 'Emma';
-    console.log(`👤 Getting character appearance for ${characterName} in session ${sessionId}`);
-    
-    const characterService = phaseIntegrationOrchestrator?.characterConsistencyService;
-    if (characterService && typeof characterService.extractTraitsFromStory === 'function') {
-      try {
-        await characterService.extractTraitsFromStory(sessionId, prompt, 1, characterName);
-        console.log(`👤 Character traits extracted and stored for ${characterName}`);
-      } catch (error) {
-        console.warn(`⚠️ Character trait extraction failed:`, error.message);
-      }
-    }
-    
-    characterAppearance = characterService ? 
-      await characterService.getCharacterAppearanceFromStory(sessionId, characterName) : '';
-    console.log(`👤 Character appearance for ${characterName}: ${characterAppearance}`);
-    
-    // Get multi-page visual consistency data
-    const visualTracker = phaseIntegrationOrchestrator?.visualDetailTracker;
-    if (visualTracker) {
-      visualHistory = await visualTracker.getVisualHistory(sessionId) || '';
-      crossPageConsistency = await visualTracker.getConsistencyAnalysis(sessionId) || '';
-      coloredObjects = await visualTracker.getColoredObjects(sessionId) || '';
-      visualConsistencyDetails = await visualTracker.getVisualDetails(sessionId) || '';
-    }
-    
-    // Get ethnicity and hair variations
-    const { deriveRegionalEthnicity, getHairBySkintone } = await import('../_shared/StaticDataCache.js');
-    ethnicity = deriveRegionalEthnicity(userInfo) || 'diverse background';
-    hairVariations = getHairBySkintone(userInfo?.avatar?.skinTone || userInfo?.skinTone || 'light') || '';
-    
-    // Get clothing information
-    const clothingService = phaseIntegrationOrchestrator?.clothingService;
-    const clothing = clothingService ? 
-      await clothingService.getClothingData(sessionId, characterName, 1) : {};
-    console.log(`👕 Retrieved clothing for ${characterName}:`, clothing);
-    
-  } catch (error) {
-    console.warn(`⚠️ [${requestId}] Character consistency failed:`, error.message);
-  }
-  
-  // Use AI-generated primary scene if available, otherwise enhance the original prompt
-  const primaryScene = `Rich, detailed scene: ${prompt || 'A beautiful children\'s story scene'}`;
-  
-  // Generate 1-2 sentence context summary
-  const contextSummary = generateContextSummary(prompt);
-  
-  // Avatar and character information
-  const characterName = userInfo?.name || userInfo?.childName || 'Emma';
-  const avatarIdentity_str = avatarIdentity ? 
-    `${characterName}, age ${avatarIdentity.age || userInfo?.age || 6}` : 
-    `${characterName}, age ${userInfo?.age || 6}`;
-  
-  // Cultural profile for enhancements
-  const culturalProfile = `${userInfo?.nativeLanguage || 'en'}_${userInfo?.avatar?.skinTone || 'light'}`;
-  const shouldApplyEnhancements = culturalProfile.includes('dark') && 
-    ['en', 'fr', 'es', 'pt'].includes(userInfo?.nativeLanguage || 'en');
-  
-  // Build enhanced character description
-  let characterDescription = [avatarIdentity_str, ethnicity, hairVariations].filter(Boolean).join(', ');
-  if (shouldApplyEnhancements) {
-    const { getCulturalBundle } = await import('../_shared/StaticDataCache.js');
-    const culturalFeatures = getCulturalBundle(userInfo, sessionId || 'default');
-    characterDescription += `, ${culturalFeatures.hair}, ${culturalFeatures.features}`;
-  }
-  
-  // Cultural enhancements
-  const culturalEnhancements = shouldApplyEnhancements ? 'culturally authentic representation' : '';
-  
-  // Style framework with warm natural lighting
-  const frameworkPrompt = styleFramework?.frameworkPrompt || 'Contemporary Children\'s Book Illustration with warm natural lighting';
-  
-  // Brand suffix for consistency
-  const brandSuffix = `${frameworkPrompt}, child-friendly aesthetic, diverse representation`;
-  
-  // Build complete 6-section COMPLETE_TIER_1 structured template
-  const enhancedPrompt = [
-    `PRIMARY SCENE: ${primaryScene}`,
-    `CHARACTER DESCRIPTION: ${characterDescription}`,
-    `CHARACTER CONSISTENCY:`,
-    `- Avatar Identity: ${avatarIdentity_str}`,
-    `- Ethnicity: ${ethnicity}`,
-    `- Visual Traits: ${characterAppearance || 'consistent character design'}`,
-    culturalEnhancements ? `- Cultural Enhancements: ${culturalEnhancements}` : '',
-    visualHistory ? `- Visual History: ${visualHistory}` : '',
-    crossPageConsistency ? `- Cross-Page Consistency: ${crossPageConsistency}` : '',
-    coloredObjects ? `- Colored Objects: ${coloredObjects}` : '',
-    visualConsistencyDetails ? `- Visual Consistency Details: ${visualConsistencyDetails}` : '',
-    `BRAND SUFFIX: ${brandSuffix}`,
-    `CONTEXT: ${contextSummary}`,
-    `STYLE FRAMEWORKS: ${frameworkPrompt}`
-  ].filter(Boolean).join('\n');
-  
-  console.log(`✅ [${requestId}] Built COMPLETE_TIER_1 fallback enhanced prompt: ${enhancedPrompt.length} chars`);
-  return enhancedPrompt;
-}
+// ============= ELIMINATED TIER 1 FALLBACK PATH =============
+// The buildTier1EnhancedPrompt function has been removed as it's inferior to Tier 2.5A
+// All failed enhanced story data scenarios now escalate directly to Tier 2.5A
 
 // Helper function for context summary generation
 function generateContextSummary(text) {
@@ -539,9 +429,8 @@ async function generateWithRunware(apiKey, prompt, sessionId, requestId, userInf
     enhancedPrompt = enhancedStoryData.enhancedPrompt;
     console.log(`🎯 [${requestId}] Using PhaseIntegrationOrchestrator enhanced prompt: ${enhancedPrompt.length} chars`);
   } else {
-    // Build enhanced prompt using COMPLETE_TIER_1 fallback with real character consistency
-    enhancedPrompt = await buildTier1EnhancedPrompt(prompt, userInfo, avatarIdentity, styleFramework, sessionId, requestId);
-    console.log(`🎯 [${requestId}] Built COMPLETE_TIER_1 fallback enhanced prompt: ${enhancedPrompt.length} chars`);
+    // If no enhanced data, escalate immediately to Tier 2.5A
+    throw new Error('ESCALATE_TO_TIER_2_5A: No enhanced story data available');
   }
   
   // Check for force tier or skip tier options
@@ -859,7 +748,8 @@ serve(async (req) => {
       if (dryRun) {
         const difficulty = userInfo?.difficulty || userInfo?.gradeLevel || 'medium';
         const styleFramework = getNuclearStyleFramework(difficulty);
-        const enhancedPrompt = await buildTier1EnhancedPrompt(pageText, userInfo, avatarIdentity, styleFramework);
+        // For dryRun, use basic prompt enhancement since Tier 1 fallback was removed
+        const enhancedPrompt = `Rich, detailed scene: ${pageText}. ${styleFramework.frameworkPrompt}`;
         const negativePrompt = generateInlineNuclearNegative(
           `${userInfo?.nativeLanguage || 'en'}_${userInfo?.avatar?.skinTone || 'light'}`,
           userInfo?.avatar?.type || 'girl',
@@ -926,20 +816,22 @@ serve(async (req) => {
           };
           
           // PHASE 4: Get previous scene data for page 2+
-          if (pageNumber > 1) {
-            try {
-              const previousSceneData = await phaseIntegrationOrchestrator.characterConsistencyService.getCharacterFromDatabase(
-                sessionId, 
-                `scene_page_${pageNumber - 1}`
-              );
-              if (previousSceneData) {
-                enhancedStoryData.previousScene = previousSceneData;
-                console.log(`🎬 [${requestId}] Retrieved previous scene data for page ${pageNumber}`);
+            if (pageNumber > 1) {
+              try {
+                const previousSceneData = await phaseIntegrationOrchestrator.characterConsistencyService.getCharacterFromDatabase(
+                  sessionId, 
+                  `scene_page_${pageNumber - 1}`
+                );
+                if (previousSceneData) {
+                  enhancedStoryData.previousScene = previousSceneData;
+                  console.log(`🎬 [${requestId}] Retrieved previous scene data for page ${pageNumber}`);
+                }
+              } catch (sceneError) {
+                console.warn(`⚠️ [${requestId}] Failed to get previous scene:`, sceneError.message);
+                // Return empty on failure instead of breaking
+                enhancedStoryData.previousScene = null;
               }
-            } catch (sceneError) {
-              console.warn(`⚠️ [${requestId}] Failed to get previous scene:`, sceneError.message);
             }
-          }
           
           console.log(`✨ [${requestId}] Enhanced data prepared:`, {
             hasEnhancedPrompt: !!enhancedStoryData.enhancedPrompt,
@@ -977,8 +869,11 @@ serve(async (req) => {
             throw new Error(`Tier 1 failed and skipTier25 flag set: ${error.message}`);
           }
           
-          // Check if this is a character consistency failure
-          if (error.message.includes('character') || error.message.includes('consistency')) {
+          // Check if this is an escalation request or PhaseIntegrationOrchestrator failure
+          if (error.message.includes('ESCALATE_TO_TIER_2_5A') || error.message.includes('PhaseIntegrationOrchestrator')) {
+            console.log(`🔄 [${requestId}] Enhanced story data failed - escalating directly to Tier 2.5A`);
+            failedTierData.enhancedDataFailure = true;
+          } else if (error.message.includes('character') || error.message.includes('consistency')) {
             console.log(`🔄 [${requestId}] Character consistency failure detected - escalating to Tier 2.5A first`);
             failedTierData.characterConsistencyFailure = true;
           }
