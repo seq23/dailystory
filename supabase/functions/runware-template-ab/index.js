@@ -671,7 +671,19 @@ async function prepareTemplateData(storyText, userInfo, avatarIdentity, characte
     frameworkPrompt: frameworkPrompt || 'children\'s book illustration style',
     culturalEnhancements,
     characterSeed: characterData?.seed, // Include character seed for consistency
-    sessionId
+    sessionId,
+    // Phase 6: Ensure all required placeholders are populated
+    character: userInfo?.name || userInfo?.childName || 'the child',
+    age: userInfo?.age || '6',
+    pageText: storyText ? (storyText.trim().length > 200 ? storyText.substring(0, 200) + '...' : storyText) : '',
+    hair: characterData?.appearance?.hair || '',
+    features: characterData?.appearance?.facialFeatures || '',
+    hairDescription: '', // Will be resolved by UnifiedPlaceholderResolver
+    facialFeatures: '', // Will be resolved by UnifiedPlaceholderResolver
+    semantic_scene: '', // Will be resolved by UnifiedPlaceholderResolver
+    ethnicity: '',
+    props: '',
+    action_objects: ''
   };
 }
 // ============= PHASE 4: ENHANCED SERVICE HEALTH CHECK WITH MONITORING =============

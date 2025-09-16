@@ -365,8 +365,8 @@ export class UnifiedPlaceholderResolver {
   cleanup(text) {
     let cleaned = text;
 
-    // Remove extra spaces
-    cleaned = cleaned.replace(/\s+/g, ' ');
+    // Preserve intentional line breaks, collapse other spaces
+    cleaned = cleaned.replace(/[ \t]+/g, ' ').replace(/\n\s*\n/g, '\n');
     
     // Fix punctuation
     cleaned = cleaned.replace(/\s+([,.!?])/g, '$1');
@@ -469,6 +469,12 @@ export class UnifiedPlaceholderResolver {
         resolved = resolved.replace(/\{character\.appearance\}/g, characterData.appearance || '');
         resolved = resolved.replace(/\{character\.consistency\}/g, characterData.visualDescription || '');
         resolved = resolved.replace(/\{secondary\.characters\}/g, characterData.secondaryCharacters || '');
+        
+        // Phase 2: Fix 2.5A Hair/Features Mapping from character consistency
+        if (characterData.appearance) {
+          resolved = resolved.replace(/\{hair\}/g, characterData.appearance.hair || '');
+          resolved = resolved.replace(/\{features\}/g, characterData.appearance.facialFeatures || '');
+        }
       }
     } catch (error) {
       console.warn('Character consistency placeholder resolution failed:', error);
@@ -564,7 +570,7 @@ export class UnifiedPlaceholderResolver {
       cultural_context: '', // Leave empty - handled by cultural system
       community_context: '', // Leave empty - no lies about community
       secondary_characters: '', // Leave empty - handled by character service
-      frameworkPrompt: 'Contemporary children\'s book illustration with warm natural lighting and known for diverse representation', // FALLBACK only
+      frameworkPrompt: context.frameworkPrompt || 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, painterly texture quality', // Use context first, then nuclear fallback
       cameraDirective: 'warm perspective'
     };
     
