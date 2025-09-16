@@ -154,6 +154,18 @@ function deriveRegionalEthnicity(userInfo, avatarIdentity) {
   return languageEthnicityMap[nativeLanguage] || '';
 }
 
+// ============= MISSING HELPER FUNCTIONS =============
+// These map to existing StaticDataCache functions
+function getHair(skinTone) {
+  const sessionId = 'default-session';
+  return getHairBySkintone(skinTone, sessionId);
+}
+
+function getFeatures(skinTone) {
+  const sessionId = 'default-session';
+  return getSkinBySkintone(skinTone, sessionId);
+}
+
 // PHASE 4: Session management removed - orchestrator handles all session state
 // Session data flows via function parameters only
 
@@ -519,7 +531,7 @@ serve(async (req) => {
     };
 
     // PHASE 7: Resolve placeholders
-    const result = await resolver.resolveAllPlaceholders(templateString, fullContext);
+    let result = await resolver.resolveAllPlaceholders(templateString, fullContext);
 
     // PHASE 8: Handle template resolution failure - escalation logic
     if (!result.success || result.remainingPlaceholders > 0) {
