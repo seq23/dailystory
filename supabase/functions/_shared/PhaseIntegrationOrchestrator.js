@@ -6,7 +6,7 @@
 
 import { CharacterConsistencyService } from './CharacterConsistencyService.js';
 import { VisualDetailTracker } from './VisualDetailTracker.js';
-import { getCulturalBundle } from './UnifiedPlaceholderResolver.js';
+import { getCulturalBundle } from './StaticDataCache.js';
 
 export class PhaseIntegrationOrchestrator {
   constructor() {
@@ -45,8 +45,8 @@ export class PhaseIntegrationOrchestrator {
       const secondaryCharacters = [];
 
       // Phase 2: Load visual history for consistency  
-      const visualHistory = await this.visualDetailTracker.getVisualHistory(sessionId);
-      const consistencyRecommendations = await this.visualDetailTracker.getConsistencyRecommendations(sessionId);
+      const visualHistory = await this.visualDetailTracker.getVisualHistory(sessionId, 'general', 10);
+      const consistencyRecommendations = await this.visualDetailTracker.getConsistencyRecommendations(sessionId, 'general');
 
       this.initialized = true;
 
@@ -221,20 +221,22 @@ export class PhaseIntegrationOrchestrator {
       );
 
       // Phase 2: Get visual consistency data for multi-page support
-      const visualHistory = await this.visualDetailTracker.getVisualHistory(sessionId) || '';
-      const crossPageConsistency = await this.visualDetailTracker.getConsistencyAnalysis(sessionId) || '';
-      const coloredObjects = await this.visualDetailTracker.getColoredObjects(sessionId) || '';
-      const visualConsistencyDetails = await this.visualDetailTracker.getVisualDetails(sessionId) || '';
+      const visualHistory = await this.visualDetailTracker.getVisualHistory(sessionId, 'general', 10) || '';
+      
+      // Get colored objects for visual consistency using CharacterConsistencyService
+      await this.characterConsistencyService.analyzeVisualDetails(sessionId, storyText, 1);
+      const coloredObjects = await this.characterConsistencyService.getColoredObjects(sessionId);
+      
+      // Use colored objects as visual consistency details
+      const visualConsistencyDetails = coloredObjects || '';
 
       // Get ethnicity for cultural representation
       const ethnicity = this.deriveRegionalEthnicity(userInfo?.culturalProfile || 'general', userInfo?.avatar?.type || 'child');
 
       // Get hair variations based on skin tone with seeded selection
-      const culturalBundle = getCulturalBundle(userInfo?.culturalProfile || 'general');
-      const seedValue = sessionId ? sessionId.slice(-8) : '12345678';
-      const seedNumber = parseInt(seedValue, 16) || 12345;
-      const hairIndex = seedNumber % (culturalBundle?.hair?.length || 73);
-      const selectedHair = culturalBundle?.hair?.[hairIndex] || 'short brown hair';
+      const culturalBundle = getCulturalBundle(userInfo, sessionId);
+      const hairData = culturalBundle?.hair;
+      const selectedHair = Array.isArray(hairData) ? hairData[0] : (hairData || 'short brown hair');
 
       // Get style framework with warm natural lighting
       const difficulty = userInfo?.difficulty || userInfo?.gradeLevel || 'medium';
@@ -438,7 +440,7 @@ export class PhaseIntegrationOrchestrator {
         stats: visualStats
       },
       integration: {
-        totalUsers: Math.max(characterStats.characterCacheSize, visualStats.characterCount),
+        totalUsers: Math.max(characterStats.cacheSize, visualStats.cacheSize),
         memoryEfficiency: 'optimized',
         cacheHealth: 'good'
       }
