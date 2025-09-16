@@ -27,32 +27,35 @@ function createSeededRandom(seed) {
 }
 
 // ============= HAIR BY SKIN TONE MAPPING - 73 VARIATIONS =============
-// Complete hair color mapping system for all skin tones
+// Complete hair color mapping system for all skin tones - 1:1 parity with frontend
 export const HAIR_BY_SKIN_TONE = {
-  light: [
-    'blonde hair', 'light brown hair', 'strawberry blonde hair', 'golden blonde hair',
-    'ash blonde hair', 'platinum blonde hair', 'honey blonde hair', 'sandy brown hair',
-    'light auburn hair', 'caramel brown hair', 'chestnut brown hair', 'dirty blonde hair',
-    'mousy brown hair', 'light copper hair', 'wheat colored hair', 'flaxen hair',
-    'tawny brown hair', 'russet brown hair', 'bronze colored hair', 'amber brown hair'
+  'pale': [
+    'strawberry blonde hair', 'golden red hair', 'auburn curls', 'copper hair',
+    'reddish brown hair', 'ginger hair', 'red-gold hair', 'russet hair',
+    'mahogany red hair', 'burgundy hair', 'crimson hair', 'rose gold hair',
+    'amber red hair', 'cinnamon red hair'
   ],
-  medium: [
-    'brown hair', 'dark brown hair', 'chestnut hair', 'mahogany hair',
-    'auburn hair', 'copper hair', 'bronze hair', 'walnut brown hair',
-    'chocolate brown hair', 'espresso brown hair', 'cinnamon brown hair', 'russet hair',
-    'burnt sienna hair', 'dark auburn hair', 'deep brown hair', 'rich brown hair',
-    'coffee colored hair', 'caramel highlighted hair', 'honey brown hair', 'dark copper hair',
-    'burgundy brown hair', 'reddish brown hair', 'warm brown hair'
+  'light': [
+    'platinum blonde hair', 'golden blonde hair', 'honey blonde hair', 'ash blonde hair',
+    'sandy blonde hair', 'wheat blonde hair', 'butter blonde hair', 'cream blonde hair',
+    'champagne blonde hair', 'vanilla blonde hair', 'pearl blonde hair', 'silver blonde hair',
+    'moonlight blonde hair', 'sunshine blonde hair', 'caramel blonde hair'
   ],
-  dark: [
-    'black hair', 'dark black hair', 'jet black hair', 'raven black hair',
-    'ebony hair', 'very dark brown hair', 'charcoal colored hair', 'deep black hair',
-    'glossy black hair', 'blue-black hair', 'rich black hair', 'dark as night hair',
-    'midnight black hair', 'coal black hair', 'obsidian black hair', 'onyx colored hair',
-    'dark chocolate hair', 'nearly black hair', 'dark espresso hair', 'blackened brown hair',
-    'dark mahogany hair', 'dark walnut hair', 'blackish brown hair', 'deep ebony hair',
-    'dark bronze hair', 'black-brown hair', 'dark chestnut hair', 'very dark auburn hair',
-    'blackened copper hair', 'dark mocha hair'
+  'medium': [
+    'chestnut brown hair', 'chocolate brown hair', 'coffee brown hair', 'walnut brown hair',
+    'hazelnut brown hair', 'mahogany brown hair', 'amber brown hair', 'bronze brown hair',
+    'toffee brown hair', 'mocha brown hair', 'caramel brown hair', 'russet brown hair',
+    'cedar brown hair', 'oak brown hair', 'maple brown hair'
+  ],
+  'olive': [
+    'jet black hair', 'raven black hair', 'midnight black hair', 'obsidian hair',
+    'coal black hair', 'ebony hair', 'onyx hair', 'charcoal hair',
+    'deep black hair', 'ink black hair', 'shadow black hair', 'pitch black hair',
+    'dark espresso hair', 'blackest brown hair'
+  ],
+  'dark': [
+    'beautiful dark hair', 'rich black hair', 'lustrous dark hair', 'silky black hair',
+    'gorgeous dark hair', 'shining black hair', 'magnificent dark hair'
   ]
 };
 
@@ -149,10 +152,14 @@ export const AFRICAN_AMERICAN_FACIAL_FEATURES = [
 export function getHairBySkintone(skinTone, sessionId) {
   const normalizedSkinTone = skinTone?.toLowerCase() || 'medium';
   
-  // Map skin tone variations to our categories
+  // Map skin tone variations to our 5 categories - now handles all skin tones
   let mappedTone = 'medium';
-  if (['light', 'lighter', 'fair', 'pale'].includes(normalizedSkinTone)) {
+  if (['pale'].includes(normalizedSkinTone)) {
+    mappedTone = 'pale';
+  } else if (['light', 'lighter', 'fair'].includes(normalizedSkinTone)) {
     mappedTone = 'light';
+  } else if (['olive'].includes(normalizedSkinTone)) {
+    mappedTone = 'olive';
   } else if (['dark', 'darker', 'deep', 'rich'].includes(normalizedSkinTone)) {
     mappedTone = 'dark';
   }
