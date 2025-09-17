@@ -502,7 +502,27 @@ serve(async (req) => {
       characterService
     };
 
-    // PHASE 6: Build enhanced context object
+    // PHASE 6: Handle character service calls for 2.5A tier
+    let secondaryCharacters = '';
+    let visualConsistencyElements = '';
+    
+    if (effectiveTierType === '2.5A' && characterService) {
+      try {
+        secondaryCharacters = await characterService.detectSecondaryCharacters(bundle.sessionId, pageText, bundle.pageNumber || 1);
+      } catch (error) {
+        console.warn('[Template AB] Character service detectSecondaryCharacters failed:', error);
+        secondaryCharacters = '';
+      }
+      
+      try {
+        visualConsistencyElements = await characterService.getCharacterAppearanceFromStory(bundle.sessionId);
+      } catch (error) {
+        console.warn('[Template AB] Character service getCharacterAppearanceFromStory failed:', error);
+        visualConsistencyElements = '';
+      }
+    }
+
+    // PHASE 7: Build enhanced context object
     const fullContext = {
       ...bundle,
       ...resolutionContext,
@@ -514,12 +534,8 @@ serve(async (req) => {
       facialFeatures: getFeatures(skinTone),
       scene: extractSimpleScene(pageText),
       semantic_scene: effectiveTierType === '2.5A' ? extractSemanticScene(pageText) : extractSimpleScene(pageText),
-      secondary_characters: effectiveTierType === '2.5A' && characterService 
-        ? await characterService.detectSecondaryCharacters(bundle.sessionId, pageText, bundle.pageNumber || 1) 
-        : '',
-      visual_consistency_elements: effectiveTierType === '2.5A' && characterService
-        ? await characterService.getCharacterAppearanceFromStory(bundle.sessionId)
-        : '',
+      secondary_characters: secondaryCharacters,
+      visual_consistency_elements: visualConsistencyElements,
       cultural_context: deriveNonEnglishCulturalContext(userInfo),
       community_context: '',
       character: bundle.characterData?.name || userInfo?.name || userInfo?.childName || 'child',

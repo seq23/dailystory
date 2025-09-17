@@ -1069,7 +1069,7 @@ export class UnifiedPlaceholderResolver {
         }
       } else {
         // Non-dark skin users - get combined hair and skin descriptions
-        const skinTone = userInfo?.skinTone || 'medium';
+        const skinTone = userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium';
         const hairDesc = getHairBySkintone(skinTone, sessionId);
         const skinDesc = getSkinBySkintone(skinTone, sessionId);
         return `${hairDesc}, ${skinDesc}`;
@@ -1103,7 +1103,7 @@ export class UnifiedPlaceholderResolver {
         }
       } else {
         // Non-dark skin users - get combined skin and hair descriptions
-        const skinTone = userInfo?.skinTone || 'medium';
+        const skinTone = userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium';
         const skinDesc = getSkinBySkintone(skinTone, sessionId);
         const hairDesc = getHairBySkintone(skinTone, sessionId);
         return `${skinDesc} with ${hairDesc}`;
