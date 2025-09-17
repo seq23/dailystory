@@ -195,4 +195,11 @@ if (typeof window !== 'undefined') {
   console.log('  window.trackStoryGeneration("sessionId") - Check for story text flicker');
   console.log('  window.trackStoryStability() - Monitor story changes in real-time');
   console.log('  window.getCurrentSessionId() - Get current session ID for debugging');
+  console.log('🔧 Session Cache Debug Console Available:');
+  console.log('  window.sessionCacheDebug.investigate(sessionId?) - Investigate session cache state');
+  console.log('  window.sessionCacheDebug.clearProblematicCache(sessionId?, avatarType?) - Clear problematic cache');
+  console.log('  window.sessionCacheDebug.testCacheKey(prompt, sessionId, avatarType, skinTone) - Test cache key generation');
+  console.log('  window.sessionCacheDebug.forceRegenerateCurrentImage(sessionId, pageNumber?) - Force regenerate image');
+  console.log('  window.sessionCacheDebug.getCurrentSessionId() - Find current session ID from storage');
+  console.log('  window.sessionCacheDebug.getStorageBreakdown() - Get storage usage breakdown');
 }

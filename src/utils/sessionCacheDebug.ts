@@ -184,6 +184,34 @@ class SessionCacheDebugConsoleClass {
   }
   
   /**
+   * Get current session ID from storage for debugging
+   */
+  static getCurrentSessionId(): string | null {
+    try {
+      // Check for session data in various places
+      const sessionStorage = window.sessionStorage;
+      const keys = Object.keys(sessionStorage);
+      
+      // Look for session-related keys
+      const sessionKey = keys.find(key => 
+        key.includes('session') || key.includes('guest_') || key.includes('premium_')
+      );
+      
+      if (sessionKey) {
+        const sessionId = sessionKey.includes('_') ? sessionKey.split('_')[0] + '_' + sessionKey.split('_')[1] : sessionKey;
+        console.log('🔍 Found session ID:', sessionId);
+        return sessionId;
+      }
+      
+      console.warn('🔍 No session ID found in storage');
+      return null;
+    } catch (error) {
+      console.error('🔍 Error finding session ID:', error);
+      return null;
+    }
+  }
+  
+  /**
    * Get storage usage breakdown
    */
   static getStorageBreakdown() {

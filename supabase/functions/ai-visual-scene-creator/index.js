@@ -494,6 +494,8 @@ serve(async (req) => {
           }
         }
         
+        // Initialize performance tracking
+        const startTime = Date.now();
 
         
         // =================== PHASE 1: MINIMAL AI REQUEST (Scene Generation Only) ===================
