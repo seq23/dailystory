@@ -6,7 +6,7 @@
 
 import { CharacterConsistencyService } from './CharacterConsistencyService.js';
 import { VisualDetailTracker } from './VisualDetailTracker.js';
-import { getCulturalBundle } from './StaticDataCache.js';
+import { getCulturalBundle, getHairBySkintone, getSkinBySkintone } from './StaticDataCache.js';
 import { UnifiedPlaceholderResolver } from './UnifiedPlaceholderResolver.js';
 import { getStyleFramework } from './styleFrameworks.js';
 
@@ -229,21 +229,13 @@ export class PhaseIntegrationOrchestrator {
       const resolver = new UnifiedPlaceholderResolver();
       const ethnicity = resolver.resolveCanonicalPlaceholders('{ethnicity}', userInfo).replace('{ethnicity}', '').trim();
 
-      // Get hair variations based on skin tone with seeded selection
+      // Get hair and skin variations based on skin tone with seeded selection
+      const skinTone = userInfo?.appearance?.skinTone || userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium';
       const culturalBundle = getCulturalBundle(userInfo, sessionId);
-      const hairData = culturalBundle?.hair;
-      const skinTone = userInfo?.appearance?.skinTone || userInfo?.skinTone || 'medium';
       
-      // Select hair based on skin tone compatibility
-      let selectedHair = 'short brown hair';
-      if (Array.isArray(hairData) && hairData.length > 0) {
-        // Use seeded selection based on skin tone for consistency
-        const skinToneIndex = {'pale': 0, 'light': 1, 'medium': 2, 'olive': 3, 'dark': 4, 'darker': 5}[skinTone] || 2;
-        const hairIndex = skinToneIndex % hairData.length;
-        selectedHair = hairData[hairIndex];
-      } else if (hairData && typeof hairData === 'string') {
-        selectedHair = hairData;
-      }
+      // Select both hair and facial features from cultural bundle
+      const selectedHair = culturalBundle?.hair || getHairBySkintone(skinTone, sessionId);
+      const selectedSkin = culturalBundle?.features || getSkinBySkintone(skinTone, sessionId);
 
       // Get style framework with full detailed prompts
       const difficulty = userInfo?.difficulty || userInfo?.gradeLevel || 'medium';
@@ -258,17 +250,17 @@ export class PhaseIntegrationOrchestrator {
       
       // Avatar Identity and Regional Context
       const avatarType = userInfo?.avatar?.type || 'child';
-      const avatarIdentity = `${avatarType} character ${characterName}, age ${userInfo?.age || 6}`;
+      const avatarIdentity = `beautiful ${avatarType} character ${characterName}, age ${userInfo?.age || 6}`;
       
       // Cultural Enhancements
       const culturalEnhancements = await this.getCulturalEnhancements(userInfo, sessionId);
       
-      // Enhanced character description with avatar type and hair variations
+      // Enhanced character description with avatar type, hair and skin variations  
       const characterDescription = [
         avatarIdentity,
         ethnicity,
         selectedHair,
-        culturalEnhancements
+        selectedSkin
       ].filter(Boolean).join(', ');
 
       // Build complete 6-section Tier 1 enhanced prompt template
@@ -276,10 +268,7 @@ export class PhaseIntegrationOrchestrator {
         `PRIMARY SCENE: ${primaryScene}`,
         `CHARACTER DESCRIPTION: ${characterDescription}`,
         `CHARACTER CONSISTENCY:`,
-        `- Avatar Identity: ${avatarIdentity}`,
-        `- Ethnicity: ${ethnicity}`,
         `- Visual Traits: ${visualDescription || 'consistent character design'}`,
-        culturalEnhancements ? `- Cultural Enhancements: ${culturalEnhancements}` : '',
         visualHistory ? `- Visual History: ${visualHistory}` : '',
         coloredObjects ? `- Colored Objects: ${coloredObjects}` : '',
         visualConsistencyDetails ? `- Visual Consistency Details: ${visualConsistencyDetails}` : '',
