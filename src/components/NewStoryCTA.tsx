@@ -1,5 +1,6 @@
 import React from "react";
 import { globalResizeService } from '@/services/GlobalResizeService';
+import { performanceManager } from '@/services/PerformanceManager';
 import { Button } from "@/components/ui/button";
 import MagicRefreshIcon from "@/components/icons/MagicRefreshIcon";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -44,15 +45,15 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
   const btnRef = React.useRef<HTMLButtonElement>(null);
   const baseIcon = size === "sm" ? 20 : size === "lg" ? 34 : 28;
   const [iconPx, setIconPx] = React.useState<number>(baseIcon);
-  const timersRef = React.useRef<{ coach?: number; sparkle?: number }>({});
+  const timersRef = React.useRef<{ coach?: NodeJS.Timeout; sparkle?: NodeJS.Timeout }>({});
   React.useEffect(() => {
     if (!isPremium || !showCoachOnSignIn) return;
     try {
       const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
       setShowCoach(true);
       if (!reduceMotion) setShowSparkle(true);
-      timersRef.current.coach = window.setTimeout(() => setShowCoach(false), 7000);
-      timersRef.current.sparkle = window.setTimeout(() => setShowSparkle(false), 2000);
+      timersRef.current.coach = performanceManager.setTimeout(() => setShowCoach(false), 7000, 'coach timeout');
+      timersRef.current.sparkle = performanceManager.setTimeout(() => setShowSparkle(false), 2000, 'sparkle timeout');
     } catch {
       // no-op
     }

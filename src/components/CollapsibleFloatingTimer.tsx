@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { performanceManager } from '@/services/PerformanceManager';
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { ChevronUp, ChevronDown, Play, Pause, Minus, Plus, X, Volume2, VolumeX } from "lucide-react";
@@ -74,7 +75,7 @@ export const CollapsibleFloatingTimer = ({
     }
     if (below && !wasBelowThresholdRef.current) {
       setLowTimePulse(true);
-      const t = setTimeout(() => setLowTimePulse(false), 1600);
+      const t = performanceManager.setTimeout(() => setLowTimePulse(false), 1600, 'low time pulse cleanup');
       return () => clearTimeout(t);
     }
     if (!below && wasBelowThresholdRef.current) {
@@ -309,7 +310,7 @@ useEffect(() => {
                  onClick={() => {
                    if (isMobileOrTablet) {
                      setMobileTooltip('play');
-                     setTimeout(() => setMobileTooltip(''), 3000);
+                      performanceManager.setTimeout(() => setMobileTooltip(''), 3000, 'mobile tooltip cleanup');
                    }
                    console.log('🔥 TIMER BUTTON CLICKED! Current state:', { isReading, timeRemaining });
                    onToggleReading();
@@ -335,7 +336,7 @@ useEffect(() => {
                  onClick={() => {
                    if (isMobileOrTablet) {
                      setMobileTooltip('reduce');
-                     setTimeout(() => setMobileTooltip(''), 3000);
+                      performanceManager.setTimeout(() => setMobileTooltip(''), 3000, 'mobile tooltip cleanup');
                    }
                    onReduceTime?.();
                  }}
@@ -362,7 +363,7 @@ useEffect(() => {
                    onClick={() => {
                      if (isMobileOrTablet) {
                        setMobileTooltip('increase');
-                       setTimeout(() => setMobileTooltip(''), 3000);
+                        performanceManager.setTimeout(() => setMobileTooltip(''), 3000, 'mobile tooltip cleanup');
                      }
                      onIncreaseTime?.();
                    }}
@@ -388,7 +389,7 @@ useEffect(() => {
                  onClick={() => {
                    if (isMobileOrTablet) {
                      setMobileTooltip('dismiss');
-                     setTimeout(() => setMobileTooltip(''), 3000);
+                      performanceManager.setTimeout(() => setMobileTooltip(''), 3000, 'mobile tooltip cleanup');
                    }
                    if (isPremium) {
                      onKeepReadingUntimed?.();
@@ -418,7 +419,7 @@ useEffect(() => {
                  onClick={() => {
                    if (isMobileOrTablet) {
                      setMobileTooltip('collapse');
-                     setTimeout(() => setMobileTooltip(''), 3000);
+                     performanceManager.setTimeout(() => setMobileTooltip(''), 3000, 'mobile tooltip cleanup');
                    }
                    setIsCollapsed(true);
                  }}

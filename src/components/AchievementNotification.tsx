@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { performanceManager } from '@/services/PerformanceManager';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,16 +26,16 @@ export const AchievementNotification = ({
     if (isVisible) {
       setShouldShow(true);
       // Auto-close after 4 seconds
-      const timer = setTimeout(() => {
+      const timer = performanceManager.setTimeout(() => {
         handleClose();
-      }, 4000);
+      }, 4000, 'achievement auto close');
       return () => clearTimeout(timer);
     }
   }, [isVisible]);
 
   const handleClose = () => {
     setShouldShow(false);
-    setTimeout(onClose, 300); // Wait for animation
+    performanceManager.setTimeout(onClose, 300, 'achievement animation cleanup'); // Wait for animation
   };
 
   const getRarityConfig = (rarity: Achievement['rarity']) => {

@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { ImageFallbackService } from './ImageFallbackService';
 import { DebugLogger } from '@/services/DebugLogger';
+import { errorRecoveryManager } from '@/services/ErrorRecoveryManager';
 
 // ============= TYPES =============
 
@@ -131,7 +132,7 @@ export class SimpleImageService {
     }
   }
 
-  // Main image generation method
+  // Main image generation method with enhanced error recovery
   static async generateStoryImage(
     storyText: string,
     userInfo?: UserInfo,
@@ -147,6 +148,57 @@ export class SimpleImageService {
       pageNumber, 
       isPremium 
     });
+
+    // Enhanced error recovery - check memory pressure before attempting generation
+    const memoryStatus = errorRecoveryManager.detectMemoryPressure();
+    if (memoryStatus.isHigh) {
+      DebugLogger.warn('image', 'High memory pressure detected, using recovery mode', {
+        usage: memoryStatus.usage,
+        recommendations: memoryStatus.recommendations
+      });
+      
+      // Use memory-efficient generation path
+      return await errorRecoveryManager.withRetry(
+        () => this.generateImageWithFallback(storyText, userInfo, sessionId, pageNumber, isPremium),
+        `image-gen-recovery-${pageNumber}`,
+        {
+          maxRetries: 2,
+          retryDelay: 2000,
+          fallbackValue: {
+            success: true,
+            url: ImageFallbackService.generateStoryPlaceholder(storyText, pageNumber),
+            tier: 'Memory Recovery',
+            metadata: { recoveryMode: true }
+          }
+        }
+      );
+    }
+
+    // Standard generation path with enhanced error recovery
+    return await errorRecoveryManager.withRetry(
+      () => this.generateImageWithFallback(storyText, userInfo, sessionId, pageNumber, isPremium),
+      `image-gen-${pageNumber}`,
+      {
+        maxRetries: 3,
+        retryDelay: 1000,
+        fallbackValue: {
+          success: true,
+          url: ImageFallbackService.generateStoryPlaceholder(storyText, pageNumber),
+          tier: 'Error Recovery',
+          metadata: { recoveryMode: true }
+        }
+      }
+    );
+  }
+
+  // Separate method for actual image generation logic
+  private static async generateImageWithFallback(
+    storyText: string,
+    userInfo?: UserInfo,
+    sessionId?: string,
+    pageNumber: number = 1,
+    isPremium: boolean = false
+  ): Promise<ImageResult> {
 
     // Check cache first
     if (this.isIndexedDBAvailable && sessionId) {

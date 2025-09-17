@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { DebugLogger } from '@/services/DebugLogger';
+import { performanceManager } from '@/services/PerformanceManager';
 import { Button } from '@/components/ui/button';
 import { Play, Square } from 'lucide-react';
 import { SimpleAudioEngine } from '@/services/SimpleAudioEngine';
@@ -18,7 +19,7 @@ export const AudioControls: React.FC<AudioControlsProps> = ({ text, contentHash,
   const [error, setError] = useState<string | null>(null);
   const { isMobileOrTablet } = useIsMobile();
   const lastTapRef = useRef<number>(0);
-  const retryTimeoutRef = useRef<number>(0);
+  const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Event-driven state updates instead of polling
   useEffect(() => {
@@ -53,7 +54,7 @@ export const AudioControls: React.FC<AudioControlsProps> = ({ text, contentHash,
     try {
       // Enhanced mobile delay for better content synchronization
       if (isMobileOrTablet) {
-        await new Promise((r) => setTimeout(r, 800)); // Increased to 800ms for better mobile sync
+        await new Promise((r) => performanceManager.setTimeout(() => r(undefined), 800, 'mobile audio sync')); // Increased to 800ms for better mobile sync
       }
       
       await engine.playText({ 
@@ -103,9 +104,9 @@ export const AudioControls: React.FC<AudioControlsProps> = ({ text, contentHash,
       clearTimeout(retryTimeoutRef.current);
     }
     
-    retryTimeoutRef.current = window.setTimeout(() => {
+    retryTimeoutRef.current = performanceManager.setTimeout(() => {
       onPlay();
-    }, delay);
+    }, delay, 'audio retry backoff');
   };
   const onStop = () => {
     if (DebugLogger.isDebugEnabled()) {
