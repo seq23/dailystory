@@ -154,6 +154,14 @@ export const ImageTierTester = () => {
       };
     }
     
+    // Template AB specific bundle/config errors
+    if (errorMsg.includes('Missing bundle or config parameters')) {
+      return {
+        category: 'VALIDATION',
+        probableCause: 'Template AB expects {bundle, config} payload shape, not flat fields'
+      };
+    }
+    
     // Edge function returned non-2xx but health GET is OK
     if (errorMsg.includes('non-2xx status code')) {
       // Special-case Tier 1 forced flow where skipTier25=true
@@ -887,14 +895,29 @@ export const ImageTierTester = () => {
       };
 
       const response = await supabase.functions.invoke(functionMap[tier], {
-        body: {
-          storyText: testStoryText, // Template AB expects storyText
-          pageText: testStoryText, // Template CD compatibility
-          userInfo: buildUserInfo(),
-          templateComplexity: templateMap[tier],
-          pageNumber: 1,
-          sessionId: crypto.randomUUID()
-        }
+        body: tier === '2.5A' || tier === '2.5B' 
+          ? {
+              // Template AB expects {bundle, config} payload shape
+              bundle: {
+                storyText: testStoryText,
+                pageText: testStoryText,
+                userInfo: buildUserInfo(),
+                pageNumber: 1,
+                sessionId: crypto.randomUUID()
+              },
+              config: {
+                templateComplexity: templateMap[tier]
+              }
+            }
+          : {
+              // Template CD expects flat payload
+              storyText: testStoryText,
+              pageText: testStoryText,
+              userInfo: buildUserInfo(),
+              templateComplexity: templateMap[tier],
+              pageNumber: 1,
+              sessionId: crypto.randomUUID()
+            }
       });
 
       const processingTime = Date.now() - startTime;
