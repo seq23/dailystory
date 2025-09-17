@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { AlertTriangle, TrendingUp, Users, RefreshCw } from "lucide-react";
+import { DebugLogger } from "@/services/DebugLogger";
 
 export interface CulturalMetrics {
   totalGenerations: number;
@@ -38,7 +39,7 @@ export const CulturalRepresentationMonitor: React.FC = () => {
         setLastUpdated(new Date());
       }
     } catch (error) {
-      console.error('Failed to load cultural metrics:', error);
+      DebugLogger.error('network', 'Failed to load cultural metrics', error);
     } finally {
       setIsLoading(false);
     }

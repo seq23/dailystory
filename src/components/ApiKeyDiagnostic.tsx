@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface DiagnosticResult {
   status: 'success' | 'error' | 'warning';
@@ -112,7 +113,7 @@ export const ApiKeyDiagnostic: React.FC = () => {
       addResult('success', '🎉 Diagnostic complete! Check results above for any issues.');
       
     } catch (error) {
-      console.error('Diagnostic error:', error);
+      DebugLogger.error('performance', 'Diagnostic error', error);
       addResult('error', `❌ Diagnostic test failed: ${error.message}`, error);
     } finally {
       setIsChecking(false);

@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, AlertTriangle, Zap, TrendingUp, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { DebugLogger } from '@/services/DebugLogger';
 
 export function AdvancedSystemStatus() {
   const [status, setStatus] = React.useState({
@@ -30,7 +31,7 @@ export function AdvancedSystemStatus() {
         });
       }
     } catch (error) {
-      console.warn('System status check failed:', error);
+      DebugLogger.warn('performance', 'System status check failed', error);
     }
   };
 

@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Upload, Trash2, RefreshCw } from 'lucide-react';
+import { DebugLogger } from '@/services/DebugLogger';
 
 export const DictionaryUploader = () => {
   const [isUploading, setIsUploading] = useState(false);
@@ -32,7 +33,7 @@ export const DictionaryUploader = () => {
         throw new Error(data?.error || 'Upload failed');
       }
     } catch (error) {
-      console.error('Upload error:', error);
+      DebugLogger.error('network', 'Upload error', error);
       toast({
         title: "Upload Failed",
         description: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -64,7 +65,7 @@ export const DictionaryUploader = () => {
         throw new Error(data?.error || 'List failed');
       }
     } catch (error) {
-      console.error('List error:', error);
+      DebugLogger.error('network', 'List error', error);
       toast({
         title: "List Failed",
         description: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -97,7 +98,7 @@ export const DictionaryUploader = () => {
         throw new Error(data?.error || 'Delete failed');
       }
     } catch (error) {
-      console.error('Delete error:', error);
+      DebugLogger.error('network', 'Delete error', error);
       toast({
         title: "Delete Failed",
         description: error instanceof Error ? error.message : 'Unknown error occurred',

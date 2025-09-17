@@ -371,7 +371,7 @@ export const InteractiveWord = ({
         }
       
     } catch (error) {
-      console.error('❌ Handle explain error (safe fallback):', error);
+      DebugLogger.error('ui', 'Handle explain error (safe fallback)', error);
       
       // Always show fallback toast even on error
       toast({
@@ -767,23 +767,23 @@ export const InteractiveWord = ({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onTouchStart={(e) => {
-        console.log('🎯 Touch start on InteractiveWord:', word, 'environment:', window.location.href.includes('preview') ? 'preview' : 'console');
+        DebugLogger.log('ui', 'Touch start on InteractiveWord', { word, environment: window.location.href.includes('preview') ? 'preview' : 'console' });
         handleMouseEnter();
       }}
       onTouchEnd={(e) => {
-        console.log('🎯 Touch end on InteractiveWord:', word);
+        DebugLogger.log('ui', 'Touch end on InteractiveWord', word);
         // Brief delay to allow touch interaction before hiding
         setTimeout(handleMouseLeave, 3000);
       }}
       onClick={(e) => {
-        console.log('🎯 Click on InteractiveWord:', word, 'environment:', window.location.href.includes('preview') ? 'preview' : 'console');
+        DebugLogger.log('ui', 'Click on InteractiveWord', { word, environment: window.location.href.includes('preview') ? 'preview' : 'console' });
         (window as any).__lastSelectedWord = cleanWord;
         if (onClick) onClick();
         else handleMouseEnter(); // Fallback to show tooltip
       }}
       // Pointer events for modern universal device support
       onPointerDown={(e) => {
-        console.log('🎯 Pointer down on InteractiveWord:', word, 'pointerType:', e.pointerType);
+        DebugLogger.log('ui', 'Pointer down on InteractiveWord', { word, pointerType: e.pointerType });
         if (e.pointerType === 'touch' || e.pointerType === 'pen') {
           handleMouseEnter();
         }
@@ -944,15 +944,15 @@ export const InteractiveWord = ({
              {/* Universal Phonetic Breakdown Button - Available for ALL users */}
               <button
                 onClick={async () => {
-                  console.log('🎯 Desktop Interactive word SYLLABLES clicked for:', cleanWord);
+                  DebugLogger.log('ui', 'Desktop Interactive word SYLLABLES clicked', cleanWord);
                   setIsPlayingPhonetics(true);
                   try {
                     // Use dedicated InteractiveWordAudioService instead of mixed systems
                     const { InteractiveWordAudioService } = await import('@/services/InteractiveWordAudioService');
                     await InteractiveWordAudioService.syllableWord(cleanWord);
-                    console.log('✅ Desktop Interactive word syllables completed successfully');
+                    DebugLogger.log('audio', 'Desktop Interactive word syllables completed successfully');
                  } catch (error) {
-                   console.error('❌ Desktop Interactive word syllables failed:', error);
+                   DebugLogger.error('audio', 'Desktop Interactive word syllables failed', error);
                    toast({
                      title: "Error",
                      description: "Could not play syllable breakdown. Please try again.",
@@ -1009,14 +1009,14 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
   // Use global gamification system instead of local hook for mobile
   const getAddVocabularyWordMobile = () => {
     return getGlobalAddVocabularyWord() || (() => {
-      console.warn('⚠️ Global addVocabularyWord not available - gamification may not be set up');
+      DebugLogger.warn('ui', 'Global addVocabularyWord not available - gamification may not be set up');
     });
   };
   
   
   // ENHANCED: Debug and fix translation issues for Arabic, Chinese, Hindi (mobile version)
   const userLanguageT = useCallback((key: string, fallback: string) => {
-    console.log('🌐 Mobile Translation Debug:', {
+    DebugLogger.log('ui', 'Mobile Translation Debug', {
       key,
       fallback,
       userLanguage: props.userInfo?.nativeLanguage,
@@ -1068,7 +1068,7 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
           return manualTranslation;
         }
       } catch (error) {
-        console.error('❌ Translation error:', error);
+        DebugLogger.error('ui', 'Translation error', error);
       }
     }
     
