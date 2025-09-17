@@ -21,5 +21,5 @@
   Pragma: no-cache
   Expires: 0
   
-  # Permissions Policy (replaces deprecated Feature-Policy)
-  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), vr=(), ambient-light-sensor=(), battery=(), speaker=(), vibrate=()
+  # Permissions Policy (replaces deprecated Feature-Policy) - Only widely supported features
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), speaker=()

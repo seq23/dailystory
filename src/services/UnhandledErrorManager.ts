@@ -83,17 +83,22 @@ export class UnhandledErrorManager {
       /Script error\.?$/i,
       /Non-Error promise rejection captured/i,
 
-      // Development tools
+      // Development tools and Chrome extensions
       /DevTools/i,
       /devtools/i,
       /chrome-extension:/i,
       /moz-extension:/i,
+      /Could not establish connection\. Receiving end does not exist/i,
+      /Unchecked runtime\.lastError/i,
 
       // Network-related recoverable errors
       /NetworkError/i,
       /Failed to fetch/i,
       /ERR_NETWORK/i,
       /ERR_INTERNET_DISCONNECTED/i,
+      /ERR_NETWORK_CHANGED/i,
+      /ERR_NAME_NOT_RESOLVED/i,
+      /ERR_NETWORK_IO_SUSPENDED/i,
       /Load failed/i,
 
       // Common browser API noise
