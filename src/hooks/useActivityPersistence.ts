@@ -1,5 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { DebugLogger } from '@/services/DebugLogger';
 import type { UserInfo } from "@/types";
 
 /**
@@ -73,7 +74,7 @@ export async function saveQuizAttempt({
   mode = "offline",
   details = {},
 }: QuizAttemptParams): Promise<PersistResult> {
-  console.log("[quiz] save attempt start", { score, totalQuestions, language, mode });
+  DebugLogger.log('performance', 'Quiz save attempt start', { score, totalQuestions, language, mode });
 
   const signature = hashStorySignature(storyText || "");
   const { data: userData } = await supabase.auth.getUser();
@@ -100,7 +101,7 @@ export async function saveQuizAttempt({
     const arr = getLocalArray<typeof payload>(LOCAL_QUIZ_KEY);
     arr.push(payload);
     setLocalArray(LOCAL_QUIZ_KEY, arr);
-    console.log("[quiz] saved locally (guest)");
+    DebugLogger.log('performance', 'Quiz saved locally (guest)');
     return { persisted: true, method: "local" };
   }
 
@@ -123,7 +124,7 @@ export async function saveQuizAttempt({
     return { persisted: false, method: "local", error: error.message };
   }
 
-  console.log("[quiz] saved to supabase");
+  DebugLogger.log('performance', 'Quiz saved to supabase');
   return { persisted: true, method: "supabase" };
 }
 
@@ -137,7 +138,7 @@ export async function saveGameSession({
   userInfo,
   details = {},
 }: GameSessionParams): Promise<PersistResult> {
-  console.log("[games] save session start", { score, maxScore, language, gameType, durationSeconds });
+  DebugLogger.log('performance', 'Games save session start', { score, maxScore, language, gameType, durationSeconds });
 
   const signature = hashStorySignature(storyText || "");
   const { data: userData } = await supabase.auth.getUser();
@@ -163,7 +164,7 @@ export async function saveGameSession({
     const arr = getLocalArray<typeof payload>(LOCAL_GAME_KEY);
     arr.push(payload);
     setLocalArray(LOCAL_GAME_KEY, arr);
-    console.log("[games] saved locally (guest)");
+    DebugLogger.log('performance', 'Games saved locally (guest)');
     return { persisted: true, method: "local" };
   }
 
@@ -186,7 +187,7 @@ export async function saveGameSession({
     return { persisted: false, method: "local", error: error.message };
   }
 
-  console.log("[games] saved to supabase");
+  DebugLogger.log('performance', 'Games saved to supabase');
   return { persisted: true, method: "supabase" };
 }
 

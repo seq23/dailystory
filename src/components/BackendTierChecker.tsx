@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { DebugGateway } from '@/services/DebugGateway';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface BackendTierCheckerProps {
   onTierFound?: (tier: string, details: any) => void;
@@ -17,7 +18,7 @@ export const BackendTierChecker: React.FC<BackendTierCheckerProps> = ({ onTierFo
 
       if (data && data.imagePrompts) {
         if (isDebugMode) {
-          console.log('🔍 Recent image generation calls:', data);
+          DebugLogger.log('image', 'Recent image generation calls', data);
         }
         setRecentCalls(data.imagePrompts || []);
         
@@ -25,7 +26,7 @@ export const BackendTierChecker: React.FC<BackendTierCheckerProps> = ({ onTierFo
         data.imagePrompts.forEach((call: any, index: number) => {
           if (call.tier) {
             if (isDebugMode) {
-              console.log(`🎯 TIER SUCCESS FOUND: Tier ${call.tier}`, {
+              DebugLogger.log('image', `TIER SUCCESS FOUND: Tier ${call.tier}`, {
                 callIndex: index,
                 timestamp: call.timestamp,
                 prompt: call.promptText?.substring(0, 100),
@@ -58,11 +59,11 @@ export const BackendTierChecker: React.FC<BackendTierCheckerProps> = ({ onTierFo
 (window as any).checkImageTier = async () => {
   const { data } = await DebugGateway.getRecentImagePrompts(10);
 
-  console.log('🔍 MANUAL TIER CHECK - Recent image calls:', data);
+  DebugLogger.log('image', 'MANUAL TIER CHECK - Recent image calls', data);
   
   if (data && data.imagePrompts) {
     data.imagePrompts.forEach((call: any, index: number) => {
-      console.log(`Call ${index + 1}:`, {
+      DebugLogger.log('image', `Call ${index + 1}`, {
         timestamp: new Date(call.timestamp).toLocaleTimeString(),
         tier: call.tier || 'Unknown',
         prompt: call.promptText?.substring(0, 150) + '...',
@@ -73,4 +74,4 @@ export const BackendTierChecker: React.FC<BackendTierCheckerProps> = ({ onTierFo
   }
 };
 
-console.log('💡 Use window.checkImageTier() to manually check which tier succeeded for recent images');
+DebugLogger.log('ui', 'Use window.checkImageTier() to manually check which tier succeeded for recent images');

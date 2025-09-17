@@ -114,7 +114,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
         setSubscriptionEnd(null);
       }
     } catch (error) {
-      console.error('Failed to check subscription:', error);
+      DebugLogger.error('auth', 'Failed to check subscription', error);
       // Fallback to check database directly
       try {
         const { data, error: dbError } = await supabase
@@ -129,7 +129,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
           setSubscriptionEnd(data.subscription_end);
         }
       } catch (dbError) {
-        console.error('Failed to check subscription from database:', dbError);
+        DebugLogger.error('auth', 'Failed to check subscription from database', dbError);
       }
     }
   };
@@ -160,7 +160,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
         .maybeSingle();
 
       if (error) {
-        console.error('Error loading profile:', error);
+        DebugLogger.error('auth', 'Error loading profile', error);
         return;
       }
 
@@ -189,7 +189,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
         setCurrentView("stories");
       }
     } catch (error) {
-      console.error('Profile loading error:', error);
+      DebugLogger.error('auth', 'Profile loading error', error);
     } finally {
       setLoading(false);
     }
@@ -213,14 +213,14 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
         });
 
       if (error) {
-        console.error('Error updating profile:', error);
+        DebugLogger.error('auth', 'Error updating profile', error);
         return;
       }
 
       setUserInfo(info);
       setCurrentView("stories");
     } catch (error) {
-      console.error('Profile update error:', error);
+      DebugLogger.error('auth', 'Profile update error', error);
     }
   };
 
@@ -234,7 +234,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
       const { SessionCacheManager } = await import('@/services/SessionCacheManager');
       SessionCacheManager.clearOnSessionEnd(user.id, userInfo?.avatar?.type);
     } catch (error) {
-      console.warn('Failed to clear session caches:', error);
+      DebugLogger.warn('performance', 'Failed to clear session caches', error);
     }
     
     // Navigate to SessionEnded page with stats
@@ -276,7 +276,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
         .maybeSingle();
 
       if (fetchErr) {
-        console.error('❌ Error checking existing profile:', fetchErr);
+        DebugLogger.error('auth', 'Error checking existing profile', fetchErr);
         throw fetchErr;
       }
 
@@ -295,24 +295,24 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
           DebugLogger.log('auth', 'Profile updated successfully');
         }
       } else {
-        console.log('➕ Creating new profile...');
+        DebugLogger.log('auth', 'Creating new profile...');
         const { error: insertErr } = await supabase
           .from('profiles')
           .insert([{ user_id: user.id, ...payload }]);
         error = insertErr;
         
         if (!insertErr) {
-          console.log('✅ Profile created successfully');
+          DebugLogger.log('auth', 'Profile created successfully');
         }
       }
 
       if (error) {
-        console.error('❌ Database operation error:', error);
+        DebugLogger.error('auth', 'Database operation error', error);
         throw error;
       }
 
       // Verify the update was successful
-      console.log('🔍 Verifying profile update...');
+      DebugLogger.log('auth', 'Verifying profile update...');
       const { data: verifyData, error: verifyError } = await supabase
         .from('profiles')
         .select('display_name, updated_at')
@@ -320,9 +320,9 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
         .single();
 
       if (verifyError) {
-        console.error('⚠️ Error verifying update:', verifyError);
+        DebugLogger.error('auth', 'Error verifying update', verifyError);
       } else {
-        console.log('✅ Verification successful:', {
+        DebugLogger.log('auth', 'Verification successful', {
           saved_name: verifyData.display_name,
           expected_name: updatedUserInfo.name,
           updated_at: verifyData.updated_at
@@ -332,9 +332,9 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
       setUserInfo(updatedUserInfo);
       setIsEditingProfile(false);
       
-      console.log('🎉 Profile update completed successfully');
+      DebugLogger.log('auth', 'Profile update completed successfully');
     } catch (error) {
-      console.error('💥 Profile update error:', error);
+      DebugLogger.error('auth', 'Profile update error', error);
       throw error;
     }
   };
@@ -426,14 +426,14 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                              // CRITICAL FIX: Load images from saved story metadata instead of hash-based lookup
                              let cachedImages = null;
                              
-                              // Priority 1: Load from story's imageCacheMetadata (newly saved stories)
-                              if ((story as any).imageCacheMetadata) {
-                                console.log('🖼️ Loading images from story imageCacheMetadata');
-                                cachedImages = convertImagesToRecord((story as any).imageCacheMetadata, 'Story metadata');
-                              }
-                              // Priority 2: Load from legacy image_cache_metadata field
-                              else if ((story as any).image_cache_metadata) {
-                                console.log('🖼️ Loading images from legacy image_cache_metadata');
+                               // Priority 1: Load from story's imageCacheMetadata (newly saved stories)
+                               if ((story as any).imageCacheMetadata) {
+                                 DebugLogger.log('image', 'Loading images from story imageCacheMetadata');
+                                 cachedImages = convertImagesToRecord((story as any).imageCacheMetadata, 'Story metadata');
+                               }
+                               // Priority 2: Load from legacy image_cache_metadata field
+                               else if ((story as any).image_cache_metadata) {
+                                 DebugLogger.log('image', 'Loading images from legacy image_cache_metadata');
                                 cachedImages = convertImagesToRecord((story as any).image_cache_metadata, 'Legacy metadata');
                               }
                               
