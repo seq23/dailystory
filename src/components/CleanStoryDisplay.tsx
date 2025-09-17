@@ -1928,7 +1928,7 @@ const initializeStory = async () => {
 
   const generateImageForCurrentPage = async () => {
     // 🔍 COMPREHENSIVE DEBUG: Track function entry
-    console.log('🚀 DEBUG: generateImageForCurrentPage() called', {
+    DebugLogger.log('image', 'generateImageForCurrentPage() called', {
       currentPage,
       isGeneratingImage,
       hasExistingImage: !!pageImages[currentPage],
@@ -1938,7 +1938,7 @@ const initializeStory = async () => {
     });
 
     if (isGeneratingImage || pageImages[currentPage]) {
-      console.log('🔍 DEBUG: Early return - already generating or image exists', {
+      DebugLogger.log('image', 'Early return - already generating or image exists', {
         isGeneratingImage,
         hasExistingImage: !!pageImages[currentPage]
       });
@@ -1947,7 +1947,7 @@ const initializeStory = async () => {
     
     // CRITICAL: Only generate images AFTER story is stable
     if (!isStoryStable) {
-      console.log('🖼️ DEBUG: Early return - story not yet stable', {
+      DebugLogger.log('image', 'Early return - story not yet stable', {
         isStoryStable,
         storyLength: story.length,
         currentPage
@@ -1957,7 +1957,7 @@ const initializeStory = async () => {
     
     const pageText = story[currentPage];
     if (!pageText) {
-      console.log('🖼️ DEBUG: Early return - no page text available', {
+      DebugLogger.log('image', 'Early return - no page text available', {
         currentPage,
         pageText,
         storyLength: story.length,
@@ -1966,38 +1966,35 @@ const initializeStory = async () => {
       return;
     }
     
-    console.log('🔍 DEBUG: Passed all early return checks, proceeding with image generation', {
+    DebugLogger.log('image', 'Passed all early return checks, proceeding with image generation', {
       currentPage,
       pageTextLength: pageText.length,
       pageTextPreview: pageText.substring(0, 100) + '...'
     });
     
     // 🔍 ENHANCED DEBUGGING: Track image generation parameters
-    const isDebug = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1';
-    if (isDebug) {
-      console.log('🔍 IMAGE GENERATION DEBUG - Starting generation via generateImageForCurrentPage:', {
-        currentPage,
-        pageText: pageText.substring(0, 100) + '...',
-        fullPageText: pageText,
-        userInfo: {
-          name: userInfo.name,
-          avatar: userInfo.avatar,
-          difficultyLevel: userInfo.difficultyLevel
-        },
-        sessionId: characterSessionId,
-        timestamp: new Date().toISOString()
-      });
-    }
+    DebugLogger.log('image', 'Starting generation via generateImageForCurrentPage', {
+      currentPage,
+      pageText: pageText.substring(0, 100) + '...',
+      fullPageText: pageText,
+      userInfo: {
+        name: userInfo.name,
+        avatar: userInfo.avatar,
+        difficultyLevel: userInfo.difficultyLevel
+      },
+      sessionId: characterSessionId,
+      timestamp: new Date().toISOString()
+    });
     
-    console.log('🔍 DEBUG: About to import EnhancedImageCache and check cache');
+    DebugLogger.log('image', 'About to import EnhancedImageCache and check cache');
     
     const { EnhancedImageCache } = await import('@/services/enhancedImageCache');
     
-    console.log('🔍 DEBUG: EnhancedImageCache imported successfully');
+    DebugLogger.log('image', 'EnhancedImageCache imported successfully');
     
     // Validate userInfo structure before extracting markers
     if (!userInfo || !userInfo.avatar) {
-      console.warn('⚠️ Missing userInfo or avatar data for story markers', {
+      DebugLogger.warn('image', 'Missing userInfo or avatar data for story markers', {
         hasUserInfo: !!userInfo,
         hasAvatar: !!userInfo?.avatar,
         userInfo: userInfo
@@ -2006,10 +2003,10 @@ const initializeStory = async () => {
     
     let storyMarkers, cachedImageUrl;
     try {
-      console.log('🔍 DEBUG: About to extract story markers and check cache');
+      DebugLogger.log('image', 'About to extract story markers and check cache');
       
       storyMarkers = EnhancedImageCache.extractStoryMarkers(pageText, userInfo);
-      console.log('🔍 DEBUG: Story markers extracted:', storyMarkers);
+      DebugLogger.log('image', 'Story markers extracted', storyMarkers);
       
       cachedImageUrl = EnhancedImageCache.getCachedImage(
         pageText.slice(0, 120),
@@ -2018,10 +2015,10 @@ const initializeStory = async () => {
         storyId,
         storyMarkers
       );
-      console.log('🔍 DEBUG: Cache lookup result:', { cachedImageUrl });
+      DebugLogger.log('image', 'Cache lookup result', { cachedImageUrl });
       
     } catch (error) {
-      console.error('❌ DEBUG: Image cache lookup failed with detailed error:', {
+      DebugLogger.error('image', 'Image cache lookup failed with detailed error', {
         error: error.message,
         stack: error.stack,
         pageText: pageText.substring(0, 100),
@@ -2034,19 +2031,19 @@ const initializeStory = async () => {
     }
     
     if (cachedImageUrl) {
-      console.log('📸 DEBUG: Using cached image for page', currentPage, 'URL:', cachedImageUrl);
+      DebugLogger.log('image', 'Using cached image for page', { currentPage, cachedImageUrl });
       setPageImages(prev => ({ ...prev, [currentPage]: cachedImageUrl }));
       return;
     }
     
-    console.log('🔍 DEBUG: No cached image found, proceeding with generation');
-    console.log('🔍 DEBUG: Setting generation states and calling SimpleImageService');
+    DebugLogger.log('image', 'No cached image found, proceeding with generation');
+    DebugLogger.log('image', 'Setting generation states and calling SimpleImageService');
     
     setIsGeneratingImage(true);
     setIsPreparingImage(true);
     
     try {
-      console.log('🎯 DEBUG: Calling backend orchestrator for image generation', {
+      DebugLogger.log('image', 'Calling backend orchestrator for image generation', {
         pageText: pageText.substring(0, 100),
         userInfo: { ...userInfo, difficultyLevel: currentDifficulty },
         currentDifficulty,
@@ -2065,32 +2062,30 @@ const initializeStory = async () => {
       );
       
       // 🔍 ENHANCED RESULT TRACKING: Log which method succeeded
-      if (isDebug) {
-        console.log('🔍 IMAGE GENERATION DEBUG - SimpleImageService result received:', {
-          currentPage,
-          pageText: pageText.substring(0, 50) + '...',
-          result: {
-            success: result.success,
-            url: result.url,
-            error: result.error
-          },
-          timestamp: new Date().toISOString()
+      DebugLogger.log('image', 'SimpleImageService result received', {
+        currentPage,
+        pageText: pageText.substring(0, 50) + '...',
+        result: {
+          success: result.success,
+          url: result.url,
+          error: result.error
+        },
+        timestamp: new Date().toISOString()
+      });
+      
+      // Analyze content match
+      if (result.success && result.url) {
+        DebugLogger.log('image', 'Content Analysis', {
+          pageContent: pageText,
+          imageUrl: result.url,
+          contentMatches: {
+            hasMultipleCharacters: pageText.toLowerCase().includes('friends') || pageText.toLowerCase().includes('together'),
+            mentionsPark: pageText.toLowerCase().includes('park') || pageText.toLowerCase().includes('playground'),
+            isPlayingScene: pageText.toLowerCase().includes('play') || pageText.toLowerCase().includes('playing'),
+            expectedScene: 'Multiple children playing in park',
+            actualImage: result.url.includes('anime') ? 'Anime portrait' : 'Unknown style'
+          }
         });
-        
-        // Analyze content match
-        if (result.success && result.url) {
-          console.log('🎯 IMAGE SUCCESS - Content Analysis:', {
-            pageContent: pageText,
-            imageUrl: result.url,
-            contentMatches: {
-              hasMultipleCharacters: pageText.toLowerCase().includes('friends') || pageText.toLowerCase().includes('together'),
-              mentionsPark: pageText.toLowerCase().includes('park') || pageText.toLowerCase().includes('playground'),
-              isPlayingScene: pageText.toLowerCase().includes('play') || pageText.toLowerCase().includes('playing'),
-              expectedScene: 'Multiple children playing in park',
-              actualImage: result.url.includes('anime') ? 'Anime portrait' : 'Unknown style'
-            }
-          });
-        }
       }
       
       if (result.success && result.url) {
@@ -2117,7 +2112,7 @@ const initializeStory = async () => {
           
           // Validate userInfo before extracting markers
           if (!userInfo || !userInfo.avatar) {
-            console.warn('⚠️ Missing userInfo or avatar data for caching story markers');
+            DebugLogger.warn('image', 'Missing userInfo or avatar data for caching story markers');
           }
           
           const storyMarkers = EnhancedImageCache.extractStoryMarkers(pageText, userInfo);
@@ -2137,12 +2132,12 @@ const initializeStory = async () => {
             StorySessionCache.updatePages(cacheId, story, currentPage, images as any);
           } catch {}
         } catch (cacheError) {
-          console.warn('Failed to cache generated image:', cacheError);
+          DebugLogger.warn('image', 'Failed to cache generated image', cacheError);
         }
       }
       
     } catch (error) {
-      console.log('Image generation failed, continuing without image:', error);
+      DebugLogger.log('image', 'Image generation failed, continuing without image', error);
     } finally {
       setIsGeneratingImage(false);
       setIsPreparingImage(false);

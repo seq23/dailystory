@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { ImageFallbackService } from './ImageFallbackService';
+import { DebugLogger } from '@/services/DebugLogger';
 
 // ============= TYPES =============
 
@@ -79,9 +80,9 @@ export class SimpleImageService {
       };
       
       await store.put(imageData);
-      console.log(`📦 Stored image data for session ${sessionId}, page ${pageNumber}`);
+      DebugLogger.log('image', `Stored image data for session ${sessionId}, page ${pageNumber}`);
     } catch (error) {
-      console.warn('Failed to store image in IndexedDB:', error);
+      DebugLogger.warn('image', 'Failed to store image in IndexedDB', error);
     }
   }
 
@@ -100,7 +101,7 @@ export class SimpleImageService {
         request.onerror = () => reject(request.error);
       });
     } catch (error) {
-      console.warn('Failed to get image from IndexedDB:', error);
+      DebugLogger.warn('image', 'Failed to get image from IndexedDB', error);
       return null;
     }
   }
@@ -124,9 +125,9 @@ export class SimpleImageService {
         }
       };
       
-      console.log(`🗑️ Cleared cache for session ${sessionId}`);
+      DebugLogger.log('image', `Cleared cache for session ${sessionId}`);
     } catch (error) {
-      console.warn('Failed to clear session cache:', error);
+      DebugLogger.warn('image', 'Failed to clear session cache', error);
     }
   }
 
@@ -138,8 +139,8 @@ export class SimpleImageService {
     pageNumber: number = 1,
     isPremium: boolean = false
   ): Promise<ImageResult> {
-    console.log('🎨 SimpleImageService: Starting image generation');
-    console.log('📋 Parameters:', { 
+    DebugLogger.log('image', 'SimpleImageService: Starting image generation');
+    DebugLogger.log('image', 'Parameters', { 
       storyLength: storyText?.length || 0, 
       hasUserInfo: !!userInfo, 
       sessionId, 
@@ -151,7 +152,7 @@ export class SimpleImageService {
     if (this.isIndexedDBAvailable && sessionId) {
       const cached = await this.getImageFromDB(sessionId, pageNumber);
       if (cached?.imageURL) {
-        console.log(`📦 Using cached image for session ${sessionId}, page ${pageNumber}`);
+        DebugLogger.log('image', `Using cached image for session ${sessionId}, page ${pageNumber}`);
         return {
           success: true,
           url: cached.imageURL,
@@ -164,7 +165,7 @@ export class SimpleImageService {
 
     // Validate input
     if (!storyText || storyText.trim().length === 0) {
-      console.error('❌ No story text provided');
+      DebugLogger.error('image', 'No story text provided');
       return {
         success: false,
         error: 'Story text is required for image generation',
@@ -173,11 +174,11 @@ export class SimpleImageService {
     }
 
     const cleanScene = storyText.trim().substring(0, 3000);
-    console.log(`📝 Clean scene (${cleanScene.length} chars):`, cleanScene.substring(0, 200) + '...');
+    DebugLogger.log('image', `Clean scene (${cleanScene.length} chars)`, cleanScene.substring(0, 200) + '...');
 
     // Map difficulty level
     const backendDifficulty = this.mapDifficultyLevel(userInfo);
-    console.log('🎯 Mapped difficulty level:', backendDifficulty);
+    DebugLogger.log('image', 'Mapped difficulty level', backendDifficulty);
 
     // Setup timeout handling
     let timeoutId: NodeJS.Timeout | null = null;
@@ -188,13 +189,13 @@ export class SimpleImageService {
       const timeoutPromise = new Promise<never>((_, reject) => {
         timeoutId = setTimeout(() => {
           requestAborted = true;
-          console.warn('⏰ Frontend timeout: Request exceeded 150 seconds');
+          DebugLogger.warn('image', 'Frontend timeout: Request exceeded 150 seconds');
           reject(new Error('Request timeout: Image generation took longer than 150 seconds'));
         }, 150000);
       });
 
       // Call the main orchestrator (runware-generate-image) which handles all tiers
-      console.log('🎯 Calling main orchestrator: runware-generate-image');
+      DebugLogger.log('image', 'Calling main orchestrator: runware-generate-image');
       
       const requestPromise = supabase.functions.invoke('runware-generate-image', {
         body: {
@@ -220,7 +221,7 @@ export class SimpleImageService {
       }
 
       if (requestAborted) {
-        console.warn('⚠️ Request was aborted due to timeout');
+        DebugLogger.warn('image', 'Request was aborted due to timeout');
         return {
           success: false,
           error: 'Request timeout: Image generation exceeded time limit',
@@ -233,7 +234,7 @@ export class SimpleImageService {
       }
 
       if (orchResult?.success && orchResult?.imageURL) {
-        console.log(`✅ Image generation successful via ${orchResult.usedTier || 'orchestrator'}`);
+        DebugLogger.log('image', `Image generation successful via ${orchResult.usedTier || 'orchestrator'}`);
         
         // Store result in IndexedDB
         if (this.isIndexedDBAvailable && sessionId) {
@@ -256,7 +257,7 @@ export class SimpleImageService {
       }
         
     } catch (error) {
-      console.error('❌ Image generation orchestrator failed:', error);
+      DebugLogger.error('image', 'Image generation orchestrator failed', error);
       
       // Clear timeout if still active
       if (timeoutId) {
@@ -274,7 +275,7 @@ export class SimpleImageService {
       }
 
       // TIER 4: Final fallback - use one of your 6 uploaded images
-      console.warn('🎨 All backend tiers failed, using ImageFallbackService with your 6 character images');
+      DebugLogger.warn('image', 'All backend tiers failed, using ImageFallbackService with your 6 character images');
       const fallbackUrl = ImageFallbackService.generateStoryPlaceholder(cleanScene, pageNumber);
       
       return {
@@ -306,7 +307,7 @@ export class SimpleImageService {
 
   // Generate SVG placeholder as final fallback
   private static generateSVGPlaceholder(cleanScene: string, userInfo?: UserInfo): { url: string } {
-    console.warn('🎨 Using local SVG fallback due to backend unavailability');
+    DebugLogger.warn('image', 'Using local SVG fallback due to backend unavailability');
     
     // Extract key elements from the scene for the placeholder
     const hasCharacter = /\b(child|person|character|they|he|she|avatar)\b/i.test(cleanScene);
