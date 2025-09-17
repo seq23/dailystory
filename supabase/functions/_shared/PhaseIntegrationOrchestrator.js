@@ -7,6 +7,7 @@
 import { CharacterConsistencyService } from './CharacterConsistencyService.js';
 import { VisualDetailTracker } from './VisualDetailTracker.js';
 import { getCulturalBundle } from './StaticDataCache.js';
+import { UnifiedPlaceholderResolver } from './UnifiedPlaceholderResolver.js';
 
 export class PhaseIntegrationOrchestrator {
   constructor() {
@@ -15,16 +16,6 @@ export class PhaseIntegrationOrchestrator {
     this.visualDetailTracker = new VisualDetailTracker();
   }
 
-  /**
-   * Local helper for regional ethnicity derivation
-   * Based on cultural profile and avatar type
-   */
-  deriveRegionalEthnicity(culturalProfile, avatarType) {
-    if (!culturalProfile || culturalProfile === 'general') {
-      return avatarType === 'child' ? 'child-general' : 'adult-general';
-    }
-    return `${avatarType}-${culturalProfile}`;
-  }
 
   /**
    * Initialize Phase 1 & 2 integration with image generation pipeline
@@ -230,8 +221,9 @@ export class PhaseIntegrationOrchestrator {
       // Use colored objects as visual consistency details
       const visualConsistencyDetails = coloredObjects || '';
 
-      // Get ethnicity for cultural representation
-      const ethnicity = this.deriveRegionalEthnicity(userInfo?.culturalProfile || 'general', userInfo?.avatar?.type || 'child');
+      // Get ethnicity for cultural representation using UnifiedPlaceholderResolver
+      const resolver = new UnifiedPlaceholderResolver();
+      const ethnicity = resolver.resolveCanonicalPlaceholders('{ethnicity}', userInfo).replace('{ethnicity}', '').trim();
 
       // Get hair variations based on skin tone with seeded selection
       const culturalBundle = getCulturalBundle(userInfo, sessionId);

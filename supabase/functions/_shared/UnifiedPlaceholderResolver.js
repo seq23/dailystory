@@ -35,8 +35,10 @@ function deriveRegionalEthnicity(userInfo, avatarIdentity) {
   
   // For dark skin tones, enforce ethnicity
   if (skinTone === 'dark' || skinTone === 'darker') {
-    if (['en', 'fr'].includes(nativeLanguage)) {
+    if (nativeLanguage === 'en') {
       return 'African American';
+    } else if (nativeLanguage === 'fr') {
+      return 'Francophone African';
     } else if (nativeLanguage === 'pt') {
       return 'Afro-Brazilian';
     } else if (nativeLanguage === 'es') {
@@ -44,9 +46,9 @@ function deriveRegionalEthnicity(userInfo, avatarIdentity) {
     }
   }
   
-  // For light/pale/medium/olive skin with English - NO ethnicity (empty string)
+  // For light/pale/medium/olive skin with English - return "American"
   if (nativeLanguage === 'en' && ['light', 'pale', 'medium', 'olive'].includes(skinTone)) {
-    return '';
+    return 'American';
   }
   
   // Use language mapping for other cases
