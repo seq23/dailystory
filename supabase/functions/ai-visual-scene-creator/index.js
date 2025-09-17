@@ -582,11 +582,14 @@ serve(async (req) => {
               session_id: sessionId,
               character_name: avatarIdentity?.name || 'character',
               image_url: '',
-              visual_elements: {
-                backgroundColor: 'auto',
-                lighting: 'natural',
-                composition: 'scene',
-                setting: 'story',
+                visual_elements: {
+                  backgroundColor: 'auto',
+                  lighting: 'natural',
+                  composition: 'scene',
+                  setting: 'story',
+                  mood: 'neutral',
+                  style: 'children_book'
+                },
                 mood: 'neutral',
                 style: 'children_book'
               },
@@ -749,8 +752,8 @@ EXAMPLES:
                   backgroundColor: 'auto',
                   lighting: 'natural',
                   composition: 'scene',
-                  setting: setting || 'story',
-                  mood: mood || 'neutral',
+                  setting: 'story',
+                  mood: 'neutral',
                   style: 'children_book'
                 },
                 page_number: pageNumber
@@ -904,7 +907,32 @@ EXAMPLES:
 
         debugLog(`SUCCESS SCENE CREATOR: Complete - Token-optimized system with bundled secondary character logic ready`);
 
-        return createCorsResponse(result);
+    // Enhanced performance logging
+    const endTime = Date.now();
+    const totalProcessingTime = endTime - startTime;
+    
+    console.log(`📊 PERFORMANCE METRICS [${aiRequestId}]:`, {
+      totalProcessingTime: `${totalProcessingTime}ms`,
+      aiCallTime: rawAIResponse?.processingTime || 'unknown',
+      characterSeed: characterConsistencyResult?.seed || 'not_tracked',
+      tier: '1',
+      success: !!result.aiSchema,
+      pageNumber,
+      sessionId: sessionId.substring(0, 8)
+    });
+    
+    // Log character consistency for debugging
+    if (characterConsistencyResult?.seed) {
+      console.log(`🎭 CHARACTER SEED TRACKING [${aiRequestId}]:`, {
+        characterSeed: characterConsistencyResult.seed,
+        characterName: avatarIdentity?.name || 'character',
+        sessionId: sessionId.substring(0, 8),
+        pageNumber,
+        consistent: true
+      });
+    }
+
+    return createCorsResponse(result);
       }
   );
 });

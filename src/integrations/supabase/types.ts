@@ -1000,6 +1000,7 @@ export type Database = {
           page_last_seen: number
           session_id: string
           updated_at: string
+          visual_elements: Json | null
         }
         Insert: {
           character_name: string
@@ -1012,6 +1013,7 @@ export type Database = {
           page_last_seen: number
           session_id: string
           updated_at?: string
+          visual_elements?: Json | null
         }
         Update: {
           character_name?: string
@@ -1024,6 +1026,7 @@ export type Database = {
           page_last_seen?: number
           session_id?: string
           updated_at?: string
+          visual_elements?: Json | null
         }
         Relationships: []
       }
