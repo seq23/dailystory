@@ -9,7 +9,11 @@ on:
   workflow_dispatch:
     inputs:
       priority_functions:
-        description: 'Comma-separated function names to deploy first'
+        description: 'Comma-separated list of priority functions to deploy first'
+        required: false
+        default: ''
+      target_function:
+        description: 'Single function to deploy (for targeted redeployments)'
         required: false
         default: ''
 # Prevent concurrent deployments to avoid rate limiting
@@ -92,30 +96,34 @@ jobs:
           done
           
           # Convert to array for processing
-          FUNC_ARRAY=($FUNCTIONS)
-          TOTAL_FUNCTIONS=${#FUNC_ARRAY[@]}
-          BATCH_SIZE=5
-          SUCCESS_COUNT=0
-          FAILED_FUNCTIONS=()
+          all_functions=($FUNCTIONS)
+          echo "📋 Discovered functions: ${all_functions[*]}"
+          echo "📦 Total functions to deploy: ${#all_functions[@]}"
           
-          # Parse PRIORITY_FUNCTIONS (comma-separated) and filter to discovered functions
-          PRIORITY_RAW="${PRIORITY_FUNCTIONS:-}"
-          PRIORITY_LIST=()
-          if [ -n "$PRIORITY_RAW" ]; then
-            echo "🚩 Priority functions requested: $PRIORITY_RAW"
-            IFS=',' read -ra PARR <<< "$PRIORITY_RAW"
-            for pf in "${PARR[@]}"; do
-              pf_trim=$(echo "$pf" | xargs)
-              if echo "$FUNCTIONS" | grep -qx "$pf_trim"; then
-                # Avoid duplicates
-                if [[ ! " ${PRIORITY_LIST[*]} " =~ " ${pf_trim} " ]]; then
-                  PRIORITY_LIST+=("$pf_trim")
-                fi
-              else
-                echo "  ⚠️  Priority function '$pf_trim' not found among discovered functions"
+          # Check for targeted single function deployment first
+          if [ -n "${{ github.event.inputs.target_function }}" ]; then
+            target_func="${{ github.event.inputs.target_function }}"
+            echo "🎯 TARGETED DEPLOYMENT: $target_func only"
+            deploy_functions=("$target_func")
+          # Determine deployment strategy based on inputs
+          elif [ -n "${{ github.event.inputs.priority_functions }}" ]; then
+            echo "🚩 Priority functions requested: ${{ github.event.inputs.priority_functions }}"
+            IFS=',' read -ra PRIORITY_ARRAY <<< "${{ github.event.inputs.priority_functions }}"
+            deploy_functions=("${PRIORITY_ARRAY[@]}")
+            # Add remaining functions
+            for func in "${all_functions[@]}"; do
+              if [[ ! " ${PRIORITY_ARRAY[*]} " =~ " ${func} " ]]; then
+                deploy_functions+=("$func")
               fi
             done
+          else
+            # Deploy all functions in discovered order
+            deploy_functions=("${all_functions[@]}")
           fi
+
+          BATCH_SIZE=5
+          successful_deployments=()
+          failed_deployments=()
           
           # Helper: deploy a single function with retries
           deploy_with_retries() {
@@ -133,8 +141,8 @@ jobs:
                 sleep $WAIT_TIME
               fi
               if supabase functions deploy "$FUNC_NAME" --project-ref "$SUPABASE_PROJECT_ID" 2>&1; then
-                echo "  ✅ $FUNC_NAME deployed successfully"
-                SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
+                echo "  ✅ $FUNC_NAME deployed successfully"  
+                successful_deployments+=("$FUNC_NAME")
                 DEPLOY_SUCCESS=true
               else
                 RETRY_COUNT=$((RETRY_COUNT + 1))
@@ -142,11 +150,25 @@ jobs:
                   echo "  ⚠️  $FUNC_NAME deployment failed, retrying..."
                 else
                   echo "  ❌ $FUNC_NAME deployment failed after $MAX_RETRIES attempts"
-                  FAILED_FUNCTIONS+=("$FUNC_NAME")
+                  failed_deployments+=("$FUNC_NAME")
                 fi
               fi
             done
           }
+          
+          echo "🚀 Starting deployment..."
+          
+          # Deploy functions sequentially with rate limiting  
+          for ((i=0; i<${#deploy_functions[@]}; i++)); do
+            FUNC_NAME="${deploy_functions[$i]}"
+            deploy_with_retries "$FUNC_NAME" 3 10
+            
+            # Rate limiting: sleep between deployments
+            if [ $i -lt $((${#deploy_functions[@]} - 1)) ]; then
+              echo "  ⏸️  Waiting 10s before next deployment..."
+              sleep 10
+            fi
+          done
           
           echo "🚀 Starting prioritized deployment (if any)..."
           # Deploy priority functions first, sequentially, with stronger backoff (5 retries, 30s base)
@@ -211,13 +233,146 @@ jobs:
             echo "  ⚠️  Some functions failed to deploy, but continuing..."
           fi
           
-      - name: Deployment verification
+          echo ""
+          echo "📋 Deployment Summary:"
+          echo "  Functions deployed successfully: ${#successful_deployments[@]}"
+          echo "  Functions that failed: ${#failed_deployments[@]}"
+          
+          if [ ${#successful_deployments[@]} -gt 0 ]; then
+            echo "  ✅ Successful: ${successful_deployments[*]}"
+          fi
+          
+          if [ ${#failed_deployments[@]} -gt 0 ]; then
+            echo "  ❌ Failed: ${failed_deployments[*]}"
+          fi
+          
+          # Verify deployment with supabase functions list
+          echo ""
+          echo "🔍 Verifying deployment..."
+          supabase functions list --project-ref $SUPABASE_PROJECT_ID || echo "⚠️ Could not verify deployment"
+
+      - name: Post-Deploy Function Warm-Up
+        if: success()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "🔍 Verifying deployed functions..."
+          echo "🔥 Starting post-deploy warm-up sequence..."
           
-          # List all functions from Supabase
-          echo "📋 Functions in Supabase dashboard:"
-          supabase functions list --project-ref "$SUPABASE_PROJECT_ID" || echo "⚠️  Could not list functions"
+          # Function configuration
+          BASE_URL="https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1"
+          ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubW1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino"
           
-          echo "✅ Deployment verification completed"
-        continue-on-error: true
+          # Critical functions and their required secrets
+          declare -A FUNCTIONS_SECRETS
+          FUNCTIONS_SECRETS["runware-generate-image"]="RUNWARE_API_KEY,OPENAI_API_KEY,SUPABASE_SERVICE_ROLE_KEY"
+          FUNCTIONS_SECRETS["ai-visual-scene-creator"]="OPENAI_API_KEY"
+          FUNCTIONS_SECRETS["runware-template-ab"]="RUNWARE_API_KEY"
+          FUNCTIONS_SECRETS["runware-template-cd"]="RUNWARE_API_KEY"
+          
+          CRITICAL_FUNCTIONS=("runware-generate-image" "ai-visual-scene-creator" "runware-template-ab" "runware-template-cd")
+          FAILED_WARMUPS=()
+          
+          # Wait 2 minutes after deployment for functions to stabilize
+          echo "⏳ Waiting 2 minutes for deployment to stabilize..."
+          sleep 120
+          
+          # Warm up each function with staggered timing
+          for i in "${!CRITICAL_FUNCTIONS[@]}"; do
+            func="${CRITICAL_FUNCTIONS[$i]}"
+            required_secrets="${FUNCTIONS_SECRETS[$func]}"
+            
+            echo ""
+            echo "🔥 Warming up $func (${i+1}/${#CRITICAL_FUNCTIONS[@]})..."
+            echo "   Required secrets: $required_secrets"
+            
+            # Test function health with retries
+            ATTEMPTS=0
+            MAX_ATTEMPTS=3
+            SUCCESS=false
+            
+            while [ $ATTEMPTS -lt $MAX_ATTEMPTS ] && [ "$SUCCESS" = false ]; do
+              ATTEMPTS=$((ATTEMPTS + 1))
+              echo "  🔍 Warm-up attempt $ATTEMPTS/$MAX_ATTEMPTS for $func..."
+              
+              response=$(curl -s -o /dev/null -w "%{http_code}" \
+                -X GET "$BASE_URL/$func" \
+                -H "Authorization: Bearer $ANON_KEY" \
+                -H "Content-Type: application/json" \
+                --max-time 20 \
+                --retry 1 \
+                --retry-delay 3 || echo "000")
+              
+              case $response in
+                "200"|"201"|"202")
+                  echo "    ✅ $func warmed up successfully (HTTP $response)"
+                  SUCCESS=true
+                  ;;
+                "404")
+                  echo "    ❌ $func returned 404 (function not deployed properly)"
+                  if [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; then
+                    echo "    ⏳ Waiting 10s before retry..."
+                    sleep 10
+                  fi
+                  ;;
+                "500")
+                  echo "    ⚠️  $func returned 500 (check secrets: $required_secrets)"
+                  if [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; then
+                    echo "    ⏳ Waiting 10s before retry..."
+                    sleep 10
+                  fi
+                  ;;
+                "000")
+                  echo "    ❌ $func is unreachable (timeout/network error)"
+                  if [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; then
+                    echo "    ⏳ Waiting 10s before retry..."
+                    sleep 10
+                  fi
+                  ;;
+                *)
+                  echo "    ⚠️  $func responded with HTTP $response"
+                  if [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; then
+                    echo "    ⏳ Waiting 10s before retry..."
+                    sleep 10
+                  fi
+                  ;;
+              esac
+            done
+            
+            # Track failed warm-ups
+            if [ "$SUCCESS" = false ]; then
+              echo "    ❌ $func failed warm-up after $MAX_ATTEMPTS attempts"
+              FAILED_WARMUPS+=("$func")
+            fi
+            
+            # Stagger warm-ups (except for the last function)
+            if [ $i -lt $((${#CRITICAL_FUNCTIONS[@]} - 1)) ]; then
+              echo "    ⏳ Waiting 60s before next function..."
+              sleep 60
+            fi
+          done
+          
+          echo ""
+          echo "🔥 Warm-up Summary:"
+          echo "  Functions tested: ${#CRITICAL_FUNCTIONS[@]}"
+          echo "  Functions failed: ${#FAILED_WARMUPS[@]}"
+          
+          if [ ${#FAILED_WARMUPS[@]} -eq 0 ]; then
+            echo "  ✅ All functions warmed up successfully"
+          else
+            echo "  ❌ Failed warm-ups: ${FAILED_WARMUPS[*]}"
+            echo ""
+            echo "🚨 Re-queueing targeted redeployments for failed functions..."
+            
+            # Trigger targeted redeployments for failed functions
+            for failed_func in "${FAILED_WARMUPS[@]}"; do
+              echo "  ⚡ Triggering redeploy for $failed_func..."
+              
+              curl -X POST \
+                -H "Accept: application/vnd.github.v3+json" \
+                -H "Authorization: token $GITHUB_TOKEN" \
+                https://api.github.com/repos/$GITHUB_REPOSITORY/actions/workflows/deploy-functions.yml/dispatches \
+                -d '{"ref":"main","inputs":{"target_function":"'$failed_func'"}}'
+            done
+            
+            echo "  ✅ Targeted redeployments queued for ${#FAILED_WARMUPS[@]} functions"
+          fi

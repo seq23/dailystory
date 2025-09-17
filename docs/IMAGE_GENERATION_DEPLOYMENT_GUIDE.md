@@ -175,29 +175,37 @@ WITH CHECK (true);
 
 ## Automated Deployment & Monitoring
 
-### Scheduled Deployment
-Functions are automatically deployed daily at 2:00 AM UTC to prevent 404 errors:
-- **Trigger**: GitHub Actions cron schedule (`0 2 * * *`)
-- **Purpose**: Ensures functions remain accessible and fixes deployment drift
-- **Scope**: All functions are redeployed regardless of changes
-- **Workflow**: `.github/workflows/deploy-functions.yml`
+### Scheduled Daily Deployments
+Edge functions are automatically deployed daily at 2:00 AM UTC via GitHub Actions to prevent "drift" and deployment errors. This ensures:
+- Functions stay synchronized with the latest code
+- Deployment issues are caught early
+- System reliability is maintained
 
-### Health Monitoring
-Automated health checks run every 30 minutes:
-- **Workflow**: `.github/workflows/monitor-functions.yml`
-- **Functions Monitored**: `runware-generate-image`, `ai-visual-scene-creator`, `runware-simple-fallback`
-- **Actions**: 
-  - Tests all critical function endpoints
-  - Triggers emergency deployment if ≥2 functions are down
-  - Creates GitHub issues for persistent failures
-- **Emergency Response**: Auto-triggers deployment with priority functions
+### Operational Hardening: Staggered Health Monitoring
+Critical functions are monitored independently with staggered timing to prevent circuit breaker conflicts:
+- `runware-generate-image`: Every 5 minutes (`:00, :05, :10...`)
+- `ai-visual-scene-creator`: Every 6 minutes (`:01, :07, :13...`)
+- `runware-template-ab`: Every 7 minutes (`:02, :09, :16...`)
+- `runware-template-cd`: Every 8 minutes (`:03, :11, :19...`)
 
-### Pre-Deployment Health Check
-Each deployment includes an optional health check:
-- Tests function endpoints before deployment
-- Logs current status for debugging
-- Continues deployment regardless of results
-- Helps identify existing issues
+Each function has its own dedicated monitoring workflow that:
+- Tests function health with 2 retry attempts
+- Includes 30-second circuit breaker reset delays
+- Triggers targeted redeployment if 2 consecutive checks fail
+- Creates GitHub issues for persistent failures
+
+### Post-Deploy Warm-Up & Auto-Heal
+After each deployment, the system performs an automated warm-up sequence:
+1. **Stabilization Wait**: 2-minute delay after deployment completion
+2. **Staggered Warm-Up**: Each function tested with 60-second intervals
+3. **Secret Validation**: Verifies required environment variables are present
+4. **Retry Logic**: 3 attempts per function with exponential backoff
+5. **Auto-Healing**: Failed functions automatically trigger targeted redeployments
+
+This prevents the "whack-a-mole" issue where functions randomly fail due to cold start problems.
+
+### Pre-Deployment Health Checks
+Before each deployment, the system performs health checks on existing functions to identify issues before deployment begins.
 
 ## Manual Monitoring & Logging
 

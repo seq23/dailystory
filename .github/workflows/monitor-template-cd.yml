@@ -1,0 +1,123 @@
+name: Monitor Template CD
+
+on:
+  schedule:
+    # Check every 8 minutes: :03, :11, :19, :27, :35, :43, :51, :59
+    - cron: '3,11,19,27,35,43,51,59 * * * *'
+  workflow_dispatch:
+
+# Prevent concurrent monitoring
+concurrency:
+  group: monitor-template-cd
+  cancel-in-progress: false
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Monitor runware-template-cd function
+        run: |
+          echo "🏥 Monitoring runware-template-cd function..."
+          
+          # Function configuration
+          BASE_URL="https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1"
+          ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubW1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino"
+          FUNCTION_NAME="runware-template-cd"
+          
+          echo "🔍 Testing $FUNCTION_NAME at $(date)..."
+          
+          # Circuit breaker reset - small delay before check
+          sleep 2
+          
+          # Test function health with retries
+          ATTEMPTS=0
+          MAX_ATTEMPTS=2
+          SUCCESS=false
+          
+          while [ $ATTEMPTS -lt $MAX_ATTEMPTS ] && [ "$SUCCESS" = false ]; do
+            ATTEMPTS=$((ATTEMPTS + 1))
+            echo "  Attempt $ATTEMPTS/$MAX_ATTEMPTS..."
+            
+            response=$(curl -s -o /dev/null -w "%{http_code}" \
+              -X GET "$BASE_URL/$FUNCTION_NAME" \
+              -H "Authorization: Bearer $ANON_KEY" \
+              -H "Content-Type: application/json" \
+              --max-time 15 \
+              --retry 1 \
+              --retry-delay 2 || echo "000")
+            
+            case $response in
+              "200"|"201"|"202")
+                echo "    ✅ $FUNCTION_NAME is healthy (HTTP $response)"
+                SUCCESS=true
+                ;;
+              "404")
+                echo "    ❌ $FUNCTION_NAME returned 404 (function not found)"
+                if [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; then
+                  echo "    ⏳ Waiting 30s before retry..."
+                  sleep 30
+                fi
+                ;;
+              "500")
+                echo "    ⚠️  $FUNCTION_NAME returned 500 (server error)"
+                if [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; then
+                  echo "    ⏳ Waiting 30s before retry..."
+                  sleep 30
+                fi
+                ;;
+              "000")
+                echo "    ❌ $FUNCTION_NAME is unreachable (timeout/network error)"
+                if [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; then
+                  echo "    ⏳ Waiting 30s before retry..."
+                  sleep 30
+                fi
+                ;;
+              *)
+                echo "    ⚠️  $FUNCTION_NAME responded with HTTP $response (unexpected)"
+                if [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; then
+                  echo "    ⏳ Waiting 30s before retry..."
+                  sleep 30
+                fi
+                ;;
+            esac
+          done
+          
+          # If function failed after retries, trigger targeted redeploy
+          if [ "$SUCCESS" = false ]; then
+            echo ""
+            echo "🚨 CRITICAL: $FUNCTION_NAME failed $MAX_ATTEMPTS consecutive checks"
+            echo "⚡ Triggering targeted redeploy for $FUNCTION_NAME only"
+            
+            # Trigger deployment workflow with specific function
+            curl -X POST \
+              -H "Accept: application/vnd.github.v3+json" \
+              -H "Authorization: token $GITHUB_TOKEN" \
+              https://api.github.com/repos/$GITHUB_REPOSITORY/actions/workflows/deploy-functions.yml/dispatches \
+              -d '{"ref":"main","inputs":{"priority_functions":"'$FUNCTION_NAME'","target_function":"'$FUNCTION_NAME'"}}'
+              
+            echo "✅ Targeted redeploy triggered for $FUNCTION_NAME"
+            exit 1
+          else
+            echo ""
+            echo "✅ $FUNCTION_NAME is healthy - monitoring complete"
+          fi
+
+      - name: Create alert issue (on failure)
+        if: failure()
+        run: |
+          echo "📝 Creating GitHub issue for runware-template-cd failure..."
+          
+          curl -X POST \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token $GITHUB_TOKEN" \
+            https://api.github.com/repos/$GITHUB_REPOSITORY/issues \
+            -d '{
+              "title": "🚨 runware-template-cd Health Alert - '"$(date '+%Y-%m-%d %H:%M UTC')"'",
+              "body": "## Function Health Alert\n\n**Time:** '"$(date '+%Y-%m-%d %H:%M UTC')"'\n**Function:** runware-template-cd\n\n**Issue:** Function experiencing persistent failures after 2 consecutive health checks.\n\n**Actions Taken:**\n- Automatic health check failed\n- Targeted redeploy triggered\n\n**Next Steps:**\n1. Check function logs in Supabase dashboard\n2. Verify RUNWARE_API_KEY secret\n3. Test function manually if needed\n\n**Monitoring:** This issue was created automatically by the staggered health monitoring system.",
+              "labels": ["bug", "edge-functions", "runware-template-cd", "automated-alert"]
+            }'
