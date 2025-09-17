@@ -1,4 +1,5 @@
 import React from "react";
+import { globalResizeService } from '@/services/GlobalResizeService';
 import { Button } from "@/components/ui/button";
 import MagicRefreshIcon from "@/components/icons/MagicRefreshIcon";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -156,9 +157,8 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
       }
     };
     update();
-    const ro = new ResizeObserver(update);
-    ro.observe(el);
-    return () => ro.disconnect();
+    const unsubscribe = globalResizeService.observe(el, update);
+    return () => unsubscribe();
   }, [size]);
 
   const handleClick = () => {

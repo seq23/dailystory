@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { globalResizeService } from '@/services/GlobalResizeService';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -74,11 +75,10 @@ export const PremiumHeader = ({
     setVar();
     
     // Use ResizeObserver for efficient resize detection
-    const ro = new ResizeObserver(() => setVar());
-    ro.observe(el);
+    const unsubscribe = globalResizeService.observe(el, () => setVar());
     
     return () => {
-      ro.disconnect();
+      unsubscribe();
     };
   }, []);
 

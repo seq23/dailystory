@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { DebugLogger } from '@/services/DebugLogger';
+import { globalResizeService } from '@/services/GlobalResizeService';
+import { performanceManager } from '@/services/PerformanceManager';
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -136,10 +138,8 @@ export const ResponsiveStoryHeader = ({
     debouncedCheck();
 
     // Use ResizeObserver for efficient resize detection
-    const ros = els.map(el => {
-      const ro = new ResizeObserver(() => debouncedCheck());
-      ro.observe(el);
-      return ro;
+    const unsubscribers = els.map(el => {
+      return globalResizeService.observe(el, () => debouncedCheck());
     });
 
     // Observe sidebar attribute changes (expanded/collapsed)
@@ -156,8 +156,8 @@ export const ResponsiveStoryHeader = ({
 
     return () => {
       clearTimeout(checkTimeout);
-      ros.forEach(ro => { 
-        try { ro.disconnect(); } catch {} 
+      unsubscribers.forEach(unsubscribe => { 
+        try { unsubscribe(); } catch {} 
       });
       if (mo) { 
         try { mo.disconnect(); } catch {} 
@@ -178,26 +178,21 @@ export const ResponsiveStoryHeader = ({
     let timeout: NodeJS.Timeout;
     const measure = () => {
       clearTimeout(timeout);
-      timeout = setTimeout(() => {
+      timeout = performanceManager.setTimeout(() => {
         requestAnimationFrame(() => {
           const h = el.getBoundingClientRect().height;
           setOverlayHeight(prev => (Math.abs(prev - h) > 1 ? h : prev));
         });
-      }, 16); // Throttle to ~60fps
+      }, 16, 'overlay height measure'); // Throttle to ~60fps
     };
     
     measure();
-    const ro = new ResizeObserver(measure);
-    try { 
-      ro.observe(el); 
-    } catch (error) {
-      DebugLogger.warn('ui', 'Failed to observe overlay element', error);
-    }
+    const unsubscribe = globalResizeService.observe(el, measure);
     
     window.addEventListener('resize', measure);
     return () => {
       clearTimeout(timeout);
-      try { ro.disconnect(); } catch {}
+      try { unsubscribe(); } catch {}
       window.removeEventListener('resize', measure);
     };
   }, [isMobileOrTablet, isPremium]);

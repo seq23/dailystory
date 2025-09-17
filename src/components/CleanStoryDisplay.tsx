@@ -1,5 +1,7 @@
 import React from 'react';
 import { DebugLogger } from '@/services/DebugLogger';
+import { performanceManager } from '@/services/PerformanceManager';
+import { globalResizeService } from '@/services/GlobalResizeService';
 /*
  * ============================================================================
  * BUSINESS MODEL DOCUMENTATION - CLEAN STORY DISPLAY
@@ -880,7 +882,7 @@ useEffect(() => {
     const force = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('forceLoader') === '1';
     if (force) {
       setForceLoaderActive(true);
-      setTimeout(() => setForceLoaderActive(false), 2000);
+      performanceManager.setTimeout(() => setForceLoaderActive(false), 2000, 'forceLoaderActive cleanup');
     }
   }, []);
 
@@ -934,7 +936,7 @@ const [highlightSave, setHighlightSave] = useState(false);
 
   useEffect(() => {
     if (!highlightSave) return;
-    const timer = setTimeout(() => setHighlightSave(false), 8000);
+    const timer = performanceManager.setTimeout(() => setHighlightSave(false), 8000, 'highlight save cleanup');
     return () => clearTimeout(timer);
   }, [highlightSave]);
   const currentStoryText = displayedStory[Math.min(currentPage, displayedStory.length - 1)] || "";
@@ -1338,7 +1340,7 @@ useEffect(() => {
 useEffect(() => {
   if (currentPage > 0 && (currentPage + 1) % 3 === 0) {
     setWandPulse(true);
-    const t = setTimeout(() => setWandPulse(false), 1200);
+    const t = performanceManager.setTimeout(() => setWandPulse(false), 1200, 'wand pulse cleanup');
     return () => clearTimeout(t);
   }
 }, [currentPage]);
@@ -1354,7 +1356,7 @@ const prevIsGeneratingEndingRef = useRef(isGeneratingEnding);
 useEffect(() => {
   if (prevIsGeneratingEndingRef.current && !isGeneratingEnding && isPremium) {
     setShowEndingBurst(true);
-    const t = setTimeout(() => setShowEndingBurst(false), 1400);
+    const t = performanceManager.setTimeout(() => setShowEndingBurst(false), 1400, 'ending burst cleanup');
     return () => clearTimeout(t);
   }
   prevIsGeneratingEndingRef.current = isGeneratingEnding;
@@ -1440,8 +1442,8 @@ useEffect(() => {
   if (completed > 0 && completed % 5 === 0) {
     setFinishSparkle(true);
     setFinishFlashCycle(true);
-    const t1 = setTimeout(() => setFinishSparkle(false), 2000);
-    const t2 = setTimeout(() => setFinishFlashCycle(false), 2000);
+    const t1 = performanceManager.setTimeout(() => setFinishSparkle(false), 2000, 'finish sparkle cleanup');
+    const t2 = performanceManager.setTimeout(() => setFinishFlashCycle(false), 2000, 'finish flash cycle cleanup');
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }
   return;
@@ -2285,8 +2287,8 @@ const initializeStory = async () => {
       // Premium: generate next page, append, then advance
       // Add 40s watchdog to prevent UI getting stuck
       setIsLoadingNextPage(true);
-      const nextPageWatchdog = setTimeout(() => {
-        console.warn('⏰ Next page watchdog triggered (40s)');
+      const nextPageWatchdog = performanceManager.setTimeout(() => {
+        DebugLogger.warn('performance', 'Next page watchdog triggered (40s)');
         setIsLoadingNextPage(false);
         setJustAdvanced(false);
         toast({
@@ -2295,7 +2297,7 @@ const initializeStory = async () => {
           variant: "default",
           duration: 5000
         });
-      }, 40000);
+      }, 40000, 'next page watchdog');
 
       setJustAdvanced(true);
       const result = await generateNextPage();
@@ -2332,7 +2334,7 @@ const initializeStory = async () => {
         setIsStoryStable(true);
       }
       setIsLoadingNextPage(false);
-      setTimeout(() => setJustAdvanced(false), 600);
+      performanceManager.setTimeout(() => setJustAdvanced(false), 600, 'just advanced cleanup');
     } else if (currentPage < (isPremium ? story.length - 1 : displayedStory.length - 1)) {
       // ROLLBACK FIX: Use story.length for premium logic, displayedStory.length only for free users
       // Navigate to next existing page
@@ -2377,7 +2379,7 @@ const initializeStory = async () => {
               setIsStoryComplete(result.isComplete);
               setCurrentPage(prev => prev + 1);
               setJustAdvanced(true);
-              setTimeout(() => setJustAdvanced(false), 600);
+              performanceManager.setTimeout(() => setJustAdvanced(false), 600, 'sequel advanced cleanup');
             }
           } catch (e) {
             console.error('Failed to continue sequel', e);
@@ -2405,7 +2407,7 @@ const initializeStory = async () => {
           setIsStoryComplete(result.isComplete);
           setCurrentPage(prev => prev + 1);
           setJustAdvanced(true);
-          setTimeout(() => setJustAdvanced(false), 600);
+          performanceManager.setTimeout(() => setJustAdvanced(false), 600, 'premium fallback advanced cleanup');
         }
         return;
       }
@@ -3077,7 +3079,7 @@ const handleRestartTimer = () => {
     try {
       // Wrap with 35s Promise.race timeout for robust timeout handling
       const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Ending generation timeout (35s)')), 35000);
+        performanceManager.setTimeout(() => reject(new Error('Ending generation timeout (35s)')), 35000, 'ending timeout fallback');
       });
       
       const generationPromise = LiveGenerationService.generateEndingPage(liveContext);
@@ -3131,7 +3133,7 @@ const handleRestartTimer = () => {
         // Auto-advance to the newly generated concluding page
         setCurrentPage(prev => prev + 1);
         setJustAdvanced(true);
-        setTimeout(() => setJustAdvanced(false), 600);
+        performanceManager.setTimeout(() => setJustAdvanced(false), 600, 'ending page advanced cleanup');
 
         // Show expanded "Finish Story" CTA on the ending page only
         finishExpandedOnPageRef.current = lastEndingPageIndex;
@@ -3162,7 +3164,7 @@ const handleRestartTimer = () => {
           setLiveContext(null);
           setCurrentPage(prev => prev + 1);
           setJustAdvanced(true);
-          setTimeout(() => setJustAdvanced(false), 600);
+          performanceManager.setTimeout(() => setJustAdvanced(false), 600, 'backup ending advanced cleanup');
           
           toast({
             title: "Story concluded",
