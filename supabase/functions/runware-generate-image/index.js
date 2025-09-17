@@ -745,13 +745,40 @@ serve(async (req) => {
         forceTier, skipTier25, dryRun
       });
       
-      // Handle dryRun mode - return prompt info without generation
+      // Handle dryRun mode - return prompt info without generation using PhaseIntegrationOrchestrator
       if (dryRun) {
         const difficulty = userInfo?.difficulty || userInfo?.gradeLevel || 'medium';
-        const styleFramework = getNuclearStyleFramework(difficulty);
-        // For dryRun, use basic prompt enhancement since Tier 1 fallback was removed
-        const enhancedPrompt = `Rich, detailed scene: ${pageText}. ${styleFramework.frameworkPrompt}`;
-        const negativePrompt = generateInlineNuclearNegative(
+        let enhancedPrompt, negativePrompt, enhancedStoryData;
+        
+        try {
+          // Use PhaseIntegrationOrchestrator for dryRun to test real implementation
+          console.log(`🧪 [${requestId}] DryRun using PhaseIntegrationOrchestrator for accurate testing`);
+          const enhancementResult = await phaseIntegrationOrchestrator.getEnhancedPrompt(
+            userInfo,
+            pageText,
+            pageText,
+            sessionId || 'dryrun-session',
+            null // enhancedStoryData will be generated internally
+          );
+          
+          enhancedStoryData = enhancementResult.enhancedData;
+          enhancedPrompt = enhancementResult.enhancedPrompt || `Rich, detailed scene: ${pageText}`;
+          
+          console.log(`🎯 [${requestId}] DryRun PhaseIntegrationOrchestrator result:`, {
+            hasEnhancedData: !!enhancedStoryData,
+            enhancedPromptLength: enhancedPrompt?.length || 0,
+            templateStructure: enhancedStoryData?.templateStructure,
+            characterConsistency: enhancedStoryData?.characterConsistency?.substring(0, 100) + '...',
+            visualConsistency: enhancedStoryData?.visualConsistency?.substring(0, 100) + '...'
+          });
+          
+        } catch (orchestratorError) {
+          console.log(`⚠️ [${requestId}] DryRun PhaseIntegrationOrchestrator failed, falling back to basic:`, orchestratorError.message);
+          const styleFramework = getNuclearStyleFramework(difficulty);
+          enhancedPrompt = `Rich, detailed scene: ${pageText}. ${styleFramework.frameworkPrompt}`;
+        }
+        
+        negativePrompt = generateInlineNuclearNegative(
           `${userInfo?.nativeLanguage || 'en'}_${userInfo?.avatar?.skinTone || 'light'}`,
           userInfo?.avatar?.type || 'girl',
           difficulty,
@@ -767,6 +794,10 @@ serve(async (req) => {
             enhancedPrompt: enhancedPrompt,
             positivePrompt: enhancedPrompt,
             negativePrompt: negativePrompt,
+            enhancedStoryData: enhancedStoryData, // Include the orchestrator data for testing
+            templateStructure: enhancedStoryData?.templateStructure,
+            characterConsistency: enhancedStoryData?.characterConsistency,
+            visualConsistency: enhancedStoryData?.visualConsistency,
             promptLengths: {
               original: pageText.length,
               enhanced: enhancedPrompt.length,
