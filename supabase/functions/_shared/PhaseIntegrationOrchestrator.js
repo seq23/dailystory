@@ -246,7 +246,8 @@ export class PhaseIntegrationOrchestrator {
       }
 
       // Get hair and skin variations based on skin tone with seeded selection
-      const culturalBundle = getCulturalBundle(userInfo, sessionId);
+      // CRITICAL FIX: Pass explicit skinTone parameter to prevent hair mapping bugs
+      const culturalBundle = getCulturalBundle(userInfo, sessionId, skinTone);
       
       // Convert sessionId to numeric seed for consistent selection
       const seedForConsistency = sessionId ? sessionId.split('-')[0].split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) : Math.floor(Math.random() * 1000000);
@@ -276,6 +277,11 @@ export class PhaseIntegrationOrchestrator {
           primaryScene = aiResult?.primaryScene || this.generatePrimaryScene(basePrompt, storyText);
         } catch (error) {
           console.warn('Failed to get AI primaryScene, using fallback:', error.message);
+          // CRITICAL FIX: Check for 503 or ai-visual-scene-creator failures and escalate to Tier 2.5A
+          if (error.message.includes('503') || error.message.includes('ai-visual-scene-creator') || error.message.includes('timeout')) {
+            console.log('🔄 AI scene creator failed - escalating to Tier 2.5A');
+            throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_25A');
+          }
           primaryScene = this.generatePrimaryScene(basePrompt, storyText);
         }
       }
@@ -368,12 +374,16 @@ export class PhaseIntegrationOrchestrator {
   extractClothingFromText(text) {
     if (!text) return '';
     
+    // CRITICAL FIX: Use tier25Vocabulary CLOTHING_DETECTION_KEYWORDS instead of primitive regex
+    const { CLOTHING_DETECTION_KEYWORDS } = await import('./tier25Vocabulary.js');
+    
+    // Create dynamic patterns using comprehensive clothing vocabulary
     const clothingPatterns = [
-      // Specific clothing items
-      /wearing?\s+(?:a\s+|an\s+|his\s+|her\s+)?([^,.\s]+\s+(?:dress|shirt|pants|shorts|jacket|coat|hat|shoes|boots|sneakers))/gi,
-      /dressed\s+in\s+(?:a\s+|an\s+)?([^,.\s]+\s+(?:dress|shirt|pants|shorts|jacket|coat|outfit))/gi,
-      /(?:a|an|his|her)\s+([^,.\s]+\s+(?:blue|red|green|yellow|pink|purple|black|white|brown|orange)\s+(?:dress|shirt|pants|shorts|jacket))/gi,
-      /(?:blue|red|green|yellow|pink|purple|black|white|brown|orange)\s+(dress|shirt|pants|shorts|jacket|coat|hat)/gi
+      // Specific clothing items using tier25Vocabulary
+      new RegExp(`wearing?\\s+(?:a\\s+|an\\s+|his\\s+|her\\s+)?([^,.\s]+\\s+(?:${CLOTHING_DETECTION_KEYWORDS.join('|')}))`, 'gi'),
+      new RegExp(`dressed\\s+in\\s+(?:a\\s+|an\\s+)?([^,.\s]+\\s+(?:${CLOTHING_DETECTION_KEYWORDS.join('|')}))`, 'gi'),
+      new RegExp(`(?:a|an|his|her)\\s+([^,.\s]+\\s+(?:blue|red|green|yellow|pink|purple|black|white|brown|orange)\\s+(?:${CLOTHING_DETECTION_KEYWORDS.join('|')}))`, 'gi'),
+      new RegExp(`(?:blue|red|green|yellow|pink|purple|black|white|brown|orange)\\s+(${CLOTHING_DETECTION_KEYWORDS.join('|')})`, 'gi')
     ];
     
     const matches = [];
@@ -389,28 +399,37 @@ export class PhaseIntegrationOrchestrator {
   }
 
   // Helper method to combine visual consistency elements, eliminating redundancies
+  // CRITICAL FIX: Improved deduplication logic to eliminate exact duplicates
   combineVisualConsistency(coloredObjects, visualHistory) {
     const elements = [];
+    const seenElements = new Set(); // Track seen elements to prevent duplicates
     
     // Add colored objects if available
-    if (coloredObjects) {
-      elements.push(coloredObjects);
+    if (coloredObjects && coloredObjects.trim()) {
+      const normalizedColoredObjects = coloredObjects.toLowerCase().trim();
+      if (!seenElements.has(normalizedColoredObjects)) {
+        elements.push(coloredObjects);
+        seenElements.add(normalizedColoredObjects);
+      }
     }
     
     // Add unique visual history elements not already in colored objects
-    if (visualHistory) {
+    if (visualHistory && visualHistory.trim()) {
       const historyItems = visualHistory.split(',').map(item => item.trim());
-      const coloredItems = coloredObjects ? coloredObjects.split(',').map(item => item.trim()) : [];
       
       historyItems.forEach(item => {
-        if (item && !coloredItems.some(colored => colored.includes(item) || item.includes(colored))) {
-          elements.push(item);
+        if (item) {
+          const normalizedItem = item.toLowerCase().trim();
+          if (!seenElements.has(normalizedItem)) {
+            elements.push(item);
+            seenElements.add(normalizedItem);
+          }
         }
       });
     }
     
-    // Remove duplicates and return as comma-separated string
-    return [...new Set(elements)].join(', ');
+    // Return unique elements as comma-separated string
+    return elements.join(', ');
   }
 
   /**

@@ -299,12 +299,16 @@ export function shouldApplyCulturalEnhancements(userInfo) {
 
 /**
  * Get cultural bundle for seeded selection
+ * CRITICAL FIX: Accept explicit skinTone parameter for consistent hair mapping
  */
-export function getCulturalBundle(userInfo, sessionId) {
+export function getCulturalBundle(userInfo, sessionId, skinTone = null) {
+  // Use explicit skinTone parameter if provided, otherwise fall back to userInfo
+  const effectiveSkinTone = skinTone || userInfo?.skinTone || userInfo?.appearance?.skinTone || userInfo?.avatar?.skinTone || 'medium';
+  
   if (!shouldApplyCulturalEnhancements(userInfo)) {
     return {
-      hair: getHairBySkintone(userInfo?.skinTone || 'medium', sessionId),
-      features: getSkinBySkintone(userInfo?.skinTone || 'medium', sessionId)
+      hair: getHairBySkintone(effectiveSkinTone, sessionId),
+      features: getSkinBySkintone(effectiveSkinTone, sessionId)
     };
   }
   

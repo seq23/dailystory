@@ -112,7 +112,7 @@ export class UnifiedPlaceholderResolver {
       // TIER 4: Basic Processing (vocabulary + user data)
       try {
         const beforeTier4 = (processedText.match(/\{[^}]+\}/g) || []).length;
-        processedText = this.resolveCanonicalPlaceholders(processedText, userInfo);
+        processedText = await this.resolveCanonicalPlaceholders(processedText, userInfo);
         processedText = this.resolveMicroPlaceholders(processedText, { userInfo, seed });
         processedText = this.resolveVocabularyPlaceholders(processedText, context);
         const afterTier4 = (processedText.match(/\{[^}]+\}/g) || []).length;
@@ -167,7 +167,7 @@ export class UnifiedPlaceholderResolver {
   /**
    * 1. CANONICAL PLACEHOLDERS - User-specific information
    */
-  resolveCanonicalPlaceholders(text, userInfo) {
+  async resolveCanonicalPlaceholders(text, userInfo) {
     let resolved = text;
 
     // User name placeholders
@@ -190,6 +190,17 @@ export class UnifiedPlaceholderResolver {
     // FIXED: Ethnicity resolution using existing deriveRegionalEthnicity function
     const ethnicity = deriveRegionalEthnicity(userInfo, userInfo?.avatarIdentity);
     resolved = resolved.replace(/\{ethnicity\}/g, ethnicity);
+
+    // NEW FIX #6: Add {clothing} placeholder support using tier25Vocabulary
+    // Use CLOTHING_DETECTION_KEYWORDS for comprehensive clothing options (Tier 1 & 2.5A only)
+    try {
+      const { default: vocabularyModule } = await import('./tier25Vocabulary.js');
+      const randomClothing = pick(vocabularyModule.CLOTHING_DETECTION_KEYWORDS || ['shirt', 'dress', 'pants', 'jacket']);
+      resolved = resolved.replace(/\{clothing\}/g, randomClothing);
+    } catch (error) {
+      // Fallback to basic clothing if tier25Vocabulary fails
+      resolved = resolved.replace(/\{clothing\}/g, pick(['shirt', 'dress', 'pants', 'jacket']));
+    }
 
     return resolved;
   }
