@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { DebugLogger } from '@/services/DebugLogger';
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,7 +38,7 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
       });
 
       if (error) {
-        console.error("Subscription check error:", error);
+        DebugLogger.error('error', 'Subscription check API error', { error });
         if (error.message?.includes("STRIPE_SECRET_KEY")) {
           toast.info("Payment system not configured yet");
         } else {
@@ -48,7 +49,7 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
 
       setSubscriptionData(data);
     } catch (error) {
-      console.error("Failed to check subscription:", error);
+      DebugLogger.error('error', 'Subscription check operation failed', { error });
       toast.error("Failed to check subscription status");
     } finally {
       setRefreshing(false);
@@ -85,7 +86,7 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
       }
     } catch (error) {
       toast.error("Failed to open customer portal");
-      console.error(error);
+      DebugLogger.error('error', 'Customer portal operation failed', { error });
     } finally {
       setLoading(false);
     }
@@ -122,7 +123,7 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
       }
     } catch (error) {
       toast.error("Failed to start checkout process");
-      console.error(error);
+      DebugLogger.error('error', 'Stripe checkout operation failed', { error });
     } finally {
       setLoading(false);
     }
@@ -286,7 +287,7 @@ export const SubscriptionManager = ({ showComparison = true }: { showComparison?
                     });
                   }
                 } catch (e) {
-                  console.error('Failed to record cancellation reason', e);
+                  DebugLogger.error('error', 'Failed to record cancellation feedback', { error: e });
                 } finally {
                   setCancelOpen(false);
                   openCustomerPortal();

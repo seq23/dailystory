@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { globalResizeService } from '@/services/GlobalResizeService';
+import { DebugLogger } from '@/services/DebugLogger';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -172,11 +173,10 @@ export const PremiumHeader = ({
                         src={getAvatarUrl()} 
                         alt={getDisplayName()}
                         onError={(e) => {
-                          console.log('🎭 Avatar image failed to load:', getAvatarUrl());
-                          console.log('🎭 Image error event:', e);
+                          DebugLogger.warn('ui', 'Avatar image failed to load', { url: getAvatarUrl(), error: e });
                         }}
                         onLoad={() => {
-                          console.log('🎭 Avatar image loaded successfully:', getAvatarUrl());
+                          DebugLogger.log('ui', 'Avatar image loaded successfully', { url: getAvatarUrl() });
                         }}
                       />
                       <AvatarFallback className="bg-gradient-primary text-white text-sm font-semibold">

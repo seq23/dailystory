@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { DebugLogger } from '@/services/DebugLogger';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -95,7 +96,7 @@ export function PromptStudio() {
         const ws = new WebSocket('wss://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/prompt-studio');
         
         ws.onopen = () => {
-          console.log('🔌 Connected to Prompt Studio');
+          DebugLogger.log('network', 'Connected to Prompt Studio WebSocket');
           setWsConnected(true);
           toast.success('Connected to Prompt Studio');
         };
@@ -133,24 +134,24 @@ export function PromptStudio() {
             }
             
           } catch (error) {
-            console.error('Failed to parse WebSocket message:', error);
+            DebugLogger.error('network', 'Failed to parse WebSocket message', { error });
           }
         };
 
         ws.onclose = () => {
-          console.log('🔌 Disconnected from Prompt Studio');
+          DebugLogger.log('network', 'Disconnected from Prompt Studio WebSocket, reconnecting in 3s');
           setWsConnected(false);
           setTimeout(connectWebSocket, 3000); // Reconnect after 3 seconds
         };
 
         ws.onerror = (error) => {
-          console.error('WebSocket error:', error);
+          DebugLogger.error('network', 'Prompt Studio WebSocket error', { error });
           setWsConnected(false);
         };
 
         wsRef.current = ws;
       } catch (error) {
-        console.error('Failed to connect WebSocket:', error);
+        DebugLogger.error('network', 'Failed to connect to Prompt Studio WebSocket', { error });
         setWsConnected(false);
       }
     };

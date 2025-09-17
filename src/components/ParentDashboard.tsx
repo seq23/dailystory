@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { DebugLogger } from '@/services/DebugLogger';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { Progress } from "@/components/ui/progress";
@@ -98,7 +99,7 @@ useEffect(() => {
           allowDecreaseBelowMin: !!g.allowDecreaseBelowMin,
         });
       } catch (e) {
-        console.warn('Failed to load guardrails', e);
+        DebugLogger.warn('error', 'Failed to load parent guardrails', { error: e });
       }
     })();
   }, []);
@@ -115,7 +116,7 @@ useEffect(() => {
           .order('started_at', { ascending: false })
           .limit(20);
         if (error) {
-          console.warn('Failed to load quiz results', error);
+          DebugLogger.warn('error', 'Failed to load quiz results from database', { error });
           return;
         }
         const scores = (data || [])
@@ -123,7 +124,7 @@ useEffect(() => {
           .filter((n: any) => typeof n === 'number' && n >= 0 && n <= 100);
         setQuizScores(scores);
       } catch (e) {
-        console.warn('Quiz fetch error', e);
+        DebugLogger.warn('error', 'Quiz scores fetch operation failed', { error: e });
       }
     })();
   }, []);
@@ -140,7 +141,7 @@ useEffect(() => {
           .select('id, active_child_id, story_preferences, is_premium')
           .eq('user_id', user.id)
           .maybeSingle();
-        if (error) { console.warn('Prefs fetch failed', error); return; }
+        if (error) { DebugLogger.warn('error', 'User preferences fetch failed', { error }); return; }
         setPrefsRowId((data as any)?.id ?? null);
         setActiveChildId((data as any)?.active_child_id ?? null);
 setIsPremiumUser(prev => prev || !!(data as any)?.is_premium);
