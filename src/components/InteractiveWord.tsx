@@ -131,7 +131,7 @@ export const InteractiveWord = ({
   const userNativeLanguage = userInfo?.nativeLanguage || "en";
   
   // 🧪 TEMPORARY DEBUG: Log language detection for troubleshooting
-  console.log('🌍 Language Detection Debug:', {
+  DebugLogger.log('ui', 'Language Detection Debug', {
     userInfoNativeLanguage: userInfo?.nativeLanguage,
     isNativeEnglishSpeaker,
     isESLLearner,
@@ -249,15 +249,15 @@ export const InteractiveWord = ({
     if (isPlaying) return;
     setIsPlaying(true);
     
-    console.log('🎯 Interactive word DIRECT HEAR button clicked for:', cleanWord);
+    DebugLogger.log('ui', 'Interactive word DIRECT HEAR button clicked', { word: cleanWord });
     
     try {
       // Use dedicated service instead of mixed audio systems
       const { InteractiveWordAudioService } = await import('@/services/InteractiveWordAudioService');
       await InteractiveWordAudioService.hearWord(cleanWord);
-      console.log('✅ Interactive word hear completed successfully');
+      DebugLogger.log('audio', 'Interactive word hear completed successfully');
     } catch (error) {
-      console.error('❌ Interactive word hear failed:', error);
+      DebugLogger.error('audio', 'Interactive word hear failed', error);
       toast({
         title: "Audio Error", 
         description: `Failed to pronounce "${cleanWord}"`,

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { performanceManager } from '@/services/PerformanceManager';
+import { DebugLogger } from '@/services/DebugLogger';
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { ChevronUp, ChevronDown, Play, Pause, Minus, Plus, X, Volume2, VolumeX } from "lucide-react";
