@@ -326,6 +326,34 @@ export class VisualDetailTracker {
   }
 
   /**
+   * Get session setting from previous pages for cross-page persistence
+   */
+  async getSessionSetting(sessionId) {
+    try {
+      const { data, error } = await this.supabase
+        .from('visual_details_cache')
+        .select('*')
+        .eq('session_id', sessionId)
+        .eq('detail_type', 'setting')
+        .eq('detail_key', 'location')
+        .order('page_last_seen', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (error) {
+        console.log('No previous setting found:', error.message);
+        return null;
+      }
+
+      console.log(`🏠 Retrieved session setting: ${data.detail_value} from page ${data.page_last_seen}`);
+      return data.detail_value;
+    } catch (error) {
+      console.error('Database error in getSessionSetting:', error);
+      return null;
+    }
+  }
+
+  /**
    * Track visual detail - matches frontend interface
    */
   async trackVisualDetail(detail) {
@@ -368,6 +396,11 @@ export class VisualDetailTracker {
   static async getCharacterClothing(sessionId, characterName) {
     const tracker = new VisualDetailTracker();
     return tracker.getCharacterClothing(sessionId, characterName);
+  }
+
+  static async getSessionSetting(sessionId) {
+    const tracker = new VisualDetailTracker();
+    return tracker.getSessionSetting(sessionId);
   }
 
   static async buildClothingDescription(sessionId, characterName) {

@@ -542,6 +542,38 @@ serve(async (req) => {
       }
     }
 
+    // NEW: Setting persistence for Tier 2.5A - detect and persist settings
+    let persistentSetting = null;
+    if (effectiveTierType === '2.5A') {
+      try {
+        // Import ExactWordExtractor and VisualDetailTracker for setting detection
+        const { ExactWordExtractor } = await import("../_shared/ExactWordExtractor.js");
+        const visualTracker = await getVisualTracker();
+        
+        if (ExactWordExtractor && visualTracker) {
+          const currentSetting = ExactWordExtractor.extractExactSetting(pageText);
+          
+          if (currentSetting && currentSetting !== 'magical place') {
+            // Save current setting to database
+            await visualTracker.saveDetailToDatabase(
+              bundle.sessionId || 'default', 'general', 'setting', 'location', currentSetting, bundle.pageNumber || 1
+            );
+            persistentSetting = currentSetting;
+            console.log(`🏠 Tier 2.5A: Detected and saved setting: ${currentSetting}`);
+          } else {
+            // Retrieve previous setting if no current one found
+            persistentSetting = await visualTracker.getSessionSetting(bundle.sessionId || 'default');
+            if (persistentSetting) {
+              console.log(`🏠 Tier 2.5A: Using persistent setting: ${persistentSetting}`);
+            }
+          }
+        }
+      } catch (error) {
+        console.warn('[Template AB] Setting persistence failed:', error);
+        persistentSetting = null;
+      }
+    }
+
     // PHASE 7: Build enhanced context object
     const fullContext = {
       ...bundle,
@@ -563,7 +595,10 @@ serve(async (req) => {
       leftover_data: bundle.leftoverData || '',
       cameraDirective: 'medium shot',
       frameworkPrompt: getNuclearStyleFramework(bundle.templateLevel || 'medium').frameworkPrompt,
-      fullFrameworkPrompt: getNuclearStyleFramework(bundle.templateLevel || 'medium').frameworkPrompt
+      fullFrameworkPrompt: getNuclearStyleFramework(bundle.templateLevel || 'medium').frameworkPrompt,
+      // NEW: Add persistent setting to context for template resolution
+      persistent_setting: persistentSetting || '',
+      setting_context: persistentSetting ? `in ${persistentSetting}` : ''
     };
 
     // PHASE 7: Resolve placeholders

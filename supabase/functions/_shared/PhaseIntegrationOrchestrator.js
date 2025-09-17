@@ -223,6 +223,26 @@ export class PhaseIntegrationOrchestrator {
           return typeof item === 'string' ? item : '';
         }).filter(Boolean).join(', ') : 
         (visualHistoryData || '');
+
+      // NEW: Setting persistence for Tier 1 - detect and persist settings
+      const { ExactWordExtractor } = await import('./ExactWordExtractor.js');
+      const currentSetting = ExactWordExtractor.extractExactSetting(storyText || '');
+      let persistentSetting = null;
+      
+      if (currentSetting && currentSetting !== 'magical place') {
+        // Save current setting to database
+        await this.visualDetailTracker.saveDetailToDatabase(
+          sessionId, 'general', 'setting', 'location', currentSetting, 1
+        );
+        persistentSetting = currentSetting;
+        console.log(`🏠 Tier 1: Detected and saved setting: ${currentSetting}`);
+      } else {
+        // Retrieve previous setting if no current one found
+        persistentSetting = await this.visualDetailTracker.getSessionSetting(sessionId);
+        if (persistentSetting) {
+          console.log(`🏠 Tier 1: Using persistent setting: ${persistentSetting}`);
+        }
+      }
       
       // Get colored objects for visual consistency using CharacterConsistencyService
       await this.characterConsistencyService.analyzeVisualDetails(sessionId, storyText, 1);
@@ -323,7 +343,7 @@ export class PhaseIntegrationOrchestrator {
         selectedSkin
       ].filter(Boolean).join(', ');
 
-      // Build complete 6-section Tier 1 enhanced prompt template
+      // Build complete 6-section Tier 1 enhanced prompt template with setting integration
       const enhancedPrompt = [
         `PRIMARY SCENE: ${primaryScene}`,
         `CHARACTER DESCRIPTION: ${characterDescription}`,
@@ -331,7 +351,9 @@ export class PhaseIntegrationOrchestrator {
         `- Visual Traits: ${specificClothing || `${characterName} wearing consistent character clothing`}`,
         `- Visual Consistency: ${combinedVisualElements}`,
         `STYLE FRAMEWORK: ${styleFramework}`,
-        `CONTEXT: ${contextSummary}`
+        `CONTEXT: ${contextSummary}`,
+        // NEW: Add persistent setting to prompt if available
+        persistentSetting ? `SETTING: consistently in ${persistentSetting}` : ''
       ].filter(Boolean).join('\n');
 
       console.log(`✅ PHASE ORCHESTRATOR: Complete Tier 1 template generated`, {
@@ -440,7 +462,9 @@ export class PhaseIntegrationOrchestrator {
         if (item) {
           const normalizedItem = item.toLowerCase().trim();
           if (!seenElements.has(normalizedItem)) {
-            elements.push(item);
+            // CRITICAL FIX: Handle object serialization to prevent "[object Object]"
+            const itemToAdd = typeof item === 'object' ? JSON.stringify(item) : item;
+            elements.push(itemToAdd);
             seenElements.add(normalizedItem);
           }
         }

@@ -158,9 +158,9 @@ export class ExactWordExtractor {
    * Extracts location-based setting words from predefined list
    */
   static extractExactSetting(text) {
-    const settingWords = TIER_25_UNIFIED_VOCABULARY_EXTENDED.environments.outdoor
-      .concat(TIER_25_UNIFIED_VOCABULARY_EXTENDED.environments.indoor)
-      .concat(TIER_25_UNIFIED_VOCABULARY_EXTENDED.environments.fantasy);
+    // CRITICAL FIX: Use correct vocabulary paths from tier25Vocabulary.js
+    const settingWords = TIER_25_UNIFIED_VOCABULARY_EXTENDED.contextDetection.outdoor
+      .concat(TIER_25_UNIFIED_VOCABULARY_EXTENDED.contextDetection.indoor);
 
     // Look for exact setting word matches
     for (const setting of settingWords) {
