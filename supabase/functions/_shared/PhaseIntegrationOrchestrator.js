@@ -272,14 +272,32 @@ export class PhaseIntegrationOrchestrator {
           const supabase = await import('https://esm.sh/@supabase/supabase-js@2.57.4').then(mod => 
             mod.createClient(Deno.env.get('SUPABASE_URL'), Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY'))
           );
-          const { data: aiResult } = await supabase.functions.invoke('ai-visual-scene-creator', {
+          const { data: aiResult, error: aiError } = await supabase.functions.invoke('ai-visual-scene-creator', {
             body: { pageText: storyText, userInfo, sessionId, pageNumber: 1 }
           });
-          primaryScene = aiResult?.primaryScene || this.generatePrimaryScene(basePrompt, storyText);
+          
+          // CRITICAL FIX: Check for aiError OR missing primaryScene and escalate to Tier 2.5A
+          if (aiError) {
+            console.warn('🚨 AI scene creator returned error:', aiError);
+            console.log('🔄 AI scene creator failed - escalating to Tier 2.5A');
+            throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_25A');
+          }
+          
+          if (!aiResult?.primaryScene) {
+            console.warn('🚨 AI scene creator returned no primaryScene');
+            console.log('🔄 AI scene creator missing primaryScene - escalating to Tier 2.5A');
+            throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_25A');
+          }
+          
+          primaryScene = aiResult.primaryScene;
         } catch (error) {
-          console.warn('Failed to get AI primaryScene, using fallback:', error.message);
-          // CRITICAL FIX: Check for 503 or ai-visual-scene-creator failures and escalate to Tier 2.5A
-          if (error.message.includes('503') || error.message.includes('ai-visual-scene-creator') || error.message.includes('timeout')) {
+          console.warn('Failed to get AI primaryScene:', error.message);
+          // CRITICAL FIX: Check for 503, Service unavailable, or ai-visual-scene-creator failures and escalate to Tier 2.5A
+          if (error.message.includes('503') || 
+              error.message.includes('Service unavailable') ||
+              error.message.includes('ai-visual-scene-creator') || 
+              error.message.includes('timeout') ||
+              error.message.includes('NO_PRIMARY_SCENE_ESCALATE_TO_25A')) {
             console.log('🔄 AI scene creator failed - escalating to Tier 2.5A');
             throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_25A');
           }
