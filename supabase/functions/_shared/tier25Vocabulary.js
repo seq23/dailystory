@@ -533,7 +533,7 @@ const UNIVERSAL_EMOTION_ARRAYS = [
 ];
 
 // ============= CLOTHING DETECTION KEYWORDS =============
-const CLOTHING_DETECTION_KEYWORDS = [
+export const CLOTHING_DETECTION_KEYWORDS = [
   'shirt', 'dress', 'pants', 'shorts', 'skirt', 'jacket', 'sweater', 'hoodie',
   'jeans', 'overalls', 'uniform', 'costume', 'pajamas', 'robe', 'coat',
   'blouse', 'tunic', 'cardigan', 'vest', 'tank top', 'polo', 'turtleneck'

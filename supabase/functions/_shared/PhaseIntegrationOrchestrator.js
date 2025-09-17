@@ -229,7 +229,7 @@ export class PhaseIntegrationOrchestrator {
       const coloredObjects = await this.characterConsistencyService.getColoredObjects(sessionId);
       
       // Extract specific clothing from pageText for Visual Traits
-      const specificClothing = this.extractClothingFromText(storyText || '');
+      const specificClothing = await this.extractClothingFromText(storyText || '');
       
       // Combine colored objects with visual history, eliminating redundancies
       const combinedVisualElements = this.combineVisualConsistency(coloredObjects, visualHistory);
@@ -371,7 +371,7 @@ export class PhaseIntegrationOrchestrator {
   }
 
   // Helper method to extract specific clothing from text
-  extractClothingFromText(text) {
+  async extractClothingFromText(text) {
     if (!text) return '';
     
     // CRITICAL FIX: Use tier25Vocabulary CLOTHING_DETECTION_KEYWORDS instead of primitive regex
