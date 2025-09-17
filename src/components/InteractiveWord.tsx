@@ -1097,11 +1097,11 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
       const cleanWord = props.word.replace(/[.,!?;:'"()]/g, '');
       const userLanguage = props.userInfo?.nativeLanguage || 'en';
       
-      console.log('Mobile TTS: Starting pronunciation for word:', cleanWord, 'Language:', userLanguage);
+      DebugLogger.log('audio', 'Starting pronunciation for word', { cleanWord, userLanguage });
       
       // For non-English speakers, use browser speech synthesis for better native pronunciation
       if (userLanguage !== 'en') {
-        console.log('Mobile TTS: Using browser speech for non-English user');
+        DebugLogger.log('audio', 'Using browser speech for non-English user');
         
         if ('speechSynthesis' in window) {
           // Cancel any existing speech
@@ -1131,21 +1131,21 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
           
           if (englishVoice) {
             utterance.voice = englishVoice;
-            console.log(`Mobile TTS: Using English voice: ${englishVoice.name}`);
+            DebugLogger.log('audio', 'Using English voice', { voiceName: englishVoice.name });
           }
           
           utterance.onend = () => {
-            console.log('Mobile TTS: Browser speech ended');
+            DebugLogger.log('audio', 'Browser speech ended');
             setIsPlayingMobile(false);
           };
           
           utterance.onerror = (e) => {
-            console.error('Mobile TTS: Browser speech error:', e);
+            DebugLogger.error('audio', 'Browser speech error', e);
             setIsPlayingMobile(false);
           };
           
           speechSynthesis.speak(utterance);
-          console.log('Mobile TTS: Browser speech synthesis started');
+          DebugLogger.log('audio', 'Browser speech synthesis started');
           return; // Exit early, don't use ElevenLabs
         } else {
           throw new Error('Speech synthesis not available');
@@ -1154,7 +1154,7 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
       
       // For English speakers, use ElevenLabs for high-quality pronunciation
       const voiceId = getVoiceForUser();
-      console.log('Mobile TTS: Using ElevenLabs for English speaker, Voice:', voiceId);
+      DebugLogger.log('audio', 'Using ElevenLabs for English speaker', { voiceId });
       
       const response = await supabase.functions.invoke('elevenlabs-tts', {
         body: {
@@ -1164,10 +1164,10 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
         }
       });
 
-      console.log('Mobile TTS Response:', response);
+      DebugLogger.log('audio', 'TTS Response received', response);
 
       if (response.error) {
-        console.error('Mobile TTS Error:', response.error);
+        DebugLogger.error('audio', 'TTS Error', response.error);
         throw new Error(response.error.message || 'TTS failed');
       }
 
@@ -1176,10 +1176,13 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
         throw new Error('No audio data received from TTS service');
       }
       
-      console.log('Mobile TTS: Audio data received, type:', typeof response.data, 'length:', response.data?.length || response.data?.byteLength || 'unknown');
-      console.log('Mobile TTS: Is ArrayBuffer?', response.data instanceof ArrayBuffer);
-      console.log('Mobile TTS: Is Uint8Array?', response.data instanceof Uint8Array);
-      console.log('Mobile TTS: Constructor name:', response.data?.constructor?.name);
+      DebugLogger.log('audio', 'Audio data received', {
+        type: typeof response.data,
+        length: response.data?.length || response.data?.byteLength || 'unknown',
+        isArrayBuffer: response.data instanceof ArrayBuffer,
+        isUint8Array: response.data instanceof Uint8Array,
+        constructorName: response.data?.constructor?.name
+      });
       
       // CRITICAL FIX: Handle different data types from Supabase functions
       let audioData;
@@ -1194,14 +1197,17 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
         // Base64 encoded data - decode it with UTF-8 safe decoder
         audioData = safeBase64Decode(response.data);
       } else {
-        console.error('Unexpected data type:', typeof response.data, response.data);
+        DebugLogger.error('audio', 'Unexpected audio data format', { 
+          type: typeof response.data, 
+          data: response.data 
+        });
         throw new Error('Unexpected audio data format: ' + typeof response.data);
       }
       
-      console.log('Mobile TTS: Processed audio data size:', audioData.byteLength);
+      DebugLogger.log('audio', 'Processed audio data', { size: audioData.byteLength });
       
       // Enhanced mobile audio handling with multiple format support
-      console.log('Mobile TTS: Creating audio with enhanced compatibility');
+      DebugLogger.log('audio', 'Creating audio with enhanced compatibility');
       
       // Try multiple audio formats for better mobile support
       const audioFormats = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg'];
@@ -1217,18 +1223,18 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
           const testAudio = new Audio();
           const canPlay = testAudio.canPlayType(format);
           
-          console.log(`Mobile TTS: Format ${format} support:`, canPlay);
+          DebugLogger.log('audio', 'Testing audio format support', { format, canPlay });
           
           if (canPlay === 'probably' || canPlay === 'maybe') {
             audioUrl = testUrl;
             successfulFormat = format;
-            console.log(`Mobile TTS: Selected format: ${format}`);
+            DebugLogger.log('audio', 'Selected audio format', { format });
             break;
           } else {
             URL.revokeObjectURL(testUrl);
           }
         } catch (formatError) {
-          console.warn(`Mobile TTS: Format ${format} failed:`, formatError);
+          DebugLogger.warn('audio', 'Audio format failed', { format, error: formatError });
         }
       }
       
@@ -1237,10 +1243,10 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
         const audioBlob = new Blob([audioData], { type: 'audio/mpeg' });
         audioUrl = URL.createObjectURL(audioBlob);
         successfulFormat = 'audio/mpeg';
-        console.log('Mobile TTS: Using fallback format');
+        DebugLogger.log('audio', 'Using fallback audio format');
       }
       
-      console.log('Mobile TTS: Audio URL created with format:', successfulFormat);
+      DebugLogger.log('audio', 'Audio URL created', { format: successfulFormat });
       
       // Create audio element with enhanced mobile configuration
       const audio = new Audio();
@@ -1259,17 +1265,17 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
       };
       
       audio.onended = () => {
-        console.log('Mobile TTS: Audio playback completed');
+        DebugLogger.log('audio', 'Audio playback completed');
         cleanup();
       };
       
       audio.onerror = (e) => {
-        console.error('Mobile TTS: Audio error:', e);
-        console.error('Audio error details:', {
+        DebugLogger.error('audio', 'Audio playback error', {
           error: audio.error?.code,
           message: audio.error?.message,
           networkState: audio.networkState,
-          readyState: audio.readyState
+          readyState: audio.readyState,
+          event: e
         });
         cleanup();
         throw new Error(`Audio playback failed (${audio.error?.code || 'unknown error'})`);
@@ -1277,7 +1283,7 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
       
       // Set source and attempt playback
       audio.src = audioUrl;
-      console.log('Mobile TTS: Starting enhanced audio playback');
+      DebugLogger.log('audio', 'Starting enhanced audio playback');
       
       try {
         // Use promise-based play with timeout for mobile compatibility
@@ -1292,11 +1298,11 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
           await Promise.race([playPromise, timeoutPromise]);
         }
         
-        console.log('Mobile TTS: Audio playback started successfully');
+        DebugLogger.log('audio', 'Audio playback started successfully');
         setIsPlayingMobile(true);
         
       } catch (playError) {
-        console.error('Mobile TTS: Enhanced play error:', playError);
+        DebugLogger.error('audio', 'Enhanced audio play error', playError);
         cleanup();
         
         // Provide specific error messages for mobile
@@ -1310,12 +1316,12 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
       }
       
     } catch (error) {
-      console.error('Mobile TTS Error Details:', error);
+      DebugLogger.error('audio', 'TTS Error Details', error);
       setIsPlayingMobile(false);
       
       // Try fallback to browser speech synthesis
       try {
-        console.log('Mobile TTS: Attempting browser speech synthesis fallback');
+        DebugLogger.log('audio', 'Attempting browser speech synthesis fallback');
         
         if ('speechSynthesis' in window) {
           const utterance = new SpeechSynthesisUtterance(props.word.replace(/[^\w\s]/g, ''));
@@ -1324,27 +1330,27 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
           utterance.volume = 0.9;
           
           utterance.onstart = () => {
-            console.log('Mobile TTS: Browser speech started');
+            DebugLogger.log('audio', 'Browser speech started');
             setIsPlayingMobile(true);
           };
           
           utterance.onend = () => {
-            console.log('Mobile TTS: Browser speech ended');
+            DebugLogger.log('audio', 'Browser speech ended');
             setIsPlayingMobile(false);
           };
           
           utterance.onerror = (e) => {
-            console.error('Mobile TTS: Browser speech error:', e);
+            DebugLogger.error('audio', 'Browser speech error', e);
             setIsPlayingMobile(false);
           };
           
           window.speechSynthesis.speak(utterance);
-          console.log('Mobile TTS: Browser speech synthesis started');
+          DebugLogger.log('audio', 'Browser speech synthesis started');
         } else {
           throw new Error('Speech synthesis not supported');
         }
       } catch (fallbackError) {
-        console.error('Mobile TTS: Fallback also failed:', fallbackError);
+        DebugLogger.error('audio', 'Fallback also failed', fallbackError);
         
         // Only show toast if no fallback worked
         toast({
@@ -1384,7 +1390,7 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
         return `${word}. ${defText}. ${exText}`;
       }
     } catch (error) {
-      console.log('Translation failed, using simple format:', error);
+      DebugLogger.log('network', 'Translation failed, using simple format', error);
     }
     
     // Fallback to simple format if translation fails
@@ -1392,20 +1398,20 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
   };
 
   const handleMobileExplain = async () => {
-    console.log('📚 Mobile Explain: Function called');
+    DebugLogger.log('story', 'Mobile Explain function called');
     if (isLoadingMobile || isPlayingMobile) {
-      console.log('📚 Mobile Explain: Blocked - already loading or playing');
+      DebugLogger.log('story', 'Mobile Explain blocked - already loading or playing');
       return;
     }
     
-    console.log('📚 Mobile Explain: Starting...');
+    DebugLogger.log('story', 'Mobile Explain starting');
     setIsLoadingMobile(true);
     
     try {
-      console.log('📚 Mobile Explain: Starting for word:', props.word);
+      DebugLogger.log('story', 'Mobile Explain starting for word', { word: props.word });
       
       // Get word definition first - with language fallback
-      console.log('📚 Mobile Explain: About to call word-dictionary API...');
+      DebugLogger.log('network', 'About to call word-dictionary API');
       let response;
       let wordData;
       
@@ -1419,7 +1425,7 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
           }
         });
         
-        console.log('📚 Mobile Explain: word-dictionary API response:', response);
+        DebugLogger.log('network', 'word-dictionary API response', response);
 
         if (response.error || !response.data) {
           throw new Error('Primary language request failed');
@@ -1427,7 +1433,7 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
         
         wordData = response.data;
       } catch (error) {
-        console.log('📚 Mobile Explain: Primary language failed, trying English fallback...');
+        DebugLogger.log('network', 'Primary language failed, trying English fallback', error);
         
         // Fallback to English if user's language fails
         response = await supabase.functions.invoke('word-dictionary', {
@@ -1446,40 +1452,45 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
       }
       
       setMobileWordData(wordData);
-      console.log('📚 Mobile Explain: Got word data:', wordData);
+      DebugLogger.log('story', 'Got word data', wordData);
       
       // Generate TTS for explanation (use simple English explanation for all users)
-      console.log('📚 Mobile Explain: About to get voice...');
+      DebugLogger.log('audio', 'About to get voice');
       const voiceId = getVoiceForUser();
-      console.log('📚 Mobile Explain: Voice ID:', voiceId);
+      DebugLogger.log('audio', 'Voice ID obtained', { voiceId });
       
       // Create appropriate explanation based on user's language
       let explanationText;
       const userLanguage = props.userInfo?.nativeLanguage || 'en';
       
-      console.log('📚 Mobile Explain: User language detected:', userLanguage);
-      console.log('📚 Mobile Explain: User info:', props.userInfo);
+      DebugLogger.log('story', 'User language detected', { 
+        userLanguage, 
+        userInfo: props.userInfo 
+      });
       
       if (userLanguage === 'en') {
         // English explanation (current format)
         explanationText = wordData.definition 
           ? `${props.word}. ${wordData.definition}.${wordData.sampleSentence ? ` Example: ${wordData.sampleSentence}` : ''}`
           : `${props.word} is a word.`;
-        console.log('📚 Mobile Explain: Using English explanation');
+        DebugLogger.log('story', 'Using English explanation');
       } else {
         // For non-English users, provide translation-based explanation
-        console.log('📚 Mobile Explain: Attempting translation to:', userLanguage);
+        DebugLogger.log('story', 'Attempting translation to language', { userLanguage });
         explanationText = await generateNativeLanguageExplanation(props.word, wordData, userLanguage);
-        console.log('📚 Mobile Explain: Translated explanation:', explanationText);
+        DebugLogger.log('story', 'Translated explanation completed', { explanationLength: explanationText.length });
       }
       
-      console.log('📚 Mobile Explain: TTS text:', explanationText.substring(0, 100) + '...');
+      DebugLogger.log('audio', 'TTS text prepared', { 
+        textLength: explanationText.length,
+        preview: explanationText.substring(0, 100) + '...'
+      });
       
-      console.log('📚 Mobile Explain: About to call elevenlabs-tts...');
+      DebugLogger.log('network', 'About to call elevenlabs-tts');
       
       // For non-English users, use browser speech synthesis for native language TTS
       if (userLanguage !== 'en') {
-        console.log('📚 Mobile Explain: Using browser speech for native language');
+        DebugLogger.log('audio', 'Using browser speech for native language');
         
         if ('speechSynthesis' in window) {
           // Cancel any existing speech
@@ -1510,29 +1521,32 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
           
           if (nativeVoice) {
             utterance.voice = nativeVoice;
-            console.log(`📚 Mobile Explain: Using native voice: ${nativeVoice.name} for ${userLanguage}`);
+            DebugLogger.log('audio', 'Using native voice for language', { 
+              voiceName: nativeVoice.name, 
+              userLanguage 
+            });
           }
           
           setIsPlayingMobile(true);
           
           utterance.onend = () => {
-            console.log('📚 Mobile Explain: Native language speech ended');
+            DebugLogger.log('audio', 'Native language speech ended');
             setIsPlayingMobile(false);
           };
           
           utterance.onerror = (e) => {
-            console.error('📚 Mobile Explain: Native language speech error:', e);
+            DebugLogger.error('audio', 'Native language speech error', e);
             setIsPlayingMobile(false);
           };
           
           speechSynthesis.speak(utterance);
-          console.log('📚 Mobile Explain: Native language speech synthesis started');
+          DebugLogger.log('audio', 'Native language speech synthesis started');
         } else {
           throw new Error('Speech synthesis not available');
         }
       } else {
         // For English users, use ElevenLabs TTS
-        console.log('📚 Mobile Explain: Using ElevenLabs for English');
+        DebugLogger.log('audio', 'Using ElevenLabs for English');
         
         const ttsResponse = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/elevenlabs-tts', {
           method: 'POST',
@@ -1548,12 +1562,12 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
           throw new Error('Failed to generate audio explanation');
         }
         
-        console.log('📚 Mobile Explain: ElevenLabs response received');
+        DebugLogger.log('network', 'ElevenLabs response received');
         
         const audioBlob = await ttsResponse.blob();
         const audioUrl = URL.createObjectURL(audioBlob);
         
-        console.log('📚 Mobile Explain: Audio blob created, setting up audio element');
+        DebugLogger.log('audio', 'Audio blob created, setting up audio element');
         
         const audio = new Audio();
         audio.src = audioUrl;
@@ -1561,28 +1575,28 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
         audio.volume = 0.9;
         
         setIsPlayingMobile(true);
-        console.log('📚 Mobile Explain: Starting ElevenLabs TTS playback');
+        DebugLogger.log('audio', 'Starting ElevenLabs TTS playback');
         
         const playAudio = () => {
           return new Promise((resolve, reject) => {
             audio.onended = () => {
-              console.log('📚 Mobile Explain: ElevenLabs TTS ended');
+              DebugLogger.log('audio', 'ElevenLabs TTS ended');
               setIsPlayingMobile(false);
               URL.revokeObjectURL(audioUrl);
               resolve(undefined);
             };
             
             audio.onerror = (e) => {
-              console.error('📚 Mobile Explain: ElevenLabs TTS playback error:', e);
+              DebugLogger.error('audio', 'ElevenLabs TTS playback error', e);
               setIsPlayingMobile(false);
               URL.revokeObjectURL(audioUrl);
               reject(new Error('Audio playback failed'));
             };
             
             audio.play().then(() => {
-              console.log('📚 Mobile Explain: ElevenLabs audio started successfully');
+              DebugLogger.log('audio', 'ElevenLabs audio started successfully');
             }).catch((playError) => {
-              console.error('📚 Mobile Explain: ElevenLabs play error:', playError);
+              DebugLogger.error('audio', 'ElevenLabs play error', playError);
               setIsPlayingMobile(false);
               URL.revokeObjectURL(audioUrl);
               reject(new Error('Audio playback requires user interaction'));
@@ -1594,7 +1608,7 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
       }
       
     } catch (error) {
-      console.error('Mobile Explain Error:', error);
+      DebugLogger.error('story', 'Mobile Explain Error', error);
       
       // Provide fallback explanation without TTS
       if (!mobileWordData) {
@@ -1617,18 +1631,19 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
 
   // Enhanced mobile word click handler
   const handleMobileWordClick = () => {
-    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
-      console.log('📱 Mobile word clicked for word:', props.word, 'current showMobileTTS:', showMobileTTS);
-    }
+    DebugLogger.log('ui', 'Mobile word clicked', { 
+      word: props.word, 
+      currentShowMobileTTS: showMobileTTS 
+    });
     setShowMobileTTS(!showMobileTTS);
-    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
-      console.log('📱 Mobile word clicked, new showMobileTTS:', !showMobileTTS);
-    }
+    DebugLogger.log('ui', 'Mobile word click completed', { 
+      newShowMobileTTS: !showMobileTTS 
+    });
   };
 
   // Phonetic breakdown handler - now available to all users
   const handlePhoneticBreakdown = async () => {
-    console.log('🎯 Interactive word DIRECT SYLLABLES clicked for:', props.word);
+    DebugLogger.log('audio', 'Interactive word DIRECT SYLLABLES clicked', { word: props.word });
     
     setIsPlayingPhonetics(true);
     
@@ -1636,17 +1651,17 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
       // Use dedicated InteractiveWordAudioService instead of mixed systems
       const { InteractiveWordAudioService } = await import('@/services/InteractiveWordAudioService');
       await InteractiveWordAudioService.syllableWord(props.word);
-      console.log('✅ Interactive word syllables completed successfully');
+      DebugLogger.log('audio', 'Interactive word syllables completed successfully');
       
       // Track vocabulary learning for all users
-      console.log('🎯 Syllables: Adding to vocabulary for word:', props.word);
+      DebugLogger.log('story', 'Syllables: Adding to vocabulary for word', { word: props.word });
       if (typeof (window as any).addVocabularyWord === 'function') {
         (window as any).addVocabularyWord();
-        console.log('✅ Syllables: Vocabulary word added via global function');
+        DebugLogger.log('story', 'Vocabulary word added via global function');
       }
       
     } catch (error) {
-      console.error('❌ Interactive word syllables failed:', error);
+      DebugLogger.error('audio', 'Interactive word syllables failed', error);
       toast({
         title: "Error",
         description: "Could not play syllable breakdown. Please try again.",
@@ -1695,21 +1710,27 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
         }`}
         // Universal event handling for mobile component
         onClick={(e) => {
-          console.log('🎯 Mobile word clicked:', props.word, 'environment:', window.location.href.includes('preview') ? 'preview' : 'console');
+          DebugLogger.log('ui', 'Mobile word clicked', { 
+            word: props.word, 
+            environment: window.location.href.includes('preview') ? 'preview' : 'console' 
+          });
           handleMobileWordClick();
         }}
         onTouchStart={(e) => {
-          console.log('🎯 Mobile touch start:', props.word);
+          DebugLogger.log('ui', 'Mobile touch start', { word: props.word });
           e.preventDefault();
         }}
         onTouchEnd={(e) => {
-          console.log('🎯 Mobile touch end:', props.word);
+          DebugLogger.log('ui', 'Mobile touch end', { word: props.word });
           e.preventDefault();
           handleMobileWordClick();
         }}
         // Add pointer events for universal support
         onPointerDown={(e) => {
-          console.log('🎯 Mobile pointer down:', props.word, 'pointerType:', e.pointerType);
+          DebugLogger.log('ui', 'Mobile pointer down', { 
+            word: props.word, 
+            pointerType: e.pointerType 
+          });
           if (e.pointerType === 'mouse') {
             handleMobileWordClick();
           }
@@ -1756,7 +1777,10 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
               
               <button
                 onClick={() => {
-                  console.log('📚 Explain button clicked, isLoadingMobile:', isLoadingMobile, 'isPlayingMobile:', isPlayingMobile);
+                  DebugLogger.log('story', 'Explain button clicked', { 
+                    isLoadingMobile, 
+                    isPlayingMobile 
+                  });
                   handleMobileExplain();
                 }}
                 disabled={isLoadingMobile || isPlayingMobile}
@@ -1773,7 +1797,7 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
                <div className="mb-4">
                   <button
                     onClick={() => {
-                      console.log('🔤 PHONETIC BUTTON CLICKED for word:', props.word);
+                      DebugLogger.log('audio', 'Phonetic button clicked for word', { word: props.word });
                       handlePhoneticBreakdown();
                     }}
                     disabled={isPlayingPhonetics}
