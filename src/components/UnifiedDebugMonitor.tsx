@@ -253,7 +253,7 @@ export const UnifiedDebugMonitor: React.FC = () => {
   }
 
   return (
-    <div className="fixed inset-2 sm:inset-4 lg:inset-6 z-[9999] bg-background/95 backdrop-blur-sm border border-muted rounded-lg shadow-2xl flex flex-col h-[calc(100vh-1rem)] sm:h-[calc(100vh-2rem)] lg:max-h-[85vh]">
+    <div className="fixed inset-4 z-[9999] bg-background/95 backdrop-blur-sm border border-muted rounded-lg shadow-2xl flex flex-col h-[95vh]">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-muted bg-background/90 backdrop-blur-sm">
         <div className="flex items-center gap-4">
@@ -302,17 +302,12 @@ export const UnifiedDebugMonitor: React.FC = () => {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
-        <TabsList className="grid w-full grid-cols-3 sm:grid-cols-5 lg:grid-cols-10 m-4 mb-2 text-xs">
-          <TabsTrigger value="console" className="text-xs p-1 sm:p-2">Console ({logs.length})</TabsTrigger>
-          <TabsTrigger value="system" className="text-xs p-1 sm:p-2 hidden sm:block">System</TabsTrigger>
-          <TabsTrigger value="network" className="text-xs p-1 sm:p-2">Network ({networkRequests.length})</TabsTrigger>
-          <TabsTrigger value="netflix" className="text-xs p-1 sm:p-2 hidden lg:block">Netflix ({netflixLogs.length})</TabsTrigger>
-          <TabsTrigger value="categories" className="text-xs p-1 sm:p-2 hidden lg:block">Categories</TabsTrigger>
-          <TabsTrigger value="circuit-breaker" className="text-xs p-1 sm:p-2 hidden lg:block">Circuit</TabsTrigger>
-          <TabsTrigger value="performance" className="text-xs p-1 sm:p-2 hidden lg:block">Perf</TabsTrigger>
-          <TabsTrigger value="image-gen" className="text-xs p-1 sm:p-2">Images</TabsTrigger>
-          <TabsTrigger value="debug-data" className="text-xs p-1 sm:p-2 hidden sm:block">Debug</TabsTrigger>
-          <TabsTrigger value="tier-checker" className="text-xs p-1 sm:p-2 hidden lg:block">Tiers</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-5 m-4 mb-2 text-xs">
+          <TabsTrigger value="console" className="text-xs p-2">Console ({logs.length})</TabsTrigger>
+          <TabsTrigger value="network" className="text-xs p-2">Network ({networkRequests.length})</TabsTrigger>
+          <TabsTrigger value="netflix" className="text-xs p-2">Netflix ({netflixLogs.length})</TabsTrigger>
+          <TabsTrigger value="image-gen" className="text-xs p-2">Images</TabsTrigger>
+          <TabsTrigger value="debug-data" className="text-xs p-2">Debug Data</TabsTrigger>
         </TabsList>
 
         <TabsContent value="console" className="flex-1 flex flex-col px-4 pb-4 min-h-0">
@@ -344,37 +339,35 @@ export const UnifiedDebugMonitor: React.FC = () => {
             </select>
           </div>
 
-          {/* Log List with Proper Scrolling */}
-          <div className="flex-1 border border-muted rounded-md bg-background/50 backdrop-blur-sm min-h-0">
-            <ScrollArea className="h-full w-full">
-              <div className="p-3 space-y-2">
-                {filteredLogs.map((log) => (
-                  <div key={log.id} className="text-xs font-mono border-b border-muted/30 pb-2 last:border-b-0">
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <span className="text-muted-foreground font-medium">{formatTime(log.timestamp)}</span>
-                      <Badge variant="outline" className={`h-5 text-xs ${getCategoryColor(log.category)}`}>
-                        {log.category}
-                      </Badge>
-                      <span className={`${getLevelColor(log.level)} font-medium uppercase text-xs`}>
-                        {log.level}
-                      </span>
-                    </div>
-                    <div className="text-foreground leading-relaxed break-words">{log.message}</div>
-                    {log.data && (
-                      <pre className="text-muted-foreground mt-2 text-xs bg-muted/20 p-2 rounded overflow-x-auto max-w-full whitespace-pre-wrap">
-                        {typeof log.data === 'string' ? log.data : JSON.stringify(log.data, null, 2)}
-                      </pre>
-                    )}
+          {/* Log List with Full Height Scrolling */}
+          <ScrollArea className="flex-1 border border-muted rounded-md bg-background/50 backdrop-blur-sm">
+            <div className="p-3 space-y-2">
+              {filteredLogs.map((log) => (
+                <div key={log.id} className="text-xs font-mono border-b border-muted/30 pb-2 last:border-b-0">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    <span className="text-muted-foreground font-medium">{formatTime(log.timestamp)}</span>
+                    <Badge variant="outline" className={`h-5 text-xs ${getCategoryColor(log.category)}`}>
+                      {log.category}
+                    </Badge>
+                    <span className={`${getLevelColor(log.level)} font-medium uppercase text-xs`}>
+                      {log.level}
+                    </span>
                   </div>
-                ))}
-                {filteredLogs.length === 0 && (
-                  <div className="text-center text-muted-foreground py-8">
-                    No logs match your search criteria
-                  </div>
-                )}
-              </div>
-            </ScrollArea>
-          </div>
+                  <div className="text-foreground leading-relaxed break-words">{log.message}</div>
+                  {log.data && (
+                    <pre className="text-muted-foreground mt-2 text-xs bg-muted/20 p-2 rounded overflow-x-auto max-w-full whitespace-pre-wrap">
+                      {typeof log.data === 'string' ? log.data : JSON.stringify(log.data, null, 2)}
+                    </pre>
+                  )}
+                </div>
+              ))}
+              {filteredLogs.length === 0 && (
+                <div className="text-center text-muted-foreground py-8">
+                  No logs match your search criteria
+                </div>
+              )}
+            </div>
+          </ScrollArea>
         </TabsContent>
 
         <TabsContent value="network" className="flex-1 flex flex-col px-4 pb-4 min-h-0">
@@ -389,46 +382,46 @@ export const UnifiedDebugMonitor: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex-1 border border-muted rounded-md bg-background/50 backdrop-blur-sm min-h-0">
-            <ScrollArea className="h-full w-full">
-              <div className="p-3 space-y-2">
-                {networkRequests.map((req) => (
-                  <div key={req.id} className="text-xs font-mono border-b border-muted/30 pb-2 last:border-b-0">
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <span className="text-muted-foreground font-medium">{formatTime(req.timestamp)}</span>
-                      <Badge className={`h-5 text-xs ${req.type === 'edge-function' ? 'bg-purple-500/20 text-purple-300' : req.type === 'supabase' ? 'bg-blue-500/20 text-blue-300' : 'bg-gray-500/20 text-gray-300'}`}>
-                        {req.type}
-                      </Badge>
-                      <span className={`font-medium text-xs ${req.error || (req.status && req.status >= 400) ? 'text-red-400' : req.status && req.status < 400 ? 'text-green-400' : 'text-yellow-400'}`}>
-                        {req.method}
+          <ScrollArea className="flex-1 border border-muted rounded-md bg-background/50 backdrop-blur-sm">
+            <div className="p-3 space-y-2">
+              {networkRequests.map((req) => (
+                <div key={req.id} className="text-xs font-mono border-b border-muted/30 pb-2 last:border-b-0">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    <span className="text-muted-foreground font-medium">{formatTime(req.timestamp)}</span>
+                    <Badge className={`h-5 text-xs ${req.type === 'edge-function' ? 'bg-purple-500/20 text-purple-300' : req.type === 'supabase' ? 'bg-blue-500/20 text-blue-300' : 'bg-gray-500/20 text-gray-300'}`}>
+                      {req.type}
+                    </Badge>
+                    <span className={`font-medium text-xs ${req.error || (req.status && req.status >= 400) ? 'text-red-400' : req.status && req.status < 400 ? 'text-green-400' : 'text-yellow-400'}`}>
+                      {req.method}
+                    </span>
+                    {req.status && (
+                      <span className={`text-xs ${req.status >= 400 ? 'text-red-400' : 'text-green-400'}`}>
+                        {req.status}
                       </span>
-                      {req.status && (
-                        <span className={`text-xs ${req.status >= 400 ? 'text-red-400' : 'text-green-400'}`}>
-                          {req.status}
-                        </span>
-                      )}
-                      {req.duration && (
-                        <span className="text-xs text-muted-foreground">
-                          {req.duration}ms
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-foreground leading-relaxed break-words">{req.url}</div>
-                    {req.error && (
-                      <div className="text-red-400 mt-1 text-xs">
-                        Error: {req.error}
-                      </div>
+                    )}
+                    {req.duration && (
+                      <span className="text-xs text-muted-foreground">
+                        {req.duration}ms
+                      </span>
                     )}
                   </div>
-                ))}
-                {networkRequests.length === 0 && (
-                  <div className="text-center text-muted-foreground py-8">
-                    No network requests captured yet
+                  <div className="text-foreground leading-relaxed break-words">
+                    {req.url}
                   </div>
-                )}
-              </div>
-            </ScrollArea>
-          </div>
+                  {req.error && (
+                    <div className="text-red-400 mt-2 text-xs bg-red-500/10 p-2 rounded">
+                      {req.error}
+                    </div>
+                  )}
+                </div>
+              ))}
+              {networkRequests.length === 0 && (
+                <div className="text-center text-muted-foreground py-8">
+                  No network requests captured yet
+                </div>
+              )}
+            </div>
+          </ScrollArea>
         </TabsContent>
 
         <TabsContent value="system" className="flex-1 flex flex-col px-4 pb-4 min-h-0">

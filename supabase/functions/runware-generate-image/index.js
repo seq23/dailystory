@@ -781,6 +781,7 @@ serve(async (req) => {
           
         } catch (orchestratorError) {
           console.log(`⚠️ [${requestId}] DryRun PhaseIntegrationOrchestrator failed, escalating to Tier 2.5A:`, orchestratorError.message);
+          console.log(`🛡️ [${requestId}] TIER 1 RAW TEXT BYPASS FIX: Preventing raw text fallback, properly escalating to Tier 2.5A`);
           // No raw text fallback - must escalate properly
           throw new Error('ESCALATE_TO_TIER_2_5A: PhaseIntegrationOrchestrator failed in dry run');
         }

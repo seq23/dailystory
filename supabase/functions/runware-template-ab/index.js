@@ -585,6 +585,7 @@ serve(async (req) => {
 
     // Get proper cultural profile for negative prompt generation
     const culturalProfileType = inlineDetectCultural(userInfo, bundle.userInfo?.avatar);
+    console.log(`🎭 [Template AB] CULTURAL PROFILE DETECTION FIX: Detected ${culturalProfileType} profile for user with skinTone: ${userInfo?.avatar?.skinTone || 'not specified'}, language: ${userInfo?.nativeLanguage || 'en'}`);
     
     return createResponse({
       success: true,
