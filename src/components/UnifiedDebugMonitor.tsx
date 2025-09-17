@@ -803,7 +803,7 @@ export const UnifiedDebugMonitor: React.FC = () => {
                     try {
                       (window as any).checkImageTier?.();
                     } catch (error) {
-                      console.log('Manual tier check not available');
+                      DebugLogger.warn('ui', 'Manual tier check not available');
                     }
                   }}
                   className="h-8"
@@ -829,7 +829,7 @@ export const UnifiedDebugMonitor: React.FC = () => {
             <BackendTierChecker 
               onTierFound={(tier, details) => {
                 if (DebugLogger.isDebugEnabled()) {
-                  console.log('🎯 Tier found in debug monitor:', { tier, details });
+                  DebugLogger.log('ui', 'Tier found in debug monitor', { tier, details });
                 }
               }} 
             />

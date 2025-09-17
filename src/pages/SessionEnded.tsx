@@ -12,6 +12,7 @@ import { VoiceQuiz } from "@/components/VoiceQuiz";
 import { Badge } from "@/components/ui/badge";
 import { StorySessionCache } from "@/services/storySessionCache";
 import { useGameContext } from "@/components/GameContextProvider";
+import { DebugLogger } from "@/services/DebugLogger";
 
 interface ReadingStats {
   wordsRead: number;
@@ -66,7 +67,7 @@ const location = useLocation();
     const clearUrlHistory = () => {
       const urlParams = new URLSearchParams(location.search);
       if (urlParams.has('session') || urlParams.has('page') || urlParams.has('total') || urlParams.has('title')) {
-        console.log('📍 SessionEnded: Clearing story URL parameters from history');
+        DebugLogger.log('ui', 'SessionEnded: Clearing story URL parameters from history');
         window.history.replaceState(null, '', '/');
       }
     };
@@ -153,7 +154,7 @@ const location = useLocation();
   
   // Debug data availability for quiz
   React.useEffect(() => {
-    console.log('🧪 Quiz data debug:', {
+    DebugLogger.log('ui', 'Quiz data debug', {
       userIsPremium,
       hasUserInfo: !!userInfoFromState,
       hasStoryText: !!storyText,
@@ -400,11 +401,11 @@ const getDifficultyLabel = (difficulty: string) => {
                   <Button 
                     disabled={!canLaunchActivities || !isQuizAllowed} 
                     onClick={() => {
-                      console.log('🧪 Quiz button clicked:', { canLaunchActivities, isQuizAllowed, userInfoFromState, storyText });
+                      DebugLogger.log('ui', 'Quiz button clicked', { canLaunchActivities, isQuizAllowed, userInfoFromState, storyText });
                       if (canLaunchActivities && isQuizAllowed) {
                         setQuizVisible(true);
                       } else {
-                        console.warn('Quiz launch blocked - missing data:', { 
+                        DebugLogger.warn('ui', 'Quiz launch blocked - missing data', { 
                           hasUserInfo: !!userInfoFromState, 
                           hasStoryText: !!storyText,
                           canLaunch: canLaunchActivities,

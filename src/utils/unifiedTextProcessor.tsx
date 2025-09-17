@@ -4,6 +4,7 @@ import type { UserInfo } from "@/types";
 import { tokenizeForHighlighting } from "@/utils/tokenize";
 import { DifficultyLevelMapper } from "@/services/DifficultyLevelMapper";
 import { VocabularyLevelClassifier } from "@/utils/vocabularyLevelClassifier";
+import { DebugLogger } from "@/services/DebugLogger";
 
 // Performance Cache for word frequency lookups
 const wordDifficultyCache = new Map<string, any>();
@@ -98,7 +99,7 @@ export const processTextWithConsistentFlow = ({
       const globalObj = globalThis as any;
       if (!globalObj.__lastHighlightLog || !globalObj.__lastHighlightLog[lastLogKey] || 
           now - globalObj.__lastHighlightLog[lastLogKey] > 500) {
-        console.log(`🎯 Highlighting word at index ${wordOnlyIndex}: "${token}"`);
+        DebugLogger.log('ui', `Highlighting word at index ${wordOnlyIndex}: "${token}"`);
         globalObj.__lastHighlightLog = globalObj.__lastHighlightLog || {};
         globalObj.__lastHighlightLog[lastLogKey] = now;
       }
