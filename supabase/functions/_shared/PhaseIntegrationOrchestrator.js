@@ -228,8 +228,11 @@ export class PhaseIntegrationOrchestrator {
       await this.characterConsistencyService.analyzeVisualDetails(sessionId, storyText, 1);
       const coloredObjects = await this.characterConsistencyService.getColoredObjects(sessionId);
       
-      // Use colored objects as visual consistency details
-      const visualConsistencyDetails = coloredObjects || '';
+      // Extract specific clothing from pageText for Visual Traits
+      const specificClothing = this.extractClothingFromText(storyText || '');
+      
+      // Combine colored objects with visual history, eliminating redundancies
+      const combinedVisualElements = this.combineVisualConsistency(coloredObjects, visualHistory);
 
       // Get ethnicity for cultural representation - only for dark skin or non-English
       const resolver = new UnifiedPlaceholderResolver();
@@ -300,10 +303,8 @@ export class PhaseIntegrationOrchestrator {
         `PRIMARY SCENE: ${primaryScene}`,
         `CHARACTER DESCRIPTION: ${characterDescription}`,
         `CHARACTER CONSISTENCY:`,
-        `- Visual Traits: ${visualDescription || 'consistent character design'}`,
-        visualHistory ? `- Visual History: ${visualHistory}` : '',
-        coloredObjects ? `- Colored Objects: ${coloredObjects}` : '',
-        visualConsistencyDetails ? `- Visual Consistency Details: ${visualConsistencyDetails}` : '',
+        `- Visual Traits: ${specificClothing || `${characterName} wearing consistent character clothing`}`,
+        `- Visual Consistency: ${combinedVisualElements}`,
         `STYLE FRAMEWORK: ${styleFramework}`,
         `CONTEXT: ${contextSummary}`
       ].filter(Boolean).join('\n');
@@ -327,9 +328,8 @@ export class PhaseIntegrationOrchestrator {
           selectedHair
         },
         visualConsistency: {
-          visualHistory,
-          coloredObjects,
-          visualConsistencyDetails
+          combinedVisualElements,
+          specificClothing
         },
         enhancementSuccessful: true,
         templateStructure: 'COMPLETE_TIER_1'
@@ -362,6 +362,55 @@ export class PhaseIntegrationOrchestrator {
       return sentences.slice(0, 2).join('. ') + '.';
     }
     return sentences[0]?.trim() + '.' || 'Children\'s story scene.';
+  }
+
+  // Helper method to extract specific clothing from text
+  extractClothingFromText(text) {
+    if (!text) return '';
+    
+    const clothingPatterns = [
+      // Specific clothing items
+      /wearing?\s+(?:a\s+|an\s+|his\s+|her\s+)?([^,.\s]+\s+(?:dress|shirt|pants|shorts|jacket|coat|hat|shoes|boots|sneakers))/gi,
+      /dressed\s+in\s+(?:a\s+|an\s+)?([^,.\s]+\s+(?:dress|shirt|pants|shorts|jacket|coat|outfit))/gi,
+      /(?:a|an|his|her)\s+([^,.\s]+\s+(?:blue|red|green|yellow|pink|purple|black|white|brown|orange)\s+(?:dress|shirt|pants|shorts|jacket))/gi,
+      /(?:blue|red|green|yellow|pink|purple|black|white|brown|orange)\s+(dress|shirt|pants|shorts|jacket|coat|hat)/gi
+    ];
+    
+    const matches = [];
+    for (const pattern of clothingPatterns) {
+      const found = text.match(pattern);
+      if (found) {
+        matches.push(...found.map(match => match.trim()));
+      }
+    }
+    
+    // Return the first match or empty string
+    return matches.length > 0 ? `wearing ${matches[0].replace(/^wearing?\s*/i, '')}` : '';
+  }
+
+  // Helper method to combine visual consistency elements, eliminating redundancies
+  combineVisualConsistency(coloredObjects, visualHistory) {
+    const elements = [];
+    
+    // Add colored objects if available
+    if (coloredObjects) {
+      elements.push(coloredObjects);
+    }
+    
+    // Add unique visual history elements not already in colored objects
+    if (visualHistory) {
+      const historyItems = visualHistory.split(',').map(item => item.trim());
+      const coloredItems = coloredObjects ? coloredObjects.split(',').map(item => item.trim()) : [];
+      
+      historyItems.forEach(item => {
+        if (item && !coloredItems.some(colored => colored.includes(item) || item.includes(colored))) {
+          elements.push(item);
+        }
+      });
+    }
+    
+    // Remove duplicates and return as comma-separated string
+    return [...new Set(elements)].join(', ');
   }
 
   /**

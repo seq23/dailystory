@@ -223,6 +223,7 @@ export class CharacterConsistencyService {
   /**
    * Build character description from seed data
    * Now integrated with VisualDetailTracker for persistent clothing
+   * CRITICAL FIX: Respect StaticDataCache hair mappings for light skin tones
    */
   async buildCharacterDescription(seedData, storyContext, pageTextClothing = null, sessionId = null) {
     const characterName = seedData.characterName || 'child';
@@ -264,6 +265,9 @@ export class CharacterConsistencyService {
     
     // Use actual avatar type from seedData instead of hardcoded "child"
     const avatarType = seedData.avatarType || seedData.type || 'child';
+    
+    // CRITICAL FIX: Don't override hair color - let StaticDataCache handle hair mapping
+    // Remove any hair color descriptions from this service to prevent override
     return `${characterName} is a ${avatarType} age ${age}${clothingStyle ? ' ' + clothingStyle : ''}`;
   }
 

@@ -881,6 +881,13 @@ serve(async (req) => {
         }
       } catch (enhancementError) {
         console.warn(`⚠️ [${requestId}] Phase orchestrator enhancement failed:`, enhancementError.message);
+        
+        // Special handling: Check if this is a 503 escalation from ai-visual-scene-creator
+        if (enhancementError.message === 'NO_PRIMARY_SCENE_ESCALATE_TO_25A') {
+          console.log(`🔄 [${requestId}] AI-Visual-Scene-Creator 503/failure detected - No PRIMARY SCENE available - immediate escalation to Tier 2.5A`);
+          // Re-throw to trigger proper escalation handling at line 913-915
+          throw new Error('ESCALATE_TO_TIER_2_5A: AI-Visual-Scene-Creator failed - no PRIMARY SCENE available');
+        }
       }
       
       // Collect failed Tier 1 data structure first
