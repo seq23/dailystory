@@ -112,14 +112,14 @@ useEffect(() => {
         // Silently handle audio failures
       }
     }
-    const timeout = setTimeout(() => {
+    const timeout = performanceManager.setTimeout(() => {
       setShowCelebration(false);
       if (isPremium) {
         setShowChoice(true);
       } else {
         onSessionEnded(sessionStats);
       }
-    }, 5000);
+    }, 5000, 'celebration timeout');
     return () => clearTimeout(timeout);
   }
 }, [timeRemaining, showCelebration, showChoice, isPremium, onSessionEnded, sessionStats, muted, expiredAcknowledged]);

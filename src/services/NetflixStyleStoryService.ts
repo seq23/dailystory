@@ -45,6 +45,7 @@ import { StoryQualityChecker } from '@/utils/storyQualityChecker';
 import { RepairService } from './repairService';
 import { NetflixRetryService } from './NetflixRetryService';
 import { NetflixSessionManager } from './NetflixSessionManager';
+import { DebugLogger } from '@/services/DebugLogger';
 
 export interface NetflixStoryResult {
   content: string[];
@@ -59,8 +60,9 @@ export class NetflixStyleStoryService {
    */
   static async generateStory(userInfo: UserInfo, vocabularyData?: any, sessionId?: string): Promise<NetflixStoryResult> {
     const generationId = `gen-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    console.log(`📺 [${generationId}] Netflix: Starting story generation for ${userInfo.name}`);
-    console.log(`📺 [${generationId}] Netflix DEBUG: Full UserInfo:`, {
+    DebugLogger.log('story', `Netflix: Starting story generation for ${userInfo.name}`, { generationId });
+    DebugLogger.log('story', `Netflix DEBUG: Full UserInfo`, {
+      generationId,
       name: userInfo.name,
       age: userInfo.age,
       difficulty: userInfo.difficultyLevel,

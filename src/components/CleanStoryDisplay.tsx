@@ -3686,7 +3686,7 @@ const handleRestartTimer = () => {
                           loading="lazy"
                           decoding="async"
                           onError={(e) => {
-                            console.warn('Background image failed to load:', currentImage);
+                            DebugLogger.warn('image', 'Background image failed to load', { currentImage });
                             (e.currentTarget as HTMLImageElement).style.display = 'none';
                             // Don't trigger layout fallback for background image failures
                           }}

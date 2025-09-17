@@ -12,6 +12,7 @@ import { APP_CONFIG } from '@/config/appConfig';
 import { toast } from '@/hooks/use-toast';
 import { RepairService } from './repairService';
 import { LoggerService } from '@/services/LoggerService';
+import { DebugLogger } from '@/services/DebugLogger';
 
 export interface LiveGenerationContext {
   userInfo: UserInfo;
@@ -58,7 +59,7 @@ export class LiveGenerationService {
       const { StoryGenerationService } = await import('./storyGenerationService');
       
       const actualSessionId = sessionId || `live-first-${userInfo.name}-${Date.now()}`;
-      console.log(`🆔 LiveGen: First Page Session ID: ${actualSessionId}`);
+      DebugLogger.log('story', `LiveGen: First Page Session ID: ${actualSessionId}`);
       
       const result = await StoryGenerationService.generateStory(userInfo, {
         sessionType: 'premium',
