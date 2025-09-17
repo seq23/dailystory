@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { GamificationService, type UserStats, type Achievement, type ReadingStreak } from "@/services/gamificationService";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
+import { DebugLogger } from "@/services/DebugLogger";
 
 interface UseGamificationOptions {
   userId?: string;
@@ -166,7 +167,7 @@ export const useGamification = (options: UseGamificationOptions = {}) => {
   }, [updateActivity]);
 
   const addVocabularyWord = useCallback(() => {
-    console.log('🎯 useGamification: addVocabularyWord called!', {
+    DebugLogger.log('ui', 'useGamification: addVocabularyWord called', {
       currentVocabCount: userStats.vocabularyWordsLearned,
       environment: typeof window !== 'undefined' && window.location.href.includes('preview') ? 'preview' : 'console'
     });
@@ -175,7 +176,7 @@ export const useGamification = (options: UseGamificationOptions = {}) => {
         ...prev,
         vocabularyWordsLearned: prev.vocabularyWordsLearned + 1
       };
-      console.log('📊 useGamification: Vocabulary updated:', {
+      DebugLogger.log('ui', 'useGamification: Vocabulary updated', {
         before: prev.vocabularyWordsLearned,
         after: newStats.vocabularyWordsLearned,
         environment: typeof window !== 'undefined' && window.location.href.includes('preview') ? 'preview' : 'console'

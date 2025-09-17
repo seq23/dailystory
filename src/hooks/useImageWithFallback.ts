@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { ImageFallbackService } from '@/services/ImageFallbackService';
 import { ImageLoadingManager } from '@/services/ImageLoadingManager';
 import SessionCacheDebugConsoleClass from '@/utils/sessionCacheDebug';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface UseImageWithFallbackOptions {
   fallbackText?: string;
@@ -30,7 +31,7 @@ export const useImageWithFallback = (
 
   const debugLog = useCallback((message: string, data?: any) => {
     if (isDebugMode) {
-      console.log(`🖼️ useImageWithFallback: ${message}`, data || '');
+      DebugLogger.log('image', `useImageWithFallback: ${message}`, data);
       // Make session cache debug available in debug mode
       if (typeof window !== 'undefined' && !((window as any).sessionCacheDebug)) {
         (window as any).sessionCacheDebug = SessionCacheDebugConsoleClass;

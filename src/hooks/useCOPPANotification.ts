@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { DebugLogger } from "@/services/DebugLogger";
 
 interface COPPANotificationData {
   parentEmail: string;
@@ -22,7 +23,7 @@ export const useCOPPANotification = () => {
         return { success: false, error: error.message };
       }
 
-      console.log('COPPA notification sent successfully:', result);
+      DebugLogger.log('network', 'COPPA notification sent successfully', result);
       return { success: true, messageId: result?.messageId };
     } catch (err) {
       console.error('Error sending COPPA notification:', err);

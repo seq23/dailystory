@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { EnhancedSecurityValidator } from "@/utils/securityEnhancedValidation";
+import { DebugLogger } from "@/services/DebugLogger";
 
 interface IncidentLogData {
   childProfileId?: string;
@@ -60,7 +61,7 @@ export const useIncidentLogger = () => {
         return { success: false, error: error.message };
       }
 
-      console.log('Incident logged successfully:', result);
+      DebugLogger.log('network', 'Incident logged successfully', result);
       return { 
         success: true, 
         incidentId: result?.incidentId,

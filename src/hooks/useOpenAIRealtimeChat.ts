@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { AudioRecorder, encodeAudioForAPI, playAudioData, clearAudioQueue } from '@/utils/audioUtils';
 import { useToast } from '@/hooks/use-toast';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface RealtimeChatMessage {
   type: string;
@@ -34,7 +35,7 @@ export const useOpenAIRealtimeChat = ({ onFunctionCall }: UseOpenAIRealtimeChatP
         await audioContextRef.current.resume();
       }
       
-      console.log('🔊 Audio context initialized');
+      DebugLogger.log('audio', 'Audio context initialized');
     }
     return audioContextRef.current;
   }, []);
@@ -52,7 +53,7 @@ export const useOpenAIRealtimeChat = ({ onFunctionCall }: UseOpenAIRealtimeChatP
 
   const connect = useCallback(async () => {
     try {
-      console.log('🔌 Connecting to Voice Assistant...');
+      DebugLogger.log('audio', 'Connecting to Voice Assistant...');
       
       // Initialize audio context first
       await initAudioContext();
@@ -62,7 +63,7 @@ export const useOpenAIRealtimeChat = ({ onFunctionCall }: UseOpenAIRealtimeChatP
       wsRef.current = new WebSocket(wsUrl);
 
       wsRef.current.onopen = () => {
-        console.log('✅ Connected to Voice Assistant');
+        DebugLogger.log('audio', 'Connected to Voice Assistant');
         setIsConnected(true);
         
         // Dispatch global voice status event
@@ -78,7 +79,7 @@ export const useOpenAIRealtimeChat = ({ onFunctionCall }: UseOpenAIRealtimeChatP
 
       wsRef.current.onmessage = async (event) => {
         const data = JSON.parse(event.data);
-        console.log('📨 Received message:', data.type);
+        DebugLogger.log('audio', 'Received message', { type: data.type });
 
         switch (data.type) {
           case 'response.audio.delta':
@@ -119,12 +120,12 @@ export const useOpenAIRealtimeChat = ({ onFunctionCall }: UseOpenAIRealtimeChatP
 
           case 'function_call':
             // Handle function calls from our edge function
-            console.log('🎯 Function call:', data.function, data.arguments);
+            DebugLogger.log('audio', 'Function call', { function: data.function, arguments: data.arguments });
             onFunctionCall?.(data.function, data.arguments);
             break;
 
           case 'input_audio_buffer.speech_started':
-            console.log('🎤 Speech started');
+            DebugLogger.log('audio', 'Speech started');
             setIsProcessing(true);
             clearAudioQueue(); // Stop any ongoing audio
             
@@ -135,7 +136,7 @@ export const useOpenAIRealtimeChat = ({ onFunctionCall }: UseOpenAIRealtimeChatP
             break;
 
           case 'input_audio_buffer.speech_stopped':
-            console.log('🎤 Speech stopped');
+            DebugLogger.log('audio', 'Speech stopped');
             setIsProcessing(false);
             
             // Dispatch listening status
@@ -154,7 +155,7 @@ export const useOpenAIRealtimeChat = ({ onFunctionCall }: UseOpenAIRealtimeChatP
             break;
 
           case 'disconnected':
-            console.log('🔌 Disconnected:', data.reason);
+            DebugLogger.log('audio', 'Disconnected', { reason: data.reason });
             setIsConnected(false);
             break;
         }
@@ -176,7 +177,7 @@ export const useOpenAIRealtimeChat = ({ onFunctionCall }: UseOpenAIRealtimeChatP
       };
 
       wsRef.current.onclose = () => {
-        console.log('🔌 Connection closed');
+        DebugLogger.log('audio', 'Connection closed');
         setIsConnected(false);
         setIsRecording(false);
         
@@ -198,7 +199,7 @@ export const useOpenAIRealtimeChat = ({ onFunctionCall }: UseOpenAIRealtimeChatP
 
   const startRecording = useCallback(async () => {
     try {
-      console.log('🎤 Starting recording...');
+      DebugLogger.log('audio', 'Starting recording...');
       
       if (!audioRecorderRef.current) {
         audioRecorderRef.current = new AudioRecorder((audioData) => {
@@ -218,7 +219,7 @@ export const useOpenAIRealtimeChat = ({ onFunctionCall }: UseOpenAIRealtimeChatP
         detail: { status: 'listening', system: 'openai' } 
       }));
       
-      console.log('✅ Recording started');
+      DebugLogger.log('audio', 'Recording started');
     } catch (error) {
       console.error('❌ Recording failed:', error);
       
@@ -236,7 +237,7 @@ export const useOpenAIRealtimeChat = ({ onFunctionCall }: UseOpenAIRealtimeChatP
   }, [handleAudioData, toast]);
 
   const stopRecording = useCallback(() => {
-    console.log('🛑 Stopping recording...');
+    DebugLogger.log('audio', 'Stopping recording...');
     
     if (audioRecorderRef.current) {
       audioRecorderRef.current.stop();
@@ -250,11 +251,11 @@ export const useOpenAIRealtimeChat = ({ onFunctionCall }: UseOpenAIRealtimeChatP
       detail: { status: 'connected', system: 'openai' } 
     }));
     
-    console.log('✅ Recording stopped');
+    DebugLogger.log('audio', 'Recording stopped');
   }, []);
 
   const disconnect = useCallback(() => {
-    console.log('🔌 Disconnecting...');
+    DebugLogger.log('audio', 'Disconnecting...');
     
     if (audioRecorderRef.current) {
       audioRecorderRef.current.stop();
