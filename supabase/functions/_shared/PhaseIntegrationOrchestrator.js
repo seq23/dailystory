@@ -203,19 +203,25 @@ export class PhaseIntegrationOrchestrator {
         basePromptLength: basePrompt?.length || 0
       });
 
-      // Phase 1: Get character consistency data
-      const existingTraits = await this.characterConsistencyService.getCharacterFromDatabase(sessionId, `traits_${characterName}`) || {};
-      const visualDescription = await this.characterConsistencyService.buildCharacterDescription(
-        { characterName, age: '6-8' }, 
-        storyText || '', 
-        null, 
-        sessionId
+      // Phase 1: Get character consistency data using proper getCharacterSeed for complete data
+      const characterSeed = await this.characterConsistencyService.getCharacterSeed(
+        sessionId,
+        { name: characterName, age: userInfo?.age || 6 },
+        storyText || '',
+        'continuing'
       );
+      const existingTraits = characterSeed || {};
+      const visualDescription = characterSeed?.characterDescription || 'consistent character design';
 
       // Phase 2: Get visual consistency data for multi-page support
       const visualHistoryData = await this.visualDetailTracker.getVisualHistory(sessionId, 'general', 10);
       const visualHistory = Array.isArray(visualHistoryData) ? 
-        visualHistoryData.map(item => typeof item === 'object' ? JSON.stringify(item) : item).join(', ') : 
+        visualHistoryData.map(item => {
+          if (typeof item === 'object' && item.visual_elements) {
+            return item.visual_elements;
+          }
+          return typeof item === 'string' ? item : '';
+        }).filter(Boolean).join(', ') : 
         (visualHistoryData || '');
       
       // Get colored objects for visual consistency using CharacterConsistencyService
@@ -225,9 +231,16 @@ export class PhaseIntegrationOrchestrator {
       // Use colored objects as visual consistency details
       const visualConsistencyDetails = coloredObjects || '';
 
-      // Get ethnicity for cultural representation using UnifiedPlaceholderResolver
+      // Get ethnicity for cultural representation - only for dark skin or non-English
       const resolver = new UnifiedPlaceholderResolver();
-      const ethnicity = resolver.resolveCanonicalPlaceholders('{ethnicity}', userInfo).replace('{ethnicity}', '').trim();
+      const skinTone = userInfo?.appearance?.skinTone || userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium';
+      const language = userInfo?.nativeLanguage || userInfo?.language || 'en';
+      let ethnicity = '';
+      
+      // Only show ethnicity for dark skin users or non-English speakers
+      if (skinTone === 'dark' || skinTone === 'darker' || language !== 'en') {
+        ethnicity = resolver.resolveCanonicalPlaceholders('{ethnicity}', userInfo).replace('{ethnicity}', '').trim();
+      }
 
       // Get hair and skin variations based on skin tone with seeded selection
       const skinTone = userInfo?.appearance?.skinTone || userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium';
@@ -242,8 +255,25 @@ export class PhaseIntegrationOrchestrator {
       const styleFrameworkData = getStyleFramework(difficulty);
       const styleFramework = styleFrameworkData.frameworkPrompt;
 
-      // Use AI-generated primaryScene from enhanced data or build from base prompt
-      const primaryScene = enhancedStoryData?.primaryScene || this.generatePrimaryScene(basePrompt, storyText);
+      // Use AI-generated primaryScene from enhanced data or call ai-visual-scene-creator
+      let primaryScene;
+      if (enhancedStoryData?.primaryScene) {
+        primaryScene = enhancedStoryData.primaryScene;
+      } else {
+        // Call ai-visual-scene-creator to get proper AI schema
+        try {
+          const supabase = await import('https://esm.sh/@supabase/supabase-js@2.57.4').then(mod => 
+            mod.createClient(Deno.env.get('SUPABASE_URL'), Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY'))
+          );
+          const { data: aiResult } = await supabase.functions.invoke('ai-visual-scene-creator', {
+            body: { pageText: storyText, userInfo, sessionId, pageNumber: 1 }
+          });
+          primaryScene = aiResult?.primaryScene || this.generatePrimaryScene(basePrompt, storyText);
+        } catch (error) {
+          console.warn('Failed to get AI primaryScene, using fallback:', error.message);
+          primaryScene = this.generatePrimaryScene(basePrompt, storyText);
+        }
+      }
       
       // Generate 1-2 sentence context summary instead of full text
       const contextSummary = this.generateContextSummary(storyText || basePrompt);

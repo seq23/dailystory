@@ -761,15 +761,22 @@ serve(async (req) => {
             null // enhancedStoryData will be generated internally
           );
           
-          enhancedStoryData = enhancementResult.enhancedData;
+          enhancedStoryData = {
+            enhancedPrompt: enhancementResult.enhancedPrompt,
+            primaryScene: enhancementResult.primaryScene,
+            characterConsistency: enhancementResult.characterConsistency,
+            visualConsistency: enhancementResult.visualConsistency,
+            templateStructure: enhancementResult.templateStructure
+          };
           enhancedPrompt = enhancementResult.enhancedPrompt || `Rich, detailed scene: ${pageText}`;
           
           console.log(`🎯 [${requestId}] DryRun PhaseIntegrationOrchestrator result:`, {
             hasEnhancedData: !!enhancedStoryData,
             enhancedPromptLength: enhancedPrompt?.length || 0,
             templateStructure: enhancedStoryData?.templateStructure,
-            characterConsistency: enhancedStoryData?.characterConsistency?.substring(0, 100) + '...',
-            visualConsistency: enhancedStoryData?.visualConsistency?.substring(0, 100) + '...'
+            primaryScene: enhancedStoryData?.primaryScene?.substring(0, 100) + '...',
+            characterConsistencyKeys: Object.keys(enhancedStoryData?.characterConsistency || {}),
+            visualConsistencyKeys: Object.keys(enhancedStoryData?.visualConsistency || {})
           });
           
         } catch (orchestratorError) {
