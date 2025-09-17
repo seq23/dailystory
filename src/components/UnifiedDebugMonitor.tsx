@@ -648,25 +648,26 @@ export const UnifiedDebugMonitor: React.FC = () => {
               </div>
             </div>
           </div>
-            {(performance as any).memory && (
-              <div className="border border-muted rounded-lg p-3 bg-background/30 backdrop-blur-sm">
-                <h3 className="font-medium mb-2">Memory Usage</h3>
-                <div className="text-sm space-y-1">
-                  <div>Used: {Math.round(((performance as any).memory.usedJSHeapSize / 1024 / 1024))} MB</div>
-                  <div>Total: {Math.round(((performance as any).memory.totalJSHeapSize / 1024 / 1024))} MB</div>
-                  <div>Limit: {Math.round(((performance as any).memory.jsHeapSizeLimit / 1024 / 1024))} MB</div>
-                </div>
-              </div>
-            )}
+          
+          {(performance as any).memory && (
             <div className="border border-muted rounded-lg p-3 bg-background/30 backdrop-blur-sm">
-              <h3 className="font-medium mb-2">Debug Stats</h3>
+              <h3 className="font-medium mb-2">Memory Usage</h3>
               <div className="text-sm space-y-1">
-                <div>General Logs: {logs.length}</div>
-                <div>Netflix Logs: {netflixLogs.length}</div>
-                <div>Recording: {isRecording ? 'Active' : 'Inactive'}</div>
-                <div>Session Start: {logs.length > 0 ? formatTime(logs[0].timestamp) : 'N/A'}</div>
-                <div>Debug Mode: {DebugLogger.isDebugEnabled() ? 'Enabled' : 'Disabled'}</div>
+                <div>Used: {Math.round(((performance as any).memory.usedJSHeapSize / 1024 / 1024))} MB</div>
+                <div>Total: {Math.round(((performance as any).memory.totalJSHeapSize / 1024 / 1024))} MB</div>
+                <div>Limit: {Math.round(((performance as any).memory.jsHeapSizeLimit / 1024 / 1024))} MB</div>
               </div>
+            </div>
+          )}
+          
+          <div className="border border-muted rounded-lg p-3 bg-background/30 backdrop-blur-sm">
+            <h3 className="font-medium mb-2">Debug Stats</h3>
+            <div className="text-sm space-y-1">
+              <div>General Logs: {logs.length}</div>
+              <div>Netflix Logs: {netflixLogs.length}</div>
+              <div>Recording: {isRecording ? 'Active' : 'Inactive'}</div>
+              <div>Session Start: {logs.length > 0 ? formatTime(logs[0].timestamp) : 'N/A'}</div>
+              <div>Debug Mode: {DebugLogger.isDebugEnabled() ? 'Enabled' : 'Disabled'}</div>
             </div>
           </div>
         </TabsContent>
