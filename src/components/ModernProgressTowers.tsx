@@ -18,6 +18,7 @@ import {
   X,
   Star
 } from 'lucide-react';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface ModernProgressTowersProps {
   userId?: string;
@@ -74,23 +75,23 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
 
   // Load and clear achievements from sessionStorage on mount/unmount
   useEffect(() => {
-    console.log('📋 [ProgressTowers] Component mounted, loaded achievements:', recentAchievements.length);
+    DebugLogger.log('ui', 'ProgressTowers component mounted', { achievementsCount: recentAchievements.length });
     
     // Clear achievements when gamification stats are reset
     const handleStatsReset = () => {
-      console.log('📋 [ProgressTowers] Stats reset detected, clearing achievements');
+      DebugLogger.log('ui', 'Stats reset detected, clearing achievements');
       setRecentAchievements([]);
       try {
         sessionStorage.removeItem('recentAchievements');
       } catch (error) {
-        console.warn('Failed to clear recent achievements:', error);
+        DebugLogger.warn('ui', 'Failed to clear recent achievements', error);
       }
     };
     
     window.addEventListener('gamificationStatsReset', handleStatsReset);
     
     return () => {
-      console.log('📋 [ProgressTowers] Component unmounting');
+      DebugLogger.log('ui', 'ProgressTowers component unmounting');
       window.removeEventListener('gamificationStatsReset', handleStatsReset);
     };
   }, []);
@@ -100,7 +101,7 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
     const handler = (e: any) => {
       const next = !!(e as CustomEvent).detail;
       setEnabled(next);
-      try { console.info('[ProgressTowers] enabled:', next); } catch {}
+      try { DebugLogger.log('ui', 'ProgressTowers enabled status', { enabled: next }); } catch {}
     };
     window.addEventListener('progressTowersToggle', handler as EventListener);
     return () => window.removeEventListener('progressTowersToggle', handler as EventListener);
@@ -217,7 +218,7 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
     if (hasNewAchievements) {
       const achievement = getNextAchievement();
       if (achievement) {
-        console.log('📋 [ProgressTowers] New achievement received:', achievement);
+        DebugLogger.log('ui', 'New achievement received', achievement);
         
         // Add to recent achievements for display in progress towers
         const updatedAchievements = [achievement, ...recentAchievements.slice(0, 4)]; // Keep only 5 most recent
@@ -226,9 +227,9 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
         // Persist to sessionStorage
         try {
           sessionStorage.setItem('recentAchievements', JSON.stringify(updatedAchievements));
-          console.log('📋 [ProgressTowers] Persisted achievements to sessionStorage:', updatedAchievements.length);
+          DebugLogger.log('ui', 'Persisted achievements to sessionStorage', { count: updatedAchievements.length });
         } catch (error) {
-          console.warn('Failed to persist recent achievements:', error);
+          DebugLogger.warn('ui', 'Failed to persist recent achievements', error);
         }
         
         // Trigger visual effects for all achievements

@@ -25,6 +25,7 @@ import { countCharacters, analyzeCharacters, type CharacterAnalysis } from '@/ut
 import { showTestToast, clearAllTestingToasts, showTestSummaryToast } from '@/utils/testingToasts';
 import { DifficultyLevelMapper } from '../../supabase/functions/_shared/DifficultyLevelMapper';
 import type { UserInfo, DifficultyLevel, ExpertGradeLevel, Grade, LanguageCode, LearningGoal, AvatarType, SkinTone } from '@/types';
+import { DebugLogger } from '@/services/DebugLogger';
 
 // Robust word counting function
 const countWords = (content: string | string[]): number => {
@@ -315,7 +316,7 @@ export function StoryPromptTester() {
       result.validationReasons = validationResult.reasons;
       
       // PHASE 2: PAGE COUNT INVESTIGATION - Track validation decisions affecting page count
-      console.log(`🔍 [VALIDATION-DEBUG] ${level} - Validation Decision Impact:`, {
+      DebugLogger.log('story', `${level} - Validation Decision Impact`, {
         originalPageCount: content.length,
         validationDecision: validationResult.decision,
         validationReasons: validationResult.reasons,
@@ -332,7 +333,7 @@ export function StoryPromptTester() {
         result.repairAttempted = true;
         
         // PHASE 5: ROOT CAUSE IDENTIFICATION - Track repair triggers
-        console.log(`🔍 [REPAIR-TRIGGER-DEBUG] ${level} - Repair Needed:`, {
+        DebugLogger.log('story', `${level} - Repair Needed`, {
           repairReason: validationResult.reasons[0],
           originalContent: content[0]?.substring(0, 100) + '...',
           repairStrategy: 'simulated'
@@ -349,7 +350,7 @@ export function StoryPromptTester() {
           result.actualPages = validationResult.content.length;
           
           // PHASE 2: PAGE COUNT INVESTIGATION - Track page splitting in validation
-          console.log(`🔍 [PAGE-SPLIT-DEBUG] ${level} - Validation Split Pages:`, {
+          DebugLogger.log('story', `${level} - Validation Split Pages`, {
             originalPages: content.length,
             newPages: validationResult.content.length,
             splitReason: validationResult.reasons[0],
@@ -358,10 +359,10 @@ export function StoryPromptTester() {
         }
       }
     } catch (error) {
-      console.error('Validation error:', error);
+      DebugLogger.error('story', 'Validation error', error);
       
       // PHASE 5: ROOT CAUSE IDENTIFICATION - Track validation failures
-      console.log(`🔍 [VALIDATION-ERROR-DEBUG] ${level} - Validation Failed:`, {
+      DebugLogger.log('story', `${level} - Validation Failed`, {
         error: error instanceof Error ? error.message : 'Unknown error',
         contentLength: content.length,
         contentPreview: content[0]?.substring(0, 50) + '...'
@@ -380,7 +381,7 @@ export function StoryPromptTester() {
     const testKey = `${level}_${service}`;
     
     // PHASE 4: PLACEHOLDER TRACKING - Log all 6 placeholders being sent
-    console.log(`🔍 [PLACEHOLDER-DEBUG] ${service} test for ${level} level - Placeholder data:`, {
+    DebugLogger.log('story', `${service} test for ${level} level - Placeholder data`, {
       placeholdersSent: {
         userName: userInfo.name,
         favoriteColor: userInfo.favoriteColor,
@@ -419,7 +420,7 @@ export function StoryPromptTester() {
     };
     
     // DEBUG: Log what level is being set in test result
-    console.log('🔍 [PROMPT-TESTING-DEBUG] Creating test result with level:', { 
+    DebugLogger.log('story', 'Creating test result with level', { 
       resultLevel: level, 
       service, 
       userInfoDifficulty: userInfo.difficultyLevel 
@@ -436,7 +437,7 @@ export function StoryPromptTester() {
 
       // Add detailed debugging for medium and hard levels
       if (level === 'medium' || level === 'hard') {
-        console.log(`🔍 [TEST-DEBUG] Starting ${service} test for ${level} level:`, {
+        DebugLogger.log('story', `Starting ${service} test for ${level} level`, {
           userInfo: {
             name: userInfo.name,
             age: userInfo.age,
@@ -470,7 +471,7 @@ export function StoryPromptTester() {
         result.source = response.source || 'unknown';
         
         // PHASE 2: PAGE COUNT INVESTIGATION - Enhanced logging
-        console.log(`🔍 [PAGE-COUNT-DEBUG] Netflix ${level} - Raw AI Response Analysis:`, {
+        DebugLogger.log('story', `Netflix ${level} - Raw AI Response Analysis`, {
           rawResponseKeys: Object.keys(response),
           hasContent: !!response.content,
           contentType: Array.isArray(response.content) ? 'array' : typeof response.content,
@@ -513,7 +514,7 @@ export function StoryPromptTester() {
         result.actualPages = actualPageCount;
         
         // Enhanced logging for source detection debugging
-        console.log(`🔍 [TEST-DEBUG] Netflix Service Result for ${level}:`, {
+        DebugLogger.log('story', `Netflix Service Result for ${level}`, {
           source: response.source,
           hasContent: !!response.content,
           pageCount: response.content?.length || 0,
@@ -540,7 +541,7 @@ export function StoryPromptTester() {
           };
           const placeholdersUsedCount = Object.values(placeholderUsage).filter(Boolean).length;
           
-          console.log(`🔍 [PLACEHOLDER-USAGE-DEBUG] Netflix ${level} - Placeholder Utilization:`, {
+          DebugLogger.log('story', `Netflix ${level} - Placeholder Utilization`, {
             placeholderUsage,
             placeholdersUsedCount,
             placeholdersUsedRate: `${placeholdersUsedCount}/6 (${Math.round((placeholdersUsedCount/6)*100)}%)`,
@@ -569,7 +570,7 @@ export function StoryPromptTester() {
           await performValidationWithRepair(response.content, level, result);
           const validationTime = Date.now() - validationStartTime;
           
-          console.log(`🔍 [PERFORMANCE-DEBUG] Netflix ${level} - Timing Breakdown:`, {
+          DebugLogger.log('performance', `Netflix ${level} - Timing Breakdown`, {
             aiGenerationTime: `${aiGenerationTime}ms`,
             validationTime: `${validationTime}ms`,
             totalTime: `${Date.now() - startTime}ms`,
@@ -591,12 +592,12 @@ export function StoryPromptTester() {
           message: 'Generating with Live service'
         });
         
-        console.log('🔄 About to call LiveGenerationService.generateFirstPage with userInfo:', userInfo);
+        DebugLogger.log('story', 'About to call LiveGenerationService.generateFirstPage', { userInfo });
         try {
           response = await testWithTimeout(() => LiveGenerationService.generateFirstPage(userInfo));
-          console.log('✅ Live service call completed successfully:', response);
+          DebugLogger.log('story', 'Live service call completed successfully', response);
         } catch (liveServiceError) {
-          console.error('❌ Live service call failed:', liveServiceError);
+          DebugLogger.error('story', 'Live service call failed', liveServiceError);
           throw liveServiceError; // Re-throw to maintain existing error handling
         }
         
@@ -622,7 +623,7 @@ export function StoryPromptTester() {
         }
         
         // Enhanced logging for source detection debugging
-        console.log(`🔍 [TEST-DEBUG] Live Service Result for ${level}:`, {
+        DebugLogger.log('story', `Live Service Result for ${level}`, {
           source: globalSource,
           hasContent: !!response.content,
           contentLength: response.content?.length || 0,
@@ -687,7 +688,7 @@ export function StoryPromptTester() {
         }
         
         // Enhanced logging for source detection debugging
-        console.log(`🔍 [TEST-DEBUG] Template Service Result for ${level}:`, {
+        DebugLogger.log('story', `Template Service Result for ${level}`, {
           source: response.success ? 'fallback' : 'emergency',
           success: response.success,
           hasPages: !!response.pages,
@@ -803,7 +804,7 @@ export function StoryPromptTester() {
 
       // Special logging for medium level to debug failures
       if (level === 'medium') {
-        console.log(`🔍 [DEBUG] Medium ${service} test completed:`, {
+        DebugLogger.log('story', `Medium ${service} test completed`, {
           success: result.success,
           source: result.source,
           pages: result.pages,
@@ -819,7 +820,7 @@ export function StoryPromptTester() {
       result.generationPath.push(`Error: ${result.error}`);
       
       // PHASE 5: ROOT CAUSE IDENTIFICATION - Track cascade failures and timeouts
-      console.log(`🔍 [PERFORMANCE-ERROR-DEBUG] ${service} ${level} - Load Time Analysis:`, {
+      DebugLogger.log('error', `${service} ${level} - Load Time Analysis`, {
         totalTime: `${result.responseTime}ms`,
         error: result.error,
         errorType: error instanceof Error ? error.constructor.name : 'Unknown',
@@ -835,11 +836,11 @@ export function StoryPromptTester() {
       }
       
       setLogs(prev => [...prev, `❌ ${service} test failed for ${level}: ${result.error}`]);
-      console.error(`${service} test failed for ${level}:`, error);
+      DebugLogger.error('story', `${service} test failed for ${level}`, error);
       
       // Special error logging for medium level
       if (level === 'medium') {
-        console.error(`🚨 [DEBUG] Medium ${service} test failed:`, {
+        DebugLogger.error('story', `Medium ${service} test failed`, {
           error: result.error,
           responseTime: result.responseTime,
           userInfo: userInfo.name
@@ -912,7 +913,7 @@ export function StoryPromptTester() {
 
     // SESSION ID SYNCHRONIZATION: Generate single session ID for all services
     const masterSessionId = `unified-test-${Date.now()}`;
-    console.log(`🆔 Master Session ID for all tests: ${masterSessionId}`);
+    DebugLogger.log('story', `Master Session ID for all tests: ${masterSessionId}`);
 
     // Use custom preferences if enabled, otherwise use all predefined profiles
     const profiles: [string, UserInfo][] = useCustomPreferences 
@@ -920,8 +921,8 @@ export function StoryPromptTester() {
       : Object.entries(testUserProfiles);
     
     // DEBUG: Log what profiles are being loaded
-    console.log('🔍 [PROMPT-TESTING-DEBUG] Available test profiles:', Object.keys(testUserProfiles));
-    console.log('🔍 [PROMPT-TESTING-DEBUG] Profiles to test:', profiles.map(([level, info]) => ({ level, name: info.name, difficultyLevel: info.difficultyLevel })));
+    DebugLogger.log('story', 'Available test profiles', Object.keys(testUserProfiles));
+    DebugLogger.log('story', 'Profiles to test', profiles.map(([level, info]) => ({ level, name: info.name, difficultyLevel: info.difficultyLevel })));
     
     const servicesCount = testMode === 'comparison' ? 3 : testMode === 'full' ? 2 : 1;
     const totalTests = profiles.length * servicesCount;
@@ -940,7 +941,7 @@ export function StoryPromptTester() {
         setCurrentTest(`Testing ${level} (${userInfo.name})`);
         
         // DEBUG: Log the level being tested
-        console.log('🔍 [PROMPT-TESTING-DEBUG] Testing level:', { 
+        DebugLogger.log('story', 'Testing level', { 
           levelKey: level, 
           userName: userInfo.name, 
           userDifficultyLevel: userInfo.difficultyLevel 
@@ -1006,7 +1007,7 @@ export function StoryPromptTester() {
           }
 
         } catch (error) {
-          console.error(`Test failed for ${level}:`, error);
+          DebugLogger.error('story', `Test failed for ${level}`, error);
           setLogs(prev => [...prev, `❌ Test failed for ${level}: ${error}`]);
         }
 
