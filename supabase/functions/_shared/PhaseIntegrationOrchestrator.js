@@ -4,7 +4,7 @@
  * with the existing image generation pipeline
  */
 
-import { CharacterConsistencyService } from './CharacterConsistencyService.js';
+import { characterConsistencyService } from './CharacterConsistencyService.js';
 import { VisualDetailTracker } from './VisualDetailTracker.js';
 import { getCulturalBundle, getHairBySkintone, getSkinBySkintone } from './StaticDataCache.js';
 import { UnifiedPlaceholderResolver } from './UnifiedPlaceholderResolver.js';
@@ -13,7 +13,7 @@ import { getStyleFramework } from './styleFrameworks.js';
 export class PhaseIntegrationOrchestrator {
   constructor() {
     this.initialized = false;
-    this.characterConsistencyService = new CharacterConsistencyService();
+    this.characterConsistencyService = characterConsistencyService;
     this.visualDetailTracker = new VisualDetailTracker();
   }
 

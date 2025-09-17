@@ -6,8 +6,8 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 async function getCharacterService() {
   try {
-    const { CharacterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
-    return CharacterConsistencyService;
+    const { characterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
+    return characterConsistencyService;
   } catch (error) {
     console.warn('CharacterService lazy load failed:', error);
     return null;
@@ -34,12 +34,11 @@ serve(async (req) => {
 
   try {
     // Use database-backed CharacterConsistencyService with lazy loading
-    const CharacterConsistencyService = await getCharacterService();
-    if (!CharacterConsistencyService) {
+    const characterService = await getCharacterService();
+    if (!characterService) {
       throw new Error('CharacterConsistencyService not available');
     }
 
-    const characterService = new CharacterConsistencyService();
     const result = await characterService.clearServerState();
     
     console.log('🎭 Character cache cleared:', result)

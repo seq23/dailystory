@@ -656,3 +656,6 @@ export class CharacterConsistencyService {
 
 // Export singleton instance for consistent state management
 export const CharacterService = new CharacterConsistencyService();
+
+// Export both the class and singleton instance for different import patterns
+export const characterConsistencyService = CharacterConsistencyService.getInstance();

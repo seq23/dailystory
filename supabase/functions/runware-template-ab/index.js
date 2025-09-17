@@ -90,8 +90,8 @@ console.log(`INIT runware-template-ab boot at ${new Date().toISOString()} | std@
 
 async function getCharacterService() {
   try {
-    const { CharacterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
-    return CharacterConsistencyService;
+    const { characterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
+    return characterConsistencyService; // Return singleton instance directly
   } catch (error) {
     console.warn('CharacterService lazy load failed:', error);
     return null;

@@ -88,7 +88,7 @@ function generateInlineNuclearNegative(culturalProfile, avatarType, difficulty) 
 }
 // Direct imports for character consistency and visual tracking
 import { phaseIntegrationOrchestrator } from '../_shared/PhaseIntegrationOrchestrator.js';
-import { CharacterConsistencyService } from '../_shared/CharacterConsistencyService.js';
+import { characterConsistencyService } from '../_shared/CharacterConsistencyService.js';
 import { visualDetailTracker } from '../_shared/VisualDetailTracker.js';
 import { CULTURAL_ARRAYS, createSeededRandom } from '../_shared/tier25Vocabulary.js';
 import { getCulturalBundle } from '../_shared/StaticDataCache.js';
@@ -858,7 +858,7 @@ serve(async (req) => {
           // PHASE 4: Get previous scene data for page 2+
             if (pageNumber > 1) {
               try {
-                const previousSceneData = await phaseIntegrationOrchestrator.characterConsistencyService.getCharacterFromDatabase(
+                const previousSceneData = await characterConsistencyService.getCharacterFromDatabase(
                   sessionId, 
                   `scene_page_${pageNumber - 1}`
                 );
@@ -1059,7 +1059,7 @@ serve(async (req) => {
               tier: result.tier
             };
             
-            await phaseIntegrationOrchestrator.characterConsistencyService.saveCharacterToDatabase(
+            await characterConsistencyService.saveCharacterToDatabase(
               sessionId,
               `scene_page_${pageNumber}`,
               currentSceneData
