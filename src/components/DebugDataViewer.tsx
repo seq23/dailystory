@@ -70,10 +70,10 @@ export function DebugDataViewer() {
       return;
     }
 
-    // Validate session ID format
-    const sessionIdPattern = /^(live-|netflix-|test-)/;
+    // Validate session ID format  
+    const sessionIdPattern = /^(live-|netflix-|test-|guest_|premium_|session_)/;
     if (!sessionIdPattern.test(sessionId.trim())) {
-      const errorMsg = "Session ID should start with 'live-', 'netflix-', or 'test-'";
+      const errorMsg = "Session ID should start with 'live-', 'netflix-', 'test-', 'guest_', 'premium_', or 'session_'";
       setLastError(errorMsg);
       toast({
         title: "Invalid Session ID Format",
@@ -177,7 +177,7 @@ export function DebugDataViewer() {
               <Label htmlFor="sessionId">Session ID</Label>
               <Input
                 id="sessionId"
-                placeholder="e.g., live-first-Jasmine-1756943063321"
+                placeholder="e.g., guest_1758140018361 or premium_1758140018361 or live-first-Jasmine-1756943063321"
                 value={sessionId}
                 onChange={(e) => setSessionId(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && fetchDebugData()}

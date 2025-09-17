@@ -147,8 +147,35 @@ declare global {
     trackStoryGeneration: typeof DebugConsole.trackStoryGeneration;
     trackStoryStability: typeof DebugConsole.trackStoryStability;
     logStoryProcessing: typeof DebugConsole.logStoryProcessing;
+    getCurrentSessionId: () => string | null;
   }
 }
+
+// Helper function to find current session ID
+const getCurrentSessionId = (): string | null => {
+  try {
+    // Check for session data in various places
+    const sessionStorage = window.sessionStorage;
+    const keys = Object.keys(sessionStorage);
+    
+    // Look for session-related keys
+    const sessionKey = keys.find(key => 
+      key.includes('session') || key.includes('guest_') || key.includes('premium_')
+    );
+    
+    if (sessionKey) {
+      const sessionId = sessionKey.includes('_') ? sessionKey.split('_')[0] + '_' + sessionKey.split('_')[1] : sessionKey;
+      console.log('🔍 Found session ID:', sessionId);
+      return sessionId;
+    }
+    
+    console.warn('🔍 No session ID found in storage');
+    return null;
+  } catch (error) {
+    console.error('🔍 Error finding session ID:', error);
+    return null;
+  }
+};
 
 // Make functions available globally
 if (typeof window !== 'undefined') {
@@ -157,10 +184,15 @@ if (typeof window !== 'undefined') {
   window.trackStoryGeneration = DebugConsole.trackStoryGeneration;
   window.trackStoryStability = DebugConsole.trackStoryStability;
   window.logStoryProcessing = DebugConsole.logStoryProcessing;
+  window.getCurrentSessionId = getCurrentSessionId;
   
   console.log('🔧 Debug Console Functions Available:');
-  console.log('  window.getFullPrompts(sessionId?, tier?, limit?) - Get full image prompts');
-  console.log('  window.getAIPrompts(sessionId, limit?) - Get AI system/user prompts');
-  console.log('  window.trackStoryGeneration(sessionId) - Check for story text flicker');
+  console.log('  window.getFullPrompts() - Get recent image prompts');
+  console.log('  window.getFullPrompts("sessionId") - Get prompts for specific session');  
+  console.log('  window.getFullPrompts("sessionId", "tier1", 10) - With tier and limit');
+  console.log('  window.getAIPrompts("sessionId") - Get AI system/user prompts');
+  console.log('  window.getAIPrompts("sessionId", 10) - With custom limit');
+  console.log('  window.trackStoryGeneration("sessionId") - Check for story text flicker');
   console.log('  window.trackStoryStability() - Monitor story changes in real-time');
+  console.log('  window.getCurrentSessionId() - Get current session ID for debugging');
 }

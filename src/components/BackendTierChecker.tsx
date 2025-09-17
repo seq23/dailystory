@@ -59,11 +59,11 @@ export const BackendTierChecker: React.FC<BackendTierCheckerProps> = ({ onTierFo
 (window as any).checkImageTier = async () => {
   const { data } = await DebugGateway.getRecentImagePrompts(10);
 
-  DebugLogger.log('image', 'MANUAL TIER CHECK - Recent image calls', data);
+  console.log('🎨 MANUAL TIER CHECK - Recent image calls', data);
   
   if (data && data.imagePrompts) {
     data.imagePrompts.forEach((call: any, index: number) => {
-      DebugLogger.log('image', `Call ${index + 1}`, {
+      console.log(`🎨 Call ${index + 1}`, {
         timestamp: new Date(call.timestamp).toLocaleTimeString(),
         tier: call.tier || 'Unknown',
         prompt: call.promptText?.substring(0, 150) + '...',
@@ -74,4 +74,4 @@ export const BackendTierChecker: React.FC<BackendTierCheckerProps> = ({ onTierFo
   }
 };
 
-DebugLogger.log('ui', 'Use window.checkImageTier() to manually check which tier succeeded for recent images');
+console.log('🎨 Use window.checkImageTier() to manually check which tier succeeded for recent images');
