@@ -913,7 +913,7 @@ EXAMPLES:
     console.log(`📊 PERFORMANCE METRICS [${aiRequestId}]:`, {
       totalProcessingTime: `${totalProcessingTime}ms`,
       aiCallTime: rawAIResponse?.processingTime || 'unknown',
-      characterSeed: characterConsistencyResult?.seed || 'not_tracked',
+      characterSeed: characterData?.seed || 'not_tracked',
       tier: '1',
       success: !!result.aiSchema,
       pageNumber,
@@ -921,9 +921,9 @@ EXAMPLES:
     });
     
     // Log character consistency for debugging
-    if (characterConsistencyResult?.seed) {
+    if (characterData?.seed) {
       console.log(`🎭 CHARACTER SEED TRACKING [${aiRequestId}]:`, {
-        characterSeed: characterConsistencyResult.seed,
+        characterSeed: characterData.seed,
         characterName: avatarIdentity?.name || 'character',
         sessionId: sessionId.substring(0, 8),
         pageNumber,

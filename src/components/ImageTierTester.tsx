@@ -209,6 +209,30 @@ export const ImageTierTester = () => {
       };
     }
     
+    // AI Visual Scene Creator specific failures
+    if (errorMsg.includes('ReferenceError') || errorMsg.includes('characterConsistencyResult is not defined')) {
+      return {
+        category: 'INTERNAL',
+        probableCause: 'AI Scene Creator failure - characterConsistencyResult undefined error (root cause of image generation failures)'
+      };
+    }
+    
+    // AI Scene Creator timeout (typically 20+ seconds)
+    if (errorMsg.includes('ai-visual-scene-creator') && (errorMsg.includes('timeout') || errorMsg.includes('23') || errorMsg.includes('24'))) {
+      return {
+        category: 'TIMEOUT',
+        probableCause: 'AI Scene Creator timeout (>20s) - this prevents all image generation tiers from functioning'
+      };
+    }
+    
+    // Failed to send request to Edge Function (common scene creator issue)
+    if (errorMsg.includes('Failed to send a request to the Edge Function')) {
+      return {
+        category: 'INTERNAL',
+        probableCause: 'AI Scene Creator unreachable - cannot generate scene descriptions needed for image generation'
+      };
+    }
+    
     // Internal server errors
     if (errorMsg.includes('500') || errorMsg.includes('internal') || errorMsg.includes('server')) {
       return {
