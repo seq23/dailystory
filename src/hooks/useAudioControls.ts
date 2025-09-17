@@ -3,6 +3,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { SimplifiedAudioEngine } from '@/services/SimplifiedAudioEngine';
+import { DebugLogger } from '@/services/DebugLogger';
 import type { UserInfo } from '@/types';
 
 interface AudioControlsOptions {
@@ -115,7 +116,7 @@ export const useAudioControls = ({
   const playWithValidation = async (retryCount = 0): Promise<void> => {
     // 800ms stabilization to ensure page content is fully stable
     if (isStabilizing) {
-      console.log('🕐 Audio playback waiting for stabilization...');
+      DebugLogger.log('audio', 'Audio playback waiting for stabilization...');
       if (retryCount === 0) {
         toast({
           title: t("audioReading.stabilizing", "Preparing audio..."),
@@ -140,7 +141,7 @@ export const useAudioControls = ({
       context: 'conversation',
       contentHash,
       onWordHighlight: (wordIndex: number) => {
-        console.log(`🎯 Audio Sync: Highlighting word ${wordIndex}`);
+        DebugLogger.log('audio', `Audio Sync: Highlighting word ${wordIndex}`);
         onWordHighlight?.(wordIndex);
       }
     });
@@ -164,7 +165,7 @@ export const useAudioControls = ({
    * Stop audio playback
    */
   const stopAudio = () => {
-    console.log('🛑 Audio Controls: Stop initiated');
+    DebugLogger.log('audio', 'Audio Controls: Stop initiated');
     
     // Immediate state update for responsive UI
     setIsPlaying(false);
@@ -184,7 +185,7 @@ export const useAudioControls = ({
       detail: { isPlaying: false } 
     }));
     
-    console.log('✅ Audio Controls: Stop completed');
+    DebugLogger.log('audio', 'Audio Controls: Stop completed');
   };
 
   // Cleanup on unmount

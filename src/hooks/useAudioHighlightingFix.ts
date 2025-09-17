@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { DebugLogger } from '@/services/DebugLogger';
 
 /**
  * Universal audio highlighting fix for all users and devices
@@ -20,12 +21,12 @@ export const useAudioHighlightingFix = () => {
       // Debounce with 300ms delay to prevent rapid start/stop cycles
       stateChangeTimeout = setTimeout(() => {
         if (isPlaying) {
-          console.log('🎵 Audio started - ensuring highlighting is active');
+          DebugLogger.log('audio', 'Audio started - ensuring highlighting is active');
           
           // Ensure highlighting system is ready
           window.dispatchEvent(new CustomEvent('highlighting:ensure-active'));
         } else {
-          console.log('🛑 Audio stopped - clearing all highlights');
+          DebugLogger.log('audio', 'Audio stopped - clearing all highlights');
           
           // Clear all highlighting immediately
           window.dispatchEvent(new CustomEvent('highlighting:clear-all'));
@@ -52,7 +53,7 @@ export const useAudioHighlightingFix = () => {
         }
       });
       
-      console.log(`🎯 Universal highlighting: word ${wordIndex} (${interactiveWords.length} words processed)`);
+      DebugLogger.log('ui', `Universal highlighting: word ${wordIndex} (${interactiveWords.length} words processed)`);
     };
     
     // Listen for clear highlighting requests
@@ -64,7 +65,7 @@ export const useAudioHighlightingFix = () => {
         element.removeAttribute('data-highlighted');
       });
       
-      console.log(`🧹 Universal highlighting cleared: ${highlightedElements.length} elements`);
+      DebugLogger.log('ui', `Universal highlighting cleared: ${highlightedElements.length} elements`);
     };
     
     // Register event listeners

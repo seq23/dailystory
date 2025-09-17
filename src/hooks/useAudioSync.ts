@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
+import { DebugLogger } from '@/services/DebugLogger';
 // Removed: import { audioSyncService } from '@/services/audioSyncService';
 
 interface AudioSyncOptions {
@@ -22,7 +23,7 @@ export const useAudioSync = ({ contentHash, text, currentPage }: AudioSyncOption
     const handleHashChange = () => {
       const currentUIHash = (window as any).__pageContentHash;
       if (currentUIHash && currentUIHash !== contentHash) {
-        console.log(`🔄 Hash change detected: ${currentUIHash?.slice(0,10)} - notifying audio service`);
+        DebugLogger.log('audio', `Hash change detected: ${currentUIHash?.slice(0,10)} - notifying audio service`);
         // Notify audio service of hash change
         // TODO: Replace with SimplifiedAudioEngine.syncContentHash
         // if (typeof SimplifiedAudioEngine.syncContentHash === 'function') {
@@ -49,7 +50,7 @@ export const useAudioSync = ({ contentHash, text, currentPage }: AudioSyncOption
     let delay = 50; // CRITICAL FIX: Reduced initial delay from 100ms to 50ms
     
     // 🔍 PHASE 1: Enhanced sync debugging
-    console.log(`⏳ Starting hash sync wait - DETAILED:`, {
+    DebugLogger.log('audio', 'Starting hash sync wait - DETAILED', {
       expectedHash: expectedHash?.slice(0,12),
       expectedHashFull: expectedHash,
       initialUIHash: initialUIHash?.slice(0,12), 
@@ -66,7 +67,7 @@ export const useAudioSync = ({ contentHash, text, currentPage }: AudioSyncOption
       const currentText = (window as any).__pageContentString;
       
       // 🔍 PHASE 2: Track hash source discrepancy
-      console.log(`🔍 Hash sync attempt ${attempt + 1}:`, {
+      DebugLogger.log('audio', `Hash sync attempt ${attempt + 1}`, {
         currentUIHash: currentUIHash?.slice(0,12),
         expectedHash: expectedHash?.slice(0,12),
         initialUIHash: initialUIHash?.slice(0,12),
@@ -80,14 +81,14 @@ export const useAudioSync = ({ contentHash, text, currentPage }: AudioSyncOption
       
       // If hashes now match, we're synchronized
       if (currentUIHash && currentUIHash === expectedHash) {
-        console.log(`✅ Hash sync successful after ${Date.now() - startTime}ms and ${attempt} attempts`);
+        DebugLogger.log('audio', `Hash sync successful after ${Date.now() - startTime}ms and ${attempt} attempts`);
         return true;
       }
       
       // If UI hash changed to something else, update audio service
       if (currentUIHash && currentUIHash !== initialUIHash && currentUIHash !== expectedHash) {
-        console.log(`🔄 UI hash changed during sync: ${currentUIHash?.slice(0,10)} - updating audio service`);
-        console.log('📊 Hash Change Analysis:', {
+        DebugLogger.log('audio', `UI hash changed during sync: ${currentUIHash?.slice(0,10)} - updating audio service`);
+        DebugLogger.log('audio', 'Hash Change Analysis', {
           newUIHash: currentUIHash?.slice(0,12),
           wasExpected: currentUIHash === expectedHash,
           textLength: currentText?.length,
@@ -128,7 +129,7 @@ export const useAudioSync = ({ contentHash, text, currentPage }: AudioSyncOption
     const currentText = (window as any).__pageContentString;
     
     // 🔍 PHASE 1 & 2: Comprehensive validation debugging
-    console.log('🎯 Hash Validation Debug:', {
+    DebugLogger.log('audio', 'Hash Validation Debug', {
       audioServiceHash: contentHash?.slice(0,12),
       uiWindowHash: currentUIHash?.slice(0,12), 
       audioServiceHashFull: contentHash,
@@ -145,10 +146,10 @@ export const useAudioSync = ({ contentHash, text, currentPage }: AudioSyncOption
     
     // If there's a hash mismatch, wait for proper synchronization
     if (contentHash && currentUIHash && currentUIHash !== contentHash) {
-      console.log(`🔄 Hash mismatch detected: UI=${currentUIHash?.slice(0,10)}, Audio=${contentHash?.slice(0,10)} - waiting for sync...`);
+      DebugLogger.log('audio', `Hash mismatch detected: UI=${currentUIHash?.slice(0,10)}, Audio=${contentHash?.slice(0,10)} - waiting for sync...`);
       
       // 🔍 PHASE 2: Analyze mismatch source
-      console.log('🔬 Mismatch Analysis:', {
+      DebugLogger.log('audio', 'Mismatch Analysis', {
         uiHashLength: currentUIHash.length,
         audioHashLength: contentHash.length,
         lengthDifference: Math.abs(currentUIHash.length - contentHash.length),
@@ -188,20 +189,20 @@ export const useAudioSync = ({ contentHash, text, currentPage }: AudioSyncOption
         return false;
       }
       
-      console.log('✅ Hash synchronization successful');
+      DebugLogger.log('audio', 'Hash synchronization successful');
       toast({
         title: "Content synchronized",
         description: "Audio is now ready to play with synchronized content.",
         duration: 1500,
       });
     } else if (!contentHash || !currentUIHash) {
-      console.log('⚠️ Missing hash data:', {
+      DebugLogger.log('audio', 'Missing hash data', {
         missingAudioHash: !contentHash,
         missingUIHash: !currentUIHash,
         actionTaken: 'proceeding_without_sync'
       });
     } else {
-      console.log('✅ Hashes already synchronized - no sync needed');
+      DebugLogger.log('audio', 'Hashes already synchronized - no sync needed');
     }
 
     return true;

@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { SmartElevenLabsTTS } from '@/services/smartElevenLabsTTS';
+import { DebugLogger } from '@/services/DebugLogger';
 
 /**
  * Hook to handle Charlotte's voice coordination with the audio system
@@ -9,7 +10,7 @@ export const useCharlotteAudioCoordination = () => {
   useEffect(() => {
     // Listen for Charlotte stop requests from audio coordinator
     const handleCharlotteStop = () => {
-      console.log('🤖 Charlotte Audio Coordination: Received stop request');
+      DebugLogger.log('audio', 'Charlotte Audio Coordination: Received stop request');
       // Charlotte is managed by ElevenLabs conversation system
       // The conversation system will handle stopping naturally
       // We just need to acknowledge the request
@@ -19,11 +20,11 @@ export const useCharlotteAudioCoordination = () => {
     // Listen for audio conflicts
     const handleAudioConflict = (event: CustomEvent) => {
       const { system } = event.detail || {};
-      console.log(`🤖 Charlotte Audio Coordination: Audio conflict detected with ${system}`);
+      DebugLogger.log('audio', `Charlotte Audio Coordination: Audio conflict detected with ${system}`);
       
       // If story audio (simple/sync) is starting, Charlotte should yield
       if (system === 'simple' || system === 'sync') {
-        console.log('🤖 Charlotte yielding to story audio');
+        DebugLogger.log('audio', 'Charlotte yielding to story audio');
         // Don't interrupt Charlotte mid-sentence, but prevent new speech
         window.dispatchEvent(new CustomEvent('charlotte:defer'));
       }
@@ -31,7 +32,7 @@ export const useCharlotteAudioCoordination = () => {
 
     // Enhanced coordination for seamless user experience
     const handleStoryAudioStart = () => {
-      console.log('🤖 Charlotte Audio Coordination: Story audio starting, deferring Charlotte');
+      DebugLogger.log('audio', 'Charlotte Audio Coordination: Story audio starting, deferring Charlotte');
       // Brief delay to let Charlotte finish current phrase if speaking
       setTimeout(() => {
         window.dispatchEvent(new CustomEvent('audio:request', { detail: { system: 'simple' } }));
@@ -39,11 +40,11 @@ export const useCharlotteAudioCoordination = () => {
     };
 
     const handleCharlotteSpeechRequest = () => {
-      console.log('🤖 Charlotte Audio Coordination: Speech request, checking conflicts');
+      DebugLogger.log('audio', 'Charlotte Audio Coordination: Speech request, checking conflicts');
       // Quick check if story audio is active
       const coordinator = (window as any).__SimpleAudioCoordinator;
       if (coordinator?.getActiveSystem() === 'simple') {
-        console.log('🤖 Charlotte deferring to active story audio');
+        DebugLogger.log('audio', 'Charlotte deferring to active story audio');
         return false; // Block Charlotte speech
       }
       return true; // Allow Charlotte speech
@@ -61,7 +62,7 @@ export const useCharlotteAudioCoordination = () => {
       // Check if we should defer to story audio
       const coordinator = (window as any).__SimpleAudioCoordinator;
       if (coordinator?.getActiveSystem() === 'simple' || coordinator?.getActiveSystem() === 'sync') {
-        console.log('🤖 Charlotte deferring speech to story audio');
+        DebugLogger.log('audio', 'Charlotte deferring speech to story audio');
         // Return empty audio to prevent speech conflict
         return new ArrayBuffer(0);
       }
