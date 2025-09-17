@@ -5,6 +5,7 @@ import { DiagnosticTool } from '@/utils/diagnostics';
 import { NetflixStyleStoryService } from '@/services/NetflixStyleStoryService';
 import { supabase } from '@/integrations/supabase/client';
 import type { UserInfo } from '@/types';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface DiagnosticPanelProps {
   userInfo: UserInfo;
@@ -20,12 +21,12 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({ userInfo }) =>
     
     try {
       // Test 1: Full diagnostic
-      console.log('🔍 Running full diagnostic...');
+      DebugLogger.log('performance', 'Running full diagnostic');
       await DiagnosticTool.runFullDiagnostic();
       setResults(prev => [...prev, '✅ Full diagnostic completed']);
 
       // Test 2: Template service accessibility  
-      console.log('🔍 Testing template service...');
+      DebugLogger.log('performance', 'Testing template service');
       const { data: templateTest, error: templateError } = await supabase.functions.invoke('template-service', {
         body: { 
           explore: true,
@@ -40,7 +41,7 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({ userInfo }) =>
       }
 
     } catch (error) {
-      console.error('Diagnostic failed:', error);
+      DebugLogger.error('performance', 'Diagnostic failed', error);
       setResults(prev => [...prev, `❌ Error: ${error.message}`]);
     } finally {
       setIsRunning(false);

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useImageWithFallback } from '@/hooks/useImageWithFallback';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface ImageWithFallbackProps {
   src?: string;
@@ -57,7 +58,7 @@ export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
         style={{ display: 'block' }}
         onError={(e) => {
           if (isDebugMode) {
-            console.error('🖼️ ImageWithFallback: Image display error', {
+            DebugLogger.error('image', 'ImageWithFallback: Image display error', {
               src: imageSrc,
               error: e
             });

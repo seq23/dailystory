@@ -143,7 +143,7 @@ export const AuthWrapper = () => {
         }
       }
     } catch (error) {
-      console.error('Error checking discount code:', error);
+      DebugLogger.error('auth', 'Error checking discount code', error);
     }
   };
 

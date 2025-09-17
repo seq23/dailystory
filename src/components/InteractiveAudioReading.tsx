@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Play } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import type { UserInfo } from '@/types';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface InteractiveAudioReadingProps {
   text: string;
@@ -52,7 +53,7 @@ export const InteractiveAudioReading = ({
       audio.pause();
       setAudioInitialized(true);
     } catch (error) {
-      console.log('Mobile audio init failed:', error);
+      DebugLogger.log('audio', 'Mobile audio init failed', error);
       setAudioInitialized(true);
     }
   };
@@ -128,7 +129,7 @@ export const InteractiveAudioReading = ({
       }
       
     } catch (error) {
-      console.error('Error starting audio reading:', error);
+      DebugLogger.error('audio', 'Error starting audio reading', error);
       setIsPlaying(false);
       
       // Fallback to browser speech synthesis if ElevenLabs fails
@@ -155,7 +156,7 @@ export const InteractiveAudioReading = ({
           highlightWords(fallbackWordInterval);
         }
       } catch (fallbackError) {
-        console.error('Fallback TTS also failed:', fallbackError);
+        DebugLogger.error('audio', 'Fallback TTS also failed', fallbackError);
       }
     }
   };
@@ -166,7 +167,7 @@ export const InteractiveAudioReading = ({
     const highlightNext = () => {
       if (index < words.length && isPlaying) {
         setCurrentWordIndex(index);
-        console.log(`🎯 InteractiveAudio: Highlighting word ${index}: "${words[index]}"`);
+        DebugLogger.log('ui', 'InteractiveAudio highlighting word', { index, word: words[index] });
         onWordHighlight?.(index);
         index++;
         
@@ -179,7 +180,7 @@ export const InteractiveAudioReading = ({
       } else {
         setCurrentWordIndex(-1);
         setIsPlaying(false);
-        console.log('🎯 InteractiveAudio: Highlighting sequence completed');
+        DebugLogger.log('ui', 'InteractiveAudio highlighting sequence completed');
       }
     };
     

@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { NetworkTimeoutError } from '@/utils/networkTimeout';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface Props {
   children: ReactNode;
@@ -29,7 +30,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
+    DebugLogger.error('error', 'ErrorBoundary caught an error', { error, errorInfo });
     
     // Suppress Chrome extension errors
     if (error.message?.includes('Extension context invalidated') ||

@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { VocabularyTrackingService } from "@/services/vocabularyTrackingService";
 import { tokenizeForHighlighting } from "@/utils/tokenize";
 import TTSDebugOverlay from "@/components/TTSDebugOverlay";
+import { DebugLogger } from "@/services/DebugLogger";
 
 // Import new lean hooks
 import { useAudioSession } from "@/hooks/useAudioSession";
@@ -123,7 +124,7 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
         markPageAsPlayed();
       }
     } catch (error) {
-      console.error('Audio playback failed:', error);
+      DebugLogger.error('audio', 'Audio playback failed', error);
     }
   };
 
@@ -278,7 +279,7 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
     try {
       // Voice command processing not available in audioSyncService
       const result = null;
-      console.log('🎙️ Headless voice command processed:', { cmd, result });
+      DebugLogger.log('audio', 'Headless voice command processed', { cmd, result });
       if (result && result.recognized && typeof result.action === 'function') {
         window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: 'processing' } }));
         try {
@@ -291,7 +292,7 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
         toast({ title: t('audioReading.voiceNotRecognized', 'Not recognized'), description: t('audioReading.tryCommand', "Try 'next page' or 'pause'"), duration: 2000 });
       }
     } catch (e) {
-      console.error('Headless voice processing failed', e);
+      DebugLogger.error('audio', 'Headless voice processing failed', e);
       toast({ title: t('audioReading.voiceCommandError', 'Voice command error'), description: String(e), variant: 'destructive' });
      } finally {
         if (voiceEnabledRef.current && !(window as any).__t2r_vc_user_disabled) {
@@ -301,7 +302,7 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
           }
           restartTimeoutRef.current = window.setTimeout(() => {
             if (voiceEnabledRef.current && !(window as any).__t2r_vc_user_disabled) {
-              try { vcRef.current?.start?.(); } catch (e) { console.warn('Headless restart failed', e); }
+              try { vcRef.current?.start?.(); } catch (e) { DebugLogger.warn('audio', 'Headless restart failed', e); }
             }
           }, 250);
         }
@@ -355,7 +356,7 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
                 voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
               });
             } catch (e) {
-              console.warn('Definition TTS failed', e);
+              DebugLogger.warn('audio', 'Definition TTS failed', e);
             }
           } else if (detail.type === 'save') {
             try {
@@ -371,7 +372,7 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
             toast({ title: t('vocab.saved', 'Saved to Vocabulary'), description: cleanWord, duration: 2000 });
           }
       } catch (err) {
-        console.error('voice:vocab handler error', err);
+        DebugLogger.error('audio', 'voice:vocab handler error', err);
         toast({ title: t('vocab.error', 'Vocabulary error'), description: String(err), variant: 'destructive' });
       }
     };

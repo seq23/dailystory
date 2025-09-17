@@ -9,6 +9,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Search, Download, CheckCircle, XCircle, Database, HardDrive } from 'lucide-react';
 import { DebugGateway } from '@/services/DebugGateway';
 import { useToast } from '@/hooks/use-toast';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface AIPromptData {
   sessionId: string;
@@ -85,12 +86,12 @@ export function DebugDataViewer() {
     setIsLoading(true);
     setLastError(null);
     
-    console.log('🔍 [DEBUG-FRONTEND] Fetching data for session:', sessionId.trim());
+    DebugLogger.log('network', 'Fetching debug data for session', { sessionId: sessionId.trim() });
     
     try {
       const { data } = await DebugGateway.getPromptHistory(sessionId.trim(), 10);
 
-      console.log('🔍 [DEBUG-FRONTEND] Response received:', { data });
+      DebugLogger.log('network', 'Debug data response received', { data });
 
       if (!data) {
         // Show service unavailable message instead of error
@@ -103,7 +104,7 @@ export function DebugDataViewer() {
         return;
       }
 
-      console.log('🔍 [DEBUG-FRONTEND] Debug info:', data.debugInfo);
+      DebugLogger.log('ui', 'Debug info retrieved', data.debugInfo);
 
       setDebugData(data);
       setLastError(null);
@@ -113,10 +114,10 @@ export function DebugDataViewer() {
         description: `Found ${data.totalEntries} entries from ${data.dataSource || 'unknown'} for session: ${sessionId}`,
       });
 
-      // Log detailed debug info to console
+      // Log detailed debug info 
       if (data.debugInfo) {
-        console.log('🔍 [DEBUG-DETAILED] Environment Check:', data.debugInfo.environmentCheck);
-        console.log('🔍 [DEBUG-DETAILED] Data Sources:', {
+        DebugLogger.log('ui', 'Environment check details', data.debugInfo.environmentCheck);
+        DebugLogger.log('ui', 'Data sources breakdown', {
           database: data.debugInfo.dbEntriesFound,
           memory: data.debugInfo.memoryEntriesFound,
           sessionManager: data.debugInfo.sessionManagerAvailable
@@ -125,7 +126,7 @@ export function DebugDataViewer() {
 
     } catch (err) {
       const errorMessage = err.message || 'Unknown error occurred';
-      console.error('❌ [DEBUG-FRONTEND] Failed to fetch debug data:', err);
+      DebugLogger.error('network', 'Failed to fetch debug data', err);
       
       setLastError(`Failed to retrieve debug data: ${errorMessage}`);
       

@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { DebugLogger } from "@/services/DebugLogger";
 
 const feedbackSchema = z.object({
   rating: z.number().min(1).max(5),
@@ -62,7 +63,7 @@ export function FeedbackForm({ onClose }: FeedbackFormProps) {
       
       onClose();
     } catch (error) {
-      console.error("Error submitting feedback:", error);
+      DebugLogger.error('network', 'Error submitting feedback', error);
       toast({
         title: t("feedback.messages.error"),
         description: t("feedback.messages.errorDescription"),

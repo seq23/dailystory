@@ -51,7 +51,7 @@ export const InteractiveWord = ({
   // Use global gamification system instead of local hook
   const getAddVocabularyWord = () => {
     return getGlobalAddVocabularyWord() || (() => {
-      console.warn('⚠️ Global addVocabularyWord not available - gamification may not be set up');
+      DebugLogger.warn('ui', 'Global addVocabularyWord not available - gamification may not be set up');
     });
   };
   
@@ -98,7 +98,7 @@ export const InteractiveWord = ({
           return manualTranslation;
         }
       } catch (error) {
-        console.error('❌ Translation error:', error);
+        DebugLogger.error('ui', 'Translation error', error);
       }
     }
     
@@ -272,7 +272,7 @@ export const InteractiveWord = ({
     e.stopPropagation();
     if (isPlaying || isLoadingWordData) return;
     
-    console.log('🔍 EXPLAIN CLICKED - Debug info:', {
+    DebugLogger.log('ui', 'EXPLAIN CLICKED - Debug info', {
       word,
       userNativeLanguage,
       difficulty,
@@ -284,13 +284,13 @@ export const InteractiveWord = ({
     });
     
     // Track vocabulary word IMMEDIATELY when user clicks explain using global system
-    console.log('🎯 Tracking vocabulary word:', word);
+    DebugLogger.log('ui', 'Tracking vocabulary word', word);
     try {
       const addVocabularyWord = getAddVocabularyWord();
       addVocabularyWord();
-      console.log('✅ Vocabulary word tracked successfully');
+      DebugLogger.log('ui', 'Vocabulary word tracked successfully');
     } catch (error) {
-      console.error('❌ Failed to track vocabulary word:', error);
+      DebugLogger.error('ui', 'Failed to track vocabulary word', error);
     }
 
     // Mark as reviewed once per tooltip open
@@ -313,7 +313,7 @@ export const InteractiveWord = ({
       
       // Try to get definition via dictionary API for ALL users
       try {
-        console.log('📞 Calling word-dictionary API for:', { cleanWord, userNativeLanguage, difficulty });
+        DebugLogger.log('network', 'Calling word-dictionary API', { cleanWord, userNativeLanguage, difficulty });
         const { data: wordData, error: wordError } = await supabase.functions.invoke('word-dictionary', {
           body: { 
             word: cleanWord, 
@@ -323,31 +323,31 @@ export const InteractiveWord = ({
           }
         });
         
-        console.log('📞 API Response:', { wordData, wordError });
+        DebugLogger.log('network', 'API Response', { wordData, wordError });
         
         if (!wordError && wordData?.definition) {
           definition = wordData.definition;
           definitionToSpeak = wordData.definition;
-          console.log('✅ Got proper API definition:', definition);
+          DebugLogger.log('network', 'Got proper API definition', definition);
         } else {
-          console.warn('⚠️ API call failed or no definition, using local fallback');
+          DebugLogger.warn('network', 'API call failed or no definition, using local fallback');
           // Only use local definitions as fallback
           definition = getWordDefinition(cleanWord, sentenceContext);
           definitionToSpeak = definition;
         }
       } catch (apiError) {
-        console.warn('⚠️ API call threw error, using local fallback:', apiError);
+        DebugLogger.warn('network', 'API call threw error, using local fallback', apiError);
         definition = getWordDefinition(cleanWord, sentenceContext);
         definitionToSpeak = definition;
       }
       
-      console.log('📝 Final definition to use:', definition);
+      DebugLogger.log('ui', 'Final definition to use', definition);
       
       // Log vocabulary encounter (authenticated users only)
       try {
         await VocabularyTrackingService.logEncounter(cleanWord, definitionToSpeak, wordComplexity);
       } catch (e) {
-        console.warn('Vocabulary tracking failed', e);
+        DebugLogger.warn('ui', 'Vocabulary tracking failed', e);
       }
       
       // Show definition immediately
@@ -359,12 +359,12 @@ export const InteractiveWord = ({
       
         // Use dedicated InteractiveWordAudioService for audio
         try {
-          console.log('🎯 Interactive word DIRECT EXPLAIN clicked for:', cleanWord);
+          DebugLogger.log('ui', 'Interactive word DIRECT EXPLAIN clicked', cleanWord);
           const { InteractiveWordAudioService } = await import('@/services/InteractiveWordAudioService');
           await InteractiveWordAudioService.explainWord(cleanWord, userInfo?.nativeLanguage || 'en');
-          console.log('✅ Interactive word explain completed successfully');
+          DebugLogger.log('audio', 'Interactive word explain completed successfully');
         } catch (audioError) {
-          console.error('❌ Interactive word explain audio failed:', audioError);
+          DebugLogger.error('audio', 'Interactive word explain audio failed', audioError);
           // Show definition without audio if audio fails
         } finally {
           setIsPlaying(false);

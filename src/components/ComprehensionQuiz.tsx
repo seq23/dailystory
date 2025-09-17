@@ -7,6 +7,7 @@ import { CheckCircle, XCircle, Star, ArrowRight, RotateCcw } from 'lucide-react'
 import type { UserInfo } from '@/types';
 import { saveQuizAttempt } from '@/hooks/useActivityPersistence';
 import { useToast } from '@/components/ui/use-toast';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface Question {
   id: string;
@@ -46,7 +47,7 @@ export const ComprehensionQuiz = ({
   // Generate questions based on story and user info
   useEffect(() => {
     if (isVisible && storyText) {
-      console.log('🧪 Generating quiz questions for story:', {
+      DebugLogger.log('ui', 'Generating quiz questions for story', {
         storyLength: storyText.length,
         userAge: userInfo.age,
         userName: userInfo.name
@@ -267,7 +268,7 @@ export const ComprehensionQuiz = ({
         toast({ title: t('postSession.savedLocally', 'Saved locally'), description: t('postSession.savedQueue', 'Will sync when logged in'), });
       }
     } catch (e: any) {
-      console.warn('[quiz] save failed', e);
+      DebugLogger.warn('ui', 'Quiz save failed', e);
       toast({ title: t('postSession.saveFailed', 'Could not save'), description: e?.message || 'Unknown error' });
     }
 

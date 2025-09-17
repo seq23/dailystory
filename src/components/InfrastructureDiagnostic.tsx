@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
+import { DebugLogger } from '@/services/DebugLogger';
 
 export const InfrastructureDiagnostic: React.FC = () => {
   const [isRunning, setIsRunning] = useState(false);
@@ -12,7 +13,7 @@ export const InfrastructureDiagnostic: React.FC = () => {
     setResult('');
     
     try {
-      console.log('🔍 Running infrastructure diagnostic...');
+      DebugLogger.log('performance', 'Running infrastructure diagnostic');
       
       // Test the main image orchestrator function health
       const { data, error } = await supabase.functions.invoke('runware-generate-image', {
@@ -33,7 +34,7 @@ Service: ${data.service} | Timestamp: ${data.timestamp}`);
         setResult(`⚠️ Infrastructure check completed with issues: ${data?.message || 'Service not healthy'}`);
       }
     } catch (error) {
-      console.error('Diagnostic error:', error);
+      DebugLogger.error('performance', 'Diagnostic error', error);
       setResult(`❌ Infrastructure test failed: ${error.message}`);
     } finally {
       setIsRunning(false);

@@ -4,6 +4,7 @@ import { toast } from '@/hooks/use-toast';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { AlertTriangle, RefreshCw, Volume2, VolumeX } from 'lucide-react';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface AudioError {
   type: 'NETWORK_TIMEOUT' | 'AUDIO_INIT_FAILED' | 'TTS_SERVICE_ERROR' | 'MOBILE_AUDIO_ERROR' | 'UNKNOWN';
@@ -54,7 +55,7 @@ export class EnhancedAudioErrorBoundary extends Component<Props, State> {
     const { onError } = this.props;
     const audioError = EnhancedAudioErrorBoundary.classifyAudioError(error);
     
-    console.error('🔊 AudioErrorBoundary caught error:', {
+    DebugLogger.error('audio', 'AudioErrorBoundary caught error', {
       error,
       errorInfo,
       audioError,
@@ -68,7 +69,7 @@ export class EnhancedAudioErrorBoundary extends Component<Props, State> {
     }
 
     // Log error (no toast notifications)
-    console.log('🔊 Audio Error:', audioError);
+    DebugLogger.log('audio', 'Audio error logged', audioError);
 
     // Attempt automatic recovery for certain error types
     this.attemptAutoRecovery(audioError);
@@ -124,7 +125,7 @@ export class EnhancedAudioErrorBoundary extends Component<Props, State> {
 
   private showErrorToast(audioError: AudioError) {
     // Toast notifications removed - errors are now handled inline in components
-    console.log('🔊 Audio Error (no toast):', audioError.type, audioError.message);
+    DebugLogger.log('audio', 'Audio error (no toast)', { type: audioError.type, message: audioError.message });
   }
 
   private attemptAutoRecovery(audioError: AudioError) {
@@ -169,11 +170,11 @@ export class EnhancedAudioErrorBoundary extends Component<Props, State> {
     
     // Rate limiting: don't retry too frequently
     if (timeSinceLastError < 60000 && this.state.errorCount >= this.maxErrorsPerMinute) {
-      console.warn('🔊 Audio error retry rate limited');
+      DebugLogger.warn('audio', 'Audio error retry rate limited');
       return;
     }
 
-    console.log('🔄 Attempting audio error recovery...');
+    DebugLogger.log('audio', 'Attempting audio error recovery');
     
     this.setState({
       hasAudioError: false,
