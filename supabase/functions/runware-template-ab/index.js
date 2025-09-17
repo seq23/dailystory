@@ -438,7 +438,8 @@ function extractSimpleScene(storyText) {
   if (text.includes('toy') || text.includes('toys')) return 'playing happily with toys';
   if (text.includes('food') || text.includes('cookie') || text.includes('apple')) return 'enjoying delicious food';
   
-  return 'playing happily outdoors';
+  // Honest fallback: empty string instead of "playing happily outdoors"
+  return '';
 }
 
 // Helper function for location extraction
@@ -454,7 +455,7 @@ const TIER_25A_TEMPLATE = `Narrative: {pageText}.
 Character Description: {character} {age}, {ethnicity}, {hair}, {features} {bundle.culturalEnhancements}.
 Action: {semantic_scene}.
 Secondary elements: {secondary_characters}.
-Consistency: {visual_consistency_elements}.
+Consistency: {visual_consistency_elements} {setting_context}.
 Context: {cultural_context}, {community_context}.
 Brand Suffix: {frameworkPrompt}, {cameraDirective}.`;
 
@@ -553,7 +554,7 @@ serve(async (req) => {
         if (ExactWordExtractor && visualTracker) {
           const currentSetting = ExactWordExtractor.extractExactSetting(pageText);
           
-          if (currentSetting && currentSetting !== 'magical place') {
+          if (currentSetting) {
             // Save current setting to database
             await visualTracker.saveDetailToDatabase(
               bundle.sessionId || 'default', 'general', 'setting', 'location', currentSetting, bundle.pageNumber || 1

@@ -155,14 +155,14 @@ export class ExactWordExtractor {
   }
 
   /**
-   * Extracts location-based setting words from predefined list
+   * Extracts location-based setting words with honest contextual inference
    */
   static extractExactSetting(text) {
     // CRITICAL FIX: Use correct vocabulary paths from tier25Vocabulary.js
     const settingWords = TIER_25_UNIFIED_VOCABULARY_EXTENDED.contextDetection.outdoor
       .concat(TIER_25_UNIFIED_VOCABULARY_EXTENDED.contextDetection.indoor);
 
-    // Look for exact setting word matches
+    // Look for exact setting word matches first
     for (const setting of settingWords) {
       const regex = new RegExp(`\\b${setting}\\b`, 'i');
       if (regex.test(text)) {
@@ -170,7 +170,28 @@ export class ExactWordExtractor {
       }
     }
 
-    return 'magical place';
+    // Contextual inference based on activity
+    const activityBasedSettings = [
+      { regex: /\b(sleep|sleeping|bed|bedroom)\b/i, setting: 'bedroom' },
+      { regex: /\b(cook|cooking|kitchen|eat|eating)\b/i, setting: 'kitchen' },
+      { regex: /\b(play|playing|playground|swing|slide)\b/i, setting: 'playground' },
+      { regex: /\b(read|reading|library|book)\b/i, setting: 'library' },
+      { regex: /\b(swim|swimming|pool|water)\b/i, setting: 'pool' },
+      { regex: /\b(run|running|jog|jogging|exercise)\b/i, setting: 'park' },
+      { regex: /\b(school|class|classroom|teacher)\b/i, setting: 'school' },
+      { regex: /\b(home|house)\b/i, setting: 'home' },
+      { regex: /\b(outside|outdoors|nature|tree|grass)\b/i, setting: 'outdoors' },
+      { regex: /\b(inside|indoors|room)\b/i, setting: 'indoors' }
+    ];
+
+    for (const { regex, setting } of activityBasedSettings) {
+      if (regex.test(text)) {
+        return setting;
+      }
+    }
+
+    // Honest fallback: empty string (no more lies)
+    return '';
   }
 
   /**
@@ -179,9 +200,14 @@ export class ExactWordExtractor {
   static buildFormulaikTemplate(exact) {
     const action = exact.action || 'moving';
     const objects = exact.objects && exact.objects.length > 0 ? exact.objects.join(' and ') : 'something special';
-    const setting = exact.setting || 'magical place';
+    const setting = exact.setting || '';
 
-    return `A character ${action} with ${objects} in a ${setting}`;
+    // Build template with honest setting logic
+    if (setting) {
+      return `A character ${action} with ${objects} in a ${setting}`;
+    } else {
+      return `A character ${action} with ${objects}`;
+    }
   }
 
   /**

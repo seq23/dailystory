@@ -229,7 +229,7 @@ export class PhaseIntegrationOrchestrator {
       const currentSetting = ExactWordExtractor.extractExactSetting(storyText || '');
       let persistentSetting = null;
       
-      if (currentSetting && currentSetting !== 'magical place') {
+      if (currentSetting) {
         // Save current setting to database
         await this.visualDetailTracker.saveDetailToDatabase(
           sessionId, 'general', 'setting', 'location', currentSetting, 1

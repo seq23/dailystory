@@ -13,7 +13,7 @@ Narrative: {pageText}.
 Character Description: {character} {age}, {ethnicity}, {hair}, {features} {bundle.culturalEnhancements}.
 Action: {semantic_scene}.
 Secondary elements: {secondary_characters}.
-Consistency: {visual_consistency_elements}.
+Consistency: {visual_consistency_elements} {setting_context}.
 Context: {cultural_context}, {community_context}.
 Brand Suffix: {frameworkPrompt}, {cameraDirective}.
 ```
@@ -67,9 +67,10 @@ Enhanced prompt from PhaseIntegrationOrchestrator with templateStructure: 'COMPL
 - `{features}` / `{facialFeatures}` - Skin-tone based facial features
 
 ### Advanced Placeholders (Tier 2.5A Only)
-- `{semantic_scene}` - Enhanced action extraction
+- `{semantic_scene}` - Enhanced action extraction with honest fallbacks
 - `{secondary_characters}` - Detected from Character Consistency Service
 - `{visual_consistency_elements}` - Character appearance consistency
+- `{setting_context}` - Persistent location context with honest detection
 - `{bundle.culturalEnhancements}` - Cultural feature enhancements
 
 ### Context Placeholders
@@ -88,18 +89,21 @@ Enhanced prompt from PhaseIntegrationOrchestrator with templateStructure: 'COMPL
 - Enhanced story data available from PhaseIntegrationOrchestrator
 - templateStructure: 'COMPLETE_TIER_1'
 - Uses direct Runware API with advanced prompts
+- **Honest setting system**: Contextual detection with empty string fallbacks
 
 ### Tier 2.5A Selection Criteria
 - User has dark or darker skin tone
 - Requires enhanced cultural representation
 - Uses Character Consistency Service
 - Includes secondary character detection
+- **Honest setting system**: Activity-based inference, then empty string fallbacks
 
 ### Tier 2.5B Selection Criteria  
 - User has light, pale, medium, or olive skin tone
 - Streamlined processing
 - No character consistency service
 - Simplified scene extraction
+- **Honest setting system**: Contextual inference, then empty string fallbacks
 
 ## Hair and Facial Feature Mapping
 
