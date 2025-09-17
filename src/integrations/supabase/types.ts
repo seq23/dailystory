@@ -1129,6 +1129,19 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
+      get_user_subscription_status: {
+        Args: { target_user_id?: string }
+        Returns: {
+          created_at: string
+          override_end: string
+          override_premium: boolean
+          subscribed: boolean
+          subscription_end: string
+          subscription_tier: string
+          updated_at: string
+          user_id: string
+        }[]
+      }
       log_enhanced_security_event: {
         Args: {
           details_param?: Json
@@ -1149,6 +1162,10 @@ export type Database = {
         Args: { details?: Json; event_type: string; user_id_param?: string }
         Returns: undefined
       }
+      log_story_access_attempt: {
+        Args: { access_granted: boolean; story_id: string; user_id: string }
+        Returns: undefined
+      }
       purge_old_incidents: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -1158,6 +1175,10 @@ export type Database = {
         Returns: boolean
       }
       validate_subscription_view_security: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      verify_phase3_security_completion: {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
