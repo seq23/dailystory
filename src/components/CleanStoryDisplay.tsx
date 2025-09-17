@@ -235,7 +235,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
           setCachedUserId(user.id);
         }
       } catch (error) {
-        console.warn('Failed to cache user ID:', error);
+        DebugLogger.warn('auth', 'Failed to cache user ID', error);
       }
     };
     
@@ -254,7 +254,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     try {
       sessionStorage.removeItem('session_achievements');
     } catch (error) {
-      console.warn('Failed to clear previous session achievements:', error);
+      DebugLogger.warn('performance', 'Failed to clear previous session achievements', error);
     }
     
     return () => {
@@ -336,7 +336,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
                 validatedImages[parseInt(index)] = url;
               }
             } catch {
-              console.warn(`🖼️ Invalid cached image URL for page ${index}:`, url);
+              DebugLogger.warn('image', `Invalid cached image URL for page ${index}`, url);
             }
           }
           
@@ -491,7 +491,7 @@ const handleImageFallbackUsed = useCallback((isUsingFallback: boolean) => {
     const now = Date.now();
     const lastWarning = sessionStorage.getItem('lastImageWarning');
     if (!lastWarning || (now - parseInt(lastWarning)) > 10000) { // 10 second rate limit
-      console.warn('Story image failed to load, using enhanced fallback:', pageImages[currentPage]);
+      DebugLogger.warn('image', 'Story image failed to load, using enhanced fallback', pageImages[currentPage]);
       sessionStorage.setItem('lastImageWarning', now.toString());
     }
     
@@ -555,7 +555,7 @@ const handleImageRegeneration = useCallback(async () => {
       isGuestUser: !isPremium
     });
   } catch (error) {
-    console.warn(`Failed to regenerate image for page ${currentPage}:`, error);
+    DebugLogger.warn('image', `Failed to regenerate image for page ${currentPage}`, error);
   } finally {
     setIsGeneratingImage(false);
     setIsPreparingImage(false);
@@ -598,7 +598,7 @@ useEffect(() => {
       
       DebugLogger.log('audio', 'Cleared audio state for page change:', currentPage + 1);
     } catch (error) {
-      console.warn('Failed to clear audio state on page change:', error);
+      DebugLogger.warn('audio', 'Failed to clear audio state on page change', error);
     }
   };
   
@@ -652,7 +652,7 @@ useEffect(() => {
   const handleStoryStabilized = (event: CustomEvent) => {
     // Use component's local story state instead of event.detail.pages
     if (!story || !Array.isArray(story) || story.length === 0) {
-      console.warn('🖼️ Story stabilized event received but no valid story state');
+      DebugLogger.warn('image', 'Story stabilized event received but no valid story state');
       return;
     }
     
@@ -690,7 +690,7 @@ useEffect(() => {
     
     // Simple bounds check to prevent undefined access
     if (!pageText || pageToGenerate >= story.length) {
-      console.warn('🖼️ Page index out of bounds for image generation:', { 
+      DebugLogger.warn('image', 'Page index out of bounds for image generation', { 
         pageToGenerate, 
         storyLength: story.length 
       });
@@ -763,7 +763,7 @@ useEffect(() => {
 // Guard against any attempts to disable the timer for guests
 useEffect(() => {
   if (!isPremium && !timerEnabled) {
-    console.warn('[Timer] Guest sessions must keep timer enabled. Re-enabling.');
+    DebugLogger.warn('performance', 'Guest sessions must keep timer enabled. Re-enabling.');
     try { localStorage.setItem('readingTimerEnabled','1'); } catch {}
     setTimerEnabled(true);
     try { window.dispatchEvent(new CustomEvent('readingTimerToggle', { detail: true })); } catch {}
@@ -924,12 +924,12 @@ const [highlightSave, setHighlightSave] = useState(false);
                 await supabase.from('profiles').update({ difficulty_level: newDifficulty }).eq('user_id', user.id);
               }
             } catch (e) {
-              console.warn('Failed to persist clamped difficulty', e);
+              DebugLogger.warn('auth', 'Failed to persist clamped difficulty', e);
             }
           }
         }
       } catch (e) {
-        console.error('Failed to load parent guardrails', e);
+        DebugLogger.error('auth', 'Failed to load parent guardrails', e);
       }
     })();
   }, [isPremium]);
@@ -1022,7 +1022,7 @@ const [highlightSave, setHighlightSave] = useState(false);
         }));
       }
       (window as any).__userName = userInfo?.name || '';
-      console.log('🎤 Content variables updated for voice commands:', {
+      DebugLogger.log('ui', 'Content variables updated for voice commands', {
         page: currentPage,
         textLength: currentStoryText.length,
         hasHash: !!contentHash,
@@ -1031,7 +1031,7 @@ const [highlightSave, setHighlightSave] = useState(false);
         textPreview: currentStoryText.substring(0, 100) + '...'
       });
     } catch (error) {
-      console.error('🎤 Failed to set content variables:', error);
+      DebugLogger.error('ui', 'Failed to set content variables', error);
     }
   }, [contentHash, currentStoryText, currentPage]);
 
@@ -1055,9 +1055,9 @@ useEffect(() => {
         context: 'conversation',
         onWordHighlight
       }); 
-    } catch (e) { console.warn('audio:play failed', e); } 
+    } catch (e) { DebugLogger.warn('audio', 'audio:play failed', e); } 
   };
-  const onPause = () => { try { audioEngineRef.current.stop(); } catch (e) { console.warn('audio:pause failed', e); } };
+  const onPause = () => { try { audioEngineRef.current.stop(); } catch (e) { DebugLogger.warn('audio', 'audio:pause failed', e); } };
   window.addEventListener('audio:play', onPlay as EventListener);
   window.addEventListener('audio:pause', onPause as EventListener);
   return () => {
@@ -1110,7 +1110,7 @@ useEffect(() => {
               DebugLogger.log('image', 'Guest image cached:', { pageIndex, avatarType });
             }
           } catch (error) {
-            console.error('❌ Cache persistence failed:', error);
+            DebugLogger.error('image', 'Cache persistence failed', error);
           }
         })();
         
@@ -1180,7 +1180,7 @@ useEffect(() => {
         const syllText = (adjusted || []).join(', ');
         await playTTS(syllText);
       } catch (e) {
-        console.warn('voice:wordHelp sequence failed', e);
+        DebugLogger.warn('audio', 'voice:wordHelp sequence failed', e);
       } finally {
         // Auto-resume narration if it was playing before the help flow
         if (wasPlaying) {
@@ -1248,7 +1248,7 @@ useEffect(() => {
   useEffect(() => {
     const isDebug = new URLSearchParams(window.location.search).has('debug');
     if (isDebug) {
-      console.log('🖼️ Image generation check:', {
+      DebugLogger.log('image', 'Image generation check', {
         layout,
         storyLength: story.length,
         currentPage,
@@ -1295,13 +1295,13 @@ useEffect(() => {
         sessionStorage.setItem(`premium.timer.remaining.${cachedUserId}`, String(timeRef.current));
       }
     } catch (error) {
-      console.warn('Timer persistence failed:', error);
+      DebugLogger.warn('performance', 'Timer persistence failed', error);
     }
     
     // Performance monitoring: Log if timer handler took too long
     const duration = performance.now() - startTime;
     if (duration > 16) {
-      console.warn(`🐌 Slow timer persistence: ${duration.toFixed(2)}ms`);
+      DebugLogger.warn('performance', `Slow timer persistence: ${duration.toFixed(2)}ms`);
     }
   }, 2000);
   return () => clearInterval(iv);
@@ -1425,11 +1425,11 @@ useEffect(() => {
             isGuestUser: !isPremium
           });
         } catch (error) {
-          console.warn(`Failed to generate image for page ${currentPage}:`, error);
+          DebugLogger.warn('image', `Failed to generate image for page ${currentPage}`, error);
         }
       }
     } catch (error) {
-      console.warn(`Failed to check cache/generate for page ${currentPage}:`, error);
+      DebugLogger.warn('image', `Failed to check cache/generate for page ${currentPage}`, error);
     }
   };
   
@@ -1464,7 +1464,7 @@ const initializeStory = async () => {
     return;
   }
   
-  console.log('🚀 initializeStory start', { 
+  DebugLogger.log('story', 'initializeStory start', { 
     isPremium, 
     userName: userInfo?.name
   });
@@ -1505,7 +1505,7 @@ const initializeStory = async () => {
             const maxValidPage = Math.max(0, cached.pages.length - 1);
             const restoredPage = Math.min(cachedPage, maxValidPage);
             
-            console.log('📄 Page restoration details:', {
+            DebugLogger.log('story', 'Page restoration details', {
               cachedCurrentPage: cachedPage,
               pagesLength: cached.pages.length,
               maxValidPage,
@@ -1558,7 +1558,7 @@ const initializeStory = async () => {
           try { sessionStorage.removeItem(`premium.timer.remaining.${cacheId}`); } catch {}
           try { StorySessionCache.clearCachedSession(cacheId); } catch {}
         }
-      } catch (e) { console.warn('Failed to restore premium cached session', e); }
+      } catch (e) { DebugLogger.warn('auth', 'Failed to restore premium cached session', e); }
 
       // Premium: Live generation - start with first page
       DebugLogger.log('story', 'Premium user: Starting live generation');
@@ -1614,7 +1614,7 @@ const initializeStory = async () => {
           0,
           { isPremium: true, sessionStartTime }
         );
-      } catch (e) { console.warn('Story cache failed (premium start)', e); }
+      } catch (e) { DebugLogger.warn('story', 'Story cache failed (premium start)', e); }
       
     } else {
       // Free: try to restore from cache first (guarded by feature flag)
@@ -1641,7 +1641,7 @@ const initializeStory = async () => {
               DebugLogger.log('story', 'Free user page 6 preserved:', { cachedPage, pagesLength: cached.pages.length });
             }
             
-            console.log('📄 Free user page restoration details:', {
+            DebugLogger.log('story', 'Free user page restoration details', {
               cachedCurrentPage: cachedPage,
               pagesLength: cached.pages.length,
               maxValidPage,
@@ -1682,9 +1682,9 @@ const initializeStory = async () => {
             if (convertedImages && Object.keys(convertedImages).length > 0) {
               setPageImages(convertedImages);
               onPageImagesUpdate?.(convertedImages); // CRITICAL: Notify parent of cache restoration
-              console.log('🖼️ Premium cache restoration: Images loaded from session cache', convertedImages);
+              DebugLogger.log('image', 'Premium cache restoration: Images loaded from session cache', convertedImages);
             } else {
-              console.log('🖼️ Premium cache restoration: No cached images found, will generate new ones');
+              DebugLogger.log('image', 'Premium cache restoration: No cached images found, will generate new ones');
             }
             
             setIsStoryStable(true);
@@ -1695,18 +1695,18 @@ const initializeStory = async () => {
           try { StorySessionCache.clearCachedSession('guest'); } catch {}
           try { guestSession.clearAll(); } catch {}
         }
-      } catch (e) { console.warn('Failed to restore cached guest session', e); }
+      } catch (e) { DebugLogger.warn('story', 'Failed to restore cached guest session', e); }
 
       // Free: Netflix-style - generate complete story upfront
       DebugLogger.log('story', 'Free user: Generating complete story', { isPremium, userInfo: userInfo?.name });
-      console.log('🔍 DIAGNOSTIC: CleanStoryDisplay calling NetflixStyleStoryService', {
+      DebugLogger.log('story', 'DIAGNOSTIC: CleanStoryDisplay calling NetflixStyleStoryService', {
         userName: userInfo.name,
         difficulty: userInfo.difficultyLevel,
         timestamp: new Date().toISOString()
       });
       
       // ✅ CRITICAL FIX: Debug userInfo gender before story generation
-      console.log('🚨 [GENDER DEBUG] UserInfo being passed to story generation:', {
+      DebugLogger.log('story', '[GENDER DEBUG] UserInfo being passed to story generation', {
         name: effectiveUser.name,
         avatarType: effectiveUser.avatar?.type,
         avatarSkinTone: effectiveUser.avatar?.skinTone,
@@ -1716,7 +1716,7 @@ const initializeStory = async () => {
       
       // ⚠️ VALIDATION: Ensure avatar type is set correctly
       if (!effectiveUser.avatar?.type) {
-        console.error('🚨 [CRITICAL] Avatar type is missing! This will cause pronoun issues.');
+        DebugLogger.error('story', '[CRITICAL] Avatar type is missing! This will cause pronoun issues.');
         toast({
           title: "Character Error",
           description: "Avatar information is missing. Please refresh and select your character again.",
@@ -1727,7 +1727,7 @@ const initializeStory = async () => {
       
       const result = await NetflixStyleStoryService.generateCompleteStory(effectiveUser);
       
-      console.log('🔍 DIAGNOSTIC: NetflixStyleStoryService result received', {
+      DebugLogger.log('story', 'DIAGNOSTIC: NetflixStyleStoryService result received', {
         hasError: !!result.error,
         pagesCount: result.content?.length,
         pageCount: result.pageCount,
@@ -1735,12 +1735,12 @@ const initializeStory = async () => {
       });
 
       if (result.error) {
-        console.error('🔍 DIAGNOSTIC: Story generation returned error', result.error);
+        DebugLogger.error('story', 'DIAGNOSTIC: Story generation returned error', result.error);
         setError(result.error);
         return;
       }
       
-      console.log('🔍 DIAGNOSTIC: Pre-processing story for placeholders BEFORE setStory', {
+      DebugLogger.log('story', 'DIAGNOSTIC: Pre-processing story for placeholders BEFORE setStory', {
         pagesCount: result.content.length,
         firstPage: result.content[0]?.substring(0, 100),
         hasPlaceholders: result.content.some(page => page.includes('{'))
@@ -1769,10 +1769,10 @@ const initializeStory = async () => {
         );
         DebugLogger.log('story', `Initialized character context for ${userInfo.name} directly via StoryVisualStateManager`);
       } catch (error) {
-        console.warn('Failed to initialize character context:', error);
+        DebugLogger.warn('story', 'Failed to initialize character context', error);
       }
       
-      console.log('✅ PHASE 1: Story fully processed in background - ready for stable display', {
+      DebugLogger.log('story', 'PHASE 1: Story fully processed in background - ready for stable display', {
         processedFirstPage: processedPages[0]?.substring(0, 100),
         stillHasPlaceholders: processedPages.some((page: string) => page.includes('{'))
       });
@@ -1792,7 +1792,7 @@ const initializeStory = async () => {
       if (!isPremium) {
         // Keep story length logging for analytics but trust backend validation
         const fullStoryText = (processedPages || []).join(' ');
-        console.log('📊 Guest story processed:', {
+        DebugLogger.log('story', 'Guest story processed', {
           totalLength: fullStoryText.length,
           pageCount: processedPages?.length || 0,
           difficulty: currentDifficulty
@@ -1837,7 +1837,7 @@ const initializeStory = async () => {
           avatarType
         );
         DebugLogger.log('story', `Guest story cached with processed pages and avatar type: ${avatarType}`);
-      } catch (e) { console.warn('Story cache failed', e); }
+      } catch (e) { DebugLogger.warn('story', 'Story cache failed', e); }
 
       // 🔧 FIX: Dispatch stability event with PROCESSED content for image generation
       // This ensures images are generated from the same content users see
@@ -1858,12 +1858,12 @@ const initializeStory = async () => {
     }
     
   } catch (error) {
-    console.error('Story initialization failed:', error);
+    DebugLogger.error('story', 'Story initialization failed', error);
     setError('Failed to create your story. Please try again.');
   } finally {
     const elapsed = Date.now() - loaderStartRef.current;
     const remaining = Math.max(0, LOADER_MIN_MS - elapsed);
-    console.log('✅ initializeStory finished', { 
+    DebugLogger.log('story', 'initializeStory finished', { 
       elapsed, 
       remaining, 
       LOADER_MIN_MS, 
@@ -1876,7 +1876,7 @@ const initializeStory = async () => {
     // DEBOUNCED STABILITY: Prevent rapid toggling that causes flickering
     const storyElapsed = Date.now() - loaderStartRef.current;
     const storyRemaining = Math.max(0, LOADER_MIN_MS - storyElapsed);
-    console.log('✅ initializeStory finished', { 
+    DebugLogger.log('story', 'initializeStory finished', { 
       elapsed: storyElapsed, 
       remaining: storyRemaining, 
       LOADER_MIN_MS, 
@@ -1899,7 +1899,7 @@ const initializeStory = async () => {
       setIsLoading(false);
       // Debounced stability to prevent flickering
         setIsStoryStable(true);
-        console.log('📚 PHASE 6: Story is now stable and locked - timer can start, images can generate');
+        DebugLogger.log('story', 'PHASE 6: Story is now stable and locked - timer can start, images can generate');
         
         // Show touch device instruction after story loads
         setTimeout(() => {
@@ -1920,7 +1920,7 @@ const initializeStory = async () => {
       }
       return result;
     } catch (error) {
-      console.error('Failed to generate next page:', error);
+      DebugLogger.error('story', 'Failed to generate next page', error);
       setError('Failed to continue the story. Please try again.');
       return;
     } finally {
@@ -2152,7 +2152,7 @@ const initializeStory = async () => {
     
     const storyText = displayedStory[index];
     if (!storyText) {
-      console.log('📸 Skipping image generation for index - no story text for page', index);
+      DebugLogger.log('image', 'Skipping image generation for index - no story text for page', index);
       return;
     }
     
@@ -2161,7 +2161,7 @@ const initializeStory = async () => {
       
       // Validate userInfo structure
       if (!userInfo || !userInfo.avatar) {
-        console.warn('⚠️ Missing userInfo or avatar data for index cache lookup');
+        DebugLogger.warn('image', 'Missing userInfo or avatar data for index cache lookup');
       }
       
       const storyMarkers = EnhancedImageCache.extractStoryMarkers(storyText, userInfo);
@@ -2174,12 +2174,12 @@ const initializeStory = async () => {
       );
       
       if (cachedImageUrl) {
-        console.log('📸 Using cached image for page', index);
+        DebugLogger.log('image', 'Using cached image for page', index);
         setPageImages(prev => ({ ...prev, [index]: cachedImageUrl }));
         return;
       }
     } catch (cacheError) {
-      console.warn('Failed to check image cache for index:', cacheError);
+      DebugLogger.warn('image', 'Failed to check image cache for index', cacheError);
     }
     
     try {
@@ -2201,7 +2201,7 @@ const initializeStory = async () => {
           
           // Validate userInfo before caching
           if (!userInfo || !userInfo.avatar) {
-            console.warn('⚠️ Missing userInfo or avatar data for index caching');
+            DebugLogger.warn('image', 'Missing userInfo or avatar data for index caching');
           }
           
           const storyMarkers = EnhancedImageCache.extractStoryMarkers(storyText, userInfo);
@@ -2215,7 +2215,7 @@ const initializeStory = async () => {
             storyMarkers
           );
         } catch (cacheError) {
-          console.warn('Failed to cache image for index:', cacheError);
+          DebugLogger.warn('image', 'Failed to cache image for index', cacheError);
         }
         
         try {
@@ -2225,7 +2225,7 @@ const initializeStory = async () => {
         } catch {}
       }
     } catch (e) {
-      console.warn('Batch image generation failed for page', index, e);
+      DebugLogger.warn('image', `Batch image generation failed for page ${index}`, e);
     }
   };
 
@@ -2314,7 +2314,7 @@ const initializeStory = async () => {
         
         // Backend now handles all validation - trust the response
         // Keep analytics logging but remove frontend re-validation
-        console.log('📊 Premium page generated:', {
+        DebugLogger.log('story', 'Premium page generated', {
           contentLength: pageContent?.length || 0,
           difficulty: currentDifficulty
         });
@@ -2329,7 +2329,7 @@ const initializeStory = async () => {
         setCurrentPage(prev => prev + 1);
         
       } else {
-        console.log('❌ Failed to generate next page:', result.error);
+        DebugLogger.log('story', 'Failed to generate next page', result.error);
         // DEBOUNCED: Re-stabilize on error with delay to prevent flickering
         setIsStoryStable(true);
       }
@@ -2382,7 +2382,7 @@ const initializeStory = async () => {
               performanceManager.setTimeout(() => setJustAdvanced(false), 600, 'sequel advanced cleanup');
             }
           } catch (e) {
-            console.error('Failed to continue sequel', e);
+            DebugLogger.error('story', 'Failed to continue sequel', e);
             toast({ title: t('errors.continueFailed','Could not continue'), description: t('errors.tryAgain','Please try again.'), variant: 'destructive' });
           } finally {
             setIsLoadingNextPage(false);
@@ -2452,17 +2452,17 @@ useEffect(() => {
   const onNavigate = (e: Event) => {
     try {
       const detail = (e as CustomEvent<{ direction: 'next' | 'prev' }>).detail;
-      console.log('📖 CleanStoryDisplay received navigation event:', detail);
+      DebugLogger.log('ui', 'CleanStoryDisplay received navigation event', detail);
       
       if (detail?.direction === 'next') {
-        console.log('📖 Executing handleNext() - going to next page');
+        DebugLogger.log('ui', 'Executing handleNext() - going to next page');
         handleNext();
       } else if (detail?.direction === 'prev') {
-        console.log('📖 Executing handlePrevious() - going to previous page');
+        DebugLogger.log('ui', 'Executing handlePrevious() - going to previous page');
         handlePrevious();
       }
     } catch (error) {
-      console.error('📖 Navigation event error:', error);
+      DebugLogger.error('ui', 'Navigation event error', error);
     }
   };
   window.addEventListener('reader:navigate', onNavigate as EventListener);
@@ -2488,11 +2488,11 @@ useEffect(() => {
 
   // Timer controls with user pause tracking
   const handleToggleTimer = () => {
-    console.log('🎯 Timer toggle clicked:', { isTimerRunning, userPausedTimer, isTimerCanceled });
+    DebugLogger.log('performance', 'Timer toggle clicked', { isTimerRunning, userPausedTimer, isTimerCanceled });
     const newRunningState = !isTimerRunning;
     setIsTimerRunning(newRunningState);
     setUserPausedTimer(!newRunningState); // Track when user manually pauses
-    console.log('🎯 Timer state after toggle:', { newRunningState, userPausedTimer: !newRunningState });
+    DebugLogger.log('performance', 'Timer state after toggle', { newRunningState, userPausedTimer: !newRunningState });
   };
 
   const handleReduceTime = () => {
@@ -2512,7 +2512,7 @@ useEffect(() => {
       try { 
         audioEngineRef.current.stop(); 
       } catch (error) {
-        console.warn('Dock stop failed:', error);
+        DebugLogger.warn('audio', 'Dock stop failed', error);
       }
     } else {
       try {
@@ -2527,7 +2527,7 @@ useEffect(() => {
         setIsAudioLoading(false);
         if (!isPremium) setAudioPlayedPage(currentPage);
       } catch (error) {
-        console.warn('Dock play failed:', error);
+        DebugLogger.warn('audio', 'Dock play failed', error);
         setIsAudioPlaying(false); // Reset on error
         setIsAudioLoading(false);
       }
@@ -2536,32 +2536,32 @@ useEffect(() => {
 
 const handleDockVoiceCommand = () => {
   // Voice functionality is now handled directly in MobileActionDock
-  console.log('🎤 Voice command handled by MobileActionDock integration');
+  DebugLogger.log('ui', 'Voice command handled by MobileActionDock integration');
 };
 
 // Voice command handler for headless controller
 const handleVoiceCommand = (command: string) => {
-  console.log('🎙️ Voice command received:', command);
+  DebugLogger.log('audio', 'Voice command received', command);
   
   const cmd = command.toLowerCase().trim();
   
   if (cmd.includes('start reading') || cmd.includes('read') || cmd.includes('play')) {
     handleDockPlayAudio();
   } else if (cmd.includes('pause') || cmd.includes('stop')) {
-    try { audioEngineRef.current.stop(); } catch (e) { console.warn('Voice pause failed', e); }
+    try { audioEngineRef.current.stop(); } catch (e) { DebugLogger.warn('audio', 'Voice pause failed', e); }
   } else if (cmd.includes('next page') || cmd.includes('next')) {
     handleNext();
   } else if (cmd.includes('previous page') || cmd.includes('previous') || cmd.includes('back')) {
     handlePrevious();
   } else if (cmd.includes('increase font') || cmd.includes('bigger text')) {
     // Font size adjustment logic would go here
-    console.log('Font size increase requested');
+    DebugLogger.log('ui', 'Font size increase requested');
   } else if (cmd.includes('decrease font') || cmd.includes('smaller text')) {
     // Font size adjustment logic would go here
-    console.log('Font size decrease requested');
+    DebugLogger.log('ui', 'Font size decrease requested');
   } else if (cmd.includes('open settings') || cmd.includes('settings')) {
     // Settings logic would go here
-    console.log('Settings requested');
+    DebugLogger.log('ui', 'Settings requested');
   }
 };
 
@@ -2579,9 +2579,9 @@ const handleDockCoach = () => {
     // Clear character state when session ends for both free and premium users
     try {
       StoryVisualStateManager.clearBasedOnContext(characterSessionId, isPremium, 'end-session');
-      console.log('🏁 Cleared character state on session end');
+      DebugLogger.log('performance', 'Cleared character state on session end');
     } catch (error) {
-      console.warn('Failed to clear character state on session end:', error);
+      DebugLogger.warn('performance', 'Failed to clear character state on session end', error);
     }
     
     const sessionStats = {
@@ -2634,7 +2634,7 @@ const handleDockCoach = () => {
           });
         }
       } catch (error) {
-        console.warn('Failed to update expert progression:', error);
+        DebugLogger.warn('performance', 'Failed to update expert progression', error);
       }
     }
     
@@ -2698,7 +2698,7 @@ const handleSaveStoryNow = async () => {
       setHighlightSave(false);
       toast({ title: t('save.toastSaved', 'Saved to your Story Library'), duration: 3000 });
     } catch (e) {
-      console.error('Save story failed', e);
+      DebugLogger.error('story', 'Save story failed', e);
       toast({ title: t('save.toastError', "We couldn’t save your story. Please try again."), variant: "destructive" });
     } finally {
       setIsSaving(false);
@@ -2734,7 +2734,7 @@ const handleRestartTimer = () => {
         .eq('user_id', user.id)
         .maybeSingle();
       if (error) {
-        console.warn('Failed to load teacher words', error);
+        DebugLogger.warn('story', 'Failed to load teacher words', error);
         return null;
       }
       const storyPrefs = (data as any)?.story_preferences || {};
@@ -2749,7 +2749,7 @@ const handleRestartTimer = () => {
         .slice(0, 20);
       return cleaned.length ? (cleaned || []).join(', ') : null;
     } catch (e) {
-      console.warn('Teacher words fetch error', e);
+      DebugLogger.warn('story', 'Teacher words fetch error', e);
       return null;
     }
   };
@@ -2757,7 +2757,7 @@ const handleRestartTimer = () => {
   // Magic wand functionality - Generate new story
   const handleGenerateNewStory = async (specialRequestOverride?: string, isRewrite: boolean = false) => {
     const callId = Math.random().toString(36).substr(2, 9);
-    console.log(`🚀 [STORY DEBUG ${callId}] handleGenerateNewStory ENTRY:`, { 
+    DebugLogger.log('story', `[STORY DEBUG ${callId}] handleGenerateNewStory ENTRY`, { 
       specialRequestOverride, 
       isRewrite, 
       isGeneratingNewStory, 
@@ -2771,14 +2771,14 @@ const handleRestartTimer = () => {
       currentToastRef.current.dismiss();
       currentToastRef.current = null;
     }
-    console.log('🍞 Toast flags reset for story generation');
+    DebugLogger.log('ui', 'Toast flags reset for story generation');
     
     if (isGeneratingNewStory || isGeneratingRewrite) {
-      console.log(`⚠️ [STORY DEBUG ${callId}] BLOCKED - Already generating:`, { isGeneratingNewStory, isGeneratingRewrite });
+      DebugLogger.log('story', `[STORY DEBUG ${callId}] BLOCKED - Already generating`, { isGeneratingNewStory, isGeneratingRewrite });
       return;
     }
     
-    console.log('🔄 User explicitly requested new story - unlocking content', {
+    DebugLogger.log('story', 'User explicitly requested new story - unlocking content', {
       isRewrite,
       specialRequest: !!specialRequestOverride,
     });
@@ -2793,7 +2793,7 @@ const handleRestartTimer = () => {
 
     // Clear caches based on context
     const avatarType = userInfo?.avatar?.type === 'prefer-not-to-answer' ? 'neutral' : userInfo?.avatar?.type;
-    console.log(`🔄 [STORY DEBUG ${callId}] handleGenerateNewStory cache clearing:`, { 
+    DebugLogger.log('story', `[STORY DEBUG ${callId}] handleGenerateNewStory cache clearing`, { 
       isRewrite, 
       currentUserId, 
       avatarType,
@@ -2801,10 +2801,10 @@ const handleRestartTimer = () => {
     });
     
     if (isRewrite) {
-      console.log(`📝 [STORY DEBUG ${callId}] Calling SessionCacheManager.clearOnRewrite`);
+      DebugLogger.log('story', `[STORY DEBUG ${callId}] Calling SessionCacheManager.clearOnRewrite`);
       SessionCacheManager.clearOnRewrite(currentUserId, avatarType);
     } else {
-      console.log(`✨ [STORY DEBUG ${callId}] Calling SessionCacheManager.clearOnNextStory`);
+      DebugLogger.log('story', `[STORY DEBUG ${callId}] Calling SessionCacheManager.clearOnNextStory`);
       SessionCacheManager.clearOnNextStory(currentUserId, avatarType);
     }
     
@@ -2826,7 +2826,7 @@ const handleRestartTimer = () => {
     }
     
     try {
-      console.log('🪄 Generating new story...');
+      DebugLogger.log('story', 'Generating new story...');
       
       // Generate new story ID for cache isolation
       const newStoryId = `story_${Date.now()}_${Math.random().toString(36).substring(2)}`;
@@ -2839,7 +2839,7 @@ const handleRestartTimer = () => {
       if (isRewrite) {
         if (isPremium) {
           // Premium rewrite: Clear story content but preserve avatar identity
-          console.log('🎭 Premium rewrite: Preserving avatar type + skin tone');
+          DebugLogger.log('story', 'Premium rewrite: Preserving avatar type + skin tone');
           
           // Use comprehensive cache manager for premium rewrite
           const { SessionCacheManager } = await import('@/services/SessionCacheManager');
@@ -2864,7 +2864,7 @@ const handleRestartTimer = () => {
 
         } else {
           // Free rewrite: Clear everything for fresh characters
-          console.log('🎭 Free rewrite: Clearing all character state');
+          DebugLogger.log('story', 'Free rewrite: Clearing all character state');
           StoryVisualStateManager.clearBasedOnContext(characterSessionId, isPremium, 'rewrite');
           
           // Clear all images for free users
@@ -2873,7 +2873,7 @@ const handleRestartTimer = () => {
         }
       } else {
         // New story (not rewrite): Clear character state appropriately
-        console.log('🎭 New story: Clearing character state for fresh generation');
+        DebugLogger.log('story', 'New story: Clearing character state for fresh generation');
         StoryVisualStateManager.clearBasedOnContext(characterSessionId, isPremium, 'next-story');
       }
       
@@ -2882,9 +2882,9 @@ const handleRestartTimer = () => {
         try {
           (await import('@/services/enhancedImageCache')).EnhancedImageCache.clearSession(characterSessionId);
           setPageImages({});
-          console.log('📸 Cleared previous story cache for free user');
+          DebugLogger.log('image', 'Cleared previous story cache for free user');
         } catch (error) {
-          console.warn('Failed to clear previous story cache:', error);
+          DebugLogger.warn('image', 'Failed to clear previous story cache', error);
         }
       }
       if (isPremium) {
@@ -2901,7 +2901,7 @@ const handleRestartTimer = () => {
           expertGradeLevel: currentDifficulty === 'expert' ? expertGradeLevel : undefined,
         } as UserInfo;
         const sessionTypeParam = isRewrite ? 'rewrite' : 'new';
-        console.log(`🔄 Premium rewrite: Passing sessionType '${sessionTypeParam}' to LiveGenerationService`);
+        DebugLogger.log('story', `Premium rewrite: Passing sessionType '${sessionTypeParam}' to LiveGenerationService`);
         const first = await LiveGenerationService.generateFirstPage(effectiveUser, sessionTypeParam, vocabularyData);
         if ((first as any).error) {
           throw new Error((first as any).error);
@@ -2936,7 +2936,7 @@ const handleRestartTimer = () => {
           expertGradeLevel: currentDifficulty === 'expert' ? expertGradeLevel : undefined,
         } as UserInfo;
         
-        console.log('🚨 [GENDER DEBUG] Story refresh userInfo:', {
+        DebugLogger.log('story', '[GENDER DEBUG] Story refresh userInfo', {
           name: refreshUserInfo.name,
           avatarType: refreshUserInfo.avatar?.type,
           avatarSkinTone: refreshUserInfo.avatar?.skinTone,
@@ -2949,19 +2949,19 @@ const handleRestartTimer = () => {
         setCurrentPage(0);
       }
     } catch (error) {
-      console.error('Failed to generate new story:', error);
+      DebugLogger.error('story', 'Failed to generate new story', error);
       toast({ title: 'Magic Failed', description: 'Please try again in a moment.', variant: 'destructive' });
     } finally {
       setIsGeneratingNewStory(false);
       setIsGeneratingRewrite(false);
       // DEBOUNCED: Restore story stability after generation
         setIsStoryStable(true);
-        console.log(`✅ [STORY DEBUG ${callId}] Story stability restored after generation`);
+        DebugLogger.log('story', `[STORY DEBUG ${callId}] Story stability restored after generation`);
     }
   };
   // Open special request dialog for premium users, or generate immediately for free
   const handleNewStoryClick = () => {
-    console.log('🎯 [STORY DEBUG] handleNewStoryClick called:', { isPremium });
+    DebugLogger.log('story', '[STORY DEBUG] handleNewStoryClick called', { isPremium });
     
     // Reset toast flags for new story session
     fallbackToastShownRef.current = false;
@@ -2969,13 +2969,13 @@ const handleRestartTimer = () => {
       currentToastRef.current.dismiss();
       currentToastRef.current = null;
     }
-    console.log('🍞 Toast flags reset for new story session');
+    DebugLogger.log('ui', 'Toast flags reset for new story session');
     
     if (isPremium) {
       setSpecialRequestDraft(userInfo?.specialRequest || "");
       setShowSpecialRequestDialog(true);
     } else {
-      console.log('🆓 [STORY DEBUG] Free user - calling handleGenerateNewStory directly');
+      DebugLogger.log('story', '[STORY DEBUG] Free user - calling handleGenerateNewStory directly');
       handleGenerateNewStory();
     }
   };
@@ -3012,7 +3012,7 @@ const handleRestartTimer = () => {
 
   const handleStartSequel = () => {
     // Premium users continuing to "Part II" - preserve character state
-    console.log('🔗 Premium user starting sequel - preserving character state');
+    DebugLogger.log('story', 'Premium user starting sequel - preserving character state');
     
     // Clear ending tracking to reset pagination UI
     clearEndingTracking();
@@ -3027,9 +3027,9 @@ const handleRestartTimer = () => {
     );
     
     if (success) {
-      console.log('✅ Character state preserved for sequel continuation');
+      DebugLogger.log('story', 'Character state preserved for sequel continuation');
     } else {
-      console.warn('⚠️ Failed to preserve character state for sequel');
+      DebugLogger.warn('story', 'Failed to preserve character state for sequel');
     }
     
     // ROLLBACK FIX: Use full story for sequel context unless ending pages are explicitly present
@@ -3038,7 +3038,7 @@ const handleRestartTimer = () => {
       ? story.slice(0, originalStoryLength)  // Only if we explicitly have ending pages to exclude
       : story;  // Otherwise use full story (yesterday's working behavior)
       
-    console.log('📖 Using sequel context for continuation:', {
+    DebugLogger.log('story', 'Using sequel context for continuation', {
       totalStoryPages: story.length,
       originalStoryLength,
       contextPages: sequelContextPages.length,
@@ -3066,7 +3066,7 @@ const handleRestartTimer = () => {
     
     // Add 40s watchdog for ending generation
     const watchdogTimeout = setTimeout(() => {
-      console.warn('⏰ Ending generation watchdog triggered (40s)');
+      DebugLogger.warn('performance', 'Ending generation watchdog triggered (40s)');
       setIsGeneratingEnding(false);
       toast({
         title: "Continuing with story progression",
@@ -3098,7 +3098,7 @@ const handleRestartTimer = () => {
         const validationLevel = UnifiedValidator.mapDifficultyToLevel(currentDifficulty);
         // Backend now handles all validation - trust the response
         // Keep analytics logging but remove frontend re-validation
-        console.log('📊 Premium ending generated:', {
+        DebugLogger.log('story', 'Premium ending generated', {
           contentLength: result.content?.length || 0,
           difficulty: currentDifficulty
         });
@@ -3142,7 +3142,7 @@ const handleRestartTimer = () => {
       }
     } catch (e) {
       clearTimeout(watchdogTimeout);
-      console.error('Failed to generate ending page', e);
+      DebugLogger.error('story', 'Failed to generate ending page', e);
       
       // Fall back to template service on timeout or error
       try {
@@ -3205,7 +3205,7 @@ const handleRestartTimer = () => {
       
       const duration = performance.now() - startTime;
       if (duration > 16) {
-        console.warn(`🐌 Slow celebration timeout: ${duration.toFixed(2)}ms`);
+        DebugLogger.warn('performance', `Slow celebration timeout: ${duration.toFixed(2)}ms`);
       }
     }, 5000);
   };
@@ -3311,7 +3311,7 @@ const handleRestartTimer = () => {
             }
           }
         } catch (e) {
-          console.warn('Could not persist difficulty preference', e);
+          DebugLogger.warn('auth', 'Could not persist difficulty preference', e);
         }
         
         // Update live context for all users (universal live difficulty updates)
@@ -3348,7 +3348,7 @@ const handleRestartTimer = () => {
             }
           }
         } catch (e) {
-          console.warn('Could not persist expert grade preference', e);
+          DebugLogger.warn('auth', 'Could not persist expert grade preference', e);
         }
         
         // Animate badge change for expert level progression
