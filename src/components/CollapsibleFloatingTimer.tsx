@@ -307,14 +307,14 @@ useEffect(() => {
                <Button
                  variant="outline"
                  size={isMobile ? "sm" : "default"}
-                 onClick={() => {
-                   if (isMobileOrTablet) {
-                     setMobileTooltip('play');
-                      performanceManager.setTimeout(() => setMobileTooltip(''), 3000, 'mobile tooltip cleanup');
-                   }
-                   console.log('🔥 TIMER BUTTON CLICKED! Current state:', { isReading, timeRemaining });
-                   onToggleReading();
-                 }}
+                  onClick={() => {
+                    if (isMobileOrTablet) {
+                      setMobileTooltip('play');
+                       performanceManager.setTimeout(() => setMobileTooltip(''), 3000, 'mobile tooltip cleanup');
+                    }
+                    DebugLogger.log('ui', 'Timer button clicked', { isReading, timeRemaining });
+                    onToggleReading();
+                  }}
                  className="min-h-[44px] min-w-[44px] rounded-full bg-background/95 backdrop-blur-sm"
                  aria-label={isReading ? t("floatingTimer.pauseTimer", "Pause Timer") : t("floatingTimer.startTimer", "Start Timer")}
                  id="timer-play-button"

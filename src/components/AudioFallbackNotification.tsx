@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, Volume2 } from 'lucide-react';
+import { performanceManager } from '@/services/PerformanceManager';
 
 export const AudioFallbackNotification: React.FC = () => {
   const [notification, setNotification] = useState<{
@@ -14,10 +15,10 @@ export const AudioFallbackNotification: React.FC = () => {
       const { message, canRetry, service } = event.detail;
       setNotification({ message, canRetry, service });
       
-      // Auto-hide after 5 seconds
-      setTimeout(() => {
+      // Auto-hide after 5 seconds using PerformanceManager
+      performanceManager.setTimeout(() => {
         setNotification(null);
-      }, 5000);
+      }, 5000, 'audio error notification cleanup');
     };
 
     const handleAudioFallback = (event: CustomEvent) => {
@@ -28,10 +29,10 @@ export const AudioFallbackNotification: React.FC = () => {
         service: 'fallback'
       });
       
-      // Auto-hide after 3 seconds for fallback messages
-      setTimeout(() => {
+      // Auto-hide after 3 seconds for fallback messages using PerformanceManager
+      performanceManager.setTimeout(() => {
         setNotification(null);
-      }, 3000);
+      }, 3000, 'audio fallback notification cleanup');
     };
 
     window.addEventListener('audio:service:error', handleAudioError as EventListener);

@@ -13,6 +13,7 @@ import { getGlobalAddVocabularyWord } from "@/utils/gamificationGlobals";
 import type { UserInfo } from "@/types";
 import { VocabularyTrackingService } from "@/services/vocabularyTrackingService";
 import { domBatchingService } from "@/utils/domBatchingService";
+import { DebugLogger } from "@/services/DebugLogger";
 
 interface InteractiveWordProps {
   word: string;
@@ -40,7 +41,7 @@ export const InteractiveWord = ({
   const { isMobileOrTablet, isCapacitor } = useIsMobile();
   
   // Debug environment detection
-  console.log('🖥️ Desktop InteractiveWord rendering:', {
+  DebugLogger.log('ui', 'Desktop InteractiveWord rendering', {
     word,
     environment: window.location.href.includes('preview') ? 'preview' : 'console',
     isMobileOrTablet,
