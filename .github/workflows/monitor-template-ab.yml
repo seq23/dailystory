@@ -2,8 +2,8 @@ name: Monitor Template AB
 
 on:
   schedule:
-    # Check every 7 minutes: :02, :09, :16, :23, :30, :37, :44, :51, :58
-    - cron: '2,9,16,23,30,37,44,51,58 * * * *'
+    # Check every 4 hours: 8am, 12pm, 4pm, 8pm UTC (4 times/day, staggered)
+    - cron: '0 8,12,16,20 * * *'
   workflow_dispatch:
 
 # Unified deployment concurrency - prevents race conditions

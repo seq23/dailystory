@@ -2,8 +2,8 @@ name: Monitor Template CD
 
 on:
   schedule:
-    # Check every 8 minutes: :03, :11, :19, :27, :35, :43, :51, :59
-    - cron: '3,11,19,27,35,43,51,59 * * * *'
+    # Check every 4 hours: 9am, 1pm, 5pm, 9pm UTC (4 times/day, staggered)
+    - cron: '0 9,13,17,21 * * *'
   workflow_dispatch:
 
 # Unified deployment concurrency - prevents race conditions
