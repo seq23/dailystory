@@ -7,6 +7,7 @@ import { Mic, MicOff, Volume2, RotateCcw, ArrowRight, Star } from 'lucide-react'
 import { useVoiceIntegration } from '@/hooks/useVoiceIntegration';
 import { useToast } from '@/components/ui/use-toast';
 import type { UserInfo } from '@/types';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface Question {
   id: string;
@@ -63,7 +64,7 @@ export const VoiceQuiz: React.FC<VoiceQuizProps> = ({
 
     const handleVoiceQuizEvent = (event: CustomEvent) => {
       const { action, data } = event.detail;
-      console.log('🎯 Voice quiz event received:', action, data);
+      DebugLogger.log('audio', 'Voice quiz event received:', { action, data });
 
       switch (action) {
         case 'start':

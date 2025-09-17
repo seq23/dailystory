@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { CheckCircle2, Sparkles, AlertCircle } from 'lucide-react';
+import { DebugLogger } from '@/services/DebugLogger';
 
 export function PromptTestingEnhancement() {
   const [testResult, setTestResult] = useState<any>(null);
@@ -25,7 +26,7 @@ export function PromptTestingEnhancement() {
         favoriteFood: 'cookies'
       };
 
-      console.log('🧪 Testing PhaseIntegrationOrchestrator in dryRun mode...');
+      DebugLogger.log('performance', 'Testing PhaseIntegrationOrchestrator in dryRun mode...');
       
       const response = await supabase.functions.invoke('runware-generate-image', {
         body: {
@@ -37,7 +38,7 @@ export function PromptTestingEnhancement() {
         }
       });
 
-      console.log('🎯 DryRun test response:', response);
+      DebugLogger.log('performance', 'DryRun test response:', response);
       
       if (response.data?.success) {
         setTestResult({

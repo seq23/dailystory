@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { EnhancedSubscriptionManager } from "@/services/enhancedSubscriptionManager";
 import { useToast } from "@/hooks/use-toast";
 import { DiscountDebugPanel } from "@/components/DiscountDebugPanel";
+import { DebugLogger } from '@/services/DebugLogger';
 
 export const SubscriptionGate = () => {
   const [loading, setLoading] = useState(false);
@@ -42,7 +43,7 @@ export const SubscriptionGate = () => {
           return;
         }
       } catch (discountError) {
-        console.log("No discount code to activate, proceeding with regular checkout");
+        DebugLogger.log('network', 'No discount code to activate, proceeding with regular checkout');
       }
 
       // If no discount code, proceed with regular checkout

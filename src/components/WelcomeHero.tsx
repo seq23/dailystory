@@ -8,6 +8,7 @@ import { BookOpen, Sparkles, Heart, Globe, Crown, Users } from "lucide-react";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from "@/components/ui/carousel";
 import { APP_CONFIG } from "@/constants/app";
 import { Link } from "react-router-dom";
+import { DebugLogger } from '@/services/DebugLogger';
 import heroImage from "@/assets/hero-image-diverse-clear.jpg";
 import logoImage from "@/assets/time2read-logo.png";
 import carouselImage1 from "@/assets/carousel-1-car-reading.jpg";
@@ -45,7 +46,7 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
   }, []);
 
   const handleLanguageChange = (newLanguage: string) => {
-    console.log("Language changed to:", newLanguage);
+    DebugLogger.log('ui', 'Language changed to:', newLanguage);
     // Store language preference for multi-step form to pick up
     localStorage.setItem('selectedLanguagePreference', newLanguage);
     i18n.changeLanguage(newLanguage);

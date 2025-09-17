@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { MobileAudioManager } from '@/services/mobileAudioManager';
+import { DebugLogger } from '@/services/DebugLogger';
 
 export const VoiceCommandIntegration: React.FC = () => {
   useEffect(() => {
@@ -17,7 +18,7 @@ export const VoiceCommandIntegration: React.FC = () => {
           await mobileAudio.initializeMobileAudio();
         }
         
-        console.log('🎙️ Voice command audio coordination established');
+        DebugLogger.log('audio', 'Voice command audio coordination established');
       } catch (error) {
         console.warn('Voice command audio setup failed:', error);
       }

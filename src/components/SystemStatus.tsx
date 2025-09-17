@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { DebugLogger } from '@/services/DebugLogger';
 import { 
   Activity, 
   CheckCircle, 
@@ -102,7 +103,7 @@ export const SystemStatus: React.FC<SystemStatusProps> = ({ className = "" }) =>
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => console.log('Export diagnostics disabled - template system removed')}
+              onClick={() => DebugLogger.log('ui', 'Export diagnostics disabled - template system removed')}
             >
               <Download className="h-3 w-3" />
             </Button>
