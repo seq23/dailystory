@@ -493,11 +493,13 @@ serve(async (req) => {
       throw new Error('Missing bundle or config parameters');
     }
 
-    // PHASE 2: Determine tier type (2.5A vs 2.5B)
+    // PHASE 2: Determine tier type (2.5A vs 2.5B) - Config-based, not discriminatory
     const userInfo = bundle.userInfo || {};
     const skinTone = userInfo.skinTone || userInfo?.avatar?.skinTone || 'medium';
-    const effectiveTierType = (skinTone === 'dark' || skinTone === 'darker') ? '2.5A' : '2.5B';
-    console.log(`🎯 Effective tier type: ${effectiveTierType} (skin: ${skinTone})`);
+    
+    // CRITICAL FIX: Use config.templateComplexity instead of discriminatory skin tone logic
+    const effectiveTierType = (config.templateComplexity === 'A') ? '2.5A' : '2.5B';
+    console.log(`🎯 Effective tier type: ${effectiveTierType} (config: ${config.templateComplexity}, skin: ${skinTone})`);
 
     // PHASE 3: Select appropriate template
     const templateString = selectTemplate(effectiveTierType);

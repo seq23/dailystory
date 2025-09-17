@@ -218,7 +218,10 @@ export class PhaseIntegrationOrchestrator {
       const visualHistory = Array.isArray(visualHistoryData) ? 
         visualHistoryData.map(item => {
           if (typeof item === 'object' && item.visual_elements) {
-            return item.visual_elements;
+            // CRITICAL FIX: Convert objects to strings properly to prevent [object Object]
+            return typeof item.visual_elements === 'object' ? 
+              JSON.stringify(item.visual_elements).replace(/[{}"\[\]]/g, '').replace(/,/g, ', ') : 
+              String(item.visual_elements);
           }
           return typeof item === 'string' ? item : '';
         }).filter(Boolean).join(', ') : 
