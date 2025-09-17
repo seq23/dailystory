@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DebugLogger } from '@/services/DebugLogger';
 import { BookOpen, Clock, Star, Award, TrendingUp, Target, Zap, Brain } from "lucide-react";
 import { ReadingRewardsSystem } from "@/components/ReadingRewardsSystem";
 import { VocabularyCollector } from "@/components/VocabularyCollector";
@@ -255,7 +256,7 @@ export const ProgressDashboard = ({ userInfo, isVisible, onClose, isPremium = fa
               pagesRead={24}
               timeSpent={240}
               onRewardEarned={(reward) => {
-                console.log('New reward earned:', reward);
+                DebugLogger.log('ui', 'New reward earned:', reward);
               }}
             />
           </TabsContent>

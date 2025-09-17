@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { AdaptiveEnhancedLoading } from '@/components/AdaptiveEnhancedLoading';
+import { DebugLogger } from '@/services/DebugLogger';
 interface MobileWrapperProps {
   children: React.ReactNode;
 }
@@ -72,9 +73,7 @@ export const MobileWrapper: React.FC<MobileWrapperProps> = ({ children }) => {
 
   // Mobile/tablet: show enhanced loader until initialized
   if (!isInitialized) {
-    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
-      console.log('📱 MobileWrapper: showing AdaptiveEnhancedLoading', { isMobileOrTablet, initialized: isInitialized });
-    }
+    DebugLogger.log('ui', 'MobileWrapper: showing AdaptiveEnhancedLoading', { isMobileOrTablet, initialized: isInitialized });
     return (
       <AdaptiveEnhancedLoading isPremium={false} />
     );

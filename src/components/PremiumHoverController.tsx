@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { SimpleAudioEngine } from '@/services/SimpleAudioEngine';
 import { contextualPronunciation } from '@/services/contextualPronunciation';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface PremiumHoverControllerProps {
   isPremium: boolean;
@@ -130,7 +131,7 @@ export const PremiumHoverController = ({ isPremium }: PremiumHoverControllerProp
           modelId: 'eleven_turbo_v2_5'
         });
         
-        console.log(`🎵 Premium hover played: "${processedWord}"`);
+        DebugLogger.log('audio', `Premium hover played: "${processedWord}"`);
         
       } catch (error) {
         console.error('Premium hover pronunciation failed:', error);

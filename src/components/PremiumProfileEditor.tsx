@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DebugLogger } from '@/services/DebugLogger';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { ColorPicker } from "@/components/ui/color-picker";
@@ -39,7 +40,7 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
   const handleSave = async () => {
     setSaving(true);
     try {
-      console.log('💾 PremiumProfileEditor: Saving profile data...', formData);
+      DebugLogger.log('ui', 'PremiumProfileEditor: Saving profile data...', formData);
       await onSave(formData);
       toast({
         title: "Profile Updated! ✨",
@@ -47,7 +48,7 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
         duration: 4000,
       });
       setHasChanges(false);
-      console.log('✅ PremiumProfileEditor: Profile save completed successfully');
+      DebugLogger.log('ui', 'PremiumProfileEditor: Profile save completed successfully');
     } catch (error) {
       console.error('❌ PremiumProfileEditor: Save failed:', error);
       toast({

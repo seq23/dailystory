@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { contextualPronunciation } from '@/services/contextualPronunciation';
 import { phoneticRulesEngine } from '@/services/phoneticRulesEngine';
 import { AudioPermissions } from '@/utils/audioPermissions';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface VoiceHoverControllerProps {
   isPremium: boolean;
@@ -39,7 +40,7 @@ export const VoiceHoverController = ({ isPremium }: VoiceHoverControllerProps) =
       
       // CRITICAL: Ignore events from direct button clicks - only handle voice command events
       if (source === 'direct-button' || source === 'interactive-word') {
-        console.log(`🚫 VoiceHoverController: Ignoring ${source} event for "${word}"`);
+        DebugLogger.log('audio', `VoiceHoverController: Ignoring ${source} event for "${word}"`);
         return;
       }
       
@@ -48,13 +49,13 @@ export const VoiceHoverController = ({ isPremium }: VoiceHoverControllerProps) =
       // Check permissions before processing
       if (!AudioPermissions.canUseVoiceHover()) {
         const reason = AudioPermissions.getBlockReason('voice-hover');
-        console.log(`🔒 Voice hover blocked: ${reason}`);
+        DebugLogger.log('audio', `Voice hover blocked: ${reason}`);
         return;
       }
       
       // Only process if voice commands are active
       if (vcStatusRef.current === 'idle') {
-        console.log(`🚫 VoiceHoverController: Voice commands not active, ignoring event`);
+        DebugLogger.log('audio', 'VoiceHoverController: Voice commands not active, ignoring event');
         return;
       }
       

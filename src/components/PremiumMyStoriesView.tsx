@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import NewStoryCTA from "@/components/NewStoryCTA";
 import { Badge } from "@/components/ui/badge";
+import { DebugLogger } from '@/services/DebugLogger';
 import { Input } from "@/components/ui/input";
 import { 
   BookOpen, 
@@ -45,7 +46,7 @@ export const PremiumMyStoriesView = ({ userInfo, isPremium, onSessionEnded }: Pr
   }, [userInfo.name]);
 
   useEffect(() => {
-    console.log('🧭 PremiumMyStoriesView currentView:', currentView);
+    DebugLogger.log('ui', 'PremiumMyStoriesView currentView:', currentView);
   }, [currentView]);
 
 // Auto-resume reading if allowed and a cached premium session exists and timer not expired

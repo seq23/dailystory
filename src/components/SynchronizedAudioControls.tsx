@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Play, Square, RotateCcw } from 'lucide-react';
 import { SimplifiedAudioEngine } from '@/services/SimplifiedAudioEngine';
 import { useToast } from '@/hooks/use-toast';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface SynchronizedAudioControlsProps {
   text: string;
@@ -62,9 +63,7 @@ export const SynchronizedAudioControls: React.FC<SynchronizedAudioControlsProps>
     setError(null);
     
     try {
-      if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
-        console.log('🎵 SynchronizedAudioControls: Starting playback');
-      }
+      DebugLogger.log('audio', 'SynchronizedAudioControls: Starting playback');
       
       // Level-based highlighting: Only enable for beginner/easy (levels 0-1)
       // Convert numeric difficulty to string if needed
@@ -72,10 +71,8 @@ export const SynchronizedAudioControls: React.FC<SynchronizedAudioControlsProps>
       const shouldHighlight = difficultyStr === 'beginner' || difficultyStr === 'easy' || difficultyStr === '0' || difficultyStr === '1';
       const highlightCallback = shouldHighlight ? onWordHighlight : undefined;
       
-      console.log(`🎯 Audio highlighting ${shouldHighlight ? 'ENABLED' : 'DISABLED'} for difficulty: "${difficulty}" (converted: "${difficultyStr}")`);
-      if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
-        console.log(`🔍 Debug - difficulty value type: ${typeof difficulty}, value: "${difficulty}"`);
-      }
+      DebugLogger.log('audio', `Audio highlighting ${shouldHighlight ? 'ENABLED' : 'DISABLED'} for difficulty: "${difficulty}" (converted: "${difficultyStr}")`);
+      DebugLogger.log('audio', `Debug - difficulty value type: ${typeof difficulty}, value: "${difficulty}"`);
       
       await audioEngine.playTextWithSynchronization({
         text,
@@ -119,9 +116,7 @@ export const SynchronizedAudioControls: React.FC<SynchronizedAudioControlsProps>
     const newRetryCount = retryCount + 1;
     setRetryCount(newRetryCount);
     
-    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
-      console.log(`🔄 SynchronizedAudioControls: Retry attempt ${newRetryCount}`);
-    }
+    DebugLogger.log('audio', `SynchronizedAudioControls: Retry attempt ${newRetryCount}`);
     
     // Exponential backoff delay
     const delay = Math.min(5000, Math.pow(2, newRetryCount - 1) * 1000);
@@ -139,9 +134,7 @@ export const SynchronizedAudioControls: React.FC<SynchronizedAudioControlsProps>
   };
 
   const onStop = () => {
-    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
-      console.log('🛑 SynchronizedAudioControls: Stopping playback');
-    }
+    DebugLogger.log('audio', 'SynchronizedAudioControls: Stopping playback');
     
     audioEngine.stop();
     

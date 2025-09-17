@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { MobileOptimizedButton } from "@/components/MobileOptimizedButton";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { DebugLogger } from '@/services/DebugLogger';
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
@@ -202,8 +203,8 @@ export const LegacyUserInfoForm = ({ onSubmit, onBack, isPremium = false }: User
         setTranslationLoading(prev => ({ ...prev, [field as string]: true }));
         
         try {
-          console.log(`🔄 Real-time translation triggered for ${field}: "${sanitizedValue}"`);
-          console.log(`📋 User info:`, { 
+          DebugLogger.log('ui', `Real-time translation triggered for ${field}: "${sanitizedValue}"`);
+          DebugLogger.log('ui', 'User info:', { 
             nativeLanguage: formData.nativeLanguage, 
             grade: formData.grade,
             age: formData.age 
@@ -213,7 +214,7 @@ export const LegacyUserInfoForm = ({ onSubmit, onBack, isPremium = false }: User
           let processedValue = sanitizedValue;
           if (formData.nativeLanguage !== 'en' && sanitizedValue.trim()) {
             try {
-              console.log(`🌍 Translating from ${formData.nativeLanguage} to English:`, sanitizedValue);
+              DebugLogger.log('network', `Translating from ${formData.nativeLanguage} to English:`, sanitizedValue);
               const { data: translationData, error: translationError } = await supabase.functions.invoke('translate-universal', {
                 body: { 
                   text: sanitizedValue,
@@ -225,7 +226,7 @@ export const LegacyUserInfoForm = ({ onSubmit, onBack, isPremium = false }: User
               
               if (!translationError && translationData?.translatedText) {
                 processedValue = translationData.translatedText;
-                console.log(`✅ Translation completed: "${sanitizedValue}" → "${processedValue}"`);
+                DebugLogger.log('network', `Translation completed: "${sanitizedValue}" → "${processedValue}"`);
                 
                 // Show translation feedback
                 setTranslations(prev => ({ 
@@ -253,7 +254,7 @@ export const LegacyUserInfoForm = ({ onSubmit, onBack, isPremium = false }: User
             // Update the form data with the processed (translated and validated) value
             setFormData(prev => ({ ...prev, [field]: validationResult.sanitized }));
           } else {
-            console.log(`⚠️ Validation failed for: "${processedValue}"`);
+            DebugLogger.log('ui', `Validation failed for: "${processedValue}"`);
             // If validation fails, revert to original sanitized value
             setFormData(prev => ({ ...prev, [field]: sanitizedValue }));
           }
@@ -270,12 +271,12 @@ export const LegacyUserInfoForm = ({ onSubmit, onBack, isPremium = false }: User
   };
 
   const handleSubmit = () => {
-    console.log("Form submitted! Name:", formData.name.trim(), "Complete:", isFormComplete());
+    DebugLogger.log('ui', 'Form submitted!', { name: formData.name.trim(), complete: isFormComplete() });
     // Check form validation first
     const errors = validateForm();
     
     if (errors.length > 0) {
-      console.log("Validation errors:", errors);
+      DebugLogger.log('ui', 'Validation errors:', errors);
       setValidationErrors(errors);
       setShowValidationErrors(true);
       
@@ -372,7 +373,7 @@ export const LegacyUserInfoForm = ({ onSubmit, onBack, isPremium = false }: User
     const hasLanguage = formData.nativeLanguage && formData.nativeLanguage.length > 0;
     
     const complete = hasName && hasAge && hasGrade && hasLanguage;
-    console.log("Form complete check:", { hasName, hasAge, hasGrade, hasLanguage, complete });
+    DebugLogger.log('ui', 'Form complete check:', { hasName, hasAge, hasGrade, hasLanguage, complete });
     return complete;
   };
 
