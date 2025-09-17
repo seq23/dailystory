@@ -407,6 +407,12 @@ Monitor external service status:
 
 ## Recent Updates
 
+### v2.3.1 - Seed Consistency & Function Health (January 2025)
+- **FIXED**: Seed misuse bug where string sessionId was passed to functions expecting numeric seeds
+- **IMPROVED**: StaticDataCache now automatically converts string seeds to numeric hashes  
+- **ENHANCED**: ai-visual-scene-creator automatic health restoration with OPENAI_API_KEY validation
+- **RESULT**: Tier 1 prompts now properly include hair/skin details for character consistency
+
 ### Backend Robustness (Template AB)
 - `runware-template-ab` now accepts `storyText` as a fallback for `pageText`
 - Function honors `templateComplexity` parameter for forced tier testing

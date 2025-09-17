@@ -9,8 +9,14 @@ function pick(arr, seed) {
   if (!Array.isArray(arr) || arr.length === 0) return '';
   
   if (seed !== undefined) {
+    // Convert string seeds to numeric for consistency
+    let numericSeed = seed;
+    if (typeof seed === 'string') {
+      numericSeed = seed.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    }
+    
     // Use seeded random for consistency
-    const seededRandom = createSeededRandom(seed);
+    const seededRandom = createSeededRandom(numericSeed);
     return arr[Math.floor(seededRandom() * arr.length)];
   }
   

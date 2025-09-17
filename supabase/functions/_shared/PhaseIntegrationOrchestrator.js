@@ -245,9 +245,12 @@ export class PhaseIntegrationOrchestrator {
       // Get hair and skin variations based on skin tone with seeded selection
       const culturalBundle = getCulturalBundle(userInfo, sessionId);
       
+      // Convert sessionId to numeric seed for consistent selection
+      const seedForConsistency = sessionId ? sessionId.split('-')[0].split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) : Math.floor(Math.random() * 1000000);
+      
       // Select both hair and facial features from cultural bundle
-      const selectedHair = culturalBundle?.hair || getHairBySkintone(skinTone, sessionId);
-      const selectedSkin = culturalBundle?.features || getSkinBySkintone(skinTone, sessionId);
+      const selectedHair = culturalBundle?.hair || getHairBySkintone(skinTone, seedForConsistency);
+      const selectedSkin = culturalBundle?.features || getSkinBySkintone(skinTone, seedForConsistency);
 
       // Get style framework with full detailed prompts
       const difficulty = userInfo?.difficulty || userInfo?.gradeLevel || 'medium';
