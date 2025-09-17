@@ -3371,7 +3371,7 @@ const handleRestartTimer = () => {
   useEffect(() => {
     const isDebug = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1';
     if (isDebug) {
-      console.log('🔍 IMAGE DISPLAY DEBUG:', {
+      DebugLogger.log('image', 'Image display debug', {
         currentPage,
         currentStoryText: (currentStoryText || '').substring(0, 100) + '...',
         currentImage,
@@ -3381,8 +3381,7 @@ const handleRestartTimer = () => {
         storyStable: isStoryStable,
         timestamp: new Date().toISOString()
       });
-      
-      // Check if displayed image matches story content
+
       if (currentImage && currentStoryText) {
         const storyWords = currentStoryText.toLowerCase().split(' ');
         const hasMultipleCharacters = storyWords.some(word => 
@@ -3392,7 +3391,7 @@ const handleRestartTimer = () => {
           ['park', 'playground', 'outside', 'playing'].includes(word)
         );
         
-        console.log('🔍 CONTENT MATCH ANALYSIS:', {
+        DebugLogger.log('image', 'Content match analysis', {
           storyText: currentStoryText,
           hasMultipleCharacters,
           mentionsPark,
@@ -3942,7 +3941,7 @@ const handleRestartTimer = () => {
                       <Button
                         data-id="magic-wand-free"
                         onClick={() => {
-                          console.log('🪄 [STORY DEBUG] Magic wand clicked - button press');
+                          DebugLogger.log('story', 'Magic wand clicked - button press');
                           setIsMagicWandAnimating(false); // Stop animation when clicked
                           handleGenerateNewStory();
                         }}
@@ -4128,7 +4127,7 @@ const handleRestartTimer = () => {
           const isDebug = typeof window !== 'undefined' && 
             new URLSearchParams(window.location.search).get('debug') === '1';
           if (isDebug) {
-            console.log('🎯 TIER SUCCESS DETECTED:', {
+            DebugLogger.log('network', 'Tier success detected', {
               tier,
               details,
               currentPage,
@@ -4291,7 +4290,7 @@ const handleRestartTimer = () => {
         vocabularyLearned={userStats.vocabularyWordsLearned || 0}
         timeSpent={Date.now() - sessionStartTime}
         onProgressUpdate={(type, value) => {
-          console.log('Progress updated:', type, value);
+          DebugLogger.log('ui', 'Progress updated', { type, value });
         }}
         className="fixed"
       />
