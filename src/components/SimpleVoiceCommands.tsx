@@ -6,6 +6,7 @@ import { SimpleAudioEngine } from '@/services/SimpleAudioEngine';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { DebugLogger } from '@/services/DebugLogger';
 
 export const SimpleVoiceCommands: React.FC = () => {
   const engine = SimpleAudioEngine.getInstance();
@@ -14,8 +15,8 @@ export const SimpleVoiceCommands: React.FC = () => {
   // Define client tools for voice commands
   const clientTools = {
     play: () => {
-      console.log('🎯 Voice command: play - CLIENT TOOL EXECUTED');
-      console.log('🎯 Global variables check:', {
+      DebugLogger.log('audio', 'Voice command: play - CLIENT TOOL EXECUTED');
+      DebugLogger.log('performance', 'Global variables check', {
         hasPageContentString: !!((window as any).__pageContentString),
         hasPageContentHash: !!((window as any).__pageContentHash),
         hasStoryTitle: !!((window as any).__storyTitle),
@@ -28,31 +29,35 @@ export const SimpleVoiceCommands: React.FC = () => {
       const userName = (window as any).__userName || '';
       
       if (text) {
-        console.log('🎯 About to start audio playback with:', { textLength: text.length, hash, voiceId: 'XB0fDUnXU5powFXDhCwa' });
+        DebugLogger.log('audio', 'About to start audio playback', { 
+          textLength: text.length, 
+          hash, 
+          voiceId: 'XB0fDUnXU5powFXDhCwa' 
+        });
         engine.playText({ 
           text, 
           contentHash: hash,
           voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
         }).then(() => {
-          console.log('🎯 Audio playback started successfully');
+          DebugLogger.log('audio', 'Audio playback started successfully');
         }).catch((error) => {
-          console.error('🎯 Audio playback failed:', error);
+          DebugLogger.error('audio', 'Audio playback failed', error);
         });
         return `Starting to read ${storyTitle ? `"${storyTitle}"` : 'the story'} with Charlotte's voice${userName ? ` for ${userName}` : ''}`;
       }
       
-      console.warn('🎯 No story content available - text variable is empty');
+      DebugLogger.warn('audio', 'No story content available - text variable is empty');
       return "No story content available to read";
     },
     
     stop: () => {
-      console.log('🎯 Voice command: stop');
+      DebugLogger.log('audio', 'Voice command: stop');
       engine.stop();
       return "Stopped reading";
     },
     
     next: () => {
-      console.log('🎯 Voice command: next page');
+      DebugLogger.log('ui', 'Voice command: next page');
       window.dispatchEvent(new CustomEvent('reader:navigate', { 
         detail: { direction: 'next' } 
       }));
@@ -60,7 +65,7 @@ export const SimpleVoiceCommands: React.FC = () => {
     },
     
     previous: () => {
-      console.log('🎯 Voice command: previous page');
+      DebugLogger.log('ui', 'Voice command: previous page');
       window.dispatchEvent(new CustomEvent('reader:navigate', { 
         detail: { direction: 'prev' } 
       }));
@@ -68,7 +73,7 @@ export const SimpleVoiceCommands: React.FC = () => {
     },
     
     wordHelp: (args: any) => {
-      console.log('🎯 Voice command: word help', args);
+      DebugLogger.log('audio', 'Voice command: word help', args);
       window.dispatchEvent(new CustomEvent('voice:wordHelp', { 
         detail: args || null 
       }));
@@ -84,8 +89,8 @@ export const SimpleVoiceCommands: React.FC = () => {
   } = useConversation({ 
     clientTools,
     onConnect: () => {
-      console.log('🟢 Connected to Buddy');
-      console.log('🎤 Voice session established successfully');
+      DebugLogger.log('audio', 'Connected to Buddy');
+      DebugLogger.log('audio', 'Voice session established successfully');
       
       // Dispatch voice status event for UI updates
       window.dispatchEvent(new CustomEvent('voice:status', { 
@@ -97,7 +102,7 @@ export const SimpleVoiceCommands: React.FC = () => {
       toast.success(`${contextMessage} Try saying "play story"`);
     },
     onDisconnect: () => {
-      console.log('🔴 Disconnected from Buddy');
+      DebugLogger.log('audio', 'Disconnected from Buddy');
       
       // Dispatch voice status event for UI updates
       window.dispatchEvent(new CustomEvent('voice:status', { 
@@ -107,9 +112,11 @@ export const SimpleVoiceCommands: React.FC = () => {
       toast.info('Buddy disconnected');
     },
     onError: (error: any) => {
-      console.error('❌ Voice error details:', error);
-      console.error('❌ Error type:', typeof error);
-      console.error('❌ Error properties:', Object.keys(error || {}));
+      DebugLogger.error('audio', 'Voice error details', {
+        error,
+        errorType: typeof error,
+        errorProperties: Object.keys(error || {})
+      });
       
       // Dispatch error status
       window.dispatchEvent(new CustomEvent('voice:status', { 
@@ -120,7 +127,7 @@ export const SimpleVoiceCommands: React.FC = () => {
       toast.error(`Voice error: ${errorMessage}`);
     },
     onMessage: (message) => {
-      console.log('📨 Voice message received:', message);
+      DebugLogger.log('audio', 'Voice message received', message);
       
       // For now, just log the message - the @11labs/react library handles status updates
       // The status from useConversation hook will automatically update UI
@@ -128,16 +135,17 @@ export const SimpleVoiceCommands: React.FC = () => {
   });
 
   const handleToggle = useCallback(async () => {
-    console.log('🎙️ Voice toggle clicked, current status:', status);
+    DebugLogger.log('audio', 'Voice toggle clicked', { status });
     
     if (status === 'connected') {
-      console.log('🛑 Voice session connected, ending...');
+      DebugLogger.log('audio', 'Voice session connected, ending');
       await endSession();
     } else {
       try {
-        console.log('🚀 Starting voice command session...');
-        console.log('🔍 Current status:', status);
-        console.log('🔍 useConversation hook available:', !!useConversation);
+        DebugLogger.log('audio', 'Starting voice command session', { 
+          status, 
+          hasConversationHook: !!useConversation 
+        });
         
         // Dispatch connecting status
         window.dispatchEvent(new CustomEvent('voice:status', { 
@@ -145,10 +153,10 @@ export const SimpleVoiceCommands: React.FC = () => {
         }));
         
         // Get signed URL from Supabase  
-        console.log('🔗 Requesting ElevenLabs agent signed URL...');
+        DebugLogger.log('network', 'Requesting ElevenLabs agent signed URL');
         const { data, error } = await supabase.functions.invoke('elevenlabs-agent-signed-url');
         
-        console.log('📨 Supabase function response:', { 
+        DebugLogger.log('network', 'Supabase function response', { 
           hasData: !!data, 
           hasError: !!error,
           dataKeys: data ? Object.keys(data) : [],
@@ -156,36 +164,38 @@ export const SimpleVoiceCommands: React.FC = () => {
         });
         
         if (error) {
-          console.error('❌ Supabase function error:', error);
+          DebugLogger.error('network', 'Supabase function error', error);
           toast.error(`Voice connection failed: ${error.message}`);
           return;
         }
         
         if (!data?.signed_url) {
-          console.error('❌ No signed URL in response:', data);
+          DebugLogger.error('network', 'No signed URL in response', data);
           toast.error('No signed URL received from ElevenLabs');
           return;
         }
         
-        console.log('✅ Got signed URL, testing microphone...');
+        DebugLogger.log('network', 'Got signed URL, testing microphone');
         
         // Test microphone permissions first
         try {
           const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          console.log('🎤 Microphone access granted');
+          DebugLogger.log('audio', 'Microphone access granted');
           stream.getTracks().forEach(track => track.stop()); // Clean up test stream
         } catch (micError) {
-          console.error('🚫 Microphone access denied:', micError);
+          DebugLogger.error('audio', 'Microphone access denied', micError);
           toast.error('Microphone access required for voice commands');
           return;
         }
         
-        console.log('🚀 About to call startSession with signed URL...');
+        DebugLogger.log('audio', 'About to call startSession with signed URL');
         const sessionResult = await startSession({ signedUrl: data.signed_url });
-        console.log('🎉 Session started successfully:', sessionResult);
+        DebugLogger.log('audio', 'Session started successfully', sessionResult);
       } catch (error: any) {
-        console.error('❌ Failed to start voice session:', error);
-        console.error('❌ Error stack:', error.stack);
+        DebugLogger.error('audio', 'Failed to start voice session', {
+          error,
+          stack: error.stack
+        });
         
         // Dispatch failed status
         window.dispatchEvent(new CustomEvent('voice:status', { 

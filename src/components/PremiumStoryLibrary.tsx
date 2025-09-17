@@ -15,6 +15,7 @@ import { toast } from '@/hooks/use-toast';
 import { PremiumStoryManager, SavedStory } from '@/services/premiumStoryManager';
 import { DifficultyLevel, Story } from '@/types/index';
 import { BatchImageService } from '@/services/BatchImageService';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface PremiumStoryLibraryProps {
   onLoadStory: (story: Story) => void;
@@ -53,7 +54,7 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
       setSavedStories(stories);
       setPage(1);
     } catch (error) {
-      console.error('Error loading saved stories:', error);
+      DebugLogger.error('story', 'Error loading saved stories', error);
       toast({
         title: 'Error',
         description: 'Failed to load your saved stories.',
@@ -86,7 +87,7 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
       setSavedStories(stories);
       setPage(1);
     } catch (error) {
-      console.error('Error searching stories:', error);
+      DebugLogger.error('story', 'Error searching stories', error);
       toast({
         title: 'Error',
         description: 'Failed to search stories.',
@@ -112,7 +113,7 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
         description: 'Story favorite status updated.',
       });
     } catch (error) {
-      console.error('Error toggling favorite:', error);
+      DebugLogger.error('story', 'Error toggling favorite', error);
       toast({
         title: 'Error',
         description: 'Failed to update favorite status.',
@@ -131,7 +132,7 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
         description: 'Story deleted successfully.',
       });
     } catch (error) {
-      console.error('Error deleting story:', error);
+      DebugLogger.error('story', 'Error deleting story', error);
       toast({
         title: 'Error',
         description: 'Failed to delete story.',
@@ -180,7 +181,7 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
       
       loadSavedStories();
     } catch (error) {
-      console.error('Error saving story:', error);
+      DebugLogger.error('story', 'Error saving story', error);
       toast({
         title: 'Error',
         description: 'Failed to save story.',
@@ -228,12 +229,12 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
         userInfo,
         {
           onProgress: (completed, total) => {
-            console.log(`Generating images: ${completed}/${total}`);
+            DebugLogger.log('image', 'Generating images progress', { completed, total });
           }
         }
       );
 
-      console.log('Generated images for library story:', updatedImages);
+      DebugLogger.log('image', 'Generated images for library story', updatedImages);
 
       toast({
         title: 'Success',
@@ -242,7 +243,7 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
 
       loadSavedStories();
     } catch (error) {
-      console.error('Error generating missing images:', error);
+      DebugLogger.error('image', 'Error generating missing images', error);
       toast({
         title: 'Error',
         description: 'Failed to generate images.',

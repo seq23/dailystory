@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Check, Star, Zap, ArrowLeft, X, Volume2, BookOpen } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { UserInfo } from "@/types";
+import { DebugLogger } from "@/services/DebugLogger";
 import { PasswordReset } from "@/components/PasswordReset";
 
 interface LoginScreenProps {
@@ -140,7 +141,7 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
           });
 
         if (subError) {
-          console.warn('Error storing discount code:', subError);
+          DebugLogger.warn('auth', 'Error storing discount code', subError);
         }
       }
 
@@ -149,7 +150,7 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
         : t("loginScreen.form.success.accountCreated"));
     } catch (error) {
       toast.error(t("loginScreen.form.errors.unexpected"));
-      console.error(error);
+      DebugLogger.error('auth', 'Signup error', error);
     } finally {
       setLoading(false);
     }
@@ -177,7 +178,7 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
       }
     } catch (error) {
       toast.error(t("loginScreen.form.errors.unexpected"));
-      console.error(error);
+      DebugLogger.error('auth', 'Signin error', error);
     } finally {
       setLoading(false);
     }
@@ -219,7 +220,7 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
       }
     } catch (error) {
       toast.error(t("loginScreen.form.errors.paymentProcessFailed"));
-      console.error(error);
+      DebugLogger.error('auth', 'Payment process failed', error);
     } finally {
       setLoading(false);
     }
@@ -236,20 +237,20 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
         variant="ghost"
         size="sm"
         onClick={() => {
-          console.log('Back button clicked - onBack available:', !!onBack);
+          DebugLogger.log('ui', 'Back button clicked', { onBackAvailable: !!onBack });
           try {
             if (onBack) {
-              console.log('Using onBack callback');
+              DebugLogger.log('ui', 'Using onBack callback');
               onBack();
             } else if (window.history.length > 1) {
-              console.log('Using window.history.back()');
+              DebugLogger.log('ui', 'Using window.history.back()');
               window.history.back();
             } else {
-              console.log('Fallback to home redirect');
+              DebugLogger.log('ui', 'Fallback to home redirect');
               window.location.href = '/';
             }
           } catch (error) {
-            console.error('Navigation error:', error);
+            DebugLogger.error('ui', 'Navigation error', error);
             window.location.href = '/';
           }
         }}
@@ -264,20 +265,20 @@ export const LoginScreen = ({ userInfo, onBack }: LoginScreenProps = {}) => {
         variant="ghost"
         size="sm"
         onClick={() => {
-          console.log('Close button clicked - onBack available:', !!onBack);
+          DebugLogger.log('ui', 'Close button clicked', { onBackAvailable: !!onBack });
           try {
             if (onBack) {
-              console.log('Using onBack callback');
+              DebugLogger.log('ui', 'Using onBack callback');
               onBack();
             } else if (window.history.length > 1) {
-              console.log('Using window.history.back()');
+              DebugLogger.log('ui', 'Using window.history.back()');
               window.history.back();
             } else {
-              console.log('Fallback to home redirect');
+              DebugLogger.log('ui', 'Fallback to home redirect');
               window.location.href = '/';
             }
           } catch (error) {
-            console.error('Navigation error:', error);
+            DebugLogger.error('ui', 'Navigation error', error);
             window.location.href = '/';
           }
         }}
