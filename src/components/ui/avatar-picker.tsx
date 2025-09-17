@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { useTranslation } from "react-i18next"
 import type { AvatarType, SkinTone } from "@/types"
+import { DebugLogger } from '@/services/DebugLogger'
 
 interface AvatarSelection {
   type: AvatarType
@@ -68,7 +69,7 @@ export const AvatarPicker = React.forwardRef<
   
   // Add debugging for avatar image selection
   React.useEffect(() => {
-    console.log('🔍 [DEBUG] AvatarPicker current selection:', {
+    DebugLogger.log('ui', 'AvatarPicker current selection:', {
       type: value.type,
       skinTone: value.skinTone,
       currentAvatar,
@@ -145,7 +146,7 @@ export const AvatarPicker = React.forwardRef<
                 alt={`${value.type} avatar with ${value.skinTone} skin tone`}
                 className="w-full h-full object-cover"
                 onError={(e) => {
-                  console.error('🚨 [DEBUG] Avatar image failed to load:', {
+                  DebugLogger.error('ui', 'Avatar image failed to load:', {
                     src: currentAvatar,
                     type: value.type,
                     skinTone: value.skinTone
@@ -153,10 +154,10 @@ export const AvatarPicker = React.forwardRef<
                   // Use existing fallback image from avatar mapping
                   const fallbackImage = avatarImages.boy[value.skinTone] || avatarImages.boy.medium;
                   (e.target as HTMLImageElement).src = fallbackImage;
-                  console.log('🔄 [DEBUG] Using fallback image:', fallbackImage);
+                  DebugLogger.log('ui', 'Using fallback image:', fallbackImage);
                 }}
                 onLoad={() => {
-                  console.log('✅ [DEBUG] Avatar image loaded successfully:', currentAvatar);
+                  DebugLogger.log('ui', 'Avatar image loaded successfully:', currentAvatar);
                 }}
               />
             </div>

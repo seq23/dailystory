@@ -8,12 +8,12 @@ import { contextualPronunciation } from "@/services/contextualPronunciation";
 import { safeBase64Decode } from '@/utils/base64Decoder';
 import { supabase } from "@/integrations/supabase/client";
 import { VocabularyLevelClassifier } from "@/utils/vocabularyLevelClassifier";
+import { DebugLogger } from '@/services/DebugLogger';
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getGlobalAddVocabularyWord } from "@/utils/gamificationGlobals";
 import type { UserInfo } from "@/types";
 import { VocabularyTrackingService } from "@/services/vocabularyTrackingService";
 import { domBatchingService } from "@/utils/domBatchingService";
-import { DebugLogger } from "@/services/DebugLogger";
 
 interface InteractiveWordProps {
   word: string;
@@ -1677,7 +1677,7 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
   const isUserName = props.userInfo?.name && cleanWord === props.userInfo.name.toLowerCase();
 
   if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
-    console.log('📱 Mobile Wrapper Active:', {
+    DebugLogger.log('ui', 'Mobile Wrapper Active:', {
       word: props.word,
       cleanWord,
       isUserName,

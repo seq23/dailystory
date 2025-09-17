@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface TestResult {
   name: string;
@@ -22,7 +23,7 @@ export const RunwareConnectionTest: React.FC = () => {
 
     try {
       // Test 1: Main Orchestrator Health Check
-      console.log('🔍 Testing main image orchestrator health...');
+      DebugLogger.log('network', 'Testing main image orchestrator health...');
       try {
         const { data, error } = await supabase.functions.invoke('runware-generate-image', {
           method: 'GET'
@@ -61,7 +62,7 @@ export const RunwareConnectionTest: React.FC = () => {
       }
 
       // Test 2: Template Services Health
-      console.log('🔍 Testing Runware template services...');
+      DebugLogger.log('network', 'Testing Runware template services...');
       const templateServices = [
         { name: 'AB Templates', endpoint: 'runware-template-ab' },
         { name: 'CD Templates', endpoint: 'runware-template-cd' }

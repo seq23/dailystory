@@ -10,6 +10,7 @@ import { estimateTokenCount } from '../../supabase/functions/_shared/validation-
 import { countCharacters, analyzeCharacters, type CharacterAnalysis } from '@/utils/characterCount';
 import { showTestToast, clearAllTestingToasts, showTestSummaryToast } from '@/utils/testingToasts';
 import type { UserInfo, ExpertGradeLevel } from '@/types';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface ValidationTestResult {
   gradeLevel: ExpertGradeLevel;
@@ -70,7 +71,7 @@ export function ValidationTestRunner() {
       });
       
       try {
-        console.log(`🧪 Testing ${gradeLevel} grade story generation...`);
+        DebugLogger.log('story', `Testing ${gradeLevel} grade story generation...`);
         
         const response = await NetflixStyleStoryService.generateStory(testUser);
         
@@ -116,7 +117,7 @@ export function ValidationTestRunner() {
         }
 
         testResults.push(result);
-        console.log(`✅ ${gradeLevel} grade: ${pageCount} pages (${pagesInRange ? 'PASS' : 'FAIL'})`);
+        DebugLogger.log('story', `${gradeLevel} grade: ${pageCount} pages (${pagesInRange ? 'PASS' : 'FAIL'})`);
         
       } catch (error) {
         console.error(`❌ Error testing ${gradeLevel}:`, error);
@@ -151,7 +152,7 @@ export function ValidationTestRunner() {
     showTestSummaryToast(successfulTests, expertGrades.length, totalTime);
     
     setIsRunning(false);
-    console.log('🎯 Validation test complete!');
+    DebugLogger.log('story', 'Validation test complete!');
   };
 
   const overallSuccess = results.length > 0 && results.every(r => r.success && r.pagesInRange);

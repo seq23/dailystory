@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { SimpleImageService } from './SimpleImageService';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface ValidationResult {
   test: string;
@@ -27,7 +28,7 @@ export const SystemValidation: React.FC<SystemValidationProps> = () => {
 
     // Phase 5: Boot success validation
     try {
-      console.log('🔍 Testing orchestrator boot success...');
+      DebugLogger.log('performance', 'Testing orchestrator boot success...');
       const { data, error } = await supabase.functions.invoke('runware-generate-image', {
         body: {}
       });
@@ -58,7 +59,7 @@ export const SystemValidation: React.FC<SystemValidationProps> = () => {
 
     // Phase 5: Tier progression test
     try {
-      console.log('🔍 Testing tier progression...');
+      DebugLogger.log('performance', 'Testing tier progression...');
       const tierTestResult = await SimpleImageService.generateImage({
         pageText: 'A child playing in a garden with colorful flowers.',
         userInfo: {
@@ -108,7 +109,7 @@ export const SystemValidation: React.FC<SystemValidationProps> = () => {
 
     // Phase 5: Emergency fallback test
     try {
-      console.log('🔍 Testing emergency fallback...');
+      DebugLogger.log('performance', 'Testing emergency fallback...');
       const emergencyResult = await SimpleImageService.emergencyFallbackTier25C({
         pageText: 'Emergency test scene with a character walking.',
         userInfo: {
@@ -157,7 +158,7 @@ export const SystemValidation: React.FC<SystemValidationProps> = () => {
 
     // Phase 5: Session persistence test
     try {
-      console.log('🔍 Testing session persistence...');
+      DebugLogger.log('performance', 'Testing session persistence...');
       const sessionId = `session-persistence-test-${Date.now()}`;
       
       // Generate first image with session
