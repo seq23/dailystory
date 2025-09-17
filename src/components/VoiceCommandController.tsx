@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { Bot, Mic, StopCircle, Loader2 } from "lucide-react";
+import { DebugLogger } from "@/services/DebugLogger";
 
 function blobToBase64(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -85,21 +86,21 @@ export const VoiceCommandController = forwardRef<VoiceCommandControllerHandle, V
         // const status = SimplifiedAudioEngine.getInstance().getStatus();
         const status = { isPlaying: false };
         if (status.isPlaying) {
-          console.log('🛑 Voice: Audio is playing, stopping it first');
+          DebugLogger.log('audio', 'Audio is playing, stopping it first');
           // SimplifiedAudioEngine.getInstance().stop();
           await new Promise(r => setTimeout(r, 500)); // Wait for audio cleanup
         }
       } catch (e) {
-        console.warn('Failed to check/stop audio:', e);
+        DebugLogger.warn('audio', 'Failed to check/stop audio', e);
       }
       
       // Respect global disable flag and avoid double-starts
       if ((window as any).__t2r_vc_user_disabled === true || (window as any).__t2r_voice_force_off === true) {
-        console.log('Headless VC: start ignored (user disabled/forced off)');
+        DebugLogger.log('audio', 'Headless VC: start ignored (user disabled/forced off)');
         return;
       }
       if (mediaRecorderRef.current && (mediaRecorderRef.current.state === 'recording')) {
-        console.log('Headless VC: already recording');
+        DebugLogger.log('audio', 'Headless VC: already recording');
         return;
       }
 
@@ -122,7 +123,7 @@ export const VoiceCommandController = forwardRef<VoiceCommandControllerHandle, V
         }
       };
       
-      console.log('🎤 VoiceCommandController - Device detection:', {
+      DebugLogger.log('audio', 'VoiceCommandController - Device detection', {
         isMobile: isMobileDevice,
         constraints
       });
@@ -174,7 +175,7 @@ export const VoiceCommandController = forwardRef<VoiceCommandControllerHandle, V
         };
         rafRef.current = requestAnimationFrame(tick);
       } catch (e) {
-        console.warn('VoiceCommandController: analyser unavailable', e);
+        DebugLogger.warn('audio', 'VoiceCommandController: analyser unavailable', e);
       }
 
       const supported = getSupportedMimeType();
@@ -215,7 +216,7 @@ export const VoiceCommandController = forwardRef<VoiceCommandControllerHandle, V
             body: { audio: base64, mimeType: mimeTypeRef.current },
           });
           if (error) {
-            console.error(error);
+            DebugLogger.error('network', 'Voice-to-text error', error);
           } else {
             const text: string = (data?.text || "").toLowerCase();
             const found = KNOWN_COMMANDS.find((c) => text.includes(c));
@@ -224,7 +225,7 @@ export const VoiceCommandController = forwardRef<VoiceCommandControllerHandle, V
             onCommand?.(cmd);
           }
         } catch (err) {
-          console.error("Voice command processing failed", err);
+          DebugLogger.error('audio', 'Voice command processing failed', err);
         } finally {
           setIsRecording(false);
           setStatus('idle'); emitStatus('idle'); emitLevel(0);
@@ -247,7 +248,7 @@ export const VoiceCommandController = forwardRef<VoiceCommandControllerHandle, V
         try { if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') stopRecording(); } catch {}
       }, 7000);
     } catch (e) {
-      console.error('Failed to start recording', e);
+      DebugLogger.error('audio', 'Failed to start recording', e);
     }
   }, [onCommand]);
 
@@ -266,7 +267,7 @@ const stopRecording = useCallback(() => {
   try {
     mediaRecorderRef.current?.stop();
   } catch (e) {
-    console.warn('stopRecording error', e);
+    DebugLogger.warn('audio', 'stopRecording error', e);
   }
 }, []);
 

@@ -2,17 +2,18 @@ import React, { useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useOpenAIRealtimeChat } from '@/hooks/useOpenAIRealtimeChat';
 import { SimpleAudioEngine } from '@/services/SimpleAudioEngine';
+import { DebugLogger } from '@/services/DebugLogger';
 
 export const OpenAIVoiceCommands: React.FC = () => {
   const engine = SimpleAudioEngine.getInstance();
 
   // Handle function calls from OpenAI
   const handleFunctionCall = useCallback((functionName: string, args: any) => {
-    console.log('🎯 Executing voice command:', functionName, args);
+    DebugLogger.log('audio', 'Executing voice command', { functionName, args });
 
     switch (functionName) {
       case 'play_story':
-        console.log('▶️ Playing story...');
+        DebugLogger.log('audio', 'Playing story');
         const text = (window as any).__pageContentString || '';
         const hash = (window as any).__pageContentHash || undefined;
         
@@ -21,40 +22,40 @@ export const OpenAIVoiceCommands: React.FC = () => {
             text, 
             contentHash: hash,
             voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
-          }).catch(console.error);
+          }).catch(error => DebugLogger.error('audio', 'Audio playback failed', error));
         } else {
-          console.warn('⚠️ No story content available');
+          DebugLogger.warn('audio', 'No story content available');
         }
         break;
 
       case 'stop_reading':
-        console.log('⏹️ Stopping reading...');
+        DebugLogger.log('audio', 'Stopping reading');
         engine.stop();
         break;
 
       case 'next_page':
-        console.log('➡️ Going to next page...');
+        DebugLogger.log('ui', 'Going to next page');
         window.dispatchEvent(new CustomEvent('reader:navigate', { 
           detail: { direction: 'next' } 
         }));
         break;
 
       case 'previous_page':
-        console.log('⬅️ Going to previous page...');
+        DebugLogger.log('ui', 'Going to previous page');
         window.dispatchEvent(new CustomEvent('reader:navigate', { 
           detail: { direction: 'prev' } 
         }));
         break;
 
       case 'word_help':
-        console.log('❓ Getting word help...', args);
+        DebugLogger.log('audio', 'Getting word help', args);
         window.dispatchEvent(new CustomEvent('voice:wordHelp', { 
           detail: args || null 
         }));
         break;
 
       default:
-        console.warn('❓ Unknown voice command:', functionName);
+        DebugLogger.warn('audio', 'Unknown voice command', { functionName });
     }
   }, [engine]);
 
@@ -83,14 +84,14 @@ export const OpenAIVoiceCommands: React.FC = () => {
         detail: { status } 
       }));
     } catch (error) {
-      console.error('Error dispatching voice status:', error);
+      DebugLogger.error('audio', 'Error dispatching voice status', error);
     }
   }, [isConnected, isProcessing]);
 
   // Handle global voice events
   useEffect(() => {
     const handleOpenAIStart = () => {
-      console.log('🎤 OpenAI voice commands starting...');
+      DebugLogger.log('audio', 'OpenAI voice commands starting');
       if (!isConnected) connect();
     };
     

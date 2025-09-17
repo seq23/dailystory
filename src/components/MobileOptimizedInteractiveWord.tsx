@@ -10,6 +10,7 @@ import { VocabularyLevelClassifier } from "@/utils/vocabularyLevelClassifier";
 import { getGlobalAddVocabularyWord } from "@/utils/gamificationGlobals";
 import { VocabularyTrackingService } from "@/services/vocabularyTrackingService";
 import { useToast } from "@/hooks/use-toast";
+import { DebugLogger } from "@/services/DebugLogger";
 
 interface MobileOptimizedInteractiveWordProps {
   word: string;
@@ -150,7 +151,7 @@ if (props.forceModal || isMobileOrTablet) {
         const addVocabularyWord = getGlobalAddVocabularyWord();
         addVocabularyWord && addVocabularyWord();
       } catch (error) {
-        console.warn('Background vocabulary operations failed:', error);
+        DebugLogger.warn('story', 'Background vocabulary operations failed', error);
       }
     }, 0);
   };
@@ -163,7 +164,7 @@ if (props.forceModal || isMobileOrTablet) {
         const { InteractiveWordAudioService } = await import('@/services/InteractiveWordAudioService');
         await InteractiveWordAudioService.hearWord(cleanWord);
       } catch (e) {
-        console.error('Mobile HearIt failed', e);
+        DebugLogger.error('audio', 'Mobile HearIt failed', e);
       } finally {
         setIsPlaying(false);
         markReviewedOnce();
@@ -178,7 +179,7 @@ if (props.forceModal || isMobileOrTablet) {
         const { InteractiveWordAudioService } = await import('@/services/InteractiveWordAudioService');
         await InteractiveWordAudioService.explainWord(cleanWord, props.userInfo?.nativeLanguage || 'en');
       } catch (e) {
-        console.error('Mobile Explain failed', e);
+        DebugLogger.error('story', 'Mobile Explain failed', e);
       } finally {
         setIsLoadingWordData(false);
         markReviewedOnce();
@@ -193,7 +194,7 @@ if (props.forceModal || isMobileOrTablet) {
         await InteractiveWordAudioService.syllableWord(cleanWord);
         setIsPlaying(false);
       } catch (e) {
-        console.error('Mobile Syllables failed', e);
+        DebugLogger.error('audio', 'Mobile Syllables failed', e);
         setIsPlaying(false);
       } finally {
         markReviewedOnce();
@@ -218,7 +219,7 @@ if (props.forceModal || isMobileOrTablet) {
       try {
         (window as any).addToVocabulary?.(vocabularyWord);
       } catch (err) {
-        console.warn('addToVocabulary not available', err);
+        DebugLogger.warn('story', 'addToVocabulary not available', err);
       }
 
       try {
