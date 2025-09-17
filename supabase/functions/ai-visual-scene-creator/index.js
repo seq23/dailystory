@@ -582,14 +582,11 @@ serve(async (req) => {
               session_id: sessionId,
               character_name: avatarIdentity?.name || 'character',
               image_url: '',
-                visual_elements: {
-                  backgroundColor: 'auto',
-                  lighting: 'natural',
-                  composition: 'scene',
-                  setting: 'story',
-                  mood: 'neutral',
-                  style: 'children_book'
-                },
+              visual_elements: {
+                backgroundColor: 'auto',
+                lighting: 'natural',
+                composition: 'scene',
+                setting: 'story',
                 mood: 'neutral',
                 style: 'children_book'
               },
