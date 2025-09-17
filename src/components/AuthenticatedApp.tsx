@@ -454,7 +454,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                               }
                              // Fallback: Attempt hash-based lookup (for backward compatibility)
                              else {
-                               console.log('🖼️ Attempting hash-based image lookup as fallback');
+                               DebugLogger.log('image', 'Attempting hash-based image lookup as fallback');
                                const { StoryCacheIntegration } = await import('@/services/StoryCacheIntegration');
                                const storyPages = story.segments?.map(s => s.text) || [];
                                if (storyPages.length > 0) {
@@ -529,7 +529,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                          isPremium={isPremium}
                          currentStory={currentStory}
                          onSessionEnded={(stats) => {
-                           console.log('Story session ended:', stats);
+                           DebugLogger.log('story', 'Story session ended:', stats);
                            setCurrentView("library");
                          }}
                          onHome={() => setCurrentView("stories")}
@@ -554,11 +554,11 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                       userInfo={userInfo}
                       isPremium={isPremium}
                       onStartThemedSession={(theme) => {
-                        console.log('Starting themed session:', theme);
+                        DebugLogger.log('story', 'Starting themed session:', theme);
                         setCurrentView("stories");
                       }}
                       onStartProgressiveSession={() => {
-                        console.log('Starting progressive session');
+                        DebugLogger.log('story', 'Starting progressive session');
                         setCurrentView("stories");
                       }}
                     />
