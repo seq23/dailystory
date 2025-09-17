@@ -852,7 +852,7 @@ serve(async (req) => {
             characterConsistency: enhancementResult.characterConsistency,
             visualConsistency: enhancementResult.visualConsistency,
             previousScene: null, // Will be populated for page 2+
-            templateStructure: 'COMPLETE_TIER_1'
+            templateStructure: enhancementResult.enhancedPrompt ? 'COMPLETE_TIER_1' : 'TIER_2_5A'
           };
           
           // PHASE 4: Get previous scene data for page 2+
@@ -888,6 +888,9 @@ serve(async (req) => {
           // Re-throw to trigger proper escalation handling at line 913-915
           throw new Error('ESCALATE_TO_TIER_2_5A: AI-Visual-Scene-Creator failed - no PRIMARY SCENE available');
         }
+        
+        // CRITICAL: Set enhancedStoryData to null on failure to prevent fake success
+        enhancedStoryData = null;
       }
       
       // Collect failed Tier 1 data structure first

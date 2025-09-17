@@ -242,7 +242,8 @@ export class PhaseIntegrationOrchestrator {
       
       // Only show ethnicity for dark skin users or non-English speakers
       if (skinTone === 'dark' || skinTone === 'darker' || language !== 'en') {
-        ethnicity = resolver.resolveCanonicalPlaceholders('{ethnicity}', userInfo).replace('{ethnicity}', '').trim();
+        const ethnicityResult = await resolver.resolveCanonicalPlaceholders('{ethnicity}', userInfo);
+        ethnicity = (typeof ethnicityResult === 'string' ? ethnicityResult : '').replace('{ethnicity}', '').trim();
       }
 
       // Get hair and skin variations based on skin tone with seeded selection

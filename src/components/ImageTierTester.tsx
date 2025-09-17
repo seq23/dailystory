@@ -678,11 +678,19 @@ export const ImageTierTester = () => {
         hasImage: !!response.data?.imageURL
       });
 
+      // CRITICAL: Check for fake Tier 1 success - enhanced prompt should be significantly different from original
+      const originalPrompt = response.data?.metadata?.originalPrompt || '';
+      const enhancedPrompt = response.data?.metadata?.enhancedPrompt || response.data?.metadata?.positivePrompt || '';
+      const isFakeSuccess = !response.error && enhancedPrompt && enhancedPrompt.length <= originalPrompt.length + 50;
+
       // Enhanced error categorization with preflight context
       let category, probableCause;
-      if (!response.error) {
+      if (!response.error && !isFakeSuccess) {
         category = 'SUCCESS';
         probableCause = 'Tier 1 full prompt flow completed successfully';
+      } else if (isFakeSuccess) {
+        category = 'VALIDATION';
+        probableCause = `Tier 1 fake success detected: Enhanced prompt (${enhancedPrompt.length} chars) not significantly enhanced from original (${originalPrompt.length} chars). Dark skin tone or non-English language may have caused ethnicity resolver async failure.`;
       } else if (triageCheck.available && triageCheck.status === 200) {
         // GET passed but POST failed - surface a more precise cause for Tier 1 forced flow with skipTier25=true
         const errorResult = categorizeError(response.error, 'runware-generate-image:forced-tier1');
