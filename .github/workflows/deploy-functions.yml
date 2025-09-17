@@ -3,6 +3,9 @@ name: Deploy Edge Functions
 on:
   push:
     branches: [ main ]
+  schedule:
+    # Daily deployment at 2:00 AM UTC to prevent 404 errors
+    - cron: '0 2 * * *'
   workflow_dispatch:
     inputs:
       priority_functions:
@@ -41,6 +44,36 @@ jobs:
         with:
           version: 1.211.0
           
+      - name: Function health check (optional)
+        run: |
+          echo "🏥 Running function health check..."
+          
+          # Define base URL for function calls
+          BASE_URL="https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1"
+          ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino"
+          
+          # Test key functions (continue deployment regardless of results)
+          for func in "runware-generate-image" "ai-visual-scene-creator" "runware-simple-fallback"; do
+            echo "  Testing $func..."
+            response=$(curl -s -o /dev/null -w "%{http_code}" \
+              -X POST "$BASE_URL/$func" \
+              -H "Authorization: Bearer $ANON_KEY" \
+              -H "Content-Type: application/json" \
+              -d '{"test": true}' \
+              --max-time 10 || echo "000")
+            
+            if [ "$response" = "404" ]; then
+              echo "  ⚠️  $func returned 404 - will be fixed by deployment"
+            elif [ "$response" = "000" ]; then
+              echo "  ⚠️  $func timeout/error - will be fixed by deployment"
+            else
+              echo "  ✅ $func responded with HTTP $response"
+            fi
+          done
+          
+          echo "✅ Health check completed - proceeding with deployment"
+        continue-on-error: true
+        
       - name: Smart function discovery and deployment
         run: |
           echo "🔍 Discovering edge functions..."

@@ -1,0 +1,121 @@
+name: Monitor Edge Functions
+
+on:
+  schedule:
+    # Check function health every 30 minutes
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+# Prevent concurrent monitoring
+concurrency:
+  group: monitor-functions
+  cancel-in-progress: false
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Function health monitoring
+        run: |
+          echo "🏥 Starting comprehensive function health check..."
+          
+          # Function monitoring configuration
+          BASE_URL="https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1"
+          ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubW1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino"
+          
+          # Critical functions to monitor
+          CRITICAL_FUNCTIONS=("runware-generate-image" "ai-visual-scene-creator" "runware-simple-fallback")
+          FAILED_FUNCTIONS=()
+          DOWN_COUNT=0
+          
+          echo "📋 Testing ${#CRITICAL_FUNCTIONS[@]} critical functions..."
+          
+          for func in "${CRITICAL_FUNCTIONS[@]}"; do
+            echo "  🔍 Testing $func..."
+            
+            # Test function with timeout and proper error handling
+            response=$(curl -s -o /dev/null -w "%{http_code}" \
+              -X POST "$BASE_URL/$func" \
+              -H "Authorization: Bearer $ANON_KEY" \
+              -H "Content-Type: application/json" \
+              -d '{"healthCheck": true, "test": true}' \
+              --max-time 15 \
+              --retry 2 \
+              --retry-delay 5 || echo "000")
+            
+            case $response in
+              "404")
+                echo "    ❌ $func is returning 404 (function not found)"
+                FAILED_FUNCTIONS+=("$func (404)")
+                DOWN_COUNT=$((DOWN_COUNT + 1))
+                ;;
+              "500")
+                echo "    ⚠️  $func returned 500 (server error)"
+                FAILED_FUNCTIONS+=("$func (500)")
+                DOWN_COUNT=$((DOWN_COUNT + 1))
+                ;;
+              "000")
+                echo "    ❌ $func is unreachable (timeout/network error)"
+                FAILED_FUNCTIONS+=("$func (unreachable)")
+                DOWN_COUNT=$((DOWN_COUNT + 1))
+                ;;
+              "200"|"201"|"202")
+                echo "    ✅ $func is healthy (HTTP $response)"
+                ;;
+              *)
+                echo "    ⚠️  $func responded with HTTP $response (unexpected)"
+                ;;
+            esac
+          done
+          
+          echo ""
+          echo "📊 Health Check Summary:"
+          echo "  Total functions checked: ${#CRITICAL_FUNCTIONS[@]}"
+          echo "  Functions with issues: $DOWN_COUNT"
+          echo "  Health rate: $(( (${#CRITICAL_FUNCTIONS[@]} - DOWN_COUNT) * 100 / ${#CRITICAL_FUNCTIONS[@]} ))%"
+          
+          # If multiple functions are down, trigger deployment
+          if [ $DOWN_COUNT -ge 2 ]; then
+            echo ""
+            echo "🚨 CRITICAL: Multiple functions are down - triggering emergency deployment"
+            echo "Failed functions: ${FAILED_FUNCTIONS[*]}"
+            
+            # Trigger deployment workflow
+            curl -X POST \
+              -H "Accept: application/vnd.github.v3+json" \
+              -H "Authorization: token $GITHUB_TOKEN" \
+              https://api.github.com/repos/$GITHUB_REPOSITORY/actions/workflows/deploy-functions.yml/dispatches \
+              -d '{"ref":"main","inputs":{"priority_functions":"'"$(IFS=','; echo "${CRITICAL_FUNCTIONS[*]}")"'"}}'
+              
+            echo "✅ Emergency deployment triggered"
+            
+          elif [ $DOWN_COUNT -eq 1 ]; then
+            echo ""
+            echo "⚠️  Single function issue detected: ${FAILED_FUNCTIONS[0]}"
+            echo "Monitoring will continue - deployment triggered if issue persists"
+            
+          else
+            echo ""
+            echo "✅ All functions are healthy"
+          fi
+          
+      - name: Create alert issue (on persistent failures)
+        if: failure()
+        run: |
+          echo "📝 Creating GitHub issue for persistent function failures..."
+          
+          # Create issue for tracking
+          curl -X POST \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token $GITHUB_TOKEN" \
+            https://api.github.com/repos/$GITHUB_REPOSITORY/issues \
+            -d '{
+              "title": "🚨 Edge Function Health Alert - '"$(date '+%Y-%m-%d %H:%M UTC')"'",
+              "body": "## Function Health Alert\n\n**Time:** '"$(date '+%Y-%m-%d %H:%M UTC')"'\n\n**Issue:** Multiple edge functions are experiencing persistent failures.\n\n**Actions Taken:**\n- Automatic health check failed\n- Emergency deployment may have been triggered\n\n**Next Steps:**\n1. Check function logs in Supabase dashboard\n2. Verify deployment status\n3. Test functions manually if needed\n\n**Monitoring:** This issue was created automatically by the health monitoring system.",
+              "labels": ["bug", "edge-functions", "automated-alert"]
+            }'

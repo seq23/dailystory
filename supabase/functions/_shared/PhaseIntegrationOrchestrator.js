@@ -243,7 +243,6 @@ export class PhaseIntegrationOrchestrator {
       }
 
       // Get hair and skin variations based on skin tone with seeded selection
-      const skinTone = userInfo?.appearance?.skinTone || userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium';
       const culturalBundle = getCulturalBundle(userInfo, sessionId);
       
       // Select both hair and facial features from cultural bundle

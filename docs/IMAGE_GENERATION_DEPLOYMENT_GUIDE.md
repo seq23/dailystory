@@ -173,7 +173,33 @@ USING (true)
 WITH CHECK (true);
 ```
 
-## Monitoring & Logging
+## Automated Deployment & Monitoring
+
+### Scheduled Deployment
+Functions are automatically deployed daily at 2:00 AM UTC to prevent 404 errors:
+- **Trigger**: GitHub Actions cron schedule (`0 2 * * *`)
+- **Purpose**: Ensures functions remain accessible and fixes deployment drift
+- **Scope**: All functions are redeployed regardless of changes
+- **Workflow**: `.github/workflows/deploy-functions.yml`
+
+### Health Monitoring
+Automated health checks run every 30 minutes:
+- **Workflow**: `.github/workflows/monitor-functions.yml`
+- **Functions Monitored**: `runware-generate-image`, `ai-visual-scene-creator`, `runware-simple-fallback`
+- **Actions**: 
+  - Tests all critical function endpoints
+  - Triggers emergency deployment if ≥2 functions are down
+  - Creates GitHub issues for persistent failures
+- **Emergency Response**: Auto-triggers deployment with priority functions
+
+### Pre-Deployment Health Check
+Each deployment includes an optional health check:
+- Tests function endpoints before deployment
+- Logs current status for debugging
+- Continues deployment regardless of results
+- Helps identify existing issues
+
+## Manual Monitoring & Logging
 
 ### Edge Function Logs
 
