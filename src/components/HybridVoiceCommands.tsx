@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { DebugLogger } from '@/services/DebugLogger';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { OpenAIVoiceCommands } from './OpenAIVoiceCommands';
@@ -22,7 +23,7 @@ export const HybridVoiceCommands: React.FC = () => {
 
   // Enhanced command handlers with speed controls
   const handleCommand = useCallback((command: string, args?: any) => {
-    console.log('🎯 Hybrid voice command:', command, args);
+    DebugLogger.log('audio', 'Hybrid voice command:', { command, args });
     
     switch (command) {
       case 'play':
@@ -48,7 +49,7 @@ export const HybridVoiceCommands: React.FC = () => {
       case 'speedUp':
         const newFasterSpeed = Math.min(readingSpeed + 0.15, 2.0);
         setReadingSpeed(newFasterSpeed);
-        console.log('📈 Speed increased to:', newFasterSpeed);
+        DebugLogger.log('audio', 'Speed increased to:', newFasterSpeed);
         // Apply speed change to current audio if playing
         if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
           speechSynthesis.cancel(); // Cancel current speech to apply new speed
@@ -58,7 +59,7 @@ export const HybridVoiceCommands: React.FC = () => {
       case 'slowDown':
         const newSlowerSpeed = Math.max(readingSpeed - 0.15, 0.5);
         setReadingSpeed(newSlowerSpeed);
-        console.log('📉 Speed decreased to:', newSlowerSpeed);
+        DebugLogger.log('audio', 'Speed decreased to:', newSlowerSpeed);
         if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
           speechSynthesis.cancel();
         }
@@ -66,7 +67,7 @@ export const HybridVoiceCommands: React.FC = () => {
 
       case 'normalSpeed':
         setReadingSpeed(1.0);
-        console.log('🎯 Speed reset to normal');
+        DebugLogger.log('audio', 'Speed reset to normal');
         if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
           speechSynthesis.cancel();
         }
@@ -107,7 +108,7 @@ export const HybridVoiceCommands: React.FC = () => {
     setCurrentSystem({ system: 'elevenlabs', status: 'connecting' });
     
     try {
-      console.log('🎤 Attempting ElevenLabs connection...');
+      DebugLogger.log('audio', 'Attempting ElevenLabs connection...');
       
       // Start ElevenLabs connection
       window.dispatchEvent(new CustomEvent('voice:start'));
@@ -133,10 +134,10 @@ export const HybridVoiceCommands: React.FC = () => {
       });
       
       await Promise.race([connectionPromise, timeout]);
-      console.log('✅ ElevenLabs connected successfully');
+      DebugLogger.log('audio', 'ElevenLabs connected successfully');
       
     } catch (error) {
-      console.log('🔄 ElevenLabs failed, falling back to OpenAI:', error);
+      DebugLogger.log('audio', 'ElevenLabs failed, falling back to OpenAI:', error);
       fallbackToOpenAI();
     }
   }, [manualOverride]);

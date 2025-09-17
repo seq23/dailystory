@@ -166,7 +166,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   // Debug device detection
   useEffect(() => {
     if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
-      console.log('📱 CleanStoryDisplay Device Detection:', {
+      DebugLogger.log('ui', 'CleanStoryDisplay Device Detection:', {
         windowWidth: typeof window !== 'undefined' ? window.innerWidth : 'unknown',
         isMobile,
         isTablet,
@@ -658,7 +658,7 @@ useEffect(() => {
     
     const isDebug = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1';
     
-    console.log('🖼️ Story stabilized - checking for image generation opportunities', {
+    DebugLogger.log('image', 'Story stabilized - checking for image generation opportunities', {
       pageCount: story.length,
       currentPage: currentPage,
       sessionId: characterSessionId,
@@ -671,7 +671,7 @@ useEffect(() => {
     });
     
     if (isDebug) {
-      console.log('🔍 [DEBUG] Image Generation Status:', {
+      DebugLogger.log('image', 'Image Generation Status:', {
         'Current Layout': layout,
         'Story Stable': isStoryStable,
         'Current Page': currentPage,
@@ -984,7 +984,7 @@ const [highlightSave, setHighlightSave] = useState(false);
       const previousText = (window as any).__pageContentString;
       
       // 🔍 PHASE 1 & 2: Debug hash setting and comparison
-      console.log('🔧 Hash Setting Debug:', {
+      DebugLogger.log('story', 'Hash Setting Debug:', {
         previousHash: previousHash?.slice(0, 12),
         newHash: contentHash?.slice(0, 12),
         hashChanged: previousHash !== contentHash,
@@ -1004,7 +1004,7 @@ const [highlightSave, setHighlightSave] = useState(false);
       // Emit hash change event if hash actually changed
       if (previousHash !== contentHash && contentHash) {
         DebugLogger.log('story', `Content hash changed: ${previousHash?.slice(0,10)} → ${contentHash?.slice(0,10)}`);
-        console.log('📊 Hash Change Analysis:', {
+        DebugLogger.log('story', 'Hash Change Analysis:', {
           hashLengthChange: (contentHash?.length || 0) - (previousHash?.length || 0),
           textSource: 'effectiveAudioText',
           isTextConsistent: effectiveAudioText.length > 0,

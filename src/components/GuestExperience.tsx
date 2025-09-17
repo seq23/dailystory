@@ -129,7 +129,7 @@ useEffect(() => {
   };
 
 const handleFormSubmit = (info: UserInfo) => {
-  console.log('🔍 [DEBUG] Form submitted with userInfo:', {
+  DebugLogger.log('auth', 'Form submitted with userInfo:', {
     name: info.name,
     avatar: info.avatar,
     avatarType: info.avatar?.type,
@@ -137,7 +137,7 @@ const handleFormSubmit = (info: UserInfo) => {
     difficultyLevel: info.difficultyLevel
   });
 
-  console.log('🔍 [DEBUG] Avatar validation check:', {
+  DebugLogger.log('auth', 'Avatar validation check:', {
     hasAvatar: !!info.avatar,
     hasAvatarType: !!info.avatar?.type,
     avatarTypeValue: info.avatar?.type,
@@ -147,14 +147,14 @@ const handleFormSubmit = (info: UserInfo) => {
   // Add avatar validation and fallback handling (Fix #4)
   if (!info.avatar || !info.avatar.type) {
     console.warn('⚠️ [DEBUG] Avatar data missing or corrupted, applying fallback');
-    DebugLogger.log('auth', 'BEFORE fallback - avatar:', info.avatar);
+    DebugLogger.warn('auth', 'BEFORE fallback - avatar:', info.avatar);
     info.avatar = { type: "prefer-not-to-answer", skinTone: "medium" };
     DebugLogger.log('auth', 'AFTER fallback - avatar:', info.avatar);
   } else {
     DebugLogger.log('auth', 'Avatar validation passed - no fallback needed');
   }
 
-  console.log('🔍 [DEBUG] Final userInfo being set:', {
+  DebugLogger.log('auth', 'Final userInfo being set:', {
     name: info.name,
     avatar: info.avatar,
     avatarType: info.avatar?.type,

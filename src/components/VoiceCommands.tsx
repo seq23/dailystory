@@ -57,7 +57,7 @@ export const VoiceCommands: React.FC<VoiceCommandsProps> = ({ agentId: initialAg
         DebugLogger.log('audio', 'SUCCESS: Audio playback started');
         return 'ok';
       } catch (error) {
-        console.error('🎤 ERROR: Audio playback failed:', error);
+        DebugLogger.error('audio', 'ERROR: Audio playback failed:', error);
         return 'error';
       }
     },
@@ -70,120 +70,120 @@ export const VoiceCommands: React.FC<VoiceCommandsProps> = ({ agentId: initialAg
         DebugLogger.log('audio', 'SUCCESS: Audio stopped');
         return 'ok';
       } catch (error) {
-        console.error('🎤 ERROR: Stop failed:', error);
+        DebugLogger.error('audio', 'ERROR: Stop failed:', error);
         return 'error';
       }
     },
     
     // Voice Command: "pause", "pause reading" -> pause tool
     pause: async () => {
-      console.log('🎤 VOICE COMMAND: pause tool called');
+      DebugLogger.log('audio', 'VOICE COMMAND: pause tool called');
       try {
         engine.pause();
-        console.log('🎤 SUCCESS: Audio paused');
+        DebugLogger.log('audio', 'SUCCESS: Audio paused');
         return 'ok';
       } catch (error) {
-        console.error('🎤 ERROR: Pause failed:', error);
+        DebugLogger.error('audio', 'ERROR: Pause failed:', error);
         return 'error';
       }
     },
     
     // Voice Command: "next", "next page", "go forward" -> next tool
     next: async () => {
-      if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
-        console.log('🎤 VOICE COMMAND: next tool called - navigating to next page');
-        console.log('🔧 Tool execution started: next');
+      if (DebugLogger.isDebugEnabled()) {
+        DebugLogger.log('audio', 'VOICE COMMAND: next tool called - navigating to next page');
+        DebugLogger.log('audio', 'Tool execution started: next');
       }
       try {
         window.dispatchEvent(new CustomEvent('reader:navigate', { detail: { direction: 'next' } }));
-        if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
-          console.log('🎤 SUCCESS: Next page event dispatched successfully');
-          console.log('🔧 Tool execution completed: next');
+        if (DebugLogger.isDebugEnabled()) {
+          DebugLogger.log('audio', 'SUCCESS: Next page event dispatched successfully');
+          DebugLogger.log('audio', 'Tool execution completed: next');
         }
         return 'Going to the next page now!';
       } catch (error) {
-        console.error('🎤 ERROR: Next navigation failed:', error);
-        console.error('🔧 Tool execution failed: next -', error);
+        DebugLogger.error('audio', 'ERROR: Next navigation failed:', error);
+        DebugLogger.error('audio', 'Tool execution failed: next -', error);
         return 'Sorry, I could not go to the next page.';
       }
     },
     
     // Voice Command: "back", "previous", "go back", "previous page" -> previous tool
     previous: async () => {
-      console.log('🎤 VOICE COMMAND: previous tool called - navigating to previous page');
-      console.log('🔧 Tool execution started: previous');
+      DebugLogger.log('audio', 'VOICE COMMAND: previous tool called - navigating to previous page');
+      DebugLogger.log('audio', 'Tool execution started: previous');
       try {
         window.dispatchEvent(new CustomEvent('reader:navigate', { detail: { direction: 'prev' } }));
-        console.log('🎤 SUCCESS: Previous page event dispatched successfully');
-        console.log('🔧 Tool execution completed: previous');
+        DebugLogger.log('audio', 'SUCCESS: Previous page event dispatched successfully');
+        DebugLogger.log('audio', 'Tool execution completed: previous');
         return 'Going back to the previous page!';
       } catch (error) {
-        console.error('🎤 ERROR: Previous navigation failed:', error);
-        console.error('🔧 Tool execution failed: previous -', error);
+        DebugLogger.error('audio', 'ERROR: Previous navigation failed:', error);
+        DebugLogger.error('audio', 'Tool execution failed: previous -', error);
         return 'Sorry, I could not go to the previous page.';
       }
     },
     
     // Voice Command: "what is this word", "help with word", "explain word" -> wordHelp tool
     wordHelp: async (params?: any) => {
-      console.log('🎤 VOICE COMMAND: wordHelp tool called with params:', params);
+      DebugLogger.log('audio', 'VOICE COMMAND: wordHelp tool called with params:', params);
       try {
         window.dispatchEvent(new CustomEvent('voice:wordHelp', { detail: params || null }));
-        console.log('🎤 SUCCESS: Word help event dispatched');
+        DebugLogger.log('audio', 'SUCCESS: Word help event dispatched');
         
         if (params?.word) {
           return `Let me help you with the word "${params.word}". I'll break it down for you: ${params.word.split('').join('-')}. This word means...`;
         }
         return 'I can help you with any word! Just tell me which word you need help with.';
       } catch (error) {
-        console.error('🎤 ERROR: Word help failed:', error);
+        DebugLogger.error('audio', 'ERROR: Word help failed:', error);
         return 'Sorry, I could not help with that word right now.';
       }
     },
     
     // Voice Command: "read faster", "faster", "speed up" -> speedUp tool
     speedUp: async () => {
-      if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
-        console.log('🎤 VOICE COMMAND: speedUp tool called');
+      if (DebugLogger.isDebugEnabled()) {
+        DebugLogger.log('audio', 'VOICE COMMAND: speedUp tool called');
       }
       try {
         window.dispatchEvent(new CustomEvent('voice:speedChange', { detail: { action: 'faster' } }));
-        if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
-          console.log('🎤 SUCCESS: Speed up event dispatched');
+        if (DebugLogger.isDebugEnabled()) {
+          DebugLogger.log('audio', 'SUCCESS: Speed up event dispatched');
         }
         return 'ok';
       } catch (error) {
-        console.error('🎤 ERROR: Speed up failed:', error);
+        DebugLogger.error('audio', 'ERROR: Speed up failed:', error);
         return 'error';
       }
     },
     
     // Voice Command: "read slower", "slower", "slow down" -> slowDown tool
     slowDown: async () => {
-      console.log('🎤 VOICE COMMAND: slowDown tool called');
+      DebugLogger.log('audio', 'VOICE COMMAND: slowDown tool called');
       try {
         window.dispatchEvent(new CustomEvent('voice:speedChange', { detail: { action: 'slower' } }));
-        console.log('🎤 SUCCESS: Slow down event dispatched');
+        DebugLogger.log('audio', 'SUCCESS: Slow down event dispatched');
         return 'ok';
       } catch (error) {
-        console.error('🎤 ERROR: Slow down failed:', error);
+        DebugLogger.error('audio', 'ERROR: Slow down failed:', error);
         return 'error';
       }
     },
     
     // Voice Command: "normal speed", "reset speed" -> normalSpeed tool
     normalSpeed: async () => {
-      if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
-        console.log('🎤 VOICE COMMAND: normalSpeed tool called');
+      if (DebugLogger.isDebugEnabled()) {
+        DebugLogger.log('audio', 'VOICE COMMAND: normalSpeed tool called');
       }
       try {
         window.dispatchEvent(new CustomEvent('voice:speedChange', { detail: { action: 'normal' } }));
-        if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
-          console.log('🎤 SUCCESS: Normal speed event dispatched');
+        if (DebugLogger.isDebugEnabled()) {
+          DebugLogger.log('audio', 'SUCCESS: Normal speed event dispatched');
         }
         return 'ok';
       } catch (error) {
-        console.error('🎤 ERROR: Normal speed failed:', error);
+        DebugLogger.error('audio', 'ERROR: Normal speed failed:', error);
         return 'error';
       }
     },
@@ -195,43 +195,43 @@ export const VoiceCommands: React.FC<VoiceCommandsProps> = ({ agentId: initialAg
       tts: { voiceId: CHARLOTTE },
     },
     onConnect: () => { 
-      console.log('🎤 ElevenLabs conversation connected');
+      DebugLogger.log('audio', 'ElevenLabs conversation connected');
       setConnected(true); 
       try { window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: 'listening' } })); } catch {} 
     },
     onDisconnect: () => { 
-      console.log('🎤 ElevenLabs conversation disconnected');
+      DebugLogger.log('audio', 'ElevenLabs conversation disconnected');
       setConnected(false); 
       try { window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: 'idle' } })); } catch {} 
     },
     onError: (e) => { 
-      console.error('🎤 ElevenLabs conversation error:', e); 
+      DebugLogger.error('audio', 'ElevenLabs conversation error:', e); 
       try { window.dispatchEvent(new CustomEvent('voice:status', { detail: { status: 'idle' } })); } catch {} 
     },
     onMessage: (message) => {
       // Enhanced debugging for tool calls
       const msgData = message as any;
-      console.log('🎤 ALL ELEVENLABS MESSAGES:', message);
+      DebugLogger.log('audio', 'ALL ELEVENLABS MESSAGES:', message);
       
       if (msgData.type === 'agent.tool_call') {
-        console.log('✅ AGENT TOOL CALL DETECTED:', {
+        DebugLogger.log('audio', 'AGENT TOOL CALL DETECTED:', {
           toolName: msgData.tool_name,
           arguments: msgData.arguments,
           callId: msgData.call_id
         });
       } else if (msgData.type === 'agent.tool_response') {
-        console.log('✅ TOOL RESPONSE DETECTED:', {
+        DebugLogger.log('audio', 'TOOL RESPONSE DETECTED:', {
           toolName: msgData.tool_name,
           response: msgData.response,
           callId: msgData.call_id
         });
       } else if (msgData.source === 'ai' || msgData.message) {
-        console.log('🤖 CHARLOTTE SPEAKING:', msgData.message);
+        DebugLogger.log('audio', 'CHARLOTTE SPEAKING:', msgData.message);
         
         // Check if Charlotte is just saying "OK" without calling tools
         if (msgData.message && msgData.message.toLowerCase().includes('ok')) {
-          console.log('⚠️ PROBLEM: Charlotte said OK but no tool was called!');
-          console.log('❌ This means tools are NOT configured in ElevenLabs dashboard');
+          DebugLogger.warn('audio', 'PROBLEM: Charlotte said OK but no tool was called!');
+          DebugLogger.warn('audio', 'This means tools are NOT configured in ElevenLabs dashboard');
         }
       }
     },
@@ -251,7 +251,7 @@ useEffect(() => {
     }));
     
     try {
-      console.log('🎤 Starting ElevenLabs conversation...');
+      DebugLogger.log('audio', 'Starting ElevenLabs conversation...');
       
       // Enhanced microphone permission check
       const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -270,14 +270,14 @@ useEffect(() => {
       
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       stream.getTracks().forEach(track => track.stop());
-      console.log('✅ Microphone access granted');
+      DebugLogger.log('audio', 'Microphone access granted');
 
       // Get signed URL from Supabase edge function
       const body = agentId ? { agentId } : {};
       const { data, error } = await supabase.functions.invoke('elevenlabs-agent-signed-url', { body });
       
       if (error) {
-        console.error('❌ ElevenLabs API error:', error);
+        DebugLogger.error('audio', 'ElevenLabs API error:', error);
         const errorMsg = error.message || 'Unknown error';
         
         // Check for specific API key error
@@ -290,7 +290,7 @@ useEffect(() => {
 
       if (data && (data as any).error) {
         const apiError = (data as any).error;
-        console.error('❌ ElevenLabs API returned error:', apiError);
+        DebugLogger.error('audio', 'ElevenLabs API returned error:', apiError);
         throw new Error(`ElevenLabs API error: ${apiError}`);
       }
 
@@ -299,9 +299,9 @@ useEffect(() => {
         throw new Error('Invalid or missing signed URL from ElevenLabs');
       }
 
-      console.log('🔗 Starting ElevenLabs session...');
+      DebugLogger.log('audio', 'Starting ElevenLabs session...');
       const id = await (conversation as any).startSession({ url });
-      console.log('✅ ElevenLabs conversation started:', id);
+      DebugLogger.log('audio', 'ElevenLabs conversation started:', id);
       
       // Dispatch successful connection
       window.dispatchEvent(new CustomEvent('voice:status', { 
@@ -317,7 +317,7 @@ useEffect(() => {
       });
       
     } catch (e: any) {
-      console.error('❌ ElevenLabs connection failed:', e);
+      DebugLogger.error('audio', 'ElevenLabs connection failed:', e);
       
       // Dispatch failure
       window.dispatchEvent(new CustomEvent('voice:status', { 
