@@ -8,6 +8,7 @@ import { CharacterConsistencyService } from './CharacterConsistencyService.js';
 import { VisualDetailTracker } from './VisualDetailTracker.js';
 import { getCulturalBundle } from './StaticDataCache.js';
 import { UnifiedPlaceholderResolver } from './UnifiedPlaceholderResolver.js';
+import { getStyleFramework } from './styleFrameworks.js';
 
 export class PhaseIntegrationOrchestrator {
   constructor() {
@@ -212,7 +213,10 @@ export class PhaseIntegrationOrchestrator {
       );
 
       // Phase 2: Get visual consistency data for multi-page support
-      const visualHistory = await this.visualDetailTracker.getVisualHistory(sessionId, 'general', 10) || '';
+      const visualHistoryData = await this.visualDetailTracker.getVisualHistory(sessionId, 'general', 10);
+      const visualHistory = Array.isArray(visualHistoryData) ? 
+        visualHistoryData.map(item => typeof item === 'object' ? JSON.stringify(item) : item).join(', ') : 
+        (visualHistoryData || '');
       
       // Get colored objects for visual consistency using CharacterConsistencyService
       await this.characterConsistencyService.analyzeVisualDetails(sessionId, storyText, 1);
@@ -228,18 +232,23 @@ export class PhaseIntegrationOrchestrator {
       // Get hair variations based on skin tone with seeded selection
       const culturalBundle = getCulturalBundle(userInfo, sessionId);
       const hairData = culturalBundle?.hair;
-      const selectedHair = Array.isArray(hairData) ? hairData[0] : (hairData || 'short brown hair');
+      const skinTone = userInfo?.appearance?.skinTone || userInfo?.skinTone || 'medium';
+      
+      // Select hair based on skin tone compatibility
+      let selectedHair = 'short brown hair';
+      if (Array.isArray(hairData) && hairData.length > 0) {
+        // Use seeded selection based on skin tone for consistency
+        const skinToneIndex = {'pale': 0, 'light': 1, 'medium': 2, 'olive': 3, 'dark': 4, 'darker': 5}[skinTone] || 2;
+        const hairIndex = skinToneIndex % hairData.length;
+        selectedHair = hairData[hairIndex];
+      } else if (hairData && typeof hairData === 'string') {
+        selectedHair = hairData;
+      }
 
-      // Get style framework with warm natural lighting
+      // Get style framework with full detailed prompts
       const difficulty = userInfo?.difficulty || userInfo?.gradeLevel || 'medium';
-      const styleFrameworks = {
-        'beginner': 'Contemporary Children\'s Book Illustration with warm natural lighting, sharp facial definition, refined features',
-        'easy': 'Contemporary Children\'s Book Illustration with warm natural lighting, sharp facial definition, refined features', 
-        'medium': 'Contemporary Children\'s Book Illustration with warm natural lighting, sharp facial definition, refined features',
-        'hard': '2.9D Rendered Illustration with warm natural lighting, golden hour volumetric lighting',
-        'expert': '2.9D Rendered Illustration with warm natural lighting, golden hour volumetric lighting'
-      };
-      const styleFramework = styleFrameworks[difficulty] || styleFrameworks['medium'];
+      const styleFrameworkData = getStyleFramework(difficulty);
+      const styleFramework = styleFrameworkData.frameworkPrompt;
 
       // Use AI-generated primaryScene from enhanced data or build from base prompt
       const primaryScene = enhancedStoryData?.primaryScene || this.generatePrimaryScene(basePrompt, storyText);
@@ -248,14 +257,15 @@ export class PhaseIntegrationOrchestrator {
       const contextSummary = this.generateContextSummary(storyText || basePrompt);
       
       // Avatar Identity and Regional Context
-      const avatarIdentity = `${characterName}, age ${userInfo?.age || 6}`;
+      const avatarType = userInfo?.avatar?.type || 'child';
+      const avatarIdentity = `${avatarType} character ${characterName}, age ${userInfo?.age || 6}`;
       
       // Cultural Enhancements
       const culturalEnhancements = await this.getCulturalEnhancements(userInfo, sessionId);
       
-      // Enhanced character description with hair variations
+      // Enhanced character description with avatar type and hair variations
       const characterDescription = [
-        avatarIdentity, 
+        avatarIdentity,
         ethnicity,
         selectedHair,
         culturalEnhancements
@@ -273,9 +283,8 @@ export class PhaseIntegrationOrchestrator {
         visualHistory ? `- Visual History: ${visualHistory}` : '',
         coloredObjects ? `- Colored Objects: ${coloredObjects}` : '',
         visualConsistencyDetails ? `- Visual Consistency Details: ${visualConsistencyDetails}` : '',
-        `BRAND SUFFIX: ${styleFramework}, child-friendly aesthetic, diverse representation`,
-        `CONTEXT: ${contextSummary}`,
-        `STYLE FRAMEWORKS: ${styleFramework}`
+        `STYLE FRAMEWORK: ${styleFramework}`,
+        `CONTEXT: ${contextSummary}`
       ].filter(Boolean).join('\n');
 
       console.log(`✅ PHASE ORCHESTRATOR: Complete Tier 1 template generated`, {
@@ -319,8 +328,8 @@ export class PhaseIntegrationOrchestrator {
   // Helper method to generate AI-rich primary scene
   generatePrimaryScene(basePrompt, storyText) {
     const sceneText = storyText || basePrompt || 'A beautiful children\'s story scene';
-    // Extract key elements and enhance for visual richness
-    return `Rich, detailed scene: ${sceneText.slice(0, 200)}...`;
+    // Return the scene content word-for-word without modification
+    return sceneText;
   }
 
   // Helper method to generate context summary (1-2 sentences)
