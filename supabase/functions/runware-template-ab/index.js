@@ -508,14 +508,14 @@ serve(async (req) => {
     
     if (effectiveTierType === '2.5A' && characterService) {
       try {
-        secondaryCharacters = await characterService.detectSecondaryCharacters(bundle.sessionId, pageText, bundle.pageNumber || 1);
+        secondaryCharacters = await characterService.detectSecondaryCharacters(pageText);
       } catch (error) {
         console.warn('[Template AB] Character service detectSecondaryCharacters failed:', error);
         secondaryCharacters = '';
       }
       
       try {
-        visualConsistencyElements = await characterService.getCharacterAppearanceFromStory(bundle.sessionId);
+        visualConsistencyElements = await characterService.getCharacterAppearanceFromStory(bundle.sessionId, userInfo?.name || userInfo?.childName);
       } catch (error) {
         console.warn('[Template AB] Character service getCharacterAppearanceFromStory failed:', error);
         visualConsistencyElements = '';
