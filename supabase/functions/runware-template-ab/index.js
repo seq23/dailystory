@@ -216,6 +216,23 @@ function createErrorResponse(error, status = 500) {
   }, status);
 }
 
+// Inline cultural detection for proper profile resolution
+function inlineDetectCultural(userInfo, avatarIdentity) {
+  const culturalProfile = {
+    nativeLanguage: userInfo?.nativeLanguage || 'en',
+    skinTone: userInfo?.avatar?.skinTone || avatarIdentity?.skinTone || 'light',
+    includes: function(term) {
+      return this.nativeLanguage === term || this.skinTone === term;
+    }
+  };
+  
+  if (culturalProfile.nativeLanguage !== 'en' || 
+      ['dark', 'medium-dark', 'brown'].includes(culturalProfile.skinTone)) {
+    return 'african-american';
+  }
+  return 'general';
+}
+
 // ============= TEMPLATE SELECTION LOGIC =============
 function selectTemplate(effectiveTierType) {
   if (effectiveTierType === '2.5A') {
@@ -566,10 +583,13 @@ serve(async (req) => {
 
     console.log(`🔧 [Template AB] Resolution completed successfully`);
 
+    // Get proper cultural profile for negative prompt generation
+    const culturalProfileType = inlineDetectCultural(userInfo, bundle.userInfo?.avatar);
+    
     return createResponse({
       success: true,
       prompt: result.resolvedText,
-      negative: generateInlineNuclearNegative(effectiveTierType === '2.5A' ? 'enhanced' : 'basic', userInfo?.avatar?.type || 'child', bundle.templateLevel),
+      negative: generateInlineNuclearNegative(culturalProfileType, userInfo?.avatar?.type || 'child', bundle.templateLevel),
       templateUsed: `${effectiveTierType}: ${templateString.substring(0, 50)}...`,
       resolutionDetails: result,
       tierType: effectiveTierType

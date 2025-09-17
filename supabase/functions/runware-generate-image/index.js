@@ -780,9 +780,9 @@ serve(async (req) => {
           });
           
         } catch (orchestratorError) {
-          console.log(`⚠️ [${requestId}] DryRun PhaseIntegrationOrchestrator failed, falling back to basic:`, orchestratorError.message);
-          const styleFramework = getNuclearStyleFramework(difficulty);
-          enhancedPrompt = `Rich, detailed scene: ${pageText}. ${styleFramework.frameworkPrompt}`;
+          console.log(`⚠️ [${requestId}] DryRun PhaseIntegrationOrchestrator failed, escalating to Tier 2.5A:`, orchestratorError.message);
+          // No raw text fallback - must escalate properly
+          throw new Error('ESCALATE_TO_TIER_2_5A: PhaseIntegrationOrchestrator failed in dry run');
         }
         
         negativePrompt = generateInlineNuclearNegative(
