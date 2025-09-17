@@ -75,7 +75,7 @@ export const AudioControls: React.FC<AudioControlsProps> = ({ text, contentHash,
       }));
       
     } catch (e) {
-      console.error('Play failed', e);
+      DebugLogger.error('audio', 'Play failed', e);
       setIsLoading(false);
       setIsPlaying(false);
       setError(e instanceof Error ? e.message : 'Audio playback failed');

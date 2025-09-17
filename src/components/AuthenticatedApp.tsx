@@ -447,7 +447,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                                       validatedImages[parseInt(index)] = url;
                                     }
                                   } catch {
-                                    console.warn(`🖼️ Invalid image URL for page ${index}:`, url);
+                                    DebugLogger.warn('image', `Invalid image URL for page ${index}`, { url });
                                   }
                                 }
                                 cachedImages = Object.keys(validatedImages).length > 0 ? validatedImages : null;
@@ -472,7 +472,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                              });
                              setCurrentView("reading");
                            } catch (error) {
-                             console.error('Failed to load story:', error);
+                             DebugLogger.error('story', 'Failed to load story', error);
                              setCurrentStory(story);
                              setCurrentView("reading");
                            }

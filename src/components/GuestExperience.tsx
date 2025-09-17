@@ -146,7 +146,7 @@ const handleFormSubmit = (info: UserInfo) => {
 
   // Add avatar validation and fallback handling (Fix #4)
   if (!info.avatar || !info.avatar.type) {
-    console.warn('⚠️ [DEBUG] Avatar data missing or corrupted, applying fallback');
+    DebugLogger.warn('auth', 'Avatar data missing or corrupted, applying fallback');
     DebugLogger.warn('auth', 'BEFORE fallback - avatar:', info.avatar);
     info.avatar = { type: "prefer-not-to-answer", skinTone: "medium" };
     DebugLogger.log('auth', 'AFTER fallback - avatar:', info.avatar);
@@ -174,7 +174,7 @@ const handleFormSubmit = (info: UserInfo) => {
     SessionCacheManager.clearOnNextStory('guest', avatarType); 
     DebugLogger.log('story', '[GUEST DEBUG] SessionCacheManager.clearOnNextStory completed successfully');
   } catch (error) {
-    console.error('❌ [GUEST DEBUG] SessionCacheManager.clearOnNextStory failed:', error);
+    DebugLogger.error('story', 'SessionCacheManager.clearOnNextStory failed', error);
   }
   setCurrentState("reading");
 };
@@ -238,7 +238,7 @@ onSessionEnded={async (stats) => {
     const { SessionCacheManager } = await import('@/services/SessionCacheManager');
     SessionCacheManager.clearOnSessionEnd('guest', userInfo?.avatar?.type);
   } catch (error) {
-    console.warn('Failed to clear session caches, using fallback:', error);
+    DebugLogger.warn('performance', 'Failed to clear session caches, using fallback', error);
     // Fallback clearing
     try { guestSession.clearAll(); } catch {}
     try { StorySessionCache.clearCachedSession('guest'); } catch {}

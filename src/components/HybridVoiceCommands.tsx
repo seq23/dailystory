@@ -37,7 +37,7 @@ export const HybridVoiceCommands: React.FC = () => {
               text, 
               contentHash: hash,
               voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
-            }).catch(console.error);
+            }).catch((error) => DebugLogger.error('audio', 'Text-to-speech playback failed', error));
           }, 200);
         }
         break;
@@ -92,7 +92,7 @@ export const HybridVoiceCommands: React.FC = () => {
         break;
 
       default:
-        console.warn('❓ Unknown hybrid command:', command);
+        DebugLogger.warn('audio', 'Unknown hybrid command', { command });
     }
   }, [engine, readingSpeed]);
 

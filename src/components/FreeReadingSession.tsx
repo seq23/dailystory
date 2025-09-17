@@ -1,6 +1,7 @@
 import React from 'react';
 import CleanStoryDisplay from "@/components/CleanStoryDisplay";
 import { useEffect } from "react";
+import { DebugLogger } from '@/services/DebugLogger';
 import type { UserInfo, SessionStats } from "@/types";
 
 interface FreeReadingSessionProps {
@@ -22,7 +23,7 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
   onSessionEnded,
   isPremium = false,
 }) => {
-  console.log('🎬 FreeReadingSession: Using new CleanStoryDisplay architecture');
+  DebugLogger.log('ui', 'FreeReadingSession: Using new CleanStoryDisplay architecture');
 
   // Force-enable timer for guest sessions on entry
   useEffect(() => {
