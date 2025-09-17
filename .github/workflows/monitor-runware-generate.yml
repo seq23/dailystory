@@ -6,9 +6,9 @@ on:
     - cron: '*/5 * * * *'
   workflow_dispatch:
 
-# Prevent concurrent monitoring
+# Unified deployment concurrency - prevents race conditions
 concurrency:
-  group: monitor-runware-generate
+  group: supabase-edge-functions
   cancel-in-progress: false
 
 jobs:
@@ -34,6 +34,21 @@ jobs:
           FUNCTION_NAME="runware-generate-image"
           
           echo "🔍 Testing $FUNCTION_NAME at $(date)..."
+          
+          # Smart deployment coordination - check if deployment is already running
+          echo "🔄 Checking for active deployments..."
+          ACTIVE_DEPLOYMENTS=$(curl -s \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token $GITHUB_TOKEN" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/runs?status=in_progress&workflow_id=deploy-functions.yml" \
+            | jq -r '.workflow_runs | length')
+          
+          if [ "$ACTIVE_DEPLOYMENTS" -gt 0 ]; then
+            echo "⏳ Found $ACTIVE_DEPLOYMENTS active deployment(s) - skipping health check to avoid interference"
+            echo "✅ Deployment coordination: Allowing active deployment to complete"
+            exit 0
+          fi
+          echo "✅ No active deployments detected - proceeding with health check"
           
           # Circuit breaker reset - small delay before check
           sleep 2
