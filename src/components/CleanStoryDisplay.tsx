@@ -3703,7 +3703,7 @@ const handleRestartTimer = () => {
                 {/* Mobile/Tablet: Top-half image, bottom-half text (full-bleed, no gray) */}
                 <div className="xl:hidden flex-1 min-h-0 flex flex-col gap-3">
                   {/* Top Half: Image - Fixed aspect ratio to prevent layout shifts */}
-                  <div className="relative min-h-[400px] w-full rounded-2xl overflow-hidden shadow-2xl bg-muted/30">
+                  <div className="relative h-[400px] sm:min-h-[400px] w-full rounded-2xl overflow-hidden shadow-2xl bg-muted/30">
                     {isPremium && (Object.keys(pageImages).length < story.length) && !isBatchGenerating && (
                       <div className="absolute top-3 right-3 z-20">
                           <Button size="sm" variant="secondary" onClick={handleBatchGenerateImages} disabled={false} aria-label="Fix missing illustrations">
@@ -3723,7 +3723,7 @@ const handleRestartTimer = () => {
         <ImageWithFallback
           src={currentImage}
           alt={`Story illustration for page ${currentPage + 1}: ${displayedStory[currentPage]?.substring(0, 100)}...`}
-          className="h-full w-full mx-auto object-cover rounded-lg"
+          className="h-full w-full mx-auto object-cover rounded-lg absolute inset-0 sm:relative sm:inset-auto"
           fallbackText={`📖 Page ${currentPage + 1}`}
           onLoadingChange={handleImageLoadingChange}
           onFallbackUsed={handleImageFallbackUsed}
