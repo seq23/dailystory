@@ -367,7 +367,7 @@ export const ResponsiveStoryHeader = ({
         "relative bg-white/90 backdrop-blur-sm border-b border-gray-200/50 z-40",
         isMobileOrTablet && (
           isTablet 
-            ? "sticky top-[-24px]"  // tablet: moved up to sit under premium header
+            ? "sticky top-[-36px]"  // tablet: moved up to sit under premium header
             : "sticky top-[calc(var(--app-header-height,56px)-72px)]"   // mobile: -16px (unchanged)
         )
       )}>
