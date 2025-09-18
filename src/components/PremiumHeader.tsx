@@ -94,6 +94,26 @@ export const PremiumHeader = ({
     return activeChild ? activeChild.display_name : userInfo.name;
   };
 
+  const getDisplayGrade = () => {
+    return activeChild ? activeChild.grade_level : userInfo.grade;
+  };
+
+  const getDisplayAge = () => {
+    if (activeChild) {
+      const currentYear = new Date().getFullYear();
+      const currentMonth = new Date().getMonth() + 1; // JavaScript months are 0-indexed
+      const birthYear = activeChild.birth_year;
+      const birthMonth = activeChild.birth_month;
+      
+      let age = currentYear - birthYear;
+      if (currentMonth < birthMonth) {
+        age--;
+      }
+      return age;
+    }
+    return userInfo.age;
+  };
+
   const getInitial = () => {
     const name = getDisplayName();
     return name.charAt(0).toUpperCase();
@@ -184,9 +204,9 @@ export const PremiumHeader = ({
                       </AvatarFallback>
                     </Avatar>
                     <div className="text-left hidden sm:block">
-                      <p className="text-sm font-medium text-gray-800 truncate max-w-[120px]">{userInfo.name}</p>
+                      <p className="text-sm font-medium text-gray-800 truncate max-w-[120px]">{getDisplayName()}</p>
                       <p className="text-xs text-gray-600 truncate max-w-[120px]">
-                        {userInfo.grade === 'PreK' ? 'Pre-K' : `Grade ${userInfo.grade}`}
+                        {getDisplayGrade() === 'PreK' ? 'Pre-K' : `Grade ${getDisplayGrade()}`}
                       </p>
                     </div>
                     <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500 transition-transform data-[state=open]:rotate-180" />
@@ -197,9 +217,9 @@ export const PremiumHeader = ({
                   <div className="px-3 py-2">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium">{userInfo.name}</p>
+                        <p className="text-sm font-medium">{getDisplayName()}</p>
                         <p className="text-xs text-muted-foreground">
-                          {userInfo.age} years old • {userInfo.grade === 'PreK' ? 'Pre-K' : `Grade ${userInfo.grade}`}
+                          {getDisplayAge()} years old • {getDisplayGrade() === 'PreK' ? 'Pre-K' : `Grade ${getDisplayGrade()}`}
                         </p>
                       </div>
                       {isPremium && (
