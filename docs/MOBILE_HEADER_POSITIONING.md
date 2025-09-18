@@ -13,8 +13,9 @@ This document defines the exact positioning of headers on **MOBILE ONLY** to pre
 - **Z-Index**: 70
 
 #### 2. ResponsiveStoryHeader (Navigation Buttons)
-- **Position**: `sticky top-[calc(var(--app-header-height,56px)-72px)]` 
-- **Calculated Position**: Approximately -16px from top (56px - 72px = -16px)
+- **Mobile Position**: `sticky top-[calc(var(--app-header-height,56px)-72px)]` 
+- **Mobile Calculated Position**: Approximately -16px from top (56px - 72px = -16px)
+- **Tablet Position**: `sticky top-0` (flush with PremiumHeader, no gap)
 - **File**: `src/components/ResponsiveStoryHeader.tsx` (line 368)
 - **Z-Index**: 40
 - **Condition**: `isMobileOrTablet && isPremium`
