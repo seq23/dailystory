@@ -5,9 +5,29 @@ import { DebugGateway } from '@/services/DebugGateway';
 export class DebugConsole {
   /**
    * Get full prompts for any tier from the last 6 images
+   * If sessionId is provided, gets prompts for that specific session
    */
   static async getFullPrompts(sessionId?: string, tier?: string, limit = 6) {
-    // Use the gateway for silent error handling
+    if (sessionId) {
+      // Get prompts for specific session
+      const { data } = await DebugGateway.getPromptHistory(sessionId, limit);
+      
+      if (data && data.data) {
+        console.log(`🖼️ Session Prompts for ${sessionId}:`, data);
+        console.table(data.data?.map((p: any) => ({
+          Tier: p.tier,
+          Page: p.pageNumber || p.page_number,
+          Success: p.success,
+          Model: p.model,
+          PromptLength: p.prompt?.length || p.promptFull?.length || 0,
+          ImageURL: p.imageURL || p.image_url ? '✅' : '❌'
+        })));
+        
+        return { data: data.data };
+      }
+    }
+    
+    // Use the gateway for silent error handling (recent images)
     const { data } = await DebugGateway.getRecentImagePrompts(limit);
     
     if (data && data.imagePrompts) {
@@ -112,6 +132,37 @@ export class DebugConsole {
   }
   
   /**
+   * Check image tier without parameters - uses recent images
+   */
+  static async checkTier() {
+    const { data } = await DebugGateway.getRecentImagePrompts(5);
+    
+    if (data && data.imagePrompts) {
+      console.log('🖼️ Recent Image Tiers:');
+      console.table(data.imagePrompts?.map((p: any) => ({
+        Tier: p.tier,
+        Success: p.success,
+        Model: p.model,
+        Timestamp: new Date(p.created_at).toLocaleTimeString(),
+        ImageURL: p.imageURL ? '✅' : '❌'
+      })));
+      
+      const successfulTiers = data.imagePrompts
+        ?.filter((p: any) => p.success && p.imageURL)
+        .map((p: any) => p.tier);
+        
+      if (successfulTiers && successfulTiers.length > 0) {
+        console.log(`✅ Working tiers: ${[...new Set(successfulTiers)].join(', ')}`);
+      }
+      
+      return { data: data.imagePrompts, workingTiers: [...new Set(successfulTiers)] };
+    }
+    
+    console.warn('❌ No recent image data found');
+    return null;
+  }
+
+  /**
    * Monitor story stability in real-time
    */
   static trackStoryStability() {
@@ -144,6 +195,7 @@ declare global {
   interface Window {
     getFullPrompts: typeof DebugConsole.getFullPrompts;
     getAIPrompts: typeof DebugConsole.getAIPrompts;
+    checkTier: typeof DebugConsole.checkTier;
     trackStoryGeneration: typeof DebugConsole.trackStoryGeneration;
     trackStoryStability: typeof DebugConsole.trackStoryStability;
     logStoryProcessing: typeof DebugConsole.logStoryProcessing;
@@ -181,20 +233,22 @@ const getCurrentSessionId = (): string | null => {
 if (typeof window !== 'undefined') {
   window.getFullPrompts = DebugConsole.getFullPrompts;
   window.getAIPrompts = DebugConsole.getAIPrompts;
+  window.checkTier = DebugConsole.checkTier;
   window.trackStoryGeneration = DebugConsole.trackStoryGeneration;
   window.trackStoryStability = DebugConsole.trackStoryStability;
   window.logStoryProcessing = DebugConsole.logStoryProcessing;
   window.getCurrentSessionId = getCurrentSessionId;
   
-  console.log('🔧 Debug Console Functions Available:');
+  console.log('🔧 Debug Console Functions Available (No Debug Mode Required):');
+  console.log('  window.checkTier() - Check recent image tiers');
   console.log('  window.getFullPrompts() - Get recent image prompts');
   console.log('  window.getFullPrompts("sessionId") - Get prompts for specific session');  
-  console.log('  window.getFullPrompts("sessionId", "tier1", 10) - With tier and limit');
+  console.log('  window.getCurrentSessionId() - Get current session ID');
+  console.log('');
+  console.log('🔧 Advanced Functions (Debug Mode Required):');
   console.log('  window.getAIPrompts("sessionId") - Get AI system/user prompts');
-  console.log('  window.getAIPrompts("sessionId", 10) - With custom limit');
   console.log('  window.trackStoryGeneration("sessionId") - Check for story text flicker');
   console.log('  window.trackStoryStability() - Monitor story changes in real-time');
-  console.log('  window.getCurrentSessionId() - Get current session ID for debugging');
   console.log('🔧 Session Cache Debug Console Available:');
   console.log('  window.sessionCacheDebug.investigate(sessionId?) - Investigate session cache state');
   console.log('  window.sessionCacheDebug.clearProblematicCache(sessionId?, avatarType?) - Clear problematic cache');

@@ -99,8 +99,11 @@ class DebugGatewayService {
   }
 
   async callDebugService(params: DebugCall): Promise<{ data: any; error: any }> {
-    // In production mode, return mock data unless debug is explicitly enabled
-    if (!this.isDebugEnabled()) {
+    // Allow basic operations without debug mode, but require debug mode for advanced operations
+    const allowedWithoutDebug = ['recent-image-prompts', 'prompt-history', 'ai-prompts'];
+    const isBasicOperation = allowedWithoutDebug.includes(params.operation);
+    
+    if (!this.isDebugEnabled() && !isBasicOperation) {
       return { data: this.createMockResponse(params.operation), error: null };
     }
 
