@@ -19,7 +19,7 @@ import { VocabularyDashboard } from "@/components/VocabularyDashboard";
 import { DismissibleSystemStatus } from "@/components/DismissibleSystemStatus";
 import { EmailVerificationBanner } from "@/components/EmailVerificationBanner";
 import { useSecurityMonitoring } from "@/hooks/useSecurityMonitoring";
-import { BookOpen } from "lucide-react";
+import { BookOpen, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { UserInfo, Grade, LanguageCode, LearningGoal, SessionStats } from "@/types";
 import { AdaptiveEnhancedLoading } from "@/components/AdaptiveEnhancedLoading";
@@ -30,7 +30,7 @@ interface AuthenticatedAppProps {
   user: User;
 }
 
-type AppView = "stories" | "library" | "profile" | "parent" | "account" | "reading" | "progress" | "premium";
+type AppView = "stories" | "library" | "profile" | "parent" | "account" | "reading" | "progress" | "premium" | "email-confirmation-required";
 
 export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
   const [currentView, setCurrentView] = useState<AppView>("stories");
@@ -155,6 +155,23 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
 
   const loadUserProfile = async () => {
     try {
+      // Handle post-90-day email confirmation blocking
+      if (!user.email_confirmed_at) {
+        const accountCreatedAt = user.created_at;
+        if (accountCreatedAt) {
+          const createdDate = new Date(accountCreatedAt);
+          const gracePeriodEnd = new Date(createdDate.getTime() + (90 * 24 * 60 * 60 * 1000));
+          const now = new Date();
+          
+          // Block access if grace period expired and not developer
+          if (now > gracePeriodEnd && user.email !== 'seq.taylor@gmail.com') {
+            setLoading(false);
+            setCurrentView("email-confirmation-required" as any);
+            return;
+          }
+        }
+      }
+
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('*')
@@ -403,6 +420,42 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
     return <AdaptiveEnhancedLoading isPremium={isPremium} />;
   }
 
+  // Handle post-90-day email confirmation requirement
+  if (currentView === "email-confirmation-required") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
+        <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg">
+          <div className="text-center mb-6">
+            <BookOpen className="h-12 w-12 text-amber-600 mx-auto mb-4" />
+            <h2 className="text-xl font-semibold text-gray-900">Email Verification Required</h2>
+            <p className="text-gray-600 mt-2">
+              Your 90-day grace period has expired. Please verify your email address to continue using your account.
+            </p>
+          </div>
+          <div className="space-y-3">
+            <Button 
+              onClick={async () => {
+                await supabase.auth.resend({ type: 'signup', email: user.email });
+                // Note: Would need toast here, but keeping minimal for now
+              }}
+              className="w-full"
+            >
+              <BookOpen className="w-4 h-4 mr-2" />
+              Resend Verification Email
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={handleSignOut}
+              className="w-full"
+            >
+              Sign Out
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // PREMIUM USERS: Should never see this form - they get auto-profile creation
   if (!userInfo) {
     // If premium user still has no profile after auto-creation attempt, show loading
@@ -456,7 +509,12 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
 
             <main className="flex-1 min-h-0 overflow-auto md:overflow-hidden overscroll-contain p-2 sm:p-4 md:p-6">
               {/* Email verification banner for unverified premium users */}
-              <EmailVerificationBanner user={user} />
+              {!user.email_confirmed_at && (
+                <EmailVerificationBanner 
+                  user={user} 
+                  accountCreatedAt={user.created_at}
+                />
+              )}
               
               {isEditingProfile ? (
                 <PremiumProfileEditor
