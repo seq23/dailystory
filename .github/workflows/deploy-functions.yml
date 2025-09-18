@@ -16,10 +16,10 @@ on:
         description: 'Single function to deploy (for targeted redeployments)'
         required: false
         default: ''
-# Unified concurrency control - prevents ALL deployment race conditions
+# Smart concurrency control - different strategies based on trigger type
 concurrency:
-  group: supabase-edge-functions
-  cancel-in-progress: false
+  group: supabase-edge-functions-${{ github.event_name == 'push' && 'push' || 'queue' }}
+  cancel-in-progress: ${{ github.event_name == 'push' && 'true' || 'false' }}
 
 jobs:
   deploy:
@@ -31,12 +31,40 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Pre-deployment checks
+      - name: Smart deployment coordination
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "🏁 RACE CONDITION PROTECTION: All workflows now use unified concurrency group 'supabase-edge-functions'"
-          echo "✅ Only ONE deployment-related action can run at a time - no more function deployment conflicts"
+          # Determine deployment strategy based on trigger
+          TRIGGER_TYPE="${{ github.event_name }}"
+          CONCURRENCY_GROUP="supabase-edge-functions-$([ "$TRIGGER_TYPE" = "push" ] && echo "push" || echo "queue")"
+          CANCEL_MODE="$([ "$TRIGGER_TYPE" = "push" ] && echo "true" || echo "false")"
+          
+          echo "🚀 SMART DEPLOYMENT COORDINATION"
+          echo "  Trigger: $TRIGGER_TYPE"
+          echo "  Concurrency Group: $CONCURRENCY_GROUP"
+          echo "  Cancel Previous: $CANCEL_MODE"
+          echo "  Strategy: $([ "$TRIGGER_TYPE" = "push" ] && echo "Cancel older pending deployments" || echo "Queue deployment properly")"
           echo ""
-          echo "Checking required secrets..."
+          
+          # Check for conflicting deployments from different trigger types
+          echo "🔍 Checking for deployment conflicts..."
+          OTHER_GROUP="supabase-edge-functions-$([ "$TRIGGER_TYPE" = "push" ] && echo "queue" || echo "push")"
+          
+          ACTIVE_DEPLOYMENTS=$(curl -s \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token $GITHUB_TOKEN" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/runs?status=in_progress&workflow_id=deploy-functions.yml" \
+            | jq -r '.workflow_runs | length' || echo "0")
+          
+          if [ "$ACTIVE_DEPLOYMENTS" -gt 1 ]; then
+            echo "⚠️  Found $ACTIVE_DEPLOYMENTS concurrent deployments"
+            echo "🔄 Smart coordination will handle conflicts automatically"
+          else
+            echo "✅ No deployment conflicts detected"
+          fi
+          echo ""
+          echo "🔐 Checking required secrets..."
           if [ -z "$SUPABASE_ACCESS_TOKEN" ]; then
             echo "❌ SUPABASE_ACCESS_TOKEN is not set"
             exit 1
@@ -46,6 +74,21 @@ jobs:
             exit 1
           fi
           echo "✅ All required secrets are configured"
+          
+          # Add deployment status reporting
+          echo "📊 DEPLOYMENT STATUS REPORT"
+          echo "  Repository: $GITHUB_REPOSITORY"
+          echo "  Commit: ${GITHUB_SHA:0:8}"
+          echo "  Actor: $GITHUB_ACTOR"
+          echo "  Run ID: $GITHUB_RUN_ID"
+          if [ "$TRIGGER_TYPE" = "push" ]; then
+            echo "  Mode: Fast deployment (cancels pending)"
+          elif [ "$TRIGGER_TYPE" = "schedule" ]; then
+            echo "  Mode: Scheduled deployment (queued)"
+          else
+            echo "  Mode: Manual deployment (queued)"
+          fi
+          echo ""
           
       - uses: supabase/setup-cli@v1
         with:
