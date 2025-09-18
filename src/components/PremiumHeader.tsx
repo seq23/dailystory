@@ -115,8 +115,9 @@ export const PremiumHeader = ({
   }, [activeChild?.birth_year, activeChild?.birth_month, userInfo.age]);
 
   const getInitial = useMemo(() => {
-    return getDisplayName.charAt(0).toUpperCase();
-  }, [getDisplayName]);
+    const displayName = activeChild ? activeChild.display_name : userInfo.name;
+    return displayName.charAt(0).toUpperCase();
+  }, [activeChild?.display_name, userInfo.name]);
 
   const hasSelectedAvatar = useMemo(() => {
     return AvatarUtils.hasValidAvatarData(activeChild?.avatar) || 
