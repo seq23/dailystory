@@ -634,14 +634,53 @@ serve(async (req) => {
     const culturalProfileType = inlineDetectCultural(userInfo, bundle.userInfo?.avatar);
     console.log(`🎭 [Template AB] CULTURAL PROFILE DETECTION FIX: Detected ${culturalProfileType} profile for user with skinTone: ${userInfo?.avatar?.skinTone || 'not specified'}, language: ${userInfo?.nativeLanguage || 'en'}`);
     
-    return createResponse({
-      success: true,
-      prompt: result.resolvedText,
-      negative: generateInlineNuclearNegative(culturalProfileType, userInfo?.avatar?.type || 'child', bundle.templateLevel),
-      templateUsed: `${effectiveTierType}: ${templateString.substring(0, 50)}...`,
-      resolutionDetails: result,
-      tierType: effectiveTierType
-    });
+    // Generate negative prompt
+    const negativePrompt = generateInlineNuclearNegative(culturalProfileType, userInfo?.avatar?.type || 'child', bundle.templateLevel);
+    
+    // ============= CRITICAL FIX: ADD RUNWARE API IMAGE GENERATION =============
+    console.log(`🖼️ [Template AB] Generating image with Runware API...`);
+    console.log(`📝 [Template AB] Final prompt: ${result.resolvedText}`);
+    console.log(`🚫 [Template AB] Negative prompt: ${negativePrompt}`);
+    
+    try {
+      // Call Runware API to generate the actual image
+      const imageResult = await callRunwareAPIWithRetry(result.resolvedText, negativePrompt);
+      
+      if (imageResult && imageResult.imageURL) {
+        console.log(`✅ [Template AB] Image generation successful: ${imageResult.imageURL}`);
+        
+        return createResponse({
+          success: true,
+          imageURL: imageResult.imageURL,
+          prompt: result.resolvedText,
+          negative: negativePrompt,
+          templateUsed: `${effectiveTierType}: ${templateString.substring(0, 50)}...`,
+          resolutionDetails: result,
+          tierType: effectiveTierType,
+          provider: imageResult.provider || 'runware',
+          tier: effectiveTierType
+        });
+      } else {
+        console.error('❌ [Template AB] Image generation failed - no imageURL returned');
+        throw new Error('Image generation failed - no imageURL returned');
+      }
+    } catch (imageError) {
+      console.error('❌ [Template AB] Image generation error:', imageError);
+      
+      // Return prompt-only response as fallback with error indication
+      return createResponse({
+        success: true,
+        imageURL: null,
+        prompt: result.resolvedText,
+        negative: negativePrompt,
+        templateUsed: `${effectiveTierType}: ${templateString.substring(0, 50)}...`,
+        resolutionDetails: result,
+        tierType: effectiveTierType,
+        provider: 'runware',
+        tier: effectiveTierType,
+        imageGenerationError: imageError.message || 'Image generation failed'
+      });
+    }
 
   } catch (error) {
     console.error('❌ [Template AB] Error:', error);
