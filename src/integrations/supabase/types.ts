@@ -1177,6 +1177,10 @@ export type Database = {
         Args: { password: string }
         Returns: boolean
       }
+      validate_subscription_view_access: {
+        Args: { target_user_id?: string }
+        Returns: boolean
+      }
       validate_subscription_view_security: {
         Args: Record<PropertyKey, never>
         Returns: Json
