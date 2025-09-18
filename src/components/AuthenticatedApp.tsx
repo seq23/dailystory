@@ -82,8 +82,12 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
   }, []);
 
   useEffect(() => {
-    loadUserProfile();
-    checkSubscription();
+    // Load subscription status first, then profile
+    const initializeUser = async () => {
+      await checkSubscription();
+      await loadUserProfile();
+    };
+    initializeUser();
   }, [user.id]);
 
   const checkSubscription = async () => {
@@ -187,11 +191,67 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
         };
         setUserInfo(userInfoData);
         setCurrentView("stories");
+      } else if (isPremium) {
+        // PREMIUM BYPASS: Auto-create default profile for premium users
+        DebugLogger.log('auth', 'Premium user with no profile - creating default profile');
+        await createDefaultPremiumProfile();
       }
     } catch (error) {
       DebugLogger.error('auth', 'Profile loading error', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Create default profile for premium users to bypass profile setup
+  const createDefaultPremiumProfile = async () => {
+    try {
+      const defaultUserInfo: UserInfo = {
+        name: user.email?.split('@')[0] || 'Reader',
+        age: 8,
+        grade: 'K',
+        gradeLevel: 'K',
+        nativeLanguage: 'en',
+        readingLevel: 'beginner',
+        difficultyLevel: 'beginner',
+        interests: [],
+        learningGoal: 'improve-english-reading' as LearningGoal,
+        avatar: { type: 'prefer-not-to-answer', skinTone: 'medium' },
+        favoriteColor: 'blue',
+        favoriteAnimal: 'cat',
+        hobbies: '',
+        favoriteFood: '',
+        specialRequest: ''
+      };
+
+      const payload = {
+        user_id: user.id,
+        display_name: defaultUserInfo.name,
+        date_of_birth: `${new Date().getFullYear() - defaultUserInfo.age}-01-01`,
+        grade_level: defaultUserInfo.gradeLevel,
+        reading_level: defaultUserInfo.readingLevel,
+        difficulty_level: defaultUserInfo.difficultyLevel,
+        native_language: defaultUserInfo.nativeLanguage,
+        avatar: JSON.stringify(defaultUserInfo.avatar),
+        favorite_color: defaultUserInfo.favoriteColor,
+        favorite_animal: defaultUserInfo.favoriteAnimal,
+        interests: defaultUserInfo.interests
+      };
+
+      const { error } = await supabase
+        .from('profiles')
+        .insert([payload]);
+
+      if (error) {
+        DebugLogger.error('auth', 'Error creating default premium profile', error);
+        return;
+      }
+
+      DebugLogger.log('auth', 'Default premium profile created successfully');
+      setUserInfo(defaultUserInfo);
+      setCurrentView("stories"); // Take premium users directly to "My Stories"
+    } catch (error) {
+      DebugLogger.error('auth', 'Error in createDefaultPremiumProfile', error);
     }
   };
 
@@ -343,7 +403,14 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
     return <AdaptiveEnhancedLoading isPremium={isPremium} />;
   }
 
+  // PREMIUM USERS: Should never see this form - they get auto-profile creation
   if (!userInfo) {
+    // If premium user still has no profile after auto-creation attempt, show loading
+    if (isPremium) {
+      return <AdaptiveEnhancedLoading isPremium={isPremium} />;
+    }
+
+    // NON-PREMIUM USERS: Show profile setup form
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
         <div className="container mx-auto px-4 py-8">
@@ -356,7 +423,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
               onSubmit={async (info) => {
                 await handleInitialProfileSetup(info);
               }}
-              onBack={() => {}}
+              onBack={handleSignOut} // FIX: Back button now signs out user
               isPremium={isPremium}
             />
           </div>
