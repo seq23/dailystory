@@ -8,7 +8,7 @@ on:
 
 # Unified deployment concurrency - prevents race conditions
 concurrency:
-  group: supabase-edge-functions
+  group: monitor-edge-functions
   cancel-in-progress: false
 
 jobs:
