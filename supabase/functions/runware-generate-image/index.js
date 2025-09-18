@@ -909,7 +909,7 @@ serve(async (req) => {
           console.log(`🚀 [${requestId}] Attempting Tier 1: Runware Premium`);
           result = await CoreUtils.withTimeout(
             generateWithRunware(runwareService.key, pageText, sessionId, requestId, userInfo, avatarIdentity, pageNumber, enhancedStoryData, { skipTier25 }),
-            25000,
+            10000,
             'Runware generation'
           );
           console.log(`✅ [${requestId}] Tier 1 succeeded`);
@@ -963,7 +963,7 @@ serve(async (req) => {
                 failedTierData // NEW: Pass failed tier data to 2.5A
               }
             }),
-            20000,
+            8000,
             'Template AB generation'
           );
           
@@ -1006,7 +1006,7 @@ serve(async (req) => {
                   failedTierData // NEW: Pass failed tier data to 2.5C
                 }
               }),
-              15000,
+              6000,
               'Template CD generation'
             );
             
