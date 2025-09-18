@@ -841,6 +841,18 @@ export class UnifiedPlaceholderResolver {
           resolved = resolved.replace(/\{features\}/g, characterData.appearance.facialFeatures || '');
         }
       }
+
+      // NEW: Add setting persistence placeholders from context
+      const settingContext = context.setting_context || context.settingContext || '';
+      const persistentSetting = context.persistent_setting || context.persistentSetting || '';
+      const visualConsistencyElements = context.visual_consistency_elements || context.visualConsistencyElements || '';
+
+      resolved = resolved.replace(/\{setting_context\}/g, settingContext);
+      resolved = resolved.replace(/\{persistent_setting\}/g, persistentSetting);
+      resolved = resolved.replace(/\{visual_consistency_elements\}/g, visualConsistencyElements);
+
+      console.log(`🏠 Setting placeholders resolved: setting_context="${settingContext}", persistent_setting="${persistentSetting}", visual_consistency_elements="${visualConsistencyElements}"`);
+
     } catch (error) {
       console.warn('Character consistency placeholder resolution failed:', error);
     }
