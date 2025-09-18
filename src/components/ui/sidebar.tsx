@@ -65,7 +65,7 @@ const SidebarProvider = React.forwardRef<
     },
     ref
   ) => {
-    const { isMobile } = useIsMobile()
+    const { isMobileOrTablet } = useIsMobile()
     const [openMobile, setOpenMobile] = React.useState(false)
 
     // This is the internal state of the sidebar.
@@ -89,10 +89,10 @@ const SidebarProvider = React.forwardRef<
 
     // Helper to toggle the sidebar.
     const toggleSidebar = React.useCallback(() => {
-      return isMobile
+      return isMobileOrTablet
         ? setOpenMobile((open) => !open)
         : setOpen((open) => !open)
-    }, [isMobile, setOpen, setOpenMobile])
+    }, [isMobileOrTablet, setOpen, setOpenMobile])
 
     // Adds a keyboard shortcut to toggle the sidebar.
     React.useEffect(() => {
@@ -119,12 +119,12 @@ const SidebarProvider = React.forwardRef<
         state,
         open,
         setOpen,
-        isMobile,
+        isMobile: isMobileOrTablet,
         openMobile,
         setOpenMobile,
         toggleSidebar,
       }),
-      [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
+      [state, open, setOpen, isMobileOrTablet, openMobile, setOpenMobile, toggleSidebar]
     )
 
     return (
@@ -173,7 +173,7 @@ const Sidebar = React.forwardRef<
     },
     ref
   ) => {
-    const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
+    const { isMobile: isMobileOrTablet, state, openMobile, setOpenMobile } = useSidebar()
 
     if (collapsible === "none") {
       return (
@@ -190,13 +190,13 @@ const Sidebar = React.forwardRef<
       )
     }
 
-    if (isMobile) {
+    if (isMobileOrTablet) {
       return (
         <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
           <SheetContent
             data-sidebar="sidebar"
             data-mobile="true"
-            className="w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
+            className="w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden z-50"
             style={
               {
                 "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
@@ -261,8 +261,8 @@ const SidebarTrigger = React.forwardRef<
   React.ElementRef<typeof Button>,
   React.ComponentProps<typeof Button>
 >(({ className, onClick, ...props }, ref) => {
-  const { toggleSidebar, open, openMobile, isMobile } = useSidebar()
-  const isOpen = isMobile ? openMobile : open
+  const { toggleSidebar, open, openMobile, isMobile: isMobileOrTablet } = useSidebar()
+  const isOpen = isMobileOrTablet ? openMobile : open
 
   return (
     <Button
