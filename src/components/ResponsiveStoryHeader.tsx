@@ -370,7 +370,7 @@ export const ResponsiveStoryHeader = ({
             ? "sticky top-0"  // tablet: flush; shifted down via positive margin
             : "sticky top-[calc(var(--app-header-height,56px)-72px)]"   // mobile: -16px (unchanged)
         ),
-        isTablet && "mt-5"
+        isTablet && "mt-2"
       )}>
         {/* Breadcrumb Navigation - Desktop/Tablet Premium Only */}
         {storyTitle && !isMobile && (
