@@ -117,13 +117,14 @@ export const useSecurityMonitoring = () => {
     UserActivityMonitor.trackPageView(location.pathname);
   }, [location.pathname]);
 
-  // Monitor performance - ONLY CRITICAL ISSUES
+  // Monitor performance - ONLY in debug mode to reduce production noise
   useEffect(() => {
     if (typeof window !== 'undefined' && window.location.search.includes('debug=security')) {
       const observer = new PerformanceObserver((list) => {
         list.getEntries().forEach((entry) => {
-          // Only log TRULY slow operations (>5000ms) 
-          if (entry.duration > 5000) {
+          // Only log extremely slow operations (>10000ms) in production
+          const threshold = import.meta.env.PROD ? 10000 : 5000;
+          if (entry.duration > threshold) {
             SecurityMonitor.logEvent('critical_slow_operation', {
               name: entry.name,
               duration: entry.duration,
@@ -209,8 +210,8 @@ export const useSecurityMonitoring = () => {
           const response = await originalFetch(...args);
           const duration = performance.now() - startTime;
           
-          // Only log failed requests or slow requests in production
-          if (!response.ok || duration > 5000 || import.meta.env.DEV) {
+          // Only log failed requests or extremely slow requests in production
+          if (!response.ok || (duration > (import.meta.env.PROD ? 10000 : 5000)) || import.meta.env.DEV) {
             SecurityMonitor.logEvent('network_request', {
               url: url.substring(0, 100), // Truncate long URLs
               method: args[1]?.method || 'GET',

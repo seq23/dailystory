@@ -44,38 +44,8 @@ export const SecurityMonitor: React.FC = () => {
       });
     };
 
-    // Monitor for unauthorized access attempts
-    const monitorUnauthorizedAccess = () => {
-      const originalFetch = window.fetch;
-      
-      window.fetch = async (...args) => {
-        const response = await originalFetch(...args);
-        
-        if (response.status === 401 || response.status === 403) {
-          const alert: SecurityAlert = {
-            id: crypto.randomUUID(),
-            type: 'unauthorized_access',
-            severity: 'medium',
-            message: `Unauthorized access attempt: ${response.status} ${args[0]}`,
-            timestamp: Date.now(),
-            data: {
-              url: args[0],
-              status: response.status,
-              method: args[1]?.method || 'GET'
-            }
-          };
-          
-          setAlerts(prev => [alert, ...prev.slice(0, 9)]);
-          
-          // Log using available methods from useSecurityMonitoring
-          handleError(new Error(`Unauthorized access: ${response.status}`), {
-            componentStack: JSON.stringify(alert.data)
-          });
-        }
-        
-        return response;
-      };
-    };
+    // Monitor for unauthorized access attempts (using existing fetch override from useSecurityMonitoring)
+    // Note: Fetch monitoring is handled by useSecurityMonitoring hook to avoid conflicts
 
     // Monitor for suspicious console access
     const monitorConsoleAccess = () => {
@@ -108,7 +78,6 @@ export const SecurityMonitor: React.FC = () => {
     };
 
     document.addEventListener('securitypolicyviolation', handleCSPViolation);
-    monitorUnauthorizedAccess();
     monitorConsoleAccess();
 
     // Cleanup
@@ -117,8 +86,9 @@ export const SecurityMonitor: React.FC = () => {
     };
   }, [handleError]);
 
-  // Show security monitor only in development or when alerts exist
-  const shouldShow = process.env.NODE_ENV === 'development' || alerts.length > 0;
+  // Show security monitor only in development or with debug parameter
+  const urlParams = new URLSearchParams(window.location.search);
+  const shouldShow = process.env.NODE_ENV === 'development' || urlParams.has('debug') && urlParams.get('debug')?.includes('security');
 
   if (!shouldShow) return null;
 
