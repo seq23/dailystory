@@ -244,6 +244,7 @@ useEffect(() => {
           localStorage.setItem(`user_${userInfo.name}_has_read_stories`, 'true');
         }}
         isGenerating={false}
+        mode="new"
       />
     </div>
   );

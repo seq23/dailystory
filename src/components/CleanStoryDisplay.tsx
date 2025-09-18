@@ -4281,6 +4281,7 @@ const handleRestartTimer = () => {
         initialValue={specialRequestDraft}
         onSubmit={handleSpecialRequestSubmit}
         isGenerating={isGeneratingNewStory}
+        mode="refresh"
       />
       <ModernProgressTowers
         userId={userInfo?.name}

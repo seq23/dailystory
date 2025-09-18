@@ -15,6 +15,7 @@ interface SpecialRequestDialogProps {
   initialValue?: string;
   onSubmit: (value: string) => void;
   isGenerating?: boolean;
+  mode?: 'new' | 'refresh';
 }
 
 export const SpecialRequestDialog: React.FC<SpecialRequestDialogProps> = ({
@@ -23,6 +24,7 @@ export const SpecialRequestDialog: React.FC<SpecialRequestDialogProps> = ({
   initialValue = "",
   onSubmit,
   isGenerating = false,
+  mode = 'refresh',
 }) => {
   const [value, setValue] = useState(initialValue);
   const [targetVocab, setTargetVocab] = useState<string>("");
@@ -406,7 +408,10 @@ Setting: magical forest AND cozy cottage --> Enter`}
             Cancel
           </Button>
           <Button onClick={handleSubmit} disabled={isGenerating}>
-            {isGenerating ? "Refreshing..." : "Refresh story"}
+            {isGenerating 
+              ? (mode === 'new' ? "Writing..." : "Refreshing...") 
+              : (mode === 'new' ? "Write story" : "Refresh story")
+            }
           </Button>
         </DialogFooter>
       </DialogContent>
