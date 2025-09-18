@@ -37,8 +37,8 @@ jobs:
         run: |
           # Determine deployment strategy based on trigger
           TRIGGER_TYPE="${{ github.event_name }}"
-CONCURRENCY_GROUP="supabase-edge-functions"
-CANCEL_MODE="false"
+          CONCURRENCY_GROUP="supabase-edge-functions"
+          CANCEL_MODE="false"
 
           echo "🚀 SMART DEPLOYMENT COORDINATION"
           echo "  Trigger: $TRIGGER_TYPE"
@@ -81,13 +81,13 @@ CANCEL_MODE="false"
           echo "  Commit: ${GITHUB_SHA:0:8}"
           echo "  Actor: $GITHUB_ACTOR"
           echo "  Run ID: $GITHUB_RUN_ID"
-if [ "$TRIGGER_TYPE" = "push" ]; then
+          if [ "$TRIGGER_TYPE" = "push" ]; then
             echo "  Mode: Push deployment (queued)"
-elif [ "$TRIGGER_TYPE" = "schedule" ]; then
+          elif [ "$TRIGGER_TYPE" = "schedule" ]; then
             echo "  Mode: Scheduled deployment (queued)"
-else
+          else
             echo "  Mode: Manual deployment (queued)"
-fi
+          fi
           echo ""
           
       - uses: supabase/setup-cli@v1
