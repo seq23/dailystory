@@ -1,5 +1,5 @@
 import DOMPurify from 'dompurify';
-import { ContentSecurity } from './security';
+import { LeanSecurity } from './LeanSecurity';
 
 export class InputSanitizer {
   private static config = {
@@ -150,9 +150,9 @@ export class InputSanitizer {
     const issues: string[] = [];
     const suggestions: string[] = [];
 
-    // Pass 1: Check comprehensive profanity using ContentSecurity word lists
-    const contentCheck = ContentSecurity.isContentAppropriate(cleaned);
-    if (!contentCheck.appropriate) {
+    // Pass 1: Check content using lean security
+    const isClean = LeanSecurity.isContentClean(cleaned);
+    if (!isClean) {
       issues.push('Contains inappropriate language or content');
       if (context === 'name') {
         suggestions.push('Please use only your child\'s first name without inappropriate words');

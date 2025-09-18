@@ -1,11 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { ErrorHandler, ErrorType, handleErrors } from '@/utils/errorHandling';
-import { SecurityLogger } from '@/utils/security';
+import { LeanErrorService } from '@/utils/LeanErrorService';
 
 describe('errorHandling', () => {
   let logSpy: ReturnType<typeof vi.spyOn>;
   beforeEach(() => {
-    logSpy = vi.spyOn(SecurityLogger, 'log').mockImplementation(() => undefined as any);
+    // Mock lean error service
+    vi.spyOn(LeanErrorService, 'logError').mockImplementation(() => {});
   });
   afterEach(() => {
     logSpy.mockRestore();

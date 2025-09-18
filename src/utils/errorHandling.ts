@@ -1,5 +1,5 @@
 // Centralized error handling utilities
-import { SecurityLogger } from "./security";
+import { LeanErrorService } from "./LeanErrorService";
 
 export enum ErrorType {
   VALIDATION = 'validation',
@@ -75,12 +75,13 @@ export class ErrorHandler {
     }
     
     // Log the error
-    SecurityLogger.log(`error_${appError.type}`, {
+    LeanErrorService.logError({
+      type: appError.type,
       message: appError.message,
       details: appError.details,
       context,
       recoverable: appError.recoverable
-    });
+    }, 'ErrorHandler');
     
     // Track error frequency
     const errorKey = `${appError.type}_${context}`;

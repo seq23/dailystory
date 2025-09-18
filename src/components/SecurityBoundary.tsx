@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, Home, RotateCcw } from 'lucide-react';
-import { SecurityLogger } from '@/utils/security';
+import { LeanErrorService } from '@/utils/LeanErrorService';
 
 interface SecurityBoundaryProps {
   children: React.ReactNode;
@@ -25,11 +25,7 @@ export class SecurityBoundary extends React.Component<SecurityBoundaryProps, Sec
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    SecurityLogger.log('react_error_boundary', {
-      error: error.message,
-      stack: error.stack,
-      componentStack: errorInfo.componentStack
-    });
+    LeanErrorService.logError(error, 'react_error_boundary');
   }
 
   render() {

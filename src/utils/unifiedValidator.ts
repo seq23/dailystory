@@ -1,7 +1,7 @@
-// Unified Validation System - Now using shared validation architecture
-// Integrates content filtering, token validation, and auto-pagination
-
-import { ContentSecurity } from './security';
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { LeanSecurity } from './LeanSecurity';
+import { LeanErrorService } from './LeanErrorService';
 import { StoryQualityChecker } from './storyQualityChecker';
 import type { DifficultyLevel, ExpertGradeLevel } from '@/types';
 import { DifficultyLevelMapper } from '@/services/DifficultyLevelMapper';
@@ -90,12 +90,7 @@ export class UnifiedValidator {
     let contentValidation = this._contentValidationCache?.get(contentHash);
     
     if (!contentValidation) {
-      // Content filtering using level-based security with language optimization
-      contentValidation = ContentSecurity.isContentAppropriateForLevel(
-        totalContent, 
-        config.level,
-        isEnglishOnly ? 'en' : config.userLanguage
-      );
+      contentValidation = { appropriate: LeanSecurity.isContentClean(totalContent) };
       
       // Cache the result
       if (!this._contentValidationCache) {

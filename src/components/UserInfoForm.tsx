@@ -15,7 +15,7 @@ import { MobileTooltip } from "@/components/MobileTooltip";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronRight, ChevronDown, User, BookOpen, Heart, Palette, Sparkles, AlertCircle, Info, CheckCircle, Loader2, Globe } from "lucide-react";
 
-import { SecurityLogger } from "@/utils/security";
+import { LeanErrorService } from "@/utils/LeanErrorService";
 import { useValidationOnSubmit } from "@/hooks/useValidationOnSubmit";
 import { ValidationFeedback } from "@/components/ValidationFeedback";
 import { InputSanitizer } from "@/utils/inputSanitizer";
@@ -322,11 +322,11 @@ export const LegacyUserInfoForm = ({ onSubmit, onBack, isPremium = false }: User
     // Convert frontend difficulty to backend using DifficultyLevelMapper
     const difficulty = DifficultyLevelMapper.toBackend(frontendDifficulty);
     
-    SecurityLogger.log('form_submission_success', {
+    LeanErrorService.logError({
       difficultyLevel: difficulty,
       age: formData.age,
       grade: formData.grade
-    });
+    }, 'form_submission_success');
     
     onSubmit(formData);
   };

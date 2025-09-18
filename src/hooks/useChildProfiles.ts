@@ -1,6 +1,7 @@
 import { useEffect, useCallback, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
+import { LeanErrorService } from "@/utils/LeanErrorService";
 
 export type ChildProfile = Tables<'child_profiles'>;
 
@@ -104,15 +105,7 @@ export function useChildProfiles() {
         
         if (shouldLog) {
           lastErrorTime = now;
-          
-          console.group(`🚨 User Preferences Error #${errorCount}`);
-          console.error('useChildProfiles failed:', e?.message);
-          if (e?.message?.includes('403')) {
-            console.warn('403 Forbidden - This should be fixed with the new lean RLS policy');
-            console.log('Check that user is authenticated and RLS policy allows access');
-          }
-          console.error('Error details:', e);
-          console.groupEnd();
+          LeanErrorService.logError(e, 'useChildProfiles');
         }
         
         setError(e?.message || 'Failed to load child profiles');

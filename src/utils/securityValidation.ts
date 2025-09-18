@@ -1,4 +1,4 @@
-import { ContentSecurity } from './security';
+import { LeanSecurity } from './LeanSecurity';
 import { SecurityMonitor } from './monitoring';
 
 export interface ValidationResult {
@@ -18,17 +18,13 @@ export class SecurityValidator {
     try {
       if (typeof input === 'string') {
         // Check content appropriateness
-        const contentCheck = ContentSecurity.isContentAppropriate(input, undefined, undefined);
-        if (!contentCheck.appropriate) {
-          errors.push(`Inappropriate content detected: ${contentCheck.reason}`);
-          SecurityMonitor.logEvent('security', 'inappropriate_content_blocked', {
-            context,
-            reason: contentCheck.reason
-          }, 'medium');
+        const isClean = LeanSecurity.isContentClean(input);
+        if (!isClean) {
+          errors.push('Inappropriate content detected');
         }
 
         // Sanitize input
-        sanitized = ContentSecurity.sanitizeInput(input);
+        sanitized = LeanSecurity.sanitizeInput(input);
         
         // Check for potential injection attempts
         const injectionPatterns = [
@@ -229,7 +225,7 @@ export class SecurityValidator {
   // Enhanced rate limiting validation
   static validateRateLimit(identifier: string, action: string, limit: number = 10, windowMs: number = 60000): ValidationResult {
     const rateLimitKey = `${identifier}_${action}`;
-    const isAllowed = ContentSecurity.checkRateLimit(rateLimitKey, limit, windowMs);
+    const isAllowed = LeanSecurity.checkRateLimit(rateLimitKey, limit, windowMs);
 
     if (!isAllowed) {
       SecurityMonitor.logEvent('security', 'rate_limit_exceeded', {
