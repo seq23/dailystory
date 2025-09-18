@@ -6,6 +6,7 @@ interface ImageWithFallbackProps {
   src?: string;
   alt: string;
   className?: string;
+  containerClassName?: string;
   fallbackText?: string;
   onLoadingChange?: (isLoading: boolean) => void;
   onFallbackUsed?: (isUsingFallback: boolean) => void;
@@ -16,6 +17,7 @@ export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
   src,
   alt,
   className = '',
+  containerClassName = '',
   fallbackText,
   onLoadingChange,
   onFallbackUsed,
@@ -38,7 +40,7 @@ export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
 
   if (isLoading) {
     return (
-      <div className={`animate-pulse bg-muted rounded-lg ${className}`}>
+      <div className={`animate-pulse bg-muted rounded-lg ${containerClassName} ${className}`}>
         <div className="flex items-center justify-center h-full text-muted-foreground">
           <div className="text-center">
             <div className="w-8 h-8 mx-auto mb-2 rounded-full bg-muted-foreground/20"></div>
@@ -50,7 +52,7 @@ export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
   }
 
   return (
-    <div className="relative">
+    <div className={`relative ${containerClassName}`}>
       <img
         src={imageSrc}
         alt={alt}
