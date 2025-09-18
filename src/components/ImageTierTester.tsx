@@ -1470,6 +1470,19 @@ export const ImageTierTester = () => {
                           {result.details.testType}
                         </Badge>
                       )}
+                      
+                      {/* Template Complexity Badge - Shows Premium vs Basic Template */}
+                      {result.details.templateComplexity && (
+                        <Badge variant={
+                          result.details.templateComplexity === 'A' ? 'default' : 'secondary'
+                        } className={
+                          result.details.templateComplexity === 'A' ? 
+                          'bg-green-600 text-white hover:bg-green-700' : 
+                          'bg-blue-600 text-white hover:bg-blue-700'
+                        }>
+                          {result.details.templateComplexity === 'A' ? '🎨 Premium Template (2.5A)' : '📋 Basic Template (2.5B)'}
+                        </Badge>
+                      )}
                     </div>
                     {result.details.processingTime && (
                       <span className="text-sm text-muted-foreground">
