@@ -81,7 +81,7 @@ export const StoryStatusIndicator = () => {
     <div className={cn(
       "animate-in slide-in-from-top-2 duration-300",
       isMobileOrTablet 
-        ? "absolute top-32 left-2 z-80"  // Mobile/tablet: upper left of image card, offset 128px
+        ? "absolute top-48 left-2 z-80"  // Mobile/tablet: upper left of image card, offset 192px
         : "fixed top-16 right-4 z-50"   // Desktop: unchanged (right side)
     )}>
       <Button
