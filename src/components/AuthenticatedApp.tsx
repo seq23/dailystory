@@ -507,7 +507,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
               onProfileClick={() => setIsEditingProfile(true)}
             />
 
-            <main className="flex-1 min-h-0 overflow-auto overscroll-contain p-2 sm:p-4 md:p-6">
+            <main className="flex-1 min-h-0 overflow-y-auto overscroll-auto mobile-scroll h-[calc(100dvh-var(--app-header-height))] p-2 sm:p-4 md:p-6">
               {/* Email verification banner for unverified premium users */}
               {!user.email_confirmed_at && (
                 <EmailVerificationBanner 

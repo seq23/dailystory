@@ -358,7 +358,7 @@ export const PremiumStoryLibrary: React.FC<PremiumStoryLibraryProps> = ({
           </CardContent>
         </Card>
 ) : isDeck ? (
-          <div className="overflow-hidden" ref={emblaRef}>
+          <div className="overflow-hidden touch-pan-y" ref={emblaRef}>
             <div className="flex gap-4">
               {savedStories.map((story) => (
                 <div key={story.id} className="basis-[88%] md:basis-[70%] shrink-0">
