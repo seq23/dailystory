@@ -739,6 +739,7 @@ useEffect(() => {
   const [isTimerCanceled, setIsTimerCanceled] = useState(false); // Premium: timer can be canceled
   const [userPausedTimer, setUserPausedTimer] = useState(false); // Track when user manually pauses timer
   const [isTimerVisible, setIsTimerVisible] = useState(true); // Premium: timer can be dismissed and shown again
+  const [hasChosenUntimed, setHasChosenUntimed] = useState(false); // Premium: track if user chose untimed reading
   
   // Timer pause logic - only block forward navigation when paused for non-premium users
   const isTimerPaused = !isPremium && !isTimerRunning && !isTimerCanceled;
@@ -811,7 +812,7 @@ useEffect(() => {
   // FIXED: Start timer immediately when story is stable (Phase 2)
   useEffect(() => {
     // Start timer immediately when story is stable and not manually paused
-    if (isStoryStable && story.length > 0 && !isTimerRunning && !isTimerCanceled && !userPausedTimer && timerEnabled) {
+    if (isStoryStable && story.length > 0 && !isTimerRunning && !isTimerCanceled && !userPausedTimer && !hasChosenUntimed && timerEnabled) {
       DebugLogger.log('performance', 'FIXED: Auto-starting timer at 20:00 - story is now stable');
       setIsTimerRunning(true);
     } else if (isStoryStable && story.length > 0 && userPausedTimer) {
@@ -2692,6 +2693,7 @@ const handleDockCoach = () => {
     if (!isPremium) return;
     setIsTimerCanceled(true);
     setIsTimerRunning(false);
+    setHasChosenUntimed(true); // Permanently disable timer for this session
   };
 
 const handleSaveStoryNow = async () => {
@@ -2808,6 +2810,9 @@ const handleRestartTimer = () => {
       currentToastRef.current = null;
     }
     DebugLogger.log('ui', 'Toast flags reset for story generation');
+    
+    // Reset untimed reading flag for new story session
+    setHasChosenUntimed(false);
     
     if (isGeneratingNewStory || isGeneratingRewrite) {
       DebugLogger.log('story', `[STORY DEBUG ${callId}] BLOCKED - Already generating`, { isGeneratingNewStory, isGeneratingRewrite });
