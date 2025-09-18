@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import NewStoryCTA from "@/components/NewStoryCTA";
@@ -118,18 +118,18 @@ useEffect(() => {
       return map[String(g)] || g;
     };
 
-    const effectiveUserInfo: UserInfo = (activeChild ? {
+    const effectiveUserInfo: UserInfo = useMemo(() => (activeChild ? {
       ...userInfo,
       name: activeChild.display_name || userInfo.name,
       grade: normalizeGrade((activeChild.grade_level as any)) || userInfo.grade,
       storyLanguagePreference: userInfo.storyLanguagePreference, // Use parent's language preference
       avatar: (activeChild.avatar as any) || userInfo.avatar,
       specialRequest,
-    } : { ...userInfo, specialRequest });
+    } : { ...userInfo, specialRequest }), [activeChild?.display_name, activeChild?.grade_level, activeChild?.avatar, userInfo, specialRequest]);
 
-    const readingAsName = activeChild?.display_name && activeChild.display_name !== userInfo.name
+    const readingAsName = useMemo(() => activeChild?.display_name && activeChild.display_name !== userInfo.name
       ? activeChild.display_name
-      : undefined;
+      : undefined, [activeChild?.display_name, userInfo.name]);
 
     return (
       <CleanStoryDisplay

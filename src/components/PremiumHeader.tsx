@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { globalResizeService } from '@/services/GlobalResizeService';
 import { DebugLogger } from '@/services/DebugLogger';
 import { Button } from "@/components/ui/button";
@@ -83,22 +83,22 @@ export const PremiumHeader = ({
     };
   }, []);
 
-  const getAvatarUrl = () => {
+  const getAvatarUrl = useMemo(() => {
     return AvatarUtils.getAvatarUrlWithFallback(
       activeChild?.avatar,
       userInfo.avatar
     );
-  };
+  }, [activeChild?.avatar, userInfo.avatar]);
 
-  const getDisplayName = () => {
+  const getDisplayName = useMemo(() => {
     return activeChild ? activeChild.display_name : userInfo.name;
-  };
+  }, [activeChild?.display_name, userInfo.name]);
 
-  const getDisplayGrade = () => {
+  const getDisplayGrade = useMemo(() => {
     return activeChild ? activeChild.grade_level : userInfo.grade;
-  };
+  }, [activeChild?.grade_level, userInfo.grade]);
 
-  const getDisplayAge = () => {
+  const getDisplayAge = useMemo(() => {
     if (activeChild) {
       const currentYear = new Date().getFullYear();
       const currentMonth = new Date().getMonth() + 1; // JavaScript months are 0-indexed
@@ -112,17 +112,16 @@ export const PremiumHeader = ({
       return age;
     }
     return userInfo.age;
-  };
+  }, [activeChild?.birth_year, activeChild?.birth_month, userInfo.age]);
 
-  const getInitial = () => {
-    const name = getDisplayName();
-    return name.charAt(0).toUpperCase();
-  };
+  const getInitial = useMemo(() => {
+    return getDisplayName.charAt(0).toUpperCase();
+  }, [getDisplayName]);
 
-  const hasSelectedAvatar = () => {
+  const hasSelectedAvatar = useMemo(() => {
     return AvatarUtils.hasValidAvatarData(activeChild?.avatar) || 
            AvatarUtils.hasValidAvatarData(userInfo.avatar);
-  };
+  }, [activeChild?.avatar, userInfo.avatar]);
 
   return (
     <header ref={headerRef} className="bg-white/95 backdrop-blur-sm shadow-sm border-b sticky top-0 z-[70]">
@@ -190,23 +189,23 @@ export const PremiumHeader = ({
                   >
                     <Avatar className="w-7 h-7 sm:w-8 sm:h-8">
                       <AvatarImage 
-                        src={getAvatarUrl()} 
-                        alt={getDisplayName()}
+                        src={getAvatarUrl} 
+                        alt={getDisplayName}
                         onError={(e) => {
-                          DebugLogger.warn('ui', 'Avatar image failed to load', { url: getAvatarUrl(), error: e });
+                          DebugLogger.warn('ui', 'Avatar image failed to load', { url: getAvatarUrl, error: e });
                         }}
                         onLoad={() => {
-                          DebugLogger.log('ui', 'Avatar image loaded successfully', { url: getAvatarUrl() });
+                          DebugLogger.log('ui', 'Avatar image loaded successfully', { url: getAvatarUrl });
                         }}
                       />
                       <AvatarFallback className="bg-gradient-primary text-white text-sm font-semibold">
-                        {hasSelectedAvatar() ? "" : getInitial()}
+                        {hasSelectedAvatar ? "" : getInitial}
                       </AvatarFallback>
                     </Avatar>
                     <div className="text-left hidden sm:block">
-                      <p className="text-sm font-medium text-gray-800 truncate max-w-[120px]">{getDisplayName()}</p>
+                      <p className="text-sm font-medium text-gray-800 truncate max-w-[120px]">{getDisplayName}</p>
                       <p className="text-xs text-gray-600 truncate max-w-[120px]">
-                        {getDisplayGrade() === 'PreK' ? 'Pre-K' : `Grade ${getDisplayGrade()}`}
+                        {getDisplayGrade === 'PreK' ? 'Pre-K' : `Grade ${getDisplayGrade}`}
                       </p>
                     </div>
                     <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500 transition-transform data-[state=open]:rotate-180" />
@@ -217,9 +216,9 @@ export const PremiumHeader = ({
                   <div className="px-3 py-2">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium">{getDisplayName()}</p>
+                        <p className="text-sm font-medium">{getDisplayName}</p>
                         <p className="text-xs text-muted-foreground">
-                          {getDisplayAge()} years old • {getDisplayGrade() === 'PreK' ? 'Pre-K' : `Grade ${getDisplayGrade()}`}
+                          {getDisplayAge} years old • {getDisplayGrade === 'PreK' ? 'Pre-K' : `Grade ${getDisplayGrade}`}
                         </p>
                       </div>
                       {isPremium && (
