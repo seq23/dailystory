@@ -1471,16 +1471,33 @@ export const ImageTierTester = () => {
                         </Badge>
                       )}
                       
-                      {/* Template Complexity Badge - Shows Premium vs Basic Template */}
+                      {/* Template Complexity Badge - Shows all tier variants */}
                       {result.details.templateComplexity && (
                         <Badge variant={
-                          result.details.templateComplexity === 'A' ? 'default' : 'secondary'
+                          result.details.templateComplexity === 'A' ? 'default' : 
+                          result.details.templateComplexity === 'B' ? 'secondary' :
+                          result.details.templateComplexity === 'C' ? 'outline' :
+                          'destructive'
                         } className={
                           result.details.templateComplexity === 'A' ? 
                           'bg-green-600 text-white hover:bg-green-700' : 
-                          'bg-blue-600 text-white hover:bg-blue-700'
+                          result.details.templateComplexity === 'B' ? 
+                          'bg-blue-600 text-white hover:bg-blue-700' :
+                          result.details.templateComplexity === 'C' ?
+                          'bg-orange-600 text-white hover:bg-orange-700' :
+                          'bg-red-600 text-white hover:bg-red-700'
                         }>
-                          {result.details.templateComplexity === 'A' ? '🎨 Premium Template (2.5A)' : '📋 Basic Template (2.5B)'}
+                          {result.details.templateComplexity === 'A' ? '🎨 Premium Template (2.5A)' : 
+                           result.details.templateComplexity === 'B' ? '📋 Basic Template (2.5B)' :
+                           result.details.templateComplexity === 'C' ? '🔧 Nuclear Template (2.5C)' :
+                           '🚨 Emergency Template (2.5D)'}
+                        </Badge>
+                      )}
+                      
+                      {/* AI Schema Generator Badge for ai-visual-scene-creator */}
+                      {result.tier === 'AI Scene Creator' && (
+                        <Badge variant="outline" className="bg-purple-600 text-white hover:bg-purple-700">
+                          🎯 AI Schema Generator
                         </Badge>
                       )}
                     </div>

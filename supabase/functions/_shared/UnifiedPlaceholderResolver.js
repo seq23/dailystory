@@ -231,26 +231,27 @@ export class UnifiedPlaceholderResolver {
     resolved = resolved.replace(/\{emotion\}/g, getSeededValue('emotion', PLACEHOLDER_POOLS.emotions));
     resolved = resolved.replace(/\{object\}/g, getSeededValue('object', PLACEHOLDER_POOLS.activities)); // Fallback to activities
 
-    // Map {hair} to cultural hair logic for Template 2.5B nuclear independence
+    // Map {hair} to cultural hair logic for ALL skin tones (Complexity A support)
     const culturalLanguage = this.detectCulturalContext(userInfo);
     resolved = resolved.replace(/\{hair\}/g, () => {
-      // Only dark skin users get cultural hair (backward compatibility)
-      const skinTone = userInfo?.skinTone || userInfo?.avatarIdentity?.skinTone || userInfo?.avatar?.skinTone;
+      const skinTone = userInfo?.skinTone || userInfo?.avatarIdentity?.skinTone || userInfo?.avatar?.skinTone || 'medium';
       if (skinTone === 'dark' || skinTone === 'darker') {
         const culturalBundle = getCulturalBundle(userInfo, userInfo?.sessionId || 'default');
         return culturalBundle.hair || '';
       }
-      return ''; // No hair description for non-dark skin users
+      // FIX: Use StaticDataCache for non-dark skin users (same as Complexity B)
+      return getHairBySkintone(skinTone, userInfo?.sessionId || 'default') || '';
     });
 
-    // Map {features} to cultural features logic for Template 2.5B nuclear independence  
+    // Map {features} to cultural features logic for ALL skin tones (Complexity A support)  
     resolved = resolved.replace(/\{features\}/g, () => {
-      const skinTone = userInfo?.skinTone || userInfo?.avatarIdentity?.skinTone || userInfo?.avatar?.skinTone;
+      const skinTone = userInfo?.skinTone || userInfo?.avatarIdentity?.skinTone || userInfo?.avatar?.skinTone || 'medium';
       if (skinTone === 'dark' || skinTone === 'darker') {
         const culturalBundle = getCulturalBundle(userInfo, userInfo?.sessionId || 'default');
         return culturalBundle.features || '';
       }
-      return ''; // No features description for non-dark skin users
+      // FIX: Use StaticDataCache for non-dark skin users  
+      return getSkinBySkintone(skinTone, userInfo?.sessionId || 'default') || '';
     });
 
     // Apply pronoun-based grammar fixes

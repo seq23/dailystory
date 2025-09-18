@@ -17,6 +17,10 @@ async function getCharacterService() {
     return characterConsistencyService; // Return singleton instance directly
   } catch (error) {
     console.warn('CharacterService lazy load failed:', error);
+    // Check if it's a DNS resolution error
+    if (error.message?.includes('DNS') || error.message?.includes('resolution') || error.message?.includes('network')) {
+      console.error('DNS Resolution Error - Character Consistency Service unreachable:', error.message);
+    }
     return null;
   }
 }
