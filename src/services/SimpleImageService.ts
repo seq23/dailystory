@@ -200,11 +200,17 @@ export class SimpleImageService {
     isPremium: boolean = false
   ): Promise<ImageResult> {
 
-    // Check cache first
-    if (this.isIndexedDBAvailable && sessionId) {
-      const cached = await this.getImageFromDB(sessionId, pageNumber);
+  // Normalize session ID for consistent caching
+    const normalizedSessionId = sessionId?.toString() || 'unknown';
+    
+    // Check cache first with normalized session ID
+    if (this.isIndexedDBAvailable && normalizedSessionId !== 'unknown') {
+      const cached = await this.getImageFromDB(normalizedSessionId, pageNumber);
       if (cached?.imageURL) {
-        DebugLogger.log('image', `Using cached image for session ${sessionId}, page ${pageNumber}`);
+        DebugLogger.log('image', `📸 Cache hit: Using cached image for session ${normalizedSessionId}, page ${pageNumber}`, {
+          url: cached.imageURL,
+          timestamp: cached.timestamp
+        });
         return {
           success: true,
           url: cached.imageURL,
@@ -212,6 +218,8 @@ export class SimpleImageService {
           tier: 'Cache',
           metadata: { ...cached.metadata, fromCache: true }
         };
+      } else {
+        DebugLogger.log('image', `📸 Cache miss: No cached image for session ${normalizedSessionId}, page ${pageNumber}`);
       }
     }
 
@@ -253,8 +261,8 @@ export class SimpleImageService {
         body: {
           pageText: cleanScene,
           userInfo,
-          sessionId,
-          storyId: sessionId, // Use sessionId as storyId for consistency
+          sessionId: normalizedSessionId,
+          storyId: normalizedSessionId, // Use normalized sessionId as storyId for consistency
           pageNumber,
           isGuestUser: !isPremium,
           difficultyLevel: backendDifficulty
@@ -286,11 +294,14 @@ export class SimpleImageService {
       }
 
       if (orchResult?.success && orchResult?.imageURL) {
-        DebugLogger.log('image', `Image generation successful via ${orchResult.usedTier || 'orchestrator'}`);
+        DebugLogger.log('image', `🖼️ Auto-generated image successfully: ${orchResult.imageURL}`, {
+          contentHash: orchResult.contentHash || 'no-hash',
+          usedTier: orchResult.usedTier || 'orchestrator'
+        });
         
-        // Store result in IndexedDB
-        if (this.isIndexedDBAvailable && sessionId) {
-          await this.storeImageInDB(sessionId, pageNumber, orchResult.imageURL, orchResult);
+        // Store result in IndexedDB with normalized session ID
+        if (this.isIndexedDBAvailable && normalizedSessionId !== 'unknown') {
+          await this.storeImageInDB(normalizedSessionId, pageNumber, orchResult.imageURL, orchResult);
         }
 
         return {
@@ -317,9 +328,9 @@ export class SimpleImageService {
         timeoutId = null;
       }
       
-      // Store failure in IndexedDB for debugging
-      if (this.isIndexedDBAvailable && sessionId) {
-        await this.storeImageInDB(sessionId, pageNumber, null, { 
+      // Store failure in IndexedDB for debugging with normalized session ID
+      if (this.isIndexedDBAvailable && normalizedSessionId !== 'unknown') {
+        await this.storeImageInDB(normalizedSessionId, pageNumber, null, { 
           error: error.message, 
           timestamp: new Date().toISOString(),
           orchestratorFailure: true

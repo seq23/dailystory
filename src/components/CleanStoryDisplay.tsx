@@ -130,6 +130,7 @@ import { APP_CONFIG } from "@/config/appConfig";
 import { ImageGenerationTrigger } from "@/utils/imageGenerationTrigger";
 import { ExpertDifficultyManager } from "@/services/expertDifficultyManager";
 
+import { useSessionAwareImageLoader } from "@/hooks/useSessionAwareImageLoader";
 import { convertImagesToRecord } from "@/utils/imageUtils";
 
 interface CleanStoryDisplayProps {
@@ -467,6 +468,13 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   
   // Vocabulary pre-fetch state
   const [vocabularyData, setVocabularyData] = useState<VocabularyIntegration | null>(null);
+
+  // Session-aware image loader for consistent session context
+  const { loadImage } = useSessionAwareImageLoader({
+    sessionId: characterSessionId,
+    timeout: 10000,
+    isDebugMode: false
+  });
 
   // DEBUG: Add window objects for console debugging
   useEffect(() => {
@@ -1399,12 +1407,23 @@ useEffect(() => {
         skinTone
       );
       
-      if (cachedImageUrl) {
-        DebugLogger.log('image', `Page ${currentPage}: Found cached image, using it`);
+    // Enhanced image loading for current page with session awareness
+    if (cachedImageUrl) {
+      DebugLogger.log('image', `Page ${currentPage}: Found cached image, preloading with session context`);
+      
+      // Preload with session context before updating state
+      const imageLoaded = await loadImage(cachedImageUrl, (stage) => {
+        DebugLogger.log('image', `Cached image loading: ${stage}`, { currentPage, cachedImageUrl });
+      });
+      
+      if (imageLoaded) {
         setPageImages(prev => ({ ...prev, [currentPage]: cachedImageUrl }));
         onPageImagesUpdate?.({ ...pageImages, [currentPage]: cachedImageUrl });
-        return;
+      } else {
+        DebugLogger.warn('image', 'Cached image failed to load, will regenerate', { currentPage, cachedImageUrl });
       }
+      return;
+    }
       
       // No cached image, trigger generation if page is within allowed range
       const maxAllowedPage = isPremium ? (story.length - 1) : 5; // Premium: all pages, Guest: pages 0-5
@@ -2091,6 +2110,23 @@ const initializeStory = async () => {
       }
       
       if (result.success && result.url) {
+        // Ensure story is stable before updating images
+        if (!isStoryStable) {
+          DebugLogger.warn('image', 'Story not stable yet, delaying image update');
+          setTimeout(() => generateImageForCurrentPage(), 1000);
+          return;
+        }
+        
+        // Preload image with session context before updating state
+        const imageLoaded = await loadImage(result.url, (stage) => {
+          DebugLogger.log('image', `Generated image loading: ${stage}`, { currentPage, url: result.url });
+        });
+        
+        if (!imageLoaded) {
+          DebugLogger.warn('image', 'Generated image failed to load', { currentPage, url: result.url });
+          return;
+        }
+        
         setPageImages(prev => {
           const updatedImages = {
             ...prev,
