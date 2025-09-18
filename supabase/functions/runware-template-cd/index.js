@@ -134,6 +134,18 @@ function getComplexityLevel(userInfo, templateComplexity) {
   return 'C';
 }
 
+// Nuclear hair color mapping - lean and simple
+function getSimpleHairColor(skinTone) {
+  switch (skinTone) {
+    case 'pale': return 'red hair';
+    case 'light': return 'blonde hair';
+    case 'medium': return 'brown hair';
+    case 'olive': return 'dark black hair';
+    case 'dark': return 'thick textured 4C hair';
+    default: return 'brown hair'; // fallback
+  }
+}
+
 // Generate Tier 2.5C template - NUCLEAR HARDCODED VERSION
 function generateTier25C(storyText, userInfo, avatarIdentity, failedTierData = {}) {
   console.log('🚀 Nuclear Tier 2.5C: Pure hardcoded template - NO imports, NO dependencies');
@@ -157,12 +169,15 @@ function generateTier25C(storyText, userInfo, avatarIdentity, failedTierData = {
   const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'diverse'; 
   const avatarType = userInfo?.avatar?.type || 'child';
   
-  // Base template: "A young $(avatar type) named $(name) age $(age) $(skintone) skin complexion"
-  let characterDesc = `A young ${avatarType} named ${characterName} age ${age} ${skinTone} skin complexion`;
+  // Get hair color based on skin tone
+  const hairColor = getSimpleHairColor(skinTone);
   
-  // Add alternative string for dark skin ONLY
+  // Base template with hair color included
+  let characterDesc = `A young ${avatarType} named ${characterName} age ${age} ${skinTone} skin complexion with ${hairColor}`;
+  
+  // Add cultural features for dark skin (hair already handled above)
   if (skinTone === 'dark' || skinTone === 'medium-dark' || skinTone === 'brown') {
-    characterDesc += ' with culturally appropriate African American features and natural hair texture';
+    characterDesc += ' and culturally appropriate African American features';
   }
   
   // Component 3: Catch-All Failed Tier Information
