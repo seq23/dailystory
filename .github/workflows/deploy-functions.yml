@@ -16,10 +16,10 @@ on:
         description: 'Single function to deploy (for targeted redeployments)'
         required: false
         default: ''
-# Smart concurrency control - different strategies based on trigger type
+# Unified concurrency control - single queue for all triggers
 concurrency:
-  group: supabase-edge-functions-${{ github.event_name == 'push' && 'push' || 'queue' }}
-  cancel-in-progress: ${{ github.event_name == 'push' && 'true' || 'false' }}
+  group: supabase-edge-functions
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -37,14 +37,14 @@ jobs:
         run: |
           # Determine deployment strategy based on trigger
           TRIGGER_TYPE="${{ github.event_name }}"
-          CONCURRENCY_GROUP="supabase-edge-functions-$([ "$TRIGGER_TYPE" = "push" ] && echo "push" || echo "queue")"
-          CANCEL_MODE="$([ "$TRIGGER_TYPE" = "push" ] && echo "true" || echo "false")"
-          
+CONCURRENCY_GROUP="supabase-edge-functions"
+CANCEL_MODE="false"
+
           echo "🚀 SMART DEPLOYMENT COORDINATION"
           echo "  Trigger: $TRIGGER_TYPE"
           echo "  Concurrency Group: $CONCURRENCY_GROUP"
           echo "  Cancel Previous: $CANCEL_MODE"
-          echo "  Strategy: $([ "$TRIGGER_TYPE" = "push" ] && echo "Cancel older pending deployments" || echo "Queue deployment properly")"
+          echo "  Strategy: Queue deployment (no cancellations)"
           echo ""
           
           # Check for conflicting deployments from different trigger types
@@ -81,13 +81,13 @@ jobs:
           echo "  Commit: ${GITHUB_SHA:0:8}"
           echo "  Actor: $GITHUB_ACTOR"
           echo "  Run ID: $GITHUB_RUN_ID"
-          if [ "$TRIGGER_TYPE" = "push" ]; then
-            echo "  Mode: Fast deployment (cancels pending)"
-          elif [ "$TRIGGER_TYPE" = "schedule" ]; then
+if [ "$TRIGGER_TYPE" = "push" ]; then
+            echo "  Mode: Push deployment (queued)"
+elif [ "$TRIGGER_TYPE" = "schedule" ]; then
             echo "  Mode: Scheduled deployment (queued)"
-          else
+else
             echo "  Mode: Manual deployment (queued)"
-          fi
+fi
           echo ""
           
       - uses: supabase/setup-cli@v1

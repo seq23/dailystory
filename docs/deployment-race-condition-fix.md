@@ -34,22 +34,20 @@ concurrency:
 - `.github/workflows/monitor-template-ab.yml`
 - `.github/workflows/monitor-template-cd.yml`
 
-### ✅ Phase 3: Smart Deployment Queuing
+### ✅ Phase 3: Unified Queue (No Cancellations)
 
-**NEW FEATURE**: Dynamic concurrency strategy that prevents cancellations while ensuring proper coordination:
+All triggers now share a single queue so runs never cancel; they execute in order.
 
 ```yaml
-# Smart concurrency control - different strategies based on trigger type
 concurrency:
-  group: supabase-edge-functions-${{ github.event_name == 'push' && 'push' || 'queue' }}
-  cancel-in-progress: ${{ github.event_name == 'push' && 'true' || 'false' }}
+  group: supabase-edge-functions
+  cancel-in-progress: false
 ```
 
 **How it works:**
-- **Push deployments**: Use separate `supabase-edge-functions-push` group with `cancel-in-progress: true`
-- **Manual/Scheduled**: Use `supabase-edge-functions-queue` group with `cancel-in-progress: false`
-- **Smart coordination**: Automatic conflict detection between different trigger types
-- **Status reporting**: Clear visibility into deployment strategy and queue status
+- All triggers (push, manual, scheduled) queue behind any in-progress run
+- No runs are cancelled; predictable, FIFO execution
+- Clear status reporting indicates queued behavior
 
 ### ✅ Phase 2: Smart Deployment Coordination
 
@@ -73,25 +71,17 @@ fi
 
 ### Smart Deployment Queue System
 
-1. **Push Deployments (Rapid Succession)**:
-   - Use `supabase-edge-functions-push` concurrency group
-   - `cancel-in-progress: true` - cancels older pending deployments
-   - Perfect for rapid commits where latest version should win
+1. **Single Queue for All Triggers**:
+   - Concurrency group: `supabase-edge-functions`
+   - `cancel-in-progress: false` (no cancellations)
+   - FIFO execution across push, manual, and scheduled runs
 
-2. **Manual/Scheduled Deployments**:
-   - Use `supabase-edge-functions-queue` concurrency group  
-   - `cancel-in-progress: false` - proper queuing without cancellation
-   - Ensures scheduled deployments and manual triggers run to completion
+2. **Cross-Trigger Protection**:
+   - Single group naturally prevents overlapping runs
+   - Monitoring workflows still skip when a deployment is active
 
-3. **Cross-Trigger Protection**: 
-   - Different groups prevent interference between push and scheduled deployments
-   - Smart conflict detection warns about concurrent deployments
-   - Automatic coordination handles edge cases gracefully
-
-4. **Enhanced Status Reporting**:
-   - Clear visibility into which strategy is being used
-   - Deployment queue status and conflict detection
-   - Detailed logging for troubleshooting
+3. **Enhanced Status Reporting**:
+   - Logs show "Queued" behavior and never "Cancel previous"
 
 ### Workflow Coordination
 
@@ -120,10 +110,9 @@ sequenceDiagram
 
 ## Benefits
 
-✅ **No deployment cancellations in rapid succession**  
-✅ **Push deployments cancel older pending (latest wins)**  
-✅ **Manual/scheduled deployments queue properly**  
-✅ **Cross-trigger type protection**  
+✅ **No deployment cancellations — all runs queue**  
+✅ **Predictable FIFO execution across push/manual/scheduled**  
+✅ **Cross-trigger protection via single queue**  
 ✅ **Enhanced deployment status reporting**  
 ✅ **Smart conflict detection and coordination**  
 ✅ **Monitoring workflows coordinate intelligently**  
@@ -151,14 +140,14 @@ Watch for these log messages to confirm the fix is working:
 ```
 🚀 SMART DEPLOYMENT COORDINATION
   Trigger: push
-  Concurrency Group: supabase-edge-functions-push
-  Cancel Previous: true
-  Strategy: Cancel older pending deployments
+  Concurrency Group: supabase-edge-functions
+  Cancel Previous: false
+  Strategy: Queue deployment (no cancellations)
 
 📊 DEPLOYMENT STATUS REPORT
   Repository: user/repo
   Commit: a1b2c3d4
   Actor: username
   Run ID: 123456789
-  Mode: Fast deployment (cancels pending)
+  Mode: Push deployment (queued)
 ```
