@@ -61,8 +61,15 @@ export function useChildProfiles() {
     
     activeLoadRequest = (async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        // Auth state guard - ensure user is fully authenticated
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError) {
+          console.warn('Auth error in useChildProfiles:', authError);
+          throw authError;
+        }
+        
         if (!user) {
+          console.log('No authenticated user, clearing child profiles');
           setChildren([]);
           setActiveChildId(null);
           requestCache = { data: { children: [], activeChildId: null }, timestamp: Date.now() };
@@ -139,6 +146,14 @@ export function useChildProfiles() {
   const setActiveChild = useCallback(async (childId: string | null) => {
     setError(null);
     try {
+      // Validate UUID if not null
+      if (childId !== null && childId !== undefined) {
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(childId)) {
+          throw new Error('Invalid child profile ID format');
+        }
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not signed in');
 
@@ -168,8 +183,13 @@ export function useChildProfiles() {
       }
 
       setActiveChildId(childId);
+      
+      // Clear cache to ensure fresh data on next load
+      requestCache = null;
+      
       window.dispatchEvent(new CustomEvent('active-child-changed', { detail: { id: childId } }));
     } catch (e: any) {
+      console.error('setActiveChild error:', e);
       setError(e?.message || 'Could not set active child');
       throw e;
     }
@@ -199,8 +219,13 @@ export function useChildProfiles() {
         .single();
       if (error) throw error;
       setChildren((prev) => [...prev, data as ChildProfile]);
+      
+      // Clear cache to ensure fresh data on next load
+      requestCache = null;
+      
       return data as ChildProfile;
     } catch (e: any) {
+      console.error('addChild error:', e);
       setError(e?.message || 'Could not add child');
       throw e;
     }
@@ -228,8 +253,13 @@ export function useChildProfiles() {
         .single();
       if (error) throw error;
       setChildren((prev) => prev.map((c) => (c.id === id ? (data as ChildProfile) : c)));
+      
+      // Clear cache to ensure fresh data on next load
+      requestCache = null;
+      
       return data as ChildProfile;
     } catch (e: any) {
+      console.error('updateChild error:', e);
       setError(e?.message || 'Could not update child');
       throw e;
     }
@@ -245,7 +275,12 @@ export function useChildProfiles() {
       if (error) throw error;
       setChildren((prev) => prev.filter((c) => c.id !== id));
       setActiveChildId((prev) => (prev === id ? null : prev));
+      
+      // Clear cache to ensure fresh data on next load
+      requestCache = null;
+      
     } catch (e: any) {
+      console.error('deleteChild error:', e);
       setError(e?.message || 'Could not delete child');
       throw e;
     }

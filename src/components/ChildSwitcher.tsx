@@ -16,9 +16,22 @@ export function ChildSwitcher({ className }: ChildSwitcherProps) {
 
   const onChange = async (value: string) => {
     try {
-      await setActiveChild(value === "default" ? null : (value || null));
+      // Convert empty strings to null and validate UUID format
+      let childId: string | null = null;
+      if (value && value !== "default" && value.trim() !== "") {
+        // Validate UUID format before passing to database
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (uuidRegex.test(value.trim())) {
+          childId = value.trim();
+        } else {
+          throw new Error("Invalid child profile selection");
+        }
+      }
+      
+      await setActiveChild(childId);
       toast({ title: t('parent.children.updated') });
     } catch (e: any) {
+      console.error("ChildSwitcher onChange error:", e);
       toast({ title: e?.message || t('parent.manager.toasts.failedSave'), variant: "destructive" });
     }
   };
