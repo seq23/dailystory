@@ -79,16 +79,18 @@ The image generation system now operates with a **4-tier fallback mechanism** fo
 ### Tier 2.5B (Nuclear Independence - Basic Templates)
 - **Function**: `runware-template-ab` (complexity 'B')
 - **Success Rate**: ~97%
-- **Features**: Basic templates + Limited cultural intelligence + Nuclear independence
+- **Features**: Basic templates + Enhanced hybrid extraction with simple scene extraction function + Nuclear independence
 - **Style Framework**: ✅ Uses unified `getStyleFramework()` system
 - **Secondary Characters**: Limited support (names only)
+- **Hair Mapping**: Sophisticated 73-variation StaticDataCache mapping (same as Tier A)
 
 ### Tier 2.5C (Emergency Framework)
 - **Function**: `runware-template-cd` (complexity 'C')
 - **Success Rate**: ~99%
-- **Features**: Emergency templates + Light cultural intelligence
+- **Features**: Nuclear hardcoded templates + Lean hair color mapping + Light cultural intelligence
 - **Style Framework**: ✅ Uses unified `getStyleFramework()` system
-- **Independence**: Zero external dependencies beyond styleFrameworks
+- **Hair Mapping**: Nuclear 5-option `getSimpleHairColor()` - culturally authentic 4C hair for dark skin
+- **Independence**: Zero external dependencies beyond styleFrameworks (NUCLEAR ACHIEVED)
 
 ### Tier 2.5D (Ultimate Emergency)
 - **Function**: `runware-template-cd` (complexity 'D')
