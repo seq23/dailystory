@@ -3719,24 +3719,11 @@ const handleRestartTimer = () => {
                     )}
                     {currentImage ? (
                       <>
-                        {/* Background fill to avoid cropping/margins */}
-                        <img
-                          src={currentImage}
-          alt={`Story illustration for page ${currentPage + 1}: ${displayedStory[currentPage]?.substring(0, 100)}...`}
-                          className="absolute inset-0 h-full w-full object-cover blur-md scale-110 brightness-[1.05]"
-                          loading="lazy"
-                          decoding="async"
-                          onError={(e) => {
-                            DebugLogger.warn('image', 'Background image failed to load', { currentImage });
-                            (e.currentTarget as HTMLImageElement).style.display = 'none';
-                            // Don't trigger layout fallback for background image failures
-                          }}
-                        />
-                        {/* Foreground clean image, never cropped - Enhanced with fallback handling */}
+                        {/* Main image - fills container completely */}
         <ImageWithFallback
           src={currentImage}
           alt={`Story illustration for page ${currentPage + 1}: ${displayedStory[currentPage]?.substring(0, 100)}...`}
-          className="relative z-10 h-full w-full mx-auto object-contain"
+          className="h-full w-full mx-auto object-cover rounded-lg"
           fallbackText={`📖 Page ${currentPage + 1}`}
           onLoadingChange={handleImageLoadingChange}
           onFallbackUsed={handleImageFallbackUsed}
