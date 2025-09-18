@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useMemo, useState, useRef } from "react";
+import { useEffect, useCallback, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 
@@ -16,12 +16,14 @@ interface NewChildInput {
   hobbies?: string | null;
 }
 
-// Request deduplication and error handling
+// Global request deduplication to prevent spam from multiple hook instances
 let activeLoadRequest: Promise<any> | null = null;
 let requestCache: { data: any; timestamp: number } | null = null;
-const CACHE_DURATION = 5000; // 5 seconds
 let errorCount = 0;
 let lastErrorTime = 0;
+const CACHE_DURATION = 5000; // 5 seconds
+const ERROR_THROTTLE = 2000; // 2 seconds between error logs
+const MAX_ERRORS = 5;
 
 export function useChildProfiles() {
   const [children, setChildren] = useState<ChildProfile[]>([]);
@@ -39,9 +41,18 @@ export function useChildProfiles() {
       return;
     }
 
-    // Deduplicate concurrent requests
+    // Deduplicate concurrent requests from multiple components
     if (activeLoadRequest) {
       return activeLoadRequest;
+    }
+
+    // Stop retrying after too many errors
+    if (errorCount >= MAX_ERRORS) {
+      console.group('🛑 useChildProfiles: Max errors reached');
+      console.warn(`Stopped loading after ${MAX_ERRORS} failed attempts`);
+      console.groupEnd();
+      setLoading(false);
+      return;
     }
 
     setLoading(true);
@@ -82,20 +93,25 @@ export function useChildProfiles() {
         
         // Reset error tracking on success
         errorCount = 0;
+        lastErrorTime = 0;
         
       } catch (e: any) {
-        // Grouped error logging with throttling
+        // Throttled, grouped error logging to prevent console spam
         const now = Date.now();
-        const shouldLog = now - lastErrorTime > 1000; // Throttle to 1 error per second max
+        const shouldLog = now - lastErrorTime > ERROR_THROTTLE;
+        
+        errorCount++;
         
         if (shouldLog) {
-          errorCount++;
           lastErrorTime = now;
           
-          console.group(`🚨 User Preferences Error (#${errorCount})`);
-          console.error('useChildProfiles load failed:', e?.message);
+          console.group(`🚨 User Preferences Error #${errorCount}`);
+          console.error('useChildProfiles failed:', e?.message);
+          if (e?.message?.includes('403')) {
+            console.warn('403 Forbidden - This should be fixed with the new lean RLS policy');
+            console.log('Check that user is authenticated and RLS policy allows access');
+          }
           console.error('Error details:', e);
-          console.error('Auth state:', { uid: (await supabase.auth.getUser()).data.user?.id });
           console.groupEnd();
         }
         
