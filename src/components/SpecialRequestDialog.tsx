@@ -292,7 +292,7 @@ Characters: brave princess AND talking dragon --> Enter
 Setting: magical forest AND cozy cottage --> Enter`}
             value={value}
             onChange={(e) => handleInputChange('specialRequest', e.target.value)}
-            className={`min-h-[120px] ${validationErrors.specialRequest?.length > 0 ? 'border-destructive' : ''}`}
+            className={`min-h-[120px] placeholder:text-xs ${validationErrors.specialRequest?.length > 0 ? 'border-destructive' : ''}`}
             spellCheck="true"
           />
           
@@ -338,6 +338,8 @@ Setting: magical forest AND cozy cottage --> Enter`}
               ))}
             </div>
           )}
+          
+          <p className="text-xs text-muted-foreground">This format helps our system provide best results.</p>
         </div>
         <div className="space-y-2 mt-4">
           <label htmlFor="target-vocab" className="text-sm font-medium text-muted-foreground">
