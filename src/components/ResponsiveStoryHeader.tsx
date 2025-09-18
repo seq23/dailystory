@@ -376,7 +376,7 @@ export const ResponsiveStoryHeader = ({
         {storyTitle && !isMobile && (
           <div className="border-b border-border/40 bg-background/50">
             <div className={cn(
-            isMobileOrTablet ? (isTablet ? "safe-area-padding px-4 pt-0 pb-2" : "safe-area-padding px-4 py-2") : "max-w-7xl mx-auto px-6 py-2"
+            isMobileOrTablet ? (isTablet ? "safe-area-padding px-4 pt-0 pb-8" : "safe-area-padding px-4 py-2") : "max-w-7xl mx-auto px-6 py-2"
             )}>
               <StorySessionBreadcrumb
                 storyTitle={storyTitle}
@@ -389,7 +389,7 @@ export const ResponsiveStoryHeader = ({
         
         {/* Story Controls Only - No duplicate navigation */}
         <div className={cn(
-          isMobileOrTablet ? (isTablet ? "safe-area-padding px-4 pt-0 pb-2" : "safe-area-padding px-4 py-2") : "max-w-7xl mx-auto px-6 py-2"
+          isMobileOrTablet ? (isTablet ? "safe-area-padding px-4 pt-0 pb-8" : "safe-area-padding px-4 py-2") : "max-w-7xl mx-auto px-6 py-2"
         )}>
           <div className="flex items-center justify-between">
             {/* Story Title */}
