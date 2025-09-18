@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useMemo, useState } from "react";
+import { useEffect, useCallback, useMemo, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 
@@ -16,6 +16,13 @@ interface NewChildInput {
   hobbies?: string | null;
 }
 
+// Request deduplication and error handling
+let activeLoadRequest: Promise<any> | null = null;
+let requestCache: { data: any; timestamp: number } | null = null;
+const CACHE_DURATION = 5000; // 5 seconds
+let errorCount = 0;
+let lastErrorTime = 0;
+
 export function useChildProfiles() {
   const [children, setChildren] = useState<ChildProfile[]>([]);
   const [activeChildId, setActiveChildId] = useState<string | null>(null);
@@ -23,37 +30,83 @@ export function useChildProfiles() {
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
+    // Check cache first
+    if (requestCache && Date.now() - requestCache.timestamp < CACHE_DURATION) {
+      const { children: cachedChildren, activeChildId: cachedActiveChildId } = requestCache.data;
+      setChildren(cachedChildren || []);
+      setActiveChildId(cachedActiveChildId || null);
+      setLoading(false);
+      return;
+    }
+
+    // Deduplicate concurrent requests
+    if (activeLoadRequest) {
+      return activeLoadRequest;
+    }
+
     setLoading(true);
     setError(null);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setChildren([]);
-        setActiveChildId(null);
-        return;
+    
+    activeLoadRequest = (async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          setChildren([]);
+          setActiveChildId(null);
+          requestCache = { data: { children: [], activeChildId: null }, timestamp: Date.now() };
+          return;
+        }
+
+        const [{ data: prefs }, { data: kids, error: kidsErr }] = await Promise.all([
+          supabase
+            .from('user_preferences')
+            .select('active_child_id')
+            .eq('user_id', user.id)
+            .maybeSingle(),
+          supabase
+            .from('child_profiles')
+            .select('*')
+            .eq('parent_user_id', user.id)
+            .order('created_at', { ascending: true })
+        ]);
+
+        if (kidsErr) throw kidsErr;
+        
+        const resultData = { children: kids || [], activeChildId: (prefs as any)?.active_child_id ?? null };
+        
+        setChildren(resultData.children);
+        setActiveChildId(resultData.activeChildId);
+        
+        // Cache successful result
+        requestCache = { data: resultData, timestamp: Date.now() };
+        
+        // Reset error tracking on success
+        errorCount = 0;
+        
+      } catch (e: any) {
+        // Grouped error logging with throttling
+        const now = Date.now();
+        const shouldLog = now - lastErrorTime > 1000; // Throttle to 1 error per second max
+        
+        if (shouldLog) {
+          errorCount++;
+          lastErrorTime = now;
+          
+          console.group(`🚨 User Preferences Error (#${errorCount})`);
+          console.error('useChildProfiles load failed:', e?.message);
+          console.error('Error details:', e);
+          console.error('Auth state:', { uid: (await supabase.auth.getUser()).data.user?.id });
+          console.groupEnd();
+        }
+        
+        setError(e?.message || 'Failed to load child profiles');
+      } finally {
+        setLoading(false);
+        activeLoadRequest = null;
       }
+    })();
 
-      const [{ data: prefs }, { data: kids, error: kidsErr }] = await Promise.all([
-        supabase
-          .from('user_preferences')
-          .select('active_child_id')
-          .eq('user_id', user.id)
-          .maybeSingle(),
-        supabase
-          .from('child_profiles')
-          .select('*')
-          .eq('parent_user_id', user.id)
-          .order('created_at', { ascending: true })
-      ]);
-
-      if (kidsErr) throw kidsErr;
-      setChildren(kids || []);
-      setActiveChildId((prefs as any)?.active_child_id ?? null);
-    } catch (e: any) {
-      setError(e?.message || 'Failed to load child profiles');
-    } finally {
-      setLoading(false);
-    }
+    return activeLoadRequest;
   }, []);
 
   useEffect(() => {
