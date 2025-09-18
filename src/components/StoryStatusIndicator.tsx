@@ -3,6 +3,7 @@ import { AlertTriangle, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 /**
  * Persistent status indicator that appears after initial toast dismissal
@@ -11,6 +12,7 @@ import { cn } from '@/lib/utils';
 export const StoryStatusIndicator = () => {
   const [currentMode, setCurrentMode] = useState<'normal' | 'backup' | 'emergency'>('normal');
   const [isVisible, setIsVisible] = useState(false);
+  const { isMobileOrTablet } = useIsMobile();
 
   useEffect(() => {
     const checkStatus = () => {
@@ -76,7 +78,12 @@ export const StoryStatusIndicator = () => {
   }
 
   return (
-    <div className="fixed top-16 right-4 z-50 animate-in slide-in-from-top-2 duration-300">
+    <div className={cn(
+      "animate-in slide-in-from-top-2 duration-300",
+      isMobileOrTablet 
+        ? "absolute top-2 left-2 z-80"  // Mobile/tablet: upper left of image card
+        : "fixed top-16 right-4 z-50"   // Desktop: unchanged (right side)
+    )}>
       <Button
         variant="outline"
         size="sm"
