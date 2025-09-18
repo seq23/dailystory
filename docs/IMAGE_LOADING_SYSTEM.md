@@ -34,6 +34,7 @@ const { imageSrc, isLoading, error, isUsingFallback, manualRetry, isManualRetry 
 <ImageWithFallback
   src={imageUrl}
   alt="Story illustration"
+  containerClassName="h-full" // NEW: Mobile height inheritance
   fallbackText="Custom fallback text"
   onLoadingChange={(isLoading) => console.log('Loading:', isLoading)}
   onFallbackUsed={(isUsing) => console.log('Using fallback:', isUsing)}
@@ -43,6 +44,8 @@ const { imageSrc, isLoading, error, isUsingFallback, manualRetry, isManualRetry 
 
 **UI Features:**
 - **Loading State**: Animated skeleton loader with visual feedback
+- **Mobile Optimization (9-18-24)**: containerClassName prop for proper height inheritance on mobile devices
+- **Fallback Prevention**: Prevents white space in fixed-height mobile containers
 - **Error Indication**: Clear error messaging with retry options
 - **Fallback Indication**: Visual badge showing "Generated" content
 - **Retry Interface**: Prominent retry button with loading animation
