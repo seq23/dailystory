@@ -246,7 +246,8 @@ export const UnifiedDebugMonitor: React.FC = () => {
     network: 'Network',
     netflix: 'Netflix',
     'live-gen': 'Live Generation',
-    'image-gen': 'Images',
+    'image-analysis': 'Image Analysis',
+    'audio-test': 'Audio Test',
     'debug-data': 'Data'
   } as Record<string, string>)[t] || 'Console';
 
@@ -280,7 +281,8 @@ export const UnifiedDebugMonitor: React.FC = () => {
               <DropdownMenuItem onSelect={() => setActiveTab('network')}>Network</DropdownMenuItem>
               <DropdownMenuItem onSelect={() => setActiveTab('netflix')}>Netflix</DropdownMenuItem>
               <DropdownMenuItem onSelect={() => setActiveTab('live-gen')}>Live Generation</DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => setActiveTab('image-gen')}>Images</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => setActiveTab('image-analysis')}>Image Analysis</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => setActiveTab('audio-test')}>Audio Test</DropdownMenuItem>
               <DropdownMenuItem onSelect={() => setActiveTab('debug-data')}>Data</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -578,6 +580,60 @@ export const UnifiedDebugMonitor: React.FC = () => {
                   }
                 }} 
               />
+            </div>
+          </div>
+        )}
+
+        {/* Image Analysis View */}
+        {activeTab === 'image-analysis' && (
+          <div className="flex-1 flex flex-col min-h-0 p-2">
+            <div className="text-xs text-muted-foreground mb-2">
+              Live Session Analysis - Auto-detecting current session
+            </div>
+            {(() => {
+              const currentSession = typeof window !== 'undefined' ? 
+                sessionStorage.getItem('current_stable_session_id') || 
+                sessionStorage.getItem('sessionId') : null;
+              
+              if (currentSession) {
+                return (
+                  <div className="space-y-2">
+                    <div className="bg-blue-500/10 border border-blue-500/20 rounded p-2">
+                      <div className="text-xs font-medium">Current Session:</div>
+                      <div className="text-xs text-muted-foreground break-all">{currentSession}</div>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Use the Debug Data tab to analyze this session's image generation pipeline.
+                    </div>
+                  </div>
+                );
+              } else {
+                return (
+                  <div className="text-xs text-muted-foreground">
+                    No active session detected. Start a story to enable live session analysis.
+                  </div>
+                );
+              }
+            })()}
+          </div>
+        )}
+
+        {/* Audio Test View */}
+        {activeTab === 'audio-test' && (
+          <div className="flex-1 flex flex-col min-h-0 p-2">
+            <div className="text-xs text-muted-foreground mb-2">
+              Audio & TTS Testing - Charlotte Voice & Interactive Words
+            </div>
+            <div className="space-y-2">
+              <div className="bg-purple-500/10 border border-purple-500/20 rounded p-2">
+                <div className="text-xs font-medium mb-1">Audio Playback Tester</div>
+                <div className="text-xs text-muted-foreground">
+                  Test Charlotte voice, interactive words, and loading states separately from Voice Catalog System
+                </div>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                AudioPlaybackTester component will be implemented for dedicated audio debugging.
+              </div>
             </div>
           </div>
         )}

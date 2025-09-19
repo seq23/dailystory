@@ -17,7 +17,26 @@ class ErrorSuppressionManager {
     return [message, ...args].join(' ').toLowerCase().trim();
   }
 
+  private isDebugMode(): boolean {
+    return typeof window !== 'undefined' && window.location.search.includes('debug=1');
+  }
+
   private shouldSuppress(message: string, ...args: any[]): boolean {
+    // In debug mode, only suppress browser noise, not actual debug logs
+    if (this.isDebugMode()) {
+      const fullMessage = [message, ...args].join(' ').toLowerCase();
+      
+      // Still suppress browser extensions and permissions policy in debug mode
+      if (fullMessage.includes('chrome-extension://') ||
+          fullMessage.includes('unchecked runtime.lasterror') ||
+          fullMessage.includes('permissions policy') ||
+          fullMessage.includes('unrecognized feature')) {
+        return true;
+      }
+      
+      // In debug mode, don't suppress anything else - let debug logs through
+      return false;
+    }
     const fullMessage = this.normalizeMessage(message, ...args);
 
     // Chrome extension runtime errors (comprehensive patterns)
