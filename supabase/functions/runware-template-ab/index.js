@@ -330,7 +330,7 @@ function extractSimpleScene(storyText) {
     "magenta","cyan","olive","tan","aqua","turqoise" /* common misspell */
   ];
 
-  const KNOWN_OBJECTS = ["ball","backpack","bag","book","lantern","hat","basket","flower","map","rope","cloak","compass","bottle","flashlight","lunchbox","scarf","toy","toys","cookie","apple","food"];
+  const KNOWN_OBJECTS = ["ball","backpack","bag","book","lantern","hat","basket","flower","map","rope","cloak","compass","bottle","flashlight","lunchbox","scarf","toy","toys","cookie","apple","food","dress","shirt","pants","clothes","shoes","jacket","coat","sweater","skirt","blouse","uniform","outfit","crown","necklace","glasses","watch","belt","gloves","socks","boots","sandals"];
   const KNOWN_SETTINGS = ["forest","woods","kitchen","bedroom","playground","park","beach","school","garden","mountain","castle","city","village","river","lake","cave","desert","space","meadow","library","trail","path","home","house"];
 
   const ALIASES = [
@@ -617,6 +617,31 @@ function extractLocationFromText(text) {
 }
 
 // Continue with rest of existing implementation...
+// ============= HELPER FUNCTIONS FOR TEMPLATE RESOLUTION =============
+
+function deriveEthnicityFromAvatar(avatar) {
+  if (!avatar) return 'diverse background';
+  const type = avatar.type;
+  if (type === 'person') return avatar.ethnicity || 'diverse background';
+  return 'diverse background';
+}
+
+function getFacialFeatures(avatar) {
+  if (!avatar) return 'friendly expression';
+  return 'bright eyes and a warm smile';
+}
+
+function deriveLeftoverCulturalData(userInfo) {
+  const culturalElements = [];
+  if (userInfo?.nativeLanguage && userInfo.nativeLanguage !== 'en') {
+    culturalElements.push('culturally diverse');
+  }
+  if (userInfo?.location) {
+    culturalElements.push(`from ${userInfo.location}`);
+  }
+  return culturalElements.join(', ');
+}
+
 // ============= TIER 2.5A/B TEMPLATES - CATEGORY-BASED WITH LINE BREAKS =============
 const TIER_25A_TEMPLATE = `Narrative: {pageText}.
 Character Description: {character} {age}, {ethnicity}, {hair}, {features} {bundle.culturalEnhancements}.
@@ -757,22 +782,46 @@ async function handleRequest(req) {
       
       // Use simple scene extraction for Tier B
       const extractedScene = extractSimpleScene(storyText);
+      console.log(`🎯 TIER 2.5B Scene Extraction Result: "${extractedScene}"`);
       
-      // Build basic template with robust fallback handling
+      // Build template data with proper placeholders
       const styleFramework = getNuclearStyleFramework(userInfo?.difficulty || 'medium');
       const culturalProfile = inlineDetectCultural(userInfo, avatarIdentity);
-      
       const characterName = userInfo?.name || userInfo?.childName || 'child';
+      const age = userInfo?.age || 'young child';
       const skinTone = userInfo?.avatar?.skinTone || 'medium';
       const hairColor = getHair(skinTone);
-      const basicCharacter = `A young child named ${characterName} with ${skinTone} skin and ${hairColor}`;
+      const ethnicity = userInfo?.avatar?.ethnicity || deriveEthnicityFromAvatar(userInfo?.avatar) || 'diverse background';
       
-      // Ensure we have valid prompts with fallbacks
-      const finalPositivePrompt = [
-        extractedScene || 'child playing happily',
-        basicCharacter,
-        styleFramework.frameworkPrompt || 'contemporary children\'s book illustration style'
-      ].filter(Boolean).join('. ');
+      // Character description components
+      const character = `A young child named ${characterName}`;
+      const hairDescription = `${hairColor}`;
+      const facialFeatures = getFacialFeatures(userInfo?.avatar) || 'friendly expression';
+      const culturalContext = culturalProfile || 'multicultural setting';
+      const leftoverData = deriveLeftoverCulturalData(userInfo) || '';
+      const fullFrameworkPrompt = styleFramework.frameworkPrompt || 'contemporary children\'s book illustration style';
+      
+      // Apply TIER_25B_TEMPLATE with placeholder resolution
+      console.log('📋 Using official TIER_25B_TEMPLATE for Tier 2.5B');
+      let finalPositivePrompt = TIER_25B_TEMPLATE
+        .replace('{pageText}', storyText || 'A child goes on an adventure')
+        .replace('{character}', character)
+        .replace('{age}', age)
+        .replace('{ethnicity}', ethnicity)
+        .replace('{hairDescription}', hairDescription)
+        .replace('{facialFeatures}', facialFeatures)
+        .replace('{scene}', extractedScene || 'playing outdoors')
+        .replace('{cultural_context}', culturalContext)
+        .replace('{leftover_data}', leftoverData)
+        .replace('{fullFrameworkPrompt}', fullFrameworkPrompt);
+
+      console.log(`✅ TIER_25B_TEMPLATE Applied: "${finalPositivePrompt.substring(0, 100)}..."`);
+      
+      // Clean up any remaining placeholders or double spaces
+      finalPositivePrompt = finalPositivePrompt
+        .replace(/\s+/g, ' ')
+        .replace(/\s*\.\s*\./g, '.')
+        .trim();
       
       templateResult = {
         positivePrompt: finalPositivePrompt,
