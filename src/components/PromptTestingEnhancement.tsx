@@ -10,7 +10,7 @@ export function PromptTestingEnhancement() {
   const [testResult, setTestResult] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const testEnhancedPrompts = async () => {
+  const testEnhancedPrompts = async (retryCount = 0) => {
     setIsLoading(true);
     try {
       // Test with a simple story to verify PhaseIntegrationOrchestrator is working
@@ -30,10 +30,12 @@ export function PromptTestingEnhancement() {
       
       const response = await supabase.functions.invoke('runware-generate-image', {
         body: {
-          pageText: testStory,
-          userInfo: testUser,
-          pageNumber: 1,
-          sessionId: 'template-test-' + Date.now(),
+          storyText: testStory, // Fixed: use 'storyText' instead of 'pageText'
+          enhancedStoryData: { // Fixed: provide 'enhancedStoryData' structure
+            userInfo: testUser,
+            pageNumber: 1,
+            sessionId: 'template-test-' + Date.now()
+          },
           dryRun: true // This will now use PhaseIntegrationOrchestrator
         }
       });
@@ -50,6 +52,11 @@ export function PromptTestingEnhancement() {
           visualConsistency: response.data.metadata?.visualConsistency,
           promptLengths: response.data.metadata?.promptLengths
         });
+      } else if (response.error?.code === 'IMPORT_SYNC_ANOMALY' && retryCount < 2) {
+        // Retry for sync anomalies during cold starts
+        DebugLogger.log('performance', `Import sync anomaly detected, retrying... (attempt ${retryCount + 1})`);
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
+        return testEnhancedPrompts(retryCount + 1);
       } else {
         setTestResult({
           success: false,
@@ -58,6 +65,12 @@ export function PromptTestingEnhancement() {
       }
     } catch (error) {
       console.error('❌ Template test failed:', error);
+      if (error.message?.includes('IMPORT_SYNC_ANOMALY') && retryCount < 2) {
+        // Retry for sync anomalies during cold starts
+        DebugLogger.log('performance', `Import sync anomaly detected in catch, retrying... (attempt ${retryCount + 1})`);
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
+        return testEnhancedPrompts(retryCount + 1);
+      }
       setTestResult({
         success: false,
         error: error.message || 'Unknown error'
@@ -76,11 +89,11 @@ export function PromptTestingEnhancement() {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex items-center gap-2">
-          <Button 
-            onClick={testEnhancedPrompts} 
-            disabled={isLoading}
-            className="flex items-center gap-2"
-          >
+        <Button 
+          onClick={() => testEnhancedPrompts()} 
+          disabled={isLoading}
+          className="flex items-center gap-2"
+        >
             {isLoading ? 'Testing...' : 'Test Enhanced Prompts'}
           </Button>
           <Badge variant="outline">

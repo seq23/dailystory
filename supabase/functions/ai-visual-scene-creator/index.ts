@@ -29,7 +29,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
 };
 
 // Main serve function with strengthened error handling
@@ -40,6 +40,26 @@ serve(async (req) => {
     return new Response(null, { 
       status: 200,
       headers: corsHeaders 
+    });
+  }
+
+  // Handle GET/HEAD health check requests directly in TypeScript receptionist
+  if (req.method === 'GET' || req.method === 'HEAD') {
+    console.log('🏥 [TypeScript Receptionist] Health check request handled');
+    return new Response(JSON.stringify({
+      status: 'healthy',
+      service: 'ai-visual-scene-creator',
+      timestamp: new Date().toISOString(),
+      environment: {
+        SUPABASE_URL: Deno.env.get('SUPABASE_URL') ? 'configured' : 'missing',
+        SUPABASE_ANON_KEY: Deno.env.get('SUPABASE_ANON_KEY') ? 'configured' : 'missing'
+      }
+    }), {
+      status: 200,
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/json'
+      }
     });
   }
 

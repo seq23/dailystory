@@ -138,6 +138,29 @@ npx vitest tests/integration/template-ai-fallback.test.ts
 npx vitest tests/integration/anti-flicker.test.ts
 ```
 
+## Edge Function Testing Notes
+
+### Runware Generate Image Function
+The `runware-generate-image` function expects specific payload structure:
+```javascript
+{
+  storyText: "The story content...", // Required: main story text
+  enhancedStoryData: {              // Required: wrapper object
+    userInfo: { /* user profile */ },
+    pageNumber: 1,
+    sessionId: "session-123"
+  },
+  dryRun: true // Optional: for testing without actual generation
+}
+```
+
+### Cold Start Retry Behavior
+Edge functions may experience temporary `IMPORT_SYNC_ANOMALY` errors during cold starts:
+- Functions use TypeScript receptionist pattern for resilience
+- Client code should implement 2-3 retry attempts with 2-second delays
+- Errors typically resolve automatically within 30 seconds
+- All functions include GET health check endpoints for monitoring
+
 ## Notes
 - The Playwright config starts/reuses a dev server on port 5173. Override with env:
   - PLAYWRIGHT_BASE_URL, PLAYWRIGHT_WEB_SERVER_CMD
