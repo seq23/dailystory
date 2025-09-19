@@ -633,6 +633,38 @@ async function handleRequest(req) {
       });
     }
 
+    // Handle GET health check requests
+    if (req.method === 'GET' || req.method === 'HEAD') {
+      console.log(`🏥 [${requestId}] Health check request`);
+      return new Response(JSON.stringify({
+        status: 'healthy',
+        service: 'runware-generate-image',
+        timestamp: new Date().toISOString(),
+        version: 'v2.1',
+        bootStatus: CrashProofBootSystem.isHealthy() ? 'healthy' : 'degraded'
+      }), {
+        status: 200,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Content-Type': 'application/json'
+        }
+      });
+    }
+
+    // Guard JSON parsing for POST requests only
+    if (req.method !== 'POST') {
+      return new Response(JSON.stringify({
+        error: 'Method not allowed',
+        allowedMethods: ['GET', 'POST', 'OPTIONS']
+      }), {
+        status: 405,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Content-Type': 'application/json'
+        }
+      });
+    }
+
     const { enhancedStoryData, storyText, pageNumber, avatarIdentity } = await req.json();
     
     if (!enhancedStoryData || !storyText) {

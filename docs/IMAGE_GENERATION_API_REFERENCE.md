@@ -1,5 +1,29 @@
 # Image Generation API Reference
 
+## Health Check Endpoints
+
+All image generation endpoints now support GET requests for health checks:
+
+- `GET /functions/v1/runware-generate-image` - Returns service health status
+- `GET /functions/v1/runware-template-ab` - Returns service health status
+- `GET /functions/v1/runware-template-cd` - Returns service health status  
+- `GET /functions/v1/ai-visual-scene-creator` - Returns service health status
+
+**Health Response Format**:
+```json
+{
+  "status": "healthy",
+  "service": "service-name",
+  "timestamp": "2025-01-30T...",
+  "environment": {
+    "hasRunwareKey": true,
+    "hasSupabaseUrl": true
+  }
+}
+```
+
+---
+
 ## Core Endpoints
 
 ### Frontend Entry Point

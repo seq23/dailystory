@@ -29,7 +29,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
 };
 
 // Main serve function with strengthened error handling
@@ -40,6 +40,26 @@ serve(async (req) => {
     return new Response(null, { 
       status: 200,
       headers: corsHeaders 
+    });
+  }
+
+  // Handle GET health check requests directly (no dynamic import needed)
+  if (req.method === 'GET' || req.method === 'HEAD') {
+    console.log('🏥 [TypeScript Receptionist] Health check request handled');
+    return new Response(JSON.stringify({
+      status: 'healthy',
+      service: 'runware-template-cd',
+      timestamp: new Date().toISOString(),
+      environment: {
+        hasRunwareKey: !!Deno.env.get('RUNWARE_API_KEY'),
+        hasSupabaseUrl: !!Deno.env.get('SUPABASE_URL')
+      }
+    }), {
+      status: 200,
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/json'
+      }
     });
   }
 

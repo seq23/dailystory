@@ -399,6 +399,17 @@ async function handleRequest(req) {
     return createCorsOptionsResponse();
   }
 
+  // Handle GET health check requests
+  if (req.method === 'GET' || req.method === 'HEAD') {
+    console.log(`🏥 [${requestId}] Health check request`);
+    return createCorsResponse({
+      status: 'healthy',
+      service: 'ai-visual-scene-creator',
+      timestamp: new Date().toISOString(),
+      models: AI_MODELS.map(m => m.name)
+    });
+  }
+
   try {
     const { enhancedStoryData, storyText, avatarIdentity } = await req.json();
     

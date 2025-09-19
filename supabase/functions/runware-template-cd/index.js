@@ -325,6 +325,32 @@ async function handleRequest(req) {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Handle GET health check requests
+  if (req.method === 'GET' || req.method === 'HEAD') {
+    console.log('🏥 Template CD Health check request');
+    return new Response(JSON.stringify({
+      status: 'healthy',
+      service: 'runware-template-cd',
+      timestamp: new Date().toISOString(),
+      tiers: ['2.5C', '2.5D'],
+      complexityLevels: ['C', 'D']
+    }), {
+      status: 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+
+  // Guard JSON parsing for POST requests only
+  if (req.method !== 'POST') {
+    return new Response(JSON.stringify({
+      error: 'Method not allowed',
+      allowedMethods: ['GET', 'POST', 'OPTIONS']
+    }), {
+      status: 405,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+
   try {
     const { enhancedStoryData, storyText, pageNumber, avatarIdentity } = await req.json();
     
