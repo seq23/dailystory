@@ -245,578 +245,265 @@ export const UnifiedDebugMonitor: React.FC = () => {
     return DebugLogger.isDebugEnabled() ? (
       <button
         onClick={() => setIsVisible(true)}
-        className="fixed bottom-4 right-4 z-[9999] bg-background/90 border border-muted rounded-lg px-3 py-2 text-xs font-medium shadow-lg hover:bg-accent backdrop-blur-sm"
+        className="fixed bottom-2 right-2 z-[9999] bg-background/90 border border-muted rounded px-2 py-1 text-xs font-medium shadow-lg hover:bg-accent backdrop-blur-sm"
       >
-        🐛 Debug Monitor ({logs.length + netflixLogs.length + networkRequests.length})
+        🐛 ({logs.length + netflixLogs.length + networkRequests.length})
       </button>
     ) : null;
   }
 
   return (
-    <div className="fixed inset-4 z-[9999] bg-background/95 backdrop-blur-sm border border-muted rounded-lg shadow-2xl flex flex-col h-[95vh]">
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-muted bg-background/90 backdrop-blur-sm">
-        <div className="flex items-center gap-4">
-          <h2 className="text-lg font-semibold">🐛 Enhanced Debug Monitor</h2>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="bg-green-500/20 text-green-300 h-5 text-xs">
-              Phase 1 Complete
-            </Badge>
-            <Badge variant="outline" className="bg-blue-500/20 text-blue-300 h-5 text-xs">
-              Image Crashes Fixed
-            </Badge>
-            <span className="text-xs text-muted-foreground">
-              {logs.filter(log => log.category === 'image').length} image logs
-            </span>
-          </div>
+    <div className="fixed top-2 right-2 bottom-2 left-1/2 lg:left-2/3 z-[9999] bg-background/95 backdrop-blur-sm border border-muted rounded shadow-2xl flex flex-col">
+      {/* Compact Header */}
+      <div className="flex items-center justify-between p-2 border-b border-muted bg-background/90 backdrop-blur-sm min-h-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <h2 className="text-sm font-semibold truncate">🐛 Debug</h2>
+          <Badge variant="outline" className="bg-green-500/20 text-green-300 h-4 text-xs px-1 hidden sm:inline-flex">
+            Phase 1
+          </Badge>
+          <span className="text-xs text-muted-foreground hidden md:inline">
+            {logs.filter(log => log.category === 'image').length}img
+          </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 flex-shrink-0">
           {!isRecording ? (
-            <Button variant="outline" size="sm" onClick={startRecording} className="h-8">
-              <Play className="h-4 w-4 mr-1" />
-              Start Recording
+            <Button variant="outline" size="sm" onClick={startRecording} className="h-6 w-6 p-0" title="Start Recording">
+              <Play className="h-3 w-3" />
             </Button>
           ) : (
-            <Button variant="outline" size="sm" onClick={stopRecording} className="h-8">
-              <Square className="h-4 w-4 mr-1" />
-              Stop Recording
+            <Button variant="outline" size="sm" onClick={stopRecording} className="h-6 w-6 p-0" title="Stop Recording">
+              <Square className="h-3 w-3" />
             </Button>
           )}
-          <Button variant="outline" size="sm" onClick={resetCircuitBreakers} className="h-8">
-            <RotateCcw className="h-4 w-4 mr-1" />
-            Reset CB
+          <Button variant="outline" size="sm" onClick={resetCircuitBreakers} className="h-6 w-6 p-0" title="Reset Circuit Breakers">
+            <RotateCcw className="h-3 w-3" />
           </Button>
-          <Button variant="outline" size="sm" onClick={exportLogs} className="h-8">
-            <Download className="h-4 w-4 mr-1" />
-            Export
+          <Button variant="outline" size="sm" onClick={exportLogs} className="h-6 w-6 p-0" title="Export Logs">
+            <Download className="h-3 w-3" />
           </Button>
-          <Button variant="outline" size="sm" onClick={clearLogs} className="h-8">
-            <Trash2 className="h-4 w-4 mr-1" />
-            Clear
+          <Button variant="outline" size="sm" onClick={clearLogs} className="h-6 w-6 p-0" title="Clear Logs">
+            <Trash2 className="h-3 w-3" />
           </Button>
-          <Button variant="ghost" size="sm" onClick={() => setIsVisible(false)} className="h-8 w-8 p-0">
-            <X className="h-4 w-4" />
+          <Button variant="ghost" size="sm" onClick={() => setIsVisible(false)} className="h-6 w-6 p-0 flex-shrink-0" title="Close">
+            <X className="h-3 w-3" />
           </Button>
         </div>
       </div>
 
-      {/* Tabs */}
+      {/* Compact Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
-        <TabsList className="grid w-full grid-cols-5 m-4 mb-2 text-xs">
-          <TabsTrigger value="console" className="text-xs p-2">Console ({logs.length})</TabsTrigger>
-          <TabsTrigger value="network" className="text-xs p-2">Network ({networkRequests.length})</TabsTrigger>
-          <TabsTrigger value="netflix" className="text-xs p-2">Netflix ({netflixLogs.length})</TabsTrigger>
-          <TabsTrigger value="image-gen" className="text-xs p-2">Images</TabsTrigger>
-          <TabsTrigger value="debug-data" className="text-xs p-2">Debug Data</TabsTrigger>
+        <TabsList className="grid grid-cols-5 m-1 mb-0 text-xs h-8">
+          <TabsTrigger value="console" className="text-xs px-1 py-1">Console</TabsTrigger>
+          <TabsTrigger value="network" className="text-xs px-1 py-1">Network</TabsTrigger>
+          <TabsTrigger value="netflix" className="text-xs px-1 py-1">Netflix</TabsTrigger>
+          <TabsTrigger value="image-gen" className="text-xs px-1 py-1">Images</TabsTrigger>
+          <TabsTrigger value="debug-data" className="text-xs px-1 py-1">Data</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="console" className="flex-1 flex flex-col px-4 pb-4 min-h-0">
-          {/* Search and Filter */}
-          <div className="flex gap-2 mb-3">
+        <TabsContent value="console" className="flex-1 flex flex-col m-1 min-h-0">
+          {/* Compact Search and Filter */}
+          <div className="flex gap-1 mb-2">
             <div className="relative flex-1">
-              <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
               <Input
-                placeholder="Search logs..."
+                placeholder="Search..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-8 h-8"
+                className="pl-6 h-6 text-xs"
               />
             </div>
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value as DebugCategory | 'all')}
-              className="h-8 px-2 rounded border border-input bg-background text-sm z-[20] relative"
+              className="h-6 px-1 rounded border border-input bg-background text-xs"
             >
-              <option value="all">All Categories</option>
+              <option value="all">All</option>
               <option value="auth">Auth</option>
               <option value="story">Story</option>
               <option value="audio">Audio</option>
               <option value="image">Image</option>
-              <option value="performance">Performance</option>
-              <option value="network">Network</option>
+              <option value="performance">Perf</option>
+              <option value="network">Net</option>
               <option value="ui">UI</option>
               <option value="error">Error</option>
             </select>
           </div>
 
-          {/* Log List with Full Height Scrolling */}
-          <ScrollArea className="flex-1 border border-muted rounded-md bg-background/50 backdrop-blur-sm">
-            <div className="p-3 space-y-2">
-              {filteredLogs.map((log) => (
-                <div key={log.id} className="text-xs font-mono border-b border-muted/30 pb-2 last:border-b-0">
-                  <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <span className="text-muted-foreground font-medium">{formatTime(log.timestamp)}</span>
-                    <Badge variant="outline" className={`h-5 text-xs ${getCategoryColor(log.category)}`}>
-                      {log.category}
-                    </Badge>
-                    <span className={`${getLevelColor(log.level)} font-medium uppercase text-xs`}>
-                      {log.level}
-                    </span>
-                  </div>
-                  <div className="text-foreground leading-relaxed break-words">{log.message}</div>
-                  {log.data && (
-                    <pre className="text-muted-foreground mt-2 text-xs bg-muted/20 p-2 rounded overflow-x-auto max-w-full whitespace-pre-wrap">
-                      {typeof log.data === 'string' ? log.data : JSON.stringify(log.data, null, 2)}
-                    </pre>
-                  )}
+          {/* Direct Log List - No Container */}
+          <div className="flex-1 overflow-auto space-y-1 text-xs font-mono">
+            {filteredLogs.map((log) => (
+              <div key={log.id} className="border-b border-muted/30 pb-1 last:border-b-0">
+                <div className="flex items-center gap-1 mb-1 flex-wrap">
+                  <span className="text-muted-foreground text-xs">{formatTime(log.timestamp)}</span>
+                  <Badge variant="outline" className={`h-4 text-xs px-1 ${getCategoryColor(log.category)}`}>
+                    {log.category}
+                  </Badge>
+                  <span className={`${getLevelColor(log.level)} text-xs uppercase`}>
+                    {log.level}
+                  </span>
                 </div>
-              ))}
-              {filteredLogs.length === 0 && (
-                <div className="text-center text-muted-foreground py-8">
-                  No logs match your search criteria
-                </div>
-              )}
-            </div>
-          </ScrollArea>
-        </TabsContent>
-
-        <TabsContent value="network" className="flex-1 flex flex-col px-4 pb-4 min-h-0">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary">
-                Network Requests ({networkRequests.length})
-              </Badge>
-              <span className="text-sm text-muted-foreground">
-                Failed: {NetworkDebugger.getFailedRequests().length}
-              </span>
-            </div>
-          </div>
-
-          <ScrollArea className="flex-1 border border-muted rounded-md bg-background/50 backdrop-blur-sm">
-            <div className="p-3 space-y-2">
-              {networkRequests.map((req) => (
-                <div key={req.id} className="text-xs font-mono border-b border-muted/30 pb-2 last:border-b-0">
-                  <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <span className="text-muted-foreground font-medium">{formatTime(req.timestamp)}</span>
-                    <Badge className={`h-5 text-xs ${req.type === 'edge-function' ? 'bg-purple-500/20 text-purple-300' : req.type === 'supabase' ? 'bg-blue-500/20 text-blue-300' : 'bg-gray-500/20 text-gray-300'}`}>
-                      {req.type}
-                    </Badge>
-                    <span className={`font-medium text-xs ${req.error || (req.status && req.status >= 400) ? 'text-red-400' : req.status && req.status < 400 ? 'text-green-400' : 'text-yellow-400'}`}>
-                      {req.method}
-                    </span>
-                    {req.status && (
-                      <span className={`text-xs ${req.status >= 400 ? 'text-red-400' : 'text-green-400'}`}>
-                        {req.status}
-                      </span>
-                    )}
-                    {req.duration && (
-                      <span className="text-xs text-muted-foreground">
-                        {req.duration}ms
-                      </span>
-                    )}
-                  </div>
-                  <div className="text-foreground leading-relaxed break-words">
-                    {req.url}
-                  </div>
-                  {req.error && (
-                    <div className="text-red-400 mt-2 text-xs bg-red-500/10 p-2 rounded">
-                      {req.error}
-                    </div>
-                  )}
-                </div>
-              ))}
-              {networkRequests.length === 0 && (
-                <div className="text-center text-muted-foreground py-8">
-                  No network requests captured yet
-                </div>
-              )}
-            </div>
-          </ScrollArea>
-        </TabsContent>
-
-        <TabsContent value="system" className="flex-1 flex flex-col px-4 pb-4 min-h-0">
-          <div className="flex items-center justify-between mb-3">
-            <Badge variant="secondary">
-              System Logs (Comprehensive Logging)
-            </Badge>
-          </div>
-
-          <div className="flex-1 border border-muted rounded-md bg-background/50 backdrop-blur-sm min-h-0">
-            <ScrollArea className="h-full w-full">
-              <div className="p-3 space-y-2">
-                {logs.filter(log => 
-                  log.message.includes('[TIER') || 
-                  log.message.includes('[CULTURAL') || 
-                  log.message.includes('[SECONDARY') || 
-                  log.message.includes('[ERROR RECOVERY') || 
-                  log.message.includes('[PERFORMANCE') || 
-                  log.message.includes('[DATA FLOW') || 
-                  log.message.includes('[SERVICE HEALTH')
-                ).slice(-50).map((log) => (
-                  <div key={log.id} className="text-xs font-mono border-b border-muted/30 pb-2 last:border-b-0">
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <span className="text-muted-foreground font-medium">{formatTime(log.timestamp)}</span>
-                      <Badge variant="outline" className="h-5 text-xs bg-purple-500/20 text-purple-300">
-                        SYSTEM
-                      </Badge>
-                      <span className={`${getLevelColor(log.level)} font-medium uppercase text-xs`}>
-                        {log.level}
-                      </span>
-                    </div>
-                    <div className="text-foreground leading-relaxed break-words">{log.message}</div>
-                    {log.data && (
-                      <pre className="text-muted-foreground mt-2 text-xs bg-muted/20 p-2 rounded overflow-x-auto max-w-full whitespace-pre-wrap">
-                        {typeof log.data === 'string' ? log.data : JSON.stringify(log.data, null, 2)}
-                      </pre>
-                    )}
-                  </div>
-                ))}
-                {logs.filter(log => 
-                  log.message.includes('[TIER') || 
-                  log.message.includes('[CULTURAL') || 
-                  log.message.includes('[SECONDARY') || 
-                  log.message.includes('[ERROR RECOVERY') || 
-                  log.message.includes('[PERFORMANCE') || 
-                  log.message.includes('[DATA FLOW') || 
-                  log.message.includes('[SERVICE HEALTH')
-                ).length === 0 && (
-                  <div className="text-center text-muted-foreground py-8">
-                    No system logs captured yet
-                  </div>
+                <div className="text-foreground text-xs leading-tight break-words">{log.message}</div>
+                {log.data && (
+                  <pre className="text-muted-foreground mt-1 text-xs bg-muted/20 p-1 rounded overflow-x-auto whitespace-pre-wrap">
+                    {typeof log.data === 'string' ? log.data : JSON.stringify(log.data, null, 2)}
+                  </pre>
                 )}
               </div>
-            </ScrollArea>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="netflix" className="flex-1 flex flex-col px-4 pb-4 min-h-0">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <Badge variant={isRecording ? "default" : "secondary"}>
-                {isRecording ? "Recording" : "Stopped"}
-              </Badge>
-              <span className="text-sm text-muted-foreground">
-                Netflix Debug Logs ({netflixLogs.length})
-              </span>
-            </div>
-          </div>
-
-          {/* Netflix Log List with Proper Scrolling */}
-          <div className="flex-1 border border-muted rounded-md bg-background/50 backdrop-blur-sm min-h-0">
-            <ScrollArea className="h-full w-full">
-              <div className="p-3 space-y-2">
-                {filteredNetflixLogs.map((log, index) => (
-                  <div key={`${log.timestamp}-${index}`} className="text-xs font-mono border-b border-muted/30 pb-2 last:border-b-0">
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <span className="text-muted-foreground font-medium">{formatTime(log.timestamp)}</span>
-                      <Badge className="bg-orange-500/20 text-orange-300 h-5 text-xs">
-                        Netflix
-                      </Badge>
-                      <span className={`${getLevelColor(log.level)} font-medium uppercase text-xs`}>
-                        {log.level}
-                      </span>
-                    </div>
-                    <div className="text-foreground leading-relaxed break-words whitespace-pre-wrap">{log.message}</div>
-                  </div>
-                ))}
-                {filteredNetflixLogs.length === 0 && (
-                  <div className="text-center text-muted-foreground py-8">
-                    {isRecording ? "Waiting for Netflix debug messages..." : "Start recording to capture Netflix debug logs"}
-                  </div>
-                )}
-              </div>
-            </ScrollArea>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="categories" className="flex-1 px-4 pb-4 overflow-auto">
-          <div className="grid grid-cols-2 gap-3">
-            {(['auth', 'story', 'audio', 'image', 'performance', 'network', 'ui', 'error'] as DebugCategory[]).map((category) => (
-              <div key={category} className="border border-muted rounded-lg p-3 bg-background/30 backdrop-blur-sm">
-                <div className="flex items-center justify-between">
-                  <Badge className={getCategoryColor(category)}>
-                    {category}
-                  </Badge>
-                  <span className="text-sm font-medium">{getLogCount(category)} logs</span>
-                </div>
-              </div>
             ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="circuit-breaker" className="flex-1 px-4 pb-4 overflow-auto">
-          <div className="space-y-3">
-            {Object.entries(circuitBreakerStatus).map(([service, status]: [string, any]) => (
-              <div key={service} className="border border-muted rounded-lg p-3 bg-background/30 backdrop-blur-sm">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-medium">{service}</span>
-                  <Badge className={getCircuitBreakerColor(status.state)}>
-                    {status.state}
-                  </Badge>
-                </div>
-                <div className="text-sm space-y-1 text-muted-foreground">
-                  <div>Failures: {status.failures || 0}</div>
-                  <div>Success Rate: {((status.successes || 0) / Math.max((status.successes || 0) + (status.failures || 0), 1) * 100).toFixed(1)}%</div>
-                  {status.nextAttempt && (
-                    <div>Next Attempt: {new Date(status.nextAttempt).toLocaleTimeString()}</div>
-                  )}
-                </div>
-              </div>
-            ))}
-            {Object.keys(circuitBreakerStatus).length === 0 && (
-              <div className="text-center text-muted-foreground py-8">
-                No circuit breaker data available
+            {filteredLogs.length === 0 && (
+              <div className="text-center text-muted-foreground py-4 text-xs">
+                No logs match search
               </div>
             )}
           </div>
         </TabsContent>
 
-        <TabsContent value="performance" className="flex-1 px-4 pb-4 overflow-auto">
-          <div className="flex items-center justify-between mb-3">
-            <Badge variant="secondary">
-              Performance Monitor (Systematic Cleanup Complete ✅)
-            </Badge>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Badge variant="outline" className="bg-green-500/20 text-green-300 h-4 text-xs">
-                Phase 1: ✅ Console Cleanup
+        <TabsContent value="network" className="flex-1 flex flex-col m-1 min-h-0">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-1">
+              <Badge variant="secondary" className="h-4 text-xs px-1">
+                Requests ({networkRequests.length})
               </Badge>
-              <Badge variant="outline" className="bg-blue-500/20 text-blue-300 h-4 text-xs">
-                Phase 2: ✅ Memory Leaks
-              </Badge>
-              <Badge variant="outline" className="bg-purple-500/20 text-purple-300 h-4 text-xs">
-                Phase 3: ✅ Production
-              </Badge>
+              <span className="text-xs text-muted-foreground">
+                Failed: {NetworkDebugger.getFailedRequests().length}
+              </span>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-            <div className="border border-muted rounded-lg p-3 bg-gradient-to-br from-green-500/10 to-green-600/5 backdrop-blur-sm">
-              <h3 className="font-medium mb-2 text-green-400 flex items-center gap-2">
-                <span className="text-lg">🎯</span>
-                Critical Fixes
-              </h3>
-              <div className="text-sm space-y-1">
-                <div className="flex justify-between">
-                  <span>Page 1 Crashes:</span>
-                  <Badge variant="outline" className="bg-green-500/20 text-green-300 h-4 text-xs">FIXED</Badge>
-                </div>
-                <div className="flex justify-between">
-                  <span>Console Logging:</span>
-                  <Badge variant="outline" className="bg-green-500/20 text-green-300 h-4 text-xs">90% REDUCED</Badge>
-                </div>
-                <div className="flex justify-between">
-                  <span>Image Generation:</span>
-                  <Badge variant="outline" className="bg-green-500/20 text-green-300 h-4 text-xs">STABLE</Badge>
-                </div>
-              </div>
-            </div>
-
-            <div className="border border-muted rounded-lg p-3 bg-gradient-to-br from-blue-500/10 to-blue-600/5 backdrop-blur-sm">
-              <h3 className="font-medium mb-2 text-blue-400 flex items-center gap-2">
-                <span className="text-lg">⚡</span>
-                Performance
-              </h3>
-              <div className="text-sm space-y-1">
-                <div>Timers: {performanceManager.getStats().timers}/100</div>
-                <div>Intervals: {performanceManager.getStats().intervals}/20</div>
-                <div>Memory: {(performance as any).memory ? 
-                  `${Math.round(((performance as any).memory.usedJSHeapSize / 1024 / 1024))}MB` : 
-                  'N/A'
-                }</div>
-                <div className="flex justify-between">
-                  <span>Status:</span>
-                  <Badge variant="outline" className="bg-blue-500/20 text-blue-300 h-4 text-xs">OPTIMIZED</Badge>
-                </div>
-              </div>
-            </div>
-
-            <div className="border border-muted rounded-lg p-3 bg-gradient-to-br from-purple-500/10 to-purple-600/5 backdrop-blur-sm">
-              <h3 className="font-medium mb-2 text-purple-400 flex items-center gap-2">
-                <span className="text-lg">🛡️</span>
-                Production
-              </h3>
-              <div className="text-sm space-y-1">
-                <div className="flex justify-between">
-                  <span>Error Recovery:</span>
-                  <Badge variant="outline" className="bg-purple-500/20 text-purple-300 h-4 text-xs">ACTIVE</Badge>
-                </div>
-                <div className="flex justify-between">
-                  <span>Memory Pressure:</span>
-                  <Badge variant="outline" className="bg-purple-500/20 text-purple-300 h-4 text-xs">MONITORED</Badge>
-                </div>
-                <div className="flex justify-between">
-                  <span>ResizeObserver:</span>
-                  <Badge variant="outline" className="bg-purple-500/20 text-purple-300 h-4 text-xs">CONSOLIDATED</Badge>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          {(performance as any).memory && (
-            <div className="border border-muted rounded-lg p-3 bg-background/30 backdrop-blur-sm">
-              <h3 className="font-medium mb-2">Memory Usage</h3>
-              <div className="text-sm space-y-1">
-                <div>Used: {Math.round(((performance as any).memory.usedJSHeapSize / 1024 / 1024))} MB</div>
-                <div>Total: {Math.round(((performance as any).memory.totalJSHeapSize / 1024 / 1024))} MB</div>
-                <div>Limit: {Math.round(((performance as any).memory.jsHeapSizeLimit / 1024 / 1024))} MB</div>
-              </div>
-            </div>
-          )}
-          
-          <div className="border border-muted rounded-lg p-3 bg-background/30 backdrop-blur-sm">
-            <h3 className="font-medium mb-2">Debug Stats</h3>
-            <div className="text-sm space-y-1">
-              <div>General Logs: {logs.length}</div>
-              <div>Netflix Logs: {netflixLogs.length}</div>
-              <div>Recording: {isRecording ? 'Active' : 'Inactive'}</div>
-              <div>Session Start: {logs.length > 0 ? formatTime(logs[0].timestamp) : 'N/A'}</div>
-              <div>Debug Mode: {DebugLogger.isDebugEnabled() ? 'Enabled' : 'Disabled'}</div>
-            </div>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="debug-data" className="flex-1 flex flex-col px-4 pb-4 min-h-0">
-          <div className="flex items-center justify-between mb-3">
-            <Badge variant="secondary">
-              Debug Data Viewer
-            </Badge>
-          </div>
-
-          <div className="flex-1 min-h-0">
-            <DebugDataViewer />
-          </div>
-        </TabsContent>
-
-        <TabsContent value="image-gen" className="flex-1 flex flex-col px-4 pb-4 min-h-0">
-          <div className="flex items-center justify-between mb-3">
-            <Badge variant="secondary">
-              Image Generation Monitor (Enhanced)
-            </Badge>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span>Crash Prevention: Active</span>
-              <span>•</span>
-              <span>Console Logs: Migrated to DebugLogger</span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div className="p-3 bg-muted/20 rounded-md">
-              <div className="text-sm font-medium mb-2">🖼️ Generation Stats</div>
-              <div className="space-y-1 text-xs">
-                <div>Total Image Logs: {logs.filter(log => log.category === 'image').length}</div>
-                <div>Recent Generations: {logs.filter(log => log.category === 'image' && log.message.includes('Starting generation')).length}</div>
-                <div>Cache Hits: {logs.filter(log => log.category === 'image' && log.message.includes('cached image')).length}</div>
-                <div>Fallbacks Used: {logs.filter(log => log.category === 'image' && log.message.includes('fallback')).length}</div>
-              </div>
-            </div>
-            
-            <div className="p-3 bg-muted/20 rounded-md">
-              <div className="text-sm font-medium mb-2">🚀 Performance Status</div>
-              <div className="space-y-1 text-xs">
-                <div className="flex justify-between">
-                  <span>Console Cleanup:</span>
-                  <Badge variant="outline" className="bg-green-500/20 text-green-300 h-4 text-xs">Phase 1 Complete</Badge>
-                </div>
-                <div className="flex justify-between">
-                  <span>Memory Usage:</span>
-                  <span className="text-green-400">
-                    {(performance as any).memory ? 
-                      `${Math.round(((performance as any).memory.usedJSHeapSize / 1024 / 1024))}MB` : 
-                      'N/A'
-                    }
+          <div className="flex-1 overflow-auto space-y-1 text-xs font-mono">
+            {networkRequests.map((req) => (
+              <div key={req.id} className="border-b border-muted/30 pb-1 last:border-b-0">
+                <div className="flex items-center gap-1 mb-1 flex-wrap">
+                  <span className="text-muted-foreground text-xs">{formatTime(req.timestamp)}</span>
+                  <Badge className={`h-4 text-xs px-1 ${req.type === 'edge-function' ? 'bg-purple-500/20 text-purple-300' : req.type === 'supabase' ? 'bg-blue-500/20 text-blue-300' : 'bg-gray-500/20 text-gray-300'}`}>
+                    {req.type}
+                  </Badge>
+                  <span className={`text-xs ${req.error || (req.status && req.status >= 400) ? 'text-red-400' : req.status && req.status < 400 ? 'text-green-400' : 'text-yellow-400'}`}>
+                    {req.method}
                   </span>
+                  {req.status && (
+                    <span className={`text-xs ${req.status >= 400 ? 'text-red-400' : 'text-green-400'}`}>
+                      {req.status}
+                    </span>
+                  )}
+                  {req.duration && (
+                    <span className="text-xs text-muted-foreground">
+                      {req.duration}ms
+                    </span>
+                  )}
                 </div>
-                <div className="flex justify-between">
-                  <span>Page 1 Crashes:</span>
-                  <Badge variant="outline" className="bg-green-500/20 text-green-300 h-4 text-xs">Fixed</Badge>
+                <div className="text-foreground text-xs leading-tight break-words">
+                  {req.url}
                 </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex-1 border border-muted rounded-md bg-background/50 backdrop-blur-sm min-h-0">
-            <ScrollArea className="h-full w-full">
-              <div className="p-3 space-y-2">
-                <div className="text-xs font-medium mb-2 text-muted-foreground">Recent Image Generation Activity:</div>
-                {logs.filter(log => log.category === 'image').slice(-20).map((log) => (
-                  <div key={log.id} className="text-xs font-mono border-b border-muted/30 pb-2 last:border-b-0">
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <span className="text-muted-foreground font-medium">{formatTime(log.timestamp)}</span>
-                      <Badge variant="outline" className="bg-pink-500/20 text-pink-300 h-5 text-xs">
-                        IMAGE
-                      </Badge>
-                      <span className={`${getLevelColor(log.level)} font-medium uppercase text-xs`}>
-                        {log.level}
-                      </span>
-                      {log.message.includes('cached') && (
-                        <Badge variant="outline" className="bg-blue-500/20 text-blue-300 h-4 text-xs">CACHE</Badge>
-                      )}
-                      {log.message.includes('generation') && (
-                        <Badge variant="outline" className="bg-purple-500/20 text-purple-300 h-4 text-xs">GEN</Badge>
-                      )}
-                      {log.message.includes('fallback') && (
-                        <Badge variant="outline" className="bg-orange-500/20 text-orange-300 h-4 text-xs">FALLBACK</Badge>
-                      )}
-                    </div>
-                    <div className="text-foreground leading-relaxed break-words">{log.message}</div>
-                    {log.data && (
-                      <pre className="text-muted-foreground mt-2 text-xs bg-muted/20 p-2 rounded overflow-x-auto max-w-full whitespace-pre-wrap">
-                        {typeof log.data === 'string' ? log.data : JSON.stringify(log.data, null, 2)}
-                      </pre>
-                    )}
-                  </div>
-                ))}
-                {logs.filter(log => log.category === 'image').length === 0 && (
-                  <div className="text-center text-muted-foreground py-8">
-                    No image generation logs yet. Generate an image to see activity here.
+                {req.error && (
+                  <div className="text-red-400 mt-1 text-xs bg-red-500/10 p-1 rounded">
+                    {req.error}
                   </div>
                 )}
               </div>
-            </ScrollArea>
+            ))}
+            {networkRequests.length === 0 && (
+              <div className="text-center text-muted-foreground py-4 text-xs">
+                No network requests
+              </div>
+            )}
           </div>
         </TabsContent>
 
-        <TabsContent value="tier-checker" className="flex-1 flex flex-col px-4 pb-4 min-h-0">
-          <div className="flex items-center justify-between mb-3">
-            <Badge variant="secondary">
-              Backend Tier Checker
-            </Badge>
-          </div>
-
-          <div className="flex-1 border border-muted rounded-md bg-background/50 backdrop-blur-sm min-h-0 p-4">
-            <div className="space-y-4">
-              <div className="text-sm text-muted-foreground">
-                The tier checker runs automatically in the background to detect which image generation tier succeeded for recent calls.
-              </div>
-              
-              <div className="space-y-2">
-                <div className="text-xs font-mono">
-                  <strong>Gateway Status:</strong>
-                </div>
-                <pre className="text-xs bg-muted/20 p-2 rounded overflow-x-auto">
-                  {JSON.stringify(DebugGateway.getStatus(), null, 2)}
-                </pre>
-              </div>
-
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    try {
-                      (window as any).checkImageTier?.();
-                    } catch (error) {
-                      DebugLogger.warn('ui', 'Manual tier check not available');
-                    }
-                  }}
-                  className="h-8"
-                >
-                  Manual Tier Check
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => DebugGateway.reset()}
-                  className="h-8"
-                >
-                  Reset Gateway
-                </Button>
-              </div>
-
-              <div className="text-xs text-muted-foreground">
-                Open browser console to see tier check results. Use <code>window.checkImageTier()</code> for manual checks.
+        <TabsContent value="netflix" className="flex-1 flex flex-col m-1 min-h-0">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-1">
+              <Badge variant="secondary" className="h-4 text-xs px-1">
+                Netflix Logs ({netflixLogs.length})
+              </Badge>
+              <div className="flex items-center gap-1">
+                {Object.entries(circuitBreakerStatus).map(([name, status]: [string, any]) => (
+                  <Badge key={name} className={`h-4 text-xs px-1 ${getCircuitBreakerColor(status.state)}`}>
+                    {name}: {status.state}
+                  </Badge>
+                ))}
               </div>
             </div>
+          </div>
+
+          <div className="flex-1 overflow-auto space-y-1 text-xs font-mono">
+            {filteredNetflixLogs.map((log, index) => (
+              <div key={index} className="border-b border-muted/30 pb-1 last:border-b-0">
+                <div className="flex items-center gap-1 mb-1">
+                  <span className="text-muted-foreground text-xs">{formatTime(log.timestamp)}</span>
+                  <span className={`text-xs uppercase ${getLevelColor(log.level)}`}>
+                    {log.level}
+                  </span>
+                  <Badge variant="outline" className="bg-cyan-500/20 text-cyan-300 h-4 text-xs px-1">
+                    {log.source}
+                  </Badge>
+                </div>
+                <div className="text-foreground text-xs leading-tight break-words">{log.message}</div>
+                {log.context && (
+                  <div className="text-muted-foreground text-xs mt-1">{log.context}</div>
+                )}
+              </div>
+            ))}
+            {filteredNetflixLogs.length === 0 && (
+              <div className="text-center text-muted-foreground py-4 text-xs">
+                {isRecording ? 'Recording... waiting for Netflix activity' : 'Click "Start Recording" to capture Netflix debug logs'}
+              </div>
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="image-gen" className="flex-1 flex flex-col m-1 min-h-0">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-1 flex-wrap">
+              <Badge variant="secondary" className="h-4 text-xs px-1">
+                Image Logs ({logs.filter(log => log.category === 'image').length})
+              </Badge>
+              
+              {/* Performance Metrics */}
+              <Badge className="bg-green-500/20 text-green-300 h-4 text-xs px-1">
+                Gen: {logs.filter(log => log.message.includes('generate') || log.message.includes('creating')).length}
+              </Badge>
+              <Badge className="bg-blue-500/20 text-blue-300 h-4 text-xs px-1">
+                Cache: {logs.filter(log => log.message.includes('cache')).length}
+              </Badge>
+              <Badge className="bg-yellow-500/20 text-yellow-300 h-4 text-xs px-1">
+                Fallback: {logs.filter(log => log.message.includes('fallback')).length}
+              </Badge>
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-auto space-y-1 text-xs font-mono">
+            {logs.filter(log => log.category === 'image').map((log) => (
+              <div key={log.id} className="border-b border-muted/30 pb-1 last:border-b-0">
+                <div className="flex items-center gap-1 mb-1">
+                  <span className="text-muted-foreground text-xs">{formatTime(log.timestamp)}</span>
+                  <span className={`text-xs uppercase ${getLevelColor(log.level)}`}>
+                    {log.level}
+                  </span>
+                  {/* Operation badges */}
+                  {log.message.includes('caching') && (
+                    <Badge className="bg-orange-500/20 text-orange-300 h-4 text-xs px-1">CACHE</Badge>
+                  )}
+                  {log.message.includes('generate') && (
+                    <Badge className="bg-purple-500/20 text-purple-300 h-4 text-xs px-1">GEN</Badge>
+                  )}
+                  {log.message.includes('fallback') && (
+                    <Badge className="bg-red-500/20 text-red-300 h-4 text-xs px-1">FALLBACK</Badge>
+                  )}
+                </div>
+                <div className="text-foreground text-xs leading-tight break-words">{log.message}</div>
+                {log.data && (
+                  <pre className="text-muted-foreground mt-1 text-xs bg-muted/20 p-1 rounded overflow-x-auto whitespace-pre-wrap">
+                    {typeof log.data === 'string' ? log.data : JSON.stringify(log.data, null, 2)}
+                  </pre>
+                )}
+              </div>
+            ))}
+            {logs.filter(log => log.category === 'image').length === 0 && (
+              <div className="text-center text-muted-foreground py-4 text-xs">
+                No image generation logs yet
+              </div>
+            )}
 
             {/* Hidden tier checker component */}
             <BackendTierChecker 
@@ -827,6 +514,10 @@ export const UnifiedDebugMonitor: React.FC = () => {
               }} 
             />
           </div>
+        </TabsContent>
+
+        <TabsContent value="debug-data" className="flex-1 flex flex-col m-1 min-h-0">
+          <DebugDataViewer />
         </TabsContent>
       </Tabs>
     </div>
