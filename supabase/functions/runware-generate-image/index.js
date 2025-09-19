@@ -1081,11 +1081,16 @@ serve(async (req) => {
             );
             
             try {
-              tierLogging.logTierAttempt(supabaseAdmin, sessionId, requestId, 'TIER_2.5C', 'ATTEMPTING', {
+              tierLogging.logTierAttempt(supabaseAdmin, sessionId, requestId, 'TIER_2.5C', 'attempting', {
                 hasCharacterConsistency: false,
                 hasVisualConsistency: false,
                 hasCulturalEnhancements: false,
-                triggerReason: 'Emergency fallback after Tier 2.5A failure'
+                triggerReason: 'Emergency fallback after Tier 2.5A failure',
+                edgeFunction: 'runware-template-cd',
+                pageNumber: pageNumber,
+                userId: userInfo?.id || null,
+                positivePrompt: storyText?.substring(0, 200) + '...',
+                templateComplexity: 'nuclear_independence'
               });
             } catch (loggingError) {
               console.warn(`⚠️ [${requestId}] Tier logging failed:`, loggingError.message);
@@ -1095,10 +1100,20 @@ serve(async (req) => {
               result = nuclearResult.data;
               console.log(`✅ [${requestId}] Tier 2.5C-D succeeded`);
               try {
-                tierLogging.logTierSuccess(supabaseAdmin, sessionId, requestId, 'TIER_2.5C', 'SUCCESS', {
+                tierLogging.logTierSuccess(supabaseAdmin, sessionId, requestId, 'TIER_2.5C', 'success', {
                   imageUrl: result.imageURL,
+                  imageURL: result.imageURL,
                   provider: result.provider,
-                  completionTime: Date.now() - startTime
+                  completionTime: Date.now() - startTime,
+                  processingTime: Date.now() - startTime,
+                  edgeFunction: 'runware-template-cd',
+                  pageNumber: pageNumber,
+                  userId: userInfo?.id || null,
+                  apiResponse: {
+                    success: true,
+                    provider: result.provider,
+                    tier: result.tier || 'TIER_2.5C'
+                  }
                 });
               } catch (loggingError) {
                 console.warn(`⚠️ [${requestId}] Success logging failed:`, loggingError.message);
@@ -1107,10 +1122,16 @@ serve(async (req) => {
           } catch (error) {
             console.warn(`⚠️ [${requestId}] Tier 2.5C-D failed:`, error.message);
             try {
-              tierLogging.logTierFailure(supabaseAdmin, sessionId, requestId, 'TIER_2.5C', 'FAILED', {
+              tierLogging.logTierFailure(supabaseAdmin, sessionId, requestId, 'TIER_2.5C', 'failure', {
                 error: error.message,
+                errorMessage: error.message,
                 errorType: tierLogging.getErrorType(error.message),
-                completionTime: Date.now() - startTime
+                completionTime: Date.now() - startTime,
+                processingTime: Date.now() - startTime,
+                edgeFunction: 'runware-template-cd',
+                pageNumber: pageNumber,
+                userId: userInfo?.id || null,
+                failureReason: error.message
               });
             } catch (loggingError) {
               console.warn(`⚠️ [${requestId}] Failure logging failed:`, loggingError.message);

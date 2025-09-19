@@ -3,47 +3,48 @@
 
 /**
  * Log tier attempt with detailed context for debugging
+ * Now logs to dedicated image_generation_debug table
  */
 export async function logTierAttempt(supabase, sessionId, requestId, tier, status, context = {}) {
   if (!supabase) return; // Graceful fallback if no Supabase client
   
   try {
-    const logEntry = {
-      session_id: sessionId,
-      request_id: requestId,
-      tier: tier,
-      status: status, // 'attempt', 'success', 'failure'
-      context: context,
-      timestamp: new Date().toISOString(),
-      page_number: context.pageNumber || null
-    };
+    // Extract edge function name from context or determine from tier
+    const edgeFunction = context.edgeFunction || 
+      (tier === 'tier-1' ? 'runware-generate-image' :
+       tier === 'tier-2.5A' ? 'runware-template-ab' :
+       tier === 'tier-2.5C' ? 'runware-template-cd' : 
+       'ai-visual-scene-creator');
     
-    // Log to ai_prompt_debug_log for unified debugging
+    // Log to dedicated image_generation_debug table
     await supabase
-      .from('ai_prompt_debug_log')
+      .from('image_generation_debug')
       .insert([{
         session_id: sessionId,
-        user_prompt: `TIER_ROUTING: ${tier} ${status}`,
-        system_prompt: JSON.stringify({
-          tier,
-          status,
-          requestId,
-          context,
-          tierAnalysis: analyzeTierContext(tier, status, context)
-        }),
-        bundle: context,
-        api_response: { tierRouting: true, tier, status },
+        user_id: context.userId || null,
+        page_number: context.pageNumber || context.page_number || 1,
+        tier: tier,
+        status: status, // 'attempting', 'success', 'failure'
+        edge_function: edgeFunction,
+        positive_prompt: context.positivePrompt || context.prompt || null,
+        negative_prompt: context.negativePrompt || null,
+        api_response: context.apiResponse || { tierRouting: true, requestId },
+        image_url: context.imageUrl || context.imageURL || null,
         success: status === 'success',
-        attempt: 1,
-        model: `tier-routing-${tier}`,
-        token_limit: 0,
-        page_number: context.pageNumber || 0,
-        user_id: null
+        failure_reason: context.error || context.errorMessage || null,
+        processing_time_ms: context.completionTime || context.processingTime || null,
+        template_complexity: context.templateComplexity || null,
+        context: {
+          ...context,
+          tierAnalysis: analyzeTierContext(tier, status, context),
+          requestId,
+          timestamp: new Date().toISOString()
+        }
       }]);
       
-    console.log(`📊 [TIER_LOG] ${tier} ${status} logged for ${sessionId}`);
+    console.log(`📊 [IMAGE_DEBUG] ${tier} ${status} logged for ${sessionId} (${edgeFunction})`);
   } catch (error) {
-    console.warn(`⚠️ Failed to log tier attempt:`, error.message);
+    console.warn(`⚠️ Failed to log image generation debug:`, error.message);
   }
 }
 

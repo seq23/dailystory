@@ -132,8 +132,64 @@ export class DebugConsole {
   }
   
   /**
-   * Check image tier without parameters - uses recent images
+   * Get image generation logs with tier routing and API details
    */
+  static async getImageGenerationLogs(sessionId?: string, limit = 6) {
+    try {
+      const currentSessionId = sessionId || getCurrentSessionId();
+      
+      if (!currentSessionId) {
+        console.warn('❌ No session ID provided or found');
+        return null;
+      }
+      
+      const { data, error } = await supabase
+        .from('image_generation_debug')
+        .select('*')
+        .eq('session_id', currentSessionId)
+        .order('created_at', { ascending: false })
+        .limit(limit);
+        
+      if (error) {
+        console.error('❌ Failed to fetch image generation logs:', error);
+        return null;
+      }
+      
+      if (!data || data.length === 0) {
+        console.log('🔍 No image generation logs found for session:', currentSessionId);
+        return null;
+      }
+      
+      console.log(`🖼️ Image Generation Logs for ${currentSessionId}:`, data);
+      console.table(data.map((log: any) => ({
+        Tier: log.tier,
+        Status: log.status,
+        EdgeFunction: log.edge_function,
+        Page: log.page_number,
+        Success: log.success ? '✅' : '❌',
+        ProcessingTime: log.processing_time_ms ? `${log.processing_time_ms}ms` : 'N/A',
+        ImageURL: log.image_url ? '✅' : '❌',
+        FailureReason: log.failure_reason || '-',
+        Timestamp: new Date(log.created_at).toLocaleTimeString()
+      })));
+      
+      // Show detailed info for each log
+      data.forEach((log: any, index: number) => {
+        console.groupCollapsed(`🖼️ Image Generation ${index + 1} - ${log.tier} ${log.status}`);
+        console.log('Positive Prompt:', log.positive_prompt);
+        console.log('Negative Prompt:', log.negative_prompt);
+        console.log('API Response:', log.api_response);
+        console.log('Context:', log.context);
+        console.log('Template Complexity:', log.template_complexity);
+        console.groupEnd();
+      });
+      
+      return { data, sessionId: currentSessionId };
+    } catch (error) {
+      console.error('❌ Error fetching image generation logs:', error);
+      return null;
+    }
+  }
   static async checkTier() {
     const { data } = await DebugGateway.getRecentImagePrompts(5);
     
@@ -199,6 +255,7 @@ declare global {
     trackStoryGeneration: typeof DebugConsole.trackStoryGeneration;
     trackStoryStability: typeof DebugConsole.trackStoryStability;
     logStoryProcessing: typeof DebugConsole.logStoryProcessing;
+    getImageGenerationLogs: typeof DebugConsole.getImageGenerationLogs;
     getCurrentSessionId: () => string | null;
   }
 }
@@ -237,12 +294,14 @@ if (typeof window !== 'undefined') {
   window.trackStoryGeneration = DebugConsole.trackStoryGeneration;
   window.trackStoryStability = DebugConsole.trackStoryStability;
   window.logStoryProcessing = DebugConsole.logStoryProcessing;
+  window.getImageGenerationLogs = DebugConsole.getImageGenerationLogs;
   window.getCurrentSessionId = getCurrentSessionId;
   
   console.log('🔧 Debug Console Functions Available (No Debug Mode Required):');
   console.log('  window.checkTier() - Check recent image tiers');
   console.log('  window.getFullPrompts() - Get recent image prompts');
-  console.log('  window.getFullPrompts("sessionId") - Get prompts for specific session');  
+  console.log('  window.getFullPrompts("sessionId") - Get prompts for specific session');
+  console.log('  window.getImageGenerationLogs("sessionId") - Get image generation debug logs with tier routing');  
   console.log('  window.getCurrentSessionId() - Get current session ID');
   console.log('');
   console.log('🔧 Advanced Functions (Debug Mode Required):');

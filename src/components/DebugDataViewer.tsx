@@ -13,6 +13,7 @@ import { DebugGateway } from '@/services/DebugGateway';
 import { useToast } from '@/hooks/use-toast';
 import { DebugLogger } from '@/services/DebugLogger';
 import { TierCascadeViewer } from '@/components/TierCascadeViewer';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AIPromptData {
   sessionId: string;
@@ -216,34 +217,63 @@ export function DebugDataViewer() {
     setLastError(null);
 
     try {
-      const { data } = await DebugGateway.getPromptHistory(sessionId.trim(), 50);
+      // Query the new dedicated image_generation_debug table
+      const { data, error } = await supabase
+        .from('image_generation_debug')
+        .select('*')
+        .eq('session_id', sessionId.trim())
+        .order('created_at', { ascending: true });
       
-      if (!data || !data.fullDebugData) {
-        setLastError('No tier routing data found');
+      if (error) {
+        throw error;
+      }
+
+      if (!data || data.length === 0) {
+        setLastError('No image generation debug data found for this session');
         return;
       }
 
-      // Filter for tier routing entries
-      const tierRoutingLogs = data.fullDebugData.filter((item: any) => 
-        item.userPrompt?.includes('TIER_ROUTING') || 
-        item.model?.includes('tier-routing')
-      );
+      // Transform data to match TierCascadeViewer expected format
+      const transformedData = data.map((item: any) => ({
+        id: item.id,
+        sessionId: item.session_id,
+        pageNumber: item.page_number,
+        tier: item.tier,
+        status: item.status,
+        edgeFunction: item.edge_function,
+        positivePrompt: item.positive_prompt,
+        negativePrompt: item.negative_prompt,
+        imageUrl: item.image_url,
+        success: item.success,
+        failureReason: item.failure_reason,
+        processingTime: item.processing_time_ms,
+        templateComplexity: item.template_complexity,
+        context: item.context,
+        apiResponse: item.api_response,
+        created_at: item.created_at,
+        // Legacy format compatibility for TierCascadeViewer
+        userPrompt: `IMAGE_GENERATION: ${item.tier} ${item.status}`,
+        systemPrompt: JSON.stringify({
+          tier: item.tier,
+          status: item.status,
+          edgeFunction: item.edge_function,
+          context: item.context,
+          imageUrl: item.image_url,
+          processingTime: item.processing_time_ms
+        }),
+        model: `image-generation-${item.tier}`
+      }));
 
-      if (tierRoutingLogs.length === 0) {
-        setLastError('No tier routing data found for this session');
-        return;
-      }
-
-      setTierCascadeData(tierRoutingLogs);
+      setTierCascadeData(transformedData);
       setLastError(null);
       
       toast({
-        title: "Tier Cascade Data Retrieved",
-        description: `Found ${tierRoutingLogs.length} tier routing entries`,
+        title: "Image Generation Debug Data Retrieved", 
+        description: `Found ${data.length} image generation events`,
       });
     } catch (err) {
-      console.error('Failed to fetch tier cascade data:', err);
-      setLastError('Failed to fetch tier cascade data. Please try again.');
+      console.error('Failed to fetch image generation debug data:', err);
+      setLastError('Failed to fetch image generation debug data. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -374,10 +404,10 @@ export function DebugDataViewer() {
             <Card>
               <CardContent className="text-center py-8">
                 <p className="text-muted-foreground">
-                  No tier routing data found for session: {sessionId}
+                  No image generation debug data found for session: {sessionId}
                 </p>
                 <p className="text-sm text-muted-foreground mt-2">
-                  Tier routing data is only available for sessions with image generation attempts.
+                  Image generation debug data includes tier routing, API calls, and processing details.
                 </p>
               </CardContent>
             </Card>

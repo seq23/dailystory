@@ -314,6 +314,66 @@ export type Database = {
         }
         Relationships: []
       }
+      image_generation_debug: {
+        Row: {
+          api_response: Json | null
+          context: Json | null
+          created_at: string
+          edge_function: string
+          failure_reason: string | null
+          id: string
+          image_url: string | null
+          negative_prompt: string | null
+          page_number: number | null
+          positive_prompt: string | null
+          processing_time_ms: number | null
+          session_id: string
+          status: string
+          success: boolean | null
+          template_complexity: string | null
+          tier: string
+          user_id: string | null
+        }
+        Insert: {
+          api_response?: Json | null
+          context?: Json | null
+          created_at?: string
+          edge_function: string
+          failure_reason?: string | null
+          id?: string
+          image_url?: string | null
+          negative_prompt?: string | null
+          page_number?: number | null
+          positive_prompt?: string | null
+          processing_time_ms?: number | null
+          session_id: string
+          status: string
+          success?: boolean | null
+          template_complexity?: string | null
+          tier: string
+          user_id?: string | null
+        }
+        Update: {
+          api_response?: Json | null
+          context?: Json | null
+          created_at?: string
+          edge_function?: string
+          failure_reason?: string | null
+          id?: string
+          image_url?: string | null
+          negative_prompt?: string | null
+          page_number?: number | null
+          positive_prompt?: string | null
+          processing_time_ms?: number | null
+          session_id?: string
+          status?: string
+          success?: boolean | null
+          template_complexity?: string | null
+          tier?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       personal_info_incidents: {
         Row: {
           child_profile_id: string | null
@@ -1105,6 +1165,10 @@ export type Database = {
         Returns: undefined
       }
       cleanup_expired_sessions: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      cleanup_image_generation_debug_logs: {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
