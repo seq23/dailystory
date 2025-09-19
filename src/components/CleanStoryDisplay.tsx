@@ -3736,9 +3736,9 @@ const handleRestartTimer = () => {
                    dir="ltr" lang="en" role="main" aria-label="Story content">
                 {/* Mobile/Tablet: Top-half image, bottom-half text (full-bleed, no gray) */}
                 <div className="xl:hidden flex-1 min-h-0 flex flex-col gap-3">
-                  {/* Top Half: Image - Fixed aspect ratio to prevent layout shifts */}
-                  <div className="relative h-[400px] sm:min-h-[400px] w-full rounded-2xl overflow-hidden shadow-2xl bg-muted/30">
-                    {isPremium && (Object.keys(pageImages).length < story.length) && !isBatchGenerating && (
+                  {/* Top Half: Image - Dynamic aspect ratio to prevent whitespace */}
+                  <div className="relative w-full rounded-2xl overflow-hidden shadow-2xl bg-muted/30 flex items-center justify-center min-h-[300px]">
+                    {isPremium && (Object.keys(pageImages).length < story.length) && !isBatchGenerating && !isGeneratingImage && !isPreparingImage && !imageLoadingStates[currentPage] && (
                       <div className="absolute top-3 right-3 z-20">
                           <Button size="sm" variant="secondary" onClick={handleBatchGenerateImages} disabled={false} aria-label="Fix missing illustrations">
                           <Sparkles className="w-4 h-4 mr-1" />
@@ -3752,20 +3752,16 @@ const handleRestartTimer = () => {
                       </div>
                     )}
                     {currentImage ? (
-                      <>
-                        {/* Main image - fills container completely */}
-        <ImageWithFallback
-          src={currentImage}
-          alt={`Story illustration for page ${currentPage + 1}: ${displayedStory[currentPage]?.substring(0, 100)}...`}
-          containerClassName="h-full"
-          className="h-full w-full mx-auto object-contain rounded-lg"
-          fallbackText={`📖 Page ${currentPage + 1}`}
-          onLoadingChange={handleImageLoadingChange}
-          onFallbackUsed={handleImageFallbackUsed}
-        />
-                      </>
+                      <ImageWithFallback
+                        src={currentImage}
+                        alt={`Story illustration for page ${currentPage + 1}: ${displayedStory[currentPage]?.substring(0, 100)}...`}
+                        className="w-full h-auto max-h-[60vh] object-contain rounded-lg"
+                        fallbackText={`📖 Page ${currentPage + 1}`}
+                        onLoadingChange={handleImageLoadingChange}
+                        onFallbackUsed={handleImageFallbackUsed}
+                      />
                     ) : (
-                      <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="flex items-center justify-center h-[300px]">
                         <ImageMixingLoading />
                       </div>
                     )}
@@ -3825,7 +3821,7 @@ const handleRestartTimer = () => {
                   {(
                     <div className="xl:order-1 h-full min-h-0">
                       <div className={`${containerClassName} w-full rounded-2xl overflow-hidden shadow-2xl bg-muted/30`} style={heightStyle}>
-                        {isPremium && (Object.keys(pageImages).length < story.length) && !isBatchGenerating && (
+                        {isPremium && (Object.keys(pageImages).length < story.length) && !isBatchGenerating && !isGeneratingImage && !isPreparingImage && !imageLoadingStates[currentPage] && (
                           <div className="absolute top-3 right-3 z-20">
                             <Button size="sm" variant="secondary" onClick={handleBatchGenerateImages} disabled={false} aria-label="Fix missing illustrations">
                               <Sparkles className="w-4 h-4 mr-1" />
