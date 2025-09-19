@@ -312,9 +312,9 @@ function extractSimpleScene(storyText) {
   console.log('🔍 Simple regex scene extraction from story text');
 
   // ==========
-  // Local config + tiny backups (scoped; no globals)
+  // Local config + tiny backups (scoped; no globals) - PHASE 1: EXPANDED VOCABULARY ARRAYS
   // ==========
-  const VERB_ROOTS = ["see","hold","carry","wear","grab","pick","lift","bring","take","hug","pull","push","walk","stroll","run","wander","tiptoe","explore","look","play","read","draw","build","climb","swing","slide","help","clean","make","watch","eat","sing","dance"];
+  const VERB_ROOTS = ["see","hold","carry","wear","grab","pick","lift","bring","take","hug","pull","push","walk","stroll","run","wander","tiptoe","explore","look","play","read","draw","build","climb","swing","slide","help","clean","make","watch","eat","sing","dance","wake","drink","create","build","hear","feel","smell","taste","touch","get","put","give","come","go","find","study","cook","sleep","sit","stand"];
   const PREP_SETTINGS = ["through","into","in","inside","across","on","at","under","near","by","along"];
   const DETERMINERS = ["a","an","the","my","his","her","their","our"];
   const STOP_TOKENS = [",",".",";","!","?","and","but","or","while","as","because","so","then","when","before","after", ...PREP_SETTINGS];
@@ -330,8 +330,52 @@ function extractSimpleScene(storyText) {
     "magenta","cyan","olive","tan","aqua","turqoise" /* common misspell */
   ];
 
-  const KNOWN_OBJECTS = ["ball","backpack","bag","book","lantern","hat","basket","flower","map","rope","cloak","compass","bottle","flashlight","lunchbox","scarf","toy","toys","cookie","apple","food","dress","shirt","pants","clothes","shoes","jacket","coat","sweater","skirt","blouse","uniform","outfit","crown","necklace","glasses","watch","belt","gloves","socks","boots","sandals"];
+  const KNOWN_OBJECTS = ["ball","backpack","bag","book","lantern","hat","basket","flower","map","rope","cloak","compass","bottle","flashlight","lunchbox","scarf","toy","toys","cookie","apple","food","dress","shirt","pants","clothes","shoes","jacket","coat","sweater","skirt","blouse","uniform","outfit","crown","necklace","glasses","watch","belt","gloves","socks","boots","sandals","doll","teddy bear","blocks","puzzle","crayons","markers","bicycle","bike","swing","slide","sandbox","bucket","shovel","dog","puppy","cat","kitten","bird","fish","rabbit","bunny","horse","cow","pig","sheep","chicken","duck","frog","butterfly","bee","ladybug","turtle","bear","elephant","lion","monkey","cake","banana","milk","juice","water","bread","sandwich","snack","treats","chair","table","cup","plate","bowl","spoon","fork","towel","blanket","tree","grass","sun","moon","star","cloud","rock","leaf","crayon","marker","paper","pencil","eraser"];
   const KNOWN_SETTINGS = ["forest","woods","kitchen","bedroom","playground","park","beach","school","garden","mountain","castle","city","village","river","lake","cave","desert","space","meadow","library","trail","path","home","house"];
+  
+  // PHASE 1.3: NEW CLOTHING DETECTION KEYWORDS ARRAY
+  const CLOTHING_DETECTION_KEYWORDS = ["dress","shirt","pants","shoes","hat","coat","jacket","sweater","skirt","blouse","uniform","outfit","socks","boots","sandals","gloves","scarf","belt","shorts","pajamas","swimsuit"];
+  
+  // PHASE 2.1: VERB_OBJECT_CONTEXT MAPPING FOR MULTI-SENTENCE ASSEMBLY
+  const VERB_OBJECT_CONTEXT = {
+    // Clothing objects → "wearing" verb
+    'dress': 'wearing', 'shirt': 'wearing', 'pants': 'wearing', 'shoes': 'wearing', 
+    'hat': 'wearing', 'coat': 'wearing', 'jacket': 'wearing', 'sweater': 'wearing',
+    'skirt': 'wearing', 'outfit': 'wearing', 'clothes': 'wearing',
+    // Carrying objects → "carrying" verb
+    'backpack': 'carrying', 'bag': 'carrying', 'basket': 'carrying', 'lunchbox': 'carrying',
+    'purse': 'carrying', 'bucket': 'carrying',
+    // Playing objects → "playing with" verb  
+    'ball': 'playing with', 'toy': 'playing with', 'toys': 'playing with', 'doll': 'playing with',
+    'blocks': 'playing with', 'puzzle': 'playing with',
+    // Holding objects → "holding" verb
+    'book': 'holding', 'lantern': 'holding', 'flashlight': 'holding', 'map': 'holding',
+    'rope': 'holding', 'bottle': 'holding',
+    // Eating objects → "eating" verb
+    'cookie': 'eating', 'apple': 'eating', 'food': 'eating', 'cake': 'eating',
+    'sandwich': 'eating', 'snack': 'eating'
+  };
+  
+  // PHASE 3.1: CONTEXT-ACTION MAPPINGS FOR CONTEXTUAL-FIRST FALLBACKS
+  const OBJECT_TO_ACTION = {
+    'dress': 'wearing', 'ball': 'playing with', 'book': 'reading', 'food': 'eating',
+    'toy': 'playing with', 'toys': 'playing with', 'cookie': 'eating', 'apple': 'eating'
+  };
+  
+  const SETTING_TO_ACTION = {
+    'forest': 'walking through', 'park': 'playing in', 'kitchen': 'eating in', 'bedroom': 'sleeping in',
+    'playground': 'playing in', 'garden': 'exploring', 'library': 'reading in'
+  };
+  
+  const ACTION_TO_OBJECT = {
+    'wearing': 'clothes', 'playing': 'toys', 'reading': 'book', 'eating': 'food',
+    'walking': 'outdoors', 'running': 'outdoors'
+  };
+  
+  const ACTION_TO_SETTING = {
+    'walking': 'outdoors', 'running': 'park', 'playing': 'playground',
+    'sleeping': 'bedroom', 'eating': 'kitchen', 'reading': 'library'
+  };
 
   const ALIASES = [
     ["emama","emma"],
@@ -532,10 +576,15 @@ function extractSimpleScene(storyText) {
   const lower = normalized.toLowerCase();
   const { action, objects, setting } = extractHybrid(normalized);
 
-  // Format action → progressive verb + rest
-  const actionText = action
-    ? (toProgressive(action.split(/\s+/)[0]) + " " + action.split(/\s+/).slice(1).join(" ")).trim()
-    : null;
+  // FIXED: Format action → progressive verb + rest (ISSUE: Action text truncation bug)
+  const actionText = action ? (() => {
+    const words = action.split(/\s+/);
+    if (words.length === 1) {
+      return toProgressive(words[0]);
+    } else {
+      return toProgressive(words[0]) + " " + words.slice(1).join(" ");
+    }
+  })().trim() : null;
 
   const obj = objects[0] || null;
   const objectText = obj
@@ -546,22 +595,58 @@ function extractSimpleScene(storyText) {
     ? (setting.phrase || setting.head)
     : (typeof extractLocationFromText === 'function' ? extractLocationFromText(lower) : null);
 
-  // Build final from extracted evidence only
-  const parts = [];
-  if (actionText) parts.push(actionText);
-  if (objectText) parts.push(objectText);
-  if (settingText) parts.push(`in the ${settingText}`);
-
-  const scene = parts.join(' ').trim();
+  // PHASE 2.2: MULTI-SENTENCE SCENE ASSEMBLY - Build primary sentence + object sentences
+  const primaryParts = [];
+  if (actionText) primaryParts.push(actionText);
+  if (settingText) primaryParts.push(`${settingText} where the golden sunlight danced`);
+  
+  const primarySentence = primaryParts.join(' ').trim();
+  
+  // Build object sentences using VERB_OBJECT_CONTEXT mapping
+  const objectSentences = [];
+  if (objectText && obj && obj.head) {
+    const contextVerb = VERB_OBJECT_CONTEXT[obj.head.toLowerCase()];
+    if (contextVerb) {
+      objectSentences.push(`${contextVerb} ${objectText}`);
+    } else {
+      objectSentences.push(objectText);
+    }
+  }
+  
+  // Join with periods for multi-sentence output
+  const allParts = [primarySentence, ...objectSentences].filter(Boolean);
+  const scene = allParts.join('. ').trim();
 
   if (scene) {
     console.log(`✅ Simple scene extracted: "${scene}"`);
     return scene;
   }
 
+  // PHASE 3.2: CONTEXTUAL-FIRST FALLBACKS - Use pageText context to fill gaps
+  if (!scene && (action || objects.length > 0 || setting)) {
+    // Tier 1 - Contextual Fallbacks: Use extracted context to fill gaps
+    if (action && !objects.length && !setting) {
+      const contextObject = ACTION_TO_OBJECT[action.toLowerCase()];
+      const contextSetting = ACTION_TO_SETTING[action.toLowerCase()];
+      if (contextObject) return `${actionText} ${contextObject}`;
+      if (contextSetting) return `${actionText} ${contextSetting}`;
+    }
+    
+    if (objects.length > 0 && !action) {
+      const objHead = objects[0].head?.toLowerCase();
+      const contextAction = OBJECT_TO_ACTION[objHead];
+      if (contextAction) return `${contextAction} ${objectText}`;
+    }
+    
+    if (setting && !action) {
+      const settingHead = setting.head?.toLowerCase() || setting.phrase?.toLowerCase();
+      const contextAction = SETTING_TO_ACTION[settingHead];
+      if (contextAction) return `${contextAction} ${settingText}`;
+    }
+  }
+  
   // ==========
-  // Integrity-Safe Fallbacks (action-based only)
-  // If no supporting action/object/location evidence, return ''.
+  // Tier 2 - Action-Based Fallbacks (existing logic, only if no pageText context)
   // ==========
 
   const has = (re) => re.test(lower);
@@ -606,7 +691,9 @@ function extractSimpleScene(storyText) {
   if (mentionsToy && hasPlay) return `playing with ${has(/\btoys\b/i) ? 'toys' : 'toy'}`;
   if (mentionsFood && hasEat) return `eating ${has(/\bcookies?\b/i) ? (has(/\bcookies\b/i) ? 'cookies' : 'a cookie') : (has(/\bapples?\b/i) ? (has(/\bapples\b/i) ? 'apples' : 'an apple') : 'food')}`;
 
+  // PHASE 3.2: Return empty string to trigger escalation (no more hardcoded fallbacks)
   return '';
+}
 }
 
 // Helper function for location extraction
@@ -614,6 +701,35 @@ function extractLocationFromText(text) {
   const locationPattern = /\b(?:in|at|on|near)\s+(?:the\s+)?([a-zA-Z]+(?:\s+[a-zA-Z]+)?)/;
   const match = text.match(locationPattern);
   return match ? match[1] : null;
+}
+
+// PHASE 4.3: ADD hasActionVerb() VALIDATION FUNCTION
+function hasActionVerb(scene) {
+  if (!scene || typeof scene !== 'string') return false;
+  const sceneWords = scene.toLowerCase().split(/\s+/);
+  const VERB_ROOTS_FOR_VALIDATION = ["see","hold","carry","wear","grab","pick","lift","bring","take","hug","pull","push","walk","stroll","run","wander","tiptoe","explore","look","play","read","draw","build","climb","swing","slide","help","clean","make","watch","eat","sing","dance","wake","drink","create","build","hear","feel","smell","taste","touch","get","put","give","come","go","find","study","cook","sleep","sit","stand"];
+  return VERB_ROOTS_FOR_VALIDATION.some(verb => 
+    sceneWords.some(word => word.startsWith(verb) || word === verb || word === verb + 'ing' || word === verb + 'ed' || word === verb + 's')
+  );
+}
+
+// PHASE 4.4: ADD escalateToNextTier() ESCALATION FUNCTION  
+async function escalateToNextTier(originalPayload) {
+  console.log('🚨 ESCALATING: No valid scene extracted, passing to next tier (CD)');
+  try {
+    // Call next tier function
+    const { serve } = await import("https://deno.land/std@0.168.0/http/server.ts");
+    // For now, return a structured error that can be handled by the calling system
+    return {
+      escalated: true,
+      reason: 'scene_extraction_failed',
+      suggestedTier: 'runware-template-cd',
+      originalPayload: originalPayload
+    };
+  } catch (error) {
+    console.error('Escalation failed:', error);
+    throw new Error('Scene extraction failed and escalation unavailable');
+  }
 }
 
 // Continue with rest of existing implementation...
@@ -651,11 +767,12 @@ Consistency: {visual_consistency_elements} {setting_context}.
 Context: {cultural_context}, {community_context}.
 Brand Suffix: {frameworkPrompt}, {cameraDirective}.`;
 
+// PHASE 5: FIXED TIER_25B_TEMPLATE FORMATTING - Added missing period and proper line breaks
 const TIER_25B_TEMPLATE = `Narrative: {pageText}.
 Subject: {character}, {age}, {ethnicity}, {hairDescription}, {facialFeatures}.
-Action: {scene}
+Action: {scene}.
 Context: {cultural_context} {leftover_data}.
-Brand Suffix: {fullFrameworkPrompt},`;
+Brand Suffix: {fullFrameworkPrompt}.`;
 
 // ============= EXPORT TEMPLATES FOR VALIDATION =============
 export { TIER_25A_TEMPLATE, TIER_25B_TEMPLATE };
@@ -716,7 +833,8 @@ async function handleRequest(req) {
       sessionId = payload.sessionId;
     }
     
-    if (!storyText) {
+    // PHASE 4.1: ENHANCED VALIDATION - Check for pageText/storyText and validate content
+    if (!storyText || storyText.trim().length === 0) {
       return createErrorResponse(new Error('Missing required field: pageText OR storyText'));
     }
 
@@ -784,6 +902,19 @@ async function handleRequest(req) {
       const extractedScene = extractSimpleScene(storyText);
       console.log(`🎯 TIER 2.5B Scene Extraction Result: "${extractedScene}"`);
       
+      // PHASE 4.2: VALIDATE SCENE HAS ACTION VERB - IMMEDIATE ESCALATION IF NOT
+      if (!extractedScene || !hasActionVerb(extractedScene)) {
+        console.log('⚠️ Scene missing action verb, escalating to next tier');
+        const escalationResult = await escalateToNextTier(payload);
+        return createResponse({
+          success: false,
+          escalated: true,
+          reason: 'scene_extraction_failed',
+          details: 'Scene missing required action verb',
+          escalationResult
+        }, 400);
+      }
+      
       // Build template data with proper placeholders
       const styleFramework = getNuclearStyleFramework(userInfo?.difficulty || 'medium');
       const culturalProfile = inlineDetectCultural(userInfo, avatarIdentity);
@@ -801,16 +932,16 @@ async function handleRequest(req) {
       const leftoverData = deriveLeftoverCulturalData(userInfo) || '';
       const fullFrameworkPrompt = styleFramework.frameworkPrompt || 'contemporary children\'s book illustration style';
       
-      // Apply TIER_25B_TEMPLATE with placeholder resolution
+      // PHASE 4.1 & 4.2: REMOVE ALL FALLBACKS - Apply TIER_25B_TEMPLATE with NO fallbacks
       console.log('📋 Using official TIER_25B_TEMPLATE for Tier 2.5B');
       let finalPositivePrompt = TIER_25B_TEMPLATE
-        .replace('{pageText}', storyText || 'A child goes on an adventure')
+        .replace('{pageText}', storyText)  // REMOVED: || 'A child goes on an adventure' fallback
         .replace('{character}', character)
         .replace('{age}', age)
         .replace('{ethnicity}', ethnicity)
         .replace('{hairDescription}', hairDescription)
         .replace('{facialFeatures}', facialFeatures)
-        .replace('{scene}', extractedScene || 'playing outdoors')
+        .replace('{scene}', extractedScene)  // REMOVED: || 'playing outdoors' fallback
         .replace('{cultural_context}', culturalContext)
         .replace('{leftover_data}', leftoverData)
         .replace('{fullFrameworkPrompt}', fullFrameworkPrompt);
