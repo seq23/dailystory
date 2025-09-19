@@ -73,19 +73,66 @@ All functions use `index.ts` as their entry point. JavaScript-only functions hav
 4. **Entry Files**: JavaScript-only functions use TypeScript shim files that import the JavaScript implementation
 5. **CI Resilience**: Generic deploy step uses `continue-on-error: true` to ensure explicit per-function deploys always run even if bundling fails
 
-## Known Supabase Sync Anomalies
+## CRITICAL: Edge Function Boot Analysis
 
-### False "Module not found" Errors
-**Issue**: Edge function logs may show "Module not found: index.js" even when files exist
-**Cause**: Supabase deployment sync delays between TypeScript shims and JavaScript implementations
-**Files Affected**: `runware-generate-image`, `runware-template-cd`, `ai-visual-scene-creator`
-**Status**: Files are present and functional - this is a false positive
+### ⚠️ DISTINGUISHING REAL vs FALSE BOOT FAILURES
 
-### Troubleshooting Steps
-1. Verify files exist in GitHub repository
-2. Check DEPLOY_MARKER timestamps for sync confirmation
-3. Monitor function execution - should work despite log errors
-4. Force redeploy only if actual functionality is broken
+**REAL 503 Boot Failures** (Action Required):
+- Analytics show consistent boot failure patterns
+- Multiple deployment attempts fail
+- Function completely unavailable
+- Requires immediate investigation
+
+**FALSE POSITIVE "Module not found" Errors** (NO Action Required):
+- Logs show "Module not found: index.js" 
+- Files exist in GitHub repository
+- Function executes successfully when called
+- Deployment sync delay between TypeScript and JavaScript files
+
+### Option A Implementation (Boot Failure Prevention)
+
+**Pattern**: Strengthened TypeScript Receptionist
+- TypeScript file handles CORS directly
+- Dynamic import of JavaScript implementation
+- Fallback responses during sync anomalies
+- Comprehensive error handling with retry guidance
+
+**Files Using Option A Pattern**:
+- `runware-generate-image/index.ts` - Strengthened receptionist
+- `runware-template-cd/index.ts` - Strengthened receptionist  
+- `ai-visual-scene-creator/index.ts` - Strengthened receptionist
+
+### Boot Failure Verification Procedures
+
+**Step 1: Check Analytics**
+```
+Version with boot failures: Analyze failure rate and patterns
+Version after fixes: Verify significant improvement
+```
+
+**Step 2: File Existence Verification**
+1. Verify both index.ts and index.js exist in GitHub
+2. Check DEPLOY_MARKER timestamps are current
+3. Confirm file sizes are reasonable (not 0 bytes)
+
+**Step 3: Function Execution Test**
+1. Make actual function calls (not just deployment checks)
+2. Monitor response times and success rates
+3. Check for graceful fallback responses during sync
+
+**Step 4: Developer Troubleshooting Checklist**
+- [ ] Analytics show actual boot failures (not just log warnings)
+- [ ] Files missing from GitHub repository
+- [ ] Function calls returning errors consistently
+- [ ] No graceful fallback responses present
+
+### Rollback Procedures
+
+**Emergency Rollback for Option A**:
+1. Revert TypeScript files to simple shim pattern
+2. Update DEPLOY_MARKER to force fresh deployment
+3. Monitor analytics for improvement
+4. Restore backup files if available
 
 ## Forced Redeploy History
 
