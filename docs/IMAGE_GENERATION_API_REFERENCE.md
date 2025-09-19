@@ -146,7 +146,7 @@ AI-powered visual scene enhancement using OpenAI + Runware.
 
 ### Tier 2.5: Template Fallback
 
-#### `POST /functions/v1/runware-simple-fallback`
+#### `POST /functions/v1/runware-template-ab`
 Template-based fallback with multiple complexity levels.
 
 **Request Body**:
@@ -294,7 +294,7 @@ const tier1Result = await supabase.functions.invoke('ai-visual-scene-creator', {
 });
 
 // Test Tier 2.5 with specific complexity
-const tier25Result = await supabase.functions.invoke('runware-simple-fallback', {
+const tier25Result = await supabase.functions.invoke('runware-template-ab', {
   body: { storyText, avatarIdentity, complexity: 'B' }
 });
 ```

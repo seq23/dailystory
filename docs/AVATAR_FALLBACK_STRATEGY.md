@@ -19,7 +19,7 @@ const avatarType = avatarIdentity?.type || userInfo?.avatar?.type || 'child';
 
 ### Edge Function Usage
 ```javascript
-// runware-simple-fallback/index.ts
+// runware-template-ab/index.js
 const avatarType = avatarIdentity?.type || userInfo?.avatar?.type || 'child';
 
 // FrontendIntelligence.js

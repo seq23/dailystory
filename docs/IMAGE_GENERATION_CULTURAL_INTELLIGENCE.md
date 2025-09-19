@@ -630,7 +630,7 @@ const negativePrompt = generateNuclearNegativePrompt(culturalProfile, avatarIden
 // AI Enhancement (ai-visual-scene-creator)  
 const enhancedData = await processWithCulturalContext(storyText, avatarIdentity);
 
-// Nuclear Fallback (runware-simple-fallback)
+// Nuclear Fallback (runware-template-ab)
 const templateData = await processCulturalTemplate(pageText, avatarIdentity);
 ```
 

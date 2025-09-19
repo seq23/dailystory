@@ -25,7 +25,7 @@ The image generation system requires these Supabase edge functions:
 
 1. **`runware-generate-image`** - Main orchestrator
 2. **`ai-visual-scene-creator`** - Tier 1 AI enhancement  
-3. **`runware-simple-fallback`** - Tier 2.5 template fallback
+3. **`runware-template-ab`** - Tier 2.5 template fallback
 
 ### Function Deployment Architecture
 - **Primary Functions**: Use TypeScript shims (`index.ts`) that import JavaScript implementations (`index.js`)
@@ -61,7 +61,7 @@ Configure these secrets in Supabase Dashboard > Edge Functions > Secrets:
 
 #### `RUNWARE_API_KEY`  
 - **Purpose**: Powers image generation in Tiers 1 and 2.5
-- **Required For**: `ai-visual-scene-creator`, `runware-simple-fallback`
+- **Required For**: `ai-visual-scene-creator`, `runware-template-ab`
 - **Format**: Runware API key
 - **Where to Get**: https://runware.ai/ (Dashboard > API Keys)
 
@@ -123,7 +123,7 @@ verify_jwt = false
 [functions.ai-visual-scene-creator]
 verify_jwt = false
 
-[functions.runware-simple-fallback]
+[functions.runware-template-ab]
 verify_jwt = false
 ```
 

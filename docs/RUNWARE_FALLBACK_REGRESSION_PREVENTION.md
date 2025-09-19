@@ -1,7 +1,7 @@
 # Runware Simple Fallback - Regression Prevention Guide
 
 **Last Updated**: January 2025  
-**File**: `supabase/functions/runware-simple-fallback/index.ts`  
+**File**: `supabase/functions/runware-template-ab/index.js`  
 **Status**: ✅ Enhanced Framework Prompts Implemented with Nuclear Regression Protection
 
 ## Overview

@@ -32,7 +32,7 @@ Navigate to `/prompt-testing?debug=1` to access the tier testing interface.
 
 #### Individual Tier Tests
 - **Tier 1**: Tests `ai-visual-scene-creator` directly
-- **Tier 2.5A-D**: Tests `runware-simple-fallback` with different complexity levels
+- **Tier 2.5A-D**: Tests `runware-template-ab` with different complexity levels
 - **Tier 4**: Uses local placeholder generation (no edge function dependency)
 
 #### Batch Testing
@@ -80,7 +80,7 @@ Monitor edge function logs in Supabase Dashboard:
 - `OPENAI REQUEST`: OpenAI API interactions
 - `RUNWARE WEBSOCKET`: WebSocket connection status
 
-##### Tier 2.5 (`runware-simple-fallback`)
+##### Tier 2.5 (`runware-template-ab`)
 - `TEMPLATE FALLBACK`: Template selection and processing
 - `COMPLEXITY LEVEL`: Complexity fallback progression
 - `RUNWARE API`: Direct API interactions

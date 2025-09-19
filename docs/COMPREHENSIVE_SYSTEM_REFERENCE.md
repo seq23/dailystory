@@ -23,7 +23,7 @@ const hairMap = {
 ### Implementation Locations
 - **Tier 1**: `supabase/functions/runware-generate-image/index.ts` (lines 807-814)
 - **Tier 2**: `supabase/functions/runware-template-generation/index.ts` (via UnifiedCharacterDescriptor)
-- **Tier 2.5**: `supabase/functions/runware-simple-fallback/index.ts` (lines 286-292)
+- **Tier 2.5**: `supabase/functions/runware-template-ab/index.js` (lines 286-292)
 - **Shared Logic**: `supabase/functions/_shared/UnifiedCharacterDescriptor.js` (lines 32-38)
 - **Hair Intelligence**: `supabase/functions/_shared/FrontendIntelligence.js` (getUniversalHairMapping method)
 
@@ -52,7 +52,7 @@ Unknown name → "7-year-old child" (safe fallback)
 ### Implementation Locations
 - **Tier 1**: `supabase/functions/runware-generate-image/index.ts` (lines 32-37, 763)
 - **Tier 2**: `supabase/functions/runware-template-generation/index.ts` (lines 188-198)
-- **Tier 2.5**: `supabase/functions/runware-simple-fallback/index.ts` (lines 24, 246-248, 395-397)
+- **Tier 2.5**: `supabase/functions/runware-template-ab/index.js` (lines 24, 246-248, 395-397)
 - **AI Enhancement**: `supabase/functions/ai-visual-scene-creator/index.ts` (line 430)
 - **Shared Logic**: `supabase/functions/_shared/UnifiedCharacterConsistency.js` (lines 115, 154, 394-398)
 - **Pipeline Enhancement**: `supabase/functions/_shared/MultiStageEnhancementPipeline.js` (lines 827-829)

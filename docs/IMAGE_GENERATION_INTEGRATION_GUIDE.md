@@ -269,7 +269,7 @@ verify_jwt = false
 [functions.ai-visual-scene-creator]
 verify_jwt = false
 
-[functions.runware-simple-fallback]
+[functions.runware-template-ab]
 verify_jwt = false
 ```
 
@@ -338,7 +338,7 @@ const generateWithTemplates = async (params: {
   pageNumber?: number;
   difficultyLevel?: string;
 }) => {
-  const { data, error } = await supabase.functions.invoke('runware-simple-fallback', {
+  const { data, error } = await supabase.functions.invoke('runware-template-ab', {
     body: params
   });
 
