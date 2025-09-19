@@ -226,12 +226,12 @@ export const FormStep1Essential = ({
             <SelectContent>
               <SelectItem value="PreK">{t("formStep1.grade.preK", "Pre-K")}</SelectItem>
               <SelectItem value="K">{t("formStep1.grade.k", "Kindergarten")}</SelectItem>
-              <SelectItem value="1st">{t("formStep1.grade.1st", "1st Grade")}</SelectItem>
-              <SelectItem value="2nd">{t("formStep1.grade.2nd", "2nd Grade")}</SelectItem>
-              <SelectItem value="3rd">{t("formStep1.grade.3rd", "3rd Grade")}</SelectItem>
-              <SelectItem value="4th">{t("formStep1.grade.4th", "4th Grade")}</SelectItem>
-              <SelectItem value="5th">{t("formStep1.grade.5th", "5th Grade")}</SelectItem>
-              <SelectItem value="6th+">{t("formStep1.grade.6thPlus", "6th Grade & Up")}</SelectItem>
+              <SelectItem value="1">{t("formStep1.grade.1st", "1st Grade")}</SelectItem>
+              <SelectItem value="2">{t("formStep1.grade.2nd", "2nd Grade")}</SelectItem>
+              <SelectItem value="3">{t("formStep1.grade.3rd", "3rd Grade")}</SelectItem>
+              <SelectItem value="4">{t("formStep1.grade.4th", "4th Grade")}</SelectItem>
+              <SelectItem value="5">{t("formStep1.grade.5th", "5th Grade")}</SelectItem>
+              <SelectItem value="6">{t("formStep1.grade.6thPlus", "6th Grade & Up")}</SelectItem>
             </SelectContent>
           </Select>
         </div>

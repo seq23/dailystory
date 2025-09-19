@@ -528,12 +528,12 @@ export const LegacyUserInfoForm = ({ onSubmit, onBack, isPremium = false }: User
                   <SelectContent className="bg-popover border border-border shadow-soft z-50">
                     <SelectItem value="PreK" className="focus:bg-accent focus:text-accent-foreground">{t("userInfoForm.grades.PreK", "Pre-K")}</SelectItem>
                     <SelectItem value="K" className="focus:bg-accent focus:text-accent-foreground">{t("userInfoForm.grades.K", "Kindergarten")}</SelectItem>
-                    <SelectItem value="1st" className="focus:bg-accent focus:text-accent-foreground">{t("userInfoForm.grades.1st", "1st Grade")}</SelectItem>
-                    <SelectItem value="2nd" className="focus:bg-accent focus:text-accent-foreground">{t("userInfoForm.grades.2nd", "2nd Grade")}</SelectItem>
-                    <SelectItem value="3rd" className="focus:bg-accent focus:text-accent-foreground">{t("userInfoForm.grades.3rd", "3rd Grade")}</SelectItem>
-                    <SelectItem value="4th" className="focus:bg-accent focus:text-accent-foreground">{t("userInfoForm.grades.4th", "4th Grade")}</SelectItem>
-                    <SelectItem value="5th" className="focus:bg-accent focus:text-accent-foreground">{t("userInfoForm.grades.5th", "5th Grade")}</SelectItem>
-                    <SelectItem value="6th" className="focus:bg-accent focus:text-accent-foreground">{t("userInfoForm.grades.6th", "6th Grade")}</SelectItem>
+                    <SelectItem value="1" className="focus:bg-accent focus:text-accent-foreground">{t("userInfoForm.grades.1st", "1st Grade")}</SelectItem>
+                    <SelectItem value="2" className="focus:bg-accent focus:text-accent-foreground">{t("userInfoForm.grades.2nd", "2nd Grade")}</SelectItem>
+                    <SelectItem value="3" className="focus:bg-accent focus:text-accent-foreground">{t("userInfoForm.grades.3rd", "3rd Grade")}</SelectItem>
+                    <SelectItem value="4" className="focus:bg-accent focus:text-accent-foreground">{t("userInfoForm.grades.4th", "4th Grade")}</SelectItem>
+                    <SelectItem value="5" className="focus:bg-accent focus:text-accent-foreground">{t("userInfoForm.grades.5th", "5th Grade")}</SelectItem>
+                    <SelectItem value="6" className="focus:bg-accent focus:text-accent-foreground">{t("userInfoForm.grades.6th", "6th Grade")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

@@ -40,7 +40,7 @@ export const SUPPORTED_LANGUAGES = [
 ] as const;
 
 export const GRADE_LEVELS = [
-  'PreK', 'K', '1st', '2nd', '3rd', '4th', '5th', '6th+'
+  'PreK', 'K', '1', '2', '3', '4', '5', '6'
 ] as const;
 
 export const DIFFICULTY_LEVELS = [

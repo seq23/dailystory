@@ -119,7 +119,7 @@ const testUserProfiles: Record<string, UserInfo> = {
   developing: {
     name: 'Maya',
     age: 8,
-    grade: "2nd" as Grade,
+    grade: "2" as Grade,
     nativeLanguage: "en" as LanguageCode,
     learningGoal: "improve-english-reading" as LearningGoal,
     avatar: { type: "girl", skinTone: "medium" },
@@ -133,7 +133,7 @@ const testUserProfiles: Record<string, UserInfo> = {
   independent: {
     name: 'Jordan',
     age: 10,
-    grade: "4th" as Grade,
+    grade: "4" as Grade,
     nativeLanguage: "en" as LanguageCode,
     learningGoal: "improve-english-reading" as LearningGoal,
     avatar: { type: "boy", skinTone: "dark" },
@@ -147,7 +147,7 @@ const testUserProfiles: Record<string, UserInfo> = {
   advanced: {
     name: 'Taylor',
     age: 12,
-    grade: "6th+" as Grade,
+    grade: "6" as Grade,
     nativeLanguage: "en" as LanguageCode,
     learningGoal: "improve-english-reading" as LearningGoal,
     avatar: { type: "prefer-not-to-answer", skinTone: "medium" },
@@ -164,7 +164,7 @@ const testUserProfiles: Record<string, UserInfo> = {
   grade6: {
     name: 'Sam',
     age: 11,
-    grade: "6th+" as Grade,
+    grade: "6" as Grade,
     nativeLanguage: "en" as LanguageCode,
     learningGoal: "improve-english-reading" as LearningGoal,
     avatar: { type: "prefer-not-to-answer", skinTone: "medium" },
@@ -179,7 +179,7 @@ const testUserProfiles: Record<string, UserInfo> = {
   grade7: {
     name: 'Dakota',
     age: 12,
-    grade: "6th+" as Grade,
+    grade: "6" as Grade,
     nativeLanguage: "en" as LanguageCode,
     learningGoal: "improve-english-reading" as LearningGoal,
     avatar: { type: "boy", skinTone: "dark" },
@@ -194,7 +194,7 @@ const testUserProfiles: Record<string, UserInfo> = {
   grade8: {
     name: 'River',
     age: 13,
-    grade: "6th+" as Grade,
+    grade: "6" as Grade,
     nativeLanguage: "en" as LanguageCode,
     learningGoal: "improve-english-reading" as LearningGoal,
     avatar: { type: "girl", skinTone: "medium" },
@@ -209,7 +209,7 @@ const testUserProfiles: Record<string, UserInfo> = {
   grade9: {
     name: 'Sage',
     age: 14,
-    grade: "6th+" as Grade,
+    grade: "6" as Grade,
     nativeLanguage: "en" as LanguageCode,
     learningGoal: "improve-english-reading" as LearningGoal,
     avatar: { type: "girl", skinTone: "olive" },
@@ -224,7 +224,7 @@ const testUserProfiles: Record<string, UserInfo> = {
   grade10: {
     name: 'Phoenix',
     age: 15,
-    grade: "6th+" as Grade,
+    grade: "6" as Grade,
     nativeLanguage: "en" as LanguageCode,
     learningGoal: "improve-english-reading" as LearningGoal,
     avatar: { type: "boy", skinTone: "olive" },
@@ -259,7 +259,7 @@ export function StoryPromptTester() {
   const [customUserPrefs, setCustomUserPrefs] = useState<UserInfo>({
     name: 'Test User',
     age: 8,
-    grade: "2nd" as Grade,
+    grade: "2" as Grade,
     nativeLanguage: "en" as LanguageCode,
     learningGoal: "improve-english-reading" as LearningGoal,
     avatar: { type: "prefer-not-to-answer", skinTone: "medium" },
@@ -1591,12 +1591,12 @@ export function StoryPromptTester() {
                             <SelectContent>
                               <SelectItem value="PreK">PreK</SelectItem>
                               <SelectItem value="K">Kindergarten</SelectItem>
-                              <SelectItem value="1st">1st Grade</SelectItem>
-                              <SelectItem value="2nd">2nd Grade</SelectItem>
-                              <SelectItem value="3rd">3rd Grade</SelectItem>
-                              <SelectItem value="4th">4th Grade</SelectItem>
-                              <SelectItem value="5th">5th Grade</SelectItem>
-                              <SelectItem value="6th+">6th+ Grade</SelectItem>
+                              <SelectItem value="1">1st Grade</SelectItem>
+                              <SelectItem value="2">2nd Grade</SelectItem>
+                              <SelectItem value="3">3rd Grade</SelectItem>
+                              <SelectItem value="4">4th Grade</SelectItem>
+                              <SelectItem value="5">5th Grade</SelectItem>
+                              <SelectItem value="6">6th+ Grade</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
