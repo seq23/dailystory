@@ -135,6 +135,12 @@ export class LiveGenerationService {
       const shouldConclude = !!userRequestedEnding;
       
       console.log(`🚀 Live Generation: Generating page ${nextPageNumber} (never-ending story, userRequestedEnding=${!!userRequestedEnding})`);
+      console.log(`🔄 Live Generation: Context continuity check`, {
+        contextPage: context.currentPage,
+        storyContextLength: context.storyContext?.length,
+        sessionId: sessionId || 'auto-generated',
+        difficulty: context.difficulty
+      });
       
       let promptConfig: any;
       const backendDifficulty = DifficultyLevelMapper.toBackend(context.difficulty) as DifficultyLevel;
@@ -154,6 +160,10 @@ export class LiveGenerationService {
       
       const actualSessionId = sessionId || `live-next-${context.userInfo.name}-${Date.now()}`;
       console.log(`🆔 LiveGen: Next Page Session ID: ${actualSessionId}`);
+      console.log(`📚 LiveGen: Story context for continuation`, {
+        existingPages: context.storyContext?.length,
+        lastPagePreview: context.storyContext?.slice(-1)[0]?.substring(0, 50) + '...'
+      });
       
       // Wrap with 35-45s Promise.race timeout for robust timeout handling
       const timeoutPromise = new Promise<never>((_, reject) => {

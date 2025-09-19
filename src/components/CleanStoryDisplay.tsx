@@ -1631,7 +1631,13 @@ const initializeStory = async () => {
               totalExpectedPages: Math.max(cached.pages.length + 1, 6),
               characters: [userInfo.name, userInfo.favoriteAnimal || 'friend']
             };
-            setLiveContext(ctx);
+        setLiveContext(ctx);
+        DebugLogger.log('story', '💾 Premium Live Generation: Context restored from cache', {
+          contextPage: ctx.currentPage,
+          storyContextLength: ctx.storyContext?.length,
+          difficulty: ctx.difficulty,
+          sessionId: stableSessionId
+        });
             const srcPremium = (window as any).__LAST_STORY_SOURCE__ || 'cached';
             setStorySource(srcPremium);
             
@@ -1678,6 +1684,12 @@ const initializeStory = async () => {
         title: `${userInfo.name}'s Live Adventure`
       });
       setLiveContext(result.nextContext || null);
+      DebugLogger.log('story', '🚀 Premium Live Generation: Initial context set', {
+        hasNextContext: !!result.nextContext,
+        contextPage: result.nextContext?.currentPage,
+        storyContextLength: result.nextContext?.storyContext?.length,
+        sessionId: stableSessionId
+      });
       // Sync UI with adaptive expert grade if returned
       if (result.nextContext?.expertGradeLevel) {
         setExpertGradeLevel(result.nextContext.expertGradeLevel);
@@ -2007,16 +2019,37 @@ const initializeStory = async () => {
 
   const generateNextPage = async (): Promise<LivePageResult | undefined> => {
     if (!isPremium || !liveContext || isLoadingNextPage) return;
+    
+    DebugLogger.log('story', '🔄 Premium Live Generation: generateNextPage called', {
+      hasLiveContext: !!liveContext,
+      currentContextPage: liveContext?.currentPage,
+      storyContextLength: liveContext?.storyContext?.length,
+      sessionId: stableSessionId
+    });
+    
     setIsLoadingNextPage(true);
     try {
-      const result = await LiveGenerationService.generateNextPage(liveContext, vocabularyData);
-      if (result.error) {
+      // Ensure session ID consistency for continuation
+      const sessionId = stableSessionId || `live-${userInfo.name}-${Date.now()}`;
+      const result = await LiveGenerationService.generateNextPage(liveContext, vocabularyData, false, sessionId);
+      
+      DebugLogger.log('story', '✅ Premium Live Generation: generateNextPage result', {
+        hasResult: !!result,
+        hasError: !!result?.error,
+        hasNextContext: !!result?.nextContext,
+        nextContextPage: result?.nextContext?.currentPage,
+        nextContextStoryLength: result?.nextContext?.storyContext?.length,
+        isComplete: result?.isComplete
+      });
+      
+      if (result?.error) {
+        DebugLogger.error('story', '❌ Premium Live Generation: Error in generateNextPage', result.error);
         setError(result.error);
         return;
       }
       return result;
     } catch (error) {
-      DebugLogger.error('story', 'Failed to generate next page', error);
+      DebugLogger.error('story', '💥 Premium Live Generation: Exception in generateNextPage', error);
       setError('Failed to continue the story. Please try again.');
       return;
     } finally {
@@ -2418,6 +2451,16 @@ const initializeStory = async () => {
       
       if (result && !result.error) {
         const pageContent = Array.isArray(result.content) ? result.content[0] : result.content;
+        
+        DebugLogger.log('story', '🎯 Premium Live Generation: Processing next page result', {
+          pageContent: pageContent?.substring(0, 100) + '...',
+          hasNextContext: !!result.nextContext,
+          currentContextPage: liveContext?.currentPage,
+          resultContextPage: result.nextContext?.currentPage,
+          resultStoryContextLength: result.nextContext?.storyContext?.length,
+          isComplete: result.isComplete
+        });
+        
         StoryContentLogger.logStoryChange('premium_next_page', 'before', [...story, pageContent], {
           currentPageBeforeAdd: currentPage,
           contentPreview: pageContent?.substring(0, 100),
@@ -2437,7 +2480,33 @@ const initializeStory = async () => {
           newCurrentPage: currentPage + 1,
           totalPages: story.length + 1
         });
-        setLiveContext(result.nextContext || null);
+        
+        // CRITICAL FIX: Preserve context continuity - never set to null if we have context
+        if (result.nextContext) {
+          DebugLogger.log('story', '✅ Premium Live Generation: Updating context for continuation', {
+            oldPage: liveContext?.currentPage,
+            newPage: result.nextContext.currentPage,
+            newStoryLength: result.nextContext.storyContext?.length
+          });
+          setLiveContext(result.nextContext);
+        } else if (liveContext && !result.isComplete) {
+          // Fallback: create continuation context if missing but story not complete
+          DebugLogger.warn('story', '⚠️ Premium Live Generation: Missing nextContext, creating fallback', {
+            currentStoryLength: story.length,
+            isComplete: result.isComplete
+          });
+          const fallbackContext: LiveGenerationContext = {
+            ...liveContext,
+            storyContext: [...liveContext.storyContext, pageContent],
+            currentPage: currentPage + 1,
+            totalExpectedPages: Math.max(liveContext.totalExpectedPages, currentPage + 2)
+          };
+          setLiveContext(fallbackContext);
+        } else {
+          DebugLogger.log('story', '🏁 Premium Live Generation: Story complete, clearing context');
+          setLiveContext(null);
+        }
+        
         setIsStoryComplete(result.isComplete);
         setCurrentPage(prev => prev + 1);
         
@@ -2475,7 +2544,16 @@ const initializeStory = async () => {
               totalExpectedPages: Math.max(story.length + 1, 6),
               characters: [userInfo.name, userInfo.favoriteAnimal || 'friend']
             };
-            const result = await LiveGenerationService.generateNextPage(newContext, vocabularyData);
+            const sessionId = stableSessionId || `live-sequel-${userInfo.name}-${Date.now()}`;
+            const result = await LiveGenerationService.generateNextPage(newContext, vocabularyData, false, sessionId);
+            
+            DebugLogger.log('story', '🎬 Premium Live Generation: Sequel generation result', {
+              hasResult: !!result,
+              hasError: !!result?.error,
+              hasNextContext: !!result?.nextContext,
+              sessionId
+            });
+            
             if (result && !result.error) {
               const pageContent = Array.isArray(result.content) ? result.content[0] : result.content;
               StoryContentLogger.logStoryChange('premium_sequel_generation', 'before', [...story, pageContent], {
@@ -2488,7 +2566,21 @@ const initializeStory = async () => {
                 newCurrentPage: currentPage + 1,
                 totalPages: story.length + 1
               });
-              setLiveContext(result.nextContext || newContext);
+              
+              // CRITICAL FIX: Preserve sequel context continuity
+              if (result.nextContext) {
+                setLiveContext(result.nextContext);
+              } else {
+                // Fallback context for sequel continuation
+                const sequelContext: LiveGenerationContext = {
+                  ...newContext,
+                  storyContext: [...newContext.storyContext, pageContent],
+                  currentPage: currentPage + 1,
+                  totalExpectedPages: Math.max(newContext.totalExpectedPages, currentPage + 2)
+                };
+                setLiveContext(sequelContext);
+              }
+              
               setIsStoryComplete(result.isComplete);
               setCurrentPage(prev => prev + 1);
               setJustAdvanced(true);
