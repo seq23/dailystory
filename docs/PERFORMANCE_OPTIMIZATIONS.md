@@ -102,6 +102,47 @@ Multiple forced reflow violations occurring during DOM measurements.
 - Global PerformanceObserver for reflow detection
 - Comprehensive error pattern matching for cleaner console output
 
+### 6. **Dynamic Image Aspect Ratio Fix** - Mobile/Tablet Whitespace Elimination
+**Problem**: Fixed-height image containers causing whitespace/letterboxing on mobile/tablet when image aspect ratios don't match container dimensions.
+
+**Solution**:
+- Implemented dynamic aspect ratio containers using `AspectRatio` component
+- Preload images to calculate natural aspect ratios 
+- State management for `imageAspectRatios` and `imageNaturalSizes`
+- Default 4:3 fallback ratio to prevent layout shifts
+- Mobile/tablet specific - desktop layout unchanged
+
+**Critical Implementation**:
+```typescript
+// State for dynamic aspect ratios
+const [imageAspectRatios, setImageAspectRatios] = useState<Record<number, number>>({});
+const [imageNaturalSizes, setImageNaturalSizes] = useState<Record<number, {width: number, height: number}>>({});
+
+// Preload and calculate aspect ratios
+useEffect(() => {
+  if (isMobileOrTablet) {
+    Object.entries(pageImages).forEach(([pageKey, imageUrl]) => {
+      const img = new Image();
+      img.onload = () => {
+        const aspectRatio = img.naturalWidth / img.naturalHeight;
+        setImageAspectRatios(prev => ({ ...prev, [pageNum]: aspectRatio }));
+      };
+      img.src = imageUrl;
+    });
+  }
+}, [pageImages, isMobileOrTablet, imageAspectRatios]);
+
+// Dynamic container with AspectRatio component
+<AspectRatio 
+  ratio={imageAspectRatios[currentPage] || 4/3} 
+  className="relative w-full rounded-2xl overflow-hidden shadow-2xl bg-muted/30"
+>
+  <ImageWithFallback className="w-full h-full object-cover rounded-lg" />
+</AspectRatio>
+```
+
+**REGRESSION PREVENTION**: This fix is critical for mobile/tablet UX. DO NOT revert to fixed-height containers without dynamic aspect ratio calculation.
+
 ## Error Handling Improvements
 
 ### Network Error Resilience

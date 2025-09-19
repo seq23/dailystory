@@ -411,7 +411,79 @@ console.warn('🚨 Rapid changes detected:', { changeCount, timeWindow });
 </MobileOptimizedButton>
 ```
 
-#### 2. Gesture Support
+#### 2. Dynamic Image Aspect Ratio Containers (Mobile/Tablet)
+**CRITICAL FIX FOR REGRESSION PREVENTION**
+
+**Problem**: Fixed-height image containers on mobile/tablet create whitespace/letterboxing when image aspect ratios don't match container ratio.
+
+**Solution**: Dynamic aspect ratio containers that adapt to each image's natural proportions.
+
+```typescript
+// Mobile/Tablet: Dynamic aspect ratio to prevent whitespace
+{currentImage ? (
+  <AspectRatio 
+    ratio={imageAspectRatios[currentPage] || 4/3} 
+    className="relative w-full rounded-2xl overflow-hidden shadow-2xl bg-muted/30"
+  >
+    <ImageWithFallback
+      src={currentImage}
+      alt={`Story illustration for page ${currentPage + 1}`}
+      className="w-full h-full object-cover rounded-lg" // object-cover, not object-contain
+      onLoadingChange={handleImageLoadingChange}
+      onFallbackUsed={handleImageFallbackUsed}
+    />
+  </AspectRatio>
+) : (
+  <div className="relative w-full rounded-2xl overflow-hidden shadow-2xl bg-muted/30 flex items-center justify-center" style={{ aspectRatio: '4/3' }}>
+    <ImageMixingLoading />
+  </div>
+)}
+```
+
+**State Management**:
+```typescript
+const [imageAspectRatios, setImageAspectRatios] = useState<Record<number, number>>({});
+const [imageNaturalSizes, setImageNaturalSizes] = useState<Record<number, {width: number, height: number}>>({});
+
+// Preload images and calculate aspect ratios for mobile/tablet dynamic sizing
+useEffect(() => {
+  if (isMobileOrTablet) {
+    Object.entries(pageImages).forEach(([pageKey, imageUrl]) => {
+      const pageNum = parseInt(pageKey);
+      
+      // Skip if we already have this image's aspect ratio
+      if (imageAspectRatios[pageNum]) return;
+      
+      const img = new Image();
+      img.onload = () => {
+        const aspectRatio = img.naturalWidth / img.naturalHeight;
+        
+        setImageAspectRatios(prev => ({
+          ...prev,
+          [pageNum]: aspectRatio
+        }));
+        
+        setImageNaturalSizes(prev => ({
+          ...prev,
+          [pageNum]: { width: img.naturalWidth, height: img.naturalHeight }
+        }));
+      };
+      
+      img.src = imageUrl;
+    });
+  }
+}, [pageImages, isMobileOrTablet, imageAspectRatios]);
+```
+
+**Key Benefits**:
+- **Eliminates Whitespace**: No letterboxing on mobile/tablet
+- **Maintains Image Quality**: Uses `object-cover` for full container fill
+- **Prevents Layout Shift**: Default 4:3 ratio until actual ratio loads
+- **Desktop Unchanged**: Only applies to mobile/tablet layouts
+
+**REGRESSION PREVENTION**: This fix MUST remain for mobile/tablet images. Do NOT revert to fixed-height containers without aspect ratio adaptation.
+
+#### 3. Gesture Support
 ```typescript
 // Swipe navigation for mobile users
 const handleSwipeGesture = (direction: 'left' | 'right') => {
