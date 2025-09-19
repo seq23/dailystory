@@ -12,6 +12,7 @@ import { Search, Download, CheckCircle, XCircle, Database, HardDrive, Image, Che
 import { DebugGateway } from '@/services/DebugGateway';
 import { useToast } from '@/hooks/use-toast';
 import { DebugLogger } from '@/services/DebugLogger';
+import { TierCascadeViewer } from '@/components/TierCascadeViewer';
 
 interface AIPromptData {
   sessionId: string;
@@ -61,6 +62,7 @@ export function DebugDataViewer() {
   const [expandedPrompt, setExpandedPrompt] = useState<number | null>(null);
   const [lastError, setLastError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('story-generation');
+  const [tierCascadeData, setTierCascadeData] = useState<any[] | null>(null);
   const { toast } = useToast();
 
   const fetchDebugData = async () => {
@@ -198,16 +200,69 @@ export function DebugDataViewer() {
     }
   };
 
+  const fetchTierCascadeData = async () => {
+    if (!sessionId.trim()) {
+      const errorMsg = "Please enter a session ID to fetch tier cascade data.";
+      setLastError(errorMsg);
+      toast({
+        title: "Session ID Required",
+        description: errorMsg,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    setLastError(null);
+
+    try {
+      const { data } = await DebugGateway.getPromptHistory(sessionId.trim(), 50);
+      
+      if (!data || !data.fullDebugData) {
+        setLastError('No tier routing data found');
+        return;
+      }
+
+      // Filter for tier routing entries
+      const tierRoutingLogs = data.fullDebugData.filter((item: any) => 
+        item.userPrompt?.includes('TIER_ROUTING') || 
+        item.model?.includes('tier-routing')
+      );
+
+      if (tierRoutingLogs.length === 0) {
+        setLastError('No tier routing data found for this session');
+        return;
+      }
+
+      setTierCascadeData(tierRoutingLogs);
+      setLastError(null);
+      
+      toast({
+        title: "Tier Cascade Data Retrieved",
+        description: `Found ${tierRoutingLogs.length} tier routing entries`,
+      });
+    } catch (err) {
+      console.error('Failed to fetch tier cascade data:', err);
+      setLastError('Failed to fetch tier cascade data. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleFetch = () => {
     if (activeTab === 'story-generation') {
       fetchDebugData();
-    } else {
+    } else if (activeTab === 'image-generation') {
       fetchImageData();
+    } else {
+      fetchTierCascadeData();
     }
   };
 
   const downloadDebugData = () => {
-    const dataToDownload = activeTab === 'story-generation' ? debugData : imageData;
+    const dataToDownload = activeTab === 'story-generation' ? debugData : 
+                          activeTab === 'image-generation' ? imageData : 
+                          tierCascadeData;
     if (!dataToDownload) return;
     
     const dataStr = JSON.stringify(dataToDownload, null, 2);
@@ -241,11 +296,15 @@ export function DebugDataViewer() {
         </CardHeader>
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="story-generation">Story Generation</TabsTrigger>
               <TabsTrigger value="image-generation" className="flex items-center gap-2">
                 <Image className="h-4 w-4" />
                 Image Generation
+              </TabsTrigger>
+              <TabsTrigger value="tier-cascade" className="flex items-center gap-2">
+                <Image className="h-4 w-4" />
+                Tier Routing
               </TabsTrigger>
             </TabsList>
             
@@ -269,7 +328,7 @@ export function DebugDataViewer() {
                 </div>
               )}
 
-              {(debugData || imageData) && (
+              {(debugData || imageData || tierCascadeData) && (
                 <div className="flex items-center gap-4 pt-4">
                   <Badge variant="outline" className="flex items-center gap-1">
                     {activeTab === 'story-generation' ? (
@@ -285,7 +344,9 @@ export function DebugDataViewer() {
                     )}
                   </Badge>
                   <Badge variant="secondary">
-                    {activeTab === 'story-generation' ? debugData?.totalEntries : imageData?.length} entries found
+                    {activeTab === 'story-generation' ? debugData?.totalEntries : 
+                     activeTab === 'image-generation' ? imageData?.length :
+                     tierCascadeData?.length} entries found
                   </Badge>
                   <Button
                     variant="outline"
@@ -304,6 +365,25 @@ export function DebugDataViewer() {
       </Card>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsContent value="tier-cascade">
+          {tierCascadeData && tierCascadeData.length > 0 && (
+            <TierCascadeViewer tierData={tierCascadeData} sessionId={sessionId} />
+          )}
+          
+          {tierCascadeData && tierCascadeData.length === 0 && (
+            <Card>
+              <CardContent className="text-center py-8">
+                <p className="text-muted-foreground">
+                  No tier routing data found for session: {sessionId}
+                </p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Tier routing data is only available for sessions with image generation attempts.
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+        
         <TabsContent value="story-generation">
           {debugData && debugData.fullDebugData && debugData.fullDebugData.length > 0 && (
             <div className="space-y-4">

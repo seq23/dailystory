@@ -92,6 +92,7 @@ import { characterConsistencyService } from '../_shared/CharacterConsistencyServ
 import { visualDetailTracker } from '../_shared/VisualDetailTracker.js';
 import { CULTURAL_ARRAYS, createSeededRandom } from '../_shared/tier25Vocabulary.js';
 import { getCulturalBundle } from '../_shared/StaticDataCache.js';
+import { logTierAttempt, getErrorType } from './tierLogging.js';
 
 // ============= PHASE B5: CENTRALIZED ERROR HANDLING =============
 class EdgeErrorHandler {
@@ -907,14 +908,43 @@ serve(async (req) => {
       if (runwareService?.status === 'configured' && (!forceTier || forceTier === 'tier-1')) {
         try {
           console.log(`🚀 [${requestId}] Attempting Tier 1: Runware Premium`);
+          
+          // LOG TIER ROUTING: Tier 1 attempt
+          await logTierAttempt(supabase, sessionId, requestId, 'tier-1', 'attempt', { 
+            runwareConfigured: true,
+            pageNumber,
+            forceTier,
+            skipTier25
+          });
+          
           result = await CoreUtils.withTimeout(
             generateWithRunware(runwareService.key, pageText, sessionId, requestId, userInfo, avatarIdentity, pageNumber, enhancedStoryData, { skipTier25 }),
             10000,
             'Runware generation'
           );
+          
           console.log(`✅ [${requestId}] Tier 1 succeeded`);
+          
+          // LOG TIER ROUTING: Tier 1 success
+          await logTierAttempt(supabase, sessionId, requestId, 'tier-1', 'success', { 
+            imageURL: result?.imageURL,
+            tier: result?.tier,
+            provider: result?.provider
+          });
         } catch (error) {
           console.warn(`⚠️ [${requestId}] Tier 1 failed:`, error.message);
+          
+          // LOG TIER ROUTING: Tier 1 failure with detailed analysis
+          await logTierAttempt(supabase, sessionId, requestId, 'tier-1', 'failure', { 
+            error: error.message,
+            errorType: getErrorType(error.message),
+            escalationReason: error.message.includes('ESCALATE_TO_TIER_2_5A') ? 'enhanced_data_failure' :
+                             error.message.includes('character') ? 'character_consistency_failure' :
+                             error.message.includes('timeout') ? 'timeout' :
+                             'api_error',
+            skipTier25,
+            willEscalate: !skipTier25
+          });
           
           if (skipTier25) {
             throw new Error(`Tier 1 failed and skipTier25 flag set: ${error.message}`);
@@ -949,6 +979,16 @@ serve(async (req) => {
         const templateComplexity = determineTemplateComplexity(userInfo, avatarIdentity);
         console.log(`🎨 [${requestId}] Attempting Tier 2.5A (${templateComplexity}) with character consistency retry`);
         
+        // LOG TIER ROUTING: Tier 2.5A attempt 
+        await logTierAttempt(supabase, sessionId, requestId, 'tier-2.5A', 'attempt', { 
+          templateComplexity,
+          pageNumber,
+          characterService: serviceHealthDiagnostics.characterService,
+          visualTracker: serviceHealthDiagnostics.visualTracker,
+          hasAvatarIdentity: !!avatarIdentity,
+          failedTierData
+        });
+        
         try {
           const templateResult = await CoreUtils.withTimeout(
             supabase.functions.invoke('runware-template-ab', {
@@ -970,9 +1010,28 @@ serve(async (req) => {
           if (templateResult.data && templateResult.data.success) {
             result = templateResult.data;
             console.log(`✅ [${requestId}] Tier 2.5A succeeded`);
+            
+            // LOG TIER ROUTING: Tier 2.5A success
+            await logTierAttempt(supabase, sessionId, requestId, 'tier-2.5A', 'success', { 
+              imageURL: result?.imageURL,
+              tier: result?.tier,
+              provider: result?.provider,
+              templateComplexity,
+              templateType: 'runware-template-ab'
+            });
           }
         } catch (error) {
           console.warn(`⚠️ [${requestId}] Tier 2.5A failed:`, error.message);
+          
+          // LOG TIER ROUTING: Tier 2.5A failure with detailed analysis
+          await logTierAttempt(supabase, sessionId, requestId, 'tier-2.5A', 'failure', { 
+            error: error.message,
+            errorType: getErrorType(error.message),
+            templateComplexity,
+            templateType: 'runware-template-ab',
+            characterConsistencyFailure: failedTierData.characterConsistencyFailure,
+            willEscalateToTier2_5C: true
+          });
           
           // Update failedTierData with 2.5A information for escalation to 2.5C
           failedTierData.tier25AAttempted = true;
@@ -991,6 +1050,17 @@ serve(async (req) => {
         // Only attempt 2.5C if 2.5A was attempted or character consistency failure
         if (failedTierData.tier25AAttempted || failedTierData.characterConsistencyFailure) {
           console.log(`🎨 [${requestId}] Attempting Tier 2.5C-D (nuclear independence) after 2.5A failure`);
+          
+          // LOG TIER ROUTING: Tier 2.5C attempt
+          await logTierAttempt(supabase, sessionId, requestId, 'tier-2.5C', 'attempt', { 
+            pageNumber,
+            tier25AAttempted: failedTierData.tier25AAttempted,
+            tier25AComplexity: failedTierData.tier25AComplexity,
+            tier25AError: failedTierData.tier25AError,
+            characterConsistencyFailure: failedTierData.characterConsistencyFailure,
+            templateType: 'runware-template-cd',
+            nuclearIndependence: true
+          });
           
           try {
             const nuclearResult = await CoreUtils.withTimeout(

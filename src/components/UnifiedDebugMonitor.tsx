@@ -32,6 +32,26 @@ export const UnifiedDebugMonitor: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<DebugCategory | 'all'>('all');
   const [isRecording, setIsRecording] = useState(false);
   const [circuitBreakerStatus, setCircuitBreakerStatus] = useState<any>({});
+  const [currentSessionId, setCurrentSessionId] = useState('');
+
+  // Auto-detect current session ID for live monitoring
+  useEffect(() => {
+    const detectCurrentSession = () => {
+      const sessionId = sessionStorage.getItem('currentSessionId') || 
+                        sessionStorage.getItem('sessionId') ||
+                        localStorage.getItem('currentSessionId');
+      if (sessionId && sessionId !== currentSessionId) {
+        setCurrentSessionId(sessionId);
+        DebugLogger.log('ui', 'Auto-detected current session for live monitoring', { sessionId });
+      }
+    };
+    
+    // Check immediately and every 5 seconds
+    detectCurrentSession();
+    const interval = setInterval(detectCurrentSession, 5000);
+    
+    return () => clearInterval(interval);
+  }, [currentSessionId]);
 
   // Netflix monitoring setup with proper state management
   useEffect(() => {
