@@ -69,6 +69,20 @@ export function getErrorType(errorMessage) {
 }
 
 /**
+ * Log tier success with detailed context for debugging
+ */
+export async function logTierSuccess(supabase, sessionId, requestId, tier, status, context = {}) {
+  return await logTierAttempt(supabase, sessionId, requestId, tier, 'success', context);
+}
+
+/**
+ * Log tier failure with detailed context for debugging
+ */
+export async function logTierFailure(supabase, sessionId, requestId, tier, status, context = {}) {
+  return await logTierAttempt(supabase, sessionId, requestId, tier, 'failure', context);
+}
+
+/**
  * Provide contextual analysis of tier routing decisions
  */
 function analyzeTierContext(tier, status, context) {

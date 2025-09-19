@@ -92,7 +92,7 @@ import { characterConsistencyService } from '../_shared/CharacterConsistencyServ
 import { visualDetailTracker } from '../_shared/VisualDetailTracker.js';
 import { CULTURAL_ARRAYS, createSeededRandom } from '../_shared/tier25Vocabulary.js';
 import { getCulturalBundle } from '../_shared/StaticDataCache.js';
-import { logTierAttempt, getErrorType } from './tierLogging.js';
+import * as tierLogging from './tierLogging.js';
 
 // ============= PHASE B5: CENTRALIZED ERROR HANDLING =============
 class EdgeErrorHandler {
@@ -1080,29 +1080,41 @@ serve(async (req) => {
               'Template CD generation'
             );
             
-            tierLogging.logTierAttempt(supabaseAdmin, sessionId, requestId, 'TIER_2.5C', 'ATTEMPTING', {
-              hasCharacterConsistency: false,
-              hasVisualConsistency: false,
-              hasCulturalEnhancements: false,
-              triggerReason: 'Emergency fallback after Tier 2.5A failure'
-            });
+            try {
+              tierLogging.logTierAttempt(supabaseAdmin, sessionId, requestId, 'TIER_2.5C', 'ATTEMPTING', {
+                hasCharacterConsistency: false,
+                hasVisualConsistency: false,
+                hasCulturalEnhancements: false,
+                triggerReason: 'Emergency fallback after Tier 2.5A failure'
+              });
+            } catch (loggingError) {
+              console.warn(`⚠️ [${requestId}] Tier logging failed:`, loggingError.message);
+            }
             
             if (nuclearResult.data && nuclearResult.data.success) {
               result = nuclearResult.data;
               console.log(`✅ [${requestId}] Tier 2.5C-D succeeded`);
-              tierLogging.logTierSuccess(supabaseAdmin, sessionId, requestId, 'TIER_2.5C', 'SUCCESS', {
-                imageUrl: result.imageURL,
-                provider: result.provider,
-                completionTime: Date.now() - startTime
-              });
+              try {
+                tierLogging.logTierSuccess(supabaseAdmin, sessionId, requestId, 'TIER_2.5C', 'SUCCESS', {
+                  imageUrl: result.imageURL,
+                  provider: result.provider,
+                  completionTime: Date.now() - startTime
+                });
+              } catch (loggingError) {
+                console.warn(`⚠️ [${requestId}] Success logging failed:`, loggingError.message);
+              }
             }
           } catch (error) {
             console.warn(`⚠️ [${requestId}] Tier 2.5C-D failed:`, error.message);
-            tierLogging.logTierFailure(supabaseAdmin, sessionId, requestId, 'TIER_2.5C', 'FAILED', {
-              error: error.message,
-              errorType: tierLogging.getErrorType(error.message),
-              completionTime: Date.now() - startTime
-            });
+            try {
+              tierLogging.logTierFailure(supabaseAdmin, sessionId, requestId, 'TIER_2.5C', 'FAILED', {
+                error: error.message,
+                errorType: tierLogging.getErrorType(error.message),
+                completionTime: Date.now() - startTime
+              });
+            } catch (loggingError) {
+              console.warn(`⚠️ [${requestId}] Failure logging failed:`, loggingError.message);
+            }
           }
         } else {
           console.log(`🎨 [${requestId}] Skipping Tier 2.5C-D - no 2.5A attempt or character consistency failure`);
