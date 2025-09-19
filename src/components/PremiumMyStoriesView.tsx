@@ -39,6 +39,46 @@ export const PremiumMyStoriesView = ({ userInfo, isPremium, onSessionEnded }: Pr
   const [specialRequest, setSpecialRequest] = useState("");
   const { activeChild } = useChildProfiles();
 
+  // Normalize grade helper function - moved to top level
+  const normalizeGrade = (g: any): any => {
+    if (!g) return g;
+    const map: Record<string, any> = {
+      'Pre-K': 'PreK',
+      'K': 'K',
+      '1': '1st',
+      '2': '2nd',
+      '3': '3rd',
+      '4': '4th',
+      '5': '5th',
+      '6': '6th+',
+    };
+    return map[String(g)] || g;
+  };
+
+  // Move useMemo hooks to top level to fix hooks ordering violation
+  const effectiveUserInfo: UserInfo = useMemo(() => {
+    if (currentView === 'reading') {
+      return activeChild ? {
+        ...userInfo,
+        name: activeChild.display_name || userInfo.name,
+        grade: normalizeGrade((activeChild.grade_level as any)) || userInfo.grade,
+        storyLanguagePreference: userInfo.storyLanguagePreference, // Use parent's language preference
+        avatar: (activeChild.avatar as any) || userInfo.avatar,
+        specialRequest,
+      } : { ...userInfo, specialRequest };
+    }
+    return userInfo;
+  }, [currentView, activeChild?.display_name, activeChild?.grade_level, activeChild?.avatar, userInfo, specialRequest]);
+
+  const readingAsName = useMemo(() => {
+    if (currentView === 'reading') {
+      return activeChild?.display_name && activeChild.display_name !== userInfo.name
+        ? activeChild.display_name
+        : undefined;
+    }
+    return undefined;
+  }, [currentView, activeChild?.display_name, userInfo.name]);
+
   // Check if user has read stories before to prevent auto-tutorial
   useEffect(() => {
     const hasReadStoriesBefore = localStorage.getItem(`user_${userInfo.name}_has_read_stories`);
@@ -103,34 +143,6 @@ useEffect(() => {
   };
 
   if (currentView === 'reading') {
-    const normalizeGrade = (g: any): any => {
-      if (!g) return g;
-      const map: Record<string, any> = {
-        'Pre-K': 'PreK',
-        'K': 'K',
-        '1': '1st',
-        '2': '2nd',
-        '3': '3rd',
-        '4': '4th',
-        '5': '5th',
-        '6': '6th+',
-      };
-      return map[String(g)] || g;
-    };
-
-    const effectiveUserInfo: UserInfo = useMemo(() => (activeChild ? {
-      ...userInfo,
-      name: activeChild.display_name || userInfo.name,
-      grade: normalizeGrade((activeChild.grade_level as any)) || userInfo.grade,
-      storyLanguagePreference: userInfo.storyLanguagePreference, // Use parent's language preference
-      avatar: (activeChild.avatar as any) || userInfo.avatar,
-      specialRequest,
-    } : { ...userInfo, specialRequest }), [activeChild?.display_name, activeChild?.grade_level, activeChild?.avatar, userInfo, specialRequest]);
-
-    const readingAsName = useMemo(() => activeChild?.display_name && activeChild.display_name !== userInfo.name
-      ? activeChild.display_name
-      : undefined, [activeChild?.display_name, userInfo.name]);
-
     return (
       <CleanStoryDisplay
         userInfo={effectiveUserInfo}

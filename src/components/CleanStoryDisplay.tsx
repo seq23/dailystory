@@ -1285,7 +1285,7 @@ useEffect(() => {
     }
     
     initializeStory();
-  }, [userInfo.name, userInfo.age, isPremium, readingAsName, currentStory?.isFromSavedStory]);
+  }, [userInfo.name, userInfo.age, userInfo.specialRequest, isPremium, readingAsName, currentStory?.isFromSavedStory]);
 
   // Generate image for current page with better diagnostics - ONLY AFTER STORY IS STABLE
   useEffect(() => {
