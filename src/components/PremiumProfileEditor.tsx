@@ -6,8 +6,6 @@ import { Label } from "@/components/ui/label";
 import { DebugLogger } from '@/services/DebugLogger';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { ColorPicker } from "@/components/ui/color-picker";
-import { AvatarPicker } from "@/components/ui/avatar-picker";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { User, Save, CheckCircle, BookOpen, Sparkles } from "lucide-react";
@@ -40,15 +38,21 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
   const handleSave = async () => {
     setSaving(true);
     try {
-      DebugLogger.log('ui', 'PremiumProfileEditor: Saving profile data...', formData);
+      DebugLogger.log('ui', 'PremiumProfileEditor: Saving account holder data...', {
+        name: formData.name,
+        age: formData.age,
+        grade: formData.grade,
+        nativeLanguage: formData.nativeLanguage,
+        difficultyLevel: formData.difficultyLevel
+      });
       await onSave(formData);
       toast({
-        title: "Profile Updated! ✨",
-        description: `Your name "${formData.name}" and preferences have been saved successfully.`,
+        title: "Account Settings Updated! ✨",
+        description: `Account holder "${formData.name}" preferences have been saved successfully.`,
         duration: 4000,
       });
       setHasChanges(false);
-      DebugLogger.log('ui', 'PremiumProfileEditor: Profile save completed successfully');
+      DebugLogger.log('ui', 'PremiumProfileEditor: Account holder save completed successfully');
     } catch (error) {
       console.error('❌ PremiumProfileEditor: Save failed:', error);
       toast({
@@ -87,7 +91,7 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
         <Badge variant="premium">Premium</Badge>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Basic Information */}
         <Card>
           <CardHeader>
@@ -179,10 +183,6 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
               </p>
             </div>
 
-            <div className="pt-2 border-t">
-              <p className="text-xs text-muted-foreground mb-2">Account holder settings apply when no specific child is selected. Manage child profiles below.</p>
-              <ChildSwitcher />
-            </div>
           </CardContent>
         </Card>
 
@@ -261,62 +261,24 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
               </Select>
               <p className="text-xs text-muted-foreground">Only English is supported for stories at this time.</p>
             </div>
-
-            {/* Special Request removed for premium; now asked per-story at start */}
           </CardContent>
         </Card>
 
-        {/* Personalization */}
-        <Card>
+        {/* Child Personalization Notice */}
+        <Card className="border-muted/60">
           <CardHeader>
-            <CardTitle>Personalization</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5" />
+              Child Personalization
+            </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label>Avatar</Label>
-              <AvatarPicker
-                value={formData.avatar}
-                onChange={(avatar) => setFormData(prev => ({ ...prev, avatar }))}
-                className="w-full"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Favorite Color</Label>
-              <ColorPicker
-                value={formData.favoriteColor || "blue"}
-                onChange={(color) => setFormData(prev => ({ ...prev, favoriteColor: color }))}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="animal">Favorite Animal</Label>
-              <Input
-                id="animal"
-                value={formData.favoriteAnimal || ""}
-                onChange={(e) => setFormData(prev => ({ ...prev, favoriteAnimal: e.target.value }))}
-                placeholder="e.g. Cat, Dog, Dragon"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="food">Favorite Food</Label>
-              <Input
-                id="food"
-                value={formData.favoriteFood || ""}
-                onChange={(e) => setFormData(prev => ({ ...prev, favoriteFood: e.target.value }))}
-                placeholder="e.g. Pizza, Ice cream"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="hobbies">Hobbies</Label>
-              <Input
-                id="hobbies"
-                value={formData.hobbies || ""}
-                onChange={(e) => setFormData(prev => ({ ...prev, hobbies: e.target.value }))}
-                placeholder="e.g. Soccer, Art, Music"
-              />
+          <CardContent>
+            <p className="text-muted-foreground mb-4">
+              Personalization settings like avatar, favorite color, animal, and hobbies are managed individually for each child profile below.
+            </p>
+            <div className="bg-muted/20 p-3 rounded-lg">
+              <p className="text-sm font-medium mb-2">Current Active Child:</p>
+              <ChildSwitcher />
             </div>
           </CardContent>
         </Card>

@@ -172,6 +172,46 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
         }
       }
 
+      // For premium users, load from user_preferences first
+      if (isPremium) {
+        const { data: preferences, error: prefError } = await supabase
+          .from('user_preferences')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (!prefError && preferences) {
+          setUserProfile(preferences);
+          // Convert preferences to UserInfo format
+          const userInfoData: UserInfo = {
+            name: preferences.display_name || 'Reader',
+            age: preferences.age || 7,
+            grade: (preferences.grade_level as Grade) || 'K',
+            gradeLevel: (preferences.grade_level as Grade) || 'K',
+            nativeLanguage: (preferences.native_language as LanguageCode) || 'en',
+            readingLevel: 'beginner',
+            difficultyLevel: 'beginner',
+            interests: [],
+            learningGoal: (preferences.learning_goal as LearningGoal) || 'improve-english-reading',
+            avatar: { type: 'prefer-not-to-answer', skinTone: 'medium' }, // Account holder has neutral avatar
+            favoriteColor: 'blue', // Default neutral values
+            favoriteAnimal: '',
+            hobbies: '',
+            favoriteFood: '',
+            specialRequest: ''
+          };
+          setUserInfo(userInfoData);
+          setCurrentView("stories");
+          return;
+        }
+        
+        // If no preferences, create default for premium user
+        DebugLogger.log('auth', 'Premium user with no preferences - creating default');
+        await createDefaultPremiumProfile();
+        return;
+      }
+
+      // For non-premium users, still use profiles table
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('*')
@@ -208,10 +248,6 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
         };
         setUserInfo(userInfoData);
         setCurrentView("stories");
-      } else if (isPremium) {
-        // PREMIUM BYPASS: Auto-create default profile for premium users
-        DebugLogger.log('auth', 'Premium user with no profile - creating default profile');
-        await createDefaultPremiumProfile();
       }
     } catch (error) {
       DebugLogger.error('auth', 'Profile loading error', error);
@@ -220,7 +256,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
     }
   };
 
-  // Create default profile for premium users to bypass profile setup
+  // Create default preferences for premium users to bypass profile setup
   const createDefaultPremiumProfile = async () => {
     try {
       const defaultUserInfo: UserInfo = {
@@ -235,7 +271,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
         learningGoal: 'improve-english-reading' as LearningGoal,
         avatar: { type: 'prefer-not-to-answer', skinTone: 'medium' },
         favoriteColor: 'blue',
-        favoriteAnimal: 'cat',
+        favoriteAnimal: '',
         hobbies: '',
         favoriteFood: '',
         specialRequest: ''
@@ -244,29 +280,27 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
       const payload = {
         user_id: user.id,
         display_name: defaultUserInfo.name,
-        date_of_birth: `${new Date().getFullYear() - defaultUserInfo.age}-01-01`,
+        age: defaultUserInfo.age,
         grade_level: defaultUserInfo.gradeLevel,
-        reading_level: defaultUserInfo.readingLevel,
-        difficulty_level: defaultUserInfo.difficultyLevel,
         native_language: defaultUserInfo.nativeLanguage,
-        avatar: JSON.stringify(defaultUserInfo.avatar),
-        favorite_color: defaultUserInfo.favoriteColor,
-        favorite_animal: defaultUserInfo.favoriteAnimal,
-        interests: defaultUserInfo.interests
+        learning_goal: defaultUserInfo.learningGoal,
+        avatar_type: defaultUserInfo.avatar.type,
+        avatar_skin_tone: defaultUserInfo.avatar.skinTone,
+        is_premium: true
       };
 
       const { error } = await supabase
-        .from('profiles')
+        .from('user_preferences')
         .insert([payload]);
 
       if (error) {
-        DebugLogger.error('auth', 'Error creating default premium profile', error);
+        DebugLogger.error('auth', 'Error creating default premium preferences', error);
         return;
       }
 
-      DebugLogger.log('auth', 'Default premium profile created successfully');
+      DebugLogger.log('auth', 'Default premium preferences created successfully');
       setUserInfo(defaultUserInfo);
-      setCurrentView("stories"); // Take premium users directly to "My Stories"
+      setCurrentView("stories");
     } catch (error) {
       DebugLogger.error('auth', 'Error in createDefaultPremiumProfile', error);
     }
@@ -320,98 +354,100 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
 
   const handleProfileUpdate = async (updatedUserInfo: UserInfo) => {
     try {
-      DebugLogger.log('auth', 'Profile update started for user:', user.id);
-      DebugLogger.log('auth', 'Updated user info:', JSON.stringify(updatedUserInfo, null, 2));
-      
-      const birthYear = new Date().getFullYear() - updatedUserInfo.age;
-      const dateOfBirth = `${birthYear}-01-01`;
+      DebugLogger.log('auth', 'Account holder update started for user:', user.id);
+      DebugLogger.log('auth', 'Updated account holder info:', {
+        name: updatedUserInfo.name,
+        age: updatedUserInfo.age,
+        grade: updatedUserInfo.grade,
+        nativeLanguage: updatedUserInfo.nativeLanguage,
+        difficultyLevel: updatedUserInfo.difficultyLevel
+      });
 
-      const payload = {
-        display_name: updatedUserInfo.name,
-        date_of_birth: dateOfBirth,
-        grade_level: updatedUserInfo.gradeLevel || updatedUserInfo.grade,
-        reading_level: updatedUserInfo.readingLevel,
-        difficulty_level: updatedUserInfo.difficultyLevel,
-        native_language: updatedUserInfo.nativeLanguage,
-        story_language_preference: updatedUserInfo.storyLanguagePreference,
-        special_request: updatedUserInfo.specialRequest,
-        avatar: JSON.stringify(updatedUserInfo.avatar),
-        favorite_color: updatedUserInfo.favoriteColor,
-        favorite_animal: updatedUserInfo.favoriteAnimal,
-        favorite_food: updatedUserInfo.favoriteFood,
-        hobbies: updatedUserInfo.hobbies,
-        interests: updatedUserInfo.interests || []
-      };
+      if (isPremium) {
+        // Premium users save to user_preferences table
+        const payload = {
+          display_name: updatedUserInfo.name,
+          age: updatedUserInfo.age,
+          grade_level: updatedUserInfo.gradeLevel || updatedUserInfo.grade,
+          native_language: updatedUserInfo.nativeLanguage,
+          learning_goal: updatedUserInfo.learningGoal,
+          avatar_type: 'prefer-not-to-answer', // Account holder has neutral avatar
+          avatar_skin_tone: 'medium',
+          is_premium: true
+        };
 
-      DebugLogger.log('auth', 'Payload to save:', JSON.stringify(payload, null, 2));
+        DebugLogger.log('auth', 'Payload to save to user_preferences:', JSON.stringify(payload, null, 2));
 
-      const { data: existing, error: fetchErr } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('user_id', user.id)
-        .limit(1)
-        .maybeSingle();
+        const { error } = await supabase
+          .from('user_preferences')
+          .upsert({ user_id: user.id, ...payload }, { onConflict: 'user_id' });
 
-      if (fetchErr) {
-        DebugLogger.error('auth', 'Error checking existing profile', fetchErr);
-        throw fetchErr;
-      }
-
-      DebugLogger.log('auth', 'Existing profile check:', existing ? 'Found existing profile' : 'No existing profile');
-
-      let error;
-      if (existing?.id) {
-        DebugLogger.log('auth', 'Updating existing profile...');
-        const { error: updateErr } = await supabase
-          .from('profiles')
-          .update(payload)
-          .eq('user_id', user.id);
-        error = updateErr;
-        
-        if (!updateErr) {
-          DebugLogger.log('auth', 'Profile updated successfully');
+        if (error) {
+          DebugLogger.error('auth', 'Database operation error', error);
+          throw error;
         }
+
+        DebugLogger.log('auth', 'Account holder preferences updated successfully');
       } else {
-        DebugLogger.log('auth', 'Creating new profile...');
-        const { error: insertErr } = await supabase
+        // Non-premium users still use profiles table
+        const birthYear = new Date().getFullYear() - updatedUserInfo.age;
+        const dateOfBirth = `${birthYear}-01-01`;
+
+        const payload = {
+          display_name: updatedUserInfo.name,
+          date_of_birth: dateOfBirth,
+          grade_level: updatedUserInfo.gradeLevel || updatedUserInfo.grade,
+          reading_level: updatedUserInfo.readingLevel,
+          difficulty_level: updatedUserInfo.difficultyLevel,
+          native_language: updatedUserInfo.nativeLanguage,
+          story_language_preference: updatedUserInfo.storyLanguagePreference,
+          special_request: updatedUserInfo.specialRequest,
+          avatar: JSON.stringify(updatedUserInfo.avatar),
+          favorite_color: updatedUserInfo.favoriteColor,
+          favorite_animal: updatedUserInfo.favoriteAnimal,
+          favorite_food: updatedUserInfo.favoriteFood,
+          hobbies: updatedUserInfo.hobbies,
+          interests: updatedUserInfo.interests || []
+        };
+
+        const { data: existing, error: fetchErr } = await supabase
           .from('profiles')
-          .insert([{ user_id: user.id, ...payload }]);
-        error = insertErr;
-        
-        if (!insertErr) {
-          DebugLogger.log('auth', 'Profile created successfully');
+          .select('id')
+          .eq('user_id', user.id)
+          .limit(1)
+          .maybeSingle();
+
+        if (fetchErr) {
+          DebugLogger.error('auth', 'Error checking existing profile', fetchErr);
+          throw fetchErr;
         }
-      }
 
-      if (error) {
-        DebugLogger.error('auth', 'Database operation error', error);
-        throw error;
-      }
+        let error;
+        if (existing?.id) {
+          const { error: updateErr } = await supabase
+            .from('profiles')
+            .update(payload)
+            .eq('user_id', user.id);
+          error = updateErr;
+        } else {
+          const { error: insertErr } = await supabase
+            .from('profiles')
+            .insert([{ user_id: user.id, ...payload }]);
+          error = insertErr;
+        }
 
-      // Verify the update was successful
-      DebugLogger.log('auth', 'Verifying profile update...');
-      const { data: verifyData, error: verifyError } = await supabase
-        .from('profiles')
-        .select('display_name, updated_at')
-        .eq('user_id', user.id)
-        .single();
-
-      if (verifyError) {
-        DebugLogger.error('auth', 'Error verifying update', verifyError);
-      } else {
-        DebugLogger.log('auth', 'Verification successful', {
-          saved_name: verifyData.display_name,
-          expected_name: updatedUserInfo.name,
-          updated_at: verifyData.updated_at
-        });
+        if (error) {
+          DebugLogger.error('auth', 'Database operation error', error);
+          throw error;
+        }
       }
 
       setUserInfo(updatedUserInfo);
       setIsEditingProfile(false);
       
-      DebugLogger.log('auth', 'Profile update completed successfully');
+      DebugLogger.log('auth', 'Account holder update completed successfully');
     } catch (error) {
-      DebugLogger.error('auth', 'Profile update error', error);
+      DebugLogger.error('auth', 'Account holder update error', error);
       throw error;
     }
   };

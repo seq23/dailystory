@@ -26,10 +26,6 @@ export interface UserPreferences {
   learningGoal?: string;
   avatarType?: string;
   avatarSkinTone?: string;
-  favoriteColor?: string;
-  favoriteAnimal?: string;
-  hobbies?: string;
-  favoriteFood?: string;
   readingPreferences?: Record<string, any>;
   storyPreferences?: Record<string, any>;
   isPremium?: boolean;
@@ -70,11 +66,8 @@ export class PremiumStoryManager {
       estimated_reading_time: story.estimatedReadingTime,
       user_preferences: {
         name: userInfo.name,
-        age: userInfo.age,
-        favoriteColor: userInfo.favoriteColor,
-        favoriteAnimal: userInfo.favoriteAnimal,
-        hobbies: userInfo.hobbies,
-        favoriteFood: userInfo.favoriteFood
+        age: userInfo.age
+        // Personalization data (avatar, colors, etc.) will come from child profiles when active child is selected
       } as any, // JSON serializable
       tags,
       is_favorite: isFavorite,
@@ -200,7 +193,7 @@ export class PremiumStoryManager {
   }
 
   /**
-   * Save or update user preferences
+   * Save or update user preferences (simplified for account holder only)
    */
   static async saveUserPreferences(userInfo: UserInfo): Promise<UserPreferences> {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -215,15 +208,9 @@ export class PremiumStoryManager {
       grade_level: userInfo.grade,
       native_language: userInfo.nativeLanguage,
       learning_goal: userInfo.learningGoal,
-      avatar_type: userInfo.avatar.type,
-      avatar_skin_tone: userInfo.avatar.skinTone,
-      favorite_color: userInfo.favoriteColor,
-      favorite_animal: userInfo.favoriteAnimal,
-      hobbies: userInfo.hobbies,
-      favorite_food: userInfo.favoriteFood,
-      is_premium: true,
-      reading_preferences: {},
-      story_preferences: {}
+      avatar_type: 'prefer-not-to-answer', // Account holder has neutral avatar
+      avatar_skin_tone: 'medium',
+      is_premium: true
     };
 
     const { data, error } = await supabase
@@ -313,7 +300,7 @@ export class PremiumStoryManager {
   }
 
   /**
-   * Convert UserInfo to UserPreferences format
+   * Convert UserInfo to UserPreferences format (account holder only)
    */
   static userInfoToPreferences(userInfo: UserInfo): UserPreferences {
     return {
@@ -323,18 +310,14 @@ export class PremiumStoryManager {
       gradeLevel: userInfo.grade,
       nativeLanguage: userInfo.nativeLanguage,
       learningGoal: userInfo.learningGoal,
-      avatarType: userInfo.avatar.type,
-      avatarSkinTone: userInfo.avatar.skinTone,
-      favoriteColor: userInfo.favoriteColor,
-      favoriteAnimal: userInfo.favoriteAnimal,
-      hobbies: userInfo.hobbies,
-      favoriteFood: userInfo.favoriteFood,
+      avatarType: 'prefer-not-to-answer',
+      avatarSkinTone: 'medium',
       isPremium: true
     };
   }
 
   /**
-   * Convert UserPreferences to UserInfo format
+   * Convert UserPreferences to UserInfo format (account holder only)
    */
   static preferencesToUserInfo(preferences: UserPreferences): UserInfo {
     return {
@@ -344,13 +327,13 @@ export class PremiumStoryManager {
       nativeLanguage: (preferences.nativeLanguage as any) || 'en',
       learningGoal: (preferences.learningGoal as any) || 'improve-english-reading',
       avatar: {
-        type: (preferences.avatarType as any) || 'boy',
-        skinTone: (preferences.avatarSkinTone as any) || 'medium'
+        type: 'prefer-not-to-answer',
+        skinTone: 'medium'
       },
-      favoriteColor: preferences.favoriteColor || 'blue',
-      favoriteAnimal: preferences.favoriteAnimal || 'dog',
-      hobbies: preferences.hobbies || 'reading',
-      favoriteFood: preferences.favoriteFood || 'cookies',
+      favoriteColor: 'blue',
+      favoriteAnimal: '',
+      hobbies: '',
+      favoriteFood: '',
       specialRequest: ''
     };
   }
@@ -383,10 +366,6 @@ export class PremiumStoryManager {
       learningGoal: data.learning_goal,
       avatarType: data.avatar_type,
       avatarSkinTone: data.avatar_skin_tone,
-      favoriteColor: data.favorite_color,
-      favoriteAnimal: data.favorite_animal,
-      hobbies: data.hobbies,
-      favoriteFood: data.favorite_food,
       readingPreferences: data.reading_preferences,
       storyPreferences: data.story_preferences,
       isPremium: data.is_premium
