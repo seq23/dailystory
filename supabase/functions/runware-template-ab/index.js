@@ -511,11 +511,34 @@ async function handleRequest(req) {
   }
 
   try {
-    // Parse request body
-    const { enhancedStoryData, storyText, pageNumber, avatarIdentity, templateComplexity, sessionId } = await req.json();
+    // FLEXIBLE PAYLOAD HANDLING: Accept either pageText OR enhancedStoryData/storyText
+    const payload = await req.json();
+    console.log('🔍 Template AB: Request payload keys:', Object.keys(payload));
     
-    if (!enhancedStoryData || !storyText) {
-      return createErrorResponse(new Error('Missing required fields: enhancedStoryData and storyText'));
+    let enhancedStoryData, storyText, pageNumber, avatarIdentity, templateComplexity, sessionId;
+    
+    if (payload.pageText) {
+      // Current format: {pageText, userInfo, sessionId, pageNumber}
+      console.log('📄 Template AB: Using pageText format');
+      storyText = payload.pageText;
+      enhancedStoryData = { userInfo: payload.userInfo };
+      pageNumber = payload.pageNumber;
+      avatarIdentity = payload.userInfo?.avatar;
+      templateComplexity = payload.templateComplexity;
+      sessionId = payload.sessionId;
+    } else {
+      // Legacy format: {enhancedStoryData, storyText, pageNumber, avatarIdentity, templateComplexity, sessionId}
+      console.log('📖 Template AB: Using legacy format');
+      enhancedStoryData = payload.enhancedStoryData;
+      storyText = payload.storyText;
+      pageNumber = payload.pageNumber;
+      avatarIdentity = payload.avatarIdentity;
+      templateComplexity = payload.templateComplexity;
+      sessionId = payload.sessionId;
+    }
+    
+    if (!storyText) {
+      return createErrorResponse(new Error('Missing required field: pageText OR storyText'));
     }
 
     console.log(`🎯 Template AB processing complexity: ${templateComplexity || 'A'}`);

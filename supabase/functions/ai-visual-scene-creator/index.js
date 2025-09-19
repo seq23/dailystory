@@ -411,10 +411,30 @@ async function handleRequest(req) {
   }
 
   try {
-    const { enhancedStoryData, storyText, avatarIdentity } = await req.json();
+    const payload = await req.json();
+    console.log(`🔍 [${requestId}] Received payload keys:`, Object.keys(payload));
     
-    if (!enhancedStoryData || !storyText) {
-      return createCorsErrorResponse('Missing required fields: enhancedStoryData and storyText', 400);
+    // FLEXIBLE PAYLOAD HANDLING: Accept either pageText OR storyText
+    let enhancedStoryData, storyText, avatarIdentity;
+    
+    if (payload.pageText) {
+      // Current format: {pageText, userInfo, sessionId, pageNumber}
+      console.log(`📄 [${requestId}] Using pageText format`);
+      storyText = payload.pageText;
+      enhancedStoryData = payload.enhancedStoryData;
+      avatarIdentity = payload.userInfo?.avatar || payload.avatarIdentity;
+    } else if (payload.storyText || payload.enhancedStoryData) {
+      // Legacy format: {enhancedStoryData, storyText, avatarIdentity}
+      console.log(`📖 [${requestId}] Using storyText/enhancedStoryData format`);
+      enhancedStoryData = payload.enhancedStoryData;
+      storyText = payload.storyText;
+      avatarIdentity = payload.avatarIdentity;
+    } else {
+      return createCorsErrorResponse('Missing required fields: pageText OR (enhancedStoryData and storyText)', 400);
+    }
+    
+    if (!storyText) {
+      return createCorsErrorResponse('No story text content provided in any format', 400);
     }
 
     const result = await withPerformanceTracking('ai-visual-scene-creator', 'gpt-4o-mini', async () => {

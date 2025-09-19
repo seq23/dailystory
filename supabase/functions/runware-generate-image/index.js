@@ -665,11 +665,31 @@ async function handleRequest(req) {
       });
     }
 
-    const { enhancedStoryData, storyText, pageNumber, avatarIdentity } = await req.json();
+    // FLEXIBLE PAYLOAD HANDLING: Accept either pageText OR enhancedStoryData/storyText
+    const payload = await req.json();
+    console.log('🔍 Request payload keys:', Object.keys(payload));
     
-    if (!enhancedStoryData || !storyText) {
+    let enhancedStoryData, storyText, pageNumber, avatarIdentity;
+    
+    if (payload.pageText) {
+      // Current format: {pageText, userInfo, sessionId, pageNumber}
+      console.log('📄 Using pageText format');
+      storyText = payload.pageText;
+      enhancedStoryData = { userInfo: payload.userInfo };
+      pageNumber = payload.pageNumber;
+      avatarIdentity = payload.userInfo?.avatar;
+    } else {
+      // Legacy format: {enhancedStoryData, storyText, pageNumber, avatarIdentity}
+      console.log('📖 Using legacy format');
+      enhancedStoryData = payload.enhancedStoryData;
+      storyText = payload.storyText;
+      pageNumber = payload.pageNumber;
+      avatarIdentity = payload.avatarIdentity;
+    }
+    
+    if (!storyText) {
       return new Response(JSON.stringify({
-        error: 'Missing required fields: enhancedStoryData and storyText'
+        error: 'Missing required field: pageText OR storyText'
       }), {
         status: 400,
         headers: {

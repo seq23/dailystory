@@ -75,8 +75,15 @@ export class SimpleImageService {
       
       const response = await supabase.functions.invoke('runware-generate-image', {
         body: {
-          ...request,
-          requestId
+          pageText: request.pageText,
+          userInfo: request.userInfo,
+          sessionId: request.sessionId,
+          pageNumber: request.pageNumber,
+          requestId,
+          // Backward compatibility fields for legacy edge functions
+          storyText: request.pageText,
+          enhancedStoryData: { userInfo: request.userInfo },
+          avatarIdentity: request.userInfo?.avatar
         }
       });
 
@@ -193,13 +200,20 @@ export class SimpleImageService {
     functionName: string, 
     complexity: string
   ): Promise<ImageGenerationResponse> {
-    const { data, error } = await supabase.functions.invoke(functionName, {
-      body: {
-        ...request,
-        templateComplexity: complexity,
-        frontendFallback: true
-      }
-    });
+      const { data, error } = await supabase.functions.invoke(functionName, {
+        body: {
+          pageText: request.pageText,
+          userInfo: request.userInfo,
+          sessionId: request.sessionId,
+          pageNumber: request.pageNumber,
+          templateComplexity: complexity,
+          frontendFallback: true,
+          // Backward compatibility fields for legacy edge functions
+          storyText: request.pageText,
+          enhancedStoryData: { userInfo: request.userInfo },
+          avatarIdentity: request.userInfo?.avatar
+        }
+      });
 
     if (error) {
       throw new Error(`Direct tier call failed: ${error.message}`);
@@ -263,9 +277,16 @@ export class SimpleImageService {
     try {
       const { data: emergencyResult, error: emergencyError } = await supabase.functions.invoke('runware-template-cd', {
         body: {
-          ...request,
+          pageText: request.pageText,
+          userInfo: request.userInfo,
+          sessionId: request.sessionId,
+          pageNumber: request.pageNumber,
           templateComplexity: 'C',
-          emergencyMode: true
+          emergencyMode: true,
+          // Backward compatibility fields for legacy edge functions
+          storyText: request.pageText,
+          enhancedStoryData: { userInfo: request.userInfo },
+          avatarIdentity: request.userInfo?.avatar
         }
       });
 

@@ -352,10 +352,34 @@ async function handleRequest(req) {
   }
 
   try {
-    const { enhancedStoryData, storyText, pageNumber, avatarIdentity, templateComplexity, failedTierData } = await req.json();
+    // FLEXIBLE PAYLOAD HANDLING: Accept either pageText OR enhancedStoryData/storyText
+    const payload = await req.json();
+    console.log('🔍 Template CD: Request payload keys:', Object.keys(payload));
     
-    if (!enhancedStoryData || !storyText) {
-      return createErrorResponse('Missing required fields: enhancedStoryData and storyText', 400);
+    let enhancedStoryData, storyText, pageNumber, avatarIdentity, templateComplexity, failedTierData;
+    
+    if (payload.pageText) {
+      // Current format: {pageText, userInfo, sessionId, pageNumber}
+      console.log('📄 Template CD: Using pageText format');
+      storyText = payload.pageText;
+      enhancedStoryData = { userInfo: payload.userInfo };
+      pageNumber = payload.pageNumber;
+      avatarIdentity = payload.userInfo?.avatar;
+      templateComplexity = payload.templateComplexity;
+      failedTierData = payload.failedTierData;
+    } else {
+      // Legacy format: {enhancedStoryData, storyText, pageNumber, avatarIdentity, templateComplexity, failedTierData}
+      console.log('📖 Template CD: Using legacy format');
+      enhancedStoryData = payload.enhancedStoryData;
+      storyText = payload.storyText;
+      pageNumber = payload.pageNumber;
+      avatarIdentity = payload.avatarIdentity;
+      templateComplexity = payload.templateComplexity;
+      failedTierData = payload.failedTierData;
+    }
+    
+    if (!storyText) {
+      return createErrorResponse('Missing required field: pageText OR storyText', 400);
     }
 
     console.log(`🎯 Template CD processing complexity: ${templateComplexity || 'auto'}`);
