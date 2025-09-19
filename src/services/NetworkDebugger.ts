@@ -39,7 +39,12 @@ class NetworkDebuggerService {
     // Only intercept in debug mode
     if (!DebugLogger.isDebugEnabled()) return;
 
-    window.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+    // Store reference to original fetch and instance methods
+    const originalFetch = this.originalFetch;
+    const getRequestType = this.getRequestType.bind(this);
+    const addRequest = this.addRequest.bind(this);
+    
+    window.fetch = async function(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
       const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       const method = init?.method || 'GET';
       const startTime = Date.now();
@@ -51,13 +56,13 @@ class NetworkDebuggerService {
         timestamp: startTime,
         method: method.toUpperCase(),
         url,
-        type: this.getRequestType(url)
+        type: getRequestType(url)
       };
 
       DebugLogger.log('network', `→ ${method} ${url}`, { requestId, type: request.type });
 
       try {
-        const response = await this.originalFetch(input, init);
+        const response = await originalFetch.call(window, input, init);
         const duration = Date.now() - startTime;
         
         request.status = response.status;
@@ -80,7 +85,7 @@ class NetworkDebuggerService {
           });
         }
 
-        this.addRequest(request);
+        addRequest(request);
         return response;
       } catch (error) {
         const duration = Date.now() - startTime;
@@ -93,7 +98,7 @@ class NetworkDebuggerService {
           duration
         });
 
-        this.addRequest(request);
+        addRequest(request);
         throw error;
       }
     };
