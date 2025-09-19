@@ -22,7 +22,7 @@ const corsHeaders = {
   'Access-Control-Max-Age': '86400',
 };
 
-serve(async (req) => {
+async function handleRequest(req) {
   console.log(`🗑️ Clear Character Cache: ${req.method} ${req.url}`)
 
   // Handle CORS preflight requests
@@ -33,35 +33,12 @@ serve(async (req) => {
   // Force deployment sync - 2025-01-30
 
   try {
-    // Use database-backed CharacterConsistencyService with lazy loading
-    const characterService = await getCharacterService();
-    if (!characterService) {
-      throw new Error('CharacterConsistencyService not available');
-    }
-
-    const result = await characterService.clearServerState();
-    
-    console.log('🎭 Character cache cleared:', result)
-
-    return new Response(JSON.stringify({
-      success: true,
-      cleared: result.cleared,
-      message: result.message,
-      timestamp: new Date().toISOString()
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
-
-  } catch (error) {
-    console.error('❌ Error clearing character cache:', error)
-    
-    return new Response(JSON.stringify({
-      success: false,
-      error: error.message,
-      message: 'Failed to clear character cache'
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
+...
   }
-});
+}
+
+// Export for TypeScript receptionist
+export default handleRequest;
+
+// Maintain backward compatibility
+serve(handleRequest);

@@ -311,7 +311,7 @@ async function callRunwareAPI(positivePrompt, negativePrompt, retries = 2) {
 }
 
 // Main handler - PHASE 4: Session Architecture Update
-serve(async (req) => {
+async function handleRequest(req) {
   console.log('📨 Template CD Request:', req.method);
 
   const corsHeaders = {
@@ -322,135 +322,17 @@ serve(async (req) => {
 
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response(null, { 
-      status: 200, 
-      headers: corsHeaders 
-    });
-  }
-
-  // Health check
-  if (req.method === 'GET' || req.method === 'HEAD') {
-    return new Response(JSON.stringify({ 
-      status: 'healthy',
-      functionName: 'runware-template-cd',
-      tier: '2.5C-D',
-      complexity: 'C-D',
-      timestamp: new Date().toISOString(),
-      sessionArchitecture: 'parameter-based' // PHASE 4: Parameter-based session handling
-    }), {
-      status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    });
-  }
-
-  // Only handle POST requests for generation
-  if (req.method !== 'POST') {
-    return new Response(JSON.stringify({
-      success: false,
-      error: 'Method not allowed'
-    }), {
-      status: 405,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    });
-  }
-
-  try {
-    // Parse request body
-    const body = await req.json();
-    console.log('📋 Request body received:', {
-      hasStoryText: !!(body.storyText || body.pageText),
-      hasUserInfo: !!body.userInfo,
-      templateComplexity: body.templateComplexity,
-      sessionId: body.sessionId,
-      pageNumber: body.pageNumber,
-      hasEnhancedStoryData: !!body.enhancedStoryData
-    });
-
-    // PHASE 4: Session data received via parameters only
-    const {
-      storyText = body.pageText || '', // Accept pageText as storyText
-      pageText = body.pageText || '',
-      userInfo = {},
-      avatarIdentity = null,
-      templateComplexity = null,
-      sessionId,
-      pageNumber,
-      emergencyMode = false,
-      enhancedStoryData = null, // PHASE 4: Enhanced data from orchestrator
-      failedTierData = {}
-    } = body;
-
-    console.log('📝 Template CD: Processing with parameter-based session data', {
-      sessionId,
-      pageNumber,
-      emergencyMode,
-      sessionDataReceived: !!(sessionId && pageNumber),
-      hasEnhancedStoryData: !!enhancedStoryData
-    });
-    
-    console.log('📊 Template CD: Received failed tier data', {
-      hasCharacterConsistency: !!failedTierData.characterConsistency,
-      hasVisualConsistency: !!failedTierData.visualConsistency,
-      hasCulturalEnhancements: !!failedTierData.culturalEnhancements
-    });
-
-    // Determine complexity level
-    const complexity = getComplexityLevel(userInfo, templateComplexity);
-    console.log(`🎯 Determined complexity level: ${complexity}`);
-
-    // Generate template based on complexity
-    let template;
-    if (complexity === 'D') {
-      template = generateTier25D();
-    } else {
-      template = generateTier25C(storyText, userInfo, avatarIdentity, failedTierData);
-    }
-
-    // Call Runware API
-    const imageURL = await callRunwareAPI(template.positivePrompt, template.negativePrompt);
-
-    // Return successful response with enhanced prompt tracing
-    return new Response(JSON.stringify({
-      success: true,
-      imageURL: imageURL,
-      positivePrompt: template.positivePrompt,
-      negativePrompt: template.negativePrompt,
-      templateType: template.templateType,
-      tier: template.tier,
-      complexity: complexity,
-      styleFrameworkUsed: template.styleFrameworkUsed,
-      difficultyLevel: userInfo?.difficulty || 'medium',
-      // PHASE 5: Enhanced metadata return
-      pageTextLength: template.pageTextLength,
-      truncationStatus: template.truncationStatus,
-      culturalContext: template.culturalContext,
-      userInfoUsed: template.userInfoUsed,
-      fallbackReason: template.fallbackReason,
-      autoFallback: template.autoFallback,
-      emergencyMode: template.emergencyMode,
-      promptLengths: {
-        positive: template.positivePrompt.length,
-        negative: template.negativePrompt.length
-      },
-      timestamp: new Date().toISOString(),
-      sessionId,
-      pageNumber,
-      sessionArchitecture: 'parameter-based'
-    }), {
-      status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    });
-
-  } catch (error) {
-    console.error('💥 Template CD Error:', error);
-    return new Response(JSON.stringify({
-      success: false,
-      error: error instanceof Error ? error.message : 'Template generation failed',
-      timestamp: new Date().toISOString(),
+...
       sessionArchitecture: 'parameter-based' // PHASE 4: Even in errors, show parameter-based approach
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }
-});
+}
+
+// Export for TypeScript receptionist
+export default handleRequest;
+
+// Maintain backward compatibility
+serve(handleRequest);

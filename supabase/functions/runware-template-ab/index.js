@@ -494,7 +494,7 @@ Brand Suffix: {fullFrameworkPrompt},`;
 // ============= EXPORT TEMPLATES FOR VALIDATION =============
 export { TIER_25A_TEMPLATE, TIER_25B_TEMPLATE };
 
-serve(async (req) => {
+async function handleRequest(req) {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -505,180 +505,15 @@ serve(async (req) => {
     return createResponse({
       status: 'healthy',
       functionName: 'runware-template-ab',
-      tier: '2.5A-B',
-      timestamp: new Date().toISOString()
-    });
-  }
-
-  try {
-    // Parse orchestrator parameters (new structure)
-    const body = await req.json();
-    const { 
-      pageText, 
-      userInfo = {}, 
-      avatarIdentity, 
-      templateComplexity = 'A', 
-      sessionId, 
-      pageNumber, 
-      enhancedStoryData, 
-      failedTierData = {},
-      // Legacy support for old structure
-      bundle, 
-      config 
-    } = body;
-    
-    console.log('🎯 Template AB Core Engine:', { 
-      templateComplexity, 
-      hasPageText: !!pageText, 
-      hasUserInfo: !!userInfo,
-      legacy: { bundle: !!bundle, config: !!config }
-    });
-
-    // Handle legacy structure if present
-    if (bundle && config && !pageText) {
-      console.warn('⚠️ Using legacy bundle/config structure - consider updating to new parameter format');
-      // Legacy processing would go here if needed
-      throw new Error('Legacy bundle/config format not supported - use templateComplexity parameter');
-    }
-
-    // Validate new structure
-    if (!pageText) {
-      throw new Error('Missing pageText parameter');
-    }
-
-    // Select template configuration based on complexity
-    const templateConfig = selectTemplate(templateComplexity);
-    const effectiveTierType = templateComplexity === 'A' ? '2.5A' : '2.5B';
-    
-    console.log(`🔧 Selected template config: ${templateConfig.name} (${effectiveTierType})`);
-    console.log(`📝 Processing: ${pageText.substring(0, 100)}...`);
-
-    // Apply complexity-specific processing
-    let characterService = null;
-    let secondaryCharacters = '';
-    let visualConsistencyElements = '';
-    
-    // Enhanced processing for Template A (premium)
-    if (templateComplexity === 'A' && templateConfig.enhancedFeatures) {
-      console.log('🎨 Template A: Using enhanced features with character consistency');
-      
-      try {
-        characterService = await getCharacterService();
-        if (characterService) {
-          secondaryCharacters = await characterService.detectSecondaryCharacters(pageText);
-          visualConsistencyElements = await characterService.getCharacterAppearanceFromStory(
-            sessionId || 'default', 
-            userInfo?.name || userInfo?.childName || 'child'
-          );
-        }
-      } catch (error) {
-        console.warn('⚠️ Template A character service failed, continuing with basic processing:', error.message);
-      }
-    } else if (templateComplexity === 'B') {
-      console.log('🎨 Template B: Using basic processing for faster performance');
-      // Template B skips enhanced features for speed
-    }
-
-    // Load resolver service
-    const resolver = await getUnifiedPlaceholderResolver();
-    if (!resolver) {
-      throw new Error('[Template AB] UnifiedPlaceholderResolver service failed to load');
-    }
-
-    // Generate simple template based on complexity
-    let templateString;
-    if (templateComplexity === 'A') {
-      // Premium Template A: More detailed prompt structure
-      templateString = `${extractSemanticScene(pageText)}. Character: {character} age {age} with {hair} and {facialFeatures}. Setting: {setting_context}. Additional characters: {secondary_characters}. Visual consistency: {visual_consistency_elements}. Cultural context: {cultural_context}. Style: {frameworkPrompt}`;
-    } else {
-      // Basic Template B: Simplified prompt structure
-      templateString = `${extractSimpleScene(pageText)}. Character: {character} age {age} with {hair}. Setting: basic scene. Style: {frameworkPrompt}`;
-    }
-    
-    console.log(`📄 Generated template (${templateComplexity}): ${templateString.substring(0, 100)}...`);
-
-    // Build context for template resolution
-    const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
-    const fullContext = {
-      pageText,
-      character: userInfo?.name || userInfo?.childName || 'child',
-      age: userInfo?.age || '6',
-      hair: getHair(skinTone),
-      facialFeatures: getFeatures(skinTone),
-      secondary_characters: secondaryCharacters,
-      visual_consistency_elements: visualConsistencyElements,
-      cultural_context: deriveNonEnglishCulturalContext(userInfo),
-      setting_context: templateComplexity === 'A' ? 'detailed setting' : 'simple setting',
-      frameworkPrompt: getNuclearStyleFramework(userInfo?.difficulty || 'medium').frameworkPrompt
-    };
-
-    // Resolve template placeholders
-    let result = await resolver.resolveAllPlaceholders(templateString, fullContext);
-
-    // Fallback handling if template resolution fails
-    if (!result.success || result.remainingPlaceholders > 0) {
-      console.warn(`⚠️ Template resolution failed for ${templateComplexity}, using fallback`);
-      
-      // Create fallback prompt
-      const fallbackPrompt = `${pageText}. Character: ${fullContext.character} age ${fullContext.age}. Style: ${fullContext.frameworkPrompt}`;
-      result = { success: true, resolvedText: fallbackPrompt };
-    }
-
-    console.log(`🔧 [Template AB] Resolution completed for ${templateComplexity}`);
-
-    // Generate negative prompt
-    const culturalProfileType = inlineDetectCultural(userInfo, avatarIdentity);
-    const negativePrompt = generateInlineNuclearNegative(culturalProfileType, userInfo?.avatar?.type || 'child', userInfo?.difficulty || 'medium');
-    
-    console.log(`🖼️ [Template AB] Generating image with Runware API...`);
-    console.log(`📝 [Template AB] Final prompt (${templateComplexity}): ${result.resolvedText}`);
-    console.log(`🚫 [Template AB] Negative prompt: ${negativePrompt}`);
-    
-    try {
-      // Call Runware API to generate the actual image
-      const imageResult = await callRunwareAPIWithRetry(result.resolvedText, negativePrompt);
-      
-      if (imageResult && imageResult.imageURL) {
-        console.log(`✅ [Template AB] Image generation successful (${templateComplexity}): ${imageResult.imageURL}`);
-        
-        return createResponse({
-          success: true,
-          imageURL: imageResult.imageURL,
-          positivePrompt: result.resolvedText,
-          negativePrompt: negativePrompt,
-          templateUsed: `Template ${templateComplexity}: ${templateString.substring(0, 50)}...`,
-          templateComplexity: templateComplexity,
-          tierType: effectiveTierType,
-          provider: imageResult.provider || 'runware',
-          tier: effectiveTierType,
-          enhancedFeatures: templateConfig.enhancedFeatures,
-          processingMode: templateComplexity === 'A' ? 'premium' : 'basic'
-        });
-      } else {
-        console.error(`❌ [Template AB] Image generation failed (${templateComplexity}) - no imageURL returned`);
-        throw new Error('Image generation failed - no imageURL returned');
-      }
-    } catch (imageError) {
-      console.error(`❌ [Template AB] Image generation error (${templateComplexity}):`, imageError);
-      
-      // Return prompt-only response as fallback
-      return createResponse({
-        success: false,
-        imageURL: null,
-        positivePrompt: result.resolvedText,
-        negativePrompt: negativePrompt,
-        templateUsed: `Template ${templateComplexity}: ${templateString.substring(0, 50)}...`,
-        templateComplexity: templateComplexity,
-        tierType: effectiveTierType,
-        provider: 'runware',
-        tier: effectiveTierType,
-        imageGenerationError: imageError.message || 'Image generation failed',
-        fallbackReason: 'Image generation API failure'
-      });
-    }
-
+...
   } catch (error) {
     console.error('❌ [Template AB] Error:', error);
     return createErrorResponse(error);
   }
-});
+}
+
+// Export for TypeScript receptionist
+export default handleRequest;
+
+// Maintain backward compatibility
+serve(handleRequest);
