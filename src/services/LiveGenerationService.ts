@@ -64,12 +64,24 @@ export class LiveGenerationService {
       
       const { StoryGenerationService } = await import('./storyGenerationService');
       
-      // CRITICAL FIX: Use consistent session ID format
+      // CRITICAL FIX: Use consistent session ID format with comprehensive debugging
       const actualSessionId = sessionId || `live-first-${userInfo.name}-${Date.now()}`;
-      DebugLogger.log('story', 'LiveGen: First Page Session ID created', { 
+      DebugLogger.log('story', 'LiveGen: First Page Session ID created with enhanced debugging', { 
         actualSessionId,
         providedSessionId: sessionId,
-        userInfo: { name: userInfo.name }
+        sessionType: 'first-page',
+        userInfo: { 
+          name: userInfo.name,
+          difficultyLevel: userInfo.difficultyLevel,
+          hasSpecialRequest: !!userInfo.specialRequest
+        },
+        generationContext: {
+          isFirstPage: true,
+          expertGradeLevel,
+          frontendDifficulty,
+          backendDifficulty: difficulty
+        },
+        timestamp: new Date().toISOString()
       });
       
       const result = await StoryGenerationService.generateStory(userInfo, {
@@ -189,18 +201,37 @@ export class LiveGenerationService {
         specialRequest: `${context.userInfo.specialRequest || 'adventure'} (continuing from: ${context.storyContext.slice(-1)[0]?.substring(0, 100)}...)`
       };
       
-      // CRITICAL FIX: Use consistent session ID format 
+      // CRITICAL FIX: Use consistent session ID format with comprehensive continuation debugging
       const actualSessionId = sessionId || `live-next-${context.userInfo.name}-${Date.now()}`;
-      DebugLogger.log('story', 'LiveGen: Next Page Session ID created', {
+      DebugLogger.log('story', 'LiveGen: Next Page Session ID created with enhanced continuation debugging', {
         actualSessionId,
         providedSessionId: sessionId,
+        sessionType: 'next-page',
         nextPageNumber,
-        contextualUserInfo: { name: contextualUserInfo.name, specialRequest: contextualUserInfo.specialRequest?.substring(0, 50) + '...' },
+        continuationDetails: {
+          shouldConclude,
+          userRequestedEnding: !!userRequestedEnding,
+          currentContextPage: context.currentPage,
+          totalExpectedPages: context.totalExpectedPages
+        },
+        contextualUserInfo: { 
+          name: contextualUserInfo.name, 
+          specialRequest: contextualUserInfo.specialRequest?.substring(0, 50) + '...',
+          difficulty: context.difficulty,
+          expertGradeLevel: context.expertGradeLevel
+        },
         storyContextSummary: {
           existingPages: context.storyContext?.length,
           lastPagePreview: context.storyContext?.slice(-1)[0]?.substring(0, 50) + '...',
-          totalCharacters: context.storyContext?.join('').length
-        }
+          totalCharacters: context.storyContext?.join('').length,
+          fullContext: context.storyContext?.join('\n\n').substring(0, 200) + '...'
+        },
+        generationSettings: {
+          backendDifficulty,
+          promptConfig: !!promptConfig,
+          hasVocabularyData: !!vocabularyData
+        },
+        timestamp: new Date().toISOString()
       });
       
       // Wrap with 35-45s Promise.race timeout for robust timeout handling

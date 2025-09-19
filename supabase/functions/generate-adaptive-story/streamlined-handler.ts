@@ -271,21 +271,53 @@ FAIL-SOFT RULES:
     finalSystemPrompt += `\n\nAVAILABLE FUNCTIONS:
 - getCulturalContext(userInfo) - Fetch culturally relevant character names, foods, and celebrations when needed`;
     
-    // CONTINUATION MODE: Enhance prompts with continuation instructions for premium users
+    // CONTINUATION MODE: Enhanced continuation instructions for premium live generation
     if (config.existingStory) {
-      console.log('🔄 STREAMLINED: Applying continuation-specific prompt enhancements');
+      console.log('🔄 STREAMLINED: Applying enhanced continuation-specific prompt instructions');
+      console.log('🔄 STREAMLINED: Session details:', {
+        sessionId: bundle.sessionId,
+        sessionType: config.sessionType,
+        pageNumber: config.pageNumber,
+        existingStoryLength: config.existingStory.length,
+        isEndingPage: config.isEndingPage
+      });
       
       const continuationInstructions = `
 
-CONTINUATION INSTRUCTIONS (Premium Mode):
-Pick up exactly where the previous page ended. Preserve established characters, setting, tone, and plot arcs. Advance the story with natural flow, transitions, and hooks. Introduce new elements only if they fit the existing context. Keep consistency in style, voice, and character development. Never conclude unless explicitly told it's an ending page. Assume the story may continue indefinitely—always leave room to move forward. Weave in voice catalog inspirations (devices, styles, tones) without breaking coherence. Use pauses, twists, or cliffhangers sparingly but effectively to sustain engagement.
+CONTINUATION INSTRUCTIONS (Premium Live Mode):
+CRITICAL: This is a continuing story session. You must seamlessly pick up exactly where the previous page ended.
 
-EXISTING STORY CONTEXT:
+NARRATIVE CONTINUITY RULES:
+- Preserve ALL established characters, their personalities, relationships, and current story state
+- Maintain the exact setting, tone, voice, and established plot arcs
+- Use the same narrative style and voice as the existing content
+- Continue character development trajectories that were established
+- Honor any conflicts, mysteries, or story threads that were set up
+
+FLOW AND TRANSITION REQUIREMENTS:
+- Begin this page as if it's the natural next paragraph of the existing story
+- NO recap, summary, or "meanwhile" transitions unless contextually natural
+- Maintain the emotional momentum and pacing from where the story left off
+- If previous page ended mid-scene, continue that exact scene
+- If previous page ended with dialogue, respond appropriately to that dialogue
+
+NEVER-ENDING STORY MODE:
+- NEVER conclude the story unless config.isEndingPage is explicitly true
+- Always assume the story will continue beyond this page
+- Leave natural hooks, questions, or momentum for future continuation
+- Introduce plot developments that can sustain long-term storytelling
+- Build in character growth opportunities that span multiple pages
+
+EXISTING STORY CONTEXT (PRESERVE ALL DETAILS):
 ${config.existingStory}
 
-Continue from where the story left off. Maintain narrative consistency and character development.`;
+CONTINUATION DIRECTIVE:
+Continue from where the story left off. This page must feel like a natural, seamless continuation of the narrative flow. Maintain complete consistency in characters, setting, tone, and established story elements.`;
       
       finalSystemPrompt += '\n\n' + continuationInstructions;
+      
+      // Add session-specific debugging for continuation context
+      console.log('🔄 STREAMLINED: Continuation context prepared for session:', bundle.sessionId);
     }
     
     // REPAIR MODE: Enhance prompts with repair-specific instructions

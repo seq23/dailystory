@@ -2444,6 +2444,32 @@ const initializeStory = async () => {
       updateActivity({ wordsRead: pageWordCount, sessionPagesRead: 1 });
     }
     
+    // Enhanced debugging for story continuation in CleanStoryDisplay
+    DebugLogger.log('story', 'CleanStoryDisplay: Live continuation session enhanced debugging', {
+      currentStoryLength: story.length,
+      currentPage,
+      isLiveGeneration: isPremium,
+      sessionType: isPremium ? 'premium-live' : 'guest-netflix',
+      userInfo: { name: userInfo.name, readingAsName },
+      storyState: {
+        isLoading,
+        isLoadingNextPage,
+        isStoryComplete,
+        hasError: !!error
+      },
+      continuationContext: {
+        hasLiveContext: !!liveContext,
+        canGenerateNext: isPremium && !isStoryComplete && currentPage === story.length - 1,
+        isAtEndOfStory: currentPage === story.length - 1
+      },
+      imageState: {
+        totalImages: Object.keys(pageImages).length,
+        currentPageHasImage: !!pageImages[currentPage],
+        isGeneratingImage: isGeneratingImage
+      },
+      timestamp: new Date().toISOString()
+    });
+    
     if (isPremium && !isStoryComplete && currentPage === story.length - 1) {
       // Premium: generate next page, append, then advance
       // Add 40s watchdog to prevent UI getting stuck
