@@ -511,9 +511,22 @@ async function handleRequest(req) {
   }
 
   try {
-    // FLEXIBLE PAYLOAD HANDLING: Accept either pageText OR enhancedStoryData/storyText
-    const payload = await req.json();
-    console.log('🔍 Template AB: Request payload keys:', Object.keys(payload));
+    // FLEXIBLE PAYLOAD HANDLING: Handle nested {bundle: {...}, config: {...}} OR flat payloads
+    const rawPayload = await req.json();
+    console.log('🔍 Template AB: Request payload keys:', Object.keys(rawPayload));
+    
+    // Detect nested payload structure from ImageTierTester
+    let payload;
+    if (rawPayload.bundle && rawPayload.config) {
+      console.log('📦 Template AB: Detected nested payload structure');
+      payload = {
+        ...rawPayload.bundle,
+        templateComplexity: rawPayload.config.templateComplexity
+      };
+    } else {
+      console.log('📄 Template AB: Using flat payload structure');
+      payload = rawPayload;
+    }
     
     let enhancedStoryData, storyText, pageNumber, avatarIdentity, templateComplexity, sessionId;
     

@@ -675,7 +675,7 @@ async function handleRequest(req) {
       // Current format: {pageText, userInfo, sessionId, pageNumber}
       console.log('📄 Using pageText format');
       storyText = payload.pageText;
-      enhancedStoryData = { userInfo: payload.userInfo };
+      enhancedStoryData = payload.enhancedStoryData || { userInfo: payload.userInfo };
       pageNumber = payload.pageNumber;
       avatarIdentity = payload.userInfo?.avatar;
     } else {
