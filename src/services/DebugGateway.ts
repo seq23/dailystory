@@ -104,18 +104,69 @@ class DebugGatewayService {
   private responseCache = new Map<string, { data: any; timestamp: number }>();
   private readonly CACHE_DURATION = 30000; // 30 seconds
 
+  // EMERGENCY: Global request limiting and throttling
+  private windowStart = 0;
+  private requestCount = 0;
+  private readonly WINDOW_MS = 60_000; // 1 minute
+  private readonly MAX_REQUESTS_PER_WINDOW = 30; // hard cap per minute
+  private emergencyShutdownUntil = 0; // timestamp until which requests are blocked
+  private readonly EMERGENCY_BACKOFF_MS = 120_000; // 2 minutes
+
+  // Throttle per operation to avoid rapid-fire calls
+  private lastOpTimestamps = new Map<string, number>();
+  private readonly MIN_OP_INTERVAL_MS = 3000; // 3s per operation key
+
+  private resetWindowIfNeeded(now: number) {
+    if (now - this.windowStart > this.WINDOW_MS) {
+      this.windowStart = now;
+      this.requestCount = 0;
+    }
+  }
+
+  private registerRequestAndMaybeTripEmergency(now: number) {
+    this.resetWindowIfNeeded(now);
+    this.requestCount++;
+    if (this.requestCount > this.MAX_REQUESTS_PER_WINDOW) {
+      this.emergencyShutdownUntil = now + this.EMERGENCY_BACKOFF_MS;
+      this.logDebug(
+        `EMERGENCY SHUTDOWN: too many debug requests (${this.requestCount}/${this.MAX_REQUESTS_PER_WINDOW})`,
+        { shutdownUntil: new Date(this.emergencyShutdownUntil).toLocaleTimeString() }
+      );
+    }
+  }
+
   async callDebugService(params: DebugCall): Promise<{ data: any; error: any }> {
     // CRITICAL FIX: Require debug=1 for ALL operations to prevent resource exhaustion
     if (!this.isDebugEnabled()) {
       return { data: this.createMockResponse(params.operation), error: null };
     }
 
+    const now = Date.now();
+
+    // Emergency global shutdown check
+    if (now < this.emergencyShutdownUntil) {
+      this.logDebug(`Emergency shutdown active - skipping ${params.operation}`);
+      return { data: this.createMockResponse(params.operation), error: null };
+    }
+
     // Request deduplication - prevent simultaneous calls
     const requestKey = `${params.operation}-${params.sessionId || 'global'}-${params.limit || 10}`;
-    
+
+    // Per-operation throttle
+    const lastOp = this.lastOpTimestamps.get(requestKey) || 0;
+    if (now - lastOp < this.MIN_OP_INTERVAL_MS) {
+      this.logDebug(`Throttled ${params.operation} (last ${now - lastOp}ms ago)`);
+      // Return cached if available, else mock
+      const cached = this.responseCache.get(requestKey);
+      if (cached && now - cached.timestamp < this.CACHE_DURATION) {
+        return { data: cached.data, error: null };
+      }
+      return { data: this.createMockResponse(params.operation), error: null };
+    }
+
     // Check cache first
     const cached = this.responseCache.get(requestKey);
-    if (cached && Date.now() - cached.timestamp < this.CACHE_DURATION) {
+    if (cached && now - cached.timestamp < this.CACHE_DURATION) {
       this.logDebug(`Using cached response for ${params.operation}`);
       return { data: cached.data, error: null };
     }
@@ -132,13 +183,17 @@ class DebugGatewayService {
       return { data: this.createMockResponse(params.operation), error: null };
     }
 
+    // Register request for rate limiting and set throttle timestamp before executing
+    this.registerRequestAndMaybeTripEmergency(now);
+    this.lastOpTimestamps.set(requestKey, now);
+
     // Create and cache the request promise
     const requestPromise = this.executeRequest(params);
     this.inFlightRequests.set(requestKey, requestPromise);
 
     try {
       const result = await requestPromise;
-      
+
       // Cache successful responses
       if (!result.error) {
         this.responseCache.set(requestKey, {
@@ -146,7 +201,7 @@ class DebugGatewayService {
           timestamp: Date.now()
         });
       }
-      
+
       return result;
     } catch (error) {
       throw error;
