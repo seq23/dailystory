@@ -413,7 +413,9 @@ async function handleRequest(req) {
       templateData: templateResult,
       complexity: complexityLevel,
       sessionArchitecture: 'parameter-based',
-      processedAt: new Date().toISOString()
+      processedAt: new Date().toISOString(),
+      positivePrompt: templateResult.positivePrompt,
+      negativePrompt: templateResult.negativePrompt
     };
 
     return createResponse(result);

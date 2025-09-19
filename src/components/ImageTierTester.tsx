@@ -1433,7 +1433,7 @@ export const ImageTierTester = () => {
                       <h4 className="font-medium mb-2">4. Final Output</h4>
                       <div className="text-xs space-y-1">
                         <div><strong>Image Generated:</strong> ✅ Yes</div>
-                        <div><strong>Image URL:</strong> <span className="font-mono">{results[0].imageURL.substring(0, 50)}...</span></div>
+                        <div><strong>Image URL:</strong> <span className="font-mono">{typeof results[0].imageURL === 'string' ? results[0].imageURL.substring(0, 50) : String(results[0].imageURL).substring(0, 50)}...</span></div>
                         {results[0].details.positivePrompt && (
                           <div><strong>Prompt Length:</strong> {results[0].details.positivePrompt.length} characters</div>
                         )}

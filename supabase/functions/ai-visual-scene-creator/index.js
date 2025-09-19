@@ -449,16 +449,61 @@ async function handleRequest(req) {
       return createCorsErrorResponse('No story text content provided in any format', 400);
     }
 
-    const result = await withPerformanceTracking('ai-visual-scene-creator', 'gpt-4o-mini', async () => {
-      const validatedContent = await validateAndEnhanceContent(enhancedStoryData, storyText);
+  const result = await withPerformanceTracking('ai-visual-scene-creator', 'gpt-4o-mini', async () => {
+    // AI Scene Creator should GENERATE primaryScene from storyText, not validate existing one
+    let processedContent = enhancedStoryData;
+    
+    // If no primaryScene exists, generate it using OpenAI
+    if (!processedContent || !processedContent.primaryScene) {
+      console.log(`🤖 [${requestId}] Generating primaryScene from storyText using OpenAI`);
       
-      if (validatedContent.primaryScene) {
-        console.log(`✅ [${requestId}] Successfully created visual scene`);
-        return validatedContent;
-      } else {
-        throw new Error('Failed to generate valid visual scene content');
+      try {
+        const openAIResponse = await callOpenAIWithFallback([{
+          role: 'system',
+          content: 'Extract visual scene description from story text. Return JSON with primaryScene field containing detailed visual description for image generation.'
+        }, {
+          role: 'user', 
+          content: `Story: ${storyText}\n\nExtract the main visual scene for illustration.`
+        }], 6000, requestId);
+        
+        const content = openAIResponse?.choices?.[0]?.message?.content;
+        if (content) {
+          try {
+            const parsed = JSON.parse(content);
+            processedContent = {
+              ...processedContent,
+              primaryScene: parsed.primaryScene || storyText,
+              extractionMethod: 'openai_generated'
+            };
+            console.log(`✅ [${requestId}] Generated primaryScene via OpenAI`);
+          } catch (parseError) {
+            console.log(`⚠️ [${requestId}] OpenAI response not JSON, using content as primaryScene`);
+            processedContent = {
+              ...processedContent,
+              primaryScene: content,
+              extractionMethod: 'openai_generated'
+            };
+          }
+        }
+      } catch (openAIError) {
+        console.log(`⚠️ [${requestId}] OpenAI failed, using storyText as primaryScene:`, openAIError.message);
+        processedContent = {
+          ...processedContent,
+          primaryScene: storyText,
+          extractionMethod: 'fallback_story_text'
+        };
       }
-    });
+    }
+    
+    const validatedContent = await validateAndEnhanceContent(processedContent, storyText);
+    
+    if (validatedContent.primaryScene) {
+      console.log(`✅ [${requestId}] Successfully created visual scene`);
+      return validatedContent;
+    } else {
+      throw new Error('Failed to generate valid visual scene content');
+    }
+  });
 
     return createCorsResponse(result);
   } catch (error) {
