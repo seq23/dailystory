@@ -69,6 +69,31 @@ export function ChildManager() {
 
   const isValid = useMemo(() => form.name.trim().length > 0, [form.name]);
 
+  // Edit form validation
+  const isEditValid = useMemo(() => 
+    editingId ? editDraft.name.trim().length > 0 : false, 
+    [editingId, editDraft.name]
+  );
+
+  // Edit form change detection
+  const hasEditChanges = useMemo(() => {
+    if (!editingId) return false;
+    const original = children.find(c => c.id === editingId);
+    if (!original) return false;
+    
+    return (
+      editDraft.name.trim() !== original.display_name ||
+      editDraft.grade !== (original.grade_level || "") ||
+      editDraft.birthMonth !== ((original as any).birth_month || null) ||
+      editDraft.birthYear !== ((original as any).birth_year || null) ||
+      editDraft.favoriteColor !== ((original as any).favorite_color || "") ||
+      editDraft.favoriteAnimal !== ((original as any).favorite_animal || "") ||
+      editDraft.favoriteFood !== ((original as any).favorite_food || "") ||
+      editDraft.hobbies !== ((original as any).hobbies || "") ||
+      JSON.stringify(editDraft.avatar) !== JSON.stringify(original.avatar || { type: "prefer-not-to-answer", skinTone: "medium" })
+    );
+  }, [editingId, editDraft, children]);
+
   const calculateAge = (birthYear: number | null): string => {
     if (!birthYear) return "—";
     const currentYear = new Date().getFullYear();
@@ -353,7 +378,9 @@ export function ChildManager() {
                       
                       <div className="flex gap-2 justify-end">
                         <Button variant="outline" onClick={() => setEditingId(null)}>{t('parent.manager.actions.cancel')}</Button>
-                        <Button disabled={saving} onClick={handleSaveEdit}>{t('parent.manager.actions.save')}</Button>
+                         <Button disabled={!isEditValid || !hasEditChanges || saving} onClick={handleSaveEdit}>
+                           {saving ? "Saving..." : t('parent.manager.actions.save')}
+                         </Button>
                       </div>
                     </div>
                    ) : (
