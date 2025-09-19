@@ -15,7 +15,7 @@ export function AdvancedTemplateTest() {
   const [userInfo, setUserInfo] = useState<Partial<UserInfo>>({
     name: 'Alex',
     age: 8,
-    grade: '3rd',
+    grade: '3',
     nativeLanguage: 'en',
     learningGoal: 'improve-english-reading',
     avatar: { type: 'prefer-not-to-answer', skinTone: 'medium' },

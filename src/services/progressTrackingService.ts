@@ -170,7 +170,7 @@ export class ProgressTrackingService {
       const userInfo: UserInfo = {
         name: updatedProgress.userId.split('_')[1] || 'user',
         age: 11, // Default for expert level
-        grade: '6th+',
+        grade: '6',
         nativeLanguage: 'en',
         learningGoal: 'improve-english-reading',
         avatar: { type: 'prefer-not-to-answer', skinTone: 'medium' },

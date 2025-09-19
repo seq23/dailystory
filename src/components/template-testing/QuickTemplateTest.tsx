@@ -44,7 +44,7 @@ export function QuickTemplateTest() {
     const testUserInfo = {
       name: 'Alex',
       age: 8,
-      grade: '3rd' as const,
+      grade: '3' as const,
       nativeLanguage: 'en' as const,
       learningGoal: 'improve-english-reading' as const,
       avatar: { type: 'prefer-not-to-answer' as const, skinTone: 'medium' as const },

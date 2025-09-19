@@ -35,7 +35,7 @@ export function ValidationTestRunner() {
   const createTestUser = (gradeLevel: ExpertGradeLevel): UserInfo => ({
     name: 'Test User',
     age: parseInt(gradeLevel.replace('th', '')) + 5,
-    grade: "6th+",
+    grade: "6",
     nativeLanguage: "en",
     learningGoal: "improve-english-reading",
     avatar: { type: "prefer-not-to-answer", skinTone: "medium" },

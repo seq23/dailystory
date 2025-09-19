@@ -231,8 +231,8 @@ export class VoiceCatalogIntegration {
     const testUser: UserInfo = {
       name: 'Test Child',
       age: 7,
-      grade: '2nd',
-      gradeLevel: '2nd',
+      grade: '2',
+      gradeLevel: '2',
       nativeLanguage: 'en',
       learningGoal: 'improve-english-reading',
       avatar: { type: 'prefer-not-to-answer', skinTone: 'medium' },

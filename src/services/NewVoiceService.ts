@@ -134,7 +134,7 @@ export class NewVoiceService {
     const legacyUserInfo: UserInfo = {
       name: 'Reader',
       age: 8,
-      grade: '2nd',
+      grade: '2',
       nativeLanguage: 'en',
       learningGoal: 'improve-english-reading',
       avatar: { type: 'prefer-not-to-answer', skinTone: 'medium' },
@@ -204,7 +204,7 @@ export class NewVoiceService {
     const testUser: UserInfo = {
       name: 'Test User',
       age: 8,
-      grade: '2nd',
+      grade: '2',
       nativeLanguage: 'en',
       learningGoal: 'improve-english-reading',
       avatar: { type: 'prefer-not-to-answer', skinTone: 'medium' },

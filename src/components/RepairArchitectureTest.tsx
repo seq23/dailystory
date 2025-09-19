@@ -24,7 +24,7 @@ interface TestResult {
 const mockUserInfo: UserInfo = {
   name: "Alex",
   age: 8,
-  grade: "3rd",
+  grade: "3",
   nativeLanguage: "en",
   learningGoal: "improve-english-reading",
   avatar: { type: "boy", skinTone: "medium" },

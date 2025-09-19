@@ -37,8 +37,8 @@ export async function testVoiceCatalogSystem() {
     const testUser: UserInfo = {
       name: 'Emma',
       age: 8,
-      grade: '3rd',
-      gradeLevel: '3rd',
+      grade: '3',
+      gradeLevel: '3',
       nativeLanguage: 'en',
       learningGoal: 'improve-english-reading',
       avatar: { type: 'girl', skinTone: 'light' },

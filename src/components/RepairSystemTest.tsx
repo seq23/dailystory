@@ -31,7 +31,7 @@ interface EndToEndTestResult {
 const mockUserInfo: UserInfo = {
   name: "TestUser",
   age: 8,
-  grade: "3rd",
+  grade: "3",
   nativeLanguage: "en",
   learningGoal: "improve-english-reading",
   avatar: { type: "boy", skinTone: "medium" },
@@ -139,7 +139,7 @@ export function RepairSystemTest() {
       const simpleUserInfo = {
         ...mockUserInfo,
         age: 6,
-        grade: "1st" as const,
+        grade: "1" as const,
         difficultyLevel: "easy" as DifficultyLevel,
         specialRequest: "simple cat story"
       };
@@ -180,7 +180,7 @@ export function RepairSystemTest() {
       const complexUserInfo = {
         ...mockUserInfo,
         age: 6,
-        grade: "1st" as const, 
+        grade: "1" as const, 
         difficultyLevel: "expert-10" as DifficultyLevel,
         specialRequest: "advanced quantum physics dissertation with complex mathematical proofs and university-level terminology"
       };
