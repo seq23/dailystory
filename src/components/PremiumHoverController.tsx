@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { SimpleAudioEngine } from '@/services/SimpleAudioEngine';
+import { SimplifiedAudioEngine } from '@/services/SimplifiedAudioEngine';
 import { contextualPronunciation } from '@/services/contextualPronunciation';
 import { DebugLogger } from '@/services/DebugLogger';
 
@@ -115,7 +115,7 @@ export const PremiumHoverController = ({ isPremium }: PremiumHoverControllerProp
       processingRef.current = true;
       
       try {
-        const audioEngine = SimpleAudioEngine.getInstance();
+        const audioEngine = SimplifiedAudioEngine.getInstance();
         const cleanWord = word.replace(/[.,!?;:'"()]/g, '').trim();
         const processedWord = contextualPronunciation.processTextForPronunciation(cleanWord, false);
         
@@ -124,11 +124,10 @@ export const PremiumHoverController = ({ isPremium }: PremiumHoverControllerProp
           detail: { system: 'premium-hover', priority: 3 }
         }));
         
-        await audioEngine.playText({
+        await audioEngine.playTextWithSynchronization({
           text: processedWord,
           voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
-          contentHash: `premium-hover-${processedWord}`,
-          modelId: 'eleven_turbo_v2_5'
+          contentHash: `premium-hover-${processedWord}`
         });
         
         DebugLogger.log('audio', `Premium hover played: "${processedWord}"`);

@@ -5,7 +5,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import type { UserInfo } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { PhoneticRulesEngine } from "@/services/phoneticRulesEngine";
-import { SimpleAudioEngine } from "@/services/SimpleAudioEngine";
+import { SimplifiedAudioEngine } from "@/services/SimplifiedAudioEngine";
 import { VocabularyLevelClassifier } from "@/utils/vocabularyLevelClassifier";
 import { getGlobalAddVocabularyWord } from "@/utils/gamificationGlobals";
 import { VocabularyTrackingService } from "@/services/vocabularyTrackingService";
@@ -29,7 +29,7 @@ export const MobileOptimizedInteractiveWord = React.memo((props: MobileOptimized
   const [showMobileModal, setShowMobileModal] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoadingWordData, setIsLoadingWordData] = useState(false);
-  const audioEngine = SimpleAudioEngine.getInstance();
+  const audioEngine = SimplifiedAudioEngine.getInstance();
   const { toast } = useToast();
   const [hasCountedReview, setHasCountedReview] = useState(false);
   

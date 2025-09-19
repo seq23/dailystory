@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { supabase } from "@/integrations/supabase/client";
 import { Mic, StopCircle, Volume2, RotateCcw, ChevronLeft, ChevronRight, Lock, ChevronDown, ChevronUp } from "lucide-react";
-import { SimpleAudioEngine } from "@/services/SimpleAudioEngine";
+import { SimplifiedAudioEngine } from "@/services/SimplifiedAudioEngine";
 import { PronunciationAnalyzer } from "@/services/PronunciationAnalyzer";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { UserInfo } from "@/types";

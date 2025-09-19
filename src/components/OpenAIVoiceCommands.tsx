@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useOpenAIRealtimeChat } from '@/hooks/useOpenAIRealtimeChat';
-import { SimpleAudioEngine } from '@/services/SimpleAudioEngine';
+import { SimplifiedAudioEngine } from '@/services/SimplifiedAudioEngine';
 import { DebugLogger } from '@/services/DebugLogger';
 
 export const OpenAIVoiceCommands: React.FC = () => {
-  const engine = SimpleAudioEngine.getInstance();
+  const engine = SimplifiedAudioEngine.getInstance();
 
   // Handle function calls from OpenAI
   const handleFunctionCall = useCallback((functionName: string, args: any) => {
@@ -18,7 +18,7 @@ export const OpenAIVoiceCommands: React.FC = () => {
         const hash = (window as any).__pageContentHash || undefined;
         
         if (text) {
-          engine.playText({ 
+          engine.playTextWithSynchronization({ 
             text, 
             contentHash: hash,
             voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte

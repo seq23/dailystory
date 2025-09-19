@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { OpenAIVoiceCommands } from './OpenAIVoiceCommands';
 import { VoiceCommands } from './VoiceCommands';
-import { SimpleAudioEngine } from '@/services/SimpleAudioEngine';
+import { SimplifiedAudioEngine } from '@/services/SimplifiedAudioEngine';
 
 interface VoiceSystemStatus {
   system: 'elevenlabs' | 'openai' | 'idle';
@@ -19,7 +19,7 @@ export const HybridVoiceCommands: React.FC = () => {
   });
   const [manualOverride, setManualOverride] = useState(false);
   const [readingSpeed, setReadingSpeed] = useState(1.0);
-  const engine = SimpleAudioEngine.getInstance();
+  const engine = SimplifiedAudioEngine.getInstance();
 
   // Enhanced command handlers with speed controls
   const handleCommand = useCallback((command: string, args?: any) => {
@@ -33,7 +33,7 @@ export const HybridVoiceCommands: React.FC = () => {
         if (text) {
           // Brief delay to let any Charlotte acknowledgment finish
           setTimeout(() => {
-            engine.playText({ 
+            engine.playTextWithSynchronization({ 
               text, 
               contentHash: hash,
               voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte

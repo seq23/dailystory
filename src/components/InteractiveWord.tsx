@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Volume2, HelpCircle, Languages, BookOpen, Lightbulb, Plus, Crown, Layers } from "lucide-react";
-import { SimpleAudioEngine } from "@/services/SimpleAudioEngine";
+import { SimplifiedAudioEngine } from "@/services/SimplifiedAudioEngine";
 import { PhoneticRulesEngine } from "@/services/phoneticRulesEngine";
 import { useToast } from "@/hooks/use-toast";
 import { contextualPronunciation } from "@/services/contextualPronunciation";
@@ -108,7 +108,7 @@ export const InteractiveWord = ({
   const [isPlaying, setIsPlaying] = useState(false);
   const [wordData, setWordData] = useState<any>(null);
   const [isLoadingWordData, setIsLoadingWordData] = useState(false);
-  const audioEngine = SimpleAudioEngine.getInstance();
+  const audioEngine = SimplifiedAudioEngine.getInstance();
   const [isPlayingPhonetics, setIsPlayingPhonetics] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState<{
     vertical: 'top' | 'bottom';
@@ -1004,7 +1004,7 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
   const [isPlayingMobile, setIsPlayingMobile] = useState(false);
   const [mobileWordData, setMobileWordData] = useState<any>(null);
   const [isLoadingMobile, setIsLoadingMobile] = useState(false);
-  const audioEngine = SimpleAudioEngine.getInstance();
+  const audioEngine = SimplifiedAudioEngine.getInstance();
   const [isPlayingPhonetics, setIsPlayingPhonetics] = useState(false);
   // Use global gamification system instead of local hook for mobile
   const getAddVocabularyWordMobile = () => {

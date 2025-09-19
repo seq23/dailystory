@@ -3,7 +3,7 @@ import { DebugLogger } from '@/services/DebugLogger';
 import { performanceManager } from '@/services/PerformanceManager';
 import { Button } from '@/components/ui/button';
 import { Play, Square } from 'lucide-react';
-import { SimpleAudioEngine } from '@/services/SimpleAudioEngine';
+import { SimplifiedAudioEngine } from '@/services/SimplifiedAudioEngine';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface AudioControlsProps {
@@ -50,14 +50,14 @@ export const AudioControls: React.FC<AudioControlsProps> = ({ text, contentHash,
       (window as any).__audioHashLocked = uiHash;
     }
 
-    const engine = SimpleAudioEngine.getInstance();
+    const engine = SimplifiedAudioEngine.getInstance();
     try {
       // Enhanced mobile delay for better content synchronization
       if (isMobileOrTablet) {
         await new Promise((r) => performanceManager.setTimeout(() => r(undefined), 800, 'mobile audio sync')); // Increased to 800ms for better mobile sync
       }
       
-      await engine.playText({ 
+      await engine.playTextWithSynchronization({ 
         text, 
         contentHash: uiHash,
         voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
@@ -113,7 +113,7 @@ export const AudioControls: React.FC<AudioControlsProps> = ({ text, contentHash,
       DebugLogger.log('audio', 'AudioControls: Stop button pressed');
     }
     
-    const engine = SimpleAudioEngine.getInstance();
+    const engine = SimplifiedAudioEngine.getInstance();
     engine.stop();
     
     // Also stop any ElevenLabs audio that might be playing

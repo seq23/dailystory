@@ -332,9 +332,9 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
       const cleanWord = resolved;
       try {
         if (detail.type === 'pronounce') {
-          // Use SimpleAudioEngine for word pronunciation
-          const { SimpleAudioEngine } = await import('@/services/SimpleAudioEngine');
-          await SimpleAudioEngine.getInstance().playText({ 
+          // Use SimplifiedAudioEngine for word pronunciation
+          const { SimplifiedAudioEngine } = await import('@/services/SimplifiedAudioEngine');
+          await SimplifiedAudioEngine.getInstance().playTextWithSynchronization({ 
             text: cleanWord,
             voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
           });
@@ -349,9 +349,9 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
           if (detail.type === 'define' || detail.type === 'explain') {
             toast({ title: cleanWord, description: definition, duration: 4000 });
             try {
-              // Use SimpleAudioEngine for definitions
-              const { SimpleAudioEngine } = await import('@/services/SimpleAudioEngine');
-              await SimpleAudioEngine.getInstance().playText({ 
+              // Use SimplifiedAudioEngine for definitions
+              const { SimplifiedAudioEngine } = await import('@/services/SimplifiedAudioEngine');
+              await SimplifiedAudioEngine.getInstance().playTextWithSynchronization({ 
                 text: definition,
                 voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
               });
