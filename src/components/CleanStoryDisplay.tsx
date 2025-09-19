@@ -132,6 +132,7 @@ import { ExpertDifficultyManager } from "@/services/expertDifficultyManager";
 
 import { useSessionAwareImageLoader } from "@/hooks/useSessionAwareImageLoader";
 import { convertImagesToRecord } from "@/utils/imageUtils";
+import "@/utils/imageDebugConsole"; // Initialize debug console
 
 interface CleanStoryDisplayProps {
   userInfo: UserInfo;
@@ -456,6 +457,31 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   // PHASE 1 FIX: Stable session ID for consistent image caching across the entire story session
   const [stableSessionId] = useState(() => isPremium ? `premium_${Date.now()}` : `guest_${Date.now()}`);
   
+  // Store session IDs in sessionStorage for debugging
+  useEffect(() => {
+    try {
+      sessionStorage.setItem('current_stable_session_id', stableSessionId);
+      sessionStorage.setItem('current_character_session_id', characterSessionId);
+      DebugLogger.log('image', 'Session IDs stored for debugging:', {
+        stableSessionId,
+        characterSessionId,
+        areEqual: stableSessionId === characterSessionId
+      });
+    } catch (error) {
+      DebugLogger.warn('image', 'Failed to store session IDs for debugging', error);
+    }
+  }, [stableSessionId, characterSessionId]);
+  
+  // Store current page and images for debugging
+  useEffect(() => {
+    try {
+      sessionStorage.setItem('current_page', currentPage.toString());
+      sessionStorage.setItem('current_page_images', JSON.stringify(pageImages));
+    } catch (error) {
+      DebugLogger.warn('image', 'Failed to store current state for debugging', error);
+    }
+  }, [currentPage, pageImages]);
+  
   // Audio and Interactive Features state
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [isAudioLoading, setIsAudioLoading] = useState(false);
@@ -471,7 +497,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
 
   // Session-aware image loader for consistent session context
   const { loadImage } = useSessionAwareImageLoader({
-    sessionId: characterSessionId,
+    sessionId: stableSessionId, // CRITICAL FIX: Use same session ID as image generation
     timeout: 10000,
     isDebugMode: false
   });

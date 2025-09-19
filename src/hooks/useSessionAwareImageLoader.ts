@@ -4,6 +4,7 @@
  */
 import { useCallback } from 'react';
 import { ImageLoadingManager } from '@/services/ImageLoadingManager';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface UseSessionAwareImageLoaderOptions {
   sessionId?: string;
@@ -18,6 +19,13 @@ export function useSessionAwareImageLoader(options: UseSessionAwareImageLoaderOp
     url: string,
     onProgress?: (stage: string) => void
   ): Promise<boolean> => {
+    DebugLogger.log('image', 'Loading image with session context:', {
+      url: url.substring(0, 50) + '...',
+      sessionId,
+      timeout,
+      isDebugMode
+    });
+    
     return ImageLoadingManager.loadImage(url, {
       timeout,
       isDebugMode,
