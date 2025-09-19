@@ -38,7 +38,21 @@ export function useChildProfiles() {
     // Deduplicate concurrent requests from multiple components
     if (activeLoadRequest) {
       console.log('🔄 useChildProfiles: Using existing request...');
-      return activeLoadRequest;
+      // Wait for the shared request and hydrate from cache
+      try {
+        await activeLoadRequest;
+        // Hydrate this instance from the cache
+        if (requestCache) {
+          const { children: cachedChildren, activeChildId: cachedActiveChildId } = requestCache.data;
+          setChildren(cachedChildren || []);
+          setActiveChildId(cachedActiveChildId || null);
+        }
+      } catch (e) {
+        setError((e as any)?.message || 'Failed to load child profiles');
+      } finally {
+        setLoading(false);
+      }
+      return;
     }
 
     // Stop retrying after too many errors

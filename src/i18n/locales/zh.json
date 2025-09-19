@@ -664,6 +664,44 @@
     }
   },
   "parent": {
+    "manager": {
+      "title": "Manage Children",
+      "description": "Add and manage child profiles for personalized reading experiences",
+      "loading": "Loading children...",
+      "addTitle": "Add New Child",
+      "addDescription": "Create a child profile with personalized preferences",
+      "manageTitle": "Current Children",
+      "manageDescription": "View and edit existing child profiles",
+      "empty": "No children added yet. Add your first child profile above.",
+      "labels": {
+        "name": "Name",
+        "grade": "Grade Level"
+      },
+      "actions": {
+        "add": "Add Child",
+        "edit": "Edit",
+        "save": "Save Changes",
+        "cancel": "Cancel",
+        "delete": "Delete"
+      },
+      "toasts": {
+        "added": "Child profile added successfully!",
+        "saved": "Child profile updated successfully!",
+        "deleted": "Child profile deleted successfully!",
+        "failedAdd": "Failed to add child profile",
+        "failedSave": "Failed to save changes",
+        "failedDelete": "Failed to delete child profile"
+      }
+    },
+    "children": {
+      "title": "Active Child",
+      "description": "Select which child is currently reading",
+      "activeLabel": "Currently Reading As",
+      "selectChild": "Select a child",
+      "noChildren": "No children added",
+      "loading": "Loading...",
+      "updated": "Active child updated successfully!"
+    },
     "controls": {
       "title": "Parent Controls",
       "lockDifficulty": "Lock reading difficulty",
