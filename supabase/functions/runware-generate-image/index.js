@@ -699,8 +699,29 @@ async function handleRequest(req) {
       });
     }
 
-    // Generate image using the enhanced story data
-    const result = await generateEnhancedFallback(storyText, pageNumber || 1, 'runware');
+    // Check for COMPLETE_TIER_1 template directive or use proper tier logic
+    let result;
+    if (payload.forceTier === 'COMPLETE_TIER_1' || payload.skipTier25) {
+      // Call AI Visual Scene Creator for Tier 1
+      try {
+        const tier1Response = await supabase.functions.invoke('ai-visual-scene-creator', {
+          body: payload
+        });
+        
+        if (tier1Response.error) {
+          console.log('🔄 Tier 1 failed, escalating to enhanced fallback');
+          result = await generateEnhancedFallback(storyText, pageNumber || 1, 'runware');
+        } else {
+          result = tier1Response.data;
+        }
+      } catch (error) {
+        console.log('🔄 Tier 1 error, escalating to enhanced fallback:', error.message);
+        result = await generateEnhancedFallback(storyText, pageNumber || 1, 'runware');
+      }
+    } else {
+      // Default to enhanced fallback for other tiers
+      result = await generateEnhancedFallback(storyText, pageNumber || 1, 'runware');
+    }
     
     return new Response(JSON.stringify(result), {
       status: 200,
