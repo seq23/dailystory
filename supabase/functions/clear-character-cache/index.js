@@ -33,7 +33,37 @@ async function handleRequest(req) {
   // Force deployment sync - 2025-01-30
 
   try {
-...
+    const characterService = await getCharacterService();
+    
+    if (!characterService) {
+      return new Response(JSON.stringify({ 
+        error: 'Character service not available' 
+      }), {
+        status: 503,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Clear character cache logic would go here
+    const result = await characterService.clearCache();
+    
+    return new Response(JSON.stringify({ 
+      status: 'success',
+      message: 'Character cache cleared successfully',
+      result: result
+    }), {
+      status: 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  } catch (error) {
+    console.error('🗑️ Clear character cache error:', error);
+    return new Response(JSON.stringify({ 
+      error: 'Internal server error',
+      message: error.message
+    }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
   }
 }
 

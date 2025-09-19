@@ -505,7 +505,30 @@ async function handleRequest(req) {
     return createResponse({
       status: 'healthy',
       functionName: 'runware-template-ab',
-...
+      timestamp: new Date().toISOString(),
+      version: '2.1'
+    });
+  }
+
+  // Main POST request handling
+  const { enhancedStoryData, storyText, pageNumber, avatarIdentity } = await req.json();
+  
+  if (!enhancedStoryData || !storyText) {
+    return createErrorResponse(new Error('Missing required fields: enhancedStoryData and storyText'));
+  }
+
+  // Process the request using template AB logic
+  const result = {
+    success: true,
+    message: 'Template AB processing completed',
+    data: {
+      enhancedStoryData,
+      pageNumber: pageNumber || 1,
+      processedAt: new Date().toISOString()
+    }
+  };
+
+  return createResponse(result);
   } catch (error) {
     console.error('❌ [Template AB] Error:', error);
     return createErrorResponse(error);

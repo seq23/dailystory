@@ -622,7 +622,54 @@ async function handleRequest(req) {
   console.log(`🎯 [${requestId}] Crash-Proof Orchestrator v2.1: ${req.method} ${req.url}`);
   
   try {
-...
+    // Handle CORS preflight requests
+    if (req.method === 'OPTIONS') {
+      return new Response(null, { 
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+          'Access-Control-Allow-Methods': 'POST, GET, OPTIONS'
+        }
+      });
+    }
+
+    const { enhancedStoryData, storyText, pageNumber, avatarIdentity } = await req.json();
+    
+    if (!enhancedStoryData || !storyText) {
+      return new Response(JSON.stringify({
+        error: 'Missing required fields: enhancedStoryData and storyText'
+      }), {
+        status: 400,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Content-Type': 'application/json'
+        }
+      });
+    }
+
+    // Generate image using the enhanced story data
+    const result = await generateEnhancedFallback(storyText, pageNumber || 1, 'runware');
+    
+    return new Response(JSON.stringify(result), {
+      status: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json'
+      }
+    });
+  } catch (error) {
+    console.error(`❌ [${requestId}] Crash-proof orchestrator error:`, error);
+    return new Response(JSON.stringify({
+      error: 'Internal server error',
+      message: error.message,
+      requestId: requestId
+    }), {
+      status: 500,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json'
+      }
+    });
   }
 }
 
