@@ -127,27 +127,43 @@ export function useChildProfiles() {
     return activeLoadRequest;
   }, []);
 
+  // Auth state subscription and initial load - wait for auth to be ready
   useEffect(() => {
-    load();
-  }, [load]);
+    let hasInitialLoad = false;
 
-  // Auth state subscription to reload when session becomes available after hard refresh
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         // Clear any stale state and reload fresh data for this user
         errorCount = 0;
         lastErrorTime = 0;
         requestCache = null;
         load();
+        hasInitialLoad = true;
       }
       if (event === 'SIGNED_OUT') {
         // Clear state on sign out
         setChildren([]);
         setActiveChildId(null);
         requestCache = null;
+        hasInitialLoad = true;
       }
     });
+
+    // Check for existing session after setting up listener
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!hasInitialLoad) {
+        if (session?.user) {
+          load();
+        } else {
+          // No session, clear state and stop loading
+          setChildren([]);
+          setActiveChildId(null);
+          setLoading(false);
+        }
+        hasInitialLoad = true;
+      }
+    });
+
     return () => {
       subscription.unsubscribe();
     };
