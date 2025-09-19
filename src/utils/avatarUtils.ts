@@ -1,4 +1,5 @@
 import type { AvatarType, SkinTone } from "@/types";
+import { DebugLogger } from "@/services/DebugLogger";
 
 interface AvatarData {
   type: AvatarType;
@@ -60,7 +61,12 @@ export class AvatarUtils {
       return typeMapping.medium || this.DEFAULT_FALLBACK;
     }
 
-    // Success: No logging needed for normal operations
+    // Success: Log successful avatar URL generation
+    DebugLogger.log('ui', 'Avatar URL generated successfully', { 
+      type: avatarData.type, 
+      skinTone: avatarData.skinTone, 
+      url: avatarUrl 
+    });
     return avatarUrl;
   }
 

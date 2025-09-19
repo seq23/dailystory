@@ -28,6 +28,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { ChildQuickSwitcher } from "@/components/ChildQuickSwitcher";
 import { useChildProfiles } from "@/hooks/useChildProfiles";
 import { AvatarUtils } from "@/utils/avatarUtils";
+import "@/utils/childDebugConsole";
 interface PremiumHeaderProps {
   userInfo: UserInfo;
   isPremium: boolean;
@@ -200,7 +201,7 @@ export const PremiumHeader = ({
                         }}
                       />
                       <AvatarFallback className="bg-gradient-primary text-white text-sm font-semibold">
-                        {hasSelectedAvatar ? "" : getInitial}
+                        {getInitial}
                       </AvatarFallback>
                     </Avatar>
                     <div className="text-left hidden sm:block">
