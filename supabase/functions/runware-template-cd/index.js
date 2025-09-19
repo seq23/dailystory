@@ -125,12 +125,12 @@ function getComplexityLevel(userInfo, templateComplexity) {
     return templateComplexity;
   }
   
-  // Default logic: use C for most cases, D only for ultimate emergency
+  // Auto-determine: C for nuclear templates, D for ultimate emergency
   if (!userInfo || !userInfo.difficulty) {
     return 'D'; // No user info = ultimate emergency
   }
   
-  // Default to C (emergency framework)
+  // Default to C (nuclear framework)
   return 'C';
 }
 

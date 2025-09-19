@@ -3,7 +3,7 @@
 
 /**
  * Log tier attempt with detailed context for debugging
- * Now logs to dedicated image_generation_debug table
+ * Enhanced with model-specific logging for Tier 1 
  */
 export async function logTierAttempt(supabase, sessionId, requestId, tier, status, context = {}) {
   if (!supabase) return; // Graceful fallback if no Supabase client
@@ -11,10 +11,26 @@ export async function logTierAttempt(supabase, sessionId, requestId, tier, statu
   try {
     // Extract edge function name from context or determine from tier
     const edgeFunction = context.edgeFunction || 
-      (tier === 'tier-1' ? 'runware-generate-image' :
-       tier === 'tier-2.5A' ? 'runware-template-ab' :
-       tier === 'tier-2.5C' ? 'runware-template-cd' : 
-       'ai-visual-scene-creator');
+      (tier === 'tier-1' ? 'ai-visual-scene-creator' :
+       tier === 'tier-2.5A' || tier === 'tier-2.5B' ? 'runware-template-ab' :
+       tier === 'tier-2.5C' || tier === 'tier-2.5D' ? 'runware-template-cd' : 
+       'runware-generate-image');
+
+    // Enhanced context for model tracking in Tier 1
+    const enhancedContext = {
+      ...context,
+      tierAnalysis: analyzeTierContext(tier, status, context),
+      requestId,
+      timestamp: new Date().toISOString()
+    };
+
+    // Add model-specific tracking for Tier 1
+    if (tier === 'tier-1' && context.modelUsed) {
+      enhancedContext.modelUsed = context.modelUsed;
+      enhancedContext.modelAttemptNumber = context.modelAttemptNumber;
+      enhancedContext.totalModelsAvailable = context.totalModelsAvailable;
+      enhancedContext.modelSuccessTracking = true;
+    }
     
     // Log to dedicated image_generation_debug table
     await supabase
@@ -28,21 +44,21 @@ export async function logTierAttempt(supabase, sessionId, requestId, tier, statu
         edge_function: edgeFunction,
         positive_prompt: context.positivePrompt || context.prompt || null,
         negative_prompt: context.negativePrompt || null,
-        api_response: context.apiResponse || { tierRouting: true, requestId },
+        api_response: context.apiResponse || { 
+          tierRouting: true, 
+          requestId,
+          modelUsed: context.modelUsed,
+          modelAttemptNumber: context.modelAttemptNumber
+        },
         image_url: context.imageUrl || context.imageURL || null,
         success: status === 'success',
         failure_reason: context.error || context.errorMessage || null,
         processing_time_ms: context.completionTime || context.processingTime || null,
         template_complexity: context.templateComplexity || null,
-        context: {
-          ...context,
-          tierAnalysis: analyzeTierContext(tier, status, context),
-          requestId,
-          timestamp: new Date().toISOString()
-        }
+        context: enhancedContext
       }]);
       
-    console.log(`📊 [IMAGE_DEBUG] ${tier} ${status} logged for ${sessionId} (${edgeFunction})`);
+    console.log(`📊 [IMAGE_DEBUG] ${tier} ${status} logged for ${sessionId} (${edgeFunction})${context.modelUsed ? ` [Model: ${context.modelUsed}]` : ''}`);
   } catch (error) {
     console.warn(`⚠️ Failed to log image generation debug:`, error.message);
   }

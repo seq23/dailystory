@@ -234,11 +234,28 @@ function inlineDetectCultural(userInfo, avatarIdentity) {
 }
 
 // ============= TEMPLATE SELECTION LOGIC =============
-function selectTemplate(effectiveTierType) {
-  if (effectiveTierType === '2.5A') {
-    return TIER_25A_TEMPLATE;
+function selectTemplate(templateComplexity) {
+  if (templateComplexity === 'A') {
+    // Premium Template: Full avatar consistency + enhanced features
+    return {
+      name: 'Premium Template A',
+      enhancedFeatures: true,
+      avatarConsistency: true,
+      culturalEnhancements: true,
+      visualTracking: true
+    };
+  } else if (templateComplexity === 'B') {
+    // Basic Template: Reduced features, faster processing
+    return {
+      name: 'Basic Template B', 
+      enhancedFeatures: false,
+      avatarConsistency: true,
+      culturalEnhancements: false,
+      visualTracking: false
+    };
   } else {
-    return TIER_25B_TEMPLATE;
+    // Default to A if not specified
+    return selectTemplate('A');
   }
 }
 
@@ -494,152 +511,127 @@ serve(async (req) => {
   }
 
   try {
-    const { bundle, config } = await req.json();
-    console.log('🎯 Template AB Core Engine:', { bundle, config });
+    // Parse orchestrator parameters (new structure)
+    const body = await req.json();
+    const { 
+      pageText, 
+      userInfo = {}, 
+      avatarIdentity, 
+      templateComplexity = 'A', 
+      sessionId, 
+      pageNumber, 
+      enhancedStoryData, 
+      failedTierData = {},
+      // Legacy support for old structure
+      bundle, 
+      config 
+    } = body;
+    
+    console.log('🎯 Template AB Core Engine:', { 
+      templateComplexity, 
+      hasPageText: !!pageText, 
+      hasUserInfo: !!userInfo,
+      legacy: { bundle: !!bundle, config: !!config }
+    });
 
-    // Basic validation
-    if (!bundle || !config) {
-      throw new Error('Missing bundle or config parameters');
+    // Handle legacy structure if present
+    if (bundle && config && !pageText) {
+      console.warn('⚠️ Using legacy bundle/config structure - consider updating to new parameter format');
+      // Legacy processing would go here if needed
+      throw new Error('Legacy bundle/config format not supported - use templateComplexity parameter');
     }
 
-    // PHASE 2: Determine tier type (2.5A vs 2.5B) - Config-based, not discriminatory
-    const userInfo = bundle.userInfo || {};
-    const skinTone = userInfo.skinTone || userInfo?.avatar?.skinTone || 'medium';
+    // Validate new structure
+    if (!pageText) {
+      throw new Error('Missing pageText parameter');
+    }
+
+    // Select template configuration based on complexity
+    const templateConfig = selectTemplate(templateComplexity);
+    const effectiveTierType = templateComplexity === 'A' ? '2.5A' : '2.5B';
     
-    // CRITICAL FIX: Use config.templateComplexity instead of discriminatory skin tone logic
-    const effectiveTierType = (config.templateComplexity === 'A') ? '2.5A' : '2.5B';
-    console.log(`🎯 Effective tier type: ${effectiveTierType} (config: ${config.templateComplexity}, skin: ${skinTone})`);
+    console.log(`🔧 Selected template config: ${templateConfig.name} (${effectiveTierType})`);
+    console.log(`📝 Processing: ${pageText.substring(0, 100)}...`);
 
-    // PHASE 3: Select appropriate template
-    const templateString = selectTemplate(effectiveTierType);
-    console.log(`📄 Selected template: ${templateString.substring(0, 100)}...`);
+    // Apply complexity-specific processing
+    let characterService = null;
+    let secondaryCharacters = '';
+    let visualConsistencyElements = '';
+    
+    // Enhanced processing for Template A (premium)
+    if (templateComplexity === 'A' && templateConfig.enhancedFeatures) {
+      console.log('🎨 Template A: Using enhanced features with character consistency');
+      
+      try {
+        characterService = await getCharacterService();
+        if (characterService) {
+          secondaryCharacters = await characterService.detectSecondaryCharacters(pageText);
+          visualConsistencyElements = await characterService.getCharacterAppearanceFromStory(
+            sessionId || 'default', 
+            userInfo?.name || userInfo?.childName || 'child'
+          );
+        }
+      } catch (error) {
+        console.warn('⚠️ Template A character service failed, continuing with basic processing:', error.message);
+      }
+    } else if (templateComplexity === 'B') {
+      console.log('🎨 Template B: Using basic processing for faster performance');
+      // Template B skips enhanced features for speed
+    }
 
-    // Phase 4: Load services
-    const characterService = effectiveTierType === '2.5A' ? await getCharacterService() : null;
+    // Load resolver service
     const resolver = await getUnifiedPlaceholderResolver();
-    
     if (!resolver) {
       throw new Error('[Template AB] UnifiedPlaceholderResolver service failed to load');
     }
 
-    // PHASE 5: Prepare context for resolution with storyText fallback
-    const pageText = bundle.pageText || bundle.storyText || '';
-    const resolutionContext = {
-      userInfo,
-      seed: bundle.seed || {},
-      sessionId: bundle.sessionId || 'default',
-      pageNumber: bundle.pageNumber || 1,
-      templateLevel: bundle.templateLevel || '0',
-      effectiveTierType,
-      characterService
-    };
-
-    // PHASE 6: Handle character service calls for 2.5A tier
-    let secondaryCharacters = '';
-    let visualConsistencyElements = '';
+    // Generate simple template based on complexity
+    let templateString;
+    if (templateComplexity === 'A') {
+      // Premium Template A: More detailed prompt structure
+      templateString = `${extractSemanticScene(pageText)}. Character: {character} age {age} with {hair} and {facialFeatures}. Setting: {setting_context}. Additional characters: {secondary_characters}. Visual consistency: {visual_consistency_elements}. Cultural context: {cultural_context}. Style: {frameworkPrompt}`;
+    } else {
+      // Basic Template B: Simplified prompt structure
+      templateString = `${extractSimpleScene(pageText)}. Character: {character} age {age} with {hair}. Setting: basic scene. Style: {frameworkPrompt}`;
+    }
     
-    if (effectiveTierType === '2.5A' && characterService) {
-      try {
-        secondaryCharacters = await characterService.detectSecondaryCharacters(pageText);
-      } catch (error) {
-        console.warn('[Template AB] Character service detectSecondaryCharacters failed:', error);
-        secondaryCharacters = '';
-      }
-      
-      try {
-        visualConsistencyElements = await characterService.getCharacterAppearanceFromStory(bundle.sessionId, userInfo?.name || userInfo?.childName);
-      } catch (error) {
-        console.warn('[Template AB] Character service getCharacterAppearanceFromStory failed:', error);
-        visualConsistencyElements = '';
-      }
-    }
+    console.log(`📄 Generated template (${templateComplexity}): ${templateString.substring(0, 100)}...`);
 
-    // NEW: Setting persistence for Tier 2.5A - detect and persist settings
-    let persistentSetting = null;
-    if (effectiveTierType === '2.5A') {
-      try {
-        // Import ExactWordExtractor and VisualDetailTracker for setting detection
-        const { ExactWordExtractor } = await import("../_shared/ExactWordExtractor.js");
-        const visualTracker = await getVisualTracker();
-        
-        if (ExactWordExtractor && visualTracker) {
-          const currentSetting = ExactWordExtractor.extractExactSetting(pageText);
-          
-          if (currentSetting) {
-            // Save current setting to database
-            await visualTracker.saveDetailToDatabase(
-              bundle.sessionId || 'default', 'general', 'setting', 'location', currentSetting, bundle.pageNumber || 1
-            );
-            persistentSetting = currentSetting;
-            console.log(`🏠 Tier 2.5A: Detected and saved setting: ${currentSetting}`);
-          } else {
-            // Retrieve previous setting if no current one found
-            persistentSetting = await visualTracker.getSessionSetting(bundle.sessionId || 'default');
-            if (persistentSetting) {
-              console.log(`🏠 Tier 2.5A: Using persistent setting: ${persistentSetting}`);
-            }
-          }
-        }
-      } catch (error) {
-        console.warn('[Template AB] Setting persistence failed:', error);
-        persistentSetting = null;
-      }
-    }
-
-    // PHASE 7: Build enhanced context object
+    // Build context for template resolution
+    const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
     const fullContext = {
-      ...bundle,
-      ...resolutionContext,
       pageText,
-      ethnicity: deriveRegionalEthnicity(userInfo, userInfo?.avatarIdentity),
+      character: userInfo?.name || userInfo?.childName || 'child',
+      age: userInfo?.age || '6',
       hair: getHair(skinTone),
-      features: getFeatures(skinTone),
-      hairDescription: getHair(skinTone),
       facialFeatures: getFeatures(skinTone),
-      scene: extractSimpleScene(pageText),
-      semantic_scene: effectiveTierType === '2.5A' ? extractSemanticScene(pageText) : extractSimpleScene(pageText),
       secondary_characters: secondaryCharacters,
       visual_consistency_elements: visualConsistencyElements,
       cultural_context: deriveNonEnglishCulturalContext(userInfo),
-      community_context: '',
-      character: bundle.characterData?.name || userInfo?.name || userInfo?.childName || 'child',
-      age: userInfo?.age || '6',
-      leftover_data: bundle.leftoverData || '',
-      cameraDirective: 'medium shot',
-      frameworkPrompt: getNuclearStyleFramework(bundle.templateLevel || 'medium').frameworkPrompt,
-      fullFrameworkPrompt: getNuclearStyleFramework(bundle.templateLevel || 'medium').frameworkPrompt,
-      // NEW: Add persistent setting to context for template resolution
-      persistent_setting: persistentSetting || '',
-      setting_context: persistentSetting ? `in ${persistentSetting}` : ''
+      setting_context: templateComplexity === 'A' ? 'detailed setting' : 'simple setting',
+      frameworkPrompt: getNuclearStyleFramework(userInfo?.difficulty || 'medium').frameworkPrompt
     };
 
-    // PHASE 7: Resolve placeholders
+    // Resolve template placeholders
     let result = await resolver.resolveAllPlaceholders(templateString, fullContext);
 
-    // PHASE 8: Handle template resolution failure - escalation logic
+    // Fallback handling if template resolution fails
     if (!result.success || result.remainingPlaceholders > 0) {
-      console.warn(`⚠️ Template resolution failed for ${effectiveTierType}, attempting escalation`);
+      console.warn(`⚠️ Template resolution failed for ${templateComplexity}, using fallback`);
       
-      if (effectiveTierType === '2.5A') {
-        // Escalate to 2.5B as fallback
-        console.log('🔄 Escalating from 2.5A to 2.5B template');
-        const fallbackTemplate = selectTemplate('2.5B');
-        result = await resolver.resolveAllPlaceholders(fallbackTemplate, fullContext);
-      }
+      // Create fallback prompt
+      const fallbackPrompt = `${pageText}. Character: ${fullContext.character} age ${fullContext.age}. Style: ${fullContext.frameworkPrompt}`;
+      result = { success: true, resolvedText: fallbackPrompt };
     }
 
-    console.log(`🔧 [Template AB] Resolution completed successfully`);
+    console.log(`🔧 [Template AB] Resolution completed for ${templateComplexity}`);
 
-    // Get proper cultural profile for negative prompt generation
-    const culturalProfileType = inlineDetectCultural(userInfo, bundle.userInfo?.avatar);
-    console.log(`🎭 [Template AB] CULTURAL PROFILE DETECTION FIX: Detected ${culturalProfileType} profile for user with skinTone: ${userInfo?.avatar?.skinTone || 'not specified'}, language: ${userInfo?.nativeLanguage || 'en'}`);
-    
     // Generate negative prompt
-    const negativePrompt = generateInlineNuclearNegative(culturalProfileType, userInfo?.avatar?.type || 'child', bundle.templateLevel);
+    const culturalProfileType = inlineDetectCultural(userInfo, avatarIdentity);
+    const negativePrompt = generateInlineNuclearNegative(culturalProfileType, userInfo?.avatar?.type || 'child', userInfo?.difficulty || 'medium');
     
-    // ============= CRITICAL FIX: ADD RUNWARE API IMAGE GENERATION =============
     console.log(`🖼️ [Template AB] Generating image with Runware API...`);
-    console.log(`📝 [Template AB] Final prompt: ${result.resolvedText}`);
+    console.log(`📝 [Template AB] Final prompt (${templateComplexity}): ${result.resolvedText}`);
     console.log(`🚫 [Template AB] Negative prompt: ${negativePrompt}`);
     
     try {
@@ -647,38 +639,41 @@ serve(async (req) => {
       const imageResult = await callRunwareAPIWithRetry(result.resolvedText, negativePrompt);
       
       if (imageResult && imageResult.imageURL) {
-        console.log(`✅ [Template AB] Image generation successful: ${imageResult.imageURL}`);
+        console.log(`✅ [Template AB] Image generation successful (${templateComplexity}): ${imageResult.imageURL}`);
         
         return createResponse({
           success: true,
           imageURL: imageResult.imageURL,
-          prompt: result.resolvedText,
-          negative: negativePrompt,
-          templateUsed: `${effectiveTierType}: ${templateString.substring(0, 50)}...`,
-          resolutionDetails: result,
+          positivePrompt: result.resolvedText,
+          negativePrompt: negativePrompt,
+          templateUsed: `Template ${templateComplexity}: ${templateString.substring(0, 50)}...`,
+          templateComplexity: templateComplexity,
           tierType: effectiveTierType,
           provider: imageResult.provider || 'runware',
-          tier: effectiveTierType
+          tier: effectiveTierType,
+          enhancedFeatures: templateConfig.enhancedFeatures,
+          processingMode: templateComplexity === 'A' ? 'premium' : 'basic'
         });
       } else {
-        console.error('❌ [Template AB] Image generation failed - no imageURL returned');
+        console.error(`❌ [Template AB] Image generation failed (${templateComplexity}) - no imageURL returned`);
         throw new Error('Image generation failed - no imageURL returned');
       }
     } catch (imageError) {
-      console.error('❌ [Template AB] Image generation error:', imageError);
+      console.error(`❌ [Template AB] Image generation error (${templateComplexity}):`, imageError);
       
-      // Return prompt-only response as fallback with error indication
+      // Return prompt-only response as fallback
       return createResponse({
-        success: true,
+        success: false,
         imageURL: null,
-        prompt: result.resolvedText,
-        negative: negativePrompt,
-        templateUsed: `${effectiveTierType}: ${templateString.substring(0, 50)}...`,
-        resolutionDetails: result,
+        positivePrompt: result.resolvedText,
+        negativePrompt: negativePrompt,
+        templateUsed: `Template ${templateComplexity}: ${templateString.substring(0, 50)}...`,
+        templateComplexity: templateComplexity,
         tierType: effectiveTierType,
         provider: 'runware',
         tier: effectiveTierType,
-        imageGenerationError: imageError.message || 'Image generation failed'
+        imageGenerationError: imageError.message || 'Image generation failed',
+        fallbackReason: 'Image generation API failure'
       });
     }
 

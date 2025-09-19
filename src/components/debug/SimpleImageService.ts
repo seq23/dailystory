@@ -54,13 +54,13 @@ export interface ImageGenerationResponse {
 
 export class SimpleImageService {
   /**
-   * Generate image using the enhanced image generation pipeline with proper fallback chain
-   * Orchestrator → Tier 2.5C → Tier 4 (SVG)
+   * Generate image using the comprehensive 5-tier fallback chain
+   * Orchestrator → Direct Tier Fallbacks (2.5A → 2.5B → 2.5C → 2.5D) → Tier 4 (SVG)
    */
   static async generateImage(request: ImageGenerationRequest): Promise<ImageGenerationResponse> {
     const requestId = request.requestId || `REQ-${Math.random().toString(36).substring(2, 10)}-${Math.random().toString(36).substring(2, 7)}`;
     
-    DebugLogger.log('image', `🖼️ SimpleImageService: Starting enhanced image generation`, {
+    DebugLogger.log('image', `🖼️ SimpleImageService: Starting comprehensive 5-tier generation`, {
       requestId,
       hasUserInfo: !!request.userInfo,
       userName: request.userInfo?.name,
@@ -70,8 +70,8 @@ export class SimpleImageService {
     try {
       const startTime = Date.now();
       
-      // PHASE 3: Enhanced fallback chain - try orchestrator first
-      DebugLogger.log('image', `🎯 Attempting Orchestrator (main pipeline)`, { requestId });
+      // Try orchestrator first (handles Tier 1 → 2.5A → 2.5B → 2.5C → 2.5D → 4)
+      DebugLogger.log('image', `🎯 Attempting Orchestrator (main 5-tier pipeline)`, { requestId });
       
       const response = await supabase.functions.invoke('runware-generate-image', {
         body: {
@@ -99,22 +99,52 @@ export class SimpleImageService {
         };
       }
 
-      // PHASE 3: If orchestrator fails, try direct Tier 2.5C fallback
-      DebugLogger.warn('image', `⚠️ Orchestrator failed, attempting Tier 2.5C fallback`, {
+      // If orchestrator fails completely, try direct tier fallback chain
+      DebugLogger.warn('image', `⚠️ Orchestrator failed, starting frontend fallback chain`, {
         requestId,
         orchestratorError: response.error?.message || response.data?.error,
         processingTime
       });
 
-      const tier25CResult = await this.emergencyFallbackTier25C(request);
-      
-      if (tier25CResult.success) {
-        DebugLogger.log('image', `✅ Tier 2.5C fallback succeeded`, { requestId });
-        return tier25CResult;
+      // Frontend Fallback Chain: 2.5A → 2.5B → 2.5C → 2.5D → SVG
+      const tiers = [
+        { name: '2.5A', function: 'runware-template-ab', complexity: 'A' },
+        { name: '2.5B', function: 'runware-template-ab', complexity: 'B' },
+        { name: '2.5C', function: 'runware-template-cd', complexity: 'C' },
+        { name: '2.5D', function: 'runware-template-cd', complexity: 'D' }
+      ];
+
+      for (const tier of tiers) {
+        try {
+          DebugLogger.log('image', `🔄 Frontend attempting Tier ${tier.name}`, { requestId });
+          
+          const tierResult = await this.callDirectTier(request, tier.function, tier.complexity);
+          
+          if (tierResult.success) {
+            DebugLogger.log('image', `✅ Frontend Tier ${tier.name} succeeded`, { requestId });
+            return {
+              ...tierResult,
+              metadata: {
+                ...tierResult.metadata,
+                frontendFallback: true,
+                bypassedOrchestrator: true,
+                tier: tier.name
+              }
+            };
+          }
+          
+          DebugLogger.warn('image', `⚠️ Frontend Tier ${tier.name} failed`, { requestId });
+          
+        } catch (error) {
+          DebugLogger.error('image', `💥 Frontend Tier ${tier.name} exception`, {
+            requestId,
+            error: error instanceof Error ? error.message : 'Unknown error'
+          });
+        }
       }
 
-      // PHASE 3: If Tier 2.5C fails, use Tier 4 (SVG fallback)
-      DebugLogger.warn('image', `⚠️ Tier 2.5C failed, using Tier 4 (SVG fallback)`, { requestId });
+      // All tiers failed, use SVG fallback
+      DebugLogger.warn('image', `⚠️ All frontend tiers failed, using Tier 4 (SVG fallback)`, { requestId });
       
       return {
         success: true,
@@ -125,9 +155,9 @@ export class SimpleImageService {
         metadata: {
           requestId,
           source: 'SimpleImageService',
-          emergencyFallback: true,
+          frontendFallback: true,
           tier: 4,
-          fallbackReason: 'All backend tiers failed'
+          fallbackReason: 'All tiers failed including frontend fallbacks'
         }
       };
 
@@ -137,7 +167,7 @@ export class SimpleImageService {
         error: error instanceof Error ? error.message : 'Unknown error'
       });
 
-      // PHASE 3: Always return a working fallback, never fail completely
+      // Always return a working fallback
       return {
         success: true,
         imageURL: this.generateTier4SVGFallback(request.pageText, request.pageNumber),
@@ -153,6 +183,47 @@ export class SimpleImageService {
         }
       };
     }
+  }
+
+  /**
+   * Call a specific tier directly (for frontend fallback chain)
+   */
+  private static async callDirectTier(
+    request: ImageGenerationRequest, 
+    functionName: string, 
+    complexity: string
+  ): Promise<ImageGenerationResponse> {
+    const { data, error } = await supabase.functions.invoke(functionName, {
+      body: {
+        ...request,
+        templateComplexity: complexity,
+        frontendFallback: true
+      }
+    });
+
+    if (error) {
+      throw new Error(`Direct tier call failed: ${error.message}`);
+    }
+
+    if (!data?.success) {
+      throw new Error('Direct tier returned unsuccessful result');
+    }
+
+    return {
+      success: true,
+      imageURL: data.imageURL,
+      provider: data.provider,
+      tier: data.tier,
+      templateType: data.templateType,
+      positivePrompt: data.positivePrompt,
+      negativePrompt: data.negativePrompt,
+      enhancementLevel: 'direct-tier-call',
+      metadata: {
+        directTierCall: true,
+        functionName,
+        complexity
+      }
+    };
   }
 
   /**

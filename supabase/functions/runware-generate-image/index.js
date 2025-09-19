@@ -966,25 +966,15 @@ serve(async (req) => {
       // Get Supabase client for tier functions
       const supabase = CrashProofBootSystem.getService('supabase')?.client;
       
-      // Tier 2.5A-B: Template with avatar consistency (unless skipTier25 is set)
+      // Tier 2.5A: Premium Template (unless skipTier25 is set)
       if ((!result || !result.success) && !skipTier25 && (!forceTier || forceTier === 'tier-2.5')) {
-        // Enhanced tier determination with service health
-        const serviceHealthDiagnostics = {
-          characterService: true, // We'll assume available unless proven otherwise
-          visualTracker: true     // We'll assume available unless proven otherwise
-        };
-        
-        console.log(`🔍 Service health for Tier 2.5: Character=${serviceHealthDiagnostics.characterService}, Visual=${serviceHealthDiagnostics.visualTracker}`);
-        
-        const templateComplexity = determineTemplateComplexity(userInfo, avatarIdentity);
-        console.log(`🎨 [${requestId}] Attempting Tier 2.5A (${templateComplexity}) with character consistency retry`);
+        const templateComplexity = 'A'; // Always use A for first attempt
+        console.log(`🎨 [${requestId}] Attempting Tier 2.5A (Premium Template) with character consistency`);
         
         // LOG TIER ROUTING: Tier 2.5A attempt 
         await logTierAttempt(supabase, sessionId, requestId, 'tier-2.5A', 'attempt', { 
           templateComplexity,
           pageNumber,
-          characterService: serviceHealthDiagnostics.characterService,
-          visualTracker: serviceHealthDiagnostics.visualTracker,
           hasAvatarIdentity: !!avatarIdentity,
           failedTierData
         });
@@ -993,18 +983,18 @@ serve(async (req) => {
           const templateResult = await CoreUtils.withTimeout(
             supabase.functions.invoke('runware-template-ab', {
               body: {
-                pageText: pageText, // Use pageText consistently
+                pageText: pageText,
                 userInfo,
                 avatarIdentity,
-                templateComplexity,
+                templateComplexity: 'A',
                 sessionId,
                 pageNumber,
-                enhancedStoryData, // PHASE 4: Pass enhanced data to tier functions
-                failedTierData // NEW: Pass failed tier data to 2.5A
+                enhancedStoryData,
+                failedTierData
               }
             }),
             8000,
-            'Template AB generation'
+            'Template AB (2.5A) generation'
           );
           
           if (templateResult.data && templateResult.data.success) {
@@ -1016,129 +1006,212 @@ serve(async (req) => {
               imageURL: result?.imageURL,
               tier: result?.tier,
               provider: result?.provider,
-              templateComplexity,
+              templateComplexity: 'A',
               templateType: 'runware-template-ab'
             });
           }
         } catch (error) {
           console.warn(`⚠️ [${requestId}] Tier 2.5A failed:`, error.message);
           
-          // LOG TIER ROUTING: Tier 2.5A failure with detailed analysis
+          // LOG TIER ROUTING: Tier 2.5A failure
           await logTierAttempt(supabase, sessionId, requestId, 'tier-2.5A', 'failure', { 
             error: error.message,
             errorType: getErrorType(error.message),
-            templateComplexity,
+            templateComplexity: 'A',
             templateType: 'runware-template-ab',
-            characterConsistencyFailure: failedTierData.characterConsistencyFailure,
-            willEscalateToTier2_5C: true
+            willEscalateToTier2_5B: true
           });
           
-          // Update failedTierData with 2.5A information for escalation to 2.5C
+          // Update failedTierData for 2.5B
           failedTierData.tier25AAttempted = true;
-          failedTierData.tier25AComplexity = templateComplexity;
           failedTierData.tier25AError = error.message;
-          
-          // If character consistency was the original failure, escalate directly to 2.5C
-          if (failedTierData.characterConsistencyFailure) {
-            console.log(`🔄 [${requestId}] Character consistency failure persists - escalating to Tier 2.5C`);
-          }
         }
       }
 
-      // Tier 2.5C-D: Nuclear independence template (only if 2.5A failed or character consistency issue)
-      if ((!result || !result.success) && !skipTier25 && (!forceTier || forceTier === 'tier-2.5')) {
-        // Only attempt 2.5C if 2.5A was attempted or character consistency failure
-        if (failedTierData.tier25AAttempted || failedTierData.characterConsistencyFailure) {
-          console.log(`🎨 [${requestId}] Attempting Tier 2.5C-D (nuclear independence) after 2.5A failure`);
+      // Tier 2.5B: Basic Template (if 2.5A failed)
+      if ((!result || !result.success) && !skipTier25 && failedTierData.tier25AAttempted && (!forceTier || forceTier === 'tier-2.5')) {
+        console.log(`🎨 [${requestId}] Attempting Tier 2.5B (Basic Template) after 2.5A failure`);
+        
+        // LOG TIER ROUTING: Tier 2.5B attempt
+        await logTierAttempt(supabase, sessionId, requestId, 'tier-2.5B', 'attempt', { 
+          templateComplexity: 'B',
+          pageNumber,
+          tier25AAttempted: true,
+          tier25AError: failedTierData.tier25AError
+        });
+        
+        try {
+          const templateResult = await CoreUtils.withTimeout(
+            supabase.functions.invoke('runware-template-ab', {
+              body: {
+                pageText: pageText,
+                userInfo,
+                avatarIdentity,
+                templateComplexity: 'B',
+                sessionId,
+                pageNumber,
+                enhancedStoryData,
+                failedTierData
+              }
+            }),
+            8000,
+            'Template AB (2.5B) generation'
+          );
           
-          // LOG TIER ROUTING: Tier 2.5C attempt
-          await logTierAttempt(supabase, sessionId, requestId, 'tier-2.5C', 'attempt', { 
-            pageNumber,
-            tier25AAttempted: failedTierData.tier25AAttempted,
-            tier25AComplexity: failedTierData.tier25AComplexity,
-            tier25AError: failedTierData.tier25AError,
-            characterConsistencyFailure: failedTierData.characterConsistencyFailure,
-            templateType: 'runware-template-cd',
-            nuclearIndependence: true
+          if (templateResult.data && templateResult.data.success) {
+            result = templateResult.data;
+            console.log(`✅ [${requestId}] Tier 2.5B succeeded`);
+            
+            // LOG TIER ROUTING: Tier 2.5B success
+            await logTierAttempt(supabase, sessionId, requestId, 'tier-2.5B', 'success', { 
+              imageURL: result?.imageURL,
+              tier: result?.tier,
+              provider: result?.provider,
+              templateComplexity: 'B',
+              templateType: 'runware-template-ab'
+            });
+          }
+        } catch (error) {
+          console.warn(`⚠️ [${requestId}] Tier 2.5B failed:`, error.message);
+          
+          // LOG TIER ROUTING: Tier 2.5B failure
+          await logTierAttempt(supabase, sessionId, requestId, 'tier-2.5B', 'failure', { 
+            error: error.message,
+            errorType: getErrorType(error.message),
+            templateComplexity: 'B',
+            templateType: 'runware-template-ab',
+            willEscalateToTier2_5C: true
           });
           
-          try {
-            const nuclearResult = await CoreUtils.withTimeout(
-              supabase.functions.invoke('runware-template-cd', {
-                body: {
-                  storyText: pageText, // Template CD expects storyText parameter
-                  userInfo,
-                  avatarIdentity,
-                  templateComplexity: 'C',
-                  sessionId,
-                  pageNumber,
-                  enhancedStoryData, // PHASE 4: Pass enhanced data to tier functions
-                  failedTierData // NEW: Pass failed tier data to 2.5C
-                }
-              }),
-              6000,
-              'Template CD generation'
-            );
-            
-            try {
-              tierLogging.logTierAttempt(supabaseAdmin, sessionId, requestId, 'TIER_2.5C', 'attempting', {
-                hasCharacterConsistency: false,
-                hasVisualConsistency: false,
-                hasCulturalEnhancements: false,
-                triggerReason: 'Emergency fallback after Tier 2.5A failure',
-                edgeFunction: 'runware-template-cd',
-                pageNumber: pageNumber,
-                userId: userInfo?.id || null,
-                positivePrompt: storyText?.substring(0, 200) + '...',
-                templateComplexity: 'nuclear_independence'
-              });
-            } catch (loggingError) {
-              console.warn(`⚠️ [${requestId}] Tier logging failed:`, loggingError.message);
-            }
-            
-            if (nuclearResult.data && nuclearResult.data.success) {
-              result = nuclearResult.data;
-              console.log(`✅ [${requestId}] Tier 2.5C-D succeeded`);
-              try {
-                tierLogging.logTierSuccess(supabaseAdmin, sessionId, requestId, 'TIER_2.5C', 'success', {
-                  imageUrl: result.imageURL,
-                  imageURL: result.imageURL,
-                  provider: result.provider,
-                  completionTime: Date.now() - startTime,
-                  processingTime: Date.now() - startTime,
-                  edgeFunction: 'runware-template-cd',
-                  pageNumber: pageNumber,
-                  userId: userInfo?.id || null,
-                  apiResponse: {
-                    success: true,
-                    provider: result.provider,
-                    tier: result.tier || 'TIER_2.5C'
-                  }
-                });
-              } catch (loggingError) {
-                console.warn(`⚠️ [${requestId}] Success logging failed:`, loggingError.message);
+          // Update failedTierData for 2.5C
+          failedTierData.tier25BAttempted = true;
+          failedTierData.tier25BError = error.message;
+        }
+      }
+
+      // Tier 2.5C: Nuclear Independence Template (if 2.5B failed)
+      if ((!result || !result.success) && !skipTier25 && failedTierData.tier25BAttempted && (!forceTier || forceTier === 'tier-2.5')) {
+        console.log(`🎨 [${requestId}] Attempting Tier 2.5C (Nuclear Independence) after 2.5B failure`);
+        
+        // LOG TIER ROUTING: Tier 2.5C attempt
+        await logTierAttempt(supabase, sessionId, requestId, 'tier-2.5C', 'attempt', { 
+          pageNumber,
+          templateComplexity: 'C',
+          tier25BAttempted: true,
+          tier25BError: failedTierData.tier25BError,
+          templateType: 'runware-template-cd',
+          nuclearIndependence: true
+        });
+        
+        try {
+          const nuclearResult = await CoreUtils.withTimeout(
+            supabase.functions.invoke('runware-template-cd', {
+              body: {
+                storyText: pageText,
+                userInfo,
+                avatarIdentity,
+                templateComplexity: 'C',
+                sessionId,
+                pageNumber,
+                enhancedStoryData,
+                failedTierData
               }
-            }
-          } catch (error) {
-            console.warn(`⚠️ [${requestId}] Tier 2.5C-D failed:`, error.message);
-            try {
-              tierLogging.logTierFailure(supabaseAdmin, sessionId, requestId, 'TIER_2.5C', 'failure', {
-                error: error.message,
-                errorMessage: error.message,
-                errorType: tierLogging.getErrorType(error.message),
-                completionTime: Date.now() - startTime,
-                processingTime: Date.now() - startTime,
-                edgeFunction: 'runware-template-cd',
-                pageNumber: pageNumber,
-                userId: userInfo?.id || null,
-                failureReason: error.message
-              });
-            } catch (loggingError) {
-              console.warn(`⚠️ [${requestId}] Failure logging failed:`, loggingError.message);
-            }
+            }),
+            6000,
+            'Template CD (2.5C) generation'
+          );
+          
+          if (nuclearResult.data && nuclearResult.data.success) {
+            result = nuclearResult.data;
+            console.log(`✅ [${requestId}] Tier 2.5C succeeded`);
+            
+            // LOG TIER ROUTING: Tier 2.5C success
+            await logTierAttempt(supabase, sessionId, requestId, 'tier-2.5C', 'success', { 
+              imageURL: result?.imageURL,
+              tier: result?.tier,
+              provider: result?.provider,
+              templateComplexity: 'C',
+              templateType: 'runware-template-cd'
+            });
           }
-        } else {
-          console.log(`🎨 [${requestId}] Skipping Tier 2.5C-D - no 2.5A attempt or character consistency failure`);
+        } catch (error) {
+          console.warn(`⚠️ [${requestId}] Tier 2.5C failed:`, error.message);
+          
+          // LOG TIER ROUTING: Tier 2.5C failure
+          await logTierAttempt(supabase, sessionId, requestId, 'tier-2.5C', 'failure', { 
+            error: error.message,
+            errorType: getErrorType(error.message),
+            templateComplexity: 'C',
+            templateType: 'runware-template-cd',
+            willEscalateToTier2_5D: true
+          });
+          
+          // Update failedTierData for 2.5D
+          failedTierData.tier25CAttempted = true;
+          failedTierData.tier25CError = error.message;
+        }
+      }
+
+      // Tier 2.5D: Ultimate Emergency Template (if 2.5C failed)
+      if ((!result || !result.success) && !skipTier25 && failedTierData.tier25CAttempted && (!forceTier || forceTier === 'tier-2.5')) {
+        console.log(`🎨 [${requestId}] Attempting Tier 2.5D (Ultimate Emergency) after 2.5C failure`);
+        
+        // LOG TIER ROUTING: Tier 2.5D attempt
+        await logTierAttempt(supabase, sessionId, requestId, 'tier-2.5D', 'attempt', { 
+          pageNumber,
+          templateComplexity: 'D',
+          tier25CAttempted: true,
+          tier25CError: failedTierData.tier25CError,
+          templateType: 'runware-template-cd',
+          ultimateEmergency: true
+        });
+        
+        try {
+          const emergencyResult = await CoreUtils.withTimeout(
+            supabase.functions.invoke('runware-template-cd', {
+              body: {
+                storyText: pageText,
+                userInfo,
+                avatarIdentity,
+                templateComplexity: 'D',
+                sessionId,
+                pageNumber,
+                enhancedStoryData,
+                failedTierData
+              }
+            }),
+            6000,
+            'Template CD (2.5D) generation'
+          );
+          
+          if (emergencyResult.data && emergencyResult.data.success) {
+            result = emergencyResult.data;
+            console.log(`✅ [${requestId}] Tier 2.5D succeeded`);
+            
+            // LOG TIER ROUTING: Tier 2.5D success
+            await logTierAttempt(supabase, sessionId, requestId, 'tier-2.5D', 'success', { 
+              imageURL: result?.imageURL,
+              tier: result?.tier,
+              provider: result?.provider,
+              templateComplexity: 'D',
+              templateType: 'runware-template-cd'
+            });
+          }
+        } catch (error) {
+          console.warn(`⚠️ [${requestId}] Tier 2.5D failed:`, error.message);
+          
+          // LOG TIER ROUTING: Tier 2.5D failure
+          await logTierAttempt(supabase, sessionId, requestId, 'tier-2.5D', 'failure', { 
+            error: error.message,
+            errorType: getErrorType(error.message),
+            templateComplexity: 'D',
+            templateType: 'runware-template-cd',
+            willEscalateToTier4: true
+          });
+          
+          // Update failedTierData for Tier 4
+          failedTierData.tier25DAttempted = true;
+          failedTierData.tier25DError = error.message;
         }
       }
 
