@@ -19,7 +19,7 @@ interface NewChildInput {
 
 // Global request deduplication to prevent spam from multiple hook instances
 let activeLoadRequest: Promise<any> | null = null;
-let requestCache: { data: any; timestamp: number } | null = null;
+let requestCache: { userId: string; data: any; timestamp: number } | null = null;
 let errorCount = 0;
 let lastErrorTime = 0;
 const CACHE_DURATION = 5000; // 5 seconds
@@ -33,14 +33,7 @@ export function useChildProfiles() {
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    // Check cache first
-    if (requestCache && Date.now() - requestCache.timestamp < CACHE_DURATION) {
-      const { children: cachedChildren, activeChildId: cachedActiveChildId } = requestCache.data;
-      setChildren(cachedChildren || []);
-      setActiveChildId(cachedActiveChildId || null);
-      setLoading(false);
-      return;
-    }
+    // Cache check moved after auth to ensure per-user validity
 
     // Deduplicate concurrent requests from multiple components
     if (activeLoadRequest) {
@@ -72,7 +65,16 @@ export function useChildProfiles() {
           console.log('No authenticated user, clearing child profiles');
           setChildren([]);
           setActiveChildId(null);
-          requestCache = { data: { children: [], activeChildId: null }, timestamp: Date.now() };
+          requestCache = null;
+          return;
+        }
+        
+        // Check per-user cache validity
+        if (requestCache && requestCache.userId === user.id && Date.now() - requestCache.timestamp < CACHE_DURATION) {
+          const { children: cachedChildren, activeChildId: cachedActiveChildId } = requestCache.data;
+          setChildren(cachedChildren || []);
+          setActiveChildId(cachedActiveChildId || null);
+          setLoading(false);
           return;
         }
 
@@ -96,8 +98,8 @@ export function useChildProfiles() {
         setChildren(resultData.children);
         setActiveChildId(resultData.activeChildId);
         
-        // Cache successful result
-        requestCache = { data: resultData, timestamp: Date.now() };
+        // Cache successful result per user
+        requestCache = { userId: user.id, data: resultData, timestamp: Date.now() };
         
         // Reset error tracking on success
         errorCount = 0;

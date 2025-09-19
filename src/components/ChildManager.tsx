@@ -28,7 +28,7 @@ const monthOptions = [
 ];
 
 export function ChildManager() {
-  const { children, addChild, updateChild, deleteChild } = useChildProfiles();
+  const { children, loading, addChild, updateChild, deleteChild } = useChildProfiles();
   const { toast } = useToast();
   const { t } = useTranslation();
 
@@ -254,7 +254,9 @@ export function ChildManager() {
           <CardDescription>{t('parent.manager.manageDescription')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          {children.length === 0 ? (
+          {loading ? (
+            <p className="text-sm text-muted-foreground">{t('parent.manager.loading') || 'Loading children...'}</p>
+          ) : children.length === 0 ? (
             <p className="text-sm text-muted-foreground">{t('parent.manager.empty')}</p>
           ) : (
             children.map((c) => (
