@@ -7,6 +7,7 @@ import { NetworkDebugger, NetworkRequest } from '@/services/NetworkDebugger';
 import { DebugGateway } from '@/services/DebugGateway';
 import { DebugDataViewer } from '@/components/DebugDataViewer';
 import { BackendTierChecker } from '@/components/BackendTierChecker';
+import { AudioPlaybackTester } from '@/components/AudioPlaybackTester';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -651,9 +652,7 @@ export const UnifiedDebugMonitor: React.FC = () => {
                   Test Charlotte voice, interactive words, and loading states separately from Voice Catalog System
                 </div>
               </div>
-              <div className="text-xs text-muted-foreground">
-                AudioPlaybackTester component will be implemented for dedicated audio debugging.
-              </div>
+              <AudioPlaybackTester />
             </div>
           </div>
         )}

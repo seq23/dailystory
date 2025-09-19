@@ -13,6 +13,7 @@ import { AnalyticsDashboard } from '@/components/AnalyticsDashboard';
 import { AdvancedMonitoringDashboard } from '@/components/AdvancedMonitoringDashboard';
 import { VoiceCatalogTester } from '@/components/VoiceCatalogTester';
 import { ImageTierTester } from '@/components/ImageTierTester';
+import { AudioPlaybackTester } from '@/components/AudioPlaybackTester';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { errorSuppressionManager } from '@/utils/errorSuppression';
 
@@ -106,6 +107,19 @@ export default function PromptTesting() {
                 </div>
                 <ErrorBoundary>
                   <ImageTierTester />
+                </ErrorBoundary>
+              </section>
+
+              <Separator />
+
+              {/* Audio Playback Testing */}
+              <section>
+                <div className="flex items-center gap-2 mb-4">
+                  <Brain className="w-5 h-5 text-primary" />
+                  <h2 className="text-2xl font-semibold">Audio Playback Testing</h2>
+                </div>
+                <ErrorBoundary>
+                  <AudioPlaybackTester />
                 </ErrorBoundary>
               </section>
 
