@@ -510,25 +510,97 @@ async function handleRequest(req) {
     });
   }
 
-  // Main POST request handling
-  const { enhancedStoryData, storyText, pageNumber, avatarIdentity } = await req.json();
-  
-  if (!enhancedStoryData || !storyText) {
-    return createErrorResponse(new Error('Missing required fields: enhancedStoryData and storyText'));
-  }
-
-  // Process the request using template AB logic
-  const result = {
-    success: true,
-    message: 'Template AB processing completed',
-    data: {
-      enhancedStoryData,
-      pageNumber: pageNumber || 1,
-      processedAt: new Date().toISOString()
+  try {
+    // Parse request body
+    const { enhancedStoryData, storyText, pageNumber, avatarIdentity, templateComplexity, sessionId } = await req.json();
+    
+    if (!enhancedStoryData || !storyText) {
+      return createErrorResponse(new Error('Missing required fields: enhancedStoryData and storyText'));
     }
-  };
 
-  return createResponse(result);
+    console.log(`🎯 Template AB processing complexity: ${templateComplexity || 'A'}`);
+
+    // Extract user info from enhancedStoryData
+    const userInfo = enhancedStoryData.userInfo || {};
+    
+    // Select template based on complexity (A or B)
+    const selectedTemplate = selectTemplate(templateComplexity || 'A');
+    console.log(`✅ Selected template: ${selectedTemplate.name}`);
+
+    let templateResult;
+    
+    if (selectedTemplate.name === 'Premium Template A') {
+      // Tier 2.5A: Full feature processing with character consistency
+      console.log('🚀 Processing Tier 2.5A: Premium Template with full features');
+      
+      // Use semantic scene extraction for Tier A
+      const extractedScene = extractSemanticScene(storyText);
+      
+      // Get character service for consistency
+      const characterService = await getCharacterService();
+      let characterConsistency = '';
+      
+      if (characterService && selectedTemplate.avatarConsistency) {
+        try {
+          characterConsistency = await characterService.generateConsistentDescription(
+            userInfo, avatarIdentity, sessionId, pageNumber
+          );
+        } catch (error) {
+          console.warn('Character consistency failed:', error);
+        }
+      }
+      
+      // Build comprehensive template
+      const styleFramework = getNuclearStyleFramework(userInfo?.difficulty || 'medium');
+      const culturalProfile = inlineDetectCultural(userInfo, avatarIdentity);
+      
+      templateResult = {
+        positivePrompt: `${extractedScene}. ${characterConsistency}. ${styleFramework.frameworkPrompt}`,
+        negativePrompt: generateInlineNuclearNegative(culturalProfile, userInfo?.avatar?.type, userInfo?.difficulty),
+        templateType: 'Premium Template A - Full Features',
+        tier: '2.5A',
+        styleFrameworkUsed: styleFramework.name
+      };
+      
+    } else if (selectedTemplate.name === 'Basic Template B') {
+      // Tier 2.5B: Basic processing with reduced features
+      console.log('🚀 Processing Tier 2.5B: Basic Template with reduced features');
+      
+      // Use simple scene extraction for Tier B
+      const extractedScene = extractSimpleScene(storyText);
+      
+      // Build basic template
+      const styleFramework = getNuclearStyleFramework(userInfo?.difficulty || 'medium');
+      const culturalProfile = inlineDetectCultural(userInfo, avatarIdentity);
+      
+      const characterName = userInfo?.name || userInfo?.childName || 'child';
+      const skinTone = userInfo?.avatar?.skinTone || 'medium';
+      const hairColor = getHair(skinTone);
+      const basicCharacter = `A young child named ${characterName} with ${skinTone} skin and ${hairColor}`;
+      
+      templateResult = {
+        positivePrompt: `${extractedScene}. ${basicCharacter}. ${styleFramework.frameworkPrompt}`,
+        negativePrompt: generateInlineNuclearNegative(culturalProfile, userInfo?.avatar?.type, userInfo?.difficulty),
+        templateType: 'Basic Template B - Reduced Features',
+        tier: '2.5B',
+        styleFrameworkUsed: styleFramework.name
+      };
+    }
+
+    // Call Runware API
+    const imageURL = await callRunwareAPIWithRetry(templateResult.positivePrompt, templateResult.negativePrompt);
+
+    const result = {
+      success: true,
+      imageURL,
+      templateData: templateResult,
+      complexity: templateComplexity || 'A',
+      sessionArchitecture: 'parameter-based',
+      processedAt: new Date().toISOString()
+    };
+
+    return createResponse(result);
+    
   } catch (error) {
     console.error('❌ [Template AB] Error:', error);
     return createErrorResponse(error);

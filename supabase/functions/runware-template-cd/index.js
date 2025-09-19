@@ -352,42 +352,51 @@ async function handleRequest(req) {
   }
 
   try {
-    const { enhancedStoryData, storyText, pageNumber, avatarIdentity } = await req.json();
+    const { enhancedStoryData, storyText, pageNumber, avatarIdentity, templateComplexity, failedTierData } = await req.json();
     
     if (!enhancedStoryData || !storyText) {
-      return new Response(JSON.stringify({
-        error: 'Missing required fields: enhancedStoryData and storyText'
-      }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
+      return createErrorResponse('Missing required fields: enhancedStoryData and storyText', 400);
     }
 
-    // Process template CD logic
+    console.log(`🎯 Template CD processing complexity: ${templateComplexity || 'auto'}`);
+
+    // Extract user info from enhancedStoryData
+    const userInfo = enhancedStoryData.userInfo || {};
+    
+    // Determine complexity level (C or D)
+    const complexityLevel = getComplexityLevel(userInfo, templateComplexity);
+    console.log(`✅ Using complexity level: ${complexityLevel}`);
+
+    let templateResult;
+    
+    if (complexityLevel === 'C') {
+      // Tier 2.5C: Nuclear hardcoded template
+      console.log('🚀 Processing Tier 2.5C: Nuclear hardcoded template');
+      templateResult = generateTier25C(storyText, userInfo, avatarIdentity, failedTierData || {});
+      
+    } else {
+      // Tier 2.5D: Ultimate emergency fallback
+      console.log('🚀 Processing Tier 2.5D: Ultimate emergency fallback');
+      templateResult = generateTier25D();
+    }
+
+    // Call Runware API
+    const imageURL = await callRunwareAPI(templateResult.positivePrompt, templateResult.negativePrompt);
+
     const result = {
       success: true,
-      message: 'Template CD processing completed',
-      data: {
-        enhancedStoryData,
-        pageNumber: pageNumber || 1,
-        processedAt: new Date().toISOString()
-      },
-      sessionArchitecture: 'parameter-based' // PHASE 4: Even in errors, show parameter-based approach
+      imageURL,
+      templateData: templateResult,
+      complexity: complexityLevel,
+      sessionArchitecture: 'parameter-based',
+      processedAt: new Date().toISOString()
     };
 
-    return new Response(JSON.stringify(result), {
-      status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    });
+    return createResponse(result);
+    
   } catch (error) {
-    console.error('Template CD error:', error);
-    return new Response(JSON.stringify({
-      error: 'Internal server error',
-      message: error.message,
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    });
+    console.error('❌ Template CD Error:', error);
+    return createErrorResponse(error);
   }
 }
 
