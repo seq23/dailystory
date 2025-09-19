@@ -93,7 +93,7 @@ export class NetflixStyleStoryService {
     return await NetflixRetryService.executeWithRetry(async () => {
       const attemptId = `attempt-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       console.log(`🔄 [${generationId}] Netflix: Starting AI generation attempt ${attemptId}`);
-      const { StoryGenerationService } = await import('./storyGenerationService');
+      const { StoryGenerationService } = await import('./storyGenerationService.ts');
       
       console.log(`🔍 [${generationId}] Netflix: Calling unified system with:`, {
         difficulty,

@@ -28,13 +28,24 @@ export class DiagnosticTool {
       
       // Test if the AI Story Enhancer edge function exists and is accessible
       const { data, error } = await supabase.functions.invoke('ai-visual-scene-creator', {
-        body: { test: true, diagnostic: 'health_check' }
+        body: { 
+          diagnostic: 'health_check',
+          storyText: 'Test story content',
+          avatarIdentity: {
+            name: 'Test',
+            type: 'girl',
+            skinTone: 'medium'
+          },
+          pageNumber: 1,
+          sessionId: 'diagnostic-test'
+        }
       });
       
       console.log('🔍 DIAGNOSTIC: Edge function test result:', { 
         hasData: !!data, 
         hasError: !!error,
-        errorDetails: error 
+        errorDetails: error,
+        dataResponse: data
       });
       
       return !error || error.message !== 'Function not found';

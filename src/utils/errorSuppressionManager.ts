@@ -31,8 +31,11 @@ class ErrorSuppressionManager {
         fullMessage.includes('extension context invalidated') ||
         fullMessage.includes('cannot access contents of') ||
         fullMessage.includes('error in event handler') ||
+        fullMessage.includes('runtime.lasterror') ||
+        fullMessage.includes('extension content') ||
+        fullMessage.includes('script error') ||
         fullMessage.includes('the message port closed before a response was received')) {
-      this.incrementErrorCount('Chrome Extension Errors');
+      this.incrementErrorCount('Browser Extension');
       return true;
     }
 
