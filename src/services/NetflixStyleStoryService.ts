@@ -104,10 +104,20 @@ export class NetflixStyleStoryService {
       });
       
       // Use managed session system for consistency
-      const actualSessionId = sessionId || NetflixSessionManager.getOrCreateSession(userInfo.name);
-      const operationKey = `next-story-generation-${userInfo.name}`;
+      let actualSessionId: string;
       
-      console.log(`🆔 [${generationId}] Netflix: Managed Session ID: ${actualSessionId}`);
+      // Check if this should be a fresh Netflix session (after "Next Story" click)
+      const shouldUseFreshSession = sessionStorage.getItem('netflix_force_fresh_session') === 'true';
+      if (shouldUseFreshSession) {
+        actualSessionId = sessionId || NetflixSessionManager.getNextStorySession(userInfo.name);
+        sessionStorage.removeItem('netflix_force_fresh_session'); // Clear flag after use
+        console.log(`🎬 [${generationId}] Netflix: Using FRESH session ID: ${actualSessionId}`);
+      } else {
+        actualSessionId = sessionId || NetflixSessionManager.getOrCreateSession(userInfo.name);
+        console.log(`🆔 [${generationId}] Netflix: Using regular session ID: ${actualSessionId}`);
+      }
+      
+      console.log(`🆔 [${generationId}] Netflix: Session ID determined`);
       
       // Add timeout wrapper for AI generation
       const result = await Promise.race([

@@ -411,6 +411,15 @@ export class SessionCacheManager {
         reason: 'new-session',
         clearVisualState: true // Full clear for new story
       });
+      
+      // Mark that next Netflix session should be fresh
+      try {
+        sessionStorage.setItem('netflix_force_fresh_session', 'true');
+        console.log('🎬 Netflix: Marked for fresh session generation');
+      } catch (error) {
+        console.warn('Failed to mark fresh session:', error);
+      }
+      
       console.log('✅ [NEXTSTORY DEBUG] clearOnNextStory COMPLETED - full cache clear done');
     } catch (error) {
       console.error('❌ [NEXTSTORY DEBUG] clearOnNextStory FAILED:', error);

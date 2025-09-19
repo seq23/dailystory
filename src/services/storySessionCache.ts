@@ -356,6 +356,17 @@ export class StorySessionCache {
     }
     
     // Comprehensive cache clearing for cross-session contamination prevention
+    // Enhanced Netflix cache clearing for "next-story" context
+    if (context === 'next-story') {
+      try {
+        const { EnhancedImageCache } = await import('@/services/enhancedImageCache');
+        EnhancedImageCache.clearAll();
+        console.log(`🎬 Netflix: Cleared all image cache for fresh story generation`);
+      } catch (error) {
+        console.warn('Failed to clear Netflix image cache:', error);
+      }
+    }
+
     console.log(`🧹 Comprehensive cache clearing to prevent cross-session contamination`);
     try {
       // Clear any cached generation data that might have stale avatar/pronoun content
@@ -405,5 +416,26 @@ export class StorySessionCache {
       difficulty: session.difficulty,
       progress: session.pages.length > 0 ? (session.currentPage + 1) / session.pages.length : 0
     };
+  }
+
+  /**
+   * Clear Netflix story cache for "Next Story" button - ensures fresh images
+   */
+  static async clearOnNextStory(userId: string, avatarType?: string): Promise<void> {
+    console.log(`🎬 Netflix: Starting "Next Story" cache clear for user ${userId}`);
+    
+    // Force comprehensive clearing for Netflix transitions
+    await this.clearCachedSession(userId, true, avatarType, 'next-story');
+    
+    // Clear Netflix session manager to force fresh session ID
+    try {
+      const { NetflixSessionManager } = await import('@/services/NetflixSessionManager');
+      NetflixSessionManager.clearSession(userId);
+      console.log(`🎬 Netflix: Cleared session manager for user ${userId}`);
+    } catch (error) {
+      console.warn('Failed to clear Netflix session manager:', error);
+    }
+    
+    console.log(`🎬 Netflix: "Next Story" cache clear completed for user ${userId}`);
   }
 }

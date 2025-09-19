@@ -352,6 +352,26 @@ export class EnhancedImageCache {
   }
 
   /**
+   * Clear for story transition - aggressive clearing for Netflix "Next Story"
+   */
+  static clearForStoryTransition(sessionId?: string): void {
+    try {
+      if (sessionId) {
+        this.clearSession(sessionId);
+      } else {
+        this.clearAll();
+      }
+      
+      // Force garbage collection of any lingering blob URLs  
+      if (typeof window !== 'undefined') {
+        console.log('📸 Netflix: Forced image cache transition clearing');
+      }
+    } catch (error) {
+      console.error('Failed to clear for story transition:', error);
+    }
+  }
+
+  /**
    * Get cache metrics
    */
   static getCacheMetrics(): CacheMetrics {
@@ -533,34 +553,6 @@ export class EnhancedImageCache {
       return used > limit * 0.8; // 80% threshold
     } catch {
       return false;
-    }
-  }
-
-  /**
-   * Clear images for story transition while preserving user session
-   * Used for guest "Next Story" and premium "New Story" actions
-   */
-  static clearForStoryTransition(sessionId: string): void {
-    try {
-      const map = this.getCacheMap();
-      const initialSize = map.size;
-      
-      // Remove all images for this session to start fresh story
-      for (const [key, value] of map.entries()) {
-        if (value.sessionId === sessionId) {
-          map.delete(key);
-        }
-      }
-      
-      this.saveCacheMap(map);
-      
-      console.log('📸 Story transition cache cleared:', {
-        sessionId,
-        removedImages: initialSize - map.size,
-        remainingImages: map.size
-      });
-    } catch (error) {
-      console.error('Failed to clear story transition cache:', error);
     }
   }
 

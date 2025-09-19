@@ -44,6 +44,27 @@ export class NetflixSessionManager {
   }
 
   /**
+   * Force fresh session for Netflix "Next Story" - prevents image recycling
+   */
+  static getNextStorySession(userId: string): string {
+    const now = Date.now();
+    const baseSessionId = `${now}-${Math.random().toString(36).substr(2, 9)}`;
+    
+    const session = {
+      baseSessionId,
+      storyCount: 1,
+      lastActivity: now,
+      userId
+    };
+
+    this.sessions.set(userId, session);
+    const sessionId = `netflix-${userId}-story1-${baseSessionId}`;
+    
+    console.log(`🎯 [SESSION-MGR] Fresh Netflix session for user ${userId}: ${sessionId}`);
+    return sessionId;
+  }
+
+  /**
    * Clear session for a user (when they end their reading session)
    */
   static clearSession(userId: string): void {
