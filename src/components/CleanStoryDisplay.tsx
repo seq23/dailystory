@@ -318,7 +318,11 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
       try {
       // Check if this is a saved story being loaded
       if (currentStory?.isFromSavedStory && currentStory.segments) {
-        DebugLogger.log('story', 'Loading saved story with cached content');
+        DebugLogger.log('story', 'Loading saved story with cached content', {
+          segmentCount: currentStory.segments.length,
+          title: currentStory.title,
+          userName: userInfo.name
+        });
         const storyPages = currentStory.segments.map((s: any) => s.text);
         StoryContentLogger.logStoryChange('saved_story_load', 'before', storyPages, { 
           source: 'saved story segments',

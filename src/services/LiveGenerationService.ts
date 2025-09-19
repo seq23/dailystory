@@ -39,6 +39,12 @@ export class LiveGenerationService {
   static async generateFirstPage(userInfo: UserInfo, sessionType?: 'new' | 'continuation' | 'rewrite', vocabularyData?: any, sessionId?: string): Promise<LivePageResult> {
     try {
       LoggerService.milestone('Starting first page generation', 'LiveGeneration', { user: userInfo.name });
+      DebugLogger.log('story', 'LiveGen: First page generation started', { 
+        user: userInfo.name, 
+        sessionType, 
+        hasVocabulary: !!vocabularyData,
+        providedSessionId: sessionId 
+      });
       
       // Convert frontend difficulty to backend format for validation system
       const frontendDifficulty = userInfo.difficultyLevel || 'beginner';
@@ -58,8 +64,13 @@ export class LiveGenerationService {
       
       const { StoryGenerationService } = await import('./storyGenerationService');
       
+      // CRITICAL FIX: Use consistent session ID format
       const actualSessionId = sessionId || `live-first-${userInfo.name}-${Date.now()}`;
-      DebugLogger.log('story', `LiveGen: First Page Session ID: ${actualSessionId}`);
+      DebugLogger.log('story', 'LiveGen: First Page Session ID created', { 
+        actualSessionId,
+        providedSessionId: sessionId,
+        userInfo: { name: userInfo.name }
+      });
       
       const result = await StoryGenerationService.generateStory(userInfo, {
         sessionType: 'premium',
@@ -152,11 +163,14 @@ export class LiveGenerationService {
       const shouldConclude = !!userRequestedEnding;
       
       console.log(`🚀 Live Generation: Generating page ${nextPageNumber} (never-ending story, userRequestedEnding=${!!userRequestedEnding})`);
-      console.log(`🔄 Live Generation: Context continuity check`, {
+      DebugLogger.log('story', 'LiveGen: Next page generation started', {
+        nextPageNumber,
+        shouldConclude,
         contextPage: context.currentPage,
         storyContextLength: context.storyContext?.length,
-        sessionId: sessionId || 'auto-generated',
-        difficulty: context.difficulty
+        providedSessionId: sessionId,
+        difficulty: context.difficulty,
+        expertGradeLevel: context.expertGradeLevel
       });
       
       let promptConfig: any;
@@ -175,11 +189,18 @@ export class LiveGenerationService {
         specialRequest: `${context.userInfo.specialRequest || 'adventure'} (continuing from: ${context.storyContext.slice(-1)[0]?.substring(0, 100)}...)`
       };
       
+      // CRITICAL FIX: Use consistent session ID format 
       const actualSessionId = sessionId || `live-next-${context.userInfo.name}-${Date.now()}`;
-      console.log(`🆔 LiveGen: Next Page Session ID: ${actualSessionId}`);
-      console.log(`📚 LiveGen: Story context for continuation`, {
-        existingPages: context.storyContext?.length,
-        lastPagePreview: context.storyContext?.slice(-1)[0]?.substring(0, 50) + '...'
+      DebugLogger.log('story', 'LiveGen: Next Page Session ID created', {
+        actualSessionId,
+        providedSessionId: sessionId,
+        nextPageNumber,
+        contextualUserInfo: { name: contextualUserInfo.name, specialRequest: contextualUserInfo.specialRequest?.substring(0, 50) + '...' },
+        storyContextSummary: {
+          existingPages: context.storyContext?.length,
+          lastPagePreview: context.storyContext?.slice(-1)[0]?.substring(0, 50) + '...',
+          totalCharacters: context.storyContext?.join('').length
+        }
       });
       
       // Wrap with 35-45s Promise.race timeout for robust timeout handling
@@ -296,8 +317,14 @@ export class LiveGenerationService {
         specialRequest: `${context.userInfo.specialRequest || 'adventure'} - please provide a satisfying conclusion to this story: ${context.storyContext.slice(-1)[0]?.substring(0, 100)}...`
       };
       
+      // CRITICAL FIX: Use consistent session ID format
       const actualSessionId = sessionId || `live-ending-${context.userInfo.name}-${Date.now()}`;
-      console.log(`🆔 LiveGen: Ending Page Session ID: ${actualSessionId}`);
+      DebugLogger.log('story', 'LiveGen: Ending Page Session ID created', {
+        actualSessionId,
+        providedSessionId: sessionId,
+        nextPageNumber,
+        endingUserInfo: { name: endingUserInfo.name, specialRequest: endingUserInfo.specialRequest?.substring(0, 50) + '...' }
+      });
       
       // Wrap with 35-45s Promise.race timeout for robust timeout handling
       const timeoutPromise = new Promise<never>((_, reject) => {

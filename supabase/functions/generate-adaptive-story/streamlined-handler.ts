@@ -271,6 +271,23 @@ FAIL-SOFT RULES:
     finalSystemPrompt += `\n\nAVAILABLE FUNCTIONS:
 - getCulturalContext(userInfo) - Fetch culturally relevant character names, foods, and celebrations when needed`;
     
+    // CONTINUATION MODE: Enhance prompts with continuation instructions for premium users
+    if (config.existingStory) {
+      console.log('🔄 STREAMLINED: Applying continuation-specific prompt enhancements');
+      
+      const continuationInstructions = `
+
+CONTINUATION INSTRUCTIONS (Premium Mode):
+Pick up exactly where the previous page ended. Preserve established characters, setting, tone, and plot arcs. Advance the story with natural flow, transitions, and hooks. Introduce new elements only if they fit the existing context. Keep consistency in style, voice, and character development. Never conclude unless explicitly told it's an ending page. Assume the story may continue indefinitely—always leave room to move forward. Weave in voice catalog inspirations (devices, styles, tones) without breaking coherence. Use pauses, twists, or cliffhangers sparingly but effectively to sustain engagement.
+
+EXISTING STORY CONTEXT:
+${config.existingStory}
+
+Continue from where the story left off. Maintain narrative consistency and character development.`;
+      
+      finalSystemPrompt += '\n\n' + continuationInstructions;
+    }
+    
     // REPAIR MODE: Enhance prompts with repair-specific instructions
     if (config.sessionType === 'repair' && config.originalContent && config.repairReasons) {
       console.log('🔧 STREAMLINED: Applying repair-specific prompt enhancements');
