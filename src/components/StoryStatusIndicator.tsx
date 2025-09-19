@@ -39,8 +39,13 @@ export const StoryStatusIndicator = () => {
     // Check immediately
     checkStatus();
     
-    // Monitor changes
-    const interval = setInterval(checkStatus, 1000);
+    // EMERGENCY FIX: Reduced from 1s to 3s to prevent resource exhaustion
+    const interval = setInterval(() => {
+      // Only check if page is visible
+      if (document.visibilityState === 'visible') {
+        checkStatus();
+      }
+    }, 3000);
     
     // Listen to story events
     const handleStoryEvent = () => {

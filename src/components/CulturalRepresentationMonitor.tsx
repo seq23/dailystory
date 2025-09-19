@@ -68,11 +68,22 @@ export const CulturalRepresentationMonitor: React.FC = () => {
   };
 
   useEffect(() => {
-    loadMetrics();
+    // Check if debug monitoring is enabled via URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    const monitoringEnabled = urlParams.has('monitoring') || urlParams.has('debug');
     
-    // Auto-refresh every 5 minutes
-    const interval = setInterval(loadMetrics, 5 * 60 * 1000);
-    return () => clearInterval(interval);
+    if (monitoringEnabled) {
+      loadMetrics();
+      
+      // EMERGENCY FIX: Only auto-refresh if explicitly enabled via URL params
+      // Disabled by default to prevent resource exhaustion
+      const interval = setInterval(() => {
+        if (document.visibilityState === 'visible') {
+          loadMetrics();
+        }
+      }, 5 * 60 * 1000);
+      return () => clearInterval(interval);
+    }
   }, []);
 
   const getBiasScoreColor = (score: number) => {

@@ -29,15 +29,18 @@ export const SecurityDashboard: React.FC = () => {
   };
 
   useEffect(() => {
-    // Initial load only - no auto-refresh to prevent quota burn
-    refreshEvents();
+    // Check if security monitoring is enabled via URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    const securityEnabled = urlParams.has('security') || urlParams.has('debug');
     
-    // EMERGENCY: Only auto-refresh if explicitly enabled and page is visible
-    if (autoRefresh && document.visibilityState === 'visible') {
-      const interval = setInterval(refreshEvents, 60000); // 1 minute if enabled
-      return () => clearInterval(interval);
+    if (securityEnabled) {
+      // Initial load only - no auto-refresh to prevent resource exhaustion
+      refreshEvents();
+      
+      // REMOVED: Auto-refresh completely disabled to prevent ERR_INSUFFICIENT_RESOURCES
+      // Previously: const interval = setInterval(refreshEvents, 60000);
     }
-  }, [getEvents, getCriticalEvents, autoRefresh]);
+  }, [getEvents, getCriticalEvents]);
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
@@ -140,17 +143,9 @@ export const SecurityDashboard: React.FC = () => {
           ))}
         </div>
 
-        {/* Auto-refresh Control */}
+        {/* Auto-refresh Control - REMOVED to prevent resource exhaustion */}
         <div className="flex items-center gap-2 text-xs border-t pt-2">
-          <label className="flex items-center gap-1">
-            <input 
-              type="checkbox" 
-              checked={autoRefresh}
-              onChange={(e) => setAutoRefresh(e.target.checked)}
-              className="w-3 h-3"
-            />
-            Live updates (1min)
-          </label>
+          <span className="text-muted-foreground">Manual refresh only (prevents connection overload)</span>
           <Button variant="ghost" size="sm" onClick={refreshEvents} className="ml-auto h-6 px-2">
             <RefreshCw className="h-3 w-3" />
           </Button>

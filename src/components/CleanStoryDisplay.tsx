@@ -270,14 +270,22 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     };
   }, []);
   
-  // ImageGenerationTrigger lifecycle management
+  // ImageGenerationTrigger lifecycle management + Debug initialization
   useEffect(() => {
     ImageGenerationTrigger.startMonitoring();
     DebugLogger.log('image', 'ImageGenerationTrigger monitoring started');
     
+    // EMERGENCY FIX: Initialize StoryContentLogger only when debug params are present
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('storydebug') || urlParams.has('imagedebug')) {
+      StoryContentLogger.init();
+      DebugLogger.log('story', 'StoryContentLogger initialized with debug params');
+    }
+    
     return () => {
       ImageGenerationTrigger.stopMonitoring();
-      DebugLogger.log('image', 'ImageGenerationTrigger monitoring stopped');
+      StoryContentLogger.stopImagePromptMonitoring(); // Stop monitoring on unmount
+      DebugLogger.log('image', 'ImageGenerationTrigger monitoring stopped, debug monitoring cleaned up');
     };
   }, []);
   

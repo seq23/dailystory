@@ -35,19 +35,16 @@ export const CacheInspectorPanel: React.FC<CacheInspectorPanelProps> = ({
 
   const [autoRefresh, setAutoRefresh] = useState(false);
 
-  // EMERGENCY: Auto-refresh disabled by default to prevent quota burn
+  // EMERGENCY FIX: Auto-refresh disabled by default, manual refresh only
   useEffect(() => {
     if (isOpen) {
-      // Initial data load only
+      // Initial data load only - no auto-refresh to prevent resource exhaustion
       refreshCacheData();
       
-      // Only auto-refresh if explicitly enabled and page is visible
-      if (autoRefresh && document.visibilityState === 'visible') {
-        const interval = setInterval(refreshCacheData, 30000); // 30 seconds if enabled
-        return () => clearInterval(interval);
-      }
+      // REMOVED: Auto-refresh completely disabled to prevent ERR_INSUFFICIENT_RESOURCES
+      // Previously: const interval = setInterval(refreshCacheData, 30000);
     }
-  }, [isOpen, userId, sessionId, autoRefresh]);
+  }, [isOpen, userId, sessionId]);
 
   const clearAllCaches = () => {
     CacheDebugger.clearAllCachesWithLogging('manual-debug-clear', sessionId);
@@ -96,17 +93,9 @@ export const CacheInspectorPanel: React.FC<CacheInspectorPanelProps> = ({
                     </Button>
                   </div>
                   
-                  {/* Auto-refresh Control */}
+                  {/* Auto-refresh Control - REMOVED to prevent resource exhaustion */}
                   <div className="flex items-center gap-2 text-xs">
-                    <label className="flex items-center gap-1">
-                      <input 
-                        type="checkbox" 
-                        checked={autoRefresh}
-                        onChange={(e) => setAutoRefresh(e.target.checked)}
-                        className="w-3 h-3"
-                      />
-                      Live updates (30s)
-                    </label>
+                    <span className="text-muted-foreground">Manual refresh only (prevents connection overload)</span>
                   </div>
                 </div>
 

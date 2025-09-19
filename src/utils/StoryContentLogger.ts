@@ -212,19 +212,35 @@ export class StoryContentLogger {
     );
   }
 
-  // PHASE 3: Image Debug Monitoring System
+  // PHASE 3: Image Debug Monitoring System - SINGLETON PROTECTED
+  private static monitoringInterval: NodeJS.Timeout | null = null;
+  private static isMonitoring = false;
+
   static startImagePromptMonitoring() {
-    if (!this.imageDebugEnabled) return;
+    if (!this.imageDebugEnabled || this.isMonitoring) return;
     
-    console.log('[IMAGE-DEBUG] 🚀 Starting image prompt monitoring (5s intervals)');
+    console.log('[IMAGE-DEBUG] 🚀 Starting image prompt monitoring (60s intervals - optimized)');
+    this.isMonitoring = true;
     
     // Fetch immediately
     this.fetchRecentImagePrompts();
     
-    // Set up periodic fetching
-    setInterval(() => {
-      this.fetchRecentImagePrompts();
-    }, 5000); // Every 5 seconds
+    // Set up periodic fetching with singleton protection
+    this.monitoringInterval = setInterval(() => {
+      // Only fetch if page is visible to prevent background resource usage
+      if (document.visibilityState === 'visible') {
+        this.fetchRecentImagePrompts();
+      }
+    }, 60000); // Reduced to 60 seconds to prevent resource exhaustion
+  }
+
+  static stopImagePromptMonitoring() {
+    if (this.monitoringInterval) {
+      clearInterval(this.monitoringInterval);
+      this.monitoringInterval = null;
+      this.isMonitoring = false;
+      console.log('[IMAGE-DEBUG] 🛑 Image prompt monitoring stopped');
+    }
   }
 
   static async fetchRecentImagePrompts() {
@@ -278,5 +294,6 @@ export class StoryContentLogger {
   }
 }
 
-// Initialize on module load
-StoryContentLogger.init();
+// EMERGENCY FIX: Remove auto-initialization to prevent resource exhaustion
+// StoryContentLogger.init() - now called manually only when debug params are present
+// This prevents multiple intervals from being created when components mount/unmount

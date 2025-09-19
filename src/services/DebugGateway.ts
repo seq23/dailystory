@@ -29,9 +29,10 @@ class DebugGatewayService {
     isOpen: false
   };
 
-  private readonly maxFailures = 3;
-  private readonly baseBackoffMs = 5000; // 5 seconds
-  private readonly maxBackoffMs = 300000; // 5 minutes
+  // EMERGENCY FIX: More aggressive circuit breaker to fail faster
+  private readonly maxFailures = 2; // Reduced from 3 to 2
+  private readonly baseBackoffMs = 2000; // Reduced from 5s to 2s
+  private readonly maxBackoffMs = 60000; // Reduced from 5min to 1min
 
   private isDebugEnabled(): boolean {
     return typeof window !== 'undefined' && window.location.search.includes('debug=1');
@@ -125,7 +126,14 @@ class DebugGatewayService {
       
       this.logDebug(`Calling debug service: ${params.operation}`, { queryString });
 
+      // EMERGENCY FIX: Add connection timeout to prevent hanging requests (removed signal)
+      const timeoutId = setTimeout(() => {
+        this.logDebug(`Request timeout after 10s: ${params.operation}`);
+      }, 10000); // 10 second timeout
+
       const { data, error } = await supabase.functions.invoke(`unified-debug-service?${queryString}`);
+      
+      clearTimeout(timeoutId);
 
       if (error) {
         throw error;

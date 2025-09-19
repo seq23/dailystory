@@ -110,8 +110,13 @@ export const useStorySourceNotifications = () => {
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('popstate', handleNavigation);
     
-    // Periodic check for source changes (every 2 seconds)
-    const interval = setInterval(checkSourceChange, 2000);
+    // EMERGENCY FIX: Reduced from 2s to 5s to prevent resource exhaustion
+    const interval = setInterval(() => {
+      // Only check if page is visible
+      if (document.visibilityState === 'visible') {
+        checkSourceChange();
+      }
+    }, 5000);
     
     return () => {
       window.removeEventListener('story:generation:complete', handleStoryEvent);

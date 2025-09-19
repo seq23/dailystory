@@ -39,7 +39,7 @@ export const ImageDebugPanel: React.FC<ImageDebugPanelProps> = ({
   const isDebugMode = typeof window !== 'undefined' && 
     new URLSearchParams(window.location.search).get('debug') === '1';
 
-  // Monitor backend logs for tier information
+  // EMERGENCY FIX: Disabled auto-polling to prevent resource exhaustion
   useEffect(() => {
     if (!isDebugMode || !isVisible) return;
 
@@ -49,9 +49,12 @@ export const ImageDebugPanel: React.FC<ImageDebugPanelProps> = ({
       setLastBackendLogs(logs.slice(-5)); // Last 5 logs
     };
 
-    // Further optimized: Only run when panel is visible and reduced to 10s interval
-    const interval = setInterval(checkBackendLogs, 10000);
-    return () => clearInterval(interval);
+    // Load once on visibility change, no auto-refresh to prevent connection exhaustion
+    checkBackendLogs();
+    
+    // NO AUTO-POLLING - manual refresh only to prevent ERR_INSUFFICIENT_RESOURCES
+    // Previously: const interval = setInterval(checkBackendLogs, 10000);
+    // return () => clearInterval(interval);
   }, [isDebugMode, isVisible]);
 
   if (!isDebugMode) return null;
