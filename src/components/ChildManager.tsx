@@ -171,7 +171,7 @@ export function ChildManager() {
       // Success feedback and cleanup
       setEditingId(null);
       toast({ 
-        title: "Saved successfully!", 
+        title: t('parent.manager.toasts.saved') || "Saved successfully!", 
         description: `${editDraft.name.trim()}'s profile has been updated.`
       });
       
