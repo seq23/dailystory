@@ -231,7 +231,7 @@ export function DebugDataViewer() {
         </CardContent>
       </Card>
 
-      {debugData && debugData.fullDebugData.length > 0 && (
+      {debugData && debugData.fullDebugData && debugData.fullDebugData.length > 0 && (
         <div className="space-y-4">
           {debugData.fullDebugData.map((prompt, index) => (
             <Card key={index}>
@@ -295,7 +295,7 @@ export function DebugDataViewer() {
                       <div>
                         <h4 className="font-semibold mb-2 text-sm">
                           Complete Bundle Data 
-                          {prompt.bundle.storyContent && (
+                          {prompt.bundle?.storyContent && (
                             <Badge variant="secondary" className="ml-2">
                               {prompt.bundle.storyContent.length} pages
                             </Badge>
@@ -339,7 +339,7 @@ export function DebugDataViewer() {
                       <div>
                         <span className="text-sm font-medium">Bundle: </span>
                         <span className="text-sm text-muted-foreground">
-                          {prompt.bundle.storyContent.length} pages in bundle
+                          {prompt.bundle?.storyContent?.length || 0} pages in bundle
                         </span>
                       </div>
                     )}
