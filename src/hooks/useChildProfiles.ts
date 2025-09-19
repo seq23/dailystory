@@ -33,10 +33,11 @@ export function useChildProfiles() {
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    // Cache check moved after auth to ensure per-user validity
-
+    console.log('🔄 useChildProfiles: Starting load...');
+    
     // Deduplicate concurrent requests from multiple components
     if (activeLoadRequest) {
+      console.log('🔄 useChildProfiles: Using existing request...');
       return activeLoadRequest;
     }
 
@@ -49,11 +50,13 @@ export function useChildProfiles() {
       return;
     }
 
+    console.log('🔄 useChildProfiles: Setting loading to true...');
     setLoading(true);
     setError(null);
     
     activeLoadRequest = (async () => {
       try {
+        console.log('🔍 useChildProfiles: Checking auth state...');
         // Auth state guard - ensure user is fully authenticated
         const { data: { user }, error: authError } = await supabase.auth.getUser();
         if (authError) {
@@ -62,15 +65,19 @@ export function useChildProfiles() {
         }
         
         if (!user) {
-          console.log('No authenticated user, clearing child profiles');
+          console.log('❌ useChildProfiles: No authenticated user, clearing child profiles');
           setChildren([]);
           setActiveChildId(null);
+          setLoading(false);
           requestCache = null;
           return;
         }
         
+        console.log('✅ useChildProfiles: User authenticated:', user.id);
+        
         // Check per-user cache validity
         if (requestCache && requestCache.userId === user.id && Date.now() - requestCache.timestamp < CACHE_DURATION) {
+          console.log('💾 useChildProfiles: Using cached data');
           const { children: cachedChildren, activeChildId: cachedActiveChildId } = requestCache.data;
           setChildren(cachedChildren || []);
           setActiveChildId(cachedActiveChildId || null);
@@ -78,6 +85,7 @@ export function useChildProfiles() {
           return;
         }
 
+        console.log('📡 useChildProfiles: Fetching fresh data from database...');
         const [{ data: prefs }, { data: kids, error: kidsErr }] = await Promise.all([
           supabase
             .from('user_preferences')
@@ -94,6 +102,11 @@ export function useChildProfiles() {
         if (kidsErr) throw kidsErr;
         
         const resultData = { children: kids || [], activeChildId: (prefs as any)?.active_child_id ?? null };
+        
+        console.log('✅ useChildProfiles: Data loaded successfully:', {
+          childrenCount: resultData.children.length,
+          activeChildId: resultData.activeChildId
+        });
         
         setChildren(resultData.children);
         setActiveChildId(resultData.activeChildId);
@@ -112,6 +125,8 @@ export function useChildProfiles() {
         
         errorCount++;
         
+        console.error('❌ useChildProfiles: Load failed:', e);
+        
         if (shouldLog) {
           lastErrorTime = now;
           LeanErrorService.logError(e, 'useChildProfiles');
@@ -119,6 +134,7 @@ export function useChildProfiles() {
         
         setError(e?.message || 'Failed to load child profiles');
       } finally {
+        console.log('🏁 useChildProfiles: Setting loading to false');
         setLoading(false);
         activeLoadRequest = null;
       }
@@ -130,20 +146,25 @@ export function useChildProfiles() {
   // Auth state subscription and initial load - wait for auth to be ready
   useEffect(() => {
     let hasInitialLoad = false;
+    console.log('🔧 useChildProfiles: Setting up auth state listener...');
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('🔐 useChildProfiles: Auth state changed:', event, !!session?.user);
+      
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         // Clear any stale state and reload fresh data for this user
         errorCount = 0;
         lastErrorTime = 0;
         requestCache = null;
-        load();
+        await load();
         hasInitialLoad = true;
       }
       if (event === 'SIGNED_OUT') {
         // Clear state on sign out
+        console.log('🚪 useChildProfiles: User signed out, clearing state');
         setChildren([]);
         setActiveChildId(null);
+        setLoading(false);
         requestCache = null;
         hasInitialLoad = true;
       }
@@ -151,11 +172,15 @@ export function useChildProfiles() {
 
     // Check for existing session after setting up listener
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('🔍 useChildProfiles: Initial session check:', !!session?.user, 'hasInitialLoad:', hasInitialLoad);
+      
       if (!hasInitialLoad) {
         if (session?.user) {
+          console.log('👤 useChildProfiles: Found existing session, loading...');
           load();
         } else {
           // No session, clear state and stop loading
+          console.log('❌ useChildProfiles: No session, clearing state');
           setChildren([]);
           setActiveChildId(null);
           setLoading(false);
@@ -165,6 +190,7 @@ export function useChildProfiles() {
     });
 
     return () => {
+      console.log('🧹 useChildProfiles: Cleaning up auth listener');
       subscription.unsubscribe();
     };
   }, [load]);

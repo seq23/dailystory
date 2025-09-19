@@ -24,6 +24,14 @@ export function ChildQuickSwitcher({ className, size = 'md' }: ChildQuickSwitche
   
   const { t } = useTranslation();
   
+  // Debug logging for child switcher state
+  React.useEffect(() => {
+    console.log('🎭 ChildQuickSwitcher: State changed', {
+      childrenCount: children?.length || 0,
+      activeChildName: activeChild?.display_name || 'none',
+      loading
+    });
+  }, [children, activeChild, loading]);
 
   const activeInitial = useMemo(() => getInitial(activeChild?.display_name), [activeChild?.display_name]);
   const activeFullName = activeChild?.display_name || "";
@@ -47,16 +55,16 @@ export function ChildQuickSwitcher({ className, size = 'md' }: ChildQuickSwitche
                   type="button"
                   onClick={openParentControls}
                   aria-label={t('header.quickChildSwitcher.readingAs', { defaultValue: 'Reading as' }) + (activeFullName ? `: ${activeFullName}` : '')}
-                      className={cn(
+                       className={cn(
                         "rounded-full inline-flex items-center justify-center font-black leading-none ring-2 ring-offset-1 ring-offset-background select-none tracking-tight drop-shadow-sm z-10",
                         size === "sm"
                           ? "h-8 w-8 text-[1.9rem] leading-[0.82]"
                           : "h-9 w-9 md:h-9 md:w-9 text-[1.6rem] md:text-[1.7rem]",
                         "ring-background bg-primary text-primary-foreground hover:bg-primary/90 transition",
                         loading && "opacity-70",
-                      )}
+                       )}
                 >
-                  {activeInitial || "–"}
+                  {loading ? "⏳" : (activeInitial || "–")}
                 </button>
               ) : (
                 <button
