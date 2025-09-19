@@ -131,6 +131,28 @@ export function useChildProfiles() {
     load();
   }, [load]);
 
+  // Auth state subscription to reload when session becomes available after hard refresh
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        // Clear any stale state and reload fresh data for this user
+        errorCount = 0;
+        lastErrorTime = 0;
+        requestCache = null;
+        load();
+      }
+      if (event === 'SIGNED_OUT') {
+        // Clear state on sign out
+        setChildren([]);
+        setActiveChildId(null);
+        requestCache = null;
+      }
+    });
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [load]);
+
   // Sync active child across components via CustomEvent
   useEffect(() => {
     const handler = (e: Event) => {
@@ -153,6 +175,10 @@ export function useChildProfiles() {
         const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
         if (!uuidRegex.test(childId)) {
           throw new Error('Invalid child profile ID format');
+        }
+        // Ensure selected child exists in current list (prevents bad pointers)
+        if (!children.some((c) => c.id === childId)) {
+          throw new Error('Selected child not found');
         }
       }
 
@@ -195,7 +221,7 @@ export function useChildProfiles() {
       setError(e?.message || 'Could not set active child');
       throw e;
     }
-  }, []);
+  }, [children]);
 
   const addChild = useCallback(async (input: NewChildInput) => {
     setError(null);
