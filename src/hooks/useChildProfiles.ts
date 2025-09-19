@@ -318,6 +318,21 @@ export function useChildProfiles() {
   const updateChild = useCallback(async (id: string, input: Partial<NewChildInput>) => {
     setError(null);
     try {
+      // Ensure session is fresh before database operation
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (!session || sessionError) {
+        console.log('Session expired or invalid, attempting refresh...');
+        const { error: refreshError } = await supabase.auth.refreshSession();
+        if (refreshError) {
+          throw new Error('Session expired. Please refresh the page and try again.');
+        }
+        // Verify session after refresh
+        const { data: { session: newSession } } = await supabase.auth.getSession();
+        if (!newSession) {
+          throw new Error('Authentication failed. Please refresh the page and try again.');
+        }
+      }
+
       const patch: TablesUpdate<'child_profiles'> = {
         display_name: input.display_name,
         birth_month: input.birth_month ?? undefined,

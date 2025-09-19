@@ -145,7 +145,19 @@ export function ChildManager() {
       setEditingId(null);
       toast({ title: t('parent.manager.toasts.saved') });
     } catch (e: any) {
-      toast({ title: e?.message || t('parent.manager.toasts.failedSave'), variant: "destructive" });
+      console.error('Save edit error:', e);
+      const errorMessage = e?.message || t('parent.manager.toasts.failedSave');
+      
+      // Provide helpful feedback for common session issues
+      if (errorMessage.includes('Session expired') || errorMessage.includes('Authentication failed')) {
+        toast({ 
+          title: "Connection Issue", 
+          description: "Please refresh the page and try again.", 
+          variant: "destructive" 
+        });
+      } else {
+        toast({ title: errorMessage, variant: "destructive" });
+      }
     } finally {
       setSaving(false);
     }
