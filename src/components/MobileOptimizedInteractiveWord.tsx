@@ -68,7 +68,19 @@ export const MobileOptimizedInteractiveWord = React.memo((props: MobileOptimized
     return VocabularyLevelClassifier.getWordDifficulty(props.word, difficulty);
   }, [props.word, difficulty]);
 
-  // LEAN Adaptive Interactive Word Rules - Smart ESL & Progress Tracking (CACHED)
+  // Difficulty level mapping for word highlighting logic
+  const difficultyLevel = useMemo(() => {
+    switch(difficulty) {
+      case 'beginner': return 0;
+      case 'easy': return 1;
+      case 'medium': return 2;
+      case 'hard': return 3;
+      case 'expert': return 4;
+      default: return 1;
+    }
+  }, [difficulty]);
+
+  // LEAN Word Highlighting Rules - Based on Difficulty Level
   const shouldBeInteractive = useMemo(() => {
     const lw = cleanWord.toLowerCase();
     if (!lw || isPurelyPunctuation) return false;
@@ -87,17 +99,15 @@ export const MobileOptimizedInteractiveWord = React.memo((props: MobileOptimized
     const isProperNoun = /^[A-Z][a-z]+$/.test(trimmedOriginal) && trimmedOriginal !== 'I';
     if (isProperNoun && !isAllCaps) return false;
 
-    const { shouldHighlight, level } = cachedWordDifficulty;
-    
-    // ESL Boost: +20% more interactive words for non-native English speakers
-    const isESL = props.userInfo?.nativeLanguage && props.userInfo.nativeLanguage !== 'en';
-    if (isESL && !shouldHighlight && difficulty !== 'beginner') {
-      // Boost: Make easier words interactive for ESL learners
-      if (level <= 3) return true; // ESL boost for levels 1-3
+    // Difficulty-based underlining logic:
+    // Levels 0-2 (beginner/easy/medium): Underline ALL words
+    // Levels 3-4 (hard/expert): Underline only 7+ letter words
+    if (difficultyLevel <= 2) {
+      return true; // Underline all words for easier levels
+    } else {
+      return cleanWord.length >= 7; // Only 7+ letter words for harder levels
     }
-    
-    return shouldHighlight;
-  }, [cleanWord, props.userInfo?.name, props.userInfo?.nativeLanguage, difficulty, cachedWordDifficulty]);
+  }, [cleanWord, props.userInfo?.name, difficultyLevel]);
 
 // For mobile devices, use click-to-open modal instead of hover
 if (props.forceModal || isMobileOrTablet) {
@@ -264,6 +274,8 @@ if (props.forceModal || isMobileOrTablet) {
             cancelRef.current = true;
           }}
           className={`${props.className} inline ${shouldBeInteractive ? 'cursor-pointer underline decoration-dotted decoration-2 underline-offset-2 hover:decoration-primary' : ''} ${props.isPremium && shouldBeInteractive ? 'interactive-word-premium-hover' : ''}`}
+          data-difficulty-level={difficultyLevel}
+          data-highlight-enabled={difficultyLevel <= 2}
           style={{ fontSize: 'inherit', lineHeight: 'inherit', display: 'inline' }}
         >
           {props.word}

@@ -1129,10 +1129,12 @@ const [highlightSave, setHighlightSave] = useState(false);
     setAudioPlayedPage(null);
   }, [currentPage, contentHash]);
   
-  // Audio highlighting integration
+  // Audio highlighting integration (with difficulty-based highlighting control)
+  const backendDifficulty = DifficultyLevelMapper.toBackend(currentDifficulty);
   const { onWordHighlight, currentHighlightedWord, clearHighlighting } = useWordHighlighting(
     currentStoryText, 
-    isAudioPlaying
+    isAudioPlaying,
+    backendDifficulty as "beginner" | "easy" | "medium" | "hard" | "expert"
   );
 
 // Voice command -> audio control bridge (now using SimplifiedAudioEngine)
