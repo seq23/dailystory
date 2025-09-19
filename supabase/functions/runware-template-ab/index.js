@@ -624,7 +624,8 @@ async function handleRequest(req) {
     }
 
     // Call Runware API
-    const imageURL = await callRunwareAPIWithRetry(templateResult.positivePrompt, templateResult.negativePrompt);
+    const apiResponse = await callRunwareAPIWithRetry(templateResult.positivePrompt, templateResult.negativePrompt);
+    const imageURL = apiResponse.imageURL || apiResponse;
 
     const result = {
       success: true,
@@ -632,7 +633,9 @@ async function handleRequest(req) {
       templateData: templateResult,
       complexity: templateComplexity || 'A',
       sessionArchitecture: 'parameter-based',
-      processedAt: new Date().toISOString()
+      processedAt: new Date().toISOString(),
+      positivePrompt: templateResult.positivePrompt,
+      negativePrompt: templateResult.negativePrompt
     };
 
     return createResponse(result);

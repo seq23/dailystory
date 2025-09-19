@@ -233,7 +233,19 @@ function validateAndEnhanceContent(enhancedStoryData, storyText) {
       .map(([key]) => key),
     contentDecision: 'Proceeding with AI-enhanced generation'
   });
-  return { enhancedData: enhancedStoryData, fieldCheck };
+  
+  // Add prompts for debugging visibility
+  const positivePrompt = enhancedStoryData.primaryScene || 'children\'s story illustration';
+  const negativePrompt = 'blur, dark, scary, adult content, inappropriate';
+  
+  return { 
+    enhancedData: enhancedStoryData, 
+    fieldCheck,
+    positivePrompt,
+    negativePrompt,
+    primaryScene: enhancedStoryData.primaryScene,
+    aiSchema: enhancedStoryData.aiSchema
+  };
 }
 
 // AI Model Fallback Chain Configuration - CHEAPEST FIRST ORDER

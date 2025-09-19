@@ -701,7 +701,7 @@ async function handleRequest(req) {
 
     // Check for COMPLETE_TIER_1 template directive or use proper tier logic
     let result;
-    if (payload.forceTier === 'COMPLETE_TIER_1' || payload.skipTier25) {
+    if (payload.forceTier === 'COMPLETE_TIER_1' || payload.forceTier === 'tier-1' || payload.skipTier25) {
       // Call AI Visual Scene Creator for Tier 1
       try {
         const tier1Response = await supabase.functions.invoke('ai-visual-scene-creator', {
