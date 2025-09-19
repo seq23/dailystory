@@ -167,8 +167,14 @@ export function ChildManager() {
         favorite_food: editDraft.favoriteFood || null,
         hobbies: editDraft.hobbies || null,
       });
+      
+      // Success feedback and cleanup
       setEditingId(null);
-      toast({ title: t('parent.manager.toasts.saved') });
+      toast({ 
+        title: "Saved successfully!", 
+        description: `${editDraft.name.trim()}'s profile has been updated.`
+      });
+      
     } catch (e: any) {
       console.error('Save edit error:', e);
       const errorMessage = e?.message || t('parent.manager.toasts.failedSave');
