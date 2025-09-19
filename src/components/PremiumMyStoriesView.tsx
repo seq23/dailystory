@@ -173,7 +173,7 @@ useEffect(() => {
           </div>
         </div>
         
-        <div className="flex items-center gap-2 -ml-8 sm:-ml-2">
+        <div className="flex items-center gap-2 -ml-11 sm:-ml-2">
           <NewStoryCTA
             isPremium={isPremium}
             iconOnly={false}
