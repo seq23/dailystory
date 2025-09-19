@@ -398,9 +398,29 @@ async function handleRequest(req) {
     console.log(`✅ [${requestId}] CORS preflight handled`);
     return createCorsOptionsResponse();
   }
-...
+
+  try {
+    const { enhancedStoryData, storyText, avatarIdentity } = await req.json();
+    
+    if (!enhancedStoryData || !storyText) {
+      return createCorsErrorResponse('Missing required fields: enhancedStoryData and storyText', 400);
+    }
+
+    const result = await withPerformanceTracking('ai-visual-scene-creator', 'gpt-4o-mini', async () => {
+      const validatedContent = await validateAndEnhanceContent(enhancedStoryData, storyText);
+      
+      if (validatedContent.primaryScene) {
+        console.log(`✅ [${requestId}] Successfully created visual scene`);
+        return validatedContent;
+      } else {
+        throw new Error('Failed to generate valid visual scene content');
+      }
+    });
+
     return createCorsResponse(result);
-  );
+  } catch (error) {
+    return handleError(error, 'handleRequest', { requestId });
+  }
 }
 
 // Export for TypeScript receptionist
