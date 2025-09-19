@@ -31,7 +31,7 @@ Brand Suffix: {frameworkPrompt}, {cameraDirective}.
 **Function**: `runware-template-ab` with complexity 'B'
 **Template Constant**: `TIER_25B_TEMPLATE`
 **Hair System**: Sophisticated 73-variation StaticDataCache mapping
-**Scene Extraction**: Enhanced hybrid with simple scene extraction function
+**Scene Extraction**: Sophisticated hybrid system with advanced features
 
 ```
 Narrative: {pageText}.
@@ -43,7 +43,13 @@ Brand Suffix: {fullFrameworkPrompt},
 
 **Key Features:**
 - Simplified template structure without consistency section
-- Enhanced hybrid extraction combining semantic and simple scene methods
+- **Sophisticated Hybrid Scene Extraction System**:
+  - 30+ color vocabulary (turquoise, lavender, burgundy, teal, beige, maroon, navy, violet, etc.)
+  - Progressive verb lemmatization with irregular verb handling (run→running, sit→sitting)
+  - Multi-sentence processing that merges actions/objects/settings across sentences
+  - Intelligent tokenization with noun phrase capture and stop token detection
+  - Expanded KNOWN_OBJECTS array including clothing items and accessories
+  - Evidence-based scene assembly with integrity-safe fallbacks
 - 73 hair variations from StaticDataCache (same as Tier A)
 - Leftover data handling for orchestrator context
 - Streamlined processing for faster generation
@@ -227,8 +233,14 @@ export const TIER_25B_TEMPLATE = "Narrative: {pageText}...";
 - Session-based character caching
 
 ### Scene Extraction Methods
-- **Tier A**: `extractSemanticScene()` - Advanced semantic understanding
-- **Tier B**: Enhanced hybrid extraction with simple scene extraction function  
+- **Tier A**: `extractSemanticScene()` - Advanced semantic understanding with pattern matching
+- **Tier B**: `extractSimpleScene()` - Sophisticated hybrid system with:
+  - Multi-sentence tokenization and normalization
+  - Progressive verb lemmatization (handles 20+ irregular verbs)
+  - 30+ color vocabulary with shade variations (light/dark prefixes)
+  - Expanded object recognition (50+ items including clothing/accessories)
+  - Intelligent noun phrase capture with stop token detection
+  - Evidence-based scene assembly with integrity-safe fallbacks
 - **Tier C**: Basic story text usage without extraction
 - **Tier D**: Hardcoded context without story analysis
 

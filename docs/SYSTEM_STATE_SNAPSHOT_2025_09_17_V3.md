@@ -43,11 +43,27 @@ const selectedHair = hairOptions[userSeed % hairOptions.length];
 **Function**: `runware-template-ab` (complexity 'B')
 **Hair System**: 73-variation StaticDataCache mapping  
 **Status**: ✅ OPERATIONAL
-**New Feature**: Enhanced hybrid extraction with simple scene extraction function
+**New V3 Feature**: Sophisticated hybrid scene extraction system
+
+**Enhanced Scene Extraction Features:**
+- **Expanded Color Vocabulary**: 30+ colors including turquoise, lavender, burgundy, teal, beige, maroon
+- **Progressive Verb Lemmatization**: Handles irregular verbs (run→running, sit→sitting, see→seeing)
+- **Multi-Sentence Processing**: Merges actions, objects, and settings across multiple sentences
+- **Intelligent Tokenization**: Advanced noun phrase capture with stop token handling
+- **Comprehensive Object Recognition**: Expanded KNOWN_OBJECTS including clothing items (dress, shirt, pants, shoes, jacket, coat, etc.)
+- **Smart Fallback System**: Integrity-safe action-based fallbacks with evidence validation
 
 ```javascript
-// Same sophisticated hair system as Tier A
-// NEW: Enhanced scene extraction combining semantic + simple methods
+// Sophisticated Hybrid Extraction (V3)
+function extractSimpleScene(storyText) {
+  // 1. Tokenization and normalization with alias handling
+  // 2. Multi-sentence hybrid extraction (semantic + regex)
+  // 3. Progressive verb transformation (walked → walking)
+  // 4. Color-object pair detection with 30+ color vocabulary
+  // 5. Setting extraction with preposition handling
+  // 6. Evidence-based scene assembly with intelligent fallbacks
+  return scene; // e.g., "carrying blue dress in the forest"
+}
 ```
 
 ### Tier 2.5C (Nuclear Template - Lean Hair) ⭐ NEW IN V3
@@ -81,12 +97,26 @@ let characterDesc = `A young ${avatarType} named ${characterName} age ${age} ${s
 
 ---
 
-## V3 HAIR MAPPING SYSTEM DOCUMENTATION
+### V3 HAIR MAPPING SYSTEM DOCUMENTATION
 
 ### Nuclear Hair Mapping Implementation
 **Location**: `supabase/functions/runware-template-cd/index.js` lines 137-147
 **Function**: `getSimpleHairColor(skinTone)`
 **Dependencies**: ZERO external services or sessionId lookups
+
+### Sophisticated Scene Extraction System (NEW V3)
+**Location**: `supabase/functions/runware-template-ab/index.js` lines 309-620
+**Function**: `extractSimpleScene(storyText)`
+**Features**: Hybrid tokenization + semantic analysis + intelligent fallbacks
+
+**Advanced Capabilities**:
+- **30+ Color Vocabulary**: Extended palette including turquoise, lavender, burgundy, teal, beige, maroon, navy, violet, indigo, cream, ivory, peach, magenta, cyan, olive, tan, aqua
+- **Progressive Verb Lemmatization**: Handles 20+ irregular verbs (run→running, sit→sitting, see→seeing, take→taking, make→making, etc.)
+- **Multi-Sentence Processing**: Merges actions, objects, and settings across multiple sentences with deduplication
+- **Intelligent Tokenization**: Advanced noun phrase capture with stop token detection and determiner removal
+- **Comprehensive Object Recognition**: 50+ items including clothing, accessories, toys, and story elements
+- **Evidence-Based Assembly**: Only returns scenes with supporting textual evidence to prevent hallucination
+- **Smart Fallback System**: Integrity-safe action-based fallbacks with red ball priority and location validation
 
 ```javascript
 // Nuclear hair color mapping - lean and simple
@@ -99,6 +129,16 @@ function getSimpleHairColor(skinTone) {
     case 'dark': return 'thick textured 4C hair'; // African/Caribbean  
     default: return 'brown hair';             // Universal fallback
   }
+}
+
+// Sophisticated scene extraction - hybrid system  
+function extractSimpleScene(storyText) {
+  // 1. Multi-sentence tokenization with normalization and alias handling
+  // 2. Hybrid extraction: verb detection + noun phrase capture + setting analysis
+  // 3. Progressive verb transformation with irregular verb support
+  // 4. Color-object pair detection with extended 30+ color vocabulary
+  // 5. Evidence-based scene assembly with integrity-safe fallbacks
+  // Returns: "carrying blue dress in the forest" or "" if insufficient evidence
 }
 ```
 
