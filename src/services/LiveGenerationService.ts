@@ -78,8 +78,8 @@ export class LiveGenerationService {
       const content = result.pages[0] || '';
       LoggerService.milestone('Content received from backend', 'LiveGeneration');
       
-      // Create context for next page
-      const context: LiveGenerationContext = {
+      // Create context for next page - using different variable name to avoid conflicts
+      const storyContext: LiveGenerationContext = {
         userInfo,
         difficulty: frontendDifficulty, // Store frontend difficulty in context
         expertGradeLevel,
@@ -111,12 +111,29 @@ export class LiveGenerationService {
         } catch {}
       }
 
-      window.dispatchEvent(new CustomEvent('story:generation:complete'));
+      // Create initial context for continuation
+      const initialContext: LiveGenerationContext = {
+        userInfo,
+        difficulty: frontendDifficulty,
+        expertGradeLevel,
+        storyContext: [content],
+        currentPage: 1,
+        totalExpectedPages: 10,
+        characters: [userInfo.name]
+      };
       
+      // FIXED: Always ensure nextContext is provided for continuation
+      DebugLogger.log('story', '✅ Live Generation: First page context created', {
+        contextPage: initialContext.currentPage,
+        storyContextLength: initialContext.storyContext.length,
+        difficulty: initialContext.difficulty,
+        expertGradeLevel: initialContext.expertGradeLevel
+      });
+
       return {
         content,
         isComplete: false,
-        nextContext: context
+        nextContext: initialContext
       };
       
     } catch (error) {

@@ -2018,7 +2018,18 @@ const initializeStory = async () => {
 };
 
   const generateNextPage = async (): Promise<LivePageResult | undefined> => {
-    if (!isPremium || !liveContext || isLoadingNextPage) return;
+    if (!isPremium || isLoadingNextPage) return;
+    
+    // FIXED: Proper context validation with detailed logging
+    if (!liveContext) {
+      DebugLogger.error('story', '❌ CRITICAL: generateNextPage called without liveContext', {
+        currentStoryLength: story.length,
+        currentPage: currentPage,
+        isStoryComplete: isStoryComplete,
+        storyTitle: storyTitle
+      });
+      return;
+    }
     
     DebugLogger.log('story', '🔄 Premium Live Generation: generateNextPage called', {
       hasLiveContext: !!liveContext,
@@ -2481,7 +2492,7 @@ const initializeStory = async () => {
           totalPages: story.length + 1
         });
         
-        // CRITICAL FIX: Preserve context continuity - never set to null if we have context
+        // FIXED: Proper context management without fallbacks
         if (result.nextContext) {
           DebugLogger.log('story', '✅ Premium Live Generation: Updating context for continuation', {
             oldPage: liveContext?.currentPage,
@@ -2489,22 +2500,19 @@ const initializeStory = async () => {
             newStoryLength: result.nextContext.storyContext?.length
           });
           setLiveContext(result.nextContext);
-        } else if (liveContext && !result.isComplete) {
-          // Fallback: create continuation context if missing but story not complete
-          DebugLogger.warn('story', '⚠️ Premium Live Generation: Missing nextContext, creating fallback', {
-            currentStoryLength: story.length,
-            isComplete: result.isComplete
-          });
-          const fallbackContext: LiveGenerationContext = {
-            ...liveContext,
-            storyContext: [...liveContext.storyContext, pageContent],
-            currentPage: currentPage + 1,
-            totalExpectedPages: Math.max(liveContext.totalExpectedPages, currentPage + 2)
-          };
-          setLiveContext(fallbackContext);
-        } else {
+        } else if (result.isComplete) {
           DebugLogger.log('story', '🏁 Premium Live Generation: Story complete, clearing context');
           setLiveContext(null);
+        } else {
+          // CRITICAL ERROR: Missing nextContext when story should continue
+          DebugLogger.error('story', '❌ CRITICAL: Missing nextContext for incomplete story', {
+            currentStoryLength: story.length,
+            isComplete: result.isComplete,
+            hasLiveContext: !!liveContext,
+            currentContextPage: liveContext?.currentPage
+          });
+          // Don't set context to null - keep existing context to prevent break
+          // This will cause generateNextPage to fail properly next time
         }
         
         setIsStoryComplete(result.isComplete);
@@ -2567,18 +2575,15 @@ const initializeStory = async () => {
                 totalPages: story.length + 1
               });
               
-              // CRITICAL FIX: Preserve sequel context continuity
+              // FIXED: Proper sequel context handling
               if (result.nextContext) {
                 setLiveContext(result.nextContext);
               } else {
-                // Fallback context for sequel continuation
-                const sequelContext: LiveGenerationContext = {
-                  ...newContext,
-                  storyContext: [...newContext.storyContext, pageContent],
-                  currentPage: currentPage + 1,
-                  totalExpectedPages: Math.max(newContext.totalExpectedPages, currentPage + 2)
-                };
-                setLiveContext(sequelContext);
+                DebugLogger.error('story', '❌ CRITICAL: Missing nextContext for sequel', {
+                  hasNewContext: !!newContext,
+                  currentPage: currentPage
+                });
+                // Keep existing context to prevent break
               }
               
               setIsStoryComplete(result.isComplete);
@@ -2608,7 +2613,14 @@ const initializeStory = async () => {
             newCurrentPage: currentPage + 1,
             totalPages: story.length + 1
           });
-          setLiveContext(result.nextContext || null);
+          // FIXED: Don't use fallback null assignment
+          if (result.nextContext) {
+            setLiveContext(result.nextContext);
+          } else if (result.isComplete) {
+            setLiveContext(null);
+          } else {
+            DebugLogger.error('story', '❌ CRITICAL: Missing nextContext in fallback generation');
+          }
           setIsStoryComplete(result.isComplete);
           setCurrentPage(prev => prev + 1);
           setJustAdvanced(true);
