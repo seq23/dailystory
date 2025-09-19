@@ -562,7 +562,7 @@ export const InteractiveWord = ({
 
         // Use SimpleAudioEngine for all audio
         try {
-          await audioEngine.playText({ 
+          await audioEngine.playTextWithSynchronization({ 
             text: translationText,
             voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
           });

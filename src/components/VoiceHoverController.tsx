@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { SimpleAudioEngine } from '@/services/SimpleAudioEngine';
+import { SimplifiedAudioEngine } from '@/services/SimplifiedAudioEngine';
 import { supabase } from '@/integrations/supabase/client';
 import { contextualPronunciation } from '@/services/contextualPronunciation';
 import { phoneticRulesEngine } from '@/services/phoneticRulesEngine';
@@ -65,13 +65,13 @@ export const VoiceHoverController = ({ isPremium }: VoiceHoverControllerProps) =
       processingRef.current = true;
 
       try {
-        const audioEngine = SimpleAudioEngine.getInstance();
+        const audioEngine = SimplifiedAudioEngine.getInstance();
         const cleanWord = word.replace(/[.,!?;:'"()]/g, '').trim();
 
         switch (action) {
           case 'hear':
             const processedWord = contextualPronunciation.processTextForPronunciation(cleanWord, false);
-            await audioEngine.playText({
+            await audioEngine.playTextWithSynchronization({
               text: processedWord,
               voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
               contentHash: processedWord
@@ -89,7 +89,7 @@ export const VoiceHoverController = ({ isPremium }: VoiceHoverControllerProps) =
 
               if (definition?.definition) {
                 const processedText = contextualPronunciation.processTextForPronunciation(definition.definition, true);
-                await audioEngine.playText({
+                await audioEngine.playTextWithSynchronization({
                   text: processedText,
                   voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
                   contentHash: definition.definition.substring(0, 20)
@@ -104,7 +104,7 @@ export const VoiceHoverController = ({ isPremium }: VoiceHoverControllerProps) =
             const syllables = phoneticRulesEngine.breakIntoSyllables(cleanWord);
             if (syllables && syllables.length > 0) {
               const syllableText = syllables.join(' - ');
-              await audioEngine.playText({
+              await audioEngine.playTextWithSynchronization({
                 text: syllableText,
                 voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
                 contentHash: syllableText

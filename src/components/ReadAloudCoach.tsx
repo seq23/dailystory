@@ -344,8 +344,8 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
       // Celebrate quickly and remove from list
       setTopWords((prev) => prev.filter((x) => x !== w));
       try { 
-        const audioEngine = SimpleAudioEngine.getInstance();
-        await audioEngine.playText({ 
+        const audioEngine = SimplifiedAudioEngine.getInstance();
+        await audioEngine.playTextWithSynchronization({ 
           text: t('coach.great','Great!'),
           voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
         });
@@ -504,8 +504,8 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
                           variant="secondary" 
                           className="text-xs px-2 py-1 h-8" 
                           onClick={() => {
-                            const audioEngine = SimpleAudioEngine.getInstance();
-                            audioEngine.playText({ 
+        const audioEngine = SimplifiedAudioEngine.getInstance();
+                            audioEngine.playTextWithSynchronization({ 
                               text: w,
                               voiceId: 'XB0fDUnXU5powFXDhCwa'
                             });
@@ -533,8 +533,8 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
                       <span className="text-muted-foreground">{w}</span>
                       <div className="flex items-center gap-2">
                         <Button size="sm" variant="secondary" className="gap-1" onClick={() => {
-                          const audioEngine = SimpleAudioEngine.getInstance();
-                          audioEngine.playText({ 
+      const audioEngine = SimplifiedAudioEngine.getInstance();
+                          audioEngine.playTextWithSynchronization({ 
                             text: w,
                             voiceId: 'XB0fDUnXU5powFXDhCwa'
                           });

@@ -1,5 +1,5 @@
 import { useRef, useCallback } from 'react';
-import { SimpleAudioEngine } from '@/services/SimpleAudioEngine';
+import { SimplifiedAudioEngine } from '@/services/SimplifiedAudioEngine';
 import { useConversation } from '@11labs/react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -10,7 +10,7 @@ import { useCharlotteAudioCoordination } from './useCharlotteAudioCoordination';
  * Hook to integrate the main UI voice buttons with the SimpleVoiceCommands system
  */
 export const useVoiceIntegration = () => {
-  const engine = SimpleAudioEngine.getInstance();
+  const engine = SimplifiedAudioEngine.getInstance();
   const voiceSystemRef = useRef<any>(null);
   const { canCharlotteSpeak, requestCharlotteSpeech, releaseCharlotteSpeech } = useCharlotteAudioCoordination();
 
@@ -61,7 +61,7 @@ export const useVoiceIntegration = () => {
       if (text) {
         // Brief delay to let Charlotte finish her acknowledgment
         setTimeout(() => {
-          engine.playText({ 
+          engine.playTextWithSynchronization({ 
             text, 
             contentHash: hash,
             voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
@@ -85,7 +85,7 @@ export const useVoiceIntegration = () => {
       console.log('🎯 Voice command: pause');
       // Brief delay to let Charlotte finish her acknowledgment
       setTimeout(() => {
-        engine.pause();
+        engine.stop();
       }, 100);
       return "Got it!"; // Very brief response to avoid audio conflicts
     },
@@ -169,7 +169,7 @@ export const useVoiceIntegration = () => {
           // Play enhanced syllable response
           const response = `"${word}" has ${count} syllable${count !== 1 ? 's' : ''}: ${syllableText}`;
           
-          engine.playText({
+          engine.playTextWithSynchronization({
             text: response,
             voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
             contentHash: response.substring(0, 20)

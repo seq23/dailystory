@@ -1,5 +1,5 @@
 // Removed: import { audioSyncService } from '../services/audioSyncService';
-import { SimpleAudioEngine } from '../services/SimpleAudioEngine';
+import { SimplifiedAudioEngine } from '../services/SimplifiedAudioEngine';
 import type { UserInfo } from '@/types';
 
 /**
@@ -130,10 +130,10 @@ export class AudioImplementationValidator {
     };
 
     try {
-      const audioEngine = SimpleAudioEngine.getInstance();
+      const audioEngine = SimplifiedAudioEngine.getInstance();
       
       // Test basic audio functionality for free users
-      await audioEngine.playText({ text: 'Test story content' });
+      await audioEngine.playTextWithSynchronization({ text: 'Test story content' });
       console.log('✅ Free user audio test completed');
     } catch (error) {
       this.warnings.push('Audio engine test failed: ' + (error as Error).message);
@@ -157,9 +157,9 @@ export class AudioImplementationValidator {
     };
 
     try {
-      const audioEngine = SimpleAudioEngine.getInstance();
+      const audioEngine = SimplifiedAudioEngine.getInstance();
       // Test premium user audio access
-      await audioEngine.playText({ text: 'Premium test content' });
+      await audioEngine.playTextWithSynchronization({ text: 'Premium test content' });
       console.log('✅ Premium user audio test completed');
     } catch (error) {
       this.warnings.push('Could not validate premium user access');
@@ -308,8 +308,8 @@ export class AudioImplementationValidator {
     };
 
     try {
-      const audioEngine = SimpleAudioEngine.getInstance();
-      await audioEngine.playText({ text: 'Test content in Spanish' });
+      const audioEngine = SimplifiedAudioEngine.getInstance();
+      await audioEngine.playTextWithSynchronization({ text: 'Test content in Spanish' });
       console.log('✅ Free user test completed');
     } catch (error) {
       this.warnings.push('Free user audio test error: ' + (error as Error).message);
