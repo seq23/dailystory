@@ -57,6 +57,11 @@ CONTENT SAFETY:
 - No copyrighted content
 - Positive, cheerful themes only
 
+CHARACTER DESCRIPTION GUIDELINES:
+- Never describe characters by skin tone or racial features
+- Focus on personality, actions, clothing, and non-racial physical traits
+- Use hair color and gender information when provided, but avoid skin tone descriptions
+
 TOKEN LIMITS:
 15 tokens per page. Target 8-12 tokens per page.
 
@@ -123,6 +128,11 @@ CONTENT SAFETY:
 - Age-appropriate adventures and friendships
 - No copyrighted content
 
+CHARACTER DESCRIPTION GUIDELINES:
+- Never describe characters by skin tone or racial features
+- Focus on personality, actions, clothing, and non-racial physical traits
+- Use hair color and gender information when provided, but avoid skin tone descriptions
+
 TOKEN LIMITS:
 60 tokens per page. Target 15-24 words per page.
 
@@ -166,6 +176,11 @@ CONTENT SAFETY:
 - Character growth and challenges
 - Problem-solving themes
 - No copyrighted content
+
+CHARACTER DESCRIPTION GUIDELINES:
+- Never describe characters by skin tone or racial features
+- Focus on personality, actions, clothing, and non-racial physical traits
+- Use hair color and gender information when provided, but avoid skin tone descriptions
 
 TOKEN LIMITS:
 75 tokens per page. Target 50-70 words per page.
@@ -211,6 +226,11 @@ CONTENT SAFETY:
 - Complex problem-solving
 - No copyrighted content
 
+CHARACTER DESCRIPTION GUIDELINES:
+- Never describe characters by skin tone or racial features
+- Focus on personality, actions, clothing, and non-racial physical traits
+- Use hair color and gender information when provided, but avoid skin tone descriptions
+
 TOKEN LIMITS:
 120 tokens per page. Target 80-120 words per page.
 
@@ -255,6 +275,11 @@ CONTENT SAFETY:
 - Complex character psychology
 - No copyrighted content
 
+CHARACTER DESCRIPTION GUIDELINES:
+- Never describe characters by skin tone or racial features
+- Focus on personality, actions, clothing, and non-racial physical traits
+- Use hair color and gender information when provided, but avoid skin tone descriptions
+
 TOKEN LIMITS:
 180 tokens per page. Target 120-200 words per page.
 
@@ -294,6 +319,11 @@ CONTENT SAFETY:
 - Age-appropriate content for 6th grade level with mature themes handled sensitively
 - No external personal data
 - No copyrighted content
+
+CHARACTER DESCRIPTION GUIDELINES:
+- Never describe characters by skin tone or racial features
+- Focus on personality, actions, clothing, and non-racial physical traits
+- Use hair color and gender information when provided, but avoid skin tone descriptions
 
 FORMAT:
 - Natural sentence flow without rigid page requirements
@@ -337,6 +367,11 @@ CONTENT SAFETY:
 - No external personal data
 - No copyrighted content
 
+CHARACTER DESCRIPTION GUIDELINES:
+- Never describe characters by skin tone or racial features
+- Focus on personality, actions, clothing, and non-racial physical traits
+- Use hair color and gender information when provided, but avoid skin tone descriptions
+
 FORMAT:
 - Natural sentence flow without rigid page requirements
 - Increasingly sophisticated sentence structures and varied literary techniques
@@ -378,6 +413,11 @@ CONTENT SAFETY:
 - Age-appropriate content for 8th grade level with mature themes handled sensitively
 - No external personal data
 - No copyrighted content
+
+CHARACTER DESCRIPTION GUIDELINES:
+- Never describe characters by skin tone or racial features
+- Focus on personality, actions, clothing, and non-racial physical traits
+- Use hair color and gender information when provided, but avoid skin tone descriptions
 
 FORMAT:
 - Natural sentence flow without rigid page requirements
@@ -421,6 +461,11 @@ CONTENT SAFETY:
 - No external personal data
 - No copyrighted content
 
+CHARACTER DESCRIPTION GUIDELINES:
+- Never describe characters by skin tone or racial features
+- Focus on personality, actions, clothing, and non-racial physical traits
+- Use hair color and gender information when provided, but avoid skin tone descriptions
+
 FORMAT:
 - Natural sentence flow without rigid page requirements
 - Sophisticated prose, complex syntactic structures, and rich literary language
@@ -462,6 +507,11 @@ CONTENT SAFETY:
 - Age-appropriate content for 10th grade level with mature themes handled sensitively
 - No external personal data
 - No copyrighted content
+
+CHARACTER DESCRIPTION GUIDELINES:
+- Never describe characters by skin tone or racial features
+- Focus on personality, actions, clothing, and non-racial physical traits
+- Use hair color and gender information when provided, but avoid skin tone descriptions
 
 FORMAT:
 - Natural sentence flow without rigid page requirements
