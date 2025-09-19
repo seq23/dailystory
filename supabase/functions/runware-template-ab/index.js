@@ -307,165 +307,306 @@ function deriveNonEnglishCulturalContext(userInfo) {
 // TIER 2.5B: SIMPLIFIED SCENE EXTRACTION (Enhanced for Level 0)
 // Extracts: Action + Object + Location with comprehensive Level 0 coverage
 function extractSimpleScene(storyText) {
-  if (!storyText || typeof storyText !== 'string') return 'playing happily';
-  
-  console.log('🔍 TIER 2.5B: Enhanced hybrid extraction with intelligent pattern detection');
-  
-  // ============= LOCAL HELPER FUNCTION FOR LOCATION EXTRACTION =============
-  function getLocationFromText(text) {
-    const locationPatterns = [
-      // Direct location mentions
-      /\b(?:in|at|on|near)\s+(?:the\s+)?([a-zA-Z]+(?:\s+[a-zA-Z]+)?)/gi,
-      // Context-based location inference
-      /\b(bedroom|kitchen|park|beach|school|home|garden|playground|library|store)\b/gi
-    ];
-    
-    for (const pattern of locationPatterns) {
-      const matches = [...text.matchAll(pattern)];
-      if (matches.length > 0) {
-        return matches[0][1] || matches[0][0];
-      }
+  if (!storyText || typeof storyText !== 'string') return '';
+
+  console.log('🔍 Simple regex scene extraction from story text');
+
+  // ==========
+  // Local config + tiny backups (scoped; no globals)
+  // ==========
+  const VERB_ROOTS = ["see","hold","carry","wear","grab","pick","lift","bring","take","hug","pull","push","walk","stroll","run","wander","tiptoe","explore","look","play","read","draw","build","climb","swing","slide","help","clean","make","watch","eat","sing","dance"];
+  const PREP_SETTINGS = ["through","into","in","inside","across","on","at","under","near","by","along"];
+  const DETERMINERS = ["a","an","the","my","his","her","their","our"];
+  const STOP_TOKENS = [",",".",";","!","?","and","but","or","while","as","because","so","then","when","before","after", ...PREP_SETTINGS];
+
+  // Expanded color coverage (includes turquoise, lavender, burgundy, etc.)
+  const COLORS = [
+    // Core
+    "red","blue","green","yellow","purple","pink","orange",
+    "brown","black","white","gray","grey","gold","silver",
+    // Extended
+    "turquoise","lavender","burgundy","teal","beige","maroon",
+    "navy","violet","indigo","cream","ivory","peach",
+    "magenta","cyan","olive","tan","aqua","turqoise" /* common misspell */
+  ];
+
+  const KNOWN_OBJECTS = ["ball","backpack","bag","book","lantern","hat","basket","flower","map","rope","cloak","compass","bottle","flashlight","lunchbox","scarf","toy","toys","cookie","apple","food"];
+  const KNOWN_SETTINGS = ["forest","woods","kitchen","bedroom","playground","park","beach","school","garden","mountain","castle","city","village","river","lake","cave","desert","space","meadow","library","trail","path","home","house"];
+
+  const ALIASES = [
+    ["emama","emma"],
+    ["backback","backpack"], ["backpak","backpack"],
+    ["forrest","forest"], ["magickal","magical"],
+    ["walked thru","walked through"]
+  ];
+
+  // ==========
+  // Helpers
+  // ==========
+  const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const mkRe = (alts, flags="i") => new RegExp(`\\b(?:${alts.map(esc).join("|")})\\b`, flags);
+
+  const VERB_RE = mkRe(VERB_ROOTS.map(v => `${v}(?:s|ed|ing)?`), "i");
+  const PREP_RE = mkRe(PREP_SETTINGS, "i");
+  const DET_RE  = mkRe(DETERMINERS, "i");
+  const STOP_RE = mkRe(STOP_TOKENS, "i");
+  const COLOR_SET = new Set(COLORS);
+
+  function normalize(t) {
+    let out = String(t ?? "").replace(/[""]/g, '"').replace(/[']/g, "'").replace(/\s+/g, " ").trim();
+    for (const [bad, good] of ALIASES) {
+      out = out.replace(new RegExp(`\\b${esc(bad)}\\b`, "gi"), (m) => {
+        if (m.toUpperCase() === m) return good.toUpperCase();
+        if (m[0] === m[0].toUpperCase()) return good[0].toUpperCase() + good.slice(1);
+        return good;
+      });
+    }
+    return out;
+  }
+
+  function splitSentences(t) {
+    const chunks = t.match(/[^.!?]+[.!?]?/g) || [t];
+    return chunks.map(s => s.trim()).filter(Boolean);
+  }
+
+  function tokenize(str) {
+    return str
+      .replace(/[""]/g, '"').replace(/[']/g, "'")
+      .replace(/\s+/g, " ").trim()
+      .match(/[A-Za-z'-]+|[.,;!?]/g) || [];
+  }
+
+  function captureNounPhrase(tokens, startIndex, maxTokens = 8) {
+    const out = [];
+    for (let i = startIndex; i < tokens.length && out.length < maxTokens; i++) {
+      const t = tokens[i];
+      if (STOP_RE.test(t) || VERB_RE.test(t)) break;
+      out.push(t);
+      if (/^[.,;!?]$/.test(t)) break;
+    }
+    while (out.length && DET_RE.test(out[0])) out.shift();
+    while (out.length && /^[.,;!?]$/.test(out[out.length - 1])) out.pop();
+    if (!out.length) return null;
+
+    const head = out[out.length - 1].toLowerCase();
+    const colors = out.filter(t => COLOR_SET.has(t.toLowerCase())).map(t => t.toLowerCase());
+    return { phrase: out.join(" "), head, colors: Array.from(new Set(colors)) };
+  }
+
+  function captureSetting(tokens, prepIndex, maxTokens = 8) {
+    let i = prepIndex + 1;
+    if (i < tokens.length && DET_RE.test(tokens[i])) i++;
+    const out = [];
+    for (; i < tokens.length && out.length < maxTokens; i++) {
+      const t = tokens[i];
+      if (STOP_RE.test(t) || /^[.,;!?]$/.test(t)) break;
+      out.push(t);
+    }
+    while (out.length && /^[.,;!?]$/.test(out[out.length - 1])) out.pop();
+    if (!out.length) return null;
+    return { phrase: out.join(" "), head: out[out.length - 1].toLowerCase() };
+  }
+
+  function backupColorObjectPairs(lower) {
+    const colorAlt = COLORS.map(esc).join("|");
+    const objAlt   = KNOWN_OBJECTS.map(esc).join("|");
+    const re = new RegExp(`\\b(?:a|an|the|her|his|their|my)?\\s*((?:light|dark)\\s+)?(${colorAlt})\\s+(${objAlt})\\b`, "gi");
+    const hits = [];
+    let m;
+    while ((m = re.exec(lower))) {
+      const shade = (m[1] || "").trim();
+      hits.push({
+        phrase: `${shade ? shade + " " : ""}${m[2]} ${m[3]}`,
+        head: m[3].toLowerCase(),
+        colors: [ (shade ? shade + " " : "") + m[2] ].map(s => s.trim().toLowerCase())
+      });
+    }
+    return hits;
+  }
+
+  function backupKnownSetting(lower) {
+    for (const s of KNOWN_SETTINGS) {
+      if (new RegExp(`\\b${esc(s)}\\b`, "i").test(lower)) return { phrase: s, head: s.toLowerCase() };
     }
     return null;
   }
-  
-  const text = storyText.toLowerCase();
-  
-  // ============= PHASE 1: COMPOUND PHRASE DETECTION =============
-  const compoundPhrases = [
-    { pattern: /rolls?\s+down\s+(?:the\s+)?hill/i, result: 'rolling down the grassy hill' },
-    { pattern: /climbs?\s+up\s+(?:the\s+)?tree/i, result: 'climbing up the tall tree' },
-    { pattern: /swings?\s+on\s+(?:the\s+)?swing/i, result: 'swinging joyfully on the playground swing' },
-    { pattern: /slides?\s+down\s+(?:the\s+)?slide/i, result: 'sliding down the playground slide' },
-    { pattern: /runs?\s+around\s+(?:the\s+)?(?:yard|garden|park)/i, result: 'running energetically around the yard' },
-    { pattern: /jumps?\s+on\s+(?:the\s+)?(?:bed|trampoline)/i, result: 'jumping excitedly on the bed' }
-  ];
-  
-  for (const phrase of compoundPhrases) {
-    if (phrase.pattern.test(storyText)) {
-      console.log(`✅ Compound phrase detected: "${phrase.result}"`);
-      return phrase.result;
+
+  // Mini lemmatizer: irregulars → progressive (-ing)
+  function toProgressive(token) {
+    if (!token) return token;
+    const lower = token.toLowerCase();
+    const irregular = {
+      run: "running", ran: "running",
+      swim: "swimming", sit: "sitting", get: "getting",
+      put: "putting", hug: "hugging", stop: "stopping",
+      lie: "lying", see: "seeing", saw: "seeing",
+      eat: "eating", ate: "eating", take: "taking",
+      make: "making", write: "writing", drive: "driving",
+      give: "giving", have: "having", use: "using",
+      wear: "wearing", hold: "holding", carry: "carrying",
+      walk: "walking", look: "looking", play: "playing"
+    };
+    if (irregular[lower]) return irregular[lower];
+    if (/\bing\b$/i.test(lower)) return token;
+    let base = lower.replace(/(ed|es|s)$/i, "");
+    if (/^[a-z]*[aeiou][bcdfghjklmnpqrstvwxz]$/i.test(base)) {
+      return base + base.slice(-1) + "ing";
     }
+    if (base.endsWith("e")) base = base.slice(0, -1);
+    return base + "ing";
   }
-  
-  // ============= PHASE 2: EXACT WORD EXTRACTION WITH COMPREHENSIVE VOCABULARIES =============
-  
-  // Enhanced Action Vocabulary
-  const actionWords = {
-    // Movement actions
-    moving: ['walk', 'walking', 'run', 'running', 'jump', 'jumping', 'climb', 'climbing', 'dance', 'dancing'],
-    // Physical actions
-    physical: ['play', 'playing', 'build', 'building', 'draw', 'drawing', 'eat', 'eating', 'sleep', 'sleeping'],
-    // Emotional actions
-    emotional: ['laugh', 'laughing', 'smile', 'smiling', 'sing', 'singing', 'help', 'helping']
-  };
-  
-  // Enhanced Object Vocabulary with Color Combinations
-  const objectWords = {
-    toys: ['ball', 'doll', 'blocks', 'truck', 'car', 'puzzle', 'game'],
-    nature: ['flower', 'tree', 'rock', 'leaf', 'grass', 'water'],
-    household: ['book', 'chair', 'table', 'cup', 'spoon', 'blanket'],
-    animals: ['dog', 'cat', 'bird', 'butterfly', 'fish'],
-    colors: ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink']
-  };
-  
-  // Enhanced Setting Vocabulary
-  const settingWords = {
-    outdoor: ['park', 'garden', 'beach', 'playground', 'yard', 'forest'],
-    indoor: ['bedroom', 'kitchen', 'living room', 'bathroom', 'classroom'],
-    activity_based: {
-      sleep: 'bedroom',
-      eat: 'kitchen',
-      read: 'library',
-      play: 'playground'
-    }
-  };
-  
-  // Extract primary action
-  let extractedAction = 'moving';
-  for (const [category, words] of Object.entries(actionWords)) {
-    for (const word of words) {
-      if (text.includes(word)) {
-        extractedAction = word;
+
+  // Sentence extraction (hybrid)
+  function extractSentenceHybrid(sentenceRaw) {
+    const sentence = normalize(sentenceRaw);
+    const tokens = tokenize(sentence);
+    const lowerStr = sentence.toLowerCase();
+
+    // ACTION
+    let action = null;
+    for (let i = 0; i < tokens.length; i++) {
+      if (VERB_RE.test(tokens[i])) {
+        const span = [tokens[i]];
+        for (let j = i + 1; j < tokens.length && span.length < 6; j++) {
+          const t = tokens[j];
+          if (/^[.,;!?]$/.test(t) || STOP_RE.test(t)) break;
+          span.push(t);
+        }
+        action = span.join(" ").replace(/\s+([.,;!?])/g, "$1");
         break;
       }
     }
-    if (extractedAction !== 'moving') break;
-  }
-  
-  // Extract objects with color priority
-  let extractedObjects = [];
-  
-  // Check for color-object combinations first
-  for (const color of objectWords.colors) {
-    if (text.includes(color)) {
-      for (const [category, objects] of Object.entries(objectWords)) {
-        if (category === 'colors') continue;
-        for (const obj of objects) {
-          if (text.includes(obj)) {
-            extractedObjects.push(`${color} ${obj}`);
-          }
+
+    // OBJECTS
+    const objects = [];
+    for (let i = 0; i < tokens.length; i++) {
+      if (VERB_RE.test(tokens[i])) {
+        const np = captureNounPhrase(tokens, i + 1, 8);
+        if (np && np.head) {
+          const key = np.head + "|" + (np.colors || []).join(",");
+          if (!objects.some(o => o._k === key)) objects.push({ ...np, _k: key });
         }
       }
     }
+    for (const p of backupColorObjectPairs(lowerStr)) {
+      const key = p.head + "|" + (p.colors || []).join(",");
+      if (!objects.some(o => o._k === key)) objects.push({ ...p, _k: key });
+    }
+    objects.forEach(o => delete o._k);
+
+    // SETTING
+    let setting = null;
+    for (let i = 0; i < tokens.length; i++) {
+      if (PREP_RE.test(tokens[i])) {
+        const sp = captureSetting(tokens, i, 8);
+        if (sp) { setting = sp; break; }
+      }
+    }
+    if (!setting) setting = backupKnownSetting(lowerStr);
+
+    return { action, objects, setting };
   }
-  
-  // If no color combinations, extract regular objects
-  if (extractedObjects.length === 0) {
-    for (const [category, objects] of Object.entries(objectWords)) {
-      if (category === 'colors') continue;
-      for (const obj of objects) {
-        if (text.includes(obj)) {
-          extractedObjects.push(obj);
+
+  // Multi-sentence merge
+  function extractHybrid(text) {
+    const sentences = splitSentences(text);
+    const merged = { action: null, setting: null, objects: [] };
+    for (const s of sentences) {
+      const part = extractSentenceHybrid(s);
+      if (!merged.action && part.action) merged.action = part.action;
+      if (!merged.setting && part.setting) merged.setting = part.setting;
+      for (const o of part.objects) {
+        const key = o.head + "|" + (o.colors || []).join(",");
+        if (!merged.objects.some(x => (x.head + "|" + (x.colors || []).join(",")) === key)) {
+          merged.objects.push(o);
         }
       }
     }
+    return merged;
   }
-  
-  // If no objects found, default
-  if (extractedObjects.length === 0) {
-    extractedObjects = ['something special'];
+
+  // ==========
+  // Run hybrid
+  // ==========
+  const normalized = normalize(storyText);
+  const lower = normalized.toLowerCase();
+  const { action, objects, setting } = extractHybrid(normalized);
+
+  // Format action → progressive verb + rest
+  const actionText = action
+    ? (toProgressive(action.split(/\s+/)[0]) + " " + action.split(/\s+/).slice(1).join(" ")).trim()
+    : null;
+
+  const obj = objects[0] || null;
+  const objectText = obj
+    ? (obj.colors && obj.colors.length ? `${obj.colors[0]} ${obj.head}` : obj.phrase)
+    : null;
+
+  const settingText = setting
+    ? (setting.phrase || setting.head)
+    : (typeof extractLocationFromText === 'function' ? extractLocationFromText(lower) : null);
+
+  // Build final from extracted evidence only
+  const parts = [];
+  if (actionText) parts.push(actionText);
+  if (objectText) parts.push(objectText);
+  if (settingText) parts.push(`in the ${settingText}`);
+
+  const scene = parts.join(' ').trim();
+
+  if (scene) {
+    console.log(`✅ Simple scene extracted: "${scene}"`);
+    return scene;
   }
-  
-  // Extract setting
-  let extractedSetting = '';
-  
-  // Check predefined outdoor/indoor words first
-  for (const [category, places] of Object.entries(settingWords)) {
-    if (category === 'activity_based') continue;
-    for (const place of places) {
-      if (text.includes(place)) {
-        extractedSetting = place;
-        break;
-      }
-    }
-    if (extractedSetting) break;
+
+  // ==========
+  // Integrity-Safe Fallbacks (action-based only)
+  // If no supporting action/object/location evidence, return ''.
+  // ==========
+
+  const has = (re) => re.test(lower);
+  const hasPlay = has(/\b(play|plays|playing|played)\b/i);
+  const hasSee  = has(/\b(see|sees|seeing|saw|look|looks|looking|looked|watch|watches|watching|watched)\b/i);
+  const hasHold = has(/\b(hold|holds|holding|carry|carries|carrying|grab|grabs|grabbing|took|take|taking|bring|brings|bringing)\b/i);
+  const hasEat  = has(/\b(eat|eats|eating|ate)\b/i);
+  const hasMove = has(/\b(walk|walks|walking|walked|run|runs|running|ran|stroll|strolling|wander|wandering|tiptoe|tiptoeing|climb|climbs|climbing)\b/i);
+
+  const mentionsBall = has(/\b(?:red|blue|green|yellow|purple|pink|orange|brown|black|white|gray|grey|gold|silver|turquoise|lavender|burgundy|teal|beige|maroon|navy|violet|indigo|cream|ivory|peach|magenta|cyan|olive|tan|aqua)\s+ball\b|\bball(s)?\b/i);
+  const mentionsRedBall = has(/\b(red\s+ball|ball\s+is\s+red)\b/i);
+
+  // Fallback A: explicit red ball ONLY with compatible action
+  if (mentionsRedBall) {
+    if (hasHold) return settingText ? `carrying red ball in the ${settingText}` : (hasMove ? `carrying red ball` : (hasSee ? `seeing red ball` : (hasPlay ? `playing with red ball` : '')));
+    if (hasPlay) return settingText ? `playing with red ball in the ${settingText}` : `playing with red ball`;
+    if (hasSee)  return settingText ? `seeing red ball in the ${settingText}` : `seeing red ball`;
+    return '';
   }
-  
-  // If no direct setting, infer from activity
-  if (!extractedSetting) {
-    for (const [activity, location] of Object.entries(settingWords.activity_based)) {
-      if (text.includes(activity)) {
-        extractedSetting = location;
-        break;
-      }
-    }
+
+  // Fallback B: generic/colored ball ONLY with compatible action
+  if (mentionsBall) {
+    if (hasHold) return settingText ? `carrying ball in the ${settingText}` : (hasMove ? `carrying ball` : (hasSee ? `seeing ball` : (hasPlay ? `playing with ball` : '')));
+    if (hasPlay) return settingText ? `playing with ball in the ${settingText}` : `playing with ball`;
+    if (hasSee)  return settingText ? `seeing ball in the ${settingText}` : `seeing ball`;
+    return '';
   }
-  
-  // ============= PHASE 3: TEMPLATE CONSTRUCTION =============
-  const settingText = getLocationFromText(text) || extractedSetting;
-  
-  // Build formulaic template
-  let template = extractedAction;
-  if (extractedObjects.length > 0) {
-    template += ` with ${extractedObjects.join(' and ')}`;
+
+  // Fallback C: location words do NOT fabricate action; only append to an action if present
+  if (settingText && (hasMove || hasPlay || hasSee || hasHold || hasEat)) {
+    if (hasEat)  return `eating in the ${settingText}`;
+    if (hasPlay) return `playing in the ${settingText}`;
+    if (hasHold) return `carrying in the ${settingText}`;
+    if (hasSee)  return `seeing in the ${settingText}`;
+    if (hasMove) return `moving in the ${settingText}`;
   }
-  if (settingText) {
-    template += ` in the ${settingText}`;
-  }
-  
-  console.log(`✅ TIER 2.5B Enhanced extraction: "${template}"`);
-  return template || 'playing happily';
+
+  // Fallback D: toy/food terms require matching actions, otherwise ''
+  const mentionsToy  = has(/\btoys?\b/i);
+  const mentionsFood = has(/\b(food|cookie|cookies|apple|apples)\b/i);
+
+  if (mentionsToy && hasPlay) return `playing with ${has(/\btoys\b/i) ? 'toys' : 'toy'}`;
+  if (mentionsFood && hasEat) return `eating ${has(/\bcookies?\b/i) ? (has(/\bcookies\b/i) ? 'cookies' : 'a cookie') : (has(/\bapples?\b/i) ? (has(/\bapples\b/i) ? 'apples' : 'an apple') : 'food')}`;
+
+  return '';
 }
 
 // Helper function for location extraction
@@ -578,25 +719,37 @@ async function handleRequest(req) {
       
       if (characterService && selectedTemplate.avatarConsistency) {
         try {
-          characterConsistency = await characterService.generateConsistentDescription(
-            userInfo, avatarIdentity, sessionId, pageNumber
+          const characterData = await characterService.getCharacterSeed(
+            sessionId, avatarIdentity, storyText, 'existing', storyText
           );
+          if (characterData && characterData.characterDescription) {
+            characterConsistency = characterData.characterDescription;
+            console.log(`✅ Character consistency applied: ${characterConsistency}`);
+          }
         } catch (error) {
           console.warn('Character consistency failed:', error);
+          characterConsistency = '';
         }
       }
       
-      // Build comprehensive template
-      const styleFramework = getNuclearStyleFramework(userInfo?.difficulty || 'medium');
-      const culturalProfile = inlineDetectCultural(userInfo, avatarIdentity);
-      
-      templateResult = {
-        positivePrompt: `${extractedScene}. ${characterConsistency}. ${styleFramework.frameworkPrompt}`,
-        negativePrompt: generateInlineNuclearNegative(culturalProfile, userInfo?.avatar?.type, userInfo?.difficulty),
-        templateType: 'Premium Template A - Full Features',
-        tier: '2.5A',
-        styleFrameworkUsed: styleFramework.name
-      };
+    // Build comprehensive template with fallback handling
+    const styleFramework = getNuclearStyleFramework(userInfo?.difficulty || 'medium');
+    const culturalProfile = inlineDetectCultural(userInfo, avatarIdentity);
+    
+    // Ensure we have valid prompts with fallbacks
+    const finalPositivePrompt = [
+      extractedScene || 'child playing happily',
+      characterConsistency || 'a young child',
+      styleFramework.frameworkPrompt || 'contemporary children\'s book illustration style'
+    ].filter(Boolean).join('. ');
+    
+    templateResult = {
+      positivePrompt: finalPositivePrompt,
+      negativePrompt: generateInlineNuclearNegative(culturalProfile, userInfo?.avatar?.type, userInfo?.difficulty) || 'blurry, low quality',
+      templateType: 'Premium Template A - Full Features',
+      tier: '2.5A',
+      styleFrameworkUsed: styleFramework.name
+    };
       
     } else if (selectedTemplate.name === 'Basic Template B') {
       // Tier 2.5B: Basic processing with reduced features
@@ -605,7 +758,7 @@ async function handleRequest(req) {
       // Use simple scene extraction for Tier B
       const extractedScene = extractSimpleScene(storyText);
       
-      // Build basic template
+      // Build basic template with robust fallback handling
       const styleFramework = getNuclearStyleFramework(userInfo?.difficulty || 'medium');
       const culturalProfile = inlineDetectCultural(userInfo, avatarIdentity);
       
@@ -614,9 +767,16 @@ async function handleRequest(req) {
       const hairColor = getHair(skinTone);
       const basicCharacter = `A young child named ${characterName} with ${skinTone} skin and ${hairColor}`;
       
+      // Ensure we have valid prompts with fallbacks
+      const finalPositivePrompt = [
+        extractedScene || 'child playing happily',
+        basicCharacter,
+        styleFramework.frameworkPrompt || 'contemporary children\'s book illustration style'
+      ].filter(Boolean).join('. ');
+      
       templateResult = {
-        positivePrompt: `${extractedScene}. ${basicCharacter}. ${styleFramework.frameworkPrompt}`,
-        negativePrompt: generateInlineNuclearNegative(culturalProfile, userInfo?.avatar?.type, userInfo?.difficulty),
+        positivePrompt: finalPositivePrompt,
+        negativePrompt: generateInlineNuclearNegative(culturalProfile, userInfo?.avatar?.type, userInfo?.difficulty) || 'blurry, low quality',
         templateType: 'Basic Template B - Reduced Features',
         tier: '2.5B',
         styleFrameworkUsed: styleFramework.name
