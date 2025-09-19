@@ -7,21 +7,132 @@ export interface AudioPermissionContext {
   isPremium: boolean;
   vcStatus: 'idle' | 'listening' | 'processing';
   isNetworkAvailable: boolean;
+  networkQuality: 'good' | 'poor' | 'offline';
+  lastNetworkCheck: number;
+}
+
+interface QueuedRequest {
+  id: string;
+  timestamp: number;
+  resolve: (value: any) => void;
+  reject: (error: Error) => void;
 }
 
 export class AudioPermissions {
   private static currentContext: AudioPermissionContext = {
     isPremium: false,
     vcStatus: 'idle',
-    isNetworkAvailable: navigator.onLine
+    isNetworkAvailable: navigator.onLine,
+    networkQuality: navigator.onLine ? 'good' : 'offline',
+    lastNetworkCheck: Date.now()
   };
+  
+  private static requestQueue: QueuedRequest[] = [];
+  private static isCheckingNetwork = false;
 
   /**
    * Update the current permission context
    */
   static updateContext(updates: Partial<AudioPermissionContext>): void {
-    this.currentContext = { ...this.currentContext, ...updates };
-    console.log('🔐 Audio Permissions updated:', this.currentContext);
+    this.currentContext = { ...this.currentContext, ...updates, lastNetworkCheck: Date.now() };
+    
+    // Process queued requests if network is back online
+    if (updates.isNetworkAvailable && this.requestQueue.length > 0) {
+      this.processQueuedRequests();
+    }
+  }
+
+  /**
+   * Real-time network quality check with timeout
+   */
+  static async checkNetworkQuality(): Promise<'good' | 'poor' | 'offline'> {
+    if (this.isCheckingNetwork) return this.currentContext.networkQuality;
+    
+    this.isCheckingNetwork = true;
+    
+    try {
+      // Fast network test with 2-second timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2000);
+      
+      const startTime = Date.now();
+      await fetch('https://www.gstatic.com/generate_204', {
+        method: 'HEAD',
+        signal: controller.signal,
+        cache: 'no-cache'
+      });
+      
+      clearTimeout(timeoutId);
+      const responseTime = Date.now() - startTime;
+      
+      const quality = responseTime < 1000 ? 'good' : 'poor';
+      this.updateContext({ 
+        isNetworkAvailable: true, 
+        networkQuality: quality 
+      });
+      
+      return quality;
+    } catch (error) {
+      this.updateContext({ 
+        isNetworkAvailable: false, 
+        networkQuality: 'offline' 
+      });
+      return 'offline';
+    } finally {
+      this.isCheckingNetwork = false;
+    }
+  }
+
+  /**
+   * Queue request during network outages
+   */
+  static queueRequest<T>(requestFn: () => Promise<T>): Promise<T> {
+    return new Promise((resolve, reject) => {
+      const request: QueuedRequest = {
+        id: Math.random().toString(36).substr(2, 9),
+        timestamp: Date.now(),
+        resolve: async () => {
+          try {
+            const result = await requestFn();
+            resolve(result);
+          } catch (error) {
+            reject(error);
+          }
+        },
+        reject
+      };
+      
+      this.requestQueue.push(request);
+      
+      // Auto-cleanup after 10 seconds
+      setTimeout(() => {
+        this.removeFromQueue(request.id);
+        reject(new Error('Request timeout - network unavailable'));
+      }, 10000);
+    });
+  }
+
+  /**
+   * Process queued requests when network returns
+   */
+  private static async processQueuedRequests(): Promise<void> {
+    const requests = [...this.requestQueue];
+    this.requestQueue = [];
+    
+    for (const request of requests) {
+      try {
+        request.resolve(undefined);
+      } catch (error) {
+        request.reject(error instanceof Error ? error : new Error('Unknown error'));
+      }
+    }
+  }
+
+  /**
+   * Remove request from queue
+   */
+  private static removeFromQueue(id: string): void {
+    this.requestQueue = this.requestQueue.filter(req => req.id !== id);
   }
 
   /**
@@ -80,13 +191,28 @@ export class AudioPermissions {
   }
 }
 
-// Listen for network changes
+// Enhanced network event listeners with quality detection
 if (typeof window !== 'undefined') {
-  window.addEventListener('online', () => {
-    AudioPermissions.updateContext({ isNetworkAvailable: true });
+  window.addEventListener('online', async () => {
+    // Quick network quality check when coming back online
+    const quality = await AudioPermissions.checkNetworkQuality();
+    AudioPermissions.updateContext({ 
+      isNetworkAvailable: true,
+      networkQuality: quality
+    });
   });
   
   window.addEventListener('offline', () => {
-    AudioPermissions.updateContext({ isNetworkAvailable: false });
+    AudioPermissions.updateContext({ 
+      isNetworkAvailable: false,
+      networkQuality: 'offline'
+    });
   });
+
+  // Periodic network quality monitoring (every 30 seconds)
+  setInterval(async () => {
+    if (navigator.onLine) {
+      await AudioPermissions.checkNetworkQuality();
+    }
+  }, 30000);
 }

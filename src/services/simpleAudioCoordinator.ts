@@ -1,6 +1,6 @@
 /**
  * Enhanced Audio Coordination - Centralized coordination for all audio systems
- * Prevents conflicts between audioSyncService, SimpleAudioEngine, and voice commands
+ * Prevents conflicts between audioSyncService, SimplifiedAudioEngine, and voice commands
  * Provides timeout protection and better mutual exclusion
  */
 

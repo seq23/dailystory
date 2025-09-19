@@ -36,7 +36,7 @@ const TTSDebug: React.FC = () => {
   };
 
   const handlePlay = async () => {
-    // Get syllables and play them using SimpleAudioEngine
+    // Get syllables and play them using SimplifiedAudioEngine
     const syllableInfo = phoneticRulesEngine.getDebugInfo(word);
     const syllableText = syllables.join(' - ');
     await audio.playTextWithSynchronization({ 

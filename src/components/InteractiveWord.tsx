@@ -123,7 +123,7 @@ export const InteractiveWord = ({
   const { isMobile } = useIsMobile();
   const reviewCountedRef = useRef(false);
 
-  // Remove TTS service initialization - using SimpleAudioEngine instead
+  // Remove TTS service initialization - using SimplifiedAudioEngine instead
 
   // Determine if user is a native English speaker
   const isNativeEnglishSpeaker = userInfo?.nativeLanguage === "en";
