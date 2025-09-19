@@ -456,6 +456,10 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [batchTotal, setBatchTotal] = useState(0);
   const preloadedUrlsRef = useRef<Set<string>>(new Set());
   
+  // Dynamic aspect ratio state for mobile/tablet images
+  const [imageAspectRatios, setImageAspectRatios] = useState<Record<number, number>>({});
+  const [imageNaturalSizes, setImageNaturalSizes] = useState<Record<number, {width: number, height: number}>>({});
+  
   // Character consistency session ID
   const [characterSessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substring(2)}`);;
   
@@ -489,6 +493,44 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
       DebugLogger.warn('image', 'Failed to store current state for debugging', error);
     }
   }, [currentPage, pageImages]);
+  
+  // Preload images and calculate aspect ratios for mobile/tablet dynamic sizing
+  useEffect(() => {
+    if (isMobileOrTablet) {
+      Object.entries(pageImages).forEach(([pageKey, imageUrl]) => {
+        const pageNum = parseInt(pageKey);
+        
+        // Skip if we already have this image's aspect ratio
+        if (imageAspectRatios[pageNum]) return;
+        
+        const img = new Image();
+        img.onload = () => {
+          const aspectRatio = img.naturalWidth / img.naturalHeight;
+          
+          setImageAspectRatios(prev => ({
+            ...prev,
+            [pageNum]: aspectRatio
+          }));
+          
+          setImageNaturalSizes(prev => ({
+            ...prev,
+            [pageNum]: { width: img.naturalWidth, height: img.naturalHeight }
+          }));
+          
+          DebugLogger.log('image', `Calculated aspect ratio for page ${pageNum}:`, {
+            aspectRatio,
+            naturalSize: { width: img.naturalWidth, height: img.naturalHeight }
+          });
+        };
+        
+        img.onerror = () => {
+          DebugLogger.warn('image', `Failed to preload image for aspect ratio calculation on page ${pageNum}`);
+        };
+        
+        img.src = imageUrl;
+      });
+    }
+  }, [pageImages, isMobileOrTablet, imageAspectRatios]);
   
   // Audio and Interactive Features state
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
@@ -3737,35 +3779,38 @@ const handleRestartTimer = () => {
                 {/* Mobile/Tablet: Top-half image, bottom-half text (full-bleed, no gray) */}
                 <div className="xl:hidden flex-1 min-h-0 flex flex-col gap-3">
                   {/* Top Half: Image - Dynamic aspect ratio to prevent whitespace */}
-                  <div className="relative w-full rounded-2xl overflow-hidden shadow-2xl bg-muted/30 flex items-center justify-center min-h-[300px]">
-                    {isPremium && (Object.keys(pageImages).length < story.length) && !isBatchGenerating && !isGeneratingImage && !isPreparingImage && !imageLoadingStates[currentPage] && (
-                      <div className="absolute top-3 right-3 z-20">
-                          <Button size="sm" variant="secondary" onClick={handleBatchGenerateImages} disabled={false} aria-label="Fix missing illustrations">
-                          <Sparkles className="w-4 h-4 mr-1" />
-                          Fix Images
-                        </Button>
-                      </div>
-                    )}
-                    {isBatchGenerating && (
-                      <div className="absolute top-3 right-3 z-20 rounded-md bg-card/90 border px-2 py-1 text-xs">
-                        {batchDone}/{batchTotal}
-                      </div>
-                    )}
-                    {currentImage ? (
+                  {currentImage ? (
+                    <AspectRatio 
+                      ratio={imageAspectRatios[currentPage] || 4/3} 
+                      className="relative w-full rounded-2xl overflow-hidden shadow-2xl bg-muted/30"
+                    >
+                      {isPremium && (Object.keys(pageImages).length < story.length) && !isBatchGenerating && !isGeneratingImage && !isPreparingImage && !imageLoadingStates[currentPage] && (
+                        <div className="absolute top-3 right-3 z-20">
+                            <Button size="sm" variant="secondary" onClick={handleBatchGenerateImages} disabled={false} aria-label="Fix missing illustrations">
+                            <Sparkles className="w-4 h-4 mr-1" />
+                            Fix Images
+                          </Button>
+                        </div>
+                      )}
+                      {isBatchGenerating && (
+                        <div className="absolute top-3 right-3 z-20 rounded-md bg-card/90 border px-2 py-1 text-xs">
+                          {batchDone}/{batchTotal}
+                        </div>
+                      )}
                       <ImageWithFallback
                         src={currentImage}
                         alt={`Story illustration for page ${currentPage + 1}: ${displayedStory[currentPage]?.substring(0, 100)}...`}
-                        className="w-full h-auto max-h-[60vh] object-contain rounded-lg"
+                        className="w-full h-full object-cover rounded-lg"
                         fallbackText={`📖 Page ${currentPage + 1}`}
                         onLoadingChange={handleImageLoadingChange}
                         onFallbackUsed={handleImageFallbackUsed}
                       />
-                    ) : (
-                      <div className="flex items-center justify-center h-[300px]">
-                        <ImageMixingLoading />
-                      </div>
-                    )}
-                  </div>
+                    </AspectRatio>
+                  ) : (
+                    <div className="relative w-full rounded-2xl overflow-hidden shadow-2xl bg-muted/30 flex items-center justify-center" style={{ aspectRatio: '4/3' }}>
+                      <ImageMixingLoading />
+                    </div>
+                  )}
                   {/* Image Status moved to main content area */}
 
                   {/* Bottom Half: Text - Fixed size to prevent layout shifts */}
