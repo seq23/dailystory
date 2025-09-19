@@ -1,5 +1,5 @@
-// Shared Runware API call with retry logic for Template AB
-export async function callRunwareAPIWithRetry(positivePrompt, negativePrompt, retries = 2) {
+// Shared Runware API call with single attempt (no retries) for Template AB
+export async function callRunwareAPIWithRetry(positivePrompt, negativePrompt, retries = 0) {
   const apiKey = Deno.env.get('RUNWARE_API_KEY');
   if (!apiKey) {
     throw new Error('RUNWARE_API_KEY not configured');

@@ -236,11 +236,11 @@ function validateAndEnhanceContent(enhancedStoryData, storyText) {
   return { enhancedData: enhancedStoryData, fieldCheck };
 }
 
-// AI Model Fallback Chain Configuration - CORRECT USER REQUESTED ORDER
+// AI Model Fallback Chain Configuration - CHEAPEST FIRST ORDER
 const AI_MODELS = [
-  { name: 'gpt-5-2025-08-07', maxTokens: 'max_completion_tokens', supportsTemperature: false },
+  { name: 'gpt-4o', maxTokens: 'max_tokens', supportsTemperature: true },
   { name: 'gpt-4.1-2025-04-14', maxTokens: 'max_completion_tokens', supportsTemperature: false },
-  { name: 'gpt-4o', maxTokens: 'max_tokens', supportsTemperature: true }
+  { name: 'gpt-5-2025-08-07', maxTokens: 'max_completion_tokens', supportsTemperature: false }
 ];
 
 // ============= AVATAR IDENTITY PROCESSING REMOVED =============
@@ -329,75 +329,61 @@ async function callOpenAIWithFallback(messages, timeout = 6000, requestId, avata
     const logPrefix = requestId ? `[${requestId}]` : '';
     console.log(`MODEL ${logPrefix} Trying model ${modelIndex + 1}/${AI_MODELS.length}: ${model.name}`);
     
-    for (let attempt = 1; attempt <= 3; attempt++) {
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), timeout);
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
+      
+      const requestBody = {
+        model: model.name,
+        messages
+      };
+      
+      // Set the correct token parameter based on model
+      if (model.maxTokens === 'max_completion_tokens') {
+        requestBody.max_completion_tokens = 600;
+      } else {
+        requestBody.max_tokens = 600;
+      }
+      
+      // Only add temperature for models that support it
+      if (model.supportsTemperature) {
+        requestBody.temperature = 0.3;
+      }
+      
+      console.log(`Attempting ${model.name} (1 attempt per model)`);
+      
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (response.ok) {
+        const result = await response.json();
         
-        const requestBody = {
-          model: model.name,
-          messages
-        };
-        
-        // Set the correct token parameter based on model
-        if (model.maxTokens === 'max_completion_tokens') {
-          requestBody.max_completion_tokens = 600;
-        } else {
-          requestBody.max_tokens = 600;
-        }
-        
-        // Only add temperature for models that support it
-        if (model.supportsTemperature) {
-          requestBody.temperature = 0.3;
-        }
-        
-        console.log(`Attempting ${model.name} (attempt ${attempt}/3)`);
-        
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${openAIApiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(requestBody),
-          signal: controller.signal
-        });
-        
-        clearTimeout(timeoutId);
-        
-        if (response.ok) {
-          const result = await response.json();
-          
-          const content = result?.choices?.[0]?.message?.content;
-          if (!content?.trim()) {
-            if (attempt < 3) {
-              await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
-              continue;
-            }
-            break;
-          }
-          
-          circuitBreaker.recordSuccess();
-          return result;
-        } else if (response.status === 503 || response.status === 429 || response.status === 502) {
-          if (attempt < 3) {
-            await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
-            continue;
-          }
-          break;
-        } else {
-          break;
-        }
-      } catch (error) {
-        if (attempt < 3) {
-          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+        const content = result?.choices?.[0]?.message?.content;
+        if (!content?.trim()) {
+          console.log(`Empty content from ${model.name}, trying next model`);
           continue;
         }
-        break;
+        
+        circuitBreaker.recordSuccess();
+        console.log(`SUCCESS: ${model.name} returned valid content`);
+        return result;
+      } else {
+        console.log(`HTTP error from ${model.name}: ${response.status}, trying next model`);
+        continue;
       }
+    } catch (error) {
+      console.log(`Error with ${model.name}: ${error.message}, trying next model`);
+      continue;
     }
-    
-    circuitBreaker.recordFailure();
   }
   
   throw new Error('All AI models failed');
