@@ -28,7 +28,7 @@ const monthOptions = [
 ];
 
 export function ChildManager() {
-  const { children, loading, addChild, updateChild, deleteChild } = useChildProfiles();
+  const { children, loading, addChild, updateChild, deleteChild, refresh } = useChildProfiles();
   const { toast } = useToast();
   const { t } = useTranslation();
 
@@ -170,6 +170,7 @@ export function ChildManager() {
       
       // Success feedback and cleanup
       setEditingId(null);
+      refresh(); // Refresh data to show updated state immediately
       toast({ 
         title: t('parent.manager.toasts.saved') || "Saved successfully!", 
         description: `${editDraft.name.trim()}'s profile has been updated.`
