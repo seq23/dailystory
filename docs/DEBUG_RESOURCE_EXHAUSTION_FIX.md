@@ -1,18 +1,18 @@
 # Debug Resource Exhaustion Emergency Fix
 
 **Date:** 2025-09-19  
-**Status:** ✅ RESOLVED - BackendTierChecker Fix Applied  
+**Status:** ✅ RESOLVED - BackendTierChecker Resource Flood Fix Applied  
 **Impact:** Critical - Fixed `ERR_INSUFFICIENT_RESOURCES` browser error
 
-## Root Cause Analysis - UPDATED
+## Root Cause Analysis - CORRECTED
 
-The application was experiencing `ERR_INSUFFICIENT_RESOURCES` errors due to **BackendTierChecker** causing resource floods on pages 2+ through uncontrolled rendering and aggressive API polling.
+**ACTUAL PRIMARY CULPRIT:** `BackendTierChecker` resource flood on navigation to pages 2+
 
-### Primary Culprit (NEW FINDINGS)
-- **`BackendTierChecker`** rendered unconditionally in `CleanStoryDisplay.tsx` (lines 4188-4201)
-- **Unstable `useEffect` dependencies** causing continuous re-runs when `onTierFound` function recreated
-- **`DebugGateway` special-casing** allowed `recent-image-prompts` calls without `debug=1` requirement
-- **No request deduplication** - multiple simultaneous calls to same endpoint created connection flood
+### BackendTierChecker Issues (ROOT CAUSE)
+- **Unconditional rendering** in `CleanStoryDisplay.tsx` without debug mode gating
+- **Unstable `useEffect` dependencies** - `onTierFound` prop changes triggered continuous API calls
+- **No throttling/deduplication** - rapid successive calls to `getRecentImagePrompts()`
+- **DebugGateway bypass** - `recent-image-prompts` allowed without `debug=1` requirement
 
 ### Previous Offenders (RESOLVED)
 - **`StoryContentLogger.init()`** - Already gated behind debug params ✅
@@ -29,9 +29,22 @@ The application was experiencing `ERR_INSUFFICIENT_RESOURCES` errors due to **Ba
 
 ## Emergency Fixes Applied
 
-### Phase 1: Stop Critical Resource Leak ✅
+### Phase 0: EMERGENCY BackendTierChecker Fix (CRITICAL) ✅
 
-**StoryContentLogger.ts:**
+**CleanStoryDisplay.tsx:**
+- ✅ **GATED**: `BackendTierChecker` rendering behind `debug=1` URL parameter only (lines 4188-4204)
+- ✅ **STABILIZED**: `onTierFound` callback using `useRef` to prevent `useEffect` re-runs
+
+**BackendTierChecker.tsx:**
+- ✅ **HARDENED**: Additional debug mode check for fail-safe protection
+- ✅ **OPTIMIZED**: Uses `useRef` for stable `onTierFound` dependency
+
+**DebugGateway.ts:**
+- ✅ **EMERGENCY RATE LIMITER**: 30 requests/minute hard cap with 2-minute emergency shutdown
+- ✅ **PER-OPERATION THROTTLING**: 3-second minimum between identical debug calls
+- ✅ **REMOVED BYPASS**: All operations now require `debug=1` (no special-casing)
+
+### Phase 1: Stop Legacy Resource Leaks ✅
 - ❌ **REMOVED**: `StoryContentLogger.init()` from module load (line 282)
 - ✅ **ADDED**: Singleton protection with `monitoringInterval` and `isMonitoring` flags
 - ✅ **ADDED**: `stopImagePromptMonitoring()` cleanup method
@@ -71,9 +84,12 @@ The application was experiencing `ERR_INSUFFICIENT_RESOURCES` errors due to **Ba
 ### Phase 3: Performance Hardening ✅
 
 **DebugGateway.ts:**
-- ✅ **ENHANCED**: More aggressive circuit breaker (2 failures vs 3)
+- ✅ **ENHANCED**: More aggressive circuit breaker (2 failures vs 3)  
 - ✅ **REDUCED**: Backoff times (2s base, 1min max vs 5s base, 5min max)
 - ✅ **ADDED**: Connection timeout monitoring (10 seconds)
+- ✅ **EMERGENCY RATE LIMITER**: Global 30 requests/minute hard cap
+- ✅ **AUTO-SHUTDOWN**: 2-minute emergency shutdown when quota exceeded  
+- ✅ **THROTTLING**: 3-second minimum per operation to prevent rapid-fire calls
 
 ## Expected Impact
 
