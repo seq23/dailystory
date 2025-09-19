@@ -8,11 +8,11 @@ import { DebugGateway } from '@/services/DebugGateway';
 import { DebugDataViewer } from '@/components/DebugDataViewer';
 import { BackendTierChecker } from '@/components/BackendTierChecker';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
-import { X, Download, Trash2, Search, Play, Square, RotateCcw } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { X, Download, Trash2, Search, Play, Square, RotateCcw, MoreHorizontal, ChevronDown } from 'lucide-react';
 
 interface NetflixDebugLog {
   timestamp: number;
@@ -240,6 +240,16 @@ export const UnifiedDebugMonitor: React.FC = () => {
       default: return 'bg-gray-500/20 text-gray-300';
     }
   };
+
+  // Compact label for current tab
+  const tabLabel = (t: string) => ({
+    console: 'Console',
+    network: 'Network',
+    netflix: 'Netflix',
+    'live-gen': 'Live Generation',
+    'image-gen': 'Images',
+    'debug-data': 'Data'
+  } as Record<string, string>)[t] || 'Console';
 
   if (!DebugLogger.isDebugEnabled() || !isVisible) {
     return DebugLogger.isDebugEnabled() ? (
