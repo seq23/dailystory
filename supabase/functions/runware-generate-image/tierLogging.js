@@ -123,10 +123,10 @@ function analyzeTierContext(tier, status, context) {
       analysis.escalationPath = 'tier-2.5A (Template AB)';
     }
   } else if (tier === 'tier-2.5A') {
-    analysis.description = 'Template AB with character consistency retry';
-    analysis.capabilities = ['template_based', 'avatar_identity', 'character_consistency'];
+    analysis.description = 'Template AB with character consistency retry (Premium Features)';
+    analysis.capabilities = ['template_based', 'avatar_identity', 'character_consistency', 'premium_features'];
     analysis.templateType = 'runware-template-ab';
-    analysis.templateComplexity = context.templateComplexity;
+    analysis.templateComplexity = context.templateComplexity || 'A';
     
     if (status === 'failure') {
       analysis.commonFailureReasons = [
@@ -135,12 +135,28 @@ function analyzeTierContext(tier, status, context) {
         'Avatar identity data insufficient',
         'Template AB service issues'
       ];
-      analysis.escalationPath = 'tier-2.5C (Template CD - Nuclear Independence)';
+      analysis.escalationPath = 'tier-2.5B (Template AB - Basic Features)';
+    }
+  } else if (tier === 'tier-2.5B') {
+    analysis.description = 'Template AB with basic features (Reduced Enhancement)';
+    analysis.capabilities = ['template_based', 'basic_avatar', 'reduced_enhancements'];
+    analysis.templateType = 'runware-template-ab';
+    analysis.templateComplexity = context.templateComplexity || 'B';
+    
+    if (status === 'failure') {
+      analysis.commonFailureReasons = [
+        'Basic template processing error',
+        'Reduced enhancement pipeline failed',
+        'Template AB service degraded',
+        'Infrastructure issues'
+      ];
+      analysis.escalationPath = 'tier-2.5C (Template CD - Nuclear Hardcoded)';
     }
   } else if (tier === 'tier-2.5C') {
-    analysis.description = 'Template CD with nuclear independence (hardcoded templates)';
-    analysis.capabilities = ['nuclear_independence', 'hardcoded_templates', 'fallback_stable'];
+    analysis.description = 'Template CD with nuclear independence (Hardcoded Nuclear)';
+    analysis.capabilities = ['nuclear_independence', 'hardcoded_templates', 'fallback_stable', 'nuclear_frameworks'];
     analysis.templateType = 'runware-template-cd';
+    analysis.templateComplexity = context.templateComplexity || 'C';
     analysis.nuclearMode = true;
     
     if (status === 'success') {
@@ -149,12 +165,34 @@ function analyzeTierContext(tier, status, context) {
     }
     
     if (status === 'failure') {
-      analysis.criticalIssue = 'All tiers failed - this should be very rare';
       analysis.commonFailureReasons = [
-        'Template CD service completely down',
-        'Fundamental configuration issues',
-        'Database or infrastructure problems'
+        'Nuclear template processing failed',
+        'Hardcoded framework errors',
+        'Template CD service issues',
+        'Infrastructure problems'
       ];
+      analysis.escalationPath = 'tier-2.5D (Template CD - Ultimate Emergency)';
+    }
+  } else if (tier === 'tier-2.5D') {
+    analysis.description = 'Template CD with ultimate emergency (Minimal Processing)';
+    analysis.capabilities = ['ultimate_emergency', 'minimal_processing', 'maximum_reliability', 'emergency_fallback'];
+    analysis.templateType = 'runware-template-cd';
+    analysis.templateComplexity = context.templateComplexity || 'D';
+    analysis.ultimateEmergency = true;
+    
+    if (status === 'success') {
+      analysis.note = 'Ultimate emergency tier succeeded - investigate why earlier tiers failed';
+      analysis.templateWarning = 'Minimal processing used - may lack advanced features';
+    }
+    
+    if (status === 'failure') {
+      analysis.criticalIssue = 'All Runware tiers failed - this should be extremely rare';
+      analysis.commonFailureReasons = [
+        'Complete Runware service outage',
+        'Fundamental system configuration issues',
+        'Database or infrastructure complete failure'
+      ];
+      analysis.escalationPath = 'tier-4 (SVG Fallback - Last Resort)';
     }
   }
   
@@ -181,8 +219,8 @@ export function getTierCascadeSummary(sessionId, tierLogs) {
     tierGroups[tier].push(log);
   });
   
-  // Build sequence
-  ['tier-1', 'tier-2.5A', 'tier-2.5C'].forEach(tier => {
+  // Build sequence - Updated to include all 5 tiers
+  ['tier-1', 'tier-2.5A', 'tier-2.5B', 'tier-2.5C', 'tier-2.5D'].forEach(tier => {
     if (tierGroups[tier]) {
       const attempts = tierGroups[tier].filter(log => log.status === 'attempt');
       const successes = tierGroups[tier].filter(log => log.status === 'success'); 

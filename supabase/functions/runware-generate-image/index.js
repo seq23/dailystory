@@ -937,7 +937,7 @@ serve(async (req) => {
           // LOG TIER ROUTING: Tier 1 failure with detailed analysis
           await logTierAttempt(supabase, sessionId, requestId, 'tier-1', 'failure', { 
             error: error.message,
-            errorType: getErrorType(error.message),
+            errorType: tierLogging.getErrorType(error.message),
             escalationReason: error.message.includes('ESCALATE_TO_TIER_2_5A') ? 'enhanced_data_failure' :
                              error.message.includes('character') ? 'character_consistency_failure' :
                              error.message.includes('timeout') ? 'timeout' :
@@ -1016,7 +1016,7 @@ serve(async (req) => {
           // LOG TIER ROUTING: Tier 2.5A failure
           await logTierAttempt(supabase, sessionId, requestId, 'tier-2.5A', 'failure', { 
             error: error.message,
-            errorType: getErrorType(error.message),
+            errorType: tierLogging.getErrorType(error.message),
             templateComplexity: 'A',
             templateType: 'runware-template-ab',
             willEscalateToTier2_5B: true
@@ -1077,7 +1077,7 @@ serve(async (req) => {
           // LOG TIER ROUTING: Tier 2.5B failure
           await logTierAttempt(supabase, sessionId, requestId, 'tier-2.5B', 'failure', { 
             error: error.message,
-            errorType: getErrorType(error.message),
+            errorType: tierLogging.getErrorType(error.message),
             templateComplexity: 'B',
             templateType: 'runware-template-ab',
             willEscalateToTier2_5C: true
@@ -1140,7 +1140,7 @@ serve(async (req) => {
           // LOG TIER ROUTING: Tier 2.5C failure
           await logTierAttempt(supabase, sessionId, requestId, 'tier-2.5C', 'failure', { 
             error: error.message,
-            errorType: getErrorType(error.message),
+            errorType: tierLogging.getErrorType(error.message),
             templateComplexity: 'C',
             templateType: 'runware-template-cd',
             willEscalateToTier2_5D: true
@@ -1203,7 +1203,7 @@ serve(async (req) => {
           // LOG TIER ROUTING: Tier 2.5D failure
           await logTierAttempt(supabase, sessionId, requestId, 'tier-2.5D', 'failure', { 
             error: error.message,
-            errorType: getErrorType(error.message),
+            errorType: tierLogging.getErrorType(error.message),
             templateComplexity: 'D',
             templateType: 'runware-template-cd',
             willEscalateToTier4: true
