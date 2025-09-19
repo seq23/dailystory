@@ -4184,21 +4184,26 @@ const handleRestartTimer = () => {
 
       {/* Timer shows yellow pulse when paused - no overlay needed since controls remain active */}
 
-      {/* Backend Tier Checker - Monitors for tier success messages */}
-      <BackendTierChecker
-        onTierFound={(tier, details) => {
-          const isDebug = typeof window !== 'undefined' && 
-            new URLSearchParams(window.location.search).get('debug') === '1';
-          if (isDebug) {
-            DebugLogger.log('network', 'Tier success detected', {
-              tier,
-              details,
-              currentPage,
-              currentStoryText: (currentStoryText || '').substring(0, 100)
-            });
-          }
-        }}
-      />
+      {/* Backend Tier Checker - Only in debug mode to prevent resource exhaustion */}
+      {(() => {
+        const isDebug = typeof window !== 'undefined' && 
+          new URLSearchParams(window.location.search).get('debug') === '1';
+        
+        if (!isDebug) return null;
+        
+        return (
+          <BackendTierChecker
+            onTierFound={(tier, details) => {
+              DebugLogger.log('network', 'Tier success detected', {
+                tier,
+                details,
+                currentPage,
+                currentStoryText: (currentStoryText || '').substring(0, 100)
+              });
+            }}
+          />
+        );
+      })()}
 
       {/* Enhanced Image Debug Panel for debug mode */}
       <ImageDebugPanel

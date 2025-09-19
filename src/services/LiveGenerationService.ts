@@ -56,7 +56,7 @@ export class LiveGenerationService {
       
       LoggerService.debug('Using unified 4-tier system', 'LiveGeneration');
       
-      const { StoryGenerationService } = await import('./storyGenerationService.ts');
+      const { StoryGenerationService } = await import('./storyGenerationService');
       
       const actualSessionId = sessionId || `live-first-${userInfo.name}-${Date.now()}`;
       DebugLogger.log('story', `LiveGen: First Page Session ID: ${actualSessionId}`);
@@ -144,7 +144,7 @@ export class LiveGenerationService {
         promptConfig = getStoryPrompt(backendDifficulty);
       }
       
-      const { StoryGenerationService } = await import('./storyGenerationService.ts');
+      const { StoryGenerationService } = await import('./storyGenerationService');
       
       // Create enhanced userInfo with story context for continuation
       const contextualUserInfo = {
@@ -260,7 +260,7 @@ export class LiveGenerationService {
     try {
       const nextPageNumber = context.currentPage + 1;
       
-      const { StoryGenerationService } = await import('./storyGenerationService.ts');
+      const { StoryGenerationService } = await import('./storyGenerationService');
       
       // CRITICAL FIX: Preserve user's original themes, characters, and settings for conclusion
       // Don't overwrite specialRequest - let user's preferences guide the ending

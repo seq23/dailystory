@@ -1,16 +1,22 @@
 # Debug Resource Exhaustion Emergency Fix
 
 **Date:** 2025-09-19  
-**Status:** ✅ RESOLVED  
+**Status:** ✅ RESOLVED - BackendTierChecker Fix Applied  
 **Impact:** Critical - Fixed `ERR_INSUFFICIENT_RESOURCES` browser error
 
-## Root Cause Analysis
+## Root Cause Analysis - UPDATED
 
-The application was experiencing `ERR_INSUFFICIENT_RESOURCES` errors due to **multiple aggressive polling services** running simultaneously and exceeding browser connection limits (6-8 concurrent connections per domain).
+The application was experiencing `ERR_INSUFFICIENT_RESOURCES` errors due to **BackendTierChecker** causing resource floods on pages 2+ through uncontrolled rendering and aggressive API polling.
 
-### Critical Offender
-- **`StoryContentLogger.init()`** auto-executed on module load (line 282), creating **5-second intervals** that flooded `unified-debug-service`
-- Each `CleanStoryDisplay` component mount triggered new intervals, creating **multiple overlapping polling** during navigation
+### Primary Culprit (NEW FINDINGS)
+- **`BackendTierChecker`** rendered unconditionally in `CleanStoryDisplay.tsx` (lines 4188-4201)
+- **Unstable `useEffect` dependencies** causing continuous re-runs when `onTierFound` function recreated
+- **`DebugGateway` special-casing** allowed `recent-image-prompts` calls without `debug=1` requirement
+- **No request deduplication** - multiple simultaneous calls to same endpoint created connection flood
+
+### Previous Offenders (RESOLVED)
+- **`StoryContentLogger.init()`** - Already gated behind debug params ✅
+- **Multiple debug panels** - Already optimized with manual refresh ✅
 
 ### Contributing Services
 1. `ImageDebugPanel`: 10-second intervals calling backend logs

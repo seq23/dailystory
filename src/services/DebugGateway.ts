@@ -99,13 +99,31 @@ class DebugGatewayService {
     }
   }
 
+  // In-flight request deduplication and caching
+  private inFlightRequests = new Map<string, Promise<{ data: any; error: any }>>();
+  private responseCache = new Map<string, { data: any; timestamp: number }>();
+  private readonly CACHE_DURATION = 30000; // 30 seconds
+
   async callDebugService(params: DebugCall): Promise<{ data: any; error: any }> {
-    // Allow basic operations without debug mode, but require debug mode for advanced operations
-    const allowedWithoutDebug = ['recent-image-prompts', 'prompt-history', 'ai-prompts'];
-    const isBasicOperation = allowedWithoutDebug.includes(params.operation);
-    
-    if (!this.isDebugEnabled() && !isBasicOperation) {
+    // CRITICAL FIX: Require debug=1 for ALL operations to prevent resource exhaustion
+    if (!this.isDebugEnabled()) {
       return { data: this.createMockResponse(params.operation), error: null };
+    }
+
+    // Request deduplication - prevent simultaneous calls
+    const requestKey = `${params.operation}-${params.sessionId || 'global'}-${params.limit || 10}`;
+    
+    // Check cache first
+    const cached = this.responseCache.get(requestKey);
+    if (cached && Date.now() - cached.timestamp < this.CACHE_DURATION) {
+      this.logDebug(`Using cached response for ${params.operation}`);
+      return { data: cached.data, error: null };
+    }
+
+    // Check for in-flight request
+    if (this.inFlightRequests.has(requestKey)) {
+      this.logDebug(`Returning existing in-flight request for ${params.operation}`);
+      return this.inFlightRequests.get(requestKey)!;
     }
 
     // Check circuit breaker
@@ -114,6 +132,31 @@ class DebugGatewayService {
       return { data: this.createMockResponse(params.operation), error: null };
     }
 
+    // Create and cache the request promise
+    const requestPromise = this.executeRequest(params);
+    this.inFlightRequests.set(requestKey, requestPromise);
+
+    try {
+      const result = await requestPromise;
+      
+      // Cache successful responses
+      if (!result.error) {
+        this.responseCache.set(requestKey, {
+          data: result.data,
+          timestamp: Date.now()
+        });
+      }
+      
+      return result;
+    } catch (error) {
+      throw error;
+    } finally {
+      // Always clean up in-flight request
+      this.inFlightRequests.delete(requestKey);
+    }
+  }
+
+  private async executeRequest(params: DebugCall): Promise<{ data: any; error: any }> {
     try {
       // Build query string
       const queryParams = new URLSearchParams();
