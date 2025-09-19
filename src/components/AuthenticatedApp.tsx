@@ -182,7 +182,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
 
         if (!prefError && preferences) {
           setUserProfile(preferences);
-          // Convert preferences to UserInfo format
+          // Convert preferences to UserInfo format with proper defaults
           const userInfoData: UserInfo = {
             name: preferences.display_name || 'Reader',
             age: preferences.age || 7,
@@ -363,12 +363,24 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
         difficultyLevel: updatedUserInfo.difficultyLevel
       });
 
+      // Normalize grade value to ensure consistency
+      const normalizeGrade = (grade: Grade): Grade => {
+        const gradeMap: Record<string, Grade> = {
+          "1": "1st", "2": "2nd", "3": "3rd", "4": "4th", "5": "5th", "6": "6th+",
+          "1st": "1st", "2nd": "2nd", "3rd": "3rd", "4th": "4th", "5th": "5th", "6th+": "6th+",
+          "PreK": "PreK", "K": "K"
+        };
+        return gradeMap[grade] || grade;
+      };
+
+      const normalizedGrade = normalizeGrade(updatedUserInfo.grade);
+
       if (isPremium) {
         // Premium users save to user_preferences table
         const payload = {
           display_name: updatedUserInfo.name,
           age: updatedUserInfo.age,
-          grade_level: updatedUserInfo.gradeLevel || updatedUserInfo.grade,
+          grade_level: normalizedGrade,
           native_language: updatedUserInfo.nativeLanguage,
           learning_goal: updatedUserInfo.learningGoal,
           avatar_type: 'prefer-not-to-answer', // Account holder has neutral avatar
@@ -442,7 +454,14 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
         }
       }
 
-      setUserInfo(updatedUserInfo);
+      // Update local state with normalized grade
+      const updatedUserInfoWithNormalizedGrade = {
+        ...updatedUserInfo,
+        grade: normalizedGrade,
+        gradeLevel: normalizedGrade
+      };
+      
+      setUserInfo(updatedUserInfoWithNormalizedGrade);
       setIsEditingProfile(false);
       
       DebugLogger.log('auth', 'Account holder update completed successfully');

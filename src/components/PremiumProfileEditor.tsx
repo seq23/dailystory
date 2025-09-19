@@ -22,7 +22,15 @@ interface PremiumProfileEditorProps {
 
 export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProfileEditorProps) => {
   const { toast } = useToast();
-  const [formData, setFormData] = useState<UserInfo>(userInfo);
+  // Ensure default values to prevent persistence issues
+  const [formData, setFormData] = useState<UserInfo>({
+    ...userInfo,
+    name: userInfo.name || 'Reader',
+    age: userInfo.age || 7,
+    grade: userInfo.grade || 'K',
+    nativeLanguage: userInfo.nativeLanguage || 'en',
+    difficultyLevel: userInfo.difficultyLevel || 'beginner'
+  });
   const [isSaving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const { syncLanguagesForPremium } = useLanguageSync();
@@ -38,6 +46,34 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
   const handleSave = async () => {
     setSaving(true);
     try {
+      // Validate required fields
+      if (!formData.name?.trim()) {
+        toast({
+          title: "Name Required",
+          description: "Please enter a name before saving.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!formData.age || formData.age < 3 || formData.age > 11) {
+        toast({
+          title: "Invalid Age",
+          description: "Please select a valid age between 3-11.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!formData.grade) {
+        toast({
+          title: "Grade Required",
+          description: "Please select a grade level.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       DebugLogger.log('ui', 'PremiumProfileEditor: Saving account holder data...', {
         name: formData.name,
         age: formData.age,
@@ -57,7 +93,7 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
       console.error('❌ PremiumProfileEditor: Save failed:', error);
       toast({
         title: "Save Failed",
-        description: "Please try again in a moment.",
+        description: "Unable to save your changes. Please try again in a moment.",
         variant: "destructive",
       });
     } finally {
@@ -115,8 +151,13 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
               <div className="space-y-2">
                 <Label htmlFor="age">Age</Label>
                 <Select
-                  value={formData.age?.toString()}
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, age: parseInt(value) }))}
+                  value={formData.age?.toString() || "7"}
+                  onValueChange={(value) => {
+                    const parsedAge = parseInt(value);
+                    if (!isNaN(parsedAge)) {
+                      setFormData(prev => ({ ...prev, age: parsedAge }));
+                    }
+                  }}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select age" />
@@ -134,7 +175,7 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
               <div className="space-y-2">
                 <Label htmlFor="grade">Grade</Label>
                 <Select
-                  value={formData.grade}
+                  value={formData.grade || "K"}
                   onValueChange={(value) => setFormData(prev => ({ ...prev, grade: value as Grade }))}
                 >
                   <SelectTrigger>

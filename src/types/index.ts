@@ -6,7 +6,7 @@ export type LanguageCode = "en" | "ar" | "es" | "zh" | "hi" | "pt" | "fr" | "fr-
 export type LearningGoal = "improve-english-reading" | "learn-english-language" | "both";
 export type SkinTone = "pale" | "light" | "medium" | "olive" | "dark";
 export type AvatarType = "boy" | "girl" | "prefer-not-to-answer";
-export type Grade = "PreK" | "K" | "1st" | "2nd" | "3rd" | "4th" | "5th" | "6th+";
+export type Grade = "PreK" | "K" | "1" | "2" | "3" | "4" | "5" | "6" | "1st" | "2nd" | "3rd" | "4th" | "5th" | "6th+";
 
 export interface Avatar {
   type: AvatarType;
