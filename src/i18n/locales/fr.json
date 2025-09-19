@@ -376,6 +376,12 @@
       "startPause": "🎯 Cliquez pour démarrer/mettre en pause votre minuteur de lecture!",
       "reduceTime": "⏰ Réduisez le temps de 5 minutes!",
       "endSession": "🔚 Cliquez pour terminer votre session de lecture!"
+    },
+    "confirmEnd": {
+      "title": "Êtes-vous sûr ?",
+      "desc": "Ceci terminera votre session de lecture et effacera votre progression. Vous devrez recommencer avec une nouvelle histoire.",
+      "endSession": "Oui, terminer la session",
+      "keepReading": "Continuer à lire"
     }
   },
   "audioReading": {

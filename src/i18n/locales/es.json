@@ -376,6 +376,12 @@
       "startPause": "🎯 ¡Haz clic para iniciar/pausar tu cronómetro de lectura!",
       "reduceTime": "⏰ ¡Reduce el tiempo en 5 minutos!",
       "endSession": "🔚 ¡Haz clic para terminar tu sesión de lectura!"
+    },
+    "confirmEnd": {
+      "title": "¿Estás seguro?",
+      "desc": "Esto terminará tu sesión de lectura y borrará tu progreso. Tendrás que empezar de nuevo con una nueva historia.",
+      "endSession": "Sí, terminar sesión",
+      "keepReading": "Seguir leyendo"
     }
   },
   "endStory": {

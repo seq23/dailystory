@@ -48,6 +48,7 @@ export const CollapsibleFloatingTimer = ({
   const [showCelebration, setShowCelebration] = useState(false);
   const [showChoice, setShowChoice] = useState(false);
   const [expiredAcknowledged, setExpiredAcknowledged] = useState(false); // Prevent re-trigger loop at 0s
+  const [showEndSessionConfirm, setShowEndSessionConfirm] = useState(false); // Confirmation for guest users ending session
   // Celebration sound mute preference
   const [muted, setMuted] = useState<boolean>(() => {
     try { return localStorage.getItem('celebrationMuted') === '1'; } catch { return false; }
@@ -387,18 +388,19 @@ useEffect(() => {
                <Button
                  variant="outline"
                  size={isMobile ? "sm" : "default"}
-                 onClick={() => {
-                   if (isMobileOrTablet) {
-                     setMobileTooltip('dismiss');
-                      performanceManager.setTimeout(() => setMobileTooltip(''), 3000, 'mobile tooltip cleanup');
-                   }
-                   if (isPremium) {
-                     onKeepReadingUntimed?.();
-                     onDismiss?.();
-                   } else {
-                     onEndSession();
-                   }
-                 }}
+                  onClick={() => {
+                    if (isMobileOrTablet) {
+                      setMobileTooltip('dismiss');
+                       performanceManager.setTimeout(() => setMobileTooltip(''), 3000, 'mobile tooltip cleanup');
+                    }
+                    if (isPremium) {
+                      onKeepReadingUntimed?.();
+                      onDismiss?.();
+                    } else {
+                      // Show confirmation for guest users
+                      setShowEndSessionConfirm(true);
+                    }
+                  }}
                  className="min-h-[44px] min-w-[44px] rounded-full bg-background/95 backdrop-blur-sm border-2 border-red-500 text-red-500 hover:bg-red-50 hover:border-red-600"
                 aria-label={isPremium ? t("floatingTimer.dismissTimer", "Dismiss timer for unlimited reading") : t("floatingTimer.endSession", "End Reading Session")}
                 id="timer-dismiss-x-button"
@@ -536,6 +538,34 @@ useEffect(() => {
     </div>
   </div>
 )}
+
+      {/* End Session Confirmation Dialog - Guest Users Only */}
+      {!isPremium && showEndSessionConfirm && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center">
+          <div className="absolute inset-0 bg-background/70 backdrop-blur-sm" />
+          <div className="relative z-[111] bg-background border border-border rounded-2xl shadow-2xl w-[92vw] max-w-xl p-6 animate-scale-in" role="dialog" aria-labelledby="endsession-confirm-title" aria-describedby="endsession-confirm-desc">
+            <h3 id="endsession-confirm-title" className="text-xl font-bold mb-2">{t('floatingTimer.confirmEnd.title', 'Are you sure?')}</h3>
+            <p id="endsession-confirm-desc" className="text-sm text-muted-foreground mb-5">{t('floatingTimer.confirmEnd.desc', "This will end your reading session and clear your progress. You'll need to start over with a new story.")}</p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-end">
+              <Button 
+                variant="destructive" 
+                onClick={() => { 
+                  setShowEndSessionConfirm(false); 
+                  onEndSession(); 
+                }}
+              >
+                {t('floatingTimer.confirmEnd.endSession', 'Yes, end session')}
+              </Button>
+              <Button 
+                variant="ghost" 
+                onClick={() => setShowEndSessionConfirm(false)}
+              >
+                {t('floatingTimer.confirmEnd.keepReading', 'Keep reading')}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

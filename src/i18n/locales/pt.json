@@ -593,6 +593,12 @@
       "startPause": "🎯 Clique para iniciar/pausar seu cronômetro de leitura!",
       "reduceTime": "⏰ Reduza o tempo em 5 minutos!",
       "endSession": "🔚 Clique para encerrar sua sessão de leitura!"
+    },
+    "confirmEnd": {
+      "title": "Tem certeza?",
+      "desc": "Isto terminará sua sessão de leitura e apagará seu progresso. Você precisará começar novamente com uma nova história.",
+      "endSession": "Sim, encerrar sessão",
+      "keepReading": "Continuar lendo"
     }
   },
   "sessionEnded": {
@@ -623,6 +629,12 @@
       "startPause": "🎯 Clique para iniciar/pausar seu temporizador de leitura!",
       "reduceTime": "⏰ Reduza o tempo em 5 minutos!",
       "endSession": "🔚 Clique para terminar sua sessão de leitura!"
+    },
+    "confirmEnd": {
+      "title": "Tem certeza?",
+      "desc": "Isto terminará sua sessão de leitura e apagará seu progresso. Você precisará começar novamente com uma nova história.",
+      "endSession": "Sim, encerrar sessão",
+      "keepReading": "Continuar lendo"
     }
   },
   "audioReading": {

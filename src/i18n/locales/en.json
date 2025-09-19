@@ -435,6 +435,12 @@
       "dismissTimer": "🙈 Hide the timer; it keeps running",
       "collapse": "🫥 Collapse the timer",
       "endSession": "🔚 Click to end your reading session!"
+    },
+    "confirmEnd": {
+      "title": "Are you sure?",
+      "desc": "This will end your reading session and clear your progress. You'll need to start over with a new story.",
+      "endSession": "Yes, end session",
+      "keepReading": "Keep reading"
     }
   },
   "parent": {

@@ -372,6 +372,12 @@
       "startPause": "🎯 点击开始/暂停您的阅读计时器！",
       "reduceTime": "⏰ 减少5分钟时间！",
       "endSession": "🔚 点击结束您的阅读会话！"
+    },
+    "confirmEnd": {
+      "title": "您确定吗？",
+      "desc": "这将结束您的阅读会话并清除您的进度。您需要用新故事重新开始。",
+      "endSession": "是的，结束会话",
+      "keepReading": "继续阅读"
     }
   },
   "audioReading": {
@@ -407,6 +413,12 @@
       "startPause": "🎯 点击开始/暂停您的阅读计时器！",
       "reduceTime": "⏰ 减少5分钟时间！",
       "endSession": "🔚 点击结束您的阅读会话！"
+    },
+    "confirmEnd": {
+      "title": "您确定吗？",
+      "desc": "这将结束您的阅读会话并清除您的进度。您需要用新故事重新开始。",
+      "endSession": "是的，结束会话",
+      "keepReading": "继续阅读"
     }
   },
   "endStory": {
