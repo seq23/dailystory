@@ -488,6 +488,7 @@ async function handleOrchestratorCall(requestId, storyText, enhancedStoryData, a
 
     console.log(`🤖 [${requestId}] Generating primaryScene from storyText using OpenAI`);
     
+    let processedContent; // Declare outside try block to fix scoping issue
     try {
       const result = await callOpenAIWithFallback(messages, 8000, requestId, avatarIdentity);
       const content = result?.choices?.[0]?.message?.content;
@@ -496,7 +497,7 @@ async function handleOrchestratorCall(requestId, storyText, enhancedStoryData, a
         throw new Error('Empty response from OpenAI');
       }
       
-      const processedContent = parseAIResponse(content);
+      processedContent = parseAIResponse(content);
       console.log(`✅ [${requestId}] Generated primaryScene + aiSchema via OpenAI`);
       
     } catch (error) {
