@@ -11,39 +11,16 @@ console.log('BOOT ai-visual-scene-creator module loaded');
 
 // ============= LAZY LOADING FUNCTIONS FOR HEAVY DEPENDENCIES =============
 
-async function getCharacterService() {
+async function getPhaseOrchestrator() {
   try {
-    const { characterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
-    return characterConsistencyService; // Return singleton instance directly
+    const { phaseIntegrationOrchestrator } = await import("../_shared/PhaseIntegrationOrchestrator.js");
+    return phaseIntegrationOrchestrator;
   } catch (error) {
-    console.warn('CharacterService lazy load failed:', error);
+    console.warn('PhaseIntegrationOrchestrator lazy load failed:', error);
     // Check if it's a DNS resolution error
     if (error.message?.includes('DNS') || error.message?.includes('resolution') || error.message?.includes('network')) {
-      console.error('DNS Resolution Error - Character Consistency Service unreachable:', error.message);
+      console.error('DNS Resolution Error - Phase Integration Orchestrator unreachable:', error.message);
     }
-    return null;
-  }
-}
-
-async function getEnhancedAnimalDetector() {
-  try {
-    const { enhancedAnimalDetector } = await import("../_shared/EnhancedAnimalDetector.js");
-    return enhancedAnimalDetector;
-  } catch (error) {
-    console.warn('EnhancedAnimalDetector lazy load failed:', error);
-    return null;
-  }
-}
-
-// PHASE 4: Session management removed - orchestrator handles all session state
-// Session data flows via function parameters only
-
-async function getVisualTracker() {
-  try {
-    const { visualDetailTracker } = await import("../_shared/VisualDetailTracker.js");
-    return visualDetailTracker; // Use singleton instance
-  } catch (error) {
-    console.warn('VisualTracker lazy load failed:', error);
     return null;
   }
 }
@@ -426,8 +403,13 @@ async function handleRequest(req) {
     const payload = await req.json();
     console.log(`🔍 [${requestId}] Received payload keys:`, Object.keys(payload));
     
+    // Detect if this is called by PhaseIntegrationOrchestrator vs frontend
+    const isOrchestratorCall = req.headers.get('x-supabase-function-name') || 
+                             req.headers.get('authorization')?.includes('service_role') ||
+                             payload._internal_orchestrator_call === true;
+    
     // FLEXIBLE PAYLOAD HANDLING: Accept either pageText OR storyText
-    let enhancedStoryData, storyText, avatarIdentity;
+    let enhancedStoryData, storyText, avatarIdentity, userInfo, sessionId, pageNumber;
     
     if (payload.pageText) {
       // Current format: {pageText, userInfo, sessionId, pageNumber}
@@ -435,12 +417,18 @@ async function handleRequest(req) {
       storyText = payload.pageText;
       enhancedStoryData = payload.enhancedStoryData || { userInfo: payload.userInfo };
       avatarIdentity = payload.userInfo?.avatar || payload.avatarIdentity;
+      userInfo = payload.userInfo;
+      sessionId = payload.sessionId;
+      pageNumber = payload.pageNumber;
     } else if (payload.storyText || payload.enhancedStoryData) {
       // Legacy format: {enhancedStoryData, storyText, avatarIdentity}
       console.log(`📖 [${requestId}] Using storyText/enhancedStoryData format`);
       enhancedStoryData = payload.enhancedStoryData;
       storyText = payload.storyText;
       avatarIdentity = payload.avatarIdentity;
+      userInfo = payload.userInfo;
+      sessionId = payload.sessionId;
+      pageNumber = payload.pageNumber;
     } else {
       return createCorsErrorResponse('Missing required fields: pageText OR (enhancedStoryData and storyText)', 400);
     }
@@ -449,8 +437,26 @@ async function handleRequest(req) {
       return createCorsErrorResponse('No story text content provided in any format', 400);
     }
 
-  const result = await withPerformanceTracking('ai-visual-scene-creator', 'gpt-4o-mini', async () => {
-    // AI Scene Creator should GENERATE primaryScene from storyText, not validate existing one
+    console.log(`🎯 [${requestId}] Call source: ${isOrchestratorCall ? 'PhaseIntegrationOrchestrator' : 'Frontend'}`);
+    
+    // If called by orchestrator, return simplified response with just primaryScene
+    if (isOrchestratorCall) {
+      return await handleOrchestratorCall(requestId, storyText, enhancedStoryData);
+    }
+    
+    // If called by frontend, delegate to orchestrator for complete template
+    return await handleFrontendCall(requestId, storyText, userInfo, sessionId, pageNumber, avatarIdentity);
+
+  } catch (error) {
+    return handleError(error, 'handleRequest', { requestId });
+  }
+}
+
+// Handle calls from PhaseIntegrationOrchestrator - return just primaryScene
+async function handleOrchestratorCall(requestId, storyText, enhancedStoryData) {
+  console.log(`🔄 [${requestId}] Processing orchestrator call - extracting primaryScene only`);
+  
+  return await withPerformanceTracking('ai-visual-scene-creator-orchestrator', 'gpt-4o', async () => {
     let processedContent = enhancedStoryData;
     
     // If no primaryScene exists, generate it using OpenAI
@@ -495,19 +501,75 @@ async function handleRequest(req) {
       }
     }
     
-    const validatedContent = await validateAndEnhanceContent(processedContent, storyText);
-    
-    if (validatedContent.primaryScene) {
-      console.log(`✅ [${requestId}] Successfully created visual scene`);
-      return validatedContent;
-    } else {
-      throw new Error('Failed to generate valid visual scene content');
+    // Simple validation for orchestrator calls
+    if (!processedContent?.primaryScene) {
+      throw new Error('Failed to extract primaryScene');
     }
+    
+    // Return minimal response for orchestrator
+    return {
+      success: true,
+      primaryScene: processedContent.primaryScene,
+      extractionMethod: processedContent.extractionMethod || 'existing',
+      aiSchema: processedContent.aiSchema
+    };
   });
+}
 
-    return createCorsResponse(result);
-  } catch (error) {
-    return handleError(error, 'handleRequest', { requestId });
+// Handle calls from frontend - delegate to orchestrator for complete template
+async function handleFrontendCall(requestId, storyText, userInfo, sessionId, pageNumber, avatarIdentity) {
+  console.log(`🎨 [${requestId}] Processing frontend call - delegating to orchestrator for complete template`);
+  
+  try {
+    const orchestrator = await getPhaseOrchestrator();
+    
+    if (!orchestrator) {
+      console.warn(`⚠️ [${requestId}] Orchestrator unavailable, falling back to simplified response`);
+      // Fallback to basic primaryScene extraction
+      const basicResult = await handleOrchestratorCall(requestId, storyText, { userInfo });
+      return createCorsResponse({
+        ...basicResult,
+        positivePrompt: basicResult.primaryScene,
+        negativePrompt: 'blur, dark, scary, adult content, inappropriate',
+        fallbackMode: true
+      });
+    }
+    
+    console.log(`🚀 [${requestId}] Calling orchestrator for enhanced template generation`);
+    
+    const enhancedResult = await orchestrator.generateEnhancedTier1Template(
+      storyText, 
+      userInfo, 
+      sessionId, 
+      pageNumber || 1
+    );
+    
+    if (enhancedResult && enhancedResult.success) {
+      console.log(`✅ [${requestId}] Orchestrator returned enhanced template`);
+      return createCorsResponse(enhancedResult);
+    } else {
+      console.warn(`⚠️ [${requestId}] Orchestrator failed, falling back to basic extraction`);
+      const fallbackResult = await handleOrchestratorCall(requestId, storyText, { userInfo });
+      return createCorsResponse({
+        ...fallbackResult,
+        positivePrompt: fallbackResult.primaryScene,
+        negativePrompt: 'blur, dark, scary, adult content, inappropriate',
+        fallbackMode: true
+      });
+    }
+    
+  } catch (orchestratorError) {
+    console.error(`❌ [${requestId}] Orchestrator integration failed:`, orchestratorError.message);
+    
+    // Graceful fallback to basic extraction
+    const fallbackResult = await handleOrchestratorCall(requestId, storyText, { userInfo });
+    return createCorsResponse({
+      ...fallbackResult,
+      positivePrompt: fallbackResult.primaryScene,
+      negativePrompt: 'blur, dark, scary, adult content, inappropriate',
+      fallbackMode: true,
+      fallbackReason: orchestratorError.message
+    });
   }
 }
 
