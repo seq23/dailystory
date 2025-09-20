@@ -469,7 +469,8 @@ async function handleOrchestratorCall(requestId, storyText, enhancedStoryData, a
       console.log(`🤖 [${requestId}] Generating primaryScene from storyText using OpenAI`);
       
       try {
-        const systemPrompt = 'Generate complete visual scene data from story text. Return JSON with primaryScene (detailed visual description) and full aiSchema object containing setting, lighting, mainCharacter, attire, accessories, atmosphere, action, mood, pose fields.';
+        // Step 3: Clean Primary Scene system prompt - focus ONLY on visual scene description
+        const systemPrompt = 'Generate visual scene data from story text. Return JSON with primaryScene (ONLY detailed visual scene description for image generation) and aiSchema object containing setting, lighting, mainCharacter, attire, accessories, atmosphere, action, mood, pose, secondaryCharacters fields.';
           
         const openAIResponse = await callOpenAIWithFallback([{
           role: 'system',
@@ -489,7 +490,8 @@ async function handleOrchestratorCall(requestId, storyText, enhancedStoryData, a
             if (parsed && typeof parsed === 'object') {
               try {
                 aiSchema = parsed.aiSchema;
-                if (!aiSchema && (parsed.setting || parsed.lighting || parsed.mainCharacter || parsed.action || parsed.mood)) {
+                if (!aiSchema && (parsed.setting || parsed.lighting || parsed.mainCharacter || parsed.action || parsed.mood || parsed.secondaryCharacters)) {
+                  // Step 4: Add secondaryCharacters to aiSchema object
                   aiSchema = {
                     setting: parsed.setting || null,
                     lighting: parsed.lighting || null,
@@ -499,7 +501,8 @@ async function handleOrchestratorCall(requestId, storyText, enhancedStoryData, a
                     atmosphere: parsed.atmosphere || null,
                     action: parsed.action || null,
                     mood: parsed.mood || null,
-                    pose: parsed.pose || null
+                    pose: parsed.pose || null,
+                    secondaryCharacters: parsed.secondaryCharacters || null
                   };
                   console.log(`🔧 [${requestId}] Synthesized aiSchema from top-level JSON fields`);
                 }

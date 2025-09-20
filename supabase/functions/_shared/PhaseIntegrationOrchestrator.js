@@ -34,7 +34,8 @@ export class PhaseIntegrationOrchestrator {
       const characterName = userInfo?.name || userInfo?.childName || 'Child';
 
       const existingTraits = await this.characterConsistencyService.getCharacterFromDatabase(sessionId, `traits_${characterName}`) || {};
-      const secondaryCharacters = [];
+      // Step 2: Generate secondary characters using CharacterConsistencyService
+      const secondaryCharacters = await this.characterConsistencyService.getSecondaryCharacterSeed(sessionId, characterName) || [];
 
       // Phase 2: Load visual history for consistency  
       const visualHistory = await this.visualDetailTracker.getVisualHistory(sessionId, 'general', 10);
@@ -339,6 +340,12 @@ export class PhaseIntegrationOrchestrator {
       // Cultural Enhancements
       const culturalEnhancements = await this.getCulturalEnhancements(userInfo, sessionId);
       
+      // Step 2: Generate secondary character descriptions for template
+      const secondaryCharacterDescriptions = await this.characterConsistencyService.getSecondaryCharacterSeed(sessionId, storyText, 1) || [];
+      const formattedSecondaryCharacters = Array.isArray(secondaryCharacterDescriptions) ? 
+        secondaryCharacterDescriptions.map(char => typeof char === 'string' ? char : char.description || char.name || '').join(', ') : 
+        (secondaryCharacterDescriptions || '');
+      
       // Enhanced character description with avatar type, hair and skin variations  
       const characterDescription = [
         avatarIdentity,
@@ -347,17 +354,18 @@ export class PhaseIntegrationOrchestrator {
         selectedSkin
       ].filter(Boolean).join(', ');
 
-      // Build complete 6-section Tier 1 enhanced prompt template with setting integration
+      // Step 1: Build complete 6-section Tier 1 enhanced prompt template with reordered structure
       const enhancedPrompt = [
         `PRIMARY SCENE: ${primaryScene}`,
         `CHARACTER DESCRIPTION: ${characterDescription}`,
         `CHARACTER CONSISTENCY:`,
         `- Visual Traits: ${specificClothing || `${characterName} wearing consistent character clothing`}`,
         `- Visual Consistency: ${combinedVisualElements}`,
+        `- Secondary Characters: ${formattedSecondaryCharacters}`,
+        // Step 1: Move SETTING after CHARACTER CONSISTENCY
+        persistentSetting ? `SETTING: consistently in ${persistentSetting}` : '',
         `STYLE FRAMEWORK: ${styleFramework}`,
-        `CONTEXT: ${contextSummary}`,
-        // NEW: Add persistent setting to prompt if available
-        persistentSetting ? `SETTING: consistently in ${persistentSetting}` : ''
+        `CONTEXT: ${contextSummary}`
       ].filter(Boolean).join('\n');
 
       console.log(`✅ PHASE ORCHESTRATOR: Complete Tier 1 template generated`, {
