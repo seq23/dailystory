@@ -63,35 +63,105 @@ serve(async (req) => {
     });
   }
 
+  // Enhanced import with retry logic and sync anomaly detection
+  const maxRetries = 3;
+  const retryDelays = [100, 500, 1000]; // Progressive delays in ms
+  let lastError: any = null;
+  let isFilePresent = false;
+
+  // Check if the JavaScript file exists
   try {
-    // Import the actual JavaScript implementation
-    // This dynamic import provides sync anomaly protection
-    const { default: handleRequest } = await import('./index.js');
-    
-    console.log('✅ [TypeScript Receptionist] Successfully imported JavaScript implementation');
-    
-    // Execute the actual implementation
-    return await handleRequest(req);
-    
-  } catch (importError) {
-    // Fallback response during sync anomalies or import failures
-    console.error('⚠️ [TypeScript Receptionist] Import fallback activated:', importError.message);
-    
-    // Provide graceful degradation with CORS support
-    const fallbackResponse = {
-      error: 'Service temporarily unavailable during deployment sync',
-      code: 'IMPORT_SYNC_ANOMALY',
-      message: 'Please retry in a few moments. This is typically resolved automatically.',
+    await Deno.stat('./index.js');
+    isFilePresent = true;
+    console.log('🔍 [TypeScript Receptionist] JavaScript file verified present');
+  } catch (statError) {
+    console.error('🚨 [TypeScript Receptionist] JavaScript file not found via stat:', statError.message);
+  }
+
+  // Attempt import with progressive retry strategy
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`🔄 [TypeScript Receptionist] Import attempt ${attempt + 1}/${maxRetries + 1}`);
+      
+      // Import the actual JavaScript implementation
+      const { default: handleRequest } = await import('./index.js');
+      
+      console.log('✅ [TypeScript Receptionist] Successfully imported JavaScript implementation');
+      
+      // Execute the actual implementation
+      return await handleRequest(req);
+      
+    } catch (importError) {
+      lastError = importError;
+      console.error(`⚠️ [TypeScript Receptionist] Import attempt ${attempt + 1} failed:`, importError.message);
+      
+      // If this is the last attempt, don't delay
+      if (attempt < maxRetries) {
+        const delay = retryDelays[attempt];
+        console.log(`🕐 [TypeScript Receptionist] Retrying in ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+
+  // All import attempts failed - categorize the error
+  const isModuleNotFoundError = lastError?.message?.includes('Module not found');
+  const isSyncAnomaly = isModuleNotFoundError && isFilePresent;
+  
+  console.error('🚨 [TypeScript Receptionist] All import attempts failed');
+  console.error('📊 [Sync Analysis]', {
+    errorType: lastError?.message || 'Unknown',
+    filePresent: isFilePresent,
+    syncAnomaly: isSyncAnomaly,
+    deployMarker: '2025-01-30T21:45:00Z'
+  });
+
+  if (isSyncAnomaly) {
+    // Sync anomaly detected - provide 202 with short retry window
+    const syncResponse = {
+      status: 'sync_in_progress',
+      code: 'DEPLOYMENT_SYNC_ANOMALY',
+      message: 'Deployment sync in progress. The service is available but files are still syncing.',
+      guidance: 'This is a temporary condition that resolves automatically within 10-30 seconds.',
       timestamp: new Date().toISOString(),
-      details: 'TypeScript receptionist active - JavaScript implementation syncing'
+      retryAfter: 10,
+      diagnostics: {
+        filePresent: true,
+        importError: 'Module loading blocked by sync process',
+        deploymentMarker: '2025-01-30T21:45:00Z'
+      }
     };
     
-    return new Response(JSON.stringify(fallbackResponse), {
+    return new Response(JSON.stringify(syncResponse), {
+      status: 202, // Accepted - processing will complete shortly
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/json',
+        'Retry-After': '10'
+      }
+    });
+  } else {
+    // Actual import failure - provide 503 with longer retry window
+    const failureResponse = {
+      error: 'Service unavailable due to import failure',
+      code: 'CRITICAL_IMPORT_FAILURE',
+      message: 'JavaScript implementation could not be loaded after multiple attempts.',
+      timestamp: new Date().toISOString(),
+      retryAfter: 60,
+      diagnostics: {
+        filePresent: isFilePresent,
+        importError: lastError?.message || 'Unknown error',
+        attemptsCount: maxRetries + 1,
+        troubleshooting: 'Check edge function logs and file deployment status'
+      }
+    };
+    
+    return new Response(JSON.stringify(failureResponse), {
       status: 503,
       headers: {
         ...corsHeaders,
         'Content-Type': 'application/json',
-        'Retry-After': '30'
+        'Retry-After': '60'
       }
     });
   }
