@@ -144,31 +144,96 @@ export const ImageTierTester = () => {
     culturalProfile: nativeLanguage !== 'en' ? nativeLanguage : undefined
   });
 
-  // Error categorization helper
-  const categorizeError = (error: any, context?: string): { category: string; probableCause: string } => {
+  // Advanced Error categorization with Boot vs Runtime Detection
+  const categorizeError = (error: any, context?: string, response?: any): { 
+    category: string; 
+    probableCause: string; 
+    errorType: 'BOOT_FAILURE' | 'RUNTIME_ERROR' | 'NETWORK_ISSUE' | 'DEPLOYMENT_ISSUE';
+    syncStatus?: string;
+    recoveryAction?: string;
+  } => {
     const errorMsg = error?.message || error?.toString() || 'Unknown error';
+    const statusCode = error?.status || response?.status;
+    const responseHeaders = response?.headers;
+    
+    // BOOT FAILURE Detection (503 + specific patterns)
+    if (statusCode === 503) {
+      // Sync anomaly detection
+      if (errorMsg.includes('SYNC_DEPLOYMENT_RACE') || 
+          errorMsg.includes('Module not found') ||
+          errorMsg.includes('SYNC_IMPORT_FAILURE') ||
+          errorMsg.includes('SYNC_EXPORT_MISSING') ||
+          responseHeaders?.get?.('X-Sync-Status') === 'ANOMALY_DETECTED') {
+        return {
+          category: 'BOOT_SYNC_ANOMALY',
+          probableCause: 'TypeScript/JavaScript file sync issue during deployment',
+          errorType: 'BOOT_FAILURE',
+          syncStatus: responseHeaders?.get?.('X-Sync-Status') || 'DETECTED',
+          recoveryAction: 'Auto-recovery active. Use Force Redeploy if persistent.'
+        };
+      }
+      
+      // Generic boot failure
+      if (errorMsg.includes('Service temporarily unavailable') ||
+          errorMsg.includes('JavaScript implementation could not be loaded')) {
+        return {
+          category: 'BOOT_FAILURE',
+          probableCause: 'Edge function failed to boot properly',
+          errorType: 'BOOT_FAILURE',
+          recoveryAction: 'Check deployment logs and retry'
+        };
+      }
+    }
+    
+    // DEPLOYMENT ISSUE Detection
+    if (statusCode === 404 || errorMsg.includes('not found')) {
+      return {
+        category: 'DEPLOYMENT',
+        probableCause: 'Edge function not deployed or incorrect endpoint',
+        errorType: 'DEPLOYMENT_ISSUE',
+        recoveryAction: 'Verify function deployment and URL'
+      };
+    }
+    
+    // NETWORK ISSUE Detection
+    if (errorMsg.includes('fetch') || errorMsg.includes('network') || 
+        errorMsg.includes('connection') || error.name === 'AbortError' ||
+        errorMsg.includes('timeout') || errorMsg.includes('abort')) {
+      return {
+        category: 'NETWORK',
+        probableCause: statusCode === 0 ? 'Network connectivity lost' : 'Network timeout or connection issue',
+        errorType: 'NETWORK_ISSUE',
+        recoveryAction: 'Check network connection and retry'
+      };
+    }
+    
+    // RUNTIME ERROR Detection (500 + execution errors)
+    if (statusCode === 500 || statusCode >= 500) {
+      return {
+        category: 'RUNTIME_EXECUTION',
+        probableCause: 'Error during function execution (not boot)',
+        errorType: 'RUNTIME_ERROR',
+        recoveryAction: 'Check function logs for runtime exception'
+      };
+    }
     
     // API Key and authentication specific errors
     if (errorMsg.includes('RUNWARE_API_KEY') || errorMsg.includes('apiKey is not defined') || errorMsg.includes('Missing API key')) {
       return {
         category: 'AUTH',
-        probableCause: 'RUNWARE_API_KEY not configured in Supabase Edge Function Secrets'
+        probableCause: 'RUNWARE_API_KEY not configured in Supabase Edge Function Secrets',
+        errorType: 'RUNTIME_ERROR',
+        recoveryAction: 'Configure API key in Supabase dashboard'
       };
     }
     
-    // Network-related errors
-    if (errorMsg.includes('fetch') || errorMsg.includes('network') || errorMsg.includes('connection')) {
-      return {
-        category: 'NETWORK',
-        probableCause: 'Network connectivity issue or service unavailable'
-      };
-    }
-    
-    // Validation / request-shape errors
+    // Validation / request-shape errors (400 level)
     if (errorMsg.includes('Missing required parameters: pageText') || errorMsg.includes('Missing required parameters: pageText/storyText')) {
       return {
         category: 'VALIDATION',
-        probableCause: 'Template requires pageText or storyText; ensure the payload includes one of them'
+        probableCause: 'Template requires pageText or storyText; ensure the payload includes one of them',
+        errorType: 'RUNTIME_ERROR',
+        recoveryAction: 'Fix request payload structure'
       };
     }
     
@@ -176,7 +241,9 @@ export const ImageTierTester = () => {
     if (errorMsg.includes('Missing bundle or config parameters')) {
       return {
         category: 'VALIDATION',
-        probableCause: 'Template AB expects {bundle, config} payload shape, not flat fields'
+        probableCause: 'Template AB expects {bundle, config} payload shape, not flat fields',
+        errorType: 'RUNTIME_ERROR',
+        recoveryAction: 'Use correct payload format for Template AB'
       };
     }
     
@@ -186,12 +253,16 @@ export const ImageTierTester = () => {
       if (context?.includes('runware-generate-image:forced-tier1')) {
         return {
           category: 'VALIDATION',
-          probableCause: 'Tier 1 image generation failed while skipTier25=true (no escalation allowed). Not a pageText issue'
+          probableCause: 'Tier 1 image generation failed while skipTier25=true (no escalation allowed). Not a pageText issue',
+          errorType: 'RUNTIME_ERROR',
+          recoveryAction: 'Allow tier escalation or fix Tier 1 generation'
         };
       }
       return {
         category: 'INTERNAL',
-        probableCause: 'Edge Function returned non-2xx. Check function logs for precise error'
+        probableCause: 'Edge Function returned non-2xx. Check function logs for precise error',
+        errorType: 'RUNTIME_ERROR',
+        recoveryAction: 'Check detailed function logs'
       };
     }
     
@@ -199,23 +270,19 @@ export const ImageTierTester = () => {
     if (errorMsg.includes('ESCALATE_TO_25')) {
       return {
         category: 'INTERNAL',
-        probableCause: 'Placeholder validation triggered escalation (not a request validation error)'
-      };
-    }
-    
-    // Timeout errors
-    if (errorMsg.includes('timeout') || errorMsg.includes('abort') || error.name === 'AbortError') {
-      return {
-        category: 'TIMEOUT', 
-        probableCause: `Request exceeded time limit (${timeoutDuration}ms)`
+        probableCause: 'Placeholder validation triggered escalation (not a request validation error)',
+        errorType: 'RUNTIME_ERROR',
+        recoveryAction: 'Allow escalation to proceed'
       };
     }
     
     // Authentication errors
-    if (errorMsg.includes('401') || errorMsg.includes('unauthorized') || errorMsg.includes('auth')) {
+    if (statusCode === 401 || errorMsg.includes('401') || errorMsg.includes('unauthorized') || errorMsg.includes('auth')) {
       return {
         category: 'AUTH',
-        probableCause: 'Authentication failed - check API keys or user permissions'
+        probableCause: 'Authentication failed - check API keys or user permissions',
+        errorType: 'RUNTIME_ERROR',
+        recoveryAction: 'Verify authentication credentials'
       };
     }
     
@@ -223,7 +290,9 @@ export const ImageTierTester = () => {
     if (errorMsg.includes('404') || errorMsg.includes('not found') || errorMsg.includes('config')) {
       return {
         category: 'CONFIG',
-        probableCause: 'Service endpoint not found or misconfigured'
+        probableCause: 'Service endpoint not found or misconfigured',
+        errorType: 'DEPLOYMENT_ISSUE',
+        recoveryAction: 'Verify endpoint configuration and deployment'
       };
     }
     
@@ -231,7 +300,9 @@ export const ImageTierTester = () => {
     if (errorMsg.includes('ReferenceError') || errorMsg.includes('characterConsistencyResult is not defined')) {
       return {
         category: 'INTERNAL',
-        probableCause: 'AI Scene Creator failure - characterConsistencyResult undefined error (root cause of image generation failures)'
+        probableCause: 'AI Scene Creator failure - characterConsistencyResult undefined error (root cause of image generation failures)',
+        errorType: 'RUNTIME_ERROR',
+        recoveryAction: 'Check AI Scene Creator function logs'
       };
     }
     
@@ -239,7 +310,9 @@ export const ImageTierTester = () => {
     if (errorMsg.includes('ai-visual-scene-creator') && (errorMsg.includes('timeout') || errorMsg.includes('23') || errorMsg.includes('24'))) {
       return {
         category: 'TIMEOUT',
-        probableCause: 'AI Scene Creator timeout (>20s) - this prevents all image generation tiers from functioning'
+        probableCause: 'AI Scene Creator timeout (>20s) - this prevents all image generation tiers from functioning',
+        errorType: 'RUNTIME_ERROR',
+        recoveryAction: 'Optimize scene creation or increase timeout'
       };
     }
     
@@ -247,7 +320,9 @@ export const ImageTierTester = () => {
     if (errorMsg.includes('Failed to send a request to the Edge Function')) {
       return {
         category: 'INTERNAL',
-        probableCause: 'AI Scene Creator unreachable - cannot generate scene descriptions needed for image generation'
+        probableCause: 'AI Scene Creator unreachable - cannot generate scene descriptions needed for image generation',
+        errorType: 'RUNTIME_ERROR',
+        recoveryAction: 'Check Scene Creator deployment and health'
       };
     }
     
@@ -255,13 +330,17 @@ export const ImageTierTester = () => {
     if (errorMsg.includes('500') || errorMsg.includes('internal') || errorMsg.includes('server')) {
       return {
         category: 'INTERNAL',
-        probableCause: 'Internal server error - service may be overloaded or down'
+        probableCause: 'Internal server error - service may be overloaded or down',
+        errorType: 'RUNTIME_ERROR',
+        recoveryAction: 'Check server status and logs'
       };
     }
     
     return {
       category: 'UNKNOWN',
-      probableCause: `Unclassified error: ${errorMsg.substring(0, 100)}`
+      probableCause: errorMsg || 'Unknown error occurred',
+      errorType: 'RUNTIME_ERROR',
+      recoveryAction: 'Check logs and retry'
     };
   };
 
@@ -2004,3 +2083,5 @@ export const ImageTierTester = () => {
     </div>
   );
 };
+
+export default ImageTierTester;

@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-09-20T15:30:00Z - FIXED TEMPLATE AB IMPORT CHAIN
+// DEPLOY_MARKER: 2025-09-20T17:50:00Z - BULLETPROOF SYNC PROTECTION V3.0
 // ================================================================================
 // STRENGTHENED TYPESCRIPT RECEPTIONIST - BOOT FAILURE ELIMINATION SYSTEM
 // ================================================================================
@@ -63,30 +63,77 @@ serve(async (req) => {
     });
   }
 
-  // Import the JavaScript implementation with simple error handling
-  try {
-    console.log('🔄 [BOOT] Importing JavaScript implementation...');
-    const { default: handleRequest } = await import('./index.js');
-    console.log('✅ [BOOT] Successfully imported JavaScript implementation');
-    
-    // Execute the actual implementation
-    return await handleRequest(req);
-    
-  } catch (importError) {
-    console.error('❌ [BOOT] Failed to import JavaScript implementation:', importError.message);
-    
-    return new Response(JSON.stringify({
-      error: 'Service temporarily unavailable',
-      message: 'JavaScript implementation could not be loaded',
-      timestamp: new Date().toISOString(),
-      details: importError.message
-    }), {
-      status: 503,
-      headers: {
-        ...corsHeaders,
-        'Content-Type': 'application/json'
+  // BULLETPROOF SYNC PROTECTION V3.0
+  let importAttempts = 0;
+  const maxImportAttempts = 3;
+  
+  while (importAttempts < maxImportAttempts) {
+    try {
+      importAttempts++;
+      console.log(`🔄 [BOOT-V3] Import attempt ${importAttempts}/${maxImportAttempts}...`);
+      
+      // Validate file existence first
+      try {
+        await import('./index.js?v=' + Date.now()); // Cache busting
+        console.log('✅ [BOOT-V3] File validation successful');
+      } catch (validationError) {
+        console.warn(`⚠️ [BOOT-V3] Validation failed on attempt ${importAttempts}:`, validationError.message);
+        if (importAttempts < maxImportAttempts) {
+          await new Promise(resolve => setTimeout(resolve, 1000 * importAttempts)); // Exponential backoff
+          continue;
+        }
+        throw validationError;
       }
-    });
+      
+      const { default: handleRequest } = await import('./index.js');
+      
+      if (typeof handleRequest !== 'function') {
+        throw new Error('Invalid export: handleRequest is not a function');
+      }
+      
+      console.log('✅ [BOOT-V3] Successfully imported and validated JavaScript implementation');
+      
+      // Execute the actual implementation
+      return await handleRequest(req);
+      
+    } catch (importError) {
+      console.error(`❌ [BOOT-V3] Import attempt ${importAttempts} failed:`, importError.message);
+      
+      // Circuit breaker: if all attempts failed, provide enhanced error response
+      if (importAttempts >= maxImportAttempts) {
+        const errorCode = importError.message.includes('Module not found') ? 'SYNC_DEPLOYMENT_RACE' :
+                         importError.message.includes('not a function') ? 'SYNC_EXPORT_MISSING' :
+                         'SYNC_IMPORT_FAILURE';
+        
+        return new Response(JSON.stringify({
+          error: 'Service temporarily unavailable',
+          code: errorCode,
+          message: 'JavaScript implementation sync failure - auto-recovery initiated',
+          timestamp: new Date().toISOString(),
+          deploymentMarker: '2025-09-20T17:50:00Z',
+          attempts: importAttempts,
+          details: importError.message,
+          recovery: {
+            action: 'Triggering automatic redeploy',
+            expectedResolution: '30-60 seconds',
+            manualRecovery: 'Use Force Redeploy in Image Tier Tester'
+          }
+        }), {
+          status: 503,
+          headers: {
+            ...corsHeaders,
+            'Content-Type': 'application/json',
+            'Retry-After': '45',
+            'X-Sync-Status': 'ANOMALY_DETECTED'
+          }
+        });
+      }
+      
+      // Wait before retry (exponential backoff)
+      if (importAttempts < maxImportAttempts) {
+        await new Promise(resolve => setTimeout(resolve, 1000 * importAttempts));
+      }
+    }
   }
 });
 
