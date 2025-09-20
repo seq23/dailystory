@@ -630,7 +630,7 @@ export const ImageTierTester = () => {
           processingTime,
           requestId: response.data?.requestId,
           aiSchema: response.data?.aiSchema,
-          primaryScene: response.data?.aiSchema?.primaryScene,
+          primaryScene: response.data?.primaryScene,
           setting: response.data?.aiSchema?.setting,
           action: response.data?.aiSchema?.action,
           mood: response.data?.aiSchema?.mood,
