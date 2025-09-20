@@ -9,6 +9,7 @@ import { VisualDetailTracker } from './VisualDetailTracker.js';
 import { getCulturalBundle, getHairBySkintone, getSkinBySkintone } from './StaticDataCache.js';
 import { UnifiedPlaceholderResolver } from './UnifiedPlaceholderResolver.js';
 import { getStyleFramework } from './styleFrameworks.js';
+import { UnifiedCharacterDescriptor } from './UnifiedCharacterDescriptor.js';
 
 export class PhaseIntegrationOrchestrator {
   constructor() {
@@ -34,8 +35,10 @@ export class PhaseIntegrationOrchestrator {
       const characterName = userInfo?.name || userInfo?.childName || 'Child';
 
       const existingTraits = await this.characterConsistencyService.getCharacterFromDatabase(sessionId, `traits_${characterName}`) || {};
-      // Step 2: Generate secondary characters using CharacterConsistencyService
-      const secondaryCharacters = await this.characterConsistencyService.getSecondaryCharacterSeed(sessionId, characterName) || [];
+      
+      // Generate secondary characters - detect from story text first, then generate seeds
+      const secondaryCharacters = [];
+      // Note: Will be populated during generateTier1EnhancedPrompt when storyText is available
 
       // Phase 2: Load visual history for consistency  
       const visualHistory = await this.visualDetailTracker.getVisualHistory(sessionId, 'general', 10);
@@ -340,11 +343,31 @@ export class PhaseIntegrationOrchestrator {
       // Cultural Enhancements
       const culturalEnhancements = await this.getCulturalEnhancements(userInfo, sessionId);
       
-      // Step 2: Generate secondary character descriptions for template
-      const secondaryCharacterDescriptions = await this.characterConsistencyService.getSecondaryCharacterSeed(sessionId, storyText, 1) || [];
-      const formattedSecondaryCharacters = Array.isArray(secondaryCharacterDescriptions) ? 
-        secondaryCharacterDescriptions.map(char => typeof char === 'string' ? char : char.description || char.name || '').join(', ') : 
-        (secondaryCharacterDescriptions || '');
+      // STEP 1: Detect secondary characters from story text
+      const detectionContext = { sessionId, pageNumber: 1, userInfo };
+      const characterDetection = UnifiedCharacterDescriptor.detectAllCharacters(storyText || '', detectionContext);
+      const detectedSecondaryChars = characterDetection.secondaryCharacters || [];
+      
+      // STEP 2: Generate seeds for each detected secondary character  
+      const secondaryCharacters = [];
+      for (const detectedChar of detectedSecondaryChars) {
+        try {
+          const charSeed = await this.characterConsistencyService.getSecondaryCharacterSeed(
+            sessionId, 
+            detectedChar.name || detectedChar.displayName || 'secondary character', 
+            detectedChar.type || detectedChar.relationshipType || 'companion',
+            userInfo
+          );
+          if (charSeed) secondaryCharacters.push(charSeed);
+        } catch (error) {
+          console.warn(`Failed to generate seed for secondary character ${detectedChar.name}:`, error);
+        }
+      }
+      
+      // STEP 3: Format secondary characters for template inclusion
+      const formattedSecondaryCharacters = secondaryCharacters.length > 0 ? 
+        secondaryCharacters.map(char => char.characterDescription || char.name || 'secondary character').join(', ') : 
+        'none detected';
       
       // Enhanced character description with avatar type, hair and skin variations  
       const characterDescription = [
