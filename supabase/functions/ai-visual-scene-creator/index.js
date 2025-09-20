@@ -403,10 +403,8 @@ async function handleRequest(req) {
     const payload = await req.json();
     console.log(`🔍 [${requestId}] Received payload keys:`, Object.keys(payload));
     
-    // Detect if this is called by PhaseIntegrationOrchestrator vs frontend
-    const isOrchestratorCall = req.headers.get('x-supabase-function-name') || 
-                             req.headers.get('authorization')?.includes('service_role') ||
-                             payload._internal_orchestrator_call === true;
+    // Simplified orchestrator call detection - single reliable check
+    const isOrchestratorCall = payload._internal_orchestrator_call === true;
     
     // FLEXIBLE PAYLOAD HANDLING: Accept either pageText OR storyText
     let enhancedStoryData, storyText, avatarIdentity, userInfo, sessionId, pageNumber;
@@ -441,11 +439,11 @@ async function handleRequest(req) {
     
     // If called by orchestrator, return simplified response with just primaryScene
     if (isOrchestratorCall) {
-      return await handleOrchestratorCall(requestId, storyText, enhancedStoryData);
+      return await handleOrchestratorCall(requestId, storyText, enhancedStoryData, avatarIdentity, userInfo);
     }
     
-  // If called by frontend (including test button), generate primaryScene + aiSchema only
-  return await handleOrchestratorCall(requestId, storyText, { userInfo }, true);
+    // If called by frontend (including test button), generate primaryScene + aiSchema only
+    return await handleOrchestratorCall(requestId, storyText, enhancedStoryData, avatarIdentity, userInfo, true);
 
   } catch (error) {
     return handleError(error, 'handleRequest', { requestId });
@@ -453,9 +451,15 @@ async function handleRequest(req) {
 }
 
 // Handle calls from PhaseIntegrationOrchestrator OR frontend test button
-async function handleOrchestratorCall(requestId, storyText, enhancedStoryData, includeFullSchema = false) {
+async function handleOrchestratorCall(requestId, storyText, enhancedStoryData, avatarIdentity, userInfo, includeFullSchema = false) {
   const callType = includeFullSchema ? 'frontend/test' : 'orchestrator';
   console.log(`🔄 [${requestId}] Processing ${callType} call - generating primaryScene + aiSchema for ${callType}`);
+  
+  // Validate userInfo parameter
+  if (!userInfo) {
+    console.warn(`⚠️ [${requestId}] Missing userInfo parameter, using fallback`);
+    userInfo = enhancedStoryData?.userInfo || {};
+  }
   
   return await withPerformanceTracking('ai-visual-scene-creator-orchestrator', 'gpt-4o', async () => {
     let processedContent = enhancedStoryData;
@@ -480,21 +484,29 @@ async function handleOrchestratorCall(requestId, storyText, enhancedStoryData, i
           try {
             const parsed = JSON.parse(content);
             
-            // Synthesize aiSchema from top-level fields if not present
-            let aiSchema = parsed.aiSchema;
-            if (!aiSchema && (parsed.setting || parsed.lighting || parsed.mainCharacter || parsed.action || parsed.mood)) {
-              aiSchema = {
-                setting: parsed.setting || null,
-                lighting: parsed.lighting || null,
-                mainCharacter: parsed.mainCharacter || null,
-                attire: parsed.attire || null,
-                accessories: parsed.accessories || null,
-                atmosphere: parsed.atmosphere || null,
-                action: parsed.action || null,
-                mood: parsed.mood || null,
-                pose: parsed.pose || null
-              };
-              console.log(`🔧 [${requestId}] Synthesized aiSchema from top-level JSON fields`);
+            // Safe aiSchema synthesis with null checks
+            let aiSchema = null;
+            if (parsed && typeof parsed === 'object') {
+              try {
+                aiSchema = parsed.aiSchema;
+                if (!aiSchema && (parsed.setting || parsed.lighting || parsed.mainCharacter || parsed.action || parsed.mood)) {
+                  aiSchema = {
+                    setting: parsed.setting || null,
+                    lighting: parsed.lighting || null,
+                    mainCharacter: parsed.mainCharacter || null,
+                    attire: parsed.attire || null,
+                    accessories: parsed.accessories || null,
+                    atmosphere: parsed.atmosphere || null,
+                    action: parsed.action || null,
+                    mood: parsed.mood || null,
+                    pose: parsed.pose || null
+                  };
+                  console.log(`🔧 [${requestId}] Synthesized aiSchema from top-level JSON fields`);
+                }
+              } catch (synthesisError) {
+                console.warn(`⚠️ [${requestId}] aiSchema synthesis failed:`, synthesisError.message);
+                aiSchema = null;
+              }
             }
             
             processedContent = {
@@ -514,21 +526,31 @@ async function handleOrchestratorCall(requestId, storyText, enhancedStoryData, i
           }
         }
       } catch (openAIError) {
-        console.log(`⚠️ [${requestId}] OpenAI failed, using storyText as primaryScene:`, openAIError.message);
-        processedContent = {
-          ...processedContent,
-          primaryScene: storyText,
-          extractionMethod: 'fallback_story_text'
-        };
+        console.error(`🚨 [${requestId}] OpenAI failed - escalating to Tier 2:`, openAIError.message);
+        throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_25A');
       }
     }
     
     console.log(`✅ [${requestId}] Primary scene extracted via ${processedContent?.extractionMethod || 'unknown'}:`);
     console.log(`   Scene: ${processedContent?.primaryScene?.substring(0, 200)}...`);
     
+    // Binary primaryScene validation: ≥30 characters = pass, <30 = fail
+    const primaryScene = processedContent?.primaryScene;
+    if (!primaryScene || typeof primaryScene !== 'string' || primaryScene.length < 30) {
+      console.error(`🚨 [${requestId}] Primary scene validation failed - escalating to Tier 2:`, {
+        hasScene: !!primaryScene,
+        sceneType: typeof primaryScene,
+        sceneLength: primaryScene?.length || 0,
+        minimumRequired: 30
+      });
+      throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_25A');
+    }
+    
+    console.log(`✅ [${requestId}] Primary scene validation passed: ${primaryScene.length} characters`);
+    
     const response = {
       success: true,
-      primaryScene: processedContent.primaryScene,
+      primaryScene: primaryScene,
       extractionMethod: processedContent.extractionMethod || 'existing',
       requestId
     };
@@ -538,7 +560,7 @@ async function handleOrchestratorCall(requestId, storyText, enhancedStoryData, i
       response.aiSchema = processedContent.aiSchema;
     }
     
-    return response;
+    return createCorsResponse(response);
   });
 }
 
