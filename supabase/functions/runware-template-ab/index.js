@@ -193,6 +193,32 @@ async function getServiceHealthMonitor() {
   }
 }
 
+// ============= PAGE TEXT SUMMARIZATION FOR LEVELS 2-4 =============
+function summarizePageText(text, difficulty) {
+  if (!text || typeof text !== 'string') return text;
+  
+  // Only summarize for levels 2-4
+  const numDifficulty = parseInt(difficulty) || 2;
+  if (numDifficulty < 2 || numDifficulty > 4) return text;
+  
+  // Split by sentence endings (., !, ?)
+  const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+  
+  // Take up to 2 sentences max
+  let summarized = sentences.slice(0, 2).join('. ').trim();
+  if (summarized && !summarized.match(/[.!?]$/)) {
+    summarized += '.';
+  }
+  
+  // Truncate to 250 characters if needed
+  if (summarized.length > 250) {
+    summarized = summarized.substring(0, 247) + '...';
+  }
+  
+  console.log(`📝 Summarized pageText (Level ${numDifficulty}): "${summarized}"`);
+  return summarized;
+}
+
 // ============= CORS HEADERS =============
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -821,10 +847,14 @@ async function handleRequest(req) {
     const styleFramework = getNuclearStyleFramework(userInfo?.difficulty || 'medium');
     const culturalProfile = inlineDetectCultural(userInfo, avatarIdentity);
     
+    // Apply pageText summarization for levels 2-4
+    const processedStoryText = summarizePageText(storyText, userInfo?.difficulty);
+    
     // Ensure we have valid prompts with fallbacks
     const finalPositivePrompt = [
       extractedScene || 'child playing happily',
       characterConsistency || 'a young child',
+      processedStoryText || storyText,
       styleFramework.frameworkPrompt || 'contemporary children\'s book illustration style'
     ].filter(Boolean).join('. ');
     
@@ -876,8 +906,12 @@ async function handleRequest(req) {
       
       // PHASE 4.1 & 4.2: REMOVE ALL FALLBACKS - Apply TIER_25B_TEMPLATE with NO fallbacks
       console.log('📋 Using official TIER_25B_TEMPLATE for Tier 2.5B');
+      
+      // Apply pageText summarization for levels 2-4
+      const processedStoryText = summarizePageText(storyText, userInfo?.difficulty);
+      
       let finalPositivePrompt = TIER_25B_TEMPLATE
-        .replace('{pageText}', storyText)  // REMOVED: || 'A child goes on an adventure' fallback
+        .replace('{pageText}', processedStoryText)  // REMOVED: || 'A child goes on an adventure' fallback
         .replace('{character}', character)
         .replace('{age}', age)
         .replace('{ethnicity}', ethnicity)
@@ -890,9 +924,9 @@ async function handleRequest(req) {
 
       console.log(`✅ TIER_25B_TEMPLATE Applied: "${finalPositivePrompt.substring(0, 100)}..."`);
       
-      // Clean up any remaining placeholders or double spaces
+      // Clean up any remaining placeholders or double spaces - PRESERVE LINE BREAKS
       finalPositivePrompt = finalPositivePrompt
-        .replace(/\s+/g, ' ')
+        .replace(/[ \t]+/g, ' ')  // Only remove spaces and tabs, preserve newlines
         .replace(/\s*\.\s*\./g, '.')
         .trim();
       
