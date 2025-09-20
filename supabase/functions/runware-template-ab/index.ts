@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-01-30T21:45:00Z - OPTION A RECEPTIONIST PATTERN IMPLEMENTATION
+// DEPLOY_MARKER: 2025-01-20T22:15:00Z - ENHANCED SYNC ANOMALY PROTECTION DEPLOYMENT
 // ================================================================================
 // STRENGTHENED TYPESCRIPT RECEPTIONIST - BOOT FAILURE ELIMINATION SYSTEM
 // ================================================================================
@@ -63,37 +63,102 @@ serve(async (req) => {
     });
   }
 
-  try {
-    // Import the actual JavaScript implementation
-    // This dynamic import provides sync anomaly protection
-    const { default: handleRequest } = await import(new URL('./index.js', import.meta.url).href);
-    
-    console.log('✅ [TypeScript Receptionist] Successfully imported JavaScript implementation');
-    
-    // Execute the actual implementation
-    return await handleRequest(req);
-    
-  } catch (importError) {
-    // Fallback response during sync anomalies or import failures
-    console.error('⚠️ [TypeScript Receptionist] Import fallback activated:', importError.message);
-    
-    // Provide graceful degradation with CORS support
-    const fallbackResponse = {
-      error: 'Service temporarily unavailable during deployment sync',
-      code: 'IMPORT_SYNC_ANOMALY', 
-      message: 'Please retry in a few moments. This is typically resolved automatically.',
-      timestamp: new Date().toISOString(),
-      details: 'TypeScript receptionist active - JavaScript implementation syncing'
-    };
-    
-    return new Response(JSON.stringify(fallbackResponse), {
-      status: 503,
-      headers: {
-        ...corsHeaders,
-        'Content-Type': 'application/json',
-        'Retry-After': '30'
+  // Enhanced import retry mechanism with sync anomaly detection
+  const deploymentMarker = '2025-01-20T22:15:00Z';
+  const maxRetries = 3;
+  const retryDelays = [100, 500, 1000]; // Progressive delays in milliseconds
+  
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`🔄 [Import Attempt ${attempt}/${maxRetries}] Importing JavaScript implementation...`);
+      
+      // Dynamic import with URL construction
+      const importUrl = new URL('./index.js', import.meta.url).href;
+      const { default: handleRequest } = await import(importUrl);
+      
+      console.log(`✅ [Import Success] JavaScript implementation loaded on attempt ${attempt}`);
+      console.log(`📊 [Deployment Tracking] Marker: ${deploymentMarker}, Attempt: ${attempt}`);
+      
+      // Execute the actual implementation
+      return await handleRequest(req);
+      
+    } catch (importError) {
+      const isModuleNotFound = importError.message.includes('Module not found');
+      const isLastAttempt = attempt === maxRetries;
+      
+      console.log(`⚠️ [Import Attempt ${attempt}] Failed: ${importError.message}`);
+      
+      // Check if file exists using Deno.stat for sync anomaly detection
+      let fileExists = false;
+      try {
+        await Deno.stat('./index.js');
+        fileExists = true;
+        console.log('📁 [File Verification] index.js exists on filesystem');
+      } catch (statError) {
+        console.log('❌ [File Verification] index.js not found on filesystem');
       }
-    });
+      
+      // Determine error type and response strategy
+      const isSyncAnomaly = isModuleNotFound && fileExists;
+      
+      if (isSyncAnomaly && !isLastAttempt) {
+        // Sync anomaly detected - retry with progressive delay
+        const delay = retryDelays[attempt - 1];
+        console.log(`🔄 [Sync Anomaly] Retrying after ${delay}ms delay (file exists but import failed)`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        continue;
+      }
+      
+      if (isLastAttempt) {
+        // All retries exhausted - provide appropriate response
+        console.error(`🚨 [Import Failure] All ${maxRetries} attempts failed. Final error: ${importError.message}`);
+        console.error(`📊 [Error Analysis] Sync Anomaly: ${isSyncAnomaly}, File Exists: ${fileExists}`);
+        
+        if (isSyncAnomaly) {
+          // Sync anomaly - return 202 Accepted for retry
+          const syncAnomalyResponse = {
+            error: 'Deployment sync in progress',
+            code: 'SYNC_ANOMALY_DETECTED',
+            message: 'JavaScript implementation syncing. Automatic retry recommended.',
+            timestamp: new Date().toISOString(),
+            deploymentMarker,
+            details: `File exists but import failed after ${maxRetries} attempts`,
+            fileExists: true,
+            retryRecommended: true
+          };
+          
+          return new Response(JSON.stringify(syncAnomalyResponse), {
+            status: 202, // Accepted - processing continues elsewhere
+            headers: {
+              ...corsHeaders,
+              'Content-Type': 'application/json',
+              'Retry-After': '10' // Shorter retry for sync anomalies
+            }
+          });
+        } else {
+          // Actual import failure - return 503 Service Unavailable
+          const importFailureResponse = {
+            error: 'Service temporarily unavailable',
+            code: 'IMPORT_FAILURE',
+            message: 'JavaScript implementation could not be loaded. Please retry later.',
+            timestamp: new Date().toISOString(),
+            deploymentMarker,
+            details: `Import failed after ${maxRetries} attempts: ${importError.message}`,
+            fileExists,
+            lastError: importError.message
+          };
+          
+          return new Response(JSON.stringify(importFailureResponse), {
+            status: 503, // Service Unavailable
+            headers: {
+              ...corsHeaders,
+              'Content-Type': 'application/json',
+              'Retry-After': '60' // Longer retry for actual failures
+            }
+          });
+        }
+      }
+    }
   }
 });
 
