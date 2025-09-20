@@ -801,7 +801,6 @@ async function handleRequest(req) {
             }
           });
           result = resp.data || { success: false, error: resp.error?.message || 'Tier 2.5A escalation failed' };
-          if (result.data) result = result.data;
         }
       }
     } else {
