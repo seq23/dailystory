@@ -514,10 +514,34 @@ export class PhaseIntegrationOrchestrator {
       // Step 2: Process story for traits
       const storyProcessing = await this.processStoryForTraits(userInfo, storyText, sessionId);
       
-      // Step 3: Enhanced prompt generation (will be used by image generation)
+      // Step 3: Get primary scene and aiSchema from ai-visual-scene-creator
+      console.log(`🔧 ORCHESTRATOR: Calling ai-visual-scene-creator for basePrompt components`);
+      
+      const sceneResponse = await this.supabase.functions.invoke('ai-visual-scene-creator', {
+        body: { 
+          storyText, 
+          includeFullSchema: true,
+          requestId: `orchestrator-${sessionId}`,
+          source: 'orchestrator'
+        }
+      });
+
+      if (!sceneResponse.data?.success || !sceneResponse.data?.primaryScene) {
+        console.error(`🚨 ORCHESTRATOR: No primary scene from ai-visual-scene-creator, escalating to Tier 2.5A`);
+        throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_25A');
+      }
+
+      const { primaryScene, aiSchema } = sceneResponse.data;
+      
+      // Combine primaryScene + aiSchema into basePrompt
+      const basePrompt = primaryScene + (aiSchema ? `\n\nSchema: ${JSON.stringify(aiSchema)}` : '');
+      
+      console.log(`✅ ORCHESTRATOR: Created basePrompt from primaryScene (${primaryScene.length} chars) + aiSchema (${aiSchema ? 'present' : 'missing'})`);
+      
+      // Step 4: Enhanced prompt generation (will be used by image generation)
       const promptEnhancement = await this.getEnhancedPrompt(
         userInfo, 
-        storyText, 
+        basePrompt, 
         storyText, 
         sessionId
       );

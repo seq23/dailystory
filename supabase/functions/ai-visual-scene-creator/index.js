@@ -455,7 +455,7 @@ async function handleRequest(req) {
 // Handle calls from PhaseIntegrationOrchestrator OR frontend test button
 async function handleOrchestratorCall(requestId, storyText, enhancedStoryData, includeFullSchema = false) {
   const callType = includeFullSchema ? 'frontend/test' : 'orchestrator';
-  console.log(`🔄 [${requestId}] Processing ${callType} call - generating primaryScene${includeFullSchema ? ' + aiSchema' : ' only'}`);
+  console.log(`🔄 [${requestId}] Processing ${callType} call - generating primaryScene + aiSchema for ${callType}`);
   
   return await withPerformanceTracking('ai-visual-scene-creator-orchestrator', 'gpt-4o', async () => {
     let processedContent = enhancedStoryData;
@@ -465,9 +465,7 @@ async function handleOrchestratorCall(requestId, storyText, enhancedStoryData, i
       console.log(`🤖 [${requestId}] Generating primaryScene from storyText using OpenAI`);
       
       try {
-        const systemPrompt = includeFullSchema 
-          ? 'Generate complete visual scene data from story text. Return JSON with primaryScene (detailed visual description) and full aiSchema object containing setting, lighting, mainCharacter, attire, accessories, atmosphere, action, mood, pose fields.'
-          : 'Extract visual scene description from story text. Return JSON with primaryScene field containing detailed visual description for image generation.';
+        const systemPrompt = 'Generate complete visual scene data from story text. Return JSON with primaryScene (detailed visual description) and full aiSchema object containing setting, lighting, mainCharacter, attire, accessories, atmosphere, action, mood, pose fields.';
           
         const openAIResponse = await callOpenAIWithFallback([{
           role: 'system',
@@ -484,7 +482,7 @@ async function handleOrchestratorCall(requestId, storyText, enhancedStoryData, i
             processedContent = {
               ...processedContent,
               primaryScene: parsed.primaryScene || storyText,
-              ...(includeFullSchema && parsed.aiSchema ? { aiSchema: parsed.aiSchema } : {}),
+              aiSchema: parsed.aiSchema || null,
               extractionMethod: 'openai_generated'
             };
             console.log(`✅ [${requestId}] Generated ${includeFullSchema ? 'primaryScene + aiSchema' : 'primaryScene'} via OpenAI`);
@@ -517,8 +515,8 @@ async function handleOrchestratorCall(requestId, storyText, enhancedStoryData, i
       requestId
     };
     
-    // Include full aiSchema for frontend/test calls  
-    if (includeFullSchema && processedContent.aiSchema) {
+    // Always include aiSchema if available (for both orchestrator and frontend calls)
+    if (processedContent.aiSchema) {
       response.aiSchema = processedContent.aiSchema;
     }
     
