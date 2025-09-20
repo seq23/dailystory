@@ -7,6 +7,7 @@
 
 import { safeErrorMessage } from './errorPatterns.js';
 import { CULTURAL_ARRAYS, PLACEHOLDER_POOLS } from './tier25Vocabulary.js';
+import { UnifiedCharacterDescriptor } from './UnifiedCharacterDescriptor.js';
 
 export class CharacterConsistencyService {
   constructor() {
@@ -310,8 +311,9 @@ export class CharacterConsistencyService {
 
   /**
    * Get or create secondary character seed for consistency across pages
+   * Enhanced with UnifiedCharacterDescriptor detection capabilities
    */
-  async getSecondaryCharacterSeed(sessionId, characterName, characterType = 'secondary_character') {
+  async getSecondaryCharacterSeed(sessionId, characterName, characterType = 'secondary_character', userInfo = null) {
     const characterKey = `secondary_${characterName.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
     
     try {
@@ -326,8 +328,8 @@ export class CharacterConsistencyService {
       const characterSpecificSeed = `secondary_${characterName}_${sessionId}_${characterType}`;
       const newSeed = this.generateStableSeed(characterSpecificSeed, characterName);
       
-      // Generate description for consistency
-      const characterDescription = this.generateSecondaryCharacterDescription(characterName, characterType, newSeed);
+      // Generate enhanced description using UnifiedCharacterDescriptor
+      const characterDescription = this.generateSecondaryCharacterDescription(characterName, characterType, newSeed, userInfo, sessionId);
       
       // Store in database for consistency
       const secondaryData = {
@@ -336,12 +338,13 @@ export class CharacterConsistencyService {
         name: characterName,
         characterType: 'secondary',
         relationshipType: characterType,
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
+        enhanced: true // Flag for enhanced generation
       };
       
       await this.saveCharacterToDatabase(sessionId, characterKey, secondaryData);
       
-      console.log(`✨ New secondary character seed generated and stored: ${characterName} (${newSeed})`);
+      console.log(`✨ Enhanced secondary character seed generated and stored: ${characterName} (${newSeed}) with type: ${characterType}`);
       return secondaryData;
       
     } catch (error) {
@@ -350,7 +353,7 @@ export class CharacterConsistencyService {
       const fallbackSeed = this.generateStableSeed(sessionId + characterName + characterType, characterName);
       return {
         seed: fallbackSeed,
-        characterDescription: this.generateSecondaryCharacterDescription(characterName, characterType, fallbackSeed),
+        characterDescription: this.generateSecondaryCharacterDescription(characterName, characterType, fallbackSeed, userInfo, sessionId),
         name: characterName,
         characterType: 'secondary'
       };
@@ -358,25 +361,79 @@ export class CharacterConsistencyService {
   }
 
   /**
-   * Generate description for secondary character using seeded randomization
+   * Generate description for secondary character using UnifiedCharacterDescriptor
+   * Enhanced with sophisticated detection and cultural consistency
    */
-  generateSecondaryCharacterDescription(characterName, type, seed) {
-    const seededRandom = this.createSeededRandom(seed);
-    
-    // Define basic character templates with minimal descriptions to let Runware decide appearance
-    const characterTemplates = {
-      person: ['friendly person', 'kind individual', 'helpful neighbor', 'cheerful friend'],
-      adult: ['caring adult', 'gentle grown-up', 'wise elder', 'supportive figure'],
-      child: ['playful child', 'curious kid', 'friendly peer', 'energetic youth'],
-      elderly: ['wise grandparent', 'kind elder', 'experienced senior', 'gentle grandmother'],
-      parent: ['loving parent', 'caring mother', 'supportive father', 'protective guardian'],
-      animal: ['friendly animal', 'curious creature', 'loyal companion', 'playful pet']
-    };
-    
-    const templates = characterTemplates[type] || characterTemplates.person;
-    const selectedTemplate = templates[Math.floor(seededRandom() * templates.length)];
-    
-    return `${characterName}, ${selectedTemplate}`;
+  generateSecondaryCharacterDescription(characterName, type, seed, userInfo = null, sessionId = null) {
+    try {
+      // Use UnifiedCharacterDescriptor for enhanced secondary character generation
+      // Already imported at top of file
+      
+      // Create mock detection element for UnifiedCharacterDescriptor
+      const detectedElement = {
+        name: characterName,
+        displayName: characterName,
+        type: type,
+        category: 'secondary_character',
+        needsConsistency: true
+      };
+      
+      // Use UnifiedCharacterDescriptor's sophisticated generation if userInfo available
+      if (userInfo && sessionId) {
+        const enhancedDescription = UnifiedCharacterDescriptor.generateSecondaryCharacterFromDetection(
+          detectedElement, 
+          userInfo, 
+          sessionId
+        );
+        
+        return enhancedDescription.description || `${characterName}, friendly person`;
+      }
+      
+      // Fallback to enhanced template system with seeded randomization
+      const seededRandom = this.createSeededRandom(seed);
+      
+      // Enhanced character templates with cultural awareness
+      const characterTemplates = {
+        // Family relationships
+        family_mother: ['loving mother', 'caring mom', 'supportive mother', 'gentle mama'],
+        family_father: ['caring father', 'supportive dad', 'protective father', 'kind papa'],
+        family_sister: ['cheerful sister', 'playful sis', 'friendly sister', 'energetic sister'],
+        family_brother: ['fun brother', 'supportive bro', 'playful brother', 'helpful brother'],
+        family_grandmother: ['wise grandmother', 'loving grandma', 'gentle nana', 'caring grandmother'],
+        family_grandfather: ['kind grandfather', 'wise grandpa', 'gentle grandfather', 'caring gramps'],
+        family_aunt: ['friendly aunt', 'caring auntie', 'supportive aunt', 'fun aunt'],
+        family_uncle: ['helpful uncle', 'fun uncle', 'supportive uncle', 'caring uncle'],
+        
+        // Community relationships  
+        community_friend: ['cheerful friend', 'loyal buddy', 'fun pal', 'supportive companion'],
+        community_teacher: ['helpful teacher', 'kind instructor', 'supportive tutor', 'caring teacher'],
+        community_neighbor: ['friendly neighbor', 'kind neighbour', 'helpful neighbor', 'caring neighbor'],
+        community_classmate: ['friendly classmate', 'supportive peer', 'fun classmate', 'helpful friend'],
+        
+        // Authority figures
+        authority_doctor: ['caring doctor', 'gentle doctor', 'helpful doctor', 'kind physician'],
+        authority_nurse: ['gentle nurse', 'caring nurse', 'helpful nurse', 'supportive nurse'],
+        authority_coach: ['encouraging coach', 'supportive trainer', 'motivating coach', 'helpful coach'],
+        
+        // Generic types
+        person: ['friendly person', 'kind individual', 'helpful neighbor', 'cheerful friend'],
+        adult: ['caring adult', 'gentle grown-up', 'wise elder', 'supportive figure'],
+        child: ['playful child', 'curious kid', 'friendly peer', 'energetic youth'],
+        elderly: ['wise grandparent', 'kind elder', 'experienced senior', 'gentle elder'],
+        parent: ['loving parent', 'caring guardian', 'supportive parent', 'protective caregiver'],
+        animal: ['friendly animal', 'curious creature', 'loyal companion', 'playful pet']
+      };
+      
+      const templates = characterTemplates[type] || characterTemplates.person;
+      const selectedTemplate = templates[Math.floor(seededRandom() * templates.length)];
+      
+      return `${characterName}, ${selectedTemplate}`;
+      
+    } catch (error) {
+      console.warn('⚠️ Enhanced character description failed, using fallback:', error.message);
+      // Ultimate fallback
+      return `${characterName}, friendly person`;
+    }
   }
 
   /**
