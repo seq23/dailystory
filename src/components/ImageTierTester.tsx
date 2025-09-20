@@ -772,9 +772,12 @@ export const ImageTierTester = () => {
         if (response.error?.message?.includes('503') || response.error?.message?.includes('Service Unavailable')) {
           errorCategory = 'NETWORK';
           probableCause = 'Edge function deployment sync issue';
-        } else if (!hasPrimaryScene) {
+        } else if (response.error?.message?.includes('NO_PRIMARY_SCENE_ESCALATE_TO_25A')) {
           errorCategory = 'AI_SCENE_CREATION';
           probableCause = 'ai-visual-scene-creator failed to generate primaryScene';
+        } else if (!hasPrimaryScene && !response.data?.templateStructure) {
+          errorCategory = 'AI_SCENE_CREATION';
+          probableCause = 'Missing primaryScene in response (may be escalated tier response)';
         } else if (!hasEnhancedPrompt) {
           errorCategory = 'PROMPT_ENHANCEMENT';
           probableCause = 'PhaseIntegrationOrchestrator failed to enhance prompt';

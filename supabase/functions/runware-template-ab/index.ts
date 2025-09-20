@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-01-21T10:30:00Z - SIMPLIFIED RECEPTIONIST PATTERN IMPLEMENTATION
+// DEPLOY_MARKER: 2025-09-20T15:30:00Z - FIXED TEMPLATE AB IMPORT CHAIN
 // ================================================================================
 // STRENGTHENED TYPESCRIPT RECEPTIONIST - BOOT FAILURE ELIMINATION SYSTEM
 // ================================================================================

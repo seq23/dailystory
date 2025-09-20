@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-09-15T00:12:00Z - FORCE REDEPLOY PRIORITY
+// DEPLOY_MARKER: 2025-09-20T15:30:00Z - FIX TIER1 PRIMARYSCENE MERGING
 // ============================================================================
 // CRASH-PROOF RUNWARE IMAGE ORCHESTRATOR v2.0
 // ============================================================================
@@ -743,7 +743,15 @@ async function handleRequest(req) {
         if (tier1Response && tier1Response.enhancementSuccessful && tier1Response.enhancedPrompt) {
           // Generate actual image using the enhanced prompt
           console.log(`🎯 [${requestId}] Generating Tier 1 image with enhanced prompt`);
-          result = await generateWithRunware(tier1Response.enhancedPrompt, storyText, payload.userInfo, payload.sessionId, pageNumber, requestId);
+          const imageResult = await generateWithRunware(tier1Response.enhancedPrompt, storyText, payload.userInfo, payload.sessionId, pageNumber, requestId);
+          
+          // Merge image result with primaryScene and aiSchema for complete TIER_1 response
+          result = {
+            ...imageResult,
+            primaryScene,
+            aiSchema,
+            templateStructure: 'COMPLETE_TIER_1'
+          };
         } else {
           throw new Error('Tier 1 enhanced prompt generation failed');
         }
