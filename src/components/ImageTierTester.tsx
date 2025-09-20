@@ -1927,7 +1927,11 @@ export const ImageTierTester = () => {
                     {result.details.error && (
                       <div className="text-sm">
                         <span className="font-medium text-red-600">Error:</span>
-                        <div className="text-red-600 text-xs mt-1">{result.details.error}</div>
+                        <div className="text-red-600 text-xs mt-1">
+                          {typeof result.details.error === 'string'
+                            ? result.details.error
+                            : ((result.details.error as any)?.message || JSON.stringify(result.details.error))}
+                        </div>
                       </div>
                     )}
                     

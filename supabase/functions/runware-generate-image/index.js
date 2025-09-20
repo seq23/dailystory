@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-09-20T15:30:00Z - FIX TIER1 PRIMARYSCENE MERGING
+// DEPLOY_MARKER: 2025-09-20T15:45:00Z - FIX TIER1 PARAMS AND ESCALATION RESPONSE NORMALIZATION
 // ============================================================================
 // CRASH-PROOF RUNWARE IMAGE ORCHESTRATOR v2.0
 // ============================================================================
@@ -741,9 +741,26 @@ async function handleRequest(req) {
         );
         
         if (tier1Response && tier1Response.enhancementSuccessful && tier1Response.enhancedPrompt) {
-          // Generate actual image using the enhanced prompt
+          // Generate actual image using the enhanced prompt with correct parameters
           console.log(`🎯 [${requestId}] Generating Tier 1 image with enhanced prompt`);
-          const imageResult = await generateWithRunware(tier1Response.enhancedPrompt, storyText, payload.userInfo, payload.sessionId, pageNumber, requestId);
+          const apiKey = Deno.env.get('RUNWARE_API_KEY')?.trim();
+          const sessionId = payload.sessionId || 'session_' + requestId;
+          const avatarIdentity = payload.userInfo?.avatar;
+          const enhancedData = {
+            enhancedPrompt: tier1Response.enhancedPrompt,
+            templateStructure: 'COMPLETE_TIER_1'
+          };
+          console.log(`🔧 [${requestId}] Enhanced data recognized:`, { hasEnhancedPrompt: !!enhancedData.enhancedPrompt });
+          const imageResult = await generateWithRunware(
+            apiKey,
+            primaryScene,
+            sessionId,
+            requestId,
+            payload.userInfo,
+            avatarIdentity,
+            pageNumber || 1,
+            enhancedData
+          );
           
           // Merge image result with primaryScene and aiSchema for complete TIER_1 response
           result = {
@@ -759,7 +776,7 @@ async function handleRequest(req) {
         if (error.message.includes('NO_PRIMARY_SCENE_ESCALATE_TO_25A')) {
           console.log('🔄 Tier 1 primary scene failed - escalating to Tier 2.5A');
           // Call runware-template-ab for real Tier 2.5A escalation
-          result = await supabase.functions.invoke('runware-template-ab', {
+          const resp = await supabase.functions.invoke('runware-template-ab', {
             body: {
               storyText,
               pageText: storyText,
@@ -769,11 +786,11 @@ async function handleRequest(req) {
               templateComplexity: 'A'
             }
           });
-          if (result.data) result = result.data;
+          result = resp.data || { success: false, error: resp.error?.message || 'Tier 2.5A escalation failed' };
         } else {
           console.log('🔄 Tier 1 error, escalating to Tier 2.5A:', error.message);
           // Call runware-template-ab for real Tier 2.5A escalation
-          result = await supabase.functions.invoke('runware-template-ab', {
+          const resp = await supabase.functions.invoke('runware-template-ab', {
             body: {
               storyText,
               pageText: storyText,
@@ -783,6 +800,7 @@ async function handleRequest(req) {
               templateComplexity: 'A'
             }
           });
+          result = resp.data || { success: false, error: resp.error?.message || 'Tier 2.5A escalation failed' };
           if (result.data) result = result.data;
         }
       }
