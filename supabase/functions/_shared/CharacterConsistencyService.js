@@ -309,51 +309,101 @@ export class CharacterConsistencyService {
   }
 
   /**
-   * Get or create secondary character seed for consistency across pages
+   * ENHANCED: Get or create secondary character seeds with detection and consistency
+   * Now includes detection from pageText and returns array of character objects with seeds
    */
-  async getSecondaryCharacterSeed(sessionId, characterName, characterType = 'secondary_character') {
-    const characterKey = `secondary_${characterName.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
+  async getSecondaryCharacterSeed(sessionId, pageText, pageNumber, primaryScene = '') {
+    console.log(`🎭 Enhanced getSecondaryCharacterSeed: Detecting and seeding for session ${sessionId}, page ${pageNumber}`);
+    
+    if (!pageText) {
+      console.log('⚠️ No pageText provided, returning empty array');
+      return [];
+    }
     
     try {
-      // Check database first
-      const existingSeed = await this.getCharacterFromDatabase(sessionId, characterKey);
-      if (existingSeed && existingSeed.seed) {
-        console.log(`🔄 Secondary character seed retrieved from database: ${characterName} (${existingSeed.seed})`);
-        return existingSeed;
+      // Step 1: Detect secondary characters using enhanced patterns
+      const originalText = `${primaryScene || ''} ${pageText}`;
+      const combinedText = originalText.toLowerCase();
+      
+      const detectedCharacters = CharacterConsistencyService.detectSecondaryCharacters(originalText, combinedText);
+      console.log(`🔍 Detected ${detectedCharacters.length} secondary characters:`, 
+        detectedCharacters.map(c => `${c.displayName} (${c.type})`));
+      
+      if (detectedCharacters.length === 0) {
+        return [];
       }
       
-      // Generate new seed if not found
-      const characterSpecificSeed = `secondary_${characterName}_${sessionId}_${characterType}`;
-      const newSeed = this.generateStableSeed(characterSpecificSeed, characterName);
+      // Step 2: Generate seeds for each detected character
+      const seededCharacters = [];
       
-      // Generate description for consistency
-      const characterDescription = this.generateSecondaryCharacterDescription(characterName, characterType, newSeed);
+      for (const character of detectedCharacters) {
+        const characterKey = `secondary_${character.name.replace(/[^a-z0-9]/g, '_')}`;
+        
+        try {
+          // Check database first
+          let existingSeed = await this.getCharacterFromDatabase(sessionId, characterKey);
+          
+          if (existingSeed && existingSeed.seed) {
+            console.log(`🔄 Existing seed retrieved: ${character.displayName} (${existingSeed.seed})`);
+            seededCharacters.push({
+              ...character,
+              seed: existingSeed.seed,
+              characterDescription: existingSeed.characterDescription || character.displayName,
+              isExisting: true
+            });
+          } else {
+            // Generate new seed
+            const characterSpecificSeed = `secondary_${character.name}_${sessionId}_${character.type}`;
+            const newSeed = this.generateStableSeed(characterSpecificSeed, character.name);
+            
+            // Generate description for consistency  
+            const characterDescription = this.generateSecondaryCharacterDescription(
+              character.displayName, 
+              character.relationshipType, 
+              newSeed
+            );
+            
+            // Store in database for consistency
+            const secondaryData = {
+              seed: newSeed,
+              characterDescription,
+              name: character.displayName,
+              characterType: 'secondary',
+              relationshipType: character.type,
+              disambiguation: character.disambiguation,
+              created_at: new Date().toISOString()
+            };
+            
+            await this.saveCharacterToDatabase(sessionId, characterKey, secondaryData);
+            
+            console.log(`✨ New seed generated: ${character.displayName} (${newSeed})`);
+            seededCharacters.push({
+              ...character,
+              seed: newSeed,
+              characterDescription,
+              isExisting: false
+            });
+          }
+        } catch (individualError) {
+          console.error(`❌ Error processing ${character.displayName}:`, individualError);
+          // Fallback: generate deterministic seed without database
+          const fallbackSeed = this.generateStableSeed(sessionId + character.name + character.type, character.name);
+          seededCharacters.push({
+            ...character,
+            seed: fallbackSeed,
+            characterDescription: this.generateSecondaryCharacterDescription(character.displayName, character.relationshipType, fallbackSeed),
+            isExisting: false,
+            isFallback: true
+          });
+        }
+      }
       
-      // Store in database for consistency
-      const secondaryData = {
-        seed: newSeed,
-        characterDescription,
-        name: characterName,
-        characterType: 'secondary',
-        relationshipType: characterType,
-        created_at: new Date().toISOString()
-      };
-      
-      await this.saveCharacterToDatabase(sessionId, characterKey, secondaryData);
-      
-      console.log(`✨ New secondary character seed generated and stored: ${characterName} (${newSeed})`);
-      return secondaryData;
+      console.log(`🎭 Completed seeding for ${seededCharacters.length} secondary characters`);
+      return seededCharacters;
       
     } catch (error) {
-      console.error(`❌ Secondary character seed error for ${characterName}:`, error);
-      // Fallback: generate deterministic seed without database
-      const fallbackSeed = this.generateStableSeed(sessionId + characterName + characterType, characterName);
-      return {
-        seed: fallbackSeed,
-        characterDescription: this.generateSecondaryCharacterDescription(characterName, characterType, fallbackSeed),
-        name: characterName,
-        characterType: 'secondary'
-      };
+      console.error(`❌ Enhanced getSecondaryCharacterSeed error:`, error);
+      return [];
     }
   }
 
@@ -379,43 +429,209 @@ export class CharacterConsistencyService {
     return `${characterName}, ${selectedTemplate}`;
   }
 
+  // Comprehensive relationship types (25+ categories) - moved from SecondaryElementDetector
+  static RELATIONSHIP_PATTERNS = {
+    // Core Family (8 types)
+    family_mother: ['mom', 'mother', 'mommy', 'mama', 'ma'],
+    family_father: ['dad', 'father', 'daddy', 'papa', 'pa'],
+    family_sister: ['sister', 'sis'],
+    family_brother: ['brother', 'bro'],
+    family_grandmother: ['grandma', 'grandmother', 'nana', 'granny'],
+    family_grandfather: ['grandpa', 'grandfather', 'papa', 'gramps'],
+    family_aunt: ['aunt', 'auntie'],
+    family_uncle: ['uncle'],
+    
+    // Extended Family (6 types)
+    family_cousin: ['cousin'],
+    family_nephew: ['nephew'],
+    family_niece: ['niece'],
+    family_stepmother: ['stepmother', 'stepmom'],
+    family_stepfather: ['stepfather', 'stepdad'],
+    family_stepsister: ['stepsister'],
+    family_stepbrother: ['stepbrother'],
+    
+    // Friends & Peers (8 types)
+    community_friend: ['friend', 'buddy', 'pal', 'companion'],
+    community_best_friend: ['best friend', 'bestie'],
+    community_classmate: ['classmate'],
+    community_teammate: ['teammate'],
+    community_neighbor: ['neighbor', 'neighbour'],
+    community_playmate: ['playmate'],
+    
+    // Authority Figures (10 types)
+    authority_teacher: ['teacher', 'instructor', 'tutor'],
+    authority_coach: ['coach', 'trainer'],
+    authority_doctor: ['doctor', 'dr'],
+    authority_nurse: ['nurse'],
+    authority_principal: ['principal', 'headmaster'],
+    authority_librarian: ['librarian'],
+    authority_babysitter: ['babysitter', 'sitter'],
+    authority_guide: ['guide']
+  };
+
+  // Common words that can be names (for disambiguation) - moved from SecondaryElementDetector
+  static COMMON_WORD_NAMES = [
+    'apple', 'sage', 'river', 'hope', 'grace', 'faith', 'rose', 'lily', 
+    'amber', 'crystal', 'summer', 'autumn', 'winter', 'spring', 'joy',
+    'charity', 'harmony', 'melody', 'angel', 'star', 'moon', 'sun',
+    'forest', 'ocean', 'sky', 'storm', 'phoenix', 'hunter', 'archer'
+  ];
+
   /**
-   * Detect secondary characters from story text
+   * Enhanced detection of secondary characters with 5 pattern types and disambiguation
+   * Moved from SecondaryElementDetector for consolidation
    */
-  detectSecondaryCharacters(pageText) {
-    if (!pageText) return [];
+  static detectSecondaryCharacters(originalText, lowercaseText) {
+    const secondaryCharacters = [];
     
-    const detectedCharacters = [];
-    const text = pageText.toLowerCase();
+    // Generate all pattern combinations for comprehensive relationship detection
+    const allPatterns = [];
     
-    // Common secondary character patterns - fixed syntax error (removed await import)
-    const characterPatterns = [
-      // Family relationships
-      /\b(mom|mother|dad|father|brother|sister|grandma|grandmother|grandpa|grandfather|aunt|uncle|cousin)\b/gi,
-      // Friends and companions
-      /\b(friend|buddy|pal|companion|classmate|teammate|neighbor)\b/gi,
-      // Titles and roles
-      /\b(teacher|doctor|nurse|police|firefighter|mailman|baker|farmer)\b/gi,
-      // Community roles
-      /\b(teacher|doctor|nurse|mailman|neighbor|friend|classmate)\b/g,
-      // Animals
-      /\b(dog|cat|bird|rabbit|horse|cow|pig|chicken|fish)\b/g
-    ];
-    
-    for (const pattern of characterPatterns) {
-      const matches = pageText.match(pattern);
-      if (matches) {
-        matches.forEach(match => {
-          const cleanMatch = match.trim();
-          if (cleanMatch.length > 1 && !detectedCharacters.includes(cleanMatch)) {
-            detectedCharacters.push(cleanMatch);
-          }
+    Object.entries(this.RELATIONSHIP_PATTERNS).forEach(([relationshipType, relationshipWords]) => {
+      relationshipWords.forEach(relationship => {
+        // Pattern 1: Direct Relationship + Name (e.g., "friend Apple", "teacher Ms. Johnson")
+        allPatterns.push({
+          pattern: new RegExp(`\\b(${relationship})\\s+([A-Z][a-z]{1,14})`, 'gi'),
+          type: relationshipType,
+          patternType: 'direct',
+          relationship: relationship
         });
-      }
+        
+        // Pattern 2: Possessive Pronouns + Relationship + Name (e.g., "my friend Apple", "her cat Whiskers")
+        allPatterns.push({
+          pattern: new RegExp(`\\b(?:my|your|his|her|their|our)\\s+(${relationship})\\s+([A-Z][a-z]{1,14})`, 'gi'),
+          type: relationshipType,
+          patternType: 'possessive_pronoun',
+          relationship: relationship
+        });
+        
+        // Pattern 3: Possessive Forms (e.g., "Apple's mom", "Sequoia's sister")
+        allPatterns.push({
+          pattern: new RegExp(`\\b([A-Z][a-z]{1,14})'?s\\s+(${relationship})`, 'gi'),
+          type: relationshipType,
+          patternType: 'possessive_form',
+          relationship: relationship
+        });
+      });
+    });
+    
+    // Pattern 4: Dialogue Attribution (e.g., '"Hello," said Apple', '"Come here," called teacher')
+    allPatterns.push({
+      pattern: /["']([^"']+)["'][,.]?\s+(?:said|asked|called|whispered|shouted|replied|answered)\s+([A-Z][a-z]{1,14})/gi,
+      type: 'dialogue_attribution',
+      patternType: 'dialogue',
+      relationship: 'speaker'
+    });
+    
+    // Pattern 5: Coordinated Names (e.g., "Apple and Sequoia", "Mom and Dad")
+    allPatterns.push({
+      pattern: /\b([A-Z][a-z]{1,14})\s+and\s+([A-Z][a-z]{1,14})/gi,
+      type: 'coordinated_names',
+      patternType: 'coordination',
+      relationship: 'companion'
+    });
+    
+    // Process all patterns
+    allPatterns.forEach(({ pattern, type, patternType, relationship }) => {
+      const matches = [...originalText.matchAll(pattern)];
+      matches.forEach(match => {
+        let names = [];
+        let fullContext = '';
+        
+        // Extract names based on pattern type
+        if (patternType === 'direct' || patternType === 'possessive_pronoun') {
+          names = [match[2]];
+          fullContext = `${relationship} ${match[2]}`;
+        } else if (patternType === 'possessive_form') {
+          names = [match[1]];
+          fullContext = `${match[1]}'s ${relationship}`;
+        } else if (patternType === 'dialogue') {
+          names = [match[2]];
+          fullContext = `speaker ${match[2]}`;
+        } else if (patternType === 'coordination') {
+          names = [match[1], match[2]];
+          fullContext = `${match[1]} and ${match[2]}`;
+        }
+        
+        // Process each detected name
+        names.forEach(name => {
+          const nameLower = name.toLowerCase();
+          
+          // Skip if already detected
+          if (secondaryCharacters.find(c => c.name === nameLower)) return;
+          
+          // Apply smart name validation
+          if (!this.isValidName(name, fullContext)) return;
+          
+          // Create character entry with disambiguation
+          const character = {
+            name: nameLower,
+            displayName: name, // Preserve original capitalization
+            type: type,
+            category: 'secondary_character',
+            needsConsistency: true,
+            relationshipType: this.getRelationshipCategory(type),
+            fullContext: fullContext,
+            patternType: patternType,
+            relationship: relationship,
+            disambiguation: this.generateDisambiguation(name, relationship, type)
+          };
+          
+          secondaryCharacters.push(character);
+        });
+      });
+    });
+    
+    return secondaryCharacters;
+  }
+
+  /**
+   * Smart name validation with context awareness
+   * Moved from SecondaryElementDetector for consolidation
+   */
+  static isValidName(name, context) {
+    // Basic validation
+    if (!name || name.length < 2 || name.length > 15) return false;
+    if (!/^[A-Z][a-z]+$/.test(name)) return false;
+    
+    // Filter out obvious non-names
+    const nonNames = ['The', 'And', 'But', 'For', 'With', 'Very', 'So', 'Then', 'Now', 'Here', 'There'];
+    if (nonNames.includes(name)) return false;
+    
+    // Filter out days and months
+    const timeWords = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday',
+                      'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August',
+                      'September', 'October', 'November', 'December'];
+    if (timeWords.includes(name)) return false;
+    
+    return true;
+  }
+
+  /**
+   * Generate disambiguation context for names that could be objects
+   * Moved from SecondaryElementDetector for consolidation
+   */
+  static generateDisambiguation(name, relationship, type) {
+    const nameLower = name.toLowerCase();
+    
+    // Check if this name could be confused with a common object
+    if (this.COMMON_WORD_NAMES.includes(nameLower)) {
+      const relationshipCategory = this.getRelationshipCategory(type);
+      return `${name} (a ${relationshipCategory} named ${name}, not the ${nameLower})`;
     }
     
-    console.log(`🔍 Detected secondary characters in story text: ${detectedCharacters.join(', ')}`);
-    return detectedCharacters;
+    return null;
+  }
+
+  /**
+   * Get relationship category for disambiguation
+   * Moved from SecondaryElementDetector for consolidation
+   */
+  static getRelationshipCategory(type) {
+    if (type.startsWith('family_')) return 'family member';
+    if (type.startsWith('community_')) return 'friend';
+    if (type.startsWith('authority_')) return 'authority figure';
+    return 'person';
   }
 
   /**
