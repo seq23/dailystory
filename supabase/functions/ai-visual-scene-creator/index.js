@@ -540,4 +540,5 @@ async function handleOrchestratorCall(requestId, storyText, enhancedStoryData, a
   });
 }
 
-serve(handleRequest);
+// Export handleRequest for TypeScript receptionist to import
+export default handleRequest;
