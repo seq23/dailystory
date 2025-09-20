@@ -306,12 +306,16 @@ function deriveNonEnglishCulturalContext(userInfo) {
 
 // TIER 2.5B: SIMPLIFIED SCENE EXTRACTION (Enhanced for Level 0)
 // Extracts: Action + Object + Location with comprehensive Level 0 coverage
-function extractSimpleScene(storyText) {
+function extractSimpleScene(storyText, pageText) {
   if (!storyText || typeof storyText !== 'string') return '';
 
-  console.log('🔍 Simple regex scene extraction from story text');
+  // ESCALATION LOGIC: Check for missing critical elements
+  if (!pageText || !pageText.trim()) {
+    console.log('⚠️ Missing pageText - escalating to next tier');
+    return 'ESCALATE_MISSING_PAGETEXT';
+  }
 
-  // ==========
+  // ==========  
   // Local config + tiny backups (scoped; no globals) - PHASE 1: EXPANDED VOCABULARY ARRAYS
   // ==========
   const VERB_ROOTS = ["see","hold","carry","wear","grab","pick","lift","bring","take","hug","pull","push","walk","stroll","run","wander","tiptoe","explore","look","play","read","draw","build","climb","swing","slide","help","clean","make","watch","eat","sing","dance","wake","drink","create","build","hear","feel","smell","taste","touch","get","put","give","come","go","find","study","cook","sleep","sit","stand"];
@@ -336,6 +340,25 @@ function extractSimpleScene(storyText) {
   // PHASE 1.3: NEW CLOTHING DETECTION KEYWORDS ARRAY
   const CLOTHING_DETECTION_KEYWORDS = ["dress","shirt","pants","shoes","hat","coat","jacket","sweater","skirt","blouse","uniform","outfit","socks","boots","sandals","gloves","scarf","belt","shorts","pajamas","swimsuit"];
   
+  // PHASE 2: SECONDARY CHARACTER KEYWORDS (Family & Friends from Level 0/1 Templates)
+  const SECONDARY_CHARACTER_KEYWORDS = [
+    // Core Family
+    'mom', 'mother', 'mommy', 'mama', 'ma',
+    'dad', 'father', 'daddy', 'papa', 'pa',
+    'sister', 'sis', 'brother', 'bro',
+    'grandma', 'grandmother', 'nana', 'granny',
+    'grandpa', 'grandfather', 'gramps',
+    'aunt', 'auntie', 'uncle',
+    
+    // Friends & Peers  
+    'friend', 'buddy', 'pal', 'companion',
+    'best friend', 'bestie', 'classmate', 'teammate',
+    'neighbor', 'neighbour', 'playmate',
+    
+    // Authority Figures
+    'teacher', 'coach', 'doctor', 'nurse', 'babysitter'
+  ];
+  
   // PHASE 2.1: VERB_OBJECT_CONTEXT MAPPING FOR MULTI-SENTENCE ASSEMBLY
   const VERB_OBJECT_CONTEXT = {
     // Clothing objects → "wearing" verb
@@ -353,28 +376,10 @@ function extractSimpleScene(storyText) {
     'rope': 'holding', 'bottle': 'holding',
     // Eating objects → "eating" verb
     'cookie': 'eating', 'apple': 'eating', 'food': 'eating', 'cake': 'eating',
-    'sandwich': 'eating', 'snack': 'eating'
-  };
-  
-  // PHASE 3.1: CONTEXT-ACTION MAPPINGS FOR CONTEXTUAL-FIRST FALLBACKS
-  const OBJECT_TO_ACTION = {
-    'dress': 'wearing', 'ball': 'playing with', 'book': 'reading', 'food': 'eating',
-    'toy': 'playing with', 'toys': 'playing with', 'cookie': 'eating', 'apple': 'eating'
-  };
-  
-  const SETTING_TO_ACTION = {
-    'forest': 'walking through', 'park': 'playing in', 'kitchen': 'eating in', 'bedroom': 'sleeping in',
-    'playground': 'playing in', 'garden': 'exploring', 'library': 'reading in'
-  };
-  
-  const ACTION_TO_OBJECT = {
-    'wearing': 'clothes', 'playing': 'toys', 'reading': 'book', 'eating': 'food',
-    'walking': 'outdoors', 'running': 'outdoors'
-  };
-  
-  const ACTION_TO_SETTING = {
-    'walking': 'outdoors', 'running': 'park', 'playing': 'playground',
-    'sleeping': 'bedroom', 'eating': 'kitchen', 'reading': 'library'
+    'sandwich': 'eating', 'snack': 'eating',
+    // Secondary characters → "with" verb
+    'mom': 'with', 'mother': 'with', 'dad': 'with', 'father': 'with',
+    'friend': 'with', 'sister': 'with', 'brother': 'with'
   };
 
   const ALIASES = [
@@ -397,7 +402,7 @@ function extractSimpleScene(storyText) {
   const COLOR_SET = new Set(COLORS);
 
   function normalize(t) {
-    let out = String(t ?? "").replace(/[""]/g, '"').replace(/[']/g, "'").replace(/\s+/g, " ").trim();
+    let out = String(t ?? "").replace(/[""]/g, '"').replace(/[']/g, "'").replace(/[ \t]+/g, " ").trim();
     for (const [bad, good] of ALIASES) {
       out = out.replace(new RegExp(`\\b${esc(bad)}\\b`, "gi"), (m) => {
         if (m.toUpperCase() === m) return good.toUpperCase();
@@ -521,7 +526,7 @@ function extractSimpleScene(storyText) {
       }
     }
 
-    // OBJECTS
+    // OBJECTS (including secondary characters)
     const objects = [];
     for (let i = 0; i < tokens.length; i++) {
       if (VERB_RE.test(tokens[i])) {
@@ -576,7 +581,13 @@ function extractSimpleScene(storyText) {
   const lower = normalized.toLowerCase();
   const { action, objects, setting } = extractHybrid(normalized);
 
-  // FIXED: Format action → progressive verb + rest (ISSUE: Action text truncation bug)
+  // ESCALATION LOGIC: Check for missing action
+  if (!action) {
+    console.log('⚠️ Missing action - escalating to next tier');
+    return 'ESCALATE_MISSING_ACTION';
+  }
+
+  // Format action → progressive verb + rest
   const actionText = action ? (() => {
     const words = action.split(/\s+/);
     if (words.length === 1) {
@@ -586,112 +597,43 @@ function extractSimpleScene(storyText) {
     }
   })().trim() : null;
 
-  const obj = objects[0] || null;
-  const objectText = obj
-    ? (obj.colors && obj.colors.length ? `${obj.colors[0]} ${obj.head}` : obj.phrase)
-    : null;
+  // PHASE 2: MULTI-OBJECT PROCESSING - Process ALL objects, not just objects[0]
+  const regularObjects = objects.filter(obj => 
+    !SECONDARY_CHARACTER_KEYWORDS.includes(obj.head.toLowerCase())
+  );
+  
+  const secondaryCharacters = objects.filter(obj => 
+    SECONDARY_CHARACTER_KEYWORDS.includes(obj.head.toLowerCase())
+  );
+
+  // Build object text from ALL regular objects
+  const objectText = regularObjects.map(obj => {
+    const text = obj.colors && obj.colors.length ? `${obj.colors[0]} ${obj.head}` : obj.phrase;
+    const contextVerb = VERB_OBJECT_CONTEXT[obj.head.toLowerCase()];
+    return contextVerb ? `${contextVerb} ${text}` : text;
+  }).join('. ');
+
+  // Build secondary character text
+  const secondaryText = secondaryCharacters.map(char => char.phrase || char.head).join(' and ');
 
   const settingText = setting
     ? (setting.phrase || setting.head)
     : (typeof extractLocationFromText === 'function' ? extractLocationFromText(lower) : null);
 
-  // PHASE 2.2: MULTI-SENTENCE SCENE ASSEMBLY - Build primary sentence + object sentences
-  const primaryParts = [];
-  if (actionText) primaryParts.push(actionText);
-  if (settingText) primaryParts.push(`${settingText} where the golden sunlight danced`);
+  // PHASE 3: SIMPLIFIED SCENE ASSEMBLY - Clean array-based approach
+  const parts = [];
+  if (actionText) parts.push(actionText);
+  if (objectText) parts.push(objectText);
+  if (secondaryText && actionText) parts.push(`with ${secondaryText}`);
+  if (settingText) parts.push(`in the ${settingText}`);
   
-  const primarySentence = primaryParts.join(' ').trim();
-  
-  // Build object sentences using VERB_OBJECT_CONTEXT mapping
-  const objectSentences = [];
-  if (objectText && obj && obj.head) {
-    const contextVerb = VERB_OBJECT_CONTEXT[obj.head.toLowerCase()];
-    if (contextVerb) {
-      objectSentences.push(`${contextVerb} ${objectText}`);
-    } else {
-      objectSentences.push(objectText);
-    }
-  }
-  
-  // Join with periods for multi-sentence output
-  const allParts = [primarySentence, ...objectSentences].filter(Boolean);
-  const scene = allParts.join('. ').trim();
+  const scene = parts.join(' ').trim();
 
   if (scene) {
     console.log(`✅ Simple scene extracted: "${scene}"`);
     return scene;
   }
 
-  // PHASE 3.2: CONTEXTUAL-FIRST FALLBACKS - Use pageText context to fill gaps
-  if (!scene && (action || objects.length > 0 || setting)) {
-    // Tier 1 - Contextual Fallbacks: Use extracted context to fill gaps
-    if (action && !objects.length && !setting) {
-      const contextObject = ACTION_TO_OBJECT[action.toLowerCase()];
-      const contextSetting = ACTION_TO_SETTING[action.toLowerCase()];
-      if (contextObject) return `${actionText} ${contextObject}`;
-      if (contextSetting) return `${actionText} ${contextSetting}`;
-    }
-    
-    if (objects.length > 0 && !action) {
-      const objHead = objects[0].head?.toLowerCase();
-      const contextAction = OBJECT_TO_ACTION[objHead];
-      if (contextAction) return `${contextAction} ${objectText}`;
-    }
-    
-    if (setting && !action) {
-      const settingHead = setting.head?.toLowerCase() || setting.phrase?.toLowerCase();
-      const contextAction = SETTING_TO_ACTION[settingHead];
-      if (contextAction) return `${contextAction} ${settingText}`;
-    }
-  }
-  
-  // ==========
-  // Tier 2 - Action-Based Fallbacks (existing logic, only if no pageText context)
-  // ==========
-
-  const has = (re) => re.test(lower);
-  const hasPlay = has(/\b(play|plays|playing|played)\b/i);
-  const hasSee  = has(/\b(see|sees|seeing|saw|look|looks|looking|looked|watch|watches|watching|watched)\b/i);
-  const hasHold = has(/\b(hold|holds|holding|carry|carries|carrying|grab|grabs|grabbing|took|take|taking|bring|brings|bringing)\b/i);
-  const hasEat  = has(/\b(eat|eats|eating|ate)\b/i);
-  const hasMove = has(/\b(walk|walks|walking|walked|run|runs|running|ran|stroll|strolling|wander|wandering|tiptoe|tiptoeing|climb|climbs|climbing)\b/i);
-
-  const mentionsBall = has(/\b(?:red|blue|green|yellow|purple|pink|orange|brown|black|white|gray|grey|gold|silver|turquoise|lavender|burgundy|teal|beige|maroon|navy|violet|indigo|cream|ivory|peach|magenta|cyan|olive|tan|aqua)\s+ball\b|\bball(s)?\b/i);
-  const mentionsRedBall = has(/\b(red\s+ball|ball\s+is\s+red)\b/i);
-
-  // Fallback A: explicit red ball ONLY with compatible action
-  if (mentionsRedBall) {
-    if (hasHold) return settingText ? `carrying red ball in the ${settingText}` : (hasMove ? `carrying red ball` : (hasSee ? `seeing red ball` : (hasPlay ? `playing with red ball` : '')));
-    if (hasPlay) return settingText ? `playing with red ball in the ${settingText}` : `playing with red ball`;
-    if (hasSee)  return settingText ? `seeing red ball in the ${settingText}` : `seeing red ball`;
-    return '';
-  }
-
-  // Fallback B: generic/colored ball ONLY with compatible action
-  if (mentionsBall) {
-    if (hasHold) return settingText ? `carrying ball in the ${settingText}` : (hasMove ? `carrying ball` : (hasSee ? `seeing ball` : (hasPlay ? `playing with ball` : '')));
-    if (hasPlay) return settingText ? `playing with ball in the ${settingText}` : `playing with ball`;
-    if (hasSee)  return settingText ? `seeing ball in the ${settingText}` : `seeing ball`;
-    return '';
-  }
-
-  // Fallback C: location words do NOT fabricate action; only append to an action if present
-  if (settingText && (hasMove || hasPlay || hasSee || hasHold || hasEat)) {
-    if (hasEat)  return `eating in the ${settingText}`;
-    if (hasPlay) return `playing in the ${settingText}`;
-    if (hasHold) return `carrying in the ${settingText}`;
-    if (hasSee)  return `seeing in the ${settingText}`;
-    if (hasMove) return `moving in the ${settingText}`;
-  }
-
-  // Fallback D: toy/food terms require matching actions, otherwise ''
-  const mentionsToy  = has(/\btoys?\b/i);
-  const mentionsFood = has(/\b(food|cookie|cookies|apple|apples)\b/i);
-
-  if (mentionsToy && hasPlay) return `playing with ${has(/\btoys\b/i) ? 'toys' : 'toy'}`;
-  if (mentionsFood && hasEat) return `eating ${has(/\bcookies?\b/i) ? (has(/\bcookies\b/i) ? 'cookies' : 'a cookie') : (has(/\bapples?\b/i) ? (has(/\bapples\b/i) ? 'apples' : 'an apple') : 'food')}`;
-
-  // PHASE 3.2: Return empty string to trigger escalation (no more hardcoded fallbacks)
   return '';
 }
 }
