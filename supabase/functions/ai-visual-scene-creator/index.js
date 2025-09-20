@@ -537,22 +537,41 @@ async function handleFrontendCall(requestId, storyText, userInfo, sessionId, pag
     
     console.log(`🚀 [${requestId}] Calling orchestrator for enhanced template generation`);
     
-    const enhancedResult = await orchestrator.generateEnhancedTier1Template(
-      storyText, 
+    // First generate primaryScene via existing OpenAI pipeline
+    const sceneResult = await handleOrchestratorCall(requestId, storyText, { userInfo });
+    
+    if (!sceneResult || !sceneResult.primaryScene) {
+      console.warn(`⚠️ [${requestId}] Failed to generate primaryScene`);
+      return createCorsErrorResponse('Failed to generate visual scene', 500);
+    }
+    
+    console.log(`🎯 [${requestId}] Generated primaryScene: ${sceneResult.primaryScene.substring(0, 100)}...`);
+    
+    // Then call orchestrator.getEnhancedPrompt with primaryScene
+    const enhancedResult = await orchestrator.getEnhancedPrompt(
       userInfo, 
+      storyText, 
+      storyText, 
       sessionId, 
-      pageNumber || 1
+      { primaryScene: sceneResult.primaryScene }
     );
     
     if (enhancedResult && enhancedResult.success) {
-      console.log(`✅ [${requestId}] Orchestrator returned enhanced template`);
-      return createCorsResponse(enhancedResult);
-    } else {
-      console.warn(`⚠️ [${requestId}] Orchestrator failed, falling back to basic extraction`);
-      const fallbackResult = await handleOrchestratorCall(requestId, storyText, { userInfo });
+      console.log(`✅ [${requestId}] Orchestrator returned enhanced prompt`);
+      // Normalize response with templateStructure: 'COMPLETE_TIER_1'
       return createCorsResponse({
-        ...fallbackResult,
-        positivePrompt: fallbackResult.primaryScene,
+        ...enhancedResult,
+        templateStructure: 'COMPLETE_TIER_1',
+        primaryScene: sceneResult.primaryScene,
+        positivePrompt: enhancedResult.positivePrompt || sceneResult.primaryScene,
+        negativePrompt: enhancedResult.negativePrompt || 'blur, dark, scary, adult content, inappropriate'
+      });
+    } else {
+      console.warn(`⚠️ [${requestId}] Orchestrator failed, using basic extraction`);
+      return createCorsResponse({
+        ...sceneResult,
+        templateStructure: 'COMPLETE_TIER_1',
+        positivePrompt: sceneResult.primaryScene,
         negativePrompt: 'blur, dark, scary, adult content, inappropriate',
         fallbackMode: true
       });
@@ -565,6 +584,7 @@ async function handleFrontendCall(requestId, storyText, userInfo, sessionId, pag
     const fallbackResult = await handleOrchestratorCall(requestId, storyText, { userInfo });
     return createCorsResponse({
       ...fallbackResult,
+      templateStructure: 'COMPLETE_TIER_1',
       positivePrompt: fallbackResult.primaryScene,
       negativePrompt: 'blur, dark, scary, adult content, inappropriate',
       fallbackMode: true,

@@ -95,9 +95,9 @@ async function getPhaseOrchestrator() {
   try {
     // DNS error detection and defensive handling
     console.log('🔄 Loading PhaseIntegrationOrchestrator...');
-    const { masterPhaseIntegrator } = await import("../_shared/MasterPhaseIntegrator.js");
+    const { phaseIntegrationOrchestrator } = await import("../_shared/PhaseIntegrationOrchestrator.js");
     console.log('✅ PhaseIntegrationOrchestrator loaded successfully');
-    return masterPhaseIntegrator;
+    return phaseIntegrationOrchestrator;
   } catch (error) {
     console.warn('⚠️ PhaseIntegrationOrchestrator lazy load failed (DNS/Sync):', error.message);
     
@@ -768,6 +768,10 @@ Brand Suffix: {fullFrameworkPrompt}.`;
 
 // ============= EXPORT TEMPLATES FOR VALIDATION =============
 export { TIER_25A_TEMPLATE, TIER_25B_TEMPLATE };
+
+// ============= TEMPLATE NAME ALIASES FOR COMPATIBILITY =============
+export const PREMIUM_PROMPT_TEMPLATE = TIER_25A_TEMPLATE;
+export const BASIC_PROMPT_TEMPLATE = TIER_25B_TEMPLATE;
 
 async function handleRequest(req) {
   // Handle CORS preflight requests
