@@ -364,10 +364,53 @@ export class PhaseIntegrationOrchestrator {
         }
       }
       
-      // STEP 3: Format secondary characters for template inclusion
+      // STEP 3: Format secondary characters for template inclusion with robust string conversion
+      console.log(`🔍 [DEBUG] Secondary characters before formatting:`, {
+        secondaryCharactersLength: secondaryCharacters.length,
+        secondaryCharactersData: secondaryCharacters.map(char => ({
+          type: typeof char,
+          keys: typeof char === 'object' ? Object.keys(char) : 'not_object',
+          characterDescription: char?.characterDescription,
+          name: char?.name,
+          fullObject: char
+        }))
+      });
+      
       const formattedSecondaryCharacters = secondaryCharacters.length > 0 ? 
-        secondaryCharacters.map(char => char.characterDescription || char.name || 'secondary character').join(', ') : 
+        secondaryCharacters.map(char => {
+          // Robust string conversion - handle nested objects
+          let description = 'secondary character';
+          
+          if (typeof char === 'string') {
+            description = char;
+          } else if (typeof char === 'object' && char) {
+            // Try multiple property paths with defensive object-to-string conversion
+            const possibleDescriptions = [
+              char.characterDescription,
+              char.description,
+              char.name,
+              char.displayName,
+              char.type
+            ];
+            
+            for (const desc of possibleDescriptions) {
+              if (desc && typeof desc === 'string' && desc.trim() !== '') {
+                description = desc.trim();
+                break;
+              } else if (desc && typeof desc === 'object') {
+                // Handle nested objects by converting to string
+                description = JSON.stringify(desc);
+                console.warn(`⚠️ [DEBUG] Found nested object in secondary character description:`, desc);
+                break;
+              }
+            }
+          }
+          
+          return description;
+        }).join(', ') : 
         'none detected';
+      
+      console.log(`✅ [DEBUG] Formatted secondary characters result:`, formattedSecondaryCharacters);
       
       // Enhanced character description with avatar type, hair and skin variations  
       const characterDescription = [
@@ -377,19 +420,32 @@ export class PhaseIntegrationOrchestrator {
         selectedSkin
       ].filter(Boolean).join(', ');
 
-      // Step 1: Build complete 6-section Tier 1 enhanced prompt template with reordered structure
+      // Build complete 6-section Tier 1 enhanced prompt template with reordered structure
+      // CRITICAL: PRIMARY SCENE must contain the exact raw OpenAI-generated scene description
+      console.log(`🔍 [DEBUG] Template building - primaryScene type and content:`, {
+        primarySceneType: typeof primaryScene,
+        primarySceneLength: primaryScene?.length,
+        primaryScenePreview: typeof primaryScene === 'string' ? primaryScene.substring(0, 100) + '...' : primaryScene
+      });
+      
       const enhancedPrompt = [
-        `PRIMARY SCENE: ${primaryScene}`,
+        `PRIMARY SCENE: ${primaryScene}`, // This MUST be the raw OpenAI output
         `CHARACTER DESCRIPTION: ${characterDescription}`,
         `CHARACTER CONSISTENCY:`,
         `- Visual Traits: ${specificClothing || `${characterName} wearing consistent character clothing`}`,
         `- Visual Consistency: ${combinedVisualElements}`,
         `- Secondary Characters: ${formattedSecondaryCharacters}`,
-        // Step 1: Move SETTING after CHARACTER CONSISTENCY
+        // Move SETTING after CHARACTER CONSISTENCY
         persistentSetting ? `SETTING: consistently in ${persistentSetting}` : '',
         `STYLE FRAMEWORK: ${styleFramework}`,
         `CONTEXT: ${contextSummary}`
       ].filter(Boolean).join('\n');
+      
+      console.log(`✅ [DEBUG] Complete template structure verified:`, {
+        templateLength: enhancedPrompt.length,
+        hasRawPrimaryScene: typeof primaryScene === 'string' && primaryScene.length > 0,
+        formattedSecondaryCharacters: formattedSecondaryCharacters
+      });
 
       console.log(`✅ PHASE ORCHESTRATOR: Complete Tier 1 template generated`, {
         userId,

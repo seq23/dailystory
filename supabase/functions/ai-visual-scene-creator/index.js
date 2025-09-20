@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-01-16T14:30:00Z - SEED FIX & OPENAI RESTORATION
+// DEPLOY_MARKER: 2025-01-16T17:30:00Z - COMPREHENSIVE BUG FIXES
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { 
   getHairBySkintone, 
@@ -382,10 +382,23 @@ async function handleRequest(req) {
   const requestId = Math.random().toString(36).substring(2, 10);
   console.log(`🚀 [${requestId}] ai-visual-scene-creator: ${req.method} ${req.url}`);
   
-  // Handle CORS preflight requests
+  // Handle CORS preflight requests  
   if (req.method === 'OPTIONS') {
     console.log(`✅ [${requestId}] CORS preflight handled`);
     return createCorsOptionsResponse();
+  }
+  
+  // Add boot failure protection
+  try {
+    // Test if we can access critical dependencies
+    const orchestrator = await getPhaseOrchestrator();
+    if (!orchestrator) {
+      console.error(`❌ [${requestId}] Boot failure - PhaseOrchestrator unavailable`);
+      return createCorsErrorResponse('Service temporarily unavailable - orchestrator boot failed', 503);
+    }
+  } catch (bootError) {
+    console.error(`❌ [${requestId}] Boot validation failed:`, bootError);
+    return createCorsErrorResponse('Service boot validation failed', 503);
   }
 
   // Handle GET health check requests
@@ -457,121 +470,74 @@ async function handleOrchestratorCall(requestId, storyText, enhancedStoryData, a
   
   // Validate userInfo parameter
   if (!userInfo) {
-    console.warn(`⚠️ [${requestId}] Missing userInfo parameter, using fallback`);
-    userInfo = enhancedStoryData?.userInfo || {};
+    console.warn(`⚠️ [${requestId}] Missing userInfo, using defaults`);
+    userInfo = { name: 'Child', age: 6 };
   }
-  
-  return await withPerformanceTracking('ai-visual-scene-creator-orchestrator', 'gpt-4o', async () => {
-    let processedContent = enhancedStoryData;
-    
-    // If no primaryScene exists, generate it using OpenAI
-    if (!processedContent || !processedContent.primaryScene) {
-      console.log(`🤖 [${requestId}] Generating primaryScene from storyText using OpenAI`);
-      
-      try {
-        // Step 3: Clean Primary Scene system prompt - focus ONLY on visual scene description
-        const systemPrompt = 'Generate visual scene data from story text. Return JSON with primaryScene (ONLY detailed visual scene description for image generation) and aiSchema object containing setting, lighting, mainCharacter, attire, accessories, atmosphere, action, mood, pose, secondaryCharacters fields.';
-          
-        const openAIResponse = await callOpenAIWithFallback([{
-          role: 'system',
-          content: systemPrompt
-        }, {
-          role: 'user', 
-          content: `Story: ${storyText}\n\nExtract the main visual scene for illustration.`
-        }], 6000, requestId);
-        
-        const content = openAIResponse?.choices?.[0]?.message?.content;
-        if (content) {
-          try {
-            const parsed = JSON.parse(content);
-            
-            // Safe aiSchema synthesis with null checks
-            let aiSchema = null;
-            if (parsed && typeof parsed === 'object') {
-              try {
-                aiSchema = parsed.aiSchema;
-                if (!aiSchema && (parsed.setting || parsed.lighting || parsed.mainCharacter || parsed.action || parsed.mood || parsed.secondaryCharacters)) {
-                  // Step 4: Add secondaryCharacters to aiSchema object
-                  aiSchema = {
-                    setting: parsed.setting || null,
-                    lighting: parsed.lighting || null,
-                    mainCharacter: parsed.mainCharacter || null,
-                    attire: parsed.attire || null,
-                    accessories: parsed.accessories || null,
-                    atmosphere: parsed.atmosphere || null,
-                    action: parsed.action || null,
-                    mood: parsed.mood || null,
-                    pose: parsed.pose || null,
-                    secondaryCharacters: parsed.secondaryCharacters || null
-                  };
-                  console.log(`🔧 [${requestId}] Synthesized aiSchema from top-level JSON fields`);
-                }
-              } catch (synthesisError) {
-                console.warn(`⚠️ [${requestId}] aiSchema synthesis failed:`, synthesisError.message);
-                aiSchema = null;
-              }
-            }
-            
-            processedContent = {
-              ...processedContent,
-              primaryScene: parsed.primaryScene || storyText,
-              aiSchema: aiSchema || null,
-              extractionMethod: 'openai_generated'
-            };
-            console.log(`✅ [${requestId}] Generated ${includeFullSchema ? 'primaryScene + aiSchema' : 'primaryScene'} via OpenAI`);
-          } catch (parseError) {
-            console.log(`⚠️ [${requestId}] OpenAI response not JSON, using content as primaryScene`);
-            processedContent = {
-              ...processedContent,
-              primaryScene: content,
-              extractionMethod: 'openai_generated'
-            };
-          }
-        }
-      } catch (openAIError) {
-        console.error(`🚨 [${requestId}] OpenAI failed - escalating to Tier 2:`, openAIError.message);
-        throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_25A');
+
+  return withPerformanceTracking('ai-visual-scene-creator-orchestrator', 'gpt-4o', async () => {
+    const messages = [
+      {
+        role: 'system',
+        content: 'Generate visual scene data from story text. Return JSON with primaryScene (ONLY detailed visual scene description for image generation) and aiSchema object containing setting, lighting, mainCharacter, attire, accessories, atmosphere, action, mood, pose, secondaryCharacters fields.'
+      },
+      {
+        role: 'user',
+        content: `Story text: "${storyText}"\n\nGenerate a visual scene description focused on creating a high-quality children's book illustration. The primaryScene should be a complete visual description suitable for image generation.`
       }
+    ];
+
+    console.log(`🤖 [${requestId}] Generating primaryScene from storyText using OpenAI`);
+    
+    try {
+      const result = await callOpenAIWithFallback(messages, 8000, requestId, avatarIdentity);
+      const content = result?.choices?.[0]?.message?.content;
+      
+      if (!content?.trim()) {
+        throw new Error('Empty response from OpenAI');
+      }
+      
+      const processedContent = parseAIResponse(content);
+      console.log(`✅ [${requestId}] Generated primaryScene + aiSchema via OpenAI`);
+      
+    } catch (error) {
+      console.error(`🚨 [${requestId}] Primary scene generation failed:`, error);
+      throw error;
     }
     
-    console.log(`✅ [${requestId}] Primary scene extracted via ${processedContent?.extractionMethod || 'unknown'}:`);
+    console.log(`✅ [${requestId}] Primary scene extracted via ${processedContent?.extractionMethod || 'openai_generated'}:`);
     console.log(`   Scene: ${processedContent?.primaryScene?.substring(0, 200)}...`);
     
-    // Binary primaryScene validation: ≥30 characters = pass, <30 = fail
+    // CRITICAL: Ensure primaryScene is a clean string for template usage
     const primaryScene = processedContent?.primaryScene;
     if (!primaryScene || typeof primaryScene !== 'string' || primaryScene.length < 30) {
       console.error(`🚨 [${requestId}] Primary scene validation failed - escalating to Tier 2:`, {
         hasScene: !!primaryScene,
         sceneType: typeof primaryScene,
         sceneLength: primaryScene?.length || 0,
-        minimumRequired: 30
+        sceneContent: primaryScene
       });
-      throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_25A');
+      throw new Error('Primary scene validation failed');
     }
     
     console.log(`✅ [${requestId}] Primary scene validation passed: ${primaryScene.length} characters`);
     
     const response = {
       success: true,
-      primaryScene: primaryScene,
-      extractionMethod: processedContent.extractionMethod || 'existing',
+      primaryScene: primaryScene, // RAW OpenAI output - no processing
+      aiSchema: includeFullSchema ? (processedContent?.aiSchema || {}) : undefined,
+      extractionMethod: 'openai_generated',
       requestId
     };
     
-    // Always include aiSchema if available (for both orchestrator and frontend calls)
-    if (processedContent.aiSchema) {
-      response.aiSchema = processedContent.aiSchema;
-    }
+    console.log(`✅ [${requestId}] Returning response:`, {
+      success: response.success,
+      primarySceneLength: response.primaryScene?.length,
+      hasAiSchema: !!response.aiSchema,
+      extractionMethod: response.extractionMethod
+    });
     
     return createCorsResponse(response);
   });
 }
 
-// Removed - ai-visual-scene-creator now only generates primaryScene + aiSchema
-// Frontend should call PhaseIntegrationOrchestrator directly for complete template
-
-// Export for TypeScript receptionist
-export default handleRequest;
-
-// Maintain backward compatibility
 serve(handleRequest);
