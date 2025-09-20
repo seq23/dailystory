@@ -702,21 +702,31 @@ async function handleRequest(req) {
     // Check for COMPLETE_TIER_1 template directive or use proper tier logic
     let result;
     if (payload.forceTier === 'COMPLETE_TIER_1' || payload.forceTier === 'tier-1' || payload.skipTier25) {
-      // Call AI Visual Scene Creator for Tier 1
+      // Call PhaseIntegrationOrchestrator for Tier 1 complete template
       try {
-        const tier1Response = await supabase.functions.invoke('ai-visual-scene-creator', {
-          body: payload
-        });
+        console.log(`🎯 [${requestId}] Forcing Tier 1 via PhaseIntegrationOrchestrator`);
+        const orchestrator = await LazyServiceLoader.getPhaseIntegrationOrchestrator();
         
-        if (tier1Response.error) {
-          console.log('🔄 Tier 1 failed, escalating to enhanced fallback');
-          result = await generateEnhancedFallback(storyText, pageNumber || 1, 'runware');
+        const tier1Response = await orchestrator.generateEnhancedTier1Template(
+          storyText,
+          payload.userInfo,
+          payload.sessionId || 'session_' + requestId,
+          payload.pageNumber || 1
+        );
+        
+        if (tier1Response && tier1Response.success) {
+          result = tier1Response;
         } else {
-          result = tier1Response.data;
+          throw new Error('Tier 1 orchestrator failed');
         }
       } catch (error) {
-        console.log('🔄 Tier 1 error, escalating to enhanced fallback:', error.message);
-        result = await generateEnhancedFallback(storyText, pageNumber || 1, 'runware');
+        if (error.message.includes('NO_PRIMARY_SCENE_ESCALATE_TO_25A')) {
+          console.log('🔄 Tier 1 primary scene failed - escalating to Tier 2.5A');
+          result = await generateEnhancedFallback(storyText, pageNumber || 1, 'runware');
+        } else {
+          console.log('🔄 Tier 1 error, escalating to enhanced fallback:', error.message);
+          result = await generateEnhancedFallback(storyText, pageNumber || 1, 'runware');
+        }
       }
     } else {
       // Default to enhanced fallback for other tiers

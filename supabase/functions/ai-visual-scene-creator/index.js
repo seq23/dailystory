@@ -444,17 +444,18 @@ async function handleRequest(req) {
       return await handleOrchestratorCall(requestId, storyText, enhancedStoryData);
     }
     
-    // If called by frontend, delegate to orchestrator for complete template
-    return await handleFrontendCall(requestId, storyText, userInfo, sessionId, pageNumber, avatarIdentity);
+  // If called by frontend (including test button), generate primaryScene + aiSchema only
+  return await handleOrchestratorCall(requestId, storyText, { userInfo }, true);
 
   } catch (error) {
     return handleError(error, 'handleRequest', { requestId });
   }
 }
 
-// Handle calls from PhaseIntegrationOrchestrator - return just primaryScene
-async function handleOrchestratorCall(requestId, storyText, enhancedStoryData) {
-  console.log(`🔄 [${requestId}] Processing orchestrator call - extracting primaryScene only`);
+// Handle calls from PhaseIntegrationOrchestrator OR frontend test button
+async function handleOrchestratorCall(requestId, storyText, enhancedStoryData, includeFullSchema = false) {
+  const callType = includeFullSchema ? 'frontend/test' : 'orchestrator';
+  console.log(`🔄 [${requestId}] Processing ${callType} call - generating primaryScene${includeFullSchema ? ' + aiSchema' : ' only'}`);
   
   return await withPerformanceTracking('ai-visual-scene-creator-orchestrator', 'gpt-4o', async () => {
     let processedContent = enhancedStoryData;
@@ -464,9 +465,13 @@ async function handleOrchestratorCall(requestId, storyText, enhancedStoryData) {
       console.log(`🤖 [${requestId}] Generating primaryScene from storyText using OpenAI`);
       
       try {
+        const systemPrompt = includeFullSchema 
+          ? 'Generate complete visual scene data from story text. Return JSON with primaryScene (detailed visual description) and full aiSchema object containing setting, lighting, mainCharacter, attire, accessories, atmosphere, action, mood, pose fields.'
+          : 'Extract visual scene description from story text. Return JSON with primaryScene field containing detailed visual description for image generation.';
+          
         const openAIResponse = await callOpenAIWithFallback([{
           role: 'system',
-          content: 'Extract visual scene description from story text. Return JSON with primaryScene field containing detailed visual description for image generation.'
+          content: systemPrompt
         }, {
           role: 'user', 
           content: `Story: ${storyText}\n\nExtract the main visual scene for illustration.`
@@ -479,9 +484,10 @@ async function handleOrchestratorCall(requestId, storyText, enhancedStoryData) {
             processedContent = {
               ...processedContent,
               primaryScene: parsed.primaryScene || storyText,
+              ...(includeFullSchema && parsed.aiSchema ? { aiSchema: parsed.aiSchema } : {}),
               extractionMethod: 'openai_generated'
             };
-            console.log(`✅ [${requestId}] Generated primaryScene via OpenAI`);
+            console.log(`✅ [${requestId}] Generated ${includeFullSchema ? 'primaryScene + aiSchema' : 'primaryScene'} via OpenAI`);
           } catch (parseError) {
             console.log(`⚠️ [${requestId}] OpenAI response not JSON, using content as primaryScene`);
             processedContent = {
@@ -501,97 +507,27 @@ async function handleOrchestratorCall(requestId, storyText, enhancedStoryData) {
       }
     }
     
-    // Simple validation for orchestrator calls
-    if (!processedContent?.primaryScene) {
-      throw new Error('Failed to extract primaryScene');
-    }
+    console.log(`✅ [${requestId}] Primary scene extracted via ${processedContent?.extractionMethod || 'unknown'}:`);
+    console.log(`   Scene: ${processedContent?.primaryScene?.substring(0, 200)}...`);
     
-    // Return minimal response for orchestrator
-    return {
+    const response = {
       success: true,
       primaryScene: processedContent.primaryScene,
       extractionMethod: processedContent.extractionMethod || 'existing',
-      aiSchema: processedContent.aiSchema
+      requestId
     };
+    
+    // Include full aiSchema for frontend/test calls  
+    if (includeFullSchema && processedContent.aiSchema) {
+      response.aiSchema = processedContent.aiSchema;
+    }
+    
+    return response;
   });
 }
 
-// Handle calls from frontend - delegate to orchestrator for complete template
-async function handleFrontendCall(requestId, storyText, userInfo, sessionId, pageNumber, avatarIdentity) {
-  console.log(`🎨 [${requestId}] Processing frontend call - delegating to orchestrator for complete template`);
-  
-  try {
-    const orchestrator = await getPhaseOrchestrator();
-    
-    if (!orchestrator) {
-      console.warn(`⚠️ [${requestId}] Orchestrator unavailable, falling back to simplified response`);
-      // Fallback to basic primaryScene extraction
-      const basicResult = await handleOrchestratorCall(requestId, storyText, { userInfo });
-      return createCorsResponse({
-        ...basicResult,
-        positivePrompt: basicResult.primaryScene,
-        negativePrompt: 'blur, dark, scary, adult content, inappropriate',
-        fallbackMode: true
-      });
-    }
-    
-    console.log(`🚀 [${requestId}] Calling orchestrator for enhanced template generation`);
-    
-    // First generate primaryScene via existing OpenAI pipeline
-    const sceneResult = await handleOrchestratorCall(requestId, storyText, { userInfo });
-    
-    if (!sceneResult || !sceneResult.primaryScene) {
-      console.warn(`⚠️ [${requestId}] Failed to generate primaryScene`);
-      return createCorsErrorResponse('Failed to generate visual scene', 500);
-    }
-    
-    console.log(`🎯 [${requestId}] Generated primaryScene: ${sceneResult.primaryScene.substring(0, 100)}...`);
-    
-    // Then call orchestrator.getEnhancedPrompt with primaryScene
-    const enhancedResult = await orchestrator.getEnhancedPrompt(
-      userInfo, 
-      storyText, 
-      storyText, 
-      sessionId, 
-      { primaryScene: sceneResult.primaryScene }
-    );
-    
-    if (enhancedResult && enhancedResult.success) {
-      console.log(`✅ [${requestId}] Orchestrator returned enhanced prompt`);
-      // Normalize response with templateStructure: 'COMPLETE_TIER_1'
-      return createCorsResponse({
-        ...enhancedResult,
-        templateStructure: 'COMPLETE_TIER_1',
-        primaryScene: sceneResult.primaryScene,
-        positivePrompt: enhancedResult.positivePrompt || sceneResult.primaryScene,
-        negativePrompt: enhancedResult.negativePrompt || 'blur, dark, scary, adult content, inappropriate'
-      });
-    } else {
-      console.warn(`⚠️ [${requestId}] Orchestrator failed, using basic extraction`);
-      return createCorsResponse({
-        ...sceneResult,
-        templateStructure: 'COMPLETE_TIER_1',
-        positivePrompt: sceneResult.primaryScene,
-        negativePrompt: 'blur, dark, scary, adult content, inappropriate',
-        fallbackMode: true
-      });
-    }
-    
-  } catch (orchestratorError) {
-    console.error(`❌ [${requestId}] Orchestrator integration failed:`, orchestratorError.message);
-    
-    // Graceful fallback to basic extraction
-    const fallbackResult = await handleOrchestratorCall(requestId, storyText, { userInfo });
-    return createCorsResponse({
-      ...fallbackResult,
-      templateStructure: 'COMPLETE_TIER_1',
-      positivePrompt: fallbackResult.primaryScene,
-      negativePrompt: 'blur, dark, scary, adult content, inappropriate',
-      fallbackMode: true,
-      fallbackReason: orchestratorError.message
-    });
-  }
-}
+// Removed - ai-visual-scene-creator now only generates primaryScene + aiSchema
+// Frontend should call PhaseIntegrationOrchestrator directly for complete template
 
 // Export for TypeScript receptionist
 export default handleRequest;

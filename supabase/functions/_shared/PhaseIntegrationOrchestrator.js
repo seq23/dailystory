@@ -324,7 +324,8 @@ export class PhaseIntegrationOrchestrator {
             console.log('🔄 AI scene creator failed - escalating to Tier 2.5A');
             throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_25A');
           }
-          primaryScene = this.generatePrimaryScene(basePrompt, storyText);
+          console.log('🔄 AI scene creator failed - escalating to Tier 2.5A');
+          throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_25A');
         }
       }
       
