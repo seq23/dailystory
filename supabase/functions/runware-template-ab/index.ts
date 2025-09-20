@@ -32,6 +32,9 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
 };
 
+// Preload so bundler includes this file in the shipped artifact
+import './index.js';
+
 // Main serve function with strengthened error handling
 serve(async (req) => {
   // Handle CORS preflight requests directly in TypeScript receptionist
@@ -66,7 +69,7 @@ serve(async (req) => {
   try {
     // Import the actual JavaScript implementation
     // This dynamic import provides sync anomaly protection
-    const { default: handleRequest } = await import('./index.js');
+    const { default: handleRequest } = await import(new URL('./index.js', import.meta.url).href);
     
     console.log('✅ [TypeScript Receptionist] Successfully imported JavaScript implementation');
     
