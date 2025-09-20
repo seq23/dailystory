@@ -707,9 +707,29 @@ async function handleRequest(req) {
         console.log(`🎯 [${requestId}] Forcing Tier 1 via PhaseIntegrationOrchestrator`);
         const orchestrator = await LazyServiceLoader.getPhaseIntegrationOrchestrator();
         
+        // First get primaryScene and aiSchema from ai-visual-scene-creator
+        console.log(`🎯 [${requestId}] Calling ai-visual-scene-creator for primaryScene`);
+        const sceneResponse = await supabase.functions.invoke('ai-visual-scene-creator', {
+          body: {
+            storyText,
+            userInfo: payload.userInfo,
+            sessionId: payload.sessionId || 'session_' + requestId,
+            pageNumber
+          }
+        });
+        
+        if (!sceneResponse.data || sceneResponse.error) {
+          throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_25A');
+        }
+        
+        // Construct basePrompt from primaryScene and aiSchema
+        const { primaryScene, aiSchema } = sceneResponse.data;
+        const basePrompt = primaryScene + (aiSchema ? `\n\nSchema: ${JSON.stringify(aiSchema)}` : '');
+        
+        console.log(`🎯 [${requestId}] Calling orchestrator with basePrompt and storyText`);
         const tier1Response = await orchestrator.getEnhancedPrompt(
           payload.userInfo,
-          storyText,
+          basePrompt,
           storyText,
           payload.sessionId || 'session_' + requestId
         );
