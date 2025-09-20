@@ -332,14 +332,11 @@ function deriveNonEnglishCulturalContext(userInfo) {
 
 // TIER 2.5B: SIMPLIFIED SCENE EXTRACTION (Enhanced for Level 0)
 // Extracts: Action + Object + Location with comprehensive Level 0 coverage
-function extractSimpleScene(storyText, pageText) {
+function extractSimpleScene(storyText) {
   if (!storyText || typeof storyText !== 'string') return '';
-
-  // ESCALATION LOGIC: Check for missing critical elements
-  if (!pageText || !pageText.trim()) {
-    console.log('⚠️ Missing pageText - escalating to next tier');
-    return 'ESCALATE_MISSING_PAGETEXT';
-  }
+  
+  // Convert storyText for processing
+  const text = storyText.toLowerCase();
 
   // ==========  
   // Local config + tiny backups (scoped; no globals) - PHASE 1: EXPANDED VOCABULARY ARRAYS
@@ -854,7 +851,6 @@ async function handleRequest(req) {
     const finalPositivePrompt = [
       extractedScene || 'child playing happily',
       characterConsistency || 'a young child',
-      processedStoryText || storyText,
       styleFramework.frameworkPrompt || 'contemporary children\'s book illustration style'
     ].filter(Boolean).join('. ');
     
