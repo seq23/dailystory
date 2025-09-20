@@ -387,6 +387,13 @@ export class PhaseIntegrationOrchestrator {
       };
     } catch (error) {
       console.error(`❌ PHASE ORCHESTRATOR: Tier 1 template generation failed`, { error });
+      
+      // Propagate escalation signal instead of returning failure object
+      if (error.message && error.message.includes('NO_PRIMARY_SCENE_ESCALATE_TO_25A')) {
+        console.log(`🚨 PHASE ORCHESTRATOR: Rethrowing escalation signal`);
+        throw error;
+      }
+      
       return {
         enhancedPrompt: basePrompt,
         primaryScene: basePrompt,
@@ -567,6 +574,13 @@ export class PhaseIntegrationOrchestrator {
       return workflow;
     } catch (error) {
       console.error(`❌ PHASE ORCHESTRATOR: Complete workflow failed`, { error });
+      
+      // Propagate escalation signal instead of returning failure object
+      if (error.message && error.message.includes('NO_PRIMARY_SCENE_ESCALATE_TO_25A')) {
+        console.log(`🚨 PHASE ORCHESTRATOR: Rethrowing escalation signal from workflow`);
+        throw error;
+      }
+      
       return {
         workflowComplete: false,
         error: error.message,

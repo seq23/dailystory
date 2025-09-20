@@ -479,10 +479,28 @@ async function handleOrchestratorCall(requestId, storyText, enhancedStoryData, i
         if (content) {
           try {
             const parsed = JSON.parse(content);
+            
+            // Synthesize aiSchema from top-level fields if not present
+            let aiSchema = parsed.aiSchema;
+            if (!aiSchema && (parsed.setting || parsed.lighting || parsed.mainCharacter || parsed.action || parsed.mood)) {
+              aiSchema = {
+                setting: parsed.setting || null,
+                lighting: parsed.lighting || null,
+                mainCharacter: parsed.mainCharacter || null,
+                attire: parsed.attire || null,
+                accessories: parsed.accessories || null,
+                atmosphere: parsed.atmosphere || null,
+                action: parsed.action || null,
+                mood: parsed.mood || null,
+                pose: parsed.pose || null
+              };
+              console.log(`🔧 [${requestId}] Synthesized aiSchema from top-level JSON fields`);
+            }
+            
             processedContent = {
               ...processedContent,
               primaryScene: parsed.primaryScene || storyText,
-              aiSchema: parsed.aiSchema || null,
+              aiSchema: aiSchema || null,
               extractionMethod: 'openai_generated'
             };
             console.log(`✅ [${requestId}] Generated ${includeFullSchema ? 'primaryScene + aiSchema' : 'primaryScene'} via OpenAI`);

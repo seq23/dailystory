@@ -707,25 +707,49 @@ async function handleRequest(req) {
         console.log(`🎯 [${requestId}] Forcing Tier 1 via PhaseIntegrationOrchestrator`);
         const orchestrator = await LazyServiceLoader.getPhaseIntegrationOrchestrator();
         
-        const tier1Response = await orchestrator.generateEnhancedTier1Template(
-          storyText,
+        const tier1Response = await orchestrator.getEnhancedPrompt(
           payload.userInfo,
-          payload.sessionId || 'session_' + requestId,
-          payload.pageNumber || 1
+          storyText,
+          storyText,
+          payload.sessionId || 'session_' + requestId
         );
         
-        if (tier1Response && tier1Response.success) {
-          result = tier1Response;
+        if (tier1Response && tier1Response.enhancementSuccessful && tier1Response.enhancedPrompt) {
+          // Generate actual image using the enhanced prompt
+          console.log(`🎯 [${requestId}] Generating Tier 1 image with enhanced prompt`);
+          result = await generateWithRunware(tier1Response.enhancedPrompt, storyText, payload.userInfo, payload.sessionId, pageNumber, requestId);
         } else {
-          throw new Error('Tier 1 orchestrator failed');
+          throw new Error('Tier 1 enhanced prompt generation failed');
         }
       } catch (error) {
         if (error.message.includes('NO_PRIMARY_SCENE_ESCALATE_TO_25A')) {
           console.log('🔄 Tier 1 primary scene failed - escalating to Tier 2.5A');
-          result = await generateEnhancedFallback(storyText, pageNumber || 1, 'runware');
+          // Call runware-template-ab for real Tier 2.5A escalation
+          result = await supabase.functions.invoke('runware-template-ab', {
+            body: {
+              storyText,
+              pageText: storyText,
+              userInfo: payload.userInfo,
+              sessionId: payload.sessionId || 'session_' + requestId,
+              pageNumber: pageNumber || 1,
+              complexity: 'A'
+            }
+          });
+          if (result.data) result = result.data;
         } else {
-          console.log('🔄 Tier 1 error, escalating to enhanced fallback:', error.message);
-          result = await generateEnhancedFallback(storyText, pageNumber || 1, 'runware');
+          console.log('🔄 Tier 1 error, escalating to Tier 2.5A:', error.message);
+          // Call runware-template-ab for real Tier 2.5A escalation
+          result = await supabase.functions.invoke('runware-template-ab', {
+            body: {
+              storyText,
+              pageText: storyText,
+              userInfo: payload.userInfo,
+              sessionId: payload.sessionId || 'session_' + requestId,
+              pageNumber: pageNumber || 1,
+              complexity: 'A'
+            }
+          });
+          if (result.data) result = result.data;
         }
       }
     } else {
