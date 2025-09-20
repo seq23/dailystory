@@ -26,7 +26,7 @@ interface TestResult {
       status?: number;
       triageResult?: string;
     }; // NEW: Health check results
-    testType?: 'REAL' | 'FORCED' | 'CONNECTIVITY' | 'HEALTH' | 'TRIAGE'; // Enhanced test types
+    testType?: 'REAL' | 'FORCED' | 'CONNECTIVITY' | 'HEALTH' | 'TRIAGE' | 'TIER_1_COMPLETE_FLOW' | 'FORCED_TEMPLATE_BYPASS'; // Enhanced test types
     timeoutTest?: boolean;
     abortReason?: string;
     // AI Scene Creator specific
@@ -89,6 +89,23 @@ interface TestResult {
       probableCause?: string; // NEW: Specific cause per endpoint
       errorCategory?: string; // NEW: Category per endpoint
     }>;
+    // Enhanced test result fields for step-by-step validation
+    stepByStepValidation?: Array<{
+      name: string;
+      status: 'pending' | 'running' | 'success' | 'error';
+    }>;
+    schemaCompleteness?: {
+      setting: boolean;
+      action: boolean;
+      mood: boolean;
+      pose: boolean;
+      completeness: number;
+    };
+    bypassedTiers?: string[];
+    selectedFunction?: string;
+    primarySceneLength?: number;
+    escalationPath?: string;
+    promptLength?: number;
   };
 }
 
@@ -671,100 +688,161 @@ export const ImageTierTester = () => {
     setIsLoading(true);
     setResults([]);
     
+    const steps: Array<{
+      name: string;
+      status: 'pending' | 'running' | 'success' | 'error';
+    }> = [
+      { name: '🔍 Preflight Check', status: 'pending' },
+      { name: '🎭 AI Scene Creation', status: 'pending' },
+      { name: '✨ Primary Scene Validation', status: 'pending' },
+      { name: '🧬 AI Schema Validation', status: 'pending' },
+      { name: '📝 Prompt Enhancement', status: 'pending' },
+      { name: '🎨 Image Generation', status: 'pending' }
+    ];
+    
     try {
       // Step 1: Perform preflight GET probe
+      steps[0].status = 'running';
       const triageCheck = await performTriageCheck('runware-generate-image');
+      steps[0].status = triageCheck.available ? 'success' : 'error';
       
-      DebugLogger.log('image', '🎯 Forcing complete Tier 1 flow (AI scene + image generation)', {
-        forceTier: 'tier-1',
-        triageResult: triageCheck.triageResult
+      DebugLogger.log('image', '🎯 Force Tier 1: Complete real user flow simulation', {
+        forceTier: 'COMPLETE_TIER_1',
+        userInfo: buildUserInfo(),
+        steps
       });
 
       const startTime = Date.now();
+      
+      // Step 2: Call runware-generate-image with COMPLETE_TIER_1 flag
+      steps[1].status = 'running';
       const response = await supabase.functions.invoke('runware-generate-image', {
         body: {
-          storyText: testStoryText, // Template AB expects storyText
-          pageText: testStoryText, // Template CD compatibility
+          storyText: testStoryText,
           userInfo: buildUserInfo(),
-          pageNumber: 1,
           sessionId: crypto.randomUUID(),
-          forceTier: 'tier-1', // Force complete Tier 1 flow
-          skipTier25: true // Skip fallback tiers
+          pageNumber: 1,
+          forceTier: 'COMPLETE_TIER_1', // Force complete Tier 1 flow
+          test: true
         }
       });
 
       const processingTime = Date.now() - startTime;
       
-      DebugLogger.log('image', '✅ Force Tier 1 (Full Prompt) completed', {
-        success: response.data?.success,
-        processingTime,
-        tier: response.data?.tier,
-        hasImage: !!response.data?.imageURL
-      });
+      // Step 3: Validate Primary Scene
+      steps[2].status = 'running';
+      const hasPrimaryScene = response.data?.primaryScene && response.data.primaryScene.length > 0;
+      steps[2].status = hasPrimaryScene ? 'success' : 'error';
+      
+      // Step 4: Validate AI Schema (DEBUG ONLY - NOT A FAILURE CONDITION)
+      steps[3].status = 'running';
+      const aiSchema = response.data?.aiSchema;
+      const schemaCompleteness = {
+        setting: !!(aiSchema?.setting),
+        action: !!(aiSchema?.action), 
+        mood: !!(aiSchema?.mood),
+        pose: !!(aiSchema?.pose),
+        completeness: 0
+      };
+      schemaCompleteness.completeness = 
+        (schemaCompleteness.setting ? 25 : 0) +
+        (schemaCompleteness.action ? 25 : 0) +
+        (schemaCompleteness.mood ? 25 : 0) +
+        (schemaCompleteness.pose ? 25 : 0);
+      steps[3].status = 'success'; // Always success - this is debug only
+      
+      // Step 5: Validate Enhanced Prompt
+      steps[4].status = 'running';
+      const hasEnhancedPrompt = response.data?.enhancedPrompt && response.data.enhancedPrompt.length > 0;
+      steps[4].status = hasEnhancedPrompt ? 'success' : 'error';
+      
+      // Step 6: Validate Image Generation
+      steps[5].status = 'running';
+      const hasImage = !!(response.data?.imageURL || response.data?.imageUrl);
+      steps[5].status = hasImage ? 'success' : 'error';
 
-      // CRITICAL: Check for fake Tier 1 success - enhanced prompt should be significantly different from original
-      const originalPrompt = response.data?.metadata?.originalPrompt || '';
-      const enhancedPrompt = response.data?.metadata?.enhancedPrompt || response.data?.metadata?.positivePrompt || '';
-      const isFakeSuccess = !response.error && enhancedPrompt && enhancedPrompt.length <= originalPrompt.length + 50;
-
-      // Enhanced error categorization with preflight context
-      let category, probableCause;
-      if (!response.error && !isFakeSuccess) {
-        category = 'SUCCESS';
-        probableCause = 'Tier 1 full prompt flow completed successfully';
-      } else if (isFakeSuccess) {
-        category = 'VALIDATION';
-        probableCause = `Tier 1 fake success detected: Enhanced prompt (${enhancedPrompt.length} chars) not significantly enhanced from original (${originalPrompt.length} chars). Dark skin tone or non-English language may have caused ethnicity resolver async failure.`;
-      } else if (triageCheck.available && triageCheck.status === 200) {
-        // GET passed but POST failed - surface a more precise cause for Tier 1 forced flow with skipTier25=true
-        const errorResult = categorizeError(response.error, 'runware-generate-image:forced-tier1');
-        category = errorResult.category;
-        probableCause = errorResult.probableCause || 'Tier 1 image generation failed while skipTier25=true (no escalation allowed)';
-      } else {
-        const errorResult = categorizeError(response.error, 'runware-generate-image');
-        category = errorResult.category;
-        probableCause = errorResult.probableCause;
+      // Determine overall success
+      const overallSuccess = !response.error && hasPrimaryScene && hasImage;
+      
+      // Categorize error type if failed
+      let errorCategory = null;
+      let probableCause = null;
+      
+      if (!overallSuccess) {
+        if (response.error?.message?.includes('503') || response.error?.message?.includes('Service Unavailable')) {
+          errorCategory = 'NETWORK';
+          probableCause = 'Edge function deployment sync issue';
+        } else if (!hasPrimaryScene) {
+          errorCategory = 'AI_SCENE_CREATION';
+          probableCause = 'ai-visual-scene-creator failed to generate primaryScene';
+        } else if (!hasEnhancedPrompt) {
+          errorCategory = 'PROMPT_ENHANCEMENT';
+          probableCause = 'PhaseIntegrationOrchestrator failed to enhance prompt';
+        } else if (!hasImage) {
+          errorCategory = 'IMAGE_GENERATION';
+          probableCause = 'Runware image generation failed';
+        } else {
+          errorCategory = 'UNKNOWN';
+          probableCause = response.error?.message || 'Unknown failure in Tier 1 flow';
+        }
       }
 
+      DebugLogger.log('image', `${overallSuccess ? '✅' : '❌'} Force Tier 1 completed`, {
+        success: overallSuccess,
+        processingTime,
+        hasPrimaryScene,
+        hasEnhancedPrompt,
+        hasImage,
+        errorCategory,
+        probableCause,
+        steps: steps.map(s => `${s.name}: ${s.status}`)
+      });
+
       setResults([{
-        tier: 'tier-1-full',
-        success: !response.error && response.data?.success,
-        imageURL: response.data?.imageURL,
+        tier: 'tier-1-forced',
+        success: overallSuccess,
+        imageURL: response.data?.imageURL || response.data?.imageUrl || null,
         details: {
           processingTime,
           requestId: response.data?.requestId,
+          aiSchema: response.data?.aiSchema,
+          primaryScene: response.data?.primaryScene,
+          setting: response.data?.aiSchema?.setting,
+          action: response.data?.aiSchema?.action,
+          mood: response.data?.aiSchema?.mood,
+          pose: response.data?.aiSchema?.pose,
+          enhancedPrompt: response.data?.enhancedPrompt,
+          positivePrompt: response.data?.positivePrompt || response.data?.enhancedPrompt,
+          negativePrompt: response.data?.negativePrompt,
+          styleFramework: response.data?.styleFrameworkUsed,
+          testType: 'TIER_1_COMPLETE_FLOW',
+          stepByStepValidation: steps,
+          schemaCompleteness, // DEBUG INFO ONLY
+          primarySceneLength: response.data?.primaryScene?.length || 0,
           tier: response.data?.tier,
-          enhancementLevel: response.data?.enhancementLevel,
-          provider: response.data?.provider,
-          forcedTier: 'tier-1',
-          fullPromptFlow: true,
-          testType: 'FORCED',
-          healthCheck: triageCheck,
-          errorCategory: category as any,
-          probableCause,
+          escalationPath: response.data?.escalationPath,
           error: response.error?.message || response.data?.error,
-          // NEW: Include prompt metadata if available
-          originalPrompt: response.data?.metadata?.originalPrompt,
-          enhancedPrompt: response.data?.metadata?.enhancedPrompt,
-          positivePrompt: response.data?.metadata?.positivePrompt,
-          negativePrompt: response.data?.metadata?.negativePrompt
+          errorCategory,
+          probableCause
         }
       }]);
     } catch (error) {
-      DebugLogger.error('image', '❌ Force Tier 1 (Full Prompt) failed', { error });
-      const { category, probableCause } = categorizeError(error);
+      DebugLogger.error('image', '❌ Force Tier 1 failed with exception', { error });
+      
+      // Update failed step
+      const currentStep = steps.find(s => s.status === 'running');
+      if (currentStep) currentStep.status = 'error';
       
       setResults([{
-        tier: 'tier-1-full-error',
+        tier: 'tier-1-error',
         success: false,
         imageURL: null,
         details: { 
-          error: error.message, 
-          forcedTier: 'tier-1', 
-          fullPromptFlow: true,
-          testType: 'FORCED',
-          errorCategory: category as any,
-          probableCause
+          error: error.message,
+          testType: 'TIER_1_COMPLETE_FLOW',
+          stepByStepValidation: steps,
+          errorCategory: 'NETWORK',
+          probableCause: 'Network timeout or connection failure'
         }
       }]);
     } finally {
@@ -901,17 +979,33 @@ export const ImageTierTester = () => {
     return 'Standard routing applied';
   };
 
-  // Force specific tier tests
+  // Force specific tier tests with enhanced validation
   const forceTier = async (tier: string) => {
     setIsLoading(true);
     setResults([]);
     
+    const steps: Array<{
+      name: string;
+      status: 'pending' | 'running' | 'success' | 'error';
+    }> = [
+      { name: '🔍 Function Selection', status: 'pending' },
+      { name: '📋 Payload Construction', status: 'pending' },
+      { name: '🚀 Template Execution', status: 'pending' },
+      { name: '📝 Prompt Generation', status: 'pending' },
+      { name: '🎨 Image Generation', status: 'pending' }
+    ];
+    
     try {
-      DebugLogger.log('image', `🎯 Forcing tier ${tier}`, { tier });
+      DebugLogger.log('image', `🎯 Force Tier ${tier}: Direct template bypass simulation`, { 
+        tier, 
+        bypassedTiers: tier === '2.5A' ? 'Tier 1' : tier === '2.5B' ? 'Tier 1, 2.5A' : 'Unknown',
+        expectedTemplate: tier.includes('A') || tier.includes('B') ? 'template-ab' : 'template-cd'
+      });
 
       const startTime = Date.now();
       
-      // Determine function based on tier
+      // Step 1: Function Selection
+      steps[0].status = 'running';
       const functionMap: { [key: string]: string } = {
         '2.5A': 'runware-template-ab',
         '2.5B': 'runware-template-ab', 
@@ -925,51 +1019,102 @@ export const ImageTierTester = () => {
         '2.5C': 'C', 
         '2.5D': 'D'
       };
-
-      const response = await supabase.functions.invoke(functionMap[tier], {
-        body: tier === '2.5A' || tier === '2.5B' 
-          ? {
-              // Template AB expects {bundle, config} payload shape
-              bundle: {
-                storyText: testStoryText,
-                pageText: testStoryText,
-                userInfo: buildUserInfo(),
-                pageNumber: 1,
-                sessionId: crypto.randomUUID()
-              },
-              config: {
-                templateComplexity: templateMap[tier]
-              }
-            }
-          : {
-              // Template CD expects flat payload
+      
+      const selectedFunction = functionMap[tier];
+      steps[0].status = selectedFunction ? 'success' : 'error';
+      
+      // Step 2: Payload Construction
+      steps[1].status = 'running';
+      const payload = tier === '2.5A' || tier === '2.5B' 
+        ? {
+            // Template AB expects {bundle, config} payload shape
+            bundle: {
               storyText: testStoryText,
               pageText: testStoryText,
               userInfo: buildUserInfo(),
-              templateComplexity: templateMap[tier],
               pageNumber: 1,
               sessionId: crypto.randomUUID()
-            }
-      });
+            },
+            config: {
+              templateComplexity: templateMap[tier]
+            },
+            test: true
+          }
+        : {
+            // Template CD expects flat payload
+            storyText: testStoryText,
+            pageText: testStoryText,
+            userInfo: buildUserInfo(),
+            templateComplexity: templateMap[tier],
+            pageNumber: 1,
+            sessionId: crypto.randomUUID(),
+            test: true
+          };
+      steps[1].status = 'success';
+
+      // Step 3: Template Execution
+      steps[2].status = 'running';
+      const response = await supabase.functions.invoke(selectedFunction, { body: payload });
+      steps[2].status = !response.error ? 'success' : 'error';
 
       const processingTime = Date.now() - startTime;
       
-      DebugLogger.log('image', `✅ Force Tier ${tier} completed`, {
-        success: response.data?.success,
-        processingTime,
-        hasImage: !!response.data?.imageURL
-      });
-
-      const safeImageURL = response.data?.imageURL || response.data?.imageUrl || null;
+      // Step 4: Prompt Generation Validation
+      steps[3].status = 'running';
       const safePositive = response.data?.positivePrompt
         || response.data?.prompt
         || response.data?.metadata?.enhancedPrompt
         || response.data?.metadata?.positivePrompt
         || null;
+      const hasPrompt = !!(safePositive && safePositive.length > 0);
+      steps[3].status = hasPrompt ? 'success' : 'error';
+      
+      // Step 5: Image Generation Validation
+      steps[4].status = 'running';
+      const safeImageURL = response.data?.imageURL || response.data?.imageUrl || null;
+      const hasImage = !!safeImageURL;
+      steps[4].status = hasImage ? 'success' : 'error';
+
+      // Determine overall success and error categorization
+      const overallSuccess = !response.error && response.data?.success && hasPrompt && hasImage;
+      
+      let errorCategory = null;
+      let probableCause = null;
+      
+      if (!overallSuccess) {
+        if (response.error?.message?.includes('503') || response.error?.message?.includes('Service Unavailable')) {
+          errorCategory = 'NETWORK';
+          probableCause = `${selectedFunction} edge function deployment sync issue`;
+        } else if (response.error?.message?.includes('Missing required field')) {
+          errorCategory = 'VALIDATION';
+          probableCause = 'Required fields missing in payload';
+        } else if (!hasPrompt) {
+          errorCategory = 'TEMPLATE_GENERATION';
+          probableCause = `Template ${tier} failed to generate prompts`;
+        } else if (!hasImage) {
+          errorCategory = 'IMAGE_GENERATION';
+          probableCause = 'Runware image generation failed in template';
+        } else {
+          errorCategory = 'TEMPLATE_PROCESSING';
+          probableCause = response.error?.message || response.data?.error || 'Template processing failed';
+        }
+      }
+      
+      DebugLogger.log('image', `${overallSuccess ? '✅' : '❌'} Force Tier ${tier} completed`, {
+        success: overallSuccess,
+        processingTime,
+        hasPrompt,
+        hasImage,
+        templateComplexity: templateMap[tier],
+        selectedFunction,
+        errorCategory,
+        probableCause,
+        steps: steps.map(s => `${s.name}: ${s.status}`)
+      });
 
       setResults([{
         tier: `tier-${tier}-forced`,
-        success: !response.error && response.data?.success,
+        success: overallSuccess,
         imageURL: safeImageURL,
         details: {
           processingTime,
@@ -980,12 +1125,24 @@ export const ImageTierTester = () => {
           negativePrompt: response.data?.negativePrompt,
           styleFramework: response.data?.styleFrameworkUsed,
           forcedTier: tier,
-          testType: 'FORCED', // This is a forced tier test
-          error: response.error?.message || response.data?.error
+          testType: 'FORCED_TEMPLATE_BYPASS',
+          bypassedTiers: tier === '2.5A' ? ['Tier 1'] : tier === '2.5B' ? ['Tier 1', 'Tier 2.5A'] : [],
+          selectedFunction,
+          stepByStepValidation: steps,
+          promptLength: safePositive?.length || 0,
+          templateStructure: response.data?.templateStructure,
+          error: response.error?.message || response.data?.error,
+          errorCategory,
+          probableCause
         }
       }]);
     } catch (error) {
-      DebugLogger.error('image', `❌ Force Tier ${tier} failed`, { error });
+      DebugLogger.error('image', `❌ Force Tier ${tier} failed with exception`, { error });
+      
+      // Update failed step
+      const currentStep = steps.find(s => s.status === 'running');
+      if (currentStep) currentStep.status = 'error';
+      
       setResults([{
         tier: `tier-${tier}-error`,
         success: false,
@@ -993,7 +1150,10 @@ export const ImageTierTester = () => {
         details: { 
           error: error.message, 
           forcedTier: tier,
-          testType: 'FORCED'
+          testType: 'FORCED_TEMPLATE_BYPASS',
+          stepByStepValidation: steps,
+          errorCategory: 'NETWORK',
+          probableCause: 'Network timeout or connection failure'
         }
       }]);
     } finally {

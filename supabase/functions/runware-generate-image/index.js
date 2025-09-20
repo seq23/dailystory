@@ -17,6 +17,12 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
 
+// Initialize Supabase client for edge function calls
+const supabase = createClient(
+  Deno.env.get('SUPABASE_URL') ?? '',
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+);
+
 // ============= NUCLEAR INDEPENDENCE: COMPLETE STYLE FRAMEWORKS =============
 const NUCLEAR_HARDCODED_STYLE_FRAMEWORKS = {
   'beginner': {
@@ -752,7 +758,7 @@ async function handleRequest(req) {
               userInfo: payload.userInfo,
               sessionId: payload.sessionId || 'session_' + requestId,
               pageNumber: pageNumber || 1,
-              complexity: 'A'
+              templateComplexity: 'A'
             }
           });
           if (result.data) result = result.data;
@@ -766,7 +772,7 @@ async function handleRequest(req) {
               userInfo: payload.userInfo,
               sessionId: payload.sessionId || 'session_' + requestId,
               pageNumber: pageNumber || 1,
-              complexity: 'A'
+              templateComplexity: 'A'
             }
           });
           if (result.data) result = result.data;
