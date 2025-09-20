@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+// FIX: 2025-09-20 - React object rendering error fixed by proper aiSchema property access
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -1704,10 +1705,10 @@ export const ImageTierTester = () => {
                        <div className="text-sm">
                          <span className="font-medium">AI Schema Details:</span>
                          <div className="text-xs mt-1 space-y-1">
-                           {result.details.setting && <div><strong>Setting:</strong> {result.details.setting}</div>}
-                           {result.details.action && <div><strong>Action:</strong> {result.details.action}</div>}
-                           {result.details.mood && <div><strong>Mood:</strong> {result.details.mood}</div>}
-                           {result.details.pose && <div><strong>Pose:</strong> {result.details.pose}</div>}
+              {result.details.aiSchema?.setting && <div><strong>Setting:</strong> {result.details.aiSchema.setting}</div>}
+              {result.details.aiSchema?.action && <div><strong>Action:</strong> {result.details.aiSchema.action}</div>}
+              {result.details.aiSchema?.mood && <div><strong>Mood:</strong> {result.details.aiSchema.mood}</div>}
+              {result.details.aiSchema?.pose && <div><strong>Pose:</strong> {result.details.aiSchema.pose}</div>}
                          </div>
                        </div>
                      )}
@@ -1720,7 +1721,7 @@ export const ImageTierTester = () => {
                          </summary>
                          <div className="mt-2">
                            <pre className="text-xs bg-white p-2 rounded border overflow-x-auto max-h-48 overflow-y-auto">
-                             {JSON.stringify(result.details.aiSchema, null, 2)}
+                             {result.details.aiSchema ? JSON.stringify(result.details.aiSchema, null, 2) : 'No schema data'}
                            </pre>
                          </div>
                        </details>
