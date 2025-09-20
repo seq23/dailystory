@@ -428,6 +428,3 @@ async function handleRequest(req) {
 
 // Export for TypeScript receptionist
 export default handleRequest;
-
-// Maintain backward compatibility
-serve(handleRequest);

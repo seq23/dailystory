@@ -834,7 +834,4 @@ async function handleRequest(req) {
 // Export for TypeScript receptionist
 export default handleRequest;
 
-// Maintain backward compatibility  
-serve(handleRequest);
-
 console.log('🎯 Crash-Proof Runware Orchestrator v2.1 initialized successfully');

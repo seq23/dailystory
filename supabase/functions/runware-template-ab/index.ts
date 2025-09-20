@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-09-20T17:50:00Z - BULLETPROOF SYNC PROTECTION V3.0
+// DEPLOY_MARKER: 2025-09-20T18:25:00Z - BULLETPROOF SYNC PROTECTION V3.1
 // ================================================================================
 // STRENGTHENED TYPESCRIPT RECEPTIONIST - BOOT FAILURE ELIMINATION SYSTEM
 // ================================================================================
@@ -65,7 +65,7 @@ serve(async (req) => {
 
   // BULLETPROOF SYNC PROTECTION V3.0
   let importAttempts = 0;
-  const maxImportAttempts = 3;
+  const maxImportAttempts = 5;
   
   while (importAttempts < maxImportAttempts) {
     try {
@@ -79,7 +79,7 @@ serve(async (req) => {
       } catch (validationError) {
         console.warn(`⚠️ [BOOT-V3] Validation failed on attempt ${importAttempts}:`, validationError.message);
         if (importAttempts < maxImportAttempts) {
-          await new Promise(resolve => setTimeout(resolve, 1000 * importAttempts)); // Exponential backoff
+          await new Promise(resolve => setTimeout(resolve, 500 * importAttempts)); // Faster backoff
           continue;
         }
         throw validationError;
@@ -110,7 +110,7 @@ serve(async (req) => {
           code: errorCode,
           message: 'JavaScript implementation sync failure - auto-recovery initiated',
           timestamp: new Date().toISOString(),
-          deploymentMarker: '2025-09-20T17:50:00Z',
+          deploymentMarker: '2025-09-20T18:25:00Z',
           attempts: importAttempts,
           details: importError.message,
           recovery: {

@@ -27,7 +27,7 @@ interface TestResult {
       status?: number;
       triageResult?: string;
     }; // NEW: Health check results
-    testType?: 'REAL' | 'FORCED' | 'CONNECTIVITY' | 'HEALTH' | 'TRIAGE' | 'TIER_1_COMPLETE_FLOW' | 'FORCED_TEMPLATE_BYPASS'; // Enhanced test types
+    testType?: 'REAL' | 'FORCED' | 'CONNECTIVITY' | 'ENHANCED_CONNECTIVITY' | 'HEALTH' | 'TRIAGE' | 'TIER_1_COMPLETE_FLOW' | 'FORCED_TEMPLATE_BYPASS'; // Enhanced test types
     timeoutTest?: boolean;
     abortReason?: string;
     // AI Scene Creator specific
@@ -1244,13 +1244,13 @@ export const ImageTierTester = () => {
     }
   };
 
-  // Comprehensive connectivity test for all 4 endpoints
+  // Enhanced connectivity test for all 4 endpoints - GET + POST with boot vs runtime detection
   const testConnectivity = async () => {
     setIsLoading(true);
     setResults([]);
     
     try {
-      DebugLogger.log('image', '🌐 Testing connectivity to all endpoints');
+      DebugLogger.log('image', '🌐 Enhanced connectivity test: GET + POST with boot detection');
       
       const endpoints = [
         'ai-visual-scene-creator',
@@ -1263,8 +1263,16 @@ export const ImageTierTester = () => {
       const connectivityResults = await Promise.allSettled(
         endpoints.map(async endpoint => {
           const endpointStartTime = Date.now();
+          
+          // Test both GET (health check) and POST (minimal request)
+          const tests = {
+            GET: null as any,
+            POST: null as any
+          };
+          
+          // GET Test (Health Check)
           try {
-            const response = await fetch(`https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/${endpoint}`, {
+            const getResponse = await fetch(`https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/${endpoint}`, {
               method: 'GET',
               headers: {
                 'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino`,
@@ -1272,49 +1280,84 @@ export const ImageTierTester = () => {
               }
             });
             
-            const responseTime = Date.now() - endpointStartTime;
-            let humanReadableReason = '';
-            
-            if (response.status === 200) {
-              humanReadableReason = 'Function is healthy and responding';
-            } else if (response.status === 404) {
-              humanReadableReason = 'Function not found - may not be deployed';
-            } else if (response.status === 503) {
-              humanReadableReason = 'Service unavailable - function may be starting up';
-            } else if (response.status === 500) {
-              humanReadableReason = 'Internal server error - function has issues';
-            } else {
-              humanReadableReason = `Unexpected status: ${response.status}`;
-            }
-            
-            return { 
-              endpoint, 
-              success: response.ok, 
-              status: response.status,
-              statusText: response.statusText,
-              responseTime,
-              humanReadableReason
+            tests.GET = {
+              success: getResponse.ok,
+              status: getResponse.status,
+              statusText: getResponse.statusText,
+              category: getResponse.ok ? 'HEALTHY' : 'BOOT_SYNC_ANOMALY'
             };
-          } catch (error) {
-            const responseTime = Date.now() - endpointStartTime;
-            let humanReadableReason = '';
-            
-            if (error.message.includes('Failed to fetch')) {
-              humanReadableReason = 'Network error - endpoint unreachable';
-            } else if (error.message.includes('timeout')) {
-              humanReadableReason = 'Request timeout - function taking too long';
-            } else {
-              humanReadableReason = `Connection failed: ${error.message}`;
-            }
-            
-            return { 
-              endpoint, 
-              success: false, 
-              error: error.message,
-              responseTime,
-              humanReadableReason
+          } catch (getError: any) {
+            tests.GET = {
+              success: false,
+              status: 0,
+              statusText: getError.message,
+              category: 'NETWORK_ISSUE'
             };
           }
+          
+          // POST Test (Minimal Request)
+          try {
+            const postResponse = await fetch(`https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/${endpoint}`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino`,
+                'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ test: true, minimal: true })
+            });
+            
+            let category = 'HEALTHY';
+            if (postResponse.status === 503) {
+              category = 'BOOT_SYNC_ANOMALY';
+            } else if (postResponse.status >= 500) {
+              category = 'RUNTIME_ERROR';
+            } else if (postResponse.status === 404) {
+              category = 'DEPLOYMENT_ISSUE';
+            }
+            
+            tests.POST = {
+              success: postResponse.ok || postResponse.status < 500,
+              status: postResponse.status,
+              statusText: postResponse.statusText,
+              category
+            };
+          } catch (postError: any) {
+            tests.POST = {
+              success: false,
+              status: 0,
+              statusText: postError.message,
+              category: 'NETWORK_ISSUE'
+            };
+          }
+          
+          const responseTime = Date.now() - endpointStartTime;
+          
+          // Overall assessment
+          const overallSuccess = tests.GET.success && tests.POST.success;
+          const overallCategory = tests.GET.category === 'HEALTHY' && tests.POST.category === 'HEALTHY' 
+            ? 'HEALTHY' 
+            : tests.POST.category; // POST reveals more issues
+          
+          let humanReadableReason = '';
+          if (overallSuccess) {
+            humanReadableReason = 'Function is healthy - both GET and POST working';
+          } else if (tests.GET.success && !tests.POST.success) {
+            humanReadableReason = `Boot successful but runtime issues (${tests.POST.category})`;
+          } else if (!tests.GET.success && !tests.POST.success) {
+            humanReadableReason = `Complete failure (${overallCategory})`;
+          } else {
+            humanReadableReason = `Mixed results - ${overallCategory}`;
+          }
+          
+          return { 
+            endpoint, 
+            success: overallSuccess,
+            responseTime,
+            humanReadableReason,
+            category: overallCategory,
+            tests
+          };
         })
       );
 
@@ -1324,20 +1367,21 @@ export const ImageTierTester = () => {
       ).length;
 
       setResults([{
-        tier: 'connectivity-test',
+        tier: 'connectivity-test-enhanced',
         success: successfulConnections > 0,
         imageURL: null,
         details: {
           processingTime,
           successfulConnections,
           totalEndpoints: endpoints.length,
-          testType: 'CONNECTIVITY', // Special test type
+          testType: 'ENHANCED_CONNECTIVITY', // Enhanced test type
           endpointResults: connectivityResults.map(result => 
             result.status === 'fulfilled' ? result.value : { 
               endpoint: 'unknown', 
               success: false, 
               error: result.reason?.message || 'Unknown error',
-              humanReadableReason: 'Test execution failed'
+              humanReadableReason: 'Test execution failed',
+              category: 'NETWORK_ISSUE'
             }
           )
         }
@@ -1964,8 +2008,8 @@ export const ImageTierTester = () => {
                       </div>
                     )}
                     
-                    {/* Enhanced Connectivity Results */}
-                    {result.details.testType === 'CONNECTIVITY' && result.details.endpointResults && (
+                    {/* Enhanced Connectivity Results - supports both CONNECTIVITY and ENHANCED_CONNECTIVITY */}
+                    {(result.details.testType === 'CONNECTIVITY' || result.details.testType === 'ENHANCED_CONNECTIVITY') && result.details.endpointResults && (
                       <div className="text-sm">
                         <span className="font-medium">Endpoint Status Details:</span>
                         <div className="text-xs mt-2 space-y-2">
@@ -1977,6 +2021,11 @@ export const ImageTierTester = () => {
                                   <Badge variant={endpoint.success ? 'default' : 'destructive'}>
                                     {endpoint.success ? 'HEALTHY' : 'FAILED'}
                                   </Badge>
+                                  {endpoint.category && (
+                                    <Badge variant="outline" className="text-xs">
+                                      {endpoint.category}
+                                    </Badge>
+                                  )}
                                   {endpoint.responseTime && (
                                     <span className="text-xs text-muted-foreground">
                                       {endpoint.responseTime}ms
@@ -1984,13 +2033,42 @@ export const ImageTierTester = () => {
                                   )}
                                 </div>
                               </div>
-                              {endpoint.status && (
+                              
+                              {/* Enhanced GET vs POST Results for ENHANCED_CONNECTIVITY */}
+                              {endpoint.tests && (
+                                <div className="grid grid-cols-2 gap-2 mt-2">
+                                  <div className="border rounded p-2 bg-blue-50">
+                                    <div className="font-medium text-blue-700 text-xs">GET (Health Check)</div>
+                                    <div className="flex items-center gap-1 mt-1">
+                                      <span className={endpoint.tests.GET.success ? "text-green-600" : "text-red-600"}>
+                                        {endpoint.tests.GET.success ? "✅" : "❌"}
+                                      </span>
+                                      <span className="text-xs">Status {endpoint.tests.GET.status}</span>
+                                      <Badge variant="outline" className="text-xs">{endpoint.tests.GET.category}</Badge>
+                                    </div>
+                                  </div>
+                                  <div className="border rounded p-2 bg-green-50">
+                                    <div className="font-medium text-green-700 text-xs">POST (Runtime Test)</div>
+                                    <div className="flex items-center gap-1 mt-1">
+                                      <span className={endpoint.tests.POST.success ? "text-green-600" : "text-red-600"}>
+                                        {endpoint.tests.POST.success ? "✅" : "❌"}
+                                      </span>
+                                      <span className="text-xs">Status {endpoint.tests.POST.status}</span>
+                                      <Badge variant="outline" className="text-xs">{endpoint.tests.POST.category}</Badge>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                              
+                              {/* Legacy status display for old CONNECTIVITY tests */}
+                              {!endpoint.tests && endpoint.status && (
                                 <div className="text-xs">
                                   <strong>HTTP Status:</strong> {endpoint.status} {endpoint.statusText}
                                 </div>
                               )}
+                              
                               <div className="text-xs">
-                                <strong>Status:</strong> {endpoint.humanReadableReason}
+                                <strong>Assessment:</strong> {endpoint.humanReadableReason}
                               </div>
                               {endpoint.error && (
                                 <div className="text-xs text-red-600">
