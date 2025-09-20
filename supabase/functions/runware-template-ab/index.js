@@ -91,22 +91,22 @@ console.log(`INIT runware-template-ab boot at ${new Date().toISOString()} | std@
 
 // ============= LAZY LOADING FUNCTIONS FOR HEAVY DEPENDENCIES =============
 
-async function getCharacterService() {
+async function getPhaseOrchestrator() {
   try {
-    const { characterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
-    return characterConsistencyService; // Return singleton instance directly
+    // DNS error detection and defensive handling
+    console.log('🔄 Loading PhaseIntegrationOrchestrator...');
+    const { masterPhaseIntegrator } = await import("../_shared/MasterPhaseIntegrator.js");
+    console.log('✅ PhaseIntegrationOrchestrator loaded successfully');
+    return masterPhaseIntegrator;
   } catch (error) {
-    console.warn('CharacterService lazy load failed:', error);
-    return null;
-  }
-}
-
-async function getUnifiedPlaceholderResolver() {
-  try {
-    const { unifiedPlaceholderResolver } = await import("../_shared/UnifiedPlaceholderResolver.js");
-    return unifiedPlaceholderResolver;
-  } catch (error) {
-    console.warn('UnifiedPlaceholderResolver lazy load failed:', error);
+    console.warn('⚠️ PhaseIntegrationOrchestrator lazy load failed (DNS/Sync):', error.message);
+    
+    // Circuit breaker: Detect repeated failures
+    const errorMessage = error.message?.toLowerCase() || '';
+    if (errorMessage.includes('dns') || errorMessage.includes('network') || errorMessage.includes('module not found')) {
+      console.warn('🔄 DNS/Network error detected, using graceful degradation');
+    }
+    
     return null;
   }
 }
@@ -172,23 +172,38 @@ function getFeatures(skinTone) {
 // PHASE 4: Session management removed - orchestrator handles all session state
 // Session data flows via function parameters only
 
-async function getVisualTracker() {
-  try {
-    const { visualDetailTracker } = await import("../_shared/VisualDetailTracker.js");
-    return visualDetailTracker; // Use singleton instance
-  } catch (error) {
-    console.warn('VisualTracker lazy load failed:', error);
+// ============= DEFENSIVE ORCHESTRATOR PROCESSING =============
+async function processWithOrchestrator(sessionId, pageText, userInfo, avatarIdentity, pageNumber) {
+  const orchestrator = await getPhaseOrchestrator();
+  if (!orchestrator) {
+    console.warn('🔄 Orchestrator unavailable, using nuclear fallback');
     return null;
   }
-}
 
-// ============= PHASE 4: SERVICE HEALTH MONITORING =============
-async function getServiceHealthMonitor() {
   try {
-    const { serviceHealthMonitor } = await import("../_shared/ServiceHealthMonitor.js");
-    return serviceHealthMonitor;
+    console.log('🎯 Processing content through PhaseIntegrationOrchestrator');
+    
+    // Create context for orchestrator processing
+    const context = {
+      sessionId,
+      userInfo,
+      avatarIdentity,
+      pageNumber: pageNumber || 1,
+      isGuestUser: false // Default to premium processing
+    };
+
+    // Process through all phases for enhanced data
+    const processedResult = await orchestrator.processContentThroughAllPhases(pageText, context);
+    
+    if (processedResult && processedResult.success) {
+      console.log('✅ Orchestrator processing successful');
+      return processedResult;
+    } else {
+      console.warn('⚠️ Orchestrator processing failed, using fallback');
+      return null;
+    }
   } catch (error) {
-    console.warn('ServiceHealthMonitor not available:', error);
+    console.warn('⚠️ Orchestrator processing error:', error.message);
     return null;
   }
 }
@@ -833,23 +848,31 @@ async function handleRequest(req) {
       // Use semantic scene extraction for Tier A
       const extractedScene = extractSemanticScene(storyText);
       
-      // Get character service for consistency
-      const characterService = await getCharacterService();
+      // Use PhaseIntegrationOrchestrator for enhanced processing
+      const orchestratedData = await processWithOrchestrator(sessionId, storyText, userInfo, avatarIdentity, pageNumber);
       let characterConsistency = '';
+      let enhancedPrompt = '';
       
-      if (characterService && selectedTemplate.avatarConsistency) {
+      if (orchestratedData && selectedTemplate.avatarConsistency) {
         try {
-          const characterData = await characterService.getCharacterSeed(
-            sessionId, avatarIdentity, storyText, 'existing', storyText
-          );
-          if (characterData && characterData.characterDescription) {
-            characterConsistency = characterData.characterDescription;
-            console.log(`✅ Character consistency applied: ${characterConsistency}`);
+          // Extract character consistency from orchestrated results
+          if (orchestratedData.characterData?.mainCharacterAppearance) {
+            characterConsistency = orchestratedData.characterData.mainCharacterAppearance;
+            console.log(`✅ Orchestrator character consistency applied: ${characterConsistency.substring(0, 100)}...`);
+          }
+          
+          // Extract enhanced prompt data
+          if (orchestratedData.enhancedPrompt) {
+            enhancedPrompt = orchestratedData.enhancedPrompt;
+            console.log(`✅ Orchestrator enhanced prompt applied`);
           }
         } catch (error) {
-          console.warn('Character consistency failed:', error);
+          console.warn('Orchestrator data extraction failed:', error);
           characterConsistency = '';
+          enhancedPrompt = '';
         }
+      } else {
+        console.warn('🔄 Using nuclear fallback for Tier 2.5A processing');
       }
       
     // Build comprehensive template with fallback handling
@@ -859,9 +882,9 @@ async function handleRequest(req) {
     // Apply pageText summarization for levels 2-4
     const processedStoryText = summarizePageText(storyText, userInfo?.difficulty);
     
-    // Ensure we have valid prompts with fallbacks
+    // Build comprehensive prompt with orchestrator data and fallbacks
     const finalPositivePrompt = [
-      extractedScene || 'child playing happily',
+      enhancedPrompt || extractedScene || 'child playing happily',
       characterConsistency || 'a young child',
       styleFramework.frameworkPrompt || 'contemporary children\'s book illustration style'
     ].filter(Boolean).join('. ');
@@ -878,9 +901,23 @@ async function handleRequest(req) {
       // Tier 2.5B: Basic processing with reduced features
       console.log('🚀 Processing Tier 2.5B: Basic Template with reduced features');
       
-      // Use simple scene extraction for Tier B
-      const extractedScene = extractSimpleScene(storyText);
-      console.log(`🎯 TIER 2.5B Scene Extraction Result: "${extractedScene}"`);
+      // Try orchestrator for basic enhancement, fallback to simple extraction
+      const orchestratedData = await processWithOrchestrator(sessionId, storyText, userInfo, avatarIdentity, pageNumber);
+      let extractedScene;
+      let basicCharacterData = '';
+      
+      if (orchestratedData) {
+        // Use orchestrator's basic prompt enhancement
+        extractedScene = orchestratedData.basicScene || extractSimpleScene(storyText);
+        if (orchestratedData.characterData?.basicAppearance) {
+          basicCharacterData = orchestratedData.characterData.basicAppearance;
+        }
+        console.log(`🎯 TIER 2.5B Orchestrated Scene: "${extractedScene}"`);
+      } else {
+        // Nuclear fallback: Use simple scene extraction
+        extractedScene = extractSimpleScene(storyText);
+        console.log(`🎯 TIER 2.5B Nuclear Scene Extraction: "${extractedScene}"`);
+      }
       
       // PHASE 4.2: VALIDATE SCENE HAS ACTION VERB - IMMEDIATE ESCALATION IF NOT
       if (!extractedScene || !hasActionVerb(extractedScene)) {
