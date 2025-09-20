@@ -194,11 +194,23 @@ async function getServiceHealthMonitor() {
 }
 
 // ============= PAGE TEXT SUMMARIZATION FOR LEVELS 2-4 =============
+function mapDifficultyToLevel(difficulty) {
+  if (typeof difficulty === 'number') return difficulty;
+  const difficultyMap = {
+    'beginner': 1,
+    'easy': 2, 
+    'medium': 3,
+    'hard': 4,
+    'expert': 5
+  };
+  return difficultyMap[difficulty?.toLowerCase()] || 2;
+}
+
 function summarizePageText(text, difficulty) {
   if (!text || typeof text !== 'string') return text;
   
   // Only summarize for levels 2-4
-  const numDifficulty = parseInt(difficulty) || 2;
+  const numDifficulty = mapDifficultyToLevel(difficulty);
   if (numDifficulty < 2 || numDifficulty > 4) return text;
   
   // Split by sentence endings (., !, ?)
@@ -880,7 +892,7 @@ async function handleRequest(req) {
           reason: 'scene_extraction_failed',
           details: 'Scene missing required action verb',
           escalationResult
-        }, 400);
+        }, 200);
       }
       
       // Build template data with proper placeholders
@@ -960,6 +972,3 @@ async function handleRequest(req) {
 
 // Export for TypeScript receptionist
 export default handleRequest;
-
-// Maintain backward compatibility
-serve(handleRequest);
