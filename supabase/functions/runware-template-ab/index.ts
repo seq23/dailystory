@@ -66,7 +66,7 @@ serve(async (req) => {
   try {
     // Import the actual JavaScript implementation
     // This dynamic import provides sync anomaly protection
-    const { default: handleRequest } = await import('./index.js');
+    const { default: handleRequest } = await import(new URL('./index.js', import.meta.url).href);
     
     console.log('✅ [TypeScript Receptionist] Successfully imported JavaScript implementation');
     
