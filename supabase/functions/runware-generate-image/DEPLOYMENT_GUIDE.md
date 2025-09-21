@@ -161,6 +161,7 @@ curl https://[project-id].supabase.co/functions/v1/runware-generate-image
 - ✅ **Better error tracking** (frequency analysis prevents spam)
 - ✅ **Enhanced monitoring** (deep health probes)
 - ✅ **Bulletproof reliability** (enhanced guardrails)
+- **CRITICAL**: Static import pattern in receptionist (index.ts) prevents 503 errors - never convert to dynamic imports.
 
 ### New Capabilities
 - Content-aware image fallbacks (50% better relevance)
