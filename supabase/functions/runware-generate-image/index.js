@@ -928,7 +928,7 @@ async function handleRequest(req) {
           result = resp.data || { success: false, error: resp.error?.message || 'Tier 2.5A escalation failed' };
         }
       }
-    } else {
+    else {
       // Default to enhanced fallback for other tiers
       result = await generateEnhancedFallback(storyText, pageNumber || 1, 'runware');
     }
