@@ -457,6 +457,11 @@ async function handleRequest(req) {
       return await handleOrchestratorCall(requestId, storyText, enhancedStoryData, avatarIdentity, userInfo, false, previousPrimaryScene);
     }
     
+    // Check for direct mode flag (when orchestrator boot fails)
+    if (payload.directMode === true) {
+      return await handleVisualSceneDirectMode(requestId, storyText, userInfo, sessionId, pageNumber);
+    }
+    
     // If called by frontend (including test button), generate primaryScene + aiSchema only
     return await handleOrchestratorCall(requestId, storyText, enhancedStoryData, avatarIdentity, userInfo, true, previousPrimaryScene);
 
@@ -571,4 +576,173 @@ Generate a visual scene description that maintains character and setting continu
 }
 
 // Export handleRequest for TypeScript receptionist to import
+// DIRECT MODE: Handle Visual Scene Direct Mode (when orchestrator fails)
+async function handleVisualSceneDirectMode(requestId, storyText, userInfo, sessionId, pageNumber) {
+  console.log(`🎯 [${requestId}] DIRECT MODE: ai-visual-scene-creator bypass mode activated`);
+  
+  try {
+    // Step 1: Generate primary scene via OpenAI
+    const messages = [
+      {
+        role: 'system',
+        content: `Generate a detailed visual scene description for children's story illustration.
+
+OBJECTIVE: Create a vivid, child-friendly visual scene that captures the story moment.
+
+JSON RESPONSE:
+{
+  "primaryScene": "Detailed visual description with setting, character, and action (50+ characters)",
+  "setting": "Location description",
+  "action": "Character activity", 
+  "mood": "Emotional atmosphere",
+  "pose": "Character position/pose"
+}
+
+RULES:
+1. Child-appropriate content only
+2. Vivid, colorful descriptions
+3. Include spatial details (positions, colors, lighting)
+4. Focus on visual elements only`
+        
+      },
+      {
+        role: 'user',
+        content: `Create a visual scene for this story text: "${storyText}"`
+      }
+    ];
+
+    let openAIResult;
+    try {
+      openAIResult = await callOpenAIWithFallback(messages, 8000, requestId, userInfo?.avatar);
+    } catch (openAIError) {
+      console.error(`❌ [${requestId}] OpenAI failed in direct mode, escalating to Tier 2.5C`);
+      return createCorsErrorResponse(`OpenAI generation failed: ${openAIError.message}`, 503);
+    }
+
+    const content = openAIResult?.choices?.[0]?.message?.content;
+    if (!content?.trim()) {
+      console.error(`❌ [${requestId}] Empty OpenAI response in direct mode`);
+      return createCorsErrorResponse('OpenAI returned empty content', 503);
+    }
+
+    let parsedResponse;
+    try {
+      parsedResponse = parseAIResponse(content);
+    } catch (parseError) {
+      console.error(`❌ [${requestId}] Failed to parse OpenAI response in direct mode`);
+      return createCorsErrorResponse(`Failed to parse AI response: ${parseError.message}`, 503);
+    }
+
+    if (!parsedResponse.primaryScene || parsedResponse.primaryScene.length < 20) {
+      console.error(`❌ [${requestId}] Insufficient primary scene in direct mode`);
+      return createCorsErrorResponse('Generated scene too short or missing', 503);
+    }
+
+    console.log(`✅ [${requestId}] OpenAI generation successful in direct mode`);
+
+    // Step 2: Direct character consistency call
+    let characterAppearance = '';
+    try {
+      const { CharacterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
+      const characterService = CharacterConsistencyService.getInstance();
+      
+      if (sessionId) {
+        await characterService.analyzeVisualDetails(sessionId, storyText, pageNumber || 1, userInfo?.name);
+        characterAppearance = await characterService.getCharacterAppearanceFromStory(sessionId, userInfo?.name) || '';
+      }
+      
+      console.log(`✅ [${requestId}] Character consistency applied`);
+    } catch (characterError) {
+      console.warn(`⚠️ [${requestId}] Character consistency failed, continuing without it:`, characterError);
+    }
+
+    // Step 3: Inline style framework based on difficulty
+    let styleFramework = '';
+    if (userInfo?.age) {
+      if (userInfo.age <= 6) {
+        styleFramework = 'Simple, cartoonish style with bright primary colors, rounded shapes, minimal detail';
+      } else if (userInfo.age <= 10) {
+        styleFramework = 'Colorful illustration style with moderate detail, vibrant colors, child-friendly characters';
+      } else {
+        styleFramework = 'Detailed illustration style with rich colors, realistic proportions, engaging composition';
+      }
+    } else {
+      styleFramework = 'Child-friendly illustration style with bright, engaging colors';
+    }
+
+    // Step 4: Inline African American features based on ethnicity/skinTone
+    let africanAmericanFeatures = '';
+    if (userInfo?.avatar?.skinTone && 
+        (userInfo.avatar.skinTone.toLowerCase().includes('dark') || 
+         userInfo.avatar.skinTone.toLowerCase().includes('brown') ||
+         userInfo.avatar.skinTone.toLowerCase().includes('african'))) {
+      africanAmericanFeatures = 'African American character features with natural hair textures, warm skin tones, culturally authentic representation';
+    }
+
+    // Step 5: Build enhancement array
+    const enhancementArray = [
+      parsedResponse.primaryScene,
+      characterAppearance,
+      styleFramework,
+      africanAmericanFeatures
+    ].filter(item => item && item.trim().length > 0);
+
+    const comprehensivePrompt = enhancementArray.join(', ');
+
+    console.log(`🎨 [${requestId}] Direct mode prompt built: ${comprehensivePrompt.substring(0, 100)}...`);
+
+    // Step 6: Generate image via runware-template-cd internally
+    try {
+      const { data: imageResult, error: imageError } = await supabase.functions.invoke('runware-template-cd', {
+        body: {
+          pageText: storyText,
+          userInfo: userInfo,
+          sessionId: sessionId,
+          pageNumber: pageNumber,
+          templateComplexity: 'C',
+          directModeCall: true,
+          enhancedPrompt: comprehensivePrompt,
+          storyText: storyText,
+          enhancedStoryData: { userInfo: userInfo },
+          avatarIdentity: userInfo?.avatar
+        }
+      });
+
+      if (imageError || !imageResult?.success) {
+        console.error(`❌ [${requestId}] Image generation failed in direct mode`);
+        return createCorsErrorResponse(`Image generation failed: ${imageError?.message || 'Unknown error'}`, 503);
+      }
+
+      console.log(`✅ [${requestId}] Direct mode successful - complete image generated`);
+
+      return createCorsResponse({
+        success: true,
+        imageURL: imageResult.imageURL,
+        primaryScene: parsedResponse.primaryScene,
+        characterAppearance,
+        styleFramework,
+        africanAmericanFeatures,
+        tier: 'AI_VISUAL_SCENE_DIRECT',
+        provider: 'ai-visual-scene-creator-direct',
+        templateType: 'direct-enhanced',
+        positivePrompt: comprehensivePrompt,
+        metadata: {
+          requestId,
+          directMode: true,
+          bypassedOrchestrator: true,
+          enhancementCount: enhancementArray.length
+        }
+      });
+
+    } catch (imageError) {
+      console.error(`❌ [${requestId}] Image generation exception in direct mode:`, imageError);
+      return createCorsErrorResponse(`Image generation exception: ${imageError.message}`, 503);
+    }
+
+  } catch (error) {
+    console.error(`❌ [${requestId}] Direct mode failed completely:`, error);
+    return createCorsErrorResponse(`Direct mode failed: ${error.message}`, 503);
+  }
+}
+
 export default handleRequest;

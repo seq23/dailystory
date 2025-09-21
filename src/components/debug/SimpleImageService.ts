@@ -113,8 +113,9 @@ export class SimpleImageService {
         processingTime
       });
 
-      // Frontend Fallback Chain: 2.5A → 2.5B → 2.5C → 2.5D → SVG
+      // Frontend Fallback Chain: Direct AI Visual Scene Creator → 2.5A → 2.5B → 2.5C → 2.5D → SVG
       const tiers = [
+        { name: 'Direct AI Visual Scene', function: 'ai-visual-scene-creator', complexity: 'direct', isDirect: true },
         { name: '2.5A', function: 'runware-template-ab', complexity: 'A' },
         { name: '2.5B', function: 'runware-template-ab', complexity: 'B' },
         { name: '2.5C', function: 'runware-template-cd', complexity: 'C' },
@@ -125,7 +126,10 @@ export class SimpleImageService {
         try {
           DebugLogger.log('image', `🔄 Frontend attempting Tier ${tier.name}`, { requestId });
           
-          const tierResult = await this.callDirectTier(request, tier.function, tier.complexity);
+          // Use direct AI Visual Scene Creator method if it's the direct tier
+          const tierResult = tier.isDirect 
+            ? await this.generateWithDirectAiVisualSceneCreator(request)
+            : await this.callDirectTier(request, tier.function, tier.complexity);
           
           if (tierResult.success) {
             DebugLogger.log('image', `✅ Frontend Tier ${tier.name} succeeded`, { requestId });
@@ -265,6 +269,58 @@ export class SimpleImageService {
     `;
 
     return `data:image/svg+xml;base64,${btoa(svg)}`;
+  }
+
+  /**
+   * DIRECT AI VISUAL SCENE CREATOR: Call ai-visual-scene-creator directly bypassing orchestrator
+   * Used when orchestrator boot fails - generates with direct mode
+   */
+  static async generateWithDirectAiVisualSceneCreator(request: ImageGenerationRequest): Promise<ImageGenerationResponse> {
+    console.log('🎯 Direct AI Visual Scene Creator mode activated');
+    
+    try {
+      const { data: directResult, error: directError } = await supabase.functions.invoke('ai-visual-scene-creator', {
+        body: {
+          pageText: request.pageText,
+          userInfo: request.userInfo,
+          sessionId: request.sessionId,
+          pageNumber: request.pageNumber,
+          directMode: true,
+          // Backward compatibility fields for legacy edge functions
+          storyText: request.pageText,
+          enhancedStoryData: { userInfo: request.userInfo },
+          avatarIdentity: request.userInfo?.avatar
+        }
+      });
+
+      if (directError) {
+        console.error('❌ Direct AI Visual Scene Creator failed:', directError);
+        throw new Error(`Direct AI visual scene creator failed: ${directError.message}`);
+      }
+
+      if (!directResult?.success) {
+        throw new Error('Direct AI visual scene creator returned unsuccessful result');
+      }
+
+      console.log('✅ Direct AI Visual Scene Creator successful');
+      return {
+        success: true,
+        imageURL: directResult.imageURL,
+        provider: 'ai-visual-scene-creator',
+        tier: directResult.tier,
+        templateType: directResult.templateType,
+        positivePrompt: directResult.positivePrompt,
+        negativePrompt: directResult.negativePrompt,
+        enhancementLevel: 'direct-ai-visual-scene',
+        metadata: {
+          directAiVisualScene: true,
+          bypassedOrchestrator: true
+        }
+      };
+    } catch (error) {
+      console.error('💥 Direct AI Visual Scene Creator fallback failed:', error);
+      throw error;
+    }
   }
 
   /**

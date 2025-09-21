@@ -13,7 +13,7 @@ export interface HealthStatus {
 export interface TierStrategy {
   tier: 'TIER_1' | 'TIER_2_5C' | 'TIER_4';
   endpoint: string | null;
-  fallback: 'orchestrator' | 'template' | 'SVG';
+  fallback: 'orchestrator' | 'template' | 'SVG' | 'ai_visual_scene_direct';
   reason: string;
 }
 
@@ -181,13 +181,13 @@ export class HealthCheckService {
       };
     }
 
-    // Service dependencies or orchestrator failed → Direct to Tier 2.5C
+    // Service dependencies or orchestrator failed → Direct to ai-visual-scene-creator
     if (healthStatus.serviceDependencies === 'failed' || healthStatus.orchestrator === 'failed') {
       return {
-        tier: 'TIER_2_5C',
-        endpoint: 'runware-template-cd',
-        fallback: 'template',
-        reason: 'Orchestrator or dependencies failed - using nuclear independent template'
+        tier: 'TIER_1',
+        endpoint: 'ai-visual-scene-creator',
+        fallback: 'ai_visual_scene_direct',
+        reason: 'Orchestrator failed - using direct ai-visual-scene-creator mode'
       };
     }
 
