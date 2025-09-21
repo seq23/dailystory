@@ -742,7 +742,12 @@ function hasActionVerb(sceneOrResult) {
           ? sceneOrResult.scene
           : "");
 
-  if (!scene) return false;
+  if (!scene) {
+    console.log(`🔍 [DEBUG] hasActionVerb: Empty scene provided`);
+    return false;
+  }
+
+  console.log(`🔍 [DEBUG] hasActionVerb: Validating scene: "${scene}"`);
 
   // --- Normalize & tokenize ---
   const text = scene.replace(/[""]/g, '"').replace(/[']/g, "'").trim();
@@ -776,34 +781,51 @@ function hasActionVerb(sceneOrResult) {
   const PARTICLES = new Set(["up","down","out","in","on","off","over","through","around","into","across","away","back"]);
 
   // 0) Quick text-level root match (fast path)
-  if (ROOT_TEXT_RE.test(text)) return true;
+  if (ROOT_TEXT_RE.test(text)) {
+    console.log(`🔍 [DEBUG] hasActionVerb: SUCCESS - Text-level root match found in: "${scene}"`);
+    return true;
+  }
 
   // 1) Token-level root match (covers weird punctuation splits)
   for (const tok of tokens) {
-    if (ROOT_WORD_RE.test(tok)) return true;
+    if (ROOT_WORD_RE.test(tok)) {
+      console.log(`🔍 [DEBUG] hasActionVerb: SUCCESS - Token-level root match "${tok}" found in: "${scene}"`);
+      return true;
+    }
   }
 
   // 2) BE + -ing (is/are/was/were + gerund) — permissive
   for (let i = 0; i < tokens.length - 1; i++) {
     const t = tokens[i], n1 = tokens[i + 1];
-    if (BE_SET.has(t) && /^[a-z]+ing$/.test(n1) && !IGNORE_ING.has(n1)) return true;
+    if (BE_SET.has(t) && /^[a-z]+ing$/.test(n1) && !IGNORE_ING.has(n1)) {
+      console.log(`🔍 [DEBUG] hasActionVerb: SUCCESS - BE + -ing pattern "${t} ${n1}" found in: "${scene}"`);
+      return true;
+    }
   }
 
   // 3) Bare -ing fallback (lenient): any -ing token not in ignore list counts
   for (let i = 0; i < tokens.length; i++) {
     const tok = tokens[i];
-    if (/^[a-z]+ing$/.test(tok) && !IGNORE_ING.has(tok)) return true;
+    if (/^[a-z]+ing$/.test(tok) && !IGNORE_ING.has(tok)) {
+      console.log(`🔍 [DEBUG] hasActionVerb: SUCCESS - Bare -ing "${tok}" found in: "${scene}"`);
+      return true;
+    }
   }
 
   // 4) Phrasal verbs: <root>(s|ed|ing)? … <particle> within 2 tokens (allows pronoun/object)
   for (let i = 0; i < tokens.length; i++) {
     if (ROOT_WORD_RE.test(tokens[i])) {
       const n1 = tokens[i + 1], n2 = tokens[i + 2];
-      if ((n1 && PARTICLES.has(n1)) || (n2 && PARTICLES.has(n2))) return true;
+      if ((n1 && PARTICLES.has(n1)) || (n2 && PARTICLES.has(n2))) {
+        console.log(`🔍 [DEBUG] hasActionVerb: SUCCESS - Phrasal verb pattern found in: "${scene}"`);
+        return true;
+      }
     }
   }
 
   // If we get here, we didn't see credible action hints
+  console.log(`🔍 [DEBUG] hasActionVerb: No action detected in: "${scene}"`);
+  console.log(`🔍 [DEBUG] hasActionVerb: Tokens analyzed: ${JSON.stringify(tokens)}`);
   return false;
 }
 
@@ -954,6 +976,14 @@ async function handleRequest(req) {
       // Use semantic scene extraction for Tier A
       const extractedScene = extractSemanticScene(storyText);
       
+      console.log(`🔍 [DEBUG] Tier 2.5A Scene Extraction Result: "${extractedScene}"`);
+      console.log(`🔍 [DEBUG] Tier 2.5A Action Validation Input: ${JSON.stringify({
+        scene: extractedScene,
+        hasAction: hasActionVerb(extractedScene),
+        sceneType: typeof extractedScene,
+        sceneLength: extractedScene?.length || 0
+      })}`);
+      
       // VALIDATE SCENE HAS ACTION VERB - IMMEDIATE ESCALATION IF NOT
       if (!extractedScene || !hasActionVerb(extractedScene)) {
         console.log('⚠️ Tier 2.5A: Scene missing action verb - escalating to next tier');
@@ -1033,6 +1063,14 @@ async function handleRequest(req) {
         extractedScene = extractSimpleScene(storyText);
         console.log(`🎯 TIER 2.5B Nuclear Scene Extraction: "${extractedScene}"`);
       }
+      
+      console.log(`🔍 [DEBUG] Tier 2.5B Scene Extraction Result: "${extractedScene}"`);
+      console.log(`🔍 [DEBUG] Tier 2.5B Action Validation Input: ${JSON.stringify({
+        scene: extractedScene,
+        hasAction: hasActionVerb(extractedScene),
+        sceneType: typeof extractedScene,
+        sceneLength: extractedScene?.length || 0
+      })}`);
       
       // VALIDATE SCENE HAS ACTION VERB - IMMEDIATE ESCALATION IF NOT
       if (!extractedScene || !hasActionVerb(extractedScene)) {
