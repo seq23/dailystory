@@ -828,7 +828,7 @@ async function handleRequest(req) {
           console.log(`🔧 [${requestId}] Enhanced data recognized:`, { hasEnhancedPrompt: !!enhancedData.enhancedPrompt });
           const imageResult = await generateWithRunware(
             apiKey,
-            tier1Response.enhancedPrompt,
+            primaryScene,
             sessionId,
             requestId,
             payload.userInfo,
@@ -912,10 +912,9 @@ async function handleRequest(req) {
               });
               result = resp.data || { success: false, error: resp.error?.message || 'All fallbacks failed' };
             }
-          }
-          
-          // If character consistency fallback failed, escalate to Tier 2.5A
-          console.log('🔄 [ORCHESTRATOR] Character consistency fallback failed, escalating to Tier 2.5A');
+          } else {
+            console.log('🔄 [ORCHESTRATOR] Character consistency fallback failed, escalating to Tier 2.5A');
+            // Call runware-template-ab for real Tier 2.5A escalation
           const resp = await supabase.functions.invoke('runware-template-ab', {
             body: {
               storyText,
@@ -927,11 +926,10 @@ async function handleRequest(req) {
             }
           });
           result = resp.data || { success: false, error: resp.error?.message || 'Tier 2.5A escalation failed' };
+        }
       }
-    }
-    
-    // If no result was set by the error handling above, use enhanced fallback
-    if (!result) {
+    else {
+      // Default to enhanced fallback for other tiers
       result = await generateEnhancedFallback(storyText, pageNumber || 1, 'runware');
     }
     
