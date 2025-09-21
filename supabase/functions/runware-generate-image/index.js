@@ -912,9 +912,10 @@ async function handleRequest(req) {
               });
               result = resp.data || { success: false, error: resp.error?.message || 'All fallbacks failed' };
             }
-          } else {
-            console.log('🔄 [ORCHESTRATOR] Character consistency fallback failed, escalating to Tier 2.5A');
-            // Call runware-template-ab for real Tier 2.5A escalation
+          }
+          
+          // If character consistency fallback failed, escalate to Tier 2.5A
+          console.log('🔄 [ORCHESTRATOR] Character consistency fallback failed, escalating to Tier 2.5A');
           const resp = await supabase.functions.invoke('runware-template-ab', {
             body: {
               storyText,
@@ -926,7 +927,6 @@ async function handleRequest(req) {
             }
           });
           result = resp.data || { success: false, error: resp.error?.message || 'Tier 2.5A escalation failed' };
-        }
       }
     }
     
