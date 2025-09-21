@@ -674,22 +674,24 @@ async function handleRequest(req) {
     const payload = await req.json();
     console.log('🔍 Request payload keys:', Object.keys(payload));
     
-    let enhancedStoryData, storyText, pageNumber, avatarIdentity;
+    let enhancedStoryData, storyText, pageNumber, avatarIdentity, previousPrimaryScene;
     
     if (payload.pageText) {
-      // Current format: {pageText, userInfo, sessionId, pageNumber}
+      // Current format: {pageText, userInfo, sessionId, pageNumber, previousPrimaryScene}
       console.log('📄 Using pageText format');
       storyText = payload.pageText;
       enhancedStoryData = payload.enhancedStoryData || { userInfo: payload.userInfo };
       pageNumber = payload.pageNumber;
       avatarIdentity = payload.userInfo?.avatar;
+      previousPrimaryScene = payload.previousPrimaryScene;
     } else {
-      // Legacy format: {enhancedStoryData, storyText, pageNumber, avatarIdentity}
+      // Legacy format: {enhancedStoryData, storyText, pageNumber, avatarIdentity, previousPrimaryScene}
       console.log('📖 Using legacy format');
       enhancedStoryData = payload.enhancedStoryData;
       storyText = payload.storyText;
       pageNumber = payload.pageNumber;
       avatarIdentity = payload.avatarIdentity;
+      previousPrimaryScene = payload.previousPrimaryScene;
     }
     
     if (!storyText) {
@@ -719,7 +721,8 @@ async function handleRequest(req) {
             storyText,
             userInfo: payload.userInfo,
             sessionId: payload.sessionId || 'session_' + requestId,
-            pageNumber
+            pageNumber,
+            previousPrimaryScene
           }
         });
         

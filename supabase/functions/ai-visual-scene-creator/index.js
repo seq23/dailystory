@@ -449,13 +449,16 @@ async function handleRequest(req) {
 
     console.log(`🎯 [${requestId}] Call source: ${isOrchestratorCall ? 'PhaseIntegrationOrchestrator' : 'Frontend'}`);
     
+    // Extract previousPrimaryScene from payload for continuity
+    const previousPrimaryScene = payload.previousPrimaryScene || null;
+    
     // If called by orchestrator, return simplified response with just primaryScene
     if (isOrchestratorCall) {
-      return await handleOrchestratorCall(requestId, storyText, enhancedStoryData, avatarIdentity, userInfo);
+      return await handleOrchestratorCall(requestId, storyText, enhancedStoryData, avatarIdentity, userInfo, false, previousPrimaryScene);
     }
     
     // If called by frontend (including test button), generate primaryScene + aiSchema only
-    return await handleOrchestratorCall(requestId, storyText, enhancedStoryData, avatarIdentity, userInfo, true);
+    return await handleOrchestratorCall(requestId, storyText, enhancedStoryData, avatarIdentity, userInfo, true, previousPrimaryScene);
 
   } catch (error) {
     return handleError(error, 'handleRequest', { requestId });
@@ -463,7 +466,7 @@ async function handleRequest(req) {
 }
 
 // Handle calls from PhaseIntegrationOrchestrator OR frontend test button
-async function handleOrchestratorCall(requestId, storyText, enhancedStoryData, avatarIdentity, userInfo, includeFullSchema = false) {
+async function handleOrchestratorCall(requestId, storyText, enhancedStoryData, avatarIdentity, userInfo, includeFullSchema = false, previousPrimaryScene = null) {
   const callType = includeFullSchema ? 'frontend/test' : 'orchestrator';
   console.log(`🔄 [${requestId}] Processing ${callType} call - generating primaryScene + aiSchema for ${callType}`);
   
@@ -477,11 +480,38 @@ async function handleOrchestratorCall(requestId, storyText, enhancedStoryData, a
     const messages = [
       {
         role: 'system',
-        content: 'Generate visual scene data from story text. Return JSON with primaryScene (ONLY detailed visual scene description for image generation) and aiSchema object containing setting, lighting, mainCharacter, attire, accessories, atmosphere, action, mood, pose, secondaryCharacters fields.'
+        content: `Generate a primary scene description for image generation.
+
+OBJECTIVE: Return ONLY a primary scene description of 30+ characters with structured metadata.
+
+JSON RESPONSE:
+{
+  "primaryScene": "Concise, descriptive visual scene for image generation",
+  "setting": "Location (bedroom, playground, etc.) or null",
+  "action": "Character activity (reading, playing, etc.) or null", 
+  "mood": "Emotional tone (happy, calm, etc.) or null",
+  "pose": "Body position (sitting, standing, etc.) or null"
+}
+
+RULES:
+1. PRESERVE EXACT COUNTS: "a bird" = 1 bird, "birds" = multiple
+2. INFER SETTING: Birds/trees = outdoor, beds/books = indoor unless specified
+3. VISUAL ONLY: Describe observable details, not thoughts or dialogue
+4. SPATIAL CLARITY: Include positions (left, right, center, background)
+5. Always return valid JSON with all 5 keys
+6. Use null (no quotes) for unclear components`
       },
       {
         role: 'user',
-        content: `Story text: "${storyText}"\n\nGenerate a visual scene description focused on creating a high-quality children's book illustration. The primaryScene should be a complete visual description suitable for image generation.`
+        content: `Based on the following page text, generate a structured scene description for image generation.
+
+Page text:
+"${storyText}"
+
+Previous scene (for continuity):
+"${previousPrimaryScene || 'None - this is the first scene'}"
+
+Generate a visual scene description that maintains character and setting continuity while focusing on the current page's action.`
       }
     ];
 
