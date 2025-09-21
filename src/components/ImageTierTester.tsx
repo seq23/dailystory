@@ -1304,7 +1304,27 @@ export const ImageTierTester = () => {
                 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino',
                 'Content-Type': 'application/json'
               },
-              body: JSON.stringify({ test: true, minimal: true })
+              body: JSON.stringify({
+                pageText: "A happy child playing in a colorful playground with swings and slides, laughing with friends under the warm sunshine.",
+                userInfo: {
+                  name: "Test",
+                  age: 8,
+                  grade: "3",
+                  nativeLanguage: "en",
+                  learningGoal: "improve-english-reading",
+                  avatar: {
+                    type: "boy",
+                    skinTone: "medium"
+                  },
+                  favoriteColor: "blue",
+                  favoriteAnimal: "dog",
+                  hobbies: "reading",
+                  favoriteFood: "pizza",
+                  specialRequest: "adventure story"
+                },
+                sessionId: "test-session",
+                pageNumber: 1
+              })
             });
             
             let category = 'HEALTHY';
