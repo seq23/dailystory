@@ -685,7 +685,6 @@ function extractSimpleScene(storyText) {
 
   return '';
 }
-}
 
 // Helper function for location extraction
 function extractLocationFromText(text) {
