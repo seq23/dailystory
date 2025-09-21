@@ -16,6 +16,14 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
 
+// Direct imports for character consistency and visual tracking
+import { phaseIntegrationOrchestrator } from '../_shared/PhaseIntegrationOrchestrator.js';
+import { characterConsistencyService } from '../_shared/CharacterConsistencyService.js';
+import { visualDetailTracker } from '../_shared/VisualDetailTracker.js';
+import { CULTURAL_ARRAYS, createSeededRandom } from '../_shared/tier25Vocabulary.js';
+import { getCulturalBundle } from '../_shared/StaticDataCache.js';
+import * as tierLogging from './tierLogging.js';
+
 // Initialize Supabase client for edge function calls
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL') ?? '',
@@ -91,13 +99,6 @@ function generateInlineNuclearNegative(culturalProfile, avatarType, difficulty) 
   
   return negativeComponents.join(', ');
 }
-// Direct imports for character consistency and visual tracking
-import { phaseIntegrationOrchestrator } from '../_shared/PhaseIntegrationOrchestrator.js';
-import { characterConsistencyService } from '../_shared/CharacterConsistencyService.js';
-import { visualDetailTracker } from '../_shared/VisualDetailTracker.js';
-import { CULTURAL_ARRAYS, createSeededRandom } from '../_shared/tier25Vocabulary.js';
-import { getCulturalBundle } from '../_shared/StaticDataCache.js';
-import * as tierLogging from './tierLogging.js';
 
 // ============= PHASE B5: CENTRALIZED ERROR HANDLING =============
 class EdgeErrorHandler {
@@ -957,6 +958,5 @@ async function handleRequest(req) {
 }
 
 // Export for TypeScript receptionist
-export default handleRequest;
-
 console.log('🎯 Crash-Proof Runware Orchestrator v2.1 initialized successfully');
+export default handleRequest;
