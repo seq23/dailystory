@@ -371,6 +371,10 @@ function extractSimpleScene(storyText) {
   const PREP_SETTINGS = ["through","into","in","inside","across","on","at","under","near","by","along"];
   const DETERMINERS = ["a","an","the","my","his","her","their","our"];
   const STOP_TOKENS = [",",".",";","!","?","and","but","or","while","as","because","so","then","when","before","after", ...PREP_SETTINGS];
+  
+  // Enhanced action detection helpers
+  const BE_RE = /\b(?:am|is|are|was|were|be|been|being)\b/i;
+  const NON_ACTION_ING = new Set(["during","something","anything","nothing","everything","morning","evening"]);
 
   // Expanded color coverage (includes turquoise, lavender, burgundy, etc.)
   const COLORS = [
@@ -560,8 +564,10 @@ function extractSimpleScene(storyText) {
     const tokens = tokenize(sentence);
     const lowerStr = sentence.toLowerCase();
 
-    // ACTION
+    // ACTION - Three-tier detection system
     let action = null;
+
+    // 1) Primary: root-verb + short tail (unchanged)
     for (let i = 0; i < tokens.length; i++) {
       if (VERB_RE.test(tokens[i])) {
         const span = [tokens[i]];
@@ -572,6 +578,39 @@ function extractSimpleScene(storyText) {
         }
         action = span.join(" ").replace(/\s+([.,;!?])/g, "$1");
         break;
+      }
+    }
+
+    // 2) Fallback: BE + -ing (e.g., "is laughing", "was running")
+    if (!action) {
+      for (let i = 0; i < tokens.length - 1; i++) {
+        if (BE_RE.test(tokens[i]) && /^[A-Za-z]+ing$/i.test(tokens[i + 1]) && !NON_ACTION_ING.has(tokens[i + 1].toLowerCase())) {
+          const span = [tokens[i + 1]];
+          for (let j = i + 2; j < tokens.length && span.length < 6; j++) {
+            const t = tokens[j];
+            if (/^[.,;!?]$/.test(t) || STOP_RE.test(t)) break;
+            span.push(t);
+          }
+          action = span.join(" ").replace(/\s+([.,;!?])/g, "$1");
+          break;
+        }
+      }
+    }
+
+    // 3) Fallback: bare -ing action head (sentence gerund; e.g., "laughing with friends")
+    if (!action) {
+      for (let i = 0; i < tokens.length; i++) {
+        const tok = tokens[i];
+        if (/^[A-Za-z]+ing$/i.test(tok) && !NON_ACTION_ING.has(tok.toLowerCase())) {
+          const span = [tok];
+          for (let j = i + 1; j < tokens.length && span.length < 6; j++) {
+            const t = tokens[j];
+            if (/^[.,;!?]$/.test(t) || STOP_RE.test(t)) break;
+            span.push(t);
+          }
+          action = span.join(" ").replace(/\s+([.,;!?])/g, "$1");
+          break;
+        }
       }
     }
 
