@@ -828,7 +828,7 @@ async function handleRequest(req) {
           console.log(`🔧 [${requestId}] Enhanced data recognized:`, { hasEnhancedPrompt: !!enhancedData.enhancedPrompt });
           const imageResult = await generateWithRunware(
             apiKey,
-            primaryScene,
+            tier1Response.enhancedPrompt,
             sessionId,
             requestId,
             payload.userInfo,
@@ -928,6 +928,7 @@ async function handleRequest(req) {
           result = resp.data || { success: false, error: resp.error?.message || 'Tier 2.5A escalation failed' };
         }
       }
+    }
     
     // If no result was set by the error handling above, use enhanced fallback
     if (!result) {
