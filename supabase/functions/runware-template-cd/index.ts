@@ -72,18 +72,7 @@ serve(async (req) => {
       importAttempts++;
       console.log(`🔄 [BOOT-V3] Import attempt ${importAttempts}/${maxImportAttempts}...`);
       
-      // Validate file existence first
-      try {
-        await import('./index.js?v=' + Date.now()); // Cache busting
-        console.log('✅ [BOOT-V3] File validation successful');
-      } catch (validationError) {
-        console.warn(`⚠️ [BOOT-V3] Validation failed on attempt ${importAttempts}:`, validationError.message);
-        if (importAttempts < maxImportAttempts) {
-          await new Promise(resolve => setTimeout(resolve, 500 * importAttempts)); // Faster backoff
-          continue;
-        }
-        throw validationError;
-      }
+      // Direct import without cache-busting validation
       
       const { default: handleRequest } = await import('./index.js');
       
