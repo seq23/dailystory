@@ -1305,23 +1305,8 @@ export const ImageTierTester = () => {
                 'Content-Type': 'application/json'
               },
               body: JSON.stringify({
-                pageText: "A happy child playing in a colorful playground with swings and slides, laughing with friends under the warm sunshine.",
-                userInfo: {
-                  name: "Test",
-                  age: 8,
-                  grade: "3",
-                  nativeLanguage: "en",
-                  learningGoal: "improve-english-reading",
-                  avatar: {
-                    type: "boy",
-                    skinTone: "medium"
-                  },
-                  favoriteColor: "blue",
-                  favoriteAnimal: "dog",
-                  hobbies: "reading",
-                  favoriteFood: "pizza",
-                  specialRequest: "adventure story"
-                },
+                pageText: testStoryText,
+                userInfo: buildUserInfo(),
                 sessionId: "test-session",
                 pageNumber: 1
               })
