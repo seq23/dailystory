@@ -1,132 +1,86 @@
-// DEPLOY_MARKER: 2025-09-21T00:00:00Z - BULLETPROOF SYNC PROTECTION V3.1
-// ================================================================================
-// STRENGTHENED TYPESCRIPT RECEPTIONIST - BOOT FAILURE ELIMINATION SYSTEM
-// ================================================================================
-//
-// IMPLEMENTATION: Option A - Self-Contained TypeScript Receptionist  
-// PURPOSE: Eliminate 503 boot failures through robust entry point architecture
-// PATTERN: TypeScript file handles CORS + imports entire JS implementation
-//
-// SYNC ANOMALY PROTECTION:
-// - Supabase may show "Module not found: index.js" in logs (FALSE POSITIVE)
-// - Files exist and function correctly despite log warnings
-// - This receptionist pattern provides fallback responses during sync delays
-//
-// ROLLBACK PROCEDURE:
-// - If issues occur, revert to previous shim pattern
-// - Restore backup files if available
-// - Update DEPLOY_MARKER to force fresh deployment
-//
-// VERIFICATION STEPS:
-// 1. Check file existence in GitHub repository
-// 2. Test function execution (should work despite log errors)
-// 3. Monitor analytics for boot success rate improvement
-// ================================================================================
-
+// DEPLOY_MARKER: 2025-09-21T00:00:00Z - STATIC IMPORT + DEFENSIVE CORS V4.2
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import handleRequest from "./index.js";
 
-// CORS headers for cross-origin requests
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+const SERVICE_NAME = "runware-template-ab";
+
+const corsHeaders: Record<string, string> = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Max-Age": "600",
+  "Vary": "Origin",
 };
 
-// Main serve function with strengthened error handling
+function withCors(res: Response): Response {
+  const headers = new Headers(res.headers);
+  for (const [k, v] of Object.entries(corsHeaders)) headers.set(k, v);
+  return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
+}
+
+// Accept Response | object | string | null/undefined
+function asResponse(maybe: unknown, fallbackStatus = 204): Response {
+  if (maybe instanceof Response) return maybe;
+  if (maybe === null || maybe === undefined) return new Response(null, { status: fallbackStatus });
+  if (typeof maybe === "string") {
+    return new Response(maybe, { status: 200, headers: { "Content-Type": "text/plain; charset=utf-8" } });
+  }
+  // object / number / boolean → JSON
+  return new Response(JSON.stringify(maybe), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
 serve(async (req) => {
-  // Handle CORS preflight requests directly in TypeScript receptionist
-  if (req.method === 'OPTIONS') {
-    console.log('🔄 [TypeScript Receptionist] CORS preflight request handled');
-    return new Response(null, { 
-      status: 200,
-      headers: corsHeaders 
-    });
-  }
+  // CORS preflight
+  if (req.method === "OPTIONS") return withCors(new Response(null, { status: 204 }));
 
-  // Handle GET health check requests directly (no dynamic import needed)
-  if (req.method === 'GET' || req.method === 'HEAD') {
-    console.log('🏥 [TypeScript Receptionist] Health check request handled');
-    return new Response(JSON.stringify({
-      status: 'healthy',
-      service: 'runware-template-ab',
-      timestamp: new Date().toISOString(),
-      environment: {
-        hasRunwareKey: !!Deno.env.get('RUNWARE_API_KEY'),
-        hasSupabaseUrl: !!Deno.env.get('SUPABASE_URL')
-      }
-    }), {
-      status: 200,
-      headers: {
-        ...corsHeaders,
-        'Content-Type': 'application/json'
-      }
-    });
-  }
+  // Health checks
+  if (req.method === "GET" || req.method === "HEAD") {
+    const url = new URL(req.url);
+    const readyCheck = url.pathname.endsWith("/ready") || url.searchParams.has("ready");
 
-  // BULLETPROOF SYNC PROTECTION V3.0
-  let importAttempts = 0;
-  const maxImportAttempts = 8;
-  
-  while (importAttempts < maxImportAttempts) {
-    try {
-      importAttempts++;
-      console.log(`🔄 [BOOT-V3] Import attempt ${importAttempts}/${maxImportAttempts}...`);
-      
-      // Direct import without cache-busting validation
-      
-      const { default: handleRequest } = await import('./index.js');
-      
-      if (typeof handleRequest !== 'function') {
-        throw new Error('Invalid export: handleRequest is not a function');
-      }
-      
-      console.log('✅ [BOOT-V3] Successfully imported and validated JavaScript implementation');
-      
-      // Execute the actual implementation
-      return await handleRequest(req);
-      
-    } catch (importError) {
-      console.error(`❌ [BOOT-V3] Import attempt ${importAttempts} failed:`, importError.message);
-      
-      // Circuit breaker: if all attempts failed, provide enhanced error response
-      if (importAttempts >= maxImportAttempts) {
-        const errorCode = importError.message.includes('Module not found') ? 'SYNC_DEPLOYMENT_RACE' :
-                         importError.message.includes('not a function') ? 'SYNC_EXPORT_MISSING' :
-                         'SYNC_IMPORT_FAILURE';
-        
-        return new Response(JSON.stringify({
-          error: 'Service temporarily unavailable',
-          code: errorCode,
-          message: 'JavaScript implementation sync failure - auto-recovery initiated',
-          timestamp: new Date().toISOString(),
-          deploymentMarker: '2025-09-21T00:00:00Z',
-          attempts: importAttempts,
-          details: importError.message,
-          stack: importError.stack?.substring(0, 500),
-          recovery: {
-            action: 'Triggering automatic redeploy',
-            expectedResolution: '30-60 seconds',
-            manualRecovery: 'Use Force Redeploy in Image Tier Tester'
-          }
-        }), {
-          status: 503,
-          headers: {
-            ...corsHeaders,
-            'Content-Type': 'application/json',
-            'Retry-After': '45',
-            'X-Sync-Status': 'ANOMALY_DETECTED'
-          }
-        });
-      }
-      
-      // Wait before retry (enhanced backoff for template-ab)
-      if (importAttempts < maxImportAttempts) {
-        await new Promise(resolve => setTimeout(resolve, 1500 * importAttempts));
-      }
+    if (readyCheck) {
+      const loaded = typeof handleRequest === "function";
+      const res = new Response(null, { status: loaded ? 204 : 503 });
+      return withCors(req.method === "HEAD" ? new Response(null, { status: res.status, headers: res.headers }) : res);
     }
+
+    const payload = {
+      status: "healthy",
+      service: SERVICE_NAME,
+      timestamp: new Date().toISOString(),
+      handler_loaded: typeof handleRequest === "function",
+    };
+
+    const res = new Response(JSON.stringify(payload), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+
+    // HEAD gets headers/status only
+    return withCors(req.method === "HEAD" ? new Response(null, { status: res.status, headers: res.headers }) : res);
+  }
+
+  // POST handling
+  try {
+    const out = await handleRequest(req);
+    return withCors(asResponse(out));
+  } catch (error) {
+    console.error(`❌ [${SERVICE_NAME}] Unhandled error:`, error);
+    const errRes = new Response(
+      JSON.stringify({
+        error: "Internal server error",
+        message: error?.message ?? String(error),
+        service: SERVICE_NAME,
+        timestamp: new Date().toISOString(),
+      }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
+    return withCors(errRes);
   }
 });
 
-// Boot validation logging
-console.log('🎯 [TypeScript Receptionist] Strengthened Runware Template AB v2.2 initialized');
-console.log('🔒 [Boot Protection] Option A pattern active - sync anomaly protection enabled');
+console.log(`🎯 [${SERVICE_NAME}] Static Import Architecture V4.2 initialized`);
+console.log(`🔒 [${SERVICE_NAME}] No more sync anomalies - bulletproof pattern active`);
