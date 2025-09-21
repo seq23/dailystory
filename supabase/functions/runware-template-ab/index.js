@@ -732,14 +732,79 @@ function extractLocationFromText(text) {
   return match ? match[1] : null;
 }
 
-// PHASE 4.3: ADD hasActionVerb() VALIDATION FUNCTION
-function hasActionVerb(scene) {
-  if (!scene || typeof scene !== 'string') return false;
-  const sceneWords = scene.toLowerCase().split(/\s+/);
-  const VERB_ROOTS_FOR_VALIDATION = ["see","hold","carry","wear","grab","pick","lift","bring","take","hug","pull","push","walk","stroll","run","wander","tiptoe","explore","look","play","read","draw","build","climb","swing","slide","help","clean","make","watch","eat","sing","dance","wake","drink","create","build","hear","feel","smell","taste","touch","get","put","give","come","go","find","study","cook","sleep","sit","stand","laugh"];
-  return VERB_ROOTS_FOR_VALIDATION.some(verb => 
-    sceneWords.some(word => word.startsWith(verb) || word === verb || word === verb + 'ing' || word === verb + 'ed' || word === verb + 's')
-  );
+// PHASE 4.3: Permissive action validator (fails open)
+function hasActionVerb(sceneOrResult) {
+  // Accept either a scene string, or an object like { scene, secondary }
+  const scene =
+    typeof sceneOrResult === "string"
+      ? sceneOrResult
+      : (sceneOrResult && typeof sceneOrResult.scene === "string"
+          ? sceneOrResult.scene
+          : "");
+
+  if (!scene) return false;
+
+  // --- Normalize & tokenize ---
+  const text = scene.replace(/[""]/g, '"').replace(/[']/g, "'").trim();
+  const tokens = (text.match(/[A-Za-z'-]+|[.,;!?]/g) || []).map(t => t.toLowerCase());
+
+  if (tokens.length === 0) return false;
+
+  // --- Verb roots (expand anytime; regex handles s|ed|ing)
+  const VERB_ROOTS = [
+    "see","hold","carry","wear","grab","pick","lift","bring","take","hug","pull","push",
+    "walk","stroll","run","wander","tiptoe","explore","look","play","read","draw","build",
+    "climb","swing","slide","help","clean","make","watch","eat","sing","dance",
+    "wake","drink","create","hear","feel","smell","taste","touch","get","put","give",
+    "come","go","find","study","cook","sleep","sit","stand","laugh","giggle","chuckle",
+    // add as needed; validator stays permissive
+  ];
+  const ROOT_ALT = VERB_ROOTS.map(s => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
+  const ROOT_WORD_RE = new RegExp(`^(?:${ROOT_ALT})(?:s|ed|ing)?$`, "i"); // token-level
+  const ROOT_TEXT_RE = new RegExp(`\\b(?:${ROOT_ALT})(?:s|ed|ing)?\\b`, "i"); // text-level
+
+  // --- BE + -ing and -ing fallback (lenient) ---
+  const BE_SET = new Set(["am","is","are","was","were","be","been","being"]);
+
+  // tiny ignore list to avoid obvious non-actions; keep small to stay permissive
+  const IGNORE_ING = new Set([
+    "during","morning","evening","nothing","something","anything","everything",
+    "ceiling","building","buildings","thing","wing","spring" // keep minimal
+  ]);
+
+  // --- Particles for phrasal verbs (wake up, pick up, put on, etc.)
+  const PARTICLES = new Set(["up","down","out","in","on","off","over","through","around","into","across","away","back"]);
+
+  // 0) Quick text-level root match (fast path)
+  if (ROOT_TEXT_RE.test(text)) return true;
+
+  // 1) Token-level root match (covers weird punctuation splits)
+  for (const tok of tokens) {
+    if (ROOT_WORD_RE.test(tok)) return true;
+  }
+
+  // 2) BE + -ing (is/are/was/were + gerund) — permissive
+  for (let i = 0; i < tokens.length - 1; i++) {
+    const t = tokens[i], n1 = tokens[i + 1];
+    if (BE_SET.has(t) && /^[a-z]+ing$/.test(n1) && !IGNORE_ING.has(n1)) return true;
+  }
+
+  // 3) Bare -ing fallback (lenient): any -ing token not in ignore list counts
+  for (let i = 0; i < tokens.length; i++) {
+    const tok = tokens[i];
+    if (/^[a-z]+ing$/.test(tok) && !IGNORE_ING.has(tok)) return true;
+  }
+
+  // 4) Phrasal verbs: <root>(s|ed|ing)? … <particle> within 2 tokens (allows pronoun/object)
+  for (let i = 0; i < tokens.length; i++) {
+    if (ROOT_WORD_RE.test(tokens[i])) {
+      const n1 = tokens[i + 1], n2 = tokens[i + 2];
+      if ((n1 && PARTICLES.has(n1)) || (n2 && PARTICLES.has(n2))) return true;
+    }
+  }
+
+  // If we get here, we didn't see credible action hints
+  return false;
 }
 
 // PHASE 4.4: ADD escalateToNextTier() ESCALATION FUNCTION  
