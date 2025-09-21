@@ -97,7 +97,7 @@ import { characterConsistencyService } from '../_shared/CharacterConsistencyServ
 import { visualDetailTracker } from '../_shared/VisualDetailTracker.js';
 import { CULTURAL_ARRAYS, createSeededRandom } from '../_shared/tier25Vocabulary.js';
 import { getCulturalBundle } from '../_shared/StaticDataCache.js';
-import * as tierLogging from './tierLogging.ts';
+import * as tierLogging from './tierLogging.js';
 
 // ============= PHASE B5: CENTRALIZED ERROR HANDLING =============
 class EdgeErrorHandler {
@@ -914,21 +914,19 @@ async function handleRequest(req) {
             }
           }
           
-          // Only escalate to Tier 2.5A if character fallback failed or didn't produce a result
-          if (!result || !result.success) {
-            console.log('🔄 [ORCHESTRATOR] Character consistency fallback failed, escalating to Tier 2.5A');
-            const resp = await supabase.functions.invoke('runware-template-ab', {
-              body: {
-                storyText,
-                pageText: storyText,
-                userInfo: payload.userInfo,
-                sessionId: payload.sessionId || 'session_' + requestId,
-                pageNumber: pageNumber || 1,
-                templateComplexity: 'A'
-              }
-            });
-            result = resp.data || { success: false, error: resp.error?.message || 'Tier 2.5A escalation failed' };
-          }
+          // If character consistency fallback failed, escalate to Tier 2.5A
+          console.log('🔄 [ORCHESTRATOR] Character consistency fallback failed, escalating to Tier 2.5A');
+          const resp = await supabase.functions.invoke('runware-template-ab', {
+            body: {
+              storyText,
+              pageText: storyText,
+              userInfo: payload.userInfo,
+              sessionId: payload.sessionId || 'session_' + requestId,
+              pageNumber: pageNumber || 1,
+              templateComplexity: 'A'
+            }
+          });
+          result = resp.data || { success: false, error: resp.error?.message || 'Tier 2.5A escalation failed' };
       }
     }
     

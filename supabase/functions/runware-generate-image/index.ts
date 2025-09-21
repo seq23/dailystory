@@ -1,6 +1,6 @@
 // DEPLOY_MARKER: 2025-09-21T00:00:00Z - STATIC IMPORT + DEFENSIVE CORS V4.2
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import handleRequest from "./handler.ts";
+import handleRequest from "./index.js";
 
 const SERVICE_NAME = "runware-generate-image";
 
