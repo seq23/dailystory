@@ -97,7 +97,7 @@ import { characterConsistencyService } from '../_shared/CharacterConsistencyServ
 import { visualDetailTracker } from '../_shared/VisualDetailTracker.js';
 import { CULTURAL_ARRAYS, createSeededRandom } from '../_shared/tier25Vocabulary.js';
 import { getCulturalBundle } from '../_shared/StaticDataCache.js';
-import * as tierLogging from './tierLogging.js';
+import * as tierLogging from './tierLogging.ts';
 
 // ============= PHASE B5: CENTRALIZED ERROR HANDLING =============
 class EdgeErrorHandler {
