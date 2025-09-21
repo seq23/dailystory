@@ -311,28 +311,466 @@ function selectTemplate(templateComplexity) {
   }
 }
 
-// ============= ENHANCED SCENE EXTRACTION FOR TIER 2.5A =============
+// PHASE 6.0: Vocabulary-Driven, Single-Pass Semantic Extractor (Deterministic, AI-like)
+// Scans the entire pageText; chooses the most representative action; aggregates objects(+colors), settings,
+// 3+ secondaries; infers optional signals (timeOfDay, mood, pose, lighting, atmosphere) only if present.
+// Validates with hasActionVerb(); fallback ONLY to extractSimpleScene(); returns empty if both fail.
+
 function extractSemanticScene(storyText) {
-  if (!storyText || typeof storyText !== 'string') return 'playing happily';
-  
-  // Advanced scene extraction with semantic understanding
-  const text = storyText.toLowerCase();
-  
-  const semanticPatterns = [
-    { regex: /character.*?(\w+ing).*?(with|in|at)\s+([^.,!?]+)/i, transform: (m) => `${m[1]} ${m[2]} ${m[3]}` },
-    { regex: /(\w+ing)\s+.*?(happily|sadly|excitedly|carefully|quietly)/i, transform: (m) => `${m[1]} ${m[2]}` },
-    { regex: /character.*?(discovers|finds|sees)\s+([^.,!?]+)/i, transform: (m) => `discovering ${m[2]}` }
-  ];
-  
-  for (const pattern of semanticPatterns) {
-    const match = storyText.match(pattern.regex);
-    if (match) {
-      return pattern.transform(match);
+  if (!storyText || typeof storyText !== "string") {
+    return { scene: "", secondary: [], actions: [], objects: [], settings: [], signals: {} };
+  }
+
+  // ---------- Hardcoded language scaffolding (stable, not domain content) ----------
+  const PREP_SETTINGS = ["through","into","in","inside","across","on","at","under","near","by","along","around","over","between","behind","beside","beyond"];
+  const DETERMINERS   = ["a","an","the","my","his","her","their","our","its","your"];
+  const BE_SET        = new Set(["am","is","are","was","were","be","been","being"]);
+  const PARTICLES     = new Set(["up","down","out","in","on","off","over","through","around","into","across","away","back"]);
+  const STOP_PUNCT    = new Set([",",".",";","!","?"]);
+  // tiny ignore list to avoid obvious non-action -ing nouns; keep minimal to stay permissive
+  const IGNORE_ING    = new Set(["during","morning","evening","nothing","something","anything","everything","ceiling","building","buildings","thing","wing","spring"]);
+
+  // ---------- Pull domain vocabulary from tier25vocabulary ----------
+  const safeArr = (x) => Array.isArray(x) ? x : [];
+  const COLORS           = safeArr(tier25vocabulary?.getColors?.());
+  const OBJECTS          = safeArr(tier25vocabulary?.getObjects?.());
+  const SETTINGS_VOCAB   = safeArr(tier25vocabulary?.getSettings?.() || tier25vocabulary?.getLocations?.());
+  const SECONDARY_ROLES  = safeArr(tier25vocabulary?.getSecondaryRoles?.() || tier25vocabulary?.getRelationships?.())
+                            .concat(safeArr(tier25vocabulary?.getAnimals?.()));
+  const VERB_ROOTS       = safeArr(tier25vocabulary?.getActionVerbs?.());
+  const IRREG_PROGRESSIVE= tier25vocabulary?.getIrregularProgressiveMap?.() || null;
+  // Optional: synonyms maps (color/objects/settings/roles) if your vocab provides them
+  const SYNONYMS = tier25vocabulary?.getSynonyms?.() || {}; // { rucksack: 'backpack', crimson: 'red', ... }
+
+  // Fast exit if essential vocab missing → we'll still try simple fallback later.
+  const vocabOk = VERB_ROOTS.length > 0;
+
+  // ---------- Normalization ----------
+  const esc = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const normalize = (t) => String(t ?? "")
+    .replace(/[""]/g, '"')
+    .replace(/[']/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  const splitSentences = (t) => (t.match(/[^.!?]+[.!?]?/g) || [t]).map(s => s.trim()).filter(Boolean);
+  const tokenize = (str) => (str.match(/[A-Za-z'-]+|[.,;!?]/g) || []);
+
+  // ---------- Build sets/regex from vocabulary ----------
+  const COLORS_SET    = new Set(COLORS.map(x => x.toLowerCase()));
+  const OBJECTS_SET   = new Set(OBJECTS.map(x => x.toLowerCase()));
+  const SETTINGS_SET  = new Set(SETTINGS_VOCAB.map(x => x.toLowerCase()));
+  const SECONDARY_SET = new Set(SECONDARY_ROLES.map(x => x.toLowerCase()));
+  const PREP_SET      = new Set(PREP_SETTINGS.map(x => x.toLowerCase()));
+  const DET_SET       = new Set(DETERMINERS.map(x => x.toLowerCase()));
+
+  const ROOT_ALT        = VERB_ROOTS.map(esc).join("|");
+  const ROOT_TOKEN_RE   = ROOT_ALT ? new RegExp(`^(?:${ROOT_ALT})(?:s|ed|ing)?$`, "i") : /$^/;
+  const ROOT_TEXT_RE    = ROOT_ALT ? new RegExp(`\\b(?:${ROOT_ALT})(?:s|ed|ing)?\\b`, "i") : /$^/;
+
+  // Lowercase synonym map
+  const SYN = Object.fromEntries(Object.entries(SYNONYMS).map(([k,v]) => [k.toLowerCase(), String(v).toLowerCase()]));
+
+  // ---------- Morphology ----------
+  function toProgressive(token) {
+    if (!token) return token;
+    const lower = token.toLowerCase();
+    if (IRREG_PROGRESSIVE && IRREG_PROGRESSIVE[lower]) return IRREG_PROGRESSIVE[lower];
+    const irregular = {
+      run:"running", ran:"running", swim:"swimming", sit:"sitting", get:"getting",
+      put:"putting", hug:"hugging", stop:"stopping", lie:"lying", see:"seeing", saw:"seeing",
+      eat:"eating", ate:"eating", take:"taking", make:"making", write:"writing", drive:"driving",
+      give:"giving", have:"having", use:"using", wear:"wearing", hold:"holding", carry:"carrying",
+      walk:"walking", look:"looking", play:"playing", laugh:"laughing", giggle:"giggling", chuckle:"chuckling"
+    };
+    if (irregular[lower]) return irregular[lower];
+    if (/\bing\b$/i.test(lower)) return token;
+    let base = lower.replace(/(ed|es|s)$/i, "");
+    if (/^[a-z]*[aeiou][bcdfghjklmnpqrstvwxz]$/i.test(base)) return base + base.slice(-1) + "ing";
+    if (base.endsWith("e")) base = base.slice(0, -1);
+    return base + "ing";
+  }
+
+  // ---------- Tiny helpers ----------
+  const last = (arr) => arr[arr.length - 1];
+  const isWord = (t) => /^[A-Za-z'-]+$/.test(t);
+
+  function normalizeToken(tok) {
+    const t = tok.toLowerCase();
+    return SYN[t] || t;
+  }
+
+  // Capture NP starting at index (skip determiners), stop at STOP/verb/punct
+  function captureNP(tokens, start, max=8) {
+    const out = [];
+    let i = start;
+    while (i < tokens.length && DET_SET.has(tokens[i]?.toLowerCase())) i++;
+    for (; i < tokens.length && out.length < max; i++) {
+      const raw = tokens[i];
+      const t = normalizeToken(raw);
+      if (STOP_PUNCT.has(t) || PREP_SET.has(t) || ROOT_TOKEN_RE.test(t)) break;
+      out.push(t);
+      if (STOP_PUNCT.has(t)) break;
+    }
+    while (out.length && STOP_PUNCT.has(last(out))) out.pop();
+    if (!out.length) return null;
+
+    // head = final word
+    const head = last(out);
+    const colors = out.filter(x => COLORS_SET.has(x));
+    return { phrase: out.join(" "), head, colors: Array.from(new Set(colors)) };
+  }
+
+  function captureSetting(tokens, prepIdx, max=8) {
+    let i = prepIdx + 1;
+    if (i < tokens.length && DET_SET.has(tokens[i]?.toLowerCase())) i++;
+    const out = [];
+    for (; i < tokens.length && out.length < max; i++) {
+      const t = normalizeToken(tokens[i]);
+      if (STOP_PUNCT.has(t) || PREP_SET.has(t)) break;
+      out.push(t);
+    }
+    while (out.length && STOP_PUNCT.has(last(out))) out.pop();
+    if (!out.length) return null;
+    return { phrase: out.join(" "), head: last(out) };
+  }
+
+  function captureSecondary(tokens, conjIdx, max=7) {
+    let i = conjIdx + 1;
+    if (i < tokens.length && DET_SET.has(tokens[i]?.toLowerCase())) i++;
+    const out = [];
+    for (; i < tokens.length && out.length < max; i++) {
+      const t = normalizeToken(tokens[i]);
+      if (STOP_PUNCT.has(t) || PREP_SET.has(t)) break;
+      out.push(t);
+    }
+    while (out.length && STOP_PUNCT.has(last(out))) out.pop();
+    if (!out.length) return null;
+    const phrase = out.join(" ");
+    const head = last(out);
+    return (SECONDARY_SET.has(head) || SECONDARY_SET.has(phrase)) ? { phrase, head } : null;
+  }
+
+  // Optional whole-text signals (only emit if cues found)
+  function inferTimeOfDay(textLower) {
+    if (/\b(night|nighttime|midnight|moon|moonlight|stars|starlit|twilight|dusk)\b/i.test(textLower)) return "night";
+    if (/\b(morning|sunrise|dawn)\b/i.test(textLower)) return "morning";
+    if (/\b(afternoon|noon|midday)\b/i.test(textLower)) return "afternoon";
+    if (/\b(evening|sunset|dusk)\b/i.test(textLower)) return "evening";
+    if (/\b(bedtime|asleep|pajamas|fireflies)\b/i.test(textLower)) return "night";
+    if (/\b(wake|breakfast|school bus)\b/i.test(textLower)) return "morning";
+    return "";
+  }
+  function inferMood(textLower) {
+    if (/\b(happily|cheerfully|joyfully|excitedly|playfully)\b/i.test(textLower)) return "happy";
+    if (/\b(quietly|calmly|softly|gently|peacefully)\b/i.test(textLower)) return "calm";
+    if (/\b(sadly|tearfully)\b/i.test(textLower)) return "sad";
+    if (/\b(angrily|madly|grumpily|frustrated|furious)\b/i.test(textLower)) return "angry";
+    if (/\b(nervously|shyly|timidly|anxiously)\b/i.test(textLower)) return "nervous";
+    if (/\b(laugh|giggle|smile|play|sing|dance)\w*\b/i.test(textLower)) return "happy";
+    if (/\b(whisper|tiptoe|hide)\w*\b/i.test(textLower)) return "calm";
+    return "";
+  }
+  function inferLighting(textLower) {
+    if (/\b(sunlight|sunny|bright|glowing|moonlight|starlit|candlelight|lamplight)\b/i.test(textLower)) return (/\bmoon|starlit|night\b/i.test(textLower) ? "dim/moonlit" : "bright/sunlit");
+    if (/\b(shadowy|dark|dim|gloomy)\b/i.test(textLower)) return "dim";
+    return "";
+  }
+  function inferAtmosphere(textLower) {
+    if (/\b(fog|foggy|mist|misty|haze|hazy)\b/i.test(textLower)) return "misty";
+    if (/\b(rain|rainy|drizzle|drizzling|storm|stormy|thunder|lightning|windy|breezy)\b/i.test(textLower)) return "weathered";
+    if (/\b(magical|enchanted|sparkling|glittering)\b/i.test(textLower)) return "magical";
+    return "";
+  }
+  function suggestPoseFromAction(actionLead) {
+    if (!actionLead) return "";
+    const a = actionLead.toLowerCase();
+    if (/\b(run|running)\b/.test(a)) return "mid-stride, arms pumping";
+    if (/\b(walk|walking|stroll|strolling|wander|wandering)\b/.test(a)) return "standing, gentle step forward";
+    if (/\b(jump|jumping)\b/.test(a)) return "knees bent, airborne";
+    if (/\b(climb|climbing)\b/.test(a)) return "one foot up, hands reaching";
+    if (/\b(sit|sitting|read|reading|draw|drawing)\b/.test(a)) return "seated, torso slightly forward";
+    if (/\b(hold|holding|carry|carrying)\b/.test(a)) return "standing, object cradled in arm";
+    if (/\b(wake|waking)\b/.test(a)) return "sitting up in bed, arms lifting";
+    if (/\b(look|looking|see|seeing|watch|watching)\b/.test(a)) return "standing, head turned toward object";
+    if (/\b(laugh|laughing|giggle|giggling)\b/.test(a)) return "standing, relaxed shoulders, open smile";
+    return "";
+  }
+
+  // ---------- Action detectors (single-pass friendly) ----------
+  function detectAction(tokens) {
+    // 1) direct root
+    for (let i=0;i<tokens.length;i++){
+      const t = normalizeToken(tokens[i]);
+      if (ROOT_TOKEN_RE.test(t)) {
+        const span=[t];
+        for (let j=i+1;j<tokens.length && span.length<6;j++){
+          const k = normalizeToken(tokens[j]);
+          if (STOP_PUNCT.has(k) || PREP_SET.has(k)) break;
+          span.push(k);
+        }
+        return span.join(" ");
+      }
+    }
+    // 2) BE + -ing
+    for (let i=0;i<tokens.length-1;i++){
+      const t = normalizeToken(tokens[i]), n = normalizeToken(tokens[i+1]);
+      if (BE_SET.has(t) && /^[a-z]+ing$/.test(n) && !IGNORE_ING.has(n)) {
+        const span=[n];
+        for (let j=i+2;j<tokens.length && span.length<6;j++){
+          const k = normalizeToken(tokens[j]);
+          if (STOP_PUNCT.has(k) || PREP_SET.has(k)) break;
+          span.push(k);
+        }
+        return span.join(" ");
+      }
+    }
+    // 3) bare -ing
+    for (let i=0;i<tokens.length;i++){
+      const tok = normalizeToken(tokens[i]);
+      if (/^[a-z]+ing$/.test(tok) && !IGNORE_ING.has(tok)) {
+        const span=[tok];
+        for (let j=i+1;j<tokens.length && span.length<6;j++){
+          const k = normalizeToken(tokens[j]);
+          if (STOP_PUNCT.has(k) || PREP_SET.has(k)) break;
+          span.push(k);
+        }
+        return span.join(" ");
+      }
+    }
+    // 4) phrasal: <root> … <particle>
+    for (let i=0;i<tokens.length;i++){
+      const t = normalizeToken(tokens[i]);
+      if (ROOT_TOKEN_RE.test(t)) {
+        const n1 = normalizeToken(tokens[i+1] || ""), n2 = normalizeToken(tokens[i+2] || "");
+        if ((n1 && PARTICLES.has(n1)) || (n2 && PARTICLES.has(n2))) {
+          return [t, PARTICLES.has(n1) ? n1 : (PARTICLES.has(n2) ? n2 : "")].filter(Boolean).join(" ");
+        }
+      }
+    }
+    return null;
+  }
+
+  // ---------- Aggregate across sentences (single pass per sentence) ----------
+  const text = normalize(storyText);
+  const sentences = splitSentences(text);
+
+  const actions = [];
+  const actionStats = new Map(); // {action -> {score, firstIdx}}
+  const objects = [];
+  const settings = [];
+  const secondaries = [];
+
+  function bumpActionScore(actionRaw, tokens, sentenceIdx) {
+    if (!actionRaw) return;
+    const pretty = (toProgressive(actionRaw.split(/\s+/)[0]) + " " + actionRaw.split(/\s+/).slice(1).join(" ")).trim();
+
+    const cur = actionStats.get(pretty) || { score: 0, firstIdx: sentenceIdx };
+    cur.score += 1; // frequency
+    if (sentenceIdx === 0) cur.score += 2; // early placement bonus
+
+    // object tie
+    for (let i=0;i<tokens.length;i++){
+      const t = normalizeToken(tokens[i]);
+      if (ROOT_TOKEN_RE.test(t)) {
+        const np = captureNP(tokens, i+1, 6);
+        if (np && (!OBJECTS_SET.size || OBJECTS_SET.has(np.head))) { cur.score += 1; break; }
+      }
+    }
+    // setting tie
+    if (tokens.some(tok => PREP_SET.has(normalizeToken(tok)))) cur.score += 0.5;
+
+    // phrasal tie
+    for (let i=0;i<tokens.length;i++){
+      const t = normalizeToken(tokens[i]);
+      if (ROOT_TOKEN_RE.test(t)) {
+        const n1 = normalizeToken(tokens[i+1] || ""), n2 = normalizeToken(tokens[i+2] || "");
+        if ((n1 && PARTICLES.has(n1)) || (n2 && PARTICLES.has(n2))) { cur.score += 0.5; break; }
+      }
+    }
+
+    actionStats.set(pretty, cur);
+    if (!actions.includes(pretty)) actions.push(pretty);
+  }
+
+  sentences.forEach((s, sIdx) => {
+    const tokens = tokenize(s);
+
+    // ACTION
+    const actionRaw = detectAction(tokens);
+    bumpActionScore(actionRaw, tokens, sIdx);
+
+    // OBJECTS after verbs
+    for (let i=0;i<tokens.length;i++){
+      const t = normalizeToken(tokens[i]);
+      if (ROOT_TOKEN_RE.test(t)) {
+        const np = captureNP(tokens, i+1, 8);
+        if (np && (!OBJECTS_SET.size || OBJECTS_SET.has(np.head))) {
+          const key = np.head + "|" + (np.colors||[]).join(",");
+          if (!objects.some(o => (o.head + "|" + (o.colors||[]).join(",")) === key)) objects.push(np);
+        }
+      }
+    }
+
+    // SETTINGS via prepositions
+    for (let i=0;i<tokens.length;i++){
+      const t = normalizeToken(tokens[i]);
+      if (PREP_SET.has(t)) {
+        const sp = captureSetting(tokens, i, 8);
+        if (sp) {
+          const phr = (sp.phrase || sp.head).toLowerCase();
+          if (!settings.includes(phr)) settings.push(phr);
+        }
+      }
+    }
+
+    // SECONDARIES after "and"/"with"
+    for (let i=0;i<tokens.length;i++){
+      const t = normalizeToken(tokens[i]);
+      if (t === "and" || t === "with") {
+        const sec = captureSecondary(tokens, i, 7);
+        if (sec) {
+          const phr = sec.phrase.toLowerCase();
+          if (!secondaries.includes(phr)) secondaries.push(phr);
+        }
+      }
+    }
+
+    // ALSO: color-object anywhere in sentence (cheap inline pass)
+    for (let i=0;i<tokens.length-1;i++){
+      const c = normalizeToken(tokens[i]), n = normalizeToken(tokens[i+1]);
+      if (COLORS_SET.has(c) && OBJECTS_SET.has(n)) {
+        const key = n + "|" + c;
+        if (!objects.some(o => (o.head + "|" + (o.colors||[]).join(",")) === key)) {
+          objects.push({ phrase: `${c} ${n}`, head: n, colors: [c] });
+        }
+      }
+    }
+  });
+
+  // ---------- Choose the most representative action ----------
+  let actionLead = "";
+  if (actions.length) {
+    const ranked = actions.slice().sort((a,b) => {
+      const A = actionStats.get(a) || { score: 0, firstIdx: 999 };
+      const B = actionStats.get(b) || { score: 0, firstIdx: 999 };
+      if (B.score !== A.score) return B.score - A.score;
+      if (A.firstIdx !== B.firstIdx) return A.firstIdx - B.firstIdx;
+      return a.length - b.length; // shorter wins ties
+    });
+    actionLead = ranked[0];
+  }
+
+  // Allow one extra short action if nearly tied
+  let extraAction = "";
+  if (actions.length > 1) {
+    const ranked = actions.slice().sort((a,b) => {
+      const A = actionStats.get(a) || { score: 0, firstIdx: 999 };
+      const B = actionStats.get(b) || { score: 0, firstIdx: 999 };
+      if (B.score !== A.score) return B.score - A.score;
+      if (A.firstIdx !== B.firstIdx) return A.firstIdx - B.firstIdx;
+      return a.length - b.length;
+    });
+    const topScore = actionStats.get(ranked[0])?.score ?? 0;
+    const cand     = ranked[1];
+    const candScore= actionStats.get(cand)?.score ?? -Infinity;
+    if (cand && candScore >= topScore - 0.5 && cand.split(/\s+/).length <= 3) extraAction = cand;
+  }
+
+  // ---------- Compose the scene line (context-only; no hallucinations) ----------
+  const SECONDARY_IN_SCENE_MAX = 4;
+
+  const actionText = [actionLead, extraAction].filter(Boolean).join(" and ");
+
+  // Objects: prefer colored; up to 3 inline (full list still returned)
+  const colored = objects.filter(o => (o.colors||[]).length);
+  const plain   = objects.filter(o => !(o.colors||[]).length);
+  const chosenObjs = colored.concat(plain).slice(0,3);
+  const objectText = chosenObjs.length
+    ? chosenObjs.map(o => (o.colors && o.colors.length ? `${o.colors[0]} ${o.head}` : o.phrase)).join(" and ")
+    : "";
+
+  // Settings: up to 2 inline
+  const settingText = settings.slice(0,2).join(" and ");
+
+  // Secondaries: show up to 4 inline; return all
+  const secondaryTextForScene = secondaries.slice(0, SECONDARY_IN_SCENE_MAX).join(" and ");
+
+  const parts = [];
+  if (actionText) parts.push(actionText);
+  if (objectText) parts.push(objectText);
+  if (secondaryTextForScene && actionText) parts.push(`with ${secondaryTextForScene}`);
+  if (settingText) parts.push(`in the ${settingText}`);
+  const scene = parts.join(" ").trim();
+
+  // ---------- Optional signals (only if text supports them) ----------
+  const lowerPage = storyText.toLowerCase();
+  const timeOfDay  = inferTimeOfDay(lowerPage) || "";
+  const mood       = inferMood(lowerPage)      || "";
+  const lighting   = inferLighting(lowerPage)  || "";
+  const atmosphere = inferAtmosphere(lowerPage)|| "";
+  const pose       = suggestPoseFromAction(actionLead || actions[0] || "") || "";
+
+  const signals = {};
+  if (timeOfDay)  signals.timeOfDay = timeOfDay;
+  if (mood)       signals.mood = mood;
+  if (lighting)   signals.lighting = lighting;
+  if (atmosphere) signals.atmosphere = atmosphere;
+  if (pose)       signals.pose = pose;
+
+  // ---------- Validation & fallback ----------
+  const validator = (typeof hasActionVerb === "function")
+    ? hasActionVerb
+    : (s) => {
+        const txt = typeof s === "string" ? s : (s && s.scene) || "";
+        if (!txt) return false;
+        if (ROOT_TEXT_RE.test(txt)) return true;
+        const tks = (txt.match(/[A-Za-z'-]+|[.,;!?]/g) || []).map(t => t.toLowerCase());
+        for (let i=0;i<tks.length-1;i++){
+          if (BE_SET.has(tks[i]) && /^[a-z]+ing$/.test(tks[i+1]) && !IGNORE_ING.has(tks[i+1])) return true;
+        }
+        if (tks.some(t => /^[a-z]+ing$/.test(t) && !IGNORE_ING.has(t))) return true;
+        for (let i=0;i<tks.length;i++){
+          const tok = tks[i];
+          if (ROOT_TOKEN_RE.test(tok)) {
+            const n1=tks[i+1]?.toLowerCase(), n2=tks[i+2]?.toLowerCase();
+            if ((n1 && PARTICLES.has(n1)) || (n2 && PARTICLES.has(n2))) return true;
+          }
+        }
+        return false;
+      };
+
+  const result = {
+    scene,
+    secondary: secondaries.slice(),   // supports 3+
+    actions: actions.slice(),
+    objects: objects.slice(),
+    settings: settings.slice(),
+    signals
+  };
+
+  if (vocabOk && scene && validator(result)) {
+    console.log(`🤖 Semantic scene (vocab-driven): "${scene}"`, signals);
+    return result;
+  }
+
+  // Fallback ONLY to extractSimpleScene; if that fails validation, return empty.
+  if (typeof extractSimpleScene === "function") {
+    const fallback = extractSimpleScene(storyText);
+    const fb = (typeof fallback === "string")
+      ? { scene: fallback, secondary: [], actions: [], objects: [], settings: [], signals: {} }
+      : (fallback && typeof fallback === "object")
+        ? { scene: String(fallback.scene || ""), secondary: Array.isArray(fallback.secondary) ? fallback.secondary : [], actions: [], objects: [], settings: [], signals: {} }
+        : { scene: "", secondary: [], actions: [], objects: [], settings: [], signals: {} };
+
+    if (fb.scene && validator(fb)) {
+      console.log(`↩️  Using simple fallback: "${fb.scene}"`);
+      return fb;
     }
   }
-  
-  // Fallback to simple scene extraction
-  return extractSimpleScene(storyText) || 'engaging in story activity';
+
+  console.warn("⚠️ Semantic extraction failed validation and simple fallback did not pass; returning empty.");
+  return { scene: "", secondary: [], actions: [], objects: [], settings: [], signals: {} };
 }
 
 // ============= CULTURAL CONTEXT DERIVATION =============

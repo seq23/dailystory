@@ -776,6 +776,96 @@ export default {
   VIVID_COLORS
 };
 
+// ============= GETTER METHODS FOR EXTRACTSEMMANTICSCENE COMPATIBILITY =============
+const tier25vocabulary = {
+  getColors: () => EXPANDED_COLOR_ARRAY,
+  
+  getObjects: () => {
+    const vocab = TIER_25_UNIFIED_VOCABULARY_EXTENDED.objectCategories;
+    return [
+      ...vocab.animals,
+      ...vocab.toys, 
+      ...vocab.food,
+      ...vocab.household,
+      ...vocab.vehicles,
+      ...vocab.school,
+      ...vocab.sports,
+      ...vocab.music,
+      ...vocab.nature
+    ];
+  },
+  
+  getSettings: () => {
+    const vocab = TIER_25_UNIFIED_VOCABULARY_EXTENDED;
+    return [
+      ...vocab.contextDetection.indoor,
+      ...vocab.contextDetection.outdoor,
+      ...UNIVERSAL_INDOOR_SETTINGS,
+      ...UNIVERSAL_OUTDOOR_SETTINGS
+    ];
+  },
+  
+  getLocations: () => {
+    return tier25vocabulary.getSettings();
+  },
+  
+  getSecondaryRoles: () => {
+    return PLACEHOLDER_POOLS.friends.concat(PLACEHOLDER_POOLS.family);
+  },
+  
+  getRelationships: () => {
+    return tier25vocabulary.getSecondaryRoles();
+  },
+  
+  getAnimals: () => {
+    return TIER_25_UNIFIED_VOCABULARY_EXTENDED.objectCategories.animals;
+  },
+  
+  getActionVerbs: () => {
+    const vocab = TIER_25_UNIFIED_VOCABULARY_EXTENDED.actions;
+    const allActions = [
+      ...vocab.basic,
+      ...vocab.creative, 
+      ...vocab.sensory,
+      ...vocab.states,
+      ...vocab.fantasy,
+      ...vocab.social
+    ];
+    // Extract base verb forms (remove inflections)
+    const baseVerbs = [];
+    for (const action of allActions) {
+      const base = action.replace(/(s|ed|ing)$/, '');
+      if (!baseVerbs.includes(base)) baseVerbs.push(base);
+    }
+    return baseVerbs;
+  },
+  
+  getIrregularProgressiveMap: () => {
+    return {
+      run: "running", ran: "running", swim: "swimming", sit: "sitting", get: "getting",
+      put: "putting", hug: "hugging", stop: "stopping", lie: "lying", see: "seeing", 
+      saw: "seeing", eat: "eating", ate: "eating", take: "taking", make: "making", 
+      write: "writing", drive: "driving", give: "giving", have: "having", use: "using", 
+      wear: "wearing", hold: "holding", carry: "carrying", walk: "walking", look: "looking", 
+      play: "playing", laugh: "laughing", giggle: "giggling", chuckle: "chuckling"
+    };
+  },
+  
+  getSynonyms: () => {
+    return {
+      rucksack: 'backpack',
+      crimson: 'red', 
+      scarlet: 'red',
+      azure: 'blue',
+      emerald: 'green',
+      golden: 'gold',
+      puppy: 'dog',
+      kitten: 'cat',
+      bunny: 'rabbit'
+    };
+  }
+};
+
 // ============= EXPORTS FOR UNIFIED PLACEHOLDER RESOLVER =============
 export const VOCABULARY = TIER_25_UNIFIED_VOCABULARY_EXTENDED;
-export { CULTURAL_ARRAYS_EXTENDED };
+export { CULTURAL_ARRAYS_EXTENDED, tier25vocabulary };
