@@ -65,7 +65,7 @@ serve(async (req) => {
 
   // BULLETPROOF SYNC PROTECTION V3.0
   let importAttempts = 0;
-  const maxImportAttempts = 5;
+  const maxImportAttempts = 8;
   
   while (importAttempts < maxImportAttempts) {
     try {
@@ -102,6 +102,7 @@ serve(async (req) => {
           deploymentMarker: '2025-09-20T18:25:00Z',
           attempts: importAttempts,
           details: importError.message,
+          stack: importError.stack?.substring(0, 500),
           recovery: {
             action: 'Triggering automatic redeploy',
             expectedResolution: '30-60 seconds',
@@ -118,9 +119,9 @@ serve(async (req) => {
         });
       }
       
-      // Wait before retry (exponential backoff)
+      // Wait before retry (enhanced backoff for template-ab)
       if (importAttempts < maxImportAttempts) {
-        await new Promise(resolve => setTimeout(resolve, 1000 * importAttempts));
+        await new Promise(resolve => setTimeout(resolve, 1500 * importAttempts));
       }
     }
   }

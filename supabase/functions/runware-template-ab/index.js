@@ -3,7 +3,6 @@
 // Handles Level A (basic shapes/colors) and Level B (simple scenes)
 // Lightweight, fast deployment - optimized for simple template generation with character consistency
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { callRunwareAPIWithRetry } from './callRunwareAPIWithRetry.js';
 import { 
   getHairBySkintone, 

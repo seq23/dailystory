@@ -1,5 +1,4 @@
 // DEPLOY_MARKER: 2025-01-16T17:30:00Z - COMPREHENSIVE BUG FIXES
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { 
   getHairBySkintone, 
   getSkinBySkintone, 

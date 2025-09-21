@@ -4,7 +4,6 @@
 // NO character consistency, NO shared functions beyond styleFrameworks
 // Pure pageText + style framework (C) or hardcoded template (D)
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 // Inline cultural detection for emergency independence (no imports)
 function inlineDetectCultural(userInfo, avatarIdentity) {
   const culturalProfile = {
