@@ -367,7 +367,7 @@ function extractSimpleScene(storyText) {
   // ==========  
   // Local config + tiny backups (scoped; no globals) - PHASE 1: EXPANDED VOCABULARY ARRAYS
   // ==========
-  const VERB_ROOTS = ["see","hold","carry","wear","grab","pick","lift","bring","take","hug","pull","push","walk","stroll","run","wander","tiptoe","explore","look","play","read","draw","build","climb","swing","slide","help","clean","make","watch","eat","sing","dance","wake","drink","create","build","hear","feel","smell","taste","touch","get","put","give","come","go","find","study","cook","sleep","sit","stand"];
+  const VERB_ROOTS = ["see","hold","carry","wear","grab","pick","lift","bring","take","hug","pull","push","walk","stroll","run","wander","tiptoe","explore","look","play","read","draw","build","climb","swing","slide","help","clean","make","watch","eat","sing","dance","wake","drink","create","build","hear","feel","smell","taste","touch","get","put","give","come","go","find","study","cook","sleep","sit","stand","laugh"];
   const PREP_SETTINGS = ["through","into","in","inside","across","on","at","under","near","by","along"];
   const DETERMINERS = ["a","an","the","my","his","her","their","our"];
   const STOP_TOKENS = [",",".",";","!","?","and","but","or","while","as","because","so","then","when","before","after", ...PREP_SETTINGS];
@@ -697,7 +697,7 @@ function extractLocationFromText(text) {
 function hasActionVerb(scene) {
   if (!scene || typeof scene !== 'string') return false;
   const sceneWords = scene.toLowerCase().split(/\s+/);
-  const VERB_ROOTS_FOR_VALIDATION = ["see","hold","carry","wear","grab","pick","lift","bring","take","hug","pull","push","walk","stroll","run","wander","tiptoe","explore","look","play","read","draw","build","climb","swing","slide","help","clean","make","watch","eat","sing","dance","wake","drink","create","build","hear","feel","smell","taste","touch","get","put","give","come","go","find","study","cook","sleep","sit","stand"];
+  const VERB_ROOTS_FOR_VALIDATION = ["see","hold","carry","wear","grab","pick","lift","bring","take","hug","pull","push","walk","stroll","run","wander","tiptoe","explore","look","play","read","draw","build","climb","swing","slide","help","clean","make","watch","eat","sing","dance","wake","drink","create","build","hear","feel","smell","taste","touch","get","put","give","come","go","find","study","cook","sleep","sit","stand","laugh"];
   return VERB_ROOTS_FOR_VALIDATION.some(verb => 
     sceneWords.some(word => word.startsWith(verb) || word === verb || word === verb + 'ing' || word === verb + 'ed' || word === verb + 's')
   );
@@ -844,60 +844,69 @@ async function handleRequest(req) {
     let templateResult;
     
     if (selectedTemplate.name === 'Premium Template A') {
-      // Tier 2.5A: Full feature processing with character consistency
+      // Tier 2.5A: Premium processing with action verb validation
       console.log('🚀 Processing Tier 2.5A: Premium Template with full features');
       
       // Use semantic scene extraction for Tier A
       const extractedScene = extractSemanticScene(storyText);
       
-      // Use PhaseIntegrationOrchestrator for enhanced processing
-      const orchestratedData = await processWithOrchestrator(sessionId, storyText, userInfo, avatarIdentity, pageNumber);
-      let characterConsistency = '';
-      let enhancedPrompt = '';
-      
-      if (orchestratedData && selectedTemplate.avatarConsistency) {
-        try {
-          // Extract character consistency from orchestrated results
-          if (orchestratedData.characterData?.mainCharacterAppearance) {
-            characterConsistency = orchestratedData.characterData.mainCharacterAppearance;
-            console.log(`✅ Orchestrator character consistency applied: ${characterConsistency.substring(0, 100)}...`);
-          }
-          
-          // Extract enhanced prompt data
-          if (orchestratedData.enhancedPrompt) {
-            enhancedPrompt = orchestratedData.enhancedPrompt;
-            console.log(`✅ Orchestrator enhanced prompt applied`);
-          }
-        } catch (error) {
-          console.warn('Orchestrator data extraction failed:', error);
-          characterConsistency = '';
-          enhancedPrompt = '';
-        }
-      } else {
-        console.warn('🔄 Using nuclear fallback for Tier 2.5A processing');
+      // VALIDATE SCENE HAS ACTION VERB - IMMEDIATE ESCALATION IF NOT
+      if (!extractedScene || !hasActionVerb(extractedScene)) {
+        console.log('⚠️ Tier 2.5A: Scene missing action verb - escalating to next tier');
+        const escalationResult = await escalateToNextTier(payload);
+        return createResponse({
+          success: false,
+          escalated: true,
+          reason: 'scene_extraction_failed',
+          details: 'Tier 2.5A: Scene missing required action verb - escalating to next tier',
+          escalationResult
+        }, 200);
       }
       
-    // Build comprehensive template with fallback handling
-    const styleFramework = getNuclearStyleFramework(userInfo?.difficulty || 'medium');
-    const culturalProfile = inlineDetectCultural(userInfo, avatarIdentity);
+      // Build template data using PREMIUM_PROMPT_TEMPLATE
+      const styleFramework = getNuclearStyleFramework(userInfo?.difficulty || 'medium');
+      const culturalProfile = inlineDetectCultural(userInfo, avatarIdentity);
+      const characterName = userInfo?.name || userInfo?.childName || 'child';
+      const age = userInfo?.age || 'young child';
+      const ethnicity = deriveRegionalEthnicity(userInfo, avatarIdentity);
+      const hairDescription = getHair(userInfo?.avatar?.skinTone) || 'brown hair';
+      const facialFeatures = getFeatures(userInfo?.avatar?.skinTone) || 'friendly expression';
+      
+      // Apply pageText summarization for levels 2-4
+      const processedStoryText = summarizePageText(storyText, userInfo?.difficulty);
+      
+      // Use PREMIUM_PROMPT_TEMPLATE with proper placeholder replacement
+      let finalPositivePrompt = PREMIUM_PROMPT_TEMPLATE
+        .replace('{pageText}', processedStoryText)
+        .replace('{character}', `A young child named ${characterName}`)
+        .replace('{age}', age)
+        .replace('{ethnicity}', ethnicity)
+        .replace('{hair}', hairDescription)
+        .replace('{features}', facialFeatures)
+        .replace('{bundle.culturalEnhancements}', culturalProfile || '')
+        .replace('{semantic_scene}', extractedScene)
+        .replace('{secondary_characters}', '')
+        .replace('{visual_consistency_elements}', '')
+        .replace('{setting_context}', '')
+        .replace('{cultural_context}', culturalProfile || 'multicultural setting')
+        .replace('{community_context}', '')
+        .replace('{frameworkPrompt}', styleFramework.frameworkPrompt || 'contemporary children\'s book illustration style')
+        .replace('{cameraDirective}', 'detailed illustration');
+      
+      // Clean up any remaining placeholders
+      finalPositivePrompt = finalPositivePrompt
+        .replace(/\{[^}]+\}/g, '')
+        .replace(/[ \t]+/g, ' ')
+        .replace(/\s*\.\s*\./g, '.')
+        .trim();
     
-    // Apply pageText summarization for levels 2-4
-    const processedStoryText = summarizePageText(storyText, userInfo?.difficulty);
-    
-    // Build comprehensive prompt with orchestrator data and fallbacks
-    const finalPositivePrompt = [
-      enhancedPrompt || extractedScene || 'child playing happily',
-      characterConsistency || 'a young child',
-      styleFramework.frameworkPrompt || 'contemporary children\'s book illustration style'
-    ].filter(Boolean).join('. ');
-    
-    templateResult = {
-      positivePrompt: finalPositivePrompt,
-      negativePrompt: generateInlineNuclearNegative(culturalProfile, userInfo?.avatar?.type, userInfo?.difficulty) || 'blurry, low quality',
-      templateType: 'Premium Template A - Full Features',
-      tier: '2.5A',
-      styleFrameworkUsed: styleFramework.name
-    };
+      templateResult = {
+        positivePrompt: finalPositivePrompt,
+        negativePrompt: generateInlineNuclearNegative(culturalProfile, userInfo?.avatar?.type, userInfo?.difficulty) || 'blurry, low quality',
+        templateType: 'Premium Template A - Full Features',
+        tier: '2.5A',
+        styleFrameworkUsed: styleFramework.name
+      };
       
     } else if (selectedTemplate.name === 'Basic Template B') {
       // Tier 2.5B: Basic processing with reduced features
@@ -921,15 +930,15 @@ async function handleRequest(req) {
         console.log(`🎯 TIER 2.5B Nuclear Scene Extraction: "${extractedScene}"`);
       }
       
-      // PHASE 4.2: VALIDATE SCENE HAS ACTION VERB - IMMEDIATE ESCALATION IF NOT
+      // VALIDATE SCENE HAS ACTION VERB - IMMEDIATE ESCALATION IF NOT
       if (!extractedScene || !hasActionVerb(extractedScene)) {
-        console.log('⚠️ Scene missing action verb, escalating to next tier');
+        console.log('⚠️ Tier 2.5B: Scene missing action verb - escalating to next tier');
         const escalationResult = await escalateToNextTier(payload);
         return createResponse({
           success: false,
           escalated: true,
           reason: 'scene_extraction_failed',
-          details: 'Scene missing required action verb',
+          details: 'Tier 2.5B: Scene missing required action verb - escalating to next tier',
           escalationResult
         }, 200);
       }
@@ -952,12 +961,12 @@ async function handleRequest(req) {
       const fullFrameworkPrompt = styleFramework.frameworkPrompt || 'contemporary children\'s book illustration style';
       
       // PHASE 4.1 & 4.2: REMOVE ALL FALLBACKS - Apply TIER_25B_TEMPLATE with NO fallbacks
-      console.log('📋 Using official TIER_25B_TEMPLATE for Tier 2.5B');
+      console.log('📋 Using official BASIC_PROMPT_TEMPLATE for Tier 2.5B');
       
       // Apply pageText summarization for levels 2-4
       const processedStoryText = summarizePageText(storyText, userInfo?.difficulty);
       
-      let finalPositivePrompt = TIER_25B_TEMPLATE
+      let finalPositivePrompt = BASIC_PROMPT_TEMPLATE
         .replace('{pageText}', processedStoryText)  // REMOVED: || 'A child goes on an adventure' fallback
         .replace('{character}', character)
         .replace('{age}', age)
@@ -969,7 +978,7 @@ async function handleRequest(req) {
         .replace('{leftover_data}', leftoverData)
         .replace('{fullFrameworkPrompt}', fullFrameworkPrompt);
 
-      console.log(`✅ TIER_25B_TEMPLATE Applied: "${finalPositivePrompt.substring(0, 100)}..."`);
+      console.log(`✅ BASIC_PROMPT_TEMPLATE Applied: "${finalPositivePrompt.substring(0, 100)}..."`);
       
       // Clean up any remaining placeholders or double spaces - PRESERVE LINE BREAKS
       finalPositivePrompt = finalPositivePrompt
