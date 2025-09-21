@@ -12,6 +12,7 @@ import {
   shouldApplyCulturalEnhancements,
   getCulturalBundle 
 } from '../_shared/StaticDataCache.js';
+import { tier25vocabulary } from '../_shared/tier25Vocabulary.js';
 
 // ============= NUCLEAR INDEPENDENCE: COMPLETE STYLE FRAMEWORKS =============
 const NUCLEAR_HARDCODED_STYLE_FRAMEWORKS = {
@@ -192,7 +193,7 @@ async function processWithOrchestrator(sessionId, pageText, userInfo, avatarIden
     };
 
     // Process through all phases for enhanced data
-    const processedResult = await orchestrator.processContentThroughAllPhases(pageText, context);
+    const processedResult = await orchestrator.executeCompleteWorkflow(userInfo, pageText, sessionId, 'template-ab');
     
     if (processedResult && processedResult.success) {
       console.log('✅ Orchestrator processing successful');
@@ -344,6 +345,13 @@ function extractSemanticScene(storyText) {
 
   // Fast exit if essential vocab missing → we'll still try simple fallback later.
   const vocabOk = VERB_ROOTS.length > 0;
+  
+  console.log(`🔍 [DEBUG] Vocabulary loading:`, {
+    colorsCount: COLORS.length,
+    objectsCount: OBJECTS.length,
+    verbRootsCount: VERB_ROOTS.length,
+    vocabOk
+  });
 
   // ---------- Normalization ----------
   const esc = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -1187,6 +1195,12 @@ function hasActionVerb(sceneOrResult) {
 
   console.log(`🔍 [DEBUG] hasActionVerb: Validating scene: "${scene}"`);
 
+  // Reject escalation strings immediately
+  if (scene.startsWith("ESCALATE_")) {
+    console.log(`🔍 [DEBUG] hasActionVerb: Rejecting escalation string: "${scene}"`);
+    return false;
+  }
+
   // --- Normalize & tokenize ---
   const text = scene.replace(/[""]/g, '"').replace(/[']/g, "'").trim();
   const tokens = (text.match(/[A-Za-z'-]+|[.,;!?]/g) || []).map(t => t.toLowerCase());
@@ -1414,12 +1428,12 @@ async function handleRequest(req) {
       // Use semantic scene extraction for Tier A
       const extractedScene = extractSemanticScene(storyText);
       
-      console.log(`🔍 [DEBUG] Tier 2.5A Scene Extraction Result: "${extractedScene}"`);
+      console.log(`🔍 [DEBUG] Tier 2.5A Scene Extraction Result: "${typeof extractedScene === 'object' && extractedScene?.scene ? extractedScene.scene : extractedScene}"`);
       console.log(`🔍 [DEBUG] Tier 2.5A Action Validation Input: ${JSON.stringify({
-        scene: extractedScene,
+        scene: typeof extractedScene === 'object' && extractedScene?.scene ? extractedScene.scene : extractedScene,
         hasAction: hasActionVerb(extractedScene),
         sceneType: typeof extractedScene,
-        sceneLength: extractedScene?.length || 0
+        sceneLength: (typeof extractedScene === 'object' && extractedScene?.scene ? extractedScene.scene : extractedScene)?.length || 0
       })}`);
       
       // VALIDATE SCENE HAS ACTION VERB - IMMEDIATE ESCALATION IF NOT
@@ -1502,12 +1516,12 @@ async function handleRequest(req) {
         console.log(`🎯 TIER 2.5B Nuclear Scene Extraction: "${extractedScene}"`);
       }
       
-      console.log(`🔍 [DEBUG] Tier 2.5B Scene Extraction Result: "${extractedScene}"`);
+      console.log(`🔍 [DEBUG] Tier 2.5B Scene Extraction Result: "${typeof extractedScene === 'object' && extractedScene?.scene ? extractedScene.scene : extractedScene}"`);
       console.log(`🔍 [DEBUG] Tier 2.5B Action Validation Input: ${JSON.stringify({
-        scene: extractedScene,
+        scene: typeof extractedScene === 'object' && extractedScene?.scene ? extractedScene.scene : extractedScene,
         hasAction: hasActionVerb(extractedScene),
         sceneType: typeof extractedScene,
-        sceneLength: extractedScene?.length || 0
+        sceneLength: (typeof extractedScene === 'object' && extractedScene?.scene ? extractedScene.scene : extractedScene)?.length || 0
       })}`);
       
       // VALIDATE SCENE HAS ACTION VERB - IMMEDIATE ESCALATION IF NOT
