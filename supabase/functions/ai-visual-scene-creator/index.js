@@ -1,10 +1,16 @@
-// DEPLOY_MARKER: 2025-01-16T17:30:00Z - COMPREHENSIVE BUG FIXES
+// DEPLOY_MARKER: 2025-01-16T17:30:00Z - COMPREHENSIVE BUG FIXES WITH SUPABASE CLIENT
 import { 
   getHairBySkintone, 
   getSkinBySkintone, 
   getCulturalBundle, 
   shouldApplyCulturalEnhancements 
 } from '../_shared/StaticDataCache.js';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
+
+// Initialize Supabase client for internal function calls
+const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
+const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY') || '';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 console.log('BOOT ai-visual-scene-creator module loaded');
 

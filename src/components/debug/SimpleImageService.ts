@@ -5,6 +5,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { DebugLogger } from '@/services/DebugLogger';
+import { HealthCheckService } from '@/services/HealthCheckService';
 
 export interface ImageGenerationRequest {
   pageText: string;
@@ -69,6 +70,37 @@ export class SimpleImageService {
 
     try {
       const startTime = Date.now();
+      
+      // Check system health to determine routing strategy
+      const healthStatus = await HealthCheckService.checkSystemHealth();
+      const tierStrategy = HealthCheckService.selectOptimalTier(healthStatus);
+      
+      DebugLogger.log('image', `🏥 Health check completed, tier strategy selected`, { 
+        requestId, 
+        overallHealth: healthStatus.overallHealth,
+        selectedTier: tierStrategy.tier,
+        fallbackType: tierStrategy.fallback,
+        reason: tierStrategy.reason
+      });
+
+      // If health check determines ai_visual_scene_direct, use it immediately
+      if (tierStrategy.fallback === 'ai_visual_scene_direct') {
+        DebugLogger.log('image', `🎯 Health check routed to direct AI Visual Scene Creator`, { requestId });
+        
+        const directResult = await this.generateWithDirectAiVisualSceneCreator(request);
+        if (directResult.success) {
+          return {
+            ...directResult,
+            metadata: {
+              ...directResult.metadata,
+              healthRouting: true,
+              routingReason: tierStrategy.reason
+            }
+          };
+        }
+        
+        DebugLogger.warn('image', `⚠️ Health-routed direct AI Visual Scene failed, falling back to orchestrator`, { requestId });
+      }
       
       // Try orchestrator first (handles Tier 1 → 2.5A → 2.5B → 2.5C → 2.5D → 4)
       DebugLogger.log('image', `🎯 Attempting Orchestrator (main 5-tier pipeline)`, { requestId });
