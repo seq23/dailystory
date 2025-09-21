@@ -2,6 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ImageFallbackService } from './ImageFallbackService';
 import { DebugLogger } from '@/services/DebugLogger';
 import { errorRecoveryManager } from '@/services/ErrorRecoveryManager';
+import { HealthCheckService, type HealthStatus, type TierStrategy } from './HealthCheckService';
 
 // ============= TYPES =============
 
@@ -132,7 +133,7 @@ export class SimpleImageService {
     }
   }
 
-  // Main image generation method with enhanced error recovery
+  // Health-aware image generation with intelligent tier skipping
   static async generateStoryImage(
     storyText: string,
     userInfo?: UserInfo,
@@ -140,7 +141,7 @@ export class SimpleImageService {
     pageNumber: number = 1,
     isPremium: boolean = false
   ): Promise<ImageResult> {
-    DebugLogger.log('image', 'SimpleImageService: Starting image generation');
+    DebugLogger.log('image', 'SimpleImageService: Starting health-aware image generation');
     DebugLogger.log('image', 'Parameters', { 
       storyLength: storyText?.length || 0, 
       hasUserInfo: !!userInfo, 
@@ -149,55 +150,89 @@ export class SimpleImageService {
       isPremium 
     });
 
-    // Enhanced error recovery - check memory pressure before attempting generation
-    const memoryStatus = errorRecoveryManager.detectMemoryPressure();
-    if (memoryStatus.isHigh) {
-      DebugLogger.warn('image', 'High memory pressure detected, using recovery mode', {
-        usage: memoryStatus.usage,
-        recommendations: memoryStatus.recommendations
-      });
-      
-      // Use memory-efficient generation path
-      return await errorRecoveryManager.withRetry(
-        () => this.generateImageWithFallback(storyText, userInfo, sessionId, pageNumber, isPremium),
-        `image-gen-recovery-${pageNumber}`,
-        {
-          maxRetries: 2,
-          retryDelay: 2000,
-          fallbackValue: {
-            success: true,
-            url: ImageFallbackService.generateStoryPlaceholder(storyText, pageNumber),
-            tier: 'Memory Recovery',
-            metadata: { recoveryMode: true }
-          }
-        }
-      );
-    }
+    // PHASE 1: Health Check and Tier Selection
+    const healthStatus = await HealthCheckService.checkSystemHealth();
+    const tierStrategy = HealthCheckService.selectOptimalTier(healthStatus);
+    
+    DebugLogger.log('image', 'Health-based tier selection', {
+      health: healthStatus,
+      selectedTier: tierStrategy.tier,
+      reason: tierStrategy.reason
+    });
 
-    // Standard generation path with enhanced error recovery
-    return await errorRecoveryManager.withRetry(
-      () => this.generateImageWithFallback(storyText, userInfo, sessionId, pageNumber, isPremium),
-      `image-gen-${pageNumber}`,
-      {
-        maxRetries: 3,
-        retryDelay: 1000,
-        fallbackValue: {
+    // PHASE 2: Direct tier routing based on health
+    switch (tierStrategy.tier) {
+      case 'TIER_4':
+        // Direct SVG fallback - no backend calls needed
+        DebugLogger.warn('image', 'Using direct SVG fallback due to Runware API failure');
+        return {
           success: true,
           url: ImageFallbackService.generateStoryPlaceholder(storyText, pageNumber),
-          tier: 'Error Recovery',
-          metadata: { recoveryMode: true }
+          tier: 'TIER_4_HEALTH_SKIP',
+          metadata: { 
+            healthReason: tierStrategy.reason,
+            healthStatus: healthStatus
+          }
+        };
+
+      case 'TIER_2_5C':
+        // Direct nuclear independent template
+        DebugLogger.log('image', 'Using nuclear independent template due to orchestrator failure');
+        return await this.generateWithTemplate(storyText, userInfo, sessionId, pageNumber, isPremium, healthStatus);
+
+      case 'TIER_1':
+      default:
+        // Enhanced error recovery with orchestrator - check memory pressure first
+        const memoryStatus = errorRecoveryManager.detectMemoryPressure();
+        if (memoryStatus.isHigh) {
+          DebugLogger.warn('image', 'High memory pressure detected, using recovery mode', {
+            usage: memoryStatus.usage,
+            recommendations: memoryStatus.recommendations
+          });
+          
+          // Use memory-efficient generation path
+          return await errorRecoveryManager.withRetry(
+            () => this.generateWithOrchestrator(storyText, userInfo, sessionId, pageNumber, isPremium, healthStatus),
+            `image-gen-recovery-${pageNumber}`,
+            {
+              maxRetries: 2,
+              retryDelay: 2000,
+              fallbackValue: {
+                success: true,
+                url: ImageFallbackService.generateStoryPlaceholder(storyText, pageNumber),
+                tier: 'Memory Recovery',
+                metadata: { recoveryMode: true, healthStatus }
+              }
+            }
+          );
         }
-      }
-    );
+
+        // Standard orchestrator path with enhanced error recovery
+        return await errorRecoveryManager.withRetry(
+          () => this.generateWithOrchestrator(storyText, userInfo, sessionId, pageNumber, isPremium, healthStatus),
+          `image-gen-${pageNumber}`,
+          {
+            maxRetries: 3,
+            retryDelay: 1000,
+            fallbackValue: {
+              success: true,
+              url: ImageFallbackService.generateStoryPlaceholder(storyText, pageNumber),
+              tier: 'Error Recovery',
+              metadata: { recoveryMode: true, healthStatus }
+            }
+          }
+        );
+    }
   }
 
-  // Separate method for actual image generation logic
-  private static async generateImageWithFallback(
+  // Orchestrator-based generation (Tier 1)
+  private static async generateWithOrchestrator(
     storyText: string,
     userInfo?: UserInfo,
     sessionId?: string,
     pageNumber: number = 1,
-    isPremium: boolean = false
+    isPremium: boolean = false,
+    healthStatus?: HealthStatus
   ): Promise<ImageResult> {
 
   // Normalize session ID for consistent caching
@@ -347,10 +382,97 @@ export class SimpleImageService {
         imageURL: fallbackUrl,
         generatedAt: new Date().toISOString(),
         tier: 'SVG Fallback',
+          metadata: {
+            isFallback: true,
+            originalError: error.message,
+            tier: 'fallback',
+            healthStatus
+          }
+      };
+    }
+  }
+
+  // Template-based generation (Tier 2.5C)
+  private static async generateWithTemplate(
+    storyText: string,
+    userInfo?: UserInfo,
+    sessionId?: string,
+    pageNumber: number = 1,
+    isPremium: boolean = false,
+    healthStatus?: HealthStatus
+  ): Promise<ImageResult> {
+    const normalizedSessionId = sessionId?.toString() || 'unknown';
+    
+    // Check cache first
+    if (this.isIndexedDBAvailable && normalizedSessionId !== 'unknown') {
+      const cached = await this.getImageFromDB(normalizedSessionId, pageNumber);
+      if (cached?.imageURL) {
+        DebugLogger.log('image', `📸 Template cache hit: session ${normalizedSessionId}, page ${pageNumber}`);
+        return {
+          success: true,
+          url: cached.imageURL,
+          generatedAt: cached.timestamp,
+          tier: 'Template Cache',
+          metadata: { ...cached.metadata, fromCache: true, healthStatus }
+        };
+      }
+    }
+
+    try {
+      DebugLogger.log('image', 'Calling nuclear independent template: runware-template-cd');
+      
+      const { data: templateResult, error: templateError } = await supabase.functions.invoke('runware-template-cd', {
+        body: {
+          pageText: storyText.trim().substring(0, 3000),
+          userInfo,
+          sessionId: normalizedSessionId,
+          pageNumber,
+          isGuestUser: !isPremium,
+          difficultyLevel: this.mapDifficultyLevel(userInfo)
+        }
+      });
+
+      if (templateError) {
+        throw new Error(`Template error: ${templateError.message}`);
+      }
+
+      if (templateResult?.success && templateResult?.imageURL) {
+        DebugLogger.log('image', `🖼️ Template generated successfully: ${templateResult.imageURL}`);
+        
+        // Store result in cache
+        if (this.isIndexedDBAvailable && normalizedSessionId !== 'unknown') {
+          await this.storeImageInDB(normalizedSessionId, pageNumber, templateResult.imageURL, templateResult);
+        }
+
+        return {
+          success: true,
+          url: templateResult.imageURL,
+          imageURL: templateResult.imageURL,
+          generatedAt: new Date().toISOString(),
+          tier: 'TIER_2_5C_TEMPLATE',
+          usedTier: 'TIER_2_5C_TEMPLATE',
+          metadata: { ...templateResult, healthStatus }
+        };
+      } else {
+        throw new Error(`Template returned no image: ${JSON.stringify(templateResult)}`);
+      }
+    } catch (error) {
+      DebugLogger.error('image', 'Template generation failed, using SVG fallback', error);
+      
+      // Final SVG fallback
+      const fallbackUrl = ImageFallbackService.generateStoryPlaceholder(storyText, pageNumber);
+      
+      return {
+        success: true,
+        url: fallbackUrl,
+        imageURL: fallbackUrl,
+        generatedAt: new Date().toISOString(),
+        tier: 'TIER_4_TEMPLATE_FALLBACK',
         metadata: {
           isFallback: true,
           originalError: error.message,
-          tier: 'fallback'
+          tier: 'template_fallback',
+          healthStatus
         }
       };
     }

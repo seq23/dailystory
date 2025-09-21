@@ -108,7 +108,8 @@ class EdgeErrorHandler {
       functionName,
       timestamp: Date.now(),
       details: context.details || error.details,
-      sessionId: context.sessionId
+      sessionId: context.sessionId,
+      category: this.categorizeError(error, functionName)
     };
     
     console.error(`❌ ${functionName} Error:`, edgeError);
@@ -124,6 +125,8 @@ class EdgeErrorHandler {
     return new Response(JSON.stringify({
       error: edgeError.message,
       type: edgeError.type,
+      category: edgeError.category,
+      escalationTarget: this.getEscalationTarget(edgeError.category),
       requestId: context.requestId,
       timestamp: edgeError.timestamp
     }), {
@@ -133,6 +136,31 @@ class EdgeErrorHandler {
         'Access-Control-Allow-Origin': '*'
       }
     });
+  }
+  
+  static categorizeError(error, functionName) {
+    const message = error.message || error.toString();
+    
+    if (message.includes('Runware') || message.includes('WebSocket') || message.includes('api.runware')) {
+      return 'RUNWARE_API_FAILURE';
+    }
+    if (message.includes('PhaseIntegrationOrchestrator') || message.includes('CharacterConsistencyService')) {
+      return 'SERVICE_DEPENDENCY_FAILURE';
+    }
+    if (message.includes('template') || message.includes('generation')) {
+      return 'TEMPLATE_GENERATION';
+    }
+    return 'INTERNAL_ERROR';
+  }
+  
+  static getEscalationTarget(category) {
+    const escalationMap = {
+      'RUNWARE_API_FAILURE': 'TIER_4',
+      'SERVICE_DEPENDENCY_FAILURE': 'TIER_2_5C',
+      'TEMPLATE_GENERATION': 'NEXT_TIER',
+      'INTERNAL_ERROR': 'NEXT_TIER'
+    };
+    return escalationMap[category] || 'NEXT_TIER';
   }
   
   static getHttpStatusCode(errorType) {
@@ -406,6 +434,51 @@ function generateContextSummary(text) {
     return sentences.slice(0, 2).join('. ') + '.';
   }
   return sentences[0]?.trim() + '.' || 'Children\'s story scene.';
+}
+
+// ============= CHARACTER CONSISTENCY FALLBACK =============
+/**
+ * Extracts only character consistency without full orchestrator enhancement
+ * Used when orchestrator fails but we want to maintain character appearance
+ */
+async function extractCharacterConsistencyOnly(pageText, sessionId, pageNumber, userInfo) {
+  console.log('🎭 [CHARACTER FALLBACK] Attempting character consistency extraction only');
+  
+  try {
+    // Direct character consistency service call
+    const characterDetails = await characterConsistencyService.analyzeVisualDetails(
+      sessionId, 
+      pageText, 
+      pageNumber
+    );
+    
+    if (characterDetails && characterDetails.mainCharacter) {
+      console.log('✅ [CHARACTER FALLBACK] Character details extracted successfully');
+      
+      // Build minimal enhanced prompt with character consistency
+      const characterDescription = await characterConsistencyService.getCharacterAppearanceFromStory(sessionId);
+      const contextSummary = generateContextSummary(pageText);
+      
+      const minimalPrompt = `${contextSummary}. Character details: ${characterDescription}`;
+      
+      return {
+        success: true,
+        enhancedPrompt: minimalPrompt,
+        tier: 'CHARACTER_CONSISTENCY_ONLY',
+        metadata: {
+          characterDetails,
+          fallbackMode: true,
+          enhancementType: 'character_only'
+        }
+      };
+    } else {
+      console.warn('⚠️ [CHARACTER FALLBACK] No character details found');
+      return null;
+    }
+  } catch (error) {
+    console.error('❌ [CHARACTER FALLBACK] Character consistency extraction failed:', error);
+    return null;
+  }
 }
 
 // ============= CORE IMAGE GENERATION LOGIC =============
@@ -790,8 +863,58 @@ async function handleRequest(req) {
           });
           result = resp.data || { success: false, error: resp.error?.message || 'Tier 2.5A escalation failed' };
         } else {
-          console.log('🔄 Tier 1 error, escalating to Tier 2.5A:', error.message);
-          // Call runware-template-ab for real Tier 2.5A escalation
+          // GRACEFUL DEGRADATION: Try character consistency fallback before escalating
+          console.log('🎭 [ORCHESTRATOR] Trying character consistency fallback before Tier 2.5A');
+          const characterFallback = await extractCharacterConsistencyOnly(
+            storyText, 
+            payload.sessionId || 'session_' + requestId, 
+            pageNumber || 1, 
+            payload.userInfo
+          );
+          
+          if (characterFallback && characterFallback.success) {
+            console.log('✅ [CHARACTER FALLBACK] Character consistency successful, generating image');
+            try {
+              const apiKey = Deno.env.get('RUNWARE_API_KEY')?.trim();
+              const sessionId = payload.sessionId || 'session_' + requestId;
+              const avatarIdentity = payload.userInfo?.avatar;
+              
+              const imageResult = await generateWithRunware(
+                apiKey,
+                characterFallback.enhancedPrompt,
+                sessionId,
+                requestId,
+                payload.userInfo,
+                avatarIdentity,
+                pageNumber || 1,
+                characterFallback.metadata
+              );
+              
+              result = {
+                ...imageResult,
+                tier: 'CHARACTER_CONSISTENCY_FALLBACK',
+                usedTier: 'CHARACTER_CONSISTENCY_FALLBACK',
+                fallbackReason: 'orchestrator_enhancement_failed',
+                templateStructure: characterFallback.tier
+              };
+            } catch (charError) {
+              console.log('❌ [CHARACTER FALLBACK] Image generation failed, escalating to Tier 2.5A');
+              // Fall through to Tier 2.5A escalation
+              const resp = await supabase.functions.invoke('runware-template-ab', {
+                body: {
+                  storyText,
+                  pageText: storyText,
+                  userInfo: payload.userInfo,
+                  sessionId: payload.sessionId || 'session_' + requestId,
+                  pageNumber: pageNumber || 1,
+                  templateComplexity: 'A'
+                }
+              });
+              result = resp.data || { success: false, error: resp.error?.message || 'All fallbacks failed' };
+            }
+          } else {
+            console.log('🔄 [ORCHESTRATOR] Character consistency fallback failed, escalating to Tier 2.5A');
+            // Call runware-template-ab for real Tier 2.5A escalation
           const resp = await supabase.functions.invoke('runware-template-ab', {
             body: {
               storyText,
