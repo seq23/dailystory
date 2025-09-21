@@ -914,19 +914,21 @@ async function handleRequest(req) {
             }
           }
           
-          // If character consistency fallback failed, escalate to Tier 2.5A
-          console.log('🔄 [ORCHESTRATOR] Character consistency fallback failed, escalating to Tier 2.5A');
-          const resp = await supabase.functions.invoke('runware-template-ab', {
-            body: {
-              storyText,
-              pageText: storyText,
-              userInfo: payload.userInfo,
-              sessionId: payload.sessionId || 'session_' + requestId,
-              pageNumber: pageNumber || 1,
-              templateComplexity: 'A'
-            }
-          });
-          result = resp.data || { success: false, error: resp.error?.message || 'Tier 2.5A escalation failed' };
+          // Only escalate to Tier 2.5A if character fallback failed or didn't produce a result
+          if (!result || !result.success) {
+            console.log('🔄 [ORCHESTRATOR] Character consistency fallback failed, escalating to Tier 2.5A');
+            const resp = await supabase.functions.invoke('runware-template-ab', {
+              body: {
+                storyText,
+                pageText: storyText,
+                userInfo: payload.userInfo,
+                sessionId: payload.sessionId || 'session_' + requestId,
+                pageNumber: pageNumber || 1,
+                templateComplexity: 'A'
+              }
+            });
+            result = resp.data || { success: false, error: resp.error?.message || 'Tier 2.5A escalation failed' };
+          }
       }
     }
     
