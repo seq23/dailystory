@@ -92,29 +92,7 @@ function getNuclearStyleFramework(difficulty) {
   return framework;
 }
 
-// CORS Headers
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Max-Age': '86400',
-};
-
-// Response helpers
-function createResponse(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-  });
-}
-
-function createErrorResponse(error, status = 500) {
-  console.error('Template CD Error:', error);
-  return createResponse({
-    success: false,
-    error: error instanceof Error ? error.message : error
-  }, status);
-}
+// ============= BUSINESS LOGIC ONLY - NO HTTP HANDLING =============
 
 // Determine complexity level (C or D)
 function getComplexityLevel(userInfo, templateComplexity) {
@@ -309,120 +287,74 @@ async function callRunwareAPI(positivePrompt, negativePrompt, retries = 2) {
   }
 }
 
-// Main handler - PHASE 4: Session Architecture Update
+// Main handler - Pure business logic
 async function handleRequest(req) {
-  console.log('📨 Template CD Request:', req.method);
 
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-    'Access-Control-Allow-Methods': 'POST, GET, OPTIONS'
+  // FLEXIBLE PAYLOAD HANDLING: Accept either pageText OR enhancedStoryData/storyText
+  const payload = await req.json();
+  console.log('🔍 Template CD: Request payload keys:', Object.keys(payload));
+  
+  let enhancedStoryData, storyText, pageNumber, avatarIdentity, templateComplexity, failedTierData;
+  
+  if (payload.pageText) {
+    // Current format: {pageText, userInfo, sessionId, pageNumber}
+    console.log('📄 Template CD: Using pageText format');
+    storyText = payload.pageText;
+    enhancedStoryData = { userInfo: payload.userInfo };
+    pageNumber = payload.pageNumber;
+    avatarIdentity = payload.userInfo?.avatar;
+    templateComplexity = payload.templateComplexity;
+    failedTierData = payload.failedTierData;
+  } else {
+    // Legacy format: {enhancedStoryData, storyText, pageNumber, avatarIdentity, templateComplexity, failedTierData}
+    console.log('📖 Template CD: Using legacy format');
+    enhancedStoryData = payload.enhancedStoryData;
+    storyText = payload.storyText;
+    pageNumber = payload.pageNumber;
+    avatarIdentity = payload.avatarIdentity;
+    templateComplexity = payload.templateComplexity;
+    failedTierData = payload.failedTierData;
+  }
+  
+  if (!storyText) {
+    throw new Error('Missing required field: pageText OR storyText');
+  }
+
+  console.log(`🎯 Template CD processing complexity: ${templateComplexity || 'auto'}`);
+
+  // Extract user info from enhancedStoryData
+  const userInfo = enhancedStoryData.userInfo || {};
+  
+  // Determine complexity level (C or D)
+  const complexityLevel = getComplexityLevel(userInfo, templateComplexity);
+  console.log(`✅ Using complexity level: ${complexityLevel}`);
+
+  let templateResult;
+  
+  if (complexityLevel === 'C') {
+    // Tier 2.5C: Nuclear hardcoded template
+    console.log('🚀 Processing Tier 2.5C: Nuclear hardcoded template');
+    templateResult = generateTier25C(storyText, userInfo, avatarIdentity, failedTierData || {});
+    
+  } else {
+    // Tier 2.5D: Ultimate emergency fallback
+    console.log('🚀 Processing Tier 2.5D: Ultimate emergency fallback');
+    templateResult = generateTier25D();
+  }
+
+  // Call Runware API
+  const imageURL = await callRunwareAPI(templateResult.positivePrompt, templateResult.negativePrompt);
+
+  return {
+    success: true,
+    imageURL,
+    templateData: templateResult,
+    complexity: complexityLevel,
+    sessionArchitecture: 'parameter-based',
+    processedAt: new Date().toISOString(),
+    positivePrompt: templateResult.positivePrompt,
+    negativePrompt: templateResult.negativePrompt
   };
-
-  // Handle CORS preflight
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
-
-  // Handle GET health check requests
-  if (req.method === 'GET' || req.method === 'HEAD') {
-    console.log('🏥 Template CD Health check request');
-    return new Response(JSON.stringify({
-      status: 'healthy',
-      service: 'runware-template-cd',
-      timestamp: new Date().toISOString(),
-      tiers: ['2.5C', '2.5D'],
-      complexityLevels: ['C', 'D']
-    }), {
-      status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    });
-  }
-
-  // Guard JSON parsing for POST requests only
-  if (req.method !== 'POST') {
-    return new Response(JSON.stringify({
-      error: 'Method not allowed',
-      allowedMethods: ['GET', 'POST', 'OPTIONS']
-    }), {
-      status: 405,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    });
-  }
-
-  try {
-    // FLEXIBLE PAYLOAD HANDLING: Accept either pageText OR enhancedStoryData/storyText
-    const payload = await req.json();
-    console.log('🔍 Template CD: Request payload keys:', Object.keys(payload));
-    
-    let enhancedStoryData, storyText, pageNumber, avatarIdentity, templateComplexity, failedTierData;
-    
-    if (payload.pageText) {
-      // Current format: {pageText, userInfo, sessionId, pageNumber}
-      console.log('📄 Template CD: Using pageText format');
-      storyText = payload.pageText;
-      enhancedStoryData = { userInfo: payload.userInfo };
-      pageNumber = payload.pageNumber;
-      avatarIdentity = payload.userInfo?.avatar;
-      templateComplexity = payload.templateComplexity;
-      failedTierData = payload.failedTierData;
-    } else {
-      // Legacy format: {enhancedStoryData, storyText, pageNumber, avatarIdentity, templateComplexity, failedTierData}
-      console.log('📖 Template CD: Using legacy format');
-      enhancedStoryData = payload.enhancedStoryData;
-      storyText = payload.storyText;
-      pageNumber = payload.pageNumber;
-      avatarIdentity = payload.avatarIdentity;
-      templateComplexity = payload.templateComplexity;
-      failedTierData = payload.failedTierData;
-    }
-    
-    if (!storyText) {
-      return createErrorResponse('Missing required field: pageText OR storyText', 400);
-    }
-
-    console.log(`🎯 Template CD processing complexity: ${templateComplexity || 'auto'}`);
-
-    // Extract user info from enhancedStoryData
-    const userInfo = enhancedStoryData.userInfo || {};
-    
-    // Determine complexity level (C or D)
-    const complexityLevel = getComplexityLevel(userInfo, templateComplexity);
-    console.log(`✅ Using complexity level: ${complexityLevel}`);
-
-    let templateResult;
-    
-    if (complexityLevel === 'C') {
-      // Tier 2.5C: Nuclear hardcoded template
-      console.log('🚀 Processing Tier 2.5C: Nuclear hardcoded template');
-      templateResult = generateTier25C(storyText, userInfo, avatarIdentity, failedTierData || {});
-      
-    } else {
-      // Tier 2.5D: Ultimate emergency fallback
-      console.log('🚀 Processing Tier 2.5D: Ultimate emergency fallback');
-      templateResult = generateTier25D();
-    }
-
-    // Call Runware API
-    const imageURL = await callRunwareAPI(templateResult.positivePrompt, templateResult.negativePrompt);
-
-    const result = {
-      success: true,
-      imageURL,
-      templateData: templateResult,
-      complexity: complexityLevel,
-      sessionArchitecture: 'parameter-based',
-      processedAt: new Date().toISOString(),
-      positivePrompt: templateResult.positivePrompt,
-      negativePrompt: templateResult.negativePrompt
-    };
-
-    return createResponse(result);
-    
-  } catch (error) {
-    console.error('❌ Template CD Error:', error);
-    return createErrorResponse(error);
-  }
 }
 
 // Export for TypeScript receptionist
