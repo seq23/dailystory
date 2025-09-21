@@ -916,7 +916,7 @@ async function handleRequest(req) {
           } else {
             console.log('🔄 [ORCHESTRATOR] Character consistency fallback failed, escalating to Tier 2.5A');
             // Call runware-template-ab for real Tier 2.5A escalation
-          const resp = await supabase.functions.invoke('runware-template-ab', {
+            const resp = await supabase.functions.invoke('runware-template-ab', {
             body: {
               storyText,
               pageText: storyText,

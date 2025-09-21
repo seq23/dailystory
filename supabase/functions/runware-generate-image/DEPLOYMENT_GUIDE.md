@@ -190,4 +190,9 @@ If you experience any issues:
 4. Rollback available: `cp index.js.backup index.js` if needed
 5. Legacy utilities available as additional fallback
 
+### 🛡️ Syntax Guardrails
+- **Critical**: All imports must be at the top of the file before any other code
+- **Critical**: All export statements must be at the bottom of the file  
+- **Validation**: Use proper brace matching and indentation to prevent parser errors
+
 **The orchestrator is now bulletproof with enhanced monitoring, smart fallbacks, and comprehensive safety nets.**
