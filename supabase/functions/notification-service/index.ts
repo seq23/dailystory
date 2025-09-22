@@ -17,6 +17,11 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Health endpoint - no preflight required
+  if (req.method === "HEAD" && new URL(req.url).pathname === "/health") {
+    return new Response(null, { status: 200, headers: corsHeaders });
+  }
+
   
 
   try {

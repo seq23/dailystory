@@ -8,6 +8,11 @@ serve(async (req) => {
     return createDynamicCorsOptionsResponse(req);
   }
 
+  // Health endpoint - no preflight required
+  if (req.method === "HEAD" && new URL(req.url).pathname === "/health") {
+    return new Response(null, { status: 200, headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Max-Age': '600' } });
+  }
+
   try {
     // Create authenticated Supabase client
     const supabaseClient = createClient(

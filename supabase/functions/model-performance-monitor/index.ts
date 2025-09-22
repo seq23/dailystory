@@ -24,9 +24,41 @@ interface ModelComparison {
   reliability: number;
 }
 
+function createCorsOptionsResponse(): Response {
+  return new Response(null, { 
+    status: 204,
+    headers: { 
+      'Access-Control-Allow-Origin': '*', 
+      'Access-Control-Max-Age': '600',
+      'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
+    } 
+  });
+}
+
+function createCorsResponse(data: any, status = 200): Response {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Max-Age': '600',
+      'Content-Type': 'application/json'
+    }
+  });
+}
+
+function createCorsErrorResponse(message: string, status = 500): Response {
+  return createCorsResponse({ error: message }, status);
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return createCorsOptionsResponse();
+  }
+
+  // Health endpoint - no preflight required  
+  if (req.method === "HEAD" && new URL(req.url).pathname === "/health") {
+    return new Response(null, { status: 200, headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Max-Age': '600' } });
   }
 
   
