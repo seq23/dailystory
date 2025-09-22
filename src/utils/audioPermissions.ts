@@ -3,6 +3,7 @@
  * Manages premium status, voice command state, and network availability checks
  */
 import { DebugLogger } from '@/services/DebugLogger';
+import { NetworkQualityService } from '@/services/networkQualityService';
 
 export interface AudioPermissionContext {
   isPremium: boolean;
@@ -47,109 +48,16 @@ export class AudioPermissions {
    * Enhanced network quality check with intelligent retry and caching
    */
   static async checkNetworkQuality(): Promise<'good' | 'poor' | 'offline'> {
-    // Prevent concurrent checks
-    if (this.isCheckingNetwork) return this.currentContext.networkQuality;
+    // Delegate to NetworkQualityService for consistent behavior
+    const isOnline = await NetworkQualityService.checkNetworkState();
+    const quality = isOnline ? 'good' : 'offline';
     
-    // Use cached result if within 5-minute window
-    const now = Date.now();
-    const cacheAge = now - this.currentContext.lastNetworkCheck;
-    if (cacheAge < 5 * 60 * 1000 && this.currentContext.lastNetworkCheck > 0) {
-      return this.currentContext.networkQuality;
-    }
+    this.updateContext({ 
+      isNetworkAvailable: isOnline, 
+      networkQuality: quality 
+    });
     
-    this.isCheckingNetwork = true;
-    
-    try {
-      // Quick browser connectivity check first
-      if (!navigator.onLine) {
-        DebugLogger.warn('network', 'Browser reports offline');
-        this.updateContext({ isNetworkAvailable: false, networkQuality: 'offline' });
-        return 'offline';
-      }
-
-      // Enhanced retry logic with exponential backoff
-      const attemptHealthCheck = async (attempt: number = 1): Promise<boolean> => {
-        const maxAttempts = 2;
-        const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
-        
-        try {
-          const { supabase } = await import('@/integrations/supabase/client');
-          
-          // Use Promise.race for timeout control with longer timeout on retries
-          const timeout = attempt === 1 ? 2000 : 3000;
-          const healthResponse = await Promise.race([
-            supabase.functions.invoke('system-diagnostics', { 
-              body: { healthCheck: true }
-            }),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), timeout))
-          ]);
-          
-          if ((healthResponse as any)?.data && !(healthResponse as any)?.error) {
-            DebugLogger.log('network', 'Network quality check successful: internal health endpoint');
-            return true;
-          }
-          return false;
-        } catch (error) {
-          DebugLogger.warn('network', `Internal health check attempt ${attempt} failed:`, error);
-          
-          if (attempt < maxAttempts) {
-            await new Promise(resolve => setTimeout(resolve, delay));
-            return attemptHealthCheck(attempt + 1);
-          }
-          return false;
-        }
-      };
-
-      // Try enhanced internal health check with retry
-      if (await attemptHealthCheck()) {
-        this.updateContext({ isNetworkAvailable: true, networkQuality: 'good' });
-        return 'good';
-      }
-
-      // Fallback: Try simple origin connectivity test with retry
-      const attemptOriginCheck = async (): Promise<boolean> => {
-        try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 1500);
-          
-          const response = await fetch(window.location.origin + '/favicon.ico', { 
-            method: 'HEAD', 
-            cache: 'no-store',
-            signal: controller.signal
-          });
-          
-          clearTimeout(timeoutId);
-          return response.ok;
-        } catch (error) {
-          DebugLogger.warn('network', 'Origin connectivity check failed:', error);
-          return false;
-        }
-      };
-
-      if (await attemptOriginCheck()) {
-        DebugLogger.log('network', 'Network quality check successful: origin connectivity');
-        this.updateContext({ isNetworkAvailable: true, networkQuality: 'good' });
-        return 'good';
-      }
-
-      // All checks failed - classify as offline
-      DebugLogger.warn('network', 'All network quality checks failed after retries');
-      this.updateContext({ 
-        isNetworkAvailable: false, 
-        networkQuality: 'offline' 
-      });
-      return 'offline';
-      
-    } catch (error) {
-      DebugLogger.error('network', 'Network quality check error:', error);
-      this.updateContext({ 
-        isNetworkAvailable: false, 
-        networkQuality: 'offline' 
-      });
-      return 'offline';
-    } finally {
-      this.isCheckingNetwork = false;
-    }
+    return quality;
   }
 
   /**

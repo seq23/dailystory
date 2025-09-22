@@ -2,6 +2,8 @@ import { StoryAudioControls } from "@/components/story/StoryAudioControls";
 import { StoryNavigationControls } from "@/components/story/StoryNavigationControls";
 import { StoryTimerIntegration } from "@/components/story/StoryTimerIntegration";
 import { useStoryLogic } from "@/hooks/useStoryLogic";
+import { useNavigationPersistence } from "@/hooks/useNavigationPersistence";
+import { ImageDeduplicationService } from "@/services/imageDeduplicationService";
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { DebugLogger } from '@/services/DebugLogger';
@@ -296,6 +298,9 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const { state: uiState, actions: uiActions, refs: uiRefs } = useUIAnimationState();
   const { state: difficultyState, actions: difficultyActions } = useDifficultyManagement({ userInfo: safeUserInfo });
 
+  // Initialize navigation persistence
+  const { saveNavigationState, getNavigationState, restoreScrollPosition } = useNavigationPersistence();
+
   // Destructure for cleaner access
   const {
     pageImages, setPageImages, pageImageMetadata, isGeneratingImage, isPreparingImage, imageLoadingStates,
@@ -381,6 +386,23 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     DebugLogger.log('story', 'isLoading changed:', isLoading);
   }, [isLoading]);
   
+  // Navigation persistence - save state on page changes
+  useEffect(() => {
+    if (hookStoryId && displayedStory.length > 0) {
+      saveNavigationState({
+        currentPage: safeCurrentPage,
+        totalPages: displayedStory.length,
+        storyId: hookStoryId,
+        viewHistory: [safeCurrentPage]
+      });
+    }
+  }, [safeCurrentPage, displayedStory.length, hookStoryId, saveNavigationState]);
+
+  // Navigation persistence - restore scroll position on mount
+  useEffect(() => {
+    restoreScrollPosition();
+  }, [restoreScrollPosition]);
+
   // Cache user ID for performance - update when auth state changes
   useEffect(() => {
     let mounted = true;

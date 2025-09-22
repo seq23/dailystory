@@ -319,9 +319,9 @@ async function handleRequest(req) {
       failedTierData = payload.failedTierData;
     }
   
-  if (!storyText) {
-    throw new Error('Missing required field: pageText OR storyText');
-  }
+    if (!storyText) {
+      throw new Error('Missing required field: pageText OR storyText');
+    }
 
   console.log(`🎯 Template CD processing complexity: ${templateComplexity || 'auto'}`);
 

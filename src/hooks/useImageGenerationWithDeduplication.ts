@@ -1,0 +1,77 @@
+import { useState, useCallback } from 'react';
+import { ImageDeduplicationService } from '@/services/imageDeduplicationService';
+import { SimpleImageService } from '@/services/SimpleImageService';
+import { DebugLogger } from '@/services/DebugLogger';
+import { ProductionLogging } from '@/services/ProductionLogger';
+
+interface ImageGenerationResult {
+  imageUrl: string;
+  cached: boolean;
+  generationTime?: number;
+}
+
+export const useImageGenerationWithDeduplication = (sessionId: string) => {
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const generateImage = useCallback(async (
+    prompt: string, 
+    pageNumber: number
+  ): Promise<ImageGenerationResult> => {
+    setIsGenerating(true);
+
+    try {
+      // Check for duplicate first
+      const cachedImage = ImageDeduplicationService.checkForDuplicate(prompt, sessionId);
+      if (cachedImage) {
+        DebugLogger.log('image', 'Using cached image for duplicate prompt', { prompt, sessionId });
+        return { imageUrl: cachedImage, cached: true };
+      }
+
+      // Generate new image
+      const startTime = Date.now();
+      const result = await SimpleImageService.generateImage({
+        prompt,
+        sessionId,
+        pageNumber
+      });
+
+      const generationTime = Date.now() - startTime;
+
+      // Cache the generated image
+      ImageDeduplicationService.cacheImage(prompt, result.imageURL, sessionId);
+
+      ProductionLogging.info('IMAGE', 'New image generated and cached', 'useImageGenerationWithDeduplication', {
+        pageNumber,
+        generationTime,
+        sessionId
+      });
+
+      return { 
+        imageUrl: result.imageURL, 
+        cached: false, 
+        generationTime 
+      };
+
+    } catch (error) {
+      ProductionLogging.error('IMAGE', 'Image generation failed', 'useImageGenerationWithDeduplication', { 
+        error, 
+        prompt, 
+        pageNumber 
+      });
+      throw error;
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [sessionId]);
+
+  const clearSessionImages = useCallback(() => {
+    ImageDeduplicationService.clearSessionCache(sessionId);
+    DebugLogger.log('image', 'Cleared session image cache', { sessionId });
+  }, [sessionId]);
+
+  return {
+    generateImage,
+    clearSessionImages,
+    isGenerating
+  };
+};
