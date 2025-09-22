@@ -9,7 +9,7 @@ declare global {
     };
     __CharlotteVoiceService?: {
       charlotteInteractiveAudio: (options: { text: string; context: string }) => Promise<void>;
-      charlotteHearWord: (options: { text: string; context: string }) => Promise<void>;
+      charlotteHearWord: (word: string) => Promise<void>;
       stopAudio: () => void;
       stop: () => void;
     };

@@ -76,10 +76,7 @@ export const AudioPlaybackTester: React.FC = () => {
         const charlotteService = window.__CharlotteVoiceService;
         
         setIsPlaying(true);
-        await charlotteService.charlotteHearWord({
-          text: testWord,
-          context: 'word-test'
-        });
+        await charlotteService.charlotteHearWord(testWord);
         
         toast({
           title: "Charlotte Word Test",

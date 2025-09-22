@@ -126,10 +126,7 @@ export class DifficultyLevelMapper {
     const rawLevel = userInfo?.difficultyLevel || 'easy';
     const normalizedLevel = this.normalizeLevel(rawLevel);
     
-    console.log(`🔄 Difficulty mapping: ${rawLevel} → ${normalizedLevel}`, {
-      userDifficultyLevel: userInfo?.difficultyLevel,
-      finalLevel: normalizedLevel
-    });
+    // Remove production console.log statement
     
     return normalizedLevel;
   }
