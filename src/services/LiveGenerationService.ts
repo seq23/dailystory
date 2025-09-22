@@ -104,7 +104,7 @@ export class LiveGenerationService {
       
       // Create context with deep cloning to prevent data loss
       const storyContext: LiveGenerationContext = {
-        userInfo: JSON.parse(JSON.stringify(userInfo)), // Deep clone to prevent reference issues
+        userInfo: userInfo ? JSON.parse(JSON.stringify(userInfo)) : { name: 'Hero' }, // Deep clone with null safety
         difficulty: frontendDifficulty,
         expertGradeLevel: expertGradeLevel || undefined,
         storyContext: [content],
@@ -124,7 +124,13 @@ export class LiveGenerationService {
       const validationLevel = mapDifficultyToLevel(expertGradeLevel || difficulty);
       const minCharsPerPage = getMinCharactersPerPage(validationLevel);
       const hasValidContent = result.pages && result.pages.length > 0 && result.pages[0] && result.pages[0].length >= minCharsPerPage;
-      console.log(`🔍 Dynamic content validation: Length=${result.pages?.[0]?.length}, MinRequired=${minCharsPerPage}, Level=${validationLevel}, Difficulty=${difficulty}, Grade=${expertGradeLevel}`);
+      DebugLogger.log('story', 'Dynamic content validation completed', { 
+        contentLength: result.pages?.[0]?.length, 
+        minRequired: minCharsPerPage, 
+        validationLevel, 
+        difficulty, 
+        expertGradeLevel 
+      });
       
       if (hasValidContent) {
         try {
@@ -181,7 +187,11 @@ export class LiveGenerationService {
       // Never auto-conclude stories - only conclude if user explicitly requests ending
       const shouldConclude = !!userRequestedEnding;
       
-      console.log(`🚀 Live Generation: Generating page ${nextPageNumber} (never-ending story, userRequestedEnding=${!!userRequestedEnding})`);
+      DebugLogger.log('story', `Live Generation: Generating page ${nextPageNumber}`, { 
+        nextPageNumber, 
+        neverEndingStory: true, 
+        userRequestedEnding: !!userRequestedEnding 
+      });
       DebugLogger.log('story', 'LiveGen: Next page generation started', {
         nextPageNumber,
         shouldConclude,
@@ -203,7 +213,7 @@ export class LiveGenerationService {
       const { StoryGenerationService } = await import('./storyGenerationService');
       
       // Create enhanced userInfo with null safety and context preservation
-      const lastContextPage = context?.storyContext?.slice(-1)?.[0];
+      const lastContextPage = context?.storyContext?.length ? context.storyContext.slice(-1)[0] : '';
       const contextualUserInfo = {
         ...JSON.parse(JSON.stringify(context?.userInfo || {})), // Deep clone
         specialRequest: `${context?.userInfo?.specialRequest || 'adventure'} (continuing from: ${

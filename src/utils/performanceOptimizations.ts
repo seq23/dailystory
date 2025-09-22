@@ -69,34 +69,42 @@ export class DOMCache {
  * Optimized ResizeObserver wrapper that debounces callbacks
  */
 export class OptimizedResizeObserver {
-  private observer: ResizeObserver;
   private callbacks = new Map<Element, Function>();
   
   constructor(debounceMs: number = 16) {
-    this.observer = new ResizeObserver(
-      debounceRAF((entries: ResizeObserverEntry[]) => {
-        for (const entry of entries) {
-          const callback = this.callbacks.get(entry.target);
-          if (callback) {
-            callback(entry);
-          }
-        }
-      }, debounceMs)
-    );
+    // Use globalResizeService instead of creating new ResizeObserver
+    import('@/services/GlobalResizeService').then(({ globalResizeService }) => {
+      this.globalResizeService = globalResizeService;
+    });
   }
   
+  private globalResizeService: any;
+  
   observe(element: Element, callback: (entry: ResizeObserverEntry) => void) {
-    this.callbacks.set(element, callback);
-    this.observer.observe(element);
+    if (!this.globalResizeService) {
+      console.warn('GlobalResizeService not loaded yet');
+      return;
+    }
+    
+    const cleanup = this.globalResizeService.observe(element, callback);
+    this.callbacks.set(element, cleanup);
   }
   
   unobserve(element: Element) {
+    const cleanup = this.callbacks.get(element);
+    if (cleanup && typeof cleanup === 'function') {
+      cleanup();
+    }
     this.callbacks.delete(element);
-    this.observer.unobserve(element);
   }
   
   disconnect() {
-    this.observer.disconnect();
+    // Cleanup all observations
+    for (const cleanup of this.callbacks.values()) {
+      if (typeof cleanup === 'function') {
+        cleanup();
+      }
+    }
     this.callbacks.clear();
   }
 }

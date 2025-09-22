@@ -58,7 +58,7 @@ function getNuclearStyleFramework(difficulty) {
   const normalizedDifficulty = difficulty?.toLowerCase() || 'medium';
   const framework = NUCLEAR_HARDCODED_STYLE_FRAMEWORKS[normalizedDifficulty] || NUCLEAR_HARDCODED_STYLE_FRAMEWORKS['medium'];
   
-  console.log(`🎨 Nuclear Retrieved ${framework.name} style framework for difficulty: ${normalizedDifficulty}`);
+  tierLogging.logTier1(`Nuclear Retrieved ${framework.name} style framework for difficulty: ${normalizedDifficulty}`);
   return framework;
 }
 
@@ -113,7 +113,7 @@ class EdgeErrorHandler {
       category: this.categorizeError(error, functionName)
     };
     
-    console.error(`❌ ${functionName} Error:`, edgeError);
+    tierLogging.logTier1(`${functionName} Error`, edgeError);
     
     const errorKey = `${functionName}_${edgeError.type}`;
     const count = this.errorCounts.get(errorKey) || 0;
@@ -184,7 +184,7 @@ class EdgeErrorHandler {
       return result;
     } finally {
       const duration = Date.now() - startTime;
-      console.log(`⏱️ ${functionName}: ${duration}ms (${success ? 'SUCCESS' : 'FAILED'})`);
+      tierLogging.logTier2(`${functionName} performance: ${duration}ms`, { success, functionName, duration });
       
       this.performanceMetrics.push({
         functionName,
@@ -210,7 +210,7 @@ class CrashProofBootSystem {
   static async validateBoot() {
     if (this.bootStatus !== null) return this.bootStatus;
     
-    console.log('🔍 [BOOT] Starting crash-proof validation');
+    tierLogging.logTier1('Boot validation started');
     
     // Critical services - system cannot start without these
     const critical = {
@@ -253,7 +253,7 @@ class CrashProofBootSystem {
       services: Object.fromEntries(this.criticalServices)
     };
     
-    console.log('✅ [BOOT] System validated successfully');
+    tierLogging.logTier1('System validated successfully');
     return this.bootStatus;
   }
   
@@ -282,7 +282,7 @@ class LazyServiceLoader {
       const module = await import(importPath);
       const service = module.default || module[serviceName] || module;
       this.services.set(serviceName, service);
-      console.log(`📦 [LAZY] Loaded ${serviceName}`);
+      tierLogging.logTier2(`Lazy loaded ${serviceName}`);
       return service;
     } catch (error) {
       console.warn(`⚠️ [LAZY] Failed to load ${serviceName}:`, error.message);

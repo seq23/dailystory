@@ -21,11 +21,19 @@ class DebugLoggerService {
   private listeners: ((logs: DebugLogEntry[]) => void)[] = [];
 
   private constructor() {
-    // Check for debug mode from URL params
+    // Check for debug mode from URL params and production environment
+    this.isDebugMode = this.getProductionLogLevel();
+  }
+
+  private getProductionLogLevel(): boolean {
+    // Only enable debug logging in specific conditions
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
-      this.isDebugMode = params.has('debug');
+      // Enable if debug=1 in URL or on localhost
+      return params.has('debug') || window.location.hostname === 'localhost';
     }
+    // In Node.js environments, check for development mode
+    return process?.env?.NODE_ENV === 'development';
   }
 
   static getInstance(): DebugLoggerService {
