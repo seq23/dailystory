@@ -65,7 +65,7 @@ export class StoryGenerationService {
   ): Promise<StoryGenerationResult> {
     try {
       ProductionLogging.info('Starting 4-layer story generation pipeline', 'storyGenerationService');
-      ProductionLogging.debug('Config received:', 'storyGenerationService', {
+      ProductionLogging.debug('STORY', 'Config received', 'storyGenerationService', {
         sessionType: config.sessionType,
         pageNumber: config.pageNumber,
         expertGradeLevel: config.expertGradeLevel,
@@ -167,13 +167,7 @@ export class StoryGenerationService {
       };
 
       ProductionLogging.info(`Session ID: ${generationBundle.sessionId}`, 'storyGenerationService');
-      ProductionLogging.debug('Generation bundle prepared:', 'storyGenerationService', {
-        sessionId: generationBundle.sessionId,
-        storyContentLength: resolvedResult.storyContent.length,
-        gradeLevel: generationBundle.systemSettings.gradeLevel,
-        avatarDataPresent: !!resolvedResult.avatarData.skinTone
-      });
-      ProductionLogging.debug('Generation bundle prepared:', 'storyGenerationService', {
+      ProductionLogging.debug('STORY', 'Generation bundle prepared', 'storyGenerationService', {
         sessionId: generationBundle.sessionId,
         storyContentLength: resolvedResult.storyContent.length,
         gradeLevel: generationBundle.systemSettings.gradeLevel,
@@ -272,10 +266,10 @@ export class StoryGenerationService {
       );
       
       if (vocabularyConfig.hasUserWords && vocabularyValidation.compliancePercentage < 0.5) {
-        console.warn('Low vocabulary compliance detected:', vocabularyValidation);
+        ProductionLogging.warn('VOCABULARY', 'Low vocabulary compliance detected', 'storyGenerationService', vocabularyValidation);
       }
     } catch (error) {
-      console.error('Vocabulary validation error:', error);
+      ProductionLogging.error('VOCABULARY', 'Vocabulary validation error', 'storyGenerationService', error);
     }
 
     // LAYER 4 - Voice Integration with Level Clamping
@@ -375,7 +369,7 @@ ${culturalContext ? `${culturalContext} ` : ''}Character Info: ${JSON.stringify(
     const startTime = Date.now();
     
     try {
-      console.log('🎯 Calling streamlined edge function');
+      ProductionLogging.info('EDGE_FUNCTION', 'Calling streamlined edge function', 'storyGenerationService');
       
       const { data, error } = await supabase.functions.invoke('generate-adaptive-story', {
         body: {
@@ -402,14 +396,14 @@ ${culturalContext ? `${culturalContext} ` : ''}Character Info: ${JSON.stringify(
         throw new Error(data?.error || 'Story generation failed');
       }
 
-      console.log('✅ Story generation successful:', {
+      ProductionLogging.info('EDGE_FUNCTION', 'Story generation successful', 'storyGenerationService', {
         processingTime,
         pagesGenerated: data.pages?.length || 0,
         storyLength: data.story?.length || 0
       });
 
       // Phase 2: Apply centralized grammar processing via process-story-content
-      console.log('🔄 Applying centralized grammar processing...');
+      ProductionLogging.info('GRAMMAR', 'Applying centralized grammar processing', 'storyGenerationService');
       
       let processedPages = data.pages;
       try {
@@ -422,13 +416,13 @@ ${culturalContext ? `${culturalContext} ` : ''}Character Info: ${JSON.stringify(
         });
 
         if (processError) {
-          console.warn('⚠️ Grammar processing failed, using raw pages:', processError);
+          ProductionLogging.warn('GRAMMAR', 'Grammar processing failed, using raw pages', 'storyGenerationService', processError);
         } else if (processResult?.success && processResult?.processedPages) {
           processedPages = processResult.processedPages;
-          console.log('✅ Grammar processing successful:', processResult.processingMetadata);
+          ProductionLogging.info('GRAMMAR', 'Grammar processing successful', 'storyGenerationService', processResult.processingMetadata);
         }
       } catch (processError) {
-        console.warn('⚠️ Grammar processing failed, using raw pages:', processError);
+        ProductionLogging.warn('GRAMMAR', 'Grammar processing failed, using raw pages', 'storyGenerationService', processError);
       }
 
       return {
@@ -443,7 +437,7 @@ ${culturalContext ? `${culturalContext} ` : ''}Character Info: ${JSON.stringify(
       };
 
     } catch (error) {
-      console.error('❌ Edge function call failed:', error);
+      ProductionLogging.error('EDGE_FUNCTION', 'Edge function call failed', 'storyGenerationService', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
@@ -532,7 +526,7 @@ ${culturalContext ? `${culturalContext} ` : ''}Character Info: ${JSON.stringify(
             extractedData = { ...extractedData, ...parsed };
           }
         } catch (jsonError) {
-          console.warn('⚠️ JSON parsing failed, using AI defaults:', safeErrorMessage(jsonError));
+          ProductionLogging.warn('STORY', 'JSON parsing failed, using AI defaults', 'storyGenerationService', safeErrorMessage(jsonError));
         }
       }
       
@@ -548,7 +542,7 @@ ${culturalContext ? `${culturalContext} ` : ''}Character Info: ${JSON.stringify(
       }
       
     } catch (error) {
-      console.warn('⚠️ Bundle extraction failed, AI will create appropriate content:', safeErrorMessage(error));
+      ProductionLogging.warn('STORY', 'Bundle extraction failed, AI will create appropriate content', 'storyGenerationService', safeErrorMessage(error));
     }
     
     return extractedData;

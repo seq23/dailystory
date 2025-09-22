@@ -41,6 +41,7 @@
 // Story Session Cache - Persistent storage for story content across navigation
 import { DifficultyLevel } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
+import { ProductionLogging } from './ProductionLogger';
 
 interface CachedStorySession {
   id: string;
@@ -118,10 +119,10 @@ export class StorySessionCache {
     try {
       sessionStorage.setItem(cacheKey, JSON.stringify(session));
       const avatarInfo = avatarType ? ` (avatar: ${avatarType})` : '';
-      console.log(`📚 Story session cached for user ${userId} with difficulty ${difficulty}${avatarInfo}`);
+      ProductionLogging.info('CACHE', `Story session cached for user ${userId} with difficulty ${difficulty}${avatarInfo}`, 'storySessionCache');
       return sessionId;
     } catch (error) {
-      console.warn('Failed to cache story session:', error);
+      ProductionLogging.warn('CACHE', 'Failed to cache story session', 'storySessionCache', error);
       return sessionId;
     }
   }
@@ -145,10 +146,10 @@ export class StorySessionCache {
       }
 
       const avatarInfo = avatarType ? ` (avatar: ${avatarType})` : '';
-      console.log(`📖 Retrieved cached story session for user ${userId}${avatarInfo}`);
+      ProductionLogging.info('CACHE', `Retrieved cached story session for user ${userId}${avatarInfo}`, 'storySessionCache');
       return session;
     } catch (error) {
-      console.warn('Failed to retrieve cached story session:', error);
+      ProductionLogging.warn('CACHE', 'Failed to retrieve cached story session', 'storySessionCache', error);
       return null;
     }
   }
@@ -167,7 +168,7 @@ export class StorySessionCache {
       const cacheKey = this.getCacheKey(userId, avatarType);
       sessionStorage.setItem(cacheKey, JSON.stringify(session));
     } catch (error) {
-      console.warn('Failed to update current page in cache:', error);
+      ProductionLogging.warn('CACHE', 'Failed to update current page in cache', 'storySessionCache', error);
     }
   }
 
@@ -189,7 +190,7 @@ export class StorySessionCache {
       const cacheKey = this.getCacheKey(userId, avatarType);
       sessionStorage.setItem(cacheKey, JSON.stringify(session));
     } catch (error) {
-      console.warn('Failed to update session metadata:', error);
+      ProductionLogging.warn('CACHE', 'Failed to update session metadata', 'storySessionCache', error);
     }
   }
 
@@ -229,7 +230,7 @@ export class StorySessionCache {
       };
       sessionStorage.setItem(cacheKey, JSON.stringify(session));
     } catch (error) {
-      console.warn('Failed to update pages in cache:', error);
+      ProductionLogging.warn('CACHE', 'Failed to update pages in cache', 'storySessionCache', error);
     }
   }
 
@@ -258,7 +259,7 @@ export class StorySessionCache {
         });
       }
     } catch (error) {
-      console.warn('Failed to mark session as complete:', error);
+      ProductionLogging.warn('CACHE', 'Failed to mark session as complete', 'storySessionCache', error);
     }
   }
 
@@ -295,9 +296,9 @@ export class StorySessionCache {
     try {
       const cacheKey = this.getCacheKey(userId, avatarType);
       sessionStorage.setItem(cacheKey, JSON.stringify(clearedSession));
-      console.log(`🎭 Cleared story content, preserved avatar identity for user ${userId}`);
+      ProductionLogging.info('CACHE', `Cleared story content, preserved avatar identity for user ${userId}`, 'storySessionCache');
     } catch (error) {
-      console.warn('Failed to clear story content only:', error);
+      ProductionLogging.warn('CACHE', 'Failed to clear story content only', 'storySessionCache', error);
     }
   }
 
@@ -312,18 +313,18 @@ export class StorySessionCache {
         const cacheKey = this.getCacheKey(userId, avatar);
         try {
           sessionStorage.removeItem(cacheKey);
-          console.log(`🗑️ Cleared cached story session for user ${userId} (avatar: ${avatar})`);
+          ProductionLogging.info('CACHE', `Cleared cached story session for user ${userId} (avatar: ${avatar})`, 'storySessionCache');
         } catch (error) {
-          console.warn(`Failed to clear ${avatar} cache:`, error);
+          ProductionLogging.warn('CACHE', `Failed to clear ${avatar} cache`, 'storySessionCache', error);
         }
       }
     } else {
       const cacheKey = this.getCacheKey(userId, avatarType);
       try {
         sessionStorage.removeItem(cacheKey);
-        console.log(`🗑️ Cleared cached story session for user ${userId}`);
+        ProductionLogging.info('CACHE', `Cleared cached story session for user ${userId}`, 'storySessionCache');
       } catch (error) {
-        console.warn('Failed to clear cache:', error);
+        ProductionLogging.warn('CACHE', 'Failed to clear cache', 'storySessionCache', error);
       }
     }
     
@@ -339,9 +340,9 @@ export class StorySessionCache {
       try {
         const { StoryVisualStateManager } = await import('@/services/storyVisualState');
         StoryVisualStateManager.clearStoryState(characterSessionId);
-        console.log(`🎭 Cleared character state for session: ${characterSessionId}`);
+        ProductionLogging.info('CACHE', `Cleared character state for session: ${characterSessionId}`, 'storySessionCache');
       } catch (error) {
-        console.warn('Failed to clear character state:', error);
+        ProductionLogging.warn('CACHE', 'Failed to clear character state', 'storySessionCache', error);
       }
 
       // Clear character consistency cache through backend
@@ -349,9 +350,9 @@ export class StorySessionCache {
         await supabase.functions.invoke('get-monitoring-data', {
           body: { action: 'cleanup', userId }
         });
-        console.log(`🎭 Cleared character consistency cache for user: ${userId}`);
+        ProductionLogging.info('CACHE', `Cleared character consistency cache for user: ${userId}`, 'storySessionCache');
       } catch (error) {
-        console.warn('Failed to clear character consistency cache:', error);
+        ProductionLogging.warn('CACHE', 'Failed to clear character consistency cache', 'storySessionCache', error);
       }
     }
     
@@ -361,13 +362,13 @@ export class StorySessionCache {
       try {
         const { EnhancedImageCache } = await import('@/services/enhancedImageCache');
         EnhancedImageCache.clearAll();
-        console.log(`🎬 Netflix: Cleared all image cache for fresh story generation`);
+        ProductionLogging.info('CACHE', 'Netflix: Cleared all image cache for fresh story generation', 'storySessionCache');
       } catch (error) {
-        console.warn('Failed to clear Netflix image cache:', error);
+        ProductionLogging.warn('CACHE', 'Failed to clear Netflix image cache', 'storySessionCache', error);
       }
     }
 
-    console.log(`🧹 Comprehensive cache clearing to prevent cross-session contamination`);
+    ProductionLogging.info('CACHE', 'Comprehensive cache clearing to prevent cross-session contamination', 'storySessionCache');
     try {
       // Clear any cached generation data that might have stale avatar/pronoun content
       const allKeys = Object.keys(sessionStorage);
@@ -381,10 +382,10 @@ export class StorySessionCache {
       
       cacheKeys.forEach(key => {
         sessionStorage.removeItem(key);
-        console.log(`🧹 Cleared cache key: ${key}`);
+        ProductionLogging.debug('CACHE', `Cleared cache key: ${key}`, 'storySessionCache');
       });
     } catch (error) {
-      console.warn('Failed to clear comprehensive cache:', error);
+      ProductionLogging.warn('CACHE', 'Failed to clear comprehensive cache', 'storySessionCache', error);
     }
   }
 
@@ -422,7 +423,7 @@ export class StorySessionCache {
    * Clear Netflix story cache for "Next Story" button - ensures fresh images
    */
   static async clearOnNextStory(userId: string, avatarType?: string): Promise<void> {
-    console.log(`🎬 Netflix: Starting "Next Story" cache clear for user ${userId}`);
+    ProductionLogging.info('CACHE', `Netflix: Starting "Next Story" cache clear for user ${userId}`, 'storySessionCache');
     
     // Force comprehensive clearing for Netflix transitions
     await this.clearCachedSession(userId, true, avatarType, 'next-story');
@@ -431,11 +432,11 @@ export class StorySessionCache {
     try {
       const { NetflixSessionManager } = await import('@/services/NetflixSessionManager');
       NetflixSessionManager.clearSession(userId);
-      console.log(`🎬 Netflix: Cleared session manager for user ${userId}`);
+      ProductionLogging.info('CACHE', `Netflix: Cleared session manager for user ${userId}`, 'storySessionCache');
     } catch (error) {
-      console.warn('Failed to clear Netflix session manager:', error);
+      ProductionLogging.warn('CACHE', 'Failed to clear Netflix session manager', 'storySessionCache', error);
     }
     
-    console.log(`🎬 Netflix: "Next Story" cache clear completed for user ${userId}`);
+    ProductionLogging.info('CACHE', `Netflix: "Next Story" cache clear completed for user ${userId}`, 'storySessionCache');
   }
 }
