@@ -1,4 +1,5 @@
 import { useEffect, useCallback } from 'react';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface PerformanceMetrics {
   loadTime: number;
@@ -102,7 +103,7 @@ export function usePerformanceMonitor() {
   useEffect(() => {
     // Only log in debug mode
     if (isPerformanceDebugEnabled()) {
-      console.log('📊 Performance monitoring active (debug mode)');
+      DebugLogger.log('performance', 'Performance monitoring active (debug mode)');
     }
   }, []);
 

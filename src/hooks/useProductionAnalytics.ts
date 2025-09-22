@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { ProductionAnalyticsTracker } from '@/services/productionAnalyticsTracker';
 import { UserInfo, DifficultyLevel } from '@/types';
+import { DebugLogger } from '@/services/DebugLogger';
 
 export interface AnalyticsSession {
   sessionId: string;
@@ -139,21 +140,21 @@ export const useProductionAnalytics = () => {
   // Phase 3: Cost Tracking Methods (Placeholder - will integrate with backend)
   const trackCost = useCallback((cost: number, inputTokens: number, outputTokens: number, model: string) => {
     if (currentSession?.isActive) {
-      console.log('💰 Cost tracking:', { cost, inputTokens, outputTokens, model, sessionId: currentSession.sessionId });
+      DebugLogger.log('story', 'Cost tracking', { cost, inputTokens, outputTokens, model, sessionId: currentSession.sessionId });
       // Future: Send to backend cost tracking service
     }
   }, [currentSession]);
 
   const trackModelPerformance = useCallback((model: string, responseTime: number, success: boolean, retryAttempt: number = 0) => {
     if (currentSession?.isActive) {
-      console.log('⚡ Model performance:', { model, responseTime, success, retryAttempt, sessionId: currentSession.sessionId });
+      DebugLogger.log('story', 'Model performance', { model, responseTime, success, retryAttempt, sessionId: currentSession.sessionId });
       // Future: Send to backend analytics service
     }
   }, [currentSession]);
 
   const trackUserSatisfaction = useCallback((rating: number, feedback?: string, pageNumber?: number) => {
     if (currentSession?.isActive) {
-      console.log('⭐ User satisfaction:', { rating, feedback, pageNumber, sessionId: currentSession.sessionId });
+      DebugLogger.log('ui', 'User satisfaction', { rating, feedback, pageNumber, sessionId: currentSession.sessionId });
       // Future: Send to backend analytics service
     }
   }, [currentSession]);

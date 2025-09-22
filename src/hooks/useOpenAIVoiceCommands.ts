@@ -1,6 +1,7 @@
 import { useCallback, useEffect } from 'react';
 import { useOpenAIRealtimeChat } from '@/hooks/useOpenAIRealtimeChat';
 import { SimplifiedAudioEngine } from '@/services/SimplifiedAudioEngine';
+import { DebugLogger } from '@/services/DebugLogger';
 
 export type OpenAIVoiceStatus = 'idle' | 'connecting' | 'connected' | 'listening' | 'processing' | 'speaking' | 'failed';
 
@@ -9,11 +10,11 @@ export const useOpenAIVoiceCommands = () => {
 
   // Handle function calls from OpenAI
   const handleFunctionCall = useCallback((functionName: string, args: any) => {
-    console.log('🎯 OPENAI VOICE COMMAND:', functionName, args);
+    DebugLogger.log('audio', 'OpenAI Voice Command', { functionName, args });
 
     switch (functionName) {
       case 'play_story':
-        console.log('▶️ Playing story...');
+        DebugLogger.log('audio', 'Playing story');
         const text = (window as any).__pageContentString || '';
         const hash = (window as any).__pageContentHash || undefined;
         
@@ -24,59 +25,59 @@ export const useOpenAIVoiceCommands = () => {
             voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
           }).catch(console.error);
         } else {
-          console.warn('⚠️ No story content available');
+          DebugLogger.warn('audio', 'No story content available');
         }
         break;
 
       case 'stop_reading':
-        console.log('⏹️ Stopping reading...');
+        DebugLogger.log('audio', 'Stopping reading');
         engine.stop();
         break;
 
       case 'next_page':
-        console.log('➡️ Going to next page...');
+        DebugLogger.log('ui', 'Going to next page');
         window.dispatchEvent(new CustomEvent('reader:navigate', { 
           detail: { direction: 'next' } 
         }));
         break;
 
       case 'previous_page':
-        console.log('⬅️ Going to previous page...');
+        DebugLogger.log('ui', 'Going to previous page');
         window.dispatchEvent(new CustomEvent('reader:navigate', { 
           detail: { direction: 'prev' } 
         }));
         break;
 
       case 'word_help':
-        console.log('❓ Getting word help...', args);
+        DebugLogger.log('audio', 'Getting word help', args);
         window.dispatchEvent(new CustomEvent('voice:wordHelp', { 
           detail: args || null 
         }));
         break;
 
       case 'speed_up':
-        console.log('📈 Speed up command...');
+        DebugLogger.log('audio', 'Speed up command');
         window.dispatchEvent(new CustomEvent('voice:speedChange', { 
           detail: { action: 'faster' } 
         }));
         break;
 
       case 'slow_down':
-        console.log('📉 Slow down command...');
+        DebugLogger.log('audio', 'Slow down command');
         window.dispatchEvent(new CustomEvent('voice:speedChange', { 
           detail: { action: 'slower' } 
         }));
         break;
 
       case 'normal_speed':
-        console.log('🎯 Normal speed command...');
+        DebugLogger.log('audio', 'Normal speed command');
         window.dispatchEvent(new CustomEvent('voice:speedChange', { 
           detail: { action: 'normal' } 
         }));
         break;
 
       default:
-        console.warn('❓ Unknown voice command:', functionName);
+        DebugLogger.warn('ui', 'Unknown voice command', { functionName });
     }
   }, [engine]);
 
@@ -110,7 +111,7 @@ export const useOpenAIVoiceCommands = () => {
   }, [isConnected, isProcessing]);
 
   const start = useCallback(() => {
-    console.log('🎤 Starting OpenAI voice commands...');
+    DebugLogger.log('audio', 'Starting OpenAI voice commands');
     // Dispatch connecting status
     window.dispatchEvent(new CustomEvent('voice:status', { 
       detail: { status: 'connecting', system: 'openai' } 
@@ -119,7 +120,7 @@ export const useOpenAIVoiceCommands = () => {
   }, [isConnected, connect]);
 
   const stop = useCallback(() => {
-    console.log('🛑 Stopping OpenAI voice commands...');
+    DebugLogger.log('audio', 'Stopping OpenAI voice commands');
     if (isConnected) disconnect();
   }, [isConnected, disconnect]);
 

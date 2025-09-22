@@ -1,5 +1,6 @@
 import { useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface SecurityEvent {
   type: string;
@@ -70,7 +71,7 @@ class SecurityMonitor {
 
     // Only log critical and high severity events in production
     if (import.meta.env.DEV || severity === 'critical' || severity === 'high') {
-      console.log(`[Security] ${severity.toUpperCase()}: ${type}`, data);
+      DebugLogger.log('error', `${severity.toUpperCase()}: ${type}`, data);
     }
   }
 

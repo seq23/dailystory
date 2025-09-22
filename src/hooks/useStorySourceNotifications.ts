@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { toast } from '@/hooks/use-toast';
+import { DebugLogger } from '@/services/DebugLogger';
 
 /**
  * Monitors story source changes and provides persistent yellow/green toast notifications
@@ -20,7 +21,7 @@ export const useStorySourceNotifications = () => {
         // Only proceed if source has actually changed
         if (currentSource === previousSource) return;
         
-        console.log('📡 Story source changed:', { from: previousSource, to: currentSource });
+        DebugLogger.log('story', 'Story source changed', { from: previousSource, to: currentSource });
         
         // Update stored source
         lastSourceRef.current = currentSource;

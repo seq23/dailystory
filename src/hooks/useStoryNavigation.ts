@@ -1,5 +1,6 @@
 import { useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface StoryNavigationProps {
   isInStorySession: boolean;
@@ -37,12 +38,12 @@ export const useStoryNavigation = ({
       
       // Only update if URL has actually changed to prevent loops
       if (location.pathname + location.search !== newUrl) {
-        console.log('📍 Updating story navigation:', { currentPage, totalPages, newUrl });
+        DebugLogger.log('ui', 'Updating story navigation', { currentPage, totalPages, newUrl });
         navigate(newUrl, { replace: true });
       }
     } else if (!isInStorySession && location.search.includes('session=story')) {
       // Clear story session parameters when exiting story
-      console.log('📍 Clearing story navigation');
+      DebugLogger.log('ui', 'Clearing story navigation');
       window.history.replaceState(null, '', '/');
       navigate('/', { replace: true });
     }
@@ -51,7 +52,7 @@ export const useStoryNavigation = ({
   // Handle browser back/forward buttons
   useEffect(() => {
     const handlePopState = (event: PopStateEvent) => {
-      console.log('📍 Browser navigation detected:', event.state);
+      DebugLogger.log('ui', 'Browser navigation detected', event.state);
       // Let the parent component handle the navigation based on URL params
       window.dispatchEvent(new CustomEvent('story:navigation:change', {
         detail: getStoryStateFromUrl()
@@ -76,7 +77,7 @@ export const useStoryNavigation = ({
   // Enhanced browser navigation handling
   const handleUrlChange = useCallback(() => {
     const urlState = getStoryStateFromUrl();
-    console.log('📍 URL state changed:', urlState);
+    DebugLogger.log('ui', 'URL state changed', urlState);
     
     // Validate state and trigger recovery if needed
     if (urlState.isStorySession && (!urlState.page || !urlState.total)) {

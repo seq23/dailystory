@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface UserProfile {
   id: string;
@@ -154,7 +155,7 @@ export const SystemAuditProfiles: React.FC = () => {
   const [auditResults, setAuditResults] = useState<Record<string, any>>({});
 
   const runProfileAudit = async (profile: UserProfile) => {
-    console.log(`🔍 Starting comprehensive audit for: ${profile.name}`);
+    DebugLogger.log('ui', `Starting comprehensive audit for: ${profile.name}`);
     setCurrentProfile(profile);
     setAuditRunning(true);
     
@@ -201,7 +202,7 @@ export const SystemAuditProfiles: React.FC = () => {
     setAuditResults(prev => ({ ...prev, [profile.id]: results }));
     setAuditRunning(false);
     
-    console.log(`✅ Audit completed for ${profile.name}:`, results);
+    DebugLogger.log('ui', `Audit completed for ${profile.name}`, results);
   };
 
   const runSystemTest = async (testId: string, profile: UserProfile): Promise<any> => {

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { DebugLogger } from "@/services/DebugLogger";
 
 export type ReaderLayout = "modern" | "classic" | "split";
 
@@ -31,7 +32,7 @@ export function useReaderLayout(): UseReaderLayoutResult {
       const lowEnd = reduceMotion || deviceMemory < 2 || cores <= 2;
 
       // DEBUG: Layout detection logging
-      console.log(`🖥️ Layout Detection Debug:`, {
+      DebugLogger.log('ui', 'Layout Detection Debug', {
         windowWidth: window.innerWidth,
         isWide,
         reduceMotion,

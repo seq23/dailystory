@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
+import { DebugLogger } from '@/services/DebugLogger';
 
 /**
  * Simplified audio highlighting hook with lean architecture
@@ -11,13 +12,13 @@ export const useSimpleAudioHighlighting = () => {
 
   // Simple word highlighting
   const highlightWord = useCallback((wordIndex: number) => {
-    console.log(`🎯 Highlighting word ${wordIndex}`);
+    DebugLogger.log('audio', 'Highlighting word', { wordIndex });
     setCurrentHighlightedWord(wordIndex);
   }, []);
 
   // Clear highlighting
   const clearHighlighting = useCallback(() => {
-    console.log('🧹 Clearing highlights');
+    DebugLogger.log('audio', 'Clearing highlights');
     setCurrentHighlightedWord(-1);
     if (cleanupRef.current) {
       cleanupRef.current();
@@ -27,7 +28,7 @@ export const useSimpleAudioHighlighting = () => {
 
   // Start highlighting session
   const startHighlighting = useCallback(() => {
-    console.log('🎵 Starting highlighting session');
+    DebugLogger.log('audio', 'Starting highlighting session');
     // Force reset state before starting
     if (cleanupRef.current) {
       cleanupRef.current();
@@ -39,7 +40,7 @@ export const useSimpleAudioHighlighting = () => {
 
   // Stop highlighting session  
   const stopHighlighting = useCallback(() => {
-    console.log('🛑 Stopping highlighting session');
+    DebugLogger.log('audio', 'Stopping highlighting session');
     setIsActive(false);
     clearHighlighting();
   }, [clearHighlighting]);

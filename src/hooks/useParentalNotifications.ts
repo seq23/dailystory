@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { DebugLogger } from "@/services/DebugLogger";
 
 interface ParentalNotificationData {
   parentEmail: string;
@@ -24,7 +25,7 @@ export const useParentalNotifications = () => {
         return { success: false, error: error.message };
       }
 
-      console.log('Parental notification sent successfully:', result);
+      DebugLogger.log('ui', 'Parental notification sent successfully', result);
       return { success: true, messageId: result?.messageId };
     } catch (err) {
       console.error('Error sending parental notification:', err);

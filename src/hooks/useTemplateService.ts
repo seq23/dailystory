@@ -4,6 +4,7 @@ import { generateSessionIdWithPrefix } from '@/utils/sessionId';
 import { ErrorHandlingManager, type ErrorContext } from '@/services/errorHandlingManager';
 import { useToast } from '@/hooks/use-toast';
 import type { UserInfo } from '@/types';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface TemplateResult {
   success: boolean;
@@ -76,7 +77,7 @@ export function useTemplateService() {
     try {
       const response = await ErrorHandlingManager.executeWithRecovery(
         async () => {
-          console.log('Calling template-service with userInfo:', userInfo);
+          DebugLogger.log('story', 'Calling template-service with userInfo', userInfo);
           
           const { data, error: functionError } = await supabase.functions.invoke('template-service', {
             body: { userInfo, mode }
@@ -86,7 +87,7 @@ export function useTemplateService() {
             throw new Error(functionError.message);
           }
 
-          console.log('Template service response:', data);
+          DebugLogger.log('story', 'Template service response', data);
 
           // Check for successful response based on actual template service format
           if (!data.pages || data.pages.length === 0) {
@@ -126,7 +127,7 @@ export function useTemplateService() {
         let finalResult = response.data;
         
         try {
-          console.log('🔄 Applying centralized grammar processing...');
+          DebugLogger.log('story', 'Applying centralized grammar processing');
           
           const { data: processResult, error: processError } = await supabase.functions.invoke('process-story-content', {
             body: {
@@ -147,7 +148,7 @@ export function useTemplateService() {
                 grammarProcessingMetadata: processResult.processingMetadata
               }
             };
-            console.log('✅ Grammar processing successful:', processResult.processingMetadata);
+            DebugLogger.log('story', 'Grammar processing successful', processResult.processingMetadata);
           }
         } catch (processError) {
           console.warn('⚠️ Grammar processing failed, using raw pages:', processError);

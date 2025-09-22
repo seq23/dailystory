@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { useChildProfiles } from "@/hooks/useChildProfiles";
-
+import { DebugLogger } from "@/services/DebugLogger";
 import { useTranslation } from "react-i18next";
 
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
@@ -26,7 +26,7 @@ export function ChildQuickSwitcher({ className, size = 'md' }: ChildQuickSwitche
   
   // Debug logging for child switcher state
   React.useEffect(() => {
-    console.log('🎭 ChildQuickSwitcher: State changed', {
+    DebugLogger.log('ui', 'ChildQuickSwitcher: State changed', {
       childrenCount: children?.length || 0,
       activeChildName: activeChild?.display_name || 'none',
       loading
