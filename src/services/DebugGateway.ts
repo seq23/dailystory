@@ -6,6 +6,7 @@
  */
 
 import { supabase } from '@/integrations/supabase/client';
+import { ProductionLogging } from '@/services/ProductionLogger';
 
 interface DebugCall {
   operation: string;
@@ -40,7 +41,7 @@ class DebugGatewayService {
 
   private logDebug(message: string, data?: any) {
     if (this.isDebugEnabled()) {
-      console.log(`🔧 [DebugGateway] ${message}`, data || '');
+      ProductionLogging.debug('DEBUG_GATEWAY', message, 'DebugGateway', data);
     }
   }
 

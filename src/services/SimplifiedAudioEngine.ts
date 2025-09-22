@@ -1,6 +1,7 @@
 import { SynchronizedElevenLabsTTS } from '@/services/SynchronizedElevenLabsTTS';
 import { contextualPronunciation } from './contextualPronunciation';
 import { AudioPermissions } from '@/utils/audioPermissions';
+import { ProductionLogging } from '@/services/ProductionLogger';
 
 export type SynchronizedPlayOptions = {
   text: string;
@@ -100,13 +101,13 @@ export class SimplifiedAudioEngine {
         }
         
         this.mobileAudioUnlocked = true;
-        console.log('🔊 Mobile audio unlocked');
+        ProductionLogging.debug('AUDIO', 'Mobile audio unlocked', 'SimplifiedAudioEngine');
         
         ['touchstart', 'touchend', 'mousedown', 'keydown'].forEach(event => {
           document.removeEventListener(event, unlockAudio);
         });
       } catch (error) {
-        console.warn('Mobile audio unlock failed:', error);
+        ProductionLogging.warn('AUDIO', 'Mobile audio unlock failed', 'SimplifiedAudioEngine', { error });
       }
     };
 
@@ -120,11 +121,11 @@ export class SimplifiedAudioEngine {
     
     if (!AudioPermissions.canPlayAudio()) {
       const reason = AudioPermissions.getBlockReason('any-audio');
-      console.log(`🔒 SimplifiedAudioEngine: Audio blocked - ${reason}`);
+      ProductionLogging.debug('AUDIO', `Audio blocked - ${reason}`, 'SimplifiedAudioEngine');
       return;
     }
     
-    console.log('🎵 SimplifiedAudioEngine: Starting synchronized playback:', {
+    ProductionLogging.debug('AUDIO', 'Starting synchronized playback', 'SimplifiedAudioEngine', {
       textLength: text.length,
       voice: voiceId || 'default',
       contentHash: contentHash || 'none',
@@ -147,7 +148,7 @@ export class SimplifiedAudioEngine {
 
     try {
       if (!navigator.onLine) {
-        console.warn('🎵 SimplifiedAudioEngine: No network, using fallback');
+        ProductionLogging.warn('AUDIO', 'No network, using fallback', 'SimplifiedAudioEngine');
         this.fallbackToWebSpeech(text);
         return;
       }
@@ -155,13 +156,13 @@ export class SimplifiedAudioEngine {
       this.inflight = new AbortController();
       const signal = this.inflight.signal;
 
-      console.log('🎵 SimplifiedAudioEngine: Requesting Synchronized ElevenLabs TTS...');
+      ProductionLogging.debug('AUDIO', 'Requesting Synchronized ElevenLabs TTS', 'SimplifiedAudioEngine');
       
       // Use the passed context parameter (conversation = fast, learning = with dictionary)
       const result = await SynchronizedElevenLabsTTS.generateSynchronizedSpeech(text, context, voiceId);
       
       if (signal.aborted) {
-        console.log('🎵 SimplifiedAudioEngine: Request was aborted');
+        ProductionLogging.debug('AUDIO', 'Request was aborted', 'SimplifiedAudioEngine');
         return;
       }
 
@@ -196,19 +197,19 @@ export class SimplifiedAudioEngine {
       this.currentUrl = url;
       audio.src = url;
 
-      console.log('✅ SimplifiedAudioEngine: ElevenLabs synchronized audio loaded, starting playback');
+      ProductionLogging.debug('AUDIO', 'ElevenLabs synchronized audio loaded, starting playback', 'SimplifiedAudioEngine');
       await audio.play();
       this.playing = true;
       
     } catch (error) {
-      console.error('🎵 ElevenLabs synchronized TTS failed, using fallback:', error);
+      ProductionLogging.error('AUDIO', 'ElevenLabs synchronized TTS failed, using fallback', 'SimplifiedAudioEngine', { error });
       this.fallbackToWebSpeech(text);
     }
   }
 
   private startWordHighlighting() {
     if (!this.audio || !this.onWordHighlight || this.wordTimings.length === 0) {
-      console.log('🎯 Cannot start word highlighting:', {
+      ProductionLogging.debug('AUDIO', 'Cannot start word highlighting', 'SimplifiedAudioEngine', {
         hasAudio: !!this.audio,
         hasCallback: !!this.onWordHighlight,
         timingsCount: this.wordTimings.length

@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { StorySessionCache } from "@/services/storySessionCache";
 import { useGameContext } from "@/components/GameContextProvider";
 import { DebugLogger } from "@/services/DebugLogger";
+import { ProductionLogging } from "@/services/ProductionLogger";
 
 interface ReadingStats {
   wordsRead: number;

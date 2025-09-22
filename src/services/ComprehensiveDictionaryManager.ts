@@ -193,7 +193,7 @@ export class ComprehensiveDictionaryManager {
       });
 
       if (error) {
-        console.error('Error checking dictionary status:', error);
+        ProductionLogging.error('DICTIONARY', 'Error checking dictionary status', 'ComprehensiveDictionaryManager', { error });
         return { isAvailable: false };
       }
 
@@ -208,7 +208,7 @@ export class ComprehensiveDictionaryManager {
       return status;
 
     } catch (error) {
-      console.error('Failed to check dictionary status:', error);
+      ProductionLogging.error('DICTIONARY', 'Failed to check dictionary status', 'ComprehensiveDictionaryManager', { error });
       return { isAvailable: false };
     }
   }
@@ -235,7 +235,7 @@ export class ComprehensiveDictionaryManager {
       return deployment.dictionaryId;
     }
 
-    console.error(`Failed to deploy ${context} dictionary:`, deployment.error);
+    ProductionLogging.error('DICTIONARY', `Failed to deploy ${context} dictionary`, 'ComprehensiveDictionaryManager', { deployment });
     return null;
   }
 
@@ -258,7 +258,7 @@ export class ComprehensiveDictionaryManager {
       });
 
       if (error) {
-        console.error('Upload error:', error);
+        ProductionLogging.error('DICTIONARY', 'Upload error', 'ComprehensiveDictionaryManager', { error });
         return { success: false, error: error.message };
       }
 
@@ -270,7 +270,7 @@ export class ComprehensiveDictionaryManager {
       return { success: false, error: 'Upload failed without specific error' };
 
     } catch (error) {
-      console.error('Dictionary upload exception:', error);
+      ProductionLogging.error('DICTIONARY', 'Dictionary upload exception', 'ComprehensiveDictionaryManager', { error });
       return { 
         success: false, 
         error: error instanceof Error ? error.message : 'Unknown upload error' 

@@ -3,6 +3,8 @@
  * Tracks and logs prompt flow from frontend through backend to Runware
  */
 
+import { ProductionLogging } from '@/services/ProductionLogger';
+
 interface PromptFlowEntry {
   id: string;
   timestamp: number;
@@ -51,7 +53,7 @@ export class PromptFlowDebugger {
     }
 
     // Log to console for immediate debugging
-    console.log(`🔍 [PROMPT-FLOW] ${stage.toUpperCase()}:`, {
+    ProductionLogging.debug('PROMPT_FLOW', `${stage.toUpperCase()}`, 'PromptFlowDebugger', {
       sessionId,
       pageNumber,
       promptPreview: prompt.substring(0, 100) + '...',
@@ -141,7 +143,7 @@ export class PromptFlowDebugger {
     const keysToDelete = Array.from(this.entries.keys()).filter(key => key.startsWith(sessionId));
     keysToDelete.forEach(key => this.entries.delete(key));
     
-    console.log(`🔍 [PROMPT-FLOW] Cleared debug entries for session: ${sessionId}`);
+    ProductionLogging.debug('PROMPT_FLOW', 'Cleared debug entries for session', 'PromptFlowDebugger', { sessionId });
   }
 
   /**
@@ -183,7 +185,7 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
     const flow = PromptFlowDebugger.getPromptFlow(sessionId, pageNumber);
     const comparison = PromptFlowDebugger.comparePromptStages(sessionId, pageNumber);
     
-    console.log('🔍 [PROMPT-FLOW] Debug Report:', {
+    ProductionLogging.debug('PROMPT_FLOW', 'Debug report generated', 'PromptFlowDebugger', {
       flow,
       comparison,
       sessionId,
