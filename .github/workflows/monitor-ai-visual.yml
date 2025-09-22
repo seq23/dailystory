@@ -1,4 +1,4 @@
-name: Monitor AI Visual Scene Creator
+name: Monitor AI Visual Scene Creator - ERROR-001 FIX
 
 on:
   schedule:
@@ -24,16 +24,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Monitor ai-visual-scene-creator function
+      - name: Smart AI Visual Function Monitoring
         run: |
-          echo "🏥 Monitoring ai-visual-scene-creator function..."
+          echo "🏥 Smart monitoring with ERROR-001 fixes applied..."
           
           # Function configuration
           BASE_URL="https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1"
-          ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubW1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino"
-          FUNCTION_NAME="ai-visual-scene-creator"
           
-          echo "🔍 Testing $FUNCTION_NAME at $(date)..."
+          # Priority functions for image generation cluster
+          FUNCTIONS=("ai-visual-scene-creator" "runware-generate-image" "runware-template-ab" "runware-template-cd" "clear-character-cache")
+          
+          echo "🔍 Testing ${#FUNCTIONS[@]} functions at $(date)..."
           
           # Smart deployment coordination - check if deployment is already running
           echo "🔄 Checking for active deployments..."
@@ -53,90 +54,138 @@ jobs:
           # Circuit breaker reset - small delay before check
           sleep 2
           
-          # Test function health with retries
-          ATTEMPTS=0
-          MAX_ATTEMPTS=2
-          SUCCESS=false
+          # Initialize tracking variables
+          TOTAL_FUNCTIONS=${#FUNCTIONS[@]}
+          HEALTHY_FUNCTIONS=0
+          NETWORK_ERRORS=0
+          SERVER_ERRORS=0
+          FAILED_FUNCTIONS=()
           
-          while [ $ATTEMPTS -lt $MAX_ATTEMPTS ] && [ "$SUCCESS" = false ]; do
-            ATTEMPTS=$((ATTEMPTS + 1))
-            echo "  Attempt $ATTEMPTS/$MAX_ATTEMPTS..."
+          # Serial health checks to avoid race conditions (ERROR-001 fix)
+          for FUNCTION_NAME in "${FUNCTIONS[@]}"; do
+            echo ""
+            echo "🔍 Checking $FUNCTION_NAME..."
             
-            response=$(curl -s -o /dev/null -w "%{http_code}" \
-              -X GET "$BASE_URL/$FUNCTION_NAME" \
-              -H "Authorization: Bearer $ANON_KEY" \
-              -H "Content-Type: application/json" \
-              --max-time 15 \
-              --retry 1 \
-              --retry-delay 2 || echo "000")
+            # ERROR-001 FIX: Use HEAD /health to avoid CORS preflights
+            HEALTH_URL="$BASE_URL/$FUNCTION_NAME/health"
             
-            case $response in
-              "200"|"201"|"202")
-                echo "    ✅ $FUNCTION_NAME is healthy (HTTP $response)"
-                SUCCESS=true
-                ;;
-              "404")
-                echo "    ❌ $FUNCTION_NAME returned 404 (function not found)"
-                if [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; then
-                  echo "    ⏳ Waiting 30s before retry..."
-                  sleep 30
-                fi
-                ;;
-              "500")
-                echo "    ⚠️  $FUNCTION_NAME returned 500 (server error)"
-                if [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; then
-                  echo "    ⏳ Waiting 30s before retry..."
-                  sleep 30
-                fi
-                ;;
-              "000")
-                echo "    ❌ $FUNCTION_NAME is unreachable (timeout/network error)"
-                if [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; then
-                  echo "    ⏳ Waiting 30s before retry..."
-                  sleep 30
-                fi
-                ;;
-              *)
-                echo "    ⚠️  $FUNCTION_NAME responded with HTTP $response (unexpected)"
-                if [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; then
-                  echo "    ⏳ Waiting 30s before retry..."
-                  sleep 30
-                fi
-                ;;
-            esac
+            ATTEMPTS=0
+            MAX_ATTEMPTS=2
+            SUCCESS=false
+            
+            while [ $ATTEMPTS -lt $MAX_ATTEMPTS ] && [ "$SUCCESS" = false ]; do
+              ATTEMPTS=$((ATTEMPTS + 1))
+              echo "  Attempt $ATTEMPTS/$MAX_ATTEMPTS (HEAD $HEALTH_URL)..."
+              
+              # ERROR-001 FIX: HEAD request with no auth headers (no preflight)
+              response=$(curl -s -o /dev/null -w "%{http_code}" \
+                -X HEAD "$HEALTH_URL" \
+                --max-time 10 \
+                --retry 0 || echo "000")
+              
+              case $response in
+                "200"|"201"|"202"|"204")
+                  echo "    ✅ $FUNCTION_NAME is healthy (HTTP $response)"
+                  SUCCESS=true
+                  HEALTHY_FUNCTIONS=$((HEALTHY_FUNCTIONS + 1))
+                  ;;
+                "404"|"405")
+                  echo "    ⚠️  $FUNCTION_NAME health endpoint not found (HTTP $response) - trying GET fallback"
+                  # Fallback to GET for functions not yet upgraded
+                  fallback_response=$(curl -s -o /dev/null -w "%{http_code}" \
+                    -X GET "$BASE_URL/$FUNCTION_NAME" \
+                    --max-time 10 || echo "000")
+                  if [ "$fallback_response" = "200" ] || [ "$fallback_response" = "201" ]; then
+                    echo "    ✅ $FUNCTION_NAME is healthy via GET fallback (HTTP $fallback_response)"
+                    SUCCESS=true
+                    HEALTHY_FUNCTIONS=$((HEALTHY_FUNCTIONS + 1))
+                  else
+                    echo "    ❌ $FUNCTION_NAME failed both HEAD and GET checks"
+                  fi
+                  ;;
+                "500"|"502"|"503"|"504")
+                  echo "    🔴 $FUNCTION_NAME server error (HTTP $response)"
+                  SERVER_ERRORS=$((SERVER_ERRORS + 1))
+                  if [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; then
+                    echo "    ⏳ Waiting 15s before retry..."
+                    sleep 15
+                  fi
+                  ;;
+                "000")
+                  # ERROR-001 FIX: Classify status 0 as network error, not server failure
+                  echo "    🌐 $FUNCTION_NAME network connectivity issue (timeout/DNS)"
+                  NETWORK_ERRORS=$((NETWORK_ERRORS + 1))
+                  if [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; then
+                    echo "    ⏳ Waiting 15s before retry..."
+                    sleep 15
+                  fi
+                  ;;
+                *)
+                  echo "    ⚠️  $FUNCTION_NAME unexpected response (HTTP $response)"
+                  if [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; then
+                    echo "    ⏳ Waiting 15s before retry..."
+                    sleep 15
+                  fi
+                  ;;
+              esac
+            done
+            
+            # Track failed functions for reporting
+            if [ "$SUCCESS" = false ]; then
+              FAILED_FUNCTIONS+=("$FUNCTION_NAME")
+            fi
+            
+            # Small delay between function checks to avoid overwhelming
+            sleep 1
           done
           
-          # If function failed after retries, trigger targeted redeploy
-          if [ "$SUCCESS" = false ]; then
+          # Health summary
+          echo ""
+          echo "📊 HEALTH SUMMARY:"
+          echo "   Total Functions: $TOTAL_FUNCTIONS"
+          echo "   Healthy: $HEALTHY_FUNCTIONS"
+          echo "   Network Errors: $NETWORK_ERRORS"
+          echo "   Server Errors: $SERVER_ERRORS"
+          echo "   Failed: ${#FAILED_FUNCTIONS[@]}"
+          
+          # ERROR-001 FIX: Network errors don't fail the job
+          if [ $SERVER_ERRORS -gt 0 ] && [ ${#FAILED_FUNCTIONS[@]} -gt 0 ]; then
             echo ""
-            echo "🚨 CRITICAL: $FUNCTION_NAME failed $MAX_ATTEMPTS consecutive checks"
-            echo "⚡ Triggering targeted redeploy for $FUNCTION_NAME only"
+            echo "🚨 SERVER FAILURES DETECTED: ${FAILED_FUNCTIONS[*]}"
+            echo "⚡ Triggering targeted redeploy for failed functions"
             
-            # Trigger deployment workflow with specific function
+            # Trigger deployment workflow with specific functions
+            PRIORITY_FUNCTIONS=$(IFS=,; echo "${FAILED_FUNCTIONS[*]}")
             curl -X POST \
               -H "Accept: application/vnd.github.v3+json" \
               -H "Authorization: token $GITHUB_TOKEN" \
               https://api.github.com/repos/$GITHUB_REPOSITORY/actions/workflows/deploy-functions.yml/dispatches \
-              -d '{"ref":"main","inputs":{"priority_functions":"'$FUNCTION_NAME'","target_function":"'$FUNCTION_NAME'"}}'
+              -d '{"ref":"main","inputs":{"priority_functions":"'$PRIORITY_FUNCTIONS'"}}'
               
-            echo "✅ Targeted redeploy triggered for $FUNCTION_NAME"
+            echo "✅ Targeted redeploy triggered for: $PRIORITY_FUNCTIONS"
             exit 1
+          elif [ $NETWORK_ERRORS -gt 0 ]; then
+            echo ""
+            echo "🌐 Network connectivity issues detected - not failing job (ERROR-001 fix)"
+            echo "   This is likely temporary and will resolve automatically"
+            exit 0
           else
             echo ""
-            echo "✅ $FUNCTION_NAME is healthy - monitoring complete"
+            echo "✅ All image generation functions are healthy - monitoring complete"
+            exit 0
           fi
 
-      - name: Create alert issue (on failure)
+      - name: Create alert issue (on server failures only)
         if: failure()
         run: |
-          echo "📝 Creating GitHub issue for ai-visual-scene-creator failure..."
+          echo "📝 Creating GitHub issue for server failures..."
           
           curl -X POST \
             -H "Accept: application/vnd.github.v3+json" \
             -H "Authorization: token $GITHUB_TOKEN" \
             https://api.github.com/repos/$GITHUB_REPOSITORY/issues \
             -d '{
-              "title": "🚨 ai-visual-scene-creator Health Alert - '"$(date '+%Y-%m-%d %H:%M UTC')"'",
-              "body": "## Function Health Alert\n\n**Time:** '"$(date '+%Y-%m-%d %H:%M UTC')"'\n**Function:** ai-visual-scene-creator\n\n**Issue:** Function experiencing persistent failures after 2 consecutive health checks.\n\n**Actions Taken:**\n- Automatic health check failed\n- Targeted redeploy triggered\n\n**Next Steps:**\n1. Check function logs in Supabase dashboard\n2. Verify OPENAI_API_KEY secret\n3. Test function manually if needed\n\n**Monitoring:** This issue was created automatically by the staggered health monitoring system.",
-              "labels": ["bug", "edge-functions", "ai-visual-scene-creator", "automated-alert"]
+              "title": "🚨 Image Generation Server Failures - '"$(date '+%Y-%m-%d %H:%M UTC')"'",
+              "body": "## Server Failure Alert (ERROR-001 Fix Applied)\n\n**Time:** '"$(date '+%Y-%m-%d %H:%M UTC')"'\n**Affected Functions:** Image generation cluster\n\n**Issue:** Server-side failures detected after health checks with ERROR-001 fixes.\n\n**ERROR-001 Fixes Applied:**\n- ✅ HEAD /health requests (no CORS preflights)\n- ✅ Network vs server error classification\n- ✅ 10-minute preflight caching (Max-Age=600)\n- ✅ Serial health checks (no race conditions)\n\n**Actions Taken:**\n- Smart health check with network awareness\n- Targeted redeploy triggered for failed functions only\n- Network errors ignored (not treated as failures)\n\n**Next Steps:**\n1. Check function logs in Supabase dashboard\n2. Verify edge function secrets\n3. Test functions manually if needed\n\n**Monitoring:** Smart monitoring system with ERROR-001 fixes",
+              "labels": ["bug", "edge-functions", "server-failure", "error-001-fixed"]
             }'

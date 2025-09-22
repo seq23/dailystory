@@ -1,11 +1,17 @@
-import { supabase } from '@/integrations/supabase/client';
 import { DebugLogger } from '@/services/DebugLogger';
+import { simpleHealth } from '@/utils/robustFetch';
 
+/**
+ * UPDATED FOR ERROR-001 FIX: Tri-state health classification
+ * - 'healthy': Service is working properly
+ * - 'network': Network connectivity issues (not service fault)
+ * - 'server': Service-side failures (needs attention)
+ */
 export interface HealthStatus {
-  orchestrator: 'healthy' | 'degraded' | 'failed';
-  runwareAPI: 'healthy' | 'failed';
-  serviceDependencies: 'healthy' | 'failed';
-  overallHealth: 'healthy' | 'degraded' | 'failed';
+  orchestrator: 'healthy' | 'network' | 'server';
+  runwareAPI: 'healthy' | 'network' | 'server';
+  serviceDependencies: 'healthy' | 'network' | 'server';
+  overallHealth: 'healthy' | 'network' | 'server';
   timestamp: string;
   checkDuration: number;
 }
@@ -23,37 +29,33 @@ export class HealthCheckService {
   private static cachedHealth: { result: HealthStatus; timestamp: number } | null = null;
 
   /**
-   * Performs comprehensive health checks and returns system status
+   * ERROR-001 FIX: Use HEAD requests to avoid CORS preflights
+   * Returns tri-state classification: healthy | network | server
    */
   static async checkSystemHealth(): Promise<HealthStatus> {
     const startTime = Date.now();
 
     // Check cache first
     if (this.cachedHealth && (Date.now() - this.cachedHealth.timestamp) < this.CACHE_DURATION) {
-    DebugLogger.log('network', 'Using cached health status');
-    return this.cachedHealth.result;
-  }
+      DebugLogger.log('network', 'Using cached health status');
+      return this.cachedHealth.result;
+    }
 
-  DebugLogger.log('network', 'Starting fresh health check');
+    DebugLogger.log('network', 'Starting fresh health check (preflight-free)');
 
-    const healthChecks = await Promise.allSettled([
-      this.checkOrchestrator(),
-      this.checkRunwareAPI(),
-      this.checkServiceDependencies()
-    ]);
+    // Serial health checks to avoid race conditions
+    const orchestrator = await this.checkOrchestrator();
+    const runwareAPI = await this.checkRunwareAPI();
+    const serviceDependencies = await this.checkServiceDependencies();
 
-    const orchestrator = healthChecks[0].status === 'fulfilled' ? healthChecks[0].value : 'failed';
-    const runwareAPI = healthChecks[1].status === 'fulfilled' ? healthChecks[1].value : 'failed';
-    const serviceDependencies = healthChecks[2].status === 'fulfilled' ? healthChecks[2].value : 'failed';
-
-    // Determine overall health
-    let overallHealth: 'healthy' | 'degraded' | 'failed';
+    // Determine overall health with network awareness
+    let overallHealth: 'healthy' | 'network' | 'server';
     if (orchestrator === 'healthy' && runwareAPI === 'healthy' && serviceDependencies === 'healthy') {
       overallHealth = 'healthy';
-    } else if (runwareAPI === 'failed') {
-      overallHealth = 'failed'; // Runware API failure is critical
+    } else if (orchestrator === 'network' || runwareAPI === 'network' || serviceDependencies === 'network') {
+      overallHealth = 'network'; // Network issues take precedence
     } else {
-      overallHealth = 'degraded';
+      overallHealth = 'server'; // Server-side issues
     }
 
     const healthStatus: HealthStatus = {
@@ -76,118 +78,116 @@ export class HealthCheckService {
   }
 
   /**
-   * Checks orchestrator health via GET endpoint
+   * ERROR-001 FIX: Use HEAD /health to avoid CORS preflights
    */
-  private static async checkOrchestrator(): Promise<'healthy' | 'degraded' | 'failed'> {
+  private static async checkOrchestrator(): Promise<'healthy' | 'network' | 'server'> {
+    const url = 'https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/runware-generate-image/health';
+    
     try {
-      const response = await Promise.race([
-        supabase.functions.invoke('runware-generate-image', {
-          method: 'GET'
-        }),
-        new Promise<never>((_, reject) => 
-          setTimeout(() => reject(new Error('Orchestrator timeout')), this.HEALTH_CHECK_TIMEOUT)
-        )
-      ]);
-
-      if (response.error) {
-        DebugLogger.warn('network', 'Orchestrator degraded', response.error);
-        return 'degraded';
-      }
-
-      const healthData = response.data;
-      if (healthData?.status === 'healthy' && healthData?.handler_loaded) {
+      const isHealthy = await simpleHealth(url, this.HEALTH_CHECK_TIMEOUT);
+      if (isHealthy) {
         return 'healthy';
+      } else {
+        DebugLogger.warn('network', 'Orchestrator health check failed - treating as server issue');
+        return 'server';
       }
-
-      return 'degraded';
-    } catch (error) {
-      DebugLogger.error('network', 'Orchestrator health check failed', error);
-      return 'failed';
+    } catch (error: any) {
+      const isNetworkError = error?.name === 'AbortError' || error?.message?.includes('network');
+      if (isNetworkError) {
+        DebugLogger.warn('network', 'Orchestrator network error', error);
+        return 'network';
+      } else {
+        DebugLogger.error('network', 'Orchestrator server error', error);
+        return 'server';
+      }
     }
   }
 
   /**
-   * Checks Runware API availability through a test connection
+   * ERROR-001 FIX: Use HEAD /health for Runware API check
    */
-  private static async checkRunwareAPI(): Promise<'healthy' | 'failed'> {
+  private static async checkRunwareAPI(): Promise<'healthy' | 'network' | 'server'> {
+    const url = 'https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/runware-generate-image/health';
+    
     try {
-      // Test WebSocket connection with dummy auth
-      const testResponse = await Promise.race([
-        supabase.functions.invoke('runware-generate-image', {
-          body: { test: true }
-        }),
-        new Promise<never>((_, reject) => 
-          setTimeout(() => reject(new Error('Runware API timeout')), this.HEALTH_CHECK_TIMEOUT)
-        )
-      ]);
-
-      // If we get any response without a Runware-specific error, API is likely healthy
-      if (!testResponse.error || !testResponse.error.message?.includes('Runware')) {
+      const isHealthy = await simpleHealth(url, this.HEALTH_CHECK_TIMEOUT);
+      if (isHealthy) {
         return 'healthy';
+      } else {
+        DebugLogger.warn('network', 'Runware API health check failed - treating as server issue');
+        return 'server';
       }
-
-      return 'failed';
-    } catch (error) {
-      DebugLogger.error('network', 'Runware API health check failed', error);
-      return 'failed';
+    } catch (error: any) {
+      const isNetworkError = error?.name === 'AbortError' || error?.message?.includes('network');
+      if (isNetworkError) {
+        DebugLogger.warn('network', 'Runware API network error', error);
+        return 'network';
+      } else {
+        DebugLogger.error('network', 'Runware API server error', error);
+        return 'server';
+      }
     }
   }
 
   /**
-   * Checks service dependencies (PhaseIntegrationOrchestrator, CharacterConsistencyService)
+   * ERROR-001 FIX: Use HEAD /health for service dependencies check
    */
-  private static async checkServiceDependencies(): Promise<'healthy' | 'failed'> {
+  private static async checkServiceDependencies(): Promise<'healthy' | 'network' | 'server'> {
+    const url = 'https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/ai-visual-scene-creator/health';
+    
     try {
-      // Test service dependencies through orchestrator ready check
-      const response = await Promise.race([
-        supabase.functions.invoke('runware-generate-image', {
-          method: 'GET',
-          body: { ready: true }
-        }),
-        new Promise<never>((_, reject) => 
-          setTimeout(() => reject(new Error('Service dependencies timeout')), this.HEALTH_CHECK_TIMEOUT)
-        )
-      ]);
-
-      if (response.error) {
-        return 'failed';
-      }
-
-      const healthData = response.data;
-      if (healthData?.handler_loaded && healthData?.environment?.hasSupabaseUrl) {
+      const isHealthy = await simpleHealth(url, this.HEALTH_CHECK_TIMEOUT);
+      if (isHealthy) {
         return 'healthy';
+      } else {
+        DebugLogger.warn('network', 'Service dependencies health check failed - treating as server issue');
+        return 'server';
       }
-
-      return 'failed';
-    } catch (error) {
-      DebugLogger.error('network', 'Service dependencies health check failed', error);
-      return 'failed';
+    } catch (error: any) {
+      const isNetworkError = error?.name === 'AbortError' || error?.message?.includes('network');
+      if (isNetworkError) {
+        DebugLogger.warn('network', 'Service dependencies network error', error);
+        return 'network';
+      } else {
+        DebugLogger.error('network', 'Service dependencies server error', error);
+        return 'server';
+      }
     }
   }
 
   /**
-   * Selects optimal tier based on health status
+   * ERROR-001 FIX: Updated tier selection with network awareness
    */
   static selectOptimalTier(healthStatus: HealthStatus): TierStrategy {
     DebugLogger.log('network', 'Selecting tier based on health', healthStatus);
 
-    // Runware API failed → Direct to Tier 4 (SVG fallback)
-    if (healthStatus.runwareAPI === 'failed') {
+    // Server failures → Use appropriate fallbacks
+    if (healthStatus.runwareAPI === 'server') {
       return {
         tier: 'TIER_4',
         endpoint: null,
         fallback: 'SVG',
-        reason: 'Runware API unavailable - using SVG fallback'
+        reason: 'Runware API server failure - using SVG fallback'
       };
     }
 
-    // Service dependencies or orchestrator failed → Direct to ai-visual-scene-creator
-    if (healthStatus.serviceDependencies === 'failed' || healthStatus.orchestrator === 'failed') {
+    // Network issues → Wait for recovery, but use direct mode
+    if (healthStatus.overallHealth === 'network') {
       return {
         tier: 'TIER_1',
         endpoint: 'ai-visual-scene-creator',
         fallback: 'ai_visual_scene_direct',
-        reason: 'Orchestrator failed - using direct ai-visual-scene-creator mode'
+        reason: 'Network connectivity issues - using direct mode'
+      };
+    }
+
+    // Service dependencies or orchestrator server issues → Direct to ai-visual-scene-creator
+    if (healthStatus.serviceDependencies === 'server' || healthStatus.orchestrator === 'server') {
+      return {
+        tier: 'TIER_1',
+        endpoint: 'ai-visual-scene-creator',
+        fallback: 'ai_visual_scene_direct',
+        reason: 'Orchestrator server failure - using direct ai-visual-scene-creator mode'
       };
     }
 
@@ -201,25 +201,22 @@ export class HealthCheckService {
   }
 
   /**
-   * Quick health check with minimal overhead
+   * ERROR-001 FIX: Quick health check using HEAD method
    */
-  static async quickHealthCheck(): Promise<'healthy' | 'degraded' | 'failed'> {
+  static async quickHealthCheck(): Promise<'healthy' | 'network' | 'server'> {
     if (this.cachedHealth && (Date.now() - this.cachedHealth.timestamp) < this.CACHE_DURATION) {
       return this.cachedHealth.result.overallHealth;
     }
 
-    // Just ping the orchestrator for quick check
+    // Use HEAD /health for quick check (no preflight)
+    const url = 'https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/runware-generate-image/health';
+    
     try {
-      const response = await Promise.race([
-        supabase.functions.invoke('runware-generate-image', { method: 'GET' }),
-        new Promise<never>((_, reject) => 
-          setTimeout(() => reject(new Error('Quick health timeout')), 1000)
-        )
-      ]);
-
-      return response.error ? 'degraded' : 'healthy';
-    } catch (error) {
-      return 'failed';
+      const isHealthy = await simpleHealth(url, 1000);
+      return isHealthy ? 'healthy' : 'server';
+    } catch (error: any) {
+      const isNetworkError = error?.name === 'AbortError' || error?.message?.includes('network');
+      return isNetworkError ? 'network' : 'server';
     }
   }
 

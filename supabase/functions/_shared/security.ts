@@ -10,8 +10,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.55.0";
 export const secureHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Max-Age': '86400',
+  'Access-Control-Allow-Methods': 'GET, HEAD, POST, PUT, DELETE, OPTIONS', // ERROR-001 FIX: Added HEAD
+  'Access-Control-Max-Age': '600', // ERROR-001 FIX: Changed from 86400 to 600 (10 minutes)
   
   // Security Headers
   'X-Content-Type-Options': 'nosniff',
