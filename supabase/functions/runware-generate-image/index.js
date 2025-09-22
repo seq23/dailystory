@@ -13,6 +13,17 @@ import { CULTURAL_ARRAYS, createSeededRandom } from "../_shared/tier25Vocabulary
 import { getCulturalBundle } from "../_shared/StaticDataCache.js";
 import * as tierLogging from "./tierLogging.js";
 
+// ---- Tier logger binder (console + DB) ----
+function bindTierLogger(supabaseClient, sessionId, requestId) {
+  return {
+    t1: (msg, ctx = {}) => tierLogging.logTier1(msg, ctx, supabaseClient, sessionId, requestId),
+    t2: (msg, ctx = {}) => tierLogging.logTier2(msg, ctx, supabaseClient, sessionId, requestId),
+    attempt: (tier, ctx = {}) => tierLogging.logTierAttempt(supabaseClient, sessionId, requestId, tier, 'attempting', ctx),
+    success: (tier, ctx = {}) => tierLogging.logTierSuccess(supabaseClient, sessionId, requestId, tier, ctx),
+    failure: (tier, ctx = {}) => tierLogging.logTierFailure(supabaseClient, sessionId, requestId, tier, ctx),
+  };
+}
+
 // Initialize Supabase client for edge function calls
 const supabase = createClient(
   Deno.env.get("SUPABASE_URL") ?? "",
@@ -53,9 +64,7 @@ function getNuclearStyleFramework(difficulty) {
   const framework =
     NUCLEAR_HARDCODED_STYLE_FRAMEWORKS[normalized] ||
     NUCLEAR_HARDCODED_STYLE_FRAMEWORKS.medium;
-  tierLogging.logTier1(
-    `Nuclear Retrieved ${framework.name} style framework for difficulty: ${normalized}`
-  );
+  console.log(`🔴 [TIER1] Nuclear Retrieved ${framework.name} style framework for difficulty: ${normalized}`);
   return framework;
 }
 
@@ -102,12 +111,12 @@ class EdgeErrorHandler {
       category: this.categorizeError(error, functionName),
     };
 
-    tierLogging.logTier1(`${functionName} Error`, edgeError);
+    console.log(`🔴 [TIER1] ${functionName} Error`, edgeError);
 
     const key = `${functionName}_${edgeError.type}`;
     const count = this.errorCounts.get(key) || 0;
     this.errorCounts.set(key, count + 1);
-    if (count > 3) tierLogging.logTier1(`⚠️ Frequent error: ${key} (${count + 1}x)`);
+    if (count > 3) console.log(`🔴 [TIER1] ⚠️ Frequent error: ${key} (${count + 1}x)`);
 
     return new Response(
       JSON.stringify({
@@ -161,7 +170,7 @@ class CrashProofBootSystem {
   static async validateBoot() {
     if (this.bootStatus !== null) return this.bootStatus;
 
-    tierLogging.logTier1("Boot validation started");
+    console.log("🔴 [TIER1] Boot validation started");
 
     const critical = {
       supabaseUrl: Deno.env.get("SUPABASE_URL"),
@@ -182,14 +191,14 @@ class CrashProofBootSystem {
       ]);
       this.criticalServices.set("supabase", { status: "healthy", client: sb });
     } catch (err) {
-      tierLogging.logTier1(`⚠️ [BOOT] Supabase connection degraded: ${err?.message || err}`);
+      console.log(`🔴 [TIER1] ⚠️ [BOOT] Supabase connection degraded: ${err?.message || err}`);
       this.criticalServices.set("supabase", { status: "degraded", error: String(err?.message || err) });
     }
 
     if (critical.runwareApiKey && critical.runwareApiKey.length > 10) {
       this.criticalServices.set("runware", { status: "configured", key: critical.runwareApiKey });
     } else {
-      tierLogging.logTier1("⚠️ [BOOT] Runware API key missing - will use fallback tiers");
+      console.log("🔴 [TIER1] ⚠️ [BOOT] Runware API key missing - will use fallback tiers");
       this.criticalServices.set("runware", { status: "missing" });
     }
 
@@ -198,7 +207,7 @@ class CrashProofBootSystem {
       timestamp: new Date().toISOString(),
       services: Object.fromEntries(this.criticalServices),
     };
-    tierLogging.logTier1("System validated successfully");
+    console.log("🔴 [TIER1] System validated successfully");
     return this.bootStatus;
   }
 
@@ -222,10 +231,10 @@ class LazyServiceLoader {
       const module = await import(importPath);
       const service = module.default || module[serviceName] || module;
       this.services.set(serviceName, service);
-      tierLogging.logTier2(`Lazy loaded ${serviceName}`);
+      console.log(`🟢 [TIER2] Lazy loaded ${serviceName}`);
       return service;
     } catch (error) {
-      tierLogging.logTier1(`⚠️ [LAZY] Failed to load ${serviceName}: ${error?.message || error}`);
+      console.log(`🔴 [TIER1] ⚠️ [LAZY] Failed to load ${serviceName}: ${error?.message || error}`);
       this.services.set(serviceName, null);
       return null;
     }
@@ -264,11 +273,11 @@ function generateContextSummary(text) {
 }
 
 async function extractCharacterConsistencyOnly(pageText, sessionId, pageNumber, userInfo) {
-  tierLogging.logTier2("🎭 [CHARACTER FALLBACK] Attempting character consistency extraction only");
+  console.log("🟢 [TIER2] 🎭 [CHARACTER FALLBACK] Attempting character consistency extraction only");
   try {
     const details = await characterConsistencyService.analyzeVisualDetails(sessionId, pageText, pageNumber);
     if (details && details.mainCharacter) {
-      tierLogging.logTier2("✅ [CHARACTER FALLBACK] Character details extracted successfully");
+      console.log("🟢 [TIER2] ✅ [CHARACTER FALLBACK] Character details extracted successfully");
       const characterDescription = await characterConsistencyService.getCharacterAppearanceFromStory(sessionId);
       const contextSummary = generateContextSummary(pageText);
       const minimalPrompt = `${contextSummary} Character details: ${characterDescription}`;
@@ -279,10 +288,10 @@ async function extractCharacterConsistencyOnly(pageText, sessionId, pageNumber, 
         metadata: { characterDetails: details, fallbackMode: true, enhancementType: "character_only" },
       };
     }
-    tierLogging.logTier1("⚠️ [CHARACTER FALLBACK] No character details found");
+    console.log("🔴 [TIER1] ⚠️ [CHARACTER FALLBACK] No character details found");
     return null;
   } catch (err) {
-    tierLogging.logTier1(`❌ [CHARACTER FALLBACK] Character consistency extraction failed: ${err}`);
+    console.log(`🔴 [TIER1] ❌ [CHARACTER FALLBACK] Character consistency extraction failed: ${err}`);
     return null;
   }
 }
@@ -299,7 +308,7 @@ async function generateWithRunware(
   enhancedStoryData,
   options = {}
 ) {
-  tierLogging.logTier2(`🚀 [${requestId}] Starting Runware generation with enhanced story data`);
+  console.log(`🟢 [TIER2] 🚀 [${requestId}] Starting Runware generation with enhanced story data`);
 
   if (!apiKey || apiKey.length < 10) throw new Error("Invalid Runware API key");
 
@@ -311,8 +320,8 @@ async function generateWithRunware(
 
   if (enhancedStoryData?.enhancedPrompt && enhancedStoryData?.templateStructure === "COMPLETE_TIER_1") {
     enhancedPrompt = enhancedStoryData.enhancedPrompt;
-    tierLogging.logTier2(
-      `🎯 [${requestId}] Using PhaseIntegrationOrchestrator enhanced prompt: ${enhancedPrompt.length} chars`
+    console.log(
+      `🟢 [TIER2] 🎯 [${requestId}] Using PhaseIntegrationOrchestrator enhanced prompt: ${enhancedPrompt.length} chars`
     );
   } else {
     throw new Error("ESCALATE_TO_TIER_2_5A: No enhanced story data available");
@@ -326,15 +335,17 @@ async function generateWithRunware(
   try {
     const culturalProfileStr = `${userInfo?.nativeLanguage || "en"}_${userInfo?.avatar?.skinTone || avatarIdentity?.skinTone || "light"}`;
     const avatarType = userInfo?.avatar?.type || avatarIdentity?.type || "girl";
-    negativePrompt = generateInlineNuclearNegative(culturalProfileStr, avatarType, difficulty);
-    tierLogging.logTier2(`🎨 [${requestId}] Generated comprehensive negative prompt: ${negativePrompt.length} chars`);
+    negativePrompt = generateInlineNuclear
+
+(culturalProfileStr, avatarType, difficulty);
+    console.log(`🟢 [TIER2] 🎨 [${requestId}] Generated comprehensive negative prompt: ${negativePrompt.length} chars`);
   } catch (e) {
-    tierLogging.logTier1(`⚠️ [${requestId}] Failed to generate nuclear negative prompt: ${e?.message || e}`);
+    console.log(`🔴 [TIER1] ⚠️ [${requestId}] Failed to generate nuclear negative prompt: ${e?.message || e}`);
     negativePrompt =
       "bad anatomy, deformed, blurry, low quality, distorted face, extra limbs, malformed hands, poorly drawn, artifacts, noise, oversaturated";
   }
 
-  tierLogging.logTier2(`🎨 [${requestId}] Enhanced prompt length: ${enhancedPrompt.length} chars`);
+  console.log(`🟢 [TIER2] 🎨 [${requestId}] Enhanced prompt length: ${enhancedPrompt.length} chars`);
 
   const ws = new WebSocket("wss://ws-api.runware.ai/v1");
   return new Promise((resolve, reject) => {
@@ -343,10 +354,10 @@ async function generateWithRunware(
       reject(new Error("Runware generation timeout"));
     }, 30000);
 
-    ws.onopen = () => {
-      tierLogging.logTier2(`🔗 [${requestId}] Runware WebSocket connected`);
-      ws.send(JSON.stringify([{ taskType: "authentication", apiKey }]));
-    };
+        ws.onopen = () => {
+          console.log(`🟢 [TIER2] 🔗 [${requestId}] Runware WebSocket connected`);
+          ws.send(JSON.stringify([{ taskType: "authentication", apiKey }]));
+        };
 
     ws.onmessage = (event) => {
       try {
@@ -420,15 +431,8 @@ async function generateWithRunware(
 // ---------------- MAIN HANDLER (POST-ONLY) ----------------
 export default async function handleRequest(req) {
   const requestId = CoreUtils.generateRequestId();
-  tierLogging.logTier2(`🎯 [${requestId}] Crash-Proof Orchestrator v2.1: ${req.method} ${req.url}`);
 
-  if (req.method !== "POST") {
-    return new Response(
-      JSON.stringify({ error: "Method not allowed", allowedMethods: ["POST"] }),
-      { status: 405, headers: { "Content-Type": "application/json" } }
-    );
-  }
-
+  // Parse payload early so we can grab sessionId
   let payload;
   try {
     payload = await req.json();
@@ -439,8 +443,21 @@ export default async function handleRequest(req) {
     });
   }
 
-  try {
-    tierLogging.logTier2(`🔍 Request payload keys: ${Object.keys(payload || {})}`);
+  const sessionId = payload?.sessionId || ('session_' + requestId);
+  const log = bindTierLogger(supabase, sessionId, requestId);
+
+  // Log request received
+  log.t2(`Crash-Proof Orchestrator v2.1: ${req.method} ${req.url}`);
+
+  if (req.method !== "POST") {
+    return new Response(
+      JSON.stringify({ error: "Method not allowed", allowedMethods: ["POST"] }),
+      { status: 405, headers: { "Content-Type": "application/json" } }
+    );
+  }
+  }
+
+    log.t2(`Request payload keys: ${Object.keys(payload || {})}`);
 
     let enhancedStoryData, storyText, pageNumber, avatarIdentity, previousPrimaryScene;
     if (payload.pageText) {
@@ -468,10 +485,10 @@ export default async function handleRequest(req) {
 
     if (payload.forceTier === "COMPLETE_TIER_1" || payload.forceTier === "tier-1" || payload.skipTier25) {
       try {
-        tierLogging.logTier2(`🎯 [${requestId}] Forcing Tier 1 via PhaseIntegrationOrchestrator`);
+        log.t2(`Forcing Tier 1 via PhaseIntegrationOrchestrator`);
         const orchestrator = await LazyServiceLoader.getPhaseIntegrationOrchestrator();
 
-        tierLogging.logTier2(`🎯 [${requestId}] Calling ai-visual-scene-creator for primaryScene`);
+        log.t2(`Calling ai-visual-scene-creator for primaryScene`);
         const sceneResponse = await supabase.functions.invoke("ai-visual-scene-creator", {
           body: {
             storyText,
@@ -487,7 +504,7 @@ export default async function handleRequest(req) {
         const { primaryScene, aiSchema } = sceneResponse.data;
         const basePrompt = primaryScene + (aiSchema ? `\n\nSchema: ${JSON.stringify(aiSchema)}` : "");
 
-        tierLogging.logTier2(`🎯 [${requestId}] Calling orchestrator with basePrompt and storyText`);
+        log.t2(`Calling orchestrator with basePrompt and storyText`);
         const tier1Response = await orchestrator.getEnhancedPrompt(
           payload.userInfo,
           basePrompt,
@@ -496,7 +513,7 @@ export default async function handleRequest(req) {
         );
 
         if (tier1Response && tier1Response.enhancementSuccessful && tier1Response.enhancedPrompt) {
-          tierLogging.logTier2(`🎯 [${requestId}] Generating Tier 1 image with enhanced prompt`);
+          log.t2(`Generating Tier 1 image with enhanced prompt`);
           const apiKey = Deno.env.get("RUNWARE_API_KEY")?.trim();
           const sessionId = payload.sessionId || "session_" + requestId;
           const avatar = payload.userInfo?.avatar;
@@ -517,7 +534,7 @@ export default async function handleRequest(req) {
         }
       } catch (error) {
         if ((error?.message || "").includes("NO_PRIMARY_SCENE_ESCALATE_TO_25A")) {
-          tierLogging.logTier2("🔄 Tier 1 primary scene failed - escalating to Tier 2.5A");
+          log.t2("Tier 1 primary scene failed - escalating to Tier 2.5A");
           const resp = await supabase.functions.invoke("runware-template-ab", {
             body: {
               storyText,
@@ -530,7 +547,7 @@ export default async function handleRequest(req) {
           });
           result = resp.data || { success: false, error: resp?.error?.message || "Tier 2.5A escalation failed" };
         } else {
-          tierLogging.logTier2("🎭 [ORCHESTRATOR] Trying character consistency fallback before Tier 2.5A");
+          log.t2("[ORCHESTRATOR] Trying character consistency fallback before Tier 2.5A");
           const characterFallback = await extractCharacterConsistencyOnly(
             storyText,
             payload.sessionId || "session_" + requestId,
@@ -561,7 +578,7 @@ export default async function handleRequest(req) {
                 templateStructure: characterFallback.tier,
               };
             } catch {
-              tierLogging.logTier2("❌ [CHARACTER FALLBACK] Image generation failed, escalating to Tier 2.5A");
+              log.t2("❌ [CHARACTER FALLBACK] Image generation failed, escalating to Tier 2.5A");
               const resp = await supabase.functions.invoke("runware-template-ab", {
                 body: {
                   storyText,
@@ -575,7 +592,7 @@ export default async function handleRequest(req) {
               result = resp.data || { success: false, error: resp?.error?.message || "All fallbacks failed" };
             }
           } else {
-            tierLogging.logTier2("🔄 [ORCHESTRATOR] Character consistency fallback failed, escalating to Tier 2.5A");
+            log.t2("🔄 [ORCHESTRATOR] Character consistency fallback failed, escalating to Tier 2.5A");
             const resp = await supabase.functions.invoke("runware-template-ab", {
               body: {
                 storyText,
@@ -593,7 +610,7 @@ export default async function handleRequest(req) {
     }
 
     if (!result || !result.success) {
-      tierLogging.logTier2("🔄 [FINAL FALLBACK] Escalating to Tier 2.5D");
+      log.t2("🔄 [FINAL FALLBACK] Escalating to Tier 2.5D");
       const resp = await supabase.functions.invoke("runware-template-cd", {
         body: {
           storyText,
@@ -612,7 +629,7 @@ export default async function handleRequest(req) {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    tierLogging.logTier1(`❌ [${requestId}] Crash-proof orchestrator error: ${error}`);
+    log.t1(`❌ Crash-proof orchestrator error: ${error}`);
     return new Response(
       JSON.stringify({ error: "Internal server error", message: error?.message || String(error), requestId }),
       { status: 500, headers: { "Content-Type": "application/json" } }
@@ -621,4 +638,4 @@ export default async function handleRequest(req) {
 }
 
 // Keep an init breadcrumb without exporting at EOF
-tierLogging.logTier2("🎯 Crash-Proof Runware Orchestrator v2.1 handler loaded");
+console.log("🟢 [TIER2] 🎯 Crash-Proof Runware Orchestrator v2.1 handler loaded");
