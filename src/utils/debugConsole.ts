@@ -1,6 +1,7 @@
 // Comprehensive debugging console functions for prompt and story analysis
 import { supabase } from '@/integrations/supabase/client';
 import { DebugGateway } from '@/services/DebugGateway';
+import { DebugLogger } from '../services/DebugLogger';
 
 export class DebugConsole {
   /**
@@ -95,7 +96,7 @@ export class DebugConsole {
       console.log('📚 Story Processing Log:', data);
       
       if (data.flickerDetected) {
-        console.warn('⚠️ TEXT FLICKER DETECTED! Story text was modified after generation');
+        DebugLogger.warn('ui', 'TEXT FLICKER DETECTED! Story text was modified after generation');
         console.table(data.storyProcessingLog?.filter((entry: any) => entry.changes.length > 0));
       } else {
         console.log('✅ No text flicker detected - story text remains stable');
@@ -122,7 +123,7 @@ export class DebugConsole {
     
     // Local logging
     if (textBefore !== textAfter) {
-      console.warn(`📚 Story Text Changed in ${phase}:`, {
+      DebugLogger.warn('story', `Story Text Changed in ${phase}`, {
         sessionId,
         pageNumber,
         lengthChange: `${textBefore.length} → ${textAfter.length}`,
@@ -139,7 +140,7 @@ export class DebugConsole {
       const currentSessionId = sessionId || getCurrentSessionId();
       
       if (!currentSessionId) {
-        console.warn('❌ No session ID provided or found');
+        DebugLogger.warn('story', 'No session ID provided or found');
         return null;
       }
       
@@ -151,7 +152,7 @@ export class DebugConsole {
         .limit(limit);
         
       if (error) {
-        console.error('❌ Failed to fetch image generation logs:', error);
+        DebugLogger.error('network', 'Failed to fetch image generation logs', error);
         return null;
       }
       
@@ -186,7 +187,7 @@ export class DebugConsole {
       
       return { data, sessionId: currentSessionId };
     } catch (error) {
-      console.error('❌ Error fetching image generation logs:', error);
+      DebugLogger.error('network', 'Error fetching image generation logs', error);
       return null;
     }
   }
@@ -214,7 +215,7 @@ export class DebugConsole {
       return { data: data.imagePrompts, workingTiers: [...new Set(successfulTiers)] };
     }
     
-    console.warn('❌ No recent image data found');
+    DebugLogger.warn('performance', 'No recent image data found');
     return null;
   }
 
@@ -233,7 +234,7 @@ export class DebugConsole {
       if (message.includes('📚 Setting story content') || 
           message.includes('Story generation completed') ||
           message.includes('Grammar processing')) {
-        console.warn('📚 Story Processing Event:', message);
+        DebugLogger.warn('story', 'Story Processing Event', { message });
       }
       
       originalConsoleLog.apply(console, args);

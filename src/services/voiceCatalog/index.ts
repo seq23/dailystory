@@ -6,6 +6,7 @@
  */
 
 import { VoiceCatalogService } from './VoiceCatalogService';
+import { DebugLogger } from '../DebugLogger';
 
 export { CodebookService } from './CodebookService';
 export { VoiceProcessor } from './VoiceProcessor';
@@ -25,8 +26,8 @@ export type {
 
 // Quick setup function
 export async function initializeVoiceCatalog() {
-  console.log('🎭 Voice Catalog System initialized with AVC v1.1.0');
+  DebugLogger.log('performance', 'Voice Catalog System initialized with AVC v1.1.0');
   const stats = await VoiceCatalogService.getCatalogStats();
-  console.log('📊 Catalog stats:', stats);
+  DebugLogger.log('performance', 'Catalog stats', stats);
   return stats;
 }

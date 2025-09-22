@@ -74,7 +74,7 @@ export class CacheDebugger {
         keys
       };
     } catch (error) {
-      console.error('Failed to inspect image cache:', error);
+      DebugLogger.error('performance', 'Failed to inspect image cache', error);
       return {
         totalImages: 0,
         sessions: {},
@@ -98,7 +98,7 @@ export class CacheDebugger {
         sessions: sessionKeys
       };
     } catch (error) {
-      console.error('Failed to inspect session cache:', error);
+      DebugLogger.error('performance', 'Failed to inspect session cache', error);
       return {
         hasCachedSessions: false,
         sessions: []
@@ -138,7 +138,7 @@ export class CacheDebugger {
         }
       };
     } catch (error) {
-      console.error('Failed to inspect storage breakdown:', error);
+      DebugLogger.error('performance', 'Failed to inspect storage breakdown', error);
       return {
         sessionStorage: { totalKeys: 0, imageCache: 0, otherKeys: [] },
         localStorage: { totalKeys: 0, storyKeys: 0, otherKeys: [] }
@@ -253,7 +253,7 @@ export class CacheDebugger {
       });
       
     } catch (error) {
-      console.error('❌ [CACHE DEBUGGER] Cache clearing failed:', error);
+      DebugLogger.error('performance', 'Cache clearing failed', error);
     }
   }
 }

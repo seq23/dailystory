@@ -1,5 +1,5 @@
 import type { AvatarType, SkinTone } from "@/types";
-import { DebugLogger } from "@/services/DebugLogger";
+import { DebugLogger } from "../services/DebugLogger";
 
 interface AvatarData {
   type: AvatarType;
@@ -10,6 +10,7 @@ interface AvatarData {
  * Centralized avatar URL generation with robust fallback handling
  * Ensures consistent avatar behavior across all components
  */
+
 export class AvatarUtils {
   private static readonly AVATAR_BASE_PATHS = {
     boy: {
@@ -44,20 +45,20 @@ export class AvatarUtils {
     // Handle null/undefined input
     if (!avatarData || !avatarData.type || !avatarData.skinTone) {
       // Only log errors, not successful operations
-      console.warn('🎭 [AvatarUtils] Invalid avatar data:', avatarData);
+      DebugLogger.warn('ui', 'Invalid avatar data', avatarData);
       return undefined;
     }
 
     // Get the specific avatar path
     const typeMapping = this.AVATAR_BASE_PATHS[avatarData.type as keyof typeof this.AVATAR_BASE_PATHS];
     if (!typeMapping) {
-      console.warn('🎭 [AvatarUtils] Unknown avatar type, using boy fallback:', avatarData.type);
+      DebugLogger.warn('ui', 'Unknown avatar type, using boy fallback', { type: avatarData.type });
       return this.AVATAR_BASE_PATHS.boy[avatarData.skinTone] || this.DEFAULT_FALLBACK;
     }
 
     const avatarUrl = typeMapping[avatarData.skinTone];
     if (!avatarUrl) {
-      console.warn('🎭 [AvatarUtils] Unknown skin tone, using medium fallback:', avatarData.skinTone);
+      DebugLogger.warn('ui', 'Unknown skin tone, using medium fallback', { skinTone: avatarData.skinTone });
       return typeMapping.medium || this.DEFAULT_FALLBACK;
     }
 

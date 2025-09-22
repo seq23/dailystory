@@ -8,6 +8,7 @@ import type { ProcessedVoice, VoiceSelectionResult } from './types';
 import { VoiceCatalogService, DifficultyLevel } from './VoiceCatalogService';
 import type { UserInfo } from '@/types';
 import { safeThemeJoin } from "@/lib/utils";
+import { DebugLogger } from '../DebugLogger';
 
 export class VoiceSelector {
   // Novelty scoring for variety
@@ -43,7 +44,7 @@ export class VoiceSelector {
       
       // If theme matching is poor and themes are provided, try cross-level search
       if (bestMatch.compatibilityScore < 0.6 && enhancedThemes && enhancedThemes.length > 0) {
-        console.log(`🔄 Cross-level search triggered for themes: ${safeThemeJoin(enhancedThemes)}`);
+        DebugLogger.log('performance', 'Cross-level search triggered for themes', { themes: safeThemeJoin(enhancedThemes) });
         bestMatch = await this.performCrossLevelSearch(userInfo, preferences, enhancedThemes, difficulty);
         this.recordVoiceSelection(bestMatch.voice.id, userInfo.name || 'anonymous');
       }
@@ -52,7 +53,7 @@ export class VoiceSelector {
 
     } catch (error) {
       if (failSoft) {
-        console.warn('⚠️ Voice selection failed, using neutral fallback:', error);
+        DebugLogger.warn('performance', 'Voice selection failed, using neutral fallback', error);
         
         // Import embedded fallback
         const { getNeutralVoiceForLevel } = await import('../failSoft/EmbeddedDefaults');
@@ -94,7 +95,7 @@ export class VoiceSelector {
 
     const bestMatch = scoredVoices[0];
     
-    console.log(`🎯 Selected voice: ${bestMatch.voice.pn} (score: ${bestMatch.score.toFixed(2)})`);
+    DebugLogger.log('performance', 'Selected voice', { voiceName: bestMatch.voice.pn, score: bestMatch.score.toFixed(2) });
     
     return {
       voice: bestMatch.voice,
@@ -116,7 +117,7 @@ export class VoiceSelector {
     const userAge = userInfo.age || 8;
     
     if (userAge <= 6) {
-      console.log('🚫 Cross-level search blocked for very young users');
+      DebugLogger.log('performance', 'Cross-level search blocked for very young users');
       const voices = await VoiceCatalogService.getVoicesForLevel(originalDifficulty);
       return this.findBestVoiceMatch(voices, userInfo, preferences, enhancedThemes);
     }
@@ -142,12 +143,12 @@ export class VoiceSelector {
           bestOverallMatch = match;
         }
       } catch (error) {
-        console.warn(`Failed to search level ${level}:`, error);
+        DebugLogger.warn('performance', `Failed to search level ${level}`, error);
       }
     }
 
     if (bestOverallMatch && bestScore > 0.6) {
-      console.log(`✨ Cross-level match found: ${bestOverallMatch.voice.pn} from different difficulty level`);
+      DebugLogger.log('performance', 'Cross-level match found', { voiceName: bestOverallMatch.voice.pn });
       return bestOverallMatch;
     }
 

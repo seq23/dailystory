@@ -3,6 +3,8 @@
  * Prevents console spam with global error grouping and throttling
  */
 
+import { DebugLogger } from '../services/DebugLogger';
+
 interface ErrorGroup {
   count: number;
   lastSeen: number;
@@ -35,14 +37,12 @@ class LeanErrorService {
 
     // Only log first error in each group per minute
     if (group.count <= this.MAX_ERRORS_PER_GROUP) {
-      console.group(`🚨 ${context} Error`);
-      console.error('Error:', error?.message || error);
+      DebugLogger.error('error', `${context} Error`, error);
       if (group.count === this.MAX_ERRORS_PER_GROUP) {
-        console.warn('Similar errors will be throttled for 1 minute');
+        DebugLogger.warn('error', 'Similar errors will be throttled for 1 minute');
       }
-      console.groupEnd();
     } else if (!group.throttled) {
-      console.warn(`🔇 ${context}: Further errors throttled (${group.count} total)`);
+      DebugLogger.warn('error', `${context}: Further errors throttled`, { count: group.count });
       group.throttled = true;
     }
   }
@@ -53,7 +53,7 @@ class LeanErrorService {
     
     let group = this.errorGroups.get(errorKey);
     if (!group || now - group.lastSeen > this.THROTTLE_MS) {
-      console.warn(`⚠️ ${context}: ${message}`);
+      DebugLogger.warn('error', `${context}: ${message}`);
       this.errorGroups.set(errorKey, { count: 1, lastSeen: now, throttled: false });
     }
   }

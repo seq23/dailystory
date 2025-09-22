@@ -4,6 +4,7 @@
  */
 
 import SessionCacheDebugConsoleClass from './sessionCacheDebug';
+import { DebugLogger } from '../services/DebugLogger';
 
 class CacheDebugConsoleClass {
   
@@ -11,7 +12,7 @@ class CacheDebugConsoleClass {
    * @deprecated Use window.sessionCacheDebug.investigate() instead
    */
   static investigateCache(sessionId?: string) {
-    console.warn('⚠️ cacheDebugConsole is deprecated. Use sessionCacheDebug instead.');
+    DebugLogger.warn('performance', 'cacheDebugConsole is deprecated. Use sessionCacheDebug instead.');
     console.log('📋 Redirecting to session-based cache debugging...');
     return SessionCacheDebugConsoleClass.investigate(sessionId);
   }
@@ -20,7 +21,7 @@ class CacheDebugConsoleClass {
    * @deprecated Use window.sessionCacheDebug.clearProblematicCache() instead
    */
   static clearProblematicCache(sessionId?: string, avatarType?: string) {
-    console.warn('⚠️ cacheDebugConsole is deprecated. Use sessionCacheDebug instead.');
+    DebugLogger.warn('performance', 'cacheDebugConsole is deprecated. Use sessionCacheDebug instead.');
     return SessionCacheDebugConsoleClass.clearProblematicCache(sessionId, avatarType);
   }
 
@@ -28,7 +29,7 @@ class CacheDebugConsoleClass {
    * @deprecated Use window.sessionCacheDebug.testCacheKey() instead
    */
   static testCacheKey(prompt: string, sessionId: string, avatarType: string = 'prefer-not-to-answer', skinTone: string = 'medium') {
-    console.warn('⚠️ cacheDebugConsole is deprecated. Use sessionCacheDebug instead.');
+    DebugLogger.warn('performance', 'cacheDebugConsole is deprecated. Use sessionCacheDebug instead.');
     return SessionCacheDebugConsoleClass.testCacheKey(prompt, sessionId, avatarType, skinTone);
   }
 
@@ -36,7 +37,7 @@ class CacheDebugConsoleClass {
    * @deprecated Use window.sessionCacheDebug.forceRegenerateCurrentImage() instead
    */
   static forceRegenerateCurrentImage(sessionId: string, pageNumber: number = 0) {
-    console.warn('⚠️ cacheDebugConsole is deprecated. Use sessionCacheDebug instead.');
+    DebugLogger.warn('performance', 'cacheDebugConsole is deprecated. Use sessionCacheDebug instead.');
     return SessionCacheDebugConsoleClass.forceRegenerateCurrentImage(sessionId, pageNumber);
   }
 }
