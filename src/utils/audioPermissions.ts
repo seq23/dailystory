@@ -47,24 +47,29 @@ export class AudioPermissions {
    * Real-time network quality check with timeout
    */
   static async checkNetworkQuality(): Promise<'good' | 'poor' | 'offline'> {
+    // Prevent concurrent checks
     if (this.isCheckingNetwork) return this.currentContext.networkQuality;
     
     this.isCheckingNetwork = true;
     
     try {
-      // Try multiple network quality checks with fallback approach
-      const timeout = (ms: number) => new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('timeout')), ms)
-      );
+      // Quick browser connectivity check first
+      if (!navigator.onLine) {
+        DebugLogger.warn('network', 'Browser reports offline');
+        this.updateContext({ isNetworkAvailable: false, networkQuality: 'offline' });
+        return 'offline';
+      }
 
-      // Try internal health check first (Supabase system diagnostics)
+      // Try internal health check with proper timeout
       try {
         const { supabase } = await import('@/integrations/supabase/client');
+        
+        // Use Promise.race for timeout control
         const healthResponse = await Promise.race([
           supabase.functions.invoke('system-diagnostics', { 
-            body: { healthCheck: true } 
+            body: { healthCheck: true }
           }),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 800))
+          new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 2000))
         ]);
         
         if ((healthResponse as any)?.data && !(healthResponse as any)?.error) {
@@ -73,25 +78,33 @@ export class AudioPermissions {
           return 'good';
         }
       } catch (error) {
-        DebugLogger.warn('network', 'Internal health check failed, trying fallback');
+        DebugLogger.warn('network', 'Internal health check failed:', error);
       }
 
-      // Try lightweight origin check (no external CORS)
+      // Fallback: Try simple origin connectivity test
       try {
-        await Promise.race([
-          fetch(window.location.origin + '/favicon.ico', { method: 'HEAD', cache: 'no-store' }),
-          timeout(1500)
-        ]);
-        DebugLogger.log('network', 'Network quality check successful: favicon');
-        this.updateContext({ 
-          isNetworkAvailable: true, 
-          networkQuality: 'good' 
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 1500);
+        
+        const response = await fetch(window.location.origin + '/favicon.ico', { 
+          method: 'HEAD', 
+          cache: 'no-store',
+          signal: controller.signal
         });
-        return 'good';
-      } catch {}
+        
+        clearTimeout(timeoutId);
+        
+        if (response.ok) {
+          DebugLogger.log('network', 'Network quality check successful: favicon');
+          this.updateContext({ isNetworkAvailable: true, networkQuality: 'good' });
+          return 'good';
+        }
+      } catch (error) {
+        DebugLogger.warn('network', 'Favicon check failed:', error);
+      }
 
-      // Final fallback - assume poor connection
-      DebugLogger.warn('network', 'All network quality checks failed, assuming poor connection');
+      // All checks failed - determine if poor or offline
+      DebugLogger.warn('network', 'All network quality checks failed');
       this.updateContext({ 
         isNetworkAvailable: false, 
         networkQuality: 'offline' 
@@ -99,7 +112,7 @@ export class AudioPermissions {
       return 'offline';
       
     } catch (error) {
-      DebugLogger.warn('network', 'Network quality check error', error);
+      DebugLogger.error('network', 'Network quality check error:', error);
       this.updateContext({ 
         isNetworkAvailable: false, 
         networkQuality: 'offline' 
