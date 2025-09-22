@@ -36,6 +36,17 @@ serve(async (req) => {
   // CORS preflight
   if (req.method === "OPTIONS") return withCors(new Response(null, { status: 204 }));
 
+  // Ultra-fast health endpoint (load balancer probe)
+  if (req.method === "HEAD" && new URL(req.url).pathname === "/health") {
+    return withCors(new Response(null, { 
+      status: 200, 
+      headers: { 
+        'Cache-Control': 'no-store',
+        'x-health': 'true' 
+      }
+    }));
+  }
+
   // Health checks
   if (req.method === "GET" || req.method === "HEAD") {
     const url = new URL(req.url);

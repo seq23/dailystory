@@ -239,6 +239,18 @@ export async function withSecurity(
         return security.handleCORS();
       }
 
+      // Ultra-fast health endpoint - bypass all security checks
+      if (req.method === 'HEAD' && new URL(req.url).pathname === '/health') {
+        return new Response(null, { 
+          status: 200, 
+          headers: { 
+            ...secureHeaders, 
+            'x-health': 'true', 
+            'Cache-Control': 'no-store' 
+          }
+        });
+      }
+
       // Validate origin
       security.validateOrigin(req, options.allowedOrigins);
 
