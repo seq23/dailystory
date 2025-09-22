@@ -1,5 +1,5 @@
 // DEPLOY_MARKER: 2025-09-15T00:12:00Z - FORCE REDEPLOY PRIORITY
-// ============= TIER 2.5A-B: RUNWARE TEMPLATE AB (A-B COMPLEXITY) =============
+import { RunwareErrorHandler } from "../_shared/runwareErrorHandler.ts";
 // Handles Level A (basic shapes/colors) and Level B (simple scenes)
 // Lightweight, fast deployment - optimized for simple template generation with character consistency
 
@@ -1608,8 +1608,20 @@ async function handleRequest(req) {
     return createResponse(result);
     
   } catch (error) {
-    console.error('❌ [Template AB] Error:', error);
-    return createErrorResponse(error);
+    const runwareError = RunwareErrorHandler.categorizeRunwareError(error);
+    console.error('❌ [Template AB] Error:', runwareError);
+    
+    return new Response(JSON.stringify({ 
+      success: false,
+      error: runwareError.message,
+      errorType: runwareError.type,
+      escalation: runwareError.escalation,
+      retry: runwareError.retry,
+      code: runwareError.code
+    }), {
+      status: runwareError.type === 'quota_exceeded' ? 429 : 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
   }
 }
 

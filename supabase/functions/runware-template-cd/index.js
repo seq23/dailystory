@@ -1,4 +1,6 @@
 // DEPLOY_MARKER: 2025-01-30T20:17:15Z - FORCED REDEPLOY TO FIX BOOT FAILURES
+import { RunwareErrorHandler } from "../_shared/runwareErrorHandler.ts";
+
 // ============= RUNWARE TEMPLATE CD: TIER 2.5C & 2.5D =============
 // Implementation of complexity levels C and D for advanced template generation
 // NO character consistency, NO shared functions beyond styleFrameworks
@@ -290,32 +292,32 @@ async function callRunwareAPI(positivePrompt, negativePrompt, retries = 2) {
 
 // Main handler - Pure business logic
 async function handleRequest(req) {
-
-  // FLEXIBLE PAYLOAD HANDLING: Accept either pageText OR enhancedStoryData/storyText
-  const payload = await req.json();
-  console.log('🔍 Template CD: Request payload keys:', Object.keys(payload));
-  
-  let enhancedStoryData, storyText, pageNumber, avatarIdentity, templateComplexity, failedTierData;
-  
-  if (payload.pageText) {
-    // Current format: {pageText, userInfo, sessionId, pageNumber}
-    console.log('📄 Template CD: Using pageText format');
-    storyText = payload.pageText;
-    enhancedStoryData = { userInfo: payload.userInfo };
-    pageNumber = payload.pageNumber;
-    avatarIdentity = payload.userInfo?.avatar;
-    templateComplexity = payload.templateComplexity;
-    failedTierData = payload.failedTierData;
-  } else {
-    // Legacy format: {enhancedStoryData, storyText, pageNumber, avatarIdentity, templateComplexity, failedTierData}
-    console.log('📖 Template CD: Using legacy format');
-    enhancedStoryData = payload.enhancedStoryData;
-    storyText = payload.storyText;
-    pageNumber = payload.pageNumber;
-    avatarIdentity = payload.avatarIdentity;
-    templateComplexity = payload.templateComplexity;
-    failedTierData = payload.failedTierData;
-  }
+  try {
+    // FLEXIBLE PAYLOAD HANDLING: Accept either pageText OR enhancedStoryData/storyText
+    const payload = await req.json();
+    console.log('🔍 Template CD: Request payload keys:', Object.keys(payload));
+    
+    let enhancedStoryData, storyText, pageNumber, avatarIdentity, templateComplexity, failedTierData;
+    
+    if (payload.pageText) {
+      // Current format: {pageText, userInfo, sessionId, pageNumber}
+      console.log('📄 Template CD: Using pageText format');
+      storyText = payload.pageText;
+      enhancedStoryData = { userInfo: payload.userInfo };
+      pageNumber = payload.pageNumber;
+      avatarIdentity = payload.userInfo?.avatar;
+      templateComplexity = payload.templateComplexity;
+      failedTierData = payload.failedTierData;
+    } else {
+      // Legacy format: {enhancedStoryData, storyText, pageNumber, avatarIdentity, templateComplexity, failedTierData}
+      console.log('📖 Template CD: Using legacy format');
+      enhancedStoryData = payload.enhancedStoryData;
+      storyText = payload.storyText;
+      pageNumber = payload.pageNumber;
+      avatarIdentity = payload.avatarIdentity;
+      templateComplexity = payload.templateComplexity;
+      failedTierData = payload.failedTierData;
+    }
   
   if (!storyText) {
     throw new Error('Missing required field: pageText OR storyText');
@@ -356,6 +358,20 @@ async function handleRequest(req) {
     positivePrompt: templateResult.positivePrompt,
     negativePrompt: templateResult.negativePrompt
   };
+  
+  } catch (error) {
+    const runwareError = RunwareErrorHandler.categorizeRunwareError(error);
+    console.error('Template CD generation failed:', runwareError);
+    
+    return {
+      success: false,
+      error: runwareError.message,
+      errorType: runwareError.type,
+      escalation: runwareError.escalation,
+      retry: runwareError.retry,
+      code: runwareError.code
+    };
+  }
 }
 
 // Export for TypeScript receptionist

@@ -946,15 +946,15 @@ async function handleRequest(req) {
             tierLogging.logTier2('🔄 [ORCHESTRATOR] Character consistency fallback failed, escalating to Tier 2.5A');
             // Call runware-template-ab for real Tier 2.5A escalation
             const resp = await supabase.functions.invoke('runware-template-ab', {
-            body: {
-              storyText,
-              pageText: storyText,
-              userInfo: payload.userInfo,
-              sessionId: payload.sessionId || 'session_' + requestId,
-              pageNumber: pageNumber || 1,
-              templateComplexity: 'A'
-            }
-          });
+              body: {
+                storyText,
+                pageText: storyText,
+                userInfo: payload.userInfo,
+                sessionId: payload.sessionId || 'session_' + requestId,
+                pageNumber: pageNumber || 1,
+                templateComplexity: 'A'
+              }
+            });
           result = resp.data || { success: false, error: resp.error?.message || 'Tier 2.5A escalation failed' };
         }
       }
