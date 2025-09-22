@@ -391,17 +391,17 @@ export class PersonalizedLearningService {
         `Show me your toy`
       ],
       easy: [
-        `Write about your favorite ${userInfo.favoriteAnimal || "animal"}`,
+        `Write about your favorite ${userInfo.favoriteAnimal || "animal or creature"}`,
         `Describe a perfect day`,
         `Tell about your family`
       ],
       medium: [
-        `Write an adventure story about a character who loves ${userInfo.hobbies || "reading"}`,
-        `Describe a magical place where your favorite color ${userInfo.favoriteColor || "blue"} is everywhere`,
+        `Write an adventure story about a character who loves ${userInfo.hobbies || "exciting activities"}`,
+        `Describe a magical place where your favorite color ${userInfo.favoriteColor || "beautiful colors"} ${userInfo.favoriteColor ? 'is' : 'are'} everywhere`,
         `Create a story about friendship`
       ],
       hard: [
-        `Write about a character who discovers a hidden talent for ${userInfo.hobbies || "art"}`,
+        `Write about a character who discovers a hidden talent for ${userInfo.hobbies || "creative activities"}`,
         `Create a mystery story set in your dream location`,
         `Write about overcoming a challenge`
       ],

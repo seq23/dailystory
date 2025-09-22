@@ -39,17 +39,14 @@ export interface StoryTemplate {
 export interface PersonalizationPlaceholders {
   userName: string;
   specialRequest: string;
-  favoriteColor: string;
-  favoriteAnimal: string;
-  favoriteFood: string;
-  hobbies: string;
+  favoriteColor?: string;  // Optional - only if user provided
+  favoriteAnimal?: string; // Optional - only if user provided
+  favoriteFood?: string;   // Optional - only if user provided
+  hobbies?: string;        // Optional - only if user provided
 }
 
 export const DEFAULT_PLACEHOLDERS: PersonalizationPlaceholders = {
   userName: "the child",
-  favoriteColor: "blue", 
-  favoriteAnimal: "puppy",
-  favoriteFood: "pasta",
-  hobbies: "playing outside",
   specialRequest: "adventure"
+  // favoriteColor, favoriteAnimal, favoriteFood, hobbies omitted = truly optional
 };

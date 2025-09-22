@@ -131,7 +131,7 @@ export class NewVoiceService {
     difficulty?: string,
     themeHints?: string[]
   ): Promise<any> {
-    // Create a minimal user info for legacy compatibility
+    // Create a minimal user info for legacy compatibility (honest fallbacks only)
     const legacyUserInfo: UserInfo = {
       name: 'Reader',
       age: 8,
@@ -139,13 +139,10 @@ export class NewVoiceService {
       nativeLanguage: 'en',
       learningGoal: 'improve-english-reading',
       avatar: { type: 'prefer-not-to-answer', skinTone: 'medium' },
-      favoriteColor: 'blue',
-      favoriteAnimal: 'dog',
-      favoriteFood: 'cookies',
-      hobbies: 'reading',
       specialRequest: '',
       difficultyLevel: difficulty,
       interests: themeHints
+      // favoriteColor, favoriteAnimal, favoriteFood, hobbies omitted = truly optional
     };
 
     const result = await this.getVoiceForStory(legacyUserInfo, {
@@ -209,10 +206,10 @@ export class NewVoiceService {
       nativeLanguage: 'en',
       learningGoal: 'improve-english-reading',
       avatar: { type: 'prefer-not-to-answer', skinTone: 'medium' },
-      favoriteColor: 'green',
-      favoriteAnimal: 'cat',
-      favoriteFood: 'ice cream',
-      hobbies: 'drawing',
+      favoriteColor: 'green',  // Explicitly provided for testing
+      favoriteAnimal: 'cat',   // Explicitly provided for testing
+      favoriteFood: 'ice cream', // Explicitly provided for testing
+      hobbies: 'drawing',      // Explicitly provided for testing
       specialRequest: 'adventure story',
       interests: ['adventure', 'animals'],
       difficultyLevel: difficulty

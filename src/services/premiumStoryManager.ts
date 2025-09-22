@@ -330,10 +330,7 @@ export class PremiumStoryManager {
         type: 'prefer-not-to-answer',
         skinTone: 'medium'
       },
-      favoriteColor: 'blue',
-      favoriteAnimal: '',
-      hobbies: '',
-      favoriteFood: '',
+      // All preferences left optional - no dishonest assumptions
       specialRequest: ''
     };
   }

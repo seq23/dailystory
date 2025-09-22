@@ -82,12 +82,30 @@ export function getExpertStoryPrompt(gradeLevel: ExpertGradeLevel): ExpertStoryP
 }
 
 export function formatUserPrompt(template: string, userInfo: Record<string, any>): string {
+  // Helper function to get generic descriptions for honest storytelling
+  const getGenericAnimal = () => {
+    const options = ['friendly animal', 'woodland creature', 'forest friend'];
+    return options[Math.floor(Math.random() * options.length)];
+  };
+  const getGenericColor = () => {
+    const options = ['bright color', 'beautiful shade', 'lovely hue'];
+    return options[Math.floor(Math.random() * options.length)];
+  };
+  const getGenericFood = () => {
+    const options = ['delicious treat', 'tasty snack', 'yummy food'];
+    return options[Math.floor(Math.random() * options.length)];
+  };
+  const getGenericActivity = () => {
+    const options = ['fun activity', 'favorite pastime', 'enjoyable hobby'];
+    return options[Math.floor(Math.random() * options.length)];
+  };
+
   return template
     .replace(/\{userName\}/g, userInfo.name || userInfo.userName || 'Reader')
-    .replace(/\{favoriteColor\}/g, userInfo.favoriteColor || 'blue')
-    .replace(/\{favoriteAnimal\}/g, userInfo.favoriteAnimal || 'cat')
-    .replace(/\{favoriteFood\}/g, userInfo.favoriteFood || 'cookies')
-    .replace(/\{hobbies\}/g, userInfo.hobbies || 'playing outside')
+    .replace(/\{favoriteColor\}/g, userInfo.favoriteColor || getGenericColor())
+    .replace(/\{favoriteAnimal\}/g, userInfo.favoriteAnimal || getGenericAnimal())
+    .replace(/\{favoriteFood\}/g, userInfo.favoriteFood || getGenericFood())
+    .replace(/\{hobbies\}/g, userInfo.hobbies || getGenericActivity())
     .replace(/\{age\}/g, userInfo.age?.toString() || '8')
     .replace(/\{specialRequest\}/g, userInfo.specialRequest || 'create an engaging adventure')
     .replace(/\{vocabularyInstructions\}/g, userInfo.vocabularyInstructions || 'Use age-appropriate vocabulary')

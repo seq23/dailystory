@@ -21,10 +21,10 @@ export interface UserInfo {
   nativeLanguage: LanguageCode;
   learningGoal: LearningGoal;
   avatar: Avatar;
-  favoriteColor: string;
-  favoriteAnimal: string;
-  hobbies: string;
-  favoriteFood: string;
+  favoriteColor?: string;  // Optional - only if user provided
+  favoriteAnimal?: string; // Optional - only if user provided  
+  hobbies?: string;        // Optional - only if user provided
+  favoriteFood?: string;   // Optional - only if user provided
   specialRequest: string;
   targetVocabulary?: string;
   difficultyLevel?: string; // Now stores frontend values: "pre-reader", "beginner", "developing", "independent", "advanced"

@@ -95,14 +95,10 @@ export class UserInputDistributor {
   static getTemplateVariables(userInfo: UserInfo, context: DistributionContext): Record<string, string> {
     const name = NameFormatter.capitalize(userInfo.name || 'Alex');
     
-    // Ensure we have fallback values to prevent incomplete sentences
-    const safeFavoriteAnimal = userInfo.favoriteAnimal || 'cat';
-    const safeFavoriteFood = userInfo.favoriteFood || 'apple';
-    const safeFavoriteColor = userInfo.favoriteColor || 'blue';
-    const safeHobbies = userInfo.hobbies || 'playing';
+    // Only use user preferences if they actually provided them
     
     console.log(`🎯 Generating template variables for page ${context.pageIndex + 1}/${context.totalPages}`);
-    console.log(`📝 UserInfo: animal=${safeFavoriteAnimal}, food=${safeFavoriteFood}, color=${safeFavoriteColor}, hobby=${safeHobbies}`);
+    console.log(`📝 UserInfo: animal=${userInfo.favoriteAnimal || 'none'}, food=${userInfo.favoriteFood || 'none'}, color=${userInfo.favoriteColor || 'none'}, hobby=${userInfo.hobbies || 'none'}`);
     
     // Get pronouns
     const pronouns = this.getPronouns(userInfo);
@@ -112,31 +108,31 @@ export class UserInputDistributor {
       '{userName}': name,
       '{age}': userInfo.age?.toString() || '6',
       
-      // Primary elements (most important - used early) - with fallbacks
-      '{primary_animal}': this.getNextElement('animals', context) || safeFavoriteAnimal,
-      '{animal}': this.getNextElement('animals', context) || safeFavoriteAnimal,
-      '{primary_food}': this.getNextElement('foods', context) || safeFavoriteFood,
-      '{food}': this.getNextElement('foods', context) || safeFavoriteFood,
-      '{primary_color}': this.getNextElement('colors', context) || safeFavoriteColor,
-      '{color}': this.getNextElement('colors', context) || safeFavoriteColor,
+      // Primary elements (most important - used early) - honest approach
+      '{primary_animal}': this.getNextElement('animals', context) || (userInfo.favoriteAnimal || this.getGenericAnimal()),
+      '{animal}': userInfo.favoriteAnimal || this.getNextElement('animals', context) || this.getGenericAnimal(),
+      '{primary_food}': this.getNextElement('foods', context) || (userInfo.favoriteFood || this.getGenericFood()),
+      '{food}': userInfo.favoriteFood || this.getNextElement('foods', context) || this.getGenericFood(),
+      '{primary_color}': this.getNextElement('colors', context) || (userInfo.favoriteColor || this.getGenericColor()),
+      '{color}': userInfo.favoriteColor || this.getNextElement('colors', context) || this.getGenericColor(),
       '{primary_object}': this.getNextElement('objects', context) || 'treasure',
       '{object}': this.getNextElement('objects', context) || 'treasure',
       
-      // Secondary elements (used mid-story) - with fallbacks
-      '{secondary_animal}': this.getSecondaryAnimal(safeFavoriteAnimal),
-      '{secondary_food}': this.getSecondaryFood(safeFavoriteFood),
-      '{secondary_color}': this.getSecondaryColor(safeFavoriteColor),
+      // Secondary elements (used mid-story) - honest approach
+      '{secondary_animal}': this.getSecondaryAnimal(userInfo.favoriteAnimal || this.getGenericAnimal()),
+      '{secondary_food}': this.getSecondaryFood(userInfo.favoriteFood || this.getGenericFood()),
+      '{secondary_color}': this.getSecondaryColor(userInfo.favoriteColor || this.getGenericColor()),
       
-      // Friend/companion elements (used for relationships) - with fallbacks
-      '{friend_animal}': this.getFriendAnimal(safeFavoriteAnimal),
+      // Friend/companion elements (used for relationships) - honest approach
+      '{friend_animal}': this.getFriendAnimal(userInfo.favoriteAnimal || this.getGenericAnimal()),
       '{friend_object}': this.getNextElement('objects', context) || 'toy',
       
-      // Activity elements - with fallbacks
-      '{favorite_activity}': this.getNextElement('activities', context) || safeHobbies,
-      '{favorite_activity_1}': this.getNextElement('activities', context) || 'playing',
-      '{favorite_activity_2}': this.getNextElement('activities', context) || 'exploring',
-      '{hobby}': safeHobbies,
-      '{hobbies}': safeHobbies,
+      // Activity elements - honest approach
+      '{favorite_activity}': this.getNextElement('activities', context) || (userInfo.hobbies || this.getGenericActivity()),
+      '{favorite_activity_1}': this.getNextElement('activities', context) || this.getGenericActivity(),
+      '{favorite_activity_2}': this.getNextElement('activities', context) || this.getGenericActivity(),
+      '{hobby}': userInfo.hobbies || this.getGenericActivity(),
+      '{hobbies}': userInfo.hobbies || this.getGenericActivity(),
       
       // Pronouns based on avatar - ALWAYS provide fallbacks
       '{pronoun}': pronouns.subject,
@@ -156,6 +152,38 @@ export class UserInputDistributor {
     
     console.log(`🎯 Generated template variables:`, allVariables);
     return allVariables;
+  }
+
+  /**
+   * Get generic animal description when user hasn't provided one
+   */
+  private static getGenericAnimal(): string {
+    const options = ['friendly animal', 'woodland creature', 'forest friend', 'magical creature'];
+    return options[Math.floor(Math.random() * options.length)];
+  }
+
+  /**
+   * Get generic color description when user hasn't provided one
+   */
+  private static getGenericColor(): string {
+    const options = ['bright color', 'beautiful shade', 'lovely hue', 'vibrant color'];
+    return options[Math.floor(Math.random() * options.length)];
+  }
+
+  /**
+   * Get generic food description when user hasn't provided one
+   */
+  private static getGenericFood(): string {
+    const options = ['delicious treat', 'tasty snack', 'yummy food', 'favorite meal'];
+    return options[Math.floor(Math.random() * options.length)];
+  }
+
+  /**
+   * Get generic activity description when user hasn't provided one
+   */
+  private static getGenericActivity(): string {
+    const options = ['fun activity', 'favorite pastime', 'enjoyable hobby', 'special interest'];
+    return options[Math.floor(Math.random() * options.length)];
   }
 
   /**

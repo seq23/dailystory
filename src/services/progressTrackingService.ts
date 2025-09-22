@@ -175,10 +175,7 @@ export class ProgressTrackingService {
         nativeLanguage: 'en',
         learningGoal: 'improve-english-reading',
         avatar: { type: 'prefer-not-to-answer', skinTone: 'medium' },
-        favoriteColor: '',
-        favoriteAnimal: '',
-        hobbies: '',
-        favoriteFood: '',
+        // All preferences left optional - no dishonest assumptions
         specialRequest: ''
       };
       

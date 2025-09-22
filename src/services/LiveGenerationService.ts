@@ -2,7 +2,7 @@
 // Generates stories page-by-page with backend validation
 
 import { supabase } from '@/integrations/supabase/client';
-import type { UserInfo, DifficultyLevel, ExpertGradeLevel } from '@/types';
+import type { UserInfo, DifficultyLevel, ExpertGradeLevel, Grade, LanguageCode, LearningGoal, AvatarType, SkinTone } from '@/types';
 import { getTokenLimitForDifficulty, STORY_PROMPTS, EXPERT_STORY_PROMPTS, getStoryPrompt, getExpertStoryPrompt, formatUserPrompt } from '../../supabase/functions/_shared/storyPrompts';
 import { DifficultyLevelMapper } from '../../supabase/functions/_shared/DifficultyLevelMapper';
 import { ErrorHandler } from '@/utils/errorHandling';
@@ -104,13 +104,24 @@ export class LiveGenerationService {
       
       // Create context with deep cloning to prevent data loss
       const storyContext: LiveGenerationContext = {
-        userInfo: userInfo ? JSON.parse(JSON.stringify(userInfo)) : { name: 'Hero' }, // Deep clone with null safety
+        userInfo: userInfo ? JSON.parse(JSON.stringify(userInfo)) : { 
+          name: 'Hero',
+          age: 8,
+          grade: 'K' as Grade,
+          difficultyLevel: 'beginner',
+          expertGradeLevel: "6th" as ExpertGradeLevel,
+          nativeLanguage: 'en' as LanguageCode,
+          learningGoal: 'improve-english-reading' as LearningGoal,
+          avatar: { type: 'prefer-not-to-answer' as AvatarType, skinTone: 'medium' as SkinTone },
+          specialRequest: ''
+          // favoriteColor, favoriteAnimal etc. omitted = truly optional
+        }, // Deep clone with honest fallback
         difficulty: frontendDifficulty,
         expertGradeLevel: expertGradeLevel || undefined,
         storyContext: [content],
         currentPage: 1,
         totalExpectedPages: 999,
-        characters: [userInfo?.name || 'Hero', userInfo?.favoriteAnimal || 'Friend']
+        characters: [userInfo?.name || 'Hero', userInfo?.favoriteAnimal ? userInfo.favoriteAnimal : 'friendly companion']
       };
       
       // Validate context integrity
@@ -516,7 +527,7 @@ export class LiveGenerationService {
         storyContext: [content],
         currentPage: 1,
         totalExpectedPages: promptConfig.expectedPages || 999, // Preserve unlimited behavior
-        characters: [userInfo.name, userInfo.favoriteAnimal || 'friend']
+        characters: [userInfo.name, userInfo.favoriteAnimal ? userInfo.favoriteAnimal : 'friendly companion']
       };
 
       try {
@@ -556,7 +567,7 @@ export class LiveGenerationService {
         storyContext: [content],
         currentPage: 1,
         totalExpectedPages: promptConfig.expectedPages || 999,
-        characters: [userInfo.name, userInfo.favoriteAnimal || 'friend']
+        characters: [userInfo.name, userInfo.favoriteAnimal ? userInfo.favoriteAnimal : 'friendly companion']
       };
 
       return {
