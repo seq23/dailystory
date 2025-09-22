@@ -308,7 +308,7 @@ export class SimpleImageService {
    * Used when orchestrator boot fails - generates with direct mode
    */
   static async generateWithDirectAiVisualSceneCreator(request: ImageGenerationRequest): Promise<ImageGenerationResponse> {
-    console.log('🎯 Direct AI Visual Scene Creator mode activated');
+    DebugLogger.log('image', 'Direct AI Visual Scene Creator mode activated');
     
     try {
       const { data: directResult, error: directError } = await supabase.functions.invoke('ai-visual-scene-creator', {
@@ -334,7 +334,7 @@ export class SimpleImageService {
         throw new Error('Direct AI visual scene creator returned unsuccessful result');
       }
 
-      console.log('✅ Direct AI Visual Scene Creator successful');
+      DebugLogger.log('image', 'Direct AI Visual Scene Creator successful');
       return {
         success: true,
         imageURL: directResult.imageURL,
@@ -360,7 +360,7 @@ export class SimpleImageService {
    * Used when main orchestrator fails - calls runware-template-cd directly
    */
   static async emergencyFallbackTier25C(request: ImageGenerationRequest): Promise<ImageGenerationResponse> {
-    console.log('🚨 EMERGENCY: Attempting direct Tier 2.5C fallback');
+    DebugLogger.log('error', 'EMERGENCY: Attempting direct Tier 2.5C fallback');
     
     try {
       const { data: emergencyResult, error: emergencyError } = await supabase.functions.invoke('runware-template-cd', {
@@ -387,7 +387,7 @@ export class SimpleImageService {
         throw new Error('Emergency fallback returned unsuccessful result');
       }
 
-      console.log('✅ EMERGENCY: Tier 2.5C fallback successful');
+      DebugLogger.log('image', 'EMERGENCY: Tier 2.5C fallback successful');
       return {
         success: true,
         imageURL: emergencyResult.imageURL,

@@ -49,6 +49,8 @@ import { globalResizeService } from '@/services/GlobalResizeService';
  */
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useImageManagement } from '../hooks/useImageManagement';
+import { useAudioVocabulary } from '../hooks/useAudioVocabulary';
 import { useNavigate } from "react-router-dom";
 import { MobileOptimizedButton } from "@/components/MobileOptimizedButton";
 import { Card, CardContent } from "@/components/ui/card";
@@ -516,20 +518,43 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   
   
   // Image state - keeping local to component for specific image management
-  const [pageImages, setPageImages] = useState<Record<number, string>>({});
-  const [pageImageMetadata, setPageImageMetadata] = useState<Record<number, any>>({});
-  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
-  const [isPreparingImage, setIsPreparingImage] = useState(false);
-  const [imageLoadingStates, setImageLoadingStates] = useState<Record<number, boolean>>({});
-  const [fallbackStates, setFallbackStates] = useState<Record<number, boolean>>({});
-  const [isBatchGenerating, setIsBatchGenerating] = useState(false);
-  const [batchDone, setBatchDone] = useState(0);
-  const [batchTotal, setBatchTotal] = useState(0);
+  // Import new hooks
+  const { state: imageState, actions: imageActions } = useImageManagement();
+  const { state: audioVocabState, actions: audioVocabActions } = useAudioVocabulary();
   const preloadedUrlsRef = useRef<Set<string>>(new Set());
   
   // Dynamic aspect ratio state for mobile/tablet images - component specific
-  const [imageAspectRatios, setImageAspectRatios] = useState<Record<number, number>>({});
-  const [imageNaturalSizes, setImageNaturalSizes] = useState<Record<number, {width: number, height: number}>>({});
+  // Destructure image management state
+  const {
+    pageImages,
+    pageImageMetadata,
+    isGeneratingImage,
+    isPreparingImage,
+    imageLoadingStates,
+    fallbackStates,
+    isBatchGenerating,
+    batchDone,
+    batchTotal,
+    imageAspectRatios,
+    imageNaturalSizes
+  } = imageState;
+
+  const {
+    setPageImages,
+    setPageImageMetadata,
+    setIsGeneratingImage,
+    setIsPreparingImage,
+    setImageLoadingStates,
+    setFallbackStates,
+    setIsBatchGenerating,
+    setBatchDone,
+    setBatchTotal,
+    setImageAspectRatios,
+    setImageNaturalSizes,
+    clearAllImages,
+    clearPageImage,
+    updateImageMetadata
+  } = imageActions;
   
   // Use storyId from hook, create fallback for consistency
   const storyId = hookStoryId || generateSessionIdWithPrefix('story');
@@ -601,16 +626,36 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   }, [pageImages, isMobileOrTablet, imageAspectRatios]);
   
   // Audio and Interactive Features state - keeping local for component-specific audio management
-  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
-  const [isAudioLoading, setIsAudioLoading] = useState(false);
-  const [showVocabularyCollector, setShowVocabularyCollector] = useState(false);
-  const [wordsInteracted, setWordsInteracted] = useState(0);
-  const [sessionWordsRead, setSessionWordsRead] = useState(0);
-  const [pagesCompleted, setPagesCompleted] = useState<Set<number>>(new Set());
-  const [audioPlayedPage, setAudioPlayedPage] = useState<number | null>(null);
+  // Destructure audio vocabulary state
+  const {
+    isAudioPlaying,
+    isAudioLoading,
+    showVocabularyCollector,
+    wordsInteracted,
+    sessionWordsRead,
+    pagesCompleted,
+    audioPlayedPage,
+    vocabularyData
+  } = audioVocabState;
+
+  const {
+    setIsAudioPlaying,
+    setIsAudioLoading,
+    setShowVocabularyCollector,
+    setWordsInteracted,
+    setSessionWordsRead,
+    setPagesCompleted,
+    setAudioPlayedPage,
+    setVocabularyData,
+    incrementWordsInteracted,
+    incrementSessionWordsRead,
+    markPageCompleted,
+    resetSessionCounters,
+    clearVocabularyData
+  } = audioVocabActions;
   
   // Vocabulary pre-fetch state - component specific
-  const [vocabularyData, setVocabularyData] = useState<VocabularyIntegration | null>(null);
+  
 
   // Session-aware image loader for consistent session context
   const { loadImage } = useSessionAwareImageLoader({

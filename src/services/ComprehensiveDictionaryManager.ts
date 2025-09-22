@@ -5,6 +5,7 @@ import { ComprehensiveVocabularyCollector } from './ComprehensiveVocabularyColle
 import { SmartPhoneticMapper } from './SmartPhoneticMapper';
 import { PLSLexiconGenerator, type PLSGenerationOptions } from './PLSLexiconGenerator';
 import { supabase } from '@/integrations/supabase/client';
+import { DebugLogger } from '@/services/DebugLogger';
 
 export interface DictionaryDeploymentResult {
   success: boolean;
@@ -40,16 +41,16 @@ export class ComprehensiveDictionaryManager {
    */
   static async deployLearningDictionary(): Promise<DictionaryDeploymentResult> {
     const startTime = Date.now();
-    console.log('Starting learning dictionary deployment...');
+    DebugLogger.log('performance', 'Starting learning dictionary deployment...');
 
     try {
       // Generate vocabulary statistics
       const vocabularyStats = ComprehensiveVocabularyCollector.getStatistics();
-      console.log('Vocabulary statistics:', vocabularyStats);
+      DebugLogger.log('performance', 'Vocabulary statistics generated', vocabularyStats);
 
       // Generate learning-optimized PLS lexicon
       const plsResult = await PLSLexiconGenerator.generateLearningLexicon();
-      console.log(`Generated PLS lexicon with ${plsResult.wordCount} words`);
+      DebugLogger.log('performance', `Generated PLS lexicon with ${plsResult.wordCount} words`, plsResult);
 
       // Upload to ElevenLabs
       const uploadResult = await this.uploadDictionaryToElevenLabs(
@@ -71,7 +72,7 @@ export class ComprehensiveDictionaryManager {
       };
 
       const deploymentTime = Date.now() - startTime;
-      console.log(`Learning dictionary deployed successfully in ${deploymentTime}ms`);
+      DebugLogger.log('performance', `Learning dictionary deployed successfully in ${deploymentTime}ms`, { deploymentTime });
 
       return {
         success: true,
@@ -106,7 +107,7 @@ export class ComprehensiveDictionaryManager {
    */
   static async deployConversationDictionary(): Promise<DictionaryDeploymentResult> {
     const startTime = Date.now();
-    console.log('Starting conversation dictionary deployment...');
+    DebugLogger.log('performance', 'Starting conversation dictionary deployment...');
 
     try {
       // Generate vocabulary statistics
@@ -114,7 +115,7 @@ export class ComprehensiveDictionaryManager {
 
       // Generate conversation-optimized PLS lexicon
       const plsResult = await PLSLexiconGenerator.generateConversationLexicon();
-      console.log(`Generated conversation PLS lexicon with ${plsResult.wordCount} words`);
+      DebugLogger.log('performance', `Generated conversation PLS lexicon with ${plsResult.wordCount} words`, plsResult);
 
       // Upload to ElevenLabs
       const uploadResult = await this.uploadDictionaryToElevenLabs(
@@ -136,7 +137,7 @@ export class ComprehensiveDictionaryManager {
       };
 
       const deploymentTime = Date.now() - startTime;
-      console.log(`Conversation dictionary deployed successfully in ${deploymentTime}ms`);
+      DebugLogger.log('performance', `Conversation dictionary deployed successfully in ${deploymentTime}ms`, { deploymentTime });
 
       return {
         success: true,
@@ -218,18 +219,18 @@ export class ComprehensiveDictionaryManager {
     const status = await this.getDictionaryStatus(context);
     
     if (status.isAvailable && status.dictionaryId) {
-      console.log(`${context} dictionary already available:`, status.dictionaryId);
+      DebugLogger.log('performance', `${context} dictionary already available`, { dictionaryId: status.dictionaryId });
       return status.dictionaryId;
     }
 
-    console.log(`${context} dictionary not available, deploying...`);
+    DebugLogger.log('performance', `${context} dictionary not available, deploying...`);
     
     const deployment = context === 'learning' 
       ? await this.deployLearningDictionary()
       : await this.deployConversationDictionary();
 
     if (deployment.success && deployment.dictionaryId) {
-      console.log(`${context} dictionary deployed successfully:`, deployment.dictionaryId);
+      DebugLogger.log('performance', `${context} dictionary deployed successfully`, { dictionaryId: deployment.dictionaryId });
       return deployment.dictionaryId;
     }
 
@@ -245,7 +246,7 @@ export class ComprehensiveDictionaryManager {
     plsContent: string
   ): Promise<{ success: boolean; dictionaryId?: string; error?: string }> {
     try {
-      console.log(`Uploading dictionary "${dictionaryName}" to ElevenLabs...`);
+      DebugLogger.log('network', `Uploading dictionary "${dictionaryName}" to ElevenLabs...`);
       
       const { data, error } = await supabase.functions.invoke('elevenlabs-dictionary-manager', {
         body: {
@@ -261,7 +262,7 @@ export class ComprehensiveDictionaryManager {
       }
 
       if (data?.success && data?.dictionaryId) {
-        console.log('Upload successful, dictionary ID:', data.dictionaryId);
+        DebugLogger.log('network', 'Upload successful', { dictionaryId: data.dictionaryId });
         return { success: true, dictionaryId: data.dictionaryId };
       }
 
@@ -304,14 +305,14 @@ export class ComprehensiveDictionaryManager {
    * Forces a refresh of all caches and regeneration
    */
   static async forceRefresh(): Promise<void> {
-    console.log('Force refreshing dictionary system...');
+    DebugLogger.log('performance', 'Force refreshing dictionary system...');
     
     // Clear all caches
     this.dictionaryCache = {};
     ComprehensiveVocabularyCollector.clearCache();
     SmartPhoneticMapper.clearCache();
     
-    console.log('All caches cleared, ready for fresh generation');
+    DebugLogger.log('performance', 'All caches cleared, ready for fresh generation');
   }
 
   /**
@@ -322,7 +323,7 @@ export class ComprehensiveDictionaryManager {
     options: PLSGenerationOptions
   ): Promise<DictionaryDeploymentResult> {
     const startTime = Date.now();
-    console.log(`Generating custom dictionary "${name}"...`);
+    DebugLogger.log('performance', `Generating custom dictionary "${name}"...`);
 
     try {
       const plsResult = await PLSLexiconGenerator.generateComprehensiveLexicon(options);

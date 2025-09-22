@@ -3,6 +3,7 @@
  */
 
 import { generateSessionId } from '@/utils/sessionId';
+import { DebugLogger } from '@/services/DebugLogger';
 
 export class NetflixSessionManager {
   private static sessions = new Map<string, {
@@ -25,7 +26,7 @@ export class NetflixSessionManager {
       existing.lastActivity = now;
       
       const sessionId = `netflix-${userId}-story${existing.storyCount}-${existing.baseSessionId}`;
-      console.log(`🎯 [SESSION-MGR] Reusing session for user ${userId}: ${sessionId} (story ${existing.storyCount})`);
+      DebugLogger.log('story', `Reusing session for user ${userId}`, { sessionId, storyCount: existing.storyCount });
       return sessionId;
     }
 
@@ -41,7 +42,7 @@ export class NetflixSessionManager {
     this.sessions.set(userId, session);
     const sessionId = `netflix-${userId}-story1-${baseSessionId}`;
     
-    console.log(`🎯 [SESSION-MGR] Created new session for user ${userId}: ${sessionId}`);
+    DebugLogger.log('story', `Created new session for user ${userId}`, { sessionId });
     return sessionId;
   }
 
@@ -62,7 +63,7 @@ export class NetflixSessionManager {
     this.sessions.set(userId, session);
     const sessionId = `netflix-${userId}-story1-${baseSessionId}`;
     
-    console.log(`🎯 [SESSION-MGR] Fresh Netflix session for user ${userId}: ${sessionId}`);
+    DebugLogger.log('story', `Fresh Netflix session for user ${userId}`, { sessionId });
     return sessionId;
   }
 
@@ -71,7 +72,7 @@ export class NetflixSessionManager {
    */
   static clearSession(userId: string): void {
     this.sessions.delete(userId);
-    console.log(`🎯 [SESSION-MGR] Cleared session for user ${userId}`);
+    DebugLogger.log('story', `Cleared session for user ${userId}`);
   }
 
   /**
@@ -91,7 +92,7 @@ export class NetflixSessionManager {
     for (const [userId, session] of this.sessions.entries()) {
       if (now - session.lastActivity > oneHour) {
         this.sessions.delete(userId);
-        console.log(`🧹 [SESSION-MGR] Cleaned up old session for user ${userId}`);
+        DebugLogger.log('performance', `Cleaned up old session for user ${userId}`);
       }
     }
   }

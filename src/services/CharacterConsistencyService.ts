@@ -213,7 +213,7 @@ export class CharacterConsistencyService {
       // Store in cache
       this.secondaryCharacterCache.set(cacheKey, detectedCharacters);
       
-      console.log(`Detected ${detectedCharacters.length} secondary characters on page ${pageNumber}:`, detectedCharacters);
+      DebugLogger.log('image', `Detected ${detectedCharacters.length} secondary characters on page ${pageNumber}`, detectedCharacters);
       return detectedCharacters;
     } catch (error) {
       console.warn('Secondary character detection failed:', error);
@@ -294,7 +294,7 @@ export class CharacterConsistencyService {
       this.visualDetailCache.delete(key);
       this.secondaryCharacterCache.delete(key);
     });
-    console.log(`Cleared visual details and secondary characters for session: ${sessionId}`);
+    DebugLogger.log('performance', `Cleared visual details and secondary characters for session: ${sessionId}`);
   }
 
   /**
