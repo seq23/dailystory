@@ -5,6 +5,8 @@ import { useStoryLogic } from "@/hooks/useStoryLogic";
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { DebugLogger } from '@/services/DebugLogger';
+import { ProductionLogging } from '@/services/ProductionLogger';
+import { ManagedTimers } from '@/utils/TimerManager';
 import { performanceManager } from '@/services/PerformanceManager';
 import { globalResizeService } from '@/services/GlobalResizeService';
 import { useImageManagement } from '../hooks/useImageManagement';  

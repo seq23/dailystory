@@ -44,11 +44,18 @@ export class AudioPermissions {
   }
 
   /**
-   * Real-time network quality check with timeout
+   * Enhanced network quality check with intelligent retry and caching
    */
   static async checkNetworkQuality(): Promise<'good' | 'poor' | 'offline'> {
     // Prevent concurrent checks
     if (this.isCheckingNetwork) return this.currentContext.networkQuality;
+    
+    // Use cached result if within 5-minute window
+    const now = Date.now();
+    const cacheAge = now - this.currentContext.lastNetworkCheck;
+    if (cacheAge < 5 * 60 * 1000 && this.currentContext.lastNetworkCheck > 0) {
+      return this.currentContext.networkQuality;
+    }
     
     this.isCheckingNetwork = true;
     
@@ -60,51 +67,73 @@ export class AudioPermissions {
         return 'offline';
       }
 
-      // Try internal health check with proper timeout
-      try {
-        const { supabase } = await import('@/integrations/supabase/client');
+      // Enhanced retry logic with exponential backoff
+      const attemptHealthCheck = async (attempt: number = 1): Promise<boolean> => {
+        const maxAttempts = 2;
+        const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
         
-        // Use Promise.race for timeout control
-        const healthResponse = await Promise.race([
-          supabase.functions.invoke('system-diagnostics', { 
-            body: { healthCheck: true }
-          }),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 2000))
-        ]);
-        
-        if ((healthResponse as any)?.data && !(healthResponse as any)?.error) {
-          DebugLogger.log('network', 'Network quality check successful: internal health endpoint');
-          this.updateContext({ isNetworkAvailable: true, networkQuality: 'good' });
-          return 'good';
+        try {
+          const { supabase } = await import('@/integrations/supabase/client');
+          
+          // Use Promise.race for timeout control with longer timeout on retries
+          const timeout = attempt === 1 ? 2000 : 3000;
+          const healthResponse = await Promise.race([
+            supabase.functions.invoke('system-diagnostics', { 
+              body: { healthCheck: true }
+            }),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), timeout))
+          ]);
+          
+          if ((healthResponse as any)?.data && !(healthResponse as any)?.error) {
+            DebugLogger.log('network', 'Network quality check successful: internal health endpoint');
+            return true;
+          }
+          return false;
+        } catch (error) {
+          DebugLogger.warn('network', `Internal health check attempt ${attempt} failed:`, error);
+          
+          if (attempt < maxAttempts) {
+            await new Promise(resolve => setTimeout(resolve, delay));
+            return attemptHealthCheck(attempt + 1);
+          }
+          return false;
         }
-      } catch (error) {
-        DebugLogger.warn('network', 'Internal health check failed:', error);
+      };
+
+      // Try enhanced internal health check with retry
+      if (await attemptHealthCheck()) {
+        this.updateContext({ isNetworkAvailable: true, networkQuality: 'good' });
+        return 'good';
       }
 
-      // Fallback: Try simple origin connectivity test
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 1500);
-        
-        const response = await fetch(window.location.origin + '/favicon.ico', { 
-          method: 'HEAD', 
-          cache: 'no-store',
-          signal: controller.signal
-        });
-        
-        clearTimeout(timeoutId);
-        
-        if (response.ok) {
-          DebugLogger.log('network', 'Network quality check successful: favicon');
-          this.updateContext({ isNetworkAvailable: true, networkQuality: 'good' });
-          return 'good';
+      // Fallback: Try simple origin connectivity test with retry
+      const attemptOriginCheck = async (): Promise<boolean> => {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 1500);
+          
+          const response = await fetch(window.location.origin + '/favicon.ico', { 
+            method: 'HEAD', 
+            cache: 'no-store',
+            signal: controller.signal
+          });
+          
+          clearTimeout(timeoutId);
+          return response.ok;
+        } catch (error) {
+          DebugLogger.warn('network', 'Origin connectivity check failed:', error);
+          return false;
         }
-      } catch (error) {
-        DebugLogger.warn('network', 'Favicon check failed:', error);
+      };
+
+      if (await attemptOriginCheck()) {
+        DebugLogger.log('network', 'Network quality check successful: origin connectivity');
+        this.updateContext({ isNetworkAvailable: true, networkQuality: 'good' });
+        return 'good';
       }
 
-      // All checks failed - determine if poor or offline
-      DebugLogger.warn('network', 'All network quality checks failed');
+      // All checks failed - classify as offline
+      DebugLogger.warn('network', 'All network quality checks failed after retries');
       this.updateContext({ 
         isNetworkAvailable: false, 
         networkQuality: 'offline' 

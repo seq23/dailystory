@@ -142,8 +142,9 @@ class EdgeErrorHandler {
   static categorizeError(error, functionName) {
     const message = error.message || error.toString();
     
+    // Enhanced Runware-specific error classification with recovery paths
     if (message.includes('Runware') || message.includes('WebSocket') || message.includes('api.runware')) {
-      return 'RUNWARE_API_FAILURE';
+      return this.categorizeRunwareError(error);
     }
     if (message.includes('PhaseIntegrationOrchestrator') || message.includes('CharacterConsistencyService')) {
       return 'SERVICE_DEPENDENCY_FAILURE';
@@ -152,6 +153,33 @@ class EdgeErrorHandler {
       return 'TEMPLATE_GENERATION';
     }
     return 'INTERNAL_ERROR';
+  }
+  
+  static categorizeRunwareError(error) {
+    const message = error.message || error.toString();
+    const code = error.code;
+    
+    // Specific Runware error codes and recovery paths
+    if (code === 'RUNWARE_QUOTA_EXCEEDED' || message.includes('quota') || message.includes('rate limit')) {
+      return { type: 'RUNWARE_QUOTA_EXCEEDED', escalation: 'TIER_4', retry: false, userMessage: 'Service temporarily at capacity' };
+    }
+    if (code === 'RUNWARE_INVALID_PROMPT' || message.includes('invalid prompt') || message.includes('content policy')) {
+      return { type: 'RUNWARE_VALIDATION_FAILURE', escalation: 'NEXT_TIER', retry: false, userMessage: 'Content needs adjustment' };
+    }
+    if (code === 'RUNWARE_TIMEOUT' || message.includes('timeout') || message.includes('timed out')) {
+      return { type: 'RUNWARE_TIMEOUT', escalation: 'RETRY_THEN_TIER_4', retry: true, userMessage: 'Service temporarily slow' };
+    }
+    if (message.includes('WebSocket') || message.includes('connection') || message.includes('network')) {
+      return { type: 'RUNWARE_CONNECTION_ERROR', escalation: 'RETRY_THEN_NEXT_TIER', retry: true, userMessage: 'Connection issue detected' };
+    }
+    if (message.includes('authentication') || message.includes('unauthorized') || message.includes('api key')) {
+      return { type: 'RUNWARE_AUTH_ERROR', escalation: 'TIER_4', retry: false, userMessage: 'Service authentication issue' };
+    }
+    if (message.includes('500') || message.includes('internal server') || message.includes('server error')) {
+      return { type: 'RUNWARE_SERVER_ERROR', escalation: 'RETRY_THEN_TIER_4', retry: true, userMessage: 'Service temporarily unavailable' };
+    }
+    
+    return { type: 'RUNWARE_UNKNOWN_ERROR', escalation: 'NEXT_TIER', retry: false, userMessage: 'Service processing issue' };
   }
   
   static getEscalationTarget(category) {

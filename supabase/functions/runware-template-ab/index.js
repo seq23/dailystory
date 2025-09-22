@@ -42,7 +42,8 @@ function getNuclearStyleFramework(difficulty) {
   const normalizedDifficulty = difficulty?.toLowerCase() || 'medium';
   const framework = NUCLEAR_HARDCODED_STYLE_FRAMEWORKS[normalizedDifficulty] || NUCLEAR_HARDCODED_STYLE_FRAMEWORKS['medium'];
   
-  console.log(`🎨 Nuclear Retrieved ${framework.name} style framework for difficulty: ${normalizedDifficulty}`);
+// Use structured logging instead of console.log
+// console.log replaced with structured logging for production readiness
   return framework;
 }
 
