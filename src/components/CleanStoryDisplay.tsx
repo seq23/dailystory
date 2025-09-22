@@ -129,6 +129,7 @@ import { guestSession } from "@/utils/guestSession";
 import { APP_CONFIG } from "@/config/appConfig";
 import { ImageGenerationTrigger } from "@/utils/imageGenerationTrigger";
 import { ExpertDifficultyManager } from "@/services/expertDifficultyManager";
+import { generateSessionId, generateSessionIdWithPrefix } from '@/utils/sessionId';
 
 import { useSessionAwareImageLoader } from "@/hooks/useSessionAwareImageLoader";
 import { convertImagesToRecord } from "@/utils/imageUtils";
@@ -465,13 +466,13 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [imageNaturalSizes, setImageNaturalSizes] = useState<Record<number, {width: number, height: number}>>({});
   
   // Character consistency session ID
-  const [characterSessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substring(2)}`);;
+  const [characterSessionId] = useState(() => generateSessionId());;
   
   // Story-specific identifier for cache isolation
-  const [storyId, setStoryId] = useState(() => `story_${Date.now()}_${Math.random().toString(36).substring(2)}`);
+  const [storyId, setStoryId] = useState(() => generateSessionIdWithPrefix('story'));
   
   // PHASE 1 FIX: Stable session ID for consistent image caching across the entire story session
-  const [stableSessionId] = useState(() => isPremium ? `premium_${Date.now()}` : `guest_${Date.now()}`);
+  const [stableSessionId] = useState(() => generateSessionIdWithPrefix(isPremium ? 'premium' : 'guest'));
   
   // Store session IDs in sessionStorage for debugging
   useEffect(() => {
@@ -2047,7 +2048,7 @@ const initializeStory = async () => {
     setIsLoadingNextPage(true);
     try {
       // Ensure session ID consistency for continuation
-      const sessionId = stableSessionId || `live-${userInfo.name}-${Date.now()}`;
+      const sessionId = stableSessionId || generateSessionIdWithPrefix(`live-${userInfo.name}`);
       const result = await LiveGenerationService.generateNextPage(liveContext, vocabularyData, false, sessionId);
       
       DebugLogger.log('story', '✅ Premium Live Generation: generateNextPage result', {
@@ -2346,7 +2347,7 @@ const initializeStory = async () => {
     }
     
     try {
-      const sessionId = `session_${Date.now()}`;
+      const sessionId = generateSessionId();
       const result = await SimpleImageService.generateStoryImage(
         storyText,
         userInfo,
@@ -2584,7 +2585,7 @@ const initializeStory = async () => {
               totalExpectedPages: Math.max(story.length + 1, 6),
               characters: [userInfo.name, userInfo.favoriteAnimal || 'friend']
             };
-            const sessionId = stableSessionId || `live-sequel-${userInfo.name}-${Date.now()}`;
+            const sessionId = stableSessionId || generateSessionIdWithPrefix(`live-sequel-${userInfo.name}`);
             const result = await LiveGenerationService.generateNextPage(newContext, vocabularyData, false, sessionId);
             
             DebugLogger.log('story', '🎬 Premium Live Generation: Sequel generation result', {
@@ -2930,7 +2931,7 @@ const handleSaveStoryNow = async () => {
       const wordCount = story.reduce((sum, s) => sum + countWords(s), 0);
       const estimatedReadingTime = Math.max(1, Math.round(wordCount / 150));
       const storyObj: StoryType = {
-        id: `story-${Date.now()}`,
+        id: generateSessionIdWithPrefix('story'),
         title: storyTitle || `${userInfo.name}'s Adventure`,
         segments,
         difficulty: currentDifficulty,
@@ -3082,11 +3083,11 @@ const handleRestartTimer = () => {
       DebugLogger.log('story', 'Generating new story...');
       
       // Generate new story ID for cache isolation
-      const newStoryId = `story_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+      const newStoryId = generateSessionIdWithPrefix('story');
       setStoryId(newStoryId);
       
       // Generate new character session ID for new characters
-      const newCharacterSessionId = `session_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+      const newCharacterSessionId = generateSessionId();
       
       // Context-aware character state clearing based on user type and action
       if (isRewrite) {
@@ -3100,7 +3101,7 @@ const handleRestartTimer = () => {
           
           SessionCacheManager.clearAllSessionCaches({
             userId,
-            sessionId: characterSessionId || `session_${Date.now()}_${Math.random().toString(36).substring(2)}`,
+            sessionId: characterSessionId || generateSessionId(),
             avatarType: userInfo.avatar?.type,
             skinTone: userInfo.avatar?.skinTone,
             reason: 'premium-rewrite',
@@ -3271,7 +3272,7 @@ const handleRestartTimer = () => {
     clearEndingTracking();
     
     // Create new session ID for the sequel but keep character consistency
-    const newCharacterSessionId = `session_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+    const newCharacterSessionId = generateSessionId();
     
     // Create continuation session to preserve character appearances
     const success = StoryVisualStateManager.createContinuationSession(

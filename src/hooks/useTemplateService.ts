@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { generateSessionIdWithPrefix } from '@/utils/sessionId';
 import { ErrorHandlingManager, type ErrorContext } from '@/services/errorHandlingManager';
 import { useToast } from '@/hooks/use-toast';
 import type { UserInfo } from '@/types';
@@ -131,7 +132,7 @@ export function useTemplateService() {
             body: {
               pages: response.data.pages || [],
               userInfo: userInfo as UserInfo,
-              sessionId: 'template-generation-' + Date.now()
+              sessionId: generateSessionIdWithPrefix('template-generation')
             }
           });
 

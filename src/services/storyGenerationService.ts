@@ -8,6 +8,7 @@ import { VocabularyService, type VocabularyIntegration } from "./vocabularyServi
 import { extractThemeIntent, type ThemeIntent } from "@/utils/themeIntent";
 import { getCulturalGuidanceString } from './StaticDataCache';
 import { VoiceCatalogIntegration } from './voiceCatalog/VoiceCatalogIntegration';
+import { generateSessionId } from '@/utils/sessionId';
 import { safeThemeJoin } from "@/lib/utils";
 
 import { LevelClampingService } from './voiceCatalog/LevelClampingService';
@@ -158,7 +159,7 @@ export class StoryGenerationService {
       
       // Step 5: Send resolved string to edge function
       const generationBundle: StoryGenerationBundle = {
-        sessionId: config.sessionId || `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        sessionId: config.sessionId || generateSessionId(),
         storyContent: resolvedResult.storyContent,
         avatarData: resolvedResult.avatarData,
         systemSettings: VocabularyService.getSystemSettings(vocabularyIntegration)

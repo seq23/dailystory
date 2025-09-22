@@ -1,6 +1,8 @@
 // Production Analytics Tracker - Comprehensive Usage Analytics for Production Deployment
 // Tracks user engagement, template performance, and system health metrics
 
+import { generateSessionIdWithPrefix } from '@/utils/sessionId';
+
 export interface UserSession {
   sessionId: string;
   userId?: string;
@@ -83,7 +85,7 @@ export class ProductionAnalyticsTracker {
     isPremium: boolean,
     userId?: string
   ): string {
-    const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const sessionId = generateSessionIdWithPrefix('session');
     
     const session: UserSession = {
       sessionId,

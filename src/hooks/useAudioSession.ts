@@ -39,6 +39,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import type { UserInfo } from '@/types';
+import { generateSessionId } from '@/utils/sessionId';
 
 interface AudioSessionOptions {
   userInfo: UserInfo;
@@ -62,7 +63,7 @@ export const useAudioSession = ({
 
   // Generate unique session key
   useEffect(() => {
-    const sessionId = sessionStorage.getItem('t2r_session_id') || Date.now().toString();
+    const sessionId = sessionStorage.getItem('t2r_session_id') || generateSessionId();
     if (!sessionStorage.getItem('t2r_session_id')) {
       sessionStorage.setItem('t2r_session_id', sessionId);
     }

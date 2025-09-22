@@ -1,5 +1,7 @@
 // Monitoring and Analytics Utilities for Security
 
+import { generateSessionId } from '@/utils/sessionId';
+
 export class SecurityMonitor {
   private static readonly MAX_EVENTS = 1000;
   private static events: Array<{
@@ -214,7 +216,7 @@ export class PerformanceMonitor {
 
 // User activity tracking (privacy-conscious)
 export class UserActivityMonitor {
-  private static sessionId = Math.random().toString(36).substr(2, 9);
+  private static sessionId = generateSessionId();
   private static sessionStart = Date.now();
 
   static trackPageView(path: string) {

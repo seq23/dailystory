@@ -1,6 +1,7 @@
 import type { UserInfo, ExpertGradeLevel } from "@/types";
 import { APP_CONFIG } from "@/constants/app";
 import { ExpertDifficultyManager } from "./expertDifficultyManager";
+import { generateSessionIdWithPrefix } from '@/utils/sessionId';
 
 export interface ReadingProgress {
   userId: string;
@@ -367,7 +368,7 @@ export class ProgressTrackingService {
   }
   
   private static generateSessionId(): string {
-    return `session_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+    return generateSessionIdWithPrefix('session');
   }
   
   static saveProgress(progress: ReadingProgress): void {

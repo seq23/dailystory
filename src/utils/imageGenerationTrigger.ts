@@ -2,6 +2,8 @@
  * Enhanced image generation trigger with improved network detection and auto-generation
  */
 
+import { generateSessionId } from '@/utils/sessionId';
+
 interface ImageGenerationOptions {
   currentPage: number;
   totalPages: number;
@@ -91,7 +93,7 @@ export class ImageGenerationTrigger {
     console.log('🖼️ Auto-triggering image generation for page', options.currentPage, {
       textLength: options.pageText.length,
       hasPlaceholders: options.pageText.includes('{'),
-      sessionId: options.sessionId || `session_${Date.now()}`
+      sessionId: options.sessionId || generateSessionId()
     });
     
     this.isGenerating = true;
@@ -113,7 +115,7 @@ export class ImageGenerationTrigger {
       // Import and use the image service
       const { SimpleImageService } = await import('@/services/SimpleImageService');
       
-      const sessionId = options.sessionId || `session_${Date.now()}`;
+      const sessionId = options.sessionId || generateSessionId();
       
       const result = await SimpleImageService.generateStoryImage(
         options.pageText,

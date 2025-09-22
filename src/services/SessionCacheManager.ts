@@ -45,6 +45,7 @@
 
 import { EnhancedImageCache } from './enhancedImageCache';
 import { StorySessionCache } from './storySessionCache';
+import { generateSessionIdWithPrefix } from '@/utils/sessionId';
 
 interface ClearOptions {
   userId?: string;
@@ -75,7 +76,7 @@ export class SessionCacheManager {
     } = options;
 
     // CRITICAL FIX: Ensure sessionId is always defined
-    const effectiveSessionId = sessionId || `fallback_session_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+    const effectiveSessionId = sessionId || generateSessionIdWithPrefix('fallback_session');
     
     console.log('🧹 [CACHE DEBUG] clearAllSessionCaches ENTRY:', {
       userId,
@@ -154,7 +155,7 @@ export class SessionCacheManager {
     const { userId = 'guest', sessionId, avatarType } = options;
 
     // CRITICAL FIX: Ensure sessionId is always defined
-    const effectiveSessionId = sessionId || `fallback_session_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+    const effectiveSessionId = sessionId || generateSessionIdWithPrefix('fallback_session');
 
     console.log('🎭 Premium rewrite: Selective clearing to preserve avatar identity', {
       userId,

@@ -8,6 +8,7 @@ import { DifficultyLevelMapper } from '../../supabase/functions/_shared/Difficul
 import { ErrorHandler } from '@/utils/errorHandling';
 import { ExpertDifficultyManager } from '@/services/expertDifficultyManager';
 import { ErrorHandlingManager } from '@/services/errorHandlingManager';
+import { generateSessionIdWithPrefix } from '@/utils/sessionId';
 import { APP_CONFIG } from '@/config/appConfig';
 import { toast } from '@/hooks/use-toast';
 import { RepairService } from './repairService';
@@ -65,7 +66,7 @@ export class LiveGenerationService {
       const { StoryGenerationService } = await import('./storyGenerationService');
       
       // CRITICAL FIX: Use consistent session ID format with comprehensive debugging
-      const actualSessionId = sessionId || `live-first-${userInfo.name}-${Date.now()}`;
+      const actualSessionId = sessionId || generateSessionIdWithPrefix(`live-first-${userInfo.name}`);
       DebugLogger.log('story', 'LiveGen: First Page Session ID created with enhanced debugging', { 
         actualSessionId,
         providedSessionId: sessionId,
@@ -202,7 +203,7 @@ export class LiveGenerationService {
       };
       
       // CRITICAL FIX: Use consistent session ID format with comprehensive continuation debugging
-      const actualSessionId = sessionId || `live-next-${context.userInfo.name}-${Date.now()}`;
+      const actualSessionId = sessionId || generateSessionIdWithPrefix(`live-next-${context.userInfo.name}`);
       DebugLogger.log('story', 'LiveGen: Next Page Session ID created with enhanced continuation debugging', {
         actualSessionId,
         providedSessionId: sessionId,
@@ -349,7 +350,7 @@ export class LiveGenerationService {
       };
       
       // CRITICAL FIX: Use consistent session ID format
-      const actualSessionId = sessionId || `live-ending-${context.userInfo.name}-${Date.now()}`;
+      const actualSessionId = sessionId || generateSessionIdWithPrefix(`live-ending-${context.userInfo.name}`);
       DebugLogger.log('story', 'LiveGen: Ending Page Session ID created', {
         actualSessionId,
         providedSessionId: sessionId,

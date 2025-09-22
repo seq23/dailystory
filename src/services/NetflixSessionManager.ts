@@ -2,6 +2,8 @@
  * Netflix Session Manager - Handles session state for Netflix-style story generation
  */
 
+import { generateSessionId } from '@/utils/sessionId';
+
 export class NetflixSessionManager {
   private static sessions = new Map<string, {
     baseSessionId: string;
@@ -28,7 +30,7 @@ export class NetflixSessionManager {
     }
 
     // Create new session
-    const baseSessionId = Date.now().toString();
+    const baseSessionId = generateSessionId();
     const session = {
       baseSessionId,
       storyCount: 1,
@@ -48,7 +50,7 @@ export class NetflixSessionManager {
    */
   static getNextStorySession(userId: string): string {
     const now = Date.now();
-    const baseSessionId = `${now}-${Math.random().toString(36).substr(2, 9)}`;
+    const baseSessionId = generateSessionId();
     
     const session = {
       baseSessionId,
