@@ -2,6 +2,8 @@
  * Performance optimization utilities to prevent forced reflows and improve rendering performance
  */
 
+import { DebugLogger } from '@/services/DebugLogger';
+
 /**
  * Batches DOM reads to minimize reflows
  */
@@ -82,7 +84,7 @@ export class OptimizedResizeObserver {
   
   observe(element: Element, callback: (entry: ResizeObserverEntry) => void) {
     if (!this.globalResizeService) {
-      console.warn('GlobalResizeService not loaded yet');
+      DebugLogger.warn('performance', 'GlobalResizeService not loaded yet');
       return;
     }
     

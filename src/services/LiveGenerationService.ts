@@ -136,14 +136,14 @@ export class LiveGenerationService {
         try {
           (globalThis as any).__LAST_PAGE_SOURCE__ = 'ai';
           (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';
-          console.log('✅ Confirmed AI-generated content, setting source tracking');
+          DebugLogger.log('story', 'Confirmed AI-generated content, setting source tracking');
         } catch {}
       } else {
-        console.log('⚠️ AI call succeeded but content insufficient, setting source to unknown');
+        DebugLogger.warn('story', 'AI call succeeded but content insufficient, setting source to unknown');
         try {
           (globalThis as any).__LAST_PAGE_SOURCE__ = 'unknown';
           (globalThis as any).__LAST_STORY_SOURCE__ = 'unknown';
-          console.log('⚠️ Set Live source to unknown due to insufficient content');
+          DebugLogger.warn('story', 'Set Live source to unknown due to insufficient content');
         } catch {}
       }
 
@@ -173,10 +173,10 @@ export class LiveGenerationService {
       };
       
     } catch (error) {
-      console.error('🚀 Live Generation: Error generating first page:', error);
+      DebugLogger.error('story', 'Live Generation: Error generating first page', error);
       const wrappedError = ErrorHandler.handleError(error as Error, 'LiveGenerationService.generateFirstPage');
       const fallbackDifficulty: DifficultyLevel = DifficultyLevelMapper.toBackend(userInfo.difficultyLevel || 'beginner');
-      console.log(`🎯 Live Generation Error Fallback: Using difficulty ${fallbackDifficulty} for ${userInfo.name}`);
+      DebugLogger.log('story', `Live Generation Error Fallback: Using difficulty ${fallbackDifficulty} for ${userInfo.name}`, { fallbackDifficulty, userName: userInfo.name });
       return this.generateFallbackFirstPage(userInfo, fallbackDifficulty, 'generation_error');
     }
   }
@@ -275,7 +275,7 @@ export class LiveGenerationService {
       const result = await Promise.race([generationPromise, timeoutPromise]);
 
       if (!result.success || !result.pages || result.pages.length === 0) {
-        console.error('🚀 Live Generation: 4-tier continuation failed:', result.error);
+        DebugLogger.error('story', 'Live Generation: 4-tier continuation failed', result.error);
         // On timeout or failure, immediately call template-service fallback
         try {
           const { data, error } = await supabase.functions.invoke('template-service', {
@@ -303,7 +303,7 @@ export class LiveGenerationService {
             };
           }
         } catch (fallbackError) {
-          console.error('Template fallback also failed:', fallbackError);
+          DebugLogger.error('story', 'Template fallback also failed', fallbackError);
         }
         
         return this.generateFallbackNextPage(context, nextPageNumber, 'unified_system_error', userRequestedEnding);
@@ -311,7 +311,7 @@ export class LiveGenerationService {
 
       // Extract first page from unified system - backend handles all validation
       const content = result.pages[0] || '';
-      console.log('✅ Live Generation: Next page content received from backend');
+      DebugLogger.log('story', 'Live Generation: Next page content received from backend');
       
       // Update context for next page (never-ending stories grow dynamically)
       const updatedContext: LiveGenerationContext = {
@@ -321,7 +321,7 @@ export class LiveGenerationService {
         totalExpectedPages: context.totalExpectedPages // Keep original expectation
       };
 
-      console.log(`🚀 Live Generation: Page ${nextPageNumber} generated successfully`);
+      DebugLogger.log('story', `Live Generation: Page ${nextPageNumber} generated successfully`, { nextPageNumber });
       // PHASE 4: Use dynamic character validation for next page
       const { mapDifficultyToLevel, getMinCharactersPerPage } = await import('../../supabase/functions/_shared/validation-utils');
       const backendDifficultyForValidation = DifficultyLevelMapper.toBackend(context.difficulty) as DifficultyLevel;
@@ -331,17 +331,17 @@ export class LiveGenerationService {
         try {
           (globalThis as any).__LAST_PAGE_SOURCE__ = 'ai';
           (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';
-          console.log('✅ Confirmed AI-generated next page content, setting source tracking');
+          DebugLogger.log('story', 'Confirmed AI-generated next page content, setting source tracking');
         } catch {}
       } else {
-        console.log('⚠️ AI call succeeded but next page content insufficient, setting source to unknown');
+        DebugLogger.warn('story', 'AI call succeeded but next page content insufficient, setting source to unknown');
         try {
           (globalThis as any).__LAST_PAGE_SOURCE__ = 'unknown';
           (globalThis as any).__LAST_STORY_SOURCE__ = 'unknown';
-          console.log('⚠️ Set Live next page source to unknown due to insufficient content');
+          DebugLogger.warn('story', 'Set Live next page source to unknown due to insufficient content');
         } catch {}
       }
-      console.log('🧭 PAGE_SOURCE', { page: nextPageNumber, source: 'ai', service: 'Live' });
+      DebugLogger.log('story', 'PAGE_SOURCE', { page: nextPageNumber, source: 'ai', service: 'Live' });
       
       // Emit story generation complete event
       window.dispatchEvent(new CustomEvent('story:generation:complete'));
@@ -353,7 +353,7 @@ export class LiveGenerationService {
       };
       
     } catch (error) {
-      console.error('🚀 Live Generation: Error generating next page:', error);
+      DebugLogger.error('story', 'Live Generation: Error generating next page', error);
       const nextPageNumber = context.currentPage + 1;
       const wrappedError = ErrorHandler.handleError(error as Error, 'LiveGenerationService.generateNextPage');
       return this.generateFallbackNextPage(context, nextPageNumber, 'generation_error', false);
@@ -399,7 +399,7 @@ export class LiveGenerationService {
       const result = await Promise.race([generationPromise, timeoutPromise]);
 
       if (!result.success || !result.pages || result.pages.length === 0) {
-        console.error('🚀 Live Generation: 4-tier ending failed:', result.error);
+        DebugLogger.error('story', 'Live Generation: 4-tier ending failed', result.error);
         // On timeout or failure, immediately call template-service fallback
         try {
           const { data, error } = await supabase.functions.invoke('template-service', {
@@ -413,7 +413,7 @@ export class LiveGenerationService {
 
           if (!error && data?.pages?.length) {
             const fallbackContent = data.pages[0];
-            console.log('✅ Template-service fallback succeeded for ending page');
+            DebugLogger.log('story', 'Template-service fallback succeeded for ending page');
             return {
               content: fallbackContent,
               isComplete: true,
@@ -421,7 +421,7 @@ export class LiveGenerationService {
             };
           }
         } catch (fallbackError) {
-          console.error('Template fallback also failed for ending:', fallbackError);
+          DebugLogger.error('story', 'Template fallback also failed for ending', fallbackError);
         }
         
         return this.generateFallbackNextPage(context, nextPageNumber, 'unified_system_error', true);
@@ -433,7 +433,7 @@ export class LiveGenerationService {
         return this.generateFallbackNextPage(context, nextPageNumber, 'content_too_short_conclusion', true);
       }
 
-      console.log(`🚀 Live Generation: Ending generated with ${allPages.length} page(s)`);
+      DebugLogger.log('story', `Live Generation: Ending generated with ${allPages.length} page(s)`, { pageCount: allPages.length });
       // PHASE 4: Use dynamic character validation for ending pages
       const { mapDifficultyToLevel, getMinCharactersPerPage } = await import('../../supabase/functions/_shared/validation-utils');
       const backendDifficultyForValidation = DifficultyLevelMapper.toBackend(context.difficulty) as DifficultyLevel;
@@ -443,14 +443,14 @@ export class LiveGenerationService {
         try {
           (globalThis as any).__LAST_PAGE_SOURCE__ = 'ai';
           (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';
-          console.log('✅ Confirmed AI-generated story ending content, setting source tracking');
+          DebugLogger.log('story', 'Confirmed AI-generated story ending content, setting source tracking');
         } catch {}
       } else {
-        console.log('⚠️ AI call succeeded but story ending content insufficient, setting source to unknown');
+        DebugLogger.warn('story', 'AI call succeeded but story ending content insufficient, setting source to unknown');
         try {
           (globalThis as any).__LAST_PAGE_SOURCE__ = 'unknown';
           (globalThis as any).__LAST_STORY_SOURCE__ = 'unknown';
-          console.log('⚠️ Set Live ending source to unknown due to insufficient content');
+          DebugLogger.warn('story', 'Set Live ending source to unknown due to insufficient content');
         } catch {}
       }
 
@@ -464,7 +464,7 @@ export class LiveGenerationService {
         endingPageCount: allPages.length
       };
     } catch (error) {
-      console.error('🚀 Live Generation: Error generating ending page:', error);
+      DebugLogger.error('story', 'Live Generation: Error generating ending page', error);
       const wrappedError = ErrorHandler.handleError(error as Error, 'LiveGenerationService.generateEndingPage');
       return {
         content: '',
@@ -475,7 +475,7 @@ export class LiveGenerationService {
   }
 
   private static async generateFallbackFirstPage(userInfo: UserInfo, difficulty: DifficultyLevel, reason: string): Promise<LivePageResult> {
-    console.log(`🚀 Live Generation: Using fallback first page (reason: ${reason})`);
+    DebugLogger.log('story', `Live Generation: Using fallback first page (reason: ${reason})`, { reason });
     
     // Show toast notification for template usage
     toast({
@@ -523,7 +523,7 @@ export class LiveGenerationService {
         (globalThis as any).__LAST_PAGE_SOURCE__ = 'fallback';
         (globalThis as any).__LAST_STORY_SOURCE__ = 'fallback';
       } catch {}
-      console.log('🧭 PAGE_SOURCE', { page: 1, source: (globalThis as any).__LAST_PAGE_SOURCE__, service: 'Live' });
+      DebugLogger.log('story', 'PAGE_SOURCE', { page: 1, source: (globalThis as any).__LAST_PAGE_SOURCE__, service: 'Live' });
 
       // Emit story generation complete event
       window.dispatchEvent(new CustomEvent('story:generation:complete'));
@@ -534,7 +534,7 @@ export class LiveGenerationService {
         nextContext: context
       };
     } catch (error) {
-      console.error('🚀 Fallback failed:', error);
+      DebugLogger.error('story', 'Fallback failed', error);
       // Emergency fallback with rhyming educational content
       const emergencyContent = await ErrorHandlingManager.getEmergencyContent(userInfo);
       const content = emergencyContent[0] || `${userInfo.name} began a wonderful adventure.`;
@@ -573,7 +573,7 @@ export class LiveGenerationService {
     reason: string,
     userRequestedEnding?: boolean
   ): Promise<LivePageResult> {
-    console.log(`🚀 Live Generation: Using fallback page ${pageNumber} (reason: ${reason})`);
+    DebugLogger.log('story', `Live Generation: Using fallback page ${pageNumber} (reason: ${reason})`, { pageNumber, reason });
     
     const isLastPage = !!userRequestedEnding;
     
@@ -615,7 +615,7 @@ export class LiveGenerationService {
         (globalThis as any).__LAST_PAGE_SOURCE__ = 'fallback';
         (globalThis as any).__LAST_STORY_SOURCE__ = 'fallback';
       } catch {}
-      console.log('🧭 PAGE_SOURCE', { page: pageNumber, source: (globalThis as any).__LAST_PAGE_SOURCE__, service: 'Live' });
+      DebugLogger.log('story', 'PAGE_SOURCE', { page: pageNumber, source: (globalThis as any).__LAST_PAGE_SOURCE__, service: 'Live' });
 
       // Emit story generation complete event
       window.dispatchEvent(new CustomEvent('story:generation:complete'));
@@ -626,7 +626,7 @@ export class LiveGenerationService {
         nextContext: isLastPage ? undefined : updatedContext
       };
     } catch (error) {
-      console.error('🚀 Fallback failed:', error);
+      DebugLogger.error('story', 'Fallback failed', error);
       // Emergency fallback with rhyming educational content
       const emergencyContent = await ErrorHandlingManager.getEmergencyContent(context.userInfo);
       const content = isLastPage ? 

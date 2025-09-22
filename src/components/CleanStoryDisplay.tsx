@@ -1,3 +1,8 @@
+import { StoryAudioControls } from "@/components/story/StoryAudioControls";
+import { StoryNavigationControls } from "@/components/story/StoryNavigationControls";
+import { StoryTimerIntegration } from "@/components/story/StoryTimerIntegration";
+import { useStoryLogic } from "@/hooks/useStoryLogic";
+
 import React from 'react';
 import { DebugLogger } from '@/services/DebugLogger';
 import { performanceManager } from '@/services/PerformanceManager';
@@ -4407,23 +4412,21 @@ const handleRestartTimer = () => {
         }}
       />
 
-      {/* Unified Timer for All Users (guest always on) */}
-      {(!isPremium || timerEnabled) && (
-        <CollapsibleFloatingTimer
-          timeRemaining={timeRemaining}
-          isReading={isTimerRunning}
-          onToggleReading={handleToggleTimer}
-          onReduceTime={handleReduceTime}
-          onEndSession={handleEndSession}
-          onSessionEnded={handleEndSession}
-          isPremium={isPremium}
-          onIncreaseTime={isPremium ? handleExtendTime : undefined}
-          onDismiss={() => { try { localStorage.setItem('readingTimerEnabled','0'); } catch {} setTimerEnabled(false); setIsTimerRunning(false); setIsTimerCanceled(true); setIsTimerVisible(false); window.dispatchEvent(new CustomEvent('readingTimerToggle', { detail: false })); }}
-          onRestartTimer={isPremium ? handleRestartTimer : undefined}
-          onKeepReadingUntimed={isPremium ? handleKeepReadingUntimed : undefined}
-          onSaveStoryNow={isPremium ? handleSaveStoryNow : undefined}
-        />
-      )}
+      {/* Unified Timer Integration - All Users */}
+      <StoryTimerIntegration
+        isPremium={isPremium}
+        timerEnabled={timerEnabled}
+        timeRemaining={timeRemaining}
+        isTimerRunning={isTimerRunning}
+        onToggleTimer={handleToggleTimer}
+        onReduceTime={handleReduceTime}
+        onEndSession={handleEndSession}
+        onExtendTime={isPremium ? handleExtendTime : undefined}
+        onRestartTimer={isPremium ? handleRestartTimer : undefined}
+        onKeepReadingUntimed={isPremium ? handleKeepReadingUntimed : undefined}
+        onSaveStoryNow={isPremium ? handleSaveStoryNow : undefined}
+        onDismiss={() => { try { localStorage.setItem('readingTimerEnabled','0'); } catch {} setTimerEnabled(false); setIsTimerRunning(false); setIsTimerCanceled(true); setIsTimerVisible(false); window.dispatchEvent(new CustomEvent('readingTimerToggle', { detail: false })); }}
+      />
 
 
 
