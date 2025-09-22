@@ -963,4 +963,4 @@ async function handleRequest(req) {
 
 // Export for TypeScript receptionist  
 tierLogging.logTier2('🎯 Crash-Proof Runware Orchestrator v2.1 initialized successfully');
-Deno.serve(handleRequest);
+export default handleRequest;
