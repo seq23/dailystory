@@ -183,7 +183,7 @@ export class SimplifiedAudioEngine {
       // Enhanced mobile audio unlocking
       if (this.isMobile()) {
         if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
-          console.log('📱 Mobile device detected, ensuring audio unlock');
+          ProductionLogging.debug('AUDIO', 'Mobile device detected, ensuring audio unlock', 'SimplifiedAudioEngine');
         }
         await this.unlockMobileAudioForPlayback();
         
@@ -262,19 +262,19 @@ export class SimplifiedAudioEngine {
       
       // Only update if we found a word and it's different from last highlighted
       if (currentWordIndex !== -1 && currentWordIndex !== lastHighlightedIndex) {
-        console.log(`🎯 Highlighting word ${currentWordIndex}: "${this.wordTimings[currentWordIndex].word}" at ${currentTimeMs}ms`);
+        ProductionLogging.debug('AUDIO', `Highlighting word ${currentWordIndex}: "${this.wordTimings[currentWordIndex].word}" at ${currentTimeMs}ms`, 'SimplifiedAudioEngine');
         this.onWordHighlight?.(currentWordIndex);
         lastHighlightedIndex = currentWordIndex;
       } else if (currentWordIndex === -1 && lastHighlightedIndex !== -1) {
         // Clear highlighting if we're between words
-        console.log(`🎯 Clearing highlight at ${currentTimeMs}ms (between words)`);
+        ProductionLogging.debug('AUDIO', `Clearing highlight at ${currentTimeMs}ms (between words)`, 'SimplifiedAudioEngine');
         this.onWordHighlight?.(-1);
         lastHighlightedIndex = -1;
       }
       
       // Debug logging every 500ms
       if (Math.floor(currentTimeMs / 500) !== Math.floor((currentTimeMs - 50) / 500)) {
-        console.log(`🎵 Audio progress: ${currentTimeMs.toFixed(0)}ms, word: ${currentWordIndex}, timings available: ${this.wordTimings.length}`);
+        ProductionLogging.debug('AUDIO', `Audio progress: ${currentTimeMs.toFixed(0)}ms, word: ${currentWordIndex}, timings available: ${this.wordTimings.length}`, 'SimplifiedAudioEngine');
       }
     };
     
@@ -296,12 +296,12 @@ export class SimplifiedAudioEngine {
       this.onWordHighlight(-1);
     }
     
-    console.log('🧹 Stopped word highlighting');
+    ProductionLogging.debug('AUDIO', 'Stopped word highlighting', 'SimplifiedAudioEngine');
   }
 
   private fallbackToWebSpeech(text: string): void {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      console.log('🔊 SimplifiedAudioEngine: Using browser speech fallback');
+      ProductionLogging.debug('AUDIO', 'Using browser speech fallback', 'SimplifiedAudioEngine');
       
       window.dispatchEvent(new CustomEvent('audio:fallback', {
         detail: { message: 'Using device voice due to network issues' }
@@ -352,7 +352,7 @@ export class SimplifiedAudioEngine {
   }
 
   stop() {
-    console.log('🛑 SimplifiedAudioEngine: Stopping all audio');
+    ProductionLogging.debug('AUDIO', 'Stopping all audio', 'SimplifiedAudioEngine');
     
     if (this.inflight) {
       try { 
@@ -411,9 +411,9 @@ export class SimplifiedAudioEngine {
       }
       
       this.mobileAudioUnlocked = true;
-      console.log('🔊 Mobile audio unlocked successfully');
+      ProductionLogging.debug('AUDIO', 'Mobile audio unlocked successfully', 'SimplifiedAudioEngine');
     } catch (error) {
-      console.warn('Failed to unlock mobile audio:', error);
+      ProductionLogging.warn('AUDIO', 'Failed to unlock mobile audio', 'SimplifiedAudioEngine', { error });
     }
   }
 

@@ -1,5 +1,6 @@
 // Enhanced Subscription Manager with caching and reliability improvements
 import { supabase } from '@/integrations/supabase/client';
+import { ProductionLogging } from '@/services/ProductionLogger';
 
 interface SubscriptionCache {
   isPremium: boolean;
@@ -55,7 +56,7 @@ export class EnhancedSubscriptionManager {
       ]) as any;
 
       if (error) {
-        console.log('No subscription found, user is free tier');
+        ProductionLogging.debug('SUBSCRIPTION', 'No subscription found, user is free tier', 'enhancedSubscriptionManager');
         this.updateCache(false);
         return false;
       }
@@ -79,7 +80,7 @@ export class EnhancedSubscriptionManager {
 
       return isPremium;
     } catch (error) {
-      console.error('Error checking premium status:', error);
+      ProductionLogging.error('SUBSCRIPTION', 'Error checking premium status', 'enhancedSubscriptionManager', { error });
       // Return cached result on error if available
       if (this.cache) {
         return this.cache.isPremium;

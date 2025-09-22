@@ -3411,7 +3411,7 @@ const handleRestartTimer = () => {
         }
         
         // Animate badge change
-        setTimeout(() => setChangeDirection('badge'), 200);
+        ManagedTimers.setTimeout(() => setChangeDirection('badge'), 200, 'CleanStoryDisplay');
       } else if (currentDifficulty === 'expert') {
         // Update live context for expert grade level changes (universal updates)
         if (liveContext) {
@@ -3439,14 +3439,14 @@ const handleRestartTimer = () => {
         }
         
         // Animate badge change for expert level progression
-        setTimeout(() => setChangeDirection('badge'), 200);
+        ManagedTimers.setTimeout(() => setChangeDirection('badge'), 200, 'CleanStoryDisplay');
       }
     
     // Complete animation
-    setTimeout(() => {
+    ManagedTimers.setTimeout(() => {
       setIsChangingDifficulty(false);
       setChangeDirection(undefined);
-    }, 800);
+    }, 800, 'CleanStoryDisplay');
   };
 
 
@@ -3536,13 +3536,13 @@ const handleRestartTimer = () => {
         } catch {}
       });
       idx += 4;
-      if (idx < urls.length) setTimeout(pump, 60); // gentle pacing
+      if (idx < urls.length) ManagedTimers.setTimeout(pump, 60, 'CleanStoryDisplay'); // gentle pacing
     };
 
     const schedule = (cb: () => void) => {
       const ric = (window as any).requestIdleCallback;
       if (typeof ric === 'function') ric(() => cb());
-      else setTimeout(cb, 0);
+      else ManagedTimers.setTimeout(cb, 0, 'CleanStoryDisplay');
     };
 
     schedule(pump);
@@ -3935,13 +3935,13 @@ const handleRestartTimer = () => {
 
                        <Button
                          data-id="finish-story-hero-premium"
-                         onClick={() => {
-                           setFinishPressBurst(true);
-                           setFinishSparkle(true);
-                           setTimeout(() => setFinishPressBurst(false), 600);
-                           setTimeout(() => setFinishSparkle(false), 1200);
-                           setShowConfirmEndStory(true);
-                         }}
+                          onClick={() => {
+                            setFinishPressBurst(true);
+                            setFinishSparkle(true);
+                            ManagedTimers.setTimeout(() => setFinishPressBurst(false), 600, 'CleanStoryDisplay');
+                            ManagedTimers.setTimeout(() => setFinishSparkle(false), 1200, 'CleanStoryDisplay');
+                            setShowConfirmEndStory(true);
+                          }}
                           disabled={!liveContext || isGeneratingEnding || isStoryComplete || controlsBlocked}
                           variant="hero"
                           size="xl"
@@ -4085,11 +4085,11 @@ const handleRestartTimer = () => {
                           <div className={`relative inline-block ${finishPressBurst ? 'animate-scale-in' : ''}`}>
                             <MobileOptimizedButton
                                onClick={() => {
-                                 setFinishPressBurst(true);
-                                 setFinishSparkle(true);
-                                 setTimeout(() => setFinishPressBurst(false), 600);
-                                 setTimeout(() => setFinishSparkle(false), 1200);
-                                 setShowConfirmEndStory(true);
+                                  setFinishPressBurst(true);
+                                  setFinishSparkle(true);
+                                  ManagedTimers.setTimeout(() => setFinishPressBurst(false), 600, 'CleanStoryDisplay');
+                                  ManagedTimers.setTimeout(() => setFinishSparkle(false), 1200, 'CleanStoryDisplay');
+                                  setShowConfirmEndStory(true);
                                }}
                                 disabled={isGeneratingEnding || controlsBlocked || (lastEndingPageIndex !== null ? currentPage <= lastEndingPageIndex : !liveContext)}
                                variant="hero"
@@ -4131,11 +4131,11 @@ const handleRestartTimer = () => {
                           <div className={`relative inline-block ${finishPressBurst ? 'animate-scale-in' : ''}`}>
                             <MobileOptimizedButton
                                onClick={() => {
-                                 setFinishPressBurst(true);
-                                 setFinishSparkle(true);
-                                 setTimeout(() => setFinishPressBurst(false), 600);
-                                 setTimeout(() => setFinishSparkle(false), 1200);
-                                 setShowConfirmEndStory(true);
+                                  setFinishPressBurst(true);
+                                  setFinishSparkle(true);
+                                  ManagedTimers.setTimeout(() => setFinishPressBurst(false), 600, 'CleanStoryDisplay');
+                                  ManagedTimers.setTimeout(() => setFinishSparkle(false), 1200, 'CleanStoryDisplay');
+                                  setShowConfirmEndStory(true);
                                }}
                                 disabled={isGeneratingEnding || controlsBlocked || (lastEndingPageIndex !== null ? currentPage <= lastEndingPageIndex : !liveContext)}
                                variant="hero"

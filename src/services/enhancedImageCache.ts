@@ -3,6 +3,8 @@
  * Handles cache management, clearing, and backward navigation support
  */
 
+import { ProductionLogging } from '@/services/ProductionLogger';
+
 interface CachedImage {
   url: string;
   timestamp: number;
@@ -48,7 +50,7 @@ export class EnhancedImageCache {
       
       return map;
     } catch (error) {
-      console.warn('Failed to load image cache:', error);
+      ProductionLogging.warn('IMAGE_CACHE', 'Failed to load image cache', 'enhancedImageCache', { error });
       return new Map();
     }
   }
@@ -71,12 +73,12 @@ export class EnhancedImageCache {
       const data = Object.fromEntries(map);
       sessionStorage.setItem(this.CACHE_KEY, JSON.stringify(data));
       
-      console.log('📸 Image cache saved:', {
+      ProductionLogging.debug('IMAGE_CACHE', 'Image cache saved', 'enhancedImageCache', {
         totalImages: map.size,
         cacheSize: JSON.stringify(data).length
       });
     } catch (error) {
-      console.error('Failed to save image cache:', error);
+      ProductionLogging.error('IMAGE_CACHE', 'Failed to save image cache', 'enhancedImageCache', { error });
       // If storage is full, try clearing old entries
       this.clearExpiredEntries();
     }
@@ -180,14 +182,14 @@ export class EnhancedImageCache {
 
       this.saveCacheMap(map);
       
-      console.log('📸 Image cached:', {
+      ProductionLogging.debug('IMAGE_CACHE', 'Image cached', 'enhancedImageCache', {
         key,
         sessionId,
         pageNumber,
         totalCached: map.size
       });
     } catch (error) {
-      console.error('Failed to cache image:', error);
+      ProductionLogging.error('IMAGE_CACHE', 'Failed to cache image', 'enhancedImageCache', { error });
     }
   }
 
@@ -212,7 +214,7 @@ export class EnhancedImageCache {
       if (cached && avatarType && skinTone) {
         const keyContainsAvatar = key.includes(`av:${avatarType}-${skinTone}`);
         if (!keyContainsAvatar) {
-          console.log('📸 Image cache rejected due to avatar mismatch:', { 
+          ProductionLogging.debug('IMAGE_CACHE', 'Image cache rejected due to avatar mismatch', 'enhancedImageCache', { 
             key, 
             expectedAvatar: `${avatarType}-${skinTone}`,
             sessionId, 
@@ -228,21 +230,21 @@ export class EnhancedImageCache {
           // For pages beyond the first, validate story continuity
           const isValidContext = this.validateStoryContinuity(cached, contextualMarkers);
           if (!isValidContext) {
-            console.log('📸 Image cache invalidated due to context mismatch:', { key, sessionId, pageNumber });
+            ProductionLogging.debug('IMAGE_CACHE', 'Image cache invalidated due to context mismatch', 'enhancedImageCache', { key, sessionId, pageNumber });
             map.delete(key);
             this.saveCacheMap(map);
             return null;
           }
         }
         
-        console.log('📸 Image cache hit:', { key, sessionId, pageNumber, contextValidated: !!contextualMarkers });
+        ProductionLogging.debug('IMAGE_CACHE', 'Image cache hit', 'enhancedImageCache', { key, sessionId, pageNumber, contextValidated: !!contextualMarkers });
         return cached.url;
       }
       
-      console.log('📸 Image cache miss:', { key, sessionId, pageNumber });
+      ProductionLogging.debug('IMAGE_CACHE', 'Image cache miss', 'enhancedImageCache', { key, sessionId, pageNumber });
       return null;
     } catch (error) {
-      console.error('Failed to get cached image:', error);
+      ProductionLogging.error('IMAGE_CACHE', 'Failed to get cached image', 'enhancedImageCache', { error });
       return null;
     }
   }
@@ -264,13 +266,13 @@ export class EnhancedImageCache {
       
       this.saveCacheMap(map);
       
-      console.log('📸 Session cache cleared:', {
+      ProductionLogging.debug('IMAGE_CACHE', 'Session cache cleared', 'enhancedImageCache', {
         sessionId,
         removedImages: initialSize - map.size,
         remainingImages: map.size
       });
     } catch (error) {
-      console.error('Failed to clear session cache:', error);
+      ProductionLogging.error('IMAGE_CACHE', 'Failed to clear session cache', 'enhancedImageCache', { error });
     }
   }
 
@@ -291,13 +293,13 @@ export class EnhancedImageCache {
       
       this.saveCacheMap(map);
       
-      console.log('📸 Story cache cleared:', {
+      ProductionLogging.debug('IMAGE_CACHE', 'Story cache cleared', 'enhancedImageCache', {
         storyHash,
         removedImages: initialSize - map.size,
         remainingImages: map.size
       });
     } catch (error) {
-      console.error('Failed to clear story cache:', error);
+      ProductionLogging.error('IMAGE_CACHE', 'Failed to clear story cache', 'enhancedImageCache', { error });
     }
   }
 
@@ -322,7 +324,7 @@ export class EnhancedImageCache {
     this.saveCacheMap(map);
     const cleared = before - map.size;
     
-    console.log(`🖼️ Cleared ${cleared} story images, preserved character seeds for session: ${sessionId}`);
+    ProductionLogging.debug('IMAGE_CACHE', `Cleared ${cleared} story images, preserved character seeds for session: ${sessionId}`, 'enhancedImageCache');
   }
 
   /**
@@ -333,9 +335,9 @@ export class EnhancedImageCache {
       const map = this.getCacheMap(); // This already filters expired entries
       this.saveCacheMap(map);
       
-      console.log('📸 Expired cache entries cleared');
+      ProductionLogging.debug('IMAGE_CACHE', 'Expired cache entries cleared', 'enhancedImageCache');
     } catch (error) {
-      console.error('Failed to clear expired entries:', error);
+      ProductionLogging.error('IMAGE_CACHE', 'Failed to clear expired entries', 'enhancedImageCache', { error });
     }
   }
 
@@ -345,9 +347,9 @@ export class EnhancedImageCache {
   static clearAll(): void {
     try {
       sessionStorage.removeItem(this.CACHE_KEY);
-      console.log('📸 All session image cache cleared');
+      ProductionLogging.debug('IMAGE_CACHE', 'All session image cache cleared', 'enhancedImageCache');
     } catch (error) {
-      console.error('Failed to clear all cache:', error);
+      ProductionLogging.error('IMAGE_CACHE', 'Failed to clear all cache', 'enhancedImageCache', { error });
     }
   }
 
@@ -364,10 +366,10 @@ export class EnhancedImageCache {
       
       // Force garbage collection of any lingering blob URLs  
       if (typeof window !== 'undefined') {
-        console.log('📸 Netflix: Forced image cache transition clearing');
+        ProductionLogging.debug('IMAGE_CACHE', 'Netflix: Forced image cache transition clearing', 'enhancedImageCache');
       }
     } catch (error) {
-      console.error('Failed to clear for story transition:', error);
+      ProductionLogging.error('IMAGE_CACHE', 'Failed to clear for story transition', 'enhancedImageCache', { error });
     }
   }
 
@@ -386,7 +388,7 @@ export class EnhancedImageCache {
         newestTimestamp: timestamps.length > 0 ? Math.max(...timestamps) : 0
       };
     } catch (error) {
-      console.error('Failed to get cache metrics:', error);
+      ProductionLogging.error('IMAGE_CACHE', 'Failed to get cache metrics', 'enhancedImageCache', { error });
       return {
         totalImages: 0,
         sessionImages: 0,
@@ -411,7 +413,7 @@ export class EnhancedImageCache {
           timestamp: img.timestamp
         }));
     } catch (error) {
-      console.error('Failed to get session images:', error);
+      ProductionLogging.error('IMAGE_CACHE', 'Failed to get session images', 'enhancedImageCache', { error });
       return [];
     }
   }
@@ -430,10 +432,10 @@ export class EnhancedImageCache {
         }
       }
 
-      console.log('📸 Story cache retrieved:', { storyHash, imageCount: Object.keys(storyImages).length });
+      ProductionLogging.debug('IMAGE_CACHE', 'Story cache retrieved', 'enhancedImageCache', { storyHash, imageCount: Object.keys(storyImages).length });
       return storyImages;
     } catch (error) {
-      console.error('Failed to get story cached images:', error);
+      ProductionLogging.error('IMAGE_CACHE', 'Failed to get story cached images', 'enhancedImageCache', { error });
       return {};
     }
   }
@@ -472,7 +474,7 @@ export class EnhancedImageCache {
     
     // If story content has changed significantly, invalidate cache
     if (storyFingerprint !== cachedFingerprint && timeAgo > 2 * 60 * 1000) {
-      console.log('📸 Story content fingerprint mismatch:', {
+      ProductionLogging.debug('IMAGE_CACHE', 'Story content fingerprint mismatch', 'enhancedImageCache', {
         current: storyFingerprint,
         cached: cachedFingerprint,
         ageMinutes: Math.round(timeAgo / 60000)
@@ -510,7 +512,7 @@ export class EnhancedImageCache {
     
     // CRITICAL FIX: Validate text parameter to prevent runtime errors
     if (!text || typeof text !== 'string') {
-      console.warn('⚠️ extractStoryMarkers called with invalid text:', text);
+      ProductionLogging.warn('IMAGE_CACHE', 'extractStoryMarkers called with invalid text', 'enhancedImageCache', { text });
       // Return user info markers only if text is invalid
       if (userInfo?.avatar?.type) {
         const fallbackMarkers = [userInfo.avatar.type];
@@ -563,7 +565,7 @@ export class EnhancedImageCache {
   static clearForPremiumFinish(sessionId: string): void {
     // For premium users, "Finish Story" does NOT clear cache
     // Images are preserved until they start a new story or end session
-    console.log('📸 Premium finish: Images preserved for navigation');
+    ProductionLogging.debug('IMAGE_CACHE', 'Premium finish: Images preserved for navigation', 'enhancedImageCache');
   }
 }
 
