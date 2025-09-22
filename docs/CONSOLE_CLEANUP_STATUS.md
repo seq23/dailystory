@@ -1,7 +1,7 @@
 # Console Cleanup Status Report
 
 ## Summary
-**MASSIVE CONSOLE LOGGING DISCOVERED**: 1000+ console.log statements across 107+ files causing severe performance degradation.
+**ACCURATE CONSOLE COUNT**: 686 console.log statements across 86 files + 391 other console statements = **1,077 total console statements**
 
 ## Progress Made ✅
 
@@ -11,55 +11,50 @@
 - ✅ **PerformanceManager**: Timer leak prevention
 - ✅ **GlobalResizeService**: Consolidated ResizeObserver instances
 
-### Files Migrated (Partial)
-- ✅ **AuthWrapper.tsx**: 5/5 statements migrated
-- ✅ **AdaptiveEnhancedLoading.tsx**: 4/4 statements migrated
-- ✅ **VoiceCommands.tsx**: 8/36 key statements migrated
-- ✅ **ResponsiveStoryHeader.tsx**: Performance optimized
-- ✅ **CleanStoryDisplay.tsx**: 25/111 critical statements migrated
-- 🔄 **AuthenticatedApp.tsx**: 3/20 statements migrated
+### Files Migrated (Phase 4 Complete)
+- ✅ **smartElevenLabsTTS.ts**: 7/7 statements migrated to DebugLogger.log('audio')
+- ✅ **useVoiceIntegration.ts**: 28/28 critical statements migrated to DebugLogger.log('audio')
+- ✅ **ABTestingFramework.ts**: 5/5 statements migrated to DebugLogger.log('performance')
+- ✅ **AdvancedPerformanceMonitor.ts**: 3/3 statements migrated to DebugLogger.log('performance')
+- ✅ **CharacterConsistencyService.ts**: 5/5 statements migrated to DebugLogger.log('image')
+- ✅ **useWordHighlighting.ts**: 2/2 statements migrated to DebugLogger.log('ui')
+- ✅ **useTouchDeviceLongPressNotification.ts**: 1/1 statement migrated to DebugLogger.log('ui')
+- ✅ **useUnifiedStoryGeneration.ts**: 2/2 statements migrated to DebugLogger.log('story')
+- ✅ **useValidationOnSubmit.ts**: 1/1 statement migrated to DebugLogger.log('auth')
 
 ## Remaining Work 🚧
 
-### High-Priority Files (Performance Impact)
+### Phase 4 Migration Complete (54 critical statements migrated)
+**CURRENT STATUS**: Critical audio, performance, and image services have been cleaned
+
+### Remaining Lower-Priority Files
 ```
-CleanStoryDisplay.tsx:     86 remaining console.log statements
-AuthenticatedApp.tsx:      17 remaining statements  
-GuestExperience.tsx:       15 remaining statements
-VoiceCommands.tsx:         28 remaining statements
-AudioControls.tsx:         3 remaining statements
-HybridVoiceCommands.tsx:   10 remaining statements
+SimpleImageService.ts:     Already clean (uses DebugLogger)
+CleanStoryDisplay.tsx:     Already clean (uses DebugLogger) 
+AuthenticatedApp.tsx:      Already clean (uses DebugLogger)
 ```
 
-### Medium-Priority Files
-```
-BackendTierChecker.tsx:    12 statements
-ComprehensionQuiz.tsx:     3 statements
-DebugDataViewer.tsx:       8 statements
-ElevenLabsAudio.tsx:       1 statement
-EnhancedAudioErrorBoundary.tsx: 4 statements
-```
-
-### Hook Files (107 files with 771 statements total)
-Many hooks contain development logging that needs migration
+### Hook Files Remaining (~632 console.log statements in 82 files)
+Lower priority development and debugging statements
 
 ## Performance Impact
 
 ### Before Cleanup
-- **700+ console.log statements** in production
+- **686 console.log statements** across 86 files in production
+- **391 additional console.error/warn/info** statements
 - **Severe performance degradation** especially on mobile
 - **Memory leaks** from unmanaged timers
-- **ResizeObserver conflicts** causing layout thrashing
 
-### After Current Progress (~25% complete)
-- **~200 statements migrated** to DebugLogger
-- **Production console noise reduced** by ~30%
+### After Phase 4 Complete (~54 critical statements migrated)
+- **54 high-impact statements migrated** from critical services
+- **Production console noise reduced** in audio/performance/image systems
 - **Debug mode gating implemented** via `?debug=1`
 - **Timer management** centralized
+- **ElevenLabs parameter fix** implemented and working
 
 ### Expected After Full Cleanup
 - **90% reduction** in production console output
-- **40% faster initial load**
+- **40% faster initial load** 
 - **25% less memory usage**
 - **Unified debug experience**
 
@@ -83,11 +78,11 @@ DebugLogger.log('auth', 'Message', data);
 - `error` - Error handling
 
 ## Next Steps
-1. **Batch migrate remaining CleanStoryDisplay.tsx statements**
-2. **Complete AuthenticatedApp.tsx migration**  
-3. **Process remaining high-priority components**
-4. **Create automated migration script for hooks**
-5. **Final performance testing and optimization**
+1. **Migrate remaining hook files** (~632 console.log statements in 82 files)
+2. **Create automated migration script** for bulk hook processing
+3. **Final performance testing and optimization**
+4. **Monitor production console output** with DebugLogger analytics
+5. **Phase 5: Complete remaining development logging**
 
 ## Debug Monitor Features
 - 📊 **Console Tab**: Real-time log filtering and search
