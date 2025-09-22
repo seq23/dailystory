@@ -35,7 +35,7 @@ export const useTouchDeviceLongPressNotification = () => {
       
       DebugLogger.log('ui', 'Touch device long-press instruction shown');
     } catch (error) {
-      console.warn('Failed to show touch device instruction:', error);
+      DebugLogger.warn('ui', 'Failed to show touch device instruction:', error);
     }
   }, [isMobileOrTablet, toast]);
 
@@ -43,7 +43,7 @@ export const useTouchDeviceLongPressNotification = () => {
     try {
       sessionStorage.removeItem(STORAGE_KEY);
     } catch (error) {
-      console.warn('Failed to clear instruction flag:', error);
+      DebugLogger.warn('ui', 'Failed to clear instruction flag:', error);
     }
   }, []);
 

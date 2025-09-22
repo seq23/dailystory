@@ -4,6 +4,7 @@ import { InputSanitizer } from '@/utils/inputSanitizer';
 import { useCOPPANotification } from './useCOPPANotification';
 import { useIncidentLogger } from './useIncidentLogger';
 import { useChildProfiles } from './useChildProfiles';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface ValidationState {
   isValid: boolean;
@@ -121,8 +122,8 @@ export const useValidationOnSubmit = () => {
       const childName = activeChild?.display_name || 'Child';
       
       // For security, parent email is accessed through auth system, not stored in child profile
-      console.log('COPPA violation detected for child:', childName);
-      console.warn('Parent notification system would need to be implemented using authenticated user email');
+      DebugLogger.log('auth', 'COPPA violation detected for child:', childName);
+      DebugLogger.warn('auth', 'Parent notification system would need to be implemented using authenticated user email');
       
       // TODO: Implement secure parent notification using auth.user.email instead of stored parent_email
       // This ensures privacy and security compliance

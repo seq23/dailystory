@@ -513,7 +513,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   }, []);
   
   
-  // Image state
+  // Image state - keeping local to component for specific image management
   const [pageImages, setPageImages] = useState<Record<number, string>>({});
   const [pageImageMetadata, setPageImageMetadata] = useState<Record<number, any>>({});
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
@@ -525,7 +525,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [batchTotal, setBatchTotal] = useState(0);
   const preloadedUrlsRef = useRef<Set<string>>(new Set());
   
-  // Dynamic aspect ratio state for mobile/tablet images
+  // Dynamic aspect ratio state for mobile/tablet images - component specific
   const [imageAspectRatios, setImageAspectRatios] = useState<Record<number, number>>({});
   const [imageNaturalSizes, setImageNaturalSizes] = useState<Record<number, {width: number, height: number}>>({});
   
@@ -598,7 +598,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     }
   }, [pageImages, isMobileOrTablet, imageAspectRatios]);
   
-  // Audio and Interactive Features state
+  // Audio and Interactive Features state - keeping local for component-specific audio management
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [isAudioLoading, setIsAudioLoading] = useState(false);
   const [showVocabularyCollector, setShowVocabularyCollector] = useState(false);
@@ -607,7 +607,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [pagesCompleted, setPagesCompleted] = useState<Set<number>>(new Set());
   const [audioPlayedPage, setAudioPlayedPage] = useState<number | null>(null);
   
-  // Vocabulary pre-fetch state
+  // Vocabulary pre-fetch state - component specific
   const [vocabularyData, setVocabularyData] = useState<VocabularyIntegration | null>(null);
 
   // Session-aware image loader for consistent session context
@@ -993,7 +993,7 @@ useEffect(() => {
     window.addEventListener('readingTimerToggle', handler as EventListener);
     return () => window.removeEventListener('readingTimerToggle', handler as EventListener);
   }, [timeRemaining, initialTimerSeconds]);
-// Magic wand and modal state - not in useStoryLogic
+// Magic wand and modal state - component specific UI state
 const [isRewriteMode, setIsRewriteMode] = useState(false);
 const [isMagicWandAnimating, setIsMagicWandAnimating] = useState(false);
 const [wandPulse, setWandPulse] = useState(false);
@@ -1003,13 +1003,13 @@ const [showEndStoryModal, setShowEndStoryModal] = useState(false);
 const [showConfirmEndStory, setShowConfirmEndStory] = useState(false);
 const [showEndSessionConfirm, setShowEndSessionConfirm] = useState(false);
 const [showCoach, setShowCoach] = useState(false);
-// Premium: edit special requests before starting a new story
+// Premium: edit special requests before starting a new story - component UI state
 const [showSpecialRequestDialog, setShowSpecialRequestDialog] = useState(false);
 const [specialRequestDraft, setSpecialRequestDraft] = useState(userInfo?.specialRequest || "");
 const loaderStartRef = useRef<number>(0);
 const LOADER_MIN_MS = 1600;
 
-// Expanded Finish CTA state: show expanded only on the ending page just generated
+// Expanded Finish CTA state - component specific UI
 const [finishCTAExpanded, setFinishCTAExpanded] = useState(false);
 const finishExpandedOnPageRef = useRef<number | null>(null);
 // Collapse expanded CTA when user navigates away from the ending page
@@ -1020,7 +1020,7 @@ useEffect(() => {
   }
 }, [currentPage, finishCTAExpanded]);
 
-  // Debug flag to force loader overlay for quick verification
+  // Debug loader override for testing - component specific
   const [forceLoaderActive, setForceLoaderActive] = useState(false);
   useEffect(() => {
     const force = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('forceLoader') === '1';
@@ -1030,14 +1030,14 @@ useEffect(() => {
     }
   }, []);
 
-  // Reading Level state with animation support
+  // Reading Level state with animation support - component specific UI
   const [currentDifficulty, setCurrentDifficulty] = useState<string>(userInfo.difficultyLevel || 'beginner');
   const [isChangingDifficulty, setIsChangingDifficulty] = useState(false);
   const [changeDirection, setChangeDirection] = useState<'increase' | 'decrease' | 'badge'>();
   const [expertGradeLevel, setExpertGradeLevel] = useState<"6th" | "7th" | "8th" | "9th" | "10th">("6th");
   const difficultyLevels: string[] = ['pre-reader', 'beginner', 'developing', 'independent', 'advanced'];
   
-  // Premium: parent guardrails and save highlight
+  // Premium: parent guardrails and save highlight - component specific settings
   const [lockDifficulty, setLockDifficulty] = useState(false);
   const [minDifficulty, setMinDifficulty] = useState<string>('beginner');
   const [minExpertGrade, setMinExpertGrade] = useState<"6th" | "7th" | "8th" | "9th" | "10th">("6th");
@@ -1491,12 +1491,12 @@ useEffect(() => {
   }
 }, [currentPage]);
 
-// Finish button feedback: state
+// Finish button feedback: state - component specific animations
 const [finishSparkle, setFinishSparkle] = useState(false);
 const [finishPressBurst, setFinishPressBurst] = useState(false);
 const [finishFlashCycle, setFinishFlashCycle] = useState(false);
 
-// Dramatic burst overlay trigger when ending generation completes
+// Dramatic burst overlay trigger when ending generation completes - component specific animation
 const [showEndingBurst, setShowEndingBurst] = useState(false);
 const prevIsGeneratingEndingRef = useRef(isGeneratingEnding);
 useEffect(() => {

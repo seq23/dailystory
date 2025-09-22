@@ -91,7 +91,7 @@ export function useTemplateService() {
 
           // Check for successful response based on actual template service format
           if (!data.pages || data.pages.length === 0) {
-            console.error('🚨 EMERGENCY: No pages in response!', { 
+            DebugLogger.error('story', '🚨 EMERGENCY: No pages in response!', { 
               hasData: !!data, 
               hasPages: !!data?.pages, 
               pagesLength: data?.pages?.length,
@@ -138,7 +138,7 @@ export function useTemplateService() {
           });
 
           if (processError) {
-            console.warn('⚠️ Grammar processing failed, using raw pages:', processError);
+            DebugLogger.warn('story', '⚠️ Grammar processing failed, using raw pages:', processError);
           } else if (processResult?.success && processResult?.processedPages) {
             finalResult = {
               ...response.data,
@@ -151,7 +151,7 @@ export function useTemplateService() {
             DebugLogger.log('story', 'Grammar processing successful', processResult.processingMetadata);
           }
         } catch (processError) {
-          console.warn('⚠️ Grammar processing failed, using raw pages:', processError);
+          DebugLogger.warn('story', '⚠️ Grammar processing failed, using raw pages:', processError);
         }
 
         setResult(finalResult);
@@ -168,7 +168,7 @@ export function useTemplateService() {
         throw new Error(response.error || 'Template generation failed');
       }
     } catch (err) {
-      console.error('Template service error:', err);
+      DebugLogger.error('story', 'Template service error:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to generate story';
       setError(errorMessage);
       

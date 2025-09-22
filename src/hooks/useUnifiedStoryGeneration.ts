@@ -64,7 +64,7 @@ export const useUnifiedStoryGeneration = (): UseUnifiedStoryGenerationResult => 
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       setError(errorMessage);
-      console.error('❌ Unified story generation failed:', err);
+      DebugLogger.error('story', '❌ Unified story generation failed:', err);
       
       return {
         success: false,
