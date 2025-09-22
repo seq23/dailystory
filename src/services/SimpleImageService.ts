@@ -142,6 +142,11 @@ export class SimpleImageService {
     isPremium: boolean = false
   ): Promise<ImageResult> {
     DebugLogger.log('image', 'SimpleImageService: Starting health-aware image generation');
+    
+    // Emit timer pause event for guest users
+    try {
+      window.dispatchEvent(new CustomEvent('image:generation:start'));
+    } catch {}
     DebugLogger.log('image', 'Parameters', { 
       storyLength: storyText?.length || 0, 
       hasUserInfo: !!userInfo, 
@@ -339,6 +344,11 @@ export class SimpleImageService {
           await this.storeImageInDB(normalizedSessionId, pageNumber, orchResult.imageURL, orchResult);
         }
 
+        // Emit timer resume event
+        try {
+          window.dispatchEvent(new CustomEvent('image:generation:complete'));
+        } catch {}
+
         return {
           success: true,
           url: orchResult.imageURL,
@@ -375,6 +385,11 @@ export class SimpleImageService {
       // TIER 4: Final fallback - use one of your 6 uploaded images
       DebugLogger.warn('image', 'All backend tiers failed, using ImageFallbackService with your 6 character images');
       const fallbackUrl = ImageFallbackService.generateStoryPlaceholder(cleanScene, pageNumber);
+      
+      // Emit timer resume event
+      try {
+        window.dispatchEvent(new CustomEvent('image:generation:complete'));
+      } catch {}
       
       return {
         success: true,
@@ -444,6 +459,11 @@ export class SimpleImageService {
           await this.storeImageInDB(normalizedSessionId, pageNumber, templateResult.imageURL, templateResult);
         }
 
+        // Emit timer resume event
+        try {
+          window.dispatchEvent(new CustomEvent('image:generation:complete'));
+        } catch {}
+
         return {
           success: true,
           url: templateResult.imageURL,
@@ -461,6 +481,11 @@ export class SimpleImageService {
       
       // Final SVG fallback
       const fallbackUrl = ImageFallbackService.generateStoryPlaceholder(storyText, pageNumber);
+      
+      // Emit timer resume event
+      try {
+        window.dispatchEvent(new CustomEvent('image:generation:complete'));
+      } catch {}
       
       return {
         success: true,
@@ -488,6 +513,91 @@ export class SimpleImageService {
     if (age <= 12) return 'medium';
     if (age <= 16) return 'hard';
     return 'expert';
+  }
+
+  // Universal hair color mapping for all skin tones and ethnicities
+  private static getUniversalHairColorForSkinTone(skinTone: string, ethnicity: string): string {
+    const mappings = {
+      // Light skin tones
+      'very-light': ['blonde', 'light-brown', 'auburn', 'strawberry-blonde'],
+      'light': ['blonde', 'brown', 'light-brown', 'auburn', 'red'],
+      'fair': ['blonde', 'brown', 'light-brown', 'red', 'auburn'],
+      'pale': ['blonde', 'light-brown', 'red', 'strawberry-blonde'],
+      'beige': ['blonde', 'brown', 'light-brown', 'auburn'],
+      
+      // Medium skin tones  
+      'medium': ['brown', 'dark-brown', 'black', 'auburn'],
+      'olive': ['brown', 'dark-brown', 'black'],
+      'tan': ['brown', 'dark-brown', 'black', 'auburn'],
+      'honey': ['brown', 'dark-brown', 'auburn'],
+      
+      // Dark skin tones
+      'dark': ['black', 'dark-brown'],
+      'very-dark': ['black', 'dark-brown'],
+      'deep': ['black'],
+      'ebony': ['black', 'dark-brown'],
+      'mahogany': ['black', 'dark-brown']
+    };
+    
+    // Ethnicity-specific preferences with expanded coverage
+    const ethnicityHairMapping = {
+      'african': ['black', 'dark-brown'],
+      'african-american': ['black', 'dark-brown'], 
+      'afro-caribbean': ['black', 'dark-brown'],
+      'hispanic': ['black', 'dark-brown', 'brown'],
+      'latino': ['black', 'dark-brown', 'brown'],
+      'asian': ['black', 'dark-brown'],
+      'east-asian': ['black', 'dark-brown'],
+      'south-asian': ['black', 'dark-brown', 'brown'],
+      'southeast-asian': ['black', 'dark-brown'],
+      'middle-eastern': ['black', 'dark-brown', 'brown'],
+      'arab': ['black', 'dark-brown', 'brown'],
+      'native-american': ['black', 'dark-brown'],
+      'indigenous': ['black', 'dark-brown'],
+      'mixed': ['black', 'dark-brown', 'brown'],
+      'multiracial': ['black', 'dark-brown', 'brown']
+    };
+    
+    // Get ethnicity-specific options first (prioritize cultural authenticity)
+    const ethnicKey = ethnicity?.toLowerCase().replace(/\s+/g, '-');
+    if (ethnicKey && ethnicityHairMapping[ethnicKey]) {
+      return ethnicityHairMapping[ethnicKey][0];
+    }
+    
+    // Fallback to skin tone mapping with safe defaults
+    const skinKey = skinTone?.toLowerCase().replace(/\s+/g, '-');
+    const hairOptions = mappings[skinKey] || mappings['medium'] || ['brown'];
+    return hairOptions[Math.floor(Math.random() * hairOptions.length)];
+  }
+
+  // Generate character versioned cache key for consistency tracking
+  private static generateCharacterVersionedCacheKey(userInfo: UserInfo, pageContent: string): string {
+    const baseKey = `${userInfo?.name || 'user'}_${pageContent.substring(0, 50)}`;
+    const characterSignature = JSON.stringify({
+      ethnicity: userInfo?.ethnicity,
+      hair: userInfo?.hair, 
+      features: userInfo?.features,
+      avatar: userInfo?.avatar?.type
+    });
+    const versionHash = btoa(characterSignature).substring(0, 8);
+    return `${baseKey}_v${versionHash}`;
+  }
+
+  // Detect if character appearance has changed during session
+  private static hasCharacterChanged(oldUserInfo: UserInfo, newUserInfo: UserInfo): boolean {
+    const oldSig = JSON.stringify({
+      ethnicity: oldUserInfo?.ethnicity,
+      hair: oldUserInfo?.hair,
+      features: oldUserInfo?.features,
+      avatar: oldUserInfo?.avatar?.type
+    });
+    const newSig = JSON.stringify({
+      ethnicity: newUserInfo?.ethnicity,
+      hair: newUserInfo?.hair,
+      features: newUserInfo?.features,
+      avatar: newUserInfo?.avatar?.type
+    });
+    return oldSig !== newSig;
   }
 
   // Generate SVG placeholder as final fallback

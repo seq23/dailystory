@@ -59,6 +59,34 @@ export const CollapsibleFloatingTimer = ({
   
   // Long press state for timer circle
   const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
+  const [isImageGenerating, setIsImageGenerating] = useState(false);
+  
+  useEffect(() => {
+    const handleImageGenerationStart = () => {
+      setIsImageGenerating(true);
+      if (isReading && !isPremium) {
+        DebugLogger.log('ui', 'Auto-pausing timer for image generation (guest user)');
+        onToggleReading(); // Pause timer
+      }
+    };
+    
+    const handleImageGenerationEnd = () => {
+      setIsImageGenerating(false);
+      if (!isReading && !isPremium && timeRemaining > 0) {
+        DebugLogger.log('ui', 'Auto-resuming timer after image generation (guest user)');
+        onToggleReading(); // Resume timer
+      }
+    };
+    
+    window.addEventListener('image:generation:start', handleImageGenerationStart);
+    window.addEventListener('image:generation:complete', handleImageGenerationEnd);
+    
+    return () => {
+      window.removeEventListener('image:generation:start', handleImageGenerationStart);
+      window.removeEventListener('image:generation:complete', handleImageGenerationEnd);
+    };
+  }, [isReading, isPremium, timeRemaining, onToggleReading]);
+
   useEffect(() => {
     try {
       if (muted) localStorage.setItem('celebrationMuted','1'); else localStorage.removeItem('celebrationMuted');

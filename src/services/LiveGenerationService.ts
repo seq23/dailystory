@@ -102,16 +102,22 @@ export class LiveGenerationService {
       const content = result.pages[0] || '';
       LoggerService.milestone('Content received from backend', 'LiveGeneration');
       
-      // Create context for next page - using different variable name to avoid conflicts
+      // Create context with deep cloning to prevent data loss
       const storyContext: LiveGenerationContext = {
-        userInfo,
-        difficulty: frontendDifficulty, // Store frontend difficulty in context
-        expertGradeLevel,
+        userInfo: JSON.parse(JSON.stringify(userInfo)), // Deep clone to prevent reference issues
+        difficulty: frontendDifficulty,
+        expertGradeLevel: expertGradeLevel || undefined,
         storyContext: [content],
         currentPage: 1,
         totalExpectedPages: 999,
-        characters: [userInfo.name, userInfo.favoriteAnimal || 'friend']
+        characters: [userInfo?.name || 'Hero', userInfo?.favoriteAnimal || 'Friend']
       };
+      
+      // Validate context integrity
+      if (!storyContext.userInfo?.name) {
+        DebugLogger.warn('story', 'LiveGen: Missing user name in context, using fallback');
+        storyContext.userInfo = { ...storyContext.userInfo, name: 'Hero' };
+      }
 
       // PHASE 4: Use dynamic character validation based on level
       const { mapDifficultyToLevel, getMinCharactersPerPage } = await import('../../supabase/functions/_shared/validation-utils');
@@ -196,11 +202,20 @@ export class LiveGenerationService {
       
       const { StoryGenerationService } = await import('./storyGenerationService');
       
-      // Create enhanced userInfo with story context for continuation
+      // Create enhanced userInfo with null safety and context preservation
+      const lastContextPage = context?.storyContext?.slice(-1)?.[0];
       const contextualUserInfo = {
-        ...context.userInfo,
-        specialRequest: `${context.userInfo.specialRequest || 'adventure'} (continuing from: ${context.storyContext.slice(-1)[0]?.substring(0, 100)}...)`
+        ...JSON.parse(JSON.stringify(context?.userInfo || {})), // Deep clone
+        specialRequest: `${context?.userInfo?.specialRequest || 'adventure'} (continuing from: ${
+          lastContextPage?.substring(0, 100) || 'beginning'
+        }...)`
       };
+      
+      // Validate contextual integrity
+      if (!contextualUserInfo.name) {
+        DebugLogger.warn('story', 'LiveGen: Context userInfo missing name, preserving from original');
+        contextualUserInfo.name = context?.characters?.[0] || 'Hero';
+      }
       
       // CRITICAL FIX: Use consistent session ID format with comprehensive continuation debugging
       const actualSessionId = sessionId || generateSessionIdWithPrefix(`live-next-${context.userInfo.name}`);
