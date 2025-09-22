@@ -271,20 +271,20 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     onSessionEnded
   });
 
-  // Initialize all other hooks
-  const { state, actions } = useImageManagement();
+  // Initialize specialized hooks for state management
+  const { state: imageState, actions: imageActions } = useImageManagement();
   const { state: audioVocabState, actions: audioVocabActions } = useAudioVocabulary();
   const { state: errorNetworkState, actions: errorNetworkActions } = useErrorNetworkState();
   const { state: metadataState, actions: metadataActions } = useStoryMetadata({ userInfo, isPremium });
   const { state: uiState, actions: uiActions, refs: uiRefs } = useUIAnimationState();
   const { state: difficultyState, actions: difficultyActions } = useDifficultyManagement({ userInfo });
 
-  // Destructure commonly used state for cleaner code
+  // Destructure for cleaner access
   const {
     pageImages, setPageImages, pageImageMetadata, isGeneratingImage, imageLoadingStates,
     fallbackStates, isBatchGenerating, batchDone, batchTotal, imageAspectRatios, imageNaturalSizes,
     clearAllImages, clearPageImage, updateImageMetadata
-  } = { ...state, ...actions };
+  } = { ...imageState, ...imageActions };
 
   const {
     isAudioPlaying, setIsAudioPlaying, isAudioLoading, setIsAudioLoading,
