@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Volume2, HelpCircle, Languages, BookOpen, Lightbulb, Plus, Crown, Layers } from "lucide-react";
-import { SimplifiedAudioEngine } from "@/services/SimplifiedAudioEngine";
+import { charlotteVoiceService } from "@/services/CharlotteVoiceService";
 import { PhoneticRulesEngine } from "@/services/phoneticRulesEngine";
 import { useToast } from "@/hooks/use-toast";
 import { contextualPronunciation } from "@/services/contextualPronunciation";
@@ -108,7 +108,6 @@ export const InteractiveWord = ({
   const [isPlaying, setIsPlaying] = useState(false);
   const [wordData, setWordData] = useState<any>(null);
   const [isLoadingWordData, setIsLoadingWordData] = useState(false);
-  const audioEngine = SimplifiedAudioEngine.getInstance();
   const [isPlayingPhonetics, setIsPlayingPhonetics] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState<{
     vertical: 'top' | 'bottom';
@@ -252,12 +251,11 @@ export const InteractiveWord = ({
     DebugLogger.log('ui', 'Interactive word DIRECT HEAR button clicked', { word: cleanWord });
     
     try {
-      // Use dedicated service instead of mixed audio systems
-      const { InteractiveWordAudioService } = await import('@/services/InteractiveWordAudioService');
-      await InteractiveWordAudioService.hearWord(cleanWord);
-      DebugLogger.log('audio', 'Interactive word hear completed successfully');
+      // Use Charlotte's unified voice service
+      await charlotteVoiceService.charlotteHearWord(cleanWord);
+      DebugLogger.log('audio', 'Charlotte hear word completed successfully');
     } catch (error) {
-      DebugLogger.error('audio', 'Interactive word hear failed', error);
+      DebugLogger.error('audio', 'Charlotte hear word failed', error);
       toast({
         title: "Audio Error", 
         description: `Failed to pronounce "${cleanWord}"`,
@@ -357,14 +355,47 @@ export const InteractiveWord = ({
         duration: 5000,
       });
       
-        // Use dedicated InteractiveWordAudioService for audio
+        // Use Charlotte's unified voice service - with multilingual support
         try {
-          DebugLogger.log('ui', 'Interactive word DIRECT EXPLAIN clicked', cleanWord);
-          const { InteractiveWordAudioService } = await import('@/services/InteractiveWordAudioService');
-          await InteractiveWordAudioService.explainWord(cleanWord, userInfo?.nativeLanguage || 'en');
-          DebugLogger.log('audio', 'Interactive word explain completed successfully');
+          DebugLogger.log('ui', 'Charlotte EXPLAIN clicked', cleanWord);
+          
+          // For English users, use Charlotte directly
+          if (userInfo?.nativeLanguage === 'en' || !userInfo?.nativeLanguage) {
+            await charlotteVoiceService.charlotteExplainWord(cleanWord, 'en');
+          } else {
+            // For non-English users, translate explanation and use browser TTS
+            try {
+              const { data: translationResult } = await supabase.functions.invoke('translate-universal', {
+                body: {
+                  text: definition,
+                  targetLanguage: userInfo.nativeLanguage,
+                  sourceLanguage: 'en',
+                  context: 'word_explanation'
+                }
+              });
+              
+              if (translationResult?.translatedText) {
+                // Use browser TTS for non-English (cost-effective)
+                if ('speechSynthesis' in window) {
+                  window.speechSynthesis.cancel();
+                  const utterance = new SpeechSynthesisUtterance(translationResult.translatedText);
+                  utterance.lang = userInfo.nativeLanguage;
+                  utterance.rate = 0.8;
+                  window.speechSynthesis.speak(utterance);
+                }
+              } else {
+                // Fallback to Charlotte if translation fails
+                await charlotteVoiceService.charlotteExplainWord(cleanWord, 'en');
+              }
+            } catch (translationError) {
+              DebugLogger.error('audio', 'Translation failed, using Charlotte fallback', translationError);
+              await charlotteVoiceService.charlotteExplainWord(cleanWord, 'en');
+            }
+          }
+          
+          DebugLogger.log('audio', 'Charlotte explain completed successfully');
         } catch (audioError) {
-          DebugLogger.error('audio', 'Interactive word explain audio failed', audioError);
+          DebugLogger.error('audio', 'Charlotte explain audio failed', audioError);
           // Show definition without audio if audio fails
         } finally {
           setIsPlaying(false);
@@ -560,10 +591,11 @@ export const InteractiveWord = ({
         // Try playing the actual translation audio
         let audioPlayed = false;
 
-        // Use SimpleAudioEngine for all audio
+        // Use Charlotte's voice service for all audio
         try {
-          await audioEngine.playTextWithSynchronization({ 
+          await charlotteVoiceService.charlotteInteractiveAudio({ 
             text: translationText,
+            context: 'interactive',
             voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
           });
           audioPlayed = true;
@@ -944,15 +976,14 @@ export const InteractiveWord = ({
              {/* Universal Phonetic Breakdown Button - Available for ALL users */}
               <button
                 onClick={async () => {
-                  DebugLogger.log('ui', 'Desktop Interactive word SYLLABLES clicked', cleanWord);
+                  DebugLogger.log('ui', 'Charlotte SYLLABLES clicked', cleanWord);
                   setIsPlayingPhonetics(true);
                   try {
-                    // Use dedicated InteractiveWordAudioService instead of mixed systems
-                    const { InteractiveWordAudioService } = await import('@/services/InteractiveWordAudioService');
-                    await InteractiveWordAudioService.syllableWord(cleanWord);
-                    DebugLogger.log('audio', 'Desktop Interactive word syllables completed successfully');
+                    // Use Charlotte's unified voice service
+                    await charlotteVoiceService.charlotteSyllableWord(cleanWord);
+                    DebugLogger.log('audio', 'Charlotte syllables completed successfully');
                  } catch (error) {
-                   DebugLogger.error('audio', 'Desktop Interactive word syllables failed', error);
+                   DebugLogger.error('audio', 'Charlotte syllables failed', error);
                    toast({
                      title: "Error",
                      description: "Could not play syllable breakdown. Please try again.",
@@ -961,7 +992,7 @@ export const InteractiveWord = ({
                  } finally {
                    setIsPlayingPhonetics(false);
                  }
-               }}
+                }}
                disabled={isPlayingPhonetics}
                className="flex items-center gap-1 text-xs bg-purple-50 hover:bg-purple-100 active:bg-purple-200 border border-purple-200 px-2.5 py-2 rounded-md transition-colors touch-manipulation min-h-[36px] font-medium text-purple-700 shadow-sm disabled:opacity-50"
              >
@@ -1004,7 +1035,6 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
   const [isPlayingMobile, setIsPlayingMobile] = useState(false);
   const [mobileWordData, setMobileWordData] = useState<any>(null);
   const [isLoadingMobile, setIsLoadingMobile] = useState(false);
-  const audioEngine = SimplifiedAudioEngine.getInstance();
   const [isPlayingPhonetics, setIsPlayingPhonetics] = useState(false);
   // Use global gamification system instead of local hook for mobile
   const getAddVocabularyWordMobile = () => {
@@ -1648,10 +1678,9 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
     setIsPlayingPhonetics(true);
     
     try {
-      // Use dedicated InteractiveWordAudioService instead of mixed systems
-      const { InteractiveWordAudioService } = await import('@/services/InteractiveWordAudioService');
-      await InteractiveWordAudioService.syllableWord(props.word);
-      DebugLogger.log('audio', 'Interactive word syllables completed successfully');
+      // Use Charlotte's unified voice service
+      await charlotteVoiceService.charlotteSyllableWord(props.word);
+      DebugLogger.log('audio', 'Charlotte syllables completed successfully');
       
       // Track vocabulary learning for all users
       DebugLogger.log('story', 'Syllables: Adding to vocabulary for word', { word: props.word });
@@ -1661,7 +1690,7 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
       }
       
     } catch (error) {
-      DebugLogger.error('audio', 'Interactive word syllables failed', error);
+      DebugLogger.error('audio', 'Charlotte syllables failed', error);
       toast({
         title: "Error",
         description: "Could not play syllable breakdown. Please try again.",

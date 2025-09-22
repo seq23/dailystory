@@ -5,7 +5,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import type { UserInfo } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { PhoneticRulesEngine } from "@/services/phoneticRulesEngine";
-import { SimplifiedAudioEngine } from "@/services/SimplifiedAudioEngine";
+import { charlotteVoiceService } from "@/services/CharlotteVoiceService";
 import { VocabularyLevelClassifier } from "@/utils/vocabularyLevelClassifier";
 import { getGlobalAddVocabularyWord } from "@/utils/gamificationGlobals";
 import { VocabularyTrackingService } from "@/services/vocabularyTrackingService";
@@ -29,7 +29,6 @@ export const MobileOptimizedInteractiveWord = React.memo((props: MobileOptimized
   const [showMobileModal, setShowMobileModal] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoadingWordData, setIsLoadingWordData] = useState(false);
-  const audioEngine = SimplifiedAudioEngine.getInstance();
   const { toast } = useToast();
   const [hasCountedReview, setHasCountedReview] = useState(false);
   
@@ -170,11 +169,10 @@ if (props.forceModal || isMobileOrTablet) {
       if (isPlaying) return;
       setIsPlaying(true);
       try {
-        // CRITICAL FIX: Lazy load audio service only when needed
-        const { InteractiveWordAudioService } = await import('@/services/InteractiveWordAudioService');
-        await InteractiveWordAudioService.hearWord(cleanWord);
+        // Use Charlotte's unified voice service
+        await charlotteVoiceService.charlotteHearWord(cleanWord);
       } catch (e) {
-        DebugLogger.error('audio', 'Mobile HearIt failed', e);
+        DebugLogger.error('audio', 'Mobile Charlotte HearIt failed', e);
       } finally {
         setIsPlaying(false);
         markReviewedOnce();
@@ -185,11 +183,47 @@ if (props.forceModal || isMobileOrTablet) {
       if (isLoadingWordData) return;
       setIsLoadingWordData(true);
       try {
-        // CRITICAL FIX: Lazy load audio service only when needed
-        const { InteractiveWordAudioService } = await import('@/services/InteractiveWordAudioService');
-        await InteractiveWordAudioService.explainWord(cleanWord, props.userInfo?.nativeLanguage || 'en');
+        // Use Charlotte's unified voice service with multilingual support
+        if (props.userInfo?.nativeLanguage === 'en' || !props.userInfo?.nativeLanguage) {
+          await charlotteVoiceService.charlotteExplainWord(cleanWord, 'en');
+        } else {
+          // For non-English users, get definition first then translate
+          const { data: definition } = await supabase.functions.invoke('word-dictionary', {
+            body: { 
+              word: cleanWord, 
+              userLevel: difficulty,
+              userLanguage: 'en'
+            }
+          });
+          
+          if (definition?.definition) {
+            // Translate explanation to user's native language
+            const { data: translationResult } = await supabase.functions.invoke('translate-universal', {
+              body: {
+                text: definition.definition,
+                targetLanguage: props.userInfo.nativeLanguage,
+                sourceLanguage: 'en',
+                context: 'word_explanation'
+              }
+            });
+            
+            if (translationResult?.translatedText) {
+              // Use browser TTS for non-English (cost-effective)
+              if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(translationResult.translatedText);
+                utterance.lang = props.userInfo.nativeLanguage;
+                utterance.rate = 0.8;
+                window.speechSynthesis.speak(utterance);
+              }
+            } else {
+              // Fallback to Charlotte if translation fails
+              await charlotteVoiceService.charlotteExplainWord(cleanWord, 'en');
+            }
+          }
+        }
       } catch (e) {
-        DebugLogger.error('story', 'Mobile Explain failed', e);
+        DebugLogger.error('story', 'Mobile Charlotte Explain failed', e);
       } finally {
         setIsLoadingWordData(false);
         markReviewedOnce();
@@ -199,12 +233,11 @@ if (props.forceModal || isMobileOrTablet) {
     const handleSyllables = async () => {
       try {
         setIsPlaying(true);
-        // CRITICAL FIX: Lazy load audio service only when needed
-        const { InteractiveWordAudioService } = await import('@/services/InteractiveWordAudioService');
-        await InteractiveWordAudioService.syllableWord(cleanWord);
+        // Use Charlotte's unified voice service
+        await charlotteVoiceService.charlotteSyllableWord(cleanWord);
         setIsPlaying(false);
       } catch (e) {
-        DebugLogger.error('audio', 'Mobile Syllables failed', e);
+        DebugLogger.error('audio', 'Mobile Charlotte Syllables failed', e);
         setIsPlaying(false);
       } finally {
         markReviewedOnce();
