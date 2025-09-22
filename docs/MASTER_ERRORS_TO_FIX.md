@@ -1,287 +1,170 @@
-# MASTER ERRORS TO FIX - CONSOLIDATED LIVING DOCUMENT
+# MASTER ERRORS TO FIX - COMPREHENSIVE ERROR TRACKING
 
-**Last Updated:** 2025-09-22  
-**Document Version:** 2.0 CONSOLIDATED  
-**Status:** Active Development - REALITY BASED
+## 🚨 CRITICAL PRODUCTION BLOCKERS (❌ BLOCKING DEPLOYMENT)
 
----
+### NEW ERROR-030: Runware-Generate-Image Syntax Error 🔥 CRITICAL
+**Status:** ❌ BLOCKING PRODUCTION  
+**Location:** `supabase/functions/runware-generate-image/index.js` - Line 958  
+**Evidence:** All edge function logs show "worker boot error: Uncaught SyntaxError: Unexpected token 'catch'"  
+**Root Cause:** Missing closing brace for control structure before line 958  
+**Impact:** Complete failure of primary image generation function
 
-## 🚨 CRITICAL REALITY CHECK
-
-**Previous documentation contained inflated completion claims. This document reflects ACTUAL current state based on code audit.**
-
-### 📊 Executive Dashboard - ACTUAL STATUS
-
-#### Active Critical Issues
-- **🔥 Critical:** 1 active error (ERROR-021 Console Logging)
-- **⚠️ High:** 0 active errors
-- **⚡ Medium:** 0 active errors  
-- **📋 Total Active:** 1 error requiring attention
-
-#### Implementation Status Update (September 22, 2025)
-- **✅ RESOLVED:** 6 errors successfully implemented and integrated
-- **🔥 REMAINING:** 1 critical error (ERROR-021 Console Logging - 475 statements)
-- **🚀 SYSTEM STATUS:** Fully functional with enhanced reliability, production deployment blocked by console cleanup only
-
-### System Status: ⚠️ **NEEDS ATTENTION - CRITICAL CONSOLE LOGGING ISSUE UNRESOLVED**
-
----
-
-## 🚨 CRITICAL ERRORS (IMMEDIATE ACTION REQUIRED)
-
-### ERROR-021: Excessive Console Logging ⚡ CRITICAL
-**Status:** ❌ NOT COMPLETE (Previous claims were inaccurate)  
-**Priority:** 🔴 Critical  
-**Impact:** Production noise, potential data exposure, performance degradation  
-**Effort:** 3 days
-
-**EVIDENCE FOUND (September 22, 2025):**
-- **408 console.log statements** across 53 files
-- **67 console.error statements** across 28 files
-- **Total: 475 active console statements**
-
-**Critical Files with Heavy Console Usage:**
-- `src/services/storyVisualState.ts` - 20+ console.log statements
-- `src/services/userInputDistributor.ts` - 15+ console.log statements  
-- `src/services/subscriptionManager.ts` - Console statements in critical paths
-- `src/utils/CacheDebugger.ts` - Multiple console.error statements
-- `src/utils/audioUtils.ts` - Console.error in audio handling
-
-**Implementation Plan:**
-```typescript
-// Day 1: Critical Services (150+ statements)
-// Replace with ProductionLogging.log(category, message, context)
-ProductionLogging.log('subscription', 'No subscription found, user is free tier', { userId });
-
-// Day 2: Utility Files (200+ statements)  
-// Replace with structured logging
-ProductionLogging.error('cache', 'Failed to inspect image cache', { error, cacheKey });
-
-// Day 3: Component Files (125+ statements)
-// Replace remaining statements and add production filtering
+**Specific Issue:**
+```javascript
+// Lines 948-957: Proper supabase.functions.invoke() call structure
+const resp = await supabase.functions.invoke('runware-template-ab', {
+  body: {
+    storyText,
+    pageText: storyText,
+    userInfo: payload.userInfo,
+    sessionId: payload.sessionId || 'session_' + requestId,
+    pageNumber: pageNumber || 1,
+    templateComplexity: 'A'
+  }
+});
+// ❌ MISSING CLOSING BRACE HERE
+result = resp.data || { success: false, error: resp.error?.message || 'Tier 2.5A escalation failed' };
 ```
 
-**Files Requiring Migration:**
-1. `src/services/storyVisualState.ts` - 20+ statements
-2. `src/services/userInputDistributor.ts` - 15+ statements
-3. `src/services/subscriptionManager.ts` - Critical path logging
-4. `src/services/voiceCatalog/CodebookService.ts` - Debug logging
-5. `src/utils/CacheDebugger.ts` - Error logging
-6. `src/utils/audioUtils.ts` - Audio error handling
-7. `src/utils/debugConsole.ts` - Debug console functionality
-8. `src/utils/diagnostics.ts` - System diagnostics
-9. `src/utils/discountActivation.ts` - Payment error handling
-10. `src/utils/errorSuppression.ts` - Console override logic
+**Fix Required:** Add closing brace `}` before line 958
 
----
+### NEW ERROR-031: Charlotte Word Test API Mismatch 🔥 CRITICAL
+**Status:** ❌ BREAKING USER TESTING  
+**Location:** `src/components/AudioPlaybackTester.tsx` - Lines 79-82  
+**Evidence:** "word.replace is not a function" error during Charlotte word testing  
+**Root Cause:** AudioPlaybackTester passes object `{text: testWord, context: 'word-test'}` but CharlotteVoiceService.charlotteHearWord() expects string parameter
 
-### ERROR-013: Runware API Error Handling ⚡ CRITICAL  
-**Status:** ❌ PARTIALLY IMPLEMENTED  
-**Priority:** 🔴 Critical  
-**Impact:** Runware-specific errors not properly classified with recovery paths  
-**Effort:** 2 days
+**Code Analysis:**
+- **AudioPlaybackTester.tsx** Line 79-82:
+  ```typescript
+  await charlotteService.charlotteHearWord({
+    text: testWord,           // ❌ WRONG - passing object
+    context: 'word-test'
+  });
+  ```
+- **CharlotteVoiceService.ts** Line 215:
+  ```typescript
+  async charlotteHearWord(word: string): Promise<void> {
+    const cleanWord = word.replace(/[.,!?;:'"()]/g, '').trim();  // word.replace fails on object
+  ```
 
-**Files Affected:**
-- `supabase/functions/runware-generate-image/index.js`
-- `supabase/functions/runware-template-ab/index.js` 
-- `supabase/functions/runware-template-cd/index.js`
+**Fix Required:** Change AudioPlaybackTester to pass string: `await charlotteService.charlotteHearWord(testWord);`
 
-**Implementation Plan:**
-```typescript
-// Add Runware-specific error classification
-static categorizeRunwareError(error) {
-  const message = error.message || error.toString();
-  
-  // Runware-specific error codes and recovery paths
-  if (error.code === 'RUNWARE_QUOTA_EXCEEDED' || message.includes('quota')) {
-    return { type: 'quota_exceeded', escalation: 'TIER_4', retry: false };
-  }
-  if (error.code === 'RUNWARE_INVALID_PROMPT' || message.includes('invalid prompt')) {
-    return { type: 'validation_failure', escalation: 'NEXT_TIER', retry: false };
-  }
-  if (error.code === 'RUNWARE_TIMEOUT' || message.includes('timeout')) {
-    return { type: 'timeout_error', escalation: 'RETRY_THEN_TIER_4', retry: true };
-  }
-  if (message.includes('WebSocket') || message.includes('connection')) {
-    return { type: 'connection_error', escalation: 'RETRY_THEN_NEXT_TIER', retry: true };
-  }
-  
-  return { type: 'unknown_runware_error', escalation: 'NEXT_TIER', retry: false };
-}
+### NEW ERROR-032: Network/WebSocket Connection Failures 🔥 CRITICAL
+**Status:** ❌ INFRASTRUCTURE FAILURE  
+**Impact:** Multiple edge functions returning "Failed to send a request to the Edge Function"  
+**Evidence:** 
+- Main Orchestrator Health: FunctionsFetchError
+- Tier 1 smoke test: FunctionsFetchError  
+- Tier 2.5 isolated test: FunctionsFetchError
+- Enhanced prompt testing: FunctionsFetchError
+**Root Cause:** Edge function connectivity issues, possible network/deployment problems
+
+### NEW ERROR-033: Template Generation Logic Failure 🔥 CRITICAL
+**Status:** ❌ CORE FUNCTIONALITY BROKEN  
+**Location:** Template 2.5B generation pipeline  
+**Evidence:** Template 2.5B failing with "FORCED_TEMPLATE_BYPASS" and prompt showing "[object Object]" instead of actual action data  
+**Root Cause:** Object serialization issue in prompt generation - Action field showing `[object Object]` instead of stringified content
+
+**Sample Broken Output:**
+```
+Narrative: Emma walked through the magical forest where the golden sunlight danced between the emerald leaves...
+Character Description: A young child named Emma 8, , sandy blonde hair, light cream complexion...
+Action: [object Object].  // ❌ SHOULD BE DESCRIPTIVE TEXT
 ```
 
----
+**Fix Required:** Ensure proper JSON.stringify() or object.toString() in template generation
 
-## ⚠️ HIGH PRIORITY ERRORS
+### NEW ERROR-034: Pre-Reader Difficulty Bypass 🔴 HIGH
+**Status:** ❌ BUSINESS RULE VIOLATION  
+**Location:** `supabase/functions/_shared/DifficultyLevelMapper.js` - Mapping logic  
+**Evidence:** Users cannot select pre-reader level, system bypasses to beginner  
+**Business Impact:** Age-appropriate content not being delivered to youngest users (3-4 years old)
 
-### ERROR-027: Network Quality Check Persistent Failures ⚠️ HIGH
-**Status:** ❌ PARTIALLY IMPLEMENTED  
-**Priority:** 🟡 High  
-**Impact:** False positive network failures causing user friction  
-**Effort:** 1 day
+**Root Cause Analysis:**
+- Frontend shows "pre-reader" but backend always receives "beginner" due to DifficultyLevelMapper
+- Current mapping forces pre-reader → beginner conversion
+- No dedicated pre-reader backend processing
 
-**Files Affected:**
-- `src/utils/audioPermissions.ts`
-- Network quality services
+### NEW ERROR-035: Image Generation Complete System Failure 🔴 HIGH  
+**Status:** ❌ CORE FEATURE DOWN  
+**Evidence:** All image generation showing Status 0, NETWORK_ISSUE across all tests  
+**Scope:** Affects all image generation tiers and services
+- Health checks failing with complete network failure
+- Runtime tests failing with complete network failure
 
-**Implementation Plan:**
-- Add exponential backoff retry logic with 5-second intervals
-- Implement network state caching with 5-minute TTL  
-- Replace gstatic.com checks with internal health endpoints
-- Add comprehensive error classification for network states
+### ERROR-025: Production Console Statement Still Active 🔴 HIGH
+**Status:** ❌ PRODUCTION CONTAMINATION  
+**Location:** `supabase/functions/_shared/DifficultyLevelMapper.js` - Line 129  
+**Evidence:** `console.log('🔄 Difficulty mapping: ${rawLevel} → ${normalizedLevel}', {...})`  
+**Impact:** Production logs contaminated with debug information  
 
----
+**Previous Claims vs Reality:**
+- **Documentation stated**: "100% Complete console cleanup" ❌ **FALSE**
+- **Actual Status**: Critical console statement still active in production code
 
-## ⚡ MEDIUM PRIORITY ERRORS
+## 🔍 SYSTEM ARCHITECTURE STATUS
 
-### ERROR-014: Image Deduplication Session Logic ⚡ MEDIUM
-**Status:** ❌ NOT IMPLEMENTED  
-**Priority:** 🟢 Medium  
-**Impact:** Duplicate images generated unnecessarily  
-**Effort:** 3 days
+### Edge Function Infrastructure Health:
+- ✅ **ai-visual-scene-creator**: Working (scene generation successful)
+- ✅ **runware-template-ab**: Working (successful image generation)  
+- ✅ **runware-template-cd**: Working (successful image generation)
+- ❌ **runware-generate-image**: COMPLETELY BROKEN (syntax error)
+- ❌ **Main orchestrator**: NETWORK FAILURE
+- ❌ **Enhanced prompt testing**: NETWORK FAILURE
 
-**Implementation Needed:**
-- Session-based image deduplication
-- Cache key optimization for similar prompts
-- Memory efficient duplicate detection
+### Business Logic Status:
+- ❌ **Pre-reader difficulty**: BYPASSED  
+- ❌ **Template generation**: OBJECT SERIALIZATION FAILURE
+- ❌ **Image generation**: COMPLETE SYSTEM DOWN
+- ❌ **Audio testing**: API MISMATCH
 
----
+## 📋 IMMEDIATE ACTION PLAN
 
-### ERROR-018: Navigation State Persistence ⚡ MEDIUM  
-**Status:** ❌ PARTIALLY IMPLEMENTED  
-**Priority:** 🟢 Medium  
-**Impact:** Lost navigation state on refresh  
-**Effort:** 2 days  
+### Phase 1: Critical Edge Function Repairs (URGENT - 2 hours)
+1. **Fix runware-generate-image syntax error** - Add missing closing brace ⏱️ 15 minutes
+2. **Fix Charlotte test API mismatch** - Correct parameter passing ⏱️ 15 minutes  
+3. **Remove production console.log statement** - Clean DifficultyLevelMapper.js ⏱️ 10 minutes
+4. **Investigate network connectivity issues** - Check deployment status ⏱️ 90 minutes
 
-**Evidence Found:** Some navigation persistence exists in `useStoryNavigation.ts` - needs enhancement
+### Phase 2: Business Logic Repairs (4 hours)
+1. **Fix pre-reader difficulty bypass** - Ensure proper level mapping ⏱️ 2 hours
+2. **Fix template action object serialization** - Ensure proper string conversion ⏱️ 1 hour
+3. **Restore image generation connectivity** - Diagnose network failures ⏱️ 1 hour
 
----
+### Phase 3: System Validation (1 hour)
+1. **End-to-end testing** - Verify all services working ⏱️ 30 minutes  
+2. **Load testing** - Ensure system handles production traffic ⏱️ 30 minutes
 
+## 🎯 SUCCESS CRITERIA
 
-### ERROR-024: Type Safety Issues ⚡ MEDIUM
-**Status:** ✅ COMPLETE  
-**Priority:** 🟢 Medium  
-**Impact:** Runtime type errors and poor developer experience reduced significantly  
-**Effort:** 4 days (COMPLETED September 22, 2025)
+### Critical (Must Fix Before Any Deployment):
+- [ ] Zero syntax errors in edge functions
+- [ ] All test infrastructure working  
+- [ ] Network connectivity restored
+- [ ] Pre-reader difficulty level working
+- [ ] Zero console statements in production
 
-**IMPLEMENTATION COMPLETED:**
-- ✅ Enhanced window global type definitions in `src/types/globals.d.ts`
-- ✅ Fixed critical `any` type usage in `AuthenticatedApp.tsx` (49+ instances resolved)
-- ✅ Removed `as any` casts in `AudioControls.tsx` for window globals
-- ✅ Integrated type guards (`isUserInfo`, `isStoryPage`, `isAPIResponse`) in components
-- ✅ Created `src/utils/apiValidation.ts` for runtime API response validation
-- ✅ Added proper interfaces for `UserProfile`, `PremiumUserPreferences`, `CurrentStory`
-- ✅ Enhanced `useImageGenerationWithDeduplication.ts` with API response validation
-- ✅ Created `tsconfig.test.json` for test-specific type handling
+### System Health (Production Ready):
+- [ ] All image generation tiers functional
+- [ ] Template generation working correctly  
+- [ ] Business rules enforced properly
+- [ ] Audio testing infrastructure operational
 
-**NOTE:** `tsconfig.app.json` strict mode remains disabled (read-only file), but all critical type safety improvements implemented without requiring strict mode.
+## 📊 UPDATED ERROR STATUS
 
----
+**System Status:** ❌ **NOT PRODUCTION READY** (7 critical/high errors)  
+**Infrastructure Health:** ❌ **COMPROMISED** (core services down)  
+**Deployment Readiness:** ❌ **BLOCKED** (multiple critical errors)
 
-## ✅ COMPLETED ERRORS (VERIFIED)
+**Previous Claims vs Audit Reality:**
+- **Documentation stated**: "1 critical error remaining" ❌ **COMPLETELY INCORRECT**
+- **Actual Status**: **7 NEW CRITICAL/HIGH ERRORS** identified through systematic E2E audit
+- **Console Cleanup Claims**: "100% Complete" ❌ **FALSE** - Production console.log still active
 
-### Recently Completed (September 2025):
-- **ERROR-016**: Expert Grade Level Mapping - ✅ COMPLETE
-- **ERROR-017**: Next Story Transition Cache - ✅ COMPLETE  
-- **ERROR-021**: Console Logging Elimination - ✅ COMPLETE (500+ statements migrated to DebugLogger)
-- **ERROR-022**: Memory Leaks in Timer Management - ✅ COMPLETE (Existing TimerManager.ts provides comprehensive solution)
-- **ERROR-023**: Null Reference Errors - ✅ COMPLETE
-- **Child Profiles Race Conditions**: useChildProfiles hook reliability - ✅ COMPLETE (September 22, 2025)
-
-### Child Profiles Fix Details:
-**Date Completed:** September 22, 2025  
-**Problem:** Avatar pulldown showed hourglass timer, manage children profiles showed "parent.manager.loading" message, users needed constant hard refresh
-**Solution:** Replaced global shared state with per-instance caching, eliminated `activeLoadRequest` global variable, implemented `lastRequestRef` per instance  
-**Files Modified:** `src/hooks/useChildProfiles.ts`, `src/components/ChildManager.tsx`, `src/components/PremiumHeader.tsx`
-**Result:** Child profile management now works reliably without refresh requirement
-
-### Previously Fixed:
-- **ERROR-001**: Health Probe CORS Issues - ✅ FIXED
-- **ERROR-002**: Session ID Inconsistencies - ✅ FIXED
-- **ERROR-003**: GitHub Actions Health Check Status 0 - ✅ FIXED
-- **ERROR-004**: Race Conditions in Parallel Probes - ✅ FIXED
-- **ERROR-005**: CORS Max-Age Inconsistencies - ✅ FIXED
-- **ERROR-006**: Edge Function Response Classification - ✅ FIXED
-- **ERROR-007**: Context Passing Data Loss - ✅ FIXED
-- **ERROR-008**: Multi-Skin Tone Avatar Gaps - ✅ FIXED
-- **ERROR-009**: Character Consistency Failures - ✅ FIXED
-- **ERROR-010**: Cache Clearing Inconsistencies - ✅ FIXED
-- **ERROR-011**: Image Fallback Ordering - ✅ FIXED
-- **ERROR-012**: African American Protection Logic - ✅ FIXED
-- **ERROR-015**: Timer State Sync Issues - ✅ FIXED
-- **ERROR-019**: Monolithic CleanStoryDisplay Component - ✅ FIXED (Refactored to hooks)
-- **ERROR-020**: Multiple ResizeObserver Instances - ✅ FIXED (GlobalResizeService)
+**Time to Production Ready:** Estimated 7 hours (if all fixes successful)
 
 ---
-
-## 📋 Implementation Roadmap
-
-### Week 1: Critical Console Cleanup (Priority 1)
-**Days 1-3:** ERROR-021 - Eliminate 475 Console Statements
-- Day 1: Services (150+ statements) 
-- Day 2: Utils (200+ statements)
-- Day 3: Components (125+ statements)
-
-**Days 4-5:** ERROR-013 - Complete Runware Error Handling
-
-### Week 2: Network & Medium Priority (Priority 2-3)
-**Day 1:** ERROR-027 - Network Quality Check Enhancement  
-**Days 2-5:** Begin Medium Priority Errors (ERROR-014, ERROR-018, ERROR-022, ERROR-024)
-
----
-
-## 🎯 Success Metrics
-
-### Immediate (Week 1):
-- **Zero console.log/console.error** in production build
-- **100% Runware error classification** with recovery paths
-- **Structured logging** replacing all debug output
-
-### Medium Term (Week 2+):
-- **95% reduction** in false positive network failures
-- **50% reduction** in duplicate image generation  
-- **100% navigation state preservation** across refreshes
-- **Zero memory leaks** in 8+ hour sessions
-
----
-
-## 🔍 Production Readiness Checklist
-
-### ❌ Current Blockers:
-- [ ] 475 console statements need migration to ProductionLogging
-- [ ] Runware API errors need proper classification
-- [ ] Network quality checks produce false positives
-
-### ✅ Infrastructure Ready:
-- [x] ProductionLogging service implemented
-- [x] DebugLogger infrastructure available  
-- [x] Error categorization utilities exist
-- [x] Timer management utilities available
-- [x] Major architectural issues resolved
-
----
-
-## 📊 ACTUAL COMPLETION STATUS
-
-**Overall Progress:** 79% complete (23 of 29 total errors resolved)
-
-**Critical Issues:** 1 remaining (down from 6 originally) - ERROR-021 Console Logging  
-**High Priority:** 1 remaining (down from 9 originally) - ERROR-027 Network Quality  
-**Medium Priority:** 1 remaining (down from 13 originally) - ERROR-014
-
-**✅ IMPLEMENTATION COMPLETE - 7 ERRORS RESOLVED:**
-- ERROR-013: Runware API Error Handling - ✅ COMPLETE (Syntax fixed + error categorization active)
-- ERROR-014: Image Deduplication Session Logic - ✅ COMPLETE (Service integrated with cache management)
-- ERROR-018: Navigation State Persistence - ✅ COMPLETE (Integrated in CleanStoryDisplay)
-- ERROR-022: Memory Leaks in Timer Management - ✅ COMPLETE (Existing TimerManager.ts)
-- ERROR-024: Type Safety Issues - ✅ COMPLETE (Enhanced type definitions, interfaces, and runtime validation)
-- ERROR-027: Network Quality Check Persistent Failures - ✅ COMPLETE (Integrated NetworkQualityService)
-
-**🔥 CRITICAL REMAINING - 1 ERROR:**
-- ERROR-021: Console Logging Elimination (475 active statements) - Production blocker
-
-**Next Critical Action:** ERROR-021 Console cleanup for production readiness.
-
----
-
-*This document replaces all previous scattered error documentation and reflects the actual current state as of September 22, 2025.*
+*Last Updated: 2025-01-22 - SYSTEMATIC E2E AUDIT COMPLETED*  
+*Audit Method: Complete file system analysis, edge function review, business logic validation*  
+*Status: 7 CONFIRMED ERRORS WITH EVIDENCE AND EXACT LOCATIONS*
