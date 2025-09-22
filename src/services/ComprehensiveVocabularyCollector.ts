@@ -15,6 +15,7 @@ import {
 import { phoneticDictionary } from '@/utils/phoneticDictionary';
 import autoPhonicsFromVocab from '@/data/autoPhonicsFromVocab';
 import phonicsMiniDict from '@/data/phonicsMiniDict';
+import { DebugLogger } from '@/services/DebugLogger';
 
 export interface VocabularyEntry {
   word: string;
@@ -54,7 +55,7 @@ export class ComprehensiveVocabularyCollector {
     Object.keys(phonicsMiniDict).forEach(word => allWords.add(word.toLowerCase()));
 
     this.allWordsCache = allWords;
-    console.log(`Collected ${allWords.size} unique words from educational standards + phonetic sources`);
+    DebugLogger.log('performance', `Collected ${allWords.size} unique words from educational standards + phonetic sources`);
     
     return allWords;
   }
@@ -127,7 +128,7 @@ export class ComprehensiveVocabularyCollector {
     });
 
     this.vocabularyCache = entries;
-    console.log(`Created ${entries.size} vocabulary entries with educational compliance metadata`);
+    DebugLogger.log('performance', `Created ${entries.size} vocabulary entries with educational compliance metadata`);
     
     return entries;
   }

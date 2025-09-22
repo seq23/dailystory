@@ -4,6 +4,7 @@
  */
 
 import { logger } from './LoggerService';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface RetryConfig {
   maxRetries: number;
@@ -49,7 +50,7 @@ export class NetflixRetryService {
     const circuitKey = `netflix-${operationName}`;
     const isNextStory = operationName.includes('next-story');
     
-    console.log(`🔄 [NETFLIX-RETRY] Starting ${operationName} with config:`, {
+    DebugLogger.log('story', `NETFLIX-RETRY: Starting ${operationName}`, {
       maxRetries: finalConfig.maxRetries,
       isNextStory,
       circuitKey
@@ -58,7 +59,7 @@ export class NetflixRetryService {
     // Check circuit breaker with special handling for next story
     if (this.isCircuitOpen(circuitKey)) {
       if (isNextStory) {
-        console.log(`🔄 [NETFLIX-RETRY] Circuit breaker open for next story - attempting reset`);
+        DebugLogger.log('story', 'NETFLIX-RETRY: Circuit breaker open for next story - attempting reset');
         this.resetCircuitBreaker(circuitKey);
       } else {
         logger.warn(`Circuit breaker open for ${operationName}, failing fast`);
@@ -174,7 +175,7 @@ export class NetflixRetryService {
       this.circuitBreakerConfig.nextStoryThreshold : 
       this.circuitBreakerConfig.failureThreshold;
     
-    console.log(`🔄 [NETFLIX-RETRY] Recording failure for ${circuitKey}: ${state.failures}/${threshold} (next story: ${isNextStory})`);
+    DebugLogger.warn('story', `NETFLIX-RETRY: Recording failure for ${circuitKey}: ${state.failures}/${threshold} (next story: ${isNextStory})`);
     
     // Open circuit if threshold exceeded
     if (state.failures >= threshold) {

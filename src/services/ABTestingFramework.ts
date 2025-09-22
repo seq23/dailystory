@@ -217,7 +217,7 @@ export class ABTestingFramework {
         recentResult.culturalAccuracy = culturalAccuracy;
       }
       
-      console.log(`📝 Recorded user feedback: ${feedback} for session ${sessionId}`);
+      DebugLogger.log('performance', `Recorded user feedback: ${feedback} for session ${sessionId}`);
     }
   }
 

@@ -5,6 +5,7 @@
 // ALL users receive the same high-quality image generation regardless of subscription
 import { SimpleImageService } from '@/services/SimpleImageService';
 import type { UserInfo } from '@/types';
+import { DebugLogger } from '@/services/DebugLogger';
 
 export interface BatchImageConfig {
   concurrencyLimit?: number;
@@ -52,7 +53,7 @@ export class BatchImageService {
           completed++;
           onProgress?.(completed, missing.length);
         } catch (error) {
-          console.warn(`Failed to generate image for page ${pageIndex}:`, error);
+          DebugLogger.warn('image', `Failed to generate image for page ${pageIndex}`, error);
           onError?.(pageIndex, error);
           completed++;
           onProgress?.(completed, missing.length);

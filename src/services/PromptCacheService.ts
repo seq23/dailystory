@@ -1,6 +1,8 @@
 // Prompt Cache Service - Implements Phase 4: Prompt Caching & Progressive Enhancement
 // Provides caching and progressive enhancement for repeated generations
 
+import { DebugLogger } from '@/services/DebugLogger';
+
 export interface CachedPrompt {
   prompt: string;
   sessionId: string;
@@ -80,7 +82,7 @@ export class PromptCacheService {
     const enhancedPrompt = this.applyProgressiveEnhancements(cached.prompt);
     const appliedEnhancements = this.getAppliedEnhancements(cached.prompt);
 
-    console.log(`📦 Cache hit for session ${sessionId}, page ${pageNumber}`);
+    DebugLogger.log('performance', `Cache hit for session ${sessionId}, page ${pageNumber}`);
 
     return {
       cached: true,
@@ -130,7 +132,7 @@ export class PromptCacheService {
     // Cleanup if cache is too large
     this.cleanupCache();
 
-    console.log(`💾 Cached prompt for session ${sessionId}, page ${pageNumber}, success: ${generationSuccess}`);
+    DebugLogger.log('performance', `Cached prompt for session ${sessionId}, page ${pageNumber}, success: ${generationSuccess}`);
   }
 
   /**
@@ -178,7 +180,7 @@ export class PromptCacheService {
       }
     }
 
-    console.log(`🧠 Learned from successful generation, total patterns: ${this.enhancements.size}`);
+    DebugLogger.log('performance', `Learned from successful generation, total patterns: ${this.enhancements.size}`);
   }
 
   /**
@@ -289,7 +291,7 @@ export class PromptCacheService {
       this.cache.delete(entries[i][0]);
     }
 
-    console.log(`🧹 Cleaned up cache, removed ${toRemove} entries, size: ${this.cache.size}`);
+    DebugLogger.log('performance', `Cleaned up cache, removed ${toRemove} entries, size: ${this.cache.size}`);
   }
 
   /**
@@ -327,7 +329,7 @@ export class PromptCacheService {
       }
     }
 
-    console.log(`🗑️ Cleared ${cleared} cache entries for session ${sessionId}`);
+    DebugLogger.log('performance', `Cleared ${cleared} cache entries for session ${sessionId}`);
     return cleared;
   }
 

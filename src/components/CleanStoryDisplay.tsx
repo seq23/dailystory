@@ -1077,37 +1077,18 @@ useEffect(() => {
     }
   }, []);
 
-  // Use difficulty management from hook instead of local state
+  // For now, keeping difficulty management as component state since useStoryLogic interface needs updates
   const difficultyLevels: string[] = ['pre-reader', 'beginner', 'developing', 'independent', 'advanced'];
-  
-  const {
-    currentDifficulty,
-    isChangingDifficulty,
-    changeDirection,
-    expertGradeLevel,
-    lockDifficulty,
-    minDifficulty,
-    minExpertGrade,
-    allowDecreaseBelowMin,
-    highlightSave,
-    isSaving
-  } = hookState;
-
-  const {
-    setCurrentDifficulty,
-    setIsChangingDifficulty,
-    setChangeDirection,
-    setExpertGradeLevel,
-    setLockDifficulty,
-    setMinDifficulty,
-    setMinExpertGrade,
-    setAllowDecreaseBelowMin,
-    setHighlightSave,
-    setIsSaving,
-    increaseDifficulty,
-    decreaseDifficulty,
-    resetDifficultyToMin
-  } = hookActions;
+  const [currentDifficulty, setCurrentDifficulty] = useState<string>(userInfo.difficultyLevel || 'beginner');
+  const [isChangingDifficulty, setIsChangingDifficulty] = useState(false);
+  const [changeDirection, setChangeDirection] = useState<'increase' | 'decrease' | 'badge'>();
+  const [expertGradeLevel, setExpertGradeLevel] = useState<"6th" | "7th" | "8th" | "9th" | "10th">("6th");
+  const [lockDifficulty, setLockDifficulty] = useState(false);
+  const [minDifficulty, setMinDifficulty] = useState<string>('beginner');
+  const [minExpertGrade, setMinExpertGrade] = useState<"6th" | "7th" | "8th" | "9th" | "10th">("6th");
+  const [allowDecreaseBelowMin, setAllowDecreaseBelowMin] = useState(false);
+  const [highlightSave, setHighlightSave] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   
   useEffect(() => {
     if (!isPremium) return;

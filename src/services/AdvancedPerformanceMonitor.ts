@@ -254,7 +254,7 @@ export class AdvancedPerformanceMonitor {
     newStrategy: string;
     modifiedPrompt?: string;
   } {
-    console.error(`🔄 Generation attempt ${attempt} failed: ${error}`);
+    DebugLogger.error('performance', `Generation attempt ${attempt} failed: ${error}`);
     
     if (attempt >= 3) {
       return { shouldRetry: false, newStrategy: 'manual-fallback' };
