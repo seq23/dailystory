@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { CheckCircle, AlertTriangle, Zap, TrendingUp, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { DebugLogger } from '@/services/DebugLogger';
+import { ManagedTimers } from '@/utils/TimerManager';
 
 export function AdvancedSystemStatus() {
   const [status, setStatus] = React.useState({
@@ -41,8 +42,10 @@ export function AdvancedSystemStatus() {
     
     // EMERGENCY: Auto-refresh disabled by default - only enable if explicitly requested and page is visible
     if (manualRefreshEnabled && document.visibilityState === 'visible') {
-      const interval = setInterval(checkSystems, 120000); // 2 minutes if enabled
-      return () => clearInterval(interval);
+      const interval = ManagedTimers.setInterval(checkSystems, 120000, 'AdvancedSystemStatus'); // 2 minutes if enabled
+      return () => {
+        ManagedTimers.clearTimer(interval);
+      };
     }
   }, [manualRefreshEnabled]);
 

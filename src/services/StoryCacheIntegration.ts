@@ -4,6 +4,7 @@
  */
 
 import { EnhancedImageCache } from './enhancedImageCache';
+import { ProductionLogging } from '@/services/ProductionLogger';
 
 export interface StoryImageMetadata {
   storyHash: string;
@@ -49,7 +50,7 @@ export class StoryCacheIntegration {
       generationTimestamps[pageNum] = Date.now();
     }
 
-    console.log('📚 Story images cached:', {
+    ProductionLogging.debug('STORY_CACHE', 'Story images cached', 'StoryCacheIntegration', {
       storyHash,
       totalImages: cacheKeys.length,
       sessionId
@@ -97,7 +98,7 @@ export class StoryCacheIntegration {
       }
     }
 
-    console.log('📚 Story images loaded from cache:', {
+    ProductionLogging.debug('STORY_CACHE', 'Story images loaded from cache', 'StoryCacheIntegration', {
       storyHash,
       loadedCount: Object.keys(loadedImages).length,
       totalPages: pageCount
@@ -126,7 +127,7 @@ export class StoryCacheIntegration {
           continue;
         }
       } catch (error) {
-        console.warn(`Image validation failed for page ${pageNum}:`, error);
+        ProductionLogging.warn('STORY_CACHE', `Image validation failed for page ${pageNum}`, 'StoryCacheIntegration', { error });
       }
 
       // Fallback to cache
@@ -135,9 +136,9 @@ export class StoryCacheIntegration {
       
       if (cachedUrl) {
         validatedImages[pageNum] = cachedUrl;
-        console.log(`📚 Using cached fallback for page ${pageNum}`);
+        ProductionLogging.debug('STORY_CACHE', `Using cached fallback for page ${pageNum}`, 'StoryCacheIntegration');
       } else {
-        console.warn(`No cached fallback available for page ${pageNum}`);
+        ProductionLogging.warn('STORY_CACHE', `No cached fallback available for page ${pageNum}`, 'StoryCacheIntegration');
       }
     }
 
@@ -177,7 +178,7 @@ export class StoryCacheIntegration {
 
     if (removed > 0) {
       EnhancedImageCache['saveCacheMap'](map);
-      console.log(`📚 Cleaned up ${removed} old story cache entries`);
+      ProductionLogging.debug('STORY_CACHE', `Cleaned up ${removed} old story cache entries`, 'StoryCacheIntegration');
     }
   }
 }

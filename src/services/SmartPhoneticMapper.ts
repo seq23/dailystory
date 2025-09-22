@@ -5,6 +5,8 @@ import { phoneticDictionary } from '@/utils/phoneticDictionary';
 import autoPhonicsFromVocab from '@/data/autoPhonicsFromVocab';
 import phonicsMiniDict from '@/data/phonicsMiniDict';
 import { phoneticRulesEngine } from '@/services/phoneticRulesEngine';
+import { ProductionLogging } from '@/services/ProductionLogger';
+import { ManagedTimers } from '@/utils/TimerManager';
 
 export interface PhoneticMapping {
   word: string;
@@ -77,7 +79,7 @@ export class SmartPhoneticMapper {
           confidence: 'medium'
         };
       } catch (error) {
-        console.warn(`Failed to generate phonetics for "${normalized}":`, error);
+        ProductionLogging.warn('PHONETIC', `Failed to generate phonetics for "${normalized}"`, 'SmartPhoneticMapper', { error });
         // Fallback to basic pronunciation guess
         mapping = {
           word: normalized,
@@ -171,7 +173,7 @@ export class SmartPhoneticMapper {
   static async batchGeneratePhonetics(words: string[], context: 'learning' | 'conversation' = 'learning'): Promise<PhoneticMapping[]> {
     const mappings: PhoneticMapping[] = [];
     
-    console.log(`Generating phonetic mappings for ${words.length} words...`);
+    ProductionLogging.debug('PHONETIC', `Generating phonetic mappings for ${words.length} words`, 'SmartPhoneticMapper');
     
     // Process in smaller batches to avoid overwhelming the system
     const batchSize = 50;
@@ -185,23 +187,23 @@ export class SmartPhoneticMapper {
         
         if (i + batchSize < words.length) {
           // Small delay between batches to prevent rate limiting
-          await new Promise(resolve => setTimeout(resolve, 100));
+          await new Promise(resolve => ManagedTimers.setTimeout(() => resolve(undefined), 100, 'SmartPhoneticMapper'));
         }
       } catch (error) {
-        console.error(`Error processing batch ${i}-${i + batchSize}:`, error);
+        ProductionLogging.error('PHONETIC', `Error processing batch ${i}-${i + batchSize}`, 'SmartPhoneticMapper', { error });
         // Continue with individual processing for this batch
         for (const word of batch) {
           try {
             const mapping = await this.getPhoneticMapping(word, context);
             mappings.push(mapping);
           } catch (wordError) {
-            console.error(`Failed to process word "${word}":`, wordError);
+            ProductionLogging.error('PHONETIC', `Failed to process word "${word}"`, 'SmartPhoneticMapper', { wordError });
           }
         }
       }
     }
 
-    console.log(`Generated ${mappings.length} phonetic mappings`);
+    ProductionLogging.debug('PHONETIC', `Generated ${mappings.length} phonetic mappings`, 'SmartPhoneticMapper');
     return mappings;
   }
 

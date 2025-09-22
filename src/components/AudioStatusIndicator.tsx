@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Volume2, Wifi, WifiOff } from 'lucide-react';
+import { ManagedTimers } from '@/utils/TimerManager';
 
 interface AudioStatusIndicatorProps {
   className?: string;
@@ -19,7 +20,7 @@ export const AudioStatusIndicator: React.FC<AudioStatusIndicatorProps> = ({ clas
       setIsVisible(true);
       
       // Auto-hide after 5 seconds
-      setTimeout(() => setIsVisible(false), 5000);
+      ManagedTimers.setTimeout(() => setIsVisible(false), 5000, 'AudioStatusIndicator');
     };
 
     const handleAudioReady = () => {

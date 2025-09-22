@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { ProductionLogging } from '@/services/ProductionLogger';
 
 export class CharlotteLexiconIntegration {
   private static dictionaryId: string | null = null;
@@ -10,13 +11,13 @@ export class CharlotteLexiconIntegration {
    */
   static async initialize(): Promise<void> {
     try {
-      console.log('Initializing Charlotte lexicon...');
+      ProductionLogging.debug('LEXICON', 'Initializing Charlotte lexicon', 'charlotteLexiconIntegration');
       
       // Check if dictionary already exists
       const existingDict = await this.checkExistingDictionary();
       if (existingDict) {
         this.dictionaryId = existingDict;
-        console.log('Charlotte lexicon already exists:', existingDict);
+        ProductionLogging.debug('LEXICON', 'Charlotte lexicon already exists', 'charlotteLexiconIntegration', { existingDict });
         return;
       }
 
@@ -24,12 +25,12 @@ export class CharlotteLexiconIntegration {
       const result = await this.uploadDictionary();
       if (result.success) {
         this.dictionaryId = result.dictionaryId;
-        console.log('Charlotte lexicon uploaded successfully:', result.dictionaryId);
+        ProductionLogging.debug('LEXICON', 'Charlotte lexicon uploaded successfully', 'charlotteLexiconIntegration', { dictionaryId: result.dictionaryId });
       } else {
-        console.error('Failed to upload Charlotte lexicon:', result.error);
+        ProductionLogging.error('LEXICON', 'Failed to upload Charlotte lexicon', 'charlotteLexiconIntegration', { error: result.error });
       }
     } catch (error) {
-      console.error('Charlotte lexicon initialization failed:', error);
+      ProductionLogging.error('LEXICON', 'Charlotte lexicon initialization failed', 'charlotteLexiconIntegration', { error });
     }
   }
 
@@ -48,14 +49,14 @@ export class CharlotteLexiconIntegration {
       });
 
       if (error) {
-        console.error('Dictionary check failed:', error);
+        ProductionLogging.error('LEXICON', 'Dictionary check failed', 'charlotteLexiconIntegration', { error });
         return null;
       }
 
       this.lastCheck = now;
       return data?.charlotteDictionaryId || null;
     } catch (error) {
-      console.error('Dictionary check error:', error);
+      ProductionLogging.error('LEXICON', 'Dictionary check error', 'charlotteLexiconIntegration', { error });
       return null;
     }
   }

@@ -9,6 +9,7 @@ import { EnhancedSubscriptionManager } from "@/services/enhancedSubscriptionMana
 import { SubscriptionGate } from "@/components/SubscriptionGate";
 import { useLocation } from "react-router-dom";
 import { activateSequoiaDiscount } from "@/utils/discountActivation";
+import { ManagedTimers } from '@/utils/TimerManager';
 
 export const AuthWrapper = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -51,9 +52,9 @@ export const AuthWrapper = () => {
       
       // Defer async work to avoid deadlocks
       if (session?.user) {
-        setTimeout(() => {
+        ManagedTimers.setTimeout(() => {
           checkSubscription();
-        }, 0);
+        }, 0, 'AuthWrapper');
       } else {
         setIsPremium(null);
         // Clear all caches and session data when signing out
@@ -137,9 +138,9 @@ export const AuthWrapper = () => {
         if (!error && data?.activated) {
           DebugLogger.log('auth', 'Discount code activated:', data.message);
           // Show success toast
-          setTimeout(() => {
+          ManagedTimers.setTimeout(() => {
             (window as any).__showDiscountActivationToast?.(data.message);
-          }, 1000);
+          }, 1000, 'AuthWrapper');
         }
       }
     } catch (error) {

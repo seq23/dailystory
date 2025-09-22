@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown, ChevronUp, RefreshCw, Trash2, Bug } from 'lucide-react';
 import { CacheDebugger } from '@/utils/CacheDebugger';
+import { ManagedTimers } from '@/utils/TimerManager';
 
 interface CacheInspectorPanelProps {
   userId?: string;
@@ -48,7 +49,7 @@ export const CacheInspectorPanel: React.FC<CacheInspectorPanelProps> = ({
 
   const clearAllCaches = () => {
     CacheDebugger.clearAllCachesWithLogging('manual-debug-clear', sessionId);
-    setTimeout(refreshCacheData, 500);
+    ManagedTimers.setTimeout(refreshCacheData, 500, 'CacheInspectorPanel');
   };
 
   if (!isVisible) return null;

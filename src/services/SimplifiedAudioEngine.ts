@@ -168,7 +168,7 @@ export class SimplifiedAudioEngine {
 
       // Store timing data for synchronization
       this.wordTimings = result.wordTimings;
-      console.log('🎯 Word timings loaded:', {
+      ProductionLogging.debug('AUDIO', 'Word timings loaded', 'SimplifiedAudioEngine', {
         count: this.wordTimings.length,
         firstWord: this.wordTimings[0],
         lastWord: this.wordTimings[this.wordTimings.length - 1],
@@ -219,7 +219,7 @@ export class SimplifiedAudioEngine {
     
     this.stopWordHighlighting(); // Clear any existing highlighting
     
-    console.log('🎯 Starting native ElevenLabs word highlighting:', {
+    ProductionLogging.debug('AUDIO', 'Starting native ElevenLabs word highlighting', 'SimplifiedAudioEngine', {
       timingsCount: this.wordTimings.length,
       firstWord: this.wordTimings[0]?.word,
       lastWord: this.wordTimings[this.wordTimings.length - 1]?.word,
