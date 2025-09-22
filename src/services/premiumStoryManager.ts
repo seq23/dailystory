@@ -1,5 +1,6 @@
 // Premium Story Management Service
 import { supabase } from '@/integrations/supabase/client';
+import { ProductionLogging } from './ProductionLogger';
 import { Story, UserInfo, DifficultyLevel } from '@/types/index';
 
 export interface SavedStory {
@@ -81,7 +82,7 @@ export class PremiumStoryManager {
       .single();
 
     if (error) {
-      console.error('Error saving story:', error);
+      ProductionLogging.error(`Error saving story: ${error.message}`, 'premiumStoryManager');
       throw new Error('Failed to save story');
     }
 
@@ -104,7 +105,7 @@ export class PremiumStoryManager {
       .order(sortBy, { ascending: sortBy === 'title' });
 
     if (error) {
-      console.error('Error fetching saved stories:', error);
+      ProductionLogging.error(`Error fetching saved stories: ${error.message}`, 'premiumStoryManager');
       throw new Error('Failed to fetch saved stories');
     }
 
@@ -187,7 +188,7 @@ export class PremiumStoryManager {
       .eq('user_id', user.id);
 
     if (error) {
-      console.error('Error updating favorite status:', error);
+      ProductionLogging.error(`Error updating favorite status: ${error.message}`, 'premiumStoryManager');
       throw new Error('Failed to update favorite status');
     }
   }
@@ -220,7 +221,7 @@ export class PremiumStoryManager {
       .single();
 
     if (error) {
-      console.error('Error saving user preferences:', error);
+      ProductionLogging.error(`Error saving user preferences: ${error.message}`, 'premiumStoryManager');
       throw new Error('Failed to save user preferences');
     }
 

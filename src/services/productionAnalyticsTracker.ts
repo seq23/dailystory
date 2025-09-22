@@ -2,6 +2,7 @@
 // Tracks user engagement, template performance, and system health metrics
 
 import { generateSessionIdWithPrefix } from '@/utils/sessionId';
+import { ProductionLogging } from './ProductionLogger';
 
 export interface UserSession {
   sessionId: string;
@@ -60,7 +61,7 @@ export class ProductionAnalyticsTracker {
   static initialize(): void {
     if (this.isInitialized) return;
 
-    console.log('📊 Initializing Production Analytics Tracker...');
+    ProductionLogging.info('Initializing Production Analytics Tracker...', 'productionAnalyticsTracker');
     
     // Set up periodic health monitoring
     // Disabled auto-refresh intervals to prevent unwanted page refreshes
@@ -102,7 +103,7 @@ export class ProductionAnalyticsTracker {
 
     this.sessions.set(sessionId, session);
     
-    console.log(`📝 Started session ${sessionId} for ${isPremium ? 'premium' : 'free'} user`);
+    ProductionLogging.info(`Started session ${sessionId} for ${isPremium ? 'premium' : 'free'} user`, 'productionAnalyticsTracker');
     return sessionId;
   }
 
@@ -191,7 +192,7 @@ export class ProductionAnalyticsTracker {
       }
     });
 
-    console.log(`📋 Ended session ${sessionId} with status: ${completionStatus}`);
+    ProductionLogging.info(`Ended session ${sessionId} with status: ${completionStatus}`, 'productionAnalyticsTracker');
   }
 
   /**
@@ -422,6 +423,6 @@ export class ProductionAnalyticsTracker {
     this.sessions.clear();
     this.templateMetrics.clear();
     this.systemMetrics = [];
-    console.log('🔄 Production Analytics Tracker reset complete');
+    ProductionLogging.info('Production Analytics Tracker reset complete', 'productionAnalyticsTracker');
   }
 }

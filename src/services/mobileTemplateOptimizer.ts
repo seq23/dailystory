@@ -3,6 +3,8 @@
  * Optimizes template loading and processing for mobile devices
  */
 
+// Mobile Template Optimizer with Production Logger
+import { ProductionLogging } from './ProductionLogger';
 import type { DifficultyLevel, UserInfo } from '@/types';
 
 interface MobileOptimizationConfig {
@@ -53,7 +55,7 @@ export class MobileTemplateOptimizer {
     }
 
     if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
-      console.log(`📱 Mobile optimizer initialized: mobile=${this.isMobile}, lowEnd=${this.isLowEndDevice}`);
+      ProductionLogging.info(`Mobile optimizer initialized: mobile=${this.isMobile}, lowEnd=${this.isLowEndDevice}`, 'mobileTemplateOptimizer');
     }
   }
 
@@ -145,7 +147,7 @@ export class MobileTemplateOptimizer {
     const compressedSize = JSON.stringify(optimizedPages).length;
 
     if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
-      console.log(`📱 Template optimized: ${originalSize}→${compressedSize} bytes, ${optimizationsApplied.length} optimizations`);
+      ProductionLogging.info(`Template optimized: ${originalSize}→${compressedSize} bytes, ${optimizationsApplied.length} optimizations`, 'mobileTemplateOptimizer');
     }
 
     return {
@@ -247,7 +249,7 @@ export class MobileTemplateOptimizer {
   static updateConfig(newConfig: Partial<MobileOptimizationConfig>): void {
     this.config = { ...this.config, ...newConfig };
     if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
-      console.log('📱 Mobile optimization config updated:', this.config);
+      ProductionLogging.info(`Mobile optimization config updated: ${JSON.stringify(this.config)}`, 'mobileTemplateOptimizer');
     }
   }
 }

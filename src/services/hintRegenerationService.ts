@@ -2,6 +2,7 @@
 // Regenerates content completely with specific hints for the AI
 
 import { supabase } from '@/integrations/supabase/client';
+import { ProductionLogging } from './ProductionLogger';
 import type { UserInfo, DifficultyLevel } from '@/types';
 import { UnifiedValidator, type ValidationResult } from '@/utils/unifiedValidator';
 
@@ -30,7 +31,7 @@ export class HintRegenerationService {
    * Regenerate content completely using validation hints
    */
   static async regenerateWithHints(request: HintRegenerationRequest): Promise<HintRegenerationResult> {
-    console.log('🔄 HintRegeneration: Starting content regeneration with hints for', request.difficulty);
+    ProductionLogging.info(`Starting content regeneration with hints for ${request.difficulty}`, 'hintRegenerationService');
     
     let attempts = 0;
     let lastError: string | undefined;
@@ -39,7 +40,7 @@ export class HintRegenerationService {
       attempts++;
       
       try {
-        console.log(`🔄 HintRegeneration: Attempt ${attempts}/${this.MAX_REGENERATION_ATTEMPTS}`);
+        ProductionLogging.info(`Attempt ${attempts}/${this.MAX_REGENERATION_ATTEMPTS}`, 'hintRegenerationService');
         
         // Create hint-enhanced prompt
         const hintPrompt = this.createHintPrompt(request, attempts);
@@ -85,7 +86,7 @@ export class HintRegenerationService {
         });
 
         // Backend now handles all validation - trust the response
-        console.log('✅ HintRegeneration: Content regeneration successful');
+        ProductionLogging.info('Content regeneration successful', 'hintRegenerationService');
         
         return {
           success: true,
@@ -94,7 +95,7 @@ export class HintRegenerationService {
         };
 
       } catch (error) {
-        console.error(`❌ HintRegeneration: Attempt ${attempts} failed:`, error);
+        ProductionLogging.error(`Attempt ${attempts} failed:`, 'hintRegenerationService', error);
         lastError = error instanceof Error ? error.message : 'Unknown regeneration error';
         
         // Don't retry on certain errors
@@ -104,7 +105,7 @@ export class HintRegenerationService {
       }
     }
 
-    console.log('❌ HintRegeneration: All regeneration attempts failed');
+    ProductionLogging.error('All regeneration attempts failed', 'hintRegenerationService');
     return {
       success: false,
       error: lastError || 'All regeneration attempts failed',

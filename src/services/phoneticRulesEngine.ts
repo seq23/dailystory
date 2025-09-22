@@ -4,6 +4,7 @@
  */
 import miniDict from '@/data/phonicsMiniDict';
 import { DebugLogger } from '@/services/DebugLogger';
+import { ProductionLogging } from './ProductionLogger';
 
 interface PhoneticRule {
   pattern: RegExp;
@@ -144,23 +145,23 @@ export class PhoneticRulesEngine {
    * Break a word into phonetic syllables - UNIVERSAL support for all users and languages
    */
   public breakIntoSyllables(word: string): string[] {
-    console.log(`🔤 UNIVERSAL PhoneticRulesEngine: Breaking "${word}" into syllables`);
+    ProductionLogging.debug(`Breaking "${word}" into syllables`, 'phoneticRulesEngine');
     
     if (!word || typeof word !== 'string') {
-      console.warn('⚠️ Invalid word provided to breakIntoSyllables:', word);
+      ProductionLogging.warn('Invalid word provided to breakIntoSyllables:', 'phoneticRulesEngine', word);
       return [word || ''];
     }
     
     const cleanWord = word.toLowerCase().replace(/[^a-záéíóúñü]/g, ''); // Support accented characters
     
     if (cleanWord.length === 0) {
-      console.warn('⚠️ Empty word after cleaning:', word);
+      ProductionLogging.warn('Empty word after cleaning:', 'phoneticRulesEngine', word);
       return [word];
     }
     
     // Check known syllables first (supports all languages with English phonetics)
     if (this.knownSyllables[cleanWord]) {
-      console.log(`✅ UNIVERSAL: Found in known syllables: ${this.knownSyllables[cleanWord]}`);
+      ProductionLogging.debug(`Found in known syllables: ${this.knownSyllables[cleanWord]}`, 'phoneticRulesEngine');
       return this.knownSyllables[cleanWord];
     }
 

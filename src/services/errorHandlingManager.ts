@@ -1,6 +1,8 @@
 // Comprehensive Error Handling Manager for Level 0 Story System
 import { EnhancedSubscriptionManager } from './enhancedSubscriptionManager';
 import { MobileSessionManager } from './mobileSessionManager';
+import { ProductionLogging } from './ProductionLogger';
+import { ManagedTimers } from '@/utils/TimerManager';
 import type { UserInfo } from '@/types';
 
 export interface ErrorContext {
@@ -42,7 +44,7 @@ export class ErrorHandlingManager {
       // Check if we've exceeded retry limit for this operation
       const errorCount = this.errorCounts.get(errorKey) || 0;
       if (errorCount >= this.MAX_RETRIES) {
-        console.warn(`⚠️ ErrorHandlingManager: Max retries exceeded for ${errorKey}, using fallback`);
+        ProductionLogging.warn(`Max retries exceeded for ${errorKey}, using fallback`, 'errorHandlingManager');
         
         if (fallbackFn) {
           const fallback = await fallbackFn();
@@ -73,16 +75,16 @@ export class ErrorHandlingManager {
       };
 
     } catch (error) {
-      console.error(`❌ ErrorHandlingManager: Error in ${errorKey}:`, error);
+      ProductionLogging.error(`Error in ${errorKey}:`, 'errorHandlingManager', error);
       
       // Increment error count
       const currentErrorCount = this.errorCounts.get(errorKey) || 0;
       this.errorCounts.set(errorKey, currentErrorCount + 1);
       
       // Schedule error count reset
-      setTimeout(() => {
+      ManagedTimers.setTimeout(() => {
         this.errorCounts.delete(errorKey);
-      }, this.ERROR_RESET_TIME);
+      }, this.ERROR_RESET_TIME, 'ErrorHandlingManager');
 
       // Try fallback if available
       if (fallbackFn) {
@@ -95,7 +97,7 @@ export class ErrorHandlingManager {
             recovery: 'Used fallback content'
           };
         } catch (fallbackError) {
-          console.error(`❌ ErrorHandlingManager: Fallback also failed for ${errorKey}:`, fallbackError);
+          ProductionLogging.error(`Fallback also failed for ${errorKey}:`, 'errorHandlingManager', fallbackError);
         }
       }
 
@@ -167,7 +169,7 @@ export class ErrorHandlingManager {
       return [...selectedTemplate, ...maxRetryMessage];
       
     } catch (error) {
-      console.error('Emergency content generation failed:', error);
+      ProductionLogging.error('Emergency content generation failed:', 'errorHandlingManager', error);
       
       // Final simple rhyming fallback for critical errors
       const userName = userInfo?.name || 'Friend';
@@ -281,7 +283,7 @@ export class ErrorHandlingManager {
     };
 
     // In production, this would send to analytics service
-    console.error('📊 ErrorHandlingManager: Logged error:', errorInfo);
+    ProductionLogging.error(`Logged error: ${JSON.stringify(errorInfo)}`, 'errorHandlingManager');
   }
 
   /**

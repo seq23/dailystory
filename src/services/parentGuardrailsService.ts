@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { ProductionLogging } from "./ProductionLogger";
 import type { DifficultyLevel, ExpertGradeLevel } from "@/types";
 
 export type ParentGuardrails = {
@@ -27,7 +28,7 @@ export class ParentGuardrailsService {
       .maybeSingle();
 
     if (error) {
-      console.warn("Failed to fetch guardrails; using defaults", error);
+      ProductionLogging.warn(`Failed to fetch guardrails; using defaults: ${error.message}`, 'parentGuardrailsService');
       return DEFAULTS;
     }
 
