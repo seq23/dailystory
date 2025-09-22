@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Mic, Loader2, CheckCircle2, X, ChevronDown, ChevronUp } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { ProductionLogging } from '@/services/ProductionLogger';
 // Lightweight persistent HUD that listens for custom events:
 //  - 'voice:status' => { status: 'idle'|'listening'|'processing' }
 //  - 'voice:level'  => { level: number 0..1 }
@@ -29,7 +30,7 @@ export const VoiceHUD: React.FC = () => {
         const Ctor = (window as any).AudioContext || (window as any).webkitAudioContext;
         audioContextRef.current = new Ctor();
       } catch (e) {
-        console.warn('VoiceHUD: AudioContext not available');
+        ProductionLogging.warn('AUDIO', 'VoiceHUD: AudioContext not available', 'VoiceHUD');
       }
     }
     return audioContextRef.current;

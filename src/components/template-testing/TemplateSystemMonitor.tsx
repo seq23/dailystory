@@ -14,6 +14,7 @@ import { TemplateMonitoringService } from '@/services/TemplateMonitoringService'
 import { TemplateValidationService } from '@/services/TemplateValidationService';
 import { PlaceholderValidationService } from '@/services/PlaceholderValidationService';
 import { Activity, AlertTriangle, CheckCircle, Clock, Zap } from 'lucide-react';
+import { ProductionLogging } from '@/services/ProductionLogger';
 
 interface MonitoringData {
   systemHealth: any;
@@ -46,7 +47,7 @@ export function TemplateSystemMonitor() {
         validationMetrics: validationMetrics || { commonErrors: [] }
       });
     } catch (error) {
-      console.error('Error refreshing monitoring data:', error);
+      ProductionLogging.error('TEMPLATE', 'Error refreshing monitoring data', 'TemplateSystemMonitor', { error });
     } finally {
       setIsRefreshing(false);
     }

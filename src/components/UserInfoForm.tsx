@@ -240,10 +240,10 @@ export const LegacyUserInfoForm = ({ onSubmit, onBack, isPremium = false }: User
                   setTranslations(prev => ({ ...prev, [field as string]: '' }));
                 }, 4000);
               } else {
-                console.warn('Translation failed, using original value:', translationError);
+                ProductionLogging.warn('FORM', 'Translation failed, using original value', 'UserInfoForm', { translationError });
               }
             } catch (translationError) {
-              console.error('Translation API error:', translationError);
+              ProductionLogging.error('FORM', 'Translation API error', 'UserInfoForm', { translationError });
               // Continue with original value if translation fails
             }
           }
@@ -260,7 +260,7 @@ export const LegacyUserInfoForm = ({ onSubmit, onBack, isPremium = false }: User
             setFormData(prev => ({ ...prev, [field]: sanitizedValue }));
           }
         } catch (error) {
-          console.error(`❌ Processing error for "${sanitizedValue}":`, error);
+          ProductionLogging.error('FORM', `Processing error for "${sanitizedValue}"`, 'UserInfoForm', { error });
           // Continue with original value if processing fails
         } finally {
           setTranslationLoading(prev => ({ ...prev, [field as string]: false }));

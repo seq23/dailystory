@@ -8,6 +8,7 @@ import { BookOpen, Star, TrendingUp } from 'lucide-react';
 import { MobileOptimizedInteractiveWord } from '@/components/MobileOptimizedInteractiveWord';
 import { useIsMobile } from '@/hooks/use-mobile';
 import type { UserInfo } from '@/types';
+import { ProductionLogging } from '@/services/ProductionLogger';
 
 interface VocabularyWord {
   word: string;
@@ -60,7 +61,7 @@ export const VocabularyCollector = ({ userInfo, isVisible, onClose, enablePersis
           } as any;
         });
       } catch (error) {
-        console.error('Error loading vocabulary:', error);
+        ProductionLogging.error('VOCABULARY', 'Error loading vocabulary', 'VocabularyCollector', { error });
       }
     }
 
@@ -97,7 +98,7 @@ export const VocabularyCollector = ({ userInfo, isVisible, onClose, enablePersis
         localStorage.setItem(`vocab_migrated_${userInfo.name}`, '1');
       }
     } catch (e) {
-      console.warn('Vocabulary legacy migration failed', e);
+      ProductionLogging.warn('VOCABULARY', 'Vocabulary legacy migration failed', 'VocabularyCollector', { error: e });
     }
 
     setVocabulary(loaded);

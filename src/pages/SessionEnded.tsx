@@ -59,7 +59,7 @@ const location = useLocation();
           reason: 'session-end'
         });
       } catch (error) {
-        console.warn('Fallback cache clearing failed:', error);
+        ProductionLogging.warn('CACHE', 'Fallback cache clearing failed', 'SessionEnded', { error });
       }
     };
 
@@ -97,7 +97,7 @@ const location = useLocation();
       sessionStats = parsedStats;
       userIsPremium = parsedStats.isPremium || false;
     } catch (error) {
-      console.error('Failed to parse stats from URL:', error);
+      ProductionLogging.error('SESSION', 'Failed to parse stats from URL', 'SessionEnded', { error });
     }
   }
 
@@ -118,7 +118,7 @@ const location = useLocation();
       if (ui) userInfoFromState = JSON.parse(ui) as UserInfo;
     }
   } catch (e) {
-    console.warn('Failed to parse last_user_info', e);
+    ProductionLogging.warn('SESSION', 'Failed to parse last_user_info', 'SessionEnded', { error: e });
   }
   try {
     if (!storyText) {

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { DebugLogger, DebugLogEntry, DebugCategory } from '@/services/DebugLogger';
+import { ProductionLogging } from '@/services/ProductionLogger';
 import { performanceManager } from '@/services/PerformanceManager';
 import { productionHardening } from '@/services/ProductionHardening';
 import { NetflixRetryService } from '@/services/NetflixRetryService';
@@ -155,7 +156,7 @@ export const UnifiedDebugMonitor: React.FC = () => {
         const status = NetflixRetryService.getCircuitBreakerStatus();
         setCircuitBreakerStatus(status);
       } catch (error) {
-        console.warn('Failed to get circuit breaker status:', error);
+        ProductionLogging.warn('DEBUG', 'Failed to get circuit breaker status', 'UnifiedDebugMonitor', { error });
       }
     };
 

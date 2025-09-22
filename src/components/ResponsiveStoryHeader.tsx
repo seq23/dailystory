@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { DebugLogger } from '@/services/DebugLogger';
+import { ProductionLogging } from '@/services/ProductionLogger';
 import { globalResizeService } from '@/services/GlobalResizeService';
 import { performanceManager } from '@/services/PerformanceManager';
 import { useTranslation } from "react-i18next";
@@ -125,7 +126,7 @@ export const ResponsiveStoryHeader = ({
             const active = constrained || (isTablet && isSidebarExpanded);
             
             setForceIconOnly(active);
-            console.info('[Header] compact mode:', { constrained, isSidebarExpanded, active });
+            ProductionLogging.debug('UI', 'Header compact mode', 'ResponsiveStoryHeader', { constrained, isSidebarExpanded, active });
             
             isChecking = false;
           } catch {

@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Loader2, Book, Layers, Palette, ChevronDown, Search } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { ProductionLogging } from '@/services/ProductionLogger';
 
 interface TemplateInfo {
   level: string;
@@ -79,7 +80,7 @@ export function TemplateExplorer() {
 
       setTemplateInfo(data);
     } catch (err) {
-      console.error('Template exploration error:', err);
+      ProductionLogging.error('TEMPLATE', 'Template exploration error', 'TemplateExplorer', { error: err });
       setError(err instanceof Error ? err.message : 'Failed to explore templates');
     } finally {
       setIsLoading(false);

@@ -9,6 +9,7 @@ import { Sparkles, ArrowRight, AlertCircle } from "lucide-react";
 import { MobileTooltip } from "@/components/MobileTooltip";
 import { InputSanitizer } from "@/utils/inputSanitizer";
 import { spellcheckService } from "@/services/spellcheckService";
+import { ProductionLogging } from '@/services/ProductionLogger';
 import { FormProgressIndicator } from "../shared/FormProgressIndicator";
 import { useLanguageSync } from "@/hooks/useLanguageSync";
 import type { UserInfo, Grade, LanguageCode } from "@/types";
@@ -93,7 +94,7 @@ export const FormStep1Essential = ({
             setSpellcheckSuggestion("");
           }
         } catch (error) {
-          console.warn('Spellcheck failed:', error);
+          ProductionLogging.warn('FORM', 'Spellcheck failed', 'FormStep1Essential', { error });
         } finally {
           setSpellcheckLoading(false);
         }

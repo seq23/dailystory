@@ -13,6 +13,7 @@ import { InputSanitizer } from "@/utils/inputSanitizer";
 import { validateTheme } from "@/utils/themeValidation";
 import { spellcheckService } from "@/services/spellcheckService";
 import { supabase } from "@/integrations/supabase/client";
+import { ProductionLogging } from '@/services/ProductionLogger';
 import { useValidationOnSubmit } from "@/hooks/useValidationOnSubmit";
 import { ValidationFeedback } from "@/components/ValidationFeedback";
 import type { UserInfo, Avatar } from "@/types";
@@ -104,7 +105,7 @@ export const FormStep3Personalization = ({
           });
         }
       } catch (error) {
-        console.warn('Tag spellcheck failed for field:', field, error);
+        ProductionLogging.warn('FORM', 'Tag spellcheck failed for field', 'FormStep3Personalization', { field, error });
       } finally {
         setSpellcheckLoading(prev => ({ ...prev, [field]: false }));
       }
@@ -142,7 +143,7 @@ export const FormStep3Personalization = ({
         });
       }
     } catch (error) {
-      console.warn('Spellcheck failed for field:', field, error);
+      ProductionLogging.warn('FORM', 'Spellcheck failed for field', 'FormStep3Personalization', { field, error });
     } finally {
       setSpellcheckLoading(prev => ({ ...prev, [field]: false }));
     }
@@ -256,7 +257,7 @@ export const FormStep3Personalization = ({
                 }, 4000);
               }
             } catch (translationError) {
-              console.error('Translation API error:', translationError);
+              ProductionLogging.error('FORM', 'Translation API error', 'FormStep3Personalization', { translationError });
             }
           }
           
@@ -268,7 +269,7 @@ export const FormStep3Personalization = ({
             onUpdate({ [field]: sanitizedValue });
           }
         } catch (error) {
-          console.error(`Processing error for "${sanitizedValue}":`, error);
+          ProductionLogging.error('FORM', `Processing error for "${sanitizedValue}"`, 'FormStep3Personalization', { error });
         } finally {
           setTranslationLoading(prev => ({ ...prev, [field as string]: false }));
         }

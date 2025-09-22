@@ -11,6 +11,7 @@ import { countCharacters, analyzeCharacters, type CharacterAnalysis } from '@/ut
 import { showTestToast, clearAllTestingToasts, showTestSummaryToast } from '@/utils/testingToasts';
 import type { UserInfo, ExpertGradeLevel } from '@/types';
 import { DebugLogger } from '@/services/DebugLogger';
+import { ProductionLogging } from '@/services/ProductionLogger';
 
 interface ValidationTestResult {
   gradeLevel: ExpertGradeLevel;
@@ -120,7 +121,7 @@ export function ValidationTestRunner() {
         DebugLogger.log('story', `${gradeLevel} grade: ${pageCount} pages (${pagesInRange ? 'PASS' : 'FAIL'})`);
         
       } catch (error) {
-        console.error(`❌ Error testing ${gradeLevel}:`, error);
+        ProductionLogging.error('VALIDATION', `Error testing ${gradeLevel}`, 'ValidationTestRunner', { gradeLevel, error });
         
         showTestToast({
           level: `Grade ${gradeLevel}`,

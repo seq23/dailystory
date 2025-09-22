@@ -133,7 +133,7 @@ export const SpecialRequestDialog: React.FC<SpecialRequestDialogProps> = ({
         });
       }
     } catch (error) {
-      console.warn('Spellcheck failed for field:', field, error);
+      ProductionLogging.warn('FORM', 'Spellcheck failed for field', 'SpecialRequestDialog', { field, error });
     } finally {
       setSpellcheckLoading(prev => ({ ...prev, [field]: false }));
     }
@@ -237,11 +237,11 @@ export const SpecialRequestDialog: React.FC<SpecialRequestDialogProps> = ({
               }, 4000);
             }
           } catch (translationError) {
-            console.error('Translation API error:', translationError);
+            ProductionLogging.error('FORM', 'Translation API error', 'SpecialRequestDialog', { translationError });
           }
         }
       } catch (error) {
-        console.error(`Processing error for "${newValue}":`, error);
+        ProductionLogging.error('FORM', `Processing error for "${newValue}"`, 'SpecialRequestDialog', { error });
       } finally {
         setTranslationLoading(prev => ({ ...prev, [field]: false }));
       }

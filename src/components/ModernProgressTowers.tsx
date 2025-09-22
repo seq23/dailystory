@@ -19,6 +19,7 @@ import {
   Star
 } from 'lucide-react';
 import { DebugLogger } from '@/services/DebugLogger';
+import { ProductionLogging } from '@/services/ProductionLogger';
 
 interface ModernProgressTowersProps {
   userId?: string;
@@ -263,7 +264,7 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
   const handleToggle = () => {
     const newExpanded = !isExpanded;
     setIsExpanded(newExpanded);
-    try { console.info('[ProgressTowers] toggle, isExpanded:', newExpanded); } catch {}
+    try { ProductionLogging.debug('UI', 'ProgressTowers toggle', 'ModernProgressTowers', { isExpanded: newExpanded }); } catch {}
     if (newExpanded) {
       scheduleAutoCollapse();
     }
@@ -287,7 +288,7 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
   const handleDismiss = () => {
     try { localStorage.setItem('progressTowersEnabled', '0'); } catch {}
     setEnabled(false);
-    try { console.info('[ProgressTowers] dismissed'); } catch {}
+    try { ProductionLogging.debug('UI', 'ProgressTowers dismissed', 'ModernProgressTowers'); } catch {}
     window.dispatchEvent(new CustomEvent('progressTowersToggle', { detail: false }));
   };
 
@@ -314,7 +315,7 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
               onClick={() => {
                 try { localStorage.setItem('progressTowersEnabled', '1'); } catch {}
                 setEnabled(true);
-                try { console.info('[ProgressTowers] re-enabled via trophy'); } catch {}
+                try { ProductionLogging.debug('UI', 'ProgressTowers re-enabled via trophy', 'ModernProgressTowers'); } catch {}
                 window.dispatchEvent(new CustomEvent('progressTowersToggle', { detail: true }));
               }}
               className={cn(

@@ -46,6 +46,7 @@ import { RepairService } from './repairService';
 import { NetflixRetryService } from './NetflixRetryService';
 import { NetflixSessionManager } from './NetflixSessionManager';
 import { DebugLogger } from '@/services/DebugLogger';
+import { ProductionLogging } from '@/services/ProductionLogger';
 
 export interface NetflixStoryResult {
   content: string[];
@@ -212,8 +213,8 @@ export class NetflixStyleStoryService {
       backoffMultiplier: 1.5 // Gentler backoff
     }).catch(async (error) => {
       // All retries exhausted - fall back to templates with comprehensive error reporting
-      console.error(`💥 [${generationId}] Netflix: All AI generation attempts failed, using fallback`);
-      console.error(`💥 [${generationId}] Netflix: Final error:`, error);
+      ProductionLogging.error('STORY', `Netflix: All AI generation attempts failed, using fallback`, 'NetflixStyleStoryService', { generationId });
+      ProductionLogging.error('STORY', 'Netflix: Final error', 'NetflixStyleStoryService', { generationId, error });
       const wrappedError = ErrorHandler.handleError(error || new Error('Unknown error'), 'NetflixStyleStoryService.generateStory');
       DebugLogger.warn('story', `Netflix Error Fallback: Using difficulty ${difficulty} for ${userInfo.name}`, { generationId });
       return this.generateFallbackStory(userInfo, difficulty, `ai_exhausted_all_attempts`);
@@ -285,17 +286,17 @@ export class NetflixStyleStoryService {
       });
 
       if (error) {
-        console.error('🔧 Netflix: Template service error:', error);
+        ProductionLogging.error('STORY', 'Netflix: Template service error', 'NetflixStyleStoryService', { error });
         throw new Error(`Template service error: ${error.message || error}`);
       }
 
       if (!data) {
-        console.error('🔧 Netflix: No data returned from template service');
+        ProductionLogging.error('STORY', 'Netflix: No data returned from template service', 'NetflixStyleStoryService');
         throw new Error('Template service returned no data');
       }
 
       if (!data.pages || !Array.isArray(data.pages) || data.pages.length === 0) {    
-        console.error('🔧 Netflix: Invalid pages data:', {
+        ProductionLogging.error('STORY', 'Netflix: Invalid pages data', 'NetflixStyleStoryService', {
           hasPages: !!data.pages,
           isArray: Array.isArray(data.pages),
           length: data.pages?.length || 0,
@@ -339,7 +340,7 @@ export class NetflixStyleStoryService {
         source: 'fallback'
       };
     } catch (error) {
-      console.error('📺 Netflix: Fallback generation failed:', error);
+      ProductionLogging.error('STORY', 'Netflix: Fallback generation failed', 'NetflixStyleStoryService', { error });
       // Emergency fallback with rhyming educational content
       const emergencyContent = await ErrorHandlingManager.getEmergencyContent(userInfo);
       
