@@ -243,9 +243,25 @@ export class SimpleImageService {
   // Normalize session ID for consistent caching
     const normalizedSessionId = sessionId?.toString() || 'unknown';
     
-    // Check cache first with normalized session ID
-    if (this.isIndexedDBAvailable && normalizedSessionId !== 'unknown') {
-      const cached = await this.getImageFromDB(normalizedSessionId, pageNumber);
+    // Detect character changes and invalidate cache if needed
+    if (userInfo && normalizedSessionId !== 'unknown') {
+      const lastUserInfo = await this.getLastUserInfoFromSession(normalizedSessionId);
+      if (lastUserInfo && this.hasCharacterChanged(lastUserInfo, userInfo)) {
+        DebugLogger.log('image', 'Character appearance changed, clearing session cache', {
+          sessionId: normalizedSessionId,
+          oldCharacter: lastUserInfo.ethnicity,
+          newCharacter: userInfo.ethnicity
+        });
+        await this.clearSessionCharacterCache(normalizedSessionId);
+      }
+      await this.saveUserInfoToSession(normalizedSessionId, userInfo);
+    }
+    
+    // Check cache first with character-versioned cache key
+    if (this.isIndexedDBAvailable && normalizedSessionId !== 'unknown' && userInfo) {
+      // Use character versioned cache key for consistency
+      const versionedCacheKey = this.generateCharacterVersionedCacheKey(userInfo, storyText);
+      const cached = await this.getImageFromDB(versionedCacheKey, pageNumber);
       if (cached?.imageURL) {
         DebugLogger.log('image', `📸 Cache hit: Using cached image for session ${normalizedSessionId}, page ${pageNumber}`, {
           url: cached.imageURL,
@@ -275,6 +291,22 @@ export class SimpleImageService {
 
     const cleanScene = storyText.trim().substring(0, 3000);
     DebugLogger.log('image', `Clean scene (${cleanScene.length} chars)`, cleanScene.substring(0, 200) + '...');
+
+    // Enhance character description with universal hair color mapping
+    if (userInfo?.ethnicity && userInfo?.skinTone) {
+      const universalHair = this.getUniversalHairColorForSkinTone(userInfo.skinTone, userInfo.ethnicity);
+      const enhancedUserInfo = {
+        ...userInfo,
+        hair: userInfo.hair || universalHair,
+        universalHairColor: universalHair
+      };
+      userInfo = enhancedUserInfo;
+      DebugLogger.log('image', 'Applied universal hair color mapping', {
+        skinTone: userInfo.skinTone,
+        ethnicity: userInfo.ethnicity,
+        mappedHair: universalHair
+      });
+    }
 
     // Apply universal cultural protections
     const enhancedPrompt = this.applyUniversalProtections(cleanScene, userInfo || {});
@@ -350,9 +382,10 @@ export class SimpleImageService {
           usedTier: orchResult.usedTier || 'orchestrator'
         });
         
-        // Store result in IndexedDB with normalized session ID
-        if (this.isIndexedDBAvailable && normalizedSessionId !== 'unknown') {
-          await this.storeImageInDB(normalizedSessionId, pageNumber, orchResult.imageURL, orchResult);
+        // Store result in IndexedDB with character versioned key
+        if (this.isIndexedDBAvailable && normalizedSessionId !== 'unknown' && userInfo) {
+          const versionedCacheKey = this.generateCharacterVersionedCacheKey(userInfo, storyText);
+          await this.storeImageInDB(versionedCacheKey, pageNumber, orchResult.imageURL, orchResult);
         }
 
         // Emit timer resume event
@@ -393,9 +426,17 @@ export class SimpleImageService {
         });
       }
 
-      // TIER 4: Final fallback - use one of your 6 uploaded images
-      DebugLogger.warn('image', 'All backend tiers failed, using ImageFallbackService with your 6 character images');
-      const fallbackUrl = ImageFallbackService.generateStoryPlaceholder(cleanScene, pageNumber);
+      // TIER 4: Intelligent fallback system with quality prioritization
+      DebugLogger.warn('image', 'Orchestrator failed, using intelligent fallback system');
+      const intelligentFallback = await this.getImageWithIntelligentFallback(
+        userInfo || {}, cleanScene, !isPremium, normalizedSessionId, pageNumber
+      );
+
+      const fallbackUrl = intelligentFallback || ImageFallbackService.generateStoryPlaceholder(cleanScene, pageNumber);
+      DebugLogger.log('image', 'Intelligent fallback completed', {
+        foundIntelligentMatch: !!intelligentFallback,
+        finalUrl: fallbackUrl.substring(0, 50) + '...'
+      });
       
       // Emit timer resume event
       try {
@@ -407,13 +448,14 @@ export class SimpleImageService {
         url: fallbackUrl,
         imageURL: fallbackUrl,
         generatedAt: new Date().toISOString(),
-        tier: 'SVG Fallback',
-          metadata: {
-            isFallback: true,
-            originalError: error.message,
-            tier: 'fallback',
-            healthStatus
-          }
+        tier: 'Intelligent Fallback',
+        metadata: {
+          isFallback: true,
+          originalError: error.message,
+          tier: 'intelligent_fallback',
+          healthStatus,
+          usedIntelligentFallback: !!intelligentFallback
+        }
       };
     }
   }
@@ -809,6 +851,68 @@ export class SimpleImageService {
     return {
       url: 'data:image/svg+xml;base64,' + btoa(svgContent)
     };
+  }
+
+  // Session-based user info persistence for character consistency
+  private static async getLastUserInfoFromSession(sessionId: string): Promise<UserInfo | null> {
+    try {
+      const stored = sessionStorage.getItem(`userInfo_${sessionId}`);
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private static async saveUserInfoToSession(sessionId: string, userInfo: UserInfo): Promise<void> {
+    try {
+      sessionStorage.setItem(`userInfo_${sessionId}`, JSON.stringify(userInfo));
+    } catch (error) {
+      DebugLogger.warn('image', 'Failed to save user info to session', error);
+    }
+  }
+
+  private static async clearSessionCharacterCache(sessionId: string): Promise<void> {
+    try {
+      // Clear session storage
+      Object.keys(sessionStorage).forEach(key => {
+        if (key.includes(sessionId)) {
+          sessionStorage.removeItem(key);
+        }
+      });
+      
+      // Clear IndexedDB entries for this session
+      if (this.isIndexedDBAvailable) {
+        await this.clearDBEntriesForSession(sessionId);
+      }
+      
+      DebugLogger.log('image', `Cleared character cache for session: ${sessionId}`);
+    } catch (error) {
+      DebugLogger.warn('image', 'Failed to clear session character cache', error);
+    }
+  }
+
+  private static async clearDBEntriesForSession(sessionId: string): Promise<void> {
+    if (!this.isIndexedDBAvailable) return;
+    
+    try {
+      const db = await this.openDB();
+      const transaction = db.transaction(['images'], 'readwrite');
+      const store = transaction.objectStore('images');
+      const index = store.index('sessionId');
+      
+      const request = index.openCursor(IDBKeyRange.only(sessionId));
+      request.onsuccess = (event) => {
+        const cursor = (event.target as IDBRequest).result;
+        if (cursor) {
+          cursor.delete();
+          cursor.continue();
+        }
+      };
+      
+      DebugLogger.log('image', `Cleared IndexedDB entries for session ${sessionId}`);
+    } catch (error) {
+      DebugLogger.warn('image', 'Failed to clear IndexedDB entries for session', error);
+    }
   }
 
   // Legacy method support
