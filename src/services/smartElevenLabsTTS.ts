@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { DebugLogger } from '@/services/DebugLogger';
 
 /**
  * Smart ElevenLabs TTS service that applies phonetic lexicon only for learning contexts
@@ -16,7 +17,7 @@ export class SmartElevenLabsTTS {
     context: 'conversation' | 'learning' = 'conversation',
     voiceId: string = 'XB0fDUnXU5powFXDhCwa'
   ): Promise<ArrayBuffer> {
-    console.log(`🔊 Smart TTS: "${text}" [Context: ${context}]`);
+    DebugLogger.log('audio', `Smart TTS: "${text}" [Context: ${context}]`);
 
     // Request audio coordinator permission for Charlotte speech
     if (context === 'conversation') {
@@ -42,11 +43,11 @@ export class SmartElevenLabsTTS {
       ]);
 
       if (error) {
-        console.error('❌ Smart TTS Error:', error);
+        DebugLogger.error('audio', 'Smart TTS Error:', error);
         
         // If dictionary-related error and learning context, retry without dictionary
         if (context === 'learning' && (error.message.includes('dictionary') || error.message.includes('pronunciation'))) {
-          console.log('🔄 Retrying TTS without dictionary for learning context...');
+          DebugLogger.log('audio', 'Retrying TTS without dictionary for learning context...');
           
           try {
             const { data: retryData, error: retryError } = await Promise.race([
@@ -61,7 +62,7 @@ export class SmartElevenLabsTTS {
             ]);
             
             if (!retryError && retryData?.audio_base64) {
-              console.log('✅ Smart TTS Success (no dictionary fallback)');
+              DebugLogger.log('audio', 'Smart TTS Success (no dictionary fallback)');
               
               // Convert base64 to ArrayBuffer
               const binaryString = atob(retryData.audio_base64);
@@ -76,7 +77,7 @@ export class SmartElevenLabsTTS {
               return bytes.buffer;
             }
           } catch (retryErr) {
-            console.warn('Retry without dictionary also failed:', retryErr);
+            DebugLogger.warn('audio', 'Retry without dictionary also failed:', retryErr);
           }
         }
         
@@ -94,7 +95,7 @@ export class SmartElevenLabsTTS {
         bytes[i] = binaryString.charCodeAt(i);
       }
 
-      console.log(`✅ Smart TTS Success: ${bytes.byteLength} bytes [Applied Lexicon: ${data.appliedLexicon || false}]`);
+      DebugLogger.log('audio', `Smart TTS Success: ${bytes.byteLength} bytes [Applied Lexicon: ${data.appliedLexicon || false}]`);
       
       // Release audio coordinator lock for Charlotte speech
       if (context === 'conversation') {
@@ -104,7 +105,7 @@ export class SmartElevenLabsTTS {
       return bytes.buffer;
       
     } catch (timeoutError) {
-      console.error('❌ TTS request timed out, falling back to browser speech');
+      DebugLogger.error('audio', 'TTS request timed out, falling back to browser speech');
       
       // Fallback to browser speech synthesis
       if ('speechSynthesis' in window) {
@@ -129,7 +130,7 @@ export class SmartElevenLabsTTS {
    * Generate natural speech for Charlotte's conversation (ALWAYS uses conversation context)
    */
   static async generateConversationSpeech(text: string, voiceId?: string): Promise<ArrayBuffer> {
-    console.log('🗣️ Charlotte conversation speech - forcing conversation context');
+    DebugLogger.log('audio', 'Charlotte conversation speech - forcing conversation context');
     return this.generateSpeech(text, 'conversation', voiceId);
   }
 

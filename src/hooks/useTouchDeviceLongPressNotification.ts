@@ -1,6 +1,7 @@
 import { useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { DebugLogger } from '@/services/DebugLogger';
 
 /**
  * Hook to show long-press instruction notification for touch devices
@@ -32,7 +33,7 @@ export const useTouchDeviceLongPressNotification = () => {
         className: "instruction-toast touch-longpress-notification z-[200]"
       });
       
-      console.log('📱 Touch device long-press instruction shown');
+      DebugLogger.log('ui', 'Touch device long-press instruction shown');
     } catch (error) {
       console.warn('Failed to show touch device instruction:', error);
     }

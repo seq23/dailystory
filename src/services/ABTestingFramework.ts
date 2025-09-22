@@ -3,6 +3,8 @@
  * Phase 7: Testing & Validation Framework Implementation
  */
 
+import { DebugLogger } from '@/services/DebugLogger';
+
 interface TestVariant {
   id: string;
   name: string;
@@ -77,7 +79,7 @@ export class ABTestingFramework {
     
     this.activeTests.set(testId, fullConfig);
     
-    console.log(`🧪 Created A/B test: ${config.name} (${testId})`);
+    DebugLogger.log('performance', `Created A/B test: ${config.name} (${testId})`);
     return testId;
   }
 
@@ -98,7 +100,7 @@ export class ABTestingFramework {
       
       cumulative += variant.weight;
       if (assignment < cumulative) {
-        console.log(`🎯 User ${userId} assigned to variant ${variant.id} for test ${testId}`);
+        DebugLogger.log('performance', `User ${userId} assigned to variant ${variant.id} for test ${testId}`);
         return variant;
       }
     }
@@ -123,7 +125,7 @@ export class ABTestingFramework {
       this.testResults = this.testResults.slice(-this.MAX_RESULTS);
     }
     
-    console.log(`📊 Recorded test result for variant ${result.variantId}`);
+    DebugLogger.log('performance', `Recorded test result for variant ${result.variantId}`);
   }
 
   /**
@@ -233,7 +235,7 @@ export class ABTestingFramework {
     const test = this.activeTests.get(testId);
     if (test) {
       test.isActive = false;
-      console.log(`⏹️ Deactivated test: ${test.name}`);
+      DebugLogger.log('performance', `Deactivated test: ${test.name}`);
     }
   }
 

@@ -16,6 +16,8 @@
 // 
 // See: docs/CURRENT_IMAGE_ARCHITECTURE_2025.md for current system overview
 
+import { DebugLogger } from '@/services/DebugLogger';
+
 export class CharacterConsistencyService {
   private static instance: CharacterConsistencyService;
   private visualDetailCache = new Map<string, any>();
@@ -48,9 +50,9 @@ export class CharacterConsistencyService {
         timestamp: Date.now()
       });
 
-      console.log(`Visual details analyzed for page ${pageNumber}:`, details);
+      DebugLogger.log('image', `Visual details analyzed for page ${pageNumber}:`, details);
     } catch (error) {
-      console.warn('Visual detail analysis failed:', error);
+      DebugLogger.warn('image', 'Visual detail analysis failed:', error);
     }
   }
 
@@ -74,7 +76,7 @@ export class CharacterConsistencyService {
       const uniqueObjects = [...new Set(sessionObjects)];
       return uniqueObjects.slice(0, 3).join(', '); // Limit to 3 objects
     } catch (error) {
-      console.warn('Colored objects retrieval failed:', error);
+      DebugLogger.warn('image', 'Colored objects retrieval failed:', error);
       return '';
     }
   }
@@ -126,7 +128,7 @@ export class CharacterConsistencyService {
       
       if (appearances.length > 0) {
         characterAppearance = appearances.join(', ').replace(/[.!?]+$/, '');
-        console.log('✅ CHARACTER APPEARANCE EXTRACTED:', characterAppearance);
+        DebugLogger.log('image', 'CHARACTER APPEARANCE EXTRACTED:', characterAppearance);
       }
     }
 
@@ -184,12 +186,12 @@ export class CharacterConsistencyService {
         // Combine and deduplicate appearance details
         const uniqueAppearances = [...new Set(appearances)];
         combinedAppearance = uniqueAppearances.join(', ');
-        console.log('✅ STORY APPEARANCE RETRIEVED:', combinedAppearance);
+        DebugLogger.log('image', 'STORY APPEARANCE RETRIEVED:', combinedAppearance);
       }
       
       return combinedAppearance;
     } catch (error) {
-      console.warn('Character appearance extraction failed:', error);
+      DebugLogger.warn('image', 'Character appearance extraction failed:', error);
       return null;
     }
   }

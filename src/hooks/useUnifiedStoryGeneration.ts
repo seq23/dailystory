@@ -6,6 +6,7 @@ import { StoryGenerationService, type StoryGenerationResult } from '@/services/s
 import { VocabularyService } from '@/services/vocabularyService';
 import { generateSessionIdWithPrefix } from '@/utils/sessionId';
 import type { UserInfo } from '@/types';
+import { DebugLogger } from '@/services/DebugLogger';
 
 export interface UseUnifiedStoryGenerationResult {
   generateStory: (userInfo: UserInfo, config?: {
@@ -34,14 +35,14 @@ export const useUnifiedStoryGeneration = (): UseUnifiedStoryGenerationResult => 
     setError(null);
 
     try {
-      console.log('🚀 Using token-optimized 3-layer story generation pipeline with bundled character logic');
+      DebugLogger.log('story', 'Using token-optimized 3-layer story generation pipeline with bundled character logic');
 
       // Process vocabulary (for debugging/display purposes)
       try {
         const vocabIntegration = await VocabularyService.fetchAllVocabulary(userInfo);
         setVocabularyIntegration(vocabIntegration);
       } catch (error) {
-        console.warn('⚠️ Vocabulary processing failed in hook:', error);
+        DebugLogger.warn('story', 'Vocabulary processing failed in hook:', error);
       }
 
       // Generate story using unified service (handles all failures internally)

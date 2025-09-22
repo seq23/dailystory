@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useSimpleAudioHighlighting } from '@/hooks/useSimpleAudioHighlighting';
+import { DebugLogger } from '@/services/DebugLogger';
 
 /**
  * Simplified word highlighting hook with difficulty-based highlighting control
@@ -34,14 +35,14 @@ export const useWordHighlighting = (
 
   // Clear highlighting on text change (new page/story)
   useEffect(() => {
-    console.log('🧹 Word highlighting: Text changed, clearing highlights');
+    DebugLogger.log('ui', 'Word highlighting: Text changed, clearing highlights');
     clearHighlighting();
   }, [text, clearHighlighting]);
 
   // Difficulty-based word highlighting callback
   const onWordHighlight = React.useCallback((wordIndex: number) => {
     if (!highlightingEnabled) {
-      console.log(`🚫 Word highlighting disabled for difficulty level ${difficultyLevel}`);
+      DebugLogger.log('ui', `Word highlighting disabled for difficulty level ${difficultyLevel}`);
       return; // No highlighting for levels 3-4
     }
 

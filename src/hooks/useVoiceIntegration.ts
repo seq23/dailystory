@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { phoneticRulesEngine } from '@/services/phoneticRulesEngine';
 import { useCharlotteAudioCoordination } from './useCharlotteAudioCoordination';
+import { DebugLogger } from '@/services/DebugLogger';
 
 /**
  * Hook to integrate the main UI voice buttons with the SimpleVoiceCommands system
@@ -16,10 +17,10 @@ export const useVoiceIntegration = () => {
 
   // Enhanced word context resolution function
   const getContextualWord = (providedWord?: string): string => {
-    console.log('🔍 Getting contextual word:', { providedWord });
+    DebugLogger.log('audio', 'Getting contextual word:', { providedWord });
     
     if (providedWord && providedWord.trim()) {
-      console.log('✅ Using provided word:', providedWord.trim());
+      DebugLogger.log('audio', 'Using provided word:', providedWord.trim());
       return providedWord.trim();
     }
     
@@ -27,29 +28,29 @@ export const useVoiceIntegration = () => {
     const hoveredWord = (window as any).__hoveredWord;
     const lastSelectedWord = (window as any).__lastSelectedWord;
     
-    console.log('🌐 Global word context:', { hoveredWord, lastSelectedWord });
+    DebugLogger.log('audio', 'Global word context:', { hoveredWord, lastSelectedWord });
     
     if (hoveredWord?.trim()) {
-      console.log('✅ Using hovered word:', hoveredWord.trim());
+      DebugLogger.log('audio', 'Using hovered word:', hoveredWord.trim());
       return hoveredWord.trim();
     }
     if (lastSelectedWord?.trim()) {
-      console.log('✅ Using last selected word:', lastSelectedWord.trim());
+      DebugLogger.log('audio', 'Using last selected word:', lastSelectedWord.trim());
       return lastSelectedWord.trim();
     }
     
-    console.log('❌ No word context found');
+    DebugLogger.log('audio', 'No word context found');
     return ''; // Will trigger clarification request
   };
 
   // Define client tools for voice commands - Enhanced Charlotte/Buddy capabilities
   const clientTools = {
     play: () => {
-      console.log('🎯 Voice command: play');
+      DebugLogger.log('audio', 'Voice command: play');
       
       // Check if Charlotte can speak before responding
       if (!canCharlotteSpeak()) {
-        console.log('🤖 Charlotte deferring play command due to audio conflict');
+        DebugLogger.log('audio', 'Charlotte deferring play command due to audio conflict');
         return "I'll wait until the current audio finishes";
       }
       
@@ -73,7 +74,7 @@ export const useVoiceIntegration = () => {
     },
     
     stop: () => {
-      console.log('🎯 Voice command: stop');
+      DebugLogger.log('audio', 'Voice command: stop');
       // Brief delay to let Charlotte finish her acknowledgment
       setTimeout(() => {
         engine.stop();
@@ -82,7 +83,7 @@ export const useVoiceIntegration = () => {
     },
     
     pause: () => {
-      console.log('🎯 Voice command: pause');
+      DebugLogger.log('audio', 'Voice command: pause');
       // Brief delay to let Charlotte finish her acknowledgment
       setTimeout(() => {
         engine.stop();
@@ -91,7 +92,7 @@ export const useVoiceIntegration = () => {
     },
     
     next: () => {
-      console.log('🎯 Voice command: next page - navigating forward');
+      DebugLogger.log('audio', 'Voice command: next page - navigating forward');
       // Brief delay to let Charlotte finish her acknowledgment
       setTimeout(() => {
         window.dispatchEvent(new CustomEvent('reader:navigate', { 
@@ -102,7 +103,7 @@ export const useVoiceIntegration = () => {
     },
     
     previous: () => {
-      console.log('🎯 Voice command: previous page - navigating backward');
+      DebugLogger.log('audio', 'Voice command: previous page - navigating backward');
       // Brief delay to let Charlotte finish her acknowledgment
       setTimeout(() => {
         window.dispatchEvent(new CustomEvent('reader:navigate', { 
@@ -115,7 +116,7 @@ export const useVoiceIntegration = () => {
     // ENHANCED WORD ASSISTANCE TOOLS with Context Awareness
     wordHelp: (args: any) => {
       const word = getContextualWord(args?.word || args?.text);
-      console.log('🎯 Voice command: general word help for:', word);
+      DebugLogger.log('audio', 'Voice command: general word help for:', word);
       
       if (word) {
         // Trigger comprehensive word help modal or voice explanation
@@ -129,7 +130,7 @@ export const useVoiceIntegration = () => {
 
     hearWord: (args: any) => {
       const word = getContextualWord(args?.word || args?.text);
-      console.log('🎯 Voice command: hear word:', word);
+      DebugLogger.log('audio', 'Voice command: hear word:', word);
       
       if (word) {
         // Use existing VoiceHoverController functionality
@@ -143,7 +144,7 @@ export const useVoiceIntegration = () => {
 
     explainWord: (args: any) => {
       const word = getContextualWord(args?.word || args?.text);
-      console.log('🎯 Voice command: explain word:', word);
+      DebugLogger.log('audio', 'Voice command: explain word:', word);
       
       if (word) {
         // Use existing VoiceHoverController functionality  
@@ -157,7 +158,7 @@ export const useVoiceIntegration = () => {
 
     syllableWord: (args: any) => {
       const word = getContextualWord(args?.word || args?.text);
-      console.log('🎯 Voice command: syllables for:', word);
+      DebugLogger.log('audio', 'Voice command: syllables for:', word);
       
       if (word) {
         // Enhanced syllable breakdown with counting (using async method for consistency)
@@ -183,7 +184,7 @@ export const useVoiceIntegration = () => {
 
     // Quiz commands
     startQuiz: () => {
-      console.log('🎯 Voice command: start quiz');
+      DebugLogger.log('audio', 'Voice command: start quiz');
       window.dispatchEvent(new CustomEvent('voice:quiz', {
         detail: { action: 'start' }
       }));
@@ -192,7 +193,7 @@ export const useVoiceIntegration = () => {
     },
 
     askQuestion: (args: any) => {
-      console.log('🎯 Voice command: ask question', args);
+      DebugLogger.log('audio', 'Voice command: ask question', args);
       const { question, options } = args || {};
       
       if (question && options) {
@@ -211,7 +212,7 @@ export const useVoiceIntegration = () => {
     },
 
     processAnswer: (args: any) => {
-      console.log('🎯 Voice command: process answer', args);
+      DebugLogger.log('audio', 'Voice command: process answer', args);
       const answer = args?.answer || args?.text || args;
       
       window.dispatchEvent(new CustomEvent('voice:quiz', {
@@ -228,7 +229,7 @@ export const useVoiceIntegration = () => {
     },
 
     endQuiz: () => {
-      console.log('🎯 Voice command: end quiz');
+      DebugLogger.log('audio', 'Voice command: end quiz');
       window.dispatchEvent(new CustomEvent('voice:quiz', {
         detail: { action: 'end' }
       }));
@@ -244,7 +245,7 @@ export const useVoiceIntegration = () => {
   } = useConversation({ 
     clientTools,
     onConnect: () => {
-      console.log('🎤 Connected to Charlotte (Buddy) via integration hook');
+      DebugLogger.log('audio', 'Connected to Charlotte (Buddy) via integration hook');
       
       // Register Charlotte as active voice system
       window.dispatchEvent(new CustomEvent('audio:request', { detail: { system: 'charlotte' } }));
@@ -257,7 +258,7 @@ export const useVoiceIntegration = () => {
       // No toast here - let ElevenLabs handle connection feedback to avoid duplicates
     },
     onDisconnect: () => {
-      console.log('🎤 Disconnected from Charlotte (Buddy) via integration hook');
+      DebugLogger.log('audio', 'Disconnected from Charlotte (Buddy) via integration hook');
       
       // Release Charlotte's audio control
       window.dispatchEvent(new CustomEvent('audio:stopped', { detail: { system: 'charlotte' } }));
@@ -270,7 +271,7 @@ export const useVoiceIntegration = () => {
       toast.info('Charlotte disconnected');
     },
     onError: (error: any) => {
-      console.error('🎤 Voice error in integration hook:', error);
+      DebugLogger.error('audio', 'Voice error in integration hook:', error);
       const errorMessage = typeof error === 'string' ? error : error?.message || 'Connection failed';
       toast.error(`Voice error: ${errorMessage}`);
       
@@ -280,19 +281,19 @@ export const useVoiceIntegration = () => {
       }));
     },
     onMessage: (message) => {
-      console.log('🎤 Voice message received in integration hook:', message);
+      DebugLogger.log('audio', 'Voice message received in integration hook:', message);
     }
   });
 
   const handleVoiceToggle = useCallback(async () => {
     if (status === 'connected') {
-      console.log('🎤 Voice session already connected, ending...');
+      DebugLogger.log('audio', 'Voice session already connected, ending...');
       // Restore natural pronunciation when ending voice session
       phoneticRulesEngine.setConversationMode(false);
       await endSession();
     } else {
       try {
-        console.log('🎤 Starting voice command session via integration hook...');
+        DebugLogger.log('audio', 'Starting voice command session via integration hook...');
         
         // Set conversation mode for natural Charlotte speech
         phoneticRulesEngine.setConversationMode(true);
@@ -305,10 +306,10 @@ export const useVoiceIntegration = () => {
         // Test microphone permissions first
         try {
           const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          console.log('🎤 Microphone access granted');
+          DebugLogger.log('audio', 'Microphone access granted');
           stream.getTracks().forEach(track => track.stop()); // Clean up test stream
         } catch (micError) {
-          console.error('🎤 Microphone access denied:', micError);
+          DebugLogger.error('audio', 'Microphone access denied:', micError);
           toast.error('Microphone access required for voice commands');
           phoneticRulesEngine.setConversationMode(false);
           window.dispatchEvent(new CustomEvent('voice:status', { 
@@ -318,11 +319,11 @@ export const useVoiceIntegration = () => {
         }
         
         // Get signed URL from Supabase  
-        console.log('🎤 Requesting ElevenLabs agent signed URL...');
+        DebugLogger.log('audio', 'Requesting ElevenLabs agent signed URL...');
         const { data, error } = await supabase.functions.invoke('elevenlabs-agent-signed-url');
         
         if (error) {
-          console.error('🎤 Supabase function error:', error);
+          DebugLogger.error('audio', 'Supabase function error:', error);
           toast.error(`Voice connection failed: ${error.message}`);
           phoneticRulesEngine.setConversationMode(false);
           window.dispatchEvent(new CustomEvent('voice:status', { 
@@ -332,7 +333,7 @@ export const useVoiceIntegration = () => {
         }
         
         if (!data?.signed_url) {
-          console.error('🎤 No signed URL in response:', data);
+          DebugLogger.error('audio', 'No signed URL in response:', data);
           toast.error('No signed URL received from ElevenLabs');
           phoneticRulesEngine.setConversationMode(false);
           window.dispatchEvent(new CustomEvent('voice:status', { 
@@ -341,11 +342,11 @@ export const useVoiceIntegration = () => {
           return;
         }
         
-        console.log('🎤 Got signed URL, starting session...');
+        DebugLogger.log('audio', 'Got signed URL, starting session...');
         const sessionResult = await startSession({ signedUrl: data.signed_url });
-        console.log('🎤 Session started successfully:', sessionResult);
+        DebugLogger.log('audio', 'Session started successfully:', sessionResult);
       } catch (error: any) {
-        console.error('🎤 Failed to start voice session:', error);
+        DebugLogger.error('audio', 'Failed to start voice session:', error);
         toast.error(`Could not connect to Buddy: ${error.message || 'Unknown error'}`);
         phoneticRulesEngine.setConversationMode(false);
         window.dispatchEvent(new CustomEvent('voice:status', { 

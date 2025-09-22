@@ -4,6 +4,7 @@
  */
 
 import { toast } from "sonner";
+import { DebugLogger } from '@/services/DebugLogger';
 
 export interface CacheEntry {
   key: string;
@@ -60,7 +61,7 @@ export class AdvancedPerformanceMonitor {
     entry.lastAccessed = now;
     this.cacheHitCount++;
     
-    console.log(`🎯 Cache hit for prompt pattern: ${key}`);
+    DebugLogger.log('performance', `Cache hit for prompt pattern: ${key}`);
     return entry.value;
   }
 
@@ -80,7 +81,7 @@ export class AdvancedPerformanceMonitor {
     };
 
     this.cache.set(key, entry);
-    console.log(`💾 Cached prompt pattern: ${key}`);
+    DebugLogger.log('performance', `Cached prompt pattern: ${key}`);
   }
 
   /**
@@ -195,7 +196,7 @@ export class AdvancedPerformanceMonitor {
     
     // Alert on significant bias detection
     if (score < 70) {
-      console.warn(`🚨 Cultural bias detected (score: ${score}):`, issues);
+      DebugLogger.warn('performance', `Cultural bias detected (score: ${score}):`, issues);
     }
 
     return result;
@@ -332,7 +333,7 @@ export class AdvancedPerformanceMonitor {
     
     if (oldestKey) {
       this.cache.delete(oldestKey);
-      console.log(`🗑️ Evicted cache entry: ${oldestKey}`);
+      DebugLogger.log('performance', `Evicted cache entry: ${oldestKey}`);
     }
   }
 
