@@ -361,7 +361,6 @@ class DeploymentValidator {
       // Test critical function declarations
       const testFunctions = [
         'generateWithRunware',
-        'generateFallbackImage',
         'CrashProofBootSystem.validateBoot'
       ];
       
@@ -899,21 +898,27 @@ async function handleRequest(req) {
     // Escalate to Tier 2.5D for proper fallback handling instead of generic stock photos
     if (!result || !result.success) {
       tierLogging.logTier2(`🚀 [${requestId}] Escalating to Tier 2.5D (runware-template-cd)`);
-      try {
-        const resp = await supabase.functions.invoke("runware-template-cd", {
-          body: {
-            storyText,
-            pageText: storyText,
-            userInfo: payload.userInfo,
-            sessionId: payload.sessionId || "session_" + requestId,
-            pageNumber: pageNumber || 1,
-            templateComplexity: "D",
-          },
-        });
-        result = resp.data || { success: false, error: "All tiers failed", escalateToClient: true };
-      } catch (escalationError) {
-        tierLogging.logTier1(`❌ [${requestId}] Tier 2.5D escalation failed: ${escalationError.message}`);
-        result = { success: false, error: "All tiers failed", escalateToClient: true };
+      
+      // Ensure we have valid story text before escalation
+      if (!storyText || storyText.trim().length === 0) {
+        tierLogging.logTier1(`❌ [${requestId}] Cannot escalate: No story text available`);
+        result = { success: false, error: "No story content available for generation", escalateToClient: true };
+      } else {
+        try {
+          const resp = await supabase.functions.invoke("runware-template-cd", {
+            body: {
+              pageText: storyText,  // Use pageText format for consistency
+              userInfo: payload.userInfo || enhancedStoryData?.userInfo || {},
+              sessionId: payload.sessionId || "session_" + requestId,
+              pageNumber: pageNumber || 1,
+              templateComplexity: "D",
+            },
+          });
+          result = resp.data || { success: false, error: "All tiers failed", escalateToClient: true };
+        } catch (escalationError) {
+          tierLogging.logTier1(`❌ [${requestId}] Tier 2.5D escalation failed: ${escalationError.message}`);
+          result = { success: false, error: "All tiers failed", escalateToClient: true };
+        }
       }
     }
     
