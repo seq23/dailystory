@@ -3236,8 +3236,8 @@ const handleRestartTimer = () => {
         setLastEndingPageIndex(lastEndingPageIndex);
         
         // Store ending page count for pagination display
-        (window as any).__endingPageCount__ = endingPageCount;
-        (window as any).__firstEndingPageIndex__ = firstEndingPageIndex;
+        window.__endingPageCount__ = endingPageCount;
+        window.__firstEndingPageIndex__ = firstEndingPageIndex;
 
         // Auto-advance to the newly generated concluding page
         setCurrentPage(prev => prev + 1);

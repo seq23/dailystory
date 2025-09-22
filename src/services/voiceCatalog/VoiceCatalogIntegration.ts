@@ -23,6 +23,8 @@ export interface VoiceIntegrationResult {
   };
 }
 
+import { DebugLogger } from '../DebugLogger';
+
 export class VoiceCatalogIntegration {
   /**
    * Main integration point - replaces AuthorVoiceService usage
@@ -38,14 +40,14 @@ export class VoiceCatalogIntegration {
   ): Promise<VoiceIntegrationResult> {
     const startTime = Date.now();
 
-    console.log(`🎭 Selecting voice for ${userInfo.name || 'user'} at ${difficulty} level`);
+    DebugLogger.log('performance', 'Selecting voice for user', { userName: userInfo.name || 'user', difficulty });
 
     // 1. Map themes using ThemeLibraryService for proper matching and synonyms
     const enhancedThemes = preferences?.themes 
       ? ThemeLibraryService.mapToLibrary(preferences.themes)
       : undefined;
 
-    console.log(`🎯 Theme mapping: ${JSON.stringify(preferences?.themes)} → ${JSON.stringify(enhancedThemes)}`);
+    DebugLogger.log('performance', 'Theme mapping', { original: preferences?.themes, enhanced: enhancedThemes });
 
     // 2. Select the best voice using the new system with enhanced themes
     const voiceSelection: VoiceSelectionResult = await VoiceSelector.selectVoice(
@@ -64,7 +66,7 @@ export class VoiceCatalogIntegration {
 
     const processingTime = Date.now() - startTime;
 
-    console.log(`✅ Voice integration complete: ${voiceSelection.voice.pn} (${processingTime}ms)`);
+    DebugLogger.log('performance', 'Voice integration complete', { voiceName: voiceSelection.voice.pn, processingTime });
 
     return {
       selectedVoice: voiceSelection.voice,
@@ -246,11 +248,11 @@ export class VoiceCatalogIntegration {
       difficultyLevel: difficulty
     };
 
-    console.log(`🧪 Testing voice selection for ${difficulty} level...`);
+    DebugLogger.log('performance', `Testing voice selection for level`, { difficulty });
     
     const result = await this.selectAndPrepareVoice(testUser, difficulty);
     
-    console.log('Test Results:', {
+    DebugLogger.log('performance', 'Test Results', {
       voice: result.selectedVoice.pn,
       score: result.compatibilityScore,
       reasoning: result.selectionReasoning,

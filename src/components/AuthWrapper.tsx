@@ -139,7 +139,7 @@ export const AuthWrapper = () => {
           DebugLogger.log('auth', 'Discount code activated:', data.message);
           // Show success toast
           ManagedTimers.setTimeout(() => {
-            (window as any).__showDiscountActivationToast?.(data.message);
+            window.__showDiscountActivationToast?.(data.message);
           }, 1000, 'AuthWrapper');
         }
       }

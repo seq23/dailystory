@@ -13,6 +13,8 @@ import codebookData from './codebook.v1.1.json';
  * Codebook Service for managing the global AVC codebook v1.1
  * Provides access to predefined lists of terms and their metadata
  */
+import { DebugLogger } from '../DebugLogger';
+
 export class CodebookService {
   private static codebook: GlobalCodebook | null = null;
   private static isLoaded = false;
@@ -44,7 +46,7 @@ export class CodebookService {
     const array = codebook[arrayName] as string[];
     
     if (!Array.isArray(array)) {
-      console.warn(`Codebook array '${String(arrayName)}' not found`);
+      DebugLogger.warn('performance', `Codebook array not found`, { arrayName: String(arrayName) });
       return [];
     }
     
@@ -61,26 +63,26 @@ export class CodebookService {
         
         // ±1 Fallback: Try index - 1 (common off-by-one error)
         if (index > 0 && (index - 1) < array.length) {
-          console.log(`📝 Codebook: Using ±1 fallback ${index}→${index-1} for '${String(arrayName)}'`);
+          DebugLogger.log('performance', `Codebook: Using ±1 fallback`, { from: index, to: index-1, arrayName: String(arrayName) });
           return array[index - 1];
         }
         
         // ±1 Fallback: Try index + 1 (reverse off-by-one error)
         if (index >= 0 && (index + 1) < array.length) {
-          console.log(`📝 Codebook: Using ±1 fallback ${index}→${index+1} for '${String(arrayName)}'`);
+          DebugLogger.log('performance', `Codebook: Using ±1 fallback`, { from: index, to: index+1, arrayName: String(arrayName) });
           return array[index + 1];
         }
         
         // Creative fallback: Use modulo wrapping to stay within bounds
         if (array.length > 0) {
           const wrappedIndex = Math.abs(index) % array.length;
-          console.log(`📝 Codebook: Using creative fallback ${index}→${wrappedIndex} for '${String(arrayName)}'`);
+          DebugLogger.log('performance', `Codebook: Using creative fallback`, { from: index, to: wrappedIndex, arrayName: String(arrayName) });
           return array[wrappedIndex];
         }
       }
       
       // Last resort: return a contextually appropriate fallback
-      console.warn(`Invalid index ${index} for codebook array '${String(arrayName)}', using creative fallback`);
+      DebugLogger.warn('performance', `Invalid index for codebook array, using creative fallback`, { index, arrayName: String(arrayName) });
       return this.getCreativeFallback(arrayName, index);
     });
   }

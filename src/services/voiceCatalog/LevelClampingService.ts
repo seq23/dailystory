@@ -24,6 +24,8 @@ export interface ClampedVoice extends ProcessedVoice {
   clampingApplied: boolean;
 }
 
+import { DebugLogger } from '../DebugLogger';
+
 export class LevelClampingService {
   
   /**
@@ -115,7 +117,7 @@ export class LevelClampingService {
     
     } catch (error) {
       if (failSoft) {
-        console.warn('⚠️ LevelClampingService: Clamping failed, using safe defaults:', error);
+        DebugLogger.warn('performance', 'LevelClampingService: Clamping failed, using safe defaults', error);
         return {
           ...voice,
           originalComplexity: 5,

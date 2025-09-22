@@ -27,6 +27,8 @@ export interface ThemeLibraryData {
   themes: ThemeMetadata[];
 }
 
+import { DebugLogger } from '../DebugLogger';
+
 export class ThemeLibraryService {
   private static readonly THEME_LIBRARY: ThemeLibraryData = themesData;
   
@@ -35,7 +37,7 @@ export class ThemeLibraryService {
    */
   static mapToLibrary(themes: string[], failSoft = false): string[] {
     if (failSoft && (!themes || themes.length === 0)) {
-      console.warn('⚠️ ThemeLibrary: No themes provided, using AI generation');
+      DebugLogger.warn('performance', 'ThemeLibrary: No themes provided, using AI generation');
       return ['AI_GENERATE_THEMES'];
     }
     

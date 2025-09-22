@@ -15,6 +15,8 @@ import { VoiceProcessor } from './VoiceProcessor';
 
 export type DifficultyLevel = 'beginner' | 'easy' | 'medium' | 'hard' | 'expert';
 
+import { DebugLogger } from '../DebugLogger';
+
 export class VoiceCatalogService {
   private static voiceCache = new Map<DifficultyLevel, ProcessedVoice[]>();
   private static rawLevelData = new Map<DifficultyLevel, LevelFile | DeltaLevelFile>();
@@ -36,7 +38,7 @@ export class VoiceCatalogService {
     // Cache the results
     this.voiceCache.set(level, processedVoices);
     
-    console.log(`✅ Loaded ${processedVoices.length} voices for ${level} level`);
+    DebugLogger.log('performance', `Loaded voices for level`, { level, count: processedVoices.length });
     return processedVoices;
   }
 
@@ -63,7 +65,7 @@ export class VoiceCatalogService {
         return VoiceDataLoader.loadExpertVoices();
       
       default:
-        console.warn(`⚠️ Unknown difficulty level: ${level}`);
+        DebugLogger.warn('performance', 'Unknown difficulty level', { level });
         return [];
     }
   }
@@ -88,7 +90,7 @@ export class VoiceCatalogService {
     for (const override of overrides) {
       const baseVoice = baseVoices.find(v => v.id === override.ref);
       if (!baseVoice) {
-        console.warn(`⚠️ Base voice not found for override: ${override.ref}`);
+        DebugLogger.warn('performance', 'Base voice not found for override', { override: override.ref });
         continue;
       }
 
@@ -141,7 +143,7 @@ export class VoiceCatalogService {
    */
   static clearCache(): void {
     this.voiceCache.clear();
-    console.log('🧹 Voice catalog cache cleared');
+    DebugLogger.log('performance', 'Voice catalog cache cleared');
   }
 
   /**
@@ -161,7 +163,7 @@ export class VoiceCatalogService {
         const voices = await this.getVoicesForLevel(level);
         stats[level] = voices.length;
       } catch (error) {
-        console.warn(`⚠️ Failed to load ${level} voices:`, error);
+        DebugLogger.warn('performance', `Failed to load voices`, { level, error });
       }
     }
 
