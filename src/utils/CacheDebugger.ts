@@ -5,6 +5,7 @@
 
 import { EnhancedImageCache } from '@/services/enhancedImageCache';
 import { StorySessionCache } from '@/services/storySessionCache';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface CacheInspectionResult {
   imageCacheStatus: {
