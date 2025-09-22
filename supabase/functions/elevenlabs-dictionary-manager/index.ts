@@ -6,6 +6,7 @@ import { createDynamicCorsResponse, createDynamicCorsErrorResponse, createDynami
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Max-Age': '600',
 };
 
 serve(async (req) => {

@@ -15,6 +15,7 @@ async function getDifficultyMapper() {
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Max-Age': '600',
 };
 
 // Enhanced word alignment interface for ElevenLabs TTS
