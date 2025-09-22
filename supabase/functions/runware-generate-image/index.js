@@ -335,9 +335,7 @@ async function generateWithRunware(
   try {
     const culturalProfileStr = `${userInfo?.nativeLanguage || "en"}_${userInfo?.avatar?.skinTone || avatarIdentity?.skinTone || "light"}`;
     const avatarType = userInfo?.avatar?.type || avatarIdentity?.type || "girl";
-    negativePrompt = generateInlineNuclear
-
-(culturalProfileStr, avatarType, difficulty);
+        negativePrompt = generateInlineNuclearNegative(culturalProfileStr, avatarType, difficulty);
     console.log(`🟢 [TIER2] 🎨 [${requestId}] Generated comprehensive negative prompt: ${negativePrompt.length} chars`);
   } catch (e) {
     console.log(`🔴 [TIER1] ⚠️ [${requestId}] Failed to generate nuclear negative prompt: ${e?.message || e}`);
@@ -664,10 +662,15 @@ async function handleRequest(req) {
     }
 
     // ===== Default: if nothing succeeded, enhanced static fallback =====
-    if (!result || !result.success) {
-      log.t2('Using enhanced static fallback (2.5)');
-      result = await generateEnhancedFallback(storyText, pageNumber || 1, 'runware');
-    }
+      if (!result || !result.success) {
+        log.t2('Using simple static fallback');
+        result = {
+          success: true,
+          imageURL: "https://images.unsplash.com/photo-1519904981063-b0cf448d479e?w=1024&h=1024&fit=crop&q=80",
+          source: 'static_fallback',
+          tier: 'STATIC_FALLBACK'
+        };
+      }
 
     return new Response(JSON.stringify(result), {
       status: 200,
@@ -680,7 +683,7 @@ async function handleRequest(req) {
     // OUTER catch — only one, and it always pairs the try above
     const message = (error && error.message) || String(error);
     // console + JSON
-    tierLogging.logTier1(`❌ [${requestId}] Crash-proof orchestrator error`, { message });
+    tierLogging.logTier1(`❌ [${requestId}] Crash-proof orchestrator error`, { message }, supabase, 'unknown', requestId);
     return new Response(JSON.stringify({
       error: 'Internal server error',
       message,
