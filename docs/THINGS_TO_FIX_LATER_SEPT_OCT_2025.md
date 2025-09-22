@@ -15,8 +15,8 @@ This document tracks technical debt, bugs, and improvements that need to be addr
 
 ### 1. Fix useChildProfiles Race Conditions 🔴 HIGH PRIORITY
 **Date Added:** September 19, 2025  
-**Status:** Not Started  
-**Reporter:** User feedback - constant hard refresh needed  
+**Status:** ✅ COMPLETED (2025-09-22)
+**Reporter:** User feedback - constant hard refresh needed
 
 **Problem:**
 Avatar pulldown shows hourglass timer and manage children profiles show "parent.manager.loading" message with no child profiles. Users constantly need to hard refresh to get it working.
@@ -40,7 +40,11 @@ Race conditions in `useChildProfiles` hook where multiple component instances sh
 ---
 
 ## Completed Items
-*Items that have been resolved will be moved here with completion dates*
+
+### 1. Fix useChildProfiles Race Conditions ✅
+**Date Completed:** September 22, 2025  
+**Solution:** Replaced global shared state with per-instance caching, eliminated `activeLoadRequest` global variable, implemented `lastRequestRef` per instance  
+**Result:** Child profile management now works reliably without refresh requirement
 
 ---
 
