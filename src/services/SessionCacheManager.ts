@@ -46,6 +46,7 @@
 import { EnhancedImageCache } from './enhancedImageCache';
 import { StorySessionCache } from './storySessionCache';
 import { generateSessionIdWithPrefix } from '@/utils/sessionId';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface ClearOptions {
   userId?: string;
@@ -440,6 +441,77 @@ export class SessionCacheManager {
       console.log('✅ [PREMIUM-FINISH DEBUG] Images preserved for navigation');
     } catch (error) {
       console.error('❌ [PREMIUM-FINISH DEBUG] clearOnPremiumFinish FAILED:', error);
+    }
+  }
+
+  /**
+   * Clear comprehensive guest cache including all image caches
+   */
+  static async clearGuestCache(sessionId?: string): Promise<void> {
+    console.log('🧹 [GUEST CACHE] clearGuestCache ENTRY:', { sessionId, timestamp: new Date().toISOString() });
+    
+    try {
+      // Clear all image-related caches
+      const imageKeys = [
+        'generatedImageUrls',
+        'imageGenerationStates', 
+        'cachedImages',
+        'runware-cache',
+        'fallback-images'
+      ];
+      
+      imageKeys.forEach(key => {
+        try {
+          sessionStorage.removeItem(`guest_${key}`);
+          localStorage.removeItem(`guest_${key}`);
+        } catch (error) {
+          console.warn(`Failed to clear ${key}:`, error);
+        }
+      });
+      
+      // Clear IndexedDB image caches
+      await this.clearIndexedDBImageCache();
+      
+      // Clear session-specific caches if sessionId provided
+      if (sessionId) {
+        const sessionKeys = Object.keys(sessionStorage).filter(key => key.includes(sessionId));
+        sessionKeys.forEach(key => {
+          try {
+            sessionStorage.removeItem(key);
+          } catch {}
+        });
+      }
+      
+      DebugLogger.log('performance', 'Guest image cache cleared completely');
+      console.log('✅ [GUEST CACHE] clearGuestCache COMPLETED successfully');
+      
+    } catch (error) {
+      DebugLogger.warn('performance', 'Failed clearing guest image cache', error);
+      console.error('❌ [GUEST CACHE] clearGuestCache FAILED:', error);
+    }
+  }
+
+  /**
+   * Clear IndexedDB image caches
+   */
+  private static async clearIndexedDBImageCache(): Promise<void> {
+    const dbNames = ['ImageCacheDB', 'RunwareImageCache', 'FallbackImageCache'];
+    
+    for (const dbName of dbNames) {
+      try {
+        const deleteRequest = indexedDB.deleteDatabase(dbName);
+        await new Promise((resolve, reject) => {
+          deleteRequest.onsuccess = () => resolve(true);
+          deleteRequest.onerror = () => reject(deleteRequest.error);
+          deleteRequest.onblocked = () => {
+            console.warn(`IndexedDB deletion blocked for ${dbName}`);
+            resolve(true); // Continue anyway
+          };
+        });
+        console.log(`🗃️ Cleared IndexedDB: ${dbName}`);
+      } catch (error) {
+        DebugLogger.warn('performance', `Failed to clear ${dbName}:`, error);
+      }
     }
   }
 

@@ -276,6 +276,16 @@ export class SimpleImageService {
     const cleanScene = storyText.trim().substring(0, 3000);
     DebugLogger.log('image', `Clean scene (${cleanScene.length} chars)`, cleanScene.substring(0, 200) + '...');
 
+    // Apply universal cultural protections
+    const enhancedPrompt = this.applyUniversalProtections(cleanScene, userInfo || {});
+    const protectionNegatives = (enhancedPrompt as any).__negatives || [];
+    
+    DebugLogger.log('image', 'Applied universal cultural protections', { 
+      originalLength: cleanScene.length, 
+      enhancedLength: enhancedPrompt.length,
+      negatives: protectionNegatives.length 
+    });
+
     // Map difficulty level
     const backendDifficulty = this.mapDifficultyLevel(userInfo);
     DebugLogger.log('image', 'Mapped difficulty level', backendDifficulty);
@@ -299,13 +309,14 @@ export class SimpleImageService {
       
       const requestPromise = supabase.functions.invoke('runware-generate-image', {
         body: {
-          pageText: cleanScene,
+          pageText: enhancedPrompt,
           userInfo,
           sessionId: normalizedSessionId,
           storyId: normalizedSessionId, // Use normalized sessionId as storyId for consistency
           pageNumber,
           isGuestUser: !isPremium,
-          difficultyLevel: backendDifficulty
+          difficultyLevel: backendDifficulty,
+          protectionNegatives // Pass negative prompts to backend
         }
       });
       
@@ -568,6 +579,135 @@ export class SimpleImageService {
     const skinKey = skinTone?.toLowerCase().replace(/\s+/g, '-');
     const hairOptions = mappings[skinKey] || mappings['medium'] || ['brown'];
     return hairOptions[Math.floor(Math.random() * hairOptions.length)];
+  }
+
+  // Apply universal protections for cultural representation
+  private static applyUniversalProtections(basePrompt: string, userInfo: UserInfo): string {
+    const protections = this.getUniversalProtectionPrompts(userInfo);
+    
+    // Integrate positive protections into main prompt
+    const enhancedPrompt = protections.positive.length > 0 
+      ? `${basePrompt}, ${protections.positive.join(', ')}`
+      : basePrompt;
+    
+    // Return enhanced prompt with negative array for caller
+    (enhancedPrompt as any).__negatives = protections.negative;
+    return enhancedPrompt;
+  }
+
+  // Get universal protection prompts for all ethnicities
+  private static getUniversalProtectionPrompts(userInfo: UserInfo): { positive: string[], negative: string[] } {
+    const ethnicity = userInfo?.ethnicity?.toLowerCase() || '';
+    const avatar = userInfo?.avatar?.type?.toLowerCase() || '';
+    
+    const positive: string[] = [
+      'dignified representation',
+      'respectful cultural portrayal',
+      'authentic character design',
+      'positive and empowering imagery'
+    ];
+    
+    const negative: string[] = [
+      'stereotypes',
+      'caricature',
+      'offensive depictions',
+      'cultural appropriation',
+      'disrespectful imagery'
+    ];
+    
+    // African American specific protections
+    if (ethnicity.includes('african') || ethnicity.includes('black') || avatar.includes('african')) {
+      positive.push(
+        'beautiful natural hair textures',
+        'diverse African American representation',
+        'confident and proud character',
+        'culturally authentic features'
+      );
+      negative.push(
+        'exaggerated features',
+        'outdated stereotypes',
+        'inappropriate hair representations',
+        'culturally insensitive imagery'
+      );
+    }
+    
+    return { positive, negative };
+  }
+
+  // Intelligent fallback ordering system for image generation
+  private static async getImageWithIntelligentFallback(
+    userInfo: UserInfo, 
+    pageContent: string, 
+    isGuestUser: boolean,
+    sessionId?: string,
+    pageNumber: number = 1
+  ): Promise<string | null> {
+    // Priority order: Runware > Fallback Images > Generic
+    const fallbackStrategies = [
+      () => this.tryRunwareGeneration(userInfo, pageContent, isGuestUser, sessionId, pageNumber),
+      () => this.tryFallbackImageService(userInfo, pageContent, pageNumber),
+      () => this.tryGenericImageGeneration(pageContent)
+    ];
+    
+    for (const strategy of fallbackStrategies) {
+      try {
+        const result = await strategy();
+        if (result && result.startsWith('http')) {
+          DebugLogger.log('image', `Fallback success with strategy: ${strategy.name}`);
+          return result;
+        }
+      } catch (error) {
+        DebugLogger.warn('image', `Fallback strategy failed: ${strategy.name}`, error);
+        continue;
+      }
+    }
+    
+    DebugLogger.warn('image', 'All fallback strategies exhausted');
+    return null;
+  }
+
+  // Try Runware generation as first priority
+  private static async tryRunwareGeneration(
+    userInfo: UserInfo, 
+    pageContent: string, 
+    isGuestUser: boolean,
+    sessionId?: string,
+    pageNumber: number = 1
+  ): Promise<string | null> {
+    try {
+      const result = await this.generateWithOrchestrator(
+        pageContent, userInfo, sessionId, pageNumber, !isGuestUser
+      );
+      return result.success ? (result.url || result.imageURL) : null;
+    } catch (error) {
+      DebugLogger.warn('image', 'Runware generation failed in fallback', error);
+      return null;
+    }
+  }
+
+  // Try fallback image service as second priority
+  private static async tryFallbackImageService(
+    userInfo: UserInfo, 
+    pageContent: string, 
+    pageNumber: number
+  ): Promise<string | null> {
+    try {
+      return ImageFallbackService.generateStoryPlaceholder(pageContent, pageNumber);
+    } catch (error) {
+      DebugLogger.warn('image', 'Fallback image service failed', error);
+      return null;
+    }
+  }
+
+  // Try generic image generation as last resort
+  private static async tryGenericImageGeneration(pageContent: string): Promise<string | null> {
+    try {
+      const svgResult = this.generateSVGPlaceholder(pageContent);
+      return svgResult.url;
+    } catch (error) {
+      DebugLogger.warn('image', 'Generic SVG generation failed', error);
+      return null;
+    }
   }
 
   // Generate character versioned cache key for consistency tracking

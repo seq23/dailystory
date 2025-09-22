@@ -57,19 +57,24 @@ export class AudioPermissions {
         setTimeout(() => reject(new Error('timeout')), ms)
       );
 
-      // Try internal health check first (internal app route)
+      // Try internal health check first (Supabase system diagnostics)
       try {
-        await Promise.race([
-          fetch('/api/health', { method: 'HEAD', cache: 'no-store' }),
-          timeout(1000)
+        const { supabase } = await import('@/integrations/supabase/client');
+        const healthResponse = await Promise.race([
+          supabase.functions.invoke('system-diagnostics', { 
+            body: { healthCheck: true } 
+          }),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 800))
         ]);
-        DebugLogger.log('network', 'Network quality check successful: internal API');
-        this.updateContext({ 
-          isNetworkAvailable: true, 
-          networkQuality: 'good' 
-        });
-        return 'good';
-      } catch {}
+        
+        if ((healthResponse as any)?.data && !(healthResponse as any)?.error) {
+          DebugLogger.log('network', 'Network quality check successful: internal health endpoint');
+          this.updateContext({ isNetworkAvailable: true, networkQuality: 'good' });
+          return 'good';
+        }
+      } catch (error) {
+        DebugLogger.warn('network', 'Internal health check failed, trying fallback');
+      }
 
       // Try lightweight origin check (no external CORS)
       try {
