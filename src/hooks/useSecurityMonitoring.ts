@@ -1,6 +1,6 @@
 import { useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
-import { DebugLogger } from '@/services/DebugLogger';
+import { DebugLogger } from '../services/DebugLogger';
 
 interface SecurityEvent {
   type: string;
