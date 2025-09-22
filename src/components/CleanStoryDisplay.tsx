@@ -168,6 +168,20 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   currentStory,
   onPageImagesUpdate, // CRITICAL: Extract callback for image updates
 }) => {
+  // ERROR-023 FIX: Defensive userInfo validation with complete fallback
+  const safeUserInfo: UserInfo = userInfo || {
+    name: 'Reader',
+    age: 8,
+    grade: 'K' as const,
+    difficultyLevel: 'beginner' as const,
+    expertGradeLevel: "6th" as const,
+    nativeLanguage: 'en' as const,
+    learningGoal: 'improve-english-reading' as const,
+    avatar: { type: 'boy' as const, skinTone: 'medium' as const },
+    specialRequest: '',
+    // Optional fields remain undefined to maintain honesty
+  };
+
   const { t } = useTranslation();
   const { toast } = useToast();
   const { isMobile, isTablet, isMobileOrTablet, hasTouchCapability } = useIsMobile();
@@ -265,10 +279,10 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
       characterSessionId
     }
   } = useStoryLogic({
-    userInfo,
+    userInfo: safeUserInfo, // Use defensive userInfo
     isPremium,
-    initialDifficulty: (userInfo.difficultyLevel || 'beginner') as any,
-    expertGradeLevel: userInfo.expertGradeLevel,
+    initialDifficulty: (safeUserInfo.difficultyLevel || 'beginner') as any,
+    expertGradeLevel: safeUserInfo.expertGradeLevel,
     onSessionEnded
   });
 
@@ -276,9 +290,9 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const { state: imageState, actions: imageActions } = useImageManagement();
   const { state: audioVocabState, actions: audioVocabActions } = useAudioVocabulary();
   const { state: errorNetworkState, actions: errorNetworkActions } = useErrorNetworkState();
-  const { state: metadataState, actions: metadataActions } = useStoryMetadata({ userInfo, isPremium });
+  const { state: metadataState, actions: metadataActions } = useStoryMetadata({ userInfo: safeUserInfo, isPremium });
   const { state: uiState, actions: uiActions, refs: uiRefs } = useUIAnimationState();
-  const { state: difficultyState, actions: difficultyActions } = useDifficultyManagement({ userInfo });
+  const { state: difficultyState, actions: difficultyActions } = useDifficultyManagement({ userInfo: safeUserInfo });
 
   // Destructure for cleaner access
   const {
@@ -350,8 +364,15 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const sessionStartTimeValue = sessionStartTime.current;
   const characterSessionIdValue = characterSessionId.current;
   
+  // ERROR-023 FIX: Defensive story array bounds checking
   // For free users, limit displayed pages to 6 maximum
-  const displayedStory = !isPremium ? story.slice(0, 6) : story;
+  const safeStory = Array.isArray(story) ? story : [];
+  const displayedStory = !isPremium ? safeStory.slice(0, 6) : safeStory;
+  
+  // Ensure currentPage is within valid bounds
+  const safeCurrentPage = Math.max(0, Math.min(currentPage, displayedStory.length - 1));
+  const currentPageContent = displayedStory[safeCurrentPage] || '';
+  const hasValidContent = displayedStory.length > 0 && currentPageContent.trim().length > 0;
 
 
   useEffect(() => {
@@ -2851,16 +2872,17 @@ const handleRestartTimer = () => {
       DebugLogger.log('story', `[STORY DEBUG ${callId}] Calling SessionCacheManager.clearOnRewrite`);
       SessionCacheManager.clearOnRewrite(currentUserId, avatarType);
     } else {
-      DebugLogger.log('story', `[STORY DEBUG ${callId}] Calling SessionCacheManager.clearOnNextStory`);
-      SessionCacheManager.clearOnNextStory(currentUserId, avatarType);
+      DebugLogger.log('story', `[STORY DEBUG ${callId}] Calling SessionCacheManager.clearOnNextStorySync (synchronous)`);
+      // ERROR-017 FIX: Use synchronous cache clearing to prevent race conditions
+      SessionCacheManager.clearOnNextStorySync(currentUserId, avatarType);
     }
     
     if (isRewrite) {
       // Rewriting current story - preserve character continuity
       SessionCacheManager.clearOnRewrite(currentUserId, avatarType);
     } else {
-      // Getting next story - complete fresh start
-      SessionCacheManager.clearOnNextStory(currentUserId, avatarType);
+      // ERROR-017 FIX: Getting next story - use synchronous complete fresh start
+      SessionCacheManager.clearOnNextStorySync(currentUserId, avatarType);
     }
     
     // FIXED: Keep story stable to allow continuous auto-image generation

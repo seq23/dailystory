@@ -29,21 +29,37 @@ interface UseDifficultyManagementProps {
 }
 
 export const useDifficultyManagement = ({ userInfo }: UseDifficultyManagementProps) => {
-  const [currentDifficulty, setCurrentDifficulty] = useState<string>(userInfo.difficultyLevel || 'beginner');
+  // ERROR-016 FIX: Defensive initialization with comprehensive validation
+  const safeUserInfo = userInfo || {} as UserInfo;
+  const validGradeLevels: ("6th" | "7th" | "8th" | "9th" | "10th")[] = ["6th", "7th", "8th", "9th", "10th"];
+  const validDifficultyLevels = ['beginner', 'easy', 'medium', 'hard', 'expert'];
+  
+  // Validate and default expert grade level
+  const safeExpertGradeLevel = validGradeLevels.includes(safeUserInfo.expertGradeLevel as any) 
+    ? safeUserInfo.expertGradeLevel || "6th" 
+    : "6th";
+    
+  // Validate and default difficulty level
+  const safeDifficultyLevel = validDifficultyLevels.includes(safeUserInfo.difficultyLevel as any)
+    ? safeUserInfo.difficultyLevel || 'beginner'
+    : 'beginner';
+
+  const [currentDifficulty, setCurrentDifficulty] = useState<string>(safeDifficultyLevel);
   const [isChangingDifficulty, setIsChangingDifficulty] = useState(false);
   const [changeDirection, setChangeDirection] = useState<'increase' | 'decrease' | 'badge' | undefined>();
-  const [expertGradeLevel, setExpertGradeLevel] = useState<"6th" | "7th" | "8th" | "9th" | "10th">(userInfo.expertGradeLevel || "6th");
+  const [expertGradeLevel, setExpertGradeLevel] = useState<"6th" | "7th" | "8th" | "9th" | "10th">(safeExpertGradeLevel);
   const [lockDifficulty, setLockDifficulty] = useState(false);
   const [minDifficulty, setMinDifficulty] = useState<string>('beginner');
   const [minExpertGrade, setMinExpertGrade] = useState<"6th" | "7th" | "8th" | "9th" | "10th">("6th");
   const [allowDecreaseBelowMin, setAllowDecreaseBelowMin] = useState(false);
 
   const resetDifficultyToInitial = useCallback(() => {
-    setCurrentDifficulty(userInfo.difficultyLevel || 'beginner');
-    setExpertGradeLevel(userInfo.expertGradeLevel || "6th");
+    // ERROR-016 FIX: Use the same defensive validation in reset
+    setCurrentDifficulty(safeDifficultyLevel);
+    setExpertGradeLevel(safeExpertGradeLevel);
     setIsChangingDifficulty(false);
     setChangeDirection(undefined);
-  }, [userInfo.difficultyLevel, userInfo.expertGradeLevel]);
+  }, [safeDifficultyLevel, safeExpertGradeLevel]);
 
   const state: DifficultyManagementState = {
     currentDifficulty,

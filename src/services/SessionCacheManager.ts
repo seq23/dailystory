@@ -445,6 +445,49 @@ export class SessionCacheManager {
   }
 
   /**
+   * ERROR-017 FIX: Synchronous cache clearing for Next Story transitions
+   * Prevents race conditions between cache clearing and new story generation
+   */
+  static clearOnNextStorySync(userId: string = 'guest', avatarType?: string): void {
+    console.log('⚡ [SYNC-NEXTSTORY DEBUG] clearOnNextStorySync ENTRY:', { userId, avatarType, timestamp: new Date().toISOString() });
+    
+    try {
+      // Immediate synchronous clearing without async operations
+      const effectiveSessionId = generateSessionIdWithPrefix('next_story_sync');
+      
+      // 1. Clear Enhanced Image Cache synchronously
+      EnhancedImageCache.clearForStoryTransition(effectiveSessionId);
+      
+      // 2. Clear Story Session Cache with next-story context
+      StorySessionCache.clearCachedSession(userId, true, avatarType, 'next-story');
+      
+      // 3. Mark Netflix session for immediate fresh generation
+      sessionStorage.setItem('netflix_force_fresh_session', 'true');
+      sessionStorage.setItem('cache_cleared_timestamp', Date.now().toString());
+      
+      // 4. Clear visual state synchronously
+      const visualStateKeys = Object.keys(sessionStorage).filter(key => 
+        key.includes('story_visual_state_manager') || 
+        key.includes('visual_state')
+      );
+      visualStateKeys.forEach(key => sessionStorage.removeItem(key));
+      
+      // 5. Clear character state from localStorage
+      const characterKeys = Object.keys(localStorage).filter(key => 
+        key.includes('character_visual_state') ||
+        key.includes('character_')
+      );
+      characterKeys.forEach(key => localStorage.removeItem(key));
+      
+      console.log('✅ [SYNC-NEXTSTORY DEBUG] clearOnNextStorySync COMPLETED - synchronous cache clear done');
+      
+    } catch (error) {
+      console.error('❌ [SYNC-NEXTSTORY DEBUG] clearOnNextStorySync FAILED:', error);
+      throw error; // Re-throw to allow caller to handle
+    }
+  }
+
+  /**
    * Clear comprehensive guest cache including all image caches
    */
   static async clearGuestCache(sessionId?: string): Promise<void> {
