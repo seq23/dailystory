@@ -541,7 +541,7 @@ async function generateWithRunware(apiKey, prompt, sessionId, requestId, userInf
     hasEnhancedPrompt: !!enhancedStoryData?.enhancedPrompt,
     hasCharacterConsistency: !!enhancedStoryData?.characterConsistency,
     hasVisualConsistency: !!enhancedStoryData?.visualConsistency
-  });
+  })}`);
   
   // Simplified WebSocket connection with proper timeout
   const ws = new WebSocket("wss://ws-api.runware.ai/v1");
