@@ -3,6 +3,7 @@
  * Handles phonetic breakdown for ALL users (free/premium), ALL languages, ALL devices
  */
 import miniDict from '@/data/phonicsMiniDict';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface PhoneticRule {
   pattern: RegExp;
@@ -348,41 +349,224 @@ export class PhoneticRulesEngine {
     };
   }
   /**
-   * Plural-aware detection and kid-friendly chunking for English plurals
-   * Handles -s, -es (sibilants, -o words), and -ies -> base + s
-   * Returns null when not confidently a plural.
+   * INTELLIGENT PLURAL, IRREGULAR VERB & PAST TENSE DETECTION
+   * Enhanced 3-4 stem chunking with comprehensive morphological analysis
+   * Handles plurals, irregular verbs, past tense, and complex word forms
    */
   private tryPluralAware(word: string): string[] | null {
     if (!word || word.length < 3) return null;
     const hasVowel = (s: string) => /[aeiouy]/.test(s);
 
-    // -ies -> base+y + s (puppies -> puppy + s)
+    // IRREGULAR VERB FORMS - Intelligent recognition
+    const irregularVerbs: Record<string, string[]> = {
+      'went': ['go', 'past'],
+      'came': ['come', 'past'],
+      'saw': ['see', 'past'],
+      'did': ['do', 'past'],
+      'had': ['have', 'past'],
+      'was': ['be', 'past'],
+      'were': ['be', 'past'],
+      'got': ['get', 'past'],
+      'took': ['take', 'past'],
+      'made': ['make', 'past'],
+      'said': ['say', 'past'],
+      'gave': ['give', 'past'],
+      'found': ['find', 'past'],
+      'thought': ['think', 'past'],
+      'brought': ['bring', 'past'],
+      'bought': ['buy', 'past'],
+      'fought': ['fight', 'past'],
+      'taught': ['teach', 'past'],
+      'caught': ['catch', 'past'],
+      'better': ['bet', 'ter'], // comparative form
+      'worse': ['bad', 'er'], // comparative form
+      'best': ['good', 'est'], // superlative form
+      'worst': ['bad', 'est'] // superlative form
+    };
+
+    if (irregularVerbs[word]) {
+      DebugLogger.log('audio', `🧩 Irregular verb detected: "${word}" → ${irregularVerbs[word].join(' + ')}`);
+      return irregularVerbs[word];
+    }
+
+    // PAST TENSE DETECTION with intelligent stems
+    // Handle -ed endings with phonetic awareness
+    if (word.endsWith('ed') && word.length > 3) {
+      const stem = word.slice(0, -2);
+      
+      // Check for doubled consonants (stopped -> stop, planned -> plan)
+      if (stem.length >= 2 && stem[stem.length - 1] === stem[stem.length - 2] && 
+          /[bcdfghjklmnpqrstvwxz]/.test(stem[stem.length - 1])) {
+        const baseStem = stem.slice(0, -1);
+        if (hasVowel(baseStem)) {
+          DebugLogger.log('audio', `🧩 Past tense (doubled): "${word}" → ${baseStem} + ed`);
+          const base = this.knownSyllables[baseStem] || this.applyRuleBasedBreaking(baseStem);
+          return [...base, 'ed'];
+        }
+      }
+
+      // Regular -ed past tense
+      if (hasVowel(stem)) {
+        // Check if -ed should be pronounced as separate syllable (wanted, started)
+        const needsSeparateSyllable = /[td]$/.test(stem);
+        if (needsSeparateSyllable) {
+          DebugLogger.log('audio', `🧩 Past tense (syllabic): "${word}" → ${stem} + ed`);
+          const base = this.knownSyllables[stem] || this.applyRuleBasedBreaking(stem);
+          return [...base, 'ed'];
+        } else {
+          DebugLogger.log('audio', `🧩 Past tense (non-syllabic): "${word}" → ${stem} + d`);
+          const base = this.knownSyllables[stem] || this.applyRuleBasedBreaking(stem);
+          return [...base, 'd'];
+        }
+      }
+    }
+
+    // COMPLEX PLURALS - Enhanced detection
+
+    // -ies -> base+y + s (puppies -> pup + py + s, stories -> stor + ies)
     if (word.endsWith('ies') && word.length > 4) {
       const stem = word.slice(0, -3) + 'y';
       if (hasVowel(stem)) {
+        DebugLogger.log('audio', `🧩 -ies plural: "${word}" → ${stem} + s`);
         const base = this.knownSyllables[stem] || this.applyRuleBasedBreaking(stem);
         return [...base, 's'];
       }
     }
 
-    // -es after sibilant or -o words (boxes, buses, heroes)
+    // -es after sibilants or -o words (boxes -> box + es, heroes -> he + ro + es)
     if (word.endsWith('es') && word.length > 3) {
       const stem = word.slice(0, -2);
       const sibilant = /(s|x|z|ch|sh)$/.test(stem);
       const endsWithO = /o$/.test(stem);
       if (sibilant || endsWithO) {
+        DebugLogger.log('audio', `🧩 -es plural: "${word}" → ${stem} + es`);
         const base = this.knownSyllables[stem] || this.applyRuleBasedBreaking(stem);
         return [...base, 'es'];
       }
     }
 
-    // Simple -s plural (cats, dogs)
+    // Simple -s plural (cats -> cat + s, dogs -> dog + s)
     if (word.endsWith('s') && !word.endsWith('ss')) {
       const stem = word.slice(0, -1);
       if (stem.length >= 3 && hasVowel(stem)) {
+        DebugLogger.log('audio', `🧩 -s plural: "${word}" → ${stem} + s`);
         const base = this.knownSyllables[stem] || this.applyRuleBasedBreaking(stem);
         return [...base, 's'];
       }
+    }
+
+    // COMPLEX WORD FORMS - 3-4 intelligent stem chunking
+
+    // -ing forms (running -> run + ning, swimming -> swim + ming)
+    if (word.endsWith('ing') && word.length > 4) {
+      const stem = word.slice(0, -3);
+      
+      // Check for doubled consonants (running -> run)
+      if (stem.length >= 2 && stem[stem.length - 1] === stem[stem.length - 2] && 
+          /[bcdfghjklmnpqrstvwxz]/.test(stem[stem.length - 1])) {
+        const baseStem = stem.slice(0, -1);
+        if (hasVowel(baseStem)) {
+          DebugLogger.log('audio', `🧩 -ing form (doubled): "${word}" → ${baseStem} + ing`);
+          const base = this.knownSyllables[baseStem] || this.applyRuleBasedBreaking(baseStem);
+          return [...base, 'ing'];
+        }
+      }
+
+      // Regular -ing
+      if (hasVowel(stem)) {
+        DebugLogger.log('audio', `🧩 -ing form: "${word}" → ${stem} + ing`);
+        const base = this.knownSyllables[stem] || this.applyRuleBasedBreaking(stem);
+        return [...base, 'ing'];
+      }
+    }
+
+    // Long complex words - Attempt intelligent 3-4 stem breakdown
+    if (word.length > 8) {
+      const intelligentBreakdown = this.attemptIntelligentBreakdown(word);
+      if (intelligentBreakdown && intelligentBreakdown.length >= 3 && intelligentBreakdown.length <= 4) {
+        DebugLogger.log('audio', `🧩 Complex word (3-4 stems): "${word}" → ${intelligentBreakdown.join(' + ')}`);
+        return intelligentBreakdown;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * INTELLIGENT 3-4 STEM BREAKDOWN for complex words
+   * Attempts to break long words into 3-4 meaningful stems
+   */
+  private attemptIntelligentBreakdown(word: string): string[] | null {
+    if (word.length < 8) return null;
+
+    // Common prefixes for intelligent chunking
+    const prefixes = ['un', 'pre', 'pro', 'anti', 'auto', 'inter', 'under', 'over', 'out', 'mis', 'dis', 're'];
+    const suffixes = ['tion', 'sion', 'ment', 'ness', 'able', 'ible', 'ful', 'less', 'ous', 'ious', 'eous', 'ive', 'atory', 'ical'];
+
+    let stems: string[] = [];
+    let remaining = word.toLowerCase();
+
+    // Check for prefix
+    for (const prefix of prefixes) {
+      if (remaining.startsWith(prefix) && remaining.length > prefix.length + 2) {
+        stems.push(prefix);
+        remaining = remaining.slice(prefix.length);
+        break;
+      }
+    }
+
+    // Check for suffix
+    let suffix = '';
+    for (const suf of suffixes) {
+      if (remaining.endsWith(suf) && remaining.length > suf.length + 2) {
+        suffix = suf;
+        remaining = remaining.slice(0, -suf.length);
+        break;
+      }
+    }
+
+    // Break remaining middle part into 1-2 chunks
+    if (remaining.length > 6) {
+      // Try to find a natural break point around the middle
+      const midPoint = Math.floor(remaining.length / 2);
+      
+      // Look for vowel-consonant boundaries near the middle
+      for (let i = midPoint - 1; i <= midPoint + 1; i++) {
+        if (i > 0 && i < remaining.length - 1) {
+          const isVowelBoundary = /[aeiou]/.test(remaining[i]) && /[bcdfghjklmnpqrstvwxz]/.test(remaining[i + 1]);
+          if (isVowelBoundary) {
+            stems.push(remaining.slice(0, i + 1));
+            stems.push(remaining.slice(i + 1));
+            break;
+          }
+        }
+      }
+      
+      // If no natural break found, split at midpoint
+      if (stems.length === 1 || (stems.length === 0 && remaining.length > 4)) {
+        const splitPoint = Math.ceil(remaining.length / 2);
+        if (stems.length === 0) {
+          stems.push(remaining.slice(0, splitPoint));
+          stems.push(remaining.slice(splitPoint));
+        } else {
+          // Already have prefix, split remaining
+          const lastStem = stems.pop()!;
+          stems.push(remaining.slice(0, splitPoint));
+          stems.push(remaining.slice(splitPoint));
+        }
+      }
+    } else if (remaining.length > 0) {
+      stems.push(remaining);
+    }
+
+    // Add suffix if found
+    if (suffix) {
+      stems.push(suffix);
+    }
+
+    // Ensure 3-4 stems as requested
+    if (stems.length >= 3 && stems.length <= 4) {
+      return stems.filter(stem => stem.length > 0);
     }
 
     return null;

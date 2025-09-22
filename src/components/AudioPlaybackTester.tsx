@@ -33,27 +33,29 @@ export const AudioPlaybackTester: React.FC = () => {
     DebugLogger.log('audio', 'Testing Charlotte voice', { text: testText });
 
     try {
-      // Check if SmartElevenLabsTTS is available
-      if (typeof window !== 'undefined' && (window as any).SmartElevenLabsTTS) {
-        const ttsService = (window as any).SmartElevenLabsTTS;
+      // Check if CharlotteVoiceService is available (new unified service)
+      if (typeof window !== 'undefined' && (window as any).__CharlotteVoiceService) {
+        const charlotteService = (window as any).__CharlotteVoiceService;
         
         setIsPlaying(true);
-        await ttsService.generateConversationSpeech(testText, 'Charlotte');
+        await charlotteService.charlotteInteractiveAudio({
+          text: testText,
+          context: 'conversation'
+        });
         
         toast({
           title: "Charlotte Voice Test",
           description: "Audio playback completed successfully",
         });
       } else {
-        throw new Error('SmartElevenLabsTTS not available');
+        throw new Error('CharlotteVoiceService not available');
       }
     } catch (error) {
-      console.error('Charlotte voice test failed:', error);
       DebugLogger.error('audio', 'Charlotte voice test failed', error);
       
       toast({
         title: "Charlotte Voice Test Failed",
-        description: error.message || 'TTS service not available',
+        description: error.message || 'Charlotte service not available',
         variant: "destructive",
       });
     } finally {
@@ -68,27 +70,26 @@ export const AudioPlaybackTester: React.FC = () => {
     DebugLogger.log('audio', 'Testing interactive word audio', { word: testWord });
 
     try {
-      // Check if InteractiveWordAudioService is available
-      if (typeof window !== 'undefined' && (window as any).InteractiveWordAudioService) {
-        const wordService = (window as any).InteractiveWordAudioService;
+      // Test Charlotte's unified word services
+      if (typeof window !== 'undefined' && (window as any).__CharlotteVoiceService) {
+        const charlotteService = (window as any).__CharlotteVoiceService;
         
         setIsPlaying(true);
-        await wordService.hearWord(testWord);
+        await charlotteService.charlotteHearWord(testWord);
         
         toast({
-          title: "Interactive Word Test",
-          description: `Successfully played audio for "${testWord}"`,
+          title: "Charlotte Word Test",
+          description: `Charlotte successfully pronounced "${testWord}"`,
         });
       } else {
-        throw new Error('InteractiveWordAudioService not available');
+        throw new Error('CharlotteVoiceService not available');
       }
     } catch (error) {
-      console.error('Interactive word test failed:', error);
-      DebugLogger.error('audio', 'Interactive word test failed', error);
+      DebugLogger.error('audio', 'Charlotte word test failed', error);
       
       toast({
-        title: "Interactive Word Test Failed",
-        description: error.message || 'Word audio service not available',
+        title: "Charlotte Word Test Failed",
+        description: error.message || 'Charlotte service not available',
         variant: "destructive",
       });
     } finally {
@@ -132,12 +133,16 @@ export const AudioPlaybackTester: React.FC = () => {
 
   const stopAllAudio = () => {
     try {
-      // Stop Charlotte audio
-      if (typeof window !== 'undefined' && (window as any).SmartElevenLabsTTS) {
-        const ttsService = (window as any).SmartElevenLabsTTS;
-        if (ttsService.stop) {
-          ttsService.stop();
-        }
+      // Stop Charlotte audio (new unified service)
+      if (typeof window !== 'undefined' && (window as any).__CharlotteVoiceService) {
+        const charlotteService = (window as any).__CharlotteVoiceService;
+        charlotteService.stop();
+      }
+
+      // Stop SimplifiedAudioEngine
+      if (typeof window !== 'undefined' && (window as any).__SimplifiedAudioEngine) {
+        const audioEngine = (window as any).__SimplifiedAudioEngine;
+        audioEngine.stop();
       }
 
       // Dispatch stop events
@@ -149,10 +154,9 @@ export const AudioPlaybackTester: React.FC = () => {
       
       toast({
         title: "Audio Stopped",
-        description: "All audio playback stopped",
+        description: "All Charlotte audio systems stopped",
       });
     } catch (error) {
-      console.error('Failed to stop audio:', error);
       DebugLogger.error('audio', 'Failed to stop audio', error);
     }
   };
@@ -271,17 +275,23 @@ export const AudioPlaybackTester: React.FC = () => {
 
           {/* Service Availability Check */}
           <div className="p-3 bg-muted/50 rounded text-xs">
-            <div className="font-medium mb-1">Service Availability:</div>
+            <div className="font-medium mb-1">Charlotte-Centric Audio Services:</div>
             <div className="space-y-1">
               <div>
-                SmartElevenLabsTTS: ✅ Available (ES6 Module)
+                CharlotteVoiceService: {typeof window !== 'undefined' && (window as any).__CharlotteVoiceService ? '✅ Available (Unified)' : '❌ Not Found'}
               </div>
               <div>
-                InteractiveWordAudioService: ✅ Available (ES6 Module)
+                SimplifiedAudioEngine: {typeof window !== 'undefined' && (window as any).__SimplifiedAudioEngine ? '✅ Available (Story)' : '❌ Not Found'}
+              </div>
+              <div>
+                SmartElevenLabsTTS: {typeof window !== 'undefined' && (window as any).SmartElevenLabsTTS ? '✅ Available (Fallback)' : '❌ Not Found'}
               </div>
               <div>
                 Event System: {typeof window !== 'undefined' && window.dispatchEvent ? '✅ Available' : '❌ Not Found'}
               </div>
+            </div>
+            <div className="mt-2 text-xs text-muted-foreground">
+              🎯 Charlotte is now the unified voice for all audio: conversations, story reading, word interactions, and voice buddy.
             </div>
           </div>
         </CardContent>

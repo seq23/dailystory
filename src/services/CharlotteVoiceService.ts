@@ -1,0 +1,485 @@
+/**
+ * UNIFIED CHARLOTTE VOICE SERVICE
+ * Single source of truth for ALL Charlotte audio functionality
+ * Consolidates conversation, learning, story reading, interactive words, and voice buddy
+ */
+import { SmartElevenLabsTTS } from '@/services/smartElevenLabsTTS';
+import { SynchronizedElevenLabsTTS } from '@/services/SynchronizedElevenLabsTTS';
+import { phoneticRulesEngine } from '@/services/phoneticRulesEngine';
+import { contextualPronunciation } from '@/services/contextualPronunciation';
+import { supabase } from '@/integrations/supabase/client';
+import { DebugLogger } from '@/services/DebugLogger';
+
+export type CharlotteContext = 'conversation' | 'learning' | 'story' | 'interactive' | 'buddy';
+
+interface CharlotteVoiceRequest {
+  text: string;
+  context: CharlotteContext;
+  voiceId?: string;
+  retryCount?: number;
+  onWordHighlight?: (wordIndex: number) => void;
+}
+
+interface CharlotteSpeechResult {
+  audioBuffer: ArrayBuffer;
+  wordTimings?: Array<{ word: string; startTime: number; endTime: number }>;
+}
+
+/**
+ * Unified Charlotte Voice Service
+ * Charlotte is the single voice for everything: conversations, story reading, word explanations, syllables
+ */
+export class CharlotteVoiceService {
+  private static instance: CharlotteVoiceService | null = null;
+  private static processingRequests = new Set<string>();
+  private static requestCounter = 0;
+  private static charlotteVoiceId = 'XB0fDUnXU5powFXDhCwa'; // Charlotte's voice
+  
+  private audio: HTMLAudioElement | null = null;
+  private currentUrl: string | null = null;
+  private playing = false;
+  private wordTimings: Array<{ word: string; startTime: number; endTime: number }> = [];
+  private onWordHighlight?: (wordIndex: number) => void;
+  private highlightInterval?: NodeJS.Timeout;
+
+  static getInstance() {
+    if (!this.instance) {
+      this.instance = new CharlotteVoiceService();
+      // Expose globally for AudioPlaybackTester
+      (window as any).__CharlotteVoiceService = this.instance;
+    }
+    return this.instance;
+  }
+
+  /**
+   * CHARLOTTE READS STORY - With word highlighting and timing
+   * Uses sophisticated timing system for story reading with word-by-word highlighting
+   */
+  async charlotteReadStory(text: string, onWordHighlight?: (wordIndex: number) => void): Promise<void> {
+    const requestId = `story-${++CharlotteVoiceService.requestCounter}`;
+    DebugLogger.log('audio', `Charlotte Reading Story: "${text.substring(0, 50)}..." [Request: ${requestId}]`);
+
+    try {
+      // Request audio control with high priority for story reading
+      window.dispatchEvent(new CustomEvent('audio:request', { 
+        detail: { system: 'charlotte-story', priority: 4, source: 'story-reading' } 
+      }));
+
+      // Use synchronized TTS for story reading (maintains word timing sophistication)
+      const result = await SynchronizedElevenLabsTTS.generateSynchronizedSpeech(
+        text, 
+        'conversation', // Natural conversation tone for story reading
+        CharlotteVoiceService.charlotteVoiceId
+      );
+
+      this.wordTimings = result.wordTimings;
+      this.onWordHighlight = onWordHighlight;
+
+      // Play with word highlighting
+      await this.playCharlotteAudio(result.audioBuffer, true);
+      
+      DebugLogger.log('audio', `✅ Charlotte story reading completed: ${requestId}`);
+
+    } catch (error) {
+      DebugLogger.error('audio', `❌ Charlotte story reading failed: ${requestId}`, error);
+      this.fallbackToBrowserSpeech(text);
+    } finally {
+      window.dispatchEvent(new CustomEvent('audio:stopped', { 
+        detail: { system: 'charlotte-story' } 
+      }));
+    }
+  }
+
+  /**
+   * CHARLOTTE INTERACTIVE AUDIO - Fast response for buttons (hear, explain, syllables)
+   * Uses fast direct TTS for 2-3 second response times
+   */
+  async charlotteInteractiveAudio(request: CharlotteVoiceRequest): Promise<void> {
+    const { text, context } = request;
+    const requestId = `interactive-${context}-${++CharlotteVoiceService.requestCounter}`;
+    
+    // Debounce rapid clicks
+    const existingRequest = Array.from(CharlotteVoiceService.processingRequests)
+      .find(id => id.includes(`interactive-${context}-${text.substring(0, 10)}`));
+    if (existingRequest) {
+      DebugLogger.log('audio', `🔒 Charlotte debounced: ${context} request for "${text}"`);
+      return;
+    }
+
+    CharlotteVoiceService.processingRequests.add(requestId);
+    DebugLogger.log('audio', `Charlotte Interactive: ${context.toUpperCase()} - "${text}" [Request: ${requestId}]`);
+
+    try {
+      // Request audio control with highest priority for interactive buttons
+      window.dispatchEvent(new CustomEvent('audio:request', { 
+        detail: { system: 'charlotte-interactive', priority: 5, source: 'interactive-button' } 
+      }));
+
+      // Use appropriate context for TTS generation
+      let finalText = text;
+      let ttsContext: 'conversation' | 'learning' = 'conversation';
+
+      // Handle different interactive contexts
+      switch (context) {
+        case 'learning':
+          // Syllable breakdown with Charlotte's learning voice
+          finalText = await this.prepareSyllableText(text);
+          ttsContext = 'learning'; // Use phonetic lexicon for syllables
+          break;
+        case 'interactive':
+          // Word explanation with Charlotte's natural voice
+          finalText = await this.prepareExplanationText(text);
+          ttsContext = 'conversation'; // Natural explanation
+          break;
+        default:
+          // Direct pronunciation with Charlotte's natural voice
+          ttsContext = 'conversation';
+          break;
+      }
+
+      // 10-second timeout for interactive requests
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Charlotte interactive timeout - using browser fallback')), 10000);
+      });
+
+      // Use fast direct TTS through SmartElevenLabsTTS
+      const audioBuffer = await Promise.race([
+        SmartElevenLabsTTS.generateSpeech(finalText, ttsContext, CharlotteVoiceService.charlotteVoiceId),
+        timeoutPromise
+      ]);
+
+      await this.playCharlotteAudio(audioBuffer, false);
+      
+      DebugLogger.log('audio', `✅ Charlotte interactive completed: ${requestId}`);
+
+    } catch (error) {
+      DebugLogger.error('audio', `❌ Charlotte interactive failed: ${requestId}`, error);
+      
+      if (request.retryCount && request.retryCount < 1) {
+        DebugLogger.log('audio', `🔄 Retrying Charlotte interactive (attempt ${request.retryCount + 1})`);
+        setTimeout(() => this.charlotteInteractiveAudio({
+          ...request,
+          retryCount: (request.retryCount || 0) + 1
+        }), 1000);
+        return;
+      }
+      
+      this.fallbackToBrowserSpeech(text);
+    } finally {
+      window.dispatchEvent(new CustomEvent('audio:stopped', { 
+        detail: { system: 'charlotte-interactive' } 
+      }));
+      CharlotteVoiceService.processingRequests.delete(requestId);
+    }
+  }
+
+  /**
+   * CHARLOTTE VOICE BUDDY - Conversation system for voice commands
+   * Routes to ElevenLabs conversation system when buddy button is active
+   */
+  charlotteVoiceBuddy(): {
+    canCharlotteSpeak: () => boolean;
+    requestCharlotteSpeech: () => void;
+    releaseCharlotteSpeech: () => void;
+  } {
+    DebugLogger.log('audio', 'Charlotte Voice Buddy: Activated');
+    
+    return {
+      canCharlotteSpeak: () => {
+        const coordinator = (window as any).__SimpleAudioCoordinator;
+        const activeSystem = coordinator?.getActiveSystem();
+        return !activeSystem || activeSystem === 'charlotte' || activeSystem === 'charlotte-buddy';
+      },
+      
+      requestCharlotteSpeech: () => {
+        DebugLogger.log('audio', 'Charlotte Voice Buddy: Requesting speech permission');
+        window.dispatchEvent(new CustomEvent('audio:request', { 
+          detail: { system: 'charlotte-buddy', priority: 6 } // Highest priority for voice buddy
+        }));
+      },
+      
+      releaseCharlotteSpeech: () => {
+        DebugLogger.log('audio', 'Charlotte Voice Buddy: Releasing speech permission');
+        window.dispatchEvent(new CustomEvent('audio:stopped', { 
+          detail: { system: 'charlotte-buddy' } 
+        }));
+      }
+    };
+  }
+
+  /**
+   * CHARLOTTE WORD SERVICES - Consolidated word interaction methods
+   */
+  
+  // Charlotte hears/pronounces a word
+  async charlotteHearWord(word: string): Promise<void> {
+    const cleanWord = word.replace(/[.,!?;:'"()]/g, '').trim();
+    await this.charlotteInteractiveAudio({
+      text: cleanWord,
+      context: 'interactive'
+    });
+  }
+
+  // Charlotte explains a word meaning
+  async charlotteExplainWord(word: string, userLanguage: string = 'en'): Promise<void> {
+    const cleanWord = word.replace(/[.,!?;:'"()]/g, '').trim();
+    
+    try {
+      // Get word definition
+      const { data: definition, error } = await supabase.functions.invoke('word-dictionary', {
+        body: { 
+          word: cleanWord.toLowerCase(),
+          userLanguage: userLanguage,
+          userLevel: 'beginner'
+        }
+      });
+
+      if (error || !definition?.definition) {
+        throw new Error('No definition found');
+      }
+
+      await this.charlotteInteractiveAudio({
+        text: definition.definition,
+        context: 'interactive'
+      });
+
+    } catch (error) {
+      DebugLogger.error('audio', `Charlotte word explanation failed for "${word}"`, error);
+      await this.charlotteInteractiveAudio({
+        text: `Sorry, I couldn't find the definition for ${word}`,
+        context: 'interactive'
+      });
+    }
+  }
+
+  // Charlotte breaks down syllables with intelligent 3-4 stem chunking
+  async charlotteSyllableWord(word: string): Promise<void> {
+    const cleanWord = word.replace(/[.,!?;:'"()]/g, '').trim();
+    
+    try {
+      // Use enhanced phonetic engine with intelligent syllable breakdown
+      const syllables = await phoneticRulesEngine.breakIntoSyllablesAsync(cleanWord);
+      
+      if (!syllables || syllables.length === 0) {
+        throw new Error('No syllables found');
+      }
+
+      const syllableText = syllables.join(' - ');
+      DebugLogger.log('audio', `Charlotte syllables for "${cleanWord}": ${syllableText}`);
+
+      await this.charlotteInteractiveAudio({
+        text: syllableText,
+        context: 'learning' // Use learning context for phonetic pronunciation
+      });
+
+    } catch (error) {
+      DebugLogger.error('audio', `Charlotte syllable breakdown failed for "${word}"`, error);
+      await this.charlotteInteractiveAudio({
+        text: `Sorry, I couldn't break down ${word} into syllables`,
+        context: 'interactive'
+      });
+    }
+  }
+
+  /**
+   * PRIVATE METHODS - Internal functionality
+   */
+
+  private async prepareSyllableText(word: string): Promise<string> {
+    try {
+      const syllables = await phoneticRulesEngine.breakIntoSyllablesAsync(word);
+      return syllables.join(' - ');
+    } catch {
+      return word;
+    }
+  }
+
+  private async prepareExplanationText(word: string): Promise<string> {
+    // For now, return the word directly - explanation logic is in charlotteExplainWord
+    return word;
+  }
+
+  private async playCharlotteAudio(audioBuffer: ArrayBuffer, withHighlighting: boolean): Promise<void> {
+    const audioBlob = new Blob([audioBuffer], { type: 'audio/mpeg' });
+    const audioUrl = URL.createObjectURL(audioBlob);
+    
+    if (!this.audio) {
+      this.audio = new Audio();
+      this.audio.preload = 'auto';
+      this.audio.crossOrigin = 'anonymous';
+      
+      // Mobile-specific configurations
+      (this.audio as any).playsInline = true;
+      this.audio.setAttribute('playsinline', 'true');
+      
+      this.audio.addEventListener('ended', () => { 
+        this.playing = false;
+        this.stopWordHighlighting();
+      });
+      
+      this.audio.addEventListener('play', () => { 
+        this.playing = true;
+        if (withHighlighting) {
+          this.startWordHighlighting();
+        }
+      });
+    }
+
+    // Clean up previous URL
+    if (this.currentUrl) {
+      URL.revokeObjectURL(this.currentUrl);
+    }
+    
+    this.currentUrl = audioUrl;
+    this.audio.src = audioUrl;
+    
+    // Wait for audio to finish
+    await new Promise<void>((resolve, reject) => {
+      if (!this.audio) return reject(new Error('Audio element not available'));
+      
+      this.audio.onended = () => {
+        URL.revokeObjectURL(audioUrl);
+        resolve();
+      };
+      this.audio.onerror = () => {
+        URL.revokeObjectURL(audioUrl);
+        reject(new Error('Audio playback failed'));
+      };
+      this.audio.play().catch(reject);
+    });
+  }
+
+  private startWordHighlighting(): void {
+    if (!this.audio || !this.onWordHighlight || this.wordTimings.length === 0) {
+      return;
+    }
+    
+    this.stopWordHighlighting();
+    
+    let lastHighlightedIndex = -1;
+    
+    const updateHighlight = () => {
+      if (!this.audio || !this.playing) return;
+      
+      const currentTimeMs = this.audio.currentTime * 1000;
+      
+      // Find the current word based on timing
+      let currentWordIndex = this.wordTimings.findIndex(timing => 
+        currentTimeMs >= timing.startTime && currentTimeMs <= timing.endTime
+      );
+      
+      // If no exact match, find closest word
+      if (currentWordIndex === -1) {
+        let closestDistance = Infinity;
+        for (let i = 0; i < this.wordTimings.length; i++) {
+          const timing = this.wordTimings[i];
+          const distance = Math.min(
+            Math.abs(currentTimeMs - timing.startTime),
+            Math.abs(currentTimeMs - timing.endTime)
+          );
+          
+          if (distance < 100 && distance < closestDistance) {
+            closestDistance = distance;
+            currentWordIndex = i;
+          }
+        }
+      }
+      
+      // Update highlighting
+      if (currentWordIndex !== -1 && currentWordIndex !== lastHighlightedIndex) {
+        this.onWordHighlight?.(currentWordIndex);
+        lastHighlightedIndex = currentWordIndex;
+      } else if (currentWordIndex === -1 && lastHighlightedIndex !== -1) {
+        this.onWordHighlight?.(-1);
+        lastHighlightedIndex = -1;
+      }
+    };
+    
+    // Use audio timeupdate event for perfect timing sync
+    this.audio.addEventListener('timeupdate', updateHighlight);
+    
+    // Also use interval as backup for smoother highlighting
+    this.highlightInterval = setInterval(updateHighlight, 50);
+  }
+
+  private stopWordHighlighting(): void {
+    if (this.highlightInterval) {
+      clearInterval(this.highlightInterval);
+      this.highlightInterval = undefined;
+    }
+    
+    if (this.onWordHighlight) {
+      this.onWordHighlight(-1);
+    }
+  }
+
+  private fallbackToBrowserSpeech(text: string): void {
+    DebugLogger.log('audio', `🗣️ Charlotte browser speech fallback: "${text}"`);
+    
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      
+      const processedText = contextualPronunciation.processTextForPronunciation(text, true);
+      const utterance = new SpeechSynthesisUtterance(processedText);
+      
+      utterance.rate = 0.7;
+      utterance.pitch = 1.1;
+      utterance.volume = 1.0;
+      
+      // Try to find a female voice (like Charlotte)
+      const voices = speechSynthesis.getVoices();
+      const preferredVoice = voices.find(voice => 
+        voice.lang === 'en-us' && voice.name.toLowerCase().includes('female')
+      ) || voices.find(voice => voice.lang.startsWith('en'));
+      
+      if (preferredVoice) {
+        utterance.voice = preferredVoice;
+      }
+      
+      window.speechSynthesis.speak(utterance);
+    }
+  }
+
+  /**
+   * PUBLIC CONTROL METHODS
+   */
+  
+  stop(): void {
+    if (this.audio) {
+      try {
+        this.audio.pause();
+        this.audio.currentTime = 0;
+      } catch {}
+    }
+    
+    if (this.currentUrl) {
+      try {
+        URL.revokeObjectURL(this.currentUrl);
+      } catch {}
+      this.currentUrl = null;
+    }
+    
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      try {
+        speechSynthesis.cancel();
+      } catch {}
+    }
+    
+    this.stopWordHighlighting();
+    this.playing = false;
+    
+    DebugLogger.log('audio', '🛑 Charlotte voice stopped');
+  }
+
+  isPlaying(): boolean {
+    return this.playing;
+  }
+
+  static clearAllRequests(): void {
+    this.processingRequests.clear();
+    DebugLogger.log('audio', '🧹 Cleared all Charlotte voice requests');
+  }
+}
+
+// Initialize and expose singleton
+export const charlotteVoiceService = CharlotteVoiceService.getInstance();

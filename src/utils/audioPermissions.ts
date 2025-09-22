@@ -2,6 +2,7 @@
  * Centralized audio permissions and validation utilities
  * Manages premium status, voice command state, and network availability checks
  */
+import { DebugLogger } from '@/services/DebugLogger';
 
 export interface AudioPermissionContext {
   isPremium: boolean;
@@ -56,13 +57,13 @@ export class AudioPermissions {
         setTimeout(() => reject(new Error('timeout')), ms)
       );
 
-      // Try internal health check first
+      // Try internal health check first (internal app route)
       try {
         await Promise.race([
-          fetch('/health', { method: 'HEAD', cache: 'no-store' }),
+          fetch('/api/health', { method: 'HEAD', cache: 'no-store' }),
           timeout(1000)
         ]);
-        console.log('🌐 Network quality check successful: internal');
+        DebugLogger.log('network', 'Network quality check successful: internal API');
         this.updateContext({ 
           isNetworkAvailable: true, 
           networkQuality: 'good' 
@@ -70,13 +71,13 @@ export class AudioPermissions {
         return 'good';
       } catch {}
 
-      // Try origin check
+      // Try lightweight origin check (no external CORS)
       try {
         await Promise.race([
-          fetch(window.location.origin, { method: 'HEAD', cache: 'no-store' }),
+          fetch(window.location.origin + '/favicon.ico', { method: 'HEAD', cache: 'no-store' }),
           timeout(1500)
         ]);
-        console.log('🌐 Network quality check successful: origin');
+        DebugLogger.log('network', 'Network quality check successful: favicon');
         this.updateContext({ 
           isNetworkAvailable: true, 
           networkQuality: 'good' 
@@ -85,7 +86,7 @@ export class AudioPermissions {
       } catch {}
 
       // Final fallback - assume poor connection
-      console.warn('🌐 All network quality checks failed, assuming poor connection');
+      DebugLogger.warn('network', 'All network quality checks failed, assuming poor connection');
       this.updateContext({ 
         isNetworkAvailable: false, 
         networkQuality: 'offline' 
@@ -93,7 +94,7 @@ export class AudioPermissions {
       return 'offline';
       
     } catch (error) {
-      console.warn('🌐 Network quality check error:', error);
+      DebugLogger.warn('network', 'Network quality check error', error);
       this.updateContext({ 
         isNetworkAvailable: false, 
         networkQuality: 'offline' 
@@ -161,7 +162,7 @@ export class AudioPermissions {
    */
   static canUseVoiceHover(): boolean {
     const { isPremium, vcStatus, isNetworkAvailable } = this.currentContext;
-    console.log('🔍 Voice hover check:', { isPremium, vcStatus, isNetworkAvailable });
+    DebugLogger.log('network', 'Voice hover permission check', { isPremium, vcStatus, isNetworkAvailable });
     
     // Allow voice hover for all users regardless of voice command status
     // This enables basic word interaction features (hear, explain, syllables) for everyone

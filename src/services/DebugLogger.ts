@@ -75,7 +75,8 @@ class DebugLoggerService {
     const entry = this.createEntry(category, message, data, 'info');
     this.addToBuffer(entry);
     
-    if (this.isDebugMode) {
+    // PRODUCTION HARDENING: Only output in debug mode or during development
+    if (this.isDebugMode || process.env.NODE_ENV === 'development') {
       console.log(this.formatMessage(entry), data || '');
     }
   }
@@ -84,7 +85,8 @@ class DebugLoggerService {
     const entry = this.createEntry(category, message, data, 'warn');
     this.addToBuffer(entry);
     
-    if (this.isDebugMode) {
+    // PRODUCTION HARDENING: Only output warnings in debug mode or development
+    if (this.isDebugMode || process.env.NODE_ENV === 'development') {
       console.warn(this.formatMessage(entry), data || '');
     }
   }
@@ -93,8 +95,13 @@ class DebugLoggerService {
     const entry = this.createEntry(category, message, data, 'error');
     this.addToBuffer(entry);
     
-    // Always log errors to console, regardless of debug mode
-    console.error(this.formatMessage(entry), data || '');
+    // PRODUCTION HARDENING: Always log errors, but with environment awareness
+    if (this.isDebugMode || process.env.NODE_ENV === 'development') {
+      console.error(this.formatMessage(entry), data || '');
+    } else {
+      // Production: Log minimal error info without exposing sensitive data
+      console.error(`[${entry.category.toUpperCase()}] ${entry.message}`);
+    }
   }
 
   // Subscribe to log updates for the debug monitor
