@@ -24,6 +24,7 @@ import { withTimeout, TIMEOUT_CONFIGS } from '@/utils/networkTimeout';
 import { countCharacters, analyzeCharacters, type CharacterAnalysis } from '@/utils/characterCount';
 import { showTestToast, clearAllTestingToasts, showTestSummaryToast } from '@/utils/testingToasts';
 import { DifficultyLevelMapper } from '../../supabase/functions/_shared/DifficultyLevelMapper';
+import { generateSessionIdWithPrefix } from '@/utils/sessionId';
 import type { UserInfo, DifficultyLevel, ExpertGradeLevel, Grade, LanguageCode, LearningGoal, AvatarType, SkinTone } from '@/types';
 import { DebugLogger } from '@/services/DebugLogger';
 
@@ -454,7 +455,7 @@ export function StoryPromptTester() {
         result.generationPath.push('Calling NetflixStyleStoryService.generateStory()');
         
         // Generate session ID for debug tracking (use passed sessionId or generate new one)
-        result.sessionId = sessionId || `netflix-${userInfo.name}-${Date.now()}`;
+        result.sessionId = sessionId || generateSessionIdWithPrefix(`netflix-${userInfo.name}`);
         
         // Show AI generation toast
         showTestToast({
@@ -583,7 +584,7 @@ export function StoryPromptTester() {
         result.generationPath.push('Calling LiveGenerationService.generateFirstPage()');
         
         // Generate session ID for debug tracking (matches service format)  
-        result.sessionId = `live-first-${userInfo.name}-${Date.now()}`;
+        result.sessionId = generateSessionIdWithPrefix(`live-first-${userInfo.name}`);
         
         // Show AI generation toast
         showTestToast({
@@ -659,7 +660,7 @@ export function StoryPromptTester() {
         result.generationPath.push('Calling template service directly');
         
         // Generate session ID for debug tracking
-        result.sessionId = `template-test-${userInfo.name}-${Date.now()}`;
+        result.sessionId = generateSessionIdWithPrefix(`template-test-${userInfo.name}`);
         
         // Show template generation toast
         showTestToast({
@@ -912,7 +913,7 @@ export function StoryPromptTester() {
     validationCache.clear();
 
     // SESSION ID SYNCHRONIZATION: Generate single session ID for all services
-    const masterSessionId = `unified-test-${Date.now()}`;
+    const masterSessionId = generateSessionIdWithPrefix('unified-test');
     DebugLogger.log('story', `Master Session ID for all tests: ${masterSessionId}`);
 
     // Use custom preferences if enabled, otherwise use all predefined profiles

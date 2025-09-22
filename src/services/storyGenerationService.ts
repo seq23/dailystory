@@ -8,7 +8,7 @@ import { VocabularyService, type VocabularyIntegration } from "./vocabularyServi
 import { extractThemeIntent, type ThemeIntent } from "@/utils/themeIntent";
 import { getCulturalGuidanceString } from './StaticDataCache';
 import { VoiceCatalogIntegration } from './voiceCatalog/VoiceCatalogIntegration';
-import { generateSessionId } from '@/utils/sessionId';
+import { generateSessionId, generateSessionIdWithPrefix } from '@/utils/sessionId';
 import { safeThemeJoin } from "@/lib/utils";
 
 import { LevelClampingService } from './voiceCatalog/LevelClampingService';
@@ -416,7 +416,7 @@ ${culturalContext ? `${culturalContext} ` : ''}Character Info: ${JSON.stringify(
           body: {
             pages: data.pages || [],
             userInfo: this.reconstructUserInfoFromBundle(bundle),
-            sessionId: 'ai-generation-' + Date.now()
+            sessionId: generateSessionIdWithPrefix('ai-generation')
           }
         });
 

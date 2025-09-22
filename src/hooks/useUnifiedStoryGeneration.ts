@@ -4,6 +4,7 @@
 import { useState, useCallback } from 'react';
 import { StoryGenerationService, type StoryGenerationResult } from '@/services/storyGenerationService';
 import { VocabularyService } from '@/services/vocabularyService';
+import { generateSessionIdWithPrefix } from '@/utils/sessionId';
 import type { UserInfo } from '@/types';
 
 export interface UseUnifiedStoryGenerationResult {
@@ -46,7 +47,7 @@ export const useUnifiedStoryGeneration = (): UseUnifiedStoryGenerationResult => 
       // Generate story using unified service (handles all failures internally)
       const result = await StoryGenerationService.generateStory(userInfo, {
         ...config,
-        sessionId: config.sessionId || `unified-${userInfo.name}-${Date.now()}`
+        sessionId: config.sessionId || generateSessionIdWithPrefix(`unified-${userInfo.name}`)
       });
       
       console.log('✅ Token-optimized generation complete:', {

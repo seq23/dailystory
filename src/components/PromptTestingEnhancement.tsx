@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { CheckCircle2, Sparkles, AlertCircle } from 'lucide-react';
+import { generateSessionIdWithPrefix } from '@/utils/sessionId';
 import { DebugLogger } from '@/services/DebugLogger';
 
 export function PromptTestingEnhancement() {
@@ -34,7 +35,7 @@ export function PromptTestingEnhancement() {
           enhancedStoryData: { // Fixed: provide 'enhancedStoryData' structure
             userInfo: testUser,
             pageNumber: 1,
-            sessionId: 'template-test-' + Date.now()
+            sessionId: generateSessionIdWithPrefix('template-test')
           },
           dryRun: true // This will now use PhaseIntegrationOrchestrator
         }

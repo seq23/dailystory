@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { SimpleImageService } from './SimpleImageService';
+import { generateSessionIdWithPrefix } from '@/utils/sessionId';
 import { DebugLogger } from '@/services/DebugLogger';
 
 interface ValidationResult {
@@ -72,10 +73,10 @@ export const SystemValidation: React.FC<SystemValidationProps> = () => {
           },
           nativeLanguage: 'English'
         },
-        sessionId: `test-session-${Date.now()}`,
-        storyId: `test-story-${Date.now()}`,
+        sessionId: generateSessionIdWithPrefix('test-session'),
+        storyId: generateSessionIdWithPrefix('test-story'),
         pageNumber: 1,
-        requestId: `test-req-${Date.now()}`
+        requestId: generateSessionIdWithPrefix('test-req')
       });
 
       if (tierTestResult.success) {
@@ -122,10 +123,10 @@ export const SystemValidation: React.FC<SystemValidationProps> = () => {
           },
           nativeLanguage: 'English'
         },
-        sessionId: `emergency-session-${Date.now()}`,
-        storyId: `emergency-story-${Date.now()}`,
+        sessionId: generateSessionIdWithPrefix('emergency-session'),
+        storyId: generateSessionIdWithPrefix('emergency-story'),
         pageNumber: 1,
-        requestId: `emergency-req-${Date.now()}`
+        requestId: generateSessionIdWithPrefix('emergency-req')
       });
 
       if (emergencyResult.success) {
@@ -159,7 +160,7 @@ export const SystemValidation: React.FC<SystemValidationProps> = () => {
     // Phase 5: Session persistence test
     try {
       DebugLogger.log('performance', 'Testing session persistence...');
-      const sessionId = `session-persistence-test-${Date.now()}`;
+      const sessionId = generateSessionIdWithPrefix('session-persistence-test');
       
       // Generate first image with session
       const firstResult = await SimpleImageService.generateImage({
@@ -175,9 +176,9 @@ export const SystemValidation: React.FC<SystemValidationProps> = () => {
           nativeLanguage: 'English'
         },
         sessionId,
-        storyId: `session-story-${Date.now()}`,
+        storyId: generateSessionIdWithPrefix('session-story'),
         pageNumber: 1,
-        requestId: `session-req-1-${Date.now()}`
+        requestId: generateSessionIdWithPrefix('session-req-1')
       });
 
       // Generate second image with same session
@@ -194,9 +195,9 @@ export const SystemValidation: React.FC<SystemValidationProps> = () => {
           nativeLanguage: 'English'
         },
         sessionId,
-        storyId: `session-story-${Date.now()}`,
+        storyId: generateSessionIdWithPrefix('session-story'),
         pageNumber: 2,
-        requestId: `session-req-2-${Date.now()}`
+        requestId: generateSessionIdWithPrefix('session-req-2')
       });
 
       if (firstResult.success && secondResult.success) {

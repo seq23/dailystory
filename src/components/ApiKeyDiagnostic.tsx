@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
+import { generateSessionIdWithPrefix } from '@/utils/sessionId';
 import { DebugLogger } from '@/services/DebugLogger';
 
 interface DiagnosticResult {
@@ -181,7 +182,7 @@ export const ApiKeyDiagnostic: React.FC = () => {
       const { data, error } = await supabase.functions.invoke('runware-generate-image', {
         body: {
           pageText: "A brave child explorer discovers a magical forest filled with glowing trees and friendly creatures.",
-          sessionId: `smoke-test-${Date.now()}`,
+          sessionId: generateSessionIdWithPrefix('smoke-test'),
           pageNumber: 1,
           userInfo: {
             name: "TestChild",
