@@ -17,6 +17,7 @@ export interface StoryState {
   timerEnabled: boolean;
   userPausedTimer: boolean;
   hasChosenUntimed: boolean;
+  isGeneratingEnding: boolean;
 }
 
 export interface StoryActions {
@@ -33,6 +34,7 @@ export interface StoryActions {
   setTimerEnabled: (enabled: boolean) => void;
   setUserPausedTimer: (paused: boolean) => void;
   setHasChosenUntimed: (chosen: boolean) => void;
+  setIsGeneratingEnding: (generating: boolean) => void;
 }
 
 export interface UseStoryLogicProps {
@@ -66,6 +68,7 @@ export const useStoryLogic = ({
   const [timerEnabled, setTimerEnabled] = useState(true);
   const [userPausedTimer, setUserPausedTimer] = useState(false);
   const [hasChosenUntimed, setHasChosenUntimed] = useState(false);
+  const [isGeneratingEnding, setIsGeneratingEnding] = useState(false);
 
   // Loading states
   const [isLoading, setIsLoading] = useState(false);
@@ -181,6 +184,7 @@ export const useStoryLogic = ({
       timerEnabled,
       userPausedTimer,
       hasChosenUntimed,
+      isGeneratingEnding,
       isLoading,
       isLoadingNextPage,
       isGeneratingNewStory,
@@ -202,6 +206,7 @@ export const useStoryLogic = ({
       setTimerEnabled,
       setUserPausedTimer,
       setHasChosenUntimed,
+      setIsGeneratingEnding,
       setIsLoading,
       setIsLoadingNextPage,
       setIsGeneratingNewStory,

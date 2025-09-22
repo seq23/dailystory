@@ -223,6 +223,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
       timerEnabled,
       userPausedTimer,
       hasChosenUntimed,
+      isGeneratingEnding,
       isLoading,
       isLoadingNextPage,
       isGeneratingNewStory,
@@ -242,6 +243,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
       setTimerEnabled,
       setUserPausedTimer,
       setHasChosenUntimed,
+      setIsGeneratingEnding,
       setIsLoading,
       setIsLoadingNextPage,
       setIsGeneratingNewStory,
@@ -997,7 +999,7 @@ useEffect(() => {
 const [isRewriteMode, setIsRewriteMode] = useState(false);
 const [isMagicWandAnimating, setIsMagicWandAnimating] = useState(false);
 const [wandPulse, setWandPulse] = useState(false);
-const [isGeneratingEnding, setIsGeneratingEnding] = useState(false);
+
 const [showManualCelebration, setShowManualCelebration] = useState(false);
 const [showEndStoryModal, setShowEndStoryModal] = useState(false);
 const [showConfirmEndStory, setShowConfirmEndStory] = useState(false);
@@ -3894,10 +3896,10 @@ const handleRestartTimer = () => {
                            setTimeout(() => setFinishSparkle(false), 1200);
                            setShowConfirmEndStory(true);
                          }}
-                         disabled={!liveContext || isGeneratingEnding || isStoryComplete || controlsBlocked}
-                         variant="hero"
-                         size="xl"
-                         aria-busy={isGeneratingEnding}
+                          disabled={!liveContext || isGeneratingEnding || isStoryComplete || controlsBlocked}
+                          variant="hero"
+                          size="xl"
+                          aria-busy={isGeneratingEnding}
                          className={cn(
                           "relative z-20 transform transition-all duration-500",
                           finishPressBurst && "animate-scale-in",
@@ -3918,7 +3920,7 @@ const handleRestartTimer = () => {
                           ].join(" ")
                         )}
                       >
-                        {isGeneratingEnding ? (
+                         {isGeneratingEnding ? (
                           <>
                             <Loader2 className="w-6 h-6 mr-3 animate-spin" />
                             <Sparkles className="w-5 h-5 absolute top-2 right-2 animate-pulse" />
@@ -4043,12 +4045,12 @@ const handleRestartTimer = () => {
                                  setTimeout(() => setFinishSparkle(false), 1200);
                                  setShowConfirmEndStory(true);
                                }}
-                               disabled={isGeneratingEnding || controlsBlocked || (lastEndingPageIndex !== null ? currentPage <= lastEndingPageIndex : !liveContext)}
-                              variant="hero"
-                              aria-busy={isGeneratingEnding}
-                              className={cn(finishFlashCycle && !isGeneratingEnding && "ring-2 ring-primary/60 animate-pulse")}
-                            >
-                              {isGeneratingEnding ? (
+                                disabled={isGeneratingEnding || controlsBlocked || (lastEndingPageIndex !== null ? currentPage <= lastEndingPageIndex : !liveContext)}
+                               variant="hero"
+                               aria-busy={isGeneratingEnding}
+                               className={cn(finishFlashCycle && !isGeneratingEnding && "ring-2 ring-primary/60 animate-pulse")}
+                             >
+                               {isGeneratingEnding ? (
                                 <>
                                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                                   {t('common.creatingMagic', 'Creating magic...')}
@@ -4089,13 +4091,13 @@ const handleRestartTimer = () => {
                                  setTimeout(() => setFinishSparkle(false), 1200);
                                  setShowConfirmEndStory(true);
                                }}
-                               disabled={isGeneratingEnding || controlsBlocked || (lastEndingPageIndex !== null ? currentPage <= lastEndingPageIndex : !liveContext)}
-                              variant="hero"
-                              size="sm"
-                              aria-busy={isGeneratingEnding}
-                              className={cn(finishFlashCycle && !isGeneratingEnding && "ring-2 ring-primary/60 animate-pulse")}
-                            >
-                              {isGeneratingEnding ? (
+                                disabled={isGeneratingEnding || controlsBlocked || (lastEndingPageIndex !== null ? currentPage <= lastEndingPageIndex : !liveContext)}
+                               variant="hero"
+                               size="sm"
+                               aria-busy={isGeneratingEnding}
+                               className={cn(finishFlashCycle && !isGeneratingEnding && "ring-2 ring-primary/60 animate-pulse")}
+                             >
+                               {isGeneratingEnding ? (
                                 <>
                                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                                   {t('common.creatingMagic', 'Creating magic...')}
