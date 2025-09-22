@@ -445,7 +445,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   useEffect(() => {
     (async () => {
       try {
-        DebugLogger.log('story', 'Pre-fetching vocabulary data for', userInfo.name);
+        DebugLogger.log('story', 'Pre-fetching vocabulary data for', safeUserInfo.name);
         const vocabData = await VocabularyService.fetchAllVocabulary(userInfo);
         setVocabularyData(vocabData);
         DebugLogger.log('story', 'Vocabulary data pre-fetched successfully:', vocabData);
@@ -473,7 +473,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
         DebugLogger.log('story', 'Loading saved story with cached content', {
           segmentCount: currentStory.segments.length,
           title: currentStory.title,
-          userName: userInfo.name
+          userName: safeUserInfo.name
         });
         const storyPages = currentStory.segments.map((s: any) => s.text);
         StoryContentLogger.logStoryChange('saved_story_load', 'before', storyPages, { 
@@ -484,11 +484,11 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
         StoryContentLogger.logStoryChange('saved_story_load', 'after', storyPages, {
           currentPage: 0,
           isComplete: true,
-          title: currentStory.title || `${userInfo.name}'s Story`
+          title: currentStory.title || `${safeUserInfo.name}'s Story`
         });
         setCurrentPage(0);
         setIsStoryComplete(true);
-        setStoryTitle(currentStory.title || `${userInfo.name}'s Story`);
+        setStoryTitle(currentStory.title || `${safeUserInfo.name}'s Story`);
         
         // Load cached images using unified conversion logic with validation
         const convertedImages = convertImagesToRecord(currentStory.cachedImages, 'Saved story');
@@ -536,7 +536,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
           try { guestSession.clearAll(); } catch {}
           try { StorySessionCache.clearCachedSession('guest'); } catch {}
         } else {
-          let id = userInfo.name || 'premium';
+          let id = safeUserInfo.name || 'premium';
           try { const { data: { user } } = await supabase.auth.getUser(); if (user?.id) id = user.id; } catch {}
           try { sessionStorage.removeItem(`premium.timer.endTs.${id}`); } catch {}
           try { sessionStorage.removeItem(`premium.timer.remaining.${id}`); } catch {}
@@ -551,7 +551,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
           try { guestSession.clearAll(); } catch {}
           try { StorySessionCache.clearCachedSession('guest'); } catch {}
         } else {
-          let id = userInfo.name || 'premium';
+          let id = safeUserInfo.name || 'premium';
           try { const { data: { user } } = await supabase.auth.getUser(); if (user?.id) id = user.id; } catch {}
           try { sessionStorage.removeItem(`premium.timer.endTs.${id}`); } catch {}
           try { sessionStorage.removeItem(`premium.timer.remaining.${id}`); } catch {}
@@ -908,11 +908,11 @@ useEffect(() => {
     }
     
     // 🔧 FIX: Generate image for current page with simple bounds check
-    const pageToGenerate = currentPage;
-    const pageText = story[pageToGenerate];
+    const pageToGenerate = safeCurrentPage;
+    const pageText = displayedStory[pageToGenerate];
     
     // Simple bounds check to prevent undefined access
-    if (!pageText || pageToGenerate >= story.length) {
+    if (!pageText || pageToGenerate >= displayedStory.length) {
       DebugLogger.warn('image', 'Page index out of bounds for image generation', { 
         pageToGenerate, 
         storyLength: story.length 
@@ -927,7 +927,7 @@ useEffect(() => {
       allImages: Object.values(pageImages),
       isNetworkAvailable: isNetworkAvailable,
       userInfo: userInfo,
-      storyTitle: storyTitle || `${userInfo.name}'s Adventure`,
+      storyTitle: storyTitle || `${safeUserInfo.name}'s Adventure`,
       pageText: pageText,
             sessionId: stableSessionId,
             isGuestUser: !isPremium
@@ -996,7 +996,7 @@ useEffect(() => {
 useEffect(() => {
   if (!isPremium) return;
   (async () => {
-    let id = userInfo.name || 'premium';
+    let id = safeUserInfo.name || 'premium';
     try { const { data: { user } } = await supabase.auth.getUser(); if (user?.id) id = user.id; } catch {}
     const now = Date.now();
     let endRaw = 0;
@@ -1281,7 +1281,7 @@ useEffect(() => {
                 DebugLogger.log('image', 'Premium image cached:', { pageIndex, userId: user.id });
               }
             } else if (story && userInfo) {
-              const avatarType = userInfo.avatar?.type;
+              const avatarType = safeUserInfo.avatar?.type;
               const imageArray = Object.entries(updated).map(([index, url]) => ({
                 url,
                 prompt: `Page ${parseInt(index) + 1} illustration`
@@ -1399,7 +1399,7 @@ useEffect(() => {
     clearNewAchievements,
     resetStats
   } = useGamification({
-    userId: userInfo.name,
+    userId: safeUserInfo.name,
     enablePersistence: isPremium, // Only persist for premium users
     onAchievementUnlocked: (achievement) => {
       DebugLogger.log('story', 'Achievement unlocked:', achievement.title || achievement.id);
@@ -1409,8 +1409,8 @@ useEffect(() => {
   // Initialize story based on tier - with ENHANCED generation protection
   useEffect(() => {
     const userInfoKey = JSON.stringify({ 
-      name: userInfo.name, 
-      age: userInfo.age, 
+      name: safeUserInfo.name, 
+      age: safeUserInfo.age,
       isPremium, 
       readingAsName,
       isFromSavedStory: currentStory?.isFromSavedStory 
@@ -1423,7 +1423,7 @@ useEffect(() => {
     }
     
     initializeStory();
-  }, [userInfo.name, userInfo.age, userInfo.specialRequest, isPremium, readingAsName, currentStory?.isFromSavedStory]);
+  }, [safeUserInfo.name, safeUserInfo.age, safeUserInfo.specialRequest, isPremium, readingAsName, currentStory?.isFromSavedStory]);
 
   // Generate image for current page with better diagnostics - ONLY AFTER STORY IS STABLE
   useEffect(() => {
@@ -1496,7 +1496,7 @@ useEffect(() => {
           guestSession.clearAll();
           StorySessionCache.clearCachedSession('guest');
         } else {
-          let id = userInfo.name || 'premium';
+          let id = safeUserInfo.name || 'premium';
           try { const { data: { user } } = await supabase.auth.getUser(); if (user?.id) id = user.id; } catch {}
           // Keep story/session cache intact so users can keep reading untimed
           sessionStorage.removeItem(`premium.timer.endTs.${id}`);
@@ -1556,12 +1556,12 @@ useEffect(() => {
       const { EnhancedImageCache } = await import('@/services/enhancedImageCache');
       // PHASE 1 FIX: Use stable session ID for consistent caching
       const sessionId = stableSessionId;
-      const storyHash = (story || []).join('|').substring(0, 50);
-      const pageContent = story[currentPage] || '';
+      const storyHash = (safeStory || []).join('|').substring(0, 50);
+      const pageContent = displayedStory[safeCurrentPage] || '';
       
       // Extract avatar info for cache validation
-      const avatarType = userInfo?.avatar?.type || 'child';
-      const skinTone = userInfo?.avatar?.skinTone;
+      const avatarType = safeUserInfo?.avatar?.type || 'child';
+      const skinTone = safeUserInfo?.avatar?.skinTone;
       
       // Try to get cached image
       const cachedImageUrl = EnhancedImageCache.getCachedImage(
@@ -1678,7 +1678,7 @@ const initializeStory = async () => {
         const viaUrl = allowOverride && params.get('resume') === '1';
         const resumeEnabled = APP_CONFIG.features.resumeOnRefresh.premium || viaUrl;
 
-        let cacheId = userInfo.name || 'premium';
+        let cacheId = safeUserInfo.name || 'premium';
         try { const { data: { user } } = await supabase.auth.getUser(); if (user?.id) cacheId = user.id; } catch {}
 
         if (resumeEnabled) {
@@ -1711,7 +1711,7 @@ const initializeStory = async () => {
             });
             setCurrentPage(restoredPage);
             setIsStoryComplete(!!cached.isComplete);
-            setStoryTitle(`${userInfo.name}'s Live Adventure`);
+            setStoryTitle(`${safeUserInfo.name}'s Live Adventure`);
             const ctx: LiveGenerationContext = {
               userInfo: { ...effectiveUser, difficultyLevel: currentDifficulty },
               difficulty: currentDifficulty,
@@ -1719,7 +1719,7 @@ const initializeStory = async () => {
               storyContext: [...cached.pages],
               currentPage: cached.currentPage || 0,
               totalExpectedPages: Math.max(cached.pages.length + 1, 6),
-              characters: [userInfo.name, userInfo.favoriteAnimal || 'friend']
+              characters: [safeUserInfo.name, safeUserInfo.favoriteAnimal || 'friend']
             };
         setLiveContext(ctx);
         DebugLogger.log('story', '💾 Premium Live Generation: Context restored from cache', {
@@ -1771,7 +1771,7 @@ const initializeStory = async () => {
       setStory([firstPageContent]);
       StoryContentLogger.logStoryChange('premium_first_page', 'after', [firstPageContent], {
         expertGradeLevel: result.nextContext?.expertGradeLevel,
-        title: `${userInfo.name}'s Live Adventure`
+        title: `${safeUserInfo.name}'s Live Adventure`
       });
       setLiveContext(result.nextContext || null);
       DebugLogger.log('story', '🚀 Premium Live Generation: Initial context set', {
@@ -1785,7 +1785,7 @@ const initializeStory = async () => {
         setExpertGradeLevel(result.nextContext.expertGradeLevel);
       }
       setIsStoryComplete(result.isComplete);
-      setStoryTitle(`${userInfo.name}'s Live Adventure`);
+      setStoryTitle(`${safeUserInfo.name}'s Live Adventure`);
       
       // Show current grade level toast for premium users
       if (currentDifficulty === 'expert' || currentDifficulty === 'advanced') {
@@ -1802,7 +1802,7 @@ const initializeStory = async () => {
       
       // Persist premium story start
       try {
-        let cacheId = userInfo.name || 'premium';
+        let cacheId = safeUserInfo.name || 'premium';
         try { const { data: { user } } = await supabase.auth.getUser(); if (user?.id) cacheId = user.id; } catch {}
         StorySessionCache.cacheStorySession(
           cacheId,
@@ -1857,11 +1857,11 @@ const initializeStory = async () => {
           setStory(cached.pages);
           StoryContentLogger.logStoryChange('guest_cache_restore', 'after', cached.pages, {
             restoredCurrentPage: restoredPage,
-            title: `${userInfo.name}'s Adventure`,
+            title: `${safeUserInfo.name}'s Adventure`,
             storySource: 'unknown'
           });
           setCurrentPage(restoredPage);
-          setStoryTitle(`${userInfo.name}'s Adventure`);
+          setStoryTitle(`${safeUserInfo.name}'s Adventure`);
           setIsStoryComplete(true);
           setStorySource('unknown');
           
@@ -1898,8 +1898,8 @@ const initializeStory = async () => {
       // Free: Netflix-style - generate complete story upfront
       DebugLogger.log('story', 'Free user: Generating complete story', { isPremium, userInfo: userInfo?.name });
       DebugLogger.log('story', 'DIAGNOSTIC: CleanStoryDisplay calling NetflixStyleStoryService', {
-        userName: userInfo.name,
-        difficulty: userInfo.difficultyLevel,
+        userName: safeUserInfo.name,
+        difficulty: safeUserInfo.difficultyLevel,
         timestamp: new Date().toISOString()
       });
       
@@ -1965,7 +1965,7 @@ const initializeStory = async () => {
           false,
           false
         );
-        DebugLogger.log('story', `Initialized character context for ${userInfo.name} directly via StoryVisualStateManager`);
+        DebugLogger.log('story', `Initialized character context for ${safeUserInfo.name} directly via StoryVisualStateManager`);
       } catch (error) {
         DebugLogger.warn('story', 'Failed to initialize character context', error);
       }
@@ -2131,7 +2131,7 @@ const initializeStory = async () => {
     setIsLoadingNextPage(true);
     try {
       // Ensure session ID consistency for continuation
-      const sessionId = stableSessionId || generateSessionIdWithPrefix(`live-${userInfo.name}`);
+      const sessionId = stableSessionId || generateSessionIdWithPrefix(`live-${safeUserInfo.name}`);
       const result = await LiveGenerationService.generateNextPage(liveContext, vocabularyData, false, sessionId);
       
       DebugLogger.log('story', '✅ Premium Live Generation: generateNextPage result', {
@@ -2187,7 +2187,7 @@ const initializeStory = async () => {
       return;
     }
     
-    const pageText = story[currentPage];
+    const pageText = displayedStory[safeCurrentPage];
     if (!pageText) {
       DebugLogger.log('image', 'Early return - no page text available', {
         currentPage,
@@ -2210,9 +2210,9 @@ const initializeStory = async () => {
       pageText: pageText.substring(0, 100) + '...',
       fullPageText: pageText,
       userInfo: {
-        name: userInfo.name,
-        avatar: userInfo.avatar,
-        difficultyLevel: userInfo.difficultyLevel
+        name: safeUserInfo.name,
+        avatar: safeUserInfo.avatar,
+        difficultyLevel: safeUserInfo.difficultyLevel
       },
       sessionId: characterSessionIdValue,
       timestamp: new Date().toISOString()
@@ -2225,7 +2225,7 @@ const initializeStory = async () => {
     DebugLogger.log('image', 'EnhancedImageCache imported successfully');
     
     // Validate userInfo structure before extracting markers
-    if (!userInfo || !userInfo.avatar) {
+    if (!safeUserInfo || !safeUserInfo.avatar) {
       DebugLogger.warn('image', 'Missing userInfo or avatar data for story markers', {
         hasUserInfo: !!userInfo,
         hasAvatar: !!userInfo?.avatar,
@@ -2360,7 +2360,7 @@ const initializeStory = async () => {
           const { EnhancedImageCache } = await import('@/services/enhancedImageCache');
           
           // Validate userInfo before extracting markers
-          if (!userInfo || !userInfo.avatar) {
+          if (!safeUserInfo || !safeUserInfo.avatar) {
             DebugLogger.warn('image', 'Missing userInfo or avatar data for caching story markers');
           }
           
@@ -2376,7 +2376,7 @@ const initializeStory = async () => {
           );
           
           try {
-            const cacheId = isPremium ? ((await supabase.auth.getUser()).data.user?.id || userInfo.name || 'premium') : 'guest';
+            const cacheId = isPremium ? ((await supabase.auth.getUser()).data.user?.id || safeUserInfo.name || 'premium') : 'guest';
             const images = story.map((s, idx) => ({ url: idx === currentPage ? result.url : pageImages[idx], prompt: (s || '').slice(0, 120) }));
             StorySessionCache.updatePages(cacheId, story, currentPage, images as any);
           } catch {}
@@ -2407,7 +2407,7 @@ const initializeStory = async () => {
       const { EnhancedImageCache } = await import('@/services/enhancedImageCache');
       
       // Validate userInfo structure
-      if (!userInfo || !userInfo.avatar) {
+      if (!safeUserInfo || !safeUserInfo.avatar) {
         DebugLogger.warn('image', 'Missing userInfo or avatar data for index cache lookup');
       }
       
@@ -2447,7 +2447,7 @@ const initializeStory = async () => {
           const { EnhancedImageCache } = await import('@/services/enhancedImageCache');
           
           // Validate userInfo before caching
-          if (!userInfo || !userInfo.avatar) {
+          if (!safeUserInfo || !safeUserInfo.avatar) {
             DebugLogger.warn('image', 'Missing userInfo or avatar data for index caching');
           }
           
@@ -2466,7 +2466,7 @@ const initializeStory = async () => {
         }
         
         try {
-          const cacheId = isPremium ? ((await supabase.auth.getUser()).data.user?.id || userInfo.name || 'premium') : 'guest';
+          const cacheId = isPremium ? ((await supabase.auth.getUser()).data.user?.id || safeUserInfo.name || 'premium') : 'guest';
           const images = story.map((s, idx) => ({ url: nextMap[idx], prompt: (s || '').slice(0, 120) }));
           StorySessionCache.updatePages(cacheId, story, currentPage, images as any);
         } catch {}
@@ -2514,13 +2514,13 @@ useEffect(() => {
   if (story.length > 0) {
     (async () => {
       try {
-        const cacheId = isPremium ? ((await supabase.auth.getUser()).data.user?.id || userInfo.name || 'premium') : 'guest';
+        const cacheId = isPremium ? ((await supabase.auth.getUser()).data.user?.id || safeUserInfo.name || 'premium') : 'guest';
         const avatarType = !isPremium && userInfo?.avatar?.type === 'prefer-not-to-answer' ? 'neutral' : userInfo?.avatar?.type;
         StorySessionCache.updateCurrentPage(cacheId, currentPage, avatarType);
       } catch {}
     })();
   }
-}, [currentPage, isPremium, story.length, userInfo.name]);
+}, [currentPage, isPremium, displayedStory.length, safeUserInfo.name]);
 
 useEffect(() => {
   const onNavigate = (e: Event) => {
@@ -2548,12 +2548,12 @@ useEffect(() => {
   if (story.length > 0) {
     (async () => {
       try {
-        const id = isPremium ? ((await supabase.auth.getUser()).data.user?.id || userInfo.name || 'premium') : 'guest';
+        const id = isPremium ? ((await supabase.auth.getUser()).data.user?.id || safeUserInfo.name || 'premium') : 'guest';
         StorySessionCache.updatePages(id, story, currentPage);
       } catch {}
     })();
   }
-}, [story, currentPage, isPremium, userInfo.name]);
+}, [displayedStory, currentPage, isPremium, safeUserInfo.name]);
   
   const handleWordInteraction = () => {
     setWordsInteracted(prev => prev + 1);
@@ -2746,7 +2746,7 @@ const handleSaveStoryNow = async () => {
       const estimatedReadingTime = Math.max(1, Math.round(wordCount / 150));
       const storyObj: StoryType = {
         id: generateSessionIdWithPrefix('story'),
-        title: storyTitle || `${userInfo.name}'s Adventure`,
+        title: storyTitle || `${safeUserInfo.name}'s Adventure`,
         segments,
         difficulty: currentDifficulty,
         estimatedReadingTime,
@@ -2856,7 +2856,7 @@ const handleRestartTimer = () => {
 
     // Get userId for cache clearing
     const currentUserId = isPremium ? 
-      ((await supabase.auth.getUser()).data.user?.id || userInfo.name || 'premium') : 
+      ((await supabase.auth.getUser()).data.user?.id || safeUserInfo.name || 'premium') : 
       'guest';
 
     // Clear caches based on context
@@ -2912,13 +2912,13 @@ const handleRestartTimer = () => {
           
           // Use comprehensive cache manager for premium rewrite
           const { SessionCacheManager } = await import('@/services/SessionCacheManager');
-          const userId = (await supabase.auth.getUser()).data.user?.id || userInfo.name || 'premium';
+          const userId = (await supabase.auth.getUser()).data.user?.id || safeUserInfo.name || 'premium';
           
           SessionCacheManager.clearAllSessionCaches({
             userId,
             sessionId: characterSessionIdValue || generateSessionId(),
-            avatarType: userInfo.avatar?.type,
-            skinTone: userInfo.avatar?.skinTone,
+            avatarType: safeUserInfo.avatar?.type,
+            skinTone: safeUserInfo.avatar?.skinTone,
             reason: 'premium-rewrite',
             preserveAvatarIdentity: true,
             clearVisualState: false // Keep avatar-related visual state
@@ -2927,7 +2927,7 @@ const handleRestartTimer = () => {
           // Clear only story images, preserve character consistency seeds
           (await import('@/services/enhancedImageCache')).EnhancedImageCache.clearStoryImagesKeepCharacterSeeds(
             characterSessionIdValue, 
-            userInfo.avatar?.type
+            safeUserInfo.avatar?.type
           );
           setPageImages({});
 
@@ -2958,7 +2958,7 @@ const handleRestartTimer = () => {
       }
       if (isPremium) {
         // Merge per-story request with persistent teacher word list (premium only)
-        let combinedSpecial = (specialRequestOverride ?? userInfo.specialRequest ?? '') as string;
+        let combinedSpecial = (specialRequestOverride ?? safeUserInfo.specialRequest ?? '') as string;
         const teacherCsv = await fetchTeacherWordsCsv();
         if (teacherCsv) {
           combinedSpecial = `${combinedSpecial ? combinedSpecial + '\n' : ''}Teacher words: ${teacherCsv}`;
@@ -2986,7 +2986,7 @@ const handleRestartTimer = () => {
         StoryContentLogger.logStoryChange('premium_rewrite_first', 'after', [firstPageContent], {
           expertGradeLevel: first.nextContext?.expertGradeLevel,
           isComplete: first.isComplete,
-          title: `${userInfo.name}'s Live Adventure`
+          title: `${safeUserInfo.name}'s Live Adventure`
         });
         setCurrentPage(0);
         setLiveContext(first.nextContext || null);
@@ -2994,13 +2994,13 @@ const handleRestartTimer = () => {
           setExpertGradeLevel(first.nextContext.expertGradeLevel);
         }
         setIsStoryComplete(first.isComplete);
-        setStoryTitle(`${userInfo.name}'s Live Adventure`);
+        setStoryTitle(`${safeUserInfo.name}'s Live Adventure`);
       } else {
         const originalPageCount = story.length;
         // ✅ CRITICAL FIX: Debug userInfo for story refresh
         const refreshUserInfo = {
           ...userInfo,
-          specialRequest: specialRequestOverride ?? userInfo.specialRequest,
+          specialRequest: specialRequestOverride ?? safeUserInfo.specialRequest,
           difficultyLevel: currentDifficulty,
           expertGradeLevel: currentDifficulty === 'expert' ? expertGradeLevel : undefined,
         } as UserInfo;
@@ -3121,7 +3121,7 @@ const handleRestartTimer = () => {
       storyContext: sequelContextPages,  // Use the sequel context we calculated
       currentPage: sequelContextPages.length,
       totalExpectedPages: Math.max(sequelContextPages.length + 1, 6),
-      characters: [userInfo.name, userInfo.favoriteAnimal || 'friend']
+      characters: [safeUserInfo.name, safeUserInfo.favoriteAnimal || 'friend']
     };
     setLiveContext(newContext);
     setIsStoryComplete(false);
@@ -3356,7 +3356,7 @@ const handleRestartTimer = () => {
         setCurrentDifficulty(newDifficulty);
         
         // Store the difficulty choice locally
-        DifficultyManager.storeDifficulty(userInfo.name || 'guest', newDifficulty, userInfo);
+        DifficultyManager.storeDifficulty(safeUserInfo.name || 'guest', newDifficulty, safeUserInfo);
         
         // Persist to Supabase profile and preferences when authenticated
         try {
@@ -3540,7 +3540,7 @@ const handleRestartTimer = () => {
     return (
       <AdaptiveEnhancedLoading 
         isPremium={isPremium} 
-        userName={userInfo.name} 
+        userName={safeUserInfo.name} 
         message={loadingMessage}
       />
     );
@@ -3556,7 +3556,7 @@ const handleRestartTimer = () => {
           {/* Show rhyming emergency content if available */}
           <div className="mb-6 bg-white/10 backdrop-blur-sm rounded-lg p-6">
             <p className="text-white/90 text-lg leading-relaxed mb-4">
-              Don't worry, {userInfo.name}! Our story elves are working hard to fix things.
+              Don't worry, {safeUserInfo.name}! Our story elves are working hard to fix things.
             </p>
             <p className="text-white/70 text-sm mb-4">
               Try clicking "Try Again" or come back in a few minutes for fresh stories!
@@ -3582,7 +3582,7 @@ const handleRestartTimer = () => {
 
   return (
     <GameContextProvider 
-      userId={userInfo.name} 
+      userId={safeUserInfo.name} 
       userType={isPremium ? 'premium' : 'free'}
       userInfo={userInfo}
     >
@@ -3737,7 +3737,7 @@ const handleRestartTimer = () => {
                       )}
                       <ImageWithFallback
                         src={currentImage}
-                        alt={`Story illustration for page ${currentPage + 1}: ${displayedStory[currentPage]?.substring(0, 100)}...`}
+        alt={`Story illustration for page ${currentPage + 1}: ${displayedStory[safeCurrentPage]?.substring(0, 100)}...`}
                         className="w-full h-full object-cover rounded-lg"
                         fallbackText={`📖 Page ${currentPage + 1}`}
                         onLoadingChange={handleImageLoadingChange}
@@ -3780,7 +3780,7 @@ const handleRestartTimer = () => {
                             difficulty: currentDifficulty,
                             userInfo,
                             isPremium,
-                            userId: userInfo.name,
+                             userId: safeUserInfo.name,
                             highlightedWordIndex: currentHighlightedWord,
                             isMobile: preferMobileModal
                           })
@@ -3820,7 +3820,7 @@ const handleRestartTimer = () => {
                         {currentImage ? (
           <ImageWithFallback
             src={currentImage} 
-            alt={`Story illustration for page ${currentPage + 1}: ${displayedStory[currentPage]?.substring(0, 100)}...`}
+            alt={`Story illustration for page ${currentPage + 1}: ${displayedStory[safeCurrentPage]?.substring(0, 100)}...`}
             className="w-full h-full mx-auto object-contain"
             fallbackText={`📖 Page ${currentPage + 1}`}
             onLoadingChange={handleImageLoadingChange}
@@ -3866,7 +3866,7 @@ const handleRestartTimer = () => {
                               difficulty: currentDifficulty,
                               userInfo,
                               isPremium,
-                              userId: userInfo.name,
+                              userId: safeUserInfo.name,
                               highlightedWordIndex: currentHighlightedWord,
                               isMobile: preferMobileModal
                             })
