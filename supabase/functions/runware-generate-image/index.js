@@ -429,36 +429,73 @@ async function generateWithRunware(
 
 
 // ---------------- MAIN HANDLER (POST-ONLY) ----------------
-export default async function handleRequest(req) {
+async function handleRequest(req) {
   const requestId = CoreUtils.generateRequestId();
-
-  // Parse payload early so we can grab sessionId
-  let payload;
-  try {
-    payload = await req.json();
-  } catch {
-    return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" },
+  // Fast-path: CORS preflight
+  if (req.method === 'OPTIONS') {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+        'Access-Control-Allow-Methods': 'GET, HEAD, POST, OPTIONS',
+        'Access-Control-Max-Age': '600'
+      }
     });
   }
 
-  const sessionId = payload?.sessionId || ('session_' + requestId);
-  const log = bindTierLogger(supabase, sessionId, requestId);
-
-  // Log request received
-  log.t2(`Crash-Proof Orchestrator v2.1: ${req.method} ${req.url}`);
-
-  if (req.method !== "POST") {
-    return new Response(
-      JSON.stringify({ error: "Method not allowed", allowedMethods: ["POST"] }),
-      { status: 405, headers: { "Content-Type": "application/json" } }
-    );
+  // Health: HEAD / GET — no JSON parse here
+  if (req.method === 'HEAD' && new URL(req.url).pathname === '/health') {
+    return new Response(null, {
+      status: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Cache-Control': 'no-store',
+        'x-health': 'true'
+      }
+    });
   }
+  if (req.method === 'GET' || req.method === 'HEAD') {
+    const payload = {
+      status: 'healthy',
+      service: 'runware-generate-image',
+      timestamp: new Date().toISOString(),
+      version: 'v2.1',
+      bootStatus: CrashProofBootSystem.isHealthy() ? 'healthy' : 'degraded',
+    };
+    return new Response(JSON.stringify(payload), {
+      status: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json'
+      }
+    });
   }
 
-    log.t2(`Request payload keys: ${Object.keys(payload || {})}`);
+  // Only POST beyond this point
+  if (req.method !== 'POST') {
+    return new Response(JSON.stringify({
+      error: 'Method not allowed',
+      allowedMethods: ['GET', 'POST', 'OPTIONS']
+    }), {
+      status: 405,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json'
+      }
+    });
+  }
 
+  // Everything that can throw goes inside ONE outer try
+  try {
+    // Flexible payload parse
+    const payload = await req.json().catch(() => ({}));
+    const requestMeta = { method: req.method, url: req.url };
+    const sessionId = payload?.sessionId || ('session_' + requestId);
+    const log = bindTierLogger(supabase, sessionId, requestId);
+    log.t2('Request received', requestMeta);
+
+    // Normalize payload shapes
     let enhancedStoryData, storyText, pageNumber, avatarIdentity, previousPrimaryScene;
     if (payload.pageText) {
       storyText = payload.pageText;
@@ -475,167 +512,190 @@ export default async function handleRequest(req) {
     }
 
     if (!storyText) {
-      return new Response(JSON.stringify({ error: "Missing required field: pageText OR storyText" }), {
+      return new Response(JSON.stringify({ error: 'Missing required field: pageText OR storyText' }), {
         status: 400,
-        headers: { "Content-Type": "application/json" },
+        headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' }
       });
     }
 
-    let result;
+    let result = null;
 
-    if (payload.forceTier === "COMPLETE_TIER_1" || payload.forceTier === "tier-1" || payload.skipTier25) {
+    // ===== Tier 1 forced path (COMPLETE_TIER_1 / tier-1 / skipTier25) =====
+    if (payload.forceTier === 'COMPLETE_TIER_1' || payload.forceTier === 'tier-1' || payload.skipTier25) {
+      log.attempt('tier-1', { note: 'PhaseIntegrationOrchestrator path' });
+
       try {
-        log.t2(`Forcing Tier 1 via PhaseIntegrationOrchestrator`);
         const orchestrator = await LazyServiceLoader.getPhaseIntegrationOrchestrator();
 
-        log.t2(`Calling ai-visual-scene-creator for primaryScene`);
-        const sceneResponse = await supabase.functions.invoke("ai-visual-scene-creator", {
+        // First: ai-visual-scene-creator for primaryScene + schema
+        log.t2('Calling ai-visual-scene-creator', { pageNumber, previousPrimaryScene });
+        const sceneResponse = await supabase.functions.invoke('ai-visual-scene-creator', {
           body: {
             storyText,
             userInfo: payload.userInfo,
-            sessionId: payload.sessionId || "session_" + requestId,
+            sessionId,
             pageNumber,
-            previousPrimaryScene,
-          },
+            previousPrimaryScene
+          }
         });
-
-        if (!sceneResponse?.data || sceneResponse.error) throw new Error("NO_PRIMARY_SCENE_ESCALATE_TO_25A");
+        if (!sceneResponse?.data || sceneResponse.error) {
+          throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_25A');
+        }
 
         const { primaryScene, aiSchema } = sceneResponse.data;
-        const basePrompt = primaryScene + (aiSchema ? `\n\nSchema: ${JSON.stringify(aiSchema)}` : "");
+        const basePrompt = primaryScene + (aiSchema ? `\n\nSchema: ${JSON.stringify(aiSchema)}` : '');
 
-        log.t2(`Calling orchestrator with basePrompt and storyText`);
+        // Next: Orchestrator enhances the prompt
+        log.t2('Enhancing prompt via orchestrator');
         const tier1Response = await orchestrator.getEnhancedPrompt(
           payload.userInfo,
           basePrompt,
           storyText,
-          payload.sessionId || "session_" + requestId
+          sessionId
         );
 
-        if (tier1Response && tier1Response.enhancementSuccessful && tier1Response.enhancedPrompt) {
-          log.t2(`Generating Tier 1 image with enhanced prompt`);
-          const apiKey = Deno.env.get("RUNWARE_API_KEY")?.trim();
-          const sessionId = payload.sessionId || "session_" + requestId;
-          const avatar = payload.userInfo?.avatar;
-          const enhancedData = { enhancedPrompt: tier1Response.enhancedPrompt, templateStructure: "COMPLETE_TIER_1" };
-          const imageResult = await generateWithRunware(
-            apiKey,
-            primaryScene,
-            sessionId,
-            requestId,
-            payload.userInfo,
-            avatar,
-            pageNumber || 1,
-            enhancedData
-          );
-          result = { ...imageResult, primaryScene, aiSchema, templateStructure: "COMPLETE_TIER_1" };
-        } else {
-          throw new Error("Tier 1 enhanced prompt generation failed");
+        if (!tier1Response?.enhancementSuccessful || !tier1Response?.enhancedPrompt) {
+          throw new Error('TIER1_ENHANCEMENT_FAILED');
         }
-      } catch (error) {
-        if ((error?.message || "").includes("NO_PRIMARY_SCENE_ESCALATE_TO_25A")) {
-          log.t2("Tier 1 primary scene failed - escalating to Tier 2.5A");
-          const resp = await supabase.functions.invoke("runware-template-ab", {
+
+        // Finally: generate with Runware
+        log.t2('Generating image via Runware (tier-1)');
+        const apiKey = Deno.env.get('RUNWARE_API_KEY')?.trim();
+        const enhancedData = {
+          enhancedPrompt: tier1Response.enhancedPrompt,
+          templateStructure: 'COMPLETE_TIER_1'
+        };
+        const imageResult = await generateWithRunware(
+          apiKey,
+          primaryScene,
+          sessionId,
+          requestId,
+          payload.userInfo,
+          payload.userInfo?.avatar,
+          pageNumber || 1,
+          enhancedData
+        );
+
+        result = {
+          ...imageResult,
+          primaryScene,
+          aiSchema,
+          templateStructure: 'COMPLETE_TIER_1'
+        };
+        log.success('tier-1', { imageUrl: result.imageURL });
+      } catch (err) {
+        const msg = (err && err.message) || String(err);
+
+        if (msg.includes('NO_PRIMARY_SCENE_ESCALATE_TO_25A')) {
+          log.failure('tier-1', { error: msg, escalation: 'tier-2.5A' });
+
+          // escalate to 2.5A (runware-template-ab)
+          const resp = await supabase.functions.invoke('runware-template-ab', {
             body: {
               storyText,
               pageText: storyText,
               userInfo: payload.userInfo,
-              sessionId: payload.sessionId || "session_" + requestId,
+              sessionId,
               pageNumber: pageNumber || 1,
-              templateComplexity: "A",
-            },
+              templateComplexity: 'A'
+            }
           });
-          result = resp.data || { success: false, error: resp?.error?.message || "Tier 2.5A escalation failed" };
+          result = resp.data || { success: false, error: resp.error?.message || 'Tier 2.5A escalation failed' };
         } else {
-          log.t2("[ORCHESTRATOR] Trying character consistency fallback before Tier 2.5A");
+          // Try character-consistency-only fallback, then escalate if needed
+          log.t2('Trying character consistency fallback');
           const characterFallback = await extractCharacterConsistencyOnly(
-            storyText,
-            payload.sessionId || "session_" + requestId,
-            pageNumber || 1,
-            payload.userInfo
+            storyText, sessionId, pageNumber || 1, payload.userInfo
           );
 
-          if (characterFallback?.success) {
+          if (characterFallback && characterFallback.success) {
             try {
-              const apiKey = Deno.env.get("RUNWARE_API_KEY")?.trim();
-              const sessionId = payload.sessionId || "session_" + requestId;
-              const avatar = payload.userInfo?.avatar;
+              const apiKey = Deno.env.get('RUNWARE_API_KEY')?.trim();
               const imageResult = await generateWithRunware(
                 apiKey,
                 characterFallback.enhancedPrompt,
                 sessionId,
                 requestId,
                 payload.userInfo,
-                avatar,
+                payload.userInfo?.avatar,
                 pageNumber || 1,
                 characterFallback.metadata
               );
               result = {
                 ...imageResult,
-                tier: "CHARACTER_CONSISTENCY_FALLBACK",
-                usedTier: "CHARACTER_CONSISTENCY_FALLBACK",
-                fallbackReason: "orchestrator_enhancement_failed",
-                templateStructure: characterFallback.tier,
+                tier: 'CHARACTER_CONSISTENCY_FALLBACK',
+                usedTier: 'CHARACTER_CONSISTENCY_FALLBACK',
+                fallbackReason: 'orchestrator_enhancement_failed',
+                templateStructure: characterFallback.tier
               };
-            } catch {
-              log.t2("❌ [CHARACTER FALLBACK] Image generation failed, escalating to Tier 2.5A");
-              const resp = await supabase.functions.invoke("runware-template-ab", {
+              log.success('tier-1', { mode: 'character_fallback', imageUrl: result.imageURL });
+            } catch (charErr) {
+              log.failure('tier-1', { error: (charErr && charErr.message) || String(charErr), escalation: 'tier-2.5A' });
+
+              const resp = await supabase.functions.invoke('runware-template-ab', {
                 body: {
                   storyText,
                   pageText: storyText,
                   userInfo: payload.userInfo,
-                  sessionId: payload.sessionId || "session_" + requestId,
+                  sessionId,
                   pageNumber: pageNumber || 1,
-                  templateComplexity: "A",
-                },
+                  templateComplexity: 'A'
+                }
               });
-              result = resp.data || { success: false, error: resp?.error?.message || "All fallbacks failed" };
+              result = resp.data || { success: false, error: resp.error?.message || 'All fallbacks failed' };
             }
           } else {
-            log.t2("🔄 [ORCHESTRATOR] Character consistency fallback failed, escalating to Tier 2.5A");
-            const resp = await supabase.functions.invoke("runware-template-ab", {
+            log.failure('tier-1', { error: msg, escalation: 'tier-2.5A' });
+
+            const resp = await supabase.functions.invoke('runware-template-ab', {
               body: {
                 storyText,
                 pageText: storyText,
                 userInfo: payload.userInfo,
-                sessionId: payload.sessionId || "session_" + requestId,
+                sessionId,
                 pageNumber: pageNumber || 1,
-                templateComplexity: "A",
-              },
+                templateComplexity: 'A'
+              }
             });
-            result = resp.data || { success: false, error: resp?.error?.message || "Tier 2.5A escalation failed" };
+            result = resp.data || { success: false, error: resp.error?.message || 'Tier 2.5A escalation failed' };
           }
         }
       }
     }
 
+    // ===== Default: if nothing succeeded, enhanced static fallback =====
     if (!result || !result.success) {
-      log.t2("🔄 [FINAL FALLBACK] Escalating to Tier 2.5D");
-      const resp = await supabase.functions.invoke("runware-template-cd", {
-        body: {
-          storyText,
-          pageText: storyText,
-          userInfo: payload.userInfo,
-          sessionId: payload.sessionId || "session_" + requestId,
-          pageNumber: pageNumber || 1,
-          templateComplexity: "D",
-        },
-      });
-      result = resp.data || { success: false, error: resp?.error?.message || "Tier 2.5D escalation failed" };
+      log.t2('Using enhanced static fallback (2.5)');
+      result = await generateEnhancedFallback(storyText, pageNumber || 1, 'runware');
     }
 
     return new Response(JSON.stringify(result), {
       status: 200,
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json'
+      }
     });
   } catch (error) {
-    log.t1(`❌ Crash-proof orchestrator error: ${error}`);
-    return new Response(
-      JSON.stringify({ error: "Internal server error", message: error?.message || String(error), requestId }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
+    // OUTER catch — only one, and it always pairs the try above
+    const message = (error && error.message) || String(error);
+    // console + JSON
+    tierLogging.logTier1(`❌ [${requestId}] Crash-proof orchestrator error`, { message });
+    return new Response(JSON.stringify({
+      error: 'Internal server error',
+      message,
+      requestId
+    }), {
+      status: 500,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json'
+      }
+    });
   }
 }
 
 // Keep an init breadcrumb without exporting at EOF
 console.log("🟢 [TIER2] 🎯 Crash-Proof Runware Orchestrator v2.1 handler loaded");
+
+export default handleRequest;
