@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { handleHealthAndCors } from "../_shared/healthCors.ts";
 
 // Import the sophisticated template system components
 import { resolveAllPlaceholders, type MicroContext, type UserInfo } from "../_shared/placeholderResolver.ts";
@@ -34,15 +35,9 @@ interface ProcessResponse {
 import { derivePronoun } from '../_shared/placeholderResolver.ts';
 
 serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
-
-  // Health endpoint - no preflight required
-  if (req.method === "HEAD" && new URL(req.url).pathname === "/health") {
-    return new Response(null, { status: 200, headers: corsHeaders });
-  }
+  // Handle health check and CORS preflight
+  const healthCorsResponse = handleHealthAndCors(req);
+  if (healthCorsResponse) return healthCorsResponse;
 
   try {
     const { pages, userInfo, sessionId }: ProcessRequest = await req.json();

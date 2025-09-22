@@ -1,6 +1,7 @@
 // Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
+import { handleHealthAndCors } from "../_shared/healthCors.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -9,14 +10,9 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
-  }
-
-  // Health endpoint - no preflight required
-  if (req.method === "HEAD" && new URL(req.url).pathname === "/health") {
-    return new Response(null, { status: 200, headers: corsHeaders });
-  }
+  // Handle health check and CORS preflight
+  const healthCorsResponse = handleHealthAndCors(req);
+  if (healthCorsResponse) return healthCorsResponse;
 
   try {
     console.log('OpenAI TTS function called');

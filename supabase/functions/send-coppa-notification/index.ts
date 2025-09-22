@@ -24,6 +24,18 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Ultra-fast health endpoint - compliance critical
+  if (req.method === "HEAD" && new URL(req.url).pathname === "/health") {
+    return new Response(null, { 
+      status: 200, 
+      headers: { 
+        ...corsHeaders,
+        'x-health': 'true', 
+        'Cache-Control': 'no-store' 
+      }
+    });
+  }
+
   
 
   try {

@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { handleHealthAndCors } from "../_shared/healthCors.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -38,14 +39,9 @@ function processBase64Chunks(base64String: string, chunkSize = 32768) {
 }
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
-  }
-
-  // Health endpoint - no preflight required
-  if (req.method === "HEAD" && new URL(req.url).pathname === "/health") {
-    return new Response(null, { status: 200, headers: corsHeaders });
-  }
+  // Handle health check and CORS preflight
+  const healthCorsResponse = handleHealthAndCors(req);
+  if (healthCorsResponse) return healthCorsResponse;
 
   
 
