@@ -665,6 +665,16 @@ const handleAudioStateChange = (playing: boolean) => {
   setIsAudioPlaying(playing);
 };
 
+// Adapter for StoryAudioControls (expects playing + loading)
+const handleAudioStateChangeDual = (playing: boolean, loading: boolean) => {
+  setIsAudioPlaying(playing);
+  setIsAudioLoading(loading);
+};
+
+const handleAudioPlayed = (page: number) => {
+  setAudioPlayedPage(page);
+};
+
 // Global audio state event listener (Fix #1)
 useEffect(() => {
   const handleGlobalAudioStateChange = (event: any) => {
@@ -3810,43 +3820,23 @@ const handleRestartTimer = () => {
               {/* Progress Bar + Centered Navigation */}
               <div className="mb-4 md:mb-6">
                 <Progress value={progress} className="h-2" />
-                <div className="mt-2 flex items-center justify-center gap-3">
-                  <Button
-                    id="reader-prev"
-                    variant="outline"
-                    size="sm"
-                    onClick={handlePrevious}
-                    disabled={currentPage === 0 || controlsBlocked}
-                    aria-label={t('nav.prev','Back')}
-                  >
-                    <ChevronLeft className="w-5 h-5" />
-                  </Button>
-                  <p className="text-sm text-muted-foreground text-center min-w-[96px]">
-                     {(() => {
-                       const endingPageCount = (window as any).__endingPageCount__;
-                       const firstEndingPageIndex = (window as any).__firstEndingPageIndex__;
-                       const isViewingEnding = endingPageCount && firstEndingPageIndex !== undefined && 
-                                             currentPage >= firstEndingPageIndex && 
-                                             currentPage <= firstEndingPageIndex + endingPageCount - 1;
-                       
-                       if (isViewingEnding) {
-                         const currentEndingPageNumber = currentPage - firstEndingPageIndex + 1;
-                         return `Page ${currentPage + 1} - Ending Page ${currentEndingPageNumber} of ${endingPageCount}`;
-                       }
-                       
-                       return `Page ${currentPage + 1}`;
-                     })()}
-                  </p>
-                  <Button
-                    id="reader-next"
-                    variant="default"
-                    size="sm"
-                    onClick={handleNext}
-                    disabled={isLoadingNextPage || controlsBlocked || (!isPremium && currentPage >= 5) || isForwardNavigationBlocked}
-                    aria-label={t('nav.next','Next')}
-                  >
-                    <ChevronRight className="w-5 h-5" />
-                  </Button>
+                <div className="mt-2">
+                  <StoryNavigationControls
+                    currentPage={currentPage}
+                    totalPages={displayedStory.length}
+                    isPremium={isPremium}
+                    isLoadingNextPage={isLoadingNextPage}
+                    isGeneratingNewStory={isGeneratingNewStory}
+                    isGeneratingRewrite={isGeneratingRewrite}
+                    canGoNext={!controlsBlocked && (isPremium ? true : currentPage < 5) && !isForwardNavigationBlocked}
+                    canGoPrevious={currentPage > 0 && !controlsBlocked}
+                    onNext={handleNext}
+                    onPrevious={handlePrevious}
+                    onGenerateNext={handleNext}
+                    onGenerateNewStory={() => handleGenerateNewStory()}
+                    onGenerateRewrite={handleRewriteWithDialog}
+                    onFinishStory={() => setShowConfirmEndStory(true)}
+                  />
                 </div>
               </div>
 
@@ -3856,12 +3846,18 @@ const handleRestartTimer = () => {
                 aria-hidden={isMobileOrTablet}
               >
                 <div className="flex items-center gap-4">
-                    <SynchronizedAudioControls
-                      text={currentStoryText || ""}
-                      contentHash={contentHash}
-                      onWordHighlight={onWordHighlight}
-                      onPlayingChange={handleAudioStateChange}
-                      difficulty={DifficultyLevelMapper.toBackend(currentDifficulty)}
+                    <StoryAudioControls
+                      audioEngineRef={audioEngineRef}
+                      isAudioPlaying={isAudioPlaying}
+                      isAudioLoading={isAudioLoading}
+                      audioDisabled={!isPremium && audioPlayedPage === currentPage && !isAudioPlaying}
+                      currentStoryText={currentStoryText || ""}
+                      userInfo={userInfo}
+                      isPremium={isPremium}
+                      currentPage={currentPage}
+                      audioPlayedPage={audioPlayedPage ?? -1}
+                      onAudioStateChange={handleAudioStateChangeDual}
+                      onAudioPlayed={handleAudioPlayed}
                     />
                   {isPremium && (
                     <Button 
