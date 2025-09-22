@@ -1,6 +1,7 @@
 // DIAGNOSTIC REDEPLOY: 2025-01-23T03:00:00Z - Force packaging inclusion
 console.log("[translate-universal] DIAGNOSTIC LOADED: 2025-01-23T03:00:00Z");
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { handleHealthAndCors } from "../_shared/healthCors.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -254,10 +255,9 @@ Always use these exact translations for these words.`
 serve(async (req) => {
   console.log('translate-universal function called');
 
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
-  }
+  // Handle CORS and health checks
+  const healthResponse = handleHealthAndCors(req);
+  if (healthResponse) return healthResponse;
 
   try {
     const openaiApiKey = Deno.env.get('OPENAI_API_KEY');

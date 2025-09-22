@@ -6,6 +6,7 @@ import { DifficultyLevelMapper } from '../_shared/DifficultyLevelMapper.ts';
 import { getPerPageTokenLimit, getStoryPrompt, formatUserPrompt, resolvePromptPlaceholders } from '../_shared/storyPrompts.ts';
 import { ENHANCED_LEVEL_0_VOCABULARY } from '../_shared/vocabulary/dolchPrePrimer.ts';
 import { handleStreamlinedGeneration } from './streamlined-handler.ts';
+import { handleHealthAndCors } from "../_shared/healthCors.ts";
 
 // Initialize Supabase client for service-to-service communication
 const supabase = createClient(
@@ -130,10 +131,9 @@ function getHairColorForSkinTone(skinTone: string | undefined): string | null {
 // Removed: getFallbackTemplate and getEnhancedFallbackPages - replaced by template-service calls
 
 serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  // Handle CORS and health checks
+  const healthResponse = handleHealthAndCors(req);
+  if (healthResponse) return healthResponse;
 
   // Health check endpoint
   if (req.method === 'GET' || req.method === 'HEAD') {

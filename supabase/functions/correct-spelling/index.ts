@@ -1,5 +1,6 @@
 // Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+import { handleHealthAndCors } from "../_shared/healthCors.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -16,10 +17,9 @@ interface SpellingRequest {
 Deno.serve(async (req) => {
   console.log('correct-spelling function called');
 
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  // Handle CORS and health checks
+  const healthResponse = handleHealthAndCors(req);
+  if (healthResponse) return healthResponse;
 
   try {
     const openAiApiKey = Deno.env.get('OPENAI_API_KEY');

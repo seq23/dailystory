@@ -2,6 +2,7 @@
 // Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { handleHealthAndCors } from "../_shared/healthCors.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -48,9 +49,9 @@ Examples:
 };
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
-  }
+  // Handle CORS and health checks
+  const healthResponse = handleHealthAndCors(req);
+  if (healthResponse) return healthResponse;
 
   try {
     const ELEVENLABS_API_KEY = Deno.env.get("ELEVENLABS_API_KEY");

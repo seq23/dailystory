@@ -1,5 +1,6 @@
 // Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { handleHealthAndCors } from "../_shared/healthCors.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -8,9 +9,9 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  // Handle CORS and health checks
+  const healthResponse = handleHealthAndCors(req);
+  if (healthResponse) return healthResponse;
 
   try {
     const { text, voice_id, model_id, voice_settings } = await req.json();

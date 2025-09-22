@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { handleHealthAndCors } from "../_shared/healthCors.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -259,10 +260,9 @@ serve(async (req) => {
   // Initialize educational cache on first request
   await initEducationalCache();
   
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  // Handle CORS and health checks
+  const healthResponse = handleHealthAndCors(req);
+  if (healthResponse) return healthResponse;
 
   let userLanguage = 'en'; // Default fallback
   try {

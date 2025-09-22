@@ -1,5 +1,6 @@
 // Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { handleHealthAndCors } from "../_shared/healthCors.ts";
 
 // Inline CORS headers to avoid import issues
 const COMPREHENSIVE_HEADER_BASELINE = [
@@ -52,9 +53,9 @@ const MonitoringDashboard = {
 };
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return createCorsOptionsResponse();
-  }
+  // Handle CORS and health checks
+  const healthResponse = handleHealthAndCors(req);
+  if (healthResponse) return healthResponse;
 
   
 

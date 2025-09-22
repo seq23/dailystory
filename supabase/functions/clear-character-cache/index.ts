@@ -24,6 +24,7 @@
 // ================================================================================
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { handleHealthAndCors } from "../_shared/healthCors.ts";
 
 // CORS headers for cross-origin requests
 const corsHeaders = {
@@ -35,14 +36,9 @@ const corsHeaders = {
 
 // Main serve function with strengthened error handling
 serve(async (req) => {
-  // Handle CORS preflight requests directly in TypeScript receptionist
-  if (req.method === 'OPTIONS') {
-    console.log('🔄 [TypeScript Receptionist] CORS preflight request handled');
-    return new Response(null, { 
-      status: 200,
-      headers: corsHeaders 
-    });
-  }
+  // Handle CORS and health checks
+  const healthResponse = handleHealthAndCors(req);
+  if (healthResponse) return healthResponse;
 
   try {
     // Import the actual JavaScript implementation
