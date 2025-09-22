@@ -132,7 +132,7 @@ export class PremiumStoryManager {
       if (error.code === 'PGRST116') {
         return null; // Story not found
       }
-      console.error('Error fetching saved story:', error);
+      ProductionLogging.error(`Error fetching saved story: ${error.message}`, 'premiumStoryManager');
       throw new Error('Failed to fetch saved story');
     }
 
@@ -155,7 +155,7 @@ export class PremiumStoryManager {
       .eq('user_id', user.id);
 
     if (error) {
-      console.error('Error deleting story:', error);
+      ProductionLogging.error(`Error deleting story: ${error.message}`, 'premiumStoryManager');
       throw new Error('Failed to delete story');
     }
   }
@@ -247,7 +247,7 @@ export class PremiumStoryManager {
       if (error.code === 'PGRST116') {
         return null; // No preferences found
       }
-      console.error('Error fetching user preferences:', error);
+      ProductionLogging.error(`Error fetching user preferences: ${error.message}`, 'premiumStoryManager');
       throw new Error('Failed to fetch user preferences');
     }
 
@@ -293,7 +293,7 @@ export class PremiumStoryManager {
     const { data, error } = await queryBuilder.order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error searching stories:', error);
+      ProductionLogging.error(`Error searching stories: ${error.message}`, 'premiumStoryManager');
       throw new Error('Failed to search stories');
     }
 

@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { ProductionLogging } from './ProductionLogger';
 
 interface SpellcheckResult {
   correctedText: string;
@@ -77,7 +78,7 @@ class SpellcheckService {
 
       return result;
     } catch (error) {
-      console.warn('Spellcheck failed:', error);
+      ProductionLogging.warn('Spellcheck failed:', 'spellcheckService', error);
       return {
         correctedText: text,
         hadErrors: false,

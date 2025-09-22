@@ -74,7 +74,7 @@ export class ProductionAnalyticsTracker {
     // }, 300000); // Every 5 minutes
 
     this.isInitialized = true;
-    console.log('✅ Production Analytics Tracker initialized');
+    ProductionLogging.info('Production Analytics Tracker initialized', 'productionAnalyticsTracker');
   }
 
   /**

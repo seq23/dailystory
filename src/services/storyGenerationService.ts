@@ -3,6 +3,7 @@
 // Sends fully resolved bundles to streamlined edge function
 
 import { supabase } from "@/integrations/supabase/client";
+import { ProductionLogging } from './ProductionLogger';
 import type { UserInfo, DifficultyLevel, LearningGoal, AvatarType } from "@/types";
 import { VocabularyService, type VocabularyIntegration } from "./vocabularyService";
 import { extractThemeIntent, type ThemeIntent } from "@/utils/themeIntent";
@@ -63,8 +64,8 @@ export class StoryGenerationService {
     }
   ): Promise<StoryGenerationResult> {
     try {
-      console.log('🚀 Starting 4-layer story generation pipeline');
-      console.log('🔍 Config received:', {
+      ProductionLogging.info('Starting 4-layer story generation pipeline', 'storyGenerationService');
+      ProductionLogging.debug('Config received:', 'storyGenerationService', {
         sessionType: config.sessionType,
         pageNumber: config.pageNumber,
         expertGradeLevel: config.expertGradeLevel,
@@ -84,7 +85,7 @@ export class StoryGenerationService {
       try {
         vocabularyIntegration = await VocabularyService.fetchAllVocabulary(userInfo);
       } catch (error) {
-        console.warn('⚠️ Layer 2 (Vocabulary) failed silently:', safeErrorMessage(error));
+        ProductionLogging.warn(`Layer 2 (Vocabulary) failed silently: ${safeErrorMessage(error)}`, 'storyGenerationService');
         vocabularyIntegration = {
           userSpecified: { formWords: [], specialRequestWords: [], teacherWords: [] },
           systemVocabulary: { level: 2, complianceTarget: 0.7 },
@@ -95,7 +96,7 @@ export class StoryGenerationService {
       try {
         themeIntent = extractThemeIntent(userInfo);
       } catch (error) {
-        console.warn('⚠️ Layer 3 (Theme) failed silently:', safeErrorMessage(error));
+        ProductionLogging.warn(`Layer 3 (Theme) failed silently: ${safeErrorMessage(error)}`, 'storyGenerationService');
         themeIntent = {
           theme: ['adventure'], // AI-friendly default
           setting: ['magical world'],
@@ -137,9 +138,9 @@ export class StoryGenerationService {
         );
         voiceIntegrationResult.selectedVoice = clampedVoice;
         
-        console.log('✅ Voice Layer 4: Selected and clamped voice:', voiceIntegrationResult.selectedVoice.pn);
+        ProductionLogging.info(`Voice Layer 4: Selected and clamped voice: ${voiceIntegrationResult.selectedVoice.pn}`, 'storyGenerationService');
       } catch (error) {
-        console.warn('⚠️ Layer 4 (Voice) failed silently:', safeErrorMessage(error));
+        ProductionLogging.warn(`Layer 4 (Voice) failed silently: ${safeErrorMessage(error)}`, 'storyGenerationService');
         // Fallback voice integration
         voiceIntegrationResult = {
           selectedVoice: { pn: 'AI Narrator', id: 'fallback' },
@@ -165,14 +166,14 @@ export class StoryGenerationService {
         systemSettings: VocabularyService.getSystemSettings(vocabularyIntegration)
       };
 
-      console.log(`🆔 StoryGen: Session ID: ${generationBundle.sessionId}`);
-      console.log('📦 Generation bundle prepared:', {
+      ProductionLogging.info(`Session ID: ${generationBundle.sessionId}`, 'storyGenerationService');
+      ProductionLogging.debug('Generation bundle prepared:', 'storyGenerationService', {
         sessionId: generationBundle.sessionId,
         storyContentLength: resolvedResult.storyContent.length,
         gradeLevel: generationBundle.systemSettings.gradeLevel,
         avatarDataPresent: !!resolvedResult.avatarData.skinTone
       });
-      console.log('📦 Generation bundle prepared:', {
+      ProductionLogging.debug('Generation bundle prepared:', 'storyGenerationService', {
         sessionId: generationBundle.sessionId,
         storyContentLength: resolvedResult.storyContent.length,
         gradeLevel: generationBundle.systemSettings.gradeLevel,
@@ -184,7 +185,7 @@ export class StoryGenerationService {
       return result;
       
     } catch (error) {
-      console.error('❌ Story generation failed:', error);
+      ProductionLogging.error('Story generation failed:', 'storyGenerationService', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
