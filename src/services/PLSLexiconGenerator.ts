@@ -3,6 +3,7 @@
 
 import { ComprehensiveVocabularyCollector } from './ComprehensiveVocabularyCollector';
 import { SmartPhoneticMapper, type PhoneticMapping } from './SmartPhoneticMapper';
+import { DebugLogger } from '@/services/DebugLogger';
 
 export interface PLSGenerationOptions {
   includeLevel?: number[]; // Which reading levels to include (default: all)
@@ -37,7 +38,7 @@ export class PLSLexiconGenerator {
     options: PLSGenerationOptions = {}
   ): Promise<PLSGenerationResult> {
     const startTime = Date.now();
-    console.log('Starting comprehensive PLS lexicon generation...');
+    DebugLogger.log('performance', 'Starting comprehensive PLS lexicon generation...');
 
     // Set defaults
     const opts: Required<PLSGenerationOptions> = {
@@ -56,7 +57,7 @@ export class PLSLexiconGenerator {
       .map(entry => entry.word)
       .slice(0, opts.maxWords);
 
-    console.log(`Processing ${relevantWords.length} words for PLS generation`);
+    DebugLogger.log('performance', `Processing ${relevantWords.length} words for PLS generation`);
 
     // Generate phonetic mappings
     const phoneticMappings = await SmartPhoneticMapper.batchGeneratePhonetics(relevantWords);
@@ -64,7 +65,7 @@ export class PLSLexiconGenerator {
     // Filter by confidence
     const filteredMappings = this.filterByConfidence(phoneticMappings, opts.minConfidence);
 
-    console.log(`Generating PLS XML for ${filteredMappings.length} words`);
+    DebugLogger.log('performance', `Generating PLS XML for ${filteredMappings.length} words`);
 
     // Generate PLS XML
     const plsXml = this.generatePLSXML(filteredMappings, opts);
@@ -73,7 +74,7 @@ export class PLSLexiconGenerator {
     const statistics = this.calculateStatistics(filteredMappings, vocabularyEntries);
 
     const generationTime = Date.now() - startTime;
-    console.log(`PLS lexicon generation completed in ${generationTime}ms`);
+    DebugLogger.log('performance', `PLS lexicon generation completed in ${generationTime}ms`);
 
     return {
       plsXml,

@@ -74,7 +74,7 @@ export class NetflixStyleStoryService {
     // Convert frontend difficulty to backend format for validation system
     const frontendDifficulty = userInfo.difficultyLevel || 'beginner';
     const difficulty: DifficultyLevel = DifficultyLevelMapper.toBackend(frontendDifficulty) as DifficultyLevel;
-    console.log(`🔄 [${generationId}] Netflix: Difficulty mapping - Frontend: "${frontendDifficulty}" → Backend: "${difficulty}" for ${userInfo.name}`);
+    DebugLogger.log('story', `Netflix: Difficulty mapping - Frontend: "${frontendDifficulty}" → Backend: "${difficulty}" for ${userInfo.name}`, { generationId });
 
     let promptConfig: any;
     let expertGradeLevel: ExpertGradeLevel | undefined;
@@ -84,7 +84,7 @@ export class NetflixStyleStoryService {
       const { ExpertDifficultyManager } = await import('@/services/expertDifficultyManager');
       expertGradeLevel = await ExpertDifficultyManager.getExpertGradeLevel(userInfo);
       promptConfig = getExpertStoryPrompt(expertGradeLevel);
-      console.log(`📚 [${generationId}] Netflix: Using adaptive expert grade ${expertGradeLevel} for ${userInfo.name}`);
+      DebugLogger.log('story', `Netflix: Using adaptive expert grade ${expertGradeLevel} for ${userInfo.name}`, { generationId });
     } else {
       promptConfig = getStoryPrompt(difficulty);
     }
@@ -92,10 +92,11 @@ export class NetflixStyleStoryService {
     // Use NetflixRetryService for robust retry logic with circuit breaker
     return await NetflixRetryService.executeWithRetry(async () => {
       const attemptId = `attempt-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      console.log(`🔄 [${generationId}] Netflix: Starting AI generation attempt ${attemptId}`);
+      DebugLogger.log('story', `Netflix: Starting AI generation attempt ${attemptId}`, { generationId });
       const { StoryGenerationService } = await import('./storyGenerationService');
       
-      console.log(`🔍 [${generationId}] Netflix: Calling unified system with:`, {
+      DebugLogger.log('story', `Netflix: Calling unified system`, {
+        generationId,
         difficulty,
         expertGradeLevel,
         promptTokens: promptConfig?.tokens || 'unknown',
@@ -111,13 +112,13 @@ export class NetflixStyleStoryService {
       if (shouldUseFreshSession) {
         actualSessionId = sessionId || NetflixSessionManager.getNextStorySession(userInfo.name);
         sessionStorage.removeItem('netflix_force_fresh_session'); // Clear flag after use
-        console.log(`🎬 [${generationId}] Netflix: Using FRESH session ID: ${actualSessionId}`);
+        DebugLogger.log('story', `Netflix: Using FRESH session ID: ${actualSessionId}`, { generationId });
       } else {
         actualSessionId = sessionId || NetflixSessionManager.getOrCreateSession(userInfo.name);
-        console.log(`🆔 [${generationId}] Netflix: Using regular session ID: ${actualSessionId}`);
+        DebugLogger.log('story', `Netflix: Using regular session ID: ${actualSessionId}`, { generationId });
       }
       
-      console.log(`🆔 [${generationId}] Netflix: Session ID determined`);
+      DebugLogger.log('story', `Netflix: Session ID determined`, { generationId });
       
       // Add timeout wrapper for AI generation
       const result = await Promise.race([
@@ -133,7 +134,8 @@ export class NetflixStyleStoryService {
         )
       ]) as any;
 
-      console.log(`🔍 [${generationId}] Netflix: Raw result received:`, {
+      DebugLogger.log('story', `Netflix: Raw result received`, {
+        generationId,
         success: result?.success,
         hasPages: !!result?.pages,
         pagesLength: result?.pages?.length,
@@ -164,11 +166,11 @@ export class NetflixStyleStoryService {
       }
 
       // SUCCESS CASE: Process valid AI result
-      console.log(`✅ [${generationId}] Netflix: Valid AI result received - processing...`);
+      DebugLogger.log('story', `Netflix: Valid AI result received - processing...`, { generationId });
       
       // Pages already cleaned by unified system
       const cleanedPages = result.pages.filter((page: string) => page.length > 10);
-      console.log(`✅ [${generationId}] Netflix: AI story received - ${cleanedPages.length} pages`);
+      DebugLogger.log('story', `Netflix: AI story received - ${cleanedPages.length} pages`, { generationId });
       
       // PHASE 4: Apply Netflix 6-page minimum validation to AI generation
       const { validateNetflixStoryWithPageMinimum } = await import('../../supabase/functions/_shared/netflix-page-validation');
@@ -186,12 +188,12 @@ export class NetflixStyleStoryService {
         throw new Error(`Netflix validation failed: ${netflixValidation.pages.length} pages, valid=${netflixValidation.isValid}`);
       }
       
-      console.log(`🎬 [${generationId}] Netflix AI generation: Using ${netflixValidation.pages.length} pages (${netflixValidation.wasForceSplit ? 'force-split' : 'natural'})`);
+      DebugLogger.log('story', `Netflix AI generation: Using ${netflixValidation.pages.length} pages (${netflixValidation.wasForceSplit ? 'force-split' : 'natural'})`, { generationId });
       const validatedContent = netflixValidation.pages;
       
       try {
         (globalThis as any).__LAST_STORY_SOURCE__ = 'ai';
-        console.log(`✅ [${generationId}] Confirmed Netflix AI-generated story content, setting source tracking`);
+        DebugLogger.log('story', `Confirmed Netflix AI-generated story content, setting source tracking`, { generationId });
       } catch {}
 
       // Emit story generation complete event
@@ -213,7 +215,7 @@ export class NetflixStyleStoryService {
       console.error(`💥 [${generationId}] Netflix: All AI generation attempts failed, using fallback`);
       console.error(`💥 [${generationId}] Netflix: Final error:`, error);
       const wrappedError = ErrorHandler.handleError(error || new Error('Unknown error'), 'NetflixStyleStoryService.generateStory');
-      console.log(`🎯 [${generationId}] Netflix Error Fallback: Using difficulty ${difficulty} for ${userInfo.name}`);
+      DebugLogger.warn('story', `Netflix Error Fallback: Using difficulty ${difficulty} for ${userInfo.name}`, { generationId });
       return this.generateFallbackStory(userInfo, difficulty, `ai_exhausted_all_attempts`);
     });
   }
@@ -223,8 +225,9 @@ export class NetflixStyleStoryService {
    */
   private static async generateFallbackStory(userInfo: UserInfo, difficulty: DifficultyLevel, reason: string): Promise<NetflixStoryResult> {
     const fallbackId = `fallback-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    console.log(`📺 [${fallbackId}] Netflix: Using fallback story generation (reason: ${reason})`);
-    console.log(`📺 [${fallbackId}] Netflix FALLBACK DEBUG: UserInfo:`, {
+    DebugLogger.log('story', `Netflix: Using fallback story generation (reason: ${reason})`, { fallbackId });
+    DebugLogger.log('story', `Netflix FALLBACK DEBUG: UserInfo`, {
+      fallbackId,
       name: userInfo.name,
       difficulty,
       originalDifficulty: userInfo.difficultyLevel,
@@ -245,8 +248,9 @@ export class NetflixStyleStoryService {
 
     try {
       // Use template service for fallback with enhanced error handling
-      console.log(`🔧 [${fallbackId}] Netflix: Calling template service with difficulty: ${difficulty}, pageCount: 12`);
-      console.log(`🔧 [${fallbackId}] Netflix: Template service call details:`, {
+      DebugLogger.log('story', `Netflix: Calling template service with difficulty: ${difficulty}, pageCount: 12`, { fallbackId });
+      DebugLogger.log('story', `Netflix: Template service call details`, {
+        fallbackId,
         difficulty,
         userInfo: {
           name: userInfo.name,
@@ -266,7 +270,8 @@ export class NetflixStyleStoryService {
         }
       });
 
-      console.log(`🔧 [${fallbackId}] Netflix: Template service response:`, {
+      DebugLogger.log('story', `Netflix: Template service response`, {
+        fallbackId,
         hasError: !!error,
         hasData: !!data,
         dataStructure: data ? Object.keys(data) : 'no data',
@@ -301,7 +306,7 @@ export class NetflixStyleStoryService {
 
       // NETFLIX INTEGRATION: Apply 6-page minimum validation to template fallback
       if (data.pages.length < 6) {
-        console.log(`🎬 Netflix: Template fallback has ${data.pages.length} pages, applying 6-page minimum`);
+        DebugLogger.log('story', `Netflix: Template fallback has ${data.pages.length} pages, applying 6-page minimum`);
         const { validateNetflixStoryWithPageMinimum } = await import('../../supabase/functions/_shared/netflix-page-validation');
         const { mapDifficultyToLevel } = await import('../../supabase/functions/_shared/validation-utils');
         
@@ -315,12 +320,12 @@ export class NetflixStyleStoryService {
         );
         
         if (netflixValidation.isValid && netflixValidation.pages.length >= 6) {
-          console.log(`📺 Netflix: Template expanded from ${data.pages.length} to ${netflixValidation.pages.length} pages`);
+          DebugLogger.log('story', `Netflix: Template expanded from ${data.pages.length} to ${netflixValidation.pages.length} pages`);
           data.pages = netflixValidation.pages;
         }
       }
 
-      console.log(`📺 Netflix: Fallback template generated - ${data.pages.length} pages`);
+      DebugLogger.log('story', `Netflix: Fallback template generated - ${data.pages.length} pages`);
       try {
         (globalThis as any).__LAST_STORY_SOURCE__ = 'fallback';
       } catch {}

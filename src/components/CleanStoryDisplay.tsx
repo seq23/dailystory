@@ -1077,20 +1077,37 @@ useEffect(() => {
     }
   }, []);
 
-  // Reading Level state with animation support - component specific UI
-  const [currentDifficulty, setCurrentDifficulty] = useState<string>(userInfo.difficultyLevel || 'beginner');
-  const [isChangingDifficulty, setIsChangingDifficulty] = useState(false);
-  const [changeDirection, setChangeDirection] = useState<'increase' | 'decrease' | 'badge'>();
-  const [expertGradeLevel, setExpertGradeLevel] = useState<"6th" | "7th" | "8th" | "9th" | "10th">("6th");
+  // Use difficulty management from hook instead of local state
   const difficultyLevels: string[] = ['pre-reader', 'beginner', 'developing', 'independent', 'advanced'];
   
-  // Premium: parent guardrails and save highlight - component specific settings
-  const [lockDifficulty, setLockDifficulty] = useState(false);
-  const [minDifficulty, setMinDifficulty] = useState<string>('beginner');
-  const [minExpertGrade, setMinExpertGrade] = useState<"6th" | "7th" | "8th" | "9th" | "10th">("6th");
-  const [allowDecreaseBelowMin, setAllowDecreaseBelowMin] = useState(false);
-const [highlightSave, setHighlightSave] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  const {
+    currentDifficulty,
+    isChangingDifficulty,
+    changeDirection,
+    expertGradeLevel,
+    lockDifficulty,
+    minDifficulty,
+    minExpertGrade,
+    allowDecreaseBelowMin,
+    highlightSave,
+    isSaving
+  } = hookState;
+
+  const {
+    setCurrentDifficulty,
+    setIsChangingDifficulty,
+    setChangeDirection,
+    setExpertGradeLevel,
+    setLockDifficulty,
+    setMinDifficulty,
+    setMinExpertGrade,
+    setAllowDecreaseBelowMin,
+    setHighlightSave,
+    setIsSaving,
+    increaseDifficulty,
+    decreaseDifficulty,
+    resetDifficultyToMin
+  } = hookActions;
   
   useEffect(() => {
     if (!isPremium) return;

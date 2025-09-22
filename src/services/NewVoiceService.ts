@@ -8,6 +8,7 @@
 
 import { VoiceCatalogIntegration, DifficultyLevel } from './voiceCatalog';
 import type { UserInfo } from '@/types';
+import { DebugLogger } from '@/services/DebugLogger';
 
 export interface NewVoiceResult {
   voiceId: string;
@@ -49,7 +50,7 @@ export class NewVoiceService {
       options.difficulty || userInfo.difficultyLevel || userInfo.gradeLevel
     );
 
-    console.log(`🎭 Getting voice for ${userInfo.name} (${difficulty} level)`);
+    DebugLogger.log('audio', `Getting voice for ${userInfo.name} (${difficulty} level)`);
 
     // Select and prepare voice using the new system
     const integrationResult = await VoiceCatalogIntegration.selectAndPrepareVoice(
@@ -82,7 +83,7 @@ export class NewVoiceService {
       }
     };
 
-    console.log(`✅ Voice selected: ${result.voiceName} (${processingTime}ms)`);
+    DebugLogger.log('audio', `Voice selected: ${result.voiceName} (${processingTime}ms)`);
     return result;
   }
 
@@ -199,7 +200,7 @@ export class NewVoiceService {
    * Test the voice service
    */
   static async test(difficulty: DifficultyLevel = 'easy') {
-    console.log(`🧪 Testing NewVoiceService with ${difficulty} level...`);
+    DebugLogger.log('audio', `Testing NewVoiceService with ${difficulty} level...`);
     
     const testUser: UserInfo = {
       name: 'Test User',
@@ -219,7 +220,7 @@ export class NewVoiceService {
 
     const result = await this.getVoiceForStory(testUser, { difficulty });
     
-    console.log('✅ Test Results:', {
+    DebugLogger.log('audio', 'Test Results', {
       voice: result.voiceName,
       score: result.compatibilityScore,
       processingTime: result.processingTime,

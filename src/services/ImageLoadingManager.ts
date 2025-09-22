@@ -3,6 +3,8 @@
  * Deduplicates simultaneous loading requests for the same URL
  */
 
+import { DebugLogger } from '@/services/DebugLogger';
+
 interface LoadingRequest {
   promise: Promise<boolean>;
   callbacks: Array<(success: boolean, url?: string) => void>;
@@ -48,13 +50,13 @@ class ImageLoadingManagerClass {
     
     // Check cascade failure circuit breaker
     if (this.cascadeFailureCount >= this.CASCADE_FAILURE_THRESHOLD) {
-      console.log(`🚫 Cascade failure circuit breaker: Stopping image loading (${this.cascadeFailureCount} failures)`);
+      DebugLogger.warn('image', `Cascade failure circuit breaker: Stopping image loading (${this.cascadeFailureCount} failures)`);
       return false;
     }
     
     // Check circuit breaker
     if (this.shouldCircuitBreak(url)) {
-      console.log(`🚫 Circuit breaker: Skipping load for ${url} (too many recent failures)`);
+      DebugLogger.warn('image', `Circuit breaker: Skipping load for ${url} (too many recent failures)`);
       return false;
     }
 
@@ -65,9 +67,9 @@ class ImageLoadingManagerClass {
     const existing = this.activeLoads.get(deduplicationKey);
     if (existing) {
       if (sessionId) {
-        console.log(`🔄 Session-aware deduplication: Reusing existing load for ${url} in session ${sessionId}`);
+        DebugLogger.log('image', `Session-aware deduplication: Reusing existing load for ${url} in session ${sessionId}`);
       } else {
-        console.log(`🔄 Global deduplication: Reusing existing load for ${url}`);
+        DebugLogger.log('image', `Global deduplication: Reusing existing load for ${url}`);
       }
       return existing.promise;
     }
@@ -164,7 +166,7 @@ class ImageLoadingManagerClass {
     this.recentFailures.set(`${domain}_time`, Date.now());
     this.globalFailureCount++;
 
-    console.log(`📊 Image failure recorded for ${domain}: ${current + 1} recent failures`);
+    DebugLogger.warn('image', `Image failure recorded for ${domain}: ${current + 1} recent failures`);
   }
 
   private extractDomain(url: string): string {
@@ -194,7 +196,7 @@ class ImageLoadingManagerClass {
     this.recentFailures.clear();
     this.globalFailureCount = 0;
     this.cascadeFailureCount = 0;
-    console.log('🧹 ImageLoadingManager: All caches cleared');
+    DebugLogger.log('performance', 'ImageLoadingManager: All caches cleared');
   }
 }
 
