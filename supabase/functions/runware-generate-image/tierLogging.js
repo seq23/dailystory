@@ -215,3 +215,12 @@ export function getTierCascadeSummary(sessionId, tierLogs) {
   }
   return cascade;
 }
+
+// Backward compatibility functions for existing index.js calls
+export function logTier1(message, context = {}) {
+  console.log(`🔴 [TIER1] ${message}`, context);
+}
+
+export function logTier2(message, context = {}) {
+  console.log(`🟢 [TIER2] ${message}`, context);
+}
