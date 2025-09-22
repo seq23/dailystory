@@ -6,6 +6,7 @@ import { SmartPhoneticMapper } from './SmartPhoneticMapper';
 import { PLSLexiconGenerator, type PLSGenerationOptions } from './PLSLexiconGenerator';
 import { supabase } from '@/integrations/supabase/client';
 import { DebugLogger } from '@/services/DebugLogger';
+import { ProductionLogging } from '@/services/ProductionLogger';
 
 export interface DictionaryDeploymentResult {
   success: boolean;
@@ -87,7 +88,7 @@ export class ComprehensiveDictionaryManager {
       };
 
     } catch (error) {
-      console.error('Learning dictionary deployment failed:', error);
+      ProductionLogging.error('DICTIONARY', 'Learning dictionary deployment failed', 'ComprehensiveDictionaryManager', { error });
       return {
         success: false,
         wordCount: 0,
@@ -152,7 +153,7 @@ export class ComprehensiveDictionaryManager {
       };
 
     } catch (error) {
-      console.error('Conversation dictionary deployment failed:', error);
+      ProductionLogging.error('DICTIONARY', 'Conversation dictionary deployment failed', 'ComprehensiveDictionaryManager', { error });
       return {
         success: false,
         wordCount: 0,

@@ -9,6 +9,7 @@ import { InputSanitizer } from "@/utils/inputSanitizer";
 import { spellcheckService } from "@/services/spellcheckService";
 import { supabase } from "@/integrations/supabase/client";
 import { Globe, Loader2 } from "lucide-react";
+import { ProductionLogging } from '@/services/ProductionLogger';
 interface SpecialRequestDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -98,7 +99,7 @@ export const SpecialRequestDialog: React.FC<SpecialRequestDialogProps> = ({
           });
         }
       } catch (error) {
-        console.warn('Tag spellcheck failed for field:', field, error);
+        ProductionLogging.warn('FORM', 'Tag spellcheck failed for field', 'SpecialRequestDialog', { field, error });
       } finally {
         setSpellcheckLoading(prev => ({ ...prev, [field]: false }));
       }

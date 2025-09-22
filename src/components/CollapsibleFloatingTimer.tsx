@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { performanceManager } from '@/services/PerformanceManager';
 import { DebugLogger } from '@/services/DebugLogger';
+import { ManagedTimers } from '@/utils/TimerManager';
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { ChevronUp, ChevronDown, Play, Pause, Minus, Plus, X, Volume2, VolumeX } from "lucide-react";
@@ -58,8 +59,15 @@ export const CollapsibleFloatingTimer = ({
   const [mobileTooltip, setMobileTooltip] = useState<string>('');
   
   // Long press state for timer circle
-  const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
+  const [longPressTimer, setLongPressTimer] = useState<string | null>(null);
   const [isImageGenerating, setIsImageGenerating] = useState(false);
+  
+  // Cleanup all timers when component unmounts
+  useEffect(() => {
+    return () => {
+      ManagedTimers.clearComponentTimers('CollapsibleFloatingTimer');
+    };
+  }, []);
   
   useEffect(() => {
     const handleImageGenerationStart = () => {
@@ -105,7 +113,7 @@ export const CollapsibleFloatingTimer = ({
     }
     if (below && !wasBelowThresholdRef.current) {
       setLowTimePulse(true);
-      const t = performanceManager.setTimeout(() => setLowTimePulse(false), 1600, 'low time pulse cleanup');
+      const t = ManagedTimers.setTimeout(() => setLowTimePulse(false), 1600, 'CollapsibleFloatingTimer');
       return () => clearTimeout(t);
     }
     if (!below && wasBelowThresholdRef.current) {
@@ -142,14 +150,14 @@ useEffect(() => {
         // Silently handle audio failures
       }
     }
-    const timeout = performanceManager.setTimeout(() => {
+    const timeout = ManagedTimers.setTimeout(() => {
       setShowCelebration(false);
       if (isPremium) {
         setShowChoice(true);
       } else {
         onSessionEnded(sessionStats);
       }
-    }, 5000, 'celebration timeout');
+    }, 5000, 'CollapsibleFloatingTimer');
     return () => clearTimeout(timeout);
   }
 }, [timeRemaining, showCelebration, showChoice, isPremium, onSessionEnded, sessionStats, muted, expiredAcknowledged]);
@@ -291,21 +299,21 @@ useEffect(() => {
           }}
           onTouchStart={() => {
             if (isMobileOrTablet) {
-              const timer = setTimeout(() => {
+              const timer = ManagedTimers.setTimeout(() => {
                 setIsCollapsed(true);
-              }, 2000);
+              }, 2000, 'CollapsibleFloatingTimer');
               setLongPressTimer(timer);
             }
           }}
           onTouchEnd={() => {
             if (longPressTimer) {
-              clearTimeout(longPressTimer);
+              ManagedTimers.clearTimer(longPressTimer);
               setLongPressTimer(null);
             }
           }}
           onTouchCancel={() => {
             if (longPressTimer) {
-              clearTimeout(longPressTimer);
+              ManagedTimers.clearTimer(longPressTimer);
               setLongPressTimer(null);
             }
           }}
@@ -340,7 +348,7 @@ useEffect(() => {
                   onClick={() => {
                     if (isMobileOrTablet) {
                       setMobileTooltip('play');
-                       performanceManager.setTimeout(() => setMobileTooltip(''), 3000, 'mobile tooltip cleanup');
+                       ManagedTimers.setTimeout(() => setMobileTooltip(''), 3000, 'CollapsibleFloatingTimer');
                     }
                     DebugLogger.log('ui', 'Timer button clicked', { isReading, timeRemaining });
                     onToggleReading();
@@ -366,7 +374,7 @@ useEffect(() => {
                  onClick={() => {
                    if (isMobileOrTablet) {
                      setMobileTooltip('reduce');
-                      performanceManager.setTimeout(() => setMobileTooltip(''), 3000, 'mobile tooltip cleanup');
+                       ManagedTimers.setTimeout(() => setMobileTooltip(''), 3000, 'CollapsibleFloatingTimer');
                    }
                    onReduceTime?.();
                  }}
@@ -393,7 +401,7 @@ useEffect(() => {
                    onClick={() => {
                      if (isMobileOrTablet) {
                        setMobileTooltip('increase');
-                        performanceManager.setTimeout(() => setMobileTooltip(''), 3000, 'mobile tooltip cleanup');
+                         ManagedTimers.setTimeout(() => setMobileTooltip(''), 3000, 'CollapsibleFloatingTimer');
                      }
                      onIncreaseTime?.();
                    }}
@@ -419,7 +427,7 @@ useEffect(() => {
                   onClick={() => {
                     if (isMobileOrTablet) {
                       setMobileTooltip('dismiss');
-                       performanceManager.setTimeout(() => setMobileTooltip(''), 3000, 'mobile tooltip cleanup');
+                        ManagedTimers.setTimeout(() => setMobileTooltip(''), 3000, 'CollapsibleFloatingTimer');
                     }
                     if (isPremium) {
                       onKeepReadingUntimed?.();
@@ -450,7 +458,7 @@ useEffect(() => {
                  onClick={() => {
                    if (isMobileOrTablet) {
                      setMobileTooltip('collapse');
-                     performanceManager.setTimeout(() => setMobileTooltip(''), 3000, 'mobile tooltip cleanup');
+                     ManagedTimers.setTimeout(() => setMobileTooltip(''), 3000, 'CollapsibleFloatingTimer');
                    }
                    setIsCollapsed(true);
                  }}

@@ -17,6 +17,7 @@
 // See: docs/CURRENT_IMAGE_ARCHITECTURE_2025.md for current system overview
 
 import { DebugLogger } from '@/services/DebugLogger';
+import { ProductionLogging } from '@/services/ProductionLogger';
 
 export class CharacterConsistencyService {
   private static instance: CharacterConsistencyService;
@@ -216,7 +217,7 @@ export class CharacterConsistencyService {
       DebugLogger.log('image', `Detected ${detectedCharacters.length} secondary characters on page ${pageNumber}`, detectedCharacters);
       return detectedCharacters;
     } catch (error) {
-      console.warn('Secondary character detection failed:', error);
+      ProductionLogging.warn('CHARACTER', 'Secondary character detection failed', 'CharacterConsistencyService', { error });
       return [];
     }
   }

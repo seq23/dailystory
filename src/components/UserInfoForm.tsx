@@ -25,6 +25,7 @@ import { validateTheme } from "@/utils/themeValidation";
 import { spellcheckService } from "@/services/spellcheckService";
 import { supabase } from "@/integrations/supabase/client";
 import { DifficultyLevelMapper } from "@/services/DifficultyLevelMapper";
+import { ProductionLogging } from '@/services/ProductionLogger';
 import type { UserInfo, Grade, LanguageCode, LearningGoal } from "@/types";
 
 export type { UserInfo } from "@/types";
@@ -115,7 +116,7 @@ export const LegacyUserInfoForm = ({ onSubmit, onBack, isPremium = false }: User
         });
       }
     } catch (error) {
-      console.warn('Spellcheck failed for field:', field, error);
+      ProductionLogging.warn('FORM', 'Spellcheck failed for field', 'UserInfoForm', { field, error });
     } finally {
       setSpellcheckLoading(prev => ({ ...prev, [field]: false }));
     }

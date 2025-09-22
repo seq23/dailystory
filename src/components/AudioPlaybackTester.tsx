@@ -7,6 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { Play, Square, Volume2, Loader2, TestTube } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { DebugLogger } from '@/services/DebugLogger';
+import { ProductionLogging } from '@/services/ProductionLogger';
 
 // Import audio services - these will be available from the main app
 // import { SmartElevenLabsTTS } from '@/services/SmartElevenLabsTTS';
@@ -118,7 +119,7 @@ export const AudioPlaybackTester: React.FC = () => {
         description: "Audio system events dispatched successfully",
       });
     } catch (error) {
-      console.error('Audio coordination test failed:', error);
+      ProductionLogging.error('AUDIO', 'Audio coordination test failed', 'AudioPlaybackTester', { error });
       DebugLogger.error('audio', 'Audio coordination test failed', error);
       
       toast({
