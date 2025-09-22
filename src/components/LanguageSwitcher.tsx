@@ -1,3 +1,4 @@
+import { DebugLogger } from '@/services/DebugLogger';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { 
@@ -36,7 +37,7 @@ export default function LanguageSwitcher() {
       // Small delay for smooth transition
       setTimeout(() => setIsChanging(false), 300);
     } catch (error) {
-      console.error('Failed to change language:', error);
+      DebugLogger.error('ui', 'Failed to change language', error);
       setIsChanging(false);
     }
   };

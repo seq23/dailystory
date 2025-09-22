@@ -1,3 +1,4 @@
+import { DebugLogger } from '@/services/DebugLogger';
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -80,7 +81,7 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({
         throw new Error('Failed to create checkout session');
       }
     } catch (error) {
-      console.error('Subscription error:', error);
+      DebugLogger.error('auth', 'Subscription error', error);
       // No toast for payment errors
     } finally {
       setIsLoading(false);

@@ -65,7 +65,7 @@ export function PromptTestingEnhancement() {
         });
       }
     } catch (error) {
-      console.error('❌ Template test failed:', error);
+      DebugLogger.error('story', 'Template test failed', error);
       if (error.message?.includes('IMPORT_SYNC_ANOMALY') && retryCount < 2) {
         // Retry for sync anomalies during cold starts
         DebugLogger.log('performance', `Import sync anomaly detected in catch, retrying... (attempt ${retryCount + 1})`);

@@ -90,7 +90,7 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
       setHasChanges(false);
       DebugLogger.log('ui', 'PremiumProfileEditor: Account holder save completed successfully');
     } catch (error) {
-      console.error('❌ PremiumProfileEditor: Save failed:', error);
+      DebugLogger.error('auth', 'PremiumProfileEditor: Save failed', error);
       toast({
         title: "Save Failed",
         description: "Unable to save your changes. Please try again in a moment.",

@@ -104,7 +104,7 @@ export const RunwareConnectionTest: React.FC = () => {
       }
 
     } catch (error) {
-      console.error('Test suite error:', error);
+      DebugLogger.error('network', 'Test suite error', error);
       testResults.push({
         name: 'Test Suite',
         status: 'error',

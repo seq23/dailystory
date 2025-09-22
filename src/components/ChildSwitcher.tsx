@@ -1,3 +1,4 @@
+import { DebugLogger } from '@/services/DebugLogger';
 import { useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
@@ -32,7 +33,7 @@ export function ChildSwitcher({ className }: ChildSwitcherProps) {
       await setActiveChild(childId);
       toast({ title: t('parent.children.updated') });
     } catch (e: any) {
-      console.error("ChildSwitcher onChange error:", e);
+      DebugLogger.error('ui', 'ChildSwitcher onChange error', e);
       toast({ title: e?.message || t('parent.manager.toasts.failedSave'), variant: "destructive" });
     }
   };

@@ -1,3 +1,4 @@
+import { DebugLogger } from '@/services/DebugLogger';
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -64,7 +65,7 @@ export const PasswordResetConfirm = () => {
       }
     } catch (error) {
       toast.error("Failed to update password. Please try again.");
-      console.error("Password update error:", error);
+      DebugLogger.error('auth', 'Password update error', error);
     } finally {
       setLoading(false);
     }

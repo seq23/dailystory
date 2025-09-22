@@ -1,12 +1,17 @@
 import { StoryAudioControls } from "@/components/story/StoryAudioControls";
 import { StoryNavigationControls } from "@/components/story/StoryNavigationControls";
 import { StoryTimerIntegration } from "@/components/story/StoryTimerIntegration";
-import { useStoryLogic } from "@/hooks/useStoryLogic";
-
 import React from 'react';
 import { DebugLogger } from '@/services/DebugLogger';
 import { performanceManager } from '@/services/PerformanceManager';
 import { globalResizeService } from '@/services/GlobalResizeService';
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useImageManagement } from '../hooks/useImageManagement';  
+import { useAudioVocabulary } from '../hooks/useAudioVocabulary';
+import { useErrorNetworkState } from '../hooks/useErrorNetworkState';
+import { useStoryMetadata } from '../hooks/useStoryMetadata';
+import { useUIAnimationState } from '../hooks/useUIAnimationState';
+import { useDifficultyManagement } from '../hooks/useDifficultyManagement';
 /*
  * ============================================================================
  * BUSINESS MODEL DOCUMENTATION - CLEAN STORY DISPLAY
@@ -282,13 +287,6 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   // Access ref values properly
   const sessionStartTimeValue = sessionStartTime.current;
   const characterSessionIdValue = characterSessionId.current;
-  // Local component state (non-duplicated)
-  const [justAdvanced, setJustAdvanced] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [lastImageError, setLastImageError] = useState<string | null>(null);
-  const [cachedUserId, setCachedUserId] = useState<string>(userInfo.name || 'premium');
-  const [originalStoryLength, setOriginalStoryLength] = useState<number | null>(null);
-  const [isNetworkAvailable, setIsNetworkAvailable] = useState(navigator.onLine);
   
   // For free users, limit displayed pages to 6 maximum
   const displayedStory = !isPremium ? story.slice(0, 6) : story;

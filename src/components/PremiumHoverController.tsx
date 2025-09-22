@@ -133,7 +133,7 @@ export const PremiumHoverController = ({ isPremium }: PremiumHoverControllerProp
         DebugLogger.log('audio', `Premium hover played: "${processedWord}"`);
         
       } catch (error) {
-        console.error('Premium hover pronunciation failed:', error);
+        DebugLogger.error('audio', 'Premium hover pronunciation failed', error);
         
         // Fallback to browser speech synthesis
         if ('speechSynthesis' in window) {

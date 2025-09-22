@@ -1,3 +1,4 @@
+import { DebugLogger } from '@/services/DebugLogger';
 import { useState, useEffect } from 'react';
 import { AlertTriangle, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -32,7 +33,7 @@ export const StoryStatusIndicator = () => {
           setIsVisible(false);
         }
       } catch (error) {
-        console.error('Status indicator error:', error);
+        DebugLogger.error('ui', 'Status indicator error', error);
       }
     };
 

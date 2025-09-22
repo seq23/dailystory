@@ -61,7 +61,7 @@ export const SubscriptionGate = () => {
         throw new Error("No checkout URL received");
       }
     } catch (e) {
-      console.error("Upgrade error", e);
+      DebugLogger.error('auth', 'Upgrade error', e);
       const errorMessage = e instanceof Error ? e.message : "Unable to start checkout. Please try again.";
       
       toast({
@@ -92,7 +92,7 @@ export const SubscriptionGate = () => {
       await supabase.auth.signOut();
       window.location.assign("/");
     } catch (e) {
-      console.error("Sign out error", e);
+      DebugLogger.error('auth', 'Sign out error', e);
       toast({
         title: "Sign Out Error", 
         description: "Failed to sign out. Please try refreshing the page.",

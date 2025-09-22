@@ -1,4 +1,5 @@
 
+import { DebugLogger } from '@/services/DebugLogger';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -218,7 +219,7 @@ export const MiniGames = ({ userInfo, storyText, isVisible, onComplete, onClose 
         toast({ title: t('postSession.savedLocally', 'Saved locally'), description: t('postSession.savedQueue', 'Will sync when logged in'), });
       }
     } catch (e: any) {
-      console.warn('[games] save failed', e);
+      DebugLogger.warn('error', 'Games save failed', e);
       toast({ title: t('postSession.saveFailed', 'Could not save'), description: e?.message || 'Unknown error' });
     }
 

@@ -326,7 +326,7 @@ export class SimpleImageService {
       });
 
       if (directError) {
-        console.error('❌ Direct AI Visual Scene Creator failed:', directError);
+        DebugLogger.error('image', 'Direct AI Visual Scene Creator failed', directError);
         throw new Error(`Direct AI visual scene creator failed: ${directError.message}`);
       }
 
@@ -350,7 +350,7 @@ export class SimpleImageService {
         }
       };
     } catch (error) {
-      console.error('💥 Direct AI Visual Scene Creator fallback failed:', error);
+      DebugLogger.error('image', 'Direct AI Visual Scene Creator fallback failed', error);
       throw error;
     }
   }
@@ -379,7 +379,7 @@ export class SimpleImageService {
       });
 
       if (emergencyError) {
-        console.error('❌ Emergency Tier 2.5C failed:', emergencyError);
+        DebugLogger.error('image', 'Emergency Tier 2.5C failed', emergencyError);
         throw new Error(`Emergency fallback failed: ${emergencyError.message}`);
       }
 
@@ -404,7 +404,7 @@ export class SimpleImageService {
         }
       };
     } catch (error) {
-      console.error('💥 Emergency Tier 2.5C fallback failed:', error);
+      DebugLogger.error('image', 'Emergency Tier 2.5C fallback failed', error);
       throw error;
     }
   }

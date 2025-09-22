@@ -1,3 +1,4 @@
+import { DebugLogger } from '@/services/DebugLogger';
 import React, { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -37,7 +38,7 @@ export const PasswordReset = ({ onBack }: PasswordResetProps) => {
       }
     } catch (error) {
       toast.error("Failed to send reset email. Please try again.");
-      console.error("Password reset error:", error);
+      DebugLogger.error('auth', 'Password reset error', error);
     } finally {
       setLoading(false);
     }

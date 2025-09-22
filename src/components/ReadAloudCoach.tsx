@@ -1,3 +1,4 @@
+import { DebugLogger } from '@/services/DebugLogger';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -254,7 +255,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
           body: { audio: base64, mimeType: mimeTypeRef.current },
         });
         if (error) {
-          console.error(error);
+          DebugLogger.error('audio', 'ReadAloudCoach processing error', error);
           return;
         }
         const text: string = data?.text || "";
@@ -278,7 +279,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
         // Auto-resume story audio after feedback
         setTimeout(resumeStoryIfNeeded, 450);
       } catch (err) {
-        console.error("ReadAloudCoach processing failed", err);
+        DebugLogger.error('audio', 'ReadAloudCoach processing failed', err);
         setTimeout(resumeStoryIfNeeded, 450);
       }
     };
@@ -324,7 +325,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
       const cleanWord = word.toLowerCase().replace(/[^a-z]/g, "");
       return new RegExp(`\\b${cleanWord}\\b`).test(said);
     } catch (e) {
-      console.warn("Word check failed", e);
+      DebugLogger.warn('audio', 'Word check failed', e);
       return false;
     }
   };

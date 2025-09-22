@@ -1,3 +1,4 @@
+import { DebugLogger } from '@/services/DebugLogger';
 import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -177,7 +178,7 @@ export function ChildManager() {
       });
       
     } catch (e: any) {
-      console.error('Save edit error:', e);
+      DebugLogger.error('auth', 'Save edit error', e);
       const errorMessage = e?.message || t('parent.manager.toasts.failedSave');
       
       // Provide helpful feedback for common session issues
