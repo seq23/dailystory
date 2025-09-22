@@ -416,64 +416,6 @@ async function generateWithRunware(
   });
 }
 
-function generateEnhancedFallback(pageText, pageNumber, requestId) {
-  tierLogging.logTier2(`🎨 [${requestId}] Enhanced fallback generation`);
-  const sceneMap = {
-    adventure:
-      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1024&h=1024&fit=crop&q=80",
-    forest:
-      "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1024&h=1024&fit=crop&q=80",
-    mountain:
-      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1024&h=1024&fit=crop&q=80",
-    home:
-      "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=1024&h=1024&fit=crop&q=80",
-    garden:
-      "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=1024&h=1024&fit=crop&q=80",
-    peaceful:
-      "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1024&h=1024&fit=crop&q=80",
-    playground:
-      "https://images.unsplash.com/photo-1519904981063-b0cf448d479e?w=1024&h=1024&fit=crop&q=80",
-    beach:
-      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1024&h=1024&fit=crop&q=80",
-    default: [
-      "https://images.unsplash.com/photo-1519904981063-b0cf448d479e?w=1024&h=1024&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1024&h=1024&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1024&h=1024&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1024&h=1024&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=1024&h=1024&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1024&h=1024&fit=crop&q=80",
-    ],
-  };
-
-  let selectedScene;
-  const textLower = (pageText || "").toLowerCase();
-  for (const [keyword, url] of Object.entries(sceneMap)) {
-    if (keyword !== "default" && textLower.includes(keyword)) {
-      selectedScene = url;
-      tierLogging.logTier2(`🎯 Smart scene match: ${keyword}`);
-      break;
-    }
-  }
-  if (!selectedScene) {
-    selectedScene = sceneMap.default[(pageNumber || 1) % sceneMap.default.length];
-    tierLogging.logTier2(
-      `🔄 Using rotation scene: ${(pageNumber || 1) % sceneMap.default.length}`
-    );
-  }
-
-  return {
-    success: true,
-    imageURL: selectedScene,
-    provider: "enhanced-fallback",
-    tier: 2.5,
-    metadata: {
-      scene: selectedScene,
-      pageText: (pageText || "").substring(0, 150) + "...",
-      smartMatch: textLower,
-      enhancedFallback: true,
-    },
-  };
-}
 
 // ---------------- MAIN HANDLER (POST-ONLY) ----------------
 export default async function handleRequest(req) {
@@ -651,7 +593,18 @@ export default async function handleRequest(req) {
     }
 
     if (!result || !result.success) {
-      result = await generateEnhancedFallback(storyText, pageNumber || 1, "runware");
+      tierLogging.logTier2("🔄 [FINAL FALLBACK] Escalating to Tier 2.5D");
+      const resp = await supabase.functions.invoke("runware-template-cd", {
+        body: {
+          storyText,
+          pageText: storyText,
+          userInfo: payload.userInfo,
+          sessionId: payload.sessionId || "session_" + requestId,
+          pageNumber: pageNumber || 1,
+          templateComplexity: "D",
+        },
+      });
+      result = resp.data || { success: false, error: resp?.error?.message || "Tier 2.5D escalation failed" };
     }
 
     return new Response(JSON.stringify(result), {
