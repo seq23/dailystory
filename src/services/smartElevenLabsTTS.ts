@@ -34,7 +34,7 @@ export class SmartElevenLabsTTS {
         supabase.functions.invoke('elevenlabs-tts-smart', {
           body: {
             text,
-            voiceId,
+            voice_id: voiceId,
             context
           }
         }),
@@ -53,18 +53,18 @@ export class SmartElevenLabsTTS {
               supabase.functions.invoke('elevenlabs-tts-smart', {
                 body: {
                   text,
-                  voiceId,
+                  voice_id: voiceId,
                   context: 'conversation' // Use conversation context to avoid dictionary
                 }
               }),
               timeoutPromise
             ]);
             
-            if (!retryError && retryData?.audioContent) {
+            if (!retryError && retryData?.audio_base64) {
               console.log('✅ Smart TTS Success (no dictionary fallback)');
               
               // Convert base64 to ArrayBuffer
-              const binaryString = atob(retryData.audioContent);
+              const binaryString = atob(retryData.audio_base64);
               const bytes = new Uint8Array(binaryString.length);
               for (let i = 0; i < binaryString.length; i++) {
                 bytes[i] = binaryString.charCodeAt(i);
@@ -83,12 +83,12 @@ export class SmartElevenLabsTTS {
         throw new Error(`Smart TTS failed: ${error.message}`);
       }
 
-      if (!data?.audioContent) {
+      if (!data?.audio_base64) {
         throw new Error('No audio content received from Smart TTS');
       }
 
       // Convert base64 to ArrayBuffer
-      const binaryString = atob(data.audioContent);
+      const binaryString = atob(data.audio_base64);
       const bytes = new Uint8Array(binaryString.length);
       for (let i = 0; i < binaryString.length; i++) {
         bytes[i] = binaryString.charCodeAt(i);
