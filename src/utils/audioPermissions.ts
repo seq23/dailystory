@@ -51,28 +51,49 @@ export class AudioPermissions {
     this.isCheckingNetwork = true;
     
     try {
-      // Fast network test with 2-second timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 2000);
-      
-      const startTime = Date.now();
-      await fetch('https://www.gstatic.com/generate_204', {
-        method: 'HEAD',
-        signal: controller.signal,
-        cache: 'no-cache'
-      });
-      
-      clearTimeout(timeoutId);
-      const responseTime = Date.now() - startTime;
-      
-      const quality = responseTime < 1000 ? 'good' : 'poor';
+      // Try multiple network quality checks with fallback approach
+      const timeout = (ms: number) => new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('timeout')), ms)
+      );
+
+      // Try internal health check first
+      try {
+        await Promise.race([
+          fetch('/health', { method: 'HEAD', cache: 'no-store' }),
+          timeout(1000)
+        ]);
+        console.log('🌐 Network quality check successful: internal');
+        this.updateContext({ 
+          isNetworkAvailable: true, 
+          networkQuality: 'good' 
+        });
+        return 'good';
+      } catch {}
+
+      // Try origin check
+      try {
+        await Promise.race([
+          fetch(window.location.origin, { method: 'HEAD', cache: 'no-store' }),
+          timeout(1500)
+        ]);
+        console.log('🌐 Network quality check successful: origin');
+        this.updateContext({ 
+          isNetworkAvailable: true, 
+          networkQuality: 'good' 
+        });
+        return 'good';
+      } catch {}
+
+      // Final fallback - assume poor connection
+      console.warn('🌐 All network quality checks failed, assuming poor connection');
       this.updateContext({ 
-        isNetworkAvailable: true, 
-        networkQuality: quality 
+        isNetworkAvailable: false, 
+        networkQuality: 'offline' 
       });
+      return 'offline';
       
-      return quality;
     } catch (error) {
+      console.warn('🌐 Network quality check error:', error);
       this.updateContext({ 
         isNetworkAvailable: false, 
         networkQuality: 'offline' 

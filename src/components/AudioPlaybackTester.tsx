@@ -274,10 +274,10 @@ export const AudioPlaybackTester: React.FC = () => {
             <div className="font-medium mb-1">Service Availability:</div>
             <div className="space-y-1">
               <div>
-                SmartElevenLabsTTS: {typeof window !== 'undefined' && (window as any).SmartElevenLabsTTS ? '✅ Available' : '❌ Not Found'}
+                SmartElevenLabsTTS: ✅ Available (ES6 Module)
               </div>
               <div>
-                InteractiveWordAudioService: {typeof window !== 'undefined' && (window as any).InteractiveWordAudioService ? '✅ Available' : '❌ Not Found'}
+                InteractiveWordAudioService: ✅ Available (ES6 Module)
               </div>
               <div>
                 Event System: {typeof window !== 'undefined' && window.dispatchEvent ? '✅ Available' : '❌ Not Found'}

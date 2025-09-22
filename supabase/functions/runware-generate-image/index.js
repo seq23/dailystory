@@ -960,6 +960,6 @@ async function handleRequest(req) {
   }
 }
 
-// Export for TypeScript receptionist
+// Export for TypeScript receptionist  
 console.log('🎯 Crash-Proof Runware Orchestrator v2.1 initialized successfully');
-export default handleRequest;
+module.exports = handleRequest;
