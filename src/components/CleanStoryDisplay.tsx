@@ -519,9 +519,9 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
         setIsStoryStable(true);
         
         // Show touch device instruction after saved story loads
-        setTimeout(() => {
+        ManagedTimers.setTimeout(() => {
           showLongPressInstruction();
-        }, 1000);
+        }, 1000, 'CleanStoryDisplay');
         return; // Exit early - don't proceed with live generation logic
       }
       
@@ -1075,7 +1075,7 @@ useEffect(() => {
     const force = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('forceLoader') === '1';
     if (force) {
       setForceLoaderActive(true);
-      performanceManager.setTimeout(() => setForceLoaderActive(false), 2000, 'forceLoaderActive cleanup');
+      ManagedTimers.setTimeout(() => setForceLoaderActive(false), 2000, 'CleanStoryDisplay');
     }
   }, []);
 
@@ -1116,10 +1116,18 @@ useEffect(() => {
   }, [isPremium]);
 
   useEffect(() => {
-    if (!highlightSave) return;
-    const timer = performanceManager.setTimeout(() => setHighlightSave(false), 8000, 'highlight save cleanup');
-    return () => clearTimeout(timer);
+    if (!highlightSave) return undefined;
+    const timer = ManagedTimers.setTimeout(() => setHighlightSave(false), 8000, 'CleanStoryDisplay');
+    return () => {
+      ManagedTimers.clearTimer(timer);
+    };
   }, [highlightSave]);
+  useEffect(() => {
+    return () => {
+      ManagedTimers.clearComponentTimers('CleanStoryDisplay');
+    };
+  }, []);
+  
   const currentStoryText = displayedStory[Math.min(currentPage, displayedStory.length - 1)] || "";
   const effectiveAudioText = currentStoryText; // Use full text for audio - no truncation
   const contentHash = hashText(effectiveAudioText);
@@ -1145,18 +1153,18 @@ useEffect(() => {
   // 2. story.length > 0 (proves setStory() has completed and updated React state)
   useEffect(() => {
     if (!isStoryStable || story.length === 0) {
-      return; // Wait for both conditions
+      return () => {}; // No-op cleanup for consistency
     }
 
     DebugLogger.log('story', 'BULLETPROOF: Both conditions met - isStoryStable=true AND story.length=' + story.length);
     
     // Debounce for rapid updates (100ms)
-    const timeoutId = setTimeout(() => {
+    const timeoutId = ManagedTimers.setTimeout(() => {
       DebugLogger.log('story', 'BULLETPROOF: Dispatching story:stabilized with fresh story data');
       window.dispatchEvent(new CustomEvent('story:stabilized'));
-    }, 100);
+    }, 100, 'CleanStoryDisplay');
 
-    return () => clearTimeout(timeoutId);
+    return () => ManagedTimers.clearTimer(timeoutId);
   }, [isStoryStable, story.length]); // Watch both state variables
 
   useEffect(() => {
@@ -1447,9 +1455,9 @@ useEffect(() => {
 
 // Timer countdown effect
 useEffect(() => {
-  let interval: NodeJS.Timeout;
+  let intervalId: string;
   if (isTimerRunning && timeRemaining > 0 && !isTimerCanceled) {
-    interval = setInterval(() => {
+    intervalId = ManagedTimers.setInterval(() => {
       setTimeRemaining(prev => {
         if (prev <= 1) {
           setIsTimerRunning(false);
@@ -1457,16 +1465,18 @@ useEffect(() => {
         }
         return prev - 1;
       });
-    }, 1000);
+    }, 1000, 'CleanStoryDisplay');
   }
-  return () => clearInterval(interval);
+  return () => {
+    if (intervalId) ManagedTimers.clearTimer(intervalId);
+  };
 }, [isTimerRunning, timeRemaining, isTimerCanceled]);
 
 // Persist timer remaining periodically for both tiers
 const timeRef = useRef(timeRemaining);
 useEffect(() => { timeRef.current = timeRemaining; }, [timeRemaining]);
 useEffect(() => {
-  const iv = setInterval(() => {
+  const iv = ManagedTimers.setInterval(() => {
     // Performance optimization: Use cached user ID to avoid async calls in timer
     const startTime = performance.now();
     
@@ -1523,9 +1533,10 @@ useEffect(() => {
 useEffect(() => {
   if (currentPage > 0 && (currentPage + 1) % 3 === 0) {
     setWandPulse(true);
-    const t = performanceManager.setTimeout(() => setWandPulse(false), 1200, 'wand pulse cleanup');
-    return () => clearTimeout(t);
+    const t = ManagedTimers.setTimeout(() => setWandPulse(false), 1200, 'CleanStoryDisplay');
+    return () => ManagedTimers.clearTimer(t);
   }
+  return () => {}; // No-op cleanup for consistency
 }, [currentPage]);
 
 // Finish button feedback: state - now handled by useUIAnimationState hook
@@ -1533,10 +1544,12 @@ const prevIsGeneratingEndingRef = useRef(isGeneratingEnding);
 useEffect(() => {
   if (prevIsGeneratingEndingRef.current && !isGeneratingEnding && isPremium) {
     setShowEndingBurst(true);
-    const t = performanceManager.setTimeout(() => setShowEndingBurst(false), 1400, 'ending burst cleanup');
-    return () => clearTimeout(t);
+    const t = ManagedTimers.setTimeout(() => setShowEndingBurst(false), 1400, 'CleanStoryDisplay');
+    prevIsGeneratingEndingRef.current = isGeneratingEnding;
+    return () => ManagedTimers.clearTimer(t);
   }
   prevIsGeneratingEndingRef.current = isGeneratingEnding;
+  return () => {}; // No-op cleanup for consistency
 }, [isGeneratingEnding, isPremium]);
 
 // CRITICAL FIX: Page navigation image generation - check cache first, generate if missing
@@ -1630,9 +1643,12 @@ useEffect(() => {
   if (completed > 0 && completed % 5 === 0) {
     setFinishSparkle(true);
     setFinishFlashCycle(true);
-    const t1 = performanceManager.setTimeout(() => setFinishSparkle(false), 2000, 'finish sparkle cleanup');
-    const t2 = performanceManager.setTimeout(() => setFinishFlashCycle(false), 2000, 'finish flash cycle cleanup');
-    return () => { clearTimeout(t1); clearTimeout(t2); };
+    const t1 = ManagedTimers.setTimeout(() => setFinishSparkle(false), 2000, 'CleanStoryDisplay');
+    const t2 = ManagedTimers.setTimeout(() => setFinishFlashCycle(false), 2000, 'CleanStoryDisplay');
+    return () => { 
+      ManagedTimers.clearTimer(t1); 
+      ManagedTimers.clearTimer(t2); 
+    };
   }
   return;
 }, [pagesCompleted]);
@@ -2041,7 +2057,7 @@ const initializeStory = async () => {
 
       // 🔧 FIX: Dispatch stability event with PROCESSED content for image generation
       // This ensures images are generated from the same content users see
-      setTimeout(() => {
+      ManagedTimers.setTimeout(() => {
         const stableEvent = new CustomEvent('story-stable', {
           detail: {
             storyPages: processedPages, // Pass processed content to image generation
@@ -2084,16 +2100,16 @@ const initializeStory = async () => {
     });
     
     if (storyRemaining > 0) {
-      setTimeout(() => {
+      ManagedTimers.setTimeout(() => {
         setIsLoading(false);
         // Debounced stability to prevent flickering
       setIsStoryStable(true);
       DebugLogger.log('story', 'PHASE 6: Story is now stable and locked - timer can start, images can generate');
         
         // Show touch device instruction after story loads
-        setTimeout(() => {
+        ManagedTimers.setTimeout(() => {
           showLongPressInstruction();
-        }, 1000);
+        }, 1000, 'CleanStoryDisplay');
       }, storyRemaining);
     } else {
       setIsLoading(false);
@@ -2102,9 +2118,9 @@ const initializeStory = async () => {
         DebugLogger.log('story', 'PHASE 6: Story is now stable and locked - timer can start, images can generate');
         
         // Show touch device instruction after story loads
-        setTimeout(() => {
+        ManagedTimers.setTimeout(() => {
           showLongPressInstruction();
-        }, 1000);
+        }, 1000, 'CleanStoryDisplay');
     }
   }
 };
@@ -2326,7 +2342,7 @@ const initializeStory = async () => {
         // Ensure story is stable before updating images
         if (!isStoryStable) {
           DebugLogger.warn('image', 'Story not stable yet, delaying image update');
-          setTimeout(() => generateImageForCurrentPage(), 1000);
+          ManagedTimers.setTimeout(() => generateImageForCurrentPage(), 1000, 'CleanStoryDisplay');
           return;
         }
         
@@ -3136,7 +3152,7 @@ const handleRestartTimer = () => {
     setIsGeneratingEnding(true);
     
     // Add 40s watchdog for ending generation
-    const watchdogTimeout = setTimeout(() => {
+    const watchdogTimeout = ManagedTimers.setTimeout(() => {
       DebugLogger.warn('performance', 'Ending generation watchdog triggered (40s)');
       setIsGeneratingEnding(false);
       toast({
@@ -3150,7 +3166,7 @@ const handleRestartTimer = () => {
     try {
       // Wrap with 35s Promise.race timeout for robust timeout handling
       const timeoutPromise = new Promise<never>((_, reject) => {
-        performanceManager.setTimeout(() => reject(new Error('Ending generation timeout (35s)')), 35000, 'ending timeout fallback');
+        ManagedTimers.setTimeout(() => reject(new Error('Ending generation timeout (35s)')), 35000, 'CleanStoryDisplay');
       });
       
       const generationPromise = LiveGenerationService.generateEndingPage(liveContext);
@@ -3267,7 +3283,7 @@ const handleRestartTimer = () => {
     }
     
     // Performance optimization: Move heavy logic out of setTimeout
-    setTimeout(() => {
+    ManagedTimers.setTimeout(() => {
       const startTime = performance.now();
       setShowManualCelebration(false);
       

@@ -260,10 +260,10 @@ export class SessionCacheManager {
         sessionStorage.removeItem(key);
       });
 
-      console.log(`🎨 Cleared ${visualStateKeys.length} visual state cache entries`);
+      ProductionLogging.debug('CACHE', `Cleared ${visualStateKeys.length} visual state cache entries`, 'SessionCacheManager');
 
     } catch (error) {
-      console.warn('Failed to clear visual state cache:', error);
+      ProductionLogging.warn('CACHE', 'Failed to clear visual state cache', 'SessionCacheManager', { error });
     }
   }
 
@@ -284,10 +284,10 @@ export class SessionCacheManager {
         localStorage.removeItem(key);
       });
 
-      console.log(`🎭 Cleared ${characterKeys.length} character state entries`);
+      ProductionLogging.debug('CACHE', `Cleared ${characterKeys.length} character state entries`, 'SessionCacheManager');
 
     } catch (error) {
-      console.warn('Failed to clear character state:', error);
+      ProductionLogging.warn('CACHE', 'Failed to clear character state', 'SessionCacheManager', { error });
     }
   }
 
@@ -308,7 +308,7 @@ export class SessionCacheManager {
         sessionStorage.removeItem(key);
       });
 
-      console.log('🗃️ Cleared session storage caches');
+      ProductionLogging.debug('CACHE', 'Cleared session storage caches', 'SessionCacheManager');
 
     } catch (error) {
       console.warn('Failed to clear session storage caches:', error);
@@ -368,7 +368,7 @@ export class SessionCacheManager {
    * Clear caches when user ends their reading session
    */
   static clearOnSessionEnd(userId?: string, avatarType?: string): void {
-    console.log('🔚 [SESSION DEBUG] clearOnSessionEnd ENTRY:', { userId, avatarType, timestamp: new Date().toISOString() });
+    ProductionLogging.debug('CACHE', 'clearOnSessionEnd ENTRY', 'SessionCacheManager', { userId, avatarType, timestamp: new Date().toISOString() });
     try {
       this.clearAllSessionCaches({
         userId: userId || 'guest',
@@ -376,9 +376,9 @@ export class SessionCacheManager {
         reason: 'session-end',
         clearVisualState: true
       });
-      console.log('✅ [SESSION DEBUG] clearOnSessionEnd COMPLETED successfully');
+      ProductionLogging.debug('CACHE', 'clearOnSessionEnd COMPLETED successfully', 'SessionCacheManager');
     } catch (error) {
-      console.error('❌ [SESSION DEBUG] clearOnSessionEnd FAILED:', error);
+      ProductionLogging.error('CACHE', 'clearOnSessionEnd FAILED', 'SessionCacheManager', { error });
     }
   }
 
