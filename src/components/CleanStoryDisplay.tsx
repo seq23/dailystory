@@ -207,25 +207,85 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   // Touch device long-press instruction notification
   const { showLongPressInstruction } = useTouchDeviceLongPressNotification();
   
-  // Legacy state - keeping during migration
-  const [story, setStory] = useState<string[]>([]);
-  const [currentPage, setCurrentPage] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingNextPage, setIsLoadingNextPage] = useState(false);
+  // Initialize useStoryLogic hook for centralized state management
+  const {
+    state: {
+      story,
+      currentPage,
+      storyId: hookStoryId,
+      storyTitle,
+      isStoryComplete,
+      isStoryStable,
+      liveContext,
+      timeRemaining,
+      isTimerRunning,
+      isTimerCanceled,
+      timerEnabled,
+      userPausedTimer,
+      hasChosenUntimed,
+      isLoading,
+      isLoadingNextPage,
+      isGeneratingNewStory,
+      isGeneratingRewrite
+    },
+    actions: {
+      setStory,
+      setCurrentPage,
+      setStoryId,
+      setStoryTitle,
+      setIsStoryComplete,
+      setIsStoryStable,
+      setLiveContext,
+      setTimeRemaining,
+      setIsTimerRunning,
+      setIsTimerCanceled,
+      setTimerEnabled,
+      setUserPausedTimer,
+      setHasChosenUntimed,
+      setIsLoading,
+      setIsLoadingNextPage,
+      setIsGeneratingNewStory,
+      setIsGeneratingRewrite
+    },
+    handlers: {
+      handleNext,
+      handlePrevious,
+      handleToggleTimer,
+      handleReduceTime
+    },
+    refs: {
+      sessionStartTime,
+      characterSessionId
+    }
+  } = useStoryLogic({
+    userInfo,
+    isPremium,
+    initialDifficulty: (userInfo.difficultyLevel || 'beginner') as any,
+    expertGradeLevel: userInfo.expertGradeLevel,
+    onSessionEnded
+  });
+
+  // Additional constants and helper variables
+  const initialTimerSeconds = (() => { 
+    try { 
+      const v = Number(localStorage.getItem('readingTimerDefaultSeconds')); 
+      return v > 0 ? v : 20 * 60; 
+    } catch { 
+      return 20 * 60; 
+    } 
+  })();
+  
+  // Access ref values properly
+  const sessionStartTimeValue = sessionStartTime.current;
+  const characterSessionIdValue = characterSessionId.current;
   const [justAdvanced, setJustAdvanced] = useState(false);
-  const [storyTitle, setStoryTitle] = useState('');
-  const [isStoryStable, setIsStoryStable] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastImageError, setLastImageError] = useState<string | null>(null);
-  
-  // Performance optimization: Cache user ID to avoid expensive auth calls in timers
   const [cachedUserId, setCachedUserId] = useState<string>(userInfo.name || 'premium');
-  
-  // Multi-page ending & sequel integration state
   const [originalStoryLength, setOriginalStoryLength] = useState<number | null>(null);
   const [isNetworkAvailable, setIsNetworkAvailable] = useState(navigator.onLine);
+  
   // For free users, limit displayed pages to 6 maximum
-  // ROLLBACK FIX: Use story.length for premium logic, displayedStory only for visual pages list
   const displayedStory = !isPremium ? story.slice(0, 6) : story;
 
 
@@ -438,9 +498,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     };
   }, []);
 
-  // Premium live generation state
-  const [liveContext, setLiveContext] = useState<LiveGenerationContext | null>(null);
-  const [isStoryComplete, setIsStoryComplete] = useState(false);
+  // Additional premium state not in useStoryLogic
   const [lastEndingPageIndex, setLastEndingPageIndex] = useState<number | null>(null);
   
   // Helper function to clear ending-related tracking variables
@@ -470,11 +528,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [imageAspectRatios, setImageAspectRatios] = useState<Record<number, number>>({});
   const [imageNaturalSizes, setImageNaturalSizes] = useState<Record<number, {width: number, height: number}>>({});
   
-  // Character consistency session ID
-  const [characterSessionId] = useState(() => generateSessionId());;
-  
-  // Story-specific identifier for cache isolation
-  const [storyId, setStoryId] = useState(() => generateSessionIdWithPrefix('story'));
+  // Use storyId from hook, create fallback for consistency
+  const storyId = hookStoryId || generateSessionIdWithPrefix('story');
   
   // PHASE 1 FIX: Stable session ID for consistent image caching across the entire story session
   const [stableSessionId] = useState(() => generateSessionIdWithPrefix(isPremium ? 'premium' : 'guest'));
@@ -483,11 +538,11 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   useEffect(() => {
     try {
       sessionStorage.setItem('current_stable_session_id', stableSessionId);
-      sessionStorage.setItem('current_character_session_id', characterSessionId);
+      sessionStorage.setItem('current_character_session_id', characterSessionIdValue);
       DebugLogger.log('image', 'Session IDs stored for debugging:', {
         stableSessionId,
-        characterSessionId,
-        areEqual: stableSessionId === characterSessionId
+        characterSessionId: characterSessionIdValue,
+        areEqual: stableSessionId === characterSessionIdValue
       });
     } catch (error) {
       DebugLogger.warn('image', 'Failed to store session IDs for debugging', error);
@@ -546,7 +601,6 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [isAudioLoading, setIsAudioLoading] = useState(false);
   const [showVocabularyCollector, setShowVocabularyCollector] = useState(false);
-  const [sessionStartTime] = useState(Date.now());
   const [wordsInteracted, setWordsInteracted] = useState(0);
   const [sessionWordsRead, setSessionWordsRead] = useState(0);
   const [pagesCompleted, setPagesCompleted] = useState<Set<number>>(new Set());
@@ -765,7 +819,7 @@ useEffect(() => {
     DebugLogger.log('image', 'Story stabilized - checking for image generation opportunities', {
       pageCount: story.length,
       currentPage: currentPage,
-      sessionId: characterSessionId,
+        sessionId: characterSessionIdValue,
       contentHash: event.detail?.contentHash,
       layout: layout,
       isStoryStable: isStoryStable,
@@ -817,7 +871,7 @@ useEffect(() => {
   
   window.addEventListener('story:stabilized', handleStoryStabilized as EventListener);
   return () => window.removeEventListener('story:stabilized', handleStoryStabilized as EventListener);
-}, [story, currentPage, pageImages, isNetworkAvailable, userInfo, storyTitle, characterSessionId, isPremium]);
+}, [story, currentPage, pageImages, isNetworkAvailable, userInfo, storyTitle, characterSessionIdValue, isPremium]);
 
 // Voice command bridge moved below after currentStory/contentHash are defined
 
@@ -825,25 +879,11 @@ useEffect(() => {
   const [storySource, setStorySource] = useState<'ai' | 'fallback' | 'emergency' | 'unknown' | null>(null);
   const isDebug = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1';
 
-  // TIMER ENFORCEMENT SYSTEM
-  // Free users have a 20-minute session limit (1200 seconds total)
-  // Timer becomes visible in the last 60 seconds (when sessionTimer > 1140)
-  // This enforces fair usage while encouraging premium upgrades
-  const initialTimerSeconds = (() => { try { const v = Number(localStorage.getItem('readingTimerDefaultSeconds')); return v > 0 ? v : 20 * 60; } catch { return 20 * 60; } })();
-  const [timeRemaining, setTimeRemaining] = useState(initialTimerSeconds); // default 20 minutes
-  const [isTimerRunning, setIsTimerRunning] = useState(false); // Start timer only when content is ready
-  const [isTimerCanceled, setIsTimerCanceled] = useState(false); // Premium: timer can be canceled
-  const [userPausedTimer, setUserPausedTimer] = useState(false); // Track when user manually pauses timer
-  const [isTimerVisible, setIsTimerVisible] = useState(true); // Premium: timer can be dismissed and shown again
-  const [hasChosenUntimed, setHasChosenUntimed] = useState(false); // Premium: track if user chose untimed reading
-  
+  // TIMER ENFORCEMENT SYSTEM - Using hook state
   // Timer pause logic - only block forward navigation when paused for non-premium users
   const isTimerPaused = !isPremium && !isTimerRunning && !isTimerCanceled;
   const isForwardNavigationBlocked = isTimerPaused;
-  
-  const [timerEnabled, setTimerEnabled] = useState<boolean>(() => {
-    try { return localStorage.getItem('readingTimerEnabled') !== '0'; } catch { return true; }
-  });
+  const [isTimerVisible, setIsTimerVisible] = useState(true); // Premium: timer can be dismissed and shown again
 
   // Ensure timer defaults ON at session start for premium users
   useEffect(() => {
@@ -952,9 +992,7 @@ useEffect(() => {
     window.addEventListener('readingTimerToggle', handler as EventListener);
     return () => window.removeEventListener('readingTimerToggle', handler as EventListener);
   }, [timeRemaining, initialTimerSeconds]);
-// Magic wand state
-const [isGeneratingNewStory, setIsGeneratingNewStory] = useState(false);
-const [isGeneratingRewrite, setIsGeneratingRewrite] = useState(false);
+// Magic wand and modal state - not in useStoryLogic
 const [isRewriteMode, setIsRewriteMode] = useState(false);
 const [isMagicWandAnimating, setIsMagicWandAnimating] = useState(false);
 const [wandPulse, setWandPulse] = useState(false);
@@ -976,7 +1014,7 @@ const finishExpandedOnPageRef = useRef<number | null>(null);
 // Collapse expanded CTA when user navigates away from the ending page
 useEffect(() => {
   if (!finishCTAExpanded) return;
-  if (finishExpandedOnPageRef.current != null && currentPage !== finishExpandedOnPageRef.current) {
+      if (finishExpandedOnPageRef.current != null && currentPage !== finishExpandedOnPageRef.current) {
     setFinishCTAExpanded(false);
   }
 }, [currentPage, finishCTAExpanded]);
@@ -1742,7 +1780,7 @@ const initializeStory = async () => {
           [Array.isArray(result.content) ? result.content[0] : result.content],
           [{ prompt: '' }],
           0,
-          { isPremium: true, sessionStartTime }
+          { isPremium: true, sessionStartTime: sessionStartTimeValue }
         );
       } catch (e) { DebugLogger.warn('story', 'Story cache failed (premium start)', e); }
       
@@ -1891,7 +1929,7 @@ const initializeStory = async () => {
       // Initialize character context directly
       try {
         const storyState = StoryVisualStateManager.getOrCreateStoryState(
-          characterSessionId,
+          characterSessionIdValue,
           processedPages.length,
           'new',
           false,
@@ -1961,7 +1999,7 @@ const initializeStory = async () => {
           processedPages, // Use processed pages for consistency
           processedPages.map(() => ({ prompt: '' })),
           0,
-          { isPremium: false, sessionStartTime },
+          { isPremium: false, sessionStartTime: sessionStartTimeValue },
           undefined,
           undefined,
           avatarType
@@ -2146,7 +2184,7 @@ const initializeStory = async () => {
         avatar: userInfo.avatar,
         difficultyLevel: userInfo.difficultyLevel
       },
-      sessionId: characterSessionId,
+      sessionId: characterSessionIdValue,
       timestamp: new Date().toISOString()
     });
     
@@ -2174,7 +2212,7 @@ const initializeStory = async () => {
       
       cachedImageUrl = EnhancedImageCache.getCachedImage(
         pageText.slice(0, 120),
-        characterSessionId, 
+        characterSessionIdValue, 
         currentPage,
         storyId,
         storyMarkers
@@ -2187,7 +2225,7 @@ const initializeStory = async () => {
         stack: error.stack,
         pageText: pageText.substring(0, 100),
         userInfo,
-        characterSessionId,
+        characterSessionIdValue,
         currentPage,
         storyId
       });
@@ -2213,14 +2251,14 @@ const initializeStory = async () => {
         currentDifficulty,
         storyId,
         pageNumber: currentPage + 1,
-        characterSessionId,
+        characterSessionIdValue,
         isPremium
       });
       
       const result = await SimpleImageService.generateStoryImage(
         pageText, // Use pageText instead of storyText for consistency 
         { ...userInfo, difficultyLevel: currentDifficulty }, 
-        characterSessionId,
+        characterSessionIdValue,
         currentPage + 1,
         isPremium
       );
@@ -2300,7 +2338,7 @@ const initializeStory = async () => {
           EnhancedImageCache.cacheImage(
             pageText.slice(0, 120),
             result.url,
-            characterSessionId,
+            characterSessionIdValue,
             currentPage,
             undefined,
             storyId,
@@ -2346,7 +2384,7 @@ const initializeStory = async () => {
       const storyMarkers = EnhancedImageCache.extractStoryMarkers(storyText, userInfo);
       const cachedImageUrl = EnhancedImageCache.getCachedImage(
         storyText.slice(0, 120),
-        characterSessionId, 
+        characterSessionIdValue, 
         index,
         storyId,
         storyMarkers
@@ -2387,7 +2425,7 @@ const initializeStory = async () => {
           EnhancedImageCache.cacheImage(
             storyText.slice(0, 120),
             result.url,
-            characterSessionId,
+            characterSessionIdValue,
             index,
             undefined,
             storyId,
@@ -2438,267 +2476,8 @@ const initializeStory = async () => {
     return matches ? matches.length : 0;
   };
 
-  // LIVE GENERATION COORDINATION
-  // This function manages real-time story generation, image creation, and state synchronization
-  // It coordinates between NetflixStyleStoryService and BatchImageService for seamless UX
-  const handleNext = async () => {
-    // Stop audio when navigating (ensure audio halts)
-    try { audioEngineRef.current.stop(); } catch {}
-    setIsAudioPlaying(false);
-    clearHighlighting();
-    
-    // Story stability maintained during navigation - no need to set unstable
-    // Images can continue to generate on upcoming pages
-
-    // Count words for the page we're leaving (once per page)
-    if (displayedStory[currentPage] && !pagesCompleted.has(currentPage)) {
-      const pageWordCount = countWords(displayedStory[currentPage]);
-      setSessionWordsRead(prev => prev + pageWordCount);
-      setPagesCompleted(prev => {
-        const next = new Set(prev);
-        next.add(currentPage);
-        return next;
-      });
-      updateActivity({ wordsRead: pageWordCount, sessionPagesRead: 1 });
-    }
-    
-    // Enhanced debugging for story continuation in CleanStoryDisplay
-    DebugLogger.log('story', 'CleanStoryDisplay: Live continuation session enhanced debugging', {
-      currentStoryLength: story.length,
-      currentPage,
-      isLiveGeneration: isPremium,
-      sessionType: isPremium ? 'premium-live' : 'guest-netflix',
-      userInfo: { name: userInfo.name, readingAsName },
-      storyState: {
-        isLoading,
-        isLoadingNextPage,
-        isStoryComplete,
-        hasError: !!error
-      },
-      continuationContext: {
-        hasLiveContext: !!liveContext,
-        canGenerateNext: isPremium && !isStoryComplete && currentPage === story.length - 1,
-        isAtEndOfStory: currentPage === story.length - 1
-      },
-      imageState: {
-        totalImages: Object.keys(pageImages).length,
-        currentPageHasImage: !!pageImages[currentPage],
-        isGeneratingImage: isGeneratingImage
-      },
-      timestamp: new Date().toISOString()
-    });
-    
-    if (isPremium && !isStoryComplete && currentPage === story.length - 1) {
-      // Premium: generate next page, append, then advance
-      // Add 40s watchdog to prevent UI getting stuck
-      setIsLoadingNextPage(true);
-      const nextPageWatchdog = performanceManager.setTimeout(() => {
-        DebugLogger.warn('performance', 'Next page watchdog triggered (40s)');
-        setIsLoadingNextPage(false);
-        setJustAdvanced(false);
-        toast({
-          title: "Continuing with story navigation",
-          description: "Page generation may complete shortly...",
-          variant: "default",
-          duration: 5000
-        });
-      }, 40000, 'next page watchdog');
-
-      setJustAdvanced(true);
-      const result = await generateNextPage();
-      clearTimeout(nextPageWatchdog);
-      
-      if (result && !result.error) {
-        const pageContent = Array.isArray(result.content) ? result.content[0] : result.content;
-        
-        DebugLogger.log('story', '🎯 Premium Live Generation: Processing next page result', {
-          pageContent: pageContent?.substring(0, 100) + '...',
-          hasNextContext: !!result.nextContext,
-          currentContextPage: liveContext?.currentPage,
-          resultContextPage: result.nextContext?.currentPage,
-          resultStoryContextLength: result.nextContext?.storyContext?.length,
-          isComplete: result.isComplete
-        });
-        
-        StoryContentLogger.logStoryChange('premium_next_page', 'before', [...story, pageContent], {
-          currentPageBeforeAdd: currentPage,
-          contentPreview: pageContent?.substring(0, 100),
-          hasNextContext: !!result.nextContext,
-          isComplete: result.isComplete
-        });
-        
-        // Backend now handles all validation - trust the response
-        // Keep analytics logging but remove frontend re-validation
-        DebugLogger.log('story', 'Premium page generated', {
-          contentLength: pageContent?.length || 0,
-          difficulty: currentDifficulty
-        });
-        
-        setStory(prev => [...prev, pageContent]);
-        StoryContentLogger.logStoryChange('premium_next_page', 'after', [...story, pageContent], {
-          newCurrentPage: currentPage + 1,
-          totalPages: story.length + 1
-        });
-        
-        // FIXED: Proper context management without fallbacks
-        if (result.nextContext) {
-          DebugLogger.log('story', '✅ Premium Live Generation: Updating context for continuation', {
-            oldPage: liveContext?.currentPage,
-            newPage: result.nextContext.currentPage,
-            newStoryLength: result.nextContext.storyContext?.length
-          });
-          setLiveContext(result.nextContext);
-        } else if (result.isComplete) {
-          DebugLogger.log('story', '🏁 Premium Live Generation: Story complete, clearing context');
-          setLiveContext(null);
-        } else {
-          // CRITICAL ERROR: Missing nextContext when story should continue
-          DebugLogger.error('story', '❌ CRITICAL: Missing nextContext for incomplete story', {
-            currentStoryLength: story.length,
-            isComplete: result.isComplete,
-            hasLiveContext: !!liveContext,
-            currentContextPage: liveContext?.currentPage
-          });
-          // Don't set context to null - keep existing context to prevent break
-          // This will cause generateNextPage to fail properly next time
-        }
-        
-        setIsStoryComplete(result.isComplete);
-        setCurrentPage(prev => prev + 1);
-        
-      } else {
-        DebugLogger.log('story', 'Failed to generate next page', result.error);
-        // DEBOUNCED: Re-stabilize on error with delay to prevent flickering
-        setIsStoryStable(true);
-      }
-      setIsLoadingNextPage(false);
-      performanceManager.setTimeout(() => setJustAdvanced(false), 600, 'just advanced cleanup');
-    } else if (currentPage < (isPremium ? story.length - 1 : displayedStory.length - 1)) {
-      // ROLLBACK FIX: Use story.length for premium logic, displayedStory.length only for free users
-      // Navigate to next existing page
-      setCurrentPage(currentPage + 1);
-      // DEBOUNCED: Re-stabilize immediately for existing content
-      setIsStoryStable(true);
-    } else if (!isPremium && currentPage < 5 && story.length >= 6) {
-      // ROLLBACK FIX: Use story.length to check if we have 6+ pages, not displayedStory.length
-      // Free user: allow advancement to page 6 (currentPage 5)
-      setCurrentPage(currentPage + 1);
-      setIsStoryStable(true);
-    } else {
-      // Last page reached
-      if (isPremium) {
-        if (isStoryComplete) {
-          // Start a sequel and continue reading
-          setIsLoadingNextPage(true);
-          try {
-            const newContext: LiveGenerationContext = {
-              userInfo: { ...userInfo, difficultyLevel: currentDifficulty },
-              difficulty: currentDifficulty,
-              expertGradeLevel: currentDifficulty === 'advanced' ? (liveContext?.expertGradeLevel || expertGradeLevel) : undefined,
-              storyContext: [...story],
-              currentPage: story.length,
-              totalExpectedPages: Math.max(story.length + 1, 6),
-              characters: [userInfo.name, userInfo.favoriteAnimal || 'friend']
-            };
-            const sessionId = stableSessionId || generateSessionIdWithPrefix(`live-sequel-${userInfo.name}`);
-            const result = await LiveGenerationService.generateNextPage(newContext, vocabularyData, false, sessionId);
-            
-            DebugLogger.log('story', '🎬 Premium Live Generation: Sequel generation result', {
-              hasResult: !!result,
-              hasError: !!result?.error,
-              hasNextContext: !!result?.nextContext,
-              sessionId
-            });
-            
-            if (result && !result.error) {
-              const pageContent = Array.isArray(result.content) ? result.content[0] : result.content;
-              StoryContentLogger.logStoryChange('premium_sequel_generation', 'before', [...story, pageContent], {
-                sequelContext: 'continuation',
-                contentPreview: pageContent?.substring(0, 100),
-                totalExpectedPages: Math.max(story.length + 1, 6)
-              });
-              setStory(prev => [...prev, pageContent]);
-              StoryContentLogger.logStoryChange('premium_sequel_generation', 'after', [...story, pageContent], {
-                newCurrentPage: currentPage + 1,
-                totalPages: story.length + 1
-              });
-              
-              // FIXED: Proper sequel context handling
-              if (result.nextContext) {
-                setLiveContext(result.nextContext);
-              } else {
-                DebugLogger.error('story', '❌ CRITICAL: Missing nextContext for sequel', {
-                  hasNewContext: !!newContext,
-                  currentPage: currentPage
-                });
-                // Keep existing context to prevent break
-              }
-              
-              setIsStoryComplete(result.isComplete);
-              setCurrentPage(prev => prev + 1);
-              setJustAdvanced(true);
-              performanceManager.setTimeout(() => setJustAdvanced(false), 600, 'sequel advanced cleanup');
-            }
-          } catch (e) {
-            DebugLogger.error('story', 'Failed to continue sequel', e);
-            toast({ title: t('errors.continueFailed','Could not continue'), description: t('errors.tryAgain','Please try again.'), variant: 'destructive' });
-          } finally {
-            setIsLoadingNextPage(false);
-          }
-          return;
-        }
-        // Fallback: continue generation if story not marked complete
-        const result = await generateNextPage();
-        if (result && !result.error) {
-          const pageContent = Array.isArray(result.content) ? result.content[0] : result.content;
-          StoryContentLogger.logStoryChange('premium_fallback_next', 'before', [...story, pageContent], {
-            fallbackReason: 'story not complete',
-            contentPreview: pageContent?.substring(0, 100),
-            hasNextContext: !!result.nextContext
-          });
-          setStory(prev => [...prev, pageContent]);
-          StoryContentLogger.logStoryChange('premium_fallback_next', 'after', [...story, pageContent], {
-            newCurrentPage: currentPage + 1,
-            totalPages: story.length + 1
-          });
-          // FIXED: Don't use fallback null assignment
-          if (result.nextContext) {
-            setLiveContext(result.nextContext);
-          } else if (result.isComplete) {
-            setLiveContext(null);
-          } else {
-            DebugLogger.error('story', '❌ CRITICAL: Missing nextContext in fallback generation');
-          }
-          setIsStoryComplete(result.isComplete);
-          setCurrentPage(prev => prev + 1);
-          setJustAdvanced(true);
-          performanceManager.setTimeout(() => setJustAdvanced(false), 600, 'premium fallback advanced cleanup');
-        }
-        return;
-      }
-      // Free user completed their story slice - record session but don't advance page
-      // This keeps currentPage === 5 so the existing "Next Story" button shows
-      const timeSpent = Date.now() - sessionStartTime;
-      const totalWordsRead = sessionWordsRead;
-      recordReadingSession({
-        timeSpent,
-        wordsRead: totalWordsRead,
-        pagesRead: pagesCompleted.size,
-        storyCompleted: true,
-        readingSpeed: Math.round((totalWordsRead / timeSpent) * 60000)
-      });
-      // Don't increment currentPage - keep it at 5 so existing "Next Story" button shows
-      return;
-    }
-  };
-
-  const handlePrevious = () => {
-    // Stop audio when navigating (ensure audio service halts)
-    try { audioEngineRef.current.stop(); } catch {}
-    setIsAudioPlaying(false);
-    clearHighlighting();
-    setCurrentPage(Math.max(0, currentPage - 1));
-  };
+  // LIVE GENERATION COORDINATION - Use hook handlers instead of local ones
+  // Remove duplicate handler definitions since they're provided by useStoryLogic hook
 
 useEffect(() => {
   // Persist current page for both tiers
@@ -2751,18 +2530,8 @@ useEffect(() => {
     updateActivity({ wordsRead: 1 });
   };
 
-  // Timer controls with user pause tracking
-  const handleToggleTimer = () => {
-    DebugLogger.log('performance', 'Timer toggle clicked', { isTimerRunning, userPausedTimer, isTimerCanceled });
-    const newRunningState = !isTimerRunning;
-    setIsTimerRunning(newRunningState);
-    setUserPausedTimer(!newRunningState); // Track when user manually pauses
-    DebugLogger.log('performance', 'Timer state after toggle', { newRunningState, userPausedTimer: !newRunningState });
-  };
-
-  const handleReduceTime = () => {
-    setTimeRemaining(prev => Math.max(5 * 60, prev - 5 * 60)); // Reduce by 5 minutes, minimum 5 minutes
-  };
+  // Remove duplicate timer handlers since they're provided by useStoryLogic hook
+  // const handleToggleTimer and handleReduceTime are available from the hook
 
   // Bottom dock actions - enhanced with immediate state updates
   const handleDockPlayAudio = async () => {
@@ -2843,7 +2612,7 @@ const handleDockCoach = () => {
     
     // Clear character state when session ends for both free and premium users
     try {
-      StoryVisualStateManager.clearBasedOnContext(characterSessionId, isPremium, 'end-session');
+      StoryVisualStateManager.clearBasedOnContext(characterSessionIdValue, isPremium, 'end-session');
       DebugLogger.log('performance', 'Cleared character state on session end');
     } catch (error) {
       DebugLogger.warn('performance', 'Failed to clear character state on session end', error);
@@ -2853,7 +2622,7 @@ const handleDockCoach = () => {
       timeSpent,
       wordsRead: totalWordsRead,
       pagesRead: pagesRead,
-      startTime: sessionStartTime,
+      startTime: sessionStartTimeValue,
       accuracy: 100
     };
     
@@ -3116,7 +2885,7 @@ const handleRestartTimer = () => {
           
           SessionCacheManager.clearAllSessionCaches({
             userId,
-            sessionId: characterSessionId || generateSessionId(),
+            sessionId: characterSessionIdValue || generateSessionId(),
             avatarType: userInfo.avatar?.type,
             skinTone: userInfo.avatar?.skinTone,
             reason: 'premium-rewrite',
@@ -3126,7 +2895,7 @@ const handleRestartTimer = () => {
 
           // Clear only story images, preserve character consistency seeds
           (await import('@/services/enhancedImageCache')).EnhancedImageCache.clearStoryImagesKeepCharacterSeeds(
-            characterSessionId, 
+            characterSessionIdValue, 
             userInfo.avatar?.type
           );
           setPageImages({});
@@ -3134,22 +2903,22 @@ const handleRestartTimer = () => {
         } else {
           // Free rewrite: Clear everything for fresh characters
           DebugLogger.log('story', 'Free rewrite: Clearing all character state');
-          StoryVisualStateManager.clearBasedOnContext(characterSessionId, isPremium, 'rewrite');
+          StoryVisualStateManager.clearBasedOnContext(characterSessionIdValue, isPremium, 'rewrite');
           
           // Clear all images for free users
-          (await import('@/services/enhancedImageCache')).EnhancedImageCache.clearSession(characterSessionId);
+          (await import('@/services/enhancedImageCache')).EnhancedImageCache.clearSession(characterSessionIdValue);
           setPageImages({});
         }
       } else {
         // New story (not rewrite): Clear character state appropriately
         DebugLogger.log('story', 'New story: Clearing character state for fresh generation');
-        StoryVisualStateManager.clearBasedOnContext(characterSessionId, isPremium, 'next-story');
+        StoryVisualStateManager.clearBasedOnContext(characterSessionIdValue, isPremium, 'next-story');
       }
       
       // Clear previous story cache for free users to prevent cache growth
       if (!isPremium) {
         try {
-          (await import('@/services/enhancedImageCache')).EnhancedImageCache.clearSession(characterSessionId);
+          (await import('@/services/enhancedImageCache')).EnhancedImageCache.clearSession(characterSessionIdValue);
           setPageImages({});
           DebugLogger.log('image', 'Cleared previous story cache for free user');
         } catch (error) {
@@ -3291,7 +3060,7 @@ const handleRestartTimer = () => {
     
     // Create continuation session to preserve character appearances
     const success = StoryVisualStateManager.createContinuationSession(
-      characterSessionId, 
+      characterSessionIdValue, 
       newCharacterSessionId
     );
     
@@ -4534,7 +4303,7 @@ const handleRestartTimer = () => {
         currentWordsRead={sessionWordsRead}
         currentPagesRead={pagesCompleted.size}
         vocabularyLearned={userStats.vocabularyWordsLearned || 0}
-        timeSpent={Date.now() - sessionStartTime}
+        timeSpent={Date.now() - sessionStartTimeValue}
         onProgressUpdate={(type, value) => {
           DebugLogger.log('ui', 'Progress updated', { type, value });
         }}
