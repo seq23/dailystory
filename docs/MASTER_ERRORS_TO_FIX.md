@@ -178,7 +178,15 @@ return withCors(res);
 4. ✅ `src/services/HealthCheckService.ts` - Converted to HEAD requests with tri-state classification
 5. ✅ `supabase/functions/_shared/security.ts` - Max-Age=600, added HEAD method
 6. ✅ `supabase/functions/background-image-pregeneration/index.js` - Applied shared template
-7. ✅ `.github/workflows/monitor-ai-visual.yml` - Smart probing with network error classification
+7. ✅ **ALL Image Generation Functions** - CORS standardization complete:
+   - `supabase/functions/ai-visual-scene-creator/index.js` - Max-Age=600, HEAD method
+   - `supabase/functions/runware-template-ab/index.js` - Max-Age=600, HEAD method  
+   - `supabase/functions/runware-template-cd/index.ts` - Max-Age=600, HEAD method
+   - `supabase/functions/runware-generate-image/index.js` - Max-Age=600, HEAD method
+   - `supabase/functions/runware-generate-image/index.ts` - Max-Age=600, HEAD method
+   - `supabase/functions/clear-character-cache/index.js` - Max-Age=600, HEAD method
+   - `supabase/functions/clear-character-cache/index.ts` - Max-Age=600, HEAD method
+8. ✅ `.github/workflows/monitor-ai-visual.yml` - Smart probing with network error classification
 
 **Verification Results:**
 1. ✅ Health = HEAD /health with no headers (no preflights triggered)
