@@ -227,6 +227,54 @@ export const ImageTierTester = () => {
       };
     }
     
+    // Runware-specific WebSocket errors
+    if (errorMsg.includes('WebSocket') || errorMsg.includes('wss://ws-api.runware.ai')) {
+      if (errorMsg.includes('timeout') || errorMsg.includes('Image generation timeout')) {
+        return {
+          category: 'RUNWARE_TIMEOUT',
+          probableCause: 'Runware image generation exceeded timeout limit',
+          errorType: 'RUNTIME_ERROR',
+          recoveryAction: 'Retry with shorter prompt or check Runware service status'
+        };
+      }
+      if (errorMsg.includes('closed') || errorMsg.includes('connection')) {
+        return {
+          category: 'RUNWARE_CONNECTION',
+          probableCause: 'Runware WebSocket connection failed or dropped',
+          errorType: 'NETWORK_ISSUE',
+          recoveryAction: 'Check network connectivity and Runware API status'
+        };
+      }
+      if (errorMsg.includes('authentication') || errorMsg.includes('Invalid API key')) {
+        return {
+          category: 'RUNWARE_AUTH',
+          probableCause: 'Invalid or expired Runware API key',
+          errorType: 'RUNTIME_ERROR',
+          recoveryAction: 'Verify Runware API key in Supabase secrets'
+        };
+      }
+    }
+    
+    // Runware image generation specific errors
+    if (errorMsg.includes('NSFWContent') || errorMsg.includes('content filter')) {
+      return {
+        category: 'RUNWARE_CONTENT_FILTER',
+        probableCause: 'Image prompt triggered Runware content filter',
+        errorType: 'RUNTIME_ERROR',
+        recoveryAction: 'Modify prompt to avoid restricted content'
+      };
+    }
+    
+    // Runware model or parameter errors
+    if (errorMsg.includes('runware:100@1') || errorMsg.includes('model') || errorMsg.includes('CFGScale') || errorMsg.includes('scheduler')) {
+      return {
+        category: 'RUNWARE_PARAMS',
+        probableCause: 'Invalid Runware model parameters or configuration',
+        errorType: 'RUNTIME_ERROR',
+        recoveryAction: 'Check model name and parameter values'
+      };
+    }
+    
     // Validation / request-shape errors (400 level)
     if (errorMsg.includes('Missing required parameters: pageText') || errorMsg.includes('Missing required parameters: pageText/storyText')) {
       return {

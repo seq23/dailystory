@@ -944,6 +944,7 @@ async function handleRequest(req) {
         'Content-Type': 'application/json'
       }
     });
+    
   } catch (error) {
     tierLogging.logTier1(`❌ [${requestId}] Crash-proof orchestrator error: ${error}`);
     return new Response(JSON.stringify({
