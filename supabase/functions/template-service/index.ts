@@ -7,6 +7,7 @@ const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+  'Access-Control-Max-Age': '600',
 };
 
 // GitHub Integration Test - 2025-01-10 - Testing automatic deployment sync
