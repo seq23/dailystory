@@ -291,8 +291,112 @@ monitor.endTiming('operation-name');
 - **Problem**: User tier detection issues
 - **Solution**: Verify authentication, check premium status edge function
 
+## 🏗️ Edge Function Receptionist Pattern V4.2
+
+### Dual-File Architecture
+All edge functions now use a **Receptionist Pattern** to eliminate CORS issues and import/export errors:
+
+- **`index.ts`** (Receptionist): Handles CORS, health checks, OPTIONS preflight
+- **`index.js`** (Handler): Contains business logic, POST-only processing
+
+### Receptionist Responsibilities
+The TypeScript receptionist (`index.ts`) handles:
+```typescript
+// CORS headers (applied to ALL responses)
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'GET, HEAD, POST, OPTIONS',
+  'Cache-Control': 'public, max-age=600',
+  'Vary': 'Origin'
+};
+
+// Health endpoints
+HEAD /health    // No body, fast load balancer probes
+GET /health     // JSON response with service status  
+OPTIONS *       // CORS preflight (204, Max-Age: 600)
+```
+
+### Handler Requirements
+Business logic handlers (`index.js`) must:
+```javascript
+// ✅ CORRECT: Export on declaration
+export default async function handleRequest(req) {
+  // POST-only business logic
+}
+
+// ❌ NEVER: Export at end of file
+// export default handleRequest;
+```
+
+### CORS Configuration (Copy-Paste Ready)
+```typescript
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'GET, HEAD, POST, OPTIONS', 
+  'Cache-Control': 'public, max-age=600',
+  'Vary': 'Origin'
+};
+
+function withCors(response: Response): Response {
+  Object.entries(corsHeaders).forEach(([key, value]) => {
+    response.headers.set(key, value);
+  });
+  return response;
+}
+```
+
+### Development Guardrails
+
+#### 🚫 Never Do
+- Export handlers at end of file (`export default handleRequest;`)
+- Mix CORS handling in business logic
+- Use raw SQL in edge functions
+- Enable auto-refresh on monitoring components
+
+#### ✅ Always Do
+- Export handlers on declaration
+- Use Supabase client methods only
+- Include comprehensive error handling
+- Test CORS preflight behavior
+
+### Deployment Pre-Flight Checklist
+```bash
+# 1. Format and validate
+deno fmt supabase/functions/your-function/index.js
+deno check supabase/functions/your-function/index.js
+
+# 2. Local testing
+supabase functions serve your-function --no-verify-jwt
+
+# 3. Health check validation  
+curl -I http://localhost:54321/functions/v1/your-function/health
+# Expect: 200 OK with CORS headers, no body
+
+# 4. CORS preflight test
+curl -X OPTIONS http://localhost:54321/functions/v1/your-function \
+  -H "Access-Control-Request-Method: POST" \
+  -H "Access-Control-Request-Headers: authorization"
+# Expect: 204 No Content with Max-Age: 600
+
+# 5. POST functionality test
+curl -X POST http://localhost:54321/functions/v1/your-function \
+  -H "Authorization: Bearer your-token" \
+  -H "Content-Type: application/json" \
+  -d '{"test": true}'
+```
+
+### Sanity Checklist for CI/CD
+- [ ] `deno check` passes without errors
+- [ ] HEAD `/health` returns 200 with CORS headers
+- [ ] OPTIONS returns 204 with `Max-Age: 600`
+- [ ] No authentication required for health probes
+- [ ] Browser DevTools shows cached preflight (no duplicate OPTIONS)
+- [ ] All responses include complete CORS header set
+
 ---
 
 **Last Updated**: January 2025  
-**Version**: 3.0 (Emergency Throttling Edition)  
+**Version**: 4.2 (Receptionist Pattern Edition)  
 **Developer Guide Status**: Ready for Use ✅
