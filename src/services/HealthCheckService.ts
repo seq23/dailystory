@@ -27,6 +27,7 @@ export class HealthCheckService {
   private static readonly HEALTH_CHECK_TIMEOUT = 2000; // 2 second max for health checks
   private static readonly CACHE_DURATION = 30000; // 30 seconds cache
   private static cachedHealth: { result: HealthStatus; timestamp: number } | null = null;
+  private static activeHealthCheck: Promise<HealthStatus> | null = null;
 
   /**
    * ERROR-001 FIX: Use HEAD requests to avoid CORS preflights
@@ -35,13 +36,37 @@ export class HealthCheckService {
   static async checkSystemHealth(): Promise<HealthStatus> {
     const startTime = Date.now();
 
-    // Check cache first
+    // ERROR-004 FIX: Request deduplication to prevent race conditions
     if (this.cachedHealth && (Date.now() - this.cachedHealth.timestamp) < this.CACHE_DURATION) {
       DebugLogger.log('network', 'Using cached health status');
       return this.cachedHealth.result;
     }
 
+    // If health check already in progress, return that promise
+    if (this.activeHealthCheck) {
+      DebugLogger.log('network', 'Joining active health check (race condition avoided)');
+      return await this.activeHealthCheck;
+    }
+
     DebugLogger.log('network', 'Starting fresh health check (preflight-free)');
+
+    // Create shared promise for concurrent requests
+    this.activeHealthCheck = this.performHealthCheck();
+    
+    try {
+      const result = await this.activeHealthCheck;
+      return result;
+    } finally {
+      // Clear active check when complete
+      this.activeHealthCheck = null;
+    }
+  }
+
+  /**
+   * ERROR-004 FIX: Extracted health check logic for deduplication
+   */
+  private static async performHealthCheck(): Promise<HealthStatus> {
+    const startTime = Date.now();
 
     // Serial health checks to avoid race conditions
     const orchestrator = await this.checkOrchestrator();
@@ -225,6 +250,7 @@ export class HealthCheckService {
    */
   static clearCache(): void {
     this.cachedHealth = null;
+    this.activeHealthCheck = null; // ERROR-004 FIX: Clear active check too
     DebugLogger.log('network', 'Health check cache cleared');
   }
 }
