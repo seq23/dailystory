@@ -19,6 +19,22 @@ declare global {
       stop: () => void;
     };
     __IS_PREMIUM?: boolean;
+    __endingPageCount__?: number;
+    __firstEndingPageIndex__?: number;
+    __pageContentHash?: string;
+    __pageContentString?: string;
+    __storyTitle?: string;
+    __userName?: string;
+    __hoveredWord?: string;
+    __lastSelectedWord?: string;
+    currentStoryPage?: number;
+    pageContent?: string;
+    storyImages?: Record<number, string>;
+    storyState?: {
+      story: any;
+      currentPage: number;
+      pageImages: Record<number, string>;
+    };
     __showDiscountActivationToast?: (message: string) => void;
     SmartElevenLabsTTS?: any;
   }

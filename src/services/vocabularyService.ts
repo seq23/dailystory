@@ -25,6 +25,8 @@ export interface VocabularyIntegration {
   };
 }
 
+import { DebugLogger } from './DebugLogger';
+
 export class VocabularyService {
   /**
    * Fetches all vocabulary from all 4 sources with proper prioritization
@@ -94,7 +96,7 @@ export class VocabularyService {
         }
       }
     } catch (error) {
-      console.warn('Failed to fetch teacher words:', error);
+      DebugLogger.warn('performance', 'Failed to fetch teacher words', error);
     }
 
     // SOURCE 4: System vocabulary (backend validation only - NOT sent to edge function)
@@ -121,7 +123,7 @@ export class VocabularyService {
         }
       };
     } catch (error) {
-      console.warn('⚠️ VocabularyService failed silently:', error);
+      DebugLogger.warn('performance', 'VocabularyService failed silently', error);
       return {
         userSpecified: { formWords: [], specialRequestWords: [], teacherWords: [] },
         systemVocabulary: { level: 2, complianceTarget: 0.7 },
@@ -136,7 +138,7 @@ export class VocabularyService {
       try {
         return difficultyToGradeLevel(difficulty);
       } catch (error) {
-        console.warn('⚠️ Invalid difficulty level:', difficulty, 'falling back to age-based mapping');
+        DebugLogger.warn('performance', 'Invalid difficulty level, falling back to age-based mapping', { difficulty });
       }
     }
 
@@ -150,7 +152,7 @@ export class VocabularyService {
       try {
         return difficultyToGradeLevel(ageDifficulty as DifficultyLevel);
       } catch (error) {
-        console.warn('⚠️ Age-based difficulty calculation failed, using default');
+        DebugLogger.warn('performance', 'Age-based difficulty calculation failed, using default');
       }
     }
 

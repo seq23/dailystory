@@ -617,8 +617,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     setOriginalStoryLength(null);
     setLastEndingPageIndex(null);
     // Clear global pagination variables
-    delete (window as any).__endingPageCount__;
-    delete (window as any).__firstEndingPageIndex__;
+    delete window.__endingPageCount__;
+    delete window.__firstEndingPageIndex__;
   }, []);
   
   
@@ -707,10 +707,10 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
 
   // DEBUG: Add window objects for console debugging
   useEffect(() => {
-    (window as any).currentStoryPage = currentPage;
-    (window as any).pageContent = story?.[currentPage];
-    (window as any).storyImages = pageImages;
-    (window as any).storyState = { story, currentPage, pageImages };
+    window.currentStoryPage = currentPage;
+    window.pageContent = story?.[currentPage];
+    window.storyImages = pageImages;
+    window.storyState = { story, currentPage, pageImages };
   }, [currentPage, story, pageImages]);
 
 // Voice integration for desktop
@@ -1110,16 +1110,16 @@ useEffect(() => {
       try {
         const guardrails = await ParentGuardrailsService.getGuardrails();
         setLockDifficulty(guardrails.lockDifficulty);
-        setMinDifficulty(guardrails.minDifficulty as any);
-        setMinExpertGrade(guardrails.minExpertGrade as any);
+        setMinDifficulty(guardrails.minDifficulty);
+        setMinExpertGrade(guardrails.minExpertGrade);
         setAllowDecreaseBelowMin(!!guardrails.allowDecreaseBelowMin);
 
         // Hard lock: clamp up immediately and persist if below min
         if (guardrails.lockDifficulty) {
           const currentIndex = difficultyLevels.indexOf(currentDifficulty);
-          const minIndex = difficultyLevels.indexOf(guardrails.minDifficulty as any);
+          const minIndex = difficultyLevels.indexOf(guardrails.minDifficulty);
           if (currentIndex < minIndex) {
-            const newDifficulty = guardrails.minDifficulty as any;
+            const newDifficulty = guardrails.minDifficulty;
             setCurrentDifficulty(newDifficulty);
             try {
               const { data: { user } } = await supabase.auth.getUser();
@@ -1191,8 +1191,8 @@ useEffect(() => {
 
   useEffect(() => {
     try { 
-      const previousHash = (window as any).__pageContentHash;
-      const previousText = (window as any).__pageContentString;
+      const previousHash = window.__pageContentHash;
+      const previousText = window.__pageContentString;
       
       // 🔍 PHASE 1 & 2: Debug hash setting and comparison
       DebugLogger.log('story', 'Hash Setting Debug:', {
@@ -1208,9 +1208,9 @@ useEffect(() => {
         timingSince: previousHash ? 'N/A' : 'Initial'
       });
       
-      (window as any).__pageContentHash = contentHash; 
-      (window as any).__pageContentString = currentStoryText;
-      (window as any).__storyTitle = storyTitle || `${userInfo?.name}'s Adventure` || 'the story';
+      window.__pageContentHash = contentHash; 
+      window.__pageContentString = currentStoryText;
+      window.__storyTitle = storyTitle || `${userInfo?.name}'s Adventure` || 'the story';
       
       // Emit hash change event if hash actually changed
       if (previousHash !== contentHash && contentHash) {
@@ -1232,13 +1232,13 @@ useEffect(() => {
           } 
         }));
       }
-      (window as any).__userName = userInfo?.name || '';
+      window.__userName = userInfo?.name || '';
       DebugLogger.log('ui', 'Content variables updated for voice commands', {
         page: currentPage,
         textLength: currentStoryText.length,
         hasHash: !!contentHash,
-        storyTitle: (window as any).__storyTitle,
-        userName: (window as any).__userName,
+        storyTitle: window.__storyTitle,
+        userName: window.__userName,
         textPreview: currentStoryText.substring(0, 100) + '...'
       });
     } catch (error) {
@@ -1374,7 +1374,7 @@ useEffect(() => {
         try { audioEngineRef.current.stop(); } catch {}
 
         // Resolve target word: hovered -> lastSelected -> highlighted
-        let target: string = (window as any).__hoveredWord || (window as any).__lastSelectedWord || '';
+        let target: string = window.__hoveredWord || window.__lastSelectedWord || '';
         if ((!target || !target.trim()) && typeof currentHighlightedWord === 'number' && currentHighlightedWord >= 0) {
           const words = wordsRef.current || [];
           target = words[currentHighlightedWord] || '';
@@ -1768,7 +1768,7 @@ const initializeStory = async () => {
           difficulty: ctx.difficulty,
           sessionId: stableSessionId
         });
-            const srcPremium = (window as any).__LAST_STORY_SOURCE__ || 'cached';
+            const srcPremium = window.__LAST_STORY_SOURCE__ || 'unknown';
             setStorySource(srcPremium);
             
             // CRITICAL FIX: Add missing image restoration for premium users
@@ -1836,7 +1836,7 @@ const initializeStory = async () => {
           duration: 3000,
         });
       }
-      const srcPremium = (window as any).__LAST_STORY_SOURCE__ || 'unknown';
+      const srcPremium = window.__LAST_STORY_SOURCE__ || 'unknown';
       DebugLogger.log('ui', 'UI SOURCE', { source: srcPremium, tier: 'premium' });
       setStorySource(srcPremium);
       
@@ -2019,7 +2019,7 @@ const initializeStory = async () => {
         originalPageCount: result.content.length,
         processedPageCount: processedPages.length,
         storyTitle: `Story for ${effectiveUser.name}`,
-        storySource: (window as any).__LAST_STORY_SOURCE__ || 'unknown'
+        storySource: window.__LAST_STORY_SOURCE__ || 'unknown'
       });
       
       // BUFFERED UPDATE: Prevent flickering by updating in single batch
@@ -2040,7 +2040,7 @@ const initializeStory = async () => {
       setStory(processedPages);
       setStoryTitle(`Story for ${effectiveUser.name}`);
       setIsStoryComplete(true);
-      const srcFree = (window as any).__LAST_STORY_SOURCE__ || 'unknown';
+      const srcFree = window.__LAST_STORY_SOURCE__ || 'unknown';
       
       // Show random grade level toast for free users (new story)
       if (currentDifficulty === 'expert' || currentDifficulty === 'advanced') {
@@ -2058,7 +2058,7 @@ const initializeStory = async () => {
         storyTitle: `Story for ${effectiveUser.name}`
       });
       DebugLogger.log('ui', 'UI SOURCE', { source: srcFree, tier: 'free' });
-      setStorySource(srcFree as any);
+      setStorySource(srcFree);
 
       // Persist guest story for refresh-resume with avatar-aware cache key
       try {

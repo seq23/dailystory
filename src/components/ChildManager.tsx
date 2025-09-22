@@ -12,6 +12,23 @@ import { useTranslation } from "react-i18next";
 import type { AvatarType, SkinTone } from "@/types";
 import { AvatarUtils } from "@/utils/avatarUtils";
 
+// Proper interface for database child records
+interface DatabaseChild {
+  id: string;
+  display_name: string;
+  grade_level?: string | null;
+  birth_month?: number | null;
+  birth_year?: number | null;
+  favorite_color?: string | null;
+  favorite_animal?: string | null; 
+  favorite_food?: string | null;
+  hobbies?: string | null;
+  avatar?: {
+    type: AvatarType;
+    skinTone: SkinTone;
+  } | null;
+}
+
 const gradeOptions = ["Pre-K", "K", "1", "2", "3", "4", "5", "6", "7", "8"];
 const monthOptions = [
   { value: 1, label: "January" },
@@ -77,21 +94,27 @@ export function ChildManager() {
   );
 
   // Edit form change detection
+  // Type-safe helper to get child data
+  // Type-safe helper to get child data
+  const getTypedChild = (child: any): DatabaseChild => child as DatabaseChild;
+
   const hasEditChanges = useMemo(() => {
     if (!editingId) return false;
     const original = children.find(c => c.id === editingId);
     if (!original) return false;
     
+    const typedOriginal = getTypedChild(original);
+    
     return (
-      editDraft.name.trim() !== original.display_name ||
-      editDraft.grade !== (original.grade_level || "") ||
-      editDraft.birthMonth !== ((original as any).birth_month || null) ||
-      editDraft.birthYear !== ((original as any).birth_year || null) ||
-      editDraft.favoriteColor !== ((original as any).favorite_color || "") ||
-      editDraft.favoriteAnimal !== ((original as any).favorite_animal || "") ||
-      editDraft.favoriteFood !== ((original as any).favorite_food || "") ||
-      editDraft.hobbies !== ((original as any).hobbies || "") ||
-      JSON.stringify(editDraft.avatar) !== JSON.stringify(original.avatar || { type: "prefer-not-to-answer", skinTone: "medium" })
+      editDraft.name.trim() !== typedOriginal.display_name ||
+      editDraft.grade !== (typedOriginal.grade_level || "") ||
+      editDraft.birthMonth !== (typedOriginal.birth_month || null) ||
+      editDraft.birthYear !== (typedOriginal.birth_year || null) ||
+      editDraft.favoriteColor !== (typedOriginal.favorite_color || "") ||
+      editDraft.favoriteAnimal !== (typedOriginal.favorite_animal || "") ||
+      editDraft.favoriteFood !== (typedOriginal.favorite_food || "") ||
+      editDraft.hobbies !== (typedOriginal.hobbies || "") ||
+      JSON.stringify(editDraft.avatar) !== JSON.stringify(typedOriginal.avatar || { type: "prefer-not-to-answer", skinTone: "medium" })
     );
   }, [editingId, editDraft, children]);
 
@@ -395,23 +418,23 @@ export function ChildManager() {
                      <div className="grid md:grid-cols-4 items-center gap-3">
                         <div className="flex items-center gap-3">
                           <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-border">
-                            <img
-                              src={AvatarUtils.getAvatarUrl(c.avatar as any) || "/avatar-boy-medium.jpg"}
-                              alt={`${c.display_name}'s avatar`}
-                              className="w-full h-full object-cover"
-                            />
+                             <img
+                               src={AvatarUtils.getAvatarUrl(getTypedChild(c).avatar) || "/avatar-boy-medium.jpg"}
+                               alt={`${c.display_name}'s avatar`}
+                               className="w-full h-full object-cover"
+                             />
                           </div>
                          <div>
                            <div className="font-medium">{c.display_name}</div>
-                           <div className="text-xs text-muted-foreground">{calculateAge((c as any).birth_year)}</div>
+                           <div className="text-xs text-muted-foreground">{calculateAge(getTypedChild(c).birth_year)}</div>
                          </div>
                        </div>
                        <div className="text-sm text-muted-foreground">{c.grade_level || "—"}</div>
-                       <div className="text-sm text-muted-foreground">
-                         {(c as any).favorite_color || (c as any).favorite_animal ? 
-                           `${(c as any).favorite_color || ''}${(c as any).favorite_color && (c as any).favorite_animal ? ', ' : ''}${(c as any).favorite_animal || ''}` : 
-                           "—"}
-                       </div>
+                        <div className="text-sm text-muted-foreground">
+                          {getTypedChild(c).favorite_color || getTypedChild(c).favorite_animal ? 
+                            `${getTypedChild(c).favorite_color || ''}${getTypedChild(c).favorite_color && getTypedChild(c).favorite_animal ? ', ' : ''}${getTypedChild(c).favorite_animal || ''}` : 
+                            "—"}
+                        </div>
                        <div className="flex gap-2 justify-end">
                          <Button variant="outline" onClick={() => startEdit(c.id)}>{t('parent.manager.actions.edit')}</Button>
                          <Button variant="destructive" onClick={() => handleDelete(c.id)}>{t('parent.manager.actions.delete')}</Button>

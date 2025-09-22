@@ -63,7 +63,7 @@ export class UserInputDistributor {
           unused[0] : // First animal = user's exact input
           unused[Math.floor(Math.random() * unused.length)];
         used.add(selected);
-        console.log(`📚 Level 0 Page ${context.pageIndex + 1}: Using ${category} "${selected}"`);
+        DebugLogger.log('story', `Level 0 Page ${context.pageIndex + 1}: Using ${category} "${selected}"`);
         return selected;
       }
     }
@@ -74,7 +74,7 @@ export class UserInputDistributor {
     if (unused.length > 0) {
       const selected = unused[Math.floor(Math.random() * unused.length)];
       used.add(selected);
-      console.log(`📖 Page ${context.pageIndex + 1}: Using ${category} "${selected}"`);
+      DebugLogger.log('story', `Page ${context.pageIndex + 1}: Using ${category} "${selected}"`);
       return selected;
     }
 
@@ -197,7 +197,7 @@ export class UserInputDistributor {
     // PRIORITY: User's exact favorite animal input comes first
     if (userInfo.favoriteAnimal) {
       const exactInput = userInfo.favoriteAnimal.toLowerCase().trim();
-      console.log(`🎯 Adding user's exact animal input: "${exactInput}"`);
+      DebugLogger.log('story', `Adding user's exact animal input: "${exactInput}"`);
       animals.add(exactInput); // Add exact input FIRST
       
       try {
@@ -212,7 +212,7 @@ export class UserInputDistributor {
           });
         }
       } catch (error) {
-        console.warn('Smart parsing failed, but exact input already added:', error);
+        DebugLogger.warn('story', 'Smart parsing failed, but exact input already added', error);
       }
     }
     
@@ -237,7 +237,7 @@ export class UserInputDistributor {
       });
     }
     
-    console.log(`🐾 Final animal pool:`, animalList);
+    DebugLogger.log('story', `Final animal pool`, animalList);
     return animalList.slice(0, 4); // Max 4 for manageability, with user input prioritized
   }
 
@@ -279,7 +279,7 @@ export class UserInputDistributor {
           foods.add(userInfo.favoriteFood.toLowerCase().trim());
         }
       } catch (error) {
-        console.warn('Smart food parsing failed, using fallback:', error);
+        DebugLogger.warn('story', 'Smart food parsing failed, using fallback', error);
         foods.add(userInfo.favoriteFood.toLowerCase().trim());
       }
     }

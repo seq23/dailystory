@@ -1,5 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 
+import { DebugLogger } from './DebugLogger';
+
 export class VocabularyTrackingService {
   static async logEncounter(word: string, definition: string, complexity?: string) {
     try {
@@ -37,7 +39,7 @@ export class VocabularyTrackingService {
           }]);
       }
     } catch (e) {
-      console.warn('Failed to log vocabulary encounter', e);
+      DebugLogger.warn('performance', 'Failed to log vocabulary encounter', e);
     }
   }
 }
