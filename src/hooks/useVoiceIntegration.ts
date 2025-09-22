@@ -66,7 +66,7 @@ export const useVoiceIntegration = () => {
             text, 
             contentHash: hash,
             voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
-          }).catch(console.error);
+          }).catch((error) => DebugLogger.error('audio', 'Voice integration error:', error));
         }, 200);
         return "Got it!"; // Very brief response to avoid audio conflicts
       }

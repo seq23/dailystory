@@ -110,7 +110,7 @@ export const useAudioSync = ({ contentHash, text, currentPage }: AudioSyncOption
       delay = Math.min(500, delay * 2);
     }
     
-    console.error(`❌ Hash sync timeout after ${MAX_WAIT_TIME}ms - DETAILED FAILURE:`, {
+    DebugLogger.error('network', `❌ Hash sync timeout after ${MAX_WAIT_TIME}ms - DETAILED FAILURE:`, {
       finalUIHash: (window as any).__pageContentHash?.slice(0,12),
       expectedHash: expectedHash?.slice(0,12),
       finalTextLength: (window as any).__pageContentString?.length,
@@ -173,8 +173,8 @@ export const useAudioSync = ({ contentHash, text, currentPage }: AudioSyncOption
       const syncSuccess = await waitForHashSync(contentHash, currentUIHash);
       
       if (!syncSuccess) {
-        console.error('❌ Hash sync timeout - unable to synchronize content');
-        console.error('🔍 Final State Analysis:', {
+        DebugLogger.error('network', '❌ Hash sync timeout - unable to synchronize content');
+        DebugLogger.error('network', '🔍 Final State Analysis:', {
           finalUIHash: (window as any).__pageContentHash?.slice(0,12),
           targetAudioHash: contentHash?.slice(0,12),
           finalTextLength: (window as any).__pageContentString?.length,

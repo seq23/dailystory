@@ -19,7 +19,7 @@ export const useIncidentLogger = () => {
       );
       
       if (!inputValidation.isValid) {
-        console.warn('Invalid incident data:', inputValidation.errors);
+        DebugLogger.warn('auth', 'Invalid incident data:', inputValidation.errors);
         return { success: false, error: 'Invalid incident data' };
       }
 
@@ -35,7 +35,7 @@ export const useIncidentLogger = () => {
       // Get current user - this will be validated server-side as well
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        console.warn('No authenticated user for incident logging');
+        DebugLogger.warn('auth', 'No authenticated user for incident logging');
         return { success: false, error: 'Authentication required' };
       }
 
@@ -51,7 +51,7 @@ export const useIncidentLogger = () => {
       });
 
       if (error) {
-        console.error('Failed to log incident:', error);
+        DebugLogger.error('auth', 'Failed to log incident:', error);
         // Log the failure as a security event
         await EnhancedSecurityValidator.logSecurityEvent('incident_logging_failure', {
           error: error.message,
@@ -69,7 +69,7 @@ export const useIncidentLogger = () => {
         recentIncidentCount: result?.recentIncidentCount
       };
     } catch (err) {
-      console.error('Error logging incident:', err);
+      DebugLogger.error('auth', 'Error logging incident:', err);
       // Log the error as a security event
       await EnhancedSecurityValidator.logSecurityEvent('incident_logging_error', {
         error: err instanceof Error ? err.message : 'Unknown error',

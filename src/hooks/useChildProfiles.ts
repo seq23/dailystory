@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useMemo, useState } from "react";
+import { useEffect, useCallback, useMemo, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import { LeanErrorService } from "@/utils/LeanErrorService";
@@ -18,86 +18,58 @@ interface NewChildInput {
   hobbies?: string | null;
 }
 
-// Global request deduplication to prevent spam from multiple hook instances
-let activeLoadRequest: Promise<any> | null = null;
-let requestCache: { userId: string; data: any; timestamp: number } | null = null;
-let errorCount = 0;
-let lastErrorTime = 0;
+// Simplified per-instance caching to prevent race conditions
 const CACHE_DURATION = 5000; // 5 seconds
-const ERROR_THROTTLE = 2000; // 2 seconds between error logs
-const MAX_ERRORS = 5;
 
 export function useChildProfiles() {
   const [children, setChildren] = useState<ChildProfile[]>([]);
   const [activeChildId, setActiveChildId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Per-instance cache to prevent race conditions
+  const lastRequestRef = useRef<{ userId: string; promise: Promise<any>; timestamp: number } | null>(null);
 
   const load = useCallback(async () => {
     DebugLogger.log('auth', 'useChildProfiles: Starting load');
     
-    // Deduplicate concurrent requests from multiple components
-    if (activeLoadRequest) {
-      DebugLogger.log('auth', 'useChildProfiles: Using existing request');
-      // Wait for the shared request and hydrate from cache
-      try {
-        await activeLoadRequest;
-        // Hydrate this instance from the cache
-        if (requestCache) {
-          const { children: cachedChildren, activeChildId: cachedActiveChildId } = requestCache.data;
-          setChildren(cachedChildren || []);
-          setActiveChildId(cachedActiveChildId || null);
-        }
-      } catch (e) {
-        setError((e as any)?.message || 'Failed to load child profiles');
-      } finally {
-        setLoading(false);
-      }
-      return;
-    }
-
-    // Stop retrying after too many errors
-    if (errorCount >= MAX_ERRORS) {
-      DebugLogger.warn('auth', `useChildProfiles: Max errors reached - stopped loading after ${MAX_ERRORS} failed attempts`);
+    // Check if we have a recent request for the current user
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError) {
+      DebugLogger.warn('auth', 'Auth error in useChildProfiles', authError);
+      setError(authError.message);
       setLoading(false);
       return;
     }
-
+    
+    if (!user) {
+      DebugLogger.log('auth', 'useChildProfiles: No authenticated user, clearing child profiles');
+      setChildren([]);
+      setActiveChildId(null);
+      setLoading(false);
+      return;
+    }
+    
+    // Use per-instance cache to prevent duplicate requests
+    const now = Date.now();
+    if (lastRequestRef.current && 
+        lastRequestRef.current.userId === user.id && 
+        now - lastRequestRef.current.timestamp < CACHE_DURATION) {
+      DebugLogger.log('auth', 'useChildProfiles: Using cached request');
+      try {
+        await lastRequestRef.current.promise;
+        return;
+      } catch (e) {
+        // Cache failed, continue with fresh request
+      }
+    }
+    
     DebugLogger.log('auth', 'useChildProfiles: Setting loading to true');
     setLoading(true);
     setError(null);
     
-    activeLoadRequest = (async () => {
+    const loadPromise = (async () => {
       try {
-        DebugLogger.log('auth', 'useChildProfiles: Checking auth state');
-        // Auth state guard - ensure user is fully authenticated
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
-        if (authError) {
-          DebugLogger.warn('auth', 'Auth error in useChildProfiles', authError);
-          throw authError;
-        }
-        
-        if (!user) {
-          DebugLogger.log('auth', 'useChildProfiles: No authenticated user, clearing child profiles');
-          setChildren([]);
-          setActiveChildId(null);
-          setLoading(false);
-          requestCache = null;
-          return;
-        }
-        
-        DebugLogger.log('auth', 'useChildProfiles: User authenticated', { userId: user.id });
-        
-        // Check per-user cache validity
-        if (requestCache && requestCache.userId === user.id && Date.now() - requestCache.timestamp < CACHE_DURATION) {
-          DebugLogger.log('auth', 'useChildProfiles: Using cached data');
-          const { children: cachedChildren, activeChildId: cachedActiveChildId } = requestCache.data;
-          setChildren(cachedChildren || []);
-          setActiveChildId(cachedActiveChildId || null);
-          setLoading(false);
-          return;
-        }
-
         DebugLogger.log('auth', 'useChildProfiles: Fetching fresh data from database');
         const [{ data: prefs }, { data: kids, error: kidsErr }] = await Promise.all([
           supabase
@@ -124,36 +96,24 @@ export function useChildProfiles() {
         setChildren(resultData.children);
         setActiveChildId(resultData.activeChildId);
         
-        // Cache successful result per user
-        requestCache = { userId: user.id, data: resultData, timestamp: Date.now() };
-        
-        // Reset error tracking on success
-        errorCount = 0;
-        lastErrorTime = 0;
-        
       } catch (e: any) {
-        // Throttled, grouped error logging to prevent console spam
-        const now = Date.now();
-        const shouldLog = now - lastErrorTime > ERROR_THROTTLE;
-        
-        errorCount++;
-        
         DebugLogger.error('auth', 'useChildProfiles: Load failed', e);
-        
-        if (shouldLog) {
-          lastErrorTime = now;
-          LeanErrorService.logError(e, 'useChildProfiles');
-        }
-        
+        LeanErrorService.logError(e, 'useChildProfiles');
         setError(e?.message || 'Failed to load child profiles');
       } finally {
         DebugLogger.log('auth', 'useChildProfiles: Setting loading to false');
         setLoading(false);
-        activeLoadRequest = null;
       }
     })();
-
-    return activeLoadRequest;
+    
+    // Cache this request per instance
+    lastRequestRef.current = {
+      userId: user.id,
+      promise: loadPromise,
+      timestamp: now
+    };
+    
+    return loadPromise;
   }, []);
 
   // Auth state subscription and initial load - wait for auth to be ready
@@ -164,11 +124,9 @@ export function useChildProfiles() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       DebugLogger.log('auth', 'useChildProfiles: Auth state changed', { event, hasUser: !!session?.user });
       
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+      if (event === 'SIGNED_IN') {
         // Clear any stale state and reload fresh data for this user
-        errorCount = 0;
-        lastErrorTime = 0;
-        requestCache = null;
+        lastRequestRef.current = null;
         await load();
         hasInitialLoad = true;
       }
@@ -178,7 +136,7 @@ export function useChildProfiles() {
         setChildren([]);
         setActiveChildId(null);
         setLoading(false);
-        requestCache = null;
+        lastRequestRef.current = null;
         hasInitialLoad = true;
       }
     });
@@ -268,7 +226,7 @@ export function useChildProfiles() {
       setActiveChildId(childId);
       
       // Clear cache to ensure fresh data on next load
-      requestCache = null;
+      lastRequestRef.current = null;
       
       window.dispatchEvent(new CustomEvent('active-child-changed', { detail: { id: childId } }));
     } catch (e: any) {
@@ -304,7 +262,7 @@ export function useChildProfiles() {
       setChildren((prev) => [...prev, data as ChildProfile]);
       
       // Clear cache to ensure fresh data on next load
-      requestCache = null;
+      lastRequestRef.current = null;
       
       return data as ChildProfile;
     } catch (e: any) {
@@ -353,7 +311,7 @@ export function useChildProfiles() {
       setChildren((prev) => prev.map((c) => (c.id === id ? (data as ChildProfile) : c)));
       
       // Clear cache to ensure fresh data on next load
-      requestCache = null;
+      lastRequestRef.current = null;
       
       return data as ChildProfile;
     } catch (e: any) {
@@ -375,7 +333,7 @@ export function useChildProfiles() {
       setActiveChildId((prev) => (prev === id ? null : prev));
       
       // Clear cache to ensure fresh data on next load
-      requestCache = null;
+      lastRequestRef.current = null;
       
     } catch (e: any) {
       DebugLogger.error('auth', 'deleteChild error', e);

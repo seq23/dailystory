@@ -40,6 +40,7 @@
 import { useState, useEffect, useRef } from 'react';
 import type { UserInfo } from '@/types';
 import { generateSessionId } from '@/utils/sessionId';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface AudioSessionOptions {
   userInfo: UserInfo;
@@ -97,7 +98,7 @@ export const useAudioSession = ({
       sessionStorage.setItem(sessionKeyRef.current, JSON.stringify(sessionData));
       setHasPlayedThisPage(true);
     } catch (error) {
-      console.warn('Failed to save audio session data:', error);
+      DebugLogger.warn('performance', 'Failed to save audio session data:', error);
     }
   };
 

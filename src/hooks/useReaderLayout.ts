@@ -130,7 +130,7 @@ export function useReaderLayout(): UseReaderLayoutResult {
         console.info(`[ReaderLayout] Reset to auto-detected: ${autoLayout}`);
       }
     } catch (error) {
-      console.warn('[ReaderLayout] Override failed:', error);
+      DebugLogger.warn('ui', '[ReaderLayout] Override failed:', error);
     }
   };
 

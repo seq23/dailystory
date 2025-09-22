@@ -51,7 +51,7 @@ export const useUnifiedStoryGeneration = (): UseUnifiedStoryGenerationResult => 
         sessionId: config.sessionId || generateSessionIdWithPrefix(`unified-${userInfo.name}`)
       });
       
-      console.log('✅ Token-optimized generation complete:', {
+      DebugLogger.log('story', '✅ Token-optimized generation complete:', {
         success: result.success,
         pagesGenerated: result.pages?.length || 0,
         processingTime: result.metadata?.processingTime,

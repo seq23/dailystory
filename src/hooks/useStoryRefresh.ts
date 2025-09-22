@@ -16,7 +16,7 @@ export const useStoryRefresh = (userId?: string) => {
       await StoryRefreshService.forceRefreshWithUserData(userId);
       DebugLogger.log('story', 'Story refresh completed successfully');
     } catch (error) {
-      console.error('❌ Story refresh failed:', error);
+      DebugLogger.error('story', '❌ Story refresh failed:', error);
       throw error;
     } finally {
       setIsRefreshing(false);

@@ -56,7 +56,7 @@ export const useGamification = (options: UseGamificationOptions = {}) => {
         }));
         setUserStats(parsedStats);
       } catch (error) {
-        console.error('Failed to parse stored gamification data:', error);
+        DebugLogger.error('performance', 'Failed to parse stored gamification data:', error);
       }
     }
   }, [userId, enablePersistence]);
@@ -133,7 +133,7 @@ export const useGamification = (options: UseGamificationOptions = {}) => {
           sessionAchievements.push(...unlockedAchievements);
           sessionStorage.setItem('session_achievements', JSON.stringify(sessionAchievements));
         } catch (error) {
-          console.warn('Failed to store session achievements:', error);
+          DebugLogger.warn('performance', 'Failed to store session achievements:', error);
         }
       }
 
@@ -232,7 +232,7 @@ export const useGamification = (options: UseGamificationOptions = {}) => {
         try {
           localStorage.removeItem(key);
         } catch (error) {
-          console.warn('Failed to clear localStorage key:', key, error);
+          DebugLogger.warn('performance', `Failed to clear localStorage key: ${key}`, error);
         }
       });
       
@@ -241,7 +241,7 @@ export const useGamification = (options: UseGamificationOptions = {}) => {
         sessionStorage.removeItem('recentAchievements');
         sessionStorage.removeItem('session_achievements');
       } catch (error) {
-        console.warn('Failed to clear sessionStorage:', error);
+        DebugLogger.warn('performance', 'Failed to clear sessionStorage:', error);
       }
     }
     

@@ -61,7 +61,7 @@ export const useProductionAnalytics = () => {
         isLoaded: true
       });
     } catch (error) {
-      console.error('Failed to load analytics dashboard:', error);
+      DebugLogger.error('error', 'Failed to load analytics dashboard:', error);
     }
   }, []);
 

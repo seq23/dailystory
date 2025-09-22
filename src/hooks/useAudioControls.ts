@@ -96,7 +96,7 @@ export const useAudioControls = ({
 
       await playWithValidation();
     } catch (error) {
-      console.error('Enhanced audio playback error:', error);
+      DebugLogger.error('audio', 'Enhanced audio playback error:', error);
 
       toast({
         title: t("audioReading.audioError", "Audio Error"),
@@ -148,7 +148,7 @@ export const useAudioControls = ({
 
     // Guard: if page or text changed during load, stop and bail
     if (playSnapshot.page !== currentPage || playSnapshot.text !== text || playSnapshot.contentHash !== contentHash) {
-      console.warn('🛑 TTS aborted due to page/text/hash change during load');
+      DebugLogger.warn('audio', '🛑 TTS aborted due to page/text/hash change during load');
       SimplifiedAudioEngine.getInstance().stop();
       toast({ 
         title: t('audioReading.pageChanged', 'Page changed'), 

@@ -19,14 +19,14 @@ export const useCOPPANotification = () => {
       });
 
       if (error) {
-        console.error('Failed to send COPPA notification:', error);
+        DebugLogger.error('auth', 'Failed to send COPPA notification:', error);
         return { success: false, error: error.message };
       }
 
       DebugLogger.log('network', 'COPPA notification sent successfully', result);
       return { success: true, messageId: result?.messageId };
     } catch (err) {
-      console.error('Error sending COPPA notification:', err);
+      DebugLogger.error('auth', 'Error sending COPPA notification:', err);
       return { success: false, error: 'Failed to send notification' };
     }
   };

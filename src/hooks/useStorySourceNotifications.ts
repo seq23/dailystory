@@ -81,7 +81,7 @@ export const useStorySourceNotifications = () => {
           } catch {}
         }
       } catch (error) {
-        console.error('Story source notification error:', error);
+        DebugLogger.error('story', 'Story source notification error:', error);
       }
     };
 

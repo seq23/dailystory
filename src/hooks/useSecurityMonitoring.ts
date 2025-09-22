@@ -75,7 +75,7 @@ class SecurityMonitor {
         DebugLogger?.log('error', `${severity.toUpperCase()}: ${type}`, data);
       } catch (e) {
         // Fallback if DebugLogger is not available
-        console.error(`[SECURITY] ${severity.toUpperCase()}: ${type}`, data);
+        DebugLogger.error('error', `[SECURITY] ${severity.toUpperCase()}: ${type}`, data);
       }
     }
   }

@@ -117,7 +117,7 @@ export async function saveQuizAttempt({
   });
 
   if (error) {
-    console.warn("[quiz] supabase insert failed, falling back to local", error);
+    DebugLogger.warn('performance', "[quiz] supabase insert failed, falling back to local", error);
     const arr = getLocalArray<typeof payload>(LOCAL_QUIZ_KEY);
     arr.push(payload);
     setLocalArray(LOCAL_QUIZ_KEY, arr);
@@ -180,7 +180,7 @@ export async function saveGameSession({
   });
 
   if (error) {
-    console.warn("[games] supabase insert failed, falling back to local", error);
+    DebugLogger.warn('performance', "[games] supabase insert failed, falling back to local", error);
     const arr = getLocalArray<typeof payload>(LOCAL_GAME_KEY);
     arr.push(payload);
     setLocalArray(LOCAL_GAME_KEY, arr);

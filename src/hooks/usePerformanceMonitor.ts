@@ -33,7 +33,7 @@ export function usePerformanceMonitor() {
       
       // Only log CRITICAL render issues (>100ms) and only in debug mode
       if (renderTime > 100 && isPerformanceDebugEnabled()) {
-        console.error(`🚨 CRITICAL: Slow render detected: ${componentName} took ${renderTime.toFixed(2)}ms`);
+        DebugLogger.error('performance', `🚨 CRITICAL: Slow render detected: ${componentName} took ${renderTime.toFixed(2)}ms`);
       }
       
       return renderTime;
@@ -49,7 +49,7 @@ export function usePerformanceMonitor() {
       
       // Only log CRITICAL interaction issues (>300ms) and only in debug mode
       if (duration > 300 && isPerformanceDebugEnabled()) {
-        console.error(`🚨 CRITICAL: Slow interaction: ${interactionName} took ${duration.toFixed(2)}ms`);
+        DebugLogger.error('performance', `🚨 CRITICAL: Slow interaction: ${interactionName} took ${duration.toFixed(2)}ms`);
       }
       
       return duration;
@@ -66,7 +66,7 @@ export function usePerformanceMonitor() {
       for (const entry of list.getEntries()) {
         // Only log CRITICAL performance issues (>100ms) 
         if (entry.entryType === 'longtask' && entry.duration > 100) {
-          console.error(`🚨 CRITICAL: Long blocking task: ${entry.name || 'unknown'} took ${entry.duration.toFixed(2)}ms`);
+          DebugLogger.error('performance', `🚨 CRITICAL: Long blocking task: ${entry.name || 'unknown'} took ${entry.duration.toFixed(2)}ms`);
         }
       }
     });

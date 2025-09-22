@@ -146,7 +146,7 @@ export const useOpenAIRealtimeChat = ({ onFunctionCall }: UseOpenAIRealtimeChatP
             break;
 
           case 'error':
-            console.error('❌ API Error:', data.message);
+            DebugLogger.error('network', '❌ API Error:', data.message);
             toast({
               title: 'Voice Error',
               description: data.message,
@@ -162,7 +162,7 @@ export const useOpenAIRealtimeChat = ({ onFunctionCall }: UseOpenAIRealtimeChatP
       };
 
       wsRef.current.onerror = (error) => {
-        console.error('❌ WebSocket error:', error);
+        DebugLogger.error('network', '❌ WebSocket error:', error);
         
         // Dispatch error status
         window.dispatchEvent(new CustomEvent('voice:status', { 
@@ -188,7 +188,7 @@ export const useOpenAIRealtimeChat = ({ onFunctionCall }: UseOpenAIRealtimeChatP
       };
 
     } catch (error) {
-      console.error('❌ Connection failed:', error);
+      DebugLogger.error('network', '❌ Connection failed:', error);
       toast({
         title: 'Connection Failed',
         description: 'Could not connect to voice service',
@@ -221,7 +221,7 @@ export const useOpenAIRealtimeChat = ({ onFunctionCall }: UseOpenAIRealtimeChatP
       
       DebugLogger.log('audio', 'Recording started');
     } catch (error) {
-      console.error('❌ Recording failed:', error);
+      DebugLogger.error('audio', '❌ Recording failed:', error);
       
       // Dispatch error status
       window.dispatchEvent(new CustomEvent('voice:status', { 

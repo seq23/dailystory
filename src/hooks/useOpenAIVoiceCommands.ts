@@ -23,7 +23,7 @@ export const useOpenAIVoiceCommands = () => {
             text, 
             contentHash: hash,
             voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
-          }).catch(console.error);
+          }).catch((error) => DebugLogger.error('audio', 'Voice command error:', error));
         } else {
           DebugLogger.warn('audio', 'No story content available');
         }
@@ -106,7 +106,7 @@ export const useOpenAIVoiceCommands = () => {
         detail: { status, system: 'openai' } 
       }));
     } catch (error) {
-      console.error('Error dispatching OpenAI voice status:', error);
+      DebugLogger.error('audio', 'Error dispatching OpenAI voice status:', error);
     }
   }, [isConnected, isProcessing]);
 

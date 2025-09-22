@@ -81,7 +81,7 @@ export const useStoryNavigation = ({
     
     // Validate state and trigger recovery if needed
     if (urlState.isStorySession && (!urlState.page || !urlState.total)) {
-      console.warn('📍 Invalid story state detected, triggering recovery');
+      DebugLogger.warn('story', '📍 Invalid story state detected, triggering recovery');
       // Could trigger a state recovery mechanism here
     }
     
@@ -100,7 +100,7 @@ export const useStoryNavigation = ({
         timestamp: Date.now()
       }));
     } catch (error) {
-      console.warn('📍 Failed to persist navigation state:', error);
+      DebugLogger.warn('story', '📍 Failed to persist navigation state:', error);
     }
   }, []);
 

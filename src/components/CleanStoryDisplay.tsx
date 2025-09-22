@@ -278,6 +278,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   // Access ref values properly
   const sessionStartTimeValue = sessionStartTime.current;
   const characterSessionIdValue = characterSessionId.current;
+  // Local component state (non-duplicated)
   const [justAdvanced, setJustAdvanced] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastImageError, setLastImageError] = useState<string | null>(null);

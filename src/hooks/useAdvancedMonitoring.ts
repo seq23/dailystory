@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { DebugLogger } from '@/services/DebugLogger';
 
 export interface MonitoringData {
   performanceMetrics: any;
@@ -25,7 +26,7 @@ export function useAdvancedMonitoring(options?: { autoRefresh?: boolean; refresh
         setMonitoringData(data.data);
       }
     } catch (error) {
-      console.error('Failed to load monitoring data:', error);
+      DebugLogger.error('performance', 'Failed to load monitoring data:', error);
     } finally {
       setIsLoading(false);
     }
