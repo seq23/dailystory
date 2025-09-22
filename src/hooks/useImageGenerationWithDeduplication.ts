@@ -3,6 +3,7 @@ import { ImageDeduplicationService } from '@/services/imageDeduplicationService'
 import { SimpleImageService } from '@/services/SimpleImageService';
 import { DebugLogger } from '@/services/DebugLogger';
 import { ProductionLogging } from '@/services/ProductionLogger';
+import { isAPIResponse } from '@/utils/typeGuards';
 
 interface ImageGenerationResult {
   imageUrl: string;
@@ -34,6 +35,11 @@ export const useImageGenerationWithDeduplication = (sessionId: string) => {
         sessionId,
         pageNumber
       });
+
+      // Validate API response
+      if (!isAPIResponse(result) || !result.success) {
+        throw new Error('Invalid image generation response');
+      }
 
       const generationTime = Date.now() - startTime;
 

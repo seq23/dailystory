@@ -45,9 +45,9 @@ export const AudioControls: React.FC<AudioControlsProps> = ({ text, contentHash,
     setIsLoading(true);
 
     // Lock content hash during audio preparation
-    const uiHash = (typeof window !== 'undefined' && (window as any).__pageContentHash) || contentHash;
+    const uiHash = window.__pageContentHash || contentHash;
     if (typeof window !== 'undefined') {
-      (window as any).__audioHashLocked = uiHash;
+      window.__audioHashLocked = uiHash;
     }
 
     const engine = SimplifiedAudioEngine.getInstance();
@@ -86,7 +86,7 @@ export const AudioControls: React.FC<AudioControlsProps> = ({ text, contentHash,
     } finally {
       // Unlock hash after audio starts
       if (typeof window !== 'undefined') {
-        delete (window as any).__audioHashLocked;
+        delete window.__audioHashLocked;
       }
     }
   };
@@ -118,7 +118,7 @@ export const AudioControls: React.FC<AudioControlsProps> = ({ text, contentHash,
     
     // Also stop any ElevenLabs audio that might be playing
     try {
-      const audioSyncService = (window as any).__audioSyncService;
+      const audioSyncService = window.__audioSyncService;
       if (audioSyncService) {
         audioSyncService.stopAudio();
         if (DebugLogger.isDebugEnabled()) {

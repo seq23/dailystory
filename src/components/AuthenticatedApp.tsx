@@ -22,6 +22,7 @@ import { useSecurityMonitoring } from "@/hooks/useSecurityMonitoring";
 import { BookOpen, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { UserInfo, Grade, LanguageCode, LearningGoal, SessionStats } from "@/types";
+import { isUserInfo } from "@/utils/typeGuards";
 import { AdaptiveEnhancedLoading } from "@/components/AdaptiveEnhancedLoading";
 
 import { convertImagesToRecord } from "@/utils/imageUtils";
@@ -32,9 +33,55 @@ interface AuthenticatedAppProps {
 
 type AppView = "stories" | "library" | "profile" | "parent" | "account" | "reading" | "progress" | "premium" | "email-confirmation-required";
 
+interface UserProfile {
+  id?: string;
+  user_id: string;
+  display_name?: string;
+  date_of_birth?: string;
+  grade_level?: string;
+  reading_level?: string;
+  difficulty_level?: string;
+  native_language?: string;
+  story_language_preference?: string;
+  special_request?: string;
+  avatar?: string | object;
+  favorite_color?: string;
+  favorite_animal?: string;
+  favorite_food?: string;
+  hobbies?: string;
+  interests?: string[];
+  updated_at?: string;
+}
+
+interface PremiumUserPreferences {
+  user_id: string;
+  display_name?: string;
+  age?: number;
+  grade_level?: string;
+  native_language?: string;
+  learning_goal?: string;
+  avatar_type?: string;
+  avatar_skin_tone?: string;
+  is_premium?: boolean;
+}
+
+interface CurrentStory {
+  id: string;
+  title: string;
+  pages?: any[];
+  segments: any[];
+  userInfo?: UserInfo;
+  sessionId?: string;
+  difficulty: string;
+  estimatedReadingTime: number;
+  wordCount: number;
+  cachedImages?: Record<number, string>;
+  isFromSavedStory?: boolean;
+}
+
 export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
   const [currentView, setCurrentView] = useState<AppView>("stories");
-  const [userProfile, setUserProfile] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | PremiumUserPreferences | null>(null);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [isPremium, setIsPremium] = useState(false);
@@ -42,7 +89,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
   const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
   const [devTestMode, setDevTestMode] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
-  const [currentStory, setCurrentStory] = useState<any>(null);
+  const [currentStory, setCurrentStory] = useState<CurrentStory | null>(null);
   const [currentPageImages, setCurrentPageImages] = useState<Record<number, string>>({});
   
   useEffect(() => {
@@ -166,7 +213,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
           // Block access if grace period expired and not developer
           if (now > gracePeriodEnd && user.email !== 'seq.taylor@gmail.com') {
             setLoading(false);
-            setCurrentView("email-confirmation-required" as any);
+            setCurrentView("email-confirmation-required");
             return;
           }
         }
@@ -180,7 +227,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
           .eq('user_id', user.id)
           .maybeSingle();
 
-        if (!prefError && preferences) {
+        if (!prefError && preferences && isUserInfo(preferences)) {
           setUserProfile(preferences);
           // Convert preferences to UserInfo format with proper defaults
           const userInfoData: UserInfo = {
@@ -188,13 +235,13 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
             age: preferences.age || 7,
             grade: (preferences.grade_level as Grade) || 'K',
             gradeLevel: (preferences.grade_level as Grade) || 'K',
-            nativeLanguage: (preferences.native_language as LanguageCode) || 'en',
-            readingLevel: 'beginner',
-            difficultyLevel: 'beginner',
-            interests: [],
-            learningGoal: (preferences.learning_goal as LearningGoal) || 'improve-english-reading',
-            avatar: { type: 'prefer-not-to-answer', skinTone: 'medium' }, // Account holder has neutral avatar
-            favoriteColor: 'blue', // Default neutral values
+          nativeLanguage: (preferences.native_language as LanguageCode) || 'en',
+          readingLevel: 'beginner',
+          difficultyLevel: 'beginner',
+          interests: [],
+          learningGoal: (preferences.learning_goal as LearningGoal) || 'improve-english-reading',
+          avatar: { type: 'prefer-not-to-answer', skinTone: 'medium' }, // Account holder has neutral avatar
+          favoriteColor: 'blue', // Default neutral values
             favoriteAnimal: '',
             hobbies: '',
             favoriteFood: '',
@@ -236,15 +283,15 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
           gradeLevel: (profile.grade_level as Grade) || 'K',
           nativeLanguage: (profile.native_language as LanguageCode) || 'en',
           readingLevel: profile.reading_level || 'beginner',
-          difficultyLevel: (profile as any).difficulty_level || profile.reading_level || 'beginner',
+          difficultyLevel: profile.difficulty_level || profile.reading_level || 'beginner',
           interests: profile.interests || [],
           learningGoal: 'improve-english-reading' as LearningGoal,
-          avatar: typeof (profile as any).avatar === 'string' ? JSON.parse((profile as any).avatar) : ((profile as any).avatar || { type: 'prefer-not-to-answer', skinTone: 'medium' }),
-          favoriteColor: (profile as any).favorite_color || 'blue',
-          favoriteAnimal: (profile as any).favorite_animal || 'cat',
-          hobbies: (profile as any).hobbies || '',
-          favoriteFood: (profile as any).favorite_food || '',
-          specialRequest: (profile as any).special_request || ''
+          avatar: typeof profile.avatar === 'string' ? JSON.parse(profile.avatar) : (profile.avatar || { type: 'prefer-not-to-answer', skinTone: 'medium' }),
+          favoriteColor: profile.favorite_color || 'blue',
+          favoriteAnimal: profile.favorite_animal || 'cat',
+          hobbies: profile.hobbies || '',
+          favoriteFood: profile.favorite_food || '',
+          specialRequest: profile.special_request || ''
         };
         setUserInfo(userInfoData);
         setCurrentView("stories");
