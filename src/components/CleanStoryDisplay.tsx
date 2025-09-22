@@ -272,13 +272,69 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     onSessionEnded
   });
 
-  // Essential state declarations (keeping existing useState pattern)
-  const [error, setError] = useState<string | null>(null);
-  const [lastImageError, setLastImageError] = useState<string | null>(null);
-  const [isNetworkAvailable, setIsNetworkAvailable] = useState(navigator.onLine);
-  const [cachedUserId, setCachedUserId] = useState<string>(userInfo.name || 'premium');
-  const [originalStoryLength, setOriginalStoryLength] = useState<number | null>(null);
-  const [justAdvanced, setJustAdvanced] = useState(false);
+  // Initialize specialized hooks for state management
+  const { state: imageState, actions: imageActions } = useImageManagement();
+  const { state: audioVocabState, actions: audioVocabActions } = useAudioVocabulary();
+  const { state: errorNetworkState, actions: errorNetworkActions } = useErrorNetworkState();
+  const { state: metadataState, actions: metadataActions } = useStoryMetadata({ userInfo, isPremium });
+  const { state: uiState, actions: uiActions, refs: uiRefs } = useUIAnimationState();
+  const { state: difficultyState, actions: difficultyActions } = useDifficultyManagement({ userInfo });
+
+  // Destructure for cleaner access
+  const {
+    pageImages, setPageImages, pageImageMetadata, isGeneratingImage, isPreparingImage, imageLoadingStates,
+    fallbackStates, isBatchGenerating, batchDone, batchTotal, imageAspectRatios, imageNaturalSizes,
+    clearAllImages, clearPageImage, updateImageMetadata, setPageImageMetadata, setIsGeneratingImage,
+    setIsPreparingImage, setImageLoadingStates, setFallbackStates, setIsBatchGenerating,
+    setBatchDone, setBatchTotal, setImageAspectRatios, setImageNaturalSizes
+  } = { ...imageState, ...imageActions };
+
+  const {
+    isAudioPlaying, setIsAudioPlaying, isAudioLoading, setIsAudioLoading,
+    showVocabularyCollector, setShowVocabularyCollector, wordsInteracted, sessionWordsRead,
+    pagesCompleted, audioPlayedPage, vocabularyData, setVocabularyData,
+    incrementWordsInteracted, incrementSessionWordsRead, markPageCompleted,
+    resetSessionCounters, clearVocabularyData, setWordsInteracted, setSessionWordsRead,
+    setPagesCompleted, setAudioPlayedPage
+  } = { ...audioVocabState, ...audioVocabActions };
+
+  const { error, lastImageError, isNetworkAvailable } = errorNetworkState;
+  const { setError, setLastImageError, setIsNetworkAvailable, clearErrors } = errorNetworkActions;
+
+  const { 
+    cachedUserId, originalStoryLength, lastEndingPageIndex, stableSessionId,
+    storySource, specialRequestDraft
+  } = metadataState;
+  const {
+    setCachedUserId, setOriginalStoryLength, setLastEndingPageIndex,
+    setStorySource, setSpecialRequestDraft, updateCachedUserId
+  } = metadataActions;
+
+  const {
+    justAdvanced, showManualCelebration, showEndStoryModal, showConfirmEndStory,
+    showEndSessionConfirm, showCoach, showSpecialRequestDialog, finishCTAExpanded,
+    isRewriteMode, isMagicWandAnimating, wandPulse, finishSparkle, finishPressBurst,
+    finishFlashCycle, showEndingBurst, forceLoaderActive, isTimerVisible,
+    highlightSave, isSaving
+  } = uiState;
+  const {
+    setJustAdvanced, setShowManualCelebration, setShowEndStoryModal, setShowConfirmEndStory,
+    setShowEndSessionConfirm, setShowCoach, setShowSpecialRequestDialog, setFinishCTAExpanded,
+    setIsRewriteMode, setIsMagicWandAnimating, setWandPulse, setFinishSparkle,
+    setFinishPressBurst, setFinishFlashCycle, setShowEndingBurst, setForceLoaderActive,
+    setIsTimerVisible, setHighlightSave, setIsSaving
+  } = uiActions;
+  const { loaderStartRef, finishExpandedOnPageRef } = uiRefs;
+
+  const {
+    currentDifficulty, isChangingDifficulty, changeDirection, expertGradeLevel,
+    lockDifficulty, minDifficulty, minExpertGrade, allowDecreaseBelowMin
+  } = difficultyState;
+  const {
+    setCurrentDifficulty, setIsChangingDifficulty, setChangeDirection, setExpertGradeLevel,
+    setLockDifficulty, setMinDifficulty, setMinExpertGrade, setAllowDecreaseBelowMin,
+    resetDifficultyToInitial
+  } = difficultyActions;
 
   // Additional constants and helper variables
   const initialTimerSeconds = (() => { 
@@ -507,8 +563,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     };
   }, []);
 
-  // Additional premium state not in useStoryLogic
-  const [lastEndingPageIndex, setLastEndingPageIndex] = useState<number | null>(null);
+  // Additional premium state not covered by hooks yet
+  // Component continues from line 566...
   
   // Helper function to clear ending-related tracking variables
   const clearEndingTracking = useCallback(() => {
@@ -521,50 +577,14 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   }, []);
   
   
-  // Image state - keeping local to component for specific image management
-  // Import new hooks
-  const { state: imageState, actions: imageActions } = useImageManagement();
-  const { state: audioVocabState, actions: audioVocabActions } = useAudioVocabulary();
+  // Image state - now handled by specialized hooks
+  // Hooks already initialized above
   const preloadedUrlsRef = useRef<Set<string>>(new Set());
-  
-  // Dynamic aspect ratio state for mobile/tablet images - component specific
-  // Destructure image management state
-  const {
-    pageImages,
-    pageImageMetadata,
-    isGeneratingImage,
-    isPreparingImage,
-    imageLoadingStates,
-    fallbackStates,
-    isBatchGenerating,
-    batchDone,
-    batchTotal,
-    imageAspectRatios,
-    imageNaturalSizes
-  } = imageState;
-
-  const {
-    setPageImages,
-    setPageImageMetadata,
-    setIsGeneratingImage,
-    setIsPreparingImage,
-    setImageLoadingStates,
-    setFallbackStates,
-    setIsBatchGenerating,
-    setBatchDone,
-    setBatchTotal,
-    setImageAspectRatios,
-    setImageNaturalSizes,
-    clearAllImages,
-    clearPageImage,
-    updateImageMetadata
-  } = imageActions;
   
   // Use storyId from hook, create fallback for consistency
   const storyId = hookStoryId || generateSessionIdWithPrefix('story');
   
-  // PHASE 1 FIX: Stable session ID for consistent image caching across the entire story session
-  const [stableSessionId] = useState(() => generateSessionIdWithPrefix(isPremium ? 'premium' : 'guest'));
+  // PHASE 1 FIX: Session ID now handled by useStoryMetadata hook
   
   // Store session IDs in sessionStorage for debugging
   useEffect(() => {
@@ -630,34 +650,6 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   }, [pageImages, isMobileOrTablet, imageAspectRatios]);
   
   // Audio and Interactive Features state - keeping local for component-specific audio management
-  // Destructure audio vocabulary state
-  const {
-    isAudioPlaying,
-    isAudioLoading,
-    showVocabularyCollector,
-    wordsInteracted,
-    sessionWordsRead,
-    pagesCompleted,
-    audioPlayedPage,
-    vocabularyData
-  } = audioVocabState;
-
-  const {
-    setIsAudioPlaying,
-    setIsAudioLoading,
-    setShowVocabularyCollector,
-    setWordsInteracted,
-    setSessionWordsRead,
-    setPagesCompleted,
-    setAudioPlayedPage,
-    setVocabularyData,
-    incrementWordsInteracted,
-    incrementSessionWordsRead,
-    markPageCompleted,
-    resetSessionCounters,
-    clearVocabularyData
-  } = audioVocabActions;
-  
   // Vocabulary pre-fetch state - component specific
   
 
@@ -927,15 +919,14 @@ useEffect(() => {
 
 // Voice command bridge moved below after currentStory/contentHash are defined
 
-  // Debug source badge state
-  const [storySource, setStorySource] = useState<'ai' | 'fallback' | 'emergency' | 'unknown' | null>(null);
+  // Debug source badge state - now handled by useStoryMetadata hook
   const isDebug = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1';
 
   // TIMER ENFORCEMENT SYSTEM - Using hook state
   // Timer pause logic - only block forward navigation when paused for non-premium users
   const isTimerPaused = !isPremium && !isTimerRunning && !isTimerCanceled;
   const isForwardNavigationBlocked = isTimerPaused;
-  const [isTimerVisible, setIsTimerVisible] = useState(true); // Premium: timer can be dismissed and shown again
+  // Timer visibility - now handled by useUIAnimationState hook
 
   // Ensure timer defaults ON at session start for premium users
   useEffect(() => {
@@ -1044,25 +1035,10 @@ useEffect(() => {
     window.addEventListener('readingTimerToggle', handler as EventListener);
     return () => window.removeEventListener('readingTimerToggle', handler as EventListener);
   }, [timeRemaining, initialTimerSeconds]);
-// Magic wand and modal state - component specific UI state
-const [isRewriteMode, setIsRewriteMode] = useState(false);
-const [isMagicWandAnimating, setIsMagicWandAnimating] = useState(false);
-const [wandPulse, setWandPulse] = useState(false);
-
-const [showManualCelebration, setShowManualCelebration] = useState(false);
-const [showEndStoryModal, setShowEndStoryModal] = useState(false);
-const [showConfirmEndStory, setShowConfirmEndStory] = useState(false);
-const [showEndSessionConfirm, setShowEndSessionConfirm] = useState(false);
-const [showCoach, setShowCoach] = useState(false);
-// Premium: edit special requests before starting a new story - component UI state
-const [showSpecialRequestDialog, setShowSpecialRequestDialog] = useState(false);
-const [specialRequestDraft, setSpecialRequestDraft] = useState(userInfo?.specialRequest || "");
-const loaderStartRef = useRef<number>(0);
+// Magic wand and modal state - now handled by useUIAnimationState hook
 const LOADER_MIN_MS = 1600;
 
-// Expanded Finish CTA state - component specific UI
-const [finishCTAExpanded, setFinishCTAExpanded] = useState(false);
-const finishExpandedOnPageRef = useRef<number | null>(null);
+// Expanded Finish CTA state - now handled by useUIAnimationState hook
 // Collapse expanded CTA when user navigates away from the ending page
 useEffect(() => {
   if (!finishCTAExpanded) return;
@@ -1071,8 +1047,7 @@ useEffect(() => {
   }
 }, [currentPage, finishCTAExpanded]);
 
-  // Debug loader override for testing - component specific
-  const [forceLoaderActive, setForceLoaderActive] = useState(false);
+  // Debug loader override for testing - now handled by useUIAnimationState hook
   useEffect(() => {
     const force = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('forceLoader') === '1';
     if (force) {
@@ -1081,18 +1056,8 @@ useEffect(() => {
     }
   }, []);
 
-  // For now, keeping difficulty management as component state since useStoryLogic interface needs updates
+  // Difficulty management now handled by useDifficultyManagement hook
   const difficultyLevels: string[] = ['pre-reader', 'beginner', 'developing', 'independent', 'advanced'];
-  const [currentDifficulty, setCurrentDifficulty] = useState<string>(userInfo.difficultyLevel || 'beginner');
-  const [isChangingDifficulty, setIsChangingDifficulty] = useState(false);
-  const [changeDirection, setChangeDirection] = useState<'increase' | 'decrease' | 'badge'>();
-  const [expertGradeLevel, setExpertGradeLevel] = useState<"6th" | "7th" | "8th" | "9th" | "10th">("6th");
-  const [lockDifficulty, setLockDifficulty] = useState(false);
-  const [minDifficulty, setMinDifficulty] = useState<string>('beginner');
-  const [minExpertGrade, setMinExpertGrade] = useState<"6th" | "7th" | "8th" | "9th" | "10th">("6th");
-  const [allowDecreaseBelowMin, setAllowDecreaseBelowMin] = useState(false);
-  const [highlightSave, setHighlightSave] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
   
   useEffect(() => {
     if (!isPremium) return;
@@ -1540,13 +1505,7 @@ useEffect(() => {
   }
 }, [currentPage]);
 
-// Finish button feedback: state - component specific animations
-const [finishSparkle, setFinishSparkle] = useState(false);
-const [finishPressBurst, setFinishPressBurst] = useState(false);
-const [finishFlashCycle, setFinishFlashCycle] = useState(false);
-
-// Dramatic burst overlay trigger when ending generation completes - component specific animation
-const [showEndingBurst, setShowEndingBurst] = useState(false);
+// Finish button feedback: state - now handled by useUIAnimationState hook
 const prevIsGeneratingEndingRef = useRef(isGeneratingEnding);
 useEffect(() => {
   if (prevIsGeneratingEndingRef.current && !isGeneratingEnding && isPremium) {
