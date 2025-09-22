@@ -1,11 +1,12 @@
 import { StoryAudioControls } from "@/components/story/StoryAudioControls";
 import { StoryNavigationControls } from "@/components/story/StoryNavigationControls";
 import { StoryTimerIntegration } from "@/components/story/StoryTimerIntegration";
-import React from 'react';
+import { useStoryLogic } from "@/hooks/useStoryLogic";
+
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { DebugLogger } from '@/services/DebugLogger';
 import { performanceManager } from '@/services/PerformanceManager';
 import { globalResizeService } from '@/services/GlobalResizeService';
-import { useState, useEffect, useRef, useCallback } from "react";
 import { useImageManagement } from '../hooks/useImageManagement';  
 import { useAudioVocabulary } from '../hooks/useAudioVocabulary';
 import { useErrorNetworkState } from '../hooks/useErrorNetworkState';
@@ -271,65 +272,13 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     onSessionEnded
   });
 
-  // Initialize specialized hooks for state management
-  const { state: imageState, actions: imageActions } = useImageManagement();
-  const { state: audioVocabState, actions: audioVocabActions } = useAudioVocabulary();
-  const { state: errorNetworkState, actions: errorNetworkActions } = useErrorNetworkState();
-  const { state: metadataState, actions: metadataActions } = useStoryMetadata({ userInfo, isPremium });
-  const { state: uiState, actions: uiActions, refs: uiRefs } = useUIAnimationState();
-  const { state: difficultyState, actions: difficultyActions } = useDifficultyManagement({ userInfo });
-
-  // Destructure for cleaner access
-  const {
-    pageImages, setPageImages, pageImageMetadata, isGeneratingImage, imageLoadingStates,
-    fallbackStates, isBatchGenerating, batchDone, batchTotal, imageAspectRatios, imageNaturalSizes,
-    clearAllImages, clearPageImage, updateImageMetadata
-  } = { ...imageState, ...imageActions };
-
-  const {
-    isAudioPlaying, setIsAudioPlaying, isAudioLoading, setIsAudioLoading,
-    showVocabularyCollector, setShowVocabularyCollector, wordsInteracted, sessionWordsRead,
-    pagesCompleted, audioPlayedPage, vocabularyData, setVocabularyData,
-    incrementWordsInteracted, incrementSessionWordsRead, markPageCompleted,
-    resetSessionCounters, clearVocabularyData
-  } = { ...audioVocabState, ...audioVocabActions };
-
-  const { error, lastImageError, isNetworkAvailable } = errorNetworkState;
-  const { setError, setLastImageError, setIsNetworkAvailable, clearErrors } = errorNetworkActions;
-
-  const { 
-    cachedUserId, originalStoryLength, lastEndingPageIndex, stableSessionId,
-    storySource, specialRequestDraft
-  } = metadataState;
-  const {
-    setCachedUserId, setOriginalStoryLength, setLastEndingPageIndex,
-    setStorySource, setSpecialRequestDraft
-  } = metadataActions;
-
-  const {
-    justAdvanced, showManualCelebration, showEndStoryModal, showConfirmEndStory,
-    showEndSessionConfirm, showCoach, showSpecialRequestDialog, finishCTAExpanded,
-    isRewriteMode, isMagicWandAnimating, wandPulse, finishSparkle, finishPressBurst,
-    finishFlashCycle, showEndingBurst, forceLoaderActive, isTimerVisible,
-    highlightSave, isSaving
-  } = uiState;
-  const {
-    setJustAdvanced, setShowManualCelebration, setShowEndStoryModal, setShowConfirmEndStory,
-    setShowEndSessionConfirm, setShowCoach, setShowSpecialRequestDialog, setFinishCTAExpanded,
-    setIsRewriteMode, setIsMagicWandAnimating, setWandPulse, setFinishSparkle,
-    setFinishPressBurst, setFinishFlashCycle, setShowEndingBurst, setForceLoaderActive,
-    setIsTimerVisible, setHighlightSave, setIsSaving
-  } = uiActions;
-  const { loaderStartRef, finishExpandedOnPageRef } = uiRefs;
-
-  const {
-    currentDifficulty, isChangingDifficulty, changeDirection, expertGradeLevel,
-    lockDifficulty, minDifficulty, minExpertGrade, allowDecreaseBelowMin
-  } = difficultyState;
-  const {
-    setCurrentDifficulty, setIsChangingDifficulty, setChangeDirection, setExpertGradeLevel,
-    setLockDifficulty, setMinDifficulty, setMinExpertGrade, setAllowDecreaseBelowMin
-  } = difficultyActions;
+  // Essential state declarations (keeping existing useState pattern)
+  const [error, setError] = useState<string | null>(null);
+  const [lastImageError, setLastImageError] = useState<string | null>(null);
+  const [isNetworkAvailable, setIsNetworkAvailable] = useState(navigator.onLine);
+  const [cachedUserId, setCachedUserId] = useState<string>(userInfo.name || 'premium');
+  const [originalStoryLength, setOriginalStoryLength] = useState<number | null>(null);
+  const [justAdvanced, setJustAdvanced] = useState(false);
 
   // Additional constants and helper variables
   const initialTimerSeconds = (() => { 
