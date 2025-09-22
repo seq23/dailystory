@@ -644,16 +644,16 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                              // CRITICAL FIX: Load images from saved story metadata instead of hash-based lookup
                              let cachedImages = null;
                              
-                               // Priority 1: Load from story's imageCacheMetadata (newly saved stories)
-                               if ((story as any).imageCacheMetadata) {
-                                 DebugLogger.log('image', 'Loading images from story imageCacheMetadata');
-                                 cachedImages = convertImagesToRecord((story as any).imageCacheMetadata, 'Story metadata');
+                                // Priority 1: Load from story's imageCacheMetadata (newly saved stories)
+                                if ('imageCacheMetadata' in story && story.imageCacheMetadata) {
+                                  DebugLogger.log('image', 'Loading images from story imageCacheMetadata');
+                                  cachedImages = convertImagesToRecord(story.imageCacheMetadata, 'Story metadata');
+                                }
+                                // Priority 2: Load from legacy image_cache_metadata field
+                                else if ('image_cache_metadata' in story && story.image_cache_metadata) {
+                                  DebugLogger.log('image', 'Loading images from legacy image_cache_metadata');
+                                 cachedImages = convertImagesToRecord(story.image_cache_metadata, 'Legacy metadata');
                                }
-                               // Priority 2: Load from legacy image_cache_metadata field
-                               else if ((story as any).image_cache_metadata) {
-                                 DebugLogger.log('image', 'Loading images from legacy image_cache_metadata');
-                                cachedImages = convertImagesToRecord((story as any).image_cache_metadata, 'Legacy metadata');
-                              }
                               
                               // Validate loaded images
                               if (cachedImages) {

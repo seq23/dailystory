@@ -20,6 +20,21 @@ export interface StoryPage {
   timestamp: number;
 }
 
+export interface SavedStoryMetadata {
+  imageCacheMetadata?: Record<number, string>;
+  image_cache_metadata?: Record<number, string>;
+}
+
+export interface SavedStory extends SavedStoryMetadata {
+  id: string;
+  title?: string;
+  pages: StoryPage[];
+  userInfo: UserInfo;
+  createdAt: number;
+  lastAccessed: number;
+  isActive: boolean;
+}
+
 export interface StorySession {
   id: string;
   pages: StoryPage[];

@@ -285,7 +285,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   } = useStoryLogic({
     userInfo: safeUserInfo, // Use defensive userInfo
     isPremium,
-    initialDifficulty: (safeUserInfo.difficultyLevel || 'beginner') as any,
+    initialDifficulty: (safeUserInfo.difficultyLevel || 'beginner') as 'beginner' | 'easy' | 'medium' | 'hard' | 'expert',
     expertGradeLevel: safeUserInfo.expertGradeLevel,
     onSessionEnded
   });

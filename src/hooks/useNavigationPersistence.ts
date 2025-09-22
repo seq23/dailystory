@@ -7,6 +7,8 @@ interface NavigationState {
   viewHistory: number[];
 }
 
+import { DebugLogger } from '../services/DebugLogger';
+
 export const useNavigationPersistence = () => {
   const saveNavigationState = (state: Partial<NavigationState>) => {
     const existing = getNavigationState();
@@ -35,7 +37,7 @@ export const useNavigationPersistence = () => {
       
       return null;
     } catch (error) {
-      console.error('Failed to parse navigation state:', error);
+      DebugLogger.error('ui', 'Failed to parse navigation state', error);
       return null;
     }
   };

@@ -3,6 +3,7 @@
 // Complex visual processing is now handled in backend
 
 import type { UserInfo } from '@/types';
+import { DebugLogger } from './DebugLogger';
 
 export interface StoryVisualState {
   sessionId: string;
@@ -42,7 +43,7 @@ export class StoryVisualStateManager {
       };
       
       this.storyStates.set(sessionId, newState);
-      console.log(`📚 Created new frontend session state: ${sessionId} (type: ${sessionType}, persistent: ${isPersistent})`);
+      DebugLogger.log('story', `Created new frontend session state: ${sessionId}`, { sessionType, isPersistent });
     }
     
     return this.storyStates.get(sessionId)!;
@@ -70,7 +71,7 @@ export class StoryVisualStateManager {
    */
   static clearStoryState(sessionId: string): void {
     this.storyStates.delete(sessionId);
-    console.log(`🗑️ Cleared frontend session state: ${sessionId}`);
+    DebugLogger.log('story', 'Cleared frontend session state', { sessionId });
   }
 
   /**
@@ -90,27 +91,27 @@ export class StoryVisualStateManager {
         // Premium users: Keep session state for character consistency
         if (!isPremium) {
           this.clearStoryState(sessionId);
-          console.log(`🆓 Free user "Next Story": Cleared session state for fresh start`);
+          DebugLogger.log('story', 'Free user "Next Story": Cleared session state for fresh start');
         } else {
-          console.log(`💎 Premium user "Next Story": Keeping session state for continuity`);
+          DebugLogger.log('story', 'Premium user "Next Story": Keeping session state for continuity');
         }
         break;
         
       case 'rewrite':
         // Both free and premium: Always clear for rewrites
         this.clearStoryState(sessionId);
-        console.log(`🔄 Story rewrite: Cleared session state for fresh start`);
+        DebugLogger.log('story', 'Story rewrite: Cleared session state for fresh start');
         break;
         
       case 'end-session':
       case 'new-session':
         // Both free and premium: Always clear when ending/starting sessions
         this.clearStoryState(sessionId);
-        console.log(`🏁 Session ended: Cleared session state`);
+        DebugLogger.log('story', 'Session ended: Cleared session state');
         break;
         
       default:
-        console.warn(`Unknown context for session clearing: ${context}`);
+        DebugLogger.warn('story', `Unknown context for session clearing: ${context}`);
     }
   }
 
@@ -123,7 +124,7 @@ export class StoryVisualStateManager {
   ): boolean {
     const originalState = this.storyStates.get(originalSessionId);
     if (!originalState) {
-      console.warn(`Cannot create continuation: Original session ${originalSessionId} not found`);
+      DebugLogger.warn('story', 'Cannot create continuation: Original session not found', { originalSessionId });
       return false;
     }
 
@@ -138,7 +139,7 @@ export class StoryVisualStateManager {
     };
 
     this.storyStates.set(newSessionId, continuationState);
-    console.log(`🔗 Created continuation session ${newSessionId} from ${originalSessionId}`);
+    DebugLogger.log('story', 'Created continuation session', { newSessionId, originalSessionId });
     return true;
   }
 
@@ -154,17 +155,17 @@ export class StoryVisualStateManager {
     seed?: number,
     pageNumber: number = 1
   ): void {
-    console.log(`📝 Character update delegated to backend: ${characterName} (seed: ${seed})`);
+    DebugLogger.log('story', 'Character update delegated to backend', { characterName, seed });
     // Backend handles character consistency via API calls
   }
 
   static getCharacterSeed(sessionId: string, characterName: string): number | undefined {
-    console.log(`📝 Character seed request delegated to backend: ${characterName}`);
+    DebugLogger.log('story', 'Character seed request delegated to backend', { characterName });
     return undefined; // Backend handles via API
   }
 
   static addSuccessfulPrompt(sessionId: string, characterName: string, prompt: string): void {
-    console.log(`📝 Prompt tracking delegated to backend: ${characterName}`);
+    DebugLogger.log('story', 'Prompt tracking delegated to backend', { characterName });
     // Backend handles prompt history
   }
 
@@ -173,37 +174,37 @@ export class StoryVisualStateManager {
     pageNumber: number,
     newSetting: any
   ): boolean {
-    console.log(`🎨 Setting update delegated to backend for page ${pageNumber}`);
+    DebugLogger.log('story', 'Setting update delegated to backend', { pageNumber });
     return true; // Backend handles settings
   }
 
   static updateLocation(sessionId: string, newLocation: string): boolean {
-    console.log(`📍 Location update delegated to backend: ${newLocation}`);
+    DebugLogger.log('story', 'Location update delegated to backend', { newLocation });
     return true; // Backend handles location consistency
   }
 
   static resolvePronouns(sessionId: string, text: string): string {
-    console.log(`🔄 Pronoun resolution delegated to backend`);
+    DebugLogger.log('story', 'Pronoun resolution delegated to backend');
     return text; // Backend handles pronoun resolution
   }
 
   static analyzeTextForDetails(sessionId: string, text: string, pageNumber: number): any[] {
-    console.log(`🔍 Visual detail analysis delegated to backend for page ${pageNumber}`);
+    DebugLogger.log('story', 'Visual detail analysis delegated to backend', { pageNumber });
     return []; // Backend handles visual details
   }
 
   static injectConsistentDetails(sessionId: string, text: string, pageNumber: number): string {
-    console.log(`🎯 Detail injection delegated to backend for page ${pageNumber}`);
+    DebugLogger.log('story', 'Detail injection delegated to backend', { pageNumber });
     return text; // Backend handles detail consistency
   }
 
   static getVisualDetailsForPrompt(sessionId: string, pageNumber?: number): string {
-    console.log(`📋 Visual details for prompt delegated to backend`);
+    DebugLogger.log('story', 'Visual details for prompt delegated to backend');
     return ''; // Backend handles prompt enhancement
   }
 
   static getSettingForPrompt(sessionId: string): string {
-    console.log(`🎨 Setting for prompt delegated to backend`);
+    DebugLogger.log('story', 'Setting for prompt delegated to backend');
     return ''; // Backend handles setting consistency
   }
 }

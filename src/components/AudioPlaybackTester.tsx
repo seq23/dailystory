@@ -35,8 +35,8 @@ export const AudioPlaybackTester: React.FC = () => {
 
     try {
       // Check if CharlotteVoiceService is available (new unified service)
-      if (typeof window !== 'undefined' && (window as any).__CharlotteVoiceService) {
-        const charlotteService = (window as any).__CharlotteVoiceService;
+      if (typeof window !== 'undefined' && window.__CharlotteVoiceService) {
+        const charlotteService = window.__CharlotteVoiceService;
         
         setIsPlaying(true);
         await charlotteService.charlotteInteractiveAudio({
@@ -72,11 +72,14 @@ export const AudioPlaybackTester: React.FC = () => {
 
     try {
       // Test Charlotte's unified word services
-      if (typeof window !== 'undefined' && (window as any).__CharlotteVoiceService) {
-        const charlotteService = (window as any).__CharlotteVoiceService;
+      if (typeof window !== 'undefined' && window.__CharlotteVoiceService) {
+        const charlotteService = window.__CharlotteVoiceService;
         
         setIsPlaying(true);
-        await charlotteService.charlotteHearWord(testWord);
+        await charlotteService.charlotteHearWord({
+          text: testWord,
+          context: 'word-test'
+        });
         
         toast({
           title: "Charlotte Word Test",
@@ -135,14 +138,14 @@ export const AudioPlaybackTester: React.FC = () => {
   const stopAllAudio = () => {
     try {
       // Stop Charlotte audio (new unified service)
-      if (typeof window !== 'undefined' && (window as any).__CharlotteVoiceService) {
-        const charlotteService = (window as any).__CharlotteVoiceService;
+      if (typeof window !== 'undefined' && window.__CharlotteVoiceService) {
+        const charlotteService = window.__CharlotteVoiceService;
         charlotteService.stop();
       }
 
       // Stop SimplifiedAudioEngine
-      if (typeof window !== 'undefined' && (window as any).__SimplifiedAudioEngine) {
-        const audioEngine = (window as any).__SimplifiedAudioEngine;
+      if (typeof window !== 'undefined' && window.__SimplifiedAudioEngine) {
+        const audioEngine = window.__SimplifiedAudioEngine;
         audioEngine.stop();
       }
 

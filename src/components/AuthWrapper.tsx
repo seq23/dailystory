@@ -20,7 +20,7 @@ export const AuthWrapper = () => {
 
   // Expose premium status globally for voice features and events
   useEffect(() => {
-    (window as any).__IS_PREMIUM = isPremium === true;
+    window.__IS_PREMIUM = isPremium === true;
   }, [isPremium]);
 
   // Clean up orphaned story URL parameters on app initialization

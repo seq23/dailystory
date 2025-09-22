@@ -7,6 +7,20 @@ declare global {
     __audioSyncService?: {
       stopAudio: () => void;
     };
+    __CharlotteVoiceService?: {
+      charlotteInteractiveAudio: (options: { text: string; context: string }) => Promise<void>;
+      charlotteHearWord: (options: { text: string; context: string }) => Promise<void>;
+      stopAudio: () => void;
+      stop: () => void;
+    };
+    __SimplifiedAudioEngine?: {
+      playText: (text: string, contentHash: string) => Promise<void>;
+      stopAudio: () => void;
+      stop: () => void;
+    };
+    __IS_PREMIUM?: boolean;
+    __showDiscountActivationToast?: (message: string) => void;
+    SmartElevenLabsTTS?: any;
   }
   // For non-browser contexts
   // eslint-disable-next-line @typescript-eslint/no-empty-interface

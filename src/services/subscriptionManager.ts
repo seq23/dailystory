@@ -1,5 +1,6 @@
 // Subscription Management Service
 import { supabase } from '@/integrations/supabase/client';
+import { DebugLogger } from './DebugLogger';
 
 export class SubscriptionManager {
   /**
@@ -20,7 +21,7 @@ export class SubscriptionManager {
         .single();
 
       if (error) {
-        console.log('No subscription found, user is free tier');
+        DebugLogger.log('auth', 'No subscription found, user is free tier');
         return false;
       }
 
@@ -31,7 +32,7 @@ export class SubscriptionManager {
 
       return isActive && isNotExpired;
     } catch (error) {
-      console.error('Error checking premium status:', error);
+      DebugLogger.error('auth', 'Error checking premium status', error);
       return false; // Default to free tier on error
     }
   }
@@ -70,7 +71,7 @@ export class SubscriptionManager {
         expiresAt: subscription.subscription_end ? new Date(subscription.subscription_end) : undefined
       };
     } catch (error) {
-      console.error('Error getting subscription info:', error);
+      DebugLogger.error('auth', 'Error getting subscription info', error);
       return { isPremium: false };
     }
   }

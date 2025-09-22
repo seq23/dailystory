@@ -10,6 +10,8 @@ export interface DistributionContext {
   usedInputs: Set<string>;
 }
 
+import { DebugLogger } from './DebugLogger';
+
 export class UserInputDistributor {
   private static userElementsPool: Map<string, string[]> = new Map();
   private static usedElements: Map<string, Set<string>> = new Map();
@@ -81,7 +83,7 @@ export class UserInputDistributor {
       used.clear();
       const selected = pool[Math.floor(Math.random() * pool.length)];
       used.add(selected);
-      console.log(`🔄 Page ${context.pageIndex + 1}: Reset ${category} after 3+ uses, using "${selected}"`);
+      DebugLogger.log('story', `Page ${context.pageIndex + 1}: Reset ${category} after 3+ uses, using "${selected}"`);
       return selected;
     }
 
@@ -97,8 +99,8 @@ export class UserInputDistributor {
     
     // Only use user preferences if they actually provided them
     
-    console.log(`🎯 Generating template variables for page ${context.pageIndex + 1}/${context.totalPages}`);
-    console.log(`📝 UserInfo: animal=${userInfo.favoriteAnimal || 'none'}, food=${userInfo.favoriteFood || 'none'}, color=${userInfo.favoriteColor || 'none'}, hobby=${userInfo.hobbies || 'none'}`);
+    DebugLogger.log('story', `Generating template variables for page ${context.pageIndex + 1}/${context.totalPages}`);
+    DebugLogger.log('story', `UserInfo: animal=${userInfo.favoriteAnimal || 'none'}, food=${userInfo.favoriteFood || 'none'}, color=${userInfo.favoriteColor || 'none'}, hobby=${userInfo.hobbies || 'none'}`);
     
     // Get pronouns
     const pronouns = this.getPronouns(userInfo);
@@ -150,7 +152,7 @@ export class UserInputDistributor {
       '{antagonist}': this.getRandomAntagonist(context.difficulty)
     };
     
-    console.log(`🎯 Generated template variables:`, allVariables);
+    DebugLogger.log('story', 'Generated template variables', allVariables);
     return allVariables;
   }
 
