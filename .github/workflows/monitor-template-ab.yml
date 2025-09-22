@@ -62,25 +62,17 @@ jobs:
             ATTEMPTS=$((ATTEMPTS + 1))
             echo "  Attempt $ATTEMPTS/$MAX_ATTEMPTS..."
             
+            # ERROR-003 FIX: Use HEAD /health to avoid CORS preflights
+            HEALTH_URL="$BASE_URL/$FUNCTION_NAME/health"
             response=$(curl -s -o /dev/null -w "%{http_code}" \
-              -X GET "$BASE_URL/$FUNCTION_NAME" \
-              -H "Authorization: Bearer $ANON_KEY" \
-              -H "Content-Type: application/json" \
-              --max-time 15 \
-              --retry 1 \
-              --retry-delay 2 || echo "000")
+              -X HEAD "$HEALTH_URL" \
+              --max-time 10 \
+              --retry 0 || echo "000")
             
             case $response in
               "200"|"201"|"202")
                 echo "    ✅ $FUNCTION_NAME is healthy (HTTP $response)"
                 SUCCESS=true
-                ;;
-              "404")
-                echo "    ❌ $FUNCTION_NAME returned 404 (function not found)"
-                if [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; then
-                  echo "    ⏳ Waiting 30s before retry..."
-                  sleep 30
-                fi
                 ;;
               "500")
                 echo "    ⚠️  $FUNCTION_NAME returned 500 (server error)"
@@ -89,8 +81,21 @@ jobs:
                   sleep 30
                 fi
                 ;;
+              "404"|"405")
+                echo "    ⚠️  $FUNCTION_NAME health endpoint not found - trying GET fallback"
+                fallback_response=$(curl -s -o /dev/null -w "%{http_code}" \
+                  -X GET "$BASE_URL/$FUNCTION_NAME" \
+                  --max-time 10 || echo "000")
+                if [ "$fallback_response" = "200" ] || [ "$fallback_response" = "201" ]; then
+                  echo "    ✅ $FUNCTION_NAME is healthy via GET fallback (HTTP $fallback_response)"
+                  SUCCESS=true
+                else
+                  echo "    ❌ $FUNCTION_NAME failed both HEAD and GET checks"
+                fi
+                ;;
               "000")
-                echo "    ❌ $FUNCTION_NAME is unreachable (timeout/network error)"
+                # ERROR-003 FIX: Classify status 0 as network error, not server failure
+                echo "    🌐 $FUNCTION_NAME network connectivity issue (timeout/DNS)"
                 if [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; then
                   echo "    ⏳ Waiting 30s before retry..."
                   sleep 30
