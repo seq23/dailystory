@@ -2,7 +2,6 @@ import { SynchronizedElevenLabsTTS } from '@/services/SynchronizedElevenLabsTTS'
 import { contextualPronunciation } from './contextualPronunciation';
 import { AudioPermissions } from '@/utils/audioPermissions';
 import { DebugLogger } from '@/services/DebugLogger';
-import { ProductionLogging } from '@/services/ProductionLogger';
 
 export type SynchronizedPlayOptions = {
   text: string;

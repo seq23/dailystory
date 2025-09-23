@@ -118,7 +118,6 @@ export const AudioPlaybackTester: React.FC = () => {
         description: "Audio system events dispatched successfully",
       });
     } catch (error) {
-      DebugLogger.error('story', 'ProductionLogging replacement', { error });
       DebugLogger.error('audio', 'Audio coordination test failed', error);
       
       toast({

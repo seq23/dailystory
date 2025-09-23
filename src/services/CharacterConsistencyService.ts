@@ -17,7 +17,6 @@
 // See: docs/CURRENT_IMAGE_ARCHITECTURE_2025.md for current system overview
 
 import { DebugLogger } from '@/services/DebugLogger';
-import { ProductionLogging } from '@/services/ProductionLogger';
 
 export class CharacterConsistencyService {
   private static instance: CharacterConsistencyService;

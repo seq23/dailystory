@@ -1,6 +1,5 @@
 import { SmartPhoneticMapper } from './SmartPhoneticMapper';
 import { phoneticRulesEngine } from './phoneticRulesEngine';
-import { ProductionLogging } from '@/services/ProductionLogger';
 import { DebugLogger } from '@/services/DebugLogger';
 
 interface PronunciationResult {

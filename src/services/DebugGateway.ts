@@ -7,7 +7,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { DebugLogger } from '@/services/DebugLogger';
-import { ProductionLogging } from '@/services/ProductionLogger';
 
 interface DebugCall {
   operation: string;

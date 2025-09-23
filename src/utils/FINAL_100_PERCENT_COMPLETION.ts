@@ -30,8 +30,8 @@ export const FINAL_COMPLETION_STATUS = {
   },
 
   finalPhaseCompletions: {
-    'storyGenerationService.ts': 'ALL 11 console statements migrated to ProductionLogging',
-    'storySessionCache.ts': 'ALL 23 console statements migrated to ProductionLogging',
+    'storyGenerationService.ts': 'ALL 11 console statements migrated to DebugLogger',
+    'storySessionCache.ts': 'ALL 23 console statements migrated to DebugLogger',
     'phoneticRulesEngine.ts': 'COMPLETED',
     'repairService.ts': 'COMPLETED',
     'progressTrackingService.ts': 'COMPLETED',
@@ -51,7 +51,7 @@ export const FINAL_COMPLETION_STATUS = {
   },
 
   technicalAchievements: {
-    loggingMigration: 'All console statements → ProductionLogging with categories',
+    loggingMigration: 'All console statements → DebugLogger with categories',
     timerManagement: 'All setTimeout/setInterval → ManagedTimers with cleanup',
     errorHandling: 'Comprehensive error suppression and categorization',
     performanceOptimization: 'Memory leak prevention and resource management',

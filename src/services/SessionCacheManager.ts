@@ -47,7 +47,6 @@ import { EnhancedImageCache } from './enhancedImageCache';
 import { StorySessionCache } from './storySessionCache';
 import { generateSessionIdWithPrefix } from '@/utils/sessionId';
 import { DebugLogger } from '@/services/DebugLogger';
-import { ProductionLogging } from '@/services/ProductionLogger';
 
 interface ClearOptions {
   userId?: string;

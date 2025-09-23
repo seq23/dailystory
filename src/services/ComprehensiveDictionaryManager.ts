@@ -6,7 +6,6 @@ import { SmartPhoneticMapper } from './SmartPhoneticMapper';
 import { PLSLexiconGenerator, type PLSGenerationOptions } from './PLSLexiconGenerator';
 import { supabase } from '@/integrations/supabase/client';
 import { DebugLogger } from '@/services/DebugLogger';
-import { ProductionLogging } from '@/services/ProductionLogger';
 
 export interface DictionaryDeploymentResult {
   success: boolean;

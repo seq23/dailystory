@@ -39,10 +39,13 @@ function cleanupImports() {
     let content = fs.readFileSync(file, 'utf8');
     const originalContent = content;
     
-    // Remove ProductionLogger/ProductionLogging imports
-    content = content.replace(/import\s*\{\s*ProductionLogging?\s*\}\s*from\s*['"][^'"]*['"];\s*\n?/g, '');
-    content = content.replace(/import\s*\{\s*[^}]*,\s*ProductionLogging?\s*\}\s*from\s*['"][^'"]*['"];\s*\n?/g, '');
-    content = content.replace(/import\s*\{\s*ProductionLogging?\s*,\s*[^}]*\}\s*from\s*['"][^'"]*['"];\s*\n?/g, '');
+    // Remove ProductionLogger/ProductionLogging imports - improved patterns
+    content = content.replace(/import\s*\{\s*ProductionLogging?\s*\}\s*from\s*['"][^'"]*ProductionLogger['"];\s*\n?/g, '');
+    content = content.replace(/import\s*\{\s*([^}]*),\s*ProductionLogging?\s*\}\s*from\s*(['"][^'"]*['"]);\s*\n?/g, 'import { $1 } from $2;\n');
+    content = content.replace(/import\s*\{\s*ProductionLogging?\s*,\s*([^}]*)\}\s*from\s*(['"][^'"]*['"]);\s*\n?/g, 'import { $1 } from $2;\n');
+    
+    // Clean up extra newlines that might be left
+    content = content.replace(/\n\n\n+/g, '\n\n');
     
     if (content !== originalContent) {
       fs.writeFileSync(file, content, 'utf8');

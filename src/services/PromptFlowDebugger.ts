@@ -3,7 +3,6 @@
  * Tracks and logs prompt flow from frontend through backend to Runware
  */
 
-import { ProductionLogging } from '@/services/ProductionLogger';
 import { DebugLogger } from '@/services/DebugLogger';
 
 interface PromptFlowEntry {

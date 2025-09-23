@@ -2,7 +2,6 @@
 // Caches frequently accessed configuration data to improve performance
 
 import { DebugLogger } from '@/services/DebugLogger';
-import { ProductionLogging } from '@/services/ProductionLogger';
 
 interface CacheEntry<T> {
   data: T;
