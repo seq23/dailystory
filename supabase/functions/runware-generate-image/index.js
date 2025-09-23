@@ -472,19 +472,6 @@ async function handleRequest(req) {
   const requestId = CoreUtils.generateRequestId();
   tierLogging.logTier2(`🎯 [${requestId}] Orchestrator: ${req.method} ${req.url}`);
 
-  // CORS preflight
-  if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      status: 204,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-        'Access-Control-Allow-Methods': 'GET, HEAD, POST, OPTIONS',
-        'Access-Control-Max-Age': '600'
-      }
-    });
-  }
-
   // Belt & suspenders: any GET/HEAD still returns 200 here
   if (req.method === 'GET' || req.method === 'HEAD') {
     const isHeadHealth = req.method === 'HEAD' && new URL(req.url).pathname === '/health';
