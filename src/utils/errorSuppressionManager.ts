@@ -349,6 +349,11 @@ errorSuppressionManager.enable();
 // Start performance monitoring
 errorSuppressionManager.monitorPerformanceViolations();
 
+// Import and initialize browser-level error suppression
+import('./browserErrorSuppression').then(({ browserErrorSuppression }) => {
+  // Browser error suppression is auto-enabled in the import
+}).catch(console.warn);
+
 // Add a global function for debugging (development only)
 if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
   (window as any).showErrorSuppression = () => errorSuppressionManager.showCurrentSummary();
