@@ -96,18 +96,18 @@ difficultyToEducationalLevel('beginner') === 0 ✅
 **Files Modified**: `src/services/SimpleImageService.ts`
 **Result**: When orchestrator is down, system now correctly bypasses it and calls ai-visual-scene-creator directly
 
-### 7. First-load Image Auto-trigger and Failsafe - FIXED ✅
-**Issue**: Images weren't generating on first load due to stale `isNetworkAvailable` state blocking `ImageGenerationTrigger.shouldAutoGenerate`
-**Root Cause**: The `handleStoryStabilized` function was passing `isNetworkAvailable` (which initializes to `false`) instead of `navigator.onLine` to `ImageGenerationTrigger.triggerAutoGeneration`
+### 7. Image Generation Page Index Mismatch - FIXED ✅
+**Issue**: Images weren't generating because `ImageGenerationTrigger` was calling `SimpleImageService.generateStoryImage` with wrong page numbers
+**Root Cause**: In `imageGenerationTrigger.ts` line 124, the trigger was adding +1 to `options.currentPage`, causing content/cache mismatch:
+  - Event dispatched with `pageIndex: 0` (correct)
+  - Image generated for page content at `pageNumber: 1` (wrong)
+  - UI expected image for page 0 content but got page 1 content
 **Fix Applied:**
-- **Network Check Fix:** Changed `isNetworkAvailable: isNetworkAvailable` to `isNetworkAvailable: navigator.onLine` in `CleanStoryDisplay.tsx` line 952
-- **Failsafe Addition:** Added 2-second timeout after `ImageGenerationTrigger.triggerAutoGeneration` that:
-  - Checks if `pageImages[pageToGenerate]` is still missing
-  - Calls `SimpleImageService.generateStoryImage` directly with correct parameters
-  - Dispatches `image:generated` event on success
-  - Uses `ManagedTimers.setTimeout` for cleanup compatibility
-**Files Modified**: `src/components/CleanStoryDisplay.tsx`, `docs/CRITICAL_FIXES_APPLIED.md`
-**Impact**: Ensures images generate reliably on first load for both guest and premium users, with direct fallback if auto-trigger chain fails
+- **Removed +1 offset:** Changed `options.currentPage + 1` to `options.currentPage` in `imageGenerationTrigger.ts` line 124
+- **Removed redundant failsafe:** Removed the 2-second timeout failsafe since auto-trigger now works correctly
+- **Corrected network check:** Kept the `navigator.onLine` fix for immediate network availability
+**Files Modified**: `src/utils/imageGenerationTrigger.ts`, `src/components/CleanStoryDisplay.tsx`
+**Impact**: Images now generate immediately when stories stabilize, with correct page content matching
 
 *Last Updated: 2025-09-23*
 *Status: All Critical Issues Resolved + AI Visual Scene Creator Fallback + First-load Image Failsafe Implemented*

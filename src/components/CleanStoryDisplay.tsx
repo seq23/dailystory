@@ -956,41 +956,6 @@ useEffect(() => {
             sessionId: stableSessionId,
             isGuestUser: !isPremium
     });
-
-    // Failsafe: Direct image generation if auto-trigger fails
-    ManagedTimers.setTimeout(async () => {
-      if (!pageImages[pageToGenerate] && pageText) {
-        DebugLogger.log('image', `Failsafe triggered for page ${pageToGenerate} - calling SimpleImageService directly`);
-        try {
-          const result = await SimpleImageService.generateStoryImage(
-            pageText,
-            userInfo,
-            stableSessionId,
-            pageToGenerate,
-            isPremium
-          );
-          
-          if (result.success && result.imageURL) {
-            setPageImages(prev => ({
-              ...prev,
-              [pageToGenerate]: result.imageURL
-            }));
-            
-            window.dispatchEvent(new CustomEvent('image:generated', {
-              detail: { 
-                pageNumber: pageToGenerate, 
-                imageUrl: result.imageURL,
-                source: 'failsafe'
-              }
-            }));
-            
-            DebugLogger.log('image', `Failsafe success for page ${pageToGenerate}`, { imageURL: result.imageURL });
-          }
-        } catch (error) {
-          DebugLogger.warn('image', `Failsafe failed for page ${pageToGenerate}`, { error });
-        }
-      }
-    }, 2000, 'image-failsafe');
   };
   
   window.addEventListener('story:stabilized', handleStoryStabilized as EventListener);

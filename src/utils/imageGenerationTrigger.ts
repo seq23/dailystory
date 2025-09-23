@@ -121,7 +121,7 @@ export class ImageGenerationTrigger {
         options.pageText,
         options.userInfo,
         sessionId,
-        options.currentPage + 1,
+        options.currentPage,
         !options.isGuestUser // For analytics only - all users get same quality
       );
       
