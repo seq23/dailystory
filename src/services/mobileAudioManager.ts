@@ -2,7 +2,6 @@
 // Comprehensive mobile audio optimization and policy compliance
 
 import { DebugLogger } from '@/services/DebugLogger';
-import { ProductionLogging } from '@/services/ProductionLogger';
 import { ManagedTimers } from '@/utils/TimerManager';
 
 export interface MobileAudioContext {
@@ -53,9 +52,9 @@ export class MobileAudioManager {
       // Handle audio interruptions (phone calls, etc.)
       this.setupAudioInterruptionHandling();
       
-      ProductionLogging.info('Mobile audio manager initialized', 'mobileAudioManager');
+      DebugLogger.log('audio', 'Mobile audio manager initialized');
     } catch (error) {
-      ProductionLogging.error('Mobile audio initialization failed:', 'mobileAudioManager', error);
+      DebugLogger.error('audio', 'Mobile audio initialization failed:', error);
     }
   }
 
@@ -81,13 +80,13 @@ export class MobileAudioManager {
         }
 
         this.isUnlocked = true;
-        ProductionLogging.info('Mobile audio unlocked', 'mobileAudioManager');
+        DebugLogger.log('audio', 'Mobile audio unlocked');
         
         // Remove event listeners
         document.removeEventListener('touchstart', unlockAudio);
         document.removeEventListener('click', unlockAudio);
       } catch (error) {
-        ProductionLogging.warn('Audio unlock attempt failed:', 'mobileAudioManager', error);
+        DebugLogger.warn('audio', 'Audio unlock attempt failed:', error);
       }
     };
 
@@ -107,7 +106,7 @@ export class MobileAudioManager {
         this.audioElement.pause();
       } else if (!document.hidden && this.audioElement && this.wasPausedByVisibility) {
         this.wasPausedByVisibility = false;
-        this.audioElement.play().catch((error) => ProductionLogging.error('Audio play error:', 'mobileAudioManager', error));
+        this.audioElement.play().catch((error) => DebugLogger.error('audio', 'Audio play error:', error));
       }
     });
 
@@ -118,7 +117,7 @@ export class MobileAudioManager {
       });
       
       navigator.mediaSession.setActionHandler('play', () => {
-        this.audioElement?.play().catch((error) => ProductionLogging.error('Audio play error:', 'mobileAudioManager', error));
+        this.audioElement?.play().catch((error) => DebugLogger.error('audio', 'Audio play error:', error));
       });
     }
   }
@@ -130,7 +129,7 @@ export class MobileAudioManager {
       
       this.networkMonitor = () => {
         const effectiveType = connection.effectiveType;
-        ProductionLogging.info(`Network quality: ${effectiveType}`, 'mobileAudioManager');
+        DebugLogger.log('audio', `Network quality: ${effectiveType}`);
       };
       
       connection.addEventListener('change', this.networkMonitor);
@@ -199,9 +198,9 @@ export class MobileAudioManager {
       }
 
       await this.audioElement.play();
-      ProductionLogging.info('Mobile audio playback started', 'mobileAudioManager');
+      DebugLogger.log('audio', 'Mobile audio playback started');
     } catch (error) {
-      ProductionLogging.error('Mobile audio playback failed:', 'mobileAudioManager', error);
+      DebugLogger.error('audio', 'Mobile audio playback failed:', error);
       throw error;
     }
   }

@@ -4,7 +4,7 @@
 import { LanguageCode, UserInfo } from '@/types/index';
 import { SupportedLanguage } from '@/types/multilingual';
 import { getEnabledLanguages } from '@/constants/storyLanguages';
-import { ProductionLogging } from '@/services/ProductionLogger';
+import { DebugLogger } from '@/services/DebugLogger';
 import i18n from '@/i18n/config';
 
 export class LanguagePreferenceService {
@@ -61,7 +61,7 @@ export class LanguagePreferenceService {
     const isEnabled = enabledLanguages.some(lang => lang.language === storyLanguage);
     
     if (!isEnabled) {
-      ProductionLogging.warn(`Story language ${storyLanguage} is not enabled`, 'languagePreferenceService');
+      DebugLogger.warn('ui', `Story language ${storyLanguage} is not enabled`);
       return false;
     }
 

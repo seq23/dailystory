@@ -2,7 +2,6 @@
 import { EnhancedSubscriptionManager } from './enhancedSubscriptionManager';
 import { MobileSessionManager } from './mobileSessionManager';
 import { DebugLogger } from '@/services/DebugLogger';
-import { ProductionLogging } from '@/services/ProductionLogger';
 import { ManagedTimers } from '@/utils/TimerManager';
 import type { UserInfo } from '@/types';
 
@@ -45,7 +44,7 @@ export class ErrorHandlingManager {
       // Check if we've exceeded retry limit for this operation
       const errorCount = this.errorCounts.get(errorKey) || 0;
       if (errorCount >= this.MAX_RETRIES) {
-        ProductionLogging.warn(`Max retries exceeded for ${errorKey}, using fallback`, 'errorHandlingManager');
+        DebugLogger.warn('error', `Max retries exceeded for ${errorKey}, using fallback`);
         
         if (fallbackFn) {
           const fallback = await fallbackFn();
@@ -76,7 +75,7 @@ export class ErrorHandlingManager {
       };
 
     } catch (error) {
-      ProductionLogging.error(`Error in ${errorKey}:`, 'errorHandlingManager', error);
+      DebugLogger.error('error', `Error in ${errorKey}:`, error);
       
       // Increment error count
       const currentErrorCount = this.errorCounts.get(errorKey) || 0;
@@ -98,7 +97,7 @@ export class ErrorHandlingManager {
             recovery: 'Used fallback content'
           };
         } catch (fallbackError) {
-          ProductionLogging.error(`Fallback also failed for ${errorKey}:`, 'errorHandlingManager', fallbackError);
+          DebugLogger.error('error', `Fallback also failed for ${errorKey}:`, fallbackError);
         }
       }
 
@@ -170,7 +169,7 @@ export class ErrorHandlingManager {
       return [...selectedTemplate, ...maxRetryMessage];
       
     } catch (error) {
-      ProductionLogging.error('Emergency content generation failed:', 'errorHandlingManager', error);
+      DebugLogger.error('error', 'Emergency content generation failed:', error);
       
       // Final simple rhyming fallback for critical errors
       const userName = userInfo?.name || 'Friend';
@@ -284,7 +283,7 @@ export class ErrorHandlingManager {
     };
 
     // In production, this would send to analytics service
-    ProductionLogging.error(`Logged error: ${JSON.stringify(errorInfo)}`, 'errorHandlingManager');
+    DebugLogger.error('error', `Logged error: ${JSON.stringify(errorInfo)}`);
   }
 
   /**

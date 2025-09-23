@@ -73,7 +73,7 @@ export class EnhancedImageCache {
       const data = Object.fromEntries(map);
       sessionStorage.setItem(this.CACHE_KEY, JSON.stringify(data));
       
-      ProductionLogging.debug('IMAGE_CACHE', 'Image cache saved', 'enhancedImageCache', {
+      DebugLogger.log('image', 'Image cache saved', {
         totalImages: map.size,
         cacheSize: JSON.stringify(data).length
       });
@@ -182,7 +182,7 @@ export class EnhancedImageCache {
 
       this.saveCacheMap(map);
       
-      ProductionLogging.debug('IMAGE_CACHE', 'Image cached', 'enhancedImageCache', {
+      DebugLogger.log('image', 'Image cached', {
         key,
         sessionId,
         pageNumber,
@@ -214,7 +214,7 @@ export class EnhancedImageCache {
       if (cached && avatarType && skinTone) {
         const keyContainsAvatar = key.includes(`av:${avatarType}-${skinTone}`);
         if (!keyContainsAvatar) {
-          ProductionLogging.debug('IMAGE_CACHE', 'Image cache rejected due to avatar mismatch', 'enhancedImageCache', { 
+          DebugLogger.log('image', 'Image cache rejected due to avatar mismatch', { 
             key, 
             expectedAvatar: `${avatarType}-${skinTone}`,
             sessionId, 
@@ -230,21 +230,21 @@ export class EnhancedImageCache {
           // For pages beyond the first, validate story continuity
           const isValidContext = this.validateStoryContinuity(cached, contextualMarkers);
           if (!isValidContext) {
-            ProductionLogging.debug('IMAGE_CACHE', 'Image cache invalidated due to context mismatch', 'enhancedImageCache', { key, sessionId, pageNumber });
+            DebugLogger.log('image', 'Image cache invalidated due to context mismatch', { key, sessionId, pageNumber });
             map.delete(key);
             this.saveCacheMap(map);
             return null;
           }
         }
         
-        ProductionLogging.debug('IMAGE_CACHE', 'Image cache hit', 'enhancedImageCache', { key, sessionId, pageNumber, contextValidated: !!contextualMarkers });
+        DebugLogger.log('image', 'Image cache hit', { key, sessionId, pageNumber, contextValidated: !!contextualMarkers });
         return cached.url;
       }
       
-      ProductionLogging.debug('IMAGE_CACHE', 'Image cache miss', 'enhancedImageCache', { key, sessionId, pageNumber });
+      DebugLogger.log('image', 'Image cache miss', { key, sessionId, pageNumber });
       return null;
     } catch (error) {
-      ProductionLogging.error('IMAGE_CACHE', 'Failed to get cached image', 'enhancedImageCache', { error });
+      DebugLogger.error('image', 'Failed to get cached image', { error });
       return null;
     }
   }
@@ -266,13 +266,13 @@ export class EnhancedImageCache {
       
       this.saveCacheMap(map);
       
-      ProductionLogging.debug('IMAGE_CACHE', 'Session cache cleared', 'enhancedImageCache', {
+      DebugLogger.log('image', 'Session cache cleared', {
         sessionId,
         removedImages: initialSize - map.size,
         remainingImages: map.size
       });
     } catch (error) {
-      ProductionLogging.error('IMAGE_CACHE', 'Failed to clear session cache', 'enhancedImageCache', { error });
+      DebugLogger.error('image', 'Failed to clear session cache', { error });
     }
   }
 
@@ -293,13 +293,13 @@ export class EnhancedImageCache {
       
       this.saveCacheMap(map);
       
-      ProductionLogging.debug('IMAGE_CACHE', 'Story cache cleared', 'enhancedImageCache', {
+      DebugLogger.log('image', 'Story cache cleared', {
         storyHash,
         removedImages: initialSize - map.size,
         remainingImages: map.size
       });
     } catch (error) {
-      ProductionLogging.error('IMAGE_CACHE', 'Failed to clear story cache', 'enhancedImageCache', { error });
+      DebugLogger.error('image', 'Failed to clear story cache', { error });
     }
   }
 
@@ -324,7 +324,7 @@ export class EnhancedImageCache {
     this.saveCacheMap(map);
     const cleared = before - map.size;
     
-    ProductionLogging.debug('IMAGE_CACHE', `Cleared ${cleared} story images, preserved character seeds for session: ${sessionId}`, 'enhancedImageCache');
+    DebugLogger.log('image', `Cleared ${cleared} story images, preserved character seeds for session: ${sessionId}`);
   }
 
   /**
@@ -335,9 +335,9 @@ export class EnhancedImageCache {
       const map = this.getCacheMap(); // This already filters expired entries
       this.saveCacheMap(map);
       
-      ProductionLogging.debug('IMAGE_CACHE', 'Expired cache entries cleared', 'enhancedImageCache');
+      DebugLogger.log('image', 'Expired cache entries cleared');
     } catch (error) {
-      ProductionLogging.error('IMAGE_CACHE', 'Failed to clear expired entries', 'enhancedImageCache', { error });
+      DebugLogger.error('image', 'Failed to clear expired entries', { error });
     }
   }
 
@@ -347,9 +347,9 @@ export class EnhancedImageCache {
   static clearAll(): void {
     try {
       sessionStorage.removeItem(this.CACHE_KEY);
-      ProductionLogging.debug('IMAGE_CACHE', 'All session image cache cleared', 'enhancedImageCache');
+      DebugLogger.log('image', 'All session image cache cleared');
     } catch (error) {
-      ProductionLogging.error('IMAGE_CACHE', 'Failed to clear all cache', 'enhancedImageCache', { error });
+      DebugLogger.error('image', 'Failed to clear all cache', { error });
     }
   }
 
@@ -366,10 +366,10 @@ export class EnhancedImageCache {
       
       // Force garbage collection of any lingering blob URLs  
       if (typeof window !== 'undefined') {
-        ProductionLogging.debug('IMAGE_CACHE', 'Netflix: Forced image cache transition clearing', 'enhancedImageCache');
+        DebugLogger.log('image', 'Netflix: Forced image cache transition clearing');
       }
     } catch (error) {
-      ProductionLogging.error('IMAGE_CACHE', 'Failed to clear for story transition', 'enhancedImageCache', { error });
+      DebugLogger.error('image', 'Failed to clear for story transition', { error });
     }
   }
 
@@ -388,7 +388,7 @@ export class EnhancedImageCache {
         newestTimestamp: timestamps.length > 0 ? Math.max(...timestamps) : 0
       };
     } catch (error) {
-      ProductionLogging.error('IMAGE_CACHE', 'Failed to get cache metrics', 'enhancedImageCache', { error });
+      DebugLogger.error('image', 'Failed to get cache metrics', { error });
       return {
         totalImages: 0,
         sessionImages: 0,
@@ -413,7 +413,7 @@ export class EnhancedImageCache {
           timestamp: img.timestamp
         }));
     } catch (error) {
-      ProductionLogging.error('IMAGE_CACHE', 'Failed to get session images', 'enhancedImageCache', { error });
+      DebugLogger.error('image', 'Failed to get session images', { error });
       return [];
     }
   }
@@ -432,10 +432,10 @@ export class EnhancedImageCache {
         }
       }
 
-      ProductionLogging.debug('IMAGE_CACHE', 'Story cache retrieved', 'enhancedImageCache', { storyHash, imageCount: Object.keys(storyImages).length });
+      DebugLogger.log('image', 'Story cache retrieved', { storyHash, imageCount: Object.keys(storyImages).length });
       return storyImages;
     } catch (error) {
-      ProductionLogging.error('IMAGE_CACHE', 'Failed to get story cached images', 'enhancedImageCache', { error });
+      DebugLogger.error('image', 'Failed to get story cached images', { error });
       return {};
     }
   }
@@ -474,7 +474,7 @@ export class EnhancedImageCache {
     
     // If story content has changed significantly, invalidate cache
     if (storyFingerprint !== cachedFingerprint && timeAgo > 2 * 60 * 1000) {
-      ProductionLogging.debug('IMAGE_CACHE', 'Story content fingerprint mismatch', 'enhancedImageCache', {
+      DebugLogger.log('image', 'Story content fingerprint mismatch', {
         current: storyFingerprint,
         cached: cachedFingerprint,
         ageMinutes: Math.round(timeAgo / 60000)
@@ -512,7 +512,7 @@ export class EnhancedImageCache {
     
     // CRITICAL FIX: Validate text parameter to prevent runtime errors
     if (!text || typeof text !== 'string') {
-      ProductionLogging.warn('IMAGE_CACHE', 'extractStoryMarkers called with invalid text', 'enhancedImageCache', { text });
+      DebugLogger.warn('image', 'extractStoryMarkers called with invalid text', { text });
       // Return user info markers only if text is invalid
       if (userInfo?.avatar?.type) {
         const fallbackMarkers = [userInfo.avatar.type];
@@ -565,7 +565,7 @@ export class EnhancedImageCache {
   static clearForPremiumFinish(sessionId: string): void {
     // For premium users, "Finish Story" does NOT clear cache
     // Images are preserved until they start a new story or end session
-    ProductionLogging.debug('IMAGE_CACHE', 'Premium finish: Images preserved for navigation', 'enhancedImageCache');
+    DebugLogger.log('image', 'Premium finish: Images preserved for navigation');
   }
 }
 

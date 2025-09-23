@@ -1,7 +1,7 @@
 // Expert Level 4 Adaptive Difficulty Manager
 // Manages 6th-10th grade reading level progression for expert users (11+)
 
-import { ProductionLogging } from './ProductionLogger';
+import { DebugLogger } from '@/services/DebugLogger';
 import type { ExpertGradeLevel, UserInfo } from '@/types';
 
 interface ExpertProgressData {
@@ -49,7 +49,7 @@ export class ExpertDifficultyManager {
       };
       this.storeProgress(userId, progressData);
       
-      ProductionLogging.info(`Starting ${userId} at 6th grade level`, 'expertDifficultyManager');
+      DebugLogger.log('ui', `Starting ${userId} at 6th grade level`);
       return '6th';
     }
     
@@ -89,7 +89,7 @@ export class ExpertDifficultyManager {
     const randomIndex = Math.floor(Math.random() * gradeLevels.length);
     const selectedGrade = gradeLevels[randomIndex];
     
-    ProductionLogging.info(`Random selection - ${selectedGrade} grade level`, 'expertDifficultyManager');
+    DebugLogger.log('ui', `Random selection - ${selectedGrade} grade level`);
     return selectedGrade;
   }
 
@@ -149,7 +149,7 @@ export class ExpertDifficultyManager {
           if (nextLevel) {
             const previousLevel = progressData.currentGradeLevel;
             progressData.currentGradeLevel = nextLevel;
-            ProductionLogging.info(`User progressed from ${previousLevel} to ${nextLevel} grade level! (${wpm} WPM, ${pages} pages)`, 'expertDifficultyManager');
+            DebugLogger.log('ui', `User progressed from ${previousLevel} to ${nextLevel} grade level! (${wpm} WPM, ${pages} pages)`);
             
             this.storeProgress(userId, progressData);
             // Return progression info for toast notification
@@ -187,12 +187,12 @@ export class ExpertDifficultyManager {
         try {
           localStorage.setItem(key, legacyStored);
           sessionStorage.removeItem(key);
-          ProductionLogging.info(`Migrated progress to localStorage for ${userId}`, 'expertDifficultyManager');
+          DebugLogger.log('ui', `Migrated progress to localStorage for ${userId}`);
         } catch {}
         return data;
       }
     } catch (error) {
-      ProductionLogging.warn('Failed to load stored progress:', 'expertDifficultyManager', error);
+      DebugLogger.warn('ui', 'Failed to load stored progress:', error);
     }
     return null;
   }
@@ -206,7 +206,7 @@ export class ExpertDifficultyManager {
       localStorage.setItem(key, JSON.stringify(progressData));
       try { sessionStorage.removeItem(key); } catch {}
     } catch (error) {
-      ProductionLogging.warn('Failed to store progress:', 'expertDifficultyManager', error);
+      DebugLogger.warn('ui', 'Failed to store progress:', error);
     }
   }
 
@@ -227,7 +227,7 @@ export class ExpertDifficultyManager {
     const key = `expert_difficulty_progress_${userId}`;
     try { localStorage.removeItem(key); } catch {}
     try { sessionStorage.removeItem(key); } catch {}
-    ProductionLogging.info(`Reset progress for ${userId}`, 'expertDifficultyManager');
+    DebugLogger.log('ui', `Reset progress for ${userId}`);
   }
 
   /**
@@ -237,14 +237,14 @@ export class ExpertDifficultyManager {
     const userId = userInfo.name || 'anonymous';
     const progressData = this.getStoredProgress(userId);
     
-    ProductionLogging.debug('=== EXPERT DEBUG ===', 'expertDifficultyManager');
-    ProductionLogging.debug(`User: ${userId}`, 'expertDifficultyManager');
-    ProductionLogging.debug(`Progress Data: ${JSON.stringify(progressData)}`, 'expertDifficultyManager');
+    DebugLogger.log('ui', '=== EXPERT DEBUG ===');
+    DebugLogger.log('ui', `User: ${userId}`);
+    DebugLogger.log('ui', `Progress Data: ${JSON.stringify(progressData)}`);
     if (progressData) {
-      ProductionLogging.debug(`Success Rate: ${progressData.sessionsCompleted > 0 ? 
-        (progressData.successfulSessions / progressData.sessionsCompleted * 100).toFixed(1) + '%' : 'N/A'}`, 'expertDifficultyManager');
-      ProductionLogging.debug(`Avg Reading Speed: ${progressData.averageReadingSpeed.toFixed(1)} WPM`, 'expertDifficultyManager');
+      DebugLogger.log('ui', `Success Rate: ${progressData.sessionsCompleted > 0 ? 
+        (progressData.successfulSessions / progressData.sessionsCompleted * 100).toFixed(1) + '%' : 'N/A'}`);
+      DebugLogger.log('ui', `Avg Reading Speed: ${progressData.averageReadingSpeed.toFixed(1)} WPM`);
     }
-    ProductionLogging.debug('=== END DEBUG ===', 'expertDifficultyManager');
+    DebugLogger.log('ui', '=== END DEBUG ===');
   }
 }

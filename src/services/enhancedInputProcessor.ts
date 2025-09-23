@@ -5,7 +5,7 @@ import type { UserInfo, DifficultyLevel, LanguageCode } from '../types';
 import { extractThemeIntent } from '@/utils/themeIntent';
 import { InputSanitizer } from '@/utils/inputSanitizer';
 import { validateThemeBatch } from '@/utils/themeValidation';
-import { ProductionLogging } from '@/services/ProductionLogger';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface CulturalContext {
   language: LanguageCode;
@@ -33,7 +33,7 @@ export class EnhancedInputProcessor {
     userInfo: UserInfo,
     difficulty: DifficultyLevel
   ): Promise<ProcessedUserElements> {
-    ProductionLogging.debug('INPUT_PROCESSOR', `Starting enhanced input processing for ${userInfo.name}`, 'enhancedInputProcessor');
+    DebugLogger.log('ui', `Starting enhanced input processing for ${userInfo.name}`);
 
     // Create base elements without InputEnhancementEngine
     const baseElements = {
@@ -242,11 +242,11 @@ export class EnhancedInputProcessor {
       
       // Log rejections for monitoring
       if (validation.rejectedThemes.length > 0) {
-        ProductionLogging.warn('INPUT_PROCESSOR', 'Rejected themes for safety', 'enhancedInputProcessor', { rejectedThemes: validation.rejectedThemes });
+        DebugLogger.warn('ui', 'Rejected themes for safety', { rejectedThemes: validation.rejectedThemes });
       }
       
     } catch (error) {
-      ProductionLogging.warn('INPUT_PROCESSOR', 'Advanced special request processing failed', 'enhancedInputProcessor', { error });
+      DebugLogger.warn('ui', 'Advanced special request processing failed', { error });
       // Fallback to simple processing with sanitization
       const sanitized = InputSanitizer.sanitizeThemeInput(userInfo.specialRequest);
       if (sanitized) {
