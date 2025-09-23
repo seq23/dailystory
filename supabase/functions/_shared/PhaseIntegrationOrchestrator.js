@@ -360,20 +360,19 @@ export class PhaseIntegrationOrchestrator {
       // Generate 1-2 sentence context summary instead of full text
       const contextSummary = this.generateContextSummary(storyText || basePrompt);
       
-      // Avatar Identity and Regional Context
-      const avatarType = userInfo?.avatar?.type || 'child';
-      const avatarIdentity = `beautiful ${avatarType} character ${characterName}, age ${userInfo?.age || 6}`;
+      // Avatar Identity and Regional Context (use existing avatarType from line 278)
+      const avatarIdentityText = `beautiful ${avatarType} character ${characterName}, age ${userInfo?.age || 6}`;
       
       // Cultural Enhancements
       const culturalEnhancements = await this.getCulturalEnhancements(userInfo, sessionId);
       
       // STEP 1: Detect secondary characters using Character Consistency Service
       console.log(`🔍 TIER 1: Detecting secondary characters from story text`);
+      let secondaryCharacters = []; // Declare outside try-catch for proper scoping
       try {
         const detectedSecondaryChars = await this.characterConsistencyService.detectSecondaryCharacters(storyText || '');
         
         // STEP 2: Generate seeds for each detected secondary character using Character Consistency Service
-        const secondaryCharacters = [];
         for (const detectedChar of detectedSecondaryChars) {
           try {
             const charSeed = await this.characterConsistencyService.getSecondaryCharacterSeed(
@@ -395,7 +394,7 @@ export class PhaseIntegrationOrchestrator {
       } catch (characterDetectionError) {
         console.warn(`⚠️ Character detection failed in orchestrator:`, characterDetectionError.message);
         // Continue without secondary characters - don't crash the orchestrator
-        const secondaryCharacters = [];
+        secondaryCharacters = [];
       }
       
       // STEP 3: Format secondary characters for template inclusion with GUARANTEED string conversion
