@@ -1,7 +1,8 @@
 // Mobile Audio Manager
 // Comprehensive mobile audio optimization and policy compliance
 
-import { ProductionLogging } from './ProductionLogger';
+import { DebugLogger } from '@/services/DebugLogger';
+import { ProductionLogging } from '@/services/ProductionLogger';
 import { ManagedTimers } from '@/utils/TimerManager';
 
 export interface MobileAudioContext {

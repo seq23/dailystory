@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { withTimeout, TIMEOUT_CONFIGS } from '@/utils/networkTimeout';
 import { safeBase64Decode } from '@/utils/base64Decoder';
+import { DebugLogger } from '@/services/DebugLogger';
 import { ProductionLogging } from '@/services/ProductionLogger';
 import { ManagedTimers } from '@/utils/TimerManager';
 

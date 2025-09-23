@@ -1,7 +1,8 @@
 // Comprehensive Error Handling Manager for Level 0 Story System
 import { EnhancedSubscriptionManager } from './enhancedSubscriptionManager';
 import { MobileSessionManager } from './mobileSessionManager';
-import { ProductionLogging } from './ProductionLogger';
+import { DebugLogger } from '@/services/DebugLogger';
+import { ProductionLogging } from '@/services/ProductionLogger';
 import { ManagedTimers } from '@/utils/TimerManager';
 import type { UserInfo } from '@/types';
 

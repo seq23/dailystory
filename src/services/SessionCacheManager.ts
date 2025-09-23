@@ -80,7 +80,7 @@ export class SessionCacheManager {
     // CRITICAL FIX: Ensure sessionId is always defined
     const effectiveSessionId = sessionId || generateSessionIdWithPrefix('fallback_session');
     
-    ProductionLogging.debug('CACHE', 'clearAllSessionCaches ENTRY', 'SessionCacheManager', {
+    DebugLogger.log('ui', 'clearAllSessionCaches', {
       userId,
       sessionId: effectiveSessionId,
       originalSessionId: sessionId,

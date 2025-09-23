@@ -41,7 +41,8 @@
 // Story Session Cache - Persistent storage for story content across navigation
 import { DifficultyLevel } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
-import { ProductionLogging } from './ProductionLogger';
+import { DebugLogger } from '@/services/DebugLogger';
+import { ProductionLogging } from '@/services/ProductionLogger';
 
 interface CachedStorySession {
   id: string;
