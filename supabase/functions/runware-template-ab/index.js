@@ -1631,7 +1631,8 @@ async function handleRequest(req) {
       const characterName = userInfo?.name || userInfo?.childName || 'child';
       const age = userInfo?.age || 'young child';
       const skinTone = userInfo?.avatar?.skinTone || 'medium';
-      const hairColor = getHair(skinTone);
+      const culturalBundle = getCulturalBundle(userInfo, sessionId, skinTone);
+      const hairColor = culturalBundle?.hair || getHair(skinTone) || 'brown hair';
       const ethnicity = userInfo?.avatar?.ethnicity || deriveEthnicityFromAvatar(userInfo?.avatar) || 'diverse background';
       
       // Character description components
