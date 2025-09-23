@@ -126,7 +126,7 @@ export class SimplifiedAudioEngine {
       return;
     }
     
-    ProductionLogging.debug('AUDIO', 'Starting synchronized playback', 'SimplifiedAudioEngine', {
+    DebugLogger.log('audio', 'Starting synchronized playback', {
       textLength: text.length,
       voice: voiceId || 'default',
       contentHash: contentHash || 'none',
@@ -169,7 +169,7 @@ export class SimplifiedAudioEngine {
 
       // Store timing data for synchronization
       this.wordTimings = result.wordTimings;
-      ProductionLogging.debug('AUDIO', 'Word timings loaded', 'SimplifiedAudioEngine', {
+      DebugLogger.log('audio', 'Word timings loaded', {
         count: this.wordTimings.length,
         firstWord: this.wordTimings[0],
         lastWord: this.wordTimings[this.wordTimings.length - 1],
@@ -184,7 +184,7 @@ export class SimplifiedAudioEngine {
       // Enhanced mobile audio unlocking
       if (this.isMobile()) {
         if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
-          ProductionLogging.debug('AUDIO', 'Mobile device detected, ensuring audio unlock', 'SimplifiedAudioEngine');
+          DebugLogger.log('audio', 'Mobile device detected, ensuring audio unlock');
         }
         await this.unlockMobileAudioForPlayback();
         
@@ -198,19 +198,19 @@ export class SimplifiedAudioEngine {
       this.currentUrl = url;
       audio.src = url;
 
-      ProductionLogging.debug('AUDIO', 'ElevenLabs synchronized audio loaded, starting playback', 'SimplifiedAudioEngine');
+      DebugLogger.log('audio', 'ElevenLabs synchronized audio loaded, starting playback');
       await audio.play();
       this.playing = true;
       
     } catch (error) {
-      ProductionLogging.error('AUDIO', 'ElevenLabs synchronized TTS failed, using fallback', 'SimplifiedAudioEngine', { error });
+      DebugLogger.error('audio', 'ElevenLabs synchronized TTS failed, using fallback', { error });
       this.fallbackToWebSpeech(text);
     }
   }
 
   private startWordHighlighting() {
     if (!this.audio || !this.onWordHighlight || this.wordTimings.length === 0) {
-      ProductionLogging.debug('AUDIO', 'Cannot start word highlighting', 'SimplifiedAudioEngine', {
+      DebugLogger.log('audio', 'Cannot start word highlighting', {
         hasAudio: !!this.audio,
         hasCallback: !!this.onWordHighlight,
         timingsCount: this.wordTimings.length
@@ -220,7 +220,7 @@ export class SimplifiedAudioEngine {
     
     this.stopWordHighlighting(); // Clear any existing highlighting
     
-    ProductionLogging.debug('AUDIO', 'Starting native ElevenLabs word highlighting', 'SimplifiedAudioEngine', {
+    DebugLogger.log('audio', 'Starting native ElevenLabs word highlighting', {
       timingsCount: this.wordTimings.length,
       firstWord: this.wordTimings[0]?.word,
       lastWord: this.wordTimings[this.wordTimings.length - 1]?.word,
@@ -263,19 +263,19 @@ export class SimplifiedAudioEngine {
       
       // Only update if we found a word and it's different from last highlighted
       if (currentWordIndex !== -1 && currentWordIndex !== lastHighlightedIndex) {
-        ProductionLogging.debug('AUDIO', `Highlighting word ${currentWordIndex}: "${this.wordTimings[currentWordIndex].word}" at ${currentTimeMs}ms`, 'SimplifiedAudioEngine');
+        DebugLogger.log('audio', `Highlighting word ${currentWordIndex}: "${this.wordTimings[currentWordIndex].word}" at ${currentTimeMs}ms`);
         this.onWordHighlight?.(currentWordIndex);
         lastHighlightedIndex = currentWordIndex;
       } else if (currentWordIndex === -1 && lastHighlightedIndex !== -1) {
         // Clear highlighting if we're between words
-        ProductionLogging.debug('AUDIO', `Clearing highlight at ${currentTimeMs}ms (between words)`, 'SimplifiedAudioEngine');
+        DebugLogger.log('audio', `Clearing highlight at ${currentTimeMs}ms (between words)`);
         this.onWordHighlight?.(-1);
         lastHighlightedIndex = -1;
       }
       
       // Debug logging every 500ms
       if (Math.floor(currentTimeMs / 500) !== Math.floor((currentTimeMs - 50) / 500)) {
-        ProductionLogging.debug('AUDIO', `Audio progress: ${currentTimeMs.toFixed(0)}ms, word: ${currentWordIndex}, timings available: ${this.wordTimings.length}`, 'SimplifiedAudioEngine');
+        DebugLogger.log('audio', `Audio progress: ${currentTimeMs.toFixed(0)}ms, word: ${currentWordIndex}, timings available: ${this.wordTimings.length}`);
       }
     };
     
@@ -297,12 +297,12 @@ export class SimplifiedAudioEngine {
       this.onWordHighlight(-1);
     }
     
-    ProductionLogging.debug('AUDIO', 'Stopped word highlighting', 'SimplifiedAudioEngine');
+    DebugLogger.log('audio', 'Stopped word highlighting');
   }
 
   private fallbackToWebSpeech(text: string): void {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      ProductionLogging.debug('AUDIO', 'Using browser speech fallback', 'SimplifiedAudioEngine');
+      DebugLogger.log('audio', 'Using browser speech fallback');
       
       window.dispatchEvent(new CustomEvent('audio:fallback', {
         detail: { message: 'Using device voice due to network issues' }
@@ -353,7 +353,7 @@ export class SimplifiedAudioEngine {
   }
 
   stop() {
-    ProductionLogging.debug('AUDIO', 'Stopping all audio', 'SimplifiedAudioEngine');
+    DebugLogger.log('audio', 'Stopping all audio');
     
     if (this.inflight) {
       try { 
@@ -412,9 +412,9 @@ export class SimplifiedAudioEngine {
       }
       
       this.mobileAudioUnlocked = true;
-      ProductionLogging.debug('AUDIO', 'Mobile audio unlocked successfully', 'SimplifiedAudioEngine');
+      DebugLogger.log('audio', 'Mobile audio unlocked successfully');
     } catch (error) {
-      ProductionLogging.warn('AUDIO', 'Failed to unlock mobile audio', 'SimplifiedAudioEngine', { error });
+      DebugLogger.warn('audio', 'Failed to unlock mobile audio', { error });
     }
   }
 

@@ -6,7 +6,6 @@ import autoPhonicsFromVocab from '@/data/autoPhonicsFromVocab';
 import phonicsMiniDict from '@/data/phonicsMiniDict';
 import { phoneticRulesEngine } from '@/services/phoneticRulesEngine';
 import { DebugLogger } from '@/services/DebugLogger';
-import { ProductionLogging } from '@/services/ProductionLogger';
 import { ManagedTimers } from '@/utils/TimerManager';
 
 export interface PhoneticMapping {
@@ -174,7 +173,7 @@ export class SmartPhoneticMapper {
   static async batchGeneratePhonetics(words: string[], context: 'learning' | 'conversation' = 'learning'): Promise<PhoneticMapping[]> {
     const mappings: PhoneticMapping[] = [];
     
-    ProductionLogging.debug('PHONETIC', `Generating phonetic mappings for ${words.length} words`, 'SmartPhoneticMapper');
+    DebugLogger.log('audio', `Generating phonetic mappings for ${words.length} words`);
     
     // Process in smaller batches to avoid overwhelming the system
     const batchSize = 50;
@@ -191,20 +190,20 @@ export class SmartPhoneticMapper {
           await new Promise(resolve => ManagedTimers.setTimeout(() => resolve(undefined), 100, 'SmartPhoneticMapper'));
         }
       } catch (error) {
-        ProductionLogging.error('PHONETIC', `Error processing batch ${i}-${i + batchSize}`, 'SmartPhoneticMapper', { error });
+        DebugLogger.error('audio', `Error processing batch ${i}-${i + batchSize}`, { error });
         // Continue with individual processing for this batch
         for (const word of batch) {
           try {
             const mapping = await this.getPhoneticMapping(word, context);
             mappings.push(mapping);
           } catch (wordError) {
-            ProductionLogging.error('PHONETIC', `Failed to process word "${word}"`, 'SmartPhoneticMapper', { wordError });
+            DebugLogger.error('audio', `Failed to process word "${word}"`, { wordError });
           }
         }
       }
     }
 
-    ProductionLogging.debug('PHONETIC', `Generated ${mappings.length} phonetic mappings`, 'SmartPhoneticMapper');
+    DebugLogger.log('audio', `Generated ${mappings.length} phonetic mappings`);
     return mappings;
   }
 

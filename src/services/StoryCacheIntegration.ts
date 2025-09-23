@@ -5,7 +5,6 @@
 
 import { DebugLogger } from '@/services/DebugLogger';
 import { EnhancedImageCache } from './enhancedImageCache';
-import { ProductionLogging } from '@/services/ProductionLogger';
 
 export interface StoryImageMetadata {
   storyHash: string;
@@ -99,7 +98,7 @@ export class StoryCacheIntegration {
       }
     }
 
-    ProductionLogging.debug('STORY_CACHE', 'Story images loaded from cache', 'StoryCacheIntegration', {
+    DebugLogger.log('story', 'Story images loaded from cache', {
       storyHash,
       loadedCount: Object.keys(loadedImages).length,
       totalPages: pageCount
@@ -128,7 +127,7 @@ export class StoryCacheIntegration {
           continue;
         }
       } catch (error) {
-        ProductionLogging.warn('STORY_CACHE', `Image validation failed for page ${pageNum}`, 'StoryCacheIntegration', { error });
+        DebugLogger.warn('story', `Image validation failed for page ${pageNum}`, { error });
       }
 
       // Fallback to cache
@@ -137,9 +136,9 @@ export class StoryCacheIntegration {
       
       if (cachedUrl) {
         validatedImages[pageNum] = cachedUrl;
-        ProductionLogging.debug('STORY_CACHE', `Using cached fallback for page ${pageNum}`, 'StoryCacheIntegration');
+        DebugLogger.log('story', `Using cached fallback for page ${pageNum}`);
       } else {
-        ProductionLogging.warn('STORY_CACHE', `No cached fallback available for page ${pageNum}`, 'StoryCacheIntegration');
+        DebugLogger.warn('story', `No cached fallback available for page ${pageNum}`);
       }
     }
 
@@ -179,7 +178,7 @@ export class StoryCacheIntegration {
 
     if (removed > 0) {
       EnhancedImageCache['saveCacheMap'](map);
-      ProductionLogging.debug('STORY_CACHE', `Cleaned up ${removed} old story cache entries`, 'StoryCacheIntegration');
+      DebugLogger.log('story', `Cleaned up ${removed} old story cache entries`);
     }
   }
 }

@@ -48,17 +48,24 @@ function normalizeCategory(input: any): DebugCategory {
 
   // handle known uppercase categories used previously
   if (map[str]) return map[str];
+  
+  // Improved mapping for legacy categories
   switch (str) {
     case 'audio':
+      return 'audio';
     case 'story_cache':
     case 'character':
+    case 'lexicon':
+      return 'story';
     case 'phonetic':
+      return 'audio';
     case 'cache':
+      return 'performance';
     case 'service':
     case 'avatar':
-      return 'ui'; // default bucket for legacy custom categories
+      return 'ui';
     default:
-      return ('ui' as DebugCategory);
+      return 'ui' as DebugCategory;
   }
 }
 
