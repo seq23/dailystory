@@ -1343,15 +1343,32 @@ export const PREMIUM_PROMPT_TEMPLATE = TIER_25A_TEMPLATE;
 export const BASIC_PROMPT_TEMPLATE = TIER_25B_TEMPLATE;
 
 async function handleRequest(req) {
-  // Handle CORS preflight requests
+  // OPTIONS fast path (preflight)
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, {
+      status: 204,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+        'Access-Control-Allow-Methods': 'GET, HEAD, POST, OPTIONS',
+        'Access-Control-Max-Age': '600',
+        'Content-Length': '0'
+      }
+    });
   }
 
-  // Handle health check requests (GET/HEAD)
+  // GET/HEAD safety — never fail health
   if (req.method === 'GET' || req.method === 'HEAD') {
-    return createResponse({
+    const isHeadHealth = req.method === 'HEAD' && new URL(req.url).pathname === '/health';
+    if (isHeadHealth) {
+      return new Response(null, { status: 200, headers: { 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store', 'x-health': 'true', 'Content-Length': '0' } });
+    }
+    return new Response(JSON.stringify({
       status: 'healthy',
+      service: 'runware-template-ab',
+      timestamp: new Date().toISOString()
+    }), { status: 200, headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' } });
+  }
       functionName: 'runware-template-ab',
       timestamp: new Date().toISOString(),
       version: '2.1'

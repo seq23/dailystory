@@ -384,14 +384,35 @@ async function callOpenAIWithFallback(messages, timeout = 6000, requestId, avata
 }
 
 async function handleRequest(req) {
+  // OPTIONS fast path (preflight)
+  if (req.method === 'OPTIONS') {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+        'Access-Control-Allow-Methods': 'GET, HEAD, POST, OPTIONS',
+        'Access-Control-Max-Age': '600',
+        'Content-Length': '0'
+      }
+    });
+  }
+
+  // GET/HEAD safety — never fail health
+  if (req.method === 'GET' || req.method === 'HEAD') {
+    const isHeadHealth = req.method === 'HEAD' && new URL(req.url).pathname === '/health';
+    if (isHeadHealth) {
+      return new Response(null, { status: 200, headers: { 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store', 'x-health': 'true', 'Content-Length': '0' } });
+    }
+    return new Response(JSON.stringify({
+      status: 'healthy',
+      service: 'ai-visual-scene-creator',
+      timestamp: new Date().toISOString()
+    }), { status: 200, headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' } });
+  }
+
   const requestId = Math.random().toString(36).substring(2, 10);
   console.log(`🚀 [${requestId}] ai-visual-scene-creator: ${req.method} ${req.url}`);
-  
-  // Handle CORS preflight requests  
-  if (req.method === 'OPTIONS') {
-    console.log(`✅ [${requestId}] CORS preflight handled`);
-    return createCorsOptionsResponse();
-  }
   
   // Add boot failure protection
   try {

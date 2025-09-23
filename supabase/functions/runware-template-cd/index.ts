@@ -1,7 +1,4 @@
-// DEPLOY_MARKER: 2025-09-21T00:00:00Z - STATIC IMPORT + DEFENSIVE CORS V4.2
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import handleRequest from "./index.js";
-
 const SERVICE_NAME = "runware-template-cd";
 
 const corsHeaders: Record<string, string> = {
@@ -11,91 +8,96 @@ const corsHeaders: Record<string, string> = {
   "Access-Control-Max-Age": "600",
   "Vary": "Origin",
 };
-
 function withCors(res: Response): Response {
-  const headers = new Headers(res.headers);
-  for (const [k, v] of Object.entries(corsHeaders)) headers.set(k, v);
-  return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
+  const h = new Headers(res.headers);
+  for (const [k, v] of Object.entries(corsHeaders)) h.set(k, v);
+  return new Response(res.body, { status: res.status, statusText: res.statusText, headers: h });
 }
-
-// Accept Response | object | string | null/undefined
 function asResponse(maybe: unknown, fallbackStatus = 204): Response {
   if (maybe instanceof Response) return maybe;
-  if (maybe === null || maybe === undefined) return new Response(null, { status: fallbackStatus });
-  if (typeof maybe === "string") {
-    return new Response(maybe, { status: 200, headers: { "Content-Type": "text/plain; charset=utf-8" } });
+  if (maybe == null) return new Response(null, { status: fallbackStatus });
+  if (typeof maybe === "string") return new Response(maybe, { status: 200, headers: { "Content-Type": "text/plain; charset=utf-8" } });
+  return new Response(JSON.stringify(maybe), { status: 200, headers: { "Content-Type": "application/json" } });
+}
+
+// Dynamic handler loader (cached + backoff)
+type HandlerFn = (req: Request) => Promise<Response> | Response;
+let cachedHandler: HandlerFn | null = null;
+let lastLoadError: { at: number; message: string } | null = null;
+const BACKOFF_MS = 15_000;
+async function loadHandler(allowRetry = false): Promise<HandlerFn | null> {
+  if (cachedHandler) return cachedHandler;
+  const now = Date.now();
+  if (lastLoadError && now - lastLoadError.at < BACKOFF_MS && !allowRetry) return null;
+  try {
+    const mod = await import("./index.js");
+    const fn = (mod as any)?.default as HandlerFn | undefined;
+    if (typeof fn !== "function") throw new Error("Handler default export not a function");
+    cachedHandler = fn;
+    lastLoadError = null;
+    return cachedHandler;
+  } catch (err: any) {
+    lastLoadError = { at: Date.now(), message: err?.message ?? String(err) };
+    return null;
   }
-  // object / number / boolean → JSON
-  return new Response(JSON.stringify(maybe), {
-    status: 200,
-    headers: { "Content-Type": "application/json" },
-  });
 }
 
 serve(async (req) => {
-  // CORS preflight
-  if (req.method === "OPTIONS") return withCors(new Response(null, { status: 204 }));
-
-  // Ultra-fast health endpoint (load balancer probe)
-  if (req.method === "HEAD" && new URL(req.url).pathname === "/health") {
-    return withCors(new Response(null, { 
-      status: 200, 
-      headers: { 
-        'Cache-Control': 'no-store',
-        'x-health': 'true' 
-      }
-    }));
-  }
-
-  // Health checks
-  if (req.method === "GET" || req.method === "HEAD") {
+  try {
     const url = new URL(req.url);
-    const readyCheck = url.pathname.endsWith("/ready") || url.searchParams.has("ready");
 
-    if (readyCheck) {
-      const loaded = typeof handleRequest === "function";
-      const res = new Response(null, { status: loaded ? 204 : 503 });
-      return withCors(req.method === "HEAD" ? new Response(null, { status: res.status, headers: res.headers }) : res);
+    // OPTIONS → 204, empty body
+    if (req.method === "OPTIONS") {
+      return withCors(new Response(null, { status: 204, headers: { "Content-Length": "0" } }));
     }
 
-    const payload = {
-      status: "healthy",
-      service: SERVICE_NAME,
-      timestamp: new Date().toISOString(),
-      handler_loaded: typeof handleRequest === "function",
-      environment: {
-        hasRunwareKey: !!Deno.env.get('RUNWARE_API_KEY'),
-        hasSupabaseUrl: !!Deno.env.get('SUPABASE_URL')
-      }
-    };
+    // HEAD /health → 200, empty body
+    if (req.method === "HEAD" && url.pathname === "/health") {
+      return withCors(new Response(null, { status: 200, headers: { "Cache-Control": "no-store", "x-health": "true", "Content-Length": "0" } }));
+    }
 
-    const res = new Response(JSON.stringify(payload), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
-
-    // HEAD gets headers/status only
-    return withCors(req.method === "HEAD" ? new Response(null, { status: res.status, headers: res.headers }) : res);
-  }
-
-  // POST handling
-  try {
-    const out = await handleRequest(req);
-    return withCors(asResponse(out));
-  } catch (error) {
-    console.error(`❌ [${SERVICE_NAME}] Unhandled error:`, error);
-    const errRes = new Response(
-      JSON.stringify({
-        error: "Internal server error",
-        message: error?.message ?? String(error),
+    // Any GET → boring 200 JSON (never fails)
+    if (req.method === "GET") {
+      const payload = {
+        status: "healthy",
         service: SERVICE_NAME,
         timestamp: new Date().toISOString(),
-      }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
-    return withCors(errRes);
+        handler_cached: !!cachedHandler,
+        last_error: lastLoadError?.message ?? null,
+      };
+      return withCors(new Response(JSON.stringify(payload), { status: 200, headers: { "Content-Type": "application/json" } }));
+    }
+
+    // Any other HEAD → 200, empty body
+    if (req.method === "HEAD") {
+      return withCors(new Response(null, { status: 200, headers: { "Cache-Control": "no-store", "Content-Length": "0" } }));
+    }
+
+    // POST → load handler (with backoff), delegate or clean 503
+    if (req.method === "POST") {
+      let handler = await loadHandler(false);
+      if (!handler) handler = await loadHandler(true);
+      if (!handler) {
+        return withCors(new Response(JSON.stringify({
+          error: "HANDLER_UNAVAILABLE",
+          message: lastLoadError?.message ?? "index.js failed to load",
+          service: SERVICE_NAME,
+          timestamp: new Date().toISOString(),
+        }), { status: 503, headers: { "Content-Type": "application/json" } }));
+      }
+      const out = await handler(req);
+      return withCors(asResponse(out));
+    }
+
+    // Method not allowed (still CORS-safe)
+    return withCors(new Response(JSON.stringify({ error: "Method not allowed", allowed: ["GET", "HEAD", "POST", "OPTIONS"] }),
+      { status: 405, headers: { "Content-Type": "application/json" } }));
+  } catch (err: any) {
+    return withCors(new Response(JSON.stringify({
+      error: "Internal receptionist error",
+      message: err?.message ?? String(err),
+      service: SERVICE_NAME,
+      timestamp: new Date().toISOString(),
+    }), { status: 500, headers: { "Content-Type": "application/json" } }));
   }
 });
-
-console.log(`🎯 [${SERVICE_NAME}] Static Import Architecture V4.2 initialized`);
-console.log(`🔒 [${SERVICE_NAME}] No more sync anomalies - bulletproof pattern active`);
