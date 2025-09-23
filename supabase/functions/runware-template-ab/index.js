@@ -1239,10 +1239,10 @@ function extractSimpleScene(storyText) {
   const lower = normalized.toLowerCase();
   const { action, objects, setting } = extractHybrid(normalized);
 
-  // ESCALATION LOGIC: Check for missing action
+  // FALLBACK: Generate basic scene if no action detected
   if (!action) {
-    console.log('⚠️ Missing action - escalating to next tier');
-    return 'ESCALATE_MISSING_ACTION';
+    console.log('⚠️ Missing action - using fallback scene');
+    return 'child in a story scene';
   }
 
   // Format action → progressive verb + rest
