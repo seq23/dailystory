@@ -353,6 +353,36 @@
       "description": "Once you've filled in the details, click here to generate a personalized reading adventure that's perfect for your child!"
     }
   },
+  "readingLevels": {
+    "preReader": {
+      "title": "Pre-Reader",
+      "desc": "Getting ready to read with picture support",
+      "educational": "Based on pre-literacy skills and Dolch Pre-Primer words"
+    },
+    "beginner": {
+      "title": "Beginner",
+      "desc": "Learning basic words and simple sentences",
+      "educational": "Uses Dolch Primer and Grade 1 sight words (220 most common words)"
+    },
+    "developing": {
+      "title": "Developing",
+      "desc": "Building reading confidence and fluency",
+      "educational": "Incorporates Grade 2-3 vocabulary with reading comprehension focus"
+    },
+    "independent": {
+      "title": "Independent",
+      "desc": "Reading chapter books independently",
+      "educational": "Grade 4-5 level with advanced sentence structures"
+    },
+    "advanced": {
+      "title": "Advanced",
+      "desc": "Mastering complex stories and vocabulary",
+      "educational": "Grade 6-10 with sophisticated vocabulary and themes"
+    },
+    "gentleGuidance": "Many {age} year olds enjoy {level} stories",
+    "choiceEmphasis": "Choose what sounds most fun and comfortable",
+    "noWrongChoice": "There's no wrong choice - we'll make it perfect for you"
+  },
   "interactiveWord": {
     "hearIt": "Hear It",
     "explain": "Explain",
