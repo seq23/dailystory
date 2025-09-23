@@ -1,6 +1,6 @@
 // Premium Story Management Service
 import { supabase } from '@/integrations/supabase/client';
-import { ProductionLogging } from './ProductionLogger';
+import { DebugLogger } from '@/services/DebugLogger';
 import { Story, UserInfo, DifficultyLevel } from '@/types/index';
 
 export interface SavedStory {
@@ -82,7 +82,7 @@ export class PremiumStoryManager {
       .single();
 
     if (error) {
-      ProductionLogging.error(`Error saving story: ${error.message}`, 'premiumStoryManager');
+      DebugLogger.error('auth', `Error saving story: ${error.message}`);
       throw new Error('Failed to save story');
     }
 
@@ -105,7 +105,7 @@ export class PremiumStoryManager {
       .order(sortBy, { ascending: sortBy === 'title' });
 
     if (error) {
-      ProductionLogging.error(`Error fetching saved stories: ${error.message}`, 'premiumStoryManager');
+      DebugLogger.error('auth', `Error fetching saved stories: ${error.message}`);
       throw new Error('Failed to fetch saved stories');
     }
 
@@ -132,7 +132,7 @@ export class PremiumStoryManager {
       if (error.code === 'PGRST116') {
         return null; // Story not found
       }
-      ProductionLogging.error(`Error fetching saved story: ${error.message}`, 'premiumStoryManager');
+      DebugLogger.error('auth', `Error fetching saved story: ${error.message}`);
       throw new Error('Failed to fetch saved story');
     }
 
@@ -155,7 +155,7 @@ export class PremiumStoryManager {
       .eq('user_id', user.id);
 
     if (error) {
-      ProductionLogging.error(`Error deleting story: ${error.message}`, 'premiumStoryManager');
+      DebugLogger.error('auth', `Error deleting story: ${error.message}`);
       throw new Error('Failed to delete story');
     }
   }
@@ -188,7 +188,7 @@ export class PremiumStoryManager {
       .eq('user_id', user.id);
 
     if (error) {
-      ProductionLogging.error(`Error updating favorite status: ${error.message}`, 'premiumStoryManager');
+      DebugLogger.error('auth', `Error updating favorite status: ${error.message}`);
       throw new Error('Failed to update favorite status');
     }
   }
@@ -221,7 +221,7 @@ export class PremiumStoryManager {
       .single();
 
     if (error) {
-      ProductionLogging.error(`Error saving user preferences: ${error.message}`, 'premiumStoryManager');
+      DebugLogger.error('auth', `Error saving user preferences: ${error.message}`);
       throw new Error('Failed to save user preferences');
     }
 
@@ -247,7 +247,7 @@ export class PremiumStoryManager {
       if (error.code === 'PGRST116') {
         return null; // No preferences found
       }
-      ProductionLogging.error(`Error fetching user preferences: ${error.message}`, 'premiumStoryManager');
+      DebugLogger.error('auth', `Error fetching user preferences: ${error.message}`);
       throw new Error('Failed to fetch user preferences');
     }
 
@@ -293,7 +293,7 @@ export class PremiumStoryManager {
     const { data, error } = await queryBuilder.order('created_at', { ascending: false });
 
     if (error) {
-      ProductionLogging.error(`Error searching stories: ${error.message}`, 'premiumStoryManager');
+      DebugLogger.error('auth', `Error searching stories: ${error.message}`);
       throw new Error('Failed to search stories');
     }
 

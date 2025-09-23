@@ -2,7 +2,7 @@
 // Tracks user engagement, template performance, and system health metrics
 
 import { generateSessionIdWithPrefix } from '@/utils/sessionId';
-import { ProductionLogging } from './ProductionLogger';
+import { DebugLogger } from '@/services/DebugLogger';
 
 export interface UserSession {
   sessionId: string;
@@ -61,7 +61,7 @@ export class ProductionAnalyticsTracker {
   static initialize(): void {
     if (this.isInitialized) return;
 
-    ProductionLogging.info('Initializing Production Analytics Tracker...', 'productionAnalyticsTracker');
+    DebugLogger.log('performance', 'Initializing Production Analytics Tracker...');
     
     // Set up periodic health monitoring
     // Disabled auto-refresh intervals to prevent unwanted page refreshes
@@ -74,7 +74,7 @@ export class ProductionAnalyticsTracker {
     // }, 300000); // Every 5 minutes
 
     this.isInitialized = true;
-    ProductionLogging.info('Production Analytics Tracker initialized', 'productionAnalyticsTracker');
+    DebugLogger.log('performance', 'Production Analytics Tracker initialized');
   }
 
   /**
@@ -103,7 +103,7 @@ export class ProductionAnalyticsTracker {
 
     this.sessions.set(sessionId, session);
     
-    ProductionLogging.info(`Started session ${sessionId} for ${isPremium ? 'premium' : 'free'} user`, 'productionAnalyticsTracker');
+    DebugLogger.log('performance', `Started session ${sessionId} for ${isPremium ? 'premium' : 'free'} user`);
     return sessionId;
   }
 
@@ -192,7 +192,7 @@ export class ProductionAnalyticsTracker {
       }
     });
 
-    ProductionLogging.info(`Ended session ${sessionId} with status: ${completionStatus}`, 'productionAnalyticsTracker');
+    DebugLogger.log('performance', `Ended session ${sessionId} with status: ${completionStatus}`);
   }
 
   /**
@@ -423,6 +423,6 @@ export class ProductionAnalyticsTracker {
     this.sessions.clear();
     this.templateMetrics.clear();
     this.systemMetrics = [];
-    ProductionLogging.info('Production Analytics Tracker reset complete', 'productionAnalyticsTracker');
+    DebugLogger.log('performance', 'Production Analytics Tracker reset complete');
   }
 }

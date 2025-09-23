@@ -3,7 +3,7 @@
 // Sends fully resolved bundles to streamlined edge function
 
 import { supabase } from "@/integrations/supabase/client";
-import { ProductionLogging } from './ProductionLogger';
+import { DebugLogger } from '@/services/DebugLogger';
 import type { UserInfo, DifficultyLevel, LearningGoal, AvatarType } from "@/types";
 import { VocabularyService, type VocabularyIntegration } from "./vocabularyService";
 import { extractThemeIntent, type ThemeIntent } from "@/utils/themeIntent";
@@ -64,7 +64,7 @@ export class StoryGenerationService {
     }
   ): Promise<StoryGenerationResult> {
     try {
-      ProductionLogging.info('Starting 4-layer story generation pipeline', 'storyGenerationService');
+      DebugLogger.log('story', 'Starting 4-layer story generation pipeline');
       ProductionLogging.debug('STORY', 'Config received', 'storyGenerationService', {
         sessionType: config.sessionType,
         pageNumber: config.pageNumber,

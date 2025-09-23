@@ -42,7 +42,6 @@
 import { DifficultyLevel } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
 import { DebugLogger } from '@/services/DebugLogger';
-import { ProductionLogging } from '@/services/ProductionLogger';
 
 interface CachedStorySession {
   id: string;
@@ -120,7 +119,7 @@ export class StorySessionCache {
     try {
       sessionStorage.setItem(cacheKey, JSON.stringify(session));
       const avatarInfo = avatarType ? ` (avatar: ${avatarType})` : '';
-      ProductionLogging.info('CACHE', `Story session cached for user ${userId} with difficulty ${difficulty}${avatarInfo}`, 'storySessionCache');
+      DebugLogger.log('story', `Story session cached for user ${userId} with difficulty ${difficulty}${avatarInfo}`);
       return sessionId;
     } catch (error) {
       ProductionLogging.warn('CACHE', 'Failed to cache story session', 'storySessionCache', error);

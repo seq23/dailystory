@@ -1,5 +1,5 @@
 import type { UserInfo, ExpertGradeLevel } from "@/types";
-import { ProductionLogging } from './ProductionLogger';
+import { DebugLogger } from '@/services/DebugLogger';
 import { APP_CONFIG } from "@/constants/app";
 import { ExpertDifficultyManager } from "./expertDifficultyManager";
 import { generateSessionIdWithPrefix } from '@/utils/sessionId';
@@ -381,7 +381,7 @@ export class ProgressTrackingService {
       try {
         return JSON.parse(stored);
       } catch (error) {
-        ProductionLogging.error('Error loading progress:', 'progressTrackingService', error);
+        DebugLogger.error('performance', 'Error loading progress:', error);
         return null;
       }
     }

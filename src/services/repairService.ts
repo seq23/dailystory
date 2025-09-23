@@ -1,6 +1,6 @@
 // Content Repair Service with Production Logger
 import { supabase } from '@/integrations/supabase/client';
-import { ProductionLogging } from './ProductionLogger';
+import { DebugLogger } from '@/services/DebugLogger';
 import type { UserInfo, DifficultyLevel } from '@/types';
 import { UnifiedValidator, type ValidationResult } from '@/utils/unifiedValidator';
 
@@ -30,7 +30,7 @@ export class RepairService {
    * Attempt to repair content using AI with specific repair instructions
    */
   static async repairContent(request: RepairRequest): Promise<RepairResult> {
-    ProductionLogging.info(`Starting content repair for ${request.difficulty}`, 'repairService');
+    DebugLogger.log('story', `Starting content repair for ${request.difficulty}`);
     
     // Create session key for loop protection
     const sessionKey = `${request.userInfo.name}-${request.difficulty}`;
@@ -44,7 +44,7 @@ export class RepairService {
     
     const sessionAttempts = this.repairAttempts.get(sessionKey) || 0;
     if (sessionAttempts >= this.MAX_REPAIR_ATTEMPTS) {
-      ProductionLogging.info('Max session repair attempts reached, aborting', 'repairService');
+      DebugLogger.log('story', 'Max session repair attempts reached, aborting');
       return {
         success: false,
         error: 'Maximum repair attempts reached for this session',
@@ -59,7 +59,7 @@ export class RepairService {
       attempts++;
       
       try {
-        ProductionLogging.info(`Repair attempt ${attempts}/${this.MAX_REPAIR_ATTEMPTS}`, 'repairService');
+        DebugLogger.log('story', `Repair attempt ${attempts}/${this.MAX_REPAIR_ATTEMPTS}`);
         
         // Create repair-specific prompt
         const repairPrompt = this.createRepairPrompt(request, attempts);
@@ -102,7 +102,7 @@ export class RepairService {
         });
 
         // Backend now handles all validation - trust the response
-        ProductionLogging.info('Content repair successful', 'repairService');
+        DebugLogger.log('story', 'Content repair successful');
         
         // Update session tracking for successful repair
         this.repairAttempts.set(sessionKey, sessionAttempts + attempts);
@@ -115,7 +115,7 @@ export class RepairService {
         };
 
       } catch (error) {
-        ProductionLogging.error(`Attempt ${attempts} failed:`, 'repairService', error);
+        DebugLogger.error('story', `Attempt ${attempts} failed:`, error);
         lastError = error instanceof Error ? error.message : 'Unknown repair error';
         
         // Don't retry on certain errors
@@ -125,7 +125,7 @@ export class RepairService {
       }
     }
 
-    ProductionLogging.error('All repair attempts failed', 'repairService');
+    DebugLogger.error('story', 'All repair attempts failed');
     
     // Update session tracking for failed repair
     this.repairAttempts.set(sessionKey, sessionAttempts + attempts);

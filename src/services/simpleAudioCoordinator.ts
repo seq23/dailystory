@@ -4,7 +4,7 @@
  * Provides timeout protection and better mutual exclusion
  */
 
-import { ProductionLogging } from './ProductionLogger';
+import { DebugLogger } from '@/services/DebugLogger';
 
 type AudioSystem = 'sync' | 'simple' | 'voice' | 'charlotte' | 'interactive-word' | null;
 
@@ -21,7 +21,7 @@ class SimpleAudioCoordinator {
     window.addEventListener('audio:request', ((event: CustomEvent) => {
       const system = event.detail?.system as AudioSystem;
       if (system && this.activeSystem !== system) {
-        ProductionLogging.info(`${system} requesting control, current: ${this.activeSystem}`, 'simpleAudioCoordinator');
+        DebugLogger.log('audio', `${system} requesting control, current: ${this.activeSystem}`);
         
         // Clear any existing timeout
         if (this.lockTimeout) {

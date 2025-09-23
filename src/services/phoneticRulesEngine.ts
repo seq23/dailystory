@@ -4,7 +4,6 @@
  */
 import miniDict from '@/data/phonicsMiniDict';
 import { DebugLogger } from '@/services/DebugLogger';
-import { ProductionLogging } from './ProductionLogger';
 
 interface PhoneticRule {
   pattern: RegExp;
@@ -145,36 +144,36 @@ export class PhoneticRulesEngine {
    * Break a word into phonetic syllables - UNIVERSAL support for all users and languages
    */
   public breakIntoSyllables(word: string): string[] {
-    ProductionLogging.debug(`Breaking "${word}" into syllables`, 'phoneticRulesEngine');
+    DebugLogger.log('audio', `Breaking "${word}" into syllables`);
     
     if (!word || typeof word !== 'string') {
-      ProductionLogging.warn('Invalid word provided to breakIntoSyllables:', 'phoneticRulesEngine', word);
+      DebugLogger.warn('audio', 'Invalid word provided to breakIntoSyllables:', word);
       return [word || ''];
     }
     
     const cleanWord = word.toLowerCase().replace(/[^a-záéíóúñü]/g, ''); // Support accented characters
     
     if (cleanWord.length === 0) {
-      ProductionLogging.warn('Empty word after cleaning:', 'phoneticRulesEngine', word);
+      DebugLogger.warn('audio', 'Empty word after cleaning:', word);
       return [word];
     }
     
     // Check known syllables first (supports all languages with English phonetics)
     if (this.knownSyllables[cleanWord]) {
-      ProductionLogging.debug(`Found in known syllables: ${this.knownSyllables[cleanWord]}`, 'phoneticRulesEngine');
+      DebugLogger.log('audio', `Found in known syllables: ${this.knownSyllables[cleanWord]}`);
       return this.knownSyllables[cleanWord];
     }
 
     // Plural-aware handling for kid-friendly breakdowns
     const pluralAware = this.tryPluralAware(cleanWord);
     if (pluralAware) {
-      ProductionLogging.debug(`Plural-aware breakdown: ${pluralAware}`, 'phoneticRulesEngine');
+      DebugLogger.log('audio', `Plural-aware breakdown: ${pluralAware}`);
       return pluralAware;
     }
 
     // Apply rule-based syllable breaking (works for all languages)
     const syllables = this.applyRuleBasedBreaking(cleanWord);
-    ProductionLogging.debug(`Rule-based breakdown: ${syllables}`, 'phoneticRulesEngine');
+    DebugLogger.log('audio', `Rule-based breakdown: ${syllables}`);
     
     return syllables;
   }
@@ -184,7 +183,7 @@ export class PhoneticRulesEngine {
    */
   public getSpeechFriendlyPronunciation(syllable: string): string {
     if (!syllable || typeof syllable !== 'string') {
-      ProductionLogging.warn('Invalid syllable provided:', 'phoneticRulesEngine', syllable);
+      DebugLogger.warn('audio', 'Invalid syllable provided:', syllable);
       return syllable || '';
     }
     
@@ -211,7 +210,7 @@ export class PhoneticRulesEngine {
    */
   public setConversationMode(isConversation: boolean): void {
     this.conversationMode = isConversation;
-    ProductionLogging.debug(`Phonetic engine mode: ${isConversation ? 'CONVERSATION' : 'LEARNING'}`, 'phoneticRulesEngine');
+    DebugLogger.log('audio', `Phonetic engine mode: ${isConversation ? 'CONVERSATION' : 'LEARNING'}`);
   }
 
   /**
@@ -641,14 +640,14 @@ export class PhoneticRulesEngine {
         const ighIdx = w.indexOf('igh');
         if (ighIdx !== -1) {
           const parts = [w.slice(0, ighIdx), 'igh', w.slice(ighIdx + 3)].filter(Boolean) as string[];
-          ProductionLogging.debug(`Heuristic split (igh): ${parts.join(', ')}`, 'phoneticRulesEngine');
+          DebugLogger.log('audio', `Heuristic split (igh): ${parts.join(', ')}`);
           return parts;
         }
         // Split simple suffixes off for clarity (plays → play | s, jumped → jump | ed)
         const suffixMatch = w.match(/^(.+[aeiouy][a-z]*)(s|ed|ing)$/);
         if (suffixMatch) {
           const parts = [suffixMatch[1], suffixMatch[2]] as string[];
-          ProductionLogging.debug(`Heuristic split (suffix): ${parts.join(', ')}`, 'phoneticRulesEngine');
+          DebugLogger.log('audio', `Heuristic split (suffix): ${parts.join(', ')}`);
           return parts;
         }
         // VCCV and double-consonant split (soccer → soc | cer), protect common digraphs
@@ -660,7 +659,7 @@ export class PhoneticRulesEngine {
             const pair = (a + b).toLowerCase();
             if (!protect.includes(pair)) {
               const parts = [left, right];
-              ProductionLogging.debug(`Heuristic split (VCCV): ${parts.join(', ')}`, 'phoneticRulesEngine');
+              DebugLogger.log('audio', `Heuristic split (VCCV): ${parts.join(', ')}`);
               return parts;
             }
           }
@@ -671,7 +670,7 @@ export class PhoneticRulesEngine {
           const onset = (m[1] || '').toString();
           const team = m[2]; const sfx = m[3];
           const parts = [onset, team, sfx].filter(Boolean) as string[];
-          ProductionLogging.debug(`Heuristic split (team+s): ${parts.join(', ')}`, 'phoneticRulesEngine');
+          DebugLogger.log('audio', `Heuristic split (team+s): ${parts.join(', ')}`);
           return parts;
         }
         // Split around vowel teams for readability (good → g | oo | d, play → pl | ay)
@@ -680,7 +679,7 @@ export class PhoneticRulesEngine {
           const idx = w.indexOf(team);
           if (idx > 0 && idx < w.length - team.length) {
             const parts = [w.slice(0, idx), team, w.slice(idx + team.length)].filter(Boolean) as string[];
-            ProductionLogging.debug(`Heuristic split (vowel team): ${parts.join(', ')}`, 'phoneticRulesEngine');
+            DebugLogger.log('audio', `Heuristic split (vowel team): ${parts.join(', ')}`);
             return parts;
           }
         }
@@ -693,22 +692,22 @@ export class PhoneticRulesEngine {
           const longMap: Record<string, string> = { a: 'ay', e: 'ee', i: 'eye', o: 'oh', u: 'yoo' };
           const nucleus = longMap[vowel] || vowel;
           const parts = [onset, nucleus, cons].filter(Boolean) as string[];
-          ProductionLogging.debug(`Heuristic split (silent-e): ${parts.join(', ')}`, 'phoneticRulesEngine');
+          DebugLogger.log('audio', `Heuristic split (silent-e): ${parts.join(', ')}`);
           return parts;
         }
         // Final sanity: if still one large chunk and >=6 letters, split into 2-3 kid-friendly parts
         if (w.length >= 6) {
           const mid = Math.floor(w.length / 2);
           const parts = [w.slice(0, mid), w.slice(mid)];
-          ProductionLogging.debug(`Heuristic split (fallback-chunk): ${parts.join(', ')}`, 'phoneticRulesEngine');
+          DebugLogger.log('audio', `Heuristic split (fallback-chunk): ${parts.join(', ')}`);
           return parts;
         }
       }
-      ProductionLogging.debug(`Syllable breakdown result for "${word}": ${result}`, 'phoneticRulesEngine');
+      DebugLogger.log('audio', `Syllable breakdown result for "${word}": ${result}`);
       return result;
       
     } catch (error) {
-      ProductionLogging.error('Error in syllable breaking, using fallback:', 'phoneticRulesEngine', error);
+      DebugLogger.error('audio', 'Error in syllable breaking, using fallback:', error);
       return [word]; // Robust fallback
     }
   }
