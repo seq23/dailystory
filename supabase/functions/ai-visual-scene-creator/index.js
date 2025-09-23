@@ -759,18 +759,43 @@ RULES:
 
     console.log(`✅ [${requestId}] OpenAI generation successful in direct mode`);
 
-    // Step 2: Direct character consistency call
+    // Step 2: Complete character consistency with secondary characters and objects
     let characterAppearance = '';
+    let detectedSecondaryCharacters = [];
+    let secondaryDescriptions = [];
+    let coloredObjects = '';
+    
     try {
       const { CharacterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
       const characterService = CharacterConsistencyService.getInstance();
       
       if (sessionId) {
+        // Main character analysis
         await characterService.analyzeVisualDetails(sessionId, storyText, pageNumber || 1, userInfo?.name);
         characterAppearance = await characterService.getCharacterAppearanceFromStory(sessionId, userInfo?.name) || '';
+        
+        // Secondary character detection
+        detectedSecondaryCharacters = await characterService.detectSecondaryCharacters(
+          sessionId, parsedResponse.primaryScene, pageNumber || 1
+        );
+        
+        // Build secondary character descriptions with seeds
+        for (const character of detectedSecondaryCharacters) {
+          const seed = await characterService.getSecondaryCharacterSeed(
+            sessionId, character.name, character.type || 'secondary_character'
+          );
+          secondaryDescriptions.push(`${character.name}: ${character.description} (${character.type})`);
+        }
+        
+        // Get environmental consistency
+        coloredObjects = await characterService.getColoredObjects(sessionId) || '';
+        
+        console.log(`✅ [${requestId}] Complete character consistency applied:`, {
+          characterAppearance: !!characterAppearance,
+          secondaryCharacters: detectedSecondaryCharacters.length,
+          coloredObjects: !!coloredObjects
+        });
       }
-      
-      console.log(`✅ [${requestId}] Character consistency applied`);
     } catch (characterError) {
       console.warn(`⚠️ [${requestId}] Character consistency failed, continuing without it:`, characterError);
     }
@@ -785,10 +810,12 @@ RULES:
     const placeholderResolver = new UnifiedPlaceholderResolver();
     const culturalEnhancements = placeholderResolver.resolveCulturalEnhancements(userInfo, sessionId);
 
-    // Step 5: Build comprehensive prompt with cultural enhancements and style framework
+    // Step 5: Build comprehensive prompt with all character consistency elements
     const enhancementArray = [
       parsedResponse.primaryScene,
       characterAppearance,
+      secondaryDescriptions.join(', '),
+      coloredObjects,
       culturalEnhancements,
       styleFramework
     ].filter(item => item && item.trim().length > 0);
@@ -828,17 +855,23 @@ RULES:
         primaryScene: parsedResponse.primaryScene,
         aiSchema: parsedResponse,
         characterAppearance,
+        detectedSecondaryCharacters,
+        secondaryDescriptions,
+        coloredObjects,
         culturalEnhancements,
         styleFramework: styleFrameworkData.name,
         tier: 'AI_VISUAL_SCENE_DIRECT',
         provider: 'ai-visual-scene-creator-direct',
         templateType: 'direct-enhanced',
         positivePrompt: comprehensivePrompt,
+        characterConsistencyLevel: 'FULL_UNIFIED_LOGIC',
         metadata: {
           requestId,
           directMode: true,
           bypassedOrchestrator: true,
-          enhancementCount: enhancementArray.length
+          enhancementCount: enhancementArray.length,
+          secondaryCharacterCount: detectedSecondaryCharacters.length,
+          hasColoredObjects: !!coloredObjects
         }
       });
 

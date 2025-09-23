@@ -1580,24 +1580,50 @@ async function handleRequest(req) {
       const hairDescription = culturalBundle?.hair || getHair(skinTone) || 'brown hair';
       const facialFeatures = culturalBundle?.features || getSkinBySkintone(skinTone, sessionId) || 'friendly expression';
       
-      // Add Character Consistency Service integration for Tier 2.5A
+      // Complete Character Consistency Service integration for Tier 2.5A
       let characterAppearance = '';
       let characterSeed = null;
+      let detectedSecondaryCharacters = [];
+      let secondaryDescriptions = [];
+      let coloredObjects = '';
+      
       try {
         const { CharacterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
         const characterService = CharacterConsistencyService.getInstance();
         
         if (sessionId) {
+          // Main character analysis
           await characterService.analyzeVisualDetails(sessionId, storyText, pageNumber || 1, characterName);
           characterAppearance = await characterService.getCharacterAppearanceFromStory(sessionId, characterName) || '';
           characterSeed = await characterService.getCharacterSeed(sessionId, characterName) || null;
+          
+          // Secondary character detection  
+          detectedSecondaryCharacters = await characterService.detectSecondaryCharacters(
+            sessionId, extractedScene?.scene || extractedScene, pageNumber || 1
+          );
+          
+          // Build secondary character descriptions with seeds
+          for (const character of detectedSecondaryCharacters) {
+            const seed = await characterService.getSecondaryCharacterSeed(
+              sessionId, character.name, character.type || 'secondary_character'
+            );
+            secondaryDescriptions.push(`${character.name}: ${character.description} (${character.type})`);
+          }
+          
+          // Get environmental consistency
+          coloredObjects = await characterService.getColoredObjects(sessionId) || '';
         }
-        console.log(`✅ [${requestId}] Tier 2.5A: Character consistency applied`);
+        
+        console.log(`✅ [${requestId}] Tier 2.5A: Complete character consistency applied:`, {
+          characterAppearance: !!characterAppearance,
+          secondaryCharacters: detectedSecondaryCharacters.length,
+          coloredObjects: !!coloredObjects
+        });
       } catch (characterError) {
         console.warn(`⚠️ [${requestId}] Tier 2.5A: Character consistency failed:`, characterError);
       }
       
-      // Debug logging to verify extractSemanticScene data structure
+      // Debug logging to verify extractSemanticScene data structure and character consistency
       console.log(`🔍 [DEBUG] Tier 2.5A extractSemanticScene result structure:`, {
         scene: extractedScene?.scene,
         secondary: extractedScene?.secondary,
@@ -1605,13 +1631,15 @@ async function handleRequest(req) {
         settings: extractedScene?.settings,
         type: typeof extractedScene,
         hasCharacterAppearance: !!characterAppearance,
-        hasCharacterSeed: !!characterSeed
+        hasCharacterSeed: !!characterSeed,
+        detectedSecondaryCharacters: detectedSecondaryCharacters.length,
+        hasColoredObjects: !!coloredObjects
       });
       
       // Apply pageText summarization for levels 2-4
       const processedStoryText = summarizePageText(storyText, userInfo?.difficulty);
       
-      // Use PREMIUM_PROMPT_TEMPLATE with proper placeholder replacement
+      // Use PREMIUM_PROMPT_TEMPLATE with proper placeholder replacement including character consistency
       let finalPositivePrompt = PREMIUM_PROMPT_TEMPLATE
         .replace('{pageText}', processedStoryText)
         .replace('{character}', `A young child named ${characterName}`)
@@ -1623,19 +1651,21 @@ async function handleRequest(req) {
           characterAppearance.split('features')[1]?.split('.')[0]?.trim() || facialFeatures : facialFeatures)
         .replace('{bundle.culturalEnhancements}', culturalProfile || '')
         .replace('{semantic_scene}', extractedScene?.scene || extractedScene)
-        .replace('{secondary_characters}', extractedScene?.secondary?.length ? extractedScene.secondary.join(', ') : '')
-        .replace('{visual_consistency_elements}', extractedScene?.objects?.length ? extractedScene.objects.map(o => o.phrase).join(', ') : '')
+        .replace('{secondary_characters}', secondaryDescriptions.length ? secondaryDescriptions.join(', ') : 
+          (extractedScene?.secondary?.length ? extractedScene.secondary.join(', ') : ''))
+        .replace('{visual_consistency_elements}', coloredObjects || 
+          (extractedScene?.objects?.length ? extractedScene.objects.map(o => o.phrase).join(', ') : ''))
         .replace('{setting_context}', extractedScene?.settings?.length ? extractedScene.settings.join(', ') : '')
         .replace('{cultural_context}', culturalProfile || 'multicultural setting')
         .replace('{community_context}', '')
         .replace('{frameworkPrompt}', styleFramework.frameworkPrompt || 'contemporary children\'s book illustration style')
         .replace('{cameraDirective}', 'detailed illustration');
       
-      // Add final debug logging for Tier 2.5A
+      // Add final debug logging for Tier 2.5A with character consistency data
       console.log(`🎯 [DEBUG] Tier 2.5A Final Prompt Data:`, {
         characterAppearance: characterAppearance.substring(0, 100),
-        secondaryCharacters: extractedScene?.secondary,
-        visualElements: extractedScene?.objects?.map(o => o.phrase),
+        secondaryCharacters: secondaryDescriptions,
+        visualElements: coloredObjects ? [coloredObjects] : (extractedScene?.objects?.map(o => o.phrase) || []),
         settingContext: extractedScene?.settings,
         hasCharacterSeed: !!characterSeed,
         promptLength: finalPositivePrompt.length
