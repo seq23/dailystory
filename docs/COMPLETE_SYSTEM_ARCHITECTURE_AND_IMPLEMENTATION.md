@@ -38,7 +38,8 @@
 - **Purpose:** Premium scene analysis and character consistency
 - **Dependencies:** OpenAI API, Character Consistency Service
 - **Success Rate:** 85% with 2.3s average response
-- **Escalation:** Falls to Tier 2.5A on failure
+- **Escalation:** Falls to Tier 2.5A on failure (regular users) or Direct Mode (Force Tier 1)
+- **Direct Mode:** Nuclear independent operation when orchestrator fails (Force Tier 1 only)
 
 ### Tier 2.5A: Premium Template (Sophisticated)
 - **Service:** `runware-template-ab` with complexity 'A'
@@ -141,19 +142,29 @@
 - **Endpoint:** Supabase Edge Functions (`runware-generate-image` orchestrator)
 - **Error Handling:** Retry logic with graceful degradation
 - **State Management:** Loading states, results, error tracking
+- **Testing Interface:** ImageTierTester with Force Tier 1 and Direct Mode support
 
 ### Backend Function Chain
-1. **Orchestrator:** `runware-generate-image` (routes requests)
+1. **Orchestrator:** `runware-generate-image` (routes requests, manages Force Tier 1 logic)
 2. **Template Services:** `runware-template-ab`, `runware-template-cd`
-3. **Scene Creator:** `ai-visual-scene-creator` (Tier 1 only)
-4. **Image Generation:** Runware API integration with retry logic
+3. **Scene Creator:** `ai-visual-scene-creator` (Tier 1 + Direct Mode)
+4. **Direct Mode Path:** ai-visual-scene-creator with directMode flag (Force Tier 1 fallback)
+5. **Image Generation:** Runware API integration with retry logic
+
+### Force Tier 1 Workflow
+1. **Primary Path:** Orchestrator enhancement via PhaseIntegrationOrchestrator
+2. **Fallback Path:** Direct Mode via ai-visual-scene-creator (nuclear independent)
+3. **No Escalation:** Force Tier 1 never escalates to Tier 2.5A (fail-fast design)
+4. **Clear Results:** "Tier 1 Success", "Direct Mode Success", or "Tier 1 Failed"
 
 ## Debugging & Validation
 
 ### Testing Interface
 - **Access:** `/prompt-testing?debug=1`
-- **Features:** Individual tier testing, batch tests, connectivity checks
-- **Verification:** Force 2.5B test should show no orchestrator logs, direct scene extraction
+- **Features:** Force Tier 1 testing, Direct Mode fallback, individual tier testing, batch tests, connectivity checks
+- **Badge System:** "Tier 1 Success" (green), "Direct Mode Success" (blue), "Tier 1 Failed" (red)
+- **Prompt Visibility:** Full prompts displayed for all successful generations with source indicators
+- **Verification:** Force Tier 1 test shows either orchestrator success or Direct Mode fallback, never Tier 2.5A escalation
 
 ### Current Debugging Status
 - **Tier 2.5B Fix:** ✅ Verified - no orchestrator dependency

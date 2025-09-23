@@ -19,16 +19,23 @@
 - **Solution**: Removed diagnostic code from runware-generate-image/index.ts
 - **Status**: ✅ RESOLVED - Clean receptionist pattern across all functions
 
+### 3. ✅ NEW: Force Tier 1 & Direct Mode Implementation
+- **Feature**: Force Tier 1 button with fail-fast logic and Direct Mode fallback
+- **Architecture**: Removed character-consistency fallback, added nuclear independent Direct Mode
+- **Enhancement**: Full prompt visibility for all successful generations with source indicators
+- **Status**: ✅ OPERATIONAL - Clear success/failure states without Tier 2.5A escalation
+
 ---
 
 ## CURRENT SYSTEM ARCHITECTURE STATUS
 
-### Image Generation Pipeline (4-Tier System)
+### Image Generation Pipeline (4-Tier System + Direct Mode)
 ```
-Tier 1: ai-visual-scene-creator     → ✅ HEALTHY (Direct mode + enhanced prompts)
+Tier 1: ai-visual-scene-creator     → ✅ HEALTHY (Direct mode + enhanced prompts + nuclear fallback)
 Tier 2.5A: runware-template-ab      → ✅ HEALTHY (Full Phase 1&2 integration) 
 Tier 2.5B: runware-template-cd      → ✅ HEALTHY (Nuclear independent operation)
-Core: runware-generate-image        → ✅ HEALTHY (Fixed duplicate declarations)
+Core: runware-generate-image        → ✅ HEALTHY (Force Tier 1 logic + Direct Mode integration)
+Direct Mode: ai-visual-scene-creator → ✅ HEALTHY (Nuclear independent Force Tier 1 fallback)
 ```
 
 ### Receptionist Pattern V4.2 (TypeScript/JavaScript Dual Architecture)
@@ -68,6 +75,8 @@ Core: runware-generate-image        → ✅ HEALTHY (Fixed duplicate declaration
 1. **"Identifier already declared" errors** → Fixed duplicate `avatarIdentity` variables
 2. **Handler loading failures** → Removed diagnostic code causing conflicts
 3. **Inconsistent boot behavior** → Standardized receptionist pattern
+4. **Force Tier 1 escalation confusion** → Implemented fail-fast with Direct Mode fallback
+5. **Character-consistency redundancy** → Removed redundant fallback layer (lines 755-795)
 
 ### Diagnostic Procedures
 ```bash

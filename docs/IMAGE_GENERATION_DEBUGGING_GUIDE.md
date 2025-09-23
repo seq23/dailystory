@@ -31,9 +31,21 @@ Navigate to `/prompt-testing?debug=1` to access the tier testing interface.
 - **Status Display**: "healthy" (2xx + keys present), "non-2xx (status)", or "unreachable"
 
 #### Individual Tier Tests
-- **Tier 1**: Tests `ai-visual-scene-creator` directly
+- **Force Tier 1**: Tests Tier 1 with fail-fast logic and Direct Mode fallback
 - **Tier 2.5A-D**: Tests `runware-template-ab` with different complexity levels
 - **Tier 4**: Uses local placeholder generation (no edge function dependency)
+
+#### Force Tier 1 Behavior
+- **Success Path 1**: Orchestrator succeeds → "Tier 1 Success" badge (green) with COMPLETE_TIER_1 template
+- **Success Path 2**: Orchestrator fails → Direct Mode succeeds → "Direct Mode Success" badge (blue)
+- **Failure Path**: Both orchestrator and Direct Mode fail → "Tier 1 Failed" badge (red)
+- **No Escalation**: Force Tier 1 never escalates to Tier 2.5A (fail-fast design)
+
+#### Enhanced Prompt Visibility
+- **All Successful Results**: Display full prompts sent to Runware with character counts
+- **Prompt Sources**: "Enhanced by Orchestrator" vs "Built by Direct Mode" indicators
+- **Metadata Display**: Enhancement counts, character consistency levels, request correlation
+- **Debugging Context**: Request IDs, tier routing decisions, failure step identification
 
 #### Batch Testing
 - **Run All Tiers**: Tests complete fallback chain
@@ -131,6 +143,32 @@ INFO ✅ runware-template-ab completed successfully via Supabase client
 
 **Resolution**: This is a false positive - files are present and functional.
 
+## Direct Mode Implementation
+
+### Architecture Overview
+**Location**: `ai-visual-scene-creator` edge function with `directMode: true` flag
+**Purpose**: Nuclear independent fallback when orchestrator fails during Force Tier 1 tests
+**Workflow**: Comprehensive prompt building → runware-template-cd → full image generation
+**Dependencies**: None (operates independently of orchestrator)
+
+### Direct Mode Flow
+1. **Trigger**: Called by `runware-generate-image` when orchestrator enhancement fails in Force Tier 1
+2. **Processing**: Direct avatar identity processing, story text analysis, cultural intelligence
+3. **Template**: Uses runware-template-cd with comprehensive prompt building
+4. **Result**: Returns `tier: 'DIRECT_MODE'` with full prompt visibility
+
+### Direct Mode vs Orchestrator
+- **Orchestrator Path**: Enhanced prompts via PhaseIntegrationOrchestrator
+- **Direct Mode Path**: Self-contained prompt building with full feature set
+- **Quality**: Both paths maintain character consistency and cultural intelligence
+- **Performance**: Direct Mode typically faster due to reduced orchestration overhead
+
+### Troubleshooting Direct Mode
+- **Success**: Shows "Direct Mode Success" badge with comprehensive prompts
+- **Failure**: Shows specific error reason (boot failure, API issues, etc.)
+- **Debugging**: Look for "DIRECT_MODE" logs in ai-visual-scene-creator function
+- **Correlation**: Use request ID to trace Direct Mode execution path
+
 ### Tier 1 Undefined apiKey Variable (FIXED)
 
 **Issue**: 
@@ -145,8 +183,7 @@ INFO ✅ runware-template-ab completed successfully via Supabase client
 **Validation Steps**:
 1. Test A: Use `forceTier = 1` with short prompt - should no longer show "apiKey is not defined" error
 2. Test B: Auto mode with missing `RUNWARE_API_KEY` - should skip Tier 1 cleanly without error
-3. Use new "Tier 1 Smoke Test" button in ApiKeyDiagnostic for easy testing
-   - Available on Prompt Testing page (`/prompt-testing?debug=1`) in the Infrastructure Testing section
+3. Use new "Force Tier 1" button for comprehensive testing with Direct Mode fallback
 
 ### Template AB Service Method Issues
 
@@ -407,6 +444,32 @@ Monitor external service status:
 
 ## Recent Updates
 
+### v2.4.0 - Force Tier 1 & Direct Mode Implementation (September 2025)
+- **NEW**: Force Tier 1 button with fail-fast logic and Direct Mode fallback
+- **REMOVED**: Character-consistency-only fallback (lines 755-795) from runware-generate-image
+- **ENHANCED**: Direct Mode via ai-visual-scene-creator provides nuclear independent operation
+- **IMPROVED**: No escalation to Tier 2.5A during Force Tier 1 tests (clear success/failure states)
+- **RESULT**: Comprehensive prompt visibility for all successful generations
+
+### Enhanced ImageTierTester Features
+- **New Badge System**: "Tier 1 Success" (green), "Direct Mode Success" (blue), "Tier 1 Failed" (red)
+- **Full Prompt Visibility**: All successful results show complete prompts sent to Runware
+- **Prompt Source Indicators**: "Enhanced by Orchestrator" vs "Built by Direct Mode" labels
+- **Enhanced Metadata**: Character counts, enhancement levels, cultural intelligence context
+- **Clear Error Display**: Specific failure reasons with debugging context and request correlation
+
+### Direct Mode Architecture
+- **Nuclear Independence**: Operates without orchestrator dependencies during Force Tier 1
+- **Complete Feature Set**: Character consistency, cultural intelligence, comprehensive prompt building
+- **Fallback Reliability**: Robust alternative when orchestrator fails to boot
+- **Performance Benefits**: Reduced orchestration overhead, faster response times
+
+### Simplified Architecture
+- **Removed Redundancy**: Eliminated character-consistency-only fallback layer
+- **Clear Escalation**: Regular users maintain full cascade (Tier 1 → 2.5A → 2.5B → 2.5C → 2.5D)
+- **Fail-Fast Testing**: Force Tier 1 provides immediate success/failure without confusion
+- **Enhanced Debugging**: Request ID correlation, prompt source tracking, tier decision logging
+
 ### v2.3.1 - Seed Consistency & Function Health (January 2025)
 - **FIXED**: Seed misuse bug where string sessionId was passed to functions expecting numeric seeds
 - **IMPROVED**: StaticDataCache now automatically converts string seeds to numeric hashes  
@@ -429,7 +492,8 @@ Monitor external service status:
 ### Key Debugging Features
 - Request ID correlation across frontend and backend logs
 - Preflight GET probe before POST attempts to distinguish connectivity vs. validation errors
-- Enhanced error categorization: NETWORK, AUTH/CONFIG, VALIDATION, TIMEOUT, INTERNAL
+- Enhanced error categorization: NETWORK, AUTH/CONFIG, VALIDATION, TIMEOUT, INTERNAL, DIRECT_MODE_FAILED
 - Deep probe functionality to determine API key configuration status
+- Direct Mode execution tracking and performance analysis
 
 This debugging guide provides comprehensive coverage of the image generation system's debugging capabilities and common troubleshooting scenarios.
