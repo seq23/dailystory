@@ -477,7 +477,7 @@ async function handleRequest(req) {
   if (req.method !== 'POST') {
     return new Response(JSON.stringify({
       error: 'Method not allowed',
-      allowedMethods: ['GET', 'POST', 'OPTIONS']
+      allowedMethods: ['GET', 'HEAD', 'POST', 'OPTIONS']
     }), {
       status: 405,
       headers: {
