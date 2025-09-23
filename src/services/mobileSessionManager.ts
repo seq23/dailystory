@@ -1,5 +1,5 @@
 // Mobile-specific session management with enhanced reliability
-import { LoggerService } from './LoggerService';
+import { DebugLogger } from './DebugLogger';
 
 export class MobileSessionManager {
   private static memoryStorage: Map<string, string> = new Map();
@@ -21,7 +21,7 @@ export class MobileSessionManager {
       return true;
     } catch {
       this.isSupported = false;
-      LoggerService.warn('SessionStorage not available, using memory fallback', 'MobileSessionManager');
+      DebugLogger.warn('network', 'SessionStorage not available, using memory fallback');
       return false;
     }
   }
@@ -37,7 +37,7 @@ export class MobileSessionManager {
       // Always update memory as backup
       this.memoryStorage.set(key, value);
     } catch (error) {
-      LoggerService.warn('SessionStorage failed, using memory only', 'MobileSessionManager', error);
+      DebugLogger.warn('network', 'SessionStorage failed, using memory only', error);
       this.memoryStorage.set(key, value);
     }
   }
@@ -57,7 +57,7 @@ export class MobileSessionManager {
       }
       return this.memoryStorage.get(key) || null;
     } catch (error) {
-      LoggerService.warn('SessionStorage read failed, using memory', 'MobileSessionManager', error);
+      DebugLogger.warn('network', 'SessionStorage read failed, using memory', error);
       return this.memoryStorage.get(key) || null;
     }
   }
@@ -72,7 +72,7 @@ export class MobileSessionManager {
       }
       this.memoryStorage.delete(key);
     } catch (error) {
-      LoggerService.warn('SessionStorage remove failed', 'MobileSessionManager', error);
+      DebugLogger.warn('network', 'SessionStorage remove failed', error);
       this.memoryStorage.delete(key);
     }
   }
@@ -87,7 +87,7 @@ export class MobileSessionManager {
       }
       this.memoryStorage.clear();
     } catch (error) {
-      LoggerService.warn('SessionStorage clear failed', 'MobileSessionManager', error);
+      DebugLogger.warn('network', 'SessionStorage clear failed', error);
       this.memoryStorage.clear();
     }
   }
@@ -114,7 +114,7 @@ export class MobileSessionManager {
       // Longer debounce during audio playback to prevent interference
       const debounceTime = isAudioPlaying ? 3000 : 1000;
       if (timeSinceLastChange < debounceTime) {
-        LoggerService.debug('Debouncing visibility change (audio-aware)', 'MobileSessionManager');
+        DebugLogger.log('network', 'Debouncing visibility change (audio-aware)');
         return;
       }
       lastVisibilityChange = now;
@@ -122,13 +122,13 @@ export class MobileSessionManager {
       if (document.hidden) {
         // Only log if not during audio playback to reduce console noise
         if (!isAudioPlaying) {
-          LoggerService.debug('App backgrounded, preserving session state', 'MobileSessionManager');
+          DebugLogger.log('network', 'App backgrounded, preserving session state');
         }
         // Session data is already saved in memory, no additional action needed
       } else {
         // Only log if not during audio playback to reduce console noise
         if (!isAudioPlaying) {
-          LoggerService.debug('App foregrounded, session state preserved', 'MobileSessionManager');
+          DebugLogger.log('network', 'App foregrounded, session state preserved');
         }
       }
     });
@@ -139,7 +139,7 @@ export class MobileSessionManager {
       // Final cleanup when page is being hidden/unloaded
       // Session data is already preserved in memory via visibilitychange handler
       if (this.memoryStorage.size > 0 && typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
-        LoggerService.debug('Page hidden, session state preserved in memory', 'MobileSessionManager');
+        DebugLogger.log('network', 'Page hidden, session state preserved in memory');
       }
     });
   }

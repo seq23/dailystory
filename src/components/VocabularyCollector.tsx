@@ -8,7 +8,7 @@ import { BookOpen, Star, TrendingUp } from 'lucide-react';
 import { MobileOptimizedInteractiveWord } from '@/components/MobileOptimizedInteractiveWord';
 import { useIsMobile } from '@/hooks/use-mobile';
 import type { UserInfo } from '@/types';
-import { ProductionLogging } from '@/services/ProductionLogger';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface VocabularyWord {
   word: string;

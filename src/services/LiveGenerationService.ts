@@ -38,7 +38,7 @@ export class LiveGenerationService {
    */
   static async generateFirstPage(userInfo: UserInfo, sessionType?: 'new' | 'continuation' | 'rewrite', vocabularyData?: any, sessionId?: string): Promise<LivePageResult> {
     try {
-      LoggerService.milestone('Starting first page generation', 'LiveGeneration', { user: userInfo.name });
+      DebugLogger.log('story', 'Starting first page generation', { user: userInfo.name });
       DebugLogger.log('story', 'LiveGen: First page generation started', { 
         user: userInfo.name, 
         sessionType, 
@@ -49,7 +49,7 @@ export class LiveGenerationService {
       // Convert frontend difficulty to backend format for validation system
       const frontendDifficulty = userInfo.difficultyLevel || 'beginner';
       const difficulty: DifficultyLevel = DifficultyLevelMapper.toBackend(frontendDifficulty) as DifficultyLevel;
-      LoggerService.info(`🔄 Live: Difficulty mapping - Frontend: "${frontendDifficulty}" → Backend: "${difficulty}"`, 'LiveGeneration', { user: userInfo.name });
+      DebugLogger.log('story', `Live: Difficulty mapping - Frontend: "${frontendDifficulty}" → Backend: "${difficulty}"`, { user: userInfo.name });
       
       // Premium Expert: adaptive grade selection
       let expertGradeLevel: ExpertGradeLevel | undefined;
@@ -57,10 +57,10 @@ export class LiveGenerationService {
       if (difficulty === 'expert') {
         // Premium expert progression: adaptive grade selection
         expertGradeLevel = await ExpertDifficultyManager.getExpertGradeLevel(userInfo);
-        LoggerService.info(`Using adaptive expert grade ${expertGradeLevel}`, 'LiveGeneration', { user: userInfo.name });
+        DebugLogger.log('story', `Using adaptive expert grade ${expertGradeLevel}`, { user: userInfo.name });
       }
       
-      LoggerService.debug('Using unified 4-tier system', 'LiveGeneration');
+      DebugLogger.log('story', 'Using unified 4-tier system');
       
       const { StoryGenerationService } = await import('./storyGenerationService');
       
@@ -93,13 +93,13 @@ export class LiveGenerationService {
       });
 
       if (!result.success || !result.pages || result.pages.length === 0) {
-        LoggerService.error('4-tier system failed', 'LiveGeneration', result.error);
+        DebugLogger.error('story', '4-tier system failed', result.error);
         return this.generateFallbackFirstPage(userInfo, difficulty, 'unified_system_error');
       }
 
       // Extract first page from unified system - backend handles all validation
       const content = result.pages[0] || '';
-      LoggerService.milestone('Content received from backend', 'LiveGeneration');
+      DebugLogger.log('story', 'Content received from backend');
       
       // Create context with deep cloning to prevent data loss
       const storyContext: LiveGenerationContext = {

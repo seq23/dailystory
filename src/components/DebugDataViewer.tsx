@@ -12,7 +12,6 @@ import { Search, Download, CheckCircle, XCircle, Database, HardDrive, Image, Che
 import { DebugGateway } from '@/services/DebugGateway';
 import { useToast } from '@/hooks/use-toast';
 import { DebugLogger } from '@/services/DebugLogger';
-import { DebugLogger } from '@/services/DebugLogger';
 import { TierCascadeViewer } from '@/components/TierCascadeViewer';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -195,7 +194,7 @@ export function DebugDataViewer() {
         description: `Found ${filteredData.length} image generation entries`,
       });
     } catch (err) {
-      ProductionLogging.error('DEBUG', 'Failed to fetch image data', 'DebugDataViewer', { error: err });
+      DebugLogger.error('ui', 'Debug data error', { error: err });
       setLastError('Failed to fetch image generation data. Please try again.');
     } finally {
       setIsLoading(false);
@@ -273,7 +272,7 @@ export function DebugDataViewer() {
         description: `Found ${data.length} image generation events`,
       });
     } catch (err) {
-      ProductionLogging.error('DEBUG', 'Failed to fetch image generation debug data', 'DebugDataViewer', { error: err });
+      DebugLogger.error('ui', 'Debug processing error', { error: err });
       setLastError('Failed to fetch image generation debug data. Please try again.');
     } finally {
       setIsLoading(false);

@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Mic, Loader2, CheckCircle2, X, ChevronDown, ChevronUp } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
-import { ProductionLogging } from '@/services/ProductionLogger';
+import { DebugLogger } from '@/services/DebugLogger';
 // Lightweight persistent HUD that listens for custom events:
 //  - 'voice:status' => { status: 'idle'|'listening'|'processing' }
 //  - 'voice:level'  => { level: number 0..1 }

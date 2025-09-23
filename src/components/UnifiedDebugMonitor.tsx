@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { DebugLogger, DebugLogEntry, DebugCategory } from '@/services/DebugLogger';
-import { DebugLogger } from '@/services/DebugLogger';
 import { performanceManager } from '@/services/PerformanceManager';
 import { productionHardening } from '@/services/ProductionHardening';
 import { NetflixRetryService } from '@/services/NetflixRetryService';

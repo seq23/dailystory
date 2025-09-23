@@ -6,7 +6,7 @@
  * network state caching, and comprehensive error classification
  */
 
-import { ProductionLogging } from '@/services/ProductionLogger';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface NetworkState {
   quality: 'excellent' | 'good' | 'poor' | 'offline';

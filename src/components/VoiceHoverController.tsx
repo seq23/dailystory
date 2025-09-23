@@ -5,7 +5,6 @@ import { contextualPronunciation } from '@/services/contextualPronunciation';
 import { phoneticRulesEngine } from '@/services/phoneticRulesEngine';
 import { AudioPermissions } from '@/utils/audioPermissions';
 import { DebugLogger } from '@/services/DebugLogger';
-import { ProductionLogging } from '@/services/ProductionLogger';
 
 interface VoiceHoverControllerProps {
   isPremium: boolean;
@@ -97,7 +96,7 @@ export const VoiceHoverController = ({ isPremium }: VoiceHoverControllerProps) =
                 });
               }
             } catch (error) {
-              ProductionLogging.error('VOICE', 'Failed to get word definition', 'VoiceHoverController', { error });
+              DebugLogger.error('audio', 'Failed to get word definition', { error });
             }
             break;
 
@@ -114,7 +113,7 @@ export const VoiceHoverController = ({ isPremium }: VoiceHoverControllerProps) =
             break;
         }
       } catch (error) {
-        ProductionLogging.error('VOICE', 'Voice hover action failed', 'VoiceHoverController', { error });
+        DebugLogger.error('audio', 'Voice hover action failed', { error });
       } finally {
         // Clear processing flag after a delay to prevent spam
         setTimeout(() => {

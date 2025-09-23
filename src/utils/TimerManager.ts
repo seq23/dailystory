@@ -6,7 +6,7 @@
  * Provides automatic cleanup on component unmount and session end
  */
 
-import { ProductionLogging } from '@/services/ProductionLogger';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface TimerEntry {
   id: string;

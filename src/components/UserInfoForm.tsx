@@ -25,7 +25,6 @@ import { validateTheme } from "@/utils/themeValidation";
 import { spellcheckService } from "@/services/spellcheckService";
 import { supabase } from "@/integrations/supabase/client";
 import { DifficultyLevelMapper } from "@/services/DifficultyLevelMapper";
-import { DebugLogger } from '@/services/DebugLogger';
 import type { UserInfo, Grade, LanguageCode, LearningGoal } from "@/types";
 
 export type { UserInfo } from "@/types";

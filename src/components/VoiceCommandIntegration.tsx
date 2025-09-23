@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { MobileAudioManager } from '@/services/mobileAudioManager';
 import { DebugLogger } from '@/services/DebugLogger';
-import { ProductionLogging } from '@/services/ProductionLogger';
 
 export const VoiceCommandIntegration: React.FC = () => {
   useEffect(() => {
@@ -21,7 +20,7 @@ export const VoiceCommandIntegration: React.FC = () => {
         
         DebugLogger.log('audio', 'Voice command audio coordination established');
       } catch (error) {
-        ProductionLogging.warn('AUDIO', 'Voice command audio setup failed', 'VoiceCommandIntegration', { error });
+        DebugLogger.warn('audio', 'Voice command audio setup failed', { error });
       }
     };
 
