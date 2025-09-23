@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Zap, Cable, ArrowRight, Bug, BarChart3, TrendingUp, Brain, Layers } from 'lucide-react';
 import { StoryPromptTester } from '@/components/StoryPromptTester';
-import { PromptTestingEnhancement } from '@/components/PromptTestingEnhancement';
+
 import { RunwareConnectionTest } from '@/components/RunwareConnectionTest';
 import { ApiKeyDiagnostic } from '@/components/ApiKeyDiagnostic';
 import { DebugDataViewer } from '@/components/DebugDataViewer';
@@ -133,11 +133,6 @@ export default function PromptTesting() {
               <Zap className="w-5 h-5 text-primary" />
               <h2 className="text-2xl font-semibold">Advanced Testing Suite</h2>
             </div>
-            
-            {/* Enhanced Prompt Testing Component */}
-            <ErrorBoundary>
-              <PromptTestingEnhancement />
-            </ErrorBoundary>
             
             <ErrorBoundary>
               <StoryPromptTester />

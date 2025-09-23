@@ -27,7 +27,7 @@ interface TestResult {
       status?: number;
       triageResult?: string;
     }; // NEW: Health check results
-    testType?: 'REAL' | 'FORCED' | 'CONNECTIVITY' | 'ENHANCED_CONNECTIVITY' | 'HEALTH' | 'TRIAGE' | 'TIER_1_COMPLETE_FLOW' | 'FORCED_TEMPLATE_BYPASS'; // Enhanced test types
+    testType?: 'REAL' | 'FORCED' | 'CONNECTIVITY' | 'ENHANCED_CONNECTIVITY' | 'HEALTH' | 'TRIAGE' | 'TIER_1_COMPLETE_FLOW' | 'FORCED_TEMPLATE_BYPASS' | 'E2E_SIMULATION'; // Enhanced test types
     timeoutTest?: boolean;
     abortReason?: string;
     // AI Scene Creator specific
@@ -105,7 +105,17 @@ interface TestResult {
     bypassedTiers?: string[];
     selectedFunction?: string;
     primarySceneLength?: number;
+    // Debug Real Routing specific
+    resultType?: string; // NEW: Result type for E2E simulation
+    resultBadge?: string; // NEW: Badge type for display
+    fallbackPath?: string; // NEW: Path taken for fallback
+    cascadeHistory?: string[]; // NEW: History of cascade attempts
+    orchestratorFailureTime?: number; // NEW: Time when orchestrator failed
+    directModeTime?: number; // NEW: Time for Direct Mode attempt
+    tier4Time?: number; // NEW: Time for Tier 4 attempt
+    cascadeFailureHistory?: string | string[]; // NEW: History of failed tiers
     escalationPath?: string;
+    tierFailureHistory?: string[]; // NEW: Tier failure history from orchestrator
     promptLength?: number;
   };
 }
@@ -981,67 +991,344 @@ export const ImageTierTester = () => {
     }
   };
 
-  // Debug Real Routing - Shows actual orchestration flow with detailed fallback reasons
+  // Debug Real Routing - Simulates true end-to-end user flow with orchestrator + Direct Mode fallback + tier cascade
   const debugRealRouting = async () => {
     setIsLoading(true);
     setResults([]);
     
     try {
-      DebugLogger.log('image', '🔍 Testing real routing with current user data', {
+      DebugLogger.log('image', '🔍 E2E User Flow Simulation: Orchestrator → Direct Mode → Tier Cascade', {
         userInfo: buildUserInfo()
       });
 
-      const startTime = Date.now();
-      const response = await supabase.functions.invoke('runware-generate-image', {
-        body: {
-          storyText: testStoryText, // Template AB expects storyText
-          pageText: testStoryText, // Template CD compatibility
-          userInfo: buildUserInfo(),
-          pageNumber: 1,
-          sessionId: crypto.randomUUID(),
-          skipTier25: true // Force Tier 1 testing
-        }
-      });
-
-      const processingTime = Date.now() - startTime;
+      const globalStartTime = Date.now();
+      const sessionId = crypto.randomUUID();
+      const userInfo = buildUserInfo();
       
-      DebugLogger.log('image', '✅ Real routing test completed', {
-        success: response.data?.success,
-        processingTime,
-        tier: response.data?.tier,
-        routingMetadata: response.data?.routingMetadata
+      let cascadeHistory = [];
+      let finalResult = null;
+      let resultBadge = '';
+      let fallbackPath = '';
+
+      // STEP 1: Try Orchestrator (runware-generate-image) - Normal User Flow
+      cascadeHistory.push('🎯 Attempting Orchestrator (runware-generate-image)...');
+      
+      try {
+        const orchestratorStartTime = Date.now();
+        const orchestratorResponse = await supabase.functions.invoke('runware-generate-image', {
+          body: {
+            storyText: testStoryText,
+            pageText: testStoryText,
+            userInfo: userInfo,
+            pageNumber: 1,
+            sessionId: sessionId
+            // NO skipTier25 - let orchestrator handle natural cascade
+          }
+        });
+
+        const orchestratorTime = Date.now() - orchestratorStartTime;
+        
+        if (orchestratorResponse.error || !orchestratorResponse.data?.success) {
+          // Orchestrator failed - check if it's a boot failure (503) or runtime error
+          const errorAnalysis = categorizeError(orchestratorResponse.error, 'orchestrator', orchestratorResponse);
+          
+          if (errorAnalysis.errorType === 'BOOT_FAILURE') {
+            cascadeHistory.push(`❌ Orchestrator Boot Failure (${orchestratorTime}ms): ${errorAnalysis.probableCause}`);
+            
+            // STEP 2: Try Direct Mode Fallback
+            cascadeHistory.push('🔄 Attempting Direct Mode Fallback (ai-visual-scene-creator)...');
+            
+            try {
+              const directModeStartTime = Date.now();
+              const directModeResponse = await supabase.functions.invoke('ai-visual-scene-creator', {
+                body: {
+                  storyText: testStoryText,
+                  userInfo: userInfo,
+                  pageNumber: 1,
+                  sessionId: sessionId,
+                  directMode: true
+                }
+              });
+
+              const directModeTime = Date.now() - directModeStartTime;
+              
+              if (!directModeResponse.error && directModeResponse.data?.success) {
+                cascadeHistory.push(`✅ Direct Mode Success (${directModeTime}ms)`);
+                resultBadge = 'Direct Mode Fallback';
+                fallbackPath = `Orchestrator failed → Direct Mode succeeded`;
+                finalResult = {
+                  tier: 'direct-mode',
+                  success: true,
+                  imageURL: directModeResponse.data?.imageURL,
+                  details: {
+                    processingTime: Date.now() - globalStartTime,
+                    orchestratorFailureTime: orchestratorTime,
+                    directModeTime: directModeTime,
+                    cascadeHistory,
+                    fallbackReason: errorAnalysis.probableCause,
+                    testType: 'E2E_SIMULATION',
+                    resultType: 'DIRECT_MODE_FALLBACK',
+                    positivePrompt: directModeResponse.data?.positivePrompt,
+                    error: null
+                  }
+                };
+              } else {
+                const directError = categorizeError(directModeResponse.error, 'direct-mode');
+                cascadeHistory.push(`❌ Direct Mode Failed (${directModeTime}ms): ${directError.probableCause}`);
+                resultBadge = 'Complete Failure';
+                fallbackPath = `Orchestrator failed → Direct Mode failed`;
+                finalResult = {
+                  tier: 'complete-failure',
+                  success: false,
+                  imageURL: null,
+                  details: {
+                    processingTime: Date.now() - globalStartTime,
+                    cascadeHistory,
+                    testType: 'E2E_SIMULATION',
+                    resultType: 'COMPLETE_FAILURE',
+                    error: `Both orchestrator and Direct Mode failed`
+                  }
+                };
+              }
+            } catch (directModeError) {
+              cascadeHistory.push(`❌ Direct Mode Exception: ${directModeError.message}`);
+              resultBadge = 'Complete Failure';
+              fallbackPath = `Orchestrator failed → Direct Mode exception`;
+              finalResult = {
+                tier: 'complete-failure',
+                success: false,
+                imageURL: null,
+                details: {
+                  processingTime: Date.now() - globalStartTime,
+                  cascadeHistory,
+                  testType: 'E2E_SIMULATION',
+                  resultType: 'COMPLETE_FAILURE',
+                  error: `Orchestrator boot failure + Direct Mode exception: ${directModeError.message}`
+                }
+              };
+            }
+          } else {
+            // Runtime error in orchestrator - it booted but internal cascade failed
+            cascadeHistory.push(`❌ Orchestrator Runtime Error (${orchestratorTime}ms): ${errorAnalysis.probableCause}`);
+            
+            // Check if it's an "all tiers failed" scenario
+            if (orchestratorResponse.data?.allTiersFailed || orchestratorResponse.data?.tier === 'all-failed') {
+              // STEP 3: Frontend Tier 4 Fallback
+              cascadeHistory.push('🔄 All internal tiers failed, attempting Tier 4 frontend fallback...');
+              
+              try {
+                const tier4StartTime = Date.now();
+                const tier4Response = await supabase.functions.invoke('runware-template-cd', {
+                  body: {
+                    storyText: testStoryText,
+                    pageText: testStoryText,
+                    userInfo: userInfo,
+                    templateComplexity: 'D',
+                    pageNumber: 1,
+                    sessionId: sessionId,
+                    test: true
+                  }
+                });
+
+                const tier4Time = Date.now() - tier4StartTime;
+                
+                if (!tier4Response.error && tier4Response.data?.success) {
+                  cascadeHistory.push(`✅ Tier 4 Emergency Success (${tier4Time}ms)`);
+                  resultBadge = 'Tier 4 Emergency';
+                  fallbackPath = `Orchestrator cascade failed → Tier 4 succeeded`;
+                  finalResult = {
+                    tier: 'tier-4-emergency',
+                    success: true,
+                    imageURL: tier4Response.data?.imageURL,
+                    details: {
+                      processingTime: Date.now() - globalStartTime,
+                      orchestratorTime,
+                      tier4Time,
+                      cascadeHistory,
+                      cascadeFailureHistory: orchestratorResponse.data?.tierFailureHistory || 'Tier 1 → 2.5A → 2.5B → 2.5C → 2.5D (all failed)',
+                      testType: 'E2E_SIMULATION',
+                      resultType: 'TIER_4_EMERGENCY',
+                      positivePrompt: tier4Response.data?.positivePrompt,
+                      error: null
+                    }
+                  };
+                } else {
+                  const tier4Error = categorizeError(tier4Response.error, 'tier-4');
+                  cascadeHistory.push(`❌ Tier 4 Failed (${tier4Time}ms): ${tier4Error.probableCause}`);
+                  resultBadge = 'Complete Failure';
+                  fallbackPath = `Orchestrator cascade failed → Tier 4 failed`;
+                  finalResult = {
+                    tier: 'complete-failure',
+                    success: false,
+                    imageURL: null,
+                    details: {
+                      processingTime: Date.now() - globalStartTime,
+                      cascadeHistory,
+                      testType: 'E2E_SIMULATION',
+                      resultType: 'COMPLETE_FAILURE',
+                      error: `Complete system failure: Orchestrator cascade + Tier 4 both failed`
+                    }
+                  };
+                }
+              } catch (tier4Error) {
+                cascadeHistory.push(`❌ Tier 4 Exception: ${tier4Error.message}`);
+                resultBadge = 'Complete Failure';
+                finalResult = {
+                  tier: 'complete-failure',
+                  success: false,
+                  imageURL: null,
+                  details: {
+                    processingTime: Date.now() - globalStartTime,
+                    cascadeHistory,
+                    testType: 'E2E_SIMULATION',
+                    resultType: 'COMPLETE_FAILURE',
+                    error: `Complete system failure with exceptions`
+                  }
+                };
+              }
+            } else {
+              // Single tier failed but not complete failure
+              resultBadge = 'Orchestrator Runtime Error';
+              fallbackPath = `Orchestrator runtime error (not complete failure)`;
+              finalResult = {
+                tier: 'orchestrator-runtime-error',
+                success: false,
+                imageURL: null,
+                details: {
+                  processingTime: orchestratorTime,
+                  cascadeHistory,
+                  testType: 'E2E_SIMULATION',
+                  resultType: 'ORCHESTRATOR_RUNTIME_ERROR',
+                  error: errorAnalysis.probableCause
+                }
+              };
+            }
+          }
+        } else {
+          // Orchestrator succeeded - check which tier succeeded
+          const successTier = orchestratorResponse.data?.tier || 'unknown';
+          cascadeHistory.push(`✅ Orchestrator Success (${orchestratorTime}ms) - ${successTier}`);
+          
+          if (successTier === '1' || successTier === 'tier-1') {
+            resultBadge = 'Orchestrator Success';
+            fallbackPath = `Direct Tier 1 success (no fallbacks needed)`;
+          } else {
+            resultBadge = 'Tier Cascade Success';
+            const failedTiers = orchestratorResponse.data?.tierFailureHistory || [];
+            fallbackPath = `Tier 1 failed → ${failedTiers.join(' → ')} → ${successTier} succeeded`;
+            cascadeHistory.push(`📝 Failure history: ${failedTiers.join(' → ')}`);
+          }
+          
+          finalResult = {
+            tier: successTier,
+            success: true,
+            imageURL: orchestratorResponse.data?.imageURL,
+            details: {
+              processingTime: orchestratorTime,
+              cascadeHistory,
+              tierFailureHistory: orchestratorResponse.data?.tierFailureHistory || [],
+              testType: 'E2E_SIMULATION',
+              resultType: successTier === '1' ? 'ORCHESTRATOR_SUCCESS' : 'TIER_CASCADE_SUCCESS',
+              positivePrompt: orchestratorResponse.data?.positivePrompt,
+              routingMetadata: orchestratorResponse.data?.routingMetadata,
+              error: null
+            }
+          };
+        }
+      } catch (orchestratorException) {
+        // Network/connection error with orchestrator
+        const exceptionAnalysis = categorizeError(orchestratorException, 'orchestrator-exception');
+        cascadeHistory.push(`❌ Orchestrator Exception: ${exceptionAnalysis.probableCause}`);
+        
+        // Still try Direct Mode as fallback
+        cascadeHistory.push('🔄 Attempting Direct Mode after orchestrator exception...');
+        
+        try {
+          const directModeResponse = await supabase.functions.invoke('ai-visual-scene-creator', {
+            body: {
+              storyText: testStoryText,
+              userInfo: userInfo,
+              pageNumber: 1,
+              sessionId: sessionId,
+              directMode: true
+            }
+          });
+          
+          if (!directModeResponse.error && directModeResponse.data?.success) {
+            cascadeHistory.push('✅ Direct Mode Success after orchestrator exception');
+            resultBadge = 'Direct Mode Fallback';
+            finalResult = {
+              tier: 'direct-mode-exception-fallback',
+              success: true,
+              imageURL: directModeResponse.data?.imageURL,
+              details: {
+                processingTime: Date.now() - globalStartTime,
+                cascadeHistory,
+                testType: 'E2E_SIMULATION',
+                resultType: 'DIRECT_MODE_FALLBACK',
+                error: null
+              }
+            };
+          } else {
+            cascadeHistory.push('❌ Direct Mode also failed after orchestrator exception');
+            resultBadge = 'Complete Failure';
+            finalResult = {
+              tier: 'complete-failure',
+              success: false,
+              imageURL: null,
+              details: {
+                processingTime: Date.now() - globalStartTime,
+                cascadeHistory,
+                testType: 'E2E_SIMULATION',
+                resultType: 'COMPLETE_FAILURE',
+                error: 'Both orchestrator and Direct Mode failed with exceptions'
+              }
+            };
+          }
+        } catch (directException) {
+          cascadeHistory.push(`❌ Direct Mode Exception: ${directException.message}`);
+          resultBadge = 'Complete Failure';
+          finalResult = {
+            tier: 'complete-failure',
+            success: false,
+            imageURL: null,
+            details: {
+              processingTime: Date.now() - globalStartTime,
+              cascadeHistory,
+              testType: 'E2E_SIMULATION',
+              resultType: 'COMPLETE_FAILURE',
+              error: 'Complete system failure with multiple exceptions'
+            }
+          };
+        }
+      }
+
+      // Add the result badge and fallback path to details
+      if (finalResult) {
+        finalResult.details.resultBadge = resultBadge;
+        finalResult.details.fallbackPath = fallbackPath;
+      }
+
+      DebugLogger.log('image', `✅ E2E Flow Completed: ${resultBadge}`, {
+        success: finalResult?.success,
+        processingTime: finalResult?.details?.processingTime,
+        cascadeHistory,
+        fallbackPath
       });
 
-      // Analyze avatar completeness for detailed feedback
-      const currentUserInfo = buildUserInfo();
-      const avatarAnalysis = analyzeAvatarCompleteness(currentUserInfo);
+      setResults([finalResult]);
 
-      setResults([{
-        tier: response.data?.tier || 'unknown',
-        success: !response.error && response.data?.success,
-        imageURL: response.data?.imageURL,
-        details: {
-          processingTime,
-          requestId: response.data?.requestId,
-          routingMetadata: response.data?.routingMetadata,
-          avatarAnalysis,
-          routingCascade: generateRoutingCascade(response.data?.routingMetadata, avatarAnalysis),
-          fallbackReason: generateFallbackReason(response.data?.routingMetadata, avatarAnalysis),
-          realRoutingFlow: true,
-          testType: 'REAL', // This is a real routing test
-          error: response.error?.message || response.data?.error
-        }
-      }]);
     } catch (error) {
-      DebugLogger.error('image', '❌ Real routing test failed', { error });
+      DebugLogger.error('image', '❌ E2E Flow failed with unexpected error', { error });
       setResults([{
-        tier: 'routing-error',
+        tier: 'e2e-system-error',
         success: false,
         imageURL: null,
         details: { 
           error: error.message, 
-          realRoutingFlow: true,
-          testType: 'REAL'
+          testType: 'E2E_SIMULATION',
+          resultType: 'SYSTEM_ERROR',
+          cascadeHistory: ['❌ System error before flow could complete']
         }
       }]);
     } finally {
@@ -1805,9 +2092,29 @@ export const ImageTierTester = () => {
                         <Badge variant={
                           result.details.testType === 'REAL' ? 'default' :
                           result.details.testType === 'FORCED' ? 'secondary' :
-                          result.details.testType === 'CONNECTIVITY' ? 'outline' : 'default'
+                          result.details.testType === 'CONNECTIVITY' ? 'outline' :
+                          result.details.testType === 'E2E_SIMULATION' ? 'default' : 'default'
                         }>
                           {result.details.testType}
+                        </Badge>
+                      )}
+                      
+                      {/* Enhanced Result Type Badge for E2E Simulation */}
+                      {result.details.resultBadge && (
+                        <Badge variant={
+                          result.details.resultBadge === 'Orchestrator Success' ? 'default' :
+                          result.details.resultBadge === 'Direct Mode Fallback' ? 'secondary' :
+                          result.details.resultBadge === 'Tier Cascade Success' ? 'outline' :
+                          result.details.resultBadge === 'Tier 4 Emergency' ? 'destructive' :
+                          result.details.resultBadge === 'Complete Failure' ? 'destructive' : 'default'
+                        } className={
+                          result.details.resultBadge === 'Orchestrator Success' ? 'bg-green-100 text-green-800' :
+                          result.details.resultBadge === 'Direct Mode Fallback' ? 'bg-blue-100 text-blue-800' :
+                          result.details.resultBadge === 'Tier Cascade Success' ? 'bg-orange-100 text-orange-800' :
+                          result.details.resultBadge === 'Tier 4 Emergency' ? 'bg-red-100 text-red-800' :
+                          result.details.resultBadge === 'Complete Failure' ? 'bg-gray-100 text-gray-800' : ''
+                        }>
+                          {result.details.resultBadge}
                         </Badge>
                       )}
                       
@@ -2172,9 +2479,76 @@ export const ImageTierTester = () => {
                           ))}
                         </div>
                       </div>
-                    )}
-                    
-                    {result.details.error && (
+                     )}
+                     
+                     {/* E2E Simulation Cascade History and Fallback Path */}
+                     {result.details.testType === 'E2E_SIMULATION' && (
+                       <>
+                         {/* Fallback Path Summary */}
+                         {result.details.fallbackPath && (
+                           <div className="text-sm bg-blue-50 p-3 rounded-lg border-l-4 border-blue-500">
+                             <span className="font-medium text-blue-800">🔄 E2E Flow Path:</span>
+                             <div className="text-blue-700 text-xs mt-1 font-mono">
+                               {result.details.fallbackPath}
+                             </div>
+                           </div>
+                         )}
+                         
+                         {/* Cascade History */}
+                         {result.details.cascadeHistory && result.details.cascadeHistory.length > 0 && (
+                           <div className="text-sm bg-gray-50 p-3 rounded-lg border">
+                             <span className="font-medium text-gray-800">📝 Cascade History:</span>
+                             <div className="mt-2 space-y-1">
+                               {result.details.cascadeHistory.map((step: string, idx: number) => (
+                                 <div key={idx} className="text-xs text-gray-700 font-mono flex items-start gap-2">
+                                   <span className="text-gray-400 min-w-[20px]">{idx + 1}.</span>
+                                   <span className={
+                                     step.includes('✅') ? 'text-green-600' :
+                                     step.includes('❌') ? 'text-red-600' :
+                                     step.includes('🔄') ? 'text-blue-600' :
+                                     step.includes('🎯') ? 'text-purple-600' :
+                                     'text-gray-700'
+                                   }>
+                                     {step}
+                                   </span>
+                                 </div>
+                               ))}
+                             </div>
+                           </div>
+                         )}
+                         
+                         {/* Tier Failure History from Orchestrator */}
+                         {result.details.tierFailureHistory && result.details.tierFailureHistory.length > 0 && (
+                           <div className="text-sm bg-orange-50 p-3 rounded-lg border-l-4 border-orange-500">
+                             <span className="font-medium text-orange-800">⚠️ Internal Tier Failures:</span>
+                             <div className="text-orange-700 text-xs mt-1">
+                               {result.details.tierFailureHistory.join(' → ')}
+                             </div>
+                           </div>
+                         )}
+                         
+                         {/* Performance Breakdown for E2E */}
+                         {(result.details.orchestratorFailureTime || result.details.directModeTime || result.details.tier4Time) && (
+                           <div className="text-sm bg-purple-50 p-3 rounded-lg border">
+                             <span className="font-medium text-purple-800">⏱️ Performance Breakdown:</span>
+                             <div className="text-xs mt-1 space-y-1">
+                               {result.details.orchestratorFailureTime && (
+                                 <div>Orchestrator attempt: {result.details.orchestratorFailureTime}ms</div>
+                               )}
+                               {result.details.directModeTime && (
+                                 <div>Direct Mode: {result.details.directModeTime}ms</div>
+                               )}
+                               {result.details.tier4Time && (
+                                 <div>Tier 4 Emergency: {result.details.tier4Time}ms</div>
+                               )}
+                               <div className="font-medium">Total: {result.details.processingTime}ms</div>
+                             </div>
+                           </div>
+                         )}
+                       </>
+                     )}
+
+                     {result.details.error && (
                       <div className="text-sm">
                         <span className="font-medium text-red-600">Error:</span>
                         <div className="text-red-600 text-xs mt-1">
