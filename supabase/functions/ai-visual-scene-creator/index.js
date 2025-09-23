@@ -488,46 +488,118 @@ async function handleOrchestratorCall(requestId, storyText, enhancedStoryData, a
     userInfo = { name: 'Child', age: 6 };
   }
 
+  // Add Character Consistency Service integration for enhanced AI prompting
+  let characterAppearance = '';
+  let characterSeed = null;
+  const sessionId = userInfo?.sessionId || enhancedStoryData?.sessionId;
+  try {
+    if (sessionId && includeFullSchema) { // Only for test results, not orchestrator calls
+      const { CharacterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
+      const characterService = CharacterConsistencyService.getInstance();
+      
+      await characterService.analyzeVisualDetails(sessionId, storyText, userInfo?.pageNumber || 1, userInfo?.name);
+      characterAppearance = await characterService.getCharacterAppearanceFromStory(sessionId, userInfo?.name) || '';
+      characterSeed = await characterService.getCharacterSeed(sessionId, userInfo?.name) || null;
+      console.log(`✅ [${requestId}] Character consistency applied for ${callType}`);
+    }
+  } catch (characterError) {
+    console.warn(`⚠️ [${requestId}] Character consistency failed:`, characterError);
+  }
+
+  // Handle avatar types - map "prefer-not-to-answer" to "gender neutral child"
+  const avatarType = userInfo?.avatar?.type || userInfo?.avatarType || 'child';
+  const characterReference = avatarType === 'prefer-not-to-answer' ? 'gender neutral child' : avatarType;
+  
+  // Detect non-English users for cultural context
+  const nativeLanguage = userInfo?.nativeLanguage || userInfo?.language || 'en';
+  const isNonEnglish = nativeLanguage !== 'en';
+  
+  // Cultural setting examples for non-English users
+  let culturalContext = '';
+  if (isNonEnglish) {
+    const culturalSettings = {
+      'fr': 'near iconic French landmarks like Eiffel Tower, Arc de Triomphe, or charming French countryside',
+      'es': 'in vibrant Spanish plazas, near colorful Mediterranean buildings, or beautiful Spanish gardens',
+      'pt': 'in lively Brazilian neighborhoods, near tropical beaches, or colorful South American architecture',
+      'zh': 'in peaceful Chinese gardens, near traditional pagodas, or modern Asian city settings',
+      'de': 'in charming German villages, near castles, or beautiful European countryside',
+      'it': 'in picturesque Italian piazzas, near ancient Roman architecture, or Tuscan landscapes'
+    };
+    culturalContext = culturalSettings[nativeLanguage] || 'in culturally authentic settings relevant to their heritage';
+  }
+
+  // Comprehensive character data for AI prompt
+  const characterName = userInfo?.name || userInfo?.childName || 'Child';
+  const characterAge = userInfo?.age || '6-8';
+  const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
+  const hairColor = userInfo?.avatar?.hairColor || 'brown';
+  
+  // Build comprehensive character description
+  const characterData = [
+    `${characterReference} named ${characterName}`,
+    `age ${characterAge}`,
+    hairColor !== 'brown' ? `${hairColor} hair` : null,
+    characterAppearance ? `with ${characterAppearance}` : null
+  ].filter(Boolean).join(', ');
+
   return withPerformanceTracking('ai-visual-scene-creator-orchestrator', 'gpt-4o', async () => {
     const messages = [
       {
         role: 'system',
-        content: `Generate a primary scene description for image generation.
+        content: `Generate a primary scene description for children's story image generation.
 
-OBJECTIVE: Return ONLY a primary scene description of 30+ characters with structured metadata.
+OBJECTIVE: Create a vivid visual scene description (30-1500 characters recommended) that captures the story moment with cultural authenticity and character consistency.
 
 JSON RESPONSE:
 {
-  "primaryScene": "Concise, descriptive visual scene for image generation",
-  "setting": "Location (bedroom, playground, etc.) or null",
-  "action": "Character activity (reading, playing, etc.) or null", 
-  "mood": "Emotional tone (happy, calm, etc.) or null",
-  "pose": "Body position (sitting, standing, etc.) or null"
+  "primaryScene": "Rich, descriptive visual scene for image generation with setting, character actions, and atmosphere",
+  "setting": "Location description or null",
+  "action": "Character activity or null", 
+  "mood": "Emotional tone or null",
+  "pose": "Body position/pose or null"
 }
 
-RULES:
-1. PRESERVE EXACT COUNTS: "a bird" = 1 bird, "birds" = multiple
-2. INFER SETTING: Birds/trees = outdoor, beds/books = indoor unless specified
-3. VISUAL ONLY: Describe observable details, not thoughts or dialogue
-4. SPATIAL CLARITY: Include positions (left, right, center, background)
-5. Always return valid JSON with all 5 keys
-6. Use null (no quotes) for unclear components`
+CRITICAL CHARACTER RULES:
+1. NEVER describe main character's skin tone - focus on hair, clothing, facial expressions, and pose only
+2. Use provided character data exactly - do not make up features for main character
+3. For secondary characters, you may describe their appearance as needed
+4. Use story-driven visual descriptions based on the text content
+
+VISUAL ENHANCEMENT RULES:
+5. Encourage visual detail consistency across pages using previous scene context
+6. Pull secondary characters naturally from story text
+7. Include spatial details (positions, colors, lighting, atmosphere)
+8. Preserve exact counts: "a bird" = 1 bird, "birds" = multiple
+9. Infer appropriate settings: birds/trees = outdoor, beds/books = indoor unless specified
+
+CULTURAL CONTEXT:
+${isNonEnglish ? `- Consider culturally authentic settings: ${culturalContext}` : '- Use universal child-friendly settings'}
+${isNonEnglish ? `- Incorporate cultural elements appropriate for ${nativeLanguage} speaking families` : ''}
+
+RESPONSE FORMAT:
+- Return valid JSON with all 5 keys
+- Use null (no quotes) for unclear components
+- Focus on observable visual elements, not thoughts or dialogue`
       },
       {
         role: 'user',
-        content: `Based on the following page text, generate a structured scene description for image generation.
+        content: `Create a visual scene description for this story page.
 
-Page text:
+CHARACTER DATA: ${characterData}
+
+STORY TEXT:
 "${storyText}"
 
-Previous scene (for continuity):
+PREVIOUS SCENE (for visual consistency):
 "${previousPrimaryScene || 'None - this is the first scene'}"
 
-Generate a visual scene description that maintains character and setting continuity while focusing on the current page's action.`
+${characterAppearance ? `CHARACTER APPEARANCE NOTES: ${characterAppearance}` : ''}
+
+Generate a scene that maintains character and setting continuity while showcasing the current page's action. Use the provided character data exactly and never describe the main character's skin tone.`
       }
     ];
 
-    console.log(`🤖 [${requestId}] Generating primaryScene from storyText using OpenAI`);
+    console.log(`🤖 [${requestId}] Generating enhanced primaryScene with character data and cultural context`);
     
     let processedContent; // Declare outside try block to fix scoping issue
     try {
@@ -566,15 +638,23 @@ Generate a visual scene description that maintains character and setting continu
     const response = {
       success: true,
       primaryScene: primaryScene, // RAW OpenAI output - no processing
-      aiSchema: includeFullSchema ? (processedContent?.aiSchema || {}) : undefined,
+      aiSchema: includeFullSchema ? (processedContent?.aiSchema || processedContent) : undefined,
       extractionMethod: 'openai_generated',
-      requestId
+      requestId,
+      // Include character consistency data for test results
+      characterConsistency: includeFullSchema ? {
+        characterAppearance,
+        characterSeed,
+        culturalContext: isNonEnglish ? culturalContext : null,
+        avatarType: characterReference
+      } : undefined
     };
     
     console.log(`✅ [${requestId}] Returning response:`, {
       success: response.success,
       primarySceneLength: response.primaryScene?.length,
       hasAiSchema: !!response.aiSchema,
+      hasCharacterConsistency: !!response.characterConsistency,
       extractionMethod: response.extractionMethod
     });
     

@@ -274,6 +274,10 @@ export class PhaseIntegrationOrchestrator {
         ethnicity = (typeof ethnicityResult === 'string' ? ethnicityResult : '').replace('{ethnicity}', '').trim();
       }
 
+      // Handle "prefer-not-to-answer" avatar type
+      const avatarType = userInfo?.avatar?.type || userInfo?.avatarType || 'child';
+      const characterReference = avatarType === 'prefer-not-to-answer' ? 'gender neutral child' : avatarType;
+
       // Get hair and skin variations based on skin tone with seeded selection
       // CRITICAL FIX: Pass explicit skinTone parameter to prevent hair mapping bugs
       const culturalBundle = getCulturalBundle(userInfo, sessionId, skinTone);
@@ -440,12 +444,13 @@ export class PhaseIntegrationOrchestrator {
       
       console.log(`✅ [DEBUG] Formatted secondary characters result:`, formattedSecondaryCharacters);
       
-      // Enhanced character description with avatar type, hair and skin variations  
+      // Enhanced character description with comprehensive character data
       const characterDescription = [
-        avatarIdentity,
+        `${characterReference} named ${characterName}, age ${userInfo?.age || 6}`,
         ethnicity,
         selectedHair,
-        selectedSkin
+        culturalEnhancements ? `with ${culturalEnhancements}` : null,
+        language !== 'en' ? `(${language} native speaker)` : null
       ].filter(Boolean).join(', ');
 
       // Build complete 6-section Tier 1 enhanced prompt template with reordered structure
@@ -606,14 +611,35 @@ export class PhaseIntegrationOrchestrator {
    */
   async getCulturalEnhancements(userInfo, sessionId) {
     const language = userInfo?.nativeLanguage || userInfo?.language || 'en';
+    const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
     
     // Import REGIONAL_CULTURAL_CONTEXTS from tier25Vocabulary.js
     const { REGIONAL_CULTURAL_CONTEXTS } = await import('./tier25Vocabulary.js');
     
-    // Use language-based cultural context (English gets empty string)
-    const culturalContext = REGIONAL_CULTURAL_CONTEXTS[language.toLowerCase()] || '';
+    // Enhanced cultural context detection
+    let culturalContext = '';
     
-    console.log(`🌍 Cultural Enhancement Level: LANGUAGE_BASED for language: ${language}`);
+    // Apply cultural enhancements for non-English users OR dark-skinned users
+    if (language !== 'en' || skinTone === 'dark' || skinTone === 'darker') {
+      culturalContext = REGIONAL_CULTURAL_CONTEXTS[language.toLowerCase()] || '';
+      
+      // Add cultural setting examples for non-English users
+      if (language !== 'en') {
+        const culturalSettings = {
+          'fr': 'French cultural elements, Parisian settings, European architecture',
+          'es': 'Spanish cultural elements, Mediterranean settings, vibrant Hispanic atmosphere',
+          'pt': 'Portuguese/Brazilian cultural elements, tropical settings, South American vibrancy',
+          'zh': 'Chinese cultural elements, Asian architectural details, traditional Eastern settings',
+          'de': 'German cultural elements, European countryside, traditional Germanic settings',
+          'it': 'Italian cultural elements, Mediterranean architecture, classic European charm'
+        };
+        
+        const settingEnhancement = culturalSettings[language] || 'culturally authentic settings';
+        culturalContext = culturalContext ? `${culturalContext}, ${settingEnhancement}` : settingEnhancement;
+      }
+    }
+    
+    console.log(`🌍 Cultural Enhancement Level: COMPREHENSIVE for language: ${language}, skin: ${skinTone}`);
     console.log(`🎨 Cultural Context Applied: ${culturalContext ? 'YES' : 'NO (English default)'}`);
     
     return culturalContext;
