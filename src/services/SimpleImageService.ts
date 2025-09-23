@@ -353,7 +353,9 @@ export class SimpleImageService {
           pageNumber,
           isGuestUser: !isPremium,
           difficultyLevel: backendDifficulty,
-          protectionNegatives // Pass negative prompts to backend
+          protectionNegatives, // Pass negative prompts to backend
+          skipTier25: true, // Skip tier 2.5 to avoid unauthorized fallback
+          forceTier: 'tier-1' // Force direct tier 1 usage
         }
       });
       
@@ -431,8 +433,22 @@ export class SimpleImageService {
         });
       }
 
+      // Direct tier 1 escalation - try ai-visual-scene-creator directly before other fallbacks
+      DebugLogger.warn('image', 'Orchestrator failed, trying direct tier 1 escalation');
+      try {
+        const directResult = await this.generateWithDirectAiVisualSceneCreator(
+          storyText, userInfo, sessionId, pageNumber, isPremium, healthStatus
+        );
+        if (directResult.success && directResult.url) {
+          DebugLogger.log('image', 'Direct tier 1 escalation successful');
+          return directResult;
+        }
+      } catch (directError) {
+        DebugLogger.warn('image', 'Direct tier 1 escalation also failed', directError);
+      }
+
       // TIER 4: Intelligent fallback system with quality prioritization
-      DebugLogger.warn('image', 'Orchestrator failed, using intelligent fallback system');
+      DebugLogger.warn('image', 'Using intelligent fallback system as final resort');
       const intelligentFallback = await this.getImageWithIntelligentFallback(
         userInfo || {}, cleanScene, !isPremium, normalizedSessionId, pageNumber
       );

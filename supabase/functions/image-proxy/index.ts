@@ -15,7 +15,6 @@ interface ImageProxyRequest {
 
 const ALLOWED_DOMAINS = [
   'im.runware.ai',
-  'images.unsplash.com',
   'cdn.openai.com'
 ];
 

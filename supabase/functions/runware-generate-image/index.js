@@ -425,17 +425,7 @@ async function generateWithRunware(
   });
 }
 
-// ---------------- ENHANCED FALLBACK ----------------
-async function generateEnhancedFallback(storyText, pageNumber, provider) {
-  return {
-    success: true,
-    imageURL: "https://images.unsplash.com/photo-1519904981063-b0cf448d479e?w=1024&h=1024&fit=crop&q=80",
-    source: 'enhanced_static_fallback',
-    tier: 'ENHANCED_STATIC_FALLBACK',
-    provider,
-    pageNumber
-  };
-}
+// Enhanced fallback function removed - unauthorized Unsplash image replaced with proper error response
 
 
 // Duplicate bindTierLogger removed - using the one at line 17-25
@@ -657,10 +647,21 @@ async function handleRequest(req) {
       }
     }
 
-    // Fallback if nothing succeeded
+    // Return error if all tiers failed - frontend will handle with authorized fallbacks
     if (!result || !result.success) {
-      log.t2('Using enhanced static fallback (2.5)');
-      result = await generateEnhancedFallback(storyText, pageNumber || 1, 'runware');
+      log.t2('All tiers failed - returning error for frontend escalation');
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'All image generation tiers failed',
+        tier: 'tier-failure',
+        frontendShouldFallback: true
+      }), {
+        status: 502,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Content-Type': 'application/json'
+        }
+      });
     }
 
     return new Response(JSON.stringify(result), {
