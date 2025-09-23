@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -20,7 +20,7 @@ interface FormStep2ReadingPrefsProps {
   canAdvance: boolean;
 }
 
-export const FormStep2ReadingPrefs = ({
+const FormStep2ReadingPrefsComponent = ({
   formData,
   onUpdate,
   onComplete,
@@ -31,8 +31,8 @@ export const FormStep2ReadingPrefs = ({
 }: FormStep2ReadingPrefsProps) => {
   const { t } = useTranslation();
 
-  // Customer-facing reading level mappings - Using FRONTEND difficulty terms
-  const readingLevels = [
+  // Memoized reading levels to prevent re-render loops
+  const readingLevels = useMemo(() => [
     {
       value: "pre-reader",
       label: t("readingLevels.preReader.title", "Pre-Reader"),
@@ -68,10 +68,12 @@ export const FormStep2ReadingPrefs = ({
       educational: t("readingLevels.advanced.educational", "Grade 6-10 with sophisticated vocabulary and themes"),
       suggestedAge: "10+"
     }
-  ];
+  ], [t]);
 
-  // Get age-sensitive suggestion
-  const getAgeSuggestion = () => {
+  // Memoized age suggestion to prevent recalculation
+  const ageSuggestion = useMemo(() => {
+    if (!formData.age) return null;
+    
     const age = formData.age;
     const suggestedLevel = readingLevels.find(level => {
       const [min, max] = level.suggestedAge.split('-').map(a => parseInt(a.replace('+', '')));
@@ -88,7 +90,7 @@ export const FormStep2ReadingPrefs = ({
       });
     }
     return null;
-  };
+  }, [formData.age, readingLevels, t]);
 
   const handleInputChange = (field: keyof UserInfo, value: string | LearningGoal) => {
     onUpdate({ [field]: value });
@@ -124,9 +126,9 @@ export const FormStep2ReadingPrefs = ({
           </div>
 
           {/* Age-sensitive guidance */}
-          {getAgeSuggestion() && (
+          {ageSuggestion && (
             <p className="text-xs text-primary bg-primary/10 px-3 py-2 rounded-lg">
-              💡 {getAgeSuggestion()}
+              💡 {ageSuggestion}
             </p>
           )}
 
@@ -248,3 +250,6 @@ export const FormStep2ReadingPrefs = ({
     </div>
   );
 };
+
+// Memoized component to prevent unnecessary re-renders
+export const FormStep2ReadingPrefs = React.memo(FormStep2ReadingPrefsComponent);

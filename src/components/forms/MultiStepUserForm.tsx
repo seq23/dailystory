@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from 'react-i18next';
 import { Card } from "@/components/ui/card";
 import { MobileOptimizedButton } from "@/components/MobileOptimizedButton";
 import { useToast } from "@/hooks/use-toast";
@@ -73,14 +73,23 @@ export const MultiStepUserForm = ({ onSubmit, onBack, isPremium = false }: Multi
     }
   };
 
-  const handleFinalSubmit = () => {
-    const finalData = submitForm();
-    if (finalData) {
-      onSubmit(finalData);
-    } else {
+  const handleFinalSubmit = async () => {
+    try {
+      const finalData = submitForm();
+      if (finalData) {
+        onSubmit(finalData);
+      } else {
+        toast({
+          title: t("multiStepForm.validationError", "Please check your information"),
+          description: t("multiStepForm.validationErrorDesc", "Some required fields need your attention."),
+          duration: 4000,
+        });
+      }
+    } catch (error) {
+      console.error('Form submission error:', error);
       toast({
-        title: t("multiStepForm.validationError", "Please check your information"),
-        description: t("multiStepForm.validationErrorDesc", "Some required fields need your attention."),
+        title: t("multiStepForm.submissionError", "Submission failed"),
+        description: t("multiStepForm.submissionErrorDesc", "Please try again in a moment."),
         duration: 4000,
       });
     }
