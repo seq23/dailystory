@@ -272,29 +272,7 @@ function generateContextSummary(text) {
   return (sentences[0]?.trim() || "Children's story scene.") + ".";
 }
 
-async function extractCharacterConsistencyOnly(pageText, sessionId, pageNumber, userInfo) {
-  console.log("🟢 [TIER2] 🎭 [CHARACTER FALLBACK] Attempting character consistency extraction only");
-  try {
-    const details = await characterConsistencyService.analyzeVisualDetails(sessionId, pageText, pageNumber);
-    if (details && details.mainCharacter) {
-      console.log("🟢 [TIER2] ✅ [CHARACTER FALLBACK] Character details extracted successfully");
-      const characterDescription = await characterConsistencyService.getCharacterAppearanceFromStory(sessionId);
-      const contextSummary = generateContextSummary(pageText);
-      const minimalPrompt = `${contextSummary} Character details: ${characterDescription}`;
-      return {
-        success: true,
-        enhancedPrompt: minimalPrompt,
-        tier: "CHARACTER_CONSISTENCY_ONLY",
-        metadata: { characterDetails: details, fallbackMode: true, enhancementType: "character_only" },
-      };
-    }
-    console.log("🔴 [TIER1] ⚠️ [CHARACTER FALLBACK] No character details found");
-    return null;
-  } catch (err) {
-    console.log(`🔴 [TIER1] ❌ [CHARACTER FALLBACK] Character consistency extraction failed: ${err}`);
-    return null;
-  }
-}
+// Character-consistency-only fallback removed - Direct Mode provides superior alternative
 
 // ---------------- RUNWARE CORE ----------------
 async function generateWithRunware(
@@ -751,62 +729,57 @@ async function handleRequest(req) {
             }
           });
           result = resp.data || { success: false, error: resp.error?.message || 'Tier 2.5A escalation failed' };
-        } else {
-          // Try character-consistency-only fallback
-          log.t2('Trying character consistency fallback');
-          const characterFallback = await extractCharacterConsistencyOnly(
-            storyText, sessionId, pageNumber || 1, payload.userInfo
-          );
-
-          if (characterFallback && characterFallback.success) {
-            try {
-              const apiKey = Deno.env.get('RUNWARE_API_KEY')?.trim();
-              const imageResult = await generateWithRunware(
-                apiKey,
-                characterFallback.enhancedPrompt,
-                sessionId,
-                requestId,
-                payload.userInfo,
-                payload.userInfo?.avatar,
-                pageNumber || 1,
-                characterFallback.metadata
-              );
-              result = {
-                ...imageResult,
-                tier: 'CHARACTER_CONSISTENCY_FALLBACK',
-                usedTier: 'CHARACTER_CONSISTENCY_FALLBACK',
-                fallbackReason: 'orchestrator_enhancement_failed',
-                templateStructure: characterFallback.tier
-              };
-              log.success('tier-1', { mode: 'character_fallback', imageUrl: result.imageURL });
-            } catch (charErr) {
-              log.failure('tier-1', { error: (charErr && charErr.message) || String(charErr), escalation: 'tier-2.5A' });
-              const resp = await supabase.functions.invoke('runware-template-ab', {
-                body: {
-                  storyText,
-                  pageText: storyText,
-                  userInfo: payload.userInfo,
-                  sessionId,
-                  pageNumber: pageNumber || 1,
-                  templateComplexity: 'A'
-                }
-              });
-              result = resp.data || { success: false, error: resp.error?.message || 'All fallbacks failed' };
-            }
-          } else {
-            log.failure('tier-1', { error: msg, escalation: 'tier-2.5A' });
-            const resp = await supabase.functions.invoke('runware-template-ab', {
+        } else if (payload.forceTier === 'COMPLETE_TIER_1' || payload.forceTier === 'tier-1' || payload.skipTier25) {
+          // Force Tier 1: Try Direct Mode instead of escalating to Tier 2.5A
+          log.t2('Force Tier 1: Attempting Direct Mode via ai-visual-scene-creator');
+          try {
+            const directModeResponse = await supabase.functions.invoke('ai-visual-scene-creator', {
               body: {
                 storyText,
-                pageText: storyText,
                 userInfo: payload.userInfo,
                 sessionId,
                 pageNumber: pageNumber || 1,
-                templateComplexity: 'A'
+                directMode: true  // Enable Direct Mode bypass
               }
             });
-            result = resp.data || { success: false, error: resp.error?.message || 'Tier 2.5A escalation failed' };
+
+            if (directModeResponse?.data && directModeResponse.data.success) {
+              result = {
+                ...directModeResponse.data,
+                tier: 'DIRECT_MODE',
+                usedTier: 'DIRECT_MODE',
+                fallbackReason: 'orchestrator_enhancement_failed_force_tier_1',
+                templateStructure: 'DIRECT_MODE_SUCCESS'
+              };
+              log.success('tier-1', { mode: 'direct_mode', imageUrl: result.imageURL });
+            } else {
+              throw new Error('Direct Mode failed');
+            }
+          } catch (directErr) {
+            log.failure('tier-1', { error: (directErr && directErr.message) || String(directErr), reason: 'direct_mode_failed' });
+            // For Force Tier 1, return clear failure without escalation
+            result = {
+              success: false,
+              error: `Force Tier 1 failed: ${msg}. Direct Mode also failed: ${(directErr && directErr.message) || String(directErr)}`,
+              tier: 'TIER_1_FAILED',
+              templateStructure: 'TIER_1_FAILED',
+              failureReason: 'orchestrator_and_direct_mode_failed'
+            };
           }
+        } else {
+          // Regular flow: Allow escalation to Tier 2.5A for non-forced requests
+          log.failure('tier-1', { error: msg, escalation: 'tier-2.5A' });
+          const resp = await supabase.functions.invoke('runware-template-ab', {
+            body: {
+              storyText,
+              pageText: storyText,
+              userInfo: payload.userInfo,
+              sessionId,
+              pageNumber: pageNumber || 1,
+              templateComplexity: 'A'
+            }
+          });
+          result = resp.data || { success: false, error: resp.error?.message || 'Tier 2.5A escalation failed' };
         }
       }
     }

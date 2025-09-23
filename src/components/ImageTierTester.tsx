@@ -1840,6 +1840,27 @@ export const ImageTierTester = () => {
                           🎯 AI Schema Generator
                         </Badge>
                       )}
+                      
+                      {/* Tier 1 Success Badge */}
+                      {result.details.templateStructure === 'COMPLETE_TIER_1' && (
+                        <Badge variant="default" className="bg-green-600 text-white hover:bg-green-700">
+                          ✅ Tier 1 Success
+                        </Badge>
+                      )}
+                      
+                      {/* Direct Mode Success Badge */}
+                      {(result.tier === 'DIRECT_MODE' || result.details.templateStructure === 'DIRECT_MODE_SUCCESS') && (
+                        <Badge variant="secondary" className="bg-blue-600 text-white hover:bg-blue-700">
+                          🚀 Direct Mode Success
+                        </Badge>
+                      )}
+                      
+                      {/* Tier 1 Failed Badge */}
+                      {(result.tier === 'TIER_1_FAILED' || result.details.templateStructure === 'TIER_1_FAILED') && (
+                        <Badge variant="destructive" className="bg-red-600 text-white hover:bg-red-700">
+                          ❌ Tier 1 Failed
+                        </Badge>
+                      )}
                     </div>
                     {result.details.processingTime && (
                       <span className="text-sm text-muted-foreground">
@@ -1903,10 +1924,23 @@ export const ImageTierTester = () => {
                        </details>
                      )}
 
-                      {/* Runware Prompt Display Section */}
-                      {(result.details.positivePrompt || result.details.negativePrompt || result.details.enhancedPrompt || result.details.originalPrompt) && (
+                      {/* Enhanced Runware Prompt Display Section - Now shows prompts for ALL successes */}
+                      {(result.success && (result.details.positivePrompt || result.details.negativePrompt || result.details.enhancedPrompt || result.details.originalPrompt)) && (
                         <div className="text-sm border rounded p-2 bg-green-50">
-                          <span className="font-medium text-green-700">Actual Runware Prompts:</span>
+                          <span className="font-medium text-green-700">
+                            🎯 Full Prompts Sent to Runware - 
+                            {result.details.templateStructure === 'COMPLETE_TIER_1' && ' (Tier 1 Success)'}
+                            {result.details.templateStructure === 'DIRECT_MODE_SUCCESS' && ' (Direct Mode Success)'}
+                          </span>
+                          
+                          {/* Enhanced Prompt Source Indicator */}
+                          <div className="mt-1 text-xs">
+                            <span className="bg-blue-100 px-2 py-1 rounded text-blue-700">
+                              {result.details.templateStructure === 'COMPLETE_TIER_1' ? '🎯 Enhanced by Orchestrator' : 
+                               result.details.templateStructure === 'DIRECT_MODE_SUCCESS' ? '🚀 Built by Direct Mode' : 
+                               '📝 Generated Prompt'}
+                            </span>
+                          </div>
                           
                           {/* Positive Prompt (Enhanced Prompt sent to Runware) */}
                           {result.details.positivePrompt && (
@@ -1942,13 +1976,19 @@ export const ImageTierTester = () => {
                             </details>
                           )}
 
-                          {/* Enhanced Prompt Structure Display */}
+                          {/* Enhanced Prompt Structure Display with Success Indicators */}
                           {result.details.enhancedPrompt && (
                             <details className="mt-2">
                               <summary className="cursor-pointer text-xs font-medium text-green-600 flex items-center gap-2">
                                 📝 Enhanced Prompt ({result.details.enhancedPrompt.length} chars)
                                 {result.details.templateStructure === 'COMPLETE_TIER_1' && (
-                                  <Badge variant="default" className="text-xs bg-green-600">TIER 1 COMPLETE</Badge>
+                                  <Badge variant="default" className="text-xs bg-green-600">✅ TIER 1 COMPLETE</Badge>
+                                )}
+                                {result.details.templateStructure === 'DIRECT_MODE_SUCCESS' && (
+                                  <Badge variant="secondary" className="text-xs bg-blue-600">🚀 DIRECT MODE</Badge>
+                                )}
+                                {result.details.templateStructure === 'TIER_1_FAILED' && (
+                                  <Badge variant="destructive" className="text-xs">❌ TIER 1 FAILED</Badge>
                                 )}
                                 {result.details.templateStructure === 'FAILED' && (
                                   <Badge variant="destructive" className="text-xs">TEMPLATE FAILED</Badge>
