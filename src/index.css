@@ -856,13 +856,13 @@ All colors MUST be HSL.
     font-size: 16px; /* Prevents iOS zoom */
   }
 
-  /* Mobile reading optimizations */
+  /* Mobile reading optimizations - NO WORD BREAKING */
   .mobile-reading-optimized {
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    hyphens: auto;
-    -webkit-hyphens: auto;
-    -moz-hyphens: auto;
+    word-break: keep-all;
+    overflow-wrap: normal;
+    hyphens: none;
+    -webkit-hyphens: none;
+    -moz-hyphens: none;
     font-kerning: auto;
     text-rendering: optimizeLegibility;
   }
@@ -1182,11 +1182,11 @@ All colors MUST be HSL.
     white-space: normal !important;
   }
   
-  /* Desktop text flow fix - prevent line breaking on each word */
+  /* Desktop text flow fix - NO WORD BREAKING */
   @media (min-width: 768px) {
     .mobile-reading-optimized {
       white-space: normal;
-      word-wrap: break-word;
+      word-break: keep-all;
     }
     
     .mobile-reading-optimized .interactive-word,
