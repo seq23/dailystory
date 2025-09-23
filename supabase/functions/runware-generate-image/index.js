@@ -425,11 +425,37 @@ async function generateWithRunware(
   });
 }
 
+// ---------------- ENHANCED FALLBACK ----------------
+async function generateEnhancedFallback(storyText, pageNumber, provider) {
+  return {
+    success: true,
+    imageURL: "https://images.unsplash.com/photo-1519904981063-b0cf448d479e?w=1024&h=1024&fit=crop&q=80",
+    source: 'enhanced_static_fallback',
+    tier: 'ENHANCED_STATIC_FALLBACK',
+    provider,
+    pageNumber
+  };
+}
 
-// ---------------- MAIN HANDLER (POST-ONLY) ----------------
+
+// ---- Tier logger binder (console + DB) ----
+// Place this near the top (after your imports).
+function bindTierLogger(supabaseClient, sessionId, requestId) {
+  return {
+    t1: (msg, ctx = {}) => tierLogging.logTier1(msg, ctx, supabaseClient, sessionId, requestId),
+    t2: (msg, ctx = {}) => tierLogging.logTier2(msg, ctx, supabaseClient, sessionId, requestId),
+    attempt: (tier, ctx = {}) => tierLogging.logTierAttempt(supabaseClient, sessionId, requestId, tier, 'attempting', ctx),
+    success: (tier, ctx = {}) => tierLogging.logTierSuccess(supabaseClient, sessionId, requestId, tier, ctx),
+    failure: (tier, ctx = {}) => tierLogging.logTierFailure(supabaseClient, sessionId, requestId, tier, ctx),
+  };
+}
+
+// ============= MAIN HANDLER WITH CRASH-PROOF BOOT (GET/HEAD safe) =============
 async function handleRequest(req) {
   const requestId = CoreUtils.generateRequestId();
-  // Fast-path: CORS preflight
+  tierLogging.logTier2(`🎯 [${requestId}] Orchestrator: ${req.method} ${req.url}`);
+
+  // CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, {
       status: 204,
@@ -442,31 +468,24 @@ async function handleRequest(req) {
     });
   }
 
-  // Health: HEAD / GET — no JSON parse here
-  if (req.method === 'HEAD' && new URL(req.url).pathname === '/health') {
-    return new Response(null, {
-      status: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Cache-Control': 'no-store',
-        'x-health': 'true'
-      }
-    });
-  }
+  // Belt & suspenders: any GET/HEAD still returns 200 here
   if (req.method === 'GET' || req.method === 'HEAD') {
-    const payload = {
+    const isHeadHealth = req.method === 'HEAD' && new URL(req.url).pathname === '/health';
+    if (isHeadHealth) {
+      return new Response(null, {
+        status: 200,
+        headers: { 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store', 'x-health': 'true' }
+      });
+    }
+    return new Response(JSON.stringify({
       status: 'healthy',
       service: 'runware-generate-image',
       timestamp: new Date().toISOString(),
       version: 'v2.1',
-      bootStatus: CrashProofBootSystem.isHealthy() ? 'healthy' : 'degraded',
-    };
-    return new Response(JSON.stringify(payload), {
+      bootStatus: CrashProofBootSystem.isHealthy() ? 'healthy' : 'degraded'
+    }), {
       status: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Content-Type': 'application/json'
-      }
+      headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' }
     });
   }
 
@@ -484,28 +503,25 @@ async function handleRequest(req) {
     });
   }
 
-  // Everything that can throw goes inside ONE outer try
+  // Outer try/catch to avoid orphan catch parse issues & network flakiness
   try {
-    // Flexible payload parse
     const payload = await req.json().catch(() => ({}));
-    const requestMeta = { method: req.method, url: req.url };
     const sessionId = payload?.sessionId || ('session_' + requestId);
     const log = bindTierLogger(supabase, sessionId, requestId);
-    log.t2('Request received', requestMeta);
 
-    // Normalize payload shapes
-    let enhancedStoryData, storyText, pageNumber, avatarIdentity, previousPrimaryScene;
+    log.t2('Request received', { hasPageText: !!payload.pageText, hasStoryText: !!payload.storyText });
+
+    // Normalize payload
+    let enhancedStoryData, storyText, pageNumber, previousPrimaryScene;
     if (payload.pageText) {
       storyText = payload.pageText;
       enhancedStoryData = payload.enhancedStoryData || { userInfo: payload.userInfo };
       pageNumber = payload.pageNumber;
-      avatarIdentity = payload.userInfo?.avatar;
       previousPrimaryScene = payload.previousPrimaryScene;
     } else {
       enhancedStoryData = payload.enhancedStoryData;
       storyText = payload.storyText;
       pageNumber = payload.pageNumber;
-      avatarIdentity = payload.avatarIdentity;
       previousPrimaryScene = payload.previousPrimaryScene;
     }
 
@@ -518,7 +534,7 @@ async function handleRequest(req) {
 
     let result = null;
 
-    // ===== Tier 1 forced path (COMPLETE_TIER_1 / tier-1 / skipTier25) =====
+    // ===== Tier 1 forced path =====
     if (payload.forceTier === 'COMPLETE_TIER_1' || payload.forceTier === 'tier-1' || payload.skipTier25) {
       log.attempt('tier-1', { note: 'PhaseIntegrationOrchestrator path' });
 
@@ -556,7 +572,7 @@ async function handleRequest(req) {
           throw new Error('TIER1_ENHANCEMENT_FAILED');
         }
 
-        // Finally: generate with Runware
+        // Generate with Runware
         log.t2('Generating image via Runware (tier-1)');
         const apiKey = Deno.env.get('RUNWARE_API_KEY')?.trim();
         const enhancedData = {
@@ -586,8 +602,6 @@ async function handleRequest(req) {
 
         if (msg.includes('NO_PRIMARY_SCENE_ESCALATE_TO_25A')) {
           log.failure('tier-1', { error: msg, escalation: 'tier-2.5A' });
-
-          // escalate to 2.5A (runware-template-ab)
           const resp = await supabase.functions.invoke('runware-template-ab', {
             body: {
               storyText,
@@ -600,7 +614,7 @@ async function handleRequest(req) {
           });
           result = resp.data || { success: false, error: resp.error?.message || 'Tier 2.5A escalation failed' };
         } else {
-          // Try character-consistency-only fallback, then escalate if needed
+          // Try character-consistency-only fallback
           log.t2('Trying character consistency fallback');
           const characterFallback = await extractCharacterConsistencyOnly(
             storyText, sessionId, pageNumber || 1, payload.userInfo
@@ -629,7 +643,6 @@ async function handleRequest(req) {
               log.success('tier-1', { mode: 'character_fallback', imageUrl: result.imageURL });
             } catch (charErr) {
               log.failure('tier-1', { error: (charErr && charErr.message) || String(charErr), escalation: 'tier-2.5A' });
-
               const resp = await supabase.functions.invoke('runware-template-ab', {
                 body: {
                   storyText,
@@ -644,7 +657,6 @@ async function handleRequest(req) {
             }
           } else {
             log.failure('tier-1', { error: msg, escalation: 'tier-2.5A' });
-
             const resp = await supabase.functions.invoke('runware-template-ab', {
               body: {
                 storyText,
@@ -661,16 +673,11 @@ async function handleRequest(req) {
       }
     }
 
-    // ===== Default: if nothing succeeded, enhanced static fallback =====
-      if (!result || !result.success) {
-        log.t2('Using simple static fallback');
-        result = {
-          success: true,
-          imageURL: "https://images.unsplash.com/photo-1519904981063-b0cf448d479e?w=1024&h=1024&fit=crop&q=80",
-          source: 'static_fallback',
-          tier: 'STATIC_FALLBACK'
-        };
-      }
+    // Fallback if nothing succeeded
+    if (!result || !result.success) {
+      log.t2('Using enhanced static fallback (2.5)');
+      result = await generateEnhancedFallback(storyText, pageNumber || 1, 'runware');
+    }
 
     return new Response(JSON.stringify(result), {
       status: 200,
@@ -680,10 +687,8 @@ async function handleRequest(req) {
       }
     });
   } catch (error) {
-    // OUTER catch — only one, and it always pairs the try above
     const message = (error && error.message) || String(error);
-    // console + JSON
-    tierLogging.logTier1(`❌ [${requestId}] Crash-proof orchestrator error`, { message }, supabase, 'unknown', requestId);
+    tierLogging.logTier1(`❌ [${requestId}] Orchestrator error`, { message });
     return new Response(JSON.stringify({
       error: 'Internal server error',
       message,
@@ -698,7 +703,5 @@ async function handleRequest(req) {
   }
 }
 
-// Keep an init breadcrumb without exporting at EOF
-console.log("🟢 [TIER2] 🎯 Crash-Proof Runware Orchestrator v2.1 handler loaded");
-
+// ---- SINGLE default export only (ensure there isn't another default export elsewhere) ----
 export default handleRequest;

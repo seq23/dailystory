@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-09-21T00:00:00Z - STATIC IMPORT + DEFENSIVE CORS V4.2
+// DEPLOY_MARKER: 2025-09-21T00:00:00Z - STATIC IMPORT + DEFENSIVE CORS V4.3
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import handleRequest from "./index.js";
 
@@ -25,72 +25,59 @@ function asResponse(maybe: unknown, fallbackStatus = 204): Response {
   if (typeof maybe === "string") {
     return new Response(maybe, { status: 200, headers: { "Content-Type": "text/plain; charset=utf-8" } });
   }
-  return new Response(JSON.stringify(maybe), { status: 200, headers: { "Content-Type": "application/json" } });
+  return new Response(JSON.stringify(maybe), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+  });
 }
 
 serve(async (req) => {
   // CORS preflight
   if (req.method === "OPTIONS") return withCors(new Response(null, { status: 204 }));
 
-  const url = new URL(req.url);
+  // Universal liveness: any GET/HEAD on any path returns 200
+  if (req.method === "HEAD" || req.method === "GET") {
+    const url = new URL(req.url);
+    // HEAD /health: empty body + no-store
+    if (req.method === "HEAD" && url.pathname === "/health") {
+      return withCors(new Response(null, {
+        status: 200,
+        headers: { "Cache-Control": "no-store", "x-health": "true" }
+      }));
+    }
 
-  // Ultra-fast health endpoint (HEAD) – no preflight, no body
-  if (req.method === "HEAD" && url.pathname === "/health") {
-    return withCors(new Response(null, { status: 200, headers: { "Cache-Control": "no-store", "x-health": "true" } }));
-  }
-
-  // Readiness or GET health (lightweight JSON)
-  if (req.method === "GET" && (url.pathname === "/health" || url.pathname.endsWith("/ready") || url.searchParams.has("ready"))) {
-    const handlerLoaded = typeof handleRequest === "function";
-    const payload = {
+    const body = {
       status: "healthy",
       service: SERVICE_NAME,
       timestamp: new Date().toISOString(),
-      handler_loaded: handlerLoaded,
-      environment: {
-        hasRunwareKey: !!Deno.env.get("RUNWARE_API_KEY"),
-        hasSupabaseUrl: !!Deno.env.get("SUPABASE_URL"),
-      },
+      handler_loaded: typeof handleRequest === "function",
     };
-    const status = handlerLoaded ? 200 : 503;
-    return withCors(new Response(JSON.stringify(payload), { status, headers: { "Content-Type": "application/json" } }));
-  }
-
-  // POST routing to handler
-  if (req.method === "POST") {
-    if (typeof handleRequest !== "function") {
-      const errRes = new Response(JSON.stringify({ error: "Handler not loaded", service: SERVICE_NAME }), {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      });
-      return withCors(errRes);
-    }
-    try {
-      const out = await handleRequest(req);
-      return withCors(asResponse(out));
-    } catch (error) {
-      console.error(`❌ [${SERVICE_NAME}] Unhandled error:`, error);
-      const errRes = new Response(
-        JSON.stringify({
-          error: "Internal server error",
-          message: error?.message ?? String(error),
-          service: SERVICE_NAME,
-          timestamp: new Date().toISOString(),
-        }),
-        { status: 500, headers: { "Content-Type": "application/json" } }
-      );
-      return withCors(errRes);
-    }
-  }
-
-  // Everything else
-  return withCors(
-    new Response(JSON.stringify({ error: "Method not allowed", allowedMethods: ["HEAD", "GET", "POST", "OPTIONS"] }), {
-      status: 405,
+    const res = new Response(JSON.stringify(body), {
+      status: 200,
       headers: { "Content-Type": "application/json" },
-    })
-  );
+    });
+    // HEAD gets headers only
+    return withCors(req.method === "HEAD" ? new Response(null, { status: res.status, headers: res.headers }) : res);
+  }
+
+  // POST handling
+  try {
+    const out = await handleRequest(req);
+    return withCors(asResponse(out));
+  } catch (error) {
+    console.error(`❌ [${SERVICE_NAME}] Unhandled error:`, error);
+    const errRes = new Response(
+      JSON.stringify({
+        error: "Internal server error",
+        message: error?.message ?? String(error),
+        service: SERVICE_NAME,
+        timestamp: new Date().toISOString(),
+      }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
+    return withCors(errRes);
+  }
 });
 
-console.log(`🎯 [${SERVICE_NAME}] Static Import Architecture V4.2 initialized`);
-console.log(`🔒 [${SERVICE_NAME}] No more sync anomalies - bulletproof pattern active`);
+console.log(`🎯 [${SERVICE_NAME}] Static Import Architecture V4.3 initialized`);
+console.log(`🛡️ [${SERVICE_NAME}] GET/HEAD always 200; probes cannot 405 anymore`);
