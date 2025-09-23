@@ -700,8 +700,8 @@ export class PhaseIntegrationOrchestrator {
         );
       }
       
-      // Create complete avatarIdentity for AI scene generation
-      const avatarIdentity = {
+      // Create complete avatarIdentity for AI scene generation (workflow-specific)
+      const avatarIdentityWorkflow = {
         type: userInfo?.avatar?.type || userInfo?.avatarType || 'child',
         skinTone: userInfo?.appearance?.skinTone || userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium',
         hairColor: userInfo?.appearance?.hairColor || userInfo?.hairColor || userInfo?.avatar?.hairColor,
@@ -711,7 +711,7 @@ export class PhaseIntegrationOrchestrator {
       };
 
       // Get cultural bundle for complete context
-      const culturalBundle = getCulturalBundle(userInfo, sessionId, avatarIdentity.skinTone);
+      const culturalBundle = getCulturalBundle(userInfo, sessionId, avatarIdentityWorkflow.skinTone);
 
       const sceneResponse = await this.supabase.functions.invoke('ai-visual-scene-creator', {
         body: { 

@@ -58,7 +58,6 @@ serve(async (req) => {
 
     // Any GET → boring 200 JSON (never fails)
     if (req.method === "GET") {
-      await loadHandler(true); // Force a single import attempt for diagnosis
       const payload = {
         status: "healthy",
         service: SERVICE_NAME,
