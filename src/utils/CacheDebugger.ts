@@ -37,7 +37,7 @@ export class CacheDebugger {
    * Perform comprehensive cache inspection
    */
   static inspectAllCaches(userId?: string, sessionId?: string): CacheInspectionResult {
-    console.log('🔍 [CACHE DEBUGGER] Starting comprehensive cache inspection...');
+    DebugLogger.log('performance', 'Starting comprehensive cache inspection...');
     
     const result: CacheInspectionResult = {
       imageCacheStatus: this.inspectImageCache(),
@@ -45,7 +45,7 @@ export class CacheDebugger {
       storageBreakdown: this.inspectStorageBreakdown()
     };
     
-    console.log('🔍 [CACHE DEBUGGER] Inspection complete:', result);
+    DebugLogger.log('performance', 'Inspection complete', result);
     return result;
   }
 
@@ -206,7 +206,7 @@ export class CacheDebugger {
     const key1 = this.generateTestCacheKey(prompt1, sessionId, pageNumber, storyId, avatarType, skinTone);
     const key2 = this.generateTestCacheKey(prompt2, sessionId, pageNumber, storyId, avatarType, skinTone);
     
-    console.log('🔑 [CACHE KEY DEBUG] Comparing cache keys:', {
+    DebugLogger.log('performance', 'Comparing cache keys', {
       prompt1: prompt1.substring(0, 50) + '...',
       prompt2: prompt2.substring(0, 50) + '...',
       key1,
@@ -230,7 +230,7 @@ export class CacheDebugger {
    * Clear all caches and log the action
    */
   static clearAllCachesWithLogging(reason: string, sessionId?: string) {
-    console.log('🧹 [CACHE DEBUGGER] Clearing all caches:', { reason, sessionId });
+    DebugLogger.log('performance', 'Clearing all caches', { reason, sessionId });
     
     try {
       if (sessionId) {
@@ -247,7 +247,7 @@ export class CacheDebugger {
       
       storyKeys.forEach(key => sessionStorage.removeItem(key));
       
-      console.log('✅ [CACHE DEBUGGER] Cache clearing completed:', {
+      DebugLogger.log('performance', 'Cache clearing completed', {
         reason,
         sessionId,
         clearedKeys: storyKeys.length

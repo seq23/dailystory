@@ -7,6 +7,7 @@ import { VoiceCatalogIntegration, type VoiceIntegrationResult } from './VoiceCat
 import { VoiceSelector } from './VoiceSelector';
 import { DifficultyLevel } from './VoiceCatalogService';
 import type { UserInfo } from '@/types';
+import { DebugLogger } from '@/services/DebugLogger';
 
 export interface TestResults {
   testName: string;
@@ -37,7 +38,7 @@ export class VoiceCatalogTester {
     runs = 5, 
     themes?: string[]
   ): Promise<VarietyTestResults> {
-    console.log(`🧪 Testing voice variety with ${runs} runs...`);
+    DebugLogger.log('audio', `Testing voice variety with ${runs} runs...`);
     
     const results: VoiceIntegrationResult[] = [];
     const uniqueVoices = new Set<string>();
@@ -73,7 +74,7 @@ export class VoiceCatalogTester {
         }
         
       } catch (error) {
-        console.error(`Run ${i + 1} failed:`, error);
+        DebugLogger.error('audio', `Run ${i + 1} failed`, error);
       }
     }
     
@@ -101,7 +102,7 @@ export class VoiceCatalogTester {
    * Test franchise mapping accuracy
    */
   static async testFranchiseMapping(): Promise<TestResults> {
-    console.log('🧪 Testing franchise mapping accuracy...');
+    DebugLogger.log('audio', 'Testing franchise mapping accuracy...');
     
     const testCases = [
       { input: ['Harry Potter'], expected: ['magic_school'] },
@@ -129,7 +130,7 @@ export class VoiceCatalogTester {
         passed: hasExpectedMatch
       });
       
-      console.log(`✅ Franchise mapping test: ${testCase.input} → ${mapped}`);
+      DebugLogger.log('audio', `Franchise mapping test: ${testCase.input} → ${mapped}`);
     }
     
     return {
@@ -144,7 +145,7 @@ export class VoiceCatalogTester {
    * Test age boundary restrictions in cross-level logic
    */
   static async testAgeBoundaries(): Promise<TestResults> {
-    console.log('🧪 Testing age boundary restrictions...');
+    DebugLogger.log('audio', 'Testing age boundary restrictions...');
     
     const testCases = [
       { age: 4, grade: 'K', expectCrossLevel: false },
@@ -213,7 +214,7 @@ export class VoiceCatalogTester {
    * Test theme processing weight distribution
    */
   static async testThemeWeighting(): Promise<TestResults> {
-    console.log('🧪 Testing theme weighting in voice selection...');
+    DebugLogger.log('audio', 'Testing theme weighting in voice selection...');
     
     const userInfo: UserInfo = {
       name: 'Theme Test User',
@@ -272,7 +273,7 @@ export class VoiceCatalogTester {
    * Run comprehensive test suite
    */
   static async runFullTestSuite(): Promise<TestResults[]> {
-    console.log('🚀 Running comprehensive voice catalog test suite...');
+    DebugLogger.log('audio', 'Running comprehensive voice catalog test suite...');
     
     const testUser: UserInfo = {
       name: 'Test User',
@@ -314,7 +315,7 @@ export class VoiceCatalogTester {
       });
       
     } catch (error) {
-      console.error('Test suite failed:', error);
+      DebugLogger.error('audio', 'Test suite failed', error);
       results.push({
         testName: 'Test Suite Error',
         passed: false,
@@ -324,7 +325,7 @@ export class VoiceCatalogTester {
     }
     
     const passedCount = results.filter(r => r.passed).length;
-    console.log(`🏁 Test suite complete: ${passedCount}/${results.length} tests passed`);
+    DebugLogger.log('audio', `Test suite complete: ${passedCount}/${results.length} tests passed`);
     
     return results;
   }

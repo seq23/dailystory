@@ -1,5 +1,6 @@
 // Test script to verify Level 0 template overhaul improvements
 import { Level0VocabularyAuditor } from './utils/level0VocabularyAuditor';
+import { DebugLogger } from '@/services/DebugLogger';
 
 // Sample overhauled templates to test
 const sampleOverhauledTemplates = [
@@ -44,41 +45,41 @@ const originalProblematicTemplate = [
   "Grocery stores have food."
 ];
 
-console.log('🎯 Level 0 Template Overhaul Results');
-console.log('='.repeat(60));
+DebugLogger.log('story', 'Level 0 Template Overhaul Results');
+DebugLogger.log('story', '='.repeat(60));
 
-console.log('\n❌ BEFORE (Original problematic template):');
+DebugLogger.log('story', 'BEFORE (Original problematic template):');
 const originalText = originalProblematicTemplate.join(' ');
 const originalAudit = Level0VocabularyAuditor.auditText(originalText, 'Original Template');
-console.log(`   Text: "${originalText}"`);
-console.log(`   Compliance: ${originalAudit.compliancePercentage}%`);
-console.log(`   Issues: ${originalAudit.totalViolations} violations`);
-console.log(`   Status: ${originalAudit.isCompliant ? '✅ PASSED' : '❌ FAILED'}`);
+DebugLogger.log('story', `Text: "${originalText}"`);
+DebugLogger.log('story', `Compliance: ${originalAudit.compliancePercentage}%`);
+DebugLogger.log('story', `Issues: ${originalAudit.totalViolations} violations`);
+DebugLogger.log('story', `Status: ${originalAudit.isCompliant ? '✅ PASSED' : '❌ FAILED'}`);
 
-console.log('\n✅ AFTER (Overhauled templates):');
+DebugLogger.log('story', 'AFTER (Overhauled templates):');
 sampleOverhauledTemplates.forEach((template, index) => {
   const templateText = template.join(' ');
   const auditResult = Level0VocabularyAuditor.auditText(templateText, `Overhauled Template ${index + 1}`);
   
-  console.log(`\n📖 Overhauled Template ${index + 1}:`);
-  console.log(`   Text: "${templateText}"`);
-  console.log(`   Compliance: ${auditResult.compliancePercentage}%`);
-  console.log(`   Violations: ${auditResult.totalViolations}`);
-  console.log(`   Status: ${auditResult.isCompliant ? '✅ PASSED (≥50%)' : '❌ FAILED'}`);
+  DebugLogger.log('story', `Overhauled Template ${index + 1}:`);
+  DebugLogger.log('story', `Text: "${templateText}"`);
+  DebugLogger.log('story', `Compliance: ${auditResult.compliancePercentage}%`);
+  DebugLogger.log('story', `Violations: ${auditResult.totalViolations}`);
+  DebugLogger.log('story', `Status: ${auditResult.isCompliant ? '✅ PASSED (≥50%)' : '❌ FAILED'}`);
   
   if (auditResult.violations.length > 0) {
-    console.log(`   Remaining issues: ${auditResult.violations.slice(0, 2).join(', ')}`);
+    DebugLogger.log('story', `Remaining issues: ${auditResult.violations.slice(0, 2).join(', ')}`);
   }
 });
 
 // Test all templates compliance
-console.log('\n🏆 OVERHAUL IMPROVEMENTS SUMMARY:');
-console.log('   ✨ Removed unnecessary "will" constructions');
-console.log('   ✨ Converted future tense to present tense');
-console.log('   ✨ Improved story flow and logical progression');
-console.log('   ✨ Increased sight word usage to 75-80%');
-console.log('   ✨ Simplified grammar for ages 3-5');
-console.log('   ✨ Fixed example: "I will help pick food" → "I help pick food"');
-console.log('   ✨ Fixed flow: Page 6 context now logical for story progression');
+DebugLogger.log('story', 'OVERHAUL IMPROVEMENTS SUMMARY:');
+DebugLogger.log('story', '✨ Removed unnecessary "will" constructions');
+DebugLogger.log('story', '✨ Converted future tense to present tense');
+DebugLogger.log('story', '✨ Improved story flow and logical progression');
+DebugLogger.log('story', '✨ Increased sight word usage to 75-80%');
+DebugLogger.log('story', '✨ Simplified grammar for ages 3-5');
+DebugLogger.log('story', '✨ Fixed example: "I will help pick food" → "I help pick food"');
+DebugLogger.log('story', '✨ Fixed flow: Page 6 context now logical for story progression');
 
 export { };

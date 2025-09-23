@@ -5,35 +5,37 @@
 
 import { VoiceCatalogIntegration, initializeVoiceCatalog } from './index';
 import type { UserInfo } from '@/types';
+import { DebugLogger } from '@/services/DebugLogger';
 
 /**
  * Test the complete voice catalog system
  */
 export async function testVoiceCatalogSystem() {
-  console.log('🧪 Starting Voice Catalog System Tests...\n');
+  DebugLogger.log('audio', 'Starting Voice Catalog System Tests...');
 
   try {
     // 1. Initialize the catalog
-    console.log('1️⃣ Initializing catalog...');
+    DebugLogger.log('audio', 'Initializing catalog...');
     const stats = await initializeVoiceCatalog();
-    console.log('✅ Catalog initialized:', stats, '\n');
+    DebugLogger.log('audio', 'Catalog initialized', stats);
 
     // 2. Test voice selection for each difficulty level
     const difficulties = ['beginner', 'easy', 'medium', 'hard', 'expert'] as const;
     
     for (const difficulty of difficulties) {
-      console.log(`2️⃣ Testing ${difficulty} level...`);
+      DebugLogger.log('audio', `Testing ${difficulty} level...`);
       try {
         const result = await VoiceCatalogIntegration.testVoiceSelection(difficulty);
-        console.log(`✅ ${difficulty}: ${result.selectedVoice.pn} (score: ${result.compatibilityScore.toFixed(2)})`);
+        DebugLogger.log('audio', `${difficulty}: ${result.selectedVoice.pn} (score: ${result.compatibilityScore.toFixed(2)})`);
       } catch (error) {
-        console.log(`❌ ${difficulty}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        DebugLogger.error('audio', `${difficulty}: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     }
-    console.log('');
+    // Empty line for debug formatting
+    DebugLogger.log('audio', '');
 
     // 3. Test with actual user data
-    console.log('3️⃣ Testing with realistic user data...');
+    DebugLogger.log('audio', 'Testing with realistic user data...');
     const testUser: UserInfo = {
       name: 'Emma',
       age: 8,
@@ -58,36 +60,38 @@ export async function testVoiceCatalogSystem() {
       { themes: ['magic', 'friendship'], warmthPreference: 0.9 }
     );
 
-    console.log(`✅ Selected for Emma: ${userResult.selectedVoice.pn}`);
-    console.log(`   Compatibility: ${userResult.compatibilityScore.toFixed(2)}`);
-    console.log(`   Reasoning: ${userResult.selectionReasoning}`);
-    console.log('');
+    DebugLogger.log('audio', `Selected for Emma: ${userResult.selectedVoice.pn}`);
+    DebugLogger.log('audio', `Compatibility: ${userResult.compatibilityScore.toFixed(2)}`);
+    DebugLogger.log('audio', `Reasoning: ${userResult.selectionReasoning}`);
+    // Empty line for debug formatting
+    DebugLogger.log('audio', '');
 
     // 4. Test voice alternatives
-    console.log('4️⃣ Testing voice alternatives...');
+    DebugLogger.log('audio', 'Testing voice alternatives...');
     const alternatives = await VoiceCatalogIntegration.getVoiceAlternatives(testUser, 'medium', 3);
-    console.log(`✅ Found ${alternatives.length} alternatives:`);
+    DebugLogger.log('audio', `Found ${alternatives.length} alternatives`);
     alternatives.forEach((alt, i) => {
-      console.log(`   ${i + 1}. ${alt.selectedVoice.pn} (${alt.compatibilityScore.toFixed(2)})`);
+      DebugLogger.log('audio', `${i + 1}. ${alt.selectedVoice.pn} (${alt.compatibilityScore.toFixed(2)})`);
     });
-    console.log('');
+    // Empty line for debug formatting
+    DebugLogger.log('audio', '');
 
     // 5. Test control line generation
-    console.log('5️⃣ Testing control line generation...');
+    DebugLogger.log('audio', 'Testing control line generation...');
     const controlLine = userResult.controlLine;
-    console.log('✅ Generated control line:');
-    console.log(controlLine + '\n');
+    DebugLogger.log('audio', 'Generated control line:');
+    DebugLogger.log('audio', controlLine);
 
     // 6. Get catalog info
-    console.log('6️⃣ Getting catalog information...');
+    DebugLogger.log('audio', 'Getting catalog information...');
     const catalogInfo = await VoiceCatalogIntegration.getCatalogInfo();
-    console.log('✅ Catalog info:', catalogInfo);
+    DebugLogger.log('audio', 'Catalog info', catalogInfo);
 
-    console.log('\n🎉 All tests completed successfully!');
+    DebugLogger.log('audio', 'All tests completed successfully!');
     return true;
 
   } catch (error) {
-    console.error('❌ Test failed:', error instanceof Error ? error.message : error);
+    DebugLogger.error('audio', 'Test failed', error instanceof Error ? error.message : error);
     return false;
   }
 }
@@ -96,14 +100,14 @@ export async function testVoiceCatalogSystem() {
  * Quick test function for development
  */
 export async function quickTest() {
-  console.log('⚡ Running quick voice catalog test...');
+  DebugLogger.log('audio', 'Running quick voice catalog test...');
   
   try {
     const result = await VoiceCatalogIntegration.testVoiceSelection('easy');
-    console.log('✅ Quick test passed:', result.selectedVoice.pn);
+    DebugLogger.log('audio', 'Quick test passed', result.selectedVoice.pn);
     return result;
   } catch (error) {
-    console.error('❌ Quick test failed:', error);
+    DebugLogger.error('audio', 'Quick test failed', error);
     throw error;
   }
 }
