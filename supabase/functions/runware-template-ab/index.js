@@ -1580,6 +1580,34 @@ async function handleRequest(req) {
       const hairDescription = culturalBundle?.hair || getHair(skinTone) || 'brown hair';
       const facialFeatures = culturalBundle?.features || getSkinBySkintone(skinTone, sessionId) || 'friendly expression';
       
+      // Add Character Consistency Service integration for Tier 2.5A
+      let characterAppearance = '';
+      let characterSeed = null;
+      try {
+        const { CharacterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
+        const characterService = CharacterConsistencyService.getInstance();
+        
+        if (sessionId) {
+          await characterService.analyzeVisualDetails(sessionId, storyText, pageNumber || 1, characterName);
+          characterAppearance = await characterService.getCharacterAppearanceFromStory(sessionId, characterName) || '';
+          characterSeed = await characterService.getCharacterSeed(sessionId, characterName) || null;
+        }
+        console.log(`✅ [${requestId}] Tier 2.5A: Character consistency applied`);
+      } catch (characterError) {
+        console.warn(`⚠️ [${requestId}] Tier 2.5A: Character consistency failed:`, characterError);
+      }
+      
+      // Debug logging to verify extractSemanticScene data structure
+      console.log(`🔍 [DEBUG] Tier 2.5A extractSemanticScene result structure:`, {
+        scene: extractedScene?.scene,
+        secondary: extractedScene?.secondary,
+        objects: extractedScene?.objects,  
+        settings: extractedScene?.settings,
+        type: typeof extractedScene,
+        hasCharacterAppearance: !!characterAppearance,
+        hasCharacterSeed: !!characterSeed
+      });
+      
       // Apply pageText summarization for levels 2-4
       const processedStoryText = summarizePageText(storyText, userInfo?.difficulty);
       
@@ -1589,8 +1617,10 @@ async function handleRequest(req) {
         .replace('{character}', `A young child named ${characterName}`)
         .replace('{age}', age)
         .replace('{ethnicity}', ethnicity)
-        .replace('{hair}', hairDescription)
-        .replace('{features}', facialFeatures)
+        .replace('{hair}', characterAppearance.includes('hair') ? 
+          characterAppearance.split(/hair|features/)[0].trim() || hairDescription : hairDescription)
+        .replace('{features}', characterAppearance.includes('features') ? 
+          characterAppearance.split('features')[1]?.split('.')[0]?.trim() || facialFeatures : facialFeatures)
         .replace('{bundle.culturalEnhancements}', culturalProfile || '')
         .replace('{semantic_scene}', extractedScene?.scene || extractedScene)
         .replace('{secondary_characters}', extractedScene?.secondary?.length ? extractedScene.secondary.join(', ') : '')
@@ -1600,6 +1630,16 @@ async function handleRequest(req) {
         .replace('{community_context}', '')
         .replace('{frameworkPrompt}', styleFramework.frameworkPrompt || 'contemporary children\'s book illustration style')
         .replace('{cameraDirective}', 'detailed illustration');
+      
+      // Add final debug logging for Tier 2.5A
+      console.log(`🎯 [DEBUG] Tier 2.5A Final Prompt Data:`, {
+        characterAppearance: characterAppearance.substring(0, 100),
+        secondaryCharacters: extractedScene?.secondary,
+        visualElements: extractedScene?.objects?.map(o => o.phrase),
+        settingContext: extractedScene?.settings,
+        hasCharacterSeed: !!characterSeed,
+        promptLength: finalPositivePrompt.length
+      });
       
       // Clean up any remaining placeholders
       finalPositivePrompt = finalPositivePrompt
@@ -1613,7 +1653,8 @@ async function handleRequest(req) {
         negativePrompt: generateInlineNuclearNegative(culturalProfile, userInfo?.avatar?.type, userInfo?.difficulty) || 'blurry, low quality',
         templateType: 'Premium Template A - Full Features',
         tier: '2.5A',
-        styleFrameworkUsed: styleFramework.name
+        styleFrameworkUsed: styleFramework.name,
+        characterSeed: characterSeed
       };
       
     } else if (selectedTemplate.name === 'Basic Template B') {
