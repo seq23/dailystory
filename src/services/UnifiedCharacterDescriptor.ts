@@ -5,7 +5,7 @@
  */
 
 import type { UserInfo } from "@/types";
-import { ProductionLogging } from '@/services/ProductionLogger';
+import { DebugLogger } from '@/services/DebugLogger';
 
 export type OutputMode = 'rich' | 'basic';
 
@@ -84,7 +84,7 @@ export class UnifiedCharacterDescriptor {
     try {
       return this.generateCharacterDescription(userInfo, difficulty, 'rich', false);
     } catch (error) {
-      ProductionLogging.warn('CHARACTER', 'UnifiedCharacterDescriptor failed, using emergency fallback', 'UnifiedCharacterDescriptor', { error });
+      DebugLogger.warn('story', 'UnifiedCharacterDescriptor failed, using emergency fallback', { error });
       const avatarType = userInfo?.avatar?.type || 'child';
       const skinTone = userInfo?.avatar?.skinTone || 'medium';
       const genderTerm = avatarType === 'girl' ? 'girl' : 'boy';
@@ -238,7 +238,7 @@ export class UnifiedCharacterDescriptor {
         this.characterRegistry.delete(id);
       }
     }
-    ProductionLogging.debug('CHARACTER', `Cleared unified character data for session: ${sessionId}`, 'UnifiedCharacterDescriptor');
+    DebugLogger.log('story', `Cleared unified character data for session: ${sessionId}`);
   }
 
   // ============= HELPER METHODS =============

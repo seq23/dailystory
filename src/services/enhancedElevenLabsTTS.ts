@@ -2,7 +2,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { withTimeout, TIMEOUT_CONFIGS } from '@/utils/networkTimeout';
 import { safeBase64Decode } from '@/utils/base64Decoder';
 import { DebugLogger } from '@/services/DebugLogger';
-import { ProductionLogging } from '@/services/ProductionLogger';
 import { ManagedTimers } from '@/utils/TimerManager';
 
 /**
@@ -102,7 +101,7 @@ export class EnhancedElevenLabsTTS {
     const sanitizedText = this.sanitizeText(text);
     const contentHash = this.generateContentHash(sanitizedText, voice, model);
 
-    ProductionLogging.debug('TTS', 'Enhanced TTS generation', 'enhancedElevenLabsTTS', {
+    DebugLogger.log('audio', 'Enhanced TTS generation', {
       originalText: text,
       sanitizedText,
       voice,
@@ -113,7 +112,7 @@ export class EnhancedElevenLabsTTS {
 
     const generateWithRetry = async (attempt: number = 1): Promise<ArrayBuffer> => {
       try {
-        ProductionLogging.debug('TTS', `TTS attempt ${attempt}/${this.MAX_RETRIES + 1}`, 'enhancedElevenLabsTTS');
+        DebugLogger.log('audio', `TTS attempt ${attempt}/${this.MAX_RETRIES + 1}`);
         
         const { data, error } = await withTimeout(
           () => supabase.functions.invoke('elevenlabs-tts', {
@@ -154,7 +153,7 @@ export class EnhancedElevenLabsTTS {
           throw new Error('Received empty audio data');
         }
 
-        ProductionLogging.debug('TTS', `TTS generation successful on attempt ${attempt}`, 'enhancedElevenLabsTTS', {
+        DebugLogger.log('audio', `TTS generation successful on attempt ${attempt}`, {
           audioSize: audioData.byteLength,
           contentHash
         });
@@ -162,12 +161,12 @@ export class EnhancedElevenLabsTTS {
         return audioData;
 
       } catch (error) {
-        ProductionLogging.error('TTS', `TTS attempt ${attempt} failed`, 'enhancedElevenLabsTTS', { error });
+        DebugLogger.error('audio', `TTS attempt ${attempt} failed`, { error });
         
         if (attempt <= this.MAX_RETRIES && !signal?.aborted) {
           // Exponential backoff with jitter
           const delay = Math.min(1000 * Math.pow(2, attempt - 1) + Math.random() * 500, 5000);
-          ProductionLogging.debug('TTS', `Retrying TTS in ${delay}ms`, 'enhancedElevenLabsTTS');
+          DebugLogger.log('audio', `Retrying TTS in ${delay}ms`);
           await new Promise(resolve => ManagedTimers.setTimeout(() => resolve(undefined), delay, 'enhancedElevenLabsTTS'));
           return generateWithRetry(attempt + 1);
         }
@@ -186,7 +185,7 @@ export class EnhancedElevenLabsTTS {
 
     // Wait for stabilization if requested
     if (stabilization > 0) {
-      ProductionLogging.debug('TTS', `Stabilizing audio for ${stabilization}s`, 'enhancedElevenLabsTTS');
+      DebugLogger.log('audio', `Stabilizing audio for ${stabilization}s`);
       await this.waitForStabilization(stabilization);
     }
 

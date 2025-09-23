@@ -9,6 +9,18 @@ const fs = require('fs');
 const path = require('path');
 const glob = require('glob');
 
+// Files to preserve console usage (intentional debug utilities)
+const PRESERVE_CONSOLE_FILES = [
+  'src/utils/StoryContentLogger.ts',
+  'src/utils/audioImplementationValidator.ts', 
+  'src/components/SecurityMonitor.tsx',
+  'src/services/ProductionHardening.ts',
+  'src/utils/cacheDebugConsole.ts',
+  'src/utils/childDebugConsole.ts',
+  'src/utils/FINAL_100_PERCENT_COMPLETION.ts',
+  'src/services/DebugLogger.ts'
+];
+
 const CONSOLE_REPLACEMENTS = [
   // Story-related logs with emojis
   { pattern: /console\.log\('📚([^']*)', ?([^)]+)?\)/g, replacement: "DebugLogger.log('story', '$1', $2)" },
@@ -54,6 +66,11 @@ const CONSOLE_REPLACEMENTS = [
 const DEBUG_IMPORT = "import { DebugLogger } from '@/services/DebugLogger';\n";
 
 function migrateFile(filePath) {
+  // Skip files that should preserve console usage
+  if (PRESERVE_CONSOLE_FILES.includes(filePath)) {
+    return false;
+  }
+  
   let content = fs.readFileSync(filePath, 'utf8');
   let hasConsole = false;
   let hasDebugImport = content.includes('DebugLogger');
@@ -101,11 +118,16 @@ function main() {
     
     if (consoleMatches) {
       totalConsoleCount += consoleMatches.length;
-      console.log(`📄 ${file}: ${consoleMatches.length} console statements`);
       
-      if (migrateFile(file)) {
-        migratedCount++;
-        console.log(`✅ Migrated ${file}`);
+      if (PRESERVE_CONSOLE_FILES.includes(file)) {
+        console.log(`🛡️ ${file}: ${consoleMatches.length} console statements (PRESERVED)`);
+      } else {
+        console.log(`📄 ${file}: ${consoleMatches.length} console statements`);
+        
+        if (migrateFile(file)) {
+          migratedCount++;
+          console.log(`✅ Migrated ${file}`);
+        }
       }
     }
   });

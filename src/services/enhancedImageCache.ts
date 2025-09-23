@@ -3,7 +3,7 @@
  * Handles cache management, clearing, and backward navigation support
  */
 
-import { ProductionLogging } from '@/services/ProductionLogger';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface CachedImage {
   url: string;
@@ -50,7 +50,7 @@ export class EnhancedImageCache {
       
       return map;
     } catch (error) {
-      ProductionLogging.warn('IMAGE_CACHE', 'Failed to load image cache', 'enhancedImageCache', { error });
+      DebugLogger.warn('image', 'Failed to load image cache', { error });
       return new Map();
     }
   }
@@ -78,7 +78,7 @@ export class EnhancedImageCache {
         cacheSize: JSON.stringify(data).length
       });
     } catch (error) {
-      ProductionLogging.error('IMAGE_CACHE', 'Failed to save image cache', 'enhancedImageCache', { error });
+      DebugLogger.error('image', 'Failed to save image cache', { error });
       // If storage is full, try clearing old entries
       this.clearExpiredEntries();
     }
@@ -189,7 +189,7 @@ export class EnhancedImageCache {
         totalCached: map.size
       });
     } catch (error) {
-      ProductionLogging.error('IMAGE_CACHE', 'Failed to cache image', 'enhancedImageCache', { error });
+      DebugLogger.error('image', 'Failed to cache image', { error });
     }
   }
 

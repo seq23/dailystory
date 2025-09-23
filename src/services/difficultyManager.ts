@@ -2,7 +2,7 @@
 import { DifficultyLevel, UserInfo } from '@/types';
 import { MobileSessionManager } from './mobileSessionManager';
 import { DifficultyLevelMapper } from './DifficultyLevelMapper';
-import { ProductionLogging } from '@/services/ProductionLogger';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface DifficultyProfile {
   suggestedDifficulty: DifficultyLevel;
@@ -127,7 +127,7 @@ export class DifficultyManager {
         return data.difficulty || null;
       }
     } catch (error) {
-      ProductionLogging.warn('DIFFICULTY', 'Failed to load stored difficulty', 'DifficultyManager', { error });
+      DebugLogger.warn('ui', 'Failed to load stored difficulty', { error });
     }
     return null;
   }
@@ -150,9 +150,9 @@ export class DifficultyManager {
       };
       
       MobileSessionManager.setItem(`${this.STORAGE_KEY}_${userId}`, JSON.stringify(data));
-      ProductionLogging.debug('DIFFICULTY', `Stored difficulty ${difficulty} (from frontend: ${frontendDifficulty}) for user ${userId}`, 'DifficultyManager');
+      DebugLogger.log('ui', `Stored difficulty ${difficulty} (from frontend: ${frontendDifficulty}) for user ${userId}`);
     } catch (error) {
-      ProductionLogging.warn('DIFFICULTY', 'Failed to store difficulty', 'DifficultyManager', { error });
+      DebugLogger.warn('ui', 'Failed to store difficulty', { error });
     }
   }
 
@@ -169,7 +169,7 @@ export class DifficultyManager {
     
     // FIRST PRIORITY: User's explicit selection (complete user control)
     if (userInfo.difficultyLevel) {
-      ProductionLogging.debug('DIFFICULTY', `Using user's explicit difficultyLevel ${userInfo.difficultyLevel} for ${userId}`, 'DifficultyManager');
+      DebugLogger.log('ui', `Using user's explicit difficultyLevel ${userInfo.difficultyLevel} for ${userId}`);
       const backendDifficulty = DifficultyLevelMapper.toBackend(userInfo.difficultyLevel);
       return {
         difficulty: backendDifficulty,
@@ -185,7 +185,7 @@ export class DifficultyManager {
     // SECOND PRIORITY: Check for stored preference
     const storedDifficulty = this.getStoredDifficulty(userId);
     if (storedDifficulty) {
-      ProductionLogging.debug('DIFFICULTY', `Using stored difficulty ${storedDifficulty} for ${userId}`, 'DifficultyManager');
+      DebugLogger.log('ui', `Using stored difficulty ${storedDifficulty} for ${userId}`);
       return {
         difficulty: storedDifficulty,
         isStored: true,
@@ -198,8 +198,8 @@ export class DifficultyManager {
     }
     
     // LAST PRIORITY: Age-based suggestions (all levels available regardless of age)
-    ProductionLogging.debug('DIFFICULTY', `Suggesting ${profile.suggestedDifficulty} for ${userId} (confidence: ${profile.confidence})`, 'DifficultyManager');
-    ProductionLogging.debug('DIFFICULTY', `Reasoning: ${profile.reasoning.join(', ')}`, 'DifficultyManager');
+    DebugLogger.log('ui', `Suggesting ${profile.suggestedDifficulty} for ${userId} (confidence: ${profile.confidence})`);
+    DebugLogger.log('ui', `Reasoning: ${profile.reasoning.join(', ')}`);
     
     return {
       difficulty: profile.suggestedDifficulty,
@@ -236,18 +236,18 @@ export class DifficultyManager {
   static debugDifficultyState(userInfo: UserInfo): void {
     const result = this.getFinalDifficulty(userInfo);
     
-    ProductionLogging.debug('DIFFICULTY', '=== DIFFICULTY DEBUG ===', 'DifficultyManager');
-    ProductionLogging.debug('DIFFICULTY', 'User Info', 'DifficultyManager', {
+    DebugLogger.log('ui', '=== DIFFICULTY DEBUG ===');
+    DebugLogger.log('ui', 'User Info', {
       name: userInfo.name,
       age: userInfo.age,
       gradeLevel: userInfo.gradeLevel,
       readingLevel: userInfo.readingLevel
     });
-    ProductionLogging.debug('DIFFICULTY', `Final Difficulty: ${result.difficulty}`, 'DifficultyManager');
-    ProductionLogging.debug('DIFFICULTY', `Is Stored: ${result.isStored}`, 'DifficultyManager');
-    ProductionLogging.debug('DIFFICULTY', `Author Voice Available: ${this.hasAuthorVoice(result.difficulty)}`, 'DifficultyManager');
-    ProductionLogging.debug('DIFFICULTY', `Reasoning: ${result.profile.reasoning.join(', ')}`, 'DifficultyManager');
-    ProductionLogging.debug('DIFFICULTY', `Confidence: ${result.profile.confidence}`, 'DifficultyManager');
-    ProductionLogging.debug('DIFFICULTY', '=== END DEBUG ===', 'DifficultyManager');
+    DebugLogger.log('ui', `Final Difficulty: ${result.difficulty}`);
+    DebugLogger.log('ui', `Is Stored: ${result.isStored}`);
+    DebugLogger.log('ui', `Author Voice Available: ${this.hasAuthorVoice(result.difficulty)}`);
+    DebugLogger.log('ui', `Reasoning: ${result.profile.reasoning.join(', ')}`);
+    DebugLogger.log('ui', `Confidence: ${result.profile.confidence}`);
+    DebugLogger.log('ui', '=== END DEBUG ===');
   }
 }

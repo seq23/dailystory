@@ -8,17 +8,24 @@
 const fs = require('fs');
 const glob = require('glob');
 
-// Category mapping from ProductionLogging to DebugLogger categories
+// Enhanced category mapping from ProductionLogging to DebugLogger categories
 const CATEGORY_MAP = {
   'AUDIO': 'audio',
-  'CACHE': 'performance', 
-  'STORY': 'story',
+  'CACHE': 'performance',
+  'STORY_CACHE': 'story',
+  'STORY': 'story', 
+  'CHARACTER': 'story',
+  'LEXICON': 'story',
+  'PHONETIC': 'audio',
   'IMAGE': 'image',
+  'IMAGE_CACHE': 'image',
   'UI': 'ui',
   'NETWORK': 'network',
   'AUTH': 'auth',
   'ERROR': 'error',
-  'PERFORMANCE': 'performance'
+  'PERFORMANCE': 'performance',
+  'TTS': 'audio',
+  'DIFFICULTY': 'ui'
 };
 
 const PRODUCTION_LOGGING_REPLACEMENTS = [
