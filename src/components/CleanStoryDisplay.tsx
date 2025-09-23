@@ -86,7 +86,7 @@ import ReadAloudCoach from "@/components/ReadAloudCoach";
 // Audio and Interactive Components
 import { SynchronizedAudioControls } from "@/components/SynchronizedAudioControls";
 import { PhoneticRulesEngine } from "@/services/phoneticRulesEngine";
-import { SimplifiedAudioEngine } from "@/services/SimplifiedAudioEngine";
+import { charlotteVoiceService } from "@/services/CharlotteVoiceService";
 import { StoryContentLogger } from "@/utils/StoryContentLogger";
 
 import { VocabularyCollector } from "@/components/VocabularyCollector";
@@ -801,7 +801,7 @@ const handleImageRegeneration = useCallback(async () => {
 
 
 // Audio engine instance for direct control
-const audioEngineRef = useRef(SimplifiedAudioEngine.getInstance());
+const audioEngineRef = useRef(charlotteVoiceService);
 
 // Audio state sync through direct callbacks (no polling)
 const handleAudioStateChange = (playing: boolean) => {
@@ -1262,13 +1262,9 @@ useEffect(() => {
 // Voice command -> audio control bridge (now using SimplifiedAudioEngine)
 useEffect(() => {
   const onPlay = () => { 
-    try { 
-      audioEngineRef.current.playTextWithSynchronization({
-        text: currentStoryText || "",
-        context: 'conversation',
-        onWordHighlight
-      }); 
-    } catch (e) { DebugLogger.warn('audio', 'audio:play failed', e); } 
+      try { 
+        audioEngineRef.current.charlotteReadStory(currentStoryText || "", onWordHighlight); 
+      } catch (e) { DebugLogger.warn('audio', 'audio:play failed', e); }
   };
   const onPause = () => { try { audioEngineRef.current.stop(); } catch (e) { DebugLogger.warn('audio', 'audio:pause failed', e); } };
   window.addEventListener('audio:play', onPlay as EventListener);
@@ -1340,12 +1336,7 @@ useEffect(() => {
     const CHARLOTTE = 'XB0fDUnXU5powFXDhCwa';
 
     const playTTS = async (text: string) => {
-      const audioEngine = SimplifiedAudioEngine.getInstance();
-      await audioEngine.playTextWithSynchronization({ 
-        text,
-        voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
-        context: 'conversation'
-      });
+      await charlotteVoiceService.charlotteInteractiveAudio({ text, context: 'conversation' });
     };
 
     const getDefinition = async (w: string): Promise<string> => {
@@ -1398,11 +1389,7 @@ useEffect(() => {
         // Auto-resume narration if it was playing before the help flow
         if (wasPlaying) {
           try { 
-            await audioEngineRef.current.playTextWithSynchronization({
-              text: currentStoryText || "",
-              context: 'conversation',
-              onWordHighlight
-            }); 
+            await audioEngineRef.current.charlotteReadStory(currentStoryText || "", onWordHighlight); 
           } catch {}
         }
       }
@@ -2637,11 +2624,7 @@ useEffect(() => {
     } else {
       try {
         setIsAudioLoading(true);
-        await audioEngineRef.current.playTextWithSynchronization({
-          text: currentStoryText || "",
-          context: 'conversation',
-          onWordHighlight
-        });
+        await audioEngineRef.current.charlotteReadStory(currentStoryText || "", onWordHighlight);
         // State will be updated via callback, but ensure it's set for immediate feedback
         setIsAudioPlaying(true);
         setIsAudioLoading(false);

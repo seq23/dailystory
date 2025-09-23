@@ -3,7 +3,7 @@ import { DebugLogger } from '@/services/DebugLogger';
 import { performanceManager } from '@/services/PerformanceManager';
 import { Button } from '@/components/ui/button';
 import { Play, Square } from 'lucide-react';
-import { SimplifiedAudioEngine } from '@/services/SimplifiedAudioEngine';
+import { charlotteVoiceService } from '@/services/CharlotteVoiceService';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface AudioControlsProps {
@@ -50,18 +50,13 @@ export const AudioControls: React.FC<AudioControlsProps> = ({ text, contentHash,
       window.__audioHashLocked = uiHash;
     }
 
-    const engine = SimplifiedAudioEngine.getInstance();
     try {
       // Enhanced mobile delay for better content synchronization
       if (isMobileOrTablet) {
         await new Promise((r) => performanceManager.setTimeout(() => r(undefined), 800, 'mobile audio sync')); // Increased to 800ms for better mobile sync
       }
       
-      await engine.playTextWithSynchronization({ 
-        text, 
-        contentHash: uiHash,
-        voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
-      });
+      await charlotteVoiceService.charlotteReadStory(text, () => {});
       
       // Reset retry count on success
       setRetryCount(0);
@@ -113,8 +108,7 @@ export const AudioControls: React.FC<AudioControlsProps> = ({ text, contentHash,
       DebugLogger.log('audio', 'AudioControls: Stop button pressed');
     }
     
-    const engine = SimplifiedAudioEngine.getInstance();
-    engine.stop();
+    charlotteVoiceService.stop();
     
     // Also stop any ElevenLabs audio that might be playing
     try {

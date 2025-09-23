@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useConversation } from '@11labs/react';
 import { supabase } from '@/integrations/supabase/client';
-import { SimplifiedAudioEngine } from '@/services/SimplifiedAudioEngine';
+import { charlotteVoiceService } from '@/services/CharlotteVoiceService';
 import { DebugLogger } from '@/services/DebugLogger';
 
 interface VoiceCommandsProps {
@@ -21,7 +21,6 @@ export const VoiceCommands: React.FC<VoiceCommandsProps> = ({ agentId: initialAg
   const [connected, setConnected] = useState(false);
 
   // Map agent tools -> app actions
-  const engine = useMemo(() => SimplifiedAudioEngine.getInstance(), []);
   const clientTools = useMemo(() => providedClientTools || ({
     // Voice Command: "read", "start reading", "play" -> play tool
     play: async () => {
@@ -49,11 +48,7 @@ export const VoiceCommands: React.FC<VoiceCommandsProps> = ({ agentId: initialAg
       }
       
       try {
-        await engine.playTextWithSynchronization({ 
-          text, 
-          contentHash: hash,
-          voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
-        });
+        await charlotteVoiceService.charlotteReadStory(text, () => {});
         DebugLogger.log('audio', 'SUCCESS: Audio playback started');
         return 'ok';
       } catch (error) {
@@ -66,7 +61,7 @@ export const VoiceCommands: React.FC<VoiceCommandsProps> = ({ agentId: initialAg
     stop: async () => {
       DebugLogger.log('audio', 'VOICE COMMAND: stop tool called');
       try {
-        engine.stop();
+        charlotteVoiceService.stop();
         DebugLogger.log('audio', 'SUCCESS: Audio stopped');
         return 'ok';
       } catch (error) {
@@ -79,7 +74,7 @@ export const VoiceCommands: React.FC<VoiceCommandsProps> = ({ agentId: initialAg
     pause: async () => {
       DebugLogger.log('audio', 'VOICE COMMAND: pause tool called');
       try {
-        engine.stop();
+        charlotteVoiceService.stop();
         DebugLogger.log('audio', 'SUCCESS: Audio paused');
         return 'ok';
       } catch (error) {
@@ -187,7 +182,7 @@ export const VoiceCommands: React.FC<VoiceCommandsProps> = ({ agentId: initialAg
         return 'error';
       }
     },
-  }), [engine]);
+  }), []);
 
   const conversation = useConversation({
     clientTools,

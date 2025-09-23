@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { OpenAIVoiceCommands } from './OpenAIVoiceCommands';
 import { VoiceCommands } from './VoiceCommands';
-import { SimplifiedAudioEngine } from '@/services/SimplifiedAudioEngine';
+import { charlotteVoiceService } from '@/services/CharlotteVoiceService';
 
 interface VoiceSystemStatus {
   system: 'elevenlabs' | 'openai' | 'idle';
@@ -19,7 +19,6 @@ export const HybridVoiceCommands: React.FC = () => {
   });
   const [manualOverride, setManualOverride] = useState(false);
   const [readingSpeed, setReadingSpeed] = useState(1.0);
-  const engine = SimplifiedAudioEngine.getInstance();
 
   // Enhanced command handlers with speed controls
   const handleCommand = useCallback((command: string, args?: any) => {
@@ -33,17 +32,13 @@ export const HybridVoiceCommands: React.FC = () => {
         if (text) {
           // Brief delay to let any Charlotte acknowledgment finish
           setTimeout(() => {
-            engine.playTextWithSynchronization({ 
-              text, 
-              contentHash: hash,
-              voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
-            }).catch((error) => DebugLogger.error('audio', 'Text-to-speech playback failed', error));
+            charlotteVoiceService.charlotteReadStory(text, () => {}).catch((error) => DebugLogger.error('audio', 'Text-to-speech playbook failed', error));
           }, 200);
         }
         break;
 
       case 'stop':
-        engine.stop();
+        charlotteVoiceService.stop();
         break;
 
       case 'speedUp':
@@ -94,7 +89,7 @@ export const HybridVoiceCommands: React.FC = () => {
       default:
         DebugLogger.warn('audio', 'Unknown hybrid command', { command });
     }
-  }, [engine, readingSpeed]);
+  }, [readingSpeed]);
 
   const startVoiceCommands = useCallback(async () => {
     if (manualOverride) {

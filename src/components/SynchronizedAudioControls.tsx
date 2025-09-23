@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Play, Square, RotateCcw } from 'lucide-react';
-import { SimplifiedAudioEngine } from '@/services/SimplifiedAudioEngine';
+import { charlotteVoiceService } from '@/services/CharlotteVoiceService';
 import { useToast } from '@/hooks/use-toast';
 import { DebugLogger } from '@/services/DebugLogger';
 
@@ -29,8 +29,6 @@ export const SynchronizedAudioControls: React.FC<SynchronizedAudioControlsProps>
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
   const { toast } = useToast();
-
-  const audioEngine = SimplifiedAudioEngine.getInstance();
 
   // Listen for audio state changes
   useEffect(() => {
@@ -74,12 +72,7 @@ export const SynchronizedAudioControls: React.FC<SynchronizedAudioControlsProps>
       DebugLogger.log('audio', `Audio highlighting ${shouldHighlight ? 'ENABLED' : 'DISABLED'} for difficulty: "${difficulty}" (converted: "${difficultyStr}")`);
       DebugLogger.log('audio', `Debug - difficulty value type: ${typeof difficulty}, value: "${difficulty}"`);
       
-      await audioEngine.playTextWithSynchronization({
-        text,
-        contentHash,
-        context: 'conversation', // Always use conversation for natural Charlotte voice
-        onWordHighlight: highlightCallback
-      });
+      await charlotteVoiceService.charlotteReadStory(text, highlightCallback);
       
       setRetryCount(0);
     } catch (err) {
@@ -136,7 +129,7 @@ export const SynchronizedAudioControls: React.FC<SynchronizedAudioControlsProps>
   const onStop = () => {
     DebugLogger.log('audio', 'SynchronizedAudioControls: Stopping playback');
     
-    audioEngine.stop();
+    charlotteVoiceService.stop();
     
     // Clear any word highlighting
     if (onWordHighlight) {

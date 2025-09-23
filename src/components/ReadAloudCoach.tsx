@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { supabase } from "@/integrations/supabase/client";
 import { Mic, StopCircle, Volume2, RotateCcw, ChevronLeft, ChevronRight, Lock, ChevronDown, ChevronUp } from "lucide-react";
-import { SimplifiedAudioEngine } from "@/services/SimplifiedAudioEngine";
+import { charlotteVoiceService } from "@/services/CharlotteVoiceService";
 import { PronunciationAnalyzer } from "@/services/PronunciationAnalyzer";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { UserInfo } from "@/types";
@@ -345,11 +345,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
       // Celebrate quickly and remove from list
       setTopWords((prev) => prev.filter((x) => x !== w));
       try { 
-        const audioEngine = SimplifiedAudioEngine.getInstance();
-        await audioEngine.playTextWithSynchronization({ 
-          text: t('coach.great','Great!'),
-          voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
-        });
+        await charlotteVoiceService.charlotteInteractiveAudio({ text: t('coach.great','Great!'), context: 'conversation' });
       } catch {}
     }
   };
@@ -505,11 +501,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
                           variant="secondary" 
                           className="text-xs px-2 py-1 h-8" 
                           onClick={() => {
-        const audioEngine = SimplifiedAudioEngine.getInstance();
-                            audioEngine.playTextWithSynchronization({ 
-                              text: w,
-                              voiceId: 'XB0fDUnXU5powFXDhCwa'
-                            });
+                            charlotteVoiceService.charlotteHearWord(w);
                           }}
                         >
                           <Volume2 className="w-3 h-3 mr-1" /> {t('coach.hear','Hear')}
@@ -534,11 +526,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
                       <span className="text-muted-foreground">{w}</span>
                       <div className="flex items-center gap-2">
                         <Button size="sm" variant="secondary" className="gap-1" onClick={() => {
-      const audioEngine = SimplifiedAudioEngine.getInstance();
-                          audioEngine.playTextWithSynchronization({ 
-                            text: w,
-                            voiceId: 'XB0fDUnXU5powFXDhCwa'
-                          });
+                          charlotteVoiceService.charlotteHearWord(w);
                         }}>
                           <Volume2 className="w-3 h-3" /> {t('coach.hearIt','Hear it')}
                         </Button>
