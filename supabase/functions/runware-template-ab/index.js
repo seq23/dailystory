@@ -1369,11 +1369,6 @@ async function handleRequest(req) {
       timestamp: new Date().toISOString()
     }), { status: 200, headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' } });
   }
-      functionName: 'runware-template-ab',
-      timestamp: new Date().toISOString(),
-      version: '2.1'
-    });
-  }
 
   try {
     // FLEXIBLE PAYLOAD HANDLING: Handle nested {bundle: {...}, config: {...}} OR flat payloads
