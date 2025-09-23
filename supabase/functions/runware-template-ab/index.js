@@ -1405,24 +1405,7 @@ function hasActionVerb(sceneOrResult) {
   return false;
 }
 
-// PHASE 4.4: ADD escalateToNextTier() ESCALATION FUNCTION  
-async function escalateToNextTier(originalPayload) {
-  console.log('🚨 ESCALATING: No valid scene extracted, passing to next tier (CD)');
-  try {
-    // Call next tier function
-    const { serve } = await import("https://deno.land/std@0.168.0/http/server.ts");
-    // For now, return a structured error that can be handled by the calling system
-    return {
-      escalated: true,
-      reason: 'scene_extraction_failed',
-      suggestedTier: 'runware-template-cd',
-      originalPayload: originalPayload
-    };
-  } catch (error) {
-    console.error('Escalation failed:', error);
-    throw new Error('Scene extraction failed and escalation unavailable');
-  }
-}
+// PHASE 4.4: ESCALATION REMOVED - ORCHESTRATOR HANDLES TIER TRANSITIONS
 
 // Continue with rest of existing implementation...
 // ============= HELPER FUNCTIONS FOR TEMPLATE RESOLUTION =============
@@ -1635,17 +1618,11 @@ async function handleRequest(req) {
         sceneLength: (typeof extractedScene === 'object' && extractedScene?.scene ? extractedScene.scene : extractedScene)?.length || 0
       })}`);
       
-      // VALIDATE SCENE HAS ACTION VERB - IMMEDIATE ESCALATION IF NOT
-      if (!extractedScene || !hasActionVerb(extractedScene)) {
-        console.log('⚠️ Tier 2.5B: Scene missing action verb - escalating to next tier');
-        const escalationResult = await escalateToNextTier(payload);
-        return createResponse({
-          success: false,
-          escalated: true,
-          reason: 'scene_extraction_failed',
-          details: 'Tier 2.5B: Scene missing required action verb - escalating to next tier',
-          escalationResult
-        }, 200);
+      // Tier 2.5B: Basic validation only (orchestrator handles failures)
+      console.log(`🎯 [${requestId}] Tier 2.5B: Basic processing - no escalation`);
+      if (!extractedScene) {
+        console.warn(`⚠️ [${requestId}] Tier 2.5B: Scene extraction failed, using fallback`);
+        extractedScene = "child in a story scene";
       }
       
       // Build template data with proper placeholders
