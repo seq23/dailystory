@@ -1239,21 +1239,40 @@ function extractSimpleScene(storyText) {
   const lower = normalized.toLowerCase();
   const { action, objects, setting } = extractHybrid(normalized);
 
-  // FALLBACK: Generate basic scene if no action detected
+  // SYNTHESIZE ACTION: Generate contextual action if no action detected
+  let actionText;
   if (!action) {
-    console.log('⚠️ Missing action - using fallback scene');
-    return 'child in a story scene';
-  }
-
-  // Format action → progressive verb + rest
-  const actionText = action ? (() => {
+    console.log('⚠️ Missing action - synthesizing from context');
+    
+    // Priority 1: If setting exists → use "walking"  
+    if (setting) {
+      actionText = 'walking';
+    }
+    // Priority 2: If objects exist that map in VERB_OBJECT_CONTEXT → use mapped verb
+    else if (objects.length > 0) {
+      const firstObj = objects[0];
+      const contextVerb = VERB_OBJECT_CONTEXT[firstObj.head.toLowerCase()];
+      if (contextVerb) {
+        actionText = contextVerb.split(' ')[0]; // e.g., "wearing", "carrying", "playing"
+      } else {
+        actionText = 'standing';
+      }
+    }
+    // Priority 3: Default fallback
+    else {
+      actionText = 'standing';
+    }
+    console.log(`🔧 Synthesized action: "${actionText}"`);
+  } else {
+    // Format existing action → progressive verb + rest
     const words = action.split(/\s+/);
     if (words.length === 1) {
-      return toProgressive(words[0]);
+      actionText = toProgressive(words[0]);
     } else {
-      return toProgressive(words[0]) + " " + words.slice(1).join(" ");
+      actionText = toProgressive(words[0]) + " " + words.slice(1).join(" ");
     }
-  })().trim() : null;
+    actionText = actionText.trim();
+  }
 
   // PHASE 2: MULTI-OBJECT PROCESSING - Process ALL objects, not just objects[0]
   const regularObjects = objects.filter(obj => 
