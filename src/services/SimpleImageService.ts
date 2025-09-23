@@ -166,6 +166,12 @@ export class SimpleImageService {
     });
 
     // PHASE 2: Direct tier routing based on health
+    // Check for direct AI Visual Scene Creator routing (when orchestrator is down)
+    if (tierStrategy.fallback === 'ai_visual_scene_direct') {
+      DebugLogger.log('image', 'Using direct AI Visual Scene Creator due to orchestrator down');
+      return await this.generateWithDirectAiVisualSceneCreator(storyText, userInfo, sessionId, pageNumber, isPremium, healthStatus);
+    }
+
     switch (tierStrategy.tier) {
       case 'TIER_4':
         // Direct SVG fallback - no backend calls needed
@@ -455,6 +461,116 @@ export class SimpleImageService {
           tier: 'intelligent_fallback',
           healthStatus,
           usedIntelligentFallback: !!intelligentFallback
+        }
+      };
+    }
+  }
+
+  // Direct AI Visual Scene Creator call (bypassing orchestrator)
+  private static async generateWithDirectAiVisualSceneCreator(
+    storyText: string,
+    userInfo?: UserInfo,
+    sessionId?: string,
+    pageNumber: number = 1,
+    isPremium: boolean = false,
+    healthStatus?: HealthStatus
+  ): Promise<ImageResult> {
+    const normalizedSessionId = sessionId?.toString() || 'unknown';
+    
+    DebugLogger.log('image', 'Direct AI Visual Scene Creator: Starting generation');
+    
+    try {
+      // Apply the same preprocessing as orchestrator
+      const cleanScene = storyText.trim().substring(0, 3000);
+      
+      // Enhance character description
+      if (userInfo?.ethnicity && userInfo?.skinTone) {
+        const universalHair = this.getUniversalHairColorForSkinTone(userInfo.skinTone, userInfo.ethnicity);
+        const enhancedUserInfo = {
+          ...userInfo,
+          hair: userInfo.hair || universalHair,
+          universalHairColor: universalHair
+        };
+        userInfo = enhancedUserInfo;
+      }
+
+      // Apply universal protections
+      const enhancedPrompt = this.applyUniversalProtections(cleanScene, userInfo || {});
+      const protectionNegatives = (enhancedPrompt as any).__negatives || [];
+      
+      // Map difficulty level
+      const backendDifficulty = this.mapDifficultyLevel(userInfo);
+      
+      DebugLogger.log('image', 'Calling ai-visual-scene-creator directly');
+      
+      const { data: result, error } = await supabase.functions.invoke('ai-visual-scene-creator', {
+        body: {
+          pageText: enhancedPrompt,
+          userInfo,
+          sessionId: normalizedSessionId,
+          storyId: normalizedSessionId,
+          pageNumber,
+          isGuestUser: !isPremium,
+          difficultyLevel: backendDifficulty,
+          protectionNegatives
+        }
+      });
+
+      if (error) {
+        throw new Error(`AI Visual Scene Creator error: ${error.message}`);
+      }
+
+      if (result?.success && result?.imageURL) {
+        DebugLogger.log('image', `🖼️ Direct AI Visual Scene Creator success: ${result.imageURL}`);
+        
+        // Store in cache like orchestrator does
+        if (this.isIndexedDBAvailable && normalizedSessionId !== 'unknown' && userInfo) {
+          const versionedCacheKey = this.generateCharacterVersionedCacheKey(userInfo, storyText);
+          await this.storeImageInDB(versionedCacheKey, pageNumber, result.imageURL, result);
+        }
+
+        // Emit timer resume event
+        try {
+          window.dispatchEvent(new CustomEvent('image:generation:complete'));
+        } catch {}
+
+        return {
+          success: true,
+          url: result.imageURL,
+          imageURL: result.imageURL,
+          generatedAt: new Date().toISOString(),
+          tier: 'AI_VISUAL_SCENE_DIRECT',
+          usedTier: 'AI_VISUAL_SCENE_DIRECT',
+          tierErrors: [],
+          requestId: result.requestId,
+          metadata: { ...result, directCall: true }
+        };
+      } else {
+        throw new Error(`AI Visual Scene Creator returned no image: ${JSON.stringify(result)}`);
+      }
+      
+    } catch (error) {
+      DebugLogger.error('image', 'Direct AI Visual Scene Creator failed', error);
+      
+      // Fall back to SVG placeholder
+      const fallbackUrl = ImageFallbackService.generateStoryPlaceholder(storyText, pageNumber);
+      
+      // Emit timer resume event
+      try {
+        window.dispatchEvent(new CustomEvent('image:generation:complete'));
+      } catch {}
+      
+      return {
+        success: true,
+        url: fallbackUrl,
+        imageURL: fallbackUrl,
+        generatedAt: new Date().toISOString(),
+        tier: 'AI_VISUAL_SCENE_DIRECT_FALLBACK',
+        metadata: {
+          isFallback: true,
+          originalError: error.message,
+          healthStatus,
+          directCallFailed: true
         }
       };
     }

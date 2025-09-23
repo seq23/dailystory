@@ -85,5 +85,16 @@ difficultyToEducationalLevel('beginner') === 0 ✅
 - **NEVER assume edge functions are missing - check deployment sync first**
 
 ---
+### 6. Missing AI Visual Scene Creator Direct Fallback - FIXED ✅
+**Issue**: SimpleImageService not implementing `ai_visual_scene_direct` fallback routing
+**Root Cause**: HealthCheckService correctly routes to `ai_visual_scene_direct` when orchestrator is down, but SimpleImageService.generateStoryImage() had no case handler for this tier
+**Impact**: System continued calling failing orchestrator instead of using working ai-visual-scene-creator
+**Fix Applied**: 
+- Added `ai_visual_scene_direct` case to switch statement in generateStoryImage()  
+- Implemented `generateWithDirectAiVisualSceneCreator()` method to call ai-visual-scene-creator edge function directly
+- Maintains same preprocessing, caching, and error handling as orchestrator path
+**Files Modified**: `src/services/SimpleImageService.ts`
+**Result**: When orchestrator is down, system now correctly bypasses it and calls ai-visual-scene-creator directly
+
 *Last Updated: 2025-09-23*
-*Status: All Critical Issues Resolved + Sync Anomaly Documented*
+*Status: All Critical Issues Resolved + AI Visual Scene Creator Fallback Implemented*
