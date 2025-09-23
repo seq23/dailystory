@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-09-21T00:00:00Z - STATIC IMPORT + DEFENSIVE CORS V4.3
+// DEPLOY_MARKER: 2025-09-23T00:26:00Z - DIFFICULTY MAPPING FIX + V4.4
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import handleRequest from "./index.js";
 
@@ -79,5 +79,5 @@ serve(async (req) => {
   }
 });
 
-console.log(`🎯 [${SERVICE_NAME}] Static Import Architecture V4.3 initialized`);
+console.log(`🎯 [${SERVICE_NAME}] Static Import Architecture V4.4 initialized`);
 console.log(`🛡️ [${SERVICE_NAME}] GET/HEAD always 200; probes cannot 405 anymore`);

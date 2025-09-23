@@ -137,7 +137,7 @@ export const useMultiStepForm = () => {
       grade: formData.grade
     }, 'form_submission_success');
     
-    return { ...formData, specialRequest: combinedSpecialRequest };
+    return { ...formData, specialRequest: combinedSpecialRequest, difficultyLevel: difficulty };
   }, [formData, validateStep1, t]);
 
   return {
