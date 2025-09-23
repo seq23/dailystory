@@ -770,21 +770,28 @@ RULES:
       const characterService = CharacterConsistencyService.getInstance();
       
       if (sessionId) {
-        // Main character analysis
-        await characterService.analyzeVisualDetails(sessionId, storyText, pageNumber || 1, userInfo?.name);
-        characterAppearance = await characterService.getCharacterAppearanceFromStory(sessionId, userInfo?.name) || '';
-        
-        // Secondary character detection
-        detectedSecondaryCharacters = await characterService.detectSecondaryCharacters(
-          sessionId, parsedResponse.primaryScene, pageNumber || 1
-        );
-        
-        // Build secondary character descriptions with seeds
-        for (const character of detectedSecondaryCharacters) {
-          const seed = await characterService.getSecondaryCharacterSeed(
-            sessionId, character.name, character.type || 'secondary_character'
-          );
-          secondaryDescriptions.push(`${character.name}: ${character.description} (${character.type})`);
+        try {
+          // Main character analysis
+          await characterService.analyzeVisualDetails(sessionId, storyText, pageNumber || 1, userInfo?.name);
+          characterAppearance = await characterService.getCharacterAppearanceFromStory(sessionId, userInfo?.name) || '';
+          
+          // Secondary character detection
+          const pageTextForAnalysis = storyText || payload.pageText || parsedResponse.primaryScene || '';
+          detectedSecondaryCharacters = await characterService.detectSecondaryCharacters(pageTextForAnalysis);
+          
+          // Build secondary character descriptions with seeds
+          for (const character of detectedSecondaryCharacters) {
+            const seed = await characterService.getSecondaryCharacterSeed(
+              sessionId, character.name, character.type || 'secondary_character'
+            );
+            secondaryDescriptions.push(`${character.name}: ${character.description} (${character.type})`);
+          }
+        } catch (characterError) {
+          console.warn(`⚠️ Character consistency service error:`, characterError.message);
+          // Continue without character consistency - don't crash the image generation
+          characterAppearance = '';
+          detectedSecondaryCharacters = [];
+          secondaryDescriptions = [];
         }
         
         // Get environmental consistency

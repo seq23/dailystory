@@ -369,31 +369,33 @@ export class PhaseIntegrationOrchestrator {
       
       // STEP 1: Detect secondary characters using Character Consistency Service
       console.log(`🔍 TIER 1: Detecting secondary characters from story text`);
-      const detectedSecondaryChars = await this.characterConsistencyService.detectSecondaryCharacters(
-        sessionId, 
-        storyText || '', 
-        1
-      );
-      
-      // STEP 2: Generate seeds for each detected secondary character using Character Consistency Service
-      const secondaryCharacters = [];
-      for (const detectedChar of detectedSecondaryChars) {
-        try {
-          const charSeed = await this.characterConsistencyService.getSecondaryCharacterSeed(
-            sessionId, 
-            detectedChar.name || detectedChar.displayName || 'secondary character', 
-            detectedChar.type || detectedChar.relationshipType || 'secondary_character'
-          );
-          if (charSeed) {
-            secondaryCharacters.push({
-              name: detectedChar.name,
-              description: charSeed,
-              type: detectedChar.type
-            });
+      try {
+        const detectedSecondaryChars = await this.characterConsistencyService.detectSecondaryCharacters(storyText || '');
+        
+        // STEP 2: Generate seeds for each detected secondary character using Character Consistency Service
+        const secondaryCharacters = [];
+        for (const detectedChar of detectedSecondaryChars) {
+          try {
+            const charSeed = await this.characterConsistencyService.getSecondaryCharacterSeed(
+              sessionId, 
+              detectedChar.name || detectedChar.displayName || 'secondary character', 
+              detectedChar.type || detectedChar.relationshipType || 'secondary_character'
+            );
+            if (charSeed) {
+              secondaryCharacters.push({
+                name: detectedChar.name,
+                description: charSeed,
+                type: detectedChar.type
+              });
+            }
+          } catch (error) {
+            console.warn(`Failed to generate seed for secondary character ${detectedChar.name}:`, error);
           }
-        } catch (error) {
-          console.warn(`Failed to generate seed for secondary character ${detectedChar.name}:`, error);
         }
+      } catch (characterDetectionError) {
+        console.warn(`⚠️ Character detection failed in orchestrator:`, characterDetectionError.message);
+        // Continue without secondary characters - don't crash the orchestrator
+        const secondaryCharacters = [];
       }
       
       // STEP 3: Format secondary characters for template inclusion with GUARANTEED string conversion

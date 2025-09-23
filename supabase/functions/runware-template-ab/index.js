@@ -1592,26 +1592,34 @@ async function handleRequest(req) {
         const characterService = CharacterConsistencyService.getInstance();
         
         if (sessionId) {
-          // Main character analysis
-          await characterService.analyzeVisualDetails(sessionId, storyText, pageNumber || 1, characterName);
-          characterAppearance = await characterService.getCharacterAppearanceFromStory(sessionId, characterName) || '';
-          characterSeed = await characterService.getCharacterSeed(sessionId, characterName) || null;
-          
-          // Secondary character detection  
-          detectedSecondaryCharacters = await characterService.detectSecondaryCharacters(
-            sessionId, extractedScene?.scene || extractedScene, pageNumber || 1
-          );
-          
-          // Build secondary character descriptions with seeds
-          for (const character of detectedSecondaryCharacters) {
-            const seed = await characterService.getSecondaryCharacterSeed(
-              sessionId, character.name, character.type || 'secondary_character'
-            );
-            secondaryDescriptions.push(`${character.name}: ${character.description} (${character.type})`);
+          try {
+            // Main character analysis
+            await characterService.analyzeVisualDetails(sessionId, storyText, pageNumber || 1, characterName);
+            characterAppearance = await characterService.getCharacterAppearanceFromStory(sessionId, characterName) || '';
+            characterSeed = await characterService.getCharacterSeed(sessionId, characterName) || null;
+            
+            // Secondary character detection  
+            const pageTextForAnalysis = storyText || extractedScene?.scene || extractedScene || '';
+            detectedSecondaryCharacters = await characterService.detectSecondaryCharacters(pageTextForAnalysis);
+            
+            // Build secondary character descriptions with seeds
+            for (const character of detectedSecondaryCharacters) {
+              const seed = await characterService.getSecondaryCharacterSeed(
+                sessionId, character.name, character.type || 'secondary_character'
+              );
+              secondaryDescriptions.push(`${character.name}: ${character.description} (${character.type})`);
+            }
+            
+            // Get environmental consistency
+            coloredObjects = await characterService.getColoredObjects(sessionId) || '';
+          } catch (characterError) {
+            console.warn(`⚠️ Character consistency error in runware-template-ab:`, characterError.message);
+            // Continue without character consistency - don't crash the image generation
+            characterAppearance = '';
+            detectedSecondaryCharacters = [];
+            secondaryDescriptions = [];
+            coloredObjects = '';
           }
-          
-          // Get environmental consistency
-          coloredObjects = await characterService.getColoredObjects(sessionId) || '';
         }
         
         console.log(`✅ [${requestId}] Tier 2.5A: Complete character consistency applied:`, {
