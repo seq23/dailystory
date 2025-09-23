@@ -1317,29 +1317,7 @@ async function escalateToNextTier(originalPayload) {
 
 // Continue with rest of existing implementation...
 // ============= HELPER FUNCTIONS FOR TEMPLATE RESOLUTION =============
-
-function deriveEthnicityFromAvatar(avatar) {
-  if (!avatar) return 'diverse background';
-  const type = avatar.type;
-  if (type === 'person') return avatar.ethnicity || 'diverse background';
-  return 'diverse background';
-}
-
-function getFacialFeatures(avatar) {
-  if (!avatar) return 'friendly expression';
-  return 'bright eyes and a warm smile';
-}
-
-function deriveLeftoverCulturalData(userInfo) {
-  const culturalElements = [];
-  if (userInfo?.nativeLanguage && userInfo.nativeLanguage !== 'en') {
-    culturalElements.push('culturally diverse');
-  }
-  if (userInfo?.location) {
-    culturalElements.push(`from ${userInfo.location}`);
-  }
-  return culturalElements.join(', ');
-}
+// Using StaticDataCache functions to avoid duplicates
 
 // ============= TIER 2.5A/B TEMPLATES - CATEGORY-BASED WITH LINE BREAKS =============
 const TIER_25A_TEMPLATE = `Narrative: {pageText}.

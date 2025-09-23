@@ -315,8 +315,7 @@ export class SimpleImageService {
     }
 
     // Apply universal cultural protections
-    const enhancedPrompt = this.applyUniversalProtections(cleanScene, userInfo || {});
-    const protectionNegatives = (enhancedPrompt as any).__negatives || [];
+    const { prompt: enhancedPrompt, negatives: protectionNegatives } = this.applyUniversalProtections(cleanScene, userInfo || {});
     
     DebugLogger.log('image', 'Applied universal cultural protections', { 
       originalLength: cleanScene.length, 
@@ -495,8 +494,7 @@ export class SimpleImageService {
       }
 
       // Apply universal protections
-      const enhancedPrompt = this.applyUniversalProtections(cleanScene, userInfo || {});
-      const protectionNegatives = (enhancedPrompt as any).__negatives || [];
+      const { prompt: enhancedPrompt, negatives: protectionNegatives } = this.applyUniversalProtections(cleanScene, userInfo || {});
       
       // Map difficulty level
       const backendDifficulty = this.mapDifficultyLevel(userInfo);
@@ -740,7 +738,7 @@ export class SimpleImageService {
   }
 
   // Apply universal protections for cultural representation
-  private static applyUniversalProtections(basePrompt: string, userInfo: UserInfo): string {
+  private static applyUniversalProtections(basePrompt: string, userInfo: UserInfo): { prompt: string; negatives: string[] } {
     const protections = this.getUniversalProtectionPrompts(userInfo);
     
     // Integrate positive protections into main prompt
@@ -748,9 +746,11 @@ export class SimpleImageService {
       ? `${basePrompt}, ${protections.positive.join(', ')}`
       : basePrompt;
     
-    // Return enhanced prompt with negative array for caller
-    (enhancedPrompt as any).__negatives = protections.negative;
-    return enhancedPrompt;
+    // Return object with both prompt and negatives
+    return {
+      prompt: enhancedPrompt,
+      negatives: protections.negative
+    };
   }
 
   // Get universal protection prompts for all ethnicities

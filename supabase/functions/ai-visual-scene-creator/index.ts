@@ -1,6 +1,5 @@
 // DEPLOY_MARKER: 2025-09-21T00:00:00Z - STATIC IMPORT + DEFENSIVE CORS V4.2
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import handleRequest from "./index.js";
 
 const SERVICE_NAME = "ai-visual-scene-creator";
 
@@ -53,16 +52,30 @@ serve(async (req) => {
     const readyCheck = url.pathname.endsWith("/ready") || url.searchParams.has("ready");
 
     if (readyCheck) {
-      const loaded = typeof handleRequest === "function";
-      const res = new Response(null, { status: loaded ? 204 : 503 });
-      return withCors(req.method === "HEAD" ? new Response(null, { status: res.status, headers: res.headers }) : res);
+      try {
+        const { default: handleRequest } = await import("./index.js");
+        const loaded = typeof handleRequest === "function";
+        const res = new Response(null, { status: loaded ? 204 : 503 });
+        return withCors(req.method === "HEAD" ? new Response(null, { status: res.status, headers: res.headers }) : res);
+      } catch {
+        const res = new Response(null, { status: 503 });
+        return withCors(req.method === "HEAD" ? new Response(null, { status: res.status, headers: res.headers }) : res);
+      }
+    }
+
+    let handlerLoaded = false;
+    try {
+      const { default: handleRequest } = await import("./index.js");
+      handlerLoaded = typeof handleRequest === "function";
+    } catch {
+      handlerLoaded = false;
     }
 
     const payload = {
       status: "healthy",
       service: SERVICE_NAME,
       timestamp: new Date().toISOString(),
-      handler_loaded: typeof handleRequest === "function",
+      handler_loaded: handlerLoaded,
       environment: {
         SUPABASE_URL: Deno.env.get('SUPABASE_URL') ? 'configured' : 'missing',
         SUPABASE_ANON_KEY: Deno.env.get('SUPABASE_ANON_KEY') ? 'configured' : 'missing'
@@ -78,10 +91,23 @@ serve(async (req) => {
     return withCors(req.method === "HEAD" ? new Response(null, { status: res.status, headers: res.headers }) : res);
   }
 
-  // POST handling
+  // POST handling with dynamic import
   try {
+    const { default: handleRequest } = await import("./index.js");
     const out = await handleRequest(req);
     return withCors(asResponse(out));
+  } catch (importError) {
+    console.error(`❌ [${SERVICE_NAME}] Import error:`, importError);
+    const errRes = new Response(
+      JSON.stringify({
+        error: "Service temporarily unavailable",
+        message: "Handler module not available",
+        service: SERVICE_NAME,
+        timestamp: new Date().toISOString(),
+      }),
+      { status: 503, headers: { "Content-Type": "application/json" } }
+    );
+    return withCors(errRes);
   } catch (error) {
     console.error(`❌ [${SERVICE_NAME}] Unhandled error:`, error);
     const errRes = new Response(
