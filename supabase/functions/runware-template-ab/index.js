@@ -1476,6 +1476,7 @@ async function handleRequest(req) {
     // FLEXIBLE PAYLOAD HANDLING: Handle nested {bundle: {...}, config: {...}} OR flat payloads
     const rawPayload = await req.json();
     console.log('🔍 Template AB: Request payload keys:', Object.keys(rawPayload));
+    console.log('🔍 Template AB: Full payload structure:', JSON.stringify(rawPayload, null, 2));
     
     // Detect nested payload structure from ImageTierTester
     let payload;
