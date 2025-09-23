@@ -438,17 +438,7 @@ async function generateEnhancedFallback(storyText, pageNumber, provider) {
 }
 
 
-// ---- Tier logger binder (console + DB) ----
-// Place this near the top (after your imports).
-function bindTierLogger(supabaseClient, sessionId, requestId) {
-  return {
-    t1: (msg, ctx = {}) => tierLogging.logTier1(msg, ctx, supabaseClient, sessionId, requestId),
-    t2: (msg, ctx = {}) => tierLogging.logTier2(msg, ctx, supabaseClient, sessionId, requestId),
-    attempt: (tier, ctx = {}) => tierLogging.logTierAttempt(supabaseClient, sessionId, requestId, tier, 'attempting', ctx),
-    success: (tier, ctx = {}) => tierLogging.logTierSuccess(supabaseClient, sessionId, requestId, tier, ctx),
-    failure: (tier, ctx = {}) => tierLogging.logTierFailure(supabaseClient, sessionId, requestId, tier, ctx),
-  };
-}
+// Duplicate bindTierLogger removed - using the one at line 17-25
 
 // ============= MAIN HANDLER WITH CRASH-PROOF BOOT (GET/HEAD safe) =============
 async function handleRequest(req) {

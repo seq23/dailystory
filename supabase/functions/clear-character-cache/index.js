@@ -44,8 +44,8 @@ async function handleRequest(req) {
       });
     }
 
-    // Clear character cache logic would go here
-    const result = await characterService.clearCache();
+    // Clear character cache using correct method
+    const result = await characterService.clearServerState();
     
     return new Response(JSON.stringify({ 
       status: 'success',

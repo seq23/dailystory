@@ -158,8 +158,10 @@ export const AudioControls: React.FC<AudioControlsProps> = ({ text, contentHash,
             <Play className="w-5 h-5 mr-2" />
             Try Again {retryCount > 0 && `(${retryCount}/3)`}
           </Button>
-          {retryCount >= 3 && (
-            <span className="text-sm text-muted-foreground">Max retries reached</span>
+          {retryCount >= 3 ? (
+            <span className="text-sm text-muted-foreground">Using device voice</span>
+          ) : (
+            <span className="text-sm text-muted-foreground">Using device voice</span>
           )}
         </div>
       ) : !isPlaying ? (
