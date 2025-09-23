@@ -36,7 +36,7 @@ class SimpleAudioCoordinator {
         // Always allow Charlotte to interrupt for story reading
         if (system === 'charlotte' || (currentPriority >= requestPriority && event.detail?.priority !== 'high')) {
           if (system !== 'charlotte' && currentPriority >= requestPriority) {
-            ProductionLogging.info(`Rejecting ${system} request (lower priority)`, 'simpleAudioCoordinator');
+            DebugLogger.log('audio', `Rejecting ${system} request (lower priority)`);
             return;
           }
         }
@@ -52,16 +52,16 @@ class SimpleAudioCoordinator {
           window.dispatchEvent(new CustomEvent('audio:stop:charlotte'));
         } else if (this.activeSystem === 'interactive-word') {
           // Interactive word system will handle its own cleanup
-          ProductionLogging.info('Interactive word system in control', 'simpleAudioCoordinator');
+          DebugLogger.log('audio', 'Interactive word system in control');
         }
         
         this.activeSystem = system;
-        ProductionLogging.info(`Control granted to ${system}`, 'simpleAudioCoordinator');
+        DebugLogger.log('audio', `Control granted to ${system}`);
         
         // Set timeout to auto-release lock if system doesn't respond
         this.lockTimeout = window.setTimeout(() => {
           if (this.activeSystem === system) {
-            ProductionLogging.info(`Auto-releasing lock for ${system} (timeout)`, 'simpleAudioCoordinator');
+            DebugLogger.log('audio', `Auto-releasing lock for ${system} (timeout)`);
             this.activeSystem = null;
           }
         }, 30000); // 30 second timeout
@@ -77,7 +77,7 @@ class SimpleAudioCoordinator {
           clearTimeout(this.lockTimeout);
           this.lockTimeout = null;
         }
-        ProductionLogging.info(`${system} released control`, 'simpleAudioCoordinator');
+        DebugLogger.log('audio', `${system} released control`);
       }
     }) as EventListener);
 
@@ -89,7 +89,7 @@ class SimpleAudioCoordinator {
         // TODO: Replace with SimplifiedAudioEngine.stop()
         // SimplifiedAudioEngine.getInstance().stop();
       } catch (e) {
-        ProductionLogging.warn('Failed to stop sync audio:', 'simpleAudioCoordinator', e);
+        DebugLogger.warn('audio', 'Failed to stop sync audio', e);
       }
     });
 
@@ -98,7 +98,7 @@ class SimpleAudioCoordinator {
         const { SimplifiedAudioEngine } = await import('@/services/SimplifiedAudioEngine');
         SimplifiedAudioEngine.getInstance().stop();
       } catch (e) {
-        ProductionLogging.warn('Failed to stop simple audio:', 'simpleAudioCoordinator', e);
+        DebugLogger.warn('audio', 'Failed to stop simple audio', e);
       }
     });
 
@@ -107,7 +107,7 @@ class SimpleAudioCoordinator {
         // Stop voice command audio systems
         window.dispatchEvent(new CustomEvent('voice:stop'));
       } catch (e) {
-        ProductionLogging.warn('Failed to stop voice audio:', 'simpleAudioCoordinator', e);
+        DebugLogger.warn('audio', 'Failed to stop voice audio', e);
       }
     });
 
@@ -115,9 +115,9 @@ class SimpleAudioCoordinator {
       try {
         // Stop Charlotte's conversation system
         window.dispatchEvent(new CustomEvent('charlotte:stop'));
-        ProductionLogging.info('Requested Charlotte to stop speaking', 'simpleAudioCoordinator');
+        DebugLogger.log('audio', 'Requested Charlotte to stop speaking');
       } catch (e) {
-        ProductionLogging.warn('Failed to stop Charlotte audio:', 'simpleAudioCoordinator', e);
+        DebugLogger.warn('audio', 'Failed to stop Charlotte audio', e);
       }
     });
   }
@@ -149,7 +149,7 @@ class SimpleAudioCoordinator {
       clearTimeout(this.lockTimeout);
       this.lockTimeout = null;
     }
-    ProductionLogging.info('All locks force released', 'simpleAudioCoordinator');
+    DebugLogger.log('audio', 'All locks force released');
   }
 }
 

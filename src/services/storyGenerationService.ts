@@ -65,7 +65,7 @@ export class StoryGenerationService {
   ): Promise<StoryGenerationResult> {
     try {
       DebugLogger.log('story', 'Starting 4-layer story generation pipeline');
-      ProductionLogging.debug('STORY', 'Config received', 'storyGenerationService', {
+      DebugLogger.log('story', 'Config received', {
         sessionType: config.sessionType,
         pageNumber: config.pageNumber,
         expertGradeLevel: config.expertGradeLevel,
@@ -85,7 +85,7 @@ export class StoryGenerationService {
       try {
         vocabularyIntegration = await VocabularyService.fetchAllVocabulary(userInfo);
       } catch (error) {
-        ProductionLogging.warn(`Layer 2 (Vocabulary) failed silently: ${safeErrorMessage(error)}`, 'storyGenerationService');
+        DebugLogger.warn('story', `Layer 2 (Vocabulary) failed silently: ${safeErrorMessage(error)}`);
         vocabularyIntegration = {
           userSpecified: { formWords: [], specialRequestWords: [], teacherWords: [] },
           systemVocabulary: { level: 2, complianceTarget: 0.7 },
@@ -96,7 +96,7 @@ export class StoryGenerationService {
       try {
         themeIntent = extractThemeIntent(userInfo);
       } catch (error) {
-        ProductionLogging.warn(`Layer 3 (Theme) failed silently: ${safeErrorMessage(error)}`, 'storyGenerationService');
+        DebugLogger.warn('story', `Layer 3 (Theme) failed silently: ${safeErrorMessage(error)}`);
         themeIntent = {
           theme: ['adventure'], // AI-friendly default
           setting: ['magical world'],
@@ -138,9 +138,9 @@ export class StoryGenerationService {
         );
         voiceIntegrationResult.selectedVoice = clampedVoice;
         
-        ProductionLogging.info(`Voice Layer 4: Selected and clamped voice: ${voiceIntegrationResult.selectedVoice.pn}`, 'storyGenerationService');
+        DebugLogger.log('story', `Voice Layer 4: Selected and clamped voice: ${voiceIntegrationResult.selectedVoice.pn}`);
       } catch (error) {
-        ProductionLogging.warn(`Layer 4 (Voice) failed silently: ${safeErrorMessage(error)}`, 'storyGenerationService');
+        DebugLogger.warn('story', `Layer 4 (Voice) failed silently: ${safeErrorMessage(error)}`);
         // Fallback voice integration
         voiceIntegrationResult = {
           selectedVoice: { pn: 'AI Narrator', id: 'fallback' },
@@ -166,8 +166,8 @@ export class StoryGenerationService {
         systemSettings: VocabularyService.getSystemSettings(vocabularyIntegration)
       };
 
-      ProductionLogging.info(`Session ID: ${generationBundle.sessionId}`, 'storyGenerationService');
-      ProductionLogging.debug('STORY', 'Generation bundle prepared', 'storyGenerationService', {
+      DebugLogger.log('story', `Session ID: ${generationBundle.sessionId}`);
+      DebugLogger.log('story', 'Generation bundle prepared', {
         sessionId: generationBundle.sessionId,
         storyContentLength: resolvedResult.storyContent.length,
         gradeLevel: generationBundle.systemSettings.gradeLevel,
@@ -179,7 +179,7 @@ export class StoryGenerationService {
       return result;
       
     } catch (error) {
-      ProductionLogging.error('Story generation failed:', 'storyGenerationService', error);
+      DebugLogger.error('story', 'Story generation failed', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
@@ -266,10 +266,10 @@ export class StoryGenerationService {
       );
       
       if (vocabularyConfig.hasUserWords && vocabularyValidation.compliancePercentage < 0.5) {
-        ProductionLogging.warn('VOCABULARY', 'Low vocabulary compliance detected', 'storyGenerationService', vocabularyValidation);
+        DebugLogger.warn('story', 'Low vocabulary compliance detected', vocabularyValidation);
       }
     } catch (error) {
-      ProductionLogging.error('VOCABULARY', 'Vocabulary validation error', 'storyGenerationService', error);
+      DebugLogger.error('story', 'Vocabulary validation error', error);
     }
 
     // LAYER 4 - Voice Integration with Level Clamping
@@ -369,7 +369,7 @@ ${culturalContext ? `${culturalContext} ` : ''}Character Info: ${JSON.stringify(
     const startTime = Date.now();
     
     try {
-      ProductionLogging.info('EDGE_FUNCTION', 'Calling streamlined edge function', 'storyGenerationService');
+      DebugLogger.log('network', 'Calling streamlined edge function');
       
       const { data, error } = await supabase.functions.invoke('generate-adaptive-story', {
         body: {
@@ -396,14 +396,14 @@ ${culturalContext ? `${culturalContext} ` : ''}Character Info: ${JSON.stringify(
         throw new Error(data?.error || 'Story generation failed');
       }
 
-      ProductionLogging.info('EDGE_FUNCTION', 'Story generation successful', 'storyGenerationService', {
+      DebugLogger.log('network', 'Story generation successful', {
         processingTime,
         pagesGenerated: data.pages?.length || 0,
         storyLength: data.story?.length || 0
       });
 
       // Phase 2: Apply centralized grammar processing via process-story-content
-      ProductionLogging.info('GRAMMAR', 'Applying centralized grammar processing', 'storyGenerationService');
+      DebugLogger.log('story', 'Applying centralized grammar processing');
       
       let processedPages = data.pages;
       try {
@@ -416,13 +416,13 @@ ${culturalContext ? `${culturalContext} ` : ''}Character Info: ${JSON.stringify(
         });
 
         if (processError) {
-          ProductionLogging.warn('GRAMMAR', 'Grammar processing failed, using raw pages', 'storyGenerationService', processError);
+          DebugLogger.warn('story', 'Grammar processing failed, using raw pages', processError);
         } else if (processResult?.success && processResult?.processedPages) {
           processedPages = processResult.processedPages;
-          ProductionLogging.info('GRAMMAR', 'Grammar processing successful', 'storyGenerationService', processResult.processingMetadata);
+          DebugLogger.log('story', 'Grammar processing successful', processResult.processingMetadata);
         }
       } catch (processError) {
-        ProductionLogging.warn('GRAMMAR', 'Grammar processing failed, using raw pages', 'storyGenerationService', processError);
+        DebugLogger.warn('story', 'Grammar processing failed, using raw pages', processError);
       }
 
       return {
@@ -437,7 +437,7 @@ ${culturalContext ? `${culturalContext} ` : ''}Character Info: ${JSON.stringify(
       };
 
     } catch (error) {
-      ProductionLogging.error('EDGE_FUNCTION', 'Edge function call failed', 'storyGenerationService', error);
+      DebugLogger.error('network', 'Edge function call failed', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
@@ -526,7 +526,7 @@ ${culturalContext ? `${culturalContext} ` : ''}Character Info: ${JSON.stringify(
             extractedData = { ...extractedData, ...parsed };
           }
         } catch (jsonError) {
-          ProductionLogging.warn('STORY', 'JSON parsing failed, using AI defaults', 'storyGenerationService', safeErrorMessage(jsonError));
+          DebugLogger.warn('story', 'JSON parsing failed, using AI defaults', safeErrorMessage(jsonError));
         }
       }
       
@@ -542,7 +542,7 @@ ${culturalContext ? `${culturalContext} ` : ''}Character Info: ${JSON.stringify(
       }
       
     } catch (error) {
-      ProductionLogging.warn('STORY', 'Bundle extraction failed, AI will create appropriate content', 'storyGenerationService', safeErrorMessage(error));
+      DebugLogger.warn('story', 'Bundle extraction failed, AI will create appropriate content', safeErrorMessage(error));
     }
     
     return extractedData;
