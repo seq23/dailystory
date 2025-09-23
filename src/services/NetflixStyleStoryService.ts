@@ -212,8 +212,8 @@ export class NetflixStyleStoryService {
       backoffMultiplier: 1.5 // Gentler backoff
     }).catch(async (error) => {
       // All retries exhausted - fall back to templates with comprehensive error reporting
-      ProductionLogging.error('STORY', `Netflix: All AI generation attempts failed, using fallback`, 'NetflixStyleStoryService', { generationId });
-      ProductionLogging.error('STORY', 'Netflix: Final error', 'NetflixStyleStoryService', { generationId, error });
+      DebugLogger.error('story', 'Netflix: All AI generation attempts failed, using fallback', { generationId });
+      DebugLogger.error('story', 'Netflix: Final error', { generationId, error });
       const wrappedError = ErrorHandler.handleError(error || new Error('Unknown error'), 'NetflixStyleStoryService.generateStory');
       DebugLogger.warn('story', `Netflix Error Fallback: Using difficulty ${difficulty} for ${userInfo.name}`, { generationId });
       return this.generateFallbackStory(userInfo, difficulty, `ai_exhausted_all_attempts`);
@@ -285,17 +285,17 @@ export class NetflixStyleStoryService {
       });
 
       if (error) {
-        ProductionLogging.error('STORY', 'Netflix: Template service error', 'NetflixStyleStoryService', { error });
+        DebugLogger.error('story', 'Netflix: Template service error', { error });
         throw new Error(`Template service error: ${error.message || error}`);
       }
 
       if (!data) {
-        ProductionLogging.error('STORY', 'Netflix: No data returned from template service', 'NetflixStyleStoryService');
+        DebugLogger.error('story', 'Netflix: No data returned from template service');
         throw new Error('Template service returned no data');
       }
 
       if (!data.pages || !Array.isArray(data.pages) || data.pages.length === 0) {    
-        ProductionLogging.error('STORY', 'Netflix: Invalid pages data', 'NetflixStyleStoryService', {
+        DebugLogger.error('story', 'Netflix: Invalid pages data', {
           hasPages: !!data.pages,
           isArray: Array.isArray(data.pages),
           length: data.pages?.length || 0,
@@ -339,7 +339,7 @@ export class NetflixStyleStoryService {
         source: 'fallback'
       };
     } catch (error) {
-      ProductionLogging.error('STORY', 'Netflix: Fallback generation failed', 'NetflixStyleStoryService', { error });
+      DebugLogger.error('story', 'Netflix: Fallback generation failed', { error });
       // Emergency fallback with rhyming educational content
       const emergencyContent = await ErrorHandlingManager.getEmergencyContent(userInfo);
       

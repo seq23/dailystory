@@ -80,7 +80,7 @@ export function TemplateExplorer() {
 
       setTemplateInfo(data);
     } catch (err) {
-      ProductionLogging.error('TEMPLATE', 'Template exploration error', 'TemplateExplorer', { error: err });
+      DebugLogger.error('ui', 'Template exploration error', { error: err });
       setError(err instanceof Error ? err.message : 'Failed to explore templates');
     } finally {
       setIsLoading(false);

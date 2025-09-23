@@ -120,7 +120,7 @@ export function ValidationTestRunner() {
         DebugLogger.log('story', `${gradeLevel} grade: ${pageCount} pages (${pagesInRange ? 'PASS' : 'FAIL'})`);
         
       } catch (error) {
-        ProductionLogging.error('VALIDATION', `Error testing ${gradeLevel}`, 'ValidationTestRunner', { gradeLevel, error });
+        DebugLogger.error('story', 'Error testing grade level', { gradeLevel, error });
         
         showTestToast({
           level: `Grade ${gradeLevel}`,

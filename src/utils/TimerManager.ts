@@ -61,7 +61,7 @@ export class TimerManager {
       callback
     });
 
-    ProductionLogging.debug('TIMER', `Created timeout: ${id}`, component, { delay, sessionId });
+    DebugLogger.log('ui', `Created timeout: ${id}`, { component, delay, sessionId });
     return id;
   }
 
@@ -82,7 +82,7 @@ export class TimerManager {
       callback
     });
 
-    ProductionLogging.debug('TIMER', `Created interval: ${id}`, component, { delay, sessionId });
+    DebugLogger.log('ui', `Created interval: ${id}`, { component, delay, sessionId });
     return id;
   }
 
@@ -100,7 +100,7 @@ export class TimerManager {
     }
 
     this.remove(id);
-    ProductionLogging.debug('TIMER', `Cleared timer: ${id}`, timer.component);
+    DebugLogger.log('ui', `Cleared timer: ${id}`, { component: timer.component });
     return true;
   }
 
@@ -119,7 +119,7 @@ export class TimerManager {
     }
 
     this.componentTimers.delete(component);
-    ProductionLogging.info('TIMER', `Cleared ${cleared} timers for component: ${component}`);
+    DebugLogger.log('ui', `Cleared ${cleared} timers for component: ${component}`);
     return cleared;
   }
 
@@ -138,7 +138,7 @@ export class TimerManager {
     }
 
     this.sessionTimers.delete(sessionId);
-    ProductionLogging.info('TIMER', `Cleared ${cleared} timers for session: ${sessionId}`);
+    DebugLogger.log('ui', `Cleared ${cleared} timers for session: ${sessionId}`);
     return cleared;
   }
 
@@ -155,7 +155,7 @@ export class TimerManager {
 
     this.componentTimers.clear();
     this.sessionTimers.clear();
-    ProductionLogging.warn('TIMER', `Emergency cleanup: cleared ${cleared} timers`);
+    DebugLogger.warn('ui', `Emergency cleanup: cleared ${cleared} timers`);
     return cleared;
   }
 
@@ -276,7 +276,7 @@ export class TimerManager {
       }
 
       if (staleTimers.length > 0) {
-        ProductionLogging.warn('TIMER', `Cleaning up ${staleTimers.length} stale timers`);
+        DebugLogger.warn('ui', `Cleaning up ${staleTimers.length} stale timers`);
         for (const id of staleTimers) {
           this.clearTimer(id);
         }

@@ -105,7 +105,7 @@ export const FormStep3Personalization = ({
           });
         }
       } catch (error) {
-        ProductionLogging.warn('FORM', 'Tag spellcheck failed for field', 'FormStep3Personalization', { field, error });
+        DebugLogger.warn('ui', 'Tag spellcheck failed for field', { field, error });
       } finally {
         setSpellcheckLoading(prev => ({ ...prev, [field]: false }));
       }
@@ -143,7 +143,7 @@ export const FormStep3Personalization = ({
         });
       }
     } catch (error) {
-      ProductionLogging.warn('FORM', 'Spellcheck failed for field', 'FormStep3Personalization', { field, error });
+      DebugLogger.warn('ui', 'Spellcheck failed for field', { field, error });
     } finally {
       setSpellcheckLoading(prev => ({ ...prev, [field]: false }));
     }
@@ -257,7 +257,7 @@ export const FormStep3Personalization = ({
                 }, 4000);
               }
             } catch (translationError) {
-              ProductionLogging.error('FORM', 'Translation API error', 'FormStep3Personalization', { translationError });
+              DebugLogger.error('ui', 'Translation API error', { translationError });
             }
           }
           
@@ -269,7 +269,7 @@ export const FormStep3Personalization = ({
             onUpdate({ [field]: sanitizedValue });
           }
         } catch (error) {
-          ProductionLogging.error('FORM', `Processing error for "${sanitizedValue}"`, 'FormStep3Personalization', { error });
+          DebugLogger.error('ui', 'Processing error', { error, value: sanitizedValue });
         } finally {
           setTranslationLoading(prev => ({ ...prev, [field as string]: false }));
         }

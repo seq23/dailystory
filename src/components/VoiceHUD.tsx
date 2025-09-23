@@ -30,7 +30,7 @@ export const VoiceHUD: React.FC = () => {
         const Ctor = (window as any).AudioContext || (window as any).webkitAudioContext;
         audioContextRef.current = new Ctor();
       } catch (e) {
-        ProductionLogging.warn('AUDIO', 'VoiceHUD: AudioContext not available', 'VoiceHUD');
+        DebugLogger.warn('audio', 'VoiceHUD: AudioContext not available');
       }
     }
     return audioContextRef.current;

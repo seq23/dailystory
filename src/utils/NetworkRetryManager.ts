@@ -105,13 +105,13 @@ export class NetworkRetryManager {
     if (typeof window === 'undefined') return;
 
     window.addEventListener('online', () => {
-      ProductionLogging.info('NETWORK', 'Browser reports online');
+      DebugLogger.log('network', 'Browser reports online');
       this.resetNetworkState();
       this.checkNetworkQuality();
     });
 
     window.addEventListener('offline', () => {
-      ProductionLogging.warn('NETWORK', 'Browser reports offline');
+      DebugLogger.warn('network', 'Browser reports offline');
       this.networkState = {
         ...this.networkState,
         quality: 'offline',
@@ -167,7 +167,7 @@ export class NetworkRetryManager {
 
     // Check cache first
     if (!this.shouldCheckNetwork()) {
-      ProductionLogging.debug('NETWORK', 'Using cached network quality', undefined, {
+      DebugLogger.log('network', 'Using cached network quality', {
         quality: this.networkState.quality,
         cacheAge: Date.now() - this.networkState.lastCheck
       });
@@ -181,7 +181,7 @@ export class NetworkRetryManager {
       const quality = this.calculateNetworkQuality(results);
       return this.updateNetworkState(quality, results.successCount > 0);
     } catch (error) {
-      ProductionLogging.error('NETWORK', 'Network quality check failed', undefined, error);
+      DebugLogger.error('network', 'Network quality check failed', error);
       return this.updateNetworkState('offline', false);
     } finally {
       this.networkState.isChecking = false;
@@ -261,7 +261,7 @@ export class NetworkRetryManager {
       ? successfulLatencies.reduce((a, b) => a + b, 0) / successfulLatencies.length 
       : 0;
 
-    ProductionLogging.debug('NETWORK', 'Health check results', undefined, {
+    DebugLogger.log('network', 'Health check results', {
       total: healthResults.length,
       successful: successCount,
       averageLatency,
@@ -315,7 +315,7 @@ export class NetworkRetryManager {
       isChecking: false
     };
 
-    ProductionLogging.info('NETWORK', `Network quality updated: ${quality}`, undefined, {
+    DebugLogger.log('network', `Network quality updated: ${quality}`, {
       consecutiveFailures: this.networkState.consecutiveFailures,
       cacheValidUntil: new Date(this.networkState.lastCheck + this.cacheTimeout).toISOString()
     });
@@ -349,20 +349,21 @@ export class NetworkRetryManager {
     for (let attempt = 0; attempt <= config.maxRetries; attempt++) {
       try {
         if (attempt > 0) {
-          ProductionLogging.debug('NETWORK', `Retry attempt ${attempt}/${config.maxRetries}`, context);
+          DebugLogger.log('network', `Retry attempt ${attempt}/${config.maxRetries}`, context);
         }
 
         const result = await operation();
         
         if (attempt > 0) {
-          ProductionLogging.info('NETWORK', `Operation succeeded after ${attempt} retries`, context);
+          DebugLogger.log('network', `Operation succeeded after ${attempt} retries`, context);
         }
         
         return result;
       } catch (error: any) {
         lastError = error;
         
-        ProductionLogging.warn('NETWORK', `Operation failed (attempt ${attempt + 1})`, context, {
+        DebugLogger.warn('network', `Operation failed (attempt ${attempt + 1})`, {
+          context,
           error: error.message,
           willRetry: attempt < config.maxRetries
         });
@@ -374,7 +375,7 @@ export class NetworkRetryManager {
       }
     }
 
-    ProductionLogging.error('NETWORK', `Operation failed after ${config.maxRetries + 1} attempts`, context, lastError);
+    DebugLogger.error('network', `Operation failed after ${config.maxRetries + 1} attempts`, { context, error: lastError });
     throw lastError;
   }
 

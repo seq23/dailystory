@@ -115,7 +115,7 @@ export const LegacyUserInfoForm = ({ onSubmit, onBack, isPremium = false }: User
         });
       }
     } catch (error) {
-      ProductionLogging.warn('FORM', 'Spellcheck failed for field', 'UserInfoForm', { field, error });
+      DebugLogger.warn('ui', 'Spellcheck failed for field', { field, error });
     } finally {
       setSpellcheckLoading(prev => ({ ...prev, [field]: false }));
     }
@@ -239,10 +239,10 @@ export const LegacyUserInfoForm = ({ onSubmit, onBack, isPremium = false }: User
                   setTranslations(prev => ({ ...prev, [field as string]: '' }));
                 }, 4000);
               } else {
-                ProductionLogging.warn('FORM', 'Translation failed, using original value', 'UserInfoForm', { translationError });
+                DebugLogger.warn('ui', 'Translation failed, using original value', { translationError });
               }
             } catch (translationError) {
-              ProductionLogging.error('FORM', 'Translation API error', 'UserInfoForm', { translationError });
+              DebugLogger.error('ui', 'Translation API error', { translationError });
               // Continue with original value if translation fails
             }
           }
@@ -259,7 +259,7 @@ export const LegacyUserInfoForm = ({ onSubmit, onBack, isPremium = false }: User
             setFormData(prev => ({ ...prev, [field]: sanitizedValue }));
           }
         } catch (error) {
-          ProductionLogging.error('FORM', `Processing error for "${sanitizedValue}"`, 'UserInfoForm', { error });
+          DebugLogger.error('ui', 'Processing error', { error, value: sanitizedValue });
           // Continue with original value if processing fails
         } finally {
           setTranslationLoading(prev => ({ ...prev, [field as string]: false }));

@@ -13,7 +13,6 @@ import { Badge } from "@/components/ui/badge";
 import { StorySessionCache } from "@/services/storySessionCache";
 import { useGameContext } from "@/components/GameContextProvider";
 import { DebugLogger } from "@/services/DebugLogger";
-import { DebugLogger } from '@/services/DebugLogger';
 
 interface ReadingStats {
   wordsRead: number;
@@ -60,7 +59,7 @@ const location = useLocation();
           reason: 'session-end'
         });
       } catch (error) {
-        ProductionLogging.warn('CACHE', 'Fallback cache clearing failed', 'SessionEnded', { error });
+        DebugLogger.warn('ui', 'Fallback cache clearing failed', { error });
       }
     };
 
@@ -98,7 +97,7 @@ const location = useLocation();
       sessionStats = parsedStats;
       userIsPremium = parsedStats.isPremium || false;
     } catch (error) {
-      ProductionLogging.error('SESSION', 'Failed to parse stats from URL', 'SessionEnded', { error });
+      DebugLogger.error('ui', 'Failed to parse stats from URL', { error });
     }
   }
 
@@ -119,7 +118,7 @@ const location = useLocation();
       if (ui) userInfoFromState = JSON.parse(ui) as UserInfo;
     }
   } catch (e) {
-    ProductionLogging.warn('SESSION', 'Failed to parse last_user_info', 'SessionEnded', { error: e });
+    DebugLogger.warn('ui', 'Failed to parse last_user_info', { error: e });
   }
   try {
     if (!storyText) {

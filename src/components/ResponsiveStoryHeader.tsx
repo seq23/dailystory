@@ -125,7 +125,7 @@ export const ResponsiveStoryHeader = ({
             const active = constrained || (isTablet && isSidebarExpanded);
             
             setForceIconOnly(active);
-            ProductionLogging.debug('UI', 'Header compact mode', 'ResponsiveStoryHeader', { constrained, isSidebarExpanded, active });
+            DebugLogger.log('ui', 'Header compact mode', { constrained, isSidebarExpanded, active });
             
             isChecking = false;
           } catch {

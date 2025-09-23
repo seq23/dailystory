@@ -155,7 +155,7 @@ export const UnifiedDebugMonitor: React.FC = () => {
         const status = NetflixRetryService.getCircuitBreakerStatus();
         setCircuitBreakerStatus(status);
       } catch (error) {
-        ProductionLogging.warn('DEBUG', 'Failed to get circuit breaker status', 'UnifiedDebugMonitor', { error });
+        DebugLogger.warn('ui', 'Failed to get circuit breaker status', { error });
       }
     };
 

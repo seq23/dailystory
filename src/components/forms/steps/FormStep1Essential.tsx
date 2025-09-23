@@ -94,7 +94,7 @@ export const FormStep1Essential = ({
             setSpellcheckSuggestion("");
           }
         } catch (error) {
-          ProductionLogging.warn('FORM', 'Spellcheck failed', 'FormStep1Essential', { error });
+          DebugLogger.warn('ui', 'Spellcheck failed', { error });
         } finally {
           setSpellcheckLoading(false);
         }

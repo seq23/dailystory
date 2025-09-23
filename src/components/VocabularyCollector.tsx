@@ -61,7 +61,7 @@ export const VocabularyCollector = ({ userInfo, isVisible, onClose, enablePersis
           } as any;
         });
       } catch (error) {
-        ProductionLogging.error('VOCABULARY', 'Error loading vocabulary', 'VocabularyCollector', { error });
+        DebugLogger.error('ui', 'Error loading vocabulary', { error });
       }
     }
 
@@ -98,7 +98,7 @@ export const VocabularyCollector = ({ userInfo, isVisible, onClose, enablePersis
         localStorage.setItem(`vocab_migrated_${userInfo.name}`, '1');
       }
     } catch (e) {
-      ProductionLogging.warn('VOCABULARY', 'Vocabulary legacy migration failed', 'VocabularyCollector', { error: e });
+      DebugLogger.warn('ui', 'Vocabulary legacy migration failed', { error: e });
     }
 
     setVocabulary(loaded);

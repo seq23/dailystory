@@ -84,7 +84,7 @@ export const SynchronizedAudioControls: React.FC<SynchronizedAudioControlsProps>
       setRetryCount(0);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Audio playback failed';
-      ProductionLogging.error('AUDIO', 'SynchronizedAudioControls: Playback failed', 'SynchronizedAudioControls', { error: errorMessage });
+      DebugLogger.error('audio', 'SynchronizedAudioControls: Playback failed', { error: errorMessage });
       
       setError(errorMessage);
       setIsLoading(false);

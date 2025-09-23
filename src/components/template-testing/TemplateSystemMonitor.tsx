@@ -47,7 +47,7 @@ export function TemplateSystemMonitor() {
         validationMetrics: validationMetrics || { commonErrors: [] }
       });
     } catch (error) {
-      ProductionLogging.error('TEMPLATE', 'Error refreshing monitoring data', 'TemplateSystemMonitor', { error });
+      DebugLogger.error('ui', 'Error refreshing monitoring data', { error });
     } finally {
       setIsRefreshing(false);
     }
