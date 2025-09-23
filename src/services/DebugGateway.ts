@@ -42,7 +42,7 @@ class DebugGatewayService {
 
   private logDebug(message: string, data?: any) {
     if (this.isDebugEnabled()) {
-      ProductionLogging.debug('DEBUG_GATEWAY', message, 'DebugGateway', data);
+      DebugLogger.log('network', message, data);
     }
   }
 

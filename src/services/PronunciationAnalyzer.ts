@@ -1,6 +1,7 @@
 import { SmartPhoneticMapper } from './SmartPhoneticMapper';
 import { phoneticRulesEngine } from './phoneticRulesEngine';
 import { ProductionLogging } from '@/services/ProductionLogger';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface PronunciationResult {
   accuracy: number;
@@ -105,7 +106,7 @@ export class PronunciationAnalyzer {
           syllableIssues
         });
       } catch (error) {
-        ProductionLogging.warn('PRONUNCIATION', `Failed to analyze word "${refWord}"`, 'PronunciationAnalyzer', { error });
+        DebugLogger.warn('audio', `Failed to analyze word "${refWord}"`, { error });
         analyses.push({
           word: refWord,
           expected: [refWord],

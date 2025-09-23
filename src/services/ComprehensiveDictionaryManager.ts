@@ -88,7 +88,7 @@ export class ComprehensiveDictionaryManager {
       };
 
     } catch (error) {
-      ProductionLogging.error('DICTIONARY', 'Learning dictionary deployment failed', 'ComprehensiveDictionaryManager', { error });
+      DebugLogger.error('story', 'Learning dictionary deployment failed', { error });
       return {
         success: false,
         wordCount: 0,
@@ -153,7 +153,7 @@ export class ComprehensiveDictionaryManager {
       };
 
     } catch (error) {
-      ProductionLogging.error('DICTIONARY', 'Conversation dictionary deployment failed', 'ComprehensiveDictionaryManager', { error });
+      DebugLogger.error('story', 'Conversation dictionary deployment failed', { error });
       return {
         success: false,
         wordCount: 0,

@@ -4,6 +4,7 @@
  */
 
 import { ProductionLogging } from '@/services/ProductionLogger';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface PromptFlowEntry {
   id: string;
@@ -53,7 +54,7 @@ export class PromptFlowDebugger {
     }
 
     // Log to console for immediate debugging
-    ProductionLogging.debug('PROMPT_FLOW', `${stage.toUpperCase()}`, 'PromptFlowDebugger', {
+    DebugLogger.log('story', `${stage.toUpperCase()}`, {
       sessionId,
       pageNumber,
       promptPreview: prompt.substring(0, 100) + '...',

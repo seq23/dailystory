@@ -101,52 +101,52 @@ export class SessionCacheManager {
 
     try {
       // 1. Clear Enhanced Image Cache (now uses sessionStorage)
-      ProductionLogging.debug('CACHE', 'Step 1: Clearing Enhanced Image Cache', 'SessionCacheManager');
+      DebugLogger.log('performance', 'Step 1: Clearing Enhanced Image Cache');
       // Use story transition clearing for new stories
       if (reason === 'new-session') {
         EnhancedImageCache.clearForStoryTransition(effectiveSessionId);
       } else {
         EnhancedImageCache.clearSession(effectiveSessionId);
       }
-      ProductionLogging.debug('CACHE', 'Enhanced Image Cache cleared for session', 'SessionCacheManager', { sessionId: effectiveSessionId });
+      DebugLogger.log('performance', 'Enhanced Image Cache cleared for session', { sessionId: effectiveSessionId });
 
       // 2. Clear Story Session Cache
-      ProductionLogging.debug('CACHE', 'Step 2: Clearing Story Session Cache', 'SessionCacheManager');
+      DebugLogger.log('performance', 'Step 2: Clearing Story Session Cache');
       if (userId) {
         const context = reason === 'premium-rewrite' ? 'rewrite' : 
                       reason === 'new-session' ? 'next-story' : 'session-end';
         StorySessionCache.clearCachedSession(userId, clearVisualState, avatarType, context);
-        ProductionLogging.debug('CACHE', 'Story Session Cache cleared', 'SessionCacheManager', { userId, context, avatarType });
+        DebugLogger.log('performance', 'Story Session Cache cleared', { userId, context, avatarType });
       }
 
       // 3. Clear Visual State (character/object tracking)
       if (clearVisualState) {
-        ProductionLogging.debug('CACHE', 'Step 3: Clearing Visual State Cache', 'SessionCacheManager');
+        DebugLogger.log('performance', 'Step 3: Clearing Visual State Cache');
         this.clearVisualStateCache(effectiveSessionId, userId);
       } else {
-        ProductionLogging.debug('CACHE', 'Step 3: Skipping Visual State Cache (preserving for rewrite)', 'SessionCacheManager');
+        DebugLogger.log('performance', 'Step 3: Skipping Visual State Cache (preserving for rewrite)');
       }
 
       // 4. Clear Character State (appearance consistency)
-      ProductionLogging.debug('CACHE', 'Step 4: Clearing Character State', 'SessionCacheManager');
+      DebugLogger.log('performance', 'Step 4: Clearing Character State');
       this.clearCharacterState(userId, effectiveSessionId, avatarType);
 
       // 5. Clear Session Storage Caches
-      ProductionLogging.debug('CACHE', 'Step 5: Clearing Session Storage Caches', 'SessionCacheManager');
+      DebugLogger.log('performance', 'Step 5: Clearing Session Storage Caches');
       this.clearSessionStorageCaches();
 
       // 6. Clear Navigation Caches
-      ProductionLogging.debug('CACHE', 'Step 6: Clearing Navigation Caches', 'SessionCacheManager');
+      DebugLogger.log('performance', 'Step 6: Clearing Navigation Caches');
       this.clearNavigationCaches(userId);
 
       // 7. Clear Server-Side Character Cache
-      ProductionLogging.debug('CACHE', 'Step 7: Clearing Server-Side Character Cache', 'SessionCacheManager');
+      DebugLogger.log('performance', 'Step 7: Clearing Server-Side Character Cache');
       this.clearServerSideCharacterCache();
 
-      ProductionLogging.debug('CACHE', 'All cache clearing steps completed successfully', 'SessionCacheManager');
+      DebugLogger.log('performance', 'All cache clearing steps completed successfully');
 
     } catch (error) {
-      ProductionLogging.error('CACHE', 'Error during session cache clearing', 'SessionCacheManager', { error });
+      DebugLogger.error('performance', 'Error during session cache clearing', { error });
     }
   }
 
@@ -159,7 +159,7 @@ export class SessionCacheManager {
     // CRITICAL FIX: Ensure sessionId is always defined
     const effectiveSessionId = sessionId || generateSessionIdWithPrefix('fallback_session');
 
-    ProductionLogging.debug('CACHE', 'Premium rewrite: Selective clearing to preserve avatar identity', 'SessionCacheManager', {
+    DebugLogger.log('performance', 'Premium rewrite: Selective clearing to preserve avatar identity', {
       userId,
       sessionId: effectiveSessionId,
       originalSessionId: sessionId,
@@ -178,10 +178,10 @@ export class SessionCacheManager {
       // 3. Preserve character appearance seeds while clearing story details
       this.clearStoryContentPreserveCharacter(userId, effectiveSessionId, avatarType);
 
-      ProductionLogging.debug('CACHE', 'Premium rewrite clearing completed - avatar identity preserved', 'SessionCacheManager');
+      DebugLogger.log('performance', 'Premium rewrite clearing completed - avatar identity preserved');
 
     } catch (error) {
-      ProductionLogging.error('CACHE', 'Error during premium rewrite clearing', 'SessionCacheManager', { error });
+      DebugLogger.error('performance', 'Error during premium rewrite clearing', { error });
     }
   }
 
@@ -210,10 +210,10 @@ export class SessionCacheManager {
         key.includes(avatarType || 'avatar')
       );
 
-      ProductionLogging.debug('CACHE', `Preserved ${characterKeys.length} character consistency markers for avatar: ${avatarType}`, 'SessionCacheManager');
+      DebugLogger.log('performance', `Preserved ${characterKeys.length} character consistency markers for avatar: ${avatarType}`);
 
     } catch (error) {
-      ProductionLogging.warn('CACHE', 'Failed to clear story content selectively', 'SessionCacheManager', { error });
+      DebugLogger.warn('performance', 'Failed to clear story content selectively', { error });
     }
   }
 
@@ -237,10 +237,10 @@ export class SessionCacheManager {
       // Clear character consistency caches for avatar transition
       this.clearCharacterState(userId, undefined, oldAvatar?.type);
 
-      ProductionLogging.debug('CACHE', 'Avatar-specific cache clearing completed', 'SessionCacheManager');
+      DebugLogger.log('performance', 'Avatar-specific cache clearing completed');
 
     } catch (error) {
-      ProductionLogging.error('CACHE', 'Error during avatar cache clearing', 'SessionCacheManager', { error });
+      DebugLogger.error('performance', 'Error during avatar cache clearing', { error });
     }
   }
 
@@ -260,10 +260,10 @@ export class SessionCacheManager {
         sessionStorage.removeItem(key);
       });
 
-      ProductionLogging.debug('CACHE', `Cleared ${visualStateKeys.length} visual state cache entries`, 'SessionCacheManager');
+      DebugLogger.log('performance', `Cleared ${visualStateKeys.length} visual state cache entries`);
 
     } catch (error) {
-      ProductionLogging.warn('CACHE', 'Failed to clear visual state cache', 'SessionCacheManager', { error });
+      DebugLogger.warn('performance', 'Failed to clear visual state cache', { error });
     }
   }
 
@@ -284,10 +284,10 @@ export class SessionCacheManager {
         localStorage.removeItem(key);
       });
 
-      ProductionLogging.debug('CACHE', `Cleared ${characterKeys.length} character state entries`, 'SessionCacheManager');
+      DebugLogger.log('performance', `Cleared ${characterKeys.length} character state entries`);
 
     } catch (error) {
-      ProductionLogging.warn('CACHE', 'Failed to clear character state', 'SessionCacheManager', { error });
+      DebugLogger.warn('performance', 'Failed to clear character state', { error });
     }
   }
 
@@ -308,10 +308,10 @@ export class SessionCacheManager {
         sessionStorage.removeItem(key);
       });
 
-      ProductionLogging.debug('CACHE', 'Cleared session storage caches', 'SessionCacheManager');
+      DebugLogger.log('performance', 'Cleared session storage caches');
 
     } catch (error) {
-      ProductionLogging.warn('CACHE', 'Failed to clear session storage caches', 'SessionCacheManager', { error });
+      DebugLogger.warn('performance', 'Failed to clear session storage caches', { error });
     }
   }
 
@@ -328,10 +328,10 @@ export class SessionCacheManager {
       const sessionNavKeys = ['current_session', 'session_navigation'];
       sessionNavKeys.forEach(key => sessionStorage.removeItem(key));
 
-      ProductionLogging.debug('CACHE', 'Cleared navigation caches', 'SessionCacheManager');
+      DebugLogger.log('performance', 'Cleared navigation caches');
 
     } catch (error) {
-      ProductionLogging.warn('CACHE', 'Failed to clear navigation caches', 'SessionCacheManager', { error });
+      DebugLogger.warn('performance', 'Failed to clear navigation caches', { error });
     }
   }
 
@@ -368,7 +368,7 @@ export class SessionCacheManager {
    * Clear caches when user ends their reading session
    */
   static clearOnSessionEnd(userId?: string, avatarType?: string): void {
-    ProductionLogging.debug('CACHE', 'clearOnSessionEnd ENTRY', 'SessionCacheManager', { userId, avatarType, timestamp: new Date().toISOString() });
+    DebugLogger.log('performance', 'clearOnSessionEnd ENTRY', { userId, avatarType, timestamp: new Date().toISOString() });
     try {
       this.clearAllSessionCaches({
         userId: userId || 'guest',

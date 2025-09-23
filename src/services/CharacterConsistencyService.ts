@@ -217,7 +217,7 @@ export class CharacterConsistencyService {
       DebugLogger.log('image', `Detected ${detectedCharacters.length} secondary characters on page ${pageNumber}`, detectedCharacters);
       return detectedCharacters;
     } catch (error) {
-      ProductionLogging.warn('CHARACTER', 'Secondary character detection failed', 'CharacterConsistencyService', { error });
+      DebugLogger.warn('story', 'Secondary character detection failed', { error });
       return [];
     }
   }
