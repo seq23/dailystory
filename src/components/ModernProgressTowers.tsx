@@ -19,7 +19,7 @@ import {
   Star
 } from 'lucide-react';
 import { DebugLogger } from '@/services/DebugLogger';
-import { ProductionLogging } from '@/services/ProductionLogger';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface ModernProgressTowersProps {
   userId?: string;

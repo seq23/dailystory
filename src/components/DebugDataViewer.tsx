@@ -12,7 +12,7 @@ import { Search, Download, CheckCircle, XCircle, Database, HardDrive, Image, Che
 import { DebugGateway } from '@/services/DebugGateway';
 import { useToast } from '@/hooks/use-toast';
 import { DebugLogger } from '@/services/DebugLogger';
-import { ProductionLogging } from '@/services/ProductionLogger';
+import { DebugLogger } from '@/services/DebugLogger';
 import { TierCascadeViewer } from '@/components/TierCascadeViewer';
 import { supabase } from '@/integrations/supabase/client';
 

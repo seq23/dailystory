@@ -4,7 +4,6 @@ import { Play, Square, RotateCcw } from 'lucide-react';
 import { SimplifiedAudioEngine } from '@/services/SimplifiedAudioEngine';
 import { useToast } from '@/hooks/use-toast';
 import { DebugLogger } from '@/services/DebugLogger';
-import { ProductionLogging } from '@/services/ProductionLogger';
 
 interface SynchronizedAudioControlsProps {
   text: string;

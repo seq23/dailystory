@@ -27,7 +27,6 @@ import { UnifiedDebugMonitor } from "./components/UnifiedDebugMonitor";
 // Import new services for global availability
 import "./services/AdvancedPerformanceMonitor";
 import "./services/ABTestingFramework";
-import { LoggerService } from "./services/LoggerService";
 import { DebugLogger } from "./services/DebugLogger";
 import { NetworkDebugger } from "./services/NetworkDebugger";
 import { initializeViteLogGrouper, cleanupViteLogGrouper } from "./utils/viteLogGrouper";

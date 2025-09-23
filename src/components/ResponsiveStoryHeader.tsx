@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { DebugLogger } from '@/services/DebugLogger';
-import { ProductionLogging } from '@/services/ProductionLogger';
+import { DebugLogger } from '@/services/DebugLogger';
 import { globalResizeService } from '@/services/GlobalResizeService';
 import { performanceManager } from '@/services/PerformanceManager';
 import { useTranslation } from "react-i18next";

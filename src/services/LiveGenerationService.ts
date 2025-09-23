@@ -12,7 +12,6 @@ import { generateSessionIdWithPrefix } from '@/utils/sessionId';
 import { APP_CONFIG } from '@/config/appConfig';
 import { toast } from '@/hooks/use-toast';
 import { RepairService } from './repairService';
-import { LoggerService } from '@/services/LoggerService';
 import { DebugLogger } from '@/services/DebugLogger';
 
 export interface LiveGenerationContext {

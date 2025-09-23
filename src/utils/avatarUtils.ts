@@ -12,6 +12,9 @@ interface AvatarData {
  */
 
 export class AvatarUtils {
+  // Throttle avatar success logging to prevent console spam
+  private static loggedAvatars = new Set<string>();
+  
   private static readonly AVATAR_BASE_PATHS = {
     boy: {
       pale: "/avatar-boy-pale.jpg",
@@ -62,12 +65,16 @@ export class AvatarUtils {
       return typeMapping.medium || this.DEFAULT_FALLBACK;
     }
 
-    // Success: Log successful avatar URL generation
-    DebugLogger.log('ui', 'Avatar URL generated successfully', { 
-      type: avatarData.type, 
-      skinTone: avatarData.skinTone, 
-      url: avatarUrl 
-    });
+    // Success: Only log unique avatar combinations to prevent spam
+    const avatarKey = `${avatarData.type}-${avatarData.skinTone}`;
+    if (!this.loggedAvatars.has(avatarKey)) {
+      this.loggedAvatars.add(avatarKey);
+      DebugLogger.log('ui', 'Avatar URL generated successfully', { 
+        type: avatarData.type, 
+        skinTone: avatarData.skinTone, 
+        url: avatarUrl 
+      });
+    }
     return avatarUrl;
   }
 

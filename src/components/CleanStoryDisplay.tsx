@@ -7,7 +7,6 @@ import { ImageDeduplicationService } from "@/services/imageDeduplicationService"
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { DebugLogger } from '@/services/DebugLogger';
-import { ProductionLogging } from '@/services/ProductionLogger';
 import { ManagedTimers } from '@/utils/TimerManager';
 import { performanceManager } from '@/services/PerformanceManager';
 import { globalResizeService } from '@/services/GlobalResizeService';

@@ -3,8 +3,7 @@
  * Handles retry logic and circuit breaking for "next story" AI generation failures
  */
 
-import { logger } from './LoggerService';
-import { DebugLogger } from '@/services/DebugLogger';
+import { DebugLogger } from './DebugLogger';
 
 interface RetryConfig {
   maxRetries: number;
@@ -62,7 +61,7 @@ export class NetflixRetryService {
         DebugLogger.log('story', 'NETFLIX-RETRY: Circuit breaker open for next story - attempting reset');
         this.resetCircuitBreaker(circuitKey);
       } else {
-        logger.warn(`Circuit breaker open for ${operationName}, failing fast`);
+        DebugLogger.warn('network', `Circuit breaker open for ${operationName}, failing fast`);
         throw new Error(`Circuit breaker open for ${operationName}`);
       }
     }
@@ -71,39 +70,39 @@ export class NetflixRetryService {
     
     for (let attempt = 1; attempt <= finalConfig.maxRetries; attempt++) {
       try {
-        logger.info(`Executing ${operationName}, attempt ${attempt}/${finalConfig.maxRetries}`);
+        DebugLogger.log('network', `Executing ${operationName}, attempt ${attempt}/${finalConfig.maxRetries}`);
         
         const result = await operation();
         
         // Success - reset circuit breaker
         this.recordSuccess(circuitKey);
-        logger.info(`${operationName} succeeded on attempt ${attempt}`);
+        DebugLogger.log('network', `${operationName} succeeded on attempt ${attempt}`);
         
         return result;
         
       } catch (error) {
         lastError = error as Error;
-        logger.warn(`${operationName} failed on attempt ${attempt}: ${lastError.message}`);
+        DebugLogger.warn('network', `${operationName} failed on attempt ${attempt}: ${lastError.message}`);
         
         // Record failure for circuit breaker
         this.recordFailure(circuitKey);
         
         // Don't retry on certain errors
         if (this.isNonRetryableError(lastError)) {
-          logger.error(`Non-retryable error for ${operationName}: ${lastError.message}`);
+          DebugLogger.error('network', `Non-retryable error for ${operationName}: ${lastError.message}`);
           break;
         }
         
         // Calculate delay for next attempt
         if (attempt < finalConfig.maxRetries) {
           const delay = this.calculateDelay(attempt, finalConfig);
-          logger.info(`Waiting ${delay}ms before retry ${attempt + 1}`);
+          DebugLogger.log('network', `Waiting ${delay}ms before retry ${attempt + 1}`);
           await this.sleep(delay);
         }
       }
     }
     
-    logger.error(`${operationName} failed after ${finalConfig.maxRetries} attempts`);
+    DebugLogger.error('network', `${operationName} failed after ${finalConfig.maxRetries} attempts`);
     throw lastError || new Error(`${operationName} failed after all retries`);
   }
 
@@ -125,7 +124,7 @@ export class NetflixRetryService {
         // Check if enough time has passed to transition to half-open
         if (now - state.lastFailureTime > this.circuitBreakerConfig.halfOpenRetryDelay) {
           state.state = 'half-open';
-          logger.info(`Circuit breaker ${circuitKey} transitioning to half-open`);
+          DebugLogger.log('network', `Circuit breaker ${circuitKey} transitioning to half-open`);
           return false;
         }
         return true;
@@ -148,7 +147,7 @@ export class NetflixRetryService {
       // Reset circuit breaker on success
       state.failures = 0;
       state.state = 'closed';
-      logger.info(`Circuit breaker ${circuitKey} reset to closed state`);
+      DebugLogger.log('network', `Circuit breaker ${circuitKey} reset to closed state`);
     }
   }
 
@@ -180,7 +179,7 @@ export class NetflixRetryService {
     // Open circuit if threshold exceeded
     if (state.failures >= threshold) {
       state.state = 'open';
-      logger.warn(`Circuit breaker ${circuitKey} opened after ${state.failures} failures (threshold: ${threshold})`);
+      DebugLogger.warn('network', `Circuit breaker ${circuitKey} opened after ${state.failures} failures (threshold: ${threshold})`);
     }
   }
 
@@ -251,7 +250,7 @@ export class NetflixRetryService {
       state.failures = 0;
       state.state = 'closed';
       state.lastFailureTime = 0;
-      logger.info(`Circuit breaker ${circuitKey} manually reset`);
+      DebugLogger.log('network', `Circuit breaker ${circuitKey} manually reset`);
     }
   }
 
@@ -260,6 +259,6 @@ export class NetflixRetryService {
    */
   static resetAllCircuitBreakers(): void {
     this.circuitBreakers.clear();
-    logger.info('All circuit breakers reset');
+    DebugLogger.log('network', 'All circuit breakers reset');
   }
 }

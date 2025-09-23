@@ -9,7 +9,7 @@ import { InputSanitizer } from "@/utils/inputSanitizer";
 import { spellcheckService } from "@/services/spellcheckService";
 import { supabase } from "@/integrations/supabase/client";
 import { Globe, Loader2 } from "lucide-react";
-import { ProductionLogging } from '@/services/ProductionLogger';
+import { DebugLogger } from '@/services/DebugLogger';
 interface SpecialRequestDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
