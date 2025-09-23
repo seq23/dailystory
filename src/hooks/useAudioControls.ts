@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { SimplifiedAudioEngine } from '@/services/SimplifiedAudioEngine';
+import { charlotteVoiceService } from '@/services/CharlotteVoiceService';
 import { DebugLogger } from '@/services/DebugLogger';
 import type { UserInfo } from '@/types';
 
@@ -62,8 +62,8 @@ export const useAudioControls = ({
     setIsPlaying(false);
     setIsLoading(false);
     
-    // Stop audio service
-    SimplifiedAudioEngine.getInstance().stop();
+    // Stop Charlotte's audio service
+    charlotteVoiceService.stop();
     
     setIsStabilizing(true);
     // 800ms stabilization to ensure page stability before audio starts
@@ -131,28 +131,21 @@ export const useAudioControls = ({
       }
     }
 
-    const speed = getBaseSpeed() * speedMultiplierRef.current;
     const playSnapshot = { text, page: currentPage, contentHash };
 
-    // Play with SimplifiedAudioEngine
-    await SimplifiedAudioEngine.getInstance().playTextWithSynchronization({
-      text,
-      voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte voice
-      context: 'conversation',
-      contentHash,
-      onWordHighlight: (wordIndex: number) => {
-        DebugLogger.log('audio', `Audio Sync: Highlighting word ${wordIndex}`);
-        onWordHighlight?.(wordIndex);
-      }
+    // Use Charlotte's unified voice service for story reading
+    await charlotteVoiceService.charlotteReadStory(text, (wordIndex: number) => {
+      DebugLogger.log('audio', `Charlotte Audio Sync: Highlighting word ${wordIndex}`);
+      onWordHighlight?.(wordIndex);
     });
 
     // Guard: if page or text changed during load, stop and bail
     if (playSnapshot.page !== currentPage || playSnapshot.text !== text || playSnapshot.contentHash !== contentHash) {
-      DebugLogger.warn('audio', '🛑 TTS aborted due to page/text/hash change during load');
-      SimplifiedAudioEngine.getInstance().stop();
+      DebugLogger.warn('audio', '🛑 Charlotte TTS aborted due to page/text/hash change during load');
+      charlotteVoiceService.stop();
       toast({ 
         title: t('audioReading.pageChanged', 'Page changed'), 
-        description: t('audioReading.refreshAudio', 'Audio refreshed for the new page.'), 
+        description: t('audioReading.refreshAudio', 'Charlotte refreshed for the new page.'), 
         duration: 1800 
       });
       return;
@@ -177,8 +170,8 @@ export const useAudioControls = ({
     // Notify parent component immediately
     onAudioStateChange?.(false);
     
-    // Stop audio sync service
-    SimplifiedAudioEngine.getInstance().stop();
+    // Stop Charlotte's audio service
+    charlotteVoiceService.stop();
     
     // Emit state change for UI updates (but not stop events to prevent loops)
     window.dispatchEvent(new CustomEvent('audio:statechange', { 
@@ -191,7 +184,7 @@ export const useAudioControls = ({
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      SimplifiedAudioEngine.getInstance().stop();
+      charlotteVoiceService.stop();
     };
   }, []);
 

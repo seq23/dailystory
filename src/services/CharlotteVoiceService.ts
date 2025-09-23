@@ -57,7 +57,7 @@ export class CharlotteVoiceService {
    */
   async charlotteReadStory(text: string, onWordHighlight?: (wordIndex: number) => void): Promise<void> {
     const requestId = `story-${++CharlotteVoiceService.requestCounter}`;
-    DebugLogger.log('audio', `Charlotte Reading Story: "${text.substring(0, 50)}..." [Request: ${requestId}]`);
+    DebugLogger.log('audio', `🎙️ Charlotte Reading Story: "${text.substring(0, 50)}..." [Request: ${requestId}]`);
 
     try {
       // Request audio control with high priority for story reading
@@ -86,6 +86,40 @@ export class CharlotteVoiceService {
     } finally {
       window.dispatchEvent(new CustomEvent('audio:stopped', { 
         detail: { system: 'charlotte-story' } 
+      }));
+    }
+  }
+
+  /**
+   * CHARLOTTE MULTILINGUAL EXPLANATIONS - Uses ElevenLabs Multilingual v2 for all languages
+   * Replaces browser TTS with Charlotte's voice for consistent experience
+   */
+  async charlotteMultilingualExplain(text: string, language: string = 'en'): Promise<void> {
+    const requestId = `multilingual-${++CharlotteVoiceService.requestCounter}`;
+    DebugLogger.log('audio', `🌍 Charlotte Multilingual Explain: "${text}" in ${language} [Request: ${requestId}]`);
+
+    try {
+      window.dispatchEvent(new CustomEvent('audio:request', { 
+        detail: { system: 'charlotte-multilingual', priority: 5, source: 'multilingual-explanation' } 
+      }));
+
+      // Use ElevenLabs TTS with Charlotte's voice - multilingual support handled by service
+      const audioBuffer = await SmartElevenLabsTTS.generateSpeech(
+        text, 
+        'conversation', 
+        CharlotteVoiceService.charlotteVoiceId
+      );
+
+      await this.playCharlotteAudio(audioBuffer, false);
+      
+      DebugLogger.log('audio', `✅ Charlotte multilingual explanation completed: ${requestId}`);
+
+    } catch (error) {
+      DebugLogger.error('audio', `❌ Charlotte multilingual explanation failed: ${requestId}`, error);
+      this.fallbackToBrowserSpeech(text);
+    } finally {
+      window.dispatchEvent(new CustomEvent('audio:stopped', { 
+        detail: { system: 'charlotte-multilingual' } 
       }));
     }
   }

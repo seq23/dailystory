@@ -23,6 +23,7 @@ import { DebugLogger } from "@/services/DebugLogger";
 import { useAudioSession } from "@/hooks/useAudioSession";
 import { useAudioSync } from "@/hooks/useAudioSync";
 import { useAudioControls } from "@/hooks/useAudioControls";
+import { charlotteVoiceService } from "@/services/CharlotteVoiceService";
 
 interface ElevenLabsAudioProps {
   text: string;
@@ -117,15 +118,16 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
       return;
     }
 
-    try {
-      await playAudioCore(validateHashSync);
-      
-      if (!isPremium) {
-        markPageAsPlayed();
+      try {
+        await playAudioCore(validateHashSync);
+        
+        // Use Charlotte's story completion tracking
+        if (!isPremium) {
+          markPageAsPlayed();
+        }
+      } catch (error) {
+        DebugLogger.error('audio', '🎙️ Charlotte story playback failed', error);
       }
-    } catch (error) {
-      DebugLogger.error('audio', 'Audio playback failed', error);
-    }
   };
 
   // Stop audio wrapper
@@ -332,13 +334,12 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
       const cleanWord = resolved;
       try {
         if (detail.type === 'pronounce') {
-          // Use SimplifiedAudioEngine for word pronunciation
-          const { SimplifiedAudioEngine } = await import('@/services/SimplifiedAudioEngine');
-          await SimplifiedAudioEngine.getInstance().playTextWithSynchronization({ 
-            text: cleanWord,
-            voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
-          });
-          return;
+        // Use Charlotte's unified voice service instead of SimplifiedAudioEngine
+        await charlotteVoiceService.charlotteInteractiveAudio({
+          text: cleanWord,
+          context: 'interactive'
+        });
+        return;
         }
         const userLang = userInfo?.nativeLanguage || 'en';
         const { data, error } = await supabase.functions.invoke('word-dictionary', {
@@ -349,14 +350,10 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
           if (detail.type === 'define' || detail.type === 'explain') {
             toast({ title: cleanWord, description: definition, duration: 4000 });
             try {
-              // Use SimplifiedAudioEngine for definitions
-              const { SimplifiedAudioEngine } = await import('@/services/SimplifiedAudioEngine');
-              await SimplifiedAudioEngine.getInstance().playTextWithSynchronization({ 
-                text: definition,
-                voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
-              });
+              // Use Charlotte's unified voice service for definitions
+              await charlotteVoiceService.charlotteExplainWord(cleanWord, userLang);
             } catch (e) {
-              DebugLogger.warn('audio', 'Definition TTS failed', e);
+              DebugLogger.warn('audio', 'Charlotte definition TTS failed', e);
             }
           } else if (detail.type === 'save') {
             try {
@@ -383,13 +380,11 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
   // Voice command playback controls
   useEffect(() => {
     const onPause = () => {
-      // TODO: Replace with SimplifiedAudioEngine
-      // try { SimplifiedAudioEngine.getInstance().pause(); } catch {}
+      // Use Charlotte's unified service for pause
+      try { charlotteVoiceService.stop(); } catch {}
     };
     const onResume = async () => {
-      // TODO: Replace with SimplifiedAudioEngine resume
-      // try { await SimplifiedAudioEngine.getInstance().resume(); }
-      // catch { try { await playAudio(); } catch {} }
+      // Use Charlotte's unified service for resume
       try { await playAudio(); } catch {}
     };
     const onRepeat = async () => {

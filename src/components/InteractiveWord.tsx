@@ -363,7 +363,7 @@ export const InteractiveWord = ({
           if (userInfo?.nativeLanguage === 'en' || !userInfo?.nativeLanguage) {
             await charlotteVoiceService.charlotteExplainWord(cleanWord, 'en');
           } else {
-            // For non-English users, translate explanation and use browser TTS
+            // For non-English users, use Charlotte's multilingual explanation
             try {
               const { data: translationResult } = await supabase.functions.invoke('translate-universal', {
                 body: {
@@ -375,20 +375,17 @@ export const InteractiveWord = ({
               });
               
               if (translationResult?.translatedText) {
-                // Use browser TTS for non-English (cost-effective)
-                if ('speechSynthesis' in window) {
-                  window.speechSynthesis.cancel();
-                  const utterance = new SpeechSynthesisUtterance(translationResult.translatedText);
-                  utterance.lang = userInfo.nativeLanguage;
-                  utterance.rate = 0.8;
-                  window.speechSynthesis.speak(utterance);
-                }
+                // Use Charlotte's multilingual voice instead of browser TTS
+                await charlotteVoiceService.charlotteMultilingualExplain(
+                  translationResult.translatedText, 
+                  userInfo.nativeLanguage
+                );
               } else {
-                // Fallback to Charlotte if translation fails
+                // Fallback to Charlotte in English if translation fails
                 await charlotteVoiceService.charlotteExplainWord(cleanWord, 'en');
               }
             } catch (translationError) {
-              DebugLogger.error('audio', 'Translation failed, using Charlotte fallback', translationError);
+              DebugLogger.error('audio', 'Translation failed, using Charlotte English fallback', translationError);
               await charlotteVoiceService.charlotteExplainWord(cleanWord, 'en');
             }
           }

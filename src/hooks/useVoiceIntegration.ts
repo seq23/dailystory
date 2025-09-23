@@ -1,5 +1,5 @@
 import { useRef, useCallback } from 'react';
-import { SimplifiedAudioEngine } from '@/services/SimplifiedAudioEngine';
+import { charlotteVoiceService } from '@/services/CharlotteVoiceService';
 import { useConversation } from '@11labs/react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -11,7 +11,6 @@ import { DebugLogger } from '@/services/DebugLogger';
  * Hook to integrate the main UI voice buttons with the SimpleVoiceCommands system
  */
 export const useVoiceIntegration = () => {
-  const engine = SimplifiedAudioEngine.getInstance();
   const voiceSystemRef = useRef<any>(null);
   const { canCharlotteSpeak, requestCharlotteSpeech, releaseCharlotteSpeech } = useCharlotteAudioCoordination();
 
@@ -62,11 +61,10 @@ export const useVoiceIntegration = () => {
       if (text) {
         // Brief delay to let Charlotte finish her acknowledgment
         setTimeout(() => {
-          engine.playTextWithSynchronization({ 
-            text, 
-            contentHash: hash,
-            voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
-          }).catch((error) => DebugLogger.error('audio', 'Voice integration error:', error));
+          charlotteVoiceService.charlotteReadStory(text, (wordIndex: number) => {
+            // Word highlighting handled by Charlotte's unified service
+            DebugLogger.log('audio', `Voice command triggered word highlight: ${wordIndex}`);
+          }).catch((error) => DebugLogger.error('audio', 'Voice integration Charlotte story error:', error));
         }, 200);
         return "Got it!"; // Very brief response to avoid audio conflicts
       }
@@ -77,7 +75,7 @@ export const useVoiceIntegration = () => {
       DebugLogger.log('audio', 'Voice command: stop');
       // Brief delay to let Charlotte finish her acknowledgment
       setTimeout(() => {
-        engine.stop();
+        charlotteVoiceService.stop();
       }, 100);
       return "Got it!"; // Very brief response to avoid audio conflicts
     },
@@ -86,7 +84,7 @@ export const useVoiceIntegration = () => {
       DebugLogger.log('audio', 'Voice command: pause');
       // Brief delay to let Charlotte finish her acknowledgment
       setTimeout(() => {
-        engine.stop();
+        charlotteVoiceService.stop();
       }, 100);
       return "Got it!"; // Very brief response to avoid audio conflicts
     },
@@ -161,21 +159,8 @@ export const useVoiceIntegration = () => {
       DebugLogger.log('audio', 'Voice command: syllables for:', word);
       
       if (word) {
-        // Enhanced syllable breakdown with counting (using async method for consistency)
-        import('@/services/phoneticRulesEngine').then(async ({ phoneticRulesEngine }) => {
-          const syllables = await phoneticRulesEngine.breakIntoSyllablesAsync(word);
-          const count = syllables?.length || 1;
-          const syllableText = syllables?.join(' - ') || word;
-          
-          // Play enhanced syllable response
-          const response = `"${word}" has ${count} syllable${count !== 1 ? 's' : ''}: ${syllableText}`;
-          
-          engine.playTextWithSynchronization({
-            text: response,
-            voiceId: 'XB0fDUnXU5powFXDhCwa', // Charlotte
-            contentHash: response.substring(0, 20)
-          });
-        });
+        // Enhanced syllable breakdown with counting (using Charlotte's service)
+        charlotteVoiceService.charlotteSyllableWord(word);
         
         return `Breaking down "${word}" into syllables for you!`;
       }

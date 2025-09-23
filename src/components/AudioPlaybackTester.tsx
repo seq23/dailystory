@@ -29,11 +29,11 @@ export const AudioPlaybackTester: React.FC = () => {
 
   const testCharlotteVoice = async () => {
     setLoading(true);
-    setLastTest('Charlotte TTS');
-    DebugLogger.log('audio', 'Testing Charlotte voice', { text: testText });
+    setLastTest('Charlotte TTS (Primary)');
+    DebugLogger.log('audio', '✅ Testing Charlotte voice service', { text: testText });
 
     try {
-      // Check if CharlotteVoiceService is available (new unified service)
+      // Check if CharlotteVoiceService is available (unified service)
       if (typeof window !== 'undefined' && window.__CharlotteVoiceService) {
         const charlotteService = window.__CharlotteVoiceService;
         
@@ -44,8 +44,8 @@ export const AudioPlaybackTester: React.FC = () => {
         });
         
         toast({
-          title: "Charlotte Voice Test",
-          description: "Audio playback completed successfully",
+          title: "🎙️ Charlotte Voice Test Success",
+          description: "ElevenLabs Charlotte audio completed successfully",
         });
       } else {
         throw new Error('CharlotteVoiceService not available');
