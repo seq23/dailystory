@@ -221,7 +221,7 @@ export class SessionCacheManager {
    * Clear avatar-specific caches when avatar changes
    */
   static clearAvatarSpecificCaches(userId: string, oldAvatar?: any, newAvatar?: any): void {
-    ProductionLogging.debug('CACHE', 'Clearing avatar-specific caches', 'SessionCacheManager', {
+    DebugLogger.log('performance', `Clearing avatar-specific caches for ${userId}`, {
       userId,
       oldAvatar: oldAvatar?.type,
       newAvatar: newAvatar?.type
@@ -350,17 +350,17 @@ export class SessionCacheManager {
       })
       .then(response => {
         if (response.ok) {
-          ProductionLogging.debug('CACHE', 'Server-side character cache cleared successfully', 'SessionCacheManager');
+          DebugLogger.log('performance', 'Server-side character cache cleared successfully');
         } else {
-          ProductionLogging.warn('CACHE', 'Server-side character cache clear failed (non-critical)', 'SessionCacheManager');
+          DebugLogger.warn('performance', 'Server-side character cache clear failed (non-critical)');
         }
       })
       .catch(error => {
-        ProductionLogging.warn('CACHE', 'Failed to clear server-side character cache (non-critical)', 'SessionCacheManager', { error: error.message });
+        DebugLogger.warn('performance', 'Failed to clear server-side character cache (non-critical)', { error: error.message });
       });
 
     } catch (error) {
-      ProductionLogging.warn('CACHE', 'Error initiating server-side cache clear (non-critical)', 'SessionCacheManager', { error });
+      DebugLogger.warn('performance', 'Error initiating server-side cache clear (non-critical)', { error });
     }
   }
 
@@ -376,9 +376,10 @@ export class SessionCacheManager {
         reason: 'session-end',
         clearVisualState: true
       });
+        DebugLogger.error('performance', 'clearOnSessionEnd COMPLETED successfully');
       ProductionLogging.debug('CACHE', 'clearOnSessionEnd COMPLETED successfully', 'SessionCacheManager');
     } catch (error) {
-      ProductionLogging.error('CACHE', 'clearOnSessionEnd FAILED', 'SessionCacheManager', { error });
+      DebugLogger.error('performance', 'clearOnSessionEnd FAILED', { error });
     }
   }
 
@@ -386,7 +387,7 @@ export class SessionCacheManager {
    * Clear caches when user rewrites current story (regenerate with same characters)
    */
   static clearOnRewrite(userId?: string, avatarType?: string): void {
-    ProductionLogging.debug('CACHE', 'clearOnRewrite ENTRY', 'SessionCacheManager', { userId, avatarType, timestamp: new Date().toISOString() });
+    DebugLogger.log('performance', 'clearOnRewrite ENTRY', { userId, avatarType, timestamp: new Date().toISOString() });
     try {
       this.clearAllSessionCaches({
         userId: userId || 'guest',
@@ -395,9 +396,9 @@ export class SessionCacheManager {
         clearVisualState: false, // Keep visual continuity for rewrite
         preserveAvatarIdentity: true
       });
-      ProductionLogging.debug('CACHE', 'clearOnRewrite COMPLETED - avatar identity preserved', 'SessionCacheManager');
+      DebugLogger.log('performance', 'clearOnRewrite COMPLETED - avatar identity preserved');
     } catch (error) {
-      ProductionLogging.error('CACHE', 'clearOnRewrite FAILED', 'SessionCacheManager', { error });
+      DebugLogger.error('performance', 'clearOnRewrite FAILED', { error });
     }
   }
 
@@ -405,7 +406,7 @@ export class SessionCacheManager {
    * Clear caches when user generates next story (completely new story)
    */
   static clearOnNextStory(userId?: string, avatarType?: string): void {
-    ProductionLogging.debug('CACHE', 'clearOnNextStory ENTRY', 'SessionCacheManager', { userId, avatarType, timestamp: new Date().toISOString() });
+    DebugLogger.log('performance', 'clearOnNextStory ENTRY', { userId, avatarType, timestamp: new Date().toISOString() });
     try {
       // Use story transition clearing for next story
       this.clearAllSessionCaches({
@@ -418,14 +419,14 @@ export class SessionCacheManager {
       // Mark that next Netflix session should be fresh
       try {
         sessionStorage.setItem('netflix_force_fresh_session', 'true');
-        ProductionLogging.debug('CACHE', 'Netflix marked for fresh session generation', 'SessionCacheManager');
+        DebugLogger.log('performance', 'Netflix marked for fresh session generation');
       } catch (error) {
-        ProductionLogging.warn('CACHE', 'Failed to mark fresh session', 'SessionCacheManager', { error });
+        DebugLogger.warn('performance', 'Failed to mark fresh session', { error });
       }
       
-      ProductionLogging.debug('CACHE', 'clearOnNextStory COMPLETED - full cache clear done', 'SessionCacheManager');
+      DebugLogger.log('performance', 'clearOnNextStory COMPLETED - full cache clear done');
     } catch (error) {
-      ProductionLogging.error('CACHE', 'clearOnNextStory FAILED', 'SessionCacheManager', { error });
+      DebugLogger.error('performance', 'clearOnNextStory FAILED', { error });
     }
   }
 
@@ -433,15 +434,15 @@ export class SessionCacheManager {
    * Clear caches for premium finish story (preserve images for navigation)
    */
   static clearOnPremiumFinish(userId?: string, sessionId?: string): void {
-    ProductionLogging.debug('CACHE', 'clearOnPremiumFinish ENTRY', 'SessionCacheManager', { userId, sessionId, timestamp: new Date().toISOString() });
+    DebugLogger.log('performance', 'clearOnPremiumFinish ENTRY', { userId, sessionId, timestamp: new Date().toISOString() });
     try {
       // Premium finish preserves images until new story or session end
       if (sessionId) {
         EnhancedImageCache.clearForPremiumFinish(sessionId);
       }
-      ProductionLogging.debug('CACHE', 'clearOnPremiumFinish - Images preserved for navigation', 'SessionCacheManager');
+      DebugLogger.log('performance', 'clearOnPremiumFinish - Images preserved for navigation');
     } catch (error) {
-      ProductionLogging.error('CACHE', 'clearOnPremiumFinish FAILED', 'SessionCacheManager', { error });
+      DebugLogger.error('performance', 'clearOnPremiumFinish FAILED', { error });
     }
   }
 
@@ -450,7 +451,7 @@ export class SessionCacheManager {
    * Prevents race conditions between cache clearing and new story generation
    */
   static clearOnNextStorySync(userId: string = 'guest', avatarType?: string): void {
-    ProductionLogging.debug('CACHE', 'clearOnNextStorySync ENTRY', 'SessionCacheManager', { userId, avatarType, timestamp: new Date().toISOString() });
+    DebugLogger.log('performance', 'clearOnNextStorySync ENTRY', { userId, avatarType, timestamp: new Date().toISOString() });
     
     try {
       // Immediate synchronous clearing without async operations
@@ -480,10 +481,10 @@ export class SessionCacheManager {
       );
       characterKeys.forEach(key => localStorage.removeItem(key));
       
-      ProductionLogging.debug('CACHE', 'clearOnNextStorySync COMPLETED - synchronous cache clear done', 'SessionCacheManager');
+      DebugLogger.log('performance', 'clearOnNextStorySync COMPLETED - synchronous cache clear done');
       
     } catch (error) {
-      ProductionLogging.error('CACHE', 'clearOnNextStorySync FAILED', 'SessionCacheManager', { error });
+      DebugLogger.error('performance', 'clearOnNextStorySync FAILED', { error });
       throw error; // Re-throw to allow caller to handle
     }
   }
@@ -492,7 +493,7 @@ export class SessionCacheManager {
    * Clear comprehensive guest cache including all image caches
    */
   static async clearGuestCache(sessionId?: string): Promise<void> {
-    ProductionLogging.debug('CACHE', 'clearGuestCache ENTRY', 'SessionCacheManager', { sessionId, timestamp: new Date().toISOString() });
+    DebugLogger.log('performance', 'clearGuestCache ENTRY', { sessionId, timestamp: new Date().toISOString() });
     
     try {
       // Clear all image-related caches
@@ -509,7 +510,7 @@ export class SessionCacheManager {
           sessionStorage.removeItem(`guest_${key}`);
           localStorage.removeItem(`guest_${key}`);
         } catch (error) {
-          ProductionLogging.warn('CACHE', `Failed to clear ${key}`, 'SessionCacheManager', { error });
+          DebugLogger.warn('performance', `Failed to clear ${key}`, { error });
         }
       });
       
@@ -527,11 +528,11 @@ export class SessionCacheManager {
       }
       
       DebugLogger.log('performance', 'Guest image cache cleared completely');
-      ProductionLogging.debug('CACHE', 'clearGuestCache COMPLETED successfully', 'SessionCacheManager');
+      DebugLogger.log('performance', 'clearGuestCache COMPLETED successfully');
       
     } catch (error) {
       DebugLogger.warn('performance', 'Failed clearing guest image cache', error);
-      ProductionLogging.error('CACHE', 'clearGuestCache FAILED', 'SessionCacheManager', { error });
+      DebugLogger.error('performance', 'clearGuestCache FAILED', { error });
     }
   }
 
@@ -548,11 +549,11 @@ export class SessionCacheManager {
           deleteRequest.onsuccess = () => resolve(true);
           deleteRequest.onerror = () => reject(deleteRequest.error);
           deleteRequest.onblocked = () => {
-            ProductionLogging.warn('CACHE', `IndexedDB deletion blocked for ${dbName}`, 'SessionCacheManager');
+            DebugLogger.warn('performance', `IndexedDB deletion blocked for ${dbName}`);
             resolve(true); // Continue anyway
           };
         });
-        ProductionLogging.debug('CACHE', `Cleared IndexedDB: ${dbName}`, 'SessionCacheManager');
+        DebugLogger.log('performance', `Cleared IndexedDB: ${dbName}`);
       } catch (error) {
         DebugLogger.warn('performance', `Failed to clear ${dbName}:`, error);
       }
@@ -597,7 +598,7 @@ export class SessionCacheManager {
       };
 
     } catch (error) {
-      ProductionLogging.warn('CACHE', 'Failed to get cache status', 'SessionCacheManager', { error });
+      DebugLogger.warn('performance', 'Failed to get cache status', { error });
       return { imageCacheSize: 0, sessionCacheExists: false, visualStateKeys: 0, characterStateKeys: 0 };
     }
   }

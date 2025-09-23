@@ -144,7 +144,7 @@ export class PromptFlowDebugger {
     const keysToDelete = Array.from(this.entries.keys()).filter(key => key.startsWith(sessionId));
     keysToDelete.forEach(key => this.entries.delete(key));
     
-    ProductionLogging.debug('PROMPT_FLOW', 'Cleared debug entries for session', 'PromptFlowDebugger', { sessionId });
+    DebugLogger.log('network', 'Cleared debug entries for session', { sessionId });
   }
 
   /**
@@ -186,7 +186,7 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
     const flow = PromptFlowDebugger.getPromptFlow(sessionId, pageNumber);
     const comparison = PromptFlowDebugger.comparePromptStages(sessionId, pageNumber);
     
-    ProductionLogging.debug('PROMPT_FLOW', 'Debug report generated', 'PromptFlowDebugger', {
+    DebugLogger.log('network', 'Debug report generated', {
       flow,
       comparison,
       sessionId,

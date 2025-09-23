@@ -193,7 +193,7 @@ export class ComprehensiveDictionaryManager {
       });
 
       if (error) {
-        ProductionLogging.error('DICTIONARY', 'Error checking dictionary status', 'ComprehensiveDictionaryManager', { error });
+        DebugLogger.error('network', 'Error checking dictionary status', { error });
         return { isAvailable: false };
       }
 
@@ -208,7 +208,7 @@ export class ComprehensiveDictionaryManager {
       return status;
 
     } catch (error) {
-      ProductionLogging.error('DICTIONARY', 'Failed to check dictionary status', 'ComprehensiveDictionaryManager', { error });
+      DebugLogger.error('network', 'Failed to check dictionary status', { error });
       return { isAvailable: false };
     }
   }
@@ -235,7 +235,7 @@ export class ComprehensiveDictionaryManager {
       return deployment.dictionaryId;
     }
 
-    ProductionLogging.error('DICTIONARY', `Failed to deploy ${context} dictionary`, 'ComprehensiveDictionaryManager', { deployment });
+    DebugLogger.error('network', `Failed to deploy ${context} dictionary`, { deployment });
     return null;
   }
 
@@ -258,7 +258,7 @@ export class ComprehensiveDictionaryManager {
       });
 
       if (error) {
-        ProductionLogging.error('DICTIONARY', 'Upload error', 'ComprehensiveDictionaryManager', { error });
+        DebugLogger.error('network', 'Upload error', { error });
         return { success: false, error: error.message };
       }
 
@@ -270,7 +270,7 @@ export class ComprehensiveDictionaryManager {
       return { success: false, error: 'Upload failed without specific error' };
 
     } catch (error) {
-      ProductionLogging.error('DICTIONARY', 'Dictionary upload exception', 'ComprehensiveDictionaryManager', { error });
+      DebugLogger.error('network', 'Dictionary upload exception', { error });
       return { 
         success: false, 
         error: error instanceof Error ? error.message : 'Unknown upload error' 
