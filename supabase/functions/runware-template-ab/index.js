@@ -183,6 +183,19 @@ function getFacialFeatures(avatar) {
   return getSkinBySkintone(skinTone);
 }
 
+// Add this function before deriveLeftoverCulturalData
+function getCulturalContext(language) {
+  const contextMap = {
+    'en': 'diverse community setting',
+    'es': 'Hispanic community elements',
+    'fr': 'French cultural background',
+    'pt': 'Portuguese cultural elements',
+    'ar': 'Arabic cultural setting',
+    'zh': 'Chinese cultural elements'
+  };
+  return contextMap[language] || 'multicultural setting';
+}
+
 function deriveLeftoverCulturalData(userInfo) {
   return getCulturalContext(userInfo?.nativeLanguage || 'en');
 }
@@ -346,6 +359,23 @@ function extractSemanticScene(storyText) {
   // tiny ignore list to avoid obvious non-action -ing nouns; keep minimal to stay permissive
   const IGNORE_ING    = new Set(["during","morning","evening","nothing","something","anything","everything","ceiling","building","buildings","thing","wing","spring"]);
 
+// Add this constant after line 347 (after IGNORE_ING definition)
+const ACTION_CONTEXT_MAPPING = {
+  'waking': 'bedroom',
+  'wake': 'bedroom', 
+  'waking up': 'bedroom',
+  'wake up': 'bedroom',
+  'sleeping': 'bedroom',
+  'sleep': 'bedroom',
+  'eating': 'kitchen',
+  'cooking': 'kitchen',
+  'bathing': 'bathroom',
+  'showering': 'bathroom',
+  'playing outside': 'garden',
+  'gardening': 'garden',
+  'reading': 'library'
+};
+
   // ---------- Pull domain vocabulary from tier25vocabulary ----------
   const safeArr = (x) => Array.isArray(x) ? x : [];
   const COLORS           = safeArr(tier25vocabulary?.getColors?.());
@@ -419,8 +449,29 @@ function extractSemanticScene(storyText) {
   const isWord = (t) => /^[A-Za-z'-]+$/.test(t);
 
   function normalizeToken(tok) {
+    const original = tok;
     const t = tok.toLowerCase();
-    return SYN[t] || t;
+    
+    // CRITICAL: Use Tier 2.5 vocabulary validation before synonym mapping
+    const isValidVerb = VERB_ROOTS.some(root => {
+      const rootLower = root.toLowerCase();
+      return t === rootLower || t === rootLower + 's' || t === rootLower + 'ed' || t === rootLower + 'ing';
+    });
+    
+    // If it's a valid verb in our vocabulary, preserve it exactly
+    if (isValidVerb) {
+      return t;
+    }
+    
+    // Otherwise apply synonym mapping
+    const normalized = SYN[t] || t;
+    
+    // Debug corrupted tokens
+    if (original !== normalized && (original.includes('wak') || original.includes('wok'))) {
+      console.log(`🔍 [DEBUG] normalizeToken corruption: "${original}" → "${normalized}" | isValidVerb: ${isValidVerb}`);
+    }
+    
+    return normalized;
   }
 
   // Capture NP starting at index (skip determiners), stop at STOP/verb/punct
@@ -485,11 +536,21 @@ function extractSemanticScene(storyText) {
     return "";
   }
   function inferMood(textLower) {
+    // ADVERB patterns (existing)
     if (/\b(happily|cheerfully|joyfully|excitedly|playfully)\b/i.test(textLower)) return "happy";
     if (/\b(quietly|calmly|softly|gently|peacefully)\b/i.test(textLower)) return "calm";
     if (/\b(sadly|tearfully)\b/i.test(textLower)) return "sad";
     if (/\b(angrily|madly|grumpily|frustrated|furious)\b/i.test(textLower)) return "angry";
     if (/\b(nervously|shyly|timidly|anxiously)\b/i.test(textLower)) return "nervous";
+    
+    // ADJECTIVE patterns (NEW - to catch "excited", "happy", etc.)
+    if (/\b(excited|happy|cheerful|joyful|playful|thrilled|delighted)\b/i.test(textLower)) return "happy";
+    if (/\b(calm|peaceful|quiet|gentle|serene|relaxed)\b/i.test(textLower)) return "calm";
+    if (/\b(sad|tearful|unhappy|melancholy|downcast)\b/i.test(textLower)) return "sad";
+    if (/\b(angry|mad|grumpy|frustrated|furious|upset)\b/i.test(textLower)) return "angry";
+    if (/\b(nervous|shy|timid|anxious|worried|scared)\b/i.test(textLower)) return "nervous";
+    
+    // ACTION-based mood inference (existing)
     if (/\b(laugh|giggle|smile|play|sing|dance)\w*\b/i.test(textLower)) return "happy";
     if (/\b(whisper|tiptoe|hide)\w*\b/i.test(textLower)) return "calm";
     return "";
@@ -514,7 +575,10 @@ function extractSemanticScene(storyText) {
     if (/\b(climb|climbing)\b/.test(a)) return "one foot up, hands reaching";
     if (/\b(sit|sitting|read|reading|draw|drawing)\b/.test(a)) return "seated, torso slightly forward";
     if (/\b(hold|holding|carry|carrying)\b/.test(a)) return "standing, object cradled in arm";
-    if (/\b(wake|waking)\b/.test(a)) return "sitting up in bed, arms lifting";
+    // ENHANCED: Better "wake" action poses with excitement
+    if (/\b(wake|waking|woke)\b/.test(a)) {
+      return "sitting up in bed, stretching arms upward, bright expression";
+    }
     if (/\b(look|looking|see|seeing|watch|watching)\b/.test(a)) return "standing, head turned toward object";
     if (/\b(laugh|laughing|giggle|giggling)\b/.test(a)) return "standing, relaxed shoulders, open smile";
     return "";
@@ -713,8 +777,27 @@ function extractSemanticScene(storyText) {
     ? chosenObjs.map(o => (o.colors && o.colors.length ? `${o.colors[0]} ${o.head}` : o.phrase)).join(" and ")
     : "";
 
-  // Settings: up to 2 inline
-  const settingText = settings.slice(0,2).join(" and ");
+  // CRITICAL: Action-Context Priority Logic
+  let settingText = '';
+  if (actionText) {
+    // Check if action implies specific context
+    const actionLower = actionText.toLowerCase();
+    const impliedContext = Object.keys(ACTION_CONTEXT_MAPPING).find(action => 
+      actionLower.includes(action.toLowerCase())
+    );
+    
+    if (impliedContext) {
+      const forcedContext = ACTION_CONTEXT_MAPPING[impliedContext];
+      settingText = `the ${forcedContext}`;
+      console.log(`🎯 [DEBUG] Action-Context Mapping: "${actionText}" → "${forcedContext}" (overriding: ${settings.join(', ')})`);
+    } else {
+      // Use detected settings if no action-context mapping
+      settingText = settings.slice(0,2).join(" and ");
+    }
+  } else {
+    // No action, use detected settings
+    settingText = settings.slice(0,2).join(" and ");
+  }
 
   // Secondaries: show up to 4 inline; return all
   const secondaryTextForScene = secondaries.slice(0, SECONDARY_IN_SCENE_MAX).join(" and ");
@@ -723,7 +806,7 @@ function extractSemanticScene(storyText) {
   if (actionText) parts.push(actionText);
   if (objectText) parts.push(objectText);
   if (secondaryTextForScene && actionText) parts.push(`with ${secondaryTextForScene}`);
-  if (settingText) parts.push(`in the ${settingText}`);
+  if (settingText) parts.push(`in ${settingText}`);
   const scene = parts.join(" ").trim();
 
   // ---------- Optional signals (only if text supports them) ----------
@@ -740,6 +823,25 @@ function extractSemanticScene(storyText) {
   if (lighting)   signals.lighting = lighting;
   if (atmosphere) signals.atmosphere = atmosphere;
   if (pose)       signals.pose = pose;
+
+  // ---------- DEBUG LOGGING FOR SCENE ASSEMBLY ----------
+  console.log(`🔍 [DEBUG] Scene Assembly Details:`, {
+    originalText: storyText.substring(0, 100) + '...',
+    detectedActions: actions,
+    chosenAction: actionLead,
+    detectedObjects: objects.map(o => o.phrase),
+    detectedSettings: settings,
+    forcedContext: settingText,
+    mood: mood,
+    finalScene: scene
+  });
+
+  // ---------- DEBUG LOGGING FOR MOOD DETECTION ----------
+  if (mood) {
+    console.log(`🎭 [DEBUG] Mood Detection Success: "${mood}" from text: "${lowerPage.substring(0, 100)}..."`);
+  } else {
+    console.log(`🎭 [DEBUG] Mood Detection Failed - no patterns matched in: "${lowerPage.substring(0, 100)}..."`);
+  }
 
   // ---------- Validation & fallback ----------
   const validator = (typeof hasActionVerb === "function")
