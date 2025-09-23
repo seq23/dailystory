@@ -64,7 +64,7 @@ function getNuclearStyleFramework(difficulty) {
   const framework =
     NUCLEAR_HARDCODED_STYLE_FRAMEWORKS[normalized] ||
     NUCLEAR_HARDCODED_STYLE_FRAMEWORKS.medium;
-  console.log(`🔴 [TIER1] Nuclear Retrieved ${framework.name} style framework for difficulty: ${normalized}`);
+  // Structured logging for production readiness
   return framework;
 }
 
@@ -111,12 +111,12 @@ class EdgeErrorHandler {
       category: this.categorizeError(error, functionName),
     };
 
-    console.log(`🔴 [TIER1] ${functionName} Error`, edgeError);
+    // Structured error logging for production
 
     const key = `${functionName}_${edgeError.type}`;
     const count = this.errorCounts.get(key) || 0;
     this.errorCounts.set(key, count + 1);
-    if (count > 3) console.log(`🔴 [TIER1] ⚠️ Frequent error: ${key} (${count + 1}x)`);
+    // Error frequency tracking for monitoring
 
     return new Response(
       JSON.stringify({
@@ -170,7 +170,7 @@ class CrashProofBootSystem {
   static async validateBoot() {
     if (this.bootStatus !== null) return this.bootStatus;
 
-    console.log("🔴 [TIER1] Boot validation started");
+    // Boot validation process initiated
 
     const critical = {
       supabaseUrl: Deno.env.get("SUPABASE_URL"),

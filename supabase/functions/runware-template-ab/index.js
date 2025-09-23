@@ -88,16 +88,16 @@ function generateInlineNuclearNegative(culturalProfile, avatarType, difficulty) 
   return negativeComponents.join(', ');
 }
 
-console.log(`INIT runware-template-ab boot at ${new Date().toISOString()} | std@0.168.0`);
+// Template AB service initialization
 
 // ============= LAZY LOADING FUNCTIONS FOR HEAVY DEPENDENCIES =============
 
 async function getPhaseOrchestrator() {
   try {
     // DNS error detection and defensive handling
-    console.log('🔄 Loading PhaseIntegrationOrchestrator...');
+    // Loading orchestrator service
     const { phaseIntegrationOrchestrator } = await import("../_shared/PhaseIntegrationOrchestrator.js");
-    console.log('✅ PhaseIntegrationOrchestrator loaded successfully');
+    // Orchestrator loaded successfully
     return phaseIntegrationOrchestrator;
   } catch (error) {
     console.warn('⚠️ PhaseIntegrationOrchestrator lazy load failed (DNS/Sync):', error.message);

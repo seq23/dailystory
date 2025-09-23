@@ -364,27 +364,26 @@ export class PhaseIntegrationOrchestrator {
         }
       }
       
-      // STEP 3: Format secondary characters for template inclusion with robust string conversion
+      // STEP 3: Format secondary characters for template inclusion with GUARANTEED string conversion
       console.log(`🔍 [DEBUG] Secondary characters before formatting:`, {
         secondaryCharactersLength: secondaryCharacters.length,
         secondaryCharactersData: secondaryCharacters.map(char => ({
           type: typeof char,
           keys: typeof char === 'object' ? Object.keys(char) : 'not_object',
           characterDescription: char?.characterDescription,
-          name: char?.name,
-          fullObject: char
+          name: char?.name
         }))
       });
       
       const formattedSecondaryCharacters = secondaryCharacters.length > 0 ? 
         secondaryCharacters.map(char => {
-          // Robust string conversion - handle nested objects
+          // GUARANTEED string conversion to prevent [object Object] in prompts
           let description = 'secondary character';
           
           if (typeof char === 'string') {
             description = char;
-          } else if (typeof char === 'object' && char) {
-            // Try multiple property paths with defensive object-to-string conversion
+          } else if (typeof char === 'object' && char !== null) {
+            // Priority-based string extraction with guaranteed string conversion
             const possibleDescriptions = [
               char.characterDescription,
               char.description,
@@ -394,16 +393,44 @@ export class PhaseIntegrationOrchestrator {
             ];
             
             for (const desc of possibleDescriptions) {
-              if (desc && typeof desc === 'string' && desc.trim() !== '') {
-                description = desc.trim();
-                break;
-              } else if (desc && typeof desc === 'object') {
-                // Handle nested objects by converting to string
-                description = JSON.stringify(desc);
-                console.warn(`⚠️ [DEBUG] Found nested object in secondary character description:`, desc);
-                break;
+              if (desc) {
+                if (typeof desc === 'string' && desc.trim() !== '') {
+                  description = desc.trim();
+                  break;
+                } else if (typeof desc === 'object') {
+                  // CRITICAL FIX: Properly flatten nested objects to prevent [object Object]
+                  try {
+                    const flattenedDesc = JSON.stringify(desc).replace(/[{}"\[\]]/g, '').replace(/,/g, ', ').replace(/:/g, ': ');
+                    if (flattenedDesc.trim() !== '') {
+                      description = flattenedDesc.trim();
+                      break;
+                    }
+                  } catch (e) {
+                    // Final fallback - convert to string
+                    description = String(desc);
+                  }
+                } else {
+                  // Convert any other type to string
+                  description = String(desc);
+                  if (description.trim() !== '' && description !== 'undefined' && description !== 'null') {
+                    break;
+                  }
+                }
               }
             }
+            
+            // Final safety check - if still no valid description, use object summary
+            if (description === 'secondary character') {
+              description = `${char.name || 'character'} (${char.type || 'companion'})`;
+            }
+          } else {
+            // Handle null, undefined, or other types
+            description = String(char);
+          }
+          
+          // FINAL GUARANTEE: Ensure we never return [object Object]
+          if (description.includes('[object Object]')) {
+            description = 'secondary character';
           }
           
           return description;

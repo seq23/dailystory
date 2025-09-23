@@ -47,7 +47,7 @@ serve(async (req) => {
     }));
   }
 
-  // Health checks
+  // Health checks - Fixed GET/HEAD request handling
   if (req.method === "GET" || req.method === "HEAD") {
     const url = new URL(req.url);
     const readyCheck = url.pathname.endsWith("/ready") || url.searchParams.has("ready");
@@ -58,11 +58,14 @@ serve(async (req) => {
       return withCors(req.method === "HEAD" ? new Response(null, { status: res.status, headers: res.headers }) : res);
     }
 
+    // Enhanced health check response
     const payload = {
       status: "healthy",
       service: SERVICE_NAME,
       timestamp: new Date().toISOString(),
       handler_loaded: typeof handleRequest === "function",
+      tier: "2.5A",
+      capabilities: ["template_generation", "nuclear_fallback"]
     };
 
     const res = new Response(JSON.stringify(payload), {

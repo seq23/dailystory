@@ -22,35 +22,41 @@ export const RunwareConnectionTest: React.FC = () => {
     const testResults: TestResult[] = [];
 
     try {
-      // Test 1: Main Orchestrator Health Check
+      // Test 1: Main Orchestrator Health Check - Fixed to use direct fetch for GET requests
       DebugLogger.log('network', 'Testing main image orchestrator health...');
       try {
-        const { data, error } = await supabase.functions.invoke('runware-generate-image', {
-          method: 'GET'
+        const response = await fetch(`https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/runware-generate-image`, {
+          method: 'GET',
+          headers: {
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino'
+          }
         });
         
-        if (error) {
+        if (!response.ok) {
           testResults.push({
             name: 'Main Orchestrator Health',
             status: 'error',
-            message: `Health check failed: ${error.message}`,
-            details: error
-          });
-        } else if (data?.status === 'healthy') {
-          const env = data.environment || {};
-          testResults.push({
-            name: 'Main Orchestrator Health',
-            status: 'success',
-            message: `✅ Healthy | Runware API: ${env.runwareApiKeyPresent ? 'Present' : 'Missing'}`,
-            details: data
+            message: `❌ HTTP ${response.status}: ${response.statusText}`,
+            details: { status: response.status, statusText: response.statusText }
           });
         } else {
-          testResults.push({
-            name: 'Main Orchestrator Health',
-            status: 'warning',
-            message: data?.message || 'Service not responding properly',
-            details: data
-          });
+          const data = await response.json();
+          if (data?.status === 'healthy') {
+            const env = data.environment || {};
+            testResults.push({
+              name: 'Main Orchestrator Health',
+              status: 'success',
+              message: `✅ Healthy | Runware API: ${env.runwareApiKeyPresent ? 'Present' : 'Missing'}`,
+              details: data
+            });
+          } else {
+            testResults.push({
+              name: 'Main Orchestrator Health',
+              status: 'warning',
+              message: data?.message || 'Service not responding properly',
+              details: data
+            });
+          }
         }
       } catch (error) {
         testResults.push({
