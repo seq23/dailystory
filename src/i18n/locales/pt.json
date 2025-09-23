@@ -971,5 +971,35 @@
       "moveToReview": "Move to Review",
       "markReviewed": "Mark as Reviewed"
     }
+  },
+  "readingLevels": {
+    "preReader": {
+      "title": "Pré-leitor",
+      "desc": "Preparando-se para ler com apoio de imagens",
+      "educational": "Baseado em habilidades de pré-alfabetização e palavras Dolch Pré-Primer"
+    },
+    "beginner": {
+      "title": "Iniciante",
+      "desc": "Aprendendo palavras básicas e frases simples",
+      "educational": "Usa palavras visuais Dolch Primer e da 1ª série (220 palavras mais comuns)"
+    },
+    "developing": {
+      "title": "Em desenvolvimento",
+      "desc": "Construindo confiança e fluência na leitura",
+      "educational": "Incorpora vocabulário da 2ª-3ª série com foco na compreensão de leitura"
+    },
+    "independent": {
+      "title": "Independente",
+      "desc": "Lendo livros de capítulos independentemente",
+      "educational": "Nível da 4ª-5ª série com estruturas de frases avançadas"
+    },
+    "advanced": {
+      "title": "Avançado",
+      "desc": "Dominando histórias complexas e vocabulário",
+      "educational": "6ª-10ª série com vocabulário sofisticado e temas"
+    },
+    "gentleGuidance": "Muitas crianças de {age} anos gostam de histórias {level}",
+    "choiceEmphasis": "Escolha o que parecer mais divertido e confortável",
+    "noWrongChoice": "Não há escolha errada - vamos torná-la perfeita para você"
   }
 }

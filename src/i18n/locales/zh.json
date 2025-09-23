@@ -784,6 +784,36 @@
       "moveToReview": "Move to Review",
       "markReviewed": "Mark as Reviewed"
     }
+  },
+  "readingLevels": {
+    "preReader": {
+      "title": "学前阅读",
+      "desc": "在图像支持下准备阅读",
+      "educational": "基于识字前技能和Dolch预备词汇"
+    },
+    "beginner": {
+      "title": "初学者",
+      "desc": "学习基本单词和简单句子",
+      "educational": "使用Dolch初级和一年级常见词汇（220个最常用词汇）"
+    },
+    "developing": {
+      "title": "发展中",
+      "desc": "建立阅读信心和流畅性",
+      "educational": "包含二至三年级词汇，重点关注阅读理解"
+    },
+    "independent": {
+      "title": "独立",
+      "desc": "独立阅读章节书籍",
+      "educational": "四至五年级水平，具有高级句子结构"
+    },
+    "advanced": {
+      "title": "高级",
+      "desc": "掌握复杂故事和词汇",
+      "educational": "六至十年级，具有复杂词汇和主题"
+    },
+    "gentleGuidance": "许多{age}岁的孩子喜欢{level}故事",
+    "choiceEmphasis": "选择听起来最有趣和舒适的",
+    "noWrongChoice": "没有错误的选择 - 我们会让它完美适合你"
   }
 }
 
