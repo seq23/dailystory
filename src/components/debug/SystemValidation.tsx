@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Loader2, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { SimpleImageService } from './SimpleImageService';
+import { SimpleImageService } from '@/services/SimpleImageService';
 import { generateSessionIdWithPrefix } from '@/utils/sessionId';
 import { DebugLogger } from '@/services/DebugLogger';
 
@@ -61,31 +61,28 @@ export const SystemValidation: React.FC<SystemValidationProps> = () => {
     // Phase 5: Tier progression test
     try {
       DebugLogger.log('performance', 'Testing tier progression...');
-      const tierTestResult = await SimpleImageService.generateImage({
-        pageText: 'A child playing in a garden with colorful flowers.',
-        userInfo: {
+      const tierTestResult = await SimpleImageService.generateStoryImage(
+        'A child playing in a garden with colorful flowers.',
+        {
           name: 'TestChild',
           age: 7,
-          userName: 'test-user',
+          ethnicity: 'mixed',
           avatar: {
-            type: 'human',
-            skinTone: 'medium'
-          },
-          nativeLanguage: 'English'
+            type: 'human'
+          }
         },
-        sessionId: generateSessionIdWithPrefix('test-session'),
-        storyId: generateSessionIdWithPrefix('test-story'),
-        pageNumber: 1,
-        requestId: generateSessionIdWithPrefix('test-req')
-      });
+        generateSessionIdWithPrefix('test-session'),
+        1,
+        false
+      );
 
       if (tierTestResult.success) {
         validationResults.push({
           test: 'Tier Progression (1 → 2.5A-B → 2.5C-D → 4)',
           status: 'pass',
-          message: `Image generated successfully via ${tierTestResult.provider} (Tier ${tierTestResult.tier})`,
+          message: `Image generated successfully via ${tierTestResult.provider || 'unknown'} (Tier ${tierTestResult.tier})`,
           details: {
-            imageURL: tierTestResult.imageURL,
+            imageURL: tierTestResult.url,
             provider: tierTestResult.provider,
             tier: tierTestResult.tier,
             metadata: tierTestResult.metadata
@@ -108,51 +105,48 @@ export const SystemValidation: React.FC<SystemValidationProps> = () => {
       });
     }
 
-    // Phase 5: Emergency fallback test
+    // Phase 5: Health check test
     try {
-      DebugLogger.log('performance', 'Testing emergency fallback...');
-      const emergencyResult = await SimpleImageService.emergencyFallbackTier25C({
-        pageText: 'Emergency test scene with a character walking.',
-        userInfo: {
-          name: 'EmergencyTest',
+      DebugLogger.log('performance', 'Testing system health check...');
+      const healthResult = await SimpleImageService.generateStoryImage(
+        'Health check test scene with a character in a garden.',
+        {
+          name: 'HealthTest',
           age: 6,
-          userName: 'emergency-user',
+          ethnicity: 'mixed',
           avatar: {
-            type: 'human',
-            skinTone: 'light'
-          },
-          nativeLanguage: 'English'
+            type: 'human'
+          }
         },
-        sessionId: generateSessionIdWithPrefix('emergency-session'),
-        storyId: generateSessionIdWithPrefix('emergency-story'),
-        pageNumber: 1,
-        requestId: generateSessionIdWithPrefix('emergency-req')
-      });
+        generateSessionIdWithPrefix('health-session'),
+        1,
+        false
+      );
 
-      if (emergencyResult.success) {
+      if (healthResult.success) {
         validationResults.push({
-          test: 'Emergency Fallback (Direct Tier 2.5C)',
+          test: 'Health Check & Fallback System',
           status: 'pass',
-          message: 'Emergency fallback to Tier 2.5C successful',
+          message: `Health check successful, tier: ${healthResult.tier}`,
           details: {
-            imageURL: emergencyResult.imageURL,
-            provider: emergencyResult.provider,
-            metadata: emergencyResult.metadata
+            imageURL: healthResult.url,
+            tier: healthResult.tier,
+            metadata: healthResult.metadata
           }
         });
       } else {
         validationResults.push({
-          test: 'Emergency Fallback (Direct Tier 2.5C)',
+          test: 'Health Check & Fallback System',
           status: 'fail',
-          message: `Emergency fallback failed: ${emergencyResult.error}`,
-          details: emergencyResult
+          message: `Health check failed: ${healthResult.error}`,
+          details: healthResult
         });
       }
     } catch (error) {
       validationResults.push({
-        test: 'Emergency Fallback (Direct Tier 2.5C)',
+        test: 'Health Check & Fallback System',
         status: 'warning',
-        message: `Emergency fallback exception (acceptable if Runware unavailable): ${error instanceof Error ? error.message : 'Unknown error'}`,
+        message: `Health check exception: ${error instanceof Error ? error.message : 'Unknown error'}`,
         details: error
       });
     }
@@ -163,42 +157,36 @@ export const SystemValidation: React.FC<SystemValidationProps> = () => {
       const sessionId = generateSessionIdWithPrefix('session-persistence-test');
       
       // Generate first image with session
-      const firstResult = await SimpleImageService.generateImage({
-        pageText: 'A brave young explorer discovers a magical forest.',
-        userInfo: {
+      const firstResult = await SimpleImageService.generateStoryImage(
+        'A brave young explorer discovers a magical forest.',
+        {
           name: 'SessionTestChild',
           age: 8,
-          userName: 'session-test-user',
+          ethnicity: 'mixed',
           avatar: {
-            type: 'human',
-            skinTone: 'medium'
-          },
-          nativeLanguage: 'English'
+            type: 'human'
+          }
         },
         sessionId,
-        storyId: generateSessionIdWithPrefix('session-story'),
-        pageNumber: 1,
-        requestId: generateSessionIdWithPrefix('session-req-1')
-      });
+        1,
+        false
+      );
 
       // Generate second image with same session
-      const secondResult = await SimpleImageService.generateImage({
-        pageText: 'The same explorer continues deeper into the enchanted woods.',
-        userInfo: {
+      const secondResult = await SimpleImageService.generateStoryImage(
+        'The same explorer continues deeper into the enchanted woods.',
+        {
           name: 'SessionTestChild',
           age: 8,
-          userName: 'session-test-user',
+          ethnicity: 'mixed',
           avatar: {
-            type: 'human',
-            skinTone: 'medium'
-          },
-          nativeLanguage: 'English'
+            type: 'human'
+          }
         },
         sessionId,
-        storyId: generateSessionIdWithPrefix('session-story'),
-        pageNumber: 2,
-        requestId: generateSessionIdWithPrefix('session-req-2')
-      });
+        2,
+        false
+      );
 
       if (firstResult.success && secondResult.success) {
         validationResults.push({
@@ -207,8 +195,8 @@ export const SystemValidation: React.FC<SystemValidationProps> = () => {
           message: 'Session maintained consistency across multiple pages',
           details: {
             sessionId,
-            firstImage: firstResult.imageURL,
-            secondImage: secondResult.imageURL,
+            firstImage: firstResult.url,
+            secondImage: secondResult.url,
             consistencyMaintained: true
           }
         });
