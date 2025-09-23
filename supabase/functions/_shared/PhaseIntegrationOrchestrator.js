@@ -304,8 +304,27 @@ export class PhaseIntegrationOrchestrator {
           const supabase = await import('https://esm.sh/@supabase/supabase-js@2.57.4').then(mod => 
             mod.createClient(Deno.env.get('SUPABASE_URL'), Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY'))
           );
+          // Create complete avatarIdentity for AI scene generation
+          const avatarIdentity = {
+            type: userInfo?.avatar?.type || userInfo?.avatarType || 'child',
+            skinTone: userInfo?.appearance?.skinTone || userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium',
+            hairColor: userInfo?.appearance?.hairColor || userInfo?.hairColor || userInfo?.avatar?.hairColor,
+            culturalProfile: ethnicity,
+            nativeLanguage: userInfo?.nativeLanguage || userInfo?.language || 'en',
+            name: characterName
+          };
+
           const { data: aiResult, error: aiError } = await supabase.functions.invoke('ai-visual-scene-creator', {
-            body: { pageText: storyText, userInfo, sessionId, pageNumber: 1 }
+            body: { 
+              pageText: storyText, 
+              userInfo, 
+              sessionId, 
+              pageNumber: 1,
+              avatarIdentity,
+              culturalBundle,
+              requestId: `tier1-${sessionId}`,
+              source: 'tier1_orchestrator'
+            }
           });
           
           // CRITICAL FIX: Check for aiError OR missing primaryScene and escalate to Tier 2.5A
@@ -348,22 +367,30 @@ export class PhaseIntegrationOrchestrator {
       // Cultural Enhancements
       const culturalEnhancements = await this.getCulturalEnhancements(userInfo, sessionId);
       
-      // STEP 1: Detect secondary characters from story text
-      const detectionContext = { sessionId, pageNumber: 1, userInfo };
-      const characterDetection = UnifiedCharacterDescriptor.detectAllCharacters(storyText || '', detectionContext);
-      const detectedSecondaryChars = characterDetection.secondaryCharacters || [];
+      // STEP 1: Detect secondary characters using Character Consistency Service
+      console.log(`🔍 TIER 1: Detecting secondary characters from story text`);
+      const detectedSecondaryChars = await this.characterConsistencyService.detectSecondaryCharacters(
+        sessionId, 
+        storyText || '', 
+        1
+      );
       
-      // STEP 2: Generate seeds for each detected secondary character  
+      // STEP 2: Generate seeds for each detected secondary character using Character Consistency Service
       const secondaryCharacters = [];
       for (const detectedChar of detectedSecondaryChars) {
         try {
           const charSeed = await this.characterConsistencyService.getSecondaryCharacterSeed(
             sessionId, 
             detectedChar.name || detectedChar.displayName || 'secondary character', 
-            detectedChar.type || detectedChar.relationshipType || 'companion',
-            userInfo
+            detectedChar.type || detectedChar.relationshipType || 'secondary_character'
           );
-          if (charSeed) secondaryCharacters.push(charSeed);
+          if (charSeed) {
+            secondaryCharacters.push({
+              name: detectedChar.name,
+              description: charSeed,
+              type: detectedChar.type
+            });
+          }
         } catch (error) {
           console.warn(`Failed to generate seed for secondary character ${detectedChar.name}:`, error);
         }
@@ -672,9 +699,28 @@ export class PhaseIntegrationOrchestrator {
         );
       }
       
+      // Create complete avatarIdentity for AI scene generation
+      const avatarIdentity = {
+        type: userInfo?.avatar?.type || userInfo?.avatarType || 'child',
+        skinTone: userInfo?.appearance?.skinTone || userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium',
+        hairColor: userInfo?.appearance?.hairColor || userInfo?.hairColor || userInfo?.avatar?.hairColor,
+        culturalProfile: userInfo?.nativeLanguage !== 'en' ? 'multicultural' : '',
+        nativeLanguage: userInfo?.nativeLanguage || userInfo?.language || 'en',
+        name: userInfo?.name || userInfo?.childName || 'Child'
+      };
+
+      // Get cultural bundle for complete context
+      const culturalBundle = getCulturalBundle(userInfo, sessionId, avatarIdentity.skinTone);
+
       const sceneResponse = await this.supabase.functions.invoke('ai-visual-scene-creator', {
         body: { 
+          pageText: storyText,
           storyText, 
+          userInfo,
+          sessionId,
+          pageNumber: 1,
+          avatarIdentity,
+          culturalBundle,
           includeFullSchema: true,
           requestId: `orchestrator-${sessionId}`,
           source: 'orchestrator'
