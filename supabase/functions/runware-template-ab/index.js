@@ -1607,23 +1607,13 @@ async function handleRequest(req) {
       // Tier 2.5B: Basic processing with reduced features
       console.log('🚀 Processing Tier 2.5B: Basic Template with reduced features');
       
-      // Try orchestrator for basic enhancement, fallback to simple extraction
-      const orchestratedData = await processWithOrchestrator(sessionId, storyText, userInfo, avatarIdentity, pageNumber);
-      let extractedScene;
-      let basicCharacterData = '';
+      // FIXED: Direct simple scene extraction (no Tier 1 orchestrator dependency)
+      const extractedScene = extractSimpleScene(storyText);
+      console.log(`🎯 TIER 2.5B Direct Scene Extraction: "${extractedScene}"`);
+      console.log(`🔍 [DEBUG] Tier 2.5B Direct Scene - Action spans captured for: "${storyText.substring(0, 100)}..."`);
       
-      if (orchestratedData) {
-        // Use orchestrator's basic prompt enhancement
-        extractedScene = orchestratedData.basicScene || extractSimpleScene(storyText);
-        if (orchestratedData.characterData?.basicAppearance) {
-          basicCharacterData = orchestratedData.characterData.basicAppearance;
-        }
-        console.log(`🎯 TIER 2.5B Orchestrated Scene: "${extractedScene}"`);
-      } else {
-        // Nuclear fallback: Use simple scene extraction
-        extractedScene = extractSimpleScene(storyText);
-        console.log(`🎯 TIER 2.5B Nuclear Scene Extraction: "${extractedScene}"`);
-      }
+      // Basic character data for Tier 2.5B (no orchestrator dependency)
+      let basicCharacterData = '';
       
       console.log(`🔍 [DEBUG] Tier 2.5B Scene Extraction Result: "${typeof extractedScene === 'object' && extractedScene?.scene ? extractedScene.scene : extractedScene}"`);
       console.log(`🔍 [DEBUG] Tier 2.5B Action Validation Input: ${JSON.stringify({

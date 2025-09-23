@@ -148,9 +148,11 @@ npm run dev
 
 ## 📚 Documentation
 
-- [`docs/BUSINESS_LOGIC_DOCUMENTATION.md`](./docs/BUSINESS_LOGIC_DOCUMENTATION.md): Detailed business logic and user flows
-- [`docs/EMERGENCY_EDGE_FUNCTION_THROTTLING.md`](./docs/EMERGENCY_EDGE_FUNCTION_THROTTLING.md): Critical throttling measures
-- [`supabase/functions/_shared/SYSTEM_ARCHITECTURE.md`](./supabase/functions/_shared/SYSTEM_ARCHITECTURE.md): Technical architecture details
+- [`docs/COMPLETE_SYSTEM_ARCHITECTURE_AND_IMPLEMENTATION.md`](./docs/COMPLETE_SYSTEM_ARCHITECTURE_AND_IMPLEMENTATION.md): Master reference for business logic, architecture, and current system status
+- [`docs/TECHNICAL_IMPLEMENTATION_COMPLETE_REFERENCE.md`](./docs/TECHNICAL_IMPLEMENTATION_COMPLETE_REFERENCE.md): Master reference for template system, scene extraction, and nuclear independence  
+- [`docs/BUSINESS_LOGIC_DOCUMENTATION.md`](./docs/BUSINESS_LOGIC_DOCUMENTATION.md): Focused business rules and user flows
+- [`docs/API_REFERENCE_UPDATED.md`](./docs/API_REFERENCE_UPDATED.md): Complete API documentation
+- [`docs/DEVELOPER_ONBOARDING.md`](./docs/DEVELOPER_ONBOARDING.md): Setup and development guide
 
 ## 🚀 Technologies Used
 
