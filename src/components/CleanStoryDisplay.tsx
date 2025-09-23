@@ -5,7 +5,7 @@ import { useStoryLogic } from "@/hooks/useStoryLogic";
 import { useNavigationPersistence } from "@/hooks/useNavigationPersistence";
 import { ImageDeduplicationService } from "@/services/imageDeduplicationService";
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { DebugLogger } from '@/services/DebugLogger';
 import { ManagedTimers } from '@/utils/TimerManager';
 import { performanceManager } from '@/services/PerformanceManager';
@@ -172,7 +172,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   onPageImagesUpdate, // CRITICAL: Extract callback for image updates
 }) => {
   // ERROR-023 FIX: Defensive userInfo validation with complete fallback
-  const safeUserInfo: UserInfo = userInfo || {
+  // Create stable reference to prevent infinite re-renders
+  const safeUserInfo: UserInfo = useMemo(() => userInfo || {
     name: 'Reader',
     age: 8,
     grade: 'K' as const,
@@ -183,7 +184,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     avatar: { type: 'boy' as const, skinTone: 'medium' as const },
     specialRequest: '',
     // Optional fields remain undefined to maintain honesty
-  };
+  }, [userInfo?.name, userInfo?.age, userInfo?.specialRequest, userInfo?.difficultyLevel, userInfo?.expertGradeLevel]);
 
   const { t } = useTranslation();
   const { toast } = useToast();
@@ -1517,8 +1518,10 @@ useEffect(() => {
     if (duration > 16) {
       DebugLogger.warn('performance', `Slow timer persistence: ${duration.toFixed(2)}ms`);
     }
-  }, 2000);
-  return () => clearInterval(iv);
+  }, 2000, 'CleanStoryDisplay');
+  return () => {
+    if (iv) ManagedTimers.clearTimer(iv);
+  };
 }, [isPremium, cachedUserId]);
 
 useEffect(() => {
@@ -1682,12 +1685,23 @@ useEffect(() => {
 }, [isPremium, timeRemaining, isTimerVisible]);
 
 
+// Add initialization guard
+const isInitializingRef = useRef(false);
+
 const initializeStory = async () => {
+  // Prevent multiple simultaneous initializations
+  if (isInitializingRef.current) {
+    DebugLogger.log('story', 'initializeStory: Already initializing, skipping');
+    return;
+  }
+  
   // Simple check to prevent double generation
   if (isStoryStable && story.length > 0) {
     setIsLoading(false);
     return;
   }
+  
+  isInitializingRef.current = true;
   
   DebugLogger.log('story', 'initializeStory start', { 
     isPremium, 
@@ -2098,6 +2112,9 @@ const initializeStory = async () => {
     DebugLogger.error('story', 'Story initialization failed', error);
     setError('Failed to create your story. Please try again.');
   } finally {
+    // Always clear initialization guard
+    isInitializingRef.current = false;
+    
     const elapsed = Date.now() - loaderStartRef.current;
     const remaining = Math.max(0, LOADER_MIN_MS - elapsed);
     DebugLogger.log('story', 'initializeStory finished', { 
