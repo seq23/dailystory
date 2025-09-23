@@ -94,8 +94,23 @@ serve(async (req) => {
   // POST handling with dynamic import
   try {
     const { default: handleRequest } = await import("./index.js");
-    const out = await handleRequest(req);
-    return withCors(asResponse(out));
+    
+    try {
+      const out = await handleRequest(req);
+      return withCors(asResponse(out));
+    } catch (error) {
+      console.error(`❌ [${SERVICE_NAME}] Unhandled error:`, error);
+      const errRes = new Response(
+        JSON.stringify({
+          error: "Internal server error",
+          message: error?.message ?? String(error),
+          service: SERVICE_NAME,
+          timestamp: new Date().toISOString(),
+        }),
+        { status: 500, headers: { "Content-Type": "application/json" } }
+      );
+      return withCors(errRes);
+    }
   } catch (importError) {
     console.error(`❌ [${SERVICE_NAME}] Import error:`, importError);
     const errRes = new Response(
@@ -106,18 +121,6 @@ serve(async (req) => {
         timestamp: new Date().toISOString(),
       }),
       { status: 503, headers: { "Content-Type": "application/json" } }
-    );
-    return withCors(errRes);
-  } catch (error) {
-    console.error(`❌ [${SERVICE_NAME}] Unhandled error:`, error);
-    const errRes = new Response(
-      JSON.stringify({
-        error: "Internal server error",
-        message: error?.message ?? String(error),
-        service: SERVICE_NAME,
-        timestamp: new Date().toISOString(),
-      }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
     );
     return withCors(errRes);
   }
