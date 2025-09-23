@@ -13,7 +13,7 @@ import { InputSanitizer } from "@/utils/inputSanitizer";
 import { validateTheme } from "@/utils/themeValidation";
 import { spellcheckService } from "@/services/spellcheckService";
 import { supabase } from "@/integrations/supabase/client";
-import { ProductionLogging } from '@/services/ProductionLogger';
+import { DebugLogger } from '@/services/DebugLogger';
 import { useValidationOnSubmit } from "@/hooks/useValidationOnSubmit";
 import { ValidationFeedback } from "@/components/ValidationFeedback";
 import type { UserInfo, Avatar } from "@/types";

@@ -11,7 +11,6 @@ import { countCharacters, analyzeCharacters, type CharacterAnalysis } from '@/ut
 import { showTestToast, clearAllTestingToasts, showTestSummaryToast } from '@/utils/testingToasts';
 import type { UserInfo, ExpertGradeLevel } from '@/types';
 import { DebugLogger } from '@/services/DebugLogger';
-import { DebugLogger } from '@/services/DebugLogger';
 
 interface ValidationTestResult {
   gradeLevel: ExpertGradeLevel;

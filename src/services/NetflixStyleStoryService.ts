@@ -46,7 +46,6 @@ import { RepairService } from './repairService';
 import { NetflixRetryService } from './NetflixRetryService';
 import { NetflixSessionManager } from './NetflixSessionManager';
 import { DebugLogger } from '@/services/DebugLogger';
-import { DebugLogger } from '@/services/DebugLogger';
 
 export interface NetflixStoryResult {
   content: string[];

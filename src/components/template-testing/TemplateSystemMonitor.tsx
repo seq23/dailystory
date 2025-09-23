@@ -14,7 +14,7 @@ import { TemplateMonitoringService } from '@/services/TemplateMonitoringService'
 import { TemplateValidationService } from '@/services/TemplateValidationService';
 import { PlaceholderValidationService } from '@/services/PlaceholderValidationService';
 import { Activity, AlertTriangle, CheckCircle, Clock, Zap } from 'lucide-react';
-import { ProductionLogging } from '@/services/ProductionLogger';
+import { DebugLogger } from '@/services/DebugLogger';
 
 interface MonitoringData {
   systemHealth: any;

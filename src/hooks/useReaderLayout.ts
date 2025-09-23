@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { DebugLogger } from "@/services/DebugLogger";
-import { ProductionLogging } from '@/services/ProductionLogger';
 
 export type ReaderLayout = "modern" | "classic" | "split";
 
@@ -93,7 +92,7 @@ export function useReaderLayout(): UseReaderLayoutResult {
     setLayout("classic");
     setOverrideActive(true);
     // Minimal telemetry for debugging
-    if (why) ProductionLogging.debug('UI', `ReaderLayout fallback to classic due to: ${why}`, 'useReaderLayout');
+    if (why) DebugLogger.log('ui', `ReaderLayout fallback to classic due to: ${why}`);
   };
 
   const overrideLayout = (newLayout: ReaderLayout | null) => {
@@ -103,7 +102,7 @@ export function useReaderLayout(): UseReaderLayoutResult {
         setLayout(newLayout);
         setOverrideActive(true);
         setReason(`Developer override: ${newLayout}`);
-        ProductionLogging.debug('UI', `ReaderLayout developer override to: ${newLayout}`, 'useReaderLayout');
+        DebugLogger.log('ui', `ReaderLayout developer override to: ${newLayout}`);
       } else {
         // Clear override and recalculate
         localStorage.removeItem("reader:layout:runtime");
@@ -128,7 +127,7 @@ export function useReaderLayout(): UseReaderLayoutResult {
         }
         
         setLayout(autoLayout);
-        ProductionLogging.debug('UI', `ReaderLayout reset to auto-detected: ${autoLayout}`, 'useReaderLayout');
+        DebugLogger.log('ui', `ReaderLayout reset to auto-detected: ${autoLayout}`);
       }
     } catch (error) {
       DebugLogger.warn('ui', '[ReaderLayout] Override failed:', error);

@@ -2,7 +2,6 @@ import { useState, useCallback } from 'react';
 import { ImageDeduplicationService } from '@/services/imageDeduplicationService';
 import { SimpleImageService } from '@/services/SimpleImageService';
 import { DebugLogger } from '@/services/DebugLogger';
-import { ProductionLogging } from '@/services/ProductionLogger';
 import { isAPIResponse } from '@/utils/typeGuards';
 
 interface ImageGenerationResult {
@@ -46,7 +45,7 @@ export const useImageGenerationWithDeduplication = (sessionId: string) => {
       // Cache the generated image
       ImageDeduplicationService.cacheImage(prompt, result.imageURL, sessionId);
 
-      ProductionLogging.info('IMAGE', 'New image generated and cached', 'useImageGenerationWithDeduplication', {
+      DebugLogger.log('image', 'New image generated and cached', {
         pageNumber,
         generationTime,
         sessionId
@@ -59,7 +58,7 @@ export const useImageGenerationWithDeduplication = (sessionId: string) => {
       };
 
     } catch (error) {
-      ProductionLogging.error('IMAGE', 'Image generation failed', 'useImageGenerationWithDeduplication', { 
+      DebugLogger.error('image', 'Image generation failed', { 
         error, 
         prompt, 
         pageNumber 

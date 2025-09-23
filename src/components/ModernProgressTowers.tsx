@@ -263,7 +263,7 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
   const handleToggle = () => {
     const newExpanded = !isExpanded;
     setIsExpanded(newExpanded);
-    try { ProductionLogging.debug('UI', 'ProgressTowers toggle', 'ModernProgressTowers', { isExpanded: newExpanded }); } catch {}
+    try { DebugLogger.log('ui', 'ProgressTowers toggle', { isExpanded: newExpanded }); } catch {}
     if (newExpanded) {
       scheduleAutoCollapse();
     }
@@ -287,7 +287,7 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
   const handleDismiss = () => {
     try { localStorage.setItem('progressTowersEnabled', '0'); } catch {}
     setEnabled(false);
-    try { ProductionLogging.debug('UI', 'ProgressTowers dismissed', 'ModernProgressTowers'); } catch {}
+    try { DebugLogger.log('ui', 'ProgressTowers dismissed'); } catch {}
     window.dispatchEvent(new CustomEvent('progressTowersToggle', { detail: false }));
   };
 
@@ -314,7 +314,7 @@ export const ModernProgressTowers: React.FC<ModernProgressTowersProps> = ({
               onClick={() => {
                 try { localStorage.setItem('progressTowersEnabled', '1'); } catch {}
                 setEnabled(true);
-                try { ProductionLogging.debug('UI', 'ProgressTowers re-enabled via trophy', 'ModernProgressTowers'); } catch {}
+                try { DebugLogger.log('ui', 'ProgressTowers re-enabled via trophy'); } catch {}
                 window.dispatchEvent(new CustomEvent('progressTowersToggle', { detail: true }));
               }}
               className={cn(

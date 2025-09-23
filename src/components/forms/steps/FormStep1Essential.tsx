@@ -9,7 +9,7 @@ import { Sparkles, ArrowRight, AlertCircle } from "lucide-react";
 import { MobileTooltip } from "@/components/MobileTooltip";
 import { InputSanitizer } from "@/utils/inputSanitizer";
 import { spellcheckService } from "@/services/spellcheckService";
-import { ProductionLogging } from '@/services/ProductionLogger';
+import { DebugLogger } from '@/services/DebugLogger';
 import { FormProgressIndicator } from "../shared/FormProgressIndicator";
 import { useLanguageSync } from "@/hooks/useLanguageSync";
 import type { UserInfo, Grade, LanguageCode } from "@/types";

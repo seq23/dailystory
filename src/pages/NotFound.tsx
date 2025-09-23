@@ -1,12 +1,12 @@
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
-import { ProductionLogging } from "@/services/ProductionLogger";
+import { DebugLogger } from '@/services/DebugLogger';
 
 const NotFound = () => {
   const location = useLocation();
 
   useEffect(() => {
-    ProductionLogging.error('NAVIGATION', 'User attempted to access non-existent route', 'NotFound', { path: location.pathname });
+    DebugLogger.error('ui', 'User attempted to access non-existent route', { path: location.pathname });
   }, [location.pathname]);
 
   return (
