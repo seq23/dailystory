@@ -309,7 +309,15 @@ if (props.forceModal || isMobileOrTablet) {
           className={`${props.className} inline ${shouldBeInteractive ? 'cursor-pointer underline decoration-dotted decoration-2 underline-offset-2 hover:decoration-primary' : ''} ${props.isPremium && shouldBeInteractive ? 'interactive-word-premium-hover' : ''}`}
           data-difficulty-level={difficultyLevel}
           data-highlight-enabled={difficultyLevel <= 2}
-          style={{ fontSize: 'inherit', lineHeight: 'inherit', display: 'inline' }}
+          style={{ 
+            fontSize: 'inherit', 
+            lineHeight: 'inherit', 
+            display: 'inline', 
+            wordBreak: 'keep-all',
+            overflowWrap: 'normal',
+            hyphens: 'none',
+            whiteSpace: 'nowrap'
+          }}
         >
           {props.word}
         </span>

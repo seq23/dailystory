@@ -14,8 +14,9 @@
   word-spacing: 0.05em;
   letter-spacing: 0.005em;
   max-width: 100%;
-  overflow-wrap: break-word;
-  hyphens: auto;
+  overflow-wrap: normal;
+  word-break: keep-all;
+  hyphens: none;
   white-space: normal;
   
   /* Container styles */
@@ -89,11 +90,14 @@
   font-weight: 400;
 }
 
-/* Container sizing without conflicts */
+/* Container sizing without conflicts - NO WORD BREAKING */
 .story-container {
   max-width: min(90vw, 800px);
   margin: 0 auto;
   padding: 0 1rem;
+  word-break: keep-all;
+  overflow-wrap: normal;
+  hyphens: none;
 }
 
 /* Mobile-specific optimizations */

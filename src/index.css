@@ -19,10 +19,12 @@
   width: 6px;
 }
 
-/* Word breaking and hyphenation */
-.hyphens-auto {
-  hyphens: auto;
-  word-break: break-word;
+/* Word preservation for kid readers - NO WORD SPLITTING */
+.no-word-break {
+  word-break: keep-all;
+  overflow-wrap: normal;
+  hyphens: none;
+  white-space: normal;
 }
 
 /* Viewport positioning utilities */
