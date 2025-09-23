@@ -3,6 +3,7 @@ import { RunwareErrorHandler } from "../_shared/runwareErrorHandler.ts";
 // Handles Level A (basic shapes/colors) and Level B (simple scenes)
 // Lightweight, fast deployment - optimized for simple template generation with character consistency
 
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
 import { callRunwareAPIWithRetry } from './callRunwareAPIWithRetry.js';
 import { 
   getHairBySkintone, 
@@ -13,6 +14,12 @@ import {
   getCulturalBundle 
 } from '../_shared/StaticDataCache.js';
 import { tier25vocabulary } from '../_shared/tier25Vocabulary.js';
+
+// Initialize Supabase client for orchestrator communication
+const supabase = createClient(
+  Deno.env.get('SUPABASE_URL'),
+  Deno.env.get('SUPABASE_ANON_KEY')
+);
 
 // ============= NUCLEAR INDEPENDENCE: COMPLETE STYLE FRAMEWORKS =============
 const NUCLEAR_HARDCODED_STYLE_FRAMEWORKS = {
@@ -1473,10 +1480,13 @@ async function handleRequest(req) {
   }
 
   try {
+    // Generate requestId for this function call
+    const requestId = Math.random().toString(36).substring(2, 10);
+    
     // FLEXIBLE PAYLOAD HANDLING: Handle nested {bundle: {...}, config: {...}} OR flat payloads
     const rawPayload = await req.json();
-    console.log('🔍 Template AB: Request payload keys:', Object.keys(rawPayload));
-    console.log('🔍 Template AB: Full payload structure:', JSON.stringify(rawPayload, null, 2));
+    console.log(`🔍 [${requestId}] Template AB: Request payload keys:`, Object.keys(rawPayload));
+    console.log(`🔍 [${requestId}] Template AB: Full payload structure:`, JSON.stringify(rawPayload, null, 2));
     
     // Detect nested payload structure from ImageTierTester
     let payload;
@@ -1608,27 +1618,9 @@ async function handleRequest(req) {
       // Tier 2.5B: Basic processing with reduced features
       console.log('🚀 Processing Tier 2.5B: Basic Template with reduced features');
       
-      // Tier 2.5B should use orchestrator services (not nuclear independent)
-      let extractedScene;
-      try {
-        console.log(`🔄 [${requestId}] Tier 2.5B calling orchestrator for scene extraction`);
-        const orchestratorResponse = await supabase.functions.invoke('runware-generate-image', {
-          body: {
-            bundle: { storyText, pageText: storyText, userInfo, sessionId, pageNumber },
-            config: { tier25B: true, sceneExtractionOnly: true }
-          }
-        });
-        
-        if (orchestratorResponse.data?.extractedScene) {
-          extractedScene = orchestratorResponse.data.extractedScene;
-          console.log(`✅ [${requestId}] Tier 2.5B orchestrator scene: "${extractedScene}"`);
-        } else {
-          throw new Error('Orchestrator scene extraction failed');
-        }
-      } catch (orchestratorError) {
-        console.warn(`⚠️ [${requestId}] Tier 2.5B orchestrator failed, using fallback: ${orchestratorError.message}`);
-        extractedScene = extractSimpleScene(storyText);
-      }
+      // Tier 2.5B: Direct scene processing (called by orchestrator, not calling orchestrator)
+      console.log(`🎯 [${requestId}] Tier 2.5B: Processing scene directly`);
+      const extractedScene = extractSimpleScene(storyText);
       console.log(`🎯 TIER 2.5B Direct Scene Extraction: "${extractedScene}"`);
       console.log(`🔍 [DEBUG] Tier 2.5B Direct Scene - Action spans captured for: "${storyText.substring(0, 100)}..."`);
       
