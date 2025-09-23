@@ -62,12 +62,6 @@ export class AvatarUtils {
       return typeMapping.medium || this.DEFAULT_FALLBACK;
     }
 
-    // Success: Log successful avatar URL generation
-    DebugLogger.log('ui', 'Avatar URL generated successfully', { 
-      type: avatarData.type, 
-      skinTone: avatarData.skinTone, 
-      url: avatarUrl 
-    });
     return avatarUrl;
   }
 
