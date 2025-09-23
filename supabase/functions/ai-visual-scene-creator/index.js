@@ -5,6 +5,8 @@ import {
   getCulturalBundle, 
   shouldApplyCulturalEnhancements 
 } from '../_shared/StaticDataCache.js';
+import { UnifiedPlaceholderResolver } from '../_shared/UnifiedPlaceholderResolver.js';
+import { getStyleFramework } from '../_shared/styleFrameworks.js';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
 
 // Initialize Supabase client for internal function calls
@@ -702,10 +704,17 @@ OBJECTIVE: Create a vivid, child-friendly visual scene that captures the story m
 JSON RESPONSE:
 {
   "primaryScene": "Detailed visual description with setting, character, and action (50+ characters)",
-  "setting": "Location description",
-  "action": "Character activity", 
+  "backgroundColor": "Background color and atmosphere",
+  "lighting": "Lighting conditions and mood",
+  "composition": "Visual arrangement and framing",
+  "setting": "Location and environment",
   "mood": "Emotional atmosphere",
-  "pose": "Character position/pose"
+  "style": "Artistic style and technique",
+  "secondaryCharacters": {
+    "humans": ["array of secondary human characters"],
+    "pets": ["array of animal companions"]
+  },
+  "objects": ["array of significant objects in scene"]
 }
 
 RULES:
@@ -766,35 +775,22 @@ RULES:
       console.warn(`⚠️ [${requestId}] Character consistency failed, continuing without it:`, characterError);
     }
 
-    // Step 3: Inline style framework based on difficulty
-    let styleFramework = '';
-    if (userInfo?.age) {
-      if (userInfo.age <= 6) {
-        styleFramework = 'Simple, cartoonish style with bright primary colors, rounded shapes, minimal detail';
-      } else if (userInfo.age <= 10) {
-        styleFramework = 'Colorful illustration style with moderate detail, vibrant colors, child-friendly characters';
-      } else {
-        styleFramework = 'Detailed illustration style with rich colors, realistic proportions, engaging composition';
-      }
-    } else {
-      styleFramework = 'Child-friendly illustration style with bright, engaging colors';
-    }
+    // Step 3: Get proper style framework using difficulty
+    const difficulty = userInfo?.difficulty || 'medium';
+    const styleFrameworkData = getStyleFramework(difficulty);
+    const styleFramework = styleFrameworkData.frameworkPrompt;
+    const negativePrompt = styleFrameworkData.negativePrompt;
 
-    // Step 4: Inline African American features based on ethnicity/skinTone
-    let africanAmericanFeatures = '';
-    if (userInfo?.avatar?.skinTone && 
-        (userInfo.avatar.skinTone.toLowerCase().includes('dark') || 
-         userInfo.avatar.skinTone.toLowerCase().includes('brown') ||
-         userInfo.avatar.skinTone.toLowerCase().includes('african'))) {
-      africanAmericanFeatures = 'African American character features with natural hair textures, warm skin tones, culturally authentic representation';
-    }
+    // Step 4: Get cultural enhancements using proper system
+    const placeholderResolver = new UnifiedPlaceholderResolver();
+    const culturalEnhancements = placeholderResolver.resolveCulturalEnhancements(userInfo, sessionId);
 
-    // Step 5: Build enhancement array
+    // Step 5: Build comprehensive prompt with cultural enhancements and style framework
     const enhancementArray = [
       parsedResponse.primaryScene,
       characterAppearance,
-      styleFramework,
-      africanAmericanFeatures
+      culturalEnhancements,
+      styleFramework
     ].filter(item => item && item.trim().length > 0);
 
     const comprehensivePrompt = enhancementArray.join(', ');
@@ -812,6 +808,7 @@ RULES:
           templateComplexity: 'C',
           directModeCall: true,
           enhancedPrompt: comprehensivePrompt,
+          negativePrompt: negativePrompt,
           storyText: storyText,
           enhancedStoryData: { userInfo: userInfo },
           avatarIdentity: userInfo?.avatar
@@ -829,9 +826,10 @@ RULES:
         success: true,
         imageURL: imageResult.imageURL,
         primaryScene: parsedResponse.primaryScene,
+        aiSchema: parsedResponse,
         characterAppearance,
-        styleFramework,
-        africanAmericanFeatures,
+        culturalEnhancements,
+        styleFramework: styleFrameworkData.name,
         tier: 'AI_VISUAL_SCENE_DIRECT',
         provider: 'ai-visual-scene-creator-direct',
         templateType: 'direct-enhanced',
