@@ -103,99 +103,55 @@ export class HealthCheckService {
   }
 
   /**
-   * ERROR-001 FIX: Use HEAD /health to avoid CORS preflights with retry logic
+   * ERROR-001 FIX: Use HEAD /health to avoid CORS preflights
    */
   private static async checkOrchestrator(): Promise<'healthy' | 'network' | 'server'> {
     const url = 'https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/runware-generate-image/health';
     
-    // Retry logic for 503 errors
-    const maxRetries = 3;
-    let lastError: any;
-    
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      try {
-        const isHealthy = await simpleHealth(url, this.HEALTH_CHECK_TIMEOUT);
-        if (isHealthy) {
-          if (attempt > 1) {
-            DebugLogger.log('network', `Orchestrator health recovered on attempt ${attempt}`);
-          }
-          return 'healthy';
-        } else {
-          lastError = new Error(`Health check failed (attempt ${attempt})`);
-          if (attempt === maxRetries) {
-            DebugLogger.warn('network', 'Orchestrator health check failed after retries - treating as server issue');
-            return 'server';
-          }
-          // Wait before retry (exponential backoff)
-          await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt - 1) * 1000));
-        }
-      } catch (error: any) {
-        lastError = error;
-        const isNetworkError = error?.name === 'AbortError' || error?.message?.includes('network');
-        
-        if (attempt === maxRetries) {
-          if (isNetworkError) {
-            DebugLogger.warn('network', 'Orchestrator network error after retries', error);
-            return 'network';
-          } else {
-            DebugLogger.error('network', 'Orchestrator server error after retries', error);
-            return 'server';
-          }
-        }
-        // Wait before retry for errors too
-        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt - 1) * 1000));
+    try {
+      const isHealthy = await simpleHealth(url, this.HEALTH_CHECK_TIMEOUT);
+      if (isHealthy) {
+        return 'healthy';
+      } else {
+        DebugLogger.warn('network', 'Orchestrator health check failed - treating as server issue');
+        return 'server';
+      }
+    } catch (error: any) {
+      const isNetworkError = error?.name === 'AbortError' || error?.message?.includes('network');
+      if (isNetworkError) {
+        DebugLogger.warn('network', 'Orchestrator network error', error);
+        return 'network';
+      } else {
+        DebugLogger.error('network', 'Orchestrator server error', error);
+        return 'server';
       }
     }
-    
-    return 'server'; // Fallback
   }
 
   /**
-   * ERROR-001 FIX: Use HEAD /health for Runware API check with retry logic
+   * ERROR-001 FIX: Use HEAD /health for Runware API check
    */
   private static async checkRunwareAPI(): Promise<'healthy' | 'network' | 'server'> {
     const url = 'https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/runware-generate-image/health';
     
-    // Retry logic for 503 errors
-    const maxRetries = 3;
-    let lastError: any;
-    
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      try {
-        const isHealthy = await simpleHealth(url, this.HEALTH_CHECK_TIMEOUT);
-        if (isHealthy) {
-          if (attempt > 1) {
-            DebugLogger.log('network', `Runware API health recovered on attempt ${attempt}`);
-          }
-          return 'healthy';
-        } else {
-          lastError = new Error(`Health check failed (attempt ${attempt})`);
-          if (attempt === maxRetries) {
-            DebugLogger.warn('network', 'Runware API health check failed after retries - treating as server issue');
-            return 'server';
-          }
-          // Wait before retry (exponential backoff)
-          await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt - 1) * 1000));
-        }
-      } catch (error: any) {
-        lastError = error;
-        const isNetworkError = error?.name === 'AbortError' || error?.message?.includes('network');
-        
-        if (attempt === maxRetries) {
-          if (isNetworkError) {
-            DebugLogger.warn('network', 'Runware API network error after retries', error);
-            return 'network';
-          } else {
-            DebugLogger.error('network', 'Runware API server error after retries', error);
-            return 'server';
-          }
-        }
-        // Wait before retry for errors too
-        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt - 1) * 1000));
+    try {
+      const isHealthy = await simpleHealth(url, this.HEALTH_CHECK_TIMEOUT);
+      if (isHealthy) {
+        return 'healthy';
+      } else {
+        DebugLogger.warn('network', 'Runware API health check failed - treating as server issue');
+        return 'server';
+      }
+    } catch (error: any) {
+      const isNetworkError = error?.name === 'AbortError' || error?.message?.includes('network');
+      if (isNetworkError) {
+        DebugLogger.warn('network', 'Runware API network error', error);
+        return 'network';
+      } else {
+        DebugLogger.error('network', 'Runware API server error', error);
+        return 'server';
       }
     }
-    
-    return 'server'; // Fallback
   }
 
   /**

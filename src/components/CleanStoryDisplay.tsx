@@ -7,7 +7,6 @@ import { ImageDeduplicationService } from "@/services/imageDeduplicationService"
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { DebugLogger } from '@/services/DebugLogger';
-import { componentStabilizer, useStableRender } from '@/utils/componentStabilizer';
 import { ProductionLogging } from '@/services/ProductionLogger';
 import { ManagedTimers } from '@/utils/TimerManager';
 import { performanceManager } from '@/services/PerformanceManager';
@@ -173,23 +172,6 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   currentStory,
   onPageImagesUpdate, // CRITICAL: Extract callback for image updates
 }) => {
-  // Component stability check to prevent excessive re-renders
-  const shouldRender = useStableRender('CleanStoryDisplay', { 
-    maxRerenders: 15, 
-    timeWindow: 10000 
-  });
-
-  if (!shouldRender) {
-    console.warn('CleanStoryDisplay: Excessive re-renders detected, blocking render');
-    return null;
-  }
-  // Cleanup component stability on unmount
-  useEffect(() => {
-    return () => {
-      componentStabilizer.clearComponent('CleanStoryDisplay');
-    };
-  }, []);
-
   // ERROR-023 FIX: Defensive userInfo validation with complete fallback
   const safeUserInfo: UserInfo = userInfo || {
     name: 'Reader',
@@ -4415,7 +4397,4 @@ const handleRestartTimer = () => {
   );
 };
 
-// Memoized export to prevent unnecessary re-renders
-const MemoizedCleanStoryDisplay = React.memo(CleanStoryDisplay);
-
-export default MemoizedCleanStoryDisplay;
+export default CleanStoryDisplay;

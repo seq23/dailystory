@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DebugLogger } from '@/services/DebugLogger';
 import { ProductionLogging } from '@/services/ProductionLogger';
 import { globalResizeService } from '@/services/GlobalResizeService';
@@ -223,14 +223,12 @@ export const ResponsiveStoryHeader = ({
     : (isMobile ? 20 : isTablet ? 40 : 60);
   const displayTitle = storyTitle ? truncateTitle(storyTitle, maxTitleLength) : '';
 
-  // Memoized avatar helper functions to prevent excessive re-renders
-  const avatarUrl = useMemo(() => {
+  // Avatar helper functions
+  const getAvatarUrl = () => {
     return AvatarUtils.getAvatarUrl(userInfo?.avatar);
-  }, [userInfo?.avatar]);
+  };
 
-  const hasSelectedAvatar = useMemo(() => {
-    return AvatarUtils.hasValidAvatarData(userInfo?.avatar);
-  }, [userInfo?.avatar]);
+  const hasSelectedAvatar = AvatarUtils.hasValidAvatarData(userInfo?.avatar);
 
   if (!isPremium && isMobile) {
     return (
@@ -245,7 +243,7 @@ export const ResponsiveStoryHeader = ({
               <Badge variant="guest">{t("welcomeHero.freeTrial", "Free Trial")}</Badge>
               <Avatar className="h-8 w-8">
                 {hasSelectedAvatar && (
-                  <AvatarImage src={avatarUrl} alt={userInfo?.name || "Guest"} />
+                  <AvatarImage src={getAvatarUrl()} alt={userInfo?.name || "Guest"} />
                 )}
                 <AvatarFallback>{userInfo?.name?.charAt(0)?.toUpperCase() || "G"}</AvatarFallback>
               </Avatar>
@@ -576,7 +574,7 @@ export const ResponsiveStoryHeader = ({
                 <div className="flex items-center gap-2 ml-1">
                   <Avatar className="h-7 w-7">
                     {hasSelectedAvatar && (
-                      <AvatarImage src={avatarUrl} alt={userInfo?.name || "Guest"} />
+                      <AvatarImage src={getAvatarUrl()} alt={userInfo?.name || "Guest"} />
                     )}
                     <AvatarFallback>{userInfo?.name?.charAt(0)?.toUpperCase() || "G"}</AvatarFallback>
                   </Avatar>
@@ -589,7 +587,7 @@ export const ResponsiveStoryHeader = ({
                 <div className="flex items-center gap-2 ml-1">
                   <Avatar className="h-8 w-8">
                     {hasSelectedAvatar && (
-                      <AvatarImage src={avatarUrl} alt={userInfo?.name || "Guest"} />
+                      <AvatarImage src={getAvatarUrl()} alt={userInfo?.name || "Guest"} />
                     )}
                     <AvatarFallback>{userInfo?.name?.charAt(0)?.toUpperCase() || "G"}</AvatarFallback>
                   </Avatar>
