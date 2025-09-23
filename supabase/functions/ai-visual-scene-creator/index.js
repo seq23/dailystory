@@ -414,18 +414,8 @@ async function handleRequest(req) {
   const requestId = Math.random().toString(36).substring(2, 10);
   console.log(`🚀 [${requestId}] ai-visual-scene-creator: ${req.method} ${req.url}`);
   
-  // Add boot failure protection
-  try {
-    // Test if we can access critical dependencies
-    const orchestrator = await getPhaseOrchestrator();
-    if (!orchestrator) {
-      console.error(`❌ [${requestId}] Boot failure - PhaseOrchestrator unavailable`);
-      return createCorsErrorResponse('Service temporarily unavailable - orchestrator boot failed', 503);
-    }
-  } catch (bootError) {
-    console.error(`❌ [${requestId}] Boot validation failed:`, bootError);
-    return createCorsErrorResponse('Service boot validation failed', 503);
-  }
+  // Boot validation removed - function ready for orchestrator or direct calls
+  console.log(`🚀 [${requestId}] ai-visual-scene-creator ready`);
 
 
   try {

@@ -1608,8 +1608,27 @@ async function handleRequest(req) {
       // Tier 2.5B: Basic processing with reduced features
       console.log('🚀 Processing Tier 2.5B: Basic Template with reduced features');
       
-      // FIXED: Direct simple scene extraction (no Tier 1 orchestrator dependency)
-      const extractedScene = extractSimpleScene(storyText);
+      // Tier 2.5B should use orchestrator services (not nuclear independent)
+      let extractedScene;
+      try {
+        console.log(`🔄 [${requestId}] Tier 2.5B calling orchestrator for scene extraction`);
+        const orchestratorResponse = await supabase.functions.invoke('runware-generate-image', {
+          body: {
+            bundle: { storyText, pageText: storyText, userInfo, sessionId, pageNumber },
+            config: { tier25B: true, sceneExtractionOnly: true }
+          }
+        });
+        
+        if (orchestratorResponse.data?.extractedScene) {
+          extractedScene = orchestratorResponse.data.extractedScene;
+          console.log(`✅ [${requestId}] Tier 2.5B orchestrator scene: "${extractedScene}"`);
+        } else {
+          throw new Error('Orchestrator scene extraction failed');
+        }
+      } catch (orchestratorError) {
+        console.warn(`⚠️ [${requestId}] Tier 2.5B orchestrator failed, using fallback: ${orchestratorError.message}`);
+        extractedScene = extractSimpleScene(storyText);
+      }
       console.log(`🎯 TIER 2.5B Direct Scene Extraction: "${extractedScene}"`);
       console.log(`🔍 [DEBUG] Tier 2.5B Direct Scene - Action spans captured for: "${storyText.substring(0, 100)}..."`);
       
