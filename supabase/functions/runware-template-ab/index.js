@@ -173,6 +173,20 @@ function getFeatures(skinTone) {
 // PHASE 4: Session management removed - orchestrator handles all session state
 // Session data flows via function parameters only
 
+// Function mappings for 2.5B compatibility - map to existing StaticDataCache functions
+function deriveEthnicityFromAvatar(avatar) {
+  return deriveRegionalEthnicity({ avatar }, avatar?.type || 'child');
+}
+
+function getFacialFeatures(avatar) {
+  const skinTone = avatar?.skinTone || 'medium';
+  return getSkinBySkintone(skinTone);
+}
+
+function deriveLeftoverCulturalData(userInfo) {
+  return getCulturalContext(userInfo?.nativeLanguage || 'en');
+}
+
 // ============= DEFENSIVE ORCHESTRATOR PROCESSING =============
 async function processWithOrchestrator(sessionId, pageText, userInfo, avatarIdentity, pageNumber) {
   const orchestrator = await getPhaseOrchestrator();
@@ -1456,8 +1470,10 @@ async function handleRequest(req) {
       const characterName = userInfo?.name || userInfo?.childName || 'child';
       const age = userInfo?.age || 'young child';
       const ethnicity = deriveRegionalEthnicity(userInfo, avatarIdentity);
-      const hairDescription = getHair(userInfo?.avatar?.skinTone) || 'brown hair';
-      const facialFeatures = getFeatures(userInfo?.avatar?.skinTone) || 'friendly expression';
+      const skinTone = userInfo?.avatar?.skinTone || 'medium';
+      const culturalBundle = getCulturalBundle(userInfo, sessionId, skinTone);
+      const hairDescription = culturalBundle?.hair || getHair(skinTone) || 'brown hair';
+      const facialFeatures = culturalBundle?.features || getSkinBySkintone(skinTone, sessionId) || 'friendly expression';
       
       // Apply pageText summarization for levels 2-4
       const processedStoryText = summarizePageText(storyText, userInfo?.difficulty);
@@ -1471,7 +1487,7 @@ async function handleRequest(req) {
         .replace('{hair}', hairDescription)
         .replace('{features}', facialFeatures)
         .replace('{bundle.culturalEnhancements}', culturalProfile || '')
-        .replace('{semantic_scene}', extractedScene)
+        .replace('{semantic_scene}', extractedScene?.scene || extractedScene)
         .replace('{secondary_characters}', '')
         .replace('{visual_consistency_elements}', '')
         .replace('{setting_context}', '')

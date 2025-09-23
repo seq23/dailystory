@@ -16,6 +16,7 @@ export class PhaseIntegrationOrchestrator {
     this.initialized = false;
     this.characterConsistencyService = characterConsistencyService;
     this.visualDetailTracker = new VisualDetailTracker();
+    this.supabase = null; // Initialize to null for safety
   }
 
 
@@ -637,6 +638,13 @@ export class PhaseIntegrationOrchestrator {
       
       // Step 3: Get primary scene and aiSchema from ai-visual-scene-creator
       console.log(`🔧 ORCHESTRATOR: Calling ai-visual-scene-creator for basePrompt components`);
+      
+      // Initialize supabase client if not already done
+      if (!this.supabase) {
+        this.supabase = await import('https://esm.sh/@supabase/supabase-js@2.57.4').then(mod => 
+          mod.createClient(Deno.env.get('SUPABASE_URL'), Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY'))
+        );
+      }
       
       const sceneResponse = await this.supabase.functions.invoke('ai-visual-scene-creator', {
         body: { 

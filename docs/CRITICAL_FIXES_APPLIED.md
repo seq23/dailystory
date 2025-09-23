@@ -109,5 +109,25 @@ difficultyToEducationalLevel('beginner') === 0 ✅
 **Files Modified**: `src/utils/imageGenerationTrigger.ts`, `src/components/CleanStoryDisplay.tsx`
 **Impact**: Images now generate immediately when stories stabilize, with correct page content matching
 
+### 8. Tier 2.5A and 2.5B Critical Fixes - FIXED ✅
+**Issue**: Multiple critical failures in Tier 2.5A and 2.5B template systems
+**Root Causes**:
+1. **Tier 2.5B Complete Failure**: `PhaseIntegrationOrchestrator` had undefined `this.supabase` causing `Cannot read properties of undefined (reading 'functions')`
+2. **Tier 2.5A "[object Object]" for Action**: Template replacement inserted object instead of `extractedScene.scene` 
+3. **Missing African American Features in 2.5A**: Used generic `getFeatures()` instead of cultural bundle system
+4. **Missing Functions in 2.5B**: Called non-existent functions instead of existing StaticDataCache functions
+
+**Fix Applied:**
+- **PhaseIntegrationOrchestrator Fix**: Added `this.supabase = null` in constructor and lazy initialization in `executeCompleteWorkflow()`
+- **Template 2.5A Object Fix**: Changed `{semantic_scene}` replacement from `extractedScene` to `extractedScene?.scene || extractedScene`
+- **African American Features Fix**: Replaced `getFeatures()` call with proper `getCulturalBundle()` system for dark-skinned users
+- **Function Mapping Fix**: Added function aliases mapping to existing StaticDataCache functions:
+  - `deriveEthnicityFromAvatar()` → `deriveRegionalEthnicity()`
+  - `getFacialFeatures()` → `getSkinBySkintone()`
+  - `deriveLeftoverCulturalData()` → `getCulturalContext()`
+
+**Files Modified**: `supabase/functions/_shared/PhaseIntegrationOrchestrator.js`, `supabase/functions/runware-template-ab/index.js`
+**Impact**: Both Tier 2.5A and 2.5B now work correctly with proper African American cultural features and nuclear independence
+
 *Last Updated: 2025-09-23*
-*Status: All Critical Issues Resolved + AI Visual Scene Creator Fallback + First-load Image Failsafe Implemented*
+*Status: All Critical Issues Resolved + Tier 2.5A/2.5B Template Systems Operational*
