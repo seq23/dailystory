@@ -377,7 +377,7 @@ export class SessionCacheManager {
         clearVisualState: true
       });
         DebugLogger.error('performance', 'clearOnSessionEnd COMPLETED successfully');
-      ProductionLogging.debug('CACHE', 'clearOnSessionEnd COMPLETED successfully', 'SessionCacheManager');
+      DebugLogger.log('performance', 'clearOnSessionEnd COMPLETED successfully');
     } catch (error) {
       DebugLogger.error('performance', 'clearOnSessionEnd FAILED', { error });
     }

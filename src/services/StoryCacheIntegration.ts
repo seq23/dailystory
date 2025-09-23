@@ -3,6 +3,7 @@
  * Manages the bridge between story persistence and image caching
  */
 
+import { DebugLogger } from '@/services/DebugLogger';
 import { EnhancedImageCache } from './enhancedImageCache';
 import { ProductionLogging } from '@/services/ProductionLogger';
 
@@ -50,7 +51,7 @@ export class StoryCacheIntegration {
       generationTimestamps[pageNum] = Date.now();
     }
 
-    ProductionLogging.debug('STORY_CACHE', 'Story images cached', 'StoryCacheIntegration', {
+    DebugLogger.log('story', 'Story images cached', {
       storyHash,
       totalImages: cacheKeys.length,
       sessionId

@@ -1,6 +1,7 @@
 // Static Data Caching Service
 // Caches frequently accessed configuration data to improve performance
 
+import { DebugLogger } from '@/services/DebugLogger';
 import { ProductionLogging } from '@/services/ProductionLogger';
 
 interface CacheEntry<T> {
@@ -163,7 +164,7 @@ export const processAvatarIdentityFromCache = (userInfo: any) => {
   
   // Gender/pronoun processing  
   const avatarType = userInfo?.avatarType || userInfo?.avatar?.type || 'prefer-not-to-answer';
-  ProductionLogging.debug('AVATAR', 'Processing avatar identity', 'StaticDataCache', { avatarType, userInfoStructure: { avatarType: userInfo?.avatarType, avatarNestedType: userInfo?.avatar?.type } });
+  DebugLogger.log('ui', 'Processing avatar identity', { avatarType, userInfoStructure: { avatarType: userInfo?.avatarType, avatarNestedType: userInfo?.avatar?.type } });
   const pronoun = genderMapping.pronouns[avatarType];
   const completeGenderInfo = genderMapping.completeInfo[avatarType];
   

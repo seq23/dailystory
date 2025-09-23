@@ -5,6 +5,7 @@ import { phoneticDictionary } from '@/utils/phoneticDictionary';
 import autoPhonicsFromVocab from '@/data/autoPhonicsFromVocab';
 import phonicsMiniDict from '@/data/phonicsMiniDict';
 import { phoneticRulesEngine } from '@/services/phoneticRulesEngine';
+import { DebugLogger } from '@/services/DebugLogger';
 import { ProductionLogging } from '@/services/ProductionLogger';
 import { ManagedTimers } from '@/utils/TimerManager';
 
@@ -79,7 +80,7 @@ export class SmartPhoneticMapper {
           confidence: 'medium'
         };
       } catch (error) {
-        ProductionLogging.warn('PHONETIC', `Failed to generate phonetics for "${normalized}"`, 'SmartPhoneticMapper', { error });
+        DebugLogger.warn('audio', `Failed to generate phonetics for "${normalized}"`, { error });
         // Fallback to basic pronunciation guess
         mapping = {
           word: normalized,

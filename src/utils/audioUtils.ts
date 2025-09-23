@@ -2,6 +2,7 @@
  * Audio utilities for OpenAI Realtime API
  * Handles PCM encoding, WAV conversion, and audio queue management
  */
+import { DebugLogger } from '@/services/DebugLogger';
 
 export class AudioRecorder {
   private stream: MediaStream | null = null;
@@ -13,7 +14,7 @@ export class AudioRecorder {
 
   async start() {
     try {
-      console.log('🎤 Starting audio recording...');
+      DebugLogger.log('audio', 'Starting audio recording...');
       
       this.stream = await navigator.mediaDevices.getUserMedia({
         audio: {
@@ -40,15 +41,15 @@ export class AudioRecorder {
       this.source.connect(this.processor);
       this.processor.connect(this.audioContext.destination);
       
-      console.log('✅ Audio recording started');
+      DebugLogger.log('audio', 'Audio recording started');
     } catch (error) {
-      console.error('❌ Error accessing microphone:', error);
+      DebugLogger.error('audio', 'Error accessing microphone:', error);
       throw error;
     }
   }
 
   stop() {
-    console.log('🛑 Stopping audio recording...');
+    DebugLogger.log('audio', 'Stopping audio recording...');
     
     if (this.source) {
       this.source.disconnect();
@@ -67,7 +68,7 @@ export class AudioRecorder {
       this.audioContext = null;
     }
     
-    console.log('✅ Audio recording stopped');
+    DebugLogger.log('audio', 'Audio recording stopped');
   }
 }
 
@@ -133,7 +134,7 @@ const createWavHeader = (dataLength: number, sampleRate: number = 24000): ArrayB
  * Convert PCM data to WAV format
  */
 export const createWavFromPCM = (pcmData: Uint8Array): Uint8Array => {
-  console.log('🔄 Converting PCM to WAV, size:', pcmData.length);
+  DebugLogger.log('audio', 'Converting PCM to WAV', { size: pcmData.length });
   
   // Convert bytes to 16-bit samples (little endian)
   const int16Data = new Int16Array(pcmData.length / 2);
@@ -147,7 +148,7 @@ export const createWavFromPCM = (pcmData: Uint8Array): Uint8Array => {
   wavArray.set(new Uint8Array(wavHeader), 0);
   wavArray.set(new Uint8Array(int16Data.buffer), wavHeader.byteLength);
   
-  console.log('✅ WAV conversion complete, final size:', wavArray.length);
+  DebugLogger.log('audio', 'WAV conversion complete', { finalSize: wavArray.length });
   return wavArray;
 };
 
@@ -161,11 +162,11 @@ export class AudioQueue {
 
   constructor(audioContext: AudioContext) {
     this.audioContext = audioContext;
-    console.log('🔊 AudioQueue initialized');
+    DebugLogger.log('audio', 'AudioQueue initialized');
   }
 
   async addToQueue(audioData: Uint8Array) {
-    console.log('📥 Adding audio chunk to queue, size:', audioData.length);
+    DebugLogger.log('audio', 'Adding audio chunk to queue', { size: audioData.length });
     this.queue.push(audioData);
     
     if (!this.isPlaying) {
@@ -175,12 +176,12 @@ export class AudioQueue {
 
   private async playNext() {
     if (this.queue.length === 0) {
-      console.log('🔇 Audio queue empty, stopping playback');
+      DebugLogger.log('audio', 'Audio queue empty, stopping playback');
       this.isPlaying = false;
       return;
     }
 
-    console.log('▶️ Playing next audio chunk, queue size:', this.queue.length);
+    DebugLogger.log('audio', 'Playing next audio chunk', { queueSize: this.queue.length });
     this.isPlaying = true;
     const audioData = this.queue.shift()!;
 
@@ -193,20 +194,20 @@ export class AudioQueue {
       source.connect(this.audioContext.destination);
       
       source.onended = () => {
-        console.log('✅ Audio chunk finished');
+        DebugLogger.log('audio', 'Audio chunk finished');
         this.playNext();
       };
       
       source.start(0);
-      console.log('🎵 Audio chunk started');
+      DebugLogger.log('audio', 'Audio chunk started');
     } catch (error) {
-      console.error('❌ Error playing audio chunk:', error);
+      DebugLogger.error('audio', 'Error playing audio chunk', error);
       this.playNext(); // Continue with next segment
     }
   }
 
   clear() {
-    console.log('🗑️ Clearing audio queue');
+    DebugLogger.log('audio', 'Clearing audio queue');
     this.queue = [];
     this.isPlaying = false;
   }

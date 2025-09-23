@@ -1,6 +1,7 @@
 import { SynchronizedElevenLabsTTS } from '@/services/SynchronizedElevenLabsTTS';
 import { contextualPronunciation } from './contextualPronunciation';
 import { AudioPermissions } from '@/utils/audioPermissions';
+import { DebugLogger } from '@/services/DebugLogger';
 import { ProductionLogging } from '@/services/ProductionLogger';
 
 export type SynchronizedPlayOptions = {
@@ -101,13 +102,13 @@ export class SimplifiedAudioEngine {
         }
         
         this.mobileAudioUnlocked = true;
-        ProductionLogging.debug('AUDIO', 'Mobile audio unlocked', 'SimplifiedAudioEngine');
+        DebugLogger.log('audio', 'Mobile audio unlocked');
         
         ['touchstart', 'touchend', 'mousedown', 'keydown'].forEach(event => {
           document.removeEventListener(event, unlockAudio);
         });
       } catch (error) {
-        ProductionLogging.warn('AUDIO', 'Mobile audio unlock failed', 'SimplifiedAudioEngine', { error });
+        DebugLogger.warn('audio', 'Mobile audio unlock failed', { error });
       }
     };
 
@@ -121,7 +122,7 @@ export class SimplifiedAudioEngine {
     
     if (!AudioPermissions.canPlayAudio()) {
       const reason = AudioPermissions.getBlockReason('any-audio');
-      ProductionLogging.debug('AUDIO', `Audio blocked - ${reason}`, 'SimplifiedAudioEngine');
+      DebugLogger.log('audio', `Audio blocked - ${reason}`);
       return;
     }
     
@@ -148,7 +149,7 @@ export class SimplifiedAudioEngine {
 
     try {
       if (!navigator.onLine) {
-        ProductionLogging.warn('AUDIO', 'No network, using fallback', 'SimplifiedAudioEngine');
+        DebugLogger.warn('audio', 'No network, using fallback');
         this.fallbackToWebSpeech(text);
         return;
       }
@@ -156,13 +157,13 @@ export class SimplifiedAudioEngine {
       this.inflight = new AbortController();
       const signal = this.inflight.signal;
 
-      ProductionLogging.debug('AUDIO', 'Requesting Synchronized ElevenLabs TTS', 'SimplifiedAudioEngine');
+      DebugLogger.log('audio', 'Requesting Synchronized ElevenLabs TTS');
       
       // Use the passed context parameter (conversation = fast, learning = with dictionary)
       const result = await SynchronizedElevenLabsTTS.generateSynchronizedSpeech(text, context, voiceId);
       
       if (signal.aborted) {
-        ProductionLogging.debug('AUDIO', 'Request was aborted', 'SimplifiedAudioEngine');
+        DebugLogger.log('audio', 'Request was aborted');
         return;
       }
 
