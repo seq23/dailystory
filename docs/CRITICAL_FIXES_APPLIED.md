@@ -96,5 +96,18 @@ difficultyToEducationalLevel('beginner') === 0 ✅
 **Files Modified**: `src/services/SimpleImageService.ts`
 **Result**: When orchestrator is down, system now correctly bypasses it and calls ai-visual-scene-creator directly
 
+### 7. First-load Image Auto-trigger and Failsafe - FIXED ✅
+**Issue**: Images weren't generating on first load due to stale `isNetworkAvailable` state blocking `ImageGenerationTrigger.shouldAutoGenerate`
+**Root Cause**: The `handleStoryStabilized` function was passing `isNetworkAvailable` (which initializes to `false`) instead of `navigator.onLine` to `ImageGenerationTrigger.triggerAutoGeneration`
+**Fix Applied:**
+- **Network Check Fix:** Changed `isNetworkAvailable: isNetworkAvailable` to `isNetworkAvailable: navigator.onLine` in `CleanStoryDisplay.tsx` line 952
+- **Failsafe Addition:** Added 2-second timeout after `ImageGenerationTrigger.triggerAutoGeneration` that:
+  - Checks if `pageImages[pageToGenerate]` is still missing
+  - Calls `SimpleImageService.generateStoryImage` directly with correct parameters
+  - Dispatches `image:generated` event on success
+  - Uses `ManagedTimers.setTimeout` for cleanup compatibility
+**Files Modified**: `src/components/CleanStoryDisplay.tsx`, `docs/CRITICAL_FIXES_APPLIED.md`
+**Impact**: Ensures images generate reliably on first load for both guest and premium users, with direct fallback if auto-trigger chain fails
+
 *Last Updated: 2025-09-23*
-*Status: All Critical Issues Resolved + AI Visual Scene Creator Fallback Implemented*
+*Status: All Critical Issues Resolved + AI Visual Scene Creator Fallback + First-load Image Failsafe Implemented*
