@@ -472,26 +472,6 @@ async function handleRequest(req) {
   const requestId = CoreUtils.generateRequestId();
   tierLogging.logTier2(`🎯 [${requestId}] Orchestrator: ${req.method} ${req.url}`);
 
-  // Belt & suspenders: any GET/HEAD still returns 200 here
-  if (req.method === 'GET' || req.method === 'HEAD') {
-    const isHeadHealth = req.method === 'HEAD' && new URL(req.url).pathname === '/health';
-    if (isHeadHealth) {
-      return new Response(null, {
-        status: 200,
-        headers: { 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store', 'x-health': 'true' }
-      });
-    }
-    return new Response(JSON.stringify({
-      status: 'healthy',
-      service: 'runware-generate-image',
-      timestamp: new Date().toISOString(),
-      version: 'v2.1',
-      bootStatus: CrashProofBootSystem.isHealthy() ? 'healthy' : 'degraded'
-    }), {
-      status: 200,
-      headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' }
-    });
-  }
 
   // Only POST beyond this point
   if (req.method !== 'POST') {
