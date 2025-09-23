@@ -353,9 +353,8 @@ export class SimpleImageService {
           pageNumber,
           isGuestUser: !isPremium,
           difficultyLevel: backendDifficulty,
-          protectionNegatives, // Pass negative prompts to backend
-          skipTier25: true, // Skip tier 2.5 to avoid unauthorized fallback
-          forceTier: 'tier-1' // Force direct tier 1 usage
+          protectionNegatives // Pass negative prompts to backend
+          // Removed skipTier25 and forceTier to allow natural tier cascade
         }
       });
       
