@@ -89,19 +89,25 @@ console.log("🎯 [runware-generate-image] Static Import Architecture V4.2 initi
 console.log("🟢 [TIER2] 🎯 Crash-Proof Runware Orchestrator v2.1 handler loaded");
 ```
 
-## **Static Fallback Strategy**
+## **Error Escalation Strategy**
 
-### **Unsplash Integration**
-When all tiers fail, system gracefully degrades to static high-quality images:
+### **Proper 502 Response System**
+When all tiers fail, system returns error for frontend intelligent fallback handling:
 
 ```javascript
-// Static fallback implementation
-result = {
-  success: true,
-  imageURL: "https://images.unsplash.com/photo-1519904981063-b0cf448d479e?w=1024&h=1024&fit=crop&q=80",
-  source: 'static_fallback',
-  tier: 'STATIC_FALLBACK'
-};
+// Proper error response implementation
+return new Response(JSON.stringify({
+  success: false,
+  error: 'All image generation tiers failed',
+  tier: 'tier-failure',
+  frontendShouldFallback: true
+}), {
+  status: 502,
+  headers: {
+    'Access-Control-Allow-Origin': '*',
+    'Content-Type': 'application/json'
+  }
+});
 ```
 
 ## **Integration Points**
@@ -152,20 +158,20 @@ fallback(runwareTemplateCD) → staticFallback()
 4. **Single Point Orchestrator**: All requests funnel through one function
 5. **Database Logging**: Potential performance impact under high load
 
-## **Recent Fixes (September 22, 2025)**
-
-### **Resolved Issues**
-- ✅ **Syntax Errors**: Fixed `generateInlineNuclearNegative` function call
-- ✅ **Missing Fallback**: Replaced broken `generateEnhancedFallback` with static Unsplash
-- ✅ **Logging Errors**: Fixed tierLogging parameter issues in error handling
-- ✅ **Boot Stability**: Enhanced crash-proof pattern prevents function failures
+### 📋 **Recent Fixes (September 22-23, 2025):**
+- **Fixed**: Tier 1 fail-fast verification - removed repair mechanisms for immediate escalation
+- **REMOVED**: Unauthorized Unsplash fallback system - replaced with proper 502 error responses
+- **Enhanced**: Frontend now forces Tier 1 with direct escalation before intelligent fallbacks
+- **Secured**: Removed unauthorized external domains from image-proxy allowed list
+- **Improved**: Error handling and logging across all tiers
+- **Verified**: Complete architectural integrity with no breaking changes
 
 ### **Performance Improvements**
 - **Boot Time**: Stable 37-39ms (previously inconsistent)
 - **Error Recovery**: Zero function crashes since fixes applied
-- **Fallback Success**: 100% success rate with static fallback implementation
+- **Error Escalation**: Proper 502 responses allow frontend intelligent fallback system
 
 ---
-*Last Updated: September 22, 2025*
-*Architecture Status: STABLE - All 4 tiers + static fallback operational*
-*Recent Fixes: Crash-proof orchestrator fully operational*
+*Last Updated: September 23, 2025*
+*Architecture Status: STABLE - All 4 tiers operational with proper error escalation*
+*Recent Fixes: Unauthorized fallback removal completed, frontend escalation active*
