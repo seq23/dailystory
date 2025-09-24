@@ -46,10 +46,9 @@ export class LiveGenerationService {
         providedSessionId: sessionId 
       });
       
-      // Convert frontend difficulty to backend format for validation system
-      const frontendDifficulty = userInfo.difficultyLevel || 'beginner';
-      const difficulty: DifficultyLevel = DifficultyLevelMapper.toBackend(frontendDifficulty) as DifficultyLevel;
-      DebugLogger.log('story', `Live: Difficulty mapping - Frontend: "${frontendDifficulty}" → Backend: "${difficulty}"`, { user: userInfo.name });
+      // userInfo.difficultyLevel is already in backend format after form submission
+      const difficulty: DifficultyLevel = (userInfo.difficultyLevel || 'beginner') as DifficultyLevel;
+      DebugLogger.log('story', `Live: Using backend difficulty: "${difficulty}"`, { user: userInfo.name });
       
       // Premium Expert: adaptive grade selection
       let expertGradeLevel: ExpertGradeLevel | undefined;
@@ -78,7 +77,6 @@ export class LiveGenerationService {
         generationContext: {
           isFirstPage: true,
           expertGradeLevel,
-          frontendDifficulty,
           backendDifficulty: difficulty
         },
         timestamp: new Date().toISOString()
@@ -115,7 +113,7 @@ export class LiveGenerationService {
           specialRequest: ''
           // favoriteColor, favoriteAnimal etc. omitted = truly optional
         }, // Deep clone with honest fallback
-        difficulty: frontendDifficulty,
+        difficulty: userInfo.difficultyLevel,
         expertGradeLevel: expertGradeLevel || undefined,
         storyContext: [content],
         currentPage: 1,
@@ -160,7 +158,7 @@ export class LiveGenerationService {
       // Create initial context for continuation
       const initialContext: LiveGenerationContext = {
         userInfo,
-        difficulty: frontendDifficulty,
+        difficulty: userInfo.difficultyLevel,
         expertGradeLevel,
         storyContext: [content],
         currentPage: 1,

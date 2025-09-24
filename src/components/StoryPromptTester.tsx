@@ -265,7 +265,7 @@ export function StoryPromptTester() {
     nativeLanguage: "en" as LanguageCode,
     learningGoal: "improve-english-reading" as LearningGoal,
     avatar: { type: "prefer-not-to-answer", skinTone: "medium" },
-    difficultyLevel: 'medium', // Backend level, displayed as frontend level
+    difficultyLevel: 'developing', // Frontend level - matches user form experience
     favoriteColor: 'blue',
     favoriteAnimal: 'dog',
     hobbies: 'playing games',
@@ -476,7 +476,14 @@ export function StoryPromptTester() {
         
         // PHASE 3: PERFORMANCE ANALYSIS - Track timing breakdown
         const aiStartTime = Date.now();
-        response = await testWithTimeout(() => NetflixStyleStoryService.generateStory(userInfo, undefined, sessionId));
+        
+        // Convert frontend difficulty to backend for story generation service
+        const testUserInfo = {
+          ...userInfo,
+          difficultyLevel: DifficultyLevelMapper.toBackend(userInfo.difficultyLevel || 'beginner')
+        };
+        
+        response = await testWithTimeout(() => NetflixStyleStoryService.generateStory(testUserInfo, undefined, sessionId));
         const aiGenerationTime = Date.now() - aiStartTime;
         
         result.source = response.source || 'unknown';
@@ -603,9 +610,15 @@ export function StoryPromptTester() {
           message: 'Generating with Live service'
         });
         
-        DebugLogger.log('story', 'About to call LiveGenerationService.generateFirstPage', { userInfo });
+        // Convert frontend difficulty to backend for story generation service
+        const testUserInfo = {
+          ...userInfo,
+          difficultyLevel: DifficultyLevelMapper.toBackend(userInfo.difficultyLevel || 'beginner')
+        };
+        
+        DebugLogger.log('story', 'About to call LiveGenerationService.generateFirstPage', { testUserInfo });
         try {
-          response = await testWithTimeout(() => LiveGenerationService.generateFirstPage(userInfo));
+          response = await testWithTimeout(() => LiveGenerationService.generateFirstPage(testUserInfo));
           DebugLogger.log('story', 'Live service call completed successfully', response);
         } catch (liveServiceError) {
           DebugLogger.error('story', 'Live service call failed', liveServiceError);
@@ -679,7 +692,13 @@ export function StoryPromptTester() {
           message: 'Testing template service directly'
         });
         
-        response = await testWithTimeout(() => templateService.generateStory(userInfo, 'testing'));
+        // Convert frontend difficulty to backend for template service
+        const testUserInfo = {
+          ...userInfo,
+          difficultyLevel: DifficultyLevelMapper.toBackend(userInfo.difficultyLevel || 'beginner')
+        };
+        
+        response = await testWithTimeout(() => templateService.generateStory(testUserInfo, 'testing'));
         result.source = response.success ? 'fallback' : 'emergency'; // Templates are fallback, emergency if they fail
         result.pages = response.pageCount || response.pages?.length || 0;
         
@@ -1626,11 +1645,11 @@ export function StoryPromptTester() {
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="beginner">{DifficultyLevelMapper.getDisplayName('beginner')}</SelectItem>
-                              <SelectItem value="easy">{DifficultyLevelMapper.getDisplayName('easy')}</SelectItem>
-                              <SelectItem value="medium">{DifficultyLevelMapper.getDisplayName('medium')}</SelectItem>
-                              <SelectItem value="hard">{DifficultyLevelMapper.getDisplayName('hard')}</SelectItem>
-                              <SelectItem value="expert">{DifficultyLevelMapper.getDisplayName('expert')}</SelectItem>
+                              <SelectItem value="pre-reader">Pre-Reader</SelectItem>
+                              <SelectItem value="beginner">Beginner</SelectItem>
+                              <SelectItem value="developing">Developing</SelectItem>
+                              <SelectItem value="independent">Independent</SelectItem>
+                              <SelectItem value="advanced">Advanced</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>

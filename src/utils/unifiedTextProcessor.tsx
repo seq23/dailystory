@@ -63,8 +63,12 @@ export const processTextWithConsistentFlow = ({
   const { wordsOnly } = tokenizeForHighlighting(text.replace(/^Page\s*\d+\s*:\s*/i, '').replace(/^Page\s*\d+\s*/i, '').trim());
   wordsOnly.forEach(word => getCachedWordDifficulty(word, backendDifficulty));
   
-  // Strip page markers as safety net before processing
-  const cleanText = text.replace(/^Page\s*\d+\s*:\s*/i, '').replace(/^Page\s*\d+\s*/i, '').trim();
+  // Strip page markers and asterisks before processing 
+  const cleanText = text
+    .replace(/^Page\s*\d+\s*:\s*/i, '')
+    .replace(/^Page\s*\d+\s*/i, '')
+    .replace(/\*{2,}/g, '') // Remove 2 or more consecutive asterisks
+    .trim();
   
   // Tokenize once for consistent mapping across audio and UI
   const { tokens, isWhitespace, wordOnlyIndexByTokenIndex } = tokenizeForHighlighting(cleanText);

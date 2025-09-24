@@ -71,10 +71,9 @@ export class NetflixStyleStoryService {
       sessionId: sessionId
     });
     
-    // Convert frontend difficulty to backend format for validation system
-    const frontendDifficulty = userInfo.difficultyLevel || 'beginner';
-    const difficulty: DifficultyLevel = DifficultyLevelMapper.toBackend(frontendDifficulty) as DifficultyLevel;
-    DebugLogger.log('story', `Netflix: Difficulty mapping - Frontend: "${frontendDifficulty}" → Backend: "${difficulty}" for ${userInfo.name}`, { generationId });
+    // userInfo.difficultyLevel is already in backend format after form submission
+    const difficulty: DifficultyLevel = (userInfo.difficultyLevel || 'beginner') as DifficultyLevel;
+    DebugLogger.log('story', `Netflix: Using backend difficulty: "${difficulty}" for ${userInfo.name}`, { generationId });
 
     let promptConfig: any;
     let expertGradeLevel: ExpertGradeLevel | undefined;
