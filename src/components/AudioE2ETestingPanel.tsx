@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -14,13 +14,20 @@ import { VoiceButtonTester } from '@/components/VoiceButtonTester';
 import { MultilingualWordTester } from '@/components/MultilingualWordTester';
 import { AudioEventMonitor } from '@/components/AudioEventMonitor';
 import type { UserInfo, LanguageCode } from '@/types';
-
+import { useLanguageSync } from '@/hooks/useLanguageSync';
 export const AudioE2ETestingPanel = () => {
   const [userType, setUserType] = useState<'guest' | 'premium'>('premium');
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [difficulty, setDifficulty] = useState<'beginner' | 'easy' | 'medium' | 'hard' | 'expert'>('easy');
   const [highlightingEnabled, setHighlightingEnabled] = useState(true);
   const [showCoach, setShowCoach] = useState(false);
+
+  const { storeLanguagePreference, getStoredLanguagePreference } = useLanguageSync();
+
+  useEffect(() => {
+    const stored = getStoredLanguagePreference();
+    if (stored) setSelectedLanguage(stored);
+  }, [getStoredLanguagePreference]);
 
   // Mock user info for testing
   const mockUserInfo: UserInfo = {
@@ -126,7 +133,7 @@ export const AudioE2ETestingPanel = () => {
                 <Languages className="w-4 h-4" />
                 Native Language
               </Label>
-              <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
+              <Select value={selectedLanguage} onValueChange={(value) => { setSelectedLanguage(value); storeLanguagePreference(value as LanguageCode); }}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>

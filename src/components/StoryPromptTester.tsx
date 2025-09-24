@@ -27,6 +27,7 @@ import { DifficultyLevelMapper } from '../../supabase/functions/_shared/Difficul
 import { generateSessionIdWithPrefix } from '@/utils/sessionId';
 import type { UserInfo, DifficultyLevel, ExpertGradeLevel, Grade, LanguageCode, LearningGoal, AvatarType, SkinTone } from '@/types';
 import { DebugLogger } from '@/services/DebugLogger';
+import { useLanguageSync } from '@/hooks/useLanguageSync';
 
 // Robust word counting function
 const countWords = (content: string | string[]): number => {
@@ -275,6 +276,15 @@ export function StoryPromptTester() {
   const [customFormExpanded, setCustomFormExpanded] = useState(false);
 
   const templateService = useTemplateService();
+
+  const { getStoredLanguagePreference } = useLanguageSync();
+
+  useEffect(() => {
+    const stored = getStoredLanguagePreference();
+    if (stored) {
+      setCustomUserPrefs(prev => ({ ...prev, nativeLanguage: stored as LanguageCode }));
+    }
+  }, [getStoredLanguagePreference]);
 
   // Cached validation to improve performance
   const getCachedValidation = (content: string[], level: string, service: string) => {
@@ -917,9 +927,13 @@ export function StoryPromptTester() {
     DebugLogger.log('story', `Master Session ID for all tests: ${masterSessionId}`);
 
     // Use custom preferences if enabled, otherwise use all predefined profiles
+    const preferredLang = getStoredLanguagePreference() as LanguageCode | null;
     const profiles: [string, UserInfo][] = useCustomPreferences 
       ? [['custom', customUserPrefs] as [string, UserInfo]] 
-      : Object.entries(testUserProfiles);
+      : (Object.entries(testUserProfiles).map(([level, info]) => [
+          level,
+          { ...info, nativeLanguage: (preferredLang || info.nativeLanguage) as LanguageCode }
+        ]) as [string, UserInfo][]);
     
     // DEBUG: Log what profiles are being loaded
     DebugLogger.log('story', 'Available test profiles', Object.keys(testUserProfiles));
