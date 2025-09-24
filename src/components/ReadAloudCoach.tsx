@@ -671,29 +671,31 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
 
         {/* Audio Syllable Practice */}
         {passed === false && syllableFeedback.length > 0 && (
-          <Collapsible open={syllableExpanded} onOpenChange={setSyllableExpanded}>
-            <CollapsibleTrigger asChild>
-              <Button variant="ghost" size="sm" className="w-full justify-between p-2 h-auto">
-                <span className="font-medium text-sm flex items-center gap-2">
-                  <Volume2 className="w-4 h-4" />
-                  {t('coach.syllablePractice','Charlotte\'s syllable coaching:')} ({syllableFeedback.length})
-                </span>
-                <p className="text-xs text-muted-foreground mt-1">{t('coach.charlotteScope','Charlotte helps with select problematic words from your reading')}</p>
-                {syllableExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-              </Button>
-            </CollapsibleTrigger>
-            <CollapsibleContent className="space-y-2 pt-2">
-              {syllableFeedback.map((feedback, idx) => (
-                <div key={idx} className="space-y-1 text-sm">
-                  <div className="font-medium text-blue-600 dark:text-blue-400 flex items-center gap-2">
-                    <Volume2 className="w-3 h-3" />
-                    {feedback.word}
+          <div className="space-y-1">
+            <Collapsible open={syllableExpanded} onOpenChange={setSyllableExpanded}>
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" size="sm" className="w-full justify-between p-2 h-auto">
+                  <span className="font-medium text-sm flex items-center gap-2">
+                    <Volume2 className="w-4 h-4" />
+                    {t('coach.syllablePractice','Charlotte\'s syllable coaching:')} ({syllableFeedback.length})
+                  </span>
+                  {syllableExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-2 pt-2">
+                {syllableFeedback.map((feedback, idx) => (
+                  <div key={idx} className="space-y-1 text-sm">
+                    <div className="font-medium text-blue-600 dark:text-blue-400 flex items-center gap-2">
+                      <Volume2 className="w-3 h-3" />
+                      {feedback.word}
+                    </div>
+                    <div className="text-xs text-muted-foreground">🎤 Charlotte provided audio breakdown</div>
                   </div>
-                  <div className="text-xs text-muted-foreground">🎤 Charlotte provided audio breakdown</div>
-                </div>
-              ))}
-            </CollapsibleContent>
-          </Collapsible>
+                ))}
+              </CollapsibleContent>
+            </Collapsible>
+            <p className="text-xs text-muted-foreground px-2">{t('coach.charlotteScope','Charlotte helps with select problematic words from your reading')}</p>
+          </div>
         )}
 
         {/* Top words coaching (only on fail) */}
