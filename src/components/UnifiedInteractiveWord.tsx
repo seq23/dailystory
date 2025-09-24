@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next";
 import { Volume2, HelpCircle, Languages, BookOpen, Lightbulb, Plus, Crown, Layers } from "lucide-react";
 import { charlotteVoiceService } from "@/services/CharlotteVoiceService";
+import { browserTTSService } from "@/services/BrowserTTSService";
 import { PhoneticRulesEngine } from "@/services/phoneticRulesEngine";
 import { useToast } from "@/hooks/use-toast";
 import { contextualPronunciation } from "@/services/contextualPronunciation";
@@ -244,52 +245,18 @@ export const UnifiedInteractiveWord: React.FC<UnifiedInteractiveWordProps> = ({
         duration: 5000,
       });
       
-      // Audio explanation - use browser TTS for ALL users for cost-effectiveness and native pronunciation
+      // Audio explanation - use Charlotte for English speakers, browser TTS for others
       try {
         DebugLogger.log('ui', 'UNIFIED EXPLAIN audio started', { cleanWord, userLanguage: userInfo?.nativeLanguage });
         
-        // Always use browser TTS for explanations with proper language selection
-        if ('speechSynthesis' in window) {
-          window.speechSynthesis.cancel();
-          const utterance = new SpeechSynthesisUtterance(definition);
-          
-          // Use user's native language for pronunciation
-          const userLanguage = userInfo?.nativeLanguage || 'en';
-          const languageCodes = {
-            'en': 'en-US',
-            'es': 'es-ES', 
-            'fr': 'fr-FR',
-            'ar': 'ar-SA',
-            'zh': 'zh-CN',
-            'hi': 'hi-IN',
-            'pt': 'pt-BR'
-          };
-          
-          utterance.lang = languageCodes[userLanguage] || 'en-US';
-          utterance.rate = 0.8;
-          utterance.pitch = 1;
-          utterance.volume = 1;
-          
-          // Try to select best voice for the language
-          const voices = speechSynthesis.getVoices();
-          const targetLang = utterance.lang;
-          const exactMatch = voices.find(voice => voice.lang === targetLang);
-          const partialMatch = voices.find(voice => voice.lang.startsWith(targetLang.split('-')[0]));
-          const selectedVoice = exactMatch || partialMatch;
-          
-          if (selectedVoice) {
-            utterance.voice = selectedVoice;
-            DebugLogger.log('audio', 'Selected voice for unified explanation', { 
-              language: userLanguage, 
-              voiceName: selectedVoice.name, 
-              voiceLang: selectedVoice.lang 
-            });
-          }
-          
-          window.speechSynthesis.speak(utterance);
-          DebugLogger.log('audio', 'Unified browser TTS explanation started', { language: userLanguage });
+        const userLanguage = userInfo?.nativeLanguage || 'en';
+        
+        if (userLanguage === 'en') {
+          // English speakers get Charlotte's premium voice
+          await charlotteVoiceService.charlotteExplainWord(cleanWord, userLanguage);
         } else {
-          DebugLogger.warn('audio', 'Browser TTS not supported - explanation shown as text only');
+          // Non-English speakers get browser TTS in their native language
+          await browserTTSService.speakExplanation(definition, userLanguage as any);
         }
         
         DebugLogger.log('audio', 'Unified explain audio completed successfully');

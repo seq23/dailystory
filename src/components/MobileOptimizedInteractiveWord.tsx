@@ -6,6 +6,7 @@ import type { UserInfo } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { PhoneticRulesEngine } from "@/services/phoneticRulesEngine";
 import { charlotteVoiceService } from "@/services/CharlotteVoiceService";
+import { browserTTSService } from "@/services/BrowserTTSService";
 import { VocabularyLevelClassifier } from "@/utils/vocabularyLevelClassifier";
 import { getGlobalAddVocabularyWord } from "@/utils/gamificationGlobals";
 import { VocabularyTrackingService } from "@/services/vocabularyTrackingService";
@@ -201,27 +202,15 @@ if (props.forceModal || isMobileOrTablet) {
           definition = `${cleanWord} - a word used in this story`;
         }
 
-        // Always use browser TTS for explanations with native pronunciation
-        if ('speechSynthesis' in window) {
-          window.speechSynthesis.cancel();
-          const utterance = new SpeechSynthesisUtterance(definition);
-          
-          const userLanguage = props.userInfo?.nativeLanguage || 'en';
-          const languageCodes = {
-            'en': 'en-US', 'es': 'es-ES', 'fr': 'fr-FR',
-            'ar': 'ar-SA', 'zh': 'zh-CN', 'hi': 'hi-IN', 'pt': 'pt-BR'
-          };
-          
-          utterance.lang = languageCodes[userLanguage] || 'en-US';
-          utterance.rate = 0.8;
-          
-          const voices = speechSynthesis.getVoices();
-          const selectedVoice = voices.find(voice => 
-            voice.lang === utterance.lang || voice.lang.startsWith(utterance.lang.split('-')[0])
-          );
-          if (selectedVoice) utterance.voice = selectedVoice;
-          
-          window.speechSynthesis.speak(utterance);
+        // Audio explanation - use Charlotte for English speakers, browser TTS for others
+        const userLanguage = props.userInfo?.nativeLanguage || 'en';
+        
+        if (userLanguage === 'en') {
+          // English speakers get Charlotte's premium voice
+          await charlotteVoiceService.charlotteExplainWord(cleanWord, userLanguage);
+        } else {
+          // Non-English speakers get browser TTS in their native language
+          await browserTTSService.speakExplanation(definition, userLanguage as any);
         }
 
       } catch (e) {

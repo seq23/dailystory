@@ -62,23 +62,8 @@ export class BrowserTTSService {
         utterance.pitch = pitch;
         utterance.volume = volume;
 
-        // Try to select best voice for language
-        const voices = speechSynthesis.getVoices();
-        const targetLang = utterance.lang;
-        
-        // Find voice that matches language exactly or partially
-        const exactMatch = voices.find(voice => voice.lang === targetLang);
-        const partialMatch = voices.find(voice => voice.lang.startsWith(targetLang.split('-')[0]));
-        const defaultVoice = exactMatch || partialMatch;
-        
-        if (defaultVoice) {
-          utterance.voice = defaultVoice;
-          DebugLogger.log('audio', 'Selected voice for TTS', { 
-            language, 
-            voiceName: defaultVoice.name, 
-            voiceLang: defaultVoice.lang 
-          });
-        }
+        // Simplified voice selection - use browser default for reliability
+        // Language is already set via utterance.lang which provides good results
 
         utterance.onstart = () => {
           this.isPlaying = true;
@@ -135,18 +120,11 @@ export class BrowserTTSService {
   }
 
   /**
-   * Get available voices for a language
+   * Get available voices for a language (simplified)
    */
   getVoicesForLanguage(language: SupportedLanguage): SpeechSynthesisVoice[] {
-    if (!('speechSynthesis' in window)) return [];
-    
-    const targetLang = BrowserTTSService.LANGUAGE_CODES[language];
-    const voices = speechSynthesis.getVoices();
-    
-    return voices.filter(voice => 
-      voice.lang === targetLang || 
-      voice.lang.startsWith(targetLang.split('-')[0])
-    );
+    // Simplified implementation - browser handles voice selection automatically
+    return [];
   }
 
   /**

@@ -22,6 +22,7 @@ import { DebugLogger } from "@/services/DebugLogger";
 // Import consolidated audio hook
 import { useAudioControls } from "@/hooks/useAudioControls";
 import { charlotteVoiceService } from "@/services/CharlotteVoiceService";
+import { browserTTSService } from "@/services/BrowserTTSService";
 
 interface ElevenLabsAudioProps {
   text: string;
@@ -120,9 +121,29 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
       }
   };
 
-  // Stop audio wrapper
+  // Enhanced stop audio with comprehensive audio system stopping
   const stopAudio = () => {
-    stopAudioCore();
+    try {
+      // 1. Stop core audio system
+      stopAudioCore();
+      
+      // 2. Stop Charlotte's voice service
+      charlotteVoiceService.stop();
+      
+      // 3. Stop browser TTS 
+      browserTTSService.stop();
+      
+      // 4. Dispatch audio coordinator events
+      window.dispatchEvent(new CustomEvent('audio:stop'));
+      window.dispatchEvent(new CustomEvent('charlotte:stop'));
+      window.dispatchEvent(new CustomEvent('audio:state:change', { 
+        detail: { isPlaying: false, source: 'main-stop-button' } 
+      }));
+      
+      DebugLogger.log('audio', 'Comprehensive audio stop completed from main app');
+    } catch (error) {
+      DebugLogger.error('audio', 'Error in comprehensive audio stop', error);
+    }
   };
 
   // Listen to voice status/level for mic button live indicators
