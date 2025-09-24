@@ -175,7 +175,7 @@ export const UnifiedAudioControls: React.FC<UnifiedAudioControlsProps> = ({
       
       DebugLogger.log('audio', `Audio highlighting ${shouldHighlight ? 'ENABLED' : 'DISABLED'} for difficulty: "${difficulty}"`);
       
-      await charlotteVoiceService.charlotteReadStory(text, highlightCallback);
+      await charlotteVoiceService.charlotteReadStory(text, highlightCallback, audioSpeed);
       
       // Mark as played for free users
       if (!isPremium) {

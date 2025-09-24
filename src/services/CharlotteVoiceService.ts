@@ -58,7 +58,7 @@ export class CharlotteVoiceService {
    * CHARLOTTE READS STORY - With word highlighting and timing
    * Uses sophisticated timing system for story reading with word-by-word highlighting
    */
-  async charlotteReadStory(text: string, onWordHighlight?: (wordIndex: number) => void): Promise<void> {
+  async charlotteReadStory(text: string, onWordHighlight?: (wordIndex: number) => void, speed?: number): Promise<void> {
     const requestId = `story-${++CharlotteVoiceService.requestCounter}`;
     DebugLogger.log('audio', `🎙️ Charlotte Reading Story: "${text.substring(0, 50)}..." [Request: ${requestId}]`);
 
@@ -79,7 +79,7 @@ export class CharlotteVoiceService {
       this.onWordHighlight = onWordHighlight;
 
       // Play with word highlighting
-      await this.playCharlotteAudio(result.audioBuffer, true);
+      await this.playCharlotteAudio(result.audioBuffer, true, speed);
       
       DebugLogger.log('audio', `✅ Charlotte story reading completed: ${requestId}`);
 
@@ -360,7 +360,7 @@ export class CharlotteVoiceService {
     return word;
   }
 
-  private async playCharlotteAudio(audioBuffer: ArrayBuffer, withHighlighting: boolean): Promise<void> {
+  private async playCharlotteAudio(audioBuffer: ArrayBuffer, withHighlighting: boolean, speed?: number): Promise<void> {
     const audioBlob = new Blob([audioBuffer], { type: 'audio/mpeg' });
     const audioUrl = URL.createObjectURL(audioBlob);
     
@@ -399,6 +399,7 @@ export class CharlotteVoiceService {
     
     this.currentUrl = audioUrl;
     this.audio.src = audioUrl;
+    this.audio.playbackRate = speed || 1.0;
     
     // Wait for audio to finish
     await new Promise<void>((resolve, reject) => {
