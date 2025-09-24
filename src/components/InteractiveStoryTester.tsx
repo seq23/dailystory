@@ -95,7 +95,7 @@ export const InteractiveStoryTester = ({
       
       return (
         <MobileOptimizedInteractiveWord
-          key={`${selectedLanguage}-${index}-${segment}`}
+          key={`${selectedLanguage}-${currentPage}-${currentWordIndex}-${segment}`}
           word={segment}
           className={`inline transition-all duration-300 ${
             isHighlighted 
@@ -120,6 +120,26 @@ export const InteractiveStoryTester = ({
       (window as any).__pageContentString = currentStory.text;
     }
   };
+
+  // Voice command navigation listener
+  React.useEffect(() => {
+    const handleNavigationCommand = (event: CustomEvent) => {
+      console.log('🎯 [TEST] Navigation command received:', event.detail);
+      const { direction } = event.detail;
+      
+      if (direction === 'next') {
+        navigateToPage(currentPage + 1);
+      } else if (direction === 'prev' || direction === 'previous') {
+        navigateToPage(currentPage - 1);
+      }
+    };
+
+    window.addEventListener('reader:navigate', handleNavigationCommand as EventListener);
+    
+    return () => {
+      window.removeEventListener('reader:navigate', handleNavigationCommand as EventListener);
+    };
+  }, [currentPage, maxPages]);
 
   // Set global state for audio synchronization
   React.useEffect(() => {
