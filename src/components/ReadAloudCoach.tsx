@@ -150,6 +150,21 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
 
   useEffect(() => {
     loadDailyCount();
+    
+    // Charlotte introduces the reading coach
+    const introduceCoach = async () => {
+      try {
+        await new Promise(resolve => setTimeout(resolve, 500)); // Small delay to avoid audio conflicts
+        await charlotteVoiceService.charlotteInteractiveAudio({ 
+          text: `Hi there! I'm Charlotte, your reading coach. I'm here to help you practice reading out loud. When you're ready, click start and read the sentence. I'll give you feedback to help you improve!`, 
+          context: 'conversation' 
+        });
+      } catch (err) {
+        DebugLogger.error('audio', 'Charlotte introduction failed:', err);
+      }
+    };
+    
+    introduceCoach();
   }, [loadDailyCount]);
 
   useEffect(() => () => mediaRecorderRef.current?.stop(), []);
@@ -198,9 +213,9 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
     const minutes = Math.max(0.001, durationMs / 60000);
     const wpm = Math.round(saidWords.length / minutes);
     let pace = "";
-    if (wpm < 70) pace = t('coach.paceFaster','Try a little faster');
-    else if (wpm > 120) pace = t('coach.paceSlower','Try a little slower');
-    else pace = t('coach.paceNice','Nice pace');
+    if (wpm < 70) pace = "Try reading a little faster next time";
+    else if (wpm > 120) pace = "Try slowing down just a bit for clearer pronunciation";
+    else pace = "Your reading pace is perfect!";
 
     // Use phonetic analysis for pronunciation accuracy
     const pronunciationResult = await PronunciationAnalyzer.analyzePronunciation(
@@ -276,8 +291,40 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
         const nextAttempts = attempts + 1;
         setAttempts(nextAttempts);
 
-        // Auto-resume story audio after feedback
-        setTimeout(resumeStoryIfNeeded, 450);
+        // Provide Charlotte's audio feedback instead of text
+        setTimeout(async () => {
+          try {
+            if (didPass) {
+              await charlotteVoiceService.charlotteInteractiveAudio({ 
+                text: `Excellent reading! ${pace} That was a perfect score!`, 
+                context: 'conversation' 
+              });
+            } else {
+              let feedbackText = `Good effort! You got ${Math.round(acc)}% correct. `;
+              if (top.length > 0) {
+                feedbackText += `Let's practice these words: ${top.join(', ')}. `;
+              }
+              feedbackText += pace;
+              
+              await charlotteVoiceService.charlotteInteractiveAudio({ 
+                text: feedbackText, 
+                context: 'conversation' 
+              });
+              
+              // Provide syllable coaching for problematic words
+              if (syllableFeedback.length > 0) {
+                for (const wordFeedback of syllableFeedback.slice(0, 2)) {
+                  await charlotteVoiceService.charlotteSyllableWord(wordFeedback.word);
+                }
+              }
+            }
+          } catch (err) {
+            DebugLogger.error('audio', 'Charlotte feedback failed:', err);
+          }
+          
+          // Auto-resume story audio after feedback
+          setTimeout(resumeStoryIfNeeded, 500);
+        }, 300);
       } catch (err) {
         DebugLogger.error('audio', 'ReadAloudCoach processing failed', err);
         setTimeout(resumeStoryIfNeeded, 450);
@@ -339,20 +386,55 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
   const onSayWithMe = async (w: string) => {
     const tries = wordTries[w] || 0;
     if (tries >= WORD_MICRO_ATTEMPTS) return;
+    
+    // Charlotte demonstrates first, then listens for user
+    try {
+      await charlotteVoiceService.charlotteInteractiveAudio({ 
+        text: `Let's practice the word "${w}" together. Listen first, then you say it.`, 
+        context: 'conversation' 
+      });
+      await charlotteVoiceService.charlotteSyllableWord(w);
+      await charlotteVoiceService.charlotteInteractiveAudio({ 
+        text: `Now you try saying "${w}"`, 
+        context: 'conversation' 
+      });
+    } catch (err) {
+      DebugLogger.error('audio', 'Charlotte demonstration failed:', err);
+    }
+    
     const ok = await checkWordPronunciation(w);
     setWordTries((prev) => ({ ...prev, [w]: tries + 1 }));
+    
     if (ok) {
-      // Celebrate quickly and remove from list
+      // Celebrate with Charlotte's voice and remove from list
       setTopWords((prev) => prev.filter((x) => x !== w));
-        try { 
-          await charlotteVoiceService.charlotteInteractiveAudio({ text: t('coach.great','Great job! That was perfect!'), context: 'conversation' });
-        } catch {}
+      try { 
+        await charlotteVoiceService.charlotteInteractiveAudio({ 
+          text: `Perfect! You nailed "${w}"! That was excellent pronunciation!`, 
+          context: 'conversation' 
+        });
+      } catch {}
+    } else {
+      try {
+        const remainingTries = WORD_MICRO_ATTEMPTS - (tries + 1);
+        if (remainingTries > 0) {
+          await charlotteVoiceService.charlotteInteractiveAudio({ 
+            text: `Almost there! You have ${remainingTries} more try. Let me break it down for you again.`, 
+            context: 'conversation' 
+          });
+        } else {
+          await charlotteVoiceService.charlotteInteractiveAudio({ 
+            text: `That's okay! Keep practicing "${w}" and you'll get it. Don't worry, it takes time!`, 
+            context: 'conversation' 
+          });
+        }
+      } catch {}
     }
   };
 
   const currentSentence = sentences[idx] || "";
 
-  const nextSentence = () => {
+  const nextSentence = async () => {
     setTranscript("");
     setPassed(null);
     setPaceTip("");
@@ -361,9 +443,19 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
     setSyllableFeedback([]);
     setAttempts(0);
     setWordTries({});
-    setIdx((i) => Math.min(sentences.length - 1, i + 1));
+    const newIdx = Math.min(sentences.length - 1, idx + 1);
+    setIdx(newIdx);
+    
+    // Charlotte introduces the new sentence
+    try {
+      await charlotteVoiceService.charlotteInteractiveAudio({ 
+        text: `Great! Let's move to the next sentence. Here it is: "${sentences[newIdx] || ""}"`, 
+        context: 'conversation' 
+      });
+    } catch {}
   };
-  const prevSentence = () => {
+  
+  const prevSentence = async () => {
     setTranscript("");
     setPassed(null);
     setPaceTip("");
@@ -372,7 +464,16 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
     setSyllableFeedback([]);
     setAttempts(0);
     setWordTries({});
-    setIdx((i) => Math.max(0, i - 1));
+    const newIdx = Math.max(0, idx - 1);
+    setIdx(newIdx);
+    
+    // Charlotte introduces the previous sentence
+    try {
+      await charlotteVoiceService.charlotteInteractiveAudio({ 
+        text: `Let's go back to practice this sentence: "${sentences[newIdx] || ""}"`, 
+        context: 'conversation' 
+      });
+    } catch {}
   };
 
   return (
@@ -433,7 +534,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
           )}
         </div>
 
-        {/* Feedback */}
+        {/* Audio Feedback Status */}
         {transcript && (
           <div className="text-sm space-y-2">
             <div>
@@ -442,37 +543,42 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
             </div>
             {passed !== null && (
               <div className="text-sm space-y-2">
-                <div className="font-medium">{t('coach.feedback','Feedback:')}</div>
+                <div className="font-medium flex items-center gap-2">
+                  <Volume2 className="w-4 h-4" />
+                  {t('coach.feedback','Charlotte is giving you feedback...')}
+                </div>
                 {passed ? (
-                  <p className="text-green-600 dark:text-green-400">{t('coach.pass','Great job! You matched the sentence.')}</p>
+                  <p className="text-green-600 dark:text-green-400">{t('coach.pass','🎉 Perfect reading!')}</p>
                 ) : (
                   <div className="space-y-1">
-                    <p className="text-amber-600 dark:text-amber-400">{t('coach.almost','Almost there—let\'s fix a few words.')}</p>
-                    {pronunciationFeedback && (
-                      <p className="text-blue-600 dark:text-blue-400 text-xs">{pronunciationFeedback}</p>
-                    )}
+                    <p className="text-amber-600 dark:text-amber-400">{t('coach.almost','💪 Good effort! Listen for tips.')}</p>
                   </div>
                 )}
-                {paceTip && <p className="text-muted-foreground mt-1">{t('coach.paceTip','Pace tip:')} {paceTip}</p>}
               </div>
             )}
           </div>
         )}
 
-        {/* Syllable-specific feedback */}
+        {/* Audio Syllable Practice */}
         {passed === false && syllableFeedback.length > 0 && (
           <Collapsible open={syllableExpanded} onOpenChange={setSyllableExpanded}>
             <CollapsibleTrigger asChild>
               <Button variant="ghost" size="sm" className="w-full justify-between p-2 h-auto">
-                <span className="font-medium text-sm">{t('coach.syllablePractice','Syllable practice:')} ({syllableFeedback.length})</span>
+                <span className="font-medium text-sm flex items-center gap-2">
+                  <Volume2 className="w-4 h-4" />
+                  {t('coach.syllablePractice','Charlotte\'s syllable coaching:')} ({syllableFeedback.length})
+                </span>
                 {syllableExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </Button>
             </CollapsibleTrigger>
             <CollapsibleContent className="space-y-2 pt-2">
               {syllableFeedback.slice(0, 3).map((feedback, idx) => (
                 <div key={idx} className="space-y-1 text-sm">
-                  <div className="font-medium text-blue-600 dark:text-blue-400">{feedback.word}</div>
-                  <div className="text-xs text-muted-foreground">{feedback.feedback}</div>
+                  <div className="font-medium text-blue-600 dark:text-blue-400 flex items-center gap-2">
+                    <Volume2 className="w-3 h-3" />
+                    {feedback.word}
+                  </div>
+                  <div className="text-xs text-muted-foreground">🎤 Charlotte provided audio breakdown</div>
                 </div>
               ))}
             </CollapsibleContent>
@@ -500,11 +606,17 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
                           size="sm" 
                           variant="secondary" 
                           className="text-xs px-2 py-1 h-8" 
-                          onClick={() => {
-                            charlotteVoiceService.charlotteHearWord(w);
+                          onClick={async () => {
+                            try {
+                              await charlotteVoiceService.charlotteInteractiveAudio({ 
+                                text: `Listen carefully to how I say "${w}"`, 
+                                context: 'conversation' 
+                              });
+                              await charlotteVoiceService.charlotteSyllableWord(w);
+                            } catch {}
                           }}
                         >
-                          <Volume2 className="w-3 h-3 mr-1" /> {t('coach.hear','Hear')}
+                          <Volume2 className="w-3 h-3 mr-1" /> {t('coach.hear','Charlotte Demo')}
                         </Button>
                         <Button 
                           size="sm" 
@@ -512,7 +624,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
                           onClick={() => onSayWithMe(w)} 
                           disabled={(wordTries[w] || 0) >= WORD_MICRO_ATTEMPTS}
                         >
-                          {t('coach.practice','Practice')} ({(wordTries[w] || 0)}/{WORD_MICRO_ATTEMPTS})
+                          {t('coach.practice','Say With Charlotte')} ({(wordTries[w] || 0)}/{WORD_MICRO_ATTEMPTS})
                         </Button>
                       </div>
                     </div>
@@ -525,13 +637,19 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
                     <div key={w} className="flex items-center justify-between gap-2">
                       <span className="text-muted-foreground">{w}</span>
                       <div className="flex items-center gap-2">
-                        <Button size="sm" variant="secondary" className="gap-1" onClick={() => {
-                          charlotteVoiceService.charlotteHearWord(w);
+                        <Button size="sm" variant="secondary" className="gap-1" onClick={async () => {
+                          try {
+                            await charlotteVoiceService.charlotteInteractiveAudio({ 
+                              text: `Listen carefully to how I say "${w}"`, 
+                              context: 'conversation' 
+                            });
+                            await charlotteVoiceService.charlotteSyllableWord(w);
+                          } catch {}
                         }}>
-                          <Volume2 className="w-3 h-3" /> {t('coach.hearIt','Hear it')}
+                          <Volume2 className="w-3 h-3" /> {t('coach.hearIt','Charlotte Demo')}
                         </Button>
                         <Button size="sm" className="gap-1" onClick={() => onSayWithMe(w)} disabled={(wordTries[w] || 0) >= WORD_MICRO_ATTEMPTS}>
-                          {t('coach.sayWithMe','Say it with me')} ({(wordTries[w] || 0)}/{WORD_MICRO_ATTEMPTS})
+                          {t('coach.sayWithMe','Say With Charlotte')} ({(wordTries[w] || 0)}/{WORD_MICRO_ATTEMPTS})
                         </Button>
                       </div>
                     </div>
