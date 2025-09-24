@@ -445,7 +445,7 @@ export class CharlotteVoiceService {
             Math.abs(currentTimeMs - timing.endTime)
           );
           
-          if (distance < 100 && distance < closestDistance) {
+          if (distance < 30 && distance < closestDistance) {
             closestDistance = distance;
             currentWordIndex = i;
           }
@@ -466,7 +466,7 @@ export class CharlotteVoiceService {
     this.audio.addEventListener('timeupdate', updateHighlight);
     
     // Also use interval as backup for smoother highlighting
-    this.highlightInterval = setInterval(updateHighlight, 50);
+    this.highlightInterval = setInterval(updateHighlight, 20);
   }
 
   private stopWordHighlighting(): void {

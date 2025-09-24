@@ -1394,11 +1394,18 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
   // Helper function to create native language explanations
   const generateNativeLanguageExplanation = async (word: string, wordData: any, userLanguage: string): Promise<string> => {
     try {
+      // If English, return as-is
+      if (userLanguage === 'en' || userLanguage === 'English') {
+        return `The word "${word}" means: ${wordData.definition || 'a word'}`;
+      }
+
       // Use translate-batch to get the explanation in user's language
       const textsToTranslate = [
         wordData.definition || 'a word',
         wordData.sampleSentence || `This is the word: ${word}`
       ];
+      
+      DebugLogger.log('network', 'Translating to language:', { userLanguage, texts: textsToTranslate });
       
       const response = await supabase.functions.invoke('translate-universal', {
         body: {
@@ -1410,18 +1417,25 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
         }
       });
       
+      DebugLogger.log('network', 'Translation response:', response);
+      
       if (response.data?.translations) {
         const [translatedDefinition, translatedExample] = response.data.translations;
         const defText = translatedDefinition.translatedText ?? translatedDefinition.translation ?? translatedDefinition;
         const exText = translatedExample.translatedText ?? translatedExample.translation ?? translatedExample;
-        return `${word}. ${defText}. ${exText}`;
+        
+        const result = `${word}: ${defText}. ${exText}`;
+        DebugLogger.log('network', 'Translation successful:', { result });
+        return result;
+      } else {
+        DebugLogger.warn('network', 'No translations in response', response.data);
       }
     } catch (error) {
-      DebugLogger.log('network', 'Translation failed, using simple format', error);
+      DebugLogger.error('network', 'Translation failed:', error);
     }
     
-    // Fallback to simple format if translation fails
-    return `${word}. ${wordData.definition || 'a word'}.`;
+    // Fallback to English with language indicator
+    return `[${userLanguage}] The word "${word}" means: ${wordData.definition || 'a word'}.`;
   };
 
   const handleMobileExplain = async () => {

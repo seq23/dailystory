@@ -164,6 +164,13 @@ export class PhoneticRulesEngine {
       return this.knownSyllables[cleanWord];
     }
 
+    // Check morphological patterns before rule-based breaking
+    const morphological = this.tryMorphologicalBreakdown(cleanWord);
+    if (morphological) {
+      DebugLogger.log('audio', `Morphological breakdown: ${morphological}`);
+      return morphological;
+    }
+
     // Plural-aware handling for kid-friendly breakdowns
     const pluralAware = this.tryPluralAware(cleanWord);
     if (pluralAware) {
@@ -176,6 +183,19 @@ export class PhoneticRulesEngine {
     DebugLogger.log('audio', `Rule-based breakdown: ${syllables}`);
     
     return syllables;
+  }
+
+  /**
+   * Try morphological pattern matching (stem + suffix combinations)
+   */
+  private tryMorphologicalBreakdown(word: string): string[] | null {
+    try {
+      const { tryMorphologicalBreakdown } = require('@/data/morphologicalPatterns');
+      return tryMorphologicalBreakdown(word);
+    } catch (error) {
+      DebugLogger.warn('audio', 'Morphological patterns not available:', error);
+      return null;
+    }
   }
 
   /**

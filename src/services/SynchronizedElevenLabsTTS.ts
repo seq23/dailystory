@@ -308,7 +308,7 @@ export class SynchronizedElevenLabsTTS {
       const isShortWord = shortWords.includes(word.toLowerCase().trim());
       
       // Balanced duration calculation: 100ms per character, realistic minimums
-      const baseDuration = isShortWord ? 120 : Math.max(180, word.length * 100); // Balanced 100ms per character
+      const baseDuration = isShortWord ? 120 : Math.max(180, word.length * 80); // Optimized 80ms per character
       const estimatedDuration = baseDuration;
       
       wordTimings.push({
@@ -317,7 +317,7 @@ export class SynchronizedElevenLabsTTS {
         endTime: currentTime + estimatedDuration
       });
       
-      currentTime += estimatedDuration + 50; // Balanced 50ms gap between words
+      currentTime += estimatedDuration + 30; // Optimized 30ms gap between words
     }
     
     DebugLogger.log('audio', '✅ Natural fallback timing generated', { wordTimingsCount: wordTimings.length });
