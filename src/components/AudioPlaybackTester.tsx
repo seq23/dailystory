@@ -138,9 +138,9 @@ export const AudioPlaybackTester: React.FC = () => {
         charlotteService.stop();
       }
 
-      // Stop SimplifiedAudioEngine
-      if (typeof window !== 'undefined' && window.__SimplifiedAudioEngine) {
-        const audioEngine = window.__SimplifiedAudioEngine;
+      // Legacy audio stop (if available)
+      if (typeof window !== 'undefined' && (window as any).__SimplifiedAudioEngine) {
+        const audioEngine = (window as any).__SimplifiedAudioEngine;
         audioEngine.stop();
       }
 
@@ -277,10 +277,7 @@ export const AudioPlaybackTester: React.FC = () => {
             <div className="font-medium mb-1">Charlotte-Centric Audio Services:</div>
             <div className="space-y-1">
               <div>
-                CharlotteVoiceService: {typeof window !== 'undefined' && (window as any).__CharlotteVoiceService ? '✅ Available (Unified)' : '❌ Not Found'}
-              </div>
-              <div>
-                SimplifiedAudioEngine: {typeof window !== 'undefined' && (window as any).__SimplifiedAudioEngine ? '✅ Available (Story)' : '❌ Not Found'}
+                CharlotteVoiceService: {typeof window !== 'undefined' && (window as any).__CharlotteVoiceService ? '✅ Available (Primary Unified)' : '❌ Not Found'}
               </div>
               <div>
                 SmartElevenLabsTTS: {typeof window !== 'undefined' && (window as any).SmartElevenLabsTTS ? '✅ Available (Fallback)' : '❌ Not Found'}

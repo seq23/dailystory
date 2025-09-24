@@ -2,14 +2,14 @@ import React, { useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useConversation } from '@11labs/react';
-import { SimplifiedAudioEngine } from '@/services/SimplifiedAudioEngine';
+import { charlotteVoiceService } from '@/services/CharlotteVoiceService';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { DebugLogger } from '@/services/DebugLogger';
 
 export const SimpleVoiceCommands: React.FC = () => {
-  const engine = SimplifiedAudioEngine.getInstance();
+  const engine = charlotteVoiceService;
   const { isMobileOrTablet } = useIsMobile();
 
   // Define client tools for voice commands
@@ -34,11 +34,7 @@ export const SimpleVoiceCommands: React.FC = () => {
           hash, 
           voiceId: 'XB0fDUnXU5powFXDhCwa' 
         });
-        engine.playTextWithSynchronization({ 
-          text, 
-          contentHash: hash,
-          voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
-        }).then(() => {
+        engine.charlotteReadStory(text, hash).then(() => {
           DebugLogger.log('audio', 'Audio playback started successfully');
         }).catch((error) => {
           DebugLogger.error('audio', 'Audio playback failed', error);

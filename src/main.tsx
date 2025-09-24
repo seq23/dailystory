@@ -14,13 +14,11 @@ import './utils/errorSuppressionManager'
 import './services/DebugLogger'
 
 // GLOBAL AUDIO SERVICE EXPOSURE - For AudioPlaybackTester and debugging
-import { SimplifiedAudioEngine } from './services/SimplifiedAudioEngine';
 import { charlotteVoiceService } from './services/CharlotteVoiceService';
 import { SmartElevenLabsTTS } from './services/smartElevenLabsTTS';
 
-// Expose audio services globally for testing and debugging
+// Expose unified Charlotte audio service globally for testing and debugging
 if (typeof window !== 'undefined') {
-  (window as any).__SimplifiedAudioEngine = SimplifiedAudioEngine.getInstance();
   (window as any).__CharlotteVoiceService = charlotteVoiceService;
   (window as any).SmartElevenLabsTTS = SmartElevenLabsTTS;
 }
