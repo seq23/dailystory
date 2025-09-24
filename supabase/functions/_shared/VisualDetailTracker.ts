@@ -67,7 +67,7 @@ export class VisualDetailTracker {
    * Analyze text for visual details and store them in database for consistency
    * Enhanced with character-specific clothing detection and secondary character visual details
    */
-  static async analyzeTextForDetails(sessionId, text, pageNumber, characterName = null) {
+  static async analyzeTextForDetails(sessionId: string, text: string, pageNumber: number, characterName: string | null = null) {
     console.log(`🎨 VisualDetailTracker - Analyzing text for session ${sessionId}, page ${pageNumber}`);
     
     if (!sessionId || !text) return;
@@ -230,7 +230,7 @@ export class VisualDetailTracker {
   /**
    * Save visual detail to database
    */
-  static async saveDetailToDatabase(sessionId, characterName, detailType, detailKey, detailValue, pageNumber) {
+  static async saveDetailToDatabase(sessionId: string, characterName: string, detailType: string, detailKey: string, detailValue: string, pageNumber: number) {
     try {
       // Check if detail already exists
       const { data: existing } = await this.supabase
@@ -286,7 +286,7 @@ export class VisualDetailTracker {
   /**
    * Get character clothing from database
    */
-  static async getCharacterClothing(sessionId, characterName) {
+  static async getCharacterClothing(sessionId: string, characterName: string) {
     try {
       const { data, error } = await this.supabase
         .from('visual_details_cache')
@@ -300,7 +300,7 @@ export class VisualDetailTracker {
         return {};
       }
 
-      const clothing = {};
+      const clothing: Record<string, any> = {};
       data?.forEach(detail => {
         clothing[detail.detail_key] = detail.detail_value;
       });
@@ -316,7 +316,7 @@ export class VisualDetailTracker {
   /**
    * Get all visual details for a character
    */
-  static async getCharacterDetails(sessionId, characterName) {
+  static async getCharacterDetails(sessionId: string, characterName: string) {
     try {
       const { data, error } = await this.supabase
         .from('visual_details_cache')
@@ -329,7 +329,7 @@ export class VisualDetailTracker {
         return {};
       }
 
-      const details = {};
+      const details: Record<string, any> = {};
       data?.forEach(detail => {
         if (!details[detail.detail_type]) {
           details[detail.detail_type] = {};
@@ -347,7 +347,7 @@ export class VisualDetailTracker {
   /**
    * Build clothing description for character prompt
    */
-  static async buildClothingDescription(sessionId, characterName) {
+  static async buildClothingDescription(sessionId: string, characterName: string) {
     const clothing = await this.getCharacterClothing(sessionId, characterName);
     
     if (Object.keys(clothing).length === 0) {
@@ -361,7 +361,7 @@ export class VisualDetailTracker {
   /**
    * Get all visual details for a session as prompt addition
    */
-  static async getVisualDetailsForPrompt(sessionId) {
+  static async getVisualDetailsForPrompt(sessionId: string) {
     try {
       const { data, error } = await this.supabase
         .from('visual_details_cache')
@@ -386,7 +386,7 @@ export class VisualDetailTracker {
   /**
    * Get secondary character visual details for enriched descriptions
    */
-  static async getSecondaryCharacterVisuals(sessionId, characterName) {
+  static async getSecondaryCharacterVisuals(sessionId: string, characterName: string) {
     try {
       const { data, error } = await this.supabase
         .from('visual_details_cache')
@@ -416,7 +416,7 @@ export class VisualDetailTracker {
   /**
    * Build enriched secondary character description with visual details
    */
-  static async buildEnrichedSecondaryCharacter(sessionId, characterType, baseDescription) {
+  static async buildEnrichedSecondaryCharacter(sessionId: string, characterType: string, baseDescription: string) {
     const characterName = this.extractCharacterNameFromDescription(characterType);
     const visuals = await this.getSecondaryCharacterVisuals(sessionId, characterName);
     

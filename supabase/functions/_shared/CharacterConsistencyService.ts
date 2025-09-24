@@ -18,13 +18,13 @@ export class CharacterConsistencyService {
   /**
    * Save character data to database
    */
-  async saveCharacterToDatabase(sessionId, characterKey, characterData) {
+  async saveCharacterToDatabase(sessionId: string, characterKey: string, characterData: any) {
     console.log(`💾 Attempting to save character ${characterKey} to database for session ${sessionId}...`);
     
     const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
     const supabase = createClient(
-      Deno.env.get('SUPABASE_URL'), 
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+      Deno.env.get('SUPABASE_URL') ?? '', 
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
     const { error } = await supabase
@@ -50,13 +50,13 @@ export class CharacterConsistencyService {
   /**
    * Get character data from database
    */
-  async getCharacterFromDatabase(sessionId, characterKey) {
+  async getCharacterFromDatabase(sessionId: string, characterKey: string) {
     console.log(`📖 Attempting to retrieve character ${characterKey} from database for session ${sessionId}...`);
     
     const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
     const supabase = createClient(
-      Deno.env.get('SUPABASE_URL'), 
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+      Deno.env.get('SUPABASE_URL') ?? '', 
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
     const { data, error } = await supabase
@@ -90,7 +90,7 @@ export class CharacterConsistencyService {
   /**
    * Get or create character seed with full consistency support (DATABASE-BACKED)
    */
-  async getCharacterSeed(sessionId, avatarIdentity, storyContext, sessionType = 'new', pageTextClothing = null) {
+  async getCharacterSeed(sessionId: string, avatarIdentity: any, storyContext: any, sessionType: string = 'new', pageTextClothing: string | null = null) {
     const characterName = avatarIdentity.name || 'child';
     const cacheKey = `${sessionId}_${characterName}`;
     
@@ -131,7 +131,7 @@ export class CharacterConsistencyService {
   /**
    * Create new character seed with avatar awareness
    */
-  async createNewCharacterSeed(avatarIdentity) {
+  async createNewCharacterSeed(avatarIdentity: any) {
     const characterName = avatarIdentity.name || 'child';
     const userId = `avatar-${avatarIdentity.type}-${avatarIdentity.skinTone}`; // Generate consistent ID from avatar
     const characterSpecificSeed = `${characterName}-${userId}-${avatarIdentity.skinTone}`;
@@ -153,6 +153,7 @@ export class CharacterConsistencyService {
       avatarType: avatarIdentity.type || 'child',
       skinTone: avatarIdentity.skinTone || 'medium',
       consistentClothingStyle,
+      physicalTraits: {}, // Add missing physicalTraits property
       selectedCulturalHair: null, // Will be populated when cultural context is generated
       selectedCulturalFeatures: null, // Will be populated when cultural context is generated
       characterSpecificSeed
@@ -162,7 +163,7 @@ export class CharacterConsistencyService {
   /**
    * Generate stable seed from user data
    */
-  generateStableSeed(seedInput, characterName) {
+  generateStableSeed(seedInput: string, characterName: string) {
     let hash = 0;
     const combined = `${seedInput}-${characterName}`;
     
@@ -178,13 +179,13 @@ export class CharacterConsistencyService {
   /**
    * Update character data with cultural selections for persistence
    */
-  async updateCulturalSelections(sessionId, characterKey, selectedCulturalHair, selectedCulturalFeatures) {
+  async updateCulturalSelections(sessionId: string, characterKey: string, selectedCulturalHair: string | null, selectedCulturalFeatures: string | null) {
     console.log(`🎨 Updating cultural selections for character ${characterKey} in session ${sessionId}`);
     
     const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
     const supabase = createClient(
-      Deno.env.get('SUPABASE_URL'), 
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+      Deno.env.get('SUPABASE_URL') ?? '', 
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
     const { error } = await supabase
@@ -210,7 +211,7 @@ export class CharacterConsistencyService {
    * Build character description from seed data
    * Now integrated with VisualDetailTracker for persistent clothing
    */
-  async buildCharacterDescription(seedData, storyContext, pageTextClothing = null, sessionId = null) {
+  async buildCharacterDescription(seedData: any, storyContext: any, pageTextClothing: string | null = null, sessionId: string | null = null) {
     const characterName = seedData.characterName || 'child';
     const age = seedData.age || '6-8';
     
@@ -225,7 +226,7 @@ export class CharacterConsistencyService {
           console.log(`👕 Using VisualDetailTracker clothing for ${characterName}: ${detectedClothing}`);
         }
       } catch (error) {
-        console.log(`⚠️ VisualDetailTracker clothing query failed:`, error.message);
+        console.log(`⚠️ VisualDetailTracker clothing query failed:`, error instanceof Error ? error.message : String(error));
       }
     }
     
@@ -254,7 +255,7 @@ export class CharacterConsistencyService {
   /**
    * Generate secondary character for relationship consistency with seed-based consistency
    */
-  async generateSecondaryCharacter(type, details, userInfo, sessionId) {
+  async generateSecondaryCharacter(type: string, details: any, userInfo: any, sessionId: string) {
     const secondaryName = details.name || `${type}_character`;
     const cacheKey = `${sessionId}_secondary_${secondaryName}`;
     
@@ -291,7 +292,7 @@ export class CharacterConsistencyService {
   /**
    * Get or create secondary character seed for consistency across pages
    */
-  async getSecondaryCharacterSeed(sessionId, characterName, characterType = 'secondary_character') {
+  async getSecondaryCharacterSeed(sessionId: string, characterName: string, characterType: string = 'secondary_character') {
     const characterKey = `secondary_${characterName.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
     
     try {
@@ -340,11 +341,11 @@ export class CharacterConsistencyService {
   /**
    * Generate description for secondary character using seeded randomization
    */
-  generateSecondaryCharacterDescription(characterName, type, seed) {
+  generateSecondaryCharacterDescription(characterName: string, type: string, seed: number) {
     const seededRandom = this.createSeededRandom(seed);
     
     // Define basic character templates with minimal descriptions to let Runware decide appearance
-    const characterTemplates = {
+    const characterTemplates: Record<string, string[]> = {
       person: ['friendly person', 'kind individual', 'helpful neighbor', 'cheerful friend'],
       adult: ['caring adult', 'gentle grown-up', 'wise elder', 'supportive figure'],
       child: ['playful child', 'curious kid', 'friendly peer', 'energetic youth'],
@@ -362,10 +363,10 @@ export class CharacterConsistencyService {
   /**
    * Detect secondary characters from story text
    */
-  detectSecondaryCharacters(pageText) {
+  detectSecondaryCharacters(pageText: string) {
     if (!pageText) return [];
     
-    const detectedCharacters = [];
+    const detectedCharacters: string[] = [];
     const text = pageText.toLowerCase();
     
     // Common secondary character patterns
@@ -405,8 +406,8 @@ export class CharacterConsistencyService {
     try {
       const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
       const supabase = createClient(
-        Deno.env.get('SUPABASE_URL'), 
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+        Deno.env.get('SUPABASE_URL') ?? '', 
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
       );
 
       const { data, error } = await supabase
@@ -419,12 +420,12 @@ export class CharacterConsistencyService {
         throw new Error(`CharacterConsistencyService.clearServerState failed: ${safeErrorMessage(error)}`);
       }
       
-      const deletedCount = data?.length || 0;
-      console.log(`🗑️ Successfully cleared ${deletedCount} character consistency cache entries`);
+      // For delete operations, we can't rely on data.length, just log success
+      console.log(`🗑️ Successfully cleared character consistency cache entries`);
       
       return {
-        cleared: deletedCount,
-        message: `Cleared ${deletedCount} character cache entries from database`,
+        cleared: 0, // Can't determine exact count from delete operation
+        message: `Cleared character cache entries from database`,
         success: true
       };
     } catch (error) {
@@ -440,7 +441,7 @@ export class CharacterConsistencyService {
   /**
    * Create seeded random number generator for consistency
    */
-  createSeededRandom(seed) {
+  createSeededRandom(seed: number) {
     let currentSeed = seed;
     return function() {
       currentSeed = (currentSeed * 9301 + 49297) % 233280;
@@ -452,21 +453,21 @@ export class CharacterConsistencyService {
    * Get African American hairstyles from consolidated cultural arrays
    */
   getAfricanAmericanHairStyles() {
-    return CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES;
+    return CULTURAL_ARRAYS.african?.hair || [];
   }
 
   /**
    * Get African American facial features from consolidated cultural arrays
    */
   getAfricanAmericanFacialFeatures() {
-    return CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES;
+    return CULTURAL_ARRAYS.african?.features || [];
   }
 
   /**
    * Get regional authenticity strings from consolidated cultural arrays
    */
   getRegionalAuthenticity(): string[] {
-    return CULTURAL_ARRAYS.REGIONAL_AUTHENTICITY_STRINGS;
+    return []; // Return empty array as fallback since property doesn't exist in CULTURAL_ARRAYS
   }
 
   /**
