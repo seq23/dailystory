@@ -551,9 +551,17 @@ export class CharlotteVoiceService {
       this.highlightInterval = undefined;
     }
     
-    if (this.onWordHighlight) {
-      this.onWordHighlight(-1);
+    // Null safety check: ensure onWordHighlight is defined and is a function
+    if (this.onWordHighlight && typeof this.onWordHighlight === 'function') {
+      try {
+        this.onWordHighlight(-1);
+      } catch (error) {
+        DebugLogger.error('audio', 'Error calling onWordHighlight callback', error);
+      }
     }
+    
+    // Clear callback to prevent stale references
+    this.onWordHighlight = undefined;
   }
 
   private fallbackToBrowserSpeech(text: string): void {
@@ -654,6 +662,10 @@ export class CharlotteVoiceService {
     
     this.stopWordHighlighting();
     this.playing = false;
+    
+    // Clear state to prevent conflicts between components
+    this.wordTimings = [];
+    this.currentHash = null;
     
     // Dispatch audio state change for UI synchronization
     window.dispatchEvent(new CustomEvent('audio:statechange', { 
