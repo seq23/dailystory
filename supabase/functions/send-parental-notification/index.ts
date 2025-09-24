@@ -1,7 +1,4 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@2.0.0";
-
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -57,71 +54,84 @@ const handler = async (req: Request): Promise<Response> => {
       </li>`
     ).join('');
 
-    const emailResponse = await resend.emails.send({
-      from: "Time2Read Safety <safety@time-2-read.com>",
-      to: [parentEmail],
-      subject: `📋 ${reportType.charAt(0).toUpperCase() + reportType.slice(1)} Privacy Report for ${childName}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-            <h1 style="color: #2563eb; margin: 0; display: flex; align-items: center;">
-              📋 ${reportType.charAt(0).toUpperCase() + reportType.slice(1)} Privacy Report
-            </h1>
-          </div>
-
-          <p>Dear Parent/Guardian,</p>
-
-          <p>This is your ${reportType} summary of privacy-related activity for <strong>${childName}</strong>'s Time2Read account.</p>
-
-          <div style="background: #dbeafe; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2563eb;">
-            <h3 style="margin-top: 0; color: #1e40af;">Summary</h3>
-            <p style="margin-bottom: 0; font-size: 18px;">
-              <strong>${incidentCount}</strong> privacy incidents detected this ${reportType.replace('ly', '')}
-            </p>
-          </div>
-
-          ${incidentCount > 0 ? `
-            <h3 style="color: #1f2937;">Recent Privacy Incidents:</h3>
-            <ul style="background: #fef2f2; padding: 15px; border-radius: 8px; border-left: 4px solid #dc2626;">
-              ${violationsList}
-            </ul>
-          ` : `
-            <div style="background: #f0f9ff; padding: 15px; border-radius: 8px; border-left: 4px solid #10b981;">
-              <p style="margin: 0; color: #065f46;">✅ Great news! No privacy incidents were detected during this period.</p>
+    // Send email using Resend API directly
+    const emailResponse = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${Deno.env.get("RESEND_API_KEY")}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: "Time2Read Safety <safety@time-2-read.com>",
+        to: [parentEmail],
+        subject: `📋 ${reportType.charAt(0).toUpperCase() + reportType.slice(1)} Privacy Report for ${childName}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <h1 style="color: #2563eb; margin: 0; display: flex; align-items: center;">
+                📋 ${reportType.charAt(0).toUpperCase() + reportType.slice(1)} Privacy Report
+              </h1>
             </div>
-          `}
 
-          <div style="background: #e0f2fe; padding: 15px; border-radius: 8px; margin: 20px 0;">
-            <h3 style="margin-top: 0; color: #0277bd;">Parental Guidance Tips:</h3>
-            <ul style="margin-bottom: 0;">
-              <li>Review story content regularly with your child</li>
-              <li>Remind them to use fictional names and places in stories</li>
-              <li>Encourage creative storytelling without personal details</li>
-              <li>Praise them when they create imaginative, privacy-safe content</li>
-            </ul>
-          </div>
+            <p>Dear Parent/Guardian,</p>
 
-          <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; margin-top: 20px;">
-            <p style="margin: 0; font-size: 14px; color: #6b7280;">
-              This ${reportType} report was generated automatically by Time2Read's privacy protection system. 
-              We're committed to keeping your child safe online and complying with COPPA regulations.
-              <a href="https://www.ftc.gov/legal-library/browse/rules/childrens-online-privacy-protection-rule-coppa" style="color: #2563eb;">Learn more about COPPA</a>
+            <p>This is your ${reportType} summary of privacy-related activity for <strong>${childName}</strong>'s Time2Read account.</p>
+
+            <div style="background: #dbeafe; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2563eb;">
+              <h3 style="margin-top: 0; color: #1e40af;">Summary</h3>
+              <p style="margin-bottom: 0; font-size: 18px;">
+                <strong>${incidentCount}</strong> privacy incidents detected this ${reportType.replace('ly', '')}
+              </p>
+            </div>
+
+            ${incidentCount > 0 ? `
+              <h3 style="color: #1f2937;">Recent Privacy Incidents:</h3>
+              <ul style="background: #fef2f2; padding: 15px; border-radius: 8px; border-left: 4px solid #dc2626;">
+                ${violationsList}
+              </ul>
+            ` : `
+              <div style="background: #f0f9ff; padding: 15px; border-radius: 8px; border-left: 4px solid #10b981;">
+                <p style="margin: 0; color: #065f46;">✅ Great news! No privacy incidents were detected during this period.</p>
+              </div>
+            `}
+
+            <div style="background: #e0f2fe; padding: 15px; border-radius: 8px; margin: 20px 0;">
+              <h3 style="margin-top: 0; color: #0277bd;">Parental Guidance Tips:</h3>
+              <ul style="margin-bottom: 0;">
+                <li>Review story content regularly with your child</li>
+                <li>Remind them to use fictional names and places in stories</li>
+                <li>Encourage creative storytelling without personal details</li>
+                <li>Praise them when they create imaginative, privacy-safe content</li>
+              </ul>
+            </div>
+
+            <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; margin-top: 20px;">
+              <p style="margin: 0; font-size: 14px; color: #6b7280;">
+                This ${reportType} report was generated automatically by Time2Read's privacy protection system. 
+                We're committed to keeping your child safe online and complying with COPPA regulations.
+                <a href="https://www.ftc.gov/legal-library/browse/rules/childrens-online-privacy-protection-rule-coppa" style="color: #2563eb;">Learn more about COPPA</a>
+              </p>
+            </div>
+
+            <p style="margin-top: 30px;">
+              Best regards,<br>
+              <strong>The Time2Read Safety Team</strong>
             </p>
           </div>
-
-          <p style="margin-top: 30px;">
-            Best regards,<br>
-            <strong>The Time2Read Safety Team</strong>
-          </p>
-        </div>
-      `,
+        `,
+      }),
     });
 
-    console.log("Parental notification sent successfully:", emailResponse);
+    if (!emailResponse.ok) {
+      throw new Error(`Resend API error: ${emailResponse.statusText}`);
+    }
+
+    const emailResult = await emailResponse.json();
+    console.log("Parental notification sent successfully:", emailResult);
 
     return new Response(JSON.stringify({
       success: true,
-      messageId: emailResponse.data?.id || 'unknown',
+      messageId: emailResult.id || 'unknown',
       reportType,
       incidentCount
     }), {
