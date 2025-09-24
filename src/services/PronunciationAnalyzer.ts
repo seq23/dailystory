@@ -10,22 +10,33 @@ interface PronunciationResult {
   syllableFeedback: { word: string; syllables: string[]; feedback: string }[];
 }
 
+interface WordConfidence {
+  word: string;
+  confidence: number;
+  start?: number;
+  end?: number;
+}
+
 interface WordAnalysis {
   word: string;
   expected: string[];
   actual: string;
   phonemeAccuracy: number;
   syllableIssues: string[];
+  confidence?: number;
+  confidenceIssue?: boolean;
 }
 
 export class PronunciationAnalyzer {
   /**
    * Analyzes pronunciation by comparing expected vs actual phonetic patterns
+   * Now with ultra-strict detection using ASR confidence data
    */
   static async analyzePronunciation(
     referenceText: string,
     spokenText: string,
-    confidence: number = 0.8
+    confidence: number = 0.8,
+    wordConfidences: WordConfidence[] = []
   ): Promise<PronunciationResult> {
     const cleanRef = this.cleanText(referenceText);
     const cleanSpoken = this.cleanText(spokenText);
@@ -33,15 +44,19 @@ export class PronunciationAnalyzer {
     const refWords = cleanRef.split(/\s+/).filter(Boolean);
     const spokenWords = cleanSpoken.split(/\s+/).filter(Boolean);
 
-    // Get phonetic analysis for each word
-    const wordAnalyses = await this.analyzeWords(refWords, spokenWords);
+    // Get phonetic analysis for each word with confidence data
+    const wordAnalyses = await this.analyzeWords(refWords, spokenWords, wordConfidences);
     
     // Calculate overall accuracy
     const accuracy = this.calculateAccuracy(wordAnalyses, confidence);
     
-    // Extract mispronounced words and specific issues - increased threshold for better detection
+    // ULTRA-STRICT: Extract mispronounced words - 99% accuracy required OR confidence < 85%
     const mispronounced = wordAnalyses
-      .filter(analysis => analysis.phonemeAccuracy < 0.8)
+      .filter(analysis => 
+        analysis.phonemeAccuracy < 0.99 || // Ultra-strict text-based threshold
+        analysis.confidenceIssue || // Low ASR confidence flag
+        analysis.syllableIssues.length > 0 // Any syllable issues
+      )
       .map(analysis => analysis.word);
 
     // Generate phoneme-level feedback
@@ -74,15 +89,16 @@ export class PronunciationAnalyzer {
   }
 
   /**
-   * Analyzes individual words for phonetic accuracy
+   * Analyzes individual words for phonetic accuracy with confidence data
    */
   private static async analyzeWords(
     referenceWords: string[], 
-    spokenWords: string[]
+    spokenWords: string[],
+    wordConfidences: WordConfidence[] = []
   ): Promise<WordAnalysis[]> {
     const analyses: WordAnalysis[] = [];
     
-    // Create word mapping (simple alignment for now)
+    // Create word mapping with confidence data
     const wordPairs = this.alignWords(referenceWords, spokenWords);
     
     for (const [refWord, spokenWord] of wordPairs) {
@@ -95,6 +111,16 @@ export class PronunciationAnalyzer {
         const phonemeAccuracy = spokenWord ? 
           this.calculatePhonemeDistance(refWord, spokenWord) : 0;
         
+        // Find confidence data for this word
+        const confidenceData = wordConfidences.find(wc => 
+          wc.word.toLowerCase() === refWord.toLowerCase() ||
+          wc.word.toLowerCase() === spokenWord?.toLowerCase()
+        );
+        const wordConfidence = confidenceData?.confidence || 1.0;
+        
+        // Flag low confidence words (< 85% confidence = mispronunciation indicator)
+        const confidenceIssue = wordConfidence < 0.85;
+        
         // Identify syllable issues
         const syllableIssues = await this.identifySyllableIssues(refWord, spokenWord, expectedSyllables);
         
@@ -103,7 +129,9 @@ export class PronunciationAnalyzer {
           expected: expectedSyllables,
           actual: spokenWord || '',
           phonemeAccuracy,
-          syllableIssues
+          syllableIssues,
+          confidence: wordConfidence,
+          confidenceIssue
         });
       } catch (error) {
         DebugLogger.warn('audio', `Failed to analyze word "${refWord}"`, { error });
@@ -112,7 +140,9 @@ export class PronunciationAnalyzer {
           expected: [refWord],
           actual: spokenWord || '',
           phonemeAccuracy: spokenWord ? 0.5 : 0,
-          syllableIssues: []
+          syllableIssues: [],
+          confidence: 0.5,
+          confidenceIssue: true
         });
       }
     }
@@ -161,8 +191,8 @@ export class PronunciationAnalyzer {
         }
       });
       
-      // Mark the best match as used if it meets our threshold
-      if (bestIndex >= 0 && bestScore > 0.4) {
+      // ULTRA-STRICT: Use higher threshold for word matching (70% vs 40%)
+      if (bestIndex >= 0 && bestScore > 0.7) {
         usedSpoken.add(bestIndex);
         // If it's a compound match, mark the next word as used too
         if (bestMatch && bestMatch.includes(" ")) {
@@ -170,7 +200,7 @@ export class PronunciationAnalyzer {
         }
       }
       
-      pairs.push([refWord, bestMatch && bestScore > 0.4 ? bestMatch : null]);
+      pairs.push([refWord, bestMatch && bestScore > 0.7 ? bestMatch : null]);
     }
     
     return pairs;
@@ -318,7 +348,7 @@ export class PronunciationAnalyzer {
     const feedback: Array<{word: string; syllables: string[]; feedback: string}> = [];
     
     for (const analysis of analyses) {
-      if (analysis.phonemeAccuracy < 0.8 && analysis.syllableIssues.length > 0) {
+      if (analysis.phonemeAccuracy < 0.99 && analysis.syllableIssues.length > 0) {
         const feedbackText = `Try breaking it down: ${analysis.expected.join('-')}. ${
           analysis.syllableIssues.length > 0 ? 
           `Focus on: ${analysis.syllableIssues.slice(0, 2).join(', ')}` : 
@@ -333,7 +363,7 @@ export class PronunciationAnalyzer {
       }
     }
     
-    return feedback.slice(0, 3); // Limit to top 3 words
+    return feedback; // ULTRA-STRICT: Show ALL words that need practice (removed 3-word cap)
   }
 
   /**

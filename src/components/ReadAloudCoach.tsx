@@ -246,7 +246,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
     } catch {}
   };
 
-  const analyzeResult = async (reference: string, said: string, durationMs: number, confidence: number = 0.8) => {
+  const analyzeResult = async (reference: string, said: string, durationMs: number, confidence: number = 0.8, wordConfidences: any[] = []) => {
     // Calculate reading pace
     const clean = (s: string) => s.toLowerCase().replace(/[^a-z\s]/g, "").split(/\s+/).filter(Boolean);
     const saidWords = clean(said);
@@ -257,11 +257,12 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
     else if (wpm > 120) pace = "Try slowing down just a bit for clearer pronunciation";
     else pace = "Your reading pace is perfect!";
 
-    // Use phonetic analysis for pronunciation accuracy
+    // Use phonetic analysis for pronunciation accuracy with confidence data
     const pronunciationResult = await PronunciationAnalyzer.analyzePronunciation(
       reference, 
       said, 
-      confidence
+      confidence,
+      wordConfidences
     );
 
     // Extract top problematic words with priority for completely missed words
@@ -274,8 +275,8 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
       const cleanSpoken = said.toLowerCase().replace(/[^a-z\s]/g, '');
       return cleanSpoken.includes(word.toLowerCase());
     });
-    // Prioritize missed words first, then mispronounced ones
-    const topWordsFromAnalysis = [...missedWords, ...mispronounced].slice(0, 3);
+    // ULTRA-STRICT: Show ALL problematic words (removed 3-word cap)
+    const topWordsFromAnalysis = [...missedWords, ...mispronounced];
     
     return { 
       acc: pronunciationResult.accuracy, 
@@ -325,10 +326,11 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
         }
         const text: string = data?.text || "";
         const confidence: number = data?.confidence || 0.8;
+        const wordConfidences = data?.words || [];
         setTranscript(text);
 
         const durationMs = Math.max(250, Date.now() - (startTsRef.current || Date.now()));
-        const analysisResult = await analyzeResult(sentences[idx], text, durationMs, confidence);
+        const analysisResult = await analyzeResult(sentences[idx], text, durationMs, confidence, wordConfidences);
         const { acc, pace, top, pronunciationFeedback, syllableFeedback } = analysisResult;
         
         setPaceTip(pace);
