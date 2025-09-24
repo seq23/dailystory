@@ -706,27 +706,6 @@
       "comfort": "لا بأس! استمر في التدرب على \"{{word}}\" وستنجح. لا تقلق، الأمر يحتاج وقت!"
     }
   },
-    "today": "اليوم",
-    "target": "الهدف:",
-    "targetLabel": "الهدف",
-    "start": "ابدأ",
-    "stop": "إيقاف",
-    "tryAgain": "حاول مجدداً",
-    "limitReached": "تم بلوغ الحد اليومي — قم بالترقية",
-    "youSaid": "قلتَ:",
-    "feedback": "الملاحظات:",
-    "pass": "أحسنت! طابقتَ الجملة.",
-    "almost": "قاربْت — لنصحّح بعض الكلمات.",
-    "paceTip": "نصيحة السرعة:",
-    "topWords": "أهم 3 كلمات للتدريب:",
-    "hearIt": "استمع",
-    "sayWithMe": "قل معي",
-    "privacy": "لا نحفظ التسجيلات. يتم حذف الصوت بعد الملاحظات.",
-    "paceFaster": "جرّب أسرع قليلاً",
-    "paceSlower": "جرّب أبطأ قليلاً",
-    "paceNice": "سرعة مناسبة",
-    "great": "رائع!"
-  },
   "postSession": {
     "quizTitle": "Comprehension Quiz",
     "quizDesc": "Quick 3–5 questions based on your story.",

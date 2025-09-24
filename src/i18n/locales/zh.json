@@ -761,27 +761,7 @@
       "comfort": "没关系！继续练习\"{{word}}\"，你会掌握的。别担心，这需要时间！"
     }
   },
-    "today": "今天",
-    "target": "目标：",
-    "targetLabel": "目标",
-    "start": "开始",
-    "stop": "停止",
-    "tryAgain": "再试一次",
-    "limitReached": "已达每日上限 — 升级",
-    "youSaid": "你说：",
-    "feedback": "反馈：",
-    "pass": "太棒了！你和句子匹配了。",
-    "almost": "快成功了——我们来修正几个词。",
-    "paceTip": "语速提示：",
-    "topWords": "练习的3个词：",
-    "hearIt": "听发音",
-    "sayWithMe": "跟我读",
-    "privacy": "我们不保存录音。反馈后会删除音频。",
-    "paceFaster": "读快一点",
-    "paceSlower": "读慢一点",
-    "paceNice": "语速合适",
-    "great": "太好了！"
-  },
+  "postSession": {
   "postSession": {
     "quizTitle": "Comprehension Quiz",
     "quizDesc": "Quick 3–5 questions based on your story.",
@@ -844,4 +824,3 @@
     "noWrongChoice": "没有错误的选择 - 我们会让它完美适合你"
   }
 }
-

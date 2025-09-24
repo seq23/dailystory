@@ -796,27 +796,7 @@
       "comfort": "¡Está bien! Sigue practicando \"{{word}}\" y lo conseguirás. No te preocupes, ¡toma tiempo!"
     }
   },
-    "today": "hoy",
-    "target": "Objetivo:",
-    "targetLabel": "Objetivo",
-    "start": "Comenzar",
-    "stop": "Detener",
-    "tryAgain": "Intentar de nuevo",
-    "limitReached": "Límite diario alcanzado — Actualiza",
-    "youSaid": "Dijiste:",
-    "feedback": "Comentarios:",
-    "pass": "¡Buen trabajo! Coincidiste la oración.",
-    "almost": "Casi — arreglemos algunas palabras.",
-    "paceTip": "Consejo de ritmo:",
-    "topWords": "3 palabras para practicar:",
-    "hearIt": "Escúchalo",
-    "sayWithMe": "Dilo conmigo",
-    "privacy": "No guardamos grabaciones. El audio se descarta después de la retroalimentación.",
-    "paceFaster": "Intenta un poco más rápido",
-    "paceSlower": "Intenta un poco más lento",
-    "paceNice": "Buen ritmo",
-    "great": "¡Genial!"
-  },
+  "postSession": {
   "postSession": {
     "quizTitle": "Comprehension Quiz",
     "quizDesc": "Quick 3–5 questions based on your story.",
@@ -877,6 +857,7 @@
     "gentleGuidance": "Muchos niños de {age} años disfrutan historias {level}",
     "choiceEmphasis": "Elige lo que suene más divertido y cómodo",
     "noWrongChoice": "No hay elección incorrecta - lo haremos perfecto para ti"
+  }
   }
 }
 

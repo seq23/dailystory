@@ -948,27 +948,6 @@
       "comfort": "Tudo bem! Continue praticando \"{{word}}\" e você vai conseguir. Não se preocupe, leva tempo!"
     }
   },
-    "today": "hoje",
-    "target": "Alvo:",
-    "targetLabel": "Alvo",
-    "start": "Iniciar",
-    "stop": "Parar",
-    "tryAgain": "Tentar novamente",
-    "limitReached": "Limite diário atingido — Atualize",
-    "youSaid": "Você disse:",
-    "feedback": "Feedback:",
-    "pass": "Ótimo! Você acompanhou a frase.",
-    "almost": "Quase lá — vamos corrigir algumas palavras.",
-    "paceTip": "Dica de ritmo:",
-    "topWords": "3 palavras para praticar:",
-    "hearIt": "Ouvir",
-    "sayWithMe": "Diga comigo",
-    "privacy": "Não armazenamos gravações. O áudio é descartado após o feedback.",
-    "paceFaster": "Tente um pouco mais rápido",
-    "paceSlower": "Tente um pouco mais devagar",
-    "paceNice": "Bom ritmo",
-    "great": "Ótimo!"
-  },
   "postSession": {
     "quizTitle": "Comprehension Quiz",
     "quizDesc": "Quick 3–5 questions based on your story.",
