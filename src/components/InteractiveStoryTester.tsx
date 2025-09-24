@@ -4,9 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { ElevenLabsAudio, type ElevenLabsAudioHandle } from '@/components/ElevenLabsAudio';
-import { MobileOptimizedInteractiveWord } from '@/components/MobileOptimizedInteractiveWord';
 import { BookOpen, ChevronLeft, ChevronRight, Play, Crown } from 'lucide-react';
 import type { UserInfo } from '@/types';
+import { useAudioControls } from '@/hooks/useAudioControls';
+import { processTextWithConsistentFlow } from '@/utils/unifiedTextProcessor';
 
 interface InteractiveStoryTesterProps {
   userInfo: UserInfo;
@@ -24,7 +25,6 @@ export const InteractiveStoryTester = ({
   highlightingEnabled 
 }: InteractiveStoryTesterProps) => {
   const [currentPage, setCurrentPage] = useState(0);
-  const [highlightedWordIndex, setHighlightedWordIndex] = useState(-1);
   const [wordInteractionCount, setWordInteractionCount] = useState(0);
   const audioRef = useRef<ElevenLabsAudioHandle>(null);
 
@@ -71,53 +71,41 @@ export const InteractiveStoryTester = ({
   const currentStory = storyPages[currentPage];
   const maxPages = isPremium ? storyPages.length : Math.min(6, storyPages.length);
 
-  const handleWordHighlight = (wordIndex: number) => {
-    if (highlightingEnabled) {
-      setHighlightedWordIndex(wordIndex);
-    }
-  };
-
-  const handleWordInteraction = () => {
-    setWordInteractionCount(prev => prev + 1);
-  };
-
-  const processTextIntoWords = (text: string) => {
-    const words = text.split(/(\s+|[.,!?;:])/);
-    let wordIndex = 0;
-    
-    return words.map((segment, index) => {
-      if (/^\s+$/.test(segment) || /^[.,!?;:]$/.test(segment)) {
-        return <span key={index}>{segment}</span>;
+  // Use production audio controls with proper highlighting
+  const { highlightWord, clearHighlighting, currentHighlightedWord } = useAudioControls({
+    text: currentStory?.text || '',
+    userInfo: testUserInfo,
+    currentPage,
+    contentHash: currentStory?.hash,
+    difficulty: difficulty as "beginner" | "easy" | "medium" | "hard" | "expert",
+    isPremium,
+    onWordHighlight: (wordIndex: number) => {
+      // Optional: Track word interactions for testing metrics
+      if (wordIndex >= 0) {
+        setWordInteractionCount(prev => prev + 1);
       }
-      
-      const currentWordIndex = wordIndex++;
-      const isHighlighted = highlightingEnabled && currentWordIndex === highlightedWordIndex;
-      
-      return (
-        <MobileOptimizedInteractiveWord
-          key={`${selectedLanguage}-${currentPage}-${currentWordIndex}-${segment}`}
-          word={segment}
-          className={`inline transition-all duration-300 ${
-            isHighlighted 
-              ? 'bg-yellow-200/80 dark:bg-yellow-800/60 animate-pulse shadow-md rounded-sm' 
-              : ''
-          }`}
-          difficulty={difficulty}
-          userInfo={testUserInfo}
-          isPremium={isPremium}
-          forceModal={true}
-        />
-      );
-    });
-  };
+    }
+  });
+
+  // Use production text processing with consistent highlighting
+  const processedStoryText = processTextWithConsistentFlow({
+    text: currentStory?.text || '',
+    userInfo: testUserInfo,
+    difficulty,
+    isPremium,
+    highlightedWordIndex: highlightingEnabled ? currentHighlightedWord : -1,
+    isMobile: false // Test on desktop primarily
+  });
 
   const navigateToPage = (pageIndex: number) => {
     if (pageIndex >= 0 && pageIndex < maxPages) {
       setCurrentPage(pageIndex);
-      setHighlightedWordIndex(-1);
+      // Clear highlighting when navigating - useAudioControls handles this automatically
+      clearHighlighting();
       // Update global state for audio synchronization
-      (window as any).__pageContentHash = currentStory.hash;
-      (window as any).__pageContentString = currentStory.text;
+      const story = storyPages[pageIndex];
+      (window as any).__pageContentHash = story.hash;
+      (window as any).__pageContentString = story.text;
     }
   };
 
@@ -202,7 +190,7 @@ export const InteractiveStoryTester = ({
               currentPage={currentPage}
               totalPages={maxPages}
               difficulty={difficulty}
-              onWordHighlight={handleWordHighlight}
+              onWordHighlight={highlightWord}
               contentHash={currentStory.hash}
             />
           </div>
@@ -213,7 +201,7 @@ export const InteractiveStoryTester = ({
       <Card>
         <CardContent className="pt-6">
           <div className="prose prose-lg max-w-none leading-relaxed text-lg">
-            {processTextIntoWords(currentStory.text)}
+            {processedStoryText}
           </div>
         </CardContent>
       </Card>
