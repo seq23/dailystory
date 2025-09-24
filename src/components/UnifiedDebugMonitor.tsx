@@ -8,6 +8,7 @@ import { DebugGateway } from '@/services/DebugGateway';
 import { DebugDataViewer } from '@/components/DebugDataViewer';
 import { phoneticRulesEngine } from '@/services/phoneticRulesEngine';
 import { charlotteVoiceService } from '@/services/CharlotteVoiceService';
+import { unifiedSystemValidator } from '@/services/UnifiedSystemValidator';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -36,6 +37,10 @@ export const UnifiedDebugMonitor: React.FC = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [circuitBreakerStatus, setCircuitBreakerStatus] = useState<any>({});
   const [currentSessionId, setCurrentSessionId] = useState('');
+  
+  // System validation states
+  const [systemValidationReport, setSystemValidationReport] = useState<any>(null);
+  const [isValidating, setIsValidating] = useState(false);
   
   // Audio testing states (integrated from AudioPlaybackTester)
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
@@ -331,6 +336,51 @@ export const UnifiedDebugMonitor: React.FC = () => {
     }
   };
 
+  // System validation functions
+  const runSystemValidation = async () => {
+    setIsValidating(true);
+    try {
+      const report = await unifiedSystemValidator.validateSystem();
+      setSystemValidationReport(report);
+      
+      toast({
+        title: "System Validation Complete",
+        description: `Status: ${report.overall.status} (Score: ${report.overall.score})`,
+        variant: report.overall.status === 'healthy' ? 'default' : 'destructive',
+      });
+    } catch (error) {
+      DebugLogger.error('performance', 'System validation failed', error);
+      toast({
+        title: "System Validation Failed",
+        description: (error as Error).message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsValidating(false);
+    }
+  };
+
+  const validateComponent = async (component: string) => {
+    setIsValidating(true);
+    try {
+      const result = await unifiedSystemValidator.validateComponent(component as any);
+      
+      toast({
+        title: `${component} Validation Complete`,
+        description: `${result.isValid ? 'Passed' : 'Failed'} - ${result.issues.length} issues, ${result.warnings.length} warnings`,
+        variant: result.isValid ? 'default' : 'destructive',
+      });
+    } catch (error) {
+      toast({
+        title: `${component} Validation Failed`,
+        description: (error as Error).message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsValidating(false);
+    }
+  };
+
   const filteredLogs = logs.filter(log => {
     const matchesSearch = log.message.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          log.category.toLowerCase().includes(searchTerm.toLowerCase());
@@ -418,6 +468,7 @@ export const UnifiedDebugMonitor: React.FC = () => {
     'live-gen': 'Live Generation',
     'image-analysis': 'Image Analysis',
     'audio-test': 'Audio Test',
+    'system-validation': 'System Validation',
     'debug-data': 'Data'
   } as Record<string, string>)[t] || 'Console';
 
@@ -453,6 +504,7 @@ export const UnifiedDebugMonitor: React.FC = () => {
               <DropdownMenuItem onSelect={() => setActiveTab('live-gen')}>Live Generation</DropdownMenuItem>
               <DropdownMenuItem onSelect={() => setActiveTab('image-analysis')}>Image Analysis</DropdownMenuItem>
               <DropdownMenuItem onSelect={() => setActiveTab('audio-test')}>Audio Test</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => setActiveTab('system-validation')}>System Validation</DropdownMenuItem>
               <DropdownMenuItem onSelect={() => setActiveTab('debug-data')}>Data</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

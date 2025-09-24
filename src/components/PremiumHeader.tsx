@@ -28,7 +28,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { ChildQuickSwitcher } from "@/components/ChildQuickSwitcher";
 import { useChildProfiles } from "@/hooks/useChildProfiles";
 import { AvatarUtils } from "@/utils/avatarUtils";
-import "@/utils/childDebugConsole";
+
 interface PremiumHeaderProps {
   userInfo: UserInfo;
   isPremium: boolean;

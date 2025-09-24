@@ -146,7 +146,6 @@ import { generateSessionId, generateSessionIdWithPrefix } from '@/utils/sessionI
 
 import { useSessionAwareImageLoader } from "@/hooks/useSessionAwareImageLoader";
 import { convertImagesToRecord } from "@/utils/imageUtils";
-import "@/utils/imageDebugConsole"; // Initialize debug console
 
 interface CleanStoryDisplayProps {
   userInfo: UserInfo;
