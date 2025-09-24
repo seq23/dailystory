@@ -25,6 +25,7 @@ interface InteractiveWordProps {
   sentenceContext?: string;
   onClick?: () => void; // Add explicit onClick for better touch handling
   userId?: string; // Add userId for gamification tracking
+  wordIndex?: number; // CRITICAL FIX: Add wordIndex for highlighting safety net
 }
 
 export const InteractiveWord = ({ 
@@ -35,7 +36,8 @@ export const InteractiveWord = ({
   isPremium = false,
   sentenceContext = "",
   onClick,
-  userId
+  userId,
+  wordIndex
 }: InteractiveWordProps) => {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
@@ -755,7 +757,7 @@ export const InteractiveWord = ({
   };
 
   if (!shouldBeInteractive()) {
-    return <span className={`inline ${className}`}>{word}</span>;
+    return <span className={`inline ${className}`} data-word-index={wordIndex}>{word}</span>;
   }
 
   // Visual indicators for word complexity
@@ -772,6 +774,7 @@ export const InteractiveWord = ({
     <span
       ref={wordRef}
       className={`relative inline cursor-pointer touch-manipulation ${className} ${isPlaying ? 'opacity-70' : ''}`}
+      data-word-index={wordIndex}
       // Universal event handling - attach both mouse and touch events regardless of device detection
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
