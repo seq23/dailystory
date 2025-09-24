@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Volume2, HelpCircle, Languages, BookOpen, Lightbulb, Plus, Crown, Layers } from "lucide-react";
 import { charlotteVoiceService } from "@/services/CharlotteVoiceService";
 import { browserTTSService } from "@/services/BrowserTTSService";
-import { PhoneticRulesEngine } from "@/services/phoneticRulesEngine";
+import phonicsMiniDict from '@/data/phonicsMiniDict';
 import { useToast } from "@/hooks/use-toast";
 import { contextualPronunciation } from "@/services/contextualPronunciation";
 import { safeBase64Decode } from '@/utils/base64Decoder';
@@ -117,8 +117,8 @@ export const InteractiveWord = ({
   }>({ vertical: 'top', horizontal: 'center', offset: 0 });
   const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const wordRef = useRef<HTMLSpanElement>(null);
-  const phoneticEngine = PhoneticRulesEngine.getInstance();
-  const phoneticSpelling = phoneticEngine.breakIntoSyllables(word).join('-');
+  const cleanWordForPhonetics = word.toLowerCase().replace(/[^a-z]/g, '');
+  const phoneticSpelling = (phonicsMiniDict[cleanWordForPhonetics] || [word]).join('-');
   const cleanWord = word.replace(/[.,!?;:'"()]/g, '').trim();
   const { isMobile } = useIsMobile();
   const reviewCountedRef = useRef(false);
@@ -1772,7 +1772,7 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
             <div className="text-center mb-6">
               <h3 className="text-2xl font-bold text-gray-800 mb-2">{props.word}</h3>
               {/* Always show phonetic spelling since PhoneticRulesEngine never returns null */}
-              <div className="text-sm text-purple-600 mb-2 font-mono">"{PhoneticRulesEngine.getInstance().breakIntoSyllables(props.word).join('-')}"</div>
+              <div className="text-sm text-purple-600 mb-2 font-mono">"{((phonicsMiniDict[props.word.toLowerCase().replace(/[^a-z]/g, '')] || [props.word])).join('-')}"</div>
               {mobileWordData && (
                 <div className="text-sm text-gray-600">
                   <p className="mb-2">{mobileWordData.definition}</p>

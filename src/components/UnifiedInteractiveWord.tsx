@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Volume2, HelpCircle, Languages, BookOpen, Lightbulb, Plus, Crown, Layers } from "lucide-react";
 import { charlotteVoiceService } from "@/services/CharlotteVoiceService";
 import { browserTTSService } from "@/services/BrowserTTSService";
-import { PhoneticRulesEngine } from "@/services/phoneticRulesEngine";
+import phonicsMiniDict from '@/data/phonicsMiniDict';
 import { useToast } from "@/hooks/use-toast";
 import { contextualPronunciation } from "@/services/contextualPronunciation";
 import { safeBase64Decode } from '@/utils/base64Decoder';

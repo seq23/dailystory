@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { charlotteVoiceService } from '@/services/CharlotteVoiceService';
 import { supabase } from '@/integrations/supabase/client';
 import { contextualPronunciation } from '@/services/contextualPronunciation';
-import { phoneticRulesEngine } from '@/services/phoneticRulesEngine';
+import phonicsMiniDict from '@/data/phonicsMiniDict';
 import { AudioPermissions } from '@/utils/audioPermissions';
 import { DebugLogger } from '@/services/DebugLogger';
 
@@ -94,7 +94,8 @@ export const VoiceHoverController = ({ isPremium }: VoiceHoverControllerProps) =
             break;
 
           case 'syllables':
-            const syllables = phoneticRulesEngine.breakIntoSyllables(cleanWord);
+            const cleanWordForSyllables = cleanWord.toLowerCase().replace(/[^a-z]/g, '');
+            const syllables = phonicsMiniDict[cleanWordForSyllables] || [cleanWord];
             if (syllables && syllables.length > 0) {
               const syllableText = syllables.join(' - ');
               await charlotteVoiceService.charlotteInteractiveAudio({ 

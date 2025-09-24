@@ -6,7 +6,7 @@ import { NetflixRetryService } from '@/services/NetflixRetryService';
 import { NetworkDebugger, NetworkRequest } from '@/services/NetworkDebugger';
 import { DebugGateway } from '@/services/DebugGateway';
 import { DebugDataViewer } from '@/components/DebugDataViewer';
-import { phoneticRulesEngine } from '@/services/phoneticRulesEngine';
+import phonicsMiniDict from '@/data/phonicsMiniDict';
 import { charlotteVoiceService } from '@/services/CharlotteVoiceService';
 import { unifiedSystemValidator } from '@/services/UnifiedSystemValidator';
 import type { ValidationResult } from '@/services/UnifiedSystemValidator';
@@ -1157,11 +1157,11 @@ const AudioTestTab: React.FC = () => {
   const [pronunciations, setPronunciations] = useState<string[] | null>(null);
 
   const handleAnalyze = async () => {
-    const chunks = await phoneticRulesEngine.breakIntoSyllablesAsync(word);
+    const cleanWord = word.toLowerCase().replace(/[^a-z]/g, '');
+    const chunks = phonicsMiniDict[cleanWord] || [word];
     setSyllables(chunks);
-    const info = phoneticRulesEngine.getDebugInfo(word);
-    setSource(info.hasKnownSyllables ? 'override' : 'heuristic');
-    setPronunciations(info.pronunciations);
+    setSource('override'); // All entries are now curated overrides
+    setPronunciations(chunks);
   };
 
   const handlePlay = async () => {

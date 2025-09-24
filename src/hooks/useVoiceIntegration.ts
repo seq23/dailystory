@@ -3,7 +3,7 @@ import { charlotteVoiceService } from '@/services/CharlotteVoiceService';
 import { useConversation } from '@11labs/react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { phoneticRulesEngine } from '@/services/phoneticRulesEngine';
+
 import { useCharlotteAudioCoordination } from './useCharlotteAudioCoordination';
 import { DebugLogger } from '@/services/DebugLogger';
 
@@ -274,14 +274,14 @@ export const useVoiceIntegration = () => {
     if (status === 'connected') {
       DebugLogger.log('audio', 'Voice session already connected, ending...');
       // Restore natural pronunciation when ending voice session
-      phoneticRulesEngine.setConversationMode(false);
+      // Natural pronunciation restored (conversation mode no longer needed)
       await endSession();
     } else {
       try {
         DebugLogger.log('audio', 'Starting voice command session via integration hook...');
         
         // Set conversation mode for natural Charlotte speech
-        phoneticRulesEngine.setConversationMode(true);
+        // Conversation mode no longer needed
         
         // Update UI to show connecting state
         window.dispatchEvent(new CustomEvent('voice:status', { 
@@ -296,7 +296,7 @@ export const useVoiceIntegration = () => {
         } catch (micError) {
           DebugLogger.error('audio', 'Microphone access denied:', micError);
           toast.error('Microphone access required for voice commands');
-          phoneticRulesEngine.setConversationMode(false);
+          // Conversation mode cleanup no longer needed
           window.dispatchEvent(new CustomEvent('voice:status', { 
             detail: { status: 'idle', system: 'elevenlabs' } 
           }));
@@ -310,7 +310,7 @@ export const useVoiceIntegration = () => {
         if (error) {
           DebugLogger.error('audio', 'Supabase function error:', error);
           toast.error(`Voice connection failed: ${error.message}`);
-          phoneticRulesEngine.setConversationMode(false);
+          // Conversation mode cleanup no longer needed
           window.dispatchEvent(new CustomEvent('voice:status', { 
             detail: { status: 'idle', system: 'elevenlabs' } 
           }));
@@ -320,7 +320,7 @@ export const useVoiceIntegration = () => {
         if (!data?.signed_url) {
           DebugLogger.error('audio', 'No signed URL in response:', data);
           toast.error('No signed URL received from ElevenLabs');
-          phoneticRulesEngine.setConversationMode(false);
+          // Conversation mode cleanup no longer needed
           window.dispatchEvent(new CustomEvent('voice:status', { 
             detail: { status: 'idle', system: 'elevenlabs' } 
           }));
@@ -333,7 +333,7 @@ export const useVoiceIntegration = () => {
       } catch (error: any) {
         DebugLogger.error('audio', 'Failed to start voice session:', error);
         toast.error(`Could not connect to Buddy: ${error.message || 'Unknown error'}`);
-        phoneticRulesEngine.setConversationMode(false);
+        // Conversation mode cleanup no longer needed
         window.dispatchEvent(new CustomEvent('voice:status', { 
           detail: { status: 'idle', system: 'elevenlabs' } 
         }));

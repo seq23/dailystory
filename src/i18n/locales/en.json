@@ -897,7 +897,7 @@
     "prevSentence": "Previous sentence",
     "nextSentence": "Next sentence",
     "youSaid": "You said:",
-    "feedback": "Your coach is giving you feedback...",
+    "feedbackStatus": "Your coach is giving you feedback...",
     "pass": "🎉 Perfect reading!",
     "navigation": {
       "next": "Great! Let's move to the next sentence. Here it is: \"{{sentence}}\"",

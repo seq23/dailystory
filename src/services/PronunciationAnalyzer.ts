@@ -1,5 +1,5 @@
 import { SmartPhoneticMapper } from './SmartPhoneticMapper';
-import { phoneticRulesEngine } from './phoneticRulesEngine';
+import phonicsMiniDict from '@/data/phonicsMiniDict';
 import { DebugLogger } from '@/services/DebugLogger';
 
 interface PronunciationResult {
@@ -90,7 +90,8 @@ export class PronunciationAnalyzer {
       
       try {
         // Get expected phonetic breakdown
-        const expectedSyllables = await phoneticRulesEngine.breakIntoSyllablesAsync(refWord);
+        const cleanWord = refWord.toLowerCase().replace(/[^a-z]/g, '');
+        const expectedSyllables = phonicsMiniDict[cleanWord] || [refWord];
         const phonemeAccuracy = spokenWord ? 
           this.calculatePhonemeDistance(refWord, spokenWord) : 0;
         

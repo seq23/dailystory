@@ -4,7 +4,6 @@
 import { phoneticDictionary } from '@/utils/phoneticDictionary';
 import autoPhonicsFromVocab from '@/data/autoPhonicsFromVocab';
 import phonicsMiniDict from '@/data/phonicsMiniDict';
-import { phoneticRulesEngine } from '@/services/phoneticRulesEngine';
 import { DebugLogger } from '@/services/DebugLogger';
 import { ManagedTimers } from '@/utils/TimerManager';
 
@@ -71,7 +70,8 @@ export class SmartPhoneticMapper {
     // Priority 4: Generate using phonetic rules engine
     else {
       try {
-        const syllables = await phoneticRulesEngine.breakIntoSyllablesAsync(normalized);
+        const cleanWord = normalized.toLowerCase().replace(/[^a-z]/g, '');
+        const syllables = phonicsMiniDict[cleanWord] || [normalized];
         mapping = {
           word: normalized,
           pronunciation: this.syllablesToIPA(syllables),

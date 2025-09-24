@@ -4,7 +4,7 @@ import { MobileTTSModal } from "./MobileTTSModal";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { UserInfo } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
-import { PhoneticRulesEngine } from "@/services/phoneticRulesEngine";
+import phonicsMiniDict from '@/data/phonicsMiniDict';
 import { charlotteVoiceService } from "@/services/CharlotteVoiceService";
 import { browserTTSService } from "@/services/BrowserTTSService";
 import { VocabularyLevelClassifier } from "@/utils/vocabularyLevelClassifier";

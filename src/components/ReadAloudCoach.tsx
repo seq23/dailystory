@@ -351,15 +351,15 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
               
               await speakWithTimeout(feedbackText);
               
-              // Provide syllable coaching for problematic words (3 words as promised)
+              // Provide syllable coaching for problematic words (help ALL words)
               if (syllableFeedback.length > 0) {
-                for (const wordFeedback of syllableFeedback.slice(0, 3)) {
+                for (const wordFeedback of syllableFeedback) {
                   const syllableMessage = t('coach.feedback.syllables', 'Let\'s break down {{word}}: {{syllables}}', { 
                     word: wordFeedback.word, 
                     syllables: wordFeedback.syllables.join('-') 
                   });
                   await speakWithTimeout(syllableMessage);
-                  await speakWithTimeout(wordFeedback.word);
+                  await browserTTSService.speakWord(wordFeedback.word, 'en');
                 }
               }
             }
@@ -682,7 +682,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
               </Button>
             </CollapsibleTrigger>
             <CollapsibleContent className="space-y-2 pt-2">
-              {syllableFeedback.slice(0, 3).map((feedback, idx) => (
+              {syllableFeedback.map((feedback, idx) => (
                 <div key={idx} className="space-y-1 text-sm">
                   <div className="font-medium text-blue-600 dark:text-blue-400 flex items-center gap-2">
                     <Volume2 className="w-3 h-3" />

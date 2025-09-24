@@ -43,6 +43,18 @@ const curated: Record<string, string[]> = {
   'bounce': ['bounce'],
   'what': ['whuh', 'ut'],
 
+  // Fixed phonetic entries (NOT grammatical analysis)
+  'found': ['found'],        // Single syllable - NOT "find past"
+  'went': ['went'],
+  'came': ['came'], 
+  'saw': ['saw'],
+  'thought': ['thought'],
+  'brought': ['brought'],
+  'bought': ['bought'],
+  'fought': ['fought'],
+  'taught': ['taught'],
+  'caught': ['caught'],
+
   // Kid-friendly curated fixes
   'tree': ['tr', 'ee'],
   'trees': ['tr', 'ee', 's'],

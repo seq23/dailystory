@@ -5,7 +5,7 @@
  */
 import { SmartElevenLabsTTS } from '@/services/smartElevenLabsTTS';
 import { SynchronizedElevenLabsTTS } from '@/services/SynchronizedElevenLabsTTS';
-import { phoneticRulesEngine } from '@/services/phoneticRulesEngine';
+import phonicsMiniDict from '@/data/phonicsMiniDict';
 import { contextualPronunciation } from '@/services/contextualPronunciation';
 import { supabase } from '@/integrations/supabase/client';
 import { DebugLogger } from '@/services/DebugLogger';
@@ -294,8 +294,9 @@ export class CharlotteVoiceService {
     const cleanWord = word.replace(/[.,!?;:'"()]/g, '').trim();
     
     try {
-      // Use enhanced phonetic engine with intelligent syllable breakdown
-      const syllables = await phoneticRulesEngine.breakIntoSyllablesAsync(cleanWord);
+      // Use phonetic dictionary for syllable breakdown
+      const cleanWordForSyllables = cleanWord.toLowerCase().replace(/[^a-z]/g, '');
+      const syllables = phonicsMiniDict[cleanWordForSyllables] || [cleanWord];
       
       if (!syllables || syllables.length === 0) {
         throw new Error('No syllables found');
@@ -347,7 +348,8 @@ export class CharlotteVoiceService {
 
   private async prepareSyllableText(word: string): Promise<string> {
     try {
-      const syllables = await phoneticRulesEngine.breakIntoSyllablesAsync(word);
+      const cleanWord = word.toLowerCase().replace(/[^a-z]/g, '');
+      const syllables = phonicsMiniDict[cleanWord] || [word];
       const condensed = this.condenseToMax4(syllables);
       return condensed.join(' - ');
     } catch {

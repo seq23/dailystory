@@ -85,7 +85,7 @@ import ReadAloudCoach from "@/components/ReadAloudCoach";
 
 // Audio and Interactive Components
 import { UnifiedAudioControls as SynchronizedAudioControls } from "@/components/UnifiedAudioControls";
-import { PhoneticRulesEngine } from "@/services/phoneticRulesEngine";
+import phonicsMiniDict from '@/data/phonicsMiniDict';
 import { charlotteVoiceService } from "@/services/CharlotteVoiceService";
 import { StoryContentLogger } from "@/utils/StoryContentLogger";
 
@@ -1389,7 +1389,8 @@ useEffect(() => {
         const def = await getDefinition(target);
         await playTTS(def);
         // 3) Syllables (comma-separated for clean pacing)
-        const raw = await PhoneticRulesEngine.getInstance().breakIntoSyllablesAsync(target);
+        const cleanWord = target.toLowerCase().replace(/[^a-z]/g, '');
+        const raw = phonicsMiniDict[cleanWord] || [target];
         const adjusted = toAudioFriendlySyllables(target, raw);
         const syllText = (adjusted || []).join(', ');
         await playTTS(syllText);
