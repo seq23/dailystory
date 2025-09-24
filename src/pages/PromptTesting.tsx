@@ -3,7 +3,8 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Zap, Cable, ArrowRight, Bug, BarChart3, TrendingUp, Brain, Layers } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Zap, Cable, ArrowRight, Bug, BarChart3, TrendingUp, Brain, Layers, Volume2 } from 'lucide-react';
 import { StoryPromptTester } from '@/components/StoryPromptTester';
 
 import { RunwareConnectionTest } from '@/components/RunwareConnectionTest';
@@ -13,6 +14,7 @@ import { AnalyticsDashboard } from '@/components/AnalyticsDashboard';
 import { AdvancedMonitoringDashboard } from '@/components/AdvancedMonitoringDashboard';
 import { VoiceCatalogTester } from '@/components/VoiceCatalogTester';
 import { ImageTierTester } from '@/components/ImageTierTester';
+import { AudioE2ETestingPanel } from '@/components/AudioE2ETestingPanel';
 // AudioPlaybackTester integrated into UnifiedDebugMonitor
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { errorSuppressionManager } from '@/utils/errorSuppression';
@@ -107,6 +109,20 @@ export default function PromptTesting() {
                 </div>
                 <ErrorBoundary>
                   <ImageTierTester />
+                </ErrorBoundary>
+              </section>
+
+              <Separator />
+
+              {/* Audio E2E Testing - Real User Flow Testing */}
+              <section>
+                <div className="flex items-center gap-2 mb-4">
+                  <Volume2 className="w-5 h-5 text-primary" />
+                  <h2 className="text-2xl font-semibold">Audio E2E Testing</h2>
+                  
+                </div>
+                <ErrorBoundary>
+                  <AudioE2ETestingPanel />
                 </ErrorBoundary>
               </section>
 
