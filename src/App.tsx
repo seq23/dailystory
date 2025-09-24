@@ -10,7 +10,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import SessionEnded from "./pages/SessionEnded";
 import StylePreview from "./pages/StylePreview";
-import TTSDebug from "./pages/TTSDebug";
+
 import Pricing from "./pages/Pricing";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
@@ -70,7 +70,7 @@ const App = () => {
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/style-preview" element={<StylePreview />} />
-              <Route path="/tts-debug" element={<TTSDebug />} />
+              
               <Route path="/pricing" element={<Pricing />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/reset-password" element={<ResetPassword />} />

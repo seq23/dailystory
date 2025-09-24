@@ -8,6 +8,8 @@ import { DebugGateway } from '@/services/DebugGateway';
 import { DebugDataViewer } from '@/components/DebugDataViewer';
 import { BackendTierChecker } from '@/components/BackendTierChecker';
 import { AudioPlaybackTester } from '@/components/AudioPlaybackTester';
+import { phoneticRulesEngine } from '@/services/phoneticRulesEngine';
+import { charlotteVoiceService } from '@/services/CharlotteVoiceService';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -641,20 +643,7 @@ export const UnifiedDebugMonitor: React.FC = () => {
 
         {/* Audio Test View */}
         {activeTab === 'audio-test' && (
-          <div className="flex-1 flex flex-col min-h-0 p-2">
-            <div className="text-xs text-muted-foreground mb-2">
-              Audio & TTS Testing - Charlotte Voice & Interactive Words
-            </div>
-            <div className="space-y-2">
-              <div className="bg-purple-500/10 border border-purple-500/20 rounded p-2">
-                <div className="text-xs font-medium mb-1">Audio Playback Tester</div>
-                <div className="text-xs text-muted-foreground">
-                  Test Charlotte voice, interactive words, and loading states separately from Voice Catalog System
-                </div>
-              </div>
-              <AudioPlaybackTester />
-            </div>
-          </div>
+          <AudioTestTab />
         )}
 
         {/* Debug Data View */}
@@ -663,6 +652,113 @@ export const UnifiedDebugMonitor: React.FC = () => {
             <DebugDataViewer />
           </div>
         )}
+      </div>
+    </div>
+  );
+};
+
+// Audio Test Tab Component with TTS debugging integrated
+const AudioTestTab: React.FC = () => {
+  const [word, setWord] = useState('illuminating');
+  const [syllables, setSyllables] = useState<string[]>([]);
+  const [source, setSource] = useState<'override' | 'heuristic' | null>(null);
+  const [pronunciations, setPronunciations] = useState<string[] | null>(null);
+
+  const handleAnalyze = async () => {
+    const chunks = await phoneticRulesEngine.breakIntoSyllablesAsync(word);
+    setSyllables(chunks);
+    const info = phoneticRulesEngine.getDebugInfo(word);
+    setSource(info.hasKnownSyllables ? 'override' : 'heuristic');
+    setPronunciations(info.pronunciations);
+  };
+
+  const handlePlay = async () => {
+    // Get syllables and play them using Charlotte
+    const syllableText = syllables.join(' - ');
+    await charlotteVoiceService.charlotteInteractiveAudio({
+      text: syllableText,
+      context: 'conversation'
+    });
+  };
+
+  const samples = ['what', 'green', 'chase', 'good', 'bounce', 'smiles', 'illuminate', 'illumination', 'illuminating'];
+
+  return (
+    <div className="flex-1 flex flex-col min-h-0 p-2 space-y-3">
+      {/* Audio Playback Tester Section */}
+      <div className="space-y-2">
+        <div className="bg-purple-500/10 border border-purple-500/20 rounded p-2">
+          <div className="text-xs font-medium mb-1">Audio Playback Tester</div>
+          <div className="text-xs text-muted-foreground">
+            Test Charlotte voice, interactive words, and loading states separately from Voice Catalog System
+          </div>
+        </div>
+        <AudioPlaybackTester />
+      </div>
+
+      {/* TTS & Syllable Debug Section */}
+      <div className="space-y-2">
+        <div className="bg-blue-500/10 border border-blue-500/20 rounded p-2">
+          <div className="text-xs font-medium mb-1">TTS & Syllable Debug</div>
+          <div className="text-xs text-muted-foreground">
+            Test syllable splits and phonetic playback for pronunciation accuracy
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex gap-2">
+            <Input 
+              value={word} 
+              onChange={(e) => setWord(e.target.value)} 
+              placeholder="Enter a word"
+              className="text-xs h-6"
+            />
+            <Button onClick={handleAnalyze} size="sm" className="h-6 px-2 text-xs">
+              Analyze
+            </Button>
+            <Button variant="secondary" onClick={handlePlay} size="sm" className="h-6 px-2 text-xs">
+              Play Syllables
+            </Button>
+          </div>
+
+          {syllables.length > 0 && (
+            <div className="rounded border p-2 bg-muted/20">
+              <div className="mb-1 text-xs font-medium">Syllables</div>
+              <div className="flex flex-wrap gap-1 mb-2">
+                {syllables.map((s, i) => (
+                  <Badge key={i} variant="outline" className="text-xs px-1 py-0.5">{s}</Badge>
+                ))}
+              </div>
+              <div className="text-xs text-muted-foreground mb-1">
+                <span className="mr-2">Source:</span>
+                <Badge variant="secondary" className="text-xs px-1">
+                  {source === 'override' ? 'Override (mini-dict)' : 'Heuristic'}
+                </Badge>
+              </div>
+              {pronunciations && (
+                <div className="text-xs">
+                  <div className="mb-1 font-medium">Speech-friendly:</div>
+                  <div className="flex flex-wrap gap-1">
+                    {pronunciations.map((p, idx) => (
+                      <Badge key={idx} className="bg-muted text-muted-foreground text-xs px-1 py-0.5">{p}</Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="rounded border p-2 bg-muted/20">
+            <div className="mb-1 text-xs font-medium">Sample Words</div>
+            <div className="flex flex-wrap gap-1">
+              {samples.map((s) => (
+                <Button key={s} size="sm" variant="outline" onClick={() => setWord(s)} className="h-5 px-2 text-xs">
+                  {s}
+                </Button>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
