@@ -359,7 +359,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
                     syllables: wordFeedback.syllables.join('-') 
                   });
                   await speakWithTimeout(syllableMessage);
-                  await browserTTSService.speakWord(wordFeedback.word, 'en');
+                  // Charlotte already spoke the syllable breakdown - no need for browser speech
                 }
               }
             }
@@ -456,8 +456,8 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
       const practiceMessage = t('coach.wordPractice.intro', 'Let\'s practice the word "{{word}}" together. Listen first, then you say it.', { word: w });
       await speakCoachMessage(practiceMessage);
       
-      // Demonstrate the word pronunciation
-      await browserTTSService.speakWord(w, 'en'); // Always pronounce English words in English
+      // Demonstrate the word pronunciation with Charlotte's voice
+      await charlotteVoiceService.charlotteSyllableWord(w);
       
       const tryMessage = t('coach.wordPractice.yourTurn', 'Now you try saying "{{word}}"', { word: w });
       await speakCoachMessage(tryMessage);
@@ -582,11 +582,11 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
   };
 
   return (
-    <Card>
+    <Card className="w-full max-w-4xl mx-auto border border-border bg-card text-card-foreground shadow-sm max-h-screen overflow-auto">
         <CardHeader className="pb-2">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-              <CardTitle className="text-base">{t('coach.title','Read‑aloud coach')}</CardTitle>
+              <CardTitle className="text-sm sm:text-base">{t('coach.title','Read‑aloud coach')}</CardTitle>
               <CardDescription className="text-xs">{t('coach.subtitle','Kids read aloud; get instant feedback')}</CardDescription>
             </div>
             <div className="flex items-center gap-1 w-full sm:w-auto justify-between sm:justify-end">
@@ -678,6 +678,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
                   <Volume2 className="w-4 h-4" />
                   {t('coach.syllablePractice','Charlotte\'s syllable coaching:')} ({syllableFeedback.length})
                 </span>
+                <p className="text-xs text-muted-foreground mt-1">{t('coach.charlotteScope','Charlotte helps with select problematic words from your reading')}</p>
                 {syllableExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </Button>
             </CollapsibleTrigger>

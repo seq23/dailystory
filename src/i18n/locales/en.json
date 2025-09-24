@@ -898,6 +898,7 @@
     "nextSentence": "Next sentence",
     "youSaid": "You said:",
     "feedbackStatus": "Your coach is giving you feedback...",
+    "charlotteScope": "Charlotte helps with select problematic words from your reading",
     "pass": "🎉 Perfect reading!",
     "navigation": {
       "next": "Great! Let's move to the next sentence. Here it is: \"{{sentence}}\"",
