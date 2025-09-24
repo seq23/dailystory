@@ -63,11 +63,34 @@ debugMonitor.getSystemStatus();
    ```
 
 2. **Verify Content Hash:**
-   ```javascript
-   // Ensure content has proper hash for caching
-   const contentHash = charlotteVoiceService.generateContentHash(text);
-   console.log("Content Hash:", contentHash);
-   ```
+```javascript
+// Ensure content has proper hash for caching
+const contentHash = charlotteVoiceService.generateContentHash(text);
+console.log("Content Hash:", contentHash);
+```
+
+3. Ensure words are rendered with the "interactive-word" class
+```tsx
+const nodes = processTextWithConsistentFlow({
+  text,
+  className: 'interactive-word',
+  highlightedWordIndex,
+});
+```
+
+4. Global CSS fallback for highlights (outside .story-content)
+```css
+/* index.css */
+@layer base {
+  .interactive-word.highlighted,
+  .highlighted {
+    background-color: hsl(var(--primary) / 0.2);
+    border-radius: 0.25rem;
+    padding: 0.1em 0.2em;
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.25);
+  }
+}
+```
 
 ### 4. Voice Commands Not Responding
 **Symptoms:**

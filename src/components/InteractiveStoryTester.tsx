@@ -90,6 +90,7 @@ export const InteractiveStoryTester = ({
   // Use production text processing with consistent highlighting
   const processedStoryText = processTextWithConsistentFlow({
     text: currentStory?.text || '',
+    className: 'interactive-word',
     userInfo: testUserInfo,
     difficulty,
     isPremium,

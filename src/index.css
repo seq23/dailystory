@@ -1298,3 +1298,15 @@ All colors MUST be HSL.
 }
 
 /* Remove duplicate story content rules - handled by storyDisplay.css */
+
+/* Universal audio highlighting fallback (applies outside .story-content) */
+@layer base {
+  .interactive-word.highlighted,
+  .highlighted {
+    background-color: hsl(var(--primary) / 0.2) !important;
+    border-radius: 0.25rem !important;
+    padding: 0.1em 0.2em !important;
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.25) !important;
+    transition: var(--transition-smooth);
+  }
+}
