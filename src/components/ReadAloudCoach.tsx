@@ -314,29 +314,34 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
         const nextAttempts = attempts + 1;
         setAttempts(nextAttempts);
 
-        // Smart coach feedback: Charlotte for English, Browser TTS for other languages
+        // Smart coach feedback with timeout safety
         setTimeout(async () => {
-          try {
-            const userLanguage = (userInfo?.nativeLanguage || 'en') as SupportedLanguage;
-            
-            const speakCoachMessage = async (message: string) => {
-              if (userLanguage === 'en') {
-                try {
-                  await charlotteVoiceService.charlotteInteractiveAudio({
-                    text: message,
-                    context: 'interactive'
-                  });
-                } catch (error) {
+          const userLanguage = (userInfo?.nativeLanguage || 'en') as SupportedLanguage;
+          
+          const speakWithTimeout = async (message: string, timeoutMs = 5000) => {
+            return Promise.race([
+              (async () => {
+                if (userLanguage === 'en') {
+                  try {
+                    await charlotteVoiceService.charlotteInteractiveAudio({
+                      text: message,
+                      context: 'interactive'
+                    });
+                  } catch {
+                    await browserTTSService.speakCoachMessage(message, userLanguage);
+                  }
+                } else {
                   await browserTTSService.speakCoachMessage(message, userLanguage);
                 }
-              } else {
-                await browserTTSService.speakCoachMessage(message, userLanguage);
-              }
-            };
-            
+              })(),
+              new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), timeoutMs))
+            ]);
+          };
+          
+          try {
             if (didPass) {
               const successMessage = t('coach.feedback.success', 'Excellent reading! {{pace}} That was a perfect score!', { pace });
-              await speakCoachMessage(successMessage);
+              await speakWithTimeout(successMessage);
             } else {
               let feedbackText = t('coach.feedback.tryAgain', 'Good effort! You got {{accuracy}}% correct. ', { accuracy: Math.round(acc) });
               if (top.length > 0) {
@@ -344,22 +349,24 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
               }
               feedbackText += pace;
               
-              await speakCoachMessage(feedbackText);
+              await speakWithTimeout(feedbackText);
               
-              // Provide syllable coaching for problematic words
+              // Provide syllable coaching for problematic words (3 words as promised)
               if (syllableFeedback.length > 0) {
-                for (const wordFeedback of syllableFeedback.slice(0, 2)) {
+                for (const wordFeedback of syllableFeedback.slice(0, 3)) {
                   const syllableMessage = t('coach.feedback.syllables', 'Let\'s break down {{word}}: {{syllables}}', { 
                     word: wordFeedback.word, 
                     syllables: wordFeedback.syllables.join('-') 
                   });
-                  await speakCoachMessage(syllableMessage);
+                  await speakWithTimeout(syllableMessage);
                   await browserTTSService.speakWord(wordFeedback.word, userLanguage);
                 }
               }
             }
           } catch (err) {
-            DebugLogger.error('audio', 'Coach feedback failed:', err);
+            DebugLogger.error('audio', 'Coach feedback failed, using browser fallback:', err);
+            const fallbackMessage = didPass ? 'Great job!' : `Good effort! You got ${Math.round(acc)}% correct.`;
+            await browserTTSService.speakCoachMessage(fallbackMessage, userLanguage);
           }
           
           // Auto-resume story audio after feedback

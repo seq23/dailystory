@@ -12,6 +12,7 @@ const curated: Record<string, string[]> = {
   'school': ['skool'],
   'sweet': ['sweet'],
   'children': ['chil', 'dren'],
+  'library': ['lie', 'brare', 'ree'],
   // Irregular plurals (kid-friendly)
   'men': ['men'],
   'women': ['wih', 'min'],
