@@ -84,7 +84,7 @@ import { GameContextProvider } from "@/components/GameContextProvider";
 import ReadAloudCoach from "@/components/ReadAloudCoach";
 
 // Audio and Interactive Components
-import { SynchronizedAudioControls } from "@/components/SynchronizedAudioControls";
+import { UnifiedAudioControls as SynchronizedAudioControls } from "@/components/UnifiedAudioControls";
 import { PhoneticRulesEngine } from "@/services/phoneticRulesEngine";
 import { charlotteVoiceService } from "@/services/CharlotteVoiceService";
 import { StoryContentLogger } from "@/utils/StoryContentLogger";

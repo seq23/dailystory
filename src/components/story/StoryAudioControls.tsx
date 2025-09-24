@@ -1,5 +1,5 @@
 import React from 'react';
-import { SynchronizedAudioControls } from "@/components/SynchronizedAudioControls";
+import { UnifiedAudioControls as SynchronizedAudioControls } from "@/components/UnifiedAudioControls";
 import { DebugLogger } from '@/services/DebugLogger';
 import { Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";

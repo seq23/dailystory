@@ -8,6 +8,7 @@ import { DebugGateway } from '@/services/DebugGateway';
 import { DebugDataViewer } from '@/components/DebugDataViewer';
 import { BackendTierChecker } from '@/components/BackendTierChecker';
 import { AudioPlaybackTester } from '@/components/AudioPlaybackTester';
+import { TTSDebugOverlay } from '@/components/TTSDebugOverlay';
 import { phoneticRulesEngine } from '@/services/phoneticRulesEngine';
 import { charlotteVoiceService } from '@/services/CharlotteVoiceService';
 import { Button } from '@/components/ui/button';
@@ -643,7 +644,13 @@ export const UnifiedDebugMonitor: React.FC = () => {
 
         {/* Audio Test View */}
         {activeTab === 'audio-test' && (
-          <AudioTestTab />
+          <div className="flex-1 flex flex-col min-h-0 space-y-4">
+            <div className="text-sm font-semibold">Consolidated Audio Testing</div>
+            <div className="flex-1 overflow-auto space-y-4">
+              <AudioPlaybackTester />
+              <TTSDebugOverlay />
+            </div>
+          </div>
         )}
 
         {/* Debug Data View */}
