@@ -95,7 +95,7 @@ export const InteractiveStoryTester = ({
       
       return (
         <MobileOptimizedInteractiveWord
-          key={`${index}-${segment}`}
+          key={`${selectedLanguage}-${index}-${segment}`}
           word={segment}
           className={`inline transition-all duration-300 ${
             isHighlighted 
