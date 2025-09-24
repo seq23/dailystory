@@ -97,9 +97,8 @@ import { defaultAudioConfig } from "@/config/audioConfig";
 import "@/styles/storyDisplay.css";
 // import { processTextForDesktop } from "@/utils/desktopTextProcessor";
 import { useWordHighlighting } from "@/hooks/useWordHighlighting";
-import { UnifiedVoiceCommands } from '@/components/UnifiedVoiceCommands';
-// Removed deprecated VoiceHoverController
-// import { VoiceHoverController } from '@/components/VoiceHoverController';
+import { VoiceCommandController } from '@/components/VoiceCommandController';
+import { VoiceHoverController } from '@/components/VoiceHoverController';
 import { PremiumHoverController } from '@/components/PremiumHoverController';
 import { useVoiceIntegration } from '@/hooks/useVoiceIntegration';
 import { useGamification } from "@/hooks/useGamification";
@@ -4384,9 +4383,10 @@ const handleRestartTimer = () => {
       {/* Audio Fallback Notification */}
       <AudioFallbackNotification />
       
-       {/* Voice Command System */}
-       <UnifiedVoiceCommands headless={true} onCommand={handleVoiceCommand} />
-       <PremiumHoverController isPremium={isPremium} />
+      {/* Voice Command System */}
+      <VoiceCommandController headless={true} onCommand={handleVoiceCommand} />
+      <VoiceHoverController isPremium={isPremium} />
+      <PremiumHoverController isPremium={isPremium} />
       
       {/* Story Status Indicator - persistent backup/emergency mode indicator */}
       <StoryStatusIndicator />
