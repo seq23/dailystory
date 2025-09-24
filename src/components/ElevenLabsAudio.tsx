@@ -361,8 +361,12 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
           if (detail.type === 'define' || detail.type === 'explain') {
             toast({ title: cleanWord, description: definition, duration: 4000 });
             try {
-              // Use Charlotte's unified voice service for definitions
-              await charlotteVoiceService.charlotteExplainWord(cleanWord, userLang);
+              // Use Charlotte for English, browser TTS for other languages
+              if (userLang === 'en') {
+                await charlotteVoiceService.charlotteExplainWord(cleanWord, userLang);
+              } else {
+                await browserTTSService.speakExplanation(definition, userLang as any);
+              }
             } catch (e) {
               DebugLogger.warn('audio', 'Charlotte definition TTS failed', e);
             }
