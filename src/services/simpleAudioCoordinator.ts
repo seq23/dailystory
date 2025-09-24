@@ -84,10 +84,7 @@ class SimpleAudioCoordinator {
     // Setup stop handlers for each system
     window.addEventListener('audio:stop:sync', async () => {
       try {
-        // TODO: Replace with SimplifiedAudioEngine
-        // const { SimplifiedAudioEngine } = await import('@/services/SimplifiedAudioEngine');
-        // TODO: Replace with SimplifiedAudioEngine.stop()
-        // SimplifiedAudioEngine.getInstance().stop();
+        // Sync audio stop handled elsewhere
       } catch (e) {
         DebugLogger.warn('audio', 'Failed to stop sync audio', e);
       }
@@ -95,8 +92,7 @@ class SimpleAudioCoordinator {
 
     window.addEventListener('audio:stop:simple', async () => {
       try {
-        const { SimplifiedAudioEngine } = await import('@/services/SimplifiedAudioEngine');
-        SimplifiedAudioEngine.getInstance().stop();
+        // Simple audio now handled by Charlotte system
       } catch (e) {
         DebugLogger.warn('audio', 'Failed to stop simple audio', e);
       }

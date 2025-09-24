@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { phoneticRulesEngine } from '@/services/phoneticRulesEngine';
-import { SimplifiedAudioEngine } from '@/services/SimplifiedAudioEngine';
+import { charlotteVoiceService } from '@/services/CharlotteVoiceService';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -12,7 +12,7 @@ const TTSDebug: React.FC = () => {
   const [syllables, setSyllables] = useState<string[]>([]);
   const [source, setSource] = useState<'override' | 'heuristic' | null>(null);
   const [pronunciations, setPronunciations] = useState<string[] | null>(null);
-  const audio = SimplifiedAudioEngine.getInstance();
+  
 
   useEffect(() => {
     // SEO basics for the page
@@ -36,12 +36,11 @@ const TTSDebug: React.FC = () => {
   };
 
   const handlePlay = async () => {
-    // Get syllables and play them using SimplifiedAudioEngine
-    const syllableInfo = phoneticRulesEngine.getDebugInfo(word);
+    // Get syllables and play them using Charlotte
     const syllableText = syllables.join(' - ');
-    await audio.playTextWithSynchronization({ 
+    await charlotteVoiceService.charlotteInteractiveAudio({
       text: syllableText,
-      voiceId: 'XB0fDUnXU5powFXDhCwa' // Charlotte
+      context: 'conversation'
     });
   };
 
