@@ -11,7 +11,7 @@ import { ManagedTimers } from '@/utils/TimerManager';
 import { performanceManager } from '@/services/PerformanceManager';
 import { globalResizeService } from '@/services/GlobalResizeService';
 import { useImageManagement } from '../hooks/useImageManagement';  
-import { useAudioVocabulary } from '../hooks/useAudioVocabulary';
+import { useAudioControls } from '../hooks/useAudioControls';
 import { useErrorNetworkState } from '../hooks/useErrorNetworkState';
 import { useStoryMetadata } from '../hooks/useStoryMetadata';
 import { useUIAnimationState } from '../hooks/useUIAnimationState';
@@ -96,7 +96,7 @@ import { hashText } from "@/utils/tokenize";
 import { defaultAudioConfig } from "@/config/audioConfig";
 import "@/styles/storyDisplay.css";
 // import { processTextForDesktop } from "@/utils/desktopTextProcessor";
-import { useWordHighlighting } from "@/hooks/useWordHighlighting";
+// useWordHighlighting integrated into useAudioControls
 import { VoiceCommandController } from '@/components/VoiceCommandController';
 import { VoiceHoverController } from '@/components/VoiceHoverController';
 import { PremiumHoverController } from '@/components/PremiumHoverController';
@@ -290,9 +290,14 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     onSessionEnded
   });
 
-  // Initialize specialized hooks for state management
+  // Initialize consolidated hooks for state management
   const { state: imageState, actions: imageActions } = useImageManagement();
-  const { state: audioVocabState, actions: audioVocabActions } = useAudioVocabulary();
+  const { vocabularyState, vocabularyActions } = useAudioControls({
+    text: '',
+    userInfo: safeUserInfo,
+    currentPage: 0,
+    isPremium
+  });
   const { state: errorNetworkState, actions: errorNetworkActions } = useErrorNetworkState();
   const { state: metadataState, actions: metadataActions } = useStoryMetadata({ userInfo: safeUserInfo, isPremium });
   const { state: uiState, actions: uiActions, refs: uiRefs } = useUIAnimationState();
@@ -317,7 +322,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     incrementWordsInteracted, incrementSessionWordsRead, markPageCompleted,
     resetSessionCounters, clearVocabularyData, setWordsInteracted, setSessionWordsRead,
     setPagesCompleted, setAudioPlayedPage
-  } = { ...audioVocabState, ...audioVocabActions };
+  } = { ...vocabularyState, ...vocabularyActions };
 
   const { error, lastImageError, isNetworkAvailable } = errorNetworkState;
   const { setError, setLastImageError, setIsNetworkAvailable, clearErrors } = errorNetworkActions;

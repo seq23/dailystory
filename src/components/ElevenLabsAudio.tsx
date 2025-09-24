@@ -16,12 +16,10 @@ import type { UserInfo } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { VocabularyTrackingService } from "@/services/vocabularyTrackingService";
 import { tokenizeForHighlighting } from "@/utils/tokenize";
-import TTSDebugOverlay from "@/components/TTSDebugOverlay";
+// TTSDebugOverlay integrated into UnifiedDebugMonitor
 import { DebugLogger } from "@/services/DebugLogger";
 
-// Import new lean hooks
-import { useAudioSession } from "@/hooks/useAudioSession";
-import { useAudioSync } from "@/hooks/useAudioSync";
+// Import consolidated audio hook
 import { useAudioControls } from "@/hooks/useAudioControls";
 import { charlotteVoiceService } from "@/services/CharlotteVoiceService";
 
@@ -64,27 +62,18 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
   const { handleVoiceToggle, isConnected: voiceConnected, isConnecting: voiceConnecting } = useVoiceIntegration();
   const { toast, dismiss } = useToast();
 
-  // Use lean hooks for separated concerns
-  const { canUseAudio, shouldShowCrown, markPageAsPlayed } = useAudioSession({
-    userInfo,
-    isPremium,
-    currentPage,
-    contentHash
-  });
-
-  const { validateHashSync } = useAudioSync({
-    contentHash,
-    text,
-    currentPage
-  });
-
+  // Use consolidated audio hook
   const { 
     isPlaying, 
     isLoading, 
     isStabilizing, 
     playAudio: playAudioCore, 
     stopAudio: stopAudioCore,
-    speedMultiplierRef 
+    speedMultiplierRef,
+    canUseAudio,
+    shouldShowCrown,
+    markPageAsPlayed,
+    validateHashSync
   } = useAudioControls({
     text,
     userInfo,
@@ -92,7 +81,8 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
     contentHash,
     difficulty,
     onWordHighlight,
-    onAudioStateChange
+    onAudioStateChange,
+    isPremium
   });
 
   // Voice command state (kept local as it's UI-specific)

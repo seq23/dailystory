@@ -6,16 +6,15 @@ import { NetflixRetryService } from '@/services/NetflixRetryService';
 import { NetworkDebugger, NetworkRequest } from '@/services/NetworkDebugger';
 import { DebugGateway } from '@/services/DebugGateway';
 import { DebugDataViewer } from '@/components/DebugDataViewer';
-import { BackendTierChecker } from '@/components/BackendTierChecker';
-import { AudioPlaybackTester } from '@/components/AudioPlaybackTester';
-import { TTSDebugOverlay } from '@/components/TTSDebugOverlay';
 import { phoneticRulesEngine } from '@/services/phoneticRulesEngine';
 import { charlotteVoiceService } from '@/services/CharlotteVoiceService';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { X, Download, Trash2, Search, Play, Square, RotateCcw, MoreHorizontal, ChevronDown } from 'lucide-react';
+import { X, Download, Trash2, Search, Play, Square, RotateCcw, MoreHorizontal, ChevronDown, Volume2, Loader2, TestTube } from 'lucide-react';
+import { BackendTierChecker } from '@/components/BackendTierChecker';
+import { useToast } from '@/hooks/use-toast';
 
 interface NetflixDebugLog {
   timestamp: number;
@@ -25,7 +24,7 @@ interface NetflixDebugLog {
   source: string;
 }
 
-// Enhanced Unified Debug Monitor - Combines Netflix monitoring with general debug system
+// Enhanced Unified Debug Monitor - Consolidates all debugging functionality
 export const UnifiedDebugMonitor: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [logs, setLogs] = useState<DebugLogEntry[]>([]);
@@ -37,6 +36,30 @@ export const UnifiedDebugMonitor: React.FC = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [circuitBreakerStatus, setCircuitBreakerStatus] = useState<any>({});
   const [currentSessionId, setCurrentSessionId] = useState('');
+  
+  // Audio testing states (integrated from AudioPlaybackTester)
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+  const [testText, setTestText] = useState('Hello, this is Charlotte speaking. How are you today?');
+  const [testWord, setTestWord] = useState('cat');
+  const [audioLoading, setAudioLoading] = useState(false);
+  const [lastTest, setLastTest] = useState<string | null>(null);
+  
+  // TTS debug states (integrated from TTSDebugOverlay)
+  const [ttsStatus, setTtsStatus] = useState({ isPlaying: false, currentWordIndex: -1, totalWords: 0, contentHash: '' });
+  
+  const { toast } = useToast();
+
+  // TTS Status polling (integrated from TTSDebugOverlay)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      try {
+        const charlotte = (window as any).__CharlotteVoiceService;
+        const status = charlotte ? charlotte.getStatus() : { isPlaying: false, currentWordIndex: -1, totalWords: 0, contentHash: '' };
+        setTtsStatus(status as any);
+      } catch {}
+    }, 500);
+    return () => clearInterval(interval);
+  }, []);
 
   // Auto-detect current session ID for live monitoring
   useEffect(() => {
@@ -174,6 +197,129 @@ export const UnifiedDebugMonitor: React.FC = () => {
     setNetflixLogs([]);
     NetworkDebugger.clearRequests();
     setNetworkRequests([]);
+  };
+
+  // Audio testing functions (integrated from AudioPlaybackTester)
+  const testCharlotteVoice = async () => {
+    setAudioLoading(true);
+    setLastTest('Charlotte TTS (Primary)');
+    DebugLogger.log('audio', '✅ Testing Charlotte voice service', { text: testText });
+
+    try {
+      if (typeof window !== 'undefined' && window.__CharlotteVoiceService) {
+        const charlotteService = window.__CharlotteVoiceService;
+        
+        setIsAudioPlaying(true);
+        await charlotteService.charlotteInteractiveAudio({
+          text: testText,
+          context: 'conversation'
+        });
+        
+        toast({
+          title: "🎙️ Charlotte Voice Test Success",
+          description: "ElevenLabs Charlotte audio completed successfully",
+        });
+      } else {
+        throw new Error('CharlotteVoiceService not available');
+      }
+    } catch (error: any) {
+      DebugLogger.error('audio', 'Charlotte voice test failed', error);
+      
+      toast({
+        title: "Charlotte Voice Test Failed",
+        description: error.message || 'Charlotte service not available',
+        variant: "destructive",
+      });
+    } finally {
+      setAudioLoading(false);
+      setIsAudioPlaying(false);
+    }
+  };
+
+  const testInteractiveWord = async () => {
+    setAudioLoading(true);
+    setLastTest('Interactive Word');
+    DebugLogger.log('audio', 'Testing interactive word audio', { word: testWord });
+
+    try {
+      if (typeof window !== 'undefined' && window.__CharlotteVoiceService) {
+        const charlotteService = window.__CharlotteVoiceService;
+        
+        setIsAudioPlaying(true);
+        await charlotteService.charlotteHearWord(testWord);
+        
+        toast({
+          title: "Charlotte Word Test",
+          description: `Charlotte successfully pronounced "${testWord}"`,
+        });
+      } else {
+        throw new Error('CharlotteVoiceService not available');
+      }
+    } catch (error: any) {
+      DebugLogger.error('audio', 'Charlotte word test failed', error);
+      
+      toast({
+        title: "Charlotte Word Test Failed",
+        description: error.message || 'Charlotte service not available',
+        variant: "destructive",
+      });
+    } finally {
+      setAudioLoading(false);
+      setIsAudioPlaying(false);
+    }
+  };
+
+  const testAudioCoordination = async () => {
+    setAudioLoading(true);
+    setLastTest('Audio Coordination');
+    DebugLogger.log('audio', 'Testing audio coordination system');
+
+    try {
+      const events = ['story:audio:start', 'charlotte:speech:request', 'audio:conflict'];
+      
+      events.forEach(eventType => {
+        const event = new CustomEvent(eventType, { detail: { source: 'UnifiedDebugMonitor' } });
+        window.dispatchEvent(event);
+        DebugLogger.log('audio', `Dispatched ${eventType} event`);
+      });
+      
+      toast({
+        title: "Audio Coordination Test",
+        description: "Audio system events dispatched successfully",
+      });
+    } catch (error: any) {
+      DebugLogger.error('audio', 'Audio coordination test failed', error);
+      
+      toast({
+        title: "Audio Coordination Test Failed",
+        description: error.message || 'Event system not available',
+        variant: "destructive",
+      });
+    } finally {
+      setAudioLoading(false);
+    }
+  };
+
+  const stopAllAudio = () => {
+    try {
+      if (typeof window !== 'undefined' && window.__CharlotteVoiceService) {
+        const charlotteService = window.__CharlotteVoiceService;
+        charlotteService.stop();
+      }
+
+      const stopEvent = new CustomEvent('charlotte:stop', { detail: { source: 'UnifiedDebugMonitor' } });
+      window.dispatchEvent(stopEvent);
+
+      setIsAudioPlaying(false);
+      DebugLogger.log('audio', 'All audio stopped via UnifiedDebugMonitor');
+      
+      toast({
+        title: "Audio Stopped",
+        description: "All Charlotte audio systems stopped",
+      });
+    } catch (error) {
+      DebugLogger.error('audio', 'Failed to stop audio', error);
+    }
   };
 
   const resetCircuitBreakers = () => {
@@ -642,13 +788,134 @@ export const UnifiedDebugMonitor: React.FC = () => {
           </div>
         )}
 
-        {/* Audio Test View */}
+        {/* Audio Test View - Integrated functionality */}
         {activeTab === 'audio-test' && (
-          <div className="flex-1 flex flex-col min-h-0 space-y-4">
-            <div className="text-sm font-semibold">Consolidated Audio Testing</div>
-            <div className="flex-1 overflow-auto space-y-4">
-              <AudioPlaybackTester />
-              <TTSDebugOverlay />
+          <div className="flex-1 flex flex-col min-h-0 space-y-4 p-2">
+            <div className="text-sm font-semibold flex items-center gap-2">
+              <TestTube className="w-4 h-4" />
+              Integrated Audio Testing
+            </div>
+            
+            {/* TTS Status Display (from TTSDebugOverlay) */}
+            <div className="bg-muted/50 rounded p-2 text-xs">
+              <div className="font-medium mb-1">TTS Debug Status:</div>
+              <div className="space-y-1">
+                <div>playing: {String(ttsStatus.isPlaying)}</div>
+                <div>word: {ttsStatus.currentWordIndex} / {ttsStatus.totalWords}</div>
+                <div>hash(audio): {ttsStatus.contentHash ? String(ttsStatus.contentHash).slice(0, 10) : '-'}</div>
+                <div>hash(ui): {typeof window !== 'undefined' && (window as any).__pageContentHash ? String((window as any).__pageContentHash).slice(0,10) : '-'}</div>
+                <div>mismatch: {typeof window !== 'undefined' && ttsStatus.contentHash && (window as any).__pageContentHash && ttsStatus.contentHash !== (window as any).__pageContentHash ? 'YES' : 'no'}</div>
+              </div>
+            </div>
+
+            {/* Charlotte Voice Testing */}
+            <div className="space-y-2">
+              <h4 className="font-semibold text-sm">Charlotte Voice (TTS)</h4>
+              <div className="flex gap-2">
+                <Input
+                  value={testText}
+                  onChange={(e) => setTestText(e.target.value)}
+                  placeholder="Enter text for Charlotte to speak..."
+                  className="flex-1 text-xs h-6"
+                />
+                <Button 
+                  onClick={testCharlotteVoice} 
+                  disabled={audioLoading || isAudioPlaying}
+                  size="sm"
+                  className="flex items-center gap-1 h-6 px-2 text-xs"
+                >
+                  {audioLoading && lastTest === 'Charlotte TTS' ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <Volume2 className="w-3 h-3" />
+                  )}
+                  Test
+                </Button>
+              </div>
+            </div>
+
+            {/* Interactive Word Testing */}
+            <div className="space-y-2">
+              <h4 className="font-semibold text-sm">Interactive Word Audio</h4>
+              <div className="flex gap-2">
+                <Input
+                  value={testWord}
+                  onChange={(e) => setTestWord(e.target.value)}
+                  placeholder="Enter word to hear pronunciation..."
+                  className="flex-1 text-xs h-6"
+                />
+                <Button 
+                  onClick={testInteractiveWord} 
+                  disabled={audioLoading || isAudioPlaying}
+                  size="sm"
+                  className="flex items-center gap-1 h-6 px-2 text-xs"
+                >
+                  {audioLoading && lastTest === 'Interactive Word' ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <Play className="w-3 h-3" />
+                  )}
+                  Hear
+                </Button>
+              </div>
+            </div>
+
+            {/* Audio Coordination Testing */}
+            <div className="space-y-2">
+              <h4 className="font-semibold text-sm">Audio System Coordination</h4>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={testAudioCoordination}
+                  disabled={audioLoading}
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-1 h-6 px-2 text-xs"
+                >
+                  {audioLoading && lastTest === 'Audio Coordination' ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <TestTube className="w-3 h-3" />
+                  )}
+                  Test Events
+                </Button>
+                <Button 
+                  onClick={stopAllAudio}
+                  variant="destructive"
+                  size="sm"
+                  className="flex items-center gap-1 h-6 px-2 text-xs"
+                >
+                  <Square className="w-3 h-3" />
+                  Stop All
+                </Button>
+              </div>
+            </div>
+
+            {/* Status Display */}
+            {(audioLoading || isAudioPlaying) && (
+              <div className="p-2 bg-blue-500/10 border border-blue-500/20 rounded text-xs">
+                <div className="flex items-center gap-2">
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                  <span>
+                    {audioLoading ? `Testing ${lastTest}...` : 'Playing audio...'}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Service Availability Check */}
+            <div className="p-2 bg-muted/50 rounded text-xs">
+              <div className="font-medium mb-1">Charlotte-Centric Audio Services:</div>
+              <div className="space-y-1">
+                <div>
+                  CharlotteVoiceService: {typeof window !== 'undefined' && (window as any).__CharlotteVoiceService ? '✅ Available (Primary Unified)' : '❌ Not Found'}
+                </div>
+                <div>
+                  SmartElevenLabsTTS: {typeof window !== 'undefined' && (window as any).SmartElevenLabsTTS ? '✅ Available (Fallback)' : '❌ Not Found'}
+                </div>
+                <div>
+                  Event System: {typeof window !== 'undefined' && window.dispatchEvent ? '✅ Available' : '❌ Not Found'}
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -692,17 +959,6 @@ const AudioTestTab: React.FC = () => {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 p-2 space-y-3">
-      {/* Audio Playback Tester Section */}
-      <div className="space-y-2">
-        <div className="bg-purple-500/10 border border-purple-500/20 rounded p-2">
-          <div className="text-xs font-medium mb-1">Audio Playback Tester</div>
-          <div className="text-xs text-muted-foreground">
-            Test Charlotte voice, interactive words, and loading states separately from Voice Catalog System
-          </div>
-        </div>
-        <AudioPlaybackTester />
-      </div>
-
       {/* TTS & Syllable Debug Section */}
       <div className="space-y-2">
         <div className="bg-blue-500/10 border border-blue-500/20 rounded p-2">
