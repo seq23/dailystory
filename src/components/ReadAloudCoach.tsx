@@ -359,7 +359,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
                     syllables: wordFeedback.syllables.join('-') 
                   });
                   await speakWithTimeout(syllableMessage);
-                  await browserTTSService.speakWord(wordFeedback.word, userLanguage);
+                  await speakWithTimeout(wordFeedback.word);
                 }
               }
             }
