@@ -244,7 +244,7 @@ export const UnifiedInteractiveWord: React.FC<UnifiedInteractiveWordProps> = ({
         duration: 5000,
       });
       
-      // Use Charlotte's voice
+      // Audio explanation - use Charlotte for English, browser TTS for other languages
       if (userInfo?.nativeLanguage === 'en' || !userInfo?.nativeLanguage) {
         await charlotteVoiceService.charlotteExplainWord(cleanWord, 'en');
       } else {
@@ -259,10 +259,31 @@ export const UnifiedInteractiveWord: React.FC<UnifiedInteractiveWordProps> = ({
           });
           
           if (translationResult?.translatedText) {
-            await charlotteVoiceService.charlotteMultilingualExplain(
-              translationResult.translatedText, 
-              userInfo.nativeLanguage
-            );
+            // Use browser TTS for cost-effective non-English speech
+            if ('speechSynthesis' in window) {
+              window.speechSynthesis.cancel();
+              const utterance = new SpeechSynthesisUtterance(translationResult.translatedText);
+              utterance.lang = userInfo.nativeLanguage;
+              utterance.rate = 0.8;
+              
+              // Check if a voice is available for the target language
+              const voices = window.speechSynthesis.getVoices();
+              const targetVoice = voices.find(voice => 
+                voice.lang.startsWith(userInfo.nativeLanguage) || 
+                voice.lang === userInfo.nativeLanguage
+              );
+              
+              if (targetVoice) {
+                utterance.voice = targetVoice;
+                window.speechSynthesis.speak(utterance);
+              } else {
+                // Fallback to Charlotte English if no voice available
+                await charlotteVoiceService.charlotteExplainWord(cleanWord, 'en');
+              }
+            } else {
+              // Fallback to Charlotte English if no speechSynthesis
+              await charlotteVoiceService.charlotteExplainWord(cleanWord, 'en');
+            }
           } else {
             await charlotteVoiceService.charlotteExplainWord(cleanWord, 'en');
           }

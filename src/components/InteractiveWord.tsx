@@ -355,15 +355,15 @@ export const InteractiveWord = ({
         duration: 5000,
       });
       
-        // Use Charlotte's unified voice service - with multilingual support
+        // Audio explanation - use Charlotte for English, browser TTS for other languages
         try {
-          DebugLogger.log('ui', 'Charlotte EXPLAIN clicked', cleanWord);
+          DebugLogger.log('ui', 'EXPLAIN audio started', { cleanWord, userLanguage: userInfo?.nativeLanguage });
           
           // For English users, use Charlotte directly
           if (userInfo?.nativeLanguage === 'en' || !userInfo?.nativeLanguage) {
             await charlotteVoiceService.charlotteExplainWord(cleanWord, 'en');
           } else {
-            // For non-English users, use Charlotte's multilingual explanation
+            // For non-English users, translate definition and use browser TTS
             try {
               const { data: translationResult } = await supabase.functions.invoke('translate-universal', {
                 body: {
@@ -375,13 +375,35 @@ export const InteractiveWord = ({
               });
               
               if (translationResult?.translatedText) {
-                // Use Charlotte's multilingual voice instead of browser TTS
-                await charlotteVoiceService.charlotteMultilingualExplain(
-                  translationResult.translatedText, 
-                  userInfo.nativeLanguage
-                );
+                // Use browser TTS for cost-effective non-English speech
+                if ('speechSynthesis' in window) {
+                  window.speechSynthesis.cancel();
+                  const utterance = new SpeechSynthesisUtterance(translationResult.translatedText);
+                  utterance.lang = userInfo.nativeLanguage;
+                  utterance.rate = 0.8;
+                  
+                  // Check if a voice is available for the target language
+                  const voices = window.speechSynthesis.getVoices();
+                  const targetVoice = voices.find(voice => 
+                    voice.lang.startsWith(userInfo.nativeLanguage) || 
+                    voice.lang === userInfo.nativeLanguage
+                  );
+                  
+                  if (targetVoice) {
+                    utterance.voice = targetVoice;
+                    window.speechSynthesis.speak(utterance);
+                    DebugLogger.log('audio', 'Browser TTS explain completed', { language: userInfo.nativeLanguage });
+                  } else {
+                    // Fallback to Charlotte English if no voice available
+                    DebugLogger.warn('audio', 'No voice available for language, falling back to English', userInfo.nativeLanguage);
+                    await charlotteVoiceService.charlotteExplainWord(cleanWord, 'en');
+                  }
+                } else {
+                  // Fallback to Charlotte English if no speechSynthesis
+                  await charlotteVoiceService.charlotteExplainWord(cleanWord, 'en');
+                }
               } else {
-                // Fallback to Charlotte in English if translation fails
+                // Fallback to Charlotte English if translation fails
                 await charlotteVoiceService.charlotteExplainWord(cleanWord, 'en');
               }
             } catch (translationError) {
@@ -390,9 +412,9 @@ export const InteractiveWord = ({
             }
           }
           
-          DebugLogger.log('audio', 'Charlotte explain completed successfully');
+          DebugLogger.log('audio', 'Explain audio completed successfully');
         } catch (audioError) {
-          DebugLogger.error('audio', 'Charlotte explain audio failed', audioError);
+          DebugLogger.error('audio', 'Explain audio failed', audioError);
           // Show definition without audio if audio fails
         } finally {
           setIsPlaying(false);
