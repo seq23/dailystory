@@ -272,6 +272,47 @@ function generateContextSummary(text) {
   return (sentences[0]?.trim() || "Children's story scene.") + ".";
 }
 
+// Helper function to try nuclear templates (2.5C → 2.5D)
+async function tryNuclearTemplates({ storyText, userInfo, sessionId, pageNumber, log }) {
+  const templates = [
+    { fn: 'runware-template-cd', complexity: 'C', tag: 'tier-2.5C' },
+    { fn: 'runware-template-cd', complexity: 'D', tag: 'tier-2.5D' }
+  ];
+
+  for (const template of templates) {
+    log.attempt(template.tag, { templateComplexity: template.complexity });
+    try {
+      const resp = await supabase.functions.invoke(template.fn, {
+        body: {
+          pageText: storyText,
+          userInfo,
+          sessionId,
+          pageNumber: pageNumber || 1,
+          templateComplexity: template.complexity
+        }
+      });
+      
+      const data = resp?.data;
+      if (data?.success && data?.imageURL) {
+        log.success(template.tag, { imageUrl: data.imageURL });
+        return { ...data, tier: template.tag.toUpperCase().replace('.', '') };
+      }
+      log.failure(template.tag, { reason: data?.error || resp?.error?.message || 'template_failed' });
+    } catch (err) {
+      log.failure(template.tag, { reason: (err && err.message) || String(err) });
+    }
+  }
+
+  // Both nuclear templates failed - return failure code for frontend Tier 4
+  return {
+    success: false,
+    error: 'All backend tiers failed (Direct Mode + 2.5C + 2.5D)',
+    tier: 'BACKEND_EXHAUSTED',
+    templateStructure: 'BACKEND_EXHAUSTED',
+    failureReason: 'all_backend_tiers_failed_trigger_tier_4'
+  };
+}
+
 // Character-consistency-only fallback removed - Direct Mode provides superior alternative
 
 // ---------------- RUNWARE CORE ----------------
@@ -756,15 +797,15 @@ async function handleRequest(req) {
               throw new Error('Direct Mode failed');
             }
           } catch (directErr) {
-            log.failure('tier-1', { error: (directErr && directErr.message) || String(directErr), reason: 'direct_mode_failed' });
-            // For Force Tier 1, return clear failure without escalation
-            result = {
-              success: false,
-              error: `Force Tier 1 failed: ${msg}. Direct Mode also failed: ${(directErr && directErr.message) || String(directErr)}`,
-              tier: 'TIER_1_FAILED',
-              templateStructure: 'TIER_1_FAILED',
-              failureReason: 'orchestrator_and_direct_mode_failed'
-            };
+            log.failure('tier-1', { error: (directErr && directErr.message) || String(directErr), reason: 'direct_mode_failed_escalating_to_nuclear' });
+            // Direct Mode failed, escalate to nuclear templates (2.5C → 2.5D)
+            result = await tryNuclearTemplates({
+              storyText,
+              userInfo: payload.userInfo,
+              sessionId,
+              pageNumber: pageNumber || 1,
+              log
+            });
           }
         } else {
           // Regular flow: Allow escalation to Tier 2.5A for non-forced requests
