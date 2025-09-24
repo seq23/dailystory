@@ -1,4 +1,5 @@
 {
+  "nodeModulesDir": "auto",
   "compilerOptions": {
     "experimentalDecorators": true,
     "lib": ["dom", "dom.asynciterable", "es2022"],
