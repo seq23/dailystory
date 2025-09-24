@@ -1,5 +1,5 @@
-// Removed: import { audioSyncService } from '../services/audioSyncService';
-import { SimplifiedAudioEngine } from '../services/SimplifiedAudioEngine';
+// Replaced SimplifiedAudioEngine with CharlotteVoiceService
+import { CharlotteVoiceService } from '../services/CharlotteVoiceService';
 import type { UserInfo } from '@/types';
 
 /**
@@ -130,7 +130,7 @@ export class AudioImplementationValidator {
     };
 
     try {
-      const audioEngine = SimplifiedAudioEngine.getInstance();
+      const audioEngine = CharlotteVoiceService.getInstance();
       
       // Test basic audio functionality for free users
       await audioEngine.playTextWithSynchronization({ text: 'Test story content' });
@@ -157,7 +157,7 @@ export class AudioImplementationValidator {
     };
 
     try {
-      const audioEngine = SimplifiedAudioEngine.getInstance();
+      const audioEngine = CharlotteVoiceService.getInstance();
       // Test premium user audio access
       await audioEngine.playTextWithSynchronization({ text: 'Premium test content' });
       console.log('✅ Premium user audio test completed');
@@ -308,7 +308,7 @@ export class AudioImplementationValidator {
     };
 
     try {
-      const audioEngine = SimplifiedAudioEngine.getInstance();
+      const audioEngine = CharlotteVoiceService.getInstance();
       await audioEngine.playTextWithSynchronization({ text: 'Test content in Spanish' });
       console.log('✅ Free user test completed');
     } catch (error) {

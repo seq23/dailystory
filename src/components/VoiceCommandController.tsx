@@ -78,16 +78,14 @@ export const VoiceCommandController = forwardRef<VoiceCommandControllerHandle, V
 
   const startRecording = useCallback(async () => {
     try {
-      // Implement mutual exclusion with audio playback
+      // Implement mutual exclusion with audio playback using Charlotte service
       try {
-        // TODO: Replace with SimplifiedAudioEngine
-        // const { SimplifiedAudioEngine } = await import('@/services/SimplifiedAudioEngine');
-        // TODO: Replace with SimplifiedAudioEngine
-        // const status = SimplifiedAudioEngine.getInstance().getStatus();
-        const status = { isPlaying: false };
+        const { CharlotteVoiceService } = await import('@/services/CharlotteVoiceService');
+        const audioService = CharlotteVoiceService.getInstance();
+        const status = audioService.getStatus();
         if (status.isPlaying) {
           DebugLogger.log('audio', 'Audio is playing, stopping it first');
-          // SimplifiedAudioEngine.getInstance().stop();
+          audioService.stop();
           await new Promise(r => setTimeout(r, 500)); // Wait for audio cleanup
         }
       } catch (e) {

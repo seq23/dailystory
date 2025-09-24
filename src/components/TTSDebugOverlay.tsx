@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
-// Removed: import { audioSyncService } from "@/services/audioSyncService";
 
-// Small, non-intrusive debug HUD for TTS highlighting & playback
+// Small, non-intrusive debug HUD for Charlotte TTS highlighting & playback
 // Enable via query param: ?ttsdebug=1
 export const TTSDebugOverlay: React.FC = () => {
   const [status, setStatus] = useState({ isPlaying: false, currentWordIndex: -1, totalWords: 0, contentHash: '' });
@@ -9,9 +8,9 @@ export const TTSDebugOverlay: React.FC = () => {
   useEffect(() => {
     const iv = setInterval(() => {
       try {
-        // TODO: Replace with SimplifiedAudioEngine status
-        // const st = SimplifiedAudioEngine.getInstance().getStatus();
-        const st = { isPlaying: false, currentWordIndex: -1, totalWords: 0, contentHash: '' };
+        // Use Charlotte's unified audio service instead of SimplifiedAudioEngine
+        const charlotte = (window as any).__CharlotteVoiceService;
+        const st = charlotte ? charlotte.getStatus() : { isPlaying: false, currentWordIndex: -1, totalWords: 0, contentHash: '' };
         setStatus(st as any);
       } catch {}
     }, 500);

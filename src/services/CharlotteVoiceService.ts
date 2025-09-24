@@ -41,12 +41,15 @@ export class CharlotteVoiceService {
   private wordTimings: Array<{ word: string; startTime: number; endTime: number }> = [];
   private onWordHighlight?: (wordIndex: number) => void;
   private highlightInterval?: NodeJS.Timeout;
+  private currentHash: string | null = null;
 
   static getInstance() {
     if (!this.instance) {
       this.instance = new CharlotteVoiceService();
-      // Expose globally for AudioPlaybackTester
+      // Expose globally for AudioPlaybackTester and backward compatibility
       (window as any).__CharlotteVoiceService = this.instance;
+      // BACKWARD COMPATIBILITY: Expose as SimplifiedAudioEngine for legacy code
+      (window as any).__SimplifiedAudioEngine = this.instance;
     }
     return this.instance;
   }
@@ -475,8 +478,52 @@ export class CharlotteVoiceService {
   }
 
   /**
-   * PUBLIC CONTROL METHODS
+   * PUBLIC CONTROL METHODS - SimplifiedAudioEngine compatibility interface
    */
+  
+  /**
+   * SimplifiedAudioEngine compatible interface - Main entry point for story reading
+   */
+  async playTextWithSynchronization(options: { 
+    text: string; 
+    contentHash?: string;
+    onWordHighlight?: (wordIndex: number) => void 
+  }): Promise<void> {
+    DebugLogger.log('audio', `🎭 Charlotte playTextWithSynchronization: "${options.text.substring(0, 50)}..."`);
+    
+    // Store content hash for compatibility
+    this.currentHash = options.contentHash || '';
+    
+    // Route to Charlotte's story reading functionality
+    return this.charlotteReadStory(options.text, options.onWordHighlight);
+  }
+
+  /**
+   * SimplifiedAudioEngine compatible status interface
+   */
+  getStatus(): { 
+    isPlaying: boolean; 
+    currentWordIndex: number; 
+    totalWords: number; 
+    contentHash: string 
+  } {
+    let currentWordIndex = -1;
+    
+    // Calculate current word index if audio is playing and we have timings
+    if (this.playing && this.audio && this.wordTimings.length > 0) {
+      const currentTimeMs = this.audio.currentTime * 1000;
+      currentWordIndex = this.wordTimings.findIndex(timing => 
+        currentTimeMs >= timing.startTime && currentTimeMs <= timing.endTime
+      );
+    }
+    
+    return {
+      isPlaying: this.playing,
+      currentWordIndex,
+      totalWords: this.wordTimings.length,
+      contentHash: this.currentHash || ''
+    };
+  }
   
   stop(): void {
     if (this.audio) {
@@ -507,6 +554,17 @@ export class CharlotteVoiceService {
 
   isPlaying(): boolean {
     return this.playing;
+  }
+
+  /**
+   * Legacy SimplifiedAudioEngine method aliases for backward compatibility
+   */
+  stopAudio(): void {
+    this.stop();
+  }
+
+  async playText(text: string, contentHash: string): Promise<void> {
+    return this.playTextWithSynchronization({ text, contentHash });
   }
 
   static clearAllRequests(): void {

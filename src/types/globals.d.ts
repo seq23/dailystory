@@ -12,11 +12,9 @@ declare global {
       charlotteHearWord: (word: string) => Promise<void>;
       stopAudio: () => void;
       stop: () => void;
-    };
-    __SimplifiedAudioEngine?: {
-      playText: (text: string, contentHash: string) => Promise<void>;
-      stopAudio: () => void;
-      stop: () => void;
+      playTextWithSynchronization: (options: { text: string; contentHash?: string; onWordHighlight?: (wordIndex: number) => void }) => Promise<void>;
+      getStatus: () => { isPlaying: boolean; currentWordIndex: number; totalWords: number; contentHash: string };
+      isPlaying: () => boolean;
     };
     __IS_PREMIUM?: boolean;
     __endingPageCount__?: number;
