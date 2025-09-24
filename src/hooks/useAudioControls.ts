@@ -60,6 +60,8 @@ export const useAudioControls = ({
   const sessionKeyRef = useRef<string>('');
   const cleanupRef = useRef<(() => void) | null>(null);
   const stateChangeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // Track last highlighted word index to restore on ensure-active
+  const currentHighlightRef = useRef<number>(-1);
 
   // Speed baseline calculator (mirror of service mapping)
   const getBaseSpeed = () => {
@@ -169,6 +171,7 @@ export const useAudioControls = ({
       });
       
       setCurrentHighlightedWord(highlightingEnabled ? wordIndex : -1);
+      currentHighlightRef.current = highlightingEnabled ? wordIndex : -1;
       DebugLogger.log('ui', `Universal highlighting: word ${wordIndex} (${interactiveWords.length} words processed)`);
     };
     
@@ -182,7 +185,19 @@ export const useAudioControls = ({
       });
       
       setCurrentHighlightedWord(-1);
+      currentHighlightRef.current = -1;
       DebugLogger.log('ui', `Universal highlighting cleared: ${highlightedElements.length} elements`);
+    };
+    
+    // Re-apply last known highlight when audio resumes or UI re-renders
+    const handleEnsureActive = () => {
+      const wi = currentHighlightRef.current;
+      if (highlightingEnabled && wi >= 0) {
+        DebugLogger.log('ui', `Ensuring highlight active: word ${wi}`);
+        window.dispatchEvent(new CustomEvent('highlighting:request', { detail: { wordIndex: wi } }));
+      } else {
+        DebugLogger.log('ui', 'Ensure-active: no highlight to restore');
+      }
     };
     
     // Listen for session reset to reset guest play states
@@ -190,18 +205,17 @@ export const useAudioControls = ({
       setHasPlayedThisPage(false);
       setIsPlaying(false);
     };
-
     window.addEventListener('audio:statechange', handleAudioStateChange as EventListener);
     window.addEventListener('highlighting:request', handleHighlightingRequest as EventListener);
     window.addEventListener('highlighting:clear-all', handleClearHighlighting as EventListener);
-    window.addEventListener('highlighting:ensure-active', handleClearHighlighting as EventListener);
+    window.addEventListener('highlighting:ensure-active', handleEnsureActive as EventListener);
     window.addEventListener('audio:session:reset', handleSessionReset);
     
     return () => {
       window.removeEventListener('audio:statechange', handleAudioStateChange as EventListener);
       window.removeEventListener('highlighting:request', handleHighlightingRequest as EventListener);
       window.removeEventListener('highlighting:clear-all', handleClearHighlighting as EventListener);
-      window.removeEventListener('highlighting:ensure-active', handleClearHighlighting as EventListener);
+      window.removeEventListener('highlighting:ensure-active', handleEnsureActive as EventListener);
       window.removeEventListener('audio:session:reset', handleSessionReset);
       
       if (stateChangeTimeoutRef.current) {
@@ -263,6 +277,10 @@ export const useAudioControls = ({
     window.dispatchEvent(new CustomEvent('highlighting:request', { 
       detail: { wordIndex } 
     }));
+
+    // Immediate local state update to avoid missed UI events
+    setCurrentHighlightedWord(wordIndex);
+    currentHighlightRef.current = wordIndex;
     
     if (onWordHighlight) {
       onWordHighlight(wordIndex);
