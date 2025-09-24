@@ -883,6 +883,41 @@
   },
   "coach": {
     "title": "Read‑aloud coach",
+    "subtitle": "Kids read aloud; get instant feedback",
+    "englishOnlyShort": "English only for now",
+    "englishOnlyLong": "This coach is available for English stories only.",
+    "introduction": "Hi there! I'm your reading coach. I'm here to help you practice reading out loud. When you're ready, click start and read the sentence. I'll give you feedback to help you improve!",
+    "targetLabel": "Target",
+    "start": "Start",
+    "stop": "Stop",
+    "stopAll": "Stop All Audio",
+    "tryAgain": "Try again",
+    "limitReached": "Daily limit reached — Upgrade",
+    "today": "today",
+    "prevSentence": "Previous sentence",
+    "nextSentence": "Next sentence",
+    "youSaid": "You said:",
+    "feedback": "Your coach is giving you feedback...",
+    "pass": "🎉 Perfect reading!",
+    "navigation": {
+      "next": "Great! Let's move to the next sentence. Here it is: \"{{sentence}}\"",
+      "previous": "Let's go back to practice this sentence: \"{{sentence}}\""
+    },
+    "feedback": {
+      "success": "Excellent reading! {{pace}} That was a perfect score!",
+      "tryAgain": "Good effort! You got {{accuracy}}% correct. ",
+      "practiceWords": "Let's practice these words: {{words}}. ",
+      "syllables": "Let's break down {{word}}: {{syllables}}"
+    },
+    "wordPractice": {
+      "intro": "Let's practice the word \"{{word}}\" together. Listen first, then you say it.",
+      "yourTurn": "Now you try saying \"{{word}}\"",
+      "success": "Perfect! You nailed \"{{word}}\"! That was excellent pronunciation!",
+      "encourage": "Almost there! You have {{tries}} more try. Let me break it down for you again.",
+      "comfort": "That's okay! Keep practicing \"{{word}}\" and you'll get it. Don't worry, it takes time!"
+    }
+  },
+  "postSession": {
     "englishOnlyShort": "English only for now",
     "englishOnlyLong": "This coach is available for English stories only.",
     "subtitle": "Kids read aloud; get instant feedback",

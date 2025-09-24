@@ -4326,7 +4326,13 @@ const handleRestartTimer = () => {
         </>
       )}
 
-      <Dialog open={showCoach} onOpenChange={setShowCoach}>
+      <Dialog open={showCoach} onOpenChange={(open) => {
+        setShowCoach(open);
+        // Stop Charlotte's voice when dialog closes
+        if (!open) {
+          charlotteVoiceService.stop();
+        }
+      }}>
         <DialogContent className="w-[min(96vw,720px)] max-h-[85vh] overflow-y-auto p-0">
           <DialogHeader>
             <DialogTitle>Help Me Read</DialogTitle>

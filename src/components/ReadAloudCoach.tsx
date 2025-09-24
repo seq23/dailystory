@@ -6,9 +6,11 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { supabase } from "@/integrations/supabase/client";
 import { Mic, StopCircle, Volume2, RotateCcw, ChevronLeft, ChevronRight, Lock, ChevronDown, ChevronUp } from "lucide-react";
 import { charlotteVoiceService } from "@/services/CharlotteVoiceService";
+import { browserTTSService } from "@/services/BrowserTTSService";
 import { PronunciationAnalyzer } from "@/services/PronunciationAnalyzer";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { UserInfo } from "@/types";
+import type { SupportedLanguage } from "@/types/multilingual";
 import { useTranslation } from "react-i18next";
 
 interface ReadAloudCoachProps {
@@ -50,20 +52,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
   onUpgrade,
 }) => {
   const { t } = useTranslation();
-  // Language gate
-  if (language && language.toLowerCase() !== "en") {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">{t('coach.title','Read‑aloud coach')}</CardTitle>
-          <CardDescription>{t('coach.englishOnlyShort','English only for now')}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">{t('coach.englishOnlyLong','This coach is available for English stories only.')}</p>
-        </CardContent>
-      </Card>
-    );
-  }
+  // Reading coach now works for ALL languages - no restrictions!
 
   const originalText =
     targetText ||
@@ -151,23 +140,43 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
   useEffect(() => {
     loadDailyCount();
     
-    // Charlotte introduces the reading coach
+    // Multilingual coach introduction using browser TTS
     const introduceCoach = async () => {
       try {
         await new Promise(resolve => setTimeout(resolve, 500)); // Small delay to avoid audio conflicts
-        await charlotteVoiceService.charlotteInteractiveAudio({ 
-          text: `Hi there! I'm Charlotte, your reading coach. I'm here to help you practice reading out loud. When you're ready, click start and read the sentence. I'll give you feedback to help you improve!`, 
-          context: 'conversation' 
-        });
+        const userLanguage = (userInfo?.nativeLanguage || 'en') as SupportedLanguage;
+        const introMessage = t('coach.introduction', 'Hi there! I\'m your reading coach. I\'m here to help you practice reading out loud. When you\'re ready, click start and read the sentence. I\'ll give you feedback to help you improve!');
+        
+        await browserTTSService.speakCoachMessage(introMessage, userLanguage);
       } catch (err) {
-        DebugLogger.error('audio', 'Charlotte introduction failed:', err);
+        DebugLogger.error('audio', 'Coach introduction failed:', err);
       }
     };
     
     introduceCoach();
-  }, [loadDailyCount]);
+  }, [loadDailyCount, userInfo?.nativeLanguage, t]);
 
   useEffect(() => () => mediaRecorderRef.current?.stop(), []);
+
+  // Stop all audio - both Charlotte and browser TTS
+  const stopAllAudio = useCallback(() => {
+    try {
+      // Stop recording if active
+      mediaRecorderRef.current?.stop();
+      mediaRecorderRef.current?.stream.getTracks().forEach((t) => t.stop());
+      setIsRecording(false);
+      
+      // Stop Charlotte's voice
+      charlotteVoiceService.stop();
+      
+      // Stop browser TTS
+      browserTTSService.stop();
+      
+      DebugLogger.log('audio', 'All reading coach audio stopped');
+    } catch (error) {
+      DebugLogger.error('audio', 'Error stopping coach audio', error);
+    }
+  }, []);
 
   const getSupportedMimeType = () => {
     const candidates = [
@@ -291,35 +300,37 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
         const nextAttempts = attempts + 1;
         setAttempts(nextAttempts);
 
-        // Provide Charlotte's audio feedback instead of text
+        // Provide multilingual coach feedback using browser TTS
         setTimeout(async () => {
           try {
+            const userLanguage = (userInfo?.nativeLanguage || 'en') as SupportedLanguage;
+            
             if (didPass) {
-              await charlotteVoiceService.charlotteInteractiveAudio({ 
-                text: `Excellent reading! ${pace} That was a perfect score!`, 
-                context: 'conversation' 
-              });
+              const successMessage = t('coach.feedback.success', 'Excellent reading! {{pace}} That was a perfect score!', { pace });
+              await browserTTSService.speakCoachMessage(successMessage, userLanguage);
             } else {
-              let feedbackText = `Good effort! You got ${Math.round(acc)}% correct. `;
+              let feedbackText = t('coach.feedback.tryAgain', 'Good effort! You got {{accuracy}}% correct. ', { accuracy: Math.round(acc) });
               if (top.length > 0) {
-                feedbackText += `Let's practice these words: ${top.join(', ')}. `;
+                feedbackText += t('coach.feedback.practiceWords', 'Let\'s practice these words: {{words}}. ', { words: top.join(', ') });
               }
               feedbackText += pace;
               
-              await charlotteVoiceService.charlotteInteractiveAudio({ 
-                text: feedbackText, 
-                context: 'conversation' 
-              });
+              await browserTTSService.speakCoachMessage(feedbackText, userLanguage);
               
-              // Provide syllable coaching for problematic words
+              // Provide syllable coaching for problematic words using browser TTS
               if (syllableFeedback.length > 0) {
                 for (const wordFeedback of syllableFeedback.slice(0, 2)) {
-                  await charlotteVoiceService.charlotteSyllableWord(wordFeedback.word);
+                  const syllableMessage = t('coach.feedback.syllables', 'Let\'s break down {{word}}: {{syllables}}', { 
+                    word: wordFeedback.word, 
+                    syllables: wordFeedback.syllables.join('-') 
+                  });
+                  await browserTTSService.speakCoachMessage(syllableMessage, userLanguage);
+                  await browserTTSService.speakWord(wordFeedback.word, userLanguage);
                 }
               }
             }
           } catch (err) {
-            DebugLogger.error('audio', 'Charlotte feedback failed:', err);
+            DebugLogger.error('audio', 'Coach feedback failed:', err);
           }
           
           // Auto-resume story audio after feedback
@@ -387,46 +398,44 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
     const tries = wordTries[w] || 0;
     if (tries >= WORD_MICRO_ATTEMPTS) return;
     
-    // Charlotte demonstrates first, then listens for user
+    // Multilingual coach demonstrates first, then listens for user
     try {
-      await charlotteVoiceService.charlotteInteractiveAudio({ 
-        text: `Let's practice the word "${w}" together. Listen first, then you say it.`, 
-        context: 'conversation' 
-      });
-      await charlotteVoiceService.charlotteSyllableWord(w);
-      await charlotteVoiceService.charlotteInteractiveAudio({ 
-        text: `Now you try saying "${w}"`, 
-        context: 'conversation' 
-      });
+      const userLanguage = (userInfo?.nativeLanguage || 'en') as SupportedLanguage;
+      
+      const practiceMessage = t('coach.wordPractice.intro', 'Let\'s practice the word "{{word}}" together. Listen first, then you say it.', { word: w });
+      await browserTTSService.speakCoachMessage(practiceMessage, userLanguage);
+      
+      // Demonstrate the word pronunciation
+      await browserTTSService.speakWord(w, 'en'); // Always pronounce English words in English
+      
+      const tryMessage = t('coach.wordPractice.yourTurn', 'Now you try saying "{{word}}"', { word: w });
+      await browserTTSService.speakCoachMessage(tryMessage, userLanguage);
+      
     } catch (err) {
-      DebugLogger.error('audio', 'Charlotte demonstration failed:', err);
+      DebugLogger.error('audio', 'Coach demonstration failed:', err);
     }
     
     const ok = await checkWordPronunciation(w);
     setWordTries((prev) => ({ ...prev, [w]: tries + 1 }));
     
     if (ok) {
-      // Celebrate with Charlotte's voice and remove from list
+      // Celebrate with coach's voice and remove from list
       setTopWords((prev) => prev.filter((x) => x !== w));
       try { 
-        await charlotteVoiceService.charlotteInteractiveAudio({ 
-          text: `Perfect! You nailed "${w}"! That was excellent pronunciation!`, 
-          context: 'conversation' 
-        });
+        const userLanguage = (userInfo?.nativeLanguage || 'en') as SupportedLanguage;
+        const successMessage = t('coach.wordPractice.success', 'Perfect! You nailed "{{word}}"! That was excellent pronunciation!', { word: w });
+        await browserTTSService.speakCoachMessage(successMessage, userLanguage);
       } catch {}
     } else {
       try {
+        const userLanguage = (userInfo?.nativeLanguage || 'en') as SupportedLanguage;
         const remainingTries = WORD_MICRO_ATTEMPTS - (tries + 1);
         if (remainingTries > 0) {
-          await charlotteVoiceService.charlotteInteractiveAudio({ 
-            text: `Almost there! You have ${remainingTries} more try. Let me break it down for you again.`, 
-            context: 'conversation' 
-          });
+          const encourageMessage = t('coach.wordPractice.encourage', 'Almost there! You have {{tries}} more try. Let me break it down for you again.', { tries: remainingTries });
+          await browserTTSService.speakCoachMessage(encourageMessage, userLanguage);
         } else {
-          await charlotteVoiceService.charlotteInteractiveAudio({ 
-            text: `That's okay! Keep practicing "${w}" and you'll get it. Don't worry, it takes time!`, 
-            context: 'conversation' 
-          });
+          const comfortMessage = t('coach.wordPractice.comfort', 'That\'s okay! Keep practicing "{{word}}" and you\'ll get it. Don\'t worry, it takes time!', { word: w });
+          await browserTTSService.speakCoachMessage(comfortMessage, userLanguage);
         }
       } catch {}
     }
@@ -446,12 +455,11 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
     const newIdx = Math.min(sentences.length - 1, idx + 1);
     setIdx(newIdx);
     
-    // Charlotte introduces the new sentence
+    // Multilingual coach introduces the new sentence
     try {
-      await charlotteVoiceService.charlotteInteractiveAudio({ 
-        text: `Great! Let's move to the next sentence. Here it is: "${sentences[newIdx] || ""}"`, 
-        context: 'conversation' 
-      });
+      const userLanguage = (userInfo?.nativeLanguage || 'en') as SupportedLanguage;
+      const nextMessage = t('coach.navigation.next', 'Great! Let\'s move to the next sentence. Here it is: "{{sentence}}"', { sentence: sentences[newIdx] || "" });
+      await browserTTSService.speakCoachMessage(nextMessage, userLanguage);
     } catch {}
   };
   
@@ -467,12 +475,11 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
     const newIdx = Math.max(0, idx - 1);
     setIdx(newIdx);
     
-    // Charlotte introduces the previous sentence
+    // Multilingual coach introduces the previous sentence
     try {
-      await charlotteVoiceService.charlotteInteractiveAudio({ 
-        text: `Let's go back to practice this sentence: "${sentences[newIdx] || ""}"`, 
-        context: 'conversation' 
-      });
+      const userLanguage = (userInfo?.nativeLanguage || 'en') as SupportedLanguage;
+      const prevMessage = t('coach.navigation.previous', 'Let\'s go back to practice this sentence: "{{sentence}}"', { sentence: sentences[newIdx] || "" });
+      await browserTTSService.speakCoachMessage(prevMessage, userLanguage);
     } catch {}
   };
 
@@ -508,11 +515,16 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
         {/* Controls */}
         <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
           {!isRecording ? (
-            <Button size="sm" onClick={startRecording} className="gap-2" disabled={limitReached || attempts >= MAX_ATTEMPTS_PER_SENTENCE}>
-              <Mic className="w-4 h-4" /> {t('coach.start','Start')}
-            </Button>
+            <>
+              <Button size="sm" onClick={startRecording} className="gap-2" disabled={limitReached || attempts >= MAX_ATTEMPTS_PER_SENTENCE}>
+                <Mic className="w-4 h-4" /> {t('coach.start','Start')}
+              </Button>
+              <Button size="sm" variant="destructive" onClick={stopAllAudio} className="gap-2">
+                <StopCircle className="w-4 h-4" /> {t('coach.stopAll','Stop All Audio')}
+              </Button>
+            </>
           ) : (
-            <Button size="sm" variant="destructive" onClick={stopRecording} className="gap-2">
+            <Button size="sm" onClick={stopRecording} variant="outline" className="gap-2">
               <StopCircle className="w-4 h-4" /> {t('coach.stop','Stop')}
             </Button>
           )}
