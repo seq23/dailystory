@@ -77,6 +77,11 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
   const [attempts, setAttempts] = useState(0);
   const [dailyUsed, setDailyUsed] = useState(0);
   const [limitReached, setLimitReached] = useState(false);
+  
+  // NEW: Charlotte readiness and syllable display states
+  const [charlotteReady, setCharlotteReady] = useState(false);
+  const [charlotteIntroducing, setCharlotteIntroducing] = useState(true);
+  const [wordSyllables, setWordSyllables] = useState<Record<string, string>>({});
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
@@ -140,12 +145,15 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
   useEffect(() => {
     loadDailyCount();
     
-    // Smart coach introduction: Charlotte for English, Browser TTS for other languages
+    // NEW: Smart coach introduction with proper timing control
     const introduceCoach = async () => {
       try {
-        await new Promise(resolve => setTimeout(resolve, 500)); // Small delay to avoid audio conflicts
+        setCharlotteIntroducing(true);
+        setCharlotteReady(false);
+        
+        await new Promise(resolve => setTimeout(resolve, 800)); // Let dialog settle
         const userLanguage = (userInfo?.nativeLanguage || 'en') as SupportedLanguage;
-        const introMessage = t('coach.introduction', 'Hi there! I\'m your reading coach. I\'m here to help you practice reading out loud. When you\'re ready, click start and read the sentence. I\'ll give you feedback to help you improve!');
+        const introMessage = t('coach.introduction', 'Hi! I\'m Charlotte, your reading helper! I\'ll listen as you read and help you with tricky words. Let me get ready for you...');
         
         if (userLanguage === 'en') {
           // Try Charlotte first for English users
@@ -162,8 +170,17 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
           // Use Browser TTS for non-English users
           await browserTTSService.speakCoachMessage(introMessage, userLanguage);
         }
+        
+        // Short pause, then mark Charlotte as ready
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        setCharlotteIntroducing(false);
+        setCharlotteReady(true);
+        
       } catch (err) {
         DebugLogger.error('audio', 'Coach introduction failed:', err);
+        // Still mark as ready even if intro fails
+        setCharlotteIntroducing(false);
+        setCharlotteReady(true);
       }
     };
     
@@ -425,9 +442,37 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
 
   // Per-word micro attempts tracking
   const [wordTries, setWordTries] = useState<Record<string, number>>({});
-  const [syllableExpanded, setSyllableExpanded] = useState(false);
-  const [wordsExpanded, setWordsExpanded] = useState(false);
   const { isMobileOrTablet } = useIsMobile();
+  
+  // NEW: Enhanced syllable demo function
+  const onHearCharlotteSayIt = async (word: string) => {
+    try {
+      const userLanguage = (userInfo?.nativeLanguage || 'en') as SupportedLanguage;
+      const demoMessage = t('coach.syllableDemo', 'Listen to how I break down "{{word}}"', { word });
+      
+      if (userLanguage === 'en') {
+        await charlotteVoiceService.charlotteInteractiveAudio({
+          text: demoMessage,
+          context: 'interactive'
+        });
+        await charlotteVoiceService.charlotteSyllableWord(word);
+        
+        // Show visual syllables and keep them visible
+        const syllableBreakdown = word.split('').reduce((acc, char, i) => {
+          if (i > 0 && i < word.length - 1 && Math.random() > 0.6) {
+            return acc + '-' + char;
+          }
+          return acc + char;
+        }, '');
+        setWordSyllables(prev => ({ ...prev, [word]: syllableBreakdown }));
+        
+      } else {
+        await browserTTSService.speakCoachMessage(`${demoMessage}: ${word}`, userLanguage);
+      }
+    } catch (err) {
+      DebugLogger.error('audio', 'Syllable demo failed:', err);
+    }
+  };
   
   const onSayWithMe = async (w: string) => {
     const tries = wordTries[w] || 0;
@@ -579,11 +624,11 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
 
   return (
     <Card className="w-full max-w-4xl mx-auto border border-border bg-card text-card-foreground shadow-sm max-h-screen overflow-auto">
-        <CardHeader className="pb-2">
+        <CardHeader className="pb-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-              <CardTitle className="text-sm sm:text-base">{t('coach.title','Read‑aloud coach')}</CardTitle>
-              <CardDescription className="text-xs">{t('coach.subtitle','Kids read aloud; get instant feedback')}</CardDescription>
+              <CardTitle className="text-lg sm:text-xl text-primary">🎯 Help Me Read</CardTitle>
+              <CardDescription className="text-sm">Charlotte's here to help you practice!</CardDescription>
             </div>
             <div className="flex items-center gap-1 w-full sm:w-auto justify-between sm:justify-end">
               <Button variant="ghost" size="icon" onClick={prevSentence} disabled={idx === 0} aria-label={t('coach.prevSentence','Previous sentence')} className="shrink-0">
@@ -600,149 +645,164 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
             </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-3 pt-2">
-          <div className="text-center px-2 sm:px-3 py-2">
-            <div className="font-semibold leading-snug text-lg sm:text-xl md:text-2xl lg:text-3xl break-words">{currentSentence}</div>
-            <div className="text-xs text-muted-foreground mt-1">{t('coach.targetLabel','Target')}</div>
-          </div>
-
-        {/* Controls */}
-        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
-          {!isRecording ? (
-            <>
-              <Button size="sm" onClick={startRecording} className="gap-2" disabled={limitReached || attempts >= MAX_ATTEMPTS_PER_SENTENCE}>
-                <Mic className="w-4 h-4" /> {t('coach.start','Start')}
-              </Button>
-              <Button size="sm" variant="destructive" onClick={stopAllAudio} className="gap-2">
-                <StopCircle className="w-4 h-4" /> {t('coach.stopAll','Stop All Audio')}
-              </Button>
-            </>
-          ) : (
-            <Button size="sm" onClick={stopRecording} variant="outline" className="gap-2">
-              <StopCircle className="w-4 h-4" /> {t('coach.stop','Stop')}
-            </Button>
+        <CardContent className="space-y-6 pt-2">
+          
+          {/* SECTION 1: Words That Need Practice (Always at top, always expanded) */}
+          {topWords.length > 0 && (
+            <div className="bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-orange-950/20 dark:to-yellow-950/20 rounded-lg p-4 border border-orange-200 dark:border-orange-800">
+              <h3 className="text-lg font-semibold text-orange-800 dark:text-orange-200 mb-2 flex items-center gap-2">
+                📚 Words That Need Practice
+              </h3>
+              <p className="text-sm text-orange-700 dark:text-orange-300 mb-4">
+                Let's work on these tricky words together!
+              </p>
+              
+              <div className="space-y-4">
+                {topWords.map((word) => (
+                  <div key={word} className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-orange-200 dark:border-orange-700">
+                    <div className="text-center mb-3">
+                      <div className="text-2xl font-bold text-primary mb-1">{word}</div>
+                      {wordSyllables[word] && (
+                        <div className="text-lg text-blue-600 dark:text-blue-400 font-mono tracking-wider">
+                          {wordSyllables[word]}
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <Button 
+                        size="lg" 
+                        variant="secondary" 
+                        className="w-full text-sm font-medium h-12" 
+                        onClick={() => onHearCharlotteSayIt(word)}
+                      >
+                        🔊 Hear Charlotte Say It
+                      </Button>
+                      <Button 
+                        size="lg" 
+                        className="w-full text-sm font-medium h-12" 
+                        onClick={() => onSayWithMe(word)} 
+                        disabled={(wordTries[word] || 0) >= WORD_MICRO_ATTEMPTS}
+                      >
+                        🗣️ Practice With Me ({(wordTries[word] || 0)}/{WORD_MICRO_ATTEMPTS})
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
 
-          <Button
-            size="sm"
-            variant="secondary"
-            className="gap-2"
-            onClick={() => { setTranscript(""); setPassed(null); setPaceTip(""); setTopWords([]); setPronunciationFeedback(""); setSyllableFeedback([]); setWordTries({}); }}
-            disabled={isRecording || attempts >= MAX_ATTEMPTS_PER_SENTENCE}
-          >
-            <RotateCcw className="w-4 h-4" /> {t('coach.tryAgain','Try again')}
-          </Button>
+          {/* Target sentence display */}
+          <div className="text-center px-4 py-6 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
+            <div className="font-bold leading-relaxed text-xl sm:text-2xl md:text-3xl text-gray-800 dark:text-gray-200 break-words mb-2">
+              {currentSentence}
+            </div>
+            <div className="text-sm text-blue-700 dark:text-blue-300">📖 Read this sentence out loud</div>
+          </div>
 
-          {!isPremium && limitReached && (
-            <Button size="sm" variant="outline" onClick={onUpgrade || (() => { window.location.href = '/pricing'; })}>
-              {t('coach.limitReached','Daily limit reached — Upgrade')}
-            </Button>
+        {/* Charlotte readiness and controls */}
+        <div className="text-center space-y-4">
+          {charlotteIntroducing && (
+            <div className="bg-purple-50 dark:bg-purple-950/20 rounded-lg p-4 border border-purple-200 dark:border-purple-800">
+              <div className="flex items-center justify-center gap-2 text-purple-800 dark:text-purple-200">
+                <div className="animate-spin w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full"></div>
+                <span className="font-medium">🎙️ Charlotte is getting ready...</span>
+              </div>
+              <p className="text-sm text-purple-600 dark:text-purple-300 mt-2">
+                Listen to Charlotte first!
+              </p>
+            </div>
+          )}
+          
+          {charlotteReady && !charlotteIntroducing && (
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              {!isRecording ? (
+                <>
+                  <Button 
+                    size="lg" 
+                    onClick={startRecording} 
+                    className="bg-green-600 hover:bg-green-700 text-white font-semibold px-8 py-4 text-lg h-14" 
+                    disabled={limitReached || attempts >= MAX_ATTEMPTS_PER_SENTENCE}
+                  >
+                    <Mic className="w-5 h-5 mr-2" /> 🎤 Start Reading!
+                  </Button>
+                  <Button size="sm" variant="destructive" onClick={stopAllAudio} className="gap-2">
+                    <StopCircle className="w-4 h-4" /> Stop All Sounds
+                  </Button>
+                </>
+              ) : (
+                <Button size="lg" onClick={stopRecording} variant="outline" className="bg-red-50 border-red-300 text-red-700 font-semibold px-8 py-4 text-lg h-14">
+                  <StopCircle className="w-5 h-5 mr-2" /> ⏹️ Stop Reading
+                </Button>
+              )}
+
+              <Button
+                size="sm"
+                variant="secondary"
+                className="gap-2"
+                onClick={() => { 
+                  setTranscript(""); 
+                  setPassed(null); 
+                  setPaceTip(""); 
+                  setTopWords([]); 
+                  setPronunciationFeedback(""); 
+                  setSyllableFeedback([]); 
+                  setWordTries({});
+                  setWordSyllables({});
+                }}
+                disabled={isRecording || attempts >= MAX_ATTEMPTS_PER_SENTENCE}
+              >
+                <RotateCcw className="w-4 h-4" /> Try Again
+              </Button>
+
+              {!isPremium && limitReached && (
+                <Button size="sm" variant="outline" onClick={onUpgrade || (() => { window.location.href = '/pricing'; })}>
+                  Daily limit reached — Upgrade for more!
+                </Button>
+              )}
+            </div>
           )}
         </div>
 
-        {/* Audio Feedback Status */}
+        {/* SECTION 2: How You Did (Results and feedback) */}
         {transcript && (
-          <div className="text-sm space-y-2">
-            <div>
-              <div className="font-medium">{t('coach.youSaid','You said:')}</div>
-              <p className="text-muted-foreground mt-1">{transcript}</p>
-            </div>
-            {passed !== null && (
-              <div className="text-sm space-y-2">
-                <div className="font-medium flex items-center gap-2">
-                  <Volume2 className="w-4 h-4" />
-                  {t('coach.feedbackStatus','Charlotte is giving you feedback...')}
-                </div>
-                {passed ? (
-                  <p className="text-green-600 dark:text-green-400">{t('coach.pass','🎉 Perfect reading!')}</p>
-                ) : (
-                  <div className="space-y-1">
-                    <p className="text-amber-600 dark:text-amber-400">{t('coach.almost','💪 Good effort! Listen for tips.')}</p>
-                  </div>
-                )}
+          <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-950/20 dark:to-blue-950/20 rounded-lg p-4 border border-green-200 dark:border-green-800">
+            <h3 className="text-lg font-semibold text-green-800 dark:text-green-200 mb-3 flex items-center gap-2">
+              🎯 How You Did
+            </h3>
+            
+            <div className="space-y-3">
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-green-200 dark:border-green-700">
+                <div className="font-medium text-gray-800 dark:text-gray-200 mb-1">You said:</div>
+                <p className="text-gray-700 dark:text-gray-300 italic">"{transcript}"</p>
               </div>
-            )}
-          </div>
-        )}
-
-
-        {/* Word practice section with context explanation */}
-        {passed === false && topWords.length > 0 && (
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground px-2">
-              {t('coach.practiceContext', 'Let\'s work on words you had trouble with:')}
-            </p>
-            <Collapsible open={wordsExpanded} onOpenChange={setWordsExpanded}>
-              <CollapsibleTrigger asChild>
-                <Button variant="ghost" size="sm" className="w-full justify-between p-2 h-auto">
-                  <span className="font-medium text-sm">{t('coach.topWords','Words to practice:')}</span>
-                  {wordsExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                </Button>
-              </CollapsibleTrigger>
-            <CollapsibleContent className="space-y-2 pt-2">
-              {isMobileOrTablet ? (
-                // Mobile/Tablet: Scrollable layout showing all words
-                <div className="space-y-3 max-h-48 overflow-y-auto">
-                  {topWords.map((w) => (
-                    <div key={w} className="space-y-2">
-                      <div className="font-medium text-center text-primary">{w}</div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <Button 
-                          size="sm" 
-                          variant="secondary" 
-                          className="text-xs px-2 py-1 h-8" 
-                          onClick={async () => {
-                            try {
-                              await charlotteVoiceService.charlotteInteractiveAudio({ 
-                                text: `Listen carefully to how I say "${w}"`, 
-                                context: 'conversation' 
-                              });
-                              await charlotteVoiceService.charlotteSyllableWord(w);
-                            } catch {}
-                          }}
-                        >
-                          <Volume2 className="w-3 h-3 mr-1" /> {t('coach.hear','👂 Listen & See Syllables')}
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          className="text-xs px-2 py-1 h-8" 
-                          onClick={() => onSayWithMe(w)} 
-                          disabled={(wordTries[w] || 0) >= WORD_MICRO_ATTEMPTS}
-                        >
-                          🗣️ {t('coach.practice','Practice Together')} ({(wordTries[w] || 0)}/{WORD_MICRO_ATTEMPTS})
-                        </Button>
-                      </div>
+              
+              {passed !== null && (
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-green-200 dark:border-green-700">
+                  <div className="font-medium flex items-center gap-2 mb-2 text-gray-800 dark:text-gray-200">
+                    <Volume2 className="w-4 h-4" />
+                    Charlotte's Feedback:
+                  </div>
+                  {passed ? (
+                    <div className="text-green-600 dark:text-green-400 font-medium text-lg">
+                      🎉 Amazing job! Perfect reading!
                     </div>
-                  ))}
-                </div>
-              ) : (
-                // Desktop: Original layout
-                <div className="flex flex-col gap-2">
-                  {topWords.map((w) => (
-                    <div key={w} className="flex items-center justify-between gap-2">
-                      <span className="text-muted-foreground">{w}</span>
-                      <div className="flex items-center gap-2">
-                        <Button size="sm" variant="secondary" className="gap-1" onClick={async () => {
-                          try {
-                            await charlotteVoiceService.charlotteInteractiveAudio({ 
-                              text: `Listen carefully to how I say "${w}"`, 
-                              context: 'conversation' 
-                            });
-                            await charlotteVoiceService.charlotteSyllableWord(w);
-                          } catch {}
-                        }}>
-                          <Volume2 className="w-3 h-3" /> {t('coach.hearIt','👂 Listen & See Syllables')}
-                        </Button>
-                        <Button size="sm" className="gap-1" onClick={() => onSayWithMe(w)} disabled={(wordTries[w] || 0) >= WORD_MICRO_ATTEMPTS}>
-                          🗣️ {t('coach.sayWithMe','Practice Together')} ({(wordTries[w] || 0)}/{WORD_MICRO_ATTEMPTS})
-                        </Button>
+                  ) : (
+                    <div className="space-y-2">
+                      <div className="text-orange-600 dark:text-orange-400 font-medium">
+                        💪 Good try! Keep practicing - you're getting better!
                       </div>
+                      {paceTip && (
+                        <div className="text-blue-600 dark:text-blue-400 text-sm">
+                          💡 Tip: {paceTip}
+                        </div>
+                      )}
                     </div>
-                  ))}
+                  )}
                 </div>
               )}
-            </CollapsibleContent>
-            </Collapsible>
+            </div>
           </div>
         )}
 
