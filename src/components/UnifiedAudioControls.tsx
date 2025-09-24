@@ -46,9 +46,13 @@ export const UnifiedAudioControls: React.FC<UnifiedAudioControlsProps> = ({
   const [audioInitialized, setAudioInitialized] = useState(false);
   const [currentWordIndex, setCurrentWordIndex] = useState(-1);
   const [words, setWords] = useState<string[]>([]);
-  const [audioSpeed, setAudioSpeed] = useState(
-    userInfo?.nativeLanguage === 'en' ? 1.0 : 0.8
-  );
+  const [audioSpeed, setAudioSpeed] = useState(() => {
+    // Import defaultAudioConfig for research-based speeds
+    const { defaultAudioConfig } = require('@/config/audioConfig');
+    const baseSpeed = defaultAudioConfig.speedByDifficulty[difficulty as keyof typeof defaultAudioConfig.speedByDifficulty] || 0.8;
+    const languageModifier = userInfo?.nativeLanguage === 'en' ? 0 : -0.1;
+    return Math.max(0.4, baseSpeed + languageModifier);
+  });
   
   const { toast } = useToast();
   const { t } = useTranslation();
@@ -168,9 +172,10 @@ export const UnifiedAudioControls: React.FC<UnifiedAudioControlsProps> = ({
         await new Promise((r) => performanceManager.setTimeout(() => r(undefined), 800, 'mobile audio sync'));
       }
 
-      // Level-based highlighting: Only enable for beginner/easy (levels 0-1)
+      // Level-based highlighting: Enable for levels 0-2 (beginner/easy/medium), disable for 3-4 (hard/expert)
       const difficultyStr = String(difficulty).toLowerCase();
-      const shouldHighlight = difficultyStr === 'beginner' || difficultyStr === 'easy' || difficultyStr === '0' || difficultyStr === '1';
+      const shouldHighlight = difficultyStr === 'beginner' || difficultyStr === 'easy' || difficultyStr === 'medium' || 
+                             difficultyStr === '0' || difficultyStr === '1' || difficultyStr === '2';
       const highlightCallback = shouldHighlight ? onWordHighlight : undefined;
       
       DebugLogger.log('audio', `Audio highlighting ${shouldHighlight ? 'ENABLED' : 'DISABLED'} for difficulty: "${difficulty}"`);

@@ -4,6 +4,7 @@
 export interface AudioSettings {
   // Speed settings based on difficulty level
   speedByDifficulty: {
+    beginner: number;  // Level 0
     easy: number;      // Level 1
     medium: number;    // Level 2  
     hard: number;      // Level 3
@@ -55,10 +56,11 @@ export interface AudioSettings {
 
 export const defaultAudioConfig: AudioSettings = {
   speedByDifficulty: {
-    easy: 0.7,    // Slow for Level 1
-    medium: 0.9,  // Moderate for Level 2
-    hard: 1.0,    // Normal for Level 3
-    expert: 1.2,  // Faster for Level 4
+    beginner: 0.5,  // Very slow for Level 0 - Pre-Reader
+    easy: 0.6,      // Slow for Level 1 - Beginning Reader
+    medium: 0.8,    // Moderate for Level 2 - Developing Reader
+    hard: 1.0,      // Normal for Level 3 - Independent Reader
+    expert: 1.0,    // Fixed speed for Level 4 - Advanced Reader
   },
   
   highlighting: {
