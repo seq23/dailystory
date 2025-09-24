@@ -11,7 +11,7 @@ import { InteractiveStoryTester } from '@/components/InteractiveStoryTester';
 import { VoiceButtonTester } from '@/components/VoiceButtonTester';
 import { MultilingualWordTester } from '@/components/MultilingualWordTester';
 import { AudioEventMonitor } from '@/components/AudioEventMonitor';
-import type { UserInfo } from '@/types';
+import type { UserInfo, LanguageCode } from '@/types';
 
 export const AudioE2ETestingPanel = () => {
   const [userType, setUserType] = useState<'guest' | 'premium'>('premium');
@@ -22,15 +22,18 @@ export const AudioE2ETestingPanel = () => {
   // Mock user info for testing
   const mockUserInfo: UserInfo = {
     name: 'Test User',
-    nativeLanguage: selectedLanguage as any,
-    age: 25,
-    experienceLevel: difficulty,
-    preferences: {
-      voice: 'XB0fDUnXU5powFXDhCwa', // Charlotte
-      readingSpeed: 1.0,
-      highlightWords: highlightingEnabled,
-      autoplay: false
-    }
+    age: 8,
+    grade: difficulty === 'beginner' ? 'K' : difficulty === 'easy' ? '1' : difficulty === 'medium' ? '2' : '3',
+    gradeLevel: difficulty === 'beginner' ? 'K' : difficulty === 'easy' ? '1' : difficulty === 'medium' ? '2' : '3',
+    nativeLanguage: selectedLanguage as LanguageCode,
+    learningGoal: 'improve-english-reading',
+    avatar: { type: 'prefer-not-to-answer', skinTone: 'medium' },
+    favoriteAnimal: 'cat',
+    favoriteColor: 'blue',
+    favoriteFood: 'pizza',
+    readingLevel: difficulty,
+    hobbies: 'reading, playing games',
+    specialRequest: 'Test user for audio testing'
   };
 
   const languageOptions = [

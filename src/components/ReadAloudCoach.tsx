@@ -344,9 +344,9 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
     if (ok) {
       // Celebrate quickly and remove from list
       setTopWords((prev) => prev.filter((x) => x !== w));
-      try { 
-        await charlotteVoiceService.charlotteInteractiveAudio({ text: t('coach.great','Great!'), context: 'conversation' });
-      } catch {}
+        try { 
+          await charlotteVoiceService.charlotteInteractiveAudio({ text: t('coach.great','Great job! That was perfect!'), context: 'conversation' });
+        } catch {}
     }
   };
 

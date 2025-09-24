@@ -4,9 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { SimpleVoiceCommands } from '@/components/SimpleVoiceCommands';
 import { ElevenLabsAudio, type ElevenLabsAudioHandle } from '@/components/ElevenLabsAudio';
-import { Mic, Volume2, Crown, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { ReadAloudCoach } from '@/components/ReadAloudCoach';
+import { Mic, Volume2, Crown, CheckCircle, AlertCircle, Loader2, BookOpen } from 'lucide-react';
 import type { UserInfo } from '@/types';
 
 interface VoiceButtonTesterProps {
@@ -25,6 +27,7 @@ export const VoiceButtonTester = ({
   const [lastCommand, setLastCommand] = useState<string>('');
   const [voiceLevel, setVoiceLevel] = useState(0);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+  const [showReadingCoach, setShowReadingCoach] = useState(false);
   const audioRef = useRef<ElevenLabsAudioHandle>(null);
 
   // Sample text for voice command testing
@@ -203,6 +206,22 @@ export const VoiceButtonTester = ({
               </p>
             </div>
 
+            {/* Reading Coach button */}
+            <div>
+              <h4 className="font-medium mb-2">Reading Coach (Help Me Read)</h4>
+              <Button 
+                onClick={() => setShowReadingCoach(true)}
+                className="gap-2"
+                variant="outline"
+              >
+                <BookOpen className="w-4 h-4" />
+                Help Me Read
+              </Button>
+              <p className="text-sm text-muted-foreground mt-2">
+                Enhanced reading coach with ElevenLabs feedback and pronunciation coaching
+              </p>
+            </div>
+
             {/* Status indicators */}
             <div className="flex items-center gap-4 p-3 bg-muted rounded-lg">
               <div className="flex items-center gap-2">
@@ -253,13 +272,16 @@ export const VoiceButtonTester = ({
               <strong>2. Voice Assistant:</strong> Click "Buddy" to activate the voice assistant, then try conversational commands
             </div>
             <div>
-              <strong>3. Voice Commands:</strong> Test commands from the reference list above while audio is playing
+              <strong>3. Reading Coach:</strong> Click "Help Me Read" to test microphone recording and ElevenLabs pronunciation feedback
             </div>
             <div>
-              <strong>4. Premium Features:</strong> Switch to Guest mode to see how voice features are limited
+              <strong>4. Voice Commands:</strong> Test commands from the reference list above while audio is playing
             </div>
             <div>
-              <strong>5. Status Monitoring:</strong> Watch the status indicators to see real-time connection and voice level feedback
+              <strong>5. Premium Features:</strong> Switch to Guest mode to see how voice features are limited
+            </div>
+            <div>
+              <strong>6. Status Monitoring:</strong> Watch the status indicators to see real-time connection and voice level feedback
             </div>
             <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded border border-yellow-200 dark:border-yellow-800">
               <strong>Note:</strong> Make sure your microphone is enabled and working. Some voice commands require the story to be playing first.
@@ -267,6 +289,28 @@ export const VoiceButtonTester = ({
           </div>
         </CardContent>
       </Card>
+
+      {/* Reading Coach Dialog */}
+      <Dialog open={showReadingCoach} onOpenChange={setShowReadingCoach}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <BookOpen className="w-5 h-5" />
+              Enhanced Reading Coach Testing
+            </DialogTitle>
+          </DialogHeader>
+          <ReadAloudCoach 
+            targetText={sampleText}
+            userInfo={userInfo}
+            isPremium={isPremium}
+            language="en"
+            onUpgrade={() => {
+              setShowReadingCoach(false);
+              // Could trigger upgrade flow
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
