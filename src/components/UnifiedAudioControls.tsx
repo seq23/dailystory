@@ -245,4 +245,7 @@ export const UnifiedAudioControls: React.FC<UnifiedAudioControlsProps> = ({
   );
 };
 
-export { UnifiedAudioControls as SynchronizedAudioControls } from './UnifiedAudioControls';
+export default UnifiedAudioControls;
+
+// Backward compatibility export
+export { UnifiedAudioControls as SynchronizedAudioControls };
