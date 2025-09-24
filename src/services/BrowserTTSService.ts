@@ -68,12 +68,18 @@ export class BrowserTTSService {
         utterance.onstart = () => {
           this.isPlaying = true;
           DebugLogger.log('audio', 'Browser TTS started', { language, text: text.substring(0, 50) });
+          window.dispatchEvent(new CustomEvent('audio:statechange', { 
+            detail: { isPlaying: true, system: 'browser-tts' } 
+          }));
         };
 
         utterance.onend = () => {
           this.isPlaying = false;
           this.currentUtterance = null;
           DebugLogger.log('audio', 'Browser TTS completed');
+          window.dispatchEvent(new CustomEvent('audio:statechange', { 
+            detail: { isPlaying: false, system: 'browser-tts' } 
+          }));
           resolve();
         };
 
@@ -81,6 +87,9 @@ export class BrowserTTSService {
           this.isPlaying = false;
           this.currentUtterance = null;
           DebugLogger.error('audio', 'Browser TTS error', event);
+          window.dispatchEvent(new CustomEvent('audio:statechange', { 
+            detail: { isPlaying: false, system: 'browser-tts' } 
+          }));
           reject(new Error(`Browser TTS error: ${event.error}`));
         };
 
@@ -106,6 +115,9 @@ export class BrowserTTSService {
         this.isPlaying = false;
         this.currentUtterance = null;
         DebugLogger.log('audio', 'Browser TTS stopped');
+        window.dispatchEvent(new CustomEvent('audio:statechange', { 
+          detail: { isPlaying: false, system: 'browser-tts' } 
+        }));
       } catch (error) {
         DebugLogger.error('audio', 'Error stopping browser TTS', error);
       }

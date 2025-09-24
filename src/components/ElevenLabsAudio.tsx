@@ -136,7 +136,7 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
       // 4. Dispatch audio coordinator events
       window.dispatchEvent(new CustomEvent('audio:stop'));
       window.dispatchEvent(new CustomEvent('charlotte:stop'));
-      window.dispatchEvent(new CustomEvent('audio:state:change', { 
+      window.dispatchEvent(new CustomEvent('audio:statechange', { 
         detail: { isPlaying: false, source: 'main-stop-button' } 
       }));
       

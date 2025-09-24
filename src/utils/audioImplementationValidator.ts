@@ -192,30 +192,26 @@ export class AudioImplementationValidator {
   private validateSynchronization(): boolean {
     let isValid = true;
 
-    // Check if AudioSyncService has proper voice profiles
+    // Check if Charlotte voice service is properly configured
     try {
-      // TODO: Replace with SimplifiedAudioEngine validation
-      const profiles = {}; // Removed audioSyncService reference
+      const charlotteService = CharlotteVoiceService.getInstance();
       
-      if (!profiles['cgSgspJ2msm6clMCkdW9']) {
-        this.issues.push('Jessica voice profile missing from AudioSyncService');
-        isValid = false;
-      }
-      
-      if (!profiles['EXAVITQu4vr4xnSDxMaL']) {
-        this.issues.push('Sarah voice profile missing from AudioSyncService');
+      if (!charlotteService) {
+        this.issues.push('Charlotte voice service not properly initialized');
         isValid = false;
       }
 
-      // Check timing values are reasonable
-      Object.entries(profiles).forEach(([voice, profile]: [string, any]) => {
-        if (profile.baseWordInterval < 200 || profile.baseWordInterval > 400) {
-          this.warnings.push(`Voice ${voice} has unusual timing: ${profile.baseWordInterval}ms`);
+      // Validate Charlotte service methods exist
+      const requiredMethods = ['playTextWithSynchronization', 'stop', 'charlotteReadStory'];
+      for (const method of requiredMethods) {
+        if (typeof charlotteService[method as keyof CharlotteVoiceService] !== 'function') {
+          this.issues.push(`Charlotte service missing required method: ${method}`);
+          isValid = false;
         }
-      });
+      }
 
     } catch (error) {
-      this.issues.push('AudioSyncService not properly configured');
+      this.issues.push('Charlotte voice service validation failed: ' + (error as Error).message);
       isValid = false;
     }
 
