@@ -164,12 +164,7 @@ export class PhoneticRulesEngine {
       return this.knownSyllables[cleanWord];
     }
 
-    // Check morphological patterns before rule-based breaking
-    const morphological = this.tryMorphologicalBreakdown(cleanWord);
-    if (morphological) {
-      DebugLogger.log('audio', `Morphological breakdown: ${morphological}`);
-      return morphological;
-    }
+    // Morphological patterns handled in async method only
 
     // Plural-aware handling for kid-friendly breakdowns
     const pluralAware = this.tryPluralAware(cleanWord);
@@ -188,9 +183,9 @@ export class PhoneticRulesEngine {
   /**
    * Try morphological pattern matching (stem + suffix combinations)
    */
-  private tryMorphologicalBreakdown(word: string): string[] | null {
+  private async tryMorphologicalBreakdown(word: string): Promise<string[] | null> {
     try {
-      const { tryMorphologicalBreakdown } = require('@/data/morphologicalPatterns');
+      const { tryMorphologicalBreakdown } = await import('@/data/morphologicalPatterns');
       return tryMorphologicalBreakdown(word);
     } catch (error) {
       DebugLogger.warn('audio', 'Morphological patterns not available:', error);
@@ -211,7 +206,7 @@ export class PhoneticRulesEngine {
     return pronunciation;
   }
 
-  // Deterministic async API: override -> heuristic (no network)
+  // Deterministic async API: override -> morphological -> heuristic (no network)
   public async breakIntoSyllablesAsync(word: string): Promise<string[]> {
     const key = word.toLowerCase();
     if (this.dictCache.has(key)) return this.dictCache.get(key)!;
@@ -219,6 +214,15 @@ export class PhoneticRulesEngine {
       this.dictCache.set(key, this.knownSyllables[key]);
       return this.knownSyllables[key];
     }
+    
+    // Try morphological patterns before fallback
+    const morphological = await this.tryMorphologicalBreakdown(key);
+    if (morphological) {
+      DebugLogger.log('audio', `Morphological breakdown: ${morphological}`);
+      this.dictCache.set(key, morphological);
+      return morphological;
+    }
+    
     const fallback = this.breakIntoSyllables(word);
     this.dictCache.set(key, fallback);
     return fallback;
