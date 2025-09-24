@@ -381,23 +381,8 @@ export const InteractiveWord = ({
                   const utterance = new SpeechSynthesisUtterance(translationResult.translatedText);
                   utterance.lang = userInfo.nativeLanguage;
                   utterance.rate = 0.8;
-                  
-                  // Check if a voice is available for the target language
-                  const voices = window.speechSynthesis.getVoices();
-                  const targetVoice = voices.find(voice => 
-                    voice.lang.startsWith(userInfo.nativeLanguage) || 
-                    voice.lang === userInfo.nativeLanguage
-                  );
-                  
-                  if (targetVoice) {
-                    utterance.voice = targetVoice;
-                    window.speechSynthesis.speak(utterance);
-                    DebugLogger.log('audio', 'Browser TTS explain completed', { language: userInfo.nativeLanguage });
-                  } else {
-                    // Fallback to Charlotte English if no voice available
-                    DebugLogger.warn('audio', 'No voice available for language, falling back to English', userInfo.nativeLanguage);
-                    await charlotteVoiceService.charlotteExplainWord(cleanWord, 'en');
-                  }
+                  window.speechSynthesis.speak(utterance);
+                  DebugLogger.log('audio', 'Browser TTS explain completed', { language: userInfo.nativeLanguage });
                 } else {
                   // Fallback to Charlotte English if no speechSynthesis
                   await charlotteVoiceService.charlotteExplainWord(cleanWord, 'en');
