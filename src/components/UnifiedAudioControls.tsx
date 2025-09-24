@@ -311,123 +311,43 @@ export const UnifiedAudioControls: React.FC<UnifiedAudioControlsProps> = ({
   }
 
   return (
-    <div className="flex flex-col items-center gap-3 p-3 bg-card rounded-lg border">
-      {/* Audio Control Button */}
-      <div className="flex items-center gap-2">
-        <div className="relative group">
-          {isLoading ? (
-            <Button size={size} variant="outline" disabled aria-label="Loading audio">
-              <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent mr-2"></div>
-              {t("audioReading.loadingAudio", "Loading Audio...")}
-            </Button>
-          ) : error && !isPlaying ? (
-            <Button 
-              size={size} 
-              variant="outline" 
-              onClick={onRetry} 
-              disabled={retryCount >= 3} 
-              aria-label="Retry audio"
-              className="gap-2 text-orange-600 border-orange-300 hover:bg-orange-50"
-            >
-              <RotateCcw className="w-4 h-4" />
-              {t("audioReading.tryAgain", "Try Again")} {retryCount > 0 && `(${retryCount}/3)`}
-            </Button>
-          ) : isPlaying ? (
-            <Button 
-              size={size} 
-              variant="destructive" 
-              onClick={onStop} 
-              aria-label="Stop narration"
-              className="gap-2"
-            >
-              <Square className="w-4 h-4" />
-              {t("audioReading.stop", "Stop")}
-            </Button>
-          ) : (
-            <Button
-              onClick={onPlay}
-              disabled={!isPremium && hasPlayedAudio}
-              variant={variant}
-              size={isMobileOrTablet ? "default" : size}
-              className={`gap-2 ${
-                !isPremium && hasPlayedAudio ? 'opacity-50 cursor-not-allowed' : ''
-              } ${isMobileOrTablet ? 'min-h-[44px] px-4' : ''}`}
-              aria-label="Read to me"
-            >
-              <Play className="w-4 h-4" />
-              {t("audioReading.readToMe", "Read to Me")}
-            </Button>
-          )}
-          
-          {/* Tooltip */}
-          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-popover text-popover-foreground text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap border shadow-md">
-            {!isPremium && hasPlayedAudio ? t("audioReading.audioUsedTooltip", "Audio used (1x per page for free users)") : 
-             isPlaying ? t("audioReading.audioPlaying", "Audio playing...") : 
-             t("audioReading.playAudio", "Play audio reading")}
-          </div>
-        </div>
-        
-        {/* Status indicator */}
-        {!isPremium && hasPlayedAudio && (
-          <span className="text-xs text-orange-600 font-medium">
-            ✓ {t("audioReading.audioUsed", "Audio used")}
-          </span>
-        )}
-      </div>
-
-      {/* Speed controls */}
-      <div className="flex items-center gap-1 flex-wrap justify-center">
-        <span className="text-xs text-muted-foreground mr-2">{t("audioReading.speed", "Speed")}:</span>
-        <Button
-          onClick={() => adjustSpeed(0.5)}
-          variant="ghost"
-          size={isMobileOrTablet ? "default" : "sm"}
-          className={`text-xs ${audioSpeed === 0.5 ? 'bg-accent' : ''} ${isMobileOrTablet ? 'min-h-[36px] px-3' : ''}`}
-        >
-          0.5x
+    <div className="story-audio-controls">
+      {isLoading ? (
+        <Button size={size} variant="outline" disabled aria-label="Loading audio">
+          <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent mr-2"></div>
+          {t("audioReading.loadingAudio", "Loading Audio...")}
         </Button>
-        <Button
-          onClick={() => adjustSpeed(0.8)}
-          variant="ghost"
-          size={isMobileOrTablet ? "default" : "sm"}
-          className={`text-xs ${audioSpeed === 0.8 ? 'bg-accent' : ''} ${isMobileOrTablet ? 'min-h-[36px] px-3' : ''}`}
+      ) : error && !isPlaying ? (
+        <Button 
+          size={size} 
+          variant="outline" 
+          onClick={onRetry} 
+          disabled={retryCount >= 3} 
+          aria-label="Retry audio"
+          className="gap-2 text-orange-600 border-orange-300 hover:bg-orange-50"
         >
-          0.8x
+          <RotateCcw className="w-4 h-4" />
+          {t("audioReading.tryAgain", "Try Again")} {retryCount > 0 && `(${retryCount}/3)`}
         </Button>
+      ) : (
         <Button
-          onClick={() => adjustSpeed(1.0)}
-          variant="ghost"
-          size={isMobileOrTablet ? "default" : "sm"}
-          className={`text-xs ${audioSpeed === 1.0 ? 'bg-accent' : ''} ${isMobileOrTablet ? 'min-h-[36px] px-3' : ''}`}
+          onClick={isPlaying ? onStop : onPlay}
+          disabled={!isPremium && hasPlayedAudio}
+          variant={variant}
+          size={isMobileOrTablet ? "default" : size}
+          className={`gap-2 ${
+            !isPremium && hasPlayedAudio ? 'opacity-50 cursor-not-allowed' : ''
+          } ${isMobileOrTablet ? 'min-h-[44px] px-4' : ''}`}
+          aria-label={isPlaying ? "Stop narration" : "Read to me"}
         >
-          1x
+          <Play className="w-4 h-4" />
+          {isPlaying ? t("audioReading.stop", "Stop") : t("audioReading.readToMe", "Read to Me")}
         </Button>
-      </div>
-      
-      {/* Status and upgrade prompts */}
-      {isPlaying && (
-        <div className="text-xs text-primary font-medium">
-          🎵 {t("audioReading.playingAudio", "Playing audio...")} ({currentWordIndex + 1}/{words.length})
-        </div>
       )}
       
       {!isPremium && hasPlayedAudio && (
-        <div className="text-center mt-1">
-          <div className="text-xs text-orange-600 mb-1">
-            🎧 {t("audioReading.freeLimit", "Free users get 1 audio per page")}
-          </div>
-          <div className="text-xs text-muted-foreground">
-            {t("audioReading.wantUnlimited", "Want unlimited audio?")}
-            <button className="ml-1 text-primary hover:text-primary/80 underline font-medium">
-              {t("audioReading.upgradeToPremium", "Upgrade to Premium")}
-            </button>
-          </div>
-        </div>
-      )}
-      
-      {error && retryCount >= 3 && (
-        <span className="text-sm text-muted-foreground">
-          {t("audioReading.usingDeviceVoice", "Using device voice")}
+        <span className="text-xs text-orange-600 font-medium ml-2">
+          ✓ {t("audioReading.audioUsed", "Audio used")}
         </span>
       )}
     </div>
