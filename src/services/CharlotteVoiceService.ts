@@ -376,6 +376,9 @@ export class CharlotteVoiceService {
       this.audio.addEventListener('ended', () => { 
         this.playing = false;
         this.stopWordHighlighting();
+        window.dispatchEvent(new CustomEvent('audio:statechange', { 
+          detail: { playing: false, system: 'charlotte' } 
+        }));
       });
       
       this.audio.addEventListener('play', () => { 
@@ -383,6 +386,9 @@ export class CharlotteVoiceService {
         if (withHighlighting) {
           this.startWordHighlighting();
         }
+        window.dispatchEvent(new CustomEvent('audio:statechange', { 
+          detail: { playing: true, system: 'charlotte' } 
+        }));
       });
     }
 

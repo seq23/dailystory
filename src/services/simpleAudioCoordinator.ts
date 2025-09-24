@@ -6,7 +6,7 @@
 
 import { DebugLogger } from '@/services/DebugLogger';
 
-type AudioSystem = 'sync' | 'simple' | 'voice' | 'charlotte' | 'interactive-word' | null;
+type AudioSystem = 'sync' | 'simple' | 'voice' | 'charlotte' | 'charlotte-story' | 'charlotte-multilingual' | 'charlotte-interactive' | 'charlotte-buddy' | 'interactive-word' | null;
 
 class SimpleAudioCoordinator {
   private activeSystem: AudioSystem = null;
@@ -48,7 +48,11 @@ class SimpleAudioCoordinator {
           window.dispatchEvent(new CustomEvent('audio:stop:simple'));
         } else if (this.activeSystem === 'voice') {
           window.dispatchEvent(new CustomEvent('audio:stop:voice'));
-        } else if (this.activeSystem === 'charlotte') {
+        } else if (this.activeSystem === 'charlotte' || 
+                   this.activeSystem === 'charlotte-story' || 
+                   this.activeSystem === 'charlotte-multilingual' || 
+                   this.activeSystem === 'charlotte-interactive' || 
+                   this.activeSystem === 'charlotte-buddy') {
           window.dispatchEvent(new CustomEvent('audio:stop:charlotte'));
         } else if (this.activeSystem === 'interactive-word') {
           // Interactive word system will handle its own cleanup
@@ -127,8 +131,12 @@ class SimpleAudioCoordinator {
    */
   private getSystemPriority(system: AudioSystem): number {
     const priorities = {
-      'charlotte': 100,      // Highest priority for story reading
-      'interactive-word': 80, // High priority for user interactions
+      'charlotte-buddy': 110,        // Highest priority - voice buddy conversations
+      'charlotte-story': 105,        // Very high priority - story reading with timing
+      'charlotte-interactive': 100,  // High priority - button interactions (hear/explain/syllables)
+      'charlotte-multilingual': 95,  // High priority - multilingual explanations
+      'charlotte': 90,               // General Charlotte voice (fallback)
+      'interactive-word': 80,        // High priority for user interactions
       'voice': 70,
       'simple': 50,
       'sync': 40

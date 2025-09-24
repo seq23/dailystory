@@ -70,6 +70,12 @@ export const AudioE2ETestingPanel = () => {
         }
       });
       
+      // Clear guest session data
+      localStorage.removeItem('t2r_session_id');
+
+      // Dispatch session reset event for guest UI reset
+      window.dispatchEvent(new CustomEvent('audio:session:reset'));
+      
     } catch (error) {
       console.warn('Error stopping audio services:', error);
     }

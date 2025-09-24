@@ -180,16 +180,24 @@ export const useAudioControls = ({
       DebugLogger.log('ui', `Universal highlighting cleared: ${highlightedElements.length} elements`);
     };
     
+    // Listen for session reset to reset guest play states
+    const handleSessionReset = () => {
+      setHasPlayedThisPage(false);
+      setIsPlaying(false);
+    };
+
     window.addEventListener('audio:statechange', handleAudioStateChange as EventListener);
     window.addEventListener('highlighting:request', handleHighlightingRequest as EventListener);
     window.addEventListener('highlighting:clear-all', handleClearHighlighting as EventListener);
     window.addEventListener('highlighting:ensure-active', handleClearHighlighting as EventListener);
+    window.addEventListener('audio:session:reset', handleSessionReset);
     
     return () => {
       window.removeEventListener('audio:statechange', handleAudioStateChange as EventListener);
       window.removeEventListener('highlighting:request', handleHighlightingRequest as EventListener);
       window.removeEventListener('highlighting:clear-all', handleClearHighlighting as EventListener);
       window.removeEventListener('highlighting:ensure-active', handleClearHighlighting as EventListener);
+      window.removeEventListener('audio:session:reset', handleSessionReset);
       
       if (stateChangeTimeoutRef.current) {
         clearTimeout(stateChangeTimeoutRef.current);
