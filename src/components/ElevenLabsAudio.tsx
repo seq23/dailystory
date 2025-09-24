@@ -10,8 +10,9 @@ import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 // Removed: import { audioSyncService } from "@/services/audioSyncService";
-import { VoiceCommandController } from "@/components/VoiceCommandController";
-import type { VoiceCommandControllerHandle } from "@/components/VoiceCommandController";
+import { UnifiedVoiceCommands } from "@/components/UnifiedVoiceCommands";
+// Removed deprecated type reference
+// import type { VoiceCommandControllerHandle } from "@/components/VoiceCommandController";
 import type { UserInfo } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { VocabularyTrackingService } from "@/services/vocabularyTrackingService";
@@ -100,7 +101,8 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
   const [vcStatus, setVcStatus] = useState<'idle'|'listening'|'processing'>('idle');
   const [vcLevel, setVcLevel] = useState(0);
   
-  const vcRef = useRef<VoiceCommandControllerHandle | null>(null);
+  // Removed deprecated reference
+  // const vcRef = useRef<VoiceCommandControllerHandle | null>(null);
   const restoredRef = useRef(false);
   const voiceEnabledRef = useRef(false);
   const restartTimeoutRef = useRef<number | null>(null);
@@ -150,7 +152,7 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
   // Stop voice commands on unmount
   useEffect(() => {
     return () => {
-      try { vcRef.current?.stop?.(); } catch {}
+      try { window.dispatchEvent(new CustomEvent('voice:stop')); } catch {}
       try { emitStatus('idle'); } catch {}
     };
   }, []);
@@ -199,7 +201,7 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
         setVcStatus('idle');
         setVcLevel(0);
         try { window.dispatchEvent(new CustomEvent('voice:level', { detail: { level: 0 } })); } catch {}
-        try { vcRef.current?.stop?.(); } catch {}
+        try { window.dispatchEvent(new CustomEvent('voice:stop')); } catch {}
       }
     };
     window.addEventListener('voice:toggle', toggleHandler as EventListener);
@@ -238,7 +240,7 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
         clearTimeout(restartTimeoutRef.current);
         restartTimeoutRef.current = null;
       }
-      try { vcRef.current?.stop?.(); } catch {}
+      try { window.dispatchEvent(new CustomEvent('voice:stop')); } catch {}
       return;
     }
 
@@ -266,7 +268,7 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
     voiceEnabledRef.current = true;
     emitStatus('listening');
     setVcStatus('listening');
-    vcRef.current?.start?.();
+    window.dispatchEvent(new CustomEvent('voice:start'));
   };
 
   // Expose imperative methods to parent (e.g., bottom dock)
@@ -304,7 +306,7 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
           }
           restartTimeoutRef.current = window.setTimeout(() => {
             if (voiceEnabledRef.current && !(window as any).__t2r_vc_user_disabled) {
-              try { vcRef.current?.start?.(); } catch (e) { DebugLogger.warn('audio', 'Headless restart failed', e); }
+              try { window.dispatchEvent(new CustomEvent('voice:start')); } catch (e) { DebugLogger.warn('audio', 'Voice restart failed', e); }
             }
           }, 250);
         }
@@ -508,7 +510,7 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
       )}
 
 {/* Headless voice controller (no UI) */}
-<VoiceCommandController ref={vcRef} headless onCommand={handleHeadlessCommand} />
+<UnifiedVoiceCommands headless={true} onCommand={handleHeadlessCommand} />
 {typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('ttsdebug') === '1' && (
   <TTSDebugOverlay />
 )}

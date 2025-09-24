@@ -21,8 +21,9 @@ import TemplateTestingPage from "./pages/TemplateTestingPage";
 import { PromptStudio } from "./components/PromptStudio";
 import VoiceHUD from "./components/VoiceHUD";
 import { AudioFallbackNotification } from "./components/AudioFallbackNotification";
-import { VoiceCommands } from "./components/VoiceCommands";
-import { VoiceHoverController } from "./components/VoiceHoverController";
+import { UnifiedVoiceCommands as VoiceCommands } from "./components/UnifiedVoiceCommands";
+// Removed deprecated VoiceHoverController
+// import { VoiceHoverController } from "./components/VoiceHoverController";
 import { UnifiedDebugMonitor } from "./components/UnifiedDebugMonitor";
 // Import new services for global availability
 import "./services/AdvancedPerformanceMonitor";
