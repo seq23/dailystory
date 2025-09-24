@@ -497,7 +497,10 @@ export class CharlotteVoiceService {
       return;
     }
     
+    // Preserve callback across stop/start cycle
+    const preservedCallback = this.onWordHighlight;
     this.stopWordHighlighting();
+    this.onWordHighlight = preservedCallback;
     
     let lastHighlightedIndex = -1;
     
