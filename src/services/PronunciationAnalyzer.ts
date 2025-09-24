@@ -39,9 +39,9 @@ export class PronunciationAnalyzer {
     // Calculate overall accuracy
     const accuracy = this.calculateAccuracy(wordAnalyses, confidence);
     
-    // Extract mispronounced words and specific issues
+    // Extract mispronounced words and specific issues - increased threshold for better detection
     const mispronounced = wordAnalyses
-      .filter(analysis => analysis.phonemeAccuracy < 0.7)
+      .filter(analysis => analysis.phonemeAccuracy < 0.8)
       .map(analysis => analysis.word);
 
     // Generate phoneme-level feedback
@@ -121,18 +121,56 @@ export class PronunciationAnalyzer {
   }
 
   /**
-   * Simple word alignment between reference and spoken text
+   * Enhanced word alignment to detect substitutions like "hidden" → "hide in"
    */
   private static alignWords(refWords: string[], spokenWords: string[]): Array<[string, string | null]> {
     const pairs: Array<[string, string | null]> = [];
     const spokenSet = new Set(spokenWords.map(w => w.toLowerCase()));
+    const usedSpoken = new Set<number>();
     
     for (const refWord of refWords) {
-      const match = spokenWords.find(sw => 
-        sw.toLowerCase() === refWord.toLowerCase() ||
-        this.isPhoneticMatch(refWord, sw)
-      );
-      pairs.push([refWord, match || null]);
+      let bestMatch: string | null = null;
+      let bestScore = 0;
+      let bestIndex = -1;
+      
+      // Check each spoken word for the best match
+      spokenWords.forEach((spokenWord, index) => {
+        if (usedSpoken.has(index)) return;
+        
+        const exactMatch = spokenWord.toLowerCase() === refWord.toLowerCase();
+        const phoneticScore = exactMatch ? 1.0 : this.calculatePhonemeDistance(refWord, spokenWord);
+        
+        // Check for compound word substitutions (e.g., "hidden" vs "hide in")
+        if (!exactMatch && phoneticScore < 0.7) {
+          // Try combining this word with the next one
+          if (index + 1 < spokenWords.length && !usedSpoken.has(index + 1)) {
+            const combinedSpoken = spokenWord + spokenWords[index + 1];
+            const combinedScore = this.calculatePhonemeDistance(refWord, combinedSpoken);
+            if (combinedScore > phoneticScore && combinedScore > bestScore) {
+              bestMatch = spokenWord + " " + spokenWords[index + 1];
+              bestScore = combinedScore;
+              bestIndex = index;
+            }
+          }
+        }
+        
+        if (phoneticScore > bestScore) {
+          bestMatch = spokenWord;
+          bestScore = phoneticScore;
+          bestIndex = index;
+        }
+      });
+      
+      // Mark the best match as used if it meets our threshold
+      if (bestIndex >= 0 && bestScore > 0.4) {
+        usedSpoken.add(bestIndex);
+        // If it's a compound match, mark the next word as used too
+        if (bestMatch && bestMatch.includes(" ")) {
+          usedSpoken.add(bestIndex + 1);
+        }
+      }
+      
+      pairs.push([refWord, bestMatch && bestScore > 0.4 ? bestMatch : null]);
     }
     
     return pairs;
@@ -143,7 +181,7 @@ export class PronunciationAnalyzer {
    */
   private static isPhoneticMatch(word1: string, word2: string): boolean {
     const distance = this.calculatePhonemeDistance(word1, word2);
-    return distance > 0.6; // 60% similarity threshold
+    return distance > 0.7; // Improved 70% similarity threshold for better detection
   }
 
   /**
@@ -280,7 +318,7 @@ export class PronunciationAnalyzer {
     const feedback: Array<{word: string; syllables: string[]; feedback: string}> = [];
     
     for (const analysis of analyses) {
-      if (analysis.phonemeAccuracy < 0.7 && analysis.syllableIssues.length > 0) {
+      if (analysis.phonemeAccuracy < 0.8 && analysis.syllableIssues.length > 0) {
         const feedbackText = `Try breaking it down: ${analysis.expected.join('-')}. ${
           analysis.syllableIssues.length > 0 ? 
           `Focus on: ${analysis.syllableIssues.slice(0, 2).join(', ')}` : 

@@ -247,8 +247,18 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
       confidence
     );
 
-    // Extract top problematic words
-    const topWordsFromAnalysis = pronunciationResult.mispronounced.slice(0, 3);
+    // Extract top problematic words with priority for completely missed words
+    const missedWords = pronunciationResult.mispronounced.filter(word => {
+      // Prioritize words that weren't found at all in the spoken text
+      const cleanSpoken = said.toLowerCase().replace(/[^a-z\s]/g, '');
+      return !cleanSpoken.includes(word.toLowerCase());
+    });
+    const mispronounced = pronunciationResult.mispronounced.filter(word => {
+      const cleanSpoken = said.toLowerCase().replace(/[^a-z\s]/g, '');
+      return cleanSpoken.includes(word.toLowerCase());
+    });
+    // Prioritize missed words first, then mispronounced ones
+    const topWordsFromAnalysis = [...missedWords, ...mispronounced].slice(0, 3);
     
     return { 
       acc: pronunciationResult.accuracy, 
@@ -655,44 +665,20 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
           </div>
         )}
 
-        {/* Audio Syllable Practice */}
-        {passed === false && syllableFeedback.length > 0 && (
-          <div className="space-y-1">
-            <Collapsible open={syllableExpanded} onOpenChange={setSyllableExpanded}>
+
+        {/* Word practice section with context explanation */}
+        {passed === false && topWords.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground px-2">
+              {t('coach.practiceContext', 'Let\'s work on words you had trouble with:')}
+            </p>
+            <Collapsible open={wordsExpanded} onOpenChange={setWordsExpanded}>
               <CollapsibleTrigger asChild>
                 <Button variant="ghost" size="sm" className="w-full justify-between p-2 h-auto">
-                  <span className="font-medium text-sm flex items-center gap-2">
-                    <Volume2 className="w-4 h-4" />
-                    {t('coach.syllablePractice','Charlotte\'s syllable coaching:')} ({syllableFeedback.length})
-                  </span>
-                  {syllableExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  <span className="font-medium text-sm">{t('coach.topWords','Words to practice:')}</span>
+                  {wordsExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                 </Button>
               </CollapsibleTrigger>
-              <CollapsibleContent className="space-y-2 pt-2">
-                {syllableFeedback.map((feedback, idx) => (
-                  <div key={idx} className="space-y-1 text-sm">
-                    <div className="font-medium text-blue-600 dark:text-blue-400 flex items-center gap-2">
-                      <Volume2 className="w-3 h-3" />
-                      {feedback.word}
-                    </div>
-                    <div className="text-xs text-muted-foreground">🎤 Charlotte provided audio breakdown</div>
-                  </div>
-                ))}
-              </CollapsibleContent>
-            </Collapsible>
-            <p className="text-xs text-muted-foreground px-2">{t('coach.charlotteScope','Charlotte helps with select problematic words from your reading')}</p>
-          </div>
-        )}
-
-        {/* Top words coaching (only on fail) */}
-        {passed === false && topWords.length > 0 && (
-          <Collapsible open={wordsExpanded} onOpenChange={setWordsExpanded}>
-            <CollapsibleTrigger asChild>
-              <Button variant="ghost" size="sm" className="w-full justify-between p-2 h-auto">
-                <span className="font-medium text-sm">{t('coach.topWords','Words to practice:')} ({isMobileOrTablet ? `${Math.min(2, topWords.length)} of ${topWords.length}` : topWords.length})</span>
-                {wordsExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-              </Button>
-            </CollapsibleTrigger>
             <CollapsibleContent className="space-y-2 pt-2">
               {isMobileOrTablet ? (
                 // Mobile/Tablet: Scrollable layout showing all words
@@ -715,7 +701,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
                             } catch {}
                           }}
                         >
-                          <Volume2 className="w-3 h-3 mr-1" /> {t('coach.hear','Charlotte Demo')}
+                          <Volume2 className="w-3 h-3 mr-1" /> {t('coach.hear','👂 Listen & See Syllables')}
                         </Button>
                         <Button 
                           size="sm" 
@@ -723,7 +709,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
                           onClick={() => onSayWithMe(w)} 
                           disabled={(wordTries[w] || 0) >= WORD_MICRO_ATTEMPTS}
                         >
-                          {t('coach.practice','Say With Charlotte')} ({(wordTries[w] || 0)}/{WORD_MICRO_ATTEMPTS})
+                          🗣️ {t('coach.practice','Practice Together')} ({(wordTries[w] || 0)}/{WORD_MICRO_ATTEMPTS})
                         </Button>
                       </div>
                     </div>
@@ -745,10 +731,10 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
                             await charlotteVoiceService.charlotteSyllableWord(w);
                           } catch {}
                         }}>
-                          <Volume2 className="w-3 h-3" /> {t('coach.hearIt','Charlotte Demo')}
+                          <Volume2 className="w-3 h-3" /> {t('coach.hearIt','👂 Listen & See Syllables')}
                         </Button>
                         <Button size="sm" className="gap-1" onClick={() => onSayWithMe(w)} disabled={(wordTries[w] || 0) >= WORD_MICRO_ATTEMPTS}>
-                          {t('coach.sayWithMe','Say With Charlotte')} ({(wordTries[w] || 0)}/{WORD_MICRO_ATTEMPTS})
+                          🗣️ {t('coach.sayWithMe','Practice Together')} ({(wordTries[w] || 0)}/{WORD_MICRO_ATTEMPTS})
                         </Button>
                       </div>
                     </div>
@@ -756,7 +742,8 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
                 </div>
               )}
             </CollapsibleContent>
-          </Collapsible>
+            </Collapsible>
+          </div>
         )}
 
         {/* Privacy note */}
