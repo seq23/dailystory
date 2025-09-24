@@ -499,9 +499,7 @@ export const ElevenLabsAudio = forwardRef<ElevenLabsAudioHandle, ElevenLabsAudio
 
 {/* Headless voice controller (no UI) */}
 <VoiceCommandController ref={vcRef} headless onCommand={handleHeadlessCommand} />
-{typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('ttsdebug') === '1' && (
-  <TTSDebugOverlay />
-)}
+{/* TTSDebugOverlay integrated into UnifiedDebugMonitor */}
     </div>
   );
 });

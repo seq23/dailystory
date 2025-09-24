@@ -1258,11 +1258,17 @@ useEffect(() => {
   
   // Audio highlighting integration (with difficulty-based highlighting control)
   const backendDifficulty = DifficultyLevelMapper.toBackend(currentDifficulty);
-  const { onWordHighlight, currentHighlightedWord, clearHighlighting } = useWordHighlighting(
-    currentStoryText, 
-    isAudioPlaying,
-    backendDifficulty as "beginner" | "easy" | "medium" | "hard" | "expert"
-  );
+  const { highlightWord, clearHighlighting, currentHighlightedWord } = useAudioControls({
+    text: currentStoryText,
+    userInfo: safeUserInfo,
+    currentPage,
+    contentHash,
+    difficulty: backendDifficulty as "beginner" | "easy" | "medium" | "hard" | "expert",
+    isPremium
+  });
+
+  // Word highlighting callback for audio playback
+  const onWordHighlight = highlightWord;
 
 // Voice command -> audio control bridge (now using SimplifiedAudioEngine)
 useEffect(() => {
