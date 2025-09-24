@@ -225,6 +225,7 @@ export const AudioE2ETestingPanel = () => {
         <TabsContent value="story">
           <InteractiveStoryTester
             userInfo={mockUserInfo}
+            selectedLanguage={selectedLanguage}
             isPremium={userType === 'premium'}
             difficulty={difficulty}
             highlightingEnabled={highlightingEnabled}

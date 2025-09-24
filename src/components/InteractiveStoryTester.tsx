@@ -10,6 +10,7 @@ import type { UserInfo } from '@/types';
 
 interface InteractiveStoryTesterProps {
   userInfo: UserInfo;
+  selectedLanguage: string;
   isPremium: boolean;
   difficulty: 'beginner' | 'easy' | 'medium' | 'hard' | 'expert';
   highlightingEnabled: boolean;
@@ -17,6 +18,7 @@ interface InteractiveStoryTesterProps {
 
 export const InteractiveStoryTester = ({ 
   userInfo, 
+  selectedLanguage,
   isPremium, 
   difficulty,
   highlightingEnabled 
@@ -25,6 +27,12 @@ export const InteractiveStoryTester = ({
   const [highlightedWordIndex, setHighlightedWordIndex] = useState(-1);
   const [wordInteractionCount, setWordInteractionCount] = useState(0);
   const audioRef = useRef<ElevenLabsAudioHandle>(null);
+
+  // Create userInfo with selected language (like MultilingualWordTester)
+  const testUserInfo: UserInfo = {
+    ...userInfo,
+    nativeLanguage: selectedLanguage as any
+  };
 
   // Sample story pages for testing
   const storyPages = [
@@ -95,7 +103,7 @@ export const InteractiveStoryTester = ({
               : ''
           }`}
           difficulty={difficulty}
-          userInfo={userInfo}
+          userInfo={testUserInfo}
           isPremium={isPremium}
           forceModal={true}
         />
@@ -169,7 +177,7 @@ export const InteractiveStoryTester = ({
             <ElevenLabsAudio
               ref={audioRef}
               text={currentStory.text}
-              userInfo={userInfo}
+              userInfo={testUserInfo}
               isPremium={isPremium}
               currentPage={currentPage}
               totalPages={maxPages}
