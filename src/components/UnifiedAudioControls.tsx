@@ -7,6 +7,7 @@ import { DebugLogger } from '@/services/DebugLogger';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { performanceManager } from '@/services/PerformanceManager';
 import { useTranslation } from 'react-i18next';
+import { defaultAudioConfig } from '@/config/audioConfig';
 import type { UserInfo } from '@/types';
 
 interface UnifiedAudioControlsProps {
@@ -47,8 +48,7 @@ export const UnifiedAudioControls: React.FC<UnifiedAudioControlsProps> = ({
   const [currentWordIndex, setCurrentWordIndex] = useState(-1);
   const [words, setWords] = useState<string[]>([]);
   const [audioSpeed, setAudioSpeed] = useState(() => {
-    // Import defaultAudioConfig for research-based speeds
-    const { defaultAudioConfig } = require('@/config/audioConfig');
+    // Use imported defaultAudioConfig for research-based speeds
     const baseSpeed = defaultAudioConfig.speedByDifficulty[difficulty as keyof typeof defaultAudioConfig.speedByDifficulty] || 0.8;
     const languageModifier = userInfo?.nativeLanguage === 'en' ? 0 : -0.1;
     return Math.max(0.4, baseSpeed + languageModifier);
