@@ -45,9 +45,6 @@ const queryClient = new QueryClient({
 const App = () => {
   // Initialize development tools
   React.useEffect(() => {
-    // Initialize network debugging
-    NetworkDebugger; // This initializes the singleton
-    
     // Migrate console logging to DebugLogger
     DebugLogger.log('performance', 'App component loaded successfully');
     

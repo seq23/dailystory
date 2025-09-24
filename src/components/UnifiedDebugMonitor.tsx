@@ -9,6 +9,7 @@ import { DebugDataViewer } from '@/components/DebugDataViewer';
 import { phoneticRulesEngine } from '@/services/phoneticRulesEngine';
 import { charlotteVoiceService } from '@/services/CharlotteVoiceService';
 import { unifiedSystemValidator } from '@/services/UnifiedSystemValidator';
+import type { ValidationResult } from '@/services/UnifiedSystemValidator';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -969,6 +970,171 @@ export const UnifiedDebugMonitor: React.FC = () => {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* System Validation View */}
+        {activeTab === 'system-validation' && (
+          <div className="flex-1 flex flex-col min-h-0 space-y-4 p-2">
+            <div className="text-sm font-semibold flex items-center gap-2">
+              <TestTube className="w-4 h-4" />
+              System Validation
+            </div>
+
+            {/* Quick Actions */}
+            <div className="flex gap-2">
+              <Button 
+                onClick={runSystemValidation}
+                disabled={isValidating}
+                size="sm"
+                className="flex items-center gap-1 h-6 px-2 text-xs"
+              >
+                {isValidating ? (
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                ) : (
+                  <TestTube className="w-3 h-3" />
+                )}
+                Full System Scan
+              </Button>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-6 px-2 text-xs" disabled={isValidating}>
+                    Component Tests <ChevronDown className="h-3 w-3 ml-1" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="z-[10000]">
+                  <DropdownMenuItem onSelect={() => validateComponent('audio')}>Audio System</DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => validateComponent('network')}>Network Health</DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => validateComponent('cache')}>Cache & Storage</DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => validateComponent('ui')}>UI & Accessibility</DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => validateComponent('performance')}>Performance</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
+            {/* System Status Overview */}
+            {systemValidationReport && (
+              <div className="space-y-3">
+                {/* Overall Status */}
+                <div className={`p-3 rounded border ${
+                  systemValidationReport.overall.status === 'healthy' 
+                    ? 'bg-green-500/10 border-green-500/20 text-green-300' 
+                    : systemValidationReport.overall.status === 'error'
+                    ? 'bg-red-500/10 border-red-500/20 text-red-300'
+                    : 'bg-yellow-500/10 border-yellow-500/20 text-yellow-300'
+                }`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="font-semibold text-sm">
+                      System Status: {systemValidationReport.overall.status.toUpperCase()}
+                    </div>
+                    <Badge variant="outline" className="text-xs">
+                      Score: {systemValidationReport.overall.score}/100
+                    </Badge>
+                  </div>
+                  <div className="text-xs opacity-75">
+                    Last checked: {new Date(systemValidationReport.overall.timestamp).toLocaleTimeString()}
+                  </div>
+                </div>
+
+                {/* Category Results */}
+                <div className="space-y-2">
+                  <div className="font-medium text-sm">Component Status</div>
+                  {Object.entries(systemValidationReport.categories).map(([category, result]) => {
+                    const validationResult = result as ValidationResult;
+                    return (
+                      <div key={category} className="border border-muted rounded p-2">
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center gap-2">
+                            <Badge className={`h-4 text-xs px-1 ${
+                              validationResult.isValid 
+                                ? 'bg-green-500/20 text-green-300' 
+                                : 'bg-red-500/20 text-red-300'
+                            }`}>
+                              {category.toUpperCase()}
+                            </Badge>
+                            <span className="text-xs font-medium">
+                              {validationResult.isValid ? '✅ Valid' : '❌ Issues Found'}
+                            </span>
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {validationResult.issues.length + validationResult.warnings.length} items
+                          </div>
+                        </div>
+                        
+                        {/* Issues */}
+                        {validationResult.issues.length > 0 && (
+                          <div className="space-y-1">
+                            <div className="text-xs font-medium text-red-300">Issues:</div>
+                            {validationResult.issues.map((issue, idx) => (
+                              <div key={idx} className="text-xs text-red-300 bg-red-500/10 p-1 rounded">
+                                • {issue}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        
+                        {/* Warnings */}
+                        {validationResult.warnings.length > 0 && (
+                          <div className="space-y-1 mt-2">
+                            <div className="text-xs font-medium text-yellow-300">Warnings:</div>
+                            {validationResult.warnings.map((warning, idx) => (
+                              <div key={idx} className="text-xs text-yellow-300 bg-yellow-500/10 p-1 rounded">
+                                • {warning}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        
+                        {/* Recommendations */}
+                        {validationResult.recommendations.length > 0 && (
+                          <div className="space-y-1 mt-2">
+                            <div className="text-xs font-medium text-blue-300">Recommendations:</div>
+                            {validationResult.recommendations.map((rec, idx) => (
+                              <div key={idx} className="text-xs text-blue-300 bg-blue-500/10 p-1 rounded">
+                                • {rec}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* System Recommendations */}
+                {systemValidationReport.recommendations.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="font-medium text-sm">System Recommendations</div>
+                    <div className="space-y-1">
+                      {systemValidationReport.recommendations.map((rec, idx) => (
+                        <div key={idx} className="text-xs bg-blue-500/10 border border-blue-500/20 p-2 rounded">
+                          • {rec}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Initial State */}
+            {!systemValidationReport && !isValidating && (
+              <div className="text-center text-muted-foreground py-8 text-xs">
+                <TestTube className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                <p>Run system validation to check application health</p>
+                <p className="mt-1 opacity-75">This will test audio, network, cache, UI, and performance systems</p>
+              </div>
+            )}
+
+            {/* Loading State */}
+            {isValidating && !systemValidationReport && (
+              <div className="text-center text-muted-foreground py-8 text-xs">
+                <Loader2 className="w-8 h-8 mx-auto mb-2 animate-spin" />
+                <p>Running comprehensive system validation...</p>
+                <p className="mt-1 opacity-75">This may take a few seconds</p>
+              </div>
+            )}
           </div>
         )}
 

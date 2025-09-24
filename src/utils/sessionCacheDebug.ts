@@ -238,8 +238,8 @@ class SessionCacheDebugConsoleClass {
   }
 }
 
-// Make available globally for console debugging
-if (typeof window !== 'undefined') {
+// Make available globally for console debugging only in debug mode
+if (typeof window !== 'undefined' && window.location.search.includes('debug=1')) {
   (window as any).sessionCacheDebug = SessionCacheDebugConsoleClass;
 }
 

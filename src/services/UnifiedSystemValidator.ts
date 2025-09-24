@@ -7,7 +7,7 @@ import { AudioImplementationValidator } from '@/utils/audioImplementationValidat
 import { DebugLogger } from '@/services/DebugLogger';
 import { NetworkDebugger } from '@/services/NetworkDebugger';
 
-interface ValidationResult {
+export interface ValidationResult {
   isValid: boolean;
   category: string;
   issues: string[];
@@ -497,6 +497,11 @@ export class UnifiedSystemValidator {
 
 // Export singleton instance
 export const unifiedSystemValidator = UnifiedSystemValidator.getInstance();
+
+// Expose globally in debug mode for console access
+if (typeof window !== 'undefined' && window.location.search.includes('debug=1')) {
+  (window as any).unifiedSystemValidator = unifiedSystemValidator;
+}
 
 // Make available globally for debugging (only in debug mode)
 if (typeof window !== 'undefined' && window.location.search.includes('debug=1')) {
