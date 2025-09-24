@@ -151,6 +151,11 @@ export const useAudioControls = ({
       
       const interactiveWords = document.querySelectorAll('[data-word-index]');
       
+      // CRITICAL DEBUG: Log if no elements found
+      if (interactiveWords.length === 0) {
+        DebugLogger.warn('ui', `❌ HIGHLIGHTING BROKEN: No [data-word-index] elements found for word ${wordIndex}`);
+      }
+      
       interactiveWords.forEach((element) => {
         const elementIndex = parseInt(element.getAttribute('data-word-index') || '-1');
         

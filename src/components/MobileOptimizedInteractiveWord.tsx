@@ -23,6 +23,7 @@ interface MobileOptimizedInteractiveWordProps {
   userId?: string;
   forceModal?: boolean;
   wordAlreadySaved?: boolean;
+  wordIndex?: number; // CRITICAL FIX: Add wordIndex for highlighting
 }
 
 export const MobileOptimizedInteractiveWord = React.memo((props: MobileOptimizedInteractiveWordProps) => {
@@ -300,6 +301,7 @@ if (props.forceModal || isMobileOrTablet) {
           className={`${props.className} inline ${shouldBeInteractive ? 'cursor-pointer underline decoration-dotted decoration-2 underline-offset-2 hover:decoration-primary' : ''} ${props.isPremium && shouldBeInteractive ? 'interactive-word-premium-hover' : ''}`}
           data-difficulty-level={difficultyLevel}
           data-highlight-enabled={difficultyLevel <= 2}
+          data-word-index={props.wordIndex} // CRITICAL FIX: Add data-word-index for highlighting
           style={{ 
             fontSize: 'inherit', 
             lineHeight: 'inherit', 

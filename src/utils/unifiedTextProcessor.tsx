@@ -120,6 +120,7 @@ export const processTextWithConsistentFlow = ({
           sentenceContext={cleanText}
           userId={userId}
           forceModal={true}
+          wordIndex={wordOnlyIndex} // CRITICAL FIX: Pass wordIndex for highlighting
         />
       );
     }
@@ -135,6 +136,7 @@ export const processTextWithConsistentFlow = ({
         sentenceContext={cleanText}
         userId={userId}
         forceModal={true}
+        wordIndex={wordOnlyIndex} // CRITICAL FIX: Pass wordIndex for highlighting
       />
     );
   }).filter(Boolean);
