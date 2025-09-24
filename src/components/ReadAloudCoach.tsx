@@ -655,7 +655,7 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
               <div className="text-sm space-y-2">
                 <div className="font-medium flex items-center gap-2">
                   <Volume2 className="w-4 h-4" />
-                  {t('coach.feedback','Charlotte is giving you feedback...')}
+                  {t('coach.feedbackStatus','Charlotte is giving you feedback...')}
                 </div>
                 {passed ? (
                   <p className="text-green-600 dark:text-green-400">{t('coach.pass','🎉 Perfect reading!')}</p>

@@ -860,7 +860,7 @@ export const InteractiveWord = ({
             marginBottom: 'max(0px, env(safe-area-inset-bottom))'
           }}
         >
-          {/* Phonetic spelling - always shown since PhoneticRulesEngine never returns null */}
+          {/* Phonetic spelling - always shown since phonicsMiniDict lookup never returns null */}
           <div className="flex items-center gap-2 mb-2">
             <span className="text-xs text-gray-500">"{phoneticSpelling}"</span>
             {userInfo?.age && userInfo.age > 8 && (
@@ -1771,7 +1771,7 @@ const MobileOptimizedInteractiveWord = (props: InteractiveWordProps) => {
           <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full mx-4 p-6">
             <div className="text-center mb-6">
               <h3 className="text-2xl font-bold text-gray-800 mb-2">{props.word}</h3>
-              {/* Always show phonetic spelling since PhoneticRulesEngine never returns null */}
+              {/* Always show phonetic spelling since phonicsMiniDict lookup never returns null */}
               <div className="text-sm text-purple-600 mb-2 font-mono">"{((phonicsMiniDict[props.word.toLowerCase().replace(/[^a-z]/g, '')] || [props.word])).join('-')}"</div>
               {mobileWordData && (
                 <div className="text-sm text-gray-600">
