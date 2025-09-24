@@ -58,9 +58,9 @@ export class SynchronizedElevenLabsTTS {
           supabase.functions.invoke('elevenlabs-tts-smart', {
             body: {
               text,
-              voiceId,
+              voice_id: voiceId,
               context,
-              useTimestamps: context === 'learning'
+              useTimestamps: true
             }
           }),
           timeoutPromise

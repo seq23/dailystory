@@ -301,8 +301,10 @@ export class CharlotteVoiceService {
         throw new Error('No syllables found');
       }
 
-      const syllableText = syllables.join(' - ');
-      DebugLogger.log('audio', `Charlotte syllables for "${cleanWord}": ${syllableText}`);
+      // Condense to maximum 4 stems for standard American pronunciation
+      const condensedSyllables = this.condenseToMax4(syllables);
+      const syllableText = condensedSyllables.join(' - ');
+      DebugLogger.log('audio', `Charlotte syllables for "${cleanWord}": ${syllableText} (condensed from ${syllables.length} to ${condensedSyllables.length} stems)`);
 
       await this.charlotteInteractiveAudio({
         text: syllableText,
@@ -322,10 +324,32 @@ export class CharlotteVoiceService {
    * PRIVATE METHODS - Internal functionality
    */
 
+  private condenseToMax4(syllables: string[]): string[] {
+    if (syllables.length <= 4) return syllables;
+    
+    // Standard American syllable condensing - merge adjacent vowel-heavy syllables
+    const condensed: string[] = [];
+    let i = 0;
+    
+    while (i < syllables.length && condensed.length < 4) {
+      if (condensed.length === 3 && i < syllables.length - 1) {
+        // Merge all remaining syllables into the final stem
+        condensed.push(syllables.slice(i).join(''));
+        break;
+      } else {
+        condensed.push(syllables[i]);
+        i++;
+      }
+    }
+    
+    return condensed;
+  }
+
   private async prepareSyllableText(word: string): Promise<string> {
     try {
       const syllables = await phoneticRulesEngine.breakIntoSyllablesAsync(word);
-      return syllables.join(' - ');
+      const condensed = this.condenseToMax4(syllables);
+      return condensed.join(' - ');
     } catch {
       return word;
     }
@@ -548,6 +572,11 @@ export class CharlotteVoiceService {
     
     this.stopWordHighlighting();
     this.playing = false;
+    
+    // Dispatch audio state change for UI synchronization
+    window.dispatchEvent(new CustomEvent('audio:statechange', { 
+      detail: { isPlaying: false } 
+    }));
     
     DebugLogger.log('audio', '🛑 Charlotte voice stopped');
   }

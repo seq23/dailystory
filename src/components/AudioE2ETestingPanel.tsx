@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import ReadAloudCoach from '@/components/ReadAloudCoach';
 import { Volume2, Mic, BookOpen, Languages, Users, Crown, Settings } from 'lucide-react';
 import { InteractiveStoryTester } from '@/components/InteractiveStoryTester';
 import { VoiceButtonTester } from '@/components/VoiceButtonTester';
@@ -18,6 +20,7 @@ export const AudioE2ETestingPanel = () => {
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [difficulty, setDifficulty] = useState<'beginner' | 'easy' | 'medium' | 'hard' | 'expert'>('easy');
   const [highlightingEnabled, setHighlightingEnabled] = useState(true);
+  const [showCoach, setShowCoach] = useState(false);
 
   // Mock user info for testing
   const mockUserInfo: UserInfo = {
@@ -54,6 +57,19 @@ export const AudioE2ETestingPanel = () => {
       window.dispatchEvent(new CustomEvent('audio:stop'));
       window.dispatchEvent(new CustomEvent('voice:stop'));
       window.dispatchEvent(new CustomEvent('highlighting:clear-all'));
+      
+      // Reset ElevenLabsAudio component state
+      window.dispatchEvent(new CustomEvent('audio:statechange', { 
+        detail: { isPlaying: false } 
+      }));
+      
+      // Clear guest user session storage
+      Object.keys(sessionStorage).forEach(key => {
+        if (key.startsWith('t2r_audio_session_')) {
+          sessionStorage.removeItem(key);
+        }
+      });
+      
     } catch (error) {
       console.warn('Error stopping audio services:', error);
     }
@@ -148,6 +164,9 @@ export const AudioE2ETestingPanel = () => {
               <Button onClick={resetAllAudio} variant="outline" size="sm" className="w-full">
                 Reset All Audio
               </Button>
+              <Button onClick={() => setShowCoach(true)} variant="outline" size="sm" className="w-full">
+                Help Me Read
+              </Button>
             </div>
           </div>
 
@@ -219,6 +238,21 @@ export const AudioE2ETestingPanel = () => {
           <AudioEventMonitor />
         </TabsContent>
       </Tabs>
+
+      {/* Help Me Read Dialog */}
+      <Dialog open={showCoach} onOpenChange={setShowCoach}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Help Me Read - Testing Mode</DialogTitle>
+          </DialogHeader>
+          <ReadAloudCoach 
+            targetText="Luna and Max found a hidden door in the library and stepped into a world of stories."
+            userInfo={mockUserInfo}
+            isPremium={userType === 'premium'}
+            language={selectedLanguage}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -127,6 +127,9 @@ export const useAudioControls = ({
     const handleAudioStateChange = (event: CustomEvent) => {
       const { isPlaying: playing } = event.detail;
       
+      // Sync isPlaying state
+      setIsPlaying(playing);
+      
       if (stateChangeTimeoutRef.current) {
         clearTimeout(stateChangeTimeoutRef.current);
       }
@@ -412,6 +415,11 @@ export const useAudioControls = ({
     }
 
     setIsPlaying(true);
+    
+    // Dispatch audio state change for synchronization
+    window.dispatchEvent(new CustomEvent('audio:statechange', { 
+      detail: { isPlaying: true } 
+    }));
   };
 
   /**
