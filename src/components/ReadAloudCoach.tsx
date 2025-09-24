@@ -314,59 +314,48 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
         const nextAttempts = attempts + 1;
         setAttempts(nextAttempts);
 
-        // Smart coach feedback with timeout safety
+        // Smart coach feedback - Charlotte only for English, direct calls with interpolated text
         setTimeout(async () => {
           const userLanguage = (userInfo?.nativeLanguage || 'en') as SupportedLanguage;
           
-          const speakWithTimeout = async (message: string, timeoutMs = 5000) => {
-            return Promise.race([
-              (async () => {
-                if (userLanguage === 'en') {
-                  try {
-                    await charlotteVoiceService.charlotteInteractiveAudio({
-                      text: message,
-                      context: 'interactive'
-                    });
-                  } catch {
-                    await browserTTSService.speakCoachMessage(message, userLanguage);
-                  }
-                } else {
-                  await browserTTSService.speakCoachMessage(message, userLanguage);
-                }
-              })(),
-              new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), timeoutMs))
-            ]);
-          };
-          
           try {
             if (didPass) {
-              const successMessage = t('coach.feedback.success', 'Excellent reading! {{pace}} That was a perfect score!', { pace });
-              await speakWithTimeout(successMessage);
+              const successMessage = t('coach.feedback.success', 'Excellent reading! {{pace}} That was a perfect score!', { pace })
+                .replace('{{pace}}', pace);
+              
+              if (userLanguage === 'en') {
+                await charlotteVoiceService.charlotteAccuracyFeedback(Math.round(acc), true, pace);
+              } else {
+                await browserTTSService.speakCoachMessage(successMessage, userLanguage);
+              }
             } else {
-              let feedbackText = t('coach.feedback.tryAgain', 'Good effort! You got {{accuracy}}% correct. ', { accuracy: Math.round(acc) });
+              let feedbackText = t('coach.feedback.tryAgain', 'Good effort! You got {{accuracy}}% correct. ', { accuracy: Math.round(acc) })
+                .replace('{{accuracy}}', Math.round(acc).toString());
+              
               if (top.length > 0) {
-                feedbackText += t('coach.feedback.practiceWords', 'Let\'s practice these words: {{words}}. ', { words: top.join(', ') });
+                feedbackText += t('coach.feedback.practiceWords', 'Let\'s practice these words: {{words}}. ', { words: top.join(', ') })
+                  .replace('{{words}}', top.join(', '));
               }
               feedbackText += pace;
               
-              await speakWithTimeout(feedbackText);
-              
-              // Provide syllable coaching for problematic words (help ALL words)
-              if (syllableFeedback.length > 0) {
-                for (const wordFeedback of syllableFeedback) {
-                  const syllableMessage = t('coach.feedback.syllables', 'Let\'s break down {{word}}: {{syllables}}', { 
-                    word: wordFeedback.word, 
-                    syllables: wordFeedback.syllables.join('-') 
-                  });
-                  await speakWithTimeout(syllableMessage);
-                  // Charlotte already spoke the syllable breakdown - no need for browser speech
+              if (userLanguage === 'en') {
+                await charlotteVoiceService.charlotteAccuracyFeedback(Math.round(acc), false, pace);
+                
+                // Provide syllable coaching for problematic words with Charlotte
+                if (top.length > 0) {
+                  await charlotteVoiceService.charlottePracticeWords(top);
                 }
+              } else {
+                await browserTTSService.speakCoachMessage(feedbackText, userLanguage);
               }
             }
           } catch (err) {
-            DebugLogger.error('audio', 'Coach feedback failed, using browser fallback:', err);
-            const fallbackMessage = didPass ? 'Great job!' : `Good effort! You got ${Math.round(acc)}% correct.`;
-            await browserTTSService.speakCoachMessage(fallbackMessage, userLanguage);
+            DebugLogger.error('audio', 'Coach feedback failed:', err);
+            // Only fallback to browser for non-English or if Charlotte completely fails
+            if (userLanguage !== 'en') {
+              const fallbackMessage = didPass ? 'Great job!' : `Good effort! You got ${Math.round(acc)}% correct.`;
+              await browserTTSService.speakCoachMessage(fallbackMessage, userLanguage);
+            }
           }
           
           // Auto-resume story audio after feedback
@@ -440,14 +429,11 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
       
       const speakCoachMessage = async (message: string) => {
         if (userLanguage === 'en') {
-          try {
-            await charlotteVoiceService.charlotteInteractiveAudio({
-              text: message,
-              context: 'interactive'
-            });
-          } catch (error) {
-            await browserTTSService.speakCoachMessage(message, userLanguage);
-          }
+          // English users get Charlotte only - no browser fallback
+          await charlotteVoiceService.charlotteInteractiveAudio({
+            text: message,
+            context: 'interactive'
+          });
         } else {
           await browserTTSService.speakCoachMessage(message, userLanguage);
         }
@@ -703,15 +689,15 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
           <Collapsible open={wordsExpanded} onOpenChange={setWordsExpanded}>
             <CollapsibleTrigger asChild>
               <Button variant="ghost" size="sm" className="w-full justify-between p-2 h-auto">
-                <span className="font-medium text-sm">{t('coach.topWords','Words to practice:')} ({topWords.length})</span>
+                <span className="font-medium text-sm">{t('coach.topWords','Words to practice:')} ({isMobileOrTablet ? `${Math.min(2, topWords.length)} of ${topWords.length}` : topWords.length})</span>
                 {wordsExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </Button>
             </CollapsibleTrigger>
             <CollapsibleContent className="space-y-2 pt-2">
               {isMobileOrTablet ? (
-                // Mobile/Tablet: Compact grid layout, max 2 visible
-                <div className="space-y-3">
-                  {topWords.slice(0, 2).map((w) => (
+                // Mobile/Tablet: Scrollable layout showing all words
+                <div className="space-y-3 max-h-48 overflow-y-auto">
+                  {topWords.map((w) => (
                     <div key={w} className="space-y-2">
                       <div className="font-medium text-center text-primary">{w}</div>
                       <div className="grid grid-cols-2 gap-2">

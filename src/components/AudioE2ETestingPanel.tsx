@@ -254,7 +254,7 @@ export const AudioE2ETestingPanel = () => {
 
       {/* Help Me Read Dialog */}
       <Dialog open={showCoach} onOpenChange={setShowCoach}>
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Help Me Read - Testing Mode</DialogTitle>
           </DialogHeader>

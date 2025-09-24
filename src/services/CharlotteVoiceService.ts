@@ -245,6 +245,79 @@ export class CharlotteVoiceService {
   }
 
   /**
+   * CHARLOTTE COACHING SERVICES - Specialized methods for reading coach
+   */
+  
+  // Charlotte provides accuracy feedback with proper interpolation
+  async charlotteAccuracyFeedback(accuracy: number, isSuccess: boolean, pace: string): Promise<void> {
+    const requestId = `accuracy-${++CharlotteVoiceService.requestCounter}`;
+    DebugLogger.log('audio', `🎯 Charlotte Accuracy Feedback: ${accuracy}% success=${isSuccess} [Request: ${requestId}]`);
+
+    try {
+      window.dispatchEvent(new CustomEvent('audio:request', { 
+        detail: { system: 'charlotte-coaching', priority: 5, source: 'accuracy-feedback' } 
+      }));
+
+      let message: string;
+      if (isSuccess) {
+        message = `Excellent reading! ${pace} That was a perfect score of ${accuracy} percent!`;
+      } else {
+        message = `Good effort! You got ${accuracy} percent correct. ${pace}`;
+      }
+
+      const audioBuffer = await SmartElevenLabsTTS.generateSpeech(
+        message, 
+        'conversation', 
+        CharlotteVoiceService.charlotteVoiceId
+      );
+
+      await this.playCharlotteAudio(audioBuffer, false);
+      
+      DebugLogger.log('audio', `✅ Charlotte accuracy feedback completed: ${requestId}`);
+
+    } catch (error) {
+      DebugLogger.error('audio', `❌ Charlotte accuracy feedback failed: ${requestId}`, error);
+      throw error;
+    } finally {
+      window.dispatchEvent(new CustomEvent('audio:stopped', { 
+        detail: { system: 'charlotte-coaching' } 
+      }));
+    }
+  }
+
+  // Charlotte provides practice words coaching
+  async charlottePracticeWords(words: string[]): Promise<void> {
+    const requestId = `practice-${++CharlotteVoiceService.requestCounter}`;
+    DebugLogger.log('audio', `📚 Charlotte Practice Words: ${words.join(', ')} [Request: ${requestId}]`);
+
+    try {
+      window.dispatchEvent(new CustomEvent('audio:request', { 
+        detail: { system: 'charlotte-coaching', priority: 5, source: 'practice-words' } 
+      }));
+
+      const message = `Let's practice these words: ${words.join(', ')}. I'll demonstrate each one for you.`;
+
+      const audioBuffer = await SmartElevenLabsTTS.generateSpeech(
+        message, 
+        'conversation', 
+        CharlotteVoiceService.charlotteVoiceId
+      );
+
+      await this.playCharlotteAudio(audioBuffer, false);
+      
+      DebugLogger.log('audio', `✅ Charlotte practice words completed: ${requestId}`);
+
+    } catch (error) {
+      DebugLogger.error('audio', `❌ Charlotte practice words failed: ${requestId}`, error);
+      throw error;
+    } finally {
+      window.dispatchEvent(new CustomEvent('audio:stopped', { 
+        detail: { system: 'charlotte-coaching' } 
+      }));
+    }
+  }
+
+  /**
    * CHARLOTTE WORD SERVICES - Consolidated word interaction methods
    */
   
