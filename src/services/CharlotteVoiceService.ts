@@ -377,7 +377,7 @@ export class CharlotteVoiceService {
         this.playing = false;
         this.stopWordHighlighting();
         window.dispatchEvent(new CustomEvent('audio:statechange', { 
-          detail: { playing: false, system: 'charlotte' } 
+          detail: { isPlaying: false, system: 'charlotte' } 
         }));
       });
       
@@ -387,7 +387,7 @@ export class CharlotteVoiceService {
           this.startWordHighlighting();
         }
         window.dispatchEvent(new CustomEvent('audio:statechange', { 
-          detail: { playing: true, system: 'charlotte' } 
+          detail: { isPlaying: true, system: 'charlotte' } 
         }));
       });
     }
