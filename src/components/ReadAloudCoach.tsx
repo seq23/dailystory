@@ -140,14 +140,28 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
   useEffect(() => {
     loadDailyCount();
     
-    // Multilingual coach introduction using browser TTS
+    // Smart coach introduction: Charlotte for English, Browser TTS for other languages
     const introduceCoach = async () => {
       try {
         await new Promise(resolve => setTimeout(resolve, 500)); // Small delay to avoid audio conflicts
         const userLanguage = (userInfo?.nativeLanguage || 'en') as SupportedLanguage;
         const introMessage = t('coach.introduction', 'Hi there! I\'m your reading coach. I\'m here to help you practice reading out loud. When you\'re ready, click start and read the sentence. I\'ll give you feedback to help you improve!');
         
-        await browserTTSService.speakCoachMessage(introMessage, userLanguage);
+        if (userLanguage === 'en') {
+          // Try Charlotte first for English users
+          try {
+            await charlotteVoiceService.charlotteInteractiveAudio({
+              text: introMessage,
+              context: 'interactive'
+            });
+          } catch (error) {
+            // Fallback to Browser TTS if Charlotte fails
+            await browserTTSService.speakCoachMessage(introMessage, userLanguage);
+          }
+        } else {
+          // Use Browser TTS for non-English users
+          await browserTTSService.speakCoachMessage(introMessage, userLanguage);
+        }
       } catch (err) {
         DebugLogger.error('audio', 'Coach introduction failed:', err);
       }
