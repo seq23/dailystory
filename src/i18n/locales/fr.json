@@ -753,11 +753,40 @@
   },
   "coach": {
     "title": "Coach de lecture à voix haute",
+    "subtitle": "Les enfants lisent à voix haute; retour immédiat",
     "englishOnlyShort": "Anglais uniquement pour le moment",
     "englishOnlyLong": "Ce coach est disponible uniquement pour les histoires en anglais.",
-    "subtitle": "Les enfants lisent à voix haute; retour immédiat",
+    "introduction": "Salut! Je suis votre coach de lecture. Je suis là pour vous aider à pratiquer la lecture à voix haute. Quand vous êtes prêt, cliquez sur commencer et lisez la phrase. Je vous donnerai des commentaires pour vous aider à vous améliorer!",
+    "targetLabel": "Objectif",
+    "start": "Commencer",
+    "stop": "Arrêter",
+    "stopAll": "Arrêter Tout Audio",
+    "tryAgain": "Réessayer",
+    "limitReached": "Limite quotidienne atteinte — Mettre à niveau",
+    "today": "aujourd'hui",
     "prevSentence": "Phrase précédente",
     "nextSentence": "Phrase suivante",
+    "youSaid": "Vous avez dit:",
+    "feedback": "Votre coach vous donne des commentaires...",
+    "pass": "🎉 Lecture parfaite!",
+    "navigation": {
+      "next": "Excellent! Passons à la phrase suivante. La voici: \"{{sentence}}\"",
+      "previous": "Revenons pratiquer cette phrase: \"{{sentence}}\""
+    },
+    "feedback": {
+      "success": "Excellente lecture! {{pace}} C'était un score parfait!",
+      "tryAgain": "Bon effort! Vous avez eu {{accuracy}}% correct. ",
+      "practiceWords": "Pratiquons ces mots: {{words}}. ",
+      "syllables": "Décomposons {{word}}: {{syllables}}"
+    },
+    "wordPractice": {
+      "intro": "Pratiquons le mot \"{{word}}\" ensemble. Écoutez d'abord, puis dites-le.",
+      "yourTurn": "Maintenant essayez de dire \"{{word}}\"",
+      "success": "Parfait! Vous avez réussi \"{{word}}\"! C'était une excellente prononciation!",
+      "encourage": "Presque! Vous avez {{tries}} essai de plus. Laissez-moi le décomposer pour vous encore.",
+      "comfort": "C'est bon! Continuez à pratiquer \"{{word}}\" et vous y arriverez. Ne vous inquiétez pas, ça prend du temps!"
+    }
+  },
     "today": "aujourd’hui",
     "target": "Phrase cible :",
     "targetLabel": "Cible",
@@ -778,8 +807,7 @@
     "paceSlower": "Un peu plus lentement",
     "paceNice": "Bon rythme",
     "great": "Super !"
-  }
-,
+  },
   "postSession": {
     "quizTitle": "Comprehension Quiz",
     "quizDesc": "Quick 3–5 questions based on your story.",

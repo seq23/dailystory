@@ -183,47 +183,49 @@ if (props.forceModal || isMobileOrTablet) {
       if (isLoadingWordData) return;
       setIsLoadingWordData(true);
       try {
-        // Use Charlotte's unified voice service with multilingual support
-        if (props.userInfo?.nativeLanguage === 'en' || !props.userInfo?.nativeLanguage) {
-          await charlotteVoiceService.charlotteExplainWord(cleanWord, 'en');
-        } else {
-          // For non-English users, get definition first then translate
-          const { data: definition } = await supabase.functions.invoke('word-dictionary', {
-            body: { 
-              word: cleanWord, 
-              userLevel: difficulty,
-              userLanguage: 'en'
-            }
-          });
-          
-          if (definition?.definition) {
-            // Translate explanation to user's native language
-            const { data: translationResult } = await supabase.functions.invoke('translate-universal', {
-              body: {
-                text: definition.definition,
-                targetLanguage: props.userInfo.nativeLanguage,
-                sourceLanguage: 'en',
-                context: 'word_explanation'
-              }
-            });
-            
-            if (translationResult?.translatedText) {
-              // Use browser TTS for non-English (cost-effective)
-              if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                const utterance = new SpeechSynthesisUtterance(translationResult.translatedText);
-                utterance.lang = props.userInfo.nativeLanguage;
-                utterance.rate = 0.8;
-                window.speechSynthesis.speak(utterance);
-              }
-            } else {
-              // Fallback to Charlotte if translation fails
-              await charlotteVoiceService.charlotteExplainWord(cleanWord, 'en');
-            }
+        // Get definition from API first
+        const { data: definitionData, error } = await supabase.functions.invoke('word-dictionary', {
+          body: { 
+            word: cleanWord, 
+            userLevel: difficulty,
+            userLanguage: props.userInfo?.nativeLanguage || 'en',
+            sentenceContext: props.sentenceContext
           }
+        });
+
+        let definition = '';
+        if (!error && definitionData?.definition) {
+          definition = definitionData.definition;
+        } else {
+          // Fallback to local definition
+          definition = `${cleanWord} - a word used in this story`;
         }
+
+        // Always use browser TTS for explanations with native pronunciation
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+          const utterance = new SpeechSynthesisUtterance(definition);
+          
+          const userLanguage = props.userInfo?.nativeLanguage || 'en';
+          const languageCodes = {
+            'en': 'en-US', 'es': 'es-ES', 'fr': 'fr-FR',
+            'ar': 'ar-SA', 'zh': 'zh-CN', 'hi': 'hi-IN', 'pt': 'pt-BR'
+          };
+          
+          utterance.lang = languageCodes[userLanguage] || 'en-US';
+          utterance.rate = 0.8;
+          
+          const voices = speechSynthesis.getVoices();
+          const selectedVoice = voices.find(voice => 
+            voice.lang === utterance.lang || voice.lang.startsWith(utterance.lang.split('-')[0])
+          );
+          if (selectedVoice) utterance.voice = selectedVoice;
+          
+          window.speechSynthesis.speak(utterance);
+        }
+
       } catch (e) {
-        DebugLogger.error('story', 'Mobile Charlotte Explain failed', e);
+        DebugLogger.error('story', 'Mobile word explanation failed', e);
       } finally {
         setIsLoadingWordData(false);
         markReviewedOnce();

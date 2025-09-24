@@ -914,11 +914,40 @@
   },
   "coach": {
     "title": "Treinador de leitura em voz alta",
+    "subtitle": "As crianças leem em voz alta; feedback instantâneo",
     "englishOnlyShort": "Apenas inglês por enquanto",
     "englishOnlyLong": "Este treinador está disponível apenas para histórias em inglês.",
-    "subtitle": "As crianças leem em voz alta; feedback instantâneo",
+    "introduction": "Olá! Eu sou seu treinador de leitura. Estou aqui para ajudá-lo a praticar a leitura em voz alta. Quando estiver pronto, clique em começar e leia a frase. Vou dar feedback para ajudá-lo a melhorar!",
+    "targetLabel": "Objetivo",
+    "start": "Começar",
+    "stop": "Parar",
+    "stopAll": "Parar Todo Áudio",
+    "tryAgain": "Tentar novamente",
+    "limitReached": "Limite diário atingido — Atualizar",
+    "today": "hoje",
     "prevSentence": "Frase anterior",
     "nextSentence": "Próxima frase",
+    "youSaid": "Você disse:",
+    "feedback": "Seu treinador está dando feedback...",
+    "pass": "🎉 Leitura perfeita!",
+    "navigation": {
+      "next": "Ótimo! Vamos para a próxima frase. Aqui está: \"{{sentence}}\"",
+      "previous": "Vamos voltar para praticar esta frase: \"{{sentence}}\""
+    },
+    "feedback": {
+      "success": "Excelente leitura! {{pace}} Essa foi uma pontuação perfeita!",
+      "tryAgain": "Bom esforço! Você acertou {{accuracy}}%. ",
+      "practiceWords": "Vamos praticar essas palavras: {{words}}. ",
+      "syllables": "Vamos quebrar {{word}}: {{syllables}}"
+    },
+    "wordPractice": {
+      "intro": "Vamos praticar a palavra \"{{word}}\" juntos. Ouça primeiro, depois você fala.",
+      "yourTurn": "Agora tente dizer \"{{word}}\"",
+      "success": "Perfeito! Você acertou \"{{word}}\"! Essa foi uma pronúncia excelente!",
+      "encourage": "Quase lá! Você tem {{tries}} tentativa a mais. Deixe-me quebrar isso para você novamente.",
+      "comfort": "Tudo bem! Continue praticando \"{{word}}\" e você vai conseguir. Não se preocupe, leva tempo!"
+    }
+  },
     "today": "hoje",
     "target": "Alvo:",
     "targetLabel": "Alvo",
@@ -939,8 +968,7 @@
     "paceSlower": "Tente um pouco mais devagar",
     "paceNice": "Bom ritmo",
     "great": "Ótimo!"
-  }
-,
+  },
   "postSession": {
     "quizTitle": "Comprehension Quiz",
     "quizDesc": "Quick 3–5 questions based on your story.",

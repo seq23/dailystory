@@ -727,11 +727,40 @@
   },
   "coach": {
     "title": "朗读教练",
+    "subtitle": "孩子大声朗读；即时反馈",
     "englishOnlyShort": "目前仅支持英文",
     "englishOnlyLong": "此教练目前仅适用于英文故事。",
-    "subtitle": "孩子大声朗读；即时反馈",
+    "introduction": "你好！我是你的阅读教练。我在这里帮助你练习大声朗读。当你准备好时，点击开始并朗读句子。我会给你反馈来帮助你改进！",
+    "targetLabel": "目标",
+    "start": "开始",
+    "stop": "停止",
+    "stopAll": "停止所有音频",
+    "tryAgain": "再试一次",
+    "limitReached": "已达每日限制 — 升级",
+    "today": "今天",
     "prevSentence": "上一句",
     "nextSentence": "下一句",
+    "youSaid": "你说了:",
+    "feedback": "你的教练正在给你反馈...",
+    "pass": "🎉 完美朗读!",
+    "navigation": {
+      "next": "太好了！让我们进入下一句。这里是：\"{{sentence}}\"",
+      "previous": "让我们回去练习这句话：\"{{sentence}}\""
+    },
+    "feedback": {
+      "success": "优秀的朗读！{{pace}} 那是完美的分数！",
+      "tryAgain": "努力很好！你得到了{{accuracy}}%正确。",
+      "practiceWords": "让我们练习这些词：{{words}}。",
+      "syllables": "让我们分解{{word}}：{{syllables}}"
+    },
+    "wordPractice": {
+      "intro": "让我们一起练习单词\"{{word}}\"。先听，然后你说。",
+      "yourTurn": "现在你试着说\"{{word}}\"",
+      "success": "完美！你搞定了\"{{word}}\"！那是优秀的发音！",
+      "encourage": "快到了！你还有{{tries}}次尝试。让我再为你分解一下。",
+      "comfort": "没关系！继续练习\"{{word}}\"，你会掌握的。别担心，这需要时间！"
+    }
+  },
     "today": "今天",
     "target": "目标：",
     "targetLabel": "目标",
@@ -752,8 +781,7 @@
     "paceSlower": "读慢一点",
     "paceNice": "语速合适",
     "great": "太好了！"
-  }
-,
+  },
   "postSession": {
     "quizTitle": "Comprehension Quiz",
     "quizDesc": "Quick 3–5 questions based on your story.",

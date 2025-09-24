@@ -762,11 +762,40 @@
   },
   "coach": {
     "title": "Entrenador de lectura en voz alta",
+    "subtitle": "Los niños leen en voz alta; reciben retroalimentación al instante",
     "englishOnlyShort": "Solo inglés por ahora",
     "englishOnlyLong": "Este entrenador está disponible solo para historias en inglés.",
-    "subtitle": "Los niños leen en voz alta; reciben retroalimentación al instante",
+    "introduction": "¡Hola! Soy tu entrenador de lectura. Estoy aquí para ayudarte a practicar la lectura en voz alta. Cuando estés listo, haz clic en comenzar y lee la oración. ¡Te daré comentarios para ayudarte a mejorar!",
+    "targetLabel": "Objetivo",
+    "start": "Comenzar",
+    "stop": "Parar",
+    "stopAll": "Parar Todo Audio",
+    "tryAgain": "Intentar de nuevo",
+    "limitReached": "Límite diario alcanzado — Actualizar",
+    "today": "hoy",
     "prevSentence": "Frase anterior",
     "nextSentence": "Siguiente frase",
+    "youSaid": "Dijiste:",
+    "feedback": "Tu entrenador te está dando comentarios...",
+    "pass": "🎉 ¡Lectura perfecta!",
+    "navigation": {
+      "next": "¡Genial! Pasemos a la siguiente oración. Aquí está: \"{{sentence}}\"",
+      "previous": "Volvamos a practicar esta oración: \"{{sentence}}\""
+    },
+    "feedback": {
+      "success": "¡Excelente lectura! {{pace}} ¡Esa fue una puntuación perfecta!",
+      "tryAgain": "¡Buen esfuerzo! Obtuviste {{accuracy}}% correcto. ",
+      "practiceWords": "Practiquemos estas palabras: {{words}}. ",
+      "syllables": "Vamos a desglosar {{word}}: {{syllables}}"
+    },
+    "wordPractice": {
+      "intro": "Practiquemos la palabra \"{{word}}\" juntos. Escucha primero, luego dila tú.",
+      "yourTurn": "Ahora intenta decir \"{{word}}\"",
+      "success": "¡Perfecto! ¡Clavaste \"{{word}}\"! ¡Esa fue una pronunciación excelente!",
+      "encourage": "¡Casi ahí! Tienes {{tries}} intento más. Déjame desglosarlo para ti de nuevo.",
+      "comfort": "¡Está bien! Sigue practicando \"{{word}}\" y lo conseguirás. No te preocupes, ¡toma tiempo!"
+    }
+  },
     "today": "hoy",
     "target": "Objetivo:",
     "targetLabel": "Objetivo",
@@ -787,8 +816,7 @@
     "paceSlower": "Intenta un poco más lento",
     "paceNice": "Buen ritmo",
     "great": "¡Genial!"
-  }
-,
+  },
   "postSession": {
     "quizTitle": "Comprehension Quiz",
     "quizDesc": "Quick 3–5 questions based on your story.",
