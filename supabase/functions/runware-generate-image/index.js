@@ -405,55 +405,6 @@ async function generateWithRunware(
 
 // Enhanced fallback function removed - unauthorized Unsplash image replaced with proper error response
 
-// ---------------- TIER CASCADE HELPER ----------------
-async function executeTierCascade(supabase, log, storyText, userInfo, sessionId, pageNumber, initialErrorMsg) {
-  // Linear tier cascade: 2.5A → 2.5B → 2.5C → 2.5D
-  const tiers = [
-    { name: 'tier-2.5A', complexity: 'A', function: 'runware-template-ab' },
-    { name: 'tier-2.5B', complexity: 'B', function: 'runware-template-ab' },
-    { name: 'tier-2.5C', complexity: 'C', function: 'runware-template-cd' },
-    { name: 'tier-2.5D', complexity: 'D', function: 'runware-template-cd' }
-  ];
-
-  for (const tier of tiers) {
-    try {
-      log.attempt(tier.name, { note: `Escalating from previous tier failure` });
-      const response = await supabase.functions.invoke(tier.function, {
-        body: {
-          storyText,
-          pageText: storyText,
-          userInfo,
-          sessionId,
-          pageNumber: pageNumber || 1,
-          templateComplexity: tier.complexity
-        }
-      });
-      
-      if (response.data && response.data.success) {
-        log.success(tier.name, { imageUrl: response.data.imageURL });
-        return response.data;
-      }
-      throw new Error(`${tier.name} failed`);
-    } catch (error) {
-      const nextTier = tiers[tiers.indexOf(tier) + 1];
-      if (nextTier) {
-        log.failure(tier.name, { error: error.message, escalation: nextTier.name });
-      } else {
-        log.failure(tier.name, { error: error.message, escalation: 'frontend-tier-4' });
-      }
-    }
-  }
-
-  // All tiers failed
-  return {
-    success: false,
-    error: `Complete tier cascade failed: ${initialErrorMsg}`,
-    tier: 'ALL_TIERS_FAILED',
-    templateStructure: 'ALL_TIERS_FAILED',
-    failureReason: 'complete_tier_cascade_exhausted'
-  };
-}
-
 
 // Duplicate bindTierLogger removed - using the one at line 17-25
 
@@ -806,8 +757,14 @@ async function handleRequest(req) {
             }
           } catch (directErr) {
             log.failure('tier-1', { error: (directErr && directErr.message) || String(directErr), reason: 'direct_mode_failed' });
-            // Force Tier 1 failed - escalate to full tier cascade
-            result = await executeTierCascade(supabase, log, storyText, payload.userInfo, sessionId, pageNumber, `Force Tier 1 and Direct Mode failed: ${msg}. Direct Mode: ${(directErr && directErr.message) || String(directErr)}`);
+            // For Force Tier 1, return clear failure without escalation
+            result = {
+              success: false,
+              error: `Force Tier 1 failed: ${msg}. Direct Mode also failed: ${(directErr && directErr.message) || String(directErr)}`,
+              tier: 'TIER_1_FAILED',
+              templateStructure: 'TIER_1_FAILED',
+              failureReason: 'orchestrator_and_direct_mode_failed'
+            };
           }
         } else {
           // Regular flow: Allow escalation to Tier 2.5A for non-forced requests

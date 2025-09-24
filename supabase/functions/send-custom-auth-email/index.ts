@@ -1,5 +1,8 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { Resend } from "npm:resend@2.0.0";
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
+
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -152,29 +155,16 @@ const handler = async (req: Request): Promise<Response> => {
       `;
     }
 
-    // Send email using Resend API directly
-    const emailResponse = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${Deno.env.get("RESEND_API_KEY")}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: "Time-2-Read <noreply@time2read.com>",
-        to: [email],
-        subject: subject,
-        html: htmlContent,
-      }),
+    const emailResponse = await resend.emails.send({
+      from: "Time-2-Read <noreply@time2read.com>",
+      to: [email],
+      subject: subject,
+      html: htmlContent,
     });
 
-    if (!emailResponse.ok) {
-      throw new Error(`Resend API error: ${emailResponse.statusText}`);
-    }
+    console.log("Custom auth email sent successfully:", emailResponse);
 
-    const emailResult = await emailResponse.json();
-    console.log("Custom auth email sent successfully:", emailResult);
-
-    return new Response(JSON.stringify(emailResult), {
+    return new Response(JSON.stringify(emailResponse), {
       status: 200,
       headers: {
         "Content-Type": "application/json",
