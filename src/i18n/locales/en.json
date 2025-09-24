@@ -914,7 +914,7 @@
       "intro": "Let's practice the word \"{{word}}\" together. Listen first, then you say it.",
       "yourTurn": "Now you try saying \"{{word}}\"",
       "success": "Perfect! You nailed \"{{word}}\"! That was excellent pronunciation!",
-      "encourage": "Almost there! You have {{tries}} more try. Let me break it down for you again.",
+      "encourage": "Almost there! You have {{tries}} more try. Push the green button to hear me say it again, then try once more.",
       "comfort": "That's okay! Keep practicing \"{{word}}\" and you'll get it. Don't worry, it takes time!"
     }
   },

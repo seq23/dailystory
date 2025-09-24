@@ -546,6 +546,11 @@ export const ReadAloudCoach: React.FC<ReadAloudCoachProps> = ({
               text: encourageMessage,
               context: 'interactive'
             });
+            
+            // Auto-demonstrate the word with syllables after encouragement (fulfilling Charlotte's promise)
+            if (remainingTries > 0) {
+              await charlotteVoiceService.charlotteSyllableWord(w);
+            }
           } catch (error) {
             await browserTTSService.speakCoachMessage(encourageMessage, userLanguage);
           }
