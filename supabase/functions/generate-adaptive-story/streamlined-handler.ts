@@ -1194,9 +1194,9 @@ async function executeFunctionCalls(storyText: string, context: any): Promise<st
       let culturalKey = 'en-general'; // Default
       let regionName = 'GENERAL ENGLISH';
 
-      if (userInfo?.nativeLanguage && userInfo?.avatar?.skinTone) {
+      const skinTone = userInfo?.avatarIdentity?.skinTone || userInfo?.avatar?.skinTone;
+      if (userInfo?.nativeLanguage && skinTone) {
         const lang = userInfo.nativeLanguage.toLowerCase();
-        const skinTone = userInfo.avatar.skinTone;
         const isDarkSkin = skinTone === 'dark';
         
         if (lang === 'en' && isDarkSkin) {

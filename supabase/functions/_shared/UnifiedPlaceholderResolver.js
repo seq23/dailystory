@@ -356,8 +356,23 @@ export class UnifiedPlaceholderResolver {
   }
 
   derivePronoun(userInfo) {
-    // Simple pronoun derivation - can be enhanced
-    return 'they'; // Default to inclusive pronoun
+    // Priority 1: Check avatarIdentity.type (processed data)
+    const avatarType = userInfo?.avatarIdentity?.type || userInfo?.avatar?.type;
+    
+    if (avatarType === 'prefer-not-to-answer') {
+      return 'they';
+    }
+    
+    if (avatarType === 'boy') {
+      return 'he';
+    }
+    
+    if (avatarType === 'girl') {
+      return 'she';
+    }
+    
+    // Default fallback for missing data
+    return 'they';
   }
 
   detectCulturalContext(userInfo) {

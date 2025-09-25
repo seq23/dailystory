@@ -66,24 +66,27 @@ export class SessionStateManager {
   initializeSessionWithAvatarData(sessionId, userInfo, isNeverEnding = false, totalPages = null) {
     console.log('🎭 Initializing session with avatar data:', {
       sessionId,
-      avatarType: userInfo?.avatar?.type,
-      skinTone: userInfo?.avatar?.skinTone
+      avatarType: userInfo?.avatarIdentity?.type || userInfo?.avatar?.type,
+      skinTone: userInfo?.avatarIdentity?.skinTone || userInfo?.avatar?.skinTone
     });
 
     const state = this.getOrCreateSessionState(sessionId, isNeverEnding, totalPages);
     
-    // Set avatar data from userInfo
-    if (userInfo?.avatar) {
-      state.avatarType = userInfo.avatar.type;
-      state.skinTone = userInfo.avatar.skinTone;
+    // Set avatar data from userInfo with fallback strategy
+    const avatarType = userInfo?.avatarIdentity?.type || userInfo?.avatar?.type;
+    const skinTone = userInfo?.avatarIdentity?.skinTone || userInfo?.avatar?.skinTone;
+    
+    if (avatarType || skinTone) {
+      state.avatarType = avatarType;
+      state.skinTone = skinTone;
       
       // Initialize core character traits
-      state.coreCharacterTraits.set('avatarType', userInfo.avatar.type);
-      state.coreCharacterTraits.set('skinTone', userInfo.avatar.skinTone);
+      state.coreCharacterTraits.set('avatarType', avatarType);
+      state.coreCharacterTraits.set('skinTone', skinTone);
       
       state.lastUpdated = Date.now();
       
-      console.log(`📋 Session ${sessionId} initialized with avatar data: ${userInfo.avatar.type}/${userInfo.avatar.skinTone}`);
+      console.log(`📋 Session ${sessionId} initialized with avatar data: ${avatarType}/${skinTone}`);
     } else {
       console.log(`⚠️ Session ${sessionId} initialized without avatar data`);
     }

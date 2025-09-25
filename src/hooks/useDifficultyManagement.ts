@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import type { UserInfo } from '@/types';
+import { DifficultyLevelMapper } from '@/services/DifficultyLevelMapper';
 
 export interface DifficultyManagementState {
   currentDifficulty: string;
@@ -44,7 +45,7 @@ export const useDifficultyManagement = ({ userInfo }: UseDifficultyManagementPro
     ? safeUserInfo.difficultyLevel || 'beginner'
     : 'beginner';
 
-  const [currentDifficulty, setCurrentDifficulty] = useState<string>(safeDifficultyLevel);
+  const [currentDifficulty, setCurrentDifficulty] = useState<string>(DifficultyLevelMapper.toFrontend(safeDifficultyLevel as any));
   const [isChangingDifficulty, setIsChangingDifficulty] = useState(false);
   const [changeDirection, setChangeDirection] = useState<'increase' | 'decrease' | 'badge' | undefined>();
   const [expertGradeLevel, setExpertGradeLevel] = useState<"6th" | "7th" | "8th" | "9th" | "10th">(safeExpertGradeLevel);
@@ -55,7 +56,7 @@ export const useDifficultyManagement = ({ userInfo }: UseDifficultyManagementPro
 
   const resetDifficultyToInitial = useCallback(() => {
     // ERROR-016 FIX: Use the same defensive validation in reset
-    setCurrentDifficulty(safeDifficultyLevel);
+    setCurrentDifficulty(DifficultyLevelMapper.toFrontend(safeDifficultyLevel as any));
     setExpertGradeLevel(safeExpertGradeLevel);
     setIsChangingDifficulty(false);
     setChangeDirection(undefined);
