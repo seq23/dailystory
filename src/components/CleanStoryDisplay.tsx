@@ -4,6 +4,7 @@ import { StoryTimerIntegration } from "@/components/story/StoryTimerIntegration"
 import { useStoryLogic } from "@/hooks/useStoryLogic";
 import { useNavigationPersistence } from "@/hooks/useNavigationPersistence";
 import { ImageDeduplicationService } from "@/services/imageDeduplicationService";
+import { NetflixSessionManager } from "@/services/NetflixSessionManager";
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { DebugLogger } from '@/services/DebugLogger';
@@ -232,7 +233,6 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   // Get Netflix session ID for consistent session tracking across services
   const getNetflixSessionId = useCallback(() => {
     try {
-      const { NetflixSessionManager } = require('@/services/NetflixSessionManager');
       return NetflixSessionManager.getOrCreateSession(safeUserInfo.name);
     } catch (error) {
       DebugLogger.warn('story', 'Failed to get Netflix session ID', error);
