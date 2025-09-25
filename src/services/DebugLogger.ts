@@ -137,6 +137,12 @@ class DebugLoggerService {
     this.listeners.forEach(listener => listener(this.logs));
   }
 
+  logToDebugMonitorOnly(category: DebugCategory, message: string, data?: any): void {
+    const entry = this.createEntry(category, message, data, 'info');
+    this.addToBuffer(entry);
+    // Skip console output - only stored in debug monitor buffer
+  }
+
   setDebugMode(enabled: boolean): void {
     this.isDebugMode = enabled;
   }

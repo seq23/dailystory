@@ -470,6 +470,7 @@ export const UnifiedDebugMonitor: React.FC = () => {
     'image-analysis': 'Image Analysis',
     'audio-test': 'Audio Test',
     'system-validation': 'System Validation',
+    'system-events': 'System Events',
     'debug-data': 'Data'
   } as Record<string, string>)[t] || 'Console';
 
@@ -506,6 +507,7 @@ export const UnifiedDebugMonitor: React.FC = () => {
               <DropdownMenuItem onSelect={() => setActiveTab('image-analysis')}>Image Analysis</DropdownMenuItem>
               <DropdownMenuItem onSelect={() => setActiveTab('audio-test')}>Audio Test</DropdownMenuItem>
               <DropdownMenuItem onSelect={() => setActiveTab('system-validation')}>System Validation</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => setActiveTab('system-events')}>System Events</DropdownMenuItem>
               <DropdownMenuItem onSelect={() => setActiveTab('debug-data')}>Data</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -1142,6 +1144,77 @@ export const UnifiedDebugMonitor: React.FC = () => {
         {activeTab === 'debug-data' && (
           <div className="flex-1 flex flex-col min-h-0">
             <DebugDataViewer />
+          </div>
+        )}
+
+        {/* System Events View */}
+        {activeTab === 'system-events' && (
+          <div className="flex-1 flex flex-col min-h-0">
+            {/* Search and Filter */}
+            <div className="flex gap-1 mb-1">
+              <div className="relative flex-1">
+                <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                <Input
+                  placeholder="Search system events..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="h-6 text-xs pl-6 pr-2"
+                />
+              </div>
+            </div>
+
+            {/* System Events Description */}
+            <div className="mb-2 p-2 bg-muted/50 rounded text-xs">
+              <div className="font-medium mb-1">System Events - Internal Operations</div>
+              <div className="text-xs opacity-75">
+                Timer creation/clearing and cache operations are logged here without console output to reduce noise.
+              </div>
+            </div>
+
+            {/* System Events Logs */}
+            <div className="flex-1 overflow-y-auto bg-black/20 rounded text-xs font-mono">
+              {filteredLogs.filter(log => 
+                (log.message.includes('timeout') || log.message.includes('interval') || 
+                 log.message.includes('timer') || log.message.includes('cached') || 
+                 log.message.includes('Retrieved cached'))
+              ).length === 0 ? (
+                <div className="p-2 text-center text-muted-foreground">No system events captured yet</div>
+              ) : (
+                <div className="p-2 space-y-1">
+                  {filteredLogs.filter(log => 
+                    (log.message.includes('timeout') || log.message.includes('interval') || 
+                     log.message.includes('timer') || log.message.includes('cached') || 
+                     log.message.includes('Retrieved cached'))
+                  ).map((log) => (
+                    <div key={log.id} className="flex gap-2 text-xs">
+                      <Badge className={`text-xs px-1 py-0 h-4 ${getCategoryColor(log.category)} flex-shrink-0`}>
+                        {log.category}
+                      </Badge>
+                      <span className="text-muted-foreground font-mono text-xs flex-shrink-0">
+                        {formatTime(log.timestamp)}
+                      </span>
+                      <span className={`${getLevelColor(log.level)} flex-1 break-all`}>
+                        {log.message}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* System Events Stats */}
+            <div className="mt-2 p-2 bg-muted/50 rounded text-xs">
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <span className="font-medium">Timer Events:</span>{' '}
+                  {filteredLogs.filter(log => log.message.includes('timeout') || log.message.includes('interval') || log.message.includes('timer')).length}
+                </div>
+                <div>
+                  <span className="font-medium">Cache Events:</span>{' '}
+                  {filteredLogs.filter(log => log.message.includes('cached') || log.message.includes('Retrieved cached')).length}
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>

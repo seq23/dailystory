@@ -146,7 +146,7 @@ export class StorySessionCache {
       }
 
       const avatarInfo = avatarType ? ` (avatar: ${avatarType})` : '';
-      DebugLogger.log('story', `Retrieved cached story session for user ${userId}${avatarInfo}`);
+      DebugLogger.logToDebugMonitorOnly('story', `Retrieved cached story session for user ${userId}${avatarInfo}`);
       return session;
     } catch (error) {
       DebugLogger.warn('story', 'Failed to retrieve cached story session', error);

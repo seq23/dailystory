@@ -61,7 +61,7 @@ export class TimerManager {
       callback
     });
 
-    DebugLogger.log('ui', `Created timeout: ${id}`, { component, delay, sessionId });
+    DebugLogger.logToDebugMonitorOnly('ui', `Created timeout: ${id}`, { component, delay, sessionId });
     return id;
   }
 
@@ -82,7 +82,7 @@ export class TimerManager {
       callback
     });
 
-    DebugLogger.log('ui', `Created interval: ${id}`, { component, delay, sessionId });
+    DebugLogger.logToDebugMonitorOnly('ui', `Created interval: ${id}`, { component, delay, sessionId });
     return id;
   }
 
@@ -100,7 +100,7 @@ export class TimerManager {
     }
 
     this.remove(id);
-    DebugLogger.log('ui', `Cleared timer: ${id}`, { component: timer.component });
+    DebugLogger.logToDebugMonitorOnly('ui', `Cleared timer: ${id}`, { component: timer.component });
     return true;
   }
 
