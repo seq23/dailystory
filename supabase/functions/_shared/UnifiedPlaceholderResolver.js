@@ -1102,7 +1102,8 @@ export class UnifiedPlaceholderResolver {
     } catch (error) {
       console.warn('getCulturalHairDescription failed, using hardcoded fallbacks:', error);
       // Hardcoded fallbacks - never escalate tier on this failure
-      if (this.shouldApplyCulturalFeatures(userInfo)) {
+      const skinTone = userInfo?.skinTone || userInfo?.avatarIdentity?.skinTone || 'medium';
+      if (skinTone === 'dark' || skinTone === 'darker') {
         return 'with authentic African American features';
       }
       return ''; // Non-dark skin gets empty if StaticDataCache fails
@@ -1136,7 +1137,8 @@ export class UnifiedPlaceholderResolver {
     } catch (error) {
       console.warn('getCulturalFacialFeatures failed, using hardcoded fallbacks:', error);
       // Hardcoded fallbacks - never escalate tier on this failure
-      if (this.shouldApplyCulturalFeatures(userInfo)) {
+      const skinTone = userInfo?.skinTone || userInfo?.avatarIdentity?.skinTone || 'medium';
+      if (skinTone === 'dark' || skinTone === 'darker') {
         return 'with photorealistic African features natural hair texture';
       }
       return ''; // Non-dark skin gets empty if StaticDataCache fails
