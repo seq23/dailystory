@@ -421,7 +421,7 @@ export class UnifiedPlaceholderResolver {
     // Combine into enhancement string
     const enhancements = [selectedHair, selectedFeatures].filter(Boolean).join(', ');
     
-    console.log(`🌍 Cultural enhancements for ${userName} (${culturalType}): ${enhancements}`);
+    console.log(`🌍 Cultural enhancements for ${userName} (${skinTone}): ${enhancements}`);
     return enhancements ? `with ${enhancements}` : '';
   }
 
@@ -449,13 +449,6 @@ export class UnifiedPlaceholderResolver {
     return 'UNIVERSAL_CULTURAL_INTELLIGENCE';
   }
 
-  /**
-   * Check if cultural features should be applied
-   */
-  shouldApplyCulturalFeatures(userInfo) {
-    const culturalType = this.detectCulturalContext(userInfo);
-    return culturalType === 'african';
-  }
 
   cleanup(text) {
     let cleaned = text;
