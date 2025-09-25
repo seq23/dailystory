@@ -92,6 +92,24 @@ const nodes = processTextWithConsistentFlow({
 }
 ```
 
+### Desktop Read-to-Me highlight wiring
+If words don't highlight on desktop when using StoryAudioControls → UnifiedAudioControls, ensure onWordHighlight is wired to the global highlighter:
+
+```tsx
+// src/components/story/StoryAudioControls.tsx
+const handleWordHighlight = (wordIndex: number) => {
+  window.dispatchEvent(new CustomEvent('highlighting:request', { detail: { wordIndex } }));
+};
+
+<SynchronizedAudioControls
+  text={currentStoryText}
+  onPlayingChange={(playing) => onAudioStateChange(playing, false)}
+  onWordHighlight={handleWordHighlight}
+/>
+```
+
+This dispatches the exact event the highlighting system listens for, aligning audio callbacks with DOM indices.
+
 ### 4. Voice Commands Not Responding
 **Symptoms:**
 - Voice commands not recognized

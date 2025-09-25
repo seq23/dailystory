@@ -50,10 +50,19 @@ export const StoryAudioControls: React.FC<StoryAudioControlsProps> = ({
     }
   };
 
+  const handleWordHighlight = (wordIndex: number) => {
+    try {
+      window.dispatchEvent(new CustomEvent('highlighting:request', { detail: { wordIndex } }));
+    } catch (error) {
+      DebugLogger.error('audio', 'Failed to dispatch highlighting:request', error);
+    }
+  };
+
   return (
     <SynchronizedAudioControls
       text={currentStoryText}
       onPlayingChange={(playing) => onAudioStateChange(playing, false)}
+      onWordHighlight={handleWordHighlight}
     />
   );
 };
