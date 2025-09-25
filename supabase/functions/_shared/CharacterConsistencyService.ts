@@ -292,7 +292,7 @@ export class CharacterConsistencyService {
     const cached = await this.getCharacterFromDatabase(sessionId, cacheKey);
     if (cached) {
       console.log(`🎭 CACHED: Using existing secondary character ${secondaryName} (seed: ${cached.seed})`);
-      return cached;
+      return cached as SecondaryCharacter;
     }
     
     // Generate new secondary character with seed consistency
@@ -451,22 +451,30 @@ export class CharacterConsistencyService {
   /**
    * Get African American hairstyles from consolidated cultural arrays
    */
-  getAfricanAmericanHairStyles() {
-    return CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES;
+  getAfricanAmericanHairStyles(): string[] {
+    return CULTURAL_ARRAYS.african?.hair || [
+      'afro', 'braids', 'dreadlocks', 'fade', 'twist out'
+    ];
   }
 
   /**
    * Get African American facial features from consolidated cultural arrays
    */
-  getAfricanAmericanFacialFeatures() {
-    return CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES;
+  getAfricanAmericanFacialFeatures(): string[] {
+    return CULTURAL_ARRAYS.african?.features || [
+      'strong jawline', 'full lips', 'broad nose', 'high cheekbones'
+    ];
   }
 
   /**
    * Get regional authenticity strings from consolidated cultural arrays
    */
   getRegionalAuthenticity(): string[] {
-    return CULTURAL_ARRAYS.REGIONAL_AUTHENTICITY_STRINGS;
+    return [
+      'regional cultural elements',
+      'local traditions',
+      'cultural authenticity'
+    ];
   }
 
   /**
@@ -614,23 +622,6 @@ export class CharacterConsistencyService {
     
     console.log(`👤 Character appearance for ${characterName}:`, combinedAppearance);
     return combinedAppearance || null;
-  }
-
-  /**
-   * Clear visual detail cache for a session
-   */
-  clearSession(sessionId: string): void {
-    console.log(`🧹 Clearing visual detail cache for session ${sessionId}`);
-    
-    const keysToDelete: string[] = [];
-    for (const key of this.visualDetailCache.keys()) {
-      if (key.startsWith(sessionId)) {
-        keysToDelete.push(key);
-      }
-    }
-    
-    keysToDelete.forEach(key => this.visualDetailCache.delete(key));
-    console.log(`🧹 Cleared ${keysToDelete.length} cache entries for session ${sessionId}`);
   }
 
   // Note: African American skin tones have been consolidated into facial features array as of 2025-09-12

@@ -5,7 +5,7 @@
  */
 
 // Import UserInfo from placeholderResolver for consistency
-import type { UserInfo } from './placeholderResolver.ts';
+import type { UserInfo } from './types/index.ts';
 
 export interface SessionState {
   sessionId: string;
@@ -116,7 +116,7 @@ export class SessionStateManager {
     // Set avatar data from userInfo
     if (userInfo?.avatar) {
       state.avatarType = userInfo.avatar.type;
-      state.skinTone = userInfo.avatar.skinTone;
+      state.skinTone = userInfo.avatar.skinTone || null;
       
       // Initialize core character traits
       state.coreCharacterTraits.set('avatarType', userInfo.avatar.type);
