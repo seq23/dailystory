@@ -4,27 +4,12 @@
  * Single source of truth for all placeholder logic
  */
 
+import type { UserInfo } from "./types/index.ts";
+
 export interface MicroContext {
   userInfo?: UserInfo;
   pageText?: string;
   seed?: Record<string, any>;
-}
-
-export interface UserInfo {
-  id?: string;
-  userId?: string;
-  name?: string;
-  age?: number;
-  grade?: string;
-  nativeLanguage?: string;
-  learningGoal?: string;
-  avatar?: { type: string; skinTone?: string };
-  favoriteColor?: string;
-  favoriteAnimal?: string;
-  hobbies?: string;
-  favoriteFood?: string;
-  specialRequest?: string;
-  [key: string]: any;
 }
 
 export const FALLBACK_POOLS = {
