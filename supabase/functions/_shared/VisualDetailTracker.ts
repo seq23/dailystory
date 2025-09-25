@@ -67,7 +67,7 @@ export class VisualDetailTracker {
    * Analyze text for visual details and store them in database for consistency
    * Enhanced with character-specific clothing detection and secondary character visual details
    */
-  static async analyzeTextForDetails(sessionId: string, text: string, pageNumber: number, characterName: string | null = null): Promise<void> {
+  static async analyzeTextForDetails(sessionId, text, pageNumber, characterName = null) {
     console.log(`🎨 VisualDetailTracker - Analyzing text for session ${sessionId}, page ${pageNumber}`);
     
     if (!sessionId || !text) return;
@@ -230,7 +230,7 @@ export class VisualDetailTracker {
   /**
    * Save visual detail to database
    */
-  static async saveDetailToDatabase(sessionId: string, characterName: string, detailType: string, detailKey: string, detailValue: string, pageNumber: number): Promise<void> {
+  static async saveDetailToDatabase(sessionId, characterName, detailType, detailKey, detailValue, pageNumber) {
     try {
       // Check if detail already exists
       const { data: existing } = await this.supabase

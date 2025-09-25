@@ -18,15 +18,6 @@ export interface UserInfo {
   gradeLevel?: string;
   interests?: string[];
   nativeLanguage?: string;
-  avatar?: { 
-    type: string; 
-    skinTone?: string | null; 
-  };
-  favoriteColor?: string;
-  favoriteAnimal?: string;
-  hobbies?: string;
-  favoriteFood?: string;
-  specialRequest?: string;
 }
 
 // Character seed interface with all properties

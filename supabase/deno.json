@@ -6,10 +6,10 @@
     "experimentalDecorators": true,
     "lib": ["dom", "dom.asynciterable", "es2022"],
     "strict": true,
-    "noImplicitAny": false,
+    "noImplicitAny": true,
     "noImplicitReturns": true,
-    "exactOptionalPropertyTypes": false,
-    "noUncheckedIndexedAccess": false
+    "exactOptionalPropertyTypes": true,
+    "noUncheckedIndexedAccess": true
   },
   "fmt": {
     "useTabs": false,
