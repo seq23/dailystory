@@ -1,7 +1,7 @@
 // Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { handleHealthAndCors } from "../_shared/healthCors.ts";
+import { withCors } from "../_shared/healthCors.ts";
 // Lazy import to avoid bundling/circular deps
 async function getDifficultyMapper() {
   try {
@@ -13,11 +13,6 @@ async function getDifficultyMapper() {
   }
 }
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Max-Age': '600',
-};
 
 // Enhanced word alignment interface for ElevenLabs TTS
 interface WordTimestamp {
@@ -38,12 +33,30 @@ interface ElevenLabsResponse {
   };
 }
 
-serve(async (req) => {
-  // Handle CORS and health checks
-  const healthResponse = handleHealthAndCors(req);
-  if (healthResponse) return healthResponse;
+const corsWrapped = withCors(handle, {
+  allowCredentials: false,
+  allowMethods: ["GET","POST","OPTIONS","HEAD"]
+});
 
+serve(corsWrapped);
+
+async function handle(req: Request): Promise<Response> {
+  const url = new URL(req.url);
   
+  // Health endpoint
+  if (url.pathname === "/" || url.pathname === "/health") {
+    return new Response(JSON.stringify({ ok: true, service: "elevenlabs-tts" }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
+
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
 
   try {
     console.log('ElevenLabs TTS function called');
@@ -124,15 +137,8 @@ serve(async (req) => {
         url: apiUrl
       });
       
-      // Return detailed error in JSON format
-      return new Response(JSON.stringify({ 
-        error: `ElevenLabs API error: ${response.status} - ${errorText}`,
-        status: response.status,
-        details: errorText
-      }), {
-        status: response.status,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      // Throw error and let withCors wrapper handle CORS headers
+      throw new Error(`ElevenLabs API error: ${response.status} - ${errorText}`);
     }
 
     // Convert audio data to base64 safely (avoiding stack overflow)
@@ -168,22 +174,15 @@ serve(async (req) => {
       }
     }), {
       headers: {
-        ...corsHeaders,
         'Content-Type': 'application/json',
       },
     });
 
   } catch (error) {
     console.error('Error in elevenlabs-tts function:', error);
-    return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : String(error) }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    );
+    throw error; // Let withCors handle error response with proper CORS headers
   }
-});
+}
 
 // Enhanced word timing generation optimized for Charlotte's voice characteristics
 function generateEnhancedWordTimings(text: string, voiceId: string): WordTimestamp[] {
