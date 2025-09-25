@@ -5,7 +5,7 @@
  */
 
 // Import UserInfo from placeholderResolver for consistency
-import type { UserInfo } from './placeholderResolver.ts';
+import type { UserInfo } from './types/index.ts';
 
 export interface SessionState {
   sessionId: string;

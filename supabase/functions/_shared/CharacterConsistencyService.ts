@@ -19,9 +19,10 @@ import type {
   SecondaryCharacter,
   CulturalSelectionUpdate 
 } from "./types/index.ts";
+import { isSecondaryCharacter } from './types/index.ts';
 
 import { safeErrorMessage } from './errorPatterns.js';
-import { CULTURAL_ARRAYS } from './tier25Vocabulary.js';
+import { getCulturalContextArrays } from './StaticDataCache.ts';
 
 export class CharacterConsistencyService {
   private visualDetailCache = new Map<string, any>();
@@ -290,7 +291,7 @@ export class CharacterConsistencyService {
     
     // Check database first
     const cached = await this.getCharacterFromDatabase(sessionId, cacheKey);
-    if (cached) {
+    if (isSecondaryCharacter(cached)) {
       console.log(`🎭 CACHED: Using existing secondary character ${secondaryName} (seed: ${cached.seed})`);
       return cached;
     }
@@ -427,15 +428,6 @@ export class CharacterConsistencyService {
     return detectedCharacters;
   }
 
-  /**
-   * Clear all cached data for a session
-   * @param sessionId - Session identifier to clear
-   */
-  clearSession(sessionId: SessionId): void {
-    console.log(`🗑️ Clearing character consistency cache for session: ${sessionId}`);
-    this.visualDetailCache.delete(sessionId);
-    // Additional cleanup logic would go here for database clearing if needed
-  }
 
   /**
    * Create seeded random number generator for consistency
@@ -451,22 +443,34 @@ export class CharacterConsistencyService {
   /**
    * Get African American hairstyles from consolidated cultural arrays
    */
-  getAfricanAmericanHairStyles() {
-    return CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES;
+  getAfricanAmericanHairStyles(): string[] {
+    const contexts = getCulturalContextArrays();
+    const africanAmericanContext = contexts['en-african-american'];
+    return africanAmericanContext ? [
+      ...(africanAmericanContext.characterNames || []),
+      ...(africanAmericanContext.commonFoods || [])
+    ] : [];
   }
 
   /**
    * Get African American facial features from consolidated cultural arrays
    */
-  getAfricanAmericanFacialFeatures() {
-    return CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES;
+  getAfricanAmericanFacialFeatures(): string[] {
+    const contexts = getCulturalContextArrays();
+    const africanAmericanContext = contexts['en-african-american'];
+    return africanAmericanContext?.values || [];
   }
 
+  private warnedRegional = false;
   /**
    * Get regional authenticity strings from consolidated cultural arrays
    */
   getRegionalAuthenticity(): string[] {
-    return CULTURAL_ARRAYS.REGIONAL_AUTHENTICITY_STRINGS;
+    if (!this.warnedRegional) {
+      console.warn('[CharacterConsistency] REGIONAL_AUTHENTICITY_STRINGS not wired; returning [].');
+      this.warnedRegional = true;
+    }
+    return [];
   }
 
   /**

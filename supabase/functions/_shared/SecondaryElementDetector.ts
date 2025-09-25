@@ -56,7 +56,12 @@ export class SecondaryElementDetector {
   /**
    * Parse elements with enhanced detection patterns and disambiguation
    */
-  static async parseElements(sessionId, primaryScene, storyText, pageNumber) {
+  static async parseElements(
+    sessionId: string,
+    primaryScene: string,
+    storyText: string,
+    pageNumber: number
+  ): Promise<unknown[]> {
     console.log(`🔍 Enhanced SecondaryElementDetector - Parsing for session ${sessionId}, page ${pageNumber}`);
     
     const detectedElements = [];
@@ -80,7 +85,7 @@ export class SecondaryElementDetector {
     detectedElements.push(...characterAnimals);
     
     console.log(`✅ Enhanced detection complete: ${detectedElements.length} secondary elements:`, 
-      detectedElements.map(e => `${e.displayName || e.name} (${e.type}) ${e.disambiguation ? `[${e.disambiguation}]` : ''}`));
+      detectedElements.map((e: any) => `${e.displayName || e.name} (${e.type}) ${e.disambiguation ? `[${e.disambiguation}]` : ''}`));
     
     return detectedElements;
   }
@@ -88,8 +93,8 @@ export class SecondaryElementDetector {
   /**
    * Enhanced detection of secondary characters with 5 pattern types and disambiguation
    */
-  static detectSecondaryCharacters(originalText, lowercaseText) {
-    const secondaryCharacters = [];
+  static detectSecondaryCharacters(originalText: string, lowercaseText: string): unknown[] {
+    const secondaryCharacters: unknown[] = [];
     
     // Generate all pattern combinations for comprehensive relationship detection
     const allPatterns = [];
@@ -142,7 +147,7 @@ export class SecondaryElementDetector {
     allPatterns.forEach(({ pattern, type, patternType, relationship }) => {
       const matches = [...originalText.matchAll(pattern)];
       matches.forEach(match => {
-        let names = [];
+        let names: string[] = [];
         let fullContext = '';
         
         // Extract names based on pattern type
@@ -165,7 +170,7 @@ export class SecondaryElementDetector {
           const nameLower = name.toLowerCase();
           
           // Skip if already detected
-          if (secondaryCharacters.find(c => c.name === nameLower)) return;
+          if (secondaryCharacters.find((c: any) => c.name === nameLower)) return;
           
           // Apply smart name validation
           if (!this.isValidName(name, fullContext)) return;
@@ -195,8 +200,8 @@ export class SecondaryElementDetector {
   /**
    * Enhanced animal detection with species disambiguation using Tier 2.5 vocabulary
    */
-  static detectCharacterAnimals(originalText, lowercaseText) {
-    const characterAnimals = [];
+  static detectCharacterAnimals(originalText: string, lowercaseText: string): unknown[] {
+    const characterAnimals: unknown[] = [];
     
     // Define comprehensive animal patterns with species recognition
     const animalPatterns = [
@@ -237,7 +242,7 @@ export class SecondaryElementDetector {
         const key = `${animalName.toLowerCase()}_${animalSpecies}`;
         
         // Skip if already detected
-        if (characterAnimals.find(a => a.key === key)) return;
+        if (characterAnimals.find((a: any) => a.key === key)) return;
         
         const animal = {
           name: animalName.toLowerCase(),
@@ -262,7 +267,7 @@ export class SecondaryElementDetector {
   /**
    * Validate if a potential species matches the Tier 2.5 unified vocabulary
    */
-  static validateAnimalSpecies(species) {
+  static validateAnimalSpecies(species: string): string | null {
     // Common animal species that would be in the Tier 2.5 vocabulary
     const commonAnimals = [
       'dog', 'cat', 'puppy', 'kitten', 'rabbit', 'bunny', 'hamster', 'guinea pig',
@@ -279,7 +284,7 @@ export class SecondaryElementDetector {
   /**
    * Smart name validation with context awareness
    */
-  static isValidName(name, context) {
+  static isValidName(name: string, context: string): boolean {
     // Basic validation
     if (!name || name.length < 2 || name.length > 15) return false;
     if (!/^[A-Z][a-z]+$/.test(name)) return false;
@@ -300,7 +305,7 @@ export class SecondaryElementDetector {
   /**
    * Generate disambiguation context for names that could be objects
    */
-  static generateDisambiguation(name, relationship, type) {
+  static generateDisambiguation(name: string, relationship: string, type: string): string | null {
     const nameLower = name.toLowerCase();
     
     // Check if this name could be confused with a common object
@@ -315,7 +320,7 @@ export class SecondaryElementDetector {
   /**
    * Get relationship category for disambiguation
    */
-  static getRelationshipCategory(type) {
+  static getRelationshipCategory(type: string): string {
     if (type.startsWith('family_')) return 'family member';
     if (type.startsWith('community_')) return 'friend';
     if (type.startsWith('authority_')) return 'authority figure';

@@ -47,13 +47,22 @@ export interface AvatarIdentity {
 // Story context type (used as string in actual calls)
 export type StoryContext = string;
 
-// Secondary character result
+// SecondaryCharacter interface with type guard for safe casting
 export interface SecondaryCharacter {
   name: string;
   type: string;
   description: string;
   seed: number;
-  [key: string]: unknown;
+  [k: string]: unknown; // allow extras without losing type-safety
+}
+
+export function isSecondaryCharacter(x: unknown): x is SecondaryCharacter {
+  const y = x as Record<string, unknown> | null;
+  return !!y
+    && typeof y.name === 'string'
+    && typeof y.type === 'string'
+    && typeof y.description === 'string'
+    && typeof y.seed === 'number';
 }
 
 // Cultural selection update params
