@@ -5,6 +5,67 @@
 export type DifficultyLevel = 'beginner' | 'easy' | 'medium' | 'hard' | 'expert';
 export type ExpertGradeLevel = '6th' | '7th' | '8th' | '9th' | '10th';
 
+// Universal Grade Format Normalizer - Accepts ANY grade format
+export function normalizeGradeFormat(input: string | number | undefined): ExpertGradeLevel | null {
+  if (!input) return null;
+  
+  const inputStr = String(input).toLowerCase().trim();
+  console.log(`🔄 NORMALIZE: Input "${input}" → "${inputStr}"`);
+  
+  // Direct matches (already normalized)
+  if (['6th', '7th', '8th', '9th', '10th'].includes(inputStr)) {
+    console.log(`✅ NORMALIZE: Direct match → "${inputStr}"`);
+    return inputStr as ExpertGradeLevel;
+  }
+  
+  // Grade format: "grade6", "grade7", etc.
+  const gradeMatch = inputStr.match(/^grade(\d+)$/);
+  if (gradeMatch) {
+    const num = parseInt(gradeMatch[1]);
+    if (num >= 6 && num <= 10) {
+      const result = `${num}th` as ExpertGradeLevel;
+      console.log(`✅ NORMALIZE: Grade format → "${result}"`);
+      return result;
+    }
+  }
+  
+  // Numeric format: 6, 7, 8, 9, 10
+  const num = parseInt(inputStr);
+  if (!isNaN(num) && num >= 6 && num <= 10) {
+    const result = `${num}th` as ExpertGradeLevel;
+    console.log(`✅ NORMALIZE: Numeric format → "${result}"`);
+    return result;
+  }
+  
+  // Text format: "sixth", "seventh", etc.
+  const textMap: Record<string, ExpertGradeLevel> = {
+    'sixth': '6th',
+    'seventh': '7th', 
+    'eighth': '8th',
+    'ninth': '9th',
+    'tenth': '10th'
+  };
+  
+  if (textMap[inputStr]) {
+    console.log(`✅ NORMALIZE: Text format → "${textMap[inputStr]}"`);
+    return textMap[inputStr];
+  }
+  
+  // Mixed formats: "Grade 6", "6 grade", etc.
+  const mixedMatch = inputStr.match(/(\d+)/);
+  if (mixedMatch) {
+    const num = parseInt(mixedMatch[1]);
+    if (num >= 6 && num <= 10) {
+      const result = `${num}th` as ExpertGradeLevel;
+      console.log(`✅ NORMALIZE: Mixed format → "${result}"`);
+      return result;
+    }
+  }
+  
+  console.warn(`⚠️ NORMALIZE: No match found for "${input}" - returning null`);
+  return null;
+}
+
 export interface StoryPromptConfig {
   difficulty: DifficultyLevel;
   systemPrompt: string;
@@ -535,8 +596,31 @@ export function getStoryPrompt(difficulty: DifficultyLevel) {
   return STORY_PROMPTS[difficulty];
 }
 
-export function getExpertStoryPrompt(gradeLevel: ExpertGradeLevel) {
-  return EXPERT_STORY_PROMPTS[gradeLevel];
+// Bulletproof Expert Story Prompt Resolution with Fallbacks
+export function getExpertStoryPrompt(gradeLevel: ExpertGradeLevel | string): ExpertStoryPromptConfig {
+  // Layer 1: Try direct lookup
+  const directResult = EXPERT_STORY_PROMPTS[gradeLevel as ExpertGradeLevel];
+  if (directResult) {
+    console.log(`✅ EXPERT_PROMPT: Direct lookup success for "${gradeLevel}"`);
+    return directResult;
+  }
+  
+  // Layer 2: Try normalization
+  const normalized = normalizeGradeFormat(gradeLevel);
+  if (normalized && EXPERT_STORY_PROMPTS[normalized]) {
+    console.log(`✅ EXPERT_PROMPT: Normalized "${gradeLevel}" → "${normalized}"`);
+    return EXPERT_STORY_PROMPTS[normalized];
+  }
+  
+  // Layer 3: Fallback to regular difficulty mapping
+  console.warn(`⚠️ EXPERT_PROMPT: No expert prompt found for "${gradeLevel}", falling back to expert difficulty`);
+  return {
+    gradeLevel: '6th', // Default fallback
+    systemPrompt: STORY_PROMPTS.expert.systemPrompt,
+    userPromptTemplate: STORY_PROMPTS.expert.userPromptTemplate,
+    wordCount: "120-200 words per page",
+    expectedPages: 12
+  };
 }
 
 export function formatUserPrompt(template: string, userInfo: any): string {

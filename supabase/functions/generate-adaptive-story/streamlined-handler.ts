@@ -2,7 +2,7 @@
 // Processes pre-processed bundles from frontend services  
 // Uses shared validation utilities for consistent page generation
 
-import { getStoryPrompt, getExpertStoryPrompt, formatUserPrompt, resolvePromptPlaceholders, getExpectedPages, getPerPageTokenLimit, mapGradeToExpertLevel, type DifficultyLevel, type ExpertGradeLevel } from "../_shared/storyPrompts.ts";
+import { getStoryPrompt, getExpertStoryPrompt, formatUserPrompt, resolvePromptPlaceholders, getExpectedPages, getPerPageTokenLimit, mapGradeToExpertLevel, normalizeGradeFormat, type DifficultyLevel, type ExpertGradeLevel } from "../_shared/storyPrompts.ts";
 import { 
   parseIntoPages as sharedParseIntoPages, 
   mapDifficultyToLevel,
@@ -129,10 +129,12 @@ export async function handleStreamlinedGeneration(requestBody: any) {
     } else if (config.difficulty) {
       // Direct difficulty passed from Netflix service
       effectiveDifficulty = config.difficulty as DifficultyLevel;
-      // Check if it's actually an expert grade in disguise
-      if (['grade6', 'grade7', 'grade8', 'grade9', 'grade10'].includes(config.difficulty)) {
-        expertGrade = config.difficulty as ExpertGradeLevel;
-        console.log(`🎓 STREAMLINED: Detected expert grade in difficulty: ${expertGrade}`);
+      
+      // BULLETPROOF GRADE NORMALIZATION: Try to normalize any grade format
+      const normalizedGrade = normalizeGradeFormat(config.difficulty);
+      if (normalizedGrade) {
+        expertGrade = normalizedGrade;
+        console.log(`🎓 STREAMLINED: Normalized "${config.difficulty}" → "${expertGrade}"`);
       } else {
         console.log(`📚 STREAMLINED: Using regular difficulty: ${effectiveDifficulty}`);
       }
@@ -173,10 +175,42 @@ export async function handleStreamlinedGeneration(requestBody: any) {
       }
     }
 
-    // Use existing prompts from storyPrompts.ts - handle expert grades (6-10) separately
-    const promptConfig = expertGrade 
-      ? getExpertStoryPrompt(expertGrade)
-      : getStoryPrompt(effectiveDifficulty as DifficultyLevel);
+    // BULLETPROOF PROMPT RESOLUTION: Multiple fallback layers prevent undefined crashes
+    let promptConfig: any;
+    
+    if (expertGrade) {
+      // Try expert grade first
+      promptConfig = getExpertStoryPrompt(expertGrade);
+      console.log(`🎓 PROMPT_RESOLUTION: Expert grade "${expertGrade}" → ${promptConfig ? 'SUCCESS' : 'FAILED'}`);
+    } else {
+      // Use regular difficulty
+      promptConfig = getStoryPrompt(effectiveDifficulty as DifficultyLevel);
+      console.log(`📚 PROMPT_RESOLUTION: Regular difficulty "${effectiveDifficulty}" → ${promptConfig ? 'SUCCESS' : 'FAILED'}`);
+    }
+    
+    // ULTIMATE FALLBACK: Never allow undefined prompts
+    if (!promptConfig || !promptConfig.systemPrompt) {
+      console.error(`🚨 CRITICAL FALLBACK TRIGGERED: No valid prompt found for expertGrade="${expertGrade}", effectiveDifficulty="${effectiveDifficulty}"`);
+      console.error(`🚨 FALLBACK CONTEXT:`, {
+        configDifficulty: config.difficulty,
+        configExpertGradeLevel: config.expertGradeLevel,
+        bundleGradeLevel: bundle.systemSettings.gradeLevel,
+        expertGrade,
+        effectiveDifficulty
+      });
+      
+      promptConfig = getStoryPrompt('easy');
+      console.log(`✅ EMERGENCY FALLBACK: Using "easy" difficulty as ultimate safety net`);
+    }
+    
+    // Final safety check - this should NEVER fail after our fixes
+    if (!promptConfig || !promptConfig.systemPrompt) {
+      const errorMsg = 'CRITICAL: All prompt resolution methods failed - system integrity compromised';
+      console.error(`🚨 ${errorMsg}`);
+      throw new Error(errorMsg);
+    }
+    
+    console.log(`✅ PROMPT_RESOLUTION: Final success - using prompt with systemPrompt length: ${promptConfig.systemPrompt.length}`);
 
     // Bundle already contains resolved natural language - use directly
     let finalSystemPrompt = promptConfig.systemPrompt;
