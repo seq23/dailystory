@@ -99,19 +99,6 @@ export class ImageGenerationTrigger {
     this.isGenerating = true;
     
     try {
-      // 🔧 FIX: Validate that pageText doesn't contain unresolved placeholders
-      if (options.pageText.includes('{') && options.pageText.includes('}')) {
-        console.warn(`⚠️ Image generation delayed - page text contains unresolved placeholders: ${options.pageText.substring(0, 100)}`);
-        
-        // Wait briefly and check again - this handles race conditions
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        if (options.pageText.includes('{') && options.pageText.includes('}')) {
-          console.error(`❌ Aborting image generation - persistent placeholders in text`);
-          return;
-        }
-      }
-      
       // Import and use the image service
       const { SimpleImageService } = await import('@/services/SimpleImageService');
       
