@@ -4,8 +4,8 @@
  * No globalThis dependencies, simple and reliable
  */
 
-// Import UserInfo from placeholderResolver for consistency
-import type { UserInfo } from './types/index.ts';
+import type { UserInfo, SessionId } from './types/index.ts';
+import { hasAvatar } from './types/index.ts';
 
 export interface SessionState {
   sessionId: string;
@@ -107,14 +107,14 @@ export class SessionStateManager {
   initializeSessionWithAvatarData(sessionId: string, userInfo: UserInfo, isNeverEnding: boolean = false, totalPages: number | null = null): SessionState {
     console.log('🎭 Initializing session with avatar data:', {
       sessionId,
-      avatarType: userInfo?.avatar?.type,
-      skinTone: userInfo?.avatar?.skinTone
+      avatarType: hasAvatar(userInfo) ? userInfo.avatar.type : undefined,
+      skinTone: hasAvatar(userInfo) ? userInfo.avatar.skinTone : undefined
     });
 
     const state = this.getOrCreateSessionState(sessionId, isNeverEnding, totalPages);
     
     // Set avatar data from userInfo
-    if (userInfo?.avatar) {
+    if (hasAvatar(userInfo)) {
       state.avatarType = userInfo.avatar.type;
       state.skinTone = userInfo.avatar.skinTone;
       

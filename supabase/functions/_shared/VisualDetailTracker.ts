@@ -298,7 +298,7 @@ export class VisualDetailTracker {
   /**
    * Get character clothing from database
    */
-  static async getCharacterClothing(sessionId, characterName) {
+  static async getCharacterClothing(sessionId: string, characterName: string): Promise<Record<string, string>> {
     try {
       const { data, error } = await this.supabase
         .from('visual_details_cache')
@@ -312,8 +312,8 @@ export class VisualDetailTracker {
         return {};
       }
 
-      const clothing = {};
-      data?.forEach(detail => {
+      const clothing: Record<string, string> = {};
+      data?.forEach((detail: any) => {
         clothing[detail.detail_key] = detail.detail_value;
       });
 
@@ -328,7 +328,7 @@ export class VisualDetailTracker {
   /**
    * Get all visual details for a character
    */
-  static async getCharacterDetails(sessionId, characterName) {
+  static async getCharacterDetails(sessionId: string, characterName: string): Promise<Record<string, Record<string, string>>> {
     try {
       const { data, error } = await this.supabase
         .from('visual_details_cache')
@@ -341,8 +341,8 @@ export class VisualDetailTracker {
         return {};
       }
 
-      const details = {};
-      data?.forEach(detail => {
+      const details: Record<string, Record<string, string>> = {};
+      data?.forEach((detail: any) => {
         if (!details[detail.detail_type]) {
           details[detail.detail_type] = {};
         }
@@ -359,7 +359,7 @@ export class VisualDetailTracker {
   /**
    * Build clothing description for character prompt
    */
-  static async buildClothingDescription(sessionId, characterName) {
+  static async buildClothingDescription(sessionId: string, characterName: string): Promise<string | null> {
     const clothing = await this.getCharacterClothing(sessionId, characterName);
     
     if (Object.keys(clothing).length === 0) {
@@ -373,7 +373,7 @@ export class VisualDetailTracker {
   /**
    * Get all visual details for a session as prompt addition
    */
-  static async getVisualDetailsForPrompt(sessionId) {
+  static async getVisualDetailsForPrompt(sessionId: string): Promise<string> {
     try {
       const { data, error } = await this.supabase
         .from('visual_details_cache')
@@ -398,7 +398,7 @@ export class VisualDetailTracker {
   /**
    * Get secondary character visual details for enriched descriptions
    */
-  static async getSecondaryCharacterVisuals(sessionId, characterName) {
+  static async getSecondaryCharacterVisuals(sessionId: string, characterName: string): Promise<Record<string, Record<string, string>> | null> {
     try {
       const { data, error } = await this.supabase
         .from('visual_details_cache')
@@ -410,8 +410,8 @@ export class VisualDetailTracker {
         return null;
       }
 
-      const visuals = {};
-      data.forEach(detail => {
+      const visuals: Record<string, Record<string, string>> = {};
+      data.forEach((detail: any) => {
         if (!visuals[detail.detail_type]) {
           visuals[detail.detail_type] = {};
         }
@@ -428,7 +428,7 @@ export class VisualDetailTracker {
   /**
    * Build enriched secondary character description with visual details
    */
-  static async buildEnrichedSecondaryCharacter(sessionId, characterType, baseDescription) {
+  static async buildEnrichedSecondaryCharacter(sessionId: string, characterType: string, baseDescription: string): Promise<string> {
     const characterName = this.extractCharacterNameFromDescription(characterType);
     const visuals = await this.getSecondaryCharacterVisuals(sessionId, characterName);
     
@@ -459,7 +459,7 @@ export class VisualDetailTracker {
   /**
    * Extract character name from description or character type
    */
-  static extractCharacterNameFromDescription(characterType) {
+  static extractCharacterNameFromDescription(characterType: string): string {
     // Simple extraction - look for common relationship patterns
     const relationshipMap = {
       'mom': 'mom',
@@ -487,12 +487,12 @@ export class VisualDetailTracker {
   /**
    * Add fallback visuals for characters without stored visual details
    */
-  static addFallbackVisuals(characterType, baseDescription, sessionId) {
+  static addFallbackVisuals(characterType: string, baseDescription: string, sessionId: string): string {
     // Generate deterministic fallback visuals based on session and character type
     const seed = this.generateSeed(`${sessionId}_${characterType}_fallback`);
     const seededRandom = this.createSeededRandom(seed);
     
-    const fallbackVisuals = {
+    const fallbackVisuals: Record<string, string[]> = {
       'mom': ['with kind eyes', 'wearing a comfortable outfit', 'with a gentle smile'],
       'dad': ['with a friendly face', 'wearing casual clothes', 'with a warm expression'],
       'friend': ['with a cheerful expression', 'wearing colorful clothes', 'with bright eyes'],
@@ -514,7 +514,7 @@ export class VisualDetailTracker {
   /**
    * Generate deterministic seed from string
    */
-  static generateSeed(input) {
+  static generateSeed(input: string): number {
     let hash = 0;
     for (let i = 0; i < input.length; i++) {
       const char = input.charCodeAt(i);
@@ -527,7 +527,7 @@ export class VisualDetailTracker {
   /**
    * Create seeded random number generator
    */
-  static createSeededRandom(seed) {
+  static createSeededRandom(seed: number): () => number {
     let currentSeed = seed;
     return function() {
       currentSeed = (currentSeed * 9301 + 49297) % 233280;
@@ -555,7 +555,7 @@ export class VisualDetailTracker {
         return { success: false, cleared: 0, message: error.message };
       }
 
-      const clearedCount = data?.length || 0;
+      const clearedCount = (data as any)?.length || 0;
       console.log(`🗑️ Cleared ${clearedCount} visual detail cache entries${sessionId ? ` for session ${sessionId}` : ''}`);
       
       return {
@@ -565,7 +565,7 @@ export class VisualDetailTracker {
       };
     } catch (error) {
       console.error('Database error in clearVisualDetailsCache:', error);
-      return { success: false, cleared: 0, message: error.message };
+      return { success: false, cleared: 0, message: (error as Error).message || 'Unknown error' };
     }
   }
 }

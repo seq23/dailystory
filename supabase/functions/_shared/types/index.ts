@@ -65,6 +65,18 @@ export function isSecondaryCharacter(x: unknown): x is SecondaryCharacter {
     && typeof y.seed === 'number';
 }
 
+// Avatar details interface for SessionStateManager
+export interface AvatarDetails {
+  type: string;
+  skinTone: string;
+}
+
+// Type guard for safe avatar access
+export function hasAvatar(userInfo: UserInfo): userInfo is UserInfo & { avatar: AvatarDetails } {
+  const info = userInfo as UserInfo & { avatar?: AvatarDetails };
+  return !!(info.avatar && typeof info.avatar.type === 'string' && typeof info.avatar.skinTone === 'string');
+}
+
 // Cultural selection update params
 export interface CulturalSelectionUpdate {
   sessionId: string;

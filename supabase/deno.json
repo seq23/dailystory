@@ -1,6 +1,7 @@
 {
   "imports": {
-    "#types/": "./supabase/functions/_shared/types/"
+    "#types/": "./supabase/functions/_shared/types/",
+    "#shared/": "./supabase/functions/_shared/"
   },
   "compilerOptions": {
     "experimentalDecorators": true,
