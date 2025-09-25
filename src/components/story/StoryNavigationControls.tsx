@@ -1,8 +1,10 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Plus, RefreshCw, Wand } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, RefreshCw, Wand, GraduationCap } from "lucide-react";
 import { DebugLogger } from '@/services/DebugLogger';
 import { MobileOptimizedButton } from "@/components/MobileOptimizedButton";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { StoryAudioControls } from "./StoryAudioControls";
 
 interface StoryNavigationControlsProps {
   currentPage: number;
@@ -19,6 +21,17 @@ interface StoryNavigationControlsProps {
   onGenerateNewStory: () => void;
   onGenerateRewrite: () => void;
   onFinishStory?: () => void;
+  // Audio controls props
+  audioEngineRef?: React.RefObject<any>;
+  isAudioPlaying?: boolean;
+  isAudioLoading?: boolean;
+  audioDisabled?: boolean;
+  currentStoryText?: string;
+  userInfo?: any;
+  audioPlayedPage?: number;
+  onAudioStateChange?: (playing: boolean, loading: boolean) => void;
+  onAudioPlayed?: (page: number) => void;
+  onUpgrade?: () => void;
 }
 
 export const StoryNavigationControls: React.FC<StoryNavigationControlsProps> = ({
@@ -35,7 +48,17 @@ export const StoryNavigationControls: React.FC<StoryNavigationControlsProps> = (
   onGenerateNext,
   onGenerateNewStory,
   onGenerateRewrite,
-  onFinishStory
+  onFinishStory,
+  audioEngineRef,
+  isAudioPlaying,
+  isAudioLoading,
+  audioDisabled,
+  currentStoryText,
+  userInfo,
+  audioPlayedPage,
+  onAudioStateChange,
+  onAudioPlayed,
+  onUpgrade
 }) => {
   const handleNext = () => {
     DebugLogger.log('ui', 'Navigation: Next page requested', { currentPage, totalPages });
@@ -69,13 +92,63 @@ export const StoryNavigationControls: React.FC<StoryNavigationControlsProps> = (
         Previous
       </Button>
 
-      {/* Center Controls */}
-      <div className="flex items-center gap-2">
+      {/* Center Controls with Audio Buttons */}
+      <div className="flex items-center gap-4">
+        {/* Read to Me Button - Left of page numbers - Guest Users Only */}
+        {!isPremium && audioEngineRef && onAudioStateChange && onAudioPlayed && (
+          <div className="xl:flex hidden">
+            <StoryAudioControls
+              audioEngineRef={audioEngineRef}
+              isAudioPlaying={isAudioPlaying || false}
+              isAudioLoading={isAudioLoading || false}
+              audioDisabled={audioDisabled || false}
+              currentStoryText={currentStoryText || ""}
+              userInfo={userInfo}
+              isPremium={isPremium}
+              currentPage={currentPage}
+              audioPlayedPage={audioPlayedPage ?? -1}
+              onAudioStateChange={onAudioStateChange}
+              onAudioPlayed={onAudioPlayed}
+            />
+          </div>
+        )}
+        
         {/* Page Indicator */}
         <span className="text-sm text-muted-foreground">
           Page {currentPage + 1} of {totalPages}
         </span>
+        
+        {/* Help Me Read Button - Right of page numbers - Guest Users Only */}
+        {!isPremium && onUpgrade && (
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="secondary" size="sm" className="xl:flex hidden">
+                <GraduationCap className="w-4 h-4 mr-2" />
+                Help Me Read
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="w-[min(96vw,720px)] max-h-[85vh] overflow-y-auto p-0">
+              <DialogHeader>
+                <DialogTitle>Help Me Read</DialogTitle>
+              </DialogHeader>
+              {/* Help Me Read Coach for guests would be limited - show upgrade prompt */}
+              <div className="p-6 text-center">
+                <GraduationCap className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-lg font-semibold mb-2">Unlock Reading Help</h3>
+                <p className="text-muted-foreground mb-4">
+                  Get personalized reading assistance with our premium features.
+                </p>
+                <Button onClick={onUpgrade} variant="default">
+                  Upgrade Now
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+      </div>
 
+      {/* Next Button */}
+      <div className="flex items-center gap-2">
         {/* Premium Controls */}
         {isPremium && (
           <div className="flex items-center gap-2">
@@ -112,28 +185,28 @@ export const StoryNavigationControls: React.FC<StoryNavigationControlsProps> = (
             {isGeneratingNewStory ? 'Loading...' : 'Next Story'}
           </MobileOptimizedButton>
         )}
+        
+        {/* Next Button */}
+        <Button
+          onClick={handleNext}
+          disabled={!canGoNext || isLoadingNextPage}
+          variant="ghost"
+          size="sm"
+          className="navigation-button"
+        >
+          {isLoadingNextPage ? (
+            <>
+              <div className="animate-spin w-4 h-4 mr-2 border-2 border-primary border-t-transparent rounded-full" />
+              Loading...
+            </>
+          ) : (
+            <>
+              Next
+              <ChevronRight className="w-4 h-4 ml-2" />
+            </>
+          )}
+        </Button>
       </div>
-
-      {/* Next Button */}
-      <Button
-        onClick={handleNext}
-        disabled={!canGoNext || isLoadingNextPage}
-        variant="ghost"
-        size="sm"
-        className="navigation-button"
-      >
-        {isLoadingNextPage ? (
-          <>
-            <div className="animate-spin w-4 h-4 mr-2 border-2 border-primary border-t-transparent rounded-full" />
-            Loading...
-          </>
-        ) : (
-          <>
-            Next
-            <ChevronRight className="w-4 h-4 ml-2" />
-          </>
-        )}
-      </Button>
     </div>
   );
 };

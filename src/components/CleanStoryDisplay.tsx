@@ -3686,21 +3686,33 @@ const handleRestartTimer = () => {
                     onGenerateNewStory={() => handleGenerateNewStory()}
                     onGenerateRewrite={handleRewriteWithDialog}
                     onFinishStory={() => setShowConfirmEndStory(true)}
+                    audioEngineRef={audioEngineRef}
+                    isAudioPlaying={isAudioPlaying}
+                    isAudioLoading={isAudioLoading}
+                    audioDisabled={!isPremium && audioPlayedPage === currentPage && !isAudioPlaying}
+                    currentStoryText={currentStoryText || ""}
+                    userInfo={userInfo}
+                    audioPlayedPage={audioPlayedPage ?? -1}
+                    onAudioStateChange={handleAudioStateChangeDual}
+                    onAudioPlayed={handleAudioPlayed}
+                    onUpgrade={onUpgrade}
                   />
                 </div>
               </div>
 
-              <div
-                id="audio-controls"
-                className={isMobileOrTablet ? "sr-only" : "mt-2 md:mt-4 flex justify-center gap-4"}
-                aria-hidden={isMobileOrTablet}
-              >
-                <div className="flex items-center gap-4">
+              {/* Premium Only Desktop Controls */}
+              {isPremium && (
+                <div
+                  id="premium-audio-controls"
+                  className={isMobileOrTablet ? "sr-only" : "mt-2 md:mt-4 flex justify-center gap-4"}
+                  aria-hidden={isMobileOrTablet}
+                >
+                  <div className="flex items-center gap-4">
                     <StoryAudioControls
                       audioEngineRef={audioEngineRef}
                       isAudioPlaying={isAudioPlaying}
                       isAudioLoading={isAudioLoading}
-                      audioDisabled={!isPremium && audioPlayedPage === currentPage && !isAudioPlaying}
+                      audioDisabled={false}
                       currentStoryText={currentStoryText || ""}
                       userInfo={userInfo}
                       isPremium={isPremium}
@@ -3709,7 +3721,6 @@ const handleRestartTimer = () => {
                       onAudioStateChange={handleAudioStateChangeDual}
                       onAudioPlayed={handleAudioPlayed}
                     />
-                  {isPremium && (
                     <Button 
                       variant={isConnected ? "default" : "outline"} 
                       size="lg" 
@@ -3725,23 +3736,6 @@ const handleRestartTimer = () => {
                       <Mic className={cn("w-4 h-4 mr-2", isSpeaking && "animate-pulse")} />
                       {isConnecting ? "Connecting..." : isConnected ? "Buddy Listening" : "Talk to Buddy"}
                     </Button>
-                  )}
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant="secondary" size="lg" aria-label="Open Help Me Read">
-                        <GraduationCap className="w-4 h-4 mr-2" />
-                        Help Me Read
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="w-[min(96vw,720px)] max-h-[85vh] overflow-y-auto p-0">
-                      <DialogHeader>
-                        <DialogTitle>Help Me Read</DialogTitle>
-                      </DialogHeader>
-                      {/* @ts-ignore */}
-                      <ReadAloudCoach targetText={currentStoryText || ""} isPremium={isPremium} language={userInfo?.nativeLanguage || 'en'} onUpgrade={onUpgrade} />
-                    </DialogContent>
-                  </Dialog>
-                  {isPremium && (
                     <Button onClick={handleSaveStoryNow} size="lg" variant={highlightSave ? "secondary" : "outline"} disabled={isSaving} aria-label={t('nav.save','Save')} className={cn(highlightSave ? 'ring-2 ring-primary/40' : '')}>
                       {isSaving ? (
                         <Loader2 className="w-4 h-4 animate-spin mr-2" />
@@ -3750,19 +3744,18 @@ const handleRestartTimer = () => {
                       )}
                       {t('nav.save','Save')}
                     </Button>
-                  )}
-
-                </div>
-                {!isMobileOrTablet && isAudioPlaying && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
-                    Playing Audio
                   </div>
-                )}
-              </div>
+                  {!isMobileOrTablet && isAudioPlaying && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                      Playing Audio
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Story Content - Enhanced Layout for Desktop Split-Screen */}
-              <div className="bg-gradient-card rounded-2xl p-2 md:p-4 lg:p-6 mb-6 flex-1 min-h-0 flex flex-col shadow-xl" 
+              <div className="bg-gradient-card rounded-2xl p-2 md:p-4 lg:p-6 mb-6 flex-1 min-h-0 flex flex-col shadow-xl mt-2" 
                    dir="ltr" lang="en" role="main" aria-label="Story content">
                 {/* Mobile/Tablet: Top-half image, bottom-half text (full-bleed, no gray) */}
                 <div className="xl:hidden flex-1 min-h-0 flex flex-col gap-3">

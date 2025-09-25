@@ -51,28 +51,9 @@ export const StoryAudioControls: React.FC<StoryAudioControlsProps> = ({
   };
 
   return (
-    <div className="story-audio-controls">
-      <SynchronizedAudioControls
-        text={currentStoryText}
-        onPlayingChange={(playing) => onAudioStateChange(playing, false)}
-      />
-      
-      {/* Mobile Audio Button */}
-      <Button
-        onClick={handleDockPlayAudio}
-        disabled={audioDisabled}
-        variant="ghost"
-        size="sm"
-        className="audio-dock-button"
-      >
-        {isAudioLoading ? (
-          <div className="animate-spin w-4 h-4 border-2 border-primary border-t-transparent rounded-full" />
-        ) : isAudioPlaying ? (
-          <VolumeX className="w-4 h-4" />
-        ) : (
-          <Volume2 className="w-4 h-4" />
-        )}
-      </Button>
-    </div>
+    <SynchronizedAudioControls
+      text={currentStoryText}
+      onPlayingChange={(playing) => onAudioStateChange(playing, false)}
+    />
   );
 };
