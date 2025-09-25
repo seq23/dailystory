@@ -43,7 +43,7 @@ export const useDesktopCardHeight = ({
     
     // Apply reasonable constraints
     const minHeight = 500; // Minimum for good aspect ratio
-    const maxHeight = 800; // Maximum to prevent excessive height
+    const maxHeight = 1200; // Maximum to prevent excessive height - increased for better image display
     const constrainedHeight = Math.max(minHeight, Math.min(maxHeight, totalTextHeight));
     
     return constrainedHeight;
