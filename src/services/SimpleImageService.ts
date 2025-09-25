@@ -165,12 +165,7 @@ export class SimpleImageService {
       reason: tierStrategy.reason
     });
 
-    // PHASE 2: Direct tier routing based on health
-    // Check for direct AI Visual Scene Creator routing (when orchestrator is down)
-    if (tierStrategy.fallback === 'ai_visual_scene_direct') {
-      DebugLogger.log('image', 'Using direct AI Visual Scene Creator due to orchestrator down');
-      return await this.generateWithDirectAiVisualSceneCreator(storyText, userInfo, sessionId, pageNumber, isPremium, healthStatus);
-    }
+    // PHASE 2: Orchestrator-first routing - always attempt orchestrator first
 
     switch (tierStrategy.tier) {
       case 'TIER_4':

@@ -215,23 +215,23 @@ export class HealthCheckService {
       };
     }
 
-    // Network issues → Wait for recovery, but use direct mode
+    // Network issues → Orchestrator-first; direct mode attempted only if orchestrator fails
     if (healthStatus.overallHealth === 'network') {
       return {
         tier: 'TIER_1',
-        endpoint: 'ai-visual-scene-creator',
-        fallback: 'ai_visual_scene_direct',
-        reason: 'Network connectivity issues - using direct mode'
+        endpoint: 'runware-generate-image',
+        fallback: 'orchestrator',
+        reason: 'Network connectivity issues - orchestrator-first; direct mode will be attempted only if orchestrator fails'
       };
     }
 
-    // Service dependencies or orchestrator server issues → Direct to ai-visual-scene-creator
+    // Service dependencies or orchestrator server issues → Still orchestrator-first
     if (healthStatus.serviceDependencies === 'server' || healthStatus.orchestrator === 'server') {
       return {
         tier: 'TIER_1',
-        endpoint: 'ai-visual-scene-creator',
-        fallback: 'ai_visual_scene_direct',
-        reason: 'Orchestrator server failure - using direct ai-visual-scene-creator mode'
+        endpoint: 'runware-generate-image',
+        fallback: 'orchestrator',
+        reason: 'Orchestrator server failure detected - orchestrator-first; direct mode will be attempted only if orchestrator fails'
       };
     }
 

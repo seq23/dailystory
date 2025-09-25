@@ -456,6 +456,69 @@ sequenceDiagram
     end
 </lov-mermaid>
 
+## **Routing Policy v2: Orchestrator-First**
+
+### **Policy Overview**
+The client **always** calls `runware-generate-image` (orchestrator) first. Only when the orchestrator is unreachable or clearly fails do we attempt `ai-visual-scene-creator` (Direct Mode), then Tier 2.5C templates, then Tier 2.5D, then Tier 4 SVG fallback.
+
+### **Complete Tier Cascade**
+1. **Tier 1**: Orchestrator (`runware-generate-image`) attempts internal cascade (Tier 1 → Tier 2.5A)
+2. **Direct Mode**: If orchestrator fails, attempt `ai-visual-scene-creator` directly
+3. **Tier 2.5C**: Template-based generation via `runware-template-cd`
+4. **Tier 2.5D**: Enhanced template fallback
+5. **Tier 4**: SVG placeholder generation
+
+### **Never-Ending Story Guarantee**
+- Tier selection **never** concludes stories artificially
+- Tier 2.5C and higher are visual fallbacks only
+- Premium users can continue stories indefinitely regardless of tier
+- Guest users are limited by business rules (6 pages), not tier limitations
+
+### **Spinner Completion**
+- `image:generation:complete` event is emitted on all code paths
+- Success, all fallbacks, and error states trigger completion
+- Prevents perpetual loading states
+
+### **Orchestrator-First Flow**
+
+<lov-mermaid>
+sequenceDiagram
+  participant UI as UI
+  participant ORCH as runware-generate-image
+  participant DIRECT as ai-visual-scene-creator
+  participant T25C as runware-template-cd
+  participant T25D as Enhanced Templates
+  participant T4 as SVG Fallback
+
+  UI->>ORCH: POST /runware-generate-image (Tier 1, 2.5A cascade inside)
+  alt Orchestrator returns success
+    ORCH-->>UI: { success: true, imageURL, usedTier }
+    UI->>UI: stop spinner, cache image
+  else Orchestrator fails/unreachable
+    UI->>DIRECT: POST /ai-visual-scene-creator (Direct Mode)
+    alt Direct Mode returns success
+      DIRECT-->>UI: { success: true, imageURL }
+      UI->>UI: stop spinner, cache image
+    else Direct Mode fails
+      UI->>T25C: POST /runware-template-cd (Tier 2.5C)
+      alt Template success
+        T25C-->>UI: { success: true, imageURL }
+        UI->>UI: stop spinner, cache image
+      else Template fails
+        UI->>T25D: Enhanced template fallback
+        alt T25D success
+          T25D-->>UI: { success: true, imageURL }
+          UI->>UI: stop spinner, cache image
+        else T25D fails
+          UI->>T4: SVG generation
+          T4-->>UI: { success: true, imageURL: SVG }
+          UI->>UI: stop spinner, cache image
+        end
+      end
+    end
+  end
+</lov-mermaid>
+
 ---
 *Last Updated: September 21, 2025*  
 *System Status: All image loading components operational*
