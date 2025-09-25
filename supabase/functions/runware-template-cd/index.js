@@ -404,9 +404,9 @@ async function handleRequest(req) {
       templateResult.tier || 'template-cd',
       'success',
       {
-        positivePrompt: templateResult.positivePrompt,
-        negativePrompt: templateResult.negativePrompt,
-        visualDetails: failedTierData?.visualDetails,
+        positive_prompt: templateResult.positivePrompt,
+        negative_prompt: templateResult.negativePrompt,
+        visual_details: failedTierData?.visualDetails,
         edgeFunction: 'runware-template-cd',
         pageNumber: pageNumber || 1,
         imageUrl: imageURL

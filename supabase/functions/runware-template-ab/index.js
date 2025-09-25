@@ -1827,9 +1827,9 @@ async function handleRequest(req) {
         templateResult.tier || 'template-ab',
         'success',
         {
-          positivePrompt: templateResult.positivePrompt,
-          negativePrompt: templateResult.negativePrompt,
-          visualDetails: preAnalyzedData?.visualDetails,
+          positive_prompt: templateResult.positivePrompt,
+          negative_prompt: templateResult.negativePrompt,
+          visual_details: preAnalyzedData?.visualDetails,
           edgeFunction: 'runware-template-ab',
           pageNumber: pageNumber || 1,
           imageUrl: imageURL
