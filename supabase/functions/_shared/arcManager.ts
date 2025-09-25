@@ -51,11 +51,8 @@ export interface CurrentArcData {
   arcNumber: number;
 }
 
-export interface UserInfo {
-  name: string;
-  age: number;
-  // Add other user info properties as needed
-}
+// Import UserInfo from placeholderResolver for consistency
+import type { UserInfo } from './placeholderResolver.ts';
 
 export interface Ending {
   type: string;

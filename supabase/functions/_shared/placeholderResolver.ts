@@ -11,6 +11,8 @@ export interface MicroContext {
 }
 
 export interface UserInfo {
+  id?: string;
+  userId?: string;
   name?: string;
   age?: number;
   grade?: string;
@@ -22,6 +24,7 @@ export interface UserInfo {
   hobbies?: string;
   favoriteFood?: string;
   specialRequest?: string;
+  [key: string]: any;
 }
 
 export const FALLBACK_POOLS = {

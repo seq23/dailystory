@@ -1,7 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@2.0.0";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -57,11 +56,17 @@ const handler = async (req: Request): Promise<Response> => {
       </li>`
     ).join('');
 
-    const emailResponse = await resend.emails.send({
-      from: "Time2Read Safety <safety@time-2-read.com>",
-      to: [parentEmail],
-      subject: `📋 ${reportType.charAt(0).toUpperCase() + reportType.slice(1)} Privacy Report for ${childName}`,
-      html: `
+    const emailResponse = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: "Time2Read Safety <safety@time-2-read.com>",
+        to: [parentEmail],
+        subject: `📋 ${reportType.charAt(0).toUpperCase() + reportType.slice(1)} Privacy Report for ${childName}`,
+        html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
             <h1 style="color: #2563eb; margin: 0; display: flex; align-items: center;">
@@ -114,14 +119,20 @@ const handler = async (req: Request): Promise<Response> => {
             <strong>The Time2Read Safety Team</strong>
           </p>
         </div>
-      `,
+        `,
+      })
     });
 
-    console.log("Parental notification sent successfully:", emailResponse);
+    if (!emailResponse.ok) {
+      throw new Error(`Resend API error: ${emailResponse.status} ${emailResponse.statusText}`);
+    }
+
+    const emailResult = await emailResponse.json();
+    console.log("Parental notification sent successfully:", emailResult);
 
     return new Response(JSON.stringify({
       success: true,
-      messageId: emailResponse.data?.id || 'unknown',
+      messageId: emailResult.id || 'unknown',
       reportType,
       incidentCount
     }), {

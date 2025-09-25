@@ -1,8 +1,7 @@
 // Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@2.0.0";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -49,11 +48,17 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Sending COPPA notification to:", parentEmail);
 
-    const emailResponse = await resend.emails.send({
-      from: "Time2Read Safety <safety@time-2-read.com>",
-      to: [parentEmail],
-      subject: `🛡️ Privacy Alert: Content Review Needed for ${childName}`,
-      html: `
+    const emailResponse = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: "Time2Read Safety <safety@time-2-read.com>",
+        to: [parentEmail],
+        subject: `🛡️ Privacy Alert: Content Review Needed for ${childName}`,
+        html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
             <h1 style="color: #d97706; margin: 0; display: flex; align-items: center;">
@@ -100,13 +105,19 @@ const handler = async (req: Request): Promise<Response> => {
           </p>
         </div>
       `,
+      })
     });
 
-    console.log("COPPA notification sent successfully:", emailResponse);
+    if (!emailResponse.ok) {
+      throw new Error(`Resend API error: ${emailResponse.status} ${emailResponse.statusText}`);
+    }
+
+    const emailResult = await emailResponse.json();
+    console.log("COPPA notification sent successfully:", emailResult);
 
     return new Response(JSON.stringify({
       success: true,
-      messageId: emailResponse.data?.id || 'unknown'
+      messageId: emailResult.id || 'unknown'
     }), {
       status: 200,
       headers: {

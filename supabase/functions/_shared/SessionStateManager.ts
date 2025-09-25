@@ -4,15 +4,8 @@
  * No globalThis dependencies, simple and reliable
  */
 
-export interface UserInfo {
-  id?: string;
-  userId?: string;
-  avatar?: {
-    type: string;
-    skinTone: string;
-  };
-  [key: string]: any;
-}
+// Import UserInfo from placeholderResolver for consistency
+import type { UserInfo } from './placeholderResolver.ts';
 
 export interface SessionState {
   sessionId: string;

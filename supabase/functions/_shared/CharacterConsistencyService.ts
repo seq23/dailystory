@@ -18,13 +18,20 @@ export class CharacterConsistencyService {
   /**
    * Save character data to database
    */
-  async saveCharacterToDatabase(sessionId, characterKey, characterData) {
+  async saveCharacterToDatabase(sessionId: string, characterKey: string, characterData: Record<string, any>): Promise<void> {
     console.log(`💾 Attempting to save character ${characterKey} to database for session ${sessionId}...`);
     
     const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error('Missing Supabase environment variables');
+    }
+    
     const supabase = createClient(
-      Deno.env.get('SUPABASE_URL'), 
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+      supabaseUrl,
+      supabaseServiceKey
     );
 
     const { error } = await supabase
@@ -50,13 +57,20 @@ export class CharacterConsistencyService {
   /**
    * Get character data from database
    */
-  async getCharacterFromDatabase(sessionId, characterKey) {
+  async getCharacterFromDatabase(sessionId: string, characterKey: string): Promise<Record<string, any> | null> {
     console.log(`📖 Attempting to retrieve character ${characterKey} from database for session ${sessionId}...`);
     
     const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error('Missing Supabase environment variables');
+    }
+    
     const supabase = createClient(
-      Deno.env.get('SUPABASE_URL'), 
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+      supabaseUrl,
+      supabaseServiceKey
     );
 
     const { data, error } = await supabase
@@ -90,7 +104,7 @@ export class CharacterConsistencyService {
   /**
    * Get or create character seed with full consistency support (DATABASE-BACKED)
    */
-  async getCharacterSeed(sessionId, avatarIdentity, storyContext, sessionType = 'new', pageTextClothing = null) {
+  async getCharacterSeed(sessionId: string, avatarIdentity: Record<string, any>, storyContext: string, sessionType: string = 'new', pageTextClothing: any = null): Promise<Record<string, any>> {
     const characterName = avatarIdentity.name || 'child';
     const cacheKey = `${sessionId}_${characterName}`;
     
