@@ -324,7 +324,7 @@ async function handleRequest(req) {
     const payload = await req.json();
     console.log('🔍 Template CD: Request payload keys:', Object.keys(payload));
     
-    let enhancedStoryData, storyText, pageNumber, avatarIdentity, templateComplexity, failedTierData;
+    let enhancedStoryData, storyText, pageNumber, avatarIdentity, templateComplexity, failedTierData, sessionId;
     
     if (payload.pageText) {
       // Current format: {pageText, userInfo, sessionId, pageNumber}
@@ -334,6 +334,7 @@ async function handleRequest(req) {
       pageNumber = payload.pageNumber;
       avatarIdentity = payload.userInfo?.avatar;
       templateComplexity = payload.templateComplexity;
+      sessionId = payload.sessionId;
       failedTierData = payload.failedTierData;
     } else {
       // Legacy format: {enhancedStoryData, storyText, pageNumber, avatarIdentity, templateComplexity, failedTierData}
@@ -343,6 +344,7 @@ async function handleRequest(req) {
       pageNumber = payload.pageNumber;
       avatarIdentity = payload.avatarIdentity;
       templateComplexity = payload.templateComplexity;
+      sessionId = payload.sessionId;
       failedTierData = payload.failedTierData;
     }
   
@@ -375,7 +377,7 @@ async function handleRequest(req) {
   // Call Runware API
   const imageURL = await callRunwareAPI(templateResult.positivePrompt, templateResult.negativePrompt);
 
-  return {
+  const result = {
     success: true,
     imageURL,
     templateData: templateResult,
@@ -385,6 +387,36 @@ async function handleRequest(req) {
     positivePrompt: templateResult.positivePrompt,
     negativePrompt: templateResult.negativePrompt
   };
+
+  // Log successful template generation
+  try {
+    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4');
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL'),
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY')
+    );
+    
+    const { logTierAttempt } = await import("../_shared/tierLogging.js");
+    await logTierAttempt(
+      supabase,
+      sessionId,
+      'template-cd-req',
+      templateResult.tier || 'template-cd',
+      'success',
+      {
+        positivePrompt: templateResult.positivePrompt,
+        negativePrompt: templateResult.negativePrompt,
+        visualDetails: failedTierData?.visualDetails,
+        edgeFunction: 'runware-template-cd',
+        pageNumber: pageNumber || 1,
+        imageUrl: imageURL
+      }
+    );
+  } catch (loggingError) {
+    console.warn('Failed to log template CD success:', loggingError.message);
+  }
+
+  return result;
   
   } catch (error) {
     const runwareError = RunwareErrorHandler.categorizeRunwareError(error);

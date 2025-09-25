@@ -1504,7 +1504,14 @@ async function handleRequest(req) {
     }
     
     // Helper function to get visual consistency elements using VisualDetailTracker
-    async function getVisualConsistencyElements(sessionId, extractedScene, fallbackColoredObjects) {
+    async function getVisualConsistencyElements(sessionId, extractedScene, fallbackColoredObjects, preAnalyzedData) {
+      // First priority: Use preAnalyzedData from cascade
+      if (preAnalyzedData?.visualDetails) {
+        console.log(`✅ [TIER2.5A] Using cascade preAnalyzedData: ${preAnalyzedData.visualDetails.substring(0, 100)}`);
+        return preAnalyzedData.visualDetails;
+      }
+      
+      // Second priority: Use sophisticated VisualDetailTracker
       try {
         const { VisualDetailTracker } = await import("../_shared/VisualDetailTracker.js");
         const visualDetails = await VisualDetailTracker.getVisualDetailsForPrompt(sessionId);
@@ -1515,12 +1522,13 @@ async function handleRequest(req) {
       } catch (error) {
         console.warn('VisualDetailTracker failed, using fallback:', error.message);
       }
+      
       // Fallback to existing logic
       return fallbackColoredObjects || 
         (extractedScene?.objects?.length ? extractedScene.objects.map(o => o.phrase).join(', ') : '');
     }
     
-    let enhancedStoryData, storyText, pageNumber, avatarIdentity, templateComplexity, sessionId;
+    let enhancedStoryData, storyText, pageNumber, avatarIdentity, templateComplexity, sessionId, preAnalyzedData;
     
     if (payload.pageText) {
       // Current format: {pageText, userInfo, sessionId, pageNumber}
@@ -1531,6 +1539,7 @@ async function handleRequest(req) {
       avatarIdentity = payload.userInfo?.avatar;
       templateComplexity = payload.templateComplexity;
       sessionId = payload.sessionId;
+      preAnalyzedData = payload.preAnalyzedData; // Extract cascade data
     } else {
       // Legacy format: {enhancedStoryData, storyText, pageNumber, avatarIdentity, templateComplexity, sessionId}
       console.log('📖 Template AB: Using legacy format');
@@ -1540,6 +1549,7 @@ async function handleRequest(req) {
       avatarIdentity = payload.avatarIdentity;
       templateComplexity = payload.templateComplexity;
       sessionId = payload.sessionId;
+      preAnalyzedData = payload.preAnalyzedData; // Extract cascade data
     }
     
     // PHASE 4.1: ENHANCED VALIDATION - Check for pageText/storyText and validate content
@@ -1678,7 +1688,7 @@ async function handleRequest(req) {
         .replace('{semantic_scene}', extractedScene?.scene || extractedScene)
         .replace('{secondary_characters}', secondaryDescriptions.length ? secondaryDescriptions.join(', ') : 
           (extractedScene?.secondary?.length ? extractedScene.secondary.join(', ') : ''))
-        .replace('{visual_consistency_elements}', await getVisualConsistencyElements(sessionId, extractedScene, coloredObjects))
+        .replace('{visual_consistency_elements}', await getVisualConsistencyElements(sessionId, extractedScene, coloredObjects, preAnalyzedData))
         .replace('{setting_context}', extractedScene?.settings?.length ? extractedScene.settings.join(', ') : '')
         .replace('{cultural_context}', culturalProfile || 'multicultural setting')
         .replace('{community_context}', '')
@@ -1806,6 +1816,28 @@ async function handleRequest(req) {
       positivePrompt: templateResult.positivePrompt,
       negativePrompt: templateResult.negativePrompt
     };
+
+    // Log successful template generation
+    try {
+      const { logTierAttempt } = await import("../_shared/tierLogging.js");
+      await logTierAttempt(
+        supabase,
+        sessionId,
+        'template-ab-req',
+        templateResult.tier || 'template-ab',
+        'success',
+        {
+          positivePrompt: templateResult.positivePrompt,
+          negativePrompt: templateResult.negativePrompt,
+          visualDetails: preAnalyzedData?.visualDetails,
+          edgeFunction: 'runware-template-ab',
+          pageNumber: pageNumber || 1,
+          imageUrl: imageURL
+        }
+      );
+    } catch (loggingError) {
+      console.warn('Failed to log template AB success:', loggingError.message);
+    }
 
     return createResponse(result);
     

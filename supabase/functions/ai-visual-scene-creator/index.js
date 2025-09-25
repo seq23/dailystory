@@ -902,6 +902,30 @@ RULES:
 
     const comprehensivePrompt = enhancementArray.join(', ');
 
+    // Log AI visual scene creation data
+    try {
+      const { logTierAttempt } = await import("../_shared/tierLogging.js");
+      await logTierAttempt(
+        supabase,
+        sessionId,
+        requestId,
+        'ai-visual-scene-creator',
+        'success',
+        {
+          aiSchema: parsedResponse,
+          primaryScene: parsedResponse.primaryScene,
+          characterAppearance,
+          coloredObjects,
+          culturalEnhancements,
+          comprehensivePrompt,
+          edgeFunction: 'ai-visual-scene-creator',
+          pageNumber: pageNumber || 1
+        }
+      );
+    } catch (loggingError) {
+      console.warn('Failed to log AI scene data:', loggingError.message);
+    }
+
     console.log(`🎨 [${requestId}] Direct mode prompt built: ${comprehensivePrompt.substring(0, 100)}...`);
 
     // Step 6: Generate image via runware-template-cd internally

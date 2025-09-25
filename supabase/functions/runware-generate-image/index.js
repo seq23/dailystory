@@ -446,13 +446,13 @@ async function generateWithRunware(
                 
                 const { logTierAttempt } = await import("./tierLogging.js");
                 await logTierAttempt(
-                  null, // supabase client not needed here
+                  supabase, // Pass actual supabase client
                   sessionId,
                   requestId,
                   'tier-1',
                   'attempting',
                   {
-                    positivePrompt: enhancedPrompt,
+                    positivePrompt: enhancedPrompt, // Fixed field name mapping
                     negativePrompt,
                     visualDetails,
                     edgeFunction: 'runware-generate-image',
@@ -726,6 +726,13 @@ async function handleRequest(req) {
           const { VisualDetailTracker } = await import("../_shared/VisualDetailTracker.js");
           const visualDetails = await VisualDetailTracker.getVisualDetailsForPrompt(sessionId);
           
+          // Pass pre-analyzed data from Tier 1 to Tier 2.5A
+          const preAnalyzedData = {
+            visualDetails,
+            characterConsistency: enhancedData?.characterConsistency,
+            aiSchema: enhancedData?.aiSchema
+          };
+          
           const resp25A = await supabase.functions.invoke('runware-template-ab', {
             body: {
               storyText,
@@ -734,191 +741,7 @@ async function handleRequest(req) {
               sessionId,
               pageNumber: pageNumber || 1,
               templateComplexity: 'A',
-              preAnalyzedData: {
-                visualDetails,
-                primaryScene,
-                aiSchema
-              }
-            }
-          });
-          if (resp25A.data && resp25A.data.success) {
-            result = resp25A.data;
-            log.success('tier-2.5A', { imageUrl: result.imageURL });
-          } else {
-            throw new Error('Tier 2.5A failed');
-          }
-        } catch (tier25AError) {
-          log.failure('tier-2.5A', { error: tier25AError.message, escalation: 'tier-2.5B' });
-          
-          // Escalate to Tier 2.5B
-          try {
-            log.attempt('tier-2.5B', { note: 'Escalating from Tier 2.5A failure' });
-            const resp25B = await supabase.functions.invoke('runware-template-ab', {
-              body: {
-                storyText,
-                pageText: storyText,
-                userInfo: payload.userInfo,
-                sessionId,
-                pageNumber: pageNumber || 1,
-                templateComplexity: 'B'
-              }
-            });
-            if (resp25B.data && resp25B.data.success) {
-              result = resp25B.data;
-              log.success('tier-2.5B', { imageUrl: result.imageURL });
-            } else {
-              throw new Error('Tier 2.5B failed');
-            }
-          } catch (tier25BError) {
-            log.failure('tier-2.5B', { error: tier25BError.message, escalation: 'tier-2.5C' });
-            
-            // Escalate to Tier 2.5C
-            try {
-              log.attempt('tier-2.5C', { note: 'Escalating from Tier 2.5B failure' });
-              const resp25C = await supabase.functions.invoke('runware-template-cd', {
-                body: {
-                  storyText,
-                  pageText: storyText,
-                  userInfo: payload.userInfo,
-                  sessionId,
-                  pageNumber: pageNumber || 1,
-                  templateComplexity: 'C'
-                }
-              });
-              if (resp25C.data && resp25C.data.success) {
-                result = resp25C.data;
-                log.success('tier-2.5C', { imageUrl: result.imageURL });
-              } else {
-                throw new Error('Tier 2.5C failed');
-              }
-            } catch (tier25CError) {
-              log.failure('tier-2.5C', { error: tier25CError.message, escalation: 'tier-2.5D' });
-              
-              // Final escalation to Tier 2.5D
-              try {
-                log.attempt('tier-2.5D', { note: 'Final escalation from Tier 2.5C failure' });
-                const resp25D = await supabase.functions.invoke('runware-template-cd', {
-                  body: {
-                    storyText,
-                    pageText: storyText,
-                    userInfo: payload.userInfo,
-                    sessionId,
-                    pageNumber: pageNumber || 1,
-                    templateComplexity: 'D'
-                  }
-                });
-                if (resp25D.data && resp25D.data.success) {
-                  result = resp25D.data;
-                  log.success('tier-2.5D', { imageUrl: result.imageURL });
-                } else {
-                  throw new Error('All tiers failed - escalating to frontend');
-                }
-              } catch (tier25DError) {
-                log.failure('tier-2.5D', { error: tier25DError.message, escalation: 'frontend-tier-4' });
-                // Let it fall through to error response for frontend Tier 4 handling
-              }
-            }
-          }
-        }
-      }
-    }
-    // ===== Tier 1 forced path (for debugging/testing) =====
-    else if (payload.forceTier === 'COMPLETE_TIER_1' || payload.forceTier === 'tier-1' || payload.skipTier25) {
-      log.attempt('tier-1', { note: 'PhaseIntegrationOrchestrator path' });
-
-      try {
-        const orchestrator = await LazyServiceLoader.getPhaseIntegrationOrchestrator();
-
-        // First: ai-visual-scene-creator for primaryScene + schema
-        log.t2('Calling ai-visual-scene-creator', { pageNumber, previousPrimaryScene });
-        // Direct timeout-enabled call with error classification
-        const controller2 = new AbortController();
-        const timeout2 = setTimeout(() => controller2.abort('timeout'), TIER_TIMEOUTS.AI_GENERATION);
-        
-        let sceneResponse;
-        try {
-          sceneResponse = await supabase.functions.invoke('ai-visual-scene-creator', {
-            body: {
-              storyText,
-              userInfo: payload.userInfo,
-              sessionId,
-              pageNumber,
-              previousPrimaryScene
-            }
-          });
-        } catch (err) {
-          if (err?.name === 'AbortError' || `${err}`.includes('timeout')) {
-            throw new Error('Timeout AI Visual Scene Creator (Force Tier 1)');
-          }
-          throw err;
-        } finally {
-          clearTimeout(timeout2);
-        }
-        if (!sceneResponse?.data || sceneResponse.error) {
-          throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_25A');
-        }
-
-        const { primaryScene, aiSchema } = sceneResponse.data;
-        
-        // PHASE 5A: Primary Scene Quality Gate
-        if (!validatePrimarySceneQuality(primaryScene)) {
-          log.failure('tier-1', { error: 'Primary scene quality validation failed', escalation: 'tier-2.5A' });
-          throw new Error('PRIMARY_SCENE_QUALITY_FAILED');
-        }
-        
-        const basePrompt = primaryScene + (aiSchema ? `\n\nSchema: ${JSON.stringify(aiSchema)}` : '');
-
-        // Next: Orchestrator enhances the prompt
-        log.t2('Enhancing prompt via orchestrator');
-        const tier1Response = await orchestrator.getEnhancedPrompt(
-          payload.userInfo,
-          basePrompt,
-          storyText,
-          sessionId
-        );
-
-        if (!tier1Response?.enhancementSuccessful || !tier1Response?.enhancedPrompt) {
-          throw new Error('TIER1_ENHANCEMENT_FAILED');
-        }
-
-        // Generate with Runware
-        log.t2('Generating image via Runware (tier-1)');
-        const apiKey = Deno.env.get('RUNWARE_API_KEY')?.trim();
-        const enhancedData = {
-          enhancedPrompt: tier1Response.enhancedPrompt,
-          templateStructure: 'COMPLETE_TIER_1'
-        };
-        const imageResult = await generateWithRunware(
-          apiKey,
-          primaryScene,
-          sessionId,
-          requestId,
-          payload.userInfo,
-          payload.userInfo?.avatar,
-          pageNumber || 1,
-          enhancedData
-        );
-
-        result = {
-          ...imageResult,
-          primaryScene,
-          aiSchema,
-          templateStructure: 'COMPLETE_TIER_1'
-        };
-        log.success('tier-1', { imageUrl: result.imageURL });
-      } catch (err) {
-        const msg = (err && err.message) || String(err);
-
-        if (msg.includes('NO_PRIMARY_SCENE_ESCALATE_TO_25A')) {
-          log.failure('tier-1', { error: msg, escalation: 'tier-2.5A' });
-          const resp = await supabase.functions.invoke('runware-template-ab', {
-            body: {
-              storyText,
-              pageText: storyText,
-              userInfo: payload.userInfo,
-              sessionId,
-              pageNumber: pageNumber || 1,
-              templateComplexity: 'A'
+              preAnalyzedData // Pass cascade data to Tier 2.5A
             }
           });
           result = resp.data || { success: false, error: resp.error?.message || 'Tier 2.5A escalation failed' };
