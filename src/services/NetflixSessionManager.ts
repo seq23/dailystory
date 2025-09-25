@@ -22,6 +22,7 @@ export class NetflixSessionManager {
 
     // If session exists and is recent (within 1 hour), reuse base
     if (existing && (now - existing.lastActivity) < 3600000) {
+      existing.storyCount++;
       existing.lastActivity = now;
       
       const sessionId = `netflix-${userId}-story${existing.storyCount}-${existing.baseSessionId}`;
