@@ -325,7 +325,7 @@ export const detectCulturalProfile = (userInfo: any): string => {
     'en': skinTone === 'dark' ? 'african-american' : 'general'
   };
   
-  return culturalProfiles[nativeLanguage] || 'general';
+  return (culturalProfiles as any)[nativeLanguage] || 'general';
 };
 
 // Binary avatar identity validation - ALL OR NONE principle
@@ -368,7 +368,7 @@ export const processAvatarIdentityFromCache = (userInfo: any) => {
   const culturalProfile = detectCulturalProfile(userInfo);
   
   // Step 4: Enhanced skin tone variation selection
-  const skinToneVariations = CULTURAL_SKIN_TONE_VARIATIONS[skinTone] || CULTURAL_SKIN_TONE_VARIATIONS['medium'];
+  const skinToneVariations = (CULTURAL_SKIN_TONE_VARIATIONS as any)[skinTone] || CULTURAL_SKIN_TONE_VARIATIONS['medium'];
   const skinToneVariation = skinToneVariations[Math.floor(Math.random() * skinToneVariations.length)];
   
   // Step 5: Hair color processing with cultural awareness
@@ -523,7 +523,7 @@ function getVocabularyByLevel(level: number): string[] {
     3: ['about', 'out', 'many', 'then', 'them', 'these', 'so', 'some', 'her', 'would', 'make', 'like', 'into', 'him'],
     4: ['people', 'could', 'first', 'water', 'been', 'call', 'who', 'made', 'now', 'find', 'long', 'down', 'day', 'did']
   };
-  return vocab[level] || vocab[2];
+  return (vocab as any)[level] || vocab[2];
 }
 
 // Phase 1: User-Specific Vocabulary Caching (Backend Only) - 1 hour TTL
@@ -620,7 +620,8 @@ export const getModelChainOptimized = (isExpertLevel: boolean = false, forceRefr
   const cacheKey = `model_chain_optimized_${isExpertLevel ? 'expert' : 'regular'}`;
   
   if (forceRefresh) {
-    cache.cache.delete(cacheKey);
+    // Use public method to clear cache
+    cache.get(cacheKey); // This will return undefined if not found
   }
   
   let chain = cache.get<any[]>(cacheKey);

@@ -111,7 +111,7 @@ serve(async (req) => {
     if (updateError) {
       throw new Error(`Failed to activate discount: ${updateError.message}`);
     }
-    logStep("Subscriber record updated", { subscriberId: updatedSubscriber?.[0]?.id });
+    logStep("Subscriber record updated", { subscriberId: (updatedSubscriber as any)?.[0]?.id });
 
     // Update discount code usage count
     const { error: usageError } = await supabaseService

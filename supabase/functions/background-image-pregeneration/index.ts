@@ -52,7 +52,7 @@ serve(async (req) => {
     
   } catch (importError) {
     // Fallback response during sync anomalies or import failures
-    console.error('⚠️ [TypeScript Receptionist] Import fallback activated:', importError.message);
+    console.error('⚠️ [TypeScript Receptionist] Import fallback activated:', importError instanceof Error ? importError.message : String(importError));
     
     // Provide graceful degradation with CORS support
     const fallbackResponse = {

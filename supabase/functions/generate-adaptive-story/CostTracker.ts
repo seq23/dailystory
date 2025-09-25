@@ -66,7 +66,7 @@ class EdgeCostTracker {
   }
 
   calculateCost(inputTokens: number, outputTokens: number, model: string): number {
-    const pricing = this.PRICING[model] || this.PRICING['gpt-4o-mini']; // fallback to cheapest
+    const pricing = (this.PRICING as any)[model] || this.PRICING['gpt-4o-mini']; // fallback to cheapest
     
     const inputCost = (inputTokens / 1000) * pricing.input;
     const outputCost = (outputTokens / 1000) * pricing.output;

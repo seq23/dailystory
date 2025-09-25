@@ -264,11 +264,11 @@ serve(async (req) => {
         (dict: any) => dict.name === dictionaryName
       );
 
-      return createCorsResponse({ 
+      return createDynamicCorsResponse({ 
         success: true, 
         dictionaries: dictionaries.pronunciation_dictionaries || [],
         charlotteDictionaryId: charlotteDictionary?.id || null
-      });
+      }, req, 200);
 
     } else if (action === 'delete') {
       const { dictionaryId } = await req.json();
@@ -284,10 +284,10 @@ serve(async (req) => {
         throw new Error(`Failed to delete dictionary: ${deleteResponse.status}`);
       }
 
-      return createCorsResponse({ 
+      return createDynamicCorsResponse({ 
         success: true, 
         message: 'Dictionary deleted successfully'
-      });
+      }, req, 200);
 
     } else {
       throw new Error(`Unknown action: ${action}`);
@@ -296,6 +296,6 @@ serve(async (req) => {
   } catch (error) {
     console.error('Dictionary manager error:', error);
     const errorMessage = error instanceof Error ? error.message : String(error);
-    return createDynamicCorsErrorResponse(errorMessage, req, 500);
+    return createDynamicCorsErrorResponse(errorMessage, undefined, 500);
   }
 });

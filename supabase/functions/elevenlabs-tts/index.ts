@@ -176,7 +176,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in elevenlabs-tts function:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error instanceof Error ? error.message : String(error) }),
       {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -207,7 +207,7 @@ function generateEnhancedWordTimings(text: string, voiceId: string): WordTimesta
     }
   };
   
-  const characteristics = voiceCharacteristics[voiceId] || voiceCharacteristics.default;
+  const characteristics = (voiceCharacteristics as any)[voiceId] || voiceCharacteristics.default;
   let currentTime = characteristics.baseDelay;
   
   return words.map((word, index) => {

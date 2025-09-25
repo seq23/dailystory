@@ -5,7 +5,6 @@
 import { getStoryPrompt, getExpertStoryPrompt, formatUserPrompt, resolvePromptPlaceholders, getExpectedPages, getPerPageTokenLimit, mapGradeToExpertLevel, type DifficultyLevel, type ExpertGradeLevel } from "../_shared/storyPrompts.ts";
 import { 
   parseIntoPages as sharedParseIntoPages, 
-  getTokensForGrade as sharedGetTokensForGrade,
   mapDifficultyToLevel,
   type ValidationLevel 
 } from "../_shared/validation-utils.ts";
@@ -60,10 +59,10 @@ interface StreamlinedConfig {
 }
 
 // Hair color mapping using cached data (performance optimized)
-function getHairColorForSkinTone(skinTone: string | undefined): string | null {
+function getHairColorForSkinTone(skinTone: string | undefined): string[] | null {
   if (!skinTone) return null;
   const mapping = getHairColorMapping();
-  return mapping[skinTone] || null;
+  return (mapping as any)[skinTone] || null;
 }
 
 export async function handleStreamlinedGeneration(requestBody: any) {
@@ -156,7 +155,7 @@ export async function handleStreamlinedGeneration(requestBody: any) {
             ...userInfo, 
             avatar: { 
               skinTone: bundle.avatarData.skinTone, 
-              type: userInfo.avatar?.type || 'prefer-not-to-answer' 
+              type: (userInfo as any).avatar?.type || 'prefer-not-to-answer' 
             } 
           };
         }
@@ -167,8 +166,8 @@ export async function handleStreamlinedGeneration(requestBody: any) {
 
     // Phase 1: Check for cached user vocabulary before any database calls
     let userVocabularyCached = [];
-    if (userInfo && userInfo.id) {
-      userVocabularyCached = getUserVocabularyCache(userInfo.id, userInfo.childId);
+    if (userInfo && (userInfo as any).id) {
+      userVocabularyCached = getUserVocabularyCache((userInfo as any).id, (userInfo as any).childId);
       if (userVocabularyCached.length > 0) {
         console.log(`📚 Using cached user vocabulary: ${userVocabularyCached.length} words`);
       }
@@ -407,7 +406,8 @@ Generate a corrected version that addresses these issues while keeping the story
       // Use Netflix-validated pages for subsequent processing
       if (netflixValidation.isValid) {
         // Apply placeholder resolution to Netflix-validated content
-        const placeholderResolved = resolveAllPlaceholders(storyText, { userInfo });
+        const userInfoWithName = { ...userInfo, name: (userInfo as any).name || 'Child' };
+        const placeholderResolved = resolveAllPlaceholders(storyText, { userInfo: userInfoWithName });
         
         return new Response(JSON.stringify({
           success: true,
@@ -463,7 +463,8 @@ Generate a corrected version that addresses these issues while keeping the story
       if (retryValidationResult.decision === 'ACCEPT' || retryValidationResult.decision === 'REPAIR_AND_SPLIT') {
         console.log(`✅ Retry successful with decision: ${retryValidationResult.decision}`);
         // Use the retry result with proper service detection
-        const retryPlaceholderResolved = resolveAllPlaceholders(retryStoryText, { userInfo });
+        const userInfoWithName = { ...userInfo, name: (userInfo as any).name || 'Child' };
+        const retryPlaceholderResolved = resolveAllPlaceholders(retryStoryText, { userInfo: userInfoWithName });
         const retryPages = sharedParseIntoPages(retryPlaceholderResolved, validationLevel, serviceType);
         
         // Calculate educational standards compliance for retry result
@@ -499,7 +500,8 @@ Generate a corrected version that addresses these issues while keeping the story
     }
     
     // Step 2: Apply placeholder resolution to entire story ONCE (grammar processing moved to process-story-content)
-    const placeholderResolved = resolveAllPlaceholders(storyText, { userInfo });
+    const userInfoWithName = { ...userInfo, name: (userInfo as any).name || 'Child' };
+    const placeholderResolved = resolveAllPlaceholders(storyText, { userInfo: userInfoWithName });
     
     // Step 4: THEN parse into pages using shared validation utilities with service detection
     const pages = sharedParseIntoPages(placeholderResolved, validationLevel, serviceType);
@@ -698,13 +700,13 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
     const avatarInfo = processAvatarIdentityFromCache(completeAvatarInfo);
     
     // Universal hair color enhancement (no language restriction)
-    if (avatarInfo.hairColor && avatarInfo.userName) {
-      enhancedUserPrompt += `\nPhysical description: ${avatarInfo.userName} has ${avatarInfo.hairColor}.`;
+    if (avatarInfo && avatarInfo.hairColor && avatarInfo.name) {
+      enhancedUserPrompt += `\nPhysical description: ${avatarInfo.name} has ${avatarInfo.hairColor}.`;
     }
     
     // Universal gender/pronoun enhancement  
-    if (avatarInfo.completeGenderInfo && avatarInfo.userName) {
-      enhancedUserPrompt += `\nCharacter pronouns: ${avatarInfo.userName} is a ${avatarInfo.completeGenderInfo}.`;
+    if (avatarInfo && avatarInfo.completeGenderInfo && avatarInfo.name) {
+      enhancedUserPrompt += `\nCharacter pronouns: ${avatarInfo.name} is a ${avatarInfo.completeGenderInfo}.`;
     }
     
     // Add clear directives for AI story creation
@@ -914,14 +916,14 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
         
         try {
           const executedContent = await executeFunctionCalls(storyText, {
-            userInfo: completeAvatarInfo,
+            userInfo: avatarInfo,
             gradeLevel: gradeLevel,
             difficulty: difficulty
           });
           
           if (executedContent !== storyText) {
             // Re-inject the executed content back to AI for final processing
-            storyText = await reInjectExecutedContent(executedContent, enhancedSystemPrompt, apiKey, currentModel);
+            storyText = await reInjectExecutedContent(executedContent, enhancedSystemPrompt, apiKey!, currentModel || 'gpt-4o-mini');
             console.log('✅ Function calls executed and content re-injected successfully');
           }
         } catch (functionError) {
@@ -1068,7 +1070,7 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
       let retryEnhancement = '';
       
       try {
-        classifiedError = classifyError(error);
+        classifiedError = classifyError(error instanceof Error ? error : new Error(String(error)));
         retryEnhancement = getRetryEnhancement(classifiedError.category, attempt);
         console.log(`📊 Error Classification: ${classifiedError.category}, Retry same model: ${classifiedError.shouldRetryWithSameModel}, Fallback: ${classifiedError.shouldFallbackToNextModel}`);
       } catch (classificationError) {
@@ -1240,11 +1242,11 @@ async function executeFunctionCalls(storyText: string, context: any): Promise<st
         const culturalContent = `DETECTED REGION: ${regionName}
 
 AVAILABLE CULTURAL ELEMENTS:
-Names: [${selectedCultural.characterNames.map(name => `"${name}"`).join(', ')}]
-Foods: [${selectedCultural.commonFoods.map(food => `"${food}"`).join(', ')}]
-Celebrations: [${selectedCultural.celebrations.map(cel => `"${cel}"`).join(', ')}]
-Values: [${selectedCultural.values.map(val => `"${val}"`).join(', ')}]
-Sports: [${selectedCultural.sports.map(sport => `"${sport}"`).join(', ')}]
+Names: [${selectedCultural.characterNames.map((name: string) => `"${name}"`).join(', ')}]
+Foods: [${selectedCultural.commonFoods.map((food: string) => `"${food}"`).join(', ')}]
+Celebrations: [${selectedCultural.celebrations.map((cel: string) => `"${cel}"`).join(', ')}]
+Values: [${selectedCultural.values.map((val: string) => `"${val}"`).join(', ')}]
+Sports: [${selectedCultural.sports.map((sport: string) => `"${sport}"`).join(', ')}]
 
 INTEGRATION GUIDANCE: Select elements that authentically enhance your story. Quality over quantity - choose what fits naturally rather than forcing inclusion.`;
         
