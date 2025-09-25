@@ -39,9 +39,9 @@ export const COMPREHENSIVE_STYLE_FRAMEWORKS = {
 };
 
 // Helper function to get style framework by difficulty
-export function getStyleFramework(difficulty) {
+export function getStyleFramework(difficulty: string): any {
   const normalizedDifficulty = difficulty?.toLowerCase() || 'medium';
-  const framework = COMPREHENSIVE_STYLE_FRAMEWORKS[normalizedDifficulty] || COMPREHENSIVE_STYLE_FRAMEWORKS['medium'];
+  const framework = (COMPREHENSIVE_STYLE_FRAMEWORKS as any)[normalizedDifficulty] || COMPREHENSIVE_STYLE_FRAMEWORKS['medium'];
   
   console.log(`🎨 Retrieved ${framework.name} style framework for difficulty: ${normalizedDifficulty}`);
   return framework;

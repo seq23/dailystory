@@ -73,8 +73,9 @@ export class EdgeErrorHandler {
       console.warn(`⚠️ Frequent error detected: ${errorKey} (${count + 1} occurrences)`);
     }
 
-    return createCorsErrorResponse(
+    return createDynamicCorsErrorResponse(
       `${functionName}: ${edgeError.message}`,
+      undefined,
       this.getHttpStatusCode(edgeError.type)
     );
   }
@@ -99,7 +100,10 @@ export class EdgeErrorHandler {
       metrics.success = true;
       return result;
     } catch (error) {
-      metrics.errorType = error.type || EdgeErrorType.UNKNOWN;
+      const errorType = (error && typeof error === 'object' && 'type' in error && typeof (error as any).type === 'string') 
+        ? (error as any).type as EdgeErrorType 
+        : EdgeErrorType.UNKNOWN;
+      metrics.errorType = errorType;
       throw error;
     } finally {
       metrics.endTime = Date.now();
@@ -233,5 +237,5 @@ export function createStandardSuccessResponse(data: {
     success: true,
     ...data
   };
-  return createCorsResponse(response);
+  return createDynamicCorsResponse(response, undefined, 200);
 }

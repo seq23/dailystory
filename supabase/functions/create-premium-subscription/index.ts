@@ -109,7 +109,8 @@ const handler = async (req: Request, user?: AuthenticatedUser): Promise<Response
 
   } catch (error) {
     console.error('Stripe payment error:', error)
-    return security.createErrorResponse(error.message, 500);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return security.createErrorResponse(errorMessage, 500);
   }
 }
 

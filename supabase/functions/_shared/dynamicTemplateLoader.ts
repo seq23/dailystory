@@ -49,9 +49,9 @@ export async function loadTemplate(level: string, templateIndex: number | null =
       
       // Call the getter function with templateIndex
       if (templateIndex !== null && templateIndex >= 0) {
-        template = module[config.functions.getter](templateIndex);
+        template = config.functions?.getter ? module[config.functions.getter](templateIndex) : null;
       } else {
-        template = module[config.functions.getter](); // Random template
+        template = config.functions?.getter ? module[config.functions.getter]() : null; // Random template
       }
     } catch (error) {
       console.error(`❌ Failed to load static template ${level}:`, error);

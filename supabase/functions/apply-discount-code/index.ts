@@ -136,6 +136,7 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('[Apply Discount] Error:', error);
-    return createDynamicCorsErrorResponse(error.message || 'Internal server error', null, 500);
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
+    return createDynamicCorsErrorResponse(errorMessage, null, 500);
   }
 });

@@ -3,8 +3,8 @@
  * Converts StoryTemplate objects to string[] arrays with full placeholder resolution
  */
 
-// Import sophisticated placeholder resolver from shared services
-import { resolveAllPlaceholders, MicroContext, UserInfo } from './placeholderResolver.ts';
+import { resolveAllPlaceholders, MicroContext } from './placeholderResolver.ts';
+import { UserInfo, toTemplateLevel } from './types/index.ts';
 
 // Define the structure for weather and setting variants
 interface Variants {
@@ -327,7 +327,7 @@ async function processEnding(endings: AttachableEnding[], userInfo: UserInfo, te
  */
 export async function convertStoryTemplateToStringArray(
   template: StoryTemplate, 
-  userInfo: UserInfo = {}, 
+  userInfo: UserInfo = { name: "Child" }, 
   pageCount: number = 5,
   mode: string = 'testing',
   arcConfig?: {
@@ -338,7 +338,7 @@ export async function convertStoryTemplateToStringArray(
     environmentalVariants?: Record<string, string>;
     swappableElements?: Record<string, string>;
   }
-): string[] | { pages: string[], testingData?: any } {
+): Promise<string[] | { pages: string[], testingData?: any }> {
   if (mode === 'testing') {
     console.log(`🔄 Converting template: \"${template.title}\" for ${pageCount} pages (${mode} mode)`);
     if (arcConfig) {
@@ -369,7 +369,7 @@ export async function convertStoryTemplateToStringArray(
   if (arcConfig?.pageIndex !== undefined) {
     // Arc-based generation using modulo logic
     const { calculateArcPosition } = await import('./arcManager.ts');
-    const arcPosition = calculateArcPosition(arcConfig.pageIndex, template.level);
+    const arcPosition = calculateArcPosition(arcConfig.pageIndex, toTemplateLevel(template.level));
     
     console.log(`🎪 Arc Processing: Page ${arcConfig.pageIndex} → Arc ${arcPosition.arcNumber}, Scene ${arcPosition.sceneIndex}, isEnding: ${arcPosition.isEndingPage}`);
     
@@ -492,7 +492,7 @@ export async function convertStoryTemplateToStringArray(
  */
 export function getNextTemplatePage(
   template: StoryTemplate, 
-  userInfo: UserInfo = {}, 
+  userInfo: UserInfo = { name: "Child" }, 
   pageIndex: number = 0
 ): string {
   const sceneIndex = pageIndex % template.scenes.length;

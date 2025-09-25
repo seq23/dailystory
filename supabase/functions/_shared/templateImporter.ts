@@ -4,7 +4,7 @@
  */
 
 import { convertStoryTemplateToStringArray } from './templateConverter.ts';
-import { UserInfo } from './placeholderResolver.ts';
+import { UserInfo } from './types/index.ts';
 
 interface StoryTemplate {
   title: string;
@@ -102,7 +102,7 @@ export async function getRawTemplate(
 export async function getTemplate(
   level: string, 
   templateIndex?: number, 
-  userInfo: UserInfo = {}, 
+  userInfo: UserInfo = { name: "Child" }, 
   pageCount: number = 5,
   mode: string = 'testing'
 ): Promise<string[] | { pages: string[], testingData?: any } | null> {
@@ -160,10 +160,12 @@ export async function getTemplate(
       
       return level0Pages;
     } else {
-      console.log(`✅ Found structured template: "${storyTemplate.title}"`);
+      // Type assertion for structured template
+      const structuredTemplate = storyTemplate as StoryTemplate;
+      console.log(`✅ Found structured template: "${structuredTemplate.title}"`);
       
       // Convert structured template to string array with mode support
-      const result = await convertStoryTemplateToStringArray(storyTemplate, userInfo, pageCount, mode);
+      const result = await convertStoryTemplateToStringArray(structuredTemplate, userInfo, pageCount, mode);
       
       // Handle both return types from convertStoryTemplateToStringArray
       if (typeof result === 'object' && 'pages' in result) {

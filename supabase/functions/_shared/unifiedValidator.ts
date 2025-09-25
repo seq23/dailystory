@@ -106,7 +106,9 @@ export class UnifiedValidator {
       // Limit cache size
       if (this._contentValidationCache.size > 500) {
         const firstKey = this._contentValidationCache.keys().next().value;
-        this._contentValidationCache.delete(firstKey);
+        if (firstKey) {
+          this._contentValidationCache.delete(firstKey);
+        }
       }
     }
 

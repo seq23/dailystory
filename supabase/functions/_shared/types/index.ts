@@ -7,17 +7,44 @@
 // Session identifier type
 export type SessionId = string;
 
-// User information interface - canonical version
+// User information interface - canonical version with all required properties
 export interface UserInfo {
-  id: string;
-  email: string;
-  plan: 'free' | 'premium' | 'team';
+  // Core properties
+  id?: string;
+  email?: string;
+  plan?: 'free' | 'premium' | 'team';
+  name: string;
+  age?: number;
+  grade?: string;
+  gradeLevel?: string;
+  nativeLanguage?: string;
+  learningGoal?: string;
+  
+  // Avatar information
+  avatar?: {
+    type?: string;
+    skinTone?: string;
+  };
+  
+  // Personal preferences (optional)
+  favoriteColor?: string;
+  favoriteAnimal?: string;
+  hobbies?: string;
+  favoriteFood?: string;
+  specialRequest?: string;
+  targetVocabulary?: string;
+  difficultyLevel?: string;
+  readingLevel?: string | number;
+  interests?: string[];
+  
+  // Story preferences
+  storyLanguagePreferences?: string[];
+  storyLanguagePreference?: string;
+  expertGradeLevel?: string;
+  
+  // Legacy support
   displayName?: string;
   guardianEmail?: string | null;
-  readingLevel?: number;
-  gradeLevel?: string;
-  interests?: string[];
-  nativeLanguage?: string;
 }
 
 // Character seed interface with all properties
@@ -80,10 +107,10 @@ export function hasAvatar(userInfo: UserInfo): userInfo is UserInfo & { avatar: 
 }
 
 // Safe avatar accessor helper to avoid "used before guard" pattern
-export function getAvatar(x: unknown): AvatarDetails['avatar'] | undefined {
-  return x && typeof x === 'object' && typeof (x as any).avatar === 'object'
-    ? (x as any).avatar
-    : undefined;
+export function getAvatar(userInfo: unknown): { type?: string; skinTone?: string } | undefined {
+  if (!userInfo || typeof userInfo !== 'object') return undefined;
+  const info = userInfo as any;
+  return info.avatar && typeof info.avatar === 'object' ? info.avatar : undefined;
 }
 
 // TemplateLevel union type for arc processing

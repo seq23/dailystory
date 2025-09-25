@@ -240,11 +240,11 @@ serve(async (req) => {
       const uploadResult = await uploadResponse.json();
       console.log('Dictionary uploaded successfully:', uploadResult);
 
-      return createCorsResponse({ 
+      return createDynamicCorsResponse({ 
         success: true, 
         dictionaryId: uploadResult.id,
         message: 'Dictionary uploaded successfully'
-      });
+      }, req, 200);
 
     } else if (action === 'list') {
       // List existing dictionaries
@@ -295,6 +295,7 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Dictionary manager error:', error);
-    return createCorsErrorResponse(error.message, 500);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return createDynamicCorsErrorResponse(errorMessage, req, 500);
   }
 });

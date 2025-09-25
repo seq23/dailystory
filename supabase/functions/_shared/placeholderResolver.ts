@@ -5,6 +5,7 @@
  */
 
 import type { UserInfo } from "./types/index.ts";
+import { getAvatar } from "./types/index.ts";
 
 export interface MicroContext {
   userInfo?: UserInfo;
@@ -72,7 +73,8 @@ function firstName(name?: string): string | undefined {
 }
 
 export function derivePronoun(userInfo?: UserInfo): string {
-  switch (userInfo?.avatar?.type) {
+  const avatar = getAvatar(userInfo);
+  switch (avatar?.type) {
     case "boy": return "he";
     case "girl": return "she"; 
     case "prefer-not-to-answer": return "they";
@@ -81,7 +83,8 @@ export function derivePronoun(userInfo?: UserInfo): string {
 }
 
 function deriveCompleteGenderInfo(userInfo?: UserInfo): string {
-  switch (userInfo?.avatar?.type) {
+  const avatar = getAvatar(userInfo);
+  switch (avatar?.type) {
     case "boy": return "boy. Use he/him/his pronouns";
     case "girl": return "girl. Use she/her/hers pronouns"; 
     case "prefer-not-to-answer": return "child. Use they/them/their pronouns";
@@ -107,7 +110,8 @@ export function resolveCanonicalPlaceholders(text: string, userInfo: UserInfo): 
       // Try to extract character names from special request
       extractedCharacterNames = extractCharacterNamesFromRequest(userInfo.specialRequest);
     } catch (error) {
-      console.warn('Character name extraction failed:', error.message);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.warn('Character name extraction failed:', errorMessage);
     }
   }
 
@@ -250,7 +254,8 @@ function extractCharacterNamesFromRequest(request: string): string[] {
     return [...new Set(names)].slice(0, 2);
     
   } catch (error) {
-    console.warn('Character name extraction error:', error.message);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.warn('Character name extraction error:', errorMessage);
     return [];
   }
 }
@@ -297,7 +302,8 @@ function applyCharacterNameSubstitutions(text: string, characterNames: string[])
     
     return result;
   } catch (error) {
-    console.warn('Character name substitution error:', error.message);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.warn('Character name substitution error:', errorMessage);
     return text; // Return original text on error
   }
 }

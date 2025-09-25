@@ -56,7 +56,8 @@ import type { UserInfo, TemplateLevel } from './types/index.ts';
 
 export interface Ending {
   type: string;
-  // Add other ending properties as needed
+  text: string;
+  microVariants: string[];
 }
 
 // Remove duplicate TemplateLevel export - using the one from types/index.ts

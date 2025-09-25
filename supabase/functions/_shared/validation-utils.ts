@@ -27,7 +27,7 @@ export function estimateTokenCount(text: string): number {
  */
 export function mapDifficultyToLevel(difficulty: DifficultyLevel | ExpertGradeLevel): ValidationLevel {
   const normalized = difficulty.toLowerCase();
-  const mapped = validationConfig.difficultyMapping[normalized];
+  const mapped = (validationConfig.difficultyMapping as any)[normalized];
   
   console.log(`🔍 [DIFFICULTY-MAPPING]`, {
     original: difficulty,
@@ -76,7 +76,8 @@ export function getTokenLimitsForLevel(level: ValidationLevel) {
  */
 export function getExpectedPagesForLevel(level: ValidationLevel): number {
   // Fallback to Netflix expectations for backward compatibility
-  return getExpectedPagesForService('netflix', level);
+  const result = getExpectedPagesForService('netflix', level);
+  return result !== null ? result : 5; // Default fallback value
 }
 
 /**

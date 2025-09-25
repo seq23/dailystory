@@ -127,10 +127,11 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Spelling correction error:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
     return new Response(
       JSON.stringify({ 
         error: 'Spelling correction failed',
-        details: error.message 
+        details: errorMessage
       }),
       { 
         status: 500,

@@ -167,7 +167,8 @@ async function testLevel0Recovery(): Promise<boolean> {
       return true;
     }
   } catch (error) {
-    console.log('❌ Level 0 template recovery test FAILED:', error.message);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.log('❌ Level 0 template recovery test FAILED:', errorMessage);
   }
   
   return false;
@@ -198,7 +199,8 @@ export async function preloadPopularTemplates(): Promise<void> {
         console.log(`✅ Preloaded ${preloadKey}`);
       }
     } catch (error) {
-      console.warn(`⚠️ Failed to preload ${level}[${index}]:`, error.message);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.warn(`⚠️ Failed to preload ${level}[${index}]:`, errorMessage);
     }
   }
   
