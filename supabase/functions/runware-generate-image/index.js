@@ -36,6 +36,7 @@ const supabase = createClient(
 const TIER_TIMEOUTS = {
   DIRECT_MODE: 8000,      // 8s max for Direct Mode
   TIER_1: 15000,          // 15s max for Tier 1 orchestration
+  AI_GENERATION: 15000,   // 15s max for AI scene generation
   RUNWARE_API: 25000      // 25s max for Runware generation
 };
 
@@ -427,7 +428,7 @@ async function generateWithRunware(
           ws.send(JSON.stringify([{ taskType: "authentication", apiKey }]));
         };
 
-    ws.onmessage = (event) => {
+    ws.onmessage = async (event) => {
       try {
         const response = JSON.parse(event.data);
         if (response.error || response.errors) {
@@ -644,7 +645,8 @@ async function handleRequest(req) {
               userInfo: payload.userInfo,
               sessionId,
               pageNumber,
-              previousPrimaryScene
+              previousPrimaryScene,
+              isDebugMode: true
             }
           });
         } catch (err) {
@@ -745,7 +747,8 @@ async function handleRequest(req) {
             }
           });
           result = resp25A.data || { success: false, error: resp25A.error?.message || 'Tier 2.5A escalation failed' };
-        } else if (payload.forceTier === 'COMPLETE_TIER_1' || payload.forceTier === 'tier-1' || payload.skipTier25) {
+        } catch (tier25Error) {
+          if (payload.forceTier === 'COMPLETE_TIER_1' || payload.forceTier === 'tier-1' || payload.skipTier25) {
           // Force Tier 1: Try Direct Mode instead of escalating to Tier 2.5A
           log.t2('Force Tier 1: Attempting Direct Mode via ai-visual-scene-creator');
           try {
