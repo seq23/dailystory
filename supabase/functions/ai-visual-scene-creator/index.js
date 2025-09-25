@@ -1,7 +1,5 @@
 // DEPLOY_MARKER: 2025-01-16T17:30:00Z - COMPREHENSIVE BUG FIXES WITH SUPABASE CLIENT
 import { 
-  getHairBySkintone, 
-  getSkinBySkintone, 
   getCulturalBundle, 
   shouldApplyCulturalEnhancements 
 } from '../_shared/StaticDataCache.js';
@@ -896,7 +894,7 @@ RULES:
 
     // Step 4: Get cultural enhancements using proper system
     const placeholderResolver = new UnifiedPlaceholderResolver();
-    const culturalEnhancements = placeholderResolver.resolveCulturalEnhancements(userInfo, sessionId);
+    const culturalEnhancements = await placeholderResolver.resolveCulturalEnhancements(userInfo, sessionId);
 
     // Step 5: Build comprehensive prompt with all character consistency elements
     const enhancementArray = [

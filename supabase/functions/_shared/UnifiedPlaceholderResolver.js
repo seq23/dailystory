@@ -417,7 +417,7 @@ export class UnifiedPlaceholderResolver {
   /**
    * CULTURAL ENHANCEMENT RESOLVER - For ${bundle.culturalEnhancements}
    */
-  resolveCulturalEnhancements(userInfo, sessionId) {
+  async resolveCulturalEnhancements(userInfo, sessionId) {
     // Check skin tone directly instead of flawed cultural type comparison
     const skinTone = userInfo?.skinTone || userInfo?.avatarIdentity?.skinTone || 'medium';
     
