@@ -3,7 +3,7 @@
 ## System Status: ACTIVE ✅
 **Primary Implementation**: `UnifiedPlaceholderResolver.js`  
 **Integration Point**: `runware-template-ab/index.js`  
-**Cultural Arrays**: `tier25Vocabulary.js`
+**Cultural Arrays**: `StaticDataCache.js` (moved from tier25Vocabulary.js)
 
 ## Core Architecture
 
@@ -31,19 +31,21 @@ Dark-skinned users receive:
 ### Implementation Flow
 1. **Skin Tone Check**: `skinTone === 'dark'` or `'darker'`
 2. **Character Seed**: Generated from character consistency service using `characterName + avatarIdentity`
-3. **Feature Selection**: Seeded random from `CULTURAL_ARRAYS.african` using character seed
+3. **Feature Selection**: Seeded random from `StaticDataCache.getCulturalBundle()` using character seed
 4. **Template Integration**: `{bundle.culturalEnhancements}` placeholder
 5. **Consistency**: Same features for same character across all pages, different across characters/sessions
 
 ### Cultural Bundle Integration
-**NEW FLOW**: `CharacterConsistencyService.getCulturalEnhancements(userInfo, sessionId, characterName)`
+**CORRECTED FLOW**: `CharacterConsistencyService.getCulturalEnhancements(userInfo, sessionId, characterName)`
 - Retrieves/creates character data with database persistence
 - Calls `StaticDataCache.getCulturalBundle()` with character seed (not session seed)
 - Caches cultural selections in character consistency database
 - Returns consistent cultural bundle across all story pages
+- **FIXED**: Direct import from StaticDataCache.js eliminates import chain dependencies
 
 ### Cultural Arrays Structure
 ```javascript
+// NOW IN StaticDataCache.js (not tier25Vocabulary.js)
 CULTURAL_ARRAYS = {
   african: {
     hair: ['beautiful afro', 'elegant braids', 'stylish cornrows', ...],

@@ -4,20 +4,8 @@
 
 // ============= CULTURAL ARRAYS - MOVED TO StaticDataCache.js =============
 // African American arrays moved to StaticDataCache.js for centralized management
-// This maintains backward compatibility while consolidating cultural data
-
-// Import cultural selection function from StaticDataCache for compatibility
-import { getCulturalBundle } from './StaticDataCache.js';
-
-// Legacy CULTURAL_ARRAYS maintained for backward compatibility
-export const CULTURAL_ARRAYS = {
-  african: {
-    // These arrays are now sourced from StaticDataCache.js
-    // Maintained for existing function signatures
-    hair: [], // Populated by getCulturalSelection()
-    features: [] // Populated by getCulturalSelection()
-  }
-};
+// All cultural selections now handled by CharacterConsistencyService for character-consistent seeding
+// This file now contains only pure vocabulary arrays for performance optimization
 
 // ============= PLACEHOLDER POOLS =============
 export const PLACEHOLDER_POOLS = {

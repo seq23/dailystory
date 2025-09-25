@@ -24,7 +24,7 @@ function asResponse(maybe: unknown, fallbackStatus = 204): Response {
 type HandlerFn = (req: Request) => Promise<Response> | Response;
 let cachedHandler: HandlerFn | null = null;
 let lastLoadError: { at: number; message: string } | null = null;
-const BACKOFF_MS = 15_000;
+const BACKOFF_MS = 5_000;
 async function loadHandler(allowRetry = false): Promise<HandlerFn | null> {
   if (cachedHandler) return cachedHandler;
   const now = Date.now();

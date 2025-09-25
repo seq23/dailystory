@@ -7,6 +7,8 @@ import {
 } from '../_shared/StaticDataCache.js';
 import { UnifiedPlaceholderResolver } from '../_shared/UnifiedPlaceholderResolver.js';
 import { getStyleFramework } from '../_shared/styleFrameworks.js';
+import { characterConsistencyService } from '../_shared/CharacterConsistencyService.js';
+import { SessionStateManager } from '../_shared/SessionStateManager.js';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
 
 // ============= BULLETPROOF PHASES IMPLEMENTATION =============
@@ -60,7 +62,8 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 // AI visual scene creator service initialized
 
-// ============= LAZY LOADING FUNCTIONS FOR HEAVY DEPENDENCIES =============
+// Remove lazy loading of CharacterConsistencyService - now static import at top
+// This fixes boot sync anomalies by eliminating import chain delays
 
 async function getPhaseOrchestrator() {
   try {
@@ -566,8 +569,7 @@ async function handleOrchestratorCall(requestId, storyText, enhancedStoryData, a
   const sessionId = userInfo?.sessionId || enhancedStoryData?.sessionId;
   try {
     if (sessionId && includeFullSchema) { // Only for test results, not orchestrator calls
-      const { CharacterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
-      const characterService = CharacterConsistencyService.getInstance();
+      const characterService = characterConsistencyService.getInstance();
       
       await characterService.analyzeVisualDetails(sessionId, storyText, userInfo?.pageNumber || 1, userInfo?.name);
       characterAppearance = await characterService.getCharacterAppearanceFromStory(sessionId, userInfo?.name) || '';
@@ -842,8 +844,7 @@ RULES:
     let coloredObjects = '';
     
     try {
-      const { CharacterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
-      const characterService = CharacterConsistencyService.getInstance();
+      const characterService = characterConsistencyService.getInstance();
       
       if (sessionId) {
         try {

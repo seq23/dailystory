@@ -9,9 +9,12 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
 import { phaseIntegrationOrchestrator } from "../_shared/PhaseIntegrationOrchestrator.js";
 import { characterConsistencyService } from "../_shared/CharacterConsistencyService.js";
 import { visualDetailTracker } from "../_shared/VisualDetailTracker.js";
-import { CULTURAL_ARRAYS, createSeededRandom } from "../_shared/tier25Vocabulary.js";
-// ORCHESTRATOR: THIS IS THE MAIN ORCHESTRATOR FUNCTION
-// **CRITICAL SYSTEM NOTICE**: This function serves as the PRIMARY ORCHESTRATOR for image generation
+import { SessionStateManager } from "../_shared/SessionStateManager.js";
+// ============================================================================
+// 🎯 ORCHESTRATOR: THIS IS THE PRIMARY IMAGE GENERATION ORCHESTRATOR
+// **CRITICAL SYSTEM NOTICE**: This function serves as the MAIN ORCHESTRATOR for image generation
+// Handles all image generation tiers, fallbacks, and service coordination
+// ============================================================================
 import { UnifiedPlaceholderResolver } from '../_shared/UnifiedPlaceholderResolver.js';
 import * as tierLogging from "./tierLogging.js";
 
