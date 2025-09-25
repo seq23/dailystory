@@ -612,77 +612,93 @@ export class SimpleImageService {
       }
     }
 
-    try {
-      DebugLogger.log('image', 'Calling nuclear independent template: runware-template-cd');
-      
-      const { data: templateResult, error: templateError } = await supabase.functions.invoke('runware-template-cd', {
-        body: {
-          pageText: storyText.trim().substring(0, 3000),
-          userInfo,
-          sessionId: normalizedSessionId,
-          pageNumber,
-          isGuestUser: !isPremium,
-          difficultyLevel: this.mapDifficultyLevel(userInfo)
-        }
-      });
+    // Try nuclear templates in order: 2.5C → 2.5D
+    const templates = [
+      { complexity: 'C', tierName: 'TIER_2_5C_TEMPLATE' },
+      { complexity: 'D', tierName: 'TIER_2_5D_TEMPLATE' }
+    ];
 
-      if (templateError) {
-        throw new Error(`Template error: ${templateError.message}`);
-      }
-
-      // Phase A: Multi-Field Image URL Validation - Handle all API response variations
-      const imageURL = templateResult?.imageURL || templateResult?.image_url || templateResult?.imageUrl || templateResult?.url;
-      if (templateResult?.success && imageURL?.trim()) {
-        DebugLogger.log('image', `🖼️ Template generated successfully: ${imageURL}`);
-        
-        // Store result in cache using character versioned key for consistency
-        if (this.isIndexedDBAvailable && normalizedSessionId !== 'unknown' && userInfo) {
-          const versionedCacheKey = this.generateCharacterVersionedCacheKey(userInfo, storyText);
-          await this.storeImageInDB(versionedCacheKey, pageNumber, imageURL, templateResult);
-        }
-
-        // Emit timer resume event
-        try {
-          window.dispatchEvent(new CustomEvent('image:generation:complete'));
-        } catch {}
-
-        return {
-          success: true,
-          url: imageURL,
-          imageURL: imageURL,
-          generatedAt: new Date().toISOString(),
-          tier: 'TIER_2_5C_TEMPLATE',
-          usedTier: 'TIER_2_5C_TEMPLATE',
-          metadata: { ...templateResult, healthStatus }
-        };
-      } else {
-        throw new Error(`Template returned no image: ${JSON.stringify(templateResult)}`);
-      }
-    } catch (error) {
-      DebugLogger.error('image', 'Template generation failed, using SVG fallback', error);
-      
-      // Final SVG fallback
-      const fallbackUrl = ImageFallbackService.generateStoryPlaceholder(storyText, pageNumber);
-      
-      // Emit timer resume event
+    for (const template of templates) {
       try {
-        window.dispatchEvent(new CustomEvent('image:generation:complete'));
-      } catch {}
-      
-      return {
-        success: true,
-        url: fallbackUrl,
-        imageURL: fallbackUrl,
-        generatedAt: new Date().toISOString(),
-        tier: 'TIER_4_TEMPLATE_FALLBACK',
-        metadata: {
-          isFallback: true,
-          originalError: error.message,
-          tier: 'template_fallback',
-          healthStatus
+        DebugLogger.log('image', `Calling nuclear independent template: runware-template-cd (complexity ${template.complexity})`);
+        
+        const { data: templateResult, error: templateError } = await supabase.functions.invoke('runware-template-cd', {
+          body: {
+            pageText: storyText.trim().substring(0, 3000),
+            userInfo,
+            sessionId: normalizedSessionId,
+            pageNumber,
+            isGuestUser: !isPremium,
+            difficultyLevel: this.mapDifficultyLevel(userInfo),
+            templateComplexity: template.complexity
+          }
+        });
+
+        if (templateError) {
+          throw new Error(`Template ${template.complexity} error: ${templateError.message}`);
         }
-      };
+
+        // Phase A: Multi-Field Image URL Validation - Handle all API response variations
+        const imageURL = templateResult?.imageURL || templateResult?.image_url || templateResult?.imageUrl || templateResult?.url;
+        if (templateResult?.success && imageURL?.trim()) {
+          DebugLogger.log('image', `🖼️ Template ${template.complexity} generated successfully: ${imageURL}`);
+          
+          // Store result in cache using character versioned key for consistency
+          if (this.isIndexedDBAvailable && normalizedSessionId !== 'unknown' && userInfo) {
+            const versionedCacheKey = this.generateCharacterVersionedCacheKey(userInfo, storyText);
+            await this.storeImageInDB(versionedCacheKey, pageNumber, imageURL, templateResult);
+          }
+
+          // Emit timer resume event
+          try {
+            window.dispatchEvent(new CustomEvent('image:generation:complete'));
+          } catch {}
+
+          return {
+            success: true,
+            url: imageURL,
+            imageURL: imageURL,
+            generatedAt: new Date().toISOString(),
+            tier: template.tierName,
+            usedTier: template.tierName,
+            metadata: { ...templateResult, healthStatus }
+          };
+        } else {
+          throw new Error(`Template ${template.complexity} returned no image: ${JSON.stringify(templateResult)}`);
+        }
+      } catch (error) {
+        DebugLogger.error('image', `Template ${template.complexity} generation failed`, error);
+        // Continue to next template if this one fails
+        if (template.complexity === 'D') {
+          // Last template failed, proceed to final fallback
+          break;
+        }
+      }
     }
+
+    // All nuclear templates failed - final SVG fallback
+    DebugLogger.error('image', 'All nuclear templates (2.5C and 2.5D) failed, using SVG fallback');
+    
+    const fallbackUrl = ImageFallbackService.generateStoryPlaceholder(storyText, pageNumber);
+    
+    // Emit timer resume event
+    try {
+      window.dispatchEvent(new CustomEvent('image:generation:complete'));
+    } catch {}
+    
+    return {
+      success: true,
+      url: fallbackUrl,
+      imageURL: fallbackUrl,
+      generatedAt: new Date().toISOString(),
+      tier: 'TIER_4_TEMPLATE_FALLBACK',
+      metadata: {
+        isFallback: true,
+        originalError: 'All nuclear templates failed',
+        tier: 'template_fallback',
+        healthStatus
+      }
+    };
   }
 
   // Map user info to backend difficulty level

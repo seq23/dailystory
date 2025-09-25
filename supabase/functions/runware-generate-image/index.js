@@ -753,49 +753,32 @@ async function handleRequest(req) {
           });
           result = resp25A.data || { success: false, error: resp25A.error?.message || 'Tier 2.5A escalation failed' };
         } catch (tier25Error) {
-          if (payload.forceTier === 'COMPLETE_TIER_1' || payload.forceTier === 'tier-1' || payload.skipTier25) {
-          // Force Tier 1: Try Direct Mode instead of escalating to Tier 2.5A
-          log.t2('Force Tier 1: Attempting Direct Mode via ai-visual-scene-creator');
+          log.failure('tier-2.5A', { error: (tier25Error && tier25Error.message) || String(tier25Error), escalation: 'tier-2.5B' });
+          
+          // Escalate to Tier 2.5B
           try {
-            // Direct timeout-enabled call with error classification
-            const controller3 = new AbortController();
-            const timeout3 = setTimeout(() => controller3.abort('timeout'), TIER_TIMEOUTS.DIRECT_MODE);
-            
-            let directModeResponse;
-            try {
-              directModeResponse = await supabase.functions.invoke('ai-visual-scene-creator', {
-                body: {
-                  storyText,
-                  userInfo: payload.userInfo,
-                  sessionId,
-                  pageNumber: pageNumber || 1,
-                  directMode: true  // Enable Direct Mode bypass
-                }
-              });
-            } catch (err) {
-              if (err?.name === 'AbortError' || `${err}`.includes('timeout')) {
-                throw new Error('Timeout AI Visual Scene Creator (Direct Mode)');
+            log.attempt('tier-2.5B', { note: 'Escalating from Tier 2.5A failure' });
+            const resp25B = await supabase.functions.invoke('runware-template-ab', {
+              body: {
+                storyText,
+                pageText: storyText,
+                userInfo: payload.userInfo,
+                sessionId,
+                pageNumber: pageNumber || 1,
+                templateComplexity: 'B'
               }
-              throw err;
-            } finally {
-              clearTimeout(timeout3);
-            }
-
-            if (directModeResponse?.data && directModeResponse.data.success) {
-              result = {
-                ...directModeResponse.data,
-                tier: 'DIRECT_MODE',
-                usedTier: 'DIRECT_MODE',
-                fallbackReason: 'orchestrator_enhancement_failed_force_tier_1',
-                templateStructure: 'DIRECT_MODE_SUCCESS'
-              };
-              log.success('tier-1', { mode: 'direct_mode', imageUrl: result.imageURL });
+            });
+            
+            if (resp25B?.data?.success) {
+              result = resp25B.data;
+              log.success('tier-2.5B', { imageUrl: result.imageURL });
             } else {
-              throw new Error('Direct Mode failed');
+              throw new Error('Tier 2.5B failed');
             }
-          } catch (directErr) {
-            log.failure('tier-1', { error: (directErr && directErr.message) || String(directErr), reason: 'direct_mode_failed_escalating_to_nuclear' });
-            // Direct Mode failed, escalate to nuclear templates (2.5C → 2.5D)
+          } catch (tier25BError) {
+            log.failure('tier-2.5B', { error: (tier25BError && tier25BError.message) || String(tier25BError), escalation: 'nuclear-templates' });
+            
+            // Escalate to nuclear templates (2.5C → 2.5D)
             result = await tryNuclearTemplates({
               storyText,
               userInfo: payload.userInfo,
@@ -804,20 +787,59 @@ async function handleRequest(req) {
               log
             });
           }
-        } else {
-          // Regular flow: Allow escalation to Tier 2.5A for non-forced requests
-          log.failure('tier-1', { error: msg, escalation: 'tier-2.5A' });
-          const resp = await supabase.functions.invoke('runware-template-ab', {
-            body: {
-              storyText,
-              pageText: storyText,
-              userInfo: payload.userInfo,
-              sessionId,
-              pageNumber: pageNumber || 1,
-              templateComplexity: 'A'
+        }
+      }
+      
+      // Handle Force Tier modes separately
+      if (payload.forceTier === 'COMPLETE_TIER_1' || payload.forceTier === 'tier-1' || payload.skipTier25) {
+        log.t2('Force Tier 1: Attempting Direct Mode via ai-visual-scene-creator');
+        try {
+          // Direct timeout-enabled call with error classification
+          const controller3 = new AbortController();
+          const timeout3 = setTimeout(() => controller3.abort('timeout'), TIER_TIMEOUTS.DIRECT_MODE);
+          
+          let directModeResponse;
+          try {
+            directModeResponse = await supabase.functions.invoke('ai-visual-scene-creator', {
+              body: {
+                storyText,
+                userInfo: payload.userInfo,
+                sessionId,
+                pageNumber: pageNumber || 1,
+                directMode: true  // Enable Direct Mode bypass
+              }
+            });
+          } catch (err) {
+            if (err?.name === 'AbortError' || `${err}`.includes('timeout')) {
+              throw new Error('Timeout AI Visual Scene Creator (Direct Mode)');
             }
+            throw err;
+          } finally {
+            clearTimeout(timeout3);
+          }
+
+          if (directModeResponse?.data && directModeResponse.data.success) {
+            result = {
+              ...directModeResponse.data,
+              tier: 'DIRECT_MODE',
+              usedTier: 'DIRECT_MODE',
+              fallbackReason: 'orchestrator_enhancement_failed_force_tier_1',
+              templateStructure: 'DIRECT_MODE_SUCCESS'
+            };
+            log.success('tier-1', { mode: 'direct_mode', imageUrl: result.imageURL });
+          } else {
+            throw new Error('Direct Mode failed');
+          }
+        } catch (directErr) {
+          log.failure('tier-1', { error: (directErr && directErr.message) || String(directErr), reason: 'direct_mode_failed_escalating_to_nuclear' });
+          // Direct Mode failed, escalate to nuclear templates (2.5C → 2.5D)
+          result = await tryNuclearTemplates({
+            storyText,
+            userInfo: payload.userInfo,
+            sessionId,
+            pageNumber: pageNumber || 1,
+            log
           });
-          result = resp.data || { success: false, error: resp.error?.message || 'Tier 2.5A escalation failed' };
         }
       }
     }
