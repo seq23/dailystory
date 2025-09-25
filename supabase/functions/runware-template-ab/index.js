@@ -1503,6 +1503,23 @@ async function handleRequest(req) {
       payload = rawPayload;
     }
     
+    // Helper function to get visual consistency elements using VisualDetailTracker
+    async function getVisualConsistencyElements(sessionId, extractedScene, fallbackColoredObjects) {
+      try {
+        const { VisualDetailTracker } = await import("../_shared/VisualDetailTracker.js");
+        const visualDetails = await VisualDetailTracker.getVisualDetailsForPrompt(sessionId);
+        if (visualDetails) {
+          console.log(`✅ [TIER2.5A] Using sophisticated VisualDetailTracker: ${visualDetails.substring(0, 100)}`);
+          return visualDetails;
+        }
+      } catch (error) {
+        console.warn('VisualDetailTracker failed, using fallback:', error.message);
+      }
+      // Fallback to existing logic
+      return fallbackColoredObjects || 
+        (extractedScene?.objects?.length ? extractedScene.objects.map(o => o.phrase).join(', ') : '');
+    }
+    
     let enhancedStoryData, storyText, pageNumber, avatarIdentity, templateComplexity, sessionId;
     
     if (payload.pageText) {
@@ -1661,8 +1678,7 @@ async function handleRequest(req) {
         .replace('{semantic_scene}', extractedScene?.scene || extractedScene)
         .replace('{secondary_characters}', secondaryDescriptions.length ? secondaryDescriptions.join(', ') : 
           (extractedScene?.secondary?.length ? extractedScene.secondary.join(', ') : ''))
-        .replace('{visual_consistency_elements}', coloredObjects || 
-          (extractedScene?.objects?.length ? extractedScene.objects.map(o => o.phrase).join(', ') : ''))
+        .replace('{visual_consistency_elements}', await getVisualConsistencyElements(sessionId, extractedScene, coloredObjects))
         .replace('{setting_context}', extractedScene?.settings?.length ? extractedScene.settings.join(', ') : '')
         .replace('{cultural_context}', culturalProfile || 'multicultural setting')
         .replace('{community_context}', '')

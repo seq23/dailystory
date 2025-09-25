@@ -439,6 +439,30 @@ async function generateWithRunware(
         if (response.data) {
           for (const item of response.data) {
             if (item.taskType === "authentication") {
+              // Log prompts to image_generation_debug before Runware call
+              try {
+                const { VisualDetailTracker } = await import("../_shared/VisualDetailTracker.js");
+                const visualDetails = await VisualDetailTracker.getVisualDetailsForPrompt(sessionId);
+                
+                const { logTierAttempt } = await import("./tierLogging.js");
+                await logTierAttempt(
+                  null, // supabase client not needed here
+                  sessionId,
+                  requestId,
+                  'tier-1',
+                  'attempting',
+                  {
+                    positivePrompt: enhancedPrompt,
+                    negativePrompt,
+                    visualDetails,
+                    edgeFunction: 'runware-generate-image',
+                    pageNumber: pageNumber || 1
+                  }
+                );
+              } catch (loggingError) {
+                console.warn('Failed to log prompt data:', loggingError.message);
+              }
+              
               ws.send(
                 JSON.stringify([
                   {
@@ -694,9 +718,14 @@ async function handleRequest(req) {
         const msg = (tier1Error && tier1Error.message) || String(tier1Error);
         log.failure('tier-1', { error: msg, escalation: 'tier-2.5A' });
         
-        // Escalate to Tier 2.5A
+        // Escalate to Tier 2.5A with pre-analyzed visual data
         try {
-          log.attempt('tier-2.5A', { note: 'Escalating from Tier 1 failure' });
+          log.attempt('tier-2.5A', { note: 'Escalating from Tier 1 failure with visual data' });
+          
+          // Gather visual consistency data from Tier 1 analysis
+          const { VisualDetailTracker } = await import("../_shared/VisualDetailTracker.js");
+          const visualDetails = await VisualDetailTracker.getVisualDetailsForPrompt(sessionId);
+          
           const resp25A = await supabase.functions.invoke('runware-template-ab', {
             body: {
               storyText,
@@ -704,7 +733,12 @@ async function handleRequest(req) {
               userInfo: payload.userInfo,
               sessionId,
               pageNumber: pageNumber || 1,
-              templateComplexity: 'A'
+              templateComplexity: 'A',
+              preAnalyzedData: {
+                visualDetails,
+                primaryScene,
+                aiSchema
+              }
             }
           });
           if (resp25A.data && resp25A.data.success) {

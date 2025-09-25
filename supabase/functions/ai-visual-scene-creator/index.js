@@ -843,6 +843,10 @@ RULES:
           // Main character analysis
           await characterService.analyzeVisualDetails(sessionId, storyText, pageNumber || 1, userInfo?.name);
           characterAppearance = await characterService.getCharacterAppearanceFromStory(sessionId, userInfo?.name) || '';
+
+          // Connect VisualDetailTracker for sophisticated analysis
+          const { VisualDetailTracker } = await import("../_shared/VisualDetailTracker.js");
+          await VisualDetailTracker.analyzeTextForDetails(sessionId, storyText, pageNumber || 1, userInfo?.name);
           
           // Secondary character detection
           const pageTextForAnalysis = storyText || payload.pageText || parsedResponse.primaryScene || '';
