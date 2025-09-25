@@ -1,17 +1,31 @@
-// Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
+// Enhanced CORS-compliant ElevenLabs TTS with preflight fix
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { handleHealthAndCors } from "../_shared/healthCors.ts";
+import { withCors } from "../_shared/healthCors.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Max-Age": "600",
-};
+const corsWrapped = withCors(handle, {
+  allowCredentials: false,
+  allowMethods: ["GET","POST","OPTIONS","HEAD"]
+});
 
-serve(async (req) => {
-  // Handle CORS and health checks
-  const healthResponse = handleHealthAndCors(req);
-  if (healthResponse) return healthResponse;
+serve(corsWrapped);
+
+async function handle(req: Request): Promise<Response> {
+  const url = new URL(req.url);
+  
+  // Health endpoint
+  if (url.pathname === "/" || url.pathname === "/health") {
+    return new Response(JSON.stringify({ ok: true, service: "elevenlabs-tts-smart" }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
+
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ success: false, error: "Method not allowed" }), {
+      status: 405,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
 
   try {
     const { text, voice_id, model_id, voice_settings } = await req.json();
@@ -66,16 +80,10 @@ serve(async (req) => {
         voice_id: voiceId,
         model_id: modelId
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { headers: { "Content-Type": "application/json" } }
     );
   } catch (error) {
     console.error("Error in elevenlabs-tts-smart:", error);
-    return new Response(
-      JSON.stringify({ success: false, error: error instanceof Error ? error.message : String(error) }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, "Content-Type": "application/json" } 
-      }
-    );
+    throw error; // Let withCors handle error response with proper CORS headers
   }
-});
+}

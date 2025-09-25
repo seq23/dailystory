@@ -1,128 +1,138 @@
 /**
- * HEALTH CORS - Standardized CORS headers and health endpoint handler
- * Part of ERROR-001 fix: Eliminates CORS preflight issues in health probes
+ * Enhanced CORS handling with origin reflection and header mirroring
+ * Fixes Charlotte speech preflight failures
  */
 
-/**
- * Standardized CORS headers - consistent across all edge functions
- * Max-Age=600 (10 minutes) for preflight caching
- */
+type CorsOptions = {
+  allowOrigins?: string[]; // if unset, reflect any Origin
+  allowCredentials?: boolean; // default false
+  allowMethods?: string[]; // default below
+  allowHeaders?: string[];  // if unset, mirror Access-Control-Request-Headers
+  maxAgeSeconds?: number;   // default 600
+};
+
+export function buildCorsHeaders(req: Request, opts: CorsOptions = {}) {
+  const origin = req.headers.get("Origin") ?? "";
+  const {
+    allowOrigins,
+    allowCredentials = false,
+    allowMethods = ["GET","POST","OPTIONS","HEAD"],
+    allowHeaders,
+    maxAgeSeconds = 600,
+  } = opts;
+
+  const h = new Headers();
+
+  // Origin handling
+  if (allowOrigins && allowOrigins.length > 0) {
+    const allowed = allowOrigins.includes(origin) ? origin : allowOrigins[0];
+    h.set("Access-Control-Allow-Origin", allowed);
+    h.set("Vary", "Origin");
+  } else if (origin) {
+    // reflect arbitrary origin
+    h.set("Access-Control-Allow-Origin", origin);
+    h.set("Vary", "Origin");
+  } else {
+    // no origin -> fallback to *
+    h.set("Access-Control-Allow-Origin", "*");
+  }
+
+  if (allowCredentials) h.set("Access-Control-Allow-Credentials", "true");
+
+  h.set("Access-Control-Allow-Methods", allowMethods.join(", "));
+  h.set("Access-Control-Max-Age", String(maxAgeSeconds));
+
+  // Allow-Headers: mirror requested or use provided list
+  const reqHdrs = req.headers.get("Access-Control-Request-Headers");
+  if (allowHeaders && allowHeaders.length) {
+    h.set("Access-Control-Allow-Headers", allowHeaders.join(", "));
+  } else if (reqHdrs) {
+    h.set("Access-Control-Allow-Headers", reqHdrs);
+    h.append("Vary", "Access-Control-Request-Headers");
+  } else {
+    // sensible default for typical TTS/fetch flows
+    h.set("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept, Range, x-client-info, apikey");
+  }
+
+  // Always helpful
+  h.set("Accept-Ranges", "bytes");
+
+  return h;
+}
+
+export function withCors(
+  handler: (req: Request) => Promise<Response> | Response,
+  opts?: CorsOptions
+) {
+  return async (req: Request): Promise<Response> => {
+    const method = req.method.toUpperCase();
+    const url = new URL(req.url);
+
+    // Health endpoints: respond quickly to HEAD
+    if (method === "HEAD" && (url.pathname === "/health" || url.pathname === "/")) {
+      return new Response(null, { status: 204, headers: buildCorsHeaders(req, opts) });
+    }
+
+    // Preflight: no body, always 204
+    if (method === "OPTIONS") {
+      return new Response(null, { status: 204, headers: buildCorsHeaders(req, opts) });
+    }
+
+    try {
+      const res = await handler(req);
+      // Merge CORS headers on success
+      const cors = buildCorsHeaders(req, opts);
+      const merged = new Headers(res.headers);
+      cors.forEach((v, k) => merged.set(k, v));
+      return new Response(res.body, { status: res.status, headers: merged });
+    } catch (err: any) {
+      // Ensure errors still have CORS headers
+      const cors = buildCorsHeaders(req, opts);
+      cors.set("Content-Type", "application/json");
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: "internal_error", 
+        detail: String(err?.message ?? err) 
+      }), {
+        status: 500,
+        headers: cors
+      });
+    }
+  };
+}
+
+// Legacy compatibility exports
 export const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "GET, HEAD, POST, OPTIONS",
-  "Access-Control-Max-Age": "600", // 10 minute preflight cache
+  "Access-Control-Max-Age": "600",
   "Vary": "Origin"
 };
 
-/**
- * Wraps any Response with standardized CORS headers
- * 
- * @param res - Response to wrap (optional, defaults to 204)
- * @returns Response with CORS headers applied
- */
-export function withCors(res?: Response): Response {
-  const response = res ?? new Response(null, { status: 204 });
-  const headers = new Headers(response.headers || {});
-  
-  // Apply all CORS headers
-  for (const [key, value] of Object.entries(corsHeaders)) {
-    headers.set(key, value);
-  }
-  
-  return new Response(response.body, { 
-    status: response.status, 
-    headers 
-  });
-}
-
-/**
- * Handles OPTIONS preflight requests instantly with proper caching
- * 
- * @returns Response - 204 with CORS headers and 10-minute cache
- */
-export function handleOptionsPreflght(): Response {
-  return withCors(new Response(null, { status: 204 }));
-}
-
-/**
- * Handles HEAD /health requests without triggering preflights
- * 
- * @param requestId - Optional request ID for tracking
- * @returns Response - 200 with minimal headers, no auth required
- */
-export function handleHealthEndpoint(requestId?: string): Response {
-  const id = requestId || crypto.randomUUID();
-  
-  const response = new Response(null, { 
-    status: 200,
-    headers: { 
-      "x-req-id": id,
-      "x-health": "true", // For easy log filtering
-      "Cache-Control": "no-store" // Never cache health checks
-    }
-  });
-  
-  return withCors(response);
-}
-
-/**
- * Unified request router for health and CORS handling
- * Use this at the top of every edge function
- * 
- * @param req - Incoming request
- * @returns Response | null - Returns Response if handled, null to continue
- */
 export function handleHealthAndCors(req: Request): Response | null {
   const url = new URL(req.url);
   
   // Handle OPTIONS preflight instantly
   if (req.method === "OPTIONS") {
-    return handleOptionsPreflght();
+    return new Response(null, { status: 204, headers: buildCorsHeaders(req) });
   }
   
   // Handle HEAD /health without auth
-  if (req.method === "HEAD" && url.pathname === "/health") {
-    return handleHealthEndpoint();
+  if (req.method === "HEAD" && (url.pathname === "/health" || url.pathname === "/")) {
+    return new Response(null, { status: 204, headers: buildCorsHeaders(req) });
   }
   
   // Handle GET /health for compatibility
-  if (req.method === "GET" && url.pathname === "/health") {
-    return handleHealthEndpoint();
+  if (req.method === "GET" && (url.pathname === "/health" || url.pathname === "/")) {
+    return new Response(JSON.stringify({ ok: true }), { 
+      status: 200, 
+      headers: { 
+        ...Object.fromEntries(buildCorsHeaders(req)),
+        "Content-Type": "application/json"
+      }
+    });
   }
   
   return null; // Let function continue with normal logic
-}
-
-/**
- * Standard error response with CORS headers
- * 
- * @param error - Error message or object
- * @param status - HTTP status code
- * @param requestId - Optional request ID
- * @returns Response - JSON error with CORS headers
- */
-export function createErrorResponse(
-  error: string | object, 
-  status: number = 500,
-  requestId?: string
-): Response {
-  const id = requestId || crypto.randomUUID();
-  
-  const errorResponse = new Response(
-    JSON.stringify({
-      error: typeof error === 'string' ? error : error,
-      requestId: id,
-      timestamp: new Date().toISOString()
-    }),
-    {
-      status,
-      headers: {
-        "Content-Type": "application/json",
-        "x-req-id": id
-      }
-    }
-  );
-  
-  return withCors(errorResponse);
 }
