@@ -30,6 +30,57 @@ const supabase = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
 );
 
+// ============= BULLETPROOF PHASES IMPLEMENTATION =============
+
+// PHASE 3: FAST CIRCUIT BREAKER PROTECTION
+const TIER_TIMEOUTS = {
+  DIRECT_MODE: 8000,      // 8s max for Direct Mode
+  TIER_1: 15000,          // 15s max for Tier 1 orchestration
+  RUNWARE_API: 25000      // 25s max for Runware generation
+};
+
+// PHASE 3B: Instant Failure Detection
+function shouldFailFast(error) {
+  const msg = error?.message?.toLowerCase() || '';
+  return msg.includes('payload_null') || 
+         msg.includes('no_story_content') || 
+         msg.includes('missing_story_content') ||
+         msg.includes('no_session_id') ||
+         msg.includes('missing_user_info');
+}
+
+// PHASE 5A: Primary Scene Quality Check
+function validatePrimarySceneQuality(scene) {
+  if (!scene || typeof scene !== 'string') return false;
+  if (scene.length < 50) return false;
+  if (scene.includes('undefined') || scene.includes('null')) return false;
+  return scene.split(' ').filter(word => word.length > 0).length >= 8; // Minimum word count
+}
+
+// PHASE 5B: Image URL Validation
+function validateImageURL(url) {
+  if (!url || typeof url !== 'string') return false;
+  if (!url.startsWith('http')) return false;
+  if (url.includes('undefined') || url.includes('null')) return false;
+  return url.length > 20; // Reasonable URL length
+}
+
+// PHASE 1A: Lightning-Fast Input Validation (50ms max)
+function validatePayloadFast(payload) {
+  if (!payload) throw new Error("PAYLOAD_NULL");
+  if (!payload.pageText && !payload.storyText) throw new Error("NO_STORY_CONTENT");
+  if (!payload.sessionId && !payload.userInfo) throw new Error("NO_SESSION_ID");
+  return true; // Validation passed
+}
+
+// PHASE 4A: Smart Tier Escalation
+function shouldEscalateToTier25(error) {
+  const msg = error?.message?.toLowerCase() || '';
+  return msg.includes('tier1_enhancement_failed') ||
+         msg.includes('no_primary_scene') ||
+         msg.includes('enhancement_failed');
+}
+
 // ---------------- NUCLEAR STYLE FRAMEWORKS ----------------
 const NUCLEAR_HARDCODED_STYLE_FRAMEWORKS = {
   beginner: {
@@ -479,6 +530,7 @@ async function handleRequest(req) {
   }
 
   const requestId = CoreUtils.generateRequestId();
+  const startTime = Date.now(); // PHASE 6: Performance tracking
   tierLogging.logTier2(`🎯 [${requestId}] Orchestrator: ${req.method} ${req.url}`);
 
 
@@ -499,6 +551,23 @@ async function handleRequest(req) {
   // Outer try/catch to avoid orphan catch parse issues & network flakiness
   try {
     const payload = await req.json().catch(() => ({}));
+    
+    // PHASE 1A: Lightning-Fast Input Validation (50ms max)
+    try {
+      validatePayloadFast(payload);
+    } catch (validationError) {
+      if (shouldFailFast(validationError)) {
+        tierLogging.logTier2(`❌ [${requestId}] Fast validation failed: ${validationError.message}`);
+        return new Response(JSON.stringify({ 
+          error: `Fast validation failed: ${validationError.message}`,
+          type: 'VALIDATION_ERROR'
+        }), {
+          status: 400,
+          headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' }
+        });
+      }
+    }
+    
     const sessionId = payload?.sessionId || ('session_' + requestId);
     const log = bindTierLogger(supabase, sessionId, requestId);
 
@@ -553,6 +622,13 @@ async function handleRequest(req) {
         }
 
         const { primaryScene, aiSchema } = sceneResponse.data;
+        
+        // PHASE 5A: Primary Scene Quality Gate
+        if (!validatePrimarySceneQuality(primaryScene)) {
+          log.failure('tier-1', { error: 'Primary scene quality validation failed', escalation: 'tier-2.5A' });
+          throw new Error('PRIMARY_SCENE_QUALITY_FAILED');
+        }
+        
         const basePrompt = primaryScene + (aiSchema ? `\n\nSchema: ${JSON.stringify(aiSchema)}` : '');
 
         // Next: Orchestrator enhances the prompt
@@ -592,6 +668,13 @@ async function handleRequest(req) {
           aiSchema,
           templateStructure: 'COMPLETE_TIER_1'
         };
+        
+        // PHASE 5B: Image URL Quality Gate
+        if (!validateImageURL(result.imageURL)) {
+          log.failure('tier-1', { error: 'Invalid image URL generated', escalation: 'tier-2.5A' });
+          throw new Error('INVALID_IMAGE_URL');
+        }
+        
         log.success('tier-1', { imageUrl: result.imageURL });
       } catch (tier1Error) {
         const msg = (tier1Error && tier1Error.message) || String(tier1Error);
@@ -714,6 +797,13 @@ async function handleRequest(req) {
         }
 
         const { primaryScene, aiSchema } = sceneResponse.data;
+        
+        // PHASE 5A: Primary Scene Quality Gate
+        if (!validatePrimarySceneQuality(primaryScene)) {
+          log.failure('tier-1', { error: 'Primary scene quality validation failed', escalation: 'tier-2.5A' });
+          throw new Error('PRIMARY_SCENE_QUALITY_FAILED');
+        }
+        
         const basePrompt = primaryScene + (aiSchema ? `\n\nSchema: ${JSON.stringify(aiSchema)}` : '');
 
         // Next: Orchestrator enhances the prompt
@@ -846,7 +936,9 @@ async function handleRequest(req) {
       status: 200,
       headers: {
         'Access-Control-Allow-Origin': '*',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'X-Response-Time': `${Date.now() - startTime}ms`, // PHASE 6: Performance tracking
+        'X-Request-Id': requestId
       }
     });
   } catch (error) {

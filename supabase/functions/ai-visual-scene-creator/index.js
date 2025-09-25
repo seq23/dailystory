@@ -9,6 +9,50 @@ import { UnifiedPlaceholderResolver } from '../_shared/UnifiedPlaceholderResolve
 import { getStyleFramework } from '../_shared/styleFrameworks.js';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
 
+// ============= BULLETPROOF PHASES IMPLEMENTATION =============
+
+// PHASE 3: FAST CIRCUIT BREAKER PROTECTION  
+const TIER_TIMEOUTS = {
+  DIRECT_MODE: 8000,      // 8s max for Direct Mode
+  AI_GENERATION: 15000,   // 15s max for AI generation
+  OPENAI_API: 12000       // 12s max for OpenAI calls
+};
+
+// PHASE 1B: Fast Direct Mode Validation
+function validateDirectModePayload(payload) {
+  if (!payload.pageText && !payload.storyText) throw new Error("MISSING_STORY_CONTENT");
+  if (!payload.userInfo) throw new Error("MISSING_USER_INFO");
+  return { isValid: true, contentType: payload.pageText ? 'pageText' : 'storyText' };
+}
+
+// PHASE 3B: Instant Failure Detection
+function shouldFailFast(error) {
+  const msg = error?.message?.toLowerCase() || '';
+  return msg.includes('missing_story_content') || 
+         msg.includes('missing_user_info') ||
+         msg.includes('payload_null') ||
+         msg.includes('no_story_content');
+}
+
+// PHASE 5A: Primary Scene Quality Check
+function validatePrimarySceneQuality(scene) {
+  if (!scene || typeof scene !== 'string') return false;
+  if (scene.length < 50) return false;
+  if (scene.includes('undefined') || scene.includes('null')) return false;
+  return scene.split(' ').filter(word => word.length > 0).length >= 8; // Minimum word count
+}
+
+// PHASE 5B: Image URL Validation  
+function validateImageURL(url) {
+  if (!url || typeof url !== 'string') return false;
+  if (!url.startsWith('http')) return false;
+  if (url.includes('undefined') || url.includes('null')) return false;
+  return url.length > 20; // Reasonable URL length
+}
+
+// PHASE 4B: Direct Mode Fallback Chain
+const AI_MODELS_FALLBACK = ['gpt-4o', 'gpt-4o-mini'];
+
 // Initialize Supabase client for internal function calls
 const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
 const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY') || '';
@@ -418,6 +462,7 @@ async function handleRequest(req) {
   }
 
   const requestId = Math.random().toString(36).substring(2, 10);
+  const startTime = Date.now(); // PHASE 6: Performance tracking
   console.log(`🚀 [${requestId}] ai-visual-scene-creator: ${req.method} ${req.url}`);
   
   // Boot validation removed - function ready for orchestrator or direct calls
@@ -426,6 +471,18 @@ async function handleRequest(req) {
 
   try {
     const payload = await req.json();
+    
+    // PHASE 1B: Fast Direct Mode Validation
+    try {
+      const validation = validateDirectModePayload(payload);
+      console.log(`✅ [${requestId}] Payload validation passed:`, validation);
+    } catch (validationError) {
+      if (shouldFailFast(validationError)) {
+        console.error(`❌ [${requestId}] Fast validation failed: ${validationError.message}`);
+        return createCorsErrorResponse(`Validation failed: ${validationError.message}`, 400);
+      }
+    }
+    
     console.log(`🔍 [${requestId}] Received payload keys:`, Object.keys(payload));
     
     // Simplified orchestrator call detection - single reliable check
@@ -684,6 +741,10 @@ Generate a comprehensive scene with complete visual elements including backgroun
     });
     
     return createCorsResponse(response);
+  }).finally(() => {
+    // PHASE 6: Performance monitoring
+    const responseTime = Date.now() - startTime;
+    console.log(`⏱️ [${requestId}] Request completed in ${responseTime}ms`);
   });
 }
 
@@ -755,6 +816,12 @@ RULES:
     if (!parsedResponse.primaryScene || parsedResponse.primaryScene.length < 20) {
       console.error(`❌ [${requestId}] Insufficient primary scene in direct mode`);
       return createCorsErrorResponse('Generated scene too short or missing', 503);
+    }
+    
+    // PHASE 5A: Primary Scene Quality Gate
+    if (!validatePrimarySceneQuality(parsedResponse.primaryScene)) {
+      console.error(`❌ [${requestId}] Primary scene quality validation failed in direct mode`);
+      return createCorsErrorResponse('Generated scene failed quality validation', 503);
     }
 
     console.log(`✅ [${requestId}] OpenAI generation successful in direct mode`);
@@ -852,6 +919,12 @@ RULES:
       if (imageError || !imageResult?.success) {
         console.error(`❌ [${requestId}] Image generation failed in direct mode`);
         return createCorsErrorResponse(`Image generation failed: ${imageError?.message || 'Unknown error'}`, 503);
+      }
+
+      // PHASE 5B: Image URL Quality Gate
+      if (!validateImageURL(imageResult.imageURL)) {
+        console.error(`❌ [${requestId}] Invalid image URL generated in direct mode`);
+        return createCorsErrorResponse('Invalid image URL generated', 503);
       }
 
       console.log(`✅ [${requestId}] Direct mode successful - complete image generated`);
