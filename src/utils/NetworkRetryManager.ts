@@ -120,12 +120,12 @@ export class NetworkRetryManager {
       };
     });
 
-    // Periodic quality monitoring
+    // Periodic quality monitoring with performance optimization
     setInterval(() => {
       if (navigator.onLine && this.shouldCheckNetwork()) {
         this.checkNetworkQuality();
       }
-    }, 30000);
+    }, 300000); // 5 minutes (aligned with HealthCheckService cache duration)
   }
 
   /**
@@ -148,6 +148,20 @@ export class NetworkRetryManager {
   private shouldCheckNetwork(): boolean {
     const now = Date.now();
     const timeSinceLastCheck = now - this.networkState.lastCheck;
+    
+    // Performance optimization: Skip network checks during content generation
+    if (typeof window !== 'undefined') {
+      // Only check ContentGenerationDetector if it's available (lazy loaded)
+      try {
+        const { ContentGenerationDetector } = require('@/services/ContentGenerationDetector');
+        if (ContentGenerationDetector.isGenerating()) {
+          DebugLogger.log('network', 'Skipping network quality check during content generation');
+          return false;
+        }
+      } catch {
+        // ContentGenerationDetector not loaded yet, continue with check
+      }
+    }
     
     // Check if cache is expired or we haven't checked yet
     return timeSinceLastCheck > this.cacheTimeout || this.networkState.lastCheck === 0;

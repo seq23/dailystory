@@ -36,7 +36,7 @@ class NetworkDebuggerService {
   }
 
   private interceptFetch() {
-    // Only intercept in debug mode
+    // Only intercept in debug mode for performance
     if (!DebugLogger.isDebugEnabled()) return;
 
     // Store reference to original fetch and instance methods
@@ -51,6 +51,12 @@ class NetworkDebuggerService {
       
       const requestId = `req-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
       
+      // Filter out routine health checks and system requests for performance
+      const shouldLog = !url.includes('/api/health') && 
+                        !url.includes('/favicon.ico') && 
+                        !url.includes('/_next/') &&
+                        !url.includes('/static/');
+
       const request: NetworkRequest = {
         id: requestId,
         timestamp: startTime,
@@ -59,7 +65,9 @@ class NetworkDebuggerService {
         type: getRequestType(url)
       };
 
-      DebugLogger.log('network', `→ ${method} ${url}`, { requestId, type: request.type });
+      if (shouldLog) {
+        DebugLogger.log('network', `→ ${method} ${url}`, { requestId, type: request.type });
+      }
 
       try {
         const response = await originalFetch.call(window, input, init);
@@ -71,18 +79,22 @@ class NetworkDebuggerService {
 
         if (!response.ok) {
           request.error = `HTTP ${response.status} ${response.statusText}`;
-          DebugLogger.warn('network', `← ${method} ${url} failed`, {
-            requestId,
-            status: response.status,
-            statusText: response.statusText,
-            duration
-          });
+          if (shouldLog) {
+            DebugLogger.warn('network', `← ${method} ${url} failed`, {
+              requestId,
+              status: response.status,
+              statusText: response.statusText,
+              duration
+            });
+          }
         } else {
-          DebugLogger.log('network', `← ${method} ${url} success`, {
-            requestId,
-            status: response.status,
-            duration
-          });
+          if (shouldLog) {
+            DebugLogger.log('network', `← ${method} ${url} success`, {
+              requestId,
+              status: response.status,
+              duration
+            });
+          }
         }
 
         addRequest(request);
@@ -92,11 +104,13 @@ class NetworkDebuggerService {
         request.duration = duration;
         request.error = error instanceof Error ? error.message : String(error);
         
-        DebugLogger.error('network', `← ${method} ${url} error`, {
-          requestId,
-          error: request.error,
-          duration
-        });
+        if (shouldLog) {
+          DebugLogger.error('network', `← ${method} ${url} error`, {
+            requestId,
+            error: request.error,
+            duration
+          });
+        }
 
         addRequest(request);
         throw error;

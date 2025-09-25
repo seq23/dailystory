@@ -24,11 +24,8 @@ import { AudioFallbackNotification } from "./components/AudioFallbackNotificatio
 import { VoiceCommands } from "./components/VoiceCommands";
 import { VoiceHoverController } from "./components/VoiceHoverController";
 import { UnifiedDebugMonitor } from "./components/UnifiedDebugMonitor";
-// Import new services for global availability
-import "./services/AdvancedPerformanceMonitor";
-import "./services/ABTestingFramework";
+// Import debug services conditionally for performance
 import { DebugLogger } from "./services/DebugLogger";
-import { NetworkDebugger } from "./services/NetworkDebugger";
 import { initializeViteLogGrouper, cleanupViteLogGrouper } from "./utils/viteLogGrouper";
 
 const queryClient = new QueryClient({
@@ -43,10 +40,26 @@ const queryClient = new QueryClient({
 });
 
 const App = () => {
-  // Initialize development tools
+  // Initialize development tools conditionally for performance
   React.useEffect(() => {
     // Migrate console logging to DebugLogger
     DebugLogger.log('performance', 'App component loaded successfully');
+    
+    // Only initialize debug services when in debug mode for performance
+    const isDebugMode = DebugLogger.isDebugEnabled();
+    
+    if (isDebugMode) {
+      // Lazy load debug services only when needed
+      Promise.all([
+        import("./services/AdvancedPerformanceMonitor"),
+        import("./services/NetworkDebugger"),
+        import("./services/ABTestingFramework")
+      ]).then(() => {
+        DebugLogger.log('performance', 'Debug services loaded for debug mode');
+      }).catch(error => {
+        DebugLogger.error('performance', 'Failed to load debug services', error);
+      });
+    }
     
     // Initialize Vite log grouper in development
     initializeViteLogGrouper();

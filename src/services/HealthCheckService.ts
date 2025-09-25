@@ -1,5 +1,6 @@
 import { DebugLogger } from '@/services/DebugLogger';
 import { simpleHealth } from '@/utils/robustFetch';
+import { ContentGenerationDetector } from '@/services/ContentGenerationDetector';
 
 /**
  * UPDATED FOR ERROR-001 FIX: Tri-state health classification
@@ -25,7 +26,7 @@ export interface TierStrategy {
 
 export class HealthCheckService {
   private static readonly HEALTH_CHECK_TIMEOUT = 2000; // 2 second max for health checks
-  private static readonly CACHE_DURATION = 30000; // 30 seconds cache
+  private static readonly CACHE_DURATION = 300000; // 5 minutes cache for performance optimization
   private static cachedHealth: { result: HealthStatus; timestamp: number } | null = null;
   private static activeHealthCheck: Promise<HealthStatus> | null = null;
 
@@ -35,6 +36,24 @@ export class HealthCheckService {
    */
   static async checkSystemHealth(): Promise<HealthStatus> {
     const startTime = Date.now();
+
+    // Performance optimization: Skip health checks during content generation
+    if (ContentGenerationDetector.isGenerating()) {
+      DebugLogger.log('network', 'Skipping health check during content generation for performance');
+      // Return cached result if available, otherwise assume healthy
+      if (this.cachedHealth && (Date.now() - this.cachedHealth.timestamp) < this.CACHE_DURATION * 2) {
+        return this.cachedHealth.result;
+      }
+      // Return optimistic default when generating content
+      return {
+        orchestrator: 'healthy',
+        runwareAPI: 'healthy', 
+        serviceDependencies: 'healthy',
+        overallHealth: 'healthy',
+        timestamp: new Date().toISOString(),
+        checkDuration: 0
+      };
+    }
 
     // ERROR-004 FIX: Request deduplication to prevent race conditions
     if (this.cachedHealth && (Date.now() - this.cachedHealth.timestamp) < this.CACHE_DURATION) {

@@ -182,12 +182,15 @@ export class EnhancedImageCache {
 
       this.saveCacheMap(map);
       
-      DebugLogger.log('image', 'Image cached', {
-        key,
-        sessionId,
-        pageNumber,
-        totalCached: map.size
-      });
+      // Use summary logging for performance - only log every 10th cache operation
+      if ((map.size) % 10 === 0) {
+        DebugLogger.log('image', 'Image cache summary', {
+          sessionId,
+          pageNumber,
+          totalCached: map.size,
+          operation: 'cached'
+        });
+      }
     } catch (error) {
       DebugLogger.error('image', 'Failed to cache image', { error });
     }
@@ -237,10 +240,12 @@ export class EnhancedImageCache {
           }
         }
         
+        // Use performance-optimized cache logging (filtered by DebugLogger)
         DebugLogger.log('image', 'Image cache hit', { key, sessionId, pageNumber, contextValidated: !!contextualMarkers });
         return cached.url;
       }
       
+      // Use performance-optimized cache logging (filtered by DebugLogger)
       DebugLogger.log('image', 'Image cache miss', { key, sessionId, pageNumber });
       return null;
     } catch (error) {
