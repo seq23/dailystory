@@ -581,30 +581,9 @@ export class SimpleImageService {
         throw new Error(`AI Visual Scene Creator returned no image: ${JSON.stringify(result)}`);
       }
       
-    } catch (error) {
-      DebugLogger.error('image', 'Direct AI Visual Scene Creator failed', error);
-      
-      // Fall back to SVG placeholder
-      const fallbackUrl = ImageFallbackService.generateStoryPlaceholder(storyText, pageNumber);
-      
-      // Emit timer resume event
-      try {
-        window.dispatchEvent(new CustomEvent('image:generation:complete'));
-      } catch {}
-      
-      return {
-        success: true,
-        url: fallbackUrl,
-        imageURL: fallbackUrl,
-        generatedAt: new Date().toISOString(),
-        tier: 'AI_VISUAL_SCENE_DIRECT_FALLBACK',
-        metadata: {
-          isFallback: true,
-          originalError: error.message,
-          healthStatus,
-          directCallFailed: true
-        }
-      };
+    } catch (error: any) {
+      DebugLogger.error('image', 'Direct failed – escalating to tier 2.5C', error);
+      throw new Error('DIRECT_MODE_FAILED', { cause: error });
     }
   }
 
@@ -658,8 +637,9 @@ export class SimpleImageService {
         DebugLogger.log('image', `🖼️ Template generated successfully: ${imageURL}`);
         
         // Store result in cache
-        if (this.isIndexedDBAvailable && normalizedSessionId !== 'unknown') {
-          await this.storeImageInDB(normalizedSessionId, pageNumber, imageURL, templateResult);
+        const versionedCacheKey = this.generateCharacterVersionedCacheKey(userInfo, sessionId);
+        if (this.isIndexedDBAvailable && versionedCacheKey !== 'unknown') {
+          await this.storeImageInDB(versionedCacheKey, pageNumber, imageURL, templateResult);
         }
 
         // Emit timer resume event
