@@ -531,10 +531,17 @@ async function handleRequest(req) {
     // Check for direct mode flag (when orchestrator boot fails)
     if (payload.directMode === true) {
       return await handleVisualSceneDirectMode(requestId, storyText, userInfo, sessionId, pageNumber);
+    } else if (payload.isDebugMode === true) {
+      // Debug path: generate primaryScene + aiSchema only (no images)
+      return await handleOrchestratorCall(requestId, storyText, enhancedStoryData, avatarIdentity, userInfo, true, previousPrimaryScene);
+    } else {
+      // No valid mode specified - return explicit error
+      return handleError(
+        new Error('INVALID_MODE: Must specify either directMode: true (for images) or isDebugMode: true (for scene descriptions)'),
+        'handleRequest',
+        { requestId, hasDirectMode: !!payload.directMode, hasDebugMode: !!payload.isDebugMode }
+      );
     }
-    
-    // If called by frontend (including test button), generate primaryScene + aiSchema only
-    return await handleOrchestratorCall(requestId, storyText, enhancedStoryData, avatarIdentity, userInfo, true, previousPrimaryScene);
 
   } catch (error) {
     return handleError(error, 'handleRequest', { requestId });

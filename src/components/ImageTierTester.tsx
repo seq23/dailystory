@@ -697,6 +697,7 @@ export const ImageTierTester = () => {
         body: {
           storyText: `Test ${i + 1}: ${testStoryText.substring(0, 50)}`, // Template AB expects storyText
           pageText: `Test ${i + 1}: ${testStoryText.substring(0, 50)}`, // Template CD compatibility
+          isDebugMode: true,
           userInfo: buildUserInfo(),
           pageNumber: i + 1,
           sessionId: crypto.randomUUID()
@@ -761,7 +762,8 @@ export const ImageTierTester = () => {
           pageText: testStoryText, // Template CD compatibility
           userInfo: buildUserInfo(),
           pageNumber: 1,
-          sessionId: crypto.randomUUID()
+          sessionId: crypto.randomUUID(),
+          isDebugMode: true
         }
       });
 
