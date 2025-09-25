@@ -229,6 +229,17 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   // Touch device long-press instruction notification
   const { showLongPressInstruction } = useTouchDeviceLongPressNotification();
   
+  // Get Netflix session ID for consistent session tracking across services
+  const getNetflixSessionId = useCallback(() => {
+    try {
+      const { NetflixSessionManager } = require('@/services/NetflixSessionManager');
+      return NetflixSessionManager.getOrCreateSession(safeUserInfo.name);
+    } catch (error) {
+      DebugLogger.warn('story', 'Failed to get Netflix session ID', error);
+      return undefined;
+    }
+  }, [safeUserInfo.name]);
+
   // Initialize useStoryLogic hook for centralized state management
   const {
     state: {
@@ -286,7 +297,8 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     isPremium,
     initialDifficulty: (safeUserInfo.difficultyLevel || 'beginner') as 'beginner' | 'easy' | 'medium' | 'hard' | 'expert',
     expertGradeLevel: safeUserInfo.expertGradeLevel,
-    onSessionEnded
+    onSessionEnded,
+    netflixSessionId: getNetflixSessionId() // Pass Netflix session ID
   });
 
   // Initialize consolidated hooks for state management

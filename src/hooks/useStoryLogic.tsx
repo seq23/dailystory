@@ -43,6 +43,7 @@ export interface UseStoryLogicProps {
   initialDifficulty: DifficultyLevel;
   expertGradeLevel?: ExpertGradeLevel;
   onSessionEnded?: (stats: any) => void;
+  netflixSessionId?: string; // Add optional Netflix session ID
 }
 
 export const useStoryLogic = ({
@@ -50,7 +51,8 @@ export const useStoryLogic = ({
   isPremium,
   initialDifficulty,
   expertGradeLevel,
-  onSessionEnded
+  onSessionEnded,
+  netflixSessionId
 }: UseStoryLogicProps) => {
   // Core story state
   const [story, setStory] = useState<string[]>([]);
@@ -78,7 +80,17 @@ export const useStoryLogic = ({
 
   // Session tracking
   const sessionStartTime = useRef(Date.now());
-  const characterSessionId = useRef(generateSessionId());
+  // Use Netflix session ID if provided, otherwise generate a new character session ID
+  const characterSessionId = useRef(netflixSessionId || generateSessionId());
+
+  // Log session ID usage for debugging
+  useEffect(() => {
+    DebugLogger.log('story', 'useStoryLogic: Session ID initialized', {
+      netflixSessionId,
+      characterSessionId: characterSessionId.current,
+      usedNetflixSession: !!netflixSessionId
+    });
+  }, [netflixSessionId]);
 
   // Initialize timer on mount
   useEffect(() => {

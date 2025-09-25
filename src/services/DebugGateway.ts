@@ -286,6 +286,14 @@ class DebugGatewayService {
     return this.getRecentImagePrompts(1);
   }
 
+  async getTierCascade(sessionId: string, limit = 20): Promise<{ data: any; error: any }> {
+    return this.callDebugService({
+      operation: 'tier-cascade',
+      sessionId,
+      limit
+    });
+  }
+
   // Get circuit breaker status for debugging
   getStatus() {
     return {

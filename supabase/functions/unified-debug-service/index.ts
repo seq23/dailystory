@@ -168,6 +168,36 @@ serve(async (req) => {
         return createCorsResponse({ data: logs || [] }, 200);
       }
 
+      case 'tier-cascade': {
+        if (!sessionId) {
+          return createCorsErrorResponse('sessionId is required for tier-cascade operation', 400);
+        }
+
+        const { data: tierLogs, error } = await supabase
+          .from('image_generation_debug')
+          .select('*')
+          .eq('session_id', sessionId)
+          .order('created_at', { ascending: false })
+          .limit(limit);
+
+        if (error) {
+          console.error('Error fetching tier cascade logs:', error);
+          return createCorsErrorResponse('Failed to fetch tier cascade logs', 500);
+        }
+
+        const tierCascadeData = tierLogs?.map(log => ({
+          id: log.id,
+          sessionId: log.session_id,
+          requestId: log.request_id,
+          tier: log.tier,
+          status: log.status,
+          context: log.context,
+          createdAt: log.created_at
+        })) || [];
+
+        return createCorsResponse({ data: tierCascadeData }, 200);
+      }
+
       case 'visual-scene-debug': {
         // Test the AI Visual Scene Creator with sample data
         const testPayload = {
