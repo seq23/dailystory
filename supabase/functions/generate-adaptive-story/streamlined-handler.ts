@@ -11,6 +11,7 @@ import {
 import { resolveAllPlaceholders } from '../_shared/placeholderResolver.ts';
 import { UnifiedValidator, type ValidationConfig } from '../_shared/unifiedValidator.ts';
 import { safeErrorMessage, safePropertyAccess, safeModelAccess } from '../_shared/errorPatterns.ts';
+import { DifficultyLevelMapper } from '../_shared/DifficultyLevelMapper.ts';
 import { classifyError, getRetryEnhancement, ErrorCategory } from './errorClassification.ts';
 
 // Phase 2: Cultural context now embedded in StaticDataCache (no external imports needed)
@@ -127,16 +128,21 @@ export async function handleStreamlinedGeneration(requestBody: any) {
       effectiveDifficulty = expertGrade;
       console.log(`🎓 STREAMLINED: Using direct expert grade level: ${expertGrade}`);
     } else if (config.difficulty) {
-      // Direct difficulty passed from Netflix service
-      effectiveDifficulty = config.difficulty as DifficultyLevel;
+      // Direct difficulty passed from Netflix service - CONVERT FRONTEND TO BACKEND
+      const originalDifficulty = config.difficulty;
+      
+      // 🔄 CRITICAL FIX: Convert frontend difficulty to backend difficulty
+      effectiveDifficulty = DifficultyLevelMapper.toBackend(originalDifficulty);
+      
+      console.log(`🔄 DIFFICULTY MAPPING: "${originalDifficulty}" (frontend) → "${effectiveDifficulty}" (backend)`);
       
       // BULLETPROOF GRADE NORMALIZATION: Try to normalize any grade format
-      const normalizedGrade = normalizeGradeFormat(config.difficulty);
+      const normalizedGrade = normalizeGradeFormat(originalDifficulty);
       if (normalizedGrade) {
         expertGrade = normalizedGrade;
-        console.log(`🎓 STREAMLINED: Normalized "${config.difficulty}" → "${expertGrade}"`);
+        console.log(`🎓 STREAMLINED: Normalized "${originalDifficulty}" → "${expertGrade}" (expert grade)`);
       } else {
-        console.log(`📚 STREAMLINED: Using regular difficulty: ${effectiveDifficulty}`);
+        console.log(`📚 STREAMLINED: Using converted backend difficulty: ${effectiveDifficulty}`);
       }
     } else {
       // Fallback to system grade level mapping
@@ -178,25 +184,34 @@ export async function handleStreamlinedGeneration(requestBody: any) {
     // BULLETPROOF PROMPT RESOLUTION: Multiple fallback layers prevent undefined crashes
     let promptConfig: any;
     
+    console.log(`🔍 [DIFFICULTY-MAPPING] {
+  original: "${config.difficulty || 'N/A'}",
+  normalized: "${effectiveDifficulty}",
+  expertGrade: ${expertGrade},
+  isValidBackendLevel: ${DifficultyLevelMapper.isValidBackendLevel(effectiveDifficulty as string)}
+}`);
+    
     if (expertGrade) {
       // Try expert grade first
       promptConfig = getExpertStoryPrompt(expertGrade);
       console.log(`🎓 PROMPT_RESOLUTION: Expert grade "${expertGrade}" → ${promptConfig ? 'SUCCESS' : 'FAILED'}`);
     } else {
-      // Use regular difficulty
+      // Use regular difficulty - now guaranteed to be backend format
+      console.log(`📚 PROMPT_RESOLUTION: Attempting backend difficulty "${effectiveDifficulty}"`);
       promptConfig = getStoryPrompt(effectiveDifficulty as DifficultyLevel);
-      console.log(`📚 PROMPT_RESOLUTION: Regular difficulty "${effectiveDifficulty}" → ${promptConfig ? 'SUCCESS' : 'FAILED'}`);
+      console.log(`📚 PROMPT_RESOLUTION: Backend difficulty "${effectiveDifficulty}" → ${promptConfig ? 'SUCCESS' : 'FAILED'}`);
     }
     
     // ULTIMATE FALLBACK: Never allow undefined prompts
     if (!promptConfig || !promptConfig.systemPrompt) {
       console.error(`🚨 CRITICAL FALLBACK TRIGGERED: No valid prompt found for expertGrade="${expertGrade}", effectiveDifficulty="${effectiveDifficulty}"`);
       console.error(`🚨 FALLBACK CONTEXT:`, {
-        configDifficulty: config.difficulty,
+        originalConfigDifficulty: config.difficulty,
+        convertedEffectiveDifficulty: effectiveDifficulty,
         configExpertGradeLevel: config.expertGradeLevel,
         bundleGradeLevel: bundle.systemSettings.gradeLevel,
         expertGrade,
-        effectiveDifficulty
+        difficultyMappingUsed: config.difficulty ? `"${config.difficulty}" → "${effectiveDifficulty}"` : 'none'
       });
       
       promptConfig = getStoryPrompt('easy');
@@ -602,11 +617,17 @@ Generate a corrected version that addresses these issues while keeping the story
 }
 
 function mapGradeLevelToDifficulty(gradeLevel: number): DifficultyLevel {
-  if (gradeLevel === 0) return 'beginner';
-  if (gradeLevel === 1) return 'easy';
-  if (gradeLevel === 2) return 'medium';
-  if (gradeLevel === 3) return 'hard';
-  return 'expert';
+  const mappings: Record<number, DifficultyLevel> = {
+    0: 'beginner',  // pre-reader (frontend)
+    1: 'easy',      // beginner (frontend)  
+    2: 'medium',    // developing (frontend)
+    3: 'hard',      // independent (frontend)
+  };
+  
+  const result = mappings[gradeLevel] || 'expert';
+  console.log(`🔄 Grade Level Fallback Mapping: Grade ${gradeLevel} → "${result}" (backend difficulty)`);
+  
+  return result;
 }
 
 /**
@@ -614,8 +635,17 @@ function mapGradeLevelToDifficulty(gradeLevel: number): DifficultyLevel {
  */
 function getPerPageTokenLimitLocal(difficulty: DifficultyLevel | ExpertGradeLevel): number {
   try {
+    // Ensure we're working with backend difficulty values only
+    let backendDifficulty = difficulty;
+    if (!DifficultyLevelMapper.isValidBackendLevel(difficulty as string)) {
+      backendDifficulty = DifficultyLevelMapper.toBackend(difficulty as string);
+      console.log(`🔄 Token Limit Conversion: "${difficulty}" → "${backendDifficulty}"`);
+    }
+    
     // Import the function from storyPrompts and call it
-    return getPerPageTokenLimit(difficulty);
+    const tokenLimit = getPerPageTokenLimit(backendDifficulty);
+    console.log(`📊 Token Limit for "${backendDifficulty}": ${tokenLimit}`);
+    return tokenLimit;
   } catch (error) {
     console.error(`❌ Failed to get per-page token limit for ${difficulty}:`, error);
     // Fallback to known values from system prompts
