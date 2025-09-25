@@ -143,7 +143,7 @@ export const useStoryLogic = ({
   const handleNext = useCallback(() => {
     if (currentPage < story.length - 1) {
       setCurrentPage(currentPage + 1);
-      DebugLogger.log('story', 'Navigated to next page', { 
+      DebugLogger.logToDebugMonitorOnly('story', 'Navigated to next page', { 
         newPage: currentPage + 1, 
         totalPages: story.length 
       });
@@ -153,7 +153,7 @@ export const useStoryLogic = ({
   const handlePrevious = useCallback(() => {
     if (currentPage > 0) {
       setCurrentPage(currentPage - 1);
-      DebugLogger.log('story', 'Navigated to previous page', { 
+      DebugLogger.logToDebugMonitorOnly('story', 'Navigated to previous page', { 
         newPage: currentPage - 1 
       });
     }
@@ -168,7 +168,7 @@ export const useStoryLogic = ({
       setIsTimerRunning(false);
       setUserPausedTimer(true);
     }
-    DebugLogger.log('story', 'Timer toggled', { 
+    DebugLogger.logToDebugMonitorOnly('story', 'Timer toggled', { 
       isRunning: !isTimerRunning, 
       userPaused: !userPausedTimer 
     });
@@ -177,7 +177,7 @@ export const useStoryLogic = ({
   const handleReduceTime = useCallback(() => {
     const reduction = 5 * 60; // 5 minutes
     setTimeRemaining(prev => Math.max(60, prev - reduction)); // Minimum 1 minute
-    DebugLogger.log('story', 'Time reduced', { reduction, newTime: timeRemaining - reduction });
+    DebugLogger.logToDebugMonitorOnly('story', 'Time reduced', { reduction, newTime: timeRemaining - reduction });
   }, [timeRemaining]);
 
   return {

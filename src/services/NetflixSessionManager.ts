@@ -42,7 +42,7 @@ export class NetflixSessionManager {
     this.sessions.set(userId, session);
     const sessionId = `netflix-${userId}-story1-${baseSessionId}`;
     
-    DebugLogger.log('story', `Created new session for user ${userId}`, { sessionId });
+    DebugLogger.logToDebugMonitorOnly('story', `Created new session for user ${userId}`, { sessionId });
     return sessionId;
   }
 
@@ -63,7 +63,7 @@ export class NetflixSessionManager {
     this.sessions.set(userId, session);
     const sessionId = `netflix-${userId}-story1-${baseSessionId}`;
     
-    DebugLogger.log('story', `Fresh Netflix session for user ${userId}`, { sessionId });
+    DebugLogger.logToDebugMonitorOnly('story', `Fresh Netflix session for user ${userId}`, { sessionId });
     return sessionId;
   }
 
@@ -72,7 +72,7 @@ export class NetflixSessionManager {
    */
   static clearSession(userId: string): void {
     this.sessions.delete(userId);
-    DebugLogger.log('story', `Cleared session for user ${userId}`);
+    DebugLogger.logToDebugMonitorOnly('story', `Cleared session for user ${userId}`);
   }
 
   /**
@@ -92,7 +92,7 @@ export class NetflixSessionManager {
     for (const [userId, session] of this.sessions.entries()) {
       if (now - session.lastActivity > oneHour) {
         this.sessions.delete(userId);
-        DebugLogger.log('performance', `Cleaned up old session for user ${userId}`);
+        DebugLogger.logToDebugMonitorOnly('performance', `Cleaned up old session for user ${userId}`);
       }
     }
   }
