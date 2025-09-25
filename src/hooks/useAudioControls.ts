@@ -153,9 +153,16 @@ export const useAudioControls = ({
       
       const interactiveWords = document.querySelectorAll('[data-word-index]');
       
-      // CRITICAL DEBUG: Log if no elements found
+      // ENHANCED DEBUG: Log detailed tokenization mismatch info
       if (interactiveWords.length === 0) {
-        DebugLogger.warn('ui', `❌ HIGHLIGHTING BROKEN: No [data-word-index] elements found for word ${wordIndex}`);
+        DebugLogger.error('ui', `❌ HIGHLIGHTING BROKEN: No [data-word-index] elements found for word ${wordIndex}`, {
+          requestedWordIndex: wordIndex,
+          availableElements: document.querySelectorAll('[data-word-index]').length,
+          allDataAttributes: Array.from(document.querySelectorAll('[data-word-index]')).map(el => el.getAttribute('data-word-index')),
+          currentText: text?.slice(0, 100) + '...'
+        });
+      } else {
+        DebugLogger.log('ui', `✅ Highlighting system found ${interactiveWords.length} interactive words for index ${wordIndex}`);
       }
       
       interactiveWords.forEach((element) => {

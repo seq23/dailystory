@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { DebugLogger } from '@/services/DebugLogger';
+import { UnifiedTokenizationService } from '@/services/UnifiedTokenizationService';
 
 interface TimestampData {
   characters: Array<{
@@ -122,10 +123,10 @@ export class SynchronizedElevenLabsTTS {
           bytes[i] = binaryString.charCodeAt(i);
         }
 
-        // Convert character-level timing to word-level timing
+        // Convert character-level timing to word-level timing using unified tokenization
         const wordTimings = data.alignment 
           ? this.convertCharacterTimingsToWords(text, data.alignment)
-          : this.generateFallbackWordTimings(text.split(/(\s+)/).filter(word => word.trim().length > 0));
+          : this.generateFallbackWordTimings(UnifiedTokenizationService.getWords(text));
 
         DebugLogger.log('audio', `✅ Synchronized TTS Success: ${bytes.byteLength} bytes, ${wordTimings.length} word timings`);
         
@@ -179,8 +180,8 @@ export class SynchronizedElevenLabsTTS {
       alignmentStructure: alignment
     });
     
-    // Better word tokenization that handles punctuation
-    const words = text.split(/(\s+)/).filter(word => word.trim().length > 0);
+    // Use unified tokenization for consistency with UI highlighting system
+    const words = UnifiedTokenizationService.getWords(text);
     const wordTimings: Array<{ word: string; startTime: number; endTime: number }> = [];
     
     DebugLogger.log('audio', '📝 Tokenized words', { 

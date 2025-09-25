@@ -1,6 +1,7 @@
 import React from "react";
 import { MobileOptimizedInteractiveWord } from "@/components/MobileOptimizedInteractiveWord";
 import type { UserInfo } from "@/types";
+import { UnifiedTokenizationService } from "@/services/UnifiedTokenizationService";
 import { tokenizeForHighlighting } from "@/utils/tokenize";
 import { DifficultyLevelMapper } from "@/services/DifficultyLevelMapper";
 import { VocabularyLevelClassifier } from "@/utils/vocabularyLevelClassifier";
@@ -63,15 +64,11 @@ export const processTextWithConsistentFlow = ({
   const { wordsOnly } = tokenizeForHighlighting(text.replace(/^Page\s*\d+\s*:\s*/i, '').replace(/^Page\s*\d+\s*/i, '').trim());
   wordsOnly.forEach(word => getCachedWordDifficulty(word, backendDifficulty));
   
-  // Strip page markers and asterisks before processing 
-  const cleanText = text
-    .replace(/^Page\s*\d+\s*:\s*/i, '')
-    .replace(/^Page\s*\d+\s*/i, '')
-    .replace(/\*{2,}/g, '') // Remove 2 or more consecutive asterisks
-    .trim();
+  // Use unified text cleaning and tokenization for consistency with audio system
+  const cleanText = UnifiedTokenizationService.cleanText(text);
   
   // Tokenize once for consistent mapping across audio and UI
-  const { tokens, isWhitespace, wordOnlyIndexByTokenIndex } = tokenizeForHighlighting(cleanText);
+  const { tokens, isWhitespace, wordOnlyIndexByTokenIndex } = UnifiedTokenizationService.getTokensWithLayout(cleanText);
   
   return tokens.map((token, index) => {
     // If it's just whitespace, return as plain text to maintain natural flow

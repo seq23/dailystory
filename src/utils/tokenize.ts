@@ -1,3 +1,5 @@
+import { UnifiedTokenizationService } from '@/services/UnifiedTokenizationService';
+
 export interface Tokenization {
   tokens: string[]; // includes whitespace tokens
   isWhitespace: boolean[];
@@ -6,24 +8,9 @@ export interface Tokenization {
 }
 
 // Split text preserving whitespace tokens and compute mapping to word-only indices
+// Now uses UnifiedTokenizationService for consistency across audio and UI systems
 export function tokenizeForHighlighting(text: string): Tokenization {
-  const tokens = text.split(/(\s+)/);
-  const isWhitespace = tokens.map(t => /^\s+$/.test(t));
-  const wordOnlyIndexByTokenIndex: number[] = new Array(tokens.length);
-  const wordsOnly: string[] = [];
-  let currentWordIndex = 0;
-
-  for (let i = 0; i < tokens.length; i++) {
-    if (isWhitespace[i] || tokens[i].trim().length === 0) {
-      wordOnlyIndexByTokenIndex[i] = -1;
-    } else {
-      wordOnlyIndexByTokenIndex[i] = currentWordIndex;
-      wordsOnly.push(tokens[i]);
-      currentWordIndex++;
-    }
-  }
-
-  return { tokens, isWhitespace, wordOnlyIndexByTokenIndex, wordsOnly };
+  return UnifiedTokenizationService.getTokenization(text);
 }
 
 // Lightweight string hash (non-crypto) for content identity
