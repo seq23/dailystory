@@ -1099,16 +1099,8 @@ export class UnifiedPlaceholderResolver {
     try {
       
       if (shouldApplyCulturalEnhancements(userInfo)) {
-        // Dark skin users - get cultural arrays from StaticDataCache with character consistency
-        if (tierType === '2.5A') {
-          // Premium: StaticDataCache + character consistency (when available)
-          const culturalBundle = await this.getCulturalBundleWithConsistency(userInfo, sessionId);
-          return culturalBundle.hair || 'with authentic African American features';
-        } else {
-          // Basic: Just StaticDataCache with character consistency
-          const culturalBundle = await this.getCulturalBundleWithConsistency(userInfo, sessionId);
-          return culturalBundle.hair || 'with authentic African American features';
-        }
+        // Dark skin users - use synchronous fallbacks to avoid async issues in .replace() callbacks
+        return 'with authentic African American features';
       } else {
         // Non-dark skin users - get combined hair and skin descriptions
         const skinTone = userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium';
@@ -1134,16 +1126,8 @@ export class UnifiedPlaceholderResolver {
     try {
       
       if (shouldApplyCulturalEnhancements(userInfo)) {
-        // Dark skin users - get cultural arrays from StaticDataCache with character consistency
-        if (tierType === '2.5A') {
-          // Premium: StaticDataCache + character consistency (when available)
-          const culturalBundle = await this.getCulturalBundleWithConsistency(userInfo, sessionId);
-          return culturalBundle.features || 'with photorealistic African features natural hair texture';
-        } else {
-          // Basic: Just StaticDataCache with character consistency
-          const culturalBundle = await this.getCulturalBundleWithConsistency(userInfo, sessionId);
-          return culturalBundle.features || 'with photorealistic African features natural hair texture';
-        }
+        // Dark skin users - use synchronous fallbacks to avoid async issues in .replace() callbacks
+        return 'with photorealistic African features natural hair texture';
       } else {
         // Non-dark skin users - get combined skin and hair descriptions
         const skinTone = userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium';
