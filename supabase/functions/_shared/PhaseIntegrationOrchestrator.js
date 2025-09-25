@@ -6,7 +6,7 @@
 
 import { characterConsistencyService } from './CharacterConsistencyService.js';
 import { VisualDetailTracker } from './VisualDetailTracker.js';
-import { getCulturalBundle, getHairBySkintone, getSkinBySkintone } from './StaticDataCache.js';
+import { getHairBySkintone, getSkinBySkintone } from './StaticDataCache.js';
 import { UnifiedPlaceholderResolver } from './UnifiedPlaceholderResolver.js';
 import { getStyleFramework } from './styleFrameworks.js';
 import { UnifiedCharacterDescriptor } from './UnifiedCharacterDescriptor.js';
@@ -278,9 +278,9 @@ export class PhaseIntegrationOrchestrator {
       const avatarType = userInfo?.avatar?.type || userInfo?.avatarType || 'child';
       const characterReference = avatarType === 'prefer-not-to-answer' ? 'gender neutral child' : avatarType;
 
-      // Get hair and skin variations based on skin tone with seeded selection
-      // CRITICAL FIX: Pass explicit skinTone parameter to prevent hair mapping bugs
-      const culturalBundle = getCulturalBundle(userInfo, sessionId, skinTone);
+      // Get cultural enhancements with character consistency
+      const characterConsistencyService = CharacterConsistencyService.getInstance();
+      const culturalBundle = await characterConsistencyService.getCulturalEnhancements(userInfo, sessionId, userInfo?.name || 'child');
       
       // Convert sessionId to numeric seed for consistent selection
       const seedForConsistency = sessionId ? sessionId.split('-')[0].split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) : Math.floor(Math.random() * 1000000);
@@ -710,8 +710,9 @@ export class PhaseIntegrationOrchestrator {
         name: userInfo?.name || userInfo?.childName || 'Child'
       };
 
-      // Get cultural bundle for complete context
-      const culturalBundle = getCulturalBundle(userInfo, sessionId, avatarIdentityWorkflow.skinTone);
+      // Get cultural bundle for complete context with character consistency
+      const characterConsistencyService = CharacterConsistencyService.getInstance();
+      const culturalBundle = await characterConsistencyService.getCulturalEnhancements(userInfo, sessionId, userInfo?.name || 'child');
 
       const sceneResponse = await this.supabase.functions.invoke('ai-visual-scene-creator', {
         body: { 

@@ -191,6 +191,49 @@ export class CharacterConsistencyService {
   }
 
   /**
+   * Get cultural enhancements with character consistency seeding
+   * Integrates with StaticDataCache using character-specific seeds
+   */
+  async getCulturalEnhancements(userInfo, sessionId, characterName = 'child') {
+    const cacheKey = `${sessionId}_${characterName}`;
+    
+    // Get or create character data
+    let characterData = await this.getCharacterFromDatabase(sessionId, cacheKey);
+    
+    if (!characterData) {
+      // Create character if it doesn't exist
+      const avatarIdentity = userInfo?.avatarIdentity || userInfo?.avatar || { name: characterName };
+      characterData = await this.getCharacterSeed(sessionId, avatarIdentity, null, 'new', null);
+    }
+    
+    // Check if cultural selections are already cached
+    if (characterData.selectedCulturalHair && characterData.selectedCulturalFeatures) {
+      return {
+        hair: characterData.selectedCulturalHair,
+        features: characterData.selectedCulturalFeatures
+      };
+    }
+    
+    // Import getCulturalBundle from StaticDataCache
+    const { getCulturalBundle } = await import('./StaticDataCache.js');
+    
+    // Use character seed for consistent cultural selections
+    const characterSeed = characterData.seed || this.generateStableSeed(`${sessionId}_${characterName}`, characterName);
+    const culturalBundle = getCulturalBundle(userInfo, characterSeed, userInfo?.skinTone);
+    
+    // Cache the cultural selections
+    await this.updateCulturalSelections(sessionId, cacheKey, culturalBundle.hair, culturalBundle.features);
+    
+    // Update in-memory character data
+    characterData.selectedCulturalHair = culturalBundle.hair;
+    characterData.selectedCulturalFeatures = culturalBundle.features;
+    
+    console.log(`🎨 Generated cultural enhancements for ${characterName} (seed: ${characterSeed}):`, culturalBundle);
+    
+    return culturalBundle;
+  }
+
+  /**
    * Update character data with cultural selections for persistence
    */
   async updateCulturalSelections(sessionId, characterKey, selectedCulturalHair, selectedCulturalFeatures) {

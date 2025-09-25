@@ -298,23 +298,23 @@ export function shouldApplyCulturalEnhancements(userInfo) {
 }
 
 /**
- * Get cultural bundle for seeded selection
- * CRITICAL FIX: Accept explicit skinTone parameter for consistent hair mapping
+ * Get cultural bundle for seeded selection with character consistency
+ * UPDATED: Now uses characterSeed for consistency instead of sessionId
  */
-export function getCulturalBundle(userInfo, sessionId, skinTone = null) {
+export function getCulturalBundle(userInfo, characterSeed, skinTone = null) {
   // Use explicit skinTone parameter if provided, otherwise fall back to userInfo
   const effectiveSkinTone = skinTone || userInfo?.skinTone || userInfo?.appearance?.skinTone || userInfo?.avatar?.skinTone || 'medium';
   
   if (!shouldApplyCulturalEnhancements(userInfo)) {
     return {
-      hair: getHairBySkintone(effectiveSkinTone, sessionId),
-      features: getSkinBySkintone(effectiveSkinTone, sessionId)
+      hair: getHairBySkintone(effectiveSkinTone, characterSeed),
+      features: getSkinBySkintone(effectiveSkinTone, characterSeed)
     };
   }
   
   const gender = userInfo?.avatar?.type || 'boy';
   return {
-    hair: getAfricanAmericanHair(gender, sessionId),
-    features: getAfricanAmericanFeatures(sessionId + 1)
+    hair: getAfricanAmericanHair(gender, characterSeed),
+    features: getAfricanAmericanFeatures(characterSeed + 1)
   };
 }

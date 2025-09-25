@@ -5,7 +5,7 @@
  */
 
 import { VOCABULARY, PLACEHOLDER_POOLS, CULTURAL_ARRAYS, pick, createSeededRandom, REGIONAL_CULTURAL_CONTEXTS } from './tier25Vocabulary.js';
-import { getCulturalBundle, getHairBySkintone, shouldApplyCulturalEnhancements, getSkinBySkintone } from './StaticDataCache.js';
+import { getHairBySkintone, shouldApplyCulturalEnhancements, getSkinBySkintone } from './StaticDataCache.js';
 
 // ============= FIXED REGIONAL ETHNICITY DERIVATION =============
 function deriveRegionalEthnicity(userInfo, avatarIdentity) {
@@ -59,6 +59,23 @@ export class UnifiedPlaceholderResolver {
   constructor() {
     this.resolvedCache = new Map();
     this.maxCacheSize = 1000;
+  }
+
+  /**
+   * Helper method to get cultural enhancements with character consistency
+   */
+  async getCulturalBundleWithConsistency(userInfo, sessionId, characterName = 'child') {
+    try {
+      const { CharacterConsistencyService } = await import('./CharacterConsistencyService.js');
+      const characterConsistencyService = CharacterConsistencyService.getInstance();
+      return await characterConsistencyService.getCulturalEnhancements(userInfo, sessionId, characterName);
+    } catch (error) {
+      console.error('❌ Failed to get cultural bundle with consistency:', error);
+      // Fallback to StaticDataCache (old behavior)
+      const { getCulturalBundle } = await import('./StaticDataCache.js');
+      const characterSeed = sessionId || 'default';
+      return getCulturalBundle(userInfo, characterSeed);
+    }
   }
 
   /**
@@ -248,10 +265,10 @@ export class UnifiedPlaceholderResolver {
 
     // Map {hair} to cultural hair logic for ALL skin tones (Complexity A support)
     const culturalLanguage = this.detectCulturalContext(userInfo);
-    resolved = resolved.replace(/\{hair\}/g, () => {
+    resolved = resolved.replace(/\{hair\}/g, async () => {
       const skinTone = userInfo?.skinTone || userInfo?.avatarIdentity?.skinTone || userInfo?.avatar?.skinTone || 'medium';
       if (skinTone === 'dark' || skinTone === 'darker') {
-        const culturalBundle = getCulturalBundle(userInfo, userInfo?.sessionId || 'default');
+        const culturalBundle = await this.getCulturalBundleWithConsistency(userInfo, userInfo?.sessionId || 'default');
         return culturalBundle.hair || '';
       }
       // FIX: Use StaticDataCache for non-dark skin users (same as Complexity B)
@@ -327,17 +344,17 @@ export class UnifiedPlaceholderResolver {
     const culturalLanguage = this.detectCulturalContext(userInfo);
 
     // Cultural hair and features (still skin-tone based for backward compatibility)
-    resolved = resolved.replace(/\{cultural\.hair\}/g, () => {
+    resolved = resolved.replace(/\{cultural\.hair\}/g, async () => {
       const skinTone = userInfo?.skinTone || userInfo?.avatarIdentity?.skinTone || userInfo?.avatar?.skinTone;
       if (skinTone !== 'dark' && skinTone !== 'darker') return '';
-      const culturalBundle = getCulturalBundle(userInfo, userInfo?.sessionId || 'default');
+      const culturalBundle = await this.getCulturalBundleWithConsistency(userInfo, userInfo?.sessionId || 'default');
       return culturalBundle.hair || '';
     });
 
-    resolved = resolved.replace(/\{cultural\.features\}/g, () => {
+    resolved = resolved.replace(/\{cultural\.features\}/g, async () => {
       const skinTone = userInfo?.skinTone || userInfo?.avatarIdentity?.skinTone || userInfo?.avatar?.skinTone;
       if (skinTone !== 'dark' && skinTone !== 'darker') return '';
-      const culturalBundle = getCulturalBundle(userInfo, userInfo?.sessionId || 'default');
+      const culturalBundle = await this.getCulturalBundleWithConsistency(userInfo, userInfo?.sessionId || 'default');
       return culturalBundle.features || '';
     });
 
@@ -413,8 +430,8 @@ export class UnifiedPlaceholderResolver {
     const userName = userInfo?.name || userInfo?.childName || 'child';
     const culturalSeed = this.generateCulturalSeed(userName, sessionId);
     
-    // Use seeded random to select from StaticDataCache cultural bundle
-    const culturalBundle = getCulturalBundle(userInfo, sessionId);
+    // Use seeded random to select from StaticDataCache cultural bundle with character consistency
+    const culturalBundle = await this.getCulturalBundleWithConsistency(userInfo, sessionId);
     const selectedHair = culturalBundle.hair;
     const selectedFeatures = culturalBundle.features;
     
@@ -930,19 +947,19 @@ export class UnifiedPlaceholderResolver {
     let resolved = text;
     
     // FIXED: Fill hair and features for PREMIUM templates (use {hair} and {features})
-    resolved = resolved.replace(/\{hair\}/g, () => {
+    resolved = resolved.replace(/\{hair\}/g, async () => {
       const skinTone = context.userInfo?.skinTone || context.userInfo?.avatarIdentity?.skinTone || context.userInfo?.avatar?.skinTone || 'medium';
       if (skinTone === 'dark' || skinTone === 'darker') {
-        const culturalBundle = getCulturalBundle(context.userInfo, context.userInfo?.sessionId || 'default');
+        const culturalBundle = await this.getCulturalBundleWithConsistency(context.userInfo, context.userInfo?.sessionId || 'default');
         return culturalBundle.hair || '';
       }
       return getHairBySkintone(skinTone, context.userInfo?.sessionId || 'default') || '';
     });
-    
-    resolved = resolved.replace(/\{features\}/g, () => {
+
+    resolved = resolved.replace(/\{features\}/g, async () => {
       const skinTone = context.userInfo?.skinTone || context.userInfo?.avatarIdentity?.skinTone || context.userInfo?.avatar?.skinTone || 'medium';
       if (skinTone === 'dark' || skinTone === 'darker') {
-        const culturalBundle = getCulturalBundle(context.userInfo, context.userInfo?.sessionId || 'default');
+        const culturalBundle = await this.getCulturalBundleWithConsistency(context.userInfo, context.userInfo?.sessionId || 'default');
         return culturalBundle.features || '';
       }
       return getSkinBySkintone(skinTone, context.userInfo?.sessionId || 'default') || '';
@@ -1082,14 +1099,14 @@ export class UnifiedPlaceholderResolver {
     try {
       
       if (shouldApplyCulturalEnhancements(userInfo)) {
-        // Dark skin users - get cultural arrays from StaticDataCache
+        // Dark skin users - get cultural arrays from StaticDataCache with character consistency
         if (tierType === '2.5A') {
           // Premium: StaticDataCache + character consistency (when available)
-          const culturalBundle = getCulturalBundle(userInfo, sessionId);
+          const culturalBundle = await this.getCulturalBundleWithConsistency(userInfo, sessionId);
           return culturalBundle.hair || 'with authentic African American features';
         } else {
-          // Basic: Just StaticDataCache
-          const culturalBundle = getCulturalBundle(userInfo, sessionId);
+          // Basic: Just StaticDataCache with character consistency
+          const culturalBundle = await this.getCulturalBundleWithConsistency(userInfo, sessionId);
           return culturalBundle.hair || 'with authentic African American features';
         }
       } else {
@@ -1117,14 +1134,14 @@ export class UnifiedPlaceholderResolver {
     try {
       
       if (shouldApplyCulturalEnhancements(userInfo)) {
-        // Dark skin users - get cultural arrays from StaticDataCache
+        // Dark skin users - get cultural arrays from StaticDataCache with character consistency
         if (tierType === '2.5A') {
           // Premium: StaticDataCache + character consistency (when available)
-          const culturalBundle = getCulturalBundle(userInfo, sessionId);
+          const culturalBundle = await this.getCulturalBundleWithConsistency(userInfo, sessionId);
           return culturalBundle.features || 'with photorealistic African features natural hair texture';
         } else {
-          // Basic: Just StaticDataCache
-          const culturalBundle = getCulturalBundle(userInfo, sessionId);
+          // Basic: Just StaticDataCache with character consistency
+          const culturalBundle = await this.getCulturalBundleWithConsistency(userInfo, sessionId);
           return culturalBundle.features || 'with photorealistic African features natural hair texture';
         }
       } else {

@@ -10,8 +10,7 @@ import {
   getSkinBySkintone,
   getAfricanAmericanHair, 
   getAfricanAmericanFeatures, 
-  shouldApplyCulturalEnhancements,
-  getCulturalBundle 
+  shouldApplyCulturalEnhancements
 } from '../_shared/StaticDataCache.js';
 import { tier25vocabulary } from '../_shared/tier25Vocabulary.js';
 
@@ -1603,7 +1602,18 @@ async function handleRequest(req) {
       const age = userInfo?.age || 'young child';
       const ethnicity = deriveRegionalEthnicity(userInfo, avatarIdentity);
       const skinTone = userInfo?.avatar?.skinTone || 'medium';
-      const culturalBundle = getCulturalBundle(userInfo, sessionId, skinTone);
+      // Get cultural bundle with character consistency
+      let culturalBundle;
+      try {
+        const { CharacterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
+        const characterService = CharacterConsistencyService.getInstance();
+        culturalBundle = await characterService.getCulturalEnhancements(userInfo, sessionId, characterName);
+      } catch (error) {
+        console.error('❌ Failed to get cultural bundle with consistency:', error);
+        // Fallback to direct StaticDataCache access
+        const { getCulturalBundle } = await import('../_shared/StaticDataCache.js');
+        culturalBundle = getCulturalBundle(userInfo, sessionId, skinTone);
+      }
       const hairDescription = culturalBundle?.hair || getHair(skinTone) || 'brown hair';
       const facialFeatures = culturalBundle?.features || getSkinBySkintone(skinTone, sessionId) || 'friendly expression';
       
@@ -1755,7 +1765,18 @@ async function handleRequest(req) {
       const characterName = userInfo?.name || userInfo?.childName || 'child';
       const age = userInfo?.age || 'young child';
       const skinTone = userInfo?.avatar?.skinTone || 'medium';
-      const culturalBundle = getCulturalBundle(userInfo, sessionId, skinTone);
+      // Get cultural bundle with character consistency
+      let culturalBundle;
+      try {
+        const { CharacterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
+        const characterService = CharacterConsistencyService.getInstance();
+        culturalBundle = await characterService.getCulturalEnhancements(userInfo, sessionId, characterName);
+      } catch (error) {
+        console.error('❌ Failed to get cultural bundle with consistency:', error);
+        // Fallback to direct StaticDataCache access
+        const { getCulturalBundle } = await import('../_shared/StaticDataCache.js');
+        culturalBundle = getCulturalBundle(userInfo, sessionId, skinTone);
+      }
       const hairColor = culturalBundle?.hair || getHair(skinTone) || 'brown hair';
       const ethnicity = userInfo?.avatar?.ethnicity || deriveEthnicityFromAvatar(userInfo?.avatar) || 'diverse background';
       

@@ -22,27 +22,25 @@ detectCulturalContext(userInfo) {
 
 **CRITICAL**: Cultural enhancements are SKIN-TONE BASED, not language-based.
 
-### Enhancement Generation
+### Enhancement Generation with Character Consistency
 Dark-skinned users receive:
 - **Cultural Hair**: Afro, cornrows, braids, dreadlocks, protective styles
 - **Facial Features**: Full lips, broad nose, high cheekbones, warm brown eyes
-- **Seeded Consistency**: Same user gets same enhancements across sessions
-
-### Language Support Matrix
-| Language | Code | Regional Authenticity | Cultural Features |
-|----------|------|---------------------|-------------------|
-| English  | en   | Standard            | Dark skin only    |
-| French   | fr   | French authenticity | Dark skin only    |
-| Spanish  | es   | Hispanic authenticity| Dark skin only    |
-| Portuguese| pt  | Brazilian authenticity| Dark skin only   |
-| Chinese  | zh   | Asian authenticity  | Dark skin only    |
+- **Character-Seeded Consistency**: Same character gets same enhancements across all pages in a session
 
 ### Implementation Flow
 1. **Skin Tone Check**: `skinTone === 'dark'` or `'darker'`
-2. **Cultural Seed**: Generated from `userName + sessionId`
-3. **Feature Selection**: Seeded random from `CULTURAL_ARRAYS.african`
+2. **Character Seed**: Generated from character consistency service using `characterName + avatarIdentity`
+3. **Feature Selection**: Seeded random from `CULTURAL_ARRAYS.african` using character seed
 4. **Template Integration**: `{bundle.culturalEnhancements}` placeholder
-5. **Consistency**: Same features across all story pages
+5. **Consistency**: Same features for same character across all pages, different across characters/sessions
+
+### Cultural Bundle Integration
+**NEW FLOW**: `CharacterConsistencyService.getCulturalEnhancements(userInfo, sessionId, characterName)`
+- Retrieves/creates character data with database persistence
+- Calls `StaticDataCache.getCulturalBundle()` with character seed (not session seed)
+- Caches cultural selections in character consistency database
+- Returns consistent cultural bundle across all story pages
 
 ### Cultural Arrays Structure
 ```javascript

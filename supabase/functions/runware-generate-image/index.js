@@ -10,7 +10,9 @@ import { phaseIntegrationOrchestrator } from "../_shared/PhaseIntegrationOrchest
 import { characterConsistencyService } from "../_shared/CharacterConsistencyService.js";
 import { visualDetailTracker } from "../_shared/VisualDetailTracker.js";
 import { CULTURAL_ARRAYS, createSeededRandom } from "../_shared/tier25Vocabulary.js";
-import { getCulturalBundle } from "../_shared/StaticDataCache.js";
+// ORCHESTRATOR: THIS IS THE MAIN ORCHESTRATOR FUNCTION
+// **CRITICAL SYSTEM NOTICE**: This function serves as the PRIMARY ORCHESTRATOR for image generation
+import { UnifiedPlaceholderResolver } from '../_shared/UnifiedPlaceholderResolver.js';
 import * as tierLogging from "./tierLogging.js";
 
 // ---- Tier logger binder (console + DB) ----
