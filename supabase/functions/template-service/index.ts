@@ -372,7 +372,7 @@ serve(async (req) => {
         // Process template with nuclear fallbacks
         if (Array.isArray(rawTemplate)) {
           // Level 0 templates - already string arrays
-          pages = rawTemplate.slice(0, Math.min(dynamicPageCount, rawTemplate.length));
+          pages = processStoryTemplate(rawTemplate, userInfo || {}, dynamicPageCount);
         } else {
           // Structured templates - use template converter
           const { getTemplate } = await import('../_shared/templateImporter.ts');
@@ -442,6 +442,9 @@ serve(async (req) => {
       console.log('📖 Converted to', actualPages.length, 'pages');
     }
     
+    // Final emergency bulletproofing with hardcoded values
+    actualPages = emergencyPlaceholderResolver(actualPages);
+    
     // Build response structure
     const responseData = {
       success: true,
@@ -496,3 +499,33 @@ serve(async (req) => {
     });
   }
 });
+
+// Emergency placeholder resolver with hardcoded fallbacks
+function emergencyPlaceholderResolver(pages: string[]): string[] {
+  // Hardcoded emergency values - bulletproof fallbacks
+  const colors = ['red', 'blue', 'green', 'yellow', 'purple'];
+  const animals = ['cat', 'dog', 'bird', 'rabbit', 'fish'];
+  const foods = ['apple', 'pizza', 'cookie', 'sandwich', 'cake'];
+  const actions = ['play', 'run', 'dance', 'sing', 'jump'];
+  const names = ['Sam', 'Alex', 'Riley', 'Casey', 'Jordan'];
+  
+  const pick = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
+  
+  return pages.map(page => {
+    let resolved = page;
+    
+    // Replace any unresolved placeholders with hardcoded values
+    resolved = resolved.replace(/\{userName\}/g, 'Child');
+    resolved = resolved.replace(/\{favoriteColor\}/g, pick(colors));
+    resolved = resolved.replace(/\{favoriteAnimal\}/g, pick(animals));
+    resolved = resolved.replace(/\{favoriteFood\}/g, pick(foods));
+    resolved = resolved.replace(/\{hobbies\}/g, pick(actions));
+    resolved = resolved.replace(/\{friend\}/g, pick(names));
+    resolved = resolved.replace(/\{specialRequest\}/g, '');
+    
+    // Generic cleanup for any other unresolved placeholders
+    resolved = resolved.replace(/\{[^}]+\}/g, '');
+    
+    return resolved;
+  });
+}
