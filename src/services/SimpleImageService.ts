@@ -527,7 +527,8 @@ export class SimpleImageService {
           pageNumber,
           isGuestUser: !isPremium,
           difficultyLevel: backendDifficulty,
-          protectionNegatives
+          protectionNegatives,
+          directMode: true
         }
       });
 
