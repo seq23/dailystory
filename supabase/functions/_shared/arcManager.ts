@@ -51,15 +51,15 @@ export interface CurrentArcData {
   arcNumber: number;
 }
 
-// Import UserInfo from placeholderResolver for consistency
-import type { UserInfo } from './placeholderResolver.ts';
+// Import UserInfo from canonical types
+import type { UserInfo, TemplateLevel } from './types/index.ts';
 
 export interface Ending {
   type: string;
   // Add other ending properties as needed
 }
 
-export type TemplateLevel = 'level0' | 'level1' | 'level2' | 'level3' | 'level4' | 'grade6' | 'grade7' | 'grade8' | 'grade9' | 'grade10';
+// Remove duplicate TemplateLevel export - using the one from types/index.ts
 
 // B values for each level (scene count per arc)
 const ARC_B_VALUES: Record<TemplateLevel, number> = {
@@ -301,7 +301,7 @@ function generateSwappableValue(category: string, sessionState: SessionState): s
   };
   
   const pool = pools[category] || ['unknown'];
-  const previous = sessionState?.swappableState?.[category];
+  const previous = (sessionState?.swappableState as any)?.[category];
   
   // Avoid immediate repetition
   const availableOptions = pool.filter(option => option !== previous);
@@ -319,7 +319,7 @@ function generateEnvironmentalChanges(sessionState: SessionState): Record<string
   if (Math.random() > 0.5) categoriesToChange.push('mood');
   
   categoriesToChange.forEach(category => {
-    const current = sessionState?.environmentalState?.[category];
+    const current = (sessionState?.environmentalState as any)?.[category];
     changes[category] = getNextEnvironmentalVariant(category, current || '');
   });
   

@@ -5,7 +5,7 @@
  */
 
 import type { UserInfo, SessionId } from './types/index.ts';
-import { hasAvatar } from './types/index.ts';
+import { getAvatar } from './types/index.ts';
 
 export interface SessionState {
   sessionId: string;
@@ -105,26 +105,27 @@ export class SessionStateManager {
    * Initialize session with avatar data from userInfo
    */
   initializeSessionWithAvatarData(sessionId: string, userInfo: UserInfo, isNeverEnding: boolean = false, totalPages: number | null = null): SessionState {
+    const avatar = getAvatar(userInfo);
     console.log('🎭 Initializing session with avatar data:', {
       sessionId,
-      avatarType: hasAvatar(userInfo) ? userInfo.avatar.type : undefined,
-      skinTone: hasAvatar(userInfo) ? userInfo.avatar.skinTone : undefined
+      avatarType: avatar?.type,
+      skinTone: avatar?.skinTone
     });
 
     const state = this.getOrCreateSessionState(sessionId, isNeverEnding, totalPages);
     
     // Set avatar data from userInfo
-    if (hasAvatar(userInfo)) {
-      state.avatarType = userInfo.avatar.type;
-      state.skinTone = userInfo.avatar.skinTone;
+    if (avatar) {
+      state.avatarType = avatar.type || null;
+      state.skinTone = avatar.skinTone || null;
       
       // Initialize core character traits
-      state.coreCharacterTraits.set('avatarType', userInfo.avatar.type);
-      state.coreCharacterTraits.set('skinTone', userInfo.avatar.skinTone);
+      state.coreCharacterTraits.set('avatarType', avatar.type || '');
+      state.coreCharacterTraits.set('skinTone', avatar.skinTone || '');
       
       state.lastUpdated = Date.now();
       
-      console.log(`📋 Session ${sessionId} initialized with avatar data: ${userInfo.avatar.type}/${userInfo.avatar.skinTone}`);
+      console.log(`📋 Session ${sessionId} initialized with avatar data: ${avatar.type}/${avatar.skinTone}`);
     } else {
       console.log(`⚠️ Session ${sessionId} initialized without avatar data`);
     }

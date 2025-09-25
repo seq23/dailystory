@@ -67,14 +67,63 @@ export function isSecondaryCharacter(x: unknown): x is SecondaryCharacter {
 
 // Avatar details interface for SessionStateManager
 export interface AvatarDetails {
-  type: string;
-  skinTone: string;
+  avatar?: {
+    type?: string;
+    skinTone?: string;
+  };
 }
 
 // Type guard for safe avatar access
-export function hasAvatar(userInfo: UserInfo): userInfo is UserInfo & { avatar: AvatarDetails } {
-  const info = userInfo as UserInfo & { avatar?: AvatarDetails };
+export function hasAvatar(userInfo: UserInfo): userInfo is UserInfo & { avatar: AvatarDetails['avatar'] } {
+  const info = userInfo as UserInfo & { avatar?: AvatarDetails['avatar'] };
   return !!(info.avatar && typeof info.avatar.type === 'string' && typeof info.avatar.skinTone === 'string');
+}
+
+// Safe avatar accessor helper to avoid "used before guard" pattern
+export function getAvatar(x: unknown): AvatarDetails['avatar'] | undefined {
+  return x && typeof x === 'object' && typeof (x as any).avatar === 'object'
+    ? (x as any).avatar
+    : undefined;
+}
+
+// TemplateLevel union type for arc processing
+export type TemplateLevel = 'level0' | 'level1' | 'level2' | 'level3' | 'level4' | 'grade6' | 'grade7' | 'grade8' | 'grade9' | 'grade10';
+
+// Template level normalizer
+export function toTemplateLevel(input: string): TemplateLevel {
+  const s = (input || '').trim().toLowerCase();
+  switch (s) {
+    case 'level0': case 'beginner': return 'level0';
+    case 'level1': case 'easy': return 'level1';
+    case 'level2': case 'medium': return 'level2';
+    case 'level3': case 'hard': return 'level3';
+    case 'level4': case 'expert': return 'level4';
+    case 'grade6': return 'grade6';
+    case 'grade7': return 'grade7';
+    case 'grade8': return 'grade8';
+    case 'grade9': return 'grade9';
+    case 'grade10': return 'grade10';
+    default: return 'level1'; // sane default
+  }
+}
+
+// Session state interface with proper property names
+export interface SessionState {
+  environmentState?: string;
+  environmentalState?: string; // legacy alias
+  originalSpecialRequest?: string;
+  arcHistory?: Array<{
+    theme?: string;
+    keyObject?: string;
+    setting?: string;
+    templateIndex?: number;
+  }>;
+  swappableState?: {
+    secondaryCharacter?: string;
+    setting?: string;
+    keyObject?: string;
+  };
+  endingRotation?: string[];
 }
 
 // Cultural selection update params

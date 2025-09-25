@@ -8,7 +8,8 @@ import { convertStoryTemplateToStringArray } from './templateConverter.ts';
 import { calculateArcPosition, generateArcTransition, needsArcTransition, getBValue } from './arcManager.ts';
 import { getNuclearSession, updateCurrentArc, sessionToJSON } from './nuclearSessionManager.ts';
 import { getTemplate, getTemplateCount } from './templateImporter.ts';
-import type { UserInfo } from './placeholderResolver.ts';
+import type { UserInfo, TemplateLevel } from './types/index.ts';
+import { toTemplateLevel } from './types/index.ts';
 
 export interface ArcProcessingResult {
   pages: string[];
@@ -28,31 +29,33 @@ export async function processArcAwarePage(
   sessionId: string,
   mode: string = 'real-user'
 ): Promise<ArcProcessingResult> {
+  // Normalize template level to proper type
+  const normalizedTemplateLevel: TemplateLevel = toTemplateLevel(templateLevel);
   try {
     // Level 0 exclusion - should never reach arc-aware processing
-    if (templateLevel === 'level0') {
+    if (normalizedTemplateLevel === 'level0') {
       throw new Error('Level 0 should use legacy processing, not arc-aware system');
     }
     
-    console.log(`🎪 Processing arc-aware page ${pageIndex} for ${templateLevel}`);
+    console.log(`🎪 Processing arc-aware page ${pageIndex} for ${normalizedTemplateLevel}`);
     
     // Get or create nuclear session state
     const sessionState = getNuclearSession(sessionId, templateLevel);
     
     // Calculate arc position using modulo logic
-    const arcPosition = calculateArcPosition(pageIndex, templateLevel);
+    const arcPosition = calculateArcPosition(pageIndex, normalizedTemplateLevel);
     console.log(`📍 Arc Position:`, arcPosition);
     
     // Check if we need arc transition
-    if (needsArcTransition(pageIndex, templateLevel) && pageIndex > 0) {
+    if (needsArcTransition(pageIndex, normalizedTemplateLevel) && pageIndex > 0) {
       console.log(`🔄 Arc transition needed at page ${pageIndex}`);
       
       // Generate arc transition data with smart template selection
       const arcTransitionData = await generateArcTransition(
         { arcNumber: arcPosition.arcNumber - 1 }, // Previous arc
         userInfo,
-        templateLevel,
-        sessionState
+        normalizedTemplateLevel,
+        sessionState as any // Type adapter for NuclearSessionState -> SessionState compatibility
       );
       
       // Complete current arc and start new one - using nuclear session
@@ -79,14 +82,14 @@ export async function processArcAwarePage(
         pageIndex,
         arcNumber: arcPosition.arcNumber,
         isArcTransition: true,
-        carriedIntent: arcTransitionData.carriedIntent,
+        carriedIntent: arcTransitionData.carriedIntent || undefined,
         environmentalVariants: arcTransitionData.environmentalChanges,
         swappableElements: arcTransitionData.swappableChanges,
         continuityLine: arcTransitionData.continuityLine
       };
       
       const pages = await convertStoryTemplateToStringArray(
-        Array.isArray(template) ? template[0] : template,
+        (Array.isArray(template) ? template[0] : template) as any, // Type adapter for template compatibility
         userInfo,
         1,
         mode,
@@ -126,12 +129,12 @@ export async function processArcAwarePage(
       pageIndex,
       arcNumber: arcPosition.arcNumber,
       isArcTransition: false,
-      environmentalVariants: sessionState.environmentalState,
-      swappableElements: sessionState.swappableState
+      environmentalVariants: (sessionState as any).environmentState || {},
+      swappableElements: (sessionState as any).swappableState || {}
     };
     
     const pages = await convertStoryTemplateToStringArray(
-      Array.isArray(template) ? template[0] : template,
+      (Array.isArray(template) ? template[0] : template) as any, // Type adapter for template compatibility
       userInfo,
       1,
       mode,
@@ -162,7 +165,7 @@ export async function processArcAwarePage(
     return {
       pages: [`Chapter ${Math.floor(pageIndex / 10) + 1}: The adventure continues with new discoveries ahead.`],
       metadata: {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         fallback: true
       }
     };
@@ -228,7 +231,7 @@ export async function batchProcessArcAwarePages(
     return {
       pages: fallbackPages,
       metadata: {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         fallback: true,
         batchProcessed: true
       }

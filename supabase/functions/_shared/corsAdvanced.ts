@@ -251,7 +251,8 @@ export function generateCorsTestingInfo(request: Request): {
 }
 
 // ============= EXPORT DEFAULT CONFIGURATION =============
-export { DEFAULT_CORS_CONFIG, CorsConfig };
+export { DEFAULT_CORS_CONFIG };
+export type { CorsConfig };
 export type { CorsConfig as CorsConfiguration };
 
 // ============= USAGE EXAMPLE =============
