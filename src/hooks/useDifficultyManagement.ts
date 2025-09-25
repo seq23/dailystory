@@ -31,21 +31,20 @@ interface UseDifficultyManagementProps {
 
 export const useDifficultyManagement = ({ userInfo }: UseDifficultyManagementProps) => {
   // ERROR-016 FIX: Defensive initialization with comprehensive validation
-  const safeUserInfo = userInfo || {} as UserInfo;
+  const safeUserInfo = userInfo || ({} as UserInfo);
   const validGradeLevels: ("6th" | "7th" | "8th" | "9th" | "10th")[] = ["6th", "7th", "8th", "9th", "10th"];
-  const validDifficultyLevels = ['beginner', 'easy', 'medium', 'hard', 'expert'];
-  
-  // Validate and default expert grade level
-  const safeExpertGradeLevel = validGradeLevels.includes(safeUserInfo.expertGradeLevel as any) 
-    ? safeUserInfo.expertGradeLevel || "6th" 
-    : "6th";
-    
-  // Validate and default difficulty level
-  const safeDifficultyLevel = validDifficultyLevels.includes(safeUserInfo.difficultyLevel as any)
-    ? safeUserInfo.difficultyLevel || 'beginner'
-    : 'beginner';
 
-  const [currentDifficulty, setCurrentDifficulty] = useState<string>(DifficultyLevelMapper.toFrontend(safeDifficultyLevel as any));
+  // Validate and default expert grade level
+  const safeExpertGradeLevel =
+    validGradeLevels.includes(safeUserInfo.expertGradeLevel as any)
+      ? (safeUserInfo.expertGradeLevel || "6th")
+      : "6th";
+  
+  // Normalize difficulty for consistent UI initialization
+  const normalizedBackend = DifficultyLevelMapper.normalizeLevel((safeUserInfo.difficultyLevel as any) || "easy");
+  const initialFrontend = DifficultyLevelMapper.toFrontend(normalizedBackend);
+
+  const [currentDifficulty, setCurrentDifficulty] = useState<string>(initialFrontend);
   const [isChangingDifficulty, setIsChangingDifficulty] = useState(false);
   const [changeDirection, setChangeDirection] = useState<'increase' | 'decrease' | 'badge' | undefined>();
   const [expertGradeLevel, setExpertGradeLevel] = useState<"6th" | "7th" | "8th" | "9th" | "10th">(safeExpertGradeLevel);
@@ -56,11 +55,11 @@ export const useDifficultyManagement = ({ userInfo }: UseDifficultyManagementPro
 
   const resetDifficultyToInitial = useCallback(() => {
     // ERROR-016 FIX: Use the same defensive validation in reset
-    setCurrentDifficulty(DifficultyLevelMapper.toFrontend(safeDifficultyLevel as any));
+    setCurrentDifficulty(initialFrontend);
     setExpertGradeLevel(safeExpertGradeLevel);
     setIsChangingDifficulty(false);
     setChangeDirection(undefined);
-  }, [safeDifficultyLevel, safeExpertGradeLevel]);
+  }, [initialFrontend, safeExpertGradeLevel]);
 
   const state: DifficultyManagementState = {
     currentDifficulty,

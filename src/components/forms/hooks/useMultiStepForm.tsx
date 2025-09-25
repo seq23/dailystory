@@ -121,23 +121,25 @@ export const useMultiStepForm = () => {
       return null;
     }
 
-    // Determine difficulty level - Convert frontend difficultyLevel to backend difficulty
+    // Determine difficulty level - KEEP frontend difficulty in userInfo
     const frontendDifficultyLevel = formData.difficultyLevel || 
       (formData.age <= 5 ? "pre-reader" : 
        formData.age <= 8 ? "beginner" : 
        formData.age <= 11 ? "developing" : 
        formData.age <= 13 ? "independent" : "advanced");
     
-    // Convert frontend value to backend value using DifficultyLevelMapper
-    const difficulty: DifficultyLevel = DifficultyLevelMapper.toBackend(frontendDifficultyLevel);
+    // For analytics/logging only, derive backend difficulty
+    const backendDifficulty: DifficultyLevel = DifficultyLevelMapper.toBackend(frontendDifficultyLevel);
     
     LeanErrorService.logError({
-      difficultyLevel: difficulty,
+      frontendDifficultyLevel,
+      backendDifficulty,
       age: formData.age,
       grade: formData.grade
     }, 'form_submission_success');
     
-    return { ...formData, specialRequest: combinedSpecialRequest, difficultyLevel: difficulty };
+    // Return userInfo with FRONTEND difficulty value
+    return { ...formData, specialRequest: combinedSpecialRequest, difficultyLevel: frontendDifficultyLevel };
   }, [formData, validateStep1, t]);
 
   return {
