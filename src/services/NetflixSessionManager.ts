@@ -26,7 +26,7 @@ export class NetflixSessionManager {
       existing.lastActivity = now;
       
       const sessionId = `netflix-${userId}-story${existing.storyCount}-${existing.baseSessionId}`;
-      DebugLogger.log('story', `Reusing session for user ${userId}`, { sessionId, storyCount: existing.storyCount });
+      DebugLogger.logToDebugMonitorOnly('story', `Reusing session for user ${userId}`, { sessionId, storyCount: existing.storyCount });
       return sessionId;
     }
 

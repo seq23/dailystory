@@ -85,7 +85,7 @@ export const useStoryLogic = ({
 
   // Log session ID usage for debugging
   useEffect(() => {
-    DebugLogger.log('story', 'useStoryLogic: Session ID initialized', {
+    DebugLogger.logToDebugMonitorOnly('story', 'useStoryLogic: Session ID initialized', {
       netflixSessionId,
       characterSessionId: characterSessionId.current,
       usedNetflixSession: !!netflixSessionId

@@ -298,7 +298,7 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     initialDifficulty: (safeUserInfo.difficultyLevel || 'beginner') as 'beginner' | 'easy' | 'medium' | 'hard' | 'expert',
     expertGradeLevel: safeUserInfo.expertGradeLevel,
     onSessionEnded,
-    netflixSessionId: getNetflixSessionId() // Pass Netflix session ID
+    netflixSessionId: useMemo(() => getNetflixSessionId(), []) // Pass Netflix session ID (memoized to prevent re-creation on every render)
   });
 
   // Initialize consolidated hooks for state management
