@@ -6,19 +6,6 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-// TypeScript interfaces for visual details
-interface VisualDetails {
-  appearance?: Record<string, string>;
-  clothing?: Record<string, string>;
-  [key: string]: Record<string, string> | undefined;
-}
-
-interface VisualDetailRecord {
-  detail_type: string;
-  detail_key: string;
-  detail_value: string;
-}
-
 // ============= UNIFIED VOCABULARY IMPORT FOR ENHANCED OBJECT DETECTION =============
 // Import comprehensive vocabulary from Tier 2.5A for consistent color/size detection
 const EXPANDED_COLOR_ARRAY = [
@@ -80,7 +67,7 @@ export class VisualDetailTracker {
    * Analyze text for visual details and store them in database for consistency
    * Enhanced with character-specific clothing detection and secondary character visual details
    */
-  static async analyzeTextForDetails(sessionId: string, text: string, pageNumber: number, characterName: string | null = null) {
+  static async analyzeTextForDetails(sessionId, text, pageNumber, characterName = null) {
     console.log(`🎨 VisualDetailTracker - Analyzing text for session ${sessionId}, page ${pageNumber}`);
     
     if (!sessionId || !text) return;
@@ -243,7 +230,7 @@ export class VisualDetailTracker {
   /**
    * Save visual detail to database
    */
-  static async saveDetailToDatabase(sessionId: string, characterName: string, detailType: string, detailKey: string, detailValue: string, pageNumber: number) {
+  static async saveDetailToDatabase(sessionId, characterName, detailType, detailKey, detailValue, pageNumber) {
     try {
       // Check if detail already exists
       const { data: existing } = await this.supabase
@@ -299,7 +286,7 @@ export class VisualDetailTracker {
   /**
    * Get character clothing from database
    */
-  static async getCharacterClothing(sessionId: string, characterName: string) {
+  static async getCharacterClothing(sessionId, characterName) {
     try {
       const { data, error } = await this.supabase
         .from('visual_details_cache')
@@ -313,7 +300,7 @@ export class VisualDetailTracker {
         return {};
       }
 
-      const clothing: Record<string, any> = {};
+      const clothing = {};
       data?.forEach(detail => {
         clothing[detail.detail_key] = detail.detail_value;
       });
@@ -329,7 +316,7 @@ export class VisualDetailTracker {
   /**
    * Get all visual details for a character
    */
-  static async getCharacterDetails(sessionId: string, characterName: string) {
+  static async getCharacterDetails(sessionId, characterName) {
     try {
       const { data, error } = await this.supabase
         .from('visual_details_cache')
@@ -342,7 +329,7 @@ export class VisualDetailTracker {
         return {};
       }
 
-      const details: Record<string, any> = {};
+      const details = {};
       data?.forEach(detail => {
         if (!details[detail.detail_type]) {
           details[detail.detail_type] = {};
@@ -360,7 +347,7 @@ export class VisualDetailTracker {
   /**
    * Build clothing description for character prompt
    */
-  static async buildClothingDescription(sessionId: string, characterName: string) {
+  static async buildClothingDescription(sessionId, characterName) {
     const clothing = await this.getCharacterClothing(sessionId, characterName);
     
     if (Object.keys(clothing).length === 0) {
@@ -374,7 +361,7 @@ export class VisualDetailTracker {
   /**
    * Get all visual details for a session as prompt addition
    */
-  static async getVisualDetailsForPrompt(sessionId: string) {
+  static async getVisualDetailsForPrompt(sessionId) {
     try {
       const { data, error } = await this.supabase
         .from('visual_details_cache')
@@ -399,7 +386,7 @@ export class VisualDetailTracker {
   /**
    * Get secondary character visual details for enriched descriptions
    */
-  static async getSecondaryCharacterVisuals(sessionId: string, characterName: string) {
+  static async getSecondaryCharacterVisuals(sessionId, characterName) {
     try {
       const { data, error } = await this.supabase
         .from('visual_details_cache')
@@ -411,12 +398,12 @@ export class VisualDetailTracker {
         return null;
       }
 
-      const visuals: VisualDetails = {};
-      data.forEach((detail: VisualDetailRecord) => {
+      const visuals = {};
+      data.forEach(detail => {
         if (!visuals[detail.detail_type]) {
           visuals[detail.detail_type] = {};
         }
-        visuals[detail.detail_type]![detail.detail_key] = detail.detail_value;
+        visuals[detail.detail_type][detail.detail_key] = detail.detail_value;
       });
 
       return visuals;
@@ -429,7 +416,7 @@ export class VisualDetailTracker {
   /**
    * Build enriched secondary character description with visual details
    */
-  static async buildEnrichedSecondaryCharacter(sessionId: string, characterType: string, baseDescription: string) {
+  static async buildEnrichedSecondaryCharacter(sessionId, characterType, baseDescription) {
     const characterName = this.extractCharacterNameFromDescription(characterType);
     const visuals = await this.getSecondaryCharacterVisuals(sessionId, characterName);
     
@@ -460,7 +447,7 @@ export class VisualDetailTracker {
   /**
    * Extract character name from description or character type
    */
-  static extractCharacterNameFromDescription(characterType: string): string {
+  static extractCharacterNameFromDescription(characterType) {
     // Simple extraction - look for common relationship patterns
     const relationshipMap = {
       'mom': 'mom',
@@ -488,12 +475,12 @@ export class VisualDetailTracker {
   /**
    * Add fallback visuals for characters without stored visual details
    */
-  static addFallbackVisuals(characterType: string, baseDescription: string, sessionId: string): string {
+  static addFallbackVisuals(characterType, baseDescription, sessionId) {
     // Generate deterministic fallback visuals based on session and character type
     const seed = this.generateSeed(`${sessionId}_${characterType}_fallback`);
     const seededRandom = this.createSeededRandom(seed);
     
-    const fallbackVisuals: Record<string, string[]> = {
+    const fallbackVisuals = {
       'mom': ['with kind eyes', 'wearing a comfortable outfit', 'with a gentle smile'],
       'dad': ['with a friendly face', 'wearing casual clothes', 'with a warm expression'],
       'friend': ['with a cheerful expression', 'wearing colorful clothes', 'with bright eyes'],
@@ -515,7 +502,7 @@ export class VisualDetailTracker {
   /**
    * Generate deterministic seed from string
    */
-  static generateSeed(input: string): number {
+  static generateSeed(input) {
     let hash = 0;
     for (let i = 0; i < input.length; i++) {
       const char = input.charCodeAt(i);
@@ -528,7 +515,7 @@ export class VisualDetailTracker {
   /**
    * Create seeded random number generator
    */
-  static createSeededRandom(seed: number): () => number {
+  static createSeededRandom(seed) {
     let currentSeed = seed;
     return function() {
       currentSeed = (currentSeed * 9301 + 49297) % 233280;
@@ -539,7 +526,7 @@ export class VisualDetailTracker {
   /**
    * Clear visual details cache from database
    */
-  static async clearVisualDetailsCache(sessionId: string | null = null) {
+  static async clearVisualDetailsCache(sessionId = null) {
     try {
       let query = this.supabase.from('visual_details_cache').delete();
       
@@ -549,24 +536,24 @@ export class VisualDetailTracker {
         query = query.neq('session_id', ''); // Delete all if no specific session
       }
 
-      const { error } = await query;
+      const { data, error } = await query;
 
       if (error) {
         console.error('Error clearing visual details cache:', error);
         return { success: false, cleared: 0, message: error.message };
       }
 
-      console.log(`🗑️ Visual details cache cleared${sessionId ? ` for session ${sessionId}` : ''}`);
+      const clearedCount = data?.length || 0;
+      console.log(`🗑️ Cleared ${clearedCount} visual detail cache entries${sessionId ? ` for session ${sessionId}` : ''}`);
       
       return {
         success: true,
-        cleared: 0, // Supabase delete doesn't return count by default
-        message: `Visual details cache cleared${sessionId ? ` for session ${sessionId}` : ''}`
+        cleared: clearedCount,
+        message: `Cleared ${clearedCount} visual detail entries${sessionId ? ` for session ${sessionId}` : ''}`
       };
-    } catch (error: unknown) {
+    } catch (error) {
       console.error('Database error in clearVisualDetailsCache:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      return { success: false, cleared: 0, message: errorMessage };
+      return { success: false, cleared: 0, message: error.message };
     }
   }
 }
