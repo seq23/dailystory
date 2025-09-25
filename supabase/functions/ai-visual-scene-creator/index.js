@@ -396,20 +396,16 @@ async function callOpenAIWithFallback(messages, timeout = 6000, requestId, avata
       
       console.log(`Attempting ${model.name} (1 attempt per model)`);
       
-      // Phase B: Enforce timeout with utilities
-      const response = await CoreUtils.withTimeout(
-        fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${openAIApiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(requestBody),
-          signal: controller.signal
-        }),
-        TIER_TIMEOUTS.OPENAI_API,
-        'OpenAI API call'
-      );
+      // Direct fetch with timeout and error classification
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+        signal: controller.signal
+      });
       
       clearTimeout(timeoutId);
       
@@ -547,6 +543,7 @@ async function handleRequest(req) {
 
 // Handle calls from PhaseIntegrationOrchestrator OR frontend test button
 async function handleOrchestratorCall(requestId, storyText, enhancedStoryData, avatarIdentity, userInfo, includeFullSchema = false, previousPrimaryScene = null) {
+  const localStartTime = Date.now(); // Fix startTime scope collision
   const callType = includeFullSchema ? 'frontend/test' : 'orchestrator';
   console.log(`🔄 [${requestId}] Processing ${callType} call - generating primaryScene + aiSchema for ${callType}`);
   
@@ -748,7 +745,7 @@ Generate a comprehensive scene with complete visual elements including backgroun
     return createCorsResponse(response);
   }).finally(() => {
     // PHASE 6: Performance monitoring
-    const responseTime = Date.now() - startTime;
+    const responseTime = Date.now() - localStartTime;
     console.log(`⏱️ [${requestId}] Request completed in ${responseTime}ms`);
   });
 }

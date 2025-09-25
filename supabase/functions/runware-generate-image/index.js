@@ -608,9 +608,13 @@ async function handleRequest(req) {
 
         // First: ai-visual-scene-creator for primaryScene + schema
         log.t2('Calling ai-visual-scene-creator', { pageNumber, previousPrimaryScene });
-        // Phase B: Enforce timeout with utilities
-        const sceneResponse = await CoreUtils.withTimeout(
-          supabase.functions.invoke('ai-visual-scene-creator', {
+        // Direct timeout-enabled call with error classification
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort('timeout'), TIER_TIMEOUTS.AI_GENERATION);
+        
+        let sceneResponse;
+        try {
+          sceneResponse = await supabase.functions.invoke('ai-visual-scene-creator', {
             body: {
               storyText,
               userInfo: payload.userInfo,
@@ -618,10 +622,15 @@ async function handleRequest(req) {
               pageNumber,
               previousPrimaryScene
             }
-          }),
-          TIER_TIMEOUTS.AI_GENERATION,
-          'AI Visual Scene Creator (Tier 1 Default)'
-        );
+          });
+        } catch (err) {
+          if (err?.name === 'AbortError' || `${err}`.includes('timeout')) {
+            throw new Error('Timeout AI Visual Scene Creator (Tier 1 Default)');
+          }
+          throw err;
+        } finally {
+          clearTimeout(timeout);
+        }
         if (!sceneResponse?.data || sceneResponse.error) {
           throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_25A');
         }
@@ -788,9 +797,13 @@ async function handleRequest(req) {
 
         // First: ai-visual-scene-creator for primaryScene + schema
         log.t2('Calling ai-visual-scene-creator', { pageNumber, previousPrimaryScene });
-        // Phase B: Enforce timeout with utilities
-        const sceneResponse = await CoreUtils.withTimeout(
-          supabase.functions.invoke('ai-visual-scene-creator', {
+        // Direct timeout-enabled call with error classification
+        const controller2 = new AbortController();
+        const timeout2 = setTimeout(() => controller2.abort('timeout'), TIER_TIMEOUTS.AI_GENERATION);
+        
+        let sceneResponse;
+        try {
+          sceneResponse = await supabase.functions.invoke('ai-visual-scene-creator', {
             body: {
               storyText,
               userInfo: payload.userInfo,
@@ -798,10 +811,15 @@ async function handleRequest(req) {
               pageNumber,
               previousPrimaryScene
             }
-          }),
-          TIER_TIMEOUTS.AI_GENERATION,
-          'AI Visual Scene Creator (Force Tier 1)'
-        );
+          });
+        } catch (err) {
+          if (err?.name === 'AbortError' || `${err}`.includes('timeout')) {
+            throw new Error('Timeout AI Visual Scene Creator (Force Tier 1)');
+          }
+          throw err;
+        } finally {
+          clearTimeout(timeout2);
+        }
         if (!sceneResponse?.data || sceneResponse.error) {
           throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_25A');
         }
@@ -874,9 +892,13 @@ async function handleRequest(req) {
           // Force Tier 1: Try Direct Mode instead of escalating to Tier 2.5A
           log.t2('Force Tier 1: Attempting Direct Mode via ai-visual-scene-creator');
           try {
-            // Phase B: Enforce timeout with utilities
-            const directModeResponse = await CoreUtils.withTimeout(
-              supabase.functions.invoke('ai-visual-scene-creator', {
+            // Direct timeout-enabled call with error classification
+            const controller3 = new AbortController();
+            const timeout3 = setTimeout(() => controller3.abort('timeout'), TIER_TIMEOUTS.DIRECT_MODE);
+            
+            let directModeResponse;
+            try {
+              directModeResponse = await supabase.functions.invoke('ai-visual-scene-creator', {
                 body: {
                   storyText,
                   userInfo: payload.userInfo,
@@ -884,10 +906,15 @@ async function handleRequest(req) {
                   pageNumber: pageNumber || 1,
                   directMode: true  // Enable Direct Mode bypass
                 }
-              }),
-              TIER_TIMEOUTS.DIRECT_MODE,
-              'AI Visual Scene Creator (Direct Mode)'
-            );
+              });
+            } catch (err) {
+              if (err?.name === 'AbortError' || `${err}`.includes('timeout')) {
+                throw new Error('Timeout AI Visual Scene Creator (Direct Mode)');
+              }
+              throw err;
+            } finally {
+              clearTimeout(timeout3);
+            }
 
             if (directModeResponse?.data && directModeResponse.data.success) {
               result = {
@@ -958,6 +985,26 @@ async function handleRequest(req) {
     });
   } catch (error) {
     const message = (error && error.message) || String(error);
+    
+    // Prevent 500→503 cascade for timeout errors - return 200 with controlled error payload
+    if (`${message}`.includes('timeout') || `${message}`.includes('Timeout')) {
+      tierLogging.logTier1(`⏰ [${requestId}] Upstream timeout handled gracefully`, { message });
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'UPSTREAM_TIMEOUT',
+        message: 'Service temporarily unavailable due to timeout',
+        requestId,
+        tier: 'TIMEOUT_HANDLED'
+      }), {
+        status: 200, // Important: 200 prevents receptionist 503
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Content-Type': 'application/json'
+        }
+      });
+    }
+    
+    // Other errors still surface normally for proper debugging
     tierLogging.logTier1(`❌ [${requestId}] Orchestrator error`, { message });
     return new Response(JSON.stringify({
       error: 'Internal server error',
