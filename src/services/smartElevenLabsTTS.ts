@@ -24,9 +24,9 @@ export class SmartElevenLabsTTS {
       window.dispatchEvent(new CustomEvent('audio:request', { detail: { system: 'charlotte' } }));
     }
 
-    // Add timeout protection - 15 seconds for TTS requests (increased for better reliability)
+    // Add timeout protection - 30 seconds for TTS requests (increased for story reading)
     const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error('TTS request timeout - falling back to browser speech')), 15000);
+      setTimeout(() => reject(new Error('TTS request timeout - falling back to browser speech')), 30000);
     });
 
     try {

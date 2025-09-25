@@ -282,6 +282,10 @@ class DebugGatewayService {
     });
   }
 
+  async getLastGeneratedImage(): Promise<{ data: any; error: any }> {
+    return this.getRecentImagePrompts(1);
+  }
+
   // Get circuit breaker status for debugging
   getStatus() {
     return {

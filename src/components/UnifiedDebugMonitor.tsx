@@ -530,6 +530,31 @@ export const UnifiedDebugMonitor: React.FC = () => {
                 {isRecording ? 'Stop Recording' : 'Start Recording'}
               </DropdownMenuItem>
               <DropdownMenuItem onSelect={resetCircuitBreakers}>Reset Circuit Breakers</DropdownMenuItem>
+              <DropdownMenuItem onSelect={async () => {
+                try {
+                  const result = await DebugGateway.getLastGeneratedImage();
+                  const imageData = result.data?.imagePrompts?.[0];
+                  if (imageData) {
+                    toast({
+                      title: "Last Generated Image",
+                      description: `Session: ${imageData.sessionId || 'Unknown'} | Status: ${imageData.success ? 'Success' : 'Failed'}`
+                    });
+                    DebugLogger.log('image', 'Last image debug data', imageData);
+                  } else {
+                    toast({
+                      title: "No Image Data",
+                      description: "No recent image generation found",
+                      variant: "destructive"
+                    });
+                  }
+                } catch (error) {
+                  toast({
+                    title: "Image Debug Failed", 
+                    description: "Failed to fetch last image data",
+                    variant: "destructive"
+                  });
+                }
+              }}>🖼️ Last Image Debug</DropdownMenuItem>
               <DropdownMenuItem onSelect={exportLogs}>Export Logs</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

@@ -40,7 +40,7 @@ export class SynchronizedElevenLabsTTS {
     const startTime = Date.now();
     let retries = 0;
     const maxRetries = 2;
-    const maxTimeoutMs = 8000;
+    const maxTimeoutMs = 30000;
 
     while (retries <= maxRetries) {
       const timeoutPromise = new Promise<never>((_, reject) => {
