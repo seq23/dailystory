@@ -444,7 +444,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Translation error:', error)
     return new Response(
-      JSON.stringify({ error: 'Translation failed', details: error.message }),
+      JSON.stringify({ error: 'Translation failed', details: error instanceof Error ? error.message : String(error) }),
       { 
         status: 500, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

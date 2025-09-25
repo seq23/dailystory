@@ -3,7 +3,8 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
 
 // Import the sophisticated template system components
-import { resolveAllPlaceholders, type MicroContext, type UserInfo } from "../_shared/placeholderResolver.ts";
+import { resolveAllPlaceholders, type MicroContext } from "../_shared/placeholderResolver.ts";
+import type { UserInfo } from "../_shared/types/index.ts";
 import { safeValidateAndEnhanceGrammar } from "../_shared/enhancedPlaceholderValidator.ts";
 
 const corsHeaders = {
@@ -132,7 +133,7 @@ serve(async (req) => {
         grammarEnhanced: grammarEnhancementSuccesses === pages.length,
         grammarEnhancementErrors: grammarFailureReasons.length,
         grammarFailureReasons: grammarFailureReasons.length > 0 ? grammarFailureReasons : undefined,
-        source: 'unified-processor-enhanced'
+        source: 'unified-processor' as const
       }
     };
 
@@ -150,9 +151,9 @@ serve(async (req) => {
         placeholdersResolved: 0,
         grammarEnhanced: false,
         grammarEnhancementErrors: 0,
-        source: 'unified-processor-enhanced'
+        source: 'unified-processor' as const
       },
-      error: error.message
+      error: error instanceof Error ? error.message : String(error)
     };
 
     return new Response(JSON.stringify(errorResponse), {

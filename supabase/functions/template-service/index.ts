@@ -25,7 +25,8 @@ import { getBValue } from '../_shared/templates/registry.ts';
 import { getBValueForLevel, type ValidationLevel } from '../_shared/validation-utils.ts';
 
 // Import sophisticated placeholder resolution  
-import { resolveAllPlaceholders, MicroContext, UserInfo, FALLBACK_POOLS, pick } from '../_shared/placeholderResolver.ts';
+import { resolveAllPlaceholders, MicroContext, FALLBACK_POOLS, pick } from '../_shared/placeholderResolver.ts';
+import type { UserInfo } from '../_shared/types/index.ts';
 
 // Token limit configurations for dynamic page counts
 interface TokenLimitConfig {
@@ -342,7 +343,7 @@ serve(async (req) => {
           }
         }
       } catch (smartError) {
-        console.warn('⚠️ Smart template selection failed, using random fallback:', smartError.message);
+        console.warn('⚠️ Smart template selection failed, using random fallback:', smartError instanceof Error ? smartError.message : String(smartError));
         // selectedTemplateIndex remains unchanged (null or provided value)
       }
     }
@@ -375,12 +376,13 @@ serve(async (req) => {
         } else {
           // Structured templates - use template converter
           const { getTemplate } = await import('../_shared/templateImporter.ts');
-          pages = await getTemplate(templateLevel, finalTemplateIndex, userInfo || {}, dynamicPageCount, mode);
+          const templateResult = await getTemplate(templateLevel, finalTemplateIndex, userInfo || {}, dynamicPageCount, mode);
+          pages = Array.isArray(templateResult) ? templateResult : templateResult?.pages || null;
         }
       }
       
       if (pages) {
-        const pageCount = Array.isArray(pages) ? pages.length : pages.pages?.length || 0;
+        const pageCount = Array.isArray(pages) ? pages.length : (pages as any)?.pages?.length || 0;
         
         if (mode === 'testing') {
           console.log('✅ Template loaded with', pageCount, 'pages');
@@ -402,8 +404,8 @@ serve(async (req) => {
 
     // Handle both simple pages array and enhanced testing data
     const isTestingResult = pages && !Array.isArray(pages) && typeof pages === 'object' && 'pages' in pages && 'testingData' in pages;
-    const actualPages = isTestingResult ? pages.pages : pages;
-    const testingData = isTestingResult ? pages.testingData : null;
+    let actualPages = isTestingResult ? (pages as any).pages : pages;
+    const testingData = isTestingResult && pages ? (pages as any).testingData : null;
 
     // Debug logging
     if (mode === 'testing') {

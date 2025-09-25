@@ -137,7 +137,7 @@ serve(async (req) => {
     } catch (fetchError) {
       clearTimeout(timeoutId);
       
-      if (fetchError.name === 'AbortError') {
+      if (fetchError && typeof fetchError === 'object' && 'name' in fetchError && fetchError.name === 'AbortError') {
         console.warn('⏱️ Image request timeout:', imageUrl);
         return new Response('Request timeout', { 
           status: 408,

@@ -37,15 +37,15 @@ serve(async (req) => {
 
     if (error) {
       console.error('[Validate Discount] Database error:', error);
-      return createCorsErrorResponse('Error validating discount code', 500);
+      return createDynamicCorsErrorResponse('Error validating discount code', undefined, 500);
     }
 
     if (!discountCode) {
       console.log(`[Validate Discount] Code not found or inactive: ${code}`);
-      return createCorsResponse({ 
+      return createDynamicCorsResponse({ 
         valid: false, 
         message: 'Invalid or expired discount code' 
-      });
+      }, undefined, 400);
     }
 
     // Check usage limits if set
@@ -59,16 +59,16 @@ serve(async (req) => {
 
     console.log(`[Validate Discount] Code valid: ${code} - ${discountCode.description}`);
     
-    return createCorsResponse({
+    return createDynamicCorsResponse({
       valid: true,
       message: `✅ Code validated! ${discountCode.description}`,
       code: discountCode.code,
       description: discountCode.description,
       duration_days: discountCode.duration_days
-    });
+    }, undefined, 200);
 
   } catch (error) {
     console.error('[Validate Discount] Error:', error);
-    return createDynamicCorsErrorResponse(error.message || 'Internal server error', null, 500);
+    return createDynamicCorsErrorResponse(error instanceof Error ? error.message : 'Internal server error', undefined, 500);
   }
 });

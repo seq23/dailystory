@@ -80,12 +80,12 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('TTS Error Details:', error)
-    console.error('Error message:', error?.message)
-    console.error('Error stack:', error?.stack)
+    console.error('Error message:', (error as any)?.message)
+    console.error('Error stack:', (error as any)?.stack)
     
     return new Response(
       JSON.stringify({ 
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         details: 'Check function logs for more information'
       }),
       { 

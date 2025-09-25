@@ -51,7 +51,7 @@ serve(async (req) => {
         return await getSystemHealthStatus();
       
       default:
-        return createCorsErrorResponse('Invalid action parameter', 400);
+        return createDynamicCorsErrorResponse('Invalid action parameter', undefined, 400);
     }
 
   } catch (error) {
@@ -89,11 +89,11 @@ async function getPerformanceMetrics(timeRange: string, models: string[]): Promi
 
   console.log(`📊 Performance metrics: ${aggregatedData.totalRequests} requests, ${aggregatedData.averageResponseTime.toFixed(2)}ms avg`);
 
-  return createCorsResponse({
+  return createDynamicCorsResponse({
     success: true,
     data: aggregatedData,
     timestamp: Date.now()
-  });
+  }, undefined, 200);
 }
 
 /**
@@ -103,7 +103,7 @@ async function recordPerformanceMetric(data: ModelPerformanceData): Promise<Resp
   // This would typically store in a database, but for now we'll use in-memory storage
   console.log(`📝 Recording metric: ${data.model} - ${data.responseTime}ms - ${data.success ? 'SUCCESS' : 'FAILED'}`);
   
-  return createCorsResponse({
+  return createDynamicCorsResponse({
     success: true,
     message: 'Metric recorded successfully'
   });
@@ -147,7 +147,7 @@ async function getModelComparison(timeRange: string, models: string[]): Promise<
 
   console.log(`🔍 Model comparison: ${comparisons.length} models, ${costSavings.toFixed(1)}% cost savings with GPT-5-mini`);
 
-  return createCorsResponse({
+  return createDynamicCorsResponse({
     success: true,
     comparisons,
     insights: {
@@ -186,7 +186,7 @@ async function getSystemHealthStatus(): Promise<Response> {
 
   console.log(`🏥 System health: ${health.status} (${health.successRate.toFixed(1)}% success rate)`);
 
-  return createCorsResponse({
+  return createDynamicCorsResponse({
     success: true,
     health
   });

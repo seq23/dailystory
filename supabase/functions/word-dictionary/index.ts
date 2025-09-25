@@ -422,7 +422,7 @@ IMPORTANT: The definition and sampleSentence must be in ${targetLanguage}, but t
 
     return new Response(
       JSON.stringify({ 
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         word: '',
         definition: fallbackDefinition,
         phonetic: '',

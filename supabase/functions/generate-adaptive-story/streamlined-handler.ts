@@ -916,7 +916,7 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
         
         try {
           const executedContent = await executeFunctionCalls(storyText, {
-            userInfo: avatarInfo,
+            userInfo: userInfo,
             gradeLevel: gradeLevel,
             difficulty: difficulty
           });

@@ -10,6 +10,12 @@ const corsHeaders = {
   'Access-Control-Max-Age': '600',
 };
 
+interface DiagnosticTest {
+  name: string;
+  status: string;
+  details: any;
+}
+
 const runwareApiKey = Deno.env.get('RUNWARE_API_KEY');
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -35,7 +41,7 @@ serve(async (req) => {
             supabase_url: !!supabaseUrl,
             supabase_service_key: !!supabaseServiceKey
           },
-          tests: []
+          tests: [] as DiagnosticTest[]
         };
 
         // Test 1: Environment Variables
@@ -88,7 +94,7 @@ serve(async (req) => {
               name: 'Runware API Connection',
               status: 'FAIL',
               details: {
-                error: error.message
+                error: error instanceof Error ? error.message : String(error)
               }
             });
           }
@@ -114,7 +120,7 @@ serve(async (req) => {
             name: 'Database Connection',
             status: 'FAIL',
             details: {
-              error: error.message
+              error: error instanceof Error ? error.message : String(error)
             }
           });
         }
@@ -159,7 +165,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         error: 'Internal server error',
-        details: error.message,
+        details: error instanceof Error ? error.message : String(error),
         timestamp: new Date().toISOString()
       }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

@@ -71,6 +71,6 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('❌ Failed to export monitoring data:', error);
-    return createCorsErrorResponse(`Monitoring data export failed: ${error.message}`, 500);
+    return createCorsErrorResponse(`Monitoring data export failed: ${error instanceof Error ? error.message : String(error)}`, 500);
   }
 });
