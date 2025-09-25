@@ -66,6 +66,7 @@ const CACHE_KEY_PREFIX = 'time2read_story_session_';
 const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 
 export class StorySessionCache {
+  private static lastCacheLogAt: Record<string, number> = {};
   private static generateSessionId(userId: string, difficulty: DifficultyLevel): string {
     return `${userId}_${difficulty}_${Date.now()}`;
   }
@@ -146,7 +147,13 @@ export class StorySessionCache {
       }
 
       const avatarInfo = avatarType ? ` (avatar: ${avatarType})` : '';
-      DebugLogger.logToDebugMonitorOnly('story', `Retrieved cached story session for user ${userId}${avatarInfo}`);
+      const cacheLogKey = `${userId}${avatarInfo}`;
+      const now = Date.now();
+      const lastLog = this.lastCacheLogAt[cacheLogKey] ?? 0;
+      if (now - lastLog > 5000) {
+        DebugLogger.logToDebugMonitorOnly('story', `Retrieved cached story session for user ${userId}${avatarInfo}`);
+        this.lastCacheLogAt[cacheLogKey] = now;
+      }
       return session;
     } catch (error) {
       DebugLogger.warn('story', 'Failed to retrieve cached story session', error);
