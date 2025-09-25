@@ -401,10 +401,11 @@ export class UnifiedPlaceholderResolver {
    * CULTURAL ENHANCEMENT RESOLVER - For ${bundle.culturalEnhancements}
    */
   resolveCulturalEnhancements(userInfo, sessionId) {
-    const culturalType = this.detectCulturalContext(userInfo);
+    // Check skin tone directly instead of flawed cultural type comparison
+    const skinTone = userInfo?.skinTone || userInfo?.avatarIdentity?.skinTone || 'medium';
     
-    // Only apply enhancements for detected cultural contexts (dark skin users)
-    if (culturalType !== 'african') {
+    // Only apply enhancements for dark skin users
+    if (skinTone !== 'dark' && skinTone !== 'darker') {
       return ''; // Light skin users get empty string
     }
     
