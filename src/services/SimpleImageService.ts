@@ -448,6 +448,20 @@ export class SimpleImageService {
         DebugLogger.warn('image', 'Direct tier 1 escalation also failed', directError);
       }
 
+      // TIER 2.5C: Template fallback before final resort
+      try {
+        DebugLogger.log('image', 'Attempting Tier 2.5C template fallback');
+        const templateResult = await this.generateWithTemplate(
+          storyText, userInfo, sessionId, pageNumber, isPremium
+        );
+        if (templateResult.success && templateResult.url) {
+          DebugLogger.log('image', 'Tier 2.5C template fallback successful');
+          return templateResult;
+        }
+      } catch (templateError) {
+        DebugLogger.warn('image', 'Tier 2.5C template fallback also failed', templateError);
+      }
+
       // TIER 4: Intelligent fallback system with quality prioritization
       DebugLogger.warn('image', 'Using intelligent fallback system as final resort');
       const intelligentFallback = await this.getImageWithIntelligentFallback(
