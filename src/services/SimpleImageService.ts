@@ -382,8 +382,10 @@ export class SimpleImageService {
         throw new Error(`Orchestrator error: ${orchError.message}`);
       }
 
-      if (orchResult?.success && orchResult?.imageURL) {
-        DebugLogger.log('image', `🖼️ Auto-generated image successfully: ${orchResult.imageURL}`, {
+      // Phase A: Multi-Field Image URL Validation - Handle all API response variations
+      const imageURL = orchResult?.imageURL || orchResult?.image_url || orchResult?.imageUrl || orchResult?.url;
+      if (orchResult?.success && imageURL?.trim()) {
+        DebugLogger.log('image', `🖼️ Auto-generated image successfully: ${imageURL}`, {
           contentHash: orchResult.contentHash || 'no-hash',
           usedTier: orchResult.usedTier || 'orchestrator'
         });
@@ -391,7 +393,7 @@ export class SimpleImageService {
         // Store result in IndexedDB with character versioned key
         if (this.isIndexedDBAvailable && normalizedSessionId !== 'unknown' && userInfo) {
           const versionedCacheKey = this.generateCharacterVersionedCacheKey(userInfo, storyText);
-          await this.storeImageInDB(versionedCacheKey, pageNumber, orchResult.imageURL, orchResult);
+          await this.storeImageInDB(versionedCacheKey, pageNumber, imageURL, orchResult);
         }
 
         // Emit timer resume event
@@ -401,8 +403,8 @@ export class SimpleImageService {
 
         return {
           success: true,
-          url: orchResult.imageURL,
-          imageURL: orchResult.imageURL,
+          url: imageURL,
+          imageURL: imageURL,
           generatedAt: new Date().toISOString(),
           tier: orchResult.usedTier,
           usedTier: orchResult.usedTier,
@@ -533,13 +535,15 @@ export class SimpleImageService {
         throw new Error(`AI Visual Scene Creator error: ${error.message}`);
       }
 
-      if (result?.success && result?.imageURL) {
-        DebugLogger.log('image', `🖼️ Direct AI Visual Scene Creator success: ${result.imageURL}`);
+      // Phase A: Multi-Field Image URL Validation - Handle all API response variations  
+      const imageURL = result?.imageURL || result?.image_url || result?.imageUrl || result?.url;
+      if (result?.success && imageURL?.trim()) {
+        DebugLogger.log('image', `🖼️ Direct AI Visual Scene Creator success: ${imageURL}`);
         
         // Store in cache like orchestrator does
         if (this.isIndexedDBAvailable && normalizedSessionId !== 'unknown' && userInfo) {
           const versionedCacheKey = this.generateCharacterVersionedCacheKey(userInfo, storyText);
-          await this.storeImageInDB(versionedCacheKey, pageNumber, result.imageURL, result);
+          await this.storeImageInDB(versionedCacheKey, pageNumber, imageURL, result);
         }
 
         // Emit timer resume event
@@ -549,8 +553,8 @@ export class SimpleImageService {
 
         return {
           success: true,
-          url: result.imageURL,
-          imageURL: result.imageURL,
+          url: imageURL,
+          imageURL: imageURL,
           generatedAt: new Date().toISOString(),
           tier: 'AI_VISUAL_SCENE_DIRECT',
           usedTier: 'AI_VISUAL_SCENE_DIRECT',
@@ -633,12 +637,14 @@ export class SimpleImageService {
         throw new Error(`Template error: ${templateError.message}`);
       }
 
-      if (templateResult?.success && templateResult?.imageURL) {
-        DebugLogger.log('image', `🖼️ Template generated successfully: ${templateResult.imageURL}`);
+      // Phase A: Multi-Field Image URL Validation - Handle all API response variations
+      const imageURL = templateResult?.imageURL || templateResult?.image_url || templateResult?.imageUrl || templateResult?.url;
+      if (templateResult?.success && imageURL?.trim()) {
+        DebugLogger.log('image', `🖼️ Template generated successfully: ${imageURL}`);
         
         // Store result in cache
         if (this.isIndexedDBAvailable && normalizedSessionId !== 'unknown') {
-          await this.storeImageInDB(normalizedSessionId, pageNumber, templateResult.imageURL, templateResult);
+          await this.storeImageInDB(normalizedSessionId, pageNumber, imageURL, templateResult);
         }
 
         // Emit timer resume event
@@ -648,8 +654,8 @@ export class SimpleImageService {
 
         return {
           success: true,
-          url: templateResult.imageURL,
-          imageURL: templateResult.imageURL,
+          url: imageURL,
+          imageURL: imageURL,
           generatedAt: new Date().toISOString(),
           tier: 'TIER_2_5C_TEMPLATE',
           usedTier: 'TIER_2_5C_TEMPLATE',

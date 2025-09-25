@@ -396,15 +396,20 @@ async function callOpenAIWithFallback(messages, timeout = 6000, requestId, avata
       
       console.log(`Attempting ${model.name} (1 attempt per model)`);
       
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${openAIApiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-        signal: controller.signal
-      });
+      // Phase B: Enforce timeout with utilities
+      const response = await CoreUtils.withTimeout(
+        fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${openAIApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody),
+          signal: controller.signal
+        }),
+        TIER_TIMEOUTS.OPENAI_API,
+        'OpenAI API call'
+      );
       
       clearTimeout(timeoutId);
       

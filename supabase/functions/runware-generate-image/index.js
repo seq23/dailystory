@@ -608,15 +608,20 @@ async function handleRequest(req) {
 
         // First: ai-visual-scene-creator for primaryScene + schema
         log.t2('Calling ai-visual-scene-creator', { pageNumber, previousPrimaryScene });
-        const sceneResponse = await supabase.functions.invoke('ai-visual-scene-creator', {
-          body: {
-            storyText,
-            userInfo: payload.userInfo,
-            sessionId,
-            pageNumber,
-            previousPrimaryScene
-          }
-        });
+        // Phase B: Enforce timeout with utilities
+        const sceneResponse = await CoreUtils.withTimeout(
+          supabase.functions.invoke('ai-visual-scene-creator', {
+            body: {
+              storyText,
+              userInfo: payload.userInfo,
+              sessionId,
+              pageNumber,
+              previousPrimaryScene
+            }
+          }),
+          TIER_TIMEOUTS.AI_GENERATION,
+          'AI Visual Scene Creator (Tier 1 Default)'
+        );
         if (!sceneResponse?.data || sceneResponse.error) {
           throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_25A');
         }
@@ -783,15 +788,20 @@ async function handleRequest(req) {
 
         // First: ai-visual-scene-creator for primaryScene + schema
         log.t2('Calling ai-visual-scene-creator', { pageNumber, previousPrimaryScene });
-        const sceneResponse = await supabase.functions.invoke('ai-visual-scene-creator', {
-          body: {
-            storyText,
-            userInfo: payload.userInfo,
-            sessionId,
-            pageNumber,
-            previousPrimaryScene
-          }
-        });
+        // Phase B: Enforce timeout with utilities
+        const sceneResponse = await CoreUtils.withTimeout(
+          supabase.functions.invoke('ai-visual-scene-creator', {
+            body: {
+              storyText,
+              userInfo: payload.userInfo,
+              sessionId,
+              pageNumber,
+              previousPrimaryScene
+            }
+          }),
+          TIER_TIMEOUTS.AI_GENERATION,
+          'AI Visual Scene Creator (Force Tier 1)'
+        );
         if (!sceneResponse?.data || sceneResponse.error) {
           throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_25A');
         }
@@ -864,15 +874,20 @@ async function handleRequest(req) {
           // Force Tier 1: Try Direct Mode instead of escalating to Tier 2.5A
           log.t2('Force Tier 1: Attempting Direct Mode via ai-visual-scene-creator');
           try {
-            const directModeResponse = await supabase.functions.invoke('ai-visual-scene-creator', {
-              body: {
-                storyText,
-                userInfo: payload.userInfo,
-                sessionId,
-                pageNumber: pageNumber || 1,
-                directMode: true  // Enable Direct Mode bypass
-              }
-            });
+            // Phase B: Enforce timeout with utilities
+            const directModeResponse = await CoreUtils.withTimeout(
+              supabase.functions.invoke('ai-visual-scene-creator', {
+                body: {
+                  storyText,
+                  userInfo: payload.userInfo,
+                  sessionId,
+                  pageNumber: pageNumber || 1,
+                  directMode: true  // Enable Direct Mode bypass
+                }
+              }),
+              TIER_TIMEOUTS.DIRECT_MODE,
+              'AI Visual Scene Creator (Direct Mode)'
+            );
 
             if (directModeResponse?.data && directModeResponse.data.success) {
               result = {
