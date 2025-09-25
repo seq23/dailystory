@@ -122,6 +122,7 @@ orchestrator() → aiVisualSceneCreator() → runwareTemplateAB() → fallback(r
 3. **Reliability**: Bulletproof static import pattern prevents sync failures
 4. **Monitoring**: Comprehensive logging at each tier
 5. **Flexibility**: Easy tier addition/removal without breaking system
+6. **Fixed Escalation**: Complete tier cascade now works properly (Tier 1 → 2.5A → 2.5B → 2.5C → 2.5D)
 
 ## **Bottlenecks Identified**
 
@@ -130,6 +131,13 @@ orchestrator() → aiVisualSceneCreator() → runwareTemplateAB() → fallback(r
 3. **OpenAI API Limits**: Rate limiting affects Tier 1 performance
 4. **Single Point Orchestrator**: All requests funnel through one function
 
+## **Recent Fixes (January 16, 2025)**
+
+1. **Escalation Logic**: Fixed unreachable code that prevented proper tier cascading
+2. **Nuclear Templates**: Now accessible in regular flow, not just Force Mode
+3. **2.5B Integration**: Added missing escalation step between 2.5A and nuclear templates
+4. **Frontend Fallbacks**: Enhanced nuclear template handling with 2.5C → 2.5D cascade
+
 ---
-*Last Updated: September 21, 2025*
-*Architecture Status: STABLE - All 4 tiers operational*
+*Last Updated: January 16, 2025*
+*Architecture Status: ENHANCED - All tiers operational with fixed escalation logic*
