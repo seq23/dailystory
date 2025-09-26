@@ -15,13 +15,13 @@ import { UnifiedPlaceholderResolver } from '../_shared/UnifiedPlaceholderResolve
 import * as tierLogging from "../_shared/tierLogging.js";
 
 // ---- Tier logger binder (console + DB) ----
-function bindTierLogger(supabaseClient, sessionId, requestId) {
+function bindTierLogger(supabaseClient, sessionId, requestId, authHeader = null) {
   return {
-    t1: (msg, ctx = {}) => tierLogging.logTier1(msg, ctx, supabaseClient, sessionId, requestId),
-    t2: (msg, ctx = {}) => tierLogging.logTier2(msg, ctx, supabaseClient, sessionId, requestId),
-    attempt: (tier, ctx = {}) => tierLogging.logTierAttempt(supabaseClient, sessionId, requestId, tier, 'attempting', ctx),
-    success: (tier, ctx = {}) => tierLogging.logTierSuccess(supabaseClient, sessionId, requestId, tier, ctx),
-    failure: (tier, ctx = {}) => tierLogging.logTierFailure(supabaseClient, sessionId, requestId, tier, ctx),
+    t1: (msg, ctx = {}) => tierLogging.logTier1(msg, { ...ctx, authHeader }, supabaseClient, sessionId, requestId),
+    t2: (msg, ctx = {}) => tierLogging.logTier2(msg, { ...ctx, authHeader }, supabaseClient, sessionId, requestId),
+    attempt: (tier, ctx = {}) => tierLogging.logTierAttempt(supabaseClient, sessionId, requestId, tier, 'attempting', { ...ctx, authHeader }),
+    success: (tier, ctx = {}) => tierLogging.logTierSuccess(supabaseClient, sessionId, requestId, tier, { ...ctx, authHeader }),
+    failure: (tier, ctx = {}) => tierLogging.logTierFailure(supabaseClient, sessionId, requestId, tier, { ...ctx, authHeader }),
   };
 }
 
@@ -561,7 +561,11 @@ async function handleRequest(req) {
 
   const requestId = CoreUtils.generateRequestId();
   const startTime = Date.now(); // PHASE 6: Performance tracking
-  tierLogging.logTier2(`🎯 [${requestId}] Orchestrator: ${req.method} ${req.url}`);
+  
+  // Extract Authorization header for user ID
+  const authHeader = req.headers.get('Authorization');
+  
+  tierLogging.logTier2(`🎯 [${requestId}] Orchestrator: ${req.method} ${req.url}`, { authHeader });
 
 
   // Only POST beyond this point
@@ -587,7 +591,7 @@ async function handleRequest(req) {
       validatePayloadFast(payload);
     } catch (validationError) {
       if (shouldFailFast(validationError)) {
-        tierLogging.logTier2(`❌ [${requestId}] Fast validation failed: ${validationError.message}`);
+        tierLogging.logTier2(`❌ [${requestId}] Fast validation failed: ${validationError.message}`, { authHeader });
         return new Response(JSON.stringify({ 
           error: `Fast validation failed: ${validationError.message}`,
           type: 'VALIDATION_ERROR'
@@ -599,7 +603,7 @@ async function handleRequest(req) {
     }
     
     const sessionId = payload?.sessionId || ('session_' + requestId);
-    const log = bindTierLogger(supabase, sessionId, requestId);
+    const log = bindTierLogger(supabase, sessionId, requestId, authHeader);
 
     log.t2('Request received', { hasPageText: !!payload.pageText, hasStoryText: !!payload.storyText });
 
@@ -971,7 +975,7 @@ async function handleRequest(req) {
     
     // Prevent 500→503 cascade for timeout errors - return 200 with controlled error payload
     if (`${message}`.includes('timeout') || `${message}`.includes('Timeout')) {
-      tierLogging.logTier1(`⏰ [${requestId}] Upstream timeout handled gracefully`, { message });
+      tierLogging.logTier1(`⏰ [${requestId}] Upstream timeout handled gracefully`, { message, authHeader });
       return new Response(JSON.stringify({
         success: false,
         error: 'UPSTREAM_TIMEOUT',
@@ -988,7 +992,7 @@ async function handleRequest(req) {
     }
     
     // Other errors still surface normally for proper debugging
-    tierLogging.logTier1(`❌ [${requestId}] Orchestrator error`, { message });
+    tierLogging.logTier1(`❌ [${requestId}] Orchestrator error`, { message, authHeader });
     return new Response(JSON.stringify({
       error: 'Internal server error',
       message,

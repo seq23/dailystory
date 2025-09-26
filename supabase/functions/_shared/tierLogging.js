@@ -17,7 +17,23 @@ async function insertDebugRow(supabase, row) {
 }
 
 /**
- * Generic tier attempt logger
+ * Extract user ID from authorization header or return system fallback
+ */
+function extractUserId(authHeader) {
+  if (!authHeader) return '00000000-0000-0000-0000-000000000001'; // System UUID
+  
+  try {
+    // Extract JWT token from Bearer header
+    const token = authHeader.replace('Bearer ', '');
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.sub || '00000000-0000-0000-0000-000000000001';
+  } catch {
+    return '00000000-0000-0000-0000-000000000001'; // System UUID fallback
+  }
+}
+
+/**
+ * Generic tier attempt logger with proper user ID handling
  */
 export async function logTierAttempt(
   supabase,
@@ -27,9 +43,12 @@ export async function logTierAttempt(
   status,
   context = {}
 ) {
+  // Ensure we always have a valid user_id for RLS compliance
+  const userId = context.userId || context.authHeader ? extractUserId(context.authHeader) : '00000000-0000-0000-0000-000000000001';
+  
   const payload = {
     session_id: sessionId,
-    user_id: context.userId || null,
+    user_id: userId, // Always provide a valid UUID
     page_number: context.pageNumber || 1,
     tier,
     status, // 'attempting', 'success', 'failure'
