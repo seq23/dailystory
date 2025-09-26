@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { ProductionAnalyticsTracker } from '@/services/productionAnalyticsTracker';
 import { UserInfo, DifficultyLevel } from '@/types';
 import { DebugLogger } from '@/services/DebugLogger';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface AnalyticsSession {
   sessionId: string;
@@ -45,6 +46,9 @@ export const useProductionAnalytics = () => {
 
   const loadDashboardData = useCallback(async () => {
     try {
+      // Fetch real analytics data from backend
+      const { data: analyticsResponse } = await supabase.functions.invoke('get-cost-analytics');
+      
       const [usageAnalytics, templateAnalytics, systemHealth] = await Promise.all([
         Promise.resolve(ProductionAnalyticsTracker.getUsageAnalytics()),
         Promise.resolve(ProductionAnalyticsTracker.getTemplateAnalytics()),
@@ -52,16 +56,26 @@ export const useProductionAnalytics = () => {
       ]);
 
       setDashboard({
-        usageAnalytics,
+        usageAnalytics: analyticsResponse?.success ? analyticsResponse.data.usageMetrics : usageAnalytics,
         templateAnalytics,
-        systemHealth,
-        costAnalytics: null, // Placeholder for future implementation
-        modelPerformance: null, // Placeholder for future implementation  
-        userSatisfaction: null, // Placeholder for future implementation
+        systemHealth: analyticsResponse?.success ? analyticsResponse.data.systemStatus : systemHealth,
+        costAnalytics: analyticsResponse?.success ? analyticsResponse.data.costSummary : null,
+        modelPerformance: null, // Will be enhanced later
+        userSatisfaction: null, // Will be enhanced later
         isLoaded: true
       });
     } catch (error) {
       DebugLogger.error('error', 'Failed to load analytics dashboard:', error);
+      // Fallback to placeholder data
+      setDashboard({
+        usageAnalytics: ProductionAnalyticsTracker.getUsageAnalytics(),
+        templateAnalytics: ProductionAnalyticsTracker.getTemplateAnalytics(),
+        systemHealth: ProductionAnalyticsTracker.getSystemHealthDashboard(),
+        costAnalytics: null,
+        modelPerformance: null,
+        userSatisfaction: null,
+        isLoaded: true
+      });
     }
   }, []);
 
@@ -159,18 +173,38 @@ export const useProductionAnalytics = () => {
     }
   }, [currentSession]);
 
-  const getDailyCostSummary = useCallback(() => {
-    // Future: Fetch from backend cost tracking service
-    return {
-      date: new Date().toISOString().split('T')[0],
-      totalCost: 0,
-      totalRequests: 0,
-      totalInputTokens: 0,
-      totalOutputTokens: 0,
-      averageCostPerRequest: 0,
-      modelBreakdown: {},
-      isLimitExceeded: false
-    };
+  const getDailyCostSummary = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('get-cost-analytics');
+      
+      if (error) {
+        console.error('Failed to fetch cost analytics:', error);
+        return {
+          date: new Date().toISOString().split('T')[0],
+          totalCost: 0,
+          totalRequests: 0,
+          totalInputTokens: 0,
+          totalOutputTokens: 0,
+          averageCostPerRequest: 0,
+          modelBreakdown: {},
+          isLimitExceeded: false
+        };
+      }
+
+      return data.data.costSummary;
+    } catch (error) {
+      console.error('Error fetching cost analytics:', error);
+      return {
+        date: new Date().toISOString().split('T')[0],
+        totalCost: 0,
+        totalRequests: 0,
+        totalInputTokens: 0,
+        totalOutputTokens: 0,
+        averageCostPerRequest: 0,
+        modelBreakdown: {},
+        isLimitExceeded: false
+      };
+    }
   }, []);
 
   const exportAnalytics = useCallback(() => {

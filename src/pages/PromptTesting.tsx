@@ -4,14 +4,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { Zap, Cable, ArrowRight, Bug, BarChart3, TrendingUp, Brain, Layers, Volume2 } from 'lucide-react';
+import { Zap, Cable, ArrowRight, Bug, BarChart3, Brain, Layers, Volume2 } from 'lucide-react';
 import { StoryPromptTester } from '@/components/StoryPromptTester';
 
 import { RunwareConnectionTest } from '@/components/RunwareConnectionTest';
 import { ApiKeyDiagnostic } from '@/components/ApiKeyDiagnostic';
 import { DebugDataViewer } from '@/components/DebugDataViewer';
 import { AnalyticsDashboard } from '@/components/AnalyticsDashboard';
-import { AdvancedMonitoringDashboard } from '@/components/AdvancedMonitoringDashboard';
+
 import { VoiceCatalogTester } from '@/components/VoiceCatalogTester';
 import { ImageTierTester } from '@/components/ImageTierTester';
 import { AudioE2ETestingPanel } from '@/components/AudioE2ETestingPanel';
@@ -90,16 +90,6 @@ export default function PromptTesting() {
 
               <Separator />
 
-              {/* Advanced Monitoring Dashboard */}
-              <section>
-                <div className="flex items-center gap-2 mb-4">
-                  <TrendingUp className="w-5 h-5 text-primary" />
-                  <h2 className="text-2xl font-semibold">Advanced Monitoring</h2>
-                </div>
-                <AdvancedMonitoringDashboard />
-              </section>
-
-              <Separator />
 
               {/* Image Tier Testing */}
               <section>
