@@ -769,6 +769,23 @@ async function handleRequest(req: Request): Promise<Response> {
         // Generate with Runware
         log.t2('Generating image via Runware (tier-1)');
         const apiKey = Deno.env.get('RUNWARE_API_KEY')?.trim();
+        
+        if (!apiKey) {
+          console.error('❌ RUNWARE_API_KEY environment variable is not set');
+          log.failure('tier-1', { error: 'Missing RUNWARE_API_KEY' });
+          return new Response(JSON.stringify({
+            success: false,
+            error: 'API key not configured',
+            provider: 'error'
+          }), {
+            status: 400,
+            headers: {
+              'Access-Control-Allow-Origin': '*',
+              'Content-Type': 'application/json'
+            }
+          });
+        }
+        
         const enhancedData = {
           enhancedPrompt: tier1Response.enhancedPrompt,
           templateStructure: 'COMPLETE_TIER_1'
@@ -912,6 +929,23 @@ async function handleRequest(req: Request): Promise<Response> {
         // Generate with Runware
         log.t2('Generating image via Runware (force tier-1)');
         const apiKey = Deno.env.get('RUNWARE_API_KEY')?.trim();
+        
+        if (!apiKey) {
+          console.error('❌ RUNWARE_API_KEY environment variable is not set');
+          log.failure('tier-2.5', { error: 'Missing RUNWARE_API_KEY' });
+          return new Response(JSON.stringify({
+            success: false,
+            error: 'API key not configured',
+            provider: 'error'
+          }), {
+            status: 400,
+            headers: {
+              'Access-Control-Allow-Origin': '*',
+              'Content-Type': 'application/json'
+            }
+          });
+        }
+        
         const enhancedData = {
           enhancedPrompt: tier1Response.enhancedPrompt,
           templateStructure: 'COMPLETE_TIER_1'
