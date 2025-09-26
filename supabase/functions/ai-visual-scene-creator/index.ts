@@ -2,6 +2,7 @@
 import { getStyleFramework } from '../_shared/styleFrameworks.ts';
 import { CharacterConsistencyService } from '../_shared/CharacterConsistencyService.ts';
 import { SessionStateManager } from '../_shared/SessionStateManager.ts';
+import { UnifiedPlaceholderResolver } from '../_shared/UnifiedPlaceholderResolver.js';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
 
 // ============= BULLETPROOF PHASES IMPLEMENTATION =============
@@ -569,11 +570,11 @@ async function handleOrchestratorCall(requestId: any, storyText: any, enhancedSt
   const sessionId = userInfo?.sessionId || enhancedStoryData?.sessionId;
   try {
     if (sessionId && includeFullSchema) { // Only for test results, not orchestrator calls
-      const characterService = characterConsistencyService;
+      const characterService = new CharacterConsistencyService();
       
       await characterService.analyzeVisualDetails(sessionId, storyText, userInfo?.pageNumber || 1, userInfo?.name);
       characterAppearance = await characterService.getCharacterAppearanceFromStory(sessionId, userInfo?.name) || '';
-      characterSeed = await characterService.getCharacterSeed(sessionId, userInfo?.name) || null;
+      characterSeed = await characterService.getCharacterSeed(sessionId, userInfo?.name, 'story_context') || null;
       console.log(`✅ [${requestId}] Character consistency applied for ${callType}`);
     }
     } catch (characterError: unknown) {
@@ -811,9 +812,10 @@ RULES:
     let openAIResult;
     try {
       openAIResult = await callOpenAIWithFallback(messages, 8000, requestId, userInfo?.avatar);
-    } catch (openAIError) {
+    } catch (openAIError: unknown) {
       console.error(`❌ [${requestId}] OpenAI failed in direct mode, escalating to Tier 2.5C`);
-      return createCorsErrorResponse(`OpenAI generation failed: ${openAIError.message}`, 503);
+      const errorMessage = openAIError instanceof Error ? openAIError.message : String(openAIError);
+      return createCorsErrorResponse(`OpenAI generation failed: ${errorMessage}`, 503);
     }
 
     const content = openAIResult?.choices?.[0]?.message?.content;
@@ -825,9 +827,10 @@ RULES:
     let parsedResponse;
     try {
       parsedResponse = parseAIResponse(content);
-    } catch (parseError) {
+    } catch (parseError: unknown) {
       console.error(`❌ [${requestId}] Failed to parse OpenAI response in direct mode`);
-      return createCorsErrorResponse(`Failed to parse AI response: ${parseError.message}`, 503);
+      const errorMessage = parseError instanceof Error ? parseError.message : String(parseError);
+      return createCorsErrorResponse(`Failed to parse AI response: ${errorMessage}`, 503);
     }
 
     if (!parsedResponse.primaryScene || parsedResponse.primaryScene.length < 20) {
@@ -845,7 +848,7 @@ RULES:
 
     // Step 2: Complete character consistency with secondary characters and objects
     let characterAppearance = '';
-    let detectedSecondaryCharacters = [];
+    let detectedSecondaryCharacters: string[] = [];
     let secondaryDescriptions = [];
     let coloredObjects = '';
     
@@ -867,11 +870,11 @@ RULES:
           detectedSecondaryCharacters = await characterService.detectSecondaryCharacters(pageTextForAnalysis);
           
           // Build secondary character descriptions with seeds
-          for (const character of detectedSecondaryCharacters) {
+          for (const characterName of detectedSecondaryCharacters) {
             const seed = await characterService.getSecondaryCharacterSeed(
-              sessionId, character.name, character.type || 'secondary_character'
+              sessionId, characterName, 'secondary_character'
             );
-            secondaryDescriptions.push(`${character.name}: ${character.description} (${character.type})`);
+            secondaryDescriptions.push(`${characterName}: secondary character`);
           }
         } catch (characterError: unknown) {
           const errorMessage = characterError instanceof Error ? characterError.message : String(characterError);
@@ -937,8 +940,9 @@ RULES:
           pageNumber: pageNumber || 1
         }
       );
-    } catch (loggingError) {
-      console.warn('Failed to log AI scene data:', loggingError.message);
+    } catch (loggingError: unknown) {
+      const errorMessage = loggingError instanceof Error ? loggingError.message : String(loggingError);
+      console.warn('Failed to log AI scene data:', errorMessage);
     }
 
     console.log(`🎨 [${requestId}] Direct mode prompt built: ${comprehensivePrompt.substring(0, 100)}...`);
@@ -1000,14 +1004,16 @@ RULES:
         }
       });
 
-    } catch (imageError) {
+    } catch (imageError: unknown) {
       console.error(`❌ [${requestId}] Image generation exception in direct mode:`, imageError);
-      return createCorsErrorResponse(`Image generation exception: ${imageError.message}`, 503);
+      const errorMessage = imageError instanceof Error ? imageError.message : String(imageError);
+      return createCorsErrorResponse(`Image generation exception: ${errorMessage}`, 503);
     }
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error(`❌ [${requestId}] Direct mode failed completely:`, error);
-    return createCorsErrorResponse(`Direct mode failed: ${error.message}`, 503);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return createCorsErrorResponse(`Direct mode failed: ${errorMessage}`, 503);
   }
 }
 
