@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-09-26T16:50:00Z - Stabilize runware-generate-image with URL import + dual-path fallback
+// DEPLOY_MARKER: 2025-09-26T16:55:00Z - Add LKG serve-stale pattern to eliminate BOOT_SYNC_ANOMALY
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 const SERVICE_NAME = "runware-generate-image";
 
@@ -21,9 +21,10 @@ function asResponse(maybe: unknown, fallbackStatus = 204): Response {
   return new Response(JSON.stringify(maybe), { status: 200, headers: { "Content-Type": "application/json" } });
 }
 
-// Enhanced dynamic handler loader with sync anomaly prevention
+// LKG serve-stale pattern to eliminate BOOT_SYNC_ANOMALY
 type HandlerFn = (req: Request) => Promise<Response> | Response;
 let cachedHandler: HandlerFn | null = null;
+let LKG: HandlerFn | null = null;
 let lastLoadError: { at: number; message: string; attempt: number } | null = null;
 let isLoading = false;
 const BACKOFF_MS = 2_000;
@@ -50,20 +51,9 @@ async function loadHandler(allowRetry = false): Promise<HandlerFn | null> {
   isLoading = true;
   
   try {
-    // Dual-path import: try robust URL form first, then simple form as fallback
-    let mod: any;
-    let importPath: string;
-    
-    try {
-      console.log(`🔍 Attempting URL import: new URL("./index.js", import.meta.url).href`);
-      importPath = "URL_IMPORT";
-      mod = await import(new URL("./index.js", import.meta.url).href);
-    } catch (urlError: any) {
-      console.log(`⚠️ URL import failed, trying simple import: ./index.js`);
-      importPath = "SIMPLE_IMPORT";
-      mod = await import("./index.js");
-    }
-    
+    // Robust URL import (single path)
+    console.log(`🔍 Attempting URL import: new URL("./index.js", import.meta.url).href`);
+    const mod = await import(new URL("./index.js", import.meta.url).href);
     const fn = (mod as any)?.default as HandlerFn | undefined;
     
     if (typeof fn !== "function") {
@@ -71,10 +61,11 @@ async function loadHandler(allowRetry = false): Promise<HandlerFn | null> {
     }
     
     cachedHandler = fn;
+    LKG = fn; // Store last-known-good handler
     lastLoadError = null;
     isLoading = false;
     
-    console.log(`✅ Handler loaded successfully via ${importPath}`);
+    console.log(`✅ Handler loaded successfully via URL_IMPORT`);
     return cachedHandler;
     
   } catch (err: any) {
@@ -129,10 +120,15 @@ serve(async (req) => {
       return withCors(new Response(null, { status: 200, headers: { "Cache-Control": "no-store", "Content-Length": "0" } }));
     }
 
-    // POST → load handler (with backoff), delegate or clean 503
+    // POST → load handler (with LKG fallback)
     if (req.method === "POST") {
       let handler = await loadHandler(false);
       if (!handler) handler = await loadHandler(true);
+      if (!handler && LKG) {
+        console.warn(`⚠️ Import failed; serving LKG handler`);
+        const out = await LKG(req);
+        return withCors(asResponse(out));
+      }
       if (!handler) {
         const errorBody = {
           success: false,

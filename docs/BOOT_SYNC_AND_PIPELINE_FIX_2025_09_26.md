@@ -15,30 +15,34 @@
 ### Boot Sync Anomaly Resolution
 **File**: `supabase/functions/runware-generate-image/index.ts`
 
-**Final Solution - Dual-Path Import Strategy**:
-1. **Primary Import Path**: Robust URL import using `new URL("./index.js", import.meta.url).href`
-2. **Fallback Import Path**: Simple import `"./index.js"` if URL import fails
-3. **Self-Healing Logic**: Automatically tries fallback without user intervention
-4. **Enhanced Logging**: Clear indication of which import path succeeded (`URL_IMPORT` or `SIMPLE_IMPORT`)
+**Final Solution - LKG Serve-Stale Pattern**:
+1. **Primary Import**: Robust URL import using `new URL("./index.js", import.meta.url).href`
+2. **Last-Known-Good Handler**: Stores successful handler as `LKG` for fallback serving
+3. **Elimination of BOOT_SYNC_ANOMALY**: After first successful load, never returns 503 from receptionist
+4. **Graceful Degradation**: Serves stale handler on import failures, preventing blackout windows
 
 **Implementation**:
 ```typescript
-try {
-  console.log(`🔍 Attempting URL import: new URL("./index.js", import.meta.url).href`);
-  importPath = "URL_IMPORT";
-  mod = await import(new URL("./index.js", import.meta.url).href);
-} catch (urlError: any) {
-  console.log(`⚠️ URL import failed, trying simple import: ./index.js`);
-  importPath = "SIMPLE_IMPORT";  
-  mod = await import("./index.js");
+// Top-level LKG storage
+let LKG: HandlerFn | null = null;
+
+// On successful load
+cachedHandler = fn;
+LKG = fn; // Store last-known-good handler
+
+// In POST handler when fresh import fails
+if (!handler && LKG) {
+  console.warn(`⚠️ Import failed; serving LKG handler`);
+  const out = await LKG(req);
+  return withCors(asResponse(out));
 }
 ```
 
 **Key Features**:
-- **Belt-and-Suspenders Approach**: Two import methods ensure maximum reliability
-- **Zero Breaking Changes**: Maintains all existing concurrency protection and backoff logic
-- **Production Diagnostics**: Logs show exactly which import method worked
-- **Deploy Marker**: Updated to `2025-09-26T16:50:00Z` to force fresh deployment
+- **Zero Blackouts**: After first successful boot, always serves requests
+- **Module Evaluation Protection**: Handles crashes during index.js evaluation
+- **Single Import Path**: Removed redundant dual-path (eval crashes affect both paths equally)
+- **Deploy Marker**: Updated to `2025-09-26T16:55:00Z` to force fresh deployment
 
 ### Tier 1 Pipeline Error Resolution
 
