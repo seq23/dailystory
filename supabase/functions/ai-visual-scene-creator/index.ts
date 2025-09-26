@@ -1,8 +1,7 @@
-// DEPLOY_MARKER: 2025-09-26T16:00:00Z - Pure TypeScript conversion from receptionist pattern
+// DEPLOY_MARKER: 2025-09-26T18:00:00Z - COMPLETE TypeScript conversion with full business logic
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-// ============= AI VISUAL SCENE CREATOR - PURE TYPESCRIPT =============
-// Converted from receptionist pattern for better performance and reliability
+// ============= AI VISUAL SCENE CREATOR - COMPLETE TYPESCRIPT IMPLEMENTATION =============
 
 import { 
   getCulturalBundle, 
@@ -18,6 +17,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
 interface UserInfo {
   name?: string;
   age?: number | string;
+  userName?: string;
+  childName?: string;
   avatar?: {
     type?: string;
     skinTone?: string;
@@ -42,6 +43,8 @@ interface AIResponse {
     pets: string[];
   };
   objects?: string[];
+  extractionMethod?: string;
+  aiSchema?: any;
 }
 
 interface DirectModePayload {
@@ -113,18 +116,12 @@ if (!supabaseUrl || !supabaseKey) {
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// AI visual scene creator service initialized
-
-// Remove lazy loading of CharacterConsistencyService - now static import at top
-// This fixes boot sync anomalies by eliminating import chain delays
-
 async function getPhaseOrchestrator(): Promise<any> {
   try {
     const { phaseIntegrationOrchestrator } = await import("../_shared/PhaseIntegrationOrchestrator.js");
     return phaseIntegrationOrchestrator;
   } catch (error: any) {
     console.warn('PhaseIntegrationOrchestrator lazy load failed:', error);
-    // Check if it's a DNS resolution error
     if (error?.message?.includes('DNS') || error?.message?.includes('resolution') || error?.message?.includes('network')) {
       console.error('DNS Resolution Error - Phase Integration Orchestrator unreachable:', error?.message);
     }
@@ -132,7 +129,7 @@ async function getPhaseOrchestrator(): Promise<any> {
   }
 }
 
-// Inline CORS utilities to fix boot failure
+// Inline CORS utilities
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -163,8 +160,6 @@ function createCorsOptionsResponse(): Response {
   return new Response(null, { headers: corsHeaders });
 }
 
-// AI VISUAL SCENE CREATOR - FOR IMAGE GENERATION ONLY - NEVER DISCUSS IN STORY GENERATION CONTEXT
-
 // Simple error handling and logging utilities
 function handleError(error: any, functionName: string, context: any = {}): Response {
   const errorMessage = error instanceof Error ? error.message : String(error);
@@ -185,11 +180,8 @@ function withPerformanceTracking<T>(functionName: string, model: string, operati
   });
 }
 
-// ============= INLINE VALIDATION FUNCTIONS (from SimpleContentValidator.js) =============
+// ============= INLINE VALIDATION FUNCTIONS =============
 
-/**
- * VISUAL QUALITY: Check if primaryScene meets visual description standards
- */
 function checkPrimarySceneCriteria(data: any): { primaryScene: boolean; passCount: number; details: any } {
   const scene = data.primaryScene;
   if (!scene || typeof scene !== 'string') {
@@ -254,15 +246,6 @@ function checkPrimarySceneCriteria(data: any): { primaryScene: boolean; passCoun
   };
 }
 
-// REMOVED: applyBasicFixes function - Tier 1 now uses strict fail-fast validation
-// This ensures immediate Tier 2 triggering when AI extraction is insufficient
-
-/**
- * RELAXED VALIDATION: Accept if primaryScene exists and meets basic criteria
- * @param enhancedStoryData - AI extracted data  
- * @param storyText - Original story text (unused, kept for compatibility)
- * @returns - Enhanced data or immediate Tier 2 trigger
- */
 function validateAndEnhanceContent(enhancedStoryData: any, storyText: string): any {
   // Check if we have ANY form of primaryScene (even from fallback extraction)
   if (!enhancedStoryData || !enhancedStoryData.primaryScene) {
@@ -283,7 +266,6 @@ function validateAndEnhanceContent(enhancedStoryData: any, storyText: string): a
   // Accept fallback extractions with lower standards, or regular extractions with 2/5 criteria
   const shouldAccept = isFallbackExtraction || fieldCheck.primaryScene;
   
-  // PHASE 3: Enhanced validation logging with detailed pass/fail reasoning
   console.log('DEBUG VALIDATION SUMMARY:', {
     result: shouldAccept ? 'PASS' : 'TIER 2 TRIGGER',
     qualityScore: fieldCheck.details?.qualityScore || '0/5',
@@ -332,7 +314,7 @@ function validateAndEnhanceContent(enhancedStoryData: any, storyText: string): a
   };
 }
 
-// AI Model Fallback Chain Configuration - CHEAPEST FIRST ORDER
+// AI Model Fallback Chain Configuration
 interface AIModel {
   name: string;
   maxTokens: string;
@@ -344,9 +326,6 @@ const AI_MODELS: AIModel[] = [
   { name: 'gpt-4.1-2025-04-14', maxTokens: 'max_completion_tokens', supportsTemperature: false },
   { name: 'gpt-5-2025-08-07', maxTokens: 'max_completion_tokens', supportsTemperature: false }
 ];
-
-// ============= AVATAR IDENTITY PROCESSING REMOVED =============
-// mapAvatarIdentity function removed - orchestrator provides processed avatarIdentity
 
 // Simple circuit breaker for API reliability
 class SimpleCircuitBreaker {
@@ -488,7 +467,7 @@ async function callOpenAIWithFallback(messages: any[], timeout: number = 6000, r
         continue;
       }
     } catch (error: any) {
-      console.log(`Error with ${model.name}: ${error?.message}, trying next model`);
+      console.log(`Error with ${model.name}: ${error?.message || error}, trying next model`);
       continue;
     }
   }
@@ -496,14 +475,392 @@ async function callOpenAIWithFallback(messages: any[], timeout: number = 6000, r
   throw new Error('All AI models failed');
 }
 
+// ============= MAIN SCENE GENERATION FUNCTION =============
+
+async function generatePrimarySceneFromStory(
+  requestId: string, 
+  storyText: string, 
+  userInfo: UserInfo, 
+  avatarIdentity?: any,
+  previousPrimaryScene?: string,
+  includeFullSchema: boolean = false
+): Promise<Response> {
+  const localStartTime = Date.now();
+  
+  // Character consistency integration
+  let characterAppearance = '';
+  let characterSeed = '';
+  
+  try {
+    const sessionId = userInfo?.sessionId;
+    if (sessionId && userInfo?.name) {
+      characterAppearance = await characterConsistencyService.getCharacterAppearanceFromStory(sessionId, userInfo.name) || '';
+      characterSeed = `char_${userInfo.name}_${sessionId}`.substring(0, 20);
+    }
+  } catch (charError) {
+    console.warn(`Character consistency error (non-critical):`, charError);
+  }
+
+  // Cultural enhancement check
+  const nativeLanguage = userInfo?.nativeLanguage || 'en';
+  const isNonEnglish = nativeLanguage !== 'en' && shouldApplyCulturalEnhancements(nativeLanguage);
+  
+  // Character reference and cultural context
+  const characterReference = avatarIdentity?.type === 'girl' ? 'A young girl' : 
+                           avatarIdentity?.type === 'boy' ? 'A young boy' : 
+                           'A child';
+  
+  let culturalContext = '';
+  if (isNonEnglish) {
+    const culturalSettings: { [key: string]: string } = {
+      'es': 'in vibrant Spanish neighborhoods, near colorful South American or Mediterranean architecture',
+      'fr': 'in charming French settings, near elegant European architecture, or beautiful countryside',
+      'pt': 'in lively Brazilian neighborhoods, near tropical beaches, or colorful South American architecture',
+      'zh': 'in peaceful Chinese gardens, near traditional pagodas, or modern Asian city settings',
+      'de': 'in charming German villages, near castles, or beautiful European countryside',
+      'it': 'in picturesque Italian piazzas, near ancient Roman architecture, or Tuscan landscapes'
+    };
+    culturalContext = culturalSettings[nativeLanguage] || 'in culturally authentic settings relevant to their heritage';
+  }
+
+  // Comprehensive character data for AI prompt
+  const characterName = userInfo?.name || userInfo?.childName || 'Child';
+  const characterAge = userInfo?.age || '6-8';
+  const skinTone = userInfo?.avatar?.skinTone || 'medium';
+  const hairColor = userInfo?.avatar?.hairColor || 'brown';
+  
+  // Build comprehensive character description
+  const characterData = [
+    `${characterReference} named ${characterName}`,
+    `age ${characterAge}`,
+    hairColor !== 'brown' ? `${hairColor} hair` : null,
+    characterAppearance ? `with ${characterAppearance}` : null
+  ].filter(Boolean).join(', ');
+
+  return withPerformanceTracking('ai-visual-scene-creator-orchestrator', 'gpt-4o', async () => {
+    const messages = [
+      {
+        role: 'system',
+        content: `Generate a comprehensive visual scene description for children's story image generation.
+
+OBJECTIVE: Create a vivid visual scene description (200-1500 characters recommended) that captures the story moment with complete visual elements, character consistency, and cultural authenticity.
+
+JSON RESPONSE:
+{
+  "primaryScene": "Rich, detailed visual scene description for image generation with setting, character actions, atmosphere, and comprehensive visual details",
+  "backgroundColor": "Background color description (e.g., 'warm golden forest light', 'cool blue sky', 'cozy indoor amber')",
+  "lighting": "Lighting description (e.g., 'golden hour sunlight', 'soft morning light', 'magical twilight glow')",
+  "composition": "Visual composition description (e.g., 'centered character with forest background', 'close-up with blurred garden')",
+  "setting": "Location and environment (e.g., 'magical forest clearing', 'cozy bedroom', 'sunny playground')",
+  "mood": "Emotional atmosphere (e.g., 'adventurous and curious', 'peaceful and content', 'excited and playful')",
+  "style": "Artistic style (e.g., 'watercolor illustration', 'digital painting', 'children's book art')",
+  "secondaryCharacters": {
+    "humans": ["list of human characters mentioned in story (e.g., 'mom', 'friend', 'teacher')"],
+    "pets": ["list of animals/pets mentioned in story (e.g., 'dog', 'cat', 'bird')"]
+  },
+  "objects": ["key props and objects in scene (e.g., 'ball', 'tree', 'flowers', 'toys')"]
+}
+
+CRITICAL CHARACTER RULES:
+1. NEVER describe main character's skin tone - focus on hair, clothing, facial expressions, and pose only
+2. Use provided character data exactly - do not make up features for main character
+3. For secondary characters, you may describe their appearance as needed
+4. Use story-driven visual descriptions based on the text content
+
+VISUAL ENHANCEMENT RULES:
+5. Create detailed primary scenes with rich visual descriptions (200-1500 characters)
+6. Extract ALL secondary characters from story text and categorize correctly:
+   - HUMANS: mom, dad, friend, teacher, brother, sister, grandma, neighbor, people
+   - PETS/ANIMALS: dog, cat, bird, rabbit, hamster, fish, horse, any animals
+7. Include comprehensive atmospheric details (time of day, weather, indoor/outdoor)
+8. Specify background colors, lighting conditions, and visual composition
+9. List key objects, props, and visual elements in the scene
+10. Preserve exact counts: "a bird" = 1 bird, "birds" = multiple
+11. Use visual continuity with previous scene context
+
+ATMOSPHERIC GUIDANCE:
+- Time of day: "morning sunlight", "afternoon glow", "evening twilight"
+- Indoor/outdoor: "inside the cozy kitchen", "outside in the garden"  
+- Weather: "sunny day", "light drizzle", "snowy morning"
+- Objects/props: include furniture, toys, nature elements, tools
+
+CULTURAL CONTEXT:
+${isNonEnglish ? `- Consider culturally authentic settings: ${culturalContext}` : '- Use universal child-friendly settings'}
+${isNonEnglish ? `- Incorporate cultural elements appropriate for ${nativeLanguage} speaking families` : ''}
+
+RESPONSE FORMAT:
+- Return valid JSON with all 9 keys exactly as specified
+- Use null (no quotes) for unclear visual components
+- Use empty arrays [] for missing secondary characters or objects
+- Focus on observable visual elements, not thoughts or dialogue
+- Ensure primary scene is 200+ characters with comprehensive visual detail`
+      },
+      {
+        role: 'user',
+        content: `Create a visual scene description for this story page.
+
+CHARACTER DATA: ${characterData}
+
+STORY TEXT:
+"${storyText}"
+
+PREVIOUS SCENE (for visual consistency):
+"${previousPrimaryScene || 'None - this is the first scene'}"
+
+${characterAppearance ? `CHARACTER APPEARANCE NOTES: ${characterAppearance}` : ''}
+
+Generate a comprehensive scene with complete visual elements including background, lighting, composition, setting, mood, style, secondary characters (categorized as humans vs pets), and key objects. Maintain character and setting continuity while showcasing the current page's action. Use the provided character data exactly and never describe the main character's skin tone.`
+      }
+    ];
+
+    console.log(`🤖 [${requestId}] Generating primaryScene from storyText using OpenAI`);
+    
+    let processedContent: any;
+    try {
+      const result = await callOpenAIWithFallback(messages, 8000, requestId, avatarIdentity);
+      const content = result?.choices?.[0]?.message?.content;
+      
+      if (!content?.trim()) {
+        throw new Error('Empty response from OpenAI');
+      }
+      
+      processedContent = parseAIResponse(content);
+      console.log(`✅ [${requestId}] Generated primaryScene + aiSchema via OpenAI`);
+      
+    } catch (error) {
+      console.error(`🚨 [${requestId}] Primary scene generation failed:`, error);
+      throw error;
+    }
+    
+    console.log(`✅ [${requestId}] Primary scene extracted via ${processedContent?.extractionMethod || 'openai_generated'}:`);
+    console.log(`   Scene: ${processedContent?.primaryScene?.substring(0, 200)}...`);
+    
+    // CRITICAL: Ensure primaryScene is a clean string for template usage
+    const primaryScene = processedContent?.primaryScene;
+    if (!primaryScene || typeof primaryScene !== 'string' || primaryScene.length < 30) {
+      console.error(`🚨 [${requestId}] Primary scene validation failed - escalating to Tier 2:`, {
+        hasScene: !!primaryScene,
+        sceneType: typeof primaryScene,
+        sceneLength: primaryScene?.length || 0,
+        sceneContent: primaryScene
+      });
+      throw new Error('Primary scene validation failed');
+    }
+    
+    console.log(`✅ [${requestId}] Primary scene validation passed: ${primaryScene.length} characters`);
+    
+    // Return standardized response format with enhanced compatibility
+    const response = {
+      success: true,
+      primaryScene: primaryScene,
+      extractedScene: primaryScene,
+      primarySceneLength: primaryScene.length,
+      aiSchema: includeFullSchema ? (processedContent?.aiSchema || processedContent) : undefined,
+      hasAiSchema: !!processedContent?.aiSchema,
+      extractionMethod: 'openai_generated',
+      requestId,
+      processingTimeMs: Date.now() - localStartTime,
+      // Include character consistency data for test results
+      characterConsistency: includeFullSchema ? {
+        characterAppearance,
+        characterSeed,
+        culturalContext: isNonEnglish ? culturalContext : null,
+        avatarType: characterReference
+      } : undefined
+    };
+    
+    console.log(`✅ [${requestId}] Returning response:`, {
+      success: response.success,
+      primarySceneLength: response.primaryScene?.length,
+      hasAiSchema: !!response.aiSchema,
+      hasCharacterConsistency: !!response.characterConsistency,
+      extractionMethod: response.extractionMethod
+    });
+    
+    return createCorsResponse(response);
+  }).finally(() => {
+    const responseTime = Date.now() - localStartTime;
+    console.log(`⏱️ [${requestId}] Request completed in ${responseTime}ms`);
+  });
+}
+
+// ============= DIRECT MODE IMPLEMENTATION =============
+
+async function handleVisualSceneDirectMode(
+  requestId: string, 
+  storyText: string, 
+  userInfo: UserInfo, 
+  sessionId: string, 
+  pageNumber: number
+): Promise<Response> {
+  console.log(`🎯 [${requestId}] DIRECT MODE: ai-visual-scene-creator bypass mode activated`);
+  
+  try {
+    // Step 1: Generate primary scene via OpenAI
+    const messages = [
+      {
+        role: 'system',
+        content: `Generate a detailed visual scene description for children's story illustration.
+
+OBJECTIVE: Create a vivid, child-friendly visual scene that captures the story moment.
+
+JSON RESPONSE:
+{
+  "primaryScene": "Detailed visual description with setting, character, and action (50+ characters)",
+  "backgroundColor": "Background color and atmosphere",
+  "lighting": "Lighting conditions and mood",
+  "composition": "Visual arrangement and framing",
+  "setting": "Location and environment",
+  "mood": "Emotional atmosphere",
+  "style": "Artistic style and technique",
+  "secondaryCharacters": {
+    "humans": ["array of secondary human characters"],
+    "pets": ["array of animal companions"]
+  },
+  "objects": ["array of significant objects in scene"]
+}
+
+RULES:
+1. Child-appropriate content only
+2. Vivid, colorful descriptions
+3. Include spatial details (positions, colors, lighting)
+4. Focus on visual elements only`
+      },
+      {
+        role: 'user',
+        content: `Create a visual scene for this story text: "${storyText}"`
+      }
+    ];
+
+    let openAIResult: any;
+    try {
+      openAIResult = await callOpenAIWithFallback(messages, 8000, requestId, userInfo?.avatar);
+    } catch (openAIError: any) {
+      console.error(`❌ [${requestId}] OpenAI failed in direct mode, escalating to Tier 2.5C`);
+      return createCorsErrorResponse(`OpenAI generation failed: ${openAIError?.message || openAIError}`, 503);
+    }
+
+    const content = openAIResult?.choices?.[0]?.message?.content;
+    if (!content?.trim()) {
+      console.error(`❌ [${requestId}] Empty OpenAI response in direct mode`);
+      return createCorsErrorResponse('OpenAI returned empty content', 503);
+    }
+
+    let parsedResponse: AIResponse;
+    try {
+      parsedResponse = parseAIResponse(content);
+    } catch (parseError: any) {
+      console.error(`❌ [${requestId}] Failed to parse OpenAI response in direct mode`);
+      return createCorsErrorResponse(`Failed to parse AI response: ${parseError?.message || parseError}`, 503);
+    }
+
+    if (!parsedResponse.primaryScene || parsedResponse.primaryScene.length < 20) {
+      console.error(`❌ [${requestId}] Insufficient primary scene in direct mode`);
+      return createCorsErrorResponse('Generated scene too short or missing', 503);
+    }
+    
+    // Primary Scene Quality Gate
+    if (!validatePrimarySceneQuality(parsedResponse.primaryScene)) {
+      console.error(`❌ [${requestId}] Primary scene quality validation failed in direct mode`);
+      return createCorsErrorResponse('Generated scene failed quality validation', 503);
+    }
+
+    console.log(`✅ [${requestId}] OpenAI generation successful in direct mode`);
+
+    // Step 2: Complete character consistency with secondary characters and objects
+    let characterAppearance = '';
+    let detectedSecondaryCharacters: any[] = [];
+    let secondaryDescriptions: string[] = [];
+    let coloredObjects = '';
+    
+    try {
+      const characterService = characterConsistencyService;
+      
+      if (sessionId) {
+        try {
+          // Main character analysis
+          await characterService.analyzeVisualDetails(sessionId, storyText, pageNumber || 1, userInfo?.name);
+          characterAppearance = await characterService.getCharacterAppearanceFromStory(sessionId, userInfo?.name) || '';
+
+          // Connect VisualDetailTracker for sophisticated analysis  
+          const { VisualDetailTracker } = await import("../_shared/VisualDetailTracker.js");
+          await VisualDetailTracker.analyzeTextForDetails(sessionId, storyText, pageNumber || 1, null);
+          
+          // Secondary character detection
+          const pageTextForAnalysis = storyText || parsedResponse.primaryScene || '';
+          detectedSecondaryCharacters = await characterService.detectSecondaryCharacters(sessionId, pageTextForAnalysis, pageNumber);
+          
+          // Build secondary character descriptions with seeds
+          for (const character of detectedSecondaryCharacters) {
+            const seed = await characterService.getSecondaryCharacterSeed(
+              sessionId, character.name, character.type || 'secondary_character'
+            );
+            secondaryDescriptions.push(`${character.name}: ${character.description} (${character.type})`);
+          }
+        } catch (characterError: any) {
+          console.warn(`⚠️ Character consistency service error:`, characterError?.message || characterError);
+          characterAppearance = '';
+          detectedSecondaryCharacters = [];
+          secondaryDescriptions = [];
+        }
+        
+        // Get environmental consistency
+        coloredObjects = await characterService.getColoredObjects(sessionId) || '';
+        
+        console.log(`✅ [${requestId}] Complete character consistency applied:`, {
+          characterAppearance: !!characterAppearance,
+          secondaryCharacters: detectedSecondaryCharacters.length,
+          coloredObjects: !!coloredObjects
+        });
+      }
+    } catch (characterError: any) {
+      console.warn(`⚠️ [${requestId}] Character consistency failed, continuing without it:`, characterError?.message || characterError);
+    }
+
+    // Step 3: Get proper style framework using difficulty
+    const difficulty = userInfo?.difficulty || 'medium';
+    let styleFramework;
+    try {
+      styleFramework = await getStyleFramework(difficulty);
+    } catch (styleError) {
+      console.warn(`⚠️ Style framework error:`, styleError);
+      styleFramework = { styles: [], negativesBase: [] };
+    }
+
+    // Return comprehensive direct mode response
+    return createCorsResponse({
+      success: true,
+      tier: 'DIRECT_MODE',
+      primaryScene: parsedResponse.primaryScene,
+      aiSchema: parsedResponse,
+      backgroundColor: parsedResponse.backgroundColor,
+      lighting: parsedResponse.lighting,
+      composition: parsedResponse.composition,
+      setting: parsedResponse.setting,
+      mood: parsedResponse.mood,
+      style: parsedResponse.style,
+      secondaryCharacters: parsedResponse.secondaryCharacters || { humans: [], pets: [] },
+      objects: parsedResponse.objects || [],
+      characterConsistency: {
+        appearance: characterAppearance,
+        secondaryCharacters: detectedSecondaryCharacters,
+        secondaryDescriptions,
+        coloredObjects
+      },
+      styleFramework,
+      processingComplete: true,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error: any) {
+    console.error(`❌ [${requestId}] Direct mode processing failed:`, error);
+    return createCorsErrorResponse(`Direct mode failed: ${error.message}`, 500);
+  }
+}
+
 // ============= MAIN REQUEST HANDLER =============
 
 async function handleRequest(req: Request): Promise<Response> {
-  // PHASE 1A: Fast validation checkpoint
-  const requestId = Math.random().toString(36).substr(2, 8);
-  console.log(`🚀 [${requestId}] ai-visual-scene-creator: ${req.method} ${req.url}`);
-  console.log(`🚀 [${requestId}] ai-visual-scene-creator ready`);
-
   // OPTIONS fast path (preflight)
   if (req.method === 'OPTIONS') {
     return new Response(null, {
@@ -518,52 +875,97 @@ async function handleRequest(req: Request): Promise<Response> {
     });
   }
 
-  // GET/HEAD safety — never fail health
+  // GET/HEAD health check
   if (req.method === 'GET' || req.method === 'HEAD') {
-    const isHeadHealth = req.method === 'HEAD' && new URL(req.url).pathname === '/health';
-    if (isHeadHealth) {
-      return new Response(null, { status: 200, headers: { 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store', 'x-health': 'true', 'Content-Length': '0' } });
-    }
-    return new Response(JSON.stringify({
+    return createCorsResponse({
       status: 'healthy',
       service: 'ai-visual-scene-creator',
       timestamp: new Date().toISOString()
-    }), {
-      status: 200,
-      headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' }
     });
   }
 
-  if (req.method !== 'POST') {
-    return createCorsErrorResponse('Method not allowed', 405);
-  }
+  const requestId = Math.random().toString(36).substring(2, 10);
+  console.log(`🚀 [${requestId}] ai-visual-scene-creator: ${req.method} ${req.url}`);
+  console.log(`🚀 [${requestId}] ai-visual-scene-creator ready`);
+  console.log('📋 SessionStateManager initialized with clean architecture');
 
   try {
-    const rawPayload = await req.text();
-    
-    if (!rawPayload?.trim()) {
-      console.error(`❌ [${requestId}] Fast validation failed: EMPTY_PAYLOAD`);
-      return createCorsErrorResponse('Validation failed: EMPTY_PAYLOAD', 400);
-    }
-    
-    const payload: DirectModePayload = JSON.parse(rawPayload);
-    
-    // PHASE 1B: Fast payload validation
+    // Parse request payload
+    let payload: DirectModePayload;
     try {
-      const validation = validateDirectModePayload(payload);
-      console.log(`✅ [${requestId}] Fast validation passed: ${validation.contentType}`);
-    } catch (error: any) {
-      console.error(`❌ [${requestId}] Fast validation failed: ${error?.message || error}`);
-      return createCorsErrorResponse(`Validation failed: ${error?.message || error}`, 400);
+      payload = await req.json();
+    } catch (parseError) {
+      console.error(`❌ [${requestId}] JSON parsing failed:`, parseError);
+      return createCorsErrorResponse('Invalid JSON payload', 400);
     }
 
-    // Continue with the rest of the business logic...
-    return createCorsResponse({ 
-      success: true, 
-      message: 'TypeScript conversion successful',
-      tier: 'DIRECT_MODE',
-      timestamp: new Date().toISOString()
-    });
+    console.log(`🔍 [${requestId}] Received payload keys:`, Object.keys(payload || {}));
+    console.log(`🎯 [${requestId}] Call source: ${payload._internal_orchestrator_call ? 'Orchestrator' : 'Frontend'}`);
+
+    // Enhanced payload validation
+    const validation = validateDirectModePayload(payload);
+    console.log(`✅ [${requestId}] Payload validation passed:`, validation);
+
+    const isDebugCall = payload.isDebugMode === true;
+    const isDirectModeCall = payload.directMode === true;
+    const isOrchestratorCall = payload._internal_orchestrator_call === true;
+    
+    console.log(`📄 [${requestId}] Using ${validation.contentType} format`);
+    
+    // Determine call type and route appropriately
+    if (isDebugCall) {
+      console.log(`🔍 [${requestId}] Processing debug mode call - generating primaryScene + aiSchema for debugging`);
+      const storyText = payload.storyText || payload.pageText || '';
+      return await generatePrimarySceneFromStory(
+        requestId, 
+        storyText, 
+        payload.userInfo!, 
+        payload.avatarIdentity,
+        payload.previousPrimaryScene,
+        true // Include full schema for debug
+      );
+    } else if (isDirectModeCall) {
+      console.log(`🔄 [${requestId}] Processing direct mode call - bypassing orchestrator`);
+      const storyText = payload.storyText || payload.pageText || '';
+      return await handleVisualSceneDirectMode(
+        requestId,
+        storyText,
+        payload.userInfo!,
+        payload.sessionId || '',
+        payload.pageNumber || 1
+      );
+    } else if (isOrchestratorCall) {
+      console.log(`🔄 [${requestId}] Processing orchestrator call - generating primaryScene + aiSchema for orchestrator`);
+      const storyText = payload.storyText || payload.pageText || '';
+      return await generatePrimarySceneFromStory(
+        requestId,
+        storyText, 
+        payload.userInfo!,
+        payload.avatarIdentity,
+        payload.previousPrimaryScene,
+        false // Standard response for orchestrator
+      );
+    } else {
+      // Check if mode is specified
+      if (!isDebugCall && !isDirectModeCall) {
+        console.error(`❌ [${requestId}] Invalid mode: Must specify either directMode: true (for images) or isDebugMode: true (for scene descriptions)`, {
+          hasDirectMode: !!isDirectModeCall,
+          hasDebugMode: !!isDebugCall
+        });
+        return createCorsErrorResponse('INVALID_MODE: Must specify either directMode: true (for images) or isDebugMode: true (for scene descriptions)', 400);
+      }
+      
+      console.log(`🔄 [${requestId}] Processing frontend/test call - generating primaryScene + aiSchema for frontend/test`);
+      const storyText = payload.storyText || payload.pageText || '';
+      return await generatePrimarySceneFromStory(
+        requestId,
+        storyText,
+        payload.userInfo!,
+        payload.avatarIdentity,
+        payload.previousPrimaryScene,
+        true // Include full schema for frontend calls
+      );
+    }
 
   } catch (error: any) {
     console.error(`❌ [${requestId}] Request processing failed:`, error);
