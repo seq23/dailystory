@@ -58,16 +58,20 @@ const UNIFIED_OBJECT_CATEGORIES = [
 
 export class VisualDetailTracker {
   // Initialize Supabase client for database operations
-  static supabase = createClient(
-    Deno.env.get('SUPABASE_URL') ?? '',
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-  );
+  private supabase;
+
+  constructor() {
+    this.supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+  }
 
   /**
    * Analyze text for visual details and store them in database for consistency
    * Enhanced with character-specific clothing detection and secondary character visual details
    */
-  static async analyzeTextForDetails(
+  async analyzeTextForDetails(
     sessionId: string,
     text: string,
     pageNumber: number,
@@ -235,7 +239,7 @@ export class VisualDetailTracker {
   /**
    * Save visual detail to database
    */
-  static async saveDetailToDatabase(
+  async saveDetailToDatabase(
     sessionId: string,
     characterName: string,
     detailType: string,
@@ -298,7 +302,7 @@ export class VisualDetailTracker {
   /**
    * Get character clothing from database
    */
-  static async getCharacterClothing(sessionId: string, characterName: string): Promise<Record<string, string>> {
+  async getCharacterClothing(sessionId: string, characterName: string): Promise<Record<string, string>> {
     try {
       const { data, error } = await this.supabase
         .from('visual_details_cache')
@@ -328,7 +332,7 @@ export class VisualDetailTracker {
   /**
    * Get all visual details for a character
    */
-  static async getCharacterDetails(sessionId: string, characterName: string): Promise<Record<string, Record<string, string>>> {
+  async getCharacterDetails(sessionId: string, characterName: string): Promise<Record<string, Record<string, string>>> {
     try {
       const { data, error } = await this.supabase
         .from('visual_details_cache')
@@ -359,7 +363,7 @@ export class VisualDetailTracker {
   /**
    * Build clothing description for character prompt
    */
-  static async buildClothingDescription(sessionId: string, characterName: string): Promise<string | null> {
+  async buildClothingDescription(sessionId: string, characterName: string): Promise<string | null> {
     const clothing = await this.getCharacterClothing(sessionId, characterName);
     
     if (Object.keys(clothing).length === 0) {
@@ -373,7 +377,7 @@ export class VisualDetailTracker {
   /**
    * Get all visual details for a session as prompt addition
    */
-  static async getVisualDetailsForPrompt(sessionId: string): Promise<string> {
+  async getVisualDetailsForPrompt(sessionId: string): Promise<string> {
     try {
       const { data, error } = await this.supabase
         .from('visual_details_cache')
@@ -398,7 +402,7 @@ export class VisualDetailTracker {
   /**
    * Get secondary character visual details for enriched descriptions
    */
-  static async getSecondaryCharacterVisuals(sessionId: string, characterName: string): Promise<Record<string, Record<string, string>> | null> {
+  async getSecondaryCharacterVisuals(sessionId: string, characterName: string): Promise<Record<string, Record<string, string>> | null> {
     try {
       const { data, error } = await this.supabase
         .from('visual_details_cache')
@@ -428,7 +432,7 @@ export class VisualDetailTracker {
   /**
    * Build enriched secondary character description with visual details
    */
-  static async buildEnrichedSecondaryCharacter(sessionId: string, characterType: string, baseDescription: string): Promise<string> {
+  async buildEnrichedSecondaryCharacter(sessionId: string, characterType: string, baseDescription: string): Promise<string> {
     const characterName = this.extractCharacterNameFromDescription(characterType);
     const visuals = await this.getSecondaryCharacterVisuals(sessionId, characterName);
     
@@ -459,7 +463,7 @@ export class VisualDetailTracker {
   /**
    * Extract character name from description or character type
    */
-  static extractCharacterNameFromDescription(characterType: string): string {
+  extractCharacterNameFromDescription(characterType: string): string {
     // Simple extraction - look for common relationship patterns
     const relationshipMap = {
       'mom': 'mom',
@@ -487,7 +491,7 @@ export class VisualDetailTracker {
   /**
    * Add fallback visuals for characters without stored visual details
    */
-  static addFallbackVisuals(characterType: string, baseDescription: string, sessionId: string): string {
+  addFallbackVisuals(characterType: string, baseDescription: string, sessionId: string): string {
     // Generate deterministic fallback visuals based on session and character type
     const seed = this.generateSeed(`${sessionId}_${characterType}_fallback`);
     const seededRandom = this.createSeededRandom(seed);
@@ -514,7 +518,7 @@ export class VisualDetailTracker {
   /**
    * Generate deterministic seed from string
    */
-  static generateSeed(input: string): number {
+  generateSeed(input: string): number {
     let hash = 0;
     for (let i = 0; i < input.length; i++) {
       const char = input.charCodeAt(i);
@@ -527,7 +531,7 @@ export class VisualDetailTracker {
   /**
    * Create seeded random number generator
    */
-  static createSeededRandom(seed: number): () => number {
+  createSeededRandom(seed: number): () => number {
     let currentSeed = seed;
     return function() {
       currentSeed = (currentSeed * 9301 + 49297) % 233280;
@@ -538,7 +542,7 @@ export class VisualDetailTracker {
   /**
    * Clear visual details cache from database
    */
-  static async clearVisualDetailsCache(sessionId = null) {
+  async clearVisualDetailsCache(sessionId = null) {
     try {
       let query = this.supabase.from('visual_details_cache').delete();
       
@@ -569,3 +573,6 @@ export class VisualDetailTracker {
     }
   }
 }
+
+// Export singleton instance to match .js pattern
+export const visualDetailTracker = new VisualDetailTracker();
