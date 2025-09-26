@@ -339,18 +339,31 @@ export class SimpleImageService {
       // Call the main orchestrator (runware-generate-image) which handles all tiers
       DebugLogger.log('image', 'Calling main orchestrator: runware-generate-image');
       
+      // Debug payload before sending
+      const orchestratorPayload = {
+        pageText: enhancedPrompt,
+        userInfo,
+        sessionId: normalizedSessionId,
+        storyId: normalizedSessionId, // Use normalized sessionId as storyId for consistency
+        pageNumber,
+        isGuestUser: !isPremium,
+        difficultyLevel: backendDifficulty,
+        protectionNegatives // Pass negative prompts to backend
+        // Removed skipTier25 and forceTier to allow natural tier cascade
+      };
+      
+      DebugLogger.log('image', 'Orchestrator payload debug', {
+        hasPageText: !!orchestratorPayload.pageText,
+        pageTextLength: orchestratorPayload.pageText?.length || 0,
+        pageTextPreview: orchestratorPayload.pageText?.substring(0, 100) + '...',
+        hasUserInfo: !!orchestratorPayload.userInfo,
+        hasSessionId: !!orchestratorPayload.sessionId,
+        sessionId: orchestratorPayload.sessionId,
+        pageNumber: orchestratorPayload.pageNumber
+      });
+      
       const requestPromise = supabase.functions.invoke('runware-generate-image', {
-        body: {
-          pageText: enhancedPrompt,
-          userInfo,
-          sessionId: normalizedSessionId,
-          storyId: normalizedSessionId, // Use normalized sessionId as storyId for consistency
-          pageNumber,
-          isGuestUser: !isPremium,
-          difficultyLevel: backendDifficulty,
-          protectionNegatives // Pass negative prompts to backend
-          // Removed skipTier25 and forceTier to allow natural tier cascade
-        }
+        body: orchestratorPayload
       });
       
         // Check for orchestrator response guidance
@@ -374,14 +387,19 @@ export class SimpleImageService {
           };
         }
 
-        if (orchError) {
-          throw new Error(`Orchestrator error: ${orchError.message}`);
-        }
-
-        // Check if orchestrator is suggesting Direct Mode
+        // Handle structured orchestrator responses (including 400 errors with nextAction)
         if (orchResult?.nextAction === 'TRY_DIRECT_MODE') {
           DebugLogger.log('image', 'Orchestrator suggests Direct Mode, attempting...');
           throw new Error('ORCHESTRATOR_SUGGESTS_DIRECT_MODE');
+        }
+
+        if (orchError) {
+          DebugLogger.error('image', 'Orchestrator response error', {
+            errorMessage: orchError.message,
+            errorDetails: orchError,
+            status: orchError.status || 'unknown'
+          });
+          throw new Error(`Orchestrator error: ${orchError.message}`);
         }
 
         // Phase A: Multi-Field Image URL Validation - Handle all API response variations
@@ -438,11 +456,22 @@ export class SimpleImageService {
 
       // Detect orchestrator failure type for proper cascade handling
       const is503Error = error.message?.includes('503') || error.message?.includes('Service temporarily unavailable');
+      const is400Error = error.message?.includes('400') || error.message?.includes('validation failed') || error.message?.includes('VALIDATION_ERROR');
+      const suggestsDirectMode = error.message?.includes('ORCHESTRATOR_SUGGESTS_DIRECT_MODE') || error.message?.includes('TRY_DIRECT_MODE');
+      
+      DebugLogger.warn('image', 'Orchestrator error categorization', {
+        errorMessage: error.message,
+        is503Error,
+        is400Error,
+        suggestsDirectMode
+      });
       
       if (is503Error) {
         DebugLogger.warn('image', 'Orchestrator unreachable (503), attempting Direct Mode fallback');
+      } else if (is400Error || suggestsDirectMode) {
+        DebugLogger.warn('image', 'Orchestrator validation/runtime failure, attempting Direct Mode fallback');
       } else {
-        DebugLogger.warn('image', 'Orchestrator runtime failure, attempting Direct Mode fallback');
+        DebugLogger.warn('image', 'Orchestrator general failure, attempting Direct Mode fallback');
       }
 
       // Direct Mode attempt - call ai-visual-scene-creator with directMode: true

@@ -670,19 +670,45 @@ async function handleRequest(req: Request): Promise<Response> {
   try {
     const payload = await req.json().catch(() => ({}));
     
+    // Debug payload structure before validation
+    console.log(`🔍 [${requestId}] Orchestrator payload debug:`, {
+      hasPayload: !!payload,
+      hasPageText: !!payload?.pageText,
+      hasStoryText: !!payload?.storyText,
+      hasSessionId: !!payload?.sessionId,
+      hasUserInfo: !!payload?.userInfo,
+      pageTextLength: payload?.pageText?.length || 0,
+      pageTextPreview: payload?.pageText?.substring(0, 50) || 'none',
+      sessionId: payload?.sessionId,
+      payloadKeys: Object.keys(payload || {})
+    });
+    
     // PHASE 1A: Lightning-Fast Input Validation (50ms max)
     try {
       validatePayloadFast(payload);
     } catch (validationError: any) {
+      console.error(`❌ [${requestId}] Payload validation details:`, {
+        error: validationError.message,
+        payload: {
+          hasPageText: !!payload?.pageText,
+          hasStoryText: !!payload?.storyText,
+          hasSessionId: !!payload?.sessionId,
+          hasUserInfo: !!payload?.userInfo,
+          pageTextValue: payload?.pageText,
+          storyTextValue: payload?.storyText,
+          sessionIdValue: payload?.sessionId
+        }
+      });
+      
       if (shouldFailFast(validationError)) {
         console.warn(`❌ [${requestId}] Fast validation failed: ${validationError.message}`);
-        return new Response(JSON.stringify({ 
+        return createCorsResponse({
+          success: false,
           error: `Fast validation failed: ${validationError.message}`,
-          type: 'VALIDATION_ERROR'
-        }), {
-          status: 400,
-          headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' }
-        });
+          type: 'VALIDATION_ERROR',
+          nextAction: 'TRY_DIRECT_MODE',
+          recommendedAction: 'Call ai-visual-scene-creator with directMode: true'
+        }, 400);
       }
     }
     
