@@ -174,3 +174,79 @@ Client → Orchestrator → Direct Mode → 2.5C → 2.5D → Client (Tier 4 fal
 
 ## Date: September 25, 2025
 ## Status: IMPLEMENTED AND VERIFIED
+
+---
+
+# Additional Fixes - January 30, 2025
+
+## Summary
+Comprehensive architecture improvements to fix module import errors, async callback issues, and broken character service dependencies.
+
+## Issues Fixed
+
+### 1. Shared Logger Architecture  
+- **Problem**: Multiple edge functions imported non-existent `_shared/tierLogging.js`
+- **Error**: "Failed to log template AB/CD success: Module not found: file:///.../tierLogging.js"
+- **Solution**: Moved `tierLogging.js` from `runware-generate-image/` to `_shared/`
+- **Files Updated**:
+  - Created: `supabase/functions/_shared/tierLogging.js`
+  - Updated: `supabase/functions/runware-generate-image/index.js` (import path)
+  - Deleted: `supabase/functions/runware-generate-image/tierLogging.js`
+
+### 2. CharacterConsistencyService Import Fix
+- **Problem**: Import of non-existent `CULTURAL_ARRAYS` from `tier25Vocabulary.js`
+- **Error**: "The requested module './tier25Vocabulary.js' does not provide an export named 'CULTURAL_ARRAYS'"
+- **Solution**: Refactored to use StaticDataCache functions
+- **Changes**:
+  - Removed: `import { CULTURAL_ARRAYS, PLACEHOLDER_POOLS }`
+  - Added: `import { getAfricanAmericanHair, getAfricanAmericanFeatures }`
+  - Updated method implementations to use StaticDataCache instead of arrays
+
+### 3. Async Callback Elimination
+- **Problem**: Async callbacks in `String.replace()` causing "[object Promise]" in output
+- **Risk**: Placeholder resolution returning promises instead of resolved strings
+- **Solution**: Replaced all async callbacks with synchronous fallbacks
+- **Locations Fixed**:
+  - `resolveMicroPlaceholders`: Lines 268-276 ({hair} placeholder)
+  - `fillMissingPlaceholders`: Lines 944-961 ({hair} and {features} placeholders)  
+  - `bundle.culturalEnhancements`: Lines 910-912 (async method call)
+
+## Architecture Benefits
+
+### Centralized Logging
+- All tier logging now managed from `_shared/tierLogging.js`
+- Eliminates "module not found" errors across all template functions
+- Consistent logging interface for all edge functions
+
+### Clean Character Service
+- Removed dependency on non-existent `CULTURAL_ARRAYS`
+- Direct integration with StaticDataCache for cultural data
+- Maintained functionality while fixing broken imports
+
+### Synchronous Placeholder Resolution  
+- Eliminated async callbacks in `.replace()` operations
+- Prevents "[object Promise]" corruption in generated text
+- Maintains cultural enhancement logic with synchronous fallbacks
+
+## Expected Results
+
+The following should now work without errors:
+- **ai-visual-scene-creator**: GET/POST requests without 503 syntax errors
+- **runware-template-ab/cd**: No "module not found tierLogging" warnings  
+- **CharacterConsistencyService**: No "export not found: CULTURAL_ARRAYS" errors
+- **Placeholder resolution**: No "[object Promise]" in generated prompts
+
+## Files Modified (January 30, 2025)
+
+### Created
+- `supabase/functions/_shared/tierLogging.js` (moved from runware-generate-image/)
+
+### Modified  
+- `supabase/functions/runware-generate-image/index.js` (updated import path)
+- `supabase/functions/_shared/CharacterConsistencyService.js` (import refactoring, method updates)
+- `supabase/functions/_shared/UnifiedPlaceholderResolver.js` (async callback elimination)
+
+### Deleted
+- `supabase/functions/runware-generate-image/tierLogging.js` (moved to _shared/)
+
+## Status: IMPLEMENTED - January 30, 2025

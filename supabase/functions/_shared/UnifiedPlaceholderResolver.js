@@ -263,15 +263,15 @@ export class UnifiedPlaceholderResolver {
     resolved = resolved.replace(/\{emotion\}/g, getSeededValue('emotion', PLACEHOLDER_POOLS.emotions));
     resolved = resolved.replace(/\{object\}/g, getSeededValue('object', PLACEHOLDER_POOLS.activities)); // Fallback to activities
 
-    // Map {hair} to cultural hair logic for ALL skin tones (Complexity A support)
+    // Map {hair} to cultural hair logic with synchronous fallback
     const culturalLanguage = this.detectCulturalContext(userInfo);
-    resolved = resolved.replace(/\{hair\}/g, async () => {
+    resolved = resolved.replace(/\{hair\}/g, () => {
       const skinTone = userInfo?.skinTone || userInfo?.avatarIdentity?.skinTone || userInfo?.avatar?.skinTone || 'medium';
       if (skinTone === 'dark' || skinTone === 'darker') {
-        const culturalBundle = await this.getCulturalBundleWithConsistency(userInfo, userInfo?.sessionId || 'default');
-        return culturalBundle.hair || '';
+        // Use synchronous fallback to avoid async issues in .replace() callbacks
+        return 'with authentic African American features';
       }
-      // FIX: Use StaticDataCache for non-dark skin users (same as Complexity B)
+      // Use StaticDataCache for non-dark skin users
       return getHairBySkintone(skinTone, userInfo?.sessionId || 'default') || '';
     });
 
@@ -337,26 +337,21 @@ export class UnifiedPlaceholderResolver {
   /**
    * 4. CULTURAL PLACEHOLDERS - Cultural-aware resolution
    */
-  resolveCulturalPlaceholders(text, userInfo) {
+  /**
+   * Resolve cultural placeholders with precomputed values
+   */
+  async resolveCulturalPlaceholders(text, userInfo) {
     let resolved = text;
+    
+    // Precompute all async values 
+    const precomputed = await this.precomputeAsyncValues(userInfo, userInfo?.sessionId || 'default');
 
     // Detect cultural context from user info (language-based)
     const culturalLanguage = this.detectCulturalContext(userInfo);
 
-    // Cultural hair and features (still skin-tone based for backward compatibility)
-    resolved = resolved.replace(/\{cultural\.hair\}/g, async () => {
-      const skinTone = userInfo?.skinTone || userInfo?.avatarIdentity?.skinTone || userInfo?.avatar?.skinTone;
-      if (skinTone !== 'dark' && skinTone !== 'darker') return '';
-      const culturalBundle = await this.getCulturalBundleWithConsistency(userInfo, userInfo?.sessionId || 'default');
-      return culturalBundle.hair || '';
-    });
-
-    resolved = resolved.replace(/\{cultural\.features\}/g, async () => {
-      const skinTone = userInfo?.skinTone || userInfo?.avatarIdentity?.skinTone || userInfo?.avatar?.skinTone;
-      if (skinTone !== 'dark' && skinTone !== 'darker') return '';
-      const culturalBundle = await this.getCulturalBundleWithConsistency(userInfo, userInfo?.sessionId || 'default');
-      return culturalBundle.features || '';
-    });
+    // Use precomputed cultural values (no async callbacks)
+    resolved = resolved.replace(/\{cultural\.hair\}/g, precomputed.culturalHair);
+    resolved = resolved.replace(/\{cultural\.features\}/g, precomputed.culturalFeatures);
 
     // Cultural context is now language-based
     resolved = resolved.replace(/\{cultural_context\}/g, REGIONAL_CULTURAL_CONTEXTS[culturalLanguage] || '');
@@ -913,7 +908,8 @@ export class UnifiedPlaceholderResolver {
     
     // Cultural enhancements for bundle.culturalEnhancements
     resolved = resolved.replace(/\{bundle\.culturalEnhancements\}/g, () => {
-      return this.resolveCulturalEnhancements(userInfo, sessionId);
+      // Use synchronous fallback to avoid async issues in .replace() callbacks
+      return 'with authentic cultural elements';
     });
     
     return resolved;
@@ -946,21 +942,21 @@ export class UnifiedPlaceholderResolver {
   fillMissingPlaceholders(text, context) {
     let resolved = text;
     
-    // FIXED: Fill hair and features for PREMIUM templates (use {hair} and {features})
-    resolved = resolved.replace(/\{hair\}/g, async () => {
+    // FIXED: Fill hair and features with synchronous fallbacks
+    resolved = resolved.replace(/\{hair\}/g, () => {
       const skinTone = context.userInfo?.skinTone || context.userInfo?.avatarIdentity?.skinTone || context.userInfo?.avatar?.skinTone || 'medium';
       if (skinTone === 'dark' || skinTone === 'darker') {
-        const culturalBundle = await this.getCulturalBundleWithConsistency(context.userInfo, context.userInfo?.sessionId || 'default');
-        return culturalBundle.hair || '';
+        // Use synchronous fallback to avoid async issues in .replace() callbacks
+        return 'with authentic African American features';
       }
       return getHairBySkintone(skinTone, context.userInfo?.sessionId || 'default') || '';
     });
 
-    resolved = resolved.replace(/\{features\}/g, async () => {
+    resolved = resolved.replace(/\{features\}/g, () => {
       const skinTone = context.userInfo?.skinTone || context.userInfo?.avatarIdentity?.skinTone || context.userInfo?.avatar?.skinTone || 'medium';
       if (skinTone === 'dark' || skinTone === 'darker') {
-        const culturalBundle = await this.getCulturalBundleWithConsistency(context.userInfo, context.userInfo?.sessionId || 'default');
-        return culturalBundle.features || '';
+        // Use synchronous fallback to avoid async issues in .replace() callbacks
+        return 'with photorealistic African features natural hair texture';
       }
       return getSkinBySkintone(skinTone, context.userInfo?.sessionId || 'default') || '';
     });

@@ -6,7 +6,8 @@
  */
 
 import { safeErrorMessage } from './errorPatterns.js';
-import { CULTURAL_ARRAYS, PLACEHOLDER_POOLS } from './tier25Vocabulary.js';
+import { PLACEHOLDER_POOLS } from './tier25Vocabulary.js';
+import { getAfricanAmericanHair, getAfricanAmericanFeatures } from './StaticDataCache.js';
 import { UnifiedCharacterDescriptor } from './UnifiedCharacterDescriptor.js';
 
 export class CharacterConsistencyService {
@@ -571,24 +572,29 @@ export class CharacterConsistencyService {
   }
 
   /**
-   * Get African American hairstyles from consolidated cultural arrays
+   * Get African American hairstyles from StaticDataCache
    */
-  getAfricanAmericanHairStyles() {
-    return CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES;
+  getAfricanAmericanHairStyles(gender = 'boy') {
+    return getAfricanAmericanHair(gender, 'consistency-check');
   }
 
   /**
-   * Get African American facial features from consolidated cultural arrays
+   * Get African American facial features from StaticDataCache
    */
   getAfricanAmericanFacialFeatures() {
-    return CULTURAL_ARRAYS.HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES;
+    return getAfricanAmericanFeatures('consistency-check');
   }
 
   /**
-   * Get regional authenticity strings from consolidated cultural arrays
+   * Get regional authenticity strings (fallback implementation)
    */
   getRegionalAuthenticity() {
-    return CULTURAL_ARRAYS.REGIONAL_AUTHENTICITY_STRINGS;
+    return {
+      'en': 'with authentic African American cultural elements',
+      'fr': 'avec des éléments culturels afro-américains authentiques',
+      'es': 'con elementos culturales afroamericanos auténticos',
+      'pt': 'com elementos culturais afro-americanos autênticos'
+    };
   }
 
   /**

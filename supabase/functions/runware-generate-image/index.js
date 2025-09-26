@@ -16,7 +16,7 @@ import { SessionStateManager } from "../_shared/SessionStateManager.js";
 // Handles all image generation tiers, fallbacks, and service coordination
 // ============================================================================
 import { UnifiedPlaceholderResolver } from '../_shared/UnifiedPlaceholderResolver.js';
-import * as tierLogging from "./tierLogging.js";
+import * as tierLogging from "../_shared/tierLogging.js";
 
 // ---- Tier logger binder (console + DB) ----
 function bindTierLogger(supabaseClient, sessionId, requestId) {
