@@ -58,7 +58,7 @@ function shouldFailFast(error) {
 // PHASE 5A: Primary Scene Quality Check
 function validatePrimarySceneQuality(scene) {
   if (!scene || typeof scene !== 'string') return false;
-  if (scene.length < 50) return false;
+  if (scene.length < 30) return false;
   if (scene.includes('undefined') || scene.includes('null')) return false;
   return scene.split(' ').filter(word => word.length > 0).length >= 8; // Minimum word count
 }
@@ -736,8 +736,7 @@ async function handleRequest(req) {
           // Pass pre-analyzed data from Tier 1 to Tier 2.5A
           const preAnalyzedData = {
             visualDetails,
-            characterConsistency: enhancedData?.characterConsistency,
-            aiSchema: enhancedData?.aiSchema
+            aiSchema
           };
           
           const resp25A = await supabase.functions.invoke('runware-template-ab', {
