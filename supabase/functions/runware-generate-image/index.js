@@ -970,10 +970,12 @@ async function handleRequest(req) {
                 aiSchema: directModeResponse.data.aiSchema,
                 enhancedPrompt: directModeResponse.data.enhancedPrompt || directModeResponse.data.primaryScene,
                 imageURL: directModeResponse.data.imageURL,
-                tier: 'DIRECT_MODE_FALLBACK',
-                usedTier: 'DIRECT_MODE_FALLBACK',
+                tier: 'DIRECT_MODE',
+                usedTier: 'DIRECT_MODE',
+                pathUsed: 'DIRECT_MODE',
+                orchestratorError: orchestratorErr.message,
                 fallbackReason: 'orchestrator_unavailable_during_force_tier_1',
-                templateStructure: 'DIRECT_MODE_FALLBACK_SUCCESS'
+                templateStructure: 'DIRECT_MODE_SUCCESS'
               };
               log.success('tier-1', { mode: 'direct_mode_fallback', imageUrl: result.imageURL, originalError: orchestratorErr.message });
             } else {

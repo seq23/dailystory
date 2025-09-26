@@ -1,3 +1,4 @@
+// DEPLOY_MARKER: 2025-09-26T16:30:00Z - Fix BOOT_SYNC_ANOMALY with stable import
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 const SERVICE_NAME = "ai-visual-scene-creator";
 
@@ -30,7 +31,7 @@ async function loadHandler(allowRetry = false): Promise<HandlerFn | null> {
   const now = Date.now();
   if (lastLoadError && now - lastLoadError.at < BACKOFF_MS && !allowRetry) return null;
   try {
-    const mod = await import("./index.js");
+    const mod = await import(new URL("./index.js", import.meta.url).href);
     const fn = (mod as any)?.default as HandlerFn | undefined;
     if (typeof fn !== "function") throw new Error("Handler default export not a function");
     cachedHandler = fn;
