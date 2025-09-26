@@ -279,7 +279,7 @@ export class PhaseIntegrationOrchestrator {
       const characterReference = avatarType === 'prefer-not-to-answer' ? 'gender neutral child' : avatarType;
 
       // Get cultural enhancements with character consistency
-      const characterConsistencyService = CharacterConsistencyService.getInstance();
+      const characterConsistencyService = this.characterConsistencyService;
       const culturalBundle = await characterConsistencyService.getCulturalEnhancements(userInfo, sessionId, userInfo?.name || 'child');
       
       // Convert sessionId to numeric seed for consistent selection
