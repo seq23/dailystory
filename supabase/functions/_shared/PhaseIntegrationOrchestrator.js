@@ -5,7 +5,7 @@
  */
 
 import { characterConsistencyService } from './CharacterConsistencyService.js';
-import { VisualDetailTracker } from './VisualDetailTracker.js';
+import { visualDetailTracker } from './VisualDetailTracker.js';
 import { getHairBySkintone, getSkinBySkintone } from './StaticDataCache.js';
 import { UnifiedPlaceholderResolver } from './UnifiedPlaceholderResolver.js';
 import { getStyleFramework } from './styleFrameworks.js';
@@ -15,7 +15,7 @@ export class PhaseIntegrationOrchestrator {
   constructor() {
     this.initialized = false;
     this.characterConsistencyService = characterConsistencyService;
-    this.visualDetailTracker = new VisualDetailTracker();
+    this.visualDetailTracker = visualDetailTracker;
     this.supabase = null; // Initialize to null for safety
   }
 
