@@ -79,9 +79,9 @@ export function DebugDataViewer() {
     }
 
     // Validate session ID format  
-    const sessionIdPattern = /^(live-|netflix-|test-|guest_|premium_|session_)/;
+    const sessionIdPattern = /^(live-|netflix-|test-|guest[_-]|premium[_-]|session[_-])/;
     if (!sessionIdPattern.test(sessionId.trim())) {
-      const errorMsg = "Session ID should start with 'live-', 'netflix-', 'test-', 'guest_', 'premium_', or 'session_'";
+      const errorMsg = "Session ID should start with a recognized prefix (live-, netflix-, test-, guest, premium, or session)";
       setLastError(errorMsg);
       toast({
         title: "Invalid Session ID Format",
