@@ -1,3 +1,4 @@
+// DEPLOY_MARKER: 2025-09-26T15:15:00Z - Switch to relative handler import
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 const SERVICE_NAME = "runware-template-ab";
 
@@ -48,8 +49,8 @@ async function loadHandler(allowRetry = false): Promise<HandlerFn | null> {
   
   try {
     // Dynamic import with enhanced error boundary
-    console.log(`🔍 Attempting dynamic import: ${new URL("./index.js", import.meta.url).href}`);
-    const mod = await import(new URL("./index.js", import.meta.url).href);
+    console.log(`🔍 Attempting dynamic import: ./index.js`);
+    const mod = await import("./index.js");
     const fn = (mod as any)?.default as HandlerFn | undefined;
     
     if (typeof fn !== "function") {

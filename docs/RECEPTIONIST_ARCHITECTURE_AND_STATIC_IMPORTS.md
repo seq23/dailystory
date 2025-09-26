@@ -223,6 +223,10 @@ if (req.method === 'OPTIONS') {
 - **V4.2**: Bulletproof pattern with sync anomaly prevention
 - **Current**: All image functions migrated to V4.2
 
+## **Local Handler Import Best Practices**
+
+For local handlers, use relative specifiers (`await import('./index.js')`) instead of file URLs. Cache busting is for remote modules only. The URL-based import pattern can cause Module not found errors in Supabase's deployment environment.
+
 ---
-*Last Updated: September 21, 2025*
+*Last Updated: September 26, 2025*
 *Pattern Status: STABLE - Zero sync anomalies in production*
