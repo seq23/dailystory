@@ -149,11 +149,25 @@ function generateTier25C(storyText, userInfo, avatarIdentity, failedTierData = {
   const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'diverse'; 
   const avatarType = userInfo?.avatar?.type || 'child';
   
+  // Map avatar type for character description
+  let mappedAvatarType = avatarType;
+  let genderNeutralDescription = '';
+  
+  if (avatarType === 'prefer-not-to-answer') {
+    mappedAvatarType = 'child';
+    genderNeutralDescription = ' gender neutral child with no visible male nor female characteristics';
+  }
+  
   // Get hair color based on skin tone
   const hairColor = getSimpleHairColor(skinTone);
   
   // Base template with hair color included
-  let characterDesc = `A young ${avatarType} named ${characterName} age ${age} ${skinTone} skin complexion with ${hairColor}`;
+  let characterDesc = `A young ${mappedAvatarType} named ${characterName} age ${age} ${skinTone} skin complexion with ${hairColor}`;
+  
+  // Add gender-neutral description if needed
+  if (genderNeutralDescription) {
+    characterDesc = `A ${genderNeutralDescription} named ${characterName} age ${age} ${skinTone} skin complexion with ${hairColor}`;
+  }
   
   // Add cultural features for dark skin (hair already handled above)
   if (skinTone === 'dark' || skinTone === 'medium-dark' || skinTone === 'brown') {
@@ -176,9 +190,9 @@ function generateTier25C(storyText, userInfo, avatarIdentity, failedTierData = {
   // NUCLEAR CONCATENATION - NO placeholders, NO resolution, NO fallback, WITH LINE BREAKS
   const positivePrompt = `scene: ${sceneText}.\n\ncharacter description: ${characterDesc}.\n\n${catchAllInfo}.\n\nbrand suffix: ${hardcodedFramework.frameworkPrompt}`;
   
-  // Generate nuclear negative prompt
+  // Generate nuclear negative prompt with correct avatar type
   const culturalProfileType = inlineDetectCultural(userInfo, avatarIdentity);
-  const negativePrompt = generateInlineNuclearNegative(culturalProfileType, 'child', difficulty);
+  const negativePrompt = generateInlineNuclearNegative(culturalProfileType, avatarType, difficulty);
   
   console.log('✅ Nuclear 2.5C: Template generated with zero dependencies');
   
