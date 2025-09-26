@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-09-26T16:30:00Z - Fix BOOT_SYNC_ANOMALY with stable import
+// DEPLOY_MARKER: 2025-09-26T16:45:00Z - Revert to simple import matching healthy functions
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 const SERVICE_NAME = "runware-generate-image";
 
@@ -52,7 +52,7 @@ async function loadHandler(allowRetry = false): Promise<HandlerFn | null> {
   try {
     // Dynamic import with enhanced validation
     console.log(`🔍 Attempting dynamic import: ./index.js`);
-    const mod = await import(new URL("./index.js", import.meta.url).href);
+    const mod = await import("./index.js");
     const fn = (mod as any)?.default as HandlerFn | undefined;
     
     if (typeof fn !== "function") {

@@ -1,9 +1,8 @@
-// DEPLOY_MARKER: 2025-09-26T15:15:00Z - Force fresh deployment sync with receptionist
+// DEPLOY_MARKER: 2025-09-26T16:45:00Z - Remove problematic XHR import causing BOOT_SYNC_ANOMALY
 // ============================================================================
 // CRASH-PROOF RUNWARE IMAGE ORCHESTRATOR v2.1 (handler)
 // ============================================================================
 
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
 
 // ============================================================================
