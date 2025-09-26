@@ -9,7 +9,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
 import { phaseIntegrationOrchestrator } from "../_shared/PhaseIntegrationOrchestrator.js";
 import { characterConsistencyService } from "../_shared/CharacterConsistencyService.js";
 import { visualDetailTracker } from "../_shared/VisualDetailTracker.js";
-import { SessionStateManager } from "../_shared/SessionStateManager.js";
+
 // ============================================================================
 // 🎯 ORCHESTRATOR: THIS IS THE PRIMARY IMAGE GENERATION ORCHESTRATOR
 // **CRITICAL SYSTEM NOTICE**: This function serves as the MAIN ORCHESTRATOR for image generation
@@ -930,17 +930,17 @@ async function handleRequest(req) {
             }
           } catch (directErr) {
             log.failure('tier-1', { error: (directErr && directErr.message) || String(directErr), reason: 'both_orchestrator_and_direct_mode_failed' });
-          // Direct Mode failed, escalate to nuclear templates (2.5C → 2.5D)
-          result = await tryNuclearTemplates({
-            storyText,
-            userInfo: payload.userInfo,
-            sessionId,
-            pageNumber: pageNumber || 1,
-            log
-          });
+            // Direct Mode failed, escalate to nuclear templates (2.5C → 2.5D)
+            result = await tryNuclearTemplates({
+              storyText,
+              userInfo: payload.userInfo,
+              sessionId,
+              pageNumber: pageNumber || 1,
+              log
+            });
+          }
         }
       }
-    }
 
     // Return error if all tiers failed - frontend will handle with authorized fallbacks
     if (!result || !result.success) {
