@@ -49,8 +49,10 @@ async function loadHandler(allowRetry = false): Promise<HandlerFn | null> {
   isLoading = true;
   
   try {
-    // Dynamic import with error boundary
-    const mod = await import(new URL("./index.js", import.meta.url).href);
+    // Dynamic import with cache-busting and validation
+    const importUrl = new URL("./index.js", import.meta.url).href + "?v=20250926c";
+    console.log(`🔍 Attempting dynamic import: ${importUrl}`);
+    const mod = await import(importUrl);
     const fn = (mod as any)?.default as HandlerFn | undefined;
     
     if (typeof fn !== "function") {
