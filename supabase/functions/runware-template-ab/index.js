@@ -810,7 +810,7 @@ const ACTION_CONTEXT_MAPPING = {
 
   const parts = [];
   if (actionText) parts.push(actionText);
-  if (objectText) parts.push(objectText);
+  if (objectText) parts.push(`with ${objectText}`);
   if (secondaryTextForScene && actionText) parts.push(`with ${secondaryTextForScene}`);
   if (settingText) parts.push(`in ${settingText}`);
   const scene = parts.join(" ").trim();
