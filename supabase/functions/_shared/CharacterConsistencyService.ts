@@ -21,7 +21,7 @@ import type {
 } from "./types/index.ts";
 import { isSecondaryCharacter } from './types/index.ts';
 
-import { safeErrorMessage } from './errorPatterns.js';
+import { safeErrorMessage } from './errorPatterns.ts';
 import { getCulturalContextArrays } from './StaticDataCache.ts';
 
 export class CharacterConsistencyService {

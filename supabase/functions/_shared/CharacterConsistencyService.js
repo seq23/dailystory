@@ -5,7 +5,7 @@
  * Includes all cultural arrays and detection logic from FrontendIntelligence
  */
 
-import { safeErrorMessage } from './errorPatterns.js';
+import { safeErrorMessage } from './errorPatterns.ts';
 import { PLACEHOLDER_POOLS } from './tier25Vocabulary.js';
 import { getAfricanAmericanHair, getAfricanAmericanFeatures } from './StaticDataCache.js';
 import { UnifiedCharacterDescriptor } from './UnifiedCharacterDescriptor.js';
