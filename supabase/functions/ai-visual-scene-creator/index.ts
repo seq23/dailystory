@@ -1,17 +1,7 @@
-// ⚠️  DEPRECATED - 2025-09-26
-// This file has been converted to pure TypeScript (index.ts)
-// Kept for reference and emergency rollback purposes only
-// DO NOT USE - Use index.ts instead
-
 // DEPLOY_MARKER: 2025-01-16T17:30:00Z - COMPREHENSIVE BUG FIXES WITH SUPABASE CLIENT
-import { 
-  getCulturalBundle, 
-  shouldApplyCulturalEnhancements 
-} from '../_shared/StaticDataCache.js';
-import { UnifiedPlaceholderResolver } from '../_shared/UnifiedPlaceholderResolver.js';
-import { getStyleFramework } from '../_shared/styleFrameworks.js';
-import { characterConsistencyService } from '../_shared/CharacterConsistencyService.js';
-import { SessionStateManager } from '../_shared/SessionStateManager.js';
+import { getStyleFramework } from '../_shared/styleFrameworks.ts';
+import { CharacterConsistencyService } from '../_shared/CharacterConsistencyService.ts';
+import { SessionStateManager } from '../_shared/SessionStateManager.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
 
 // ============= BULLETPROOF PHASES IMPLEMENTATION =============
@@ -24,14 +14,14 @@ const TIER_TIMEOUTS = {
 };
 
 // PHASE 1B: Fast Direct Mode Validation
-function validateDirectModePayload(payload) {
+function validateDirectModePayload(payload: any): { isValid: boolean; contentType: string } {
   if (!payload.pageText && !payload.storyText) throw new Error("MISSING_STORY_CONTENT");
   if (!payload.userInfo) throw new Error("MISSING_USER_INFO");
   return { isValid: true, contentType: payload.pageText ? 'pageText' : 'storyText' };
 }
 
 // PHASE 3B: Instant Failure Detection
-function shouldFailFast(error) {
+function shouldFailFast(error: any): boolean {
   const msg = error?.message?.toLowerCase() || '';
   return msg.includes('missing_story_content') || 
          msg.includes('missing_user_info') ||
@@ -40,7 +30,7 @@ function shouldFailFast(error) {
 }
 
 // PHASE 5A: Primary Scene Quality Check
-function validatePrimarySceneQuality(scene) {
+function validatePrimarySceneQuality(scene: any): boolean {
   if (!scene || typeof scene !== 'string') return false;
   if (scene.length < 50) return false;
   if (scene.includes('undefined') || scene.includes('null')) return false;
@@ -48,7 +38,7 @@ function validatePrimarySceneQuality(scene) {
 }
 
 // PHASE 5B: Image URL Validation  
-function validateImageURL(url) {
+function validateImageURL(url: any): boolean {
   if (!url || typeof url !== 'string') return false;
   if (!url.startsWith('http')) return false;
   if (url.includes('undefined') || url.includes('null')) return false;
@@ -70,13 +60,14 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function getPhaseOrchestrator() {
   try {
-    const { phaseIntegrationOrchestrator } = await import("../_shared/PhaseIntegrationOrchestrator.js");
+    const { phaseIntegrationOrchestrator } = await import("../_shared/PhaseIntegrationOrchestrator.ts");
     return phaseIntegrationOrchestrator;
-  } catch (error) {
+  } catch (error: unknown) {
     console.warn('PhaseIntegrationOrchestrator lazy load failed:', error);
     // Check if it's a DNS resolution error
-    if (error.message?.includes('DNS') || error.message?.includes('resolution') || error.message?.includes('network')) {
-      console.error('DNS Resolution Error - Phase Integration Orchestrator unreachable:', error.message);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    if (errorMessage.includes('DNS') || errorMessage.includes('resolution') || errorMessage.includes('network')) {
+      console.error('DNS Resolution Error - Phase Integration Orchestrator unreachable:', errorMessage);
     }
     return null;
   }
@@ -90,7 +81,7 @@ const corsHeaders = {
   'Access-Control-Max-Age': '600',
 };
 
-function createCorsResponse(data, status = 200) {
+function createCorsResponse(data: any, status = 200): Response {
   const headers = { 
     ...corsHeaders, 
     'Content-Type': 'application/json' 
@@ -99,7 +90,7 @@ function createCorsResponse(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers });
 }
 
-function createCorsErrorResponse(error, status = 500) {
+function createCorsErrorResponse(error: any, status = 500): Response {
   const errorMessage = error instanceof Error ? error.message : error;
   console.error('Edge function error:', errorMessage);
   
@@ -109,20 +100,20 @@ function createCorsErrorResponse(error, status = 500) {
   }, status);
 }
 
-function createCorsOptionsResponse() {
+function createCorsOptionsResponse(): Response {
   return new Response(null, { headers: corsHeaders });
 }
 
 // AI VISUAL SCENE CREATOR - FOR IMAGE GENERATION ONLY - NEVER DISCUSS IN STORY GENERATION CONTEXT
 
 // Simple error handling and logging utilities
-function handleError(error, functionName, context = {}) {
+function handleError(error: unknown, functionName: string, context: Record<string, any> = {}) {
   const errorMessage = error instanceof Error ? error.message : String(error);
   console.error(`ERROR ${functionName}:`, errorMessage, context);
   return createCorsErrorResponse(errorMessage, 500);
 }
 
-function withPerformanceTracking(functionName, model, operation) {
+function withPerformanceTracking<T>(functionName: string, model: string | undefined, operation: () => Promise<T>): Promise<T> {
   const startTime = Date.now();
   console.log(`START ${functionName} with model: ${model}`);
   
@@ -140,7 +131,7 @@ function withPerformanceTracking(functionName, model, operation) {
 /**
  * VISUAL QUALITY: Check if primaryScene meets visual description standards
  */
-function checkPrimarySceneCriteria(data) {
+function checkPrimarySceneCriteria(data: any): any {
   const scene = data.primaryScene;
   if (!scene || typeof scene !== 'string') {
     console.log('DEBUG VALIDATION DEBUG: Missing or invalid primaryScene', { 
@@ -213,7 +204,7 @@ function checkPrimarySceneCriteria(data) {
  * @param {string} storyText - Original story text (unused, kept for compatibility)
  * @returns {Object} - Enhanced data or immediate Tier 2 trigger
  */
-function validateAndEnhanceContent(enhancedStoryData, storyText) {
+function validateAndEnhanceContent(enhancedStoryData: any, storyText: any): any {
   // Check if we have ANY form of primaryScene (even from fallback extraction)
   if (!enhancedStoryData || !enhancedStoryData.primaryScene) {
     console.log(`ERROR TIER 2 TRIGGER: No primaryScene found in data`, {
@@ -294,6 +285,11 @@ const AI_MODELS = [
 
 // Simple circuit breaker for API reliability
 class SimpleCircuitBreaker {
+  private failures: number = 0;
+  private lastFailure: number = 0;
+  private threshold: number = 3;
+  private timeout: number = 30000; // 30 seconds
+
   constructor() {
     this.failures = 0;
     this.lastFailure = 0;
@@ -301,7 +297,7 @@ class SimpleCircuitBreaker {
     this.timeout = 30000; // 30 seconds
   }
   
-  isOpen() {
+  isOpen(): boolean {
     if (this.failures >= this.threshold && (Date.now() - this.lastFailure < this.timeout)) {
       return true;
     }
@@ -311,15 +307,14 @@ class SimpleCircuitBreaker {
     return false;
   }
   
-  recordSuccess() {
+  recordSuccess(): void {
     this.failures = 0;
   }
   
-  recordFailure() {
+  recordFailure(): void {
     this.failures++;
     this.lastFailure = Date.now();
   }
-  
 }
 
 const circuitBreaker = new SimpleCircuitBreaker();
@@ -327,7 +322,7 @@ const circuitBreaker = new SimpleCircuitBreaker();
 
 // ============= ROBUST JSON PARSING WITH FALLBACKS =============
 
-function parseAIResponse(content) {
+function parseAIResponse(content: string): any {
   try {
     return JSON.parse(content);
   } catch (directError) {
@@ -361,7 +356,7 @@ function parseAIResponse(content) {
   }
 }
 
-async function callOpenAIWithFallback(messages, timeout = 6000, requestId, avatarIdentity) {
+async function callOpenAIWithFallback(messages: any[], timeout = 6000, requestId?: string, avatarIdentity?: any): Promise<any> {
   const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
   
   if (circuitBreaker.isOpen()) {
@@ -383,7 +378,7 @@ async function callOpenAIWithFallback(messages, timeout = 6000, requestId, avata
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), timeout);
       
-      const requestBody = {
+      const requestBody: Record<string, any> = {
         model: model.name,
         messages
       };
@@ -431,8 +426,9 @@ async function callOpenAIWithFallback(messages, timeout = 6000, requestId, avata
         console.log(`HTTP error from ${model.name}: ${response.status}, trying next model`);
         continue;
       }
-    } catch (error) {
-      console.log(`Error with ${model.name}: ${error.message}, trying next model`);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.log(`Error with ${model.name}: ${errorMessage}, trying next model`);
       continue;
     }
   }
@@ -440,7 +436,7 @@ async function callOpenAIWithFallback(messages, timeout = 6000, requestId, avata
   throw new Error('All AI models failed');
 }
 
-async function handleRequest(req) {
+async function handleRequest(req: Request): Promise<Response> {
   // OPTIONS fast path (preflight)
   if (req.method === 'OPTIONS') {
     return new Response(null, {
@@ -483,10 +479,11 @@ async function handleRequest(req) {
     try {
       const validation = validateDirectModePayload(payload);
       console.log(`✅ [${requestId}] Payload validation passed:`, validation);
-    } catch (validationError) {
+    } catch (validationError: unknown) {
       if (shouldFailFast(validationError)) {
-        console.error(`❌ [${requestId}] Fast validation failed: ${validationError.message}`);
-        return createCorsErrorResponse(`Validation failed: ${validationError.message}`, 400);
+        const errorMessage = validationError instanceof Error ? validationError.message : String(validationError);
+        console.error(`❌ [${requestId}] Fast validation failed: ${errorMessage}`);
+        return createCorsErrorResponse(`Validation failed: ${errorMessage}`, 400);
       }
     }
     
@@ -555,7 +552,7 @@ async function handleRequest(req) {
 }
 
 // Handle calls from PhaseIntegrationOrchestrator OR frontend test button
-async function handleOrchestratorCall(requestId, storyText, enhancedStoryData, avatarIdentity, userInfo, includeFullSchema = false, previousPrimaryScene = null) {
+async function handleOrchestratorCall(requestId: any, storyText: any, enhancedStoryData: any, avatarIdentity: any, userInfo: any, includeFullSchema = false, previousPrimaryScene: any = null): Promise<any> {
   const localStartTime = Date.now(); // Fix startTime scope collision
   const callType = includeFullSchema ? 'frontend/test' : 'orchestrator';
   console.log(`🔄 [${requestId}] Processing ${callType} call - generating primaryScene + aiSchema for ${callType}`);
@@ -579,8 +576,9 @@ async function handleOrchestratorCall(requestId, storyText, enhancedStoryData, a
       characterSeed = await characterService.getCharacterSeed(sessionId, userInfo?.name) || null;
       console.log(`✅ [${requestId}] Character consistency applied for ${callType}`);
     }
-  } catch (characterError) {
-    console.warn(`⚠️ [${requestId}] Character consistency failed:`, characterError);
+    } catch (characterError: unknown) {
+    const errorMessage = characterError instanceof Error ? characterError.message : String(characterError);
+    console.warn(`⚠️ [${requestId}] Character consistency failed:`, errorMessage);
   }
 
   // Handle avatar types - map "prefer-not-to-answer" to "gender neutral child"
@@ -602,7 +600,7 @@ async function handleOrchestratorCall(requestId, storyText, enhancedStoryData, a
       'de': 'in charming German villages, near castles, or beautiful European countryside',
       'it': 'in picturesque Italian piazzas, near ancient Roman architecture, or Tuscan landscapes'
     };
-    culturalContext = culturalSettings[nativeLanguage] || 'in culturally authentic settings relevant to their heritage';
+    culturalContext = (culturalSettings as any)[nativeLanguage] || 'in culturally authentic settings relevant to their heritage';
   }
 
   // Comprehensive character data for AI prompt
@@ -769,7 +767,7 @@ Generate a comprehensive scene with complete visual elements including backgroun
 
 // Export handleRequest for TypeScript receptionist to import
 // DIRECT MODE: Handle Visual Scene Direct Mode (when orchestrator fails)
-async function handleVisualSceneDirectMode(requestId, storyText, userInfo, sessionId, pageNumber) {
+async function handleVisualSceneDirectMode(requestId: any, storyText: any, userInfo: any, sessionId: any, pageNumber: any): Promise<any> {
   console.log(`🎯 [${requestId}] DIRECT MODE: ai-visual-scene-creator bypass mode activated`);
   
   try {
@@ -852,7 +850,7 @@ RULES:
     let coloredObjects = '';
     
     try {
-      const characterService = characterConsistencyService;
+      const characterService = new CharacterConsistencyService();
       
       if (sessionId) {
         try {
@@ -865,7 +863,7 @@ RULES:
           await VisualDetailTracker.analyzeTextForDetails(sessionId, storyText, pageNumber || 1, userInfo?.name);
           
           // Secondary character detection
-          const pageTextForAnalysis = storyText || payload.pageText || parsedResponse.primaryScene || '';
+          const pageTextForAnalysis = storyText || parsedResponse.primaryScene || '';
           detectedSecondaryCharacters = await characterService.detectSecondaryCharacters(pageTextForAnalysis);
           
           // Build secondary character descriptions with seeds
@@ -875,8 +873,9 @@ RULES:
             );
             secondaryDescriptions.push(`${character.name}: ${character.description} (${character.type})`);
           }
-        } catch (characterError) {
-          console.warn(`⚠️ Character consistency service error:`, characterError.message);
+        } catch (characterError: unknown) {
+          const errorMessage = characterError instanceof Error ? characterError.message : String(characterError);
+          console.warn(`⚠️ Character consistency service error:`, errorMessage);
           // Continue without character consistency - don't crash the image generation
           characterAppearance = '';
           detectedSecondaryCharacters = [];
