@@ -32,3 +32,9 @@ Fixed critical ReferenceError and import conflicts in `runware-generate-image` c
 
 ## Architecture Benefit
 The system now properly uses lazy loading for all shared services, eliminating module resolution conflicts and improving reliability.
+
+## Tier 1 Orchestrator Loader Fix
+- Fixed orchestrator loader to properly instantiate the PhaseIntegrationOrchestrator class instead of importing a non-existent instance
+- Added singleflight protection to prevent concurrent import stampedes and avoid caching null values
+- Added guards at both orchestrator call sites to throw TIER1_ENHANCEMENT_SERVICE_UNAVAILABLE when instance isn't usable
+- Result: Force Tier 1 now sets templateStructure='COMPLETE_TIER_1' when healthy and prevents handler import-time failures that caused 503s

@@ -11,7 +11,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
 // **CRITICAL SYSTEM NOTICE**: This function serves as the MAIN ORCHESTRATOR for image generation
 // Handles all image generation tiers, fallbacks, and service coordination
 // ============================================================================
-import { UnifiedPlaceholderResolver } from '../_shared/UnifiedPlaceholderResolver.js';
+// Removed unused import: UnifiedPlaceholderResolver
 import * as tierLogging from "../_shared/tierLogging.js";
 
 // ---- Tier logger binder (console + DB) ----
@@ -294,14 +294,41 @@ class LazyServiceLoader {
   }
 
   static async getPhaseIntegrationOrchestrator() {
-    if (!this.services.has('phaseIntegrationOrchestrator')) {
-      const { phaseIntegrationOrchestrator } = await import('../_shared/PhaseIntegrationOrchestrator.js');
-      this.services.set('phaseIntegrationOrchestrator', phaseIntegrationOrchestrator);
-    }
-    return this.services.get('phaseIntegrationOrchestrator');
+    const key = 'phaseIntegrationOrchestrator';
+    if (this.services.has(key)) return this.services.get(key);
+    if (this.inFlight.has(key)) return this.inFlight.get(key);
+
+    const p = (async () => {
+      try {
+        const mod = await import('../_shared/PhaseIntegrationOrchestrator.js');
+        const OrchestratorClass = mod.PhaseIntegrationOrchestrator ?? mod.default;
+
+        if (!OrchestratorClass) {
+          throw new Error('PHASE_ORCH_EXPORT_MISSING');
+        }
+
+        // Support either a static factory or a no-arg ctor
+        const instance = typeof OrchestratorClass.create === 'function'
+          ? await OrchestratorClass.create()
+          : new OrchestratorClass();
+
+        if (!instance || typeof instance.getEnhancedPrompt !== 'function') {
+          throw new Error('PHASE_ORCH_METHOD_MISSING:getEnhancedPrompt');
+        }
+
+        this.services.set(key, instance);   // ✅ only cache on success
+        return instance;
+      } finally {
+        this.inFlight.delete(key);          // ✅ singleflight cleanup
+      }
+    })();
+
+    this.inFlight.set(key, p);
+    return p;
   }
 }
 LazyServiceLoader.services = new Map();
+LazyServiceLoader.inFlight = new Map(); // <string, Promise<any>>
 
 // ---------------- CORE UTILS ----------------
 class CoreUtils {
@@ -642,6 +669,9 @@ async function handleRequest(req) {
         log.attempt('tier-1', { note: 'Default cascade - PhaseIntegrationOrchestrator path' });
         
         const orchestrator = await LazyServiceLoader.getPhaseIntegrationOrchestrator();
+        if (!orchestrator || typeof orchestrator.getEnhancedPrompt !== 'function') {
+          throw new Error('TIER1_ENHANCEMENT_SERVICE_UNAVAILABLE');
+        }
 
         // First: ai-visual-scene-creator for primaryScene + schema
         log.t2('Calling ai-visual-scene-creator', { pageNumber, previousPrimaryScene });
@@ -801,6 +831,9 @@ async function handleRequest(req) {
         try {
           // Primary path: Execute true Tier 1 orchestrator logic
           const orchestrator = await LazyServiceLoader.getPhaseIntegrationOrchestrator();
+          if (!orchestrator || typeof orchestrator.getEnhancedPrompt !== 'function') {
+            throw new Error('TIER1_ENHANCEMENT_SERVICE_UNAVAILABLE');
+          }
 
           // First: ai-visual-scene-creator for primaryScene + schema (normal mode, not direct)
           log.t2('Calling ai-visual-scene-creator (normal mode)', { pageNumber, previousPrimaryScene });
