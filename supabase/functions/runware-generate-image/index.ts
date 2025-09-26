@@ -68,7 +68,7 @@ async function loadHandler(allowRetry = false): Promise<HandlerFn | null> {
     const attempt = (lastLoadError?.attempt || 0) + 1;
     lastLoadError = { 
       at: Date.now(), 
-      message: err?.message ?? String(err),
+      message: `${err?.message ?? String(err)}${err?.stack ? ` | Stack: ${String(err.stack).slice(0, 500)}` : ''}`,
       attempt 
     };
     isLoading = false;
