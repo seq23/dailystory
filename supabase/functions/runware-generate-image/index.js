@@ -591,7 +591,7 @@ async function handleRequest(req) {
       validatePayloadFast(payload);
     } catch (validationError) {
       if (shouldFailFast(validationError)) {
-        tierLogging.logTier2(`❌ [${requestId}] Fast validation failed: ${validationError.message}`, { authHeader });
+        console.warn(`❌ [${requestId}] Fast validation failed: ${validationError.message}`);
         return new Response(JSON.stringify({ 
           error: `Fast validation failed: ${validationError.message}`,
           type: 'VALIDATION_ERROR'
@@ -991,7 +991,7 @@ async function handleRequest(req) {
     
     // Prevent 500→503 cascade for timeout errors - return 200 with controlled error payload
     if (`${message}`.includes('timeout') || `${message}`.includes('Timeout')) {
-      tierLogging.logTier1(`⏰ [${requestId}] Upstream timeout handled gracefully`, { message, authHeader });
+      console.warn(`⏰ [${requestId}] Upstream timeout handled gracefully: ${message}`);
       return new Response(JSON.stringify({
         success: false,
         error: 'UPSTREAM_TIMEOUT',
@@ -1008,7 +1008,7 @@ async function handleRequest(req) {
     }
     
     // Other errors still surface normally for proper debugging
-    tierLogging.logTier1(`❌ [${requestId}] Orchestrator error`, { message, authHeader });
+    console.error(`❌ [${requestId}] Orchestrator error: ${message}`);
     return new Response(JSON.stringify({
       error: 'Internal server error',
       message,
