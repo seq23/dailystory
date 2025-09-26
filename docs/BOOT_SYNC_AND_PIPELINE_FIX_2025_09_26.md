@@ -1,5 +1,19 @@
 # Boot Sync Anomaly and Tier 1 Pipeline Fix - September 26, 2025
 
+## UPDATE 2025-09-26T17:15:00Z - Forced Fresh Supabase Snapshot
+
+**Problem**: Persistent "Module not found" errors for `index.js` in `runware-generate-image` causing receptionist 503s and "Missing primaryScene" errors in COMPLETE_TIER_1 flow.
+
+**Root Cause**: Supabase worker snapshot missing the `index.js` handler file, despite being present in GitHub repo and other functions working correctly.
+
+**Solution**: Force fresh snapshot by bumping DEPLOY_MARKER in both:
+- `supabase/functions/runware-generate-image/index.ts` (receptionist) → `2025-09-26T17:15:00Z`
+- `supabase/functions/runware-generate-image/index.js` (handler) → `2025-09-26T17:15:00Z`
+
+**Expected Result**: Handler loads successfully, LKG pattern activates after first successful load, COMPLETE_TIER_1 flow restored.
+
+---
+
 ## Issues Fixed
 
 ### 1. Boot Sync Anomaly in `runware-generate-image`

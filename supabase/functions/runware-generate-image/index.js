@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-09-26T16:45:00Z - Remove problematic XHR import causing BOOT_SYNC_ANOMALY
+// DEPLOY_MARKER: 2025-09-26T17:15:00Z - Force fresh Supabase snapshot to fix Module not found
 // ============================================================================
 // CRASH-PROOF RUNWARE IMAGE ORCHESTRATOR v2.1 (handler)
 // ============================================================================

@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-09-26T16:55:00Z - Add LKG serve-stale pattern to eliminate BOOT_SYNC_ANOMALY
+// DEPLOY_MARKER: 2025-09-26T17:15:00Z - Force fresh Supabase snapshot to fix Module not found
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 const SERVICE_NAME = "runware-generate-image";
 
