@@ -726,12 +726,17 @@ Generate a comprehensive scene with complete visual elements including backgroun
     
     console.log(`✅ [${requestId}] Primary scene validation passed: ${primaryScene.length} characters`);
     
+    // Return standardized response format with enhanced compatibility
     const response = {
       success: true,
       primaryScene: primaryScene, // RAW OpenAI output - no processing
+      extractedScene: primaryScene, // Alternate field for compatibility
+      primarySceneLength: primaryScene.length,
       aiSchema: includeFullSchema ? (processedContent?.aiSchema || processedContent) : undefined,
+      hasAiSchema: !!processedContent?.aiSchema,
       extractionMethod: 'openai_generated',
       requestId,
+      processingTimeMs: Date.now() - startTime,
       // Include character consistency data for test results
       characterConsistency: includeFullSchema ? {
         characterAppearance,

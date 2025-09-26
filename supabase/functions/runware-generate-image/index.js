@@ -825,11 +825,24 @@ async function handleRequest(req) {
             clearTimeout(timeout);
           }
 
+          // Enhanced response validation and extraction
           if (!sceneResponse?.data || sceneResponse.error) {
+            log.failure('force-tier-1', { error: 'ai-visual-scene-creator returned error or no data', sceneResponse: sceneResponse });
             throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_DIRECT_MODE');
           }
 
-          const { primaryScene, aiSchema } = sceneResponse.data;
+          console.log("🔍 Force Tier 1: Scene response structure:", JSON.stringify(sceneResponse.data, null, 2));
+
+          // Extract primaryScene with fallback options
+          const responseData = sceneResponse.data;
+          const primaryScene = responseData?.primaryScene || responseData?.extractedScene;
+          const aiSchema = responseData?.aiSchema;
+          
+          // Enhanced primary scene validation
+          if (!primaryScene || typeof primaryScene !== 'string') {
+            log.failure('force-tier-1', { error: 'primaryScene missing or invalid type', responseData });
+            throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_DIRECT_MODE');
+          }
           
           // Primary Scene Quality Gate
           if (!validatePrimarySceneQuality(primaryScene)) {
