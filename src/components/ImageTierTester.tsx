@@ -132,6 +132,7 @@ interface TestResult {
 export const ImageTierTester = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<TestResult[]>([]);
+  const [currentTestProgress, setCurrentTestProgress] = useState<string>('');
   const [testStoryText, setTestStoryText] = useState(
     "Emma walked through the magical forest where the golden sunlight danced between the emerald leaves. She wore her favorite blue dress and carried a small brown backpack filled with adventure supplies."
   );
@@ -459,6 +460,12 @@ export const ImageTierTester = () => {
   // Reset function to clear results and set defaults
   const resetTester = () => {
     setResults([]);
+    setIsLoading(false);
+    setCurrentTestProgress('');
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
     setTestStoryText("Emma walked through the magical forest where the golden sunlight danced between the emerald leaves. She wore her favorite blue dress and carried a small brown backpack filled with adventure supplies.");
     setUserName('Emma');
     setUserAge('8');
@@ -507,66 +514,92 @@ export const ImageTierTester = () => {
     }
   };
 
-  // Batch timeout testing for all tiers
+  // Batch timeout testing for all tiers with progress tracking
   const batchTimeoutTest = async () => {
     setIsLoading(true);
     setResults([]);
+    setCurrentTestProgress('');
     
-    const timeoutVariations = [5000, 10000, 15000, 30000]; // 5s, 10s, 15s, 30s
-    const endpoints = ['ai-visual-scene-creator', 'runware-generate-image', 'runware-template-ab', 'runware-template-cd'];
+    const timeoutVariations = [5000, 10000]; // Reduced to 5s, 10s for faster testing
+    const endpoints = ['ai-visual-scene-creator', 'runware-generate-image'];
     
     const allResults: TestResult[] = [];
+    const totalTests = timeoutVariations.length * endpoints.length;
+    let completedTests = 0;
     
-    for (const timeout of timeoutVariations) {
-      for (const endpoint of endpoints) {
-        try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), timeout);
+    // Create abort controller for batch operation
+    const batchController = new AbortController();
+    abortControllerRef.current = batchController;
+    
+    try {
+      for (const timeout of timeoutVariations) {
+        for (const endpoint of endpoints) {
+          if (batchController.signal.aborted) {
+            break;
+          }
           
-          const startTime = Date.now();
+          completedTests++;
+          setCurrentTestProgress(`Testing ${endpoint} with ${timeout}ms timeout (${completedTests}/${totalTests})`);
+          
+          try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), timeout);
+            
+            const startTime = Date.now();
             const response = await supabase.functions.invoke(endpoint, {
-            body: {
-              storyText: testStoryText.substring(0, 100), // Template AB expects storyText
-              pageText: testStoryText.substring(0, 100), // Template CD compatibility
-              userInfo: buildUserInfo(),
-              pageNumber: 1,
-              sessionId: crypto.randomUUID()
-            }
-          });
-          
-          clearTimeout(timeoutId);
-          const processingTime = Date.now() - startTime;
-          
-          allResults.push({
-            tier: `${endpoint}-${timeout}ms`,
-            success: !response.error && response.data?.success,
-            imageURL: response.data?.imageURL,
-            details: {
-              processingTime,
-              testType: 'REAL',
-              timeoutTest: true,
-              requestId: response.data?.requestId,
-              error: response.error?.message || response.data?.error
-            }
-          });
-        } catch (error) {
-          allResults.push({
-            tier: `${endpoint}-${timeout}ms-error`,
-            success: false,
-            imageURL: null,
-            details: {
-              error: error.name === 'AbortError' ? `Timeout at ${timeout}ms` : error.message,
-              testType: 'REAL',
-              timeoutTest: true,
-              abortReason: error.name === 'AbortError' ? 'Timeout' : 'Error'
-            }
-          });
+              body: {
+                storyText: testStoryText.substring(0, 100),
+                pageText: testStoryText.substring(0, 100),
+                userInfo: buildUserInfo(),
+                pageNumber: 1,
+                sessionId: crypto.randomUUID()
+              }
+            });
+            
+            clearTimeout(timeoutId);
+            const processingTime = Date.now() - startTime;
+            
+            const result = {
+              tier: `${endpoint}-${timeout}ms`,
+              success: !response.error && response.data?.success,
+              imageURL: response.data?.imageURL,
+              details: {
+                processingTime,
+                testType: 'REAL' as const,
+                timeoutTest: true,
+                requestId: response.data?.requestId,
+                error: response.error?.message || response.data?.error
+              }
+            };
+            
+            allResults.push(result);
+            setResults([...allResults]); // Show results as they come in
+            
+          } catch (error) {
+            const result = {
+              tier: `${endpoint}-${timeout}ms-error`,
+              success: false,
+              imageURL: undefined,
+              details: {
+                error: error.name === 'AbortError' ? `Timeout at ${timeout}ms` : (error as Error).message,
+                testType: 'REAL' as const,
+                timeoutTest: true,
+                abortReason: error.name === 'AbortError' ? 'Timeout' : 'Error'
+              }
+            };
+            
+            allResults.push(result);
+            setResults([...allResults]); // Show results as they come in
+          }
         }
       }
+    } catch (error) {
+      console.error('Batch test error:', error);
+    } finally {
+      setCurrentTestProgress('');
+      setIsLoading(false);
+      abortControllerRef.current = null;
     }
-    
-    setResults(allResults);
-    setIsLoading(false);
   };
 
   // NEW: Individual Tier Testing with Health Checks
@@ -2187,7 +2220,14 @@ export const ImageTierTester = () => {
           {isLoading && (
             <div className="flex items-center justify-center py-8">
               <RefreshCw className="h-6 w-6 animate-spin" />
-              <span className="ml-2">Running test...</span>
+              <div className="ml-2">
+                <div>Running test...</div>
+                {currentTestProgress && (
+                  <div className="text-sm text-muted-foreground mt-1">
+                    {currentTestProgress}
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </CardContent>
