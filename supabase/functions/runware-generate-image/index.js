@@ -295,8 +295,8 @@ class LazyServiceLoader {
 
   static async getPhaseIntegrationOrchestrator() {
     const key = 'phaseIntegrationOrchestrator';
-    if (this.services.has(key)) return this.services.get(key);
-    if (this.inFlight.has(key)) return this.inFlight.get(key);
+    if (LazyServiceLoader.services.has(key)) return LazyServiceLoader.services.get(key);
+    if (LazyServiceLoader.inFlight.has(key)) return LazyServiceLoader.inFlight.get(key);
 
     const p = (async () => {
       try {
@@ -316,14 +316,14 @@ class LazyServiceLoader {
           throw new Error('PHASE_ORCH_METHOD_MISSING:getEnhancedPrompt');
         }
 
-        this.services.set(key, instance);   // ✅ only cache on success
+        LazyServiceLoader.services.set(key, instance);   // ✅ only cache on success
         return instance;
       } finally {
-        this.inFlight.delete(key);          // ✅ singleflight cleanup
+        LazyServiceLoader.inFlight.delete(key);          // ✅ singleflight cleanup
       }
     })();
 
-    this.inFlight.set(key, p);
+    LazyServiceLoader.inFlight.set(key, p);
     return p;
   }
 }
