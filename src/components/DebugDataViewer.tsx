@@ -165,33 +165,32 @@ export function DebugDataViewer() {
     setImageData(null);
 
     try {
-      const data = await DebugGateway.getRecentImagePrompts(50);
-      
-      if (!data || (Array.isArray(data) && data.length === 0)) {
-        setLastError('No image generation data found');
-        return;
+      // Use the corrected service that queries image_generation_debug
+      const response = await fetch(`https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/unified-debug-service?operation=recent-image-prompts&sessionId=${sessionId}&limit=50`, {
+        headers: {
+          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      // Handle different data structures
-      const imageArray = Array.isArray(data) ? data : (data.data || []);
-      
-      // Filter by session if provided
-      const filteredData = sessionId ? imageArray.filter((item: any) => 
-        item.sessionId === sessionId || 
-        (item.metadata && item.metadata.sessionId === sessionId)
-      ) : imageArray;
+      const result = await response.json();
+      const data = result.data || [];
 
-      if (filteredData.length === 0) {
+      if (data.length === 0) {
         setLastError('No image generation data found for this session ID');
         return;
       }
 
-      setImageData(filteredData);
+      setImageData(data);
       setLastError(null);
       
       toast({
         title: "Image Data Retrieved",
-        description: `Found ${filteredData.length} image generation entries`,
+        description: `Found ${data.length} image generation entries`,
       });
     } catch (err) {
       DebugLogger.error('ui', 'Debug data error', { error: err });
@@ -279,6 +278,100 @@ export function DebugDataViewer() {
     }
   };
 
+  const fetchAllSessionData = async () => {
+    if (!sessionId.trim()) {
+      const errorMsg = "Please enter a session ID to fetch all data.";
+      setLastError(errorMsg);
+      toast({
+        title: "Session ID Required",
+        description: errorMsg,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    setLastError(null);
+
+    try {
+      // Fetch all data types simultaneously
+      const [storyData, imageData, tierData] = await Promise.allSettled([
+        DebugGateway.getPromptHistory(sessionId.trim(), 10),
+        fetch(`https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/unified-debug-service?operation=recent-image-prompts&sessionId=${sessionId}&limit=50`, {
+          headers: {
+            'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino`,
+            'Content-Type': 'application/json'
+          }
+        }).then(res => res.json()),
+        supabase.from('image_generation_debug').select('*').eq('session_id', sessionId.trim()).order('created_at', { ascending: true })
+      ]);
+
+      let foundDataTypes = [];
+      
+      // Process story data
+      if (storyData.status === 'fulfilled' && storyData.value.data) {
+        setDebugData(storyData.value.data);
+        foundDataTypes.push('story generation');
+      }
+      
+      // Process image data
+      if (imageData.status === 'fulfilled' && imageData.value.data?.length > 0) {
+        setImageData(imageData.value.data);
+        foundDataTypes.push(`${imageData.value.data.length} images`);
+      }
+      
+      // Process tier data
+      if (tierData.status === 'fulfilled' && tierData.value.data?.length > 0) {
+        const transformedData = tierData.value.data.map((item: any) => ({
+          id: item.id,
+          sessionId: item.session_id,
+          pageNumber: item.page_number,
+          tier: item.tier,
+          status: item.status,
+          edgeFunction: item.edge_function,
+          positivePrompt: item.positive_prompt,
+          negativePrompt: item.negative_prompt,
+          imageUrl: item.image_url,
+          success: item.success,
+          failureReason: item.failure_reason,
+          processingTime: item.processing_time_ms,
+          templateComplexity: item.template_complexity,
+          context: item.context,
+          apiResponse: item.api_response,
+          created_at: item.created_at,
+          userPrompt: `IMAGE_GENERATION: ${item.tier} ${item.status}`,
+          systemPrompt: JSON.stringify({
+            tier: item.tier,
+            status: item.status,
+            edgeFunction: item.edge_function,
+            context: item.context,
+            imageUrl: item.image_url,
+            processingTime: item.processing_time_ms
+          }),
+          model: `image-generation-${item.tier}`
+        }));
+        setTierCascadeData(transformedData);
+        foundDataTypes.push('tier routing');
+      }
+
+      if (foundDataTypes.length > 0) {
+        toast({
+          title: "Session Data Retrieved",
+          description: `Found: ${foundDataTypes.join(', ')} for session: ${sessionId}`,
+        });
+        setLastError(null);
+      } else {
+        setLastError(`No data found for session: ${sessionId}`);
+      }
+
+    } catch (err) {
+      DebugLogger.error('ui', 'Failed to fetch all session data', { error: err });
+      setLastError('Failed to fetch session data. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleFetch = () => {
     if (activeTab === 'story-generation') {
       fetchDebugData();
@@ -349,6 +442,9 @@ export function DebugDataViewer() {
                 />
                 <Button onClick={handleFetch} disabled={isLoading}>
                   {isLoading ? 'Loading...' : 'Fetch Data'}
+                </Button>
+                <Button onClick={fetchAllSessionData} disabled={isLoading} variant="outline">
+                  Fetch All Data
                 </Button>
               </div>
               

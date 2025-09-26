@@ -103,19 +103,25 @@ serve(async (req) => {
       }
 
       case 'recent-image-prompts': {
-        const { data: prompts, error } = await supabase
-          .from('ai_prompt_debug_log')
-          .select('*')
-          .contains('details', { type: 'image_generation' })
+        // Add session filtering for image generation data
+        let query = supabase
+          .from('image_generation_debug')
+          .select('*');
+        
+        if (sessionId) {
+          query = query.eq('session_id', sessionId);
+        }
+        
+        const { data: imagePrompts, error } = await query
           .order('created_at', { ascending: false })
           .limit(limit);
 
         if (error) {
-          console.error('Error fetching recent image prompts:', error);
-          return createCorsErrorResponse('Failed to fetch recent image prompts', 500);
+          console.error('Error fetching image generation data:', error);
+          return createCorsErrorResponse('Failed to fetch image generation data', 500);
         }
 
-        return createCorsResponse({ data: prompts || [] }, 200);
+        return createCorsResponse({ data: imagePrompts || [] }, 200);
       }
 
       case 'story-processing': {
