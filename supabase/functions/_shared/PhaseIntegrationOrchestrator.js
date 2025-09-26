@@ -477,6 +477,7 @@ export class PhaseIntegrationOrchestrator {
         `${characterReference} named ${characterName}, age ${userInfo?.age || 6}`,
         ethnicity,
         selectedHair,
+        selectedSkin, // Add facial features after hair
         culturalEnhancements ? `with ${culturalEnhancements}` : null,
         language !== 'en' ? `(${language} native speaker)` : null
       ].filter(Boolean).join(', ');

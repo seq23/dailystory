@@ -299,6 +299,54 @@ async function callOpenAIWithFallback(messages: any[], timeout: number = 12000, 
   throw new Error('All AI models failed');
 }
 
+// Helper function to get cultural descriptor based on skin tone and language
+function getCulturalDescriptor(skinTone: string, nativeLanguage: string): string {
+  // Map combinations of skin tone and language to appropriate cultural descriptors
+  if (skinTone === 'dark') {
+    switch (nativeLanguage) {
+      case 'hi': // Hindi
+      case 'ur': // Urdu
+        return 'south-asian';
+      case 'es': // Spanish
+        return 'afro-latina';
+      case 'pt': // Portuguese
+        return 'afro-brazilian';
+      case 'fr': // French
+        return 'afro-caribbean';
+      case 'ar': // Arabic
+        return 'middle-eastern';
+      case 'sw': // Swahili
+        return 'east-african';
+      default: // English and others
+        return 'african-american';
+    }
+  } else if (skinTone === 'medium') {
+    switch (nativeLanguage) {
+      case 'hi': // Hindi
+      case 'ur': // Urdu
+        return 'south-asian';
+      case 'es': // Spanish
+        return 'hispanic';
+      case 'ar': // Arabic
+        return 'middle-eastern';
+      default:
+        return 'mixed-heritage';
+    }
+  } else {
+    // Light skin tone - use more general descriptors
+    switch (nativeLanguage) {
+      case 'es': // Spanish
+        return 'hispanic';
+      case 'fr': // French
+        return 'european';
+      case 'de': // German
+        return 'european';
+      default:
+        return 'caucasian';
+    }
+  }
+}
+
 // Main scene generation function
 async function generatePrimarySceneFromStory(
   requestId: string, 
@@ -378,7 +426,7 @@ The primaryScene should be detailed (50+ words) and include character actions, a
       role: 'user',
       content: `Story text: ${storyText}
 
-Character: ${userName} (${gender}, ${skinTone} skin tone)
+Character: ${userName} (${gender}, ${getCulturalDescriptor(skinTone, nativeLanguage)})
 Page number: ${pageNumber}
 ${previousPrimaryScene ? `Previous scene: ${previousPrimaryScene}` : ''}
 
