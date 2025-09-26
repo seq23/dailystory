@@ -4,8 +4,8 @@
  * Replaces scattered placeholder logic with centralized system
  */
 
-import { VOCABULARY, PLACEHOLDER_POOLS, CULTURAL_ARRAYS, pick, createSeededRandom, REGIONAL_CULTURAL_CONTEXTS } from './tier25Vocabulary.js';
-import { getHairBySkintone, shouldApplyCulturalEnhancements, getSkinBySkintone } from './StaticDataCache.js';
+import { VOCABULARY, PLACEHOLDER_POOLS, pick, createSeededRandom, REGIONAL_CULTURAL_CONTEXTS } from './tier25Vocabulary.js';
+import { getHairBySkintone, shouldApplyCulturalEnhancements, getSkinBySkintone, getCulturalBundle } from './StaticDataCache.js';
 
 // ============= FIXED REGIONAL ETHNICITY DERIVATION =============
 function deriveRegionalEthnicity(userInfo, avatarIdentity) {
@@ -343,15 +343,15 @@ export class UnifiedPlaceholderResolver {
   async resolveCulturalPlaceholders(text, userInfo) {
     let resolved = text;
     
-    // Precompute all async values 
-    const precomputed = await this.precomputeAsyncValues(userInfo, userInfo?.sessionId || 'default');
+    // Get cultural bundle using existing method
+    const culturalBundle = await this.getCulturalBundleWithConsistency(userInfo, userInfo?.sessionId || 'default');
 
     // Detect cultural context from user info (language-based)
     const culturalLanguage = this.detectCulturalContext(userInfo);
 
-    // Use precomputed cultural values (no async callbacks)
-    resolved = resolved.replace(/\{cultural\.hair\}/g, precomputed.culturalHair);
-    resolved = resolved.replace(/\{cultural\.features\}/g, precomputed.culturalFeatures);
+    // Use cultural bundle values (no async callbacks)
+    resolved = resolved.replace(/\{cultural\.hair\}/g, culturalBundle.hair || '');
+    resolved = resolved.replace(/\{cultural\.features\}/g, culturalBundle.features || '');
 
     // Cultural context is now language-based
     resolved = resolved.replace(/\{cultural_context\}/g, REGIONAL_CULTURAL_CONTEXTS[culturalLanguage] || '');
