@@ -10,11 +10,11 @@ const path = require('path');
 async function main() {
   try {
     console.log('🚀 Starting complete file copy operation');
-    console.log('🎯 Target: Copy complete StaticDataCache.ts to StaticDataCache.ts.temp');
+    console.log('🎯 Target: Copy complete runware-generate-image/index.js to runware-generate-image.js.temp');
     console.log('==========================================');
     
-    const inputPath = path.join(__dirname, '..', 'src', 'services', 'StaticDataCache.ts');
-    const outputPath = path.join(__dirname, '..', 'StaticDataCache.ts.temp');
+    const inputPath = path.join(__dirname, '..', 'supabase', 'functions', 'runware-generate-image', 'index.js');
+    const outputPath = path.join(__dirname, '..', 'runware-generate-image.js.temp');
     
     console.log('Source:', inputPath);
     console.log('Target:', outputPath);

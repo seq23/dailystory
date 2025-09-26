@@ -1,3 +1,8 @@
+// ⚠️  DEPRECATED - 2025-09-26
+// This file has been converted to pure TypeScript (index.ts)
+// Kept for reference and emergency rollback purposes only
+// DO NOT USE - Use index.ts instead
+// 
 // DEPLOY_MARKER: 2025-09-26T17:15:00Z - Force fresh Supabase snapshot to fix Module not found
 // ============================================================================
 // CRASH-PROOF RUNWARE IMAGE ORCHESTRATOR v2.1 (handler)
