@@ -298,7 +298,11 @@ class LazyServiceLoader {
   }
 
   static async getPhaseIntegrationOrchestrator() {
-    return phaseIntegrationOrchestrator;
+    if (!this.services.has('phaseIntegrationOrchestrator')) {
+      const { phaseIntegrationOrchestrator } = await import('../_shared/PhaseIntegrationOrchestrator.js');
+      this.services.set('phaseIntegrationOrchestrator', phaseIntegrationOrchestrator);
+    }
+    return this.services.get('phaseIntegrationOrchestrator');
   }
 }
 LazyServiceLoader.services = new Map();
