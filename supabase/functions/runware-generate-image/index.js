@@ -450,7 +450,7 @@ async function generateWithRunware(
                 const { VisualDetailTracker } = await import("../_shared/VisualDetailTracker.js");
                 const visualDetails = await VisualDetailTracker.getVisualDetailsForPrompt(sessionId);
                 
-                const { logTierAttempt } = await import("./tierLogging.js");
+                const { logTierAttempt } = await import("../_shared/tierLogging.js");
                 await logTierAttempt(
                   supabase, // Pass actual supabase client
                   sessionId,
@@ -565,7 +565,7 @@ async function handleRequest(req) {
   // Extract Authorization header for user ID
   const authHeader = req.headers.get('Authorization');
   
-  tierLogging.logTier2(`🎯 [${requestId}] Orchestrator: ${req.method} ${req.url}`, { authHeader });
+  // Tier 2 logging will be called after bindTierLogger
 
 
   // Only POST beyond this point
@@ -604,6 +604,9 @@ async function handleRequest(req) {
     
     const sessionId = payload?.sessionId || ('session_' + requestId);
     const log = bindTierLogger(supabase, sessionId, requestId, authHeader);
+
+    // Log Tier 2 orchestrator start with proper context
+    log.t2(`🎯 [${requestId}] Orchestrator: POST ${req.url}`, { authHeader });
 
     log.t2('Request received', { hasPageText: !!payload.pageText, hasStoryText: !!payload.storyText });
 
