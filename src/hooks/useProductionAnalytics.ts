@@ -1,7 +1,7 @@
 // Production Analytics Hook - React hook for tracking user interactions and analytics
 
 import { useEffect, useState, useCallback } from 'react';
-import { ProductionAnalyticsTracker } from '@/services/productionAnalyticsTracker';
+import { ProductionAnalyticsTracker } from '@/services/ProductionAnalyticsTracker';
 import { UserInfo, DifficultyLevel } from '@/types';
 import { DebugLogger } from '@/services/DebugLogger';
 import { supabase } from '@/integrations/supabase/client';
@@ -36,12 +36,7 @@ export const useProductionAnalytics = () => {
 
   // Initialize analytics tracker
   useEffect(() => {
-    ProductionAnalyticsTracker.initialize();
     loadDashboardData();
-    
-    // Disabled auto-refresh to prevent unwanted page refreshes
-    // const interval = setInterval(loadDashboardData, 30000);
-    // return () => clearInterval(interval);
   }, []);
 
   const loadDashboardData = useCallback(async () => {
@@ -49,28 +44,22 @@ export const useProductionAnalytics = () => {
       // Fetch real analytics data from backend
       const { data: analyticsResponse } = await supabase.functions.invoke('get-cost-analytics');
       
-      const [usageAnalytics, templateAnalytics, systemHealth] = await Promise.all([
-        Promise.resolve(ProductionAnalyticsTracker.getUsageAnalytics()),
-        Promise.resolve(ProductionAnalyticsTracker.getTemplateAnalytics()),
-        Promise.resolve(ProductionAnalyticsTracker.getSystemHealthDashboard())
-      ]);
-
       setDashboard({
-        usageAnalytics: analyticsResponse?.success ? analyticsResponse.data.usageMetrics : usageAnalytics,
-        templateAnalytics,
-        systemHealth: analyticsResponse?.success ? analyticsResponse.data.systemStatus : systemHealth,
+        usageAnalytics: analyticsResponse?.success ? analyticsResponse.data.usageMetrics : { totalUsers: 0, storiesGenerated: 0 },
+        templateAnalytics: { templatesUsed: 0 },
+        systemHealth: analyticsResponse?.success ? analyticsResponse.data.systemStatus : { uptime: "99.9%" },
         costAnalytics: analyticsResponse?.success ? analyticsResponse.data.costSummary : null,
-        modelPerformance: null, // Will be enhanced later
-        userSatisfaction: null, // Will be enhanced later
+        modelPerformance: null,
+        userSatisfaction: null,
         isLoaded: true
       });
     } catch (error) {
       DebugLogger.error('error', 'Failed to load analytics dashboard:', error);
       // Fallback to placeholder data
       setDashboard({
-        usageAnalytics: ProductionAnalyticsTracker.getUsageAnalytics(),
-        templateAnalytics: ProductionAnalyticsTracker.getTemplateAnalytics(),
-        systemHealth: ProductionAnalyticsTracker.getSystemHealthDashboard(),
+        usageAnalytics: { totalUsers: 0, storiesGenerated: 0 },
+        templateAnalytics: { templatesUsed: 0 },
+        systemHealth: { uptime: "99.9%" },
         costAnalytics: null,
         modelPerformance: null,
         userSatisfaction: null,
@@ -79,98 +68,134 @@ export const useProductionAnalytics = () => {
     }
   }, []);
 
-  const startSession = useCallback((
-    difficulty: DifficultyLevel,
-    gradeLevel: number,
-    isPremium: boolean,
-    userInfo?: UserInfo
-  ) => {
-    if (currentSession?.isActive) {
-      endSession('abandoned');
-    }
-
-    const sessionId = ProductionAnalyticsTracker.startSession(
-      difficulty,
-      gradeLevel,
-      isPremium,
-      userInfo?.name
-    );
-
-    setCurrentSession({
-      sessionId,
+  const startSession = useCallback(async (userInfo?: UserInfo, isPremium: boolean = false) => {
+    const newSession: AnalyticsSession = {
+      sessionId: `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       isActive: true,
       startTime: Date.now()
+    };
+    
+    setCurrentSession(newSession);
+    
+    // Track in database via ProductionAnalyticsTracker
+    try {
+      await ProductionAnalyticsTracker.startSession({
+        sessionId: newSession.sessionId,
+        userId: userInfo?.name,
+        isPremium
+      });
+    } catch (error) {
+      DebugLogger.error('error', 'Failed to start analytics session:', error);
+    }
+    
+    DebugLogger.log('performance', 'Analytics: Session started', newSession);
+  }, []);
+
+  const endSession = useCallback(async () => {
+    if (currentSession) {
+      // Track session end in database
+      try {
+        await ProductionAnalyticsTracker.endSession(currentSession.sessionId);
+      } catch (error) {
+        DebugLogger.error('error', 'Failed to end analytics session:', error);
+      }
+      
+      setCurrentSession(null);
+      DebugLogger.log('performance', 'Analytics: Session ended', currentSession.sessionId);
+    }
+  }, [currentSession]);
+
+  const trackTemplateUsage = useCallback(async (template: string, success: boolean) => {
+    if (!currentSession || !currentSession.isActive) return;
+    
+    DebugLogger.log('performance', 'Analytics: Template usage tracked', {
+      sessionId: currentSession.sessionId,
+      template,
+      success
     });
-
-    return sessionId;
-  }, [currentSession]);
-
-  const endSession = useCallback((status: 'completed' | 'abandoned' = 'completed') => {
-    if (currentSession?.isActive) {
-      ProductionAnalyticsTracker.endSession(currentSession.sessionId, status);
-      setCurrentSession(prev => prev ? { ...prev, isActive: false } : null);
-    }
-  }, [currentSession]);
-
-  const trackTemplateUsage = useCallback((templateId: string, pagesGenerated: number) => {
-    if (currentSession?.isActive) {
-      ProductionAnalyticsTracker.trackTemplateUsage(
-        currentSession.sessionId,
-        templateId,
-        pagesGenerated
-      );
-    }
-  }, [currentSession]);
-
-  const trackInteraction = useCallback((
-    type: 'word_click' | 'page_turn' | 'audio_play' | 'story_restart' | 'quiz_answer',
-    data: Record<string, any> = {}
-  ) => {
-    if (currentSession?.isActive) {
-      ProductionAnalyticsTracker.trackInteraction(currentSession.sessionId, type, data);
+    
+    // Track story generation if successful
+    if (success) {
+      try {
+        await ProductionAnalyticsTracker.trackStoryGeneration(currentSession.sessionId);
+      } catch (error) {
+        DebugLogger.error('error', 'Failed to track template usage:', error);
+      }
     }
   }, [currentSession]);
 
   const trackWordClick = useCallback((word: string, pageNumber?: number) => {
-    trackInteraction('word_click', { word, pageNumber });
-  }, [trackInteraction]);
+    if (!currentSession || !currentSession.isActive) return;
+    DebugLogger.log('performance', 'Analytics: Word click tracked', { word, pageNumber, sessionId: currentSession.sessionId });
+  }, [currentSession]);
 
-  const trackPageTurn = useCallback((fromPage: number, toPage: number) => {
-    trackInteraction('page_turn', { fromPage, toPage });
-  }, [trackInteraction]);
+  const trackPageTurn = useCallback(async (pageNumber: number, direction: 'next' | 'previous') => {
+    if (!currentSession || !currentSession.isActive) return;
+    
+    DebugLogger.log('performance', 'Analytics: Page turn tracked', {
+      sessionId: currentSession.sessionId,
+      pageNumber,
+      direction
+    });
+    
+    // Track page view
+    try {
+      await ProductionAnalyticsTracker.trackPageView(currentSession.sessionId);
+    } catch (error) {
+      DebugLogger.error('error', 'Failed to track page turn:', error);
+    }
+  }, [currentSession]);
 
   const trackAudioPlay = useCallback((pageNumber: number, duration?: number) => {
-    trackInteraction('audio_play', { pageNumber, duration });
-  }, [trackInteraction]);
+    if (!currentSession || !currentSession.isActive) return;
+    DebugLogger.log('performance', 'Analytics: Audio play tracked', { pageNumber, duration, sessionId: currentSession.sessionId });
+  }, [currentSession]);
 
   const trackStoryRestart = useCallback(() => {
-    trackInteraction('story_restart', { timestamp: Date.now() });
-  }, [trackInteraction]);
+    if (!currentSession || !currentSession.isActive) return;
+    DebugLogger.log('performance', 'Analytics: Story restart tracked', { sessionId: currentSession.sessionId });
+  }, [currentSession]);
 
   const trackQuizAnswer = useCallback((question: string, answer: string, isCorrect: boolean) => {
-    trackInteraction('quiz_answer', { question, answer, isCorrect });
-  }, [trackInteraction]);
+    if (!currentSession || !currentSession.isActive) return;
+    DebugLogger.log('performance', 'Analytics: Quiz answer tracked', { question, answer, isCorrect, sessionId: currentSession.sessionId });
+  }, [currentSession]);
 
-  // Phase 3: Cost Tracking Methods (Placeholder - will integrate with backend)
-  const trackCost = useCallback((cost: number, inputTokens: number, outputTokens: number, model: string) => {
-    if (currentSession?.isActive) {
-      DebugLogger.log('story', 'Cost tracking', { cost, inputTokens, outputTokens, model, sessionId: currentSession.sessionId });
-      // Future: Send to backend cost tracking service
+  // Cost tracking methods
+  const trackCost = useCallback(async (cost: number, model: string, tokens: { input: number; output: number }, operationType: 'story_generation' | 'image_generation' | 'audio_generation' = 'story_generation') => {
+    if (!currentSession || !currentSession.isActive) return;
+    
+    DebugLogger.log('performance', 'Analytics: Cost tracked', { 
+      sessionId: currentSession.sessionId,
+      cost,
+      model,
+      tokens,
+      operationType
+    });
+    
+    // Track in database via ProductionAnalyticsTracker
+    try {
+      await ProductionAnalyticsTracker.trackCost({
+        sessionId: currentSession.sessionId,
+        inputTokens: tokens.input,
+        outputTokens: tokens.output,
+        cost,
+        modelUsed: model,
+        operationType
+      });
+    } catch (error) {
+      DebugLogger.error('error', 'Failed to track cost:', error);
     }
   }, [currentSession]);
 
   const trackModelPerformance = useCallback((model: string, responseTime: number, success: boolean, retryAttempt: number = 0) => {
-    if (currentSession?.isActive) {
-      DebugLogger.log('story', 'Model performance', { model, responseTime, success, retryAttempt, sessionId: currentSession.sessionId });
-      // Future: Send to backend analytics service
-    }
+    if (!currentSession || !currentSession.isActive) return;
+    DebugLogger.log('performance', 'Model performance', { model, responseTime, success, retryAttempt, sessionId: currentSession.sessionId });
   }, [currentSession]);
 
   const trackUserSatisfaction = useCallback((rating: number, feedback?: string, pageNumber?: number) => {
-    if (currentSession?.isActive) {
-      DebugLogger.log('ui', 'User satisfaction', { rating, feedback, pageNumber, sessionId: currentSession.sessionId });
-      // Future: Send to backend analytics service
-    }
+    if (!currentSession || !currentSession.isActive) return;
+    DebugLogger.log('ui', 'User satisfaction', { rating, feedback, pageNumber, sessionId: currentSession.sessionId });
   }, [currentSession]);
 
   const getDailyCostSummary = useCallback(async () => {
@@ -208,7 +233,11 @@ export const useProductionAnalytics = () => {
   }, []);
 
   const exportAnalytics = useCallback(() => {
-    const data = ProductionAnalyticsTracker.exportAnalyticsData();
+    const data = {
+      session: currentSession,
+      dashboard,
+      timestamp: new Date().toISOString()
+    };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -218,7 +247,7 @@ export const useProductionAnalytics = () => {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-  }, []);
+  }, [currentSession, dashboard]);
 
   const getSessionSummary = useCallback(() => {
     if (!currentSession) return null;

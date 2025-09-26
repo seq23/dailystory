@@ -65,6 +65,54 @@ export type Database = {
         }
         Relationships: []
       }
+      analytics_sessions: {
+        Row: {
+          created_at: string
+          ended_at: string | null
+          id: string
+          images_generated: number
+          is_active: boolean
+          is_premium: boolean
+          pages_viewed: number
+          session_id: string
+          started_at: string
+          stories_generated: number
+          total_cost: number
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          images_generated?: number
+          is_active?: boolean
+          is_premium?: boolean
+          pages_viewed?: number
+          session_id: string
+          started_at?: string
+          stories_generated?: number
+          total_cost?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          images_generated?: number
+          is_active?: boolean
+          is_premium?: boolean
+          pages_viewed?: number
+          session_id?: string
+          started_at?: string
+          stories_generated?: number
+          total_cost?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       api_rate_limits: {
         Row: {
           created_at: string
@@ -194,6 +242,45 @@ export type Database = {
           id?: string
           parent_user_id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      cost_tracking: {
+        Row: {
+          cost: number
+          created_at: string
+          id: string
+          input_tokens: number
+          model_used: string
+          operation_type: string
+          output_tokens: number
+          session_id: string
+          timestamp: string
+          user_id: string | null
+        }
+        Insert: {
+          cost?: number
+          created_at?: string
+          id?: string
+          input_tokens?: number
+          model_used: string
+          operation_type?: string
+          output_tokens?: number
+          session_id: string
+          timestamp?: string
+          user_id?: string | null
+        }
+        Update: {
+          cost?: number
+          created_at?: string
+          id?: string
+          input_tokens?: number
+          model_used?: string
+          operation_type?: string
+          output_tokens?: number
+          session_id?: string
+          timestamp?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -332,7 +419,7 @@ export type Database = {
           success: boolean | null
           template_complexity: string | null
           tier: string
-          user_id: string | null
+          user_id: string
         }
         Insert: {
           api_response?: Json | null
@@ -351,7 +438,7 @@ export type Database = {
           success?: boolean | null
           template_complexity?: string | null
           tier: string
-          user_id?: string | null
+          user_id?: string
         }
         Update: {
           api_response?: Json | null
@@ -370,7 +457,7 @@ export type Database = {
           success?: boolean | null
           template_complexity?: string | null
           tier?: string
-          user_id?: string | null
+          user_id?: string
         }
         Relationships: []
       }
