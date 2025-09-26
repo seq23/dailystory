@@ -6,10 +6,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
 
-import { phaseIntegrationOrchestrator } from "../_shared/PhaseIntegrationOrchestrator.js";
-import { characterConsistencyService } from "../_shared/CharacterConsistencyService.js";
-import { visualDetailTracker } from "../_shared/VisualDetailTracker.js";
-
 // ============================================================================
 // 🎯 ORCHESTRATOR: THIS IS THE PRIMARY IMAGE GENERATION ORCHESTRATOR
 // **CRITICAL SYSTEM NOTICE**: This function serves as the MAIN ORCHESTRATOR for image generation
@@ -739,8 +735,7 @@ async function handleRequest(req) {
           
           // Pass pre-analyzed data from Tier 1 to Tier 2.5A
           const preAnalyzedData = {
-            visualDetails,
-            aiSchema
+            visualDetails
           };
           
           const resp25A = await supabase.functions.invoke('runware-template-ab', {
