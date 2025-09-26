@@ -1645,7 +1645,9 @@ export const ImageTierTester = () => {
                 pageText: testStoryText,
                 userInfo: buildUserInfo(),
                 sessionId: "test-session",
-                pageNumber: 1
+                pageNumber: 1,
+                // Add required flags for ai-visual-scene-creator
+                ...(endpoint === 'ai-visual-scene-creator' ? { isDebugMode: true } : {})
               })
             });
             
