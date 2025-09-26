@@ -1,5 +1,6 @@
 import React from 'react';
 import { useImageWithFallback } from '@/hooks/useImageWithFallback';
+import { useSmartObjectFit } from '@/hooks/useSmartObjectFit';
 import { DebugLogger } from '@/services/DebugLogger';
 
 interface ImageWithFallbackProps {
@@ -10,7 +11,8 @@ interface ImageWithFallbackProps {
   fallbackText?: string;
   onLoadingChange?: (isLoading: boolean) => void;
   onFallbackUsed?: (isUsingFallback: boolean) => void;
-  
+  smartObjectFit?: boolean;
+  containerHeight?: number;
 }
 
 export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
@@ -21,10 +23,14 @@ export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
   fallbackText,
   onLoadingChange,
   onFallbackUsed,
+  smartObjectFit = false,
+  containerHeight,
 }) => {
   const { imageSrc, isLoading, error, isUsingFallback } = useImageWithFallback(src, {
     fallbackText
   });
+
+  const { objectFitStyle, onImageLoad } = useSmartObjectFit(containerHeight);
 
   React.useEffect(() => {
     onLoadingChange?.(isLoading);
@@ -52,12 +58,17 @@ export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
   }
 
   return (
-    <div className={`relative ${containerClassName}`}>
+    <div className={`relative ${containerClassName} ${smartObjectFit && objectFitStyle.containerStyle ? objectFitStyle.containerStyle : ''}`}>
       <img
         src={imageSrc}
         alt={alt}
-        className={className}
+        className={smartObjectFit ? `w-full h-full ${objectFitStyle.objectFit} rounded-lg` : className}
         style={{ display: 'block' }}
+        onLoad={(e) => {
+          if (smartObjectFit) {
+            onImageLoad(e.currentTarget);
+          }
+        }}
         onError={(e) => {
           if (isDebugMode) {
             DebugLogger.error('image', 'ImageWithFallback: Image display error', {

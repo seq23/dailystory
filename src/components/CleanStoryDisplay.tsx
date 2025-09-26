@@ -3542,7 +3542,7 @@ const handleRestartTimer = () => {
   const controlsBlocked = !isPremium && timeRemaining <= 0;
 
   // Desktop card height calculation for perfect mirroring
-  const { heightStyle, containerClassName } = useDesktopCardHeight({
+  const { heightStyle, containerClassName, dynamicHeight } = useDesktopCardHeight({
     textContent: currentStoryText,
     fontSize: difficultyBasedTextConfig.fontSize,
     lineHeight: difficultyBasedTextConfig.lineHeight,
@@ -3876,11 +3876,11 @@ const handleRestartTimer = () => {
           <ImageWithFallback
             src={currentImage} 
             alt={`Story illustration for page ${currentPage + 1}: ${displayedStory[safeCurrentPage]?.substring(0, 100)}...`}
-            className="w-full h-full object-cover rounded-lg"
             fallbackText={`📖 Page ${currentPage + 1}`}
             onLoadingChange={handleImageLoadingChange}
             onFallbackUsed={handleImageFallbackUsed}
-            
+            smartObjectFit={true}
+            containerHeight={dynamicHeight}
           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
