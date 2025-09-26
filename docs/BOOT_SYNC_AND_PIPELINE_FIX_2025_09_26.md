@@ -15,21 +15,30 @@
 ### Boot Sync Anomaly Resolution
 **File**: `supabase/functions/runware-generate-image/index.ts`
 
-**Changes Made**:
-1. **Enhanced Module Loading**:
-   - Added `validateModuleExists()` function for pre-validation
-   - Implemented concurrent loading protection with `isLoading` flag
-   - Added retry mechanism with attempt tracking (max 3 retries)
-   - Reduced backoff time to 2 seconds for faster recovery
+**Final Solution - Dual-Path Import Strategy**:
+1. **Primary Import Path**: Robust URL import using `new URL("./index.js", import.meta.url).href`
+2. **Fallback Import Path**: Simple import `"./index.js"` if URL import fails
+3. **Self-Healing Logic**: Automatically tries fallback without user intervention
+4. **Enhanced Logging**: Clear indication of which import path succeeded (`URL_IMPORT` or `SIMPLE_IMPORT`)
 
-2. **Improved Error Handling**:
-   - Added comprehensive error logging with attempt numbers
-   - Implemented cache clearing after max retries
-   - Added sync anomaly detection messaging
+**Implementation**:
+```typescript
+try {
+  console.log(`🔍 Attempting URL import: new URL("./index.js", import.meta.url).href`);
+  importPath = "URL_IMPORT";
+  mod = await import(new URL("./index.js", import.meta.url).href);
+} catch (urlError: any) {
+  console.log(`⚠️ URL import failed, trying simple import: ./index.js`);
+  importPath = "SIMPLE_IMPORT";  
+  mod = await import("./index.js");
+}
+```
 
-3. **Race Condition Prevention**:
-   - Protected against concurrent loading attempts
-   - Added proper async/await handling for module validation
+**Key Features**:
+- **Belt-and-Suspenders Approach**: Two import methods ensure maximum reliability
+- **Zero Breaking Changes**: Maintains all existing concurrency protection and backoff logic
+- **Production Diagnostics**: Logs show exactly which import method worked
+- **Deploy Marker**: Updated to `2025-09-26T16:50:00Z` to force fresh deployment
 
 ### Tier 1 Pipeline Error Resolution
 

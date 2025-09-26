@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-09-26T16:45:00Z - Revert to simple import matching healthy functions
+// DEPLOY_MARKER: 2025-09-26T16:50:00Z - Stabilize runware-generate-image with URL import + dual-path fallback
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 const SERVICE_NAME = "runware-generate-image";
 
@@ -50,9 +50,20 @@ async function loadHandler(allowRetry = false): Promise<HandlerFn | null> {
   isLoading = true;
   
   try {
-    // Dynamic import with enhanced validation
-    console.log(`🔍 Attempting dynamic import: ./index.js`);
-    const mod = await import("./index.js");
+    // Dual-path import: try robust URL form first, then simple form as fallback
+    let mod: any;
+    let importPath: string;
+    
+    try {
+      console.log(`🔍 Attempting URL import: new URL("./index.js", import.meta.url).href`);
+      importPath = "URL_IMPORT";
+      mod = await import(new URL("./index.js", import.meta.url).href);
+    } catch (urlError: any) {
+      console.log(`⚠️ URL import failed, trying simple import: ./index.js`);
+      importPath = "SIMPLE_IMPORT";
+      mod = await import("./index.js");
+    }
+    
     const fn = (mod as any)?.default as HandlerFn | undefined;
     
     if (typeof fn !== "function") {
@@ -63,7 +74,7 @@ async function loadHandler(allowRetry = false): Promise<HandlerFn | null> {
     lastLoadError = null;
     isLoading = false;
     
-    console.log(`✅ Handler loaded successfully`);
+    console.log(`✅ Handler loaded successfully via ${importPath}`);
     return cachedHandler;
     
   } catch (err: any) {
