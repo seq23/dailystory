@@ -37,6 +37,22 @@ export interface UserInfo {
   [key: string]: any;
 }
 
+// Direct Mode Bypass Decision Types
+export interface BypassDecision {
+  shouldBypass: boolean;
+  reason: string;
+  conditions: string[];
+}
+
+export interface BypassConditions {
+  forceTier1?: boolean;
+  orchestratorUnhealthy?: boolean;
+  recentFailures?: boolean;
+  testMode?: boolean;
+  debugMode?: boolean;
+  userPreference?: boolean;
+}
+
 // ============= SIMPLE IMAGE SERVICE =============
 
 export class SimpleImageService {
@@ -321,6 +337,72 @@ export class SimpleImageService {
     // Map difficulty level
     const backendDifficulty = this.mapDifficultyLevel(userInfo);
     DebugLogger.log('image', 'Mapped difficulty level', backendDifficulty);
+
+    // ============= PROACTIVE DIRECT MODE BYPASS LOGIC =============
+    const bypassDecision = await this.evaluateDirectModeBypass(normalizedSessionId, healthStatus);
+    if (bypassDecision.shouldBypass) {
+      DebugLogger.log('image', 'PROACTIVE BYPASS: Skipping orchestrator, going directly to Direct Mode', {
+        reason: bypassDecision.reason,
+        conditions: bypassDecision.conditions
+      });
+      
+      // Call Direct Mode directly without trying orchestrator
+      try {
+        const directModeResult = await supabase.functions.invoke('ai-visual-scene-creator', {
+          body: {
+            storyText: enhancedPrompt,
+            userInfo,
+            sessionId: normalizedSessionId,
+            pageNumber,
+            directMode: true, // Enable Direct Mode
+            isGuestUser: !isPremium,
+            bypassReason: bypassDecision.reason // Track why we bypassed
+          }
+        });
+
+        if (directModeResult.data?.success && directModeResult.data?.imageURL) {
+          DebugLogger.log('image', 'PROACTIVE BYPASS SUCCESS: Direct Mode succeeded');
+          
+          // Store result in cache
+          if (this.isIndexedDBAvailable && normalizedSessionId !== 'unknown' && userInfo) {
+            const versionedCacheKey = this.generateCharacterVersionedCacheKey(userInfo, storyText);
+            await this.storeImageInDB(versionedCacheKey, pageNumber, directModeResult.data.imageURL, {
+              ...directModeResult.data,
+              bypassedOrchestrator: true,
+              bypassReason: bypassDecision.reason
+            });
+          }
+
+          // Emit timer resume event
+          try {
+            window.dispatchEvent(new CustomEvent('image:generation:complete'));
+          } catch {}
+
+          return {
+            success: true,
+            url: directModeResult.data.imageURL,
+            imageURL: directModeResult.data.imageURL,
+            generatedAt: new Date().toISOString(),
+            tier: 'Direct Mode (Proactive Bypass)',
+            metadata: { 
+              ...directModeResult.data, 
+              bypassedOrchestrator: true,
+              bypassReason: bypassDecision.reason
+            }
+          };
+        } else {
+          DebugLogger.warn('image', 'PROACTIVE BYPASS FAILED: Direct Mode returned no image, falling back to orchestrator', {
+            directModeResponse: directModeResult
+          });
+          // Fall through to orchestrator - bypass failed, so try normal flow
+        }
+      } catch (directModeError) {
+        DebugLogger.error('image', 'PROACTIVE BYPASS FAILED: Direct Mode error, falling back to orchestrator', {
+          error: directModeError.message
+        });
+        // Fall through to orchestrator - bypass failed, so try normal flow
+      }
+    }
 
     // Setup timeout handling
     let timeoutId: NodeJS.Timeout | null = null;
@@ -1122,6 +1204,218 @@ export class SimpleImageService {
     } catch (error) {
       DebugLogger.warn('image', 'Failed to clear IndexedDB entries for session', error);
     }
+  }
+
+  // ============= PROACTIVE DIRECT MODE BYPASS LOGIC =============
+  
+  /**
+   * Evaluate whether to bypass the orchestrator and go directly to Direct Mode
+   */
+  private static async evaluateDirectModeBypass(
+    sessionId: string, 
+    healthStatus?: HealthStatus
+  ): Promise<BypassDecision> {
+    const conditions: string[] = [];
+    
+    // Check for force tier 1 flag (URL param, localStorage, etc.)
+    const forceTier1 = this.checkForceTier1Flag();
+    if (forceTier1.active) {
+      conditions.push(`Force Tier 1: ${forceTier1.source}`);
+    }
+    
+    // Check orchestrator health status
+    const orchestratorUnhealthy = this.checkOrchestratorHealth(healthStatus);
+    if (orchestratorUnhealthy.unhealthy) {
+      conditions.push(`Orchestrator Health: ${orchestratorUnhealthy.reason}`);
+    }
+    
+    // Check recent failure history
+    const recentFailures = await this.checkRecentFailures(sessionId);
+    if (recentFailures.hasFailures) {
+      conditions.push(`Recent Failures: ${recentFailures.count} in last ${recentFailures.window}`);
+    }
+    
+    // Check test/debug modes
+    const debugMode = this.checkDebugMode();
+    if (debugMode.active) {
+      conditions.push(`Debug Mode: ${debugMode.type}`);
+    }
+    
+    // Check user preferences
+    const userPreference = this.checkUserPreference();
+    if (userPreference.preferDirectMode) {
+      conditions.push(`User Preference: ${userPreference.reason}`);
+    }
+    
+    // Decision logic: bypass if any condition is met
+    const shouldBypass = conditions.length > 0;
+    
+    const decision: BypassDecision = {
+      shouldBypass,
+      reason: shouldBypass 
+        ? `Proactive bypass triggered: ${conditions.join(', ')}`
+        : 'No bypass conditions met',
+      conditions
+    };
+    
+    return decision;
+  }
+  
+  /**
+   * Check for force tier 1 flags
+   */
+  private static checkForceTier1Flag(): { active: boolean; source?: string } {
+    try {
+      // Check URL parameters
+      if (typeof window !== 'undefined') {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('forceTier1') === 'true' || urlParams.get('directMode') === 'true') {
+          return { active: true, source: 'URL parameter' };
+        }
+        
+        // Check localStorage
+        if (localStorage.getItem('forceTier1') === 'true' || localStorage.getItem('debugDirectMode') === 'true') {
+          return { active: true, source: 'localStorage setting' };
+        }
+      }
+    } catch (error) {
+      // Ignore errors in checking flags
+    }
+    
+    return { active: false };
+  }
+  
+  /**
+   * Check orchestrator health status
+   */
+  private static checkOrchestratorHealth(healthStatus?: HealthStatus): { unhealthy: boolean; reason?: string } {
+    if (!healthStatus) {
+      return { unhealthy: false };
+    }
+    
+    // Consider orchestrator unhealthy if multiple services are down
+    const downServices = Object.entries(healthStatus).filter(([_, status]) => status === false);
+    if (downServices.length >= 2) {
+      return { 
+        unhealthy: true, 
+        reason: `${downServices.length} services down: ${downServices.map(([name]) => name).join(', ')}` 
+      };
+    }
+    
+    return { unhealthy: false };
+  }
+  
+  /**
+   * Check recent orchestrator failures for this session
+   */
+  private static async checkRecentFailures(sessionId: string): Promise<{ hasFailures: boolean; count?: number; window?: string }> {
+    try {
+      if (!this.isIndexedDBAvailable) {
+        return { hasFailures: false };
+      }
+      
+      const db = await this.openDB();
+      const transaction = db.transaction(['images'], 'readonly');
+      const store = transaction.objectStore('images');
+      const index = store.index('sessionId');
+      
+      let failureCount = 0;
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+      
+      return new Promise((resolve) => {
+        const request = index.openCursor(IDBKeyRange.only(sessionId));
+        
+        request.onsuccess = (event) => {
+          const cursor = (event.target as IDBRequest).result;
+          if (cursor) {
+            const record = cursor.value;
+            const recordTime = new Date(record.timestamp);
+            
+            if (recordTime > oneHourAgo && record.metadata?.orchestratorFailure) {
+              failureCount++;
+            }
+            
+            cursor.continue();
+          } else {
+            // Finished checking records
+            const hasFailures = failureCount >= 3; // 3+ failures in last hour
+            resolve({ 
+              hasFailures, 
+              count: failureCount, 
+              window: '1 hour' 
+            });
+          }
+        };
+        
+        request.onerror = () => {
+          resolve({ hasFailures: false });
+        };
+      });
+      
+    } catch (error) {
+      return { hasFailures: false };
+    }
+  }
+  
+  /**
+   * Check debug/test mode flags
+   */
+  private static checkDebugMode(): { active: boolean; type?: string } {
+    try {
+      if (typeof window !== 'undefined') {
+        // Check for debug mode in URL or localStorage
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('debug') === 'true' || urlParams.get('testMode') === 'true') {
+          return { active: true, type: 'URL debug flag' };
+        }
+        
+        if (localStorage.getItem('imageDebugMode') === 'true') {
+          return { active: true, type: 'localStorage debug mode' };
+        }
+        
+        // Check for development environment
+        if (window.location.hostname === 'localhost' || window.location.hostname.includes('dev')) {
+          const devMode = localStorage.getItem('autoDirectMode');
+          if (devMode === 'true') {
+            return { active: true, type: 'development auto-bypass' };
+          }
+        }
+      }
+    } catch (error) {
+      // Ignore errors
+    }
+    
+    return { active: false };
+  }
+  
+  /**
+   * Check user preference for Direct Mode
+   */
+  private static checkUserPreference(): { preferDirectMode: boolean; reason?: string } {
+    try {
+      if (typeof window !== 'undefined') {
+        const preference = localStorage.getItem('imageGenerationMode');
+        if (preference === 'direct' || preference === 'tier1-only') {
+          return { 
+            preferDirectMode: true, 
+            reason: 'user selected Direct Mode preference' 
+          };
+        }
+        
+        // Check for performance mode
+        const performanceMode = localStorage.getItem('performanceMode');
+        if (performanceMode === 'fast' || performanceMode === 'bypass-orchestrator') {
+          return {
+            preferDirectMode: true,
+            reason: 'performance mode enabled'
+          };
+        }
+      }
+    } catch (error) {
+      // Ignore errors
+    }
+    
+    return { preferDirectMode: false };
   }
 
   // Legacy method support
