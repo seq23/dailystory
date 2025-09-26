@@ -736,7 +736,7 @@ Generate a comprehensive scene with complete visual elements including backgroun
       hasAiSchema: !!processedContent?.aiSchema,
       extractionMethod: 'openai_generated',
       requestId,
-      processingTimeMs: Date.now() - startTime,
+      processingTimeMs: Date.now() - localStartTime,
       // Include character consistency data for test results
       characterConsistency: includeFullSchema ? {
         characterAppearance,

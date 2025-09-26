@@ -28,15 +28,6 @@ let isLoading = false;
 const BACKOFF_MS = 2_000;
 const MAX_RETRIES = 3;
 
-async function validateModuleExists(): Promise<boolean> {
-  try {
-    // Check if index.js file exists and is accessible
-    const response = await fetch('./index.js', { method: 'HEAD' });
-    return response.ok;
-  } catch {
-    return false;
-  }
-}
 
 async function loadHandler(allowRetry = false): Promise<HandlerFn | null> {
   if (cachedHandler) return cachedHandler;
@@ -58,12 +49,6 @@ async function loadHandler(allowRetry = false): Promise<HandlerFn | null> {
   isLoading = true;
   
   try {
-    // Pre-validate module availability
-    const moduleExists = await validateModuleExists();
-    if (!moduleExists && !allowRetry) {
-      throw new Error("Module index.js not accessible - sync anomaly detected");
-    }
-    
     // Dynamic import with error boundary
     const mod = await import("./index.js");
     const fn = (mod as any)?.default as HandlerFn | undefined;
