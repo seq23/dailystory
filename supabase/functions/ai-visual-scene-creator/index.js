@@ -1,3 +1,8 @@
+// ⚠️  DEPRECATED - 2025-09-26
+// This file has been converted to pure TypeScript (index.ts)
+// Kept for reference and emergency rollback purposes only
+// DO NOT USE - Use index.ts instead
+
 // DEPLOY_MARKER: 2025-01-16T17:30:00Z - COMPREHENSIVE BUG FIXES WITH SUPABASE CLIENT
 import { 
   getCulturalBundle, 

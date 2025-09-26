@@ -346,8 +346,8 @@ interface BootStatus {
 // Run the conversion
 async function main() {
   const converter = new JSToTSConverter();
-  const inputPath = 'runware-generate-image.js.temp';
-  const outputPath = 'runware-generate-image.ts.temp';
+  const inputPath = 'ai-visual-scene-creator.js.temp';
+  const outputPath = 'ai-visual-scene-creator.ts.temp';
   
   try {
     await converter.convertFile(inputPath, outputPath);
