@@ -23,21 +23,62 @@ function asResponse(maybe: unknown, fallbackStatus = 204): Response {
 // Dynamic handler loader (cached + backoff)
 type HandlerFn = (req: Request) => Promise<Response> | Response;
 let cachedHandler: HandlerFn | null = null;
-let lastLoadError: { at: number; message: string } | null = null;
+let lastLoadError: { at: number; message: string; attempt: number } | null = null;
+let isLoading = false;
+const MAX_RETRIES = 3;
 const BACKOFF_MS = 5_000;
 async function loadHandler(allowRetry = false): Promise<HandlerFn | null> {
   if (cachedHandler) return cachedHandler;
+  
+  // Prevent concurrent loading attempts
+  if (isLoading && !allowRetry) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+    return cachedHandler;
+  }
+  
   const now = Date.now();
-  if (lastLoadError && now - lastLoadError.at < BACKOFF_MS && !allowRetry) return null;
+  const shouldBackoff = lastLoadError && 
+    now - lastLoadError.at < BACKOFF_MS && 
+    !allowRetry && 
+    lastLoadError.attempt < MAX_RETRIES;
+    
+  if (shouldBackoff) return null;
+  
+  isLoading = true;
+  
   try {
-    const mod = await import("./index.js");
+    // Dynamic import with error boundary
+    const mod = await import(new URL("./index.js", import.meta.url).href);
     const fn = (mod as any)?.default as HandlerFn | undefined;
-    if (typeof fn !== "function") throw new Error("Handler default export not a function");
+    
+    if (typeof fn !== "function") {
+      throw new Error("Handler default export not a function - boot sync error");
+    }
+    
     cachedHandler = fn;
     lastLoadError = null;
+    isLoading = false;
+    
+    console.log(`✅ Handler loaded successfully`);
     return cachedHandler;
+    
   } catch (err: any) {
-    lastLoadError = { at: Date.now(), message: err?.message ?? String(err) };
+    const attempt = (lastLoadError?.attempt || 0) + 1;
+    lastLoadError = { 
+      at: Date.now(), 
+      message: `${err?.message ?? String(err)}${err?.stack ? ` | Stack: ${String(err.stack).slice(0, 500)}` : ''}`,
+      attempt 
+    };
+    isLoading = false;
+    
+    console.error(`❌ Handler load failed (attempt ${attempt}/${MAX_RETRIES}):`, err?.message);
+    
+    // If we've exceeded max retries, clear cache to force fresh attempts
+    if (attempt >= MAX_RETRIES) {
+      cachedHandler = null;
+      console.log("🔄 Clearing handler cache after max retries");
+    }
+    
     return null;
   }
 }
