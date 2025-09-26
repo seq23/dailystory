@@ -792,46 +792,144 @@ async function handleRequest(req) {
       
       // Handle Force Tier modes separately
       if (payload.forceTier === 'COMPLETE_TIER_1' || payload.forceTier === 'tier-1' || payload.skipTier25) {
-        log.t2('Force Tier 1: Attempting Direct Mode via ai-visual-scene-creator');
+        log.t2('Force Tier 1: Attempting true orchestrator Tier 1');
         try {
-          // Direct timeout-enabled call with error classification
-          const controller3 = new AbortController();
-          const timeout3 = setTimeout(() => controller3.abort('timeout'), TIER_TIMEOUTS.DIRECT_MODE);
+          // Primary path: Execute true Tier 1 orchestrator logic
+          const orchestrator = await LazyServiceLoader.getPhaseIntegrationOrchestrator();
+
+          // First: ai-visual-scene-creator for primaryScene + schema (normal mode, not direct)
+          log.t2('Calling ai-visual-scene-creator (normal mode)', { pageNumber, previousPrimaryScene });
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort('timeout'), TIER_TIMEOUTS.AI_GENERATION);
           
-          let directModeResponse;
+          let sceneResponse;
           try {
-            directModeResponse = await supabase.functions.invoke('ai-visual-scene-creator', {
+            sceneResponse = await supabase.functions.invoke('ai-visual-scene-creator', {
               body: {
                 storyText,
                 userInfo: payload.userInfo,
                 sessionId,
                 pageNumber: pageNumber || 1,
-                directMode: true  // Enable Direct Mode bypass
+                previousPrimaryScene,
+                isDebugMode: true
               }
             });
           } catch (err) {
             if (err?.name === 'AbortError' || `${err}`.includes('timeout')) {
-              throw new Error('Timeout AI Visual Scene Creator (Direct Mode)');
+              throw new Error('Timeout AI Visual Scene Creator (Force Tier 1)');
             }
             throw err;
           } finally {
-            clearTimeout(timeout3);
+            clearTimeout(timeout);
           }
 
-          if (directModeResponse?.data && directModeResponse.data.success) {
-            result = {
-              ...directModeResponse.data,
-              tier: 'DIRECT_MODE',
-              usedTier: 'DIRECT_MODE',
-              fallbackReason: 'orchestrator_enhancement_failed_force_tier_1',
-              templateStructure: 'DIRECT_MODE_SUCCESS'
-            };
-            log.success('tier-1', { mode: 'direct_mode', imageUrl: result.imageURL });
-          } else {
-            throw new Error('Direct Mode failed');
+          if (!sceneResponse?.data || sceneResponse.error) {
+            throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_DIRECT_MODE');
           }
-        } catch (directErr) {
-          log.failure('tier-1', { error: (directErr && directErr.message) || String(directErr), reason: 'direct_mode_failed_escalating_to_nuclear' });
+
+          const { primaryScene, aiSchema } = sceneResponse.data;
+          
+          // Primary Scene Quality Gate
+          if (!validatePrimarySceneQuality(primaryScene)) {
+            log.failure('tier-1', { error: 'Primary scene quality validation failed', escalation: 'direct_mode_fallback' });
+            throw new Error('PRIMARY_SCENE_QUALITY_FAILED');
+          }
+          
+          const basePrompt = primaryScene + (aiSchema ? `\n\nSchema: ${JSON.stringify(aiSchema)}` : '');
+
+          // Next: Orchestrator enhances the prompt
+          log.t2('Enhancing prompt via orchestrator (Force Tier 1)');
+          const tier1Response = await orchestrator.getEnhancedPrompt(
+            payload.userInfo,
+            basePrompt,
+            storyText,
+            sessionId
+          );
+
+          if (!tier1Response?.enhancementSuccessful || !tier1Response?.enhancedPrompt) {
+            throw new Error('TIER1_ENHANCEMENT_FAILED');
+          }
+
+          // Generate with Runware
+          log.t2('Generating image via Runware (Force Tier 1)');
+          const apiKey = Deno.env.get('RUNWARE_API_KEY')?.trim();
+          const enhancedData = {
+            enhancedPrompt: tier1Response.enhancedPrompt,
+            templateStructure: 'COMPLETE_TIER_1'
+          };
+          const imageResult = await generateWithRunware(
+            apiKey,
+            primaryScene,
+            sessionId,
+            requestId,
+            payload.userInfo,
+            payload.userInfo?.avatar,
+            pageNumber || 1,
+            enhancedData
+          );
+
+          result = {
+            ...imageResult,
+            primaryScene,
+            aiSchema,
+            tier: 'COMPLETE_TIER_1',
+            usedTier: 'COMPLETE_TIER_1',
+            templateStructure: 'COMPLETE_TIER_1'
+          };
+          
+          // Image URL Quality Gate
+          if (!validateImageURL(result.imageURL)) {
+            log.failure('tier-1', { error: 'Invalid image URL generated', escalation: 'direct_mode_fallback' });
+            throw new Error('INVALID_IMAGE_URL');
+          }
+          
+          log.success('tier-1', { mode: 'orchestrator_tier_1', imageUrl: result.imageURL });
+
+        } catch (orchestratorErr) {
+          // Fallback path: Only use Direct Mode when orchestrator fails
+          log.t2('Force Tier 1 orchestrator failed, falling back to Direct Mode', { error: orchestratorErr.message });
+          try {
+            const controller3 = new AbortController();
+            const timeout3 = setTimeout(() => controller3.abort('timeout'), TIER_TIMEOUTS.DIRECT_MODE);
+            
+            let directModeResponse;
+            try {
+              directModeResponse = await supabase.functions.invoke('ai-visual-scene-creator', {
+                body: {
+                  storyText,
+                  userInfo: payload.userInfo,
+                  sessionId,
+                  pageNumber: pageNumber || 1,
+                  directMode: true  // Enable Direct Mode bypass as fallback
+                }
+              });
+            } catch (err) {
+              if (err?.name === 'AbortError' || `${err}`.includes('timeout')) {
+                throw new Error('Timeout AI Visual Scene Creator (Direct Mode Fallback)');
+              }
+              throw err;
+            } finally {
+              clearTimeout(timeout3);
+            }
+
+            if (directModeResponse?.data && directModeResponse.data.success) {
+              result = {
+                success: directModeResponse.data.success,
+                primaryScene: directModeResponse.data.primaryScene,
+                aiSchema: directModeResponse.data.aiSchema,
+                enhancedPrompt: directModeResponse.data.enhancedPrompt || directModeResponse.data.primaryScene,
+                imageURL: directModeResponse.data.imageURL,
+                tier: 'DIRECT_MODE_FALLBACK',
+                usedTier: 'DIRECT_MODE_FALLBACK',
+                fallbackReason: 'orchestrator_unavailable_during_force_tier_1',
+                templateStructure: 'DIRECT_MODE_FALLBACK_SUCCESS'
+              };
+              log.success('tier-1', { mode: 'direct_mode_fallback', imageUrl: result.imageURL, originalError: orchestratorErr.message });
+            } else {
+              throw new Error('Direct Mode fallback failed');
+            }
+          } catch (directErr) {
+            log.failure('tier-1', { error: (directErr && directErr.message) || String(directErr), reason: 'both_orchestrator_and_direct_mode_failed' });
           // Direct Mode failed, escalate to nuclear templates (2.5C → 2.5D)
           result = await tryNuclearTemplates({
             storyText,
