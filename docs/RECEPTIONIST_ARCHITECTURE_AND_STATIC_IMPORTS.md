@@ -227,6 +227,14 @@ if (req.method === 'OPTIONS') {
 
 For local handlers, use relative specifiers (`await import('./index.js')`) instead of file URLs. Cache busting is for remote modules only. The URL-based import pattern can cause Module not found errors in Supabase's deployment environment.
 
+### **Fresh Deployment Protocol**
+
+When forcing fresh deployments, update **BOTH** `DEPLOY_MARKER` timestamps:
+- `index.ts` (receptionist): `2025-09-26T15:15:00Z - Switch to relative handler import`  
+- `index.js` (handler): `2025-09-26T15:15:00Z - Force fresh deployment sync with receptionist`
+
+Synchronized timestamps ensure the deployment system recognizes both files as updated and creates a fresh bundle.
+
 ---
 *Last Updated: September 26, 2025*
 *Pattern Status: STABLE - Zero sync anomalies in production*

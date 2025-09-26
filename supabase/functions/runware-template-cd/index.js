@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-01-30T20:17:15Z - FORCED REDEPLOY TO FIX BOOT FAILURES
+// DEPLOY_MARKER: 2025-09-26T15:15:00Z - Force fresh deployment sync with receptionist
 import { RunwareErrorHandler } from "../_shared/runwareErrorHandler.ts";
 
 // ============= RUNWARE TEMPLATE CD: TIER 2.5C & 2.5D =============
