@@ -176,9 +176,7 @@ function validateDirectModePayload(payload: DirectModePayload): { isValid: boole
   if (!payload.pageText && !payload.storyText) {
     throw new Error("MISSING_STORY_CONTENT");
   }
-  if (!payload.userInfo) {
-    throw new Error("MISSING_USER_INFO");
-  }
+  // userInfo is optional; defaulted downstream
   return { isValid: true, contentType: payload.pageText ? 'pageText' : 'storyText' };
 }
 
@@ -195,8 +193,8 @@ function parseAIResponse(content: string): AIResponse {
     return JSON.parse(content);
   } catch (directError) {
     // Try extracting JSON from code blocks
-    const match = content.match(/```(?:json)?\s*(\{[\\s\\S]*?\})\s*```/i) || 
-                  content.match(/(\{[\\s\\S]*?\})/);
+    const match = content.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/i) || 
+                  content.match(/(\{[\s\S]*?\})/);
     
     if (match?.[1]) {
       try {
