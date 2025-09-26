@@ -711,7 +711,7 @@ export class PhaseIntegrationOrchestrator {
       };
 
       // Get cultural bundle for complete context with character consistency
-      const characterConsistencyService = CharacterConsistencyService.getInstance();
+      const characterConsistencyService = this.characterConsistencyService;
       const culturalBundle = await characterConsistencyService.getCulturalEnhancements(userInfo, sessionId, userInfo?.name || 'child');
 
       const sceneResponse = await this.supabase.functions.invoke('ai-visual-scene-creator', {

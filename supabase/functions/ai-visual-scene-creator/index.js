@@ -567,7 +567,7 @@ async function handleOrchestratorCall(requestId, storyText, enhancedStoryData, a
   const sessionId = userInfo?.sessionId || enhancedStoryData?.sessionId;
   try {
     if (sessionId && includeFullSchema) { // Only for test results, not orchestrator calls
-      const characterService = characterConsistencyService.getInstance();
+      const characterService = characterConsistencyService;
       
       await characterService.analyzeVisualDetails(sessionId, storyText, userInfo?.pageNumber || 1, userInfo?.name);
       characterAppearance = await characterService.getCharacterAppearanceFromStory(sessionId, userInfo?.name) || '';
@@ -842,7 +842,7 @@ RULES:
     let coloredObjects = '';
     
     try {
-      const characterService = characterConsistencyService.getInstance();
+      const characterService = characterConsistencyService;
       
       if (sessionId) {
         try {
