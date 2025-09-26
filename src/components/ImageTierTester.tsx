@@ -117,6 +117,15 @@ interface TestResult {
     escalationPath?: string;
     tierFailureHistory?: string[]; // NEW: Tier failure history from orchestrator
     promptLength?: number;
+    architecture?: string; // NEW: Architecture type (PURE_TYPESCRIPT | RECEPTIONIST_PATTERN)
+    payloadStructure?: string; // NEW: Payload structure summary
+    expectedArchitecture?: string; // NEW: Expected architecture type
+    orchestratorGuidance?: string; // NEW: Orchestrator guidance like TRY_DIRECT_MODE
+    errorType?: 'BOOT_FAILURE' | 'RUNTIME_ERROR' | 'NETWORK_ISSUE' | 'DEPLOYMENT_ISSUE'; // NEW: Error type classification
+    usedTier?: string; // Tier that was actually used
+    nextAction?: string; // Orchestrator guidance for next action
+    recommendedAction?: string; // Orchestrator recommended action
+    directMode?: boolean; // Direct Mode flag
   };
 }
 
@@ -1746,6 +1755,177 @@ export const ImageTierTester = () => {
     }
   };
 
+  // Test Architecture Awareness - Different payload structures for mixed architectures
+  const testArchitectureAwareness = async () => {
+    if (!testStoryText.trim()) {
+      alert('Please enter story text first');
+      return;
+    }
+
+    setIsLoading(true);
+    setResults([]);
+    
+    try {
+      DebugLogger.log('image', '🏗️ Testing mixed architecture cascade flow');
+      
+      // Updated tier configurations to handle mixed architectures
+      const tierConfigurations = [
+        {
+          name: 'Orchestrator (Pure TypeScript)',
+          function: 'runware-generate-image',
+          architecture: 'PURE_TYPESCRIPT',
+          payload: {
+            pageText: testStoryText,
+            userInfo: buildUserInfo(),
+            sessionId: 'test-session',
+            pageNumber: 1,
+            isGuestUser: true
+          }
+        },
+        {
+          name: 'Direct Mode (Pure TypeScript)', 
+          function: 'ai-visual-scene-creator',
+          architecture: 'PURE_TYPESCRIPT',
+          payload: {
+            storyText: testStoryText,
+            userInfo: buildUserInfo(),
+            sessionId: 'test-session',
+            pageNumber: 1,
+            directMode: true
+          }
+        },
+        {
+          name: 'Template 2.5A (Receptionist)',
+          function: 'runware-template-ab',
+          architecture: 'RECEPTIONIST_PATTERN',
+          payload: {
+            bundle: {
+              pageText: testStoryText,
+              userInfo: buildUserInfo(),
+              sessionId: 'test-session',
+              pageNumber: 1,
+              templateComplexity: 'A'
+            },
+            config: { tier: '2.5A' }
+          }
+        },
+        {
+          name: 'Template 2.5C (Receptionist)',
+          function: 'runware-template-cd',
+          architecture: 'RECEPTIONIST_PATTERN',
+          payload: {
+            bundle: {
+              pageText: testStoryText,
+              userInfo: buildUserInfo(),
+              sessionId: 'test-session', 
+              pageNumber: 1,
+              templateComplexity: 'C'
+            },
+            config: { tier: '2.5C' }
+          }
+        }
+      ];
+
+      const testResults: TestResult[] = [];
+      
+      for (const tier of tierConfigurations) {
+        const tierStartTime = Date.now();
+        let tierResult: TestResult;
+
+        try {
+          DebugLogger.log('image', `Testing ${tier.name} (${tier.architecture})`);
+
+          const { data, error } = await supabase.functions.invoke(tier.function, {
+            body: tier.payload
+          });
+
+          const processingTime = Date.now() - tierStartTime;
+          const { category, probableCause, errorType } = categorizeError(error, tier.function, data);
+
+          if (data?.success && data?.imageURL) {
+            tierResult = {
+              tier: tier.name,
+              success: true,
+              imageURL: data.imageURL,
+              details: {
+                processingTime,
+                testType: 'REAL',
+                errorCategory: 'SUCCESS',
+                architecture: tier.architecture,
+                requestId: data.requestId,
+                usedTier: data.usedTier || data.tier,
+                tier: data.tier,
+                
+                // Architecture-specific display fields
+                primaryScene: data.primaryScene,
+                templateStructure: data.templateStructure,
+                directMode: tier.payload.directMode,
+                
+                // Orchestrator-specific fields
+                nextAction: data.nextAction,
+                recommendedAction: data.recommendedAction,
+                
+                // Show payload structure used
+                payloadStructure: Object.keys(tier.payload).join(', '),
+                expectedArchitecture: tier.architecture
+              }
+            };
+          } else {
+            throw new Error(error?.message || `No image returned from ${tier.name}`);
+          }
+        } catch (error: any) {
+          const processingTime = Date.now() - tierStartTime;
+          const { category, probableCause, errorType } = categorizeError(error, tier.function);
+
+          tierResult = {
+            tier: tier.name,
+            success: false,
+            details: {
+              processingTime,
+              testType: 'REAL',
+              error: error?.message || 'Unknown error',
+              probableCause,
+              errorCategory: category as any,
+              errorType,
+              architecture: tier.architecture,
+              
+              // Show architecture mismatch indicators
+              payloadStructure: Object.keys(tier.payload).join(', '),
+              expectedArchitecture: tier.architecture,
+              
+              // Detect potential orchestrator guidance
+              orchestratorGuidance: error?.message?.includes('TRY_DIRECT_MODE') ? 'TRY_DIRECT_MODE' : null
+            }
+          };
+        }
+
+        testResults.push(tierResult);
+        setResults([...testResults]); // Update UI progressively
+      }
+
+      DebugLogger.log('image', '✅ Architecture awareness test completed', {
+        totalTests: testResults.length,
+        successCount: testResults.filter(r => r.success).length
+      });
+
+    } catch (error: any) {
+      DebugLogger.error('image', '❌ Architecture awareness test failed', { error });
+      
+      setResults([{
+        tier: 'architecture-test-error',
+        success: false,
+        details: { 
+          error: error.message,
+          testType: 'REAL',
+          errorCategory: 'INTERNAL',
+          probableCause: 'Test framework error'
+        }
+      }]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <Card>
@@ -1991,6 +2171,16 @@ export const ImageTierTester = () => {
             >
               <Network className="h-4 w-4" />
               Test Connectivity
+            </Button>
+            
+            <Button
+              onClick={testArchitectureAwareness}
+              disabled={isLoading}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <CheckCircle className="h-4 w-4" />
+              Test Architecture Cascade
             </Button>
           </div>
 

@@ -353,33 +353,40 @@ export class SimpleImageService {
         }
       });
       
-      const { data: orchResult, error: orchError } = await Promise.race([
-        requestPromise,
-        timeoutPromise
-      ]);
+        // Check for orchestrator response guidance
+        const { data: orchResult, error: orchError } = await Promise.race([
+          requestPromise,
+          timeoutPromise
+        ]);
 
-      // Clear timeout since request completed
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-        timeoutId = null;
-      }
+        // Clear timeout since request completed
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          timeoutId = null;
+        }
 
-      if (requestAborted) {
-        DebugLogger.warn('image', 'Request was aborted due to timeout');
-        return {
-          success: false,
-          error: 'Request timeout: Image generation exceeded time limit',
-          timestamp: new Date().toISOString()
-        };
-      }
+        if (requestAborted) {
+          DebugLogger.warn('image', 'Request was aborted due to timeout');
+          return {
+            success: false,
+            error: 'Request timeout: Image generation exceeded time limit',
+            timestamp: new Date().toISOString()
+          };
+        }
 
-      if (orchError) {
-        throw new Error(`Orchestrator error: ${orchError.message}`);
-      }
+        if (orchError) {
+          throw new Error(`Orchestrator error: ${orchError.message}`);
+        }
 
-      // Phase A: Multi-Field Image URL Validation - Handle all API response variations
-      const imageURL = orchResult?.imageURL || orchResult?.image_url || orchResult?.imageUrl || orchResult?.url;
-      if (orchResult?.success && imageURL?.trim()) {
+        // Check if orchestrator is suggesting Direct Mode
+        if (orchResult?.nextAction === 'TRY_DIRECT_MODE') {
+          DebugLogger.log('image', 'Orchestrator suggests Direct Mode, attempting...');
+          throw new Error('ORCHESTRATOR_SUGGESTS_DIRECT_MODE');
+        }
+
+        // Phase A: Multi-Field Image URL Validation - Handle all API response variations
+        const imageURL = orchResult?.imageURL || orchResult?.image_url || orchResult?.imageUrl || orchResult?.url;
+        if (orchResult?.success && imageURL?.trim()) {
         DebugLogger.log('image', `🖼️ Auto-generated image successfully: ${imageURL}`, {
           contentHash: orchResult.contentHash || 'no-hash',
           usedTier: orchResult.usedTier || 'orchestrator'
@@ -429,18 +436,44 @@ export class SimpleImageService {
         });
       }
 
-      // Direct tier 1 escalation - try ai-visual-scene-creator directly before other fallbacks
-      DebugLogger.warn('image', 'Orchestrator failed, trying direct tier 1 escalation');
+      // Detect orchestrator failure type for proper cascade handling
+      const is503Error = error.message?.includes('503') || error.message?.includes('Service temporarily unavailable');
+      
+      if (is503Error) {
+        DebugLogger.warn('image', 'Orchestrator unreachable (503), attempting Direct Mode fallback');
+      } else {
+        DebugLogger.warn('image', 'Orchestrator runtime failure, attempting Direct Mode fallback');
+      }
+
+      // Direct Mode attempt - call ai-visual-scene-creator with directMode: true
       try {
-        const directResult = await this.generateWithDirectAiVisualSceneCreator(
-          storyText, userInfo, sessionId, pageNumber, isPremium, healthStatus
-        );
-        if (directResult.success && directResult.url) {
-          DebugLogger.log('image', 'Direct tier 1 escalation successful');
-          return directResult;
+        DebugLogger.log('image', 'Attempting Direct Mode via ai-visual-scene-creator');
+        const directModeResult = await supabase.functions.invoke('ai-visual-scene-creator', {
+          body: {
+            storyText: enhancedPrompt,
+            userInfo,
+            sessionId: normalizedSessionId,
+            pageNumber,
+            directMode: true, // KEY: Enable Direct Mode
+            isGuestUser: !isPremium
+          }
+        });
+
+        if (directModeResult.data?.success && directModeResult.data?.imageURL) {
+          DebugLogger.log('image', 'Direct Mode successful');
+          return {
+            success: true,
+            url: directModeResult.data.imageURL,
+            imageURL: directModeResult.data.imageURL,
+            generatedAt: new Date().toISOString(),
+            tier: 'Direct Mode',
+            metadata: { ...directModeResult.data, orchestratorFailed: true }
+          };
+        } else {
+          throw new Error(`Direct Mode failed: ${JSON.stringify(directModeResult)}`);
         }
-      } catch (directError) {
-        DebugLogger.warn('image', 'Direct tier 1 escalation also failed', directError);
+      } catch (directModeError) {
+        DebugLogger.warn('image', 'Direct Mode also failed, escalating to nuclear templates', directModeError);
       }
 
       // TIER 2.5C: Template fallback before final resort

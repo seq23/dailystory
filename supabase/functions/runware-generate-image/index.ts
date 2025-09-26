@@ -81,6 +81,23 @@ const supabase = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
 );
 
+// CORS utilities  
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'GET, HEAD, POST, OPTIONS',
+  'Access-Control-Max-Age': '600',
+};
+
+function createCorsResponse(data: any, status = 200): Response {
+  const headers = { 
+    ...corsHeaders, 
+    'Content-Type': 'application/json' 
+  };
+  
+  return new Response(JSON.stringify(data), { status, headers });
+}
+
 // ============= BULLETPROOF PHASES IMPLEMENTATION =============
 
 // PHASE 3: FAST CIRCUIT BREAKER PROTECTION
@@ -817,69 +834,16 @@ async function handleRequest(req: Request): Promise<Response> {
         log.success('tier-1', { imageUrl: result.imageURL });
       } catch (tier1Error: any) {
         const msg = (tier1Error && tier1Error.message) || String(tier1Error);
-        log.failure('tier-1', { error: msg, escalation: 'tier-2.5A' });
+        log.failure('tier-1', { error: msg, nextAction: 'TRY_DIRECT_MODE' });
         
-        // Escalate to Tier 2.5A with pre-analyzed visual data
-        try {
-          log.attempt('tier-2.5A', { note: 'Escalating from Tier 1 failure with visual data' });
-          
-          // Gather visual consistency data from Tier 1 analysis
-          const { VisualDetailTracker } = await import("../_shared/VisualDetailTracker.js");
-          const visualDetails = await VisualDetailTracker.getVisualDetailsForPrompt(sessionId);
-          
-          // Pass pre-analyzed data from Tier 1 to Tier 2.5A
-          const preAnalyzedData = {
-            visualDetails
-          };
-          
-          const resp25A = await supabase.functions.invoke('runware-template-ab', {
-            body: {
-              storyText,
-              pageText: storyText,
-              userInfo: payload.userInfo,
-              sessionId,
-              pageNumber: pageNumber || 1,
-              templateComplexity: 'A',
-              preAnalyzedData // Pass cascade data to Tier 2.5A
-            }
-          });
-          result = resp25A.data || { success: false, error: resp25A.error?.message || 'Tier 2.5A escalation failed' };
-        } catch (tier25Error: any) {
-          log.failure('tier-2.5A', { error: (tier25Error && tier25Error.message) || String(tier25Error), escalation: 'tier-2.5B' });
-          
-          // Escalate to Tier 2.5B
-          try {
-            log.attempt('tier-2.5B', { note: 'Escalating from Tier 2.5A failure' });
-            const resp25B = await supabase.functions.invoke('runware-template-ab', {
-              body: {
-                storyText,
-                pageText: storyText,
-                userInfo: payload.userInfo,
-                sessionId,
-                pageNumber: pageNumber || 1,
-                templateComplexity: 'B'
-              }
-            });
-            
-            if (resp25B?.data?.success) {
-              result = resp25B.data;
-              log.success('tier-2.5B', { imageUrl: result.imageURL });
-            } else {
-              throw new Error('Tier 2.5B failed');
-            }
-          } catch (tier25BError: any) {
-            log.failure('tier-2.5B', { error: (tier25BError && tier25BError.message) || String(tier25BError), escalation: 'nuclear-templates' });
-            
-            // Escalate to nuclear templates (2.5C → 2.5D)
-            result = await tryNuclearTemplates({
-              storyText,
-              userInfo: payload.userInfo,
-              sessionId,
-              pageNumber: pageNumber || 1,
-              log
-            });
-          }
-        }
+        // Return structured failure response to let client handle Direct Mode
+        return createCorsResponse({
+          success: false,
+          error: `Tier 1 failed: ${msg}`,
+          nextAction: 'TRY_DIRECT_MODE',
+          recommendedAction: 'Call ai-visual-scene-creator with directMode: true',
+          tier: 'orchestrator-tier-1-failed'
+        });
       }
     }
       
@@ -1039,12 +1003,6 @@ async function handleRequest(req: Request): Promise<Response> {
 }
 
 // ============= CORS HEADERS AND SERVE =============
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'GET, HEAD, POST, OPTIONS',
-};
-
 serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: corsHeaders });
