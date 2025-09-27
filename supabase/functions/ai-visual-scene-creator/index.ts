@@ -469,6 +469,20 @@ serve(async (req: Request): Promise<Response> => {
       }
     };
 
+    // Declare variables outside withPerformanceTracking for proper scoping across all return paths
+    const nativeLanguage = userInfo?.nativeLanguage || 'en';
+    const isNonEnglish = nativeLanguage !== 'en';
+    const culturalContext = isNonEnglish ? `culturally appropriate ${nativeLanguage} settings` : '';
+    const characterData = userInfo ? JSON.stringify(userInfo) : '{}';
+    const previousPrimaryScene = ''; // Could be extracted from session/page context
+    const characterAppearance = userInfo?.features || '';
+    let aiResponse: Response | undefined;
+    let lastError: Error | unknown = null;
+    let successfulModel: string | null = null;
+    let requestBody: any = null;
+    let aiData: any = null;
+    let generatedScene: string | null = null;
+
     const startTime = Date.now();
     const result = await withPerformanceTracking(
       'ai-visual-scene-creator',
@@ -502,20 +516,6 @@ serve(async (req: Request): Promise<Response> => {
         }
 
         try {
-          // Extract variables for template
-          const nativeLanguage = userInfo?.nativeLanguage || 'en';
-          const isNonEnglish = nativeLanguage !== 'en';
-          const culturalContext = isNonEnglish ? `culturally appropriate ${nativeLanguage} settings` : '';
-          const characterData = userInfo ? JSON.stringify(userInfo) : '{}';
-          const previousPrimaryScene = ''; // Could be extracted from session/page context
-          const characterAppearance = userInfo?.features || '';
-          
-          // Implement model chain logic with proper API parameters
-          let aiResponse;
-          let lastError;
-          let successfulModel = null;
-          let requestBody;
-          let aiData;
           
           for (const modelConfig of AI_MODELS) {
             try {
@@ -637,7 +637,7 @@ Generate a comprehensive scene with complete visual elements including backgroun
           }
 
           aiData = await aiResponse.json();
-          const generatedScene = aiData.choices?.[0]?.message?.content;
+          generatedScene = aiData.choices?.[0]?.message?.content;
 
           if (!generatedScene) {
             throw new Error('OpenAI returned empty response');
