@@ -3,11 +3,19 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { phaseIntegrationOrchestrator } from '../_shared/PhaseIntegrationOrchestrator.js';
 
 // ============= RESILIENT IMPORT SYSTEM =============
-// Dynamic Supabase client creation using resilient loader
+// Dynamic Supabase client creation using direct import to bypass CDN failures
 async function createSupabaseClient() {
   try {
-    const { createResilientSupabaseClient } = await import('../_shared/resilientLoader.ts');
-    return await createResilientSupabaseClient();
+    // Direct import approach to bypass CDN failures
+    const { createClient } = await import('https://deno.land/x/supabase@2.0.2/mod.ts');
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    if (!supabaseUrl || !supabaseServiceRoleKey) {
+      throw new Error('Missing Supabase environment variables');
+    }
+    
+    return createClient(supabaseUrl, supabaseServiceRoleKey);
   } catch (error) {
     console.error('Failed to create Supabase client:', error);
     // Return a null client to continue without Supabase for nuclear independence

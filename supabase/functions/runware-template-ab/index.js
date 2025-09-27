@@ -1525,7 +1525,19 @@ async function handleRequest(req) {
     
     let enhancedStoryData, storyText, pageNumber, avatarIdentity, templateComplexity, sessionId, preAnalyzedData;
     
-    if (payload.pageText) {
+    if (payload.bundle && payload.config) {
+      // Bundle format: {bundle: {pageText, userInfo, sessionId, pageNumber}, config: {templateComplexity}}
+      console.log('📦 Template AB: Detected nested payload structure');
+      const bundle = payload.bundle;
+      const config = payload.config;
+      storyText = bundle.pageText;
+      enhancedStoryData = { userInfo: bundle.userInfo };
+      pageNumber = bundle.pageNumber;
+      avatarIdentity = bundle.userInfo?.avatar;
+      templateComplexity = config.templateComplexity;
+      sessionId = bundle.sessionId;
+      preAnalyzedData = bundle.preAnalyzedData; // Extract cascade data
+    } else if (payload.pageText) {
       // Current format: {pageText, userInfo, sessionId, pageNumber}
       console.log('📄 Template AB: Using pageText format');
       storyText = payload.pageText;
@@ -1837,9 +1849,16 @@ async function handleRequest(req) {
 
     // Log successful template generation
     try {
+      // Use direct Supabase import to avoid CDN failures
+      const { createClient } = await import('https://deno.land/x/supabase@2.0.2/mod.ts');
+      const supabaseClient = createClient(
+        Deno.env.get('SUPABASE_URL'),
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY')
+      );
+      
       const { logTierAttempt } = await import("../_shared/tierLogging.js");
       await logTierAttempt(
-        supabase,
+        supabaseClient,
         sessionId,
         'template-ab-req',
         templateResult.tier || 'template-ab',

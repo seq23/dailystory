@@ -350,9 +350,19 @@ async function handleRequest(req) {
       templateComplexity = payload.templateComplexity;
       sessionId = payload.sessionId;
       failedTierData = payload.failedTierData;
-    } else {
-      // Legacy format: {enhancedStoryData, storyText, pageNumber, avatarIdentity, templateComplexity, failedTierData}
+    } else if (payload.storyText) {
+      // Legacy format: {storyText, userInfo, sessionId, pageNumber, templateComplexity} 
       console.log('📖 Template CD: Using legacy format');
+      storyText = payload.storyText;
+      enhancedStoryData = { userInfo: payload.userInfo };
+      pageNumber = payload.pageNumber;
+      avatarIdentity = payload.userInfo?.avatar;
+      templateComplexity = payload.templateComplexity;
+      sessionId = payload.sessionId;
+      failedTierData = payload.failedTierData;
+    } else {
+      // Enhanced legacy format: {enhancedStoryData, storyText, pageNumber, avatarIdentity, templateComplexity, failedTierData}
+      console.log('📚 Template CD: Using enhanced legacy format');
       enhancedStoryData = payload.enhancedStoryData;
       storyText = payload.storyText;
       pageNumber = payload.pageNumber;
@@ -404,29 +414,29 @@ async function handleRequest(req) {
 
   // Log successful template generation
   try {
-const { memoizedImport } = await import('../_shared/resilientLoader.ts');
-const { createClient } = await memoizedImport('@supabase/supabase-js');
-const supabase = createClient(
-  Deno.env.get('SUPABASE_URL'),
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY')
-);
+    // Direct import approach to bypass CDN failures
+    const { createClient } = await import('https://deno.land/x/supabase@2.0.2/mod.ts');
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL'),
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY')
+    );
     
-const { logTierAttempt } = await import("../_shared/tierLogging.js");
-await logTierAttempt(
-  supabase,
-  sessionId,
-  'template-cd-req',
-  templateResult.tier || 'template-cd',
-  'success',
-  {
-    positive_prompt: templateResult.positivePrompt,
-    negative_prompt: templateResult.negativePrompt,
-    visual_details: failedTierData?.visualDetails,
-    edgeFunction: 'runware-template-cd',
-    pageNumber: pageNumber || 1,
-    imageUrl: imageURL
-  }
-);
+    const { logTierAttempt } = await import("../_shared/tierLogging.js");
+    await logTierAttempt(
+      supabase,
+      sessionId,
+      'template-cd-req',
+      templateResult.tier || 'template-cd',
+      'success',
+      {
+        positive_prompt: templateResult.positivePrompt,
+        negative_prompt: templateResult.negativePrompt,
+        visual_details: failedTierData?.visualDetails,
+        edgeFunction: 'runware-template-cd',
+        pageNumber: pageNumber || 1,
+        imageUrl: imageURL
+      }
+    );
   } catch (loggingError) {
     console.warn('Failed to log template CD success:', loggingError.message);
   }
