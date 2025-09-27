@@ -532,11 +532,12 @@ export class CharacterConsistencyService {
     console.log('🗑️ Clearing all character consistency cache from database...');
     
     try {
-      const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
-      const supabase = createClient(
-        Deno.env.get('SUPABASE_URL'), 
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-      );
+const { memoizedImport } = await import('./resilientLoader.ts');
+const { createClient } = await memoizedImport('@supabase/supabase-js');
+const supabase = createClient(
+  Deno.env.get('SUPABASE_URL'), 
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+);
 
       const { data, error } = await supabase
         .from('character_consistency_cache')

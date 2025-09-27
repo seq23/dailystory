@@ -698,11 +698,14 @@ export class PhaseIntegrationOrchestrator {
       console.log(`🔧 ORCHESTRATOR: Calling ai-visual-scene-creator for basePrompt components`);
       
       // Initialize supabase client if not already done
-      if (!this.supabase) {
-        this.supabase = await import('https://esm.sh/@supabase/supabase-js@2.57.4').then(mod => 
-          mod.createClient(Deno.env.get('SUPABASE_URL'), Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY'))
-        );
-      }
+if (!this.supabase) {
+  const { memoizedImport } = await import('./resilientLoader.ts');
+  const { createClient } = await memoizedImport('@supabase/supabase-js');
+  this.supabase = createClient(
+    Deno.env.get('SUPABASE_URL'), 
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY')
+  );
+}
       
       // Create complete avatarIdentity for AI scene generation (workflow-specific)
       const avatarIdentityWorkflow = {

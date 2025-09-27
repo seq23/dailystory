@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -36,8 +36,10 @@ serve(async (req) => {
   
 
   try {
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    const { operation, email, parentEmail, childName, parentName, incidentDetails, coppaDetails } = await req.json();
+const { memoizedImport } = await import("../_shared/resilientLoader.ts");
+const { createClient } = await memoizedImport('@supabase/supabase-js');
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
+const { operation, email, parentEmail, childName, parentName, incidentDetails, coppaDetails } = await req.json();
     
     // Support both email formats for backward compatibility
     const targetEmail = email || parentEmail;

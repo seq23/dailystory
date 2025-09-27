@@ -1,15 +1,11 @@
 // Force clean redeployment: 2025-01-23T02:45:01Z - Import fix attempt
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.55.0";
+
 import { withSecurity, SecurityMiddleware } from "../_shared/security.ts";
 import type { AuthenticatedUser } from "../_shared/security.ts";
 
 console.log("[security-alert] Function loaded successfully");
 
-const supabase = createClient(
-  Deno.env.get("SUPABASE_URL") ?? "",
-  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-);
 
 interface SecurityAlertRequest {
   alertType: 'suspicious_activity' | 'data_breach' | 'unauthorized_access' | 'system_anomaly';
@@ -28,12 +24,20 @@ const handler = async (req: Request, user?: AuthenticatedUser): Promise<Response
   const security = new SecurityMiddleware();
   
   try {
-    const { alertType, severity, details }: SecurityAlertRequest = await req.json();
+const { alertType, severity, details }: SecurityAlertRequest = await req.json();
 
-    // Validate alert data
-    if (!alertType || !severity || !details?.description) {
-      throw new Error('Missing required alert data');
-    }
+// Create Supabase client via resilient loader
+const { memoizedImport } = await import("../_shared/resilientLoader.ts");
+const { createClient } = await memoizedImport('@supabase/supabase-js');
+const supabase = createClient(
+  Deno.env.get("SUPABASE_URL") ?? "",
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+);
+
+// Validate alert data
+if (!alertType || !severity || !details?.description) {
+  throw new Error('Missing required alert data');
+}
 
     // Log security alert to enhanced monitoring
     const alertId = crypto.randomUUID();

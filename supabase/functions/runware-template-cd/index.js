@@ -404,28 +404,29 @@ async function handleRequest(req) {
 
   // Log successful template generation
   try {
-    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4');
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL'),
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY')
-    );
+const { memoizedImport } = await import('../_shared/resilientLoader.ts');
+const { createClient } = await memoizedImport('@supabase/supabase-js');
+const supabase = createClient(
+  Deno.env.get('SUPABASE_URL'),
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY')
+);
     
-    const { logTierAttempt } = await import("../_shared/tierLogging.js");
-    await logTierAttempt(
-      supabase,
-      sessionId,
-      'template-cd-req',
-      templateResult.tier || 'template-cd',
-      'success',
-      {
-        positive_prompt: templateResult.positivePrompt,
-        negative_prompt: templateResult.negativePrompt,
-        visual_details: failedTierData?.visualDetails,
-        edgeFunction: 'runware-template-cd',
-        pageNumber: pageNumber || 1,
-        imageUrl: imageURL
-      }
-    );
+const { logTierAttempt } = await import("../_shared/tierLogging.js");
+await logTierAttempt(
+  supabase,
+  sessionId,
+  'template-cd-req',
+  templateResult.tier || 'template-cd',
+  'success',
+  {
+    positive_prompt: templateResult.positivePrompt,
+    negative_prompt: templateResult.negativePrompt,
+    visual_details: failedTierData?.visualDetails,
+    edgeFunction: 'runware-template-cd',
+    pageNumber: pageNumber || 1,
+    imageUrl: imageURL
+  }
+);
   } catch (loggingError) {
     console.warn('Failed to log template CD success:', loggingError.message);
   }

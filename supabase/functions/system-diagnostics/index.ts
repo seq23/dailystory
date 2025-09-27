@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
 
 // Queue test verification - 2025-01-30
@@ -26,7 +26,9 @@ serve(async (req) => {
   if (healthCorsResponse) return healthCorsResponse;
 
   try {
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+const { memoizedImport } = await import("../_shared/resilientLoader.ts");
+const { createClient } = await memoizedImport('@supabase/supabase-js');
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const url = new URL(req.url);
     const operation = url.searchParams.get('operation') || 'health-check';
 

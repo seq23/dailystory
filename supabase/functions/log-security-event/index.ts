@@ -1,12 +1,8 @@
 // Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.55.0";
+
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
 
-const supabase = createClient(
-  Deno.env.get("SUPABASE_URL") ?? "",
-  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-);
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -43,16 +39,20 @@ async function validateAuth(req: Request): Promise<AuthenticatedUser | null> {
     }
 
     const token = authHeader.replace('Bearer ', '');
+
+    const { memoizedImport } = await import("../_shared/resilientLoader.ts");
+    const { createClient } = await memoizedImport('@supabase/supabase-js');
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
     const { data: { user }, error } = await supabase.auth.getUser(token);
-    
     if (error || !user) {
       return null;
     }
 
-    return {
-      id: user.id,
-      email: user.email
-    };
+    return { id: user.id, email: user.email };
   } catch (error) {
     console.error('Auth validation error:', error);
     return null;
@@ -112,19 +112,27 @@ const handler = async (req: Request): Promise<Response> => {
       origin: req.headers.get('Origin')
     };
 
-    // Log the security event to the database
-    const { data: logEntry, error: insertError } = await supabase
-      .from('security_audit_log')
-      .insert({
-        event_type: eventType,
-        user_id: user.id,
-        details: enhancedDetails,
-        ip_address: getClientIP(req),
-        user_agent: req.headers.get('User-Agent'),
-        created_at: new Date().toISOString()
-      })
-      .select()
-      .single();
+// Create Supabase client via resilient loader
+const { memoizedImport } = await import("../_shared/resilientLoader.ts");
+const { createClient } = await memoizedImport('@supabase/supabase-js');
+const supabase = createClient(
+  Deno.env.get("SUPABASE_URL") ?? "",
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+);
+
+// Log the security event to the database
+const { data: logEntry, error: insertError } = await supabase
+  .from('security_audit_log')
+  .insert({
+    event_type: eventType,
+    user_id: user.id,
+    details: enhancedDetails,
+    ip_address: getClientIP(req),
+    user_agent: req.headers.get('User-Agent'),
+    created_at: new Date().toISOString()
+  })
+  .select()
+  .single();
 
     if (insertError) {
       throw new Error(`Failed to log security event: ${insertError.message}`);

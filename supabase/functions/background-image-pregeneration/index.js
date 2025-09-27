@@ -1,7 +1,7 @@
 // Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
 console.log("[background-image-pregeneration] Loaded: 2025-09-12T18:45:32Z");
 // Phase 4: Background pre-generation cron job - ERROR-001 FIX APPLIED
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { handleHealthAndCors, withCors, createErrorResponse } from "../_shared/healthCors.ts";
 
