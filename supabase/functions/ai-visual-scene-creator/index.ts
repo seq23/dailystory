@@ -483,18 +483,20 @@ serve(async (req: Request): Promise<Response> => {
           const previousPrimaryScene = ''; // Could be extracted from session/page context
           const characterAppearance = userInfo?.features || '';
           
-          const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${openaiApiKey}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              model: 'gpt-4o-mini',
-          messages: [
-            { 
-              role: 'system', 
-              content: `Generate a comprehensive visual scene description for children's story image generation.
+          // Implement model chain logic with proper API parameters
+          let aiResponse;
+          let lastError;
+          
+          for (const modelConfig of AI_MODELS) {
+            try {
+              console.log(`🤖 [${requestId}] Attempting AI generation with model: ${modelConfig.name}`);
+              
+              const requestBody: any = {
+                model: modelConfig.name,
+                messages: [
+                  { 
+                    role: 'system', 
+                    content: `Generate a comprehensive visual scene description for children's story image generation.
 
 OBJECTIVE: Create a vivid visual scene description (200-1500 characters recommended) that captures the story moment with complete visual elements, character consistency, and cultural authenticity.
 
@@ -540,10 +542,10 @@ ATMOSPHERIC GUIDANCE:
 CULTURAL CONTEXT:
 ${isNonEnglish ? `- Consider culturally authentic settings: ${culturalContext}` : '- Use universal child-friendly settings'}
 ${isNonEnglish ? `- Incorporate cultural elements appropriate for ${nativeLanguage} speaking families` : ''}` 
-            },
-            { 
-              role: 'user', 
-              content: `Create a visual scene description for this story page.
+                  },
+                  { 
+                    role: 'user', 
+                    content: `Create a visual scene description for this story page.
 
 CHARACTER DATA: ${characterData}
 
@@ -556,14 +558,51 @@ PREVIOUS SCENE (for visual consistency):
 ${characterAppearance ? `CHARACTER APPEARANCE NOTES: ${characterAppearance}` : ''}
 
 Generate a comprehensive scene with complete visual elements including background, lighting, composition, setting, mood, style, secondary characters (categorized as humans vs pets), and key objects. Maintain character and setting continuity while showcasing the current page's action. Use the provided character data exactly and never describe the main character's skin tone.`
-            }
-          ],
-          max_completion_tokens: 1500,
-            }),
-          });
+                  }
+                ]
+              };
 
-          if (!aiResponse.ok) {
-            throw new Error(`OpenAI API error: ${aiResponse.status} ${aiResponse.statusText}`);
+              // Set correct token parameter based on model
+              if (modelConfig.maxTokens === 'max_tokens') {
+                requestBody.max_tokens = 1500;
+              } else {
+                requestBody.max_completion_tokens = 1500;
+              }
+
+              // Add temperature only for supported models
+              if (modelConfig.supportsTemperature) {
+                requestBody.temperature = 0.7;
+              }
+
+              aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${openaiApiKey}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestBody)
+              });
+
+              if (aiResponse.ok) {
+                console.log(`✅ [${requestId}] AI generation successful with model: ${modelConfig.name}`);
+                break; // Success - exit the loop
+              } else {
+                const errorText = await aiResponse.text();
+                throw new Error(`OpenAI API error: ${aiResponse.status} ${aiResponse.statusText} - ${errorText}`);
+              }
+              
+            } catch (error) {
+              lastError = error;
+              console.warn(`⚠️ [${requestId}] Model ${modelConfig.name} failed:`, error instanceof Error ? error.message : String(error));
+              
+              // Continue to next model if this one fails
+              continue;
+            }
+          }
+
+          // If all models failed, throw the last error
+          if (!aiResponse || !aiResponse.ok) {
+            throw new Error(`All AI models failed. Last error: ${lastError instanceof Error ? lastError.message : String(lastError)}`);
           }
 
           const aiData = await aiResponse.json();
