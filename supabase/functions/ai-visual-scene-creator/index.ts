@@ -843,24 +843,10 @@ Generate a comprehensive scene with complete visual elements including backgroun
         tier: result.tier || 'DIRECT_MODE',
         primaryScene: result.primaryScene || storyText || "Generated scene",
         enhancedData: result.enhancedData,
-        aiSchema: result.enhancedData?.aiSchema || {
-          primaryScene: result.primaryScene || storyText || "Generated scene",
-          setting: result.enhancedData?.setting || "magical forest",
-          action: result.enhancedData?.action || "walking",
-          mood: result.enhancedData?.mood || "happy",
-          pose: result.enhancedData?.pose || "standing"
-        },
         debug: {
           ...debugContext,
           systemPrompt: requestBody?.messages?.[0]?.content || 'AI visual scene creation system',
           userPrompt: requestBody?.messages?.[1]?.content || storyText,
-          aiSchema: result.enhancedData?.aiSchema || {
-            primaryScene: result.primaryScene || storyText || "Generated scene",
-            setting: result.enhancedData?.setting || "magical forest",
-            action: result.enhancedData?.action || "walking",
-            mood: result.enhancedData?.mood || "happy",
-            pose: result.enhancedData?.pose || "standing"
-          },
           openaiInteraction: {
             model: successfulModel || 'unknown',
             requestBody: requestBody || null,
@@ -898,13 +884,6 @@ Generate a comprehensive scene with complete visual elements including backgroun
           ...debugContext,
           systemPrompt: requestBody?.messages?.[0]?.content || 'AI visual scene creation system',
           userPrompt: requestBody?.messages?.[1]?.content || storyText,
-          aiSchema: result.enhancedData?.aiSchema || {
-            primaryScene: result.primaryScene || storyText || "Generated scene",
-            setting: result.enhancedData?.setting || "magical forest",
-            action: result.enhancedData?.action || "walking",
-            mood: result.enhancedData?.mood || "happy",
-            pose: result.enhancedData?.pose || "standing"
-          },
           openaiInteraction: {
             model: successfulModel || 'unknown',
             requestBody: requestBody || null,
