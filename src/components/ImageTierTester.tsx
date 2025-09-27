@@ -74,6 +74,7 @@ const ImageTierTester = () => {
           <div className="text-sm text-gray-600">
             Component temporarily simplified to resolve syntax errors.
             Full functionality will be restored after structural fixes.
+            {/* Cache bust: 2025-09-27 */}
           </div>
           
           <Button onClick={resetTester} variant="outline">
