@@ -911,61 +911,6 @@ export class SimpleImageService {
     return hairOptions[Math.floor(Math.random() * hairOptions.length)];
   }
 
-  // Apply universal protections for cultural representation
-  private static applyUniversalProtections(basePrompt: string, userInfo: UserInfo): { prompt: string; negatives: string[] } {
-    const protections = this.getUniversalProtectionPrompts(userInfo);
-    
-    // Integrate positive protections into main prompt
-    const enhancedPrompt = protections.positive.length > 0 
-      ? `${basePrompt}, ${protections.positive.join(', ')}`
-      : basePrompt;
-    
-    // Return object with both prompt and negatives
-    return {
-      prompt: enhancedPrompt,
-      negatives: protections.negative
-    };
-  }
-
-  // Get universal protection prompts for all ethnicities
-  private static getUniversalProtectionPrompts(userInfo: UserInfo): { positive: string[], negative: string[] } {
-    const ethnicity = userInfo?.ethnicity?.toLowerCase() || '';
-    const avatar = userInfo?.avatar?.type?.toLowerCase() || '';
-    
-    const positive: string[] = [
-      'dignified representation',
-      'respectful cultural portrayal',
-      'authentic character design',
-      'positive and empowering imagery'
-    ];
-    
-    const negative: string[] = [
-      'stereotypes',
-      'caricature',
-      'offensive depictions',
-      'cultural appropriation',
-      'disrespectful imagery'
-    ];
-    
-    // African American specific protections
-    if (ethnicity.includes('african') || ethnicity.includes('black') || avatar.includes('african')) {
-      positive.push(
-        'beautiful natural hair textures',
-        'diverse African American representation',
-        'confident and proud character',
-        'culturally authentic features'
-      );
-      negative.push(
-        'exaggerated features',
-        'outdated stereotypes',
-        'inappropriate hair representations',
-        'culturally insensitive imagery'
-      );
-    }
-    
-    return { positive, negative };
-  }
-
   // Intelligent fallback ordering system for image generation
   private static async getImageWithIntelligentFallback(
     userInfo: UserInfo, 

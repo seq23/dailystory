@@ -267,17 +267,9 @@ export const ImageTierTester = () => {
     return 'expert';
   };
 
-  // Apply universal protections - MATCH SimpleImageService logic  
-  const applyUniversalProtections = (basePrompt: string, userInfo: any): { prompt: string; negatives: string[] } => {
-    const ethnicity = userInfo?.ethnicity?.toLowerCase() || '';
-    const avatar = userInfo?.avatar?.type?.toLowerCase() || '';
-    
-    const positive: string[] = [
-      'dignified representation',
-      'respectful cultural portrayal', 
-      'authentic character design',
-      'positive and empowering imagery'
-    ];
+  // Apply universal protections - PROTECTION SYSTEM REMOVED
+  const enhancedPrompt = basePrompt; // Use raw content directly
+  const protectionNegatives: string[] = []; // No protection negatives
     
     const negative: string[] = [
       'stereotypes',
@@ -1056,7 +1048,7 @@ export const ImageTierTester = () => {
       steps[0].status = triageCheck.available ? 'success' : 'error';
       
       const userInfo = buildUserInfo();
-      const { prompt: enhancedPrompt, negatives: protectionNegatives } = applyUniversalProtections(testStoryText, userInfo);
+      const enhancedPrompt = testStoryText; // Use raw content directly
       const sessionId = crypto.randomUUID();
 
       const startTime = Date.now();
@@ -1876,7 +1868,7 @@ export const ImageTierTester = () => {
 
       const startTime = Date.now();
       const userInfo = buildUserInfo();
-      const { prompt: enhancedPrompt, negatives: protectionNegatives } = applyUniversalProtections(testStoryText, userInfo);
+      const enhancedPrompt = testStoryText; // Use raw content directly
       
       // Step 1: Function Selection
       steps[0].status = 'running';
@@ -2254,52 +2246,66 @@ export const ImageTierTester = () => {
       // Updated tier configurations to handle mixed architectures
       const tierConfigurations = [
         {
-          name: 'Orchestrator (Pure TypeScript)',
+          name: 'Tier 1 (via Orchestrator)', 
           function: 'runware-generate-image',
           architecture: 'PURE_TYPESCRIPT',
           payload: {
-            pageText: testStoryText,
+            storyText: testStoryText,
             userInfo: buildUserInfo(),
             sessionId: 'test-session',
             pageNumber: 1,
             storyId: 'cascade-test-story',
             isGuestUser: false,
-            difficultyLevel: 'medium',
-            protectionNegatives: 'blur, dark, scary, adult content'
+            difficultyLevel: 'medium'
           }
         },
         {
-          name: 'Direct Mode (Pure TypeScript)', 
+          name: 'Direct Mode (AI Scene Creator)', 
           function: 'ai-visual-scene-creator',
           architecture: 'PURE_TYPESCRIPT',
           payload: {
-            pageText: testStoryText, // FIXED: Use pageText instead of storyText for consistency
+            storyText: testStoryText,
             userInfo: buildUserInfo(),
             sessionId: 'test-session',
             pageNumber: 1,
             storyId: 'cascade-test-story',
             isGuestUser: false,
-            isDebugMode: true
+            isDebugMode: true,
+            directMode: true
           }
         },
         {
-          name: 'Template 2.5A (Receptionist)',
+          name: 'Template 2.5A (Complexity A)',
           function: 'runware-template-ab',
           architecture: 'RECEPTIONIST_PATTERN',
           payload: {
-            pageText: testStoryText, // FIXED: Use flat payload structure
+            storyText: testStoryText,
             userInfo: buildUserInfo(),
             sessionId: 'test-session',
             pageNumber: 1,
             storyId: 'cascade-test-story',
             isGuestUser: false,
             difficultyLevel: 'medium',
-            protectionNegatives: 'blur, dark, scary, adult content',
             templateComplexity: 'A'
           }
         },
         {
-          name: 'Template 2.5C (Receptionist)',
+          name: 'Template 2.5B (Complexity B)',
+          function: 'runware-template-ab',
+          architecture: 'RECEPTIONIST_PATTERN',
+          payload: {
+            storyText: testStoryText,
+            userInfo: buildUserInfo(),
+            sessionId: 'test-session',
+            pageNumber: 1,
+            storyId: 'cascade-test-story',
+            isGuestUser: false,
+            difficultyLevel: 'medium',
+            templateComplexity: 'B'
+          }
+        },
+        {
+          name: 'Template 2.5C (Complexity C)',
           function: 'runware-template-cd',
           architecture: 'RECEPTIONIST_PATTERN',
           payload: {
@@ -2314,7 +2320,7 @@ export const ImageTierTester = () => {
           }
         },
         {
-          name: 'Template 2.5D (Receptionist)',
+          name: 'Template 2.5D (Complexity D)',
           function: 'runware-template-cd',
           architecture: 'RECEPTIONIST_PATTERN',
           payload: {

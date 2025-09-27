@@ -480,6 +480,14 @@ serve(async (req: Request): Promise<Response> => {
         }
 
         try {
+          // Extract variables for template
+          const nativeLanguage = userInfo?.nativeLanguage || 'en';
+          const isNonEnglish = nativeLanguage !== 'en';
+          const culturalContext = isNonEnglish ? `culturally appropriate ${nativeLanguage} settings` : '';
+          const characterData = userInfo ? JSON.stringify(userInfo) : '{}';
+          const previousPrimaryScene = ''; // Could be extracted from session/page context
+          const characterAppearance = userInfo?.features || '';
+          
           const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -488,18 +496,71 @@ serve(async (req: Request): Promise<Response> => {
             },
             body: JSON.stringify({
               model: 'gpt-4o-mini',
-              messages: [
-                { 
-                  role: 'system', 
-                  content: 'You are a children\'s story illustrator. Create vivid visual scene descriptions for illustrations.' 
-                },
-                { 
-                  role: 'user', 
-                  content: `Create a detailed visual scene description for this story: ${storyText.substring(0, 1000)}` 
-                }
-              ],
-              max_tokens: 150,
-              temperature: 0.7
+          messages: [
+            { 
+              role: 'system', 
+              content: `Generate a comprehensive visual scene description for children's story image generation.
+
+OBJECTIVE: Create a vivid visual scene description (200-1500 characters recommended) that captures the story moment with complete visual elements, character consistency, and cultural authenticity.
+
+JSON RESPONSE:
+{
+  "primaryScene": "Rich, detailed visual scene description for image generation with setting, character actions, atmosphere, and comprehensive visual details",
+  "backgroundColor": "Background color description (e.g., 'warm golden forest light', 'cool blue sky', 'cozy indoor amber')",
+  "lighting": "Lighting description (e.g., 'golden hour sunlight', 'soft morning light', 'magical twilight glow')",
+  "composition": "Visual composition description (e.g., 'centered character with forest background', 'close-up with blurred garden')",
+  "setting": "Location and environment (e.g., 'magical forest clearing', 'cozy bedroom', 'sunny playground')",
+  "mood": "Emotional atmosphere (e.g., 'adventurous and curious', 'peaceful and content', 'excited and playful')",
+  "style": "Artistic style (e.g., 'watercolor illustration', 'digital painting', 'children's book art')",
+  "secondaryCharacters": {
+    "humans": ["list of human characters mentioned in story (e.g., 'mom', 'friend', 'teacher')"],
+    "pets": ["list of animals/pets mentioned in story (e.g., 'dog', 'cat', 'bird')"]
+  },
+  "objects": ["key props and objects in scene (e.g., 'ball', 'tree', 'flowers', 'toys')"]
+}
+
+CRITICAL CHARACTER RULES:
+1. NEVER describe main character's skin tone - focus on hair, clothing, facial expressions, and pose only
+2. Use provided character data exactly - do not make up features for main character
+3. For secondary characters, you may describe their appearance as needed
+4. Use story-driven visual descriptions based on the text content
+
+VISUAL ENHANCEMENT RULES:
+5. Create detailed primary scenes with rich visual descriptions (200-1500 characters)
+6. Extract ALL secondary characters from story text and categorize correctly:
+   - HUMANS: mom, dad, friend, teacher, brother, sister, grandma, neighbor, people
+   - PETS/ANIMALS: dog, cat, bird, rabbit, hamster, fish, horse, any animals
+7. Include comprehensive atmospheric details (time of day, weather, indoor/outdoor)
+8. Specify background colors, lighting conditions, and visual composition
+9. List key objects, props, and visual elements in the scene
+10. Preserve exact counts: "a bird" = 1 bird, "birds" = multiple
+11. Use visual continuity with previous scene context
+
+ATMOSPHERIC GUIDANCE:
+- Time of day: "morning sunlight", "afternoon glow", "evening twilight"
+- Indoor/outdoor: "inside the cozy kitchen", "outside in the garden"  
+- Weather: "sunny day", "light drizzle", "snowy morning"
+- Objects/props: include furniture, toys, nature elements, tools
+
+CULTURAL CONTEXT:
+- Use universal child-friendly settings unless cultural context is needed` 
+            },
+            { 
+              role: 'user', 
+              content: `Create a visual scene description for this story page.
+
+CHARACTER DATA: ${JSON.stringify(userInfo)}
+
+STORY TEXT:
+"${storyText}"
+
+PREVIOUS SCENE (for visual consistency):
+"None - this is the first scene"
+
+Generate a comprehensive scene with complete visual elements including background, lighting, composition, setting, mood, style, secondary characters (categorized as humans vs pets), and key objects. Maintain character and setting continuity while showcasing the current page's action. Use the provided character data exactly and never describe the main character's skin tone.`
+            }
+          ],
+          max_completion_tokens: 1500,
             }),
           });
 
