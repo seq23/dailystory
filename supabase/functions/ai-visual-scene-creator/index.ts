@@ -635,6 +635,41 @@ Generate a comprehensive scene with complete visual elements including backgroun
             throw new Error('OpenAI returned empty response');
           }
 
+          // DIRECT MODE: Generate Tier 1 character consistency components
+          let characterConsistency = '';
+          let visualConsistency = '';
+          let culturalEnhancements = '';
+          
+          if (payload.directMode === true && dependencies?.CharacterConsistencyService) {
+            try {
+              console.log(`🧠 [${requestId}] Generating Tier 1 character consistency data...`);
+              const characterService = dependencies.CharacterConsistencyService.getInstance();
+              
+              // Analyze the generated scene for consistency data
+              await characterService.analyzeVisualDetails(sessionId, generatedScene, payload.pageNumber || 1, userInfo?.name || 'child');
+              
+              // Generate character consistency
+              characterConsistency = await characterService.getCharacterAppearanceFromStory(sessionId, userInfo?.name || 'child') || '';
+              
+              // Generate visual consistency 
+              visualConsistency = await characterService.getColoredObjects(sessionId) || '';
+              
+              // Generate cultural enhancements based on user profile
+              if (userInfo?.avatar?.type && userInfo.avatar.type !== 'prefer-not-to-answer') {
+                culturalEnhancements = `Cultural enhancement for ${userInfo.avatar.type} representation with authentic styling and features`;
+              }
+              
+              console.log(`✅ [${requestId}] Character consistency data generated:`, {
+                characterConsistency: characterConsistency.length > 0,
+                visualConsistency: visualConsistency.length > 0,
+                culturalEnhancements: culturalEnhancements.length > 0
+              });
+            } catch (consistencyError) {
+              console.warn(`⚠️ [${requestId}] Character consistency generation failed:`, consistencyError);
+              // Continue without consistency data - not a blocking error
+            }
+          }
+
           // Check if this is Direct Mode - if so, call runware-template-cd for real image generation
           if (payload.directMode === true) {
             console.log(`🎯 [${requestId}] Direct Mode activated - calling runware-template-cd`);
@@ -655,7 +690,10 @@ Generate a comprehensive scene with complete visual elements including backgroun
                     failedTierData: {
                       enhancedSceneData: generatedScene,
                       tier: 'DIRECT_MODE',
-                      primaryScene: generatedScene
+                      primaryScene: generatedScene,
+                      characterConsistency: characterConsistency,
+                      visualConsistency: visualConsistency,
+                      culturalEnhancements: culturalEnhancements
                     }
                   }
                 });
@@ -686,7 +724,10 @@ Generate a comprehensive scene with complete visual elements including backgroun
                     failedTierData: {
                       enhancedSceneData: generatedScene,
                       tier: 'DIRECT_MODE',
-                      primaryScene: generatedScene
+                      primaryScene: generatedScene,
+                      characterConsistency: characterConsistency,
+                      visualConsistency: visualConsistency,
+                      culturalEnhancements: culturalEnhancements
                     }
                   })
                 });
@@ -720,6 +761,9 @@ Generate a comprehensive scene with complete visual elements including backgroun
                   realAIGenerated: true,
                   openaiModel: successfulModel || 'unknown',
                   directMode: true,
+                  characterConsistency: characterConsistency,
+                  visualConsistency: visualConsistency,
+                  culturalEnhancements: culturalEnhancements,
                   templateResponse: templateData
                 }
               };
