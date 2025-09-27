@@ -71,3 +71,8 @@ window.sessionCacheDebug.investigate()
 ## Migration Notes
 
 All previous debug functionality remains available through the UnifiedDebugMonitor. The scattered `window.debug*` objects have been eliminated, and debug access is properly gated behind debug mode.
+
+## Common Issues
+
+### CORS Error with `[object Object]` in URL
+If you see CORS errors with URLs like `functions/v1/[object%20Object]`, this typically indicates a bug where an object is being used as a string in a fetch URL. Check that endpoint references use `.name` property when the endpoint is an object: `${endpoint.name}` not `${endpoint}`.
