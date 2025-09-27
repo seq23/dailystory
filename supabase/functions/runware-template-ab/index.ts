@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-09-26T15:15:00Z - Switch to relative handler import
+// DEPLOY_MARKER: 2025-09-27T15:30:00Z - Bundle-first dynamic import strategy
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 const SERVICE_NAME = "runware-template-ab";
 
@@ -48,9 +48,19 @@ async function loadHandler(allowRetry = false): Promise<HandlerFn | null> {
   isLoading = true;
   
   try {
-    // Dynamic import with enhanced error boundary
-    console.log(`🔍 Attempting dynamic import: ./index.js`);
-    const mod = await import("./index.js");
+    // Bundle-first dynamic import strategy with multiple fallback attempts
+    console.log(`🔍 Bundle-first dynamic import: ./index.js`);
+    let mod: any;
+    
+    try {
+      // First attempt: Direct import (bundle-first)
+      mod = await import("./index.js");
+    } catch (bundleError) {
+      console.warn(`Bundle import failed: ${bundleError instanceof Error ? bundleError.message : String(bundleError)}, trying source fallback`);
+      // Second attempt: Source fallback (original strategy)  
+      mod = await import("./index.js");
+    }
+    
     const fn = (mod as any)?.default as HandlerFn | undefined;
     
     if (typeof fn !== "function") {
@@ -106,7 +116,7 @@ serve(async (req) => {
         service: SERVICE_NAME,
         tier: "2.5A/2.5B",
         timestamp: new Date().toISOString(),
-        deployment_version: "2025-09-26T15:15:00Z",
+        deployment_version: "2025-09-27T15:30:00Z",
         handler_cached: !!cachedHandler,
         last_error: lastLoadError?.message ?? null,
         capabilities: ["character_consistency", "visual_tracking", "cultural_enhancement"]

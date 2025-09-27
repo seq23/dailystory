@@ -1,7 +1,9 @@
-// DEPLOY_MARKER: 2025-09-27T00:00:00Z - Enhanced with complete tier cascade logic
+// DEPLOY_MARKER: 2025-09-27T15:30:00Z - Fix boot crashes: lazy orchestrator loading  
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { phaseIntegrationOrchestrator } from '../_shared/PhaseIntegrationOrchestrator.js';
 import { memoizedImport, createImportFailureResponse } from '../_shared/resilientLoader.ts';
+
+// Lazy-loaded orchestrator to prevent boot crashes
+let phaseIntegrationOrchestrator: any = null;
 
 // ============================================================================
 // 🎯 ORCHESTRATOR: RESILIENT IMAGE GENERATION ORCHESTRATOR
@@ -168,10 +170,19 @@ serve(async (req: Request): Promise<Response> => {
   }
 
   try {
-    // PHASE 5: Load tier logger with direct orchestrator access
+    // PHASE 5: Load tier logger and lazy-load orchestrator
     const tierLogger = await bindTierLogger(payload.sessionId || 'unknown', requestId, req.headers.get('authorization'));
 
-    // Use direct import for orchestrator (nuclear independence)
+    // Lazy load orchestrator to prevent boot crashes
+    if (!phaseIntegrationOrchestrator) {
+      try {
+        const orchestratorModule = await memoizedImport("../_shared/PhaseIntegrationOrchestrator.js");
+        phaseIntegrationOrchestrator = orchestratorModule.phaseIntegrationOrchestrator;
+      } catch (error) {
+        console.warn(`Failed to get AI primaryScene: ${error instanceof Error ? error.message : String(error)}`);
+        throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_25A');
+      }
+    }
     const orchestrator = phaseIntegrationOrchestrator;
 
     // PHASE 6: Process request with lazy-loaded services
