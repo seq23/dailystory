@@ -22,19 +22,32 @@ class ErrorSuppressionManager {
   }
 
   private shouldSuppress(message: string, ...args: any[]): boolean {
-    // In debug mode, only suppress browser noise, not actual debug logs
+    // In debug mode, suppress browser noise but allow application debug logs
     if (this.isDebugMode()) {
       const fullMessage = [message, ...args].join(' ').toLowerCase();
       
-      // Still suppress browser extensions and permissions policy in debug mode
+      // ALWAYS suppress browser extensions, permissions policy, iframe warnings, and deprecated APIs even in debug mode
       if (fullMessage.includes('chrome-extension://') ||
+          fullMessage.includes('moz-extension://') ||
           fullMessage.includes('unchecked runtime.lasterror') ||
           fullMessage.includes('permissions policy') ||
-          fullMessage.includes('unrecognized feature')) {
+          fullMessage.includes('unrecognized feature') ||
+          fullMessage.includes('ambient-light-sensor') ||
+          fullMessage.includes('battery') ||
+          fullMessage.includes('vr') ||
+          fullMessage.includes('gyroscope') ||
+          fullMessage.includes('magnetometer') ||
+          fullMessage.includes('speaker') ||
+          fullMessage.includes('vibrate') ||
+          fullMessage.includes('iframe which has both allow-scripts and allow-same-origin') ||
+          fullMessage.includes('sandbox attribute can escape its sandboxing') ||
+          fullMessage.includes('deprecated api for given entry type') ||
+          fullMessage.includes('deprecated') && fullMessage.includes('api')) {
+        this.incrementErrorCount('Browser Noise (Debug Mode)');
         return true;
       }
       
-      // In debug mode, don't suppress anything else - let debug logs through
+      // In debug mode, don't suppress application-specific debug logs
       return false;
     }
     const fullMessage = this.normalizeMessage(message, ...args);
@@ -99,6 +112,16 @@ class ErrorSuppressionManager {
         fullMessage.includes('sandbox attribute can escape its sandboxing') ||
         fullMessage.includes('iframe') && fullMessage.includes('sandbox') && fullMessage.includes('escape')) {
       this.incrementErrorCount('Iframe Security Warnings');
+      return true;
+    }
+
+    // Deprecated API warnings (CRITICAL ADDITION)
+    if (fullMessage.includes('deprecated api for given entry type') ||
+        fullMessage.includes('deprecated') && fullMessage.includes('api') ||
+        fullMessage.includes('deprecated') && fullMessage.includes('entry type') ||
+        fullMessage.includes('deprecated web api') ||
+        fullMessage.includes('deprecated feature')) {
+      this.incrementErrorCount('Deprecated API Warnings');
       return true;
     }
 

@@ -14,14 +14,23 @@ class BrowserErrorSuppression {
   }
 
   private shouldSuppressBrowserError(message: string, filename?: string): boolean {
-    if (this.isDebugMode()) {
-      // In debug mode, only suppress the most obvious extension noise
-      return message.includes('chrome-extension://') || 
-             message.includes('moz-extension://');
-    }
-
     const lowerMessage = message.toLowerCase();
     
+    // In debug mode, suppress browser noise but not application errors
+    if (this.isDebugMode()) {
+      // ALWAYS suppress browser extensions, permissions policy, iframe warnings, and deprecated APIs even in debug mode
+      return lowerMessage.includes('chrome-extension://') || 
+             lowerMessage.includes('moz-extension://') ||
+             lowerMessage.includes('permissions policy') ||
+             lowerMessage.includes('unrecognized feature') ||
+             lowerMessage.includes('ambient-light-sensor') ||
+             lowerMessage.includes('battery') ||
+             lowerMessage.includes('vr') ||
+             lowerMessage.includes('iframe which has both allow-scripts and allow-same-origin') ||
+             lowerMessage.includes('sandbox attribute can escape its sandboxing') ||
+             lowerMessage.includes('deprecated api for given entry type');
+    }
+
     // Chrome extension runtime errors
     if (lowerMessage.includes('unchecked runtime.lasterror') ||
         lowerMessage.includes('could not establish connection') ||

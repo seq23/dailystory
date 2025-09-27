@@ -7,7 +7,6 @@
   X-Frame-Options: SAMEORIGIN
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
-  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
   Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
   
   # Additional Security - Allow Lovable cross-origin communication
@@ -21,5 +20,5 @@
   Pragma: no-cache
   Expires: 0
   
-  # Consolidated Permissions Policy
-  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+  # Comprehensive Permissions Policy - Deny all problematic browser features
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), accelerometer=(), ambient-light-sensor=(), autoplay=(), battery=(), bluetooth=(), display-capture=(), document-domain=(), encrypted-media=(), fullscreen=(), gyroscope=(), hid=(), idle-detection=(), local-fonts=(), magnetometer=(), midi=(), navigation-override=(), notifications=(), picture-in-picture=(), publickey-credentials-get=(), screen-wake-lock=(), serial=(), speaker-selection=(), usb=(), vr=(), web-share=(), xr-spatial-tracking=()
