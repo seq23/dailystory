@@ -193,7 +193,9 @@ export const useAudioControls = ({
       
       setCurrentHighlightedWord(-1);
       currentHighlightRef.current = -1;
-      DebugLogger.log('ui', `Universal highlighting cleared: ${highlightedElements.length} elements`);
+      if (highlightedElements.length > 0) {
+        DebugLogger.log('ui', `Universal highlighting cleared: ${highlightedElements.length} elements`);
+      }
     };
     
     // Re-apply last known highlight when audio resumes or UI re-renders

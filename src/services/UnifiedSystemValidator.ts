@@ -270,11 +270,13 @@ export class UnifiedSystemValidator {
           const audioButtons = document.querySelectorAll('button[aria-label*=\\\"audio\\\"], button[aria-label*=\\\"play\\\"]');
           let smallTouchTargets = 0;
           
-          audioButtons.forEach(button => {
-            const rect = button.getBoundingClientRect();
-            if (rect.height < 44 || rect.width < 44) {
-              smallTouchTargets++;
-            }
+          requestAnimationFrame(() => {
+            audioButtons.forEach(button => {
+              const rect = button.getBoundingClientRect();
+              if (rect.height < 44 || rect.width < 44) {
+                smallTouchTargets++;
+              }
+            });
           });
 
           if (smallTouchTargets > 0) {

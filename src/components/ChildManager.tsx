@@ -241,8 +241,8 @@ export function ChildManager() {
         <CardContent className="space-y-6">
           <div className="grid md:grid-cols-4 gap-3">
             <div>
-              <Label>{t('parent.manager.labels.name')}</Label>
-              <Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="e.g., Sam" />
+              <Label htmlFor="child-name">{t('parent.manager.labels.name')}</Label>
+              <Input id="child-name" name="child-name" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="e.g., Sam" />
             </div>
             <div>
               <Label>{t('parent.manager.labels.grade')}</Label>
@@ -333,14 +333,16 @@ export function ChildManager() {
                   {editingId === c.id ? (
                      <div className="space-y-4">
                        <div className="grid md:grid-cols-4 gap-3">
-                         <div>
-                           <Label>Name</Label>
-                           <Input
-                             value={editDraft.name}
-                             onChange={(e) => setEditDraft((d) => ({ ...d, name: e.target.value }))}
-                             placeholder="Name"
-                           />
-                         </div>
+                            <div>
+                            <Label htmlFor="edit-child-name">Name</Label>
+                            <Input
+                              id="edit-child-name"
+                              name="edit-child-name"
+                              value={editDraft.name}
+                              onChange={(e) => setEditDraft((d) => ({ ...d, name: e.target.value }))}
+                              placeholder="Name"
+                            />
+                          </div>
                          <div>
                            <Label>Grade</Label>
                            <Select value={editDraft.grade} onValueChange={(v) => setEditDraft((d) => ({ ...d, grade: v }))}>

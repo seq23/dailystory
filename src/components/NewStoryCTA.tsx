@@ -151,11 +151,13 @@ const NewStoryCTA: React.FC<NewStoryCTAProps> = ({
     const el = btnRef.current;
     if (!el) return;
     const update = () => {
-      const h = el.getBoundingClientRect().height;
-      if (h && !Number.isNaN(h)) {
-        const factor = h <= 44 ? 0.8 : 0.92;
-        setIconPx(Math.max(16, Math.floor(h * factor)));
-      }
+      requestAnimationFrame(() => {
+        const h = el.getBoundingClientRect().height;
+        if (h && !Number.isNaN(h)) {
+          const factor = h <= 44 ? 0.8 : 0.92;
+          setIconPx(Math.max(16, Math.floor(h * factor)));
+        }
+      });
     };
     update();
     const unsubscribe = globalResizeService.observe(el, update);

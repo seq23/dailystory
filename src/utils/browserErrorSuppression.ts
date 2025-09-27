@@ -28,7 +28,10 @@ class BrowserErrorSuppression {
              lowerMessage.includes('vr') ||
              lowerMessage.includes('iframe which has both allow-scripts and allow-same-origin') ||
              lowerMessage.includes('sandbox attribute can escape its sandboxing') ||
-             lowerMessage.includes('deprecated api for given entry type');
+             lowerMessage.includes('deprecated api for given entry type') ||
+             lowerMessage.includes('deprecated feature used') ||
+             lowerMessage.includes('unchecked runtime.lasterror') ||
+             lowerMessage.includes('could not establish connection');
     }
 
     // Chrome extension runtime errors
@@ -37,7 +40,10 @@ class BrowserErrorSuppression {
         lowerMessage.includes('receiving end does not exist') ||
         lowerMessage.includes('extension context invalidated') ||
         lowerMessage.includes('cannot access contents of') ||
-        lowerMessage.includes('the message port closed before a response was received')) {
+        lowerMessage.includes('the message port closed before a response was received') ||
+        lowerMessage.includes('deprecated feature used') ||
+        lowerMessage.includes('permissions policy directive') ||
+        lowerMessage.includes('not allowed to use feature')) {
       this.suppressedCount++;
       return true;
     }
