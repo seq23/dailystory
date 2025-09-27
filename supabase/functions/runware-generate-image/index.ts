@@ -1,5 +1,6 @@
 // DEPLOY_MARKER: 2025-09-27T00:00:00Z - Optimized with echoing CORS and memoized lazy loading
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { phaseIntegrationOrchestrator } from '../_shared/PhaseIntegrationOrchestrator.js';
 
 // ============================================================================
 // 🎯 ORCHESTRATOR: OPTIMIZED IMAGE GENERATION ORCHESTRATOR
@@ -265,19 +266,11 @@ serve(async (req: Request): Promise<Response> => {
   }
 
   try {
-    // PHASE 5: Lazy load all dependencies in parallel
-    const [tierLogger, orchestrator] = await Promise.all([
-      bindTierLogger(payload.sessionId || 'unknown', requestId, req.headers.get('authorization')),
-      LazyServiceLoader.getPhaseIntegrationOrchestrator()
-    ]);
+    // PHASE 5: Load tier logger with direct orchestrator access
+    const tierLogger = await bindTierLogger(payload.sessionId || 'unknown', requestId, req.headers.get('authorization'));
 
-    if (!orchestrator) {
-      console.error('Failed to load phase orchestrator');
-      return corsResponse({ 
-        error: 'Service initialization failed',
-        escalationTarget: "TIER_4" 
-      }, req, 500);
-    }
+    // Use direct import for orchestrator (nuclear independence)
+    const orchestrator = phaseIntegrationOrchestrator;
 
     // PHASE 6: Process request with lazy-loaded services
     tierLogger.attempt('TIER_1', { storyLength: payload.pageText?.length || payload.storyText?.length });

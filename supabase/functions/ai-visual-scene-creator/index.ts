@@ -1,5 +1,6 @@
 // DEPLOY_MARKER: 2025-09-27T00:00:00Z - Optimized with echoing CORS and memoized lazy loading
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { phaseIntegrationOrchestrator } from '../_shared/PhaseIntegrationOrchestrator.js';
 
 // ============= MEMOIZED IMPORT SYSTEM =============
 const importCache = new Map<string, Promise<any>>();
@@ -26,23 +27,51 @@ async function createSupabaseClient() {
   }
 }
 
+// ============= NUCLEAR HARDCODED STYLE FRAMEWORKS =============
+// Nuclear independence - hardcoded with exact user specifications
+const NUCLEAR_HARDCODED_STYLE_FRAMEWORKS = {
+  'beginner': {
+    name: 'Contemporary Children\'s Book Illustration',
+    frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, warm natural lighting'
+  },
+  'easy': {
+    name: 'Contemporary Children\'s Book Illustration', 
+    frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, warm natural lighting'
+  },
+  'medium': {
+    name: 'Contemporary Children\'s Book Illustration',
+    frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, warm natural lighting'
+  },
+  'hard': {
+    name: '2.9D Rendered Illustration',
+    frameworkPrompt: '2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation'
+  },
+  'expert': {
+    name: '2.9D Rendered Illustration',
+    frameworkPrompt: '2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation'
+  }
+};
+
+// Nuclear helper function to get style framework by difficulty
+function getNuclearStyleFramework(difficulty: string) {
+  const normalizedDifficulty = difficulty?.toLowerCase() || 'medium';
+  const framework = NUCLEAR_HARDCODED_STYLE_FRAMEWORKS[normalizedDifficulty as keyof typeof NUCLEAR_HARDCODED_STYLE_FRAMEWORKS] || NUCLEAR_HARDCODED_STYLE_FRAMEWORKS['medium'];
+  return framework;
+}
+
 async function getPhaseOrchestrator() {
   try {
     const [
-      { getStyleFramework },
       { CharacterConsistencyService },
-      { UnifiedPlaceholderResolver },
-      { phaseIntegrationOrchestrator }
+      { UnifiedPlaceholderResolver }
     ] = await Promise.all([
-      memoizedImport('../_shared/styleFrameworks.js'),
       memoizedImport('../_shared/CharacterConsistencyService.js'),
-      memoizedImport('../_shared/UnifiedPlaceholderResolver.js'),
-      memoizedImport("../_shared/PhaseIntegrationOrchestrator.js")
+      memoizedImport('../_shared/UnifiedPlaceholderResolver.js')
     ]);
     
     return { 
       phaseIntegrationOrchestrator, 
-      getStyleFramework, 
+      getNuclearStyleFramework, 
       CharacterConsistencyService, 
       UnifiedPlaceholderResolver 
     };
@@ -412,7 +441,7 @@ serve(async (req: Request): Promise<Response> => {
       return createCorsErrorResponse('Service initialization failed', 500, req);
     }
 
-    const { CharacterConsistencyService, getStyleFramework, UnifiedPlaceholderResolver } = dependencies;
+    const { CharacterConsistencyService, getNuclearStyleFramework, UnifiedPlaceholderResolver } = dependencies;
 
     // PHASE 6: Process request with lazy-loaded services
     const storyText = payload.pageText || payload.storyText;
