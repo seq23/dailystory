@@ -267,41 +267,6 @@ export const ImageTierTester = () => {
     return 'expert';
   };
 
-  // Apply universal protections - PROTECTION SYSTEM REMOVED
-  const enhancedPrompt = basePrompt; // Use raw content directly
-  const protectionNegatives: string[] = []; // No protection negatives
-    
-    const negative: string[] = [
-      'stereotypes',
-      'caricature', 
-      'offensive depictions',
-      'cultural appropriation',
-      'disrespectful imagery'
-    ];
-    
-    // African American specific protections
-    if (ethnicity.includes('african') || ethnicity.includes('black') || avatar.includes('african')) {
-      positive.push(
-        'beautiful natural hair textures',
-        'diverse African American representation',
-        'confident and proud character',
-        'culturally authentic features'
-      );
-      negative.push(
-        'exaggerated features',
-        'outdated stereotypes', 
-        'inappropriate hair representations',
-        'culturally insensitive imagery'
-      );
-    }
-    
-    // Integrate positive protections into main prompt
-    const enhancedPrompt = positive.length > 0 
-      ? `${basePrompt}, ${positive.join(', ')}`
-      : basePrompt;
-    
-    return { prompt: enhancedPrompt, negatives: negative };
-  };
 
   // Advanced Error categorization with Boot vs Runtime Detection
   const categorizeError = (error: any, context?: string, response?: any): { 
@@ -1080,7 +1045,7 @@ export const ImageTierTester = () => {
             pageNumber: 1,
             isGuestUser: true,
             difficultyLevel: mapDifficultyLevel(userInfo),
-            protectionNegatives: protectionNegatives,
+            protectionNegatives: [],
             forceTier: 'COMPLETE_TIER_1',
             test: true
           }
@@ -1110,7 +1075,7 @@ export const ImageTierTester = () => {
             pageNumber: 1,
             isGuestUser: true,
             difficultyLevel: mapDifficultyLevel(userInfo),
-            protectionNegatives: protectionNegatives,
+            protectionNegatives: [],
             directMode: true,
             test: true
           }
@@ -1902,7 +1867,7 @@ export const ImageTierTester = () => {
               pageNumber: 1,
               isGuestUser: true, // ADDED: Missing field  
               difficultyLevel: mapDifficultyLevel(userInfo), // ADDED: Missing field
-              protectionNegatives: protectionNegatives // ADDED: Missing field
+              protectionNegatives: [] // ADDED: Missing field
             },
             config: {
               templateComplexity: templateMap[tier]
@@ -1918,7 +1883,7 @@ export const ImageTierTester = () => {
             pageNumber: 1,
             isGuestUser: true, // ADDED: Missing field
             difficultyLevel: mapDifficultyLevel(userInfo), // ADDED: Missing field
-            protectionNegatives: protectionNegatives, // ADDED: Missing field
+            protectionNegatives: [], // ADDED: Missing field
             templateComplexity: templateMap[tier],
             test: true
           };
