@@ -450,6 +450,24 @@ serve(async (req: Request): Promise<Response> => {
     }
 
     console.log(`DEBUG [${requestId}] Processing with story text length: ${storyText?.length || 0}`);
+    
+    // Build debug context for comprehensive response
+    const debugContext = {
+      requestId,
+      payload: {
+        hasStoryText: !!storyText,
+        storyTextLength: storyText?.length || 0,
+        hasUserInfo: !!userInfo,
+        userInfoKeys: userInfo ? Object.keys(userInfo) : [],
+        sessionId,
+        pageNumber: payload.pageNumber || 1
+      },
+      cultural: {
+        nativeLanguage: userInfo?.nativeLanguage || 'en',
+        skinTone: userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium',
+        avatarType: userInfo?.avatar?.type || userInfo?.avatarType || 'child'
+      }
+    };
 
     const result = await withPerformanceTracking(
       'ai-visual-scene-creator',
@@ -729,6 +747,16 @@ Generate a comprehensive scene with complete visual elements including backgroun
           mood: result.enhancedData?.mood || "happy",
           pose: result.enhancedData?.pose || "standing"
         },
+        debug: {
+          ...debugContext,
+          systemPrompt: 'AI visual scene creation system',
+          userPrompt: storyText,
+          aiSchema: result.enhancedData?.aiSchema || null,
+          status: 'SUCCESS',
+          primarySceneLength: result.primaryScene?.length || 0,
+          culturalContext: debugContext.cultural,
+          tier: result.tier || 'DIRECT_MODE'
+        },
         requestId: requestId,
         timestamp: new Date().toISOString()
       };
@@ -747,6 +775,16 @@ Generate a comprehensive scene with complete visual elements including backgroun
           action: result.enhancedData?.action || "walking",
           mood: result.enhancedData?.mood || "happy",
           pose: result.enhancedData?.pose || "standing"
+        },
+        debug: {
+          ...debugContext,
+          systemPrompt: 'AI visual scene creation system',
+          userPrompt: storyText,
+          aiSchema: result.enhancedData?.aiSchema || null,
+          status: 'SUCCESS',
+          primarySceneLength: result.primaryScene?.length || 0,
+          culturalContext: debugContext.cultural,
+          tier: result.tier || 'TIER_1_SCENE_ONLY'
         },
         requestId: requestId,
         timestamp: new Date().toISOString()

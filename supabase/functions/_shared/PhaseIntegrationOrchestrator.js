@@ -197,7 +197,7 @@ export class PhaseIntegrationOrchestrator {
   /**
    * Get enhanced prompt with Phase 1 & 2 data using the EXACT Tier 1 template structure
    */
-  async getEnhancedPrompt(userInfo, basePrompt, storyText, sessionId, enhancedStoryData = null) {
+  async getEnhancedPrompt(userInfo, basePrompt, storyText, sessionId, enhancedStoryData = null, forceTier = null) {
     try {
       const userId = userInfo?.id || userInfo?.userId || 'anonymous';
       const characterName = userInfo?.name || userInfo?.childName || 'Child';
@@ -205,8 +205,14 @@ export class PhaseIntegrationOrchestrator {
       console.log(`🎨 PHASE ORCHESTRATOR: Generating Tier 1 enhanced prompt template`, {
         userId,
         characterName,
-        basePromptLength: basePrompt?.length || 0
+        basePromptLength: basePrompt?.length || 0,
+        forceTier
       });
+
+      // Handle force tier settings - prevent escalation when force mode is specified
+      if (forceTier === 'COMPLETE_TIER_1') {
+        console.log(`🔒 Force Tier 1 mode activated - preventing escalation`);
+      }
 
       // Phase 1: Get character consistency data using proper getCharacterSeed for complete data
       const characterSeed = await this.characterConsistencyService.getCharacterSeed(
@@ -331,32 +337,49 @@ export class PhaseIntegrationOrchestrator {
           });
           
           // CRITICAL FIX: Check for aiError OR missing primaryScene and escalate to Tier 2.5A
-          if (aiError) {
+          // BUT respect force tier settings - prevent escalation when force mode is specified
+          if (aiError && forceTier !== 'COMPLETE_TIER_1') {
             console.warn('🚨 AI scene creator returned error:', aiError);
             console.log('🔄 AI scene creator failed - escalating to Tier 2.5A');
             throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_25A');
           }
           
-          if (!aiResult?.primaryScene) {
+          if (!aiResult?.primaryScene && forceTier !== 'COMPLETE_TIER_1') {
             console.warn('🚨 AI scene creator returned no primaryScene');
             console.log('🔄 AI scene creator missing primaryScene - escalating to Tier 2.5A');
             throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_25A');
           }
           
-          primaryScene = aiResult.primaryScene;
+          // If force tier is set and AI failed, provide fallback
+          if (forceTier === 'COMPLETE_TIER_1' && (aiError || !aiResult?.primaryScene)) {
+            console.warn('🔒 Force Tier 1: AI scene creator failed but escalation prevented');
+            primaryScene = `${characterName} in a beautiful story scene. ${storyText.substring(0, 100)}`;
+          } else {
+            primaryScene = aiResult.primaryScene;
+          }
         } catch (error) {
           console.warn('Failed to get AI primaryScene:', error.message);
           // CRITICAL FIX: Check for 503, Service unavailable, or ai-visual-scene-creator failures and escalate to Tier 2.5A
-          if (error.message.includes('503') || 
+          // BUT respect force tier settings - prevent escalation when force mode is specified
+          if (forceTier !== 'COMPLETE_TIER_1' && (
+              error.message.includes('503') || 
               error.message.includes('Service unavailable') ||
               error.message.includes('ai-visual-scene-creator') || 
               error.message.includes('timeout') ||
-              error.message.includes('NO_PRIMARY_SCENE_ESCALATE_TO_25A')) {
+              error.message.includes('NO_PRIMARY_SCENE_ESCALATE_TO_25A')
+            )) {
             console.log('🔄 AI scene creator failed - escalating to Tier 2.5A');
             throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_25A');
           }
-          console.log('🔄 AI scene creator failed - escalating to Tier 2.5A');
-          throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_25A');
+          
+          // If force tier is set, provide fallback instead of escalating
+          if (forceTier === 'COMPLETE_TIER_1') {
+            console.warn('🔒 Force Tier 1: Using fallback primaryScene due to AI failure');
+            primaryScene = `${characterName} in a beautiful story scene. ${storyText.substring(0, 100)}`;
+          } else {
+            console.log('🔄 AI scene creator failed - escalating to Tier 2.5A');
+            throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_25A');
+          }
         }
       }
       
@@ -792,6 +815,62 @@ if (!this.supabase) {
           phase2Complete: false
         }
       };
+    }
+  }
+
+  
+  // MAIN ORCHESTRATOR METHOD: Generate Tier 1 enhanced prompt 
+  async generateTier1EnhancedPrompt(userInfo, storyText, basePrompt, sessionId, forceTier = null) {
+    console.log(`🚀 PHASE ORCHESTRATOR: Starting Tier 1 prompt generation`, {
+      userId: userInfo?.id || userInfo?.userId || 'anonymous',
+      sessionId,
+      storyTextLength: storyText?.length || 0,
+      forceTier
+    });
+
+    try {
+      // Initialize phases if needed
+      if (!this.initialized) {
+        await this.initializePhases(userInfo, sessionId, `tier1-${Date.now()}`);
+      }
+
+      // Process story for character traits
+      const traitResult = await this.processStoryForTraits(userInfo, storyText, sessionId);
+
+      // Get enhanced prompt with all phase data
+      const enhancedResult = await this.getEnhancedPrompt(
+        userInfo, 
+        basePrompt || storyText, 
+        storyText, 
+        sessionId, 
+        null, 
+        forceTier
+      );
+
+      console.log(`✅ PHASE ORCHESTRATOR: Tier 1 generation completed`, {
+        success: enhancedResult.enhancementSuccessful,
+        templateStructure: enhancedResult.templateStructure,
+        hasTraits: traitResult.processedSuccessfully,
+        forceTier
+      });
+
+      return enhancedResult;
+    } catch (error) {
+      console.error(`❌ PHASE ORCHESTRATOR: Tier 1 generation failed`, { error, forceTier });
+      
+      // For force tier mode, don't escalate - return error result
+      if (forceTier === 'COMPLETE_TIER_1') {
+        console.warn('🔒 Force Tier 1: Suppressing escalation, returning failure');
+        return {
+          enhancedPrompt: basePrompt || storyText,
+          primaryScene: `${userInfo?.name || 'Child'} in a story scene`,
+          enhancementSuccessful: false,
+          templateStructure: 'FORCE_TIER_1_FAILED',
+          error: error.message
+        };
+      }
+      
+      throw error;
     }
   }
 

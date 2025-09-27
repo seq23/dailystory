@@ -132,6 +132,8 @@ interface TestResult {
     chosenPath?: string; // 'Orchestrator Mode' or 'Direct Mode'
     orchestratorHealth?: 'healthy' | 'unhealthy'; // Health status of orchestrator
     triageResult?: any; // Full triage check result
+    tierPathResult?: string; // Tier path result message
+    debug?: any; // Debug information from AI functions
   };
 }
 
@@ -952,17 +954,18 @@ export const ImageTierTester = () => {
         details: {
           processingTime,
           requestId: response.data?.requestId,
-          aiSchema: response.data?.aiSchema,
+          aiSchema: response.data?.aiSchema || response.data?.debug?.aiSchema,
           primaryScene: response.data?.primaryScene,
-          setting: response.data?.aiSchema?.setting,
-          action: response.data?.aiSchema?.action,
-          mood: response.data?.aiSchema?.mood,
-          pose: response.data?.aiSchema?.pose,
+          setting: response.data?.aiSchema?.setting || response.data?.debug?.aiSchema?.setting,
+          action: response.data?.aiSchema?.action || response.data?.debug?.aiSchema?.action,
+          mood: response.data?.aiSchema?.mood || response.data?.debug?.aiSchema?.mood,
+          pose: response.data?.aiSchema?.pose || response.data?.debug?.aiSchema?.pose,
           positivePrompt: response.data?.positivePrompt,
           negativePrompt: response.data?.negativePrompt,
           styleFramework: response.data?.styleFrameworkUsed,
           sceneGenerationOnly: true,
           testType: 'REAL',
+          debug: response.data?.debug, // Include debug information
           errorCategory: category as any,
           probableCause,
           error: response.error?.message || response.data?.error
@@ -1095,9 +1098,24 @@ export const ImageTierTester = () => {
       const hasPrimaryScene = response.data?.primaryScene && response.data.primaryScene.length > 0;
       steps[2].status = hasPrimaryScene ? 'success' : 'error';
       
+      // CRITICAL: Detect escalation responses and treat as Tier 1 failures
+      const hasEscalationAction = response.data?.nextAction && 
+        (response.data.nextAction.includes('ESCALATE') || response.data.nextAction.includes('escalate'));
+      const isEscalationResponse = hasEscalationAction || 
+        (response.data?.templateStructure && response.data.templateStructure !== 'COMPLETE_TIER_1');
+      
+      // If this is an escalation response, Force Tier 1 should be considered failed
+      if (isEscalationResponse) {
+        steps[2].status = 'error';
+        console.warn(`Force Tier 1 received escalation response - treating as failure:`, {
+          nextAction: response.data?.nextAction,
+          templateStructure: response.data?.templateStructure
+        });
+      }
+      
       // Step 4: Validate AI Schema (DEBUG ONLY - NOT A FAILURE CONDITION)
       steps[3].status = 'running';
-      const aiSchema = response.data?.aiSchema;
+      const aiSchema = response.data?.aiSchema || response.data?.debug?.aiSchema;
       const schemaCompleteness = {
         setting: !!(aiSchema?.setting),
         action: !!(aiSchema?.action), 
@@ -1122,15 +1140,18 @@ export const ImageTierTester = () => {
       const hasImage = !!(response.data?.imageURL || response.data?.imageUrl);
       steps[5].status = hasImage ? 'success' : 'error';
 
-      // Determine overall success
-      const overallSuccess = !response.error && hasPrimaryScene && hasImage;
+      // Determine overall success - Force Tier 1 fails if escalation occurs
+      const overallSuccess = !response.error && hasPrimaryScene && hasImage && !isEscalationResponse;
       
       // Categorize error type if failed
       let errorCategory = null;
       let probableCause = null;
       
       if (!overallSuccess) {
-        if (response.error?.message?.includes('503') || response.error?.message?.includes('Service Unavailable')) {
+        if (isEscalationResponse) {
+          errorCategory = 'TIER_1_ESCALATION_FAILURE';
+          probableCause = `Force Tier 1 failed: System attempted to escalate to ${response.data?.nextAction || 'higher tier'} instead of completing Tier 1`;
+        } else if (response.error?.message?.includes('503') || response.error?.message?.includes('Service Unavailable')) {
           errorCategory = 'NETWORK';
           probableCause = `${chosenPath} failed: Edge function deployment sync issue`;
         } else if (response.error?.message?.includes('NO_PRIMARY_SCENE_ESCALATE_TO_25A')) {
@@ -1189,15 +1210,15 @@ export const ImageTierTester = () => {
         details: {
           processingTime,
           requestId: response.data?.requestId,
-          chosenPath,
+          chosenPath: chosenPath,
           orchestratorHealth: triageCheck.available ? 'healthy' : 'unhealthy',
           triageResult: triageCheck,
-          aiSchema: response.data?.aiSchema,
+          aiSchema: response.data?.aiSchema || response.data?.debug?.aiSchema,
           primaryScene: response.data?.primaryScene,
-          setting: response.data?.aiSchema?.setting,
-          action: response.data?.aiSchema?.action,
-          mood: response.data?.aiSchema?.mood,
-          pose: response.data?.aiSchema?.pose,
+          setting: response.data?.aiSchema?.setting || response.data?.debug?.aiSchema?.setting,
+          action: response.data?.aiSchema?.action || response.data?.debug?.aiSchema?.action,
+          mood: response.data?.aiSchema?.mood || response.data?.debug?.aiSchema?.mood,
+          pose: response.data?.aiSchema?.pose || response.data?.debug?.aiSchema?.pose,
           enhancedPrompt: response.data?.enhancedPrompt,
           positivePrompt: response.data?.positivePrompt || response.data?.enhancedPrompt,
           negativePrompt: response.data?.negativePrompt,
@@ -1208,6 +1229,11 @@ export const ImageTierTester = () => {
           primarySceneLength: response.data?.primaryScene?.length || 0,
           tier: response.data?.tier,
           escalationPath: response.data?.escalationPath,
+          nextAction: response.data?.nextAction, // Show escalation actions
+          templateStructure: response.data?.templateStructure, // Show template structure
+          tierPathResult: isEscalationResponse ? 'Both Tier 1 paths failed - escalation attempted' : 
+                         (chosenPath === 'Direct Mode' ? 'Direct Mode successful' : 'Tier 1 Complete Flow successful'),
+          debug: response.data?.debug, // Include debug information
           error: response.error?.message || response.data?.error,
           errorCategory,
           probableCause
