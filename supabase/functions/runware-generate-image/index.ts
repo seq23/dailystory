@@ -217,19 +217,31 @@ serve(async (req: Request): Promise<Response> => {
         
         if (tier25aResponse.data?.success && tier25aResponse.data?.imageURL) {
           const result = {
+            success: true,
             imageURL: tier25aResponse.data.imageURL,
             provider: 'tier-2.5a-fallback',
             tier: 'TIER_2.5A',
             requestId: requestId,
             timestamp: new Date().toISOString(),
-            tier1FailureReason: errorMessage
+            tier1FailureReason: errorMessage,
+            // Complete cascade history for debugging
+            cascadeHistory: [
+              `❌ Tier 1 Failed: ${errorMessage.includes('NO_PRIMARY_SCENE') ? 'NO_PRIMARY_SCENE (missing service key)' : errorMessage}`,
+              `❌ Direct Mode Failed: ${errorMessage.includes('Supabase client') ? 'Supabase client unavailable' : 'Direct mode fallback failed'}`,
+              '✅ Tier 2.5A Success'
+            ],
+            tierFailureHistory: {
+              tier1: errorMessage,
+              directMode: 'Escalated to 2.5A fallback',
+              finalTier: 'TIER_2.5A'
+            },
+            escalationPath: 'orchestrator_failed → direct_mode_failed → tier_2.5a_success'
           };
           
           tierLogger.success('TIER_2.5A', { result });
           console.log(`SUCCESS [${requestId}] Tier 2.5A fallback completed`);
           
           return corsResponse({
-            success: true,
             ...result
           }, req);
         } else {

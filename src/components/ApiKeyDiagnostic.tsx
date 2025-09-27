@@ -46,6 +46,14 @@ export const ApiKeyDiagnostic: React.FC = () => {
         const env = healthData?.environment || {};
         addResult('success', '✅ Orchestrator is healthy', healthData);
         
+        // Test service role key availability for Direct Mode
+        addResult('warning', '🔑 Testing SUPABASE_SERVICE_ROLE_KEY availability for Direct Mode...');
+        if (env.SUPABASE_SERVICE_ROLE_KEY) {
+          addResult('success', '✅ SUPABASE_SERVICE_ROLE_KEY is available - Direct Mode should work');
+        } else {
+          addResult('warning', '⚠️ SUPABASE_SERVICE_ROLE_KEY not found - Direct Mode may fail');
+        }
+        
         // Handle environment info - if missing, show warning instead of error
         if (healthData?.environment) {
           addResult(env.runwareApiKeyPresent ? 'success' : 'error', 

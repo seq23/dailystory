@@ -1063,6 +1063,20 @@ export const ImageTierTester = () => {
         chosenPath = 'Direct Mode';
         steps[1].name = '🎯 Using Direct Mode (Nuclear Fallback)';
         
+        // Enhanced orchestrator health detection and error context
+        if (chosenPath === 'Direct Mode') {
+          DebugLogger.log('image', '🔄 Force Tier 1: Orchestrator unhealthy, using Direct Mode', {
+            orchestratorHealth: triageCheck,
+            directModeReason: 'Orchestrator failed health check',
+            fallbackPath: 'orchestrator_unhealthy → direct_mode_activated'
+          });
+        } else {
+          DebugLogger.log('image', '✅ Force Tier 1: Orchestrator healthy, proceeding with standard flow', {
+            orchestratorHealth: triageCheck,
+            orchestratorPath: 'orchestrator_healthy → standard_flow'
+          });
+        }
+        
         DebugLogger.log('image', '🎯 Force Tier 1: Direct Mode (unhealthy orchestrator)', {
           forceTier: 'DIRECT_MODE',
           path: 'direct_mode',
@@ -2255,12 +2269,12 @@ export const ImageTierTester = () => {
     try {
       DebugLogger.log('image', '🏗️ Testing mixed architecture cascade flow');
       
-      // Updated tier configurations to handle mixed architectures
+      // Updated tier configurations to standardize with Debug Real Routing
       const tierConfigurations = [
         {
-          name: 'Tier 1 (via Orchestrator)', 
+          name: 'Orchestrator (Health Check)', 
           function: 'runware-generate-image',
-          architecture: 'PURE_TYPESCRIPT',
+          architecture: 'ORCHESTRATOR_PATTERN',
           payload: {
             storyText: testStoryText,
             userInfo: buildUserInfo(),
@@ -2268,7 +2282,8 @@ export const ImageTierTester = () => {
             pageNumber: 1,
             storyId: 'cascade-test-story',
             isGuestUser: false,
-            difficultyLevel: 'medium'
+            difficultyLevel: 'medium',
+            test: true
           }
         },
         {
@@ -2284,6 +2299,21 @@ export const ImageTierTester = () => {
             isGuestUser: false,
             isDebugMode: true,
             directMode: true
+          }
+        },
+        {
+          name: 'Orchestrator (Health Check)', 
+          function: 'runware-generate-image',
+          architecture: 'ORCHESTRATOR_PATTERN',
+          payload: {
+            storyText: testStoryText,
+            userInfo: buildUserInfo(),
+            sessionId: 'test-session',
+            pageNumber: 1,
+            storyId: 'cascade-test-story',
+            isGuestUser: false,
+            difficultyLevel: 'medium',
+            test: true
           }
         },
         {

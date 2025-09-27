@@ -849,13 +849,7 @@ Generate a comprehensive scene with complete visual elements including backgroun
         tier: result.tier || 'TIER_1_SCENE_ONLY',
         primaryScene: result.primaryScene || storyText || "Generated scene",
         enhancedData: result.enhancedData,
-        aiSchema: result.enhancedData?.aiSchema || {
-          primaryScene: result.primaryScene || storyText || "Generated scene",
-          setting: result.enhancedData?.setting || "magical forest",
-          action: result.enhancedData?.action || "walking",
-          mood: result.enhancedData?.mood || "happy",
-          pose: result.enhancedData?.pose || "standing"
-        },
+        // Remove redundant aiSchema construction - already in enhancedData
         debug: {
           ...debugContext,
           systemPrompt: requestBody?.messages?.[0]?.content || 'AI visual scene creation system',
