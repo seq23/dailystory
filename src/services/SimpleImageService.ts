@@ -1237,12 +1237,20 @@ export class SimpleImageService {
       return { unhealthy: false };
     }
     
-    // Consider orchestrator unhealthy if multiple services are down
-    const downServices = Object.entries(healthStatus).filter(([_, status]) => status === false);
+    // Aggressively bypass if orchestrator specifically is unhealthy
+    if (healthStatus.orchestrator !== 'healthy') {
+      return { 
+        unhealthy: true, 
+        reason: `Orchestrator status: ${healthStatus.orchestrator}` 
+      };
+    }
+    
+    // Also bypass if multiple services are unhealthy (fallback logic)
+    const downServices = Object.entries(healthStatus).filter(([_, status]) => status !== 'healthy');
     if (downServices.length >= 2) {
       return { 
         unhealthy: true, 
-        reason: `${downServices.length} services down: ${downServices.map(([name]) => name).join(', ')}` 
+        reason: `${downServices.length} services unhealthy: ${downServices.map(([name, status]) => `${name}(${status})`).join(', ')}` 
       };
     }
     
