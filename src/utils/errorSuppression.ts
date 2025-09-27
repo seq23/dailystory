@@ -78,9 +78,16 @@ class ErrorSuppressionManager {
   }
 
   getStatus() {
+    let environment = 'browser';
+    try {
+      environment = (typeof process !== 'undefined' && process.env && process.env.NODE_ENV) || 'development';
+    } catch (error) {
+      // Safe fallback for browser environments
+    }
+    
     return {
       enabled: this.suppressionEnabled,
-      environment: process.env.NODE_ENV || 'development'
+      environment
     };
   }
 }
@@ -88,7 +95,12 @@ class ErrorSuppressionManager {
 export const errorSuppressionManager = new ErrorSuppressionManager();
 
 // Auto-enable in production
-if (process.env.NODE_ENV === 'production') {
+try {
+  if (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'production') {
+    errorSuppressionManager.enable();
+  }
+} catch (error) {
+  // Safe fallback for browser environments - enable by default
   errorSuppressionManager.enable();
 }
 

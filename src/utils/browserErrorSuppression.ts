@@ -19,7 +19,7 @@ class BrowserErrorSuppression {
     // In debug mode, suppress browser noise but not application errors
     if (this.isDebugMode()) {
       // ALWAYS suppress browser extensions, permissions policy, iframe warnings, and deprecated APIs even in debug mode
-      return lowerMessage.includes('chrome-extension://') || 
+      const shouldSuppress = lowerMessage.includes('chrome-extension://') || 
              lowerMessage.includes('moz-extension://') ||
              lowerMessage.includes('permissions policy') ||
              lowerMessage.includes('unrecognized feature') ||
@@ -31,11 +31,22 @@ class BrowserErrorSuppression {
              lowerMessage.includes('deprecated api for given entry type') ||
              lowerMessage.includes('deprecated feature used') ||
              lowerMessage.includes('unchecked runtime.lasterror') ||
-             lowerMessage.includes('could not establish connection');
+             lowerMessage.includes('unchecked runtime.lasterror') ||
+             lowerMessage.includes('runtime.lasterror') ||
+             lowerMessage.includes('could not establish connection') ||
+             lowerMessage.includes('receiving end does not exist');
+             
+      if (shouldSuppress) {
+        console.debug('🔇 [DEBUG] Suppressed browser error:', message.substring(0, 100));
+        this.suppressedCount++;
+      }
+      return shouldSuppress;
     }
 
     // Chrome extension runtime errors
     if (lowerMessage.includes('unchecked runtime.lasterror') ||
+        lowerMessage.includes('unchecked runtime.lasterror') ||
+        lowerMessage.includes('runtime.lasterror') ||
         lowerMessage.includes('could not establish connection') ||
         lowerMessage.includes('receiving end does not exist') ||
         lowerMessage.includes('extension context invalidated') ||
@@ -69,15 +80,22 @@ class BrowserErrorSuppression {
   }
 
   private shouldSuppressPromiseRejection(reason: any): boolean {
-    if (this.isDebugMode()) return false;
-
     const reasonStr = String(reason).toLowerCase();
     
-    // Extension-related promise rejections
-    if (reasonStr.includes('chrome-extension://') ||
+    // Extension-related promise rejections - suppress even in debug mode
+    const isExtensionError = reasonStr.includes('chrome-extension://') ||
+        reasonStr.includes('moz-extension://') ||
         reasonStr.includes('extension') ||
         reasonStr.includes('runtime.lasterror') ||
-        reasonStr.includes('connection') && reasonStr.includes('receiving end')) {
+        reasonStr.includes('unchecked runtime.lasterror') ||
+        reasonStr.includes('could not establish connection') ||
+        reasonStr.includes('receiving end does not exist') ||
+        (reasonStr.includes('connection') && reasonStr.includes('receiving end'));
+    
+    if (isExtensionError) {
+      if (this.isDebugMode()) {
+        console.debug('🔇 [DEBUG] Suppressed promise rejection:', reasonStr.substring(0, 100));
+      }
       this.suppressedCount++;
       return true;
     }
@@ -201,7 +219,15 @@ export const browserErrorSuppression = new BrowserErrorSuppression();
 browserErrorSuppression.enable();
 
 // Add debugging functions in development
-if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
-  (window as any).browserErrorSuppressionStatus = () => browserErrorSuppression.getStatus();
-  (window as any).detectExtensions = () => browserErrorSuppression.detectProblematicExtensions();
+if (typeof window !== 'undefined') {
+  try {
+    const isDevelopment = typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'development';
+    if (isDevelopment) {
+      (window as any).browserErrorSuppressionStatus = () => browserErrorSuppression.getStatus();
+      (window as any).detectExtensions = () => browserErrorSuppression.detectProblematicExtensions();
+    }
+  } catch (error) {
+    // Safely ignore process.env access errors in browser environments
+    console.debug('Browser environment detected, skipping development-only features');
+  }
 }
