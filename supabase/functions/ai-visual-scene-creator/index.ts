@@ -514,9 +514,74 @@ serve(async (req: Request): Promise<Response> => {
             throw new Error('OpenAI returned empty response');
           }
 
+          // Check if this is Direct Mode - if so, call runware-template-cd for real image generation
+          if (payload.directMode === true) {
+            console.log(`🎯 [${requestId}] Direct Mode activated - calling runware-template-cd`);
+            
+            try {
+              if (!supabase) {
+                throw new Error('Supabase client not available for direct mode');
+              }
+
+              const templateResponse = await supabase.functions.invoke('runware-template-cd', {
+                body: {
+                  storyText,
+                  pageText: payload.pageText,
+                  userInfo,
+                  sessionId,
+                  pageNumber: payload.pageNumber || 1,
+                  templateComplexity: 'C',
+                  failedTierData: {
+                    enhancedSceneData: generatedScene,
+                    tier: 'DIRECT_MODE',
+                    primaryScene: generatedScene
+                  }
+                }
+              });
+
+              if (templateResponse.error) {
+                throw new Error(`Template CD failed: ${templateResponse.error.message}`);
+              }
+
+              const templateData = templateResponse.data;
+              if (!templateData?.success || !validateImageURL(templateData.imageURL)) {
+                throw new Error('Template CD returned invalid response');
+              }
+
+              console.log(`✅ [${requestId}] Direct Mode success - real image generated`);
+              
+              return {
+                imageURL: templateData.imageURL,
+                provider: 'runware-template-cd',
+                tier: 'DIRECT_MODE',
+                primaryScene: generatedScene,
+                enhancedData: {
+                  ...validation.enhancedData,
+                  realAIGenerated: true,
+                  openaiModel: 'gpt-4o-mini',
+                  directMode: true,
+                  templateResponse: templateData
+                }
+              };
+
+            } catch (directModeError) {
+              console.error(`❌ [${requestId}] Direct Mode failed:`, directModeError);
+              const errorMessage = directModeError instanceof Error ? directModeError.message : String(directModeError);
+              return corsResponse({
+                success: false,
+                error: `Direct Mode image generation failed: ${errorMessage}`,
+                nextAction: 'ESCALATE_TIER_2_5C',
+                primaryScene: generatedScene,
+                enhancedData: validation.enhancedData
+              }, req, 500);
+            }
+          }
+
+          // Non-direct mode: return only scene data (no imageURL)
+          console.log(`📝 [${requestId}] Scene-only mode - returning primaryScene without image`);
+          
           return {
-            imageURL: `https://via.placeholder.com/512x512/87CEEB/FFFFFF?text=Real+AI+Generated`,
-            provider: 'ai-visual-scene-creator-real',
+            tier: 'TIER_1_SCENE_ONLY',
             primaryScene: generatedScene,
             enhancedData: {
               ...validation.enhancedData,
@@ -539,15 +604,35 @@ serve(async (req: Request): Promise<Response> => {
 
     console.log(`SUCCESS [${requestId}] AI visual scene creation completed`);
     
-    // Ensure we have the correct result type
+    // Handle different result types based on mode
     if ('imageURL' in result) {
+      // Direct Mode success - return with real imageURL
       const response = {
         success: true,
         imageURL: result.imageURL,
         provider: result.provider,
+        tier: result.tier || 'DIRECT_MODE',
         primaryScene: result.primaryScene || storyText || "Generated scene",
         enhancedData: result.enhancedData,
-        // Add aiSchema for UI consistency
+        aiSchema: result.enhancedData?.aiSchema || {
+          primaryScene: result.primaryScene || storyText || "Generated scene",
+          setting: result.enhancedData?.setting || "magical forest",
+          action: result.enhancedData?.action || "walking",
+          mood: result.enhancedData?.mood || "happy",
+          pose: result.enhancedData?.pose || "standing"
+        },
+        requestId: requestId,
+        timestamp: new Date().toISOString()
+      };
+      
+      return corsResponse(response, req);
+    } else if ('primaryScene' in result) {
+      // Scene-only mode success - no imageURL
+      const response = {
+        success: true,
+        tier: result.tier || 'TIER_1_SCENE_ONLY',
+        primaryScene: result.primaryScene || storyText || "Generated scene",
+        enhancedData: result.enhancedData,
         aiSchema: result.enhancedData?.aiSchema || {
           primaryScene: result.primaryScene || storyText || "Generated scene",
           setting: result.enhancedData?.setting || "magical forest",

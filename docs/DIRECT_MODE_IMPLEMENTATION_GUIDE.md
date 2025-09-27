@@ -24,10 +24,15 @@ Direct Mode is a nuclear independent image generation pathway that provides robu
 #### Direct Mode Path  
 1. `runware-generate-image` orchestrator enhancement fails
 2. Direct call to `ai-visual-scene-creator` with `directMode: true`
-3. Self-contained avatar processing and prompt building
-4. Character consistency and cultural intelligence (internal)
-5. Direct image generation via runware-template-cd
-6. Returns with `tier: 'DIRECT_MODE'` identifier
+3. Generate `primaryScene` via OpenAI API
+4. Call `runware-template-cd` internally with generated scene data
+5. Return real `imageURL` with `tier: 'DIRECT_MODE'` identifier
+
+#### Scene-Only Mode Path
+1. Call `ai-visual-scene-creator` without `directMode` flag
+2. Generate `primaryScene` via OpenAI API  
+3. Return only scene data with `tier: 'TIER_1_SCENE_ONLY'`
+4. No `imageURL` returned (intended for scene testing)
 
 ## Implementation Details
 
@@ -38,65 +43,118 @@ Direct Mode is triggered when:
 - API boot failures prevent normal orchestrator flow
 
 ### Request Format
+
+**Direct Mode Request**:
 ```javascript
 const directModeRequest = {
-  pageText: "Story text for image generation",
-  avatarIdentity: {
-    name: "Character name",
-    age: 12,
-    userName: "user123"
+  storyText: "Story content for scene generation", // or pageText
+  userInfo: {
+    favoriteColor: "blue",
+    avatar: { skinTone: "medium", hairColor: "brown" }
   },
   sessionId: "session-abc123",
-  directMode: true  // This flag triggers Direct Mode
+  pageNumber: 1,
+  directMode: true  // Triggers Direct Mode with real image generation
+};
+```
+
+**Scene-Only Request**:
+```javascript
+const sceneOnlyRequest = {
+  storyText: "Story content for scene generation",
+  userInfo: { /* user preferences */ },
+  sessionId: "session-abc123"
+  // No directMode flag = scene-only response
 };
 ```
 
 ### Response Format
+
+**Direct Mode Success Response**:
 ```javascript
-// Success Response
 {
   success: true,
-  tier: 'DIRECT_MODE',
-  imageURL: 'https://...',
-  positivePrompt: 'Comprehensive prompt built by Direct Mode...',
-  negativePrompt: 'Quality and safety prompts...',
-  metadata: {
-    promptSource: 'DIRECT_MODE',
-    characterConsistency: true,
-    culturalIntelligence: 'FULL',
-    enhancementCount: 0,
-    processingTime: 2.3
-  }
-}
-
-// Failure Response  
-{
-  success: false,
-  tier: 'DIRECT_MODE_FAILED',
-  error: 'Specific failure reason',
-  templateStructure: 'TIER_1_FAILED'
+  imageURL: "https://im.runware.ai/image/...", // Real image URL
+  provider: "runware-template-cd",
+  tier: "DIRECT_MODE",
+  primaryScene: "Generated visual scene description...",
+  enhancedData: {
+    realAIGenerated: true,
+    openaiModel: "gpt-4o-mini",
+    directMode: true
+  },
+  aiSchema: { /* structured scene data */ },
+  requestId: "abc123",
+  timestamp: "2025-09-27T..."
 }
 ```
 
-## Feature Parity
+**Scene-Only Success Response**:
+```javascript
+{
+  success: true,
+  tier: "TIER_1_SCENE_ONLY",
+  primaryScene: "Generated visual scene description...",
+  enhancedData: {
+    realAIGenerated: true,
+    openaiModel: "gpt-4o-mini"
+  },
+  aiSchema: { /* structured scene data */ },
+  requestId: "abc123",
+  timestamp: "2025-09-27T..."
+  // Note: No imageURL field
+}
+```
 
-### Character Consistency
-- **Avatar Identity Processing**: Full avatar identity validation and processing
-- **Session-Based Caching**: Character appearance cached across pages
-- **Seed Generation**: Consistent character seeds for visual continuity
-- **Database Integration**: Character data stored and retrieved properly
+**Direct Mode Failure Response**:
+```javascript
+{
+  success: false,
+  error: "Direct Mode image generation failed: Template CD failed",
+  nextAction: "ESCALATE_TIER_2_5C",
+  primaryScene: "Generated scene (if available)",
+  enhancedData: { /* available data */ }
+}
+```
 
-### Cultural Intelligence
-- **Skin Tone Variations**: Complete cultural heritage mapping
-- **Hair Descriptions**: 73-variation hair mapping system
-- **Cultural Context**: Respectful representation across ethnicities
-- **Feature Enhancement**: Detailed physical characteristic descriptions
+## Usage Scenarios
 
-### Prompt Building
-- **Comprehensive Templates**: Full template system with cultural intelligence
-- **Quality Prompts**: Professional photography and artistic style prompts
-- **Safety Prompts**: COPPA-compliant negative prompts for child safety
-- **Brand Framework**: Consistent style framework integration
+### Frontend Direct Mode (Orchestrator Unhealthy)
+When the orchestrator is unavailable, frontend can call Direct Mode:
+```javascript
+const response = await supabase.functions.invoke('ai-visual-scene-creator', {
+  body: { 
+    directMode: true, 
+    storyText: "A young girl explores a magical garden...", 
+    userInfo: { favoriteColor: "purple" },
+    sessionId: "session_123",
+    pageNumber: 1 
+  }
+});
+// Returns real imageURL via internal runware-template-cd call
+```
+
+### Orchestrator Fallback Path  
+When Tier 1 enhancement fails, orchestrator triggers Direct Mode:
+1. `runware-generate-image` attempts PhaseIntegrationOrchestrator
+2. On failure, calls `ai-visual-scene-creator` with `directMode: true`
+3. Direct Mode generates scene and calls `runware-template-cd` internally
+4. Returns real `imageURL` to orchestrator
+5. If Direct Mode fails, orchestrator has final fallback to `runware-template-cd`
+
+### Scene Testing Mode
+For testing scene generation without image creation:
+```javascript
+const response = await supabase.functions.invoke('ai-visual-scene-creator', {
+  body: { 
+    storyText: "A story for scene testing...",
+    userInfo: { /* preferences */ },
+    sessionId: "test_session"
+    // No directMode = scene-only response
+  }
+});
+// Returns: primaryScene, enhancedData, aiSchema (no imageURL)
+```
 
 ## Performance Characteristics
 
@@ -182,10 +240,10 @@ Direct Mode failures show:
    - Failure: "Tier 1 Failed" with clear error message
 
 ### Expected Behaviors
-- **Normal Case**: Orchestrator succeeds → "Tier 1 Success"
-- **Fallback Case**: Orchestrator fails → Direct Mode succeeds → "Direct Mode Success"  
-- **Complete Failure**: Both fail → "Tier 1 Failed"
-- **No Escalation**: Never shows Tier 2.5A content during Force Tier 1
+- **Scene-Only Mode**: No `directMode` → Returns `primaryScene` only (no `imageURL`)
+- **Direct Mode Success**: `directMode: true` → Returns real `imageURL` and `tier: "DIRECT_MODE"`
+- **Direct Mode Fallback**: If orchestrator calls Direct Mode → Real image generation via template-cd
+- **No Placeholder Images**: All `imageURL` responses are real, validated URLs
 
 ### Performance Testing
 Monitor Direct Mode performance characteristics:
