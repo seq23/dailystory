@@ -1424,23 +1424,7 @@ export const ImageTierTester = () => {
           };
         } else {
           cascadeHistory.push(`❌ Orchestrator failed (${orchestratorTime}ms)`);
-        }
-      } catch (error) {
-        cascadeHistory.push(`❌ Orchestrator exception: ${error.message}`);
-            userInfo: userInfo,
-            sessionId: sessionId,
-            storyId: sessionId, // ADDED: Missing field
-            pageNumber: 1,
-            isGuestUser: true, // ADDED: Missing field (default to guest for testing)
-            difficultyLevel: mapDifficultyLevel(userInfo), // ADDED: Missing field
-            protectionNegatives: protectionNegatives // ADDED: Missing field
-            // NO skipTier25 - let orchestrator handle natural cascade
-          }
-        });
-
-        const orchestratorTime = Date.now() - orchestratorStartTime;
-        
-        if (orchestratorResponse.error || !orchestratorResponse.data?.success) {
+          
           // Orchestrator failed - check if it's a boot failure (503) or runtime error
           const errorAnalysis = categorizeError(orchestratorResponse.error, 'orchestrator', orchestratorResponse);
           
@@ -2013,9 +1997,8 @@ export const ImageTierTester = () => {
             }
           };
         }
-      } catch (orchestratorException) {
-        // Network/connection error with orchestrator
-        const exceptionAnalysis = categorizeError(orchestratorException, 'orchestrator-exception');
+
+        // Add the result badge and fallback path to details
         cascadeHistory.push(`❌ Orchestrator Exception: ${exceptionAnalysis.probableCause}`);
         
         // Still try Direct Mode as fallback
@@ -2079,7 +2062,6 @@ export const ImageTierTester = () => {
             }
           };
         }
-      }
       }
 
       // Add the result badge and fallback path to details
