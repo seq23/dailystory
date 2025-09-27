@@ -1027,4 +1027,31 @@ RULES:
   }
 }
 
-export default handleRequest;
+// ============= SERVE WRAPPER WITH CORS =============
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+
+serve(async (req: Request) => {
+  // Handle OPTIONS requests for CORS
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { 
+      status: 204, 
+      headers: corsHeaders 
+    });
+  }
+  
+  const response = await handleRequest(req);
+  
+  // Ensure CORS headers are applied to all responses
+  const headers = new Headers(response.headers);
+  Object.entries(corsHeaders).forEach(([key, value]) => {
+    if (!headers.has(key)) {
+      headers.set(key, value);
+    }
+  });
+  
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers
+  });
+});

@@ -1101,16 +1101,15 @@ async function handleRequest(req: Request): Promise<Response> {
 
 // ============= CORS HEADERS AND SERVE =============
 serve(async (req: Request) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: corsHeaders });
-  }
-  
+  // Remove duplicate OPTIONS handler - handleRequest() already handles it
   const response = await handleRequest(req);
   
-  // Add CORS headers to response
+  // Add CORS headers to response if not already present
   const headers = new Headers(response.headers);
   Object.entries(corsHeaders).forEach(([key, value]) => {
-    headers.set(key, value);
+    if (!headers.has(key)) {
+      headers.set(key, value);
+    }
   });
   
   return new Response(response.body, {
