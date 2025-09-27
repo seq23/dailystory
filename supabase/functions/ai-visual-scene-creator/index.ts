@@ -469,6 +469,7 @@ serve(async (req: Request): Promise<Response> => {
       }
     };
 
+    const startTime = Date.now();
     const result = await withPerformanceTracking(
       'ai-visual-scene-creator',
       'gpt-4o',
@@ -513,12 +514,14 @@ serve(async (req: Request): Promise<Response> => {
           let aiResponse;
           let lastError;
           let successfulModel = null;
+          let requestBody;
+          let aiData;
           
           for (const modelConfig of AI_MODELS) {
             try {
               console.log(`🤖 [${requestId}] Attempting AI generation with model: ${modelConfig.name}`);
               
-              const requestBody: any = {
+              requestBody = {
                 model: modelConfig.name,
                 messages: [
                   { 
@@ -587,18 +590,18 @@ ${characterAppearance ? `CHARACTER APPEARANCE NOTES: ${characterAppearance}` : '
 Generate a comprehensive scene with complete visual elements including background, lighting, composition, setting, mood, style, secondary characters (categorized as humans vs pets), and key objects. Maintain character and setting continuity while showcasing the current page's action. Use the provided character data exactly and never describe the main character's skin tone.`
                   }
                 ]
-              };
+              } as any;
 
               // Set correct token parameter based on model
               if (modelConfig.maxTokens === 'max_tokens') {
-                requestBody.max_tokens = 1500;
+                (requestBody as any).max_tokens = 1500;
               } else {
-                requestBody.max_completion_tokens = 1500;
+                (requestBody as any).max_completion_tokens = 1500;
               }
 
               // Add temperature only for supported models
               if (modelConfig.supportsTemperature) {
-                requestBody.temperature = 0.7;
+                (requestBody as any).temperature = 0.7;
               }
 
               aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -633,7 +636,7 @@ Generate a comprehensive scene with complete visual elements including backgroun
             throw new Error(`All AI models failed. Last error: ${lastError instanceof Error ? lastError.message : String(lastError)}`);
           }
 
-          const aiData = await aiResponse.json();
+          aiData = await aiResponse.json();
           const generatedScene = aiData.choices?.[0]?.message?.content;
 
           if (!generatedScene) {
@@ -716,13 +719,38 @@ Generate a comprehensive scene with complete visual elements including backgroun
             }
           };
 
-        } catch (openaiError) {
+          } catch (openaiError) {
           console.error('OpenAI API call failed:', openaiError);
           const errorMessage = openaiError instanceof Error ? openaiError.message : String(openaiError);
+          
+          // Enhanced error logging with debug information
+          const errorDebug = {
+            ...debugContext,
+            error: {
+              message: errorMessage,
+              type: openaiError instanceof Error ? openaiError.constructor.name : 'unknown',
+              stack: openaiError instanceof Error ? openaiError.stack : null
+            },
+            openaiInteraction: {
+              lastAttemptedModel: successfulModel || 'none',
+              requestBody: requestBody || null,
+              allModelsAttempted: AI_MODELS.map(m => m.name),
+              lastError: lastError instanceof Error ? lastError.message : String(lastError)
+            },
+            culturalContext: {
+              ...debugContext.cultural,
+              isMulticultural: debugContext.cultural.nativeLanguage !== 'en',
+              culturalEnhancements: isNonEnglish ? culturalContext : 'standard'
+            },
+            status: 'ERROR',
+            processingTime: Date.now() - startTime
+          };
+          
           return corsResponse({
             success: false,
             error: `OpenAI generation failed: ${errorMessage}`,
-            nextAction: 'ESCALATE_TO_TIER_2'
+            nextAction: 'ESCALATE_TO_TIER_2',
+            debug: errorDebug
           }, req, 500);
         }
       }
@@ -749,13 +777,34 @@ Generate a comprehensive scene with complete visual elements including backgroun
         },
         debug: {
           ...debugContext,
-          systemPrompt: 'AI visual scene creation system',
-          userPrompt: storyText,
-          aiSchema: result.enhancedData?.aiSchema || null,
+          systemPrompt: requestBody?.messages?.[0]?.content || 'AI visual scene creation system',
+          userPrompt: requestBody?.messages?.[1]?.content || storyText,
+          aiSchema: result.enhancedData?.aiSchema || {
+            primaryScene: result.primaryScene || storyText || "Generated scene",
+            setting: result.enhancedData?.setting || "magical forest",
+            action: result.enhancedData?.action || "walking",
+            mood: result.enhancedData?.mood || "happy",
+            pose: result.enhancedData?.pose || "standing"
+          },
+          openaiInteraction: {
+            model: successfulModel || 'unknown',
+            requestBody: requestBody || null,
+            responseData: aiData || null,
+            generatedScene: generatedScene || null,
+            tokenUsage: aiData?.usage || null
+          },
+          culturalContext: {
+            ...debugContext.cultural,
+            isMulticultural: debugContext.cultural.nativeLanguage !== 'en',
+            culturalEnhancements: isNonEnglish ? culturalContext : 'standard',
+            characterConsistency: userInfo ? 'applied' : 'none'
+          },
           status: 'SUCCESS',
           primarySceneLength: result.primaryScene?.length || 0,
-          culturalContext: debugContext.cultural,
-          tier: result.tier || 'DIRECT_MODE'
+          tier: result.tier || 'DIRECT_MODE',
+          processingTime: Date.now() - startTime,
+          directMode: payload.directMode === true,
+          templateResponse: result.enhancedData?.templateResponse || null
         },
         requestId: requestId,
         timestamp: new Date().toISOString()
@@ -778,13 +827,34 @@ Generate a comprehensive scene with complete visual elements including backgroun
         },
         debug: {
           ...debugContext,
-          systemPrompt: 'AI visual scene creation system',
-          userPrompt: storyText,
-          aiSchema: result.enhancedData?.aiSchema || null,
+          systemPrompt: requestBody?.messages?.[0]?.content || 'AI visual scene creation system',
+          userPrompt: requestBody?.messages?.[1]?.content || storyText,
+          aiSchema: result.enhancedData?.aiSchema || {
+            primaryScene: result.primaryScene || storyText || "Generated scene",
+            setting: result.enhancedData?.setting || "magical forest",
+            action: result.enhancedData?.action || "walking",
+            mood: result.enhancedData?.mood || "happy",
+            pose: result.enhancedData?.pose || "standing"
+          },
+          openaiInteraction: {
+            model: successfulModel || 'unknown',
+            requestBody: requestBody || null,
+            responseData: aiData || null,
+            generatedScene: generatedScene || null,
+            tokenUsage: aiData?.usage || null
+          },
+          culturalContext: {
+            ...debugContext.cultural,
+            isMulticultural: debugContext.cultural.nativeLanguage !== 'en',
+            culturalEnhancements: isNonEnglish ? culturalContext : 'standard',
+            characterConsistency: userInfo ? 'applied' : 'none'
+          },
           status: 'SUCCESS',
           primarySceneLength: result.primaryScene?.length || 0,
-          culturalContext: debugContext.cultural,
-          tier: result.tier || 'TIER_1_SCENE_ONLY'
+          tier: result.tier || 'TIER_1_SCENE_ONLY',
+          processingTime: Date.now() - startTime,
+          directMode: false,
+          sceneOnly: true
         },
         requestId: requestId,
         timestamp: new Date().toISOString()

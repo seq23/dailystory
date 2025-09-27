@@ -2898,43 +2898,146 @@ export const ImageTierTester = () => {
                       </div>
                     )}
                     
-                    {/* Enhanced AI Scene Creator Details */}
-                    {result.details.sceneGenerationOnly && (
-                      <div className="text-sm">
-                        <span className="font-medium text-blue-600">Scene Generation Only (No Image)</span>
-                      </div>
-                    )}
-                    {result.details.primaryScene && (
-                      <div className="text-sm">
-                        <span className="font-medium">Primary Scene:</span>
-                        <div className="text-xs mt-1 bg-blue-50 p-2 rounded">{result.details.primaryScene}</div>
-                      </div>
-                    )}
-                     {result.details.aiSchema && (
+                     {/* Enhanced AI Scene Creator Details with Comprehensive Debug Display */}
+                     {result.details.sceneGenerationOnly && (
                        <div className="text-sm">
-                         <span className="font-medium">AI Schema Details:</span>
-                         <div className="text-xs mt-1 space-y-1">
-              {result.details.aiSchema?.setting && <div><strong>Setting:</strong> {result.details.aiSchema.setting}</div>}
-              {result.details.aiSchema?.action && <div><strong>Action:</strong> {result.details.aiSchema.action}</div>}
-              {result.details.aiSchema?.mood && <div><strong>Mood:</strong> {result.details.aiSchema.mood}</div>}
-              {result.details.aiSchema?.pose && <div><strong>Pose:</strong> {result.details.aiSchema.pose}</div>}
-                         </div>
+                         <span className="font-medium text-blue-600">Scene Generation Only (No Image)</span>
                        </div>
                      )}
-
-                     {/* Full Schema Output Expandable Section */}
-                     {result.details.aiSchema && (
-                       <details className="text-sm border rounded p-2 bg-gray-50">
+                     
+                     {/* OpenAI Interaction Details */}
+                     {result.details.debug?.openaiInteraction && (
+                       <details className="text-sm border rounded p-2 bg-blue-50 mb-2">
                          <summary className="cursor-pointer font-medium text-blue-600 hover:text-blue-700">
-                           Full Schema Output (Expandable)
+                           🤖 OpenAI Interaction Details
                          </summary>
-                         <div className="mt-2">
-                           <pre className="text-xs bg-white p-2 rounded border overflow-x-auto max-h-48 overflow-y-auto">
-                             {result.details.aiSchema ? JSON.stringify(result.details.aiSchema, null, 2) : 'No schema data'}
-                           </pre>
+                         <div className="mt-2 space-y-2">
+                           <div>
+                             <span className="font-medium">Model Used:</span>
+                             <Badge variant="default" className="ml-2">
+                               {result.details.debug.openaiInteraction.model}
+                             </Badge>
+                           </div>
+                           {result.details.debug.openaiInteraction.tokenUsage && (
+                             <div className="text-xs">
+                               <span className="font-medium">Token Usage:</span>
+                               <div className="ml-2 mt-1 grid grid-cols-3 gap-2 text-xs">
+                                 <span className="bg-green-100 px-2 py-1 rounded">
+                                   Prompt: {result.details.debug.openaiInteraction.tokenUsage.prompt_tokens}
+                                 </span>
+                                 <span className="bg-blue-100 px-2 py-1 rounded">
+                                   Completion: {result.details.debug.openaiInteraction.tokenUsage.completion_tokens}
+                                 </span>
+                                 <span className="bg-purple-100 px-2 py-1 rounded">
+                                   Total: {result.details.debug.openaiInteraction.tokenUsage.total_tokens}
+                                 </span>
+                               </div>
+                             </div>
+                           )}
+                           {result.details.debug.systemPrompt && (
+                             <details className="mt-2">
+                               <summary className="cursor-pointer text-xs font-medium text-gray-600">
+                                 📝 System Prompt ({result.details.debug.systemPrompt.length} chars)
+                               </summary>
+                               <pre className="text-xs bg-gray-50 p-2 rounded border mt-1 overflow-x-auto max-h-32 overflow-y-auto whitespace-pre-wrap">
+                                 {result.details.debug.systemPrompt}
+                               </pre>
+                             </details>
+                           )}
+                           {result.details.debug.userPrompt && (
+                             <details className="mt-2">
+                               <summary className="cursor-pointer text-xs font-medium text-gray-600">
+                                 👤 User Prompt ({result.details.debug.userPrompt.length} chars)
+                               </summary>
+                               <pre className="text-xs bg-gray-50 p-2 rounded border mt-1 overflow-x-auto max-h-32 overflow-y-auto whitespace-pre-wrap">
+                                 {result.details.debug.userPrompt}
+                               </pre>
+                             </details>
+                           )}
                          </div>
                        </details>
                      )}
+
+                     {/* Cultural Context Details */}
+                     {result.details.debug?.culturalContext && (
+                       <details className="text-sm border rounded p-2 bg-purple-50 mb-2">
+                         <summary className="cursor-pointer font-medium text-purple-600 hover:text-purple-700">
+                           🌍 Cultural Context & Character Consistency
+                         </summary>
+                         <div className="mt-2 space-y-2">
+                           <div className="grid grid-cols-2 gap-2 text-xs">
+                             <div>
+                               <span className="font-medium">Native Language:</span>
+                               <Badge variant="outline" className="ml-2">
+                                 {result.details.debug.culturalContext.nativeLanguage}
+                               </Badge>
+                             </div>
+                             <div>
+                               <span className="font-medium">Skin Tone:</span>
+                               <Badge variant="outline" className="ml-2">
+                                 {result.details.debug.culturalContext.skinTone}
+                               </Badge>
+                             </div>
+                             <div>
+                               <span className="font-medium">Avatar Type:</span>
+                               <Badge variant="outline" className="ml-2">
+                                 {result.details.debug.culturalContext.avatarType}
+                               </Badge>
+                             </div>
+                             <div>
+                               <span className="font-medium">Multicultural:</span>
+                               <Badge variant={result.details.debug.culturalContext.isMulticultural ? "default" : "secondary"} className="ml-2">
+                                 {result.details.debug.culturalContext.isMulticultural ? "Yes" : "No"}
+                               </Badge>
+                             </div>
+                           </div>
+                           <div className="text-xs">
+                             <span className="font-medium">Cultural Enhancements:</span>
+                             <div className="ml-2 mt-1 bg-white p-2 rounded border">
+                               {result.details.debug.culturalContext.culturalEnhancements}
+                             </div>
+                           </div>
+                           <div className="text-xs">
+                             <span className="font-medium">Character Consistency:</span>
+                             <Badge variant={result.details.debug.culturalContext.characterConsistency === 'applied' ? "default" : "secondary"} className="ml-2">
+                               {result.details.debug.culturalContext.characterConsistency}
+                             </Badge>
+                           </div>
+                         </div>
+                       </details>
+                     )}
+
+                     {result.details.primaryScene && (
+                       <div className="text-sm">
+                         <span className="font-medium">Primary Scene:</span>
+                         <div className="text-xs mt-1 bg-blue-50 p-2 rounded">{result.details.primaryScene}</div>
+                       </div>
+                     )}
+                      {result.details.aiSchema && (
+                        <div className="text-sm">
+                          <span className="font-medium">AI Schema Details:</span>
+                          <div className="text-xs mt-1 space-y-1">
+               {result.details.aiSchema?.setting && <div><strong>Setting:</strong> {result.details.aiSchema.setting}</div>}
+               {result.details.aiSchema?.action && <div><strong>Action:</strong> {result.details.aiSchema.action}</div>}
+               {result.details.aiSchema?.mood && <div><strong>Mood:</strong> {result.details.aiSchema.mood}</div>}
+               {result.details.aiSchema?.pose && <div><strong>Pose:</strong> {result.details.aiSchema.pose}</div>}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Full Schema Output Expandable Section */}
+                      {result.details.aiSchema && (
+                        <details className="text-sm border rounded p-2 bg-gray-50">
+                          <summary className="cursor-pointer font-medium text-blue-600 hover:text-blue-700">
+                            Full Schema Output (Expandable)
+                          </summary>
+                          <div className="mt-2">
+                            <pre className="text-xs bg-white p-2 rounded border overflow-x-auto max-h-48 overflow-y-auto">
+                              {result.details.aiSchema ? JSON.stringify(result.details.aiSchema, null, 2) : 'No schema data'}
+                            </pre>
+                          </div>
+                        </details>
+                      )}
 
                       {/* Enhanced Runware Prompt Display Section - Now shows prompts for ALL successes */}
                       {(result.success && (result.details.positivePrompt || result.details.negativePrompt || result.details.enhancedPrompt || result.details.originalPrompt)) && (
