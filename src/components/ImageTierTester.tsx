@@ -1028,13 +1028,13 @@ export const ImageTierTester = () => {
       let response: any;
       let chosenPath = '';
       
-      // HEALTH-BASED ROUTING: Orchestrator vs Direct Mode
+      // TWO-STAGE FALLBACK ROUTING: Orchestrator → Direct Mode
       if (triageCheck.available) {
-        // Path 1: Orchestrator Mode - runware-generate-image is healthy
+        // Path 1: Try Orchestrator Mode first - runware-generate-image is healthy
         chosenPath = 'Orchestrator Mode';
-        steps[1].name = '🎯 Using Orchestrator Mode';
+        steps[1].name = '🎯 Trying Orchestrator Mode';
         
-        DebugLogger.log('image', '🎯 Force Tier 1: Orchestrator Mode (healthy)', {
+        DebugLogger.log('image', '🎯 Force Tier 1: Attempting Orchestrator Mode (healthy)', {
           forceTier: 'COMPLETE_TIER_1',
           path: 'orchestrator',
           triageCheck,
@@ -1044,42 +1044,86 @@ export const ImageTierTester = () => {
 
         // Step 2: Call runware-generate-image with orchestrator payload
         steps[1].status = 'running';
-        response = await supabase.functions.invoke('runware-generate-image', {
-          body: {
-            pageText: enhancedPrompt,
-            userInfo: userInfo,
-            sessionId: sessionId,
-            storyId: sessionId,
-            pageNumber: 1,
-            isGuestUser: true,
-            difficultyLevel: mapDifficultyLevel(userInfo),
-            protectionNegatives: [],
-            forceTier: 'COMPLETE_TIER_1',
-            test: true
+        try {
+          response = await supabase.functions.invoke('runware-generate-image', {
+            body: {
+              pageText: enhancedPrompt,
+              userInfo: userInfo,
+              sessionId: sessionId,
+              storyId: sessionId,
+              pageNumber: 1,
+              isGuestUser: true,
+              difficultyLevel: mapDifficultyLevel(userInfo),
+              protectionNegatives: [],
+              forceTier: 'COMPLETE_TIER_1',
+              test: true
+            }
+          });
+
+          // Check if orchestrator POST succeeded
+          if (response.error) {
+            throw new Error(`Orchestrator POST failed: ${response.error.message}`);
           }
-        });
-      } else {
-        // Path 2: Direct Mode Fallback - runware-generate-image is unhealthy
-        chosenPath = 'Direct Mode';
-        steps[1].name = '🎯 Using Direct Mode (Nuclear Fallback)';
-        
-        // Enhanced orchestrator health detection and error context
-        if (chosenPath === 'Direct Mode') {
-          DebugLogger.log('image', '🔄 Force Tier 1: Orchestrator unhealthy, using Direct Mode', {
-            orchestratorHealth: triageCheck,
-            directModeReason: 'Orchestrator failed health check',
-            fallbackPath: 'orchestrator_unhealthy → direct_mode_activated'
+          
+          steps[1].status = 'success';
+          steps[1].name = '✅ Orchestrator Mode Succeeded';
+        } catch (orchestratorError) {
+          // Orchestrator POST failed - Fallback to Direct Mode
+          DebugLogger.log('image', '🔄 Force Tier 1: Orchestrator POST failed, falling back to Direct Mode', {
+            orchestratorError: orchestratorError.message,
+            fallbackReason: 'orchestrator_post_failed',
+            fallbackPath: 'orchestrator_failed → direct_mode_activated'
           });
-        } else {
-          DebugLogger.log('image', '✅ Force Tier 1: Orchestrator healthy, proceeding with standard flow', {
-            orchestratorHealth: triageCheck,
-            orchestratorPath: 'orchestrator_healthy → standard_flow'
+
+          chosenPath = 'Direct Mode (Orchestrator Fallback)';
+          steps[1].name = '🔄 Falling back to Direct Mode';
+          steps[1].status = 'running';
+
+          DebugLogger.log('image', '🎯 Force Tier 1: Direct Mode (orchestrator POST failed)', {
+            forceTier: 'DIRECT_MODE',
+            path: 'direct_mode_fallback',
+            reason: 'orchestrator_post_failed',
+            originalError: orchestratorError.message,
+            userInfo,
+            steps
           });
+
+          // Call ai-visual-scene-creator directly
+          response = await supabase.functions.invoke('ai-visual-scene-creator', {
+            body: {
+              pageText: enhancedPrompt,
+              userInfo: userInfo,
+              sessionId: sessionId,
+              storyId: sessionId,
+              pageNumber: 1,
+              isGuestUser: true,
+              difficultyLevel: mapDifficultyLevel(userInfo),
+              protectionNegatives: [],
+              directMode: true,
+              test: true
+            }
+          });
+          
+          // Mark response with direct mode identifier for tracking
+          if (response.data) {
+            response.data.tier = 'DIRECT_MODE';
+            response.data.escalationPath = 'force_tier_1_orchestrator_fallback';
+          }
         }
+      } else {
+        // Path 2: Direct Mode Immediately - runware-generate-image is unhealthy
+        chosenPath = 'Direct Mode (Health Check Failed)';
+        steps[1].name = '🎯 Using Direct Mode (Orchestrator Unhealthy)';
+        
+        DebugLogger.log('image', '🔄 Force Tier 1: Orchestrator unhealthy, going straight to Direct Mode', {
+          orchestratorHealth: triageCheck,
+          directModeReason: 'Orchestrator failed health check',
+          fallbackPath: 'orchestrator_unhealthy → direct_mode_immediate'
+        });
         
         DebugLogger.log('image', '🎯 Force Tier 1: Direct Mode (unhealthy orchestrator)', {
           forceTier: 'DIRECT_MODE',
-          path: 'direct_mode',
+          path: 'direct_mode_immediate',
           triageCheck,
           reason: 'orchestrator_unhealthy',
           userInfo,
@@ -1106,7 +1150,7 @@ export const ImageTierTester = () => {
         // Mark response with direct mode identifier for tracking
         if (response.data) {
           response.data.tier = 'DIRECT_MODE';
-          response.data.escalationPath = 'force_tier_1_direct_fallback';
+          response.data.escalationPath = 'force_tier_1_direct_immediate';
         }
       }
 
