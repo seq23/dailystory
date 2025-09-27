@@ -301,8 +301,10 @@ export class PhaseIntegrationOrchestrator {
       } else {
         // Call ai-visual-scene-creator to get proper AI schema
         try {
-          const supabase = await import('https://esm.sh/@supabase/supabase-js@2.57.4').then(mod => 
-            mod.createClient(Deno.env.get('SUPABASE_URL'), Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY'))
+          const { createClient } = await import('https://deno.land/x/supabase@1.0.0/mod.ts');
+          const supabase = createClient(
+            Deno.env.get('SUPABASE_URL'), 
+            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY')
           );
           // Create complete avatarIdentity for AI scene generation
           const avatarIdentity = {

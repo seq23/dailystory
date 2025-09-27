@@ -4,7 +4,7 @@
  * Now with character-specific clothing detection and database persistence
  */
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'https://deno.land/x/supabase@1.0.0/mod.ts'
 import { EXPANDED_COLOR_ARRAY, TIER_25_UNIFIED_VOCABULARY_EXTENDED } from './tier25Vocabulary.js';
 
 const CLOTHING_DETECTION_KEYWORDS = [
@@ -18,11 +18,16 @@ const CLOTHING_DETECTION_KEYWORDS = [
 
 export class VisualDetailTracker {
   constructor() {
-    // Initialize Supabase client for database operations
-    this.supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+    // Initialize Supabase client for database operations with resilience
+    try {
+      this.supabase = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+    } catch (error) {
+      console.warn('Failed to create Supabase client in VisualDetailTracker:', error);
+      this.supabase = null;
+    }
   }
 
   /**
@@ -197,6 +202,11 @@ export class VisualDetailTracker {
    * Save visual detail to database
    */
   async saveDetailToDatabase(sessionId, characterName, detailType, detailKey, detailValue, pageNumber) {
+    if (!this.supabase) {
+      console.warn('Supabase client unavailable, skipping database save');
+      return;
+    }
+    
     try {
       // Check if detail already exists
       const { data: existing } = await this.supabase

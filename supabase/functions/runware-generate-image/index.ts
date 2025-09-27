@@ -75,23 +75,35 @@ interface BootStatus {
 
 // ---- Async Tier logger binder with memoized dependencies ----
 async function bindTierLogger(sessionId: SessionId, requestId: string, authHeader: string | null = null): Promise<TierLogger> {
-  const [{ createClient }, tierLogging] = await Promise.all([
-    memoizedImport("https://esm.sh/@supabase/supabase-js@2"),
-    memoizedImport("../_shared/tierLogging.js")
-  ]);
+  try {
+    const [{ createClient }, tierLogging] = await Promise.all([
+      memoizedImport("https://deno.land/x/supabase@1.0.0/mod.ts"),
+      memoizedImport("../_shared/tierLogging.js")
+    ]);
+    
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
   
-  const supabaseClient = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-  );
-  
-  return {
-    t1: (msg, ctx = {}) => tierLogging.logTier1(msg, { ...ctx, authHeader }, supabaseClient, sessionId, requestId),
-    t2: (msg, ctx = {}) => tierLogging.logTier2(msg, { ...ctx, authHeader }, supabaseClient, sessionId, requestId),
-    attempt: (tier, ctx = {}) => tierLogging.logTierAttempt(supabaseClient, sessionId, requestId, tier, 'attempting', { ...ctx, authHeader }),
-    success: (tier, ctx = {}) => tierLogging.logTierSuccess(supabaseClient, sessionId, requestId, tier, { ...ctx, authHeader }),
-    failure: (tier, ctx = {}) => tierLogging.logTierFailure(supabaseClient, sessionId, requestId, tier, { ...ctx, authHeader }),
-  };
+    return {
+      t1: (msg, ctx = {}) => tierLogging.logTier1(msg, { ...ctx, authHeader }, supabaseClient, sessionId, requestId),
+      t2: (msg, ctx = {}) => tierLogging.logTier2(msg, { ...ctx, authHeader }, supabaseClient, sessionId, requestId),
+      attempt: (tier, ctx = {}) => tierLogging.logTierAttempt(supabaseClient, sessionId, requestId, tier, 'attempting', { ...ctx, authHeader }),
+      success: (tier, ctx = {}) => tierLogging.logTierSuccess(supabaseClient, sessionId, requestId, tier, { ...ctx, authHeader }),
+      failure: (tier, ctx = {}) => tierLogging.logTierFailure(supabaseClient, sessionId, requestId, tier, { ...ctx, authHeader }),
+    };
+  } catch (error) {
+    console.warn(`Failed to create Supabase client: ${error}`);
+    // Return console-only logger to prevent function crashes
+    return {
+      t1: (msg, ctx = {}) => console.log(`[T1] ${msg}`, ctx),
+      t2: (msg, ctx = {}) => console.log(`[T2] ${msg}`, ctx),
+      attempt: (tier, ctx = {}) => console.log(`[${tier}] Attempting`, ctx),
+      success: (tier, ctx = {}) => console.log(`[${tier}] Success`, ctx),
+      failure: (tier, ctx = {}) => console.log(`[${tier}] Failure`, ctx),
+    };
+  }
 }
 
 // Echoing CORS with Vary headers for preflight consistency

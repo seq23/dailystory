@@ -32,11 +32,12 @@ export class CharacterConsistencyService {
   async saveCharacterToDatabase(sessionId, characterKey, characterData) {
     // Database operation - success/error logged via error handling
     
-    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL'), 
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-    );
+    try {
+      const { createClient } = await import('https://deno.land/x/supabase@1.0.0/mod.ts');
+      const supabase = createClient(
+        Deno.env.get('SUPABASE_URL'), 
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+      );
 
     const { error } = await supabase
       .from('character_consistency_cache')
@@ -49,13 +50,17 @@ export class CharacterConsistencyService {
         updated_at: new Date().toISOString()
       });
 
-    if (error) {
-      console.error('❌ Database save error:', error);
-      throw new Error(`CharacterConsistencyService.saveCharacterToDatabase failed: ${safeErrorMessage(error)}`);
+      if (error) {
+        console.error('❌ Database save error:', error);
+        throw new Error(`CharacterConsistencyService.saveCharacterToDatabase failed: ${safeErrorMessage(error)}`);
+      }
+      
+      // Success - character saved to database
+      return true;
+    } catch (importError) {
+      console.warn('Failed to create Supabase client, skipping database save:', importError);
+      return null; // Graceful degradation
     }
-    
-    // Success - character saved to database
-    return true;
   }
 
   /**
@@ -64,11 +69,12 @@ export class CharacterConsistencyService {
   async getCharacterFromDatabase(sessionId, characterKey) {
     // Database fetch operation
     
-    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL'), 
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-    );
+    try {
+      const { createClient } = await import('https://deno.land/x/supabase@1.0.0/mod.ts');
+      const supabase = createClient(
+        Deno.env.get('SUPABASE_URL'), 
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+      );
 
     const { data, error } = await supabase
       .from('character_consistency_cache')
@@ -77,24 +83,28 @@ export class CharacterConsistencyService {
       .eq('character_key', characterKey)
       .single();
 
-    if (error && error.code !== 'PGRST116') { // PGRST116 = not found, which is expected sometimes
-      console.error('❌ Database fetch error:', error);
-      throw new Error(`CharacterConsistencyService.getCharacterFromDatabase failed: ${safeErrorMessage(error)}`);
-    }
-    
-    if (data?.character_data) {
-      // Character cached in database - return with cultural selections merged
-      const characterData = data.character_data;
-      if (data.selected_cultural_hair) {
-        characterData.selectedCulturalHair = data.selected_cultural_hair;
+      if (error && error.code !== 'PGRST116') { // PGRST116 = not found, which is expected sometimes
+        console.error('❌ Database fetch error:', error);
+        throw new Error(`CharacterConsistencyService.getCharacterFromDatabase failed: ${safeErrorMessage(error)}`);
       }
-      if (data.selected_cultural_features) {
-        characterData.selectedCulturalFeatures = data.selected_cultural_features;
+      
+      if (data?.character_data) {
+        // Character cached in database - return with cultural selections merged
+        const characterData = data.character_data;
+        if (data.selected_cultural_hair) {
+          characterData.selectedCulturalHair = data.selected_cultural_hair;
+        }
+        if (data.selected_cultural_features) {
+          characterData.selectedCulturalFeatures = data.selected_cultural_features;
+        }
+        return characterData;
       }
-      return characterData;
+      
+      return null;
+    } catch (importError) {
+      console.warn('Failed to create Supabase client, returning null:', importError);
+      return null; // Graceful degradation
     }
-    
-    return null;
   }
 
   /**
@@ -240,11 +250,12 @@ export class CharacterConsistencyService {
   async updateCulturalSelections(sessionId, characterKey, selectedCulturalHair, selectedCulturalFeatures) {
     console.log(`🎨 Updating cultural selections for character ${characterKey} in session ${sessionId}`);
     
-    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL'), 
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-    );
+    try {
+      const { createClient } = await import('https://deno.land/x/supabase@1.0.0/mod.ts');  
+      const supabase = createClient(
+        Deno.env.get('SUPABASE_URL'), 
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+      );
 
     const { error } = await supabase
       .from('character_consistency_cache')
@@ -256,13 +267,17 @@ export class CharacterConsistencyService {
       .eq('session_id', sessionId)
       .eq('character_key', characterKey);
 
-    if (error) {
-      console.error('❌ Cultural selections update error:', error);
-      throw new Error(`CharacterConsistencyService.updateCulturalSelections failed: ${safeErrorMessage(error)}`);
+      if (error) {
+        console.error('❌ Cultural selections update error:', error);
+        throw new Error(`CharacterConsistencyService.updateCulturalSelections failed: ${safeErrorMessage(error)}`);
+      }
+      
+      console.log(`🎨 Updated cultural selections for character ${characterKey}`);
+      return true;
+    } catch (importError) {
+      console.warn('Failed to create Supabase client, skipping cultural selections update:', importError);
+      return false; // Graceful degradation
     }
-    
-    console.log(`🎨 Updated cultural selections for character ${characterKey}`);
-    return true;
   }
 
   /**
