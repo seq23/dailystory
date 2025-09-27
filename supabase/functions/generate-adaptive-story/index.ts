@@ -6,7 +6,6 @@ import { DifficultyLevelMapper } from '../_shared/DifficultyLevelMapper.ts';
 import { getPerPageTokenLimit, getStoryPrompt, formatUserPrompt, resolvePromptPlaceholders } from '../_shared/storyPrompts.ts';
 import { ENHANCED_LEVEL_0_VOCABULARY } from '../_shared/vocabulary/dolchPrePrimer.ts';
 import { handleStreamlinedGeneration } from './streamlined-handler.ts';
-import { handleHealthAndCors } from "../_shared/healthCors.ts";
 
 // Initialize Supabase client for service-to-service communication
 const supabase = createClient(
@@ -17,6 +16,7 @@ const supabase = createClient(
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, HEAD',
   'Access-Control-Max-Age': '600',
 }
 
@@ -131,9 +131,25 @@ function getHairColorForSkinTone(skinTone: string | undefined): string | null {
 // Removed: getFallbackTemplate and getEnhancedFallbackPages - replaced by template-service calls
 
 serve(async (req) => {
-  // Handle CORS and health checks
-  const healthResponse = handleHealthAndCors(req);
-  if (healthResponse) return healthResponse;
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { 
+      status: 204, 
+      headers: corsHeaders 
+    });
+  }
+
+  // Health endpoint
+  if (req.method === 'HEAD' && new URL(req.url).pathname === '/health') {
+    return new Response(null, { 
+      status: 200, 
+      headers: { 
+        ...corsHeaders,
+        'x-health': 'true', 
+        'Cache-Control': 'no-store' 
+      }
+    });
+  }
 
   // Health check endpoint
   if (req.method === 'GET' || req.method === 'HEAD') {

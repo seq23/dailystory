@@ -1,6 +1,5 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { handleHealthAndCors } from "../_shared/healthCors.ts";
 
 // Import the sophisticated template system components
 import { resolveAllPlaceholders, type MicroContext } from "../_shared/placeholderResolver.ts";
@@ -10,6 +9,7 @@ import { safeValidateAndEnhanceGrammar } from "../_shared/enhancedPlaceholderVal
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, HEAD',
   'Access-Control-Max-Age': '600',
 };
 
@@ -36,9 +36,25 @@ interface ProcessResponse {
 import { derivePronoun } from '../_shared/placeholderResolver.ts';
 
 serve(async (req) => {
-  // Handle health check and CORS preflight
-  const healthCorsResponse = handleHealthAndCors(req);
-  if (healthCorsResponse) return healthCorsResponse;
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { 
+      status: 204, 
+      headers: corsHeaders 
+    });
+  }
+
+  // Health endpoint
+  if (req.method === 'HEAD' && new URL(req.url).pathname === '/health') {
+    return new Response(null, { 
+      status: 200, 
+      headers: { 
+        ...corsHeaders,
+        'x-health': 'true', 
+        'Cache-Control': 'no-store' 
+      }
+    });
+  }
 
   try {
     const { pages, userInfo, sessionId }: ProcessRequest = await req.json();

@@ -1,10 +1,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { handleHealthAndCors } from "../_shared/healthCors.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, HEAD',
   'Access-Control-Max-Age': '600',
 };
 
@@ -13,9 +13,25 @@ const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 serve(async (req) => {
-  // Handle health check and CORS preflight
-  const healthCorsResponse = handleHealthAndCors(req);
-  if (healthCorsResponse) return healthCorsResponse;
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { 
+      status: 204, 
+      headers: corsHeaders 
+    });
+  }
+
+  // Health endpoint
+  if (req.method === 'HEAD' && new URL(req.url).pathname === '/health') {
+    return new Response(null, { 
+      status: 200, 
+      headers: { 
+        ...corsHeaders,
+        'x-health': 'true', 
+        'Cache-Control': 'no-store' 
+      }
+    });
+  }
 
   
 

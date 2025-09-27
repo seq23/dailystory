@@ -1,7 +1,13 @@
 // Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { withCors } from "../_shared/healthCors.ts";
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, HEAD',
+  'Access-Control-Max-Age': '600'
+};
 // Lazy import to avoid bundling/circular deps
 async function getDifficultyMapper() {
   try {
@@ -33,12 +39,44 @@ interface ElevenLabsResponse {
   };
 }
 
-const corsWrapped = withCors(handle, {
-  allowCredentials: false,
-  allowMethods: ["GET","POST","OPTIONS","HEAD"]
+serve(async (req: Request) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { 
+      status: 204, 
+      headers: corsHeaders 
+    });
+  }
+  
+  try {
+    const response = await handle(req);
+    
+    // Add CORS headers to response
+    const headers = new Headers(response.headers);
+    Object.entries(corsHeaders).forEach(([key, value]) => {
+      if (!headers.has(key)) {
+        headers.set(key, value);
+      }
+    });
+    
+    return new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers
+    });
+  } catch (error) {
+    console.error("Error in elevenlabs-tts:", error);
+    return new Response(
+      JSON.stringify({ 
+        error: error instanceof Error ? error.message : 'Internal server error' 
+      }),
+      { 
+        status: 500, 
+        headers: { ...corsHeaders, "Content-Type": "application/json" } 
+      }
+    );
+  }
 });
-
-serve(corsWrapped);
 
 async function handle(req: Request): Promise<Response> {
   const url = new URL(req.url);
