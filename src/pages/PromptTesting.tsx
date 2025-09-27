@@ -13,7 +13,7 @@ import { DebugDataViewer } from '@/components/DebugDataViewer';
 import { AnalyticsDashboard } from '@/components/AnalyticsDashboard';
 
 import { VoiceCatalogTester } from '@/components/VoiceCatalogTester';
-import { ImageTierTester } from '@/components/ImageTierTester';
+import ImageTierTester from '@/components/ImageTierTester';
 import { AudioE2ETestingPanel } from '@/components/AudioE2ETestingPanel';
 // AudioPlaybackTester integrated into UnifiedDebugMonitor
 import { ErrorBoundary } from '@/components/ErrorBoundary';
