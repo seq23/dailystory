@@ -3531,35 +3531,154 @@ export const ImageTierTester = () => {
                        </>
                      )}
 
-                     {result.details.error && (
-                      <div className="text-sm">
-                        <span className="font-medium text-red-600">Error:</span>
-                        <div className="text-red-600 text-xs mt-1">
-                          {typeof result.details.error === 'string'
-                            ? result.details.error
-                            : ((result.details.error as any)?.message || JSON.stringify(result.details.error))}
+                      {result.details.error && (
+                        <div className="space-y-3 bg-red-50 p-4 rounded-lg border border-red-200">
+                          {/* Error Type Badge */}
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <AlertTriangle className="h-4 w-4 text-red-600" />
+                              <span className="font-medium text-red-700">Error Details</span>
+                            </div>
+                            {result.details.errorType && (
+                              <Badge 
+                                variant="destructive" 
+                                className="text-xs"
+                              >
+                                {result.details.errorType.replace('_', ' ')}
+                              </Badge>
+                            )}
+                          </div>
+
+                          {/* Main Error Message */}
+                          <div className="text-sm">
+                            <span className="font-medium text-red-600">🚨 Error:</span>
+                            <div className="text-red-600 text-xs mt-1 bg-white p-2 rounded border">
+                              {typeof result.details.error === 'string'
+                                ? result.details.error
+                                : ((result.details.error as any)?.message || JSON.stringify(result.details.error))}
+                            </div>
+                          </div>
+
+                          {/* Probable Cause */}
+                          {result.details.probableCause && (
+                            <div className="text-sm">
+                              <span className="font-medium text-orange-600">📝 Probable Cause:</span>
+                              <div className="text-orange-700 text-xs mt-1 bg-orange-50 p-2 rounded border-l-2 border-orange-300">
+                                {result.details.probableCause}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Recovery Action - NEW */}
+                          {(result.details as any).recoveryAction && (
+                            <div className="text-sm">
+                              <span className="font-medium text-green-600">🔧 Recovery Action:</span>
+                              <div className="text-green-700 text-xs mt-1 bg-green-50 p-2 rounded border-l-2 border-green-300">
+                                {(result.details as any).recoveryAction}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Architecture Context - NEW */}
+                          {result.details.architecture && (
+                            <div className="text-sm">
+                              <span className="font-medium text-purple-600">📊 Architecture:</span>
+                              <div className="text-xs mt-1 bg-purple-50 p-2 rounded">
+                                <div className="flex justify-between">
+                                  <span>Current: {result.details.architecture}</span>
+                                  {result.details.expectedArchitecture && (
+                                    <span>Expected: {result.details.expectedArchitecture}</span>
+                                  )}
+                                </div>
+                                {result.details.payloadStructure && (
+                                  <div className="mt-1 text-purple-600">
+                                    Format: {result.details.payloadStructure}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Direct Function Logs Access - NEW */}
+                          <div className="flex flex-wrap gap-2">
+                            {result.tier.includes('ai-visual-scene-creator') && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-xs h-7"
+                                onClick={() => window.open(`https://supabase.com/dashboard/project/cpzeuogomaixamrtnnmj/functions/ai-visual-scene-creator/logs`, '_blank')}
+                              >
+                                🔗 View AI Scene Creator Logs
+                              </Button>
+                            )}
+                            {result.tier.includes('runware-generate-image') && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-xs h-7"
+                                onClick={() => window.open(`https://supabase.com/dashboard/project/cpzeuogomaixamrtnnmj/functions/runware-generate-image/logs`, '_blank')}
+                              >
+                                🔗 View Runware Generator Logs
+                              </Button>
+                            )}
+                            {result.tier.includes('runware-template-ab') && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-xs h-7"
+                                onClick={() => window.open(`https://supabase.com/dashboard/project/cpzeuogomaixamrtnnmj/functions/runware-template-ab/logs`, '_blank')}
+                              >
+                                🔗 View Template AB Logs
+                              </Button>
+                            )}
+                            {result.tier.includes('runware-template-cd') && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-xs h-7"
+                                onClick={() => window.open(`https://supabase.com/dashboard/project/cpzeuogomaixamrtnnmj/functions/runware-template-cd/logs`, '_blank')}
+                              >
+                                🔗 View Template CD Logs
+                              </Button>
+                            )}
+                          </div>
+
+                          {/* Retry This Tier Button - NEW */}
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="w-full text-xs h-8 bg-blue-50 hover:bg-blue-100 text-blue-700"
+                            onClick={() => {
+                              // Extract the tier name for retry
+                              const tierName = result.tier;
+                              setCurrentTestProgress(`Retrying ${tierName}...`);
+                              // You could implement individual tier retry logic here
+                              console.log(`Retrying tier: ${tierName}`);
+                            }}
+                          >
+                            🔄 Retry This Tier Only
+                          </Button>
                         </div>
-                      </div>
-                    )}
-                    
-                    {/* NEW: Enhanced Error Categorization and Probable Cause */}
-                    {result.details.errorCategory && result.details.errorCategory !== 'SUCCESS' && (
-                      <div className="text-sm">
-                        <span className="font-medium text-orange-600">Error Category:</span>
-                        <Badge variant="outline" className="ml-1 text-xs">
-                          {result.details.errorCategory}
-                        </Badge>
-                      </div>
-                    )}
-                    
-                    {result.details.probableCause && (
-                      <div className="text-sm">
-                        <span className="font-medium text-blue-600">Probable Cause:</span>
-                        <div className="text-blue-700 text-xs mt-1 bg-blue-50 p-2 rounded border-l-2 border-blue-200">
-                          {result.details.probableCause}
-                        </div>
-                      </div>
-                    )}
+                      )}
+                     
+                     {/* Enhanced Error Category Display */}
+                     {result.details.errorCategory && result.details.errorCategory !== 'SUCCESS' && !result.details.error && (
+                       <div className="text-sm">
+                         <span className="font-medium text-orange-600">Error Category:</span>
+                         <Badge 
+                           variant="outline" 
+                           className={`ml-1 text-xs ${
+                             result.details.errorCategory === 'NETWORK' ? 'bg-red-50 text-red-700' :
+                             result.details.errorCategory === 'TIMEOUT' ? 'bg-yellow-50 text-yellow-700' :
+                             result.details.errorCategory === 'AUTH' ? 'bg-purple-50 text-purple-700' :
+                             result.details.errorCategory === 'CONFIG' ? 'bg-blue-50 text-blue-700' :
+                             'bg-gray-50 text-gray-700'
+                           }`}
+                         >
+                           {result.details.errorCategory}
+                         </Badge>
+                       </div>
+                     )}
                     
                     {/* NEW: Health Check Results Display */}
                     {result.details.healthCheck && (
