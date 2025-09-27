@@ -543,22 +543,19 @@ ATMOSPHERIC GUIDANCE:
 - Objects/props: include furniture, toys, nature elements, tools
 
 CULTURAL CONTEXT:
-${isNonEnglish ? `- Consider culturally authentic settings: ${culturalContext}` : '- Use universal child-friendly settings'}
-${isNonEnglish ? `- Incorporate cultural elements appropriate for ${nativeLanguage} speaking families` : ''}` 
+- Use universal child-friendly settings unless cultural context is needed` 
             },
             { 
               role: 'user', 
               content: `Create a visual scene description for this story page.
 
-CHARACTER DATA: ${characterData}
+CHARACTER DATA: ${JSON.stringify(userInfo)}
 
 STORY TEXT:
 "${storyText}"
 
 PREVIOUS SCENE (for visual consistency):
-"${previousPrimaryScene || 'None - this is the first scene'}"
-
-${characterAppearance ? `CHARACTER APPEARANCE NOTES: ${characterAppearance}` : ''}
+"None - this is the first scene"
 
 Generate a comprehensive scene with complete visual elements including background, lighting, composition, setting, mood, style, secondary characters (categorized as humans vs pets), and key objects. Maintain character and setting continuity while showcasing the current page's action. Use the provided character data exactly and never describe the main character's skin tone.`
             }
