@@ -208,8 +208,8 @@ function checkPrimarySceneCriteria(data: any): any {
     return { primaryScene: false, passCount: 0, details: 'missing_or_invalid' };
   }
 
-  // Validation with regex match examples
-  const lengthTest = scene.length >= 15;
+  // Validation with regex match examples - STRICT 100+ CHARACTER THRESHOLD
+  const lengthTest = scene.length >= 100;
   const characterRegex = /\b(child|character|person|they|he|she|avatar)\b/i;
   const actionRegex = /\b(playing|reading|building|walking|running|sitting|standing|holding|looking|smiling)\b/i;
   const settingRegex = /\b(room|classroom|garden|playground|library|home|indoor|outdoor|table|floor)\b/i;
@@ -230,15 +230,15 @@ function checkPrimarySceneCriteria(data: any): any {
 
   console.log('TIER 1 VALIDATION: Primary Scene Criteria Analysis:', {
     sceneLength: scene.length,
-    lengthTest: `${lengthTest} (>= 15 chars - RELAXED)`,
+    lengthTest: `${lengthTest} (>= 100 chars - STRICT FAIL-FAST)`,
     characterTest: `${hasCharacter} ${characterMatch ? `(matched: "${characterMatch[0]}")` : '(no match)'}`,
     actionTest: `${hasAction} ${actionMatch ? `(matched: "${actionMatch[0]}")` : '(no match)'}`,
     settingTest: `${hasSetting} ${settingMatch ? `(matched: "${settingMatch[0]}")` : '(no match)'}`,
     descriptiveTest: `${hasDescriptiveWords} ${descriptiveMatch ? `(matched: "${descriptiveMatch[0]}")` : '(no match)'}`,
     qualityScore: `${qualityScore}/5`,
-    validationResult: isPrimarySceneValid ? 'TIER 1 APPROVED - RELAXED VALIDATION' : 'TIER 2 TRIGGER',
+    validationResult: isPrimarySceneValid ? 'TIER 1 APPROVED - STRICT FAIL-FAST' : 'TIER 2 TRIGGER',
     scenePreview: scene.substring(0, 150) + (scene.length > 150 ? '...' : ''),
-    relaxedThresholds: 'length: 15+ chars, score: 1+ criteria (was 30+ chars, 2+ criteria)'
+    strictThresholds: 'length: 100+ chars, score: 1+ criteria - NO FALLBACK ACCEPTANCE'
   });
 
   return {
@@ -262,7 +262,7 @@ function checkPrimarySceneCriteria(data: any): any {
 }
 
 /**
- * RELAXED VALIDATION: Accept if primaryScene exists and meets basic criteria
+ * TIER 1 FAIL-FAST VALIDATION: Accept ONLY if primaryScene meets strict criteria - NO fallback acceptance
  */
 function validateAndEnhanceContent(enhancedStoryData: any, storyText: any): any {
   // Check if we have ANY form of primaryScene (even from fallback extraction)
@@ -277,23 +277,18 @@ function validateAndEnhanceContent(enhancedStoryData: any, storyText: any): any 
   
   const fieldCheck = checkPrimarySceneCriteria(enhancedStoryData);
   
-  // RELAXED VALIDATION: Accept if primaryScene exists and meets 2/5 criteria OR if it was extracted via fallback
-  const isFallbackExtraction = enhancedStoryData.extractionMethod === 'fallback_text_extraction' || 
-                               enhancedStoryData.extractionMethod === 'full_content_fallback';
+  // STRICT FAIL-FAST: Accept ONLY if primaryScene meets ALL validation criteria - NO fallback acceptance
+  const shouldAccept = fieldCheck.primaryScene;
   
-  // Accept fallback extractions with lower standards, or regular extractions with 2/5 criteria
-  const shouldAccept = isFallbackExtraction || fieldCheck.primaryScene;
-  
-  // PHASE 3: Enhanced validation logging with detailed pass/fail reasoning
+  // FAIL-FAST VALIDATION SUMMARY: No fallback acceptance - strict criteria only
   console.log('DEBUG VALIDATION SUMMARY:', {
     result: shouldAccept ? 'PASS' : 'TIER 2 TRIGGER',
     qualityScore: fieldCheck.details?.qualityScore || '0/5',
     sceneLength: enhancedStoryData.primaryScene?.length || 0,
     extractionMethod: enhancedStoryData.extractionMethod || 'standard_json',
-    isFallbackExtraction: isFallbackExtraction,
     criteria: fieldCheck.details,
-    decision: shouldAccept ? 'Accept for Tier 1' : 'Fallback to Tier 2',
-    tier2Reason: !shouldAccept ? 'Insufficient visual quality criteria' : null
+    decision: shouldAccept ? 'Accept for Tier 1' : 'Escalate to Tier 2',
+    tier2Reason: !shouldAccept ? 'Failed strict validation criteria (100+ chars + 1+ quality criteria)' : null
   });
   
   if (!shouldAccept) {
