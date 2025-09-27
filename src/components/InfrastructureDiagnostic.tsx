@@ -15,27 +15,32 @@ export const InfrastructureDiagnostic: React.FC = () => {
     try {
       DebugLogger.log('performance', 'Running infrastructure diagnostic');
       
-      // Test the main image orchestrator function health
+      // Test the main image orchestrator function health with version check
       const { data, error } = await supabase.functions.invoke('runware-generate-image', {
         method: 'GET'
       });
       
       if (error) {
-        setResult(`❌ Infrastructure diagnostic failed: ${error.message}`);
+        setResult(`❌ Infrastructure diagnostic failed: ${error.message}\nNote: This might indicate a stale deployment being tested.`);
         return;
       }
       
       if (data?.status === 'healthy') {
         const env = data.environment || {};
+        const timestamp = new Date(data.timestamp);
+        const timeDiff = Date.now() - timestamp.getTime();
+        const isRecent = timeDiff < 300000; // 5 minutes
+        
         setResult(`✅ Infrastructure diagnostic completed successfully
 Environment: OpenAI ${env.openaiApiKeyPresent ? '✅' : '❌'}, Runware ${env.runwareApiKeyPresent ? '✅' : '❌'}, Supabase ${env.supabaseServiceRolePresent ? '✅' : '❌'}
-Service: ${data.service} | Timestamp: ${data.timestamp}`);
+Service: ${data.service} | Timestamp: ${data.timestamp}
+Deployment Status: ${isRecent ? '🟢 Current' : '🟡 May be stale'} (${Math.round(timeDiff/1000)}s ago)`);
       } else {
         setResult(`⚠️ Infrastructure check completed with issues: ${data?.message || 'Service not healthy'}`);
       }
     } catch (error) {
       DebugLogger.error('performance', 'Diagnostic error', error);
-      setResult(`❌ Infrastructure test failed: ${error.message}`);
+      setResult(`❌ Infrastructure test failed: ${error.message}\nTip: Check if functions are properly deployed and not using stale cached versions.`);
     } finally {
       setIsRunning(false);
     }

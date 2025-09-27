@@ -477,6 +477,8 @@ serve(async (req: Request): Promise<Response> => {
       success: true,
       imageURL: result.imageURL,
       provider: result.provider,
+      primaryScene: result.primaryScene || payload.pageText || payload.storyText || "Generated scene",
+      enhancedData: result.enhancedData,
       requestId: requestId,
       timestamp: new Date().toISOString()
     };

@@ -15,7 +15,7 @@ Phase 4 implements comprehensive service health monitoring and smart routing bas
 **Location**: `supabase/functions/_shared/ServiceHealthMonitor.js`
 
 #### Key Features:
-- **Comprehensive Health Checks**: Monitors CharacterConsistencyService, VisualDetailTracker, SessionStateManager, UniversalPlaceholderResolver
+- **Comprehensive Health Checks**: Monitors CharacterConsistencyService, VisualDetailTracker, UniversalPlaceholderResolver (SessionStateManager deprecated)
 - **Smart Caching**: 30-second cache for health results to prevent overload
 - **Tier Availability Detection**: Dynamically determines which tiers are available based on service health
 - **Graceful Degradation**: Provides fallback strategies when services are unavailable
@@ -27,8 +27,7 @@ Phase 4 implements comprehensive service health monitoring and smart routing bas
   services: {
     CharacterConsistencyService: { status, responseTime, capabilities },
     VisualDetailTracker: { status, responseTime, capabilities },
-    SessionStateManager: { status, responseTime, capabilities },  
-    UniversalPlaceholderResolver: { status, responseTime, capabilities }
+    UniversalPlaceholderResolver: { status, responseTime, capabilities } // SessionStateManager deprecated
   },
   availableTiers: ['1', '2.5A', '2.5B', '2.5C', '2.5D'],
   timestamp: '2025-01-30T...'

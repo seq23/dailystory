@@ -70,7 +70,7 @@ supabase/functions/_shared/
 ├── MultiStageEnhancementPipeline.js ✅
 ├── RealContextCollector.js        ✅
 ├── SecurityValidator.js           ✅
-├── SessionStateManager.js         ✅
+├── tier25Vocabulary.js            ✅  
 ├── SYSTEM_ARCHITECTURE.md         ✅
 ├── VisualDetailTracker.js         ✅
 ├── cors.ts                        ✅

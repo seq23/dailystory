@@ -119,8 +119,8 @@ class MyService {
 - ✅ `CharacterConsistencyService.js` - Converted 3 `deno.land/x/supabase@1.0.0` imports
 - ✅ `ServiceHealthMonitor.js` - Converted `esm.sh/@supabase/supabase-js@2` import
 - ✅ `VisualDetailTracker.js` - Converted `deno.land/x/supabase@1.0.0` import
-- ✅ `SessionStateManager.js` - Converted `esm.sh/@supabase/supabase-js@2.55.0` import
-- ✅ `SessionStateManager.ts` - Converted `esm.sh/@supabase/supabase-js@2.55.0` import
+- ✅ `SessionStateManager.js` - **DEPRECATED** - No longer used in production (replaced by direct session management)
+- ✅ `SessionStateManager.ts` - **DEPRECATED** - No longer used in production (replaced by direct session management)
 
 ### Phase 3: Edge Functions ✅
 - ✅ `runware-template-ab/index.js` - Converted `esm.sh/@supabase/supabase-js@2.57.4` import

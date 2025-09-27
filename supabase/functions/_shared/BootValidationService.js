@@ -125,8 +125,8 @@ export class BootValidationService {
     // Test critical module imports
     const criticalModules = [
       { name: 'corsAdvanced', path: '../_shared/corsAdvanced.js' },
-      { name: 'tier25Vocabulary', path: '../_shared/tier25Vocabulary.js' },
-      { name: 'SessionStateManager', path: '../_shared/SessionStateManager.js' }
+      { name: 'tier25Vocabulary', path: '../_shared/tier25Vocabulary.js' }
+      // Note: SessionStateManager removed - deprecated and no longer used
     ];
 
     for (const mod of criticalModules) {

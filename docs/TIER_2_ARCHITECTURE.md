@@ -25,7 +25,7 @@ Tier 2 is the **Multi-Service Dynamic Pipeline** that orchestrates 5+ systematic
 
 ### Enhanced Dynamic Pipeline Components
 Tier 2 uses enhanced pipeline with advanced capabilities:
-- `SessionStateManager`: Session state and character tracking
+- **DEPRECATED**: `SessionStateManager` - No longer used, replaced by direct session handling
 - `CharacterConsistencyService`: **DATABASE-BACKED** character seed generation (eliminates race conditions)
 - `SecondaryElementDetector`: Story element detection
 - `RealContextCollector`: Context collection from session history

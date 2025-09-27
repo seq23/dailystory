@@ -2561,7 +2561,10 @@ export const ImageTierTester = () => {
             userInfo: buildUserInfo(),
             sessionId: 'test-session',
             pageNumber: 1,
-            isGuestUser: true
+            storyId: 'cascade-test-story',
+            isGuestUser: false,
+            difficultyLevel: 'medium',
+            protectionNegatives: 'blur, dark, scary, adult content'
           }
         },
         {
@@ -2569,11 +2572,13 @@ export const ImageTierTester = () => {
           function: 'ai-visual-scene-creator',
           architecture: 'PURE_TYPESCRIPT',
           payload: {
-            storyText: testStoryText,
+            pageText: testStoryText, // FIXED: Use pageText instead of storyText for consistency
             userInfo: buildUserInfo(),
             sessionId: 'test-session',
             pageNumber: 1,
-            directMode: true
+            storyId: 'cascade-test-story',
+            isGuestUser: false,
+            isDebugMode: true
           }
         },
         {
@@ -2581,14 +2586,15 @@ export const ImageTierTester = () => {
           function: 'runware-template-ab',
           architecture: 'RECEPTIONIST_PATTERN',
           payload: {
-            bundle: {
-              pageText: testStoryText,
-              userInfo: buildUserInfo(),
-              sessionId: 'test-session',
-              pageNumber: 1,
-              templateComplexity: 'A'
-            },
-            config: { tier: '2.5A' }
+            pageText: testStoryText, // FIXED: Use flat payload structure
+            userInfo: buildUserInfo(),
+            sessionId: 'test-session',
+            pageNumber: 1,
+            storyId: 'cascade-test-story',
+            isGuestUser: false,
+            difficultyLevel: 'medium',
+            protectionNegatives: 'blur, dark, scary, adult content',
+            templateComplexity: 'A'
           }
         },
         {
@@ -2596,14 +2602,15 @@ export const ImageTierTester = () => {
           function: 'runware-template-cd',
           architecture: 'RECEPTIONIST_PATTERN',
           payload: {
-            bundle: {
-              pageText: testStoryText,
-              userInfo: buildUserInfo(),
-              sessionId: 'test-session', 
-              pageNumber: 1,
-              templateComplexity: 'C'
-            },
-            config: { tier: '2.5C' }
+            pageText: testStoryText, // FIXED: Use flat payload structure
+            userInfo: buildUserInfo(),
+            sessionId: 'test-session', 
+            pageNumber: 1,
+            storyId: 'cascade-test-story',
+            isGuestUser: false,
+            difficultyLevel: 'medium',
+            protectionNegatives: 'blur, dark, scary, adult content',
+            templateComplexity: 'C'
           }
         }
       ];
@@ -2641,7 +2648,6 @@ export const ImageTierTester = () => {
                 // Architecture-specific display fields
                 primaryScene: data.primaryScene,
                 templateStructure: data.templateStructure,
-                directMode: tier.payload.directMode,
                 
                 // Orchestrator-specific fields
                 nextAction: data.nextAction,

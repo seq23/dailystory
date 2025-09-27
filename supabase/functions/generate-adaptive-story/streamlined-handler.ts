@@ -911,29 +911,24 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
           model: currentModel?.name || 'unknown'
         });
         
-        // Store failed AI prompt for debugging (EVERYTHING sent to AI, even failures)
-        try {
-          const { globalSessionManager } = await import('../_shared/SessionStateManager.js');
-        globalSessionManager.storeAIPromptForDebugging(sessionId || 'unknown-session', {
-          systemPrompt: enhancedSystemPrompt,
-          userPrompt: finalUserPrompt,
+        // Store failed AI prompt for debugging (inline console logging)
+        console.log(`❌ [DEBUG] Failed AI prompt for session ${sessionId}:`, {
+          systemPrompt: enhancedSystemPrompt.substring(0, 200) + '...',
+          userPrompt: finalUserPrompt.substring(0, 200) + '...',
           model: currentModel.name,
           tokenLimit: apiBody[safePropertyAccess(currentModel, 'paramName', 'max_completion_tokens')],
           pageNumber: config?.pageNumber || 1,
           attempt: attempt,
-           success: false,
-           bundle: bundleForDebug,
-            apiResponse: {
-              status: response.status,
-                statusText: response.statusText,
-                errorBody: errorText,
-                error: `API Error ${response.status}`,
-                content: errorText
-              }
-           });
-        } catch (debugError) {
-          console.warn('⚠️ Failed to store failed AI prompt for debugging:', debugError);
-        }
+          success: false,
+          bundle: bundleForDebug,
+          apiResponse: {
+            status: response.status,
+            statusText: response.statusText,
+            errorBody: errorText,
+            error: `API Error ${response.status}`,
+            content: errorText
+          }
+        });
         
         throw new Error(`API Error ${response.status}: ${errorText}`);
       }
@@ -1004,30 +999,25 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
       if (reasoningTokens > 0 && contentLength < 50) {
         console.log(`⚠️ REASONING TOKEN ISSUE: Model ${currentModel.name} used ${reasoningTokens} reasoning tokens but produced ${contentLength} chars. Advancing to content-focused model.`);
         
-        // Store failure for debugging
-        try {
-          const { globalSessionManager } = await import('../_shared/SessionStateManager.js');
-          globalSessionManager.storeAIPromptForDebugging(sessionId || 'unknown-session', {
-            systemPrompt: enhancedSystemPrompt,
-            userPrompt: finalUserPrompt,
-            model: currentModel.name,
-            tokenLimit: apiBody[safePropertyAccess(currentModel, 'paramName', 'max_completion_tokens')],
-            pageNumber: config?.pageNumber || 1,
-            attempt: attempt,
-            success: false,
-            bundle: bundleForDebug,
-             apiResponse: {
-               status: response.status,
-               contentLength,
-               usage: data.usage,
-               reasoningTokenFailure: true,
-               reasoningTokens,
-               content: storyText || ''
-             }
-          });
-        } catch (debugError) {
-          console.warn('⚠️ Failed to store reasoning token failure for debugging:', debugError);
-        }
+        // Store reasoning token failure for debugging (inline console logging)
+        console.log(`⚠️ [DEBUG] Reasoning token failure for session ${sessionId}:`, {
+          systemPrompt: enhancedSystemPrompt.substring(0, 200) + '...',
+          userPrompt: finalUserPrompt.substring(0, 200) + '...',
+          model: currentModel.name,
+          tokenLimit: apiBody[safePropertyAccess(currentModel, 'paramName', 'max_completion_tokens')],
+          pageNumber: config?.pageNumber || 1,
+          attempt: attempt,
+          success: false,
+          bundle: bundleForDebug,
+          apiResponse: {
+            status: response.status,
+            contentLength,
+            usage: data.usage,
+            reasoningTokenFailure: true,
+            reasoningTokens,
+            content: storyText || ''
+          }
+        });
         
         // Skip to next model (prefer content-focused models)
         currentModelIndex++;
@@ -1041,30 +1031,25 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
         continue;
       }
       
-      // Store complete AI prompt for debugging (EVERYTHING sent to AI)
-      try {
-        const { globalSessionManager } = await import('../_shared/SessionStateManager.js');
-        globalSessionManager.storeAIPromptForDebugging(sessionId || 'unknown-session', {
-          systemPrompt: enhancedSystemPrompt,
-          userPrompt: finalUserPrompt,
-          model: currentModel.name,
-          tokenLimit: apiBody[safePropertyAccess(currentModel, 'paramName', 'max_completion_tokens')],
-          pageNumber: config?.pageNumber || 1,
-          attempt: attempt,
-           success: true,
-           bundle: bundleForDebug,
-            apiResponse: {
-              status: response.status,
-              contentLength: storyText?.length || 0,
-              usage: data.usage,
-              hasChoices: !!data.choices,
-              choicesLength: data.choices?.length || 0,
-              content: storyText || ''
-            }
-         });
-      } catch (debugError) {
-        console.warn('⚠️ Failed to store AI prompt for debugging:', debugError);
-      }
+      // Store successful AI prompt for debugging (inline console logging)
+      console.log(`✅ [DEBUG] Successful AI prompt for session ${sessionId}:`, {
+        systemPrompt: enhancedSystemPrompt.substring(0, 200) + '...',
+        userPrompt: finalUserPrompt.substring(0, 200) + '...',
+        model: currentModel.name,
+        tokenLimit: apiBody[safePropertyAccess(currentModel, 'paramName', 'max_completion_tokens')],
+        pageNumber: config?.pageNumber || 1,
+        attempt: attempt,
+        success: true,
+        bundle: bundleForDebug,
+        apiResponse: {
+          status: response.status,
+          contentLength: storyText?.length || 0,
+          usage: data.usage,
+          hasChoices: !!data.choices,
+          choicesLength: data.choices?.length || 0,
+          content: storyText || ''
+        }
+      });
       
       if (storyText && storyText.trim()) {
         const vocabularyUsage = extractVocabularyUsage(storyText, enhancedUserPrompt);
