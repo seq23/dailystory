@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { DebugLogger } from '@/services/DebugLogger';
 import { HealthCheckService } from '@/services/HealthCheckService';
+import { ImageFallbackService } from '@/services/ImageFallbackService';
 import { Sparkles, Zap, Network, Search, Camera, RefreshCw, RotateCcw, Clock, AlertTriangle, CheckCircle } from 'lucide-react';
 
 interface TestResult {
@@ -1285,7 +1286,7 @@ export const ImageTierTester = () => {
     setResults([]);
     
     try {
-      DebugLogger.log('image', '🔍 E2E User Flow Simulation: Health Check → Bypass Logic → Orchestrator → Direct Mode → Tier Cascade', {
+      DebugLogger.log('image', '🔍 E2E Real Routing: Health Check → Orchestrator → Direct Mode → Tier Cascade → SVG Fallback', {
         userInfo: buildUserInfo()
       });
 
@@ -1300,7 +1301,7 @@ export const ImageTierTester = () => {
       let fallbackPath = '';
       let healthStatus = null;
 
-      // STEP 0: Health Check First - MIRROR SimpleImageService
+      // STEP 1: Health Check
       cascadeHistory.push('🏥 Checking System Health...');
       const healthStartTime = Date.now();
       
@@ -1308,93 +1309,23 @@ export const ImageTierTester = () => {
         healthStatus = await HealthCheckService.checkSystemHealth();
         const healthTime = Date.now() - healthStartTime;
         cascadeHistory.push(`✅ Health Check Complete (${healthTime}ms): ${healthStatus.overallHealth}`);
-        
-        // Log health details
         cascadeHistory.push(`📊 Orchestrator: ${healthStatus.orchestrator}, Runware: ${healthStatus.runwareAPI}, Dependencies: ${healthStatus.serviceDependencies}`);
       } catch (healthError) {
         const healthTime = Date.now() - healthStartTime;
         cascadeHistory.push(`❌ Health Check Failed (${healthTime}ms): ${healthError.message}`);
-        // Continue with optimistic default
         healthStatus = {
           orchestrator: 'server',
-          runwareAPI: 'server', 
+          runwareAPI: 'server',
           serviceDependencies: 'server',
-          overallHealth: 'server',
-          timestamp: new Date().toISOString(),
-          checkDuration: healthTime
+          overallHealth: 'server'
         };
       }
 
-      // STEP 0.5: Evaluate Bypass Logic - MIRROR SimpleImageService  
-      cascadeHistory.push('🤔 Evaluating Direct Mode Bypass...');
-      const bypassDecision = {
-        shouldBypass: healthStatus.overallHealth === 'server' || healthStatus.orchestrator === 'server',
-        reason: healthStatus.overallHealth === 'server' ? 'System unhealthy - proactive bypass' : 'System healthy - proceed normally',
-        conditions: [`Health: ${healthStatus.overallHealth}`, `Orchestrator: ${healthStatus.orchestrator}`]
-      };
-      
-      cascadeHistory.push(`📋 Bypass Decision: ${bypassDecision.shouldBypass ? 'BYPASS' : 'PROCEED'} (${bypassDecision.reason})`);
-
-      if (bypassDecision.shouldBypass) {
-        // PROACTIVE BYPASS: Skip orchestrator, go directly to Direct Mode
-        cascadeHistory.push('🔄 PROACTIVE BYPASS: Skipping orchestrator, attempting Direct Mode...');
-        
-        try {
-          const directModeStartTime = Date.now();
-          const directModeResponse = await supabase.functions.invoke('ai-visual-scene-creator', {
-            body: {
-              pageText: enhancedPrompt, // FIXED: Use pageText like SimpleImageService
-              userInfo: userInfo,
-              sessionId: sessionId,
-              storyId: sessionId,
-              pageNumber: 1,
-              isGuestUser: true,
-              difficultyLevel: mapDifficultyLevel(userInfo),
-              protectionNegatives: protectionNegatives,
-              directMode: true,
-              bypassReason: bypassDecision.reason
-            }
-          });
-
-          const directModeTime = Date.now() - directModeStartTime;
-          
-          if (!directModeResponse.error && directModeResponse.data?.success) {
-            cascadeHistory.push(`✅ PROACTIVE BYPASS SUCCESS: Direct Mode (${directModeTime}ms)`);
-            resultBadge = 'Proactive Direct Mode';
-            fallbackPath = `Health check → Proactive bypass → Direct Mode succeeded`;
-            finalResult = {
-              tier: 'proactive-direct-mode',
-              success: true,
-              imageURL: directModeResponse.data?.imageURL,
-              details: {
-                processingTime: Date.now() - globalStartTime,
-                directModeTime: directModeTime,
-                cascadeHistory,
-                bypassReason: bypassDecision.reason,
-                healthStatus: healthStatus,
-                testType: 'E2E_SIMULATION',
-                resultType: 'PROACTIVE_BYPASS_SUCCESS',
-                positivePrompt: directModeResponse.data?.positivePrompt,
-                error: null
-              }
-            };
-          } else {
-            const directError = categorizeError(directModeResponse.error, 'proactive-direct-mode');
-            cascadeHistory.push(`❌ PROACTIVE BYPASS FAILED: Direct Mode (${directModeTime}ms): ${directError.probableCause}`);
-            // Fall through to try orchestrator anyway
-          }
-        } catch (directModeError) {
-          cascadeHistory.push(`❌ PROACTIVE BYPASS EXCEPTION: ${directModeError.message}`);
-          // Fall through to try orchestrator anyway
-        }
-      }
-
-      // STEP 1: Try Orchestrator (if not already successful from proactive bypass)
-      if (!finalResult) {
-        cascadeHistory.push('🎯 Attempting Orchestrator (runware-generate-image)...');
+      // STEP 2: Try Orchestrator
+      cascadeHistory.push('🚀 Attempting Orchestrator (runware-generate-image)...');
+      const orchestratorStartTime = Date.now();
       
       try {
-        const orchestratorStartTime = Date.now();
         const orchestratorResponse = await supabase.functions.invoke('runware-generate-image', {
           body: {
             pageText: testStoryText,
@@ -1410,342 +1341,218 @@ export const ImageTierTester = () => {
         const orchestratorTime = Date.now() - orchestratorStartTime;
         
         if (orchestratorResponse.data?.success) {
-          cascadeHistory.push(`✅ Orchestrator completed (${orchestratorTime}ms)`);
+          cascadeHistory.push(`✅ Orchestrator Success (${orchestratorTime}ms)`);
+          resultBadge = 'Orchestrator Success';
+          fallbackPath = 'No fallbacks needed - direct orchestrator success';
           finalResult = {
-            tier: 'orchestrator-success',
+            tier: orchestratorResponse.data.tier || 'orchestrator',
             success: true,
             imageURL: orchestratorResponse.data.imageURL,
             details: {
-              processingTime: Date.now() - globalStartTime,
+              processingTime: orchestratorTime,
               cascadeHistory,
-              testType: 'E2E_SIMULATION',
+                      testType: 'REAL',
+              resultType: 'ORCHESTRATOR_SUCCESS',
+              tierFailureHistory: orchestratorResponse.data.tierFailureHistory || [],
+              positivePrompt: orchestratorResponse.data.positivePrompt,
+              routingMetadata: orchestratorResponse.data.routingMetadata,
               error: null
             }
           };
         } else {
-          cascadeHistory.push(`❌ Orchestrator failed (${orchestratorTime}ms)`);
-          
-          // Orchestrator failed - check if it's a boot failure (503) or runtime error
+          // Orchestrator failed - start cascade
+          cascadeHistory.push(`❌ Orchestrator Failed (${orchestratorTime}ms)`);
           const errorAnalysis = categorizeError(orchestratorResponse.error, 'orchestrator', orchestratorResponse);
+          cascadeHistory.push(`❌ Error Type: ${errorAnalysis.errorType} - ${errorAnalysis.probableCause}`);
           
-          if (errorAnalysis.errorType === 'BOOT_FAILURE') {
-            cascadeHistory.push(`❌ Orchestrator Boot Failure (${orchestratorTime}ms): ${errorAnalysis.probableCause}`);
+          // STEP 3: Try Direct Mode Fallback
+          cascadeHistory.push('🔄 Attempting Direct Mode (ai-visual-scene-creator)...');
+          const directModeStartTime = Date.now();
+          
+          try {
+            const directModeResponse = await supabase.functions.invoke('ai-visual-scene-creator', {
+              body: {
+                pageText: enhancedPrompt,
+                userInfo: userInfo,
+                sessionId: sessionId,
+                storyId: sessionId,
+                pageNumber: 1,
+                isGuestUser: true,
+                difficultyLevel: mapDifficultyLevel(userInfo),
+                protectionNegatives: protectionNegatives,
+                directMode: true
+              }
+            });
+
+            const directModeTime = Date.now() - directModeStartTime;
             
-            // STEP 2: Try Direct Mode Fallback
-            cascadeHistory.push('🔄 Attempting Direct Mode Fallback (ai-visual-scene-creator)...');
-            
-            try {
-              const directModeStartTime = Date.now();
-              const directModeResponse = await supabase.functions.invoke('ai-visual-scene-creator', {
-                body: {
-                  pageText: enhancedPrompt, // FIXED: Use pageText like SimpleImageService
-                  userInfo: userInfo,
-                  sessionId: sessionId,
-                  storyId: sessionId, // ADDED: Missing field
-                  pageNumber: 1,
-                  isGuestUser: true, // ADDED: Missing field
-                  difficultyLevel: mapDifficultyLevel(userInfo), // ADDED: Missing field
-                  protectionNegatives: protectionNegatives, // ADDED: Missing field
-                  directMode: true
+            if (directModeResponse.data?.success) {
+              cascadeHistory.push(`✅ Direct Mode Success (${directModeTime}ms)`);
+              resultBadge = 'Direct Mode Fallback';
+              fallbackPath = 'Orchestrator failed → Direct Mode succeeded';
+              finalResult = {
+                tier: 'direct-mode',
+                success: true,
+                imageURL: directModeResponse.data.imageURL,
+                details: {
+                  processingTime: Date.now() - globalStartTime,
+                  cascadeHistory,
+                      testType: 'REAL',
+                  resultType: 'DIRECT_MODE_SUCCESS',
+                  error: null
                 }
-              });
-
-              const directModeTime = Date.now() - directModeStartTime;
+              };
+            } else {
+              // Direct Mode failed - try Tier 2.5C
+              cascadeHistory.push(`❌ Direct Mode Failed (${directModeTime}ms)`);
               
-              if (!directModeResponse.error && directModeResponse.data?.success) {
-                cascadeHistory.push(`✅ Direct Mode Success (${directModeTime}ms)`);
-                resultBadge = 'Direct Mode Fallback';
-                fallbackPath = `Orchestrator failed → Direct Mode succeeded`;
-                finalResult = {
-                  tier: 'direct-mode',
-                  success: true,
-                  imageURL: directModeResponse.data?.imageURL,
-                  details: {
-                    processingTime: Date.now() - globalStartTime,
-                    orchestratorFailureTime: orchestratorTime,
-                    directModeTime: directModeTime,
-                    cascadeHistory,
-                    fallbackReason: errorAnalysis.probableCause,
-                    testType: 'E2E_SIMULATION',
-                    resultType: 'DIRECT_MODE_FALLBACK',
-                    positivePrompt: directModeResponse.data?.positivePrompt,
-                    error: null
+              // STEP 4: Try Tier 2.5C
+              cascadeHistory.push('🔄 Attempting Tier 2.5C (runware-template-ab)...');
+              const tier25CStartTime = Date.now();
+              
+              try {
+                const tier25CResponse = await supabase.functions.invoke('runware-template-ab', {
+                  body: {
+                    pageText: enhancedPrompt,
+                    userInfo: userInfo,
+                    sessionId: sessionId,
+                    pageNumber: 1,
+                    complexity: 'moderate'
                   }
-                };
-              } else {
-                const directError = categorizeError(directModeResponse.error, 'direct-mode');
-                cascadeHistory.push(`❌ Direct Mode Failed (${directModeTime}ms): ${directError.probableCause}`);
+                });
+
+                const tier25CTime = Date.now() - tier25CStartTime;
                 
-                // CONTINUE CASCADE: Try Tier 2.5C after Direct Mode failure
-                cascadeHistory.push('🔄 Direct Mode failed, attempting Tier 2.5C...');
-                
-                try {
-                  const tier25CStartTime = Date.now();
-                  const tier25CResponse = await supabase.functions.invoke('runware-template-cd', {
-                    body: {
-                      pageText: enhancedPrompt,
-                      userInfo: userInfo,
-                      sessionId: sessionId,
-                      pageNumber: 1,
-                      isGuestUser: true,
-                      difficultyLevel: mapDifficultyLevel(userInfo),
-                      templateComplexity: 'C',
-                      test: true
+                if (tier25CResponse.data?.success) {
+                  cascadeHistory.push(`✅ Tier 2.5C Success (${tier25CTime}ms)`);
+                  resultBadge = 'Tier 2.5C Success';
+                  fallbackPath = 'Orchestrator failed → Direct Mode failed → Tier 2.5C succeeded';
+                  finalResult = {
+                    tier: '2.5C',
+                    success: true,
+                    imageURL: tier25CResponse.data.imageURL,
+                    details: {
+                      processingTime: Date.now() - globalStartTime,
+                      cascadeHistory,
+                      testType: 'REAL',
+                      resultType: 'TIER_25C_SUCCESS',
+                      error: null
                     }
-                  });
-
-                  const tier25CTime = Date.now() - tier25CStartTime;
+                  };
+                } else {
+                  // Tier 2.5C failed - try SVG Tier 4
+                  cascadeHistory.push(`❌ Tier 2.5C Failed (${tier25CTime}ms)`);
                   
-                  if (!tier25CResponse.error && tier25CResponse.data?.success) {
-                    cascadeHistory.push(`✅ Tier 2.5C Success (${tier25CTime}ms)`);
-                    resultBadge = 'Tier 2.5C Success';
-                    fallbackPath = `Orchestrator failed → Direct Mode failed → Tier 2.5C succeeded`;
-                    finalResult = {
-                      tier: 'tier-2.5C',
-                      success: true,
-                      imageURL: tier25CResponse.data?.imageURL,
-                      details: {
-                        processingTime: Date.now() - globalStartTime,
-                        orchestratorFailureTime: orchestratorTime,
-                        directModeTime: directModeTime,
-                        tier25CTime: tier25CTime,
-                        cascadeHistory,
-                        testType: 'E2E_SIMULATION',
-                        resultType: 'TIER_25C_SUCCESS',
-                        positivePrompt: tier25CResponse.data?.positivePrompt,
-                        error: null
-                      }
-                    };
-                  } else {
-                    const tier25CError = categorizeError(tier25CResponse.error, 'tier-2.5C');
-                    cascadeHistory.push(`❌ Tier 2.5C Failed (${tier25CTime}ms): ${tier25CError.probableCause}`);
-                    
-                    // CONTINUE CASCADE: Try Tier 2.5D after Tier 2.5C failure
-                    cascadeHistory.push('🔄 Tier 2.5C failed, attempting Tier 2.5D...');
-                    
-                    try {
-                      const tier25DStartTime = Date.now();
-                      const tier25DResponse = await supabase.functions.invoke('runware-template-cd', {
-                        body: {
-                          pageText: enhancedPrompt,
-                          userInfo: userInfo,
-                          sessionId: sessionId,
-                          pageNumber: 1,
-                          isGuestUser: true,
-                          difficultyLevel: mapDifficultyLevel(userInfo),
-                          templateComplexity: 'D',
-                          test: true
-                        }
-                      });
-
-                      const tier25DTime = Date.now() - tier25DStartTime;
-                      
-                      if (!tier25DResponse.error && tier25DResponse.data?.success) {
-                        cascadeHistory.push(`✅ Tier 2.5D Success (${tier25DTime}ms)`);
-                        resultBadge = 'Tier 2.5D Success';
-                        fallbackPath = `Orchestrator failed → Direct Mode failed → Tier 2.5C failed → Tier 2.5D succeeded`;
-                        finalResult = {
-                          tier: 'tier-2.5D',
-                          success: true,
-                          imageURL: tier25DResponse.data?.imageURL,
-                          details: {
-                            processingTime: Date.now() - globalStartTime,
-                            orchestratorFailureTime: orchestratorTime,
-                            directModeTime: directModeTime,
-                            tier25CTime: tier25CTime,
-                            tier25DTime: tier25DTime,
-                            cascadeHistory,
-                            testType: 'E2E_SIMULATION',
-                            resultType: 'TIER_25D_SUCCESS',
-                            positivePrompt: tier25DResponse.data?.positivePrompt,
-                            error: null
-                          }
-                        };
-                      } else {
-                        const tier25DError = categorizeError(tier25DResponse.error, 'tier-2.5D');
-                        cascadeHistory.push(`❌ Tier 2.5D Failed (${tier25DTime}ms): ${tier25DError.probableCause}`);
-                        
-                        // FINAL CASCADE: Try Tier 4 SVG after Tier 2.5D failure
-                        cascadeHistory.push('🔄 Tier 2.5D failed, attempting final Tier 4 SVG fallback...');
-                        
-                        try {
-                          const tier4SVGStartTime = Date.now();
-                          // Use frontend SVG generation as absolute last resort
-                          const tier4SVGResponse = await generateSVGFallback(userInfo, enhancedPrompt);
-                          const tier4SVGTime = Date.now() - tier4SVGStartTime;
-                          
-                          if (tier4SVGResponse.success) {
-                            cascadeHistory.push(`✅ Tier 4 SVG Success (${tier4SVGTime}ms) - Final fallback succeeded`);
-                            resultBadge = 'Tier 4 SVG Fallback';
-                            fallbackPath = `Orchestrator → Direct Mode → Tier 2.5C → Tier 2.5D → Tier 4 SVG succeeded`;
-                            finalResult = {
-                              tier: 'tier-4-svg',
-                              success: true,
-                              imageURL: tier4SVGResponse.imageURL,
-                              details: {
-                                processingTime: Date.now() - globalStartTime,
-                                orchestratorFailureTime: orchestratorTime,
-                                directModeTime: directModeTime,
-                                tier25CTime: tier25CTime,
-                                tier25DTime: tier25DTime,
-                                tier4SVGTime: tier4SVGTime,
-                                cascadeHistory,
-                                testType: 'E2E_SIMULATION',
-                                resultType: 'TIER_4_SVG_SUCCESS',
-                                positivePrompt: tier4SVGResponse.prompt,
-                                error: null
-                              }
-                            };
-                          } else {
-                            cascadeHistory.push(`❌ Tier 4 SVG Failed (${tier4SVGTime}ms): ${tier4SVGResponse.error}`);
-                            
-                            // NOW declare complete failure after full cascade
-                            resultBadge = 'Complete Failure';
-                            fallbackPath = `Complete cascade failure: Orchestrator → Direct Mode → Tier 2.5C → Tier 2.5D → Tier 4 SVG all failed`;
-                            finalResult = {
-                              tier: 'complete-failure',
-                              success: false,
-                              imageURL: null,
-                              details: {
-                                processingTime: Date.now() - globalStartTime,
-                                orchestratorFailureTime: orchestratorTime,
-                                directModeTime: directModeTime,
-                                tier25CTime: tier25CTime,
-                                tier25DTime: tier25DTime,
-                                tier4SVGTime: tier4SVGTime,
-                                cascadeHistory,
-                                testType: 'E2E_SIMULATION',
-                                resultType: 'COMPLETE_FAILURE_AFTER_FULL_CASCADE',
-                                error: `All tiers failed: Orchestrator, Direct Mode, Tier 2.5C, Tier 2.5D, and Tier 4 SVG`
-                              }
-                            };
-                          }
-                        } catch (tier4SVGError) {
-                          cascadeHistory.push(`❌ Tier 4 SVG Exception: ${tier4SVGError.message}`);
-                          resultBadge = 'Complete Failure';
-                          fallbackPath = `Complete cascade failure with final exception`;
-                          finalResult = {
-                            tier: 'complete-failure',
-                            success: false,
-                            imageURL: null,
-                            details: {
-                              processingTime: Date.now() - globalStartTime,
-                              cascadeHistory,
-                              testType: 'E2E_SIMULATION',
-                              resultType: 'COMPLETE_FAILURE_WITH_EXCEPTION',
-                              error: `Complete cascade failure with Tier 4 SVG exception: ${tier4SVGError.message}`
-                            }
-                          };
-                        }
-                      }
-                    } catch (tier25DError) {
-                      cascadeHistory.push(`❌ Tier 2.5D Exception: ${tier25DError.message}`);
-                      // Still try Tier 4 SVG even after 2.5D exception
-                      // (Implementation similar to above, condensed for space)
-                      resultBadge = 'Tier 2.5D Exception';
-                      fallbackPath = `Tier 2.5D exception occurred`;
+                  // STEP 5: Try SVG Tier 4 (Final Fallback)
+                  cascadeHistory.push('🔄 Attempting SVG Tier 4 (final fallback)...');
+                  const svgStartTime = Date.now();
+                  
+                  try {
+                    const svgResponse = await ImageFallbackService.generateStoryPlaceholder(enhancedPrompt, 1);
+                    const svgTime = Date.now() - svgStartTime;
+                  
+                  if (svgResponse) {
+                      cascadeHistory.push(`✅ SVG Tier 4 Success (${svgTime}ms)`);
+                      resultBadge = 'SVG Tier 4 Fallback';
+                      fallbackPath = 'Complete cascade: Orchestrator → Direct Mode → Tier 2.5C → SVG Tier 4';
                       finalResult = {
-                        tier: 'tier-2.5D-exception',
+                        tier: 'SVG_TIER_4',
+                        success: true,
+                      imageURL: svgResponse,
+                        details: {
+                          processingTime: Date.now() - globalStartTime,
+                          cascadeHistory,
+                      testType: 'REAL',
+                          resultType: 'SVG_TIER_4_SUCCESS',
+                          error: null
+                        }
+                      };
+                    } else {
+                      // Complete failure - all tiers failed
+                      cascadeHistory.push(`❌ SVG Tier 4 Failed (${svgTime}ms) - Complete System Failure`);
+                      resultBadge = 'Complete Failure';
+                      fallbackPath = 'All tiers failed: Orchestrator → Direct Mode → Tier 2.5C → SVG Tier 4';
+                      finalResult = {
+                        tier: 'complete-failure',
                         success: false,
                         imageURL: null,
                         details: {
                           processingTime: Date.now() - globalStartTime,
                           cascadeHistory,
-                          testType: 'E2E_SIMULATION',
-                          resultType: 'TIER_25D_EXCEPTION',
-                          error: `Tier 2.5D exception: ${tier25DError.message}`
+                          testType: 'REAL_ROUTING',
+                          resultType: 'COMPLETE_FAILURE',
+                          error: 'All fallback tiers exhausted'
                         }
                       };
                     }
+                  } catch (svgError) {
+                    const svgTime = Date.now() - svgStartTime;
+                    cascadeHistory.push(`❌ SVG Tier 4 Exception (${svgTime}ms): ${svgError.message}`);
+                    resultBadge = 'Complete Failure';
+                    fallbackPath = 'System failure at final SVG fallback';
+                    finalResult = {
+                      tier: 'complete-failure',
+                      success: false,
+                      imageURL: null,
+                      details: {
+                        processingTime: Date.now() - globalStartTime,
+                        cascadeHistory,
+                        testType: 'REAL_ROUTING',
+                        resultType: 'COMPLETE_SYSTEM_FAILURE',
+                        error: `SVG Tier 4 exception: ${svgError.message}`
+                      }
+                    };
                   }
-                } catch (tier25CError) {
-                  cascadeHistory.push(`❌ Tier 2.5C Exception: ${tier25CError.message}`);
-                  // Still try Tier 2.5D even after 2.5C exception
-                  // (Implementation similar to above, condensed for space)
-                  resultBadge = 'Tier 2.5C Exception';
-                  fallbackPath = `Tier 2.5C exception occurred`;
-                  finalResult = {
-                    tier: 'tier-2.5C-exception',
-                    success: false,
-                    imageURL: null,
-                    details: {
-                      processingTime: Date.now() - globalStartTime,
-                      cascadeHistory,
-                      testType: 'E2E_SIMULATION',
-                      resultType: 'TIER_25C_EXCEPTION',
-                      error: `Tier 2.5C exception: ${tier25CError.message}`
-                    }
-                  };
                 }
-              }
-            } catch (directModeError) {
-              cascadeHistory.push(`❌ Direct Mode Exception: ${directModeError.message}`);
-              resultBadge = 'Complete Failure';
-              fallbackPath = `Orchestrator failed → Direct Mode exception`;
-              finalResult = {
-                tier: 'complete-failure',
-                success: false,
-                imageURL: null,
-                details: {
-                  processingTime: Date.now() - globalStartTime,
-                  cascadeHistory,
-                  testType: 'E2E_SIMULATION',
-                  resultType: 'COMPLETE_FAILURE',
-                  error: `Orchestrator boot failure + Direct Mode exception: ${directModeError.message}`
-                }
-              };
-            }
-          } else {
-            // Runtime error in orchestrator - it booted but internal cascade failed
-            cascadeHistory.push(`❌ Orchestrator Runtime Error (${orchestratorTime}ms): ${errorAnalysis.probableCause}`);
-            
-            // Check if it's an "all tiers failed" scenario
-            if (orchestratorResponse.data?.allTiersFailed || orchestratorResponse.data?.tier === 'all-failed') {
-              // STEP 3: Frontend Tier 4 Fallback
-              cascadeHistory.push('🔄 All internal tiers failed, attempting Tier 4 frontend fallback...');
-              
-              try {
-                const tier4StartTime = Date.now();
-                const tier4Response = await supabase.functions.invoke('runware-template-cd', {
-                  body: {
-                    pageText: enhancedPrompt, // FIXED: Use pageText like SimpleImageService
-                    userInfo: userInfo,
-                    sessionId: sessionId,
-                    pageNumber: 1,
-                    isGuestUser: true, // ADDED: Missing field
-                    difficultyLevel: mapDifficultyLevel(userInfo), // ADDED: Missing field  
-                    templateComplexity: 'D',
-                    test: true
-                  }
-                });
-
-                const tier4Time = Date.now() - tier4StartTime;
+              } catch (tier25CError) {
+                const tier25CTime = Date.now() - tier25CStartTime;
+                cascadeHistory.push(`❌ Tier 2.5C Exception (${tier25CTime}ms): ${tier25CError.message}`);
                 
-                if (!tier4Response.error && tier4Response.data?.success) {
-                  cascadeHistory.push(`✅ Tier 4 Emergency Success (${tier4Time}ms)`);
-                  resultBadge = 'Tier 4 Emergency';
-                  fallbackPath = `Orchestrator cascade failed → Tier 4 succeeded`;
-                  finalResult = {
-                    tier: 'tier-4-emergency',
-                    success: true,
-                    imageURL: tier4Response.data?.imageURL,
-                    details: {
-                      processingTime: Date.now() - globalStartTime,
-                      orchestratorTime,
-                      tier4Time,
-                      cascadeHistory,
-                      cascadeFailureHistory: orchestratorResponse.data?.tierFailureHistory || 'Tier 1 → 2.5A → 2.5B → 2.5C → 2.5D (all failed)',
-                      testType: 'E2E_SIMULATION',
-                      resultType: 'TIER_4_EMERGENCY',
-                      positivePrompt: tier4Response.data?.positivePrompt,
-                      error: null
-                    }
-                  };
-                } else {
-                  const tier4Error = categorizeError(tier4Response.error, 'tier-4');
-                  cascadeHistory.push(`❌ Tier 4 Failed (${tier4Time}ms): ${tier4Error.probableCause}`);
+                // Still try SVG Tier 4 even after 2.5C exception
+                cascadeHistory.push('🔄 Attempting SVG Tier 4 after 2.5C exception...');
+                const svgStartTime = Date.now();
+                
+                try {
+                  const svgResponse = await ImageFallbackService.generateStoryPlaceholder(enhancedPrompt, 1);
+                  const svgTime = Date.now() - svgStartTime;
+                  
+                  if (svgResponse) {
+                    cascadeHistory.push(`✅ SVG Tier 4 Success after 2.5C exception (${svgTime}ms)`);
+                    resultBadge = 'SVG Tier 4 Recovery';
+                    fallbackPath = 'Recovered at SVG Tier 4 after 2.5C exception';
+                    finalResult = {
+                      tier: 'SVG_TIER_4',
+                      success: true,
+                      imageURL: svgResponse,
+                      details: {
+                        processingTime: Date.now() - globalStartTime,
+                        cascadeHistory,
+                      testType: 'REAL',
+                        resultType: 'SVG_TIER_4_RECOVERY',
+                        error: null
+                      }
+                    };
+                  } else {
+                    cascadeHistory.push(`❌ SVG Tier 4 also failed after 2.5C exception`);
+                    resultBadge = 'Complete Failure';
+                    fallbackPath = 'Complete failure after 2.5C exception';
+                    finalResult = {
+                      tier: 'complete-failure',
+                      success: false,
+                      imageURL: null,
+                      details: {
+                        processingTime: Date.now() - globalStartTime,
+                        cascadeHistory,
+                        testType: 'REAL_ROUTING',
+                        resultType: 'COMPLETE_FAILURE_AFTER_EXCEPTION',
+                        error: 'Complete failure after Tier 2.5C exception'
+                      }
+                    };
+                  }
+                } catch (svgError) {
+                  cascadeHistory.push(`❌ SVG Tier 4 Exception after 2.5C exception: ${svgError.message}`);
                   resultBadge = 'Complete Failure';
-                  fallbackPath = `Orchestrator cascade failed → Tier 4 failed`;
+                  fallbackPath = 'Multiple exceptions in cascade';
                   finalResult = {
                     tier: 'complete-failure',
                     success: false,
@@ -1753,302 +1560,188 @@ export const ImageTierTester = () => {
                     details: {
                       processingTime: Date.now() - globalStartTime,
                       cascadeHistory,
-                      testType: 'E2E_SIMULATION',
-                      resultType: 'COMPLETE_FAILURE',
-                      error: `Complete system failure: Orchestrator cascade + Tier 4 both failed`
+                      testType: 'REAL',
+                      resultType: 'MULTIPLE_EXCEPTIONS',
+                      error: 'Multiple exceptions in tier cascade'
                     }
                   };
                 }
-              } catch (tier4Error) {
-                cascadeHistory.push(`❌ Tier 4 Exception: ${tier4Error.message}`);
-                resultBadge = 'Complete Failure';
+              }
+            }
+          } catch (directModeError) {
+            const directModeTime = Date.now() - directModeStartTime;
+            cascadeHistory.push(`❌ Direct Mode Exception (${directModeTime}ms): ${directModeError.message}`);
+            
+            // Still try remaining tiers after Direct Mode exception
+            cascadeHistory.push('🔄 Attempting Tier 2.5C after Direct Mode exception...');
+            
+            try {
+              const tier25CResponse = await supabase.functions.invoke('runware-template-ab', {
+                body: {
+                  pageText: enhancedPrompt,
+                  userInfo: userInfo,
+                  sessionId: sessionId,
+                  pageNumber: 1,
+                  complexity: 'moderate'
+                }
+              });
+
+              if (tier25CResponse.data?.success) {
+                cascadeHistory.push(`✅ Tier 2.5C Success after Direct Mode exception`);
+                resultBadge = 'Tier 2.5C Recovery';
+                fallbackPath = 'Recovered at Tier 2.5C after Direct Mode exception';
                 finalResult = {
-                  tier: 'complete-failure',
-                  success: false,
-                  imageURL: null,
+                  tier: '2.5C',
+                  success: true,
+                  imageURL: tier25CResponse.data.imageURL,
                   details: {
                     processingTime: Date.now() - globalStartTime,
                     cascadeHistory,
-                    testType: 'E2E_SIMULATION',
-                    resultType: 'COMPLETE_FAILURE',
-                    error: `Complete system failure with exceptions`
+          testType: 'REAL',
+                    resultType: 'TIER_25C_RECOVERY',
+                    error: null
                   }
                 };
-              }
-            } else {
-              // Runtime error in orchestrator but not "all tiers failed" - still need cascade
-              cascadeHistory.push(`❌ Orchestrator Runtime Error (${orchestratorTime}ms): ${errorAnalysis.probableCause}`);
-              cascadeHistory.push('🔄 Orchestrator runtime error, attempting Tier 2.5C cascade...');
-              
-              // Try the full cascade: Tier 2.5C → Tier 2.5D → Tier 4 SVG
-              try {
-                const tier25CStartTime = Date.now();
-                const tier25CResponse = await supabase.functions.invoke('runware-template-cd', {
-                  body: {
-                    pageText: enhancedPrompt,
-                    userInfo: userInfo,
-                    sessionId: sessionId,
-                    pageNumber: 1,
-                    isGuestUser: true,
-                    difficultyLevel: mapDifficultyLevel(userInfo),
-                    templateComplexity: 'C',
-                    test: true
-                  }
-                });
-
-                const tier25CTime = Date.now() - tier25CStartTime;
+              } else {
+                // Final SVG fallback
+                cascadeHistory.push('🔄 Final SVG Tier 4 attempt...');
+                const svgResponse = await ImageFallbackService.generateStoryPlaceholder(enhancedPrompt, 1);
                 
-                if (!tier25CResponse.error && tier25CResponse.data?.success) {
-                  cascadeHistory.push(`✅ Tier 2.5C Success (${tier25CTime}ms)`);
-                  resultBadge = 'Tier 2.5C Success';
-                  fallbackPath = `Orchestrator runtime error → Tier 2.5C succeeded`;
+                if (svgResponse) {
+                  cascadeHistory.push('✅ SVG Tier 4 Final Success');
+                  resultBadge = 'SVG Tier 4 Final Fallback';
+                  fallbackPath = 'Final recovery at SVG Tier 4';
                   finalResult = {
-                    tier: 'tier-2.5C',
+                    tier: 'SVG_TIER_4',
                     success: true,
-                    imageURL: tier25CResponse.data?.imageURL,
+                    imageURL: svgResponse,
                     details: {
                       processingTime: Date.now() - globalStartTime,
-                      orchestratorFailureTime: orchestratorTime,
-                      tier25CTime: tier25CTime,
                       cascadeHistory,
-                      testType: 'E2E_SIMULATION',
-                      resultType: 'TIER_25C_SUCCESS_AFTER_RUNTIME_ERROR',
-                      positivePrompt: tier25CResponse.data?.positivePrompt,
+                      testType: 'REAL',
+                      resultType: 'SVG_TIER_4_FINAL_FALLBACK',
                       error: null
                     }
                   };
                 } else {
-                  const tier25CError = categorizeError(tier25CResponse.error, 'tier-2.5C');
-                  cascadeHistory.push(`❌ Tier 2.5C Failed (${tier25CTime}ms): ${tier25CError.probableCause}`);
-                  
-                  // Continue to Tier 2.5D
-                  cascadeHistory.push('🔄 Tier 2.5C failed, attempting Tier 2.5D...');
-                  
-                  try {
-                    const tier25DStartTime = Date.now();
-                    const tier25DResponse = await supabase.functions.invoke('runware-template-cd', {
-                      body: {
-                        pageText: enhancedPrompt,
-                        userInfo: userInfo,
-                        sessionId: sessionId,
-                        pageNumber: 1,
-                        isGuestUser: true,
-                        difficultyLevel: mapDifficultyLevel(userInfo),
-                        templateComplexity: 'D',
-                        test: true
-                      }
-                    });
-
-                    const tier25DTime = Date.now() - tier25DStartTime;
-                    
-                    if (!tier25DResponse.error && tier25DResponse.data?.success) {
-                      cascadeHistory.push(`✅ Tier 2.5D Success (${tier25DTime}ms)`);
-                      resultBadge = 'Tier 2.5D Success';
-                      fallbackPath = `Orchestrator runtime error → Tier 2.5C failed → Tier 2.5D succeeded`;
-                      finalResult = {
-                        tier: 'tier-2.5D',
-                        success: true,
-                        imageURL: tier25DResponse.data?.imageURL,
-                        details: {
-                          processingTime: Date.now() - globalStartTime,
-                          orchestratorFailureTime: orchestratorTime,
-                          tier25CTime: tier25CTime,
-                          tier25DTime: tier25DTime,
-                          cascadeHistory,
-                          testType: 'E2E_SIMULATION',
-                          resultType: 'TIER_25D_SUCCESS_AFTER_RUNTIME_ERROR',
-                          positivePrompt: tier25DResponse.data?.positivePrompt,
-                          error: null
-                        }
-                      };
-                    } else {
-                      const tier25DError = categorizeError(tier25DResponse.error, 'tier-2.5D');
-                      cascadeHistory.push(`❌ Tier 2.5D Failed (${tier25DTime}ms): ${tier25DError.probableCause}`);
-                      
-                      // Final cascade: Tier 4 SVG
-                      cascadeHistory.push('🔄 Tier 2.5D failed, attempting final Tier 4 SVG fallback...');
-                      
-                      try {
-                        const tier4SVGStartTime = Date.now();
-                        const tier4SVGResponse = await generateSVGFallback(userInfo, enhancedPrompt);
-                        const tier4SVGTime = Date.now() - tier4SVGStartTime;
-                        
-                        if (tier4SVGResponse.success) {
-                          cascadeHistory.push(`✅ Tier 4 SVG Success (${tier4SVGTime}ms) - Final fallback succeeded`);
-                          resultBadge = 'Tier 4 SVG Fallback';
-                          fallbackPath = `Orchestrator runtime error → Tier 2.5C → Tier 2.5D → Tier 4 SVG succeeded`;
-                          finalResult = {
-                            tier: 'tier-4-svg',
-                            success: true,
-                            imageURL: tier4SVGResponse.imageURL,
-                            details: {
-                              processingTime: Date.now() - globalStartTime,
-                              orchestratorFailureTime: orchestratorTime,
-                              tier25CTime: tier25CTime,
-                              tier25DTime: tier25DTime,
-                              tier4SVGTime: tier4SVGTime,
-                              cascadeHistory,
-                              testType: 'E2E_SIMULATION',
-                              resultType: 'TIER_4_SVG_SUCCESS_AFTER_RUNTIME_ERROR',
-                              positivePrompt: tier4SVGResponse.prompt,
-                              error: null
-                            }
-                          };
-                        } else {
-                          cascadeHistory.push(`❌ Tier 4 SVG Failed (${tier4SVGTime}ms): ${tier4SVGResponse.error}`);
-                          resultBadge = 'Complete Failure';
-                          fallbackPath = `Complete cascade failure after orchestrator runtime error`;
-                          finalResult = {
-                            tier: 'complete-failure',
-                            success: false,
-                            imageURL: null,
-                            details: {
-                              processingTime: Date.now() - globalStartTime,
-                              cascadeHistory,
-                              testType: 'E2E_SIMULATION',
-                              resultType: 'COMPLETE_FAILURE_AFTER_RUNTIME_ERROR',
-                              error: `Complete cascade failure after orchestrator runtime error`
-                            }
-                          };
-                        }
-                      } catch (tier4SVGError) {
-                        cascadeHistory.push(`❌ Tier 4 SVG Exception: ${tier4SVGError.message}`);
-                        resultBadge = 'Complete Failure';
-                        fallbackPath = `Complete cascade failure with Tier 4 SVG exception`;
-                        finalResult = {
-                          tier: 'complete-failure',
-                          success: false,
-                          imageURL: null,
-                          details: {
-                            processingTime: Date.now() - globalStartTime,
-                            cascadeHistory,
-                            testType: 'E2E_SIMULATION',
-                            resultType: 'COMPLETE_FAILURE_WITH_SVG_EXCEPTION',
-                            error: `Complete cascade failure with Tier 4 SVG exception: ${tier4SVGError.message}`
-                          }
-                        };
-                      }
+                  cascadeHistory.push('❌ Complete system failure - all tiers exhausted');
+                  resultBadge = 'Complete Failure';
+                  fallbackPath = 'All tiers failed with exceptions';
+                  finalResult = {
+                    tier: 'complete-failure',
+                    success: false,
+                    imageURL: null,
+                    details: {
+                      processingTime: Date.now() - globalStartTime,
+                      cascadeHistory,
+                      testType: 'REAL',
+                      resultType: 'COMPLETE_SYSTEM_FAILURE',
+                      error: 'All tiers failed with exceptions'
                     }
-                  } catch (tier25DError) {
-                    cascadeHistory.push(`❌ Tier 2.5D Exception: ${tier25DError.message}`);
-                    resultBadge = 'Tier 2.5D Exception';
-                    fallbackPath = `Tier 2.5D exception after orchestrator runtime error`;
-                    finalResult = {
-                      tier: 'tier-2.5D-exception',
-                      success: false,
-                      imageURL: null,
-                      details: {
-                        processingTime: Date.now() - globalStartTime,
-                        cascadeHistory,
-                        testType: 'E2E_SIMULATION',
-                        resultType: 'TIER_25D_EXCEPTION_AFTER_RUNTIME_ERROR',
-                        error: `Tier 2.5D exception: ${tier25DError.message}`
-                      }
-                    };
-                  }
+                  };
                 }
-              } catch (tier25CError) {
-                cascadeHistory.push(`❌ Tier 2.5C Exception: ${tier25CError.message}`);
-                resultBadge = 'Tier 2.5C Exception';
-                fallbackPath = `Tier 2.5C exception after orchestrator runtime error`;
-                finalResult = {
-                  tier: 'tier-2.5C-exception',
-                  success: false,
-                  imageURL: null,
-                  details: {
-                    processingTime: Date.now() - globalStartTime,
-                    cascadeHistory,
-                    testType: 'E2E_SIMULATION',
-                    resultType: 'TIER_25C_EXCEPTION_AFTER_RUNTIME_ERROR',
-                    error: `Tier 2.5C exception: ${tier25CError.message}`
-                  }
-                };
               }
+            } catch (finalError) {
+              cascadeHistory.push(`❌ Final tier attempt failed: ${finalError.message}`);
+              resultBadge = 'Complete Failure';
+              fallbackPath = 'Complete system failure';
+              finalResult = {
+                tier: 'complete-failure',
+                success: false,
+                imageURL: null,
+                details: {
+                  processingTime: Date.now() - globalStartTime,
+                  cascadeHistory,
+                      testType: 'REAL',
+                  resultType: 'COMPLETE_SYSTEM_FAILURE',
+                  error: 'Complete system failure with multiple exceptions'
+                }
+              };
             }
           }
-        } else {
-          // Orchestrator succeeded - check which tier succeeded
-          const successTier = orchestratorResponse.data?.tier || 'unknown';
-          cascadeHistory.push(`✅ Orchestrator Success (${orchestratorTime}ms) - ${successTier}`);
-          
-          if (successTier === '1' || successTier === 'tier-1') {
-            resultBadge = 'Orchestrator Success';
-            fallbackPath = `Direct Tier 1 success (no fallbacks needed)`;
-          } else {
-            resultBadge = 'Tier Cascade Success';
-            const failedTiers = orchestratorResponse.data?.tierFailureHistory || [];
-            fallbackPath = `Tier 1 failed → ${failedTiers.join(' → ')} → ${successTier} succeeded`;
-            cascadeHistory.push(`📝 Failure history: ${failedTiers.join(' → ')}`);
-          }
-          
-          finalResult = {
-            tier: successTier,
-            success: true,
-            imageURL: orchestratorResponse.data?.imageURL,
-            details: {
-              processingTime: orchestratorTime,
-              cascadeHistory,
-              tierFailureHistory: orchestratorResponse.data?.tierFailureHistory || [],
-              testType: 'E2E_SIMULATION',
-              resultType: successTier === '1' ? 'ORCHESTRATOR_SUCCESS' : 'TIER_CASCADE_SUCCESS',
-              positivePrompt: orchestratorResponse.data?.positivePrompt,
-              routingMetadata: orchestratorResponse.data?.routingMetadata,
-              error: null
-            }
-          };
         }
-
-        // Add the result badge and fallback path to details
-        cascadeHistory.push(`❌ Orchestrator Exception: ${exceptionAnalysis.probableCause}`);
+      } catch (orchestratorError) {
+        const orchestratorTime = Date.now() - orchestratorStartTime;
+        cascadeHistory.push(`❌ Orchestrator Exception (${orchestratorTime}ms): ${orchestratorError.message}`);
         
-        // Still try Direct Mode as fallback
+        // Try Direct Mode after orchestrator exception
         cascadeHistory.push('🔄 Attempting Direct Mode after orchestrator exception...');
         
         try {
           const directModeResponse = await supabase.functions.invoke('ai-visual-scene-creator', {
             body: {
-              storyText: testStoryText,
+              pageText: enhancedPrompt,
               userInfo: userInfo,
-              pageNumber: 1,
               sessionId: sessionId,
+              storyId: sessionId,
+              pageNumber: 1,
+              isGuestUser: true,
+              difficultyLevel: mapDifficultyLevel(userInfo),
+              protectionNegatives: protectionNegatives,
               directMode: true
             }
           });
           
-          if (!directModeResponse.error && directModeResponse.data?.success) {
+          if (directModeResponse.data?.success) {
             cascadeHistory.push('✅ Direct Mode Success after orchestrator exception');
-            resultBadge = 'Direct Mode Fallback';
+            resultBadge = 'Direct Mode Recovery';
+            fallbackPath = 'Recovered at Direct Mode after orchestrator exception';
             finalResult = {
-              tier: 'direct-mode-exception-fallback',
+              tier: 'direct-mode',
               success: true,
-              imageURL: directModeResponse.data?.imageURL,
+              imageURL: directModeResponse.data.imageURL,
               details: {
                 processingTime: Date.now() - globalStartTime,
                 cascadeHistory,
-                testType: 'E2E_SIMULATION',
-                resultType: 'DIRECT_MODE_FALLBACK',
+                      testType: 'REAL',
+                resultType: 'DIRECT_MODE_RECOVERY',
                 error: null
               }
             };
           } else {
             cascadeHistory.push('❌ Direct Mode also failed after orchestrator exception');
-            resultBadge = 'Complete Failure';
-            finalResult = {
-              tier: 'complete-failure',
-              success: false,
-              imageURL: null,
-              details: {
-                processingTime: Date.now() - globalStartTime,
-                cascadeHistory,
-                testType: 'E2E_SIMULATION',
-                resultType: 'COMPLETE_FAILURE',
-                error: 'Both orchestrator and Direct Mode failed with exceptions'
-              }
-            };
+            // Final SVG attempt
+            cascadeHistory.push('🔄 Final SVG Tier 4 attempt after orchestrator exception...');
+            const svgResponse = await ImageFallbackService.generateStoryPlaceholder(enhancedPrompt, 1);
+            
+            if (svgResponse) {
+              cascadeHistory.push('✅ SVG Tier 4 Final Recovery');
+              resultBadge = 'SVG Tier 4 Final Recovery';
+              fallbackPath = 'Final recovery at SVG Tier 4 after orchestrator exception';
+              finalResult = {
+                tier: 'SVG_TIER_4',
+                success: true,
+                imageURL: svgResponse,
+                details: {
+                  processingTime: Date.now() - globalStartTime,
+                  cascadeHistory,
+                      testType: 'REAL',
+                  resultType: 'SVG_TIER_4_FINAL_RECOVERY',
+                  error: null
+                }
+              };
+            } else {
+              cascadeHistory.push('❌ Complete failure - SVG Tier 4 also failed');
+              resultBadge = 'Complete Failure';
+              fallbackPath = 'Complete failure after orchestrator exception';
+              finalResult = {
+                tier: 'complete-failure',
+                success: false,
+                imageURL: null,
+                details: {
+                  processingTime: Date.now() - globalStartTime,
+                  cascadeHistory,
+                      testType: 'REAL',
+                  resultType: 'COMPLETE_FAILURE_AFTER_ORCHESTRATOR_EXCEPTION',
+                  error: 'Complete failure after orchestrator exception'
+                }
+              };
+            }
           }
-        } catch (directException) {
-          cascadeHistory.push(`❌ Direct Mode Exception: ${directException.message}`);
+        } catch (finalException) {
+          cascadeHistory.push(`❌ Final exception: ${finalException.message}`);
           resultBadge = 'Complete Failure';
+          fallbackPath = 'Complete system failure with multiple exceptions';
           finalResult = {
             tier: 'complete-failure',
             success: false,
@@ -2056,22 +1749,22 @@ export const ImageTierTester = () => {
             details: {
               processingTime: Date.now() - globalStartTime,
               cascadeHistory,
-              testType: 'E2E_SIMULATION',
-              resultType: 'COMPLETE_FAILURE',
-              error: 'Complete system failure with multiple exceptions'
+                      testType: 'REAL',
+              resultType: 'MULTIPLE_EXCEPTIONS_FAILURE',
+              error: 'Multiple exceptions in tier cascade'
             }
           };
         }
       }
 
-      // Add the result badge and fallback path to details
-      if (finalResult) {
+      // Add result metadata
+      if (finalResult?.details) {
         finalResult.details.resultBadge = resultBadge;
         finalResult.details.fallbackPath = fallbackPath;
-        finalResult.details.healthStatus = healthStatus; // Add health status to results
+        finalResult.details.healthStatus = healthStatus;
       }
 
-      DebugLogger.log('image', `✅ E2E Flow Completed: ${resultBadge}`, {
+      DebugLogger.log('image', `✅ Real Routing Completed: ${resultBadge}`, {
         success: finalResult?.success,
         processingTime: finalResult?.details?.processingTime,
         cascadeHistory,
@@ -2081,14 +1774,14 @@ export const ImageTierTester = () => {
       setResults([finalResult]);
 
     } catch (error) {
-      DebugLogger.error('image', '❌ E2E Flow failed with unexpected error', { error });
+      DebugLogger.error('image', '❌ Real Routing failed with unexpected error', { error });
       setResults([{
-        tier: 'e2e-system-error',
+        tier: 'system-error',
         success: false,
         imageURL: null,
         details: { 
           error: error.message, 
-          testType: 'E2E_SIMULATION',
+                      testType: 'REAL',
           resultType: 'SYSTEM_ERROR',
           cascadeHistory: ['❌ System error before flow could complete']
         }
