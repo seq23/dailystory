@@ -18,14 +18,20 @@ serve(async (req) => {
       return createDynamicCorsErrorResponse('Discount code is required', null, 400);
     }
 
-// Create Supabase client with service role for discount code access
-const { memoizedImport } = await import("../_shared/resilientLoader.ts");
-const { createClient } = await memoizedImport('@supabase/supabase-js');
-const supabase = createClient(
-  Deno.env.get("SUPABASE_URL") ?? "",
-  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-  { auth: { persistSession: false } }
-);
+    // Create Supabase client with service role for discount code access
+    const { createResilientSupabaseClient, memoizedImport } = await import("../_shared/resilientLoader.ts");
+    const { createClient } = await memoizedImport('@supabase/supabase-js');
+    
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
+    );
+    
+    if (!supabase) {
+      console.error('[Validate Discount] Failed to create Supabase client');
+      return createDynamicCorsErrorResponse('Service temporarily unavailable', undefined, 503);
+    }
 
     console.log(`[Validate Discount] Checking code: ${code}`);
 

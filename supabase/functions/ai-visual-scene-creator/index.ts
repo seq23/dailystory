@@ -2,20 +2,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { phaseIntegrationOrchestrator } from '../_shared/PhaseIntegrationOrchestrator.js';
 
-// ============= MEMOIZED IMPORT SYSTEM =============
-const importCache = new Map<string, Promise<any>>();
-
-function memoizedImport(path: string): Promise<any> {
-  if (!importCache.has(path)) {
-    importCache.set(path, import(path));
-  }
-  return importCache.get(path)!;
-}
-
-// Dynamic Supabase client creation
+// ============= RESILIENT IMPORT SYSTEM =============
+// Dynamic Supabase client creation using resilient loader
 async function createSupabaseClient() {
   try {
-    const { createResilientSupabaseClient } = await memoizedImport('../_shared/resilientLoader.ts');
+    const { createResilientSupabaseClient } = await import('../_shared/resilientLoader.ts');
     return await createResilientSupabaseClient();
   } catch (error) {
     console.error('Failed to create Supabase client:', error);
@@ -58,6 +49,7 @@ function getNuclearStyleFramework(difficulty: string) {
 
 async function getPhaseOrchestrator() {
   try {
+    const { memoizedImport } = await import('../_shared/resilientLoader.ts');
     const [
       { CharacterConsistencyService },
       { UnifiedPlaceholderResolver }
