@@ -127,6 +127,10 @@ interface TestResult {
     nextAction?: string; // Orchestrator guidance for next action
     recommendedAction?: string; // Orchestrator recommended action
     directMode?: boolean; // Direct Mode flag
+    // Force Tier 1 Nuclear Fallback specific
+    chosenPath?: string; // 'Orchestrator Mode' or 'Direct Mode'
+    orchestratorHealth?: 'healthy' | 'unhealthy'; // Health status of orchestrator
+    triageResult?: any; // Full triage check result
   };
 }
 
@@ -1052,34 +1056,81 @@ export const ImageTierTester = () => {
       const triageCheck = await performTriageCheck('runware-generate-image');
       steps[0].status = triageCheck.available ? 'success' : 'error';
       
-      DebugLogger.log('image', '🎯 Force Tier 1: Complete real user flow simulation', {
-        forceTier: 'COMPLETE_TIER_1',
-        userInfo: buildUserInfo(),
-        steps
-      });
-
       const userInfo = buildUserInfo();
       const { prompt: enhancedPrompt, negatives: protectionNegatives } = applyUniversalProtections(testStoryText, userInfo);
       const sessionId = crypto.randomUUID();
 
       const startTime = Date.now();
+      let response: any;
+      let chosenPath = '';
       
-      // Step 2: Call runware-generate-image with orchestrator payload - MATCH SimpleImageService
-      steps[1].status = 'running';
-      const response = await supabase.functions.invoke('runware-generate-image', {
-        body: {
-          pageText: enhancedPrompt, // FIXED: Use pageText like SimpleImageService
-          userInfo: userInfo,
-          sessionId: sessionId,
-          storyId: sessionId, // ADDED: Missing field
-          pageNumber: 1,
-          isGuestUser: true, // ADDED: Missing field (default to guest for testing)
-          difficultyLevel: mapDifficultyLevel(userInfo), // ADDED: Missing field
-          protectionNegatives: protectionNegatives, // ADDED: Missing field
-          forceTier: 'COMPLETE_TIER_1', // Force complete Tier 1 flow
-          test: true
+      // HEALTH-BASED ROUTING: Orchestrator vs Direct Mode
+      if (triageCheck.available) {
+        // Path 1: Orchestrator Mode - runware-generate-image is healthy
+        chosenPath = 'Orchestrator Mode';
+        steps[1].name = '🎯 Using Orchestrator Mode';
+        
+        DebugLogger.log('image', '🎯 Force Tier 1: Orchestrator Mode (healthy)', {
+          forceTier: 'COMPLETE_TIER_1',
+          path: 'orchestrator',
+          triageCheck,
+          userInfo,
+          steps
+        });
+
+        // Step 2: Call runware-generate-image with orchestrator payload
+        steps[1].status = 'running';
+        response = await supabase.functions.invoke('runware-generate-image', {
+          body: {
+            pageText: enhancedPrompt,
+            userInfo: userInfo,
+            sessionId: sessionId,
+            storyId: sessionId,
+            pageNumber: 1,
+            isGuestUser: true,
+            difficultyLevel: mapDifficultyLevel(userInfo),
+            protectionNegatives: protectionNegatives,
+            forceTier: 'COMPLETE_TIER_1',
+            test: true
+          }
+        });
+      } else {
+        // Path 2: Direct Mode Fallback - runware-generate-image is unhealthy
+        chosenPath = 'Direct Mode';
+        steps[1].name = '🎯 Using Direct Mode (Nuclear Fallback)';
+        
+        DebugLogger.log('image', '🎯 Force Tier 1: Direct Mode (unhealthy orchestrator)', {
+          forceTier: 'DIRECT_MODE',
+          path: 'direct_mode',
+          triageCheck,
+          reason: 'orchestrator_unhealthy',
+          userInfo,
+          steps
+        });
+
+        // Step 2: Call ai-visual-scene-creator directly
+        steps[1].status = 'running';
+        response = await supabase.functions.invoke('ai-visual-scene-creator', {
+          body: {
+            pageText: enhancedPrompt,
+            userInfo: userInfo,
+            sessionId: sessionId,
+            storyId: sessionId,
+            pageNumber: 1,
+            isGuestUser: true,
+            difficultyLevel: mapDifficultyLevel(userInfo),
+            protectionNegatives: protectionNegatives,
+            directMode: true,
+            test: true
+          }
+        });
+        
+        // Mark response with direct mode identifier for tracking
+        if (response.data) {
+          response.data.tier = 'DIRECT_MODE';
+          response.data.escalationPath = 'force_tier_1_direct_fallback';
         }
-      });
+      }
 
       const processingTime = Date.now() - startTime;
       
@@ -1125,22 +1176,42 @@ export const ImageTierTester = () => {
       if (!overallSuccess) {
         if (response.error?.message?.includes('503') || response.error?.message?.includes('Service Unavailable')) {
           errorCategory = 'NETWORK';
-          probableCause = 'Edge function deployment sync issue';
+          probableCause = `${chosenPath} failed: Edge function deployment sync issue`;
         } else if (response.error?.message?.includes('NO_PRIMARY_SCENE_ESCALATE_TO_25A')) {
           errorCategory = 'AI_SCENE_CREATION';
-          probableCause = 'ai-visual-scene-creator failed to generate primaryScene';
+          probableCause = `${chosenPath} failed: ai-visual-scene-creator failed to generate primaryScene`;
         } else if (!hasPrimaryScene && !response.data?.templateStructure) {
           errorCategory = 'AI_SCENE_CREATION';
-          probableCause = 'Missing primaryScene in response (may be escalated tier response)';
+          probableCause = `${chosenPath} failed: Missing primaryScene in response (may be escalated tier response)`;
         } else if (!hasEnhancedPrompt) {
           errorCategory = 'PROMPT_ENHANCEMENT';
-          probableCause = 'PhaseIntegrationOrchestrator failed to enhance prompt';
+          probableCause = `${chosenPath} failed: PhaseIntegrationOrchestrator failed to enhance prompt`;
         } else if (!hasImage) {
           errorCategory = 'IMAGE_GENERATION';
-          probableCause = 'Runware image generation failed';
+          probableCause = `${chosenPath} failed: Image generation failed`;
         } else {
           errorCategory = 'UNKNOWN';
-          probableCause = response.error?.message || 'Unknown failure in Tier 1 flow';
+          probableCause = `${chosenPath} failed: ${response.error?.message || 'Unknown failure in Tier 1 flow'}`;
+        }
+        
+        // Enhanced error logging for Force Tier 1 failures
+        if (chosenPath === 'Direct Mode') {
+          DebugLogger.error('image', '❌ Force Tier 1 Direct Mode failed', {
+            reason: 'Both orchestrator (unhealthy) and direct mode failed',
+            orchestratorHealth: triageCheck,
+            directModeError: response.error?.message,
+            errorCategory,
+            probableCause
+          });
+        } else {
+          DebugLogger.error('image', '❌ Force Tier 1 Orchestrator Mode failed', {
+            reason: 'Orchestrator was healthy but failed to complete',
+            orchestratorHealth: triageCheck,
+            orchestratorError: response.error?.message,
+            errorCategory,
+            probableCause,
+            suggestion: 'Try again - orchestrator may auto-fallback to Direct Mode'
+          });
         }
       }
 
@@ -1162,6 +1233,9 @@ export const ImageTierTester = () => {
         details: {
           processingTime,
           requestId: response.data?.requestId,
+          chosenPath,
+          orchestratorHealth: triageCheck.available ? 'healthy' : 'unhealthy',
+          triageResult: triageCheck,
           aiSchema: response.data?.aiSchema,
           primaryScene: response.data?.primaryScene,
           setting: response.data?.aiSchema?.setting,
