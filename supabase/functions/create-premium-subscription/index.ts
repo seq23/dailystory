@@ -1,8 +1,8 @@
 // Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import Stripe from "https://esm.sh/stripe@14.21.0"
 import { withSecurity, SecurityMiddleware } from "../_shared/security.ts"
 import type { AuthenticatedUser } from "../_shared/security.ts"
+import { memoizedImport, createImportFailureResponse } from "../_shared/resilientLoader.ts"
 
 console.log("[create-premium-subscription] Function loaded successfully");
 
@@ -10,6 +10,9 @@ const handler = async (req: Request, user?: AuthenticatedUser): Promise<Response
   const security = new SecurityMiddleware();
   
   try {
+    // Load dependencies with resilient import system
+    const { default: Stripe } = await memoizedImport('stripe');
+    
     const { planId } = await req.json()
     
     // Use authenticated user's email instead of accepting it from request
@@ -110,6 +113,12 @@ const handler = async (req: Request, user?: AuthenticatedUser): Promise<Response
   } catch (error) {
     console.error('Stripe payment error:', error)
     const errorMessage = error instanceof Error ? error.message : String(error);
+    
+    // Check for import failure and return 503 with structured response
+    if (errorMessage.includes('Import') || errorMessage.includes('CDN') || errorMessage.includes('load')) {
+      return createImportFailureResponse(error, 'create-premium-subscription');
+    }
+    
     return security.createErrorResponse(errorMessage, 500);
   }
 }

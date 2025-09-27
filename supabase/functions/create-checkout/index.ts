@@ -1,8 +1,7 @@
 // Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@14.21.0";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
+import { memoizedImport, createResilientSupabaseClient, createImportFailureResponse } from "../_shared/resilientLoader.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -24,24 +23,23 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) {
-      throw new Error("STRIPE_SECRET_KEY is not configured yet. Please add your Stripe secret key to proceed with payments.");
-    }
-    logStep("Stripe key verified");
-
-    // Create a Supabase client using the anon key for user authentication
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
-    );
-
-    // Also create service role client for checking subscription status
+    // Load dependencies with resilient import system
+    const { default: Stripe } = await memoizedImport('stripe');
+    const supabaseClient = await createResilientSupabaseClient();
+    
+    // Create service role client for checking subscription status
+    const { createClient } = await memoizedImport('@supabase/supabase-js');
     const supabaseService = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
       { auth: { persistSession: false } }
     );
+
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+    if (!stripeKey) {
+      throw new Error("STRIPE_SECRET_KEY is not configured yet. Please add your Stripe secret key to proceed with payments.");
+    }
+    logStep("Stripe key verified");
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("No authorization header provided");
@@ -142,6 +140,12 @@ serve(async (req) => {
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logStep("ERROR in create-checkout", { message: errorMessage });
+    
+    // Check for import failure and return 503 with structured response
+    if (errorMessage.includes('Import') || errorMessage.includes('CDN') || errorMessage.includes('load')) {
+      return createImportFailureResponse(error, 'create-checkout');
+    }
+    
     return new Response(JSON.stringify({ error: errorMessage }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,

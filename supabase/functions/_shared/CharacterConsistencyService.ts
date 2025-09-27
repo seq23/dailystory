@@ -37,7 +37,7 @@ export class CharacterConsistencyService {
   async saveCharacterToDatabase(sessionId: string, characterKey: string, characterData: Record<string, any>): Promise<boolean> {
     console.log(`💾 Attempting to save character ${characterKey} to database for session ${sessionId}...`);
     
-    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+    const { createClient } = await import('../resilientLoader.ts').then(m => m.memoizedImport('@supabase/supabase-js'));
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     
@@ -76,7 +76,7 @@ export class CharacterConsistencyService {
   async getCharacterFromDatabase(sessionId: string, characterKey: string): Promise<Record<string, any> | null> {
     console.log(`📖 Attempting to retrieve character ${characterKey} from database for session ${sessionId}...`);
     
-    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+    const { createClient } = await import('../resilientLoader.ts').then(m => m.memoizedImport('@supabase/supabase-js'));
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     
@@ -212,7 +212,7 @@ export class CharacterConsistencyService {
   async updateCulturalSelections(sessionId: SessionId, characterKey: string, selectedCulturalHair: string | null, selectedCulturalFeatures: string | null): Promise<boolean> {
     console.log(`🎨 Updating cultural selections for character ${characterKey} in session ${sessionId}`);
     
-    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+    const { createClient } = await import('../resilientLoader.ts').then(m => m.memoizedImport('@supabase/supabase-js'));
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') as string, 
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') as string

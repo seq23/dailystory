@@ -301,7 +301,8 @@ export class PhaseIntegrationOrchestrator {
       } else {
         // Call ai-visual-scene-creator to get proper AI schema
         try {
-          const { createClient } = await import('https://deno.land/x/supabase@1.0.0/mod.ts');
+          const { memoizedImport } = await import('./resilientLoader.ts');
+          const { createClient } = await memoizedImport('@supabase/supabase-js');
           const supabase = createClient(
             Deno.env.get('SUPABASE_URL'), 
             Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY')

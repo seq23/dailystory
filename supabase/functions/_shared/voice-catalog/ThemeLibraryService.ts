@@ -1,10 +1,10 @@
 /**
  * Backend Theme Library Service - Enhanced theme mapping with complete themes.v1.json
- * Compatible with edge functions - uses require() for JSON imports
+ * Compatible with edge functions - uses dynamic import for JSON imports
  */
 
-// Import theme library data
-const themesData = require('./themes.v1.json');
+// Import theme library data using dynamic import for Deno compatibility
+const themesData = await import('./themes.v1.json', { assert: { type: 'json' } }).then(m => m.default);
 
 export interface ThemeMetadata {
   id: string;
