@@ -111,8 +111,7 @@ function validateImageURL(url: any): boolean {
   return url.length > 20; // Reasonable URL length
 }
 
-// PHASE 4B: Direct Mode Fallback Chain
-const AI_MODELS_FALLBACK = ['gpt-4o', 'gpt-4o-mini'];
+// PHASE 4B: Unused fallback array removed - consolidated into AI_MODELS
 
 // Echoing CORS with Vary headers for preflight consistency  
 function generateEchoCorsHeaders(req: Request): Record<string, string> {
@@ -364,8 +363,9 @@ class SimpleCircuitBreaker {
 
 const circuitBreaker = new SimpleCircuitBreaker();
 
-// AI Model Fallback Chain Configuration - CHEAPEST FIRST ORDER
+// AI Model Fallback Chain Configuration - CHEAPEST TO MOST EXPENSIVE ORDER
 const AI_MODELS = [
+  { name: 'gpt-4o-mini', maxTokens: 'max_tokens', supportsTemperature: true },
   { name: 'gpt-4o', maxTokens: 'max_tokens', supportsTemperature: true },
   { name: 'gpt-4.1-2025-04-14', maxTokens: 'max_completion_tokens', supportsTemperature: false },
   { name: 'gpt-5-2025-08-07', maxTokens: 'max_completion_tokens', supportsTemperature: false }
@@ -486,6 +486,7 @@ serve(async (req: Request): Promise<Response> => {
           // Implement model chain logic with proper API parameters
           let aiResponse;
           let lastError;
+          let successfulModel = null;
           
           for (const modelConfig of AI_MODELS) {
             try {
@@ -585,6 +586,7 @@ Generate a comprehensive scene with complete visual elements including backgroun
 
               if (aiResponse.ok) {
                 console.log(`✅ [${requestId}] AI generation successful with model: ${modelConfig.name}`);
+                successfulModel = modelConfig.name;
                 break; // Success - exit the loop
               } else {
                 const errorText = await aiResponse.text();
@@ -656,7 +658,7 @@ Generate a comprehensive scene with complete visual elements including backgroun
                 enhancedData: {
                   ...validation.enhancedData,
                   realAIGenerated: true,
-                  openaiModel: 'gpt-4o-mini',
+                  openaiModel: successfulModel || 'unknown',
                   directMode: true,
                   templateResponse: templateData
                 }
@@ -684,7 +686,7 @@ Generate a comprehensive scene with complete visual elements including backgroun
             enhancedData: {
               ...validation.enhancedData,
               realAIGenerated: true,
-              openaiModel: 'gpt-4o-mini'
+              openaiModel: successfulModel || 'unknown'
             }
           };
 
