@@ -15,11 +15,8 @@ function memoizedImport(path: string): Promise<any> {
 // Dynamic Supabase client creation
 async function createSupabaseClient() {
   try {
-    const { createClient } = await memoizedImport('https://deno.land/x/supabase@1.0.0/mod.ts');
-    return createClient(
-      Deno.env.get('SUPABASE_URL') || '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY') || ''
-    );
+    const { createResilientSupabaseClient } = await memoizedImport('../_shared/resilientLoader.ts');
+    return await createResilientSupabaseClient();
   } catch (error) {
     console.error('Failed to create Supabase client:', error);
     // Return a null client to continue without Supabase for nuclear independence

@@ -4,7 +4,7 @@
  * Now with character-specific clothing detection and database persistence
  */
 
-import { createClient } from 'https://deno.land/x/supabase@1.0.0/mod.ts'
+// Supabase client created dynamically via resilient loader
 import { EXPANDED_COLOR_ARRAY, TIER_25_UNIFIED_VOCABULARY_EXTENDED } from './tier25Vocabulary.js';
 
 const CLOTHING_DETECTION_KEYWORDS = [
@@ -18,16 +18,24 @@ const CLOTHING_DETECTION_KEYWORDS = [
 
 export class VisualDetailTracker {
   constructor() {
-    // Initialize Supabase client for database operations with resilience
-    try {
-      this.supabase = createClient(
-        Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-      );
-    } catch (error) {
-      console.warn('Failed to create Supabase client in VisualDetailTracker:', error);
-      this.supabase = null;
+    // Supabase client will be created dynamically when needed via resilient loader
+    this.supabase = null;
+  }
+
+  /**
+   * Get or create Supabase client using resilient loader
+   */
+  async getSupabaseClient() {
+    if (!this.supabase) {
+      try {
+        const { createResilientSupabaseClient } = await import('./resilientLoader.ts');
+        this.supabase = await createResilientSupabaseClient();
+      } catch (error) {
+        console.warn('Failed to create Supabase client in VisualDetailTracker:', error);
+        this.supabase = null;
+      }
     }
+    return this.supabase;
   }
 
   /**
@@ -202,14 +210,15 @@ export class VisualDetailTracker {
    * Save visual detail to database
    */
   async saveDetailToDatabase(sessionId, characterName, detailType, detailKey, detailValue, pageNumber) {
-    if (!this.supabase) {
+    const supabase = await this.getSupabaseClient();
+    if (!supabase) {
       console.warn('Supabase client unavailable, skipping database save');
       return;
     }
     
     try {
       // Check if detail already exists
-      const { data: existing } = await this.supabase
+      const { data: existing } = await supabase
         .from('visual_details_cache')
         .select('*')
         .eq('session_id', sessionId)
@@ -220,7 +229,7 @@ export class VisualDetailTracker {
 
       if (existing) {
         // Update existing detail
-        const { error } = await this.supabase
+        const { error } = await supabase
           .from('visual_details_cache')
           .update({
             detail_value: detailValue,
@@ -236,7 +245,7 @@ export class VisualDetailTracker {
         }
       } else {
         // Insert new detail
-        const { error } = await this.supabase
+        const { error } = await supabase
           .from('visual_details_cache')
           .insert({
             session_id: sessionId,

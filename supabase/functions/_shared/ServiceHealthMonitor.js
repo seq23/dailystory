@@ -15,11 +15,8 @@ export class ServiceHealthMonitor {
   // Basic ping test for database
   async pingDatabase() {
     try {
-      const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
-      const supabase = createClient(
-        Deno.env.get('SUPABASE_URL'), 
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-      );
+      const { memoizedImport, createResilientSupabaseClient } = await import('./resilientLoader.ts');
+      const supabase = await createResilientSupabaseClient();
       
       const { error } = await supabase.from('profiles').select('id').limit(1);
       return { success: !error, service: 'database' };

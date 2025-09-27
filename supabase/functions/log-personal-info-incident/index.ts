@@ -1,15 +1,12 @@
 // Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.55.0";
+// Supabase client created via resilient loader
 import { withSecurity, SecurityMiddleware } from "../_shared/security.ts";
 import type { AuthenticatedUser } from "../_shared/security.ts";
 
 console.log("[log-personal-info-incident] Function loaded successfully");
 
-const supabase = createClient(
-  Deno.env.get("SUPABASE_URL") ?? "",
-  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-);
+// Supabase client will be created dynamically when needed
 
 interface IncidentLogRequest {
   userId: string;
@@ -25,6 +22,9 @@ const handler = async (req: Request, user?: AuthenticatedUser): Promise<Response
   const security = new SecurityMiddleware();
   
   try {
+    // Create Supabase client using resilient loader
+    const { createResilientSupabaseClient } = await import("../_shared/resilientLoader.ts");
+    const supabase = await createResilientSupabaseClient();
     const { 
       childProfileId,
       violationType,

@@ -74,15 +74,12 @@ interface BootStatus {
 // ---- Async Tier logger binder with memoized dependencies ----
 async function bindTierLogger(sessionId: SessionId, requestId: string, authHeader: string | null = null): Promise<TierLogger> {
   try {
-    const [{ createClient }, tierLogging] = await Promise.all([
-      memoizedImport("https://deno.land/x/supabase@1.0.0/mod.ts"),
+    const [{ createResilientSupabaseClient }, tierLogging] = await Promise.all([
+      memoizedImport("../_shared/resilientLoader.ts"),
       memoizedImport("../_shared/tierLogging.js")
     ]);
     
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
+    const supabaseClient = await createResilientSupabaseClient();
   
     return {
       t1: (msg, ctx = {}) => tierLogging.logTier1(msg, { ...ctx, authHeader }, supabaseClient, sessionId, requestId),

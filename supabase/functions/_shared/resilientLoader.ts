@@ -21,6 +21,14 @@ const CDN_FALLBACKS = {
       'https://cdn.jsdelivr.net/npm/openai@4.28.0/+esm',
       'https://unpkg.com/openai@4.28.0?module'
     ]
+  },
+  'stripe': {
+    primary: 'https://esm.sh/stripe@12.18.0?target=deno',
+    fallbacks: [
+      'https://esm.sh/stripe@12.18.0',
+      'https://cdn.jsdelivr.net/npm/stripe@12.18.0/+esm',
+      'https://unpkg.com/stripe@12.18.0?module'
+    ]
   }
 };
 
@@ -101,6 +109,7 @@ async function attemptImportWithFallbacks(path: string): Promise<any> {
 function extractPackageName(path: string): string {
   if (path.includes('@supabase/supabase-js')) return '@supabase/supabase-js';
   if (path.includes('openai')) return 'openai';
+  if (path.includes('stripe')) return 'stripe';
   return path;
 }
 

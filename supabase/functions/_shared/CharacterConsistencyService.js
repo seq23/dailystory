@@ -33,11 +33,8 @@ export class CharacterConsistencyService {
     // Database operation - success/error logged via error handling
     
     try {
-      const { createClient } = await import('https://deno.land/x/supabase@1.0.0/mod.ts');
-      const supabase = createClient(
-        Deno.env.get('SUPABASE_URL'), 
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-      );
+      const { createResilientSupabaseClient } = await import('./resilientLoader.ts');
+      const supabase = await createResilientSupabaseClient();
 
     const { error } = await supabase
       .from('character_consistency_cache')
@@ -70,11 +67,8 @@ export class CharacterConsistencyService {
     // Database fetch operation
     
     try {
-      const { createClient } = await import('https://deno.land/x/supabase@1.0.0/mod.ts');
-      const supabase = createClient(
-        Deno.env.get('SUPABASE_URL'), 
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-      );
+      const { createResilientSupabaseClient } = await import('./resilientLoader.ts');
+      const supabase = await createResilientSupabaseClient();
 
     const { data, error } = await supabase
       .from('character_consistency_cache')
@@ -251,11 +245,8 @@ export class CharacterConsistencyService {
     console.log(`🎨 Updating cultural selections for character ${characterKey} in session ${sessionId}`);
     
     try {
-      const { createClient } = await import('https://deno.land/x/supabase@1.0.0/mod.ts');  
-      const supabase = createClient(
-        Deno.env.get('SUPABASE_URL'), 
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-      );
+      const { createResilientSupabaseClient } = await import('./resilientLoader.ts');
+      const supabase = await createResilientSupabaseClient();
 
     const { error } = await supabase
       .from('character_consistency_cache')

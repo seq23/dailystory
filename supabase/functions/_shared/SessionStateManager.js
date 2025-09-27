@@ -335,8 +335,8 @@ export class SessionStateManager {
         userPromptLength: aiPromptData.userPrompt?.length || 0
       });
 
-      const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.55.0');
-      const supabase = createClient(supabaseUrl, supabaseServiceKey);
+      const { createResilientSupabaseClient } = await import('./resilientLoader.ts');
+      const supabase = await createResilientSupabaseClient();
 
       // Extract user_id from bundle if available
       let userId = null;

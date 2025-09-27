@@ -374,8 +374,8 @@ export class SessionStateManager {
         userPromptLength: aiPromptData.userPrompt?.length || 0
       });
 
-      const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.55.0');
-      const supabase = createClient(supabaseUrl, supabaseServiceKey);
+      const { createResilientSupabaseClient } = await import('./resilientLoader.ts');
+      const supabase = await createResilientSupabaseClient();
 
       // Extract user_id from bundle if available
       let userId = null;
@@ -429,7 +429,7 @@ export class SessionStateManager {
 
         if (!fetchError && keepEntries && keepEntries.length > 0) {
           // Delete entries not in the keep list
-          const keepIds = keepEntries.map(entry => entry.id);
+          const keepIds = keepEntries.map((entry: any) => entry.id);
           const { error: cleanupError } = await supabase
             .from('ai_prompt_debug_log')
             .delete()

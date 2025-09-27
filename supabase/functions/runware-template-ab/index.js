@@ -3,7 +3,7 @@ import { RunwareErrorHandler } from "../_shared/runwareErrorHandler.ts";
 // Handles Level A (basic shapes/colors) and Level B (simple scenes)
 // Lightweight, fast deployment - optimized for simple template generation with character consistency
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
+// Supabase client created dynamically via resilient loader
 import { callRunwareAPIWithRetry } from './callRunwareAPIWithRetry.js';
 import { 
   getHairBySkintone, 
@@ -14,11 +14,7 @@ import {
 } from '../_shared/StaticDataCache.js';
 import { tier25vocabulary } from '../_shared/tier25Vocabulary.js';
 
-// Initialize Supabase client for orchestrator communication
-const supabase = createClient(
-  Deno.env.get('SUPABASE_URL'),
-  Deno.env.get('SUPABASE_ANON_KEY')
-);
+// Supabase client will be created dynamically when needed via resilient loader
 
 // ============= NUCLEAR INDEPENDENCE: COMPLETE STYLE FRAMEWORKS =============
 const NUCLEAR_HARDCODED_STYLE_FRAMEWORKS = {
