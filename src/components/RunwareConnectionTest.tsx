@@ -14,12 +14,15 @@ interface TestResult {
 export const RunwareConnectionTest: React.FC = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [results, setResults] = useState<TestResult[]>([]);
+  const [deploymentWarning, setDeploymentWarning] = useState<string | null>(null);
 
   const runTests = async () => {
     setIsRunning(true);
     setResults([]);
+    setDeploymentWarning(null);
     
     const testResults: TestResult[] = [];
+    const CURRENT_DEPLOYMENT = '2025-09-27T15:45:00Z';
 
     try {
       // Test 1: Main Orchestrator Health Check - Fixed to use direct fetch for GET requests
@@ -43,10 +46,36 @@ export const RunwareConnectionTest: React.FC = () => {
           const data = await response.json();
           if (data?.status === 'healthy') {
             const env = data.environment || {};
+            
+            // Check deployment version
+            if (data.deployment_version && data.deployment_version !== CURRENT_DEPLOYMENT) {
+              setDeploymentWarning(`Deployment may be stale: ${data.deployment_version} (expected: ${CURRENT_DEPLOYMENT})`);
+            }
+            
+            // Build detailed status message
+            const apiStatuses = [];
+            if (env.runwareApiKeyPresent) {
+              apiStatuses.push(`Runware: ✓ (${env.runwareApiKeyLength} chars)`);
+            } else {
+              apiStatuses.push(`Runware: ❌ Missing`);
+            }
+            if (env.openaiApiKeyPresent) {
+              apiStatuses.push(`OpenAI: ✓ (${env.openaiApiKeyLength} chars)`);
+            } else {
+              apiStatuses.push(`OpenAI: ❌ Missing`);
+            }
+            if (env.supabaseServiceRoleKeyPresent) {
+              apiStatuses.push(`Supabase: ✓`);
+            } else {
+              apiStatuses.push(`Supabase: ❌ Missing`);
+            }
+            
+            const hasAllKeys = env.runwareApiKeyPresent && env.openaiApiKeyPresent && env.supabaseServiceRoleKeyPresent;
+            
             testResults.push({
               name: 'Main Orchestrator Health',
-              status: 'success',
-              message: `✅ Healthy | Runware API: ${env.runwareApiKeyPresent ? 'Present' : 'Missing'}`,
+              status: hasAllKeys ? 'success' : 'warning',
+              message: `✅ ${data.tier || 'Main Service'} | ${apiStatuses.join(', ')}`,
               details: data
             });
           } else {
@@ -85,10 +114,19 @@ export const RunwareConnectionTest: React.FC = () => {
 
           if (response.ok) {
             const data = await response.json();
+            
+            // Check deployment version
+            if (data.deployment_version && data.deployment_version !== CURRENT_DEPLOYMENT) {
+              setDeploymentWarning(prev => prev || `Some services may be stale (expected: ${CURRENT_DEPLOYMENT})`);
+            }
+            
+            const statusMessage = `✅ ${data.status || 'healthy'} | Tier: ${data.tier || 'Not Specified'}`;
+            const cacheStatus = data.handler_cached !== undefined ? ` | Handler: ${data.handler_cached ? 'Cached' : 'Fresh'}` : '';
+            
             testResults.push({
               name: service.name,
               status: 'success',
-              message: `✅ ${data.status || 'healthy'} | Tier: ${data.tier || 'unknown'}`,
+              message: statusMessage + cacheStatus,
               details: data
             });
           } else {
@@ -144,7 +182,12 @@ export const RunwareConnectionTest: React.FC = () => {
   return (
     <Card className="w-full max-w-2xl mx-auto mt-4">
       <CardHeader>
-        <CardTitle className="text-sm">🔌 Runware WebSocket Connection Test</CardTitle>
+        <CardTitle className="text-sm">🔗 Runware Service Health Check</CardTitle>
+        {deploymentWarning && (
+          <div className="text-xs text-amber-600 bg-amber-50 p-2 rounded border">
+            ⚠️ {deploymentWarning}
+          </div>
+        )}
       </CardHeader>
       <CardContent>
         <Button 
@@ -153,7 +196,7 @@ export const RunwareConnectionTest: React.FC = () => {
           size="sm"
           className="w-full mb-4"
         >
-          {isRunning ? 'Running Tests...' : 'Test Runware Connection'}
+          {isRunning ? 'Testing Services...' : 'Test Runware Services'}
         </Button>
         
         {results.length > 0 && (

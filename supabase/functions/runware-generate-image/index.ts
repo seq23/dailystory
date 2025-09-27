@@ -240,22 +240,25 @@ serve(async (req: Request): Promise<Response> => {
 
   // PHASE 2: GET/HEAD health checks with environment info
   if (req.method === 'GET' || req.method === 'HEAD') {
-    // Include environment information for diagnostic compatibility
-    const runwareApiKey = Deno.env.get('RUNWARE_API_KEY');
-    const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const runwareKey = Deno.env.get('RUNWARE_API_KEY');
+    const openaiKey = Deno.env.get('OPENAI_API_KEY');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     
     return corsResponse({ 
-      status: 'healthy', 
+      status: 'healthy',
       service: 'runware-generate-image',
+      tier: 'Main Orchestrator',
+      deployment_version: '2025-09-27T15:45:00Z',
       timestamp: new Date().toISOString(),
       environment: {
-        runwareApiKeyPresent: !!runwareApiKey,
-        runwareKeyLength: runwareApiKey ? runwareApiKey.length : 0,
-        openaiApiKeyPresent: !!openaiApiKey,
-        openaiKeyLength: openaiApiKey ? openaiApiKey.length : 0,
-        supabaseServiceRolePresent: !!supabaseServiceKey
-      }
+        runwareApiKeyPresent: !!runwareKey,
+        runwareApiKeyLength: runwareKey ? runwareKey.length : 0,
+        openaiApiKeyPresent: !!openaiKey,
+        openaiApiKeyLength: openaiKey ? openaiKey.length : 0,
+        supabaseServiceRoleKeyPresent: !!supabaseKey,
+        supabaseServiceRoleKeyLength: supabaseKey ? supabaseKey.length : 0
+      },
+      capabilities: ["tier_orchestration", "image_generation", "fallback_coordination"]
     }, req);
   }
 
