@@ -199,8 +199,9 @@ serve(async (req: Request): Promise<Response> => {
         throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_25A');
       }
 
-      // Real image generation would happen here - but for now we know it will fail
-      throw new Error('TIER_1_REAL_PROCESSING: Runware WebSocket not implemented in this function');
+      // TODO: Implement real Runware image generation here when WebSocket client is available
+      // For now, escalate to test the cascade logic
+      throw new Error('TIER_1_PROCESSING_FAILED: Image generation service unavailable');
 
     } catch (tier1Error: unknown) {
       const errorMessage = tier1Error instanceof Error ? tier1Error.message : String(tier1Error);
@@ -214,8 +215,55 @@ serve(async (req: Request): Promise<Response> => {
         Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
       );
       
-      // Try Tier 2.5A first
-      console.log(`[TIER_2.5A] Attempting fallback after Tier 1 failure`);
+      // CORRECTED CASCADE: Try Direct Mode first (if we have valid primaryScene)
+      if (!errorMessage.includes('NO_PRIMARY_SCENE')) {
+        console.log(`[DIRECT_MODE] Attempting Direct Mode fallback after Tier 1 failure`);
+        
+        try {
+          const directModeResponse = await internalSupabase.functions.invoke('ai-visual-scene-creator', {
+            body: {
+              ...payload,
+              directMode: true,
+              tier1FailureReason: errorMessage
+            }
+          });
+          
+          if (directModeResponse.data?.success && directModeResponse.data?.imageURL) {
+            const result = {
+              success: true,
+              imageURL: directModeResponse.data.imageURL,
+              provider: 'direct-mode-fallback',
+              tier: 'DIRECT_MODE',
+              requestId: requestId,
+              timestamp: new Date().toISOString(),
+              tier1FailureReason: errorMessage,
+              cascadeHistory: [
+                `❌ Tier 1 Failed: ${errorMessage}`,
+                '✅ Direct Mode Success'
+              ]
+            };
+            
+            tierLogger.success('DIRECT_MODE', { result });
+            console.log(`SUCCESS [${requestId}] Direct Mode fallback completed`);
+            
+            return corsResponse({
+              success: true,
+              ...result
+            }, req);
+          } else {
+            throw new Error('DIRECT_MODE_FAILED: ' + (directModeResponse.error?.message || 'Direct mode processing failed'));
+          }
+          
+        } catch (directModeError: unknown) {
+          const directErrorMessage = directModeError instanceof Error ? directModeError.message : String(directModeError);
+          console.log(`[DIRECT_MODE] Failed: ${directErrorMessage}`);
+          tierLogger.failure('DIRECT_MODE', { error: directErrorMessage });
+          // Continue to 2.5A cascade below
+        }
+      }
+      
+      // Try Tier 2.5A 
+      console.log(`[TIER_2.5A] Attempting fallback after Direct Mode or if no primaryScene`);
       
       try {
         const tier25aResponse = await internalSupabase.functions.invoke('runware-template-ab', {
@@ -303,60 +351,19 @@ serve(async (req: Request): Promise<Response> => {
           console.log(`[TIER_2.5B] Failed: ${tier25bErrorMessage}`);
           tierLogger.failure('TIER_2.5B', { error: tier25bErrorMessage });
           
-          // Try Direct Mode as fallback
-          console.log(`[DIRECT_MODE] Attempting fallback after Tier 2.5B failure`);
+          // Final fallback to Tier 2.5C (Direct Mode already tried earlier)
+          console.log(`[TIER_2.5C] Attempting fallback after Tier 2.5B failure`);
           
           try {
-            const directModeResponse = await internalSupabase.functions.invoke('ai-visual-scene-creator', {
+            const tier25cResponse = await internalSupabase.functions.invoke('runware-template-cd', {
               body: {
                 ...payload,
-                directMode: true,
+                templateComplexity: 'C',
                 tier1FailureReason: errorMessage,
                 tier25aFailureReason: tier25aErrorMessage,
                 tier25bFailureReason: tier25bErrorMessage
               }
             });
-            
-            if (directModeResponse.data?.success && directModeResponse.data?.imageURL) {
-              const result = {
-                imageURL: directModeResponse.data.imageURL,
-                provider: 'direct-mode-fallback',
-                tier: 'DIRECT_MODE',
-                requestId: requestId,
-                timestamp: new Date().toISOString(),
-                cascadeFailures: [errorMessage, tier25aErrorMessage, tier25bErrorMessage]
-              };
-              
-              tierLogger.success('DIRECT_MODE', { result });
-              console.log(`SUCCESS [${requestId}] Direct Mode fallback completed`);
-              
-              return corsResponse({
-                success: true,
-                ...result
-              }, req);
-            } else {
-              throw new Error('DIRECT_MODE_FAILED: ' + (directModeResponse.error?.message || 'Direct mode processing failed'));
-            }
-            
-          } catch (directModeError: unknown) {
-            const directErrorMessage = directModeError instanceof Error ? directModeError.message : String(directModeError);
-            console.log(`[DIRECT_MODE] Failed: ${directErrorMessage}`);
-            tierLogger.failure('DIRECT_MODE', { error: directErrorMessage });
-            
-            // Final fallback to Tier 2.5C
-            console.log(`[TIER_2.5C] Final fallback attempt`);
-            
-            try {
-              const tier25cResponse = await internalSupabase.functions.invoke('runware-template-cd', {
-                body: {
-                  ...payload,
-                  templateComplexity: 'C',
-                  tier1FailureReason: errorMessage,
-                  tier25aFailureReason: tier25aErrorMessage,
-                  tier25bFailureReason: tier25bErrorMessage,
-                  directModeFailureReason: directErrorMessage
-                }
-              });
               
               if (tier25cResponse.data?.success && tier25cResponse.data?.imageURL) {
                 const result = {

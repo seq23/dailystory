@@ -1384,165 +1384,75 @@ export const ImageTierTester = () => {
         };
       }
 
-      // STEP 2: Try Orchestrator
-      cascadeHistory.push('🚀 Attempting Orchestrator (runware-generate-image)...');
-      const orchestratorStartTime = Date.now();
+      // STEP 2: Use real frontend routing with Force Tier 1
+      cascadeHistory.push('🚀 Using SimpleImageService.generateImage with forceTier1=true...');
+      const tier1StartTime = Date.now();
       
       try {
-        const orchestratorResponse = await supabase.functions.invoke('runware-generate-image', {
-          body: {
-            pageText: testStoryText,
-            userInfo: userInfo,
-            sessionId: sessionId,
-            pageNumber: 1,
-            storyId: 'debug-routing-test',
-            isGuestUser: false,
-            difficultyLevel: mapDifficultyLevel(userInfo)
-          }
+        const result = await SimpleImageService.generateImage({
+          storyText: testStoryText,
+          userInfo: userInfo,
+          sessionId: sessionId,
+          pageNumber: 1,
+          isPremium: false,
+          forceTier1: true // Force attempt at Tier 1 (orchestrator or direct mode)
         });
 
-        const orchestratorTime = Date.now() - orchestratorStartTime;
+        const tier1Time = Date.now() - tier1StartTime;
         
-        if (orchestratorResponse.data?.success) {
-          cascadeHistory.push(`✅ Orchestrator Success (${orchestratorTime}ms)`);
-          resultBadge = 'Orchestrator Success';
-          fallbackPath = 'No fallbacks needed - direct orchestrator success';
+        if (result.success) {
+          cascadeHistory.push(`✅ Force Tier 1 Success (${tier1Time}ms) - Tier: ${result.tier}`);
+          resultBadge = `${result.tier} Success`;
+          fallbackPath = `Force Tier 1 succeeded via ${result.tier}`;
           finalResult = {
-            tier: orchestratorResponse.data.tier || 'orchestrator',
+            tier: result.tier || 'tier-1',
             success: true,
-            imageURL: orchestratorResponse.data.imageURL,
+            imageURL: result.imageURL || result.url,
             details: {
-              processingTime: orchestratorTime,
+              processingTime: tier1Time,
               cascadeHistory,
-                      testType: 'REAL',
-              resultType: 'ORCHESTRATOR_SUCCESS',
-              tierFailureHistory: orchestratorResponse.data.tierFailureHistory || [],
-              positivePrompt: orchestratorResponse.data.positivePrompt,
-              routingMetadata: orchestratorResponse.data.routingMetadata,
+              testType: 'REAL',
+              resultType: 'FORCE_TIER_1_SUCCESS',
+              metadata: result.metadata,
               error: null
             }
           };
         } else {
-          // Orchestrator failed - start cascade
-          cascadeHistory.push(`❌ Orchestrator Failed (${orchestratorTime}ms)`);
-          const errorAnalysis = categorizeError(orchestratorResponse.error, 'orchestrator', orchestratorResponse);
-          cascadeHistory.push(`❌ Error Type: ${errorAnalysis.errorType} - ${errorAnalysis.probableCause}`);
-          
-          // STEP 3: Try Direct Mode Fallback
-          cascadeHistory.push('🔄 Attempting Direct Mode (ai-visual-scene-creator)...');
-          const directModeStartTime = Date.now();
-          
-          try {
-            const directModeResponse = await supabase.functions.invoke('ai-visual-scene-creator', {
-              body: {
-                storyText: rawStoryText,
-                userInfo: userInfo,
-                sessionId: sessionId,
-                storyId: sessionId,
-                pageNumber: 1,
-                isGuestUser: true,
-                difficultyLevel: mapDifficultyLevel(userInfo),
-                directMode: true
-              }
-            });
-
-            const directModeTime = Date.now() - directModeStartTime;
-            
-            if (directModeResponse.data?.success) {
-              cascadeHistory.push(`✅ Direct Mode Success (${directModeTime}ms)`);
-              resultBadge = 'Direct Mode Fallback';
-              fallbackPath = 'Orchestrator failed → Direct Mode succeeded';
-              finalResult = {
-                tier: 'direct-mode',
-                success: true,
-                imageURL: directModeResponse.data.imageURL,
-                details: {
-                  processingTime: Date.now() - globalStartTime,
-                  cascadeHistory,
-                      testType: 'REAL',
-                  resultType: 'DIRECT_MODE_SUCCESS',
-                  error: null
-                }
-              };
-            } else {
-              // Direct Mode failed - try Tier 2.5C
-              cascadeHistory.push(`❌ Direct Mode Failed (${directModeTime}ms)`);
-              
-              // STEP 4: Try Tier 2.5C
-              cascadeHistory.push('🔄 Attempting Tier 2.5C (runware-template-cd)...');
-              const tier25CStartTime = Date.now();
-              
-              try {
-                const tier25CResponse = await supabase.functions.invoke('runware-template-cd', {
-                  body: {
-                    pageText: rawStoryText,
-                    userInfo: userInfo,
-                    sessionId: sessionId,
-                    pageNumber: 1,
-                    templateComplexity: 'C'
-                  }
-                });
-
-                const tier25CTime = Date.now() - tier25CStartTime;
-                
-                if (tier25CResponse.data?.success) {
-                  cascadeHistory.push(`✅ Tier 2.5C Success (${tier25CTime}ms)`);
-                  resultBadge = 'Tier 2.5C Success';
-                  fallbackPath = 'Orchestrator failed → Direct Mode failed → Tier 2.5C succeeded';
-                  finalResult = {
-                    tier: '2.5C',
-                    success: true,
-                    imageURL: tier25CResponse.data.imageURL,
-                    details: {
-                      processingTime: Date.now() - globalStartTime,
-                      cascadeHistory,
-                      testType: 'REAL',
-                      resultType: 'TIER_25C_SUCCESS',
-                      error: null
-                    }
-                  };
-                } else {
-                  // Tier 2.5C failed - try SVG Tier 4
-                  cascadeHistory.push(`❌ Tier 2.5C Failed (${tier25CTime}ms)`);
-                  
-                  // STEP 5: Try SVG Tier 4 (Final Fallback)
-                  cascadeHistory.push('🔄 Attempting SVG Tier 4 (final fallback)...');
-                  const svgStartTime = Date.now();
-                  
-                  try {
-                    const svgResponse = await ImageFallbackService.generateStoryPlaceholder(rawStoryText, 1);
-                    const svgTime = Date.now() - svgStartTime;
-                  
-                  if (svgResponse) {
-                      cascadeHistory.push(`✅ SVG Tier 4 Success (${svgTime}ms)`);
-                      resultBadge = 'SVG Tier 4 Fallback';
-                      fallbackPath = 'Complete cascade: Orchestrator → Direct Mode → Tier 2.5C → SVG Tier 4';
-                      finalResult = {
-                        tier: 'SVG_TIER_4',
-                        success: true,
-                      imageURL: svgResponse,
-                        details: {
-                          processingTime: Date.now() - globalStartTime,
-                          cascadeHistory,
-                      testType: 'REAL',
-                          resultType: 'SVG_TIER_4_SUCCESS',
-                          error: null
-                        }
-                      };
-                    } else {
-                      // Complete failure - all tiers failed
-                      cascadeHistory.push(`❌ SVG Tier 4 Failed (${svgTime}ms) - Complete System Failure`);
-                      resultBadge = 'Complete Failure';
-                      fallbackPath = 'All tiers failed: Orchestrator → Direct Mode → Tier 2.5C → SVG Tier 4';
-                      finalResult = {
-                        tier: 'complete-failure',
-                        success: false,
-                        imageURL: null,
-                        details: {
-                          processingTime: Date.now() - globalStartTime,
-                          cascadeHistory,
-                          testType: 'REAL_ROUTING',
-                          resultType: 'COMPLETE_FAILURE',
+          // Force Tier 1 failed - this means complete cascade failure
+          cascadeHistory.push(`❌ Force Tier 1 Complete Failure (${tier1Time}ms)`);
+          resultBadge = 'Complete Cascade Failure';
+          fallbackPath = 'Force Tier 1 exhausted all tiers without success';
+          finalResult = {
+            tier: 'cascade-failure',
+            success: false,
+            imageURL: null,
+            details: {
+              processingTime: tier1Time,
+              cascadeHistory,
+              testType: 'REAL',
+              resultType: 'COMPLETE_CASCADE_FAILURE',
+              error: result.error
+            }
+          };
+        }
+      } catch (tier1Error) {
+        const tier1Time = Date.now() - tier1StartTime;
+        cascadeHistory.push(`❌ Force Tier 1 Error (${tier1Time}ms): ${tier1Error.message}`);
+        resultBadge = 'Force Tier 1 Error';
+        fallbackPath = 'Force Tier 1 encountered an error';
+        finalResult = {
+          tier: 'error',
+          success: false,
+          imageURL: null,
+          details: {
+            processingTime: tier1Time,
+            cascadeHistory,
+            testType: 'REAL',
+            resultType: 'FORCE_TIER_1_ERROR',
+            error: tier1Error.message
+          }
+        };
+      }
                           error: 'All fallback tiers exhausted'
                         }
                       };

@@ -155,7 +155,8 @@ export class SimpleImageService {
     userInfo?: UserInfo,
     sessionId?: string,
     pageNumber: number = 1,
-    isPremium: boolean = false
+    isPremium: boolean = false,
+    forceTier1: boolean = false
   ): Promise<ImageResult> {
     DebugLogger.log('image', 'SimpleImageService: Starting health-aware image generation');
     
@@ -338,7 +339,7 @@ export class SimpleImageService {
     DebugLogger.log('image', 'Mapped difficulty level', backendDifficulty);
 
     // ============= PROACTIVE DIRECT MODE BYPASS LOGIC =============
-    const bypassDecision = await this.evaluateDirectModeBypass(normalizedSessionId, healthStatus);
+    const bypassDecision = forceTier1 ? { shouldBypass: false } : await this.evaluateDirectModeBypass(normalizedSessionId, healthStatus);
     if (bypassDecision.shouldBypass) {
       DebugLogger.log('image', 'PROACTIVE BYPASS: Skipping orchestrator, going directly to Direct Mode', {
         reason: bypassDecision.reason,
@@ -1377,7 +1378,8 @@ export class SimpleImageService {
       params.userInfo,
       params.sessionId,
       params.pageNumber || 1,
-      params.isPremium || false
+      params.isPremium || false,
+      params.forceTier1 || false
     );
   }
 }
