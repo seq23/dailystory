@@ -238,12 +238,24 @@ serve(async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // PHASE 2: GET/HEAD health checks
+  // PHASE 2: GET/HEAD health checks with environment info
   if (req.method === 'GET' || req.method === 'HEAD') {
+    // Include environment information for diagnostic compatibility
+    const runwareApiKey = Deno.env.get('RUNWARE_API_KEY');
+    const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
     return corsResponse({ 
       status: 'healthy', 
       service: 'runware-generate-image',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      environment: {
+        runwareApiKeyPresent: !!runwareApiKey,
+        runwareKeyLength: runwareApiKey ? runwareApiKey.length : 0,
+        openaiApiKeyPresent: !!openaiApiKey,
+        openaiKeyLength: openaiApiKey ? openaiApiKey.length : 0,
+        supabaseServiceRolePresent: !!supabaseServiceKey
+      }
     }, req);
   }
 

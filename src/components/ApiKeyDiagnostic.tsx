@@ -43,14 +43,38 @@ export const ApiKeyDiagnostic: React.FC = () => {
       if (healthError) {
         addResult('error', `❌ Orchestrator health check failed: ${healthError.message}`, healthError);
       } else {
-        const env = healthData.environment || {};
+        const env = healthData?.environment || {};
         addResult('success', '✅ Orchestrator is healthy', healthData);
-        addResult(env.runwareApiKeyPresent ? 'success' : 'error', 
-          `${env.runwareApiKeyPresent ? '✅' : '❌'} RUNWARE_API_KEY: ${env.runwareApiKeyPresent ? 'Present' : 'Missing'} (${env.runwareKeyLength || 0} chars)`);
-        addResult(env.openaiApiKeyPresent ? 'success' : 'warning', 
-          `${env.openaiApiKeyPresent ? '✅' : '⚠️'} OPENAI_API_KEY: ${env.openaiApiKeyPresent ? 'Present' : 'Missing'} (${env.openaiKeyLength || 0} chars)`);
-        addResult(env.supabaseServiceRolePresent ? 'success' : 'error', 
-          `${env.supabaseServiceRolePresent ? '✅' : '❌'} SUPABASE_SERVICE_ROLE_KEY: ${env.supabaseServiceRolePresent ? 'Present' : 'Missing'}`);
+        
+        // Handle environment info - if missing, show warning instead of error
+        if (healthData?.environment) {
+          addResult(env.runwareApiKeyPresent ? 'success' : 'error', 
+            `${env.runwareApiKeyPresent ? '✅' : '❌'} RUNWARE_API_KEY: ${env.runwareApiKeyPresent ? 'Present' : 'Missing'} (${env.runwareKeyLength || 0} chars)`);
+          addResult(env.openaiApiKeyPresent ? 'success' : 'warning', 
+            `${env.openaiApiKeyPresent ? '✅' : '⚠️'} OPENAI_API_KEY: ${env.openaiApiKeyPresent ? 'Present' : 'Missing'} (${env.openaiKeyLength || 0} chars)`);
+          addResult(env.supabaseServiceRolePresent ? 'success' : 'error', 
+            `${env.supabaseServiceRolePresent ? '✅' : '❌'} SUPABASE_SERVICE_ROLE_KEY: ${env.supabaseServiceRolePresent ? 'Present' : 'Missing'}`);
+        } else {
+          addResult('warning', '⚠️ Environment information not available - using system-diagnostics for detailed API key status...');
+          
+          // Fallback to system-diagnostics for detailed environment check
+          try {
+            const { data: sysData, error: sysError } = await supabase.functions.invoke('system-diagnostics?operation=runware-diagnostic', {
+              method: 'GET'
+            });
+            
+            if (sysError) {
+              addResult('warning', '⚠️ Could not retrieve detailed environment status', sysError);
+            } else if (sysData?.environment) {
+              addResult(sysData.environment.runware_api_key ? 'success' : 'error', 
+                `${sysData.environment.runware_api_key ? '✅' : '❌'} RUNWARE_API_KEY: ${sysData.environment.runware_api_key ? 'Present' : 'Missing'}`);
+              addResult(sysData.environment.supabase_service_key ? 'success' : 'error', 
+                `${sysData.environment.supabase_service_key ? '✅' : '❌'} SUPABASE_SERVICE_ROLE_KEY: ${sysData.environment.supabase_service_key ? 'Present' : 'Missing'}`);
+            }
+          } catch (fallbackError) {
+            addResult('warning', '⚠️ Fallback diagnostic check failed', fallbackError);
+          }
+        }
       }
 
       // Test 2: Template services health check
