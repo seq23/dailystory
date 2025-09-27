@@ -4,7 +4,7 @@
  * Provides JWT validation, rate limiting, security headers, and audit logging
  */
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.55.0";
+import { createResilientSupabaseClient } from '../_shared/resilientLoader.ts';
 
 // Enhanced CORS headers with security policies
 export const secureHeaders = {

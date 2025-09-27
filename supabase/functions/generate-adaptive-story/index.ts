@@ -1,17 +1,13 @@
-// Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
+// Clean Deploy: 2025-01-30T12:00:00Z - Enhanced with resilient loader
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.55.0';
+import { memoizedImport, createResilientSupabaseClient, createImportFailureResponse } from '../_shared/resilientLoader.ts';
 import { DifficultyLevelMapper } from '../_shared/DifficultyLevelMapper.ts';
 import { getPerPageTokenLimit, getStoryPrompt, formatUserPrompt, resolvePromptPlaceholders } from '../_shared/storyPrompts.ts';
 import { ENHANCED_LEVEL_0_VOCABULARY } from '../_shared/vocabulary/dolchPrePrimer.ts';
 import { handleStreamlinedGeneration } from './streamlined-handler.ts';
 
-// Initialize Supabase client for service-to-service communication
-const supabase = createClient(
-  Deno.env.get('SUPABASE_URL') ?? '',
-  Deno.env.get('SUPABASE_ANON_KEY') ?? ''
-);
+// Supabase client will be created inside handler for better error handling
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -158,6 +154,15 @@ serve(async (req) => {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
+  }
+
+  // Create Supabase client inside handler for better error handling
+  let supabase;
+  try {
+    supabase = await createResilientSupabaseClient();
+  } catch (error) {
+    console.error('Failed to create Supabase client:', error);
+    return createImportFailureResponse(error, 'generate-adaptive-story');
   }
 
   // Log request diagnostics

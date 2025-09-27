@@ -1,6 +1,6 @@
 // Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createResilientSupabaseClient, memoizedImport } from '../_shared/resilientLoader.ts';
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
 
 const corsHeaders = {
@@ -24,13 +24,17 @@ serve(async (req) => {
     logStep("Function started");
 
     // Create Supabase client with service role key to bypass RLS
+    const supabase = await createResilientSupabaseClient();
+    
+    // Create service client
+    const { createClient } = await memoizedImport('@supabase/supabase-js');
     const supabaseService = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
       { auth: { persistSession: false } }
     );
 
-    // Also create anon client for user authentication
+    // Also create anon client for user authentication  
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? ""

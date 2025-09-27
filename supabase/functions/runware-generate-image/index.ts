@@ -1,28 +1,26 @@
-// DEPLOY_MARKER: 2025-09-27T00:00:00Z - Optimized with echoing CORS and memoized lazy loading
+// DEPLOY_MARKER: 2025-09-27T00:00:00Z - Enhanced with resilient loader system
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { phaseIntegrationOrchestrator } from '../_shared/PhaseIntegrationOrchestrator.js';
+import { memoizedImport, createImportFailureResponse } from '../_shared/resilientLoader.ts';
 
 // ============================================================================
-// 🎯 ORCHESTRATOR: OPTIMIZED IMAGE GENERATION ORCHESTRATOR
+// 🎯 ORCHESTRATOR: RESILIENT IMAGE GENERATION ORCHESTRATOR
 // **CRITICAL SYSTEM NOTICE**: This function serves as the MAIN ORCHESTRATOR for image generation
 // Handles all image generation tiers, fallbacks, and service coordination
-// OPTIMIZED: Memoized lazy loading, echoing CORS, method-first parsing
+// ENHANCED: Resilient CDN fallbacks, structured error handling, graceful degradation
 // ============================================================================
 
 // TypeScript type imports
 import type { UserInfo, SessionId } from "../_shared/types/index.ts";
 
-// ============= MEMOIZED IMPORT SYSTEM =============
-const importCache = new Map<string, Promise<any>>();
-
-function memoizedImport(path: string): Promise<any> {
-  if (!importCache.has(path)) {
-    importCache.set(path, import(path));
-  }
-  return importCache.get(path)!;
-}
-
 // TypeScript interface definitions
+interface TierLogger {
+  t1: (msg: string, ctx?: Record<string, any>) => void;
+  t2: (msg: string, ctx?: Record<string, any>) => void;
+  attempt: (tier: string, ctx?: Record<string, any>) => void;
+  success: (tier: string, ctx?: Record<string, any>) => void;
+  failure: (tier: string, ctx?: Record<string, any>) => void;
+}
 interface TierLogger {
   t1: (msg: string, ctx?: Record<string, any>) => void;
   t2: (msg: string, ctx?: Record<string, any>) => void;

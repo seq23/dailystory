@@ -4,7 +4,7 @@
  * Now with character-specific clothing detection and database persistence
  */
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createResilientSupabaseClient } from '../_shared/resilientLoader.ts';
 
 // ============= UNIFIED VOCABULARY IMPORT FOR ENHANCED OBJECT DETECTION =============
 // Import comprehensive vocabulary from Tier 2.5A for consistent color/size detection
