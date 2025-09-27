@@ -134,6 +134,11 @@ interface TestResult {
     triageResult?: any; // Full triage check result
     tierPathResult?: string; // Tier path result message
     debug?: any; // Debug information from AI functions
+    // Direct Mode specific properties
+    characterConsistency?: any; // Character consistency data from Direct Mode
+    visualConsistency?: any; // Visual consistency data from Direct Mode  
+    culturalEnhancements?: any; // Cultural enhancements data from Direct Mode
+    templateData?: any; // Template data from runware-template-cd
   };
 }
 
@@ -1203,6 +1208,10 @@ export const ImageTierTester = () => {
         steps: steps.map(s => `${s.name}: ${s.status}`)
       });
 
+      // Extract Direct Mode template prompts if available
+      const templateResponse = response.data?.enhancedData?.templateResponse;
+      const isDirectMode = chosenPath === 'Direct Mode' && templateResponse;
+      
       setResults([{
         tier: 'tier-1-forced',
         success: overallSuccess,
@@ -1220,8 +1229,20 @@ export const ImageTierTester = () => {
           mood: response.data?.aiSchema?.mood || response.data?.debug?.aiSchema?.mood,
           pose: response.data?.aiSchema?.pose || response.data?.debug?.aiSchema?.pose,
           enhancedPrompt: response.data?.enhancedPrompt,
-          positivePrompt: response.data?.positivePrompt || response.data?.enhancedPrompt,
-          negativePrompt: response.data?.negativePrompt,
+          // For Direct Mode, show template prompts; otherwise show original prompts
+          positivePrompt: isDirectMode ? 
+            templateResponse.positivePrompt : 
+            (response.data?.positivePrompt || response.data?.enhancedPrompt),
+          negativePrompt: isDirectMode ? 
+            templateResponse.negativePrompt : 
+            response.data?.negativePrompt,
+          // Character consistency data
+          characterConsistency: response.data?.enhancedData?.characterConsistency,
+          visualConsistency: response.data?.enhancedData?.visualConsistency,
+          culturalEnhancements: response.data?.enhancedData?.culturalEnhancements,
+          // Template data for Direct Mode
+          templateData: isDirectMode ? templateResponse.templateData : null,
+          templateComplexity: isDirectMode ? templateResponse.templateComplexity || '2.5C' : null,
           styleFramework: response.data?.styleFrameworkUsed,
           testType: 'TIER_1_COMPLETE_FLOW',
           stepByStepValidation: steps,
@@ -1230,9 +1251,9 @@ export const ImageTierTester = () => {
           tier: response.data?.tier,
           escalationPath: response.data?.escalationPath,
           nextAction: response.data?.nextAction, // Show escalation actions
-          templateStructure: response.data?.templateStructure, // Show template structure
+          templateStructure: isDirectMode ? 'DIRECT_MODE_HYBRID' : response.data?.templateStructure,
           tierPathResult: isEscalationResponse ? 'Both Tier 1 paths failed - escalation attempted' : 
-                         (chosenPath === 'Direct Mode' ? 'Direct Mode successful' : 'Tier 1 Complete Flow successful'),
+                         (chosenPath === 'Direct Mode' ? 'Direct Mode Success (Tier 1 AI → 2.5C Template)' : 'Tier 1 Complete Flow successful'),
           debug: response.data?.debug, // Include debug information
           error: response.error?.message || response.data?.error,
           errorCategory,
