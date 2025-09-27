@@ -149,20 +149,77 @@ export const ImageTierTester = () => {
   const [nativeLanguage, setNativeLanguage] = useState('en');
   const [difficultyLevel, setDifficultyLevel] = useState('medium');
 
-  // Build dynamic user info from form inputs
+  // Build dynamic user info from form inputs - MATCH SimpleImageService
   const buildUserInfo = () => ({
     name: userName,
     age: parseInt(userAge) || 8,
     userName: userName,
+    ethnicity: avatarType, // Map avatarType to ethnicity for consistency
+    skinTone: skinTone,
     avatar: {
       type: avatarType,
       skinTone: skinTone
     },
     nativeLanguage: nativeLanguage,
     difficulty: difficultyLevel,
-    // Conditionally add culturalProfile for completeness
     culturalProfile: nativeLanguage !== 'en' ? nativeLanguage : undefined
   });
+
+  // Map difficulty level - MATCH SimpleImageService exactly
+  const mapDifficultyLevel = (userInfo: any): string => {
+    if (!userInfo?.age) return 'medium';
+    
+    const age = userInfo.age;
+    if (age <= 5) return 'beginner';
+    if (age <= 8) return 'easy';
+    if (age <= 12) return 'medium';
+    if (age <= 16) return 'hard';
+    return 'expert';
+  };
+
+  // Apply universal protections - MATCH SimpleImageService logic  
+  const applyUniversalProtections = (basePrompt: string, userInfo: any): { prompt: string; negatives: string[] } => {
+    const ethnicity = userInfo?.ethnicity?.toLowerCase() || '';
+    const avatar = userInfo?.avatar?.type?.toLowerCase() || '';
+    
+    const positive: string[] = [
+      'dignified representation',
+      'respectful cultural portrayal', 
+      'authentic character design',
+      'positive and empowering imagery'
+    ];
+    
+    const negative: string[] = [
+      'stereotypes',
+      'caricature', 
+      'offensive depictions',
+      'cultural appropriation',
+      'disrespectful imagery'
+    ];
+    
+    // African American specific protections
+    if (ethnicity.includes('african') || ethnicity.includes('black') || avatar.includes('african')) {
+      positive.push(
+        'beautiful natural hair textures',
+        'diverse African American representation',
+        'confident and proud character',
+        'culturally authentic features'
+      );
+      negative.push(
+        'exaggerated features',
+        'outdated stereotypes', 
+        'inappropriate hair representations',
+        'culturally insensitive imagery'
+      );
+    }
+    
+    // Integrate positive protections into main prompt
+    const enhancedPrompt = positive.length > 0 
+      ? `${basePrompt}, ${positive.join(', ')}`
+      : basePrompt;
+    
+    return { prompt: enhancedPrompt, negatives: negative };
+  };
 
   // Advanced Error categorization with Boot vs Runtime Detection
   const categorizeError = (error: any, context?: string, response?: any): { 
@@ -797,14 +854,21 @@ export const ImageTierTester = () => {
         storyText: testStoryText.substring(0, 100)
       });
 
+      const userInfo = buildUserInfo();
+      const { prompt: enhancedPrompt, negatives: protectionNegatives } = applyUniversalProtections(testStoryText, userInfo);
+      const sessionId = crypto.randomUUID();
+
       const startTime = Date.now();
       const response = await supabase.functions.invoke('ai-visual-scene-creator', {
         body: {
-          storyText: testStoryText, // Template AB expects storyText
-          pageText: testStoryText, // Template CD compatibility
-          userInfo: buildUserInfo(),
+          pageText: enhancedPrompt, // FIXED: Use pageText like SimpleImageService
+          userInfo: userInfo,
+          sessionId: sessionId,
+          storyId: sessionId, // ADDED: Missing field
           pageNumber: 1,
-          sessionId: crypto.randomUUID(),
+          isGuestUser: true, // ADDED: Missing field (default to guest for testing)
+          difficultyLevel: mapDifficultyLevel(userInfo), // ADDED: Missing field
+          protectionNegatives: protectionNegatives, // ADDED: Missing field
           isDebugMode: true
         }
       });
@@ -894,16 +958,24 @@ export const ImageTierTester = () => {
         steps
       });
 
+      const userInfo = buildUserInfo();
+      const { prompt: enhancedPrompt, negatives: protectionNegatives } = applyUniversalProtections(testStoryText, userInfo);
+      const sessionId = crypto.randomUUID();
+
       const startTime = Date.now();
       
-      // Step 2: Call runware-generate-image with COMPLETE_TIER_1 flag
+      // Step 2: Call runware-generate-image with orchestrator payload - MATCH SimpleImageService
       steps[1].status = 'running';
       const response = await supabase.functions.invoke('runware-generate-image', {
         body: {
-          storyText: testStoryText,
-          userInfo: buildUserInfo(),
-          sessionId: crypto.randomUUID(),
+          pageText: enhancedPrompt, // FIXED: Use pageText like SimpleImageService
+          userInfo: userInfo,
+          sessionId: sessionId,
+          storyId: sessionId, // ADDED: Missing field
           pageNumber: 1,
+          isGuestUser: true, // ADDED: Missing field (default to guest for testing)
+          difficultyLevel: mapDifficultyLevel(userInfo), // ADDED: Missing field
+          protectionNegatives: protectionNegatives, // ADDED: Missing field
           forceTier: 'COMPLETE_TIER_1', // Force complete Tier 1 flow
           test: true
         }
@@ -1048,24 +1120,28 @@ export const ImageTierTester = () => {
       const globalStartTime = Date.now();
       const sessionId = crypto.randomUUID();
       const userInfo = buildUserInfo();
+      const { prompt: enhancedPrompt, negatives: protectionNegatives } = applyUniversalProtections(testStoryText, userInfo);
       
       let cascadeHistory = [];
       let finalResult = null;
       let resultBadge = '';
       let fallbackPath = '';
 
-      // STEP 1: Try Orchestrator (runware-generate-image) - Normal User Flow
+      // STEP 1: Try Orchestrator (runware-generate-image) - Normal User Flow - MATCH SimpleImageService  
       cascadeHistory.push('🎯 Attempting Orchestrator (runware-generate-image)...');
       
       try {
         const orchestratorStartTime = Date.now();
         const orchestratorResponse = await supabase.functions.invoke('runware-generate-image', {
           body: {
-            storyText: testStoryText,
-            pageText: testStoryText,
+            pageText: enhancedPrompt, // FIXED: Use pageText like SimpleImageService
             userInfo: userInfo,
+            sessionId: sessionId,
+            storyId: sessionId, // ADDED: Missing field
             pageNumber: 1,
-            sessionId: sessionId
+            isGuestUser: true, // ADDED: Missing field (default to guest for testing)
+            difficultyLevel: mapDifficultyLevel(userInfo), // ADDED: Missing field
+            protectionNegatives: protectionNegatives // ADDED: Missing field
             // NO skipTier25 - let orchestrator handle natural cascade
           }
         });
@@ -1086,10 +1162,14 @@ export const ImageTierTester = () => {
               const directModeStartTime = Date.now();
               const directModeResponse = await supabase.functions.invoke('ai-visual-scene-creator', {
                 body: {
-                  storyText: testStoryText,
+                  pageText: enhancedPrompt, // FIXED: Use pageText like SimpleImageService
                   userInfo: userInfo,
-                  pageNumber: 1,
                   sessionId: sessionId,
+                  storyId: sessionId, // ADDED: Missing field
+                  pageNumber: 1,
+                  isGuestUser: true, // ADDED: Missing field
+                  difficultyLevel: mapDifficultyLevel(userInfo), // ADDED: Missing field
+                  protectionNegatives: protectionNegatives, // ADDED: Missing field
                   directMode: true
                 }
               });
@@ -1164,12 +1244,13 @@ export const ImageTierTester = () => {
                 const tier4StartTime = Date.now();
                 const tier4Response = await supabase.functions.invoke('runware-template-cd', {
                   body: {
-                    storyText: testStoryText,
-                    pageText: testStoryText,
+                    pageText: enhancedPrompt, // FIXED: Use pageText like SimpleImageService
                     userInfo: userInfo,
-                    templateComplexity: 'D',
-                    pageNumber: 1,
                     sessionId: sessionId,
+                    pageNumber: 1,
+                    isGuestUser: true, // ADDED: Missing field
+                    difficultyLevel: mapDifficultyLevel(userInfo), // ADDED: Missing field  
+                    templateComplexity: 'D',
                     test: true
                   }
                 });
