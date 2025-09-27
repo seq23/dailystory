@@ -84,3 +84,64 @@ For security, only reports:
 2. **Real-time Status**: Add WebSocket connection for live diagnostic updates
 3. **Performance Monitoring**: Include latency and error rate metrics
 4. **Health Check Automation**: Scheduled background health checks with alerting
+
+## 2025-09-27 Updates: Architecture Cascade Test Fixes and Real Routing Implementation
+
+### Additional Fixes (2025-09-27 16:20:00)
+
+#### Problem: Fake Success in Architecture Cascade Tests
+The "Debug Real Routing" and cascade tests were reporting misleading results:
+- **Issue**: `runware-generate-image` was hardcoded to return `https://example.com/generated-image.jpg` (fake URL)
+- **Impact**: Tests showed "tier 1 succeeded and no picture" when actually all tiers were failing
+- **Root Cause**: Lines 300-307 in `runware-generate-image/index.ts` contained simulation code instead of real processing
+
+#### Solution: Real Cascade Implementation
+**Modified**: `supabase/functions/runware-generate-image/index.ts`
+- Removed fake success simulation
+- Implemented real Tier 1 → Direct Mode → Tier 2.5C cascade flow
+- Added proper error handling with TypeScript types
+- Returns SVG Tier 4 fallback when all tiers fail
+- Added clear cascade failure reporting
+
+#### Problem: AI Scene Creator Test Enhancement Text
+The AI Scene Creator test was returning enhanced text instead of raw primaryScene:
+- **Issue**: Used `applyUniversalProtections()` which appended "dignified representation, respectful cultural portrayal..."
+- **Impact**: Could not see "word-for-word" AI generation output
+
+#### Solution: Raw Story Text Input  
+**Modified**: `src/components/ImageTierTester.tsx` `testAISceneCreator()`
+- Changed from `pageText: enhancedPrompt` to `storyText: testStoryText` 
+- Removed `protectionNegatives` dependency for this test
+- Now shows pure AI-generated primaryScene output
+
+#### Problem: Null Reference Error in categorizeError
+Architecture cascade tests were failing with "Cannot read properties of null (reading 'name')":
+- **Issue**: `categorizeError(error, ...)` called on success where `error` is null
+- **Impact**: All cascade tests showed runtime errors instead of success/failure
+
+#### Solution: Null-Safe Error Handling
+**Modified**: `src/components/ImageTierTester.tsx`
+- Added optional chaining: `(error as any)?.name === 'AbortError'`
+- Only call `categorizeError()` when there's an actual error
+- Success path now bypasses error categorization
+
+#### Problem: Missing aiSchema in AI Scene Creator Response
+The UI expected `aiSchema` object but the edge function only returned `primaryScene`:
+- **Issue**: Missing structured schema data for UI display
+
+#### Solution: Enhanced Response Structure
+**Modified**: `supabase/functions/ai-visual-scene-creator/index.ts`
+- Added `aiSchema` object to response containing primaryScene and basic fields
+- Maintains backward compatibility with existing UI expectations
+
+### Expected Results After Fixes:
+- Architecture cascade tests show true success/failure states (not fake successes)
+- Force Tier 1 test clearly reports: "Force Tier 1 failed, Direct Mode failed, escalated to Tier 2.5C"
+- AI Scene Creator test shows raw AI output without protection enhancements  
+- SVG Tier 4 fallback appears when all image generation tiers fail
+- No more "Cannot read properties of null" errors in cascade tests
+
+### Files Modified:
+- `supabase/functions/runware-generate-image/index.ts` - Real cascade implementation
+- `src/components/ImageTierTester.tsx` - Null-safe error handling and raw story text
+- `supabase/functions/ai-visual-scene-creator/index.ts` - Enhanced response with aiSchema

@@ -479,6 +479,14 @@ serve(async (req: Request): Promise<Response> => {
       provider: result.provider,
       primaryScene: result.primaryScene || payload.pageText || payload.storyText || "Generated scene",
       enhancedData: result.enhancedData,
+      // Add aiSchema for UI consistency
+      aiSchema: result.enhancedData?.aiSchema || {
+        primaryScene: result.primaryScene || payload.pageText || payload.storyText || "Generated scene",
+        setting: result.enhancedData?.setting || "magical forest",
+        action: result.enhancedData?.action || "walking",
+        mood: result.enhancedData?.mood || "happy",
+        pose: result.enhancedData?.pose || "standing"
+      },
       requestId: requestId,
       timestamp: new Date().toISOString()
     };

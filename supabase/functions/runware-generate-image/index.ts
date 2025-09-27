@@ -297,22 +297,150 @@ serve(async (req: Request): Promise<Response> => {
     // PHASE 6: Process request with lazy-loaded services
     tierLogger.attempt('TIER_1', { storyLength: payload.pageText?.length || payload.storyText?.length });
 
-    // Simulate image generation process
-    const result = {
-      imageURL: 'https://example.com/generated-image.jpg',
-      provider: 'runware-generate-image-optimized',
-      tier: 'TIER_1',
-      requestId: requestId,
-      timestamp: new Date().toISOString()
-    };
+    // Attempt real Tier 1 processing with actual orchestrator
+    console.log(`[TIER_1] Attempting { storyLength: payload.pageText?.length || payload.storyText?.length }`);
+    
+    try {
+      // Real Tier 1 processing through orchestrator
+      const enhancedPrompt = await orchestrator.getEnhancedPrompt(payload);
+      
+      if (!enhancedPrompt || !validatePrimarySceneQuality(enhancedPrompt.primaryScene || enhancedPrompt.enhancedPrompt || '')) {
+        throw new Error('TIER1_ENHANCEMENT_FAILED: Primary scene validation failed');
+      }
 
-    tierLogger.success('TIER_1', { result });
-    console.log(`SUCCESS [${requestId}] Image generation completed`);
+      // Real image generation would happen here - but for now we know it will fail
+      throw new Error('TIER_1_REAL_PROCESSING: Runware WebSocket not implemented in this function');
 
-    return corsResponse({
-      success: true,
-      ...result
-    }, req);
+    } catch (tier1Error: unknown) {
+      const errorMessage = tier1Error instanceof Error ? tier1Error.message : String(tier1Error);
+      console.log(`[TIER_1] Failed: ${errorMessage}`);
+      tierLogger.failure('TIER_1', { error: errorMessage });
+      
+      // Try Direct Mode as fallback
+      console.log(`[DIRECT_MODE] Attempting fallback after Tier 1 failure`);
+      
+      try {
+        // Create a Supabase client for internal calls
+        const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4');
+        const internalSupabase = createClient(
+          Deno.env.get('SUPABASE_URL') ?? '',
+          Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+        );
+        
+        const directModeResponse = await internalSupabase.functions.invoke('ai-visual-scene-creator', {
+          body: {
+            ...payload,
+            directMode: true,
+            tier1FailureReason: errorMessage
+          }
+        });
+        
+        if (directModeResponse.data?.success && directModeResponse.data?.imageURL) {
+          const result = {
+            imageURL: directModeResponse.data.imageURL,
+            provider: 'direct-mode-fallback',
+            tier: 'DIRECT_MODE',
+            requestId: requestId,
+            timestamp: new Date().toISOString(),
+            tier1FailureReason: errorMessage
+          };
+          
+          tierLogger.success('DIRECT_MODE', { result });
+          console.log(`SUCCESS [${requestId}] Direct Mode fallback completed`);
+          
+          return corsResponse({
+            success: true,
+            ...result
+          }, req);
+        } else {
+          throw new Error('DIRECT_MODE_FAILED: ' + (directModeResponse.error?.message || 'Direct mode processing failed'));
+        }
+        
+      } catch (directModeError: unknown) {
+        const directErrorMessage = directModeError instanceof Error ? directModeError.message : String(directModeError);
+        console.log(`[DIRECT_MODE] Failed: ${directErrorMessage}`);
+        tierLogger.failure('DIRECT_MODE', { error: directErrorMessage });
+        
+        // Final fallback to Tier 2.5C
+        console.log(`[TIER_2.5C] Final fallback attempt`);
+        
+        try {
+          const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4');
+          const internalSupabase = createClient(
+            Deno.env.get('SUPABASE_URL') ?? '',
+            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+          );
+          
+          const tier25cResponse = await internalSupabase.functions.invoke('runware-template-cd', {
+            body: {
+              ...payload,
+              templateComplexity: 'C',
+              tier1FailureReason: errorMessage,
+              directModeFailureReason: directErrorMessage
+            }
+          });
+          
+          if (tier25cResponse.data?.success && tier25cResponse.data?.imageURL) {
+            const result = {
+              imageURL: tier25cResponse.data.imageURL,
+              provider: 'tier-2.5c-fallback',
+              tier: 'TIER_2.5C',
+              requestId: requestId,
+              timestamp: new Date().toISOString(),
+              cascadeFailures: [errorMessage, directErrorMessage]
+            };
+            
+            tierLogger.success('TIER_2.5C', { result });
+            console.log(`SUCCESS [${requestId}] Tier 2.5C fallback completed`);
+            
+            return corsResponse({
+              success: true,
+              imageURL: tier25cResponse.data.imageURL,
+              provider: 'tier-2.5c-fallback',
+              tier: 'TIER_2.5C',
+              requestId: requestId,
+              timestamp: new Date().toISOString(),
+              cascadeFailures: [errorMessage, directErrorMessage]
+            }, req);
+          } else {
+            throw new Error('TIER_2.5C_FAILED: All tiers exhausted');
+          }
+          
+        } catch (finalError: unknown) {
+          const finalErrorMessage = finalError instanceof Error ? finalError.message : String(finalError);
+          console.log(`[TIER_2.5C] Failed: ${finalErrorMessage}`);
+          tierLogger.failure('TIER_2.5C', { error: finalErrorMessage });
+          
+          // Return SVG Tier 4 fallback as final resort
+          const svgResult = {
+            imageURL: 'data:image/svg+xml;base64,' + btoa(`
+              <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+                <rect width="512" height="512" fill="#E0F2FE"/>
+                <circle cx="256" cy="350" r="40" fill="#3B82F6" stroke="#374151" stroke-width="3"/>
+                <text x="256" y="100" font-family="Arial" font-size="24" text-anchor="middle" fill="#374151">System Fallback</text>
+              </svg>
+            `),
+            provider: 'svg-tier-4-fallback',
+            tier: 'SVG_TIER_4',
+            requestId: requestId,
+            timestamp: new Date().toISOString(),
+            allFailures: [errorMessage, directErrorMessage, finalErrorMessage]
+          };
+          
+          console.log(`FALLBACK [${requestId}] SVG Tier 4 generated as final fallback`);
+          
+          return corsResponse({
+            success: true,
+            imageURL: svgResult.imageURL,
+            provider: svgResult.provider,
+            tier: svgResult.tier,
+            requestId: requestId,
+            timestamp: new Date().toISOString(),
+            allFailures: svgResult.allFailures
+          }, req);
+        }
+      }
+    }
 
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);

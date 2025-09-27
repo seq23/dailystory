@@ -363,7 +363,7 @@ export const ImageTierTester = () => {
     
     // NETWORK ISSUE Detection
     if (errorMsg.includes('fetch') || errorMsg.includes('network') || 
-        errorMsg.includes('connection') || error.name === 'AbortError' ||
+        errorMsg.includes('connection') || (error as any)?.name === 'AbortError' ||
         errorMsg.includes('timeout') || errorMsg.includes('abort')) {
       return {
         category: 'NETWORK',
@@ -959,20 +959,18 @@ export const ImageTierTester = () => {
       });
 
       const userInfo = buildUserInfo();
-      const { prompt: enhancedPrompt, negatives: protectionNegatives } = applyUniversalProtections(testStoryText, userInfo);
       const sessionId = crypto.randomUUID();
 
       const startTime = Date.now();
       const response = await supabase.functions.invoke('ai-visual-scene-creator', {
         body: {
-          pageText: enhancedPrompt, // FIXED: Use pageText like SimpleImageService
+          storyText: testStoryText, // Use raw story text to get "word-for-word" primaryScene
           userInfo: userInfo,
           sessionId: sessionId,
           storyId: sessionId, // ADDED: Missing field
           pageNumber: 1,
           isGuestUser: true, // ADDED: Missing field (default to guest for testing)
           difficultyLevel: mapDifficultyLevel(userInfo), // ADDED: Missing field
-          protectionNegatives: protectionNegatives, // ADDED: Missing field
           isDebugMode: true
         }
       });
@@ -1399,7 +1397,36 @@ export const ImageTierTester = () => {
         const orchestratorStartTime = Date.now();
         const orchestratorResponse = await supabase.functions.invoke('runware-generate-image', {
           body: {
-            pageText: enhancedPrompt, // FIXED: Use pageText like SimpleImageService
+            pageText: testStoryText,
+            userInfo: userInfo,
+            sessionId: sessionId,
+            pageNumber: 1,
+            storyId: 'debug-routing-test',
+            isGuestUser: false,
+            difficultyLevel: mapDifficultyLevel(userInfo)
+          }
+        });
+
+        const orchestratorTime = Date.now() - orchestratorStartTime;
+        
+        if (orchestratorResponse.data?.success) {
+          cascadeHistory.push(`✅ Orchestrator completed (${orchestratorTime}ms)`);
+          finalResult = {
+            tier: 'orchestrator-success',
+            success: true,
+            imageURL: orchestratorResponse.data.imageURL,
+            details: {
+              processingTime: Date.now() - globalStartTime,
+              cascadeHistory,
+              testType: 'E2E_SIMULATION',
+              error: null
+            }
+          };
+        } else {
+          cascadeHistory.push(`❌ Orchestrator failed (${orchestratorTime}ms)`);
+        }
+      } catch (error) {
+        cascadeHistory.push(`❌ Orchestrator exception: ${error.message}`);
             userInfo: userInfo,
             sessionId: sessionId,
             storyId: sessionId, // ADDED: Missing field
@@ -2629,7 +2656,11 @@ export const ImageTierTester = () => {
           });
 
           const processingTime = Date.now() - tierStartTime;
-          const { category, probableCause, errorType } = categorizeError(error, tier.function, data);
+          
+          // Only categorize error if there actually is an error
+          const { category, probableCause, errorType } = error ? 
+            categorizeError(error, tier.function, data) : 
+            { category: 'SUCCESS', probableCause: 'Test completed successfully', errorType: 'RUNTIME_ERROR' as const };
 
           if (data?.success && data?.imageURL) {
             tierResult = {
