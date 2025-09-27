@@ -1,6 +1,6 @@
 // Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { memoizedImport } from '../_shared/resilientLoader.ts';
+import { memoizedImport, createResilientSupabaseClient } from '../_shared/resilientLoader.ts';
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
 
 const corsHeaders = {
@@ -20,16 +20,9 @@ serve(async (req) => {
   const healthResponse = handleHealthAndCors(req);
   if (healthResponse) return healthResponse;
 
-  
-
-  // Use the service role key to perform writes (upsert) in Supabase
-  const supabaseClient = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-    { auth: { persistSession: false } }
-  );
-
   try {
+    // Use resilient loader for Supabase client
+    const supabaseClient = await createResilientSupabaseClient();
     logStep("Function started");
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
@@ -100,6 +93,8 @@ serve(async (req) => {
       });
     }
 
+    // Load Stripe using resilient loader
+    const { default: Stripe } = await memoizedImport('stripe');
     const stripe = new Stripe(stripeKey as string, { apiVersion: "2023-10-16" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     

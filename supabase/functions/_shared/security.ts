@@ -4,7 +4,7 @@
  * Provides JWT validation, rate limiting, security headers, and audit logging
  */
 
-import { createResilientSupabaseClient } from '../_shared/resilientLoader.ts';
+import { memoizedImport, createResilientSupabaseClient } from '../_shared/resilientLoader.ts';
 
 // Enhanced CORS headers with security policies
 export const secureHeaders = {
@@ -50,18 +50,18 @@ const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
 export class SecurityMiddleware {
   private supabase: any;
 
-  constructor() {
-    this.supabase = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-      { auth: { persistSession: false } }
-    );
+  async initialize() {
+    if (!this.supabase) {
+      this.supabase = await createResilientSupabaseClient();
+    }
+    return this.supabase;
   }
 
   /**
    * Validate JWT token and extract user information
    */
   async validateAuth(req: Request): Promise<AuthenticatedUser> {
+    await this.initialize();
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       throw new Error("No authorization header provided");
@@ -151,6 +151,7 @@ export class SecurityMiddleware {
    */
   async logSecurityEvent(eventType: string, details: any): Promise<void> {
     try {
+      await this.initialize();
       await this.supabase
         .from('security_audit_log')
         .insert({

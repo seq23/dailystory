@@ -4,7 +4,7 @@
  * Now with character-specific clothing detection and database persistence
  */
 
-import { createResilientSupabaseClient } from '../_shared/resilientLoader.ts';
+import { memoizedImport, createResilientSupabaseClient } from '../_shared/resilientLoader.ts';
 
 // ============= UNIFIED VOCABULARY IMPORT FOR ENHANCED OBJECT DETECTION =============
 // Import comprehensive vocabulary from Tier 2.5A for consistent color/size detection
@@ -58,13 +58,13 @@ const UNIFIED_OBJECT_CATEGORIES = [
 
 export class VisualDetailTracker {
   // Initialize Supabase client for database operations
-  private supabase;
+  private supabase: any;
 
-  constructor() {
-    this.supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+  async initialize() {
+    if (!this.supabase) {
+      this.supabase = await createResilientSupabaseClient();
+    }
+    return this.supabase;
   }
 
   /**
@@ -248,6 +248,7 @@ export class VisualDetailTracker {
     pageNumber: number
   ) {
     try {
+      await this.initialize();
       // Check if detail already exists
       const { data: existing } = await this.supabase
         .from('visual_details_cache')
@@ -388,7 +389,7 @@ export class VisualDetailTracker {
         return '';
       }
 
-      const details = data.map(detail => 
+      const details = data.map((detail: any) => 
         `${detail.character_name !== 'general' ? detail.character_name + ' ' : ''}${detail.detail_value}`
       );
 
