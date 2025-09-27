@@ -1293,7 +1293,8 @@ export const ImageTierTester = () => {
       const globalStartTime = Date.now();
       const sessionId = crypto.randomUUID();
       const userInfo = buildUserInfo();
-      const { prompt: enhancedPrompt, negatives: protectionNegatives } = applyUniversalProtections(testStoryText, userInfo);
+      // Use raw story text directly - no protection enhancement
+      const rawStoryText = testStoryText;
       
       let cascadeHistory = [];
       let finalResult = null;
@@ -1372,14 +1373,13 @@ export const ImageTierTester = () => {
           try {
             const directModeResponse = await supabase.functions.invoke('ai-visual-scene-creator', {
               body: {
-                pageText: enhancedPrompt,
+                storyText: rawStoryText,
                 userInfo: userInfo,
                 sessionId: sessionId,
                 storyId: sessionId,
                 pageNumber: 1,
                 isGuestUser: true,
                 difficultyLevel: mapDifficultyLevel(userInfo),
-                protectionNegatives: protectionNegatives,
                 directMode: true
               }
             });
@@ -1413,7 +1413,7 @@ export const ImageTierTester = () => {
               try {
                 const tier25CResponse = await supabase.functions.invoke('runware-template-ab', {
                   body: {
-                    pageText: enhancedPrompt,
+                    storyText: rawStoryText,
                     userInfo: userInfo,
                     sessionId: sessionId,
                     pageNumber: 1,
@@ -1448,7 +1448,7 @@ export const ImageTierTester = () => {
                   const svgStartTime = Date.now();
                   
                   try {
-                    const svgResponse = await ImageFallbackService.generateStoryPlaceholder(enhancedPrompt, 1);
+                    const svgResponse = await ImageFallbackService.generateStoryPlaceholder(rawStoryText, 1);
                     const svgTime = Date.now() - svgStartTime;
                   
                   if (svgResponse) {
@@ -1513,7 +1513,7 @@ export const ImageTierTester = () => {
                 const svgStartTime = Date.now();
                 
                 try {
-                  const svgResponse = await ImageFallbackService.generateStoryPlaceholder(enhancedPrompt, 1);
+                  const svgResponse = await ImageFallbackService.generateStoryPlaceholder(rawStoryText, 1);
                   const svgTime = Date.now() - svgStartTime;
                   
                   if (svgResponse) {
@@ -1578,7 +1578,7 @@ export const ImageTierTester = () => {
             try {
               const tier25CResponse = await supabase.functions.invoke('runware-template-ab', {
                 body: {
-                  pageText: enhancedPrompt,
+                  storyText: rawStoryText,
                   userInfo: userInfo,
                   sessionId: sessionId,
                   pageNumber: 1,
@@ -1605,7 +1605,7 @@ export const ImageTierTester = () => {
               } else {
                 // Final SVG fallback
                 cascadeHistory.push('🔄 Final SVG Tier 4 attempt...');
-                const svgResponse = await ImageFallbackService.generateStoryPlaceholder(enhancedPrompt, 1);
+                const svgResponse = await ImageFallbackService.generateStoryPlaceholder(rawStoryText, 1);
                 
                 if (svgResponse) {
                   cascadeHistory.push('✅ SVG Tier 4 Final Success');
@@ -1670,14 +1670,13 @@ export const ImageTierTester = () => {
         try {
           const directModeResponse = await supabase.functions.invoke('ai-visual-scene-creator', {
             body: {
-              pageText: enhancedPrompt,
+              storyText: rawStoryText,
               userInfo: userInfo,
               sessionId: sessionId,
               storyId: sessionId,
               pageNumber: 1,
               isGuestUser: true,
               difficultyLevel: mapDifficultyLevel(userInfo),
-              protectionNegatives: protectionNegatives,
               directMode: true
             }
           });
@@ -1702,7 +1701,7 @@ export const ImageTierTester = () => {
             cascadeHistory.push('❌ Direct Mode also failed after orchestrator exception');
             // Final SVG attempt
             cascadeHistory.push('🔄 Final SVG Tier 4 attempt after orchestrator exception...');
-            const svgResponse = await ImageFallbackService.generateStoryPlaceholder(enhancedPrompt, 1);
+            const svgResponse = await ImageFallbackService.generateStoryPlaceholder(rawStoryText, 1);
             
             if (svgResponse) {
               cascadeHistory.push('✅ SVG Tier 4 Final Recovery');
@@ -2304,15 +2303,29 @@ export const ImageTierTester = () => {
           function: 'runware-template-cd',
           architecture: 'RECEPTIONIST_PATTERN',
           payload: {
-            pageText: testStoryText, // FIXED: Use flat payload structure
+            storyText: testStoryText,
             userInfo: buildUserInfo(),
             sessionId: 'test-session', 
             pageNumber: 1,
             storyId: 'cascade-test-story',
             isGuestUser: false,
             difficultyLevel: 'medium',
-            protectionNegatives: 'blur, dark, scary, adult content',
             templateComplexity: 'C'
+          }
+        },
+        {
+          name: 'Template 2.5D (Receptionist)',
+          function: 'runware-template-cd',
+          architecture: 'RECEPTIONIST_PATTERN',
+          payload: {
+            storyText: testStoryText,
+            userInfo: buildUserInfo(),
+            sessionId: 'test-session', 
+            pageNumber: 1,
+            storyId: 'cascade-test-story',
+            isGuestUser: false,
+            difficultyLevel: 'medium',
+            templateComplexity: 'D'
           }
         }
       ];

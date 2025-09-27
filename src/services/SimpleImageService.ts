@@ -325,13 +325,12 @@ export class SimpleImageService {
       });
     }
 
-    // Apply universal cultural protections
-    const { prompt: enhancedPrompt, negatives: protectionNegatives } = this.applyUniversalProtections(cleanScene, userInfo || {});
+    // Use raw story content directly - no protection enhancement
+    const enhancedPrompt = cleanScene;
+    const protectionNegatives: string[] = [];
     
-    DebugLogger.log('image', 'Applied universal cultural protections', { 
-      originalLength: cleanScene.length, 
-      enhancedLength: enhancedPrompt.length,
-      negatives: protectionNegatives.length 
+    DebugLogger.log('image', 'Using raw story content without protection enhancement', { 
+      contentLength: enhancedPrompt.length
     });
 
     // Map difficulty level
@@ -423,21 +422,20 @@ export class SimpleImageService {
       
       // Debug payload before sending
       const orchestratorPayload = {
-        pageText: enhancedPrompt,
+        storyText: enhancedPrompt,
         userInfo,
         sessionId: normalizedSessionId,
         storyId: normalizedSessionId, // Use normalized sessionId as storyId for consistency
         pageNumber,
         isGuestUser: !isPremium,
-        difficultyLevel: backendDifficulty,
-        protectionNegatives // Pass negative prompts to backend
-        // Removed skipTier25 and forceTier to allow natural tier cascade
+        difficultyLevel: backendDifficulty
+        // Removed protectionNegatives - using raw content only
       };
       
       DebugLogger.log('image', 'Orchestrator payload debug', {
-        hasPageText: !!orchestratorPayload.pageText,
-        pageTextLength: orchestratorPayload.pageText?.length || 0,
-        pageTextPreview: orchestratorPayload.pageText?.substring(0, 100) + '...',
+        hasStoryText: !!orchestratorPayload.storyText,
+        storyTextLength: orchestratorPayload.storyText?.length || 0,
+        storyTextPreview: orchestratorPayload.storyText?.substring(0, 100) + '...',
         hasUserInfo: !!orchestratorPayload.userInfo,
         hasSessionId: !!orchestratorPayload.sessionId,
         sessionId: orchestratorPayload.sessionId,
@@ -663,8 +661,9 @@ export class SimpleImageService {
         userInfo = enhancedUserInfo;
       }
 
-      // Apply universal protections
-      const { prompt: enhancedPrompt, negatives: protectionNegatives } = this.applyUniversalProtections(cleanScene, userInfo || {});
+      // Use raw story content directly - no protection enhancement
+      const enhancedPrompt = cleanScene;
+      const protectionNegatives: string[] = [];
       
       // Map difficulty level
       const backendDifficulty = this.mapDifficultyLevel(userInfo);
@@ -673,7 +672,7 @@ export class SimpleImageService {
       
       const { data: result, error } = await supabase.functions.invoke('ai-visual-scene-creator', {
         body: {
-          pageText: enhancedPrompt,
+          storyText: enhancedPrompt,
           userInfo,
           sessionId: normalizedSessionId,
           storyId: normalizedSessionId,
