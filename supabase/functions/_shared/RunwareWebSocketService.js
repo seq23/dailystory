@@ -120,7 +120,14 @@ class RunwareWebSocketService {
           console.error('❌ WebSocket error during image generation:', error);
           clearTimeout(timeoutId);
           if (keepaliveInterval) clearInterval(keepaliveInterval);
-          reject(error);
+          
+          // Phase 2: Enhanced error classification
+          const errorType = this.classifyWebSocketError(error);
+          const enhancedError = new Error(`WebSocket ${errorType}: ${error?.message || 'Connection failed'}`);
+          enhancedError.type = errorType;
+          enhancedError.nextAction = errorType === 'AUTH_ERROR' ? 'ESCALATE_TIER_4' : 'RETRY_THEN_TIER_4';
+          
+          reject(enhancedError);
         }
       };
 
@@ -130,7 +137,14 @@ class RunwareWebSocketService {
           console.log(`🔌 WebSocket closed unexpectedly during image generation (code: ${event.code})`);
           clearTimeout(timeoutId);
           if (keepaliveInterval) clearInterval(keepaliveInterval);
-          reject(new Error(`WebSocket closed unexpectedly (code: ${event.code})`));
+          
+          // Phase 2: Enhanced close code handling
+          const closeReason = this.getCloseReason(event.code);
+          const error = new Error(`WebSocket closed: ${closeReason} (code: ${event.code})`);
+          error.type = event.code === 1000 ? 'NORMAL_CLOSE' : 'ABNORMAL_CLOSE';
+          error.nextAction = event.code === 1000 ? 'RETRY' : 'ESCALATE_TIER_4';
+          
+          reject(error);
         }
       };
     });
@@ -213,6 +227,37 @@ class RunwareWebSocketService {
 // Export for use in edge functions
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { RunwareWebSocketService };
+}
+
+  // Phase 2: Error classification helpers
+  static classifyWebSocketError(error) {
+    const msg = error?.message?.toLowerCase() || '';
+    if (msg.includes('auth') || msg.includes('unauthorized') || msg.includes('api key')) {
+      return 'AUTH_ERROR';
+    }
+    if (msg.includes('network') || msg.includes('connection') || msg.includes('timeout')) {
+      return 'NETWORK_ERROR';
+    }
+    if (msg.includes('quota') || msg.includes('limit')) {
+      return 'QUOTA_ERROR';
+    }
+    return 'UNKNOWN_ERROR';
+  }
+  
+  static getCloseReason(code) {
+    const reasons = {
+      1000: 'Normal Closure',
+      1001: 'Going Away',
+      1002: 'Protocol Error',
+      1003: 'Unsupported Data',
+      1006: 'Abnormal Closure',
+      1011: 'Internal Error',
+      1012: 'Service Restart',
+      1013: 'Try Again Later',
+      1014: 'Bad Gateway'
+    };
+    return reasons[code] || `Unknown (${code})`;
+  }
 }
 
 // Make available as global

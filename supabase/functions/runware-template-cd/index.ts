@@ -122,11 +122,14 @@ serve(async (req) => {
       if (!handler) handler = await loadHandler(true);
       if (!handler) {
         return withCors(new Response(JSON.stringify({
+          success: false,
           error: "HANDLER_UNAVAILABLE",
+          nextAction: 'ESCALATE_TIER_4',
+          escalationReason: 'handler_unavailable',
           message: lastLoadError?.message ?? "index.js failed to load",
           service: SERVICE_NAME,
           timestamp: new Date().toISOString(),
-        }), { status: 503, headers: { "Content-Type": "application/json" } }));
+        }), { status: 200, headers: { "Content-Type": "application/json" } }));
       }
       const out = await handler(req);
       return withCors(asResponse(out));

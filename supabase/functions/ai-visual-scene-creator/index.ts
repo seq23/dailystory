@@ -95,6 +95,16 @@ function createCorsErrorResponse(error: any, status = 500): Response {
   const errorMessage = error instanceof Error ? error.message : error;
   console.error('Edge function error:', errorMessage);
   
+  // Phase 1: Convert 5xx errors to 200 + escalation instructions
+  if (status >= 500) {
+    return createCorsResponse({ 
+      success: false, 
+      error: errorMessage,
+      nextAction: 'ESCALATE_TIER_4',
+      escalationReason: 'server_error_converted_to_escalation'
+    }, 200);
+  }
+  
   return createCorsResponse({ 
     success: false, 
     error: errorMessage 

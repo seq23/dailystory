@@ -418,6 +418,78 @@ class CoreUtils {
   }
 }
 
+// Phase 5: Cross-Function Retry Helper
+async function invokeWithRetry(
+  supabaseClient: any,
+  functionName: string,
+  body: any,
+  maxRetries: number = 2,
+  timeoutMs: number = 15000
+): Promise<any> {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+      
+      let response;
+      try {
+        response = await supabaseClient.functions.invoke(functionName, {
+          body,
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+      } catch (err: any) {
+        clearTimeout(timeoutId);
+        if (controller.signal.aborted || err?.name === 'AbortError') {
+          throw new Error(`Timeout calling ${functionName} (${timeoutMs}ms)`);
+        }
+        throw err;
+      }
+      
+      // Handle network errors or 503s
+      if (response?.error?.message?.includes('503') || 
+          response?.error?.message?.includes('failed to fetch') ||
+          response?.error?.message?.includes('network')) {
+        
+        if (attempt < maxRetries) {
+          const delay = Math.pow(2, attempt) * 1000; // Exponential backoff
+          console.log(`🔄 Retry attempt ${attempt + 1}/${maxRetries + 1} for ${functionName} after ${delay}ms`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue;
+        }
+        
+        // Exhausted retries, return escalation
+        return {
+          data: {
+            success: false,
+            error: `Network error calling ${functionName}`,
+            nextAction: 'ESCALATE_TIER_4',
+            escalationReason: 'network_retries_exhausted'
+          }
+        };
+      }
+      
+      return response;
+    } catch (err: any) {
+      if (attempt < maxRetries && (
+        err?.message?.includes('timeout') ||
+        err?.message?.includes('network') ||
+        err?.message?.includes('failed to fetch')
+      )) {
+        const delay = Math.pow(2, attempt) * 1000;
+        console.log(`🔄 Retry attempt ${attempt + 1}/${maxRetries + 1} for ${functionName} after ${delay}ms due to: ${err.message}`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        continue;
+      }
+      
+      // Non-retryable error or exhausted retries
+      throw err;
+    }
+  }
+  
+  throw new Error(`All retries exhausted for ${functionName}`);
+}
+
 // ---------------- HELPERS ----------------
 function generateContextSummary(text: string): string {
   if (!text) return "Children's story scene with engaging characters.";
@@ -436,17 +508,18 @@ async function tryNuclearTemplates({ storyText, userInfo, sessionId, pageNumber,
   for (const template of templates) {
     log.attempt(template.tag, { templateComplexity: template.complexity });
     try {
-      const resp = await supabase.functions.invoke(template.fn, {
-        body: {
-          pageText: storyText,
-          userInfo,
-          sessionId,
-          pageNumber: pageNumber || 1,
-          templateComplexity: template.complexity
-        }
-      });
+      const resp = await invokeWithRetry(supabase, template.fn, {
+        pageText: storyText,
+        userInfo,
+        sessionId,
+        pageNumber: pageNumber || 1,
+        templateComplexity: template.complexity
+      }, 1, TIER_TIMEOUTS.AI_GENERATION);
       
       const data = resp?.data;
+      if (data?.nextAction === 'ESCALATE_TIER_4') {
+        return data; // Pass through escalation
+      }
       if (data?.success && data?.imageURL) {
         log.success(template.tag, { imageUrl: data.imageURL });
         return { ...data, tier: template.tag.toUpperCase().replace('.', '') };
@@ -764,16 +837,19 @@ async function handleRequest(req: Request): Promise<Response> {
         
         let sceneResponse;
         try {
-          sceneResponse = await supabase.functions.invoke('ai-visual-scene-creator', {
-            body: {
-              storyText,
-              userInfo: payload.userInfo,
-              sessionId,
-              pageNumber,
-              previousPrimaryScene,
-              isDebugMode: true
-            }
-          });
+          sceneResponse = await invokeWithRetry(supabase, 'ai-visual-scene-creator', {
+            storyText,
+            userInfo: payload.userInfo,
+            sessionId,
+            pageNumber,
+            previousPrimaryScene,
+            isDebugMode: true
+          }, 1, TIER_TIMEOUTS.AI_GENERATION);
+          
+          // Phase 4: Check for escalation response
+          if (sceneResponse?.data?.nextAction === 'ESCALATE_TIER_4') {
+            return createCorsResponse(sceneResponse.data, 200);
+          }
         } catch (err: any) {
           if (err?.name === 'AbortError' || `${err}`.includes('timeout')) {
             throw new Error('Timeout AI Visual Scene Creator (Tier 1 Default)');
@@ -816,17 +892,13 @@ async function handleRequest(req: Request): Promise<Response> {
         if (!apiKey) {
           console.error('❌ RUNWARE_API_KEY environment variable is not set');
           log.failure('tier-1', { error: 'Missing RUNWARE_API_KEY' });
-          return new Response(JSON.stringify({
+          return createCorsResponse({
             success: false,
             error: 'API key not configured',
+            nextAction: 'ESCALATE_TIER_4',
+            escalationReason: 'missing_runware_api_key',
             provider: 'error'
-          }), {
-            status: 400,
-            headers: {
-              'Access-Control-Allow-Origin': '*',
-              'Content-Type': 'application/json'
-            }
-          });
+          }, 200);
         }
         
         const enhancedData = {
@@ -885,16 +957,19 @@ async function handleRequest(req: Request): Promise<Response> {
 
         // First: ai-visual-scene-creator for primaryScene + schema (normal mode, not direct)
         log.t2('Calling ai-visual-scene-creator (normal mode)', { pageNumber, previousPrimaryScene });
-        const sceneResponse = await supabase.functions.invoke('ai-visual-scene-creator', {
-          body: {
-            storyText,
-            userInfo: payload.userInfo,
-            sessionId,
-            pageNumber: pageNumber || 1,
-            previousPrimaryScene,
-            isDebugMode: false // Force normal mode for consistent orchestrator behavior
-          }
-        });
+        const sceneResponse = await invokeWithRetry(supabase, 'ai-visual-scene-creator', {
+          storyText,
+          userInfo: payload.userInfo,
+          sessionId,
+          pageNumber: pageNumber || 1,
+          previousPrimaryScene,
+          isDebugMode: false // Force normal mode for consistent orchestrator behavior
+        }, 1, TIER_TIMEOUTS.AI_GENERATION);
+        
+        // Phase 4: Check for escalation response
+        if (sceneResponse?.data?.nextAction === 'ESCALATE_TIER_4') {
+          return createCorsResponse(sceneResponse.data, 200);
+        }
         
         if (!sceneResponse?.data || sceneResponse.error) {
           throw new Error('FORCE_TIER_1_NO_PRIMARY_SCENE');
@@ -968,18 +1043,14 @@ async function handleRequest(req: Request): Promise<Response> {
     // Return error if all tiers failed - frontend will handle with authorized fallbacks
     if (!result || !result.success) {
       log.t2('All tiers failed - returning error for frontend escalation');
-      return new Response(JSON.stringify({
+      return createCorsResponse({
         success: false,
         error: 'All image generation tiers failed',
+        nextAction: 'ESCALATE_TIER_4',
+        escalationReason: 'all_tiers_exhausted',
         tier: 'tier-failure',
         frontendShouldFallback: true
-      }), {
-        status: 502,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Content-Type': 'application/json'
-        }
-      });
+      }, 200);
     }
 
     return new Response(JSON.stringify(result), {
