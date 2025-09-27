@@ -156,11 +156,11 @@ export const ImageTierTester = () => {
     try {
       // Use REAL system defaults from useMultiStepForm.tsx (not hardcoded values)
       return {
-        name: userName || 'Guest', // Real system default for guest users
-        age: parseInt(userAge) || 5, // Real system default (not 8)
-        userName: userName || 'Guest', // Real system default for guest users
-        ethnicity: avatarType || 'prefer-not-to-answer', // Real system default (not 'girl')
-        skinTone: skinTone || 'medium', // Real system default (not 'light')
+        name: userName || 'child', // Real system default 
+        age: parseInt(userAge) || 8, // Real system default
+        userName: userName || 'child', // Real system default
+        ethnicity: avatarType || 'prefer-not-to-answer', // Real system default
+        skinTone: skinTone || 'medium', // Real system default
         avatar: {
           type: avatarType || 'prefer-not-to-answer', // Real system default
           skinTone: skinTone || 'medium' // Real system default
@@ -174,9 +174,9 @@ export const ImageTierTester = () => {
       console.error('Error in buildUserInfo:', error);
       // Return safe fallback with all system defaults
       return {
-        name: 'Guest',
-        age: 5,
-        userName: 'Guest',
+        name: 'child',
+        age: 8,
+        userName: 'child',
         ethnicity: 'prefer-not-to-answer',
         skinTone: 'medium',
         avatar: {
@@ -1691,21 +1691,194 @@ export const ImageTierTester = () => {
                 };
               }
             } else {
-              // Single tier failed but not complete failure
-              resultBadge = 'Orchestrator Runtime Error';
-              fallbackPath = `Orchestrator runtime error (not complete failure)`;
-              finalResult = {
-                tier: 'orchestrator-runtime-error',
-                success: false,
-                imageURL: null,
-                details: {
-                  processingTime: orchestratorTime,
-                  cascadeHistory,
-                  testType: 'E2E_SIMULATION',
-                  resultType: 'ORCHESTRATOR_RUNTIME_ERROR',
-                  error: errorAnalysis.probableCause
+              // Runtime error in orchestrator but not "all tiers failed" - still need cascade
+              cascadeHistory.push(`❌ Orchestrator Runtime Error (${orchestratorTime}ms): ${errorAnalysis.probableCause}`);
+              cascadeHistory.push('🔄 Orchestrator runtime error, attempting Tier 2.5C cascade...');
+              
+              // Try the full cascade: Tier 2.5C → Tier 2.5D → Tier 4 SVG
+              try {
+                const tier25CStartTime = Date.now();
+                const tier25CResponse = await supabase.functions.invoke('runware-template-cd', {
+                  body: {
+                    pageText: enhancedPrompt,
+                    userInfo: userInfo,
+                    sessionId: sessionId,
+                    pageNumber: 1,
+                    isGuestUser: true,
+                    difficultyLevel: mapDifficultyLevel(userInfo),
+                    templateComplexity: 'C',
+                    test: true
+                  }
+                });
+
+                const tier25CTime = Date.now() - tier25CStartTime;
+                
+                if (!tier25CResponse.error && tier25CResponse.data?.success) {
+                  cascadeHistory.push(`✅ Tier 2.5C Success (${tier25CTime}ms)`);
+                  resultBadge = 'Tier 2.5C Success';
+                  fallbackPath = `Orchestrator runtime error → Tier 2.5C succeeded`;
+                  finalResult = {
+                    tier: 'tier-2.5C',
+                    success: true,
+                    imageURL: tier25CResponse.data?.imageURL,
+                    details: {
+                      processingTime: Date.now() - globalStartTime,
+                      orchestratorFailureTime: orchestratorTime,
+                      tier25CTime: tier25CTime,
+                      cascadeHistory,
+                      testType: 'E2E_SIMULATION',
+                      resultType: 'TIER_25C_SUCCESS_AFTER_RUNTIME_ERROR',
+                      positivePrompt: tier25CResponse.data?.positivePrompt,
+                      error: null
+                    }
+                  };
+                } else {
+                  const tier25CError = categorizeError(tier25CResponse.error, 'tier-2.5C');
+                  cascadeHistory.push(`❌ Tier 2.5C Failed (${tier25CTime}ms): ${tier25CError.probableCause}`);
+                  
+                  // Continue to Tier 2.5D
+                  cascadeHistory.push('🔄 Tier 2.5C failed, attempting Tier 2.5D...');
+                  
+                  try {
+                    const tier25DStartTime = Date.now();
+                    const tier25DResponse = await supabase.functions.invoke('runware-template-cd', {
+                      body: {
+                        pageText: enhancedPrompt,
+                        userInfo: userInfo,
+                        sessionId: sessionId,
+                        pageNumber: 1,
+                        isGuestUser: true,
+                        difficultyLevel: mapDifficultyLevel(userInfo),
+                        templateComplexity: 'D',
+                        test: true
+                      }
+                    });
+
+                    const tier25DTime = Date.now() - tier25DStartTime;
+                    
+                    if (!tier25DResponse.error && tier25DResponse.data?.success) {
+                      cascadeHistory.push(`✅ Tier 2.5D Success (${tier25DTime}ms)`);
+                      resultBadge = 'Tier 2.5D Success';
+                      fallbackPath = `Orchestrator runtime error → Tier 2.5C failed → Tier 2.5D succeeded`;
+                      finalResult = {
+                        tier: 'tier-2.5D',
+                        success: true,
+                        imageURL: tier25DResponse.data?.imageURL,
+                        details: {
+                          processingTime: Date.now() - globalStartTime,
+                          orchestratorFailureTime: orchestratorTime,
+                          tier25CTime: tier25CTime,
+                          tier25DTime: tier25DTime,
+                          cascadeHistory,
+                          testType: 'E2E_SIMULATION',
+                          resultType: 'TIER_25D_SUCCESS_AFTER_RUNTIME_ERROR',
+                          positivePrompt: tier25DResponse.data?.positivePrompt,
+                          error: null
+                        }
+                      };
+                    } else {
+                      const tier25DError = categorizeError(tier25DResponse.error, 'tier-2.5D');
+                      cascadeHistory.push(`❌ Tier 2.5D Failed (${tier25DTime}ms): ${tier25DError.probableCause}`);
+                      
+                      // Final cascade: Tier 4 SVG
+                      cascadeHistory.push('🔄 Tier 2.5D failed, attempting final Tier 4 SVG fallback...');
+                      
+                      try {
+                        const tier4SVGStartTime = Date.now();
+                        const tier4SVGResponse = await generateSVGFallback(userInfo, enhancedPrompt);
+                        const tier4SVGTime = Date.now() - tier4SVGStartTime;
+                        
+                        if (tier4SVGResponse.success) {
+                          cascadeHistory.push(`✅ Tier 4 SVG Success (${tier4SVGTime}ms) - Final fallback succeeded`);
+                          resultBadge = 'Tier 4 SVG Fallback';
+                          fallbackPath = `Orchestrator runtime error → Tier 2.5C → Tier 2.5D → Tier 4 SVG succeeded`;
+                          finalResult = {
+                            tier: 'tier-4-svg',
+                            success: true,
+                            imageURL: tier4SVGResponse.imageURL,
+                            details: {
+                              processingTime: Date.now() - globalStartTime,
+                              orchestratorFailureTime: orchestratorTime,
+                              tier25CTime: tier25CTime,
+                              tier25DTime: tier25DTime,
+                              tier4SVGTime: tier4SVGTime,
+                              cascadeHistory,
+                              testType: 'E2E_SIMULATION',
+                              resultType: 'TIER_4_SVG_SUCCESS_AFTER_RUNTIME_ERROR',
+                              positivePrompt: tier4SVGResponse.prompt,
+                              error: null
+                            }
+                          };
+                        } else {
+                          cascadeHistory.push(`❌ Tier 4 SVG Failed (${tier4SVGTime}ms): ${tier4SVGResponse.error}`);
+                          resultBadge = 'Complete Failure';
+                          fallbackPath = `Complete cascade failure after orchestrator runtime error`;
+                          finalResult = {
+                            tier: 'complete-failure',
+                            success: false,
+                            imageURL: null,
+                            details: {
+                              processingTime: Date.now() - globalStartTime,
+                              cascadeHistory,
+                              testType: 'E2E_SIMULATION',
+                              resultType: 'COMPLETE_FAILURE_AFTER_RUNTIME_ERROR',
+                              error: `Complete cascade failure after orchestrator runtime error`
+                            }
+                          };
+                        }
+                      } catch (tier4SVGError) {
+                        cascadeHistory.push(`❌ Tier 4 SVG Exception: ${tier4SVGError.message}`);
+                        resultBadge = 'Complete Failure';
+                        fallbackPath = `Complete cascade failure with Tier 4 SVG exception`;
+                        finalResult = {
+                          tier: 'complete-failure',
+                          success: false,
+                          imageURL: null,
+                          details: {
+                            processingTime: Date.now() - globalStartTime,
+                            cascadeHistory,
+                            testType: 'E2E_SIMULATION',
+                            resultType: 'COMPLETE_FAILURE_WITH_SVG_EXCEPTION',
+                            error: `Complete cascade failure with Tier 4 SVG exception: ${tier4SVGError.message}`
+                          }
+                        };
+                      }
+                    }
+                  } catch (tier25DError) {
+                    cascadeHistory.push(`❌ Tier 2.5D Exception: ${tier25DError.message}`);
+                    resultBadge = 'Tier 2.5D Exception';
+                    fallbackPath = `Tier 2.5D exception after orchestrator runtime error`;
+                    finalResult = {
+                      tier: 'tier-2.5D-exception',
+                      success: false,
+                      imageURL: null,
+                      details: {
+                        processingTime: Date.now() - globalStartTime,
+                        cascadeHistory,
+                        testType: 'E2E_SIMULATION',
+                        resultType: 'TIER_25D_EXCEPTION_AFTER_RUNTIME_ERROR',
+                        error: `Tier 2.5D exception: ${tier25DError.message}`
+                      }
+                    };
+                  }
                 }
-              };
+              } catch (tier25CError) {
+                cascadeHistory.push(`❌ Tier 2.5C Exception: ${tier25CError.message}`);
+                resultBadge = 'Tier 2.5C Exception';
+                fallbackPath = `Tier 2.5C exception after orchestrator runtime error`;
+                finalResult = {
+                  tier: 'tier-2.5C-exception',
+                  success: false,
+                  imageURL: null,
+                  details: {
+                    processingTime: Date.now() - globalStartTime,
+                    cascadeHistory,
+                    testType: 'E2E_SIMULATION',
+                    resultType: 'TIER_25C_EXCEPTION_AFTER_RUNTIME_ERROR',
+                    error: `Tier 2.5C exception: ${tier25CError.message}`
+                  }
+                };
+              }
             }
           }
         } else {

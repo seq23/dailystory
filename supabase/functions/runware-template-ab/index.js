@@ -1640,11 +1640,12 @@ async function handleRequest(req) {
             detectedSecondaryCharacters = await characterService.detectSecondaryCharacters(pageTextForAnalysis);
             
             // Build secondary character descriptions with seeds
-            for (const character of detectedSecondaryCharacters) {
+            const safeSecondaryCharacters = (detectedSecondaryCharacters || []).filter(character => character && character.name);
+            for (const character of safeSecondaryCharacters) {
               const seed = await characterService.getSecondaryCharacterSeed(
                 sessionId, character.name, character.type || 'secondary_character'
               );
-              secondaryDescriptions.push(`${character.name}: ${character.description} (${character.type})`);
+              secondaryDescriptions.push(`${character.name}: ${character.description || 'character'} (${character.type || 'character'})`);
             }
             
             // Get environmental consistency

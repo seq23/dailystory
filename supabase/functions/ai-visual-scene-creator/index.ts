@@ -13,7 +13,7 @@ function memoizedImport(path: string): Promise<any> {
 
 // Dynamic Supabase client creation
 async function createSupabaseClient() {
-  const { createClient } = await memoizedImport('https://esm.sh/@supabase/supabase-js@2.57.4');
+  const { createClient } = await memoizedImport('https://esm.sh/@supabase/supabase-js@2');
   return createClient(
     Deno.env.get('SUPABASE_URL') || '',
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY') || ''
@@ -28,10 +28,10 @@ async function getPhaseOrchestrator() {
       { UnifiedPlaceholderResolver },
       { phaseIntegrationOrchestrator }
     ] = await Promise.all([
-      memoizedImport('../_shared/styleFrameworks.ts'),
-      memoizedImport('../_shared/CharacterConsistencyService.ts'),
+      memoizedImport('../_shared/styleFrameworks.js'),
+      memoizedImport('../_shared/CharacterConsistencyService.js'),
       memoizedImport('../_shared/UnifiedPlaceholderResolver.js'),
-      memoizedImport("../_shared/PhaseIntegrationOrchestrator.ts")
+      memoizedImport("../_shared/PhaseIntegrationOrchestrator.js")
     ]);
     
     return { 
@@ -360,7 +360,16 @@ serve(async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // PHASE 2: Method validation before JSON parsing
+  // PHASE 2: GET/HEAD health checks
+  if (req.method === 'GET' || req.method === 'HEAD') {
+    return corsResponse({ 
+      status: 'healthy', 
+      service: 'ai-visual-scene-creator',
+      timestamp: new Date().toISOString()
+    }, req);
+  }
+
+  // PHASE 3: Method validation before JSON parsing
   if (req.method !== 'POST') {
     return corsResponse({ error: 'Method not allowed' }, req, 405);
   }

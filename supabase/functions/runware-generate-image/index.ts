@@ -75,7 +75,7 @@ interface BootStatus {
 // ---- Async Tier logger binder with memoized dependencies ----
 async function bindTierLogger(sessionId: SessionId, requestId: string, authHeader: string | null = null): Promise<TierLogger> {
   const [{ createClient }, tierLogging] = await Promise.all([
-    memoizedImport("https://esm.sh/@supabase/supabase-js@2.57.4"),
+    memoizedImport("https://esm.sh/@supabase/supabase-js@2"),
     memoizedImport("../_shared/tierLogging.js")
   ]);
   
@@ -230,7 +230,16 @@ serve(async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // PHASE 2: Method validation before JSON parsing
+  // PHASE 2: GET/HEAD health checks
+  if (req.method === 'GET' || req.method === 'HEAD') {
+    return corsResponse({ 
+      status: 'healthy', 
+      service: 'runware-generate-image',
+      timestamp: new Date().toISOString()
+    }, req);
+  }
+
+  // PHASE 3: Method validation before JSON parsing
   if (req.method !== 'POST') {
     return corsResponse({ error: 'Method not allowed' }, req, 405);
   }
