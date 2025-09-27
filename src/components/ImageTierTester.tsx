@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { DebugLogger } from '@/services/DebugLogger';
+import { HealthCheckService } from '@/services/HealthCheckService';
 import { Sparkles, Zap, Network, Search, Camera, RefreshCw, RotateCcw, Clock, AlertTriangle, CheckCircle } from 'lucide-react';
 
 interface TestResult {
@@ -140,6 +141,7 @@ export const ImageTierTester = () => {
   // Timeout testing configuration
   const [timeoutDuration, setTimeoutDuration] = useState(30000); // 30 seconds default
   const abortControllerRef = useRef<AbortController | null>(null);
+  const abortControllersRef = useRef<AbortController[]>([]); // Track multiple controllers
 
   // User Info Section - Editable fields
   const [userName, setUserName] = useState('Emma');
@@ -514,15 +516,28 @@ export const ImageTierTester = () => {
     }
   };
 
-  // Reset function to clear results and set defaults
+  // Reset function to clear results and set defaults - FIXED: Abort multiple controllers
   const resetTester = () => {
     setResults([]);
     setIsLoading(false);
     setCurrentTestProgress('');
+    
+    // Abort single controller
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
     }
+    
+    // Abort all parallel controllers (for connectivity tests)
+    abortControllersRef.current.forEach(controller => {
+      try {
+        controller.abort();
+      } catch (error) {
+        DebugLogger.warn('image', 'Error aborting controller', error);
+      }
+    });
+    abortControllersRef.current = [];
+    
     setTestStoryText("Emma walked through the magical forest where the golden sunlight danced between the emerald leaves. She wore her favorite blue dress and carried a small brown backpack filled with adventure supplies.");
     setUserName('Emma');
     setUserAge('8');
@@ -530,6 +545,8 @@ export const ImageTierTester = () => {
     setSkinTone('light');
     setNativeLanguage('en');
     setDifficultyLevel('medium');
+    
+    DebugLogger.log('image', 'Tester reset - all operations aborted and state cleared');
   };
 
   // Enhanced test function with timeout and AbortController support
@@ -1107,13 +1124,13 @@ export const ImageTierTester = () => {
     }
   };
 
-  // Debug Real Routing - Simulates true end-to-end user flow with orchestrator + Direct Mode fallback + tier cascade
+  // Debug Real Routing - FIXED: Add health check first, then bypass logic, then orchestrator
   const debugRealRouting = async () => {
     setIsLoading(true);
     setResults([]);
     
     try {
-      DebugLogger.log('image', '🔍 E2E User Flow Simulation: Orchestrator → Direct Mode → Tier Cascade', {
+      DebugLogger.log('image', '🔍 E2E User Flow Simulation: Health Check → Bypass Logic → Orchestrator → Direct Mode → Tier Cascade', {
         userInfo: buildUserInfo()
       });
 
@@ -1126,9 +1143,100 @@ export const ImageTierTester = () => {
       let finalResult = null;
       let resultBadge = '';
       let fallbackPath = '';
+      let healthStatus = null;
 
-      // STEP 1: Try Orchestrator (runware-generate-image) - Normal User Flow - MATCH SimpleImageService  
-      cascadeHistory.push('🎯 Attempting Orchestrator (runware-generate-image)...');
+      // STEP 0: Health Check First - MIRROR SimpleImageService
+      cascadeHistory.push('🏥 Checking System Health...');
+      const healthStartTime = Date.now();
+      
+      try {
+        healthStatus = await HealthCheckService.checkSystemHealth();
+        const healthTime = Date.now() - healthStartTime;
+        cascadeHistory.push(`✅ Health Check Complete (${healthTime}ms): ${healthStatus.overallHealth}`);
+        
+        // Log health details
+        cascadeHistory.push(`📊 Orchestrator: ${healthStatus.orchestrator}, Runware: ${healthStatus.runwareAPI}, Dependencies: ${healthStatus.serviceDependencies}`);
+      } catch (healthError) {
+        const healthTime = Date.now() - healthStartTime;
+        cascadeHistory.push(`❌ Health Check Failed (${healthTime}ms): ${healthError.message}`);
+        // Continue with optimistic default
+        healthStatus = {
+          orchestrator: 'server',
+          runwareAPI: 'server', 
+          serviceDependencies: 'server',
+          overallHealth: 'server',
+          timestamp: new Date().toISOString(),
+          checkDuration: healthTime
+        };
+      }
+
+      // STEP 0.5: Evaluate Bypass Logic - MIRROR SimpleImageService  
+      cascadeHistory.push('🤔 Evaluating Direct Mode Bypass...');
+      const bypassDecision = {
+        shouldBypass: healthStatus.overallHealth === 'server' || healthStatus.orchestrator === 'server',
+        reason: healthStatus.overallHealth === 'server' ? 'System unhealthy - proactive bypass' : 'System healthy - proceed normally',
+        conditions: [`Health: ${healthStatus.overallHealth}`, `Orchestrator: ${healthStatus.orchestrator}`]
+      };
+      
+      cascadeHistory.push(`📋 Bypass Decision: ${bypassDecision.shouldBypass ? 'BYPASS' : 'PROCEED'} (${bypassDecision.reason})`);
+
+      if (bypassDecision.shouldBypass) {
+        // PROACTIVE BYPASS: Skip orchestrator, go directly to Direct Mode
+        cascadeHistory.push('🔄 PROACTIVE BYPASS: Skipping orchestrator, attempting Direct Mode...');
+        
+        try {
+          const directModeStartTime = Date.now();
+          const directModeResponse = await supabase.functions.invoke('ai-visual-scene-creator', {
+            body: {
+              pageText: enhancedPrompt, // FIXED: Use pageText like SimpleImageService
+              userInfo: userInfo,
+              sessionId: sessionId,
+              storyId: sessionId,
+              pageNumber: 1,
+              isGuestUser: true,
+              difficultyLevel: mapDifficultyLevel(userInfo),
+              protectionNegatives: protectionNegatives,
+              directMode: true,
+              bypassReason: bypassDecision.reason
+            }
+          });
+
+          const directModeTime = Date.now() - directModeStartTime;
+          
+          if (!directModeResponse.error && directModeResponse.data?.success) {
+            cascadeHistory.push(`✅ PROACTIVE BYPASS SUCCESS: Direct Mode (${directModeTime}ms)`);
+            resultBadge = 'Proactive Direct Mode';
+            fallbackPath = `Health check → Proactive bypass → Direct Mode succeeded`;
+            finalResult = {
+              tier: 'proactive-direct-mode',
+              success: true,
+              imageURL: directModeResponse.data?.imageURL,
+              details: {
+                processingTime: Date.now() - globalStartTime,
+                directModeTime: directModeTime,
+                cascadeHistory,
+                bypassReason: bypassDecision.reason,
+                healthStatus: healthStatus,
+                testType: 'E2E_SIMULATION',
+                resultType: 'PROACTIVE_BYPASS_SUCCESS',
+                positivePrompt: directModeResponse.data?.positivePrompt,
+                error: null
+              }
+            };
+          } else {
+            const directError = categorizeError(directModeResponse.error, 'proactive-direct-mode');
+            cascadeHistory.push(`❌ PROACTIVE BYPASS FAILED: Direct Mode (${directModeTime}ms): ${directError.probableCause}`);
+            // Fall through to try orchestrator anyway
+          }
+        } catch (directModeError) {
+          cascadeHistory.push(`❌ PROACTIVE BYPASS EXCEPTION: ${directModeError.message}`);
+          // Fall through to try orchestrator anyway
+        }
+      }
+
+      // STEP 1: Try Orchestrator (if not already successful from proactive bypass)
+      if (!finalResult) {
+        cascadeHistory.push('🎯 Attempting Orchestrator (runware-generate-image)...');
       
       try {
         const orchestratorStartTime = Date.now();
@@ -1427,11 +1535,13 @@ export const ImageTierTester = () => {
           };
         }
       }
+      }
 
       // Add the result badge and fallback path to details
       if (finalResult) {
         finalResult.details.resultBadge = resultBadge;
         finalResult.details.fallbackPath = fallbackPath;
+        finalResult.details.healthStatus = healthStatus; // Add health status to results
       }
 
       DebugLogger.log('image', `✅ E2E Flow Completed: ${resultBadge}`, {
@@ -1522,7 +1632,7 @@ export const ImageTierTester = () => {
     return 'Standard routing applied';
   };
 
-  // Force specific tier tests with enhanced validation
+  // Force specific tier tests - FIXED: Correct payload structure and fields
   const forceTier = async (tier: string) => {
     setIsLoading(true);
     setResults([]);
@@ -1546,6 +1656,8 @@ export const ImageTierTester = () => {
       });
 
       const startTime = Date.now();
+      const userInfo = buildUserInfo();
+      const { prompt: enhancedPrompt, negatives: protectionNegatives } = applyUniversalProtections(testStoryText, userInfo);
       
       // Step 1: Function Selection
       steps[0].status = 'running';
@@ -1566,17 +1678,20 @@ export const ImageTierTester = () => {
       const selectedFunction = functionMap[tier];
       steps[0].status = selectedFunction ? 'success' : 'error';
       
-      // Step 2: Payload Construction
+      // Step 2: Payload Construction - FIXED: Use pageText and add missing fields
       steps[1].status = 'running';
       const payload = tier === '2.5A' || tier === '2.5B' 
         ? {
             // Template AB expects {bundle, config} payload shape
             bundle: {
-              storyText: testStoryText,
-              pageText: testStoryText,
-              userInfo: buildUserInfo(),
+              pageText: enhancedPrompt, // FIXED: Use pageText like SimpleImageService
+              userInfo: userInfo,
+              sessionId: crypto.randomUUID(),
+              storyId: crypto.randomUUID(), // ADDED: Missing field
               pageNumber: 1,
-              sessionId: crypto.randomUUID()
+              isGuestUser: true, // ADDED: Missing field  
+              difficultyLevel: mapDifficultyLevel(userInfo), // ADDED: Missing field
+              protectionNegatives: protectionNegatives // ADDED: Missing field
             },
             config: {
               templateComplexity: templateMap[tier]
@@ -1584,13 +1699,16 @@ export const ImageTierTester = () => {
             test: true
           }
         : {
-            // Template CD expects flat payload
-            storyText: testStoryText,
-            pageText: testStoryText,
-            userInfo: buildUserInfo(),
-            templateComplexity: templateMap[tier],
-            pageNumber: 1,
+            // Template CD expects flat payload - FIXED: Use pageText and add missing fields
+            pageText: enhancedPrompt, // FIXED: Use pageText like SimpleImageService
+            userInfo: userInfo,
             sessionId: crypto.randomUUID(),
+            storyId: crypto.randomUUID(), // ADDED: Missing field
+            pageNumber: 1,
+            isGuestUser: true, // ADDED: Missing field
+            difficultyLevel: mapDifficultyLevel(userInfo), // ADDED: Missing field
+            protectionNegatives: protectionNegatives, // ADDED: Missing field
+            templateComplexity: templateMap[tier],
             test: true
           };
       steps[1].status = 'success';
@@ -1704,24 +1822,37 @@ export const ImageTierTester = () => {
     }
   };
 
-  // Enhanced connectivity test for all 4 endpoints - GET + POST with boot vs runtime detection
+  // Enhanced connectivity test for all 4 endpoints - FIXED: Track controllers for proper abort
   const testConnectivity = async () => {
     setIsLoading(true);
     setResults([]);
+    
+    // Clear any existing controllers
+    abortControllersRef.current.forEach(controller => {
+      try {
+        controller.abort();
+      } catch (error) {
+        // Ignore abort errors for already completed requests
+      }
+    });
+    abortControllersRef.current = [];
     
     try {
       DebugLogger.log('image', '🌐 Enhanced connectivity test: GET + POST with boot detection');
       
       const endpoints = [
-        'ai-visual-scene-creator',
-        'runware-generate-image', 
-        'runware-template-ab',
-        'runware-template-cd'
+        { name: 'ai-visual-scene-creator', type: 'Pure TypeScript (.ts)', architecture: 'PURE_TYPESCRIPT' },
+        { name: 'runware-generate-image', type: 'Pure TypeScript (.ts) - ORCHESTRATOR', architecture: 'PURE_TYPESCRIPT' }, 
+        { name: 'runware-template-ab', type: 'Hybrid JavaScript (.js)', architecture: 'RECEPTIONIST_PATTERN' },
+        { name: 'runware-template-cd', type: 'Hybrid JavaScript (.js)', architecture: 'RECEPTIONIST_PATTERN' }
       ];
 
       const startTime = Date.now();
       const connectivityResults = await Promise.allSettled(
         endpoints.map(async endpoint => {
+          const controller = new AbortController();
+          abortControllersRef.current.push(controller);
+          
           const endpointStartTime = Date.now();
           
           // Test both GET (health check) and POST (minimal request)
@@ -1730,10 +1861,11 @@ export const ImageTierTester = () => {
             POST: null as any
           };
           
-          // GET Test (Health Check)
+          // GET Test (Health Check) - Use controller for abort
           try {
-            const getResponse = await fetch(`https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/${endpoint}`, {
+            const getResponse = await fetch(`https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/${endpoint.name}`, {
               method: 'GET',
+              signal: controller.signal,
               headers: {
                 'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino`,
                 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino'
@@ -1747,12 +1879,21 @@ export const ImageTierTester = () => {
               category: getResponse.ok ? 'HEALTHY' : 'BOOT_SYNC_ANOMALY'
             };
           } catch (getError: any) {
-            tests.GET = {
-              success: false,
-              status: 0,
-              statusText: getError.message,
-              category: 'NETWORK_ISSUE'
-            };
+            if (getError.name === 'AbortError') {
+              tests.GET = {
+                success: false,
+                status: 0,
+                statusText: 'Request aborted',
+                category: 'ABORTED'
+              };
+            } else {
+              tests.GET = {
+                success: false,
+                status: 0,
+                statusText: getError.message,
+                category: 'NETWORK_ISSUE'
+              };
+            }
           }
           
           // POST Test (Minimal Request)
@@ -1770,7 +1911,7 @@ export const ImageTierTester = () => {
                 sessionId: "test-session",
                 pageNumber: 1,
                 // Add required flags for ai-visual-scene-creator
-                ...(endpoint === 'ai-visual-scene-creator' ? { isDebugMode: true } : {})
+                ...(endpoint.name === 'ai-visual-scene-creator' ? { isDebugMode: true } : {})
               })
             });
             
@@ -1800,29 +1941,38 @@ export const ImageTierTester = () => {
           
           const responseTime = Date.now() - endpointStartTime;
           
-          // Overall assessment
-          const overallSuccess = tests.GET.success && tests.POST.success;
-          const overallCategory = tests.GET.category === 'HEALTHY' && tests.POST.category === 'HEALTHY' 
-            ? 'HEALTHY' 
-            : tests.POST.category; // POST reveals more issues
+          // Overall assessment - FIXED: Handle abort cases
+          const wasAborted = tests.GET.category === 'ABORTED' || tests.POST.category === 'ABORTED';
+          const overallSuccess = !wasAborted && tests.GET.success && tests.POST.success;
+          const overallCategory = wasAborted ? 'ABORTED' :
+            (tests.GET.category === 'HEALTHY' && tests.POST.category === 'HEALTHY' 
+              ? 'HEALTHY' 
+              : tests.POST.category); // POST reveals more issues
           
           let humanReadableReason = '';
-          if (overallSuccess) {
-            humanReadableReason = 'Function is healthy - both GET and POST working';
+          if (wasAborted) {
+            humanReadableReason = 'Test was aborted (Reset button pressed)';
+          } else if (overallSuccess) {
+            humanReadableReason = `${endpoint.type} - Both GET and POST working`;
           } else if (tests.GET.success && !tests.POST.success) {
-            humanReadableReason = `Boot successful but runtime issues (${tests.POST.category})`;
+            const bootExpected = endpoint.architecture === 'RECEPTIONIST_PATTERN' ? 
+              'Can have boot failures (has receptionist)' : 
+              'Should not have boot failures (pure .ts)';
+            humanReadableReason = `Boot OK but runtime issues (${tests.POST.category}) - ${bootExpected}`;
           } else if (!tests.GET.success && !tests.POST.success) {
-            humanReadableReason = `Complete failure (${overallCategory})`;
+            humanReadableReason = `Complete failure (${overallCategory}) - ${endpoint.type}`;
           } else {
             humanReadableReason = `Mixed results - ${overallCategory}`;
           }
           
           return { 
-            endpoint, 
+            endpoint: endpoint.name, 
             success: overallSuccess,
             responseTime,
             humanReadableReason,
             category: overallCategory,
+            architecture: endpoint.architecture,
+            type: endpoint.type,
             tests
           };
         })
