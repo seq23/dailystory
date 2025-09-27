@@ -1390,17 +1390,17 @@ export const ImageTierTester = () => {
               cascadeHistory.push(`❌ Direct Mode Failed (${directModeTime}ms)`);
               
               // STEP 4: Try Tier 2.5C
-              cascadeHistory.push('🔄 Attempting Tier 2.5C (runware-template-ab)...');
+              cascadeHistory.push('🔄 Attempting Tier 2.5C (runware-template-cd)...');
               const tier25CStartTime = Date.now();
               
               try {
-                const tier25CResponse = await supabase.functions.invoke('runware-template-ab', {
+                const tier25CResponse = await supabase.functions.invoke('runware-template-cd', {
                   body: {
-                    storyText: rawStoryText,
+                    pageText: rawStoryText,
                     userInfo: userInfo,
                     sessionId: sessionId,
                     pageNumber: 1,
-                    complexity: 'moderate'
+                    templateComplexity: 'C'
                   }
                 });
 
@@ -1559,13 +1559,13 @@ export const ImageTierTester = () => {
             cascadeHistory.push('🔄 Attempting Tier 2.5C after Direct Mode exception...');
             
             try {
-              const tier25CResponse = await supabase.functions.invoke('runware-template-ab', {
+              const tier25CResponse = await supabase.functions.invoke('runware-template-cd', {
                 body: {
-                  storyText: rawStoryText,
+                  pageText: rawStoryText,
                   userInfo: userInfo,
                   sessionId: sessionId,
                   pageNumber: 1,
-                  complexity: 'moderate'
+                  templateComplexity: 'C'
                 }
               });
 

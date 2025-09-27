@@ -1550,10 +1550,10 @@ async function handleRequest(req) {
     } else {
       // Legacy format: {enhancedStoryData, storyText, pageNumber, avatarIdentity, templateComplexity, sessionId}
       console.log('📖 Template AB: Using legacy format');
-      enhancedStoryData = payload.enhancedStoryData;
+      enhancedStoryData = payload.enhancedStoryData || { userInfo: payload.userInfo };
       storyText = payload.storyText;
       pageNumber = payload.pageNumber;
-      avatarIdentity = payload.avatarIdentity;
+      avatarIdentity = payload.avatarIdentity || {};
       templateComplexity = payload.templateComplexity;
       sessionId = payload.sessionId;
       preAnalyzedData = payload.preAnalyzedData; // Extract cascade data

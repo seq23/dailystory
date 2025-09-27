@@ -640,25 +640,64 @@ Generate a comprehensive scene with complete visual elements including backgroun
             console.log(`🎯 [${requestId}] Direct Mode activated - calling runware-template-cd`);
             
             try {
-              if (!supabase) {
-                throw new Error('Supabase client not available for direct mode');
-              }
-
-              const templateResponse = await supabase.functions.invoke('runware-template-cd', {
-                body: {
-                  storyText,
-                  pageText: payload.pageText,
-                  userInfo,
-                  sessionId,
-                  pageNumber: payload.pageNumber || 1,
-                  templateComplexity: 'C',
-                  failedTierData: {
-                    enhancedSceneData: generatedScene,
-                    tier: 'DIRECT_MODE',
-                    primaryScene: generatedScene
+              let templateResponse;
+              
+              // Try supabase client first
+              if (supabase) {
+                templateResponse = await supabase.functions.invoke('runware-template-cd', {
+                  body: {
+                    storyText,
+                    pageText: payload.pageText,
+                    userInfo,
+                    sessionId,
+                    pageNumber: payload.pageNumber || 1,
+                    templateComplexity: 'C',
+                    failedTierData: {
+                      enhancedSceneData: generatedScene,
+                      tier: 'DIRECT_MODE',
+                      primaryScene: generatedScene
+                    }
                   }
+                });
+              } else {
+                // HTTP fallback when supabase client unavailable
+                console.log(`❌ [${requestId}] Supabase client unavailable, using HTTP fallback`);
+                
+                const SUPABASE_URL = Deno.env.get('SUPABASE_URL') || 'https://cpzeuogomaixamrtnnmj.supabase.co';
+                const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+                
+                if (!SUPABASE_SERVICE_ROLE_KEY) {
+                  throw new Error('SUPABASE_SERVICE_ROLE_KEY not available for HTTP fallback');
                 }
-              });
+                
+                const httpResponse = await fetch(`${SUPABASE_URL}/functions/v1/runware-template-cd`, {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    storyText,
+                    pageText: payload.pageText,
+                    userInfo,
+                    sessionId,
+                    pageNumber: payload.pageNumber || 1,
+                    templateComplexity: 'C',
+                    failedTierData: {
+                      enhancedSceneData: generatedScene,
+                      tier: 'DIRECT_MODE',
+                      primaryScene: generatedScene
+                    }
+                  })
+                });
+                
+                if (!httpResponse.ok) {
+                  throw new Error(`HTTP fallback failed: ${httpResponse.status}`);
+                }
+                
+                const httpData = await httpResponse.json();
+                templateResponse = { data: httpData, error: null };
+              }
 
               if (templateResponse.error) {
                 throw new Error(`Template CD failed: ${templateResponse.error.message}`);

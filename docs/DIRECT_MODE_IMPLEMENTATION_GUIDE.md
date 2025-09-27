@@ -252,16 +252,50 @@ Monitor Direct Mode performance characteristics:
 - Prompt quality should match orchestrator-enhanced results
 - Character consistency should be maintained across sessions
 
+## HTTP Fallback Implementation (September 27, 2025)
+
+### Enhanced Reliability
+Direct Mode now includes HTTP fallback functionality when the Supabase client is unavailable:
+
+**Primary Path**: Uses supabase.functions.invoke() when client is available
+**Fallback Path**: Direct HTTP calls to edge functions when client is null/undefined
+
+### HTTP Fallback Logic
+```typescript
+if (supabase) {
+  // Use normal supabase client
+  templateResponse = await supabase.functions.invoke('runware-template-cd', { body });
+} else {
+  // HTTP fallback using service role key
+  const httpResponse = await fetch(`${SUPABASE_URL}/functions/v1/runware-template-cd`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
+  });
+}
+```
+
+### Requirements
+- **SUPABASE_SERVICE_ROLE_KEY** must be configured in edge function secrets
+- HTTP fallback provides same functionality as supabase client calls
+- Maintains error handling and response validation
+- Logs fallback usage for monitoring
+
 ## Maintenance & Monitoring
 
 ### Health Monitoring
 - Monitor Direct Mode success rates via edge function logs
 - Track response times and identify performance regressions
+- Monitor HTTP fallback usage frequency
 - Verify character consistency accuracy across different avatar types
 - Validate cultural intelligence representation quality
 
 ### Capacity Planning
 - Direct Mode reduces load on PhaseIntegrationOrchestrator
+- HTTP fallback provides additional reliability layer
 - Self-contained processing scales independently
 - Consider Direct Mode for emergency orchestrator bypass scenarios
 - Monitor resource usage patterns for optimization opportunities
