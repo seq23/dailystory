@@ -2,8 +2,8 @@
 
 ## Status: COMPLETE ✅
 **Migration Date:** 2025-09-27  
-**Remaining esm.sh imports:** 0  
-**Total functions migrated:** 28+
+**Remaining esm.sh imports:** 0 (excluding CDN fallback configuration)  
+**Total functions migrated:** 34+ edge functions and shared services
 
 ## Overview
 

@@ -68,7 +68,7 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
           return createCorsErrorResponse('Failed to fetch AI prompts', 500);
         }
 
-        const aiPrompts = prompts?.map(prompt => ({
+        const aiPrompts = prompts?.map((prompt: any) => ({
           id: prompt.id,
           sessionId: prompt.session_id,
           model: prompt.model,
@@ -193,7 +193,7 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
           return createCorsErrorResponse('Failed to fetch tier cascade logs', 500);
         }
 
-        const tierCascadeData = tierLogs?.map(log => ({
+        const tierCascadeData = tierLogs?.map((log: any) => ({
           id: log.id,
           sessionId: log.session_id,
           requestId: log.request_id,
