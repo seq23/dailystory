@@ -3193,74 +3193,74 @@ export const ImageTierTester = () => {
                           ))}
                         </div>
                       </div>
-                     )}
-                     
-                     {/* E2E Simulation Cascade History and Fallback Path */}
-                     {result.details.testType === 'E2E_SIMULATION' && (
-                       <>
-                         {/* Fallback Path Summary */}
-                         {result.details.fallbackPath && (
-                           <div className="text-sm bg-blue-50 p-3 rounded-lg border-l-4 border-blue-500">
-                             <span className="font-medium text-blue-800">🔄 E2E Flow Path:</span>
-                             <div className="text-blue-700 text-xs mt-1 font-mono">
-                               {result.details.fallbackPath}
-                             </div>
-                           </div>
-                         )}
-                         
-                         {/* Cascade History */}
-                         {result.details.cascadeHistory && result.details.cascadeHistory.length > 0 && (
-                           <div className="text-sm bg-gray-50 p-3 rounded-lg border">
-                             <span className="font-medium text-gray-800">📝 Cascade History:</span>
-                             <div className="mt-2 space-y-1">
-                               {result.details.cascadeHistory.map((step: string, idx: number) => (
-                                 <div key={idx} className="text-xs text-gray-700 font-mono flex items-start gap-2">
-                                   <span className="text-gray-400 min-w-[20px]">{idx + 1}.</span>
-                                   <span className={
-                                     step.includes('✅') ? 'text-green-600' :
-                                     step.includes('❌') ? 'text-red-600' :
-                                     step.includes('🔄') ? 'text-blue-600' :
-                                     step.includes('🎯') ? 'text-purple-600' :
-                                     'text-gray-700'
-                                   }>
-                                     {step}
-                                   </span>
-                                 </div>
-                               ))}
-                             </div>
-                           </div>
-                         )}
-                         
-                         {/* Tier Failure History from Orchestrator */}
-                         {result.details.tierFailureHistory && result.details.tierFailureHistory.length > 0 && (
-                           <div className="text-sm bg-orange-50 p-3 rounded-lg border-l-4 border-orange-500">
-                             <span className="font-medium text-orange-800">⚠️ Internal Tier Failures:</span>
-                             <div className="text-orange-700 text-xs mt-1">
-                               {result.details.tierFailureHistory.join(' → ')}
-                             </div>
-                           </div>
-                         )}
-                         
-                         {/* Performance Breakdown for E2E */}
-                         {(result.details.orchestratorFailureTime || result.details.directModeTime || result.details.tier4Time) && (
-                           <div className="text-sm bg-purple-50 p-3 rounded-lg border">
-                             <span className="font-medium text-purple-800">⏱️ Performance Breakdown:</span>
-                             <div className="text-xs mt-1 space-y-1">
-                               {result.details.orchestratorFailureTime && (
-                                 <div>Orchestrator attempt: {result.details.orchestratorFailureTime}ms</div>
-                               )}
-                               {result.details.directModeTime && (
-                                 <div>Direct Mode: {result.details.directModeTime}ms</div>
-                               )}
-                               {result.details.tier4Time && (
-                                 <div>Tier 4 Emergency: {result.details.tier4Time}ms</div>
-                               )}
-                               <div className="font-medium">Total: {result.details.processingTime}ms</div>
-                             </div>
-                           </div>
-                         )}
-                       </>
-                     )}
+                      )}
+                      
+                      {/* E2E Simulation Cascade History and Fallback Path */}
+                      {result.details.testType === 'E2E_SIMULATION' && (
+                        <>
+                          {/* Fallback Path Summary */}
+                          {result.details.fallbackPath && (
+                            <div className="text-sm bg-blue-50 p-3 rounded-lg border-l-4 border-blue-500">
+                              <span className="font-medium text-blue-800">🔄 E2E Flow Path:</span>
+                              <div className="text-blue-700 text-xs mt-1 font-mono">
+                                {result.details.fallbackPath}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* Cascade History */}
+                          {result.details.cascadeHistory && result.details.cascadeHistory.length > 0 && (
+                            <div className="text-sm bg-gray-50 p-3 rounded-lg border">
+                              <span className="font-medium text-gray-800">📝 Cascade History:</span>
+                              <div className="mt-2 space-y-1">
+                                {result.details.cascadeHistory.map((step: string, idx: number) => (
+                                  <div key={idx} className="text-xs text-gray-700 font-mono flex items-start gap-2">
+                                    <span className="text-gray-400 min-w-[20px]">{idx + 1}.</span>
+                                    <span className={
+                                      step.includes('✅') ? 'text-green-600' :
+                                      step.includes('❌') ? 'text-red-600' :
+                                      step.includes('🔄') ? 'text-blue-600' :
+                                      step.includes('🎯') ? 'text-purple-600' :
+                                      'text-gray-700'
+                                    }>
+                                      {step}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* Tier Failure History from Orchestrator */}
+                          {result.details.tierFailureHistory && result.details.tierFailureHistory.length > 0 && (
+                            <div className="text-sm bg-orange-50 p-3 rounded-lg border-l-4 border-orange-500">
+                              <span className="font-medium text-orange-800">⚠️ Internal Tier Failures:</span>
+                              <div className="text-orange-700 text-xs mt-1">
+                                {result.details.tierFailureHistory.join(' → ')}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* Performance Breakdown for E2E */}
+                          {(result.details.orchestratorFailureTime || result.details.directModeTime || result.details.tier4Time) && (
+                            <div className="text-sm bg-purple-50 p-3 rounded-lg border">
+                              <span className="font-medium text-purple-800">⏱️ Performance Breakdown:</span>
+                              <div className="text-xs mt-1 space-y-1">
+                                {result.details.orchestratorFailureTime && (
+                                  <div>Orchestrator attempt: {result.details.orchestratorFailureTime}ms</div>
+                                )}
+                                {result.details.directModeTime && (
+                                  <div>Direct Mode: {result.details.directModeTime}ms</div>
+                                )}
+                                {result.details.tier4Time && (
+                                  <div>Tier 4 Emergency: {result.details.tier4Time}ms</div>
+                                )}
+                                <div className="font-medium">Total: {result.details.processingTime}ms</div>
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )}
 
                       {result.details.error && (
                         <div className="space-y-3 bg-red-50 p-4 rounded-lg border border-red-200">
@@ -3270,35 +3270,31 @@ export const ImageTierTester = () => {
                               <AlertTriangle className="h-4 w-4 text-red-600" />
                               <span className="font-medium text-red-700">Error Details</span>
                             </div>
-                            {result.details.errorType && (
-                              <Badge 
-                                variant="destructive" 
-                                className="text-xs"
-                              >
-                                {result.details.errorType.replace('_', ' ')}
-                              </Badge>
-                            )}
-                          </div>
-
-                          {/* Main Error Message */}
-                          <div className="text-sm">
-                            <span className="font-medium text-red-600">🚨 Error:</span>
-                            <div className="text-red-600 text-xs mt-1 bg-white p-2 rounded border">
-                              {typeof result.details.error === 'string'
-                                ? result.details.error
-                                : ((result.details.error as any)?.message || JSON.stringify(result.details.error))}
-                            </div>
+                            <Badge 
+                              variant="destructive" 
+                              className="text-xs"
+                            >
+                              {result.details.errorCategory || 'ERROR'}
+                            </Badge>
                           </div>
 
                           {/* Probable Cause */}
                           {result.details.probableCause && (
-                            <div className="text-sm">
-                              <span className="font-medium text-orange-600">📝 Probable Cause:</span>
-                              <div className="text-orange-700 text-xs mt-1 bg-orange-50 p-2 rounded border-l-2 border-orange-300">
+                            <div className="text-sm bg-orange-100 p-3 rounded border-l-4 border-orange-400">
+                              <span className="font-medium text-orange-800">🔍 Probable Cause:</span>
+                              <div className="text-orange-700 text-xs mt-1">
                                 {result.details.probableCause}
                               </div>
                             </div>
                           )}
+
+                          {/* Error Message */}
+                          <div className="text-sm">
+                            <span className="font-medium text-red-700">Error Message:</span>
+                            <pre className="text-red-600 text-xs mt-1 whitespace-pre-wrap bg-red-50 p-2 rounded border">
+                              {result.details.error}
+                            </pre>
+                          </div>
 
                           {/* Recovery Action - NEW */}
                           {(result.details as any).recoveryAction && (
@@ -3392,74 +3388,74 @@ export const ImageTierTester = () => {
                         </div>
                       )}
                      
-                     {/* Enhanced Error Category Display */}
-                     {result.details.errorCategory && result.details.errorCategory !== 'SUCCESS' && !result.details.error && (
-                       <div className="text-sm">
-                         <span className="font-medium text-orange-600">Error Category:</span>
-                         <Badge 
-                           variant="outline" 
-                           className={`ml-1 text-xs ${
-                             result.details.errorCategory === 'NETWORK' ? 'bg-red-50 text-red-700' :
-                             result.details.errorCategory === 'TIMEOUT' ? 'bg-yellow-50 text-yellow-700' :
-                             result.details.errorCategory === 'AUTH' ? 'bg-purple-50 text-purple-700' :
-                             result.details.errorCategory === 'CONFIG' ? 'bg-blue-50 text-blue-700' :
-                             'bg-gray-50 text-gray-700'
-                           }`}
-                         >
-                           {result.details.errorCategory}
-                         </Badge>
-                       </div>
-                     )}
-                    
-                    {/* NEW: Health Check Results Display */}
-                    {result.details.healthCheck && (
-                      <div className="text-sm">
-                        <span className="font-medium text-purple-600">Health Check Results:</span>
-                        <div className="text-xs mt-1 bg-purple-50 p-2 rounded">
-                          <div className="flex items-center justify-between">
-                            <span>Endpoint: {result.details.healthCheck.endpoint}</span>
-                            <Badge variant={result.details.healthCheck.available ? 'default' : 'destructive'}>
-                              {result.details.healthCheck.available ? 'AVAILABLE' : 'UNAVAILABLE'}
-                            </Badge>
-                          </div>
-                          {result.details.healthCheck.responseTime && (
-                            <div>Response Time: {result.details.healthCheck.responseTime}ms</div>
-                          )}
-                          {result.details.healthCheck.status && (
-                            <div>HTTP Status: {result.details.healthCheck.status}</div>
-                          )}
-                          <div>Triage Result: {result.details.healthCheck.triageResult}</div>
+                      {/* Enhanced Error Category Display */}
+                      {result.details.errorCategory && result.details.errorCategory !== 'SUCCESS' && !result.details.error && (
+                        <div className="text-sm">
+                          <span className="font-medium text-orange-600">Error Category:</span>
+                          <Badge 
+                            variant="outline" 
+                            className={`ml-1 text-xs ${
+                              result.details.errorCategory === 'NETWORK' ? 'bg-red-50 text-red-700' :
+                              result.details.errorCategory === 'TIMEOUT' ? 'bg-yellow-50 text-yellow-700' :
+                              result.details.errorCategory === 'AUTH' ? 'bg-purple-50 text-purple-700' :
+                              result.details.errorCategory === 'CONFIG' ? 'bg-blue-50 text-blue-700' :
+                              'bg-gray-50 text-gray-700'
+                            }`}
+                          >
+                            {result.details.errorCategory}
+                          </Badge>
                         </div>
-                      </div>
-                    )}
-                    
-                    {/* Test Type Indicator with color coding */}
-                    {result.details.testType && (
-                      <div className="text-sm">
-                        <span className="font-medium">Test Type:</span>
-                        <Badge 
-                          variant="outline" 
-                          className={`ml-1 text-xs ${
-                            result.details.testType === 'HEALTH' ? 'bg-green-50 text-green-700' :
-                            result.details.testType === 'TRIAGE' ? 'bg-purple-50 text-purple-700' :
-                            result.details.testType === 'FORCED' ? 'bg-yellow-50 text-yellow-700' :
-                            result.details.testType === 'REAL' ? 'bg-blue-50 text-blue-700' :
-                            'bg-gray-50 text-gray-700'
-                          }`}
-                        >
-                          {result.details.testType}
-                        </Badge>
-                      </div>
-                    )}
+                      )}
+                     
+                      {/* NEW: Health Check Results Display */}
+                      {result.details.healthCheck && (
+                        <div className="text-sm">
+                          <span className="font-medium text-purple-600">Health Check Results:</span>
+                          <div className="text-xs mt-1 bg-purple-50 p-2 rounded">
+                            <div className="flex items-center justify-between">
+                              <span>Endpoint: {result.details.healthCheck.endpoint}</span>
+                              <Badge variant={result.details.healthCheck.available ? 'default' : 'destructive'}>
+                                {result.details.healthCheck.available ? 'AVAILABLE' : 'UNAVAILABLE'}
+                              </Badge>
+                            </div>
+                            {result.details.healthCheck.responseTime && (
+                              <div>Response Time: {result.details.healthCheck.responseTime}ms</div>
+                            )}
+                            {result.details.healthCheck.status && (
+                              <div>HTTP Status: {result.details.healthCheck.status}</div>
+                            )}
+                            <div>Triage Result: {result.details.healthCheck.triageResult}</div>
+                          </div>
+                        </div>
+                      )}
+                     
+                      {/* Test Type Indicator with color coding */}
+                      {result.details.testType && (
+                        <div className="text-sm">
+                          <span className="font-medium">Test Type:</span>
+                          <Badge 
+                            variant="outline" 
+                            className={`ml-1 text-xs ${
+                              result.details.testType === 'HEALTH' ? 'bg-green-50 text-green-700' :
+                              result.details.testType === 'TRIAGE' ? 'bg-purple-50 text-purple-700' :
+                              result.details.testType === 'FORCED' ? 'bg-yellow-50 text-yellow-700' :
+                              result.details.testType === 'REAL' ? 'bg-blue-50 text-blue-700' :
+                              'bg-gray-50 text-gray-700'
+                            }`}
+                          >
+                            {result.details.testType}
+                          </Badge>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-    </div>
-  );
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    );
 };
 
 export default ImageTierTester;
