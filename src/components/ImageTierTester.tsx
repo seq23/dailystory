@@ -1447,7 +1447,7 @@ export const ImageTierTester = () => {
             details: {
               processingTime: tier1Time,
               cascadeHistory,
-              testType: 'REAL',
+              testType: 'E2E_SIMULATION',
               resultType: 'FORCE_TIER_1_SUCCESS',
               metadata: result.metadata,
               error: null,
@@ -2393,7 +2393,7 @@ export const ImageTierTester = () => {
               className="flex items-center gap-2"
             >
               <Search className="h-4 w-4" />
-              Debug Real Routing
+              E2E User Simulation
             </Button>
             
             <Button
@@ -2453,7 +2453,7 @@ export const ImageTierTester = () => {
               className="flex items-center gap-2"
             >
               <CheckCircle className="h-4 w-4" />
-              Test Architecture Cascade
+              Individual Tier Testing
             </Button>
           </div>
 
@@ -3059,7 +3059,7 @@ export const ImageTierTester = () => {
                      )}
                      
                      {/* E2E Simulation Cascade History and Fallback Path */}
-                     {result.details.testType === 'E2E_SIMULATION' && (
+                     {result.details.cascadeHistory && result.details.cascadeHistory.length > 0 && (
                        <>
                          {/* Fallback Path Summary */}
                          {result.details.fallbackPath && (
