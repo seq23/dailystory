@@ -64,7 +64,7 @@ export function createTimeoutController(timeout: number): AbortController {
  */
 export const TIMEOUT_CONFIGS = {
   STORY_GENERATION: { timeout: 60000, retries: 2, retryDelay: 2000 },
-  IMAGE_GENERATION: { timeout: 8000, retries: 1, retryDelay: 500 }, // Optimized: 15s → 8s
+  IMAGE_GENERATION: { timeout: 12000, retries: 1, retryDelay: 500 }, // Optimized: 8s → 12s (balanced)
   TTS_REQUEST: { timeout: 30000, retries: 2, retryDelay: 500 },
   API_CALL: { timeout: 5000, retries: 1, retryDelay: 500 }, // Optimized: 8s → 5s  
   AI_ENHANCEMENT: { timeout: 5000, retries: 1, retryDelay: 500 } // Optimized: 8s → 5s

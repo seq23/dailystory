@@ -399,13 +399,13 @@ export class SimpleImageService {
     let requestAborted = false;
 
     try {
-      // Create timeout promise that rejects after 25 seconds (optimized)
+      // Create timeout promise that rejects after 60 seconds (balanced)
       const timeoutPromise = new Promise<never>((_, reject) => {
         timeoutId = setTimeout(() => {
           requestAborted = true;
-          DebugLogger.warn('image', 'Frontend timeout: Request exceeded 25 seconds');
-          reject(new Error('Request timeout: Image generation took longer than 25 seconds'));
-        }, 25000); // Reduced from 150s to 25s for faster failure detection
+          DebugLogger.warn('image', 'Frontend timeout: Request exceeded 60 seconds');
+          reject(new Error('Request timeout: Image generation took longer than 60 seconds'));
+        }, 60000); // Balanced timeout: 60s for full orchestration with retries
       });
 
       // Call the main orchestrator (runware-generate-image) which handles all tiers
