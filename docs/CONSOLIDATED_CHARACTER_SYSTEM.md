@@ -141,11 +141,11 @@ Next Story → clearSession() → Fresh start
 ## Removed Files
 
 The following files were consolidated and are no longer needed:
-- `supabase/functions/_shared/UnifiedCharacterDescriptor.js` (927 lines → consolidated)
-- `supabase/functions/_shared/VisualDetailTracker.js` (462 lines → consolidated)  
-- `supabase/functions/_shared/VisualDetailTracker.ts` (579 lines → consolidated)
-- `supabase/functions/_shared/SecondaryElementDetector.ts` (329 lines → consolidated)
-- `supabase/functions/_shared/PhaseIntegrationOrchestrator.js` (906 lines → inlined)
+- `supabase/functions/_shared/UnifiedCharacterDescriptor.js` (927 lines → ✅ consolidated into CharacterConsistencyService.js)
+- `supabase/functions/_shared/VisualDetailTracker.js` (462 lines → ✅ consolidated into CharacterConsistencyService.js)  
+- `supabase/functions/_shared/VisualDetailTracker.ts` (579 lines → ✅ consolidated into CharacterConsistencyService.js)
+- `supabase/functions/_shared/SecondaryElementDetector.ts` (329 lines → ✅ consolidated into CharacterConsistencyService.js)
+- `supabase/functions/_shared/PhaseIntegrationOrchestrator.js` (906 lines → ✅ inlined into runware-generate-image/index.ts)
 - `src/services/UnifiedCharacterDescriptor.ts` (frontend legacy → removed)
 - `src/services/CharacterConsistencyService.ts` (frontend mock → removed)
 

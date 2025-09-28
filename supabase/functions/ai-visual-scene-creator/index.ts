@@ -360,9 +360,9 @@ serve(async (req) => {
       });
     }
 
-    // Validate required fields
-    const storyText = payload.pageText || payload.storyText;
-    if (!storyText) {
+    // Validate required fields - enhanced content checking
+    const content = payload.pageText || payload.storyText || payload.content || '';
+    if (!content.trim()) {
       console.error(`❌ [${requestId}] Validation failure (no retry): MISSING_STORY_CONTENT`);
       return new Response(JSON.stringify({
         success: false,
@@ -383,7 +383,7 @@ serve(async (req) => {
 
     // PHASE 1 & 2: Generate complete visual schema with character consistency
     console.log(`🎨 [${requestId}] Generating complete visual schema...`);
-    const visualSchema = await generateCompleteVisualSchema(storyText, userInfo, sessionId, pageNumber);
+    const visualSchema = await generateCompleteVisualSchema(content, userInfo, sessionId, pageNumber);
 
     // Generate character seed for consistency
     const characterSeed = await generateCharacterSeed(sessionId, userInfo);
@@ -407,7 +407,7 @@ serve(async (req) => {
       
       // Prepare payload for runware-template-cd
       const templatePayload = {
-        pageText: storyText,
+        pageText: content,
         userInfo,
         sessionId,
         pageNumber,
