@@ -12,6 +12,15 @@
 // TypeScript type imports
 import type { UserInfo, SessionId } from "../_shared/types/index.ts";
 
+// COMPLETE_TIER_1_TEMPLATE: 4-section structured template 
+const COMPLETE_TIER_1_TEMPLATE = `PRIMARY SCENE: {primaryScene}.
+
+CHARACTER DESCRIPTION: {mainCharacterDetails}.
+
+CONSISTENCY: {secondaryCharacters}{coloredObjects}{settingContext}.
+
+BRAND SUFFIX: {styleFramework}.`;
+
 // TypeScript interface definitions
 interface TierLogger {
   t1: (msg: string, ctx?: Record<string, any>) => void;
@@ -150,8 +159,9 @@ async function processInlinedTier1(payload: any, memoizedImport: any): Promise<a
   await characterConsistencyService.analyzeVisualDetails(sessionId, storyText || pageText, 1);
   const coloredObjects = await characterConsistencyService.getColoredObjects(sessionId);
   
-  // Get AI-generated primary scene
+  // Get AI-generated primary scene and complete schema
   let primaryScene;
+  let aiSchema: Record<string, any> = {};
   try {
     const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4');
     const supabase = createClient(
@@ -177,6 +187,17 @@ async function processInlinedTier1(payload: any, memoizedImport: any): Promise<a
     }
     
     primaryScene = aiResult.primaryScene;
+    
+    // Collect complete AI schema for debugging (only primaryScene used in template)
+    aiSchema = {
+      backgroundColor: aiResult?.backgroundColor || '',
+      lighting: aiResult?.lighting || '',
+      composition: aiResult?.composition || '',
+      mood: aiResult?.mood || '',
+      visualElements: aiResult?.visualElements || '',
+      sceneSettings: aiResult?.sceneSettings || '',
+      atmosphericDetails: aiResult?.atmosphericDetails || ''
+    };
   } catch (error) {
     console.warn('AI scene creator failed:', error);
     throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_25A');
@@ -213,21 +234,46 @@ async function processInlinedTier1(payload: any, memoizedImport: any): Promise<a
   const difficulty = userInfo?.difficulty || userInfo?.gradeLevel || 'medium';
   const styleFramework = getInlinedStyleFramework(difficulty);
   
-  // Compose final enhanced prompt
-  const enhancedPrompt = `${primaryScene}. Beautiful ${characterReference} character ${characterName}, age ${userInfo?.age || 6}${characterSeed?.characterDescription ? `, ${characterSeed.characterDescription}` : ''}${culturalBundle?.hair ? `, ${culturalBundle.hair}` : ''}${culturalBundle?.features ? `, ${culturalBundle.features}` : ''}${coloredObjects ? `, ${coloredObjects}` : ''}${secondaryCharacterSeeds.length > 0 ? `, with ${secondaryCharacterSeeds.map(s => s.characterDescription).join(', ')}` : ''}. ${styleFramework}`;
+  // Build COMPLETE_TIER_1 template using 4-section structured format
+  const mainCharacterDetails = `Beautiful ${characterReference} character ${characterName}, age ${userInfo?.age || 6}${characterSeed?.characterDescription ? `, ${characterSeed.characterDescription}` : ''}${culturalBundle?.hair ? `, ${culturalBundle.hair}` : ''}${culturalBundle?.features ? `, ${culturalBundle.features}` : ''}`;
+  
+  const secondaryCharacters = secondaryCharacterSeeds.length > 0 ? `With ${secondaryCharacterSeeds.map(s => s.characterDescription).join(', ')}` : '';
+  const consistencyElements = [
+    secondaryCharacters,
+    coloredObjects || '',
+    aiSchema?.sceneSettings || ''
+  ].filter(Boolean).join(', ');
+  
+  const enhancedPrompt = COMPLETE_TIER_1_TEMPLATE
+    .replace('{primaryScene}', primaryScene)
+    .replace('{mainCharacterDetails}', mainCharacterDetails)
+    .replace('{secondaryCharacters}', consistencyElements ? `${consistencyElements}.` : '')
+    .replace('{coloredObjects}', '')
+    .replace('{settingContext}', '')
+    .replace('{styleFramework}', styleFramework);
   
   const negativePrompt = "blurry, low quality, distorted, deformed, disfigured, bad anatomy, extra limbs, missing limbs, floating limbs, disconnected limbs, malformed hands, missing fingers, extra fingers, bad hands, signature, username, artist name, watermark, copyright";
   
   console.log(`✅ INLINED TIER 1: Generated enhanced prompt for ${characterName}`);
   
   return {
-    enhancedPrompt,
+    enhancedPrompt,           // ← Structured COMPLETE_TIER_1 template
     negativePrompt,
-    primaryScene,
+    primaryScene,            // ← Used in template
+    aiSchema: {              // ← NEW: Complete schema for debugging
+      backgroundColor: aiSchema?.backgroundColor || '',
+      lighting: aiSchema?.lighting || '',
+      composition: aiSchema?.composition || '',
+      mood: aiSchema?.mood || '',
+      visualElements: aiSchema?.visualElements || '',
+      sceneSettings: aiSchema?.sceneSettings || '',
+      atmosphericDetails: aiSchema?.atmosphericDetails || ''
+    },
     characterSeed,
     culturalBundle,
     coloredObjects,
-    secondaryCharacterSeeds
+    secondaryCharacterSeeds,
+    templateStructure: 'COMPLETE_TIER_1'
   };
 }
 
