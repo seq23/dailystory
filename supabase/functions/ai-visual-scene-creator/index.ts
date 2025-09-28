@@ -1,6 +1,8 @@
 // DEPLOY_MARKER: 2025-09-27T00:00:00Z - Optimized with echoing CORS and memoized lazy loading
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { phaseIntegrationOrchestrator } from '../_shared/PhaseIntegrationOrchestrator.js';
+import { deriveRegionalEthnicity } from '../_shared/UnifiedPlaceholderResolver.js';
+import { getHairBySkintone, getSkinBySkintone } from '../_shared/StaticDataCache.js';
 
 // ============= RESILIENT IMPORT SYSTEM =============
 // Dynamic Supabase client creation using direct import to bypass CDN failures
@@ -101,7 +103,7 @@ function normalizeUserInfo(userInfo: any): any {
     name: userInfo?.name || 'child',
     age: userInfo?.age || 8,
     userName: userInfo?.userName || userInfo?.name || 'child',
-    ethnicity: userInfo?.ethnicity || userInfo?.avatar?.type || 'prefer-not-to-answer',
+    ethnicity: deriveRegionalEthnicity(userInfo, userInfo?.avatar),
     skinTone: userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium',
     avatar: {
       type: userInfo?.avatar?.type || userInfo?.ethnicity || 'prefer-not-to-answer',
@@ -477,7 +479,22 @@ serve(async (req: Request): Promise<Response> => {
         nativeLanguage = normalizedUserInfo?.nativeLanguage || 'en';
         isNonEnglish = nativeLanguage !== 'en';
         culturalContext = isNonEnglish ? `culturally appropriate ${nativeLanguage} settings` : '';
-        characterData = normalizedUserInfo ? JSON.stringify(normalizedUserInfo) : '{}';
+        // Get variety mappings for hair and skin
+        if (normalizedUserInfo) {
+          const mappedHairColor = getHairBySkintone(normalizedUserInfo.skinTone, payload.sessionId || 'default');
+          const mappedSkinTone = getSkinBySkintone(normalizedUserInfo.skinTone, payload.sessionId || 'default');
+          
+          // Add enhanced character data
+          const enhancedCharacterData = {
+            ...normalizedUserInfo,
+            hairColor: mappedHairColor,
+            skinToneDescription: mappedSkinTone
+          };
+          
+          characterData = JSON.stringify(enhancedCharacterData);
+        } else {
+          characterData = '{}';
+        }
         characterAppearance = normalizedUserInfo?.features || '';
         
         // Use lazy-loaded CharacterConsistencyService

@@ -8,7 +8,7 @@ import { VOCABULARY, PLACEHOLDER_POOLS, pick, createSeededRandom, REGIONAL_CULTU
 import { getHairBySkintone, shouldApplyCulturalEnhancements, getSkinBySkintone, getCulturalBundle } from './StaticDataCache.js';
 
 // ============= FIXED REGIONAL ETHNICITY DERIVATION =============
-function deriveRegionalEthnicity(userInfo, avatarIdentity) {
+export function deriveRegionalEthnicity(userInfo, avatarIdentity) {
   // Primary: Use avatar ethnicity if available
   if (avatarIdentity?.ethnicity) {
     return avatarIdentity.ethnicity;
