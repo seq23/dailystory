@@ -2010,21 +2010,6 @@ export const ImageTierTester = () => {
       // Updated tier configurations to standardize with Debug Real Routing
       const tierConfigurations = [
         {
-          name: 'Orchestrator (Health Check)', 
-          function: 'runware-generate-image',
-          architecture: 'ORCHESTRATOR_PATTERN',
-          payload: {
-            storyText: testStoryText,
-            userInfo: buildUserInfo(),
-            sessionId: 'test-session',
-            pageNumber: 1,
-            storyId: 'cascade-test-story',
-            isGuestUser: false,
-            difficultyLevel: 'medium',
-            test: true
-          }
-        },
-        {
           name: 'Tier 1 (Direct Mode)', // PLAN FIX 2A: Renamed from "Direct Mode (AI Scene Creator)" 
           function: 'ai-visual-scene-creator',
           architecture: 'PURE_TYPESCRIPT',
@@ -2137,6 +2122,11 @@ export const ImageTierTester = () => {
             { category: 'SUCCESS', probableCause: 'Test completed successfully', errorType: 'RUNTIME_ERROR' as const };
 
           if (data?.success && data?.imageURL) {
+            // Check for escalation in Tier 1 (via Orchestrator)
+            if (tier.name === 'Tier 1 (via Orchestrator)' && data.templateStructure !== 'COMPLETE_TIER_1') {
+              throw new Error(`Tier 1 failed - escalated to ${data.usedTier || data.tier || 'higher tier'}`);
+            }
+            
             tierResult = {
               tier: tier.name,
               success: true,
