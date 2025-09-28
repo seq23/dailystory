@@ -1,6 +1,6 @@
 // DEPLOY_MARKER: 2025-09-27T15:30:00Z - Fix boot crashes: lazy orchestrator loading  
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { memoizedImport, createImportFailureResponse } from '../_shared/resilientLoader.ts';
+import { memoizedImport } from '../_shared/resilientLoader.ts';
 
 // Lazy-loaded orchestrator to prevent boot crashes
 let phaseIntegrationOrchestrator: any = null;
@@ -174,17 +174,6 @@ serve(async (req: Request): Promise<Response> => {
     // PHASE 5: Load tier logger and lazy-load orchestrator
     const tierLogger = await bindTierLogger(payload.sessionId || 'unknown', requestId, req.headers.get('authorization'));
 
-    // Lazy load orchestrator to prevent boot crashes
-    if (!phaseIntegrationOrchestrator) {
-      try {
-        const orchestratorModule = await memoizedImport("../_shared/PhaseIntegrationOrchestrator.js");
-        phaseIntegrationOrchestrator = orchestratorModule.phaseIntegrationOrchestrator;
-      } catch (error) {
-        console.warn(`Failed to get AI primaryScene: ${error instanceof Error ? error.message : String(error)}`);
-        throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_25A');
-      }
-    }
-    const orchestrator = phaseIntegrationOrchestrator;
 
     // PHASE 6: Process request with lazy-loaded services
     tierLogger.attempt('TIER_1', { storyLength: payload.pageText?.length || payload.storyText?.length });
@@ -193,6 +182,17 @@ serve(async (req: Request): Promise<Response> => {
     console.log(`[TIER_1] Attempting orchestrator enhancement`);
     
     try {
+      // Ensure orchestrator is available (lazy-load here so failures fall into Tier 1 catch)
+      if (!phaseIntegrationOrchestrator) {
+        try {
+          const orchestratorModule = await memoizedImport("../_shared/PhaseIntegrationOrchestrator.js");
+          phaseIntegrationOrchestrator = orchestratorModule.phaseIntegrationOrchestrator;
+        } catch (error) {
+          console.warn(`[TIER_1] Orchestrator load failed: ${error instanceof Error ? error.message : String(error)}`);
+        }
+      }
+      const orchestrator = phaseIntegrationOrchestrator;
+      
       // Real Tier 1 processing through orchestrator
       const enhancedPrompt = await orchestrator.getEnhancedPrompt(payload);
       
@@ -250,7 +250,6 @@ serve(async (req: Request): Promise<Response> => {
             console.log(`SUCCESS [${requestId}] Direct Mode fallback completed`);
             
             return corsResponse({
-              success: true,
               ...result
             }, req);
           } else {

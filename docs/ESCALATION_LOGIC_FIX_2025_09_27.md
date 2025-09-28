@@ -1,11 +1,37 @@
 # Critical Cascade Fixes - September 27, 2025
 
 ## Summary
-Three critical fixes to resolve cascade button testing issues and ensure proper tier escalation behavior.
+Four critical fixes to resolve cascade button testing issues and ensure proper tier escalation behavior.
 
 ## Problems Fixed
 
-### 1. ai-visual-scene-creator Direct Mode HTTP Fallback
+### 1. runware-generate-image Orchestrator Scope Issue
+**Problem**: Orchestrator lazy-load was outside Tier 1 try/catch, causing hard failures and 500 errors instead of engaging fallback cascade
+**File**: `supabase/functions/runware-generate-image/index.ts`
+**Lines**: 177-187 → moved into 195+
+**Impact**: Build errors and 500 responses when orchestrator unavailable
+
+**Solution**: Moved orchestrator lazy-load into Tier 1 try/catch
+```typescript
+// Before (Hard Fail)
+// Lazy load orchestrator to prevent boot crashes (outside try/catch)
+if (!phaseIntegrationOrchestrator) {
+  throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_25A'); // Hard failure!
+}
+
+// After (Proper Cascade)  
+try {
+  // Ensure orchestrator is available (inside Tier 1 try/catch)
+  if (!phaseIntegrationOrchestrator) {
+    console.warn(`[TIER_1] Orchestrator load failed`); // Logged but continues
+  }
+  // ... rest of Tier 1 processing
+} catch (tier1Error) {
+  // Falls into Direct Mode → 2.5A → 2.5B → 2.5C → 2.5D → SVG
+}
+```
+
+### 2. ai-visual-scene-creator Direct Mode HTTP Fallback
 **Problem**: Direct Mode failed when Supabase client was unavailable, breaking Force Tier 1 functionality
 **File**: `supabase/functions/ai-visual-scene-creator/index.ts`
 **Lines**: 642-661 → 642-696
@@ -36,7 +62,7 @@ if (supabase) {
 }
 ```
 
-### 2. runware-template-ab Legacy Format Crash
+### 3. runware-template-ab Legacy Format Crash
 **Problem**: Template AB crashed on legacy format when `enhancedStoryData` was undefined
 **File**: `supabase/functions/runware-template-ab/index.js`
 **Line**: 1553, 1556
@@ -53,7 +79,7 @@ enhancedStoryData = payload.enhancedStoryData || { userInfo: payload.userInfo };
 avatarIdentity = payload.avatarIdentity || {};
 ```
 
-### 3. ImageTierTester 2.5C Wrong Function Routing
+### 4. ImageTierTester 2.5C Wrong Function Routing
 **Problem**: 2.5C test called `runware-template-ab` instead of `runware-template-cd`
 **File**: `src/components/ImageTierTester.tsx`
 **Lines**: 1393-1404, 1562-1569
@@ -144,17 +170,23 @@ Use normal "Generate Image" with a standard prompt:
 ## Files Modified
 
 ### Core Fixes
-1. **`supabase/functions/ai-visual-scene-creator/index.ts`** (lines 642-696)
+1. **`supabase/functions/runware-generate-image/index.ts`** (lines 177-187 → moved to 195+)
+   - Moved orchestrator lazy-load into Tier 1 try/catch block
+   - Removed unused import createImportFailureResponse
+   - Fixed duplicate success property in response object
+   - Ensures proper cascade fallback when orchestrator unavailable
+
+2. **`supabase/functions/ai-visual-scene-creator/index.ts`** (lines 642-696)
    - Added HTTP fallback mechanism for Direct Mode
    - Enhanced error handling and logging
    - Maintained backward compatibility
 
-2. **`supabase/functions/runware-template-ab/index.js`** (lines 1553, 1556)
+3. **`supabase/functions/runware-template-ab/index.js`** (lines 1553, 1556)
    - Added fallback defaults for undefined data
    - Improved robustness for edge cases
    - Maintained existing functionality
 
-3. **`src/components/ImageTierTester.tsx`** (lines 1393-1404, 1562-1569)
+4. **`src/components/ImageTierTester.tsx`** (lines 1393-1404, 1562-1569)
    - Fixed 2.5C routing from AB to CD function
    - Updated payload format for CD templates
    - Corrected parameter naming
@@ -172,6 +204,7 @@ Use normal "Generate Image" with a standard prompt:
 
 ## Testing Status
 
+- ✅ **Orchestrator Scope Fix**: No more build errors or 500 responses when orchestrator unavailable
 - ✅ **Service Role Key**: Properly deployed and accessible
 - ✅ **Direct Mode HTTP Fallback**: Functional when supabase client unavailable
 - ✅ **Template AB Legacy Format**: No longer crashes on undefined data
@@ -181,6 +214,7 @@ Use normal "Generate Image" with a standard prompt:
 
 ## Impact
 
+- **Fixed**: Orchestrator lazy-load scope issue preventing proper fallback cascade
 - **Fixed**: Force Tier 1 button now works via Direct Mode with HTTP fallback
 - **Fixed**: 2.5C cascade tests now hit the correct template function
 - **Fixed**: Template AB no longer crashes on legacy format edge cases
