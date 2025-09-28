@@ -169,9 +169,9 @@ function generateTier25C(storyText, userInfo, avatarIdentity, failedTierData = {
     characterDesc = `A ${genderNeutralDescription} named ${characterName} age ${age} ${skinTone} skin complexion with ${hairColor}`;
   }
   
-  // Add detailed cultural features for dark skin (hair already handled above)
-  if (skinTone === 'dark' || skinTone === 'medium-dark' || skinTone === 'brown') {
-    characterDesc += ' with beautiful natural African American features including fuller lips, broader nose, defined cheekbones, rich melanin-rich skin tone, and authentic cultural representation';
+  // Add detailed cultural features for dark skin with supported languages (hair already handled above)
+  if ((skinTone === 'dark' || skinTone === 'medium-dark' || skinTone === 'brown') && ['en', 'fr', 'es', 'pt'].includes(nativeLanguage)) {
+    characterDesc += ' with authentic African American features and naturally occurring melanin-rich skin tones ranging from warm beige to warm caramel to deep ebony with appropriate warm undertones, realistic hazel-green, brown and dark brown eyes with natural depth and authentic iris patterns, genuine African American facial bone structure with appropriate nose width and lip fullness, authentic textured hair ranging from 3B to 4C curl patterns including DETAILED AND PHOTOREALISTIC natural afros, box braids, cornrows, twist-outs, or protective styles with proper hair density and realistic coil definition, accurate representation of Black features without European beauty standard alterations, natural skin luminosity with warm golden or red undertones, detailed individual hair strand texture showing authentic curl patterns and natural shine';
   }
   
   // Component 3: Catch-All Failed Tier Information
