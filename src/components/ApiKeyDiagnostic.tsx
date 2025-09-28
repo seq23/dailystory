@@ -48,7 +48,7 @@ export const ApiKeyDiagnostic: React.FC = () => {
         
         // Test service role key availability for Direct Mode
         addResult('warning', '🔑 Testing SUPABASE_SERVICE_ROLE_KEY availability for Direct Mode...');
-        if (env.SUPABASE_SERVICE_ROLE_KEY) {
+        if (env.supabaseServiceRoleKeyPresent) {
           addResult('success', '✅ SUPABASE_SERVICE_ROLE_KEY is available - Direct Mode should work');
         } else {
           addResult('warning', '⚠️ SUPABASE_SERVICE_ROLE_KEY not found - Direct Mode may fail');
@@ -60,8 +60,8 @@ export const ApiKeyDiagnostic: React.FC = () => {
             `${env.runwareApiKeyPresent ? '✅' : '❌'} RUNWARE_API_KEY: ${env.runwareApiKeyPresent ? 'Present' : 'Missing'} (${env.runwareKeyLength || 0} chars)`);
           addResult(env.openaiApiKeyPresent ? 'success' : 'warning', 
             `${env.openaiApiKeyPresent ? '✅' : '⚠️'} OPENAI_API_KEY: ${env.openaiApiKeyPresent ? 'Present' : 'Missing'} (${env.openaiKeyLength || 0} chars)`);
-          addResult(env.supabaseServiceRolePresent ? 'success' : 'error', 
-            `${env.supabaseServiceRolePresent ? '✅' : '❌'} SUPABASE_SERVICE_ROLE_KEY: ${env.supabaseServiceRolePresent ? 'Present' : 'Missing'}`);
+          addResult(env.supabaseServiceRoleKeyPresent ? 'success' : 'error', 
+            `${env.supabaseServiceRoleKeyPresent ? '✅' : '❌'} SUPABASE_SERVICE_ROLE_KEY: ${env.supabaseServiceRoleKeyPresent ? 'Present' : 'Missing'}`);
         } else {
           addResult('warning', '⚠️ Environment information not available - using system-diagnostics for detailed API key status...');
           
@@ -76,8 +76,8 @@ export const ApiKeyDiagnostic: React.FC = () => {
             } else if (sysData?.environment) {
               addResult(sysData.environment.runware_api_key ? 'success' : 'error', 
                 `${sysData.environment.runware_api_key ? '✅' : '❌'} RUNWARE_API_KEY: ${sysData.environment.runware_api_key ? 'Present' : 'Missing'}`);
-              addResult(sysData.environment.supabase_service_key ? 'success' : 'error', 
-                `${sysData.environment.supabase_service_key ? '✅' : '❌'} SUPABASE_SERVICE_ROLE_KEY: ${sysData.environment.supabase_service_key ? 'Present' : 'Missing'}`);
+              addResult(sysData.environment.service_key_present ? 'success' : 'error', 
+                `${sysData.environment.service_key_present ? '✅' : '❌'} SUPABASE_SERVICE_ROLE_KEY: ${sysData.environment.service_key_present ? 'Present' : 'Missing'}`);
             }
           } catch (fallbackError) {
             addResult('warning', '⚠️ Fallback diagnostic check failed', fallbackError);
