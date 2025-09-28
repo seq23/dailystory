@@ -1485,7 +1485,7 @@ async function handleRequest(req) {
       payload = rawPayload;
     }
     
-    // Helper function to get visual consistency elements using VisualDetailTracker
+    // Helper function to get visual consistency elements using CharacterConsistencyService
     async function getVisualConsistencyElements(sessionId, extractedScene, fallbackColoredObjects, preAnalyzedData) {
       // First priority: Use preAnalyzedData from cascade
       if (preAnalyzedData?.visualDetails) {
@@ -1493,16 +1493,17 @@ async function handleRequest(req) {
         return preAnalyzedData.visualDetails;
       }
       
-      // Second priority: Use sophisticated VisualDetailTracker
+      // Second priority: Use consolidated CharacterConsistencyService
       try {
-        const { VisualDetailTracker } = await import("../_shared/VisualDetailTracker.js");
-        const visualDetails = await VisualDetailTracker.getVisualDetailsForPrompt(sessionId);
-        if (visualDetails) {
-          console.log(`✅ [TIER2.5A] Using sophisticated VisualDetailTracker: ${visualDetails.substring(0, 100)}`);
-          return visualDetails;
+        const { CharacterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
+        const service = CharacterConsistencyService.getInstance();
+        const coloredObjects = service.getColoredObjects(sessionId);
+        if (coloredObjects) {
+          console.log(`✅ [TIER2.5A] Using CharacterConsistencyService colored objects: ${coloredObjects.substring(0, 100)}`);
+          return coloredObjects;
         }
       } catch (error) {
-        console.warn('VisualDetailTracker failed, using fallback:', error.message);
+        console.warn('CharacterConsistencyService failed, using fallback:', error.message);
       }
       
       // Fallback to existing logic

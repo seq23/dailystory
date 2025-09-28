@@ -22,9 +22,9 @@ const hairMap = {
 
 ### Implementation Locations
 - **Tier 1**: `supabase/functions/runware-generate-image/index.ts` (lines 807-814)
-- **Tier 2**: `supabase/functions/runware-template-generation/index.ts` (via UnifiedCharacterDescriptor)
+- **Tier 2**: `supabase/functions/runware-template-generation/index.ts` (via CharacterConsistencyService)
 - **Tier 2.5**: `supabase/functions/runware-template-ab/index.js` (lines 286-292)
-- **Shared Logic**: `supabase/functions/_shared/UnifiedCharacterDescriptor.js` (lines 32-38)
+- **Consolidated Service**: `supabase/functions/_shared/CharacterConsistencyService.js`
 - **Hair Intelligence**: `supabase/functions/_shared/FrontendIntelligence.js` (getUniversalHairMapping method)
 
 ### REGRESSION PREVENTION CHECKLIST

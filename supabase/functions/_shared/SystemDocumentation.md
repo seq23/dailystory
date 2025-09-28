@@ -34,8 +34,9 @@
 - ✅ SVG Fallback: Implemented as final tier
 
 ## Critical Notes:
-- Frontend Force Tier 1 tests must defer to SimpleImageService.generateImage() with forceTier1=true rather than re-implementing cascade logic client-side
-- Never duplicate cascade logic in frontend components - use the orchestrator
+- Never duplicate cascade logic in frontend components - use the backend services
+- Character logic consolidated into CharacterConsistencyService (backend only)
+- Frontend services are minimal stubs - real logic in edge functions
 - All tiers are implemented and functional as of 2025-09-28
 
 ## Anti-Regression Guidelines:

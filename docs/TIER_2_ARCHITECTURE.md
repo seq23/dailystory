@@ -25,15 +25,11 @@ Tier 2 is the **Multi-Service Dynamic Pipeline** that orchestrates 5+ systematic
 
 ### Enhanced Dynamic Pipeline Components
 Tier 2 uses enhanced pipeline with advanced capabilities:
-- **DEPRECATED**: `SessionStateManager` - No longer used, replaced by direct session handling
-- `CharacterConsistencyService`: **DATABASE-BACKED** character seed generation (eliminates race conditions)
-- `SecondaryElementDetector`: Story element detection
-- `RealContextCollector`: Context collection from session history
-- `FrontendIntelligence`: Cultural enhancement and prompt building
-- `UnifiedCharacterDescriptor`: Character description generation
-
+- `CharacterConsistencyService`: **CONSOLIDATED** character management (database-backed, eliminates race conditions)
+  - Handles character generation, visual details, secondary characters, cultural enhancements
+  - Replaces previous: SessionStateManager, SecondaryElementDetector, VisualDetailTracker, UnifiedCharacterDescriptor
+- `RealContextCollector`: Context collection from session history  
 - `StyleFrameworks`: Dynamic styling based on difficulty
-- `VisualDetailTracker`: Visual element tracking
 
 ### What Tier 2 Does NOT Have
 - ❌ Templates or hardcoded prompt systems (that's Tier 2.5)

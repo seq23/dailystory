@@ -17,7 +17,7 @@ The system operates through two primary components:
 
 ### Current Implementation (CORRECT - DO NOT CHANGE)
 
-Located in: `supabase/functions/_shared/UnifiedCharacterDescriptor.js` (lines 32-38)
+Located in: `supabase/functions/_shared/CharacterConsistencyService.js` (consolidated service)
 
 ```javascript
 const visualMap = {
@@ -164,10 +164,9 @@ Verify cultural arrays only apply when intended:
 
 ## File Locations
 
-- **Main hair color logic**: `supabase/functions/_shared/UnifiedCharacterDescriptor.js`
-- **Cultural enhancement trigger and arrays**: `supabase/functions/_shared/FrontendIntelligence.js`
-- **Character consistency**: `supabase/functions/_shared/UnifiedCharacterConsistency.js`
-- **Frontend service layer**: `src/services/SimpleImageService.ts`
+- **Consolidated character logic**: `supabase/functions/_shared/CharacterConsistencyService.js`
+- **Cultural enhancement arrays**: `supabase/functions/_shared/tier25Vocabulary.js`
+- **Frontend service stub**: `src/services/PlaceholderValidationService.ts` (minimal stub only)
 
 ## Summary
 
