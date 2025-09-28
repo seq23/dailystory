@@ -1271,6 +1271,27 @@ export const ImageTierTester = () => {
       const templateResponse = response.data?.enhancedData?.templateResponse;
       const isDirectMode = chosenPath === 'Direct Mode' && templateResponse;
       
+      // PLAN FIX 3: Force Tier 1 Prompt Display Issue - Fix extraction logic
+      let positivePromptDisplay = '';
+      let negativePromptDisplay = '';
+      
+      if (isDirectMode) {
+        // Direct Mode: Use template prompts
+        positivePromptDisplay = templateResponse.positivePrompt;
+        negativePromptDisplay = templateResponse.negativePrompt;
+      } else {
+        // Orchestrator Mode: Fix the COMPLETE_TIER_1 prompt extraction
+        if (response.data?.templateStructure === 'COMPLETE_TIER_1' && response.data?.enhancedPrompt) {
+          // Copy enhancedPrompt to positivePrompt for COMPLETE_TIER_1 successes
+          positivePromptDisplay = response.data.enhancedPrompt;
+          negativePromptDisplay = response.data?.negativePrompt || '';
+        } else {
+          // Fallback to existing logic
+          positivePromptDisplay = response.data?.positivePrompt || response.data?.enhancedPrompt || '';
+          negativePromptDisplay = response.data?.negativePrompt || '';
+        }
+      }
+      
       setResults([{
         tier: 'tier-1-forced',
         success: overallSuccess,
@@ -1288,14 +1309,10 @@ export const ImageTierTester = () => {
           mood: response.data?.aiSchema?.mood || response.data?.debug?.aiSchema?.mood,
           pose: response.data?.aiSchema?.pose || response.data?.debug?.aiSchema?.pose,
           enhancedPrompt: response.data?.enhancedPrompt,
-          // For Direct Mode, show template prompts; otherwise show original prompts
-          positivePrompt: isDirectMode ? 
-            templateResponse.positivePrompt : 
-            (response.data?.positivePrompt || response.data?.enhancedPrompt),
-          negativePrompt: isDirectMode ? 
-            templateResponse.negativePrompt : 
-            response.data?.negativePrompt,
-          // Character consistency data
+          // PLAN FIX 3: Enhanced prompt display with proper COMPLETE_TIER_1 handling
+          positivePrompt: positivePromptDisplay,
+          negativePrompt: negativePromptDisplay,
+          templateStructure: response.data?.templateStructure || (isDirectMode ? 'DIRECT_MODE' : 'UNKNOWN'),
           characterConsistency: response.data?.enhancedData?.characterConsistency,
           visualConsistency: response.data?.enhancedData?.visualConsistency,
           culturalEnhancements: response.data?.enhancedData?.culturalEnhancements,
@@ -1310,7 +1327,6 @@ export const ImageTierTester = () => {
           tier: response.data?.tier,
           escalationPath: response.data?.escalationPath,
           nextAction: response.data?.nextAction, // Show escalation actions
-          templateStructure: isDirectMode ? 'DIRECT_MODE_HYBRID' : response.data?.templateStructure,
           tierPathResult: isEscalationResponse ? 'Both Tier 1 paths failed - escalation attempted' : 
                          (chosenPath === 'Direct Mode' ? 'Direct Mode Success (Tier 1 AI → 2.5C Template)' : 'Tier 1 Complete Flow successful'),
           debug: response.data?.debug, // Include debug information
@@ -1385,9 +1401,10 @@ export const ImageTierTester = () => {
         };
       }
 
-      // STEP 2: Use real frontend routing with Force Tier 1
-      cascadeHistory.push('🚀 Using SimpleImageService.generateImage with forceTier1=true...');
-      const tier1StartTime = Date.now();
+       // STEP 2: Use real frontend routing with Force Tier 1
+       cascadeHistory.push('🚀 Using SimpleImageService.generateImage with forceTier1=true...');
+       cascadeHistory.push(`⏰ ${new Date().toLocaleTimeString()}: Starting Force Tier 1 routing`);
+       const tier1StartTime = Date.now();
       
       try {
         const result = await SimpleImageService.generateImage({
@@ -1402,22 +1419,24 @@ export const ImageTierTester = () => {
         const tier1Time = Date.now() - tier1StartTime;
         
         if (result.success) {
-          cascadeHistory.push(`✅ Force Tier 1 Success (${tier1Time}ms) - Tier: ${result.tier}`);
-          
-          // Enhanced badge logic with proper fallback and path detection
-          let displayTier = result.tier || 'Tier 1';
+          // PLAN FIX 2B: Enhanced badge logic with proper fallback and path detection
+          let displayTier = result.tier || 'Tier 1';  // Fallback to 'Tier 1' if undefined
           let pathIndicator = '';
           
-          // Check if Direct Mode was used (proactive bypass)
-          if (result.metadata?.bypassedOrchestrator || result.metadata?.usedDirectMode) {
+          // Check path detection with better logic
+          if (result.metadata?.bypassedOrchestrator || result.metadata?.usedDirectMode || result.tier === 'DIRECT_MODE') {
             pathIndicator = ' (Direct Mode)';
           } else if (result.tier === 'Cache') {
             pathIndicator = ' (Cached)';
           } else if (result.tier?.includes('Recovery')) {
             pathIndicator = ' (Recovery)';
-          } else if (result.metadata?.usedOrchestrator) {
+          } else if (result.metadata?.usedOrchestrator || result.tier?.includes('orchestrator')) {
             pathIndicator = ' (via Orchestrator)';
           }
+          
+          cascadeHistory.push(`✅ Force Tier 1 Success (${tier1Time}ms) - Tier: ${result.tier}`);
+          cascadeHistory.push(`🎯 Final routing decision: ${result.tier}${pathIndicator} selected`);
+          cascadeHistory.push(`⏰ ${new Date().toLocaleTimeString()}: Process completed successfully`);
           
           resultBadge = `${displayTier}${pathIndicator} Success`;
           fallbackPath = `Force Tier 1 succeeded via ${displayTier}${pathIndicator}`;
@@ -1986,7 +2005,7 @@ export const ImageTierTester = () => {
           }
         },
         {
-          name: 'Direct Mode (AI Scene Creator)', 
+          name: 'Tier 1 (Direct Mode)', // PLAN FIX 2A: Renamed from "Direct Mode (AI Scene Creator)" 
           function: 'ai-visual-scene-creator',
           architecture: 'PURE_TYPESCRIPT',
           payload: {
@@ -2001,7 +2020,7 @@ export const ImageTierTester = () => {
           }
         },
         {
-          name: 'Orchestrator (Health Check)', 
+          name: 'Tier 1 (via Orchestrator)', // PLAN FIX 2A: Renamed from "Orchestrator (Health Check)"
           function: 'runware-generate-image',
           architecture: 'ORCHESTRATOR_PATTERN',
           payload: {

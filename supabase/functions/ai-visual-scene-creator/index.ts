@@ -629,11 +629,31 @@ Generate a comprehensive scene with complete visual elements including backgroun
           }
 
           aiData = await aiResponse.json();
-          generatedScene = aiData.choices?.[0]?.message?.content;
+          const rawContent = aiData.choices?.[0]?.message?.content;
 
-          if (!generatedScene) {
+          if (!rawContent) {
             throw new Error('OpenAI returned empty response');
           }
+
+          // PLAN FIX 1A: Parse AI JSON response into aiSchema, extract clean primaryScene
+          let aiSchema: any = null;
+          let generatedSceneClean: string = rawContent;
+          
+          try {
+            // Try to parse as JSON first
+            const parsedSchema = JSON.parse(rawContent);
+            if (parsedSchema && typeof parsedSchema === 'object' && parsedSchema.primaryScene) {
+              aiSchema = parsedSchema;
+              generatedSceneClean = parsedSchema.primaryScene;
+              console.log(`✅ [${requestId}] AI JSON parsed successfully - extracted clean primaryScene (${generatedSceneClean.length} chars)`);
+            } else {
+              console.log(`📄 [${requestId}] AI response is JSON but missing primaryScene field, using raw content`);
+            }
+          } catch (parseError) {
+            console.log(`📄 [${requestId}] AI response is not JSON, using raw content as primaryScene`);
+          }
+          
+          generatedScene = generatedSceneClean;
 
           // DIRECT MODE: Generate Tier 1 character consistency components
           let characterConsistency = '';
@@ -681,19 +701,25 @@ Generate a comprehensive scene with complete visual elements including backgroun
               if (supabase) {
                 templateResponse = await supabase.functions.invoke('runware-template-cd', {
                   body: {
-                    storyText,
-                    pageText: payload.pageText,
+                    // PLAN FIX 1B: Use cleaned primaryScene as pageText for Template C
+                    pageText: generatedSceneClean,  // Changed from payload.pageText to cleaned AI scene
                     userInfo,
                     sessionId,
                     pageNumber: payload.pageNumber || 1,
                     templateComplexity: 'C',
                     failedTierData: {
-                      enhancedSceneData: generatedScene,
+                      enhancedSceneData: generatedSceneClean,
                       tier: 'DIRECT_MODE',
-                      primaryScene: generatedScene,
+                      primaryScene: generatedSceneClean,
                       characterConsistency: characterConsistency,
                       visualConsistency: visualConsistency,
                       culturalEnhancements: culturalEnhancements
+                    },
+                    // Add targeted logging context
+                    debugContext: {
+                      source: 'ai-visual-scene-creator-direct-mode',
+                      aiParsed: !!aiSchema,
+                      sceneLength: generatedSceneClean.length
                     }
                   }
                 });
@@ -715,19 +741,25 @@ Generate a comprehensive scene with complete visual elements including backgroun
                     'Content-Type': 'application/json'
                   },
                   body: JSON.stringify({
-                    storyText,
-                    pageText: payload.pageText,
+                    // PLAN FIX 1B: Use cleaned primaryScene as pageText for Template C (HTTP fallback)
+                    pageText: generatedSceneClean,  // Changed from payload.pageText to cleaned AI scene
                     userInfo,
                     sessionId,
                     pageNumber: payload.pageNumber || 1,
                     templateComplexity: 'C',
                     failedTierData: {
-                      enhancedSceneData: generatedScene,
+                      enhancedSceneData: generatedSceneClean,
                       tier: 'DIRECT_MODE',
-                      primaryScene: generatedScene,
+                      primaryScene: generatedSceneClean,
                       characterConsistency: characterConsistency,
                       visualConsistency: visualConsistency,
                       culturalEnhancements: culturalEnhancements
+                    },
+                    // Add targeted logging context
+                    debugContext: {
+                      source: 'ai-visual-scene-creator-direct-mode-http',
+                      aiParsed: !!aiSchema,
+                      sceneLength: generatedSceneClean.length
                     }
                   })
                 });
@@ -755,7 +787,9 @@ Generate a comprehensive scene with complete visual elements including backgroun
                 imageURL: templateData.imageURL,
                 provider: 'runware-template-cd',
                 tier: 'DIRECT_MODE',
-                primaryScene: generatedScene,
+                primaryScene: generatedSceneClean,  // Return cleaned scene text
+                // PLAN FIX 1C: Return aiSchema at top level for UI display
+                aiSchema: aiSchema,
                 enhancedData: {
                   ...validation.enhancedData,
                   realAIGenerated: true,
@@ -786,7 +820,9 @@ Generate a comprehensive scene with complete visual elements including backgroun
           
           return {
             tier: 'TIER_1_SCENE_ONLY',
-            primaryScene: generatedScene,
+            primaryScene: generatedSceneClean,  // Return cleaned scene text
+            // PLAN FIX 1C: Return aiSchema at top level for UI display  
+            aiSchema: aiSchema,
             enhancedData: {
               ...validation.enhancedData,
               realAIGenerated: true,
