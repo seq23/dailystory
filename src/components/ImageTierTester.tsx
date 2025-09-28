@@ -1162,19 +1162,31 @@ export const ImageTierTester = () => {
       const hasPrimaryScene = response.data?.primaryScene && response.data.primaryScene.length > 0;
       steps[2].status = hasPrimaryScene ? 'success' : 'error';
       
-      // CRITICAL: Detect escalation responses and treat as Tier 1 failures
+      // Step 6: Validate Image Generation
+      steps[5].status = 'running';
+      const hasImage = !!(response.data?.imageURL || response.data?.imageUrl);
+      steps[5].status = hasImage ? 'success' : 'error';
+
+      // Detect response type for proper success categorization  
       const hasEscalationAction = response.data?.nextAction && 
         (response.data.nextAction.includes('ESCALATE') || response.data.nextAction.includes('escalate'));
-      const isEscalationResponse = hasEscalationAction || 
-        (response.data?.templateStructure && response.data.templateStructure !== 'COMPLETE_TIER_1');
+      const isCompleteTier1 = response.data?.templateStructure === 'COMPLETE_TIER_1';
+      const isDirectModeFallback = response.data?.tier === 'DIRECT_MODE' && hasImage;
       
-      // If this is an escalation response, Force Tier 1 should be considered failed
-      if (isEscalationResponse) {
+      // Force Tier 1 primary success: COMPLETE_TIER_1
+      // Force Tier 1 secondary success: Successful Direct Mode fallback
+      let tier1SuccessType = 'none';
+      if (isCompleteTier1) {
+        tier1SuccessType = 'primary'; // Achieved COMPLETE_TIER_1 - most desired outcome
+        steps[2].status = 'success';
+      } else if (isDirectModeFallback) {
+        tier1SuccessType = 'secondary'; // Successful fallback to Direct Mode
+        steps[2].status = 'success';
+        console.log(`Force Tier 1 achieved secondary success via Direct Mode fallback`);
+      } else if (hasEscalationAction || !hasImage) {
+        tier1SuccessType = 'failed'; // True failure - no image generated
         steps[2].status = 'error';
-        console.warn(`Force Tier 1 received escalation response - treating as failure:`, {
-          nextAction: response.data?.nextAction,
-          templateStructure: response.data?.templateStructure
-        });
+        console.warn(`Force Tier 1 failed - no successful image generation`);
       }
       
       // Step 4: Validate AI Schema (DEBUG ONLY - NOT A FAILURE CONDITION)
@@ -1199,20 +1211,16 @@ export const ImageTierTester = () => {
       const hasEnhancedPrompt = response.data?.enhancedPrompt && response.data.enhancedPrompt.length > 0;
       steps[4].status = hasEnhancedPrompt ? 'success' : 'error';
       
-      // Step 6: Validate Image Generation
-      steps[5].status = 'running';
-      const hasImage = !!(response.data?.imageURL || response.data?.imageUrl);
-      steps[5].status = hasImage ? 'success' : 'error';
-
-      // Determine overall success - Force Tier 1 fails if escalation occurs
-      const overallSuccess = !response.error && hasPrimaryScene && hasImage && !isEscalationResponse;
+      // Remove duplicate hasImage declaration - it's already defined above
+      // Determine overall success - Force Tier 1 succeeds with COMPLETE_TIER_1 or successful Direct Mode fallback
+      const overallSuccess = !response.error && hasPrimaryScene && hasImage && (isCompleteTier1 || isDirectModeFallback);
       
       // Categorize error type if failed
       let errorCategory = null;
       let probableCause = null;
       
       if (!overallSuccess) {
-        if (isEscalationResponse) {
+        if (hasEscalationAction) {
           errorCategory = 'TIER_1_ESCALATION_FAILURE';
           probableCause = `Force Tier 1 failed: System attempted to escalate to ${response.data?.nextAction || 'higher tier'} instead of completing Tier 1`;
         } else if (response.error?.message?.includes('503') || response.error?.message?.includes('Service Unavailable')) {
@@ -1327,8 +1335,9 @@ export const ImageTierTester = () => {
           tier: response.data?.tier,
           escalationPath: response.data?.escalationPath,
           nextAction: response.data?.nextAction, // Show escalation actions
-          tierPathResult: isEscalationResponse ? 'Both Tier 1 paths failed - escalation attempted' : 
-                         (chosenPath === 'Direct Mode' ? 'Direct Mode Success (Tier 1 AI → 2.5C Template)' : 'Tier 1 Complete Flow successful'),
+          tierPathResult: tier1SuccessType === 'primary' ? 'Tier 1 Complete Flow successful (COMPLETE_TIER_1)' :
+                          tier1SuccessType === 'secondary' ? 'Direct Mode Success (Tier 1 AI → Direct Mode Fallback)' : 
+                          'Both Tier 1 paths failed - escalation attempted',
           debug: response.data?.debug, // Include debug information
           error: response.error?.message || response.data?.error,
           errorCategory,
@@ -2453,7 +2462,7 @@ export const ImageTierTester = () => {
               className="flex items-center gap-2"
             >
               <CheckCircle className="h-4 w-4" />
-              Individual Tier Testing
+              Batch Tier Testing
             </Button>
           </div>
 

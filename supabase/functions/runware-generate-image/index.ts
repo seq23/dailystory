@@ -200,9 +200,57 @@ serve(async (req: Request): Promise<Response> => {
         throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_25A');
       }
 
-      // TODO: Implement real Runware image generation here when WebSocket client is available
-      // For now, escalate to test the cascade logic
-      throw new Error('TIER_1_PROCESSING_FAILED: Image generation service unavailable');
+      // Real Runware image generation using WebSocket service
+      const { RunwareWebSocketService } = await import('../_shared/RunwareWebSocketService.js');
+      const runwareApiKey = Deno.env.get('RUNWARE_API_KEY');
+      
+      if (!runwareApiKey) {
+        throw new Error('TIER_1_PROCESSING_FAILED: Runware API key not configured');
+      }
+
+      const imageResult = await RunwareWebSocketService.generateImage({
+        apiKey: runwareApiKey,
+        positivePrompt: enhancedPrompt.enhancedPrompt,
+        negativePrompt: enhancedPrompt.negativePrompt || '',
+        parameters: {
+          width: 1024,
+          height: 1024,
+          model: 'runware:100@1',
+          numberResults: 1,
+          outputFormat: 'WEBP'
+        }
+      });
+
+      if (!imageResult.success || !imageResult.imageURL) {
+        throw new Error('TIER_1_PROCESSING_FAILED: Image generation failed');
+      }
+
+      // Return successful COMPLETE_TIER_1 response
+      tierLogger.success('TIER_1', {
+        templateStructure: 'COMPLETE_TIER_1',
+        imageURL: imageResult.imageURL,
+        enhancedPrompt: enhancedPrompt.enhancedPrompt,
+        negativePrompt: enhancedPrompt.negativePrompt
+      });
+
+      return new Response(JSON.stringify({
+        success: true,
+        imageURL: imageResult.imageURL,
+        provider: 'runware-websocket',
+        tier: 'TIER_1',
+        templateStructure: 'COMPLETE_TIER_1',
+        requestId: requestId,
+        timestamp: new Date().toISOString(),
+        metadata: {
+          enhancedPrompt: enhancedPrompt.enhancedPrompt,
+          negativePrompt: enhancedPrompt.negativePrompt,
+          primaryScene: enhancedPrompt.primaryScene,
+          templateStructure: 'COMPLETE_TIER_1'
+        }
+      }), {
+        headers: generateEchoCorsHeaders(req),
+        status: 200
+      });
 
     } catch (tier1Error: unknown) {
       const errorMessage = tier1Error instanceof Error ? tier1Error.message : String(tier1Error);
