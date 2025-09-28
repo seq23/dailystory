@@ -31,28 +31,28 @@ async function memoizedServiceImport(path) {
 }
 
 
-/**
- * Extract relationships from tier25 vocabulary structure
- */
-extractRelationshipsFromTier25(vocab) {
-  return [
-    // Family relationships
-    'mom', 'mother', 'mommy', 'mama', 'ma', 'dad', 'father', 'daddy', 'papa', 'pa',
-    'sister', 'sis', 'brother', 'bro', 'grandma', 'grandmother', 'nana', 'granny',
-    'grandpa', 'grandfather', 'gramps', 'aunt', 'auntie', 'uncle', 'cousin',
-    // Community relationships  
-    'friend', 'buddy', 'pal', 'companion', 'best friend', 'bestie', 'classmate',
-    'teammate', 'neighbor', 'neighbour', 'playmate',
-    // Authority figures
-    'teacher', 'instructor', 'tutor', 'coach', 'trainer', 'doctor', 'dr',
-    'nurse', 'principal', 'headmaster', 'librarian', 'babysitter', 'sitter', 'guide'
-  ];
-}
-
 export class CharacterConsistencyService {
   constructor() {
     this.visualDetailCache = new Map();
     this.supabase = null;
+  }
+
+  /**
+   * Extract relationships from tier25 vocabulary structure
+   */
+  extractRelationshipsFromTier25(vocab) {
+    return [
+      // Family relationships
+      'mom', 'mother', 'mommy', 'mama', 'ma', 'dad', 'father', 'daddy', 'papa', 'pa',
+      'sister', 'sis', 'brother', 'bro', 'grandma', 'grandmother', 'nana', 'granny',
+      'grandpa', 'grandfather', 'gramps', 'aunt', 'auntie', 'uncle', 'cousin',
+      // Community relationships  
+      'friend', 'buddy', 'pal', 'companion', 'best friend', 'bestie', 'classmate',
+      'teammate', 'neighbor', 'neighbour', 'playmate',
+      // Authority figures
+      'teacher', 'instructor', 'tutor', 'coach', 'trainer', 'doctor', 'dr',
+      'nurse', 'principal', 'headmaster', 'librarian', 'babysitter', 'sitter', 'guide'
+    ];
   }
 
   /**
