@@ -304,21 +304,15 @@ Deno.serve(async (req: Request): Promise<Response> => {
       const validationResult = validateDirectModePayload(payload);
       console.log(`✅ [${requestId}] Fast validation passed: ${validationResult.contentType}`);
 
-      // Handle fast failure cases
-      if (shouldFailFast(payload)) {
-        console.log(`❌ [${requestId}] Fast failure detected`);
-        return corsResponse({ 
-          success: false, 
-          error: 'Invalid payload - missing required fields' 
-        }, req, 400);
-      }
+      // PHASE 5: Load orchestrator and dependencies in parallel (single load point)
+      console.log(`📦 [${requestId}] Loading orchestrator and dependencies in parallel`);
+      const [dependencies, supabaseClient] = await Promise.all([
+        getPhaseOrchestrator(),
+        createSupabaseClient()
+      ]);
 
-      // PHASE 5: Lazy load orchestrator and dependencies
-      console.log(`📦 [${requestId}] Loading orchestrator (lazy)`);
-      const orchestratorModules = await getPhaseOrchestrator();
-      
-      if (!orchestratorModules) {
-        throw new Error('Service initialization failed');
+      if (!dependencies?.phaseIntegrationOrchestrator) {
+        throw new Error('BOOT_OR_IMPORT_FAILURE: Service initialization failed');
       }
 
       // Load shared dependencies with resilient handling
@@ -360,15 +354,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
         console.warn(`[AI_VISUAL] StaticDataCache load failed: ${error instanceof Error ? error.message : String(error)}`);;
       }
 
-      // PHASE 5: Lazy load all dependencies in parallel
-      const [dependencies, supabase] = await Promise.all([
-        getPhaseOrchestrator(),
-        createSupabaseClient()
-      ]);
-
-      if (!dependencies?.phaseIntegrationOrchestrator) {
-        throw new Error('Service initialization failed');
-      }
+      // Dependencies already loaded above, use the cached reference
+      console.log(`✅ [${requestId}] Using loaded dependencies`);
 
       console.log(`✅ [${requestId}] All dependencies loaded`);
 
@@ -410,34 +397,66 @@ Deno.serve(async (req: Request): Promise<Response> => {
         provider: (result as any)?.provider
       });
 
-      // PHASE 8: Validate and return result
-      if (result && typeof result === 'object' && 'success' in result) {
-        const typedResult = result as any;
-        const response = {
-          success: typedResult.success,
-          imageURL: typedResult.imageURL,
-          ...(typedResult.templateData && { templateData: typedResult.templateData }),
-          ...(typedResult.metadata && { metadata: typedResult.metadata }),
-          provider: typedResult.provider || 'ai-visual-scene-creator',
-          requestId,
-          timestamp: new Date().toISOString()
-        };
-      
-        return corsResponse(response, req);
-      } else {
-        // This should be a Response object (error case)
-        return result as Response;
+      // PHASE 8: Validate and return result with proper type safety
+      if (!result || typeof result !== 'object') {
+        throw new Error('Invalid orchestrator response: null or non-object result');
       }
+
+      // Type-safe result validation
+      const resultObj = result as Record<string, any>;
+      if (!('success' in resultObj)) {
+        throw new Error('Invalid orchestrator response: missing success field');
+      }
+
+      const response = {
+        success: resultObj.success,
+        imageURL: resultObj.imageURL || null,
+        ...(resultObj.templateData && { templateData: resultObj.templateData }),
+        ...(resultObj.metadata && { metadata: resultObj.metadata }),
+        provider: resultObj.provider || 'ai-visual-scene-creator',
+        primaryScene: resultObj.primaryScene || null,
+        requestId,
+        timestamp: new Date().toISOString()
+      };
+
+      // Additional validation for critical fields if success is true
+      if (resultObj.success) {
+        if (!validateImageURL(resultObj.imageURL)) {
+          throw new Error('Invalid orchestrator response: invalid or missing imageURL');
+        }
+        if (!validatePrimarySceneQuality(resultObj.primaryScene)) {
+          console.warn(`[${requestId}] Warning: Primary scene quality may be suboptimal`);
+        }
+      }
+
+      return corsResponse(response, req);
 
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      const isSyncFailure = FAST_BOOT_SYNC.bootErrors.some(msg => 
+      
+      // Enhanced error classification for better retry logic
+      const isBootFailure = FAST_BOOT_SYNC.bootErrors.some(msg => 
         errorMessage.includes(msg)
       );
-      
-      if (!isSyncFailure || attempt === FAST_BOOT_SYNC.maxRetries) {
-        // Final failure or non-sync error
-        console.error('AI_VISUAL_SCENE_CREATOR - Final error after retries:', errorMessage);
+      const isValidationFailure = errorMessage.includes('MISSING_STORY_CONTENT') ||
+                                 errorMessage.includes('Invalid payload') ||
+                                 errorMessage.includes('Invalid JSON');
+      const isNetworkFailure = errorMessage.includes('timeout') ||
+                              errorMessage.includes('network') ||
+                              errorMessage.includes('connection');
+
+      // Validation failures should not retry
+      if (isValidationFailure) {
+        console.error(`❌ [${requestId}] Validation failure (no retry):`, errorMessage);
+        return corsResponse({ 
+          success: false, 
+          error: errorMessage 
+        }, req, 400);
+      }
+
+      // Only retry for boot/import failures or network issues
+      if ((!isBootFailure && !isNetworkFailure) || attempt === FAST_BOOT_SYNC.maxRetries) {
+        console.error(`AI_VISUAL_SCENE_CREATOR - Final error after retries: ${errorMessage}`);
         return createCorsErrorResponse(errorMessage, 500, req);
       }
       
