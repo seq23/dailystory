@@ -30,33 +30,6 @@ async function memoizedServiceImport(path) {
   }
 }
 
-// ============= DYNAMIC TIER25 VOCABULARY INTEGRATION =============
-/**
- * Enhanced vocabulary fetcher with comprehensive coverage and error handling
- */
-async getVocabulary() {
-  try {
-    const { TIER_25_UNIFIED_VOCABULARY_EXTENDED, EXPANDED_COLOR_ARRAY, CLOTHING_DETECTION_KEYWORDS } = await import('./tier25Vocabulary.js');
-    return {
-      settings: [...TIER_25_UNIFIED_VOCABULARY_EXTENDED.contextDetection.indoor, ...TIER_25_UNIFIED_VOCABULARY_EXTENDED.contextDetection.outdoor],
-      animals: TIER_25_UNIFIED_VOCABULARY_EXTENDED.objectCategories.animals,
-      relationships: this.extractRelationshipsFromTier25(TIER_25_UNIFIED_VOCABULARY_EXTENDED),
-      colors: EXPANDED_COLOR_ARRAY,
-      objects: Object.values(TIER_25_UNIFIED_VOCABULARY_EXTENDED.objectCategories).flat(),
-      clothing: CLOTHING_DETECTION_KEYWORDS || ['shirt', 'dress', 'pants', 'shoes', 'hat', 'jacket', 'sweater', 'skirt', 'uniform', 'pajamas', 'coat', 'scarf', 'boots', 'sneakers', 'hoodie', 'shorts', 'socks', 'blouse', 'tie', 'apron', 'gloves']
-    };
-  } catch (error) {
-    console.warn('Fallback to minimal vocabulary:', error);
-    return { 
-      settings: ['room', 'outside', 'kitchen', 'bedroom', 'park', 'playground'],
-      animals: ['cat', 'dog', 'rabbit', 'bird', 'hamster', 'fish'], 
-      relationships: ['friend', 'family', 'mom', 'dad', 'sister', 'brother', 'teacher'],
-      colors: ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown', 'black', 'white'], 
-      objects: ['toy', 'ball', 'book', 'car', 'doll', 'blocks', 'puzzle'], 
-      clothing: ['shirt', 'dress', 'pants', 'shoes', 'hat', 'jacket']
-    };
-  }
-}
 
 /**
  * Extract relationships from tier25 vocabulary structure
@@ -80,6 +53,33 @@ export class CharacterConsistencyService {
   constructor() {
     this.visualDetailCache = new Map();
     this.supabase = null;
+  }
+
+  /**
+   * Enhanced vocabulary fetcher with comprehensive coverage and error handling
+   */
+  async getVocabulary() {
+    try {
+      const { TIER_25_UNIFIED_VOCABULARY_EXTENDED, EXPANDED_COLOR_ARRAY, CLOTHING_DETECTION_KEYWORDS } = await import('./tier25Vocabulary.js');
+      return {
+        settings: [...TIER_25_UNIFIED_VOCABULARY_EXTENDED.contextDetection.indoor, ...TIER_25_UNIFIED_VOCABULARY_EXTENDED.contextDetection.outdoor],
+        animals: TIER_25_UNIFIED_VOCABULARY_EXTENDED.objectCategories.animals,
+        relationships: this.extractRelationshipsFromTier25(TIER_25_UNIFIED_VOCABULARY_EXTENDED),
+        colors: EXPANDED_COLOR_ARRAY,
+        objects: Object.values(TIER_25_UNIFIED_VOCABULARY_EXTENDED.objectCategories).flat(),
+        clothing: CLOTHING_DETECTION_KEYWORDS || ['shirt', 'dress', 'pants', 'shoes', 'hat', 'jacket', 'sweater', 'skirt', 'uniform', 'pajamas', 'coat', 'scarf', 'boots', 'sneakers', 'hoodie', 'shorts', 'socks', 'blouse', 'tie', 'apron', 'gloves']
+      };
+    } catch (error) {
+      console.warn('Fallback to minimal vocabulary:', error);
+      return { 
+        settings: ['room', 'outside'], 
+        animals: ['cat', 'dog'], 
+        relationships: ['friend'], 
+        colors: ['red', 'blue'], 
+        objects: ['toy', 'ball'], 
+        clothing: ['shirt', 'dress'] 
+      };
+    }
   }
 
   /**
@@ -737,10 +737,11 @@ export class CharacterConsistencyService {
     const momVisualPattern = /(mom|mother|mommy|mama)\\s+(has|with|wearing|wears|in)\\s+(a|an|the)?\\s*(long|short|curly|straight|blonde|brown|black|red|gray|grey)?\\s*(hair|dress|shirt|blouse|jacket|coat|apron|glasses|smile)/gi;
     const dadVisualPattern = /(dad|father|daddy|papa)\\s+(has|with|wearing|wears|in)\\s+(a|an|the)?\\s*(beard|mustache|glasses|hat|cap|shirt|jacket|tie|suit)/gi;
     
-    // Enhanced color and size patterns
-    const expandedColorWords = EXPANDED_COLOR_ARRAY.join('|').replace(/\s+/g, '\\s+');
-    const sizeWords = SIZE_ADJECTIVES.join('|');
-    const objectWords = UNIFIED_OBJECT_CATEGORIES.join('|').replace(/\s+/g, '\\s+');
+    // Enhanced color and size patterns using dynamic vocabulary
+    const vocab = await this.getVocabulary();
+    const expandedColorWords = vocab.colors.join('|').replace(/\s+/g, '\\s+');
+    const sizeWords = ['big', 'small', 'large', 'tiny', 'huge', 'little', 'giant', 'mini'].join('|');
+    const objectWords = vocab.objects.join('|').replace(/\s+/g, '\\s+');
     
     const colorPattern = new RegExp(`(${expandedColorWords})\\s+(${objectWords})`, 'gi');
     const sizePattern = new RegExp(`(${sizeWords})\\s+(${objectWords})`, 'gi');
@@ -1384,12 +1385,12 @@ export class CharacterConsistencyService {
     // Generate all pattern combinations for comprehensive relationship detection
     const allPatterns = [];
     
-    Object.entries(RELATIONSHIP_PATTERNS).forEach(([relationshipType, relationshipWords]) => {
-      relationshipWords.forEach(relationship => {
+    const vocab = await this.getVocabulary();
+    vocab.relationships.forEach(relationship => {
         // Direct Relationship + Name (e.g., "friend Apple", "teacher Ms. Johnson")
         allPatterns.push({
           pattern: new RegExp(`\\b(${relationship})\\s+([A-Z][a-z]{1,14})`, 'gi'),
-          type: relationshipType,
+          type: 'secondary',
           patternType: 'direct',
           relationship: relationship
         });
