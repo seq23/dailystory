@@ -556,10 +556,9 @@ JSON RESPONSE:
 }
 
 CRITICAL CHARACTER RULES:
-1. NEVER describe main character's skin tone - focus on hair, clothing, facial expressions, and pose only
-2. Use provided character data exactly - do not make up features for main character
-3. For secondary characters, you may describe their appearance as needed
-4. Use story-driven visual descriptions based on the text content
+1. Use provided character data exactly - do not make up features for main character
+2. For secondary characters, you may describe their appearance as needed
+3. Use story-driven visual descriptions based on the text content
 
 VISUAL ENHANCEMENT RULES:
 5. Create detailed primary scenes with rich visual descriptions (200-1500 characters)
