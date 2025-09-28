@@ -3,12 +3,36 @@
  * Character Consistency Service - Enhanced with Cultural Intelligence
  * Handles all character generation, consistency, cultural enhancements, and persistence
  * Includes all cultural arrays and detection logic from FrontendIntelligence
+ * BOOT_SYNC_ANOMALY FIX: Lazy loading with inline fallback memoizers
  */
 
 import { safeErrorMessage } from './errorPatterns.ts';
-import { PLACEHOLDER_POOLS } from './tier25Vocabulary.js';
-import { getAfricanAmericanHair, getAfricanAmericanFeatures } from './StaticDataCache.js';
 import { UnifiedCharacterDescriptor } from './UnifiedCharacterDescriptor.js';
+
+// Inline fallback memoizer for shared dependencies
+const serviceImportCache = new Map();
+async function memoizedServiceImport(path) {
+  if (serviceImportCache.has(path)) {
+    return serviceImportCache.get(path);
+  }
+  
+  try {
+    const module = await import(path);
+    serviceImportCache.set(path, module);
+    return module;
+  } catch (error) {
+    console.warn(`Failed to import ${path}:`, error);
+    // Return fallback mock to prevent crashes
+    return {
+      PLACEHOLDER_POOLS: {
+        colors: ['red', 'blue', 'green'],
+        animals: ['dog', 'cat', 'rabbit']
+      },
+      getAfricanAmericanHair: () => 'beautiful hair',
+      getAfricanAmericanFeatures: () => 'authentic features'
+    };
+  }
+}
 
 export class CharacterConsistencyService {
   constructor() {

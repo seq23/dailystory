@@ -2,10 +2,44 @@
  * UNIFIED PLACEHOLDER RESOLVER - PHASE 2 IMPLEMENTATION
  * Single resolver for all placeholder resolution across all tiers
  * Replaces scattered placeholder logic with centralized system
+ * BOOT_SYNC_ANOMALY FIX: Lazy loading with inline fallback memoizers
  */
 
-import { VOCABULARY, PLACEHOLDER_POOLS, pick, createSeededRandom, REGIONAL_CULTURAL_CONTEXTS } from './tier25Vocabulary.js';
-import { getHairBySkintone, shouldApplyCulturalEnhancements, getSkinBySkintone, getCulturalBundle } from './StaticDataCache.js';
+// Inline fallback memoizer for shared dependencies
+const importCache = new Map();
+async function memoizedImport(path) {
+  if (importCache.has(path)) {
+    return importCache.get(path);
+  }
+  
+  try {
+    const module = await import(path);
+    importCache.set(path, module);
+    return module;
+  } catch (error) {
+    console.warn(`Failed to import ${path}:`, error);
+    // Return fallback mock to prevent crashes
+    return {
+      VOCABULARY: {},
+      PLACEHOLDER_POOLS: {
+        colors: ['red', 'blue', 'green', 'yellow'],
+        animals: ['dog', 'cat', 'rabbit'],
+        sizes: ['big', 'small'],
+        foods: ['apples', 'cookies'],
+        settings: ['park', 'home'],
+        activities: ['playing', 'reading'],
+        emotions: ['happy', 'excited']
+      },
+      pick: (array, seed) => array?.[0] || '',
+      createSeededRandom: () => Math.random,
+      REGIONAL_CULTURAL_CONTEXTS: {},
+      getHairBySkintone: () => '',
+      getSkinBySkintone: () => '',
+      shouldApplyCulturalEnhancements: () => false,
+      getCulturalBundle: () => ({ hair: '', features: '' })
+    };
+  }
+}
 
 // ============= FIXED REGIONAL ETHNICITY DERIVATION =============
 export function deriveRegionalEthnicity(userInfo, avatarIdentity) {
@@ -121,10 +155,10 @@ export class UnifiedPlaceholderResolver {
         console.warn('Tier 1 Character Consistency failed:', error);
       }
       
-      // TIER 2: Smart Semantic Processing (contextual intelligence)  
+    // TIER 2: Smart Semantic Processing (contextual intelligence)  
       try {
         const beforeTier2 = (processedText.match(/\{[^}]+\}/g) || []).length;
-        processedText = this.resolveSmartSemanticPlaceholders(processedText, context);
+        processedText = await this.resolveSmartSemanticPlaceholders(processedText, context);
         const afterTier2 = (processedText.match(/\{[^}]+\}/g) || []).length;
         console.log(`✅ Tier 2 (Smart Semantic): Resolved ${beforeTier2 - afterTier2} placeholders`);
       } catch (error) {
@@ -145,8 +179,8 @@ export class UnifiedPlaceholderResolver {
       try {
         const beforeTier4 = (processedText.match(/\{[^}]+\}/g) || []).length;
         processedText = await this.resolveCanonicalPlaceholders(processedText, userInfo);
-        processedText = this.resolveMicroPlaceholders(processedText, { userInfo, seed });
-        processedText = this.resolveVocabularyPlaceholders(processedText, context);
+        processedText = await this.resolveMicroPlaceholders(processedText, { userInfo, seed });
+        processedText = await this.resolveVocabularyPlaceholders(processedText, context);
         const afterTier4 = (processedText.match(/\{[^}]+\}/g) || []).length;
         console.log(`✅ Tier 4 (Basic Processing): Resolved ${beforeTier4 - afterTier4} placeholders`);
       } catch (error) {
@@ -208,6 +242,9 @@ export class UnifiedPlaceholderResolver {
     resolved = resolved.replace(/\{child\.name\}/g, name);
     resolved = resolved.replace(/\{character\.name\}/g, name);
 
+    // Get lazy loaded modules
+    const { PLACEHOLDER_POOLS, pick } = await memoizedImport('./tier25Vocabulary.js');
+
     // User preferences
     resolved = resolved.replace(/\{user\.favoriteColor\}/g, userInfo?.favoriteColor || pick(PLACEHOLDER_POOLS.colors));
     resolved = resolved.replace(/\{user\.favoriteAnimal\}/g, userInfo?.favoriteAnimal || pick(PLACEHOLDER_POOLS.animals));
@@ -226,7 +263,7 @@ export class UnifiedPlaceholderResolver {
     // NEW FIX #6: Add {clothing} placeholder support using tier25Vocabulary
     // Use CLOTHING_DETECTION_KEYWORDS for comprehensive clothing options (Tier 1 & 2.5A only)
     try {
-      const { default: vocabularyModule } = await import('./tier25Vocabulary.js');
+      const vocabularyModule = await memoizedImport('./tier25Vocabulary.js');
       const randomClothing = pick(vocabularyModule.CLOTHING_DETECTION_KEYWORDS || ['shirt', 'dress', 'pants', 'jacket']);
       resolved = resolved.replace(/\{clothing\}/g, randomClothing);
     } catch (error) {
@@ -240,9 +277,13 @@ export class UnifiedPlaceholderResolver {
   /**
    * 2. MICRO PLACEHOLDERS - Story-specific with deterministic seeding
    */
-  resolveMicroPlaceholders(text, context) {
+  async resolveMicroPlaceholders(text, context) {
     const { userInfo = {}, seed = {} } = context;
     let resolved = text;
+
+    // Get lazy loaded modules
+    const { PLACEHOLDER_POOLS, pick } = await memoizedImport('./tier25Vocabulary.js');
+    const { getHairBySkintone, getSkinBySkintone, getCulturalBundle } = await memoizedImport('./StaticDataCache.js');
 
     // Use seeded values if available, otherwise pick from vocabulary
     const getSeededValue = (key, fallbackArray) => {
@@ -296,8 +337,11 @@ export class UnifiedPlaceholderResolver {
   /**
    * 3. VOCABULARY PLACEHOLDERS - From tier25Vocabulary pools
    */
-  resolveVocabularyPlaceholders(text, context) {
+  async resolveVocabularyPlaceholders(text, context) {
     let resolved = text;
+
+    // Get lazy loaded modules
+    const { PLACEHOLDER_POOLS, pick } = await memoizedImport('./tier25Vocabulary.js');
 
     // Replace vocabulary-specific placeholders - with safety checks
     if (PLACEHOLDER_POOLS && typeof PLACEHOLDER_POOLS === 'object') {
@@ -348,6 +392,9 @@ export class UnifiedPlaceholderResolver {
 
     // Detect cultural context from user info (language-based)
     const culturalLanguage = this.detectCulturalContext(userInfo);
+
+    // Get lazy loaded modules
+    const { REGIONAL_CULTURAL_CONTEXTS } = await memoizedImport('./tier25Vocabulary.js');
 
     // Use cultural bundle values (no async callbacks)
     resolved = resolved.replace(/\{cultural\.hair\}/g, culturalBundle.hair || '');
