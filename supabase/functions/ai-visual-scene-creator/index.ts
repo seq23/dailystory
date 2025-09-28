@@ -448,13 +448,29 @@ Deno.serve(async (req: Request): Promise<Response> => {
       };
     }
 
-    // Load shared dependencies
-    const { deriveRegionalEthnicity } = await memoizedImport(
-      new URL("../_shared/UnifiedPlaceholderResolver.js", import.meta.url).href
-    );
-    const { getHairBySkintone, getSkinBySkintone } = await memoizedImport(
-      new URL("../_shared/StaticDataCache.js", import.meta.url).href
-    );
+    // Load shared dependencies with resilient handling
+    let deriveRegionalEthnicity = (userInfo: any) => userInfo?.ethnicity || 'American';
+    let getHairBySkintone = (skinTone: string, sessionId?: string) => 'brown hair';
+    let getSkinBySkintone = (skinTone: string, sessionId?: string) => 'medium skin tone';
+
+    try {
+      const resolverModule = await memoizedImport(
+        new URL("../_shared/UnifiedPlaceholderResolver.js", import.meta.url).href
+      );
+      deriveRegionalEthnicity = resolverModule.deriveRegionalEthnicity;
+    } catch (error) {
+      console.warn(`[AI_VISUAL] UnifiedPlaceholderResolver load failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
+
+    try {
+      const cacheModule = await memoizedImport(
+        new URL("../_shared/StaticDataCache.js", import.meta.url).href
+      );
+      getHairBySkintone = cacheModule.getHairBySkintone;
+      getSkinBySkintone = cacheModule.getSkinBySkintone;
+    } catch (error) {
+      console.warn(`[AI_VISUAL] StaticDataCache load failed: ${error instanceof Error ? error.message : String(error)}`);;
+    }
 
     // PHASE 5: Lazy load all dependencies in parallel
     const [dependencies, supabase] = await Promise.all([
