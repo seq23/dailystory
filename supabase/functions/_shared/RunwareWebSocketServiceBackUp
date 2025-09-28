@@ -1,5 +1,63 @@
+// ============= Full TypeScript conversion =============
 // Unified Runware WebSocket Service
 // Single source of truth for all Runware WebSocket operations across edge functions
+
+// TypeScript interfaces for type safety
+interface GenerateImageParams {
+  apiKey: string;
+  positivePrompt: string;
+  negativePrompt?: string;
+  parameters?: ImageParameters;
+  timeout?: number;
+}
+
+interface ImageParameters {
+  width?: number;
+  height?: number;
+  model?: string;
+  numberResults?: number;
+  outputFormat?: string;
+  CFGScale?: number;
+  scheduler?: string;
+  steps?: number;
+  seed?: number;
+}
+
+interface ImageGenerationResult {
+  success: boolean;
+  imageURL: string;
+  seed: number;
+  cost: number;
+  NSFWContent: boolean;
+}
+
+interface TestConnectionResult {
+  success: boolean;
+  error?: string;
+  connectionSessionUUID?: string;
+}
+
+interface RunwareResponse {
+  error?: boolean;
+  errors?: Array<{ message: string }>;
+  errorMessage?: string;
+  data?: Array<RunwareResponseItem>;
+}
+
+interface RunwareResponseItem {
+  taskType: string;
+  taskUUID?: string;
+  imageURL?: string;
+  seed?: number;
+  cost?: number;
+  NSFWContent?: boolean;
+  connectionSessionUUID?: string;
+}
+
+interface ErrorWithMetadata extends Error {
+  type?: string;
+  nextAction?: string;
+}
 
 class RunwareWebSocketService {
   static async generateImage({
@@ -8,12 +66,12 @@ class RunwareWebSocketService {
     negativePrompt = '',
     parameters = {},
     timeout = 120000 // Increased from 30s to 120s for image generation
-  }) {
+  }: GenerateImageParams): Promise<ImageGenerationResult> {
     return new Promise((resolve, reject) => {
       const ws = new WebSocket('wss://ws-api.runware.ai/v1');
       let authCompleted = false;
       let resolved = false;
-      let keepaliveInterval = null;
+      let keepaliveInterval: number | null = null;
       
       // WebSocket timeout handler with improved error messaging
       const timeoutId = setTimeout(() => {
@@ -34,7 +92,7 @@ class RunwareWebSocketService {
           if (ws.readyState === WebSocket.OPEN && !resolved) {
             console.log('🏓 Sending WebSocket keepalive ping');
             try {
-              ws.ping();
+              (ws as any).ping();
             } catch (error) {
               // Ping not supported, send a minimal message instead
               console.log('🏓 Ping not supported, using alternative keepalive');
@@ -50,11 +108,11 @@ class RunwareWebSocketService {
         ws.send(authMessage);
       };
 
-      ws.onmessage = (event) => {
+      ws.onmessage = (event: MessageEvent) => {
         if (resolved) return;
         
         console.log('📩 WebSocket message:', event.data);
-        const response = JSON.parse(event.data);
+        const response: RunwareResponse = JSON.parse(event.data);
         
         // Handle errors
         if (response.error || response.errors) {
@@ -104,9 +162,9 @@ class RunwareWebSocketService {
               
               resolve({
                 success: true,
-                imageURL: item.imageURL,
-                seed: item.seed,
-                cost: item.cost,
+                imageURL: item.imageURL!,
+                seed: item.seed!,
+                cost: item.cost!,
                 NSFWContent: item.NSFWContent || false
               });
             }
@@ -114,7 +172,7 @@ class RunwareWebSocketService {
         }
       };
 
-      ws.onerror = (error) => {
+      ws.onerror = (error: Event) => {
         if (!resolved) {
           resolved = true;
           console.error('❌ WebSocket error during image generation:', error);
@@ -122,8 +180,8 @@ class RunwareWebSocketService {
           if (keepaliveInterval) clearInterval(keepaliveInterval);
           
           // Phase 2: Enhanced error classification
-          const errorType = this.classifyWebSocketError(error);
-          const enhancedError = new Error(`WebSocket ${errorType}: ${error?.message || 'Connection failed'}`);
+          const errorType = this.classifyWebSocketError(error as any);
+          const enhancedError: ErrorWithMetadata = new Error(`WebSocket ${errorType}: ${(error as any)?.message || 'Connection failed'}`);
           enhancedError.type = errorType;
           enhancedError.nextAction = errorType === 'AUTH_ERROR' ? 'ESCALATE_TIER_4' : 'RETRY_THEN_TIER_4';
           
@@ -131,7 +189,7 @@ class RunwareWebSocketService {
         }
       };
 
-      ws.onclose = (event) => {
+      ws.onclose = (event: CloseEvent) => {
         if (!resolved) {
           resolved = true;
           console.log(`🔌 WebSocket closed unexpectedly during image generation (code: ${event.code})`);
@@ -140,7 +198,7 @@ class RunwareWebSocketService {
           
           // Phase 2: Enhanced close code handling
           const closeReason = this.getCloseReason(event.code);
-          const error = new Error(`WebSocket closed: ${closeReason} (code: ${event.code})`);
+          const error: ErrorWithMetadata = new Error(`WebSocket closed: ${closeReason} (code: ${event.code})`);
           error.type = event.code === 1000 ? 'NORMAL_CLOSE' : 'ABNORMAL_CLOSE';
           error.nextAction = event.code === 1000 ? 'RETRY' : 'ESCALATE_TIER_4';
           
@@ -151,7 +209,7 @@ class RunwareWebSocketService {
   }
 
   // Helper for diagnostic operations
-  static async testConnection(apiKey, timeout = 15000) {
+  static async testConnection(apiKey: string, timeout: number = 15000): Promise<TestConnectionResult> {
     return new Promise((resolve) => {
       const ws = new WebSocket('wss://ws-api.runware.ai/v1');
       let resolved = false;
@@ -174,10 +232,10 @@ class RunwareWebSocketService {
         ws.send(authMessage);
       };
 
-      ws.onmessage = (event) => {
+      ws.onmessage = (event: MessageEvent) => {
         if (resolved) return;
         
-        const response = JSON.parse(event.data);
+        const response: RunwareResponse = JSON.parse(event.data);
         
         if (response.error || response.errors) {
           resolved = true;
@@ -205,7 +263,7 @@ class RunwareWebSocketService {
         }
       };
 
-      ws.onerror = (error) => {
+      ws.onerror = (error: Event) => {
         if (!resolved) {
           resolved = true;
           clearTimeout(timeoutId);
@@ -222,15 +280,9 @@ class RunwareWebSocketService {
       };
     });
   }
-}
-
-// Export for use in edge functions
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { RunwareWebSocketService };
-}
 
   // Phase 2: Error classification helpers
-  static classifyWebSocketError(error) {
+  static classifyWebSocketError(error: any): string {
     const msg = error?.message?.toLowerCase() || '';
     if (msg.includes('auth') || msg.includes('unauthorized') || msg.includes('api key')) {
       return 'AUTH_ERROR';
@@ -244,8 +296,8 @@ if (typeof module !== 'undefined' && module.exports) {
     return 'UNKNOWN_ERROR';
   }
   
-  static getCloseReason(code) {
-    const reasons = {
+  static getCloseReason(code: number): string {
+    const reasons: Record<number, string> = {
       1000: 'Normal Closure',
       1001: 'Going Away',
       1002: 'Protocol Error',
@@ -260,5 +312,9 @@ if (typeof module !== 'undefined' && module.exports) {
   }
 }
 
-// Make available as global
-globalThis.RunwareWebSocketService = RunwareWebSocketService;
+// Export for use in edge functions
+export { RunwareWebSocketService };
+export type { GenerateImageParams, ImageGenerationResult, TestConnectionResult };
+
+// Make available as global for backward compatibility
+(globalThis as any).RunwareWebSocketService = RunwareWebSocketService;
