@@ -21,13 +21,21 @@ function asResponse(maybe: unknown, fallbackStatus = 204): Response {
   return new Response(JSON.stringify(maybe), { status: 200, headers: { "Content-Type": "application/json" } });
 }
 
-// Dynamic handler loader (cached + backoff)
+// Fast Boot Sync Recovery Configuration
+const FAST_BOOT_SYNC = {
+  maxRetries: 3,
+  delays: [500, 2000, 3500], // Total: 6 seconds max
+  bootErrors: ['Module not found', 'index.js failed to load', 'Handler default export not a function', 'boot sync error'],
+  maxTotalTime: 6000
+};
+
+// Dynamic handler loader (cached + fast retry)
 type HandlerFn = (req: Request) => Promise<Response> | Response;
 let cachedHandler: HandlerFn | null = null;
 let lastLoadError: { at: number; message: string; attempt: number } | null = null;
 let isLoading = false;
 const MAX_RETRIES = 3;
-const BACKOFF_MS = 5_000;
+const BACKOFF_MS = 2_000; // Reduced from 5s to 2s for faster retry
 async function loadHandler(allowRetry = false): Promise<HandlerFn | null> {
   if (cachedHandler) return cachedHandler;
   
@@ -129,20 +137,59 @@ serve(async (req) => {
       return withCors(new Response(null, { status: 200, headers: { "Cache-Control": "no-store", "Content-Length": "0" } }));
     }
 
-    // POST → load handler (with backoff), delegate or clean 503
+    // POST → fast boot sync recovery with handler loading
     if (req.method === "POST") {
-      let handler = await loadHandler(false);
-      if (!handler) handler = await loadHandler(true);
-      if (!handler) {
-        return withCors(new Response(JSON.stringify({
-          error: "HANDLER_UNAVAILABLE",
-          message: lastLoadError?.message ?? "index.js failed to load",
-          service: SERVICE_NAME,
-          timestamp: new Date().toISOString(),
-        }), { status: 503, headers: { "Content-Type": "application/json" } }));
+      // Fast retry wrapper for handler loading
+      for (let attempt = 0; attempt <= FAST_BOOT_SYNC.maxRetries; attempt++) {
+        try {
+          let handler = await loadHandler(false);
+          if (!handler) handler = await loadHandler(true);
+          if (handler) {
+            const out = await handler(req);
+            return withCors(asResponse(out));
+          }
+          
+          // Handler unavailable - check if boot sync error
+          const errorMessage = lastLoadError?.message ?? "index.js failed to load";
+          const isSyncFailure = FAST_BOOT_SYNC.bootErrors.some(msg => 
+            errorMessage.includes(msg)
+          );
+          
+          if (!isSyncFailure || attempt === FAST_BOOT_SYNC.maxRetries) {
+            // Final failure or non-sync error
+            return withCors(new Response(JSON.stringify({
+              error: "HANDLER_UNAVAILABLE",
+              message: errorMessage,
+              service: SERVICE_NAME,
+              timestamp: new Date().toISOString(),
+            }), { status: 503, headers: { "Content-Type": "application/json" } }));
+          }
+          
+          const delay = FAST_BOOT_SYNC.delays[attempt];
+          console.warn(`🔄 [TEMPLATE_AB] Fast boot retry ${attempt + 1}/${FAST_BOOT_SYNC.maxRetries} in ${delay}ms: ${errorMessage}`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          
+        } catch (handlerError: any) {
+          const errorMessage = handlerError?.message ?? String(handlerError);
+          const isSyncFailure = FAST_BOOT_SYNC.bootErrors.some(msg => 
+            errorMessage.includes(msg)
+          );
+          
+          if (!isSyncFailure || attempt === FAST_BOOT_SYNC.maxRetries) {
+            // Final failure or non-sync error
+            return withCors(new Response(JSON.stringify({
+              error: "HANDLER_ERROR",
+              message: errorMessage,
+              service: SERVICE_NAME,
+              timestamp: new Date().toISOString(),
+            }), { status: 500, headers: { "Content-Type": "application/json" } }));
+          }
+          
+          const delay = FAST_BOOT_SYNC.delays[attempt];
+          console.warn(`🔄 [TEMPLATE_AB] Fast boot retry ${attempt + 1}/${FAST_BOOT_SYNC.maxRetries} in ${delay}ms: ${errorMessage}`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
       }
-      const out = await handler(req);
-      return withCors(asResponse(out));
     }
 
     // Method not allowed (still CORS-safe)

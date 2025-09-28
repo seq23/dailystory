@@ -110,13 +110,24 @@ function validatePayloadFast(payload: ValidationPayload): boolean {
   return true; // Validation passed
 }
 
-// OPTIMIZED SERVE HANDLER WITH COMPLETE TIER CASCADE
+// Fast Boot Sync Recovery Configuration
+const FAST_BOOT_SYNC = {
+  maxRetries: 3,
+  delays: [500, 2000, 3500], // Total: 6 seconds max
+  bootErrors: ['Module not found', 'BOOT_OR_IMPORT_FAILURE', 'failed to determine entrypoint', 'Cannot read properties of null'],
+  maxTotalTime: 6000
+};
+
+// OPTIMIZED SERVE HANDLER WITH FAST BOOT SYNC RECOVERY AND COMPLETE TIER CASCADE
 Deno.serve(async (req: Request): Promise<Response> => {
-  // PHASE 1: OPTIONS fast path (immediate return)
-  if (req.method === 'OPTIONS') {
-    const corsHeaders = generateEchoCorsHeaders(req);
-    return new Response(null, { headers: corsHeaders });
-  }
+  // Fast retry wrapper for boot sync issues
+  for (let attempt = 0; attempt <= FAST_BOOT_SYNC.maxRetries; attempt++) {
+    try {
+      // PHASE 1: OPTIONS fast path (immediate return)
+      if (req.method === 'OPTIONS') {
+        const corsHeaders = generateEchoCorsHeaders(req);
+        return new Response(null, { headers: corsHeaders });
+      }
 
   // PHASE 2: GET/HEAD health checks with environment info
   if (req.method === 'GET' || req.method === 'HEAD') {
@@ -557,23 +568,27 @@ Deno.serve(async (req: Request): Promise<Response> => {
     }
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error(`Boot or import failure: ${errorMessage}`, error);
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: "BOOT_OR_IMPORT_FAILURE",
-        message: errorMessage,
-        service: "runware-generate-image",
-        escalation: "TIER_4",
-      }),
-      {
-        status: 503,
-        headers: {
-          "content-type": "application/json",
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-        },
-      }
+    const isSyncFailure = FAST_BOOT_SYNC.bootErrors.some(msg => 
+      errorMessage.includes(msg)
     );
+    
+    if (!isSyncFailure || attempt === FAST_BOOT_SYNC.maxRetries) {
+      // Final failure or non-sync error
+      console.error(`[runware-generate-image] Final error after retries: ${errorMessage}`);
+      return corsResponse({ 
+        error: errorMessage,
+        escalationTarget: "TIER_4" 
+      }, req, 500);
+    }
+    
+    const delay = FAST_BOOT_SYNC.delays[attempt];
+    console.warn(`🔄 [RUNWARE_GEN] Fast boot retry ${attempt + 1}/${FAST_BOOT_SYNC.maxRetries} in ${delay}ms: ${errorMessage}`);
+    await new Promise(resolve => setTimeout(resolve, delay));
   }
+  
+  // Should never reach here, but fallback
+  return corsResponse({ 
+    error: 'Max retries exceeded',
+    escalationTarget: "TIER_4" 
+  }, req, 500);
 });
