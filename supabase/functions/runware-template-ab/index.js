@@ -94,24 +94,11 @@ function generateInlineNuclearNegative(culturalProfile, avatarType, difficulty) 
 
 // ============= LAZY LOADING FUNCTIONS FOR HEAVY DEPENDENCIES =============
 
+// PhaseIntegrationOrchestrator functionality has been consolidated into CharacterConsistencyService
+// This function now returns null to trigger fallback processing
 async function getPhaseOrchestrator() {
-  try {
-    // DNS error detection and defensive handling
-    // Loading orchestrator service
-    const { phaseIntegrationOrchestrator } = await import("../_shared/PhaseIntegrationOrchestrator.js");
-    // Orchestrator loaded successfully
-    return phaseIntegrationOrchestrator;
-  } catch (error) {
-    console.warn('⚠️ PhaseIntegrationOrchestrator lazy load failed (DNS/Sync):', error.message);
-    
-    // Circuit breaker: Detect repeated failures
-    const errorMessage = error.message?.toLowerCase() || '';
-    if (errorMessage.includes('dns') || errorMessage.includes('network') || errorMessage.includes('module not found')) {
-      console.warn('🔄 DNS/Network error detected, using graceful degradation');
-    }
-    
-    return null;
-  }
+  console.log('🔄 PhaseIntegrationOrchestrator consolidated - using character consistency service instead');
+  return null;
 }
 
 // ============= FIXED REGIONAL ETHNICITY DERIVATION =============

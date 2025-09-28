@@ -238,25 +238,71 @@ export class CharacterConsistencyService {
   }
 
   /**
+   * Get visual detail from cache or database for consistency
+   */
+  async getVisualDetailFromCache(sessionId: SessionId, characterName: string, detailType: string): Promise<string | null> {
+    const cacheKey = `${sessionId}_${characterName}_${detailType}`;
+    
+    // Check in-memory cache first
+    if (this.visualDetailCache.has(cacheKey)) {
+      return this.visualDetailCache.get(cacheKey);
+    }
+    
+    // Check database
+    try {
+      const { createClient } = await import('../resilientLoader.ts').then(m => m.memoizedImport('@supabase/supabase-js'));
+      const supabase = createClient(
+        Deno.env.get('SUPABASE_URL') as string,
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') as string
+      );
+      
+      const { data, error } = await supabase
+        .from('visual_details_cache')
+        .select('detail_value')
+        .eq('session_id', sessionId)
+        .eq('character_name', characterName)
+        .eq('detail_type', detailType)
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .single();
+      
+      if (error && error.code !== 'PGRST116') {
+        console.error('❌ Visual detail cache query error:', error);
+        return null;
+      }
+      
+      const value = data?.detail_value || null;
+      if (value) {
+        // Cache in memory for future requests
+        this.visualDetailCache.set(cacheKey, value);
+      }
+      
+      return value;
+    } catch (error) {
+      console.error('❌ Visual detail cache error:', error);
+      return null;
+    }
+  }
+
+  /**
    * Build character description from seed data
-   * Now integrated with VisualDetailTracker for persistent clothing
+   * Now integrated with visual details cache for persistent clothing
    */
   async buildCharacterDescription(seedData: Partial<CharacterSeed>, storyContext: StoryContext, pageTextClothing: string | null = null, sessionId: SessionId | null = null): Promise<string> {
     const characterName = seedData.characterName || 'child';
     const age = '6-8'; // Fixed age since age is not part of CharacterSeed
     
-    // PRIORITY 1: Check VisualDetailTracker for detected clothing
+    // PRIORITY 1: Check visual details cache for detected clothing
     let clothingStyle = '';
     if (sessionId) {
       try {
-        const { VisualDetailTracker } = await import('./VisualDetailTracker.js');
-        const detectedClothing = await VisualDetailTracker.buildClothingDescription(sessionId, characterName);
-        if (detectedClothing) {
-          clothingStyle = detectedClothing;
-          console.log(`👕 Using VisualDetailTracker clothing for ${characterName}: ${detectedClothing}`);
+        const existingClothing = await this.getVisualDetailFromCache(sessionId, characterName, 'clothing');
+        if (existingClothing) {
+          clothingStyle = existingClothing;
+          console.log(`👕 Using cached clothing for ${characterName}: ${existingClothing}`);
         }
       } catch (error) {
-        console.log(`⚠️ VisualDetailTracker clothing query failed:`, (error as Error).message || 'Unknown error');
+        console.log(`⚠️ Visual details cache query failed:`, (error as Error).message || 'Unknown error');
       }
     }
     
