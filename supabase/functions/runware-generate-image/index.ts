@@ -104,7 +104,16 @@ function validatePrimarySceneQuality(scene: string): boolean {
 // PHASE 1A: Lightning-Fast Input Validation (50ms max)
 function validatePayloadFast(payload: ValidationPayload): boolean {
   if (!payload) throw new Error("PAYLOAD_NULL");
-  if (!payload.pageText && !payload.storyText) throw new Error("NO_STORY_CONTENT");
+  
+  // Enhanced validation for story content
+  const hasPageText = payload.pageText && typeof payload.pageText === 'string' && payload.pageText.trim().length > 0;
+  const hasStoryText = payload.storyText && typeof payload.storyText === 'string' && payload.storyText.trim().length > 0;
+  
+  if (!hasPageText && !hasStoryText) {
+    console.error("[runware-generate-image] Final error after retries: NO_STORY_CONTENT");
+    throw new Error("NO_STORY_CONTENT");
+  }
+  
   if (!payload.sessionId && !payload.userInfo) throw new Error("NO_SESSION_ID");
   return true; // Validation passed
 }

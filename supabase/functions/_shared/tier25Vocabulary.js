@@ -737,5 +737,4 @@ const tier25vocabulary = {
 };
 
 // ============= EXPORTS FOR UNIFIED PLACEHOLDER RESOLVER =============
-export const VOCABULARY = TIER_25_UNIFIED_VOCABULARY_EXTENDED;
 export { CULTURAL_ARRAYS_EXTENDED, tier25vocabulary };
