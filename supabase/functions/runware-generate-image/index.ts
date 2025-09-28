@@ -120,14 +120,11 @@ const FAST_BOOT_SYNC = {
 
 // OPTIMIZED SERVE HANDLER WITH FAST BOOT SYNC RECOVERY AND COMPLETE TIER CASCADE
 Deno.serve(async (req: Request): Promise<Response> => {
-  // Fast retry wrapper for boot sync issues
-  for (let attempt = 0; attempt <= FAST_BOOT_SYNC.maxRetries; attempt++) {
-    try {
-      // PHASE 1: OPTIONS fast path (immediate return)
-      if (req.method === 'OPTIONS') {
-        const corsHeaders = generateEchoCorsHeaders(req);
-        return new Response(null, { headers: corsHeaders });
-      }
+  // PHASE 1: OPTIONS fast path (immediate return)
+  if (req.method === 'OPTIONS') {
+    const corsHeaders = generateEchoCorsHeaders(req);
+    return new Response(null, { headers: corsHeaders });
+  }
 
   // PHASE 2: GET/HEAD health checks with environment info
   if (req.method === 'GET' || req.method === 'HEAD') {
@@ -158,432 +155,334 @@ Deno.serve(async (req: Request): Promise<Response> => {
     return corsResponse({ error: 'Method not allowed' }, req, 405);
   }
 
-  let payload: any;
-  const requestId = `mg1${Math.random().toString(36).substring(2)}`;
-
-  try {
-    // PHASE 3: JSON parsing only after method validation
-    payload = await req.json();
-    console.log(`🚀 [${requestId}] runware-generate-image ready`);
-
-    // PHASE 4: Fast validation
-    validatePayloadFast(payload);
-    console.log(`✅ [${requestId}] Fast validation passed`);
-
-  } catch (error: unknown) {
-    console.log(`❌ [${requestId}] Fast validation failed: ${error instanceof Error ? error.message : String(error)}`);
-    return corsResponse({ 
-      error: error instanceof Error ? error.message : String(error),
-      escalationTarget: "TIER_4" 
-    }, req, 400);
-  }
-
-  try {
-    // Preferred: resilient loader from _shared
-    let memoizedImport: <T=any>(href: string) => Promise<T>;
+  // Fast retry wrapper for boot sync issues
+  for (let attempt = 0; attempt <= FAST_BOOT_SYNC.maxRetries; attempt++) {
     try {
-      ({ memoizedImport } = await import(
-        new URL("../_shared/resilientLoader.ts", import.meta.url).href
-      ));
-    } catch {
-      // Fallback: simple local memoizer to stay up during cold boot anomalies
-      const cache = new Map<string, Promise<any>>();
-      memoizedImport = <T=any>(href: string) => {
-        if (!cache.has(href)) cache.set(href, import(href));
-        return cache.get(href)! as Promise<T>;
-      };
-    }
+      let payload: any;
+      const requestId = `mg1${Math.random().toString(36).substring(2)}`;
 
-    // PHASE 5: Load tier logger and lazy-load orchestrator
-    const tierLogger = await bindTierLogger(payload.sessionId || 'unknown', requestId, req.headers.get('authorization'), memoizedImport);
+      // PHASE 3: JSON parsing only after method validation
+      payload = await req.json();
+      console.log(`🚀 [${requestId}] runware-generate-image ready`);
 
+      // PHASE 4: Fast validation
+      validatePayloadFast(payload);
+      console.log(`✅ [${requestId}] Fast validation passed`);
 
-    // PHASE 6: Process request with lazy-loaded services
-    tierLogger.attempt('TIER_1', { storyLength: payload.pageText?.length || payload.storyText?.length });
+      // Preferred: resilient loader from _shared
+      let memoizedImport: <T=any>(href: string) => Promise<T>;
+      try {
+        ({ memoizedImport } = await import(
+          new URL("../_shared/resilientLoader.ts", import.meta.url).href
+        ));
+      } catch {
+        // Fallback: simple local memoizer to stay up during cold boot anomalies
+        const cache = new Map<string, Promise<any>>();
+        memoizedImport = <T=any>(href: string) => {
+          if (!cache.has(href)) cache.set(href, import(href));
+          return cache.get(href)! as Promise<T>;
+        };
+      }
 
-    // Attempt real Tier 1 processing with actual orchestrator
-    console.log(`[TIER_1] Attempting orchestrator enhancement`);
-    
-    try {
-      // Ensure orchestrator is available (lazy-load here so failures fall into Tier 1 catch)
-      if (!phaseIntegrationOrchestrator) {
-        try {
-          const orchestratorUrl = new URL("../_shared/PhaseIntegrationOrchestrator.js", import.meta.url).href;
-          const orchestratorModule = await memoizedImport(orchestratorUrl);
-          phaseIntegrationOrchestrator = orchestratorModule.phaseIntegrationOrchestrator;
-        } catch (error) {
-          console.warn(`[TIER_1] Orchestrator load failed: ${error instanceof Error ? error.message : String(error)}`);
+      // PHASE 5: Load tier logger and lazy-load orchestrator
+      const tierLogger = await bindTierLogger(payload.sessionId || 'unknown', requestId, req.headers.get('authorization'), memoizedImport);
+
+      // PHASE 6: Process request with lazy-loaded services
+      tierLogger.attempt('TIER_1', { storyLength: payload.pageText?.length || payload.storyText?.length });
+
+      // Attempt real Tier 1 processing with actual orchestrator
+      console.log(`[TIER_1] Attempting orchestrator enhancement`);
+      
+      try {
+        // Ensure orchestrator is available (lazy-load here so failures fall into Tier 1 catch)
+        if (!phaseIntegrationOrchestrator) {
+          try {
+            const orchestratorUrl = new URL("../_shared/PhaseIntegrationOrchestrator.js", import.meta.url).href;
+            const orchestratorModule = await memoizedImport(orchestratorUrl);
+            phaseIntegrationOrchestrator = orchestratorModule.phaseIntegrationOrchestrator;
+          } catch (error) {
+            console.warn(`[TIER_1] Orchestrator load failed: ${error instanceof Error ? error.message : String(error)}`);
+          }
         }
-      }
-      const orchestrator = phaseIntegrationOrchestrator;
-      
-      // Real Tier 1 processing through orchestrator
-      const enhancedPrompt = await orchestrator.getEnhancedPrompt(payload);
-      
-      if (!enhancedPrompt || !validatePrimarySceneQuality(enhancedPrompt.primaryScene || enhancedPrompt.enhancedPrompt || '')) {
-        throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_25A');
-      }
-
-      // Real Runware image generation using WebSocket service
-      const runwareUrl = new URL("../_shared/RunwareWebSocketService.ts", import.meta.url).href;
-      const { RunwareWebSocketService } = await memoizedImport(runwareUrl);
-      const runwareApiKey = Deno.env.get('RUNWARE_API_KEY');
-      
-      if (!runwareApiKey) {
-        throw new Error('TIER_1_PROCESSING_FAILED: Runware API key not configured');
-      }
-
-      const imageResult = await RunwareWebSocketService.generateImage({
-        apiKey: runwareApiKey,
-        positivePrompt: enhancedPrompt.enhancedPrompt,
-        negativePrompt: enhancedPrompt.negativePrompt || '',
-        parameters: {
-          width: 1024,
-          height: 1024,
-          model: 'runware:100@1',
-          numberResults: 1,
-          outputFormat: 'WEBP'
+        const orchestrator = phaseIntegrationOrchestrator;
+        
+        // Real Tier 1 processing through orchestrator
+        const enhancedPrompt = await orchestrator.getEnhancedPrompt(payload);
+        
+        if (!enhancedPrompt || !validatePrimarySceneQuality(enhancedPrompt.primaryScene || enhancedPrompt.enhancedPrompt || '')) {
+          throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_25A');
         }
-      });
 
-      if (!imageResult.success || !imageResult.imageURL) {
-        throw new Error('TIER_1_PROCESSING_FAILED: Image generation failed');
-      }
+        // Real Runware image generation using WebSocket service
+        const runwareUrl = new URL("../_shared/RunwareWebSocketService.ts", import.meta.url).href;
+        const { RunwareWebSocketService } = await memoizedImport(runwareUrl);
+        const runwareApiKey = Deno.env.get('RUNWARE_API_KEY');
+        
+        if (!runwareApiKey) {
+          throw new Error('TIER_1_PROCESSING_FAILED: Runware API key not configured');
+        }
 
-      // Return successful COMPLETE_TIER_1 response
-      tierLogger.success('TIER_1', {
-        templateStructure: 'COMPLETE_TIER_1',
-        imageURL: imageResult.imageURL,
-        enhancedPrompt: enhancedPrompt.enhancedPrompt,
-        negativePrompt: enhancedPrompt.negativePrompt
-      });
+        const imageResult = await RunwareWebSocketService.generateImage({
+          apiKey: runwareApiKey,
+          positivePrompt: enhancedPrompt.enhancedPrompt,
+          negativePrompt: enhancedPrompt.negativePrompt || '',
+          parameters: {
+            width: 1024,
+            height: 1024,
+            model: 'runware:100@1',
+            numberResults: 1,
+            outputFormat: 'WEBP'
+          }
+        });
 
-      return new Response(JSON.stringify({
-        success: true,
-        imageURL: imageResult.imageURL,
-        provider: 'runware-websocket',
-        tier: 'TIER_1',
-        templateStructure: 'COMPLETE_TIER_1',
-        requestId: requestId,
-        timestamp: new Date().toISOString(),
-        metadata: {
+        if (!imageResult.success || !imageResult.imageURL) {
+          throw new Error('TIER_1_PROCESSING_FAILED: Image generation failed');
+        }
+
+        // Return successful COMPLETE_TIER_1 response
+        tierLogger.success('TIER_1', {
+          templateStructure: 'COMPLETE_TIER_1',
+          imageURL: imageResult.imageURL,
           enhancedPrompt: enhancedPrompt.enhancedPrompt,
-          negativePrompt: enhancedPrompt.negativePrompt,
-          primaryScene: enhancedPrompt.primaryScene,
-          templateStructure: 'COMPLETE_TIER_1'
-        }
-      }), {
-        headers: generateEchoCorsHeaders(req),
-        status: 200
-      });
+          negativePrompt: enhancedPrompt.negativePrompt
+        });
 
-    } catch (tier1Error: unknown) {
-      const errorMessage = tier1Error instanceof Error ? tier1Error.message : String(tier1Error);
-      console.log(`[TIER_1] Failed: ${errorMessage}`);
-      tierLogger.failure('TIER_1', { error: errorMessage });
-      
-      // Create Supabase client once for all fallback attempts
-      const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4');
-      const internalSupabase = createClient(
-        Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-      );
-      
-      let directErrorMessage = 'Direct Mode not attempted';
-      
-      // CORRECTED CASCADE: Try Direct Mode first (if we have valid primaryScene)
-      if (!errorMessage.includes('NO_PRIMARY_SCENE')) {
-        console.log(`[DIRECT_MODE] Attempting Direct Mode fallback after Tier 1 failure`);
+        return new Response(JSON.stringify({
+          success: true,
+          imageURL: imageResult.imageURL,
+          provider: 'runware-websocket',
+          tier: 'TIER_1',
+          templateStructure: 'COMPLETE_TIER_1',
+          requestId: requestId,
+          timestamp: new Date().toISOString(),
+          metadata: {
+            enhancedPrompt: enhancedPrompt.enhancedPrompt,
+            negativePrompt: enhancedPrompt.negativePrompt,
+            primaryScene: enhancedPrompt.primaryScene,
+            templateStructure: 'COMPLETE_TIER_1'
+          }
+        }), {
+          headers: generateEchoCorsHeaders(req),
+          status: 200
+        });
+
+      } catch (tier1Error: unknown) {
+        const errorMessage = tier1Error instanceof Error ? tier1Error.message : String(tier1Error);
+        console.log(`[TIER_1] Failed: ${errorMessage}`);
+        tierLogger.failure('TIER_1', { error: errorMessage });
+        
+        // Create Supabase client once for all fallback attempts
+        const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4');
+        const internalSupabase = createClient(
+          Deno.env.get('SUPABASE_URL') ?? '',
+          Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+        );
+        
+        let directErrorMessage = 'Direct Mode not attempted';
+        
+        // CORRECTED CASCADE: Try Direct Mode first (if we have valid primaryScene)
+        if (!errorMessage.includes('NO_PRIMARY_SCENE')) {
+          console.log(`[DIRECT_MODE] Attempting Direct Mode fallback after Tier 1 failure`);
+          
+          try {
+            const directModeResponse = await internalSupabase.functions.invoke('ai-visual-scene-creator', {
+              body: {
+                ...payload,
+                directMode: true,
+                tier1FailureReason: errorMessage
+              }
+            });
+            
+            if (directModeResponse.data?.success && directModeResponse.data?.imageURL) {
+              const result = {
+                success: true,
+                imageURL: directModeResponse.data.imageURL,
+                provider: 'direct-mode-fallback',
+                tier: 'DIRECT_MODE',
+                requestId: requestId,
+                timestamp: new Date().toISOString(),
+                tier1FailureReason: errorMessage,
+                cascadeHistory: [
+                  `❌ Tier 1 Failed: ${errorMessage}`,
+                  '✅ Direct Mode Success'
+                ]
+              };
+              
+              tierLogger.success('DIRECT_MODE', { result });
+              console.log(`SUCCESS [${requestId}] Direct Mode fallback completed`);
+              
+              return corsResponse({
+                ...result
+              }, req);
+            } else {
+              throw new Error('DIRECT_MODE_FAILED: ' + (directModeResponse.error?.message || 'Direct mode processing failed'));
+            }
+            
+          } catch (directModeError: unknown) {
+            directErrorMessage = directModeError instanceof Error ? directModeError.message : String(directModeError);
+            console.log(`[DIRECT_MODE] Failed: ${directErrorMessage}`);
+            tierLogger.failure('DIRECT_MODE', { error: directErrorMessage });
+            // Continue to 2.5A cascade below
+          }
+        }
+        
+        // Try Tier 2.5A 
+        console.log(`[TIER_2.5A] Attempting fallback after Direct Mode or if no primaryScene`);
         
         try {
-          const directModeResponse = await internalSupabase.functions.invoke('ai-visual-scene-creator', {
+          const tier25aResponse = await internalSupabase.functions.invoke('runware-template-ab', {
             body: {
               ...payload,
-              directMode: true,
+              templateComplexity: 'A',
               tier1FailureReason: errorMessage
             }
           });
           
-          if (directModeResponse.data?.success && directModeResponse.data?.imageURL) {
+          if (tier25aResponse.data?.success && tier25aResponse.data?.imageURL) {
             const result = {
               success: true,
-              imageURL: directModeResponse.data.imageURL,
-              provider: 'direct-mode-fallback',
-              tier: 'DIRECT_MODE',
+              imageURL: tier25aResponse.data.imageURL,
+              provider: 'tier-2.5a-fallback',
+              tier: 'TIER_2.5A',
               requestId: requestId,
               timestamp: new Date().toISOString(),
               tier1FailureReason: errorMessage,
               cascadeHistory: [
-                `❌ Tier 1 Failed: ${errorMessage}`,
-                '✅ Direct Mode Success'
+                `❌ Tier 1 Failed: ${errorMessage.includes('NO_PRIMARY_SCENE') ? 'NO_PRIMARY_SCENE (missing service key)' : errorMessage}`,
+                `❌ Direct Mode Failed: ${directErrorMessage}`,
+                '✅ Tier 2.5A Success'
               ]
             };
             
-            tierLogger.success('DIRECT_MODE', { result });
-            console.log(`SUCCESS [${requestId}] Direct Mode fallback completed`);
+            tierLogger.success('TIER_2.5A', { result });
+            console.log(`SUCCESS [${requestId}] Tier 2.5A fallback completed`);
             
             return corsResponse({
               ...result
             }, req);
           } else {
-            throw new Error('DIRECT_MODE_FAILED: ' + (directModeResponse.error?.message || 'Direct mode processing failed'));
+            throw new Error('TIER_2.5A_FAILED: Template A processing failed');
           }
           
-        } catch (directModeError: unknown) {
-          directErrorMessage = directModeError instanceof Error ? directModeError.message : String(directModeError);
-          console.log(`[DIRECT_MODE] Failed: ${directErrorMessage}`);
-          tierLogger.failure('DIRECT_MODE', { error: directErrorMessage });
-          // Continue to 2.5A cascade below
-        }
-      }
-      
-      // Try Tier 2.5A 
-      console.log(`[TIER_2.5A] Attempting fallback after Direct Mode or if no primaryScene`);
-      
-      try {
-        const tier25aResponse = await internalSupabase.functions.invoke('runware-template-ab', {
-          body: {
-            ...payload,
-            templateComplexity: 'A',
-            tier1FailureReason: errorMessage
-          }
-        });
-        
-        if (tier25aResponse.data?.success && tier25aResponse.data?.imageURL) {
-          const result = {
-            success: true,
-            imageURL: tier25aResponse.data.imageURL,
-            provider: 'tier-2.5a-fallback',
-            tier: 'TIER_2.5A',
-            requestId: requestId,
-            timestamp: new Date().toISOString(),
-            tier1FailureReason: errorMessage,
-            cascadeHistory: [
-              `❌ Tier 1 Failed: ${errorMessage.includes('NO_PRIMARY_SCENE') ? 'NO_PRIMARY_SCENE (missing service key)' : errorMessage}`,
-              `❌ Direct Mode Failed: ${directErrorMessage}`,
-              '✅ Tier 2.5A Success'
-            ]
-          };
+        } catch (tier25aError: unknown) {
+          const tier25aErrorMessage = tier25aError instanceof Error ? tier25aError.message : String(tier25aError);
+          console.log(`[TIER_2.5A] Failed: ${tier25aErrorMessage}`);
+          tierLogger.failure('TIER_2.5A', { error: tier25aErrorMessage });
           
-          tierLogger.success('TIER_2.5A', { result });
-          console.log(`SUCCESS [${requestId}] Tier 2.5A fallback completed`);
-          
-          return corsResponse({
-            ...result
-          }, req);
-        } else {
-          throw new Error('TIER_2.5A_FAILED: Template A processing failed');
-        }
-        
-      } catch (tier25aError: unknown) {
-        const tier25aErrorMessage = tier25aError instanceof Error ? tier25aError.message : String(tier25aError);
-        console.log(`[TIER_2.5A] Failed: ${tier25aErrorMessage}`);
-        tierLogger.failure('TIER_2.5A', { error: tier25aErrorMessage });
-        
-        // Try Tier 2.5B
-        console.log(`[TIER_2.5B] Attempting fallback after 2.5A failure`);
-        
-        try {
-          const tier25bResponse = await internalSupabase.functions.invoke('runware-template-ab', {
-            body: {
-              ...payload,
-              templateComplexity: 'B',
-              tier1FailureReason: errorMessage,
-              tier25aFailureReason: tier25aErrorMessage
-            }
-          });
-          
-          if (tier25bResponse.data?.success && tier25bResponse.data?.imageURL) {
-            const result = {
-              imageURL: tier25bResponse.data.imageURL,
-              provider: 'tier-2.5b-fallback',
-              tier: 'TIER_2.5B',
-              requestId: requestId,
-              timestamp: new Date().toISOString(),
-              cascadeFailures: [errorMessage, tier25aErrorMessage]
-            };
-            
-            tierLogger.success('TIER_2.5B', { result });
-            console.log(`SUCCESS [${requestId}] Tier 2.5B fallback completed`);
-            
-            return corsResponse({
-              success: true,
-              ...result
-            }, req);
-          } else {
-            throw new Error('TIER_2.5B_FAILED: Template B processing failed');
-          }
-          
-        } catch (tier25bError: unknown) {
-          const tier25bErrorMessage = tier25bError instanceof Error ? tier25bError.message : String(tier25bError);
-          console.log(`[TIER_2.5B] Failed: ${tier25bErrorMessage}`);
-          tierLogger.failure('TIER_2.5B', { error: tier25bErrorMessage });
-          
-          // Try Tier 2.5C
-          console.log(`[TIER_2.5C] Attempting fallback after Tier 2.5B failure`);
+          // Try Tier 2.5B
+          console.log(`[TIER_2.5B] Attempting fallback after 2.5A failure`);
           
           try {
-            const tier25cResponse = await internalSupabase.functions.invoke('runware-template-cd', {
+            const tier25bResponse = await internalSupabase.functions.invoke('runware-template-ab', {
               body: {
                 ...payload,
-                templateComplexity: 'C',
+                templateComplexity: 'B',
                 tier1FailureReason: errorMessage,
-                tier25aFailureReason: tier25aErrorMessage,
-                tier25bFailureReason: tier25bErrorMessage
+                tier25aFailureReason: tier25aErrorMessage
               }
             });
-              
-            if (tier25cResponse.data?.success && tier25cResponse.data?.imageURL) {
+            
+            if (tier25bResponse.data?.success && tier25bResponse.data?.imageURL) {
               const result = {
-                imageURL: tier25cResponse.data.imageURL,
-                provider: 'tier-2.5c-fallback',
-                tier: 'TIER_2.5C',
+                imageURL: tier25bResponse.data.imageURL,
+                provider: 'tier-2.5b-fallback',
+                tier: 'TIER_2.5B',
                 requestId: requestId,
                 timestamp: new Date().toISOString(),
-                cascadeFailures: [errorMessage, tier25aErrorMessage, tier25bErrorMessage, directErrorMessage]
+                cascadeFailures: [errorMessage, tier25aErrorMessage]
               };
               
-              tierLogger.success('TIER_2.5C', { result });
-              console.log(`SUCCESS [${requestId}] Tier 2.5C fallback completed`);
+              tierLogger.success('TIER_2.5B', { result });
+              console.log(`SUCCESS [${requestId}] Tier 2.5B fallback completed`);
               
               return corsResponse({
                 success: true,
-                imageURL: tier25cResponse.data.imageURL,
-                provider: 'tier-2.5c-fallback',
-                tier: 'TIER_2.5C',
-                requestId: requestId,
-                timestamp: new Date().toISOString(),
-                cascadeFailures: [errorMessage, tier25aErrorMessage, tier25bErrorMessage, directErrorMessage]
+                ...result
               }, req);
             } else {
-              const tier25cErrorMessage = tier25cResponse.data?.error || 'Unknown Tier 2.5C error'; 
-              console.log(`[TIER_2.5C] Failed: ${tier25cErrorMessage}`);
-              tierLogger.failure('TIER_2.5C', { error: tier25cErrorMessage });
-              
-              // Try Tier 2.5D before final SVG fallback
-              console.log(`[TIER_2.5D] Attempting Tier 2.5D...`);
-              tierLogger.attempt('TIER_2.5D');
-              
-              try {
-                const tier25dResponse = await internalSupabase.functions.invoke('runware-template-cd', {
-                  body: {
-                    ...payload,
-                    templateComplexity: 'D',
-                    tier1FailureReason: errorMessage,
-                    tier25aFailureReason: tier25aErrorMessage,
-                    tier25bFailureReason: tier25bErrorMessage,
-                    tier25cFailureReason: tier25cErrorMessage
-                  }
-                });
-                
-                if (tier25dResponse.data?.success) {
-                  console.log(`[TIER_2.5D] Success`);
-                  tierLogger.success('TIER_2.5D', { 
-                    imageURL: tier25dResponse.data.imageURL?.substring(0, 50) + '...' 
-                  });
-                  
-                  return corsResponse({
-                    success: true,
-                    imageURL: tier25dResponse.data.imageURL,
-                    tier: 'TIER_2.5D',
-                    requestId: requestId,
-                    timestamp: new Date().toISOString(),
-                    cascadeFailures: [errorMessage, tier25aErrorMessage, tier25bErrorMessage, directErrorMessage, tier25cErrorMessage]
-                  }, req);
-                } else {
-                  const tier25dErrorMessage = tier25dResponse.data?.error || 'Unknown Tier 2.5D error';
-                  console.log(`[TIER_2.5D] Failed: ${tier25dErrorMessage}`);
-                  tierLogger.failure('TIER_2.5D', { error: tier25dErrorMessage });
-                  throw new Error('TIER_2.5D_FAILED: All tiers exhausted');
+              throw new Error('TIER_2.5B_FAILED: Template B processing failed');
+            }
+            
+          } catch (tier25bError: unknown) {
+            const tier25bErrorMessage = tier25bError instanceof Error ? tier25bError.message : String(tier25bError);
+            console.log(`[TIER_2.5B] Failed: ${tier25bErrorMessage}`);
+            tierLogger.failure('TIER_2.5B', { error: tier25bErrorMessage });
+            
+            // Try Tier 2.5C
+            console.log(`[TIER_2.5C] Attempting fallback after Tier 2.5B failure`);
+            
+            try {
+              const tier25cResponse = await internalSupabase.functions.invoke('runware-template-cd', {
+                body: {
+                  ...payload,
+                  templateComplexity: 'C',
+                  tier1FailureReason: errorMessage,
+                  tier25aFailureReason: tier25aErrorMessage,
+                  tier25bFailureReason: tier25bErrorMessage
                 }
-              } catch (finalError: unknown) {
-                const finalErrorMessage = finalError instanceof Error ? finalError.message : String(finalError);
-                console.log(`[TIER_2.5D/SVG] Failed: ${finalErrorMessage}`);
-                tierLogger.failure('TIER_2.5D', { error: finalErrorMessage });
+              });
                 
-                // Return SVG Tier 4 fallback as final resort
-                const svgResult = {
-                  imageURL: 'data:image/svg+xml;base64,' + btoa(`
-                    <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-                      <rect width="512" height="512" fill="#E0F2FE"/>
-                      <circle cx="256" cy="350" r="40" fill="#3B82F6" stroke="#374151" stroke-width="3"/>
-                      <text x="256" y="100" font-family="Arial" font-size="24" text-anchor="middle" fill="#374151">Complete Cascade Fallback</text>
-                    </svg>
-                  `),
-                  provider: 'svg-tier-4-fallback',
-                  tier: 'SVG_TIER_4',
+              if (tier25cResponse.data?.success && tier25cResponse.data?.imageURL) {
+                const result = {
+                  imageURL: tier25cResponse.data.imageURL,
+                  provider: 'tier-2.5c-fallback',
+                  tier: 'TIER_2.5C',
                   requestId: requestId,
                   timestamp: new Date().toISOString(),
-                  allFailures: [errorMessage, tier25aErrorMessage, tier25bErrorMessage, directErrorMessage, tier25cErrorMessage, finalErrorMessage]
+                  cascadeFailures: [errorMessage, tier25aErrorMessage, tier25bErrorMessage, directErrorMessage]
                 };
                 
-                console.log(`FALLBACK [${requestId}] SVG Tier 4 generated as final fallback`);
+                tierLogger.success('TIER_2.5C', { result });
+                console.log(`SUCCESS [${requestId}] Tier 2.5C fallback completed`);
                 
                 return corsResponse({
                   success: true,
-                  imageURL: svgResult.imageURL,
-                  provider: svgResult.provider,
-                  tier: svgResult.tier,
-                  requestId: requestId,
-                  timestamp: new Date().toISOString(),
-                  allFailures: svgResult.allFailures
+                  ...result
                 }, req);
+              } else {
+                throw new Error('TIER_2.5C_FAILED: Template C processing failed');
               }
+              
+            } catch (tier25cError: unknown) {
+              const tier25cErrorMessage = tier25cError instanceof Error ? tier25cError.message : String(tier25cError);
+              console.log(`[TIER_2.5C] Failed: ${tier25cErrorMessage}`);
+              tierLogger.failure('TIER_2.5C', { error: tier25cErrorMessage });
+              
+              // All tiers exhausted - final error
+              const finalError = `All tiers exhausted. Final errors: Tier1: ${errorMessage}, 2.5A: ${tier25aErrorMessage}, 2.5B: ${tier25bErrorMessage}, 2.5C: ${tier25cErrorMessage}`;
+              tierLogger.failure('ALL_TIERS', { finalError });
+              console.error(`❌ [${requestId}] All tiers failed`);
+              
+              return corsResponse({ 
+                error: finalError,
+                escalationTarget: "TIER_4" 
+              }, req, 500);
             }
-          } catch (tier25cError: unknown) {
-            const tier25cErrorMessage = tier25cError instanceof Error ? tier25cError.message : String(tier25cError);
-            console.log(`[TIER_2.5C] Failed: ${tier25cErrorMessage}`);
-            tierLogger.failure('TIER_2.5C', { error: tier25cErrorMessage });
-            
-            // Final SVG fallback
-            const svgResult = {
-              imageURL: 'data:image/svg+xml;base64,' + btoa(`
-                <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-                  <rect width="512" height="512" fill="#E0F2FE"/>
-                  <circle cx="256" cy="350" r="40" fill="#3B82F6" stroke="#374151" stroke-width="3"/>
-                  <text x="256" y="100" font-family="Arial" font-size="24" text-anchor="middle" fill="#374151">All Tiers Failed</text>
-                </svg>
-              `),
-              provider: 'svg-final-fallback',
-              tier: 'SVG_TIER_4',
-              requestId: requestId,
-              timestamp: new Date().toISOString(),
-              allFailures: [errorMessage, tier25aErrorMessage, tier25bErrorMessage, directErrorMessage, tier25cErrorMessage]
-            };
-            
-            console.log(`FALLBACK [${requestId}] Final SVG fallback generated`);
-            
-            return corsResponse({
-              success: true,
-              imageURL: svgResult.imageURL,
-              provider: svgResult.provider,
-              tier: svgResult.tier,
-              requestId: requestId,
-              timestamp: new Date().toISOString(),
-              allFailures: svgResult.allFailures
-            }, req);
           }
         }
       }
+
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      
+      // Check if this is a boot sync error that should be retried
+      const isSyncFailure = FAST_BOOT_SYNC.bootErrors.some(msg => 
+        errorMessage.includes(msg)
+      );
+      
+      if (!isSyncFailure || attempt === FAST_BOOT_SYNC.maxRetries) {
+        // Final failure or non-sync error
+        console.error(`[runware-generate-image] Final error after retries: ${errorMessage}`);
+        return corsResponse({ 
+          error: errorMessage,
+          escalationTarget: "TIER_4" 
+        }, req, 500);
+      }
+      
+      const delay = FAST_BOOT_SYNC.delays[attempt];
+      console.warn(`🔄 [RUNWARE_GEN] Fast boot retry ${attempt + 1}/${FAST_BOOT_SYNC.maxRetries} in ${delay}ms: ${errorMessage}`);
+      await new Promise(resolve => setTimeout(resolve, delay));
     }
-  } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    const isSyncFailure = FAST_BOOT_SYNC.bootErrors.some(msg => 
-      errorMessage.includes(msg)
-    );
-    
-    if (!isSyncFailure || attempt === FAST_BOOT_SYNC.maxRetries) {
-      // Final failure or non-sync error
-      console.error(`[runware-generate-image] Final error after retries: ${errorMessage}`);
-      return corsResponse({ 
-        error: errorMessage,
-        escalationTarget: "TIER_4" 
-      }, req, 500);
-    }
-    
-    const delay = FAST_BOOT_SYNC.delays[attempt];
-    console.warn(`🔄 [RUNWARE_GEN] Fast boot retry ${attempt + 1}/${FAST_BOOT_SYNC.maxRetries} in ${delay}ms: ${errorMessage}`);
-    await new Promise(resolve => setTimeout(resolve, delay));
   }
   
   // Should never reach here, but fallback

@@ -396,19 +396,20 @@ Deno.serve(async (req: Request): Promise<Response> => {
       );
 
       console.log(`🎯 [${requestId}] Orchestrator processing completed:`, {
-        success: result?.success,
-        hasImageURL: !!result?.imageURL,
-        provider: result?.provider
+        success: (result as any)?.success,
+        hasImageURL: !!(result as any)?.imageURL,
+        provider: (result as any)?.provider
       });
 
       // PHASE 8: Validate and return result
       if (result && typeof result === 'object' && 'success' in result) {
+        const typedResult = result as any;
         const response = {
-          success: result.success,
-          imageURL: result.imageURL,
-          ...(result.templateData && { templateData: result.templateData }),
-          ...(result.metadata && { metadata: result.metadata }),
-          provider: result.provider || 'ai-visual-scene-creator',
+          success: typedResult.success,
+          imageURL: typedResult.imageURL,
+          ...(typedResult.templateData && { templateData: typedResult.templateData }),
+          ...(typedResult.metadata && { metadata: typedResult.metadata }),
+          provider: typedResult.provider || 'ai-visual-scene-creator',
           requestId,
           timestamp: new Date().toISOString()
         };
@@ -416,7 +417,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         return corsResponse(response, req);
       } else {
         // This should be a Response object (error case)
-        return result;
+        return result as Response;
       }
 
     } catch (error: unknown) {
