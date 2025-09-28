@@ -279,15 +279,24 @@ Deno.serve(async (req: Request): Promise<Response> => {
     return corsResponse({ error: 'Method not allowed' }, req, 405);
   }
 
-  // Fast Boot Sync Recovery wrapper
+  // PHASE 4: Parse request body ONCE before retry loop to prevent "Body already consumed" errors
+  let payload: any;
+  let requestId: string;
+  
+  try {
+    payload = await req.json();
+    requestId = `${Math.random().toString(36).substring(2)}`;
+  } catch (error) {
+    console.error('Failed to parse request body:', error);
+    return corsResponse({ 
+      success: false, 
+      error: 'Invalid JSON payload' 
+    }, req, 400);
+  }
+
+  // Fast Boot Sync Recovery wrapper (now uses cached payload)
   for (let attempt = 0; attempt <= FAST_BOOT_SYNC.maxRetries; attempt++) {
     try {
-      let payload: any;
-      let requestId = '';
-
-      // PHASE 3: JSON parsing only after method validation
-      payload = await req.json();
-      requestId = `${Math.random().toString(36).substring(2)}`;
 
       console.log(`🚀 [${requestId}] ai-visual-scene-creator: ${req.method} ${req.url}`);
 
