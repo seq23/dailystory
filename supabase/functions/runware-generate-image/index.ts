@@ -201,7 +201,7 @@ serve(async (req: Request): Promise<Response> => {
       }
 
       // Real Runware image generation using WebSocket service
-      const { RunwareWebSocketService } = await import('../_shared/RunwareWebSocketService.js');
+      const { RunwareWebSocketService } = await import('../_shared/RunwareWebSocketService.ts');
       const runwareApiKey = Deno.env.get('RUNWARE_API_KEY');
       
       if (!runwareApiKey) {
