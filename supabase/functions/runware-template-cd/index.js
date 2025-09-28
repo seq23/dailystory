@@ -148,6 +148,7 @@ function generateTier25C(storyText, userInfo, avatarIdentity, failedTierData = {
   const age = userInfo?.age || 8;
   const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'diverse'; 
   const avatarType = userInfo?.avatar?.type || 'child';
+  const nativeLanguage = userInfo?.nativeLanguage || userInfo?.language || 'en';
   
   // Map avatar type for character description
   let mappedAvatarType = avatarType;
