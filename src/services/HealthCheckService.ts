@@ -25,7 +25,7 @@ export interface TierStrategy {
 }
 
 export class HealthCheckService {
-  private static readonly HEALTH_CHECK_TIMEOUT = 2000; // 2 second max for health checks
+  private static readonly HEALTH_CHECK_TIMEOUT = 1000; // 1 second max for health checks (optimized)
   private static readonly CACHE_DURATION = 300000; // 5 minutes cache for performance optimization
   private static cachedHealth: { result: HealthStatus; timestamp: number } | null = null;
   private static activeHealthCheck: Promise<HealthStatus> | null = null;
@@ -82,15 +82,17 @@ export class HealthCheckService {
   }
 
   /**
-   * ERROR-004 FIX: Extracted health check logic for deduplication
+   * PERFORMANCE OPTIMIZATION: Parallel health checks for 2-5s time savings
    */
   private static async performHealthCheck(): Promise<HealthStatus> {
     const startTime = Date.now();
 
-    // Serial health checks to avoid race conditions
-    const orchestrator = await this.checkOrchestrator();
-    const runwareAPI = await this.checkRunwareAPI();
-    const serviceDependencies = await this.checkServiceDependencies();
+    // PARALLEL health checks - all run simultaneously for maximum speed
+    const [orchestrator, runwareAPI, serviceDependencies] = await Promise.all([
+      this.checkOrchestrator(),
+      this.checkRunwareAPI(), 
+      this.checkServiceDependencies()
+    ]);
 
     // Determine overall health with network awareness
     let overallHealth: 'healthy' | 'network' | 'server';

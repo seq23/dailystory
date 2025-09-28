@@ -3,6 +3,8 @@ import { ImageFallbackService } from './ImageFallbackService';
 import { DebugLogger } from '@/services/DebugLogger';
 import { errorRecoveryManager } from '@/services/ErrorRecoveryManager';
 import { HealthCheckService, type HealthStatus, type TierStrategy } from './HealthCheckService';
+import { OptimizedImageCache } from './OptimizedImageCache';
+import { SmartOrchestrationBypass } from '@/utils/SmartOrchestrationBypass';
 
 // ============= TYPES =============
 
@@ -276,27 +278,19 @@ export class SimpleImageService {
       await this.saveUserInfoToSession(normalizedSessionId, userInfo);
     }
     
-    // Check cache first with character-versioned cache key
-    if (this.isIndexedDBAvailable && normalizedSessionId !== 'unknown' && userInfo) {
-      // Use character versioned cache key for consistency
-      const versionedCacheKey = this.generateCharacterVersionedCacheKey(userInfo, storyText);
-      const cached = await this.getImageFromDB(versionedCacheKey, pageNumber);
-      if (cached?.imageURL) {
-        DebugLogger.log('image', `📸 Cache hit: Using cached image for session ${normalizedSessionId}, page ${pageNumber}`, {
-          url: cached.imageURL,
-          timestamp: cached.timestamp
-        });
-        return {
-          success: true,
-          url: cached.imageURL,
-          generatedAt: cached.timestamp,
-          tier: 'Cache',
-          metadata: { ...cached.metadata, fromCache: true }
-        };
-      } else {
-        DebugLogger.log('image', `📸 Cache miss: No cached image for session ${normalizedSessionId}, page ${pageNumber}`);
-      }
+    // PERFORMANCE: Fast cache check with content-based keys
+    const cachedImage = OptimizedImageCache.getCachedImage(storyText, normalizedSessionId);
+    if (cachedImage) {
+      DebugLogger.log('image', `⚡ Fast cache hit: session ${normalizedSessionId}, page ${pageNumber}`);
+      return {
+        success: true,
+        url: cachedImage,
+        generatedAt: new Date().toISOString(),
+        tier: 'FastCache',
+        metadata: { fromCache: true, optimized: true }
+      };
     }
+    DebugLogger.log('image', `⚡ Fast cache miss: session ${normalizedSessionId}, page ${pageNumber}`);
 
     // Validate input
     if (!storyText || storyText.trim().length === 0) {
@@ -327,83 +321,76 @@ export class SimpleImageService {
       });
     }
 
-    // Use raw story content directly - no protection enhancement
+    // PERFORMANCE: Skip processing for simple content
     const enhancedPrompt = cleanScene;
-    const protectionNegatives: string[] = [];
+    let backendDifficulty: string;
     
-    DebugLogger.log('image', 'Using raw story content without protection enhancement', { 
-      contentLength: enhancedPrompt.length
-    });
+    if (OptimizedImageCache.shouldSkipProcessing(cleanScene)) {
+      DebugLogger.log('image', '⚡ Skipping processing for simple content', { 
+        contentLength: enhancedPrompt.length
+      });
+      backendDifficulty = 'easy'; // Default for simple content
+    } else {
+      // Only map difficulty for complex content
+      backendDifficulty = this.mapDifficultyLevel(userInfo);
+      DebugLogger.log('image', 'Mapped difficulty level', backendDifficulty);
+    }
 
-    // Map difficulty level
-    const backendDifficulty = this.mapDifficultyLevel(userInfo);
-    DebugLogger.log('image', 'Mapped difficulty level', backendDifficulty);
-
-    // ============= PROACTIVE DIRECT MODE BYPASS LOGIC =============
-    const bypassDecision: BypassDecision = forceTier1 
-      ? { shouldBypass: false, reason: 'Force Tier 1 requested', conditions: ['forceTier1'] } 
-      : await this.evaluateDirectModeBypass(normalizedSessionId, healthStatus);
-    if (bypassDecision.shouldBypass) {
-      DebugLogger.log('image', 'PROACTIVE BYPASS: Skipping orchestrator, going directly to Direct Mode', {
+    // PERFORMANCE: Smart orchestrator bypass decision
+    const bypassDecision = SmartOrchestrationBypass.shouldBypassOrchestrator(
+      cleanScene, 
+      normalizedSessionId, 
+      healthStatus
+    );
+    
+    if (bypassDecision.shouldBypass && !forceTier1) {
+      DebugLogger.log('image', '⚡ SMART BYPASS: Routing directly to template', {
         reason: bypassDecision.reason,
-        conditions: bypassDecision.conditions
+        targetTemplate: bypassDecision.targetTemplate,
+        contentLength: cleanScene.length
       });
       
-      // Call Direct Mode directly without trying orchestrator
+      // Route directly to optimized template
+      const startTime = Date.now();
       try {
-        const directModeResult = await supabase.functions.invoke('ai-visual-scene-creator', {
+        const templateResult = await supabase.functions.invoke(bypassDecision.targetTemplate || 'runware-template-cd', {
           body: {
-            storyText: enhancedPrompt,
+            pageText: enhancedPrompt,
             userInfo,
             sessionId: normalizedSessionId,
-            pageNumber,
-            directMode: true, // Enable Direct Mode
-            isGuestUser: !isPremium,
-            bypassReason: bypassDecision.reason // Track why we bypassed
+            pageNumber
           }
         });
-
-        if (directModeResult.data?.success && directModeResult.data?.imageURL) {
-          DebugLogger.log('image', 'PROACTIVE BYPASS SUCCESS: Direct Mode succeeded');
+        
+        const responseTime = Date.now() - startTime;
+        SmartOrchestrationBypass.recordTemplateResponse(normalizedSessionId, responseTime);
+        
+        const imageURL = templateResult.data?.imageURL;
+        if (templateResult.data?.success && imageURL?.trim()) {
+          OptimizedImageCache.cacheImage(storyText, imageURL, normalizedSessionId);
           
-          // Store result in cache
-          if (this.isIndexedDBAvailable && normalizedSessionId !== 'unknown' && userInfo) {
-            const versionedCacheKey = this.generateCharacterVersionedCacheKey(userInfo, storyText);
-            await this.storeImageInDB(versionedCacheKey, pageNumber, directModeResult.data.imageURL, {
-              ...directModeResult.data,
-              bypassedOrchestrator: true,
-              bypassReason: bypassDecision.reason
-            });
-          }
-
-          // Emit timer resume event
           try {
             window.dispatchEvent(new CustomEvent('image:generation:complete'));
           } catch {}
-
+          
           return {
             success: true,
-            url: directModeResult.data.imageURL,
-            imageURL: directModeResult.data.imageURL,
+            url: imageURL,
             generatedAt: new Date().toISOString(),
-            tier: 'Direct Mode (Proactive Bypass)',
+            tier: 'Smart Bypass',
             metadata: { 
-              ...directModeResult.data, 
-              bypassedOrchestrator: true,
-              bypassReason: bypassDecision.reason
+              ...templateResult.data, 
+              bypassReason: bypassDecision.reason,
+              responseTime
             }
           };
-        } else {
-          DebugLogger.warn('image', 'PROACTIVE BYPASS FAILED: Direct Mode returned no image, falling back to orchestrator', {
-            directModeResponse: directModeResult
-          });
-          // Fall through to orchestrator - bypass failed, so try normal flow
         }
-      } catch (directModeError) {
-        DebugLogger.error('image', 'PROACTIVE BYPASS FAILED: Direct Mode error, falling back to orchestrator', {
-          error: directModeError.message
+      } catch (bypassError) {
+        DebugLogger.warn('image', '⚡ Smart bypass failed, falling back to orchestrator', {
+          error: bypassError.message
         });
-        // Fall through to orchestrator - bypass failed, so try normal flow
+        SmartOrchestrationBypass.recordTemplateResponse(normalizedSessionId, Date.now() - startTime);
+        // Fall through to orchestrator
       }
     }
 
@@ -412,17 +399,19 @@ export class SimpleImageService {
     let requestAborted = false;
 
     try {
-      // Create timeout promise that rejects after 150 seconds
+      // Create timeout promise that rejects after 25 seconds (optimized)
       const timeoutPromise = new Promise<never>((_, reject) => {
         timeoutId = setTimeout(() => {
           requestAborted = true;
-          DebugLogger.warn('image', 'Frontend timeout: Request exceeded 150 seconds');
-          reject(new Error('Request timeout: Image generation took longer than 150 seconds'));
-        }, 150000);
+          DebugLogger.warn('image', 'Frontend timeout: Request exceeded 25 seconds');
+          reject(new Error('Request timeout: Image generation took longer than 25 seconds'));
+        }, 25000); // Reduced from 150s to 25s for faster failure detection
       });
 
       // Call the main orchestrator (runware-generate-image) which handles all tiers
       DebugLogger.log('image', 'Calling main orchestrator: runware-generate-image');
+      
+      const startTime = Date.now();
       
       // Debug payload before sending
       const orchestratorPayload = {
@@ -455,6 +444,9 @@ export class SimpleImageService {
           requestPromise,
           timeoutPromise
         ]);
+
+        const responseTime = Date.now() - startTime;
+        SmartOrchestrationBypass.recordOrchestratorResponse(normalizedSessionId, responseTime, !!orchResult?.success);
 
         // Clear timeout since request completed
         if (timeoutId) {
@@ -494,11 +486,8 @@ export class SimpleImageService {
           usedTier: orchResult.usedTier || 'orchestrator'
         });
         
-        // Store result in IndexedDB with character versioned key
-        if (this.isIndexedDBAvailable && normalizedSessionId !== 'unknown' && userInfo) {
-          const versionedCacheKey = this.generateCharacterVersionedCacheKey(userInfo, storyText);
-          await this.storeImageInDB(versionedCacheKey, pageNumber, imageURL, orchResult);
-        }
+        // Store result in fast cache  
+        OptimizedImageCache.cacheImage(storyText, imageURL, normalizedSessionId);
 
         // Emit timer resume event
         try {
@@ -697,11 +686,8 @@ export class SimpleImageService {
       if (result?.success && imageURL?.trim()) {
         DebugLogger.log('image', `🖼️ Direct AI Visual Scene Creator success: ${imageURL}`);
         
-        // Store in cache like orchestrator does
-        if (this.isIndexedDBAvailable && normalizedSessionId !== 'unknown' && userInfo) {
-          const versionedCacheKey = this.generateCharacterVersionedCacheKey(userInfo, storyText);
-          await this.storeImageInDB(versionedCacheKey, pageNumber, imageURL, result);
-        }
+        // Store in fast cache
+        OptimizedImageCache.cacheImage(storyText, imageURL, normalizedSessionId);
 
         // Emit timer resume event
         try {
@@ -790,11 +776,8 @@ export class SimpleImageService {
         if (templateResult?.success && imageURL?.trim()) {
           DebugLogger.log('image', `🖼️ Template ${template.complexity} generated successfully: ${imageURL}`);
           
-          // Store result in cache using character versioned key for consistency
-          if (this.isIndexedDBAvailable && normalizedSessionId !== 'unknown' && userInfo) {
-            const versionedCacheKey = this.generateCharacterVersionedCacheKey(userInfo, storyText);
-            await this.storeImageInDB(versionedCacheKey, pageNumber, imageURL, templateResult);
-          }
+          // Store result in fast cache
+          OptimizedImageCache.cacheImage(storyText, imageURL, normalizedSessionId);
 
           // Emit timer resume event
           try {
