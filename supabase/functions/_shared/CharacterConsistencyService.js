@@ -24,9 +24,15 @@ async function memoizedServiceImport(path) {
     console.warn(`Failed to import ${path}:`, error);
     // Return fallback mock to prevent crashes
     return {
-      PLACEHOLDER_POOLS: {
-        colors: ['red', 'blue', 'green'],
-        animals: ['dog', 'cat', 'rabbit']
+      VOCABULARY: {
+        objectCategories: {
+          animals: ['dog', 'cat', 'rabbit', 'hamster', 'bird'],
+          colors: ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink']
+        },
+        actions: {
+          basic: ['run', 'jump', 'walk', 'play', 'dance'],
+          social: ['help', 'share', 'laugh', 'smile', 'hug']
+        }
       },
       getAfricanAmericanHair: () => 'beautiful hair',
       getAfricanAmericanFeatures: () => 'authentic features'
@@ -187,8 +193,9 @@ export class CharacterConsistencyService {
     
     // Eye color handling removed - let avatar descriptions handle naturally
     
-    // Generate consistent clothing style for this character using tier25Vocabulary
-    const clothingStyles = PLACEHOLDER_POOLS.clothingStyles || ['casual', 'colorful', 'comfortable', 'neat', 'playful'];
+    // Generate consistent clothing style for this character using proper tier25 vocabulary
+    const { VOCABULARY } = await memoizedServiceImport('./tier25Vocabulary.js');
+    const clothingStyles = ['casual', 'colorful', 'comfortable', 'neat', 'playful', 'stylish', 'fun', 'vibrant'];
     const consistentClothingStyle = clothingStyles[Math.floor(seededRandom() * clothingStyles.length)];
 
     return {
@@ -683,10 +690,11 @@ const supabase = createClient(
     const characterAppearance = [];
 
     // Extract colored objects (color + noun combinations) using tier25Vocabulary patterns
-    const coloredObjectPatterns = PLACEHOLDER_POOLS.coloredObjectPatterns || [
-      /\b(red|blue|green|yellow|purple|pink|orange|black|white|brown|gray|grey|gold|silver)\s+(\w+)\b/gi,
-      /\b(\w+)\s+(red|blue|green|yellow|purple|pink|orange|black|white|brown|gray|grey|gold|silver)\b/gi
-    ];
+    // Use proper color detection from VOCABULARY system
+    const { VOCABULARY } = await memoizedServiceImport('./tier25Vocabulary.js');
+    const colorWords = VOCABULARY?.objectCategories?.colors || ['red', 'blue', 'green', 'yellow', 'purple', 'pink', 'orange', 'black', 'white', 'brown'];
+    const colorPattern = new RegExp(`\\b(${colorWords.join('|')})\\s+(\\w+)\\b`, 'gi');
+    const coloredObjectPatterns = [colorPattern];
 
     coloredObjectPatterns.forEach(pattern => {
       const matches = pageText.match(pattern);
@@ -701,10 +709,9 @@ const supabase = createClient(
     });
 
     // Extract atmospheric/mood words using tier25Vocabulary patterns
-    const atmosphericPatterns = PLACEHOLDER_POOLS.atmosphericPatterns || [
-      /\b(bright|dark|sunny|cloudy|rainy|stormy|peaceful|calm|exciting|scary|magical|mysterious|cheerful|gloomy)\b/gi,
-      /\b(sparkling|glowing|shimmering|twinkling|rustling|whispers|echoing|silence)\b/gi
-    ];
+    // Use proper atmospheric detection from tier25 system
+    const atmosphericWords = ['bright', 'dark', 'sunny', 'cloudy', 'rainy', 'stormy', 'peaceful', 'calm', 'exciting', 'scary', 'magical', 'mysterious', 'cheerful', 'gloomy', 'sparkling', 'glowing', 'shimmering', 'twinkling'];
+    const atmosphericPatterns = [new RegExp(`\\b(${atmosphericWords.join('|')})\\b`, 'gi')];
 
     atmosphericPatterns.forEach(pattern => {
       const matches = pageText.match(pattern);

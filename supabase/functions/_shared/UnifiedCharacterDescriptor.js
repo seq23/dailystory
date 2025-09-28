@@ -4,7 +4,7 @@
  * with visual approach and cultural consistency for Tier 1 & Tier 2.5 compatibility
  */
 
-import { VOCABULARY, pick, PLACEHOLDER_POOLS } from './tier25Vocabulary.js';
+import { VOCABULARY, pick } from './tier25Vocabulary.js';
 
 export class UnifiedCharacterDescriptor {
   static sessionCharacters = new Map();
@@ -99,7 +99,7 @@ export class UnifiedCharacterDescriptor {
 
     // Get all animal categories from tier25Vocabulary
     const allAnimals = [
-      ...(VOCABULARY?.animals?.domestic || PLACEHOLDER_POOLS.level0Animals),
+      ...(VOCABULARY?.objectCategories?.animals || ['dog', 'cat', 'rabbit', 'hamster', 'bird', 'fish', 'turtle', 'horse', 'cow', 'pig', 'sheep', 'chicken', 'duck']),
       ...(VOCABULARY?.animals?.farm || ['cow', 'pig', 'sheep', 'chicken', 'duck']),
       ...(VOCABULARY?.animals?.wild || ['bear', 'lion', 'tiger', 'elephant', 'monkey'])
     ];
@@ -116,7 +116,7 @@ export class UnifiedCharacterDescriptor {
       new RegExp(`\\b(big|small|little|tiny|fluffy|friendly|cute)\\s+(${allAnimals.join('|')})s?\\b`, 'gi'),
       
       // Colored animals using tier25Vocabulary colors
-      new RegExp(`\\b(${(PLACEHOLDER_POOLS.colors || ['red', 'blue', 'green']).join('|')})\\s+(${allAnimals.join('|')})s?\\b`, 'gi'),
+      new RegExp(`\\b(red|blue|green|yellow|purple|pink|orange|black|white|brown|gray|grey|gold|silver)\\s+(${allAnimals.join('|')})s?\\b`, 'gi'),
       
       // Animal actions
       new RegExp(`\\b(${allAnimals.join('|')})s?\\s+(runs?|jumps?|plays?|sleeps?|eats?|walks?)\\b`, 'gi')
@@ -420,7 +420,7 @@ export class UnifiedCharacterDescriptor {
       
       // Cultural enhancement using tier25Vocabulary
       if (culturalEnhancement && userInfo.nativeLanguage === 'en') {
-        const clothingStyle = pick(PLACEHOLDER_POOLS.clothingStyles || ['modern clothing'], userInfo.name);
+        const clothingStyle = pick(['casual', 'colorful', 'comfortable', 'neat', 'playful', 'stylish', 'fun', 'vibrant'] || ['modern clothing'], userInfo.name);
         description += ` in ${clothingStyle}`;
       }
     }
@@ -447,7 +447,7 @@ export class UnifiedCharacterDescriptor {
       secondaryDesc = this.generateCommunityCharacter(communityRole, primary, userInfo);
     } else if (type === 'animal') {
       const species = details.species || 'friendly animal';
-      const animalName = details.name || pick(PLACEHOLDER_POOLS.level0Animals || ['pet'], sessionId);
+      const animalName = details.name || pick(['dog', 'cat', 'rabbit', 'hamster', 'bird', 'fish', 'turtle'] || ['pet'], sessionId);
       secondaryDesc = this.generateCharacterAnimalSeed(animalName, species, userInfo).description;
     }
     
@@ -559,7 +559,7 @@ export class UnifiedCharacterDescriptor {
   }
 
   static categorizeAnimal(animalName) {
-    const domesticAnimals = PLACEHOLDER_POOLS.level0Animals?.slice(0, 8) || ['dog', 'cat', 'rabbit', 'hamster', 'bird', 'fish', 'turtle'];
+    const domesticAnimals = ['dog', 'cat', 'rabbit', 'hamster', 'bird', 'fish', 'turtle'] || ['dog', 'cat', 'rabbit', 'hamster', 'bird', 'fish', 'turtle'];
     const farmAnimals = ['horse', 'cow', 'pig', 'sheep', 'chicken', 'duck'];
     const wildAnimals = ['bear', 'lion', 'tiger', 'elephant', 'monkey'];
     
@@ -573,12 +573,12 @@ export class UnifiedCharacterDescriptor {
     const attributes = {};
     
     // Color attributes using tier25Vocabulary
-    const colors = PLACEHOLDER_POOLS.colors || ['red', 'blue', 'green', 'yellow', 'orange', 'purple'];
+    const colors = ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown', 'black', 'white'] || ['red', 'blue', 'green', 'yellow', 'orange', 'purple'];
     const colorMatch = text.match(new RegExp(`\\b(${colors.join('|')})\\b`, 'i'));
     if (colorMatch) attributes.color = colorMatch[1];
     
     // Size attributes using tier25Vocabulary
-    const sizes = PLACEHOLDER_POOLS.sizes || ['big', 'small', 'little', 'tiny', 'huge', 'large'];
+    const sizes = ['big', 'small', 'little', 'tiny', 'huge', 'large'] || ['big', 'small', 'little', 'tiny', 'huge', 'large'];
     const sizeMatch = text.match(new RegExp(`\\b(${sizes.join('|')})\\b`, 'i'));
     if (sizeMatch) attributes.size = sizeMatch[1];
     
@@ -669,7 +669,7 @@ export class UnifiedCharacterDescriptor {
 
   static validateAnimalSpecies(species) {
     // Use tier25Vocabulary for animal validation
-    const commonAnimals = PLACEHOLDER_POOLS.level0Animals || [
+    const commonAnimals = ['dog', 'cat', 'rabbit', 'hamster', 'bird', 'fish', 'turtle', 'horse', 'cow', 'pig'] || [
       'dog', 'cat', 'puppy', 'kitten', 'rabbit', 'bunny', 'hamster', 'guinea pig',
       'bird', 'parrot', 'canary', 'fish', 'goldfish', 'turtle', 'lizard', 'snake',
       'horse', 'pony', 'cow', 'pig', 'sheep', 'goat', 'chicken', 'duck', 'goose',

@@ -21,14 +21,14 @@ async function memoizedImport(path) {
     // Return fallback mock to prevent crashes
     return {
       VOCABULARY: {},
-      PLACEHOLDER_POOLS: {
-        colors: ['red', 'blue', 'green', 'yellow'],
-        animals: ['dog', 'cat', 'rabbit'],
-        sizes: ['big', 'small'],
-        foods: ['apples', 'cookies'],
-        settings: ['park', 'home'],
-        activities: ['playing', 'reading'],
-        emotions: ['happy', 'excited']
+      VOCABULARY: {
+        objectCategories: {
+          animals: ['dog', 'cat', 'rabbit', 'hamster', 'bird'],
+          colors: ['red', 'blue', 'green', 'yellow', 'orange', 'purple']
+        },
+        actions: {
+          basic: ['playing', 'running', 'jumping', 'dancing', 'swimming']
+        }
       },
       pick: (array, seed) => array?.[0] || '',
       createSeededRandom: () => Math.random,
@@ -243,16 +243,16 @@ export class UnifiedPlaceholderResolver {
     resolved = resolved.replace(/\{character\.name\}/g, name);
 
     // Get lazy loaded modules
-    const { PLACEHOLDER_POOLS, pick } = await memoizedImport('./tier25Vocabulary.js');
+    const { VOCABULARY, pick } = await memoizedImport('./tier25Vocabulary.js');
 
     // User preferences
-    resolved = resolved.replace(/\{user\.favoriteColor\}/g, userInfo?.favoriteColor || pick(PLACEHOLDER_POOLS.colors));
-    resolved = resolved.replace(/\{user\.favoriteAnimal\}/g, userInfo?.favoriteAnimal || pick(PLACEHOLDER_POOLS.animals));
+    resolved = resolved.replace(/\{user\.favoriteColor\}/g, userInfo?.favoriteColor || pick(VOCABULARY.objectCategories?.colors || ['red', 'blue', 'green']));
+    resolved = resolved.replace(/\{user\.favoriteAnimal\}/g, userInfo?.favoriteAnimal || pick(VOCABULARY.objectCategories?.animals || ['dog', 'cat', 'rabbit']));
     resolved = resolved.replace(/\{user\.age\}/g, userInfo?.age || '6');
 
     // User interests
     const interests = Array.isArray(userInfo?.interests) ? userInfo.interests : [];
-    const primaryInterest = interests[0] || pick(PLACEHOLDER_POOLS.activities);
+    const primaryInterest = interests[0] || pick(VOCABULARY.actions?.social || ['playing', 'helping', 'sharing']);
     resolved = resolved.replace(/\{user\.interest\}/g, primaryInterest);
     resolved = resolved.replace(/\{user\.hobby\}/g, primaryInterest);
 
@@ -282,7 +282,7 @@ export class UnifiedPlaceholderResolver {
     let resolved = text;
 
     // Get lazy loaded modules
-    const { PLACEHOLDER_POOLS, pick } = await memoizedImport('./tier25Vocabulary.js');
+    const { VOCABULARY, pick } = await memoizedImport('./tier25Vocabulary.js');
     const { getHairBySkintone, getSkinBySkintone, getCulturalBundle } = await memoizedImport('./StaticDataCache.js');
 
     // Use seeded values if available, otherwise pick from vocabulary
@@ -293,16 +293,16 @@ export class UnifiedPlaceholderResolver {
       return pick(fallbackArray, characterSeed);
     };
 
-    // Story elements
-    resolved = resolved.replace(/\{animal\}/g, getSeededValue('animal', PLACEHOLDER_POOLS.animals));
-    resolved = resolved.replace(/\{pet\}/g, getSeededValue('pet', PLACEHOLDER_POOLS.animals));
-    resolved = resolved.replace(/\{color\}/g, getSeededValue('color', PLACEHOLDER_POOLS.colors));
-    resolved = resolved.replace(/\{size\}/g, getSeededValue('size', PLACEHOLDER_POOLS.sizes));
-    resolved = resolved.replace(/\{food\}/g, getSeededValue('food', PLACEHOLDER_POOLS.foods));
-    resolved = resolved.replace(/\{setting\}/g, getSeededValue('setting', PLACEHOLDER_POOLS.settings));
-    resolved = resolved.replace(/\{activity\}/g, getSeededValue('activity', PLACEHOLDER_POOLS.activities));
-    resolved = resolved.replace(/\{emotion\}/g, getSeededValue('emotion', PLACEHOLDER_POOLS.emotions));
-    resolved = resolved.replace(/\{object\}/g, getSeededValue('object', PLACEHOLDER_POOLS.activities)); // Fallback to activities
+    // Story elements - Use proper VOCABULARY system
+    resolved = resolved.replace(/\{animal\}/g, getSeededValue('animal', VOCABULARY.objectCategories?.animals || ['dog', 'cat', 'rabbit']));
+    resolved = resolved.replace(/\{pet\}/g, getSeededValue('pet', VOCABULARY.objectCategories?.animals || ['dog', 'cat', 'rabbit']));
+    resolved = resolved.replace(/\{color\}/g, getSeededValue('color', VOCABULARY.objectCategories?.colors || ['red', 'blue', 'green']));
+    resolved = resolved.replace(/\{size\}/g, getSeededValue('size', ['big', 'small', 'tiny', 'huge', 'large', 'little']));
+    resolved = resolved.replace(/\{food\}/g, getSeededValue('food', VOCABULARY.objectCategories?.food || ['apple', 'banana', 'cookie']));
+    resolved = resolved.replace(/\{setting\}/g, getSeededValue('setting', ['park', 'forest', 'beach', 'playground', 'garden']));
+    resolved = resolved.replace(/\{activity\}/g, getSeededValue('activity', VOCABULARY.actions?.basic || ['playing', 'running', 'jumping']));
+    resolved = resolved.replace(/\{emotion\}/g, getSeededValue('emotion', ['happy', 'excited', 'curious', 'brave', 'kind']));
+    resolved = resolved.replace(/\{object\}/g, getSeededValue('object', VOCABULARY.objectCategories?.toys || ['ball', 'doll', 'book'])); // Use toys instead of activities
 
     // Map {hair} to cultural hair logic with synchronous fallback
     const culturalLanguage = this.detectCulturalContext(userInfo);
@@ -341,36 +341,40 @@ export class UnifiedPlaceholderResolver {
     let resolved = text;
 
     // Get lazy loaded modules
-    const { PLACEHOLDER_POOLS, pick } = await memoizedImport('./tier25Vocabulary.js');
+    const { VOCABULARY, pick } = await memoizedImport('./tier25Vocabulary.js');
 
-    // Replace vocabulary-specific placeholders - with safety checks
-    if (PLACEHOLDER_POOLS && typeof PLACEHOLDER_POOLS === 'object') {
-      Object.entries(PLACEHOLDER_POOLS).forEach(([category, pool]) => {
-        if (Array.isArray(pool) && pool.length > 0) {
-          const regex = new RegExp(`\\{${category}\\}`, 'g');
-          resolved = resolved.replace(regex, () => {
-            const characterSeed = context.seed?.characterSeed || context.seed?.seed;
-            return pick(pool, characterSeed);
+    // Replace vocabulary-specific placeholders - with proper VOCABULARY system
+    if (VOCABULARY && typeof VOCABULARY === 'object') {
+      Object.entries(VOCABULARY).forEach(([category, categoryData]) => {
+        if (categoryData && typeof categoryData === 'object') {
+          Object.entries(categoryData).forEach(([subcategory, pool]) => {
+            if (Array.isArray(pool) && pool.length > 0) {
+              const regex = new RegExp(`\\{${subcategory}\\}`, 'g');
+              resolved = resolved.replace(regex, () => {
+                const characterSeed = context.seed?.characterSeed || context.seed?.seed;
+                return pick(pool, characterSeed);
+              });
+            }
           });
         }
       });
     }
 
-    // Special combined placeholders - with safety checks
-    if (PLACEHOLDER_POOLS?.colors && PLACEHOLDER_POOLS?.activities) {
+    // Special combined placeholders - with proper VOCABULARY system
+    if (VOCABULARY?.objectCategories?.colors && VOCABULARY?.objectCategories?.toys) {
       resolved = resolved.replace(/\{colorful\.object\}/g, () => {
         const characterSeed = context.seed?.characterSeed || context.seed?.seed;
-        const color = pick(PLACEHOLDER_POOLS.colors, characterSeed);
-        const object = pick(PLACEHOLDER_POOLS.activities, characterSeed + 1); // Use activities as objects
+        const color = pick(VOCABULARY.objectCategories.colors, characterSeed);
+        const object = pick(VOCABULARY.objectCategories.toys, characterSeed + 1);
         return `${color} ${object}`;
       });
     }
 
-    if (PLACEHOLDER_POOLS?.sizes && PLACEHOLDER_POOLS?.animals) {
+    if (VOCABULARY?.objectCategories?.animals) {
       resolved = resolved.replace(/\{sized\.animal\}/g, () => {
         const characterSeed = context.seed?.characterSeed || context.seed?.seed;
-        const size = pick(PLACEHOLDER_POOLS.sizes, characterSeed);
-        const animal = pick(PLACEHOLDER_POOLS.animals, characterSeed + 1);
+        const size = pick(['big', 'small', 'tiny', 'huge', 'large', 'little'], characterSeed);
+        const animal = pick(VOCABULARY.objectCategories.animals, characterSeed + 1);
         return `${size} ${animal}`;
       });
     }
@@ -620,8 +624,16 @@ export class UnifiedPlaceholderResolver {
    * ADVANCED ACTION VERB RESOLUTION AND NORMALIZATION
    */
    extractAndNormalizeAction(text) {
-    // Enhanced Level 0 action detection using tier25Vocabulary
-    const level0Actions = PLACEHOLDER_POOLS?.level0Actions || [];
+    // Enhanced Level 0 action detection using proper vocabulary system
+    const level0Actions = [
+      'wakes up', 'waking up', 'wake up', 'gets up', 'getting up', 'sleeps', 'sleeping', 'sleep',
+      'eats', 'eating', 'eat', 'drinks', 'drinking', 'drink', 'plays', 'playing', 'play',
+      'goes', 'going', 'go', 'comes', 'coming', 'come', 'sits', 'sitting', 'sit',
+      'stands', 'standing', 'stand', 'runs', 'running', 'run', 'walks', 'walking', 'walk',
+      'jumps', 'jumping', 'jump', 'climbs', 'climbing', 'climb', 'swings', 'swinging', 'swing',
+      'draws', 'drawing', 'draw', 'reads', 'reading', 'read', 'sings', 'singing', 'sing',
+      'dances', 'dancing', 'dance', 'builds', 'building', 'build', 'creates', 'creating', 'create'
+    ];
     
     // First check for Level 0 specific action patterns with word boundaries
     for (const action of level0Actions) {
@@ -751,7 +763,12 @@ export class UnifiedPlaceholderResolver {
    */
   inferLocationFromContext(text) {
     // Enhanced Level 0 location detection using tier25Vocabulary
-    const level0Locations = PLACEHOLDER_POOLS?.level0Locations || [];
+    const level0Locations = [
+      'bed', 'bedroom', 'kitchen', 'home', 'house', 'room', 'bathroom', 'living room',
+      'dining room', 'playroom', 'inside', 'indoors', 'park', 'playground', 'garden', 
+      'yard', 'outside', 'outdoors', 'beach', 'forest', 'field', 'street', 'road', 
+      'path', 'tree', 'grass', 'school', 'store', 'shop', 'library', 'hospital', 'farm', 'zoo'
+    ];
     
     // Check for Level 0 specific locations first
     for (const location of level0Locations) {

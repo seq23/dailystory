@@ -4,7 +4,7 @@
  * Integrates with tier25Vocabulary for comprehensive object tracking
  */
 
-import { VOCABULARY, pick, PLACEHOLDER_POOLS } from './tier25Vocabulary.js';
+import { VOCABULARY, pick } from './tier25Vocabulary.js';
 
 export class ColoredObjectTracker {
   constructor() {
@@ -57,7 +57,7 @@ export class ColoredObjectTracker {
     
     // Get vocabularies
     const colors = VOCABULARY.colors || ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown', 'black', 'white'];
-    const objects = VOCABULARY.objects || PLACEHOLDER_POOLS.objects || ['ball', 'car', 'house', 'tree', 'flower', 'book'];
+    const objects = VOCABULARY?.objectCategories?.toys || VOCABULARY?.objectCategories?.household || ['ball', 'car', 'house', 'tree', 'flower', 'book'];
     const sizes = ['big', 'small', 'tiny', 'huge', 'large', 'little'];
 
     // Enhanced detection patterns

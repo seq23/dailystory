@@ -7,131 +7,11 @@
 // All cultural selections now handled by CharacterConsistencyService for character-consistent seeding
 // This file now contains only pure vocabulary arrays for performance optimization
 
-// ============= PLACEHOLDER POOLS =============
-export const PLACEHOLDER_POOLS = {
-  // Character placeholders
-  animals: ['dog', 'cat', 'rabbit', 'hamster', 'bird', 'fish', 'turtle', 'horse', 'cow', 'pig', 'sheep'],
-  colors: ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown', 'black', 'white'],
-  sizes: ['big', 'small', 'tiny', 'huge', 'large', 'little', 'giant', 'enormous'],
-  
-  // NEW: Clothing styles for character consistency
-  clothingStyles: ['casual', 'colorful', 'comfortable', 'neat', 'playful', 'stylish', 'fun', 'vibrant'],
-  
-  // Story elements
-  foods: [
-    'apples', 'bananas', 'cookies', 'cake', 'pizza', 'ice cream', 'sandwiches', 'fruit',
-    'vegetables', 'snacks', 'treats', 'candy', 'chocolate', 'juice', 'milk'
-  ],
-  
-  settings: [
-    'park', 'forest', 'beach', 'mountain', 'garden', 'playground', 'school', 'library',
-    'zoo', 'farm', 'castle', 'spaceship', 'underwater kingdom', 'magical forest', 'village'
-  ],
-  
-  activities: [
-    'playing', 'exploring', 'discovering', 'learning', 'helping', 'sharing', 'creating',
-    'building', 'dancing', 'singing', 'reading', 'drawing', 'painting', 'cooking'
-  ],
-  
-  emotions: [
-    'happy', 'excited', 'curious', 'brave', 'kind', 'friendly', 'cheerful', 'proud',
-    'amazed', 'delighted', 'surprised', 'grateful', 'confident', 'adventurous'
-  ],
-  
-  // Friends and family
-  friends: [
-    'best friend', 'school friend', 'neighbor', 'playmate', 'buddy', 'companion',
-    'adventure partner', 'study buddy', 'teammate', 'classmate'
-  ],
-  
-  family: [
-    'mom', 'dad', 'sister', 'brother', 'grandma', 'grandpa', 'aunt', 'uncle',
-    'cousin', 'family', 'parents', 'siblings', 'relatives'
-  ],
+// ============= PROPER VOCABULARY ACCESS - Use TIER_25_UNIFIED_VOCABULARY_EXTENDED =============
+// All vocabulary should use the structured VOCABULARY system below, not separate pools
 
-  // NEW: Pattern arrays for character consistency detection
-  coloredObjectPatterns: [
-    /\b(red|blue|green|yellow|purple|pink|orange|black|white|brown|gray|grey|gold|silver)\s+(\w+)\b/gi,
-    /\b(\w+)\s+(red|blue|green|yellow|purple|pink|orange|black|white|brown|gray|grey|gold|silver)\b/gi
-  ],
-
-  atmosphericPatterns: [
-    /\b(bright|dark|sunny|cloudy|rainy|stormy|peaceful|calm|exciting|scary|magical|mysterious|cheerful|gloomy)\b/gi,
-    /\b(sparkling|glowing|shimmering|twinkling|rustling|whispers|echoing|silence)\b/gi
-  ],
-
-  characterPatterns: [
-    /\b(friend|buddy|pal|companion|classmate|teammate|neighbor|sibling|sister|brother|cousin)\b/gi,
-    /\b([A-Z][a-z]+)\s+(said|says|asked|tells|told|replied|answered|whispered|shouted|called|smiled|laughed|ran|walked|jumped)\b/g,
-    /\b(he|she|they)\s+(is|was|are|were|has|had|does|did|can|could|will|would|should|must)\b/gi
-  ],
-
-  // NEW: Level 0 Template Coverage Arrays
-  level0Actions: [
-    // Daily routine actions from Level 0 templates
-    'wakes up', 'waking up', 'wake up', 'gets up', 'getting up', 'sleeps', 'sleeping', 'sleep',
-    'eats', 'eating', 'eat', 'drinks', 'drinking', 'drink', 'plays', 'playing', 'play',
-    'goes', 'going', 'go', 'comes', 'coming', 'come', 'sits', 'sitting', 'sit',
-    'stands', 'standing', 'stand', 'runs', 'running', 'run', 'walks', 'walking', 'walk',
-    'jumps', 'jumping', 'jump', 'climbs', 'climbing', 'climb', 'swings', 'swinging', 'swing',
-    // Care activities
-    'cleans', 'cleaning', 'clean', 'helps', 'helping', 'help', 'makes', 'making', 'make',
-    'puts', 'putting', 'put', 'takes', 'taking', 'take', 'gives', 'giving', 'give',
-    'gets', 'getting', 'get', 'looks', 'looking', 'look', 'sees', 'seeing', 'see',
-    // Creative activities
-    'draws', 'drawing', 'draw', 'reads', 'reading', 'read', 'sings', 'singing', 'sing',
-    'dances', 'dancing', 'dance', 'builds', 'building', 'build', 'creates', 'creating', 'create'
-  ],
-
-  level0Locations: [
-    // Indoor locations from Level 0 templates
-    'bed', 'bedroom', 'kitchen', 'home', 'house', 'room', 'bathroom', 'living room',
-    'dining room', 'playroom', 'inside', 'indoors',
-    // Outdoor locations
-    'park', 'playground', 'garden', 'yard', 'outside', 'outdoors', 'beach', 'forest',
-    'field', 'street', 'road', 'path', 'tree', 'grass',
-    // Community locations
-    'school', 'store', 'shop', 'library', 'hospital', 'farm', 'zoo'
-  ],
-
-  level0Objects: [
-    // From Level 0 templates - toys and play items
-    'toys', 'toy', 'ball', 'doll', 'teddy bear', 'blocks', 'puzzle', 'book', 'crayons',
-    'markers', 'bicycle', 'bike', 'swing', 'slide', 'sandbox', 'bucket', 'shovel',
-    // Food items
-    'food', 'cookie', 'cookies', 'cake', 'apple', 'banana', 'milk', 'juice', 'water',
-    'bread', 'sandwich', 'snack', 'treats',
-    // Clothing items
-    'shirt', 'dress', 'pants', 'shoes', 'hat', 'coat', 'clothes',
-    // Household items
-    'chair', 'table', 'cup', 'plate', 'bowl', 'spoon', 'fork', 'towel', 'blanket'
-  ],
-
-  level0CharacterPoses: [
-    // Character poses for Level 0 activities mapped to actions
-    'sitting up in bed', 'lying in bed', 'standing tall', 'sitting at table',
-    'running happily', 'jumping excitedly', 'walking carefully', 'climbing safely',
-    'sitting cross-legged', 'standing with hands on hips', 'reaching up high',
-    'kneeling down', 'crouching low', 'leaning forward', 'stretching arms wide',
-    'holding hands out', 'looking up curiously', 'tilting head thoughtfully',
-    'bouncing on toes', 'marching in place', 'spinning around', 'dancing joyfully',
-    'hugging tightly', 'waving hello', 'clapping hands', 'pointing excitedly'
-  ],
-
-  level0SecondaryCharacters: [
-    // Family and community members from Level 0 templates
-    'mom', 'mommy', 'mother', 'dad', 'daddy', 'father', 'grandma', 'grandpa',
-    'sister', 'brother', 'family', 'friend', 'friends', 'teacher', 'doctor',
-    'nurse', 'helper', 'neighbor', 'grown-up', 'adult', 'people'
-  ],
-
-  level0Animals: [
-    // Animals commonly referenced in Level 0 templates
-    'dog', 'puppy', 'cat', 'kitten', 'bird', 'fish', 'rabbit', 'bunny',
-    'horse', 'cow', 'pig', 'sheep', 'chicken', 'duck', 'frog', 'butterfly',
-    'bee', 'ladybug', 'turtle', 'bear', 'elephant', 'lion', 'monkey'
-  ]
-};
+// ============= VOCABULARY ALIAS FOR EASY ACCESS =============
+export const VOCABULARY = TIER_25_UNIFIED_VOCABULARY_EXTENDED;
 
 // ============= UTILITY FUNCTIONS =============
 export function pick(arr, seed) {
@@ -798,7 +678,9 @@ const tier25vocabulary = {
   },
   
   getSecondaryRoles: () => {
-    return PLACEHOLDER_POOLS.friends.concat(PLACEHOLDER_POOLS.family);
+    const friends = ['best friend', 'school friend', 'neighbor', 'playmate', 'buddy', 'companion'];
+    const family = ['mom', 'dad', 'sister', 'brother', 'grandma', 'grandpa', 'aunt', 'uncle'];
+    return friends.concat(family);
   },
   
   getRelationships: () => {
