@@ -1410,31 +1410,30 @@ export const ImageTierTester = () => {
         };
       }
 
-       // STEP 2: Use real frontend routing with Force Tier 1
-       cascadeHistory.push('🚀 Using SimpleImageService.generateImage with forceTier1=true...');
-       cascadeHistory.push(`⏰ ${new Date().toLocaleTimeString()}: Starting Force Tier 1 routing`);
-       const tier1StartTime = Date.now();
+       // STEP 2: Use real frontend routing (generateStoryImage - the actual user entry point)
+       cascadeHistory.push('🚀 Using SimpleImageService.generateStoryImage (real user flow)...');
+       cascadeHistory.push(`⏰ ${new Date().toLocaleTimeString()}: Starting user image generation request`);
+       const userFlowStartTime = Date.now();
       
       try {
-        const result = await SimpleImageService.generateImage({
-          storyText: testStoryText,
-          userInfo: userInfo,
-          sessionId: sessionId,
-          pageNumber: 1,
-          isPremium: false,
-          forceTier1: true // Force attempt at Tier 1 (orchestrator or direct mode)
-        });
+        const result = await SimpleImageService.generateStoryImage(
+          testStoryText,    // storyText - the actual story content
+          userInfo,         // userInfo - user profile and preferences
+          sessionId,        // sessionId - unique session identifier
+          1,                // pageNumber - current story page
+          false             // isPremium - guest user simulation (no forceTier1!)
+        );
 
-        const tier1Time = Date.now() - tier1StartTime;
+        const userFlowTime = Date.now() - userFlowStartTime;
         
         if (result.success) {
-          // PLAN FIX 2B: Enhanced badge logic with proper fallback and path detection
-          let displayTier = result.tier || 'Tier 1';  // Fallback to 'Tier 1' if undefined
+          // Real user experience: Natural tier routing with proper classification
+          let displayTier = result.tier || 'Tier 1';  // Natural tier selection
           let pathIndicator = '';
           
-          // Check path detection with better logic
+          // Real routing path detection (not forced)
           if (result.metadata?.bypassedOrchestrator || result.metadata?.usedDirectMode || result.tier === 'DIRECT_MODE') {
-            pathIndicator = ' (Direct Mode)';
+            pathIndicator = ' (Smart Bypass)';
           } else if (result.tier === 'Cache') {
             pathIndicator = ' (Cached)';
           } else if (result.tier?.includes('Recovery')) {
@@ -1443,60 +1442,60 @@ export const ImageTierTester = () => {
             pathIndicator = ' (via Orchestrator)';
           }
           
-          cascadeHistory.push(`✅ Force Tier 1 Success (${tier1Time}ms) - Tier: ${result.tier}`);
-          cascadeHistory.push(`🎯 Final routing decision: ${result.tier}${pathIndicator} selected`);
-          cascadeHistory.push(`⏰ ${new Date().toLocaleTimeString()}: Process completed successfully`);
+          cascadeHistory.push(`✅ User Image Generation Success (${userFlowTime}ms) - Tier: ${result.tier}`);
+          cascadeHistory.push(`🎯 Natural routing decision: ${result.tier}${pathIndicator} selected`);
+          cascadeHistory.push(`⏰ ${new Date().toLocaleTimeString()}: Real user flow completed successfully`);
           
           resultBadge = `${displayTier}${pathIndicator} Success`;
-          fallbackPath = `Force Tier 1 succeeded via ${displayTier}${pathIndicator}`;
-          finalResult = {
+          fallbackPath = `Real user flow succeeded via ${displayTier}${pathIndicator}`;
+           finalResult = {
             tier: result.tier || 'tier-1',
             success: true,
             imageURL: result.imageURL || result.url,
             details: {
-              processingTime: tier1Time,
+              processingTime: userFlowTime,
               cascadeHistory,
               testType: 'E2E_SIMULATION',
-              resultType: 'FORCE_TIER_1_SUCCESS',
+              resultType: 'REAL_USER_FLOW_SUCCESS',
               metadata: result.metadata,
               error: null,
               pathUsed: `${displayTier}${pathIndicator}`,
-              routingDecision: result.metadata?.routingReason || 'Standard tier 1 routing'
+              routingDecision: result.metadata?.routingReason || 'Natural tier routing'
             }
           };
         } else {
-          // Force Tier 1 failed - this means complete cascade failure
-          cascadeHistory.push(`❌ Force Tier 1 Complete Failure (${tier1Time}ms)`);
+          // Real user flow failed - this means complete cascade failure  
+          cascadeHistory.push(`❌ Real User Flow Complete Failure (${userFlowTime}ms)`);
           resultBadge = 'Complete Cascade Failure';
-          fallbackPath = 'Force Tier 1 exhausted all tiers without success';
+          fallbackPath = 'Real user flow exhausted all tiers without success';
           finalResult = {
             tier: 'cascade-failure',
             success: false,
             imageURL: null,
             details: {
-              processingTime: tier1Time,
+              processingTime: userFlowTime,
               cascadeHistory,
-              testType: 'REAL',
+              testType: 'E2E_SIMULATION',
               resultType: 'COMPLETE_CASCADE_FAILURE',
               error: result.error
             }
           };
         }
-      } catch (tier1Error) {
-        const tier1Time = Date.now() - tier1StartTime;
-        cascadeHistory.push(`❌ Force Tier 1 Error (${tier1Time}ms): ${tier1Error.message}`);
-        resultBadge = 'Force Tier 1 Error';
-        fallbackPath = 'Force Tier 1 encountered an error';
+      } catch (userFlowError) {
+        const userFlowTime = Date.now() - userFlowStartTime;
+        cascadeHistory.push(`❌ Real User Flow Error (${userFlowTime}ms): ${userFlowError.message}`);
+        resultBadge = 'Real User Flow Error';
+        fallbackPath = 'Real user flow encountered an error';
         finalResult = {
           tier: 'error',
           success: false,
           imageURL: null,
           details: {
-            processingTime: tier1Time,
+            processingTime: userFlowTime,
             cascadeHistory,
-            testType: 'REAL',
-            resultType: 'FORCE_TIER_1_ERROR',
-            error: tier1Error.message
+            testType: 'E2E_SIMULATION',
+            resultType: 'REAL_USER_FLOW_ERROR',
+            error: userFlowError.message
           }
         };
       }
