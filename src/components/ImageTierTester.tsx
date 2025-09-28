@@ -1403,8 +1403,24 @@ export const ImageTierTester = () => {
         
         if (result.success) {
           cascadeHistory.push(`✅ Force Tier 1 Success (${tier1Time}ms) - Tier: ${result.tier}`);
-          resultBadge = `${result.tier} Success`;
-          fallbackPath = `Force Tier 1 succeeded via ${result.tier}`;
+          
+          // Enhanced badge logic with proper fallback and path detection
+          let displayTier = result.tier || 'Tier 1';
+          let pathIndicator = '';
+          
+          // Check if Direct Mode was used (proactive bypass)
+          if (result.metadata?.bypassedOrchestrator || result.metadata?.usedDirectMode) {
+            pathIndicator = ' (Direct Mode)';
+          } else if (result.tier === 'Cache') {
+            pathIndicator = ' (Cached)';
+          } else if (result.tier?.includes('Recovery')) {
+            pathIndicator = ' (Recovery)';
+          } else if (result.metadata?.usedOrchestrator) {
+            pathIndicator = ' (via Orchestrator)';
+          }
+          
+          resultBadge = `${displayTier}${pathIndicator} Success`;
+          fallbackPath = `Force Tier 1 succeeded via ${displayTier}${pathIndicator}`;
           finalResult = {
             tier: result.tier || 'tier-1',
             success: true,
@@ -1415,7 +1431,9 @@ export const ImageTierTester = () => {
               testType: 'REAL',
               resultType: 'FORCE_TIER_1_SUCCESS',
               metadata: result.metadata,
-              error: null
+              error: null,
+              pathUsed: `${displayTier}${pathIndicator}`,
+              routingDecision: result.metadata?.routingReason || 'Standard tier 1 routing'
             }
           };
         } else {
@@ -3034,30 +3052,60 @@ export const ImageTierTester = () => {
                            </div>
                          )}
                          
-                         {/* Cascade History */}
-                         {result.details.cascadeHistory && result.details.cascadeHistory.length > 0 && (
-                           <div className="text-sm bg-gray-50 p-3 rounded-lg border">
-                             <span className="font-medium text-gray-800">📝 Cascade History:</span>
-                             <div className="mt-2 space-y-1">
-                               {result.details.cascadeHistory.map((step: string, idx: number) => (
-                                 <div key={idx} className="text-xs text-gray-700 font-mono flex items-start gap-2">
-                                   <span className="text-gray-400 min-w-[20px]">{idx + 1}.</span>
-                                   <span className={
-                                     step.includes('✅') ? 'text-green-600' :
-                                     step.includes('❌') ? 'text-red-600' :
-                                     step.includes('🔄') ? 'text-blue-600' :
-                                     step.includes('🎯') ? 'text-purple-600' :
-                                     'text-gray-700'
-                                   }>
-                                     {step}
+                           {/* Enhanced Cascade History with Routing Steps */}
+                           {result.details.cascadeHistory && result.details.cascadeHistory.length > 0 && (
+                             <div className="text-sm bg-blue-50 p-4 rounded-lg border-l-4 border-blue-400">
+                               <div className="flex items-center gap-2 mb-3">
+                                 <span className="font-semibold text-blue-900">🛤️ Routing Steps</span>
+                                 {(result.details as any).pathUsed && (
+                                   <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full font-medium">
+                                     {(result.details as any).pathUsed}
+                                   </span>
+                                 )}
+                               </div>
+                               
+                               {/* Routing Decision Summary */}
+                               {(result.details as any).routingDecision && (
+                                 <div className="mb-3 p-2 bg-blue-100 rounded text-xs">
+                                   <span className="font-medium text-blue-900">Routing Decision: </span>
+                                   <span className="text-blue-800">{(result.details as any).routingDecision}</span>
+                                 </div>
+                               )}
+                               
+                               <div className="space-y-1">
+                                 {result.details.cascadeHistory.map((step: string, idx: number) => {
+                                   const timestamp = new Date().toLocaleTimeString();
+                                   return (
+                                     <div key={idx} className="text-xs font-mono flex items-start gap-2 p-1 hover:bg-blue-100 rounded">
+                                       <span className="text-blue-400 min-w-[20px] font-bold">{idx + 1}.</span>
+                                       <span className="text-gray-500 min-w-[60px] text-[10px]">{timestamp}</span>
+                                       <span className={
+                                         step.includes('✅') ? 'text-green-700 font-medium' :
+                                         step.includes('❌') ? 'text-red-700 font-medium' :
+                                         step.includes('🔄') ? 'text-blue-700 font-medium' :
+                                         step.includes('🎯') ? 'text-purple-700 font-medium' :
+                                         'text-gray-700'
+                                       }>
+                                         {step}
+                                       </span>
+                                     </div>
+                                   );
+                                 })}
+                               </div>
+                               
+                               {/* Final Routing Summary */}
+                               <div className="mt-3 pt-2 border-t border-blue-200">
+                                 <div className="text-xs text-blue-800">
+                                   <span className="font-medium">Final Classification: </span>
+                                   <span className="px-2 py-1 bg-green-100 text-green-800 rounded font-medium">
+                                     {(result.details as any).pathUsed || result.tier || 'Tier 1'} Success
                                    </span>
                                  </div>
-                               ))}
+                               </div>
                              </div>
-                           </div>
-                         )}
-                         
-                         {/* Tier Failure History from Orchestrator */}
+                           )}
+                          
+                          {/* Tier Failure History from Orchestrator */}
                          {result.details.tierFailureHistory && result.details.tierFailureHistory.length > 0 && (
                            <div className="text-sm bg-orange-50 p-3 rounded-lg border-l-4 border-orange-500">
                              <span className="font-medium text-orange-800">⚠️ Internal Tier Failures:</span>
