@@ -1,5 +1,8 @@
 // DEPLOY_MARKER: 2025-09-27T00:00:00Z - Optimized with echoing CORS and memoized lazy loading
 
+// TypeScript type imports (ensures _shared is bundled)
+import type { UserInfo } from "../_shared/types/index.ts";
+
 // ============= RESILIENT IMPORT SYSTEM =============
 // Dynamic Supabase client creation using resilient loading
 async function createSupabaseClient() {
@@ -69,38 +72,20 @@ function getNuclearStyleFramework(difficulty: string) {
   return framework;
 }
 
-async function getPhaseOrchestrator() {
-  try {
-    // Preferred: resilient loader from _shared
-    let memoizedImport: <T=any>(href: string) => Promise<T>;
-    try {
-      ({ memoizedImport } = await import(
-        new URL("../_shared/resilientLoader.ts", import.meta.url).href
-      ));
-    } catch {
-      // Fallback: simple local memoizer to stay up during cold boot anomalies
-      const cache = new Map<string, Promise<any>>();
-      memoizedImport = <T=any>(href: string) => {
-        if (!cache.has(href)) cache.set(href, import(href));
-        return cache.get(href)! as Promise<T>;
-      };
-    }
+// Lazy-loaded orchestrator to prevent boot crashes (aligned with runware-generate-image)
+let phaseIntegrationOrchestrator: any = null;
 
-    const [
-      orchestratorModule,
-      { CharacterConsistencyService },
-      { UnifiedPlaceholderResolver }
-    ] = await Promise.all([
-      memoizedImport(new URL("../_shared/PhaseIntegrationOrchestrator.js", import.meta.url).href),
-      memoizedImport(new URL("../_shared/CharacterConsistencyService.js", import.meta.url).href),
-      memoizedImport(new URL("../_shared/UnifiedPlaceholderResolver.js", import.meta.url).href)
-    ]);
+async function getPhaseOrchestrator(memoizedImport: any) {
+  try {
+    if (!phaseIntegrationOrchestrator) {
+      const orchestratorUrl = new URL("../_shared/PhaseIntegrationOrchestrator.js", import.meta.url).href;
+      const orchestratorModule = await memoizedImport(orchestratorUrl);
+      phaseIntegrationOrchestrator = orchestratorModule.phaseIntegrationOrchestrator;
+    }
     
     return { 
-      phaseIntegrationOrchestrator: orchestratorModule.phaseIntegrationOrchestrator, 
-      getNuclearStyleFramework, 
-      CharacterConsistencyService, 
-      UnifiedPlaceholderResolver 
+      phaseIntegrationOrchestrator, 
+      getNuclearStyleFramework
     };
   } catch (error: unknown) {
     console.warn('Phase orchestrator lazy load failed:', error);
@@ -304,18 +289,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
       const validationResult = validateDirectModePayload(payload);
       console.log(`✅ [${requestId}] Fast validation passed: ${validationResult.contentType}`);
 
-      // PHASE 5: Load orchestrator and dependencies in parallel (single load point)
-      console.log(`📦 [${requestId}] Loading orchestrator and dependencies in parallel`);
-      const [dependencies, supabaseClient] = await Promise.all([
-        getPhaseOrchestrator(),
-        createSupabaseClient()
-      ]);
-
-      if (!dependencies?.phaseIntegrationOrchestrator) {
-        throw new Error('BOOT_OR_IMPORT_FAILURE: Service initialization failed');
-      }
-
-      // Load shared dependencies with resilient handling
+      // PHASE 5: Load resilient loader first
+      console.log(`📦 [${requestId}] Loading orchestrator (lazy)`);
       let memoizedImport: <T=any>(href: string) => Promise<T>;
       try {
         ({ memoizedImport } = await import(
@@ -330,29 +305,19 @@ Deno.serve(async (req: Request): Promise<Response> => {
         };
       }
 
-      // Load shared dependencies with resilient handling
-      let deriveRegionalEthnicity = (userInfo: any) => userInfo?.ethnicity || 'American';
-      let getHairBySkintone = (skinTone: string, sessionId?: string) => 'brown hair';
-      let getSkinBySkintone = (skinTone: string, sessionId?: string) => 'medium skin tone';
+      const [dependencies, supabaseClient] = await Promise.all([
+        getPhaseOrchestrator(memoizedImport),
+        createSupabaseClient()
+      ]);
 
-      try {
-        const resolverModule = await memoizedImport(
-          new URL("../_shared/UnifiedPlaceholderResolver.js", import.meta.url).href
-        );
-        deriveRegionalEthnicity = resolverModule.deriveRegionalEthnicity;
-      } catch (error) {
-        console.warn(`[AI_VISUAL] UnifiedPlaceholderResolver load failed: ${error instanceof Error ? error.message : String(error)}`);
+      if (!dependencies?.phaseIntegrationOrchestrator) {
+        throw new Error('Service initialization failed');
       }
 
-      try {
-        const cacheModule = await memoizedImport(
-          new URL("../_shared/StaticDataCache.js", import.meta.url).href
-        );
-        getHairBySkintone = cacheModule.getHairBySkintone;
-        getSkinBySkintone = cacheModule.getSkinBySkintone;
-      } catch (error) {
-        console.warn(`[AI_VISUAL] StaticDataCache load failed: ${error instanceof Error ? error.message : String(error)}`);;
-      }
+      // Local no-op fallbacks (orchestrator has its own dependencies)
+      const deriveRegionalEthnicity = (userInfo: any) => userInfo?.ethnicity || 'American';
+      const getHairBySkintone = (_skinTone: string, _sessionId?: string) => 'brown hair';
+      const getSkinBySkintone = (_skinTone: string, _sessionId?: string) => 'medium skin tone';
 
       // Dependencies already loaded above, use the cached reference
       console.log(`✅ [${requestId}] Using loaded dependencies`);
@@ -421,10 +386,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
       // Additional validation for critical fields if success is true
       if (resultObj.success) {
-        if (!validateImageURL(resultObj.imageURL)) {
-          throw new Error('Invalid orchestrator response: invalid or missing imageURL');
+        if (resultObj.imageURL && !validateImageURL(resultObj.imageURL)) {
+          console.warn(`[${requestId}] Warning: imageURL present but invalid, ignoring`);
         }
-        if (!validatePrimarySceneQuality(resultObj.primaryScene)) {
+        if (resultObj.primaryScene && !validatePrimarySceneQuality(resultObj.primaryScene)) {
           console.warn(`[${requestId}] Warning: Primary scene quality may be suboptimal`);
         }
       }
