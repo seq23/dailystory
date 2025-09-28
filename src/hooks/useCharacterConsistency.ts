@@ -16,7 +16,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { DebugLogger } from '@/services/DebugLogger';
-import { characterConsistencyService } from '@/services/CharacterConsistencyService';
+// CharacterConsistencyService now backend-only - this hook provides mock data
 import { type VisualDetail, type AppearanceConflict } from '@/types/visualDetailTypes';
 
 interface CharacterTraits {

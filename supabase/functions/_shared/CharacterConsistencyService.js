@@ -1,13 +1,10 @@
-// Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
 /**
- * Character Consistency Service - Enhanced with Cultural Intelligence
- * Handles all character generation, consistency, cultural enhancements, and persistence
- * Includes all cultural arrays and detection logic from FrontendIntelligence
- * BOOT_SYNC_ANOMALY FIX: Lazy loading with inline fallback memoizers
+ * UNIFIED CHARACTER CONSISTENCY SERVICE - COMPLETE CONSOLIDATION
+ * Combines all character generation, visual tracking, secondary detection, and persistence
+ * Single source of truth for all character-related functionality
  */
 
 import { safeErrorMessage } from './errorPatterns.ts';
-import { UnifiedCharacterDescriptor } from './UnifiedCharacterDescriptor.js';
 
 // Inline fallback memoizer for shared dependencies
 const serviceImportCache = new Map();
@@ -22,28 +19,96 @@ async function memoizedServiceImport(path) {
     return module;
   } catch (error) {
     console.warn(`Failed to import ${path}:`, error);
-    // Return fallback mock to prevent crashes
     return {
       VOCABULARY: {
         objectCategories: {
           animals: ['dog', 'cat', 'rabbit', 'hamster', 'bird'],
           colors: ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink']
-        },
-        actions: {
-          basic: ['run', 'jump', 'walk', 'play', 'dance'],
-          social: ['help', 'share', 'laugh', 'smile', 'hug']
         }
-      },
-      getAfricanAmericanHair: () => 'beautiful hair',
-      getAfricanAmericanFeatures: () => 'authentic features'
+      }
     };
   }
 }
 
+// ============= COMPREHENSIVE RELATIONSHIP PATTERNS (consolidated from all sources) =============
+const RELATIONSHIP_PATTERNS = {
+  // Core Family (8 types)
+  family_mother: ['mom', 'mother', 'mommy', 'mama', 'ma'],
+  family_father: ['dad', 'father', 'daddy', 'papa', 'pa'],
+  family_sister: ['sister', 'sis'],
+  family_brother: ['brother', 'bro'],
+  family_grandmother: ['grandma', 'grandmother', 'nana', 'granny'],
+  family_grandfather: ['grandpa', 'grandfather', 'papa', 'gramps'],
+  family_aunt: ['aunt', 'auntie'],
+  family_uncle: ['uncle'],
+  
+  // Extended Family (7 types)
+  family_cousin: ['cousin'],
+  family_nephew: ['nephew'],
+  family_niece: ['niece'],
+  family_stepmother: ['stepmother', 'stepmom'],
+  family_stepfather: ['stepfather', 'stepdad'],
+  family_stepsister: ['stepsister'],
+  family_stepbrother: ['stepbrother'],
+  
+  // Friends & Peers (6 types)
+  community_friend: ['friend', 'buddy', 'pal', 'companion'],
+  community_best_friend: ['best friend', 'bestie'],
+  community_classmate: ['classmate'],
+  community_teammate: ['teammate'],
+  community_neighbor: ['neighbor', 'neighbour'],
+  community_playmate: ['playmate'],
+  
+  // Authority Figures (8 types)
+  authority_teacher: ['teacher', 'instructor', 'tutor'],
+  authority_coach: ['coach', 'trainer'],
+  authority_doctor: ['doctor', 'dr'],
+  authority_nurse: ['nurse'],
+  authority_principal: ['principal', 'headmaster'],
+  authority_librarian: ['librarian'],
+  authority_babysitter: ['babysitter', 'sitter'],
+  authority_guide: ['guide']
+};
+
+// Common words that can be names (for disambiguation)
+const COMMON_WORD_NAMES = [
+  'apple', 'sage', 'river', 'hope', 'grace', 'faith', 'rose', 'lily', 
+  'amber', 'crystal', 'summer', 'autumn', 'winter', 'spring', 'joy',
+  'charity', 'harmony', 'melody', 'angel', 'star', 'moon', 'sun',
+  'forest', 'ocean', 'sky', 'storm', 'phoenix', 'hunter', 'archer'
+];
+
+// Visual detail detection patterns
+const EXPANDED_COLOR_ARRAY = [
+  'red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'black', 'white', 'brown', 'gray', 'grey',
+  'bright red', 'bright blue', 'bright green', 'vibrant red', 'vibrant blue', 'electric blue',
+  'light blue', 'light pink', 'pastel blue', 'pale blue', 'dark blue', 'navy blue',
+  'silver', 'gold', 'rainbow', 'sky blue', 'ocean blue', 'grass green', 'sunset orange'
+];
+
+const SIZE_ADJECTIVES = [
+  'big', 'small', 'tiny', 'huge', 'large', 'little', 'giant', 'enormous', 
+  'mini', 'massive', 'microscopic', 'colossal', 'petite', 'immense'
+];
+
+const CLOTHING_DETECTION_KEYWORDS = [
+  'shirt', 'dress', 'shoes', 'hat', 'jacket', 'sweater', 'pants', 'jeans',
+  'skirt', 'uniform', 'pajamas', 'coat', 'scarf', 'boots', 'sneakers',
+  'hoodie', 'shorts', 'socks', 'blouse', 'tie', 'apron', 'gloves'
+];
+
+const UNIFIED_OBJECT_CATEGORIES = [
+  'apple', 'banana', 'cookie', 'cake', 'pizza', 'ice cream',
+  'dog', 'cat', 'rabbit', 'hamster', 'bird', 'fish', 'turtle',
+  'car', 'truck', 'bus', 'train', 'airplane', 'bicycle',
+  'ball', 'doll', 'teddy bear', 'blocks', 'puzzle', 'kite',
+  'tree', 'flower', 'leaf', 'rock', 'shell', 'butterfly'
+];
+
 export class CharacterConsistencyService {
   constructor() {
-    // Structured initialization logging via unified-debug-service
     this.visualDetailCache = new Map();
+    this.supabase = null;
   }
 
   /**
@@ -57,63 +122,75 @@ export class CharacterConsistencyService {
   }
 
   /**
-   * Save character data to database
+   * Get or create Supabase client using resilient loader
+   */
+  async getSupabaseClient() {
+    if (!this.supabase) {
+      try {
+        const { createResilientSupabaseClient } = await import('./resilientLoader.ts');
+        this.supabase = await createResilientSupabaseClient();
+      } catch (error) {
+        console.warn('Failed to create Supabase client:', error);
+        this.supabase = null;
+      }
+    }
+    return this.supabase;
+  }
+
+  // ============= DATABASE OPERATIONS =============
+  
+  /**
+   * Save character data to database (character_consistency_cache only)
    */
   async saveCharacterToDatabase(sessionId, characterKey, characterData) {
-    // Database operation - success/error logged via error handling
-    
     try {
-      const { createResilientSupabaseClient } = await import('./resilientLoader.ts');
-      const supabase = await createResilientSupabaseClient();
+      const supabase = await this.getSupabaseClient();
+      if (!supabase) return null;
 
-    const { error } = await supabase
-      .from('character_consistency_cache')
-      .upsert({
-        session_id: sessionId,
-        character_key: characterKey,
-        character_data: characterData,
-        selected_cultural_hair: characterData.selectedCulturalHair || null,
-        selected_cultural_features: characterData.selectedCulturalFeatures || null,
-        updated_at: new Date().toISOString()
-      });
+      const { error } = await supabase
+        .from('character_consistency_cache')
+        .upsert({
+          session_id: sessionId,
+          character_key: characterKey,
+          character_data: characterData,
+          selected_cultural_hair: characterData.selectedCulturalHair || null,
+          selected_cultural_features: characterData.selectedCulturalFeatures || null,
+          updated_at: new Date().toISOString()
+        });
 
       if (error) {
         console.error('❌ Database save error:', error);
         throw new Error(`CharacterConsistencyService.saveCharacterToDatabase failed: ${safeErrorMessage(error)}`);
       }
       
-      // Success - character saved to database
       return true;
     } catch (importError) {
-      console.warn('Failed to create Supabase client, skipping database save:', importError);
-      return null; // Graceful degradation
+      console.warn('Failed to save character to database:', importError);
+      return null;
     }
   }
 
   /**
-   * Get character data from database
+   * Get character data from database (character_consistency_cache only)
    */
   async getCharacterFromDatabase(sessionId, characterKey) {
-    // Database fetch operation
-    
     try {
-      const { createResilientSupabaseClient } = await import('./resilientLoader.ts');
-      const supabase = await createResilientSupabaseClient();
+      const supabase = await this.getSupabaseClient();
+      if (!supabase) return null;
 
-    const { data, error } = await supabase
-      .from('character_consistency_cache')
-      .select('character_data, selected_cultural_hair, selected_cultural_features')
-      .eq('session_id', sessionId)
-      .eq('character_key', characterKey)
-      .single();
+      const { data, error } = await supabase
+        .from('character_consistency_cache')
+        .select('character_data, selected_cultural_hair, selected_cultural_features')
+        .eq('session_id', sessionId)
+        .eq('character_key', characterKey)
+        .single();
 
-      if (error && error.code !== 'PGRST116') { // PGRST116 = not found, which is expected sometimes
+      if (error && error.code !== 'PGRST116') {
         console.error('❌ Database fetch error:', error);
         throw new Error(`CharacterConsistencyService.getCharacterFromDatabase failed: ${safeErrorMessage(error)}`);
       }
       
       if (data?.character_data) {
-        // Character cached in database - return with cultural selections merged
         const characterData = data.character_data;
         if (data.selected_cultural_hair) {
           characterData.selectedCulturalHair = data.selected_cultural_hair;
@@ -126,16 +203,76 @@ export class CharacterConsistencyService {
       
       return null;
     } catch (importError) {
-      console.warn('Failed to create Supabase client, returning null:', importError);
-      return null; // Graceful degradation
+      console.warn('Failed to get character from database:', importError);
+      return null;
     }
   }
 
   /**
-   * Get or create character seed with full consistency support (DATABASE-BACKED)
+   * Save visual detail to database (visual_details_cache only)
+   */
+  async saveVisualDetailToDatabase(sessionId, characterName, detailType, detailKey, detailValue, pageNumber) {
+    try {
+      const supabase = await this.getSupabaseClient();
+      if (!supabase) return;
+
+      // Check if detail already exists
+      const { data: existing } = await supabase
+        .from('visual_details_cache')
+        .select('*')
+        .eq('session_id', sessionId)
+        .eq('character_name', characterName)
+        .eq('detail_type', detailType)
+        .eq('detail_key', detailKey)
+        .single();
+
+      if (existing) {
+        // Update existing detail
+        const { error } = await supabase
+          .from('visual_details_cache')
+          .update({
+            detail_value: detailValue,
+            page_last_seen: pageNumber,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existing.id);
+
+        if (error) {
+          console.error('Error updating visual detail:', error);
+        } else {
+          console.log(`✅ Updated visual detail: ${characterName} ${detailType} ${detailKey} = ${detailValue}`);
+        }
+      } else {
+        // Insert new detail
+        const { error } = await supabase
+          .from('visual_details_cache')
+          .insert({
+            session_id: sessionId,
+            character_name: characterName,
+            detail_type: detailType,
+            detail_key: detailKey,
+            detail_value: detailValue,
+            page_first_seen: pageNumber,
+            page_last_seen: pageNumber
+          });
+
+        if (error) {
+          console.error('Error inserting visual detail:', error);
+        } else {
+          console.log(`✅ Stored new visual detail: ${characterName} ${detailType} ${detailKey} = ${detailValue}`);
+        }
+      }
+    } catch (error) {
+      console.error('Database error in saveVisualDetailToDatabase:', error);
+    }
+  }
+
+  // ============= CHARACTER GENERATION & CONSISTENCY =============
+  
+  /**
+   * Get or create character seed with full consistency support
    */
   async getCharacterSeed(sessionId, avatarIdentity, storyContext, sessionType = 'new', pageTextClothing = null) {
-    // Add null check to prevent crashes when avatarIdentity is undefined
     if (!avatarIdentity) {
       console.warn('⚠️ CharacterConsistencyService: avatarIdentity is undefined, using fallback');
       avatarIdentity = { name: 'child' };
@@ -147,13 +284,11 @@ export class CharacterConsistencyService {
     // Check database for existing character
     const cached = await this.getCharacterFromDatabase(sessionId, cacheKey);
     if (cached) {
-      // Using cached character from database
       return cached;
     }
     
     // Generate new character
     const seedData = await this.createNewCharacterSeed(avatarIdentity);
-    
     const characterDescription = await this.buildCharacterDescription(seedData, storyContext, pageTextClothing, sessionId);
     
     const characterData = {
@@ -174,7 +309,6 @@ export class CharacterConsistencyService {
     // Save to database for consistency across edge function instances
     await this.saveCharacterToDatabase(sessionId, cacheKey, characterData);
     
-    // Fresh character generated and saved
     return characterData;
   }
 
@@ -183,18 +317,12 @@ export class CharacterConsistencyService {
    */
   async createNewCharacterSeed(avatarIdentity) {
     const characterName = avatarIdentity.name || 'child';
-    const userId = `avatar-${avatarIdentity.type}-${avatarIdentity.skinTone}`; // Generate consistent ID from avatar
+    const userId = `avatar-${avatarIdentity.type}-${avatarIdentity.skinTone}`;
     const characterSpecificSeed = `${characterName}-${userId}-${avatarIdentity.skinTone}`;
     
     const baseSeed = this.generateStableSeed(characterSpecificSeed, characterName);
-    
-    // Generate consistent physical features using character-specific seed
     const seededRandom = this.createSeededRandom(baseSeed);
     
-    // Eye color handling removed - let avatar descriptions handle naturally
-    
-    // Generate consistent clothing style for this character using proper tier25 vocabulary
-    const { VOCABULARY } = await memoizedServiceImport('./tier25Vocabulary.js');
     const clothingStyles = ['casual', 'colorful', 'comfortable', 'neat', 'playful', 'stylish', 'fun', 'vibrant'];
     const consistentClothingStyle = clothingStyles[Math.floor(seededRandom() * clothingStyles.length)];
 
@@ -204,8 +332,8 @@ export class CharacterConsistencyService {
       avatarType: avatarIdentity.type || 'child',
       skinTone: avatarIdentity.skinTone || 'medium',
       consistentClothingStyle,
-      selectedCulturalHair: null, // Will be populated when cultural context is generated
-      selectedCulturalFeatures: null, // Will be populated when cultural context is generated
+      selectedCulturalHair: null,
+      selectedCulturalFeatures: null,
       characterSpecificSeed
     };
   }
@@ -227,22 +355,29 @@ export class CharacterConsistencyService {
   }
 
   /**
+   * Create seeded random function
+   */
+  createSeededRandom(seed) {
+    let x = Math.sin(seed) * 10000;
+    return () => {
+      x = Math.sin(x) * 10000;
+      return x - Math.floor(x);
+    };
+  }
+
+  /**
    * Get cultural enhancements with character consistency seeding
-   * Integrates with StaticDataCache using character-specific seeds
    */
   async getCulturalEnhancements(userInfo, sessionId, characterName = 'child') {
     const cacheKey = `${sessionId}_${characterName}`;
     
-    // Get or create character data
     let characterData = await this.getCharacterFromDatabase(sessionId, cacheKey);
     
     if (!characterData) {
-      // Create character if it doesn't exist
       const avatarIdentity = userInfo?.avatarIdentity || userInfo?.avatar || { name: characterName };
       characterData = await this.getCharacterSeed(sessionId, avatarIdentity, null, 'new', null);
     }
     
-    // Check if cultural selections are already cached
     if (characterData.selectedCulturalHair && characterData.selectedCulturalFeatures) {
       return {
         hair: characterData.selectedCulturalHair,
@@ -253,14 +388,11 @@ export class CharacterConsistencyService {
     // Import getCulturalBundle from StaticDataCache
     const { getCulturalBundle } = await import('./StaticDataCache.js');
     
-    // Use character seed for consistent cultural selections
     const characterSeed = characterData.seed || this.generateStableSeed(`${sessionId}_${characterName}`, characterName);
     const culturalBundle = getCulturalBundle(userInfo, characterSeed, userInfo?.skinTone);
     
-    // Cache the cultural selections
     await this.updateCulturalSelections(sessionId, cacheKey, culturalBundle.hair, culturalBundle.features);
     
-    // Update in-memory character data
     characterData.selectedCulturalHair = culturalBundle.hair;
     characterData.selectedCulturalFeatures = culturalBundle.features;
     
@@ -270,24 +402,24 @@ export class CharacterConsistencyService {
   }
 
   /**
-   * Update character data with cultural selections for persistence
+   * Update character data with cultural selections
    */
   async updateCulturalSelections(sessionId, characterKey, selectedCulturalHair, selectedCulturalFeatures) {
     console.log(`🎨 Updating cultural selections for character ${characterKey} in session ${sessionId}`);
     
     try {
-      const { createResilientSupabaseClient } = await import('./resilientLoader.ts');
-      const supabase = await createResilientSupabaseClient();
+      const supabase = await this.getSupabaseClient();
+      if (!supabase) return false;
 
-    const { error } = await supabase
-      .from('character_consistency_cache')
-      .update({
-        selected_cultural_hair: selectedCulturalHair,
-        selected_cultural_features: selectedCulturalFeatures,
-        updated_at: new Date().toISOString()
-      })
-      .eq('session_id', sessionId)
-      .eq('character_key', characterKey);
+      const { error } = await supabase
+        .from('character_consistency_cache')
+        .update({
+          selected_cultural_hair: selectedCulturalHair,
+          selected_cultural_features: selectedCulturalFeatures,
+          updated_at: new Date().toISOString()
+        })
+        .eq('session_id', sessionId)
+        .eq('character_key', characterKey);
 
       if (error) {
         console.error('❌ Cultural selections update error:', error);
@@ -297,64 +429,667 @@ export class CharacterConsistencyService {
       console.log(`🎨 Updated cultural selections for character ${characterKey}`);
       return true;
     } catch (importError) {
-      console.warn('Failed to create Supabase client, skipping cultural selections update:', importError);
-      return false; // Graceful degradation
+      console.warn('Failed to update cultural selections:', importError);
+      return false;
     }
   }
 
   /**
    * Build character description from seed data
-   * Now integrated with VisualDetailTracker for persistent clothing
-   * CRITICAL FIX: Respect StaticDataCache hair mappings for light skin tones
    */
   async buildCharacterDescription(seedData, storyContext, pageTextClothing = null, sessionId = null) {
     const characterName = seedData.characterName || 'child';
     const age = seedData.age || '6-8';
     
-    // PRIORITY 1: Check VisualDetailTracker for detected clothing
+    // Check for detected clothing from visual details
     let clothingStyle = '';
     if (sessionId) {
       try {
-        const { VisualDetailTracker } = await import('./VisualDetailTracker.js');
-        const detectedClothing = await VisualDetailTracker.buildClothingDescription(sessionId, characterName);
+        const detectedClothing = await this.buildClothingDescription(sessionId, characterName);
         if (detectedClothing) {
           clothingStyle = detectedClothing;
-          console.log(`👕 Using VisualDetailTracker clothing for ${characterName}: ${detectedClothing}`);
+          console.log(`👕 Using detected clothing for ${characterName}: ${detectedClothing}`);
         }
       } catch (error) {
-        console.log(`⚠️ VisualDetailTracker clothing query failed:`, error.message);
+        console.log(`⚠️ Clothing detection failed:`, error.message);
       }
     }
     
-    // PRIORITY 2: Check if story text has clothing descriptions (legacy check)
+    // Use random clothing if no specific clothing detected
     if (!clothingStyle) {
       const hasStoryClothing = pageTextClothing && (
         pageTextClothing.includes('wearing') || 
         pageTextClothing.includes('dressed') || 
         pageTextClothing.includes('shirt') ||
         pageTextClothing.includes('pants') ||
-        pageTextClothing.includes('dress') ||
-        pageTextClothing.includes('hat') ||
-        pageTextClothing.includes('jacket') ||
-        pageTextClothing.includes('coat')
+        pageTextClothing.includes('dress')
       );
       
-      // PRIORITY 3: Use random clothing if no specific clothing detected
       if (!hasStoryClothing) {
         clothingStyle = `wearing ${seedData.consistentClothingStyle} clothing`;
       }
     }
     
-    // Use actual avatar type from seedData instead of hardcoded "child"
     const avatarType = seedData.avatarType || seedData.type || 'child';
     
-    // CRITICAL FIX: Don't override hair color - let StaticDataCache handle hair mapping
-    // Remove any hair color descriptions from this service to prevent override
     return `${characterName} is a ${avatarType} age ${age}${clothingStyle ? ' ' + clothingStyle : ''}`;
   }
 
+  // ============= VISUAL DETAIL TRACKING (consolidated from VisualDetailTracker) =============
+  
   /**
-   * Generate secondary character for relationship consistency with seed-based consistency
+   * Analyze text for visual details and store them in database
+   */
+  async analyzeVisualDetails(sessionId, text, pageNumber, characterName = null) {
+    console.log(`🎨 Analyzing visual details for session ${sessionId}, page ${pageNumber}`);
+    
+    if (!sessionId || !text) return;
+    
+    // Enhanced patterns for character-specific clothing detection
+    const characterClothingPattern = new RegExp(
+      `(${characterName || '[A-Z][a-z]+'}|[A-Z][a-z]+)\\s+(has|wears?|wearing|puts?\\s+on|dresses?\\s+in)\\s+(a|an|the)?\\s*(new|old)?\\s*(red|blue|green|yellow|purple|orange|pink|brown|black|white|gray|grey|colorful)?\\s*(shirt|dress|pants|hat|jacket|coat|shoes|boots|socks|gloves|scarf|belt|tie|sweater|blouse|skirt|shorts|vest|uniform)`,
+      'gi'
+    );
+    
+    // Secondary character visual patterns
+    const momVisualPattern = /(mom|mother|mommy|mama)\\s+(has|with|wearing|wears|in)\\s+(a|an|the)?\\s*(long|short|curly|straight|blonde|brown|black|red|gray|grey)?\\s*(hair|dress|shirt|blouse|jacket|coat|apron|glasses|smile)/gi;
+    const dadVisualPattern = /(dad|father|daddy|papa)\\s+(has|with|wearing|wears|in)\\s+(a|an|the)?\\s*(beard|mustache|glasses|hat|cap|shirt|jacket|tie|suit)/gi;
+    
+    // Enhanced color and size patterns
+    const expandedColorWords = EXPANDED_COLOR_ARRAY.join('|').replace(/\s+/g, '\\s+');
+    const sizeWords = SIZE_ADJECTIVES.join('|');
+    const objectWords = UNIFIED_OBJECT_CATEGORIES.join('|').replace(/\s+/g, '\\s+');
+    
+    const colorPattern = new RegExp(`(${expandedColorWords})\\s+(${objectWords})`, 'gi');
+    const sizePattern = new RegExp(`(${sizeWords})\\s+(${objectWords})`, 'gi');
+    const colorSizePattern = new RegExp(`(${sizeWords})\\s+(${expandedColorWords})\\s+(${objectWords})`, 'gi');
+    
+    // Process character-specific clothing
+    let match;
+    while ((match = characterClothingPattern.exec(text)) !== null) {
+      const characterInText = match[1];
+      const clothingItem = match[7];
+      const color = match[6] || 'unspecified';
+      const modifier = match[4] || '';
+      
+      const clothingDescription = `${modifier} ${color} ${clothingItem}`.trim();
+      
+      await this.saveVisualDetailToDatabase(
+        sessionId, 
+        characterInText.toLowerCase(), 
+        'clothing', 
+        clothingItem, 
+        clothingDescription, 
+        pageNumber
+      );
+      
+      console.log(`👕 New character clothing: ${characterInText} - ${clothingDescription}`);
+    }
+    
+    // Process secondary character visual details
+    while ((match = momVisualPattern.exec(text)) !== null) {
+      const attribute = match[5];
+      const descriptor = match[4] || 'default';
+      const fullDescription = `${descriptor} ${attribute}`.trim();
+      
+      await this.saveVisualDetailToDatabase(sessionId, 'mom', 'appearance', attribute, fullDescription, pageNumber);
+      console.log(`👩 Mom visual detail: ${fullDescription}`);
+    }
+    
+    while ((match = dadVisualPattern.exec(text)) !== null) {
+      const attribute = match[4];
+      await this.saveVisualDetailToDatabase(sessionId, 'dad', 'appearance', attribute, attribute, pageNumber);
+      console.log(`👨 Dad visual detail: ${attribute}`);
+    }
+    
+    // Process enhanced object detection
+    while ((match = colorSizePattern.exec(text)) !== null) {
+      const size = match[1].toLowerCase();
+      const color = match[2].toLowerCase();
+      const object = match[3].toLowerCase();
+      const fullDescription = `${size} ${color} ${object}`;
+      
+      await this.saveVisualDetailToDatabase(sessionId, 'general', 'colored_object', object, fullDescription, pageNumber);
+      console.log(`🎯 Enhanced object detail: ${fullDescription}`);
+    }
+    
+    while ((match = colorPattern.exec(text)) !== null) {
+      const color = match[1].toLowerCase();
+      const object = match[2].toLowerCase();
+      const fullDescription = `${color} ${object}`;
+      
+      await this.saveVisualDetailToDatabase(sessionId, 'general', 'colored_object', object, fullDescription, pageNumber);
+      console.log(`🎨 Color object detail: ${fullDescription}`);
+    }
+    
+    while ((match = sizePattern.exec(text)) !== null) {
+      const size = match[1].toLowerCase();
+      const object = match[2].toLowerCase();
+      const fullDescription = `${size} ${object}`;
+      
+      await this.saveVisualDetailToDatabase(sessionId, 'general', 'colored_object', object, fullDescription, pageNumber);
+      console.log(`📏 Size object detail: ${fullDescription}`);
+    }
+  }
+
+  /**
+   * Get colored objects for consistency
+   */
+  async getColoredObjects(sessionId) {
+    try {
+      const supabase = await this.getSupabaseClient();
+      if (!supabase) return '';
+
+      const { data, error } = await supabase
+        .from('visual_details_cache')
+        .select('detail_value')
+        .eq('session_id', sessionId)
+        .eq('detail_type', 'colored_object');
+
+      if (error || !data) {
+        return '';
+      }
+
+      const uniqueObjects = [...new Set(data.map(item => item.detail_value))];
+      return uniqueObjects.join(', ');
+    } catch (error) {
+      console.error('Database error in getColoredObjects:', error);
+      return '';
+    }
+  }
+
+  /**
+   * Get character clothing from database
+   */
+  async getCharacterClothing(sessionId, characterName) {
+    try {
+      const supabase = await this.getSupabaseClient();
+      if (!supabase) return {};
+
+      const { data, error } = await supabase
+        .from('visual_details_cache')
+        .select('*')
+        .eq('session_id', sessionId)
+        .eq('character_name', characterName.toLowerCase())
+        .eq('detail_type', 'clothing');
+
+      if (error) {
+        console.error('Error fetching character clothing:', error);
+        return {};
+      }
+
+      const clothing = {};
+      data?.forEach(detail => {
+        clothing[detail.detail_key] = detail.detail_value;
+      });
+
+      console.log(`👕 Retrieved clothing for ${characterName}:`, clothing);
+      return clothing;
+    } catch (error) {
+      console.error('Database error in getCharacterClothing:', error);
+      return {};
+    }
+  }
+
+  /**
+   * Build clothing description for character prompt
+   */
+  async buildClothingDescription(sessionId, characterName) {
+    const clothing = await this.getCharacterClothing(sessionId, characterName);
+    
+    if (Object.keys(clothing).length === 0) {
+      return null;
+    }
+    
+    const clothingItems = Object.values(clothing);
+    return `wearing ${clothingItems.join(', ')}`;
+  }
+
+  /**
+   * Get character appearance from story
+   */
+  async getCharacterAppearanceFromStory(sessionId, characterName = null) {
+    try {
+      const supabase = await this.getSupabaseClient();
+      if (!supabase) return null;
+
+      const query = supabase
+        .from('visual_details_cache')
+        .select('*')
+        .eq('session_id', sessionId);
+
+      if (characterName) {
+        query.eq('character_name', characterName.toLowerCase());
+      }
+
+      const { data, error } = await query;
+
+      if (error || !data) {
+        return null;
+      }
+
+      const details = data.map(detail => 
+        `${detail.character_name !== 'general' ? detail.character_name + ' ' : ''}${detail.detail_value}`
+      );
+
+      return details.join(', ');
+    } catch (error) {
+      console.error('Database error in getCharacterAppearanceFromStory:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Get session setting from previous pages
+   */
+  async getSessionSetting(sessionId) {
+    try {
+      const supabase = await this.getSupabaseClient();
+      if (!supabase) return null;
+
+      const { data, error } = await supabase
+        .from('visual_details_cache')
+        .select('*')
+        .eq('session_id', sessionId)
+        .eq('detail_type', 'setting')
+        .eq('detail_key', 'location')
+        .order('page_last_seen', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (error) {
+        console.log('No previous setting found:', error.message);
+        return null;
+      }
+
+      console.log(`🏠 Retrieved session setting: ${data.detail_value} from page ${data.page_last_seen}`);
+      return data.detail_value;
+    } catch (error) {
+      console.error('Database error in getSessionSetting:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Get visual history for consistency
+   */
+  async getVisualHistory(userId, characterName, limit = 10) {
+    try {
+      const supabase = await this.getSupabaseClient();
+      if (!supabase) return [];
+
+      const { data, error } = await supabase
+        .from('visual_details_cache')
+        .select('*')
+        .eq('character_name', characterName.toLowerCase())
+        .order('updated_at', { ascending: false })
+        .limit(limit);
+
+      if (error) {
+        console.error('Error fetching visual history:', error);
+        return [];
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Database error in getVisualHistory:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get consistency recommendations
+   */
+  async getConsistencyRecommendations(userId, characterName) {
+    try {
+      const history = await this.getVisualHistory(userId, characterName);
+      const consistencyScore = history.length > 0 ? 1.0 : 0.5;
+      
+      return {
+        recommendations: history.length > 0 
+          ? [`Use established visual details for ${characterName}`]
+          : [`No visual history found for ${characterName} - building new details`],
+        consistencyScore
+      };
+    } catch (error) {
+      console.error('Error getting consistency recommendations:', error);
+      return { recommendations: [], consistencyScore: 0.5 };
+    }
+  }
+
+  /**
+   * Track visual detail
+   */
+  async trackVisualDetail(detail) {
+    const { user_id, character_name, session_id, page_number, image_url, visual_elements } = detail;
+    
+    try {
+      const supabase = await this.getSupabaseClient();
+      if (!supabase) return null;
+
+      const { data, error } = await supabase
+        .from('visual_details_cache')
+        .insert({
+          session_id,
+          character_name: character_name.toLowerCase(),
+          detail_type: 'tracked_visual',
+          detail_key: 'image_url',
+          detail_value: image_url,
+          page_first_seen: page_number,
+          page_last_seen: page_number,
+          visual_elements: visual_elements
+        })
+        .select('id')
+        .single();
+
+      if (error) {
+        console.error('Error tracking visual detail:', error);
+        return null;
+      }
+
+      return data?.id || null;
+    } catch (error) {
+      console.error('Database error in trackVisualDetail:', error);
+      return null;
+    }
+  }
+
+  // ============= SECONDARY CHARACTER DETECTION (consolidated from SecondaryElementDetector + UnifiedCharacterDescriptor) =============
+  
+  /**
+   * Detect all secondary characters using comprehensive patterns
+   */
+  async detectAllCharacters(text, context = {}) {
+    const { sessionId, pageNumber = 1, userInfo = {} } = context;
+    
+    if (!text || typeof text !== 'string') {
+      return { animals: [], secondaryCharacters: [], relationships: [] };
+    }
+
+    try {
+      const results = {
+        animals: this.detectAnimals(text, context),
+        secondaryCharacters: this.detectSecondaryCharacters(text, context),
+        relationships: this.detectRelationships(text, context),
+        success: true
+      };
+
+      // Store detections for consistency
+      if (sessionId) {
+        this.storeDetections(sessionId, pageNumber, results);
+      }
+
+      console.log(`🔍 Detected ${results.animals.length} animals, ${results.secondaryCharacters.length} secondary characters`);
+      
+      return results;
+
+    } catch (error) {
+      console.warn('⚠️ Detection error (non-blocking):', error.message);
+      return { animals: [], secondaryCharacters: [], relationships: [], success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Enhanced detection of secondary characters with disambiguation
+   */
+  detectSecondaryCharacters(originalText, context) {
+    const secondaryCharacters = [];
+    
+    // Generate all pattern combinations for comprehensive relationship detection
+    const allPatterns = [];
+    
+    Object.entries(RELATIONSHIP_PATTERNS).forEach(([relationshipType, relationshipWords]) => {
+      relationshipWords.forEach(relationship => {
+        // Direct Relationship + Name (e.g., "friend Apple", "teacher Ms. Johnson")
+        allPatterns.push({
+          pattern: new RegExp(`\\b(${relationship})\\s+([A-Z][a-z]{1,14})`, 'gi'),
+          type: relationshipType,
+          patternType: 'direct',
+          relationship: relationship
+        });
+        
+        // Possessive Pronouns + Relationship + Name (e.g., "my friend Apple")
+        allPatterns.push({
+          pattern: new RegExp(`\\b(?:my|your|his|her|their|our)\\s+(${relationship})\\s+([A-Z][a-z]{1,14})`, 'gi'),
+          type: relationshipType,
+          patternType: 'possessive_pronoun',
+          relationship: relationship
+        });
+        
+        // Possessive Forms (e.g., "Apple's mom")
+        allPatterns.push({
+          pattern: new RegExp(`\\b([A-Z][a-z]{1,14})'?s\\s+(${relationship})`, 'gi'),
+          type: relationshipType,
+          patternType: 'possessive_form',
+          relationship: relationship
+        });
+      });
+    });
+    
+    // Dialogue Attribution (e.g., '"Hello," said Apple')
+    allPatterns.push({
+      pattern: /["']([^"']+)["'][,.]?\s+(?:said|asked|called|whispered|shouted|replied|answered)\s+([A-Z][a-z]{1,14})/gi,
+      type: 'dialogue_attribution',
+      patternType: 'dialogue',
+      relationship: 'speaker'
+    });
+    
+    // Coordinated Names (e.g., "Apple and Sequoia")
+    allPatterns.push({
+      pattern: /\b([A-Z][a-z]{1,14})\s+and\s+([A-Z][a-z]{1,14})/gi,
+      type: 'coordinated_names',
+      patternType: 'coordination',
+      relationship: 'companion'
+    });
+    
+    // Process all patterns
+    allPatterns.forEach(({ pattern, type, patternType, relationship }) => {
+      const matches = [...originalText.matchAll(pattern)];
+      matches.forEach(match => {
+        let names = [];
+        let fullContext = '';
+        
+        // Extract names based on pattern type
+        if (patternType === 'direct' || patternType === 'possessive_pronoun') {
+          names = [match[2]];
+          fullContext = `${relationship} ${match[2]}`;
+        } else if (patternType === 'possessive_form') {
+          names = [match[1]];
+          fullContext = `${match[1]}'s ${relationship}`;
+        } else if (patternType === 'dialogue') {
+          names = [match[2]];
+          fullContext = `speaker ${match[2]}`;
+        } else if (patternType === 'coordination') {
+          names = [match[1], match[2]];
+          fullContext = `${match[1]} and ${match[2]}`;
+        }
+        
+        // Process each detected name
+        names.forEach(name => {
+          const nameLower = name.toLowerCase();
+          
+          // Skip if already detected
+          if (secondaryCharacters.find(c => c.name === nameLower)) return;
+          
+          // Apply smart name validation
+          if (!this.isValidName(name, fullContext)) return;
+          
+          // Create character entry with disambiguation
+          const character = {
+            name: nameLower,
+            displayName: name,
+            type: type,
+            category: 'secondary_character',
+            needsConsistency: true,
+            relationshipType: this.getRelationshipCategory(type),
+            fullContext: fullContext,
+            patternType: patternType,
+            relationship: relationship,
+            disambiguation: this.generateDisambiguation(name, relationship, type)
+          };
+          
+          secondaryCharacters.push(character);
+        });
+      });
+    });
+    
+    return secondaryCharacters;
+  }
+
+  /**
+   * Enhanced animal detection with species disambiguation
+   */
+  detectAnimals(text, context) {
+    const detectedAnimals = [];
+    const { userInfo = {} } = context;
+
+    // Get all animal categories
+    const allAnimals = [
+      'dog', 'cat', 'rabbit', 'hamster', 'bird', 'fish', 'turtle', 'horse', 'cow', 'pig', 'sheep', 'chicken', 'duck',
+      'bear', 'lion', 'tiger', 'elephant', 'monkey'
+    ];
+
+    // Enhanced animal detection patterns
+    const animalPatterns = [
+      new RegExp(`\\b(${allAnimals.join('|')})s?\\b`, 'gi'),
+      /\b(my|his|her|their)\s+(pet|dog|cat|rabbit|hamster|bird|fish)\b/gi,
+      new RegExp(`\\b(big|small|little|tiny|fluffy|friendly|cute)\\s+(${allAnimals.join('|')})s?\\b`, 'gi'),
+      new RegExp(`\\b(red|blue|green|yellow|purple|pink|orange|black|white|brown|gray|grey|gold|silver)\\s+(${allAnimals.join('|')})s?\\b`, 'gi'),
+      new RegExp(`\\b(${allAnimals.join('|')})s?\\s+(runs?|jumps?|plays?|sleeps?|eats?|walks?)\\b`, 'gi')
+    ];
+
+    // Process each pattern
+    animalPatterns.forEach(pattern => {
+      let match;
+      while ((match = pattern.exec(text)) !== null) {
+        const animalMention = this.normalizeAnimalMention(match[0]);
+        const animalType = this.identifyAnimalType(animalMention, allAnimals);
+        
+        if (animalType && !detectedAnimals.find(a => a.name === animalType)) {
+          detectedAnimals.push({
+            name: animalType,
+            mention: animalMention,
+            category: this.categorizeAnimal(animalType),
+            attributes: this.extractAnimalAttributes(match[0]),
+            position: match.index,
+            confidence: this.calculateConfidence(match[0], text)
+          });
+        }
+      }
+    });
+
+    // Add user's favorite animal if not detected
+    if (userInfo.favoriteAnimal && !detectedAnimals.find(a => a.name === userInfo.favoriteAnimal)) {
+      detectedAnimals.push({
+        name: userInfo.favoriteAnimal,
+        mention: userInfo.favoriteAnimal,
+        category: this.categorizeAnimal(userInfo.favoriteAnimal),
+        attributes: { favorite: true },
+        position: -1,
+        confidence: 0.9
+      });
+    }
+
+    return detectedAnimals.slice(0, 10);
+  }
+
+  /**
+   * Detect character animals with species disambiguation
+   */
+  detectCharacterAnimals(originalText, lowercaseText) {
+    const characterAnimals = [];
+    
+    // Define comprehensive animal patterns with species recognition
+    const animalPatterns = [
+      { pattern: /\b([A-Z][a-z]{1,14})\s+(?:the\s+)?(\w+)/gi, nameFirst: true },
+      { pattern: /\b(?:my|your|his|her|their|our)\s+(\w+)\s+([A-Z][a-z]{1,14})/gi, nameFirst: false },
+      { pattern: /\b(\w+)\s+([A-Z][a-z]{1,14})'?s/gi, nameFirst: false },
+      { pattern: /["']([^"']+)["'][,.]?\s+(?:barked|meowed|chirped|squeaked|roared|growled|purred|neighed)\s+([A-Z][a-z]{1,14})/gi, nameFirst: false, isDialogue: true }
+    ];
+    
+    // Process animal patterns
+    animalPatterns.forEach(({ pattern, nameFirst, isDialogue }) => {
+      const matches = [...originalText.matchAll(pattern)];
+      matches.forEach(match => {
+        let animalName, potentialSpecies;
+        
+        if (nameFirst) {
+          animalName = match[1];
+          potentialSpecies = match[2];
+        } else {
+          potentialSpecies = match[1];
+          animalName = match[2];
+        }
+        
+        // Validate if the potential species is actually an animal
+        const animalSpecies = this.validateAnimalSpecies(potentialSpecies.toLowerCase());
+        if (!animalSpecies) return;
+        
+        // Apply name validation
+        if (!this.isValidName(animalName, `pet ${animalSpecies}`)) return;
+        
+        const key = `${animalName.toLowerCase()}_${animalSpecies}`;
+        
+        // Skip if already detected
+        if (characterAnimals.find(a => a.key === key)) return;
+        
+        const animal = {
+          name: animalName.toLowerCase(),
+          displayName: animalName,
+          species: animalSpecies,
+          key: key,
+          type: 'character_animal',
+          category: 'character_animal',
+          needsConsistency: true,
+          hasDialogue: isDialogue || false,
+          fullContext: `pet ${animalSpecies} ${animalName}`,
+          disambiguation: `${animalName} (a pet ${animalSpecies}, not an object named ${animalName.toLowerCase()})`
+        };
+        
+        characterAnimals.push(animal);
+      });
+    });
+    
+    return characterAnimals;
+  }
+
+  /**
+   * Detect relationship patterns
+   */
+  detectRelationships(text, context) {
+    const relationships = [];
+
+    const relationshipPatterns = [
+      /\b(my|his|her|their)\s+(pet|dog|cat|rabbit|hamster|bird|fish)\b/gi,
+      /\b(my|his|her)\s+(mom|dad|sister|brother|family)\b/gi,
+      /\b(my|his|her)\s+(friend|buddy|pal)\b/gi,
+      /\bwith\s+(my|his|her|their)\s+(mom|dad|friend|pet|dog|cat)\b/gi
+    ];
+
+    relationshipPatterns.forEach(pattern => {
+      let match;
+      while ((match = pattern.exec(text)) !== null) {
+        const possessive = match[1];
+        const target = match[2];
+        
+        relationships.push({
+          type: this.classifyRelationship(target),
+          possessive,
+          target,
+          mention: match[0],
+          position: match.index,
+          confidence: 0.8
+        });
+      }
+    });
+
+    return relationships.slice(0, 10);
+  }
+
+  // ============= SECONDARY CHARACTER GENERATION =============
+  
+  /**
+   * Generate secondary character for relationship consistency
    */
   async generateSecondaryCharacter(type, details, userInfo, sessionId) {
     const secondaryName = details.name || `${type}_character`;
@@ -391,8 +1126,7 @@ export class CharacterConsistencyService {
   }
 
   /**
-   * Get or create secondary character seed for consistency across pages
-   * Enhanced with UnifiedCharacterDescriptor detection capabilities
+   * Get or create secondary character seed for consistency
    */
   async getSecondaryCharacterSeed(sessionId, characterName, characterType = 'secondary_character', userInfo = null) {
     const characterKey = `secondary_${characterName.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
@@ -409,7 +1143,7 @@ export class CharacterConsistencyService {
       const characterSpecificSeed = `secondary_${characterName}_${sessionId}_${characterType}`;
       const newSeed = this.generateStableSeed(characterSpecificSeed, characterName);
       
-      // Generate enhanced description using UnifiedCharacterDescriptor
+      // Generate enhanced description
       const characterDescription = this.generateSecondaryCharacterDescription(characterName, characterType, newSeed, userInfo, sessionId);
       
       // Store in database for consistency
@@ -420,7 +1154,7 @@ export class CharacterConsistencyService {
         characterType: 'secondary',
         relationshipType: characterType,
         created_at: new Date().toISOString(),
-        enhanced: true // Flag for enhanced generation
+        enhanced: true
       };
       
       await this.saveCharacterToDatabase(sessionId, characterKey, secondaryData);
@@ -442,364 +1176,213 @@ export class CharacterConsistencyService {
   }
 
   /**
-   * Generate description for secondary character using UnifiedCharacterDescriptor
-   * Enhanced with sophisticated detection and cultural consistency
+   * Generate description for secondary character
    */
-  generateSecondaryCharacterDescription(characterName, type, seed, userInfo = null, sessionId = null) {
-    try {
-      // Use UnifiedCharacterDescriptor for enhanced secondary character generation
-      // Already imported at top of file
-      
-      // Create mock detection element for UnifiedCharacterDescriptor
-      const detectedElement = {
-        name: characterName,
-        displayName: characterName,
-        type: type,
-        category: 'secondary_character',
-        needsConsistency: true
-      };
-      
-      // Use UnifiedCharacterDescriptor's sophisticated generation if userInfo available
-      if (userInfo && sessionId) {
-        const enhancedDescription = UnifiedCharacterDescriptor.generateSecondaryCharacterFromDetection(
-          detectedElement, 
-          userInfo, 
-          sessionId
-        );
-        
-        return enhancedDescription.description || `${characterName}, friendly person`;
-      }
-      
-      // Fallback to enhanced template system with seeded randomization
-      const seededRandom = this.createSeededRandom(seed);
-      
-      // Enhanced character templates with cultural awareness
-      const characterTemplates = {
-        // Family relationships
-        family_mother: ['loving mother', 'caring mom', 'supportive mother', 'gentle mama'],
-        family_father: ['caring father', 'supportive dad', 'protective father', 'kind papa'],
-        family_sister: ['cheerful sister', 'playful sis', 'friendly sister', 'energetic sister'],
-        family_brother: ['fun brother', 'supportive bro', 'playful brother', 'helpful brother'],
-        family_grandmother: ['wise grandmother', 'loving grandma', 'gentle nana', 'caring grandmother'],
-        family_grandfather: ['kind grandfather', 'wise grandpa', 'gentle grandfather', 'caring gramps'],
-        family_aunt: ['friendly aunt', 'caring auntie', 'supportive aunt', 'fun aunt'],
-        family_uncle: ['helpful uncle', 'fun uncle', 'supportive uncle', 'caring uncle'],
-        
-        // Community relationships  
-        community_friend: ['cheerful friend', 'loyal buddy', 'fun pal', 'supportive companion'],
-        community_teacher: ['helpful teacher', 'kind instructor', 'supportive tutor', 'caring teacher'],
-        community_neighbor: ['friendly neighbor', 'kind neighbour', 'helpful neighbor', 'caring neighbor'],
-        community_classmate: ['friendly classmate', 'supportive peer', 'fun classmate', 'helpful friend'],
-        
-        // Authority figures
-        authority_doctor: ['caring doctor', 'gentle doctor', 'helpful doctor', 'kind physician'],
-        authority_nurse: ['gentle nurse', 'caring nurse', 'helpful nurse', 'supportive nurse'],
-        authority_coach: ['encouraging coach', 'supportive trainer', 'motivating coach', 'helpful coach'],
-        
-        // Generic types
-        person: ['friendly person', 'kind individual', 'helpful neighbor', 'cheerful friend'],
-        adult: ['caring adult', 'gentle grown-up', 'wise elder', 'supportive figure'],
-        child: ['playful child', 'curious kid', 'friendly peer', 'energetic youth'],
-        elderly: ['wise grandparent', 'kind elder', 'experienced senior', 'gentle elder'],
-        parent: ['loving parent', 'caring guardian', 'supportive parent', 'protective caregiver'],
-        animal: ['friendly animal', 'curious creature', 'loyal companion', 'playful pet']
-      };
-      
-      const templates = characterTemplates[type] || characterTemplates.person;
-      const selectedTemplate = templates[Math.floor(seededRandom() * templates.length)];
-      
-      return `${characterName}, ${selectedTemplate}`;
-      
-    } catch (error) {
-      console.warn('⚠️ Enhanced character description failed, using fallback:', error.message);
-      // Ultimate fallback
-      return `${characterName}, friendly person`;
+  generateSecondaryCharacterDescription(characterName, characterType, seed, userInfo = null, sessionId = null) {
+    const seededRandom = this.createSeededRandom(seed);
+    
+    // Basic character traits based on relationship type
+    let baseDescription = '';
+    
+    if (characterType.includes('family')) {
+      baseDescription = `${characterName} is a loving family member`;
+    } else if (characterType.includes('community')) {
+      baseDescription = `${characterName} is a friendly community member`;
+    } else if (characterType.includes('authority')) {
+      baseDescription = `${characterName} is a helpful authority figure`;
+    } else {
+      baseDescription = `${characterName} is a nice person`;
     }
+    
+    // Add some randomized traits for consistency
+    const traits = ['kind', 'helpful', 'friendly', 'caring', 'patient', 'gentle'];
+    const selectedTrait = traits[Math.floor(seededRandom() * traits.length)];
+    
+    return `${baseDescription}, ${selectedTrait} and reliable`;
   }
 
+  // ============= UTILITY METHODS =============
+  
   /**
-   * Detect secondary characters from story text
+   * Validate if a potential species matches common animals
    */
-  detectSecondaryCharacters(pageText) {
-    if (!pageText) return [];
-    
-    const detectedCharacters = [];
-    const text = pageText.toLowerCase();
-    
-    // Common secondary character patterns - fixed syntax error (removed await import)
-    const characterPatterns = [
-      // Family relationships
-      /\b(mom|mother|dad|father|brother|sister|grandma|grandmother|grandpa|grandfather|aunt|uncle|cousin)\b/gi,
-      // Friends and companions
-      /\b(friend|buddy|pal|companion|classmate|teammate|neighbor)\b/gi,
-      // Titles and roles
-      /\b(teacher|doctor|nurse|police|firefighter|mailman|baker|farmer)\b/gi,
-      // Community roles
-      /\b(teacher|doctor|nurse|mailman|neighbor|friend|classmate)\b/g,
-      // Animals
-      /\b(dog|cat|bird|rabbit|horse|cow|pig|chicken|fish)\b/g
+  validateAnimalSpecies(species) {
+    const commonAnimals = [
+      'dog', 'cat', 'puppy', 'kitten', 'rabbit', 'bunny', 'hamster', 'guinea pig',
+      'bird', 'parrot', 'canary', 'fish', 'goldfish', 'turtle', 'lizard', 'snake',
+      'horse', 'pony', 'cow', 'pig', 'sheep', 'goat', 'chicken', 'duck', 'goose',
+      'elephant', 'lion', 'tiger', 'bear', 'wolf', 'fox', 'deer', 'rabbit',
+      'squirrel', 'mouse', 'rat', 'frog', 'butterfly', 'bee', 'spider'
     ];
     
-    for (const pattern of characterPatterns) {
-      const matches = pageText.match(pattern);
-      if (matches) {
-        matches.forEach(match => {
-          const cleanMatch = match.trim();
-          if (cleanMatch.length > 1 && !detectedCharacters.includes(cleanMatch)) {
-            detectedCharacters.push(cleanMatch);
-          }
-        });
-      }
-    }
-    
-    console.log(`🔍 Detected secondary characters in story text: ${detectedCharacters.join(', ')}`);
-    return detectedCharacters;
+    return commonAnimals.includes(species) ? species : null;
   }
 
   /**
-   * Clear all character consistency cache from database
+   * Smart name validation with context awareness
    */
-  async clearServerState() {
-    console.log('🗑️ Clearing all character consistency cache from database...');
+  isValidName(name, context) {
+    // Basic validation
+    if (!name || name.length < 2 || name.length > 15) return false;
+    if (!/^[A-Z][a-z]+$/.test(name)) return false;
+    
+    // Filter out obvious non-names
+    const nonNames = ['The', 'And', 'But', 'For', 'With', 'Very', 'So', 'Then', 'Now', 'Here', 'There'];
+    if (nonNames.includes(name)) return false;
+    
+    // Filter out days and months
+    const timeWords = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday',
+                      'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August',
+                      'September', 'October', 'November', 'December'];
+    if (timeWords.includes(name)) return false;
+    
+    return true;
+  }
+
+  /**
+   * Generate disambiguation context for names that could be objects
+   */
+  generateDisambiguation(name, relationship, type) {
+    const nameLower = name.toLowerCase();
+    
+    // Check if this name could be confused with a common object
+    if (COMMON_WORD_NAMES.includes(nameLower)) {
+      const relationshipCategory = this.getRelationshipCategory(type);
+      return `${name} (a ${relationshipCategory} named ${name}, not the ${nameLower})`;
+    }
+    
+    return null;
+  }
+
+  /**
+   * Get relationship category for disambiguation
+   */
+  getRelationshipCategory(type) {
+    if (type.startsWith('family_')) return 'family member';
+    if (type.startsWith('community_')) return 'friend';
+    if (type.startsWith('authority_')) return 'authority figure';
+    return 'person';
+  }
+
+  /**
+   * Helper methods for animal detection
+   */
+  normalizeAnimalMention(mention) {
+    return mention.toLowerCase().replace(/[^\w\s]/g, '').trim();
+  }
+
+  identifyAnimalType(mention, allAnimals) {
+    for (const animal of allAnimals) {
+      if (mention.includes(animal)) {
+        return animal;
+      }
+    }
+    return null;
+  }
+
+  categorizeAnimal(animalType) {
+    const farmAnimals = ['cow', 'pig', 'sheep', 'chicken', 'duck', 'horse'];
+    const pets = ['dog', 'cat', 'rabbit', 'hamster', 'bird', 'fish'];
+    const wildAnimals = ['bear', 'lion', 'tiger', 'elephant', 'monkey'];
+    
+    if (pets.includes(animalType)) return 'pet';
+    if (farmAnimals.includes(animalType)) return 'farm';
+    if (wildAnimals.includes(animalType)) return 'wild';
+    return 'unknown';
+  }
+
+  extractAnimalAttributes(match) {
+    const attributes = {};
+    
+    if (match.includes('big') || match.includes('large')) attributes.size = 'big';
+    if (match.includes('small') || match.includes('little') || match.includes('tiny')) attributes.size = 'small';
+    if (match.includes('fluffy')) attributes.texture = 'fluffy';
+    if (match.includes('friendly')) attributes.personality = 'friendly';
+    if (match.includes('cute')) attributes.appearance = 'cute';
+    
+    return attributes;
+  }
+
+  calculateConfidence(match, fullText) {
+    // Simple confidence calculation based on context
+    let confidence = 0.5;
+    
+    if (match.includes('my') || match.includes('pet')) confidence += 0.3;
+    if (fullText.split(match)[1]?.substring(0, 50).includes('played') || 
+        fullText.split(match)[1]?.substring(0, 50).includes('ran')) confidence += 0.2;
+    
+    return Math.min(confidence, 1.0);
+  }
+
+  classifyRelationship(target) {
+    if (['pet', 'dog', 'cat', 'rabbit', 'hamster', 'bird', 'fish'].includes(target)) return 'pet';
+    if (['mom', 'dad', 'sister', 'brother', 'family'].includes(target)) return 'family';
+    if (['friend', 'buddy', 'pal'].includes(target)) return 'social';
+    return 'unknown';
+  }
+
+  storeDetections(sessionId, pageNumber, results) {
+    // Store detection results in memory cache for this session
+    const cacheKey = `${sessionId}_${pageNumber}`;
+    this.visualDetailCache.set(cacheKey, {
+      animals: results.animals,
+      secondaryCharacters: results.secondaryCharacters,
+      relationships: results.relationships,
+      timestamp: Date.now()
+    });
+    
+    // Limit cache size to prevent memory bloat
+    if (this.visualDetailCache.size > 100) {
+      const firstKey = this.visualDetailCache.keys().next().value;
+      this.visualDetailCache.delete(firstKey);
+    }
+  }
+
+  // ============= SESSION MANAGEMENT =============
+  
+  /**
+   * Clear session data
+   */
+  async clearSession(sessionId) {
+    console.log(`🧹 Clearing session data for ${sessionId}`);
     
     try {
-const { memoizedImport } = await import('./resilientLoader.ts');
-const { createClient } = await memoizedImport('@supabase/supabase-js');
-const supabase = createClient(
-  Deno.env.get('SUPABASE_URL'), 
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-);
-
-      const { data, error } = await supabase
-        .from('character_consistency_cache')
-        .delete()
-        .neq('session_id', ''); // Delete all records
-
-      if (error) {
-        console.error('❌ Database clear error:', error);
-        throw new Error(`CharacterConsistencyService.clearServerState failed: ${safeErrorMessage(error)}`);
+      const supabase = await this.getSupabaseClient();
+      if (supabase) {
+        // Clear from character_consistency_cache
+        await supabase
+          .from('character_consistency_cache')
+          .delete()
+          .eq('session_id', sessionId);
+        
+        // Clear from visual_details_cache
+        await supabase
+          .from('visual_details_cache')
+          .delete()
+          .eq('session_id', sessionId);
       }
       
-      const deletedCount = data?.length || 0;
-      console.log(`🗑️ Successfully cleared ${deletedCount} character consistency cache entries`);
+      // Clear memory cache
+      for (const [key] of this.visualDetailCache) {
+        if (key.startsWith(sessionId)) {
+          this.visualDetailCache.delete(key);
+        }
+      }
       
-      return {
-        cleared: deletedCount,
-        message: `Cleared ${deletedCount} character cache entries from database`,
-        success: true
-      };
+      console.log(`✅ Session ${sessionId} cleared successfully`);
     } catch (error) {
-      console.error('❌ Error clearing character cache:', error);
-      return {
-        cleared: 0,
-        message: `Failed to clear character cache: ${safeErrorMessage(error)}`,
-        success: false
-      };
+      console.error(`❌ Failed to clear session ${sessionId}:`, error);
     }
   }
 
   /**
-   * Create seeded random number generator for consistency
+   * Clear server state (legacy compatibility)
    */
-  createSeededRandom(seed) {
-    let currentSeed = seed;
-    return function() {
-      currentSeed = (currentSeed * 9301 + 49297) % 233280;
-      return currentSeed / 233280;
-    };
+  clearServerState() {
+    this.visualDetailCache.clear();
+    console.log('🧹 Server state cleared');
   }
-
-  /**
-   * Get African American hairstyles from StaticDataCache
-   */
-  getAfricanAmericanHairStyles(gender = 'boy') {
-    return getAfricanAmericanHair(gender, 'consistency-check');
-  }
-
-  /**
-   * Get African American facial features from StaticDataCache
-   */
-  getAfricanAmericanFacialFeatures() {
-    return getAfricanAmericanFeatures('consistency-check');
-  }
-
-  /**
-   * Get regional authenticity strings (fallback implementation)
-   */
-  getRegionalAuthenticity() {
-    return {
-      'en': 'with authentic African American cultural elements',
-      'fr': 'avec des éléments culturels afro-américains authentiques',
-      'es': 'con elementos culturales afroamericanos auténticos',
-      'pt': 'com elementos culturais afro-americanos autênticos'
-    };
-  }
-
-  /**
-   * Analyze visual details from page text and cache them using session and page number
-   */
-  async analyzeVisualDetails(sessionId, pageText, pageNumber, characterName) {
-    console.log(`👁️ Analyzing visual details for session ${sessionId}, page ${pageNumber}`);
-    
-    try {
-      const visualDetails = this.extractVisualDetails(pageText, characterName);
-      const cacheKey = `${sessionId}-page-${pageNumber}`;
-      this.visualDetailCache.set(cacheKey, visualDetails);
-      
-      console.log(`👁️ Cached visual details for ${cacheKey}:`, visualDetails);
-      return visualDetails;
-    } catch (error) {
-      console.error('❌ Visual detail analysis failed:', error);
-      return null;
-    }
-  }
-
-  /**
-   * Get colored objects across all cached pages for a session (limit to first 3)
-   */
-  async getColoredObjects(sessionId) {
-    console.log(`🎨 Getting colored objects for session ${sessionId}`);
-    
-    const coloredObjectsSet = new Set();
-    
-    // Iterate through all cached pages for this session
-    for (const [key, details] of this.visualDetailCache.entries()) {
-      if (key.startsWith(sessionId)) {
-        if (details.coloredObjects && Array.isArray(details.coloredObjects)) {
-          details.coloredObjects.forEach(obj => coloredObjectsSet.add(obj));
-        }
-      }
-    }
-    
-    const uniqueObjects = Array.from(coloredObjectsSet).slice(0, 3);
-    console.log(`🎨 Found ${uniqueObjects.length} unique colored objects:`, uniqueObjects);
-    
-    return uniqueObjects.join(', ');
-  }
-
-  /**
-   * Extract visual details from text using regex patterns
-   */
-  extractVisualDetails(pageText, characterName) {
-    if (!pageText) {
-      return { coloredObjects: [], atmosphericWords: [], characterAppearance: [] };
-    }
-
-    const coloredObjects = [];
-    const atmosphericWords = [];
-    const characterAppearance = [];
-
-    // Extract colored objects (color + noun combinations) using tier25Vocabulary patterns
-    // Use proper color detection from VOCABULARY system
-    const { VOCABULARY } = await memoizedServiceImport('./tier25Vocabulary.js');
-    const colorWords = VOCABULARY?.objectCategories?.colors || ['red', 'blue', 'green', 'yellow', 'purple', 'pink', 'orange', 'black', 'white', 'brown'];
-    const colorPattern = new RegExp(`\\b(${colorWords.join('|')})\\s+(\\w+)\\b`, 'gi');
-    const coloredObjectPatterns = [colorPattern];
-
-    coloredObjectPatterns.forEach(pattern => {
-      const matches = pageText.match(pattern);
-      if (matches) {
-        matches.forEach(match => {
-          const cleaned = match.trim().toLowerCase();
-          if (!coloredObjects.includes(cleaned)) {
-            coloredObjects.push(cleaned);
-          }
-        });
-      }
-    });
-
-    // Extract atmospheric/mood words using tier25Vocabulary patterns
-    // Use proper atmospheric detection from tier25 system
-    const atmosphericWords = ['bright', 'dark', 'sunny', 'cloudy', 'rainy', 'stormy', 'peaceful', 'calm', 'exciting', 'scary', 'magical', 'mysterious', 'cheerful', 'gloomy', 'sparkling', 'glowing', 'shimmering', 'twinkling'];
-    const atmosphericPatterns = [new RegExp(`\\b(${atmosphericWords.join('|')})\\b`, 'gi')];
-
-    atmosphericPatterns.forEach(pattern => {
-      const matches = pageText.match(pattern);
-      if (matches) {
-        matches.forEach(match => {
-          const cleaned = match.trim().toLowerCase();
-          if (!atmosphericWords.includes(cleaned)) {
-            atmosphericWords.push(cleaned);
-          }
-        });
-      }
-    });
-
-    // Extract character appearance if characterName is provided
-    if (characterName) {
-      const characterPatterns = [
-        new RegExp(`${characterName}.*?(wearing|dressed|has|with).*?(\\.|\n|$)`, 'gi'),
-        new RegExp(`(wearing|dressed|has|with).*?${characterName}.*?(\\.|\n|$)`, 'gi'),
-        /\b(hair|eyes|wearing|dressed|shirt|pants|dress|jacket|coat|hat|shoes)\s+[^.]*?\b/gi
-      ];
-
-      characterPatterns.forEach(pattern => {
-        const matches = pageText.match(pattern);
-        if (matches) {
-          matches.forEach(match => {
-            const cleaned = match.trim();
-            if (cleaned.length > 3 && !characterAppearance.includes(cleaned)) {
-              characterAppearance.push(cleaned);
-            }
-          });
-        }
-      });
-    }
-
-    return {
-      coloredObjects,
-      atmosphericWords,
-      characterAppearance
-    };
-  }
-
-  /**
-   * Get character appearance description from all cached pages for a session
-   */
-  async getCharacterAppearanceFromStory(sessionId, characterName) {
-    console.log(`👤 Getting character appearance for ${characterName} in session ${sessionId}`);
-    
-    const appearanceDetails = [];
-    
-    // Collect character appearance from all cached pages
-    for (const [key, details] of this.visualDetailCache.entries()) {
-      if (key.startsWith(sessionId)) {
-        if (details.characterAppearance && Array.isArray(details.characterAppearance)) {
-          appearanceDetails.push(...details.characterAppearance);
-        }
-      }
-    }
-    
-    // Remove duplicates and join
-    const uniqueAppearance = [...new Set(appearanceDetails)];
-    const combinedAppearance = uniqueAppearance.join(' ');
-    
-    console.log(`👤 Character appearance for ${characterName}:`, combinedAppearance);
-    return combinedAppearance || null;
-  }
-
-  /**
-   * Clear visual detail cache for a session
-   */
-  clearSession(sessionId) {
-    console.log(`🧹 Clearing visual detail cache for session ${sessionId}`);
-    
-    const keysToDelete = [];
-    for (const key of this.visualDetailCache.keys()) {
-      if (key.startsWith(sessionId)) {
-        keysToDelete.push(key);
-      }
-    }
-    
-    keysToDelete.forEach(key => this.visualDetailCache.delete(key));
-    console.log(`🧹 Cleared ${keysToDelete.length} cache entries for session ${sessionId}`);
-  }
-
-  // Note: African American skin tones have been consolidated into facial features array as of 2025-09-12
 }
 
-// Export singleton instance for consistent state management
-export const CharacterService = new CharacterConsistencyService();
-
-// Export both the class and singleton instance for different import patterns
+// Export singleton instance
 export const characterConsistencyService = CharacterConsistencyService.getInstance();

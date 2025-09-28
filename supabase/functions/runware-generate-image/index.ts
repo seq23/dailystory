@@ -1,7 +1,6 @@
 // DEPLOY_MARKER: 2025-09-27T15:30:00Z - Fix boot crashes: lazy orchestrator loading  
 
-// Lazy-loaded orchestrator to prevent boot crashes
-let phaseIntegrationOrchestrator: any = null;
+// Inlined orchestrator logic - no more lazy loading
 
 // ============================================================================
 // 🎯 ORCHESTRATOR: RESILIENT IMAGE GENERATION ORCHESTRATOR
@@ -110,6 +109,132 @@ function validatePayloadFast(payload: ValidationPayload): boolean {
   return true; // Validation passed
 }
 
+// ============= INLINED TIER 1 PROCESSING (from PhaseIntegrationOrchestrator) =============
+async function processInlinedTier1(payload: any, memoizedImport: any): Promise<any> {
+  const { pageText, storyText, userInfo, sessionId } = payload;
+  const userId = userInfo?.id || userInfo?.userId || 'anonymous';
+  const characterName = userInfo?.name || userInfo?.childName || 'Child';
+  
+  console.log(`🎨 INLINED TIER 1: Processing for ${characterName} in session ${sessionId}`);
+  
+  // Import consolidated CharacterConsistencyService
+  const { characterConsistencyService } = await memoizedImport("../_shared/CharacterConsistencyService.js");
+  
+  // Get character consistency data
+  const avatarIdentity = { 
+    name: characterName, 
+    type: userInfo?.avatar?.type || 'child',
+    skinTone: userInfo?.avatar?.skinTone || 'medium'
+  };
+  
+  const characterSeed = await characterConsistencyService.getCharacterSeed(
+    sessionId,
+    avatarIdentity,
+    storyText || pageText || '',
+    'continuing'
+  );
+  
+  // Get cultural enhancements
+  const culturalBundle = await characterConsistencyService.getCulturalEnhancements(userInfo, sessionId, characterName);
+  
+  // Analyze visual details
+  await characterConsistencyService.analyzeVisualDetails(sessionId, storyText || pageText, 1);
+  const coloredObjects = await characterConsistencyService.getColoredObjects(sessionId);
+  
+  // Get AI-generated primary scene
+  let primaryScene;
+  try {
+    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4');
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+    
+    const { data: aiResult, error: aiError } = await supabase.functions.invoke('ai-visual-scene-creator', {
+      body: { 
+        pageText: storyText || pageText, 
+        userInfo, 
+        sessionId, 
+        pageNumber: 1,
+        avatarIdentity,
+        culturalBundle,
+        requestId: `tier1-${sessionId}`,
+        source: 'inlined_orchestrator'
+      }
+    });
+    
+    if (aiError || !aiResult?.primaryScene) {
+      throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_25A');
+    }
+    
+    primaryScene = aiResult.primaryScene;
+  } catch (error) {
+    console.warn('AI scene creator failed:', error);
+    throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_25A');
+  }
+  
+  // Detect secondary characters
+  const detectedSecondaryChars = await characterConsistencyService.detectAllCharacters(storyText || pageText, {
+    sessionId,
+    pageNumber: 1,
+    userInfo
+  });
+  
+  let secondaryCharacterSeeds = [];
+  for (const detectedChar of detectedSecondaryChars.secondaryCharacters || []) {
+    try {
+      const charSeed = await characterConsistencyService.getSecondaryCharacterSeed(
+        sessionId, 
+        detectedChar.name || detectedChar.displayName || 'secondary character', 
+        detectedChar.type || detectedChar.relationshipType || 'secondary_character'
+      );
+      if (charSeed) {
+        secondaryCharacterSeeds.push(charSeed);
+      }
+    } catch (error) {
+      console.warn(`Failed to get secondary character seed for ${detectedChar.name}:`, error);
+    }
+  }
+  
+  // Build enhanced prompt
+  const characterReference = avatarIdentity.type === 'prefer-not-to-answer' ? 'gender neutral child' : avatarIdentity.type;
+  const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
+  
+  // Get style framework
+  const difficulty = userInfo?.difficulty || userInfo?.gradeLevel || 'medium';
+  const styleFramework = getInlinedStyleFramework(difficulty);
+  
+  // Compose final enhanced prompt
+  const enhancedPrompt = `${primaryScene}. Beautiful ${characterReference} character ${characterName}, age ${userInfo?.age || 6}${characterSeed?.characterDescription ? `, ${characterSeed.characterDescription}` : ''}${culturalBundle?.hair ? `, ${culturalBundle.hair}` : ''}${culturalBundle?.features ? `, ${culturalBundle.features}` : ''}${coloredObjects ? `, ${coloredObjects}` : ''}${secondaryCharacterSeeds.length > 0 ? `, with ${secondaryCharacterSeeds.map(s => s.characterDescription).join(', ')}` : ''}. ${styleFramework}`;
+  
+  const negativePrompt = "blurry, low quality, distorted, deformed, disfigured, bad anatomy, extra limbs, missing limbs, floating limbs, disconnected limbs, malformed hands, missing fingers, extra fingers, bad hands, signature, username, artist name, watermark, copyright";
+  
+  console.log(`✅ INLINED TIER 1: Generated enhanced prompt for ${characterName}`);
+  
+  return {
+    enhancedPrompt,
+    negativePrompt,
+    primaryScene,
+    characterSeed,
+    culturalBundle,
+    coloredObjects,
+    secondaryCharacterSeeds
+  };
+}
+
+// Inlined style framework (from PhaseIntegrationOrchestrator)
+function getInlinedStyleFramework(difficulty: string): string {
+  const frameworks = {
+    'beginner': 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, warm natural lighting',
+    'easy': 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, warm natural lighting',
+    'medium': 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, warm natural lighting',
+    'hard': '2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation',
+    'expert': '2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation'
+  };
+  
+  return frameworks[difficulty?.toLowerCase() as keyof typeof frameworks] || frameworks['medium'];
+}
+
 // Fast Boot Sync Recovery Configuration
 const FAST_BOOT_SYNC = {
   maxRetries: 3,
@@ -194,20 +319,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
       console.log(`[TIER_1] Attempting orchestrator enhancement`);
       
       try {
-        // Ensure orchestrator is available (lazy-load here so failures fall into Tier 1 catch)
-        if (!phaseIntegrationOrchestrator) {
-          try {
-            const orchestratorUrl = new URL("../_shared/PhaseIntegrationOrchestrator.js", import.meta.url).href;
-            const orchestratorModule = await memoizedImport(orchestratorUrl);
-            phaseIntegrationOrchestrator = orchestratorModule.phaseIntegrationOrchestrator;
-          } catch (error) {
-            console.warn(`[TIER_1] Orchestrator load failed: ${error instanceof Error ? error.message : String(error)}`);
-          }
-        }
-        const orchestrator = phaseIntegrationOrchestrator;
-        
-        // Real Tier 1 processing through orchestrator
-        const enhancedPrompt = await orchestrator.getEnhancedPrompt(payload);
+        // INLINED TIER 1 PROCESSING - Direct orchestration without PhaseIntegrationOrchestrator
+        const enhancedPrompt = await processInlinedTier1(payload, memoizedImport);
         
         if (!enhancedPrompt || !validatePrimarySceneQuality(enhancedPrompt.primaryScene || enhancedPrompt.enhancedPrompt || '')) {
           throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_25A');
