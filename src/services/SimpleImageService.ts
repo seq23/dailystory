@@ -343,7 +343,8 @@ export class SimpleImageService {
       cleanScene, 
       normalizedSessionId, 
       healthStatus,
-      !smartBypassEnabled  // forceDisable = true when smartBypassEnabled = false
+      !smartBypassEnabled,  // forceDisable = true when smartBypassEnabled = false
+      userInfo?.userTier || 'guest' // Pass user tier for routing decision
     );
     
     if (bypassDecision.shouldBypass && !forceTier1) {

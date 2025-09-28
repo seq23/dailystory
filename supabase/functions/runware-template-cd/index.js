@@ -136,12 +136,12 @@ function generateTier25C(storyText, userInfo, avatarIdentity, failedTierData = {
     hasEnhancedSceneData: !!failedTierData.enhancedSceneData
   });
   
-  // Component 1: Scene (1500 character limit) - NO FALLBACKS, trigger 2.5D immediately
+  // Component 1: Scene (1000 character limit) - NO FALLBACKS, trigger 2.5D immediately
   if (!storyText) {
     console.log('🚨 Nuclear 2.5C: No storyText provided - triggering Tier 2.5D immediately');
     return generateTier25D(storyText, userInfo, avatarIdentity, failedTierData);
   }
-  const sceneText = storyText.substring(0, 1500);
+  const sceneText = storyText.substring(0, 1000);
   
   // Component 2: Character Description with static template format
   const characterName = userInfo?.name || userInfo?.childName || 'child';
@@ -169,9 +169,9 @@ function generateTier25C(storyText, userInfo, avatarIdentity, failedTierData = {
     characterDesc = `A ${genderNeutralDescription} named ${characterName} age ${age} ${skinTone} skin complexion with ${hairColor}`;
   }
   
-  // Add cultural features for dark skin (hair already handled above)
+  // Add detailed cultural features for dark skin (hair already handled above)
   if (skinTone === 'dark' || skinTone === 'medium-dark' || skinTone === 'brown') {
-    characterDesc += ' and culturally appropriate African American features';
+    characterDesc += ' with beautiful natural African American features including fuller lips, broader nose, defined cheekbones, rich melanin-rich skin tone, and authentic cultural representation';
   }
   
   // Component 3: Catch-All Failed Tier Information

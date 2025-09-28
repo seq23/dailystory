@@ -24,7 +24,8 @@ export class SmartOrchestrationBypass {
     content: string, 
     sessionId: string,
     healthStatus?: any,
-    forceDisable: boolean = false
+    forceDisable: boolean = false,
+    userTier: 'premium' | 'guest' = 'guest'
   ): { shouldBypass: boolean; reason: string; targetTemplate?: string } {
     
     // Testing mode: Force disable bypass when requested
@@ -41,10 +42,11 @@ export class SmartOrchestrationBypass {
     
     // Always bypass for very simple content
     if (content.length < this.SIMPLE_CONTENT_THRESHOLD) {
+      const template = userTier === 'premium' ? 'runware-template-ab' : 'runware-template-cd';
       return {
         shouldBypass: true,
-        reason: `Simple content (${content.length} chars) - direct template routing`,
-        targetTemplate: 'runware-template-cd'
+        reason: `Simple content (${content.length} chars) - direct ${userTier} template routing`,
+        targetTemplate: template
       };
     }
     
@@ -56,19 +58,21 @@ export class SmartOrchestrationBypass {
     const avgTemplateTime = this.calculateAverage(metrics.templateResponseTimes);
     
     if (avgOrchestratorTime > this.FAST_RESPONSE_THRESHOLD && avgTemplateTime < this.FAST_RESPONSE_THRESHOLD) {
+      const template = userTier === 'premium' ? 'runware-template-ab' : 'runware-template-cd';
       return {
         shouldBypass: true,
-        reason: `Orchestrator slow (${avgOrchestratorTime}ms avg) vs template fast (${avgTemplateTime}ms avg)`,
-        targetTemplate: 'runware-template-ab'
+        reason: `Orchestrator slow (${avgOrchestratorTime}ms avg) vs template fast (${avgTemplateTime}ms avg) - ${userTier} template`,
+        targetTemplate: template
       };
     }
     
     // Bypass if recent orchestrator failures
     if (metrics.recentFailures > 2) {
+      const template = userTier === 'premium' ? 'runware-template-ab' : 'runware-template-cd';
       return {
         shouldBypass: true,
-        reason: `Recent orchestrator failures (${metrics.recentFailures})`,
-        targetTemplate: 'runware-template-cd'
+        reason: `Recent orchestrator failures (${metrics.recentFailures}) - ${userTier} template`,
+        targetTemplate: template
       };
     }
     

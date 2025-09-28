@@ -167,6 +167,9 @@ export const ImageTierTester = () => {
   
   // Smart Bypass control for E2E simulation
   const [smartBypassEnabled, setSmartBypassEnabled] = useState(true);
+  
+  // User tier control for testing
+  const [userTier, setUserTier] = useState<'premium' | 'guest'>('guest');
 
   // Build dynamic user info from form inputs - MATCH SimpleImageService
   const buildUserInfo = () => {
@@ -185,7 +188,8 @@ export const ImageTierTester = () => {
         nativeLanguage: nativeLanguage || 'en', // Real system default
         difficulty: difficultyLevel || 'pre-reader', // Real system default (not 'medium')
         grade: 'PreK', // Real system default
-        culturalProfile: (nativeLanguage && nativeLanguage !== 'en') ? nativeLanguage : undefined
+        culturalProfile: (nativeLanguage && nativeLanguage !== 'en') ? nativeLanguage : undefined,
+        userTier: userTier // Add user tier for Smart Bypass
       };
     } catch (error) {
       console.error('Error in buildUserInfo:', error);
@@ -203,7 +207,8 @@ export const ImageTierTester = () => {
         nativeLanguage: 'en',
         difficulty: 'pre-reader',
         grade: 'PreK',
-        culturalProfile: undefined
+        culturalProfile: undefined,
+        userTier: 'guest' // Default to guest tier
       };
     }
   };
@@ -2306,22 +2311,35 @@ export const ImageTierTester = () => {
                   </SelectContent>
                 </Select>
               </div>
-              
-              <div>
-                <label className="text-sm font-medium mb-2 block">Difficulty Level</label>
-                <Select value={difficultyLevel} onValueChange={setDifficultyLevel}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Difficulty Level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="beginner">Beginner (0-2)</SelectItem>
-                    <SelectItem value="easy">Easy (0-2)</SelectItem>
-                    <SelectItem value="medium">Medium (0-2)</SelectItem>
-                    <SelectItem value="hard">Hard (3-4)</SelectItem>
-                    <SelectItem value="expert">Expert (3-4)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+               
+               <div>
+                 <label className="text-sm font-medium mb-2 block">Difficulty Level</label>
+                 <Select value={difficultyLevel} onValueChange={setDifficultyLevel}>
+                   <SelectTrigger>
+                     <SelectValue placeholder="Difficulty Level" />
+                   </SelectTrigger>
+                   <SelectContent>
+                     <SelectItem value="beginner">Beginner (0-2)</SelectItem>
+                     <SelectItem value="easy">Easy (0-2)</SelectItem>
+                     <SelectItem value="medium">Medium (0-2)</SelectItem>
+                     <SelectItem value="hard">Hard (3-4)</SelectItem>
+                     <SelectItem value="expert">Expert (3-4)</SelectItem>
+                   </SelectContent>
+                 </Select>
+               </div>
+               
+               <div>
+                 <label className="text-sm font-medium mb-2 block">User Tier</label>
+                 <Select value={userTier} onValueChange={(value: string) => setUserTier(value as 'premium' | 'guest')}>
+                   <SelectTrigger>
+                     <SelectValue />
+                   </SelectTrigger>
+                   <SelectContent>
+                     <SelectItem value="guest">Guest (Template CD)</SelectItem>
+                     <SelectItem value="premium">Premium (Template AB)</SelectItem>
+                   </SelectContent>
+                 </Select>
+               </div>
             </CardContent>
           </Card>
 
