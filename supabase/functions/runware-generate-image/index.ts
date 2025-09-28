@@ -1,6 +1,4 @@
 // DEPLOY_MARKER: 2025-09-27T15:30:00Z - Fix boot crashes: lazy orchestrator loading  
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { memoizedImport } from '../_shared/resilientLoader.ts';
 
 // Lazy-loaded orchestrator to prevent boot crashes
 let phaseIntegrationOrchestrator: any = null;
@@ -45,7 +43,7 @@ interface ValidationPayload {
 }
 
 // ---- Async Tier logger binder with memoized dependencies ----
-async function bindTierLogger(sessionId: SessionId, requestId: string, authHeader: string | null = null): Promise<TierLogger> {
+async function bindTierLogger(sessionId: SessionId, requestId: string, authHeader: string | null = null, memoizedImport: any): Promise<TierLogger> {
   try {
     const [{ createResilientSupabaseClient }, tierLogging] = await Promise.all([
       memoizedImport("../_shared/resilientLoader.ts"),
@@ -113,7 +111,7 @@ function validatePayloadFast(payload: ValidationPayload): boolean {
 }
 
 // OPTIMIZED SERVE HANDLER WITH COMPLETE TIER CASCADE
-serve(async (req: Request): Promise<Response> => {
+Deno.serve(async (req: Request): Promise<Response> => {
   // PHASE 1: OPTIONS fast path (immediate return)
   if (req.method === 'OPTIONS') {
     const corsHeaders = generateEchoCorsHeaders(req);
@@ -169,10 +167,24 @@ serve(async (req: Request): Promise<Response> => {
     }, req, 400);
   }
 
-  // Main processing logic
   try {
+    // Preferred: resilient loader from _shared
+    let memoizedImport: <T=any>(href: string) => Promise<T>;
+    try {
+      ({ memoizedImport } = await import(
+        new URL("../_shared/resilientLoader.ts", import.meta.url).href
+      ));
+    } catch {
+      // Fallback: simple local memoizer to stay up during cold boot anomalies
+      const cache = new Map<string, Promise<any>>();
+      memoizedImport = <T=any>(href: string) => {
+        if (!cache.has(href)) cache.set(href, import(href));
+        return cache.get(href)! as Promise<T>;
+      };
+    }
+
     // PHASE 5: Load tier logger and lazy-load orchestrator
-    const tierLogger = await bindTierLogger(payload.sessionId || 'unknown', requestId, req.headers.get('authorization'));
+    const tierLogger = await bindTierLogger(payload.sessionId || 'unknown', requestId, req.headers.get('authorization'), memoizedImport);
 
 
     // PHASE 6: Process request with lazy-loaded services
@@ -185,7 +197,8 @@ serve(async (req: Request): Promise<Response> => {
       // Ensure orchestrator is available (lazy-load here so failures fall into Tier 1 catch)
       if (!phaseIntegrationOrchestrator) {
         try {
-          const orchestratorModule = await memoizedImport("../_shared/PhaseIntegrationOrchestrator.js");
+          const orchestratorUrl = new URL("../_shared/PhaseIntegrationOrchestrator.js", import.meta.url).href;
+          const orchestratorModule = await memoizedImport(orchestratorUrl);
           phaseIntegrationOrchestrator = orchestratorModule.phaseIntegrationOrchestrator;
         } catch (error) {
           console.warn(`[TIER_1] Orchestrator load failed: ${error instanceof Error ? error.message : String(error)}`);
@@ -201,7 +214,8 @@ serve(async (req: Request): Promise<Response> => {
       }
 
       // Real Runware image generation using WebSocket service
-      const { RunwareWebSocketService } = await import('../_shared/RunwareWebSocketService.ts');
+      const runwareUrl = new URL("../_shared/RunwareWebSocketService.ts", import.meta.url).href;
+      const { RunwareWebSocketService } = await memoizedImport(runwareUrl);
       const runwareApiKey = Deno.env.get('RUNWARE_API_KEY');
       
       if (!runwareApiKey) {
@@ -543,10 +557,23 @@ serve(async (req: Request): Promise<Response> => {
     }
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error(`Edge function error: ${errorMessage}`, error);
-    return corsResponse({ 
-      error: errorMessage,
-      escalationTarget: "TIER_4" 
-    }, req, 500);
+    console.error(`Boot or import failure: ${errorMessage}`, error);
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: "BOOT_OR_IMPORT_FAILURE",
+        message: errorMessage,
+        service: "runware-generate-image",
+        escalation: "TIER_4",
+      }),
+      {
+        status: 503,
+        headers: {
+          "content-type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+        },
+      }
+    );
   }
 });

@@ -1,15 +1,25 @@
 // DEPLOY_MARKER: 2025-09-27T00:00:00Z - Optimized with echoing CORS and memoized lazy loading
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { phaseIntegrationOrchestrator } from '../_shared/PhaseIntegrationOrchestrator.js';
-import { deriveRegionalEthnicity } from '../_shared/UnifiedPlaceholderResolver.js';
-import { getHairBySkintone, getSkinBySkintone } from '../_shared/StaticDataCache.js';
 
 // ============= RESILIENT IMPORT SYSTEM =============
-// Dynamic Supabase client creation using direct import to bypass CDN failures
+// Dynamic Supabase client creation using resilient loading
 async function createSupabaseClient() {
   try {
-    // Direct import approach to bypass CDN failures
-    const { createClient } = await import('https://deno.land/x/supabase@2.0.2/mod.ts');
+    // Preferred: resilient loader from _shared
+    let memoizedImport: <T=any>(href: string) => Promise<T>;
+    try {
+      ({ memoizedImport } = await import(
+        new URL("../_shared/resilientLoader.ts", import.meta.url).href
+      ));
+    } catch {
+      // Fallback: simple local memoizer to stay up during cold boot anomalies
+      const cache = new Map<string, Promise<any>>();
+      memoizedImport = <T=any>(href: string) => {
+        if (!cache.has(href)) cache.set(href, import(href));
+        return cache.get(href)! as Promise<T>;
+      };
+    }
+
+    // Use resilient loading for Supabase
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     
@@ -17,6 +27,8 @@ async function createSupabaseClient() {
       throw new Error('Missing Supabase environment variables');
     }
     
+    // Try primary CDN first, then fallback
+    const { createClient } = await memoizedImport('https://esm.sh/@supabase/supabase-js@2.57.4');
     return createClient(supabaseUrl, supabaseServiceRoleKey);
   } catch (error) {
     console.error('Failed to create Supabase client:', error);
@@ -59,17 +71,33 @@ function getNuclearStyleFramework(difficulty: string) {
 
 async function getPhaseOrchestrator() {
   try {
-    const { memoizedImport } = await import('../_shared/resilientLoader.ts');
+    // Preferred: resilient loader from _shared
+    let memoizedImport: <T=any>(href: string) => Promise<T>;
+    try {
+      ({ memoizedImport } = await import(
+        new URL("../_shared/resilientLoader.ts", import.meta.url).href
+      ));
+    } catch {
+      // Fallback: simple local memoizer to stay up during cold boot anomalies
+      const cache = new Map<string, Promise<any>>();
+      memoizedImport = <T=any>(href: string) => {
+        if (!cache.has(href)) cache.set(href, import(href));
+        return cache.get(href)! as Promise<T>;
+      };
+    }
+
     const [
+      orchestratorModule,
       { CharacterConsistencyService },
       { UnifiedPlaceholderResolver }
     ] = await Promise.all([
-      memoizedImport('../_shared/CharacterConsistencyService.js'),
-      memoizedImport('../_shared/UnifiedPlaceholderResolver.js')
+      memoizedImport(new URL("../_shared/PhaseIntegrationOrchestrator.js", import.meta.url).href),
+      memoizedImport(new URL("../_shared/CharacterConsistencyService.js", import.meta.url).href),
+      memoizedImport(new URL("../_shared/UnifiedPlaceholderResolver.js", import.meta.url).href)
     ]);
     
     return { 
-      phaseIntegrationOrchestrator, 
+      phaseIntegrationOrchestrator: orchestratorModule.phaseIntegrationOrchestrator, 
       getNuclearStyleFramework, 
       CharacterConsistencyService, 
       UnifiedPlaceholderResolver 
@@ -97,7 +125,7 @@ function validateDirectModePayload(payload: any): { isValid: boolean; contentTyp
 }
 
 // PHASE 1C: UserInfo Normalization - Real World Defaults
-function normalizeUserInfo(userInfo: any): any {
+function normalizeUserInfo(userInfo: any, deriveRegionalEthnicity: any): any {
   // Use the same exact fallbacks as production (child, age 8, prefer-not-to-answer, medium, etc.)
   return {
     name: userInfo?.name || 'child',
@@ -363,7 +391,7 @@ const AI_MODELS = [
 ];
 
 // OPTIMIZED SERVE HANDLER WITH MEMOIZED LAZY LOADING
-serve(async (req: Request): Promise<Response> => {
+Deno.serve(async (req: Request): Promise<Response> => {
   // PHASE 1: OPTIONS fast path (immediate return)
   if (req.method === 'OPTIONS') {
     const corsHeaders = generateEchoCorsHeaders(req);
@@ -405,6 +433,29 @@ serve(async (req: Request): Promise<Response> => {
   }
 
   try {
+    // Preferred: resilient loader from _shared
+    let memoizedImport: <T=any>(href: string) => Promise<T>;
+    try {
+      ({ memoizedImport } = await import(
+        new URL("../_shared/resilientLoader.ts", import.meta.url).href
+      ));
+    } catch {
+      // Fallback: simple local memoizer to stay up during cold boot anomalies
+      const cache = new Map<string, Promise<any>>();
+      memoizedImport = <T=any>(href: string) => {
+        if (!cache.has(href)) cache.set(href, import(href));
+        return cache.get(href)! as Promise<T>;
+      };
+    }
+
+    // Load shared dependencies
+    const { deriveRegionalEthnicity } = await memoizedImport(
+      new URL("../_shared/UnifiedPlaceholderResolver.js", import.meta.url).href
+    );
+    const { getHairBySkintone, getSkinBySkintone } = await memoizedImport(
+      new URL("../_shared/StaticDataCache.js", import.meta.url).href
+    );
+
     // PHASE 5: Lazy load all dependencies in parallel
     const [dependencies, supabase] = await Promise.all([
       getPhaseOrchestrator(),
@@ -473,7 +524,7 @@ serve(async (req: Request): Promise<Response> => {
       'gpt-4o',
       async () => {
         // Normalize userInfo with production fallbacks
-        const normalizedUserInfo = normalizeUserInfo(userInfo);
+        const normalizedUserInfo = normalizeUserInfo(userInfo, deriveRegionalEthnicity);
         
         // Update variables with normalized userInfo
         nativeLanguage = normalizedUserInfo?.nativeLanguage || 'en';
@@ -968,7 +1019,23 @@ Generate a comprehensive scene with complete visual elements including backgroun
 
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error(`Edge function error: ${errorMessage}`, error);
-    return createCorsErrorResponse(errorMessage, 500, req);
+    console.error(`Boot or import failure: ${errorMessage}`, error);
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: "BOOT_OR_IMPORT_FAILURE",
+        message: errorMessage,
+        service: "ai-visual-scene-creator",
+        escalation: "TIER_4",
+      }),
+      {
+        status: 503,
+        headers: {
+          "content-type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+        },
+      }
+    );
   }
 });
