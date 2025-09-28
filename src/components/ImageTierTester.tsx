@@ -17,6 +17,7 @@ import { TimerToggleItem } from '@/components/ui/timer-toggle-item';
 interface TestResult {
   tier: string;
   success: boolean;
+  isFallback?: boolean; // NEW: Indicates Direct Mode fallback scenario
   imageURL?: string;
   details: {
     processingTime?: number;
@@ -1182,20 +1183,23 @@ export const ImageTierTester = () => {
       const isCompleteTier1 = response.data?.templateStructure === 'COMPLETE_TIER_1';
       const isDirectModeFallback = response.data?.tier === 'DIRECT_MODE' && hasImage;
       
-      // Force Tier 1 primary success: COMPLETE_TIER_1
-      // Force Tier 1 secondary success: Successful Direct Mode fallback
-      let tier1SuccessType = 'none';
+      // Force Tier 1 four-state success system for complete transparency
+      let tier1SuccessType = 'complete_failure';
       if (isCompleteTier1) {
-        tier1SuccessType = 'primary'; // Achieved COMPLETE_TIER_1 - most desired outcome
+        tier1SuccessType = 'complete_tier1'; // Pure Tier 1 success with COMPLETE_TIER_1 template
         steps[2].status = 'success';
       } else if (isDirectModeFallback) {
-        tier1SuccessType = 'secondary'; // Successful fallback to Direct Mode
+        tier1SuccessType = 'direct_fallback'; // Tier 1 failed, fell back to Direct Mode (AI Primary Scene + Tier 2.5C)
         steps[2].status = 'success';
-        console.log(`Force Tier 1 achieved secondary success via Direct Mode fallback`);
-      } else if (hasEscalationAction || !hasImage) {
-        tier1SuccessType = 'failed'; // True failure - no image generated
+        console.log(`Force Tier 1 achieved fallback success via Direct Mode (AI Primary Scene + Tier 2.5C Template)`);
+      } else if (hasEscalationAction) {
+        tier1SuccessType = 'escalation_failure'; // Escalation attempted but failed
         steps[2].status = 'error';
-        console.warn(`Force Tier 1 failed - no successful image generation`);
+        console.warn(`Force Tier 1 escalation failed - attempted ${response.data?.nextAction || 'escalation'} but no image generated`);
+      } else {
+        tier1SuccessType = 'complete_failure'; // Complete failure - no image generated
+        steps[2].status = 'error';
+        console.warn(`Force Tier 1 complete failure - no successful image generation`);
       }
       
       // Step 4: Validate AI Schema (DEBUG ONLY - NOT A FAILURE CONDITION)
@@ -1220,16 +1224,19 @@ export const ImageTierTester = () => {
       const hasEnhancedPrompt = response.data?.enhancedPrompt && response.data.enhancedPrompt.length > 0;
       steps[4].status = hasEnhancedPrompt ? 'success' : 'error';
       
-      // Remove duplicate hasImage declaration - it's already defined above
-      // Determine overall success - Force Tier 1 succeeds with COMPLETE_TIER_1 or successful Direct Mode fallback
-      const overallSuccess = !response.error && hasPrimaryScene && hasImage && (isCompleteTier1 || isDirectModeFallback);
+      // Determine overall success - Only COMPLETE_TIER_1 is true success
+      const overallSuccess = !response.error && hasPrimaryScene && hasImage && isCompleteTier1;
+      const isFallback = isDirectModeFallback; // Direct Mode fallback scenario
       
       // Categorize error type if failed
       let errorCategory = null;
       let probableCause = null;
       
-      if (!overallSuccess) {
-        if (hasEscalationAction) {
+      if (!overallSuccess && !isFallback) {
+        if (isDirectModeFallback) {
+          errorCategory = 'TIER_1_ESCALATION_TO_DIRECT_MODE';
+          probableCause = 'Force Tier 1 failed: System fell back to Direct Mode instead of completing Tier 1 (AI Primary Scene + Tier 2.5C Nuclear Template)';
+        } else if (hasEscalationAction) {
           errorCategory = 'TIER_1_ESCALATION_FAILURE';
           probableCause = `Force Tier 1 failed: System attempted to escalate to ${response.data?.nextAction || 'higher tier'} instead of completing Tier 1`;
         } else if (response.error?.message?.includes('503') || response.error?.message?.includes('Service Unavailable')) {
@@ -1309,9 +1316,17 @@ export const ImageTierTester = () => {
         }
       }
       
+      // Dynamic tier naming based on actual outcome
+      const dynamicTierName = 
+        tier1SuccessType === 'complete_tier1' ? 'Tier 1 (via Orchestrator)' :
+        tier1SuccessType === 'direct_fallback' ? 'Tier 1 (via Orchestrator): ⚠️ FALLBACK → Direct Mode' :
+        tier1SuccessType === 'escalation_failure' ? 'Tier 1 (via Orchestrator): ❌ ESCALATION FAILED' :
+        'Tier 1 (via Orchestrator) AND Direct Mode ❌ FAILED. ESCALATED -->TIER 2.5C';
+
       setResults([{
-        tier: 'tier-1-forced',
+        tier: dynamicTierName,
         success: overallSuccess,
+        isFallback: isFallback,
         imageURL: response.data?.imageURL || response.data?.imageUrl || null,
         details: {
           processingTime,
@@ -1344,9 +1359,10 @@ export const ImageTierTester = () => {
           tier: response.data?.tier,
           escalationPath: response.data?.escalationPath,
           nextAction: response.data?.nextAction, // Show escalation actions
-          tierPathResult: tier1SuccessType === 'primary' ? 'Tier 1 Complete Flow successful (COMPLETE_TIER_1)' :
-                          tier1SuccessType === 'secondary' ? 'Direct Mode Success (Tier 1 AI → Direct Mode Fallback)' : 
-                          'Both Tier 1 paths failed - escalation attempted',
+          tierPathResult: tier1SuccessType === 'complete_tier1' ? 'Tier 1 Complete Success (COMPLETE_TIER_1 Template)' :
+                          tier1SuccessType === 'direct_fallback' ? 'Tier 1 FAILED - Direct Mode Fallback Success (AI Primary Scene + Tier 2.5C Nuclear Template)' : 
+                          tier1SuccessType === 'escalation_failure' ? 'Tier 1 AND Direct Mode FAILED - Escalation Attempted but Failed' :
+                          'Tier 1 AND Direct Mode FAILED - Escalation Required',
           debug: response.data?.debug, // Include debug information
           error: response.error?.message || response.data?.error,
           errorCategory,
@@ -2593,8 +2609,12 @@ export const ImageTierTester = () => {
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <span className="font-medium">{result.tier}</span>
-                      <span className={result.success ? "text-green-600" : "text-red-600"}>
-                        {result.success ? "✅" : "❌"}
+                      <span className={
+                        result.success ? "text-green-600" : 
+                        result.isFallback ? "text-yellow-600" : 
+                        "text-red-600"
+                      }>
+                        {result.success ? "✅" : result.isFallback ? "⚠️" : "❌"}
                       </span>
                       {/* Test Type Badge */}
                       {result.details.testType && (
@@ -2843,20 +2863,25 @@ export const ImageTierTester = () => {
                         </details>
                       )}
 
-                      {/* Enhanced Runware Prompt Display Section - Now shows prompts for ALL successes */}
-                      {(result.success && (result.details.positivePrompt || result.details.negativePrompt || result.details.enhancedPrompt || result.details.originalPrompt)) && (
-                        <div className="text-sm border rounded p-2 bg-green-50">
-                          <span className="font-medium text-green-700">
+                      {/* Enhanced Runware Prompt Display Section - Shows prompts for successes AND fallbacks */}
+                      {((result.success || result.isFallback) && (result.details.positivePrompt || result.details.negativePrompt || result.details.enhancedPrompt || result.details.originalPrompt)) && (
+                        <div className={`text-sm border rounded p-2 ${result.success ? 'bg-green-50' : 'bg-yellow-50'}`}>
+                          <span className={`font-medium ${result.success ? 'text-green-700' : 'text-yellow-700'}`}>
                             🎯 Full Prompts Sent to Runware - 
-                            {result.details.templateStructure === 'COMPLETE_TIER_1' && ' (Tier 1 Success)'}
-                            {result.details.templateStructure === 'DIRECT_MODE_SUCCESS' && ' (Direct Mode Success)'}
+                            {result.details.templateStructure === 'COMPLETE_TIER_1' && ' (Enhanced by Orchestrator - COMPLETE_TIER_1 Template)'}
+                            {result.details.templateStructure === 'DIRECT_MODE_SUCCESS' && ' (AI Primary Scene + Tier 2.5C Nuclear Template)'}
+                            {result.isFallback && !result.details.templateStructure?.includes('COMPLETE_TIER_1') && ' (AI Primary Scene + Tier 2.5C Nuclear Template)'}
                           </span>
                           
                           {/* Enhanced Prompt Source Indicator */}
                           <div className="mt-1 text-xs">
-                            <span className="bg-blue-100 px-2 py-1 rounded text-blue-700">
-                              {result.details.templateStructure === 'COMPLETE_TIER_1' ? '🎯 Enhanced by Orchestrator' : 
-                               result.details.templateStructure === 'DIRECT_MODE_SUCCESS' ? '🚀 Built by Direct Mode' : 
+                            <span className={`px-2 py-1 rounded ${
+                              result.details.templateStructure === 'COMPLETE_TIER_1' ? 'bg-blue-100 text-blue-700' : 
+                              result.isFallback || result.details.templateStructure === 'DIRECT_MODE_SUCCESS' ? 'bg-orange-100 text-orange-700' : 
+                              'bg-gray-100 text-gray-700'
+                            }`}>
+                              {result.details.templateStructure === 'COMPLETE_TIER_1' ? '🎯 Enhanced by Orchestrator (COMPLETE_TIER_1 Template)' : 
+                               result.isFallback || result.details.templateStructure === 'DIRECT_MODE_SUCCESS' ? '🚀 AI Primary Scene + Tier 2.5C Nuclear Template' : 
                                '📝 Generated Prompt'}
                             </span>
                           </div>
