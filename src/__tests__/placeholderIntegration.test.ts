@@ -77,6 +77,19 @@ describe("PlaceholderValidationService", () => {
     expect(result.validationScore).toBe(1.0);
     expect(result.recommendations).toContain('Validation handled by unified edge function');
   });
+
+  it("analyzes placeholder coverage with stub implementation", () => {
+    const template = "Hello {name}, your favorite color is {favoriteColor}";
+    
+    const result = PlaceholderValidationService.analyzePlaceholderCoverage(template);
+    
+    // Test stub behavior
+    expect(result.required).toHaveLength(0);
+    expect(result.optional).toHaveLength(0);
+    expect(result.found).toHaveLength(0);
+    expect(result.missing).toHaveLength(0);
+    expect(result.coverage).toBe(1.0);
+  });
 });
 
 describe("DifficultyLevelMapper", () => {
@@ -103,7 +116,7 @@ describe("DifficultyLevelMapper", () => {
     expect(DifficultyLevelMapper.normalizeLevel("unknown")).toBe("easy"); // fallback
   });
 
-  it("validates difficulty levels", () => {
+  it("validates difficulty levels correctly", () => {
     expect(DifficultyLevelMapper.isValidBackendLevel("beginner")).toBe(true);
     expect(DifficultyLevelMapper.isValidBackendLevel("expert")).toBe(true);
     expect(DifficultyLevelMapper.isValidBackendLevel("invalid")).toBe(false);
@@ -111,6 +124,24 @@ describe("DifficultyLevelMapper", () => {
     expect(DifficultyLevelMapper.isValidFrontendLevel("pre-reader")).toBe(true);
     expect(DifficultyLevelMapper.isValidFrontendLevel("advanced")).toBe(true);
     expect(DifficultyLevelMapper.isValidFrontendLevel("invalid")).toBe(false);
+  });
+
+  it("provides display names correctly", () => {
+    expect(DifficultyLevelMapper.getDisplayName("beginner")).toBe("Beginner");
+    expect(DifficultyLevelMapper.getDisplayName("pre-reader")).toBe("Pre-Reader");
+    expect(DifficultyLevelMapper.getDisplayName("unknown")).toBe("unknown");
+  });
+
+  it("gets style framework key with fallback", () => {
+    expect(DifficultyLevelMapper.getStyleFrameworkKey("beginner")).toBe("beginner");
+    expect(DifficultyLevelMapper.getStyleFrameworkKey("unknown")).toBe("easy");
+  });
+
+  it("returns all mappings", () => {
+    const mappings = DifficultyLevelMapper.getAllMappings();
+    expect(mappings).toHaveLength(5);
+    expect(mappings[0].backend).toBe("beginner");
+    expect(mappings[0].frontend).toBe("pre-reader");
   });
 });
 

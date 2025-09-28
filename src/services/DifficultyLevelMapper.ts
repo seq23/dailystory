@@ -104,7 +104,14 @@ export class DifficultyLevelMapper {
       return level;
     }
     
-    return this.toBackend(level);
+    const backendLevel = this.toBackend(level);
+    // If toBackend couldn't find a mapping and returned the original value,
+    // and it's still not a valid backend level, fallback to 'easy'
+    if (!this.isValidBackendLevel(backendLevel)) {
+      return 'easy';
+    }
+    
+    return backendLevel;
   }
 
   /**
