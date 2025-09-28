@@ -1251,6 +1251,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      archive_legacy_character_tables: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       cleanup_expired_sessions: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -1318,6 +1322,14 @@ export type Database = {
       }
       log_story_access_attempt: {
         Args: { access_granted: boolean; story_id: string; user_id: string }
+        Returns: undefined
+      }
+      migrate_character_traits_to_cache: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      migrate_visual_details_to_cache: {
+        Args: Record<PropertyKey, never>
         Returns: undefined
       }
       purge_old_incidents: {
