@@ -158,7 +158,8 @@ export class SimpleImageService {
     sessionId?: string,
     pageNumber: number = 1,
     isPremium: boolean = false,
-    forceTier1: boolean = false
+    forceTier1: boolean = false,
+    smartBypassEnabled: boolean = true
   ): Promise<ImageResult> {
     DebugLogger.log('image', 'SimpleImageService: Starting health-aware image generation');
     
@@ -234,7 +235,7 @@ export class SimpleImageService {
 
         // Standard orchestrator path with enhanced error recovery
         return await errorRecoveryManager.withRetry(
-          () => this.generateWithOrchestrator(storyText, userInfo, sessionId, pageNumber, isPremium, healthStatus, forceTier1),
+          () => this.generateWithOrchestrator(storyText, userInfo, sessionId, pageNumber, isPremium, healthStatus, forceTier1, smartBypassEnabled),
           `image-gen-${pageNumber}`,
           {
             maxRetries: 3,
@@ -258,7 +259,8 @@ export class SimpleImageService {
     pageNumber: number = 1,
     isPremium: boolean = false,
     healthStatus?: HealthStatus,
-    forceTier1: boolean = false
+    forceTier1: boolean = false,
+    smartBypassEnabled: boolean = true
   ): Promise<ImageResult> {
 
   // Normalize session ID for consistent caching
@@ -340,7 +342,8 @@ export class SimpleImageService {
     const bypassDecision = SmartOrchestrationBypass.shouldBypassOrchestrator(
       cleanScene, 
       normalizedSessionId, 
-      healthStatus
+      healthStatus,
+      !smartBypassEnabled  // forceDisable = true when smartBypassEnabled = false
     );
     
     if (bypassDecision.shouldBypass && !forceTier1) {

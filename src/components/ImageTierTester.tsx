@@ -10,8 +10,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { DebugLogger } from '@/services/DebugLogger';
 import { HealthCheckService } from '@/services/HealthCheckService';
 import { ImageFallbackService } from '@/services/ImageFallbackService';
-import { Sparkles, Zap, Network, Search, Camera, RefreshCw, RotateCcw, Clock, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Sparkles, Zap, Network, Search, Camera, RefreshCw, RotateCcw, Clock, AlertTriangle, CheckCircle, Settings } from 'lucide-react';
 import { SimpleImageService } from '@/services/SimpleImageService';
+import { TimerToggleItem } from '@/components/ui/timer-toggle-item';
 
 interface TestResult {
   tier: string;
@@ -163,6 +164,9 @@ export const ImageTierTester = () => {
   const [skinTone, setSkinTone] = useState('light');
   const [nativeLanguage, setNativeLanguage] = useState('en');
   const [difficultyLevel, setDifficultyLevel] = useState('medium');
+  
+  // Smart Bypass control for E2E simulation
+  const [smartBypassEnabled, setSmartBypassEnabled] = useState(true);
 
   // Build dynamic user info from form inputs - MATCH SimpleImageService
   const buildUserInfo = () => {
@@ -1412,6 +1416,7 @@ export const ImageTierTester = () => {
 
        // STEP 2: Use real frontend routing (generateStoryImage - the actual user entry point)
        cascadeHistory.push('🚀 Using SimpleImageService.generateStoryImage (real user flow)...');
+       cascadeHistory.push(`⚙️ Smart Bypass: ${smartBypassEnabled ? 'Enabled' : 'Disabled (Testing Mode)'}`);
        cascadeHistory.push(`⏰ ${new Date().toLocaleTimeString()}: Starting user image generation request`);
        const userFlowStartTime = Date.now();
       
@@ -1421,7 +1426,9 @@ export const ImageTierTester = () => {
           userInfo,         // userInfo - user profile and preferences
           sessionId,        // sessionId - unique session identifier
           1,                // pageNumber - current story page
-          false             // isPremium - guest user simulation (no forceTier1!)
+          false,            // isPremium - guest user simulation (no forceTier1!)
+          false,            // forceTier1 - not forced
+          smartBypassEnabled // smartBypassEnabled - controlled by toggle
         );
 
         const userFlowTime = Date.now() - userFlowStartTime;
@@ -2394,15 +2401,27 @@ export const ImageTierTester = () => {
               Force Tier 1 (Full Prompt)
             </Button>
             
-            <Button
-              onClick={debugRealRouting}
-              disabled={isLoading}
-              variant="secondary"
-              className="flex items-center gap-2"
-            >
-              <Search className="h-4 w-4" />
-              E2E User Simulation
-            </Button>
+            <div className="space-y-2">
+              <Button
+                onClick={debugRealRouting}
+                disabled={isLoading}
+                variant="secondary"
+                className="flex items-center gap-2 w-full"
+              >
+                <Search className="h-4 w-4" />
+                E2E User Simulation
+              </Button>
+              
+              <TimerToggleItem
+                checked={smartBypassEnabled}
+                onToggle={() => setSmartBypassEnabled(!smartBypassEnabled)}
+                label="Smart Bypass"
+                description={smartBypassEnabled ? "Enabled - optimized routing" : "Disabled - force full orchestrator"}
+                icon={<Settings className="h-4 w-4" />}
+                className="text-xs"
+                ariaLabel="Toggle Smart Bypass for E2E simulation"
+              />
+            </div>
             
             <Button
               onClick={() => forceTier('2.5A')}

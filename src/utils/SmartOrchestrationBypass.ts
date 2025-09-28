@@ -23,8 +23,21 @@ export class SmartOrchestrationBypass {
   static shouldBypassOrchestrator(
     content: string, 
     sessionId: string,
-    healthStatus?: any
+    healthStatus?: any,
+    forceDisable: boolean = false
   ): { shouldBypass: boolean; reason: string; targetTemplate?: string } {
+    
+    // Testing mode: Force disable bypass when requested
+    if (forceDisable) {
+      DebugLogger.log('image', '⚡ Smart Bypass disabled for testing - forcing full orchestrator path', {
+        contentLength: content.length,
+        sessionId
+      });
+      return {
+        shouldBypass: false,
+        reason: 'Smart Bypass disabled for testing - forcing full orchestrator path'
+      };
+    }
     
     // Always bypass for very simple content
     if (content.length < this.SIMPLE_CONTENT_THRESHOLD) {
