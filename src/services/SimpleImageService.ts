@@ -232,7 +232,7 @@ export class SimpleImageService {
 
         // Standard orchestrator path with enhanced error recovery
         return await errorRecoveryManager.withRetry(
-          () => this.generateWithOrchestrator(storyText, userInfo, sessionId, pageNumber, isPremium, healthStatus),
+          () => this.generateWithOrchestrator(storyText, userInfo, sessionId, pageNumber, isPremium, healthStatus, forceTier1),
           `image-gen-${pageNumber}`,
           {
             maxRetries: 3,
@@ -255,7 +255,8 @@ export class SimpleImageService {
     sessionId?: string,
     pageNumber: number = 1,
     isPremium: boolean = false,
-    healthStatus?: HealthStatus
+    healthStatus?: HealthStatus,
+    forceTier1: boolean = false
   ): Promise<ImageResult> {
 
   // Normalize session ID for consistent caching

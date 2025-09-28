@@ -140,7 +140,7 @@ serve(async (req: Request): Promise<Response> => {
         supabaseServiceRoleKeyPresent: !!supabaseKey,
         supabaseServiceRoleKeyLength: supabaseKey ? supabaseKey.length : 0
       },
-      capabilities: ["tier_orchestration", "image_generation", "complete_cascade_1_2.5A_2.5B_DirectMode_2.5C_SVG"]
+      capabilities: ["tier_orchestration", "image_generation", "complete_cascade_1_2.5A_2.5B_DirectMode_2.5C_2.5D_SVG"]
     }, req);
   }
 
@@ -216,6 +216,8 @@ serve(async (req: Request): Promise<Response> => {
         Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
       );
       
+      let directErrorMessage = 'Direct Mode not attempted';
+      
       // CORRECTED CASCADE: Try Direct Mode first (if we have valid primaryScene)
       if (!errorMessage.includes('NO_PRIMARY_SCENE')) {
         console.log(`[DIRECT_MODE] Attempting Direct Mode fallback after Tier 1 failure`);
@@ -256,7 +258,7 @@ serve(async (req: Request): Promise<Response> => {
           }
           
         } catch (directModeError: unknown) {
-          const directErrorMessage = directModeError instanceof Error ? directModeError.message : String(directModeError);
+          directErrorMessage = directModeError instanceof Error ? directModeError.message : String(directModeError);
           console.log(`[DIRECT_MODE] Failed: ${directErrorMessage}`);
           tierLogger.failure('DIRECT_MODE', { error: directErrorMessage });
           // Continue to 2.5A cascade below
@@ -284,18 +286,11 @@ serve(async (req: Request): Promise<Response> => {
             requestId: requestId,
             timestamp: new Date().toISOString(),
             tier1FailureReason: errorMessage,
-            // Complete cascade history for debugging
             cascadeHistory: [
               `❌ Tier 1 Failed: ${errorMessage.includes('NO_PRIMARY_SCENE') ? 'NO_PRIMARY_SCENE (missing service key)' : errorMessage}`,
-              `❌ Direct Mode Failed: ${errorMessage.includes('Supabase client') ? 'Supabase client unavailable' : 'Direct mode fallback failed'}`,
+              `❌ Direct Mode Failed: ${directErrorMessage}`,
               '✅ Tier 2.5A Success'
-            ],
-            tierFailureHistory: {
-              tier1: errorMessage,
-              directMode: 'Escalated to 2.5A fallback',
-              finalTier: 'TIER_2.5A'
-            },
-            escalationPath: 'orchestrator_failed → direct_mode_failed → tier_2.5a_success'
+            ]
           };
           
           tierLogger.success('TIER_2.5A', { result });
@@ -352,7 +347,7 @@ serve(async (req: Request): Promise<Response> => {
           console.log(`[TIER_2.5B] Failed: ${tier25bErrorMessage}`);
           tierLogger.failure('TIER_2.5B', { error: tier25bErrorMessage });
           
-          // Final fallback to Tier 2.5C (Direct Mode already tried earlier)
+          // Try Tier 2.5C
           console.log(`[TIER_2.5C] Attempting fallback after Tier 2.5B failure`);
           
           try {
@@ -366,40 +361,46 @@ serve(async (req: Request): Promise<Response> => {
               }
             });
               
-              if (tier25cResponse.data?.success && tier25cResponse.data?.imageURL) {
-                const result = {
-                  imageURL: tier25cResponse.data.imageURL,
-                  provider: 'tier-2.5c-fallback',
-                  tier: 'TIER_2.5C',
-                  requestId: requestId,
-                  timestamp: new Date().toISOString(),
-                  cascadeFailures: [errorMessage, tier25aErrorMessage, tier25bErrorMessage, directErrorMessage]
-                };
-                
-                tierLogger.success('TIER_2.5C', { result });
-                console.log(`SUCCESS [${requestId}] Tier 2.5C fallback completed`);
-                
-                return corsResponse({
-                  success: true,
-                  imageURL: tier25cResponse.data.imageURL,
-                  provider: 'tier-2.5c-fallback',
-                  tier: 'TIER_2.5C',
-                  requestId: requestId,
-                  timestamp: new Date().toISOString(),
-                  cascadeFailures: [errorMessage, tier25aErrorMessage, tier25bErrorMessage, directErrorMessage]
-                }, req);
-              } else {
-                // Try Tier 2.5D before final SVG fallback
-                console.log(`[TIER_2.5D] Attempting Tier 2.5D...`);
-                tierLogger.attempt('TIER_2.5D');
-                
-                const tier25dResponse = await supabase.functions.invoke('runware-template-cd', {
+            if (tier25cResponse.data?.success && tier25cResponse.data?.imageURL) {
+              const result = {
+                imageURL: tier25cResponse.data.imageURL,
+                provider: 'tier-2.5c-fallback',
+                tier: 'TIER_2.5C',
+                requestId: requestId,
+                timestamp: new Date().toISOString(),
+                cascadeFailures: [errorMessage, tier25aErrorMessage, tier25bErrorMessage, directErrorMessage]
+              };
+              
+              tierLogger.success('TIER_2.5C', { result });
+              console.log(`SUCCESS [${requestId}] Tier 2.5C fallback completed`);
+              
+              return corsResponse({
+                success: true,
+                imageURL: tier25cResponse.data.imageURL,
+                provider: 'tier-2.5c-fallback',
+                tier: 'TIER_2.5C',
+                requestId: requestId,
+                timestamp: new Date().toISOString(),
+                cascadeFailures: [errorMessage, tier25aErrorMessage, tier25bErrorMessage, directErrorMessage]
+              }, req);
+            } else {
+              const tier25cErrorMessage = tier25cResponse.data?.error || 'Unknown Tier 2.5C error'; 
+              console.log(`[TIER_2.5C] Failed: ${tier25cErrorMessage}`);
+              tierLogger.failure('TIER_2.5C', { error: tier25cErrorMessage });
+              
+              // Try Tier 2.5D before final SVG fallback
+              console.log(`[TIER_2.5D] Attempting Tier 2.5D...`);
+              tierLogger.attempt('TIER_2.5D');
+              
+              try {
+                const tier25dResponse = await internalSupabase.functions.invoke('runware-template-cd', {
                   body: {
-                    pageText: storyText,
-                    userInfo: userInfo,
-                    sessionId: sessionId,
-                    pageNumber: pageNumber || 1,
-                    templateComplexity: 'D'
+                    ...payload,
+                    templateComplexity: 'D',
+                    tier1FailureReason: errorMessage,
+                    tier25aFailureReason: tier25aErrorMessage,
+                    tier25bFailureReason: tier25bErrorMessage,
+                    tier25cFailureReason: tier25cErrorMessage
                   }
                 });
                 
@@ -409,57 +410,86 @@ serve(async (req: Request): Promise<Response> => {
                     imageURL: tier25dResponse.data.imageURL?.substring(0, 50) + '...' 
                   });
                   
-                  return new Response(JSON.stringify({
+                  return corsResponse({
                     success: true,
                     imageURL: tier25dResponse.data.imageURL,
                     tier: 'TIER_2.5D',
                     requestId: requestId,
                     timestamp: new Date().toISOString(),
-                    cascadeFailures: [errorMessage, tier25aErrorMessage, tier25bErrorMessage, directErrorMessage]
-                  }), {
-                    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-                  });
+                    cascadeFailures: [errorMessage, tier25aErrorMessage, tier25bErrorMessage, directErrorMessage, tier25cErrorMessage]
+                  }, req);
                 } else {
                   const tier25dErrorMessage = tier25dResponse.data?.error || 'Unknown Tier 2.5D error';
                   console.log(`[TIER_2.5D] Failed: ${tier25dErrorMessage}`);
                   tierLogger.failure('TIER_2.5D', { error: tier25dErrorMessage });
                   throw new Error('TIER_2.5D_FAILED: All tiers exhausted');
                 }
+              } catch (finalError: unknown) {
+                const finalErrorMessage = finalError instanceof Error ? finalError.message : String(finalError);
+                console.log(`[TIER_2.5D/SVG] Failed: ${finalErrorMessage}`);
+                tierLogger.failure('TIER_2.5D', { error: finalErrorMessage });
+                
+                // Return SVG Tier 4 fallback as final resort
+                const svgResult = {
+                  imageURL: 'data:image/svg+xml;base64,' + btoa(`
+                    <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+                      <rect width="512" height="512" fill="#E0F2FE"/>
+                      <circle cx="256" cy="350" r="40" fill="#3B82F6" stroke="#374151" stroke-width="3"/>
+                      <text x="256" y="100" font-family="Arial" font-size="24" text-anchor="middle" fill="#374151">Complete Cascade Fallback</text>
+                    </svg>
+                  `),
+                  provider: 'svg-tier-4-fallback',
+                  tier: 'SVG_TIER_4',
+                  requestId: requestId,
+                  timestamp: new Date().toISOString(),
+                  allFailures: [errorMessage, tier25aErrorMessage, tier25bErrorMessage, directErrorMessage, tier25cErrorMessage, finalErrorMessage]
+                };
+                
+                console.log(`FALLBACK [${requestId}] SVG Tier 4 generated as final fallback`);
+                
+                return corsResponse({
+                  success: true,
+                  imageURL: svgResult.imageURL,
+                  provider: svgResult.provider,
+                  tier: svgResult.tier,
+                  requestId: requestId,
+                  timestamp: new Date().toISOString(),
+                  allFailures: svgResult.allFailures
+                }, req);
               }
-              
-            } catch (finalError: unknown) {
-              const finalErrorMessage = finalError instanceof Error ? finalError.message : String(finalError);
-              console.log(`[TIER_2.5D/SVG] Failed: ${finalErrorMessage}`);
-              tierLogger.failure('TIER_2.5D', { error: finalErrorMessage });
-              
-              // Return SVG Tier 4 fallback as final resort
-              const svgResult = {
-                imageURL: 'data:image/svg+xml;base64,' + btoa(`
-                  <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-                    <rect width="512" height="512" fill="#E0F2FE"/>
-                    <circle cx="256" cy="350" r="40" fill="#3B82F6" stroke="#374151" stroke-width="3"/>
-                    <text x="256" y="100" font-family="Arial" font-size="24" text-anchor="middle" fill="#374151">Complete Cascade Fallback</text>
-                  </svg>
-                `),
-                provider: 'svg-tier-4-fallback',
-                tier: 'SVG_TIER_4',
-                requestId: requestId,
-                timestamp: new Date().toISOString(),
-                allFailures: [errorMessage, tier25aErrorMessage, tier25bErrorMessage, directErrorMessage, finalErrorMessage]
-              };
-              
-              console.log(`FALLBACK [${requestId}] SVG Tier 4 generated as final fallback`);
-              
-              return corsResponse({
-                success: true,
-                imageURL: svgResult.imageURL,
-                provider: svgResult.provider,
-                tier: svgResult.tier,
-                requestId: requestId,
-                timestamp: new Date().toISOString(),
-                allFailures: svgResult.allFailures
-              }, req);
             }
+          } catch (tier25cError: unknown) {
+            const tier25cErrorMessage = tier25cError instanceof Error ? tier25cError.message : String(tier25cError);
+            console.log(`[TIER_2.5C] Failed: ${tier25cErrorMessage}`);
+            tierLogger.failure('TIER_2.5C', { error: tier25cErrorMessage });
+            
+            // Final SVG fallback
+            const svgResult = {
+              imageURL: 'data:image/svg+xml;base64,' + btoa(`
+                <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="512" height="512" fill="#E0F2FE"/>
+                  <circle cx="256" cy="350" r="40" fill="#3B82F6" stroke="#374151" stroke-width="3"/>
+                  <text x="256" y="100" font-family="Arial" font-size="24" text-anchor="middle" fill="#374151">All Tiers Failed</text>
+                </svg>
+              `),
+              provider: 'svg-final-fallback',
+              tier: 'SVG_TIER_4',
+              requestId: requestId,
+              timestamp: new Date().toISOString(),
+              allFailures: [errorMessage, tier25aErrorMessage, tier25bErrorMessage, directErrorMessage, tier25cErrorMessage]
+            };
+            
+            console.log(`FALLBACK [${requestId}] Final SVG fallback generated`);
+            
+            return corsResponse({
+              success: true,
+              imageURL: svgResult.imageURL,
+              provider: svgResult.provider,
+              tier: svgResult.tier,
+              requestId: requestId,
+              timestamp: new Date().toISOString(),
+              allFailures: svgResult.allFailures
+            }, req);
           }
         }
       }
