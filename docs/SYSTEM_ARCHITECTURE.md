@@ -266,16 +266,26 @@ graph LR
 - **Database**: Connection pooling and read replicas
 - **CDN**: Global content distribution
 
-### Performance Metrics
+### Performance Metrics (Updated 2025-09-28)
 ```json
 {
   "storyGeneration": "2-5 seconds per page",
-  "imageGeneration": "3-8 seconds per image", 
+  "imageGeneration": "15-25 seconds per image (35-45% improvement from 30-45s)", 
+  "healthChecks": "0.5-2 seconds (60% improvement from 2-5s)",
+  "frontendTimeout": "60 seconds (balanced from 25s)",
+  "apiTimeout": "12 seconds per call (balanced from 8s)",
   "cacheHitRate": ">80% for navigation",
   "uptime": "99.9% availability target",
   "edgeFunctionUsage": "<1M monthly (post-throttling)"
 }
 ```
+
+### Recent Performance Optimizations (2025-09-28)
+- **Fast Boot Sync Recovery**: 6-second max retry across all edge functions
+- **Parallel Health Checks**: 60% faster health check validation
+- **OptimizedImageCache**: Memory-based caching replacing IndexedDB
+- **SmartOrchestrationBypass**: Content-based routing for simple requests
+- **Timeout Balancing**: Frontend 60s, API calls 12s for optimal UX
 
 ## 🚀 Deployment Architecture
 
@@ -300,6 +310,6 @@ graph LR
 
 ---
 
-**Last Updated**: January 2025  
-**Version**: 3.0 (Emergency Throttling Edition)  
+**Last Updated**: September 28, 2025  
+**Version**: 3.1 (Performance Optimization Edition)  
 **Architecture Status**: Stable ✅

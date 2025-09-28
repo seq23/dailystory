@@ -91,10 +91,13 @@ All endpoints return standardized error responses:
 
 All functions are configured with `verify_jwt = false` for public access. No authentication required.
 
-## Rate Limits
+## Rate Limits & Timeouts (Updated 2025-09-28)
 
-- Image Generation: Governed by Runware API limits
-- AI Story Enhancer: No specific limits (uses OpenAI internally)
+- **Image Generation**: Governed by Runware API limits
+- **AI Story Enhancer**: No specific limits (uses OpenAI internally)
+- **API Timeouts**: 12 seconds per individual call (balanced from 8s)
+- **Frontend Timeouts**: 60 seconds for full image generation process (balanced from 25s)
+- **Boot Recovery**: 6-second maximum retry pattern for edge function recovery
 
 ## CORS Support
 
