@@ -169,6 +169,7 @@ serve(async (req: Request): Promise<Response> => {
     }, req, 400);
   }
 
+  // Main processing logic
   try {
     // PHASE 5: Load tier logger and lazy-load orchestrator
     const tierLogger = await bindTierLogger(payload.sessionId || 'unknown', requestId, req.headers.get('authorization'));
@@ -388,13 +389,48 @@ serve(async (req: Request): Promise<Response> => {
                   cascadeFailures: [errorMessage, tier25aErrorMessage, tier25bErrorMessage, directErrorMessage]
                 }, req);
               } else {
-                throw new Error('TIER_2.5C_FAILED: All tiers exhausted');
+                // Try Tier 2.5D before final SVG fallback
+                console.log(`[TIER_2.5D] Attempting Tier 2.5D...`);
+                tierLogger.attempt('TIER_2.5D');
+                
+                const tier25dResponse = await supabase.functions.invoke('runware-template-cd', {
+                  body: {
+                    pageText: storyText,
+                    userInfo: userInfo,
+                    sessionId: sessionId,
+                    pageNumber: pageNumber || 1,
+                    templateComplexity: 'D'
+                  }
+                });
+                
+                if (tier25dResponse.data?.success) {
+                  console.log(`[TIER_2.5D] Success`);
+                  tierLogger.success('TIER_2.5D', { 
+                    imageURL: tier25dResponse.data.imageURL?.substring(0, 50) + '...' 
+                  });
+                  
+                  return new Response(JSON.stringify({
+                    success: true,
+                    imageURL: tier25dResponse.data.imageURL,
+                    tier: 'TIER_2.5D',
+                    requestId: requestId,
+                    timestamp: new Date().toISOString(),
+                    cascadeFailures: [errorMessage, tier25aErrorMessage, tier25bErrorMessage, directErrorMessage]
+                  }), {
+                    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                  });
+                } else {
+                  const tier25dErrorMessage = tier25dResponse.data?.error || 'Unknown Tier 2.5D error';
+                  console.log(`[TIER_2.5D] Failed: ${tier25dErrorMessage}`);
+                  tierLogger.failure('TIER_2.5D', { error: tier25dErrorMessage });
+                  throw new Error('TIER_2.5D_FAILED: All tiers exhausted');
+                }
               }
               
             } catch (finalError: unknown) {
               const finalErrorMessage = finalError instanceof Error ? finalError.message : String(finalError);
-              console.log(`[TIER_2.5C] Failed: ${finalErrorMessage}`);
-              tierLogger.failure('TIER_2.5C', { error: finalErrorMessage });
+              console.log(`[TIER_2.5D/SVG] Failed: ${finalErrorMessage}`);
+              tierLogger.failure('TIER_2.5D', { error: finalErrorMessage });
               
               // Return SVG Tier 4 fallback as final resort
               const svgResult = {
@@ -428,7 +464,6 @@ serve(async (req: Request): Promise<Response> => {
         }
       }
     }
-
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.error(`Edge function error: ${errorMessage}`, error);

@@ -1,3 +1,49 @@
+          # CRITICAL: Image Generation Cascade Logic (Frontend + Orchestrator + Direct Mode)
+
+**Date Updated: 2025-09-28**
+
+## CORRECT CASCADE LOGIC SHOULD BE:
+
+### Frontend: Health Check → Route Decision
+```
+├─ If orchestrator healthy: call runware-generate-image
+└─ If orchestrator unhealthy: call ai-visual-scene-creator with directMode=true
+```
+
+### Orchestrator (runware-generate-image):
+```
+1. Try Tier 1 (get primaryScene from ai-visual-scene-creator) 
+2. If primaryScene valid but image generation fails → try Direct Mode
+3. If no primaryScene OR Direct Mode fails → 2.5A → 2.5B → 2.5C → 2.5D → SVG
+```
+
+### Direct Mode (ai-visual-scene-creator with directMode=true):
+```
+1. Generate primaryScene internally
+2. Call runware-template-cd for image generation
+3. Return image or error
+```
+
+## Implementation Status:
+- ✅ Tier 1: Implemented in ai-visual-scene-creator
+- ✅ Direct Mode: Implemented in ai-visual-scene-creator with directMode=true
+- ✅ Tier 2.5A: Implemented in runware-template-ab with complexity 'A'
+- ✅ Tier 2.5B: Implemented in runware-template-ab with complexity 'B'
+- ✅ Tier 2.5C: Implemented in runware-template-cd with complexity 'C'
+- ✅ Tier 2.5D: Implemented in runware-template-cd with complexity 'D'
+- ✅ SVG Fallback: Implemented as final tier
+
+## Critical Notes:
+- Frontend Force Tier 1 tests must defer to SimpleImageService.generateImage() with forceTier1=true rather than re-implementing cascade logic client-side
+- Never duplicate cascade logic in frontend components - use the orchestrator
+- All tiers are implemented and functional as of 2025-09-28
+
+## Anti-Regression Guidelines:
+- DO NOT re-implement manual cascade logic in frontend components
+- DO NOT skip intermediate tiers in the orchestrator cascade
+- DO maintain proper error handling and logging at each tier
+- DO ensure directErrorMessage is properly guarded when Direct Mode wasn't attempted
+
 # COMPREHENSIVE IMAGE GENERATION SYSTEM - HARDENED ARCHITECTURE
 
 ## SYSTEM STATUS: ✅ FULLY OPERATIONAL (Updated September 23, 2025)

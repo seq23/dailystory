@@ -339,7 +339,9 @@ export class SimpleImageService {
     DebugLogger.log('image', 'Mapped difficulty level', backendDifficulty);
 
     // ============= PROACTIVE DIRECT MODE BYPASS LOGIC =============
-    const bypassDecision = forceTier1 ? { shouldBypass: false } : await this.evaluateDirectModeBypass(normalizedSessionId, healthStatus);
+    const bypassDecision: BypassDecision = forceTier1 
+      ? { shouldBypass: false, reason: 'Force Tier 1 requested', conditions: ['forceTier1'] } 
+      : await this.evaluateDirectModeBypass(normalizedSessionId, healthStatus);
     if (bypassDecision.shouldBypass) {
       DebugLogger.log('image', 'PROACTIVE BYPASS: Skipping orchestrator, going directly to Direct Mode', {
         reason: bypassDecision.reason,
