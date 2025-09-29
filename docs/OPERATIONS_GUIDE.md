@@ -424,7 +424,7 @@
 - 🏠 [Documentation Hub](./README.md) - Central navigation
 
 ### Implementation References
-- 📡 [Function Reference Registry](./FUNCTION_REFERENCE_REGISTRY_2025.md) - Edge function docs
+- 📡 [API Reference](./API_REFERENCE.md) - Edge function documentation
 - 🔄 [Smart Bypass Fix](./SMART_BYPASS_CRITICAL_FIX_2025_09_28.md) - Business logic fixes
 - 📱 [Mobile App Guide](./MOBILE_APP_GUIDE.md) - Capacitor implementation
 

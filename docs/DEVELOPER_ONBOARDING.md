@@ -256,7 +256,7 @@ monitor.endTiming('operation-name');
 
 ### Documentation
 - [`README.md`](../README.md): Project overview and setup
-- [`docs/BUSINESS_LOGIC_DOCUMENTATION.md`](./BUSINESS_LOGIC_DOCUMENTATION.md): Business rules
+- [`docs/MASTER_SYSTEM_GUIDE.md`](./MASTER_SYSTEM_GUIDE.md): System architecture and business rules
 - [`docs/EMERGENCY_EDGE_FUNCTION_THROTTLING.md`](./EMERGENCY_EDGE_FUNCTION_THROTTLING.md): Throttling guide
 - [`supabase/functions/_shared/SYSTEM_ARCHITECTURE.md`](../supabase/functions/_shared/SYSTEM_ARCHITECTURE.md): Technical architecture
 

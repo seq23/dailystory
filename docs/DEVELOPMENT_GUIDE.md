@@ -784,7 +784,7 @@ supabase functions deploy --no-verify-jwt <function-name>
 - 🏠 [Documentation Hub](./README.md) - Central navigation
 
 ### Specialized Documentation
-- 📡 [Function Reference Registry](./FUNCTION_REFERENCE_REGISTRY_2025.md) - Edge function API docs
+- 📡 [API Reference](./API_REFERENCE.md) - Edge function API documentation
 - 🔧 [Error Handling Standards](./ERROR_HANDLING_STANDARDS.md) - Code standards for errors
 - 📱 [Mobile App Guide](./MOBILE_APP_GUIDE.md) - Capacitor implementation
 

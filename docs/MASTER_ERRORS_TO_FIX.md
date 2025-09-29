@@ -681,7 +681,7 @@ Next Update: [Time]
 - **Architecture**: 2-tier system (Network + Vendor fallback only)
 
 #### Business Logic
-- **Primary Documentation**: [Business Logic Documentation](./BUSINESS_LOGIC_DOCUMENTATION.md#core-business-model)
+- **Primary Documentation**: [Master System Guide](./MASTER_SYSTEM_GUIDE.md#section-2-business-logic)
 - **Related Errors**: ERROR-036, ERROR-037
 - **Components**: `CleanStoryDisplay.tsx`, `SmartOrchestrationBypass.ts`
 - **Architecture**: Premium/guest differentiation with smart bypass

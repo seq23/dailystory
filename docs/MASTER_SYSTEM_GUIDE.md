@@ -739,7 +739,7 @@ Tier 4 → ErrorHandlingManager (NEVER FAILS)
 - 🏠 [Documentation Hub](./README.md) - Central navigation
 
 ### Specialized Documentation
-- 📡 [Function Reference Registry](./FUNCTION_REFERENCE_REGISTRY_2025.md) - Edge function documentation
+- 📡 [API Reference](./API_REFERENCE.md) - Edge function documentation
 - 📱 [Mobile App Guide](./MOBILE_APP_GUIDE.md) - Capacitor implementation
 - 🔐 [Security Guide](./SECURITY_GUIDE.md) - Security policies
 

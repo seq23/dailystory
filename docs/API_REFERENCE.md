@@ -851,8 +851,7 @@ if (response.status === 429) {
 - 🏠 [Documentation Hub](./README.md) - Central navigation
 
 ### Function Documentation
-- 📡 [Function Reference Registry](./FUNCTION_REFERENCE_REGISTRY_2025.md) - Detailed function specs
-- 🔧 [Edge Functions README](../supabase/functions/README.md) - Deployment manifest
+- 🔧 [Edge Functions README](../supabase/functions/README.md) - Deployment manifest and function list
 
 ### Integration Guides
 - 🏗️ [Integration Guide](./INTEGRATION_GUIDE.md) - Frontend-backend patterns
