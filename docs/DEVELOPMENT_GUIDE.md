@@ -96,6 +96,32 @@ supabase db seed
 
 ### 1.3 IDE Configuration
 
+### 1.4 Authentication & Premium Access Model
+
+**⚠️ CRITICAL: ALL authenticated users are premium users.**
+
+This project uses a simplified two-tier authentication model:
+- **Authenticated users:** Full premium access (isPremium = true, always)
+- **Unauthenticated users:** Guest experience (isPremium = false)
+
+**Key Implementation Points:**
+
+```typescript
+// CORRECT: Authentication determines premium status
+const isPremium = !!user; // Simple and reliable
+
+// WRONG: Never check subscription for feature access
+const isPremium = await checkSubscription(); // DON'T DO THIS
+```
+
+**What This Means for Development:**
+1. **No Feature Gating:** Don't check subscription status before showing features
+2. **Payment Functions:** Business operations ONLY (not access control)
+3. **Simple Auth Flow:** User logged in = premium, user logged out = guest
+4. **Global Flag:** `window.__IS_PREMIUM = !!user` available everywhere
+
+**Detailed Documentation:** See [Authentication Model Guide](./AUTHENTICATION_MODEL.md) for complete implementation details, payment system role, and migration notes.
+
 **VS Code Extensions (Recommended):**
 - ESLint
 - Prettier

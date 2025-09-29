@@ -123,6 +123,13 @@
 
 **Payment Pattern Note:** Return standardized 503 responses on complete system failure
 
+**⚠️ IMPORTANT - Payment Functions Role:**
+- **Purpose:** Business operations ONLY (revenue processing, analytics, reporting)
+- **NOT for:** Feature access control or premium gating
+- **Authentication Model:** ALL authenticated users have premium access by default
+- **check-subscription:** Analytics/reporting only - does NOT control feature access
+- **See:** [Authentication Model](./AUTHENTICATION_MODEL.md) for complete details
+
 #### 🟠 HIGH PRIORITY - Core Content Generation
 **Status:** 📋 **PLANNED** (Phase 2)  
 **Risk Level:** HIGH - Core user experience  
@@ -420,6 +427,7 @@
 ### Core Documentation
 - 📘 [Master System Guide](./MASTER_SYSTEM_GUIDE.md) - Complete architecture overview
 - 💻 [Development Guide](./DEVELOPMENT_GUIDE.md) - Technical standards and patterns
+- 🔐 [Authentication Model](./AUTHENTICATION_MODEL.md) - Premium access model explained
 - 🚨 [Master Errors Document](./MASTER_ERRORS_TO_FIX.md) - Detailed error tracking
 - 🏠 [Documentation Hub](./README.md) - Central navigation
 

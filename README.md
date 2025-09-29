@@ -151,12 +151,13 @@ npm run dev
 **📚 [Documentation Hub](docs/README.md)** - Start here for role-based navigation
 
 ### Quick Access by Role
-- **Developers**: [Development Guide](docs/DEVELOPMENT_GUIDE.md) | [API Reference](docs/API_REFERENCE.md)
+- **Developers**: [Development Guide](docs/DEVELOPMENT_GUIDE.md) | [Authentication Model](docs/AUTHENTICATION_MODEL.md) | [API Reference](docs/API_REFERENCE.md)
 - **Operations**: [Operations Guide](docs/OPERATIONS_GUIDE.md) | [Deployment Guide](docs/DEPLOYMENT_GUIDE.md)
 - **Management**: [Master System Guide](docs/MASTER_SYSTEM_GUIDE.md) | [Master Errors](docs/MASTER_ERRORS_TO_FIX.md)
 
 ### Core Documentation
 - **[Master System Guide](docs/MASTER_SYSTEM_GUIDE.md)**: Complete architecture + business logic
+- **[Authentication Model](docs/AUTHENTICATION_MODEL.md)**: **NEW:** Premium access model explained
 - **[Operations Guide](docs/OPERATIONS_GUIDE.md)**: Current status, roadmap, monitoring
 - **[Development Guide](docs/DEVELOPMENT_GUIDE.md)**: Setup, patterns, standards, debugging
 - **[API Reference](docs/API_REFERENCE.md)**: All 40 edge functions with examples

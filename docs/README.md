@@ -11,6 +11,7 @@
 ### 👨‍💻 For Developers
 Start here for technical implementation details:
 - 📘 [Master System Guide](./MASTER_SYSTEM_GUIDE.md) - Complete system architecture and business logic
+- 🔐 [Authentication Model](./AUTHENTICATION_MODEL.md) - **NEW:** Premium access model explained
 - 🚨 [Master Errors Document](./MASTER_ERRORS_TO_FIX.md) - Error tracking and troubleshooting
 - 💻 [Development Guide](./DEVELOPMENT_GUIDE.md) - Developer workflows and best practices
 - 📡 [API Reference](./API_REFERENCE.md) - Edge function documentation (40 functions)
@@ -63,6 +64,7 @@ Recommended reading order:
 | Document | Purpose | Status | Last Updated |
 |----------|---------|--------|--------------|
 | [Master System Guide](./MASTER_SYSTEM_GUIDE.md) | Complete system architecture, business logic, technical details | ✅ Current | 2025-09-29 |
+| [Authentication Model](./AUTHENTICATION_MODEL.md) | **NEW:** Premium access model, payment system role | ✅ Current | 2025-09-29 |
 | [Operations Guide](./OPERATIONS_GUIDE.md) | System status, roadmap, backlog, monitoring | ✅ Current | 2025-09-29 |
 | [Development Guide](./DEVELOPMENT_GUIDE.md) | Developer workflows, testing, debugging | ✅ Current | 2025-09-29 |
 | [Project README](../README.md) | Quick start, overview, core features | ✅ Current | 2025-09-22 |
