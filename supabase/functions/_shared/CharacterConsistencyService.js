@@ -1,7 +1,60 @@
 /**
- * UNIFIED CHARACTER CONSISTENCY SERVICE - COMPLETE CONSOLIDATION
- * Combines all character generation, visual tracking, secondary detection, and persistence
- * Single source of truth for all character-related functionality
+ * ========================================
+ * CHARACTER CONSISTENCY SERVICE - IMAGE GENERATION VERSION (PRODUCTION)
+ * ========================================
+ * 
+ * PURPOSE: This is the PRODUCTION version used exclusively by IMAGE GENERATION systems
+ * USAGE: Edge functions for image orchestration (runware-generate-image, templates, etc.)
+ * ARCHITECTURE: Self-contained with inlined dependencies for edge function optimization
+ * 
+ * =================== CRITICAL DISTINCTIONS ===================
+ * 
+ * 🔥 IMAGE GENERATION SYSTEM (THIS FILE):
+ * - Used by: runware-generate-image, template-ab, template-cd edge functions
+ * - Dependencies: INLINED safeErrorMessage function (no external imports)
+ * - Export: characterConsistencyService (singleton instance)
+ * - Purpose: Character consistency for AI-generated images
+ * - Environment: Edge functions (Deno runtime)
+ * 
+ * 📖 STORY GENERATION SYSTEM (CharacterConsistencyService.ts):
+ * - Used by: story generation functions, smartTemplateSelector.ts, streamlined-handler.ts
+ * - Dependencies: IMPORTS safeErrorMessage from errorPatterns.ts
+ * - Export: CharacterService (class constructor)
+ * - Purpose: Character consistency for story narrative generation
+ * - Environment: TypeScript development environment
+ * 
+ * =================== SYNCHRONIZATION WARNING ===================
+ * 
+ * ⚠️  BOTH VERSIONS MUST MAINTAIN IDENTICAL CORE FUNCTIONALITY
+ * ⚠️  Changes to character logic MUST be applied to BOTH files
+ * ⚠️  Database methods MUST remain synchronized between versions
+ * ⚠️  DO NOT remove errorPatterns.ts - story generation depends on it
+ * 
+ * =================== FUNCTION CATEGORIES ===================
+ * 
+ * 🖼️  IMAGE GENERATION FUNCTIONS:
+ * - getCharacterSeed() - Main character consistency for images
+ * - getCulturalEnhancements() - Avatar appearance consistency
+ * - buildCharacterDescription() - Image prompt building
+ * - detectColoredObjectsAndClothing() - Visual element consistency
+ * 
+ * 📊 DATABASE OPERATIONS (SHARED):
+ * - saveCharacterToDatabase() - Persistence layer
+ * - getCharacterFromDatabase() - Data retrieval
+ * - saveVisualDetailToDatabase() - Visual details cache
+ * 
+ * 🎭 CHARACTER GENERATION (SHARED):
+ * - generateStableSeed() - Deterministic seed generation
+ * - createSeededRandom() - Consistent randomization
+ * - detectSecondaryCharacters() - Relationship detection
+ * 
+ * =================== EDGE FUNCTION OPTIMIZATION ===================
+ * 
+ * This version is optimized for edge function performance:
+ * - Inlined safeErrorMessage to avoid import dependency issues
+ * - Memoized imports with fallback handling
+ * - Single instance export for memory efficiency
+ * - Minimal external dependencies
  */
 
 // Inline safe error handling to avoid TypeScript import issues in edge functions

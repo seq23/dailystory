@@ -1,13 +1,71 @@
 /**
- * Character Consistency Service - TypeScript Version
+ * ========================================
+ * CHARACTER CONSISTENCY SERVICE - STORY GENERATION VERSION (DEVELOPMENT)
+ * ========================================
  * 
- * This is the TypeScript version of the Character Consistency Service.
- * It mirrors the functionality of the JavaScript version but provides
- * type safety and better IDE support for development.
+ * PURPOSE: This is the DEVELOPMENT version used exclusively by STORY GENERATION systems
+ * USAGE: Story generation functions, narrative processing, template selection
+ * ARCHITECTURE: Imports dependencies from errorPatterns.ts for story generation integration
  * 
- * WARNING: This service must remain functionally identical to the
- * JavaScript version (CharacterConsistencyService.js) to ensure
- * consistent behavior across the application.
+ * =================== CRITICAL DISTINCTIONS ===================
+ * 
+ * 📖 STORY GENERATION SYSTEM (THIS FILE):
+ * - Used by: story generation functions, smartTemplateSelector.ts, streamlined-handler.ts
+ * - Dependencies: IMPORTS safeErrorMessage from errorPatterns.ts (REQUIRED FOR STORY SYSTEM)
+ * - Export: CharacterService (class constructor)
+ * - Purpose: Character consistency for story narrative generation
+ * - Environment: TypeScript development environment
+ * 
+ * 🖼️  IMAGE GENERATION SYSTEM (CharacterConsistencyService.js):
+ * - Used by: runware-generate-image, template-ab, template-cd edge functions
+ * - Dependencies: INLINED safeErrorMessage function (no external imports)
+ * - Export: characterConsistencyService (singleton instance)
+ * - Purpose: Character consistency for AI-generated images
+ * - Environment: Edge functions (Deno runtime)
+ * 
+ * =================== DEPENDENCY CHAIN CRITICAL WARNING ===================
+ * 
+ * 🚨 NEVER REMOVE: import { safeErrorMessage } from './errorPatterns.ts'
+ * 
+ * This import is ESSENTIAL for the story generation system:
+ * - smartTemplateSelector.ts depends on errorPatterns.ts
+ * - streamlined-handler.ts depends on errorPatterns.ts
+ * - Multiple story functions use safeErrorMessage pattern
+ * - Removing this import WILL BREAK story generation system
+ * 
+ * =================== SYNCHRONIZATION REQUIREMENTS ===================
+ * 
+ * ⚠️  BOTH VERSIONS MUST MAINTAIN IDENTICAL CORE FUNCTIONALITY
+ * - Database methods MUST remain synchronized
+ * - Character generation logic MUST be identical
+ * - Seed generation MUST produce same results
+ * - Visual detection MUST work consistently
+ * 
+ * =================== FUNCTION CATEGORIES ===================
+ * 
+ * 📖 STORY GENERATION FUNCTIONS:
+ * - analyzeVisualDetails() - Extract story elements for consistency
+ * - detectSecondaryCharacters() - Find characters in narrative
+ * - getCharacterAppearanceFromStory() - Extract appearance from text
+ * - clearSession() - Clean up story session data
+ * 
+ * 📊 DATABASE OPERATIONS (SHARED):
+ * - saveCharacterToDatabase() - Persistence layer
+ * - getCharacterFromDatabase() - Data retrieval
+ * - updateCulturalSelections() - Cultural trait persistence
+ * 
+ * 🎭 CHARACTER GENERATION (SHARED):
+ * - getCharacterSeed() - Main character consistency
+ * - generateStableSeed() - Deterministic seed generation
+ * - getSecondaryCharacterSeed() - Secondary character consistency
+ * 
+ * =================== TYPE SAFETY INTEGRATION ===================
+ * 
+ * This version provides TypeScript integration:
+ * - Full type definitions for all methods
+ * - Integration with shared type system (#types/)
+ * - IDE support for development
+ * - Compile-time error checking
  */
 
 import type { 

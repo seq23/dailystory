@@ -1,11 +1,49 @@
 // Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
 /**
- * STANDARDIZED ERROR HANDLING PATTERNS
+ * ========================================
+ * STANDARDIZED ERROR HANDLING PATTERNS - STORY GENERATION CORE UTILITY
+ * ========================================
+ * 
+ * PURPOSE: Critical error handling utilities for the STORY GENERATION SYSTEM
+ * USAGE: Imported by story generation functions, CharacterConsistencyService.ts
+ * ARCHITECTURE: Shared utility providing consistent error handling patterns
+ * 
+ * =================== CRITICAL STORY SYSTEM DEPENDENCY ===================
+ * 
+ * 🚨 THIS MODULE IS ESSENTIAL FOR STORY GENERATION - DO NOT REMOVE
+ * 
+ * USED BY:
+ * - CharacterConsistencyService.ts (IMPORTS safeErrorMessage)
+ * - smartTemplateSelector.ts (error handling patterns)
+ * - streamlined-handler.ts (safe error extraction)
+ * - Multiple story generation edge functions
+ * 
+ * =================== USAGE PATTERNS ===================
+ * 
+ * 📖 STORY GENERATION USAGE:
+ * import { safeErrorMessage } from './errorPatterns.ts';
+ * - Used in try/catch blocks for safe error message extraction
+ * - Prevents crashes from undefined error objects
+ * - Provides consistent error logging across story functions
+ * 
+ * 🖼️  IMAGE GENERATION USAGE:
+ * - CharacterConsistencyService.js has INLINED safeErrorMessage function
+ * - Does NOT import this module (edge function optimization)
+ * - Same functionality, different implementation approach
+ * 
+ * =================== ERROR HANDLING SAFETY ===================
  * 
  * This module provides consistent, safe error handling patterns to prevent:
  * - ReferenceErrors from undefined variables in catch blocks
  * - TypeErrors from accessing properties on null/undefined objects
- * - Inconsistent error message extraction
+ * - Inconsistent error message extraction across story generation functions
+ * - System crashes due to malformed error objects
+ * 
+ * =================== SYNCHRONIZATION NOTE ===================
+ * 
+ * ⚠️  The safeErrorMessage function here MUST remain identical to the
+ *     inlined version in CharacterConsistencyService.js to ensure
+ *     consistent error handling behavior across both systems.
  * 
  * Usage: Import and use these utilities instead of direct property access
  */
