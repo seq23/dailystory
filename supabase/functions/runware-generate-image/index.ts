@@ -139,7 +139,7 @@ async function processInlinedTier1(payload: any, memoizedImport: any): Promise<a
   let characterConsistencyService;
   try {
     const serviceModule = await memoizedImport("../_shared/CharacterConsistencyService.js");
-    characterConsistencyService = serviceModule.getInstance();
+    characterConsistencyService = serviceModule.characterConsistencyService;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.log(`[TIER_1] CharacterConsistencyService failed: ${errorMessage}`);
