@@ -5,6 +5,8 @@ import { ErrorHandlingManager, type ErrorContext } from '@/services/errorHandlin
 import { useToast } from '@/hooks/use-toast';
 import type { UserInfo } from '@/types';
 import { DebugLogger } from '@/services/DebugLogger';
+import { TemplateMonitoringService } from '@/services/TemplateMonitoringService';
+import { validatePlaceholders } from '@/utils/placeholderValidator';
 
 interface TemplateResult {
   success: boolean;
@@ -64,6 +66,9 @@ export function useTemplateService() {
     setError('');
     setResult(null);
 
+    const startTime = performance.now();
+    const templateId = `${userInfo.difficultyLevel || 'unknown'}-${mode}`;
+
     const context: ErrorContext = {
       component: 'TemplateService',
       action: 'generateStory',
@@ -122,7 +127,7 @@ export function useTemplateService() {
         }
       );
 
-      if (response.success && response.data) {
+        if (response.success && response.data) {
         // Phase 2: Apply centralized grammar processing via process-story-content
         let finalResult = response.data;
         
@@ -154,12 +159,45 @@ export function useTemplateService() {
           DebugLogger.warn('story', '⚠️ Grammar processing failed, using raw pages:', processError);
         }
 
+        // Record monitoring data
+        const processingTime = performance.now() - startTime;
+        TemplateMonitoringService.recordTemplateUsage(templateId, processingTime, true);
+
+        // Validate placeholders and record results
+        if (finalResult.pages) {
+          const validation = validatePlaceholders(
+            finalResult.pages, 
+            finalResult.metadata?.sourceSystem?.includes('AI') ? 'ai' : 'template',
+            false,
+            userInfo
+          );
+
+          // Record placeholder resolution results
+          if (validation.userInputsUsed) {
+            validation.userInputsUsed.forEach(placeholder => {
+              TemplateMonitoringService.recordPlaceholderResolution(placeholder, true);
+            });
+          }
+
+          // Record any unresolved placeholders as failures
+          validation.unresolvedPlaceholders.forEach(placeholder => {
+            TemplateMonitoringService.recordPlaceholderResolution(
+              placeholder, 
+              false, 
+              'Template validation failed'
+            );
+          });
+        }
+
         setResult(finalResult);
         setRetryCount(0);
         setIsMaxRetriesReached(false);
         return finalResult;
       } else if (response.fallback) {
-        // Using fallback content
+        // Using fallback content - record as failure
+        const processingTime = performance.now() - startTime;
+        TemplateMonitoringService.recordTemplateUsage(templateId, processingTime, false, 'Used fallback content');
+
         setResult(response.fallback);
         setError(response.error || 'Used emergency content due to service issues');
         setIsMaxRetriesReached(true);
@@ -170,6 +208,11 @@ export function useTemplateService() {
     } catch (err) {
       DebugLogger.error('story', 'Template service error:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to generate story';
+      
+      // Record monitoring data for failed attempt
+      const processingTime = performance.now() - startTime;
+      TemplateMonitoringService.recordTemplateUsage(templateId, processingTime, false, errorMessage);
+
       setError(errorMessage);
       
       // Show emergency notification to parents/users

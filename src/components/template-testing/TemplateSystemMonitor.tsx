@@ -33,24 +33,37 @@ export function TemplateSystemMonitor() {
   const refreshData = async () => {
     setIsRefreshing(true);
     try {
-      // Simulate real monitoring data collection
+      // Collect real monitoring data
       const report = TemplateMonitoringService.generateMonitoringReport();
       const alerts = TemplateMonitoringService.checkForCriticalIssues();
       const validationMetrics = TemplateValidationService.getValidationMetrics();
 
       setMonitoringData({
-        systemHealth: report.summary || { recommendations: [] },
-        templateRankings: report.topPerformingTemplates || [],
-        problematicTemplates: report.problematicTemplates || [],
-        placeholderIssues: report.placeholderIssues || [],
-        alerts: alerts || [],
-        validationMetrics: validationMetrics || { commonErrors: [] }
+        systemHealth: report.summary,
+        templateRankings: report.topPerformingTemplates,
+        problematicTemplates: report.problematicTemplates,
+        placeholderIssues: report.placeholderIssues,
+        alerts: alerts,
+        validationMetrics: validationMetrics
       });
     } catch (error) {
       DebugLogger.error('ui', 'Error refreshing monitoring data', { error });
     } finally {
       setIsRefreshing(false);
     }
+  };
+
+  const generateTestData = () => {
+    // Generate some test monitoring data for demonstration
+    TemplateMonitoringService.recordTemplateUsage('beginner-testing', 1200, true);
+    TemplateMonitoringService.recordTemplateUsage('intermediate-testing', 1800, true);
+    TemplateMonitoringService.recordTemplateUsage('advanced-testing', 2200, false, 'Timeout error');
+    
+    TemplateMonitoringService.recordPlaceholderResolution('name', true);
+    TemplateMonitoringService.recordPlaceholderResolution('favoriteColor', true);
+    TemplateMonitoringService.recordPlaceholderResolution('favoriteAnimal', false, 'Missing user data');
+    
+    refreshData();
   };
 
   useEffect(() => {
@@ -99,6 +112,13 @@ export function TemplateSystemMonitor() {
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Template System Monitor</h2>
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={generateTestData}
+          >
+            Generate Test Data
+          </Button>
           <Button
             variant="outline"
             size="sm"
