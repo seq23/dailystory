@@ -10,6 +10,8 @@ export interface TemplateUsageMetrics {
   averageProcessingTime: number;
   lastUsed: Date;
   userSatisfactionScore?: number;
+  successCount: number;
+  totalAttempts: number;
 }
 
 export interface PlaceholderMetrics {
@@ -53,11 +55,16 @@ export class TemplateMonitoringService {
     
     if (existing) {
       existing.usageCount++;
+      existing.totalAttempts++;
+      if (success) {
+        existing.successCount++;
+      }
       existing.averageProcessingTime = (
         (existing.averageProcessingTime * (existing.usageCount - 1)) + processingTime
       ) / existing.usageCount;
       
-      existing.successRate = existing.successRate * 0.9 + (success ? 0.1 : 0);
+      // Calculate success rate as a proper percentage
+      existing.successRate = existing.successCount / existing.totalAttempts;
       existing.lastUsed = new Date();
     } else {
       this.templateMetrics.set(templateId, {
@@ -65,7 +72,9 @@ export class TemplateMonitoringService {
         usageCount: 1,
         successRate: success ? 1 : 0,
         averageProcessingTime: processingTime,
-        lastUsed: new Date()
+        lastUsed: new Date(),
+        successCount: success ? 1 : 0,
+        totalAttempts: 1
       });
     }
 

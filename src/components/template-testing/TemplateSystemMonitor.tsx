@@ -305,15 +305,19 @@ export function TemplateSystemMonitor() {
                         <div>
                           <div className="font-medium">{template.templateId}</div>
                           <div className="text-sm text-muted-foreground">
-                            Issues detected
+                            {template.successRate < 0.5 ? 'Critical Issues' : 
+                             template.successRate < 0.8 ? 'Performance Issues' : 'Needs Review'}
                           </div>
                         </div>
                         <div className="text-right">
                           <div className="font-bold text-red-600">
                             {(template.successRate * 100).toFixed(1)}%
                           </div>
-                          <Badge variant="destructive" className="text-xs">
-                            Needs Review
+                          <Badge 
+                            variant={template.successRate < 0.5 ? "destructive" : "secondary"} 
+                            className="text-xs"
+                          >
+                            {template.successRate < 0.5 ? 'Critical' : 'Attention Needed'}
                           </Badge>
                         </div>
                       </div>
