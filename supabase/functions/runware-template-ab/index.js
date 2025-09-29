@@ -1856,7 +1856,7 @@ async function handleRequest(req) {
     // Log successful template generation
     try {
       // Use direct Supabase import to avoid CDN failures
-      const { createClient } = await import('https://deno.land/x/supabase@2.0.2/mod.ts');
+      const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4?target=deno&bundle');
       const supabaseClient = createClient(
         Deno.env.get('SUPABASE_URL'),
         Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY')

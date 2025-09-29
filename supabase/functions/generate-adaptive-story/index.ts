@@ -1,7 +1,7 @@
 // Clean Deploy: 2025-01-30T12:00:00Z - Enhanced with resilient loader
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { memoizedImport, createResilientSupabaseClient, createImportFailureResponse } from '../_shared/resilientLoader.ts';
+import { memoizedImport, createTieredSupabaseClient, createImportFailureResponse } from '../_shared/resilientLoader.ts';
 import { DifficultyLevelMapper } from '../_shared/DifficultyLevelMapper.ts';
 import { getPerPageTokenLimit, getStoryPrompt, formatUserPrompt, resolvePromptPlaceholders } from '../_shared/storyPrompts.ts';
 import { ENHANCED_LEVEL_0_VOCABULARY } from '../_shared/vocabulary/dolchPrePrimer.ts';
@@ -159,7 +159,7 @@ serve(async (req) => {
   // Create Supabase client inside handler for better error handling
   let supabase;
   try {
-    supabase = await createResilientSupabaseClient();
+    supabase = await createTieredSupabaseClient();
   } catch (error) {
     console.error('Failed to create Supabase client:', error);
     return createImportFailureResponse(error, 'generate-adaptive-story');
