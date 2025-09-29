@@ -64,7 +64,7 @@ export const AuthWrapper = () => {
   }, []);
 
   if (loading) {
-    return <AdaptiveEnhancedLoading isPremium={false} />;
+    return <AdaptiveEnhancedLoading isPremium={false} reason="auth" />;
   }
 
   // Logged out = Guest (free trial)

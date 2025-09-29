@@ -162,7 +162,10 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
       }
       // Note: We never downgrade authenticated users from premium status
     } catch (error) {
-      DebugLogger.error('auth', 'Failed to check subscription', error);
+      // Subscription check failures are non-blocking; only log in debug mode
+      if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
+        DebugLogger.log('auth', 'Subscription service unavailable, checking database fallback', error);
+      }
       // Fallback to check database directly
       try {
         const { data, error: dbError } = await supabase
@@ -178,7 +181,9 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
         }
         // Note: We never downgrade authenticated users from premium status
       } catch (dbError) {
-        DebugLogger.error('auth', 'Failed to check subscription from database', dbError);
+        if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
+          DebugLogger.log('auth', 'Database subscription fallback also unavailable', dbError);
+        }
       }
     }
   };

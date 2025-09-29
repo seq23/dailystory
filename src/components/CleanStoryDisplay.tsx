@@ -1117,6 +1117,22 @@ useEffect(() => {
     }
   }, []);
 
+  // Safety timeout: Auto-clear loader if stuck for >25s
+  useEffect(() => {
+    if (!isLoading) return;
+    
+    const SAFETY_TIMEOUT_MS = 25000; // 25 seconds
+    const safetyTimer = ManagedTimers.setTimeout(() => {
+      DebugLogger.warn('story', 'Story loader safety timeout triggered after 25s');
+      setIsLoading(false);
+      setError('Story setup is taking longer than usual. Please try again or check your connection.');
+    }, SAFETY_TIMEOUT_MS, 'CleanStoryDisplay');
+    
+    return () => {
+      ManagedTimers.clearTimer(safetyTimer);
+    };
+  }, [isLoading]);
+
   // Difficulty management now handled by useDifficultyManagement hook
   const difficultyLevels: string[] = ['pre-reader', 'beginner', 'developing', 'independent', 'advanced'];
   
@@ -3604,6 +3620,7 @@ const handleRestartTimer = () => {
         isPremium={isPremium} 
         userName={safeUserInfo.name} 
         message={loadingMessage}
+        reason="story-init"
       />
     );
   }

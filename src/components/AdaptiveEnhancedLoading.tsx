@@ -9,9 +9,10 @@ interface AdaptiveEnhancedLoadingProps {
   isPremium: boolean;
   userName?: string;
   message?: string; // PHASE 3: Add custom message support
+  reason?: string; // Debug: track loader source (e.g., "auth", "story-init", "profile-setup")
 }
 
-export function AdaptiveEnhancedLoading({ isPremium, userName, message }: AdaptiveEnhancedLoadingProps) {
+export function AdaptiveEnhancedLoading({ isPremium, userName, message, reason }: AdaptiveEnhancedLoadingProps) {
   const { t } = useTranslation();
 
   const debugMode = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("debug") === "1";
@@ -43,15 +44,19 @@ export function AdaptiveEnhancedLoading({ isPremium, userName, message }: Adapti
   
 
   useEffect(() => {
-    DebugLogger.log('ui', 'AdaptiveEnhancedLoading mounted', { isPremium, userName });
+    const win = window as any;
+    if (!win.__loaderCounter) win.__loaderCounter = 0;
+    win.__loaderCounter++;
+    const instanceId = win.__loaderCounter;
+    DebugLogger.log('ui', `AdaptiveEnhancedLoading mounted #${instanceId}`, { reason, isPremium, userName });
     requestAnimationFrame(() => {
       const rect = containerRef.current?.getBoundingClientRect();
       if (rect && rect.height > 0 && rect.width > 0) {
         DebugLogger.log('ui', 'Enhanced loader visible', { width: rect.width, height: rect.height });
       }
     });
-    return () => DebugLogger.log('ui', 'AdaptiveEnhancedLoading unmounted');
-  }, [isPremium, userName]);
+    return () => DebugLogger.log('ui', `AdaptiveEnhancedLoading unmounted #${instanceId}`, { reason });
+  }, [isPremium, userName, reason]);
 
   return (
     <>

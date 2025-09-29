@@ -97,9 +97,21 @@ serve(async (req) => {
       });
     }
 
-    // Load Stripe using resilient loader
-    const { default: Stripe } = await memoizedImport('stripe');
-    const stripe = new Stripe(stripeKey as string, { apiVersion: "2023-10-16" });
+    // Load Stripe using resilient loader with graceful degradation
+    let stripe;
+    try {
+      const { default: Stripe } = await memoizedImport('stripe');
+      stripe = new Stripe(stripeKey as string, { apiVersion: "2023-10-16" });
+    } catch (stripeImportError) {
+      logStep("Stripe import failed, degrading to unsubscribed", { error: String(stripeImportError) });
+      return new Response(JSON.stringify({
+        subscribed: false,
+        message: "Stripe service temporarily unavailable"
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     
     if (customers.data.length === 0) {
