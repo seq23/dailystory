@@ -108,10 +108,69 @@ serve(async (req) => {
   try {
     console.log('💰 Cost Analytics Request');
     
-    const costTracker = EdgeCostTracker.getInstance();
-    const summary = costTracker.getDailySummary();
+    // Get real cost data from database instead of memory
+    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4');
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    // Get today's cost data
+    const today = new Date().toISOString().split('T')[0];
+    const { data: costData, error: costError } = await supabaseClient
+      .from('cost_tracking')
+      .select('*')
+      .gte('timestamp', `${today}T00:00:00Z`)
+      .lt('timestamp', `${today}T23:59:59Z`);
+
+    if (costError) {
+      throw new Error(`Failed to fetch cost data: ${costError.message}`);
+    }
+
+    // Calculate summary from database data
+    const totalCost = costData?.reduce((sum, entry) => sum + Number(entry.cost), 0) || 0;
+    const totalRequests = costData?.length || 0;
+    const totalInputTokens = costData?.reduce((sum, entry) => sum + (entry.input_tokens || 0), 0) || 0;
+    const totalOutputTokens = costData?.reduce((sum, entry) => sum + (entry.output_tokens || 0), 0) || 0;
+
+    // Provider and model breakdown
+    const providerBreakdown: Record<string, { requests: number; cost: number }> = {};
+    const modelBreakdown: Record<string, { requests: number; cost: number }> = {};
+
+    costData?.forEach(entry => {
+      // Provider breakdown
+      const provider = entry.provider || 'unknown';
+      if (!providerBreakdown[provider]) {
+        providerBreakdown[provider] = { requests: 0, cost: 0 };
+      }
+      providerBreakdown[provider].requests++;
+      providerBreakdown[provider].cost += Number(entry.cost);
+
+      // Model breakdown
+      const model = entry.model_used || 'unknown';
+      if (!modelBreakdown[model]) {
+        modelBreakdown[model] = { requests: 0, cost: 0 };
+      }
+      modelBreakdown[model].requests++;
+      modelBreakdown[model].cost += Number(entry.cost);
+    });
+
+    const DAILY_LIMIT = 5.0; // $5 daily limit
+    const summary = {
+      date: today,
+      totalCost,
+      totalRequests,
+      totalInputTokens,
+      totalOutputTokens,
+      averageCostPerRequest: totalRequests > 0 ? totalCost / totalRequests : 0,
+      modelBreakdown,
+      providerBreakdown,
+      isLimitExceeded: totalCost > DAILY_LIMIT,
+      dailyLimit: DAILY_LIMIT,
+      remainingBudget: Math.max(0, DAILY_LIMIT - totalCost)
+    };
     
-    // Add additional analytics data
+    // Add additional analytics data with real database data
     const analyticsData = {
       costSummary: summary,
       systemStatus: {
@@ -122,7 +181,7 @@ serve(async (req) => {
       },
       usageMetrics: {
         totalUsers: summary.totalRequests, // Using requests as proxy
-        storiesGenerated: Math.floor(summary.totalRequests * 0.8), // Estimate
+        storiesGenerated: Math.floor(summary.totalRequests * 0.6), // Estimate based on operation types
         averageSessionTime: "5m 30s" // Placeholder
       },
       timestamp: new Date().toISOString()

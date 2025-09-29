@@ -288,6 +288,39 @@ async function callRunwareAPI(positivePrompt, negativePrompt, retries = 2) {
       }
 
       console.log('✅ Runware API call successful');
+      
+      // Track Runware cost for analytics
+      try {
+        // FLUX.1 [schnell] pricing: $0.0013 per image
+        const cost = 0.0013;
+        
+        // Import Supabase client
+        const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4');
+        const supabaseClient = createClient(
+          Deno.env.get('SUPABASE_URL') ?? '',
+          Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+        );
+
+        await supabaseClient.from('cost_tracking').insert({
+          session_id: 'runware-session', // Will be updated when we get sessionId
+          user_id: null,
+          input_tokens: 0,
+          output_tokens: 0,
+          cost: cost,
+          model_used: 'runware:100@1',
+          operation_type: 'image_generation',
+          provider: 'runware',
+          api_endpoint: 'v1/imageInference',
+          pricing_model: 'images',
+          quantity_used: 1,
+          unit_cost: cost
+        });
+
+        console.log(`💰 Runware Template CD cost tracked: $${cost} for image generation`);
+      } catch (error) {
+        console.warn('Failed to track Runware Template CD cost:', error);
+      }
+      
       return imageData.imageURL;
 
     } catch (error) {

@@ -957,6 +957,34 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
             limitExceeded: costResult.limitExceeded,
             processingTime: Date.now() - startTime
           });
+
+          // Persist cost data to database for analytics dashboard
+          try {
+            const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4');
+            const supabaseClient = createClient(
+              Deno.env.get('SUPABASE_URL') ?? '',
+              Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+            );
+
+            await supabaseClient.from('cost_tracking').insert({
+              session_id: sessionId,
+              user_id: null, // Will be linked by session
+              input_tokens: inputTokens,
+              output_tokens: outputTokens,
+              cost: costResult.cost,
+              model_used: modelName,
+              operation_type: 'story_generation',
+              provider: 'openai',
+              api_endpoint: 'chat/completions',
+              pricing_model: 'tokens',
+              quantity_used: inputTokens + outputTokens,
+              unit_cost: costResult.cost / (inputTokens + outputTokens)
+            });
+
+            console.log(`📊 Cost data persisted to database for session ${sessionId}`);
+          } catch (dbError) {
+            console.warn('Failed to persist cost data to database:', dbError);
+          }
           
           // Check if limit exceeded after this request
           if (costResult.limitExceeded) {

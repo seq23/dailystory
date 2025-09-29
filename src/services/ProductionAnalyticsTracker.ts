@@ -83,54 +83,16 @@ export class ProductionAnalyticsTracker {
   }
 
   /**
-   * Track cost for a specific operation
+   * Track cost for a specific operation - DEPRECATED
+   * Edge functions now handle cost tracking directly to database
    */
   static async trackCost(costEntry: CostEntry): Promise<void> {
     try {
-      // Store cost tracking
-      const { error: costError } = await supabase
-        .from('cost_tracking')
-        .insert({
-          session_id: costEntry.sessionId,
-          user_id: costEntry.userId,
-          input_tokens: costEntry.inputTokens,
-          output_tokens: costEntry.outputTokens,
-          cost: costEntry.cost,
-          model_used: costEntry.modelUsed,
-          operation_type: costEntry.operationType
-        });
-
-      if (costError) {
-        DebugLogger.warn('performance', 'Failed to track cost', costError);
-        return;
-      }
-
-      // Update session total cost - simplified version without RPC
-      const { data: sessionData } = await supabase
-        .from('analytics_sessions')
-        .select('total_cost')
-        .eq('session_id', costEntry.sessionId)
-        .single();
-
-      if (sessionData) {
-        const newTotalCost = (sessionData.total_cost || 0) + costEntry.cost;
-        const { error: updateError } = await supabase
-          .from('analytics_sessions')
-          .update({ total_cost: newTotalCost })
-          .eq('session_id', costEntry.sessionId);
-
-        if (updateError) {
-          DebugLogger.warn('performance', 'Failed to update session cost', updateError);
-        }
-      }
-
-      DebugLogger.log('performance', 'Cost tracked successfully', {
-        sessionId: costEntry.sessionId,
-        cost: costEntry.cost,
-        operationType: costEntry.operationType
-      });
+      console.log('⚠️ Cost tracking called on frontend - this is now handled by edge functions');
+      // Edge functions handle cost tracking directly to prevent data loss
+      // This method is kept for backward compatibility but does minimal work
     } catch (error) {
-      DebugLogger.warn('performance', 'Error tracking cost', error);
+      DebugLogger.warn('performance', 'Legacy cost tracking error', error);
     }
   }
 
@@ -230,51 +192,19 @@ export class ProductionAnalyticsTracker {
   }
 
   /**
-   * Get daily cost summary from database
+   * Get daily cost summary from database - now fetched from cost_tracking table
    */
   static async getDailyCostSummary(): Promise<any> {
     try {
-      // Get today's cost tracking data
-      const today = new Date().toISOString().split('T')[0];
+      // Get cost analytics from edge function instead of calculating here
+      const { data, error } = await supabase.functions.invoke('get-cost-analytics');
       
-      const { data: costData, error: costError } = await supabase
-        .from('cost_tracking')
-        .select('*')
-        .gte('timestamp', `${today}T00:00:00Z`)
-        .lt('timestamp', `${today}T23:59:59Z`);
-
-      if (costError) {
-        DebugLogger.warn('performance', 'Failed to get daily cost summary', costError);
+      if (error) {
+        DebugLogger.warn('performance', 'Failed to get cost analytics from edge function', error);
         return null;
       }
 
-      // Calculate summary statistics
-      const totalCost = costData?.reduce((sum, entry) => sum + Number(entry.cost), 0) || 0;
-      const totalRequests = costData?.length || 0;
-      const totalInputTokens = costData?.reduce((sum, entry) => sum + entry.input_tokens, 0) || 0;
-      const totalOutputTokens = costData?.reduce((sum, entry) => sum + entry.output_tokens, 0) || 0;
-
-      // Model breakdown
-      const modelBreakdown: Record<string, { requests: number; cost: number }> = {};
-      costData?.forEach(entry => {
-        if (!modelBreakdown[entry.model_used]) {
-          modelBreakdown[entry.model_used] = { requests: 0, cost: 0 };
-        }
-        modelBreakdown[entry.model_used].requests++;
-        modelBreakdown[entry.model_used].cost += Number(entry.cost);
-      });
-
-      return {
-        date: today,
-        totalCost,
-        totalRequests,
-        totalInputTokens,
-        totalOutputTokens,
-        averageCostPerRequest: totalRequests > 0 ? totalCost / totalRequests : 0,
-        modelBreakdown,
-        dailyLimit: 5.0, // $5 daily limit
-        remainingBudget: Math.max(0, 5.0 - totalCost)
-      };
+      return data?.data?.costSummary || null;
     } catch (error) {
       DebugLogger.warn('performance', 'Error getting daily cost summary', error);
       return null;

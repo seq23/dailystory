@@ -202,6 +202,39 @@ async function handle(req: Request): Promise<Response> {
       wordCount: wordTimestamps.length,
       estimatedDuration: wordTimestamps.length > 0 ? wordTimestamps[wordTimestamps.length - 1].end_time : 'unknown'
     });
+
+    // Track ElevenLabs cost for analytics
+    try {
+      const characterCount = String(text).slice(0, 2000).length;
+      // ElevenLabs pricing: approximately $0.22 per 1K characters for Turbo v2.5
+      const cost = (characterCount / 1000) * 0.22;
+      const sessionId = userInfo?.sessionId || 'unknown';
+
+      const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4');
+      const supabaseClient = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+
+      await supabaseClient.from('cost_tracking').insert({
+        session_id: sessionId,
+        user_id: null,
+        input_tokens: 0,
+        output_tokens: 0,
+        cost: cost,
+        model_used: effectiveModel,
+        operation_type: 'audio_generation',
+        provider: 'elevenlabs',
+        api_endpoint: `text-to-speech/${effectiveVoice}`,
+        pricing_model: 'characters',
+        quantity_used: characterCount,
+        unit_cost: 0.22 / 1000
+      });
+
+      console.log(`💰 ElevenLabs cost tracked: $${cost.toFixed(6)} for ${characterCount} characters`);
+    } catch (error) {
+      console.warn('Failed to track ElevenLabs cost:', error);
+    }
     
     return new Response(JSON.stringify({ 
       audio: base64Audio,

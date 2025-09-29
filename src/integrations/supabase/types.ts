@@ -247,6 +247,7 @@ export type Database = {
       }
       cost_tracking: {
         Row: {
+          api_endpoint: string | null
           cost: number
           created_at: string
           id: string
@@ -254,11 +255,16 @@ export type Database = {
           model_used: string
           operation_type: string
           output_tokens: number
+          pricing_model: string | null
+          provider: string | null
+          quantity_used: number | null
           session_id: string
           timestamp: string
+          unit_cost: number | null
           user_id: string | null
         }
         Insert: {
+          api_endpoint?: string | null
           cost?: number
           created_at?: string
           id?: string
@@ -266,11 +272,16 @@ export type Database = {
           model_used: string
           operation_type?: string
           output_tokens?: number
+          pricing_model?: string | null
+          provider?: string | null
+          quantity_used?: number | null
           session_id: string
           timestamp?: string
+          unit_cost?: number | null
           user_id?: string | null
         }
         Update: {
+          api_endpoint?: string | null
           cost?: number
           created_at?: string
           id?: string
@@ -278,8 +289,12 @@ export type Database = {
           model_used?: string
           operation_type?: string
           output_tokens?: number
+          pricing_model?: string | null
+          provider?: string | null
+          quantity_used?: number | null
           session_id?: string
           timestamp?: string
+          unit_cost?: number | null
           user_id?: string | null
         }
         Relationships: []
