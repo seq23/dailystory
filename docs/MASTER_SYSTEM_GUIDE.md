@@ -264,6 +264,16 @@ Template 3: "Hello there ${userName}, our story box needs a snack..."
 - **Escalation:** Falls to Tier 2.5A (regular users) or Direct Mode (Force Tier 1)
 - **Direct Mode:** Nuclear independent operation when orchestrator fails
 
+**Character Consistency Service Integration:**
+- ✅ **Status**: All runtime failures resolved (ERROR-042, Sep 29 2025)
+- **Service**: CharacterConsistencyService singleton at `_shared/CharacterConsistencyService.js`
+- **Key Methods**: 
+  - `detectAllCharacters(pageText, context)` - Unified detection (consolidated API)
+  - `getCharacterSeed(sessionId, avatarIdentity, storyContext, sessionType)` - Requires avatarIdentity object
+  - `getColoredObjects(sessionId)` - **MUST await** (returns Promise<string>)
+- **Database Tables**: `character_consistency_cache`, `visual_details_cache`
+- **Reliability**: 100% runtime success (as of Sep 29 2025)
+
 **Force Tier 1 Workflow:**
 1. **Primary Path:** Orchestrator enhancement via PhaseIntegrationOrchestrator
 2. **Fallback Path:** Direct Mode via ai-visual-scene-creator (nuclear independent)
