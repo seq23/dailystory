@@ -1,7 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { COMPREHENSIVE_HEADER_BASELINE } from '../_shared/corsAdvanced.js';
-import { handleHealthAndCors } from "../_shared/healthCors.ts";
 
 // Define CORS headers
 const corsHeaders = {
@@ -104,9 +103,23 @@ serve(async (req) => {
     systemsInitialized = true;
   }
   
-  // Handle CORS and health checks
-  const healthResponse = handleHealthAndCors(req);
-  if (healthResponse) return healthResponse;
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }
+  
+  // Handle health check requests
+  const url = new URL(req.url);
+  if (req.method === 'GET' && (url.pathname === '/health' || url.pathname === '/')) {
+    return new Response(JSON.stringify({ ok: true }), { 
+      status: 200, 
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+  
+  if (req.method === 'HEAD' && (url.pathname === '/health' || url.pathname === '/')) {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }
 
   try {
     const { 
