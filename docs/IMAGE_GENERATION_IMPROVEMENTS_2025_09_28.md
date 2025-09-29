@@ -1,10 +1,21 @@
-# Image Generation Improvements - January 25, 2025
+# Image Generation Improvements - September 28, 2025
+
+## Table of Contents
+- [Overview](#overview)
+- [Major Improvements](#major-improvements)
+- [Technical Changes](#technical-changes)
+- [Image Generation Flow](#image-generation-flow-updated)
+- [Business Logic Compliance](#business-logic-compliance)
+- [Quality Assurance](#quality-assurance)
+- [Integration Benefits](#integration-benefits)
+- [Files Modified/Created](#files-modifiedcreated)
+- [Impact Analysis](#impact-analysis)
 
 ## Overview
 
 Comprehensive improvements to the image generation system including bypass logic fixes, template enhancements, and user tier differentiation.
 
-**Implementation Date**: January 25, 2025  
+**Implementation Date**: September 28, 2025  
 **Status**: ✅ Fully Implemented
 
 ## Major Improvements
