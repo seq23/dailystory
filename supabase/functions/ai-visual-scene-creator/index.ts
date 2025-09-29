@@ -13,7 +13,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Character consistency service integration
+// Character consistency service integration - Conditional loading for Direct Mode
 let characterService: any = null;
 
 async function getCharacterService() {
@@ -44,24 +44,35 @@ async function generateCompleteVisualSchema(storyText: string, userInfo: any, se
     throw new Error('OPENAI_API_KEY not configured');
   }
 
-  // CHARACTER CONSISTENCY INTEGRATION - Phase 2
-  const characterService = await getCharacterService();
+  // Extract structured avatar data for OpenAI
   const characterName = userInfo?.name || userInfo?.userName || 'child';
+  let structuredAvatarData: any = {};
+  
+  // Import StaticDataCache for avatar appearance generation
+  try {
+    const { getHairBySkintone, getSkinBySkintone } = await import('../_shared/StaticDataCache.js');
+    const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
+    
+    structuredAvatarData = {
+      characterName,
+      avatarType: userInfo?.avatar?.type || 'child',
+      hairColor: getHairBySkintone(skinTone, sessionId),
+      skinTone: getSkinBySkintone(skinTone, sessionId),
+      culturalContext: userInfo?.nativeLanguage !== 'en' ? userInfo?.nativeLanguage : 'universal'
+    };
+  } catch (error) {
+    console.warn('Failed to load StaticDataCache, using fallback avatar data:', error);
+    structuredAvatarData = {
+      characterName,
+      avatarType: userInfo?.avatar?.type || 'child',
+      hairColor: 'brown hair',
+      skinTone: 'medium skin tone',
+      culturalContext: 'universal'
+    };
+  }
 
-  // Analyze visual details for character consistency
-  await characterService.analyzeVisualDetails(sessionId, storyText, pageNumber, characterName);
-
-  // Detect secondary characters  
-  const detectedCharacters = await characterService.detectSecondaryCharacters(sessionId, storyText, pageNumber);
-
-  // Get colored objects for scene consistency
-  const coloredObjects = await characterService.getColoredObjects(sessionId);
-
-  // Get character appearance from story
-  const characterAppearance = await characterService.getCharacterAppearanceFromStory(sessionId, characterName);
-
-  // Prepare variables for word-for-word prompts
-  const characterData = JSON.stringify(userInfo || {});
+  // Prepare variables for word-for-word prompts with structured avatar data
+  const characterData = JSON.stringify(structuredAvatarData);
   const previousPrimaryScene = null; // Will be implemented with visual history tracking
   const nativeLanguage = userInfo?.native_language || userInfo?.nativeLanguage || 'en';
   const isNonEnglish = nativeLanguage && nativeLanguage !== 'en';
@@ -89,20 +100,21 @@ JSON RESPONSE:
 }
 
 CRITICAL CHARACTER RULES:
-1. Use provided character data exactly - do not make up features for main character
+1. Use provided character appearance data exactly - character name, avatar type, hair color, and skin tone must be used as specified
 2. For secondary characters, you may describe their appearance as needed
 3. Use story-driven visual descriptions based on the text content
+4. Include the character's hair color and skin tone prominently in scene descriptions
 
 VISUAL ENHANCEMENT RULES:
-4. Create detailed primary scenes with rich visual descriptions (200-1500 characters)
-5. Extract ALL secondary characters from story text and categorize correctly:
+5. Create detailed primary scenes with rich visual descriptions (200-1500 characters)
+6. Extract ALL secondary characters from story text and categorize correctly:
    - HUMANS: mom, dad, friend, teacher, brother, sister, grandma, neighbor, people
    - PETS/ANIMALS: dog, cat, bird, rabbit, hamster, fish, horse, any animals
-6. Include comprehensive atmospheric details (time of day, weather, indoor/outdoor)
-7. Specify background colors, lighting conditions, and visual composition
-8. List key objects, props, and visual elements in the scene
-9. Preserve exact counts: "a bird" = 1 bird, "birds" = multiple
-10. Use visual continuity with previous scene context
+7. Include comprehensive atmospheric details (time of day, weather, indoor/outdoor)
+8. Specify background colors, lighting conditions, and visual composition
+9. List key objects, props, and visual elements in the scene
+10. Preserve exact counts: "a bird" = 1 bird, "birds" = multiple
+11. Use visual continuity with previous scene context
 
 ATMOSPHERIC GUIDANCE:
 - Time of day: "morning sunlight", "afternoon glow", "evening twilight"
@@ -116,7 +128,7 @@ ${isNonEnglish ? `- Incorporate cultural elements appropriate for ${nativeLangua
 
   const userPrompt = `Create a visual scene description for this story page.
 
-CHARACTER DATA: ${characterData}
+CHARACTER APPEARANCE: ${characterData}
 
 STORY TEXT:
 "${storyText}"
@@ -124,9 +136,7 @@ STORY TEXT:
 PREVIOUS SCENE (for visual consistency):
 "${previousPrimaryScene || 'None - this is the first scene'}"
 
-${characterAppearance ? `CHARACTER APPEARANCE NOTES: ${characterAppearance}` : ''}
-
-Generate a comprehensive scene with complete visual elements including background, lighting, composition, setting, mood, style, secondary characters (categorized as humans vs pets), and key objects. Maintain character and setting continuity while showcasing the current page's action. Use the provided character data exactly.`;
+Generate a comprehensive scene with complete visual elements including background, lighting, composition, setting, mood, style, secondary characters (categorized as humans vs pets), and key objects. Maintain character and setting continuity while showcasing the current page's action. Use the character appearance data exactly - include the specified hair color and skin tone prominently in the scene description.`;
 
   try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -177,24 +187,14 @@ Generate a comprehensive scene with complete visual elements including backgroun
       };
     }
 
-    // Enhance with character consistency data
+    // Enhance with structured avatar data
     const enhancedSchema = {
       ...visualSchema,
-      // Merge detected secondary characters
-      secondaryCharacters: [
-        ...(visualSchema.secondaryCharacters || []),
-        ...detectedCharacters.map((char: any) => char.name)
-      ],
-      // Merge detected objects with colored objects
-      objects: [
-        ...(visualSchema.objects || []),
-        ...coloredObjects.split(',').map((obj: string) => obj.trim()).filter(Boolean)
-      ],
-      // Add character appearance if available
-      characterAppearance: characterAppearance || '',
-      // Add consistency metadata
-      detectedCharacters,
-      coloredObjects
+      // Add structured avatar data
+      characterAppearance: structuredAvatarData,
+      // Keep original secondary characters and objects from OpenAI
+      secondaryCharacters: visualSchema.secondaryCharacters || [],
+      objects: visualSchema.objects || []
     };
 
     console.log('✅ Generated complete visual schema with character consistency');
@@ -205,18 +205,16 @@ Generate a comprehensive scene with complete visual elements including backgroun
     
     // Fallback schema generation
     const fallbackSchema = {
-      primaryScene: `${characterName} in a beautiful story scene from: ${storyText.substring(0, 100)}`,
+      primaryScene: `${characterName} with ${structuredAvatarData.hairColor} and ${structuredAvatarData.skinTone} in a beautiful story scene from: ${storyText.substring(0, 100)}`,
       backgroundColor: 'bright and colorful',
       lighting: 'warm natural lighting',
       composition: 'character-focused composition',
       setting: 'story setting',
       mood: 'cheerful and engaging',
       style: 'children\'s book illustration',
-      secondaryCharacters: detectedCharacters.map((char: any) => char.name),
-      objects: coloredObjects.split(',').map((obj: string) => obj.trim()).filter(Boolean),
-      characterAppearance: characterAppearance || '',
-      detectedCharacters,
-      coloredObjects
+      secondaryCharacters: [],
+      objects: [],
+      characterAppearance: structuredAvatarData
     };
 
     console.log('⚠️ Using fallback visual schema');
@@ -224,35 +222,17 @@ Generate a comprehensive scene with complete visual elements including backgroun
   }
 }
 
-// Generate character seed with consistency service
-async function generateCharacterSeed(sessionId: string, userInfo: any) {
-  const characterService = await getCharacterService();
+// Generate character seed - simplified for Scene-Only mode
+function generateCharacterSeed(sessionId: string, userInfo: any) {
   const characterName = userInfo?.name || userInfo?.userName || 'child';
   
-  try {
-    // Generate secondary character seed using CharacterConsistencyService
-    const secondaryData = await characterService.getSecondaryCharacterSeed(
-      sessionId, 
-      characterName, 
-      'secondary_character'
-    );
-
-    return {
-      seed: secondaryData.seed || Math.floor(Math.random() * 999999),
-      characterName,
-      avatarType: userInfo?.avatar?.type || 'child',
-      skinTone: userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium',
-      culturalProfile: userInfo?.nativeLanguage !== 'en' ? userInfo?.nativeLanguage : undefined
-    };
-  } catch (error) {
-    console.warn('Character seed generation failed, using fallback:', error);
-    return {
-      seed: Math.floor(Math.random() * 999999),
-      characterName,
-      avatarType: userInfo?.avatar?.type || 'child',
-      skinTone: userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium'
-    };
-  }
+  return {
+    seed: Math.floor(Math.random() * 999999),
+    characterName,
+    avatarType: userInfo?.avatar?.type || 'child',
+    skinTone: userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium',
+    culturalProfile: userInfo?.nativeLanguage !== 'en' ? userInfo?.nativeLanguage : undefined
+  };
 }
 
 // Call runware-template-cd for Direct Mode image generation
@@ -404,9 +384,14 @@ serve(async (req) => {
     let tier: string;
 
     if (directMode) {
-      console.log(`🖼️ [${requestId}] Direct Mode: Generating image via runware-template-cd`);
+      console.log(`🖼️ [${requestId}] Direct Mode: Loading character service for full processing`);
       
-      // Prepare payload for runware-template-cd
+      // CONDITIONAL CHARACTER SERVICE LOADING - Only for Direct Mode
+      const characterService = await getCharacterService();
+      const characterAppearance = await characterService.getCharacterAppearanceFromStory(sessionId, characterSeed.characterName);
+      const coloredObjects = await characterService.getColoredObjects(sessionId);
+      
+      // Prepare payload for runware-template-cd with character consistency data
       const templatePayload = {
         pageText: content,
         userInfo,
@@ -420,7 +405,7 @@ serve(async (req) => {
         templateComplexity: 'C', // Use Tier 2.5C for nuclear hardcoded template
         failedTierData: {
           enhancedSceneData: visualSchema.primaryScene,
-          characterConsistency: `${characterSeed.characterName} (${characterSeed.avatarType})`,
+          characterConsistency: characterAppearance || `${characterSeed.characterName} (${characterSeed.avatarType})`,
           visualConsistency: `${visualSchema.backgroundColor}, ${visualSchema.lighting}`,
           culturalEnhancements: culturalBundle.hair
         }
@@ -436,7 +421,7 @@ serve(async (req) => {
         tier = 'TIER_1_SCENE_ONLY';
       }
     } else {
-      console.log(`📋 [${requestId}] Scene-Only Mode: Returning schema for orchestrator`);
+      console.log(`📋 [${requestId}] Scene-Only Mode: No character service loading, lightweight OpenAI-only`);
       tier = 'TIER_1_SCENE_ONLY';
     }
 

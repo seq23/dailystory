@@ -135,24 +135,44 @@ async function processInlinedTier1(payload: any, memoizedImport: any): Promise<a
   
   console.log(`🎨 INLINED TIER 1: Processing for ${characterName} in session ${sessionId}`);
   
-  // Import consolidated CharacterConsistencyService with error handling
+  // Import CharacterConsistencyService for Tier 1 Complete and Tier 2.5A
   let characterConsistencyService;
   try {
     const serviceModule = await memoizedImport("../_shared/CharacterConsistencyService.js");
     characterConsistencyService = serviceModule.CharacterConsistencyService.getInstance();
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.log(`[TIER_1] Failed: ${errorMessage}`);
-    throw new Error(`Module not found: ${errorMessage}`);
+    console.log(`[TIER_1] CharacterConsistencyService failed: ${errorMessage}`);
+    throw new Error(`CharacterConsistencyService not available: ${errorMessage}`);
   }
   
-  // Get character consistency data
+  // Import StaticDataCache for self-sufficient avatar data generation
+  let staticDataCache;
+  try {
+    staticDataCache = await memoizedImport("../_shared/StaticDataCache.js");
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.log(`[TIER_1] StaticDataCache failed: ${errorMessage}`);
+    throw new Error(`StaticDataCache not available: ${errorMessage}`);
+  }
+  
+  // Generate structured avatar data using StaticDataCache (self-sufficient)
+  const avatarSkinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
   const avatarIdentity = { 
     name: characterName, 
     type: userInfo?.avatar?.type || 'child',
-    skinTone: userInfo?.avatar?.skinTone || 'medium'
+    skinTone: avatarSkinTone
   };
   
+  const structuredAvatarData = {
+    characterName,
+    avatarType: avatarIdentity.type,
+    hairColor: staticDataCache.getHairBySkintone(avatarSkinTone, sessionId),
+    skinTone: staticDataCache.getSkinBySkintone(avatarSkinTone, sessionId),
+    culturalContext: userInfo?.nativeLanguage !== 'en' ? userInfo?.nativeLanguage : 'universal'
+  };
+  
+  // Get character consistency data using the service
   const characterSeed = await characterConsistencyService.getCharacterSeed(
     sessionId,
     avatarIdentity,
@@ -160,7 +180,7 @@ async function processInlinedTier1(payload: any, memoizedImport: any): Promise<a
     'continuing'
   );
   
-  // Get cultural enhancements
+  // Get cultural enhancements using the service
   const culturalBundle = await characterConsistencyService.getCulturalEnhancements(userInfo, sessionId, characterName);
   
   // Analyze visual details
@@ -180,13 +200,18 @@ async function processInlinedTier1(payload: any, memoizedImport: any): Promise<a
     const { data: aiResult, error: aiError } = await supabase.functions.invoke('ai-visual-scene-creator', {
       body: { 
         pageText: storyText || pageText, 
-        userInfo, 
+        userInfo: {
+          ...userInfo,
+          // Pass structured avatar data for Scene-Only mode
+          structuredAvatarData
+        }, 
         sessionId, 
         pageNumber: 1,
         avatarIdentity,
         culturalBundle,
         requestId: `tier1-${sessionId}`,
-        source: 'inlined_orchestrator'
+        source: 'inlined_orchestrator',
+        directMode: false // Scene-Only mode from runware-generate-image
       }
     });
     
