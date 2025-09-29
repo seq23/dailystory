@@ -157,6 +157,9 @@ export async function createResilientSupabaseClient() {
  * Tier 1: Network (improved resilientLoader)
  * Tier 2: Vendor (local import)
  * Tier 3: Signal for template fallback
+ * 
+ * NOTE: This is for STORY GENERATION functions only.
+ * Payment functions should use createPaymentSupabaseClient() instead.
  */
 export async function createTieredSupabaseClient() {
   try {
@@ -188,6 +191,79 @@ export async function createTieredSupabaseClient() {
       throw new Error('SUPABASE_UNAVAILABLE - Both network and vendor failed');
     }
   }
+}
+
+/**
+ * Create payment-specific Supabase client with 2-tier fallback system
+ * Tier 1: Network CDN imports (with resilient fallbacks)
+ * Tier 2: Local vendor fallback
+ * 
+ * Payment functions require live database access and CANNOT use template fallbacks.
+ * Returns null on complete failure instead of throwing.
+ */
+export async function createPaymentSupabaseClient() {
+  try {
+    // Tier 1: Network CDN imports
+    console.log('💳 Payment Client Tier 1: Attempting network CDN imports');
+    return await createResilientSupabaseClient();
+  } catch (networkError: any) {
+    console.warn('💳 Payment Client Tier 1 failed, attempting Tier 2:', networkError?.message || 'Unknown error');
+    
+    try {
+      // Tier 2: Local vendor fallback
+      console.log('💳 Payment Client Tier 2: Attempting vendor fallback');
+      const { createClient } = await import('../_vendor/supabase-js@2.57.4.mjs');
+      
+      const supabaseUrl = Deno.env.get('SUPABASE_URL');
+      const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY');
+
+      if (!supabaseUrl || !supabaseKey) {
+        throw new Error('Missing Supabase environment variables');
+      }
+
+      console.log('✅ Payment Client Tier 2 successful: Using vendor fallback');
+      return createClient(supabaseUrl, supabaseKey);
+    } catch (vendorError: any) {
+      console.error('💳 Payment Client: Both network and vendor failed:', vendorError?.message || 'Unknown vendor error');
+      
+      // Payment functions cannot use template fallback - return null
+      console.error('🚨 Payment service unavailable: Database connection required for payments');
+      return null;
+    }
+  }
+}
+
+/**
+ * Create standardized 503 response for payment service unavailability
+ */
+export function createPaymentUnavailableResponse(functionName: string): Response {
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, HEAD',
+    'Access-Control-Max-Age': '600',
+  };
+
+  return new Response(
+    JSON.stringify({
+      success: false,
+      error: 'Payment services temporarily unavailable',
+      code: 'PAYMENT_SERVICE_UNAVAILABLE',
+      details: {
+        function: functionName,
+        timestamp: new Date().toISOString(),
+        message: 'Our payment system requires database connectivity which is currently unavailable. Please try again in a few moments.'
+      }
+    }),
+    {
+      status: 503,
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/json',
+        'Retry-After': '60' // Suggest retry after 60 seconds
+      }
+    }
+  );
 }
 
 /**

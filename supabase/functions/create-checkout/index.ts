@@ -1,7 +1,9 @@
-// Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
+// Payment Function Pattern: Tier 1 (Network CDN) + Tier 2 (Vendor) ONLY
+// NO template fallback - payment requires live database access
+// Returns 503 if both network and vendor fail
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
-import { memoizedImport, createTieredSupabaseClient, createImportFailureResponse } from "../_shared/resilientLoader.ts";
+import { memoizedImport, createPaymentSupabaseClient, createPaymentUnavailableResponse, createImportFailureResponse } from "../_shared/resilientLoader.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -23,11 +25,17 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    // Load dependencies with tiered import system
+    // Load Stripe with resilient import
     const { default: Stripe } = await memoizedImport('stripe');
-    const supabaseClient = await createTieredSupabaseClient();
     
-    // Create service role client with tiered fallback
+    // Create payment-specific Supabase client (Tier 1 + Tier 2 only)
+    const supabaseClient = await createPaymentSupabaseClient();
+    if (!supabaseClient) {
+      logStep("Payment service unavailable - database connection failed");
+      return createPaymentUnavailableResponse('create-checkout');
+    }
+    
+    // Create service role client with same fallback pattern
     let supabaseService;
     try {
       const { createClient } = await memoizedImport('@supabase/supabase-js');
@@ -37,7 +45,7 @@ serve(async (req) => {
         { auth: { persistSession: false } }
       );
     } catch (importError) {
-      console.error('Failed to create service client, using main client as fallback');
+      console.error('Failed to create service client, using payment client as fallback');
       supabaseService = supabaseClient;
     }
 

@@ -1,8 +1,10 @@
-// Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
+// Payment Function Pattern: Tier 1 (Network CDN) + Tier 2 (Vendor) ONLY
+// NO template fallback - payment requires live database access
+// Returns 503 if both network and vendor fail
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { withSecurity, SecurityMiddleware } from "../_shared/security.ts"
 import type { AuthenticatedUser } from "../_shared/security.ts"
-import { memoizedImport, createImportFailureResponse, createTieredSupabaseClient } from "../_shared/resilientLoader.ts"
+import { memoizedImport, createImportFailureResponse, createPaymentSupabaseClient, createPaymentUnavailableResponse } from "../_shared/resilientLoader.ts"
 
 console.log("[create-premium-subscription] Function loaded successfully");
 

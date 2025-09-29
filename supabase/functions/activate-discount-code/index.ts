@@ -1,6 +1,8 @@
-// Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
+// Payment Function Pattern: Tier 1 (Network CDN) + Tier 2 (Vendor) ONLY
+// NO template fallback - payment requires live database access
+// Returns 503 if both network and vendor fail
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createTieredSupabaseClient, memoizedImport } from '../_shared/resilientLoader.ts';
+import { createPaymentSupabaseClient, createPaymentUnavailableResponse, memoizedImport } from '../_shared/resilientLoader.ts';
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
 
 const corsHeaders = {
@@ -23,11 +25,15 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    // Create Supabase client with tiered fallback system
-    const supabase = await createTieredSupabaseClient();
+    // Create payment-specific Supabase client (Tier 1 + Tier 2 only)
+    const supabaseClient = await createPaymentSupabaseClient();
+    if (!supabaseClient) {
+      logStep("Payment service unavailable - database connection failed");
+      return createPaymentUnavailableResponse('activate-discount-code');
+    }
     
-    // Create service and anon clients with fallback handling
-    let supabaseService, supabaseClient;
+    // Create service role client with same fallback pattern
+    let supabaseService;
     try {
       const { createClient } = await memoizedImport('@supabase/supabase-js');
       supabaseService = createClient(
@@ -35,15 +41,9 @@ serve(async (req) => {
         Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
         { auth: { persistSession: false } }
       );
-      
-      supabaseClient = createClient(
-        Deno.env.get("SUPABASE_URL") ?? "",
-        Deno.env.get("SUPABASE_ANON_KEY") ?? ""
-      );
     } catch (importError) {
-      console.log('Using tiered client as fallback for discount activation');
-      supabaseService = supabase;
-      supabaseClient = supabase;
+      console.log('Using payment client as service fallback');
+      supabaseService = supabaseClient;
     }
 
     const authHeader = req.headers.get("Authorization");

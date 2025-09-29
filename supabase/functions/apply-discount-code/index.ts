@@ -1,6 +1,8 @@
-// Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
+// Payment Function Pattern: Tier 1 (Network CDN) + Tier 2 (Vendor) ONLY
+// NO template fallback - payment requires live database access
+// Returns 503 if both network and vendor fail
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createTieredSupabaseClient, memoizedImport } from '../_shared/resilientLoader.ts';
+import { createPaymentSupabaseClient, createPaymentUnavailableResponse, memoizedImport } from '../_shared/resilientLoader.ts';
 import { createDynamicCorsResponse, createDynamicCorsErrorResponse, createDynamicCorsOptionsResponse } from "../_shared/corsAdvanced.js";
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
 
@@ -10,26 +12,25 @@ serve(async (req) => {
   if (healthCorsResponse) return healthCorsResponse;
 
   try {
-    // Create authenticated Supabase client with tiered fallback
-    let supabaseClient, supabaseService;
+    // Create payment-specific Supabase client (Tier 1 + Tier 2 only)
+    const supabaseClient = await createPaymentSupabaseClient();
+    if (!supabaseClient) {
+      console.error('[Apply Discount] Payment service unavailable - database connection failed');
+      return createPaymentUnavailableResponse('apply-discount-code');
+    }
+    
+    // Create service role client with same fallback pattern
+    let supabaseService;
     try {
       const { createClient } = await memoizedImport('@supabase/supabase-js');
-      supabaseClient = createClient(
-        Deno.env.get("SUPABASE_URL") ?? "",
-        Deno.env.get("SUPABASE_ANON_KEY") ?? ""
-      );
-
-      // Create service role client for database operations
       supabaseService = createClient(
         Deno.env.get("SUPABASE_URL") ?? "",
         Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
         { auth: { persistSession: false } }
       );
     } catch (importError) {
-      console.log('Using tiered Supabase client fallback for discount application');
-      const tieredClient = await createTieredSupabaseClient();
-      supabaseClient = tieredClient;
-      supabaseService = tieredClient;
+      console.log('[Apply Discount] Using payment client as service fallback');
+      supabaseService = supabaseClient;
     }
 
     // Get user from auth header

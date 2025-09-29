@@ -1,6 +1,7 @@
-// Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
+// Payment Function Pattern: Tier 1 (Network CDN) + Tier 2 (Vendor) ONLY
+// NO template fallback - payment requires live database access
+// Returns 503 if both network and vendor fail
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-
 import { createDynamicCorsResponse, createDynamicCorsErrorResponse, createDynamicCorsOptionsResponse } from "../_shared/corsAdvanced.js";
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
 
@@ -18,8 +19,8 @@ serve(async (req) => {
       return createDynamicCorsErrorResponse('Discount code is required', null, 400);
     }
 
-    // Create Supabase client with tiered fallback system
-    const { createTieredSupabaseClient, memoizedImport } = await import("../_shared/resilientLoader.ts");
+    // Create payment-specific Supabase client (Tier 1 + Tier 2 only)
+    const { createPaymentSupabaseClient, createPaymentUnavailableResponse, memoizedImport } = await import("../_shared/resilientLoader.ts");
     
     let supabase;
     try {
@@ -30,13 +31,13 @@ serve(async (req) => {
         { auth: { persistSession: false } }
       );
     } catch (importError) {
-      console.log('Using tiered Supabase client fallback for discount validation');
-      supabase = await createTieredSupabaseClient();
+      console.log('[Validate Discount] Using payment client fallback');
+      supabase = await createPaymentSupabaseClient();
     }
     
     if (!supabase) {
-      console.error('[Validate Discount] Failed to create Supabase client');
-      return createDynamicCorsErrorResponse('Service temporarily unavailable', undefined, 503);
+      console.error('[Validate Discount] Payment service unavailable - database connection failed');
+      return createPaymentUnavailableResponse('validate-discount-code');
     }
 
     console.log(`[Validate Discount] Checking code: ${code}`);
