@@ -38,26 +38,27 @@ export function QuickTemplateTest() {
 
   const allOptions = [...difficultyOptions, ...gradeOptions];
 
+  // Test user info constant for consistent template testing
+  const testUserInfo = {
+    name: 'Alex',
+    age: 8,
+    grade: '3' as const,
+    nativeLanguage: 'en' as const,
+    learningGoal: 'improve-english-reading' as const,
+    avatar: { type: 'prefer-not-to-answer' as const, skinTone: 'medium' as const },
+    favoriteColor: 'blue',
+    favoriteAnimal: 'dragon',
+    hobbies: 'playing games',
+    favoriteFood: 'pizza',
+    specialRequest: 'adventure with magic',
+    difficultyLevel: selectedLevel as DifficultyLevel,
+  };
+
   const handleTest = async () => {
     if (!selectedLevel) return;
 
-    const testUserInfo = {
-      name: 'Alex',
-      age: 8,
-      grade: '3' as const,
-      nativeLanguage: 'en' as const,
-      learningGoal: 'improve-english-reading' as const,
-      avatar: { type: 'prefer-not-to-answer' as const, skinTone: 'medium' as const },
-      favoriteColor: 'blue',
-      favoriteAnimal: 'dragon',
-      hobbies: 'playing games',
-      favoriteFood: 'pizza',
-      specialRequest: 'adventure with magic',
-      difficultyLevel: selectedLevel as DifficultyLevel,
-    };
-
     try {
-      await generateStory(testUserInfo, testingMode);
+      await generateStory({ ...testUserInfo, difficultyLevel: selectedLevel as DifficultyLevel }, testingMode);
     } catch (err) {
       // Error handling is now managed by the hook
     }
@@ -260,7 +261,19 @@ export function QuickTemplateTest() {
                     { mode: 'guest', level: validationLevel }
                   );
 
-                  const placeholderValidation = validatePlaceholders(result.pages, 'template');
+                  const placeholderValidation = validatePlaceholders(
+                    result.pages, 
+                    'template', 
+                    false, 
+                    {
+                      name: testUserInfo.name,
+                      favoriteColor: testUserInfo.favoriteColor,
+                      favoriteAnimal: testUserInfo.favoriteAnimal,
+                      favoriteFood: testUserInfo.favoriteFood,
+                      hobbies: testUserInfo.hobbies,
+                      specialRequest: testUserInfo.specialRequest,
+                    }
+                  );
                   const placeholderIssues = checkForPlaceholderIssues(result.pages);
                   
                   return (

@@ -35,7 +35,7 @@ export function AdvancedTemplateTest() {
     if (result?.pages) {
       const v = validatePlaceholders(
         result.pages,
-        'ai',
+        'template',
         false,
         {
           name: userInfo.name,
