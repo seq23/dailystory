@@ -23,8 +23,8 @@ This document serves as the **single source of truth** for all production errors
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📈 This Week's Activity:
-• Errors Resolved: 4 (ERROR-036 through ERROR-040)
-• System Improvements: 3 major enhancements
+• Errors Resolved: 5 (ERROR-036 through ERROR-041)
+• System Improvements: 4 major enhancements
 • Uptime: 99.9%
 • Response Time: < 2s average across all tiers
 ```
@@ -94,6 +94,7 @@ Quick lookup table for all tracked errors with searchable keywords.
 
 | Error ID | Keywords | Severity | Status | System | Quick Link |
 |----------|----------|----------|--------|--------|------------|
+| ERROR-041 | hair, override, session, consistency, variety | HIGH | ✅ RESOLVED | Character System | [View](#error-041-hair-override-breaking-session-consistency) |
 | ERROR-040 | emergency, content, tier-4, fallback, rhyming | HIGH | ✅ RESOLVED | Story Gen | [View](#error-040-missing-emergency-content-integration) |
 | ERROR-039 | body, consumption, parsing, request | HIGH | ✅ RESOLVED | Story Gen | [View](#error-039-request-body-double-consumption-bug) |
 | ERROR-038 | story, generation, complete, failure, 503, CDN | CRITICAL | ✅ RESOLVED | Story Gen | [View](#error-038-story-generation-system-complete-failure) |
@@ -203,6 +204,7 @@ Next Review: October 6, 2025
 ## Critical Production Issues by System
 
 ### 🎨 Image Generation System Errors
+- [ERROR-041: Hair Override Breaking Session Consistency](#error-041-hair-override-breaking-session-consistency) ✅
 - [ERROR-035: Image Generation System Failure](#error-035-image-generation-system-failure) ✅
 - [ERROR-033: Template Generation Logic Failure](#error-033-template-generation-logic-failure) ✅
 - [ERROR-032: Network/WebSocket Connection Failures](#error-032-networkwebsocket-connection-failures) ✅
@@ -290,12 +292,36 @@ Next Review: October 6, 2025
 - **Files Modified:** `generate-adaptive-story/index.ts` (Lines 211-290)
 - **Resolved:** 2025-09-29
 
+### ✅ ERROR-041: Hair Override Breaking Session Consistency
+- **Status:** RESOLVED ✅
+- **Severity:** HIGH (Character consistency + quality)
+- **Discovered:** 2025-09-29
+- **Impact:** Hair colors not consistent within sessions; light-skinned avatars getting brown hair (20% chance)
+- **Root Cause:** `userInfo.hair` override + `Math.random()` selection on small arrays causing non-deterministic variety
+- **Business Impact:** Character appearance changing between pages, poor user experience, cultural inaccuracy
+- **Fix Applied:**
+  - **Phase 1**: Added session-seeded random functions (`createSeededRandom`, `pickFromArray`)
+  - **Phase 2**: Replaced hair arrays with proper 73-variation `HAIR_BY_SKIN_TONE` object
+  - **Phase 3**: Removed `userInfo.hair` override on lines 315 & 685
+  - **Phase 4**: Integrated `sessionId` into hair selection for deterministic variety
+- **Files Modified:**
+  - `src/services/SimpleImageService.ts` (Lines 876-947, 315, 685)
+  - `src/components/CleanStoryDisplay.tsx` (Line 2502)
+  - `src/types/api.ts` (Removed hairColor from avatar interface)
+- **Technical Details:**
+  - Session-seeded PRNG ensures same session = same hair variety
+  - 73 variations: pale(14), light(15), medium(15), olive(14), dark(7)
+  - Ethnicity overrides for cultural authenticity (deterministic)
+  - Skin tone mapping (very-light→pale, beige→light, etc.)
+- **Resolved:** 2025-09-29
+- **Prevention:** Session-seeded selection + removed manual overrides + enhanced logging
+
 ---
 
 ## System Status Summary
 
-**Total Issues Tracked:** 12  
-**Issues Resolved:** 12 ✅  
+**Total Issues Tracked:** 13  
+**Issues Resolved:** 13 ✅
 **Critical Issues Remaining:** 0 ✅  
 **System Status:** PRODUCTION READY - 4-TIER STORY GENERATION SYSTEM OPERATIONAL ✅
 

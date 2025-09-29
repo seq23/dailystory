@@ -28,6 +28,37 @@ This document defines the hair mapping architecture across frontend and backend 
 3. getCulturalSelection() only routes 'african' requests to comprehensive arrays
 4. All other cultural requests return empty string
 
+## Session-Seeded Hair Selection (September 2025)
+
+### Implementation
+- **Location**: `src/services/SimpleImageService.ts` (lines 876-947)
+- **Algorithm**: Seeded PRNG using sessionId for deterministic variety
+- **Benefit**: Consistent hair within session + variety between sessions
+
+### Functions
+```javascript
+// Session-seeded random selection
+createSeededRandom(seed: number): () => number
+pickFromArray<T>(arr: T[], sessionId: string): T
+```
+
+### Selection Logic
+1. Convert `sessionId` to numeric seed
+2. Use seeded PRNG to pick from array
+3. Same session = same random selection
+4. Different sessions = different selections
+
+### Hair Selection Priority (UPDATED)
+1. **Ethnicity Override** (deterministic for cultural authenticity)
+2. **Session-Seeded Selection** from `HAIR_BY_SKIN_TONE` arrays
+3. ~~userInfo.hair override~~ **REMOVED** (was causing consistency bugs)
+
+### Critical Change
+**BEFORE**: `hair: userInfo.hair || universalHair`  
+**AFTER**: `hair: universalHair`  
+- Ensures session-seeded hair is always used
+- Prevents external overrides from breaking consistency
+
 ## Hair Mapping by Skin Tone (73 Total Variations)
 
 ### Pale (14 variations)

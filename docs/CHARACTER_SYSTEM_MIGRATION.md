@@ -137,3 +137,39 @@ After migration, verify:
 
 ## Migration Status
 ✅ **COMPLETE** - All 5 phases successfully implemented and tested
+
+---
+
+## Post-Migration Enhancement: Session-Seeded Hair Variety
+
+### Date
+**Implemented**: September 29, 2025
+
+### Problem Identified
+After backend migration, hair selection still had two issues:
+1. `Math.random()` caused non-deterministic hair within same session
+2. `userInfo.hair` override defeated backend consistency logic
+
+### Solution Applied
+**Session-Seeded Hair Selection**
+- Added deterministic PRNG seeded by `sessionId`
+- 73 hair variations mapped by skin tone
+- Removed `userInfo.hair` override at generation time
+- Result: Same character in same session = same hair
+
+### Files Modified
+- `src/services/SimpleImageService.ts` - Added seeded random functions (lines 876-947), removed hair override (lines 315, 685)
+- `src/components/CleanStoryDisplay.tsx` - Pass sessionId consistently (line 2502)
+- `src/types/api.ts` - Removed hairColor from avatar interface
+
+### Architecture Impact
+- **Before**: Random hair every generation (inconsistent)
+- **After**: Session-determined hair (consistent + variety)
+- **Backend**: Character consistency logic preserved
+- **Frontend**: Session-aware hair selection complements backend logic
+
+### Business Value
+- ✅ Character consistency within sessions
+- ✅ Natural variety between sessions  
+- ✅ Cultural authenticity maintained (ethnicity overrides)
+- ✅ No brown hair on light-skinned avatars (fixed poor mapping)
