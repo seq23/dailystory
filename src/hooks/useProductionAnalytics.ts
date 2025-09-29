@@ -205,6 +205,32 @@ export const useProductionAnalytics = () => {
       if (error) {
         console.error('Failed to fetch cost analytics:', error);
         return {
+          costSummary: {
+            date: new Date().toISOString().split('T')[0],
+            totalCost: 0,
+            totalRequests: 0,
+            totalInputTokens: 0,
+            totalOutputTokens: 0,
+            averageCostPerRequest: 0,
+            modelBreakdown: {},
+            isLimitExceeded: false
+          },
+          totalCostSummary: {
+            totalCost: 0,
+            totalRequests: 0,
+            averageCostPerRequest: 0,
+            costPerStory: 0,
+            totalTokens: 0,
+            providerBreakdown: {}
+          }
+        };
+      }
+
+      return data.data;
+    } catch (error) {
+      console.error('Error fetching cost analytics:', error);
+      return {
+        costSummary: {
           date: new Date().toISOString().split('T')[0],
           totalCost: 0,
           totalRequests: 0,
@@ -213,21 +239,15 @@ export const useProductionAnalytics = () => {
           averageCostPerRequest: 0,
           modelBreakdown: {},
           isLimitExceeded: false
-        };
-      }
-
-      return data.data.costSummary;
-    } catch (error) {
-      console.error('Error fetching cost analytics:', error);
-      return {
-        date: new Date().toISOString().split('T')[0],
-        totalCost: 0,
-        totalRequests: 0,
-        totalInputTokens: 0,
-        totalOutputTokens: 0,
-        averageCostPerRequest: 0,
-        modelBreakdown: {},
-        isLimitExceeded: false
+        },
+        totalCostSummary: {
+          totalCost: 0,
+          totalRequests: 0,
+          averageCostPerRequest: 0,
+          costPerStory: 0,
+          totalTokens: 0,
+          providerBreakdown: {}
+        }
       };
     }
   }, []);

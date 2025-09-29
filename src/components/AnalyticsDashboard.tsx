@@ -27,12 +27,9 @@ export const AnalyticsDashboard: React.FC = () => {
   const loadCostData = async () => {
     setIsLoadingCost(true);
     try {
-      const summary = await getDailyCostSummary();
-      setCostSummary(summary);
-      // Extract total cost summary if available
-      if (summary?.totalCostSummary) {
-        setTotalCostSummary(summary.totalCostSummary);
-      }
+      const data = await getDailyCostSummary();
+      setCostSummary(data.costSummary);
+      setTotalCostSummary(data.totalCostSummary);
     } catch (error) {
       console.error('Failed to load cost data:', error);
     } finally {
