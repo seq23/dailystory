@@ -13,29 +13,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Character consistency service integration - Conditional loading for Direct Mode
-let characterService: any = null;
-
-async function getCharacterService() {
-  if (!characterService) {
-    try {
-      const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
-      characterService = CharacterConsistencyService.getInstance();
-    } catch (error) {
-      console.warn('Failed to load CharacterConsistencyService:', error);
-      // Create minimal fallback service
-      characterService = {
-        analyzeVisualDetails: async () => {},
-        detectSecondaryCharacters: async () => [],
-        getSecondaryCharacterSeed: async () => ({ seed: Math.floor(Math.random() * 999999) }),
-        getCharacterAppearanceFromStory: async () => '',
-        getColoredObjects: async () => '',
-        clearSession: async () => {}
-      };
-    }
-  }
-  return characterService;
-}
+// Character consistency service - Loaded conditionally for Direct Mode only
 
 // Generate complete visual schema using OpenAI with word-for-word prompts
 async function generateCompleteVisualSchema(storyText: string, userInfo: any, sessionId: string, pageNumber: number = 1) {
@@ -44,30 +22,21 @@ async function generateCompleteVisualSchema(storyText: string, userInfo: any, se
     throw new Error('OPENAI_API_KEY not configured');
   }
 
-  // Extract structured avatar data for OpenAI
+  // Extract structured avatar data for OpenAI (Scene-Only mode)
   const characterName = userInfo?.name || userInfo?.userName || 'child';
   let structuredAvatarData: any = {};
   
-  // Import StaticDataCache for avatar appearance generation
-  try {
-    const { getHairBySkintone, getSkinBySkintone } = await import('../_shared/StaticDataCache.js');
-    const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
-    
-    structuredAvatarData = {
-      characterName,
-      avatarType: userInfo?.avatar?.type || 'child',
-      hairColor: getHairBySkintone(skinTone, sessionId),
-      skinTone: getSkinBySkintone(skinTone, sessionId),
-      culturalContext: userInfo?.nativeLanguage !== 'en' ? userInfo?.nativeLanguage : 'universal'
-    };
-  } catch (error) {
-    console.warn('Failed to load StaticDataCache, using fallback avatar data:', error);
+  // Use passed structured avatar data from runware-generate-image, or generate fallback
+  if (userInfo?.structuredAvatarData) {
+    structuredAvatarData = userInfo.structuredAvatarData;
+  } else {
+    // Fallback generation without StaticDataCache import
     structuredAvatarData = {
       characterName,
       avatarType: userInfo?.avatar?.type || 'child',
       hairColor: 'brown hair',
       skinTone: 'medium skin tone',
-      culturalContext: 'universal'
+      culturalContext: userInfo?.nativeLanguage !== 'en' ? userInfo?.nativeLanguage : 'universal'
     };
   }
 
@@ -387,7 +356,23 @@ serve(async (req) => {
       console.log(`🖼️ [${requestId}] Direct Mode: Loading character service for full processing`);
       
       // CONDITIONAL CHARACTER SERVICE LOADING - Only for Direct Mode
-      const characterService = await getCharacterService();
+      let characterService: any = null;
+      try {
+        const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
+        characterService = CharacterConsistencyService.getInstance();
+      } catch (error) {
+        console.warn('Failed to load CharacterConsistencyService:', error);
+        // Create minimal fallback service
+        characterService = {
+          analyzeVisualDetails: async () => {},
+          detectSecondaryCharacters: async () => [],
+          getSecondaryCharacterSeed: async () => ({ seed: Math.floor(Math.random() * 999999) }),
+          getCharacterAppearanceFromStory: async () => '',
+          getColoredObjects: async () => '',
+          clearSession: async () => {}
+        };
+      }
+      
       const characterAppearance = await characterService.getCharacterAppearanceFromStory(sessionId, characterSeed.characterName);
       const coloredObjects = await characterService.getColoredObjects(sessionId);
       

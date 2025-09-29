@@ -139,24 +139,14 @@ async function processInlinedTier1(payload: any, memoizedImport: any): Promise<a
   let characterConsistencyService;
   try {
     const serviceModule = await memoizedImport("../_shared/CharacterConsistencyService.js");
-    characterConsistencyService = serviceModule.CharacterConsistencyService.getInstance();
+    characterConsistencyService = serviceModule.getInstance();
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.log(`[TIER_1] CharacterConsistencyService failed: ${errorMessage}`);
     throw new Error(`CharacterConsistencyService not available: ${errorMessage}`);
   }
   
-  // Import StaticDataCache for self-sufficient avatar data generation
-  let staticDataCache;
-  try {
-    staticDataCache = await memoizedImport("../_shared/StaticDataCache.js");
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    console.log(`[TIER_1] StaticDataCache failed: ${errorMessage}`);
-    throw new Error(`StaticDataCache not available: ${errorMessage}`);
-  }
-  
-  // Generate structured avatar data using StaticDataCache (self-sufficient)
+  // Generate structured avatar data using centralized method (single source of truth)
   const avatarSkinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
   const avatarIdentity = { 
     name: characterName, 
@@ -164,13 +154,7 @@ async function processInlinedTier1(payload: any, memoizedImport: any): Promise<a
     skinTone: avatarSkinTone
   };
   
-  const structuredAvatarData = {
-    characterName,
-    avatarType: avatarIdentity.type,
-    hairColor: staticDataCache.getHairBySkintone(avatarSkinTone, sessionId),
-    skinTone: staticDataCache.getSkinBySkintone(avatarSkinTone, sessionId),
-    culturalContext: userInfo?.nativeLanguage !== 'en' ? userInfo?.nativeLanguage : 'universal'
-  };
+  const structuredAvatarData = await characterConsistencyService.getStructuredAvatarData(sessionId, userInfo);
   
   // Get character consistency data using the service
   const characterSeed = await characterConsistencyService.getCharacterSeed(

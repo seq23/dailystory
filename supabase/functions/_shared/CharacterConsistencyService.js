@@ -406,6 +406,42 @@ export class CharacterConsistencyService {
   }
 
   /**
+   * Get structured avatar data for OpenAI integration (single source of truth)
+   * Centralizes StaticDataCache usage within CharacterConsistencyService
+   */
+  async getStructuredAvatarData(sessionId, userInfo) {
+    try {
+      // Import StaticDataCache internally
+      const staticDataCache = await import('./StaticDataCache.js');
+      
+      const characterName = userInfo?.name || userInfo?.childName || userInfo?.userName || 'child';
+      const avatarSkinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
+      
+      const structuredAvatarData = {
+        characterName,
+        avatarType: userInfo?.avatar?.type || 'child',
+        hairColor: staticDataCache.getHairBySkintone(avatarSkinTone, sessionId),
+        skinTone: staticDataCache.getSkinBySkintone(avatarSkinTone, sessionId),
+        culturalContext: userInfo?.nativeLanguage !== 'en' ? userInfo?.nativeLanguage : 'universal'
+      };
+      
+      console.log(`🎯 Generated structured avatar data for ${characterName}:`, structuredAvatarData);
+      return structuredAvatarData;
+    } catch (error) {
+      console.warn('Failed to generate structured avatar data, using fallback:', error);
+      
+      // Fallback without StaticDataCache
+      return {
+        characterName: userInfo?.name || userInfo?.childName || 'child',
+        avatarType: userInfo?.avatar?.type || 'child',
+        hairColor: 'brown hair',
+        skinTone: 'medium skin tone',
+        culturalContext: userInfo?.nativeLanguage !== 'en' ? userInfo?.nativeLanguage : 'universal'
+      };
+    }
+  }
+
+  /**
    * Smart colored object and clothing detection with character binding
    */
   async detectColoredObjectsAndClothing(text, sessionId, pageNumber) {
