@@ -208,6 +208,87 @@ serve(async (req) => {
       }
     }
     
+    // TIER 4 NUCLEAR FALLBACK: Emergency rhyming content when all systems fail
+    console.log('🚨🚨 TIER 4 ACTIVATED: Nuclear fallback - Emergency rhyming content');
+    
+    try {
+      // Parse request body to extract user info for personalized emergency content
+      let userInfo = null;
+      try {
+        const requestData = JSON.parse(rawBody);
+        userInfo = requestData.config?.userInfo || requestData.userInfo;
+      } catch (parseError) {
+        console.log('⚠️ Could not parse user info for emergency content, using defaults');
+      }
+      
+      const userName = userInfo?.name || 'Friend';
+      
+      // Emergency rhyming content templates (recreated from ErrorHandlingManager)
+      const rhymingTemplates = [
+        [
+          `Oh dear ${userName}, our story machine took a little rest,`,
+          `Sometimes computers need breaks to work their very best!`,
+          `Click the magic "Try Again" button that you can see,`,
+          `And soon a wonderful new story there will be!`
+        ],
+        [
+          `Whoops-a-daisy ${userName}, our story elves went to play,`,
+          `They're fixing all the gears in their magical way!`,
+          `Press "Try Again" when you're ready for more fun,`,
+          `Your amazing adventure has only just begun!`
+        ],
+        [
+          `Hello there ${userName}, our story box needs a snack,`,
+          `Give it just a moment and it will bounce right back!`,
+          `The "Try Again" button is your magical key,`,
+          `To unlock the stories that are waiting to be free!`
+        ]
+      ];
+      
+      // Add helpful instruction for max retries
+      const maxRetryMessage = [
+        `If three little tries don't make it quite right,`,
+        `Don't worry, don't fret - everything's still bright!`,
+        `Come back in a few minutes to try once more,`,
+        `Or tell us what happened - we'd love to explore!`
+      ];
+      
+      // Select random template
+      const randomIndex = Math.floor(Math.random() * rhymingTemplates.length);
+      const emergencyContent = [...rhymingTemplates[randomIndex], ...maxRetryMessage];
+      
+      // Return emergency response in proper story format
+      const emergencyResponse = {
+        success: true,
+        pages: emergencyContent,
+        source: 'emergency_fallback',
+        difficulty: userInfo?.difficulty || 'beginner',
+        rhymes: true,
+        explanation: 'Emergency creative content activated when all story generation systems are unavailable',
+        metadata: {
+          tier: 4,
+          fallback_type: 'nuclear_emergency',
+          template_index: randomIndex,
+          timestamp: new Date().toISOString()
+        }
+      };
+      
+      console.log('✅ TIER 4 SUCCESS: Emergency rhyming content generated');
+      
+      return new Response(JSON.stringify(emergencyResponse), {
+        status: 503, // Service unavailable but with emergency content
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json',
+          'X-Emergency-Fallback': 'true',
+          'X-Story-Source': 'tier4_nuclear'
+        }
+      });
+      
+    } catch (emergencyError) {
+      console.error('💥💥 TIER 4 FAILED: Even emergency content failed:', emergencyError);
+    }
+    
     return createImportFailureResponse(error, 'generate-adaptive-story');
   }
 
