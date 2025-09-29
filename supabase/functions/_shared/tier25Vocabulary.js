@@ -10,9 +10,6 @@
 // ============= PROPER VOCABULARY ACCESS - Use TIER_25_UNIFIED_VOCABULARY_EXTENDED =============
 // All vocabulary should use the structured VOCABULARY system below, not separate pools
 
-// ============= VOCABULARY ALIAS FOR EASY ACCESS =============
-export const VOCABULARY = TIER_25_UNIFIED_VOCABULARY_EXTENDED;
-
 // ============= UTILITY FUNCTIONS =============
 export function pick(arr, seed) {
   if (!Array.isArray(arr) || arr.length === 0) return '';
@@ -213,6 +210,9 @@ export const TIER_25_UNIFIED_VOCABULARY_EXTENDED = {
     ]
   }
 };
+
+// ============= VOCABULARY ALIAS FOR EASY ACCESS =============
+export const VOCABULARY = TIER_25_UNIFIED_VOCABULARY_EXTENDED;
 
 // ============= ENHANCED COLOR DETECTION ARRAYS =============
 export const EXPANDED_COLOR_ARRAY = [

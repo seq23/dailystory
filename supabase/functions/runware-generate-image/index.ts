@@ -135,8 +135,16 @@ async function processInlinedTier1(payload: any, memoizedImport: any): Promise<a
   
   console.log(`🎨 INLINED TIER 1: Processing for ${characterName} in session ${sessionId}`);
   
-  // Import consolidated CharacterConsistencyService
-  const { characterConsistencyService } = await memoizedImport("../_shared/CharacterConsistencyService.js");
+  // Import consolidated CharacterConsistencyService with error handling
+  let characterConsistencyService;
+  try {
+    const serviceModule = await memoizedImport("../_shared/CharacterConsistencyService.js");
+    characterConsistencyService = serviceModule.CharacterConsistencyService.getInstance();
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.log(`[TIER_1] Failed: ${errorMessage}`);
+    throw new Error(`Module not found: ${errorMessage}`);
+  }
   
   // Get character consistency data
   const avatarIdentity = { 
@@ -247,9 +255,9 @@ async function processInlinedTier1(payload: any, memoizedImport: any): Promise<a
   const enhancedPrompt = COMPLETE_TIER_1_TEMPLATE
     .replace('{primaryScene}', primaryScene)
     .replace('{mainCharacterDetails}', mainCharacterDetails)
-    .replace('{secondaryCharacters}', consistencyElements ? `${consistencyElements}.` : '')
-    .replace('{coloredObjects}', '')
-    .replace('{settingContext}', '')
+    .replace('{secondaryCharacters}', consistencyElements ? `${consistencyElements}. ` : '')
+    .replace('{coloredObjects}', coloredObjects ? `Featuring ${coloredObjects}. ` : '')
+    .replace('{settingContext}', aiSchema?.sceneSettings ? `In ${aiSchema.sceneSettings}. ` : '')
     .replace('{styleFramework}', styleFramework);
   
   const negativePrompt = "blurry, low quality, distorted, deformed, disfigured, bad anatomy, extra limbs, missing limbs, floating limbs, disconnected limbs, malformed hands, missing fingers, extra fingers, bad hands, signature, username, artist name, watermark, copyright";
@@ -375,6 +383,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       
       try {
         // INLINED TIER 1 PROCESSING - Direct orchestration without PhaseIntegrationOrchestrator
+        console.log(`🎨 INLINED TIER 1: Processing for ${payload.userInfo?.name || 'Child'} in session ${payload.sessionId}`);
         const enhancedPrompt = await processInlinedTier1(payload, memoizedImport);
         
         if (!enhancedPrompt || !validatePrimarySceneQuality(enhancedPrompt.primaryScene || enhancedPrompt.enhancedPrompt || '')) {
