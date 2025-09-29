@@ -2205,4 +2205,3 @@ export class CharacterConsistencyService {
 
 // Export singleton instance
 export const characterConsistencyService = CharacterConsistencyService.getInstance();
-export { CharacterConsistencyService };
