@@ -346,6 +346,11 @@ serve(async (req) => {
       try {
         const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
         characterService = CharacterConsistencyService.getInstance();
+        
+        // Validate service instance has required methods
+        if (!characterService || typeof characterService.getCharacterAppearanceFromStory !== 'function') {
+          throw new Error(`CharacterConsistencyService instance not functional - missing required methods`);
+        }
       } catch (error) {
         console.error('Failed to load CharacterConsistencyService:', error);
         const errorMessage = error instanceof Error ? error.message : String(error);

@@ -141,10 +141,11 @@ async function processInlinedTier1(payload: any, memoizedImport: any): Promise<a
     console.log(`[TIER_1] Attempting to import CharacterConsistencyService from ../_shared/CharacterConsistencyService.js`);
     const serviceModule = await memoizedImport("../_shared/CharacterConsistencyService.js");
     console.log(`[TIER_1] Service module keys:`, Object.keys(serviceModule));
-    characterConsistencyService = serviceModule.characterConsistencyService;
+    characterConsistencyService = serviceModule.CharacterConsistencyService.getInstance();
     
-    if (!characterConsistencyService) {
-      throw new Error(`CharacterConsistencyService instance not found in module exports`);
+    // Validate service instance has required methods
+    if (!characterConsistencyService || typeof characterConsistencyService.getCharacterAppearanceFromStory !== 'function') {
+      throw new Error(`CharacterConsistencyService instance not functional - missing required methods`);
     }
     
     console.log(`[TIER_1] CharacterConsistencyService loaded successfully`);
