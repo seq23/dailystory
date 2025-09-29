@@ -163,11 +163,14 @@ serve(async (req) => {
   } catch (error) {
     console.error('Failed to create Supabase client:', error);
     
-    // TIER 3: Emergency Template Service Fallback
-    if (error instanceof Error && error.message === 'SUPABASE_UNAVAILABLE') {
+    // TIER 3: Emergency Template Service Fallback - Fixed detection and body forwarding
+    if (error instanceof Error && error.message.includes('SUPABASE_UNAVAILABLE')) {
       console.log('🚨 TIER 3 ACTIVATED: Routing to template service for emergency content generation');
       
       try {
+        // Read the original request body once
+        const rawBody = await req.text();
+        
         const templateServiceUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/template-service`;
         console.log('📡 Calling template service at:', templateServiceUrl);
         
@@ -177,11 +180,11 @@ serve(async (req) => {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`
           },
-          body: JSON.stringify(req.body || {})
+          body: rawBody // Forward original body intact
         });
         
         if (templateResponse.ok) {
-          console.log('✅ Template service responded successfully');
+          console.log('✅ Template service responded successfully - forwarding response');
           return templateResponse;
         } else {
           console.error('❌ Template service failed:', templateResponse.status);

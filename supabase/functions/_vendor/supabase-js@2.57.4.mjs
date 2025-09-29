@@ -1,8 +1,8 @@
 /**
  * VENDOR FALLBACK: Local copy of @supabase/supabase-js@2.57.4
  * This file serves as Tier 2 fallback when network CDN imports fail
- * DO NOT MODIFY - Auto-generated vendor copy
+ * TRUE LOCAL VENDOR - No network dependencies
  */
 
-// Re-export from esm.sh with guaranteed working URL
-export { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4?target=deno&bundle';
+// Re-export from local bundle - completely network independent
+export { createClient } from './supabase-js@2.57.4.bundle.mjs';
