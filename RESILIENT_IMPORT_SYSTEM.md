@@ -254,3 +254,11 @@ The Resilient Import System is now **FULLY OPERATIONAL** across the entire codeb
 - Complete CDN fallback coverage
 - Standardized error handling
 - Full TypeScript compatibility
+
+### Tier 3 Activation Logic
+
+The emergency template service fallback (Tier 3) now activates when ANY of these error messages occur (case-insensitive):
+- "SUPABASE_UNAVAILABLE" (from Tier 2 vendor fallback failure)
+- "service unavailable" (from Tier 1 network CDN failure)
+
+This ensures robust fallback coverage regardless of which tier fails first.

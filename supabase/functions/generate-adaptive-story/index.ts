@@ -164,7 +164,7 @@ serve(async (req) => {
     console.error('Failed to create Supabase client:', error);
     
     // TIER 3: Emergency Template Service Fallback - Fixed detection and body forwarding
-    if (error instanceof Error && error.message.includes('SUPABASE_UNAVAILABLE')) {
+    if (error instanceof Error && (((error.message || '').toLowerCase().includes('supabase_unavailable')) || ((error.message || '').toLowerCase().includes('service unavailable')))) {
       console.log('🚨 TIER 3 ACTIVATED: Routing to template service for emergency content generation');
       
       try {
