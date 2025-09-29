@@ -234,6 +234,40 @@ export async function createPaymentSupabaseClient() {
 }
 
 /**
+ * Create a Stripe client with vendor fallback resilience
+ * Tier 1: Network CDN (esm.sh)
+ * Tier 2: Local vendor bundle
+ * Tier 3: Graceful degradation (return null, caller handles)
+ */
+export async function createResilientStripeClient(apiKey: string): Promise<any> {
+  console.log('🔧 Creating resilient Stripe client...');
+  
+  try {
+    // Tier 1: Try network CDN
+    console.log('📡 Tier 1: Attempting Stripe import from network CDN...');
+    const { default: Stripe } = await memoizedImport('stripe');
+    console.log('✅ Tier 1 SUCCESS: Stripe loaded from network CDN');
+    return new Stripe(apiKey, { apiVersion: '2023-10-16' });
+  } catch (cdnError) {
+    console.warn('⚠️ Tier 1 FAILED: Network CDN unavailable', cdnError);
+    
+    try {
+      // Tier 2: Try local vendor bundle
+      console.log('📦 Tier 2: Attempting Stripe import from local vendor...');
+      const { default: Stripe } = await import('../_vendor/stripe@12.18.0.mjs');
+      console.log('✅ Tier 2 SUCCESS: Stripe loaded from local vendor');
+      return new Stripe(apiKey, { apiVersion: '2023-10-16' });
+    } catch (vendorError) {
+      console.error('❌ Tier 2 FAILED: Local vendor unavailable', vendorError);
+      
+      // Tier 3: Graceful degradation - return null, caller handles
+      console.error('🚨 All Stripe import tiers exhausted - returning null for graceful degradation');
+      return null;
+    }
+  }
+}
+
+/**
  * Create standardized 503 response for payment service unavailability
  */
 export function createPaymentUnavailableResponse(functionName: string): Response {

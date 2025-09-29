@@ -1,6 +1,6 @@
 // Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { memoizedImport, createPaymentSupabaseClient, createPaymentUnavailableResponse } from '../_shared/resilientLoader.ts';
+import { memoizedImport, createPaymentSupabaseClient, createPaymentUnavailableResponse, createResilientStripeClient } from '../_shared/resilientLoader.ts';
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
 
 const corsHeaders = {
@@ -97,13 +97,11 @@ serve(async (req) => {
       });
     }
 
-    // Load Stripe using resilient loader with graceful degradation
-    let stripe;
-    try {
-      const { default: Stripe } = await memoizedImport('stripe');
-      stripe = new Stripe(stripeKey as string, { apiVersion: "2023-10-16" });
-    } catch (stripeImportError) {
-      logStep("Stripe import failed, degrading to unsubscribed", { error: String(stripeImportError) });
+    // Load Stripe using resilient loader with vendor fallback
+    const stripe = await createResilientStripeClient(stripeKey as string);
+    
+    if (!stripe) {
+      logStep("Stripe client creation failed (all tiers exhausted), degrading to unsubscribed");
       return new Response(JSON.stringify({
         subscribed: false,
         message: "Stripe service temporarily unavailable"

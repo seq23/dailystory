@@ -1464,16 +1464,21 @@ useEffect(() => {
     }
   });
 
-  // Initialize story based on tier - with ENHANCED generation protection
-  useEffect(() => {
-    const userInfoKey = JSON.stringify({ 
+  // Memoize story initialization key to prevent spurious re-initializations
+  const storyInitKey = useMemo(() => 
+    JSON.stringify({ 
       name: safeUserInfo.name, 
       age: safeUserInfo.age,
+      specialRequest: safeUserInfo.specialRequest,
       isPremium, 
       readingAsName,
       isFromSavedStory: currentStory?.isFromSavedStory 
-    });
-    
+    }), 
+    [safeUserInfo.name, safeUserInfo.age, safeUserInfo.specialRequest, isPremium, readingAsName, currentStory?.isFromSavedStory]
+  );
+
+  // Initialize story based on tier - with ENHANCED generation protection
+  useEffect(() => {
     // Simple check to prevent double generation for same user context
     if (isStoryStable && story.length > 0) {
       setIsLoading(false);
@@ -1481,7 +1486,7 @@ useEffect(() => {
     }
     
     initializeStory();
-  }, [safeUserInfo.name, safeUserInfo.age, safeUserInfo.specialRequest, isPremium, readingAsName, currentStory?.isFromSavedStory]);
+  }, [storyInitKey]);
 
   // Generate image for current page with better diagnostics - ONLY AFTER STORY IS STABLE
   useEffect(() => {
