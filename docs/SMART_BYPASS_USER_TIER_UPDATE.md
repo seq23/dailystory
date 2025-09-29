@@ -1,4 +1,8 @@
-# Smart Bypass User Tier Update Documentation
+# Smart Bypass User Tier Update Documentation (SUPERSEDED)
+
+## ⚠️ CRITICAL UPDATE - JANUARY 25, 2025
+**This documentation is OUTDATED. A critical bug was discovered and fixed.**  
+**See**: `SMART_BYPASS_CRITICAL_FIX_2025_01_25.md` for the actual implementation.
 
 ## Overview
 Enhanced the Smart Orchestration Bypass system to be user-tier aware, allowing different template routing based on premium vs guest user status.
