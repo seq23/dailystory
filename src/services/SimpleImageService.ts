@@ -312,7 +312,7 @@ export class SimpleImageService {
       const universalHair = this.getUniversalHairColorForSkinTone(userInfo.skinTone, userInfo.ethnicity, normalizedSessionId);
       const enhancedUserInfo = {
         ...userInfo,
-        hair: userInfo.hair || universalHair,
+        hair: universalHair,
         universalHairColor: universalHair
       };
       userInfo = enhancedUserInfo;
@@ -682,7 +682,7 @@ export class SimpleImageService {
         const universalHair = this.getUniversalHairColorForSkinTone(userInfo.skinTone, userInfo.ethnicity, normalizedSessionId);
         const enhancedUserInfo = {
           ...userInfo,
-          hair: userInfo.hair || universalHair,
+          hair: universalHair,
           universalHairColor: universalHair
         };
         userInfo = enhancedUserInfo;
