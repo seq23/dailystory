@@ -106,7 +106,7 @@ function getComplexityLevel(userInfo, templateComplexity) {
   }
   
   // Auto-determine: C for nuclear templates, D for ultimate emergency
-  if (!userInfo || !userInfo.difficulty) {
+  if (!userInfo || (!userInfo.difficulty && !userInfo.difficultyLevel)) {
     return 'D'; // No user info = ultimate emergency
   }
   

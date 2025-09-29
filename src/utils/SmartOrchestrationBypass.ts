@@ -26,7 +26,7 @@ export class SmartOrchestrationBypass {
     healthStatus?: any,
     forceDisable: boolean = false,
     userTier: 'premium' | 'guest' = 'guest'
-  ): { shouldBypass: boolean; reason: string; targetTemplate?: string } {
+  ): { shouldBypass: boolean; reason: string; targetTemplate?: string; templateComplexity?: 'C' | 'D' } {
     
     DebugLogger.log('image', '⚡ Smart Bypass Decision Check', {
       contentLength: content.length,
@@ -71,7 +71,8 @@ export class SmartOrchestrationBypass {
       return {
         shouldBypass: true,
         reason: `Guest short story (${content.length} chars < ${this.SIMPLE_CONTENT_THRESHOLD}) - direct template-cd routing`,
-        targetTemplate: 'runware-template-cd'
+        targetTemplate: 'runware-template-cd',
+        templateComplexity: 'C'
       };
     }
     

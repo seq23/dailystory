@@ -364,14 +364,33 @@ export class SimpleImageService {
       // Route directly to optimized template
       const startTime = Date.now();
       try {
-        const templateResult = await supabase.functions.invoke(bypassDecision.targetTemplate || 'runware-template-cd', {
+        let templateResult = await supabase.functions.invoke(bypassDecision.targetTemplate || 'runware-template-cd', {
           body: {
             pageText: enhancedPrompt,
             userInfo,
             sessionId: normalizedSessionId,
-            pageNumber
+            pageNumber,
+            templateComplexity: bypassDecision.templateComplexity || 'C'
           }
         });
+
+        // If Complexity C fails, escalate to Complexity D
+        if (!templateResult.data?.success && (bypassDecision.templateComplexity === 'C' || !bypassDecision.templateComplexity)) {
+          DebugLogger.log('image', '⚡ Smart bypass Complexity C failed, escalating to D', {
+            sessionId: normalizedSessionId,
+            error: templateResult.error
+          });
+          
+          templateResult = await supabase.functions.invoke(bypassDecision.targetTemplate || 'runware-template-cd', {
+            body: {
+              pageText: enhancedPrompt,
+              userInfo,
+              sessionId: normalizedSessionId,
+              pageNumber,
+              templateComplexity: 'D'
+            }
+          });
+        }
         
         const responseTime = Date.now() - startTime;
         SmartOrchestrationBypass.recordTemplateResponse(normalizedSessionId, responseTime);
