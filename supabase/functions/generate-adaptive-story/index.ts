@@ -162,6 +162,35 @@ serve(async (req) => {
     supabase = await createTieredSupabaseClient();
   } catch (error) {
     console.error('Failed to create Supabase client:', error);
+    
+    // TIER 3: Emergency Template Service Fallback
+    if (error instanceof Error && error.message === 'SUPABASE_UNAVAILABLE') {
+      console.log('🚨 TIER 3 ACTIVATED: Routing to template service for emergency content generation');
+      
+      try {
+        const templateServiceUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/template-service`;
+        console.log('📡 Calling template service at:', templateServiceUrl);
+        
+        const templateResponse = await fetch(templateServiceUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`
+          },
+          body: JSON.stringify(req.body || {})
+        });
+        
+        if (templateResponse.ok) {
+          console.log('✅ Template service responded successfully');
+          return templateResponse;
+        } else {
+          console.error('❌ Template service failed:', templateResponse.status);
+        }
+      } catch (templateError) {
+        console.error('💥 Template service error:', templateError);
+      }
+    }
+    
     return createImportFailureResponse(error, 'generate-adaptive-story');
   }
 
