@@ -27,32 +27,11 @@ async function generateCompleteVisualSchema(storyText: string, userInfo: any, se
   let structuredAvatarData: any = {};
   
   // Use passed structured avatar data from runware-generate-image, or generate fallback
+  // Only use structuredAvatarData if it exists - no fallback generation
   if (userInfo?.structuredAvatarData) {
     structuredAvatarData = userInfo.structuredAvatarData;
   } else {
-    // Fallback generation using proper skin/hair mapping
-    const avatarType = userInfo?.avatar?.type || 'child';
-    const fallbackSkinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
-    
-    // Use nuclear hair color mapping function from StaticDataCache
-    const getSimpleHairColor = (skinTone: string): string => {
-      const hairMappings: Record<string, string> = {
-        'pale': 'strawberry blonde hair',
-        'light': 'golden blonde hair', 
-        'medium': 'chestnut brown hair',
-        'olive': 'jet black hair',
-        'dark': 'beautiful dark hair'
-      };
-      return hairMappings[skinTone] || 'brown hair';
-    };
-    
-    structuredAvatarData = {
-      characterName,
-      avatarType,
-      hairColor: getSimpleHairColor(fallbackSkinTone),
-      skinTone: `${fallbackSkinTone} skin tone`,
-      culturalContext: userInfo?.nativeLanguage !== 'en' ? userInfo?.nativeLanguage : 'universal'
-    };
+    structuredAvatarData = undefined;
   }
 
   // Prepare variables for word-for-word prompts with structured avatar data

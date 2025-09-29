@@ -260,8 +260,10 @@ async function processInlinedTier1(payload: any, memoizedImport: any): Promise<a
   const difficulty = userInfo?.difficulty || userInfo?.gradeLevel || 'medium';
   const styleFramework = getInlinedStyleFramework(difficulty);
   
-  // Build COMPLETE_TIER_1 template using 4-section structured format
-  const mainCharacterDetails = `Beautiful ${characterReference} character ${characterName}, age ${userInfo?.age || 6} with ${structuredAvatarData?.skinTone || skinTone} skin and ${structuredAvatarData?.hairColor || 'brown hair'}${characterSeed?.characterDescription ? `, ${characterSeed.characterDescription}` : ''}${culturalBundle?.hair ? `, ${culturalBundle.hair}` : ''}${culturalBundle?.features ? `, ${culturalBundle.features}` : ''}`;
+  // Build COMPLETE_TIER_1 template using 4-section structured format - only include physical descriptions when complete
+  const hasCompletePhysicalData = structuredAvatarData?.skinTone && structuredAvatarData?.hairColor;
+  const physicalDescription = hasCompletePhysicalData ? ` with ${structuredAvatarData.skinTone} skin and ${structuredAvatarData.hairColor}` : '';
+  const mainCharacterDetails = `Beautiful ${characterReference} character ${characterName}, age ${userInfo?.age || 6}${physicalDescription}${characterSeed?.characterDescription ? `, ${characterSeed.characterDescription}` : ''}${culturalBundle?.hair ? `, ${culturalBundle.hair}` : ''}${culturalBundle?.features ? `, ${culturalBundle.features}` : ''}`;
   
   const secondaryCharacters = secondaryCharacterSeeds.length > 0 ? `With ${secondaryCharacterSeeds.map(s => s.characterDescription).join(', ')}` : '';
   const consistencyElements = [
