@@ -156,6 +156,21 @@ serve(async (req) => {
     });
   }
 
+  // Read request body once at the top to avoid double consumption
+  let rawBody: string;
+  try {
+    rawBody = await req.text();
+  } catch (error) {
+    console.error('❌ Failed to read request body:', error);
+    return new Response(JSON.stringify({ 
+      success: false, 
+      error: 'Failed to read request body' 
+    }), { 
+      status: 400, 
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+    });
+  }
+
   // Create Supabase client inside handler for better error handling
   let supabase;
   try {
@@ -168,8 +183,7 @@ serve(async (req) => {
       console.log('🚨 TIER 3 ACTIVATED: Routing to template service for emergency content generation');
       
       try {
-        // Read the original request body once
-        const rawBody = await req.text();
+        // Use the already-read request body
         
         const templateServiceUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/template-service`;
         console.log('📡 Calling template service at:', templateServiceUrl);
@@ -211,8 +225,7 @@ serve(async (req) => {
   let requestBody = null;
   
   try {
-    // Get raw body text first
-    const rawBody = await req.text();
+    // Use the already-read raw body
     
     // Check for empty body
     if (!rawBody || rawBody.trim().length === 0) {
