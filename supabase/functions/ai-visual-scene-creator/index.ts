@@ -135,9 +135,26 @@ Generate a comprehensive scene with complete visual elements including backgroun
     try {
       visualSchema = JSON.parse(content);
     } catch (parseError) {
-      console.error('Failed to parse OpenAI JSON response:', parseError);
-      const errorMessage = parseError instanceof Error ? parseError.message : String(parseError);
-      throw new Error(`OpenAI JSON parse failed: ${errorMessage}`);
+      // If JSON parse fails, try to extract just primaryScene
+      const primarySceneMatch = content.match(/"primaryScene":\s*"([^"]+)"/);
+      if (primarySceneMatch && primarySceneMatch[1] && primarySceneMatch[1].length >= 30) {
+        // Create minimal schema with just primaryScene
+        visualSchema = {
+          primaryScene: primarySceneMatch[1],
+          backgroundColor: 'warm natural lighting',
+          lighting: 'soft daylight',
+          composition: 'centered character',
+          setting: 'story scene',
+          mood: 'cheerful and engaging',
+          style: 'children\'s book illustration',
+          secondaryCharacters: [],
+          objects: []
+        };
+        console.log('✅ Extracted primaryScene from malformed JSON');
+      } else {
+        // Only fail if we can't get primaryScene at all
+        throw new Error(`No usable primaryScene found in OpenAI response`);
+      }
     }
 
     // Enhance with structured avatar data
