@@ -1,6 +1,6 @@
 // Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createResilientSupabaseClient, memoizedImport } from '../_shared/resilientLoader.ts';
+import { createTieredSupabaseClient, memoizedImport } from '../_shared/resilientLoader.ts';
 import { createDynamicCorsResponse, createDynamicCorsErrorResponse, createDynamicCorsOptionsResponse } from "../_shared/corsAdvanced.js";
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
 
@@ -10,12 +10,27 @@ serve(async (req) => {
   if (healthCorsResponse) return healthCorsResponse;
 
   try {
-    // Create authenticated Supabase client
-    const { createClient } = await memoizedImport('@supabase/supabase-js');
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
-    );
+    // Create authenticated Supabase client with tiered fallback
+    let supabaseClient, supabaseService;
+    try {
+      const { createClient } = await memoizedImport('@supabase/supabase-js');
+      supabaseClient = createClient(
+        Deno.env.get("SUPABASE_URL") ?? "",
+        Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+      );
+
+      // Create service role client for database operations
+      supabaseService = createClient(
+        Deno.env.get("SUPABASE_URL") ?? "",
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+        { auth: { persistSession: false } }
+      );
+    } catch (importError) {
+      console.log('Using tiered Supabase client fallback for discount application');
+      const tieredClient = await createTieredSupabaseClient();
+      supabaseClient = tieredClient;
+      supabaseService = tieredClient;
+    }
 
     // Get user from auth header
     const authHeader = req.headers.get("Authorization");
@@ -31,13 +46,6 @@ serve(async (req) => {
     }
 
     console.log(`[Apply Discount] Processing for user: ${user.id}`);
-
-    // Create service role client for database operations
-    const supabaseService = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-      { auth: { persistSession: false } }
-    );
 
     // Check if user has a pending discount code
     const { data: subscriber, error: subError } = await supabaseService

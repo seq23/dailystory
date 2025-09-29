@@ -2,7 +2,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { withSecurity, SecurityMiddleware } from "../_shared/security.ts"
 import type { AuthenticatedUser } from "../_shared/security.ts"
-import { memoizedImport, createImportFailureResponse } from "../_shared/resilientLoader.ts"
+import { memoizedImport, createImportFailureResponse, createTieredSupabaseClient } from "../_shared/resilientLoader.ts"
 
 console.log("[create-premium-subscription] Function loaded successfully");
 
@@ -10,7 +10,7 @@ const handler = async (req: Request, user?: AuthenticatedUser): Promise<Response
   const security = new SecurityMiddleware();
   
   try {
-    // Load dependencies with resilient import system
+    // Load dependencies with tiered import system
     const { default: Stripe } = await memoizedImport('stripe');
     
     const { planId } = await req.json()

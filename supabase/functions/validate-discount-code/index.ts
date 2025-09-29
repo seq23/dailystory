@@ -18,15 +18,21 @@ serve(async (req) => {
       return createDynamicCorsErrorResponse('Discount code is required', null, 400);
     }
 
-    // Create Supabase client with service role for discount code access
-    const { createResilientSupabaseClient, memoizedImport } = await import("../_shared/resilientLoader.ts");
-    const { createClient } = await memoizedImport('@supabase/supabase-js');
+    // Create Supabase client with tiered fallback system
+    const { createTieredSupabaseClient, memoizedImport } = await import("../_shared/resilientLoader.ts");
     
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-      { auth: { persistSession: false } }
-    );
+    let supabase;
+    try {
+      const { createClient } = await memoizedImport('@supabase/supabase-js');
+      supabase = createClient(
+        Deno.env.get("SUPABASE_URL") ?? "",
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+        { auth: { persistSession: false } }
+      );
+    } catch (importError) {
+      console.log('Using tiered Supabase client fallback for discount validation');
+      supabase = await createTieredSupabaseClient();
+    }
     
     if (!supabase) {
       console.error('[Validate Discount] Failed to create Supabase client');

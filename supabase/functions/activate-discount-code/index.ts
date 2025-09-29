@@ -1,6 +1,6 @@
 // Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createResilientSupabaseClient, memoizedImport } from '../_shared/resilientLoader.ts';
+import { createTieredSupabaseClient, memoizedImport } from '../_shared/resilientLoader.ts';
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
 
 const corsHeaders = {
@@ -23,22 +23,28 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    // Create Supabase client with service role key to bypass RLS
-    const supabase = await createResilientSupabaseClient();
+    // Create Supabase client with tiered fallback system
+    const supabase = await createTieredSupabaseClient();
     
-    // Create service client
-    const { createClient } = await memoizedImport('@supabase/supabase-js');
-    const supabaseService = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-      { auth: { persistSession: false } }
-    );
-
-    // Also create anon client for user authentication  
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
-    );
+    // Create service and anon clients with fallback handling
+    let supabaseService, supabaseClient;
+    try {
+      const { createClient } = await memoizedImport('@supabase/supabase-js');
+      supabaseService = createClient(
+        Deno.env.get("SUPABASE_URL") ?? "",
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+        { auth: { persistSession: false } }
+      );
+      
+      supabaseClient = createClient(
+        Deno.env.get("SUPABASE_URL") ?? "",
+        Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+      );
+    } catch (importError) {
+      console.log('Using tiered client as fallback for discount activation');
+      supabaseService = supabase;
+      supabaseClient = supabase;
+    }
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("No authorization header provided");
