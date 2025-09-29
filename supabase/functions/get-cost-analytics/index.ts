@@ -123,8 +123,17 @@ serve(async (req) => {
       .gte('timestamp', `${today}T00:00:00Z`)
       .lt('timestamp', `${today}T23:59:59Z`);
 
+    // Get ALL-TIME cost data for total cumulative costs  
+    const { data: totalCostData, error: totalCostError } = await supabaseClient
+      .from('cost_tracking')
+      .select('*');
+
     if (costError) {
       throw new Error(`Failed to fetch cost data: ${costError.message}`);
+    }
+
+    if (totalCostError) {
+      throw new Error(`Failed to fetch total cost data: ${totalCostError.message}`);
     }
 
     // Calculate summary from database data
@@ -155,6 +164,34 @@ serve(async (req) => {
       modelBreakdown[model].cost += Number(entry.cost);
     });
 
+    // Calculate TOTAL cumulative costs across all time
+    const totalAllTimeCost = totalCostData?.reduce((sum, entry) => sum + Number(entry.cost), 0) || 0;
+    const totalAllTimeRequests = totalCostData?.length || 0;
+    const totalAllTimeInputTokens = totalCostData?.reduce((sum, entry) => sum + (entry.input_tokens || 0), 0) || 0;
+    const totalAllTimeOutputTokens = totalCostData?.reduce((sum, entry) => sum + (entry.output_tokens || 0), 0) || 0;
+
+    // Total provider breakdown (all time)
+    const totalProviderBreakdown: Record<string, { requests: number; cost: number }> = {};
+    const totalModelBreakdown: Record<string, { requests: number; cost: number }> = {};
+
+    totalCostData?.forEach(entry => {
+      // Total provider breakdown
+      const provider = entry.provider || 'unknown';
+      if (!totalProviderBreakdown[provider]) {
+        totalProviderBreakdown[provider] = { requests: 0, cost: 0 };
+      }
+      totalProviderBreakdown[provider].requests++;
+      totalProviderBreakdown[provider].cost += Number(entry.cost);
+
+      // Total model breakdown  
+      const model = entry.model_used || 'unknown';
+      if (!totalModelBreakdown[model]) {
+        totalModelBreakdown[model] = { requests: 0, cost: 0 };
+      }
+      totalModelBreakdown[model].requests++;
+      totalModelBreakdown[model].cost += Number(entry.cost);
+    });
+
     const DAILY_LIMIT = 5.0; // $5 daily limit
     const summary = {
       date: today,
@@ -169,10 +206,25 @@ serve(async (req) => {
       dailyLimit: DAILY_LIMIT,
       remainingBudget: Math.max(0, DAILY_LIMIT - totalCost)
     };
+
+    // Total cumulative cost summary
+    const totalCostSummary = {
+      totalCost: totalAllTimeCost,
+      totalRequests: totalAllTimeRequests,
+      totalInputTokens: totalAllTimeInputTokens,
+      totalOutputTokens: totalAllTimeOutputTokens,
+      averageCostPerRequest: totalAllTimeRequests > 0 ? totalAllTimeCost / totalAllTimeRequests : 0,
+      providerBreakdown: totalProviderBreakdown,
+      modelBreakdown: totalModelBreakdown,
+      averageDailyCost: totalAllTimeRequests > 0 ? totalAllTimeCost / Math.max(1, Math.ceil(totalAllTimeRequests / 10)) : 0, // Rough estimate
+      totalTokens: totalAllTimeInputTokens + totalAllTimeOutputTokens,
+      costPerStory: totalAllTimeRequests > 0 ? totalAllTimeCost / Math.max(1, Math.floor(totalAllTimeRequests * 0.8)) : 0 // Estimate stories as ~80% of requests
+    };
     
     // Add additional analytics data with real database data
     const analyticsData = {
       costSummary: summary,
+      totalCostSummary: totalCostSummary, // Add total cumulative costs
       systemStatus: {
         uptime: "99.9%", // Placeholder
         averageResponseTime: "250ms", // Placeholder  

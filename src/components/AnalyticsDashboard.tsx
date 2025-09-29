@@ -17,6 +17,7 @@ export const AnalyticsDashboard: React.FC = () => {
   } = useProductionAnalytics();
 
   const [costSummary, setCostSummary] = useState<any>(null);
+  const [totalCostSummary, setTotalCostSummary] = useState<any>(null);
   const [isLoadingCost, setIsLoadingCost] = useState(true);
 
   useEffect(() => {
@@ -28,6 +29,10 @@ export const AnalyticsDashboard: React.FC = () => {
     try {
       const summary = await getDailyCostSummary();
       setCostSummary(summary);
+      // Extract total cost summary if available
+      if (summary?.totalCostSummary) {
+        setTotalCostSummary(summary.totalCostSummary);
+      }
     } catch (error) {
       console.error('Failed to load cost data:', error);
     } finally {
@@ -81,7 +86,63 @@ export const AnalyticsDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Cost Monitoring Section */}
+      {/* Total Project Costs Section */}
+      {totalCostSummary && (
+        <Card className="border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-secondary/5">
+          <CardHeader>
+            <CardTitle className="text-xl font-bold flex items-center gap-2">
+              <DollarSign className="h-5 w-5 text-primary" />
+              Total Project Costs
+            </CardTitle>
+            <CardDescription>Cumulative spending across all operations</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-4xl font-bold text-primary mb-4">
+              ${totalCostSummary.totalCost.toFixed(4)}
+            </div>
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="text-center p-3 bg-muted/50 rounded-lg">
+                <div className="text-lg font-semibold">
+                  ${totalCostSummary.providerBreakdown?.openai?.cost?.toFixed(4) || '0.0000'}
+                </div>
+                <p className="text-xs text-muted-foreground">OpenAI</p>
+              </div>
+              <div className="text-center p-3 bg-muted/50 rounded-lg">
+                <div className="text-lg font-semibold">
+                  ${totalCostSummary.providerBreakdown?.elevenlabs?.cost?.toFixed(4) || '0.0000'}
+                </div>
+                <p className="text-xs text-muted-foreground">ElevenLabs</p>
+              </div>
+              <div className="text-center p-3 bg-muted/50 rounded-lg">
+                <div className="text-lg font-semibold">
+                  ${totalCostSummary.providerBreakdown?.runware?.cost?.toFixed(4) || '0.0000'}
+                </div>
+                <p className="text-xs text-muted-foreground">Runware</p>
+              </div>
+            </div>
+            <div className="grid gap-2 md:grid-cols-2 mt-4 text-sm">
+              <div className="flex justify-between">
+                <span>Total Requests:</span>
+                <span className="font-medium">{totalCostSummary.totalRequests.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Avg Cost/Request:</span>
+                <span className="font-medium">${totalCostSummary.averageCostPerRequest.toFixed(6)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Est. Cost/Story:</span>
+                <span className="font-medium">${totalCostSummary.costPerStory.toFixed(4)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Total Tokens:</span>
+                <span className="font-medium">{totalCostSummary.totalTokens.toLocaleString()}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Daily Cost Monitoring Section */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
