@@ -1700,9 +1700,10 @@ async function handleRequest(req) {
       const processedStoryText = summarizePageText(storyText, userInfo?.difficulty);
       
       // Use PREMIUM_PROMPT_TEMPLATE with proper placeholder replacement including character consistency
+      const avatarType = userInfo?.avatar?.type || 'child';
       let finalPositivePrompt = PREMIUM_PROMPT_TEMPLATE
         .replace('{pageText}', processedStoryText)
-        .replace('{character}', `A young child named ${characterName}`)
+        .replace('{character}', `A ${avatarType} named ${characterName}`)
         .replace('{age}', age)
         .replace('{ethnicity}', ethnicity)
         .replace('{hair}', characterAppearance.includes('hair') ? 
@@ -1795,13 +1796,17 @@ async function handleRequest(req) {
       const hairColor = culturalBundle?.hair || getHair(skinTone) || 'brown hair';
       const ethnicity = userInfo?.avatar?.ethnicity || deriveEthnicityFromAvatar(userInfo?.avatar) || 'diverse background';
       
-      // Character description components
-      const character = `A young child named ${characterName}`;
+      // Character description components - Use avatar type instead of generic "young child"
+      const avatarTypeForB = userInfo?.avatar?.type || 'child';
+      const character = `A ${avatarTypeForB} named ${characterName}`;
       const hairDescription = `${hairColor}`;
       const facialFeatures = getFacialFeatures(userInfo?.avatar) || 'friendly expression';
       const culturalContext = culturalProfile || 'multicultural setting';
       const leftoverData = deriveLeftoverCulturalData(userInfo) || '';
       const fullFrameworkPrompt = styleFramework.frameworkPrompt || 'contemporary children\'s book illustration style';
+      
+      // Fix: Use avatar type for character description instead of generic "young child"
+      const avatarTypeB = userInfo?.avatar?.type || 'child';
       
       // PHASE 4.1 & 4.2: REMOVE ALL FALLBACKS - Apply TIER_25B_TEMPLATE with NO fallbacks
       console.log('📋 Using official BASIC_PROMPT_TEMPLATE for Tier 2.5B');

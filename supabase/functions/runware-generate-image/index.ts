@@ -469,6 +469,15 @@ Deno.serve(async (req: Request): Promise<Response> => {
         console.log(`[TIER_1] Failed: ${errorMessage}`);
         tierLogger.failure('TIER_1', { error: errorMessage });
         
+        // Detect if CharacterConsistencyService is unavailable
+        const isCharacterServiceUnavailable = errorMessage.includes('CharacterConsistencyService') || 
+                                              errorMessage.includes('Module not found') ||
+                                              errorMessage.includes('_shared');
+        
+        if (isCharacterServiceUnavailable) {
+          console.log(`[CASCADE] CharacterConsistencyService unavailable - will skip 2.5A and route to 2.5B`);
+        }
+        
         // Create Supabase client once for all fallback attempts
         const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4');
         const internalSupabase = createClient(
@@ -524,10 +533,66 @@ Deno.serve(async (req: Request): Promise<Response> => {
           }
         }
         
-        // Try Tier 2.5A 
-        console.log(`[TIER_2.5A] Attempting fallback after Direct Mode or if no primaryScene`);
+        // CRITICAL FIX: Skip 2.5A if CharacterConsistencyService is unavailable
+        // 2.5A requires CharacterConsistencyService and will succeed with incomplete data (causing misgendering)
+        // Go directly to 2.5B which doesn't require the service
+        if (isCharacterServiceUnavailable) {
+          console.log(`[CASCADE] Skipping 2.5A - CharacterConsistencyService unavailable, routing directly to 2.5B`);
+          
+          // Try Tier 2.5B directly
+          console.log(`[TIER_2.5B] Attempting fallback (2.5A skipped due to missing service)`);
+          
+          try {
+            const tier25bResponse = await internalSupabase.functions.invoke('runware-template-ab', {
+              body: {
+                ...payload,
+                templateComplexity: 'B',
+                tier1FailureReason: errorMessage,
+                tier25aFailureReason: 'SKIPPED: CharacterConsistencyService unavailable'
+              }
+            });
+            
+            if (tier25bResponse.data?.success && tier25bResponse.data?.imageURL) {
+              const result = {
+                success: true,
+                imageURL: tier25bResponse.data.imageURL,
+                provider: 'tier-2.5b-fallback',
+                tier: 'TIER_2.5B',
+                requestId: requestId,
+                timestamp: new Date().toISOString(),
+                tier1FailureReason: errorMessage,
+                cascadeHistory: [
+                  `❌ Tier 1 Failed: ${errorMessage}`,
+                  `❌ Direct Mode Failed: ${directErrorMessage}`,
+                  `⏭️ Tier 2.5A Skipped: CharacterConsistencyService unavailable`,
+                  '✅ Tier 2.5B Success'
+                ]
+              };
+              
+              tierLogger.success('TIER_2.5B', { result });
+              console.log(`SUCCESS [${requestId}] Tier 2.5B fallback completed (2.5A skipped)`);
+              
+              return corsResponse({
+                ...result
+              }, req);
+            } else {
+              throw new Error('TIER_2.5B_FAILED: Template B processing failed');
+            }
+            
+          } catch (tier25bError: unknown) {
+            const tier25bErrorMessage = tier25bError instanceof Error ? tier25bError.message : String(tier25bError);
+            console.log(`[TIER_2.5B] Failed: ${tier25bErrorMessage}`);
+            tierLogger.failure('TIER_2.5B', { error: tier25bErrorMessage });
+            
+            // Continue to 2.5C cascade below (at end of function)
+          }
+        }
         
-        try {
+        // Try Tier 2.5A (only if CharacterConsistencyService is available)
+        if (!isCharacterServiceUnavailable) {
+          console.log(`[TIER_2.5A] Attempting fallback after Direct Mode or if no primaryScene`);
+          
+          try {
           const tier25aResponse = await internalSupabase.functions.invoke('runware-template-ab', {
             body: {
               ...payload,
@@ -658,7 +723,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
             }
           }
         }
-      }
+        } // Close if (!isCharacterServiceUnavailable)
+      } // Close Tier 1 catch block
 
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : String(error);
