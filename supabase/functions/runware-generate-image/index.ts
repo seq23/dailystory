@@ -138,11 +138,20 @@ async function processInlinedTier1(payload: any, memoizedImport: any): Promise<a
   // Import CharacterConsistencyService for Tier 1 Complete and Tier 2.5A
   let characterConsistencyService;
   try {
+    console.log(`[TIER_1] Attempting to import CharacterConsistencyService from ../_shared/CharacterConsistencyService.js`);
     const serviceModule = await memoizedImport("../_shared/CharacterConsistencyService.js");
+    console.log(`[TIER_1] Service module keys:`, Object.keys(serviceModule));
     characterConsistencyService = serviceModule.characterConsistencyService;
+    
+    if (!characterConsistencyService) {
+      throw new Error(`CharacterConsistencyService instance not found in module exports`);
+    }
+    
+    console.log(`[TIER_1] CharacterConsistencyService loaded successfully`);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.log(`[TIER_1] CharacterConsistencyService failed: ${errorMessage}`);
+    console.log(`[TIER_1] Error stack:`, error instanceof Error ? error.stack : 'No stack trace');
     throw new Error(`CharacterConsistencyService not available: ${errorMessage}`);
   }
   

@@ -4,7 +4,15 @@
  * Single source of truth for all character-related functionality
  */
 
-import { safeErrorMessage } from './errorPatterns.ts';
+// Inline safe error handling to avoid TypeScript import issues in edge functions
+function safeErrorMessage(error) {
+  if (error instanceof Error) return error.message;
+  if (typeof error === 'string') return error;
+  if (error && typeof error === 'object' && error !== null && 'message' in error) {
+    return String(error.message);
+  }
+  return 'Unknown error occurred';
+}
 
 // Inline fallback memoizer for shared dependencies
 const serviceImportCache = new Map();
