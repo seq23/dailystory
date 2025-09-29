@@ -260,7 +260,7 @@ export function QuickTemplateTest() {
                     { mode: 'guest', level: validationLevel }
                   );
 
-                  const placeholderValidation = validatePlaceholders(result.pages);
+                  const placeholderValidation = validatePlaceholders(result.pages, 'template');
                   const placeholderIssues = checkForPlaceholderIssues(result.pages);
                   
                   return (

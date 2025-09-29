@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,7 @@ import { useTemplateService } from '@/hooks/useTemplateService';
 import { StoryResultDisplay } from './StoryResultDisplay';
 import type { UserInfo, DifficultyLevel, Grade, LanguageCode, LearningGoal, AvatarType, SkinTone } from '@/types';
 import { DifficultyLevelMapper } from '@/services/DifficultyLevelMapper';
+import { validatePlaceholders, getPlaceholderValidationMessage, type PlaceholderValidationResult } from '@/utils/placeholderValidator';
 
 export function AdvancedTemplateTest() {
   const [userInfo, setUserInfo] = useState<Partial<UserInfo>>({
@@ -28,6 +29,28 @@ export function AdvancedTemplateTest() {
   });
 
   const { generateStory, isLoading, result, error } = useTemplateService();
+  const [validation, setValidation] = useState<PlaceholderValidationResult | null>(null);
+
+  useEffect(() => {
+    if (result?.pages) {
+      const v = validatePlaceholders(
+        result.pages,
+        'ai',
+        false,
+        {
+          name: userInfo.name,
+          favoriteColor: userInfo.favoriteColor,
+          favoriteAnimal: userInfo.favoriteAnimal,
+          favoriteFood: userInfo.favoriteFood,
+          hobbies: userInfo.hobbies,
+          specialRequest: userInfo.specialRequest,
+        }
+      );
+      setValidation(v);
+    } else {
+      setValidation(null);
+    }
+  }, [result, userInfo]);
 
   const handleInputChange = (field: keyof UserInfo, value: any) => {
     setUserInfo(prev => ({ ...prev, [field]: value }));
@@ -261,7 +284,32 @@ export function AdvancedTemplateTest() {
         </Card>
       )}
 
-      {result && <StoryResultDisplay result={result} />}
+      {result && (
+        <>
+          <StoryResultDisplay result={result} />
+          {validation && (
+            <Card className="mt-4">
+              <CardHeader>
+                <CardTitle>Personalization & Placeholder Validation</CardTitle>
+                <CardDescription>Checks if your custom inputs appear in the story</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <p className="text-sm">{getPlaceholderValidationMessage(validation)}</p>
+                {validation.placeholderDetails && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                    <div><span className="text-muted-foreground">Name:</span> <span className="ml-2 font-medium">{validation.placeholderDetails.name ? 'Found' : 'Not found'}</span></div>
+                    <div><span className="text-muted-foreground">Favorite Color:</span> <span className="ml-2 font-medium">{validation.placeholderDetails.favoriteColor ? 'Found' : 'Not found'}</span></div>
+                    <div><span className="text-muted-foreground">Favorite Animal:</span> <span className="ml-2 font-medium">{validation.placeholderDetails.favoriteAnimal ? 'Found' : 'Not found'}</span></div>
+                    <div><span className="text-muted-foreground">Favorite Food:</span> <span className="ml-2 font-medium">{validation.placeholderDetails.favoriteFood ? 'Found' : 'Not found'}</span></div>
+                    <div><span className="text-muted-foreground">Hobbies:</span> <span className="ml-2 font-medium">{validation.placeholderDetails.hobbies ? 'Found' : 'Not found'}</span></div>
+                    <div><span className="text-muted-foreground">Special Request:</span> <span className="ml-2 font-medium">{validation.placeholderDetails.specialRequest ? 'Found' : 'Not found'}</span></div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+        </>
+      )}
     </div>
   );
 }
