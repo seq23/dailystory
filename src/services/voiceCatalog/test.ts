@@ -97,19 +97,68 @@ export async function testVoiceCatalogSystem() {
 }
 
 /**
- * Quick test function for development
+ * Quick test function for development - now with variety!
  */
 export async function quickTest() {
   DebugLogger.log('audio', 'Running quick voice catalog test...');
   
   try {
-    const result = await VoiceCatalogIntegration.testVoiceSelection('easy');
-    DebugLogger.log('audio', 'Quick test passed', result.selectedVoice.pn);
-    return result;
+    // Randomize test parameters for variety
+    const difficulties = ['beginner', 'easy', 'medium', 'hard', 'expert'] as const;
+    const difficulty = difficulties[Math.floor(Math.random() * difficulties.length)];
+    
+    const testUsers = [
+      { name: 'Alex', age: 6, themes: ['animals', 'adventure'], color: 'blue' },
+      { name: 'Emma', age: 8, themes: ['magic', 'friendship'], color: 'purple' },
+      { name: 'Jordan', age: 10, themes: ['science', 'mystery'], color: 'green' },
+      { name: 'Sam', age: 12, themes: ['fantasy', 'dragons'], color: 'red' },
+      { name: 'Maya', age: 15, themes: ['philosophy', 'space'], color: 'black' }
+    ];
+    
+    const randomUser = testUsers[Math.floor(Math.random() * testUsers.length)];
+    
+    DebugLogger.log('audio', `Testing: Age ${randomUser.age}, ${difficulty} difficulty, themes: ${randomUser.themes.join(', ')}`);
+    
+    const result = await VoiceCatalogIntegration.testVoiceSelection(difficulty);
+    DebugLogger.log('audio', 'Quick test passed', { 
+      voice: result.selectedVoice.pn,
+      scenario: `Age ${randomUser.age}, ${difficulty} level`,
+      themes: randomUser.themes
+    });
+    
+    return {
+      ...result,
+      testScenario: {
+        difficulty,
+        user: randomUser,
+        description: `Age ${randomUser.age}, ${difficulty} difficulty, themes: ${randomUser.themes.join(', ')}`
+      }
+    };
   } catch (error) {
     DebugLogger.error('audio', 'Quick test failed', error);
     throw error;
   }
+}
+
+/**
+ * Run multiple quick tests to show variety
+ */
+export async function runMultipleQuickTests(count: number = 3) {
+  DebugLogger.log('audio', `Running ${count} quick tests to demonstrate variety...`);
+  
+  const results = [];
+  for (let i = 0; i < count; i++) {
+    try {
+      const result = await quickTest();
+      results.push(result);
+      DebugLogger.log('audio', `Test ${i + 1}/${count}: ${result.selectedVoice.pn} (${result.testScenario.description})`);
+    } catch (error) {
+      DebugLogger.error('audio', `Test ${i + 1}/${count} failed:`, error);
+      results.push({ error: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  }
+  
+  return results;
 }
 
 // Export for console testing

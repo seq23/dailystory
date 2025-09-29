@@ -21,10 +21,13 @@ import {
   Settings, 
   Zap,
   RotateCcw,
-  Info
+  Info,
+  Database,
+  BarChart3
 } from 'lucide-react';
 import { VoiceCatalogIntegration, initializeVoiceCatalog } from '@/services/voiceCatalog';
-import { testVoiceCatalogSystem, quickTest } from '@/services/voiceCatalog/test';
+import { testVoiceCatalogSystem, quickTest, runMultipleQuickTests } from '@/services/voiceCatalog/test';
+import { VoiceCatalogModal } from './VoiceCatalogModal';
 import type { UserInfo } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { batchDOMReads, debounceRAF, globalDOMCache } from '@/utils/performanceOptimizations';
@@ -176,6 +179,8 @@ export function VoiceCatalogTester() {
   const [userTests, setUserTests] = useState<TestResult>({ status: 'idle' });
   const [alternativesTest, setAlternativesTest] = useState<TestResult>({ status: 'idle' });
   const [fullSystemTest, setFullSystemTest] = useState<TestResult>({ status: 'idle' });
+  const [catalogModalOpen, setCatalogModalOpen] = useState(false);
+  const [multipleQuickTests, setMultipleQuickTests] = useState<TestResult>({ status: 'idle' });
   
   const [selectedUser, setSelectedUser] = useState<UserInfo>(defaultUserProfile);
   const [customUser, setCustomUser] = useState<UserInfo>(defaultUserProfile);
@@ -229,7 +234,10 @@ export function VoiceCatalogTester() {
       );
       const timing = performance.now() - startTime;
       setQuickTestResult({ status: 'success', data: result, timing });
-      toast({ title: 'Success', description: `Quick test passed: ${result.selectedVoice.pn}` });
+      toast({ 
+        title: 'Success', 
+        description: `Quick test: ${result.selectedVoice.pn} (${result.testScenario?.description || 'Variety test'})` 
+      });
     } catch (error) {
       const timing = performance.now() - startTime;
       const errorMessage = error instanceof NetworkTimeoutError 
@@ -241,6 +249,38 @@ export function VoiceCatalogTester() {
         timing 
       });
       toast({ title: 'Error', description: 'Quick test failed', variant: 'destructive' });
+    } finally {
+      measureTest();
+    }
+  }, [toast, performanceMonitor]);
+
+  const runMultipleQuickTestsCallback = useCallback(async () => {
+    const measureTest = performanceMonitor.measureInteraction('multiple-quick-tests');
+    setMultipleQuickTests({ status: 'running' });
+    const startTime = performance.now();
+    
+    try {
+      const results = await withTimeout(
+        () => runMultipleQuickTests(3),
+        { ...TIMEOUT_CONFIGS.API_CALL, timeout: TIMEOUT_CONFIGS.API_CALL.timeout * 3 }
+      );
+      const timing = performance.now() - startTime;
+      setMultipleQuickTests({ status: 'success', data: results, timing });
+      toast({ 
+        title: 'Success', 
+        description: `Completed 3 variety tests showing different voices` 
+      });
+    } catch (error) {
+      const timing = performance.now() - startTime;
+      const errorMessage = error instanceof NetworkTimeoutError 
+        ? `Multiple tests timed out (${error.timeout}ms)` 
+        : error instanceof Error ? error.message : 'Unknown error';
+      setMultipleQuickTests({ 
+        status: 'error', 
+        error: errorMessage,
+        timing 
+      });
+      toast({ title: 'Error', description: 'Multiple quick tests failed', variant: 'destructive' });
     } finally {
       measureTest();
     }
@@ -408,8 +448,9 @@ export function VoiceCatalogTester() {
   };
 
   return (
-    <div ref={containerRef} className="space-y-6">
-      <Tabs defaultValue="overview" className="w-full">
+    <>
+      <div ref={containerRef} className="space-y-6">
+        <Tabs defaultValue="overview" className="w-full">
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="difficulty">Difficulty</TabsTrigger>
@@ -445,11 +486,45 @@ export function VoiceCatalogTester() {
                   {renderTestStatus(systemStatus)}
                 </div>
                 {systemStatus.data && (
-                  <div className="text-sm space-y-1 p-3 bg-muted rounded-md">
-                    <div><strong>Catalog Stats:</strong></div>
-                    <pre className="text-xs overflow-x-auto">
-                      {JSON.stringify(systemStatus.data, null, 2)}
-                    </pre>
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div className="flex items-center justify-between p-2 bg-muted rounded">
+                        <span className="text-muted-foreground">Total Voices:</span>
+                        <span className="font-medium">{systemStatus.data.totalVoices || 'N/A'}</span>
+                      </div>
+                      <div className="flex items-center justify-between p-2 bg-muted rounded">
+                        <span className="text-muted-foreground">Levels:</span>
+                        <span className="font-medium">{systemStatus.data.totalLevels || 5}</span>
+                      </div>
+                      <div className="flex items-center justify-between p-2 bg-muted rounded">
+                        <span className="text-muted-foreground">Themes:</span>
+                        <span className="font-medium">{systemStatus.data.totalThemes || 'N/A'}</span>
+                      </div>
+                      <div className="flex items-center justify-between p-2 bg-muted rounded">
+                        <span className="text-muted-foreground">Status:</span>
+                        <span className="font-medium text-green-600">Ready</span>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setCatalogModalOpen(true)}
+                        className="flex items-center gap-2"
+                      >
+                        <Database className="w-4 h-4" />
+                        Browse All Voices
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => copyToClipboard(JSON.stringify(systemStatus.data, null, 2))}
+                        className="flex items-center gap-2"
+                      >
+                        <Copy className="w-4 h-4" />
+                        Copy Raw Data
+                      </Button>
+                    </div>
                   </div>
                 )}
                 {systemStatus.error && (
@@ -485,6 +560,11 @@ export function VoiceCatalogTester() {
                 </div>
                 {quickTestResult.data && (
                   <div className="space-y-3">
+                    {quickTestResult.data.testScenario && (
+                      <div className="p-2 bg-blue-50 rounded text-sm">
+                        <strong>Test Scenario:</strong> {quickTestResult.data.testScenario.description}
+                      </div>
+                    )}
                     <div className="flex items-center gap-2 flex-wrap">
                       <Badge variant="secondary" className="text-sm">
                         {quickTestResult.data.selectedVoice.pn}
@@ -1338,7 +1418,13 @@ export function VoiceCatalogTester() {
             </CardContent>
           </Card>
         </TabsContent>
-      </Tabs>
-    </div>
+        </Tabs>
+      </div>
+      
+      <VoiceCatalogModal 
+        open={catalogModalOpen} 
+        onOpenChange={setCatalogModalOpen} 
+      />
+    </>
   );
 }
