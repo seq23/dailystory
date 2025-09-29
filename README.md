@@ -148,11 +148,20 @@ npm run dev
 
 ## 📚 Documentation
 
-- [`docs/COMPLETE_SYSTEM_ARCHITECTURE_AND_IMPLEMENTATION.md`](./docs/COMPLETE_SYSTEM_ARCHITECTURE_AND_IMPLEMENTATION.md): Master reference for business logic, architecture, and current system status
-- [`docs/TECHNICAL_IMPLEMENTATION_COMPLETE_REFERENCE.md`](./docs/TECHNICAL_IMPLEMENTATION_COMPLETE_REFERENCE.md): Master reference for template system, scene extraction, and nuclear independence  
-- [`docs/BUSINESS_LOGIC_DOCUMENTATION.md`](./docs/BUSINESS_LOGIC_DOCUMENTATION.md): Focused business rules and user flows
-- [`docs/API_REFERENCE_UPDATED.md`](./docs/API_REFERENCE_UPDATED.md): Complete API documentation
-- [`docs/DEVELOPER_ONBOARDING.md`](./docs/DEVELOPER_ONBOARDING.md): Setup and development guide
+**📚 [Documentation Hub](docs/README.md)** - Start here for role-based navigation
+
+### Quick Access by Role
+- **Developers**: [Development Guide](docs/DEVELOPMENT_GUIDE.md) | [API Reference](docs/API_REFERENCE.md)
+- **Operations**: [Operations Guide](docs/OPERATIONS_GUIDE.md) | [Deployment Guide](docs/DEPLOYMENT_GUIDE.md)
+- **Management**: [Master System Guide](docs/MASTER_SYSTEM_GUIDE.md) | [Master Errors](docs/MASTER_ERRORS_TO_FIX.md)
+
+### Core Documentation
+- **[Master System Guide](docs/MASTER_SYSTEM_GUIDE.md)**: Complete architecture + business logic
+- **[Operations Guide](docs/OPERATIONS_GUIDE.md)**: Current status, roadmap, monitoring
+- **[Development Guide](docs/DEVELOPMENT_GUIDE.md)**: Setup, patterns, standards, debugging
+- **[API Reference](docs/API_REFERENCE.md)**: All 40 edge functions with examples
+- **[Deployment Guide](docs/DEPLOYMENT_GUIDE.md)**: Deployment procedures and checklists
+- **[Master Errors](docs/MASTER_ERRORS_TO_FIX.md)**: Known issues and troubleshooting
 
 ## 🚀 Technologies Used
 
