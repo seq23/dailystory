@@ -135,19 +135,9 @@ Generate a comprehensive scene with complete visual elements including backgroun
     try {
       visualSchema = JSON.parse(content);
     } catch (parseError) {
-      console.warn('Failed to parse OpenAI JSON response, extracting manually:', parseError);
-      // Fallback extraction if JSON parsing fails
-      visualSchema = {
-        primaryScene: content.substring(0, 200),
-        backgroundColor: 'bright and colorful',
-        lighting: 'warm natural lighting',
-        composition: 'character-focused',
-        setting: 'indoor scene',
-        mood: 'cheerful and engaging',
-        style: 'children\'s book illustration',
-        secondaryCharacters: [],
-        objects: []
-      };
+      console.error('Failed to parse OpenAI JSON response:', parseError);
+      const errorMessage = parseError instanceof Error ? parseError.message : String(parseError);
+      throw new Error(`OpenAI JSON parse failed: ${errorMessage}`);
     }
 
     // Enhance with structured avatar data
@@ -165,23 +155,8 @@ Generate a comprehensive scene with complete visual elements including backgroun
 
   } catch (error) {
     console.error('OpenAI generation failed:', error);
-    
-    // Fallback schema generation
-    const fallbackSchema = {
-      primaryScene: `${characterName} with ${structuredAvatarData.hairColor} and ${structuredAvatarData.skinTone} in a beautiful story scene from: ${storyText.substring(0, 100)}`,
-      backgroundColor: 'bright and colorful',
-      lighting: 'warm natural lighting',
-      composition: 'character-focused composition',
-      setting: 'story setting',
-      mood: 'cheerful and engaging',
-      style: 'children\'s book illustration',
-      secondaryCharacters: [],
-      objects: [],
-      characterAppearance: structuredAvatarData
-    };
-
-    console.log('⚠️ Using fallback visual schema');
-    return fallbackSchema;
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new Error(`OpenAI visual scene generation failed: ${errorMessage}`);
   }
 }
 
@@ -334,7 +309,7 @@ serve(async (req) => {
 
     // Create cultural bundle
     const culturalBundle = {
-      hair: userInfo?.avatar?.hairColor || 'brown hair',
+      hair: userInfo?.avatar?.hairColor || undefined,
       features: userInfo?.nativeLanguage !== 'en' ? `${userInfo.nativeLanguage} cultural features` : 'diverse features',
       profile: characterSeed.culturalProfile
     };
@@ -355,16 +330,9 @@ serve(async (req) => {
         const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
         characterService = CharacterConsistencyService.getInstance();
       } catch (error) {
-        console.warn('Failed to load CharacterConsistencyService:', error);
-        // Create minimal fallback service
-        characterService = {
-          analyzeVisualDetails: async () => {},
-          detectSecondaryCharacters: async () => [],
-          getSecondaryCharacterSeed: async () => ({ seed: Math.floor(Math.random() * 999999) }),
-          getCharacterAppearanceFromStory: async () => '',
-          getColoredObjects: async () => '',
-          clearSession: async () => {}
-        };
+        console.error('Failed to load CharacterConsistencyService:', error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        throw new Error(`CharacterConsistencyService load failed: ${errorMessage}`);
       }
       
       const characterAppearance = await characterService.getCharacterAppearanceFromStory(sessionId, characterSeed.characterName);
