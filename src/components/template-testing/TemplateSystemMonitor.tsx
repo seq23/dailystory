@@ -54,15 +54,24 @@ export function TemplateSystemMonitor() {
   };
 
   const generateTestData = () => {
-    // Generate some test monitoring data for demonstration
+    // Generate realistic test monitoring data for demonstration
     TemplateMonitoringService.recordTemplateUsage('beginner-testing', 1200, true);
     TemplateMonitoringService.recordTemplateUsage('intermediate-testing', 1800, true);
     TemplateMonitoringService.recordTemplateUsage('advanced-testing', 2200, false, 'Timeout error');
+    TemplateMonitoringService.recordTemplateUsage('expert-testing', 1500, true);
     
+    // Generate realistic placeholder data with mostly successes
     TemplateMonitoringService.recordPlaceholderResolution('name', true);
     TemplateMonitoringService.recordPlaceholderResolution('favoriteColor', true);
-    TemplateMonitoringService.recordPlaceholderResolution('favoriteAnimal', false, 'Missing user data');
+    TemplateMonitoringService.recordPlaceholderResolution('favoriteAnimal', true);
+    TemplateMonitoringService.recordPlaceholderResolution('grade', true);
+    TemplateMonitoringService.recordPlaceholderResolution('hobby', false, 'Optional field empty');
     
+    refreshData();
+  };
+
+  const clearMonitoringData = () => {
+    TemplateMonitoringService.clearMonitoringData();
     refreshData();
   };
 
@@ -118,6 +127,13 @@ export function TemplateSystemMonitor() {
             onClick={generateTestData}
           >
             Generate Test Data
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={clearMonitoringData}
+          >
+            Clear Data
           </Button>
           <Button
             variant="outline"
