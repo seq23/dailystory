@@ -42,8 +42,8 @@
 - Hybrid Vendor System across 40 edge functions
 
 **Business Model:**
-- **Guest Users**: 20-min sessions, 6-page story limit, Netflix-style batch generation
-- **Premium Users**: Unlimited sessions, full stories, live page-by-page generation
+- **Guest Users (Unauthenticated)**: 20-min sessions, 6-page story limit, Netflix-style batch generation
+- **Premium Users (ALL Authenticated)**: Unlimited sessions, full stories, live page-by-page generation
 
 **Critical Achievement:** 99.8% story generation success rate with emergency content failsafe
 
@@ -90,9 +90,9 @@
 - Validation mode: 'guest' (full story validation)
 - Cache clearing: On "Next Story" or session timeout
 
-#### Premium Users (Paid - Unlimited)
+#### Premium Users (Authenticated - Unlimited)
 **Core Characteristics:**
-- **Authenticated users** - Subscription required
+- **ALL authenticated users are premium** - No subscription gating after sign-in
 - **Unlimited time** - Can dismiss timer, no session limits
 - **Unlimited stories** - No artificial page cutoffs
 - **Generation style** - Live page-by-page generation

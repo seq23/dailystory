@@ -18,10 +18,10 @@ export const AuthWrapper = () => {
   const [premiumSafetyTick, setPremiumSafetyTick] = useState(0);
   const location = useLocation();
 
-  // Expose premium status globally for voice features and events
+  // Expose premium status globally: ALL authenticated users are premium
   useEffect(() => {
-    window.__IS_PREMIUM = isPremium === true;
-  }, [isPremium]);
+    window.__IS_PREMIUM = !!user;
+  }, [user]);
 
   // Clean up orphaned story URL parameters on app initialization
   useEffect(() => {
@@ -157,17 +157,6 @@ export const AuthWrapper = () => {
     return <GuestExperience />;
   }
 
-  // Logged in but still checking subscription
-  if (isPremium === null) {
-    return <AdaptiveEnhancedLoading isPremium={false} />;
-  }
-
-  // Logged in and NOT premium -> show gate
-  if (isPremium === false) {
-    return <SubscriptionGate />;
-  }
-
-  // Logged in and premium (verified or unverified)
-  // Allow immediate access for premium users regardless of email verification status
+  // ALL authenticated users are premium - no gating
   return <AuthenticatedApp user={user} />;
 };

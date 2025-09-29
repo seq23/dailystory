@@ -84,7 +84,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
   const [userProfile, setUserProfile] = useState<UserProfile | PremiumUserPreferences | null>(null);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isPremium, setIsPremium] = useState(false);
+  const [isPremium, setIsPremium] = useState(true); // All authenticated users are premium
   const [subscriptionTier, setSubscriptionTier] = useState<string | null>(null);
   const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
   const [devTestMode, setDevTestMode] = useState(false);
@@ -159,11 +159,8 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
         setIsPremium(true);
         setSubscriptionTier(data.subscription_tier || 'Premium');
         setSubscriptionEnd(data.subscription_end);
-      } else {
-        setIsPremium(false);
-        setSubscriptionTier(null);
-        setSubscriptionEnd(null);
       }
+      // Note: We never downgrade authenticated users from premium status
     } catch (error) {
       DebugLogger.error('auth', 'Failed to check subscription', error);
       // Fallback to check database directly
@@ -179,6 +176,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
           setSubscriptionTier(data.subscription_tier || 'Premium');
           setSubscriptionEnd(data.subscription_end);
         }
+        // Note: We never downgrade authenticated users from premium status
       } catch (dbError) {
         DebugLogger.error('auth', 'Failed to check subscription from database', dbError);
       }
