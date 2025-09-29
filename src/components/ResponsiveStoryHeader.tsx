@@ -407,13 +407,14 @@ export const ResponsiveStoryHeader = ({
                  {onNewStory && (
                   <NewStoryCTA
                     isPremium={true}
-                    iconOnly={true}
+                    iconOnly={isMobile}
                     onNewStory={onNewStory}
                     onUpgrade={onUpgrade || (() => {})}
                     size={isMobileOrTablet ? "sm" : "md"}
                     wandPulse={wandPulse}
                     isGeneratingRewrite={isGeneratingRewrite}
-                    tooltipText="Refresh story"
+                    tooltipText={isMobile ? "Refresh story" : undefined}
+                    labelOverride={!isMobile ? "Refresh" : undefined}
                   />
                 )}
                 
