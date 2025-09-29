@@ -97,7 +97,7 @@ export function validatePlaceholders(
   });
 
   // If userInfo is provided, search for actual user input values in the content
-  if (userInfo && source === 'ai') {
+  if (userInfo && (source === 'ai' || source === 'template')) {
     const allContent = pages.join(' ').toLowerCase();
     
     // Search for name (case insensitive)
@@ -179,8 +179,8 @@ export function validatePlaceholders(
 
   const unresolvedArray = Array.from(unresolvedPlaceholders);
   const resolvedCount = totalPlaceholders - unresolvedArray.length;
-  const userInputsResolved = userInfo && source === 'ai' ? userInputsUsed.size : 0;
-  const totalUserInputs = userInfo && source === 'ai' ? 6 : userInputsTotal;
+  const userInputsResolved = userInfo && (source === 'ai' || source === 'template') ? userInputsUsed.size : 0;
+  const totalUserInputs = userInfo && (source === 'ai' || source === 'template') ? 6 : userInputsTotal;
 
   return {
     isValid: unresolvedArray.length === 0,
@@ -192,8 +192,8 @@ export function validatePlaceholders(
     userInputsResolved,
     userInputsTotal: totalUserInputs,
     grammarEnhanced: false, // Grammar enhancement handled by edge functions
-    placeholderDetails: userInfo && source === 'ai' ? placeholderDetails : undefined,
-    foundInstances: userInfo && source === 'ai' ? foundInstances : undefined
+    placeholderDetails: userInfo && (source === 'ai' || source === 'template') ? placeholderDetails : undefined,
+    foundInstances: userInfo && (source === 'ai' || source === 'template') ? foundInstances : undefined
   };
 }
 
@@ -201,7 +201,7 @@ export function validatePlaceholders(
  * Get user-friendly message for placeholder validation results
  */
 export function getPlaceholderValidationMessage(result: PlaceholderValidationResult): string {
-  if (result.source === 'ai' && result.userInputsResolved !== undefined && result.userInputsTotal !== undefined) {
+  if ((result.source === 'ai' || result.source === 'template') && result.userInputsResolved !== undefined && result.userInputsTotal !== undefined) {
     return `${result.userInputsResolved}/${result.userInputsTotal} placeholders found`;
   }
   
