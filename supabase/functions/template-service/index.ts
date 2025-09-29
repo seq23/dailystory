@@ -191,7 +191,7 @@ serve(async (req) => {
       const templateCount = await getTemplateCount(templateLevel);
       console.log(`✅ Found ${templateCount} templates for ${templateLevel}`);
       
-      // Get actual template details for better exploration (Level 0 removed)
+      // Get actual template details for better exploration
       let templateDetails = [];
       try {
         const templatesToLoad = Math.min(templateCount, 5);
@@ -201,15 +201,39 @@ serve(async (req) => {
         for (let i = 0; i < templatesToLoad; i++) {
           const rawTemplate = await getRawTemplate(templateLevel, i);
           if (rawTemplate) {
-            // All templates are now structured templates (Level 0 removed)
-            const sceneCount = rawTemplate.scenes?.length || 0;
-            console.log(`📊 Template ${i}: "${rawTemplate.title}" has ${sceneCount} scenes`);
-            templateDetails.push({
-              title: rawTemplate.title || `Template ${i + 1}`,
-              theme: rawTemplate.theme || "Adventure",
-              scenes: sceneCount,
-              endings: rawTemplate.endings?.length || 0
-            });
+            // Special handling for Level 0 templates (string arrays)
+            if (templateLevel === 'level0' && Array.isArray(rawTemplate)) {
+              const firstSentence = rawTemplate[0] || `Level 0 Template ${i + 1}`;
+              // Extract theme from content or use default categories
+              let theme = "Daily Life";
+              if (firstSentence.toLowerCase().includes('adventure') || firstSentence.toLowerCase().includes('journey')) {
+                theme = "Adventure";
+              } else if (firstSentence.toLowerCase().includes('food') || firstSentence.toLowerCase().includes('eat')) {
+                theme = "Food & Cooking";
+              } else if (firstSentence.toLowerCase().includes('friend') || firstSentence.toLowerCase().includes('play')) {
+                theme = "Friendship";
+              } else if (firstSentence.toLowerCase().includes('animal') || firstSentence.toLowerCase().includes('pet')) {
+                theme = "Animals";
+              }
+              
+              console.log(`📊 Level 0 Template ${i}: "${firstSentence.substring(0, 40)}..." theme: ${theme}`);
+              templateDetails.push({
+                title: firstSentence, // Show unresolved placeholders
+                theme: theme,
+                scenes: 6, // Level 0 templates have 6 sentences each
+                endings: 1 // Level 0 has simple endings
+              });
+            } else {
+              // Structured templates (Level 1+)
+              const sceneCount = rawTemplate.scenes?.length || 0;
+              console.log(`📊 Template ${i}: "${rawTemplate.title}" has ${sceneCount} scenes`);
+              templateDetails.push({
+                title: rawTemplate.title || `Template ${i + 1}`,
+                theme: rawTemplate.theme || "Adventure",
+                scenes: sceneCount,
+                endings: rawTemplate.endings?.length || 0
+              });
+            }
           }
         }
       } catch (error) {
