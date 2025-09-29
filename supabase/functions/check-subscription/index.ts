@@ -1,6 +1,6 @@
 // Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { memoizedImport, createResilientSupabaseClient } from '../_shared/resilientLoader.ts';
+import { memoizedImport, createPaymentSupabaseClient, createPaymentUnavailableResponse } from '../_shared/resilientLoader.ts';
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
 
 const corsHeaders = {
@@ -21,9 +21,13 @@ serve(async (req) => {
   if (healthResponse) return healthResponse;
 
   try {
-    // Use resilient loader for Supabase client
-    const supabaseClient = await createResilientSupabaseClient();
-    logStep("Function started");
+    // Use payment-specific client with 2-tier fallback (network CDNs + vendor bundle)
+    const supabaseClient = await createPaymentSupabaseClient();
+    if (!supabaseClient) {
+      logStep("Payment client unavailable - both network and vendor fallbacks failed");
+      return createPaymentUnavailableResponse('check-subscription');
+    }
+    logStep("Function started with payment client");
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     const stripeConfigured = !!stripeKey;
