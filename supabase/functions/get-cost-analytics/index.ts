@@ -137,16 +137,16 @@ serve(async (req) => {
     }
 
     // Calculate summary from database data
-    const totalCost = costData?.reduce((sum, entry) => sum + Number(entry.cost), 0) || 0;
+    const totalCost = costData?.reduce((sum: number, entry: any) => sum + Number(entry.cost), 0) || 0;
     const totalRequests = costData?.length || 0;
-    const totalInputTokens = costData?.reduce((sum, entry) => sum + (entry.input_tokens || 0), 0) || 0;
-    const totalOutputTokens = costData?.reduce((sum, entry) => sum + (entry.output_tokens || 0), 0) || 0;
+    const totalInputTokens = costData?.reduce((sum: number, entry: any) => sum + (entry.input_tokens || 0), 0) || 0;
+    const totalOutputTokens = costData?.reduce((sum: number, entry: any) => sum + (entry.output_tokens || 0), 0) || 0;
 
     // Provider and model breakdown
     const providerBreakdown: Record<string, { requests: number; cost: number }> = {};
     const modelBreakdown: Record<string, { requests: number; cost: number }> = {};
 
-    costData?.forEach(entry => {
+    costData?.forEach((entry: any) => {
       // Provider breakdown
       const provider = entry.provider || 'unknown';
       if (!providerBreakdown[provider]) {
@@ -165,16 +165,16 @@ serve(async (req) => {
     });
 
     // Calculate TOTAL cumulative costs across all time
-    const totalAllTimeCost = totalCostData?.reduce((sum, entry) => sum + Number(entry.cost), 0) || 0;
+    const totalAllTimeCost = totalCostData?.reduce((sum: number, entry: any) => sum + Number(entry.cost), 0) || 0;
     const totalAllTimeRequests = totalCostData?.length || 0;
-    const totalAllTimeInputTokens = totalCostData?.reduce((sum, entry) => sum + (entry.input_tokens || 0), 0) || 0;
-    const totalAllTimeOutputTokens = totalCostData?.reduce((sum, entry) => sum + (entry.output_tokens || 0), 0) || 0;
+    const totalAllTimeInputTokens = totalCostData?.reduce((sum: number, entry: any) => sum + (entry.input_tokens || 0), 0) || 0;
+    const totalAllTimeOutputTokens = totalCostData?.reduce((sum: number, entry: any) => sum + (entry.output_tokens || 0), 0) || 0;
 
     // Total provider breakdown (all time)
     const totalProviderBreakdown: Record<string, { requests: number; cost: number }> = {};
     const totalModelBreakdown: Record<string, { requests: number; cost: number }> = {};
 
-    totalCostData?.forEach(entry => {
+    totalCostData?.forEach((entry: any) => {
       // Total provider breakdown
       const provider = entry.provider || 'unknown';
       if (!totalProviderBreakdown[provider]) {
