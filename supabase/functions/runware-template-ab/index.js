@@ -1805,9 +1805,6 @@ async function handleRequest(req) {
       const leftoverData = deriveLeftoverCulturalData(userInfo) || '';
       const fullFrameworkPrompt = styleFramework.frameworkPrompt || 'contemporary children\'s book illustration style';
       
-      // Fix: Use avatar type for character description instead of generic "young child"
-      const avatarTypeB = userInfo?.avatar?.type || 'child';
-      
       // PHASE 4.1 & 4.2: REMOVE ALL FALLBACKS - Apply TIER_25B_TEMPLATE with NO fallbacks
       console.log('📋 Using official BASIC_PROMPT_TEMPLATE for Tier 2.5B');
       

@@ -533,11 +533,16 @@ Deno.serve(async (req: Request): Promise<Response> => {
           }
         }
         
+        // Track error messages from all tier attempts for universal 2.5C fallback
+        let tier25aErrorMessage = '';
+        let tier25bErrorMessage = '';
+        
         // CRITICAL FIX: Skip 2.5A if CharacterConsistencyService is unavailable
         // 2.5A requires CharacterConsistencyService and will succeed with incomplete data (causing misgendering)
         // Go directly to 2.5B which doesn't require the service
         if (isCharacterServiceUnavailable) {
           console.log(`[CASCADE] Skipping 2.5A - CharacterConsistencyService unavailable, routing directly to 2.5B`);
+          tier25aErrorMessage = 'SKIPPED: CharacterConsistencyService unavailable';
           
           // Try Tier 2.5B directly
           console.log(`[TIER_2.5B] Attempting fallback (2.5A skipped due to missing service)`);
@@ -548,7 +553,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
                 ...payload,
                 templateComplexity: 'B',
                 tier1FailureReason: errorMessage,
-                tier25aFailureReason: 'SKIPPED: CharacterConsistencyService unavailable'
+                tier25aFailureReason: tier25aErrorMessage
               }
             });
             
@@ -580,11 +585,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
             }
             
           } catch (tier25bError: unknown) {
-            const tier25bErrorMessage = tier25bError instanceof Error ? tier25bError.message : String(tier25bError);
+            tier25bErrorMessage = tier25bError instanceof Error ? tier25bError.message : String(tier25bError);
             console.log(`[TIER_2.5B] Failed: ${tier25bErrorMessage}`);
             tierLogger.failure('TIER_2.5B', { error: tier25bErrorMessage });
             
-            // Continue to 2.5C cascade below (at end of function)
+            // Error stored - will attempt 2.5C in universal fallback block below
           }
         }
         
@@ -628,7 +633,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
           }
           
         } catch (tier25aError: unknown) {
-          const tier25aErrorMessage = tier25aError instanceof Error ? tier25aError.message : String(tier25aError);
+          tier25aErrorMessage = tier25aError instanceof Error ? tier25aError.message : String(tier25aError);
           console.log(`[TIER_2.5A] Failed: ${tier25aErrorMessage}`);
           tierLogger.failure('TIER_2.5A', { error: tier25aErrorMessage });
           
@@ -667,63 +672,67 @@ Deno.serve(async (req: Request): Promise<Response> => {
             }
             
           } catch (tier25bError: unknown) {
-            const tier25bErrorMessage = tier25bError instanceof Error ? tier25bError.message : String(tier25bError);
+            tier25bErrorMessage = tier25bError instanceof Error ? tier25bError.message : String(tier25bError);
             console.log(`[TIER_2.5B] Failed: ${tier25bErrorMessage}`);
             tierLogger.failure('TIER_2.5B', { error: tier25bErrorMessage });
             
-            // Try Tier 2.5C
-            console.log(`[TIER_2.5C] Attempting fallback after Tier 2.5B failure`);
-            
-            try {
-              const tier25cResponse = await internalSupabase.functions.invoke('runware-template-cd', {
-                body: {
-                  ...payload,
-                  templateComplexity: 'C',
-                  tier1FailureReason: errorMessage,
-                  tier25aFailureReason: tier25aErrorMessage,
-                  tier25bFailureReason: tier25bErrorMessage
-                }
-              });
-                
-              if (tier25cResponse.data?.success && tier25cResponse.data?.imageURL) {
-                const result = {
-                  imageURL: tier25cResponse.data.imageURL,
-                  provider: 'tier-2.5c-fallback',
-                  tier: 'TIER_2.5C',
-                  requestId: requestId,
-                  timestamp: new Date().toISOString(),
-                  cascadeFailures: [errorMessage, tier25aErrorMessage, tier25bErrorMessage, directErrorMessage]
-                };
-                
-                tierLogger.success('TIER_2.5C', { result });
-                console.log(`SUCCESS [${requestId}] Tier 2.5C fallback completed`);
-                
-                return corsResponse({
-                  success: true,
-                  ...result
-                }, req);
-              } else {
-                throw new Error('TIER_2.5C_FAILED: Template C processing failed');
-              }
-              
-            } catch (tier25cError: unknown) {
-              const tier25cErrorMessage = tier25cError instanceof Error ? tier25cError.message : String(tier25cError);
-              console.log(`[TIER_2.5C] Failed: ${tier25cErrorMessage}`);
-              tierLogger.failure('TIER_2.5C', { error: tier25cErrorMessage });
-              
-              // All tiers exhausted - final error
-              const finalError = `All tiers exhausted. Final errors: Tier1: ${errorMessage}, 2.5A: ${tier25aErrorMessage}, 2.5B: ${tier25bErrorMessage}, 2.5C: ${tier25cErrorMessage}`;
-              tierLogger.failure('ALL_TIERS', { finalError });
-              console.error(`❌ [${requestId}] All tiers failed`);
-              
-              return corsResponse({ 
-                error: finalError,
-                escalationTarget: "TIER_4" 
-              }, req, 500);
-            }
+            // Error stored - will attempt 2.5C in universal fallback block below
           }
         }
         } // Close if (!isCharacterServiceUnavailable)
+        
+        // UNIVERSAL 2.5C FALLBACK: Attempt 2.5C if ANY 2.5B failed (from either path)
+        if (tier25bErrorMessage) {
+          console.log(`[TIER_2.5C] Attempting universal fallback after 2.5B failure (from ${isCharacterServiceUnavailable ? 'direct 2.5B' : '2.5A→2.5B'} path)`);
+          
+          try {
+            const tier25cResponse = await internalSupabase.functions.invoke('runware-template-cd', {
+              body: {
+                ...payload,
+                templateComplexity: 'C',
+                tier1FailureReason: errorMessage,
+                tier25aFailureReason: tier25aErrorMessage,
+                tier25bFailureReason: tier25bErrorMessage
+              }
+            });
+              
+            if (tier25cResponse.data?.success && tier25cResponse.data?.imageURL) {
+              const result = {
+                imageURL: tier25cResponse.data.imageURL,
+                provider: 'tier-2.5c-fallback',
+                tier: 'TIER_2.5C',
+                requestId: requestId,
+                timestamp: new Date().toISOString(),
+                cascadeFailures: [errorMessage, tier25aErrorMessage, tier25bErrorMessage, directErrorMessage]
+              };
+              
+              tierLogger.success('TIER_2.5C', { result });
+              console.log(`SUCCESS [${requestId}] Tier 2.5C universal fallback completed`);
+              
+              return corsResponse({
+                success: true,
+                ...result
+              }, req);
+            } else {
+              throw new Error('TIER_2.5C_FAILED: Template C processing failed');
+            }
+            
+          } catch (tier25cError: unknown) {
+            const tier25cErrorMessage = tier25cError instanceof Error ? tier25cError.message : String(tier25cError);
+            console.log(`[TIER_2.5C] Failed: ${tier25cErrorMessage}`);
+            tierLogger.failure('TIER_2.5C', { error: tier25cErrorMessage });
+            
+            // All tiers exhausted - final error
+            const finalError = `All tiers exhausted. Final errors: Tier1: ${errorMessage}, 2.5A: ${tier25aErrorMessage}, 2.5B: ${tier25bErrorMessage}, 2.5C: ${tier25cErrorMessage}`;
+            tierLogger.failure('ALL_TIERS', { finalError });
+            console.error(`❌ [${requestId}] All tiers failed`);
+            
+            return corsResponse({ 
+              error: finalError,
+              escalationTarget: "TIER_4" 
+            }, req, 500);
+          }
+        }
       } // Close Tier 1 catch block
 
     } catch (error: unknown) {
