@@ -645,36 +645,37 @@ Next Update: [Time]
 ## 🔗 Related Documentation
 
 ### Core System Documentation
-- 📘 [Complete System Architecture](./COMPLETE_SYSTEM_ARCHITECTURE_AND_IMPLEMENTATION.md) - Complete system architecture and business logic
-- 📊 [Implementation Backlog](./MASTER_IMPLEMENTATION_BACKLOG_2025.md) - Implementation roadmap, backlog, and system status
-- 💻 [Business Logic Documentation](./BUSINESS_LOGIC_DOCUMENTATION.md) - Business rules and user flows
+- 📘 [Master System Guide](./MASTER_SYSTEM_GUIDE.md) - Complete system architecture and business logic
+- 📊 [Operations Guide](./OPERATIONS_GUIDE.md) - System status, roadmap, and backlog
+- 💻 [Development Guide](./DEVELOPMENT_GUIDE.md) - Developer workflows and best practices
 - 🏠 [Project README](../README.md) - Quick start and project overview
 
 ### Specialized Documentation
-- 🔧 [Function Reference Registry](./FUNCTION_REFERENCE_REGISTRY_2025.md) - Edge function documentation (40 functions)
-- 🎯 [Documents to Update List](./DOCUMENTS_TO_UPDATE_2025.md) - Documentation roadmap
-- 📱 [Integration Guide](./INTEGRATION_GUIDE.md) - Frontend-backend integration patterns
+- 🔧 [API Reference](./API_REFERENCE.md) - Edge function documentation (40 functions)
+- 🚀 [Deployment Guide](./DEPLOYMENT_GUIDE.md) - Deployment procedures and configuration
+- 📱 [Tier 2 Architecture](./TIER_2_ARCHITECTURE.md) - Multi-service dynamic pipeline
+- 📱 [Tier 3 Architecture](./TIER_3_SIMPLIFIED_ARCHITECTURE.md) - Nuclear fallback system
 
 ### Specific Fix Documentation
-- 🔄 [Smart Bypass Fix](./SMART_BYPASS_CRITICAL_FIX_2025_09_28.md) - Premium user service quality restoration
 - 🏗️ [System Documentation (Shared)](../supabase/functions/_shared/SystemDocumentation.md) - Edge function internal docs
+- 📚 [Archive Folder](./archive/) - Historical documentation references
 
 ### Cross-Reference Index
 
 #### Story Generation System
-- **Primary Documentation**: [Complete System Architecture - Story Generation](./COMPLETE_SYSTEM_ARCHITECTURE_AND_IMPLEMENTATION.md#story-generation-4-tier-resilience-system)
+- **Primary Documentation**: [Master System Guide - Story Generation](./MASTER_SYSTEM_GUIDE.md#story-generation-4-tier-resilience-system)
 - **Related Errors**: ERROR-038, ERROR-039, ERROR-040
 - **Edge Functions**: `generate-adaptive-story`, `template-service`
 - **Architecture**: 4-Tier resilience system with nuclear fallback
 
 #### Image Generation System
-- **Primary Documentation**: [Complete System Architecture - Image Generation](./COMPLETE_SYSTEM_ARCHITECTURE_AND_IMPLEMENTATION.md#technical-architecture---4-tier-image-generation-system)
+- **Primary Documentation**: [Master System Guide - Image Generation](./MASTER_SYSTEM_GUIDE.md#image-generation-4-tier-system)
 - **Related Errors**: ERROR-035, ERROR-033, ERROR-032
 - **Edge Functions**: `runware-generate-image`, `runware-template-ab`, `runware-template-cd`, `ai-visual-scene-creator`
 - **Architecture**: Multi-tier with character consistency caching
 
 #### Payment Systems  
-- **Primary Documentation**: [Implementation Backlog - Payment Functions](./MASTER_IMPLEMENTATION_BACKLOG_2025.md#🔴-a1-critical-priority---payment--subscription-functions)
+- **Primary Documentation**: [Operations Guide - Payment Systems](./OPERATIONS_GUIDE.md#payment-infrastructure)
 - **Related Errors**: None (100% operational)
 - **Edge Functions**: `create-checkout`, `create-premium-subscription`, `customer-portal`, `validate-discount-code`, `activate-discount-code`, `apply-discount-code`
 - **Architecture**: 2-tier system (Network + Vendor fallback only)

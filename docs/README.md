@@ -10,48 +10,48 @@
 
 ### 👨‍💻 For Developers
 Start here for technical implementation details:
-- 📘 [Complete System Architecture](./COMPLETE_SYSTEM_ARCHITECTURE_AND_IMPLEMENTATION.md) - Full architecture overview
+- 📘 [Master System Guide](./MASTER_SYSTEM_GUIDE.md) - Complete system architecture and business logic
 - 🚨 [Master Errors Document](./MASTER_ERRORS_TO_FIX.md) - Error tracking and troubleshooting
-- 💻 [Business Logic Documentation](./BUSINESS_LOGIC_DOCUMENTATION.md) - Business rules and user flows
-- 📡 [Function Reference Registry](./FUNCTION_REFERENCE_REGISTRY_2025.md) - Edge function documentation (40 functions)
+- 💻 [Development Guide](./DEVELOPMENT_GUIDE.md) - Developer workflows and best practices
+- 📡 [API Reference](./API_REFERENCE.md) - Edge function documentation (40 functions)
 
 **Quick Links:**
-- [Edge Function List](./FUNCTION_REFERENCE_REGISTRY_2025.md#canonical-function-list-40-functions)
-- [Story Generation 4-Tier System](./COMPLETE_SYSTEM_ARCHITECTURE_AND_IMPLEMENTATION.md#story-generation-4-tier-resilience-system)
-- [Image Generation Pipeline](./COMPLETE_SYSTEM_ARCHITECTURE_AND_IMPLEMENTATION.md#technical-architecture---4-tier-image-generation-system)
+- [Edge Function List](./API_REFERENCE.md#edge-functions-overview)
+- [Story Generation 4-Tier System](./MASTER_SYSTEM_GUIDE.md#story-generation-4-tier-resilience-system)
+- [Image Generation Pipeline](./MASTER_SYSTEM_GUIDE.md#image-generation-4-tier-system)
 - [Recent Fixes](./MASTER_ERRORS_TO_FIX.md#recent-major-fixes-september-29-2025)
 
 ### 📊 For Operations
 Start here for system monitoring and management:
-- 📊 [Implementation Backlog](./MASTER_IMPLEMENTATION_BACKLOG_2025.md) - Roadmap, backlog, system status
+- 📊 [Operations Guide](./OPERATIONS_GUIDE.md) - System status, roadmap, and backlog
 - 🚨 [Master Errors Document](./MASTER_ERRORS_TO_FIX.md) - System health monitoring
-- 💻 [Business Logic Documentation](./BUSINESS_LOGIC_DOCUMENTATION.md) - Emergency procedures
+- 🚀 [Deployment Guide](./DEPLOYMENT_GUIDE.md) - Deployment procedures and emergency protocols
 
 **Quick Links:**
 - [System Health Dashboard](./MASTER_ERRORS_TO_FIX.md#current-system-health)
-- [Implementation Roadmap](./MASTER_IMPLEMENTATION_BACKLOG_2025.md#implementation-roadmap)
+- [Implementation Roadmap](./OPERATIONS_GUIDE.md#section-2-implementation-roadmap)
 - [Escalation Procedures](./MASTER_ERRORS_TO_FIX.md#escalation-procedures)
-- [Current Backlog](./MASTER_IMPLEMENTATION_BACKLOG_2025.md#current-status-summary)
+- [Current Backlog](./OPERATIONS_GUIDE.md#section-3-feature-backlog)
 
 ### 💼 For Management
 Start here for high-level overview and metrics:
-- 📘 [Complete System Architecture](./COMPLETE_SYSTEM_ARCHITECTURE_AND_IMPLEMENTATION.md) - System overview
-- 📊 [Implementation Backlog](./MASTER_IMPLEMENTATION_BACKLOG_2025.md) - Project status and planning
+- 📘 [Master System Guide](./MASTER_SYSTEM_GUIDE.md) - Complete system overview
+- 📊 [Operations Guide](./OPERATIONS_GUIDE.md) - Project status and planning
 - 🏠 [Project README](../README.md) - Executive summary
 - 🚨 [Master Errors Document](./MASTER_ERRORS_TO_FIX.md) - Production readiness
 
 **Quick Links:**
 - [Success Metrics](./MASTER_ERRORS_TO_FIX.md#success-metrics-achieved)
-- [System Status Summary](./MASTER_IMPLEMENTATION_BACKLOG_2025.md#current-status-summary)
-- [Business Logic](./COMPLETE_SYSTEM_ARCHITECTURE_AND_IMPLEMENTATION.md#business-logic--user-flows)
-- [Architecture Overview](./COMPLETE_SYSTEM_ARCHITECTURE_AND_IMPLEMENTATION.md#executive-summary---current-system-state)
+- [System Status Summary](./OPERATIONS_GUIDE.md#section-1-current-system-status)
+- [Business Logic](./MASTER_SYSTEM_GUIDE.md#section-2-business-logic)
+- [Architecture Overview](./MASTER_SYSTEM_GUIDE.md#section-1-system-architecture)
 
 ### 🎓 For New Team Members
 Recommended reading order:
 1. [Project README](../README.md) - Start here for overview
-2. [Complete System Architecture](./COMPLETE_SYSTEM_ARCHITECTURE_AND_IMPLEMENTATION.md) - Understand the architecture
-3. [Business Logic Documentation](./BUSINESS_LOGIC_DOCUMENTATION.md) - Learn business rules
-4. [Implementation Backlog](./MASTER_IMPLEMENTATION_BACKLOG_2025.md) - See current priorities
+2. [Master System Guide](./MASTER_SYSTEM_GUIDE.md) - Understand the architecture
+3. [Development Guide](./DEVELOPMENT_GUIDE.md) - Learn development workflows
+4. [Operations Guide](./OPERATIONS_GUIDE.md) - See current priorities
 5. [Master Errors Document](./MASTER_ERRORS_TO_FIX.md) - Review system health
 
 ---
@@ -62,9 +62,9 @@ Recommended reading order:
 
 | Document | Purpose | Status | Last Updated |
 |----------|---------|--------|--------------|
-| [Complete System Architecture](./COMPLETE_SYSTEM_ARCHITECTURE_AND_IMPLEMENTATION.md) | Complete system architecture, business logic, implementation history | ✅ Current | 2025-09-29 |
-| [Implementation Backlog](./MASTER_IMPLEMENTATION_BACKLOG_2025.md) | Implementation roadmap, backlog, system status | ✅ Current | 2025-09-29 |
-| [Business Logic Documentation](./BUSINESS_LOGIC_DOCUMENTATION.md) | Business rules, user flows, compliance | ✅ Current | 2025-01 |
+| [Master System Guide](./MASTER_SYSTEM_GUIDE.md) | Complete system architecture, business logic, technical details | ✅ Current | 2025-09-29 |
+| [Operations Guide](./OPERATIONS_GUIDE.md) | System status, roadmap, backlog, monitoring | ✅ Current | 2025-09-29 |
+| [Development Guide](./DEVELOPMENT_GUIDE.md) | Developer workflows, testing, debugging | ✅ Current | 2025-09-29 |
 | [Project README](../README.md) | Quick start, overview, core features | ✅ Current | 2025-09-22 |
 
 ### 🚨 Critical References
@@ -72,15 +72,15 @@ Recommended reading order:
 | Document | Purpose | When to Use |
 |----------|---------|-------------|
 | [Master Errors Document](./MASTER_ERRORS_TO_FIX.md) | Error tracking, troubleshooting, system health | When investigating issues, monitoring production |
-| [Function Reference Registry](./FUNCTION_REFERENCE_REGISTRY_2025.md) | Edge function documentation (40 functions) | When calling or modifying edge functions |
-| [Integration Guide](./INTEGRATION_GUIDE.md) | Frontend-backend integration patterns | When integrating services |
+| [API Reference](./API_REFERENCE.md) | Edge function documentation (40 functions) | When calling or modifying edge functions |
+| [Deployment Guide](./DEPLOYMENT_GUIDE.md) | Deployment procedures, environment config | When deploying or managing infrastructure |
 
 ### 📱 Specialized Topics
 
 | Document | Purpose | Audience |
 |----------|---------|----------|
-| [Documents to Update List](./DOCUMENTS_TO_UPDATE_2025.md) | Documentation roadmap for future work | Documentation team |
-| [Smart Bypass Fix](./SMART_BYPASS_CRITICAL_FIX_2025_09_28.md) | Premium user service quality restoration | Backend developers |
+| [Tier 2 Architecture](./TIER_2_ARCHITECTURE.md) | Multi-service dynamic pipeline details | Backend developers |
+| [Tier 3 Architecture](./TIER_3_SIMPLIFIED_ARCHITECTURE.md) | Nuclear fallback system details | Backend developers |
 
 ### 🔧 Implementation Details
 
@@ -96,32 +96,32 @@ Recommended reading order:
 ### Story Generation System
 | Topic | Primary Doc | Supporting Docs | Related Errors |
 |-------|-------------|-----------------|----------------|
-| 4-Tier Architecture | [Complete System Architecture](./COMPLETE_SYSTEM_ARCHITECTURE_AND_IMPLEMENTATION.md#story-generation-4-tier-resilience-system) | [Implementation Backlog](./MASTER_IMPLEMENTATION_BACKLOG_2025.md) | ERROR-038, ERROR-039, ERROR-040 |
-| Edge Functions | [Function Reference Registry](./FUNCTION_REFERENCE_REGISTRY_2025.md) | [Edge Functions README](../supabase/functions/README.md) | [Master Errors](./MASTER_ERRORS_TO_FIX.md) |
-| Template Service | [Complete System Architecture](./COMPLETE_SYSTEM_ARCHITECTURE_AND_IMPLEMENTATION.md#tier-3-template-service-ultimate-fallback) | - | ERROR-040 |
-| Emergency Content | [Complete System Architecture](./COMPLETE_SYSTEM_ARCHITECTURE_AND_IMPLEMENTATION.md#tier-4-nuclear-emergency-content-always-succeeds) | [Master Errors](./MASTER_ERRORS_TO_FIX.md) | ERROR-040 |
+| 4-Tier Architecture | [Master System Guide](./MASTER_SYSTEM_GUIDE.md#story-generation-4-tier-resilience-system) | [Operations Guide](./OPERATIONS_GUIDE.md) | ERROR-038, ERROR-039, ERROR-040 |
+| Edge Functions | [API Reference](./API_REFERENCE.md) | [Edge Functions README](../supabase/functions/README.md) | [Master Errors](./MASTER_ERRORS_TO_FIX.md) |
+| Template Service | [Master System Guide](./MASTER_SYSTEM_GUIDE.md#tier-3-template-service) | - | ERROR-040 |
+| Emergency Content | [Master System Guide](./MASTER_SYSTEM_GUIDE.md#tier-4-emergency-content) | [Master Errors](./MASTER_ERRORS_TO_FIX.md) | ERROR-040 |
 
 ### Image Generation System
 | Topic | Primary Doc | Supporting Docs | Related Errors |
 |-------|-------------|-----------------|----------------|
-| Multi-Tier Pipeline | [Complete System Architecture](./COMPLETE_SYSTEM_ARCHITECTURE_AND_IMPLEMENTATION.md#technical-architecture---4-tier-image-generation-system) | [Implementation Backlog](./MASTER_IMPLEMENTATION_BACKLOG_2025.md) | ERROR-032, ERROR-033, ERROR-035 |
-| Character Consistency | [Complete System Architecture](./COMPLETE_SYSTEM_ARCHITECTURE_AND_IMPLEMENTATION.md#monitoring--performance-metrics) | - | - |
-| Runware Integration | [Function Reference Registry](./FUNCTION_REFERENCE_REGISTRY_2025.md#3-runware-template-ab-tier-25a-b) | - | ERROR-032, ERROR-035 |
-| Template Generation | [Complete System Architecture](./COMPLETE_SYSTEM_ARCHITECTURE_AND_IMPLEMENTATION.md#template-system-complete-reference) | - | ERROR-033 |
+| Multi-Tier Pipeline | [Master System Guide](./MASTER_SYSTEM_GUIDE.md#image-generation-4-tier-system) | [Operations Guide](./OPERATIONS_GUIDE.md) | ERROR-032, ERROR-033, ERROR-035 |
+| Character Consistency | [Master System Guide](./MASTER_SYSTEM_GUIDE.md#character-consistency) | - | - |
+| Runware Integration | [API Reference](./API_REFERENCE.md#runware-image-generation) | - | ERROR-032, ERROR-035 |
+| Template Generation | [Master System Guide](./MASTER_SYSTEM_GUIDE.md#template-system) | - | ERROR-033 |
 
 ### Payment Systems
 | Topic | Primary Doc | Supporting Docs | Related Errors |
 |-------|-------------|-----------------|----------------|
-| Stripe Integration | [Complete System Architecture](./COMPLETE_SYSTEM_ARCHITECTURE_AND_IMPLEMENTATION.md) | [Function Reference Registry](./FUNCTION_REFERENCE_REGISTRY_2025.md) | None (100% operational) |
-| Hybrid Vendor System | [Implementation Backlog](./MASTER_IMPLEMENTATION_BACKLOG_2025.md#🔴-a1-critical-priority---payment--subscription-functions) | - | None |
-| Discount Codes | [Edge Functions README](../supabase/functions/README.md) | - | None |
+| Stripe Integration | [Master System Guide](./MASTER_SYSTEM_GUIDE.md#payment-systems) | [API Reference](./API_REFERENCE.md#payment-functions) | None (100% operational) |
+| Hybrid Vendor System | [Operations Guide](./OPERATIONS_GUIDE.md#payment-infrastructure) | - | None |
+| Discount Codes | [API Reference](./API_REFERENCE.md#discount-code-functions) | - | None |
 
 ### Business Logic
 | Topic | Primary Doc | Supporting Docs | Related Errors |
 |-------|-------------|-----------------|----------------|
-| User Tier Differentiation | [Business Logic Documentation](./BUSINESS_LOGIC_DOCUMENTATION.md#core-business-model) | [Complete System Architecture](./COMPLETE_SYSTEM_ARCHITECTURE_AND_IMPLEMENTATION.md) | ERROR-036, ERROR-037 |
-| Smart Bypass Logic | [Smart Bypass Fix](./SMART_BYPASS_CRITICAL_FIX_2025_09_28.md) | [Master Errors](./MASTER_ERRORS_TO_FIX.md) | ERROR-036, ERROR-037 |
-| Session Management | [Business Logic Documentation](./BUSINESS_LOGIC_DOCUMENTATION.md#session--cache-management-non-image) | - | - |
+| User Tier Differentiation | [Master System Guide](./MASTER_SYSTEM_GUIDE.md#business-logic) | [Operations Guide](./OPERATIONS_GUIDE.md) | ERROR-036, ERROR-037 |
+| Smart Bypass Logic | [Development Guide](./DEVELOPMENT_GUIDE.md#business-logic-implementation) | [Master Errors](./MASTER_ERRORS_TO_FIX.md) | ERROR-036, ERROR-037 |
+| Session Management | [Master System Guide](./MASTER_SYSTEM_GUIDE.md#session-management) | - | - |
 
 ---
 
@@ -142,12 +142,12 @@ Legend:
 
 **Immediately After:**
 - Production error resolution → Update [Master Errors Document](./MASTER_ERRORS_TO_FIX.md)
-- New feature implementation → Update [Complete System Architecture](./COMPLETE_SYSTEM_ARCHITECTURE_AND_IMPLEMENTATION.md)
+- New feature implementation → Update [Master System Guide](./MASTER_SYSTEM_GUIDE.md)
 - Architecture changes → Update relevant guides + this hub
-- Edge function changes → Update [Function Reference Registry](./FUNCTION_REFERENCE_REGISTRY_2025.md)
+- Edge function changes → Update [API Reference](./API_REFERENCE.md)
 
 **Weekly:**
-- Review [Implementation Backlog](./MASTER_IMPLEMENTATION_BACKLOG_2025.md) for roadmap updates
+- Review [Operations Guide](./OPERATIONS_GUIDE.md) for roadmap updates
 - Update implementation status in backlog sections
 - Review and consolidate error trends
 
@@ -227,4 +227,4 @@ If you find:
 **Next Review:** 2025-10-06  
 **Maintained By:** Engineering Team
 
-**Quick Start**: New to the project? Start with the [Project README](../README.md), then explore the [Complete System Architecture](./COMPLETE_SYSTEM_ARCHITECTURE_AND_IMPLEMENTATION.md).
+**Quick Start**: New to the project? Start with the [Project README](../README.md), then explore the [Master System Guide](./MASTER_SYSTEM_GUIDE.md).
