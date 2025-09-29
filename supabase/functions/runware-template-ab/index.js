@@ -1515,7 +1515,7 @@ async function handleRequest(req) {
       try {
         const { CharacterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
         const service = CharacterConsistencyService.getInstance();
-        const coloredObjects = service.getColoredObjects(sessionId);
+        const coloredObjects = await service.getColoredObjects(sessionId);
         if (coloredObjects) {
           console.log(`✅ [TIER2.5A] Using CharacterConsistencyService colored objects: ${coloredObjects.substring(0, 100)}`);
           return coloredObjects;
@@ -1647,11 +1647,28 @@ async function handleRequest(req) {
             // Main character analysis
             await characterService.analyzeVisualDetails(sessionId, storyText, pageNumber || 1, characterName);
             characterAppearance = await characterService.getCharacterAppearanceFromStory(sessionId, characterName) || '';
-            characterSeed = await characterService.getCharacterSeed(sessionId, characterName) || null;
             
-            // Secondary character detection  
+            // Get character seed with proper avatarIdentity
+            const avatarIdentity = {
+              name: characterName,
+              type: userInfo?.avatar?.type || 'child',
+              skinTone: userInfo?.avatar?.skinTone || 'medium'
+            };
+            characterSeed = await characterService.getCharacterSeed(
+              sessionId,
+              avatarIdentity,
+              storyText || '',
+              'continuing'
+            ) || null;
+            
+            // Secondary character detection using consolidated API
             const pageTextForAnalysis = storyText || extractedScene?.scene || extractedScene || '';
-            detectedSecondaryCharacters = await characterService.detectSecondaryCharacters(pageTextForAnalysis);
+            const detections = await characterService.detectAllCharacters(pageTextForAnalysis, {
+              sessionId,
+              pageNumber: pageNumber || 1,
+              userInfo
+            });
+            detectedSecondaryCharacters = detections?.secondaryCharacters || [];
             
             // Build secondary character descriptions with seeds
             const safeSecondaryCharacters = (detectedSecondaryCharacters || []).filter(character => character && character.name);

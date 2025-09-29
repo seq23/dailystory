@@ -16,15 +16,17 @@ Returns singleton instance of the service.
 - Extracts colored objects, atmospheric words, character appearance
 - Stores data by sessionId and pageNumber
 
-### `detectSecondaryCharacters(sessionId, pageText, pageNumber)`
-- Detects secondary characters and relationships
-- Uses pattern matching for family members, friends, etc.
-- Returns array of character objects with names and relationships
+### `detectAllCharacters(pageText, context)` ✅
+**STATUS**: CONSOLIDATED API  
+**Purpose**: Unified detection for all character types (main, secondary, family, community)  
+**Returns**: Object with `secondaryCharacters` array and other detection results  
+**Usage**: Template AB should call this instead of older `detectSecondaryCharacters`  
 
-### `getSecondaryCharacterSeed(sessionId, characterName, type)` ✅
-**STATUS**: VERIFIED PRESENT - NOT A BUG  
-**Purpose**: Generates consistent seeds for secondary character appearance  
-**Usage**: Called correctly in `runware-template-ab/index.js` lines 248-252
+### `getCharacterSeed(sessionId, avatarIdentity, storyContext, sessionType)` ✅
+**STATUS**: REQUIRES PROPER ARGUMENTS  
+**Purpose**: Generates consistent character seeds with avatar identity  
+**Signature**: Expects `avatarIdentity` object with `{name, type, skinTone}`, not just a string  
+**Usage**: Pass full `avatarIdentity` object for correct cache keys and consistency
 
 ### `getCharacterAppearanceFromStory(sessionId, characterName?)`
 - Combines character appearance from all cached pages
@@ -43,26 +45,40 @@ Returns singleton instance of the service.
 
 ## Integration Points
 
-### Template AB (`runware-template-ab/index.js`)
+### Template AB (`runware-template-ab/index.js`) - CORRECTED
 ```javascript
 // Service instantiation
-const CharacterService = await getCharacterService();
-const characterService = CharacterService.getInstance();
+const { CharacterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
+const characterService = CharacterConsistencyService.getInstance();
 
-// Secondary character detection
-const detectedCharacters = await characterService.detectSecondaryCharacters(
-  sessionId, storyText, pageNumber
-);
+// Consolidated character detection (CORRECT API)
+const detections = await characterService.detectAllCharacters(pageText, {
+  sessionId,
+  pageNumber: pageNumber || 1,
+  userInfo
+});
+const detectedSecondaryCharacters = detections?.secondaryCharacters || [];
 
-// Character seed generation
-const secondaryData = await characterService.getSecondaryCharacterSeed(
-  sessionId, characterName, 'secondary_character'
+// Character seed with proper avatarIdentity (CORRECT ARGUMENTS)
+const avatarIdentity = {
+  name: characterName,
+  type: userInfo?.avatar?.type || 'child',
+  skinTone: userInfo?.avatar?.skinTone || 'medium'
+};
+const characterSeed = await characterService.getCharacterSeed(
+  sessionId,
+  avatarIdentity,
+  storyText || '',
+  'continuing'
 );
 
 // Visual analysis
 await characterService.analyzeVisualDetails(
   sessionId, storyText, pageNumber, userInfo?.name
 );
+
+// Get colored objects (MUST AWAIT)
+const coloredObjects = await characterService.getColoredObjects(sessionId);
 ```
 
 ### Template CD Integration

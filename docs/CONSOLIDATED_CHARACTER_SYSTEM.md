@@ -56,6 +56,9 @@ Explicitly handles OpenAI integration for generating primaryScene descriptions:
 
 #### Character Management
 - `getCharacterSeed(sessionId, avatarIdentity, storyContext, sessionType, pageTextClothing?)` - Get/create character with consistency
+  - **CRITICAL**: `avatarIdentity` MUST be an object `{name, type, skinTone}`, NOT a string
+  - **Incorrect**: `getCharacterSeed(sessionId, characterName)` ❌
+  - **Correct**: `getCharacterSeed(sessionId, {name, type, skinTone}, storyContext, 'continuing')` ✅
 - `getCulturalEnhancements(userInfo, sessionId, characterName)` - Get cultural traits with seeding
 - `generateSecondaryCharacter(type, details, userInfo, sessionId)` - Create secondary characters
 - `getSecondaryCharacterSeed(sessionId, characterName, characterType, userInfo?)` - Get secondary character seeds
@@ -63,13 +66,18 @@ Explicitly handles OpenAI integration for generating primaryScene descriptions:
 #### Visual Detail Management  
 - `analyzeVisualDetails(sessionId, pageText, pageNumber, characterName?)` - Detect and store visual elements
 - `getColoredObjects(sessionId)` - Get detected colored objects for consistency
+  - **CRITICAL**: This method is async, MUST be awaited
+  - **Incorrect**: `const objects = service.getColoredObjects(sessionId)` ❌
+  - **Correct**: `const objects = await service.getColoredObjects(sessionId)` ✅
 - `getCharacterAppearanceFromStory(sessionId, characterName?)` - Build appearance description
 - `buildClothingDescription(sessionId, characterName)` - Get character clothing description
 - `getSessionSetting(sessionId)` - Get persistent setting across pages
 
 #### Detection & Analysis
-- `detectAllCharacters(text, context)` - Detect secondary characters and animals
-- `detectSecondaryCharacters(text, context)` - Pattern-based character detection  
+- `detectAllCharacters(text, context)` - **[CONSOLIDATED API]** Unified character detection
+  - **Returns**: `{ secondaryCharacters: [...], humans: {...}, animals: {...}, ... }`
+  - **Replaces**: Old `detectSecondaryCharacters` method  
+  - **Usage**: Template AB MUST use this instead of deprecated methods
 - `detectAnimals(text, context)` - Enhanced animal detection with species validation
 - `detectCharacterAnimals(originalText, lowercaseText)` - Named animal detection
 - `detectRelationships(text, context)` - Relationship pattern detection

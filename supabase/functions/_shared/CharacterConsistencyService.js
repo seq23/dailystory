@@ -91,6 +91,8 @@ async function memoizedServiceImport(path) {
   }
 }
 
+const COMMON_WORD_NAMES = ['apple','rose','sage','sky','rain','may','june','april','parker','river','autumn','summer'];
+
 
 export class CharacterConsistencyService {
   constructor() {
@@ -159,7 +161,7 @@ export class CharacterConsistencyService {
   async getSupabaseClient() {
     if (!this.supabase) {
       try {
-        const { createResilientSupabaseClient } = await import('./resilientLoader.ts');
+        const { createResilientSupabaseClient } = await import('./resilientLoader.js');
         this.supabase = await createResilientSupabaseClient();
       } catch (error) {
         console.warn('Failed to create Supabase client:', error);
@@ -395,6 +397,45 @@ export class CharacterConsistencyService {
       x = Math.sin(x) * 10000;
       return x - Math.floor(x);
     };
+  }
+
+  /**
+   * Build character description with detected clothing
+   */
+  async buildCharacterDescription(seedData, storyContext, pageTextClothing, sessionId) {
+    const characterName = seedData.characterName || 'child';
+    const age = seedData.age || '6-8';
+
+    // Check for detected clothing from visual details
+    let clothingStyle = '';
+    if (sessionId) {
+      try {
+        const detectedClothing = await this.buildClothingDescription(sessionId, characterName);
+        if (detectedClothing) {
+          clothingStyle = detectedClothing;
+          console.log(`👕 Using detected clothing for ${characterName}: ${detectedClothing}`);
+        }
+      } catch (error) {
+        console.log(`⚠️ Clothing detection failed:`, error.message);
+      }
+    }
+
+    // Use random clothing if no specific clothing detected and story doesn't specify
+    if (!clothingStyle) {
+      const hasStoryClothing = pageTextClothing && (
+        pageTextClothing.includes('wearing') || 
+        pageTextClothing.includes('dressed') || 
+        pageTextClothing.includes('shirt') ||
+        pageTextClothing.includes('pants') ||
+        pageTextClothing.includes('dress')
+      );
+      if (!hasStoryClothing) {
+        clothingStyle = `wearing ${seedData.consistentClothingStyle} clothing`;
+      }
+    }
+
+    const avatarType = seedData.avatarType || seedData.type || 'child';
+    return `${characterName} is a ${avatarType} age ${age}${clothingStyle ? ' ' + clothingStyle : ''}`;
   }
 
   /**
@@ -735,42 +776,6 @@ export class CharacterConsistencyService {
       console.error('Database error in storeAllDetections:', error);
     }
   }
-    const characterName = seedData.characterName || 'child';
-    const age = seedData.age || '6-8';
-    
-    // Check for detected clothing from visual details
-    let clothingStyle = '';
-    if (sessionId) {
-      try {
-        const detectedClothing = await this.buildClothingDescription(sessionId, characterName);
-        if (detectedClothing) {
-          clothingStyle = detectedClothing;
-          console.log(`👕 Using detected clothing for ${characterName}: ${detectedClothing}`);
-        }
-      } catch (error) {
-        console.log(`⚠️ Clothing detection failed:`, error.message);
-      }
-    }
-    
-    // Use random clothing if no specific clothing detected
-    if (!clothingStyle) {
-      const hasStoryClothing = pageTextClothing && (
-        pageTextClothing.includes('wearing') || 
-        pageTextClothing.includes('dressed') || 
-        pageTextClothing.includes('shirt') ||
-        pageTextClothing.includes('pants') ||
-        pageTextClothing.includes('dress')
-      );
-      
-      if (!hasStoryClothing) {
-        clothingStyle = `wearing ${seedData.consistentClothingStyle} clothing`;
-      }
-    }
-    
-    const avatarType = seedData.avatarType || seedData.type || 'child';
-    
-    return `${characterName} is a ${avatarType} age ${age}${clothingStyle ? ' ' + clothingStyle : ''}`;
-  }
 
   // ============= VISUAL DETAIL TRACKING (consolidated from VisualDetailTracker) =============
   
@@ -823,92 +828,6 @@ export class CharacterConsistencyService {
           );
         }
       }
-    }
-  }
-    const characterClothingPattern = new RegExp(
-      `(${characterName || '[A-Z][a-z]+'}|[A-Z][a-z]+)\\s+(has|wears?|wearing|puts?\\s+on|dresses?\\s+in)\\s+(a|an|the)?\\s*(new|old)?\\s*(red|blue|green|yellow|purple|orange|pink|brown|black|white|gray|grey|colorful)?\\s*(shirt|dress|pants|hat|jacket|coat|shoes|boots|socks|gloves|scarf|belt|tie|sweater|blouse|skirt|shorts|vest|uniform)`,
-      'gi'
-    );
-    
-    // Secondary character visual patterns
-    const momVisualPattern = /(mom|mother|mommy|mama)\\s+(has|with|wearing|wears|in)\\s+(a|an|the)?\\s*(long|short|curly|straight|blonde|brown|black|red|gray|grey)?\\s*(hair|dress|shirt|blouse|jacket|coat|apron|glasses|smile)/gi;
-    const dadVisualPattern = /(dad|father|daddy|papa)\\s+(has|with|wearing|wears|in)\\s+(a|an|the)?\\s*(beard|mustache|glasses|hat|cap|shirt|jacket|tie|suit)/gi;
-    
-    // Enhanced color and size patterns using dynamic vocabulary
-    const vocab = await this.getVocabulary();
-    const expandedColorWords = vocab.colors.join('|').replace(/\s+/g, '\\s+');
-    const sizeWords = ['big', 'small', 'large', 'tiny', 'huge', 'little', 'giant', 'mini'].join('|');
-    const objectWords = vocab.objects.join('|').replace(/\s+/g, '\\s+');
-    
-    const colorPattern = new RegExp(`(${expandedColorWords})\\s+(${objectWords})`, 'gi');
-    const sizePattern = new RegExp(`(${sizeWords})\\s+(${objectWords})`, 'gi');
-    const colorSizePattern = new RegExp(`(${sizeWords})\\s+(${expandedColorWords})\\s+(${objectWords})`, 'gi');
-    
-    // Process character-specific clothing
-    let match;
-    while ((match = characterClothingPattern.exec(text)) !== null) {
-      const characterInText = match[1];
-      const clothingItem = match[7];
-      const color = match[6] || 'unspecified';
-      const modifier = match[4] || '';
-      
-      const clothingDescription = `${modifier} ${color} ${clothingItem}`.trim();
-      
-      await this.saveVisualDetailToDatabase(
-        sessionId, 
-        characterInText.toLowerCase(), 
-        'clothing', 
-        clothingItem, 
-        clothingDescription, 
-        pageNumber
-      );
-      
-      console.log(`👕 New character clothing: ${characterInText} - ${clothingDescription}`);
-    }
-    
-    // Process secondary character visual details
-    while ((match = momVisualPattern.exec(text)) !== null) {
-      const attribute = match[5];
-      const descriptor = match[4] || 'default';
-      const fullDescription = `${descriptor} ${attribute}`.trim();
-      
-      await this.saveVisualDetailToDatabase(sessionId, 'mom', 'appearance', attribute, fullDescription, pageNumber);
-      console.log(`👩 Mom visual detail: ${fullDescription}`);
-    }
-    
-    while ((match = dadVisualPattern.exec(text)) !== null) {
-      const attribute = match[4];
-      await this.saveVisualDetailToDatabase(sessionId, 'dad', 'appearance', attribute, attribute, pageNumber);
-      console.log(`👨 Dad visual detail: ${attribute}`);
-    }
-    
-    // Process enhanced object detection
-    while ((match = colorSizePattern.exec(text)) !== null) {
-      const size = match[1].toLowerCase();
-      const color = match[2].toLowerCase();
-      const object = match[3].toLowerCase();
-      const fullDescription = `${size} ${color} ${object}`;
-      
-      await this.saveVisualDetailToDatabase(sessionId, 'general', 'colored_object', object, fullDescription, pageNumber);
-      console.log(`🎯 Enhanced object detail: ${fullDescription}`);
-    }
-    
-    while ((match = colorPattern.exec(text)) !== null) {
-      const color = match[1].toLowerCase();
-      const object = match[2].toLowerCase();
-      const fullDescription = `${color} ${object}`;
-      
-      await this.saveVisualDetailToDatabase(sessionId, 'general', 'colored_object', object, fullDescription, pageNumber);
-      console.log(`🎨 Color object detail: ${fullDescription}`);
-    }
-    
-    while ((match = sizePattern.exec(text)) !== null) {
-      const size = match[1].toLowerCase();
-      const object = match[2].toLowerCase();
-      const fullDescription = `${size} ${object}`;
-      
-      await this.saveVisualDetailToDatabase(sessionId, 'general', 'colored_object', object, fullDescription, pageNumber);
-      console.log(`📏 Size object detail: ${fullDescription}`);
     }
   }
 
@@ -1476,108 +1395,6 @@ export class CharacterConsistencyService {
     await this.saveCharacterToDatabase(sessionId, cacheKey, characterData);
     
     return characterData;
-  }
-    const secondaryCharacters = [];
-    
-    // Generate all pattern combinations for comprehensive relationship detection
-    const allPatterns = [];
-    
-    const vocab = await this.getVocabulary();
-    vocab.relationships.forEach(relationship => {
-        // Direct Relationship + Name (e.g., "friend Apple", "teacher Ms. Johnson")
-        allPatterns.push({
-          pattern: new RegExp(`\\b(${relationship})\\s+([A-Z][a-z]{1,14})`, 'gi'),
-          type: 'secondary',
-          patternType: 'direct',
-          relationship: relationship
-        });
-        
-        // Possessive Pronouns + Relationship + Name (e.g., "my friend Apple")
-        allPatterns.push({
-          pattern: new RegExp(`\\b(?:my|your|his|her|their|our)\\s+(${relationship})\\s+([A-Z][a-z]{1,14})`, 'gi'),
-          type: relationshipType,
-          patternType: 'possessive_pronoun',
-          relationship: relationship
-        });
-        
-        // Possessive Forms (e.g., "Apple's mom")
-        allPatterns.push({
-          pattern: new RegExp(`\\b([A-Z][a-z]{1,14})'?s\\s+(${relationship})`, 'gi'),
-          type: relationshipType,
-          patternType: 'possessive_form',
-          relationship: relationship
-        });
-      });
-    });
-    
-    // Dialogue Attribution (e.g., '"Hello," said Apple')
-    allPatterns.push({
-      pattern: /["']([^"']+)["'][,.]?\s+(?:said|asked|called|whispered|shouted|replied|answered)\s+([A-Z][a-z]{1,14})/gi,
-      type: 'dialogue_attribution',
-      patternType: 'dialogue',
-      relationship: 'speaker'
-    });
-    
-    // Coordinated Names (e.g., "Apple and Sequoia")
-    allPatterns.push({
-      pattern: /\b([A-Z][a-z]{1,14})\s+and\s+([A-Z][a-z]{1,14})/gi,
-      type: 'coordinated_names',
-      patternType: 'coordination',
-      relationship: 'companion'
-    });
-    
-    // Process all patterns
-    allPatterns.forEach(({ pattern, type, patternType, relationship }) => {
-      const matches = [...originalText.matchAll(pattern)];
-      matches.forEach(match => {
-        let names = [];
-        let fullContext = '';
-        
-        // Extract names based on pattern type
-        if (patternType === 'direct' || patternType === 'possessive_pronoun') {
-          names = [match[2]];
-          fullContext = `${relationship} ${match[2]}`;
-        } else if (patternType === 'possessive_form') {
-          names = [match[1]];
-          fullContext = `${match[1]}'s ${relationship}`;
-        } else if (patternType === 'dialogue') {
-          names = [match[2]];
-          fullContext = `speaker ${match[2]}`;
-        } else if (patternType === 'coordination') {
-          names = [match[1], match[2]];
-          fullContext = `${match[1]} and ${match[2]}`;
-        }
-        
-        // Process each detected name
-        names.forEach(name => {
-          const nameLower = name.toLowerCase();
-          
-          // Skip if already detected
-          if (secondaryCharacters.find(c => c.name === nameLower)) return;
-          
-          // Apply smart name validation
-          if (!this.isValidName(name, fullContext)) return;
-          
-          // Create character entry with disambiguation
-          const character = {
-            name: nameLower,
-            displayName: name,
-            type: type,
-            category: 'secondary_character',
-            needsConsistency: true,
-            relationshipType: this.getRelationshipCategory(type),
-            fullContext: fullContext,
-            patternType: patternType,
-            relationship: relationship,
-            disambiguation: this.generateDisambiguation(name, relationship, type)
-          };
-          
-          secondaryCharacters.push(character);
-        });
-      });
-    });
-    
-    return secondaryCharacters;
   }
 
   /**
