@@ -28,6 +28,26 @@ export class SmartOrchestrationBypass {
     userTier: 'premium' | 'guest' = 'guest'
   ): { shouldBypass: boolean; reason: string; targetTemplate?: string } {
     
+    DebugLogger.log('image', '⚡ Smart Bypass Decision Check', {
+      contentLength: content.length,
+      sessionId,
+      userTier,
+      forceDisable
+    });
+    
+    // CRITICAL: Premium users NEVER get bypassed - always use full orchestrator
+    if (userTier === 'premium') {
+      DebugLogger.log('image', '⚡ Smart Bypass BLOCKED for premium user - forcing full orchestrator', {
+        contentLength: content.length,
+        sessionId,
+        userTier
+      });
+      return {
+        shouldBypass: false,
+        reason: 'Premium user - always use full orchestrator for quality'
+      };
+    }
+    
     // Testing mode: Force disable bypass when requested
     if (forceDisable) {
       DebugLogger.log('image', '⚡ Smart Bypass disabled for testing - forcing full orchestrator path', {
@@ -40,46 +60,31 @@ export class SmartOrchestrationBypass {
       };
     }
     
-    // Always bypass for very simple content
+    // GUEST USERS ONLY: Bypass for very simple content (short stories)
     if (content.length < this.SIMPLE_CONTENT_THRESHOLD) {
-      const template = userTier === 'premium' ? 'runware-template-ab' : 'runware-template-cd';
+      DebugLogger.log('image', '⚡ Smart Bypass APPROVED for guest short story', {
+        contentLength: content.length,
+        sessionId,
+        userTier,
+        threshold: this.SIMPLE_CONTENT_THRESHOLD
+      });
       return {
         shouldBypass: true,
-        reason: `Simple content (${content.length} chars) - direct ${userTier} template routing`,
-        targetTemplate: template
+        reason: `Guest short story (${content.length} chars < ${this.SIMPLE_CONTENT_THRESHOLD}) - direct template-cd routing`,
+        targetTemplate: 'runware-template-cd'
       };
     }
     
-    // Get performance metrics for this session
-    const metrics = this.getSessionMetrics(sessionId);
-    
-    // Bypass if orchestrator has been consistently slow
-    const avgOrchestratorTime = this.calculateAverage(metrics.orchestratorResponseTimes);
-    const avgTemplateTime = this.calculateAverage(metrics.templateResponseTimes);
-    
-    if (avgOrchestratorTime > this.FAST_RESPONSE_THRESHOLD && avgTemplateTime < this.FAST_RESPONSE_THRESHOLD) {
-      const template = userTier === 'premium' ? 'runware-template-ab' : 'runware-template-cd';
-      return {
-        shouldBypass: true,
-        reason: `Orchestrator slow (${avgOrchestratorTime}ms avg) vs template fast (${avgTemplateTime}ms avg) - ${userTier} template`,
-        targetTemplate: template
-      };
-    }
-    
-    // Bypass if recent orchestrator failures
-    if (metrics.recentFailures > 2) {
-      const template = userTier === 'premium' ? 'runware-template-ab' : 'runware-template-cd';
-      return {
-        shouldBypass: true,
-        reason: `Recent orchestrator failures (${metrics.recentFailures}) - ${userTier} template`,
-        targetTemplate: template
-      };
-    }
-    
-    // Don't bypass for complex content when orchestrator is healthy
+    // All other content (longer stories) should use full orchestrator for quality
+    DebugLogger.log('image', '⚡ Smart Bypass DENIED - using full orchestrator for quality', {
+      contentLength: content.length,
+      sessionId,
+      userTier,
+      reason: 'Complex content requires full orchestrator'
+    });
     return {
       shouldBypass: false,
-      reason: 'Complex content with healthy orchestrator'
+      reason: 'Complex content requires full orchestrator for quality'
     };
   }
   

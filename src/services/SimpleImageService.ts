@@ -339,6 +339,13 @@ export class SimpleImageService {
     }
 
     // PERFORMANCE: Smart orchestrator bypass decision
+    DebugLogger.log('image', '⚡ Bypass Decision Input', {
+      userTier: userInfo?.userTier || 'guest',
+      smartBypassEnabled,
+      cleanSceneLength: cleanScene.length,
+      sessionId: normalizedSessionId
+    });
+    
     const bypassDecision = SmartOrchestrationBypass.shouldBypassOrchestrator(
       cleanScene, 
       normalizedSessionId, 
