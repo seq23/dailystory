@@ -159,11 +159,12 @@ function generateTier25C(storyText, userInfo, avatarIdentity, failedTierData = {
     genderNeutralDescription = ' gender neutral child with no visible male nor female characteristics';
   }
   
-  // Get hair color based on skin tone
-  const hairColor = getSimpleHairColor(skinTone);
+  // Get hair color based on skin tone (prioritize structured data)
+  const hairColor = failedTierData?.structuredAvatarData?.hairColor || getSimpleHairColor(skinTone);
   
-  // Base template with hair color included
-  let characterDesc = `A young ${mappedAvatarType} named ${characterName} age ${age} ${skinTone} skin complexion with ${hairColor}`;
+  // Base template with hair color included (use structured skin tone)
+  const actualSkinTone = failedTierData?.structuredAvatarData?.skinTone || skinTone;
+  let characterDesc = `A young ${mappedAvatarType} named ${characterName} age ${age} ${actualSkinTone} skin complexion with ${hairColor}`;
   
   // Add gender-neutral description if needed
   if (genderNeutralDescription) {
