@@ -343,8 +343,12 @@ export class SimpleImageService {
     }
 
     // PERFORMANCE: Smart orchestrator bypass decision
+    // Defensive: derive tier from isPremium if userTier missing
+    const effectiveTier = userInfo?.userTier || (isPremium ? 'premium' : 'guest');
+    
     DebugLogger.log('image', '⚡ Bypass Decision Input', {
-      userTier: userInfo?.userTier || 'guest',
+      userTier: effectiveTier,
+      isPremium,
       smartBypassEnabled,
       cleanSceneLength: cleanScene.length,
       sessionId: normalizedSessionId
@@ -355,7 +359,7 @@ export class SimpleImageService {
       normalizedSessionId, 
       healthStatus,
       !smartBypassEnabled,  // forceDisable = true when smartBypassEnabled = false
-      userInfo?.userTier || 'guest' // Pass user tier for routing decision
+      effectiveTier // Pass user tier for routing decision
     );
     
     if (bypassDecision.shouldBypass && !forceTier1) {

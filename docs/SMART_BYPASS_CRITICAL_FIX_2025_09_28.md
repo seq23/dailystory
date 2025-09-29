@@ -99,3 +99,22 @@ DebugLogger.log('image', '⚡ Bypass Decision Input', {
 3. `src/services/SimpleImageService.ts` - Lines 342-349 (logging)
 
 **Status**: ✅ **FULLY IMPLEMENTED AND VERIFIED**
+
+## Phase 5: Frontend Defensive Tier Default (September 29, 2025)
+**File**: `src/services/SimpleImageService.ts`
+**Lines 345-362**: Added defensive tier derivation
+```typescript
+// Defensive: derive tier from isPremium if userTier missing
+const effectiveTier = userInfo?.userTier || (isPremium ? 'premium' : 'guest');
+```
+
+**File**: `src/utils/imageGenerationTrigger.ts`
+**Lines 107-111**: Always set userTier before calling generateStoryImage
+```typescript
+const userInfoWithTier = {
+  ...options.userInfo,
+  userTier: options.isGuestUser ? 'guest' : 'premium'
+};
+```
+
+**Impact**: Frontend ensures 'premium' tier for authenticated users in bypass routing even if userTier not present in userInfo object.

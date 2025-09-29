@@ -104,9 +104,15 @@ export class ImageGenerationTrigger {
       
       const sessionId = options.sessionId || generateSessionId();
       
+      // Ensure userTier is set for consistent routing
+      const userInfoWithTier = {
+        ...options.userInfo,
+        userTier: options.isGuestUser ? 'guest' : 'premium'
+      };
+      
       const result = await SimpleImageService.generateStoryImage(
         options.pageText,
-        options.userInfo,
+        userInfoWithTier,
         sessionId,
         options.currentPage,
         !options.isGuestUser // For analytics only - all users get same quality
