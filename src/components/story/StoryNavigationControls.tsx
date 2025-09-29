@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Plus, RefreshCw, Wand, GraduationCap } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, RefreshCw, GraduationCap } from "lucide-react";
 import { DebugLogger } from '@/services/DebugLogger';
 import { MobileOptimizedButton } from "@/components/MobileOptimizedButton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -12,15 +12,12 @@ interface StoryNavigationControlsProps {
   isPremium: boolean;
   isLoadingNextPage: boolean;
   isGeneratingNewStory: boolean;
-  isGeneratingRewrite: boolean;
   canGoNext: boolean;
   canGoPrevious: boolean;
   onNext: () => void;
   onPrevious: () => void;
   onGenerateNext: () => void;
   onGenerateNewStory: () => void;
-  onGenerateRewrite: () => void;
-  onFinishStory?: () => void;
   // Audio controls props
   audioEngineRef?: React.RefObject<any>;
   isAudioPlaying?: boolean;
@@ -40,15 +37,12 @@ export const StoryNavigationControls: React.FC<StoryNavigationControlsProps> = (
   isPremium,
   isLoadingNextPage,
   isGeneratingNewStory,
-  isGeneratingRewrite,
   canGoNext,
   canGoPrevious,
   onNext,
   onPrevious,
   onGenerateNext,
   onGenerateNewStory,
-  onGenerateRewrite,
-  onFinishStory,
   audioEngineRef,
   isAudioPlaying,
   isAudioLoading,
@@ -149,31 +143,6 @@ export const StoryNavigationControls: React.FC<StoryNavigationControlsProps> = (
 
       {/* Next Button */}
       <div className="flex items-center gap-2">
-        {/* Premium Controls */}
-        {isPremium && (
-          <div className="flex items-center gap-2">
-            <MobileOptimizedButton
-              onClick={onGenerateRewrite}
-              disabled={isGeneratingRewrite || isGeneratingNewStory}
-              variant="ghost"
-              size="sm"
-            >
-              <Wand className="w-4 h-4" />
-              {isGeneratingRewrite ? 'Rewriting...' : 'Rewrite'}
-            </MobileOptimizedButton>
-
-            {onFinishStory && (
-              <MobileOptimizedButton
-                onClick={onFinishStory}
-                variant="outline"
-                size="sm"
-              >
-                Finish Story
-              </MobileOptimizedButton>
-            )}
-          </div>
-        )}
-
         {/* Guest Next Story Button */}
         {!isPremium && currentPage === 5 && (
           <MobileOptimizedButton

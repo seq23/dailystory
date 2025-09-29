@@ -3689,15 +3689,12 @@ const handleRestartTimer = () => {
                     isPremium={isPremium}
                     isLoadingNextPage={isLoadingNextPage}
                     isGeneratingNewStory={isGeneratingNewStory}
-                    isGeneratingRewrite={isGeneratingRewrite}
                     canGoNext={!controlsBlocked && (isPremium ? true : currentPage < 5) && !isForwardNavigationBlocked}
                     canGoPrevious={currentPage > 0 && !controlsBlocked}
                     onNext={handleNext}
                     onPrevious={handlePrevious}
                     onGenerateNext={handleNext}
                     onGenerateNewStory={() => handleGenerateNewStory()}
-                    onGenerateRewrite={handleRewriteWithDialog}
-                    onFinishStory={() => setShowConfirmEndStory(true)}
                     audioEngineRef={audioEngineRef}
                     isAudioPlaying={isAudioPlaying}
                     isAudioLoading={isAudioLoading}
