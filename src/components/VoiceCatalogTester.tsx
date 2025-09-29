@@ -484,13 +484,54 @@ export function VoiceCatalogTester() {
                   {renderTestStatus(quickTestResult)}
                 </div>
                 {quickTestResult.data && (
-                  <div className="space-y-2">
-                    <Badge variant="secondary">
-                      {quickTestResult.data.selectedVoice.pn}
-                    </Badge>
-                    <div className="text-sm text-muted-foreground">
-                      Score: {quickTestResult.data.compatibilityScore?.toFixed(2)}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge variant="secondary" className="text-sm">
+                        {quickTestResult.data.selectedVoice.pn}
+                      </Badge>
+                      <Badge variant="outline" className="text-xs">
+                        Score: {quickTestResult.data.compatibilityScore?.toFixed(2) || 'N/A'}
+                      </Badge>
                     </div>
+                    
+                    {/* Voice Characteristics */}
+                    {quickTestResult.data.selectedVoice && (
+                      <div className="p-3 bg-muted/50 rounded-md space-y-2">
+                        <div className="text-sm font-medium">Voice Characteristics:</div>
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          {quickTestResult.data.selectedVoice.tones && (
+                            <div>
+                              <span className="font-medium">Tones:</span> {quickTestResult.data.selectedVoice.tones.join(', ')}
+                            </div>
+                          )}
+                          {quickTestResult.data.selectedVoice.warmth !== undefined && (
+                            <div>
+                              <span className="font-medium">Warmth:</span> {quickTestResult.data.selectedVoice.warmth}/5
+                            </div>
+                          )}
+                          {quickTestResult.data.selectedVoice.humor !== undefined && (
+                            <div>
+                              <span className="font-medium">Humor:</span> {quickTestResult.data.selectedVoice.humor}/5
+                            </div>
+                          )}
+                          {quickTestResult.data.selectedVoice.themes && (
+                            <div className="col-span-2">
+                              <span className="font-medium">Themes:</span> {quickTestResult.data.selectedVoice.themes.join(', ')}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Selection Reasoning */}
+                    {quickTestResult.data.selectionReasoning && (
+                      <div className="p-3 bg-primary/5 rounded-md">
+                        <div className="text-sm font-medium mb-1">Selection Reasoning:</div>
+                        <div className="text-xs text-muted-foreground">
+                          {quickTestResult.data.selectionReasoning}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
                 {quickTestResult.error && (
@@ -582,13 +623,41 @@ export function VoiceCatalogTester() {
                         {renderTestStatus(result)}
                         
                         {result.voiceName && (
-                          <div className="space-y-1">
+                          <div className="space-y-2">
                             <Badge variant="secondary" className="text-xs">
                               {result.voiceName}
                             </Badge>
                             {result.score && (
                               <div className="text-xs text-muted-foreground">
                                 Score: {result.score.toFixed(2)}
+                              </div>
+                            )}
+                            
+                            {/* Voice Details */}
+                            {result.data?.selectedVoice && (
+                              <div className="space-y-1">
+                                {result.data.selectedVoice.tones && (
+                                  <div className="text-xs">
+                                    <span className="font-medium">Tones:</span> {result.data.selectedVoice.tones.slice(0, 2).join(', ')}
+                                  </div>
+                                )}
+                                {result.data.selectedVoice.warmth !== undefined && (
+                                  <div className="text-xs">
+                                    <span className="font-medium">Warmth:</span> {result.data.selectedVoice.warmth}/5
+                                  </div>
+                                )}
+                                {result.data.selectedVoice.themes && result.data.selectedVoice.themes.length > 0 && (
+                                  <div className="text-xs">
+                                    <span className="font-medium">Themes:</span> {result.data.selectedVoice.themes.slice(0, 3).join(', ')}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                            
+                            {/* Selection Reasoning Summary */}
+                            {result.data?.selectionReasoning && (
+                              <div className="text-xs text-muted-foreground bg-muted/30 p-2 rounded text-ellipsis">
+                                {result.data.selectionReasoning.substring(0, 100)}...
                               </div>
                             )}
                           </div>
@@ -899,17 +968,64 @@ export function VoiceCatalogTester() {
                 </div>
                 
                 {userTests.data && (
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Badge variant="secondary">
-                        {userTests.data.result.selectedVoice.pn}
-                      </Badge>
-                      <span className="text-sm text-muted-foreground">
-                        Score: {userTests.data.result.compatibilityScore.toFixed(2)}
-                      </span>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Voice Selection Summary */}
+                      <div className="p-3 bg-muted/50 rounded-md space-y-2">
+                        <div className="text-sm font-medium">Selected Voice</div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="secondary">
+                            {userTests.data.result.selectedVoice.pn}
+                          </Badge>
+                          <span className="text-sm text-muted-foreground">
+                            Score: {userTests.data.result.compatibilityScore.toFixed(2)}
+                          </span>
+                        </div>
+                        
+                        {/* Voice Characteristics */}
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          {userTests.data.result.selectedVoice.warmth !== undefined && (
+                            <div>
+                              <span className="font-medium">Warmth:</span> {userTests.data.result.selectedVoice.warmth}/5
+                            </div>
+                          )}
+                          {userTests.data.result.selectedVoice.humor !== undefined && (
+                            <div>
+                              <span className="font-medium">Humor:</span> {userTests.data.result.selectedVoice.humor}/5
+                            </div>
+                          )}
+                          {userTests.data.result.selectedVoice.tones && (
+                            <div className="col-span-2">
+                              <span className="font-medium">Tones:</span> {userTests.data.result.selectedVoice.tones.join(', ')}
+                            </div>
+                          )}
+                          {userTests.data.result.selectedVoice.themes && (
+                            <div className="col-span-2">
+                              <span className="font-medium">Themes:</span> {userTests.data.result.selectedVoice.themes.join(', ')}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {/* User Profile Summary */}
+                      <div className="p-3 bg-primary/5 rounded-md space-y-2">
+                        <div className="text-sm font-medium">User Profile</div>
+                        <div className="text-xs space-y-1">
+                          <div><span className="font-medium">Name:</span> {userTests.data.user.name}</div>
+                          <div><span className="font-medium">Age:</span> {userTests.data.user.age} ({userTests.data.user.grade} grade)</div>
+                          <div><span className="font-medium">Level:</span> {userTests.data.user.difficultyLevel}</div>
+                          <div><span className="font-medium">Interests:</span> {userTests.data.user.interests?.join(', ') || 'None'}</div>
+                          <div><span className="font-medium">Language:</span> {userTests.data.user.nativeLanguage}</div>
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-sm">
-                      <strong>Reasoning:</strong> {userTests.data.result.selectionReasoning}
+                    
+                    {/* Selection Reasoning */}
+                    <div className="p-3 bg-accent/10 rounded-md">
+                      <div className="text-sm font-medium mb-2">Selection Reasoning:</div>
+                      <div className="text-sm text-muted-foreground">
+                        {userTests.data.result.selectionReasoning}
+                      </div>
                     </div>
                     {userTests.data.result.controlLine && (
                       <div className="space-y-2">
@@ -1007,26 +1123,66 @@ export function VoiceCatalogTester() {
               </div>
 
               {alternativesTest.data && (
-                <div className="space-y-3">
-                  <h4 className="font-medium">Voice Options ({alternativesTest.data.length})</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="space-y-4">
+                  <h4 className="font-medium">Voice Alternatives Comparison ({alternativesTest.data.length})</h4>
+                  
+                  {/* Comparison Table */}
+                  <div className="border rounded-lg overflow-hidden">
+                    <div className="grid grid-cols-7 gap-2 p-3 bg-muted/50 text-sm font-medium">
+                      <div>Voice Name</div>
+                      <div>Score</div>
+                      <div>Warmth</div>
+                      <div>Humor</div>
+                      <div>Tones</div>
+                      <div>Themes</div>
+                      <div>Reasoning</div>
+                    </div>
                     {alternativesTest.data.map((alternative: any, index: number) => (
-                      <Card key={index} className="p-3">
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <Badge variant="secondary">
-                              {alternative.selectedVoice.pn}
-                            </Badge>
-                            <span className="text-sm text-muted-foreground">
-                              {alternative.compatibilityScore.toFixed(2)}
-                            </span>
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {alternative.selectionReasoning}
-                          </div>
+                      <div key={index} className="grid grid-cols-7 gap-2 p-3 border-t text-xs">
+                        <div>
+                          <Badge variant="secondary" className="text-xs">
+                            {alternative.selectedVoice.pn}
+                          </Badge>
                         </div>
-                      </Card>
+                        <div className="font-medium">
+                          {alternative.compatibilityScore.toFixed(2)}
+                        </div>
+                        <div>
+                          {alternative.selectedVoice.warmth !== undefined ? `${alternative.selectedVoice.warmth}/5` : 'N/A'}
+                        </div>
+                        <div>
+                          {alternative.selectedVoice.humor !== undefined ? `${alternative.selectedVoice.humor}/5` : 'N/A'}
+                        </div>
+                        <div>
+                          {alternative.selectedVoice.tones ? alternative.selectedVoice.tones.slice(0, 2).join(', ') : 'N/A'}
+                        </div>
+                        <div>
+                          {alternative.selectedVoice.themes ? alternative.selectedVoice.themes.slice(0, 2).join(', ') : 'N/A'}
+                        </div>
+                        <div className="text-muted-foreground">
+                          {alternative.selectionReasoning ? alternative.selectionReasoning.substring(0, 80) + '...' : 'N/A'}
+                        </div>
+                      </div>
                     ))}
+                  </div>
+                  
+                  {/* Voice Diversity Analysis */}
+                  <div className="p-3 bg-primary/5 rounded-md">
+                    <div className="text-sm font-medium mb-2">Diversity Analysis:</div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+                      <div>
+                        <span className="font-medium">Unique Voices:</span> {new Set(alternativesTest.data.map((a: any) => a.selectedVoice.pn)).size}
+                      </div>
+                      <div>
+                        <span className="font-medium">Avg Score:</span> {(alternativesTest.data.reduce((sum: number, a: any) => sum + a.compatibilityScore, 0) / alternativesTest.data.length).toFixed(2)}
+                      </div>
+                      <div>
+                        <span className="font-medium">Score Range:</span> {Math.min(...alternativesTest.data.map((a: any) => a.compatibilityScore)).toFixed(2)} - {Math.max(...alternativesTest.data.map((a: any) => a.compatibilityScore)).toFixed(2)}
+                      </div>
+                      <div>
+                        <span className="font-medium">Theme Coverage:</span> {new Set(alternativesTest.data.flatMap((a: any) => a.selectedVoice.themes || [])).size} themes
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -1096,12 +1252,15 @@ export function VoiceCatalogTester() {
               <Separator />
 
               <div className="space-y-3">
-                <h4 className="font-medium">Performance Summary</h4>
+                <h4 className="font-medium">Performance & Health Summary</h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   <div className="space-y-1">
                     <div className="text-muted-foreground">System Init</div>
                     <div className="font-mono">
                       {systemStatus.timing ? `${systemStatus.timing.toFixed(0)}ms` : '-'}
+                    </div>
+                    <div className={`text-xs ${systemStatus.status === 'success' ? 'text-green-600' : systemStatus.status === 'error' ? 'text-red-600' : 'text-muted-foreground'}`}>
+                      {systemStatus.status === 'success' ? '✓ Healthy' : systemStatus.status === 'error' ? '✗ Failed' : 'Not tested'}
                     </div>
                   </div>
                   <div className="space-y-1">
@@ -1109,11 +1268,17 @@ export function VoiceCatalogTester() {
                     <div className="font-mono">
                       {quickTestResult.timing ? `${quickTestResult.timing.toFixed(0)}ms` : '-'}
                     </div>
+                    <div className={`text-xs ${quickTestResult.status === 'success' ? 'text-green-600' : quickTestResult.status === 'error' ? 'text-red-600' : 'text-muted-foreground'}`}>
+                      {quickTestResult.status === 'success' ? '✓ Passed' : quickTestResult.status === 'error' ? '✗ Failed' : 'Not tested'}
+                    </div>
                   </div>
                   <div className="space-y-1">
                     <div className="text-muted-foreground">User Test</div>
                     <div className="font-mono">
                       {userTests.timing ? `${userTests.timing.toFixed(0)}ms` : '-'}
+                    </div>
+                    <div className={`text-xs ${userTests.status === 'success' ? 'text-green-600' : userTests.status === 'error' ? 'text-red-600' : 'text-muted-foreground'}`}>
+                      {userTests.status === 'success' ? '✓ Passed' : userTests.status === 'error' ? '✗ Failed' : 'Not tested'}
                     </div>
                   </div>
                   <div className="space-y-1">
@@ -1121,8 +1286,54 @@ export function VoiceCatalogTester() {
                     <div className="font-mono">
                       {alternativesTest.timing ? `${alternativesTest.timing.toFixed(0)}ms` : '-'}
                     </div>
+                    <div className={`text-xs ${alternativesTest.status === 'success' ? 'text-green-600' : alternativesTest.status === 'error' ? 'text-red-600' : 'text-muted-foreground'}`}>
+                      {alternativesTest.status === 'success' ? '✓ Passed' : alternativesTest.status === 'error' ? '✗ Failed' : 'Not tested'}
+                    </div>
                   </div>
                 </div>
+                
+                {/* Difficulty Level Coverage */}
+                <div className="mt-4">
+                  <div className="text-sm font-medium mb-2">Difficulty Level Testing Status</div>
+                  <div className="grid grid-cols-5 gap-2">
+                    {difficultyLevels.map((level) => {
+                      const result = difficultyTests[level];
+                      return (
+                        <div key={level} className="p-2 bg-muted/30 rounded text-center">
+                          <div className="text-xs font-medium capitalize">{level}</div>
+                          <div className={`text-xs mt-1 ${result?.status === 'success' ? 'text-green-600' : result?.status === 'error' ? 'text-red-600' : 'text-muted-foreground'}`}>
+                            {result?.status === 'success' ? '✓' : result?.status === 'error' ? '✗' : '-'}
+                          </div>
+                          {result?.timing && (
+                            <div className="text-xs text-muted-foreground">{result.timing.toFixed(0)}ms</div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+                
+                {/* System Health Indicators */}
+                {(systemStatus.data || quickTestResult.data || Object.keys(difficultyTests).length > 0) && (
+                  <div className="mt-4 p-3 bg-accent/10 rounded-md">
+                    <div className="text-sm font-medium mb-2">System Health Indicators</div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                      {systemStatus.data && (
+                        <div>
+                          <span className="font-medium">Catalog Status:</span> {Object.keys(systemStatus.data).length > 0 ? '✓ Loaded' : '⚠ Limited'}
+                        </div>
+                      )}
+                      {quickTestResult.data && (
+                        <div>
+                          <span className="font-medium">Voice Selection:</span> {quickTestResult.data.selectedVoice ? '✓ Working' : '✗ Failed'}
+                        </div>
+                      )}
+                      <div>
+                        <span className="font-medium">Difficulty Coverage:</span> {Object.keys(difficultyTests).filter(k => difficultyTests[k].status === 'success').length}/{difficultyLevels.length} levels
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
