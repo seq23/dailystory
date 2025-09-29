@@ -5,7 +5,6 @@ export interface UserInfo {
   hobbies?: string;
   avatar?: {
     skinTone?: string;
-    hairColor?: string;
     gender?: string;
   };
   gradeLevel?: string;

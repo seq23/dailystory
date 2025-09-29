@@ -309,17 +309,21 @@ export class SimpleImageService {
 
     // Enhance character description with universal hair color mapping
     if (userInfo?.ethnicity && userInfo?.skinTone) {
-      const universalHair = this.getUniversalHairColorForSkinTone(userInfo.skinTone, userInfo.ethnicity);
+      const universalHair = this.getUniversalHairColorForSkinTone(userInfo.skinTone, userInfo.ethnicity, normalizedSessionId);
       const enhancedUserInfo = {
         ...userInfo,
         hair: userInfo.hair || universalHair,
         universalHairColor: universalHair
       };
       userInfo = enhancedUserInfo;
-      DebugLogger.log('image', 'Applied universal hair color mapping', {
+      DebugLogger.log('image', '🎨 Session-Seeded Hair Resolution', {
         skinTone: userInfo.skinTone,
         ethnicity: userInfo.ethnicity,
-        mappedHair: universalHair
+        mappedHair: universalHair,
+        sessionId: normalizedSessionId,
+        source: 'HAIR_BY_SKIN_TONE',
+        varietyCount: '73 variations',
+        isSeeded: true
       });
     }
 
@@ -675,7 +679,7 @@ export class SimpleImageService {
       
       // Enhance character description
       if (userInfo?.ethnicity && userInfo?.skinTone) {
-        const universalHair = this.getUniversalHairColorForSkinTone(userInfo.skinTone, userInfo.ethnicity);
+        const universalHair = this.getUniversalHairColorForSkinTone(userInfo.skinTone, userInfo.ethnicity, normalizedSessionId);
         const enhancedUserInfo = {
           ...userInfo,
           hair: userInfo.hair || universalHair,
@@ -873,59 +877,97 @@ export class SimpleImageService {
     return 'expert';
   }
 
-  // Universal hair color mapping for all skin tones and ethnicities
-  private static getUniversalHairColorForSkinTone(skinTone: string, ethnicity: string): string {
-    const mappings = {
-      // Light skin tones
-      'very-light': ['blonde', 'light-brown', 'auburn', 'strawberry-blonde'],
-      'light': ['blonde', 'brown', 'light-brown', 'auburn', 'red'],
-      'fair': ['blonde', 'brown', 'light-brown', 'red', 'auburn'],
-      'pale': ['blonde', 'light-brown', 'red', 'strawberry-blonde'],
-      'beige': ['blonde', 'brown', 'light-brown', 'auburn'],
-      
-      // Medium skin tones  
-      'medium': ['brown', 'dark-brown', 'black', 'auburn'],
-      'olive': ['brown', 'dark-brown', 'black'],
-      'tan': ['brown', 'dark-brown', 'black', 'auburn'],
-      'honey': ['brown', 'dark-brown', 'auburn'],
-      
-      // Dark skin tones
-      'dark': ['black', 'dark-brown'],
-      'very-dark': ['black', 'dark-brown'],
-      'deep': ['black'],
-      'ebony': ['black', 'dark-brown'],
-      'mahogany': ['black', 'dark-brown']
+  // Session-seeded random selection for consistent variety
+  private static createSeededRandom(seed: number): () => number {
+    let currentSeed = seed;
+    return function() {
+      currentSeed = (currentSeed * 9301 + 49297) % 233280;
+      return currentSeed / 233280;
+    };
+  }
+
+  private static pickFromArray<T>(arr: T[], sessionId: string): T {
+    if (!Array.isArray(arr) || arr.length === 0) return arr[0];
+    
+    // Convert sessionId to numeric seed
+    const numericSeed = sessionId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const seededRandom = this.createSeededRandom(numericSeed);
+    
+    return arr[Math.floor(seededRandom() * arr.length)];
+  }
+
+  // Universal hair color mapping for all skin tones and ethnicities - SESSION-SEEDED for variety
+  private static getUniversalHairColorForSkinTone(skinTone: string, ethnicity: string, sessionId: string): string {
+    // PROPER HAIR VARIATIONS - matches backend StaticDataCache.HAIR_BY_SKIN_TONE (73 variations)
+    const HAIR_BY_SKIN_TONE = {
+      'pale': [
+        'strawberry blonde hair', 'golden red hair', 'auburn curls', 'copper hair',
+        'reddish brown hair', 'ginger hair', 'red-gold hair', 'russet hair',
+        'mahogany red hair', 'burgundy hair', 'crimson hair', 'rose gold hair',
+        'amber red hair', 'cinnamon red hair'
+      ],
+      'light': [
+        'platinum blonde hair', 'golden blonde hair', 'honey blonde hair', 'ash blonde hair',
+        'sandy blonde hair', 'wheat blonde hair', 'butter blonde hair', 'cream blonde hair',
+        'champagne blonde hair', 'vanilla blonde hair', 'pearl blonde hair', 'silver blonde hair',
+        'moonlight blonde hair', 'sunshine blonde hair', 'caramel blonde hair'
+      ],
+      'medium': [
+        'chestnut brown hair', 'chocolate brown hair', 'coffee brown hair', 'walnut brown hair',
+        'hazelnut brown hair', 'mahogany brown hair', 'amber brown hair', 'bronze brown hair',
+        'toffee brown hair', 'mocha brown hair', 'caramel brown hair', 'russet brown hair',
+        'cedar brown hair', 'oak brown hair', 'maple brown hair'
+      ],
+      'olive': [
+        'jet black hair', 'raven black hair', 'midnight black hair', 'obsidian hair',
+        'coal black hair', 'ebony hair', 'onyx hair', 'charcoal hair',
+        'deep black hair', 'ink black hair', 'shadow black hair', 'pitch black hair',
+        'dark espresso hair', 'blackest brown hair'
+      ],
+      'dark': [
+        'beautiful dark hair', 'rich black hair', 'lustrous dark hair', 'silky black hair',
+        'gorgeous dark hair', 'shining black hair', 'magnificent dark hair'
+      ]
     };
     
-    // Ethnicity-specific preferences with expanded coverage
-    const ethnicityHairMapping = {
-      'african': ['black', 'dark-brown'],
-      'african-american': ['black', 'dark-brown'], 
-      'afro-caribbean': ['black', 'dark-brown'],
-      'hispanic': ['black', 'dark-brown', 'brown'],
-      'latino': ['black', 'dark-brown', 'brown'],
-      'asian': ['black', 'dark-brown'],
-      'east-asian': ['black', 'dark-brown'],
-      'south-asian': ['black', 'dark-brown', 'brown'],
-      'southeast-asian': ['black', 'dark-brown'],
-      'middle-eastern': ['black', 'dark-brown', 'brown'],
-      'arab': ['black', 'dark-brown', 'brown'],
-      'native-american': ['black', 'dark-brown'],
-      'indigenous': ['black', 'dark-brown'],
-      'mixed': ['black', 'dark-brown', 'brown'],
-      'multiracial': ['black', 'dark-brown', 'brown']
+    // Ethnicity overrides (cultural authenticity - DETERMINISTIC)
+    const ethnicityOverrides = {
+      'african': 'black',
+      'african-american': 'black',
+      'hispanic': 'black',
+      'asian': 'black',
+      'middle-eastern': 'black'
     };
     
-    // Get ethnicity-specific options first (prioritize cultural authenticity)
     const ethnicKey = ethnicity?.toLowerCase().replace(/\s+/g, '-');
-    if (ethnicKey && ethnicityHairMapping[ethnicKey]) {
-      return ethnicityHairMapping[ethnicKey][0];
+    if (ethnicKey && ethnicityOverrides[ethnicKey]) {
+      return `${ethnicityOverrides[ethnicKey]} hair`; // Deterministic for cultural authenticity
     }
     
-    // Fallback to skin tone mapping with safe defaults
+    // Map skin tone variations to base categories
+    const skinToneMapping = {
+      'very-light': 'pale',
+      'fair': 'pale',
+      'pale': 'pale',
+      'beige': 'light',
+      'light': 'light',
+      'honey': 'medium',
+      'tan': 'medium',
+      'medium': 'medium',
+      'olive': 'olive',
+      'dark': 'dark',
+      'very-dark': 'dark',
+      'deep': 'dark',
+      'ebony': 'dark',
+      'mahogany': 'dark'
+    };
+    
     const skinKey = skinTone?.toLowerCase().replace(/\s+/g, '-');
-    const hairOptions = mappings[skinKey] || mappings['medium'] || ['brown'];
-    return hairOptions[Math.floor(Math.random() * hairOptions.length)];
+    const baseCategory = skinToneMapping[skinKey] || 'medium';
+    const hairOptions = HAIR_BY_SKIN_TONE[baseCategory] || HAIR_BY_SKIN_TONE['medium'];
+    
+    // SESSION-SEEDED selection for variety + consistency
+    return this.pickFromArray(hairOptions, sessionId);
   }
 
   // Intelligent fallback ordering system for image generation

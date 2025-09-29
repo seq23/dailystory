@@ -2499,7 +2499,7 @@ const initializeStory = async () => {
       const sessionId = generateSessionId();
       const result = await SimpleImageService.generateStoryImage(
         storyText,
-        userInfo,
+        { ...userInfo, difficultyLevel: currentDifficulty, userTier: isPremium ? 'premium' : 'guest' },
         sessionId,
         index + 1,
         isPremium
