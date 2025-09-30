@@ -1512,7 +1512,7 @@ async function handleRequest(req) {
       
       // Second priority: Use consolidated CharacterConsistencyService
       try {
-        const { characterConsistencyService } = await import("#shared/CharacterConsistencyService.js");
+        const { characterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
         const coloredObjects = await characterConsistencyService.getColoredObjects(sessionId);
         if (coloredObjects) {
           console.log(`✅ [TIER2.5A] Using CharacterConsistencyService colored objects: ${coloredObjects.substring(0, 100)}`);
@@ -1808,7 +1808,17 @@ async function handleRequest(req) {
           coloredObjects: !!coloredObjects
         });
       } catch (characterError) {
-        console.warn(`⚠️ [${requestId}] Tier 2.5A: Character consistency failed:`, characterError);
+        // ESCALATE TO TIER 2.5B on ANY CharacterConsistencyService failure (import or method)
+        console.error(`🚨 [${requestId}] Tier 2.5A: CharacterConsistencyService FAILED (outer catch) - Escalating to Tier 2.5B`, characterError.message);
+        
+        return createResponse({
+          success: false,
+          escalateToTier: '2.5B',
+          reason: 'character_consistency_service_failure',
+          sessionId: sessionId,
+          complexity: 'B',
+          errorDetails: characterError.message
+        }, 200);
       }
       
       // Debug logging to verify extractSemanticScene data structure and character consistency
