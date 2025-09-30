@@ -683,10 +683,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
                           isAISceneCreatorFailure ? 'AI_SCENE_CREATOR' : 'UNKNOWN',
               attemptedPrompts: {
                 note: 'Tier 1 failed before prompt generation completed',
-                partialData: preAnalyzedData ? {
-                  storyText: preAnalyzedData.storyText?.substring(0, 100) + '...',
-                  hasUserInfo: !!preAnalyzedData.userInfo,
-                  sessionId: preAnalyzedData.sessionId
+                partialData: payload ? {
+                  storyText: payload.storyText?.substring(0, 100) + '...',
+                  hasUserInfo: !!payload.userInfo,
+                  sessionId: payload.sessionId
                 } : null
               }
             },
