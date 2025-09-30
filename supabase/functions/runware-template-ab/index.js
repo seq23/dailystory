@@ -1513,9 +1513,8 @@ async function handleRequest(req) {
       
       // Second priority: Use consolidated CharacterConsistencyService
       try {
-        const { CharacterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
-        const service = CharacterConsistencyService.getInstance();
-        const coloredObjects = await service.getColoredObjects(sessionId);
+        const { characterConsistencyService } = await import("#shared/CharacterConsistencyService.js");
+        const coloredObjects = await characterConsistencyService.getColoredObjects(sessionId);
         if (coloredObjects) {
           console.log(`✅ [TIER2.5A] Using CharacterConsistencyService colored objects: ${coloredObjects.substring(0, 100)}`);
           return coloredObjects;
@@ -1619,9 +1618,8 @@ async function handleRequest(req) {
       // Get cultural bundle with character consistency
       let culturalBundle;
       try {
-        const { CharacterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
-        const characterService = CharacterConsistencyService.getInstance();
-        culturalBundle = await characterService.getCulturalEnhancements(userInfo, sessionId, characterName);
+        const { characterConsistencyService } = await import("#shared/CharacterConsistencyService.js");
+        culturalBundle = await characterConsistencyService.getCulturalEnhancements(userInfo, sessionId, characterName);
       } catch (error) {
         console.error('❌ Failed to get cultural bundle with consistency:', error);
         // Fallback to direct StaticDataCache access
@@ -1639,14 +1637,13 @@ async function handleRequest(req) {
       let coloredObjects = '';
       
       try {
-        const { CharacterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
-        const characterService = CharacterConsistencyService.getInstance();
+        const { characterConsistencyService } = await import("#shared/CharacterConsistencyService.js");
         
         if (sessionId) {
           try {
             // Main character analysis
-            await characterService.analyzeVisualDetails(sessionId, storyText, pageNumber || 1, characterName);
-            characterAppearance = await characterService.getCharacterAppearanceFromStory(sessionId, characterName) || '';
+            await characterConsistencyService.analyzeVisualDetails(sessionId, storyText, pageNumber || 1, characterName);
+            characterAppearance = await characterConsistencyService.getCharacterAppearanceFromStory(sessionId, characterName) || '';
             
             // Get character seed with proper avatarIdentity
             const avatarIdentity = {
@@ -1801,9 +1798,8 @@ async function handleRequest(req) {
       // Get cultural bundle with character consistency
       let culturalBundle;
       try {
-        const { CharacterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
-        const characterService = CharacterConsistencyService.getInstance();
-        culturalBundle = await characterService.getCulturalEnhancements(userInfo, sessionId, characterName);
+        const { characterConsistencyService } = await import("#shared/CharacterConsistencyService.js");
+        culturalBundle = await characterConsistencyService.getCulturalEnhancements(userInfo, sessionId, characterName);
       } catch (error) {
         console.error('❌ Failed to get cultural bundle with consistency:', error);
         // Fallback to direct StaticDataCache access

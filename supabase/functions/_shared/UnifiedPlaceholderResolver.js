@@ -100,8 +100,7 @@ export class UnifiedPlaceholderResolver {
    */
   async getCulturalBundleWithConsistency(userInfo, sessionId, characterName = 'child') {
     try {
-      const { CharacterConsistencyService } = await import('./CharacterConsistencyService.js');
-      const characterConsistencyService = CharacterConsistencyService.getInstance();
+      const { characterConsistencyService } = await import('#shared/CharacterConsistencyService.js');
       return await characterConsistencyService.getCulturalEnhancements(userInfo, sessionId, characterName);
     } catch (error) {
       console.error('❌ Failed to get cultural bundle with consistency:', error);

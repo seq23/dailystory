@@ -6,7 +6,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 async function getCharacterService() {
   try {
-    const { characterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
+    const { characterConsistencyService } = await import("#shared/CharacterConsistencyService.js");
     return characterConsistencyService;
   } catch (error) {
     console.warn('CharacterService lazy load failed:', error);
