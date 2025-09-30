@@ -587,6 +587,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
           throw new Error('TIER_1_PROCESSING_FAILED: Runware API key not configured');
         }
 
+        logTier1Step('Image Generation', 'attempt', 'Calling RunwareWebSocketService.generateImage');
+
         const imageResult = await RunwareWebSocketService.generateImage({
           apiKey: runwareApiKey,
           positivePrompt: enhancedPrompt.enhancedPrompt,
@@ -601,8 +603,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
         });
 
         if (!imageResult.success || !imageResult.imageURL) {
+          logTier1Step('Image Generation', 'failed', 'RunwareWebSocketService image generation failed');
           throw new Error('TIER_1_PROCESSING_FAILED: Image generation failed');
         }
+
+        logTier1Step('Image Generation', 'success', `Image generated successfully: ${imageResult.imageURL?.substring(0, 50)}...`);
 
         // Return successful COMPLETE_TIER_1 response
         tierLogger.success('TIER_1', {
