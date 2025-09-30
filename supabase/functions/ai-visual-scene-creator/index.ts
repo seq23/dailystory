@@ -24,18 +24,28 @@ async function generateCompleteVisualSchema(storyText: string, userInfo: any, se
 
   // Extract structured avatar data for OpenAI (Scene-Only mode)
   const characterName = userInfo?.name || userInfo?.userName || 'child';
-  let structuredAvatarData: any = {};
-  
-  // Use passed structured avatar data from runware-generate-image, or generate fallback
-  // Only use structuredAvatarData if it exists - no fallback generation
-  if (userInfo?.structuredAvatarData) {
-    structuredAvatarData = userInfo.structuredAvatarData;
-  } else {
-    structuredAvatarData = undefined;
+  // Build initial character appearance from frontend userInfo data
+  const characterAppearanceParts = [];
+
+  // Extract available character data from frontend userInfo
+  if (userInfo?.hair && String(userInfo.hair).trim()) {
+    characterAppearanceParts.push(`Hair: ${String(userInfo.hair).trim()}`);
   }
 
-  // Prepare variables for word-for-word prompts with structured avatar data
-  const characterData = JSON.stringify(structuredAvatarData);
+  const skinTone = userInfo?.skinTone || userInfo?.avatar?.skinTone;
+  if (skinTone && String(skinTone).trim()) {
+    characterAppearanceParts.push(`Skin: ${String(skinTone).trim()}`);
+  }
+
+  const avatarType = userInfo?.avatar?.type || userInfo?.avatarType;
+  if (avatarType && String(avatarType).trim()) {
+    characterAppearanceParts.push(`Type: ${String(avatarType).trim()}`);
+  }
+
+  // Build character appearance line for OpenAI
+  const characterData = characterAppearanceParts.length > 0 
+    ? characterAppearanceParts.join(', ')
+    : 'Character appearance to be determined from story context';
   const previousPrimaryScene = null; // Will be implemented with visual history tracking
   const nativeLanguage = userInfo?.native_language || userInfo?.nativeLanguage || 'en';
   const isNonEnglish = nativeLanguage && nativeLanguage !== 'en';
