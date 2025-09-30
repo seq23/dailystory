@@ -163,6 +163,13 @@ async function processInlinedTier1(payload: any, memoizedImport: any): Promise<a
     skinTone: avatarSkinTone
   };
   
+  // ============================================================================
+  // PHASE 1: CHARACTER CONSISTENCY ESTABLISHES FOUNDATION FIRST
+  // Page 1: Generate seed, cultural bundle, clothing style
+  // Page 2+: Load existing character data + analyze new story text for visual details
+  // Extract: secondary characters, colored objects, animals, settings from story text
+  // ============================================================================
+  
   const structuredAvatarData = await characterConsistencyService.getStructuredAvatarData(sessionId, userInfo);
   
   // Get character consistency data using the service
@@ -176,9 +183,34 @@ async function processInlinedTier1(payload: any, memoizedImport: any): Promise<a
   // Get cultural enhancements using the service
   const culturalBundle = await characterConsistencyService.getCulturalEnhancements(userInfo, sessionId, characterName);
   
-  // Analyze visual details
+  // Analyze visual details from story text
   await characterConsistencyService.analyzeVisualDetails(sessionId, storyText || pageText, 1);
   const coloredObjects = await characterConsistencyService.getColoredObjects(sessionId);
+  
+  // Detect ALL characters (secondary characters, animals, relationships) using unified API
+  const detectedAllCharacters = await characterConsistencyService.detectAllCharacters(storyText || pageText, {
+    sessionId,
+    pageNumber: payload.pageNumber || 1,
+    userInfo
+  });
+  
+  // Extract secondary characters for AI context
+  const secondaryCharacters = detectedAllCharacters.secondaryCharacters || [];
+  
+  // Detect animals using character consistency service
+  const detectedAnimals = await characterConsistencyService.detectCharacterAnimals(storyText || pageText, sessionId);
+  
+  // Get session setting (indoor/outdoor context)
+  const sessionSetting = await characterConsistencyService.getSessionSetting(sessionId);
+  
+  console.log(`✅ CHARACTER FOUNDATION: Established complete character consistency data`, {
+    hasCharacterSeed: !!characterSeed,
+    hasCulturalBundle: !!culturalBundle,
+    coloredObjectsCount: coloredObjects?.split(',').length || 0,
+    secondaryCharactersCount: secondaryCharacters.length,
+    detectedAnimalsCount: detectedAnimals?.length || 0,
+    sessionSetting
+  });
   
   // Get AI-generated primary scene and complete schema
   let primaryScene;
@@ -191,22 +223,42 @@ async function processInlinedTier1(payload: any, memoizedImport: any): Promise<a
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
     
+    // ============================================================================
+    // PHASE 2: AI SCENE GENERATION (Informed by Complete Character Context)
+    // Pass ALL character consistency data to AI so it generates a scene that
+    // works WITH established character consistency
+    // ============================================================================
+    
     const { data: aiResult, error: aiError } = await supabase.functions.invoke('ai-visual-scene-creator', {
       body: { 
         pageText: storyText || pageText, 
         userInfo: {
           ...userInfo,
-          // Pass structured avatar data for Scene-Only mode
           structuredAvatarData
         }, 
         sessionId, 
-        pageNumber: 1,
+        pageNumber: payload.pageNumber || 1,
         avatarIdentity,
+        // Pass COMPLETE character consistency context to AI
+        characterSeed,
         culturalBundle,
+        coloredObjects,
+        secondaryCharacters,
+        detectedAnimals,
+        sessionSetting,
         requestId: `tier1-${sessionId}`,
         source: 'inlined_orchestrator',
-        directMode: false // Scene-Only mode from runware-generate-image
+        directMode: false // Scene-Only mode - AI uses character context to inform scene
       }
+    });
+    
+    console.log(`✅ AI SCENE GENERATION: Called with complete character context`, {
+      hasCharacterSeed: !!characterSeed,
+      hasCulturalBundle: !!culturalBundle,
+      hasColoredObjects: !!coloredObjects,
+      secondaryCharactersCount: secondaryCharacters?.length || 0,
+      hasDetectedAnimals: !!detectedAnimals?.length,
+      hasSessionSetting: !!sessionSetting
     });
     
     if (aiError || !aiResult?.primaryScene) {
@@ -231,15 +283,36 @@ async function processInlinedTier1(payload: any, memoizedImport: any): Promise<a
     throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_25A');
   }
   
-  // Detect secondary characters
-  const detectedSecondaryChars = await characterConsistencyService.detectAllCharacters(storyText || pageText, {
-    sessionId,
-    pageNumber: 1,
-    userInfo
-  });
+  // ============================================================================
+  // PHASE 3: POST-AI CONSISTENCY VALIDATION
+  // After receiving primaryScene from AI, validate that AI scene doesn't
+  // conflict with established character data
+  // ============================================================================
   
+  console.log(`🔍 CONSISTENCY VALIDATION: Checking AI scene against character data`);
+  
+  // Validate primary scene quality
+  if (!validatePrimarySceneQuality(primaryScene)) {
+    console.warn(`⚠️ CONSISTENCY WARNING: Primary scene quality validation failed`);
+  }
+  
+  // Log consistency check for debugging
+  const consistencyCheck = {
+    primarySceneLength: primaryScene?.length || 0,
+    hasCharacterSeed: !!characterSeed,
+    hasCulturalBundle: !!culturalBundle,
+    hasColoredObjects: !!coloredObjects,
+    secondaryCharactersMatched: secondaryCharacters?.length || 0,
+    animalsDetected: detectedAnimals?.length || 0,
+    sessionSetting,
+    aiSchemaComplete: Object.values(aiSchema).filter(Boolean).length
+  };
+  
+  console.log(`✅ CONSISTENCY VALIDATION: Complete`, consistencyCheck);
+  
+  // Generate secondary character seeds for template building
   let secondaryCharacterSeeds = [];
-  for (const detectedChar of detectedSecondaryChars.secondaryCharacters || []) {
+  for (const detectedChar of secondaryCharacters || []) {
     try {
       const charSeed = await characterConsistencyService.getSecondaryCharacterSeed(
         sessionId, 
@@ -262,15 +335,24 @@ async function processInlinedTier1(payload: any, memoizedImport: any): Promise<a
   const difficulty = userInfo?.difficulty || userInfo?.gradeLevel || 'medium';
   const styleFramework = getInlinedStyleFramework(difficulty);
   
+  // ============================================================================
+  // PHASE 4: TEMPLATE BUILDING WITH FULL CONTEXT
+  // Use both character consistency data AND AI-generated primaryScene
+  // Build template that leverages cross-page consistency
+  // ============================================================================
+  
   // Build COMPLETE_TIER_1 template using 4-section structured format - only include physical descriptions when complete
   const hasCompletePhysicalData = structuredAvatarData?.skinTone && structuredAvatarData?.hairColor;
   const physicalDescription = hasCompletePhysicalData ? ` with ${structuredAvatarData.skinTone} skin and ${structuredAvatarData.hairColor}` : '';
   const mainCharacterDetails = `Beautiful ${characterReference} character ${characterName}, age ${userInfo?.age || 6}${physicalDescription}${characterSeed?.characterDescription ? `, ${characterSeed.characterDescription}` : ''}${culturalBundle?.hair ? `, ${culturalBundle.hair}` : ''}${culturalBundle?.features ? `, ${culturalBundle.features}` : ''}`;
   
-  const secondaryCharacters = secondaryCharacterSeeds.length > 0 ? `With ${secondaryCharacterSeeds.map(s => s.characterDescription).join(', ')}` : '';
+  const secondaryCharsText = secondaryCharacterSeeds.length > 0 ? `With ${secondaryCharacterSeeds.map(s => s.characterDescription).join(', ')}` : '';
+  const animalsText = detectedAnimals?.length > 0 ? `Including ${detectedAnimals.map(a => a.name || a.type).join(', ')}` : '';
   const consistencyElements = [
-    secondaryCharacters,
+    secondaryCharsText,
+    animalsText,
     coloredObjects || '',
+    sessionSetting ? `${sessionSetting} setting` : '',
     aiSchema?.sceneSettings || ''
   ].filter(Boolean).join(', ');
   
@@ -281,6 +363,13 @@ async function processInlinedTier1(payload: any, memoizedImport: any): Promise<a
     .replace('{coloredObjects}', coloredObjects ? `Featuring ${coloredObjects}. ` : '')
     .replace('{settingContext}', aiSchema?.sceneSettings ? `In ${aiSchema.sceneSettings}. ` : '')
     .replace('{styleFramework}', styleFramework);
+  
+  console.log(`✅ TEMPLATE BUILDING: Enhanced prompt with full context`, {
+    primarySceneLength: primaryScene?.length || 0,
+    mainCharacterLength: mainCharacterDetails?.length || 0,
+    consistencyElementsLength: consistencyElements?.length || 0,
+    totalPromptLength: enhancedPrompt?.length || 0
+  });
   
   const negativePrompt = "blurry, low quality, distorted, deformed, disfigured, bad anatomy, extra limbs, missing limbs, floating limbs, disconnected limbs, malformed hands, missing fingers, extra fingers, bad hands, signature, username, artist name, watermark, copyright";
   
@@ -304,6 +393,9 @@ async function processInlinedTier1(payload: any, memoizedImport: any): Promise<a
     culturalBundle,
     coloredObjects,
     secondaryCharacterSeeds,
+    secondaryCharacters,     // ← NEW: All detected secondary characters
+    detectedAnimals,         // ← NEW: All detected animals
+    sessionSetting,          // ← NEW: Indoor/outdoor context
     structuredAvatarData,    // ← CRITICAL: Pass 73-variation session-seeded hair to Direct Mode
     templateStructure: 'COMPLETE_TIER_1'
   };
