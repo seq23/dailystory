@@ -91,7 +91,15 @@ async function loadHandler(allowRetry = false): Promise<HandlerFn | null> {
     };
     isLoading = false;
     
-    console.error(`❌ Handler load failed (attempt ${attempt}/${MAX_RETRIES}):`, err?.message);
+    // Handler load failed - categorize error for better debugging
+    const errorMessage = err?.message ?? String(err);
+    const errorCategory = errorMessage.includes('Failed to fetch') || errorMessage.includes('NetworkError') 
+      ? 'CDN_IMPORT_FAILURE' 
+      : errorMessage.includes('Cannot find module') || errorMessage.includes('not found')
+      ? 'FILE_MISSING'
+      : 'HANDLER_CRASH';
+    
+    console.error(`❌ Handler load failed [${errorCategory}] (attempt ${attempt}/${MAX_RETRIES}):`, errorMessage);
     
     // If we've exceeded max retries, clear cache to force fresh attempts
     if (attempt >= MAX_RETRIES) {

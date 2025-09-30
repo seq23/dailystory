@@ -4,7 +4,6 @@ import { RunwareErrorHandler } from "../_shared/runwareErrorHandler.ts";
 // Lightweight, fast deployment - optimized for simple template generation with character consistency
 
 // Supabase client created dynamically via resilient loader
-import { callRunwareAPIWithRetry } from './callRunwareAPIWithRetry.js';
 import { 
   getHairBySkintone, 
   getSkinBySkintone,
@@ -1873,9 +1872,118 @@ async function handleRequest(req) {
       };
     }
 
-    // Call Runware API
-    const apiResponse = await callRunwareAPIWithRetry(templateResult.positivePrompt, templateResult.negativePrompt);
-    const imageURL = apiResponse.imageURL || apiResponse;
+    // Call Runware API with retry logic
+    console.log('🌐 Calling Runware API with retry logic...');
+    const runwareApiKey = Deno.env.get('RUNWARE_API_KEY');
+    if (!runwareApiKey) {
+      throw new Error('RUNWARE_API_KEY not configured');
+    }
+
+    const MAX_RETRIES = 3;
+    let imageURL = null;
+    let lastError = null;
+
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        if (attempt > 0) {
+          const delay = Math.pow(2, attempt - 1) * 1000;
+          console.log(`⏱️ Retry attempt ${attempt}/${MAX_RETRIES} after ${delay}ms delay...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+
+        const response = await fetch('https://api.runware.ai/v1', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify([
+            {
+              taskType: 'authentication',
+              apiKey: runwareApiKey,
+            },
+            {
+              taskType: 'imageInference',
+              taskUUID: crypto.randomUUID(),
+              positivePrompt: templateResult.positivePrompt,
+              negativePrompt: templateResult.negativePrompt,
+              width: 1024,
+              height: 1024,
+              model: 'runware:100@1',
+              numberResults: 1,
+              outputFormat: 'WEBP',
+              steps: 4,
+              CFGScale: 1,
+              scheduler: 'FlowMatchEulerDiscreteScheduler',
+            },
+          ]),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Runware API returned ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const imageTask = data.data?.find(task => task.taskType === 'imageInference');
+        
+        if (!imageTask || !imageTask.imageURL) {
+          throw new Error('No image URL in API response');
+        }
+
+        imageURL = imageTask.imageURL;
+        console.log(`✅ Runware API call successful on attempt ${attempt + 1}`);
+        
+        // Track Runware cost for analytics with 2-tier CDN fallback
+        try {
+          const cost = 0.0013;
+          let supabaseClient = null;
+          
+          // Tier 1: Try primary CDN
+          try {
+            const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4');
+            supabaseClient = createClient(
+              Deno.env.get('SUPABASE_URL') ?? '',
+              Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+            );
+          } catch (cdnError) {
+            console.warn('⚠️ CDN import failed, falling back to local vendor:', cdnError.message);
+            // Tier 2: Fall back to local vendor bundle
+            const { createClient } = await import('../_vendor/supabase-js@2.57.4.mjs');
+            supabaseClient = createClient(
+              Deno.env.get('SUPABASE_URL') ?? '',
+              Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+            );
+          }
+
+          await supabaseClient.from('cost_tracking').insert({
+            session_id: sessionId || 'template-ab-session',
+            user_id: null,
+            input_tokens: 0,
+            output_tokens: 0,
+            cost: cost,
+            model_used: 'runware:100@1',
+            operation_type: 'image_generation',
+            provider: 'runware',
+            api_endpoint: 'v1/imageInference',
+            pricing_model: 'images',
+            quantity_used: 1,
+            unit_cost: cost
+          });
+
+          console.log('💰 Runware cost tracked: $' + cost.toFixed(4) + ' for image generation');
+        } catch (costTrackingError) {
+          console.warn('Failed to track Runware cost:', costTrackingError.message);
+        }
+
+        break; // Success, exit retry loop
+      } catch (error) {
+        lastError = error;
+        console.error(`❌ Runware API call failed (attempt ${attempt + 1}/${MAX_RETRIES + 1}):`, error.message);
+        
+        if (attempt === MAX_RETRIES) {
+          throw new Error(`Runware API failed after ${MAX_RETRIES + 1} attempts: ${error.message}`);
+        }
+      }
+    }
 
     const result = {
       success: true,
@@ -1888,14 +1996,26 @@ async function handleRequest(req) {
       negativePrompt: templateResult.negativePrompt
     };
 
-    // Log successful template generation
+    // Log successful template generation with 2-tier CDN fallback
     try {
-      // Use direct Supabase import to avoid CDN failures
-      const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4?target=deno&bundle');
-      const supabaseClient = createClient(
-        Deno.env.get('SUPABASE_URL'),
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY')
-      );
+      let supabaseClient = null;
+      
+      // Tier 1: Try primary CDN
+      try {
+        const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4');
+        supabaseClient = createClient(
+          Deno.env.get('SUPABASE_URL'),
+          Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY')
+        );
+      } catch (cdnError) {
+        console.warn('⚠️ CDN import failed for logging, falling back to local vendor:', cdnError.message);
+        // Tier 2: Fall back to local vendor bundle
+        const { createClient } = await import('../_vendor/supabase-js@2.57.4.mjs');
+        supabaseClient = createClient(
+          Deno.env.get('SUPABASE_URL'),
+          Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY')
+        );
+      }
       
       const { logTierAttempt } = await import("../_shared/tierLogging.js");
       await logTierAttempt(

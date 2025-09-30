@@ -282,17 +282,29 @@ async function callRunwareAPI(positivePrompt, negativePrompt, retries = 2) {
 
       console.log('✅ Runware API call successful');
       
-      // Track Runware cost for analytics
+      // Track Runware cost for analytics with 2-tier CDN fallback
       try {
         // FLUX.1 [schnell] pricing: $0.0013 per image
         const cost = 0.0013;
         
-        // Import Supabase client
-        const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4');
-        const supabaseClient = createClient(
-          Deno.env.get('SUPABASE_URL') ?? '',
-          Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-        );
+        let supabaseClient = null;
+        
+        // Tier 1: Try primary CDN
+        try {
+          const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4');
+          supabaseClient = createClient(
+            Deno.env.get('SUPABASE_URL') ?? '',
+            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+          );
+        } catch (cdnError) {
+          console.warn('⚠️ CDN import failed, falling back to local vendor:', cdnError.message);
+          // Tier 2: Fall back to local vendor bundle
+          const { createClient } = await import('../_vendor/supabase-js@2.57.4.mjs');
+          supabaseClient = createClient(
+            Deno.env.get('SUPABASE_URL') ?? '',
+            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+          );
+        }
 
         await supabaseClient.from('cost_tracking').insert({
           session_id: 'runware-session', // Will be updated when we get sessionId
@@ -439,14 +451,26 @@ async function handleRequest(req) {
     negativePrompt: templateResult.negativePrompt
   };
 
-  // Log successful template generation
+  // Log successful template generation with 2-tier CDN fallback
   try {
-    // Direct import approach to bypass CDN failures
-    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4?target=deno&bundle');
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL'),
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY')
-    );
+    let supabase = null;
+    
+    // Tier 1: Try primary CDN
+    try {
+      const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4');
+      supabase = createClient(
+        Deno.env.get('SUPABASE_URL'),
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY')
+      );
+    } catch (cdnError) {
+      console.warn('⚠️ CDN import failed for logging, falling back to local vendor:', cdnError.message);
+      // Tier 2: Fall back to local vendor bundle
+      const { createClient } = await import('../_vendor/supabase-js@2.57.4.mjs');
+      supabase = createClient(
+        Deno.env.get('SUPABASE_URL'),
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY')
+      );
+    }
     
     const { logTierAttempt } = await import("../_shared/tierLogging.js");
     await logTierAttempt(
