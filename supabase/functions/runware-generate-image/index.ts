@@ -304,6 +304,7 @@ async function processInlinedTier1(payload: any, memoizedImport: any): Promise<a
     culturalBundle,
     coloredObjects,
     secondaryCharacterSeeds,
+    structuredAvatarData,    // ← CRITICAL: Pass 73-variation session-seeded hair to Direct Mode
     templateStructure: 'COMPLETE_TIER_1'
   };
 }
@@ -404,10 +405,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
       // Attempt real Tier 1 processing with actual orchestrator
       console.log(`[TIER_1] Attempting orchestrator enhancement`);
       
+      // Declare enhancedPrompt outside try block so it's accessible in catch for Direct Mode
+      let enhancedPrompt: any = null;
+      
       try {
         // INLINED TIER 1 PROCESSING - Direct orchestration without PhaseIntegrationOrchestrator
         console.log(`🎨 INLINED TIER 1: Processing for ${payload.userInfo?.name || 'Child'} in session ${payload.sessionId}`);
-        const enhancedPrompt = await processInlinedTier1(payload, memoizedImport);
+        enhancedPrompt = await processInlinedTier1(payload, memoizedImport);
         
         if (!enhancedPrompt || !validatePrimarySceneQuality(enhancedPrompt.primaryScene || enhancedPrompt.enhancedPrompt || '')) {
           throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_25A');
@@ -511,6 +515,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
             const directModeResponse = await internalSupabase.functions.invoke('ai-visual-scene-creator', {
               body: {
                 ...payload,
+                // Pass structuredAvatarData from orchestrator if Tier 1 partially succeeded
+                userInfo: {
+                  ...payload.userInfo,
+                  structuredAvatarData: enhancedPrompt?.structuredAvatarData || payload.userInfo?.structuredAvatarData
+                },
                 directMode: true,
                 tier1FailureReason: errorMessage
               }
