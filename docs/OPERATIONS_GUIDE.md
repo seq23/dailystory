@@ -25,6 +25,11 @@
   - [4.2 Error Trends](#42-error-trends)
   - [4.3 Prevention Measures](#43-prevention-measures)
 - [5. Monitoring & Metrics](#5-monitoring--metrics)
+- [6. Future Implementation Roadmap](#6-future-implementation-roadmap)
+  - [6.1 Critical Functions - createLocalSupabaseClient() Migration](#61-critical-functions---createlocalsupabaseclient-migration)
+  - [6.2 UI/UX Improvements Roadmap](#62-uiux-improvements-roadmap)
+  - [6.3 Phase 2 Premium Feature Roadmap](#63-phase-2-premium-feature-roadmap)
+  - [6.4 Character Consistency Vendor-Bundle Plan](#64-character-consistency-vendor-bundle-plan)
 - [📚 Related Documentation](#related-documentation)
 
 ---
@@ -433,6 +438,341 @@
 - **HIGH:** Edge function quota > 90%
 - **HIGH:** Response times > 5s average
 - **MEDIUM:** Cache hit rate < 70%
+
+[↑ Back to Top](#operations-guide) | [📋 TOC](#table-of-contents)
+
+---
+
+## 6. Future Implementation Roadmap
+
+### 6.1 Critical Functions - createLocalSupabaseClient() Migration
+
+**Status:** 📋 **PLANNED**  
+**Priority:** 🔴 **CRITICAL**  
+**Risk Level:** HIGH - Payment/authorization/compliance functions must be 100% reliable
+
+#### Background
+Based on comprehensive system scan, the following functions should use the same local-only approach as `check-subscription` to eliminate network dependency and ensure instant startup with zero CDN delays.
+
+#### 🔴 CRITICAL Priority - Payment & Authorization Functions
+
+**Current Issue:** Using `createPaymentSupabaseClient()` which tries network first, adding unnecessary latency to critical auth/payment flows.
+
+| Function | Current Client | Risk Level | Effort | Status |
+|----------|----------------|------------|--------|--------|
+| check-subscription ✅ | createLocalSupabaseClient() | ✅ FIXED | - | ✅ COMPLETED |
+| validate-discount-code | createPaymentSupabaseClient() | HIGH | 2 hours | 📋 PLANNED |
+| activate-discount-code | createPaymentSupabaseClient() | HIGH | 2 hours | 📋 PLANNED |
+| apply-discount-code | createPaymentSupabaseClient() | HIGH | 2 hours | 📋 PLANNED |
+| create-checkout | createPaymentSupabaseClient() | HIGH | 2 hours | 📋 PLANNED |
+| create-premium-subscription | createPaymentSupabaseClient() | HIGH | 2 hours | 📋 PLANNED |
+| customer-portal | createPaymentSupabaseClient() | HIGH | 2 hours | 📋 PLANNED |
+
+**Total Estimated Effort:** 12-14 hours
+
+#### 🔴 CRITICAL Priority - Security & Compliance Functions
+
+| Function | Current Client | Risk Level | Effort | Status |
+|----------|----------------|------------|--------|--------|
+| log-personal-info-incident | createResilientSupabaseClient() | **CRITICAL** | 2 hours | 📋 PLANNED |
+
+**Critical Issue:** Currently uses `createResilientSupabaseClient()` which has **NO vendor fallback at all**. If CDNs fail, this COPPA compliance function will crash completely.
+
+**Total Estimated Effort:** 2 hours
+
+#### Why These Are Critical
+
+All of these functions:
+- ✅ Cannot tolerate network delays (user authorization, payment processing)
+- ✅ Must be 100% reliable (blocking user access or payment flows is unacceptable)
+- ✅ Don't need image generation fallbacks (they just need database access)
+- ✅ Should start instantly (no CDN timeout delays)
+
+#### Risk Assessment
+
+**🔴 HIGH RISK (must fix):**
+- `log-personal-info-incident` - Currently uses createResilientSupabaseClient which has NO vendor fallback at all. If CDNs fail, this COPPA compliance function will crash completely.
+
+**🟠 MEDIUM RISK (network dependent):**
+- All 7 payment functions use createPaymentSupabaseClient which tries network first, adding unnecessary latency to critical auth/payment flows.
+
+#### ✅ Safe to Ignore (per instruction)
+- generate-adaptive-story (story generation)
+- runware-generate-image (image generation)
+- ai-visual-scene-creator (image generation)
+- template-service (image generation)
+- runware-template-ab/cd (image generation)
+
+#### Implementation Benefits
+- ✅ Eliminate network dependency for critical operations
+- ✅ Ensure instant startup with zero CDN delays
+- ✅ Provide 100% reliability using local vendor bundle
+- ✅ Create consistent architecture for all critical functions
+
+**Total Project Effort:** 14-16 hours  
+**Priority:** Implement ASAP after ERROR-048 resolution
+
+---
+
+### 6.2 UI/UX Improvements Roadmap
+
+#### Phase 3: User Information Form Redesign
+**Priority:** HIGH  
+**Effort:** 2-3 days
+
+**Requirements:**
+- Re-work user info form with tutorial style
+- Large icon buttons for better touch targets
+- Comprehensive tooltips for guidance
+- Better mobile responsiveness
+
+#### Phase 3.5: Welcome & Pricing Updates
+**Priority:** MEDIUM  
+**Effort:** 1-2 days
+
+**Requirements:**
+- Welcome hero header spacing improvements
+- Pricing page story cards for premium features
+- Clear value proposition display
+- Feature comparison visualization
+
+#### Phase 4: Dialog & Modal Improvements
+**Priority:** MEDIUM  
+**Effort:** 2-3 days
+
+**Special Request Dialog Redesign:**
+- Clear, friendly language
+- Visual examples of requests
+- Better input organization
+- Contextual help
+
+**Consistent Modal Patterns:**
+- Unified styling across all modals
+- Clear action buttons (primary/secondary/cancel)
+- Consistent escape mechanisms
+- Mobile responsive design
+- Accessibility improvements
+
+#### Phase 5: Homepage Restructure
+**Priority:** HIGH  
+**Effort:** 3-4 days
+
+**Information Architecture:**
+- Hero section with primary CTA
+- Quick stats in sidebar
+- Recent stories showcase
+- Clear navigation to library
+
+**Action Hierarchy:**
+- **Primary:** Start New Story
+- **Secondary:** Continue Reading
+- **Tertiary:** Browse Library
+- **Minimal:** Account settings
+
+**Progressive Enhancement:**
+- Core functionality first
+- Enhanced features for premium
+- Clear upgrade paths
+- Feature discovery flows
+
+#### Phase 6: Visual Polish
+**Priority:** MEDIUM  
+**Effort:** 2-3 days
+
+**Consistent Visual Language:**
+- Unified illustration style
+- Consistent iconography
+- Harmonious animations
+- Cohesive micro-interactions
+
+**Accessibility Improvements:**
+- WCAG AA compliance
+- Touch target sizing (44x44px minimum)
+- Color contrast optimization
+- Screen reader optimization
+- Keyboard navigation improvements
+
+**Total UI/UX Effort:** 10-15 days
+
+---
+
+### 6.3 Phase 2 Premium Feature Roadmap
+
+#### 🎓 Learning Management System (LMS)
+**Priority:** HIGH  
+**Effort:** 6-8 weeks
+
+**Features:**
+- Parent Learning Goal Setting & Override System
+- Teacher Dashboard & Classroom Management
+- Curriculum Alignment Tools
+- Assessment & Reporting for Educators
+- Bulk User Management
+- Learning Outcomes Tracking
+
+#### 👥 Social Features & Sharing
+**Priority:** MEDIUM  
+**Effort:** 4-5 weeks
+
+**Features:**
+- Story sharing with family/friends
+- Reading achievements sharing
+- Collaborative reading sessions
+- Community challenges
+- Peer reading groups
+
+#### 🌍 Enhanced Multilingual Support
+**Priority:** HIGH  
+**Effort:** 5-6 weeks
+
+**Features:**
+- Full story translation into multiple languages
+- Native language audio support
+- Cultural story adaptations
+- Cross-language vocabulary building
+- Language-specific phonetic systems
+
+#### ♿ Accessibility & Inclusion
+**Priority:** HIGH  
+**Effort:** 4-5 weeks
+
+**Features:**
+- Screen reader optimization
+- Visual impairment support
+- Motor disability accommodations
+- Cognitive accessibility features
+- High contrast/dyslexia-friendly modes
+
+**Total Phase 2 Premium Effort:** 19-24 weeks (4.5-6 months)
+
+---
+
+### 6.4 Character Consistency Vendor-Bundle Plan
+
+**Status:** 📋 **PLANNED**  
+**Priority:** MEDIUM  
+**Goal:** 99.99% reliability through zero runtime cross-folder/CDN imports
+
+#### Problem Statement
+Current character consistency service relies on runtime imports from `_shared/` which introduces CDN dependency and potential failures. Every function should ship its own local ESM bundle of this service plus dependencies.
+
+#### Implementation Plan
+
+**Step 1: Create Per-Function Vendor Entry**
+
+```typescript
+// supabase/functions/<FN>/vendor/character-consistency.entry.ts
+// Pull in exactly what <FN> needs. Keep it small for tree-shaking.
+export { 
+  CharacterConsistencyService, 
+  characterConsistencyService 
+} from "../../_shared/CharacterConsistencyService.image.js";
+```
+
+**If resilientLoader / tier25Vocabulary / StaticDataCache are separate local files:**
+- Import them by relative path from the same repo
+- The bundler will inline them
+- If any are generated at build time, wire them the same way
+
+**Step 2: Bundle It (ESM) Per Function**
+
+Using esbuild (recommended):
+```bash
+esbuild supabase/functions/<FN>/vendor/character-consistency.entry.ts \
+  --bundle --format=esm --platform=neutral \
+  --outfile=supabase/functions/<FN>/vendor/character-consistency.bundled.js
+```
+
+Package.json script (templated):
+```json
+{
+  "scripts": {
+    "bundle:cc:<FN>": "esbuild supabase/functions/<FN>/vendor/character-consistency.entry.ts --bundle --format=esm --platform=neutral --outfile=supabase/functions/<FN>/vendor/character-consistency.bundled.js"
+  }
+}
+```
+
+**Repeat for:**
+- runware-generate-image
+- template-ab
+- template-cd
+- template-service
+
+**Alternative using Deno:**
+```bash
+deno bundle supabase/functions/<FN>/vendor/character-consistency.entry.ts \
+  supabase/functions/<FN>/vendor/character-consistency.bundled.js
+```
+
+**Step 3: Load Bundle Locally Inside Each Function**
+
+At the top of each function's entry (e.g., `supabase/functions/runware-generate-image/index.ts`):
+
+```typescript
+let ccModPromise: Promise<any> | null = null;
+async function loadCC() {
+  if (!ccModPromise) ccModPromise = import("./vendor/character-consistency.bundled.js");
+  return ccModPromise;
+}
+```
+
+Use it in the handler:
+```typescript
+try {
+  const { characterConsistencyService } = await loadCC();
+  // ... use characterConsistencyService
+} catch (e) {
+  return new Response(JSON.stringify({
+    success: false,
+    error: "SHARED_MODULE_LOAD_FAILED",
+    detail: String(e?.message ?? e)
+  }), { status: 503, headers: { "Content-Type": "application/json" } });
+}
+```
+
+Optional pre-warm in GET /health:
+```typescript
+await loadCC().catch(() => {});
+```
+
+**Step 4: CI/Build Integration**
+
+- Run all `bundle:cc:*` scripts before `supabase functions deploy`
+- Ensure no runtime imports of `../_shared/...` or `https://...` remain in the functions
+- Add to deployment verification checklist
+
+#### Verification Steps
+
+**Local type/parse check:**
+```bash
+# TypeScript-first approach
+tsc -p .
+
+# Or Deno compile check
+deno check path/to/CharacterConsistencyService.image.ts
+```
+
+**Edge dry run:**
+```bash
+# From function directory
+deno eval 'import("./vendor/character-consistency.bundled.js").then(m=>console.log(Object.keys(m)))'
+```
+
+**Expected output:**
+- Should see: `CharacterConsistencyService` and `characterConsistencyService`
+
+#### Benefits
+- ✅ Zero runtime cross-folder/CDN imports
+- ✅ 99.99% reliability
+- ✅ Instant startup with no network dependency
+- ✅ Each function ships its own local ESM bundle
+- ✅ No CDN timeout delays
+- ✅ True nuclear independence
+
+**Estimated Effort:** 3-4 days  
+**Priority:** Implement after UI Phase 4 completion
+
+---
 
 [↑ Back to Top](#operations-guide) | [📋 TOC](#table-of-contents)
 
