@@ -377,20 +377,21 @@ serve(async (req) => {
     console.log(`🎨 [${requestId}] Generating complete visual schema...`);
     const { visualSchema, aiDebugSchema } = await generateCompleteVisualSchema(content, userInfo, sessionId, pageNumber);
 
-    // Generate character seed for consistency
-    const characterSeed = await generateCharacterSeed(sessionId, userInfo);
-
-    // PHASE 1: Create cultural bundle with proper fallback logic
-    let culturalBundle: any;
+    // ARCHITECTURE FIX: Character generation only for Direct Mode
+    // Scene-Only mode returns ONLY primaryScene to orchestrator
+    // Orchestrator is responsible for character consistency via CharacterConsistencyService
     
-    if (!directMode && payload.culturalBundle) {
-      // Use culturalBundle from orchestrator (Tier 1)
-      culturalBundle = payload.culturalBundle;
-      console.log(`✅ [${requestId}] Using culturalBundle from orchestrator`);
-    } else if (directMode) {
-      // Generate culturalBundle with 3-tier fallback for Direct Mode
-      console.log(`🔄 [${requestId}] Direct Mode: Generating culturalBundle with 3-tier fallback`);
+    let characterSeed: any = null;
+    let culturalBundle: any = null;
+
+    if (directMode) {
+      // DIRECT MODE ONLY: Generate character seed and cultural bundle
+      console.log(`🎨 [${requestId}] Direct Mode: Generating character data with 3-tier fallback`);
       
+      // Generate character seed for consistency
+      characterSeed = await generateCharacterSeed(sessionId, userInfo);
+
+      // Generate culturalBundle with 3-tier fallback for Direct Mode
       try {
         // TIER 1: CharacterConsistencyService (session-seeded 73-variation hair)
         const { characterConsistencyService } = await import('#shared/CharacterConsistencyService.js');
@@ -620,7 +621,10 @@ serve(async (req) => {
         tier = 'TIER_1_SCENE_ONLY';
       }
     } else {
-      console.log(`📋 [${requestId}] Scene-Only Mode: No character service loading, lightweight OpenAI-only`);
+      // ARCHITECTURE FIX: Scene-Only mode returns ONLY visual elements
+      // NO CHARACTER DATA - orchestrator will handle character consistency
+      console.log(`✅ [${requestId}] Scene-Only mode: Returning primaryScene and visual schema to orchestrator`);
+      console.log(`🎯 [${requestId}] Orchestrator is responsible for CharacterConsistencyService calls`);
       tier = 'TIER_1_SCENE_ONLY';
     }
 
@@ -641,13 +645,13 @@ serve(async (req) => {
       secondaryCharacters: visualSchema.secondaryCharacters || [],
       objects: visualSchema.objects || [],
       
-      // Character consistency data
-      characterSeed,
-      culturalBundle,
-      coloredObjects,
+      // ARCHITECTURE FIX: Character data only in Direct Mode
+      ...(directMode && characterSeed && { characterSeed }),
+      ...(directMode && culturalBundle && { culturalBundle }),
+      ...(directMode && coloredObjects && { coloredObjects }),
       
       // Metadata for orchestrator
-      templateStructure: 'COMPLETE_TIER_1',
+      templateStructure: directMode ? undefined : 'COMPLETE_TIER_1',
       detectedCharacters: visualSchema.detectedCharacters || [],
       
       // DEBUG: Full OpenAI request details for debugging

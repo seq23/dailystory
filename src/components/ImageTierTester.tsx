@@ -1016,419 +1016,8 @@ export const ImageTierTester = () => {
     }
   };
 
-  // Force Tier 1 (Full Prompt) - Complete Tier 1 flow with photo
-  const forceTier1FullPrompt = async () => {
-    setIsLoading(true);
-    setResults([]);
-    
-    const steps: Array<{
-      name: string;
-      status: 'pending' | 'running' | 'success' | 'error';
-    }> = [
-      { name: '🔍 Preflight Check', status: 'pending' },
-      { name: '🎭 AI Scene Creation', status: 'pending' },
-      { name: '✨ Primary Scene Validation', status: 'pending' },
-      { name: '🧬 AI Schema Validation', status: 'pending' },
-      { name: '📝 Prompt Enhancement', status: 'pending' },
-      { name: '🎨 Image Generation', status: 'pending' }
-    ];
-    
-    try {
-      // Step 1: Perform preflight GET probe
-      steps[0].status = 'running';
-      const triageCheck = await performTriageCheck('runware-generate-image');
-      steps[0].status = triageCheck.available ? 'success' : 'error';
-      
-      const userInfo = buildUserInfo();
-      const enhancedPrompt = testStoryText; // Use raw content directly
-      const sessionId = crypto.randomUUID();
 
-      const startTime = Date.now();
-      let response: any;
-      let chosenPath = '';
-      
-      // TWO-STAGE FALLBACK ROUTING: Orchestrator → Direct Mode
-      if (triageCheck.available) {
-        // Path 1: Try Orchestrator Mode first - runware-generate-image is healthy
-        chosenPath = 'Orchestrator Mode';
-        steps[1].name = '🎯 Trying Orchestrator Mode';
-        
-        DebugLogger.log('image', '🎯 Force Tier 1: Attempting Orchestrator Mode (healthy)', {
-          forceTier: 'COMPLETE_TIER_1',
-          path: 'orchestrator',
-          triageCheck,
-          userInfo,
-          steps
-        });
-
-        // Step 2: Call runware-generate-image with orchestrator payload
-        steps[1].status = 'running';
-        try {
-          response = await supabase.functions.invoke('runware-generate-image', {
-            body: {
-              pageText: enhancedPrompt,
-              userInfo: userInfo,
-              sessionId: sessionId,
-              storyId: sessionId,
-              pageNumber: 1,
-              isGuestUser: true,
-              difficultyLevel: mapDifficultyLevel(userInfo),
-              protectionNegatives: [],
-              forceTier: 'COMPLETE_TIER_1',
-              test: true
-            }
-          });
-
-          // Check if orchestrator POST succeeded
-          if (response.error) {
-            throw new Error(`Orchestrator POST failed: ${response.error.message}`);
-          }
-          
-          steps[1].status = 'success';
-          steps[1].name = '✅ Orchestrator Mode Succeeded';
-        } catch (orchestratorError) {
-          // Orchestrator POST failed - Fallback to Direct Mode
-          DebugLogger.log('image', '🔄 Force Tier 1: Orchestrator POST failed, falling back to Direct Mode', {
-            orchestratorError: orchestratorError.message,
-            fallbackReason: 'orchestrator_post_failed',
-            fallbackPath: 'orchestrator_failed → direct_mode_activated'
-          });
-
-          chosenPath = 'Direct Mode (Orchestrator Fallback)';
-          steps[1].name = '🔄 Falling back to Direct Mode';
-          steps[1].status = 'running';
-
-          DebugLogger.log('image', '🎯 Force Tier 1: Direct Mode (orchestrator POST failed)', {
-            forceTier: 'DIRECT_MODE',
-            path: 'direct_mode_fallback',
-            reason: 'orchestrator_post_failed',
-            originalError: orchestratorError.message,
-            userInfo,
-            steps
-          });
-
-          // Call ai-visual-scene-creator directly
-          response = await supabase.functions.invoke('ai-visual-scene-creator', {
-            body: {
-              pageText: enhancedPrompt,
-              userInfo: userInfo,
-              sessionId: sessionId,
-              storyId: sessionId,
-              pageNumber: 1,
-              isGuestUser: true,
-              difficultyLevel: mapDifficultyLevel(userInfo),
-              protectionNegatives: [],
-              directMode: true,
-              test: true
-            }
-          });
-          
-          // Mark response with direct mode identifier for tracking
-          if (response.data) {
-            response.data.tier = 'DIRECT_MODE';
-            response.data.escalationPath = 'force_tier_1_orchestrator_fallback';
-          }
-        }
-      } else {
-        // Path 2: Direct Mode Immediately - runware-generate-image is unhealthy
-        chosenPath = 'Direct Mode (Health Check Failed)';
-        steps[1].name = '🎯 Using Direct Mode (Orchestrator Unhealthy)';
-        
-        DebugLogger.log('image', '🔄 Force Tier 1: Orchestrator unhealthy, going straight to Direct Mode', {
-          orchestratorHealth: triageCheck,
-          directModeReason: 'Orchestrator failed health check',
-          fallbackPath: 'orchestrator_unhealthy → direct_mode_immediate'
-        });
-        
-        DebugLogger.log('image', '🎯 Force Tier 1: Direct Mode (unhealthy orchestrator)', {
-          forceTier: 'DIRECT_MODE',
-          path: 'direct_mode_immediate',
-          triageCheck,
-          reason: 'orchestrator_unhealthy',
-          userInfo,
-          steps
-        });
-
-        // Step 2: Call ai-visual-scene-creator directly
-        steps[1].status = 'running';
-        response = await supabase.functions.invoke('ai-visual-scene-creator', {
-          body: {
-            pageText: enhancedPrompt,
-            userInfo: userInfo,
-            sessionId: sessionId,
-            storyId: sessionId,
-            pageNumber: 1,
-            isGuestUser: true,
-            difficultyLevel: mapDifficultyLevel(userInfo),
-            protectionNegatives: [],
-            directMode: true,
-            test: true
-          }
-        });
-        
-        // Mark response with direct mode identifier for tracking
-        if (response.data) {
-          response.data.tier = 'DIRECT_MODE';
-          response.data.escalationPath = 'force_tier_1_direct_immediate';
-        }
-      }
-
-      const processingTime = Date.now() - startTime;
-      
-      // Step 3: Validate Primary Scene
-      steps[2].status = 'running';
-      const hasPrimaryScene = response.data?.primaryScene && response.data.primaryScene.length > 0;
-      steps[2].status = hasPrimaryScene ? 'success' : 'error';
-      
-      // Step 6: Validate Image Generation
-      steps[5].status = 'running';
-      const hasImage = !!(response.data?.imageURL || response.data?.imageUrl);
-      steps[5].status = hasImage ? 'success' : 'error';
-
-      // Detect response type for proper success categorization  
-      const hasEscalationAction = response.data?.nextAction && 
-        (response.data.nextAction.includes('ESCALATE') || response.data.nextAction.includes('escalate'));
-      const isCompleteTier1 = response.data?.templateStructure === 'COMPLETE_TIER_1';
-      const isDirectModeFallback = response.data?.tier === 'DIRECT_MODE' && hasImage;
-      
-      // Force Tier 1 four-state success system for complete transparency
-      let tier1SuccessType = 'complete_failure';
-      if (isCompleteTier1) {
-        tier1SuccessType = 'complete_tier1'; // Pure Tier 1 success with COMPLETE_TIER_1 template
-        steps[2].status = 'success';
-      } else if (isDirectModeFallback) {
-        tier1SuccessType = 'direct_fallback'; // Tier 1 failed, fell back to Direct Mode (AI Primary Scene + Tier 2.5C)
-        steps[2].status = 'success';
-        console.log(`Force Tier 1 achieved fallback success via Direct Mode (AI Primary Scene + Tier 2.5C Template)`);
-      } else if (hasEscalationAction) {
-        tier1SuccessType = 'escalation_failure'; // Escalation attempted but failed
-        steps[2].status = 'error';
-        console.warn(`Force Tier 1 escalation failed - attempted ${response.data?.nextAction || 'escalation'} but no image generated`);
-      } else {
-        tier1SuccessType = 'complete_failure'; // Complete failure - no image generated
-        steps[2].status = 'error';
-        console.warn(`Force Tier 1 complete failure - no successful image generation`);
-      }
-      
-      // Step 4: Validate AI Schema (DEBUG ONLY - NOT A FAILURE CONDITION)
-      steps[3].status = 'running';
-      const aiSchema = response.data?.aiSchema || response.data?.debug?.aiSchema;
-      const schemaCompleteness = {
-        setting: !!(aiSchema?.setting),
-        action: !!(aiSchema?.action), 
-        mood: !!(aiSchema?.mood),
-        pose: !!(aiSchema?.pose),
-        completeness: 0
-      };
-      schemaCompleteness.completeness = 
-        (schemaCompleteness.setting ? 25 : 0) +
-        (schemaCompleteness.action ? 25 : 0) +
-        (schemaCompleteness.mood ? 25 : 0) +
-        (schemaCompleteness.pose ? 25 : 0);
-      steps[3].status = 'success'; // Always success - this is debug only
-      
-      // Step 5: Validate Enhanced Prompt
-      steps[4].status = 'running';
-      const hasEnhancedPrompt = response.data?.enhancedPrompt && response.data.enhancedPrompt.length > 0;
-      steps[4].status = hasEnhancedPrompt ? 'success' : 'error';
-      
-      // Determine overall success - Only COMPLETE_TIER_1 is true success
-      const overallSuccess = !response.error && hasPrimaryScene && hasImage && isCompleteTier1;
-      const isFallback = isDirectModeFallback; // Direct Mode fallback scenario
-      
-      // Categorize error type if failed
-      let errorCategory = null;
-      let probableCause = null;
-      
-      if (!overallSuccess && !isFallback) {
-        if (isDirectModeFallback) {
-          errorCategory = 'TIER_1_ESCALATION_TO_DIRECT_MODE';
-          probableCause = 'Force Tier 1 failed: System fell back to Direct Mode instead of completing Tier 1 (AI Primary Scene + Tier 2.5C Nuclear Template)';
-        } else if (hasEscalationAction) {
-          errorCategory = 'TIER_1_ESCALATION_FAILURE';
-          probableCause = `Force Tier 1 failed: System attempted to escalate to ${response.data?.nextAction || 'higher tier'} instead of completing Tier 1`;
-        } else if (response.error?.message?.includes('503') || response.error?.message?.includes('Service Unavailable')) {
-          errorCategory = 'NETWORK';
-          probableCause = `${chosenPath} failed: Edge function deployment sync issue`;
-        } else if (response.error?.message?.includes('NO_PRIMARY_SCENE_ESCALATE_TO_25A')) {
-          errorCategory = 'AI_SCENE_CREATION';
-          probableCause = `${chosenPath} failed: ai-visual-scene-creator failed to generate primaryScene`;
-        } else if (!hasPrimaryScene && !response.data?.templateStructure) {
-          errorCategory = 'AI_SCENE_CREATION';
-          probableCause = `${chosenPath} failed: Missing primaryScene in response (may be escalated tier response)`;
-        } else if (!hasEnhancedPrompt) {
-          errorCategory = 'PROMPT_ENHANCEMENT';
-          probableCause = `${chosenPath} failed: PhaseIntegrationOrchestrator failed to enhance prompt`;
-        } else if (!hasImage) {
-          errorCategory = 'IMAGE_GENERATION';
-          probableCause = `${chosenPath} failed: Image generation failed`;
-        } else {
-          errorCategory = 'UNKNOWN';
-          probableCause = `${chosenPath} failed: ${response.error?.message || 'Unknown failure in Tier 1 flow'}`;
-        }
-        
-        // Enhanced error logging for Force Tier 1 failures
-        if (chosenPath === 'Direct Mode') {
-          DebugLogger.error('image', '❌ Force Tier 1 Direct Mode failed', {
-            reason: 'Both orchestrator (unhealthy) and direct mode failed',
-            orchestratorHealth: triageCheck,
-            directModeError: response.error?.message,
-            errorCategory,
-            probableCause
-          });
-        } else {
-          DebugLogger.error('image', '❌ Force Tier 1 Orchestrator Mode failed', {
-            reason: 'Orchestrator was healthy but failed to complete',
-            orchestratorHealth: triageCheck,
-            orchestratorError: response.error?.message,
-            errorCategory,
-            probableCause,
-            suggestion: 'Try again - orchestrator may auto-fallback to Direct Mode'
-          });
-        }
-      }
-
-      DebugLogger.log('image', `${overallSuccess ? '✅' : '❌'} Force Tier 1 completed`, {
-        success: overallSuccess,
-        processingTime,
-        hasPrimaryScene,
-        hasEnhancedPrompt,
-        hasImage,
-        errorCategory,
-        probableCause,
-        steps: steps.map(s => `${s.name}: ${s.status}`)
-      });
-
-      // COMPREHENSIVE DEBUG PLAN: Waterfall logic to extract prompts from multiple sources
-      let positivePromptDisplay = '';
-      let negativePromptDisplay = '';
-      let promptSource = 'unknown';
-      let orchestratorDebugData = null;
-      let directModeDebugData = null;
-      
-      // Try to extract prompts using waterfall strategy
-      if (response.data?.positivePrompt) {
-        // Top-level prompts (exposed by orchestrator or direct mode)
-        positivePromptDisplay = response.data.positivePrompt;
-        negativePromptDisplay = response.data.negativePrompt || '';
-        promptSource = 'top_level';
-        console.log('[PROMPT_DEBUG] Extracted from top-level response fields');
-      } else if (response.data?.orchestratorDebugData) {
-        // Orchestrator success case
-        orchestratorDebugData = response.data.orchestratorDebugData;
-        positivePromptDisplay = response.data?.metadata?.enhancedPrompt || response.data?.enhancedPrompt || '';
-        negativePromptDisplay = response.data?.metadata?.negativePrompt || response.data?.negativePrompt || '';
-        promptSource = 'orchestrator_metadata';
-        console.log('[PROMPT_DEBUG] Extracted from orchestrator metadata');
-      } else if (response.data?.directModeDebugData?.runwareDebugData) {
-        // Direct Mode fallback case
-        directModeDebugData = response.data.directModeDebugData;
-        positivePromptDisplay = directModeDebugData.runwareDebugData.positivePrompt || '';
-        negativePromptDisplay = directModeDebugData.runwareDebugData.negativePrompt || '';
-        promptSource = 'direct_mode_runware';
-        console.log('[PROMPT_DEBUG] Extracted from Direct Mode runware data');
-      } else if (response.data?.enhancedPrompt) {
-        // Legacy fallback
-        positivePromptDisplay = response.data.enhancedPrompt;
-        negativePromptDisplay = response.data?.negativePrompt || '';
-        promptSource = 'legacy_enhanced_prompt';
-        console.log('[PROMPT_DEBUG] Extracted from legacy enhancedPrompt field');
-      }
-      
-      console.log('[PROMPT_DEBUG] Final extraction result:', {
-        promptSource,
-        hasPositive: !!positivePromptDisplay,
-        hasNegative: !!negativePromptDisplay,
-        positiveLength: positivePromptDisplay.length,
-        negativeLength: negativePromptDisplay.length
-      });
-      
-      // Dynamic tier naming based on actual outcome
-      const dynamicTierName = 
-        tier1SuccessType === 'complete_tier1' ? 'Tier 1 (via Orchestrator)' :
-        tier1SuccessType === 'direct_fallback' ? 'Tier 1 (via Orchestrator): ⚠️ FALLBACK → Direct Mode' :
-        tier1SuccessType === 'escalation_failure' ? 'Tier 1 (via Orchestrator): ❌ ESCALATION FAILED' :
-        'Tier 1 (via Orchestrator) AND Direct Mode ❌ FAILED. ESCALATED -->TIER 2.5C';
-
-      setResults([{
-        tier: dynamicTierName,
-        success: overallSuccess,
-        isFallback: isFallback,
-        imageURL: response.data?.imageURL || response.data?.imageUrl || null,
-          details: {
-          processingTime,
-          requestId: response.data?.requestId,
-          chosenPath: chosenPath,
-          orchestratorHealth: triageCheck.available ? 'healthy' : 'unhealthy',
-          triageResult: triageCheck,
-          aiSchema: response.data?.aiSchema || response.data?.debug?.aiSchema,
-          primaryScene: response.data?.primaryScene,
-          setting: response.data?.aiSchema?.setting || response.data?.debug?.aiSchema?.setting,
-          action: response.data?.aiSchema?.action || response.data?.debug?.aiSchema?.action,
-          mood: response.data?.aiSchema?.mood || response.data?.debug?.aiSchema?.mood,
-          pose: response.data?.aiSchema?.pose || response.data?.debug?.aiSchema?.pose,
-          enhancedPrompt: response.data?.enhancedPrompt,
-          // COMPREHENSIVE DEBUG PLAN: Enhanced prompt display with waterfall extraction
-          positivePrompt: positivePromptDisplay,
-          negativePrompt: negativePromptDisplay,
-          promptSource: promptSource, // NEW: Track where prompts came from
-          promptExtractionSuccess: !!positivePromptDisplay, // NEW: Did we get prompts?
-          orchestratorDebugData: orchestratorDebugData, // NEW: Full orchestrator debug data
-          directModeDebugData: directModeDebugData, // NEW: Full direct mode debug data
-          rawPromptData: { // NEW: Raw data for debugging
-            topLevel: { positivePrompt: response.data?.positivePrompt, negativePrompt: response.data?.negativePrompt },
-            metadata: response.data?.metadata,
-            orchestratorDebug: response.data?.orchestratorDebugData,
-            directModeDebug: response.data?.directModeDebugData
-          },
-          templateStructure: response.data?.templateStructure || 'UNKNOWN',
-          characterConsistency: response.data?.enhancedData?.characterConsistency,
-          visualConsistency: response.data?.enhancedData?.visualConsistency,
-          culturalEnhancements: response.data?.enhancedData?.culturalEnhancements,
-          // Template data from response
-          templateData: response.data?.directModeDebugData?.runwareDebugData?.templatePayloadSent || null,
-          templateComplexity: response.data?.directModeDebugData?.runwareDebugData?.templateComplexity || response.data?.templateStructure || null,
-          styleFramework: response.data?.styleFrameworkUsed,
-          testType: 'TIER_1_COMPLETE_FLOW',
-          stepByStepValidation: steps,
-          schemaCompleteness, // DEBUG INFO ONLY
-          primarySceneLength: response.data?.primaryScene?.length || 0,
-          tier: response.data?.tier,
-          escalationPath: response.data?.escalationPath,
-          nextAction: response.data?.nextAction, // Show escalation actions
-          tierPathResult: tier1SuccessType === 'complete_tier1' ? 'Tier 1 Complete Success (COMPLETE_TIER_1 Template)' :
-                          tier1SuccessType === 'direct_fallback' ? 'Tier 1 FAILED - Direct Mode Fallback Success (AI Primary Scene + Tier 2.5C Nuclear Template)' : 
-                          tier1SuccessType === 'escalation_failure' ? 'Tier 1 AND Direct Mode FAILED - Escalation Attempted but Failed' :
-                          'Tier 1 AND Direct Mode FAILED - Escalation Required',
-          debug: response.data?.debug, // Include debug information
-          error: response.error?.message || response.data?.error,
-          errorCategory,
-          probableCause
-        }
-      }]);
-    } catch (error) {
-      DebugLogger.error('image', '❌ Force Tier 1 failed with exception', { error });
-      
-      // Update failed step
-      const currentStep = steps.find(s => s.status === 'running');
-      if (currentStep) currentStep.status = 'error';
-      
-      setResults([{
-        tier: 'tier-1-error',
-        success: false,
-        imageURL: null,
-        details: { 
-          error: error.message,
-          testType: 'TIER_1_COMPLETE_FLOW',
-          stepByStepValidation: steps,
-          errorCategory: 'NETWORK',
-          probableCause: 'Network timeout or connection failure'
-        }
-      }]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // PLAN B: Force Tier 1 removed - now using simplified forceTier('1') pattern
 
   // Debug Real Routing - FIXED: Add health check first, then bypass logic, then orchestrator
   const debugRealRouting = async () => {
@@ -1697,6 +1286,7 @@ export const ImageTierTester = () => {
       // Step 1: Function Selection
       steps[0].status = 'running';
       const functionMap: { [key: string]: string } = {
+        '1': 'ai-visual-scene-creator',  // PLAN B: Add Tier 1 mapping
         '2.5A': 'runware-template-ab',
         '2.5B': 'runware-template-ab', 
         '2.5C': 'runware-template-cd',
@@ -1713,9 +1303,23 @@ export const ImageTierTester = () => {
       const selectedFunction = functionMap[tier];
       steps[0].status = selectedFunction ? 'success' : 'error';
       
-      // Step 2: Payload Construction - FIXED: Use pageText and add missing fields
+      // Step 2: Payload Construction - PLAN B: Add Tier 1 case
       steps[1].status = 'running';
-      const payload = tier === '2.5A' || tier === '2.5B' 
+      const payload = tier === '1'
+        ? {
+            // Tier 1 Direct Mode: ai-visual-scene-creator with directMode: true
+            pageText: enhancedPrompt,
+            userInfo: userInfo,
+            sessionId: crypto.randomUUID(),
+            storyId: crypto.randomUUID(),
+            pageNumber: 1,
+            isGuestUser: true,
+            difficultyLevel: mapDifficultyLevel(userInfo),
+            protectionNegatives: [],
+            directMode: true, // Direct Mode for Tier 1
+            test: true
+          }
+        : tier === '2.5A' || tier === '2.5B'
         ? {
             // Template AB expects {bundle, config} payload shape
             bundle: {
@@ -2461,12 +2065,13 @@ export const ImageTierTester = () => {
             </Button>
             
             <Button
-              onClick={forceTier1FullPrompt}
+              onClick={() => forceTier('1')}
               disabled={isLoading}
-              className="flex items-center gap-2 bg-primary"
+              variant="outline"
+              className="flex items-center gap-2"
             >
-              <Camera className="h-4 w-4" />
-              Force Tier 1 (Full Prompt)
+              <Zap className="h-4 w-4" />
+              Force Tier 1
             </Button>
             
             <div className="space-y-2">
