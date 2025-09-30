@@ -446,6 +446,9 @@ export class SimpleImageService {
     let timeoutId: NodeJS.Timeout | null = null;
     let requestAborted = false;
 
+    // Initialize cascade history tracking (shared between try and catch)
+    const cascadeHistory: string[] = [];
+
     try {
       // Create timeout promise that rejects after 60 seconds (balanced)
       const timeoutPromise = new Promise<never>((_, reject) => {
@@ -483,8 +486,6 @@ export class SimpleImageService {
         pageNumber: orchestratorPayload.pageNumber
       });
       
-      // Initialize cascade history tracking
-      const cascadeHistory: string[] = [];
       cascadeHistory.push('🎯 Attempting Tier 1 (orchestrator)');
       
       const requestPromise = supabase.functions.invoke('runware-generate-image', {
@@ -580,8 +581,7 @@ export class SimpleImageService {
       }
         
     } catch (error) {
-      // Initialize cascade history tracking for client-side fallback
-      const cascadeHistory: string[] = [];
+      // Append to existing cascade history
       cascadeHistory.push(`❌ Tier 1 Failed: ${error.message}`);
       
       DebugLogger.error('image', 'Image generation orchestrator failed', error);
