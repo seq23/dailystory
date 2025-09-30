@@ -217,7 +217,7 @@ Generate a comprehensive scene with complete visual elements including backgroun
     let cachedSecondaryCharacters: any[] = [];
     
     try {
-      const { characterConsistencyService } = await import('#shared/CharacterConsistencyService.js');
+      const { characterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
       cachedSecondaryCharacters = await characterConsistencyService.getSecondaryCharactersForSession(sessionId);
       console.log(`✅ Retrieved ${cachedSecondaryCharacters.length} cached secondary characters for session ${sessionId}`);
     } catch (error) {
@@ -423,7 +423,7 @@ serve(async (req) => {
       // Generate culturalBundle with 3-tier fallback for Direct Mode
       try {
         // TIER 1: CharacterConsistencyService (session-seeded 73-variation hair)
-        const { characterConsistencyService } = await import('#shared/CharacterConsistencyService.js');
+        const { characterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
         const culturalEnhancements = await characterConsistencyService.getCulturalEnhancements(
           userInfo,
           sessionId,
@@ -433,7 +433,7 @@ serve(async (req) => {
         culturalBundle = {
           hair: culturalEnhancements.hair || 'natural hair',
           features: culturalEnhancements.features || 'diverse features',
-          profile: characterSeed.culturalProfile,
+          profile: characterSeed?.culturalProfile || null,
           source: 'CharacterConsistencyService'
         };
         console.log(`✅ [${requestId}] Tier 1: CharacterConsistencyService culturalBundle generated`);
@@ -442,7 +442,7 @@ serve(async (req) => {
         
         try {
           // TIER 2: StaticDataCache fallback
-          const { StaticDataCache } = await import('#shared/StaticDataCache.js');
+          const { StaticDataCache } = await import('../_shared/StaticDataCache.js');
           const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
           const isDarkSkin = skinTone === 'dark' || skinTone === 'darker';
           
@@ -453,7 +453,7 @@ serve(async (req) => {
           culturalBundle = {
             hair: hairBundle?.hair || 'natural hair',
             features: isDarkSkin ? 'authentic African American features' : 'diverse features',
-            profile: characterSeed.culturalProfile,
+            profile: characterSeed?.culturalProfile || null,
             source: 'StaticDataCache'
           };
           console.log(`✅ [${requestId}] Tier 2: StaticDataCache culturalBundle generated`);
@@ -467,7 +467,7 @@ serve(async (req) => {
           culturalBundle = {
             hair: isDarkSkin ? 'photorealistic detailed textured 4C African American hairstyle' : userInfo?.avatar?.hairColor || 'brown hair',
             features: isDarkSkin ? 'authentic African American features' : 'diverse features',
-            profile: characterSeed.culturalProfile,
+            profile: characterSeed?.culturalProfile || null,
             source: 'emergency_hardcoded'
           };
           console.log(`✅ [${requestId}] Tier 3: Emergency hardcoded culturalBundle applied`);
@@ -478,7 +478,7 @@ serve(async (req) => {
       culturalBundle = {
         hair: userInfo?.avatar?.hairColor || 'natural hair',
         features: userInfo?.nativeLanguage !== 'en' ? `${userInfo.nativeLanguage} cultural features` : 'diverse features',
-        profile: characterSeed.culturalProfile,
+        profile: characterSeed?.culturalProfile || null,
         source: 'minimal_fallback'
       };
     }
