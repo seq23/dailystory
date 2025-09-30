@@ -115,7 +115,7 @@ These errors were added to MASTER_ERRORS_TO_FIX.md on 2025-09-30. This file cont
 
 - **Documentation:**
   - `docs/CHARACTER_CONSISTENCY_STATUS.md` - Import map configuration
-  - `docs/SECONDARY_CHARACTER_INTEGRATION_FIX_2025_09_30.md` - Complete technical implementation
+  - `docs/CHARACTER_CONSISTENCY_STATUS.md` - Complete technical implementation and status
   - `docs/ANTI_REGRESSION_GUIDELINES.md` - Import pattern enforcement
 
 ---
@@ -231,7 +231,7 @@ These errors were added to MASTER_ERRORS_TO_FIX.md on 2025-09-30. This file cont
   - PHASE-2 (Secondary character enhancement system-wide)
 
 - **Documentation:**
-  - `docs/SECONDARY_CHARACTER_INTEGRATION_FIX_2025_09_30.md` - Complete implementation guide
+  - `docs/CHARACTER_CONSISTENCY_STATUS.md` - Complete implementation guide and status
   - `docs/PHASE_2_SECONDARY_CHARACTER_ENHANCEMENT.md` - Tier-specific processing
   - `docs/CHARACTER_CONSISTENCY_ARCHITECTURE.md` - Updated with new method usage
 

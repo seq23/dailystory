@@ -539,7 +539,7 @@ const characters = await service.getSecondaryCharactersForSession(sessionId);
 - `docs/MASTER_ERRORS_TO_FIX.md` - Error tracking and resolution
 - `docs/CHARACTER_CONSISTENCY_STATUS.md` - Service status and integration
 - `docs/CHARACTER_CONSISTENCY_ARCHITECTURE.md` - Method reference
-- `docs/SECONDARY_CHARACTER_INTEGRATION_FIX_2025_09_30.md` - Implementation guide
+- `docs/CHARACTER_CONSISTENCY_STATUS.md` - Implementation guide and status
 - `docs/PHASE_2_SECONDARY_CHARACTER_ENHANCEMENT.md` - Tier-specific processing
 
 ---
