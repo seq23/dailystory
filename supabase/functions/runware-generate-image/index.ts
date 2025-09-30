@@ -616,6 +616,27 @@ Deno.serve(async (req: Request): Promise<Response> => {
         console.log(`[TIER_1] Error stack:`, errorStack);
         tierLogger.failure('TIER_1', { error: errorMessage });
         
+        // FORCE MODE: If forceCompleteTier1 is true, return failure immediately without cascading
+        if (forceCompleteTier1) {
+          console.log(`[TIER_1_FORCE_MODE] forceCompleteTier1=true - returning failure immediately, NO CASCADE`);
+          return new Response(JSON.stringify({
+            success: false,
+            error: `Tier 1 Complete Flow Failed: ${errorMessage}`,
+            templateStructure: 'TIER_1_FORCED_FAILURE',
+            tier: 'TIER_1_FORCE_MODE',
+            forceMode: true,
+            cascadeBlocked: true,
+            errorDetails: {
+              message: errorMessage,
+              stack: errorStack,
+              timestamp: new Date().toISOString()
+            }
+          }), {
+            headers: generateEchoCorsHeaders(req),
+            status: 200
+          });
+        }
+        
         // Detect if CharacterConsistencyService is unavailable
         const isCharacterServiceUnavailable = errorMessage.includes('CHARACTERSERVICE_UNAVAILABLE_ESCALATE_TO_25B') || 
                                               errorMessage.includes('CharacterConsistencyService') || 

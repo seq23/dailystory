@@ -32,7 +32,7 @@ interface TestResult {
       status?: number;
       triageResult?: string;
     }; // NEW: Health check results
-    testType?: 'REAL' | 'FORCED' | 'CONNECTIVITY' | 'ENHANCED_CONNECTIVITY' | 'HEALTH' | 'TRIAGE' | 'TIER_1_COMPLETE_FLOW' | 'FORCED_TEMPLATE_BYPASS' | 'E2E_SIMULATION'; // Enhanced test types
+    testType?: 'REAL' | 'FORCED' | 'CONNECTIVITY' | 'ENHANCED_CONNECTIVITY' | 'HEALTH' | 'TRIAGE' | 'TIER_1_COMPLETE_FLOW' | 'TIER_1_FORCE_TEST' | 'FORCED_TEMPLATE_BYPASS' | 'E2E_SIMULATION'; // Enhanced test types
     timeoutTest?: boolean;
     abortReason?: string;
     // AI Scene Creator specific
@@ -149,6 +149,13 @@ interface TestResult {
     orchestratorDebugData?: any; // Full orchestrator debug data
     directModeDebugData?: any; // Full direct mode debug data
     rawPromptData?: any; // Raw prompt data for debugging
+    tier1Validation?: { // Tier 1 force mode validation
+      expectedStructure: string;
+      actualStructure?: string;
+      success: boolean;
+      forcedFailure: boolean;
+      cascadeBlocked?: boolean;
+    };
   };
 }
 
@@ -1284,10 +1291,16 @@ export const ImageTierTester = () => {
     ];
     
     try {
-      DebugLogger.log('image', `🎯 Force Tier ${tier}: Direct template bypass simulation`, { 
+      const logMessage = tier === '1' 
+        ? '🎯 Force Tier 1: Testing Complete Orchestrator Flow - NO CASCADE'
+        : `🎯 Force Tier ${tier}: Direct template bypass simulation`;
+      
+      DebugLogger.log('image', logMessage, { 
         tier, 
-        bypassedTiers: tier === '2.5A' ? 'Tier 1' : tier === '2.5B' ? 'Tier 1, 2.5A' : 'Unknown',
-        expectedTemplate: tier.includes('A') || tier.includes('B') ? 'template-ab' : 'template-cd'
+        forceMode: tier === '1',
+        cascadeDisabled: tier === '1',
+        bypassedTiers: tier === '2.5A' ? 'Tier 1' : tier === '2.5B' ? 'Tier 1, 2.5A' : tier === '1' ? 'NONE - Testing Full Orchestrator' : 'Unknown',
+        expectedTemplate: tier === '1' ? 'COMPLETE_TIER_1' : tier.includes('A') || tier.includes('B') ? 'template-ab' : 'template-cd'
       });
 
       const startTime = Date.now();
@@ -1425,25 +1438,37 @@ export const ImageTierTester = () => {
         steps: steps.map(s => `${s.name}: ${s.status}`)
       });
 
+      // Tier 1 specific validation
+      const isTier1Test = tier === '1';
+      const tier1Success = isTier1Test && response.data?.templateStructure === 'COMPLETE_TIER_1';
+      const tier1ForcedFailure = isTier1Test && response.data?.templateStructure === 'TIER_1_FORCED_FAILURE';
+      
       setResults([{
         tier: `tier-${tier}-forced`,
-        success: overallSuccess,
+        success: isTier1Test ? tier1Success : overallSuccess,
         imageURL: safeImageURL,
         details: {
           processingTime,
           requestId: response.data?.requestId,
           tier: response.data?.tier,
-          templateComplexity: templateMap[tier],
+          templateComplexity: isTier1Test ? 'COMPLETE_TIER_1' : templateMap[tier],
           positivePrompt: safePositive,
           negativePrompt: response.data?.negativePrompt,
           styleFramework: response.data?.styleFrameworkUsed,
           forcedTier: tier,
-          testType: 'FORCED_TEMPLATE_BYPASS',
-          bypassedTiers: tier === '2.5A' ? ['Tier 1'] : tier === '2.5B' ? ['Tier 1', 'Tier 2.5A'] : [],
+          testType: isTier1Test ? 'TIER_1_FORCE_TEST' : 'FORCED_TEMPLATE_BYPASS',
+          bypassedTiers: isTier1Test ? [] : tier === '2.5A' ? ['Tier 1'] : tier === '2.5B' ? ['Tier 1', 'Tier 2.5A'] : [],
           selectedFunction,
           stepByStepValidation: steps,
           promptLength: safePositive?.length || 0,
           templateStructure: response.data?.templateStructure,
+          tier1Validation: isTier1Test ? {
+            expectedStructure: 'COMPLETE_TIER_1',
+            actualStructure: response.data?.templateStructure,
+            success: tier1Success,
+            forcedFailure: tier1ForcedFailure,
+            cascadeBlocked: response.data?.cascadeBlocked
+          } : undefined,
           error: response.error?.message || response.data?.error,
           errorCategory,
           probableCause
