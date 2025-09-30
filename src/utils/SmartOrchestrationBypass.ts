@@ -13,7 +13,7 @@ interface BypassMetrics {
 
 export class SmartOrchestrationBypass {
   private static metrics = new Map<string, BypassMetrics>();
-  private static readonly SIMPLE_CONTENT_THRESHOLD = 100; // characters
+  private static readonly SIMPLE_CONTENT_THRESHOLD = 300; // characters
   private static readonly FAST_RESPONSE_THRESHOLD = 3000; // 3 seconds
   private static readonly MAX_METRICS_AGE = 600000; // 10 minutes
   
