@@ -146,7 +146,7 @@ function generateTier25C(storyText, userInfo, avatarIdentity, failedTierData = {
   // Component 2: Character Description with static template format
   const characterName = userInfo?.name || userInfo?.childName || 'child';
   const age = userInfo?.age || 8;
-  const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'diverse'; 
+  const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium'; 
   const avatarType = userInfo?.avatar?.type || 'child';
   const nativeLanguage = userInfo?.nativeLanguage || userInfo?.language || 'en';
   
@@ -159,22 +159,16 @@ function generateTier25C(storyText, userInfo, avatarIdentity, failedTierData = {
     genderNeutralDescription = ' gender neutral child with no visible male nor female characteristics';
   }
   
-  // Only include physical descriptions when we have COMPLETE structured data
-  const hasCompleteStructuredData = failedTierData?.structuredAvatarData?.skinTone && failedTierData?.structuredAvatarData?.hairColor;
-  let characterDesc;
-  if (hasCompleteStructuredData) {
-    characterDesc = `A young ${mappedAvatarType} named ${characterName} age ${age} ${failedTierData.structuredAvatarData.skinTone} skin complexion with ${failedTierData.structuredAvatarData.hairColor}`;
-  } else {
-    characterDesc = `A young ${mappedAvatarType} named ${characterName} age ${age}`;
-  }
+  // ALWAYS include physical descriptions - use structuredAvatarData or generate from skinTone
+  const hasStructuredData = failedTierData?.structuredAvatarData?.skinTone && failedTierData?.structuredAvatarData?.hairColor;
+  const effectiveSkinTone = hasStructuredData ? failedTierData.structuredAvatarData.skinTone : skinTone;
+  const effectiveHairColor = hasStructuredData ? failedTierData.structuredAvatarData.hairColor : getSimpleHairColor(skinTone);
   
-  // Add gender-neutral description if needed
+  let characterDesc;
   if (genderNeutralDescription) {
-    if (hasCompleteStructuredData) {
-      characterDesc = `A ${genderNeutralDescription} named ${characterName} age ${age} ${failedTierData.structuredAvatarData.skinTone} skin complexion with ${failedTierData.structuredAvatarData.hairColor}`;
-    } else {
-      characterDesc = `A ${genderNeutralDescription} named ${characterName} age ${age}`;
-    }
+    characterDesc = `A ${genderNeutralDescription} named ${characterName} age ${age} ${effectiveSkinTone} skin complexion with ${effectiveHairColor}`;
+  } else {
+    characterDesc = `A young ${mappedAvatarType} named ${characterName} age ${age} ${effectiveSkinTone} skin complexion with ${effectiveHairColor}`;
   }
   
   // Add detailed cultural features for dark skin with supported languages (hair already handled above)

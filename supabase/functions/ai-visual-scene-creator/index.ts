@@ -341,8 +341,12 @@ serve(async (req) => {
     if (directMode) {
       console.log(`🖼️ [${requestId}] Direct Mode: Loading character service for full processing`);
       
-      // CONDITIONAL CHARACTER SERVICE LOADING - Only for Direct Mode
+      // CONDITIONAL CHARACTER SERVICE LOADING - Only for Direct Mode (NON-FATAL)
       let characterService: any = null;
+      let characterAppearance: string | null = null;
+      let coloredObjects: string = '';
+      let characterServiceAvailable = false;
+      
       try {
         const { characterConsistencyService } = await import('#shared/CharacterConsistencyService.js');
         characterService = characterConsistencyService;
@@ -351,14 +355,34 @@ serve(async (req) => {
         if (!characterService || typeof characterService.getCharacterAppearanceFromStory !== 'function') {
           throw new Error(`CharacterConsistencyService instance not functional - missing required methods`);
         }
+        
+        characterAppearance = await characterService.getCharacterAppearanceFromStory(sessionId, characterSeed.characterName);
+        coloredObjects = await characterService.getColoredObjects(sessionId);
+        characterServiceAvailable = true;
+        console.log(`✅ [${requestId}] CharacterConsistencyService loaded and data retrieved`);
       } catch (error) {
-        console.error('Failed to load CharacterConsistencyService:', error);
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        throw new Error(`CharacterConsistencyService load failed: ${errorMessage}`);
+        console.warn(`⚠️ [${requestId}] CharacterConsistencyService unavailable, continuing with minimal avatar data:`, error);
+        characterServiceAvailable = false;
+        // Service unavailable is non-fatal - continue with fallback
       }
       
-      const characterAppearance = await characterService.getCharacterAppearanceFromStory(sessionId, characterSeed.characterName);
-      const coloredObjects = await characterService.getColoredObjects(sessionId);
+      // Provide minimal structuredAvatarData when character service unavailable
+      const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
+      const hairColorMap: Record<string, string> = {
+        'pale': 'red hair',
+        'light': 'blonde hair', 
+        'medium': 'brown hair',
+        'olive': 'dark black hair',
+        'dark': 'thick textured 4C hair'
+      };
+      const hairColor = hairColorMap[skinTone] || 'brown hair';
+      
+      const structuredAvatarData = {
+        skinTone,
+        hairColor,
+        type: characterSeed.avatarType,
+        name: characterSeed.characterName
+      };
       
       // Prepare payload for runware-template-cd with character consistency data
       const templatePayload = {
@@ -376,7 +400,8 @@ serve(async (req) => {
           enhancedSceneData: visualSchema.primaryScene,
           characterConsistency: characterAppearance || `${characterSeed.characterName} (${characterSeed.avatarType})`,
           visualConsistency: `${visualSchema.backgroundColor}, ${visualSchema.lighting}`,
-          culturalEnhancements: culturalBundle.hair
+          culturalEnhancements: culturalBundle.hair,
+          structuredAvatarData // Always provide structured avatar data
         }
       };
 

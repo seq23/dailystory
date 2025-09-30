@@ -23,8 +23,8 @@ This document serves as the **single source of truth** for all production errors
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📈 This Week's Activity:
-• Errors Resolved: 6 (ERROR-036 through ERROR-042)
-• System Improvements: 5 major enhancements
+• Errors Resolved: 8 (ERROR-036 through ERROR-044)
+• System Improvements: 7 major enhancements
 • Uptime: 99.9%
 • Response Time: < 2s average across all tiers
 ```
@@ -94,6 +94,8 @@ Quick lookup table for all tracked errors with searchable keywords.
 
 | Error ID | Keywords | Severity | Status | System | Quick Link |
 |----------|----------|----------|--------|--------|------------|
+| ERROR-044 | tier-2.5c, character-description, hair-mapping, direct-mode, structuredAvatarData | HIGH | ✅ RESOLVED | Image Gen | [View](#error-044-tier-25c-missing-character-description-details-and-hair-mapping) |
+| ERROR-043 | direct-mode, character-service, import-map, non-fatal, structuredAvatarData | CRITICAL | ✅ RESOLVED | Image Gen | [View](#error-043-direct-mode-character-service-import-map-failure) |
 | ERROR-042 | character, consistency, await, TypeError, detectAll, getCharacterSeed, orphaned, regex | CRITICAL | ✅ RESOLVED | Character System | [View](#error-042-characterconsistencyservice-runtime-failures) |
 | ERROR-041 | hair, override, session, consistency, variety | HIGH | ✅ RESOLVED | Character System | [View](#error-041-hair-override-breaking-session-consistency) |
 | ERROR-040 | emergency, content, tier-4, fallback, rhyming | HIGH | ✅ RESOLVED | Story Gen | [View](#error-040-missing-emergency-content-integration) |
@@ -205,6 +207,8 @@ Next Review: October 6, 2025
 ## Critical Production Issues by System
 
 ### 🎨 Image Generation System Errors
+- [ERROR-044: Tier 2.5C Missing Character Description Details and Hair Mapping](#error-044-tier-25c-missing-character-description-details-and-hair-mapping) ✅
+- [ERROR-043: Direct Mode Character Service Import Map Failure](#error-043-direct-mode-character-service-import-map-failure) ✅
 - [ERROR-041: Hair Override Breaking Session Consistency](#error-041-hair-override-breaking-session-consistency) ✅
 - [ERROR-035: Image Generation System Failure](#error-035-image-generation-system-failure) ✅
 - [ERROR-033: Template Generation Logic Failure](#error-033-template-generation-logic-failure) ✅
@@ -316,6 +320,59 @@ Next Review: October 6, 2025
   - Skin tone mapping (very-light→pale, beige→light, etc.)
 - **Resolved:** 2025-09-29
 - **Prevention:** Session-seeded selection + removed manual overrides + enhanced logging
+
+### ✅ ERROR-044: Tier 2.5C Missing Character Description Details and Hair Mapping
+- **Status:** RESOLVED ✅
+- **Severity:** HIGH (Character consistency + quality)
+- **Discovered:** 2025-09-30
+- **Impact:** Tier 2.5C template not including character hair/skin descriptions; Direct Mode hair color mappings incorrect
+- **Root Cause:** 
+  1. Tier 2.5C only displayed character descriptions when COMPLETE structuredAvatarData was present (lines 163-178)
+  2. Direct Mode (`ai-visual-scene-creator`) not providing structuredAvatarData to Template CD
+  3. No fallback hair mapping when structuredAvatarData missing
+- **Business Impact:** Generic character descriptions without physical traits, poor image quality, inconsistent hair colors
+- **Fix Applied:**
+  - **runware-template-cd/index.js (lines 146-178):**
+    - Changed logic to ALWAYS include hair and skin in character description
+    - Use structuredAvatarData when available, otherwise compute hairColor via `getSimpleHairColor(skinTone)`
+    - Default skinTone to 'medium' instead of 'diverse' for fallback mapping
+  - **ai-visual-scene-creator/index.ts (lines 341-391):**
+    - Created minimal structuredAvatarData with skinTone and hairColor when CharacterConsistencyService unavailable
+    - Used same hair mapping as Template CD (pale→red, light→blonde, medium→brown, olive→dark black, dark→4C)
+    - Always include structuredAvatarData in failedTierData passed to Template CD
+- **Files Modified:**
+  - `supabase/functions/runware-template-cd/index.js` (Lines 146-178)
+  - `supabase/functions/ai-visual-scene-creator/index.ts` (Lines 341-391)
+- **Technical Details:**
+  - Hair mapping: pale→red, light→blonde, medium→brown, olive→dark black, dark→4C
+  - Skin tone normalization: always use medium as safe fallback
+  - structuredAvatarData format: `{skinTone, hairColor, type, name}`
+- **Resolved:** 2025-09-30
+- **Prevention:** Always compute fallback hair/skin values; never skip physical descriptions
+
+### ✅ ERROR-043: Direct Mode Character Service Import Map Failure
+- **Status:** RESOLVED ✅
+- **Severity:** CRITICAL (System failure, service unavailable)
+- **Discovered:** 2025-09-30
+- **Impact:** Direct Mode throwing fatal errors when CharacterConsistencyService import fails; no images generated
+- **Root Cause:** Import map alias `#shared/CharacterConsistencyService.js` failing in Direct Mode; error treated as fatal
+- **Business Impact:** Complete Direct Mode outage when character service unavailable; no fallback to basic image generation
+- **Fix Applied:**
+  - **ai-visual-scene-creator/index.ts (lines 344-391):**
+    - Made CharacterConsistencyService load NON-FATAL
+    - Wrapped service load in try-catch with warning log instead of throw
+    - Created minimal structuredAvatarData fallback when service unavailable
+    - Always continue to Template CD call even if character service fails
+    - Service availability tracked with `characterServiceAvailable` flag
+- **Files Modified:**
+  - `supabase/functions/ai-visual-scene-creator/index.ts` (Lines 344-391)
+- **Technical Details:**
+  - Import error logged as warning, not error
+  - Fallback skinTone = 'medium', hairColor computed from skinTone
+  - Template CD always receives structuredAvatarData in failedTierData
+  - Direct Mode resilience: service failure → continue with minimal data, not abort
+- **Resolved:** 2025-09-30
+- **Prevention:** All external service loads should be non-fatal with graceful degradation
 
 ### ✅ ERROR-042: CharacterConsistencyService Runtime Failures
 - **Status:** RESOLVED ✅
