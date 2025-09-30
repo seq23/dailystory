@@ -441,8 +441,8 @@ serve(async (req) => {
           structuredAvatarData // Always provide structured avatar data
         }
       };
-
-      let runwareDebugData: any = {};
+      
+      // runwareDebugData already declared at line 360 (outer scope)
       
       try {
         const response = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/runware-template-cd', {
