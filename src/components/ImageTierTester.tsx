@@ -160,6 +160,12 @@ interface TestResult {
       message: string;
       stack?: string;
       timestamp: string;
+      tier1ErrorLog?: Array<{ // Timeline of Tier 1 execution steps
+        step: string;
+        status: 'attempt' | 'success' | 'failed' | 'skipped';
+        message: string;
+        at: string;
+      }>;
       componentFailures?: {
         orchestratorHealth: boolean;
         characterConsistencyAvailable: boolean;
@@ -2348,8 +2354,8 @@ export const ImageTierTester = () => {
                         </Badge>
                       )}
                       
-                      {/* Template Complexity Badge - Shows all tier variants */}
-                      {result.details.templateComplexity && (
+                      {/* Template Complexity Badge - Only show for actual A/B/C/D */}
+                      {result.details.templateComplexity && ['A', 'B', 'C', 'D'].includes(result.details.templateComplexity) && (
                         <Badge variant={
                           result.details.templateComplexity === 'A' ? 'default' : 
                           result.details.templateComplexity === 'B' ? 'secondary' :
@@ -2402,7 +2408,7 @@ export const ImageTierTester = () => {
                       {/* Tier 1 Force Mode Failed Badge */}
                       {result.details.templateStructure === 'TIER_1_FORCED_FAILURE' && (
                         <Badge variant="destructive" className="bg-orange-600 text-white hover:bg-orange-700">
-                          🎯 Tier 1 Force Mode Failed - No Cascade
+                          ⚡ Tier 1 Force Mode Failed - No Cascade
                         </Badge>
                       )}
                       
@@ -2695,6 +2701,37 @@ export const ImageTierTester = () => {
                               )}
                             </div>
                           </details>
+                        </div>
+                      )}
+                      
+                      {/* Tier 1 Timeline (Force Mode) */}
+                      {result.details.templateStructure === 'TIER_1_FORCED_FAILURE' && result.details.errorDetails?.tier1ErrorLog && result.details.errorDetails.tier1ErrorLog.length > 0 && (
+                        <div className="text-sm border-2 border-yellow-300 rounded p-3 bg-yellow-50 mt-3">
+                          <div className="font-bold text-yellow-700 mb-3">⚡ Tier 1 Timeline (Force Mode)</div>
+                          
+                          <div className="space-y-2">
+                            {result.details.errorDetails.tier1ErrorLog.map((entry: any, idx: number) => (
+                              <div key={idx} className="flex items-start gap-3 p-2 bg-white rounded border text-xs">
+                                <span className="text-lg shrink-0 mt-0.5">
+                                  {entry.status === 'attempt' && '⏳'}
+                                  {entry.status === 'success' && '✅'}
+                                  {entry.status === 'failed' && '❌'}
+                                  {entry.status === 'skipped' && '⏭️'}
+                                </span>
+                                <div className="flex-1 min-w-0">
+                                  <div className="font-semibold text-foreground mb-1">{entry.step}</div>
+                                  <div className="text-muted-foreground/90 break-words mb-1">{entry.message}</div>
+                                  <div className="text-muted-foreground/60 text-[10px]">
+                                    {new Date(entry.at).toLocaleTimeString()}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                          
+                          <div className="mt-3 p-2 bg-yellow-100 rounded border border-yellow-300 text-xs text-yellow-800">
+                            <strong>ℹ️ Force Mode:</strong> Cascade was blocked. Timeline shows Tier 1 execution steps before failure.
+                          </div>
                         </div>
                       )}
                       

@@ -135,11 +135,20 @@ async function processInlinedTier1(payload: any, memoizedImport: any): Promise<a
   
   console.log(`🎨 INLINED TIER 1: Processing for ${characterName} in session ${sessionId}`);
   
+  // Initialize Tier 1 Timeline tracking (for Force Mode debugging)
+  const tier1ErrorLog: Array<{step: string, status: 'attempt' | 'success' | 'failed' | 'skipped', message: string, at: string}> = [];
+  const logTier1Step = (step: string, status: 'attempt' | 'success' | 'failed' | 'skipped', message: string) => {
+    if (tier1ErrorLog.length < 20) { // Cap at 20 entries
+      tier1ErrorLog.push({ step, status, message: message.substring(0, 200), at: new Date().toISOString() });
+    }
+  };
+  
   // Import CharacterConsistencyService with resilient multi-path fallback (ERROR-046 fix)
   let characterConsistencyService;
   let characterServiceUnavailable = false;
   
   try {
+    logTier1Step('CharacterConsistencyService Import', 'attempt', 'Loading CharacterConsistencyService');
     console.log(`[TIER_1] Attempting CharacterConsistencyService import with resilient pattern`);
     
     // Try multiple import paths with fallback
@@ -164,9 +173,11 @@ async function processInlinedTier1(payload: any, memoizedImport: any): Promise<a
       throw new Error(`CharacterConsistencyService missing required methods`);
     }
     
+    logTier1Step('CharacterConsistencyService Import', 'success', 'Service loaded successfully');
     console.log(`[TIER_1] ✅ CharacterConsistencyService loaded successfully`);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
+    logTier1Step('CharacterConsistencyService Import', 'failed', errorMessage);
     console.warn(`[TIER_1] ⚠️ CharacterConsistencyService unavailable:`, errorMessage);
     console.log(`[TIER_1] Will escalate to Tier 2.5B (Nuclear Independence)`);
     // Set flag but don't throw - let escalation logic handle it gracefully
@@ -191,6 +202,7 @@ async function processInlinedTier1(payload: any, memoizedImport: any): Promise<a
   }
   
   // Generate structured avatar data using centralized method (single source of truth)
+  logTier1Step('Avatar Data Extraction', 'attempt', 'Building structured avatar data');
   const avatarSkinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
   const avatarIdentity = { 
     name: characterName, 
@@ -206,6 +218,7 @@ async function processInlinedTier1(payload: any, memoizedImport: any): Promise<a
   // ============================================================================
   
   const structuredAvatarData = await characterConsistencyService.getStructuredAvatarData(sessionId, userInfo);
+  logTier1Step('Avatar Data Extraction', 'success', `Avatar data: ${structuredAvatarData?.skinTone}, ${structuredAvatarData?.hairColor}`);
   
   // Get character consistency data using the service
   const characterSeed = await characterConsistencyService.getCharacterSeed(
@@ -252,6 +265,7 @@ async function processInlinedTier1(payload: any, memoizedImport: any): Promise<a
   let aiSchema: Record<string, any> = {};
   let aiDebugSchema: any = null;
   try {
+    logTier1Step('AI Scene Creator Call', 'attempt', 'Invoking ai-visual-scene-creator');
     const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4');
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -297,11 +311,13 @@ async function processInlinedTier1(payload: any, memoizedImport: any): Promise<a
     });
     
     if (aiError || !aiResult?.primaryScene) {
+      logTier1Step('AI Scene Creator Call', 'failed', `AI error: ${aiError?.message || 'No primary scene'}`);
       throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_25A');
     }
     
     primaryScene = aiResult.primaryScene;
     aiDebugSchema = aiResult.aiDebugSchema || null;
+    logTier1Step('AI Scene Creator Call', 'success', `Primary scene generated: ${primaryScene?.substring(0, 50)}...`);
     
     // Collect complete AI schema for debugging (only primaryScene used in template)
     aiSchema = {
@@ -314,6 +330,8 @@ async function processInlinedTier1(payload: any, memoizedImport: any): Promise<a
       atmosphericDetails: aiResult?.atmosphericDetails || ''
     };
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logTier1Step('AI Scene Creator Call', 'failed', errorMessage);
     console.warn('AI scene creator failed:', error);
     throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_25A');
   }
@@ -324,11 +342,15 @@ async function processInlinedTier1(payload: any, memoizedImport: any): Promise<a
   // conflict with established character data
   // ============================================================================
   
+  logTier1Step('Scene Validation', 'attempt', 'Validating primary scene quality');
   console.log(`🔍 CONSISTENCY VALIDATION: Checking AI scene against character data`);
   
   // Validate primary scene quality
   if (!validatePrimarySceneQuality(primaryScene)) {
+    logTier1Step('Scene Validation', 'failed', 'Primary scene quality check failed');
     console.warn(`⚠️ CONSISTENCY WARNING: Primary scene quality validation failed`);
+  } else {
+    logTier1Step('Scene Validation', 'success', 'Primary scene validated');
   }
   
   // Log consistency check for debugging
@@ -376,6 +398,8 @@ async function processInlinedTier1(payload: any, memoizedImport: any): Promise<a
   // Build template that leverages cross-page consistency
   // ============================================================================
   
+  logTier1Step('Template Building', 'attempt', 'Constructing COMPLETE_TIER_1 template');
+  
   // Build COMPLETE_TIER_1 template using 4-section structured format - only include physical descriptions when complete
   const hasCompletePhysicalData = structuredAvatarData?.skinTone && structuredAvatarData?.hairColor;
   const physicalDescription = hasCompletePhysicalData ? ` with ${structuredAvatarData.skinTone} skin and ${structuredAvatarData.hairColor}` : '';
@@ -398,6 +422,8 @@ async function processInlinedTier1(payload: any, memoizedImport: any): Promise<a
     .replace('{coloredObjects}', coloredObjects ? `Featuring ${coloredObjects}. ` : '')
     .replace('{settingContext}', aiSchema?.sceneSettings ? `In ${aiSchema.sceneSettings}. ` : '')
     .replace('{styleFramework}', styleFramework);
+  
+  logTier1Step('Template Building', 'success', `Template built, length: ${enhancedPrompt.length}`);
   
   console.log(`✅ TEMPLATE BUILDING: Enhanced prompt with full context`, {
     primarySceneLength: primaryScene?.length || 0,
@@ -646,6 +672,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
               message: errorMessage,
               stack: errorStack,
               timestamp: new Date().toISOString(),
+              tier1ErrorLog: tier1ErrorLog.length > 0 ? tier1ErrorLog : undefined,
               componentFailures: {
                 orchestratorHealth: !isOrchestratorFailure,
                 characterConsistencyAvailable: !isCharacterServiceFailure,
@@ -662,6 +689,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
                   sessionId: preAnalyzedData.sessionId
                 } : null
               }
+            },
+            metadata: {
+              cascadeHistory: ['❌ Tier 1 Force Mode Failed — No cascade']
             }
           }), {
             headers: generateEchoCorsHeaders(req),
@@ -960,15 +990,67 @@ Deno.serve(async (req: Request): Promise<Response> => {
             console.log(`[TIER_2.5C] Failed: ${tier25cErrorMessage}`);
             tierLogger.failure('TIER_2.5C', { error: tier25cErrorMessage });
             
-            // All tiers exhausted - final error
-            const finalError = `All tiers exhausted. Final errors: Tier1: ${errorMessage}, 2.5A: ${tier25aErrorMessage}, 2.5B: ${tier25bErrorMessage}, 2.5C: ${tier25cErrorMessage}`;
-            tierLogger.failure('ALL_TIERS', { finalError });
-            console.error(`❌ [${requestId}] All tiers failed`);
+            // Try Tier 2.5D before escalating to TIER_4
+            console.log(`[TIER_2.5D] Attempting emergency fallback after 2.5C failure`);
             
-            return corsResponse({ 
-              error: finalError,
-              escalationTarget: "TIER_4" 
-            }, req, 500);
+            try {
+              const tier25dResponse = await internalSupabase.functions.invoke('runware-template-cd', {
+                body: {
+                  ...payload,
+                  templateComplexity: 'D',
+                  tier1FailureReason: errorMessage,
+                  tier25aFailureReason: tier25aErrorMessage,
+                  tier25bFailureReason: tier25bErrorMessage,
+                  tier25cFailureReason: tier25cErrorMessage
+                }
+              });
+              
+              if (tier25dResponse.data?.success && tier25dResponse.data?.imageURL) {
+                const result = {
+                  imageURL: tier25dResponse.data.imageURL,
+                  provider: 'tier-2.5d-fallback',
+                  tier: 'TIER_2.5D',
+                  requestId: requestId,
+                  timestamp: new Date().toISOString(),
+                  cascadeFailures: [errorMessage, tier25aErrorMessage, tier25bErrorMessage, tier25cErrorMessage, directErrorMessage],
+                  metadata: {
+                    cascadeHistory: [
+                      `❌ Tier 1 Failed: ${errorMessage}`,
+                      `❌ Direct Mode Failed: ${directErrorMessage}`,
+                      `❌ Tier 2.5A Failed: ${tier25aErrorMessage}`,
+                      `❌ Tier 2.5B Failed: ${tier25bErrorMessage}`,
+                      `❌ Tier 2.5C Failed: ${tier25cErrorMessage}`,
+                      '✅ Tier 2.5D Success (Emergency Template)'
+                    ]
+                  }
+                };
+                
+                tierLogger.success('TIER_2.5D', { result });
+                console.log(`SUCCESS [${requestId}] Tier 2.5D emergency fallback completed`);
+                
+                return corsResponse({
+                  success: true,
+                  ...result
+                }, req);
+              } else {
+                throw new Error('TIER_2.5D_FAILED: Template D processing failed');
+              }
+              
+            } catch (tier25dError: unknown) {
+              const tier25dErrorMessage = tier25dError instanceof Error ? tier25dError.message : String(tier25dError);
+              console.log(`[TIER_2.5D] Failed: ${tier25dErrorMessage}`);
+              tierLogger.failure('TIER_2.5D', { error: tier25dErrorMessage });
+              
+              // All tiers exhausted - final error
+              const finalError = `All tiers exhausted. Final errors: Tier1: ${errorMessage}, 2.5A: ${tier25aErrorMessage}, 2.5B: ${tier25bErrorMessage}, 2.5C: ${tier25cErrorMessage}, 2.5D: ${tier25dErrorMessage}`;
+              tierLogger.failure('ALL_TIERS', { finalError });
+              console.error(`❌ [${requestId}] All tiers failed`);
+              
+              return corsResponse({ 
+                error: finalError,
+                escalationTarget: "TIER_4" 
+              }, req, 500);
+            }
           }
         }
       } // Close Tier 1 catch block
