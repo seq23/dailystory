@@ -619,6 +619,18 @@ Deno.serve(async (req: Request): Promise<Response> => {
         // FORCE MODE: If forceCompleteTier1 is true, return failure immediately without cascading
         if (forceCompleteTier1) {
           console.log(`[TIER_1_FORCE_MODE] forceCompleteTier1=true - returning failure immediately, NO CASCADE`);
+          
+          // Detect component-specific failures
+          const isCharacterServiceFailure = errorMessage.includes('CharacterConsistencyService') || 
+                                           errorMessage.includes('CHARACTERSERVICE_UNAVAILABLE') ||
+                                           errorMessage.includes('Module not found');
+          const isAISceneCreatorFailure = errorMessage.includes('ai-visual-scene-creator') || 
+                                         errorMessage.includes('MISSING_STORY_CONTENT') ||
+                                         errorMessage.includes('primaryScene');
+          const isOrchestratorFailure = errorMessage.includes('PhaseIntegrationOrchestrator') || 
+                                       errorMessage.includes('import') ||
+                                       errorMessage.includes('IMPORT_SYNC_ANOMALY');
+          
           return new Response(JSON.stringify({
             success: false,
             error: `Tier 1 Complete Flow Failed: ${errorMessage}`,
@@ -629,7 +641,23 @@ Deno.serve(async (req: Request): Promise<Response> => {
             errorDetails: {
               message: errorMessage,
               stack: errorStack,
-              timestamp: new Date().toISOString()
+              timestamp: new Date().toISOString(),
+              componentFailures: {
+                orchestratorHealth: !isOrchestratorFailure,
+                characterConsistencyAvailable: !isCharacterServiceFailure,
+                aiVisualSceneCreatorAvailable: !isAISceneCreatorFailure
+              },
+              failureType: isOrchestratorFailure ? 'ORCHESTRATOR_HEALTH' :
+                          isCharacterServiceFailure ? 'CHARACTER_SERVICE' :
+                          isAISceneCreatorFailure ? 'AI_SCENE_CREATOR' : 'UNKNOWN',
+              attemptedPrompts: {
+                note: 'Tier 1 failed before prompt generation completed',
+                partialData: preAnalyzedData ? {
+                  storyText: preAnalyzedData.storyText?.substring(0, 100) + '...',
+                  hasUserInfo: !!preAnalyzedData.userInfo,
+                  sessionId: preAnalyzedData.sessionId
+                } : null
+              }
             }
           }), {
             headers: generateEchoCorsHeaders(req),

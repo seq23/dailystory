@@ -156,6 +156,18 @@ interface TestResult {
       forcedFailure: boolean;
       cascadeBlocked?: boolean;
     };
+    errorDetails?: { // Force mode error details
+      message: string;
+      stack?: string;
+      timestamp: string;
+      componentFailures?: {
+        orchestratorHealth: boolean;
+        characterConsistencyAvailable: boolean;
+        aiVisualSceneCreatorAvailable: boolean;
+      };
+      failureType?: string;
+      attemptedPrompts?: any;
+    };
   };
 }
 
@@ -2384,6 +2396,20 @@ export const ImageTierTester = () => {
                           ❌ Tier 1 Failed
                         </Badge>
                       )}
+                      
+                      {/* Tier 1 Force Mode Failed Badge */}
+                      {result.details.templateStructure === 'TIER_1_FORCED_FAILURE' && (
+                        <Badge variant="destructive" className="bg-orange-600 text-white hover:bg-orange-700">
+                          🎯 Tier 1 Force Mode Failed - No Cascade
+                        </Badge>
+                      )}
+                      
+                      {/* Force Mode Indicator */}
+                      {result.details.tier1Validation?.cascadeBlocked && (
+                        <Badge variant="outline" className="bg-purple-50 border-purple-300 text-purple-700">
+                          🛑 Cascade Blocked (Force Mode)
+                        </Badge>
+                      )}
                     </div>
                     {result.details.processingTime && (
                       <span className="text-sm text-muted-foreground">
@@ -2604,6 +2630,69 @@ export const ImageTierTester = () => {
                               )}
                             </div>
                           </div>
+                        </div>
+                      )}
+                      
+                      {/* Force Mode Component Failure Details */}
+                      {result.details.templateStructure === 'TIER_1_FORCED_FAILURE' && result.details.errorDetails && (
+                        <div className="text-sm border-2 border-red-400 rounded p-3 bg-red-50 mt-3">
+                          <div className="font-bold text-red-800 mb-2">🚨 Force Tier 1 - Component Failure Analysis</div>
+                          
+                          {/* Component Health Status */}
+                          {result.details.errorDetails.componentFailures && (
+                            <div className="mb-3 p-2 bg-white rounded border">
+                              <div className="font-medium text-sm mb-2">Component Health Check:</div>
+                              <div className="space-y-1 text-xs">
+                                <div className={result.details.errorDetails.componentFailures.orchestratorHealth ? 'text-green-700' : 'text-red-700'}>
+                                  {result.details.errorDetails.componentFailures.orchestratorHealth ? '✅' : '❌'} PhaseIntegrationOrchestrator
+                                </div>
+                                <div className={result.details.errorDetails.componentFailures.characterConsistencyAvailable ? 'text-green-700' : 'text-red-700'}>
+                                  {result.details.errorDetails.componentFailures.characterConsistencyAvailable ? '✅' : '❌'} CharacterConsistencyService
+                                </div>
+                                <div className={result.details.errorDetails.componentFailures.aiVisualSceneCreatorAvailable ? 'text-green-700' : 'text-red-700'}>
+                                  {result.details.errorDetails.componentFailures.aiVisualSceneCreatorAvailable ? '✅' : '❌'} AI Visual Scene Creator
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* Failure Type Classification */}
+                          {result.details.errorDetails.failureType && (
+                            <div className="mb-2 p-2 bg-yellow-50 rounded border border-yellow-300">
+                              <span className="font-medium text-xs">Failure Type:</span>
+                              <span className="ml-2 px-2 py-0.5 rounded bg-yellow-200 text-yellow-800 text-xs font-mono">
+                                {result.details.errorDetails.failureType}
+                              </span>
+                            </div>
+                          )}
+                          
+                          {/* Attempted Prompts Section */}
+                          {result.details.errorDetails.attemptedPrompts && (
+                            <details className="mb-2">
+                              <summary className="cursor-pointer font-medium text-orange-700 hover:text-orange-800 text-xs">
+                                📝 Attempted Prompt Generation (Click to expand)
+                              </summary>
+                              <div className="mt-2 bg-white p-2 rounded border text-xs">
+                                <pre className="whitespace-pre-wrap">{JSON.stringify(result.details.errorDetails.attemptedPrompts, null, 2)}</pre>
+                              </div>
+                            </details>
+                          )}
+                          
+                          {/* Full Error Details */}
+                          <details className="mb-2">
+                            <summary className="cursor-pointer font-medium text-red-700 hover:text-red-800 text-xs">
+                              🔍 Full Error Details (Click to expand)
+                            </summary>
+                            <div className="mt-2 bg-white p-2 rounded border text-xs overflow-x-auto max-h-48 overflow-y-auto">
+                              <div className="mb-2"><strong>Message:</strong> {result.details.errorDetails.message}</div>
+                              {result.details.errorDetails.stack && (
+                                <div>
+                                  <strong>Stack Trace:</strong>
+                                  <pre className="mt-1 text-xs">{result.details.errorDetails.stack}</pre>
+                                </div>
+                              )}
+                            </div>
+                          </details>
                         </div>
                       )}
                       
