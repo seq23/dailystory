@@ -170,7 +170,7 @@ Generate a comprehensive scene with complete visual elements including backgroun
       systemPrompt: systemPrompt,
       userPrompt: userPrompt,
       characterDataSent: characterData, // Exact string sent to OpenAI
-      structuredAvatarData: structuredAvatarData, // The actual object
+      structuredAvatarData: userInfo?.structuredAvatarData || null, // Use from userInfo if available
       rawUserInfoReceived: {
         hasStructuredAvatar: !!userInfo?.structuredAvatarData,
         avatarSkinTone: userInfo?.avatar?.skinTone,

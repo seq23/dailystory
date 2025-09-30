@@ -152,7 +152,7 @@ async function processInlinedTier1(payload: any, memoizedImport: any): Promise<a
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.log(`[TIER_1] CharacterConsistencyService failed: ${errorMessage}`);
     console.log(`[TIER_1] Error stack:`, error instanceof Error ? error.stack : 'No stack trace');
-    throw new Error(`CharacterConsistencyService not available: ${errorMessage}`);
+    throw new Error('CHARACTERSERVICE_UNAVAILABLE_ESCALATE_TO_25B');
   }
   
   // Check for force flag to bypass health checks and fallbacks
@@ -594,12 +594,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
         tierLogger.failure('TIER_1', { error: errorMessage });
         
         // Detect if CharacterConsistencyService is unavailable
-        const isCharacterServiceUnavailable = errorMessage.includes('CharacterConsistencyService') || 
+        const isCharacterServiceUnavailable = errorMessage.includes('CHARACTERSERVICE_UNAVAILABLE_ESCALATE_TO_25B') || 
+                                              errorMessage.includes('CharacterConsistencyService') || 
                                               errorMessage.includes('Module not found') ||
                                               errorMessage.includes('_shared');
         
         if (isCharacterServiceUnavailable) {
-          console.log(`[CASCADE] CharacterConsistencyService unavailable - will skip 2.5A and route to 2.5B`);
+          console.log(`[CASCADE] CharacterConsistencyService unavailable - will skip Direct Mode and 2.5A, route directly to 2.5B`);
         }
         
         // Create Supabase client once for all fallback attempts
@@ -611,8 +612,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
         
         let directErrorMessage = 'Direct Mode not attempted';
         
-        // CORRECTED CASCADE: Try Direct Mode first (if we have valid primaryScene)
-        if (!errorMessage.includes('NO_PRIMARY_SCENE')) {
+        // CORRECTED CASCADE: Skip Direct Mode if CharacterService unavailable, otherwise try Direct Mode first (if we have valid primaryScene)
+        if (!isCharacterServiceUnavailable && !errorMessage.includes('NO_PRIMARY_SCENE')) {
           console.log(`[DIRECT_MODE] Attempting Direct Mode fallback after Tier 1 failure`);
           
           try {
@@ -705,10 +706,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
                 timestamp: new Date().toISOString(),
                 tier1FailureReason: errorMessage,
                 cascadeHistory: [
-                  `❌ Tier 1 Failed: ${errorMessage}`,
-                  `❌ Direct Mode Failed: ${directErrorMessage}`,
+                  `❌ Tier 1 Failed: CharacterConsistencyService unavailable`,
+                  `⏭️ Direct Mode Skipped: CharacterService unavailable`,
                   `⏭️ Tier 2.5A Skipped: CharacterConsistencyService unavailable`,
-                  '✅ Tier 2.5B Success'
+                  '✅ Tier 2.5B Success (Nuclear Independence)'
                 ]
               };
               
