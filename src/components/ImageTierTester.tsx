@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { ExpandableText } from '@/components/ui/ExpandableText';
 import { supabase } from '@/integrations/supabase/client';
 import { DebugLogger } from '@/services/DebugLogger';
 import { HealthCheckService } from '@/services/HealthCheckService';
@@ -1139,19 +1140,56 @@ export const ImageTierTester = () => {
           cascadeHistory.push(`✅ Success via: ${actualTier}`);
           cascadeHistory.push(`⏰ ${new Date().toLocaleTimeString()}: Real user flow completed successfully`);
           
-          // Check character consistency status from cascade history and metadata
+          // Enhanced character consistency diagnostics
           const ccErrors = result.metadata?.cascadeHistory?.filter((line: string) => 
             line.includes('structuredAvatarData') || 
             line.includes('CharacterConsistencyService') || 
-            line.includes('CHARACTERSERVICE')
+            line.includes('CHARACTERSERVICE') ||
+            line.includes('resilientLoader') ||
+            line.includes('Import @supabase/supabase-js failed') ||
+            line.includes('getSupabaseClient') ||
+            line.includes('getCulturalEnhancements') ||
+            line.includes('Database connection') ||
+            line.includes('CDN_IMPORT_FAILURE')
           ) || [];
           
           if (result.metadata?.characterConsistencyActive === true) {
             cascadeHistory.push('✅ Character consistency active');
           } else if (ccErrors.length > 0) {
             cascadeHistory.push('⚠️ Character consistency NOT active');
-            cascadeHistory.push('📋 CC Diagnostics:');
-            ccErrors.forEach((error: string) => cascadeHistory.push(`   • ${error}`));
+            cascadeHistory.push('📋 CC Diagnostics - Detected Issues:');
+            
+            // Categorize CC errors
+            const dbErrors = ccErrors.filter(e => e.includes('getSupabaseClient') || e.includes('Database'));
+            const importErrors = ccErrors.filter(e => e.includes('resilientLoader') || e.includes('Import') || e.includes('CDN'));
+            const avatarErrors = ccErrors.filter(e => e.includes('structuredAvatarData') || e.includes('getCulturalEnhancements'));
+            
+            if (dbErrors.length > 0) {
+              cascadeHistory.push('   🔴 Database Connection Issues:');
+              dbErrors.forEach(error => cascadeHistory.push(`      • ${error}`));
+              cascadeHistory.push('   💡 Recommendation: Check Supabase connection and RLS policies');
+            }
+            
+            if (importErrors.length > 0) {
+              cascadeHistory.push('   🔴 Import/Module Loading Failures:');
+              importErrors.forEach(error => cascadeHistory.push(`      • ${error}`));
+              cascadeHistory.push('   💡 Recommendation: Check CDN availability and module imports');
+            }
+            
+            if (avatarErrors.length > 0) {
+              cascadeHistory.push('   🔴 Avatar Data Generation Issues:');
+              avatarErrors.forEach(error => cascadeHistory.push(`      • ${error}`));
+              cascadeHistory.push('   💡 Recommendation: Verify CharacterConsistencyService initialization');
+            }
+            
+            // Add general CC error context if not categorized
+            const uncategorized = ccErrors.filter(e => 
+              !dbErrors.includes(e) && !importErrors.includes(e) && !avatarErrors.includes(e)
+            );
+            if (uncategorized.length > 0) {
+              cascadeHistory.push('   🟡 Other CC Errors:');
+              uncategorized.forEach(error => cascadeHistory.push(`      • ${error}`));
+            }
           }
           
           // Show Direct Mode status explicitly
@@ -2905,24 +2943,27 @@ export const ImageTierTester = () => {
                             </span>
                           </div>
                           
-                          {/* Positive Prompt (Enhanced Prompt sent to Runware) */}
+                          {/* Positive Prompt with Preview */}
                           {result.details.positivePrompt && (
-                            <details className="mt-2">
-                              <summary className="cursor-pointer text-xs font-medium text-blue-600">
+                            <div className="mt-2 bg-blue-50 p-2 rounded border border-blue-200">
+                              <div className="text-xs font-medium text-blue-700 mb-1">
                                 ✨ Positive Prompt ({result.details.positivePrompt.length} chars) - Sent to Runware
-                              </summary>
-                              <div className="mt-1">
-                                <pre className="text-xs bg-blue-50 p-2 rounded border overflow-x-auto max-h-32 overflow-y-auto whitespace-pre-wrap">
-                                  {result.details.positivePrompt}
-                                </pre>
                               </div>
-                            </details>
+                              <div className="text-xs text-blue-600 bg-white p-2 rounded">
+                                <ExpandableText 
+                                  text={result.details.positivePrompt} 
+                                  maxLength={80} 
+                                  showCharCount={false}
+                                  className="text-blue-800"
+                                />
+                              </div>
+                            </div>
                           )}
 
-                          {/* Enhanced Negative Prompt with NO TEXT badge */}
+                          {/* Negative Prompt with Preview */}
                           {result.details.negativePrompt && (
-                            <details className="mt-2">
-                              <summary className="cursor-pointer text-xs font-medium text-red-600 flex items-center gap-2">
+                            <div className="mt-2 bg-red-50 p-2 rounded border border-red-200">
+                              <div className="text-xs font-medium text-red-700 mb-1 flex items-center gap-2">
                                 🛡️ Negative Prompt ({result.details.negativePrompt.length} chars) - Nuclear Negative
                                 {result.details.negativePrompt.includes('NO TEXT') && (
                                   <Badge variant="destructive" className="text-xs">NO TEXT</Badge>
@@ -2930,13 +2971,16 @@ export const ImageTierTester = () => {
                                 {result.details.negativePrompt.includes('(especially for Emma)') && (
                                   <Badge variant="secondary" className="text-xs">EMMA</Badge>
                                 )}
-                              </summary>
-                              <div className="mt-1">
-                                <pre className="text-xs bg-red-50 p-2 rounded border overflow-x-auto max-h-32 overflow-y-auto whitespace-pre-wrap">
-                                  {result.details.negativePrompt}
-                                </pre>
                               </div>
-                            </details>
+                              <div className="text-xs text-red-600 bg-white p-2 rounded">
+                                <ExpandableText 
+                                  text={result.details.negativePrompt} 
+                                  maxLength={80} 
+                                  showCharCount={false}
+                                  className="text-red-800"
+                                />
+                              </div>
+                            </div>
                           )}
 
                           {/* Enhanced Prompt Structure Display with Success Indicators */}
@@ -3170,26 +3214,32 @@ export const ImageTierTester = () => {
                                  </div>
                                )}
                                
-                               <div className="space-y-1">
-                                 {result.details.cascadeHistory.map((step: string, idx: number) => {
-                                   const timestamp = new Date().toLocaleTimeString();
-                                   return (
-                                     <div key={idx} className="text-xs font-mono flex items-start gap-2 p-1 hover:bg-blue-100 rounded">
-                                       <span className="text-blue-400 min-w-[20px] font-bold">{idx + 1}.</span>
-                                       <span className="text-gray-500 min-w-[60px] text-[10px]">{timestamp}</span>
-                                       <span className={
-                                         step.includes('✅') ? 'text-green-700 font-medium' :
-                                         step.includes('❌') ? 'text-red-700 font-medium' :
-                                         step.includes('🔄') ? 'text-blue-700 font-medium' :
-                                         step.includes('🎯') ? 'text-purple-700 font-medium' :
-                                         'text-gray-700'
-                                       }>
-                                         {step}
-                                       </span>
-                                     </div>
-                                   );
-                                 })}
-                               </div>
+                                <div className="space-y-1">
+                                  {result.details.cascadeHistory.map((step: string, idx: number) => {
+                                    const timestamp = new Date().toLocaleTimeString();
+                                    const needsExpansion = step.length > 150;
+                                    
+                                    return (
+                                      <div key={idx} className="text-xs font-mono flex items-start gap-2 p-1 hover:bg-blue-100 rounded">
+                                        <span className="text-blue-400 min-w-[20px] font-bold">{idx + 1}.</span>
+                                        <span className="text-gray-500 min-w-[60px] text-[10px]">{timestamp}</span>
+                                        <div className={`flex-1 ${
+                                          step.includes('✅') ? 'text-green-700 font-medium' :
+                                          step.includes('❌') ? 'text-red-700 font-medium' :
+                                          step.includes('🔄') ? 'text-blue-700 font-medium' :
+                                          step.includes('🎯') ? 'text-purple-700 font-medium' :
+                                          'text-gray-700'
+                                        }`}>
+                                          {needsExpansion ? (
+                                            <ExpandableText text={step} maxLength={150} showCharCount={true} />
+                                          ) : (
+                                            <span className="whitespace-pre-wrap break-words">{step}</span>
+                                          )}
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
                                
                                {/* Final Routing Summary */}
                                <div className="mt-3 pt-2 border-t border-blue-200">
@@ -3234,33 +3284,97 @@ export const ImageTierTester = () => {
                        </>
                      )}
 
-                      {result.details.error && (
-                        <div className="space-y-3 bg-red-50 p-4 rounded-lg border border-red-200">
-                          {/* Error Type Badge */}
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <AlertTriangle className="h-4 w-4 text-red-600" />
-                              <span className="font-medium text-red-700">Error Details</span>
-                            </div>
-                            {result.details.errorType && (
-                              <Badge 
-                                variant="destructive" 
-                                className="text-xs"
-                              >
-                                {result.details.errorType.replace('_', ' ')}
-                              </Badge>
-                            )}
-                          </div>
+                       {result.details.error && (
+                         <div className="space-y-3 bg-red-50 p-4 rounded-lg border border-red-200">
+                           {/* Error Type Badge */}
+                           <div className="flex items-center justify-between">
+                             <div className="flex items-center gap-2">
+                               <AlertTriangle className="h-4 w-4 text-red-600" />
+                               <span className="font-medium text-red-700">Error Details</span>
+                             </div>
+                             {result.details.errorType && (
+                               <Badge 
+                                 variant="destructive" 
+                                 className="text-xs"
+                               >
+                                 {result.details.errorType.replace('_', ' ')}
+                               </Badge>
+                             )}
+                           </div>
 
-                          {/* Main Error Message */}
-                          <div className="text-sm">
-                            <span className="font-medium text-red-600">🚨 Error:</span>
-                            <div className="text-red-600 text-xs mt-1 bg-white p-2 rounded border">
-                              {typeof result.details.error === 'string'
-                                ? result.details.error
-                                : ((result.details.error as any)?.message || JSON.stringify(result.details.error))}
-                            </div>
-                          </div>
+                           {/* Main Error Message with Enhanced Parsing */}
+                           <div className="text-sm">
+                             <span className="font-medium text-red-600">🚨 Error:</span>
+                             <div className="text-red-600 text-xs mt-1 bg-white p-2 rounded border">
+                               {(() => {
+                                 const errorMsg = typeof result.details.error === 'string'
+                                   ? result.details.error
+                                   : ((result.details.error as any)?.message || JSON.stringify(result.details.error));
+                                 
+                                 return <ExpandableText text={errorMsg} maxLength={200} showCharCount={true} />;
+                               })()}
+                             </div>
+                             
+                             {/* Enhanced Error Explanation */}
+                             {(() => {
+                               const errorMsg = typeof result.details.error === 'string'
+                                 ? result.details.error
+                                 : ((result.details.error as any)?.message || '');
+                               
+                               // Parse common orchestrator errors
+                               if (errorMsg.includes('logTier1Step is not defined')) {
+                                 return (
+                                   <div className="mt-2 p-2 bg-yellow-50 border-l-2 border-yellow-400 text-yellow-800 text-xs">
+                                     <div className="font-medium">🔍 Analysis: Missing Logging Function</div>
+                                     <div className="mt-1">The orchestrator is trying to call a logging function that doesn't exist in the current execution context.</div>
+                                     <div className="mt-1 font-medium">Suggested Fix: Check runware-generate-image edge function for missing logTier1Step import or definition.</div>
+                                   </div>
+                                 );
+                               }
+                               
+                               if (errorMsg.includes('structuredAvatarData is not defined')) {
+                                 return (
+                                   <div className="mt-2 p-2 bg-yellow-50 border-l-2 border-yellow-400 text-yellow-800 text-xs">
+                                     <div className="font-medium">🔍 Analysis: Character Data Missing</div>
+                                     <div className="mt-1">Character consistency data was not properly passed from CharacterConsistencyService to the AI scene creator.</div>
+                                     <div className="mt-1 font-medium">Suggested Fix: Verify CharacterConsistencyService.getCulturalEnhancements() is returning data and being passed to payload correctly.</div>
+                                   </div>
+                                 );
+                               }
+                               
+                               if (errorMsg.includes('Module not found') || errorMsg.includes('Import') || errorMsg.includes('ERR_MODULE_NOT_FOUND')) {
+                                 return (
+                                   <div className="mt-2 p-2 bg-yellow-50 border-l-2 border-yellow-400 text-yellow-800 text-xs">
+                                     <div className="font-medium">🔍 Analysis: Module Import Failure</div>
+                                     <div className="mt-1">Edge function failed to load required dependencies from CDN or local imports.</div>
+                                     <div className="mt-1 font-medium">Suggested Fix: Check resilientLoader.ts CDN fallbacks and verify all import paths are correct.</div>
+                                   </div>
+                                 );
+                               }
+                               
+                               if (errorMsg.includes('timeout') || errorMsg.includes('Timeout')) {
+                                 return (
+                                   <div className="mt-2 p-2 bg-yellow-50 border-l-2 border-yellow-400 text-yellow-800 text-xs">
+                                     <div className="font-medium">🔍 Analysis: Request Timeout</div>
+                                     <div className="mt-1">The orchestrator took too long to respond (exceeded 60s timeout).</div>
+                                     <div className="mt-1 font-medium">Suggested Fix: Check AI service response times and consider increasing timeout threshold.</div>
+                                   </div>
+                                 );
+                               }
+                               
+                               if (errorMsg.includes('Supabase') || errorMsg.includes('Database')) {
+                                 return (
+                                   <div className="mt-2 p-2 bg-yellow-50 border-l-2 border-yellow-400 text-yellow-800 text-xs">
+                                     <div className="font-medium">🔍 Analysis: Database Connection Issue</div>
+                                     <div className="mt-1">Failed to connect to Supabase database or execute database operations.</div>
+                                     <div className="mt-1 font-medium">Suggested Fix: Verify Supabase credentials, check RLS policies, and ensure tables exist.</div>
+                                   </div>
+                                 );
+                               }
+                               
+                               return null;
+                             })()}
+                           </div>
 
                           {/* Probable Cause */}
                           {result.details.probableCause && (
