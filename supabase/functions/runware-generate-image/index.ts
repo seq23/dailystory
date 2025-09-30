@@ -414,8 +414,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
         }
 
         // Real Runware image generation using WebSocket service
-        const runwareUrl = new URL("../_shared/RunwareWebSocketService.ts", import.meta.url).href;
-        const { RunwareWebSocketService } = await memoizedImport(runwareUrl);
+        const { RunwareWebSocketService } = await import("../_shared/RunwareWebSocketService.ts");
+        
+        // Validate service is functional
+        if (!RunwareWebSocketService || typeof RunwareWebSocketService.generateImage !== 'function') {
+          throw new Error('TIER_1_PROCESSING_FAILED: RunwareWebSocketService not functional - missing generateImage method');
+        }
+        
         const runwareApiKey = Deno.env.get('RUNWARE_API_KEY');
         
         if (!runwareApiKey) {
@@ -475,7 +480,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
       } catch (tier1Error: unknown) {
         const errorMessage = tier1Error instanceof Error ? tier1Error.message : String(tier1Error);
+        const errorStack = tier1Error instanceof Error ? tier1Error.stack : undefined;
         console.log(`[TIER_1] Failed: ${errorMessage}`);
+        console.log(`[TIER_1] Error stack:`, errorStack);
         tierLogger.failure('TIER_1', { error: errorMessage });
         
         // Detect if CharacterConsistencyService is unavailable

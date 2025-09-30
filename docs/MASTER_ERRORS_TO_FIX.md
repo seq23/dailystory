@@ -94,6 +94,7 @@ Quick lookup table for all tracked errors with searchable keywords.
 
 | Error ID | Keywords | Severity | Status | System | Quick Link |
 |----------|----------|----------|--------|--------|------------|
+| ERROR-048 | runware-websocket, import-path, tier-1, module-not-found, url-import, deno-edge | CRITICAL | ✅ RESOLVED | Image Gen | [View](#error-048-runwarewebsocketservice-import-path-failure-in-tier-1) |
 | ERROR-047 | debug-data, variable-shadowing, aiDebugSchema, runwareDebugData, orchestratorDebugData, ImageTierTester | HIGH | ✅ RESOLVED | Debug System | [View](#error-047-debug-data-exposure-blocked-by-variable-shadowing) |
 | ERROR-046 | character-service, import-map, detectAllCharacters, storeAllDetections, iteration, guard-rails | CRITICAL | ✅ RESOLVED | Character System | [View](#error-046-characterconsistencyservice-import-and-runtime-failures) |
 | ERROR-044 | tier-2.5c, character-description, hair-mapping, direct-mode, structuredAvatarData | HIGH | ✅ RESOLVED | Image Gen | [View](#error-044-tier-25c-missing-character-description-details-and-hair-mapping) |
@@ -349,6 +350,44 @@ Next Review: October 6, 2025
   - Code review requirement for debug data return paths
   - Variable shadowing detection in critical debug functions
   - Comprehensive testing protocol in `STORY_GENERATION_TEST_PLAN.md`
+
+### ✅ ERROR-048: RunwareWebSocketService Import Path Failure in Tier 1
+- **Status:** RESOLVED ✅
+- **Severity:** CRITICAL (Tier 1 complete outage)
+- **Discovered:** 2025-09-30
+- **Impact:** All Tier 1 Complete attempts failing with "Module not found" error; forced cascade to Direct Mode (Tier 2.5B)
+- **Root Cause:** `runware-generate-image/index.ts` using `new URL("../_shared/RunwareWebSocketService.ts", import.meta.url).href` with `memoizedImport()` - creates absolute `file://` path that cannot be imported in Deno edge functions for local TypeScript files
+- **Business Impact:** Tier 1 orchestrator completely non-functional; 100% fallback to slower Direct Mode; cascading Supabase client errors
+- **Technical Details:**
+  - **Line 417-418 (BEFORE):** Used URL-based dynamic import with memoizedImport
+  - **Error Chain:** "Module not found" → "Import @supabase/supabase-js failed recently" → "Failed to create resilient Supabase client" → CharacterConsistencyService unavailable
+  - **Deno Limitation:** `import.meta.url` creates `file:///home/runner/work/...` paths unsuitable for local file imports
+  - **Correct Pattern:** Use direct relative imports (`await import("../_shared/...")`) for local TypeScript files
+- **3-Phase Fix Applied:**
+  - **Phase 1 - Change Import Method (Lines 417-418):**
+    - **REMOVED:** `const runwareUrl = new URL("../_shared/RunwareWebSocketService.ts", import.meta.url).href;`
+    - **REMOVED:** `const { RunwareWebSocketService } = await memoizedImport(runwareUrl);`
+    - **ADDED:** `const { RunwareWebSocketService } = await import("../_shared/RunwareWebSocketService.ts");`
+  - **Phase 2 - Add Service Validation (After Line 418):**
+    - Added validation: `if (!RunwareWebSocketService || typeof RunwareWebSocketService.generateImage !== 'function')`
+    - Throw explicit error: `'TIER_1_PROCESSING_FAILED: RunwareWebSocketService not functional - missing generateImage method'`
+  - **Phase 3 - Enhanced Error Logging (Line 476-479):**
+    - Added `errorStack` capture for better debugging
+    - Log both error message and stack trace for import failures
+- **Files Modified:**
+  - `supabase/functions/runware-generate-image/index.ts` (Lines 416-423, 476-481)
+- **Verification:**
+  - Test "Force Tier 1 Orchestrator" in `/prompt-testing?debug=1`
+  - Check logs for successful RunwareWebSocketService loading
+  - Verify `tier: "TIER_1"` in response (not "DIRECT_MODE")
+  - Confirm no "Module not found" errors
+- **Resolved:** 2025-09-30
+- **Prevention:** 
+  - Use direct relative imports for all local TypeScript files in edge functions
+  - Never use `new URL(..., import.meta.url)` pattern for local file imports
+  - Reserve `memoizedImport()` for external CDN packages only
+  - Updated `supabase/functions/README.md` with correct import patterns
+  - Added guidelines to `docs/DEBUG_DATA_EXPOSURE_CHECKLIST.md` for import validation
 
 ### ✅ ERROR-046: CharacterConsistencyService Import and Runtime Failures
 - **Status:** RESOLVED ✅
