@@ -1651,7 +1651,7 @@ async function handleRequest(req) {
               type: userInfo?.avatar?.type || 'child',
               skinTone: userInfo?.avatar?.skinTone || 'medium'
             };
-            characterSeed = await characterService.getCharacterSeed(
+            characterSeed = await characterConsistencyService.getCharacterSeed(
               sessionId,
               avatarIdentity,
               storyText || '',
@@ -1660,7 +1660,7 @@ async function handleRequest(req) {
             
             // Secondary character detection using consolidated API
             const pageTextForAnalysis = storyText || extractedScene?.scene || extractedScene || '';
-            const detections = await characterService.detectAllCharacters(pageTextForAnalysis, {
+            const detections = await characterConsistencyService.detectAllCharacters(pageTextForAnalysis, {
               sessionId,
               pageNumber: pageNumber || 1,
               userInfo
@@ -1670,14 +1670,14 @@ async function handleRequest(req) {
             // Build secondary character descriptions with seeds
             const safeSecondaryCharacters = (detectedSecondaryCharacters || []).filter(character => character && character.name);
             for (const character of safeSecondaryCharacters) {
-              const seed = await characterService.getSecondaryCharacterSeed(
+              const seed = await characterConsistencyService.getSecondaryCharacterSeed(
                 sessionId, character.name, character.type || 'secondary_character'
               );
               secondaryDescriptions.push(`${character.name}: ${character.description || 'character'} (${character.type || 'character'})`);
             }
             
             // Get environmental consistency
-            coloredObjects = await characterService.getColoredObjects(sessionId) || '';
+            coloredObjects = await characterConsistencyService.getColoredObjects(sessionId) || '';
           } catch (characterError) {
             console.warn(`⚠️ Character consistency error in runware-template-ab:`, characterError.message);
             // Continue without character consistency - don't crash the image generation
