@@ -23,8 +23,8 @@ This document serves as the **single source of truth** for all production errors
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📈 This Week's Activity:
-• Errors Resolved: 12 (ERROR-036 through ERROR-051)
-• System Improvements: 11 major enhancements
+• Errors Resolved: 13 (ERROR-036 through ERROR-052)
+• System Improvements: 12 major enhancements
 • Uptime: 99.9%
 • Response Time: < 2s average across all tiers
 ```
@@ -94,6 +94,7 @@ Quick lookup table for all tracked errors with searchable keywords.
 
 | Error ID | Keywords | Severity | Status | System | Quick Link |
 |----------|----------|----------|--------|--------|------------|
+| ERROR-052 | referenceerror, structuredavatardata, import-resilience, multi-path-fallback, character-service, critical-fix | CRITICAL | ✅ RESOLVED | Image Gen | [View](#error-052-critical-referenceerror-and-import-resilience-fix) |
 | ERROR-051 | secondary-characters, ai-visual-scene-creator, family-members, character-consistency-service, template-integration | HIGH | ✅ RESOLVED | Character System | [View](#error-051-secondary-character-integration-missing-in-ai-scene-creator) |
 | ERROR-050 | import-pattern, character-consistency-service, singleton, dynamic-import, shared-alias, runtime-failure | CRITICAL | ✅ RESOLVED | Character System | [View](#error-050-ai-visual-scene-creator-import-pattern-inconsistency) |
 | ERROR-049 | direct-mode, structuredAvatarData, client-side, session-seeded-hair, character-service-generation, 73-variation, method-signature-bug | HIGH | ✅ RESOLVED | Image Gen | [View](#error-049-direct-mode-missing-orchestrator-structuredavatardata) |
@@ -172,6 +173,8 @@ Quick lookup table for all tracked errors with searchable keywords.
 | Template generation failing | API parameter mismatch | Verify parameter structure | ERROR-031 |
 | 405 Method Not Allowed | GET request handling issue | Check edge function request methods | [ERROR-032](#error-032-networkwebsocket-connection-failures) |
 | Image generation network errors | WebSocket connection failure | Check network resilience | [ERROR-032](#error-032-networkwebsocket-connection-failures) |
+| ReferenceError: structuredAvatarData is not defined | Variable used before declaration | Check ai-visual-scene-creator early declaration pattern | [ERROR-052](#error-052-critical-referenceerror-and-import-resilience-fix) |
+| CharacterConsistencyService import failures | Non-resilient import pattern | Implement multi-path fallback import | [ERROR-052](#error-052-critical-referenceerror-and-import-resilience-fix) |
 
 ### System-Specific Diagnostics
 
@@ -205,8 +208,8 @@ Quick lookup table for all tracked errors with searchable keywords.
 ### Critical Active Issues
 **Current Status**: ✅ **ZERO CRITICAL ISSUES** - All systems operational
 
-Last Review: September 29, 2025  
-Next Review: October 6, 2025
+Last Review: September 30, 2025  
+Next Review: October 7, 2025
 
 ---
 
@@ -421,6 +424,57 @@ Next Review: October 6, 2025
 - **Resolved:** 2025-09-30
 - **Prevention:** Use relative paths for dynamic imports, add type guards for all iteration operations, validate data structures before iteration
 
+### ✅ ERROR-052: Critical ReferenceError and Import Resilience Fix
+- **Status:** RESOLVED ✅
+- **Severity:** CRITICAL (System crashes, ReferenceError)
+- **Discovered:** 2025-09-30
+- **Impact:** `ai-visual-scene-creator` crashing with `ReferenceError: structuredAvatarData is not defined`; `runware-generate-image` failing when CharacterConsistencyService import unavailable
+- **Root Cause:**
+  1. **ai-visual-scene-creator**: `structuredAvatarData` variable referenced at line 218 before declaration at line 522
+  2. **runware-generate-image**: Non-resilient CharacterConsistencyService import causing function crashes when service unavailable
+  3. **Architectural Flaw**: No fallback mechanism when character service imports fail
+- **Business Impact:** Complete image generation failures, tier escalation blocked, user-facing errors
+- **Comprehensive Fix Applied:**
+  - **Phase 1: ai-visual-scene-creator structuredAvatarData Fix** (Lines 25-52, 522-530)
+    - **Line 25**: Moved `let structuredAvatarData = userInfo?.structuredAvatarData;` to early declaration
+    - **Lines 29-52**: Implemented robust 3-tier fallback when `structuredAvatarData` missing:
+      1. **Tier 1**: Attempt generation via `CharacterConsistencyService.getCulturalEnhancements()` with proper 3-parameter signature
+      2. **Tier 2**: Extract from `userInfo.skinTone` + culturalEnhancements.hair if service succeeds
+      3. **Tier 3**: Hardcoded fallback map as last resort
+    - **Lines 522-530**: Removed duplicate `structuredAvatarData` logic, replaced with simple validation
+  - **Phase 2: runware-generate-image Import Resilience** (Lines 138-179)
+    - **Multi-Path Import Strategy**: 
+      1. Try `await import("../_shared/CharacterConsistencyService.js")` (relative path)
+      2. Fallback to `await import("#shared/CharacterConsistencyService.js")` (import map alias)
+    - **Non-Fatal Error Handling**: Import failures set `characterServiceUnavailable = true` instead of crashing
+    - **Immediate Escalation**: When unavailable, immediately `throw new Error('CHARACTERSERVICE_UNAVAILABLE_ESCALATE_TO_25B')`
+    - **Lines 620-623, 639, 705-707, 732-735**: Verified existing escalation handlers remain functional
+- **Files Modified:**
+  - `supabase/functions/ai-visual-scene-creator/index.ts`:
+    - Line 25: Early `structuredAvatarData` declaration
+    - Lines 29-52: Robust fallback logic with CharacterService generation
+    - Lines 522-530: Removed duplicate logic
+  - `supabase/functions/runware-generate-image/index.ts`:
+    - Lines 138-179: Multi-path resilient import with escalation
+- **Technical Details:**
+  - **structuredAvatarData ReferenceError**: JavaScript hoisting doesn't apply to `let` - variable must be declared before use
+  - **Import Resilience Pattern**: Try relative path first (works in most contexts), fallback to import map alias
+  - **Escalation Integration**: `CHARACTERSERVICE_UNAVAILABLE_ESCALATE_TO_25B` error properly triggers tier 2.5B template fallback
+  - **CharacterService Optional**: System continues functioning even when service unavailable
+- **Verification:**
+  - ✅ No `structuredAvatarData is not defined` errors in edge function logs
+  - ✅ No CharacterConsistencyService import failures in runware-generate-image logs
+  - ✅ Escalation to tier 2.5B working when character service unavailable
+  - ✅ Both edge functions boot successfully with health check endpoints
+- **Resolved:** 2025-09-30
+- **Prevention:**
+  - Always declare variables before use in JavaScript
+  - Use multi-path import resilience for all shared service imports
+  - Make external service dependencies non-fatal with graceful degradation
+  - Test both success and failure paths for import patterns
+  - Add comprehensive logging at each fallback level
+- **Related Fixes:** ERROR-049 (structuredAvatarData generation), ERROR-046 (CharacterService import patterns)
+
 ### ✅ ERROR-049: Direct Mode Missing Orchestrator structuredAvatarData
 - **Status:** RESOLVED ✅ (Import fix completed 2025-09-30)
 - **Severity:** HIGH (Character consistency, hair variety)
@@ -481,7 +535,7 @@ Next Review: October 6, 2025
   4. Verify method signatures before implementation
   5. Add detailed logging for all service calls to detect failures early
   6. See: `docs/ANTI_REGRESSION_GUIDELINES.md` for complete import patterns
-- **Related Fixes:** ERROR-050 (import pattern standardization)
+- **Related Fixes:** ERROR-050 (import pattern standardization), ERROR-052 (ReferenceError fix)
 
 ### ✅ ERROR-044: Tier 2.5C Missing Character Description Details and Hair Mapping
 - **Status:** RESOLVED ✅
@@ -587,8 +641,8 @@ Next Review: October 6, 2025
 
 ## System Status Summary
 
-**Total Issues Tracked:** 15  
-**Issues Resolved:** 15 ✅
+**Total Issues Tracked:** 16  
+**Issues Resolved:** 16 ✅
 **Critical Issues Remaining:** 0 ✅
 **System Status:** PRODUCTION READY - 4-TIER STORY GENERATION SYSTEM OPERATIONAL ✅
 
