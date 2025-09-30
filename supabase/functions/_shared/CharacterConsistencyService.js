@@ -161,7 +161,7 @@ export class CharacterConsistencyService {
   async getSupabaseClient() {
     if (!this.supabase) {
       try {
-        const { createResilientSupabaseClient } = await import('./resilientLoader.js');
+        const { createResilientSupabaseClient } = await import('./resilientLoader.ts');
         this.supabase = await createResilientSupabaseClient();
       } catch (error) {
         console.warn('Failed to create Supabase client:', error);
