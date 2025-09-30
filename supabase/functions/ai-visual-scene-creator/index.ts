@@ -63,10 +63,7 @@ JSON RESPONSE:
 }
 
 CRITICAL CHARACTER RULES:
-1. Use provided character appearance data exactly - character name, avatar type, hair color, and skin tone must be used as specified
-2. For secondary characters, you may describe their appearance as needed
-3. Use story-driven visual descriptions based on the text content
-4. Include the character's hair color and skin tone prominently in scene descriptions
+Use character appearance data from userInfo.structuredAvatarData EXACTLY as provided (character name, avatar type, hair color, skin tone) - NEVER substitute, modify, or invent these details, and if any data is missing, skip that detail entirely.
 
 VISUAL ENHANCEMENT RULES:
 5. Create detailed primary scenes with rich visual descriptions (200-1500 characters)
@@ -387,39 +384,41 @@ serve(async (req) => {
         // Service unavailable is non-fatal - continue with fallback
       }
       
-      // DEBUG: Log incoming userInfo to diagnose hair color mismatch
-      console.log(`🔍 [${requestId}] DIRECT MODE HAIR DEBUG:`, {
-        hasOrchestratorData: !!userInfo?.structuredAvatarData,
-        orchestratorHair: userInfo?.structuredAvatarData?.hairColor,
-        avatarSkinTone: userInfo?.avatar?.skinTone,
-        directSkinTone: userInfo?.skinTone,
-        avatarObject: userInfo?.avatar
-      });
+      // PRIORITY 1: Use orchestrator-generated structuredAvatarData if available
+      let structuredAvatarData = userInfo?.structuredAvatarData;
       
-      // Provide minimal structuredAvatarData when character service unavailable
-      const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
-      const hairColorMap: Record<string, string> = {
-        'pale': 'red hair',
-        'light': 'blonde hair', 
-        'medium': 'brown hair',
-        'olive': 'dark black hair',
-        'dark': 'thick textured 4C hair'
-      };
-      const hairColor = hairColorMap[skinTone] || 'brown hair';
-      
-      const structuredAvatarData = {
-        skinTone,
-        hairColor,
-        type: characterSeed.avatarType,
-        name: characterSeed.characterName
-      };
-      
-      console.log(`🎨 [${requestId}] CREATED structuredAvatarData:`, {
-        resolvedSkinTone: skinTone,
-        assignedHairColor: hairColor,
-        mapLookupResult: hairColorMap[skinTone],
-        fullData: structuredAvatarData
-      });
+      if (structuredAvatarData) {
+        console.log(`✅ [${requestId}] Using orchestrator structuredAvatarData:`, {
+          hairColor: structuredAvatarData.hairColor,
+          skinTone: structuredAvatarData.skinTone,
+          source: 'orchestrator'
+        });
+      } else {
+        // PRIORITY 2: Fallback to session-seeded hair selection (only if orchestrator data missing)
+        console.warn(`⚠️ [${requestId}] No orchestrator data - using fallback hair map`);
+        const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
+        const hairColorMap: Record<string, string> = {
+          'pale': 'red hair',
+          'light': 'blonde hair', 
+          'medium': 'brown hair',
+          'olive': 'dark black hair',
+          'dark': 'thick textured 4C hair'
+        };
+        const hairColor = hairColorMap[skinTone] || 'brown hair';
+        
+        structuredAvatarData = {
+          skinTone,
+          hairColor,
+          type: characterSeed.avatarType,
+          name: characterSeed.characterName
+        };
+        
+        console.log(`🎨 [${requestId}] CREATED fallback structuredAvatarData:`, {
+          resolvedSkinTone: skinTone,
+          assignedHairColor: hairColor,
+          source: 'fallback_map'
+        });
+      }
       
       // Prepare payload for runware-template-cd with character consistency data
       const templatePayload = {
