@@ -94,7 +94,7 @@ Quick lookup table for all tracked errors with searchable keywords.
 
 | Error ID | Keywords | Severity | Status | System | Quick Link |
 |----------|----------|----------|--------|--------|------------|
-| ERROR-049 | direct-mode, structuredAvatarData, client-side, session-seeded-hair, character-service-generation, 73-variation | HIGH | ✅ RESOLVED | Image Gen | [View](#error-049-direct-mode-missing-orchestrator-structuredavatardata) |
+| ERROR-049 | direct-mode, structuredAvatarData, client-side, session-seeded-hair, character-service-generation, 73-variation, method-signature-bug | HIGH | 🔄 IN PROGRESS | Image Gen | [View](#error-049-direct-mode-missing-orchestrator-structuredavatardata) |
 | ERROR-048 | runware-websocket, import-path, tier-1, module-not-found, url-import, deno-edge | CRITICAL | ✅ RESOLVED | Image Gen | [View](#error-048-runwarewebsocketservice-import-path-failure-in-tier-1) |
 | ERROR-047 | debug-data, variable-shadowing, aiDebugSchema, runwareDebugData, orchestratorDebugData, ImageTierTester | HIGH | ✅ RESOLVED | Debug System | [View](#error-047-debug-data-exposure-blocked-by-variable-shadowing) |
 | ERROR-046 | character-service, import-map, detectAllCharacters, storeAllDetections, iteration, guard-rails | CRITICAL | ✅ RESOLVED | Character System | [View](#error-046-characterconsistencyservice-import-and-runtime-failures) |
@@ -419,8 +419,8 @@ Next Review: October 6, 2025
 - **Resolved:** 2025-09-30
 - **Prevention:** Use relative paths for dynamic imports, add type guards for all iteration operations, validate data structures before iteration
 
-### ✅ ERROR-049: Direct Mode Missing Orchestrator structuredAvatarData
-- **Status:** RESOLVED ✅
+### 🔄 ERROR-049: Direct Mode Missing Orchestrator structuredAvatarData (BUGFIX IN PROGRESS)
+- **Status:** IN PROGRESS 🔄 (Critical bugs found in initial implementation)
 - **Severity:** HIGH (Character consistency, hair variety)
 - **Discovered:** 2025-09-30
 - **Impact:** Direct Mode invoked from frontend always falling back to 5-value hardcoded hair map; no session-seeded 73-variation hair diversity
@@ -455,9 +455,24 @@ Next Review: October 6, 2025
   - **Session Consistency:** Both orchestrator and CharacterService use same `sessionId` seed for deterministic hair selection
   - **Session Variety:** Different sessions get different hair variations (73 total options per skin tone)
   - **Invocation Path Independence:** Works for both client-side and server-side Direct Mode calls
-- **Resolved:** 2025-09-30
-- **Prevention:** Services should be self-sufficient for critical data generation; always provide fallback generation mechanisms
-- **Testing:** Verified with Direct Mode E2E test showing successful generation with CharacterService fallback
+- **Bugs Discovered in Initial Implementation (2025-09-30):**
+  1. **Incorrect Method Signature:** Called `getCulturalEnhancements` with 5 parameters in wrong order; actual signature requires 3: `(userInfo, sessionId, characterName)`
+  2. **Non-existent Property Access:** Accessed `culturalEnhancements.skinTone` which doesn't exist; method only returns `{ hair, features }`
+  3. **Constant Fallback:** All Direct Mode calls consistently fell back to 5-value hardcoded map due to method call failure
+  4. **Missing Error Context:** Error logs didn't include parameter details for debugging
+  5. **Implementation Never Tested:** 73-variation logic was never actually invoked successfully
+- **Bugfix Applied (2025-09-30):**
+  - **Lines 401-431:** Corrected `getCulturalEnhancements` call to use proper 3-parameter signature
+  - **Lines 418-420:** Fixed `structuredAvatarData` to use `userInfo.skinTone` for skinTone (not from culturalEnhancements)
+  - **Lines 405-413:** Added detailed parameter logging for debugging method calls
+  - **Lines 423-431:** Enhanced success logging to show actual service response data
+- **Resolved:** 2025-09-30 (bugfix complete)
+- **Prevention:** 
+  1. Verify method signatures before implementation
+  2. Check return value structures in service documentation
+  3. Add detailed logging for all service calls to detect failures early
+  4. Test fallback paths independently to ensure they work as designed
+- **Testing Required:** Direct Mode invocation with missing orchestrator data should now successfully generate 73-variation session-seeded hair via CharacterService
 
 ### ✅ ERROR-044: Tier 2.5C Missing Character Description Details and Hair Mapping
 - **Status:** RESOLVED ✅

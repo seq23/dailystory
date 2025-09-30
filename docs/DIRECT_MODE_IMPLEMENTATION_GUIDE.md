@@ -332,6 +332,35 @@ Direct Mode now generates its own `structuredAvatarData` if not provided by the 
    - Only used if `CharacterConsistencyService` fails
    - Maps: pale→platinum blonde, light→golden blonde, medium→chestnut brown, olive→dark brown, dark→black
 
+### Troubleshooting structuredAvatarData Generation
+
+#### Common Issues
+
+**Problem: Direct Mode always falls back to 5-value hardcoded hair map**
+- **Symptom:** Logs show "Falling back to hardcoded hair map" immediately after trying CharacterService
+- **Cause:** Incorrect method signature or parameter order in `getCulturalEnhancements` call
+- **Solution:** Verify call uses `(userInfo, sessionId, characterName)` - exactly 3 parameters in this order
+- **Verification:** Check logs for "Generated structuredAvatarData via CharacterConsistencyService" success message
+
+**Problem: `culturalEnhancements.skinTone is undefined` error**
+- **Symptom:** TypeError when accessing properties on culturalEnhancements object
+- **Cause:** `getCulturalEnhancements` only returns `{ hair, features }` - no `skinTone` property
+- **Solution:** Use `userInfo.skinTone` or `userInfo.avatarIdentity.skinTone` for skinTone data
+- **Verification:** structuredAvatarData should show source: 'character_service_generation'
+
+**Problem: CharacterConsistencyService import fails in Edge Function**
+- **Symptom:** Module not found error or import resolution failure
+- **Cause:** Incorrect import path or file extension
+- **Solution:** Use relative path `'../_shared/CharacterConsistencyService.js'` with .js extension
+- **Verification:** Function boots successfully without import errors
+
+#### Success Indicators
+- ✅ Logs show "Generated structuredAvatarData via CharacterConsistencyService"
+- ✅ Hair colors vary across different sessionIds (not always same color)
+- ✅ Hair colors match 73-variation palette (not just 5 basic colors)
+- ✅ structuredAvatarData.source shows 'character_service_generation'
+- ✅ No immediate fallback to hardcoded map unless service genuinely fails
+
 ### Implementation Details
 **File**: `supabase/functions/ai-visual-scene-creator/index.ts` (Lines 387-421)
 

@@ -400,26 +400,34 @@ serve(async (req) => {
         
         try {
           const characterService = new CharacterConsistencyService();
-          const culturalEnhancements = await characterService.getCulturalEnhancements(
+          
+          // CORRECT METHOD SIGNATURE: getCulturalEnhancements(userInfo, sessionId, characterName)
+          console.log(`🔍 [${requestId}] Calling CharacterConsistencyService with parameters:`, {
+            hasUserInfo: !!userInfo,
             sessionId,
-            userInfo?.name || 'Child',
-            {
-              name: userInfo?.name || 'Child',
-              age: userInfo?.age || 7,
-              skinTone: userInfo?.skinTone || userInfo?.avatarIdentity?.skinTone || 'medium',
-              avatarType: userInfo?.avatarIdentity?.type || 'girl'
-            },
+            characterName: userInfo?.name || 'Child',
+            skinTone: userInfo?.skinTone || userInfo?.avatarIdentity?.skinTone || 'medium'
+          });
+          
+          const culturalEnhancements = await characterService.getCulturalEnhancements(
             userInfo,
-            sessionId // Use sessionId as seed for consistency
+            sessionId,
+            userInfo?.name || 'Child'
           );
           
           structuredAvatarData = {
-            resolvedSkinTone: culturalEnhancements.skinTone || userInfo?.skinTone || 'medium',
+            resolvedSkinTone: userInfo?.skinTone || userInfo?.avatarIdentity?.skinTone || 'medium',
             assignedHairColor: culturalEnhancements.hair || 'brown hair',
             source: 'character_service_generation'
           };
           
-          console.log(`✅ [${requestId}] Generated structuredAvatarData via CharacterConsistencyService:`, structuredAvatarData);
+          console.log(`✅ [${requestId}] Generated structuredAvatarData via CharacterConsistencyService:`, {
+            resolvedSkinTone: structuredAvatarData.resolvedSkinTone,
+            assignedHairColor: structuredAvatarData.assignedHairColor,
+            source: structuredAvatarData.source,
+            hairFromService: culturalEnhancements.hair,
+            featuresFromService: culturalEnhancements.features ? 'present' : 'absent'
+          });
         } catch (error) {
           console.error(`❌ [${requestId}] CharacterConsistencyService generation failed:`, error);
           
