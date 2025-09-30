@@ -128,20 +128,12 @@ function validatePayloadFast(payload: ValidationPayload): boolean {
 }
 
 // ============= INLINED TIER 1 PROCESSING (from PhaseIntegrationOrchestrator) =============
-async function processInlinedTier1(payload: any, memoizedImport: any): Promise<any> {
+async function processInlinedTier1(payload: any, memoizedImport: any, logTier1Step: Function, tier1ErrorLog: any[]): Promise<any> {
   const { pageText, storyText, userInfo, sessionId } = payload;
   const userId = userInfo?.id || userInfo?.userId || 'anonymous';
   const characterName = userInfo?.name || userInfo?.childName || 'Child';
   
   console.log(`🎨 INLINED TIER 1: Processing for ${characterName} in session ${sessionId}`);
-  
-  // Initialize Tier 1 Timeline tracking (for Force Mode debugging)
-  const tier1ErrorLog: Array<{step: string, status: 'attempt' | 'success' | 'failed' | 'skipped', message: string, at: string}> = [];
-  const logTier1Step = (step: string, status: 'attempt' | 'success' | 'failed' | 'skipped', message: string) => {
-    if (tier1ErrorLog.length < 20) { // Cap at 20 entries
-      tier1ErrorLog.push({ step, status, message: message.substring(0, 200), at: new Date().toISOString() });
-    }
-  };
   
   // Import CharacterConsistencyService with resilient multi-path fallback (ERROR-046 fix)
   let characterConsistencyService;
@@ -537,17 +529,32 @@ Deno.serve(async (req: Request): Promise<Response> => {
       // Extract force flag at handler scope so it's accessible in catch blocks
       const forceCompleteTier1 = payload.forceCompleteTier1 === true;
 
+      // Initialize Tier 1 Timeline tracking at handler scope (CRITICAL FIX: was inside processInlinedTier1)
+      const tier1ErrorLog: Array<{step: string, status: 'attempt' | 'success' | 'failed' | 'skipped', message: string, at: string}> = [];
+      const logTier1Step = (step: string, status: 'attempt' | 'success' | 'failed' | 'skipped', message: string) => {
+        if (tier1ErrorLog.length < 20) { // Cap at 20 entries
+          tier1ErrorLog.push({ step, status, message: message.substring(0, 200), at: new Date().toISOString() });
+        }
+      };
+
       // Preferred: resilient loader from _shared
       let memoizedImport: <T=any>(href: string) => Promise<T>;
+      let usingResilientLoader = false;
       try {
         ({ memoizedImport } = await import(
           new URL("../_shared/resilientLoader.ts", import.meta.url).href
         ));
-      } catch {
+        usingResilientLoader = true;
+        console.log(`✅ [CDN_HEALTH] Using resilient loader with multi-CDN fallback support`);
+      } catch (loaderError) {
+        console.warn(`⚠️ [CDN_HEALTH] Resilient loader unavailable, using local fallback:`, loaderError instanceof Error ? loaderError.message : String(loaderError));
         // Fallback: simple local memoizer to stay up during cold boot anomalies
         const cache = new Map<string, Promise<any>>();
         memoizedImport = <T=any>(href: string) => {
-          if (!cache.has(href)) cache.set(href, import(href));
+          if (!cache.has(href)) {
+            console.log(`📦 [CDN_HEALTH] Local memoizer importing: ${href}`);
+            cache.set(href, import(href));
+          }
           return cache.get(href)! as Promise<T>;
         };
       }
@@ -567,7 +574,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       try {
         // INLINED TIER 1 PROCESSING - Direct orchestration without PhaseIntegrationOrchestrator
         console.log(`🎨 INLINED TIER 1: Processing for ${payload.userInfo?.name || 'Child'} in session ${payload.sessionId}`);
-        enhancedPrompt = await processInlinedTier1(payload, memoizedImport);
+        enhancedPrompt = await processInlinedTier1(payload, memoizedImport, logTier1Step, tier1ErrorLog);
         
         if (!enhancedPrompt || !validatePrimarySceneQuality(enhancedPrompt.primaryScene || enhancedPrompt.enhancedPrompt || '')) {
           throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_25A');
