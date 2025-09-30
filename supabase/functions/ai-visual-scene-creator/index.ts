@@ -59,72 +59,18 @@ async function generateCompleteVisualSchema(storyText: string, userInfo: any, se
     }
   }
 
-  // Helper: Simplify detailed hair colors to basic categories
-  function simplifyHairColor(detailedHair: string | undefined): string {
-    if (!detailedHair) return 'brown hair';
-    const hair = String(detailedHair).toLowerCase();
-    if (hair.includes('blonde') || hair.includes('yellow') || hair.includes('golden')) return 'blonde hair';
-    if (hair.includes('red') || hair.includes('ginger') || hair.includes('auburn') || hair.includes('copper')) return 'red hair';
-    if (hair.includes('black') || hair.includes('dark') || hair.includes('raven')) return 'black hair';
-    return 'brown hair'; // Default fallback
-  }
+  // REMOVED: Over-engineered helper functions (simplifyHairColor, standardizeSkinTone, detectEthnicity)
+  // Now using existing mapping system: StaticDataCache.getHairBySkintone() and UnifiedPlaceholderResolver.detectCulturalContext()
 
-  // Helper: Standardize skin tones to basic categories
-  function standardizeSkinTone(rawSkinTone: string | undefined): string {
-    if (!rawSkinTone) return 'light skin';
-    const skin = String(rawSkinTone).toLowerCase();
-    if (skin.includes('pale') || skin.includes('light') || skin.includes('fair')) return 'light skin';
-    if (skin.includes('olive') || skin.includes('mediterranean')) return 'olive skin';
-    if (skin.includes('dark') || skin.includes('brown') || skin.includes('deep')) return 'dark skin';
-    if (skin.includes('medium') || skin.includes('tan')) return 'medium skin';
-    return 'light skin'; // Default fallback
-  }
-
-  // Helper: Detect basic ethnicity from language and skin tone
-  function detectEthnicity(nativeLanguage: string | undefined, skinTone: string): string {
-    const lang = (nativeLanguage || 'en').toLowerCase();
-    const skin = skinTone.toLowerCase();
-    
-    // English speakers with basic ethnicity detection
-    if (lang === 'en' || lang === 'english') {
-      if (skin.includes('dark')) return 'African American';
-      return 'American'; // Default for English + light/medium/olive skin
-    }
-    
-    // Use native language as cultural context for non-English
-    return ''; // Return empty for non-English (cultural context handled separately)
-  }
-
-  // Extract structured avatar data for OpenAI (Scene-Only mode)
+  // Extract character name for reference
   const characterName = userInfo?.name || userInfo?.userName || 'child';
-  // Build initial character appearance from frontend userInfo data
-  const characterAppearanceParts = [];
-
-  // PRIORITY: Use structured hair color from orchestrator if available, then simplify
-  const rawHairColor = structuredAvatarData?.assignedHairColor || userInfo?.hair;
-  const basicHairColor = simplifyHairColor(rawHairColor);
-  characterAppearanceParts.push(`Hair: ${basicHairColor}`);
-
-  // Extract and standardize skin tone
-  const rawSkinTone = structuredAvatarData?.resolvedSkinTone || userInfo?.skinTone || userInfo?.avatar?.skinTone;
-  const standardSkinTone = standardizeSkinTone(rawSkinTone);
-  characterAppearanceParts.push(`Skin: ${standardSkinTone}`);
-
-  // Add avatar type if available
-  const avatarType = userInfo?.avatar?.type || userInfo?.avatarType;
-  if (avatarType && String(avatarType).trim()) {
-    characterAppearanceParts.push(`Type: ${String(avatarType).trim()}`);
-  }
-
-  // Detect and add ethnicity for English speakers
   const nativeLanguage = userInfo?.native_language || userInfo?.nativeLanguage || 'en';
-  const ethnicity = detectEthnicity(nativeLanguage, standardSkinTone);
-  if (ethnicity) {
-    characterAppearanceParts.push(`Ethnicity: ${ethnicity}`);
-  }
-
-  // Build character appearance line for OpenAI with basic categories
-  const characterData = characterAppearanceParts.join(', ');
+  
+  // Build character data string for OpenAI
+  // This data comes from orchestrator (Tier 1) or will be built from mapping system (Direct Mode)
+  const characterData = structuredAvatarData 
+    ? `${characterName}, ${structuredAvatarData.assignedHairColor || 'natural hair'}, ${structuredAvatarData.resolvedSkinTone || 'medium'} skin tone`
+    : `${characterName}, character appearance data from orchestrator`;
   
   console.log(`🎨 Character data for OpenAI (basic categories): ${characterData}`);
   const previousPrimaryScene = null; // Will be implemented with visual history tracking
@@ -153,7 +99,7 @@ JSON RESPONSE:
 }
 
 CRITICAL CHARACTER RULES:
-Use character appearance data from userInfo.structuredAvatarData EXACTLY as provided (character name, avatar type, hair color, skin tone) - NEVER substitute, modify, or invent these details, and if any data is missing, skip that detail entirely.
+Use character appearance data EXACTLY as provided in the CHARACTER APPEARANCE section below - NEVER substitute, modify, or invent character details. Focus on scene generation and visual atmosphere.
 
 VISUAL ENHANCEMENT RULES:
 5. Create detailed primary scenes with rich visual descriptions (200-1500 characters)
