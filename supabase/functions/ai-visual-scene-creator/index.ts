@@ -3,7 +3,6 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // TypeScript type imports
 import type { UserInfo } from "../_shared/types/index.ts";
-import { CharacterConsistencyService } from '../_shared/CharacterConsistencyService.js';
 
 // ============= PERFECT AI VISUAL SCENE CREATOR WITH CHARACTER CONSISTENCY =============
 // Complete implementation with word-for-word OpenAI prompts and CharacterConsistencyService integration
@@ -179,8 +178,8 @@ Generate a comprehensive scene with complete visual elements including backgroun
     let cachedSecondaryCharacters: any[] = [];
     
     try {
-      const characterService = new CharacterConsistencyService();
-      cachedSecondaryCharacters = await characterService.getSecondaryCharactersForSession(sessionId);
+      const { characterConsistencyService } = await import('#shared/CharacterConsistencyService.js');
+      cachedSecondaryCharacters = await characterConsistencyService.getSecondaryCharactersForSession(sessionId);
       console.log(`✅ Retrieved ${cachedSecondaryCharacters.length} cached secondary characters for session ${sessionId}`);
     } catch (error) {
       console.warn(`⚠️ Failed to retrieve cached secondary characters:`, error);
@@ -384,8 +383,8 @@ serve(async (req) => {
       
       try {
         // TIER 1: CharacterConsistencyService (session-seeded 73-variation hair)
-        const characterService = new CharacterConsistencyService();
-        const culturalEnhancements = await characterService.getCulturalEnhancements(
+        const { characterConsistencyService } = await import('#shared/CharacterConsistencyService.js');
+        const culturalEnhancements = await characterConsistencyService.getCulturalEnhancements(
           userInfo,
           sessionId,
           userInfo?.name || 'Child'
@@ -494,7 +493,7 @@ serve(async (req) => {
         console.log(`🔄 [${requestId}] No orchestrator data - generating structuredAvatarData via CharacterConsistencyService`);
         
         try {
-          const characterService = new CharacterConsistencyService();
+          const { characterConsistencyService } = await import('#shared/CharacterConsistencyService.js');
           
           // CORRECT METHOD SIGNATURE: getCulturalEnhancements(userInfo, sessionId, characterName)
           console.log(`🔍 [${requestId}] Calling CharacterConsistencyService with parameters:`, {
@@ -504,7 +503,7 @@ serve(async (req) => {
             skinTone: userInfo?.skinTone || userInfo?.avatarIdentity?.skinTone || 'medium'
           });
           
-          const culturalEnhancements = await characterService.getCulturalEnhancements(
+          const culturalEnhancements = await characterConsistencyService.getCulturalEnhancements(
             userInfo,
             sessionId,
             userInfo?.name || 'Child'
