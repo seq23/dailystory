@@ -1698,12 +1698,107 @@ async function handleRequest(req) {
             // Get environmental consistency
             coloredObjects = await characterConsistencyService.getColoredObjects(sessionId) || '';
           } catch (characterError) {
-            console.warn(`⚠️ Character consistency error in runware-template-ab:`, characterError.message);
-            // Continue without character consistency - don't crash the image generation
-            characterAppearance = '';
-            detectedSecondaryCharacters = [];
-            secondaryDescriptions = [];
-            coloredObjects = '';
+            console.error(`🚨 [${requestId}] Tier 2.5A: CharacterConsistencyService FAILED - Escalating to Tier 2.5B`, characterError.message);
+            console.log(`⚡ [${requestId}] Tier 2.5A→2.5B Escalation Reason: Character consistency unavailable`);
+            
+            // ESCALATE TO TIER 2.5B: Switch complexity from 'A' to 'B' and re-process
+            const escalatedPayload = {
+              ...payload,
+              templateComplexity: 'B'
+            };
+            
+            console.log(`🔄 [${requestId}] Re-processing with Tier 2.5B (nuclear independent)...`);
+            
+            // Re-select template with complexity 'B'
+            const escalatedTemplate = selectTemplate('B');
+            console.log(`✅ [${requestId}] Escalated to: ${escalatedTemplate.name}`);
+            
+            // Jump to Tier 2.5B processing (skip to line 1783 logic)
+            const extractedScene = extractSimpleScene(storyText);
+            console.log(`🎯 [${requestId}] Tier 2.5B Escalation Scene: "${extractedScene}"`);
+            
+            const styleFramework = getNuclearStyleFramework(userInfo?.difficulty || 'medium');
+            const culturalProfile = inlineDetectCultural(userInfo, avatarIdentity);
+            const characterName = userInfo?.name || userInfo?.childName || 'child';
+            const age = userInfo?.age || 'young child';
+            const ethnicity = deriveRegionalEthnicity(userInfo, avatarIdentity);
+            const skinTone = userInfo?.avatar?.skinTone || 'medium';
+            const hairDescription = getHairBySkintone(skinTone) || 'brown hair';
+            const facialFeatures = getSkinBySkintone(skinTone, sessionId) || 'friendly expression';
+            const cultural_context = determineCulturalContext(userInfo?.preferredLanguage || 'en');
+            
+            const leftoverDataTier2B = [
+              preAnalyzedData?.timeOfDay,
+              preAnalyzedData?.mood,
+              preAnalyzedData?.lighting,
+              preAnalyzedData?.atmosphere
+            ].filter(Boolean).join(', ');
+            
+            const fullFrameworkPrompt = `${styleFramework.frameworkPrompt}, medium shot, child-safe, age-appropriate`;
+            
+            const tier2BPrompt = TIER_25B_TEMPLATE
+              .replace('{pageText}', storyText)
+              .replace('{character}', characterName)
+              .replace('{age}', age)
+              .replace('{ethnicity}', ethnicity)
+              .replace('{hairDescription}', hairDescription)
+              .replace('{facialFeatures}', facialFeatures)
+              .replace('{scene}', extractedScene || storyText)
+              .replace('{cultural_context}', cultural_context)
+              .replace('{leftover_data}', leftoverDataTier2B)
+              .replace('{fullFrameworkPrompt}', fullFrameworkPrompt)
+              .replace(/\{[^}]+\}/g, '')
+              .replace(/[ \t]+/g, ' ')
+              .replace(/\s*\.\s*\./g, '.')
+              .trim();
+            
+            templateResult = {
+              positivePrompt: tier2BPrompt,
+              negativePrompt: generateInlineNuclearNegative(culturalProfile, userInfo?.avatar?.type, userInfo?.difficulty) || 'blurry, low quality',
+              templateType: 'Basic Template B - Escalated from 2.5A',
+              tier: '2.5B',
+              styleFrameworkUsed: styleFramework.name,
+              escalated: true,
+              escalationReason: 'character_consistency_failure'
+            };
+            
+            console.log(`✅ [${requestId}] Tier 2.5A→2.5B Escalation Complete`);
+            
+            // Skip remaining Tier 2.5A logic and jump to Runware API call
+            // Return early to avoid continuing with Tier 2.5A processing
+            console.log('🌐 Calling Runware API with escalated Tier 2.5B template...');
+            const runwareApiKey = Deno.env.get('RUNWARE_API_KEY');
+            if (!runwareApiKey) {
+              throw new Error('RUNWARE_API_KEY not configured');
+            }
+            
+            const runwarePayload = {
+              positivePrompt: templateResult.positivePrompt,
+              negativePrompt: templateResult.negativePrompt,
+              width: 1024,
+              height: 1024,
+              numberResults: 1,
+              outputFormat: "WEBP",
+              model: "runware:100@1",
+              steps: 4,
+              CFGScale: 1,
+              scheduler: "FlowMatchEulerDiscreteScheduler"
+            };
+            
+            if (templateResult.characterSeed) {
+              runwarePayload.seed = templateResult.characterSeed;
+            }
+            
+            const imageResult = await callRunwareWithRetry(runwarePayload, runwareApiKey);
+            
+            return createResponse({
+              success: true,
+              imageUrl: imageResult.imageURL,
+              template: templateResult,
+              escalated: true,
+              escalationReason: 'character_consistency_failure',
+              tier: '2.5B'
+            }, 200);
           }
         }
         
