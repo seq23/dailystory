@@ -157,6 +157,26 @@ Generate a comprehensive scene with complete visual elements including backgroun
       }
     }
 
+    // Build AI Debug Schema for comprehensive debugging
+    const aiDebugSchema = {
+      modelUsed: 'gpt-4o-mini',
+      systemPrompt: systemPrompt,
+      userPrompt: userPrompt,
+      characterDataSent: characterData, // Exact string sent to OpenAI
+      structuredAvatarData: structuredAvatarData, // The actual object
+      rawUserInfoReceived: {
+        hasStructuredAvatar: !!userInfo?.structuredAvatarData,
+        avatarSkinTone: userInfo?.avatar?.skinTone,
+        skinTone: userInfo?.skinTone,
+        avatarHairColor: userInfo?.avatar?.hairColor,
+        nativeLanguage: userInfo?.native_language || userInfo?.nativeLanguage,
+        fullUserInfo: userInfo
+      },
+      storyTextLength: storyText.length,
+      isNonEnglish: isNonEnglish,
+      culturalContext: culturalContext
+    };
+
     // Enhance with structured avatar data
     const enhancedSchema = {
       ...visualSchema,
@@ -168,7 +188,7 @@ Generate a comprehensive scene with complete visual elements including backgroun
     };
 
     console.log('✅ Generated complete visual schema with character consistency');
-    return enhancedSchema;
+    return { visualSchema: enhancedSchema, aiDebugSchema };
 
   } catch (error) {
     console.error('OpenAI generation failed:', error);
@@ -319,7 +339,7 @@ serve(async (req) => {
 
     // PHASE 1 & 2: Generate complete visual schema with character consistency
     console.log(`🎨 [${requestId}] Generating complete visual schema...`);
-    const visualSchema = await generateCompleteVisualSchema(content, userInfo, sessionId, pageNumber);
+    const { visualSchema, aiDebugSchema } = await generateCompleteVisualSchema(content, userInfo, sessionId, pageNumber);
 
     // Generate character seed for consistency
     const characterSeed = await generateCharacterSeed(sessionId, userInfo);
@@ -421,8 +441,39 @@ serve(async (req) => {
         }
       };
 
+      let runwareDebugData: any = {};
+      
       try {
-        imageURL = await callRunwareTemplateCD(templatePayload);
+        const response = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/runware-template-cd', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`
+          },
+          body: JSON.stringify(templatePayload)
+        });
+
+        if (!response.ok) {
+          throw new Error(`runware-template-cd failed: ${response.status} ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        
+        if (!result.success || !result.imageURL) {
+          throw new Error(`runware-template-cd failed: ${result.error || 'No image URL returned'}`);
+        }
+
+        imageURL = result.imageURL;
+        
+        // Capture Runware debug data for Direct Mode
+        runwareDebugData = {
+          positivePrompt: result.positivePrompt || result.debug?.positivePrompt,
+          negativePrompt: result.negativePrompt || result.debug?.negativePrompt,
+          templateUsed: result.templateUsed || 'runware-template-cd',
+          templateComplexity: templatePayload.templateComplexity,
+          templatePayloadSent: templatePayload
+        };
+        
         tier = 'DIRECT_MODE';
         console.log(`✅ [${requestId}] Direct Mode image generated successfully`);
       } catch (directError) {

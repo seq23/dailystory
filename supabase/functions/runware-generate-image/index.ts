@@ -508,10 +508,19 @@ Deno.serve(async (req: Request): Promise<Response> => {
                 requestId: requestId,
                 timestamp: new Date().toISOString(),
                 tier1FailureReason: errorMessage,
+                // Expose prompts at top level for easy frontend access
+                positivePrompt: directModeResponse.data?.runwareDebugData?.positivePrompt,
+                negativePrompt: directModeResponse.data?.runwareDebugData?.negativePrompt,
                 cascadeHistory: [
                   `❌ Tier 1 Failed: ${errorMessage}`,
                   '✅ Direct Mode Success'
-                ]
+                ],
+                // NEW: Direct Mode debug data from ai-visual-scene-creator
+                directModeDebugData: {
+                  aiDebugSchema: directModeResponse.data?.aiDebugSchema,
+                  runwareDebugData: directModeResponse.data?.runwareDebugData,
+                  primaryScene: directModeResponse.data?.primaryScene
+                }
               };
               
               tierLogger.success('DIRECT_MODE', { result });

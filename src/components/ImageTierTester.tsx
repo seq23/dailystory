@@ -142,6 +142,13 @@ interface TestResult {
     visualConsistency?: any; // Visual consistency data from Direct Mode  
     culturalEnhancements?: any; // Cultural enhancements data from Direct Mode
     templateData?: any; // Template data from runware-template-cd
+    // COMPREHENSIVE DEBUG PLAN: OpenAI and Runware debug data
+    aiDebugSchema?: any; // Full OpenAI request debug data including prompts and character data
+    promptSource?: string; // Where prompts were extracted from
+    promptExtractionSuccess?: boolean; // Whether prompt extraction succeeded
+    orchestratorDebugData?: any; // Full orchestrator debug data
+    directModeDebugData?: any; // Full direct mode debug data
+    rawPromptData?: any; // Raw prompt data for debugging
   };
 }
 
@@ -970,6 +977,7 @@ export const ImageTierTester = () => {
         details: {
           processingTime,
           requestId: response.data?.requestId,
+          aiDebugSchema: response.data?.aiDebugSchema, // NEW: Full OpenAI debug data
           aiSchema: response.data?.aiSchema || response.data?.debug?.aiSchema,
           primaryScene: response.data?.primaryScene,
           setting: response.data?.aiSchema?.setting || response.data?.debug?.aiSchema?.setting,
@@ -1291,30 +1299,49 @@ export const ImageTierTester = () => {
         steps: steps.map(s => `${s.name}: ${s.status}`)
       });
 
-      // Extract Direct Mode template prompts if available
-      const templateResponse = response.data?.enhancedData?.templateResponse;
-      const isDirectMode = chosenPath === 'Direct Mode' && templateResponse;
-      
-      // PLAN FIX 3: Force Tier 1 Prompt Display Issue - Fix extraction logic
+      // COMPREHENSIVE DEBUG PLAN: Waterfall logic to extract prompts from multiple sources
       let positivePromptDisplay = '';
       let negativePromptDisplay = '';
+      let promptSource = 'unknown';
+      let orchestratorDebugData = null;
+      let directModeDebugData = null;
       
-      if (isDirectMode) {
-        // Direct Mode: Use template prompts
-        positivePromptDisplay = templateResponse.positivePrompt;
-        negativePromptDisplay = templateResponse.negativePrompt;
-      } else {
-        // Orchestrator Mode: Fix the COMPLETE_TIER_1 prompt extraction
-        if (response.data?.templateStructure === 'COMPLETE_TIER_1' && response.data?.enhancedPrompt) {
-          // Copy enhancedPrompt to positivePrompt for COMPLETE_TIER_1 successes
-          positivePromptDisplay = response.data.enhancedPrompt;
-          negativePromptDisplay = response.data?.negativePrompt || '';
-        } else {
-          // Fallback to existing logic
-          positivePromptDisplay = response.data?.positivePrompt || response.data?.enhancedPrompt || '';
-          negativePromptDisplay = response.data?.negativePrompt || '';
-        }
+      // Try to extract prompts using waterfall strategy
+      if (response.data?.positivePrompt) {
+        // Top-level prompts (exposed by orchestrator or direct mode)
+        positivePromptDisplay = response.data.positivePrompt;
+        negativePromptDisplay = response.data.negativePrompt || '';
+        promptSource = 'top_level';
+        console.log('[PROMPT_DEBUG] Extracted from top-level response fields');
+      } else if (response.data?.orchestratorDebugData) {
+        // Orchestrator success case
+        orchestratorDebugData = response.data.orchestratorDebugData;
+        positivePromptDisplay = response.data?.metadata?.enhancedPrompt || response.data?.enhancedPrompt || '';
+        negativePromptDisplay = response.data?.metadata?.negativePrompt || response.data?.negativePrompt || '';
+        promptSource = 'orchestrator_metadata';
+        console.log('[PROMPT_DEBUG] Extracted from orchestrator metadata');
+      } else if (response.data?.directModeDebugData?.runwareDebugData) {
+        // Direct Mode fallback case
+        directModeDebugData = response.data.directModeDebugData;
+        positivePromptDisplay = directModeDebugData.runwareDebugData.positivePrompt || '';
+        negativePromptDisplay = directModeDebugData.runwareDebugData.negativePrompt || '';
+        promptSource = 'direct_mode_runware';
+        console.log('[PROMPT_DEBUG] Extracted from Direct Mode runware data');
+      } else if (response.data?.enhancedPrompt) {
+        // Legacy fallback
+        positivePromptDisplay = response.data.enhancedPrompt;
+        negativePromptDisplay = response.data?.negativePrompt || '';
+        promptSource = 'legacy_enhanced_prompt';
+        console.log('[PROMPT_DEBUG] Extracted from legacy enhancedPrompt field');
       }
+      
+      console.log('[PROMPT_DEBUG] Final extraction result:', {
+        promptSource,
+        hasPositive: !!positivePromptDisplay,
+        hasNegative: !!negativePromptDisplay,
+        positiveLength: positivePromptDisplay.length,
+        negativeLength: negativePromptDisplay.length
+      });
       
       // Dynamic tier naming based on actual outcome
       const dynamicTierName = 
@@ -1328,7 +1355,7 @@ export const ImageTierTester = () => {
         success: overallSuccess,
         isFallback: isFallback,
         imageURL: response.data?.imageURL || response.data?.imageUrl || null,
-        details: {
+          details: {
           processingTime,
           requestId: response.data?.requestId,
           chosenPath: chosenPath,
@@ -1341,16 +1368,26 @@ export const ImageTierTester = () => {
           mood: response.data?.aiSchema?.mood || response.data?.debug?.aiSchema?.mood,
           pose: response.data?.aiSchema?.pose || response.data?.debug?.aiSchema?.pose,
           enhancedPrompt: response.data?.enhancedPrompt,
-          // PLAN FIX 3: Enhanced prompt display with proper COMPLETE_TIER_1 handling
+          // COMPREHENSIVE DEBUG PLAN: Enhanced prompt display with waterfall extraction
           positivePrompt: positivePromptDisplay,
           negativePrompt: negativePromptDisplay,
-          templateStructure: response.data?.templateStructure || (isDirectMode ? 'DIRECT_MODE' : 'UNKNOWN'),
+          promptSource: promptSource, // NEW: Track where prompts came from
+          promptExtractionSuccess: !!positivePromptDisplay, // NEW: Did we get prompts?
+          orchestratorDebugData: orchestratorDebugData, // NEW: Full orchestrator debug data
+          directModeDebugData: directModeDebugData, // NEW: Full direct mode debug data
+          rawPromptData: { // NEW: Raw data for debugging
+            topLevel: { positivePrompt: response.data?.positivePrompt, negativePrompt: response.data?.negativePrompt },
+            metadata: response.data?.metadata,
+            orchestratorDebug: response.data?.orchestratorDebugData,
+            directModeDebug: response.data?.directModeDebugData
+          },
+          templateStructure: response.data?.templateStructure || 'UNKNOWN',
           characterConsistency: response.data?.enhancedData?.characterConsistency,
           visualConsistency: response.data?.enhancedData?.visualConsistency,
           culturalEnhancements: response.data?.enhancedData?.culturalEnhancements,
-          // Template data for Direct Mode
-          templateData: isDirectMode ? templateResponse.templateData : null,
-          templateComplexity: isDirectMode ? templateResponse.templateComplexity || '2.5C' : null,
+          // Template data from response
+          templateData: response.data?.directModeDebugData?.runwareDebugData?.templatePayloadSent || null,
+          templateComplexity: response.data?.directModeDebugData?.runwareDebugData?.templateComplexity || response.data?.templateStructure || null,
           styleFramework: response.data?.styleFrameworkUsed,
           testType: 'TIER_1_COMPLETE_FLOW',
           stepByStepValidation: steps,
@@ -2838,12 +2875,166 @@ export const ImageTierTester = () => {
                        </details>
                      )}
 
-                     {result.details.primaryScene && (
-                       <div className="text-sm">
-                         <span className="font-medium">Primary Scene:</span>
-                         <div className="text-xs mt-1 bg-blue-50 p-2 rounded">{result.details.primaryScene}</div>
-                       </div>
-                     )}
+                      {result.details.primaryScene && (
+                        <div className="text-sm">
+                          <span className="font-medium">Primary Scene:</span>
+                          <div className="text-xs mt-1 bg-blue-50 p-2 rounded">{result.details.primaryScene}</div>
+                        </div>
+                      )}
+                      
+                      {/* COMPREHENSIVE DEBUG PLAN: OpenAI Debug Data Section */}
+                      {result.details.aiDebugSchema && (
+                        <div className="text-sm border-2 border-purple-300 rounded p-3 bg-purple-50 mt-3">
+                          <div className="font-bold text-purple-700 mb-2">🔍 OpenAI Debug Data - Full Request Details</div>
+                          
+                          {/* Character Data Sent Warning */}
+                          <div className={`text-xs mb-2 p-2 rounded ${
+                            result.details.aiDebugSchema.characterDataSent === 'undefined' || 
+                            result.details.aiDebugSchema.characterDataSent === '{}' 
+                              ? 'bg-red-100 border border-red-400' 
+                              : 'bg-green-100 border border-green-400'
+                          }`}>
+                            <span className="font-medium">Character Data Sent to OpenAI:</span>
+                            {result.details.aiDebugSchema.characterDataSent === 'undefined' || 
+                             result.details.aiDebugSchema.characterDataSent === '{}' ? (
+                              <div className="text-red-700 font-bold mt-1">
+                                ⚠️ WARNING: OpenAI received "undefined" or empty character data! This causes "brown hair" defaults.
+                              </div>
+                            ) : (
+                              <div className="text-green-700 mt-1">
+                                ✅ Character data sent: {result.details.aiDebugSchema.characterDataSent}
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* System Prompt */}
+                          <details className="mb-2">
+                            <summary className="cursor-pointer font-medium text-blue-600 hover:text-blue-700 text-xs">
+                              📋 System Prompt ({result.details.aiDebugSchema.systemPrompt?.length || 0} chars) - Click to expand
+                            </summary>
+                            <div className="mt-2 bg-white p-2 rounded border text-xs overflow-x-auto max-h-64 overflow-y-auto">
+                              <pre className="whitespace-pre-wrap">{result.details.aiDebugSchema.systemPrompt}</pre>
+                            </div>
+                          </details>
+                          
+                          {/* User Prompt */}
+                          <details className="mb-2">
+                            <summary className="cursor-pointer font-medium text-blue-600 hover:text-blue-700 text-xs">
+                              💬 User Prompt ({result.details.aiDebugSchema.userPrompt?.length || 0} chars) - Click to expand
+                            </summary>
+                            <div className="mt-2 bg-white p-2 rounded border text-xs overflow-x-auto max-h-64 overflow-y-auto">
+                              <pre className="whitespace-pre-wrap">{result.details.aiDebugSchema.userPrompt}</pre>
+                            </div>
+                          </details>
+                          
+                          {/* Raw Input Validation */}
+                          <div className="text-xs border-t pt-2 mt-2">
+                            <div className="font-medium mb-1">📊 Raw Input Validation:</div>
+                            <div className="bg-white p-2 rounded space-y-1">
+                              <div>
+                                <span className="font-medium">userInfo has structuredAvatarData:</span>
+                                <span className={`ml-2 px-2 py-0.5 rounded ${
+                                  result.details.aiDebugSchema.rawUserInfoReceived?.hasStructuredAvatar 
+                                    ? 'bg-green-200 text-green-800' 
+                                    : 'bg-red-200 text-red-800'
+                                }`}>
+                                  {result.details.aiDebugSchema.rawUserInfoReceived?.hasStructuredAvatar ? '✅ YES' : '❌ NO'}
+                                </span>
+                              </div>
+                              <div>Skin Tone (avatar): {result.details.aiDebugSchema.rawUserInfoReceived?.avatarSkinTone || 'undefined'}</div>
+                              <div>Skin Tone (direct): {result.details.aiDebugSchema.rawUserInfoReceived?.skinTone || 'undefined'}</div>
+                              <div>Hair Color (avatar): {result.details.aiDebugSchema.rawUserInfoReceived?.avatarHairColor || 'undefined'}</div>
+                              <div>Native Language: {result.details.aiDebugSchema.rawUserInfoReceived?.nativeLanguage || 'en'}</div>
+                            </div>
+                          </div>
+                          
+                          {/* Model & Context Info */}
+                          <div className="text-xs border-t pt-2 mt-2">
+                            <div className="font-medium mb-1">🤖 Model & Context:</div>
+                            <div className="bg-white p-2 rounded space-y-1">
+                              <div>Model: {result.details.aiDebugSchema.modelUsed}</div>
+                              <div>Story Length: {result.details.aiDebugSchema.storyTextLength} chars</div>
+                              <div>Non-English: {result.details.aiDebugSchema.isNonEnglish ? 'Yes' : 'No'}</div>
+                              {result.details.aiDebugSchema.culturalContext && (
+                                <div>Cultural Context: {result.details.aiDebugSchema.culturalContext}</div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* COMPREHENSIVE DEBUG PLAN: Runware Debug Info Section */}
+                      {(result.details.positivePrompt || result.details.negativePrompt || result.details.promptSource) && (
+                        <div className="text-sm border-2 border-orange-300 rounded p-3 bg-orange-50 mt-3">
+                          <div className="font-bold text-orange-700 mb-2">🎨 Runware Debug Info - Prompts Sent to Image API</div>
+                          
+                          {/* Prompt Source Indicator */}
+                          <div className="text-xs mb-2 p-2 rounded bg-white border">
+                            <span className="font-medium">Prompt Source:</span>
+                            <span className={`ml-2 px-2 py-0.5 rounded ${
+                              result.details.promptSource === 'top_level' ? 'bg-green-200 text-green-800' :
+                              result.details.promptSource === 'orchestrator_metadata' ? 'bg-blue-200 text-blue-800' :
+                              result.details.promptSource === 'direct_mode_runware' ? 'bg-orange-200 text-orange-800' :
+                              'bg-gray-200 text-gray-800'
+                            }`}>
+                              {result.details.promptSource || 'unknown'}
+                            </span>
+                            <span className={`ml-2 px-2 py-0.5 rounded ${
+                              result.details.promptExtractionSuccess ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'
+                            }`}>
+                              {result.details.promptExtractionSuccess ? '✅ Extracted' : '❌ Failed'}
+                            </span>
+                          </div>
+                          
+                          {/* Positive Prompt */}
+                          {result.details.positivePrompt && (
+                            <details className="mb-2">
+                              <summary className="cursor-pointer font-medium text-green-600 hover:text-green-700 text-xs">
+                                ✨ Positive Prompt ({result.details.positivePrompt.length} chars) - Click to expand
+                              </summary>
+                              <div className="mt-2 bg-white p-2 rounded border text-xs overflow-x-auto max-h-64 overflow-y-auto">
+                                <pre className="whitespace-pre-wrap">{result.details.positivePrompt}</pre>
+                              </div>
+                            </details>
+                          )}
+                          
+                          {/* Negative Prompt */}
+                          {result.details.negativePrompt && (
+                            <details className="mb-2">
+                              <summary className="cursor-pointer font-medium text-red-600 hover:text-red-700 text-xs">
+                                🚫 Negative Prompt ({result.details.negativePrompt.length} chars) - Click to expand
+                              </summary>
+                              <div className="mt-2 bg-white p-2 rounded border text-xs overflow-x-auto max-h-64 overflow-y-auto">
+                                <pre className="whitespace-pre-wrap">{result.details.negativePrompt}</pre>
+                              </div>
+                            </details>
+                          )}
+                          
+                          {/* Orchestrator Debug Data */}
+                          {result.details.orchestratorDebugData && (
+                            <details className="mb-2">
+                              <summary className="cursor-pointer font-medium text-blue-600 hover:text-blue-700 text-xs">
+                                🎯 Orchestrator Debug Data - Click to expand
+                              </summary>
+                              <div className="mt-2 bg-white p-2 rounded border text-xs overflow-x-auto max-h-64 overflow-y-auto">
+                                <pre>{JSON.stringify(result.details.orchestratorDebugData, null, 2)}</pre>
+                              </div>
+                            </details>
+                          )}
+                          
+                          {/* Direct Mode Fallback Debug Data */}
+                          {result.details.directModeDebugData && (
+                            <details className="mb-2">
+                              <summary className="cursor-pointer font-medium text-orange-600 hover:text-orange-700 text-xs">
+                                🔄 Direct Mode Fallback Debug Data - Click to expand
+                              </summary>
+                              <div className="mt-2 bg-white p-2 rounded border text-xs overflow-x-auto max-h-64 overflow-y-auto">
+                                <pre>{JSON.stringify(result.details.directModeDebugData, null, 2)}</pre>
+                              </div>
+                            </details>
+                          )}
+                        </div>
+                      )}
                       {result.details.aiSchema && (
                         <div className="text-sm">
                           <span className="font-medium">AI Schema Details:</span>
