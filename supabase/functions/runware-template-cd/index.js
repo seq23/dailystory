@@ -141,7 +141,7 @@ function generateTier25C(storyText, userInfo, avatarIdentity, failedTierData = {
     console.log('🚨 Nuclear 2.5C: No storyText provided - triggering Tier 2.5D immediately');
     return generateTier25D(storyText, userInfo, avatarIdentity, failedTierData);
   }
-  const sceneText = storyText.substring(0, 1000);
+  const sceneText = (failedTierData.enhancedSceneData || storyText).substring(0, 1000);
   
   // Component 2: Character Description with static template format
   const characterName = userInfo?.name || userInfo?.childName || 'child';
@@ -177,21 +177,12 @@ function generateTier25C(storyText, userInfo, avatarIdentity, failedTierData = {
     characterDesc += ' with authentic African American features and naturally occurring melanin-rich skin tones ranging from warm beige to warm caramel to deep ebony with appropriate warm undertones, realistic hazel-green, brown and dark brown eyes with natural depth and authentic iris patterns, genuine African American facial bone structure with appropriate nose width and lip fullness, authentic textured hair ranging from 3B to 4C curl patterns including DETAILED AND PHOTOREALISTIC natural afros, box braids, cornrows, twist-outs, or protective styles with proper hair density and realistic coil definition, accurate representation of Black features without European beauty standard alterations, natural skin luminosity with warm golden or red undertones, detailed individual hair strand texture showing authentic curl patterns and natural shine';
   }
   
-  // Component 3: Catch-All Failed Tier Information
-  const catchAllElements = [
-    failedTierData.characterConsistency || '',
-    failedTierData.visualConsistency || '',
-    failedTierData.culturalEnhancements || '',
-    failedTierData.enhancedSceneData || ''
-  ].filter(Boolean);
-  const catchAllInfo = catchAllElements.length > 0 ? catchAllElements.join(', ') : 'enhanced story details';
-  
-  // Component 4: Brand Suffix (hardcoded framework - ALWAYS LAST)
+  // Component 3: Brand Suffix (hardcoded framework - ALWAYS LAST)
   const difficulty = userInfo?.difficulty || 'medium';
   const hardcodedFramework = getNuclearStyleFramework(difficulty);
   
   // NUCLEAR CONCATENATION - NO placeholders, NO resolution, NO fallback, WITH LINE BREAKS
-  const positivePrompt = `scene: ${sceneText}.\n\ncharacter description: ${characterDesc}.\n\n${catchAllInfo}.\n\nbrand suffix: ${hardcodedFramework.frameworkPrompt}`;
+  const positivePrompt = `scene: ${sceneText}.\n\ncharacter description: ${characterDesc}.\n\nbrand suffix: ${hardcodedFramework.frameworkPrompt}`;
   
   // Generate nuclear negative prompt with correct avatar type
   const culturalProfileType = inlineDetectCultural(userInfo, avatarIdentity);
