@@ -589,6 +589,10 @@ export class SimpleImageService {
       }
         
     } catch (error) {
+      // Initialize cascade history tracking for client-side fallback
+      const cascadeHistory: string[] = [];
+      cascadeHistory.push(`❌ Tier 1 Failed: ${error.message}`);
+      
       DebugLogger.error('image', 'Image generation orchestrator failed', error);
       
       // Track failure metrics
@@ -646,7 +650,13 @@ export class SimpleImageService {
       }
 
       // Direct Mode attempt - call ai-visual-scene-creator with directMode: true
+      let directModeAttempted = false;
+      let directModeError: string | undefined;
+      
       try {
+        cascadeHistory.push('🔁 Attempting Direct Mode (ai-visual-scene-creator)');
+        directModeAttempted = true;
+        
         DebugLogger.log('image', 'Attempting Direct Mode via ai-visual-scene-creator');
         const directModeResult = await supabase.functions.invoke('ai-visual-scene-creator', {
           body: {
@@ -660,6 +670,7 @@ export class SimpleImageService {
         });
 
         if (directModeResult.data?.success && directModeResult.data?.imageURL) {
+          cascadeHistory.push('✅ Direct Mode Success');
           DebugLogger.log('image', 'Direct Mode successful');
           return {
             success: true,
@@ -671,6 +682,9 @@ export class SimpleImageService {
             orchestratorFailureReason: this.categorizeOrchestratorError(error),
             metadata: { 
               ...directModeResult.data, 
+              cascadeHistory,
+              directModeAttempted: true,
+              pathUsed: 'DIRECT_MODE',
               fallbackFromOrchestrator: true,
               originalOrchestrator: 'runware-generate-image',
               fallbackFlow: 'Direct Mode'
@@ -679,31 +693,50 @@ export class SimpleImageService {
         } else {
           throw new Error(`Direct Mode failed: ${JSON.stringify(directModeResult)}`);
         }
-      } catch (directModeError) {
-        DebugLogger.warn('image', 'Direct Mode also failed, escalating to nuclear templates', directModeError);
+      } catch (directModeErr) {
+        directModeError = directModeErr.message;
+        cascadeHistory.push(`❌ Direct Mode Failed: ${directModeError}`);
+        DebugLogger.warn('image', 'Direct Mode also failed, escalating to nuclear templates', directModeErr);
       }
 
       // TIER 2.5C: Template fallback before final resort
       try {
+        cascadeHistory.push('🧪 Attempting Tier 2.5C nuclear template');
         DebugLogger.log('image', 'Attempting Tier 2.5C template fallback');
         const templateResult = await this.generateWithTemplate(
           storyText, userInfo, sessionId, pageNumber, isPremium
         );
         if (templateResult.success && templateResult.url) {
+          cascadeHistory.push('✅ Tier 2.5C Success (Nuclear Fallback)');
           DebugLogger.log('image', 'Tier 2.5C template fallback successful');
-          return templateResult;
+          return {
+            ...templateResult,
+            metadata: {
+              ...templateResult.metadata,
+              cascadeHistory,
+              directModeAttempted,
+              directModeError,
+              orchestratorFailed: true,
+              orchestratorFailureReason: this.categorizeOrchestratorError(error),
+              pathUsed: 'TIER_2_5C_TEMPLATE'
+            }
+          };
         }
       } catch (templateError) {
+        cascadeHistory.push(`❌ Tier 2.5C Failed: ${templateError.message}`);
         DebugLogger.warn('image', 'Tier 2.5C template fallback also failed', templateError);
       }
 
       // TIER 4: Intelligent fallback system with quality prioritization
+      cascadeHistory.push('🔄 Attempting Intelligent Fallback System');
       DebugLogger.warn('image', 'Using intelligent fallback system as final resort');
       const intelligentFallback = await this.getImageWithIntelligentFallback(
         userInfo || {}, cleanScene, !isPremium, normalizedSessionId, pageNumber
       );
 
       const fallbackUrl = intelligentFallback || ImageFallbackService.generateStoryPlaceholder(cleanScene, pageNumber);
+      cascadeHistory.push(`✅ Intelligent Fallback Success: ${intelligentFallback ? 'Match Found' : 'SVG Placeholder'}`);
+      
       DebugLogger.log('image', 'Intelligent fallback completed', {
         foundIntelligentMatch: !!intelligentFallback,
         finalUrl: fallbackUrl.substring(0, 50) + '...'
@@ -721,6 +754,12 @@ export class SimpleImageService {
         generatedAt: new Date().toISOString(),
         tier: 'Intelligent Fallback',
         metadata: {
+          cascadeHistory,
+          directModeAttempted,
+          directModeError,
+          orchestratorFailed: true,
+          orchestratorFailureReason: this.categorizeOrchestratorError(error),
+          pathUsed: intelligentFallback ? 'INTELLIGENT_FALLBACK' : 'SVG_PLACEHOLDER',
           isFallback: true,
           originalError: error.message,
           tier: 'intelligent_fallback',

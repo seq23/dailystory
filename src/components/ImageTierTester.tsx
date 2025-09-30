@@ -198,8 +198,7 @@ export const ImageTierTester = () => {
   const [nativeLanguage, setNativeLanguage] = useState('en');
   const [difficultyLevel, setDifficultyLevel] = useState('medium');
   
-  // Smart Bypass control for E2E simulation
-  const [smartBypassEnabled, setSmartBypassEnabled] = useState(true);
+  // Smart Bypass control removed - now tied to user tier (guests=ON, premium=OFF)
   
   // User tier control for testing
   const [userTier, setUserTier] = useState<'premium' | 'guest'>('guest');
@@ -1088,7 +1087,7 @@ export const ImageTierTester = () => {
 
        // STEP 2: Use real frontend routing (generateStoryImage - the actual user entry point)
        cascadeHistory.push('🚀 Using SimpleImageService.generateStoryImage (real user flow)...');
-       cascadeHistory.push(`⚙️ Smart Bypass: ${smartBypassEnabled ? 'Enabled' : 'Disabled (Testing Mode)'}`);
+       cascadeHistory.push(`⚙️ Smart Bypass: ${userTier === 'guest' ? 'Enabled (Real Guest Experience)' : 'Disabled (Real Premium Experience)'}`);
        cascadeHistory.push('🎯 Attempting Tier 1 via Enhanced Character-First Flow (runware-generate-image)...');
        cascadeHistory.push(`⏰ ${new Date().toLocaleTimeString()}: Starting user image generation request`);
        const userFlowStartTime = Date.now();
@@ -1099,14 +1098,19 @@ export const ImageTierTester = () => {
           userInfo,         // userInfo - user profile and preferences
           sessionId,        // sessionId - unique session identifier
           1,                // pageNumber - current story page
-          false,            // isPremium - guest user simulation (no forceTier1!)
+          userTier === 'premium', // isPremium - based on selected user tier
           false,            // forceTier1 - not forced
-          smartBypassEnabled // smartBypassEnabled - controlled by toggle
+          userTier === 'guest' // smartBypassEnabled - guests get bypass ON, premium gets bypass OFF
         );
 
         const userFlowTime = Date.now() - userFlowStartTime;
         
         if (result.success) {
+          // Check if cascade history is missing (indicates Smart Bypass or missing metadata)
+          if (!result.metadata?.cascadeHistory || result.metadata.cascadeHistory.length === 0) {
+            cascadeHistory.push('⚠️ No cascade history returned - Smart Bypass likely used or metadata missing');
+          }
+          
           // Extract actual cascade history from backend metadata
           if (result.metadata?.cascadeHistory && Array.isArray(result.metadata.cascadeHistory)) {
             cascadeHistory.push('🔄 Backend Cascade Tracking:');
@@ -1135,13 +1139,31 @@ export const ImageTierTester = () => {
           cascadeHistory.push(`✅ Success via: ${actualTier}`);
           cascadeHistory.push(`⏰ ${new Date().toLocaleTimeString()}: Real user flow completed successfully`);
           
-          // Check if character consistency was active
-          const hasCharacterConsistency = !result.metadata?.tier1FailureReason?.includes('CharacterConsistencyService');
-          if (!hasCharacterConsistency && actualTier === 'DIRECT_MODE') {
-            cascadeHistory.push(`⚠️ Character consistency NOT active (degraded mode)`);
-          } else if (hasCharacterConsistency) {
-            cascadeHistory.push(`✅ Character consistency active`);
+          // Check character consistency status from cascade history and metadata
+          const ccErrors = result.metadata?.cascadeHistory?.filter((line: string) => 
+            line.includes('structuredAvatarData') || 
+            line.includes('CharacterConsistencyService') || 
+            line.includes('CHARACTERSERVICE')
+          ) || [];
+          
+          if (result.metadata?.characterConsistencyActive === true) {
+            cascadeHistory.push('✅ Character consistency active');
+          } else if (ccErrors.length > 0) {
+            cascadeHistory.push('⚠️ Character consistency NOT active');
+            cascadeHistory.push('📋 CC Diagnostics:');
+            ccErrors.forEach((error: string) => cascadeHistory.push(`   • ${error}`));
           }
+          
+          // Show Direct Mode status explicitly
+          if (result.metadata?.directModeAttempted) {
+            if (result.metadata?.pathUsed === 'DIRECT_MODE') {
+              cascadeHistory.push('✅ Direct Mode Success');
+            } else {
+              cascadeHistory.push(`❌ Direct Mode Failed: ${result.metadata?.directModeError || 'Unknown error'}`);
+            }
+          }
+          
+          const hasCharacterConsistency = result.metadata?.characterConsistencyActive === true || ccErrors.length === 0;
           
           resultBadge = `${actualTier}${wasFailover} Success`;
           fallbackPath = `Real user flow succeeded via ${actualTier}${wasFailover}`;
@@ -2046,10 +2068,10 @@ export const ImageTierTester = () => {
                    <SelectTrigger>
                      <SelectValue />
                    </SelectTrigger>
-                   <SelectContent>
-                     <SelectItem value="guest">Guest (Template CD)</SelectItem>
-                     <SelectItem value="premium">Premium (Template AB)</SelectItem>
-                   </SelectContent>
+                    <SelectContent>
+                      <SelectItem value="guest">Guest</SelectItem>
+                      <SelectItem value="premium">Premium</SelectItem>
+                    </SelectContent>
                  </Select>
                </div>
             </CardContent>
@@ -2142,16 +2164,6 @@ export const ImageTierTester = () => {
                 <Search className="h-4 w-4" />
                 E2E User Simulation
               </Button>
-              
-              <TimerToggleItem
-                checked={smartBypassEnabled}
-                onToggle={() => setSmartBypassEnabled(!smartBypassEnabled)}
-                label="Smart Bypass"
-                description={smartBypassEnabled ? "Enabled - optimized routing" : "Disabled - force full orchestrator"}
-                icon={<Settings className="h-4 w-4" />}
-                className="text-xs"
-                ariaLabel="Toggle Smart Bypass for E2E simulation"
-              />
             </div>
             
             <Button
