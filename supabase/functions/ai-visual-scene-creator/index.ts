@@ -40,9 +40,17 @@ async function generateCompleteVisualSchema(storyText: string, userInfo: any, se
         assignedHairColor: culturalEnhancements?.hair || 'brown hair',
         source: 'character_service_generation'
       };
-      console.log(`✅ Generated structuredAvatarData via CharacterConsistencyService`);
+      console.log(`✅ [CDN_IMPORT_SUCCESS] Generated structuredAvatarData via CharacterConsistencyService`);
     } catch (error) {
-      console.warn(`⚠️ CharacterConsistencyService unavailable, using fallback:`, error);
+      // Categorize import failure
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorCategory = errorMessage.includes('Failed to fetch') || errorMessage.includes('NetworkError')
+        ? 'CDN_IMPORT_FAILURE'
+        : errorMessage.includes('Cannot find module') || errorMessage.includes('not found')
+        ? 'SERVICE_UNAVAILABLE'
+        : 'IMPORT_ERROR';
+      
+      console.warn(`⚠️ [${errorCategory}] CharacterConsistencyService unavailable, using fallback:`, errorMessage);
       structuredAvatarData = {
         resolvedSkinTone: userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium',
         assignedHairColor: 'brown hair',
@@ -224,9 +232,17 @@ Generate a comprehensive scene with complete visual elements including backgroun
     try {
       const { characterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
       cachedSecondaryCharacters = await characterConsistencyService.getSecondaryCharactersForSession(sessionId);
-      console.log(`✅ Retrieved ${cachedSecondaryCharacters.length} cached secondary characters for session ${sessionId}`);
+      console.log(`✅ [CDN_IMPORT_SUCCESS] Retrieved ${cachedSecondaryCharacters.length} cached secondary characters for session ${sessionId}`);
     } catch (error) {
-      console.warn(`⚠️ Failed to retrieve cached secondary characters:`, error);
+      // Categorize import failure
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorCategory = errorMessage.includes('Failed to fetch') || errorMessage.includes('NetworkError')
+        ? 'CDN_IMPORT_FAILURE'
+        : errorMessage.includes('Cannot find module') || errorMessage.includes('not found')
+        ? 'SERVICE_UNAVAILABLE'
+        : 'IMPORT_ERROR';
+      
+      console.warn(`⚠️ [${errorCategory}] Failed to retrieve cached secondary characters:`, errorMessage);
     }
     
     // Merge OpenAI-detected and cached secondary characters

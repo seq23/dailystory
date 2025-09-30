@@ -164,13 +164,14 @@ serve(async (req) => {
           );
           
           if (!isSyncFailure || attempt === FAST_BOOT_SYNC.maxRetries) {
-            // Final failure or non-sync error
+            // Final failure or non-sync error - return 200 with success: false
             return withCors(new Response(JSON.stringify({
+              success: false,
               error: "HANDLER_UNAVAILABLE",
               message: errorMessage,
               service: SERVICE_NAME,
               timestamp: new Date().toISOString(),
-            }), { status: 503, headers: { "Content-Type": "application/json" } }));
+            }), { status: 200, headers: { "Content-Type": "application/json" } }));
           }
           
           const delay = FAST_BOOT_SYNC.delays[attempt];
@@ -184,13 +185,14 @@ serve(async (req) => {
           );
           
           if (!isSyncFailure || attempt === FAST_BOOT_SYNC.maxRetries) {
-            // Final failure or non-sync error
+            // Final failure or non-sync error - return 200 with success: false
             return withCors(new Response(JSON.stringify({
+              success: false,
               error: "HANDLER_ERROR",
               message: errorMessage,
               service: SERVICE_NAME,
               timestamp: new Date().toISOString(),
-            }), { status: 500, headers: { "Content-Type": "application/json" } }));
+            }), { status: 200, headers: { "Content-Type": "application/json" } }));
           }
           
           const delay = FAST_BOOT_SYNC.delays[attempt];

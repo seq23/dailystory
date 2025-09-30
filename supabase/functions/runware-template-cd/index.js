@@ -289,22 +289,25 @@ async function callRunwareAPI(positivePrompt, negativePrompt, retries = 2) {
         
         let supabaseClient = null;
         
-        // Tier 1: Try primary CDN
-        try {
-          const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4');
-          supabaseClient = createClient(
-            Deno.env.get('SUPABASE_URL') ?? '',
-            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-          );
-        } catch (cdnError) {
-          console.warn('⚠️ CDN import failed, falling back to local vendor:', cdnError.message);
-          // Tier 2: Fall back to local vendor bundle
-          const { createClient } = await import('../_vendor/supabase-js@2.57.4.mjs');
-          supabaseClient = createClient(
-            Deno.env.get('SUPABASE_URL') ?? '',
-            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-          );
-        }
+    // Tier 1: Try primary CDN
+    try {
+      console.log('🔍 [2-TIER-CDN] Attempting Tier 1: Primary CDN import for cost tracking');
+      const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4');
+      supabaseClient = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+      console.log('✅ [2-TIER-CDN] Tier 1 SUCCESS: Primary CDN import successful');
+    } catch (cdnError) {
+      console.warn('⚠️ [2-TIER-CDN] Tier 1 FAILED: CDN import failed, activating Tier 2 fallback:', cdnError.message);
+      // Tier 2: Fall back to local vendor bundle
+      const { createClient } = await import('../_vendor/supabase-js@2.57.4.mjs');
+      supabaseClient = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+      console.log('✅ [2-TIER-CDN] Tier 2 SUCCESS: Local vendor fallback successful');
+    }
 
         await supabaseClient.from('cost_tracking').insert({
           session_id: 'runware-session', // Will be updated when we get sessionId
@@ -412,7 +415,10 @@ async function handleRequest(req) {
     }
   
     if (!storyText) {
-      throw new Error('Missing required field: pageText OR storyText');
+      const receivedKeys = Object.keys(payload).join(', ');
+      console.error(`❌ Template CD validation failed - Received payload keys: [${receivedKeys}]`);
+      console.error(`❌ Missing required field. Expected: pageText OR storyText. Payload structure:`, JSON.stringify(payload, null, 2));
+      throw new Error(`Missing required field: pageText OR storyText. Received keys: ${receivedKeys}`);
     }
 
   console.log(`🎯 Template CD processing complexity: ${templateComplexity || 'auto'}`);
@@ -457,19 +463,22 @@ async function handleRequest(req) {
     
     // Tier 1: Try primary CDN
     try {
+      console.log('🔍 [2-TIER-CDN] Attempting Tier 1: Primary CDN import for logging');
       const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4');
       supabase = createClient(
         Deno.env.get('SUPABASE_URL'),
         Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY')
       );
+      console.log('✅ [2-TIER-CDN] Tier 1 SUCCESS: Primary CDN import successful for logging');
     } catch (cdnError) {
-      console.warn('⚠️ CDN import failed for logging, falling back to local vendor:', cdnError.message);
+      console.warn('⚠️ [2-TIER-CDN] Tier 1 FAILED: CDN import failed for logging, activating Tier 2 fallback:', cdnError.message);
       // Tier 2: Fall back to local vendor bundle
       const { createClient } = await import('../_vendor/supabase-js@2.57.4.mjs');
       supabase = createClient(
         Deno.env.get('SUPABASE_URL'),
         Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY')
       );
+      console.log('✅ [2-TIER-CDN] Tier 2 SUCCESS: Local vendor fallback successful for logging');
     }
     
     const { logTierAttempt } = await import("../_shared/tierLogging.js");
