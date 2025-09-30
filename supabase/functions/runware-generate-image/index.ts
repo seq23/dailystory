@@ -178,7 +178,7 @@ async function processInlinedTier1(payload: any, memoizedImport: any): Promise<a
     throw new Error('CHARACTERSERVICE_UNAVAILABLE_ESCALATE_TO_25B');
   }
   
-  // Check for force flag to bypass health checks and fallbacks
+  // Check for force flag (now passed from handler scope)
   const forceCompleteTier1 = payload.forceCompleteTier1 === true;
   if (forceCompleteTier1) {
     console.log(`🎯 FORCE TIER 1 MODE: Bypassing health checks, proceeding directly to Enhanced Character-First Flow`);
@@ -507,6 +507,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
       // PHASE 4: Fast validation
       validatePayloadFast(payload);
       console.log(`✅ [${requestId}] Fast validation passed`);
+      
+      // Extract force flag at handler scope so it's accessible in catch blocks
+      const forceCompleteTier1 = payload.forceCompleteTier1 === true;
 
       // Preferred: resilient loader from _shared
       let memoizedImport: <T=any>(href: string) => Promise<T>;
