@@ -183,6 +183,7 @@ async function processInlinedTier1(payload: any, memoizedImport: any): Promise<a
   // Get AI-generated primary scene and complete schema
   let primaryScene;
   let aiSchema: Record<string, any> = {};
+  let aiDebugSchema: any = null;
   try {
     const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4');
     const supabase = createClient(
@@ -213,6 +214,7 @@ async function processInlinedTier1(payload: any, memoizedImport: any): Promise<a
     }
     
     primaryScene = aiResult.primaryScene;
+    aiDebugSchema = aiResult.aiDebugSchema || null;
     
     // Collect complete AI schema for debugging (only primaryScene used in template)
     aiSchema = {
@@ -288,7 +290,7 @@ async function processInlinedTier1(payload: any, memoizedImport: any): Promise<a
     enhancedPrompt,           // ← Structured COMPLETE_TIER_1 template
     negativePrompt,
     primaryScene,            // ← Used in template
-    aiSchema: {              // ← NEW: Complete schema for debugging
+    aiSchema: {              // ← Complete schema for debugging
       backgroundColor: aiSchema?.backgroundColor || '',
       lighting: aiSchema?.lighting || '',
       composition: aiSchema?.composition || '',
@@ -297,6 +299,7 @@ async function processInlinedTier1(payload: any, memoizedImport: any): Promise<a
       sceneSettings: aiSchema?.sceneSettings || '',
       atmosphericDetails: aiSchema?.atmosphericDetails || ''
     },
+    aiDebugSchema,           // ← NEW: Full OpenAI debug data from ai-visual-scene-creator
     characterSeed,
     culturalBundle,
     coloredObjects,
@@ -452,6 +455,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
           templateStructure: 'COMPLETE_TIER_1',
           requestId: requestId,
           timestamp: new Date().toISOString(),
+          positivePrompt: enhancedPrompt.enhancedPrompt,
+          negativePrompt: enhancedPrompt.negativePrompt,
+          orchestratorDebugData: {
+            aiDebugSchema: enhancedPrompt.aiDebugSchema,
+            primaryScene: enhancedPrompt.primaryScene,
+            aiSchema: enhancedPrompt.aiSchema
+          },
           metadata: {
             enhancedPrompt: enhancedPrompt.enhancedPrompt,
             negativePrompt: enhancedPrompt.negativePrompt,

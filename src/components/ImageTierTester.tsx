@@ -2871,12 +2871,13 @@ export const ImageTierTester = () => {
                                {result.details.debug.culturalContext.characterConsistency}
                              </Badge>
                            </div>
-                         </div>
-                       </details>
-                     )}
+                          </div>
+                        </details>
+                      )}
 
+                      {/* PRIMARY SCENE - DISPLAY FIRST */}
                       {result.details.primaryScene && (
-                        <div className="text-sm">
+                        <div className="text-sm mb-3">
                           <span className="font-medium">Primary Scene:</span>
                           <div className="text-xs mt-1 bg-blue-50 p-2 rounded">{result.details.primaryScene}</div>
                         </div>

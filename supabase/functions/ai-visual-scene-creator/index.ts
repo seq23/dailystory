@@ -357,6 +357,7 @@ serve(async (req) => {
     // PHASE 3: Handle Direct Mode vs Scene-Only Mode
     let imageURL: string | undefined;
     let tier: string;
+    let runwareDebugData: any = {};
 
     if (directMode) {
       console.log(`🖼️ [${requestId}] Direct Mode: Loading character service for full processing`);
@@ -511,6 +512,12 @@ serve(async (req) => {
       // Metadata for orchestrator
       templateStructure: 'COMPLETE_TIER_1',
       detectedCharacters: visualSchema.detectedCharacters || [],
+      
+      // DEBUG: Full OpenAI request details for debugging
+      aiDebugSchema,
+      
+      // DEBUG: Runware debug data (Direct Mode only)
+      ...(imageURL && runwareDebugData && { runwareDebugData }),
       
       // Image URL only in Direct Mode
       ...(imageURL && { imageURL }),
