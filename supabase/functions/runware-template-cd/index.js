@@ -196,7 +196,7 @@ function generateTier25C(storyText, userInfo, avatarIdentity, failedTierData = {
     templateType: 'Nuclear Hardcoded Template - Zero Dependencies',
     tier: 'NUCLEAR_2.5C',
     styleFrameworkUsed: hardcodedFramework.name,
-    failedTierDataUsed: catchAllElements.length > 0
+    failedTierDataUsed: !!(failedTierData.enhancedSceneData || failedTierData.characterConsistency || failedTierData.visualConsistency || failedTierData.culturalEnhancements || failedTierData.structuredAvatarData)
   };
 }
 
