@@ -135,23 +135,46 @@ async function processInlinedTier1(payload: any, memoizedImport: any): Promise<a
   
   console.log(`🎨 INLINED TIER 1: Processing for ${characterName} in session ${sessionId}`);
   
-  // Import CharacterConsistencyService for Tier 1 Complete and Tier 2.5A
+  // Import CharacterConsistencyService with resilient multi-path fallback (ERROR-046 fix)
   let characterConsistencyService;
+  let characterServiceUnavailable = false;
+  
   try {
-    console.log(`[TIER_1] Attempting to import CharacterConsistencyService using relative path`);
-    const { characterConsistencyService: service } = await import("../_shared/CharacterConsistencyService.js");
+    console.log(`[TIER_1] Attempting CharacterConsistencyService import with resilient pattern`);
+    
+    // Try multiple import paths with fallback
+    let service;
+    try {
+      const importResult = await import("../_shared/CharacterConsistencyService.js");
+      service = importResult.characterConsistencyService;
+    } catch (relativeError) {
+      console.warn(`[TIER_1] Relative path import failed, trying alternative...`);
+      try {
+        const importResult = await import("#shared/CharacterConsistencyService.js");
+        service = importResult.characterConsistencyService;
+      } catch (hashError) {
+        throw new Error(`All import paths failed: ${relativeError.message} | ${hashError.message}`);
+      }
+    }
+    
     characterConsistencyService = service;
     
     // Validate service instance has required methods
-    if (!characterConsistencyService || typeof characterConsistencyService.getCharacterAppearanceFromStory !== 'function') {
-      throw new Error(`CharacterConsistencyService instance not functional - missing required methods`);
+    if (!characterConsistencyService?.getCharacterAppearanceFromStory) {
+      throw new Error(`CharacterConsistencyService missing required methods`);
     }
     
-    console.log(`[TIER_1] CharacterConsistencyService loaded successfully`);
+    console.log(`[TIER_1] ✅ CharacterConsistencyService loaded successfully`);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.log(`[TIER_1] CharacterConsistencyService failed: ${errorMessage}`);
-    console.log(`[TIER_1] Error stack:`, error instanceof Error ? error.stack : 'No stack trace');
+    console.warn(`[TIER_1] ⚠️ CharacterConsistencyService unavailable:`, errorMessage);
+    console.log(`[TIER_1] Will escalate to Tier 2.5B (Nuclear Independence)`);
+    // Set flag but don't throw - let escalation logic handle it gracefully
+    characterServiceUnavailable = true;
+  }
+  
+  // If service is unavailable, escalate immediately to 2.5B
+  if (characterServiceUnavailable) {
     throw new Error('CHARACTERSERVICE_UNAVAILABLE_ESCALATE_TO_25B');
   }
   

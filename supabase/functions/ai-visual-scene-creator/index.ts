@@ -22,6 +22,35 @@ async function generateCompleteVisualSchema(storyText: string, userInfo: any, se
     throw new Error('OPENAI_API_KEY not configured');
   }
 
+  // PRIORITY 1: Initialize structuredAvatarData early to prevent ReferenceError (ERROR-049 fix)
+  let structuredAvatarData = userInfo?.structuredAvatarData;
+  
+  // If missing, attempt CharacterService generation with fallback
+  if (!structuredAvatarData) {
+    try {
+      const { characterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
+      const characterName = userInfo?.name || 'Child';
+      const culturalEnhancements = await characterConsistencyService.getCulturalEnhancements(
+        userInfo, 
+        sessionId, 
+        characterName
+      );
+      structuredAvatarData = {
+        resolvedSkinTone: userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium',
+        assignedHairColor: culturalEnhancements?.hair || 'brown hair',
+        source: 'character_service_generation'
+      };
+      console.log(`✅ Generated structuredAvatarData via CharacterConsistencyService`);
+    } catch (error) {
+      console.warn(`⚠️ CharacterConsistencyService unavailable, using fallback:`, error);
+      structuredAvatarData = {
+        resolvedSkinTone: userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium',
+        assignedHairColor: 'brown hair',
+        source: 'hardcoded_fallback'
+      };
+    }
+  }
+
   // Extract structured avatar data for OpenAI (Scene-Only mode)
   const characterName = userInfo?.name || userInfo?.userName || 'child';
   // Build initial character appearance from frontend userInfo data
@@ -490,74 +519,21 @@ serve(async (req) => {
         // Service unavailable is non-fatal - continue with fallback
       }
       
-      // PRIORITY 1: Use orchestrator-generated structuredAvatarData if available
-      let structuredAvatarData = userInfo?.structuredAvatarData;
-      
-      if (structuredAvatarData) {
-        console.log(`✅ [${requestId}] Using orchestrator structuredAvatarData:`, {
-          hairColor: structuredAvatarData.assignedHairColor,
-          skinTone: structuredAvatarData.resolvedSkinTone,
-          source: 'orchestrator'
-        });
-      } else {
-        // PRIORITY 2: Generate structuredAvatarData using CharacterConsistencyService (73-variation session-seeded hair)
-        console.log(`🔄 [${requestId}] No orchestrator data - generating structuredAvatarData via CharacterConsistencyService`);
-        
-        try {
-          const { characterConsistencyService } = await import('#shared/CharacterConsistencyService.js');
-          
-          // CORRECT METHOD SIGNATURE: getCulturalEnhancements(userInfo, sessionId, characterName)
-          console.log(`🔍 [${requestId}] Calling CharacterConsistencyService with parameters:`, {
-            hasUserInfo: !!userInfo,
-            sessionId,
-            characterName: userInfo?.name || 'Child',
-            skinTone: userInfo?.skinTone || userInfo?.avatarIdentity?.skinTone || 'medium'
-          });
-          
-          const culturalEnhancements = await characterConsistencyService.getCulturalEnhancements(
-            userInfo,
-            sessionId,
-            userInfo?.name || 'Child'
-          );
-          
-          structuredAvatarData = {
-            resolvedSkinTone: userInfo?.skinTone || userInfo?.avatarIdentity?.skinTone || 'medium',
-            assignedHairColor: culturalEnhancements.hair || 'brown hair',
-            source: 'character_service_generation'
-          };
-          
-          console.log(`✅ [${requestId}] Generated structuredAvatarData via CharacterConsistencyService:`, {
-            resolvedSkinTone: structuredAvatarData.resolvedSkinTone,
-            assignedHairColor: structuredAvatarData.assignedHairColor,
-            source: structuredAvatarData.source,
-            hairFromService: culturalEnhancements.hair,
-            featuresFromService: culturalEnhancements.features ? 'present' : 'absent'
-          });
-        } catch (error) {
-          console.error(`❌ [${requestId}] CharacterConsistencyService generation failed:`, error);
-          
-          // PRIORITY 3: Emergency fallback - Use hardcoded map only if service fails
-          console.warn(`⚠️ [${requestId}] Falling back to hardcoded hair map`);
-          const FALLBACK_HAIR_MAP = {
-            pale: 'platinum blonde hair',
-            light: 'golden blonde hair',
-            medium: 'chestnut brown hair',
-            olive: 'dark brown hair',
-            dark: 'black hair'
-          };
-          
-          const normalizedSkinTone = (userInfo?.skinTone || 'medium').toLowerCase().trim();
-          const mappedHair = FALLBACK_HAIR_MAP[normalizedSkinTone] || FALLBACK_HAIR_MAP.medium;
-          
-          structuredAvatarData = {
-            resolvedSkinTone: normalizedSkinTone,
-            assignedHairColor: mappedHair,
-            source: 'fallback_map'
-          };
-          
-          console.log(`🎨 [${requestId}] CREATED fallback structuredAvatarData:`, structuredAvatarData);
-        }
+      // Validate structuredAvatarData exists (already initialized at function start)
+      if (!structuredAvatarData) {
+        console.error(`❌ [${requestId}] Critical error: structuredAvatarData still undefined after initialization`);
+        structuredAvatarData = {
+          resolvedSkinTone: 'medium',
+          assignedHairColor: 'brown hair',
+          source: 'emergency_fallback'
+        };
       }
+      
+      console.log(`✅ [${requestId}] Using structuredAvatarData:`, {
+        hairColor: structuredAvatarData.assignedHairColor,
+        skinTone: structuredAvatarData.resolvedSkinTone,
+        source: structuredAvatarData.source
+      });
       
       // Prepare payload for runware-template-cd with character consistency data
       const templatePayload = {
