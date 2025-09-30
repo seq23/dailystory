@@ -117,7 +117,7 @@ async function generateCompleteVisualSchema(storyText: string, userInfo: any, se
   }
 
   // Detect and add ethnicity for English speakers
-  const nativeLanguage = userInfo?.nativeLanguage;
+  const nativeLanguage = userInfo?.native_language || userInfo?.nativeLanguage || 'en';
   const ethnicity = detectEthnicity(nativeLanguage, standardSkinTone);
   if (ethnicity) {
     characterAppearanceParts.push(`Ethnicity: ${ethnicity}`);
@@ -128,7 +128,6 @@ async function generateCompleteVisualSchema(storyText: string, userInfo: any, se
   
   console.log(`🎨 Character data for OpenAI (basic categories): ${characterData}`);
   const previousPrimaryScene = null; // Will be implemented with visual history tracking
-  const nativeLanguage = userInfo?.native_language || userInfo?.nativeLanguage || 'en';
   const isNonEnglish = nativeLanguage && nativeLanguage !== 'en';
   const culturalContext = isNonEnglish ? `${nativeLanguage} cultural context` : '';
 
