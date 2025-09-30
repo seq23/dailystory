@@ -483,6 +483,10 @@ export class SimpleImageService {
         pageNumber: orchestratorPayload.pageNumber
       });
       
+      // Initialize cascade history tracking
+      const cascadeHistory: string[] = [];
+      cascadeHistory.push('🎯 Attempting Tier 1 (orchestrator)');
+      
       const requestPromise = supabase.functions.invoke('runware-generate-image', {
         body: orchestratorPayload
       });
@@ -542,22 +546,8 @@ export class SimpleImageService {
           window.dispatchEvent(new CustomEvent('image:generation:complete'));
         } catch {}
 
-        return {
-          success: true,
-          url: imageURL,
-          imageURL: imageURL,
-          generatedAt: new Date().toISOString(),
-          tier: orchResult.usedTier,
-          usedTier: orchResult.usedTier,
-          tierErrors: orchResult.tierErrors,
-          requestId: orchResult.requestId,
-          metadata: {
-            ...orchResult,
-            orchestratorAttempted: true,
-            orchestratorSuccess: true,
-            flowType: orchResult.templateStructure === 'COMPLETE_TIER_1' ? 'Enhanced Character-First Flow' : 'Template Flow'
-          }
-        };
+        // Add success cascade entry
+        cascadeHistory.push(`✅ Orchestrator Success: ${orchResult.usedTier || 'TIER_1'}`);
         
         // Track success metrics
         SimpleImageService.orchestratorSuccessCount++;
@@ -567,7 +557,7 @@ export class SimpleImageService {
           successRate: (SimpleImageService.orchestratorSuccessCount / 
             (SimpleImageService.orchestratorSuccessCount + SimpleImageService.orchestratorFailureCount) * 100).toFixed(2) + '%'
         });
-        
+
         return {
           success: true,
           url: imageURL,
@@ -581,6 +571,7 @@ export class SimpleImageService {
             ...orchResult,
             orchestratorAttempted: true,
             orchestratorSuccess: true,
+            cascadeHistory: orchResult.metadata?.cascadeHistory || cascadeHistory,
             flowType: orchResult.templateStructure === 'COMPLETE_TIER_1' ? 'Enhanced Character-First Flow' : 'Template Flow'
           }
         };
