@@ -138,10 +138,9 @@ async function processInlinedTier1(payload: any, memoizedImport: any): Promise<a
   // Import CharacterConsistencyService for Tier 1 Complete and Tier 2.5A
   let characterConsistencyService;
   try {
-    console.log(`[TIER_1] Attempting to import CharacterConsistencyService from ../_shared/CharacterConsistencyService.js`);
-    const serviceModule = await memoizedImport("../_shared/CharacterConsistencyService.js");
-    console.log(`[TIER_1] Service module keys:`, Object.keys(serviceModule));
-    characterConsistencyService = serviceModule.characterConsistencyService;
+    console.log(`[TIER_1] Attempting to import CharacterConsistencyService using #shared/ import map`);
+    const { characterConsistencyService: service } = await import("#shared/CharacterConsistencyService.js");
+    characterConsistencyService = service;
     
     // Validate service instance has required methods
     if (!characterConsistencyService || typeof characterConsistencyService.getCharacterAppearanceFromStory !== 'function') {

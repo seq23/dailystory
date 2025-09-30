@@ -344,8 +344,8 @@ serve(async (req) => {
       // CONDITIONAL CHARACTER SERVICE LOADING - Only for Direct Mode
       let characterService: any = null;
       try {
-        const { CharacterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
-        characterService = CharacterConsistencyService.getInstance();
+        const { characterConsistencyService } = await import('#shared/CharacterConsistencyService.js');
+        characterService = characterConsistencyService;
         
         // Validate service instance has required methods
         if (!characterService || typeof characterService.getCharacterAppearanceFromStory !== 'function') {

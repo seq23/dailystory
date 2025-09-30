@@ -1455,29 +1455,35 @@ export const ImageTierTester = () => {
         const userFlowTime = Date.now() - userFlowStartTime;
         
         if (result.success) {
-          // Real user experience: Natural tier routing with proper classification
-          let displayTier = result.tier || 'Tier 1';  // Natural tier selection
-          let pathIndicator = '';
-          
-          // Real routing path detection (not forced)
-          if (result.metadata?.bypassedOrchestrator || result.metadata?.usedDirectMode || result.tier === 'DIRECT_MODE') {
-            pathIndicator = ' (Smart Bypass)';
-          } else if (result.tier === 'Cache') {
-            pathIndicator = ' (Cached)';
-          } else if (result.tier?.includes('Recovery')) {
-            pathIndicator = ' (Recovery)';
-          } else if (result.metadata?.usedOrchestrator || result.tier?.includes('orchestrator')) {
-            pathIndicator = ' (via Orchestrator)';
+          // Extract actual cascade history from backend metadata
+          if (result.metadata?.cascadeHistory && Array.isArray(result.metadata.cascadeHistory)) {
+            cascadeHistory.push(...result.metadata.cascadeHistory);
           }
           
-          cascadeHistory.push(`✅ User Image Generation Success (${userFlowTime}ms) - Tier: ${result.tier}`);
-          cascadeHistory.push(`🎯 Natural routing decision: ${result.tier}${pathIndicator} selected`);
+          // Add tier 1 failure reason if present
+          if (result.metadata?.tier1FailureReason) {
+            cascadeHistory.push(`❌ Tier 1 Failed: ${result.metadata.tier1FailureReason}`);
+          }
+          
+          // Determine actual successful tier and path
+          const actualTier = result.metadata?.pathUsed || result.tier || 'Unknown';
+          const wasFailover = result.metadata?.tier1FailureReason ? ' (Failover)' : '';
+          
+          cascadeHistory.push(`✅ Success via: ${actualTier}`);
           cascadeHistory.push(`⏰ ${new Date().toLocaleTimeString()}: Real user flow completed successfully`);
           
-          resultBadge = `${displayTier}${pathIndicator} Success`;
-          fallbackPath = `Real user flow succeeded via ${displayTier}${pathIndicator}`;
-           finalResult = {
-            tier: result.tier || 'tier-1',
+          // Check if character consistency was active
+          const hasCharacterConsistency = !result.metadata?.tier1FailureReason?.includes('CharacterConsistencyService');
+          if (!hasCharacterConsistency && actualTier === 'DIRECT_MODE') {
+            cascadeHistory.push(`⚠️ Character consistency NOT active (degraded mode)`);
+          } else if (hasCharacterConsistency) {
+            cascadeHistory.push(`✅ Character consistency active`);
+          }
+          
+          resultBadge = `${actualTier}${wasFailover} Success`;
+          fallbackPath = `Real user flow succeeded via ${actualTier}${wasFailover}`;
+          finalResult = {
+            tier: actualTier,
             success: true,
             imageURL: result.imageURL || result.url,
             details: {
@@ -1487,8 +1493,9 @@ export const ImageTierTester = () => {
               resultType: 'REAL_USER_FLOW_SUCCESS',
               metadata: result.metadata,
               error: null,
-              pathUsed: `${displayTier}${pathIndicator}`,
-              routingDecision: result.metadata?.routingReason || 'Natural tier routing'
+              pathUsed: actualTier,
+              routingDecision: result.metadata?.routingReason || 'Natural tier routing',
+              hasCharacterConsistency
             }
           };
         } else {
