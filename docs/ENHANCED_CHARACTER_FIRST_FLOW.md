@@ -96,12 +96,15 @@ const detectedAllCharacters = await characterConsistencyService.detectAllCharact
 
 ### Key Differences from Direct Mode:
 
-| Aspect | Enhanced Character-First Flow | Direct Mode |
-|--------|------------------------------|-------------|
-| Character Context | ✅ Full character seed, cultural bundle, colored objects | ❌ Minimal or no character context |
-| Consistency | ✅ Session-wide character consistency | ⚠️ Per-page generation (inconsistent) |
-| Cultural Awareness | ✅ Cultural bundle applied | ⚠️ Generic representation |
-| Multi-Character | ✅ Secondary characters detected | ❌ No secondary character tracking |
+| Aspect | Enhanced Character-First Flow (Tier 1) | Direct Mode |
+|--------|----------------------------------------|-------------|
+| Character Context | ✅ Full character seed, cultural bundle, colored objects built BEFORE AI | ⚠️ Initial descriptor from StaticDataCache, analysis AFTER primary scene |
+| Character Foundation Timing | ✅ Phase 1: Before AI scene generation | ⚠️ Built during/after scene generation |
+| Consistency | ✅ Session-wide character consistency (Phase 1) | ✅ Session-seeded hair + page-by-page accumulation via analyzeVisualDetails() |
+| Cultural Awareness | ✅ Cultural bundle from CharacterConsistencyService | ✅ Cultural bundle from StaticDataCache (session-seeded) |
+| Multi-Character | ✅ Secondary characters detected in Phase 1 | ⚠️ Analyzed after primary scene generation |
+| Visual Analysis | ✅ analyzeVisualDetails() before AI call | ✅ analyzeVisualDetails() after primary scene generation |
+| Accumulation Strategy | ✅ All character data built first, then AI generates scene | ✅ StaticDataCache initial → AI scene → analyze → accumulate |
 
 ### AI Scene Generation Call:
 
@@ -190,14 +193,15 @@ const enhancedPrompt = COMPLETE_TIER_1_TEMPLATE
 ✅ **Secondary Characters Tracked**  
 ✅ **Colored Objects Cached**  
 
-### Direct Mode (Fallback):
-⚠️ **No Character Foundation**  
-⚠️ **AI Generates Scenes WITHOUT Context**  
-⚠️ **Generic Prompt Structure**  
-⚠️ **Per-Page Generation (No Consistency)**  
-⚠️ **No Cultural Awareness**  
-⚠️ **No Secondary Character Tracking**  
-⚠️ **No Visual Consistency Caching**  
+### Direct Mode (September 2025 - StaticDataCache-First):
+✅ **StaticDataCache-First Initial Descriptor** (session-seeded 73-hair mapping)  
+✅ **AI Generates Primary Scene**  
+✅ **analyzeVisualDetails() After Primary Scene** (extracts & caches visual details)  
+✅ **Page-by-Page Accumulation** (getCharacterAppearanceFromStory() grows across pages)  
+✅ **Session-Seeded Hair Consistency** (same hair within session)  
+✅ **Cultural Bundle from StaticDataCache** (session-seeded)  
+⚠️ **Character Foundation Built During Generation** (not before)  
+⚠️ **2-Tier Fallback** (StaticDataCache → Emergency Hardcoded)
 
 ---
 

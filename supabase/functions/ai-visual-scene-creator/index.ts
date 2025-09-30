@@ -411,6 +411,23 @@ serve(async (req) => {
     console.log(`🎨 [${requestId}] Generating complete visual schema...`);
     const { visualSchema, aiDebugSchema } = await generateCompleteVisualSchema(content, userInfo, sessionId, pageNumber);
 
+    // DIRECT MODE ONLY: After primary scene generation, analyze visual details
+    if (directMode) {
+      try {
+        const { characterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
+        const characterName = userInfo?.name || userInfo?.userName || 'Child';
+        await characterConsistencyService.analyzeVisualDetails(
+          sessionId,
+          visualSchema.primaryScene,
+          pageNumber,
+          characterName
+        );
+        console.log(`✅ [${requestId}] ANALYSIS_APPLIED: Visual details analyzed and cached for page ${pageNumber}`);
+      } catch (error) {
+        console.warn(`⚠️ [${requestId}] Failed to analyze visual details (non-fatal):`, error);
+      }
+    }
+
     // ARCHITECTURE FIX: Character generation only for Direct Mode
     // Scene-Only mode returns ONLY primaryScene to orchestrator
     // Orchestrator is responsible for character consistency via CharacterConsistencyService
@@ -420,63 +437,43 @@ serve(async (req) => {
 
     if (directMode) {
       // DIRECT MODE ONLY: Generate character seed and cultural bundle
-      console.log(`🎨 [${requestId}] Direct Mode: Generating character data with 3-tier fallback`);
+      console.log(`🎨 [${requestId}] Direct Mode: Generating initial character descriptor with 2-tier fallback`);
       
       // Generate character seed for consistency
       characterSeed = await generateCharacterSeed(sessionId, userInfo);
 
-      // Generate culturalBundle with 3-tier fallback for Direct Mode
+      // Generate culturalBundle with StaticDataCache-first 2-tier fallback for Direct Mode
       try {
-        // TIER 1: CharacterConsistencyService (session-seeded 73-variation hair)
-        const { characterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
-        const culturalEnhancements = await characterConsistencyService.getCulturalEnhancements(
-          userInfo,
-          sessionId,
-          userInfo?.name || 'Child'
-        );
+        // TIER 1: StaticDataCache (session-seeded 73-variation hair)
+        const { StaticDataCache } = await import('../_shared/StaticDataCache.js');
+        const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
+        const isDarkSkin = skinTone === 'dark' || skinTone === 'darker';
+        
+        const hairBundle = isDarkSkin 
+          ? StaticDataCache.getCulturalBundle('african', sessionId)
+          : StaticDataCache.getHairBySkinTone(skinTone, sessionId);
         
         culturalBundle = {
-          hair: culturalEnhancements.hair || 'natural hair',
-          features: culturalEnhancements.features || 'diverse features',
+          hair: hairBundle?.hair || 'natural hair',
+          features: isDarkSkin ? (hairBundle?.features || 'authentic African American features') : 'diverse features',
           profile: characterSeed?.culturalProfile || null,
-          source: 'CharacterConsistencyService'
+          source: 'StaticDataCache'
         };
-        console.log(`✅ [${requestId}] Tier 1: CharacterConsistencyService culturalBundle generated`);
+        console.log(`✅ [${requestId}] INITIAL_DESCRIPTOR_SOURCE: StaticDataCache (Tier 1)`);
       } catch (tier1Error) {
-        console.warn(`⚠️ [${requestId}] Tier 1 failed, falling back to Tier 2 (StaticDataCache)`, tier1Error);
+        console.warn(`⚠️ [${requestId}] Tier 1 (StaticDataCache) failed, using Tier 2 (emergency hardcoded)`, tier1Error);
         
-        try {
-          // TIER 2: StaticDataCache fallback
-          const { StaticDataCache } = await import('../_shared/StaticDataCache.js');
-          const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
-          const isDarkSkin = skinTone === 'dark' || skinTone === 'darker';
-          
-          const hairBundle = isDarkSkin 
-            ? StaticDataCache.getCulturalBundle('african', sessionId)
-            : StaticDataCache.getHairBySkinTone(skinTone, sessionId);
-          
-          culturalBundle = {
-            hair: hairBundle?.hair || 'natural hair',
-            features: isDarkSkin ? 'authentic African American features' : 'diverse features',
-            profile: characterSeed?.culturalProfile || null,
-            source: 'StaticDataCache'
-          };
-          console.log(`✅ [${requestId}] Tier 2: StaticDataCache culturalBundle generated`);
-        } catch (tier2Error) {
-          console.warn(`⚠️ [${requestId}] Tier 2 failed, using Tier 3 (emergency hardcoded)`, tier2Error);
-          
-          // TIER 3: Emergency hardcoded strings
-          const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
-          const isDarkSkin = skinTone === 'dark' || skinTone === 'darker';
-          
-          culturalBundle = {
-            hair: isDarkSkin ? 'photorealistic detailed textured 4C African American hairstyle' : userInfo?.avatar?.hairColor || 'brown hair',
-            features: isDarkSkin ? 'authentic African American features' : 'diverse features',
-            profile: characterSeed?.culturalProfile || null,
-            source: 'emergency_hardcoded'
-          };
-          console.log(`✅ [${requestId}] Tier 3: Emergency hardcoded culturalBundle applied`);
-        }
+        // TIER 2: Emergency hardcoded strings
+        const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
+        const isDarkSkin = skinTone === 'dark' || skinTone === 'darker';
+        
+        culturalBundle = {
+          hair: isDarkSkin ? 'photorealistic detailed textured 4C African American hairstyle' : userInfo?.avatar?.hairColor || 'brown hair',
+          features: isDarkSkin ? 'authentic African American features' : 'diverse features',
+          profile: characterSeed?.culturalProfile || null,
+          source: 'emergency_hardcoded'
+        };
+        console.log(`✅ [${requestId}] INITIAL_DESCRIPTOR_SOURCE: Emergency hardcoded (Tier 2)`);
       }
     } else {
       // Fallback for Scene-Only mode without orchestrator bundle
@@ -506,7 +503,7 @@ serve(async (req) => {
       let characterServiceAvailable = false;
       
       try {
-        const { characterConsistencyService } = await import('#shared/CharacterConsistencyService.js');
+        const { characterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
         characterService = characterConsistencyService;
         
         // Validate service instance has required methods
