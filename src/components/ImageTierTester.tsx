@@ -1483,7 +1483,8 @@ export const ImageTierTester = () => {
           } : undefined,
           error: response.error?.message || response.data?.error,
           errorCategory,
-          probableCause
+          probableCause,
+          errorDetails: response.data?.errorDetails
         }
       }]);
     } catch (error) {
@@ -2697,7 +2698,8 @@ export const ImageTierTester = () => {
                       )}
                       
                       {/* COMPREHENSIVE DEBUG PLAN: Runware Debug Info Section */}
-                      {(result.details.positivePrompt || result.details.negativePrompt || result.details.promptSource) && (
+                      {(result.details.positivePrompt || result.details.negativePrompt || result.details.promptSource || 
+                        (result.tier === 'tier-1-forced-failure' && result.details.errorDetails?.attemptedPrompts)) && (
                         <div className="text-sm border-2 border-orange-300 rounded p-3 bg-orange-50 mt-3">
                           <div className="font-bold text-orange-700 mb-2">🎨 Runware Debug Info - Prompts Sent to Image API</div>
                           
@@ -2751,6 +2753,28 @@ export const ImageTierTester = () => {
                               </summary>
                               <div className="mt-2 bg-white p-2 rounded border text-xs overflow-x-auto max-h-64 overflow-y-auto">
                                 <pre>{JSON.stringify(result.details.orchestratorDebugData, null, 2)}</pre>
+                              </div>
+                            </details>
+                          )}
+                          
+                          {/* Force Mode Attempted Prompts */}
+                          {result.tier === 'tier-1-forced-failure' && result.details.errorDetails?.attemptedPrompts && (
+                            <details className="mb-2">
+                              <summary className="cursor-pointer font-medium text-purple-600 hover:text-purple-700 text-xs">
+                                🔧 Attempted Prompts (Force Mode Failure) - Click to expand
+                              </summary>
+                              <div className="mt-2 bg-purple-50 p-3 rounded border border-purple-200 text-xs">
+                                {result.details.errorDetails.attemptedPrompts.partialData && (
+                                  <div className="mb-2">
+                                    <div className="font-medium text-purple-700 mb-1">Partial Story Data:</div>
+                                    <pre className="bg-white p-2 rounded border overflow-x-auto max-h-32 overflow-y-auto">
+                                      {JSON.stringify(result.details.errorDetails.attemptedPrompts.partialData, null, 2)}
+                                    </pre>
+                                  </div>
+                                )}
+                                <div className="text-purple-600 text-xs italic">
+                                  ℹ️ These are the inputs that were being processed when Tier 1 orchestrator failed
+                                </div>
                               </div>
                             </details>
                           )}
