@@ -59,22 +59,56 @@ async function generateCompleteVisualSchema(storyText: string, userInfo: any, se
     }
   }
 
+  // Helper: Simplify detailed hair colors to basic categories
+  function simplifyHairColor(detailedHair: string | undefined): string {
+    if (!detailedHair) return 'brown hair';
+    const hair = String(detailedHair).toLowerCase();
+    if (hair.includes('blonde') || hair.includes('yellow') || hair.includes('golden')) return 'blonde hair';
+    if (hair.includes('red') || hair.includes('ginger') || hair.includes('auburn') || hair.includes('copper')) return 'red hair';
+    if (hair.includes('black') || hair.includes('dark') || hair.includes('raven')) return 'black hair';
+    return 'brown hair'; // Default fallback
+  }
+
+  // Helper: Standardize skin tones to basic categories
+  function standardizeSkinTone(rawSkinTone: string | undefined): string {
+    if (!rawSkinTone) return 'light skin';
+    const skin = String(rawSkinTone).toLowerCase();
+    if (skin.includes('pale') || skin.includes('light') || skin.includes('fair')) return 'light skin';
+    if (skin.includes('olive') || skin.includes('mediterranean')) return 'olive skin';
+    if (skin.includes('dark') || skin.includes('brown') || skin.includes('deep')) return 'dark skin';
+    if (skin.includes('medium') || skin.includes('tan')) return 'medium skin';
+    return 'light skin'; // Default fallback
+  }
+
+  // Helper: Detect basic ethnicity from language and skin tone
+  function detectEthnicity(nativeLanguage: string | undefined, skinTone: string): string {
+    const lang = (nativeLanguage || 'en').toLowerCase();
+    const skin = skinTone.toLowerCase();
+    
+    // English speakers with basic ethnicity detection
+    if (lang === 'en' || lang === 'english') {
+      if (skin.includes('dark')) return 'African American';
+      return 'American'; // Default for English + light/medium/olive skin
+    }
+    
+    // Use native language as cultural context for non-English
+    return ''; // Return empty for non-English (cultural context handled separately)
+  }
+
   // Extract structured avatar data for OpenAI (Scene-Only mode)
   const characterName = userInfo?.name || userInfo?.userName || 'child';
   // Build initial character appearance from frontend userInfo data
   const characterAppearanceParts = [];
 
-  // PRIORITY: Use structured hair color from orchestrator if available
-  const hairColor = structuredAvatarData?.assignedHairColor || userInfo?.hair;
-  if (hairColor && String(hairColor).trim()) {
-    characterAppearanceParts.push(`Hair: ${String(hairColor).trim()}`);
-  }
+  // PRIORITY: Use structured hair color from orchestrator if available, then simplify
+  const rawHairColor = structuredAvatarData?.assignedHairColor || userInfo?.hair;
+  const basicHairColor = simplifyHairColor(rawHairColor);
+  characterAppearanceParts.push(`Hair: ${basicHairColor}`);
 
-  // Extract skin tone and ethnicity for proper character representation
-  const skinTone = structuredAvatarData?.resolvedSkinTone || userInfo?.skinTone || userInfo?.avatar?.skinTone;
-  if (skinTone && String(skinTone).trim()) {
-    characterAppearanceParts.push(`Skin: ${String(skinTone).trim()}`);
-  }
+  // Extract and standardize skin tone
+  const rawSkinTone = structuredAvatarData?.resolvedSkinTone || userInfo?.skinTone || userInfo?.avatar?.skinTone;
+  const standardSkinTone = standardizeSkinTone(rawSkinTone);
+  characterAppearanceParts.push(`Skin: ${standardSkinTone}`);
 
   // Add avatar type if available
   const avatarType = userInfo?.avatar?.type || userInfo?.avatarType;
@@ -82,12 +116,17 @@ async function generateCompleteVisualSchema(storyText: string, userInfo: any, se
     characterAppearanceParts.push(`Type: ${String(avatarType).trim()}`);
   }
 
-  // Build character appearance line for OpenAI with proper hair and ethnicity data
-  const characterData = characterAppearanceParts.length > 0 
-    ? characterAppearanceParts.join(', ')
-    : 'Character appearance to be determined from story context';
+  // Detect and add ethnicity for English speakers
+  const nativeLanguage = userInfo?.nativeLanguage;
+  const ethnicity = detectEthnicity(nativeLanguage, standardSkinTone);
+  if (ethnicity) {
+    characterAppearanceParts.push(`Ethnicity: ${ethnicity}`);
+  }
+
+  // Build character appearance line for OpenAI with basic categories
+  const characterData = characterAppearanceParts.join(', ');
   
-  console.log(`🎨 Character data for OpenAI: ${characterData}`);
+  console.log(`🎨 Character data for OpenAI (basic categories): ${characterData}`);
   const previousPrimaryScene = null; // Will be implemented with visual history tracking
   const nativeLanguage = userInfo?.native_language || userInfo?.nativeLanguage || 'en';
   const isNonEnglish = nativeLanguage && nativeLanguage !== 'en';

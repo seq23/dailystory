@@ -2655,24 +2655,47 @@ export const ImageTierTester = () => {
                             </div>
                           </details>
                           
-                          {/* Raw Input Validation */}
+                          {/* Character Processing Pipeline */}
                           <div className="text-xs border-t pt-2 mt-2">
-                            <div className="font-medium mb-1">📊 Raw Input Validation:</div>
-                            <div className="bg-white p-2 rounded space-y-1">
-                              <div>
-                                <span className="font-medium">userInfo has structuredAvatarData:</span>
-                                <span className={`ml-2 px-2 py-0.5 rounded ${
-                                  result.details.aiDebugSchema.rawUserInfoReceived?.hasStructuredAvatar 
-                                    ? 'bg-green-200 text-green-800' 
-                                    : 'bg-red-200 text-red-800'
-                                }`}>
-                                  {result.details.aiDebugSchema.rawUserInfoReceived?.hasStructuredAvatar ? '✅ YES' : '❌ NO'}
-                                </span>
+                            <div className="font-medium mb-1">🎨 Character Processing Pipeline:</div>
+                            <div className="bg-white p-2 rounded space-y-2">
+                              {/* Hair Selection Process */}
+                              <div className="border-l-2 border-blue-400 pl-2">
+                                <div className="font-medium text-blue-700">Hair Selection:</div>
+                                <div className="text-xs text-gray-600 mt-1">
+                                  Raw Hair: {result.details.aiDebugSchema.rawUserInfoReceived?.fullUserInfo?.hair || 'not provided'} 
+                                  → Simplified: {result.details.aiDebugSchema.characterDataSent?.split(',')[0]?.split(':')[1]?.trim() || 'basic category used'}
+                                </div>
                               </div>
-                              <div>Skin Tone (avatar): {result.details.aiDebugSchema.rawUserInfoReceived?.avatarSkinTone || 'undefined'}</div>
-                              <div>Skin Tone (direct): {result.details.aiDebugSchema.rawUserInfoReceived?.skinTone || 'undefined'}</div>
-                              <div>Hair Color (avatar): {result.details.aiDebugSchema.rawUserInfoReceived?.avatarHairColor || 'undefined'}</div>
-                              <div>Native Language: {result.details.aiDebugSchema.rawUserInfoReceived?.nativeLanguage || 'en'}</div>
+                              
+                              {/* Skin Tone Standardization */}
+                              <div className="border-l-2 border-green-400 pl-2">
+                                <div className="font-medium text-green-700">Skin Tone Standardization:</div>
+                                <div className="text-xs text-gray-600 mt-1">
+                                  Raw Skin: {result.details.aiDebugSchema.rawUserInfoReceived?.skinTone || 'undefined'}
+                                  → Standardized: {result.details.aiDebugSchema.characterDataSent?.split(',')[1]?.split(':')[1]?.trim() || 'basic category used'}
+                                </div>
+                              </div>
+                              
+                              {/* Ethnicity Detection */}
+                              <div className="border-l-2 border-purple-400 pl-2">
+                                <div className="font-medium text-purple-700">Ethnicity Detection:</div>
+                                <div className="text-xs text-gray-600 mt-1">
+                                  Language: {result.details.aiDebugSchema.rawUserInfoReceived?.nativeLanguage || 'en'} +
+                                  Skin: {result.details.aiDebugSchema.rawUserInfoReceived?.skinTone || 'undefined'}
+                                  → Ethnicity: {result.details.aiDebugSchema.characterDataSent?.includes('Ethnicity:') ? result.details.aiDebugSchema.characterDataSent.split('Ethnicity:')[1]?.split(',')[0]?.trim() : 'not detected'}
+                                </div>
+                              </div>
+                              
+                              {/* Cultural Context */}
+                              {result.details.aiDebugSchema.culturalContext && (
+                                <div className="border-l-2 border-orange-400 pl-2">
+                                  <div className="font-medium text-orange-700">Cultural Context:</div>
+                                  <div className="text-xs text-gray-600 mt-1">
+                                    {result.details.aiDebugSchema.culturalContext}
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           </div>
                           
@@ -2892,15 +2915,15 @@ export const ImageTierTester = () => {
                         </div>
                       )}
 
-                      {/* AI Debug Schema Output - Show for Scene-Only mode */}
-                      {(result.details.aiDebugSchema || result.details.debug?.aiDebugSchema) && (
+                      {/* AI Schema Output - Actual JSON from OpenAI */}
+                      {result.details.aiSchema && (
                         <details className="text-sm border-2 border-purple-300 rounded p-3 bg-purple-50 mt-3">
                           <summary className="cursor-pointer font-medium text-purple-700 hover:text-purple-800">
-                            🧪 AI Debug Schema - Full OpenAI Request/Response (Expandable)
+                            🧪 AI Schema Output - JSON Response from OpenAI (Expandable)
                           </summary>
                           <div className="mt-2">
                             <pre className="text-xs bg-white p-2 rounded border overflow-x-auto max-h-64 overflow-y-auto">
-                              {JSON.stringify(result.details.aiDebugSchema || result.details.debug?.aiDebugSchema, null, 2)}
+                              {JSON.stringify(result.details.aiSchema, null, 2)}
                             </pre>
                           </div>
                         </details>
@@ -2920,8 +2943,8 @@ export const ImageTierTester = () => {
                         </details>
                       )}
 
-                      {/* Enhanced Runware Prompt Display Section - Shows prompts for successes AND fallbacks */}
-                      {((result.success || result.isFallback) && (result.details.positivePrompt || result.details.negativePrompt || result.details.enhancedPrompt || result.details.originalPrompt)) && (
+                      {/* Enhanced Runware Prompt Display Section - Hide for Scene-Only mode */}
+                      {!result.details.sceneGenerationOnly && ((result.success || result.isFallback) && (result.details.positivePrompt || result.details.negativePrompt || result.details.enhancedPrompt || result.details.originalPrompt)) && (
                         <div className={`text-sm border rounded p-2 ${result.success ? 'bg-green-50' : 'bg-yellow-50'}`}>
                           <span className={`font-medium ${result.success ? 'text-green-700' : 'text-yellow-700'}`}>
                             🎯 Full Prompts Sent to Runware - 
