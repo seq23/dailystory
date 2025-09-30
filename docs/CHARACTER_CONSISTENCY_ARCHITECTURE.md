@@ -22,6 +22,21 @@ Returns singleton instance of the service.
 **Returns**: Object with `secondaryCharacters` array and other detection results  
 **Usage**: Template AB should call this instead of older `detectSecondaryCharacters`  
 
+### `getSecondaryCharactersForSession(sessionId)` ✅ NEW (2025-09-30)
+**STATUS**: FULLY INTEGRATED  
+**Purpose**: Retrieves all tracked secondary characters for a session  
+**Returns**: `Promise<SecondaryCharacter[]>` with name, relationship, appearance, traits  
+**Usage**: AI visual scene creator (lines 178-188), template integration  
+**Fix**: ERROR-051 resolution
+
+### `getCulturalEnhancements(userInfo, sessionId, characterName)` ✅
+**STATUS**: SIGNATURE VERIFIED  
+**Purpose**: Generates culturally appropriate character enhancements  
+**Parameters**: userInfo (object), sessionId (string), characterName (string)  
+**Returns**: `{ hair, features }` - Does NOT return skinTone  
+**Usage**: Direct Mode, AI visual scenes, templates  
+**Fix**: ERROR-049 resolution (import pattern standardized)
+
 ### `getCharacterSeed(sessionId, avatarIdentity, storyContext, sessionType)` ✅
 **STATUS**: REQUIRES PROPER ARGUMENTS  
 **Purpose**: Generates consistent character seeds with avatar identity  

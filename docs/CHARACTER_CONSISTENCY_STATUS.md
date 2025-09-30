@@ -110,6 +110,53 @@ const appearance = await characterConsistencyService.getCharacterAppearanceFromS
 
 ---
 
+## Secondary Character Support
+
+### ✅ AI Visual Scene Creator (Enhanced 2025-09-30)
+**Status**: Secondary characters fully integrated
+
+**Details**:
+- ✅ Uses `getSecondaryCharactersForSession(sessionId)` method
+- ✅ Retrieves cached family members, friends, companions
+- ✅ Integrates into AI visual schema generation
+- ✅ Passes data to template system
+- ✅ Graceful degradation if no secondary characters exist
+
+**Method Usage**:
+```typescript
+const { characterConsistencyService } = await import('#shared/CharacterConsistencyService.js');
+const cachedSecondaryCharacters = await characterConsistencyService.getSecondaryCharactersForSession(sessionId);
+
+// Returns array of character objects:
+[
+  {
+    name: "Mom",
+    relationshipToMain: "parent",
+    appearance: "warm brown eyes, curly black hair",
+    traits: ["caring", "protective"]
+  },
+  {
+    name: "Best Friend",
+    relationshipToMain: "friend", 
+    appearance: "bright smile, adventurous spirit",
+    traits: ["loyal", "brave"]
+  }
+]
+```
+
+**Integration Points**:
+- Lines 178-188: Secondary character retrieval
+- Lines 250-270: Family description formatting for AI prompts
+- Template AB: `{secondary_characters}` placeholder resolution
+
+**Character Types Tracked**:
+- **Parents**: Mom, Dad, Guardian
+- **Siblings**: Brother, Sister
+- **Friends**: Best Friend, Classmate, Teammate
+- **Pets**: Speaking animals, silent pets
+
+---
+
 ## Testing Character Consistency
 
 ### E2E User Simulation

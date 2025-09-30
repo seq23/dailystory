@@ -23,8 +23,8 @@ This document serves as the **single source of truth** for all production errors
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📈 This Week's Activity:
-• Errors Resolved: 10 (ERROR-036 through ERROR-049)
-• System Improvements: 9 major enhancements
+• Errors Resolved: 12 (ERROR-036 through ERROR-051)
+• System Improvements: 11 major enhancements
 • Uptime: 99.9%
 • Response Time: < 2s average across all tiers
 ```
@@ -94,7 +94,9 @@ Quick lookup table for all tracked errors with searchable keywords.
 
 | Error ID | Keywords | Severity | Status | System | Quick Link |
 |----------|----------|----------|--------|--------|------------|
-| ERROR-049 | direct-mode, structuredAvatarData, client-side, session-seeded-hair, character-service-generation, 73-variation, method-signature-bug | HIGH | 🔄 IN PROGRESS | Image Gen | [View](#error-049-direct-mode-missing-orchestrator-structuredavatardata) |
+| ERROR-051 | secondary-characters, ai-visual-scene-creator, family-members, character-consistency-service, template-integration | HIGH | ✅ RESOLVED | Character System | [View](#error-051-secondary-character-integration-missing-in-ai-scene-creator) |
+| ERROR-050 | import-pattern, character-consistency-service, singleton, dynamic-import, shared-alias, runtime-failure | CRITICAL | ✅ RESOLVED | Character System | [View](#error-050-ai-visual-scene-creator-import-pattern-inconsistency) |
+| ERROR-049 | direct-mode, structuredAvatarData, client-side, session-seeded-hair, character-service-generation, 73-variation, method-signature-bug | HIGH | ✅ RESOLVED | Image Gen | [View](#error-049-direct-mode-missing-orchestrator-structuredavatardata) |
 | ERROR-048 | runware-websocket, import-path, tier-1, module-not-found, url-import, deno-edge | CRITICAL | ✅ RESOLVED | Image Gen | [View](#error-048-runwarewebsocketservice-import-path-failure-in-tier-1) |
 | ERROR-047 | debug-data, variable-shadowing, aiDebugSchema, runwareDebugData, orchestratorDebugData, ImageTierTester | HIGH | ✅ RESOLVED | Debug System | [View](#error-047-debug-data-exposure-blocked-by-variable-shadowing) |
 | ERROR-046 | character-service, import-map, detectAllCharacters, storeAllDetections, iteration, guard-rails | CRITICAL | ✅ RESOLVED | Character System | [View](#error-046-characterconsistencyservice-import-and-runtime-failures) |
@@ -419,8 +421,8 @@ Next Review: October 6, 2025
 - **Resolved:** 2025-09-30
 - **Prevention:** Use relative paths for dynamic imports, add type guards for all iteration operations, validate data structures before iteration
 
-### 🔄 ERROR-049: Direct Mode Missing Orchestrator structuredAvatarData (BUGFIX IN PROGRESS)
-- **Status:** IN PROGRESS 🔄 (Critical bugs found in initial implementation)
+### ✅ ERROR-049: Direct Mode Missing Orchestrator structuredAvatarData
+- **Status:** RESOLVED ✅ (Import fix completed 2025-09-30)
 - **Severity:** HIGH (Character consistency, hair variety)
 - **Discovered:** 2025-09-30
 - **Impact:** Direct Mode invoked from frontend always falling back to 5-value hardcoded hair map; no session-seeded 73-variation hair diversity
@@ -466,13 +468,20 @@ Next Review: October 6, 2025
   - **Lines 418-420:** Fixed `structuredAvatarData` to use `userInfo.skinTone` for skinTone (not from culturalEnhancements)
   - **Lines 405-413:** Added detailed parameter logging for debugging method calls
   - **Lines 423-431:** Enhanced success logging to show actual service response data
-- **Resolved:** 2025-09-30 (bugfix complete)
+- **Resolved:** 2025-09-30 (bugfix complete, import pattern standardized)
+- **Import Pattern Fix (2025-09-30):**
+  - Removed static import of `CharacterConsistencyService` (line 6)
+  - Standardized all instances to dynamic import: `await import('#shared/CharacterConsistencyService.js')`
+  - Used singleton instance: `characterConsistencyService` instead of `new CharacterConsistencyService()`
+  - Applied to 3 locations: secondary character retrieval (lines 178-188), cultural enhancement (lines 385-392), direct mode character service (lines 494-511)
 - **Prevention:** 
-  1. Verify method signatures before implementation
-  2. Check return value structures in service documentation
-  3. Add detailed logging for all service calls to detect failures early
-  4. Test fallback paths independently to ensure they work as designed
-- **Testing Required:** Direct Mode invocation with missing orchestrator data should now successfully generate 73-variation session-seeded hair via CharacterService
+  1. Always use `#shared/` import map alias for shared services
+  2. Always use dynamic imports (`await import()`) in edge functions
+  3. Always use singleton instances exported from services (never instantiate)
+  4. Verify method signatures before implementation
+  5. Add detailed logging for all service calls to detect failures early
+  6. See: `docs/ANTI_REGRESSION_GUIDELINES.md` for complete import patterns
+- **Related Fixes:** ERROR-050 (import pattern standardization)
 
 ### ✅ ERROR-044: Tier 2.5C Missing Character Description Details and Hair Mapping
 - **Status:** RESOLVED ✅
