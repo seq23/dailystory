@@ -468,9 +468,9 @@ serve(async (req) => {
         templateComplexity: 'C', // Use Tier 2.5C for nuclear hardcoded template
         failedTierData: {
           enhancedSceneData: visualSchema.primaryScene,
-          characterConsistency: characterAppearance || `${characterSeed.characterName} (${characterSeed.avatarType})`,
+          characterConsistency: characterAppearance || `${characterSeed.characterName} is a ${characterSeed.avatarType} with ${characterSeed.skinTone} skin tone, ${culturalBundle.hair || structuredAvatarData?.assignedHairColor || 'natural hair'}, and ${culturalBundle.features}`,
           visualConsistency: `${visualSchema.backgroundColor}, ${visualSchema.lighting}`,
-          culturalEnhancements: culturalBundle.hair,
+          culturalEnhancements: `${culturalBundle.hair}, ${culturalBundle.features}`,
           structuredAvatarData // Always provide structured avatar data
         }
       };
