@@ -155,6 +155,18 @@ async function processInlinedTier1(payload: any, memoizedImport: any): Promise<a
     throw new Error(`CharacterConsistencyService not available: ${errorMessage}`);
   }
   
+  // Check for force flag to bypass health checks and fallbacks
+  const forceCompleteTier1 = payload.forceCompleteTier1 === true;
+  if (forceCompleteTier1) {
+    console.log(`🎯 FORCE TIER 1 MODE: Bypassing health checks, proceeding directly to Enhanced Character-First Flow`);
+    console.log(`📋 Force mode payload validation:`, {
+      hasStoryText: !!payload.storyText,
+      hasPageText: !!payload.pageText,
+      hasCharacterName: !!payload.characterName,
+      hasUserInfo: !!payload.userInfo
+    });
+  }
+  
   // Generate structured avatar data using centralized method (single source of truth)
   const avatarSkinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
   const avatarIdentity = { 

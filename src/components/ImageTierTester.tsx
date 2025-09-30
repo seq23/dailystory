@@ -1064,6 +1064,7 @@ export const ImageTierTester = () => {
        // STEP 2: Use real frontend routing (generateStoryImage - the actual user entry point)
        cascadeHistory.push('🚀 Using SimpleImageService.generateStoryImage (real user flow)...');
        cascadeHistory.push(`⚙️ Smart Bypass: ${smartBypassEnabled ? 'Enabled' : 'Disabled (Testing Mode)'}`);
+       cascadeHistory.push('🎯 Attempting Tier 1 via Enhanced Character-First Flow (runware-generate-image)...');
        cascadeHistory.push(`⏰ ${new Date().toLocaleTimeString()}: Starting user image generation request`);
        const userFlowStartTime = Date.now();
       
@@ -1094,6 +1095,16 @@ export const ImageTierTester = () => {
           // Determine actual successful tier and path
           const actualTier = result.metadata?.pathUsed || result.tier || 'Unknown';
           const wasFailover = result.metadata?.tier1FailureReason ? ' (Failover)' : '';
+          
+          // Enhanced Character-First Flow detection
+          if (result.metadata?.templateStructure === 'COMPLETE_TIER_1') {
+            cascadeHistory.push('✅ Enhanced Character-First Flow succeeded - COMPLETE_TIER_1 template generated');
+            cascadeHistory.push(`🎭 Character Foundation: ${result.metadata?.hasCharacterSeed ? 'Established' : 'Missing'}`);
+            cascadeHistory.push(`🌍 Cultural Bundle: ${result.metadata?.hasCulturalBundle ? 'Applied' : 'Missing'}`);
+          } else if (result.metadata?.orchestratorFailed) {
+            cascadeHistory.push(`❌ Orchestrator failed: ${result.metadata?.orchestratorFailureReason || 'Unknown reason'}`);
+            cascadeHistory.push('🔄 Falling back to Direct Mode...');
+          }
           
           cascadeHistory.push(`✅ Success via: ${actualTier}`);
           cascadeHistory.push(`⏰ ${new Date().toLocaleTimeString()}: Real user flow completed successfully`);
@@ -1286,7 +1297,7 @@ export const ImageTierTester = () => {
       // Step 1: Function Selection
       steps[0].status = 'running';
       const functionMap: { [key: string]: string } = {
-        '1': 'ai-visual-scene-creator',  // PLAN B: Add Tier 1 mapping
+        '1': 'runware-generate-image',  // Test Enhanced Character-First Flow orchestrator
         '2.5A': 'runware-template-ab',
         '2.5B': 'runware-template-ab', 
         '2.5C': 'runware-template-cd',
@@ -1307,16 +1318,18 @@ export const ImageTierTester = () => {
       steps[1].status = 'running';
       const payload = tier === '1'
         ? {
-            // Tier 1 Direct Mode: ai-visual-scene-creator with directMode: true
+            // Tier 1 Enhanced Character-First Flow: runware-generate-image orchestrator
+            storyText: enhancedPrompt,  // FIXED: Add missing storyText field
             pageText: enhancedPrompt,
             userInfo: userInfo,
             sessionId: crypto.randomUUID(),
             storyId: crypto.randomUUID(),
             pageNumber: 1,
+            characterName: userInfo?.name || 'Alex',
             isGuestUser: true,
             difficultyLevel: mapDifficultyLevel(userInfo),
             protectionNegatives: [],
-            directMode: true, // Direct Mode for Tier 1
+            forceCompleteTier1: true, // Force Enhanced Character-First Flow
             test: true
           }
         : tier === '2.5A' || tier === '2.5B'

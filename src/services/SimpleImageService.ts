@@ -23,6 +23,8 @@ export interface ImageResult {
   model?: string;
   cost?: number;
   seed?: number | string;
+  orchestratorFailed?: boolean;
+  orchestratorFailureReason?: string;
   metadata?: any;
 }
 
@@ -541,7 +543,12 @@ export class SimpleImageService {
           usedTier: orchResult.usedTier,
           tierErrors: orchResult.tierErrors,
           requestId: orchResult.requestId,
-          metadata: orchResult
+          metadata: {
+            ...orchResult,
+            orchestratorAttempted: true,
+            orchestratorSuccess: true,
+            flowType: orchResult.templateStructure === 'COMPLETE_TIER_1' ? 'Enhanced Character-First Flow' : 'Template Flow'
+          }
         };
       } else {
         throw new Error(`Orchestrator returned no image: ${JSON.stringify(orchResult)}`);
@@ -549,6 +556,16 @@ export class SimpleImageService {
         
     } catch (error) {
       DebugLogger.error('image', 'Image generation orchestrator failed', error);
+      
+      // Enhanced error capture with detailed context
+      DebugLogger.error('image', 'Orchestrator failure details', {
+        errorType: this.categorizeOrchestratorError(error),
+        errorMessage: error.message,
+        statusCode: this.extractStatusCode(error),
+        sessionId: normalizedSessionId,
+        failureTimestamp: new Date().toISOString(),
+        isCharacterServiceFailure: error.message?.includes('CharacterConsistencyService')
+      });
       
       // Clear timeout if still active
       if (timeoutId) {
@@ -607,7 +624,14 @@ export class SimpleImageService {
             imageURL: directModeResult.data.imageURL,
             generatedAt: new Date().toISOString(),
             tier: 'Direct Mode',
-            metadata: { ...directModeResult.data, orchestratorFailed: true }
+            orchestratorFailed: true,
+            orchestratorFailureReason: this.categorizeOrchestratorError(error),
+            metadata: { 
+              ...directModeResult.data, 
+              fallbackFromOrchestrator: true,
+              originalOrchestrator: 'runware-generate-image',
+              fallbackFlow: 'Direct Mode'
+            }
           };
         } else {
           throw new Error(`Direct Mode failed: ${JSON.stringify(directModeResult)}`);
@@ -1431,6 +1455,43 @@ export class SimpleImageService {
     }
     
     return { preferDirectMode: false };
+  }
+  
+  /**
+   * Categorize orchestrator error for debugging
+   */
+  private static categorizeOrchestratorError(error: any): string {
+    const errorMsg = error?.message || error?.toString() || 'Unknown error';
+    
+    if (errorMsg.includes('503') || errorMsg.includes('Service temporarily unavailable')) {
+      return 'SERVICE_UNAVAILABLE';
+    }
+    if (errorMsg.includes('400') || errorMsg.includes('validation failed')) {
+      return 'VALIDATION_ERROR';
+    }
+    if (errorMsg.includes('timeout') || errorMsg.includes('exceeded')) {
+      return 'TIMEOUT';
+    }
+    if (errorMsg.includes('CharacterConsistencyService')) {
+      return 'CHARACTER_SERVICE_FAILURE';
+    }
+    if (errorMsg.includes('network') || errorMsg.includes('fetch')) {
+      return 'NETWORK_ERROR';
+    }
+    
+    return 'UNKNOWN_ERROR';
+  }
+  
+  /**
+   * Extract status code from error object
+   */
+  private static extractStatusCode(error: any): number | null {
+    if (error?.status) return error.status;
+    if (error?.response?.status) return error.response.status;
+    
+    const errorMsg = error?.message || error?.toString() || '';
+    const match = errorMsg.match(/\b([45]\d{2})\b/);
+    return match ? parseInt(match[1]) : null;
   }
 
   // Legacy method support
