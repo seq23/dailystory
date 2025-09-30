@@ -56,25 +56,30 @@ async function generateCompleteVisualSchema(storyText: string, userInfo: any, se
   // Build initial character appearance from frontend userInfo data
   const characterAppearanceParts = [];
 
-  // Extract available character data from frontend userInfo
-  if (userInfo?.hair && String(userInfo.hair).trim()) {
-    characterAppearanceParts.push(`Hair: ${String(userInfo.hair).trim()}`);
+  // PRIORITY: Use structured hair color from orchestrator if available
+  const hairColor = structuredAvatarData?.assignedHairColor || userInfo?.hair;
+  if (hairColor && String(hairColor).trim()) {
+    characterAppearanceParts.push(`Hair: ${String(hairColor).trim()}`);
   }
 
-  const skinTone = userInfo?.skinTone || userInfo?.avatar?.skinTone;
+  // Extract skin tone and ethnicity for proper character representation
+  const skinTone = structuredAvatarData?.resolvedSkinTone || userInfo?.skinTone || userInfo?.avatar?.skinTone;
   if (skinTone && String(skinTone).trim()) {
     characterAppearanceParts.push(`Skin: ${String(skinTone).trim()}`);
   }
 
+  // Add avatar type if available
   const avatarType = userInfo?.avatar?.type || userInfo?.avatarType;
   if (avatarType && String(avatarType).trim()) {
     characterAppearanceParts.push(`Type: ${String(avatarType).trim()}`);
   }
 
-  // Build character appearance line for OpenAI
+  // Build character appearance line for OpenAI with proper hair and ethnicity data
   const characterData = characterAppearanceParts.length > 0 
     ? characterAppearanceParts.join(', ')
     : 'Character appearance to be determined from story context';
+  
+  console.log(`🎨 Character data for OpenAI: ${characterData}`);
   const previousPrimaryScene = null; // Will be implemented with visual history tracking
   const nativeLanguage = userInfo?.native_language || userInfo?.nativeLanguage || 'en';
   const isNonEnglish = nativeLanguage && nativeLanguage !== 'en';
@@ -633,8 +638,8 @@ serve(async (req) => {
       // DEBUG: Full OpenAI request details for debugging
       aiDebugSchema,
       
-      // DEBUG: Runware debug data (Direct Mode only)
-      ...(imageURL && runwareDebugData && { runwareDebugData }),
+      // DEBUG: Runware debug data (Direct Mode only) - Scene-Only mode doesn't have this
+      ...(directMode && imageURL && runwareDebugData && { runwareDebugData }),
       
       // Image URL only in Direct Mode
       ...(imageURL && { imageURL }),

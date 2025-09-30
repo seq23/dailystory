@@ -605,7 +605,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
             enhancedPrompt: enhancedPrompt.enhancedPrompt,
             negativePrompt: enhancedPrompt.negativePrompt,
             primaryScene: enhancedPrompt.primaryScene,
-            templateStructure: 'COMPLETE_TIER_1'
+            templateStructure: 'COMPLETE_TIER_1',
+            cascadeHistory: ['✅ Tier 1 Complete Success']
           }
         }), {
           headers: generateEchoCorsHeaders(req),
@@ -717,10 +718,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
                 // Expose prompts at top level for easy frontend access
                 positivePrompt: directModeResponse.data?.runwareDebugData?.positivePrompt,
                 negativePrompt: directModeResponse.data?.runwareDebugData?.negativePrompt,
-                cascadeHistory: [
-                  `❌ Tier 1 Failed: ${errorMessage}`,
-                  '✅ Direct Mode Success'
-                ],
+                metadata: {
+                  cascadeHistory: [
+                    `❌ Tier 1 Failed: ${errorMessage}`,
+                    '✅ Direct Mode Success'
+                  ]
+                },
                 // NEW: Direct Mode debug data from ai-visual-scene-creator
                 directModeDebugData: {
                   aiDebugSchema: directModeResponse.data?.aiDebugSchema,
@@ -780,12 +783,14 @@ Deno.serve(async (req: Request): Promise<Response> => {
                 requestId: requestId,
                 timestamp: new Date().toISOString(),
                 tier1FailureReason: errorMessage,
-                cascadeHistory: [
-                  `❌ Tier 1 Failed: CharacterConsistencyService unavailable`,
-                  `⏭️ Direct Mode Skipped: CharacterService unavailable`,
-                  `⏭️ Tier 2.5A Skipped: CharacterConsistencyService unavailable`,
-                  '✅ Tier 2.5B Success (Nuclear Independence)'
-                ]
+                metadata: {
+                  cascadeHistory: [
+                    `❌ Tier 1 Failed: CharacterConsistencyService unavailable`,
+                    `⏭️ Direct Mode Skipped: CharacterService unavailable`,
+                    `⏭️ Tier 2.5A Skipped: CharacterConsistencyService unavailable`,
+                    '✅ Tier 2.5B Success (Nuclear Independence)'
+                  ]
+                }
               };
               
               tierLogger.success('TIER_2.5B', { result });
@@ -829,11 +834,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
               requestId: requestId,
               timestamp: new Date().toISOString(),
               tier1FailureReason: errorMessage,
-              cascadeHistory: [
-                `❌ Tier 1 Failed: ${errorMessage.includes('NO_PRIMARY_SCENE') ? 'NO_PRIMARY_SCENE (missing service key)' : errorMessage}`,
-                `❌ Direct Mode Failed: ${directErrorMessage}`,
-                '✅ Tier 2.5A Success'
-              ]
+              metadata: {
+                cascadeHistory: [
+                  `❌ Tier 1 Failed: ${errorMessage.includes('NO_PRIMARY_SCENE') ? 'NO_PRIMARY_SCENE (missing service key)' : errorMessage}`,
+                  `❌ Direct Mode Failed: ${directErrorMessage}`,
+                  '✅ Tier 2.5A Success'
+                ]
+              }
             };
             
             tierLogger.success('TIER_2.5A', { result });
@@ -871,7 +878,15 @@ Deno.serve(async (req: Request): Promise<Response> => {
                 tier: 'TIER_2.5B',
                 requestId: requestId,
                 timestamp: new Date().toISOString(),
-                cascadeFailures: [errorMessage, tier25aErrorMessage]
+                cascadeFailures: [errorMessage, tier25aErrorMessage],
+                metadata: {
+                  cascadeHistory: [
+                    `❌ Tier 1 Failed: ${errorMessage}`,
+                    `❌ Direct Mode Failed: ${directErrorMessage}`,
+                    `❌ Tier 2.5A Failed: ${tier25aErrorMessage}`,
+                    '✅ Tier 2.5B Success'
+                  ]
+                }
               };
               
               tierLogger.success('TIER_2.5B', { result });
@@ -917,7 +932,16 @@ Deno.serve(async (req: Request): Promise<Response> => {
                 tier: 'TIER_2.5C',
                 requestId: requestId,
                 timestamp: new Date().toISOString(),
-                cascadeFailures: [errorMessage, tier25aErrorMessage, tier25bErrorMessage, directErrorMessage]
+                cascadeFailures: [errorMessage, tier25aErrorMessage, tier25bErrorMessage, directErrorMessage],
+                metadata: {
+                  cascadeHistory: [
+                    `❌ Tier 1 Failed: ${errorMessage}`,
+                    `❌ Direct Mode Failed: ${directErrorMessage}`,
+                    `❌ Tier 2.5A Failed: ${tier25aErrorMessage}`,
+                    `❌ Tier 2.5B Failed: ${tier25bErrorMessage}`,
+                    '✅ Tier 2.5C Success (Nuclear Fallback)'
+                  ]
+                }
               };
               
               tierLogger.success('TIER_2.5C', { result });

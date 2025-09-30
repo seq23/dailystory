@@ -1103,12 +1103,13 @@ export const ImageTierTester = () => {
         if (result.success) {
           // Extract actual cascade history from backend metadata
           if (result.metadata?.cascadeHistory && Array.isArray(result.metadata.cascadeHistory)) {
+            cascadeHistory.push('🔄 Backend Cascade Tracking:');
             cascadeHistory.push(...result.metadata.cascadeHistory);
-          }
-          
-          // Add tier 1 failure reason if present
-          if (result.metadata?.tier1FailureReason) {
-            cascadeHistory.push(`❌ Tier 1 Failed: ${result.metadata.tier1FailureReason}`);
+          } else {
+            // Manual cascade history construction if not provided by backend
+            if (result.metadata?.tier1FailureReason) {
+              cascadeHistory.push(`❌ Tier 1 Failed: ${result.metadata.tier1FailureReason}`);
+            }
           }
           
           // Determine actual successful tier and path
@@ -2697,8 +2698,8 @@ export const ImageTierTester = () => {
                         </div>
                       )}
                       
-                      {/* COMPREHENSIVE DEBUG PLAN: Runware Debug Info Section */}
-                      {(result.details.positivePrompt || result.details.negativePrompt || result.details.promptSource || 
+                      {/* COMPREHENSIVE DEBUG PLAN: Runware Debug Info Section - Hide for Scene-Only mode */}
+                      {!result.details.sceneGenerationOnly && (result.details.positivePrompt || result.details.negativePrompt || result.details.promptSource || 
                         (result.tier === 'tier-1-forced-failure' && result.details.errorDetails?.attemptedPrompts)) && (
                         <div className="text-sm border-2 border-orange-300 rounded p-3 bg-orange-50 mt-3">
                           <div className="font-bold text-orange-700 mb-2">🎨 Runware Debug Info - Prompts Sent to Image API</div>
@@ -2802,6 +2803,20 @@ export const ImageTierTester = () => {
                {result.details.aiSchema?.pose && <div><strong>Pose:</strong> {result.details.aiSchema.pose}</div>}
                           </div>
                         </div>
+                      )}
+
+                      {/* AI Debug Schema Output - Show for Scene-Only mode */}
+                      {(result.details.aiDebugSchema || result.details.debug?.aiDebugSchema) && (
+                        <details className="text-sm border-2 border-purple-300 rounded p-3 bg-purple-50 mt-3">
+                          <summary className="cursor-pointer font-medium text-purple-700 hover:text-purple-800">
+                            🧪 AI Debug Schema - Full OpenAI Request/Response (Expandable)
+                          </summary>
+                          <div className="mt-2">
+                            <pre className="text-xs bg-white p-2 rounded border overflow-x-auto max-h-64 overflow-y-auto">
+                              {JSON.stringify(result.details.aiDebugSchema || result.details.debug?.aiDebugSchema, null, 2)}
+                            </pre>
+                          </div>
+                        </details>
                       )}
 
                       {/* Full Schema Output Expandable Section */}
