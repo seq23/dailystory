@@ -366,6 +366,15 @@ serve(async (req) => {
         // Service unavailable is non-fatal - continue with fallback
       }
       
+      // DEBUG: Log incoming userInfo to diagnose hair color mismatch
+      console.log(`🔍 [${requestId}] DIRECT MODE HAIR DEBUG:`, {
+        hasOrchestratorData: !!userInfo?.structuredAvatarData,
+        orchestratorHair: userInfo?.structuredAvatarData?.hairColor,
+        avatarSkinTone: userInfo?.avatar?.skinTone,
+        directSkinTone: userInfo?.skinTone,
+        avatarObject: userInfo?.avatar
+      });
+      
       // Provide minimal structuredAvatarData when character service unavailable
       const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
       const hairColorMap: Record<string, string> = {
@@ -383,6 +392,13 @@ serve(async (req) => {
         type: characterSeed.avatarType,
         name: characterSeed.characterName
       };
+      
+      console.log(`🎨 [${requestId}] CREATED structuredAvatarData:`, {
+        resolvedSkinTone: skinTone,
+        assignedHairColor: hairColor,
+        mapLookupResult: hairColorMap[skinTone],
+        fullData: structuredAvatarData
+      });
       
       // Prepare payload for runware-template-cd with character consistency data
       const templatePayload = {
