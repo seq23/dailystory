@@ -314,8 +314,54 @@ if (supabase) {
 - Cultural sensitivity preserved through built-in intelligence
 - Safety prompts automatically included in all generations
 
+## structuredAvatarData Independence
+
+Direct Mode now generates its own `structuredAvatarData` if not provided by the orchestrator, ensuring session-seeded hair variety across all invocation paths:
+
+### Generation Priority (3-tier fallback)
+1. **Preferred Source**: Orchestrator's 73-variation session-seeded hair data
+   - Passed via `userInfo.structuredAvatarData` from `runware-generate-image`
+   - Contains `resolvedSkinTone`, `assignedHairColor`, and `source`
+   
+2. **Fallback Generation**: `CharacterConsistencyService.getCulturalEnhancements()`
+   - Generates session-seeded 73-variation hair when orchestrator data is missing
+   - Uses `sessionId` as seed for consistency within a session
+   - Provides variety between different sessions
+   
+3. **Emergency Fallback**: Hardcoded 5-value hair map
+   - Only used if `CharacterConsistencyService` fails
+   - Maps: pale→platinum blonde, light→golden blonde, medium→chestnut brown, olive→dark brown, dark→black
+
+### Implementation Details
+**File**: `supabase/functions/ai-visual-scene-creator/index.ts` (Lines 387-421)
+
+```typescript
+// Check orchestrator data first
+if (userInfo?.structuredAvatarData) {
+  structuredAvatarData = userInfo.structuredAvatarData;
+} else {
+  // Generate via CharacterConsistencyService
+  const characterService = new CharacterConsistencyService();
+  const culturalEnhancements = await characterService.getCulturalEnhancements(
+    sessionId, characterName, characterContext, userInfo, sessionId
+  );
+  structuredAvatarData = {
+    resolvedSkinTone: culturalEnhancements.skinTone,
+    assignedHairColor: culturalEnhancements.hair,
+    source: 'character_service_generation'
+  };
+}
+```
+
+### Benefits
+- **Client-Side Direct Mode**: Works when invoked directly from frontend (no orchestrator)
+- **Server-Side Direct Mode**: Works when invoked from `runware-generate-image` fallback
+- **Session Consistency**: Uses `sessionId` as seed for deterministic hair selection within sessions
+- **Session Variety**: Different sessions get different hair variations (73 total options)
+- **Orchestrator Priority**: Still uses orchestrator data when available for optimal consistency
+
 ---
 
 **Implementation Status**: ✅ OPERATIONAL  
-**Last Updated**: September 23, 2025  
-**Next Review**: October 1, 2025
+**Last Updated**: September 30, 2025  
+**Next Review**: October 15, 2025

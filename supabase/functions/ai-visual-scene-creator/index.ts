@@ -3,6 +3,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // TypeScript type imports
 import type { UserInfo } from "../_shared/types/index.ts";
+import { CharacterConsistencyService } from '../_shared/CharacterConsistencyService.js';
 
 // ============= PERFECT AI VISUAL SCENE CREATOR WITH CHARACTER CONSISTENCY =============
 // Complete implementation with word-for-word OpenAI prompts and CharacterConsistencyService integration
@@ -389,35 +390,60 @@ serve(async (req) => {
       
       if (structuredAvatarData) {
         console.log(`✅ [${requestId}] Using orchestrator structuredAvatarData:`, {
-          hairColor: structuredAvatarData.hairColor,
-          skinTone: structuredAvatarData.skinTone,
+          hairColor: structuredAvatarData.assignedHairColor,
+          skinTone: structuredAvatarData.resolvedSkinTone,
           source: 'orchestrator'
         });
       } else {
-        // PRIORITY 2: Fallback to session-seeded hair selection (only if orchestrator data missing)
-        console.warn(`⚠️ [${requestId}] No orchestrator data - using fallback hair map`);
-        const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
-        const hairColorMap: Record<string, string> = {
-          'pale': 'red hair',
-          'light': 'blonde hair', 
-          'medium': 'brown hair',
-          'olive': 'dark black hair',
-          'dark': 'thick textured 4C hair'
-        };
-        const hairColor = hairColorMap[skinTone] || 'brown hair';
+        // PRIORITY 2: Generate structuredAvatarData using CharacterConsistencyService (73-variation session-seeded hair)
+        console.log(`🔄 [${requestId}] No orchestrator data - generating structuredAvatarData via CharacterConsistencyService`);
         
-        structuredAvatarData = {
-          skinTone,
-          hairColor,
-          type: characterSeed.avatarType,
-          name: characterSeed.characterName
-        };
-        
-        console.log(`🎨 [${requestId}] CREATED fallback structuredAvatarData:`, {
-          resolvedSkinTone: skinTone,
-          assignedHairColor: hairColor,
-          source: 'fallback_map'
-        });
+        try {
+          const characterService = new CharacterConsistencyService();
+          const culturalEnhancements = await characterService.getCulturalEnhancements(
+            sessionId,
+            userInfo?.name || 'Child',
+            {
+              name: userInfo?.name || 'Child',
+              age: userInfo?.age || 7,
+              skinTone: userInfo?.skinTone || userInfo?.avatarIdentity?.skinTone || 'medium',
+              avatarType: userInfo?.avatarIdentity?.type || 'girl'
+            },
+            userInfo,
+            sessionId // Use sessionId as seed for consistency
+          );
+          
+          structuredAvatarData = {
+            resolvedSkinTone: culturalEnhancements.skinTone || userInfo?.skinTone || 'medium',
+            assignedHairColor: culturalEnhancements.hair || 'brown hair',
+            source: 'character_service_generation'
+          };
+          
+          console.log(`✅ [${requestId}] Generated structuredAvatarData via CharacterConsistencyService:`, structuredAvatarData);
+        } catch (error) {
+          console.error(`❌ [${requestId}] CharacterConsistencyService generation failed:`, error);
+          
+          // PRIORITY 3: Emergency fallback - Use hardcoded map only if service fails
+          console.warn(`⚠️ [${requestId}] Falling back to hardcoded hair map`);
+          const FALLBACK_HAIR_MAP = {
+            pale: 'platinum blonde hair',
+            light: 'golden blonde hair',
+            medium: 'chestnut brown hair',
+            olive: 'dark brown hair',
+            dark: 'black hair'
+          };
+          
+          const normalizedSkinTone = (userInfo?.skinTone || 'medium').toLowerCase().trim();
+          const mappedHair = FALLBACK_HAIR_MAP[normalizedSkinTone] || FALLBACK_HAIR_MAP.medium;
+          
+          structuredAvatarData = {
+            resolvedSkinTone: normalizedSkinTone,
+            assignedHairColor: mappedHair,
+            source: 'fallback_map'
+          };
+          
+          console.log(`🎨 [${requestId}] CREATED fallback structuredAvatarData:`, structuredAvatarData);
+        }
       }
       
       // Prepare payload for runware-template-cd with character consistency data

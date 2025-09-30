@@ -23,8 +23,8 @@ This document serves as the **single source of truth** for all production errors
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📈 This Week's Activity:
-• Errors Resolved: 9 (ERROR-036 through ERROR-046)
-• System Improvements: 8 major enhancements
+• Errors Resolved: 10 (ERROR-036 through ERROR-049)
+• System Improvements: 9 major enhancements
 • Uptime: 99.9%
 • Response Time: < 2s average across all tiers
 ```
@@ -94,6 +94,7 @@ Quick lookup table for all tracked errors with searchable keywords.
 
 | Error ID | Keywords | Severity | Status | System | Quick Link |
 |----------|----------|----------|--------|--------|------------|
+| ERROR-049 | direct-mode, structuredAvatarData, client-side, session-seeded-hair, character-service-generation, 73-variation | HIGH | ✅ RESOLVED | Image Gen | [View](#error-049-direct-mode-missing-orchestrator-structuredavatardata) |
 | ERROR-048 | runware-websocket, import-path, tier-1, module-not-found, url-import, deno-edge | CRITICAL | ✅ RESOLVED | Image Gen | [View](#error-048-runwarewebsocketservice-import-path-failure-in-tier-1) |
 | ERROR-047 | debug-data, variable-shadowing, aiDebugSchema, runwareDebugData, orchestratorDebugData, ImageTierTester | HIGH | ✅ RESOLVED | Debug System | [View](#error-047-debug-data-exposure-blocked-by-variable-shadowing) |
 | ERROR-046 | character-service, import-map, detectAllCharacters, storeAllDetections, iteration, guard-rails | CRITICAL | ✅ RESOLVED | Character System | [View](#error-046-characterconsistencyservice-import-and-runtime-failures) |
@@ -418,6 +419,46 @@ Next Review: October 6, 2025
 - **Resolved:** 2025-09-30
 - **Prevention:** Use relative paths for dynamic imports, add type guards for all iteration operations, validate data structures before iteration
 
+### ✅ ERROR-049: Direct Mode Missing Orchestrator structuredAvatarData
+- **Status:** RESOLVED ✅
+- **Severity:** HIGH (Character consistency, hair variety)
+- **Discovered:** 2025-09-30
+- **Impact:** Direct Mode invoked from frontend always falling back to 5-value hardcoded hair map; no session-seeded 73-variation hair diversity
+- **Root Cause:** 
+  1. Client-side Direct Mode invocation path (`src/services/SimpleImageService.ts` → `ai-visual-scene-creator`) doesn't receive `structuredAvatarData`
+  2. Only server-side path (`runware-generate-image` → `ai-visual-scene-creator`) passes `structuredAvatarData`
+  3. Direct Mode had no mechanism to generate its own `structuredAvatarData` when missing
+  4. Always fell back to 5-value hardcoded map: pale→platinum blonde, light→golden blonde, etc.
+- **Business Impact:** Loss of 73-variation hair diversity in Direct Mode; repetitive character appearance across sessions
+- **3-Phase Fix Applied:**
+  - **Phase 1: Import CharacterConsistencyService** (Line 6)
+    - Added: `import { CharacterConsistencyService } from '../_shared/CharacterConsistencyService.js';`
+    - Enables Direct Mode to generate its own session-seeded hair
+  - **Phase 2: Generate structuredAvatarData When Missing** (Lines 387-450)
+    - **Priority 1**: Use orchestrator's `structuredAvatarData` if available (server-side path)
+    - **Priority 2**: Generate via `CharacterConsistencyService.getCulturalEnhancements()` when missing
+      - Uses `sessionId` as seed for 73-variation session-seeded hair
+      - Creates: `{ resolvedSkinTone, assignedHairColor, source: 'character_service_generation' }`
+    - **Priority 3**: Emergency fallback to hardcoded 5-value map only if service fails
+  - **Phase 3: Documentation Updates**
+    - Updated `docs/DIRECT_MODE_IMPLEMENTATION_GUIDE.md` with structuredAvatarData independence section
+    - Updated `docs/MASTER_ERRORS_TO_FIX.md` (ERROR-049 entry)
+- **Files Modified:**
+  - `supabase/functions/ai-visual-scene-creator/index.ts` (Lines 6, 387-450)
+  - `docs/DIRECT_MODE_IMPLEMENTATION_GUIDE.md` (New section: structuredAvatarData Independence)
+  - `docs/MASTER_ERRORS_TO_FIX.md` (ERROR-049 entry)
+- **Technical Details:**
+  - **3-Tier Fallback Architecture:**
+    1. Orchestrator data (preferred): 73-variation session-seeded from inlined Tier 1
+    2. CharacterService generation: Same 73-variation logic using `sessionId` seed
+    3. Hardcoded map (emergency): 5-value map as last resort
+  - **Session Consistency:** Both orchestrator and CharacterService use same `sessionId` seed for deterministic hair selection
+  - **Session Variety:** Different sessions get different hair variations (73 total options per skin tone)
+  - **Invocation Path Independence:** Works for both client-side and server-side Direct Mode calls
+- **Resolved:** 2025-09-30
+- **Prevention:** Services should be self-sufficient for critical data generation; always provide fallback generation mechanisms
+- **Testing:** Verified with Direct Mode E2E test showing successful generation with CharacterService fallback
+
 ### ✅ ERROR-044: Tier 2.5C Missing Character Description Details and Hair Mapping
 - **Status:** RESOLVED ✅
 - **Severity:** HIGH (Character consistency + quality)
@@ -522,8 +563,8 @@ Next Review: October 6, 2025
 
 ## System Status Summary
 
-**Total Issues Tracked:** 14  
-**Issues Resolved:** 14 ✅
+**Total Issues Tracked:** 15  
+**Issues Resolved:** 15 ✅
 **Critical Issues Remaining:** 0 ✅
 **System Status:** PRODUCTION READY - 4-TIER STORY GENERATION SYSTEM OPERATIONAL ✅
 
