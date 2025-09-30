@@ -737,24 +737,27 @@ export class CharacterConsistencyService {
       }
 
       // Store animals with classification
-      for (const animal of allDetections.animals || []) {
-        const animalType = Object.keys(animal)[0]; // silent_pets, speaking_animals, etc.
-        const animalData = animal[animalType];
-        
-        insertions.push({
-          session_id: sessionId,
-          character_name: 'animals',
-          detail_type: 'animal',
-          detail_key: `${animalData.name}_${animalType}`,
-          detail_value: `${animalData.name} (${animalType})`,
-          page_first_seen: pageNumber,
-          page_last_seen: pageNumber,
-          visual_elements: {
-            name: animalData.name,
-            species: animalData.species,
-            classification: animalType
+      // allDetections.animals is an object like { silent_pets: [...], speaking_animals: [...] }
+      const animalsObject = allDetections.animals || {};
+      for (const [animalType, animalArray] of Object.entries(animalsObject)) {
+        if (Array.isArray(animalArray)) {
+          for (const animalData of animalArray) {
+            insertions.push({
+              session_id: sessionId,
+              character_name: 'animals',
+              detail_type: 'animal',
+              detail_key: `${animalData.name}_${animalType}`,
+              detail_value: `${animalData.name} (${animalType})`,
+              page_first_seen: pageNumber,
+              page_last_seen: pageNumber,
+              visual_elements: {
+                name: animalData.name,
+                species: animalData.species,
+                classification: animalType
+              }
+            });
           }
-        });
+        }
       }
 
       // Batch insert all detections
@@ -813,7 +816,8 @@ export class CharacterConsistencyService {
    */
   async storeTemplateDetections(sessionId, pageNumber, results, characterName = 'main_character') {
     for (const [type, items] of Object.entries(results)) {
-      if (items.length > 0) {
+      // Guard rail: handle both arrays and objects
+      if (Array.isArray(items) && items.length > 0) {
         for (const item of items) {
           const detailKey = item.name || item.description || item.type || item.location || 'detected';
           const detailValue = typeof item === 'string' ? item : JSON.stringify(item);
@@ -826,6 +830,25 @@ export class CharacterConsistencyService {
             detailValue,
             pageNumber
           );
+        }
+      } else if (typeof items === 'object' && items !== null && !Array.isArray(items)) {
+        // Handle object structure (e.g., { silent_pets: [...], speaking_animals: [...] })
+        for (const [subType, subItems] of Object.entries(items)) {
+          if (Array.isArray(subItems) && subItems.length > 0) {
+            for (const item of subItems) {
+              const detailKey = item.name || item.description || item.type || item.location || 'detected';
+              const detailValue = typeof item === 'string' ? item : JSON.stringify(item);
+              
+              await this.saveVisualDetailToDatabase(
+                sessionId,
+                characterName,
+                `${type}_${subType}`,
+                detailKey,
+                detailValue,
+                pageNumber
+              );
+            }
+          }
         }
       }
     }
@@ -1176,7 +1199,7 @@ export class CharacterConsistencyService {
       const results = await this.detectAndGenerateAllCharacters(text, { 
         sessionId, 
         pageNumber, 
-        userInfo: context 
+        userInfo: userInfo 
       });
 
       // Transform results to maintain backward compatibility
@@ -1719,6 +1742,7 @@ export class CharacterConsistencyService {
    * Get relationship category for disambiguation
    */
   getRelationshipCategory(type) {
+    if (!type || typeof type !== 'string') return 'person';
     if (type.startsWith('family_')) return 'family member';
     if (type.startsWith('community_')) return 'friend';
     if (type.startsWith('authority_')) return 'authority figure';

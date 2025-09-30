@@ -23,8 +23,8 @@ This document serves as the **single source of truth** for all production errors
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📈 This Week's Activity:
-• Errors Resolved: 8 (ERROR-036 through ERROR-044)
-• System Improvements: 7 major enhancements
+• Errors Resolved: 9 (ERROR-036 through ERROR-046)
+• System Improvements: 8 major enhancements
 • Uptime: 99.9%
 • Response Time: < 2s average across all tiers
 ```
@@ -94,6 +94,7 @@ Quick lookup table for all tracked errors with searchable keywords.
 
 | Error ID | Keywords | Severity | Status | System | Quick Link |
 |----------|----------|----------|--------|--------|------------|
+| ERROR-046 | character-service, import-map, detectAllCharacters, storeAllDetections, iteration, guard-rails | CRITICAL | ✅ RESOLVED | Character System | [View](#error-046-characterconsistencyservice-import-and-runtime-failures) |
 | ERROR-044 | tier-2.5c, character-description, hair-mapping, direct-mode, structuredAvatarData | HIGH | ✅ RESOLVED | Image Gen | [View](#error-044-tier-25c-missing-character-description-details-and-hair-mapping) |
 | ERROR-043 | direct-mode, character-service, import-map, non-fatal, structuredAvatarData | CRITICAL | ✅ RESOLVED | Image Gen | [View](#error-043-direct-mode-character-service-import-map-failure) |
 | ERROR-042 | character, consistency, await, TypeError, detectAll, getCharacterSeed, orphaned, regex | CRITICAL | ✅ RESOLVED | Character System | [View](#error-042-characterconsistencyservice-runtime-failures) |
@@ -320,6 +321,35 @@ Next Review: October 6, 2025
   - Skin tone mapping (very-light→pale, beige→light, etc.)
 - **Resolved:** 2025-09-29
 - **Prevention:** Session-seeded selection + removed manual overrides + enhanced logging
+
+### ✅ ERROR-046: CharacterConsistencyService Import and Runtime Failures
+- **Status:** RESOLVED ✅
+- **Severity:** CRITICAL (System reliability + data integrity)
+- **Discovered:** 2025-09-30
+- **Impact:** 5 critical failures causing E2E simulation errors, DB operations failing, character detection breaking
+- **Root Cause:**
+  1. **Import Map Failure**: `runware-generate-image` using `#shared/` alias in dynamic import (line 142) - Deno doesn't support import maps in dynamic contexts
+  2. **detectAllCharacters Wrong userInfo**: Passing `context` object instead of `userInfo` (line 1179)
+  3. **storeAllDetections Animals Iteration**: Treating `animals` object as array (lines 739-758) - "is not iterable" error
+  4. **storeTemplateDetections Missing Guards**: No validation for array vs object structures (lines 814-832)
+  5. **getRelationshipCategory Unsafe**: No type checking before `startsWith()` call (lines 1721-1726)
+- **Business Impact:** Complete Tier 1 failures, DB storage failures, character detection breaking, data loss
+- **5-Phase Fix Applied:**
+  - **Phase 1**: Changed import from `#shared/CharacterConsistencyService.js` to `../_shared/CharacterConsistencyService.js` (relative path)
+  - **Phase 2**: Fixed `detectAllCharacters` to pass actual `userInfo: userInfo` instead of `userInfo: context`
+  - **Phase 3**: Fixed `storeAllDetections` animals iteration to handle object structure: `{ silent_pets: [...], speaking_animals: [...] }`
+  - **Phase 4**: Hardened `storeTemplateDetections` with guards for both arrays and nested objects
+  - **Phase 5**: Added type validation to `getRelationshipCategory`: `if (!type || typeof type !== 'string') return 'person';`
+- **Files Modified:**
+  - `supabase/functions/runware-generate-image/index.ts` (Line 142)
+  - `supabase/functions/_shared/CharacterConsistencyService.js` (Lines 1179, 739-758, 814-832, 1721-1726)
+- **Technical Details:**
+  - Import maps (`#shared/`) work in static imports but fail in dynamic `import()` contexts in Deno
+  - `allDetections.animals` is `{ silent_pets: [], speaking_animals: [] }` not a flat array
+  - Template detections can be arrays OR nested objects depending on source
+  - Relationship category validation prevents TypeError on undefined/null values
+- **Resolved:** 2025-09-30
+- **Prevention:** Use relative paths for dynamic imports, add type guards for all iteration operations, validate data structures before iteration
 
 ### ✅ ERROR-044: Tier 2.5C Missing Character Description Details and Hair Mapping
 - **Status:** RESOLVED ✅
