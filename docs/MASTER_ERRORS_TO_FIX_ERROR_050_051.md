@@ -237,8 +237,138 @@ These errors were added to MASTER_ERRORS_TO_FIX.md on 2025-09-30. This file cont
 
 ---
 
+## ✅ ERROR-052: CHARACTER APPEARANCE Undefined in AI Visual Scene Creator
+
+- **Status:** RESOLVED ✅
+- **Severity:** CRITICAL (Data quality, visual accuracy)
+- **Discovered:** 2025-09-30
+- **Impact:** OpenAI receiving literal string "undefined" instead of character descriptions, breaking visual consistency
+- **Root Cause:**
+  1. **JSON.stringify() on Undefined Object:** Line 36 used `JSON.stringify(structuredAvatarData)` when `structuredAvatarData = undefined`
+  2. **No Frontend Data Extraction:** Not utilizing available `userInfo` fields from frontend (hair, skinTone, avatar.type)
+  3. **Hardcoded Undefined Assignment:** Lines 27-37 explicitly set `structuredAvatarData = undefined` when no structured data available
+  4. **Missing Fallback Logic:** No default character description when structured data unavailable
+  5. **String Conversion Failure:** `JSON.stringify(undefined)` returns string "undefined" not empty string
+
+- **Business Impact:**
+  - OpenAI generating generic characters instead of user's avatar identity
+  - Character appearance inconsistency across story pages
+  - User customization (hair color, skin tone, avatar type) ignored in AI scenes
+  - Reduced visual personalization for users
+  - 3-tier character consistency system receiving invalid initial data
+
+- **Fix Applied (Lines 27-48):**
+
+  ### BEFORE (Lines 27-37):
+  ```typescript
+  let structuredAvatarData: any = {};
+  
+  // Use passed structured avatar data from runware-generate-image, or generate fallback
+  // Only use structuredAvatarData if it exists - no fallback generation
+  if (userInfo?.structuredAvatarData) {
+    structuredAvatarData = userInfo.structuredAvatarData;
+  } else {
+    structuredAvatarData = undefined;
+  }
+
+  // Prepare variables for word-for-word prompts with structured avatar data
+  const characterData = JSON.stringify(structuredAvatarData);
+  ```
+
+  ### AFTER (Lines 27-48):
+  ```typescript
+  // Build initial character appearance from frontend userInfo data
+  const characterAppearanceParts = [];
+
+  // Extract available character data from frontend userInfo
+  if (userInfo?.hair && String(userInfo.hair).trim()) {
+    characterAppearanceParts.push(`Hair: ${String(userInfo.hair).trim()}`);
+  }
+
+  const skinTone = userInfo?.skinTone || userInfo?.avatar?.skinTone;
+  if (skinTone && String(skinTone).trim()) {
+    characterAppearanceParts.push(`Skin: ${String(skinTone).trim()}`);
+  }
+
+  const avatarType = userInfo?.avatar?.type || userInfo?.avatarType;
+  if (avatarType && String(avatarType).trim()) {
+    characterAppearanceParts.push(`Type: ${String(avatarType).trim()}`);
+  }
+
+  // Build character appearance line for OpenAI
+  const characterData = characterAppearanceParts.length > 0 
+    ? characterAppearanceParts.join(', ')
+    : 'Character appearance to be determined from story context';
+  ```
+
+- **Files Modified:**
+  - `supabase/functions/ai-visual-scene-creator/index.ts` (Lines 27-48 complete replacement)
+
+- **Technical Details:**
+  - **Frontend Data Source:** `SimpleImageService` adds `hair` and `skinTone` fields to `userInfo` before calling AI scene creator
+  - **Avatar Fields:** `avatar.type` and `avatar.skinTone` available from user profile
+  - **Fallback Chain:** `userInfo.skinTone` → `userInfo.avatar.skinTone` → omit if both missing
+  - **String Safety:** All fields converted to strings and trimmed before inclusion
+  - **OpenAI Integration:** `characterData` variable used at line 101 in AI prompt
+
+- **Data Flow:**
+  ```
+  Frontend (SimpleImageService)
+    ↓ adds hair, skinTone to userInfo
+  AI Visual Scene Creator
+    ↓ extracts: hair, skinTone, avatar.type
+  characterData = "Hair: brown, Skin: medium, Type: child"
+    ↓ passed to OpenAI (line 101)
+  OpenAI Visual Schema
+    ↓ includes character appearance
+  3-Tier Character Consistency System
+    ↓ enhances with full avatar identity
+  Final Image Generation
+  ```
+
+- **Architecture Improvements:**
+  - ✅ Proper frontend data utilization
+  - ✅ Graceful degradation with meaningful default
+  - ✅ Type-safe string conversion
+  - ✅ Multiple fallback paths for each field
+  - ✅ Clear separation: initial description (AI creator) → enhancement (3-tier system)
+
+- **Before/After Examples:**
+
+  **BEFORE:**
+  ```
+  OpenAI receives: "CHARACTER APPEARANCE: undefined"
+  Result: Generic characters, no personalization
+  ```
+
+  **AFTER:**
+  ```
+  OpenAI receives: "CHARACTER APPEARANCE: Hair: curly brown, Skin: warm tan, Type: child"
+  Result: Personalized characters matching user avatar
+  ```
+
+- **Resolved:** 2025-09-30
+- **Prevention:**
+  1. Never use `JSON.stringify()` on potentially undefined objects
+  2. Always extract available frontend data before defaulting to fallback
+  3. Provide meaningful default strings instead of "undefined"
+  4. Verify OpenAI prompt inputs in console logs during development
+  5. Test with empty `userInfo` objects to ensure graceful degradation
+
+- **Related Issues:**
+  - ERROR-050 (Import pattern fix - prerequisite)
+  - ERROR-051 (Secondary character integration - related architecture)
+  - ERROR-049 (Direct Mode structuredAvatarData - similar data flow issue)
+
+- **Documentation:**
+  - `docs/CHARACTER_CONSISTENCY_STATUS.md` - Updated with ERROR-052 resolution
+  - `docs/CHARACTER_CONSISTENCY_ARCHITECTURE.md` - Character appearance building logic
+
+---
+
 **Cross-Reference:**
-- Both errors resolved in same session (2025-09-30)
-- ERROR-050 was prerequisite for ERROR-051 (import fix enabled feature integration)
-- Combined fix improves overall character consistency architecture
+- All three errors (050, 051, 052) resolved in same session (2025-09-30)
+- ERROR-050 was prerequisite for ERROR-051 and ERROR-052
+- ERROR-052 fixes data quality issue affecting entire character consistency pipeline
+- Combined fixes significantly improve character personalization and visual accuracy
 - See master tracking in: `docs/MASTER_ERRORS_TO_FIX.md`

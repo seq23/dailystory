@@ -1,12 +1,18 @@
-# CHARACTER CONSISTENCY ARCHITECTURE
+# CHARACTER CONSISTENCY ARCHITECTURE - Technical Reference
 
-## Single Source of Truth: CharacterConsistencyService ✅
+> **Note**: This document provides supplementary technical details. For complete status, integration guides, and resolved errors, see the canonical **[CHARACTER_CONSISTENCY_STATUS.md](./CHARACTER_CONSISTENCY_STATUS.md)**.
+
+---
+
+## Service Overview
 
 **Location**: `supabase/functions/_shared/CharacterConsistencyService.js`  
-**Pattern**: Singleton instance  
-**Integration**: All edge functions use this service
+**Pattern**: Singleton instance (pre-instantiated)  
+**Integration**: All image generation edge functions
 
-## Core Methods - VERIFIED PRESENT
+---
+
+## Method Reference (Quick Lookup)
 
 ### `getInstance()`
 Returns singleton instance of the service.
@@ -34,8 +40,8 @@ Returns singleton instance of the service.
 **Purpose**: Generates culturally appropriate character enhancements  
 **Parameters**: userInfo (object), sessionId (string), characterName (string)  
 **Returns**: `{ hair, features }` - Does NOT return skinTone  
-**Usage**: Direct Mode, AI visual scenes, templates  
-**Fix**: ERROR-049 resolution (import pattern standardized)
+**Usage**: Direct Mode (line 385-392), AI visual scenes, templates  
+**Fixes**: ERROR-049, ERROR-050 (import pattern standardized)
 
 ### `getCharacterSeed(sessionId, avatarIdentity, storyContext, sessionType)` ✅
 **STATUS**: REQUIRES PROPER ARGUMENTS  
@@ -132,8 +138,23 @@ Similar pattern with lazy loading and singleton instance usage.
 - Memory cleanup on session end
 - Lazy loading reduces initial bundle size
 
+## Documentation Cross-Reference
+
+For complete details on:
+- **Integration Status**: See [CHARACTER_CONSISTENCY_STATUS.md](./CHARACTER_CONSISTENCY_STATUS.md)
+- **Resolved Errors**: See [MASTER_ERRORS_TO_FIX_ERROR_050_051.md](./MASTER_ERRORS_TO_FIX_ERROR_050_051.md)
+- **Secondary Characters**: See CHARACTER_CONSISTENCY_STATUS.md § Secondary Character Integration
+- **Testing Procedures**: See CHARACTER_CONSISTENCY_STATUS.md § Testing & Validation
+
+---
+
 ## Future Enhancements
 - Cross-session character persistence for premium users
 - Enhanced relationship detection algorithms
 - Visual similarity scoring for character consistency
 - Integration with story library character storage
+
+---
+
+**Last Updated**: 2025-09-30  
+**Status**: All critical errors resolved (ERROR-050, ERROR-051, ERROR-052)
