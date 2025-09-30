@@ -14,6 +14,8 @@ import { ImageFallbackService } from '@/services/ImageFallbackService';
 import { Sparkles, Zap, Network, Search, Camera, RefreshCw, RotateCcw, Clock, AlertTriangle, CheckCircle, Settings } from 'lucide-react';
 import { SimpleImageService } from '@/services/SimpleImageService';
 import { TimerToggleItem } from '@/components/ui/timer-toggle-item';
+import { NetflixSessionManager } from '@/services/NetflixSessionManager';
+import { generateSessionIdWithPrefix } from '@/utils/sessionId';
 
 interface TestResult {
   tier: string;
@@ -1055,8 +1057,13 @@ export const ImageTierTester = () => {
       });
 
       const globalStartTime = Date.now();
-      const sessionId = crypto.randomUUID();
       const userInfo = buildUserInfo();
+      
+      // REAL USER SESSION MANAGEMENT: Match actual user experience
+      const sessionId = userTier === 'guest' 
+        ? NetflixSessionManager.getOrCreateSession(userInfo.name)
+        : generateSessionIdWithPrefix('premium');
+      
       // Use raw story text directly - no protection enhancement
       const rawStoryText = testStoryText;
       
@@ -1065,6 +1072,9 @@ export const ImageTierTester = () => {
       let resultBadge = '';
       let fallbackPath = '';
       let healthStatus = null;
+
+      // Log session management
+      cascadeHistory.push(`🔑 Session: ${sessionId.substring(0, 30)}... (${userTier} tier - matches real user experience)`);
 
       // STEP 1: Health Check
       cascadeHistory.push('🏥 Checking System Health...');
