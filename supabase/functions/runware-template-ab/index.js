@@ -1667,13 +1667,33 @@ async function handleRequest(req) {
             });
             detectedSecondaryCharacters = detections?.secondaryCharacters || [];
             
-            // Build secondary character descriptions with seeds
+            // PHASE 3: Build secondary character descriptions with FULL visual details
             const safeSecondaryCharacters = (detectedSecondaryCharacters || []).filter(character => character && character.name);
             for (const character of safeSecondaryCharacters) {
-              const seed = await characterConsistencyService.getSecondaryCharacterSeed(
-                sessionId, character.name, character.type || 'secondary_character'
-              );
-              secondaryDescriptions.push(`${character.name}: ${character.description || 'character'} (${character.type || 'character'})`);
+              try {
+                // Generate FULL character data with visual description using generateCharacterForConsistency
+                const fullCharacterData = await characterConsistencyService.generateCharacterForConsistency(
+                  character.name,
+                  character.type || 'secondary_character',
+                  {
+                    sessionId,
+                    userInfo,
+                    storyContext: storyText || '',
+                    relationship: character.relationship
+                  }
+                );
+                
+                // Use the DETAILED characterDescription instead of basic description
+                const visualDescription = fullCharacterData?.characterDescription || 
+                                          character.description || 
+                                          `${character.name} is a character`;
+                
+                secondaryDescriptions.push(`${character.name}: ${visualDescription}`);
+                console.log(`✅ Generated detailed visual description for ${character.name}`);
+              } catch (charError) {
+                console.warn(`⚠️ Failed to generate visual description for ${character.name}, using fallback`, charError);
+                secondaryDescriptions.push(`${character.name}: ${character.description || 'character'} (${character.type || 'character'})`);
+              }
             }
             
             // Get environmental consistency

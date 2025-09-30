@@ -2120,51 +2120,96 @@ export class CharacterConsistencyService {
   }
 
   /**
-   * Generate family-specific description
+   * Generate family-specific description with enhanced visual details
+   * PHASE 2: Adds age, specific skin tone descriptions, and hair details
    */
   generateFamilyDescription(relationship, characterName, seed, baseTraits) {
     const seededRandom = this.createSeededRandom(seed);
     
-    const familyRoleDescriptions = {
-      family_mother: `${characterName} is a loving mother with gentle eyes and a warm smile`,
-      family_father: `${characterName} is a caring father with strong, kind features`,
-      family_sister: `${characterName} is a playful sister with bright, curious eyes`,
-      family_brother: `${characterName} is an energetic brother with a mischievous grin`,
-      family_grandmother: `${characterName} is a wise grandmother with soft, caring features`,
-      family_grandfather: `${characterName} is a gentle grandfather with kind, twinkling eyes`,
-      family_aunt: `${characterName} is a fun-loving aunt with an animated expression`,
-      family_uncle: `${characterName} is a friendly uncle with a hearty laugh`
+    // Age ranges for family members
+    const ageRanges = {
+      family_mother: '30s-40s',
+      family_father: '30s-40s',
+      family_sister: 'child (5-12 years old)',
+      family_brother: 'child (5-12 years old)',
+      family_grandmother: '60s-70s',
+      family_grandfather: '60s-70s',
+      family_aunt: '25-45 years old',
+      family_uncle: '25-45 years old'
     };
     
-    const baseDescription = familyRoleDescriptions[relationship] || `${characterName} is a loving family member`;
+    const age = ageRanges[relationship] || 'adult';
     
-    // Add family resemblance note
-    const resemblanceNote = baseTraits.skinTone !== 'medium' 
-      ? `, sharing the family's ${baseTraits.skinTone} skin tone`
-      : '';
+    // Enhanced skin tone descriptions
+    const skinToneDescriptions = {
+      pale: 'fair porcelain skin',
+      light: 'light peachy skin',
+      medium: 'warm medium skin',
+      olive: 'olive tan skin',
+      dark: 'rich dark brown skin',
+      darker: 'deep ebony skin'
+    };
     
-    return baseDescription + resemblanceNote;
+    const skinDescription = skinToneDescriptions[baseTraits.skinTone] || `${baseTraits.skinTone} skin tone`;
+    
+    // Hair detail from selectedCulturalHair if available
+    const hairDetail = baseTraits.selectedCulturalHair 
+      ? `, ${baseTraits.selectedCulturalHair}`
+      : `, similar hair to the family`;
+    
+    const familyRoleDescriptions = {
+      family_mother: `${characterName} is a loving mother (${age}) with gentle eyes, a warm smile, ${skinDescription}${hairDetail}`,
+      family_father: `${characterName} is a caring father (${age}) with strong kind features, ${skinDescription}${hairDetail}`,
+      family_sister: `${characterName} is a playful sister (${age}) with bright curious eyes, ${skinDescription}${hairDetail}`,
+      family_brother: `${characterName} is an energetic brother (${age}) with a mischievous grin, ${skinDescription}${hairDetail}`,
+      family_grandmother: `${characterName} is a wise grandmother (${age}) with soft caring features, ${skinDescription}${hairDetail}`,
+      family_grandfather: `${characterName} is a gentle grandfather (${age}) with kind twinkling eyes, ${skinDescription}${hairDetail}`,
+      family_aunt: `${characterName} is a fun-loving aunt (${age}) with an animated expression, ${skinDescription}${hairDetail}`,
+      family_uncle: `${characterName} is a friendly uncle (${age}) with a hearty laugh, ${skinDescription}${hairDetail}`
+    };
+    
+    return familyRoleDescriptions[relationship] || `${characterName} is a loving family member (${age}) with ${skinDescription}${hairDetail}`;
   }
 
   /**
-   * Generate community-specific description  
+   * Generate community-specific description with enhanced visual details
+   * PHASE 2: Adds age, skin tone descriptions, and appearance details
    */
   generateCommunityDescription(role, characterName, seed, context) {
     const seededRandom = this.createSeededRandom(seed);
     
-    const communityRoleDescriptions = {
-      authority_teacher: `${characterName} is a dedicated teacher with professional attire and encouraging smile`,
-      authority_coach: `${characterName} is an enthusiastic coach with athletic wear and motivating presence`,
-      authority_doctor: `${characterName} is a caring doctor with medical attire and reassuring demeanor`,
-      authority_nurse: `${characterName} is a compassionate nurse with scrubs and gentle manner`,
-      authority_librarian: `${characterName} is a knowledgeable librarian with neat appearance and helpful attitude`,
-      community_friend: `${characterName} is a cheerful friend with casual clothes and bright smile`,
-      community_classmate: `${characterName} is a friendly classmate with school appropriate attire`,
-      community_neighbor: `${characterName} is a kind neighbor with welcoming appearance`,
-      community_teammate: `${characterName} is a supportive teammate with team colors and encouraging spirit`
+    // Age ranges for community roles
+    const ageRanges = {
+      authority_teacher: '30s-50s',
+      authority_coach: '25-45 years old',
+      authority_doctor: '35-55 years old',
+      authority_nurse: '25-50 years old',
+      authority_librarian: '30s-60s',
+      community_friend: 'child (5-12 years old)',
+      community_classmate: 'child (5-12 years old)',
+      community_neighbor: '30s-60s',
+      community_teammate: 'child (5-12 years old)'
     };
     
-    return communityRoleDescriptions[role] || `${characterName} is a helpful community member`;
+    const age = ageRanges[role] || 'adult';
+    
+    // Get diverse skin tones for community characters
+    const skinTones = ['light peachy skin', 'warm medium skin', 'olive tan skin', 'rich brown skin'];
+    const randomSkinTone = skinTones[Math.floor(seededRandom() * skinTones.length)];
+    
+    const communityRoleDescriptions = {
+      authority_teacher: `${characterName} is a dedicated teacher (${age}) with professional attire, encouraging smile, ${randomSkinTone}, and neat professional hairstyle`,
+      authority_coach: `${characterName} is an enthusiastic coach (${age}) with athletic wear, motivating presence, ${randomSkinTone}, and sporty hairstyle`,
+      authority_doctor: `${characterName} is a caring doctor (${age}) with medical attire, reassuring demeanor, ${randomSkinTone}, and professional appearance`,
+      authority_nurse: `${characterName} is a compassionate nurse (${age}) with scrubs, gentle manner, ${randomSkinTone}, and tidy hairstyle`,
+      authority_librarian: `${characterName} is a knowledgeable librarian (${age}) with neat appearance, helpful attitude, ${randomSkinTone}, and scholarly look`,
+      community_friend: `${characterName} is a cheerful friend (${age}) with casual clothes, bright smile, ${randomSkinTone}, and playful hairstyle`,
+      community_classmate: `${characterName} is a friendly classmate (${age}) with school appropriate attire, ${randomSkinTone}, and age-appropriate hairstyle`,
+      community_neighbor: `${characterName} is a kind neighbor (${age}) with welcoming appearance, ${randomSkinTone}, and casual friendly look`,
+      community_teammate: `${characterName} is a supportive teammate (${age}) with team colors, encouraging spirit, ${randomSkinTone}, and athletic hairstyle`
+    };
+    
+    return communityRoleDescriptions[role] || `${characterName} is a helpful community member (${age}) with ${randomSkinTone}`;
   }
 
   /**
@@ -2183,6 +2228,55 @@ export class CharacterConsistencyService {
     return roleTraits[role] || { formality: 'casual', friendliness: 'medium' };
   }
   
+  /**
+   * PHASE 5: Get all secondary characters for a session from cache
+   * Returns array of cached secondary character data with visual descriptions
+   */
+  async getSecondaryCharactersForSession(sessionId) {
+    try {
+      const supabase = await this.getSupabaseClient();
+      if (!supabase) {
+        console.warn('⚠️ Supabase client not available for getSecondaryCharactersForSession');
+        return [];
+      }
+      
+      const { data, error } = await supabase
+        .from('character_consistency_cache')
+        .select('*')
+        .eq('session_id', sessionId)
+        .like('character_key', '%_secondary_%');
+      
+      if (error) {
+        console.error('❌ Error retrieving secondary characters from cache:', error);
+        return [];
+      }
+      
+      if (!data || data.length === 0) {
+        console.log(`ℹ️ No cached secondary characters found for session ${sessionId}`);
+        return [];
+      }
+      
+      // Parse character_data and extract useful information
+      const secondaryCharacters = data.map(record => {
+        const characterData = record.character_data || {};
+        return {
+          name: characterData.characterName || 'Unknown',
+          type: characterData.type || 'secondary_character',
+          description: characterData.characterDescription || characterData.description || '',
+          visualTraits: characterData.visualTraits || {},
+          seed: characterData.seed,
+          cached: true
+        };
+      });
+      
+      console.log(`✅ Retrieved ${secondaryCharacters.length} secondary characters from cache`);
+      return secondaryCharacters;
+    } catch (error) {
+      console.error('❌ Failed to retrieve secondary characters:', error);
+      return [];
+    }
+  }
+
   /**
    * Clear session data
    */

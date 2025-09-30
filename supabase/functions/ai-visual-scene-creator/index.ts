@@ -175,13 +175,42 @@ Generate a comprehensive scene with complete visual elements including backgroun
       culturalContext: culturalContext
     };
 
-    // Enhance with structured avatar data
+    // PHASE 4: Retrieve cached secondary characters and enhance visual schema
+    let cachedSecondaryCharacters: any[] = [];
+    
+    try {
+      const characterService = new CharacterConsistencyService();
+      cachedSecondaryCharacters = await characterService.getSecondaryCharactersForSession(sessionId);
+      console.log(`✅ Retrieved ${cachedSecondaryCharacters.length} cached secondary characters for session ${sessionId}`);
+    } catch (error) {
+      console.warn(`⚠️ Failed to retrieve cached secondary characters:`, error);
+    }
+    
+    // Merge OpenAI-detected and cached secondary characters
+    const mergedSecondaryCharacters = {
+      humans: [
+        ...(visualSchema.secondaryCharacters?.humans || []),
+        ...cachedSecondaryCharacters
+          .filter(char => char.type !== 'animal' && char.type !== 'pet')
+          .map(char => char.name)
+      ],
+      pets: [
+        ...(visualSchema.secondaryCharacters?.pets || []),
+        ...cachedSecondaryCharacters
+          .filter(char => char.type === 'animal' || char.type === 'pet')
+          .map(char => char.name)
+      ]
+    };
+
+    // Enhance with structured avatar data and cached secondary characters
     const enhancedSchema = {
       ...visualSchema,
       // Add structured avatar data
       characterAppearance: structuredAvatarData,
-      // Keep original secondary characters and objects from OpenAI
-      secondaryCharacters: visualSchema.secondaryCharacters || [],
+      // Merge secondary characters from OpenAI and cache
+      secondaryCharacters: mergedSecondaryCharacters,
+      // Add detailed secondary character data for consistency
+      secondaryCharacterDetails: cachedSecondaryCharacters,
       objects: visualSchema.objects || []
     };
 
@@ -342,12 +371,78 @@ serve(async (req) => {
     // Generate character seed for consistency
     const characterSeed = await generateCharacterSeed(sessionId, userInfo);
 
-    // Create cultural bundle
-    const culturalBundle = {
-      hair: userInfo?.avatar?.hairColor || undefined,
-      features: userInfo?.nativeLanguage !== 'en' ? `${userInfo.nativeLanguage} cultural features` : 'diverse features',
-      profile: characterSeed.culturalProfile
-    };
+    // PHASE 1: Create cultural bundle with proper fallback logic
+    let culturalBundle: any;
+    
+    if (!directMode && payload.culturalBundle) {
+      // Use culturalBundle from orchestrator (Tier 1)
+      culturalBundle = payload.culturalBundle;
+      console.log(`✅ [${requestId}] Using culturalBundle from orchestrator`);
+    } else if (directMode) {
+      // Generate culturalBundle with 3-tier fallback for Direct Mode
+      console.log(`🔄 [${requestId}] Direct Mode: Generating culturalBundle with 3-tier fallback`);
+      
+      try {
+        // TIER 1: CharacterConsistencyService (session-seeded 73-variation hair)
+        const characterService = new CharacterConsistencyService();
+        const culturalEnhancements = await characterService.getCulturalEnhancements(
+          userInfo,
+          sessionId,
+          userInfo?.name || 'Child'
+        );
+        
+        culturalBundle = {
+          hair: culturalEnhancements.hair || 'natural hair',
+          features: culturalEnhancements.features || 'diverse features',
+          profile: characterSeed.culturalProfile,
+          source: 'CharacterConsistencyService'
+        };
+        console.log(`✅ [${requestId}] Tier 1: CharacterConsistencyService culturalBundle generated`);
+      } catch (tier1Error) {
+        console.warn(`⚠️ [${requestId}] Tier 1 failed, falling back to Tier 2 (StaticDataCache)`, tier1Error);
+        
+        try {
+          // TIER 2: StaticDataCache fallback
+          const { StaticDataCache } = await import('#shared/StaticDataCache.js');
+          const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
+          const isDarkSkin = skinTone === 'dark' || skinTone === 'darker';
+          
+          const hairBundle = isDarkSkin 
+            ? StaticDataCache.getCulturalBundle('african', sessionId)
+            : StaticDataCache.getHairBySkinTone(skinTone, sessionId);
+          
+          culturalBundle = {
+            hair: hairBundle?.hair || 'natural hair',
+            features: isDarkSkin ? 'authentic African American features' : 'diverse features',
+            profile: characterSeed.culturalProfile,
+            source: 'StaticDataCache'
+          };
+          console.log(`✅ [${requestId}] Tier 2: StaticDataCache culturalBundle generated`);
+        } catch (tier2Error) {
+          console.warn(`⚠️ [${requestId}] Tier 2 failed, using Tier 3 (emergency hardcoded)`, tier2Error);
+          
+          // TIER 3: Emergency hardcoded strings
+          const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
+          const isDarkSkin = skinTone === 'dark' || skinTone === 'darker';
+          
+          culturalBundle = {
+            hair: isDarkSkin ? 'photorealistic detailed textured 4C African American hairstyle' : userInfo?.avatar?.hairColor || 'brown hair',
+            features: isDarkSkin ? 'authentic African American features' : 'diverse features',
+            profile: characterSeed.culturalProfile,
+            source: 'emergency_hardcoded'
+          };
+          console.log(`✅ [${requestId}] Tier 3: Emergency hardcoded culturalBundle applied`);
+        }
+      }
+    } else {
+      // Fallback for Scene-Only mode without orchestrator bundle
+      culturalBundle = {
+        hair: userInfo?.avatar?.hairColor || 'natural hair',
+        features: userInfo?.nativeLanguage !== 'en' ? `${userInfo.nativeLanguage} cultural features` : 'diverse features',
+        profile: characterSeed.culturalProfile,
+        source: 'minimal_fallback'
+      };
+    }
 
     // Get colored objects string
     const coloredObjects = visualSchema.coloredObjects || '';
