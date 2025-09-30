@@ -94,6 +94,7 @@ Quick lookup table for all tracked errors with searchable keywords.
 
 | Error ID | Keywords | Severity | Status | System | Quick Link |
 |----------|----------|----------|--------|--------|------------|
+| ERROR-047 | debug-data, variable-shadowing, aiDebugSchema, runwareDebugData, orchestratorDebugData, ImageTierTester | HIGH | ✅ RESOLVED | Debug System | [View](#error-047-debug-data-exposure-blocked-by-variable-shadowing) |
 | ERROR-046 | character-service, import-map, detectAllCharacters, storeAllDetections, iteration, guard-rails | CRITICAL | ✅ RESOLVED | Character System | [View](#error-046-characterconsistencyservice-import-and-runtime-failures) |
 | ERROR-044 | tier-2.5c, character-description, hair-mapping, direct-mode, structuredAvatarData | HIGH | ✅ RESOLVED | Image Gen | [View](#error-044-tier-25c-missing-character-description-details-and-hair-mapping) |
 | ERROR-043 | direct-mode, character-service, import-map, non-fatal, structuredAvatarData | CRITICAL | ✅ RESOLVED | Image Gen | [View](#error-043-direct-mode-character-service-import-map-failure) |
@@ -321,6 +322,33 @@ Next Review: October 6, 2025
   - Skin tone mapping (very-light→pale, beige→light, etc.)
 - **Resolved:** 2025-09-29
 - **Prevention:** Session-seeded selection + removed manual overrides + enhanced logging
+
+### ✅ ERROR-047: Debug Data Exposure Blocked by Variable Shadowing
+- **Status:** RESOLVED ✅
+- **Severity:** HIGH (Developer experience + monitoring)
+- **Discovered:** 2025-09-30
+- **Impact:** Complete debug information not reaching ImageTierTester UI; Template 2.5C details invisible
+- **Root Cause:** Variable shadowing in `ai-visual-scene-creator/index.ts` - duplicate `let runwareDebugData = {}` declaration at line 445 shadowed outer scope declaration at line 360
+- **Business Impact:** Developers unable to verify complete image generation flow; Template 2.5C debugging compromised
+- **Technical Details:**
+  - **Outer Scope (Line 360):** `let runwareDebugData: any = {};` - intended to collect all Template 2.5C data
+  - **Inner Scope (Line 445):** `let runwareDebugData: any = {};` - created new empty variable, shadowing outer scope
+  - **Effect:** Template 2.5C response data never populated outer scope variable, lost before final response
+  - **Debug Data Lost:** Template structure, image URLs, prompts, tier routing decisions
+- **Fix Applied (3 Phases):**
+  - **Phase 1 - Backend `ai-visual-scene-creator`:** Removed duplicate declaration at line 445, added comment referencing outer scope
+  - **Phase 2 - Backend `runware-generate-image`:** Exposed complete `orchestratorDebugData` including `aiDebugSchema`, `runwareDebugData`, `primaryScene`, `openaiInteraction`, and `culturalContext`
+  - **Phase 3 - Frontend `ImageTierTester`:** Enhanced UI to display all debug data with proper structure (Primary Scene, OpenAI Debug, Cultural Context, AI Schema)
+- **Files Modified:**
+  - `supabase/functions/ai-visual-scene-creator/index.ts` (Line 445 - removed shadowing)
+  - `supabase/functions/runware-generate-image/index.js` (Lines 1075-1082 - exposed orchestratorDebugData)
+  - `src/components/ImageTierTester.tsx` (Lines 2829-2941 - enhanced debug UI)
+- **Resolved:** 2025-09-30
+- **Prevention:** 
+  - Created `DEBUG_DATA_EXPOSURE_CHECKLIST.md` with anti-regression protocols
+  - Code review requirement for debug data return paths
+  - Variable shadowing detection in critical debug functions
+  - Comprehensive testing protocol in `STORY_GENERATION_TEST_PLAN.md`
 
 ### ✅ ERROR-046: CharacterConsistencyService Import and Runtime Failures
 - **Status:** RESOLVED ✅

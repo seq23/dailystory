@@ -264,6 +264,9 @@ Template 3: "Hello there ${userName}, our story box needs a snack..."
 - **Escalation:** Falls to Tier 2.5A (regular users) or Direct Mode (Force Tier 1)
 - **Direct Mode:** Nuclear independent operation when orchestrator fails
 
+**Debug Visibility (September 2025):**
+All ImageTierTester operations now expose complete debug information including `aiDebugSchema`, `runwareDebugData`, `orchestratorDebugData`, `primaryScene`, OpenAI interactions, and cultural context. This enables comprehensive monitoring and troubleshooting of the complete image generation pipeline. See [DEBUG_DATA_EXPOSURE_CHECKLIST.md](./DEBUG_DATA_EXPOSURE_CHECKLIST.md) for anti-regression protocols and [IMAGE_GENERATION_DEBUGGING_GUIDE.md](./IMAGE_GENERATION_DEBUGGING_GUIDE.md) for complete debug data structures.
+
 **Character Consistency Service Integration:**
 - ✅ **Status**: All runtime failures resolved (ERROR-042, Sep 29 2025)
 - **Service**: CharacterConsistencyService singleton at `_shared/CharacterConsistencyService.js`

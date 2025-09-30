@@ -72,6 +72,7 @@ All functions use `index.ts` as their entry point. JavaScript-only functions hav
 3. **Deployment**: Functions auto-deploy when code is committed
 4. **Entry Files**: JavaScript-only functions use TypeScript shim files that import the JavaScript implementation
 5. **CI Resilience**: Generic deploy step uses `continue-on-error: true` to ensure explicit per-function deploys always run even if bundling fails
+6. **Debug Data Exposure**: Critical functions (`ai-visual-scene-creator`, `runware-generate-image`) must maintain complete debug data exposure. See [DEBUG_DATA_EXPOSURE_CHECKLIST.md](../docs/DEBUG_DATA_EXPOSURE_CHECKLIST.md) for anti-regression requirements when modifying these functions.
 
 ## CRITICAL: Edge Function Boot Analysis
 

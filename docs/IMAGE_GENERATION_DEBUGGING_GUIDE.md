@@ -442,6 +442,105 @@ Monitor external service status:
 - Update fallback thresholds based on data
 - Maintain debug logging clarity
 
+## Debug Data Exposure
+
+### Complete Debug Information Available
+
+**As of September 2025**, all ImageTierTester buttons expose complete debug information:
+
+#### Force Tier 1 (ai-scene-creator)
+**Available Debug Data:**
+- `aiDebugSchema`: Template type, character consistency level, cultural intelligence
+- `runwareDebugData`: Template structure (2.5C, etc.), image URLs, prompts
+- `orchestratorDebugData`: Complete orchestration details
+- `primaryScene`: Exact scene text sent to generation
+- `openaiInteraction`: OpenAI API request/response details
+- `culturalContext`: Cultural intelligence data
+
+**Debug Data Structure:**
+```typescript
+{
+  success: true,
+  imageURL: "https://...",
+  tier: "TIER_1",
+  orchestratorDebugData: {
+    aiDebugSchema: {
+      enhancedBy: "PhaseIntegrationOrchestrator",
+      enhancedPrompt: "Full prompt sent to Runware",
+      promptCharCount: 523,
+      template: "COMPLETE_TIER_1",
+      characterConsistencyLevel: "FULL",
+      culturalIntelligence: "ENHANCED"
+    },
+    runwareDebugData: {
+      templateStructure: "2.5C",
+      imageURL: "https://...",
+      prompt: "Template prompt details"
+    },
+    primaryScene: "The actual scene text",
+    openaiInteraction: { /* OpenAI API details */ },
+    culturalContext: { /* Cultural data */ }
+  }
+}
+```
+
+#### Force Tier 1 Orchestrator (Full Flow)
+**Additional Debug Data:**
+- Full orchestration pipeline details
+- Enhancement stages and transformations
+- Character consistency cache hits/misses
+- Tier routing decisions
+
+#### Force Tier 1 Direct Mode
+**Specific Debug Data:**
+- `runwareDebugData.mode: 'direct'`
+- `runwareDebugData.characterDescription`: Full avatar identity
+- `runwareDebugData.hairMapping`: Hair variation details
+- Template 2.5C structure and configuration
+
+### Manual Verification Steps
+
+**To verify debug data is flowing correctly:**
+
+1. Navigate to `/prompt-testing?debug=1`
+2. Click "Force Tier 1 (ai-scene-creator)"
+3. Check response includes:
+   - ✅ `orchestratorDebugData` object
+   - ✅ `aiDebugSchema` with template type
+   - ✅ `runwareDebugData` with template structure
+   - ✅ `primaryScene` text
+4. Verify UI displays:
+   - ✅ Primary Scene (first)
+   - ✅ OpenAI Interaction Details
+   - ✅ Cultural Context
+   - ✅ AI Debug Schema
+
+**If debug data is missing:**
+- Check for variable shadowing in `ai-visual-scene-creator/index.ts`
+- Verify `orchestratorDebugData` extraction in `runware-generate-image/index.js`
+- Confirm UI rendering in `ImageTierTester.tsx`
+- See [DEBUG_DATA_EXPOSURE_CHECKLIST.md](./DEBUG_DATA_EXPOSURE_CHECKLIST.md) for full anti-regression protocol
+
+### Common Debug Data Issues
+
+#### Variable Shadowing (ERROR-047)
+**Symptom:** Template 2.5C details not visible in responses
+**Cause:** Duplicate `let runwareDebugData = {}` declarations
+**Fix:** Remove inner scope declarations, use outer scope variable
+**Prevention:** Code review checklist in [DEBUG_DATA_EXPOSURE_CHECKLIST.md](./DEBUG_DATA_EXPOSURE_CHECKLIST.md)
+
+#### Missing Orchestrator Data
+**Symptom:** `orchestratorDebugData` is null/undefined
+**Cause:** Tier 1 response not properly extracted
+**Fix:** Explicit extraction: `const { aiDebugSchema, runwareDebugData } = tier1Response`
+**Prevention:** Backend integration tests
+
+#### UI Display Errors
+**Symptom:** Debug sections render blank or show errors
+**Cause:** Missing optional chaining for undefined fields
+**Fix:** Use `orchestratorDebugData?.aiDebugSchema?.template`
+**Prevention:** Frontend null/undefined handling
+
 ## Recent Updates
 
 ### v2.4.0 - Force Tier 1 & Direct Mode Implementation (September 2025)
