@@ -63,6 +63,10 @@ export class SimpleImageService {
   // Service constants
   private static readonly ESTIMATED_COST_PER_IMAGE_USD = 0.002;
   private static readonly isIndexedDBAvailable = typeof window !== 'undefined' && 'indexedDB' in window;
+  
+  // Orchestrator failure metrics
+  private static orchestratorFailureCount = 0;
+  private static orchestratorSuccessCount = 0;
 
   // Database management for caching
   private static async openDB(): Promise<IDBDatabase> {
@@ -178,10 +182,14 @@ export class SimpleImageService {
     });
 
     // PHASE 1: Health Check and Tier Selection
+    const orchestratorServiceHealth = await this.checkOrchestratorServiceHealth();
     const healthStatus = await HealthCheckService.checkSystemHealth();
     const tierStrategy = HealthCheckService.selectOptimalTier(healthStatus);
     
-    DebugLogger.log('image', 'Health-based tier selection', {
+    DebugLogger.log('image', 'Health validation comparison', {
+      orchestratorSpecific: orchestratorServiceHealth,
+      generalHealth: healthStatus.overallHealth,
+      correlation: orchestratorServiceHealth === 'healthy' && healthStatus.overallHealth === 'healthy' ? 'MATCH' : 'MISMATCH',
       health: healthStatus,
       selectedTier: tierStrategy.tier,
       reason: tierStrategy.reason
@@ -550,6 +558,32 @@ export class SimpleImageService {
             flowType: orchResult.templateStructure === 'COMPLETE_TIER_1' ? 'Enhanced Character-First Flow' : 'Template Flow'
           }
         };
+        
+        // Track success metrics
+        SimpleImageService.orchestratorSuccessCount++;
+        DebugLogger.log('image', 'Orchestrator success - metrics updated', {
+          successes: SimpleImageService.orchestratorSuccessCount,
+          failures: SimpleImageService.orchestratorFailureCount,
+          successRate: (SimpleImageService.orchestratorSuccessCount / 
+            (SimpleImageService.orchestratorSuccessCount + SimpleImageService.orchestratorFailureCount) * 100).toFixed(2) + '%'
+        });
+        
+        return {
+          success: true,
+          url: imageURL,
+          imageURL: imageURL,
+          generatedAt: new Date().toISOString(),
+          tier: orchResult.usedTier,
+          usedTier: orchResult.usedTier,
+          tierErrors: orchResult.tierErrors,
+          requestId: orchResult.requestId,
+          metadata: {
+            ...orchResult,
+            orchestratorAttempted: true,
+            orchestratorSuccess: true,
+            flowType: orchResult.templateStructure === 'COMPLETE_TIER_1' ? 'Enhanced Character-First Flow' : 'Template Flow'
+          }
+        };
       } else {
         throw new Error(`Orchestrator returned no image: ${JSON.stringify(orchResult)}`);
       }
@@ -557,14 +591,23 @@ export class SimpleImageService {
     } catch (error) {
       DebugLogger.error('image', 'Image generation orchestrator failed', error);
       
-      // Enhanced error capture with detailed context
+      // Track failure metrics
+      SimpleImageService.orchestratorFailureCount++;
+      
+      // Enhanced error capture with detailed context and metrics
       DebugLogger.error('image', 'Orchestrator failure details', {
         errorType: this.categorizeOrchestratorError(error),
         errorMessage: error.message,
         statusCode: this.extractStatusCode(error),
         sessionId: normalizedSessionId,
         failureTimestamp: new Date().toISOString(),
-        isCharacterServiceFailure: error.message?.includes('CharacterConsistencyService')
+        isCharacterServiceFailure: error.message?.includes('CharacterConsistencyService'),
+        metrics: {
+          failures: SimpleImageService.orchestratorFailureCount,
+          successes: SimpleImageService.orchestratorSuccessCount,
+          failureRate: (SimpleImageService.orchestratorFailureCount / 
+            (SimpleImageService.orchestratorFailureCount + SimpleImageService.orchestratorSuccessCount) * 100).toFixed(2) + '%'
+        }
       });
       
       // Clear timeout if still active
@@ -1425,6 +1468,28 @@ export class SimpleImageService {
     }
     
     return { active: false };
+  }
+  
+  /**
+   * Orchestrator-specific health check - quick ping to runware-generate-image
+   */
+  private static async checkOrchestratorServiceHealth(): Promise<'healthy' | 'degraded' | 'down'> {
+    try {
+      const response = await supabase.functions.invoke('runware-generate-image', {
+        body: { healthCheck: true }
+      });
+      
+      if (response.error) {
+        DebugLogger.warn('image', 'Orchestrator health check failed', { error: response.error });
+        return 'down';
+      }
+      
+      DebugLogger.log('image', 'Orchestrator health check passed');
+      return 'healthy';
+    } catch (error) {
+      DebugLogger.error('image', 'Orchestrator health check exception', { error });
+      return 'down';
+    }
   }
   
   /**
