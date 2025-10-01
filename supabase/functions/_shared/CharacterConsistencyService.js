@@ -35,6 +35,10 @@ function safeErrorMessage(error) {
   return 'Unknown error occurred';
 }
 
+// Import regex escape utility from existing shared service
+import { CrossPageConsistencyIntelligence } from './CrossPageConsistencyIntelligence.js';
+const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 // Memoized service imports with fallbacks
 const serviceImportCache = new Map();
 async function memoizedServiceImport(path) {
@@ -420,8 +424,8 @@ export class CharacterConsistencyService {
       console.log(`✅ Tier25Vocabulary loaded: ${this.vocabulary.objects.length} objects, ${this.vocabulary.colors.length} colors`);
       return this.vocabulary;
     } catch (error) {
-      console.warn('⚠️ Tier25Vocabulary import failed, using emergency vocabulary fallback:', error);
-      this.vocabulary = this.getEmergencyVocabularyFallback();
+      console.warn('⚠️ Tier25Vocabulary import failed, using ESSENTIAL_VOCABULARY fallback:', error);
+      this.vocabulary = CharacterConsistencyService.ESSENTIAL_VOCABULARY;
       return this.vocabulary;
     }
   }
@@ -442,26 +446,6 @@ export class CharacterConsistencyService {
     }
   }
 
-  /**
-   * Emergency vocabulary fallback with hardcoded terms
-   * Ensures detection never fails completely
-   */
-  getEmergencyVocabularyFallback() {
-    return {
-      ...CharacterConsistencyService.ESSENTIAL_VOCABULARY,
-      // Ensure all critical categories exist
-      colors: CharacterConsistencyService.ESSENTIAL_VOCABULARY.colors || [],
-      objects: CharacterConsistencyService.ESSENTIAL_VOCABULARY.objects || [],
-      animals: CharacterConsistencyService.ESSENTIAL_VOCABULARY.animals || [],
-      toys: CharacterConsistencyService.ESSENTIAL_VOCABULARY.toys || [],
-      nature: CharacterConsistencyService.ESSENTIAL_VOCABULARY.nature || [],
-      food: CharacterConsistencyService.ESSENTIAL_VOCABULARY.food || [],
-      settings: CharacterConsistencyService.ESSENTIAL_VOCABULARY.settings || [],
-      relationships: CharacterConsistencyService.ESSENTIAL_VOCABULARY.relationships || [],
-      clothing: CharacterConsistencyService.ESSENTIAL_VOCABULARY.clothing || [],
-      actions: CharacterConsistencyService.ESSENTIAL_VOCABULARY.actions || []
-    };
-  }
 
   /**
    * Extract relationships from tier25 structure
@@ -545,8 +529,8 @@ export class CharacterConsistencyService {
     for (const color of vocab.colors) {
       for (const object of vocab.objects) {
         // Escape regex metacharacters to prevent SyntaxError
-        const safeColor = CharacterConsistencyService.escapeRegexChars(color);
-        const safeObject = CharacterConsistencyService.escapeRegexChars(object);
+        const safeColor = escapeRegExp(color);
+        const safeObject = escapeRegExp(object);
         const pattern = new RegExp(`\\b${safeColor}\\s+${safeObject}\\b`, 'gi');
         const matches = text.match(pattern);
         
@@ -1267,49 +1251,14 @@ export class CharacterConsistencyService {
       const hairOptions = CharacterConsistencyService.HAIR_BY_SKIN_TONE_INLINE[normalizedTone] || 
                           CharacterConsistencyService.HAIR_BY_SKIN_TONE_INLINE.medium;
       
-      // Get appropriate skin feature array (48 total variations across all tones)
-      const featureOptions = this.getFullSkinFeatureArray(normalizedTone);
+      // Use existing getSkinFeatures() method (already handles 48 total variations)
+      const features = CharacterConsistencyService.getSkinFeatures(normalizedTone, characterSeed);
       
       return {
         hair: CharacterConsistencyService.seededPick(hairOptions, characterSeed),
-        features: CharacterConsistencyService.seededPick(featureOptions, characterSeed)
+        features
       };
     }
-  }
-
-  /**
-   * Get full skin feature array for a given skin tone
-   * Returns complete arrays with 12 variations per tone (48 total)
-   */
-  getFullSkinFeatureArray(skinTone) {
-    const normalizedTone = (skinTone || 'medium').toLowerCase();
-    
-    switch (normalizedTone) {
-      case 'dark':
-      case 'darker':
-        // Use African American features for dark skin tones
-        return CharacterConsistencyService.AFRICAN_AMERICAN_FACIAL_FEATURES_INLINE;
-      case 'pale':
-        return CharacterConsistencyService.PALE_SKIN_TONES_INLINE;
-      case 'light':
-      case 'lighter':
-      case 'fair':
-        return CharacterConsistencyService.LIGHT_SKIN_TONES_INLINE;
-      case 'olive':
-        return CharacterConsistencyService.OLIVE_SKIN_TONES_INLINE;
-      case 'medium':
-      default:
-        return CharacterConsistencyService.MEDIUM_SKIN_TONES_INLINE;
-    }
-  }
-
-  /**
-   * Escape regex metacharacters to prevent SyntaxError
-   * Static utility method for safe regex pattern building
-   */
-  static escapeRegexChars(text) {
-    if (typeof text !== 'string') return String(text || '');
-    return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
   // REMOVED: updateCulturalSelections() method
