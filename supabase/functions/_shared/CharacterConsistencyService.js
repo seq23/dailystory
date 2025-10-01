@@ -420,6 +420,32 @@ export class CharacterConsistencyService {
     console.log(`🧹 Session cleared: ${sessionId}`);
   }
 
+  /**
+   * Clear all server-side state (for clear-character-cache API)
+   * Returns summary of cleared data for API response
+   */
+  clearServerState() {
+    const sessionCount = this.sessionManifests.size;
+    const cacheSize = this.storyCache.memoryCache.size;
+    const visualCacheSize = this.visualDetailCache.size;
+
+    // Clear all in-memory state
+    this.sessionManifests.clear();
+    this.storyCache.memoryCache.clear();
+    this.storyCache.dirtyKeys.clear();
+    this.visualDetailCache.clear();
+
+    const summary = {
+      sessionsCleared: sessionCount,
+      cacheEntriesCleared: cacheSize,
+      visualCacheEntriesCleared: visualCacheSize,
+      clearedAt: new Date().toISOString()
+    };
+
+    console.log(`🗑️ Server state cleared:`, summary);
+    return summary;
+  }
+
   // ============= TIER25-POWERED DETECTION (PHASE 2) =============
 
   /**
@@ -1077,6 +1103,7 @@ export async function safeImportCharacterConsistency() {
         getCulturalEnhancements: async () => ({ hair: '', features: '' }),
         analyzeVisualDetails: async () => ({ originalText: '', resolvedText: '', manifest: [] }),
         clearSession: () => {},
+        clearServerState: () => ({ sessionsCleared: 0, cacheEntriesCleared: 0, visualCacheEntriesCleared: 0 }),
         getInstance: () => this
       },
       success: false,
