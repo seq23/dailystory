@@ -332,18 +332,53 @@ export class CharacterConsistencyService {
   
   // Essential vocabulary inlined for 99.99% reliability (core detection never fails)
   static ESSENTIAL_VOCABULARY = {
-    colors: ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown', 'black', 'white', 
-             'gray', 'silver', 'gold', 'beige', 'turquoise', 'magenta', 'crimson', 'navy'],
-    objects: ['ball', 'toy', 'book', 'balloon', 'bike', 'tree', 'flower', 'car', 'house', 'star', 
-              'moon', 'sun', 'cloud', 'rainbow', 'butterfly', 'bird', 'fish', 'cat', 'dog'],
+    actions: ['walks', 'sees', 'goes', 'eats', 'plays', 'sits', 'rides', 'helps', 'makes', 'gets', 'puts', 'looks', 'comes', 'flies', 'runs', 'gives', 'takes', 'feels', 'needs', 'loves'],
+    objects: ['water', 'food', 'snow', 'flowers', 'stars', 'trees', 'sand', 'rain', 'sun', 'cake', 'gift', 'pet', 'car', 'bus', 'train', 'boat', 'book', 'music', 'art', 'bed', 'toys', 'clothes', 'shoes', 'hands', 'teeth'],
+    places: ['bed', 'park', 'school', 'home', 'house', 'room', 'store', 'library', 'restaurant', 'beach', 'forest', 'car', 'bus', 'train', 'airplane'],
+    people: ['friend', 'family', 'mom', 'dad', 'doctor', 'dentist', 'teacher', 'pet'],
+    descriptors: ['good', 'pretty', 'fast', 'warm', 'clean', 'happy', 'big', 'tall', 'old', 'new', 'nice', 'fun', 'soft', 'hard', 'loud'],
+    body: ['hands', 'teeth', 'mouth', 'feet', 'eyes', 'hair', 'face', 'body'],
+    colors: ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown', 'black', 'white', 'gray', 'silver', 'gold'],
     animals: ['dog', 'cat', 'rabbit', 'bird', 'fish', 'bear', 'lion', 'elephant', 'tiger', 'monkey'],
     toys: ['ball', 'doll', 'toy car', 'balloon', 'teddy bear', 'puzzle', 'blocks'],
     nature: ['tree', 'flower', 'grass', 'leaf', 'rock', 'mountain', 'river', 'ocean'],
     food: ['apple', 'banana', 'cake', 'cookie', 'pizza', 'sandwich', 'ice cream'],
     settings: ['park', 'home', 'school', 'forest', 'beach', 'garden', 'playground', 'bedroom'],
-    relationships: ['mom', 'dad', 'mother', 'father', 'sister', 'brother', 'friend', 'grandma', 'grandpa'],
-    clothing: ['shirt', 'pants', 'dress', 'shoes', 'hat', 'coat', 'socks'],
-    actions: ['play', 'run', 'jump', 'laugh', 'smile', 'dance', 'sing', 'read', 'eat', 'sleep']
+    relationships: ['friend', 'family', 'mom', 'dad'],
+    clothing: ['shirt', 'pants', 'dress', 'shoes', 'hat', 'coat', 'jacket']
+  };
+
+  // Lean cultural fallback (ELIMINATE STATICDATACACHE SINGLE-POINT-OF-FAILURE)
+  static LEAN_CULTURAL_FALLBACK = {
+    // Use actual hair color mapping system (subset of HAIR_BY_SKIN_TONE - 3 selections each)
+    hair: {
+      'pale': ['strawberry blonde hair', 'golden red hair', 'auburn curls'],
+      'light': ['platinum blonde hair', 'golden blonde hair', 'honey blonde hair'],  
+      'medium': ['chestnut brown hair', 'chocolate brown hair', 'coffee brown hair'],
+      'olive': ['jet black hair', 'raven black hair', 'midnight black hair'],
+      'dark': ['beautiful dark hair', 'rich black hair', 'lustrous dark hair']
+    },
+    
+    // African American subsets (MINIMAL selections from protected arrays)
+    africanAmericanHair: {
+      girls: [
+        'wearing natural hair in a cute protective style with colorful hair accessories',
+        'wearing beautiful braids with neat parting and decorative beads', 
+        'wearing a stylish twist-out with defined curl pattern'
+      ],
+      boys: [
+        'wearing a curly top fade with perfectly defined coils on top',
+        'wearing twist sponge curls with tight coil definition', 
+        'wearing a high top fade with voluminous textured crown'
+      ]
+    },
+    
+    // Subset of AFRICAN_AMERICAN_FACIAL_FEATURES (3 selections from 36 total)
+    africanAmericanFeatures: [
+      'light brown skin tone with warm brown eyes and a bright infectious smile',
+      'caramel skin tone with deep chocolate eyes and a confident cheerful expression', 
+      'medium brown skin tone with warm brown eyes and a bright infectious smile'
+    ]
   };
 
   /**
@@ -987,21 +1022,61 @@ export class CharacterConsistencyService {
       characterData.selectedCulturalHair = culturalBundle.hair;
       characterData.selectedCulturalFeatures = culturalBundle.features;
       
+      // Persist to database
+      const cacheKey = `${sessionId}_${characterName}`;
+      await this.saveCharacterToDatabase(sessionId, cacheKey, characterData);
+      
       console.log(`🎨 Generated cultural enhancements for ${characterName} (seed: ${characterSeed}):`, culturalBundle);
       return culturalBundle;
     } catch (error) {
-      console.warn('⚠️ StaticDataCache import failed, using generic enhancements:', error);
-      // Phase 4: Bulletproof fallback - generic culturally-neutral enhancements
-      const fallbackEnhancements = {
-        hair: 'styled hair',
-        features: 'friendly features'
-      };
+      console.warn('⚠️ StaticDataCache import failed, using LEAN_CULTURAL_FALLBACK:', error);
+      
+      // Use hardcoded LEAN_CULTURAL_FALLBACK
+      const skinTone = userInfo?.skinTone || 'medium';
+      const language = userInfo?.language || 'en';
+      const gender = userInfo?.avatarType?.includes('girl') ? 'girls' : 'boys';
+      
+      // Check if user qualifies for African American cultural enhancements
+      const qualifiesForCulturalEnhancements = 
+        (skinTone === 'dark' || skinTone === 'darker') && 
+        ['en', 'en-US', 'fr', 'es', 'pt', 'zh'].includes(language);
+      
+      let fallbackEnhancements;
+      
+      if (qualifiesForCulturalEnhancements) {
+        // Use African American cultural arrays
+        const hairOptions = CharacterConsistencyService.LEAN_CULTURAL_FALLBACK.africanAmericanHair[gender];
+        const characterSeed = characterData.seed || this.generateStableSeed(`${sessionId}_${characterName}`, characterName);
+        const hairIndex = characterSeed % hairOptions.length;
+        const featureIndex = characterSeed % CharacterConsistencyService.LEAN_CULTURAL_FALLBACK.africanAmericanFeatures.length;
+        
+        fallbackEnhancements = {
+          hair: hairOptions[hairIndex],
+          features: CharacterConsistencyService.LEAN_CULTURAL_FALLBACK.africanAmericanFeatures[featureIndex]
+        };
+      } else {
+        // Use hair color mapping for other skin tones
+        const hairOptions = CharacterConsistencyService.LEAN_CULTURAL_FALLBACK.hair[skinTone] || 
+                            CharacterConsistencyService.LEAN_CULTURAL_FALLBACK.hair['medium'];
+        const characterSeed = characterData.seed || this.generateStableSeed(`${sessionId}_${characterName}`, characterName);
+        const hairIndex = characterSeed % hairOptions.length;
+        
+        fallbackEnhancements = {
+          hair: hairOptions[hairIndex],
+          features: 'friendly features with bright eyes'
+        };
+      }
+      
       characterData.selectedCulturalHair = fallbackEnhancements.hair;
       characterData.selectedCulturalFeatures = fallbackEnhancements.features;
+      
+      // Persist to database
+      const cacheKey = `${sessionId}_${characterName}`;
+      await this.saveCharacterToDatabase(sessionId, cacheKey, characterData);
+      
+      console.log(`🎨 Using LEAN_CULTURAL_FALLBACK for ${characterName}:`, fallbackEnhancements);
       return fallbackEnhancements;
     }
-    
-    // Removed unreachable lines (post-return) to prevent dead code
   }
 
   // REMOVED: updateCulturalSelections() method

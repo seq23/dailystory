@@ -266,6 +266,7 @@ export class CharacterConsistencyService {
 
   /**
    * Update character data with cultural selections for persistence
+   * Cultural data is stored in character_data jsonb (redundant columns removed)
    */
   async updateCulturalSelections(sessionId: SessionId, characterKey: string, selectedCulturalHair: string | null, selectedCulturalFeatures: string | null): Promise<boolean> {
     console.log(`🎨 Updating cultural selections for character ${characterKey} in session ${sessionId}`);
@@ -276,11 +277,29 @@ export class CharacterConsistencyService {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') as string
     );
 
+    // Load existing character_data
+    const { data: existingData, error: loadError } = await supabase
+      .from('character_consistency_cache')
+      .select('character_data')
+      .eq('session_id', sessionId)
+      .eq('character_key', characterKey)
+      .single();
+
+    if (loadError) {
+      console.error('❌ Failed to load character data for cultural update:', loadError);
+      throw new Error(`CharacterConsistencyService.updateCulturalSelections load failed: ${safeErrorMessage(loadError)}`);
+    }
+
+    // Embed cultural selections into character_data
+    const characterData = existingData?.character_data || {};
+    characterData.selectedCulturalHair = selectedCulturalHair;
+    characterData.selectedCulturalFeatures = selectedCulturalFeatures;
+
+    // Update character_data only (redundant columns removed)
     const { error } = await supabase
       .from('character_consistency_cache')
       .update({
-        selected_cultural_hair: selectedCulturalHair,
-        selected_cultural_features: selectedCulturalFeatures,
+        character_data: characterData,
         updated_at: new Date().toISOString()
       })
       .eq('session_id', sessionId)
