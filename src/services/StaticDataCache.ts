@@ -1,3 +1,19 @@
+// ============================================================================
+// 📖 FOR STORY GENERATION ONLY - Story Text Narratives
+// ============================================================================
+// This file provides hair styling descriptors for text-based story narratives.
+// Contains 65 hair variations with specific styling terms (ponytail, braids, etc.)
+// that are suitable for describing characters in written story content.
+//
+// DO NOT USE FOR IMAGE GENERATION - Image prompts use different descriptors
+// See: supabase/functions/_shared/StaticDataCache.js for image generation hair
+//
+// 3-WAY ARCHITECTURE:
+// - Frontend .ts (THIS FILE): Story text narratives (65 variations)
+// - Backend .ts (Failsafe): Dual-mode failsafe for both story + image (65 each)
+// - Backend .js: Image generation prompts only (65 variations)
+// ============================================================================
+
 // Static Data Caching Service
 // Caches frequently accessed configuration data to improve performance
 
@@ -72,40 +88,44 @@ class StaticCache {
 const staticCache = StaticCache.getInstance();
 
 
-// Hair descriptors by skin tone (comprehensive 1:1 backend parity - 73 total variations)
+// Hair descriptors by skin tone (65 total variations - 1:1 parity with backend .ts failsafe)
+// COPIED FROM: supabase/functions/generate-adaptive-story/StaticDataCache.ts
 export const HAIR_BY_SKIN_TONE = {
   'pale': [
-    // 14 red/auburn variations (exact backend copy)
-    'strawberry blonde hair', 'golden red hair', 'auburn curls', 'copper hair',
-    'reddish brown hair', 'ginger hair', 'red-gold hair', 'russet hair',
-    'mahogany red hair', 'burgundy hair', 'crimson hair', 'rose gold hair',
-    'amber red hair', 'cinnamon red hair'
+    // 14 red/auburn variations with styling terms
+    'long red hair', 'short red hair', 'red hair in pigtails', 'red hair in ponytail',
+    'shoulder-length red hair', 'long auburn hair', 'short auburn hair', 'auburn hair in braids',
+    'shoulder-length auburn hair', 'long strawberry blonde hair', 'short strawberry blonde hair',
+    'strawberry blonde hair in pigtails', 'curly red hair', 'wavy auburn hair'
   ],
   'light': [
-    // 15 blonde variations (exact backend copy)  
-    'platinum blonde hair', 'golden blonde hair', 'honey blonde hair', 'ash blonde hair',
-    'sandy blonde hair', 'wheat blonde hair', 'butter blonde hair', 'cream blonde hair',
-    'champagne blonde hair', 'vanilla blonde hair', 'pearl blonde hair', 'silver blonde hair',
-    'moonlight blonde hair', 'sunshine blonde hair', 'caramel blonde hair'
+    // 15 blonde variations with styling terms
+    'long blonde hair', 'short blonde hair', 'blonde hair in pigtails', 'blonde hair in ponytail',
+    'shoulder-length blonde hair', 'long platinum blonde hair', 'short platinum blonde hair',
+    'long golden blonde hair', 'short golden blonde hair', 'golden blonde hair in braids',
+    'long dirty blonde hair', 'short dirty blonde hair', 'curly blonde hair', 'wavy blonde hair',
+    'blonde hair in twin braids'
   ],
   'medium': [
-    // 15 brown variations (exact backend copy)
-    'chestnut brown hair', 'chocolate brown hair', 'coffee brown hair', 'walnut brown hair',
-    'hazelnut brown hair', 'mahogany brown hair', 'amber brown hair', 'bronze brown hair',
-    'toffee brown hair', 'mocha brown hair', 'caramel brown hair', 'russet brown hair',
-    'cedar brown hair', 'oak brown hair', 'maple brown hair'
+    // 15 brown variations with styling terms
+    'long brown hair', 'short brown hair', 'brown hair in ponytail', 'brown hair in pigtails',
+    'shoulder-length brown hair', 'long chestnut hair', 'short chestnut hair',
+    'chestnut hair in braids', 'long dark brown hair', 'short dark brown hair',
+    'dark brown hair in ponytail', 'curly brown hair', 'wavy brown hair', 'brown hair in bun',
+    'shoulder-length chestnut hair'
   ],
   'olive': [
-    // 14 black/dark brown variations (exact backend copy)
-    'jet black hair', 'raven black hair', 'midnight black hair', 'obsidian hair',
-    'coal black hair', 'ebony hair', 'onyx hair', 'charcoal hair',
-    'deep black hair', 'ink black hair', 'shadow black hair', 'pitch black hair',
-    'dark espresso hair', 'blackest brown hair'
+    // 14 black/dark brown variations with styling terms
+    'long black hair', 'short black hair', 'black hair in ponytail', 'black hair in braids',
+    'shoulder-length black hair', 'long jet black hair', 'short jet black hair',
+    'jet black hair in bun', 'long dark brown hair', 'short dark brown hair',
+    'dark brown hair in ponytail', 'straight black hair', 'wavy black hair',
+    'black hair in twin braids'
   ],  
   'dark': [
-    // 7 generic descriptive terms (exact backend copy)
-    'beautiful dark hair', 'rich black hair', 'lustrous dark hair', 'silky black hair',
-    'gorgeous dark hair', 'shining black hair', 'magnificent dark hair'
+    // 7 generic descriptive terms (for natural textured styles)
+    'pretty hair', 'thick hair', 'shiny hair', 'great hair', 'amazing hair', 'awesome hair',
+    'voluminous thick hair'
   ]
 };
 

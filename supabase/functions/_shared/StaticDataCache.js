@@ -1,7 +1,23 @@
 /**
+ * ============================================================================
+ * 🎨 FOR IMAGE GENERATION ONLY - Visual Prompt Descriptors
+ * ============================================================================
+ * This file provides hair styling descriptors specifically for AI image
+ * generation prompts. Contains 65 hair variations optimized for visual
+ * rendering by image generation models (Runware, DALL-E, etc.)
+ *
+ * DO NOT USE FOR STORY TEXT - Story narratives use different descriptors
+ * See: src/services/StaticDataCache.ts for story generation hair
+ *
+ * 3-WAY ARCHITECTURE:
+ * - Frontend .ts: Story text narratives (65 variations)
+ * - Backend .ts (Failsafe): Dual-mode failsafe for both story + image (65 each)
+ * - Backend .js (THIS FILE): Image generation prompts only (65 variations)
+ * ============================================================================
+ *
  * STATIC DATA CACHE - Backend Implementation
  * Centralized source of truth for hair mappings and cultural arrays
- * 1:1 parity with frontend src/services/StaticDataCache.ts
+ * 1:1 parity with frontend src/services/StaticDataCache.ts (story mode)
  */
 
 // Local helper functions to avoid circular imports

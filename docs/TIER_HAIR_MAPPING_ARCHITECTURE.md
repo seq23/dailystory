@@ -1,12 +1,20 @@
 # Tier Hair Mapping Architecture
 
 ## Overview
-This document defines the hair mapping architecture across frontend and backend systems to ensure 1:1 parity and prevent regressions.
+This document defines the 3-way hair mapping architecture across frontend and backend systems to ensure proper separation of concerns and prevent regressions.
 
-## Hair Array Requirements
-- **Frontend**: `src/services/StaticDataCache.ts` - 73 total variations
-- **Backend**: `supabase/functions/_shared/tier25Vocabulary.js` - 73 total variations  
-- **Rule**: Must maintain exact 1:1 parity between frontend and backend
+## 3-Way Hair Mapping Architecture (October 2025)
+
+### File Structure and Responsibilities
+- **Frontend Story** (`src/services/StaticDataCache.ts`): 65 variations - FOR STORY GENERATION ONLY
+- **Backend Failsafe** (`supabase/functions/generate-adaptive-story/StaticDataCache.ts`): 65 story + 65 image - FAILSAFE CATCH-ALL  
+- **Backend Image** (`supabase/functions/_shared/StaticDataCache.js`): 65 variations - FOR IMAGE GENERATION ONLY
+
+### Architecture Rules
+1. Frontend and Backend must maintain identical 65 styling variations for story consistency
+2. Backend .js provides image-optimized descriptors for visual generation
+3. Backend .ts failsafe contains BOTH modes to handle either scenario
+4. All three files must be updated together when hair mappings change
 
 ## Cultural Enhancement System
 - **Only African American enhancements are supported**
@@ -20,7 +28,7 @@ This document defines the hair mapping architecture across frontend and backend 
 ## Protected Arrays
 - `HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES` (30 items total)
 - `HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES` (36 items)
-- `HAIR_BY_SKIN_TONE` frontend mapping (73 items total)
+- `HAIR_BY_SKIN_TONE` mapping (65 items total across all 3 files)
 
 ## Modification Rules
 1. Never modify hair arrays without updating both frontend and backend
@@ -59,22 +67,28 @@ pickFromArray<T>(arr: T[], sessionId: string): T
 - Ensures session-seeded hair is always used
 - Prevents external overrides from breaking consistency
 
-## Hair Mapping by Skin Tone (73 Total Variations)
+## Hair Mapping by Skin Tone (65 Total Variations)
 
-### Pale (14 variations)
-Red/Auburn focus: strawberry blonde, golden red, auburn curls, copper, reddish brown, ginger, red-gold, russet, mahogany red, burgundy, crimson, rose gold, amber red, cinnamon red
+### Story Mode (Frontend .ts + Backend .ts Failsafe)
+Used for text narratives in story generation:
 
-### Light (15 variations)  
-Blonde focus: platinum, golden, honey, ash, sandy, wheat, butter, cream, champagne, vanilla, pearl, silver, moonlight, sunshine, caramel blonde
+**Pale (14 variations)**  
+Styling terms: long red, short red, red in pigtails, red in ponytail, shoulder-length red, long auburn, short auburn, auburn in braids, shoulder-length auburn, long strawberry blonde, short strawberry blonde, strawberry blonde in pigtails, curly red, wavy auburn
 
-### Medium (15 variations)
-Brown focus: chestnut, chocolate, coffee, walnut, hazelnut, mahogany, amber, bronze, toffee, mocha, caramel, russet, cedar, oak, maple brown
+**Light (15 variations)**  
+Styling terms: long blonde, short blonde, blonde in pigtails, blonde in ponytail, shoulder-length blonde, long platinum blonde, short platinum blonde, long golden blonde, short golden blonde, golden blonde in braids, long dirty blonde, short dirty blonde, curly blonde, wavy blonde, blonde in twin braids
 
-### Olive (14 variations)
-Black/Dark focus: jet black, raven, midnight, obsidian, coal, ebony, onyx, charcoal, deep black, ink, shadow, pitch black, dark espresso, blackest brown
+**Medium (15 variations)**  
+Styling terms: long brown, short brown, brown in ponytail, brown in pigtails, shoulder-length brown, long chestnut, short chestnut, chestnut in braids, long dark brown, short dark brown, dark brown in ponytail, curly brown, wavy brown, brown in bun, shoulder-length chestnut
 
-### Dark (7 variations)
-Generic descriptive: beautiful dark, rich black, lustrous dark, silky black, gorgeous dark, shining black, magnificent dark
+**Olive (14 variations)**  
+Styling terms: long black, short black, black in ponytail, black in braids, shoulder-length black, long jet black, short jet black, jet black in bun, long dark brown, short dark brown, dark brown in ponytail, straight black, wavy black, black in twin braids
+
+**Dark (7 variations)**  
+Generic descriptive: pretty hair, thick hair, shiny hair, great hair, amazing hair, awesome hair, voluminous thick hair
+
+### Image Mode (Backend .js)
+Used for AI image generation prompts - currently matches Story Mode for consistency (65 variations)
 
 ## Cultural Enhancement Detection
 ```javascript

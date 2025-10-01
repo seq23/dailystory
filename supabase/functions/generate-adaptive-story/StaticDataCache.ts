@@ -1,8 +1,13 @@
 // ============================================================================
-// 🚨 CRITICAL: StaticDataCache for Story Generation - DO NOT REMOVE
+// 🚨 FAILSAFE CATCH-ALL - Dual-Mode Hair Mapping Architecture
 // ============================================================================
-// This file is REQUIRED for story generation and MUST NOT be replaced with
-// dummy functions or inline implementations.
+// This backend .ts file serves as the FAILSAFE between frontend story generation
+// and backend image generation. It contains BOTH hair mapping modes to ensure
+// the system can handle either scenario if needed.
+//
+// DUAL-MODE CAPABILITY:
+// - Story Mode: 65 styling variations (matches frontend .ts for story text)
+// - Image Mode: 65 styling variations (matches backend .js for image prompts)
 //
 // REGRESSION PREVENTION (ERROR-058):
 // - Story generation depends on this file for cultural authenticity
@@ -11,9 +16,10 @@
 // - Provides educational vocabulary integration
 // - Enables cultural names, foods, celebrations
 //
-// ARCHITECTURAL SEPARATION:
-// ✅ Story Generation: Uses this full StaticDataCache (cultural + educational)
-// ✅ Image Generation: Uses lean inline data (performance optimization)
+// 3-WAY ARCHITECTURE:
+// - Frontend .ts: Story text narratives (65 variations)
+// - Backend .ts (THIS FILE): Dual-mode failsafe (65 story + 65 image)
+// - Backend .js: Image generation prompts (65 variations)
 //
 // Before modifying this file or its imports, see:
 // docs/STORY_GENERATION_STATICDATACACHE_RESTORATION_2025-10-01.md
@@ -167,89 +173,91 @@ export const getCulturalContextArrays = () => {
   return contexts;
 };
 
-// Cache hair color mapping rules with enhanced diversity
-export const getHairColorMapping = () => {
-  const cacheKey = 'hair_color_mapping';
+// ============================================================================
+// DUAL-MODE HAIR MAPPING - Failsafe Architecture
+// ============================================================================
+// This function provides BOTH story and image hair mappings as a failsafe.
+// Can switch between modes based on usage context.
+
+// Story Mode Hair Mappings (65 variations - for text narratives)
+const HAIR_STORY_MODE = {
+  'pale': [
+    'long red hair', 'short red hair', 'red hair in pigtails', 'red hair in ponytail',
+    'shoulder-length red hair', 'long auburn hair', 'short auburn hair', 'auburn hair in braids',
+    'shoulder-length auburn hair', 'long strawberry blonde hair', 'short strawberry blonde hair',
+    'strawberry blonde hair in pigtails', 'curly red hair', 'wavy auburn hair'
+  ],
+  'light': [
+    'long blonde hair', 'short blonde hair', 'blonde hair in pigtails', 'blonde hair in ponytail',
+    'shoulder-length blonde hair', 'long platinum blonde hair', 'short platinum blonde hair',
+    'long golden blonde hair', 'short golden blonde hair', 'golden blonde hair in braids',
+    'long dirty blonde hair', 'short dirty blonde hair', 'curly blonde hair', 'wavy blonde hair',
+    'blonde hair in twin braids'
+  ],
+  'medium': [
+    'long brown hair', 'short brown hair', 'brown hair in ponytail', 'brown hair in pigtails',
+    'shoulder-length brown hair', 'long chestnut hair', 'short chestnut hair',
+    'chestnut hair in braids', 'long dark brown hair', 'short dark brown hair',
+    'dark brown hair in ponytail', 'curly brown hair', 'wavy brown hair', 'brown hair in bun',
+    'shoulder-length chestnut hair'
+  ],
+  'olive': [
+    'long black hair', 'short black hair', 'black hair in ponytail', 'black hair in braids',
+    'shoulder-length black hair', 'long jet black hair', 'short jet black hair',
+    'jet black hair in bun', 'long dark brown hair', 'short dark brown hair',
+    'dark brown hair in ponytail', 'straight black hair', 'wavy black hair',
+    'black hair in twin braids'
+  ],
+  'dark': [
+    'pretty hair', 'thick hair', 'shiny hair', 'great hair', 'amazing hair', 'awesome hair',
+    'voluminous thick hair'
+  ]
+};
+
+// Image Mode Hair Mappings (65 variations - for visual prompts)
+// Identical to Story Mode in this implementation for consistency
+const HAIR_IMAGE_MODE = {
+  'pale': [
+    'long red hair', 'short red hair', 'red hair in pigtails', 'red hair in ponytail',
+    'shoulder-length red hair', 'long auburn hair', 'short auburn hair', 'auburn hair in braids',
+    'shoulder-length auburn hair', 'long strawberry blonde hair', 'short strawberry blonde hair',
+    'strawberry blonde hair in pigtails', 'curly red hair', 'wavy auburn hair'
+  ],
+  'light': [
+    'long blonde hair', 'short blonde hair', 'blonde hair in pigtails', 'blonde hair in ponytail',
+    'shoulder-length blonde hair', 'long platinum blonde hair', 'short platinum blonde hair',
+    'long golden blonde hair', 'short golden blonde hair', 'golden blonde hair in braids',
+    'long dirty blonde hair', 'short dirty blonde hair', 'curly blonde hair', 'wavy blonde hair',
+    'blonde hair in twin braids'
+  ],
+  'medium': [
+    'long brown hair', 'short brown hair', 'brown hair in ponytail', 'brown hair in pigtails',
+    'shoulder-length brown hair', 'long chestnut hair', 'short chestnut hair',
+    'chestnut hair in braids', 'long dark brown hair', 'short dark brown hair',
+    'dark brown hair in ponytail', 'curly brown hair', 'wavy brown hair', 'brown hair in bun',
+    'shoulder-length chestnut hair'
+  ],
+  'olive': [
+    'long black hair', 'short black hair', 'black hair in ponytail', 'black hair in braids',
+    'shoulder-length black hair', 'long jet black hair', 'short jet black hair',
+    'jet black hair in bun', 'long dark brown hair', 'short dark brown hair',
+    'dark brown hair in ponytail', 'straight black hair', 'wavy black hair',
+    'black hair in twin braids'
+  ],
+  'dark': [
+    'pretty hair', 'thick hair', 'shiny hair', 'great hair', 'amazing hair', 'awesome hair',
+    'voluminous thick hair'
+  ]
+};
+
+// Dual-mode hair color mapping with mode parameter
+export const getHairColorMapping = (mode: 'story' | 'image' = 'story') => {
+  const cacheKey = `hair_color_mapping_${mode}`;
   
   let mapping = cache.get<Record<string, string[]>>(cacheKey);
   if (!mapping) {
-    mapping = {
-      'pale': [
-        // Red/Auburn family only - true to pale skin
-        'long red hair',
-        'short red hair', 
-        'red hair in pigtails',
-        'red hair in ponytail',
-        'shoulder-length red hair',
-        'long auburn hair',
-        'short auburn hair',
-        'auburn hair in braids',
-        'shoulder-length auburn hair',
-        'long strawberry blonde hair',
-        'short strawberry blonde hair',
-        'strawberry blonde hair in pigtails',
-        'curly red hair',
-        'wavy auburn hair'
-      ],
-      'light': [
-        // Blonde types only - true to light skin
-        'long blonde hair',
-        'short blonde hair',
-        'blonde hair in pigtails', 
-        'blonde hair in ponytail',
-        'shoulder-length blonde hair',
-        'long platinum blonde hair',
-        'short platinum blonde hair',
-        'long golden blonde hair',
-        'short golden blonde hair',
-        'golden blonde hair in braids',
-        'long dirty blonde hair',
-        'short dirty blonde hair',
-        'curly blonde hair',
-        'wavy blonde hair',
-        'blonde hair in twin braids'
-      ],
-      'medium': [
-        // Brown family - true to medium skin
-        'long brown hair',
-        'short brown hair',
-        'brown hair in ponytail',
-        'brown hair in pigtails',
-        'shoulder-length brown hair',
-        'long chestnut hair',
-        'short chestnut hair',
-        'chestnut hair in braids',
-        'long dark brown hair',
-        'short dark brown hair',
-        'dark brown hair in ponytail',
-        'curly brown hair',
-        'wavy brown hair',
-        'brown hair in bun',
-        'shoulder-length chestnut hair'
-      ],
-      'olive': [
-        // Black/very dark brown - true to olive skin
-        'long black hair',
-        'short black hair',
-        'black hair in ponytail',
-        'black hair in braids',
-        'shoulder-length black hair',
-        'long jet black hair',
-        'short jet black hair',
-        'jet black hair in bun',
-        'long dark brown hair',
-        'short dark brown hair',
-        'dark brown hair in ponytail',
-        'straight black hair',
-        'wavy black hair',
-        'black hair in twin braids'
-      ],
-      'dark': [
-        // Natural textured styles - true to dark skin
-        'pretty hair', 'thick hair', 'shiny hair', 'great hair', 'amazing hair', 'awesome hair', 'voluminous thick hair'
-      ]
-    };
-    
+    // Select mapping based on mode
+    mapping = mode === 'image' ? HAIR_IMAGE_MODE : HAIR_STORY_MODE;
     cache.set(cacheKey, mapping);
   }
   
