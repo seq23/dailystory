@@ -145,8 +145,6 @@ export type Database = {
           character_data: Json
           character_key: string
           created_at: string | null
-          selected_cultural_features: string | null
-          selected_cultural_hair: string | null
           session_id: string
           updated_at: string | null
         }
@@ -154,8 +152,6 @@ export type Database = {
           character_data: Json
           character_key: string
           created_at?: string | null
-          selected_cultural_features?: string | null
-          selected_cultural_hair?: string | null
           session_id: string
           updated_at?: string | null
         }
@@ -163,8 +159,6 @@ export type Database = {
           character_data?: Json
           character_key?: string
           created_at?: string | null
-          selected_cultural_features?: string | null
-          selected_cultural_hair?: string | null
           session_id?: string
           updated_at?: string | null
         }

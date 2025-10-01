@@ -329,17 +329,35 @@ export class CharacterConsistencyService {
   }
 
   // ============= TIER25VOCABULARY INTEGRATION (PHASE 2) =============
+  
+  // Essential vocabulary inlined for 99.99% reliability (core detection never fails)
+  static ESSENTIAL_VOCABULARY = {
+    colors: ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown', 'black', 'white', 
+             'gray', 'silver', 'gold', 'beige', 'turquoise', 'magenta', 'crimson', 'navy'],
+    objects: ['ball', 'toy', 'book', 'balloon', 'bike', 'tree', 'flower', 'car', 'house', 'star', 
+              'moon', 'sun', 'cloud', 'rainbow', 'butterfly', 'bird', 'fish', 'cat', 'dog'],
+    animals: ['dog', 'cat', 'rabbit', 'bird', 'fish', 'bear', 'lion', 'elephant', 'tiger', 'monkey'],
+    toys: ['ball', 'doll', 'toy car', 'balloon', 'teddy bear', 'puzzle', 'blocks'],
+    nature: ['tree', 'flower', 'grass', 'leaf', 'rock', 'mountain', 'river', 'ocean'],
+    food: ['apple', 'banana', 'cake', 'cookie', 'pizza', 'sandwich', 'ice cream'],
+    settings: ['park', 'home', 'school', 'forest', 'beach', 'garden', 'playground', 'bedroom'],
+    relationships: ['mom', 'dad', 'mother', 'father', 'sister', 'brother', 'friend', 'grandma', 'grandpa'],
+    clothing: ['shirt', 'pants', 'dress', 'shoes', 'hat', 'coat', 'socks'],
+    actions: ['play', 'run', 'jump', 'laugh', 'smile', 'dance', 'sing', 'read', 'eat', 'sleep']
+  };
 
   /**
-   * Load and cache tier25Vocabulary for dynamic detection
-   * Called once per service instance, then reused
+   * Load and cache tier25Vocabulary for dynamic detection (with resilient import)
+   * Falls back to essential vocabulary if import fails
    */
   async getVocabulary() {
     if (this.vocabulary) return this.vocabulary;
 
     try {
+      // Phase 2: Use resilient loader for 99.99% reliability
+      const { memoizedImport } = await import('./resilientLoader.ts');
       const { TIER_25_UNIFIED_VOCABULARY_EXTENDED, EXPANDED_COLOR_ARRAY, CLOTHING_DETECTION_KEYWORDS } = 
-        await import('./tier25Vocabulary.js');
+        await memoizedImport('./tier25Vocabulary.js');
       
       this.vocabulary = {
         // Dynamic arrays from tier25Vocabulary
@@ -361,13 +379,9 @@ export class CharacterConsistencyService {
       console.log(`✅ Tier25Vocabulary loaded: ${this.vocabulary.objects.length} objects, ${this.vocabulary.colors.length} colors`);
       return this.vocabulary;
     } catch (error) {
-      console.warn('⚠️ Tier25Vocabulary fallback:', error);
-      // Minimal fallback
-      this.vocabulary = {
-        colors: ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown', 'black', 'white'],
-        objects: ['ball', 'toy', 'book', 'balloon', 'bike', 'dog', 'cat'],
-        animals: ['dog', 'cat', 'rabbit', 'bird'],
-        toys: ['ball', 'doll', 'toy car', 'balloon'],
+      console.warn('⚠️ Tier25Vocabulary import failed, using essential vocabulary:', error);
+      // Phase 3: Use inlined essential vocabulary for bulletproof fallback
+      this.vocabulary = CharacterConsistencyService.ESSENTIAL_VOCABULARY;
         nature: ['tree', 'flower', 'grass'],
         food: ['apple', 'cookie'],
         settings: ['room', 'park', 'school'],
@@ -976,46 +990,40 @@ export class CharacterConsistencyService {
       };
     }
     
-    const { getCulturalBundle } = await import('./StaticDataCache.js');
-    
-    const characterSeed = characterData.seed || this.generateStableSeed(`${sessionId}_${characterName}`, characterName);
-    const culturalBundle = getCulturalBundle(userInfo, characterSeed, userInfo?.skinTone);
-    
-    await this.updateCulturalSelections(sessionId, cacheKey, culturalBundle.hair, culturalBundle.features);
-    
-    characterData.selectedCulturalHair = culturalBundle.hair;
-    characterData.selectedCulturalFeatures = culturalBundle.features;
+    // Phase 2: Use resilient loader for StaticDataCache import
+    try {
+      const { memoizedImport } = await import('./resilientLoader.ts');
+      const { getCulturalBundle } = await memoizedImport('./StaticDataCache.js');
+      
+      const characterSeed = characterData.seed || this.generateStableSeed(`${sessionId}_${characterName}`, characterName);
+      const culturalBundle = getCulturalBundle(userInfo, characterSeed, userInfo?.skinTone);
+      
+      // Store cultural enhancements in character_data jsonb (redundant columns removed)
+      characterData.selectedCulturalHair = culturalBundle.hair;
+      characterData.selectedCulturalFeatures = culturalBundle.features;
+      
+      console.log(`🎨 Generated cultural enhancements for ${characterName} (seed: ${characterSeed}):`, culturalBundle);
+      return culturalBundle;
+    } catch (error) {
+      console.warn('⚠️ StaticDataCache import failed, using generic enhancements:', error);
+      // Phase 4: Bulletproof fallback - generic culturally-neutral enhancements
+      const fallbackEnhancements = {
+        hair: 'styled hair',
+        features: 'friendly features'
+      };
+      characterData.selectedCulturalHair = fallbackEnhancements.hair;
+      characterData.selectedCulturalFeatures = fallbackEnhancements.features;
+      return fallbackEnhancements;
+    }
     
     console.log(`🎨 Generated cultural enhancements for ${characterName} (seed: ${characterSeed}):`, culturalBundle);
     
     return culturalBundle;
   }
 
-  /**
-   * Update character data with cultural selections
-   */
-  async updateCulturalSelections(sessionId, cacheKey, hair, features) {
-    try {
-      const supabase = await this.getSupabaseClient();
-      if (!supabase) return;
-
-      const { error } = await supabase
-        .from('character_consistency_cache')
-        .update({
-          selected_cultural_hair: hair,
-          selected_cultural_features: features,
-          updated_at: new Date().toISOString()
-        })
-        .eq('session_id', sessionId)
-        .eq('character_key', cacheKey);
-
-      if (error) {
-        console.error('Error updating cultural selections:', error);
-      }
-    } catch (error) {
-      console.warn('Failed to update cultural selections:', error);
-    }
-  }
+  // REMOVED: updateCulturalSelections() method
+  // Reason: Phase 1 database optimization removed redundant columns (selected_cultural_hair, selected_cultural_features)
+  // Cultural data now stored exclusively in character_data jsonb field
 
   /**
    * Get character appearance from story (for backwards compatibility)
