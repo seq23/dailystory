@@ -58,12 +58,12 @@ async function generateCompleteVisualSchema(
   
   // Build complete character data string for OpenAI with detailed features
   const characterData = structuredAvatarData 
-    ? `${characterName}, ${structuredAvatarData.assignedHairColor || 'natural hair'}, ${structuredAvatarData.skinFeatures || 'medium skin tone with brown eyes'}, ${ethnicity} ethnicity`
+    ? `${characterName}, ${structuredAvatarData.hairColor || 'natural hair'}, ${structuredAvatarData.skinFeatures || 'medium skin tone with brown eyes'}, ${ethnicity} ethnicity`
     : `${characterName}, character appearance data from orchestrator`;
   
   console.log(`🎨 Complete character data for OpenAI:`, {
     characterName,
-    hair: structuredAvatarData?.assignedHairColor,
+    hair: structuredAvatarData?.hairColor,
     skinFeatures: structuredAvatarData?.skinFeatures,
     ethnicity,
     fullString: characterData
@@ -139,13 +139,13 @@ CRITICAL: Enhance story settings with specific cultural elements for ${nativeLan
 ${culturalContext}
 
 EXAMPLE: For a French speaker named Sarah playing in a park, generate:
-"Sarah with ${structuredAvatarData?.assignedHairColor || 'natural hair'} and ${structuredAvatarData?.resolvedSkinTone || 'medium'} skin tone plays joyfully in a charming Parisian park near the Eiffel Tower, with the Seine River visible in the background, surrounded by elegant French gardens with lavender and a quaint café district with outdoor seating. Warm, sophisticated European aesthetic with golden afternoon light."
+"Sarah with ${structuredAvatarData?.hairColor || 'natural hair'} and ${structuredAvatarData?.resolvedSkinTone || 'medium'} skin tone plays joyfully in a charming Parisian park near the Eiffel Tower, with the Seine River visible in the background, surrounded by elegant French gardens with lavender and a quaint café district with outdoor seating. Warm, sophisticated European aesthetic with golden afternoon light."
 
 Use this level of cultural detail and specificity for ALL scenes - incorporate the cultural elements naturally into the setting description.` : '- Use universal child-friendly settings with warm, inviting atmospheres'}`;
 
   const userPrompt = `Create a visual scene description for this story page.
 
-CHARACTER APPEARANCE: ${characterData}${ethnicity ? `, ${ethnicity} ethnicity` : ''}
+CHARACTER APPEARANCE: ${characterData}
 
 STORY TEXT:
 "${storyText}"

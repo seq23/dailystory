@@ -1433,10 +1433,12 @@ export class CharacterConsistencyService {
     const avatarType = userInfo?.avatar?.type || userInfo?.type || 'child';
     const ethnicity = CharacterConsistencyService.detectEthnicity(userInfo);
     const hairColor = CharacterConsistencyService.getHair(skinTone, sessionId, ethnicity, avatarType);
+    const skinFeatures = CharacterConsistencyService.getSkinFeatures(skinTone, sessionId);
     
     return {
       skinTone,
       hairColor,
+      skinFeatures,
       type: avatarType,
       name: userInfo?.name || userInfo?.childName || 'Child',
       age: userInfo?.age || userInfo?.childAge || 7,
