@@ -645,6 +645,9 @@ serve(async (req) => {
       ...(directMode && culturalBundle && { culturalBundle }),
       ...(directMode && coloredObjects && { coloredObjects }),
       
+      // CRITICAL FIX: Include structuredAvatarData in ALL modes for orchestrator
+      ...(structuredAvatarData && { structuredAvatarData }),
+      
       // Metadata for orchestrator
       templateStructure: directMode ? undefined : 'COMPLETE_TIER_1',
       detectedCharacters: visualSchema.detectedCharacters || [],
