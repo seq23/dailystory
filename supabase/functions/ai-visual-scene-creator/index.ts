@@ -93,9 +93,7 @@ async function generateCompleteVisualSchema(
   }
 
   // WORD-FOR-WORD OpenAI PROMPTS - Phase 1 (lines 625-678 and 682-694 from deprecated JS version)
-  const systemPrompt = `Generate a comprehensive visual scene description for children's story image generation.
-
-OBJECTIVE: Create a vivid visual scene description (200-1500 characters recommended) that captures the story moment with complete visual elements, character consistency, and cultural authenticity.
+  const systemPrompt = `Generate a comprehensive visual scene description for children's story image generation. Create rich primary scenes (200-1500 characters preferred) with key actions, setting, character descriptions, and other visual details derived from story text with intelligent enhancements and inferences.
 
 JSON RESPONSE:
 {
@@ -113,25 +111,15 @@ JSON RESPONSE:
   "objects": ["key props and objects in scene (e.g., 'ball', 'tree', 'flowers', 'toys')"]
 }
 
-CRITICAL CHARACTER RULES:
-Use character appearance data EXACTLY as provided in the CHARACTER APPEARANCE section below - NEVER substitute, modify, or invent character details. Focus on scene generation and visual atmosphere.
-
-VISUAL ENHANCEMENT RULES:
-5. Create detailed primary scenes with rich visual descriptions (200-1500 characters)
-6. Extract ALL secondary characters from story text and categorize correctly:
-   - HUMANS: mom, dad, friend, teacher, brother, sister, grandma, neighbor, people
-   - PETS/ANIMALS: dog, cat, bird, rabbit, hamster, fish, horse, any animals
-7. Include comprehensive atmospheric details (time of day, weather, indoor/outdoor)
-8. Specify background colors, lighting conditions, and visual composition
-9. List key objects, props, and visual elements in the scene
-10. Preserve exact counts: "a bird" = 1 bird, "birds" = multiple
-11. Use visual continuity with previous scene context
-
-ATMOSPHERIC GUIDANCE:
-- Time of day: "morning sunlight", "afternoon glow", "evening twilight"
-- Indoor/outdoor: "inside the cozy kitchen", "outside in the garden"  
-- Weather: "sunny day", "light drizzle", "snowy morning"
-- Objects/props: include furniture, toys, nature elements, tools
+RULES:
+1. Story text priority: absolute driver - never contradict visual details
+2. Main action extraction: focus on most visually significant action from story text
+3. Character appearance: use provided appearance data exactly as given, enhance unspecified details reasonably (e.g., if hair color provided use it, if not provided skip it or just describe hair styling)
+4. Character poses and positioning: infer body positions from story actions ('wakes up' = sitting up in bed with arms stretched, 'runs' = dynamic running pose, 'reads' = sitting/lying with book, 'looks up' = head tilted upward, 'plays' = active engaging pose)
+5. Singular/plural intelligence: "a bird" = 1 bird, "the bird" = 1 bird, "birds" = 2-4 birds, "many/lots of birds" = 5+ birds
+6. Extract secondary characters: HUMANS (mom, dad, friend, teacher, people), PETS (household animals like dog, cat), ANIMAL CHARACTERS (talking animals, fantasy creatures with speaking roles in the story)
+7. Atmospheric details: infer time of day, weather, indoor/outdoor context from story
+8. Visual continuity on pages 2+: track object colors/details ('red ball' stays 'red ball'), resolve pronouns to same objects/characters, use previous scene context for consistency
 
 CULTURAL CONTEXT:
 ${isNonEnglish ? `
@@ -141,7 +129,7 @@ ${culturalContext}
 EXAMPLE: For a French speaker named Sarah playing in a park, generate:
 "Sarah with ${structuredAvatarData?.hairColor || 'natural hair'} and ${structuredAvatarData?.resolvedSkinTone || 'medium'} skin tone plays joyfully in a charming Parisian park near the Eiffel Tower, with the Seine River visible in the background, surrounded by elegant French gardens with lavender and a quaint café district with outdoor seating. Warm, sophisticated European aesthetic with golden afternoon light."
 
-Use this level of cultural detail and specificity for ALL scenes - incorporate the cultural elements naturally into the setting description.` : '- Use universal child-friendly settings with warm, inviting atmospheres'}`;
+Use cultural detail naturally without contradicting explicit story settings.` : '- Use universal child-friendly settings with warm, inviting atmospheres'}`;
 
   const userPrompt = `Create a visual scene description for this story page.
 
