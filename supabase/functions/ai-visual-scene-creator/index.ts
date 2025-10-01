@@ -45,10 +45,10 @@ async function generateCompleteVisualSchema(
       
       // 3-Tier fallback: CCS → StaticDataCache → Hardcoded
       try {
-        const { StaticDataCache } = await import('./_shared/StaticDataCache.js');
+        const { getHairBySkintone, getSkinBySkintone } = await import('../_shared/StaticDataCache.js');
         const skinTone = userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium';
-        const hairColor = StaticDataCache.getHairBySkintone(skinTone, sessionId);
-        const skinFeatures = StaticDataCache.getSkinBySkintone(skinTone, sessionId);
+        const hairColor = getHairBySkintone(skinTone, sessionId);
+        const skinFeatures = getSkinBySkintone(skinTone, sessionId);
         
         structuredAvatarData = {
           resolvedSkinTone: skinTone,
@@ -527,10 +527,10 @@ serve(async (req) => {
       if (!culturalBundle) {
         try {
           console.log(`🔄 [${requestId}] Trying StaticDataCache for cultural bundle (Tier 2)`);
-          const { StaticDataCache } = await import('./_shared/StaticDataCache.js');
+          const { getHairBySkintone, getSkinBySkintone } = await import('../_shared/StaticDataCache.js');
           const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
-          const hairColor = StaticDataCache.getHairBySkintone(skinTone, sessionId);
-          const skinFeatures = StaticDataCache.getSkinBySkintone(skinTone, sessionId);
+          const hairColor = getHairBySkintone(skinTone, sessionId);
+          const skinFeatures = getSkinBySkintone(skinTone, sessionId);
           
           culturalBundle = {
             hair: hairColor || (skinTone === 'dark' || skinTone === 'darker' ? 'photorealistic detailed textured 4C African American hairstyle' : 'brown hair'),
