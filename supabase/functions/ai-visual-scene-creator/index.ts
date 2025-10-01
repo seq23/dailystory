@@ -16,14 +16,20 @@ const corsHeaders = {
 // Character consistency service - Loaded conditionally for Direct Mode only
 
 // Generate complete visual schema using OpenAI with word-for-word prompts
-async function generateCompleteVisualSchema(storyText: string, userInfo: any, sessionId: string, pageNumber: number = 1) {
+async function generateCompleteVisualSchema(
+  storyText: string, 
+  userInfo: any, 
+  sessionId: string, 
+  pageNumber: number = 1,
+  inputStructuredAvatarData: any = null
+): Promise<{ visualSchema: any; aiDebugSchema: any; structuredAvatarData: any }> {
   const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
   if (!openaiApiKey) {
     throw new Error('OPENAI_API_KEY not configured');
   }
 
   // PRIORITY 1: Get complete structured avatar data from CharacterConsistencyService
-  let structuredAvatarData = userInfo?.structuredAvatarData;
+  let structuredAvatarData = inputStructuredAvatarData || userInfo?.structuredAvatarData;
   let characterName = userInfo?.name || userInfo?.userName || 'child';
   let ethnicity = '';
   
@@ -273,7 +279,7 @@ Generate a comprehensive scene with complete visual elements including backgroun
     };
 
     console.log('✅ Generated complete visual schema with character consistency');
-    return { visualSchema: enhancedSchema, aiDebugSchema };
+    return { visualSchema: enhancedSchema, aiDebugSchema, structuredAvatarData };
 
   } catch (error) {
     console.error('OpenAI generation failed:', error);
@@ -422,14 +428,51 @@ serve(async (req) => {
 
     console.log(`✅ [${requestId}] Payload validated - Direct Mode: ${directMode}`);
 
+    // CRITICAL FIX: Declare structuredAvatarData in main function scope
+    let structuredAvatarData: any = null;
+
     // PHASE 1 & 2: Generate complete visual schema with character consistency
     console.log(`🎨 [${requestId}] Generating complete visual schema...`);
-    const { visualSchema, aiDebugSchema } = await generateCompleteVisualSchema(content, userInfo, sessionId, pageNumber);
+    let visualSchema: any;
+    let aiDebugSchema: any;
+    
+    try {
+      const result = await generateCompleteVisualSchema(content, userInfo, sessionId, pageNumber, structuredAvatarData);
+      visualSchema = result.visualSchema;
+      aiDebugSchema = result.aiDebugSchema;
+      structuredAvatarData = result.structuredAvatarData;
+      console.log(`✅ [${requestId}] Visual schema generated successfully`);
+    } catch (schemaError) {
+      const errorMessage = schemaError instanceof Error ? schemaError.message : String(schemaError);
+      console.error(`❌ [${requestId}] Visual schema generation failed:`, errorMessage);
+      return new Response(JSON.stringify({
+        success: false,
+        error: `Visual schema generation failed: ${errorMessage}`,
+        tier: 'SCHEMA_GENERATION_FAILED'
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // CRITICAL FIX: Import characterConsistencyService at main scope (non-fatal)
+    let characterConsistencyService: any = null;
+    let characterServiceAvailable = false;
+    
+    try {
+      const importResult = await import('../_shared/CharacterConsistencyService.js');
+      characterConsistencyService = importResult.characterConsistencyService;
+      characterServiceAvailable = true;
+      console.log(`✅ [${requestId}] CharacterConsistencyService loaded successfully`);
+    } catch (importError) {
+      const errorMessage = importError instanceof Error ? importError.message : String(importError);
+      console.warn(`⚠️ [${requestId}] CharacterConsistencyService unavailable (non-fatal):`, errorMessage);
+      characterServiceAvailable = false;
+    }
 
     // DIRECT MODE ONLY: After primary scene generation, analyze visual details
-    if (directMode) {
+    if (directMode && characterServiceAvailable && characterConsistencyService) {
       try {
-        const { characterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
         const characterName = userInfo?.name || userInfo?.userName || 'Child';
         await characterConsistencyService.analyzeVisualDetails(
           sessionId,
@@ -458,17 +501,23 @@ serve(async (req) => {
       characterSeed = await generateCharacterSeed(sessionId, userInfo);
 
       // Generate culturalBundle using CharacterConsistencyService (inlined functionality)
-      try {
-        culturalBundle = await characterConsistencyService.getCulturalEnhancements(
-          userInfo, 
-          sessionId, 
-          userInfo?.avatar?.characterName || 'child'
-        );
-        console.log(`✅ [${requestId}] INITIAL_DESCRIPTOR_SOURCE: CharacterConsistencyService (inlined)`);
-      } catch (tier1Error) {
-        console.warn(`⚠️ [${requestId}] CharacterConsistencyService failed, using emergency hardcoded`, tier1Error);
-        
-        // TIER 2: Emergency hardcoded strings
+      if (characterServiceAvailable && characterConsistencyService) {
+        try {
+          culturalBundle = await characterConsistencyService.getCulturalEnhancements(
+            userInfo, 
+            sessionId, 
+            userInfo?.avatar?.characterName || 'child'
+          );
+          console.log(`✅ [${requestId}] INITIAL_DESCRIPTOR_SOURCE: CharacterConsistencyService (inlined)`);
+        } catch (tier1Error) {
+          console.warn(`⚠️ [${requestId}] CharacterConsistencyService.getCulturalEnhancements failed, using emergency hardcoded`, tier1Error);
+          characterServiceAvailable = false;
+        }
+      }
+      
+      // Fallback if service unavailable or failed
+      if (!culturalBundle) {
+        console.log(`🔄 [${requestId}] Using emergency hardcoded cultural bundle (Tier 2)`);
         const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
         const isDarkSkin = skinTone === 'dark' || skinTone === 'darker';
         
@@ -490,8 +539,8 @@ serve(async (req) => {
       };
     }
 
-    // Get colored objects string
-    const coloredObjects = visualSchema.coloredObjects || '';
+    // Get colored objects string from visual schema
+    let coloredObjects = visualSchema.coloredObjects || '';
 
     // PHASE 3: Handle Direct Mode vs Scene-Only Mode
     let imageURL: string | undefined;
@@ -499,47 +548,43 @@ serve(async (req) => {
     let runwareDebugData: any = {};
 
     if (directMode) {
-      console.log(`🖼️ [${requestId}] Direct Mode: Loading character service for full processing`);
+      console.log(`🖼️ [${requestId}] Direct Mode: Full character processing with service`);
       
-      // CONDITIONAL CHARACTER SERVICE LOADING - Only for Direct Mode (NON-FATAL)
-      let characterService: any = null;
+      // DIRECT MODE: Get character appearance and colored objects from service
       let characterAppearance: string | null = null;
-      let coloredObjects: string = '';
-      let characterServiceAvailable = false;
       
-      try {
-        const { characterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
-        characterService = characterConsistencyService;
-        
-        // Validate service instance has required methods
-        if (!characterService || typeof characterService.getCharacterAppearanceFromStory !== 'function') {
-          throw new Error(`CharacterConsistencyService instance not functional - missing required methods`);
+      if (characterServiceAvailable && characterConsistencyService) {
+        try {
+          characterAppearance = await characterConsistencyService.getCharacterAppearanceFromStory(sessionId, characterSeed?.characterName || 'child');
+          const serviceColoredObjects = await characterConsistencyService.getColoredObjects(sessionId);
+          if (serviceColoredObjects) {
+            coloredObjects = serviceColoredObjects;
+          }
+          console.log(`✅ [${requestId}] Character data retrieved from service`);
+        } catch (error) {
+          console.warn(`⚠️ [${requestId}] Failed to retrieve character data from service (non-fatal):`, error);
         }
-        
-        characterAppearance = await characterService.getCharacterAppearanceFromStory(sessionId, characterSeed.characterName);
-        coloredObjects = await characterService.getColoredObjects(sessionId);
-        characterServiceAvailable = true;
-        console.log(`✅ [${requestId}] CharacterConsistencyService loaded and data retrieved`);
-      } catch (error) {
-        console.warn(`⚠️ [${requestId}] CharacterConsistencyService unavailable, continuing with minimal avatar data:`, error);
-        characterServiceAvailable = false;
-        // Service unavailable is non-fatal - continue with fallback
+      } else {
+        console.warn(`⚠️ [${requestId}] CharacterConsistencyService unavailable, using minimal fallback data`);
       }
       
-      // Validate structuredAvatarData exists (already initialized at function start)
+      // Validate structuredAvatarData exists
       if (!structuredAvatarData) {
-        console.error(`❌ [${requestId}] Critical error: structuredAvatarData still undefined after initialization`);
+        console.error(`❌ [${requestId}] structuredAvatarData missing, using emergency fallback`);
         structuredAvatarData = {
           resolvedSkinTone: 'medium',
           assignedHairColor: 'brown hair',
+          skinFeatures: 'medium skin tone with brown eyes',
+          ethnicity: 'Euro-American',
           source: 'emergency_fallback'
         };
       }
       
       console.log(`✅ [${requestId}] Using structuredAvatarData:`, {
-        hairColor: structuredAvatarData.assignedHairColor,
-        skinTone: structuredAvatarData.resolvedSkinTone,
-        source: structuredAvatarData.source
+        hairColor: structuredAvatarData?.assignedHairColor,
+        skinTone: structuredAvatarData?.resolvedSkinTone,
+        ethnicity: structuredAvatarData?.ethnicity,
+        source: structuredAvatarData?.source
       });
       
       // Prepare payload for runware-template-cd with character consistency data
