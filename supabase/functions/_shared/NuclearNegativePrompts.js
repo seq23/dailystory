@@ -180,11 +180,11 @@ export function detectCulturalProfileForNegatives(userInfo, avatarIdentity) {
       return 'african-american';
     }
     
-    // Return general profile
-    return 'general';
+    // Return Euro-American profile
+    return 'Euro-American';
     
   } catch (error) {
     console.warn('⚠️ Nuclear Negative: Cultural profile detection error:', error);
-    return 'general';
+    return 'Euro-American';
   }
 }

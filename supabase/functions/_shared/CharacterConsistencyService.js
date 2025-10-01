@@ -1347,7 +1347,7 @@ export class CharacterConsistencyService {
    */
   static detectEthnicity(userInfo) {
     const skinTone = (userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium').toLowerCase();
-    return (skinTone === 'dark' || skinTone === 'deep' || skinTone === 'darker') ? 'african-american' : 'general';
+    return (skinTone === 'dark' || skinTone === 'deep' || skinTone === 'darker') ? 'african-american' : 'Euro-American';
   }
 
   /**
@@ -1365,7 +1365,7 @@ export class CharacterConsistencyService {
   /**
    * SIMPLIFIED: Get hair description by skin tone (Direct array lookup)
    */
-  static getHair(skinTone, sessionId, ethnicity = 'general', avatarType = 'girl') {
+  static getHair(skinTone, sessionId, ethnicity = 'Euro-American', avatarType = 'girl') {
     if (ethnicity === 'african-american') {
       const hairArray = CharacterConsistencyService.AFRICAN_AMERICAN_HAIR_INLINE[avatarType === 'boy' ? 'boys' : 'girls'];
       return CharacterConsistencyService.seededPick(hairArray, sessionId);
@@ -1418,7 +1418,7 @@ export class CharacterConsistencyService {
   /**
    * SIMPLIFIED: Get complete appearance (hair + skin/features in one call)
    */
-  static getAppearance(skinTone, sessionId, ethnicity = 'general', avatarType = 'girl') {
+  static getAppearance(skinTone, sessionId, ethnicity = 'Euro-American', avatarType = 'girl') {
     return {
       hair: CharacterConsistencyService.getHair(skinTone, sessionId, ethnicity, avatarType),
       skinFeatures: CharacterConsistencyService.getSkinFeatures(skinTone, sessionId)

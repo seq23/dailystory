@@ -22,58 +22,46 @@ async function generateCompleteVisualSchema(storyText: string, userInfo: any, se
     throw new Error('OPENAI_API_KEY not configured');
   }
 
-  // PRIORITY 1: Initialize structuredAvatarData early to prevent ReferenceError (ERROR-049 fix)
+  // PRIORITY 1: Get complete structured avatar data from CharacterConsistencyService
   let structuredAvatarData = userInfo?.structuredAvatarData;
+  let characterName = userInfo?.name || userInfo?.userName || 'child';
+  let ethnicity = '';
   
-  // If missing, attempt CharacterService generation with fallback
+  // If missing, generate complete structured avatar data using CharacterConsistencyService
   if (!structuredAvatarData) {
     try {
       const { characterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
-      const characterName = userInfo?.name || 'Child';
-      const culturalEnhancements = await characterConsistencyService.getCulturalEnhancements(
-        userInfo, 
-        sessionId, 
-        characterName
-      );
-      structuredAvatarData = {
-        resolvedSkinTone: userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium',
-        assignedHairColor: culturalEnhancements?.hair || 'brown hair',
-        source: 'character_service_generation'
-      };
-      console.log(`✅ [CDN_IMPORT_SUCCESS] Generated structuredAvatarData via CharacterConsistencyService`);
+      structuredAvatarData = await characterConsistencyService.getStructuredAvatarData(sessionId, userInfo);
+      console.log(`✅ Generated complete structuredAvatarData via CharacterConsistencyService:`, structuredAvatarData);
     } catch (error) {
-      // Categorize import failure
       const errorMessage = error instanceof Error ? error.message : String(error);
-      const errorCategory = errorMessage.includes('Failed to fetch') || errorMessage.includes('NetworkError')
-        ? 'CDN_IMPORT_FAILURE'
-        : errorMessage.includes('Cannot find module') || errorMessage.includes('not found')
-        ? 'SERVICE_UNAVAILABLE'
-        : 'IMPORT_ERROR';
-      
-      console.warn(`⚠️ [${errorCategory}] CharacterConsistencyService unavailable, using fallback:`, errorMessage);
+      console.warn(`⚠️ CharacterConsistencyService unavailable, using fallback:`, errorMessage);
       structuredAvatarData = {
         resolvedSkinTone: userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium',
         assignedHairColor: 'brown hair',
+        skinFeatures: 'medium skin tone with brown eyes',
+        ethnicity: 'Euro-American',
         source: 'hardcoded_fallback'
       };
     }
   }
 
-  // REMOVED: Over-engineered helper functions (simplifyHairColor, standardizeSkinTone, detectEthnicity)
-  // Now using existing mapping system: StaticDataCache.getHairBySkintone() and UnifiedPlaceholderResolver.detectCulturalContext()
-
-  // Extract character name for reference
-  const characterName = userInfo?.name || userInfo?.userName || 'child';
+  // Extract ethnicity from structured data
+  ethnicity = structuredAvatarData?.ethnicity || 'Euro-American';
   const nativeLanguage = userInfo?.native_language || userInfo?.nativeLanguage || 'en';
-  const ethnicity = userInfo?.ethnicity || '';
   
-  // Build character data string for OpenAI
-  // This data comes from orchestrator (Tier 1) or will be built from mapping system (Direct Mode)
+  // Build complete character data string for OpenAI with detailed features
   const characterData = structuredAvatarData 
-    ? `${characterName}, ${structuredAvatarData.assignedHairColor || 'natural hair'}, ${structuredAvatarData.resolvedSkinTone || 'medium'} skin tone`
+    ? `${characterName}, ${structuredAvatarData.assignedHairColor || 'natural hair'}, ${structuredAvatarData.skinFeatures || 'medium skin tone with brown eyes'}, ${ethnicity} ethnicity`
     : `${characterName}, character appearance data from orchestrator`;
   
-  console.log(`🎨 Character data for OpenAI (basic categories): ${characterData}`);
+  console.log(`🎨 Complete character data for OpenAI:`, {
+    characterName,
+    hair: structuredAvatarData?.assignedHairColor,
+    skinFeatures: structuredAvatarData?.skinFeatures,
+    ethnicity,
+    fullString: characterData
+  });
   const previousPrimaryScene = null; // Will be implemented with visual history tracking
   const isNonEnglish = nativeLanguage && nativeLanguage !== 'en';
   
