@@ -531,8 +531,35 @@ export class SimpleImageService {
           throw new Error(`Orchestrator error: ${orchError.message}`);
         }
 
+        // ENHANCED ORCHESTRATOR RESPONSE LOGGING - Diagnose "false success" issue
+        DebugLogger.log('image', '🔍 Orchestrator Response Validation (BEFORE URL CHECK)', {
+          hasResult: !!orchResult,
+          hasSuccess: orchResult?.hasOwnProperty('success'),
+          successValue: orchResult?.success,
+          hasImageURL: orchResult?.hasOwnProperty('imageURL'),
+          hasImage_url: orchResult?.hasOwnProperty('image_url'),
+          hasImageUrl: orchResult?.hasOwnProperty('imageUrl'),
+          hasUrl: orchResult?.hasOwnProperty('url'),
+          imageURLValue: orchResult?.imageURL,
+          image_urlValue: orchResult?.image_url,
+          imageUrlValue: orchResult?.imageUrl,
+          urlValue: orchResult?.url,
+          allKeys: orchResult ? Object.keys(orchResult) : [],
+          fullResponsePreview: JSON.stringify(orchResult).substring(0, 500)
+        });
+
         // Phase A: Multi-Field Image URL Validation - Handle all API response variations
         const imageURL = orchResult?.imageURL || orchResult?.image_url || orchResult?.imageUrl || orchResult?.url;
+        
+        DebugLogger.log('image', '🔍 Image URL After Extraction', {
+          imageURL,
+          imageURLType: typeof imageURL,
+          imageURLLength: imageURL?.length,
+          trimmedLength: imageURL?.trim()?.length,
+          startsWithHttp: imageURL?.startsWith('http'),
+          validationWillPass: !!(orchResult?.success && imageURL?.trim())
+        });
+        
         if (orchResult?.success && imageURL?.trim()) {
         DebugLogger.log('image', `🖼️ Auto-generated image successfully: ${imageURL}`, {
           contentHash: orchResult.contentHash || 'no-hash',
