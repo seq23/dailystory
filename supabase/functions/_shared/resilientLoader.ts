@@ -13,7 +13,8 @@ const CDN_FALLBACKS = {
       'https://ga.jspm.io/npm:@supabase/supabase-js@2.57.4/+esm',
       'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/+esm',
       'https://unpkg.com/@supabase/supabase-js@2.57.4?module'
-    ]
+    ],
+    vendor: '../_vendor/supabase-js@2.57.4.mjs'
   },
   'openai': {
     primary: 'https://deno.land/x/openai@v4.28.0/mod.ts',

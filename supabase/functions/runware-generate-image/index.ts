@@ -273,11 +273,8 @@ async function processInlinedTier1(payload: any, memoizedImport: any, logTier1St
   let aiDebugSchema: any = null;
   try {
     logTier1Step('AI Scene Creator Call', 'attempt', 'Invoking ai-visual-scene-creator');
-    const { createClient } = await memoizedImport('@supabase/supabase-js');
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+    const { createResilientSupabaseClient } = await memoizedImport('../_shared/resilientLoader.ts');
+    const supabase = await createResilientSupabaseClient();
     
     // ============================================================================
     // PHASE 2: AI SCENE GENERATION (Informed by Complete Character Context)
@@ -417,9 +414,7 @@ async function processInlinedTier1(payload: any, memoizedImport: any, logTier1St
   const consistencyElements = [
     secondaryCharsText,
     animalsText,
-    coloredObjects || '',
-    sessionSetting ? `${sessionSetting} setting` : '',
-    aiSchema?.sceneSettings || ''
+    sessionSetting ? `${sessionSetting} setting` : ''
   ].filter(Boolean).join(', ');
   
   const enhancedPrompt = COMPLETE_TIER_1_TEMPLATE
@@ -652,7 +647,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
             dryRun: true
           });
           
-          return new Response(JSON.stringify({
+          return corsResponse({
             success: true,
             dryRun: true,
             tier: 'TIER_1',
@@ -675,30 +670,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
             ccsDebug: {
               characterSeed: enhancedPrompt.characterSeed,
               culturalBundle: enhancedPrompt.culturalBundle,
-              coloredObjects: enhancedPrompt.coloredObjects,
-              secondaryCharacters: enhancedPrompt.secondaryCharacters,
-              detectedAnimals: enhancedPrompt.detectedAnimals,
-              sessionSetting: enhancedPrompt.sessionSetting,
-              structuredAvatarData: enhancedPrompt.structuredAvatarData
-            },
-            
-            // AI Scene Creator Debug Data
-            orchestratorDebugData: {
-              aiDebugSchema: enhancedPrompt.aiDebugSchema,
-              aiSchema: enhancedPrompt.aiSchema,
-              primaryScene: enhancedPrompt.primaryScene
-            },
-            
-            metadata: {
-              dryRunMode: true,
-              componentsHealthy: true,
+...
               tier1Steps: tier1ErrorLog.length,
               cascadeHistory: ['✅ Tier 1 Dry Run Complete (No Image Generation)']
             }
-          }), {
-            headers: generateEchoCorsHeaders(req),
-            status: 200
-          });
+          }, req, 200);
         }
 
         // Real Runware image generation using WebSocket service
@@ -745,7 +721,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
           negativePrompt: enhancedPrompt.negativePrompt
         });
 
-        return new Response(JSON.stringify({
+        return corsResponse({
           success: true,
           imageURL: imageResult.imageURL,
           provider: 'runware-websocket',
@@ -765,18 +741,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
             negativePrompt: enhancedPrompt.negativePrompt,
             primaryScene: enhancedPrompt.primaryScene,
             templateStructure: enhancedPrompt.templateStructure
-          },
-          
-          // CCS Debug Data
-          ccsDebug: {
-            characterSeed: enhancedPrompt.characterSeed,
-            culturalBundle: enhancedPrompt.culturalBundle,
-            coloredObjects: enhancedPrompt.coloredObjects,
-            secondaryCharacters: enhancedPrompt.secondaryCharacters,
-            detectedAnimals: enhancedPrompt.detectedAnimals,
-            sessionSetting: enhancedPrompt.sessionSetting,
-            structuredAvatarData: enhancedPrompt.structuredAvatarData
-          },
+...
           
           orchestratorDebugData: {
             aiDebugSchema: enhancedPrompt.aiDebugSchema,
@@ -790,10 +755,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
             templateStructure: 'COMPLETE_TIER_1',
             cascadeHistory: ['✅ Tier 1 Complete Success']
           }
-        }), {
-          headers: generateEchoCorsHeaders(req),
-          status: 200
-        });
+        }, req, 200);
 
       } catch (tier1Error: unknown) {
         const errorMessage = tier1Error instanceof Error ? tier1Error.message : String(tier1Error);
@@ -852,7 +814,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
           console.log(`[TIER_1_FORCE_MODE] Component Health:`, componentHealth);
           console.log(`[TIER_1_FORCE_MODE] Tier 1 Timeline Steps:`, tier1ErrorLog.length);
           
-          return new Response(JSON.stringify({
+          return corsResponse({
             success: false,
             error: failureDetails,
             errorMessage: errorMessage,
@@ -878,20 +840,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
             
             // Tier 1 Timeline for Debugging
             tier1Debug: {
-              timeline: tier1ErrorLog,
-              stepsCompleted: tier1ErrorLog.filter(s => s.status === 'success').length,
-              stepsFailed: tier1ErrorLog.filter(s => s.status === 'failed').length,
-              lastSuccessfulStep: tier1ErrorLog.filter(s => s.status === 'success').pop()?.step || 'None',
-              firstFailedStep: tier1ErrorLog.find(s => s.status === 'failed')?.step || 'None'
-            },
-            
-            errorDetails: {
-              message: errorMessage,
-              stack: errorStack,
-              timestamp: new Date().toISOString(),
-              tier1ErrorLog: tier1ErrorLog.length > 0 ? tier1ErrorLog : undefined,
-              failureType: failureCategory,
-              attemptedPrompts: {
+...
                 note: 'Tier 1 failed before prompt generation completed',
                 partialData: payload ? {
                   storyText: payload.storyText?.substring(0, 100) + '...',
@@ -912,10 +861,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
                 '⛔ Cascade Blocked: forceCompleteTier1=true'
               ]
             }
-          }), {
-            headers: generateEchoCorsHeaders(req),
-            status: 200
-          });
+          }, req, 200);
         }
         
         // Detect if CharacterConsistencyService is unavailable
