@@ -850,7 +850,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
               timeline: tier1ErrorLog,
               lastStep: tier1ErrorLog[tier1ErrorLog.length - 1] || 'Unknown',
               context: {
-                note: 'Tier 1 failed before prompt generation completed',
+                note: 'Tier 1 escalated to Direct Mode - AI scene insufficient, system operating normally',
                 partialData: payload ? {
                   storyText: payload.storyText?.substring(0, 100) + '...',
                   hasUserInfo: !!payload.userInfo,

@@ -651,8 +651,11 @@ export class SimpleImageService {
       }
         
     } catch (error) {
-      // Append to existing cascade history
-      cascadeHistory.push(`❌ Tier 1 Failed: ${error.message}`);
+      // Append to existing cascade history with escalation detection
+      const isEscalation = error.message.includes('ESCALATE_TO');
+      const icon = isEscalation ? '🔄' : '❌';
+      const action = isEscalation ? 'Escalated' : 'Failed';
+      cascadeHistory.push(`${icon} Tier 1 ${action}: ${error.message}`);
       
       DebugLogger.error('image', 'Image generation orchestrator failed', error);
       
