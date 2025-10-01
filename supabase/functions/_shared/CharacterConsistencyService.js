@@ -838,21 +838,34 @@ export class CharacterConsistencyService {
     const characterName = avatarIdentity?.name || 'child';
     const avatarType = avatarIdentity?.type || 'child';
     const skinTone = avatarIdentity?.skinTone || 'medium';
+    const gender = avatarType?.includes('girl') ? 'girls' : 'boys';
     
     // Generate seed using simple hash
     const characterSpecificSeed = `${sessionId}_${characterName}_${skinTone}`;
     const baseSeed = this.generateStableSeed(characterSpecificSeed, characterName);
     
-    // Get cultural hair from StaticDataCache (no database dependency)
+    // Get hair from full inlined arrays (no external dependencies)
     let selectedCulturalHair = null;
-    try {
-      const culturalData = getCulturalContextArrays();
-      const skinToneKey = skinTone.toLowerCase().replace(/[^a-z]/g, '');
-      if (culturalData.characterNames[skinToneKey]) {
-        selectedCulturalHair = culturalData.characterNames[skinToneKey][0] || null;
-      }
-    } catch (error) {
-      console.log('⚠️ Cultural data unavailable in basic seed, using null');
+    let selectedCulturalFeatures = null;
+    
+    const normalizedSkinTone = skinTone.toLowerCase();
+    
+    // For dark skin tones, use African American cultural arrays
+    if (normalizedSkinTone === 'dark' || normalizedSkinTone === 'darker') {
+      const hairArray = CharacterConsistencyService.AFRICAN_AMERICAN_HAIR_INLINE[gender];
+      selectedCulturalHair = CharacterConsistencyService.seededPick(hairArray, sessionId);
+      selectedCulturalFeatures = CharacterConsistencyService.seededPick(
+        CharacterConsistencyService.AFRICAN_AMERICAN_FACIAL_FEATURES_INLINE, 
+        sessionId
+      );
+    } else {
+      // For all other skin tones, use HAIR_BY_SKIN_TONE_INLINE
+      const hairArray = CharacterConsistencyService.HAIR_BY_SKIN_TONE_INLINE[normalizedSkinTone] || 
+                        CharacterConsistencyService.HAIR_BY_SKIN_TONE_INLINE.medium;
+      selectedCulturalHair = CharacterConsistencyService.seededPick(hairArray, sessionId);
+      
+      // Get appropriate skin feature description
+      selectedCulturalFeatures = CharacterConsistencyService.getSkinFeatures(skinTone, sessionId);
     }
     
     return {
@@ -862,7 +875,7 @@ export class CharacterConsistencyService {
       skinTone,
       consistentClothingStyle: 'casual', // Default
       selectedCulturalHair,
-      selectedCulturalFeatures: null,
+      selectedCulturalFeatures,
       characterSpecificSeed,
       physicalTraits: {},
       characterDescription: `${characterName} is a ${avatarType} age 6-8 wearing casual clothing`,
@@ -1130,15 +1143,19 @@ export class CharacterConsistencyService {
           features: CharacterConsistencyService.AFRICAN_AMERICAN_FACIAL_FEATURES_INLINE[featureIndex]
         };
       } else {
-        // Use hair color mapping for other skin tones
-        const hairOptions = CharacterConsistencyService.LEAN_CULTURAL_FALLBACK.hair[skinTone] || 
-                            CharacterConsistencyService.LEAN_CULTURAL_FALLBACK.hair['medium'];
+        // Use full HAIR_BY_SKIN_TONE_INLINE arrays for other skin tones
+        const normalizedTone = skinTone.toLowerCase();
+        const hairOptions = CharacterConsistencyService.HAIR_BY_SKIN_TONE_INLINE[normalizedTone] || 
+                            CharacterConsistencyService.HAIR_BY_SKIN_TONE_INLINE.medium;
         const characterSeed = characterData.seed || this.generateStableSeed(`${sessionId}_${characterName}`, characterName);
         const hairIndex = characterSeed % hairOptions.length;
         
+        // Get appropriate skin features for this tone
+        const skinFeatures = CharacterConsistencyService.getSkinFeatures(skinTone, sessionId);
+        
         fallbackEnhancements = {
           hair: hairOptions[hairIndex],
-          features: 'friendly features with bright eyes'
+          features: skinFeatures
         };
       }
       
