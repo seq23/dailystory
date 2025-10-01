@@ -1,3 +1,15 @@
+// ============================================================================
+// 🚨 SHARED StaticDataCache - Available for Edge Functions
+// ============================================================================
+// REGRESSION PREVENTION (ERROR-058):
+// This shared version exists for edge functions that need lightweight caching.
+// Story generation uses the local version at:
+// supabase/functions/generate-adaptive-story/StaticDataCache.ts
+//
+// DO NOT assume all edge functions can use dummy inline functions.
+// Story generation specifically requires full StaticDataCache integration.
+// ============================================================================
+
 // Self-contained StaticDataCache for _shared modules
 // This file MUST NOT import from other function folders to avoid deployment errors
 

@@ -19,53 +19,30 @@ import { classifyError, getRetryEnhancement, ErrorCategory } from './errorClassi
 // Import cost tracking and error classification  
 import { checkDailyLimit, trackOpenAICost, getDailyCostSummary } from './CostTracker.ts';
 
-// Inline lean implementations (no StaticDataCache dependency)
-function getModelChainOptimized() {
-  return {
-    primary: 'gpt-4o-mini',
-    fallback: 'gpt-3.5-turbo',
-    costs: { 'gpt-4o-mini': 0.00015, 'gpt-3.5-turbo': 0.0005 }
-  };
-}
-
-function getHairColorMapping() {
-  return {
-    'pale': ['strawberry blonde', 'golden red', 'auburn'],
-    'light': ['platinum blonde', 'golden blonde', 'honey blonde'],
-    'medium': ['chestnut brown', 'chocolate brown', 'coffee brown'],
-    'olive': ['jet black', 'raven black', 'midnight black'],
-    'dark': ['dark hair', 'black hair', 'dark hair']
-  };
-}
-
-function getSystemSettings() {
-  return { maxRetries: 3, timeout: 30000 };
-}
-
-function processAvatarIdentityFromCache(avatarData: any) {
-  return avatarData;
-}
-
-function getCulturalContextArrays(userInfo: any) {
-  return { names: [], foods: [], celebrations: [] };
-}
-
-// In-memory vocabulary cache
-const vocabularyCache = new Map<string, string[]>();
-
-function getVocabularyCache() {
-  return vocabularyCache;
-}
-
-function getUserVocabularyCache(userId: string, childId?: string) {
-  const key = childId ? `${userId}_${childId}` : userId;
-  return vocabularyCache.get(key) || [];
-}
-
-function setUserVocabularyCache(userId: string, childId: string | undefined, vocabulary: string[]) {
-  const key = childId ? `${userId}_${childId}` : userId;
-  vocabularyCache.set(key, vocabulary);
-}
+// ============================================================================
+// 🚨 CRITICAL RESTORATION: StaticDataCache Integration (ERROR-058 Fix)
+// ============================================================================
+// CONTEXT: Story generation REQUIRES StaticDataCache for:
+// - Cultural names, foods, celebrations (66 protected African American names)
+// - Model chain arrays (returns ARRAY not OBJECT for .map() calls)
+// - Educational vocabulary integration
+// - Hair color mapping for character consistency
+//
+// ARCHITECTURAL RULE: 
+// ✅ Story Generation = Full StaticDataCache integration (cultural authenticity)
+// ✅ Image Generation = Lean inline data (performance optimization)
+//
+// DO NOT REMOVE StaticDataCache imports from story generation without explicit approval
+// See: docs/STORY_GENERATION_STATICDATACACHE_RESTORATION_2025-10-01.md
+// ============================================================================
+import { 
+  getModelChainOptimized,
+  getHairColorMapping,
+  processAvatarIdentityFromCache,
+  getCulturalContextArrays,
+  getUserVocabularyCache,
+  setUserVocabularyCache
+} from './StaticDataCache.ts';
 
 
 // CORS headers - moved to top to fix ReferenceError

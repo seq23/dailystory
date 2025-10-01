@@ -1,3 +1,24 @@
+// ============================================================================
+// 🚨 CRITICAL: StaticDataCache for Story Generation - DO NOT REMOVE
+// ============================================================================
+// This file is REQUIRED for story generation and MUST NOT be replaced with
+// dummy functions or inline implementations.
+//
+// REGRESSION PREVENTION (ERROR-058):
+// - Story generation depends on this file for cultural authenticity
+// - Contains 66 protected African American names (sentimental to owner)
+// - getModelChainOptimized() returns ARRAYS not OBJECTS (critical for .map())
+// - Provides educational vocabulary integration
+// - Enables cultural names, foods, celebrations
+//
+// ARCHITECTURAL SEPARATION:
+// ✅ Story Generation: Uses this full StaticDataCache (cultural + educational)
+// ✅ Image Generation: Uses lean inline data (performance optimization)
+//
+// Before modifying this file or its imports, see:
+// docs/STORY_GENERATION_STATICDATACACHE_RESTORATION_2025-10-01.md
+// ============================================================================
+
 // Static Data Caching for Edge Functions
 // Mirror of frontend caching service for edge function use
 

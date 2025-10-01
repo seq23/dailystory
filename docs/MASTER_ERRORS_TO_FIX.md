@@ -94,6 +94,7 @@ Quick lookup table for all tracked errors with searchable keywords.
 
 | Error ID | Keywords | Severity | Status | System | Quick Link |
 |----------|----------|----------|--------|--------|------------|
+| ERROR-058 | staticdatacache-removal, story-generation, cultural-data-loss, model-chain-type-mismatch, object-vs-array, error-055-misapplication, dummy-functions, map-is-not-a-function | CRITICAL | ✅ RESOLVED | Story Gen | [View](#error-058-staticdatacache-removal-breaking-story-generation) |
 | ERROR-057 | function-hoisting, normalizeSupabaseResponse, javascript-arrow-functions, referenceerror, tier-1-false-failures, validation-system, declaration-order | CRITICAL | ✅ RESOLVED | Validation | [View](#error-057-javascript-hoisting-error-in-universal-validation-system) |
 | ERROR-056 | variable-scoping, structuredavatardata, characterconsistencyservice, referenceerror, coloredObjects-shadowing, early-exit, ai-visual-scene-creator | CRITICAL | ✅ RESOLVED | Image Gen | [View](#error-056-ai-visual-scene-creator-variable-scoping-and-reference-errors) |
 | ERROR-055 | missing-methods, getstructuredavatardata, generatecharacterforconsistency, import-dependencies, inline-data, runtime-guards, template-ab, tier-1 | HIGH | ✅ RESOLVED | Character System | [View](#error-055-missing-characterconsistencyservice-methods) |
@@ -229,6 +230,7 @@ Next Review: October 7, 2025
 - [ERROR-032: Network/WebSocket Connection Failures](#error-032-networkwebsocket-connection-failures) ✅
 
 ### 📖 Story Generation System Errors
+- [ERROR-058: StaticDataCache Removal Breaking Story Generation](#error-058-staticdatacache-removal-breaking-story-generation) ✅
 - [ERROR-040: Missing Emergency Content Integration](#error-040-missing-emergency-content-integration) ✅
 - [ERROR-039: Request Body Double Consumption Bug](#error-039-request-body-double-consumption-bug) ✅
 - [ERROR-038: Story Generation System Complete Failure](#error-038-story-generation-system-complete-failure) ✅
@@ -276,6 +278,41 @@ Next Review: October 7, 2025
 - **Fix Applied:** Removed all performance-based bypass triggers
 - **Current Logic:** Only content-length bypass for guest users (< 100 chars)
 - **Resolved:** 2025-09-28
+
+### ✅ ERROR-058: StaticDataCache Removal Breaking Story Generation
+- **Status:** RESOLVED ✅
+- **Severity:** CRITICAL (Complete story generation failure)
+- **Discovered:** 2025-10-01
+- **Impact:** 500 errors on all story generation, cultural data loss, vocabulary integration broken
+- **Root Cause:** ERROR-055 fix (image generation optimization) wrongly applied to story generation
+- **Technical Details:**
+  - Dummy `getModelChainOptimized()` returned OBJECT instead of ARRAY
+  - Code called `modelProgression.map()` expecting array, got `TypeError: map is not a function`
+  - 66 African American names inaccessible (sentimental to owner)
+  - Cultural foods, celebrations, names all empty arrays
+  - Educational vocabulary cache non-functional
+- **Architectural Mistake:**
+  - Image generation: Lean inline data (CORRECT for performance)
+  - Story generation: Requires full StaticDataCache (CRITICAL for cultural authenticity)
+  - Mixed up the two architectural requirements
+- **Fix Applied:**
+  - Removed all dummy functions (lines 23-68) from `streamlined-handler.ts`
+  - Added proper StaticDataCache import with 6 essential functions
+  - Added regression prevention comments in 3 files
+  - Created comprehensive documentation snapshot
+- **Files Modified:**
+  - `supabase/functions/generate-adaptive-story/streamlined-handler.ts` (Lines 19-68 replaced with proper imports)
+  - `supabase/functions/generate-adaptive-story/StaticDataCache.ts` (Added header comments)
+  - `supabase/functions/_shared/StaticDataCache.ts` (Added header comments)
+  - `docs/STORY_GENERATION_STATICDATACACHE_RESTORATION_2025-10-01.md` (New comprehensive snapshot)
+  - `docs/MASTER_ERRORS_TO_FIX.md` (Added ERROR-058 entry)
+- **Resolved:** 2025-10-01
+- **Prevention:** 
+  - Clear architectural boundaries documented
+  - Regression prevention comments in all affected files
+  - Explicit warnings against removing StaticDataCache from story generation
+  - Reference documentation for future developers
+- **Related Documentation:** [Full Restoration Guide](./STORY_GENERATION_STATICDATACACHE_RESTORATION_2025-10-01.md)
 
 ### ✅ ERROR-057: JavaScript Hoisting Error in Universal Validation System
 - **Status:** RESOLVED ✅
