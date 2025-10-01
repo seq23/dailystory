@@ -670,7 +670,14 @@ Deno.serve(async (req: Request): Promise<Response> => {
             ccsDebug: {
               characterSeed: enhancedPrompt.characterSeed,
               culturalBundle: enhancedPrompt.culturalBundle,
-...
+              coloredObjects: enhancedPrompt.coloredObjects,
+              secondaryCharacterSeeds: enhancedPrompt.secondaryCharacterSeeds,
+              secondaryCharacters: enhancedPrompt.secondaryCharacters,
+              detectedAnimals: enhancedPrompt.detectedAnimals,
+              sessionSetting: enhancedPrompt.sessionSetting,
+              structuredAvatarData: enhancedPrompt.structuredAvatarData,
+              aiSchema: enhancedPrompt.aiSchema,
+              aiDebugSchema: enhancedPrompt.aiDebugSchema,
               tier1Steps: tier1ErrorLog.length,
               cascadeHistory: ['✅ Tier 1 Dry Run Complete (No Image Generation)']
             }
