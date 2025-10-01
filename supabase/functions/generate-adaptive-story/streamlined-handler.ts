@@ -38,6 +38,7 @@ import { checkDailyLimit, trackOpenAICost, getDailyCostSummary } from './CostTra
 import { 
   getModelChainOptimized,
   getHairColorMapping,
+  getSystemSettings,
   processAvatarIdentityFromCache,
   getCulturalContextArrays,
   getUserVocabularyCache,

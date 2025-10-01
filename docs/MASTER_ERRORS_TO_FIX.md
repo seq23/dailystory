@@ -307,6 +307,7 @@ Next Review: October 7, 2025
   - `docs/STORY_GENERATION_STATICDATACACHE_RESTORATION_2025-10-01.md` (New comprehensive snapshot)
   - `docs/MASTER_ERRORS_TO_FIX.md` (Added ERROR-058 entry)
 - **Resolved:** 2025-10-01
+- **Follow-up Patch:** Added missing `getSystemSettings` import to complete StaticDataCache restoration
 - **Prevention:** 
   - Clear architectural boundaries documented
   - Regression prevention comments in all affected files

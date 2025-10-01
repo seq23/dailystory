@@ -322,6 +322,7 @@ import {
 - **2025-10-01**: ERROR-058 discovered (500 errors, cultural data loss)
 - **2025-10-01**: ERROR-058 resolved (StaticDataCache restored)
 - **2025-10-01**: Documentation and prevention measures implemented
+- **2025-10-01**: Follow-up patch - Added missing `getSystemSettings` import to complete restoration
 
 ---
 
