@@ -155,7 +155,8 @@ async function processInlinedTier1(payload: any, memoizedImport: any, logTier1St
       'analyzeVisualDetails',
       'getColoredObjects',
       'detectAllCharacters',
-      'getSessionSetting'
+      'getSessionSetting',
+      'getSecondaryCharacterSeed'
     ];
     
     const missingMethods = requiredMethods.filter(method => 
@@ -248,7 +249,7 @@ async function processInlinedTier1(payload: any, memoizedImport: any, logTier1St
   const detectedAnimals = detectedAllCharacters.animals || [];
   
   // Get session setting (indoor/outdoor context)
-  const sessionSetting = await characterConsistencyService.getSessionSetting(sessionId);
+  const sessionSetting = await characterConsistencyService.getSessionSetting(sessionId, 'context', 'indoor');
   
   console.log(`✅ CHARACTER FOUNDATION: Established complete character consistency data`, {
     hasCharacterSeed: !!characterSeed,

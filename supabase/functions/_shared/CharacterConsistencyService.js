@@ -1085,9 +1085,12 @@ export class CharacterConsistencyService {
 
   /**
    * Get character appearance from story (for backwards compatibility)
+   * Now accepts 3 params: storyContext, characterName, sessionId
    */
-  async getCharacterAppearanceFromStory(sessionId, characterName) {
-    const manifest = this.getSessionManifest(sessionId);
+  async getCharacterAppearanceFromStory(storyContext, characterName, sessionId) {
+    // Use sessionId if provided, fallback to storyContext
+    const sessionIdToUse = sessionId || storyContext;
+    const manifest = this.getSessionManifest(sessionIdToUse);
     const character = manifest.getCharacter || manifest.getAllCharacters().find(c => c.name === characterName);
     
     if (character?.appearance) {
@@ -1117,6 +1120,22 @@ export class CharacterConsistencyService {
       characterType,
       seed: characterSeed,
       appearance: `${characterName} is a ${characterType}`,
+      generatedAt: Date.now()
+    };
+  }
+
+  /**
+   * Get secondary character seed (required by runware-generate-image)
+   * Returns character seed data for secondary characters
+   */
+  async getSecondaryCharacterSeed(sessionId, characterName, characterType) {
+    const characterSeed = this.generateStableSeed(sessionId, characterName);
+    
+    return {
+      characterName,
+      characterType,
+      seed: characterSeed,
+      visualDescription: `${characterName} is a ${characterType}`,
       generatedAt: Date.now()
     };
   }
