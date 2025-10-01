@@ -147,9 +147,23 @@ async function processInlinedTier1(payload: any, memoizedImport: any, logTier1St
     const { characterConsistencyService: service } = await import('../_shared/CharacterConsistencyService.js');
     characterConsistencyService = service;
     
-    // Validate service instance has required methods
-    if (!characterConsistencyService?.getCharacterAppearanceFromStory) {
-      throw new Error(`CharacterConsistencyService missing required methods`);
+    // Validate service instance has ALL required methods
+    const requiredMethods = [
+      'getStructuredAvatarData',
+      'getCharacterSeed', 
+      'getCulturalEnhancements',
+      'analyzeVisualDetails',
+      'getColoredObjects',
+      'detectAllCharacters',
+      'getSessionSetting'
+    ];
+    
+    const missingMethods = requiredMethods.filter(method => 
+      typeof characterConsistencyService?.[method] !== 'function'
+    );
+    
+    if (missingMethods.length > 0) {
+      throw new Error(`CharacterConsistencyService missing required methods: ${missingMethods.join(', ')}`);
     }
     
     logTier1Step('CharacterConsistencyService Import', 'success', 'Service loaded successfully');
@@ -229,11 +243,9 @@ async function processInlinedTier1(payload: any, memoizedImport: any, logTier1St
     userInfo
   });
   
-  // Extract secondary characters for AI context
+  // Extract secondary characters and animals for AI context
   const secondaryCharacters = detectedAllCharacters.secondaryCharacters || [];
-  
-  // Detect animals using character consistency service
-  const detectedAnimals = await characterConsistencyService.detectAnimals(storyText || pageText, sessionId);
+  const detectedAnimals = detectedAllCharacters.animals || [];
   
   // Get session setting (indoor/outdoor context)
   const sessionSetting = await characterConsistencyService.getSessionSetting(sessionId);
@@ -243,7 +255,7 @@ async function processInlinedTier1(payload: any, memoizedImport: any, logTier1St
     hasCulturalBundle: !!culturalBundle,
     coloredObjectsCount: coloredObjects?.split(',').length || 0,
     secondaryCharactersCount: secondaryCharacters.length,
-    detectedAnimalsCount: detectedAnimals?.length || 0,
+    detectedAnimalsCount: detectedAnimals.length,
     sessionSetting
   });
   
@@ -293,7 +305,7 @@ async function processInlinedTier1(payload: any, memoizedImport: any, logTier1St
       hasCulturalBundle: !!culturalBundle,
       hasColoredObjects: !!coloredObjects,
       secondaryCharactersCount: secondaryCharacters?.length || 0,
-      hasDetectedAnimals: !!detectedAnimals?.length,
+      hasDetectedAnimals: detectedAnimals.length > 0,
       hasSessionSetting: !!sessionSetting
     });
     
@@ -347,7 +359,7 @@ async function processInlinedTier1(payload: any, memoizedImport: any, logTier1St
     hasCulturalBundle: !!culturalBundle,
     hasColoredObjects: !!coloredObjects,
     secondaryCharactersMatched: secondaryCharacters?.length || 0,
-    animalsDetected: detectedAnimals?.length || 0,
+    animalsDetected: detectedAnimals.length,
     sessionSetting,
     aiSchemaComplete: Object.values(aiSchema).filter(Boolean).length
   };
