@@ -65,6 +65,7 @@ async function generateCompleteVisualSchema(storyText: string, userInfo: any, se
   // Extract character name for reference
   const characterName = userInfo?.name || userInfo?.userName || 'child';
   const nativeLanguage = userInfo?.native_language || userInfo?.nativeLanguage || 'en';
+  const ethnicity = userInfo?.ethnicity || '';
   
   // Build character data string for OpenAI
   // This data comes from orchestrator (Tier 1) or will be built from mapping system (Direct Mode)
@@ -75,7 +76,27 @@ async function generateCompleteVisualSchema(storyText: string, userInfo: any, se
   console.log(`🎨 Character data for OpenAI (basic categories): ${characterData}`);
   const previousPrimaryScene = null; // Will be implemented with visual history tracking
   const isNonEnglish = nativeLanguage && nativeLanguage !== 'en';
-  const culturalContext = isNonEnglish ? `${nativeLanguage} cultural context` : '';
+  
+  // Build specific cultural enhancement instructions based on native language
+  let culturalContext = '';
+  if (isNonEnglish) {
+    switch (nativeLanguage) {
+      case 'fr':
+        culturalContext = 'French cultural elements like Parisian parks near Eiffel Tower, Seine River waterfront scenes, charming café districts with outdoor seating, French gardens with lavender, elegant French architecture, boulangeries';
+        break;
+      case 'es':
+        culturalContext = 'Spanish cultural settings like Mediterranean courtyards, colorful plazas with fountains, vibrant Hispanic neighborhoods, traditional Spanish architecture, sunny patios with potted plants, Spanish gardens';
+        break;
+      case 'zh':
+        culturalContext = 'Chinese cultural elements like traditional gardens with bamboo, pagoda backgrounds, Chinese parks with stone bridges, cultural landmarks, lantern-lit scenes, traditional Chinese architecture';
+        break;
+      case 'ar':
+        culturalContext = 'Middle Eastern cultural settings like desert oasis scenes, traditional Arabic architecture with geometric patterns, cultural landmarks, palm tree gardens, ornate archways';
+        break;
+      default:
+        culturalContext = `${nativeLanguage} cultural context with authentic local settings and architecture`;
+    }
+  }
 
   // WORD-FOR-WORD OpenAI PROMPTS - Phase 1 (lines 625-678 and 682-694 from deprecated JS version)
   const systemPrompt = `Generate a comprehensive visual scene description for children's story image generation.
@@ -119,12 +140,18 @@ ATMOSPHERIC GUIDANCE:
 - Objects/props: include furniture, toys, nature elements, tools
 
 CULTURAL CONTEXT:
-${isNonEnglish ? `- Consider culturally authentic settings: ${culturalContext}` : '- Use universal child-friendly settings'}
-${isNonEnglish ? `- Incorporate cultural elements appropriate for ${nativeLanguage} speaking families` : ''}`;
+${isNonEnglish ? `
+CRITICAL: Enhance story settings with specific cultural elements for ${nativeLanguage} speakers:
+${culturalContext}
+
+EXAMPLE: For a French speaker named Sarah playing in a park, generate:
+"Sarah with ${structuredAvatarData?.assignedHairColor || 'natural hair'} and ${structuredAvatarData?.resolvedSkinTone || 'medium'} skin tone plays joyfully in a charming Parisian park near the Eiffel Tower, with the Seine River visible in the background, surrounded by elegant French gardens with lavender and a quaint café district with outdoor seating. Warm, sophisticated European aesthetic with golden afternoon light."
+
+Use this level of cultural detail and specificity for ALL scenes - incorporate the cultural elements naturally into the setting description.` : '- Use universal child-friendly settings with warm, inviting atmospheres'}`;
 
   const userPrompt = `Create a visual scene description for this story page.
 
-CHARACTER APPEARANCE: ${characterData}
+CHARACTER APPEARANCE: ${characterData}${ethnicity ? `, ${ethnicity} ethnicity` : ''}
 
 STORY TEXT:
 "${storyText}"
