@@ -1601,6 +1601,26 @@ async function handleRequest(req) {
       templateComplexity = payload.templateComplexity;
       sessionId = payload.sessionId;
       preAnalyzedData = payload.preAnalyzedData; // Extract cascade data
+    } else if (payload.storyText) {
+      // storyText format: {storyText, userInfo, sessionId, pageNumber}
+      console.log('📝 Template AB: Using storyText format');
+      storyText = payload.storyText;
+      enhancedStoryData = payload.enhancedStoryData || { userInfo: payload.userInfo };
+      pageNumber = payload.pageNumber;
+      avatarIdentity = payload.userInfo?.avatar;
+      templateComplexity = payload.templateComplexity;
+      sessionId = payload.sessionId;
+      preAnalyzedData = payload.preAnalyzedData; // Extract cascade data
+    } else if (payload.enhancedStoryData?.storyText) {
+      // Nested enhancedStoryData format
+      console.log('📦 Template AB: Using nested enhancedStoryData.storyText format');
+      enhancedStoryData = payload.enhancedStoryData;
+      storyText = payload.enhancedStoryData.storyText;
+      pageNumber = payload.pageNumber || payload.enhancedStoryData.pageNumber;
+      avatarIdentity = payload.enhancedStoryData.userInfo?.avatar || payload.avatarIdentity || {};
+      templateComplexity = payload.templateComplexity;
+      sessionId = payload.sessionId || payload.enhancedStoryData.sessionId;
+      preAnalyzedData = payload.preAnalyzedData; // Extract cascade data
     } else {
       // Legacy format: {enhancedStoryData, storyText, pageNumber, avatarIdentity, templateComplexity, sessionId}
       console.log('📖 Template AB: Using legacy format');

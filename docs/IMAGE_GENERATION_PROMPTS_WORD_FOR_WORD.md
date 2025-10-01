@@ -5,6 +5,20 @@
 
 ---
 
+## PAYLOAD CONVENTIONS
+
+**CRITICAL**: All image generation functions (`runware-generate-image`, `runware-template-ab`, `runware-template-cd`) accept BOTH `pageText` AND `storyText` interchangeably.
+
+**Supported Formats**:
+1. Root-level: `{ pageText: "...", userInfo: {...}, sessionId: "...", pageNumber: 1 }`
+2. Root-level alternate: `{ storyText: "...", userInfo: {...}, sessionId: "...", pageNumber: 1 }`
+3. Nested enhancedStoryData: `{ enhancedStoryData: { storyText: "...", userInfo: {...}, sessionId: "..." } }`
+4. Nested bundle: `{ bundle: { storyText: "...", userInfo: {...}, sessionId: "...", pageNumber: 1 } }`
+
+The orchestrator (`runware-generate-image`) automatically normalizes all payloads to ensure both `pageText` and `storyText` are set at the root level, along with `userInfo`, `sessionId`, and `pageNumber`.
+
+---
+
 ## TABLE OF CONTENTS
 
 1. [AI Visual Scene Creator Prompts](#ai-visual-scene-creator-prompts)

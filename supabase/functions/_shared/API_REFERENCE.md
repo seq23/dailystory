@@ -46,10 +46,11 @@ The following edge functions are **DEPRECATED**: `runware-generate-image` and `p
 **Method**: POST
 **Purpose**: Generate images using advanced tier-based fallback system
 
-**Request Body**:
+**Request Body** (accepts multiple payload formats):
 ```json
 {
-  "pageText": "string (required)",
+  "pageText": "string (required - OR storyText)",
+  "storyText": "string (accepted - OR pageText)",
   "userInfo": "object (required)",
   "sessionId": "string",
   "pageNumber": "number",
@@ -57,6 +58,20 @@ The following edge functions are **DEPRECATED**: `runware-generate-image` and `p
   "difficultyLevel": "string"
 }
 ```
+
+**Nested Format Support**:
+```json
+{
+  "enhancedStoryData": {
+    "storyText": "string",
+    "userInfo": "object",
+    "sessionId": "string",
+    "pageNumber": "number"
+  }
+}
+```
+
+**Note**: The orchestrator accepts both `pageText` and `storyText` interchangeably at root level, as well as nested within `enhancedStoryData` or `bundle` objects. All formats are automatically normalized internally.
 
 **Response**:
 ```json

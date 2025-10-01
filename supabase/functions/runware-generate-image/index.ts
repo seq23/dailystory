@@ -111,19 +111,26 @@ function validatePrimarySceneQuality(scene: string): boolean {
 }
 
 // PHASE 1A: Lightning-Fast Input Validation (50ms max)
-function validatePayloadFast(payload: ValidationPayload): boolean {
+// Accepts pageText OR storyText from root, bundle, or enhancedStoryData
+function validatePayloadFast(payload: any): boolean {
   if (!payload) throw new Error("PAYLOAD_NULL");
   
-  // Enhanced validation for story content
+  // Check for story content at multiple locations
   const hasPageText = payload.pageText && typeof payload.pageText === 'string' && payload.pageText.trim().length > 0;
   const hasStoryText = payload.storyText && typeof payload.storyText === 'string' && payload.storyText.trim().length > 0;
+  const hasBundleStoryText = payload.bundle?.storyText && typeof payload.bundle.storyText === 'string' && payload.bundle.storyText.trim().length > 0;
+  const hasEnhancedStoryText = payload.enhancedStoryData?.storyText && typeof payload.enhancedStoryData.storyText === 'string' && payload.enhancedStoryData.storyText.trim().length > 0;
   
-  if (!hasPageText && !hasStoryText) {
+  if (!hasPageText && !hasStoryText && !hasBundleStoryText && !hasEnhancedStoryText) {
     console.error("[runware-generate-image] Final error after retries: NO_STORY_CONTENT");
     throw new Error("NO_STORY_CONTENT");
   }
   
-  if (!payload.sessionId && !payload.userInfo) throw new Error("NO_SESSION_ID");
+  // Check for session/user info at multiple locations
+  const hasSessionId = payload.sessionId || payload.bundle?.sessionId || payload.enhancedStoryData?.sessionId;
+  const hasUserInfo = payload.userInfo || payload.bundle?.userInfo || payload.enhancedStoryData?.userInfo;
+  
+  if (!hasSessionId && !hasUserInfo) throw new Error("NO_SESSION_ID");
   return true; // Validation passed
 }
 
@@ -533,6 +540,41 @@ Deno.serve(async (req: Request): Promise<Response> => {
       // PHASE 4: Fast validation
       validatePayloadFast(payload);
       console.log(`✅ [${requestId}] Fast validation passed`);
+      
+      // PHASE 4.5: PAYLOAD NORMALIZATION - Unify pageText/storyText and nested structures
+      // Extract story text from all possible locations
+      const storyTextValue = payload.pageText || payload.storyText || payload.bundle?.storyText || payload.enhancedStoryData?.storyText;
+      
+      // Extract userInfo from all possible locations
+      const userInfoValue = payload.userInfo || payload.bundle?.userInfo || payload.enhancedStoryData?.userInfo;
+      
+      // Extract sessionId from all possible locations
+      const sessionIdValue = payload.sessionId || payload.bundle?.sessionId || payload.enhancedStoryData?.sessionId;
+      
+      // Extract pageNumber from all possible locations
+      const pageNumberValue = payload.pageNumber || payload.bundle?.pageNumber || payload.enhancedStoryData?.pageNumber || 1;
+      
+      // Normalize payload: ensure both pageText and storyText are set at root level
+      payload.pageText = storyTextValue;
+      payload.storyText = storyTextValue;
+      payload.userInfo = userInfoValue;
+      payload.sessionId = sessionIdValue;
+      payload.pageNumber = pageNumberValue;
+      
+      // Preserve nested structures for backward compatibility
+      if (!payload.enhancedStoryData && userInfoValue) {
+        payload.enhancedStoryData = { userInfo: userInfoValue, storyText: storyTextValue };
+      }
+      if (!payload.bundle && userInfoValue) {
+        payload.bundle = { 
+          userInfo: userInfoValue, 
+          storyText: storyTextValue, 
+          sessionId: sessionIdValue,
+          pageNumber: pageNumberValue 
+        };
+      }
+      
+      console.log(`✅ [${requestId}] Payload normalized: pageText=${!!payload.pageText}, storyText=${!!payload.storyText}, userInfo=${!!payload.userInfo}, sessionId=${!!payload.sessionId}`);
       
       // Extract force flag at handler scope so it's accessible in catch blocks
       const forceCompleteTier1 = payload.forceCompleteTier1 === true;
