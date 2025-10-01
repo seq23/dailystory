@@ -21,7 +21,8 @@ const CDN_FALLBACKS = {
       'https://esm.sh/openai@4.28.0?pin=v135',
       'https://cdn.jsdelivr.net/npm/openai@4.28.0/+esm',
       'https://unpkg.com/openai@4.28.0?module'
-    ]
+    ],
+    vendor: '../_vendor/openai@4.28.0.mjs'
   },
   'stripe': {
     primary: 'https://esm.sh/stripe@12.18.0?target=deno',
@@ -124,6 +125,16 @@ async function attemptImportWithTimeoutAndFallbacks(path: string): Promise<any> 
           return await timeoutImport(fallbackUrl);
         } catch (fallbackError) {
           console.warn(`Fallback CDN failed: ${fallbackUrl}`, fallbackError);
+        }
+      }
+
+      // Try vendor bundle if available
+      if (cdnConfig.vendor) {
+        try {
+          console.log(`Trying vendor bundle: ${cdnConfig.vendor}`);
+          return await timeoutImport(cdnConfig.vendor);
+        } catch (vendorError) {
+          console.warn(`Vendor bundle failed: ${cdnConfig.vendor}`, vendorError);
         }
       }
 

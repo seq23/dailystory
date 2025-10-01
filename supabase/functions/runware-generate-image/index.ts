@@ -61,11 +61,11 @@ async function bindTierLogger(sessionId: SessionId, requestId: string, authHeade
     const supabaseClient = await createResilientSupabaseClient();
   
     return {
-      t1: (msg, ctx = {}) => tierLogging.logTier1(msg, { ...ctx, authHeader }, supabaseClient, sessionId, requestId),
-      t2: (msg, ctx = {}) => tierLogging.logTier2(msg, { ...ctx, authHeader }, supabaseClient, sessionId, requestId),
-      attempt: (tier, ctx = {}) => tierLogging.logTierAttempt(supabaseClient, sessionId, requestId, tier, 'attempting', { ...ctx, authHeader }),
-      success: (tier, ctx = {}) => tierLogging.logTierSuccess(supabaseClient, sessionId, requestId, tier, { ...ctx, authHeader }),
-      failure: (tier, ctx = {}) => tierLogging.logTierFailure(supabaseClient, sessionId, requestId, tier, { ...ctx, authHeader }),
+      t1: (msg, ctx = {}) => tierLogging.logTier1(msg, ctx, supabaseClient, sessionId, requestId),
+      t2: (msg, ctx = {}) => tierLogging.logTier2(msg, ctx, supabaseClient, sessionId, requestId),
+      attempt: (tier, ctx = {}) => tierLogging.logTierAttempt(supabaseClient, sessionId, requestId, tier, 'attempting', ctx),
+      success: (tier, ctx = {}) => tierLogging.logTierSuccess(supabaseClient, sessionId, requestId, tier, ctx),
+      failure: (tier, ctx = {}) => tierLogging.logTierFailure(supabaseClient, sessionId, requestId, tier, ctx),
     };
   } catch (error) {
     console.warn(`Failed to create Supabase client: ${error}`);
@@ -126,11 +126,11 @@ function validatePayloadFast(payload: any): boolean {
     throw new Error("NO_STORY_CONTENT");
   }
   
-  // Check for session/user info at multiple locations
+  // Check for session/user info at multiple locations - BOTH required
   const hasSessionId = payload.sessionId || payload.bundle?.sessionId || payload.enhancedStoryData?.sessionId;
   const hasUserInfo = payload.userInfo || payload.bundle?.userInfo || payload.enhancedStoryData?.userInfo;
   
-  if (!hasSessionId && !hasUserInfo) throw new Error("NO_SESSION_ID");
+  if (!hasSessionId || !hasUserInfo) throw new Error("NO_SESSION_OR_USER_INFO");
   return true; // Validation passed
 }
 
@@ -157,7 +157,7 @@ async function processInlinedTier1(payload: any, memoizedImport: any, logTier1St
     // Validate service instance has ALL required methods
     const requiredMethods = [
       'getStructuredAvatarData',
-      'getCharacterSeed', 
+      'getEnhancedCharacterSeed', 
       'getCulturalEnhancements',
       'analyzeVisualDetails',
       'getColoredObjects',
@@ -273,7 +273,7 @@ async function processInlinedTier1(payload: any, memoizedImport: any, logTier1St
   let aiDebugSchema: any = null;
   try {
     logTier1Step('AI Scene Creator Call', 'attempt', 'Invoking ai-visual-scene-creator');
-    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4');
+    const { createClient } = await memoizedImport('@supabase/supabase-js');
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -395,8 +395,8 @@ async function processInlinedTier1(payload: any, memoizedImport: any, logTier1St
   const characterReference = avatarIdentity.type === 'prefer-not-to-answer' ? 'gender neutral child' : avatarIdentity.type;
   const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
   
-  // Get style framework
-  const difficulty = userInfo?.difficulty || userInfo?.gradeLevel || 'medium';
+  // Get style framework with safe type coercion
+  const difficulty = String(userInfo?.difficulty || userInfo?.gradeLevel || 'medium').toLowerCase();
   const styleFramework = getInlinedStyleFramework(difficulty);
   
   // ============================================================================
@@ -508,7 +508,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       status: 'healthy',
       service: 'runware-generate-image',
       tier: 'Main Orchestrator',
-      deployment_version: '2025-09-27T18:40:00Z',
+      deployment_version: '2025-10-01T21:20:00Z',
       timestamp: new Date().toISOString(),
       environment: {
         runwareApiKeyPresent: !!runwareKey,
@@ -518,7 +518,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         supabaseServiceRoleKeyPresent: !!supabaseKey,
         supabaseServiceRoleKeyLength: supabaseKey ? supabaseKey.length : 0
       },
-      capabilities: ["tier_orchestration", "image_generation", "complete_cascade_1_2.5A_2.5B_DirectMode_2.5C_2.5D_SVG"]
+      capabilities: ["tier_orchestration", "image_generation", "complete_cascade_1_DirectMode_2.5A_2.5B_2.5C_2.5D"]
     }, req);
   }
 
@@ -604,12 +604,19 @@ Deno.serve(async (req: Request): Promise<Response> => {
         console.log(`✅ [CDN_HEALTH] Using resilient loader with multi-CDN fallback support`);
       } catch (loaderError) {
         console.warn(`⚠️ [CDN_HEALTH] Resilient loader unavailable, using local fallback:`, loaderError instanceof Error ? loaderError.message : String(loaderError));
-        // Fallback: simple local memoizer to stay up during cold boot anomalies
+        // Fallback: vendor-aware local memoizer to stay up during cold boot anomalies
         const cache = new Map<string, Promise<any>>();
         memoizedImport = <T=any>(href: string) => {
           if (!cache.has(href)) {
             console.log(`📦 [CDN_HEALTH] Local memoizer importing: ${href}`);
-            cache.set(href, import(href));
+            // Try vendor path first for known packages
+            let importPath = href;
+            if (href.includes('@supabase/supabase-js')) {
+              importPath = '../_vendor/supabase-js@2.57.4.mjs';
+            } else if (href.includes('openai')) {
+              importPath = '../_vendor/openai@4.28.0.mjs';
+            }
+            cache.set(href, import(importPath).catch(() => import(href)));
           }
           return cache.get(href)! as Promise<T>;
         };
