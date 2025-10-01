@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { ImageDeduplicationService } from '@/services/imageDeduplicationService';
 import { SimpleImageService } from '@/services/SimpleImageService';
 import { DebugLogger } from '@/services/DebugLogger';
-import { isAPIResponse } from '@/utils/typeGuards';
+import { isAPIResponse, extractImageUrl } from '@/utils/typeGuards';
 
 interface ImageGenerationResult {
   imageUrl: string;
@@ -42,8 +42,14 @@ export const useImageGenerationWithDeduplication = (sessionId: string) => {
 
       const generationTime = Date.now() - startTime;
 
+      // Extract image URL using universal utility
+      const imageUrl = extractImageUrl(result);
+      if (!imageUrl) {
+        throw new Error('No valid image URL in response');
+      }
+
       // Cache the generated image
-      ImageDeduplicationService.cacheImage(prompt, result.imageURL, sessionId);
+      ImageDeduplicationService.cacheImage(prompt, imageUrl, sessionId);
 
       DebugLogger.log('image', 'New image generated and cached', {
         pageNumber,
@@ -52,7 +58,7 @@ export const useImageGenerationWithDeduplication = (sessionId: string) => {
       });
 
       return { 
-        imageUrl: result.imageURL, 
+        imageUrl, 
         cached: false, 
         generationTime 
       };

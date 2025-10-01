@@ -5,6 +5,7 @@ import { errorRecoveryManager } from '@/services/ErrorRecoveryManager';
 import { HealthCheckService, type HealthStatus, type TierStrategy } from './HealthCheckService';
 import { OptimizedImageCache } from './OptimizedImageCache';
 import { SmartOrchestrationBypass } from '@/utils/SmartOrchestrationBypass';
+import { extractImageUrl, extractSuccessValue } from '@/utils/typeGuards';
 
 // ============= TYPES =============
 
@@ -549,8 +550,6 @@ export class SimpleImageService {
         });
 
         // CONSOLIDATED VALIDATION: Use universal validation utilities
-        const { extractImageUrl, extractSuccessValue } = await import('@/utils/typeGuards');
-        
         const imageURL = extractImageUrl(orchResult);
         const isSuccess = extractSuccessValue(orchResult);
         const hasValidImageURL = !!imageURL;
@@ -853,8 +852,9 @@ export class SimpleImageService {
       }
 
       // Phase A: Multi-Field Image URL Validation - Handle all API response variations  
-      const imageURL = result?.imageURL || result?.image_url || result?.imageUrl || result?.url;
-      if (result?.success && imageURL?.trim()) {
+      const imageURL = extractImageUrl(result);
+      const isSuccess = extractSuccessValue(result);
+      if (isSuccess && imageURL?.trim()) {
         DebugLogger.log('image', `🖼️ Direct AI Visual Scene Creator success: ${imageURL}`);
         
         // Store in fast cache
@@ -943,8 +943,9 @@ export class SimpleImageService {
         }
 
         // Phase A: Multi-Field Image URL Validation - Handle all API response variations
-        const imageURL = templateResult?.imageURL || templateResult?.image_url || templateResult?.imageUrl || templateResult?.url;
-        if (templateResult?.success && imageURL?.trim()) {
+        const imageURL = extractImageUrl(templateResult);
+        const isSuccess = extractSuccessValue(templateResult);
+        if (isSuccess && imageURL?.trim()) {
           DebugLogger.log('image', `🖼️ Template ${template.complexity} generated successfully: ${imageURL}`);
           
           // Store result in fast cache
