@@ -541,6 +541,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
       validatePayloadFast(payload);
       console.log(`✅ [${requestId}] Fast validation passed`);
       
+      // PHASE 4.1: DRY RUN MODE DETECTION
+      const isDryRun = payload.dryRun === true;
+      if (isDryRun) {
+        console.log(`🧪 [${requestId}] DRY RUN MODE: Debug-only request detected`);
+      }
+      
       // PHASE 4.5: PAYLOAD NORMALIZATION - Unify pageText/storyText and nested structures
       // Extract story text from all possible locations
       const storyTextValue = payload.pageText || payload.storyText || payload.bundle?.storyText || payload.enhancedStoryData?.storyText;
@@ -629,6 +635,64 @@ Deno.serve(async (req: Request): Promise<Response> => {
         if (!enhancedPrompt || !validatePrimarySceneQuality(enhancedPrompt.primaryScene || enhancedPrompt.enhancedPrompt || '')) {
           throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_25A');
         }
+        
+        // DRY RUN MODE: Return debug data without generating image
+        if (isDryRun) {
+          console.log(`🧪 [${requestId}] DRY RUN: Returning Tier 1 debug data without image generation`);
+          
+          tierLogger.success('TIER_1_DRY_RUN', {
+            templateStructure: 'COMPLETE_TIER_1',
+            dryRun: true
+          });
+          
+          return new Response(JSON.stringify({
+            success: true,
+            dryRun: true,
+            tier: 'TIER_1',
+            pathUsed: 'orchestrator',
+            resultType: 'TIER_1_DRY_RUN',
+            templateStructure: 'COMPLETE_TIER_1',
+            requestId: requestId,
+            timestamp: new Date().toISOString(),
+            
+            // Enhanced Debug Data
+            tier1Debug: {
+              timeline: tier1ErrorLog,
+              enhancedPrompt: enhancedPrompt.enhancedPrompt,
+              negativePrompt: enhancedPrompt.negativePrompt,
+              primaryScene: enhancedPrompt.primaryScene,
+              templateStructure: enhancedPrompt.templateStructure
+            },
+            
+            // CCS Debug Data
+            ccsDebug: {
+              characterSeed: enhancedPrompt.characterSeed,
+              culturalBundle: enhancedPrompt.culturalBundle,
+              coloredObjects: enhancedPrompt.coloredObjects,
+              secondaryCharacters: enhancedPrompt.secondaryCharacters,
+              detectedAnimals: enhancedPrompt.detectedAnimals,
+              sessionSetting: enhancedPrompt.sessionSetting,
+              structuredAvatarData: enhancedPrompt.structuredAvatarData
+            },
+            
+            // AI Scene Creator Debug Data
+            orchestratorDebugData: {
+              aiDebugSchema: enhancedPrompt.aiDebugSchema,
+              aiSchema: enhancedPrompt.aiSchema,
+              primaryScene: enhancedPrompt.primaryScene
+            },
+            
+            metadata: {
+              dryRunMode: true,
+              componentsHealthy: true,
+              tier1Steps: tier1ErrorLog.length,
+              cascadeHistory: ['✅ Tier 1 Dry Run Complete (No Image Generation)']
+            }
+          }), {
+            headers: generateEchoCorsHeaders(req),
+            status: 200
+          });
+        }
 
         // Real Runware image generation using WebSocket service
         const { RunwareWebSocketService } = await import("../_shared/RunwareWebSocketService.ts");
@@ -679,11 +743,34 @@ Deno.serve(async (req: Request): Promise<Response> => {
           imageURL: imageResult.imageURL,
           provider: 'runware-websocket',
           tier: 'TIER_1',
+          pathUsed: 'orchestrator',
+          resultType: 'TIER_1_SUCCESS',
           templateStructure: 'COMPLETE_TIER_1',
           requestId: requestId,
           timestamp: new Date().toISOString(),
           positivePrompt: enhancedPrompt.enhancedPrompt,
           negativePrompt: enhancedPrompt.negativePrompt,
+          
+          // Enhanced Debug Data for E2E Simulation
+          tier1Debug: {
+            timeline: tier1ErrorLog,
+            enhancedPrompt: enhancedPrompt.enhancedPrompt,
+            negativePrompt: enhancedPrompt.negativePrompt,
+            primaryScene: enhancedPrompt.primaryScene,
+            templateStructure: enhancedPrompt.templateStructure
+          },
+          
+          // CCS Debug Data
+          ccsDebug: {
+            characterSeed: enhancedPrompt.characterSeed,
+            culturalBundle: enhancedPrompt.culturalBundle,
+            coloredObjects: enhancedPrompt.coloredObjects,
+            secondaryCharacters: enhancedPrompt.secondaryCharacters,
+            detectedAnimals: enhancedPrompt.detectedAnimals,
+            sessionSetting: enhancedPrompt.sessionSetting,
+            structuredAvatarData: enhancedPrompt.structuredAvatarData
+          },
+          
           orchestratorDebugData: {
             aiDebugSchema: enhancedPrompt.aiDebugSchema,
             primaryScene: enhancedPrompt.primaryScene,
@@ -715,34 +802,88 @@ Deno.serve(async (req: Request): Promise<Response> => {
           // Detect component-specific failures
           const isCharacterServiceFailure = errorMessage.includes('CharacterConsistencyService') || 
                                            errorMessage.includes('CHARACTERSERVICE_UNAVAILABLE') ||
-                                           errorMessage.includes('Module not found');
+                                           errorMessage.includes('Module not found') ||
+                                           errorMessage.includes('GETSTRUCTUREDAVATARDATA');
           const isAISceneCreatorFailure = errorMessage.includes('ai-visual-scene-creator') || 
                                          errorMessage.includes('MISSING_STORY_CONTENT') ||
+                                         errorMessage.includes('NO_PRIMARY_SCENE') ||
                                          errorMessage.includes('primaryScene');
           const isOrchestratorFailure = errorMessage.includes('PhaseIntegrationOrchestrator') || 
                                        errorMessage.includes('import') ||
                                        errorMessage.includes('IMPORT_SYNC_ANOMALY');
+          const isRunwareFailure = errorMessage.includes('RunwareWebSocketService') ||
+                                  errorMessage.includes('RUNWARE_API_KEY') ||
+                                  errorMessage.includes('Image generation failed');
+          
+          // Component Health Status
+          const componentHealth = {
+            characterConsistencyService: !isCharacterServiceFailure,
+            aiSceneCreator: !isAISceneCreatorFailure,
+            orchestrator: !isOrchestratorFailure,
+            runwareService: !isRunwareFailure
+          };
+          
+          // Determine failure category
+          let failureCategory = 'UNKNOWN_FAILURE';
+          let failureDetails = errorMessage;
+          
+          if (isCharacterServiceFailure) {
+            failureCategory = 'CHARACTER_SERVICE_FAILURE';
+            failureDetails = 'CharacterConsistencyService unavailable or malfunctioning. Required methods may be missing.';
+          } else if (isAISceneCreatorFailure) {
+            failureCategory = 'AI_SCENE_CREATOR_FAILURE';
+            failureDetails = 'ai-visual-scene-creator failed to generate primary scene. May be missing story content or API keys.';
+          } else if (isOrchestratorFailure) {
+            failureCategory = 'ORCHESTRATOR_FAILURE';
+            failureDetails = 'Orchestrator failed to load or process. Import sync anomaly detected.';
+          } else if (isRunwareFailure) {
+            failureCategory = 'RUNWARE_SERVICE_FAILURE';
+            failureDetails = 'Runware image generation service failed. Check API key and service availability.';
+          }
+          
+          console.log(`[TIER_1_FORCE_MODE] Failure Category: ${failureCategory}`);
+          console.log(`[TIER_1_FORCE_MODE] Component Health:`, componentHealth);
+          console.log(`[TIER_1_FORCE_MODE] Tier 1 Timeline Steps:`, tier1ErrorLog.length);
           
           return new Response(JSON.stringify({
             success: false,
-            error: `Tier 1 Complete Flow Failed: ${errorMessage}`,
-            templateStructure: 'TIER_1_FORCED_FAILURE',
+            error: failureDetails,
+            errorMessage: errorMessage,
             tier: 'TIER_1_FORCE_MODE',
+            pathUsed: 'orchestrator',
+            resultType: 'TIER_1_FORCE_MODE_FAILURE',
+            failureCategory: failureCategory,
+            templateStructure: 'TIER_1_FORCED_FAILURE',
             forceMode: true,
+            cascadePrevented: true,
             cascadeBlocked: true,
+            requestId: requestId,
+            timestamp: new Date().toISOString(),
+            
+            // Enhanced Component Diagnostics
+            componentHealth: componentHealth,
+            componentFailures: {
+              characterConsistencyService: isCharacterServiceFailure,
+              aiSceneCreator: isAISceneCreatorFailure,
+              orchestrator: isOrchestratorFailure,
+              runwareService: isRunwareFailure
+            },
+            
+            // Tier 1 Timeline for Debugging
+            tier1Debug: {
+              timeline: tier1ErrorLog,
+              stepsCompleted: tier1ErrorLog.filter(s => s.status === 'success').length,
+              stepsFailed: tier1ErrorLog.filter(s => s.status === 'failed').length,
+              lastSuccessfulStep: tier1ErrorLog.filter(s => s.status === 'success').pop()?.step || 'None',
+              firstFailedStep: tier1ErrorLog.find(s => s.status === 'failed')?.step || 'None'
+            },
+            
             errorDetails: {
               message: errorMessage,
               stack: errorStack,
               timestamp: new Date().toISOString(),
               tier1ErrorLog: tier1ErrorLog.length > 0 ? tier1ErrorLog : undefined,
-              componentFailures: {
-                orchestratorHealth: !isOrchestratorFailure,
-                characterConsistencyAvailable: !isCharacterServiceFailure,
-                aiVisualSceneCreatorAvailable: !isAISceneCreatorFailure
-              },
-              failureType: isOrchestratorFailure ? 'ORCHESTRATOR_HEALTH' :
-                          isCharacterServiceFailure ? 'CHARACTER_SERVICE' :
-                          isAISceneCreatorFailure ? 'AI_SCENE_CREATOR' : 'UNKNOWN',
+              failureType: failureCategory,
               attemptedPrompts: {
                 note: 'Tier 1 failed before prompt generation completed',
                 partialData: payload ? {
@@ -752,8 +893,17 @@ Deno.serve(async (req: Request): Promise<Response> => {
                 } : null
               }
             },
+            
             metadata: {
-              cascadeHistory: ['❌ Tier 1 Force Mode Failed — No cascade']
+              errorMessage,
+              errorStack: errorStack?.substring(0, 500) || 'No stack trace available',
+              forceCompleteTier1: true,
+              failureCategory: failureCategory,
+              cascadeHistory: [
+                `❌ Tier 1 Force Mode Failed: ${failureCategory}`,
+                `📋 ${failureDetails}`,
+                '⛔ Cascade Blocked: forceCompleteTier1=true'
+              ]
             }
           }), {
             headers: generateEchoCorsHeaders(req),
@@ -804,6 +954,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
                 imageURL: directModeResponse.data.imageURL,
                 provider: 'direct-mode-fallback',
                 tier: 'DIRECT_MODE',
+                pathUsed: 'direct-mode',
+                resultType: 'DIRECT_MODE_SUCCESS',
                 requestId: requestId,
                 timestamp: new Date().toISOString(),
                 tier1FailureReason: errorMessage,
@@ -872,6 +1024,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
                 imageURL: tier25bResponse.data.imageURL,
                 provider: 'tier-2.5b-fallback',
                 tier: 'TIER_2.5B',
+                pathUsed: 'template-cascade',
+                resultType: 'TIER_2.5B_SUCCESS',
                 requestId: requestId,
                 timestamp: new Date().toISOString(),
                 tier1FailureReason: errorMessage,
@@ -918,22 +1072,24 @@ Deno.serve(async (req: Request): Promise<Response> => {
           });
           
           if (tier25aResponse.data?.success && tier25aResponse.data?.imageURL) {
-            const result = {
-              success: true,
-              imageURL: tier25aResponse.data.imageURL,
-              provider: 'tier-2.5a-fallback',
-              tier: 'TIER_2.5A',
-              requestId: requestId,
-              timestamp: new Date().toISOString(),
-              tier1FailureReason: errorMessage,
-              metadata: {
-                cascadeHistory: [
-                  `❌ Tier 1 Failed: ${errorMessage.includes('NO_PRIMARY_SCENE') ? 'NO_PRIMARY_SCENE (missing service key)' : errorMessage}`,
-                  `❌ Direct Mode Failed: ${directErrorMessage}`,
-                  '✅ Tier 2.5A Success'
-                ]
-              }
-            };
+              const result = {
+                success: true,
+                imageURL: tier25aResponse.data.imageURL,
+                provider: 'tier-2.5a-fallback',
+                tier: 'TIER_2.5A',
+                pathUsed: 'template-cascade',
+                resultType: 'TIER_2.5A_SUCCESS',
+                requestId: requestId,
+                timestamp: new Date().toISOString(),
+                tier1FailureReason: errorMessage,
+                metadata: {
+                  cascadeHistory: [
+                    `❌ Tier 1 Failed: ${errorMessage.includes('NO_PRIMARY_SCENE') ? 'NO_PRIMARY_SCENE (missing service key)' : errorMessage}`,
+                    `❌ Direct Mode Failed: ${directErrorMessage}`,
+                    '✅ Tier 2.5A Success'
+                  ]
+                }
+              };
             
             tierLogger.success('TIER_2.5A', { result });
             console.log(`SUCCESS [${requestId}] Tier 2.5A fallback completed`);
@@ -965,9 +1121,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
             
             if (tier25bResponse.data?.success && tier25bResponse.data?.imageURL) {
               const result = {
+                success: true,
                 imageURL: tier25bResponse.data.imageURL,
                 provider: 'tier-2.5b-fallback',
                 tier: 'TIER_2.5B',
+                pathUsed: 'template-cascade',
+                resultType: 'TIER_2.5B_SUCCESS',
                 requestId: requestId,
                 timestamp: new Date().toISOString(),
                 cascadeFailures: [errorMessage, tier25aErrorMessage],
@@ -1019,9 +1178,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
               
             if (tier25cResponse.data?.success && tier25cResponse.data?.imageURL) {
               const result = {
+                success: true,
                 imageURL: tier25cResponse.data.imageURL,
                 provider: 'tier-2.5c-fallback',
                 tier: 'TIER_2.5C',
+                pathUsed: 'template-cascade',
+                resultType: 'TIER_2.5C_SUCCESS',
                 requestId: requestId,
                 timestamp: new Date().toISOString(),
                 cascadeFailures: [errorMessage, tier25aErrorMessage, tier25bErrorMessage, directErrorMessage],
@@ -1069,9 +1231,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
               
               if (tier25dResponse.data?.success && tier25dResponse.data?.imageURL) {
                 const result = {
+                  success: true,
                   imageURL: tier25dResponse.data.imageURL,
                   provider: 'tier-2.5d-fallback',
                   tier: 'TIER_2.5D',
+                  pathUsed: 'template-cascade',
+                  resultType: 'TIER_2.5D_SUCCESS',
                   requestId: requestId,
                   timestamp: new Date().toISOString(),
                   cascadeFailures: [errorMessage, tier25aErrorMessage, tier25bErrorMessage, tier25cErrorMessage, directErrorMessage],
