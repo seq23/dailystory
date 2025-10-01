@@ -1141,39 +1141,105 @@ export class CharacterConsistencyService {
   // ============= MISSING METHODS WITH INLINE DEPENDENCIES (ERROR-055 FIX) =============
 
   /**
-   * INLINE HAIR DATA: 73 variations by skin tone (complete buffet)
+   * INLINE HAIR DATA: 73 variations by skin tone (EXACT 1:1 BACKEND COPY)
    * Prevents StaticDataCache import dependency
+   * ⚠️ WARNING: Must maintain perfect parity with supabase/functions/_shared/StaticDataCache.js
    */
   static HAIR_BY_SKIN_TONE_INLINE = {
     'pale': [
-      'strawberry blonde hair', 'golden red hair', 'auburn curls', 'copper blonde waves',
-      'light auburn hair', 'honey blonde curls', 'champagne blonde hair', 'rose gold hair',
-      'pale blonde waves', 'peach blonde hair', 'sandy red hair', 'light ginger hair',
-      'platinum red highlights', 'soft copper hair'
+      'strawberry blonde hair', 'golden red hair', 'auburn curls', 'copper hair',
+      'reddish brown hair', 'ginger hair', 'red-gold hair', 'russet hair',
+      'mahogany red hair', 'burgundy hair', 'crimson hair', 'rose gold hair',
+      'amber red hair', 'cinnamon red hair'
     ],
     'light': [
       'platinum blonde hair', 'golden blonde hair', 'honey blonde hair', 'ash blonde hair',
-      'sandy blonde hair', 'champagne blonde hair', 'butterscotch blonde hair', 'vanilla blonde hair',
-      'light golden hair', 'wheat blonde hair', 'cornsilk blonde hair', 'pale gold hair',
-      'cream blonde hair', 'butter blonde hair', 'lemon blonde hair'
+      'sandy blonde hair', 'wheat blonde hair', 'butter blonde hair', 'cream blonde hair',
+      'champagne blonde hair', 'vanilla blonde hair', 'pearl blonde hair', 'silver blonde hair',
+      'moonlight blonde hair', 'sunshine blonde hair', 'caramel blonde hair'
     ],
     'medium': [
-      'chestnut brown hair', 'chocolate brown hair', 'coffee brown hair', 'caramel brown hair',
-      'warm brown hair', 'hazelnut brown hair', 'toffee brown hair', 'amber brown hair',
-      'honey brown hair', 'maple brown hair', 'cinnamon brown hair', 'bronze brown hair',
-      'copper brown hair', 'auburn brown hair', 'mahogany brown hair'
+      'chestnut brown hair', 'chocolate brown hair', 'coffee brown hair', 'walnut brown hair',
+      'hazelnut brown hair', 'mahogany brown hair', 'amber brown hair', 'bronze brown hair',
+      'toffee brown hair', 'mocha brown hair', 'caramel brown hair', 'russet brown hair',
+      'cedar brown hair', 'oak brown hair', 'maple brown hair'
     ],
     'olive': [
-      'jet black hair', 'raven black hair', 'midnight black hair', 'ebony hair',
-      'dark espresso hair', 'deep brown hair', 'dark chocolate hair', 'rich brown hair',
-      'warm black hair', 'dark chestnut hair', 'deep mahogany hair', 'dark auburn hair',
-      'black-brown hair', 'dark walnut hair'
+      'jet black hair', 'raven black hair', 'midnight black hair', 'obsidian hair',
+      'coal black hair', 'ebony hair', 'onyx hair', 'charcoal hair',
+      'deep black hair', 'ink black hair', 'shadow black hair', 'pitch black hair',
+      'dark espresso hair', 'blackest brown hair'
     ],
     'dark': [
-      'beautiful dark hair', 'rich black hair', 'lustrous dark hair', 'deep black hair',
-      'natural black hair', 'warm black hair', 'glossy black hair'
+      'beautiful dark hair', 'rich black hair', 'lustrous dark hair', 'silky black hair',
+      'gorgeous dark hair', 'shining black hair', 'magnificent dark hair'
     ]
   };
+
+  /**
+   * INLINE SKIN TONE DESCRIPTIONS: 48 variations (EXACT 1:1 BACKEND COPY)
+   * Used for non-African-American users to provide detailed skin tone descriptions
+   * Combined with hair via getSkinBySkintone() function
+   */
+  static PALE_SKIN_TONES_INLINE = [
+    "porcelain skin with cool undertones",
+    "fair ivory complexion with pink undertones",
+    "alabaster skin with neutral undertones",
+    "creamy pale skin with warm undertones",
+    "pearl white complexion with subtle pink flush",
+    "milky white skin with cool undertones",
+    "fair skin with peachy undertones",
+    "pale rose-tinted complexion",
+    "translucent fair skin with blue undertones",
+    "cream-colored skin with golden undertones",
+    "snow white complexion with neutral base",
+    "fair skin with subtle yellow undertones"
+  ];
+
+  static LIGHT_SKIN_TONES_INLINE = [
+    "light peachy skin tone with warm glow",
+    "soft beige complexion with pink undertones",
+    "warm vanilla skin with golden undertones",
+    "light cream complexion with neutral base",
+    "pale golden skin with honey undertones",
+    "light rose-beige skin tone",
+    "champagne-colored complexion",
+    "light ivory skin with warm peachy glow",
+    "soft bisque skin tone with pink flush",
+    "light caramel undertones with creamy base",
+    "warm light tan with golden highlights",
+    "light sand-colored skin with neutral undertones"
+  ];
+
+  static MEDIUM_SKIN_TONES_INLINE = [
+    "warm peachy medium skin tone",
+    "golden medium complexion with honey undertones",
+    "medium beige skin with warm caramel highlights",
+    "soft medium tan with golden glow",
+    "medium caramel skin tone with warm undertones",
+    "warm medium brown with peachy undertones",
+    "medium golden skin with bronze highlights",
+    "caramel medium complexion with honey base",
+    "medium wheat-colored skin with warm glow",
+    "golden medium tan with amber undertones",
+    "medium olive-beige with warm undertones",
+    "warm medium skin with cinnamon undertones"
+  ];
+
+  static OLIVE_SKIN_TONES_INLINE = [
+    "light olive complexion with green undertones",
+    "warm olive skin with golden undertones",
+    "medium olive with bronze highlights",
+    "golden olive complexion with warm glow",
+    "olive-beige skin with neutral undertones",
+    "warm olive-tan with amber undertones",
+    "deep olive with rich warm undertones",
+    "olive-brown complexion with golden base",
+    "Mediterranean olive skin with sun-kissed glow",
+    "olive-caramel with warm honey undertones",
+    "rich olive complexion with bronze undertones",
+    "dark olive skin with deep golden highlights"
+  ];
 
   /**
    * INLINE AFRICAN AMERICAN HAIR: Cultural authenticity
@@ -1282,12 +1348,11 @@ export class CharacterConsistencyService {
   /**
    * Select hair by skin tone with session-seeded variety
    */
-  static selectHairBySkintone(skinTone, sessionId, ethnicity) {
+  static selectHairBySkintone(skinTone, sessionId, ethnicity, avatarType = 'girl') {
     const normalizedSkinTone = (skinTone || 'medium').toLowerCase();
     
     // African American override
     if (ethnicity === 'african-american') {
-      const avatarType = 'girl'; // Default - would need to be passed in for proper gender detection
       const hairArray = CharacterConsistencyService.AFRICAN_AMERICAN_HAIR_INLINE[avatarType === 'boy' ? 'boys' : 'girls'];
       return CharacterConsistencyService.seededPick(hairArray, sessionId);
     }
@@ -1296,6 +1361,50 @@ export class CharacterConsistencyService {
     const hairArray = CharacterConsistencyService.HAIR_BY_SKIN_TONE_INLINE[normalizedSkinTone] || 
                       CharacterConsistencyService.HAIR_BY_SKIN_TONE_INLINE['medium'];
     return CharacterConsistencyService.seededPick(hairArray, sessionId);
+  }
+
+  /**
+   * Get seeded skin tone description and facial features (EXACT 1:1 BACKEND COPY)
+   * Combines skin tone descriptions with facial features for comprehensive appearance
+   * 
+   * @param {string} skinTone - Skin tone category (pale, light, medium, olive, dark)
+   * @param {string} sessionId - Session ID for seeded selection
+   * @returns {string} Combined skin tone and facial feature description
+   */
+  static getSkinBySkintone(skinTone, sessionId) {
+    const normalizedSkinTone = (skinTone || 'medium').toLowerCase();
+    
+    // Use African American features for dark skin tones
+    if (normalizedSkinTone === 'dark' || normalizedSkinTone === 'darker') {
+      return CharacterConsistencyService.seededPick(
+        CharacterConsistencyService.AFRICAN_AMERICAN_FACIAL_FEATURES_INLINE, 
+        sessionId
+      );
+    }
+    
+    // Use specific skin tone descriptions for other tones
+    if (normalizedSkinTone === 'pale') {
+      return CharacterConsistencyService.seededPick(
+        CharacterConsistencyService.PALE_SKIN_TONES_INLINE, 
+        sessionId
+      );
+    } else if (['light', 'lighter', 'fair'].includes(normalizedSkinTone)) {
+      return CharacterConsistencyService.seededPick(
+        CharacterConsistencyService.LIGHT_SKIN_TONES_INLINE, 
+        sessionId
+      );
+    } else if (normalizedSkinTone === 'olive') {
+      return CharacterConsistencyService.seededPick(
+        CharacterConsistencyService.OLIVE_SKIN_TONES_INLINE, 
+        sessionId
+      );
+    } else {
+      // Default to medium for any unmapped tones
+      return CharacterConsistencyService.seededPick(
+        CharacterConsistencyService.MEDIUM_SKIN_TONES_INLINE, 
+        sessionId
+      );
+    }
   }
 
   /**
