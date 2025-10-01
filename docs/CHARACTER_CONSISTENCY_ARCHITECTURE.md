@@ -22,6 +22,22 @@ Returns singleton instance of the service.
 - Extracts colored objects, atmospheric words, character appearance
 - Stores data by sessionId and pageNumber
 
+### `ESSENTIAL_VOCABULARY` ✅ ENHANCED (2025-09-30)
+**STATUS**: 134+ words across 15 categories  
+**Purpose**: Core vocabulary for character consistency system  
+**Categories**: Hair textures, skin descriptors, facial features, body types, clothing items, actions, emotions, settings, cultural elements  
+**Location**: Lines 334-349 of CharacterConsistencyService.js
+
+### `LEAN_CULTURAL_FALLBACK` ✅ NEW (2025-09-30)
+**STATUS**: Emergency cultural enhancement system  
+**Purpose**: Standalone fallback when StaticDataCache unavailable  
+**Contents**: 
+- Hair mappings: 5 skin tones × 3 options each (15 total combinations)
+- African American hair arrays: Girls (3 options) + Boys (3 options)
+- Curated features: 3 culturally appropriate options
+**Location**: Lines 352-382 of CharacterConsistencyService.js  
+**Design**: Zero external dependencies, instant availability
+
 ### `detectAllCharacters(pageText, context)` ✅
 **STATUS**: CONSOLIDATED API  
 **Purpose**: Unified detection for all character types (main, secondary, family, community)  
@@ -35,13 +51,19 @@ Returns singleton instance of the service.
 **Usage**: AI visual scene creator (lines 178-188), template integration  
 **Fix**: ERROR-051 resolution
 
-### `getCulturalEnhancements(userInfo, sessionId, characterName)` ✅
-**STATUS**: SIGNATURE VERIFIED  
+### `getCulturalEnhancements(userInfo, sessionId, characterName)` ✅ ENHANCED
+**STATUS**: 3-TIER SYSTEM IMPLEMENTED (2025-09-30)  
 **Purpose**: Generates culturally appropriate character enhancements  
 **Parameters**: userInfo (object), sessionId (string), characterName (string)  
 **Returns**: `{ hair, features }` - Does NOT return skinTone  
+**3-Tier Logic**:
+- **Tier 1**: Try StaticDataCache import → Full cultural arrays (if available)
+- **Tier 2**: Use LEAN_CULTURAL_FALLBACK → Curated emergency options (if Tier 1 fails)
+- **Tier 3**: ~~Generic fallback~~ **REMOVED** (was causing inconsistency)
+**Persistence**: Calls `await this.saveCharacterToDatabase()` after Tier 1 success and Tier 2 usage  
+**Location**: Lines 1030-1080 of CharacterConsistencyService.js  
 **Usage**: Direct Mode (line 385-392), AI visual scenes, templates  
-**Fixes**: ERROR-049, ERROR-050 (import pattern standardized)
+**Fixes**: ERROR-049, ERROR-050, ERROR-054
 
 ### `getCharacterSeed(sessionId, avatarIdentity, storyContext, sessionType)` ✅
 **STATUS**: REQUIRES PROPER ARGUMENTS  
@@ -157,4 +179,5 @@ For complete details on:
 ---
 
 **Last Updated**: 2025-09-30  
-**Status**: All critical errors resolved (ERROR-050, ERROR-051, ERROR-052)
+**Status**: All critical errors resolved (ERROR-050, ERROR-051, ERROR-052, ERROR-054)  
+**Recent Enhancement**: 3-Tier Cultural Enhancement System with LEAN_CULTURAL_FALLBACK

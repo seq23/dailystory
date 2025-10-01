@@ -59,7 +59,7 @@ Explicitly handles OpenAI integration for generating primaryScene descriptions:
   - **CRITICAL**: `avatarIdentity` MUST be an object `{name, type, skinTone}`, NOT a string
   - **Incorrect**: `getCharacterSeed(sessionId, characterName)` ❌
   - **Correct**: `getCharacterSeed(sessionId, {name, type, skinTone}, storyContext, 'continuing')` ✅
-- `getCulturalEnhancements(userInfo, sessionId, characterName)` - Get cultural traits with seeding
+- `getCulturalEnhancements(userInfo, sessionId, characterName)` ✅ **ENHANCED (ERROR-054)** - Returns culturally appropriate hair and features via 3-tier system (StaticDataCache → LEAN_CULTURAL_FALLBACK → no generic), persists to database
 - `generateSecondaryCharacter(type, details, userInfo, sessionId)` - Create secondary characters
 - `getSecondaryCharacterSeed(sessionId, characterName, characterType, userInfo?)` - Get secondary character seeds
 
@@ -133,12 +133,13 @@ Next Story → clearSession() → Fresh start
 - **Minimal DB**: Only 2 tables actively written to
 - **Direct Orchestration**: No intermediate orchestrator layer
 - **Efficient Caching**: Database-backed consistency across edge instances
+- **3-Tier Cultural Enhancement**: StaticDataCache → LEAN_CULTURAL_FALLBACK → eliminated generic (ERROR-054 fix)
 
 ### Consistency  
 - **Unified Logic**: All character functionality in one place
 - **Seed-Based**: Deterministic character generation across pages
-- **Database Persistence**: Consistent data across edge function instances
-- **Cultural Continuity**: Persistent cultural trait selections per session
+- **Database Persistence**: Consistent data across edge function instances, automatic persistence after cultural enhancement generation (ERROR-054 fix)
+- **Cultural Continuity**: Persistent cultural trait selections per session via enhanced ESSENTIAL_VOCABULARY (134+ words) and LEAN_CULTURAL_FALLBACK system
 
 ### Maintainability
 - **Single Source**: One service to maintain for all character functionality
