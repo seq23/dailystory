@@ -16,18 +16,56 @@ import { classifyError, getRetryEnhancement, ErrorCategory } from './errorClassi
 
 // Phase 2: Cultural context now embedded in StaticDataCache (no external imports needed)
 
-// Import static caching, cost tracking, and error classification  
-import { 
-  getModelChainOptimized, 
-  getHairColorMapping, 
-  getSystemSettings, 
-  processAvatarIdentityFromCache, 
-  getCulturalContextArrays, 
-  getVocabularyCache,
-  getUserVocabularyCache,
-  setUserVocabularyCache
-} from './StaticDataCache.ts';
+// Import cost tracking and error classification  
 import { checkDailyLimit, trackOpenAICost, getDailyCostSummary } from './CostTracker.ts';
+
+// Inline lean implementations (no StaticDataCache dependency)
+function getModelChainOptimized() {
+  return {
+    primary: 'gpt-4o-mini',
+    fallback: 'gpt-3.5-turbo',
+    costs: { 'gpt-4o-mini': 0.00015, 'gpt-3.5-turbo': 0.0005 }
+  };
+}
+
+function getHairColorMapping() {
+  return {
+    'pale': ['strawberry blonde', 'golden red', 'auburn'],
+    'light': ['platinum blonde', 'golden blonde', 'honey blonde'],
+    'medium': ['chestnut brown', 'chocolate brown', 'coffee brown'],
+    'olive': ['jet black', 'raven black', 'midnight black'],
+    'dark': ['dark hair', 'black hair', 'dark hair']
+  };
+}
+
+function getSystemSettings() {
+  return { maxRetries: 3, timeout: 30000 };
+}
+
+function processAvatarIdentityFromCache(avatarData: any) {
+  return avatarData;
+}
+
+function getCulturalContextArrays(userInfo: any) {
+  return { names: [], foods: [], celebrations: [] };
+}
+
+// In-memory vocabulary cache
+const vocabularyCache = new Map<string, string[]>();
+
+function getVocabularyCache() {
+  return vocabularyCache;
+}
+
+function getUserVocabularyCache(userId: string, childId?: string) {
+  const key = childId ? `${userId}_${childId}` : userId;
+  return vocabularyCache.get(key) || [];
+}
+
+function setUserVocabularyCache(userId: string, childId: string | undefined, vocabulary: string[]) {
+  const key = childId ? `${userId}_${childId}` : userId;
+  vocabularyCache.set(key, vocabulary);
+}
 
 
 // CORS headers - moved to top to fix ReferenceError

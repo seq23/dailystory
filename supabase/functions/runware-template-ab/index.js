@@ -4,14 +4,64 @@ import { RunwareErrorHandler } from "../_shared/runwareErrorHandler.ts";
 // Lightweight, fast deployment - optimized for simple template generation with character consistency
 
 // Supabase client created dynamically via resilient loader
-import { 
-  getHairBySkintone, 
-  getSkinBySkintone,
-  getAfricanAmericanHair, 
-  getAfricanAmericanFeatures, 
-  shouldApplyCulturalEnhancements
-} from '../_shared/StaticDataCache.js';
 import { tier25vocabulary } from '../_shared/tier25Vocabulary.js';
+
+// Inline cultural enhancement functions (no external dependencies)
+const LEAN_HAIR_BY_SKIN = {
+  'pale': ['strawberry blonde hair', 'golden red hair', 'auburn curls'],
+  'light': ['platinum blonde hair', 'golden blonde hair', 'honey blonde hair'],  
+  'medium': ['chestnut brown hair', 'chocolate brown hair', 'coffee brown hair'],
+  'olive': ['jet black hair', 'raven black hair', 'midnight black hair'],
+  'dark': ['beautiful dark hair', 'rich black hair', 'lustrous dark hair']
+};
+
+const LEAN_AFRICAN_AMERICAN_HAIR = {
+  girls: [
+    'wearing natural hair in a cute protective style with colorful hair accessories',
+    'wearing beautiful braids with neat parting and decorative beads', 
+    'wearing a stylish twist-out with defined curl pattern'
+  ],
+  boys: [
+    'wearing a curly top fade with perfectly defined coils on top',
+    'wearing twist sponge curls with tight coil definition', 
+    'wearing a high top fade with voluminous textured crown'
+  ]
+};
+
+const LEAN_AFRICAN_AMERICAN_FEATURES = [
+  'light brown skin tone with warm brown eyes and a bright infectious smile',
+  'caramel skin tone with deep chocolate eyes and a confident cheerful expression', 
+  'medium brown skin tone with warm brown eyes and a bright infectious smile'
+];
+
+function getHairBySkintone(skinTone, sessionId) {
+  const normalized = skinTone?.toLowerCase() || 'medium';
+  const options = LEAN_HAIR_BY_SKIN[normalized] || LEAN_HAIR_BY_SKIN['medium'];
+  const seed = sessionId ? sessionId.charCodeAt(0) % options.length : 0;
+  return options[seed];
+}
+
+function getSkinBySkintone(skinTone) {
+  return LEAN_AFRICAN_AMERICAN_FEATURES[0]; // Default to first option
+}
+
+function getAfricanAmericanHair(gender, sessionId) {
+  const genderKey = gender?.includes('girl') ? 'girls' : 'boys';
+  const options = LEAN_AFRICAN_AMERICAN_HAIR[genderKey];
+  const seed = sessionId ? sessionId.charCodeAt(0) % options.length : 0;
+  return options[seed];
+}
+
+function getAfricanAmericanFeatures(sessionId) {
+  const seed = sessionId ? sessionId.charCodeAt(0) % LEAN_AFRICAN_AMERICAN_FEATURES.length : 0;
+  return LEAN_AFRICAN_AMERICAN_FEATURES[seed];
+}
+
+function shouldApplyCulturalEnhancements(userInfo) {
+  const skinTone = userInfo?.avatar?.skinTone || 'light';
+  const language = userInfo?.nativeLanguage || 'en';
+  return ['dark', 'medium-dark', 'brown'].includes(skinTone) || language !== 'en';
+}
 
 // Supabase client will be created dynamically when needed via resilient loader
 
