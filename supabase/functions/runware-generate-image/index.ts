@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-10-01T21:20:00Z - Fix escalation logic: always try Direct Mode when CCS unavailable  
+// DEPLOY_MARKER: 2025-10-01T21:45:00Z - Fixed Direct Mode guard: now always attempts after Tier 1 failure (removed NO_PRIMARY_SCENE skip logic)  
 
 // Inlined orchestrator logic - no more lazy loading
 
@@ -937,22 +937,21 @@ Deno.serve(async (req: Request): Promise<Response> => {
         
         let directErrorMessage = 'Direct Mode not attempted';
         
-        // CORRECTED CASCADE: Always try Direct Mode first (CCS is copilot, not required), unless NO_PRIMARY_SCENE
-        if (!errorMessage.includes('NO_PRIMARY_SCENE')) {
-          console.log(`[DIRECT_MODE] Attempting Direct Mode fallback after Tier 1 failure`);
+        // CORRECTED CASCADE: Always try Direct Mode after Tier 1 failure (Direct Mode works without Tier 1 scene)
+        console.log(`[DIRECT_MODE] Attempting Direct Mode fallback after Tier 1 failure`);
           
-          try {
-            const directModeResponse = await internalSupabase.functions.invoke('ai-visual-scene-creator', {
-              body: {
-                ...payload,
-                // Pass structuredAvatarData from orchestrator if Tier 1 partially succeeded
-                userInfo: {
-                  ...payload.userInfo,
-                  structuredAvatarData: enhancedPrompt?.structuredAvatarData || payload.userInfo?.structuredAvatarData
-                },
-                directMode: true,
-                tier1FailureReason: errorMessage
-              }
+        try {
+          const directModeResponse = await internalSupabase.functions.invoke('ai-visual-scene-creator', {
+            body: {
+              ...payload,
+              // Pass structuredAvatarData from orchestrator if Tier 1 partially succeeded
+              userInfo: {
+                ...payload.userInfo,
+                structuredAvatarData: enhancedPrompt?.structuredAvatarData || payload.userInfo?.structuredAvatarData
+              },
+              directMode: true,
+              tier1FailureReason: errorMessage
+            }
             });
             
             if (directModeResponse.data?.success && directModeResponse.data?.imageURL) {
@@ -999,7 +998,6 @@ Deno.serve(async (req: Request): Promise<Response> => {
             tierLogger.failure('DIRECT_MODE', { error: directErrorMessage });
             // Continue to 2.5A cascade below
           }
-        }
         
         // Track error messages from all tier attempts for universal 2.5C fallback
         let tier25aErrorMessage = '';
