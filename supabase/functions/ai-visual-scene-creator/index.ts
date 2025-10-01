@@ -469,26 +469,16 @@ serve(async (req) => {
       // Generate character seed for consistency
       characterSeed = await generateCharacterSeed(sessionId, userInfo);
 
-      // Generate culturalBundle with StaticDataCache-first 2-tier fallback for Direct Mode
+      // Generate culturalBundle using CharacterConsistencyService (inlined functionality)
       try {
-        // TIER 1: StaticDataCache (session-seeded 73-variation hair)
-        const { StaticDataCache } = await import('../_shared/StaticDataCache.js');
-        const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
-        const isDarkSkin = skinTone === 'dark' || skinTone === 'darker';
-        
-        const hairBundle = isDarkSkin 
-          ? StaticDataCache.getCulturalBundle('african', sessionId)
-          : StaticDataCache.getHairBySkinTone(skinTone, sessionId);
-        
-        culturalBundle = {
-          hair: hairBundle?.hair || 'natural hair',
-          features: isDarkSkin ? (hairBundle?.features || 'authentic African American features') : 'diverse features',
-          profile: characterSeed?.culturalProfile || null,
-          source: 'StaticDataCache'
-        };
-        console.log(`✅ [${requestId}] INITIAL_DESCRIPTOR_SOURCE: StaticDataCache (Tier 1)`);
+        culturalBundle = await characterConsistencyService.getCulturalEnhancements(
+          userInfo, 
+          sessionId, 
+          userInfo?.avatar?.characterName || 'child'
+        );
+        console.log(`✅ [${requestId}] INITIAL_DESCRIPTOR_SOURCE: CharacterConsistencyService (inlined)`);
       } catch (tier1Error) {
-        console.warn(`⚠️ [${requestId}] Tier 1 (StaticDataCache) failed, using Tier 2 (emergency hardcoded)`, tier1Error);
+        console.warn(`⚠️ [${requestId}] CharacterConsistencyService failed, using emergency hardcoded`, tier1Error);
         
         // TIER 2: Emergency hardcoded strings
         const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';

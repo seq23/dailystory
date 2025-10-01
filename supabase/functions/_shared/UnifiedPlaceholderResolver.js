@@ -104,10 +104,8 @@ export class UnifiedPlaceholderResolver {
       return await characterConsistencyService.getCulturalEnhancements(userInfo, sessionId, characterName);
     } catch (error) {
       console.error('❌ Failed to get cultural bundle with consistency:', error);
-      // Fallback to StaticDataCache (old behavior)
-      const { getCulturalBundle } = await import('./StaticDataCache.js');
-      const characterSeed = sessionId || 'default';
-      return getCulturalBundle(userInfo, characterSeed);
+      // Return emergency fallback
+      return { hair: 'natural hair', features: 'diverse features' };
     }
   }
 
@@ -282,7 +280,7 @@ export class UnifiedPlaceholderResolver {
 
     // Get lazy loaded modules
     const { VOCABULARY, pick } = await memoizedImport('./tier25Vocabulary.js');
-    const { getHairBySkintone, getSkinBySkintone, getCulturalBundle } = await memoizedImport('./StaticDataCache.js');
+    const { characterConsistencyService } = await memoizedImport('./CharacterConsistencyService.js');
 
     // Use seeded values if available, otherwise pick from vocabulary
     const getSeededValue = (key, fallbackArray) => {

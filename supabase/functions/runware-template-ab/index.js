@@ -1621,9 +1621,8 @@ async function handleRequest(req) {
         culturalBundle = await characterConsistencyService.getCulturalEnhancements(userInfo, sessionId, characterName);
       } catch (error) {
         console.error('❌ Failed to get cultural bundle with consistency:', error);
-        // Fallback to direct StaticDataCache access
-        const { getCulturalBundle } = await import('../_shared/StaticDataCache.js');
-        culturalBundle = getCulturalBundle(userInfo, sessionId, skinTone);
+        // Use emergency fallback
+        culturalBundle = { hair: 'natural hair', features: 'diverse features' };
       }
       const hairDescription = culturalBundle?.hair || getHair(skinTone) || 'brown hair';
       const facialFeatures = culturalBundle?.features || getSkinBySkintone(skinTone, sessionId) || 'friendly expression';
@@ -1935,9 +1934,8 @@ async function handleRequest(req) {
         culturalBundle = await characterConsistencyService.getCulturalEnhancements(userInfo, sessionId, characterName);
       } catch (error) {
         console.error('❌ Failed to get cultural bundle with consistency:', error);
-        // Fallback to direct StaticDataCache access
-        const { getCulturalBundle } = await import('../_shared/StaticDataCache.js');
-        culturalBundle = getCulturalBundle(userInfo, sessionId, skinTone);
+        // Use emergency fallback
+        culturalBundle = { hair: 'natural hair', features: 'diverse features' };
       }
       const hairColor = culturalBundle?.hair || getHair(skinTone) || 'brown hair';
       const ethnicity = userInfo?.avatar?.ethnicity || deriveEthnicityFromAvatar(userInfo?.avatar) || 'diverse background';

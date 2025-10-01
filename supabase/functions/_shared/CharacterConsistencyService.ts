@@ -1041,13 +1041,11 @@ export class CharacterConsistencyService {
       };
     }
     
-    // Phase 2: Use resilient loader for StaticDataCache import
+    // Phase 2: Use inlined StaticDataCache functionality
     try {
-      const { memoizedImport } = await import('./resilientLoader.ts');
-      const { getCulturalBundle } = await memoizedImport('./StaticDataCache.js');
       
       const characterSeed = characterData.seed || this.generateStableSeed(`${sessionId}_${characterName}`, characterName);
-      const culturalBundle = getCulturalBundle(userInfo, characterSeed, userInfo?.skinTone);
+      const culturalBundle = this.getCulturalBundle(userInfo?.skinTone || 'medium', characterSeed);
       
       // Store cultural enhancements in character_data jsonb (redundant columns removed)
       characterData.selectedCulturalHair = culturalBundle.hair;
