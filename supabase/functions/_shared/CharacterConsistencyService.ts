@@ -858,46 +858,122 @@ export class CharacterConsistencyService {
     }
   }
 
-  // ============= CHARACTER GENERATION (PRESERVED 100%) =============
+  // ============= CHARACTER GENERATION (REFACTORED WITH FAIL-FAST/FALLBACK SPLIT) =============
 
   /**
-   * Get or create character seed with full consistency support
+   * Get basic character seed - LIGHTWEIGHT FALLBACK (never fails)
+   * Pure computation with no database dependencies
+   * Used for graceful degradation when enhanced seed generation fails
    */
-  async getCharacterSeed(sessionId, avatarIdentity, storyContext, sessionType = 'new', pageTextClothing = null) {
+  async getBasicCharacterSeed(avatarIdentity: AvatarIdentity, sessionId: string): Promise<CharacterSeed> {
+    const characterName = avatarIdentity?.name || 'child';
+    const avatarType = avatarIdentity?.type || 'child';
+    const skinTone = avatarIdentity?.skinTone || 'medium';
+    
+    // Generate seed using simple hash
+    const characterSpecificSeed = `${sessionId}_${characterName}_${skinTone}`;
+    const baseSeed = this.generateStableSeed(characterSpecificSeed, characterName);
+    
+    // Get cultural hair from StaticDataCache (no database dependency)
+    let selectedCulturalHair: string | null = null;
+    try {
+      const culturalData = getCulturalContextArrays();
+      const skinToneKey = skinTone.toLowerCase().replace(/[^a-z]/g, '');
+      if (culturalData.characterNames[skinToneKey]) {
+        selectedCulturalHair = culturalData.characterNames[skinToneKey][0] || null;
+      }
+    } catch (error) {
+      console.log('⚠️ Cultural data unavailable in basic seed, using null');
+    }
+    
+    return {
+      baseSeed,
+      characterName,
+      avatarType,
+      skinTone,
+      consistentClothingStyle: 'casual', // Default
+      selectedCulturalHair,
+      selectedCulturalFeatures: null,
+      characterSpecificSeed,
+      physicalTraits: {},
+      characterDescription: `${characterName} is a ${avatarType} age 6-8 wearing casual clothing`,
+      generatedAt: Date.now()
+    };
+  }
+
+  /**
+   * Get character from cache only - SIMPLE DATABASE LOOKUP
+   * Returns null on failure (graceful)
+   * No complex logic, just cache retrieval
+   */
+  async getCharacterFromCache(sessionId: string, characterName: string): Promise<CharacterSeed | null> {
+    const cacheKey = `${sessionId}_${characterName}`;
+    
+    try {
+      const cached = await this.getCharacterFromDatabase(sessionId, cacheKey);
+      return cached || null;
+    } catch (error) {
+      console.log(`⚠️ Cache lookup failed for ${characterName}:`, error.message);
+      return null;
+    }
+  }
+
+  /**
+   * Get enhanced character seed - FULL CCS ORCHESTRATION
+   * Includes database caching, cultural enhancements, clothing detection
+   * THROWS ERROR on failure to trigger tier escalation
+   * 
+   * @deprecated Use getEnhancedCharacterSeed instead
+   */
+  async getCharacterSeed(sessionId: string, avatarIdentity: AvatarIdentity, storyContext: string, sessionType: string = 'new', pageTextClothing: string | null = null): Promise<CharacterSeed> {
+    return this.getEnhancedCharacterSeed(sessionId, avatarIdentity, storyContext, sessionType, pageTextClothing);
+  }
+
+  /**
+   * Get enhanced character seed with full consistency support
+   * CRITICAL METHOD - THROWS ERROR on failure to trigger tier escalation
+   */
+  async getEnhancedCharacterSeed(sessionId: string, avatarIdentity: AvatarIdentity, storyContext: string, sessionType: string = 'new', pageTextClothing: string | null = null): Promise<CharacterSeed> {
     if (!avatarIdentity) {
-      console.warn('⚠️ CharacterConsistencyService: avatarIdentity is undefined, using fallback');
-      avatarIdentity = { name: 'child' };
+      throw new Error('CCS_ENHANCED_SEED_FAILED: avatarIdentity is required');
     }
     
     const characterName = avatarIdentity.name || 'child';
     const cacheKey = `${sessionId}_${characterName}`;
     
+    // Check cache first
     const cached = await this.getCharacterFromDatabase(sessionId, cacheKey);
     if (cached) {
       return cached;
     }
     
-    const seedData = await this.createNewCharacterSeed(avatarIdentity);
-    const characterDescription = await this.buildCharacterDescription(seedData, storyContext, pageTextClothing, sessionId);
-    
-    const characterData = {
-      seed: seedData.baseSeed,
-      characterDescription,
-      avatarIdentity: {
-        type: seedData.avatarType || avatarIdentity?.type,
-        skinTone: seedData.skinTone || avatarIdentity?.skinTone
-      },
-      physicalTraits: seedData.physicalTraits,
-      consistentClothingStyle: seedData.consistentClothingStyle,
-      selectedCulturalHair: seedData.selectedCulturalHair,
-      selectedCulturalFeatures: seedData.selectedCulturalFeatures,
-      characterName: seedData.characterName,
-      generatedAt: Date.now()
-    };
-    
-    await this.saveCharacterToDatabase(sessionId, cacheKey, characterData);
-    
-    return characterData;
+    // Generate new character seed with full orchestration
+    try {
+      const seedData = await this.createNewCharacterSeed(avatarIdentity);
+      const characterDescription = await this.buildCharacterDescription(seedData, storyContext, pageTextClothing, sessionId);
+      
+      const characterData: CharacterSeed = {
+        seed: seedData.baseSeed,
+        characterDescription,
+        avatarIdentity: {
+          type: seedData.avatarType || avatarIdentity?.type,
+          skinTone: seedData.skinTone || avatarIdentity?.skinTone
+        },
+        physicalTraits: seedData.physicalTraits,
+        consistentClothingStyle: seedData.consistentClothingStyle,
+        selectedCulturalHair: seedData.selectedCulturalHair,
+        selectedCulturalFeatures: seedData.selectedCulturalFeatures,
+        characterName: seedData.characterName,
+        generatedAt: Date.now()
+      };
+      
+      await this.saveCharacterToDatabase(sessionId, cacheKey, characterData);
+      
+      return characterData;
+    } catch (error) {
+      console.error('❌ Enhanced character seed generation failed:', error);
+      throw new Error(`CCS_ENHANCED_SEED_FAILED: ${error.message}`);
+    }
   }
 
   /**
@@ -1031,7 +1107,8 @@ export class CharacterConsistencyService {
     
     if (!characterData) {
       const avatarIdentity = userInfo?.avatarIdentity || userInfo?.avatar || { name: characterName };
-      characterData = await this.getCharacterSeed(sessionId, avatarIdentity, null, 'new', null);
+      // Use basic seed for fallback (graceful degradation)
+      characterData = await this.getBasicCharacterSeed(avatarIdentity, sessionId);
     }
     
     if (characterData.selectedCulturalHair && characterData.selectedCulturalFeatures) {

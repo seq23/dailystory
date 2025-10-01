@@ -59,6 +59,13 @@ export interface CharacterSeed {
   selectedCulturalFeatures: string | null;
   characterSpecificSeed: string;
   physicalTraits?: Record<string, unknown>;
+  characterDescription?: string;
+  seed?: number;
+  avatarIdentity?: {
+    type?: string;
+    skinTone?: string;
+  };
+  generatedAt?: number;
 }
 
 // Avatar identity input for character creation

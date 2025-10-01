@@ -1713,18 +1713,25 @@ async function handleRequest(req) {
             await characterConsistencyService.analyzeVisualDetails(sessionId, storyText, pageNumber || 1, characterName);
             characterAppearance = await characterConsistencyService.getCharacterAppearanceFromStory(sessionId, characterName) || '';
             
-            // Get character seed with proper avatarIdentity
+            // Get enhanced character seed with proper avatarIdentity
             const avatarIdentity = {
               name: characterName,
               type: userInfo?.avatar?.type || 'child',
               skinTone: userInfo?.avatar?.skinTone || 'medium'
             };
-            characterSeed = await characterConsistencyService.getCharacterSeed(
-              sessionId,
-              avatarIdentity,
-              storyText || '',
-              'continuing'
-            ) || null;
+            
+            // Try enhanced seed first, fallback to basic on failure
+            try {
+              characterSeed = await characterConsistencyService.getEnhancedCharacterSeed(
+                sessionId,
+                avatarIdentity,
+                storyText || '',
+                'continuing'
+              );
+            } catch (enhancedError) {
+              console.warn(`⚠️ Enhanced character seed failed, using basic seed fallback:`, enhancedError.message);
+              characterSeed = await characterConsistencyService.getBasicCharacterSeed(avatarIdentity, sessionId);
+            }
             
             // Secondary character detection using consolidated API
             const pageTextForAnalysis = storyText || extractedScene?.scene || extractedScene || '';

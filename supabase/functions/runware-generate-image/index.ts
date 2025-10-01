@@ -229,8 +229,8 @@ async function processInlinedTier1(payload: any, memoizedImport: any, logTier1St
 
   logTier1Step('Avatar Data Extraction', 'success', `Avatar data: ${structuredAvatarData?.skinTone}, ${structuredAvatarData?.hairColor}`);
   
-  // Get character consistency data using the service
-  const characterSeed = await characterConsistencyService.getCharacterSeed(
+  // Get enhanced character consistency data (CRITICAL - will throw on failure to trigger tier escalation)
+  const characterSeed = await characterConsistencyService.getEnhancedCharacterSeed(
     sessionId,
     avatarIdentity,
     storyText || pageText || '',
