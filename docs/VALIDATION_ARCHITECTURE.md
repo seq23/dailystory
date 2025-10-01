@@ -1,7 +1,33 @@
 # Character-Only Validation Architecture + Service-Aware Token Limits
 
-**Version:** 3.1.0 - Character-Only + Service-Aware Token System (2025-01-03 Evening)  
-**Status:** Character validation PRIMARY - Service-aware token limits re-introduced
+**Version:** 3.2.0 - Universal Image Response Validation (2025-09-30)  
+**Status:** Character validation PRIMARY + Universal image validation utilities  
+**Previous Version:** 3.1.0 (Character-Only + Service-Aware Tokens)
+
+## 🆕 Universal Image Response Validation (v3.2.0)
+
+### Integration with Validation Architecture
+
+Version 3.2.0 adds universal validation utilities for image generation responses while maintaining the existing character-based story validation system.
+
+#### New Components (September 30, 2025)
+
+**Type Guards (`src/utils/typeGuards.ts`):**
+- `isAPIResponse()` - Flexible success validation (boolean/string/number)
+- `isImageResponse()` - Validates all image field variations
+- `extractImageUrl()` - Universal URL extraction
+- `extractSuccessValue()` - Normalizes all success types
+- `normalizeSupabaseResponse()` - Handles Supabase nesting
+
+**API Validators (`src/utils/apiValidation.ts`):**
+- `validateImageResponse()` - Robust validation
+- `validateSupabaseImageResponse()` - Supabase-specific
+- `extractValidatedImageUrl()` - Quick extraction
+- `isSuccessfulResponse()` - Success check
+
+**Complete Documentation:** [UNIVERSAL_IMAGE_VALIDATION_SYSTEM.md](./UNIVERSAL_IMAGE_VALIDATION_SYSTEM.md)
+
+---
 
 ## Overview
 

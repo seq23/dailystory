@@ -378,10 +378,14 @@ console.log(data.tier)    // 'tier1' (most likely)
 **Response:**
 ```typescript
 {
-  imageURL: string         // Generated image URL
-  tier: string            // '1' | '2.5A' | '2.5B' | '2.5C' | '2.5D'
-  seed?: number           // Random seed used
-  prompt: string          // Full prompt used
+  success: boolean | string | number  // Success indicator (flexible types)
+  imageURL?: string                   // Generated image URL (primary field)
+  image_url?: string                  // Alternative field name
+  imageUrl?: string                   // Alternative field name
+  url?: string                        // Alternative field name
+  tier: string                        // '1' | '2.5A' | '2.5B' | '2.5C' | '2.5D'
+  seed?: number                       // Random seed used
+  prompt: string                      // Full prompt used
   metadata: {
     generationTime: number
     model: string
@@ -389,6 +393,8 @@ console.log(data.tier)    // 'tier1' (most likely)
   }
 }
 ```
+
+**Note:** The response format supports multiple field name variations for backwards compatibility. Use the [Universal Image Validation System](../docs/UNIVERSAL_IMAGE_VALIDATION_SYSTEM.md) utilities to handle all variations automatically.
 
 **Tier System:**
 - **Tier 1:** AI Visual Scene Creator (85% success, premium features)

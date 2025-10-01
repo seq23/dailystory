@@ -548,38 +548,21 @@ export class SimpleImageService {
           fullResponsePreview: JSON.stringify(orchResult).substring(0, 500)
         });
 
-        // Phase A: Multi-Field Image URL Validation - Handle all API response variations
-        const imageURL = orchResult?.imageURL || orchResult?.image_url || orchResult?.imageUrl || orchResult?.url;
+        // CONSOLIDATED VALIDATION: Use universal validation utilities
+        const { extractImageUrl, extractSuccessValue } = await import('@/utils/typeGuards');
         
-        // Phase B: Robust success validation - handle string/boolean/numeric variations
-        const isSuccess = !!(
-          orchResult?.success === true || 
-          orchResult?.success === 'true' || 
-          orchResult?.success === 1 ||
-          orchResult?.success === '1'
-        );
+        const imageURL = extractImageUrl(orchResult);
+        const isSuccess = extractSuccessValue(orchResult);
+        const hasValidImageURL = !!imageURL;
         
-        // Phase C: Robust imageURL validation
-        const hasValidImageURL = !!(
-          imageURL && 
-          typeof imageURL === 'string' && 
-          imageURL.trim().length > 0 &&
-          (imageURL.trim().startsWith('http://') || imageURL.trim().startsWith('https://'))
-        );
-        
-        DebugLogger.log('image', '🔍 CRITICAL: Validation Breakdown', {
+        DebugLogger.log('image', '🔍 CRITICAL: Validation Breakdown (Universal Utils)', {
           // Raw values
           rawSuccess: orchResult?.success,
           rawSuccessType: typeof orchResult?.success,
           rawImageURL: imageURL,
-          rawImageURLType: typeof imageURL,
           // Computed booleans
           isSuccess,
           hasValidImageURL,
-          // Detailed checks
-          imageURLLength: imageURL?.length,
-          trimmedLength: imageURL?.trim()?.length,
-          startsWithHttp: imageURL?.startsWith('http'),
           // Final validation
           validationWillPass: isSuccess && hasValidImageURL,
           // Full response for debugging

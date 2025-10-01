@@ -1,5 +1,5 @@
-import { isAPIResponse, isUserInfo, isStoryPage } from './typeGuards';
-import { APIResponse, UserInfo, StoryPage } from '@/types/api';
+import { isAPIResponse, isUserInfo, isStoryPage, isImageResponse, extractImageUrl, extractSuccessValue, normalizeSupabaseResponse } from './typeGuards';
+import { APIResponse, UserInfo, StoryPage, ImageResponse } from '@/types/api';
 
 /**
  * Runtime validation middleware for API responses
@@ -37,6 +37,65 @@ export class APIValidator {
       }
       return page;
     });
+  }
+
+  /**
+   * Validates image response with robust multi-field and multi-type handling
+   * Handles all variations: imageURL, image_url, imageUrl, url
+   * Handles success values: boolean, string, number
+   */
+  static validateImageResponse(response: any): ImageResponse {
+    if (!isImageResponse(response)) {
+      const imageUrl = extractImageUrl(response);
+      const hasSuccess = extractSuccessValue(response);
+      
+      throw new Error(
+        `Invalid image response format. ` +
+        `Success: ${hasSuccess}, ` +
+        `Image URL: ${imageUrl ? 'present but invalid' : 'missing'}`
+      );
+    }
+    
+    return {
+      success: extractSuccessValue(response),
+      imageURL: extractImageUrl(response)!,
+      ...response
+    };
+  }
+
+  /**
+   * Validates Supabase function image response (handles nested { data: response } structure)
+   */
+  static validateSupabaseImageResponse(supabaseResponse: any): ImageResponse {
+    // Normalize the response structure first
+    const normalized = normalizeSupabaseResponse(supabaseResponse);
+    
+    if (!normalized) {
+      throw new Error('Empty or invalid Supabase response');
+    }
+    
+    // Validate the normalized response
+    return this.validateImageResponse(normalized);
+  }
+
+  /**
+   * Extracts validated image URL from any response format
+   */
+  static extractValidatedImageUrl(response: any): string {
+    const imageUrl = extractImageUrl(response);
+    
+    if (!imageUrl) {
+      throw new Error('No valid image URL found in response');
+    }
+    
+    return imageUrl;
+  }
+
+  /**
+   * Checks if response indicates success (handles all variations)
+   */
+  static isSuccessfulResponse(response: any): boolean {
+    return extractSuccessValue(response);
   }
 }
 

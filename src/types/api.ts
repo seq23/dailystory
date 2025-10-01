@@ -44,10 +44,28 @@ export interface StorySession {
 }
 
 export interface APIResponse<T = any> {
-  success: boolean;
+  success: boolean | string | number;
   data?: T;
   error?: string;
   message?: string;
+}
+
+export interface ImageResponse {
+  success: boolean | string | number;
+  imageURL?: string;
+  image_url?: string;
+  imageUrl?: string;
+  url?: string;
+  tier?: string;
+  usedTier?: string;
+  seed?: number | string;
+  prompt?: string;
+  metadata?: any;
+  generatedAt?: string;
+  timestamp?: string;
+  provider?: string;
+  model?: string;
+  cost?: number;
 }
 
 export interface ImageGenerationRequest {
