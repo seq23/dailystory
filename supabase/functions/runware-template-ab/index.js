@@ -1617,7 +1617,7 @@ async function handleRequest(req) {
       // Get cultural bundle with character consistency
       let culturalBundle;
       try {
-        const { characterConsistencyService } = await import("#shared/CharacterConsistencyService.js");
+        const { characterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
         culturalBundle = await characterConsistencyService.getCulturalEnhancements(userInfo, sessionId, characterName);
       } catch (error) {
         console.error('❌ Failed to get cultural bundle with consistency:', error);
@@ -1636,7 +1636,7 @@ async function handleRequest(req) {
       let coloredObjects = '';
       
       try {
-        const { characterConsistencyService } = await import("#shared/CharacterConsistencyService.js");
+        const { characterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
         
         if (sessionId) {
           try {
@@ -1922,7 +1922,7 @@ async function handleRequest(req) {
       // Get cultural bundle with character consistency
       let culturalBundle;
       try {
-        const { characterConsistencyService } = await import("#shared/CharacterConsistencyService.js");
+        const { characterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
         culturalBundle = await characterConsistencyService.getCulturalEnhancements(userInfo, sessionId, characterName);
       } catch (error) {
         console.error('❌ Failed to get cultural bundle with consistency:', error);
