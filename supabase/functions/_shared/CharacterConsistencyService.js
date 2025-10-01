@@ -391,13 +391,19 @@ export class CharacterConsistencyService {
     try {
       // Phase 2: Use resilient loader for 99.99% reliability
       const { memoizedImport } = await import('./resilientLoader.ts');
-      const { TIER_25_UNIFIED_VOCABULARY_EXTENDED, EXPANDED_COLOR_ARRAY, CLOTHING_DETECTION_KEYWORDS } = 
-        await memoizedImport('./tier25Vocabulary.js');
+      
+      // Safe destructuring with validation
+      const vocabularyModule = await memoizedImport('./tier25Vocabulary.js');
+      if (!vocabularyModule || typeof vocabularyModule !== 'object') {
+        throw new Error('Invalid vocabulary module structure');
+      }
+      
+      const { TIER_25_UNIFIED_VOCABULARY_EXTENDED, EXPANDED_COLOR_ARRAY, CLOTHING_DETECTION_KEYWORDS } = vocabularyModule;
       
       this.vocabulary = {
-        // Dynamic arrays from tier25Vocabulary
+        // Dynamic arrays from tier25Vocabulary with safe extraction
         colors: EXPANDED_COLOR_ARRAY || [],
-        objects: Object.values(TIER_25_UNIFIED_VOCABULARY_EXTENDED.objectCategories).flat(),
+        objects: this.safeObjectExtraction(TIER_25_UNIFIED_VOCABULARY_EXTENDED),
         animals: TIER_25_UNIFIED_VOCABULARY_EXTENDED.objectCategories.animals || [],
         toys: TIER_25_UNIFIED_VOCABULARY_EXTENDED.objectCategories.toys || [],
         nature: TIER_25_UNIFIED_VOCABULARY_EXTENDED.objectCategories.nature || [],
@@ -414,10 +420,47 @@ export class CharacterConsistencyService {
       console.log(`✅ Tier25Vocabulary loaded: ${this.vocabulary.objects.length} objects, ${this.vocabulary.colors.length} colors`);
       return this.vocabulary;
     } catch (error) {
-      console.warn('⚠️ Tier25Vocabulary import failed, using essential vocabulary:', error);
-      this.vocabulary = CharacterConsistencyService.ESSENTIAL_VOCABULARY;
+      console.warn('⚠️ Tier25Vocabulary import failed, using emergency vocabulary fallback:', error);
+      this.vocabulary = this.getEmergencyVocabularyFallback();
       return this.vocabulary;
     }
+  }
+
+  /**
+   * Safe object extraction from vocabulary structure
+   * Prevents errors when objectCategories has unexpected structure
+   */
+  safeObjectExtraction(vocabularyExtended) {
+    try {
+      if (!vocabularyExtended?.objectCategories || typeof vocabularyExtended.objectCategories !== 'object') {
+        throw new Error('Invalid objectCategories structure');
+      }
+      return Object.values(vocabularyExtended.objectCategories).flat();
+    } catch (error) {
+      console.warn('⚠️ Safe object extraction failed, using emergency object list:', error);
+      return CharacterConsistencyService.ESSENTIAL_VOCABULARY.objects;
+    }
+  }
+
+  /**
+   * Emergency vocabulary fallback with hardcoded terms
+   * Ensures detection never fails completely
+   */
+  getEmergencyVocabularyFallback() {
+    return {
+      ...CharacterConsistencyService.ESSENTIAL_VOCABULARY,
+      // Ensure all critical categories exist
+      colors: CharacterConsistencyService.ESSENTIAL_VOCABULARY.colors || [],
+      objects: CharacterConsistencyService.ESSENTIAL_VOCABULARY.objects || [],
+      animals: CharacterConsistencyService.ESSENTIAL_VOCABULARY.animals || [],
+      toys: CharacterConsistencyService.ESSENTIAL_VOCABULARY.toys || [],
+      nature: CharacterConsistencyService.ESSENTIAL_VOCABULARY.nature || [],
+      food: CharacterConsistencyService.ESSENTIAL_VOCABULARY.food || [],
+      settings: CharacterConsistencyService.ESSENTIAL_VOCABULARY.settings || [],
+      relationships: CharacterConsistencyService.ESSENTIAL_VOCABULARY.relationships || [],
+      clothing: CharacterConsistencyService.ESSENTIAL_VOCABULARY.clothing || [],
+      actions: CharacterConsistencyService.ESSENTIAL_VOCABULARY.actions || []
+    };
   }
 
   /**
@@ -501,7 +544,10 @@ export class CharacterConsistencyService {
     // Dynamic pattern: [color] + [object from tier25]
     for (const color of vocab.colors) {
       for (const object of vocab.objects) {
-        const pattern = new RegExp(`\\b${color}\\s+${object}\\b`, 'gi');
+        // Escape regex metacharacters to prevent SyntaxError
+        const safeColor = CharacterConsistencyService.escapeRegexChars(color);
+        const safeObject = CharacterConsistencyService.escapeRegexChars(object);
+        const pattern = new RegExp(`\\b${safeColor}\\s+${safeObject}\\b`, 'gi');
         const matches = text.match(pattern);
         
         if (matches) {
@@ -680,16 +726,38 @@ export class CharacterConsistencyService {
   // ============= DATABASE OPERATIONS (PRESERVED 100%) =============
 
   /**
-   * Get or create Supabase client using resilient loader
+   * Get or create Supabase client using resilient loader with enhanced fallback
    */
   async getSupabaseClient() {
     if (!this.supabase) {
       try {
-        const { createResilientSupabaseClient } = await import('./resilientLoader.ts');
-        this.supabase = await createResilientSupabaseClient();
+        // Try resilient loader first
+        const resilientModule = await import('./resilientLoader.ts');
+        if (resilientModule?.createResilientSupabaseClient && typeof resilientModule.createResilientSupabaseClient === 'function') {
+          this.supabase = await resilientModule.createResilientSupabaseClient();
+          console.log('✅ Resilient Supabase client created');
+        } else {
+          throw new Error('createResilientSupabaseClient not available');
+        }
       } catch (error) {
-        console.warn('Failed to create Supabase client:', error);
-        this.supabase = null;
+        console.warn('⚠️ Resilient loader failed, attempting direct supabase-js fallback:', error);
+        
+        // Direct supabase-js fallback
+        try {
+          const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.39.3');
+          const supabaseUrl = Deno.env.get('SUPABASE_URL');
+          const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+          
+          if (!supabaseUrl || !supabaseKey) {
+            throw new Error('Missing Supabase environment variables');
+          }
+          
+          this.supabase = createClient(supabaseUrl, supabaseKey);
+          console.log('✅ Direct Supabase client created as fallback');
+        } catch (fallbackError) {
+          console.error('❌ All Supabase client creation methods failed:', fallbackError);
+          this.supabase = null;
+        }
       }
     }
     return this.supabase;
@@ -1100,11 +1168,11 @@ export class CharacterConsistencyService {
       };
     }
     
-    // Phase 2: Use inlined StaticDataCache functionality
+    // Phase 2: Use full cultural data buffet (not LEAN_CULTURAL_FALLBACK)
     try {
-      
+      const skinTone = userInfo?.skinTone || 'medium';
       const characterSeed = characterData.seed || this.generateStableSeed(`${sessionId}_${characterName}`, characterName);
-      const culturalBundle = this.getCulturalBundle(userInfo?.skinTone || 'medium', characterSeed);
+      const culturalBundle = this.buildFullCulturalBundle(skinTone, characterSeed, userInfo);
       
       // Store cultural enhancements in character_data jsonb (redundant columns removed)
       characterData.selectedCulturalHair = culturalBundle.hair;
@@ -1114,7 +1182,7 @@ export class CharacterConsistencyService {
       const cacheKey = `${sessionId}_${characterName}`;
       await this.saveCharacterToDatabase(sessionId, cacheKey, characterData);
       
-      console.log(`🎨 Generated cultural enhancements for ${characterName} (seed: ${characterSeed}):`, culturalBundle);
+      console.log(`🎨 Generated full cultural enhancements for ${characterName} (seed: ${characterSeed}):`, culturalBundle);
       return culturalBundle;
     } catch (error) {
       console.warn('⚠️ StaticDataCache import failed, using LEAN_CULTURAL_FALLBACK:', error);
@@ -1169,6 +1237,79 @@ export class CharacterConsistencyService {
       console.log(`🎨 Using LEAN_CULTURAL_FALLBACK for ${characterName}:`, fallbackEnhancements);
       return fallbackEnhancements;
     }
+  }
+
+  /**
+   * Build full cultural bundle using complete inline data (not LEAN_CULTURAL_FALLBACK)
+   * Uses all 73+ hair variations, 30 African American hair, 36 African American features, 48 skin descriptions
+   */
+  buildFullCulturalBundle(skinTone, characterSeed, userInfo) {
+    const normalizedTone = (skinTone || 'medium').toLowerCase();
+    const language = userInfo?.language || 'en';
+    const gender = userInfo?.avatarType?.includes('girl') ? 'girls' : 'boys';
+    
+    // Check if user qualifies for African American cultural enhancements
+    const qualifiesForAfricanAmericanEnhancements = 
+      (normalizedTone === 'dark' || normalizedTone === 'darker') && 
+      ['en', 'en-US', 'fr', 'es', 'pt', 'zh'].includes(language);
+    
+    if (qualifiesForAfricanAmericanEnhancements) {
+      // Use complete African American arrays (30 hair + 36 features)
+      const hairOptions = CharacterConsistencyService.AFRICAN_AMERICAN_HAIR_INLINE[gender];
+      const featureOptions = CharacterConsistencyService.AFRICAN_AMERICAN_FACIAL_FEATURES_INLINE;
+      
+      return {
+        hair: CharacterConsistencyService.seededPick(hairOptions, characterSeed),
+        features: CharacterConsistencyService.seededPick(featureOptions, characterSeed)
+      };
+    } else {
+      // Use full HAIR_BY_SKIN_TONE_INLINE arrays (73 total variations)
+      const hairOptions = CharacterConsistencyService.HAIR_BY_SKIN_TONE_INLINE[normalizedTone] || 
+                          CharacterConsistencyService.HAIR_BY_SKIN_TONE_INLINE.medium;
+      
+      // Get appropriate skin feature array (48 total variations across all tones)
+      const featureOptions = this.getFullSkinFeatureArray(normalizedTone);
+      
+      return {
+        hair: CharacterConsistencyService.seededPick(hairOptions, characterSeed),
+        features: CharacterConsistencyService.seededPick(featureOptions, characterSeed)
+      };
+    }
+  }
+
+  /**
+   * Get full skin feature array for a given skin tone
+   * Returns complete arrays with 12 variations per tone (48 total)
+   */
+  getFullSkinFeatureArray(skinTone) {
+    const normalizedTone = (skinTone || 'medium').toLowerCase();
+    
+    switch (normalizedTone) {
+      case 'dark':
+      case 'darker':
+        // Use African American features for dark skin tones
+        return CharacterConsistencyService.AFRICAN_AMERICAN_FACIAL_FEATURES_INLINE;
+      case 'pale':
+        return CharacterConsistencyService.PALE_SKIN_TONES_INLINE;
+      case 'light':
+      case 'lighter':
+      case 'fair':
+        return CharacterConsistencyService.LIGHT_SKIN_TONES_INLINE;
+      case 'olive':
+        return CharacterConsistencyService.OLIVE_SKIN_TONES_INLINE;
+      case 'medium':
+      default:
+        return CharacterConsistencyService.MEDIUM_SKIN_TONES_INLINE;
+    }
+  }
+
+  /**
+   * Escape regex metacharacters to prevent SyntaxError
+   * Static utility method for safe regex pattern building
+   */
+  static escapeRegexChars(text) {
+    if (typeof text !== 'string') return String(text || '');
+    return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
   // REMOVED: updateCulturalSelections() method
@@ -1446,10 +1587,15 @@ export class CharacterConsistencyService {
 
   /**
    * Seeded pseudo-random picker for session consistency
+   * FIXED: Bulletproof type conversion for seed parameter
    */
   static seededPick(array, seed) {
     if (!array || array.length === 0) return '';
-    const hash = seed.split('').reduce((acc, char) => {
+    
+    // Bulletproof type conversion: handle undefined, null, number, string, or any other type
+    const seedString = String(seed || Date.now());
+    
+    const hash = seedString.split('').reduce((acc, char) => {
       return ((acc << 5) - acc) + char.charCodeAt(0);
     }, 0);
     const index = Math.abs(hash) % array.length;
