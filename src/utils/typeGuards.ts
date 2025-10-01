@@ -63,19 +63,43 @@ export const isImageResponse = (obj: any): obj is ImageResponse => {
  * Extracts image URL from response handling all field name variations
  */
 export const extractImageUrl = (obj: any): string | null => {
-  if (typeof obj !== 'object' || obj === null) return null;
+  if (typeof obj !== 'object' || obj === null) {
+    console.log('🔍 extractImageUrl: obj is not an object or is null', { obj, type: typeof obj });
+    return null;
+  }
   
   // Try all possible field names in priority order
   const imageUrl = obj.imageURL || obj.image_url || obj.imageUrl || obj.url;
   
-  if (!imageUrl || typeof imageUrl !== 'string') return null;
+  console.log('🔍 extractImageUrl: Field extraction', {
+    hasImageURL: !!obj.imageURL,
+    hasImage_url: !!obj.image_url,
+    hasImageUrl: !!obj.imageUrl,
+    hasUrl: !!obj.url,
+    extractedValue: imageUrl,
+    extractedType: typeof imageUrl
+  });
+  
+  if (!imageUrl || typeof imageUrl !== 'string') {
+    console.log('🔍 extractImageUrl: imageUrl is not a valid string', { imageUrl, type: typeof imageUrl });
+    return null;
+  }
   
   const trimmed = imageUrl.trim();
   
-  // Validate it's a proper URL
-  if (trimmed.length === 0) return null;
-  if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) return null;
+  console.log('🔍 extractImageUrl: Trimmed value', { trimmed, length: trimmed.length });
   
+  // Validate it's a proper URL
+  if (trimmed.length === 0) {
+    console.log('🔍 extractImageUrl: Trimmed string is empty');
+    return null;
+  }
+  if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+    console.log('🔍 extractImageUrl: URL does not start with http(s)://', { trimmed });
+    return null;
+  }
+  
+  console.log('🔍 extractImageUrl: SUCCESS - Returning valid URL', { url: trimmed });
   return trimmed;
 };
 
@@ -83,17 +107,33 @@ export const extractImageUrl = (obj: any): string | null => {
  * Extracts and normalizes success value from response
  */
 export const extractSuccessValue = (obj: any): boolean => {
-  if (typeof obj !== 'object' || obj === null) return false;
+  if (typeof obj !== 'object' || obj === null) {
+    console.log('🔍 extractSuccessValue: obj is not an object or is null', { obj, type: typeof obj });
+    return false;
+  }
   
   const success = obj.success;
   
+  console.log('🔍 extractSuccessValue: Checking success field', {
+    successValue: success,
+    successType: typeof success,
+    isTrue: success === true,
+    isStringTrue: success === 'true',
+    isNumber1: success === 1,
+    isString1: success === '1'
+  });
+  
   // Handle all success value variations
-  return (
+  const result = (
     success === true ||
     success === 'true' ||
     success === 1 ||
     success === '1'
   );
+  
+  console.log('🔍 extractSuccessValue: Result', { result });
+  
+  return result;
 };
 
 /**

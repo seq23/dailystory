@@ -549,23 +549,46 @@ export class SimpleImageService {
           fullResponsePreview: JSON.stringify(orchResult).substring(0, 500)
         });
 
+        // ENHANCED DEBUG: Log raw response BEFORE validation
+        DebugLogger.log('image', '🔍 PRE-VALIDATION: Raw Orchestrator Response', {
+          responseType: typeof orchResult,
+          responseIsNull: orchResult === null,
+          responseIsUndefined: orchResult === undefined,
+          responseKeys: orchResult ? Object.keys(orchResult) : [],
+          rawResponse: JSON.stringify(orchResult, null, 2).substring(0, 1000),
+          successField: orchResult?.success,
+          successFieldType: typeof orchResult?.success,
+          imageURLField: orchResult?.imageURL,
+          imageURLFieldType: typeof orchResult?.imageURL,
+          image_urlField: orchResult?.image_url,
+          imageUrlField: orchResult?.imageUrl,
+          urlField: orchResult?.url
+        });
+
         // CONSOLIDATED VALIDATION: Use universal validation utilities
         const imageURL = extractImageUrl(orchResult);
         const isSuccess = extractSuccessValue(orchResult);
         const hasValidImageURL = !!imageURL;
         
-        DebugLogger.log('image', '🔍 CRITICAL: Validation Breakdown (Universal Utils)', {
-          // Raw values
-          rawSuccess: orchResult?.success,
-          rawSuccessType: typeof orchResult?.success,
-          rawImageURL: imageURL,
-          // Computed booleans
-          isSuccess,
+        // ENHANCED DEBUG: Log validation results with extreme detail
+        DebugLogger.log('image', '🔍 VALIDATION RESULTS (Post-Extract)', {
+          // Extract function results
+          extractedImageURL: imageURL,
+          extractedImageURLType: typeof imageURL,
+          extractedImageURLLength: imageURL?.length,
+          extractedIsSuccess: isSuccess,
+          extractedIsSuccessType: typeof isSuccess,
+          // Boolean checks
           hasValidImageURL,
-          // Final validation
+          hasValidImageURLReason: !imageURL ? 'imageURL is falsy' : 'imageURL exists',
+          // Final validation check
           validationWillPass: isSuccess && hasValidImageURL,
-          // Full response for debugging
-          orchResultKeys: orchResult ? Object.keys(orchResult) : []
+          validationFailureReason: !isSuccess ? 'isSuccess is false' : !hasValidImageURL ? 'hasValidImageURL is false' : 'both passed',
+          // Original values for comparison
+          originalSuccess: orchResult?.success,
+          originalImageURL: orchResult?.imageURL,
+          // Full response keys
+          allResponseKeys: orchResult ? Object.keys(orchResult) : []
         });
         
         if (isSuccess && hasValidImageURL) {
@@ -612,6 +635,18 @@ export class SimpleImageService {
           }
         };
       } else {
+        // ENHANCED DEBUG: Log why validation failed
+        DebugLogger.error('image', '❌ VALIDATION FAILED - Orchestrator response rejected', {
+          isSuccess,
+          hasValidImageURL,
+          imageURL,
+          failureReason: !isSuccess ? 'extractSuccessValue returned false' : 'extractImageUrl returned null/empty',
+          rawSuccessValue: orchResult?.success,
+          rawImageURLValue: orchResult?.imageURL,
+          rawResponse: JSON.stringify(orchResult).substring(0, 500),
+          extractSuccessValueResult: isSuccess,
+          extractImageUrlResult: imageURL
+        });
         throw new Error(`Orchestrator returned no image: ${JSON.stringify(orchResult)}`);
       }
         
