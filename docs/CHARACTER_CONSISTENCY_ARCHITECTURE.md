@@ -82,11 +82,12 @@ Returns singleton instance of the service.
 **Fixes**: ERROR-049, ERROR-050, ERROR-054
 
 ### `getBasicCharacterSeed(avatarIdentity, sessionId)` ✅ NEW (2025-09-30)
-**STATUS**: REFACTORED - ALWAYS SUCCEEDS  
-**Purpose**: Lightweight character seed generation with **ZERO external dependencies**  
+**STATUS**: REFACTORED - PURE COMPUTATION  
+**Responsibility**: **Pure computation** - Generate basic character seed with zero external dependencies  
+**Purpose**: Provides guaranteed-success fallback for tier-based architecture  
 **Parameters**: avatarIdentity (object with name, type, skinTone), sessionId (string)  
 **Returns**: Complete `CharacterSeed` object with cultural authenticity  
-**Failure Behavior**: ✅ **ALWAYS SUCCEEDS** - Pure computation, no database, no imports  
+**Failure Behavior**: ✅ **ALWAYS SUCCEEDS** - Cannot fail (pure computation, no database, no imports)  
 **Location**: Lines 837-884 of CharacterConsistencyService.js  
 **Data Sources**: 
 - `HAIR_BY_SKIN_TONE_INLINE` (144+ hair options across 6 skin tones)
@@ -94,29 +95,34 @@ Returns singleton instance of the service.
 - `AFRICAN_AMERICAN_FACIAL_FEATURES_INLINE` (12 descriptions)
 - `getSkinFeatures()` static method for facial features
 **Usage**: Ultimate fallback for `getEnhancedCharacterSeed()` failures (Tier 2.5+)  
-**Performance**: < 10ms (pure computation)
+**Performance**: < 10ms (pure computation)  
+**Why It Exists**: Original `getCharacterSeed()` was over-engineered with too many failure points
 
 ### `getCharacterFromCache(sessionId, characterName)` ✅ NEW (2025-09-30)
 **STATUS**: REFACTORED - SIMPLE CACHE LOOKUP  
-**Purpose**: Retrieve character seed from database cache only  
+**Responsibility**: **Simple cache lookup** - Database query with no complex logic  
+**Purpose**: Check for existing cached character data without expensive orchestration  
 **Parameters**: sessionId (string), characterName (string)  
 **Returns**: `CharacterSeed | null`  
-**Failure Behavior**: ✅ **GRACEFUL NULL RETURN** - Returns null on any error  
+**Failure Behavior**: ✅ **GRACEFUL NULL RETURN** - Returns null on any error, never throws  
 **Location**: Lines 891-901 of CharacterConsistencyService.js  
 **Usage**: Optional cache check in orchestration layers  
-**Performance**: Fast (database query with memory cache)
+**Performance**: Fast (database query with memory cache)  
+**Why It Exists**: Decouples simple cache lookup from complex orchestration logic
 
 ### `getEnhancedCharacterSeed(sessionId, avatarIdentity, storyContext, sessionType, pageTextClothing)` ✅ NEW (2025-09-30)
-**STATUS**: REFACTORED - FAIL-FAST FOR TIER ESCALATION  
-**Purpose**: Full CCS orchestration with database caching, cultural enhancements, clothing detection  
+**STATUS**: REFACTORED - FULL ORCHESTRATION  
+**Responsibility**: **Full CCS orchestration** - Complete character generation with all enhancements  
+**Purpose**: Provide maximum-quality character seed with database caching, cultural features, clothing detection  
 **Parameters**: sessionId, avatarIdentity (object), storyContext, sessionType, pageTextClothing (optional)  
 **Returns**: Complete `CharacterSeed` object **OR THROWS ERROR**  
-**Failure Behavior**: ⚠️ **FAIL-FAST (THROWS ERROR)** - Triggers tier escalation  
+**Failure Behavior**: ⚠️ **FAIL-FAST (THROWS ERROR)** - Signals need for tier escalation  
 **Location**: Lines 918-1000 of CharacterConsistencyService.js  
 **Critical Classification**: **ONLY CCS METHOD THAT TRIGGERS TIER ESCALATION**  
 **Usage**: Tier 1 (`runware-generate-image`) - throws to escalate to Tier 2.5  
 **Fallback Pattern**: Tier 2.5 catches errors and uses `getBasicCharacterSeed()`  
-**Performance**: Heavy (50-200ms with database + orchestration)
+**Performance**: Heavy (50-200ms with database + orchestration)  
+**Why It Exists**: Retains full orchestration capability while enabling precise failure control for tier-based architecture
 
 ### `getCharacterSeed(sessionId, avatarIdentity, storyContext, sessionType)` ✅
 **STATUS**: REQUIRES PROPER ARGUMENTS  
