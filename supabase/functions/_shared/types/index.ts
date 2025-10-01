@@ -36,6 +36,7 @@ export interface UserInfo {
   difficultyLevel?: string;
   readingLevel?: string | number;
   interests?: string[];
+  ethnicity?: string;
   
   // Story preferences
   storyLanguagePreferences?: string[];

@@ -246,7 +246,7 @@ async function processInlinedTier1(payload: any, memoizedImport: any, logTier1St
   const secondaryCharacters = detectedAllCharacters.secondaryCharacters || [];
   
   // Detect animals using character consistency service
-  const detectedAnimals = await characterConsistencyService.detectCharacterAnimals(storyText || pageText, sessionId);
+  const detectedAnimals = await characterConsistencyService.detectAnimals(storyText || pageText, sessionId);
   
   // Get session setting (indoor/outdoor context)
   const sessionSetting = await characterConsistencyService.getSessionSetting(sessionId);
