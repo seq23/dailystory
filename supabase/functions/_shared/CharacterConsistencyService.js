@@ -1346,122 +1346,86 @@ export class CharacterConsistencyService {
   }
 
   /**
-   * Select hair by skin tone with session-seeded variety
+   * SIMPLIFIED: Get hair description by skin tone (Direct array lookup)
    */
-  static selectHairBySkintone(skinTone, sessionId, ethnicity, avatarType = 'girl') {
-    const normalizedSkinTone = (skinTone || 'medium').toLowerCase();
-    
-    // African American override
+  static getHair(skinTone, sessionId, ethnicity = 'general', avatarType = 'girl') {
     if (ethnicity === 'african-american') {
       const hairArray = CharacterConsistencyService.AFRICAN_AMERICAN_HAIR_INLINE[avatarType === 'boy' ? 'boys' : 'girls'];
       return CharacterConsistencyService.seededPick(hairArray, sessionId);
     }
-
-    // Regular hair buffet (73 variations)
-    const hairArray = CharacterConsistencyService.HAIR_BY_SKIN_TONE_INLINE[normalizedSkinTone] || 
-                      CharacterConsistencyService.HAIR_BY_SKIN_TONE_INLINE['medium'];
+    
+    const normalizedTone = (skinTone || 'medium').toLowerCase();
+    const hairArray = CharacterConsistencyService.HAIR_BY_SKIN_TONE_INLINE[normalizedTone] || 
+                      CharacterConsistencyService.HAIR_BY_SKIN_TONE_INLINE.medium;
     return CharacterConsistencyService.seededPick(hairArray, sessionId);
   }
 
   /**
-   * Get seeded skin tone description and facial features (EXACT 1:1 BACKEND COPY)
-   * Combines skin tone descriptions with facial features for comprehensive appearance
-   * 
-   * @param {string} skinTone - Skin tone category (pale, light, medium, olive, dark)
-   * @param {string} sessionId - Session ID for seeded selection
-   * @returns {string} Combined skin tone and facial feature description
+   * LEGACY WRAPPER: Maintains backward compatibility
    */
-  static getSkinBySkintone(skinTone, sessionId) {
-    const normalizedSkinTone = (skinTone || 'medium').toLowerCase();
+  static selectHairBySkintone(skinTone, sessionId, ethnicity, avatarType = 'girl') {
+    return CharacterConsistencyService.getHair(skinTone, sessionId, ethnicity, avatarType);
+  }
+
+  /**
+   * SIMPLIFIED: Get skin tone and facial features (Switch statement for clean mapping)
+   */
+  static getSkinFeatures(skinTone, sessionId) {
+    const normalizedTone = (skinTone || 'medium').toLowerCase();
     
-    // Use African American features for dark skin tones
-    if (normalizedSkinTone === 'dark' || normalizedSkinTone === 'darker') {
-      return CharacterConsistencyService.seededPick(
-        CharacterConsistencyService.AFRICAN_AMERICAN_FACIAL_FEATURES_INLINE, 
-        sessionId
-      );
-    }
-    
-    // Use specific skin tone descriptions for other tones
-    if (normalizedSkinTone === 'pale') {
-      return CharacterConsistencyService.seededPick(
-        CharacterConsistencyService.PALE_SKIN_TONES_INLINE, 
-        sessionId
-      );
-    } else if (['light', 'lighter', 'fair'].includes(normalizedSkinTone)) {
-      return CharacterConsistencyService.seededPick(
-        CharacterConsistencyService.LIGHT_SKIN_TONES_INLINE, 
-        sessionId
-      );
-    } else if (normalizedSkinTone === 'olive') {
-      return CharacterConsistencyService.seededPick(
-        CharacterConsistencyService.OLIVE_SKIN_TONES_INLINE, 
-        sessionId
-      );
-    } else {
-      // Default to medium for any unmapped tones
-      return CharacterConsistencyService.seededPick(
-        CharacterConsistencyService.MEDIUM_SKIN_TONES_INLINE, 
-        sessionId
-      );
+    switch (normalizedTone) {
+      case 'dark':
+      case 'darker':
+        return CharacterConsistencyService.seededPick(CharacterConsistencyService.AFRICAN_AMERICAN_FACIAL_FEATURES_INLINE, sessionId);
+      case 'pale':
+        return CharacterConsistencyService.seededPick(CharacterConsistencyService.PALE_SKIN_TONES_INLINE, sessionId);
+      case 'light':
+      case 'lighter':
+      case 'fair':
+        return CharacterConsistencyService.seededPick(CharacterConsistencyService.LIGHT_SKIN_TONES_INLINE, sessionId);
+      case 'olive':
+        return CharacterConsistencyService.seededPick(CharacterConsistencyService.OLIVE_SKIN_TONES_INLINE, sessionId);
+      case 'medium':
+      default:
+        return CharacterConsistencyService.seededPick(CharacterConsistencyService.MEDIUM_SKIN_TONES_INLINE, sessionId);
     }
   }
 
   /**
-   * Get structured avatar data for image generation
-   * ZERO EXTERNAL DEPENDENCIES - all data inline
-   * 
-   * @param {string} sessionId - Session ID for seeded hair selection
-   * @param {object} userInfo - User information object
-   * @returns {object} Structured avatar data { skinTone, hairColor, type, name, age, nativeLanguage, ethnicity }
+   * LEGACY WRAPPER: Maintains backward compatibility
+   */
+  static getSkinBySkintone(skinTone, sessionId) {
+    return CharacterConsistencyService.getSkinFeatures(skinTone, sessionId);
+  }
+
+  /**
+   * SIMPLIFIED: Get complete appearance (hair + skin/features in one call)
+   */
+  static getAppearance(skinTone, sessionId, ethnicity = 'general', avatarType = 'girl') {
+    return {
+      hair: CharacterConsistencyService.getHair(skinTone, sessionId, ethnicity, avatarType),
+      skinFeatures: CharacterConsistencyService.getSkinFeatures(skinTone, sessionId)
+    };
+  }
+
+  /**
+   * SIMPLIFIED: Get structured avatar data (Clean data flow)
    */
   async getStructuredAvatarData(sessionId, userInfo) {
-    try {
-      console.log(`🎨 getStructuredAvatarData: Building for session ${sessionId}`);
-      
-      const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
-      const avatarType = userInfo?.avatar?.type || userInfo?.type || 'child';
-      const characterName = userInfo?.name || userInfo?.childName || 'Child';
-      const age = userInfo?.age || userInfo?.childAge || 7;
-      const nativeLanguage = userInfo?.nativeLanguage || 'en';
-      
-      // Detect ethnicity for cultural authenticity
-      const ethnicity = CharacterConsistencyService.detectEthnicity(userInfo);
-      
-      // Select hair using session-seeded variety (73 variations)
-      const hairColor = CharacterConsistencyService.selectHairBySkintone(skinTone, sessionId, ethnicity);
-      
-      const result = {
-        skinTone,
-        hairColor,
-        type: avatarType,
-        name: characterName,
-        age,
-        nativeLanguage,
-        ethnicity
-      };
-      
-      console.log(`✅ getStructuredAvatarData: Complete`, { 
-        skinTone, 
-        hairColor: hairColor?.substring(0, 30) + '...', 
-        ethnicity,
-        type: avatarType
-      });
-      
-      return result;
-    } catch (error) {
-      console.error(`❌ getStructuredAvatarData: Failed`, error);
-      // Return safe defaults
-      return {
-        skinTone: 'medium',
-        hairColor: 'brown hair',
-        type: 'child',
-        name: 'Child',
-        age: 7,
-        nativeLanguage: 'en',
-        ethnicity: 'general'
-      };
-    }
+    const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
+    const avatarType = userInfo?.avatar?.type || userInfo?.type || 'child';
+    const ethnicity = CharacterConsistencyService.detectEthnicity(userInfo);
+    const hairColor = CharacterConsistencyService.getHair(skinTone, sessionId, ethnicity, avatarType);
+    
+    return {
+      skinTone,
+      hairColor,
+      type: avatarType,
+      name: userInfo?.name || userInfo?.childName || 'Child',
+      age: userInfo?.age || userInfo?.childAge || 7,
+      nativeLanguage: userInfo?.nativeLanguage || 'en',
+      ethnicity
+    };
   }
 
   /**
