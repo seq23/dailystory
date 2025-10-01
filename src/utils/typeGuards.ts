@@ -1,5 +1,32 @@
 import { UserInfo, StoryPage, APIResponse, ImageResponse } from '@/types/api';
 
+/**
+ * Normalizes Supabase function response structure
+ * Handles JSON strings, direct responses, and nested { data: actualResponse } structure
+ * 
+ * CRITICAL: This function MUST be declared FIRST because all validators depend on it
+ */
+export const normalizeSupabaseResponse = <T = any>(response: any): T | null => {
+  // Handle JSON string responses (parse to object)
+  if (typeof response === 'string') {
+    try {
+      response = JSON.parse(response);
+    } catch {
+      return null; // Invalid JSON string
+    }
+  }
+  
+  if (typeof response !== 'object' || response === null) return null;
+  
+  // If response has a 'data' field, extract it (Supabase wrapper)
+  if ('data' in response && response.data !== null && response.data !== undefined) {
+    return response.data as T;
+  }
+  
+  // Otherwise return the response as-is
+  return response as T;
+};
+
 export const isUserInfo = (obj: any): obj is UserInfo => {
   return typeof obj === 'object' && obj !== null;
 };
@@ -138,31 +165,6 @@ export const extractSuccessValue = (obj: any): boolean => {
   console.log('🔍 extractSuccessValue: Result', { result });
   
   return result;
-};
-
-/**
- * Normalizes Supabase function response structure
- * Handles JSON strings, direct responses, and nested { data: actualResponse } structure
- */
-export const normalizeSupabaseResponse = <T = any>(response: any): T | null => {
-  // Handle JSON string responses (parse to object)
-  if (typeof response === 'string') {
-    try {
-      response = JSON.parse(response);
-    } catch {
-      return null; // Invalid JSON string
-    }
-  }
-  
-  if (typeof response !== 'object' || response === null) return null;
-  
-  // If response has a 'data' field, extract it (Supabase wrapper)
-  if ('data' in response && response.data !== null && response.data !== undefined) {
-    return response.data as T;
-  }
-  
-  // Otherwise return the response as-is
-  return response as T;
 };
 
 export const assertNever = (value: never): never => {

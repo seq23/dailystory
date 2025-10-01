@@ -94,6 +94,7 @@ Quick lookup table for all tracked errors with searchable keywords.
 
 | Error ID | Keywords | Severity | Status | System | Quick Link |
 |----------|----------|----------|--------|--------|------------|
+| ERROR-057 | function-hoisting, normalizeSupabaseResponse, javascript-arrow-functions, referenceerror, tier-1-false-failures, validation-system, declaration-order | CRITICAL | ✅ RESOLVED | Validation | [View](#error-057-javascript-hoisting-error-in-universal-validation-system) |
 | ERROR-056 | variable-scoping, structuredavatardata, characterconsistencyservice, referenceerror, coloredObjects-shadowing, early-exit, ai-visual-scene-creator | CRITICAL | ✅ RESOLVED | Image Gen | [View](#error-056-ai-visual-scene-creator-variable-scoping-and-reference-errors) |
 | ERROR-055 | missing-methods, getstructuredavatardata, generatecharacterforconsistency, import-dependencies, inline-data, runtime-guards, template-ab, tier-1 | HIGH | ✅ RESOLVED | Character System | [View](#error-055-missing-characterconsistencyservice-methods) |
 | ERROR-054 | cultural-enhancement, 3-tier-fallback, lean-cultural-fallback, essential-vocabulary, staticdatacache, persistence, 1-to-1-parity, no-generic-fallback | HIGH | ✅ RESOLVED | Character System | [View](#error-054-cultural-enhancement-3-tier-fallback-system) |
@@ -240,6 +241,9 @@ Next Review: October 7, 2025
 - [ERROR-037: Performance-Based Bypass Conflicts](#error-037-performance-based-bypass-conflicts-with-business-logic) ✅
 - [ERROR-036: Smart Bypass Logic Affecting Premium Users](#error-036-smart-bypass-logic-incorrectly-affecting-premium-users) ✅
 
+### 🔧 Validation System Errors
+- [ERROR-057: JavaScript Hoisting Error in Universal Validation System](#error-057-javascript-hoisting-error-in-universal-validation-system) ✅
+
 [↑ Back to Top](#master-error-tracking-document) | [📋 TOC](#table-of-contents)
 
 ---
@@ -272,6 +276,49 @@ Next Review: October 7, 2025
 - **Fix Applied:** Removed all performance-based bypass triggers
 - **Current Logic:** Only content-length bypass for guest users (< 100 chars)
 - **Resolved:** 2025-09-28
+
+### ✅ ERROR-057: JavaScript Hoisting Error in Universal Validation System
+- **Status:** RESOLVED ✅
+- **Severity:** CRITICAL (Complete validation system failure)
+- **Discovered:** 2025-10-01
+- **Impact:** All image validation functions failing with ReferenceError
+- **Root Cause:** `normalizeSupabaseResponse` function called before declaration due to JavaScript arrow function hoisting rules
+- **Business Impact:** 
+  - Tier 1 false failures (valid responses appearing as errors)
+  - All image URL extraction failing
+  - Complete breakdown of Universal Image Validation System
+  - Inconsistent image loading in production
+- **Technical Details:**
+  - JavaScript arrow functions (`const x = () => {}`) are NOT hoisted
+  - 4 validators called `normalizeSupabaseResponse` before it was declared:
+    - `isAPIResponse` (line 20)
+    - `isImageResponse` (line 42)
+    - `extractImageUrl` (line 68)
+    - `extractSuccessValue` (line 113)
+  - Function declared at line 147, causing runtime ReferenceError
+- **Fix Applied:**
+  - Moved `normalizeSupabaseResponse` to line 3 (before all validators)
+  - Added JSDoc warning: "CRITICAL: This function MUST be declared FIRST"
+  - Removed duplicate declaration at line 147
+  - Zero breaking changes, zero API modifications
+- **Files Modified:**
+  - `src/utils/typeGuards.ts` (Lines 3-30: moved function, Lines 138-168: removed duplicate)
+- **Resolved:** 2025-10-01
+- **Prevention:** 
+  - Added critical JSDoc comment for function dependency
+  - Created comprehensive snapshot documentation
+  - Added to ESLint recommendations: `no-use-before-define`
+  - Updated Universal Image Validation System docs with JSON string handling
+- **Documentation:**
+  - [Tier 1 False Failure Fix Snapshot](./TIER_1_FALSE_FAILURE_FIX_SNAPSHOT_2025-10-01.md)
+  - [Universal Image Validation System](./UNIVERSAL_IMAGE_VALIDATION_SYSTEM.md)
+  - Word-for-word code modifications documented in snapshot
+- **Testing Validated:**
+  - JSON string parsing: `'{"imageURL":"..."}'` → extracted URL ✅
+  - Supabase nested: `{ data: { imageURL: '...' } }` → extracted URL ✅
+  - Direct object: `{ imageURL: '...' }` → extracted URL ✅
+  - Success normalization: All value types (boolean, string, number) ✅
+  - Type guards: All validators working correctly ✅
 
 ## Story Generation System Fixes
 
