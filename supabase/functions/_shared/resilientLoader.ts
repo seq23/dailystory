@@ -39,8 +39,13 @@ const failureCache = new Map<string, { timestamp: number; ttl: number }>();
 
 // Differentiated TTL for critical vs regular services
 const CRITICAL_SERVICES = ['@supabase/supabase-js', 'stripe', 'openai'];
-const CRITICAL_FAILURE_TTL = 30 * 1000; // 30 seconds for critical services
-const REGULAR_FAILURE_TTL = 2 * 60 * 1000; // 2 minutes for regular services
+
+// Environment-based cooldown configuration - shorter times for faster debugging
+const isDevelopment = Deno.env.get('ENVIRONMENT') === 'development' || 
+                     Deno.env.get('DENO_DEPLOYMENT_ID') === undefined;
+
+const CRITICAL_FAILURE_TTL = isDevelopment ? 2 * 1000 : 5 * 1000; // 2s dev, 5s prod
+const REGULAR_FAILURE_TTL = isDevelopment ? 5 * 1000 : 30 * 1000; // 5s dev, 30s prod
 const IMPORT_TIMEOUT = 7 * 1000; // 7 seconds
 
 // Failure counter for automatic cache reset
