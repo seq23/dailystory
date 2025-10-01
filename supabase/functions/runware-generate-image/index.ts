@@ -209,7 +209,15 @@ async function processInlinedTier1(payload: any, memoizedImport: any, logTier1St
   // Extract: secondary characters, colored objects, animals, settings from story text
   // ============================================================================
   
-  const structuredAvatarData = await characterConsistencyService.getStructuredAvatarData(sessionId, userInfo);
+  // Runtime guard for getStructuredAvatarData method (ERROR-055 fix)
+  let structuredAvatarData;
+  if (typeof characterConsistencyService?.getStructuredAvatarData === 'function') {
+    structuredAvatarData = await characterConsistencyService.getStructuredAvatarData(sessionId, userInfo);
+  } else {
+    console.warn(`⚠️ getStructuredAvatarData not available, escalating to Tier 2.5B`);
+    throw new Error('GETSTRUCTUREDAVATARDATA_UNAVAILABLE_ESCALATE_TO_25B');
+  }
+
   logTier1Step('Avatar Data Extraction', 'success', `Avatar data: ${structuredAvatarData?.skinTone}, ${structuredAvatarData?.hairColor}`);
   
   // Get character consistency data using the service

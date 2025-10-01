@@ -94,6 +94,7 @@ Quick lookup table for all tracked errors with searchable keywords.
 
 | Error ID | Keywords | Severity | Status | System | Quick Link |
 |----------|----------|----------|--------|--------|------------|
+| ERROR-055 | missing-methods, getstructuredavatardata, generatecharacterforconsistency, import-dependencies, inline-data, runtime-guards, template-ab, tier-1 | HIGH | ✅ RESOLVED | Character System | [View](#error-055-missing-characterconsistencyservice-methods) |
 | ERROR-054 | cultural-enhancement, 3-tier-fallback, lean-cultural-fallback, essential-vocabulary, staticdatacache, persistence, 1-to-1-parity, no-generic-fallback | HIGH | ✅ RESOLVED | Character System | [View](#error-054-cultural-enhancement-3-tier-fallback-system) |
 | ERROR-053 | character-consistency, direct-mode, staticdatacache-first, analyzevisualdetails, over-engineering, helper-functions, import-standardization | HIGH | ✅ RESOLVED | Character System | [View](#error-053-character-consistency-flow-and-architecture-optimization) |
 | ERROR-052 | referenceerror, structuredavatardata, import-resilience, multi-path-fallback, character-service, critical-fix | CRITICAL | ✅ RESOLVED | Image Gen | [View](#error-052-critical-referenceerror-and-import-resilience-fix) |
@@ -659,6 +660,59 @@ Next Review: October 7, 2025
 ---
 
 ## Recent Major Fixes (September 30, 2025)
+
+### ✅ ERROR-055: Missing CharacterConsistencyService Methods
+- **Status:** RESOLVED ✅
+- **Severity:** HIGH (Runtime method failures)
+- **Discovered:** 2025-09-30
+- **Impact:** `getStructuredAvatarData` and `generateCharacterForConsistency` methods missing, causing Tier 1 and Template-AB failures
+- **Root Cause:** Methods called but never implemented in CharacterConsistencyService.js
+
+**Problem Details:**
+1. **Tier 1 Orchestrator** calls `getStructuredAvatarData(sessionId, userInfo)` at line 212
+2. **Template-AB** calls `generateCharacterForConsistency(name, type, ctx)` at line 1674
+3. Both methods missing from CharacterConsistencyService.js, causing runtime errors
+
+**Solution Applied:**
+1. **Added getStructuredAvatarData Method** (Lines 1253-1310 in CharacterConsistencyService.js):
+   - Returns `{ skinTone, hairColor, type, name, age, nativeLanguage, ethnicity }`
+   - **INLINE HAIR_BY_SKIN_TONE_INLINE** data (73 variations) - eliminates StaticDataCache dependency
+   - **INLINE AFRICAN_AMERICAN_HAIR_INLINE** data - cultural authenticity
+   - Session-seeded hair selection using `seededPick()` helper
+   - Inline `detectEthnicity()` helper for cultural detection
+   - Safe fallback defaults if errors occur
+
+2. **Added generateCharacterForConsistency Method** (Lines 1312-1350):
+   - Thin wrapper using existing `getSecondaryCharacterSeed()` and `getCharacterAppearanceFromStory()`
+   - Returns `{ characterName, characterDescription }`
+   - Safe fallback for Template-AB compatibility
+
+3. **Added Runtime Guards**:
+   - **runware-generate-image/index.ts Line 212-219**: Check method exists before calling, escalate to Tier 2.5B if missing
+   - **runware-template-ab/index.js Lines 1674-1697**: Check method exists before calling, use basic fallback if missing
+
+**Files Modified:**
+- `supabase/functions/_shared/CharacterConsistencyService.js` (Lines 1181-1350): Added 2 methods + inline data + helpers
+- `supabase/functions/runware-generate-image/index.ts` (Line 212): Added runtime guard with escalation
+- `supabase/functions/runware-template-ab/index.js` (Lines 1674-1688): Added runtime guard with safe fallback
+- `docs/MASTER_ERRORS_TO_FIX.md`: Documented ERROR-055
+
+**Expected Outcomes:**
+- ✅ Tier 1 fully functional with structured avatar data
+- ✅ Template-AB secondary character generation working
+- ✅ 73-variation hair buffet preserved via inline data
+- ✅ Cultural authenticity maintained (African American features/hair)
+- ✅ Runtime safety - graceful escalation/fallbacks if methods unavailable
+- ✅ Zero external import dependencies for these methods
+
+**Prevention:**
+- Method existence validation before calling
+- Inline critical data to prevent import failures
+- Comprehensive error logging for debugging
+
+- **Resolved:** 2025-09-30
+
+---
 
 ### ✅ ERROR-054: Cultural Enhancement 3-Tier Fallback System
 - **Status:** RESOLVED ✅

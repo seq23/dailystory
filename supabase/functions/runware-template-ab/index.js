@@ -1670,17 +1670,26 @@ async function handleRequest(req) {
             const safeSecondaryCharacters = (detectedSecondaryCharacters || []).filter(character => character && character.name);
             for (const character of safeSecondaryCharacters) {
               try {
-                // Generate FULL character data with visual description using generateCharacterForConsistency
-                const fullCharacterData = await characterConsistencyService.generateCharacterForConsistency(
-                  character.name,
-                  character.type || 'secondary_character',
-                  {
-                    sessionId,
-                    userInfo,
-                    storyContext: storyText || '',
-                    relationship: character.relationship
-                  }
-                );
+                // Runtime guard for generateCharacterForConsistency (ERROR-055 fix)
+                let fullCharacterData;
+                if (typeof characterConsistencyService?.generateCharacterForConsistency === 'function') {
+                  fullCharacterData = await characterConsistencyService.generateCharacterForConsistency(
+                    character.name,
+                    character.type || 'secondary_character',
+                    {
+                      sessionId,
+                      userInfo,
+                      storyContext: storyText || '',
+                      relationship: character.relationship
+                    }
+                  );
+                } else {
+                  console.warn(`⚠️ generateCharacterForConsistency not available for ${character.name}, using basic description`);
+                  fullCharacterData = { 
+                    characterName: character.name,
+                    characterDescription: character.description || `${character.name} is a character`
+                  };
+                }
                 
                 // Use the DETAILED characterDescription instead of basic description
                 const visualDescription = fullCharacterData?.characterDescription || 

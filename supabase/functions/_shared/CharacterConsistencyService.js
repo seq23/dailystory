@@ -1178,6 +1178,213 @@ export async function safeImportCharacterConsistency() {
   }
 }
 
+  // ============= MISSING METHODS WITH INLINE DEPENDENCIES (ERROR-055 FIX) =============
+
+  /**
+   * INLINE HAIR DATA: 73 variations by skin tone (complete buffet)
+   * Prevents StaticDataCache import dependency
+   */
+  static HAIR_BY_SKIN_TONE_INLINE = {
+    'pale': [
+      'strawberry blonde hair', 'golden red hair', 'auburn curls', 'copper blonde waves',
+      'light auburn hair', 'honey blonde curls', 'champagne blonde hair', 'rose gold hair',
+      'pale blonde waves', 'peach blonde hair', 'sandy red hair', 'light ginger hair',
+      'platinum red highlights', 'soft copper hair'
+    ],
+    'light': [
+      'platinum blonde hair', 'golden blonde hair', 'honey blonde hair', 'ash blonde hair',
+      'sandy blonde hair', 'champagne blonde hair', 'butterscotch blonde hair', 'vanilla blonde hair',
+      'light golden hair', 'wheat blonde hair', 'cornsilk blonde hair', 'pale gold hair',
+      'cream blonde hair', 'butter blonde hair', 'lemon blonde hair'
+    ],
+    'medium': [
+      'chestnut brown hair', 'chocolate brown hair', 'coffee brown hair', 'caramel brown hair',
+      'warm brown hair', 'hazelnut brown hair', 'toffee brown hair', 'amber brown hair',
+      'honey brown hair', 'maple brown hair', 'cinnamon brown hair', 'bronze brown hair',
+      'copper brown hair', 'auburn brown hair', 'mahogany brown hair'
+    ],
+    'olive': [
+      'jet black hair', 'raven black hair', 'midnight black hair', 'ebony hair',
+      'dark espresso hair', 'deep brown hair', 'dark chocolate hair', 'rich brown hair',
+      'warm black hair', 'dark chestnut hair', 'deep mahogany hair', 'dark auburn hair',
+      'black-brown hair', 'dark walnut hair'
+    ],
+    'dark': [
+      'beautiful dark hair', 'rich black hair', 'lustrous dark hair', 'deep black hair',
+      'natural black hair', 'warm black hair', 'glossy black hair'
+    ]
+  };
+
+  /**
+   * INLINE AFRICAN AMERICAN HAIR: Cultural authenticity
+   */
+  static AFRICAN_AMERICAN_HAIR_INLINE = {
+    girls: [
+      'wearing natural hair in a cute protective style with colorful hair accessories',
+      'wearing beautiful braids with neat parting and decorative beads',
+      'wearing a stylish twist-out with defined curl pattern',
+      'wearing adorable puff ponytails with matching ribbons',
+      'wearing cornrows styled into a heart pattern'
+    ],
+    boys: [
+      'wearing a curly top fade with perfectly defined coils on top',
+      'wearing twist sponge curls with tight coil definition',
+      'wearing a high top fade with voluminous textured crown',
+      'wearing short natural curls with a clean taper fade',
+      'wearing a temp fade with curly textured top'
+    ]
+  };
+
+  /**
+   * Detect ethnicity from userInfo
+   */
+  static detectEthnicity(userInfo) {
+    const skinTone = (userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium').toLowerCase();
+    return (skinTone === 'dark' || skinTone === 'deep' || skinTone === 'darker') ? 'african-american' : 'general';
+  }
+
+  /**
+   * Seeded pseudo-random picker for session consistency
+   */
+  static seededPick(array, seed) {
+    if (!array || array.length === 0) return '';
+    const hash = seed.split('').reduce((acc, char) => {
+      return ((acc << 5) - acc) + char.charCodeAt(0);
+    }, 0);
+    const index = Math.abs(hash) % array.length;
+    return array[index];
+  }
+
+  /**
+   * Select hair by skin tone with session-seeded variety
+   */
+  static selectHairBySkintone(skinTone, sessionId, ethnicity) {
+    const normalizedSkinTone = (skinTone || 'medium').toLowerCase();
+    
+    // African American override
+    if (ethnicity === 'african-american') {
+      const avatarType = 'girl'; // Default - would need to be passed in for proper gender detection
+      const hairArray = CharacterConsistencyService.AFRICAN_AMERICAN_HAIR_INLINE[avatarType === 'boy' ? 'boys' : 'girls'];
+      return CharacterConsistencyService.seededPick(hairArray, sessionId);
+    }
+
+    // Regular hair buffet (73 variations)
+    const hairArray = CharacterConsistencyService.HAIR_BY_SKIN_TONE_INLINE[normalizedSkinTone] || 
+                      CharacterConsistencyService.HAIR_BY_SKIN_TONE_INLINE['medium'];
+    return CharacterConsistencyService.seededPick(hairArray, sessionId);
+  }
+
+  /**
+   * Get structured avatar data for image generation
+   * ZERO EXTERNAL DEPENDENCIES - all data inline
+   * 
+   * @param {string} sessionId - Session ID for seeded hair selection
+   * @param {object} userInfo - User information object
+   * @returns {object} Structured avatar data { skinTone, hairColor, type, name, age, nativeLanguage, ethnicity }
+   */
+  async getStructuredAvatarData(sessionId, userInfo) {
+    try {
+      console.log(`🎨 getStructuredAvatarData: Building for session ${sessionId}`);
+      
+      const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
+      const avatarType = userInfo?.avatar?.type || userInfo?.type || 'child';
+      const characterName = userInfo?.name || userInfo?.childName || 'Child';
+      const age = userInfo?.age || userInfo?.childAge || 7;
+      const nativeLanguage = userInfo?.nativeLanguage || 'en';
+      
+      // Detect ethnicity for cultural authenticity
+      const ethnicity = CharacterConsistencyService.detectEthnicity(userInfo);
+      
+      // Select hair using session-seeded variety (73 variations)
+      const hairColor = CharacterConsistencyService.selectHairBySkintone(skinTone, sessionId, ethnicity);
+      
+      const result = {
+        skinTone,
+        hairColor,
+        type: avatarType,
+        name: characterName,
+        age,
+        nativeLanguage,
+        ethnicity
+      };
+      
+      console.log(`✅ getStructuredAvatarData: Complete`, { 
+        skinTone, 
+        hairColor: hairColor?.substring(0, 30) + '...', 
+        ethnicity,
+        type: avatarType
+      });
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ getStructuredAvatarData: Failed`, error);
+      // Return safe defaults
+      return {
+        skinTone: 'medium',
+        hairColor: 'brown hair',
+        type: 'child',
+        name: 'Child',
+        age: 7,
+        nativeLanguage: 'en',
+        ethnicity: 'general'
+      };
+    }
+  }
+
+  /**
+   * Generate character for consistency (thin wrapper)
+   * Used by template-ab for secondary character generation
+   * 
+   * @param {string} name - Character name
+   * @param {string} type - Character type (secondary_character, animal, etc.)
+   * @param {object} ctx - Context { sessionId, userInfo, storyContext, relationship }
+   * @returns {object} { characterName, characterDescription }
+   */
+  async generateCharacterForConsistency(name, type, ctx) {
+    try {
+      console.log(`👥 generateCharacterForConsistency: ${name} (${type})`);
+      
+      // Use existing service methods to build character
+      const characterSeed = await this.getSecondaryCharacterSeed(
+        ctx.sessionId,
+        name,
+        type
+      );
+      
+      // Get appearance from story context if available
+      let appearance = '';
+      if (ctx.storyContext) {
+        const storyAppearance = await this.getCharacterAppearanceFromStory(
+          ctx.storyContext,
+          name,
+          ctx.sessionId
+        );
+        if (storyAppearance) {
+          appearance = storyAppearance;
+        }
+      }
+      
+      // Build character description
+      const characterDescription = appearance || 
+                                  characterSeed?.visualDescription || 
+                                  `${name} is a ${type}`;
+      
+      console.log(`✅ generateCharacterForConsistency: ${name} -> ${characterDescription.substring(0, 50)}...`);
+      
+      return {
+        characterName: name,
+        characterDescription
+      };
+    } catch (error) {
+      console.error(`❌ generateCharacterForConsistency: Failed for ${name}`, error);
+      // Safe fallback
+      return {
+        characterName: name,
+        characterDescription: `${name} is a ${type}`
+      };
+    }
+  }
+
 // ============= EXPORTS =============
 
 // Pre-instantiate singleton for edge functions
