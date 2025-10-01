@@ -551,16 +551,42 @@ export class SimpleImageService {
         // Phase A: Multi-Field Image URL Validation - Handle all API response variations
         const imageURL = orchResult?.imageURL || orchResult?.image_url || orchResult?.imageUrl || orchResult?.url;
         
-        DebugLogger.log('image', '🔍 Image URL After Extraction', {
-          imageURL,
-          imageURLType: typeof imageURL,
+        // Phase B: Robust success validation - handle string/boolean/numeric variations
+        const isSuccess = !!(
+          orchResult?.success === true || 
+          orchResult?.success === 'true' || 
+          orchResult?.success === 1 ||
+          orchResult?.success === '1'
+        );
+        
+        // Phase C: Robust imageURL validation
+        const hasValidImageURL = !!(
+          imageURL && 
+          typeof imageURL === 'string' && 
+          imageURL.trim().length > 0 &&
+          (imageURL.trim().startsWith('http://') || imageURL.trim().startsWith('https://'))
+        );
+        
+        DebugLogger.log('image', '🔍 CRITICAL: Validation Breakdown', {
+          // Raw values
+          rawSuccess: orchResult?.success,
+          rawSuccessType: typeof orchResult?.success,
+          rawImageURL: imageURL,
+          rawImageURLType: typeof imageURL,
+          // Computed booleans
+          isSuccess,
+          hasValidImageURL,
+          // Detailed checks
           imageURLLength: imageURL?.length,
           trimmedLength: imageURL?.trim()?.length,
           startsWithHttp: imageURL?.startsWith('http'),
-          validationWillPass: !!(orchResult?.success && imageURL?.trim())
+          // Final validation
+          validationWillPass: isSuccess && hasValidImageURL,
+          // Full response for debugging
+          orchResultKeys: orchResult ? Object.keys(orchResult) : []
         });
         
-        if (orchResult?.success && imageURL?.trim()) {
+        if (isSuccess && hasValidImageURL) {
         DebugLogger.log('image', `🖼️ Auto-generated image successfully: ${imageURL}`, {
           contentHash: orchResult.contentHash || 'no-hash',
           usedTier: orchResult.usedTier || 'orchestrator'
