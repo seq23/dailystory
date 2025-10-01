@@ -129,6 +129,33 @@ const AFRICAN_AMERICAN_BOYS_HAIRSTYLES = [
 ];
 ```
 
+### CHARACTER NAMES (65 Total Entries)
+
+#### African American Names Array (65 entries):
+```javascript
+const AFRICAN_AMERICAN_CHARACTER_NAMES = [
+  'Zoe', 'Cheyenne', 'Brooklyn', 'Surrayah', 'Layla', 'Ricky', 'Scooter', 'Kennedy', 
+  'Christian', 'Carter', 'Calli', 'Serenity', 'Asia', 'India', 'Nia', 'Dariane', 
+  'Eden', 'Sofia', 'Hudson', 'Hanson', 'Holland', 'Harper', 'Cameron', 'Brayden', 
+  'Jayden', 'Chyna', 'Lena', 'Ari', 'Mercedes', 'Sequoia', 'Yaw', 'Amara', 
+  'Kenzie', 'Abo', 'Carlos', 'Ace', 'Cruz', 'Crystal', 'Benny', 'Gerzell', 
+  'Isabella', 'Imani', 'Jordan', 'Tori', 'Amari', 'Will', 'Justin', 'Paige', 
+  'Val', 'Akeelah', 'Erin', 'Shannon', 'Reggie', 'Kelsie', 'Aerric', 'Ayden', 
+  'Jared', 'Lennon', 'Brandon', 'Gabriella', 'Noah', 'Oliva', 'Sterling', 'Korri', 
+  'Corey'
+];
+```
+
+**Location**: 
+- Frontend: `src/services/StaticDataCache.ts` (line 1032-1040)
+- Backend: `supabase/functions/generate-adaptive-story/StaticDataCache.ts` (line 1065-1073)
+
+**Protection Status**: MAXIMUM - SENTIMENTAL VALUE
+- ⚠️ **WARNING**: These names have been hand-curated and hold sentimental value
+- Each name represents authentic African American naming traditions
+- This array MUST remain synchronized across Frontend and Backend
+- Count: 65 entries (matching hair variations count for system consistency)
+
 ---
 
 ## 🚨 CHANGE HISTORY
