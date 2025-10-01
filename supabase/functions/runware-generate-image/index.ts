@@ -748,7 +748,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
             negativePrompt: enhancedPrompt.negativePrompt,
             primaryScene: enhancedPrompt.primaryScene,
             templateStructure: enhancedPrompt.templateStructure
-...
+          },
           
           orchestratorDebugData: {
             aiDebugSchema: enhancedPrompt.aiDebugSchema,
@@ -847,7 +847,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
             
             // Tier 1 Timeline for Debugging
             tier1Debug: {
-...
+              timeline: tier1ErrorLog,
+              lastStep: tier1ErrorLog[tier1ErrorLog.length - 1] || 'Unknown',
+              context: {
                 note: 'Tier 1 failed before prompt generation completed',
                 partialData: payload ? {
                   storyText: payload.storyText?.substring(0, 100) + '...',
