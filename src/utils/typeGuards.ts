@@ -18,10 +18,11 @@ export const isStoryPage = (obj: any): obj is StoryPage => {
  * Flexible API response validation - handles boolean, string, and number success values
  */
 export const isAPIResponse = (obj: any): obj is APIResponse => {
-  if (typeof obj !== 'object' || obj === null) return false;
+  const normalized = normalizeSupabaseResponse(obj);
+  if (typeof normalized !== 'object' || normalized === null) return false;
   
   // Accept boolean, string, or number success values
-  const successValue = obj.success;
+  const successValue = normalized.success;
   return (
     successValue === true ||
     successValue === false ||
@@ -38,22 +39,23 @@ export const isAPIResponse = (obj: any): obj is APIResponse => {
  * Validates image response with all field name variations
  */
 export const isImageResponse = (obj: any): obj is ImageResponse => {
-  if (typeof obj !== 'object' || obj === null) return false;
+  const normalized = normalizeSupabaseResponse(obj);
+  if (typeof normalized !== 'object' || normalized === null) return false;
   
   // Check for any of the image URL field variations
   const hasImageUrl = !!(
-    obj.imageURL ||
-    obj.image_url ||
-    obj.imageUrl ||
-    obj.url
+    normalized.imageURL ||
+    normalized.image_url ||
+    normalized.imageUrl ||
+    normalized.url
   );
   
   // Validate success value
   const hasSuccess = !!(
-    obj.success === true ||
-    obj.success === 'true' ||
-    obj.success === 1 ||
-    obj.success === '1'
+    normalized.success === true ||
+    normalized.success === 'true' ||
+    normalized.success === 1 ||
+    normalized.success === '1'
   );
   
   return hasImageUrl && hasSuccess;
@@ -63,19 +65,20 @@ export const isImageResponse = (obj: any): obj is ImageResponse => {
  * Extracts image URL from response handling all field name variations
  */
 export const extractImageUrl = (obj: any): string | null => {
-  if (typeof obj !== 'object' || obj === null) {
+  const normalized = normalizeSupabaseResponse(obj);
+  if (typeof normalized !== 'object' || normalized === null) {
     console.log('🔍 extractImageUrl: obj is not an object or is null', { obj, type: typeof obj });
     return null;
   }
   
   // Try all possible field names in priority order
-  const imageUrl = obj.imageURL || obj.image_url || obj.imageUrl || obj.url;
+  const imageUrl = normalized.imageURL || normalized.image_url || normalized.imageUrl || normalized.url;
   
   console.log('🔍 extractImageUrl: Field extraction', {
-    hasImageURL: !!obj.imageURL,
-    hasImage_url: !!obj.image_url,
-    hasImageUrl: !!obj.imageUrl,
-    hasUrl: !!obj.url,
+    hasImageURL: !!normalized.imageURL,
+    hasImage_url: !!normalized.image_url,
+    hasImageUrl: !!normalized.imageUrl,
+    hasUrl: !!normalized.url,
     extractedValue: imageUrl,
     extractedType: typeof imageUrl
   });
@@ -107,12 +110,13 @@ export const extractImageUrl = (obj: any): string | null => {
  * Extracts and normalizes success value from response
  */
 export const extractSuccessValue = (obj: any): boolean => {
-  if (typeof obj !== 'object' || obj === null) {
+  const normalized = normalizeSupabaseResponse(obj);
+  if (typeof normalized !== 'object' || normalized === null) {
     console.log('🔍 extractSuccessValue: obj is not an object or is null', { obj, type: typeof obj });
     return false;
   }
   
-  const success = obj.success;
+  const success = normalized.success;
   
   console.log('🔍 extractSuccessValue: Checking success field', {
     successValue: success,
@@ -138,9 +142,18 @@ export const extractSuccessValue = (obj: any): boolean => {
 
 /**
  * Normalizes Supabase function response structure
- * Handles both direct responses and nested { data: actualResponse } structure
+ * Handles JSON strings, direct responses, and nested { data: actualResponse } structure
  */
 export const normalizeSupabaseResponse = <T = any>(response: any): T | null => {
+  // Handle JSON string responses (parse to object)
+  if (typeof response === 'string') {
+    try {
+      response = JSON.parse(response);
+    } catch {
+      return null; // Invalid JSON string
+    }
+  }
+  
   if (typeof response !== 'object' || response === null) return null;
   
   // If response has a 'data' field, extract it (Supabase wrapper)
