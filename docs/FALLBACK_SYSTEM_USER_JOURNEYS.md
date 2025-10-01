@@ -200,6 +200,84 @@ This document details complete user journey scenarios for both Guest and Premium
 - **Performance Metrics**: Response time and success rate monitoring  
 - **User Impact**: Measuring user experience during fallback periods
 
+---
+
+## Character Consistency Service (CCS) Escalation Behavior
+
+### CCS Failure Classification in Image Generation Tiers
+
+#### Tier 1 (Orchestrator) CCS Behavior
+**Service**: PhaseIntegrationOrchestrator
+
+**Critical CCS Failures (Escalate)**:
+- `getCulturalEnhancements()` fails → Escalate to Direct Mode
+- `getColoredObjects()` fails → Escalate to Direct Mode
+- `detectAllCharacters()` fails → Escalate to Direct Mode
+
+**Non-Critical CCS Failures (Use Fallbacks)**:
+- `getStructuredAvatarData()` fails → Use `StaticDataCache.HAIR_BY_SKIN_TONE` + `userInfo`
+- `getCharacterSeed()` fails → Use random seed with basic `userInfo` data
+
+**User Experience**:
+- **Seamless**: User unaware of CCS method failures
+- **Quality**: Premium orchestration continues with emergency avatar fallbacks
+- **No Toast**: Internal recovery, no user notification needed
+
+#### Direct Mode (AI Visual Scene Creator) CCS Behavior
+**Service**: ai-visual-scene-creator
+
+**Primary Scene Failure (Escalate)**:
+- OpenAI visual scene generation fails → Escalate to Tier 2.5C (Nuclear Hardcoded Template)
+- **Reason**: Direct Mode's core value is AI scene generation
+
+**CCS Co-Pilot Failures (Use Hardcoded Fallbacks)**:
+- `getCulturalEnhancements()` fails → Use `culturalContext = 'diverse, age-appropriate, inclusive'`
+- `getColoredObjects()` fails → Use `coloredObjects = 'colorful, vibrant objects'`
+- `detectAllCharacters()` fails → Use `secondaryCharacters = []`
+- `getStructuredAvatarData()` fails → Use `StaticDataCache` + `userInfo`
+- `getCharacterSeed()` fails → Use basic `userInfo` data
+
+**User Experience**:
+- **Continue Generation**: CCS failures don't stop Direct Mode
+- **Degraded Quality**: Less sophisticated character consistency
+- **No Toast**: Internal recovery with hardcoded emergency values
+- **Escalation Only If**: Primary scene generation fails (then → Tier 2.5C)
+
+#### Tier 2.5A (Premium Template) CCS Behavior
+**Service**: runware-template-ab (complexity 'A')
+
+**Critical CCS Failures (Escalate)**:
+- `getCulturalEnhancements()` fails → Escalate to Tier 2.5B
+- `getColoredObjects()` fails → Escalate to Tier 2.5B
+- `detectAllCharacters()` fails → Escalate to Tier 2.5B
+
+**Non-Critical CCS Failures (Use Fallbacks)**:
+- `getStructuredAvatarData()` fails → Use `StaticDataCache.HAIR_BY_SKIN_TONE` (73 variations)
+- `getCharacterSeed()` fails → Use session-based hash seed
+
+**User Experience**:
+- **Graceful Degradation**: Falls to simpler template with reduced dependencies
+- **Yellow Toast**: May appear if falling to 2.5B due to CCS issues
+- **Quality Maintained**: 73-variation hair mapping still available in 2.5B
+
+#### Tier 2.5B (Basic Template) CCS Behavior
+**Service**: runware-template-ab (complexity 'B')
+
+**Nuclear Independent**:
+- ✅ No CCS critical dependencies (orchestrator removed)
+- Uses `StaticDataCache` for 73-variation hair mapping
+- Direct `extractSimpleScene()` for action detection
+
+**Fallback Strategy**:
+- All CCS methods treated as non-critical
+- Uses `StaticDataCache` and `userInfo` for all avatar data
+- Cannot escalate due to CCS (escalates only on scene extraction failure)
+
+**User Experience**:
+- **Reliable**: Nuclear independence ensures consistency
+- **No CCS Escalation**: CCS failures don't cause tier changes
+- **Quality**: 73-variation hair mapping maintained
+
 ## Business Logic Integration
 
 ### Content Limits and Restrictions

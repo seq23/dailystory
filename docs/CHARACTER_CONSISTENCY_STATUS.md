@@ -444,6 +444,255 @@ import { characterConsistencyService } from '#shared/CharacterConsistencyService
 
 ---
 
+## CCS Failure Classification & Escalation Logic
+
+### Overview
+**Status**: ✅ PRODUCTION READY  
+**Last Updated**: 2025-10-01
+
+The Character Consistency Service (CCS) employs a sophisticated failure classification system that distinguishes between acceptable graceful fallbacks and critical failures requiring escalation.
+
+### Failure Classification
+
+#### 🟢 Acceptable Graceful Fallbacks (Non-Critical)
+These method failures use bulletproof fallbacks from `StaticDataCache.js` and `userInfo` without escalating:
+
+**1. `getStructuredAvatarData()` Failures**
+- **Fallback Strategy**: Extract from `userInfo` + `StaticDataCache.HAIR_BY_SKIN_TONE`
+- **Fallback Source**: Direct access to 73 hair variations across 10 skin tone categories
+- **Implementation**: 
+  ```javascript
+  // Emergency fallback using StaticDataCache
+  const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
+  const hairOptions = StaticDataCache.HAIR_BY_SKIN_TONE[skinTone] || StaticDataCache.HAIR_BY_SKIN_TONE['medium'];
+  const seededHairChoice = hairOptions[seedIndex % hairOptions.length];
+  ```
+- **Why Non-Critical**: Avatar appearance can be constructed from reliable static data
+- **Result**: Continue image generation with emergency avatar data
+
+**2. `getCharacterSeed()` Failures**
+- **Fallback Strategy**: Use random seed or empty string with basic userInfo
+- **Fallback Source**: `userInfo.avatar.type`, `userInfo.avatar.skinTone`, `userInfo.hair`
+- **Implementation**:
+  ```javascript
+  // Emergency fallback
+  const emergencySeed = {
+    baseSeed: Math.random().toString(),
+    characterName: userInfo?.characterName || 'Child',
+    avatarType: userInfo?.avatar?.type || 'child',
+    skinTone: userInfo?.avatar?.skinTone || 'medium'
+  };
+  ```
+- **Why Non-Critical**: Seed generation is "nice-to-have" enhancement, not required for basic image generation
+- **Result**: Continue with simplified character seed
+
+#### 🔴 Critical CCS Failures (Must Escalate)
+These method failures indicate fundamental CCS problems requiring tier escalation:
+
+**1. `getCulturalEnhancements()` Failures**
+- **Why Critical**: Cultural context is core to character consistency and quality
+- **Impact**: Cannot guarantee appropriate cultural representation
+- **Escalation Action**: Throw error → trigger tier escalation
+- **Rationale**: Cultural accuracy is not optional
+
+**2. `getColoredObjects()` Failures**
+- **Why Critical**: Object consistency is core to visual continuity across pages
+- **Impact**: Cannot track important story elements (red ball, blue backpack, etc.)
+- **Escalation Action**: Throw error → trigger tier escalation
+- **Rationale**: Object persistence is fundamental to story coherence
+
+**3. `detectAllCharacters()` Failures**
+- **Why Critical**: Character detection is core to scene composition
+- **Impact**: Cannot identify secondary characters (parents, siblings, friends, pets)
+- **Escalation Action**: Throw error → trigger tier escalation
+- **Rationale**: Character universe tracking is essential for narrative richness
+
+### Tier-Specific Escalation Behavior
+
+#### Tier 1 (Orchestrator) CCS Failure Handling
+**Path**: `runware-generate-image/index.ts` → PhaseIntegrationOrchestrator
+
+**CCS Critical Failure Response**:
+- **Detect**: `getCulturalEnhancements()`, `getColoredObjects()`, or `detectAllCharacters()` throws error
+- **Action**: Escalate to Direct Mode (AI Visual Scene Creator)
+- **Rationale**: Direct Mode acts as co-pilot with hardcoded emergency fallbacks
+- **Result**: Tier 1 fails fast, Direct Mode takes over
+
+**CCS Non-Critical Failure Response**:
+- **Detect**: `getStructuredAvatarData()` or `getCharacterSeed()` fails
+- **Action**: Use emergency fallbacks from `StaticDataCache` and `userInfo`
+- **Rationale**: These are enhancements, not core requirements
+- **Result**: Continue Tier 1 with degraded but functional character data
+
+#### Direct Mode CCS Failure Handling
+**Path**: `ai-visual-scene-creator/index.ts` (lines 400-716)
+
+**Primary Scene Failure Response**:
+- **Detect**: OpenAI visual scene generation fails (lines 428-444)
+- **Action**: Escalate to Tier 2.5C (Nuclear Hardcoded Template)
+- **Rationale**: Direct Mode's core value is AI scene generation
+- **Result**: Bypass premium templates, go straight to nuclear fallback
+
+**CCS Co-Pilot Failure Response**:
+- **Detect**: CCS enhancement methods fail (lines 462-475, 492-504, 544-557)
+- **Action**: Use graceful emergency hardcoded fallbacks (lines 500-519)
+- **Rationale**: CCS acts as co-pilot in Direct Mode, not primary scene generator
+- **Implementation**:
+  ```javascript
+  // Emergency hardcoded fallbacks (lines 500-519)
+  culturalContext = 'diverse, age-appropriate, inclusive';
+  coloredObjects = 'colorful, vibrant objects';
+  secondaryCharacters = [];
+  ```
+- **Result**: Continue Direct Mode image generation with basic fallbacks
+
+#### Tier 2.5A (Premium Template) CCS Failure Handling
+**Path**: `runware-template-ab/index.js` (complexity 'A')
+
+**CCS Critical Failure Response**:
+- **Detect**: `getCulturalEnhancements()`, `getColoredObjects()`, or `detectAllCharacters()` fails
+- **Action**: Escalate to Tier 2.5B (Basic Template)
+- **Rationale**: Premium template requires full CCS capabilities
+- **Result**: Fall to simpler template with reduced CCS dependencies
+
+**CCS Non-Critical Failure Response**:
+- **Detect**: `getStructuredAvatarData()` or `getCharacterSeed()` fails
+- **Action**: Use `StaticDataCache.HAIR_BY_SKIN_TONE` + basic `userInfo`
+- **Rationale**: Hair mapping can use static 73-variation arrays
+- **Result**: Continue Tier 2.5A with emergency avatar data
+
+### StaticDataCache as Bulletproof Fallback Source
+
+**Location**: `supabase/functions/_shared/StaticDataCache.js`
+
+**Available Data Structures**:
+```javascript
+// 73 hair variations across 10 skin tone categories (lines 35-80)
+HAIR_BY_SKIN_TONE = {
+  'very light': ['platinum blonde straight', 'golden blonde wavy', ...],
+  'light': ['light brown straight', 'blonde with highlights', ...],
+  'medium': ['brown straight', 'dark brown wavy', ...],
+  'tan': ['dark brown straight', 'black wavy', ...],
+  'olive': ['black straight', 'dark brown wavy', ...],
+  'brown': ['black curly', 'dark brown tight curls', ...],
+  'dark brown': ['black afro', 'black braided', ...],
+  'very dark': ['black tightly coiled', 'black cornrows', ...],
+  'deep': ['black afro', 'black locs', ...],
+  'ebony': ['black tightly coiled', 'black bantu knots', ...]
+}
+
+// Cultural hairstyle arrays
+AFRICAN_AMERICAN_HAIR_STYLES = ['afro', 'braids', 'locs', 'cornrows', ...]
+ASIAN_HAIR_STYLES = ['straight black', 'layered', 'bob', ...]
+LATINO_HAIR_STYLES = ['wavy brown', 'curly black', ...]
+NATIVE_AMERICAN_HAIR_STYLES = ['long straight black', 'braided', ...]
+```
+
+**Emergency Fallback Pattern**:
+```javascript
+// Step 1: Determine skin tone
+const skinTone = avatarIdentity?.skinTone 
+  || userInfo?.avatar?.skinTone 
+  || userInfo?.skinTone 
+  || 'medium';
+
+// Step 2: Get hair options from StaticDataCache
+const hairOptions = StaticDataCache.HAIR_BY_SKIN_TONE[skinTone] 
+  || StaticDataCache.HAIR_BY_SKIN_TONE['medium'];
+
+// Step 3: Seeded selection for consistency
+const seedValue = sessionId ? hashCode(sessionId) : Math.floor(Math.random() * 1000);
+const hairChoice = hairOptions[seedValue % hairOptions.length];
+
+// Result: Reliable, culturally appropriate hair selection
+```
+
+### Testing & Validation
+
+#### Unit Tests for Failure Classification
+```javascript
+describe('CCS Failure Classification', () => {
+  test('getStructuredAvatarData failure uses StaticDataCache fallback', async () => {
+    // Mock CCS failure
+    characterConsistencyService.getStructuredAvatarData.mockRejectedValue(new Error('CCS unavailable'));
+    
+    // Should NOT escalate, use emergency fallback
+    const result = await generateImage(userInfo, sessionId);
+    
+    expect(result.tier).toBe('tier1'); // Did not escalate
+    expect(result.avatarData).toContain('medium'); // Used fallback
+  });
+  
+  test('getCulturalEnhancements failure escalates tier', async () => {
+    // Mock critical CCS failure
+    characterConsistencyService.getCulturalEnhancements.mockRejectedValue(new Error('CCS unavailable'));
+    
+    // Should escalate
+    const result = await generateImage(userInfo, sessionId);
+    
+    expect(result.tier).not.toBe('tier1'); // Escalated
+  });
+});
+```
+
+#### Integration Tests for Escalation Behavior
+1. **Tier 1 → Direct Mode Escalation**
+   - Trigger: `getCulturalEnhancements()` fails
+   - Expected: Direct Mode with hardcoded fallbacks
+   - Verify: Image generated, tier = 'direct_mode'
+
+2. **Direct Mode Primary Scene Failure**
+   - Trigger: OpenAI visual scene generation fails
+   - Expected: Escalate to Tier 2.5C
+   - Verify: Image generated, tier = 'tier2.5c'
+
+3. **Direct Mode CCS Co-Pilot Failure**
+   - Trigger: CCS methods fail but primary scene succeeds
+   - Expected: Continue Direct Mode with hardcoded CCS fallbacks
+   - Verify: Image generated, tier = 'direct_mode', used emergency fallbacks
+
+4. **Tier 2.5A → Tier 2.5B Escalation**
+   - Trigger: `getColoredObjects()` fails in Tier 2.5A
+   - Expected: Escalate to Tier 2.5B
+   - Verify: Image generated, tier = 'tier2.5b'
+
+### Monitoring & Debug Data
+
+**Debug Flags for Failure Classification**:
+```javascript
+{
+  ccsFailureType: 'critical' | 'non-critical',
+  failedMethod: 'getCulturalEnhancements' | 'getStructuredAvatarData' | ...,
+  usedFallback: true | false,
+  fallbackSource: 'StaticDataCache' | 'userInfo' | 'hardcoded',
+  escalated: true | false,
+  escalationReason: 'ccs_critical_failure' | 'primary_scene_failure'
+}
+```
+
+**Logging Pattern**:
+```javascript
+console.log('[CCS_FAILURE_CLASSIFICATION]', {
+  method: 'getCulturalEnhancements',
+  classification: 'CRITICAL',
+  action: 'ESCALATE',
+  targetTier: 'direct_mode',
+  reason: 'Cultural context is core requirement'
+});
+```
+
+### Summary
+
+**CCS Failure Philosophy**:
+- ✅ **Graceful degradation** for "nice-to-have" enhancements (avatar data, seeds)
+- ❌ **Fail-fast escalation** for core requirements (cultural context, object tracking, character detection)
+- 🔧 **StaticDataCache as bulletproof fallback** for emergency avatar construction
+- 🎯 **Tier-appropriate responses** (Tier 1 → Direct Mode; Direct Mode → Tier 2.5C or continue with fallbacks)
+
+**Key Principle**: The system distinguishes between "Cannot generate image" (escalate) vs "Can generate with reduced quality" (use fallback).
+
+---
+
 ## Related Documentation
 
 - [Master Errors Document](./MASTER_ERRORS_TO_FIX_ERROR_050_051.md) - ERROR-050, ERROR-051, ERROR-052 detailed tracking
@@ -451,6 +700,7 @@ import { characterConsistencyService } from '#shared/CharacterConsistencyService
 - [Character Consistency Architecture](./CHARACTER_CONSISTENCY_ARCHITECTURE.md) - Supplementary technical details
 - [Escalation Logic Fix](./ESCALATION_LOGIC_FIX_2025_09_26.md) - Tier escalation system
 - [Anti-Regression Guidelines](./ANTI_REGRESSION_GUIDELINES.md) - Prevention rules and best practices
+- [Fallback System User Journeys](./FALLBACK_SYSTEM_USER_JOURNEYS.md) - Complete tier escalation flows
 
 ---
 

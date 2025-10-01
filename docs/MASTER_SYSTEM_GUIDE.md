@@ -264,6 +264,24 @@ Template 3: "Hello there ${userName}, our story box needs a snack..."
 - **Escalation:** Falls to Tier 2.5A (regular users) or Direct Mode (Force Tier 1)
 - **Direct Mode:** Nuclear independent operation when orchestrator fails
 
+**CCS Failure Handling in Tier 1**:
+- **Critical CCS Failures** (escalate to Direct Mode):
+  - `getCulturalEnhancements()` fails
+  - `getColoredObjects()` fails
+  - `detectAllCharacters()` fails
+- **Non-Critical CCS Failures** (use fallbacks, continue Tier 1):
+  - `getStructuredAvatarData()` fails → Use `StaticDataCache.HAIR_BY_SKIN_TONE` + `userInfo`
+  - `getCharacterSeed()` fails → Use random seed with basic `userInfo`
+
+**Direct Mode CCS Failure Handling**:
+- **Primary Scene Failure** (escalate to Tier 2.5C):
+  - OpenAI visual scene generation fails
+- **CCS Co-Pilot Failures** (use hardcoded fallbacks, continue Direct Mode):
+  - All CCS methods use emergency hardcoded values
+  - `culturalContext = 'diverse, age-appropriate, inclusive'`
+  - `coloredObjects = 'colorful, vibrant objects'`
+  - `secondaryCharacters = []`
+
 **Debug Visibility (September 2025):**
 All ImageTierTester operations now expose complete debug information including `aiDebugSchema`, `runwareDebugData`, `orchestratorDebugData`, `primaryScene`, OpenAI interactions, and cultural context. This enables comprehensive monitoring and troubleshooting of the complete image generation pipeline. See [DEBUG_DATA_EXPOSURE_CHECKLIST.md](./DEBUG_DATA_EXPOSURE_CHECKLIST.md) for anti-regression protocols and [IMAGE_GENERATION_DEBUGGING_GUIDE.md](./IMAGE_GENERATION_DEBUGGING_GUIDE.md) for complete debug data structures.
 
