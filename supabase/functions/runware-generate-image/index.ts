@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-09-27T15:30:00Z - Fix boot crashes: lazy orchestrator loading  
+// DEPLOY_MARKER: 2025-10-01T21:20:00Z - Fix escalation logic: always try Direct Mode when CCS unavailable  
 
 // Inlined orchestrator logic - no more lazy loading
 
@@ -180,14 +180,14 @@ async function processInlinedTier1(payload: any, memoizedImport: any, logTier1St
     const errorMessage = error instanceof Error ? error.message : String(error);
     logTier1Step('CharacterConsistencyService Import', 'failed', errorMessage);
     console.warn(`[TIER_1] ⚠️ CharacterConsistencyService unavailable:`, errorMessage);
-    console.log(`[TIER_1] Will escalate to Tier 2.5B (Nuclear Independence)`);
+    console.log(`[TIER_1] Will escalate to Direct Mode (CCS is copilot there, not required)`);
     // Set flag but don't throw - let escalation logic handle it gracefully
     characterServiceUnavailable = true;
   }
   
-  // If service is unavailable, escalate immediately to 2.5B
+  // If service is unavailable, escalate to Direct Mode (CCS is copilot, not required)
   if (characterServiceUnavailable) {
-    throw new Error('CHARACTERSERVICE_UNAVAILABLE_ESCALATE_TO_25B');
+    throw new Error('CHARACTERSERVICE_UNAVAILABLE_TRY_DIRECT_MODE');
   }
   
   // Check for force flag (now passed from handler scope)
@@ -912,13 +912,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
         }
         
         // Detect if CharacterConsistencyService is unavailable
-        const isCharacterServiceUnavailable = errorMessage.includes('CHARACTERSERVICE_UNAVAILABLE_ESCALATE_TO_25B') || 
+        const isCharacterServiceUnavailable = errorMessage.includes('CHARACTERSERVICE_UNAVAILABLE_TRY_DIRECT_MODE') || 
                                               errorMessage.includes('CharacterConsistencyService') || 
                                               errorMessage.includes('Module not found') ||
                                               errorMessage.includes('_shared');
         
         if (isCharacterServiceUnavailable) {
-          console.log(`[CASCADE] CharacterConsistencyService unavailable - will skip Direct Mode and 2.5A, route directly to 2.5B`);
+          console.log(`[CASCADE] CharacterConsistencyService unavailable - will attempt Direct Mode (CCS is copilot there)`);
         }
         
         // Create Supabase client once for all fallback attempts
@@ -930,8 +930,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
         
         let directErrorMessage = 'Direct Mode not attempted';
         
-        // CORRECTED CASCADE: Skip Direct Mode if CharacterService unavailable, otherwise try Direct Mode first (if we have valid primaryScene)
-        if (!isCharacterServiceUnavailable && !errorMessage.includes('NO_PRIMARY_SCENE')) {
+        // CORRECTED CASCADE: Always try Direct Mode first (CCS is copilot, not required), unless NO_PRIMARY_SCENE
+        if (!errorMessage.includes('NO_PRIMARY_SCENE')) {
           console.log(`[DIRECT_MODE] Attempting Direct Mode fallback after Tier 1 failure`);
           
           try {
@@ -1032,7 +1032,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
                 metadata: {
                   cascadeHistory: [
                     `❌ Tier 1 Failed: CharacterConsistencyService unavailable`,
-                    `⏭️ Direct Mode Skipped: CharacterService unavailable`,
+                    `❌ Direct Mode Failed: ${directErrorMessage}`,
                     `⏭️ Tier 2.5A Skipped: CharacterConsistencyService unavailable`,
                     '✅ Tier 2.5B Success (Nuclear Independence)'
                   ]

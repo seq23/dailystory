@@ -606,7 +606,7 @@ export class SimpleImageService {
         } catch {}
 
         // Add success cascade entry
-        cascadeHistory.push(`✅ Orchestrator Success: ${orchResult.usedTier || 'TIER_1'}`);
+        cascadeHistory.push(`✅ Orchestrator Success: ${orchResult.tier || 'TIER_1'}`);
         
         // Track success metrics
         SimpleImageService.orchestratorSuccessCount++;
@@ -622,8 +622,8 @@ export class SimpleImageService {
           url: imageURL,
           imageURL: imageURL,
           generatedAt: new Date().toISOString(),
-          tier: orchResult.usedTier,
-          usedTier: orchResult.usedTier,
+          tier: orchResult.tier,
+          usedTier: orchResult.tier,
           tierErrors: orchResult.tierErrors,
           requestId: orchResult.requestId,
           metadata: {

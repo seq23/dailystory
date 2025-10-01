@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-09-27T15:30:00Z - Bundle-first dynamic import strategy
+// DEPLOY_MARKER: 2025-10-01T21:20:00Z - Force redeploy to resolve boot sync issue
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 const SERVICE_NAME = "runware-template-ab";
 
