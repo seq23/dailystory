@@ -1150,8 +1150,7 @@ export const ImageTierTester = () => {
           cascadeHistory.push(`✅ Success via: ${actualTier}`);
           cascadeHistory.push(`⏰ ${new Date().toLocaleTimeString()}: Real user flow completed successfully`);
           
-          // Enhanced character consistency diagnostics
-          // Only report CC issues if Tier 1 was the successful path (not Direct Mode fallback)
+          // Enhanced character consistency diagnostics for BOTH Tier 1 AND Direct Mode
           const isTier1Success = actualTier.includes('TIER_1') || actualTier.includes('orchestrator') || actualTier.includes('Enhanced Character-First');
           const isDirectModeSuccess = actualTier.includes('DIRECT_MODE') || actualTier.includes('ai-visual-scene-creator');
           
@@ -1163,18 +1162,24 @@ export const ImageTierTester = () => {
             line.includes('Import @supabase/supabase-js failed') ||
             line.includes('getSupabaseClient') ||
             line.includes('getCulturalEnhancements') ||
+            line.includes('getCharacterAppearanceFromStory') ||
+            line.includes('analyzeVisualDetails') ||
+            line.includes('getColoredObjects') ||
             line.includes('Database connection') ||
-            line.includes('CDN_IMPORT_FAILURE')
+            line.includes('CDN_IMPORT_FAILURE') ||
+            line.includes('Emergency fallback') ||
+            line.includes('hardcoded cultural bundle') ||
+            line.includes('emergency structuredAvatarData')
           ) || [];
           
-          // Only report CC diagnostics if Tier 1 was used (CCS is required for Tier 1)
-          // Direct Mode doesn't require CCS, so don't report false positives
+          // TIER 1 CCS DIAGNOSTICS
           if (isTier1Success) {
+            cascadeHistory.push('🔍 Tier 1 Character Consistency Status:');
             if (result.metadata?.characterConsistencyActive === true) {
-              cascadeHistory.push('✅ Character consistency active (Tier 1)');
+              cascadeHistory.push('   ✅ CCS Active and Working');
             } else if (ccErrors.length > 0) {
-              cascadeHistory.push('⚠️ Character consistency issues detected (Tier 1)');
-              cascadeHistory.push('📋 CC Diagnostics - Detected Issues:');
+              cascadeHistory.push('   ⚠️ CCS Issues Detected');
+              cascadeHistory.push('   📋 Tier 1 CCS Diagnostics:');
               
               // Categorize CC errors
               const dbErrors = ccErrors.filter(e => e.includes('getSupabaseClient') || e.includes('Database'));
@@ -1182,35 +1187,115 @@ export const ImageTierTester = () => {
               const avatarErrors = ccErrors.filter(e => e.includes('structuredAvatarData') || e.includes('getCulturalEnhancements'));
               
               if (dbErrors.length > 0) {
-                cascadeHistory.push('   🔴 Database Connection Issues:');
-                dbErrors.forEach(error => cascadeHistory.push(`      • ${error}`));
-                cascadeHistory.push('   💡 Recommendation: Check Supabase connection and RLS policies');
+                cascadeHistory.push('      🔴 Database Connection Issues:');
+                dbErrors.forEach(error => cascadeHistory.push(`         • ${error}`));
+                cascadeHistory.push('      💡 Check Supabase connection and RLS policies');
               }
               
               if (importErrors.length > 0) {
-                cascadeHistory.push('   🔴 Import/Module Loading Failures:');
-                importErrors.forEach(error => cascadeHistory.push(`      • ${error}`));
-                cascadeHistory.push('   💡 Recommendation: Check CDN availability and module imports');
+                cascadeHistory.push('      🔴 Import/Module Loading Failures:');
+                importErrors.forEach(error => cascadeHistory.push(`         • ${error}`));
+                cascadeHistory.push('      💡 Check CDN availability and module imports');
               }
               
               if (avatarErrors.length > 0) {
-                cascadeHistory.push('   🔴 Avatar Data Generation Issues:');
-                avatarErrors.forEach(error => cascadeHistory.push(`      • ${error}`));
-                cascadeHistory.push('   💡 Recommendation: Verify CharacterConsistencyService initialization');
-              }
-              
-              // Add general CC error context if not categorized
-              const uncategorized = ccErrors.filter(e => 
-                !dbErrors.includes(e) && !importErrors.includes(e) && !avatarErrors.includes(e)
-              );
-              if (uncategorized.length > 0) {
-                cascadeHistory.push('   🟡 Other CC Errors:');
-                uncategorized.forEach(error => cascadeHistory.push(`      • ${error}`));
+                cascadeHistory.push('      🔴 Avatar Data Generation Issues:');
+                avatarErrors.forEach(error => cascadeHistory.push(`         • ${error}`));
+                cascadeHistory.push('      💡 Verify CharacterConsistencyService initialization');
               }
             }
-          } else if (isDirectModeSuccess) {
-            // Direct Mode doesn't require CCS - don't report false CC issues
-            cascadeHistory.push('ℹ️ Direct Mode used (Character Consistency Service not required)');
+          }
+          
+          // DIRECT MODE CCS DIAGNOSTICS (Enhanced - show even when used)
+          if (isDirectModeSuccess) {
+            cascadeHistory.push('🔍 Direct Mode Character Consistency Analysis:');
+            
+            // CCS Import Status
+            const ccsImportFailed = ccErrors.some(e => 
+              e.includes('resilientLoader') || 
+              e.includes('Import') || 
+              e.includes('CDN_IMPORT_FAILURE')
+            );
+            
+            if (ccsImportFailed) {
+              cascadeHistory.push('   🔴 CCS Import/Module Loading: FAILED');
+              const importIssues = ccErrors.filter(e => 
+                e.includes('resilientLoader') || e.includes('Import') || e.includes('CDN')
+              );
+              importIssues.forEach(issue => cascadeHistory.push(`      • ${issue}`));
+              cascadeHistory.push('      💡 Impact: HIGH - CCS unavailable, using fallbacks');
+            } else {
+              cascadeHistory.push('   ✅ CCS Import/Module Loading: SUCCESS');
+            }
+            
+            // CCS Method-Specific Status
+            cascadeHistory.push('   📊 CCS Method Status:');
+            
+            // analyzeVisualDetails
+            const visualAnalysisFailed = ccErrors.some(e => e.includes('analyzeVisualDetails'));
+            if (visualAnalysisFailed) {
+              cascadeHistory.push('      🔴 analyzeVisualDetails(): FAILED');
+              ccErrors.filter(e => e.includes('analyzeVisualDetails')).forEach(e => 
+                cascadeHistory.push(`         • ${e}`)
+              );
+              cascadeHistory.push('      💡 Impact: MEDIUM - Visual consistency may be reduced');
+            } else if (!ccsImportFailed) {
+              cascadeHistory.push('      ✅ analyzeVisualDetails(): SUCCESS');
+            }
+            
+            // getCulturalEnhancements
+            const culturalFailed = ccErrors.some(e => e.includes('getCulturalEnhancements'));
+            const culturalFallback = ccErrors.some(e => e.includes('hardcoded cultural bundle'));
+            if (culturalFailed || culturalFallback) {
+              cascadeHistory.push('      🟡 getCulturalEnhancements(): FALLBACK USED');
+              if (culturalFallback) {
+                cascadeHistory.push('         ⚡ Emergency hardcoded cultural bundle activated');
+                cascadeHistory.push('      💡 Impact: LOW - Basic cultural context maintained');
+              }
+            } else if (!ccsImportFailed) {
+              cascadeHistory.push('      ✅ getCulturalEnhancements(): SUCCESS');
+            }
+            
+            // getCharacterAppearanceFromStory
+            const appearanceFailed = ccErrors.some(e => e.includes('getCharacterAppearanceFromStory'));
+            const appearanceFallback = ccErrors.some(e => e.includes('emergency structuredAvatarData'));
+            if (appearanceFailed || appearanceFallback) {
+              cascadeHistory.push('      🟡 getCharacterAppearanceFromStory(): FALLBACK USED');
+              if (appearanceFallback) {
+                cascadeHistory.push('         ⚡ Emergency structuredAvatarData fallback activated');
+                cascadeHistory.push('      💡 Impact: MEDIUM - Using basic avatar structure');
+              }
+            } else if (!ccsImportFailed) {
+              cascadeHistory.push('      ✅ getCharacterAppearanceFromStory(): SUCCESS');
+            }
+            
+            // getColoredObjects
+            const colorsFailed = ccErrors.some(e => e.includes('getColoredObjects'));
+            if (colorsFailed) {
+              cascadeHistory.push('      🟡 getColoredObjects(): FAILED');
+              cascadeHistory.push('      💡 Impact: LOW - Color consistency may vary');
+            } else if (!ccsImportFailed) {
+              cascadeHistory.push('      ✅ getColoredObjects(): SUCCESS');
+            }
+            
+            // Overall Direct Mode CCS Summary
+            const allMethodsWorking = !ccsImportFailed && !visualAnalysisFailed && 
+                                     !culturalFailed && !appearanceFailed && !colorsFailed;
+            const hasFallbacks = culturalFallback || appearanceFallback;
+            
+            cascadeHistory.push('');
+            if (allMethodsWorking) {
+              cascadeHistory.push('   ✅ Direct Mode CCS: FULLY OPERATIONAL');
+              cascadeHistory.push('      All character consistency methods working');
+            } else if (hasFallbacks) {
+              cascadeHistory.push('   🟡 Direct Mode CCS: PARTIAL (Fallbacks Active)');
+              cascadeHistory.push('      Some methods using emergency fallbacks');
+              cascadeHistory.push('      💡 Image generated successfully with reduced consistency');
+            } else if (ccsImportFailed) {
+              cascadeHistory.push('   🔴 Direct Mode CCS: UNAVAILABLE');
+              cascadeHistory.push('      CCS module failed to load');
+              cascadeHistory.push('      💡 Using minimal fallback data only');
+            }
           }
           
           // Show Direct Mode status explicitly
