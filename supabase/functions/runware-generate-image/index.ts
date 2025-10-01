@@ -143,21 +143,8 @@ async function processInlinedTier1(payload: any, memoizedImport: any, logTier1St
     logTier1Step('CharacterConsistencyService Import', 'attempt', 'Loading CharacterConsistencyService');
     console.log(`[TIER_1] Attempting CharacterConsistencyService import with resilient pattern`);
     
-    // Try multiple import paths with fallback
-    let service;
-    try {
-      const importResult = await import("../_shared/CharacterConsistencyService.js");
-      service = importResult.characterConsistencyService;
-    } catch (relativeError) {
-      console.warn(`[TIER_1] Relative path import failed, trying alternative...`);
-      try {
-        const importResult = await import("#shared/CharacterConsistencyService.js");
-        service = importResult.characterConsistencyService;
-      } catch (hashError) {
-        throw new Error(`All import paths failed: ${relativeError.message} | ${hashError.message}`);
-      }
-    }
-    
+    // Simple, proven import pattern (same as ai-visual-scene-creator)
+    const { characterConsistencyService: service } = await import('../_shared/CharacterConsistencyService.js');
     characterConsistencyService = service;
     
     // Validate service instance has required methods
