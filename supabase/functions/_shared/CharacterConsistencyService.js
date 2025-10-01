@@ -392,11 +392,9 @@ export class CharacterConsistencyService {
     if (this.vocabulary) return this.vocabulary;
 
     try {
-      // Phase 2: Use resilient loader for 99.99% reliability
-      const { memoizedImport } = await import('./resilientLoader.ts');
-      
-      // Safe destructuring with validation
-      const vocabularyModule = await memoizedImport('./tier25Vocabulary.js');
+      // Phase 2: Direct import for local module (ERROR-060 fix)
+      // tier25Vocabulary is co-located in _shared/, no need for resilient loader
+      const vocabularyModule = await import('./tier25Vocabulary.js');
       if (!vocabularyModule || typeof vocabularyModule !== 'object') {
         throw new Error('Invalid vocabulary module structure');
       }

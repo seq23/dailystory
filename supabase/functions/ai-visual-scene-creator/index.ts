@@ -41,14 +41,34 @@ async function generateCompleteVisualSchema(
       console.log(`✅ Generated complete structuredAvatarData via CharacterConsistencyService:`, structuredAvatarData);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      console.warn(`⚠️ CharacterConsistencyService unavailable, using fallback:`, errorMessage);
-      structuredAvatarData = {
-        resolvedSkinTone: userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium',
-        assignedHairColor: 'brown hair',
-        skinFeatures: 'medium skin tone with brown eyes',
-        ethnicity: 'Euro-American',
-        source: 'hardcoded_fallback'
-      };
+      console.warn(`⚠️ CharacterConsistencyService unavailable, trying StaticDataCache fallback:`, errorMessage);
+      
+      // 3-Tier fallback: CCS → StaticDataCache → Hardcoded
+      try {
+        const { StaticDataCache } = await import('./_shared/StaticDataCache.js');
+        const skinTone = userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium';
+        const hairColor = StaticDataCache.getHairBySkintone(skinTone, sessionId);
+        const skinFeatures = StaticDataCache.getSkinBySkintone(skinTone, sessionId);
+        
+        structuredAvatarData = {
+          resolvedSkinTone: skinTone,
+          assignedHairColor: hairColor || 'brown hair',
+          skinFeatures: skinFeatures || 'medium skin tone with brown eyes',
+          ethnicity: 'Euro-American',
+          source: 'static_data_cache'
+        };
+        console.log(`✅ [AISCHEMA_FALLBACK] source=static_data_cache`);
+      } catch (staticError) {
+        console.warn(`⚠️ StaticDataCache fallback failed, using hardcoded:`, staticError);
+        structuredAvatarData = {
+          resolvedSkinTone: userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium',
+          assignedHairColor: 'brown hair',
+          skinFeatures: 'medium skin tone with brown eyes',
+          ethnicity: 'Euro-American',
+          source: 'hardcoded_fallback'
+        };
+        console.log(`✅ [AISCHEMA_FALLBACK] source=hardcoded`);
+      }
     }
   }
 
@@ -498,24 +518,40 @@ serve(async (req) => {
           );
           console.log(`✅ [${requestId}] INITIAL_DESCRIPTOR_SOURCE: CharacterConsistencyService (inlined)`);
         } catch (tier1Error) {
-          console.warn(`⚠️ [${requestId}] CharacterConsistencyService.getCulturalEnhancements failed, using emergency hardcoded`, tier1Error);
+          console.warn(`⚠️ [${requestId}] CharacterConsistencyService.getCulturalEnhancements failed, trying StaticDataCache`, tier1Error);
           characterServiceAvailable = false;
         }
       }
       
-      // Fallback if service unavailable or failed
+      // 3-Tier fallback: CCS → StaticDataCache → Hardcoded
       if (!culturalBundle) {
-        console.log(`🔄 [${requestId}] Using emergency hardcoded cultural bundle (Tier 2)`);
-        const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
-        const isDarkSkin = skinTone === 'dark' || skinTone === 'darker';
-        
-        culturalBundle = {
-          hair: isDarkSkin ? 'photorealistic detailed textured 4C African American hairstyle' : userInfo?.avatar?.hairColor || 'brown hair',
-          features: isDarkSkin ? 'authentic African American features' : 'diverse features',
-          profile: characterSeed?.culturalProfile || null,
-          source: 'emergency_hardcoded'
-        };
-        console.log(`✅ [${requestId}] INITIAL_DESCRIPTOR_SOURCE: Emergency hardcoded (Tier 2)`);
+        try {
+          console.log(`🔄 [${requestId}] Trying StaticDataCache for cultural bundle (Tier 2)`);
+          const { StaticDataCache } = await import('./_shared/StaticDataCache.js');
+          const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
+          const hairColor = StaticDataCache.getHairBySkintone(skinTone, sessionId);
+          const skinFeatures = StaticDataCache.getSkinBySkintone(skinTone, sessionId);
+          
+          culturalBundle = {
+            hair: hairColor || (skinTone === 'dark' || skinTone === 'darker' ? 'photorealistic detailed textured 4C African American hairstyle' : 'brown hair'),
+            features: skinFeatures || (skinTone === 'dark' || skinTone === 'darker' ? 'authentic African American features' : 'diverse features'),
+            profile: characterSeed?.culturalProfile || null,
+            source: 'static_data_cache'
+          };
+          console.log(`✅ [${requestId}] [CULTURAL_BUNDLE_FALLBACK] source=static_data_cache`);
+        } catch (staticError) {
+          console.log(`🔄 [${requestId}] StaticDataCache failed, using emergency hardcoded (Tier 3)`);
+          const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
+          const isDarkSkin = skinTone === 'dark' || skinTone === 'darker';
+          
+          culturalBundle = {
+            hair: isDarkSkin ? 'photorealistic detailed textured 4C African American hairstyle' : userInfo?.avatar?.hairColor || 'brown hair',
+            features: isDarkSkin ? 'authentic African American features' : 'diverse features',
+            profile: characterSeed?.culturalProfile || null,
+            source: 'emergency_hardcoded'
+          };
+          console.log(`✅ [${requestId}] [CULTURAL_BUNDLE_FALLBACK] source=hardcoded`);
+        }
       }
     } else {
       // Fallback for Scene-Only mode without orchestrator bundle

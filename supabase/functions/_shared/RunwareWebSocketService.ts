@@ -57,6 +57,7 @@ interface RunwareResponseItem {
 interface ErrorWithMetadata extends Error {
   type?: string;
   nextAction?: string;
+  metadata?: Record<string, any>;
 }
 
 class RunwareWebSocketService {
@@ -73,14 +74,25 @@ class RunwareWebSocketService {
       let resolved = false;
       let keepaliveInterval: number | null = null;
       
-      // WebSocket timeout handler with improved error messaging
+      // WebSocket timeout handler with tier escalation metadata (ERROR-061 fix)
       const timeoutId = setTimeout(() => {
         if (!resolved) {
           resolved = true;
           if (keepaliveInterval) clearInterval(keepaliveInterval);
           ws.close();
           console.error(`❌ Image generation timeout after ${timeout}ms`);
-          reject(new Error(`Image generation timeout after ${timeout / 1000} seconds`));
+          const timeoutError: ErrorWithMetadata = {
+            name: 'RunwareTimeout',
+            message: `Image generation timeout after ${timeout / 1000} seconds`,
+            type: 'TIMEOUT',
+            nextAction: 'RETRY_THEN_TIER_2_5',
+            metadata: {
+              timeout_ms: timeout,
+              vendor: 'runware',
+              tier: '2.5A'
+            }
+          };
+          reject(timeoutError);
         }
       }, timeout);
 

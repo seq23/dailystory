@@ -239,8 +239,8 @@ export class UnifiedPlaceholderResolver {
     resolved = resolved.replace(/\{child\.name\}/g, name);
     resolved = resolved.replace(/\{character\.name\}/g, name);
 
-    // Get lazy loaded modules
-    const { VOCABULARY, pick } = await memoizedImport('./tier25Vocabulary.js');
+    // Get lazy loaded modules (ERROR-060 fix: direct import for local module)
+    const { VOCABULARY, pick } = await import('./tier25Vocabulary.js');
 
     // User preferences
     resolved = resolved.replace(/\{user\.favoriteColor\}/g, userInfo?.favoriteColor || pick(VOCABULARY.objectCategories?.colors || ['red', 'blue', 'green']));
@@ -260,7 +260,7 @@ export class UnifiedPlaceholderResolver {
     // NEW FIX #6: Add {clothing} placeholder support using tier25Vocabulary
     // Use CLOTHING_DETECTION_KEYWORDS for comprehensive clothing options (Tier 1 & 2.5A only)
     try {
-      const vocabularyModule = await memoizedImport('./tier25Vocabulary.js');
+      const vocabularyModule = await import('./tier25Vocabulary.js');
       const randomClothing = pick(vocabularyModule.CLOTHING_DETECTION_KEYWORDS || ['shirt', 'dress', 'pants', 'jacket']);
       resolved = resolved.replace(/\{clothing\}/g, randomClothing);
     } catch (error) {
@@ -278,8 +278,8 @@ export class UnifiedPlaceholderResolver {
     const { userInfo = {}, seed = {} } = context;
     let resolved = text;
 
-    // Get lazy loaded modules
-    const { VOCABULARY, pick } = await memoizedImport('./tier25Vocabulary.js');
+    // Get lazy loaded modules (ERROR-060 fix: direct import for local modules)
+    const { VOCABULARY, pick } = await import('./tier25Vocabulary.js');
     const { characterConsistencyService } = await memoizedImport('./CharacterConsistencyService.js');
 
     // Use seeded values if available, otherwise pick from vocabulary
@@ -337,8 +337,8 @@ export class UnifiedPlaceholderResolver {
   async resolveVocabularyPlaceholders(text, context) {
     let resolved = text;
 
-    // Get lazy loaded modules
-    const { VOCABULARY, pick } = await memoizedImport('./tier25Vocabulary.js');
+    // Get lazy loaded modules (ERROR-060 fix: direct import for local module)
+    const { VOCABULARY, pick } = await import('./tier25Vocabulary.js');
 
     // Replace vocabulary-specific placeholders - with proper VOCABULARY system
     if (VOCABULARY && typeof VOCABULARY === 'object') {
@@ -394,8 +394,8 @@ export class UnifiedPlaceholderResolver {
     // Detect cultural context from user info (language-based)
     const culturalLanguage = this.detectCulturalContext(userInfo);
 
-    // Get lazy loaded modules
-    const { REGIONAL_CULTURAL_CONTEXTS } = await memoizedImport('./tier25Vocabulary.js');
+    // Get lazy loaded modules (ERROR-060 fix: direct import for local module)
+    const { REGIONAL_CULTURAL_CONTEXTS } = await import('./tier25Vocabulary.js');
 
     // Use cultural bundle values (no async callbacks)
     resolved = resolved.replace(/\{cultural\.hair\}/g, culturalBundle.hair || '');
