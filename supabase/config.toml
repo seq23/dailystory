@@ -12,6 +12,9 @@ verify_jwt = true
 [functions.background-image-pregeneration]
 verify_jwt = false
 
+[functions.cache-health]
+verify_jwt = false
+
 [functions.check-subscription]
 verify_jwt = true
 

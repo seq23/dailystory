@@ -33,11 +33,19 @@ const CDN_FALLBACKS = {
   }
 };
 
-// Enhanced memoized import cache with TTL-based failure tracking
+// Enhanced memoized import cache with differentiated TTL-based failure tracking
 const importCache = new Map<string, Promise<any>>();
 const failureCache = new Map<string, { timestamp: number; ttl: number }>();
-const FAILURE_TTL = 5 * 60 * 1000; // 5 minutes
+
+// Differentiated TTL for critical vs regular services
+const CRITICAL_SERVICES = ['@supabase/supabase-js', 'stripe', 'openai'];
+const CRITICAL_FAILURE_TTL = 30 * 1000; // 30 seconds for critical services
+const REGULAR_FAILURE_TTL = 2 * 60 * 1000; // 2 minutes for regular services
 const IMPORT_TIMEOUT = 7 * 1000; // 7 seconds
+
+// Failure counter for automatic cache reset
+const failureCounter = new Map<string, number>();
+const FAILURE_THRESHOLD = 3; // Reset cache after 3 consecutive failures
 
 /**
  * Enhanced memoizedImport with CDN fallback cascade
@@ -62,11 +70,29 @@ export async function memoizedImport(path: string): Promise<any> {
     const result = await importPromise;
     // Clear any cached failure on success
     failureCache.delete(path);
+    failureCounter.delete(path);
     return result;
   } catch (error) {
-    // Remove from cache and mark as failed with TTL
+    // Remove from cache and mark as failed with differentiated TTL
     importCache.delete(path);
-    failureCache.set(path, { timestamp: Date.now(), ttl: FAILURE_TTL });
+    
+    // Determine TTL based on service criticality
+    const packageName = extractPackageName(path);
+    const isCritical = CRITICAL_SERVICES.includes(packageName);
+    const ttl = isCritical ? CRITICAL_FAILURE_TTL : REGULAR_FAILURE_TTL;
+    
+    failureCache.set(path, { timestamp: Date.now(), ttl });
+    
+    // Track consecutive failures for automatic cache reset
+    const failures = (failureCounter.get(path) || 0) + 1;
+    failureCounter.set(path, failures);
+    
+    // Automatic cache reset on threshold
+    if (failures >= FAILURE_THRESHOLD) {
+      console.warn(`🚨 ${path} failed ${failures} times - triggering cache reset`);
+      clearImportCache();
+    }
+    
     throw error;
   }
 }
@@ -334,26 +360,101 @@ export function createImportFailureResponse(error: any, functionName: string): R
 }
 
 /**
- * Clear import cache (for testing/debugging)
+ * Clear import cache with optional selective clearing
  */
-export function clearImportCache(): void {
-  importCache.clear();
-  failureCache.clear();
+export function clearImportCache(packageName?: string): void {
+  if (packageName) {
+    // Clear specific package cache
+    for (const [key] of importCache) {
+      if (key.includes(packageName)) {
+        importCache.delete(key);
+        failureCache.delete(key);
+        failureCounter.delete(key);
+      }
+    }
+    console.log(`🧹 Cleared cache for ${packageName}`);
+  } else {
+    // Clear all caches
+    importCache.clear();
+    failureCache.clear();
+    failureCounter.clear();
+    console.log('🧹 Cleared all import caches');
+  }
 }
 
 /**
- * Get cache status for debugging
+ * Get cache status for debugging and monitoring
  */
-export function getCacheStatus(): { imports: number; failures: number; failureDetails: Array<{ path: string; failedAt: string; retryIn: string }> } {
-  const failureDetails = Array.from(failureCache.entries()).map(([path, failure]) => ({
-    path,
-    failedAt: new Date(failure.timestamp).toISOString(),
-    retryIn: `${Math.ceil((failure.ttl - (Date.now() - failure.timestamp)) / 1000)}s`
-  }));
+export function getCacheStatus(): { 
+  imports: number; 
+  failures: number; 
+  consecutiveFailures: number;
+  criticalServicesDown: string[];
+  failureDetails: Array<{ 
+    path: string; 
+    failedAt: string; 
+    retryIn: string;
+    failures: number;
+    isCritical: boolean;
+  }> 
+} {
+  const failureDetails = Array.from(failureCache.entries()).map(([path, failure]) => {
+    const packageName = extractPackageName(path);
+    return {
+      path,
+      failedAt: new Date(failure.timestamp).toISOString(),
+      retryIn: `${Math.ceil((failure.ttl - (Date.now() - failure.timestamp)) / 1000)}s`,
+      failures: failureCounter.get(path) || 0,
+      isCritical: CRITICAL_SERVICES.includes(packageName)
+    };
+  });
+  
+  const criticalServicesDown = failureDetails
+    .filter(f => f.isCritical)
+    .map(f => extractPackageName(f.path));
   
   return {
     imports: importCache.size,
     failures: failureCache.size,
+    consecutiveFailures: Array.from(failureCounter.values()).reduce((sum, count) => sum + count, 0),
+    criticalServicesDown,
     failureDetails
+  };
+}
+
+/**
+ * Health check for resilient loader system
+ */
+export function getLoaderHealth(): { 
+  healthy: boolean; 
+  status: 'healthy' | 'degraded' | 'critical';
+  message: string;
+  details: ReturnType<typeof getCacheStatus>;
+} {
+  const status = getCacheStatus();
+  
+  if (status.criticalServicesDown.length > 0) {
+    return {
+      healthy: false,
+      status: 'critical',
+      message: `Critical services unavailable: ${status.criticalServicesDown.join(', ')}`,
+      details: status
+    };
+  }
+  
+  if (status.failures > 0) {
+    return {
+      healthy: true,
+      status: 'degraded',
+      message: `${status.failures} non-critical services experiencing issues`,
+      details: status
+    };
+  }
+  
+  return {
+    healthy: true,
+    status: 'healthy',
+    message: 'All services operational',
+    details: status
   };
 }

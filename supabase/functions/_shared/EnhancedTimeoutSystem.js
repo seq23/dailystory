@@ -7,10 +7,11 @@ export class EnhancedTimeoutSystem {
   constructor() {
     this.activeControllers = new Map();
     this.timeoutCascade = [
-      { name: 'quick', timeout: 5000, description: 'Quick response' },
-      { name: 'standard', timeout: 15000, description: 'Standard processing' },
-      { name: 'extended', timeout: 30000, description: 'Extended processing' },
-      { name: 'maximum', timeout: 60000, description: 'Maximum allowed time' }
+      { name: 'critical', timeout: 3000, description: 'Critical operations', retries: 5 },
+      { name: 'quick', timeout: 5000, description: 'Quick response', retries: 3 },
+      { name: 'standard', timeout: 15000, description: 'Standard processing', retries: 2 },
+      { name: 'extended', timeout: 30000, description: 'Extended processing', retries: 1 },
+      { name: 'maximum', timeout: 60000, description: 'Maximum allowed time', retries: 0 }
     ];
   }
 

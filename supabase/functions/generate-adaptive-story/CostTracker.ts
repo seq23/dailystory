@@ -21,7 +21,7 @@ class EdgeCostTracker {
   private static instance: EdgeCostTracker;
   private cache = new Map<string, DailyCostCache>();
   private readonly DAILY_LIMIT = 5.0; // $5 daily limit
-  private readonly CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+  private readonly CACHE_TTL = 4 * 60 * 60 * 1000; // 4 hours (reduced for better real-time tracking)
 
   // OpenAI GPT-4o-mini pricing (per 1K tokens)
   private readonly PRICING = {

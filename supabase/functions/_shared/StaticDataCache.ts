@@ -9,7 +9,7 @@ interface CacheEntry<T> {
 class EdgeStaticCache {
   private static instance: EdgeStaticCache;
   private cache = new Map<string, CacheEntry<any>>();
-  private readonly CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours TTL
+  private readonly CACHE_TTL = 4 * 60 * 60 * 1000; // 4 hours TTL (reduced from 24h)
 
   private constructor() {}
 
@@ -40,6 +40,20 @@ class EdgeStaticCache {
       data,
       timestamp: Date.now()
     });
+  }
+
+  clear(key?: string): void {
+    if (key) {
+      this.cache.delete(key);
+    } else {
+      this.cache.clear();
+    }
+  }
+
+  invalidateOnImportFailure(): void {
+    // Clear cache when critical imports fail to force fresh data load
+    console.log('🧹 Invalidating static cache due to import failures');
+    this.cache.clear();
   }
 }
 
