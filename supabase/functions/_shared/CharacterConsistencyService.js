@@ -380,15 +380,7 @@ export class CharacterConsistencyService {
       return this.vocabulary;
     } catch (error) {
       console.warn('⚠️ Tier25Vocabulary import failed, using essential vocabulary:', error);
-      // Phase 3: Use inlined essential vocabulary for bulletproof fallback
       this.vocabulary = CharacterConsistencyService.ESSENTIAL_VOCABULARY;
-        nature: ['tree', 'flower', 'grass'],
-        food: ['apple', 'cookie'],
-        settings: ['room', 'park', 'school'],
-        relationships: ['friend', 'mom', 'dad'],
-        clothing: ['shirt', 'pants', 'dress'],
-        actions: ['run', 'jump', 'play']
-      };
       return this.vocabulary;
     }
   }
@@ -685,8 +677,6 @@ export class CharacterConsistencyService {
           session_id: sessionId,
           character_key: characterKey,
           character_data: characterData,
-          selected_cultural_hair: characterData.selectedCulturalHair || null,
-          selected_cultural_features: characterData.selectedCulturalFeatures || null,
           updated_at: new Date().toISOString()
         });
 
@@ -720,7 +710,7 @@ export class CharacterConsistencyService {
 
       const { data, error } = await supabase
         .from('character_consistency_cache')
-        .select('character_data, selected_cultural_hair, selected_cultural_features')
+        .select('character_data')
         .eq('session_id', sessionId)
         .eq('character_key', characterKey)
         .single();
@@ -732,12 +722,7 @@ export class CharacterConsistencyService {
       
       if (data?.character_data) {
         const characterData = data.character_data;
-        if (data.selected_cultural_hair) {
-          characterData.selectedCulturalHair = data.selected_cultural_hair;
-        }
-        if (data.selected_cultural_features) {
-          characterData.selectedCulturalFeatures = data.selected_cultural_features;
-        }
+        // Legacy cultural columns removed; values are stored within character_data JSONB
         
         // Cache for future reads
         this.storyCache.smartWrite(`${sessionId}_${characterKey}`, characterData);
@@ -1016,9 +1001,7 @@ export class CharacterConsistencyService {
       return fallbackEnhancements;
     }
     
-    console.log(`🎨 Generated cultural enhancements for ${characterName} (seed: ${characterSeed}):`, culturalBundle);
-    
-    return culturalBundle;
+    // Removed unreachable lines (post-return) to prevent dead code
   }
 
   // REMOVED: updateCulturalSelections() method
