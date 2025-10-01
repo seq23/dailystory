@@ -1137,46 +1137,6 @@ export class CharacterConsistencyService {
   async saveSessionSetting(sessionId, settingKey, value) {
     this.storyCache.smartWrite(`${sessionId}_setting_${settingKey}`, value);
   }
-}
-
-// ============= SAFE IMPORT WITH FALLBACKS (PHASE 4) =============
-
-/**
- * Comprehensive import reliability system
- * Prevents Tier 2.5B escalations from import failures
- */
-export async function safeImportCharacterConsistency() {
-  try {
-    // Try primary import
-    const service = CharacterConsistencyService.getInstance();
-    
-    // Validate service has critical methods
-    if (!service.getCharacterSeed || !service.detectAllCharacters) {
-      throw new Error('Service missing critical methods');
-    }
-    
-    return { characterConsistencyService: service, success: true };
-  } catch (primaryError) {
-    console.warn('⚠️ Primary service load failed, using fallback:', primaryError);
-    
-    // Fallback: Create minimal service
-    return {
-      characterConsistencyService: {
-        getCharacterSeed: async () => ({ seed: 123456, characterDescription: 'child' }),
-        detectAllCharacters: async () => ({ secondaryCharacters: [], coloredObjects: [] }),
-        getColoredObjects: async () => '',
-        getSecondaryCharactersForSession: async () => [],
-        getCulturalEnhancements: async () => ({ hair: '', features: '' }),
-        analyzeVisualDetails: async () => ({ originalText: '', resolvedText: '', manifest: [] }),
-        clearSession: () => {},
-        clearServerState: () => ({ sessionsCleared: 0, cacheEntriesCleared: 0, visualCacheEntriesCleared: 0 }),
-        getInstance: () => this
-      },
-      success: false,
-      fallback: true
-    };
-  }
-}
 
   // ============= MISSING METHODS WITH INLINE DEPENDENCIES (ERROR-055 FIX) =============
 
@@ -1384,6 +1344,47 @@ export async function safeImportCharacterConsistency() {
       };
     }
   }
+}
+
+// ============= SAFE IMPORT WITH FALLBACKS (PHASE 4) =============
+
+/**
+ * Comprehensive import reliability system
+ * Prevents Tier 2.5B escalations from import failures
+ */
+export async function safeImportCharacterConsistency() {
+  try {
+    // Try primary import
+    const service = CharacterConsistencyService.getInstance();
+    
+    // Validate service has critical methods
+    if (!service.getCharacterSeed || !service.detectAllCharacters) {
+      throw new Error('Service missing critical methods');
+    }
+    
+    return { characterConsistencyService: service, success: true };
+  } catch (primaryError) {
+    console.warn('⚠️ Primary service load failed, using fallback:', primaryError);
+    
+    // Fallback: Create minimal service
+    return {
+      characterConsistencyService: {
+        getCharacterSeed: async () => ({ seed: 123456, characterDescription: 'child' }),
+        detectAllCharacters: async () => ({ secondaryCharacters: [], coloredObjects: [] }),
+        getColoredObjects: async () => '',
+        getSecondaryCharactersForSession: async () => [],
+        getCulturalEnhancements: async () => ({ hair: '', features: '' }),
+        analyzeVisualDetails: async () => ({ originalText: '', resolvedText: '', manifest: [] }),
+        clearSession: () => {},
+        clearServerState: () => ({ sessionsCleared: 0, cacheEntriesCleared: 0, visualCacheEntriesCleared: 0 }),
+        getInstance: () => this
+      },
+      success: false,
+      fallback: true
+    };
+  }
+}
+
 
 // ============= EXPORTS =============
 
