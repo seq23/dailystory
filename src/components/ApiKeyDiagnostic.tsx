@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { generateSessionIdWithPrefix } from '@/utils/sessionId';
 import { DebugLogger } from '@/services/DebugLogger';
+import { extractImageUrl, extractSuccessValue } from '@/utils/typeGuards';
 
 interface DiagnosticResult {
   status: 'success' | 'error' | 'warning';
@@ -171,10 +172,14 @@ export const ApiKeyDiagnostic: React.FC = () => {
       
       if (error) {
         addResult('error', `❌ Tier 2.5 isolated test failed: ${error.message}`, error);
-      } else if (data.success && data.imageURL) {
-        addResult('success', `✅ Tier 2.5 isolated test successful - Used: ${data.usedTier}`, data);
       } else {
-        addResult('error', '❌ Tier 2.5 test returned no image URL', data);
+        const success = extractSuccessValue(data);
+        const imageUrl = extractImageUrl(data);
+        if (success && imageUrl) {
+          addResult('success', `✅ Tier 2.5 isolated test successful - Used: ${data.usedTier}`, data);
+        } else {
+          addResult('error', '❌ Tier 2.5 test returned no image URL', data);
+        }
       }
     } catch (error) {
       addResult('error', `❌ Tier 2.5 test failed: ${error.message}`, error);

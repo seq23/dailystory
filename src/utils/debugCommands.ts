@@ -5,6 +5,7 @@
 import { DebugGateway } from '@/services/DebugGateway';
 import { DebugLogger } from '@/services/DebugLogger';
 import { TIMEOUT_CONFIGS } from '@/utils/networkTimeout';
+import { extractImageUrl, extractSuccessValue } from '@/utils/typeGuards';
 
 // Charlotte TTS Debug Commands
 function debugCharlotte(): void {
@@ -33,10 +34,10 @@ async function debugLastImage(): Promise<void> {
     
     if (imageData) {
       console.log('Last Generated Image:', imageData);
-      console.log('Success:', imageData.success);
+      console.log('Success:', extractSuccessValue(imageData));
       console.log('Session ID:', imageData.sessionId);
       console.log('Tier Used:', imageData.tier);
-      console.log('Image URL:', imageData.imageURL);
+      console.log('Image URL:', extractImageUrl(imageData));
     } else {
       console.log('❌ No recent image generation found');
     }

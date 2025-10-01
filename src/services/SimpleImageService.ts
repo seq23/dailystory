@@ -1152,7 +1152,7 @@ export class SimpleImageService {
       const result = await this.generateWithOrchestrator(
         pageContent, userInfo, sessionId, pageNumber, !isGuestUser
       );
-      return result.success ? (result.url || result.imageURL) : null;
+      return extractSuccessValue(result) ? extractImageUrl(result) : null;
     } catch (error) {
       DebugLogger.warn('image', 'Runware generation failed in fallback', error);
       return null;

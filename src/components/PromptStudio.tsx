@@ -13,6 +13,7 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { Play, Download, Palette, Settings, Zap, Image as ImageIcon } from 'lucide-react';
+import { extractImageUrl } from '@/utils/typeGuards';
 import { RunwareQualityControls } from './RunwareQualityControls';
 import { DifficultyLevelMapper } from '@/services/DifficultyLevelMapper';
 
@@ -552,17 +553,17 @@ export function PromptStudio() {
                     {results.map((result, index) => (
                       <div key={index} className="border rounded-lg p-4">
                         <div className="flex flex-col lg:flex-row gap-4">
-                          {result.imageURL && (
+                          {extractImageUrl(result) && (
                             <div className="lg:w-1/3">
                               <img
-                                src={result.imageURL}
+                                src={extractImageUrl(result)!}
                                 alt="Generated"
                                 className="w-full rounded-lg"
                               />
                               <Button
                                 onClick={() => {
                                   const link = document.createElement('a');
-                                  link.href = result.imageURL!;
+                                  link.href = extractImageUrl(result)!;
                                   link.download = `generated-${Date.now()}.webp`;
                                   link.click();
                                 }}

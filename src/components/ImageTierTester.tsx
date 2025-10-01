@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { ExpandableText } from '@/components/ui/ExpandableText';
 import { supabase } from '@/integrations/supabase/client';
+import { extractImageUrl, extractSuccessValue } from '@/utils/typeGuards';
 import { DebugLogger } from '@/services/DebugLogger';
 import { HealthCheckService } from '@/services/HealthCheckService';
 import { ImageFallbackService } from '@/services/ImageFallbackService';
@@ -1314,7 +1315,7 @@ export const ImageTierTester = () => {
           finalResult = {
             tier: actualTier,
             success: true,
-            imageURL: result.imageURL || result.url,
+            imageURL: extractImageUrl(result) || '',
             details: {
               processingTime: userFlowTime,
               cascadeHistory,
@@ -1582,7 +1583,7 @@ export const ImageTierTester = () => {
       
       // Step 5: Image Generation Validation
       steps[4].status = 'running';
-      const safeImageURL = response.data?.imageURL || response.data?.imageUrl || null;
+      const safeImageURL = extractImageUrl(response.data);
       const hasImage = !!safeImageURL;
       steps[4].status = hasImage ? 'success' : 'error';
 
@@ -2582,10 +2583,10 @@ export const ImageTierTester = () => {
                     )}
                   </div>
 
-                  {result.imageURL && (
+                  {extractImageUrl(result) && (
                     <div className="mb-4">
                       <img 
-                        src={result.imageURL} 
+                        src={extractImageUrl(result)!}
                         alt="Generated test image" 
                         className="max-w-full h-auto rounded-lg border"
                       />

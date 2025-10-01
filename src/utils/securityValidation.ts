@@ -1,5 +1,6 @@
 import { LeanSecurity } from './LeanSecurity';
 import { SecurityMonitor } from './monitoring';
+import { extractImageUrl, extractSuccessValue } from './typeGuards';
 
 export interface ValidationResult {
   valid: boolean;
@@ -110,13 +111,14 @@ export class SecurityValidator {
     try {
       // Check for required fields based on response type
       if (response && typeof response === 'object') {
-        // Validate image response
-        if (response.imageURL) {
-          if (!response.imageURL.startsWith('https://')) {
+        // Validate image response using universal extraction
+        const imageURL = extractImageUrl(response);
+        if (imageURL) {
+          if (!imageURL.startsWith('https://')) {
             errors.push('Image URL must use HTTPS');
           }
           
-          if (!response.imageURL.includes('runware.ai')) {
+          if (!imageURL.includes('runware.ai')) {
             warnings.push('Image URL from unexpected domain');
           }
         }
@@ -125,7 +127,7 @@ export class SecurityValidator {
         if (response.NSFWContent === true) {
           errors.push('Content flagged as inappropriate');
           SecurityMonitor.logEvent('security', 'nsfw_content_detected', {
-            imageURL: response.imageURL
+            imageURL
           }, 'high');
         }
       }

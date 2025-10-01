@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { DebugGateway } from '@/services/DebugGateway';
 import { DebugLogger } from '@/services/DebugLogger';
+import { extractImageUrl } from '@/utils/typeGuards';
 
 interface BackendTierCheckerProps {
   onTierFound?: (tier: string, details: any) => void;
@@ -34,18 +35,19 @@ export const BackendTierChecker: React.FC<BackendTierCheckerProps> = ({ onTierFo
         // Look for tier success information
         data.imagePrompts.forEach((call: any, index: number) => {
           if (call.tier) {
+            const imageUrl = extractImageUrl(call);
             DebugLogger.log('image', `TIER SUCCESS FOUND: Tier ${call.tier}`, {
               callIndex: index,
               timestamp: call.timestamp,
               prompt: call.promptText?.substring(0, 100),
               success: call.success,
-              imageUrl: call.imageURL
+              imageUrl
             });
             
             onTierFoundRef.current?.(call.tier, {
               prompt: call.promptText,
               timestamp: call.timestamp,
-              imageUrl: call.imageURL,
+              imageUrl,
               success: call.success
             });
           }
@@ -70,12 +72,13 @@ export const BackendTierChecker: React.FC<BackendTierCheckerProps> = ({ onTierFo
   
   if (data && data.imagePrompts) {
     data.imagePrompts.forEach((call: any, index: number) => {
+      const imageUrl = extractImageUrl(call);
       DebugLogger.log('image', `Call ${index + 1}`, {
         timestamp: new Date(call.timestamp).toLocaleTimeString(),
         tier: call.tier || 'Unknown',
         prompt: call.promptText?.substring(0, 150) + '...',
         success: call.success,
-        imageUrl: call.imageURL?.substring(0, 50) + '...'
+        imageUrl: imageUrl?.substring(0, 50) + '...'
       });
     });
   }
