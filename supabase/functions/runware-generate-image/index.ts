@@ -412,7 +412,7 @@ async function processInlinedTier1(payload: any, memoizedImport: any, logTier1St
   const physicalDescription = hasCompletePhysicalData ? ` with ${structuredAvatarData.skinTone} skin and ${structuredAvatarData.hairColor}` : '';
   const mainCharacterDetails = `Beautiful ${characterReference} character ${characterName}, age ${userInfo?.age || 6}${physicalDescription}${characterSeed?.characterDescription ? `, ${characterSeed.characterDescription}` : ''}${culturalBundle?.hair ? `, ${culturalBundle.hair}` : ''}${culturalBundle?.features ? `, ${culturalBundle.features}` : ''}`;
   
-  const secondaryCharsText = secondaryCharacterSeeds.length > 0 ? `With ${secondaryCharacterSeeds.map(s => s.characterDescription).join(', ')}` : '';
+  const secondaryCharsText = secondaryCharacterSeeds.length > 0 ? `With ${secondaryCharacterSeeds.map(s => s.visualDescription).join(', ')}` : '';
   const animalsText = detectedAnimals?.length > 0 ? `Including ${detectedAnimals.map(a => a.name || a.type).join(', ')}` : '';
   const consistencyElements = [
     secondaryCharsText,
@@ -508,7 +508,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       status: 'healthy',
       service: 'runware-generate-image',
       tier: 'Main Orchestrator',
-      deployment_version: '2025-10-01T21:20:00Z',
+      deployment_version: '2025-10-01T21:45:00Z',
       timestamp: new Date().toISOString(),
       environment: {
         runwareApiKeyPresent: !!runwareKey,
