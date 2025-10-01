@@ -5,7 +5,6 @@
  */
 
 import { unifiedPlaceholderResolver } from './UnifiedPlaceholderResolver.js';
-import { enhancedAnimalDetector } from './EnhancedAnimalDetector.js';
 import { coloredObjectTracker } from './ColoredObjectTracker.js';
 
 export class TemplateConsistencyEnforcer {
@@ -95,8 +94,8 @@ export class TemplateConsistencyEnforcer {
       required: !p.includes('?') // Assume required unless marked optional
     }));
 
-    // Detect characters using enhanced detector
-    const characterDetection = enhancedAnimalDetector.detectAllCharacters(content, context);
+    // Detect characters - simple fallback implementation (EnhancedAnimalDetector removed)
+    const characterDetection = this.detectCharactersSimple(content, context);
     templateData.characters = [
       ...characterDetection.animals.map(a => ({ name: a.name, type: 'animal', category: a.category })),
       ...characterDetection.secondaryCharacters.map(c => ({ name: c.name || c.type, type: 'person', category: c.category }))
@@ -472,6 +471,36 @@ export class TemplateConsistencyEnforcer {
 
   escapeRegExp(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  /**
+   * Simple character detection fallback (replaces EnhancedAnimalDetector)
+   */
+  detectCharactersSimple(content, context) {
+    const animals = [];
+    const secondaryCharacters = [];
+    const relationships = [];
+
+    // Basic animal detection using common patterns
+    const animalPatterns = [
+      /\b(dog|puppy|cat|kitten|bear|bunny|rabbit|bird|lion|tiger|elephant|giraffe|monkey|fox|wolf|deer|horse|pony|cow|pig|sheep|chicken|duck|goose|frog|turtle|fish|whale|dolphin|shark|octopus|butterfly|bee|ladybug|spider|ant)\b/gi
+    ];
+
+    animalPatterns.forEach(pattern => {
+      let match;
+      while ((match = pattern.exec(content)) !== null) {
+        const animalName = match[1].toLowerCase();
+        if (!animals.find(a => a.name === animalName)) {
+          animals.push({
+            name: animalName,
+            category: 'animal',
+            type: animalName
+          });
+        }
+      }
+    });
+
+    return { animals, secondaryCharacters, relationships };
   }
 
   /**

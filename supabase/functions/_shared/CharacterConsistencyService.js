@@ -35,8 +35,7 @@ function safeErrorMessage(error) {
   return 'Unknown error occurred';
 }
 
-// Import regex escape utility from existing shared service
-import { CrossPageConsistencyIntelligence } from './CrossPageConsistencyIntelligence.js';
+// Inline regex escape utility
 const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 // Memoized service imports with fallbacks
