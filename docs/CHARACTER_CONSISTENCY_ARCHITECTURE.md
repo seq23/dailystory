@@ -12,9 +12,23 @@
 
 ---
 
+## Complete Function Inventory
+
+**Total Functions**: 21 core methods  
+**Failure Classification**: 20 Graceful Fallback | 1 Fail-Fast  
+**Last Audited**: 2025-10-01
+
+> **📋 For complete function audit with line numbers and failure behaviors**, see [CHARACTER_CONSISTENCY_SERVICE_COMPLETE_FUNCTION_AUDIT.md](./CHARACTER_CONSISTENCY_SERVICE_COMPLETE_FUNCTION_AUDIT.md)
+
+> **🔗 For integration patterns across edge functions**, see [CCS_FUNCTION_INTEGRATION_SNAPSHOT_2025-10-01.md](./CCS_FUNCTION_INTEGRATION_SNAPSHOT_2025-10-01.md)
+
+---
+
 ## Method Reference (Quick Lookup)
 
-### `getInstance()`
+### Core Methods
+
+#### `getInstance()`
 Returns singleton instance of the service.
 
 ### `analyzeVisualDetails(sessionId, pageText, pageNumber, characterName?)`
@@ -51,19 +65,58 @@ Returns singleton instance of the service.
 **Usage**: AI visual scene creator (lines 178-188), template integration  
 **Fix**: ERROR-051 resolution
 
-### `getCulturalEnhancements(userInfo, sessionId, characterName)` ✅ ENHANCED
-**STATUS**: 3-TIER SYSTEM IMPLEMENTED (2025-09-30)  
+### `getCulturalEnhancements(userInfo, sessionId, characterName)` ✅ CORRECTED CLASSIFICATION
+**STATUS**: GRACEFUL FALLBACK (2025-10-01)  
 **Purpose**: Generates culturally appropriate character enhancements  
 **Parameters**: userInfo (object), sessionId (string), characterName (string)  
 **Returns**: `{ hair, features }` - Does NOT return skinTone  
+**Failure Behavior**: ⚠️ **GRACEFUL FALLBACK** (CORRECTED from fail-fast)  
 **3-Tier Logic**:
-- **Tier 1**: Try StaticDataCache import → Full cultural arrays (if available)
-- **Tier 2**: Use LEAN_CULTURAL_FALLBACK → Curated emergency options (if Tier 1 fails)
+- **Tier 1**: Database cache lookup → Full character data (if available)
+- **Tier 2**: `HAIR_BY_SKIN_TONE_INLINE` + `getSkinFeatures()` → Inlined arrays (if Tier 1 fails)
 - **Tier 3**: ~~Generic fallback~~ **REMOVED** (was causing inconsistency)
-**Persistence**: Calls `await this.saveCharacterToDatabase()` after Tier 1 success and Tier 2 usage  
-**Location**: Lines 1030-1080 of CharacterConsistencyService.js  
-**Usage**: Direct Mode (line 385-392), AI visual scenes, templates  
+**Fallback Pattern**: Uses `getBasicCharacterSeed()` if no cached data exists (line 1093)  
+**Location**: Lines 1085-1170 of CharacterConsistencyService.js  
+**Usage**: All tiers safe - `ai-visual-scene-creator`, `runware-template-ab`, `runware-generate-image`  
+**Data Sources**: Same as `getBasicCharacterSeed()` - 144+ hair options, 40 African American styles  
 **Fixes**: ERROR-049, ERROR-050, ERROR-054
+
+### `getBasicCharacterSeed(avatarIdentity, sessionId)` ✅ NEW (2025-09-30)
+**STATUS**: REFACTORED - ALWAYS SUCCEEDS  
+**Purpose**: Lightweight character seed generation with **ZERO external dependencies**  
+**Parameters**: avatarIdentity (object with name, type, skinTone), sessionId (string)  
+**Returns**: Complete `CharacterSeed` object with cultural authenticity  
+**Failure Behavior**: ✅ **ALWAYS SUCCEEDS** - Pure computation, no database, no imports  
+**Location**: Lines 837-884 of CharacterConsistencyService.js  
+**Data Sources**: 
+- `HAIR_BY_SKIN_TONE_INLINE` (144+ hair options across 6 skin tones)
+- `AFRICAN_AMERICAN_HAIR_INLINE` (20 boys + 20 girls styles)
+- `AFRICAN_AMERICAN_FACIAL_FEATURES_INLINE` (12 descriptions)
+- `getSkinFeatures()` static method for facial features
+**Usage**: Ultimate fallback for `getEnhancedCharacterSeed()` failures (Tier 2.5+)  
+**Performance**: < 10ms (pure computation)
+
+### `getCharacterFromCache(sessionId, characterName)` ✅ NEW (2025-09-30)
+**STATUS**: REFACTORED - SIMPLE CACHE LOOKUP  
+**Purpose**: Retrieve character seed from database cache only  
+**Parameters**: sessionId (string), characterName (string)  
+**Returns**: `CharacterSeed | null`  
+**Failure Behavior**: ✅ **GRACEFUL NULL RETURN** - Returns null on any error  
+**Location**: Lines 891-901 of CharacterConsistencyService.js  
+**Usage**: Optional cache check in orchestration layers  
+**Performance**: Fast (database query with memory cache)
+
+### `getEnhancedCharacterSeed(sessionId, avatarIdentity, storyContext, sessionType, pageTextClothing)` ✅ NEW (2025-09-30)
+**STATUS**: REFACTORED - FAIL-FAST FOR TIER ESCALATION  
+**Purpose**: Full CCS orchestration with database caching, cultural enhancements, clothing detection  
+**Parameters**: sessionId, avatarIdentity (object), storyContext, sessionType, pageTextClothing (optional)  
+**Returns**: Complete `CharacterSeed` object **OR THROWS ERROR**  
+**Failure Behavior**: ⚠️ **FAIL-FAST (THROWS ERROR)** - Triggers tier escalation  
+**Location**: Lines 918-1000 of CharacterConsistencyService.js  
+**Critical Classification**: **ONLY CCS METHOD THAT TRIGGERS TIER ESCALATION**  
+**Usage**: Tier 1 (`runware-generate-image`) - throws to escalate to Tier 2.5  
+**Fallback Pattern**: Tier 2.5 catches errors and uses `getBasicCharacterSeed()`  
+**Performance**: Heavy (50-200ms with database + orchestration)
 
 ### `getCharacterSeed(sessionId, avatarIdentity, storyContext, sessionType)` ✅
 **STATUS**: REQUIRES PROPER ARGUMENTS  

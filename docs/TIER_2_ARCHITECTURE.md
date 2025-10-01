@@ -1,9 +1,24 @@
 # Tier 2 Architecture Documentation
 
+## CharacterConsistencyService Function Classification Update (2025-10-01)
+
+**CRITICAL CORRECTION**: Complete CCS function audit revealed that **only 1 of 21 functions** triggers tier escalation.
+
+### Graceful Fallback Methods (20 Functions)
+All CCS methods EXCEPT `getEnhancedCharacterSeed()` employ graceful fallback - return safe defaults, empty arrays, or null on failure.
+
+### Fail-Fast Method (1 Function)
+**Only `getEnhancedCharacterSeed()`** throws errors to trigger tier escalation.
+
+> **📋 For complete function audit**, see [CHARACTER_CONSISTENCY_SERVICE_COMPLETE_FUNCTION_AUDIT.md](./CHARACTER_CONSISTENCY_SERVICE_COMPLETE_FUNCTION_AUDIT.md)  
+> **🔗 For integration patterns**, see [CCS_FUNCTION_INTEGRATION_SNAPSHOT_2025-10-01.md](./CCS_FUNCTION_INTEGRATION_SNAPSHOT_2025-10-01.md)
+
+---
+
 ## Overview
 Tier 2 is the **Multi-Service Dynamic Pipeline** that orchestrates 5+ systematic services to build comprehensive prompts with database-backed character consistency.
 
-## Tier 2 Functionality  
+## Tier 2 Functionality
 - **Multi-Service Orchestra**: Coordinates CharacterConsistencyService, SecondaryElementDetector, VisualDetailTracker, RealContextCollector, and StyleFrameworks
 - **Database-Backed Character Consistency**: Eliminates race conditions across edge function instances via `character_consistency_cache` table
 - **Advanced Narrative Processing**: Includes pronoun resolution and systematic story element detection
