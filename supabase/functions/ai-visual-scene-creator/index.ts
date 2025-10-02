@@ -76,9 +76,9 @@ async function generateCompleteVisualSchema(
   ethnicity = structuredAvatarData?.ethnicity || 'Euro-American';
   const nativeLanguage = userInfo?.native_language || userInfo?.nativeLanguage || 'en';
   
-  // Build complete character data string for OpenAI with detailed features
+  // Build complete character data string for OpenAI with structured data (hair/skin handled by culturalBundle separately)
   const characterData = structuredAvatarData 
-    ? `${characterName}, ${structuredAvatarData.hairColor || 'natural hair'}, ${structuredAvatarData.skinFeatures || 'medium skin tone with brown eyes'}, ${ethnicity} ethnicity`
+    ? `${characterName}, ${ethnicity} ethnicity`
     : `${characterName}, character appearance data from orchestrator`;
   
   console.log(`🎨 Complete character data for OpenAI:`, {
@@ -508,13 +508,13 @@ serve(async (req) => {
       // Generate character seed for consistency
       characterSeed = await generateCharacterSeed(sessionId, userInfo);
 
-      // Generate culturalBundle using CharacterConsistencyService (inlined functionality)
+      // Generate culturalBundle using CharacterConsistencyService with aligned sessionId
       if (characterServiceAvailable && characterConsistencyService) {
         try {
           culturalBundle = await characterConsistencyService.getCulturalEnhancements(
             userInfo, 
             sessionId, 
-            userInfo?.avatar?.characterName || 'child'
+            sessionId // Use sessionId directly for alignment with other character data
           );
           console.log(`✅ [${requestId}] INITIAL_DESCRIPTOR_SOURCE: CharacterConsistencyService (inlined)`);
         } catch (tier1Error) {
@@ -529,12 +529,16 @@ serve(async (req) => {
           console.log(`🔄 [${requestId}] Trying StaticDataCache for cultural bundle (Tier 2)`);
           const { getHairBySkintone, getSkinBySkintone } = await import('../_shared/StaticDataCache.js');
           const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
+          const nativeLanguage = userInfo?.native_language || userInfo?.nativeLanguage || 'en';
           const hairColor = getHairBySkintone(skinTone, sessionId);
           const skinFeatures = getSkinBySkintone(skinTone, sessionId);
           
+          // Standardized ethnicity detection: dark skin + afro heritage languages (en, es, fr, pt)
+          const isAfricanAmerican = (skinTone === 'dark') && ['en', 'en-US', 'es', 'fr', 'pt'].includes(nativeLanguage);
+          
           culturalBundle = {
-            hair: hairColor || (skinTone === 'dark' || skinTone === 'darker' ? 'photorealistic detailed textured 4C African American hairstyle' : 'brown hair'),
-            features: skinFeatures || (skinTone === 'dark' || skinTone === 'darker' ? 'authentic African American features' : 'diverse features'),
+            hair: hairColor || (isAfricanAmerican ? 'photorealistic detailed textured 4C African American hairstyle' : 'brown hair'),
+            features: skinFeatures || (isAfricanAmerican ? 'authentic African American features' : 'diverse features'),
             profile: characterSeed?.culturalProfile || null,
             source: 'static_data_cache'
           };
@@ -542,11 +546,14 @@ serve(async (req) => {
         } catch (staticError) {
           console.log(`🔄 [${requestId}] StaticDataCache failed, using emergency hardcoded (Tier 3)`);
           const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
-          const isDarkSkin = skinTone === 'dark' || skinTone === 'darker';
+          const nativeLanguage = userInfo?.native_language || userInfo?.nativeLanguage || 'en';
+          
+          // Standardized ethnicity detection: dark skin + afro heritage languages (en, es, fr, pt)
+          const isAfricanAmerican = (skinTone === 'dark') && ['en', 'en-US', 'es', 'fr', 'pt'].includes(nativeLanguage);
           
           culturalBundle = {
-            hair: isDarkSkin ? 'photorealistic detailed textured 4C African American hairstyle' : userInfo?.avatar?.hairColor || 'brown hair',
-            features: isDarkSkin ? 'authentic African American features' : 'diverse features',
+            hair: isAfricanAmerican ? 'photorealistic detailed textured 4C African American hairstyle' : userInfo?.avatar?.hairColor || 'brown hair',
+            features: isAfricanAmerican ? 'authentic African American features' : 'diverse features',
             profile: characterSeed?.culturalProfile || null,
             source: 'emergency_hardcoded'
           };
@@ -625,7 +632,8 @@ serve(async (req) => {
         templateComplexity: 'C', // Use Tier 2.5C for nuclear hardcoded template
         failedTierData: {
           enhancedSceneData: visualSchema.primaryScene,
-          characterConsistency: characterAppearance || `${characterSeed.characterName} is a ${characterSeed.avatarType} with ${characterSeed.skinTone} skin tone, ${culturalBundle.hair || structuredAvatarData?.assignedHairColor || 'photorealistic detailed textured 4C African American hairstyle'}, and ${culturalBundle.features || 'authentic african american features'}`,
+          // Enhanced deduplication: avoid duplicating hair from culturalBundle
+          characterConsistency: characterAppearance || `${characterSeed.characterName} is a ${characterSeed.avatarType}, age ${userInfo?.age || 6}${culturalBundle?.hair ? `, ${culturalBundle.hair}` : ''}${culturalBundle?.features ? `, ${culturalBundle.features}` : ''}`,
           visualConsistency: `${visualSchema.backgroundColor}, ${visualSchema.lighting}`,
           culturalEnhancements: `${culturalBundle.hair}, ${culturalBundle.features}`,
           structuredAvatarData // Always provide structured avatar data
