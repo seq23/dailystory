@@ -422,7 +422,7 @@ async function processInlinedTier1(payload: any, memoizedImport: any, logTier1St
   
   // Build enhanced prompt
   const characterReference = avatarIdentity.type === 'prefer-not-to-answer' ? 'gender neutral child' : avatarIdentity.type;
-  const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
+  
   
   // Get style framework with safe type coercion
   const difficulty = String(userInfo?.difficulty || userInfo?.gradeLevel || 'medium').toLowerCase();
@@ -740,7 +740,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         }
 
         // Real Runware image generation using WebSocket service
-        const { RunwareWebSocketService } = await import("../_shared/RunwareWebSocketService.ts");
+        const { RunwareWebSocketService } = await memoizedImport("../_shared/RunwareWebSocketService.ts");
         
         // Validate service is functional
         if (!RunwareWebSocketService || typeof RunwareWebSocketService.generateImage !== 'function') {
@@ -939,11 +939,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
         }
         
         // Create Supabase client once for all fallback attempts
-        const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4');
-        const internalSupabase = createClient(
-          Deno.env.get('SUPABASE_URL') ?? '',
-          Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-        );
+        const { createResilientSupabaseClient } = await memoizedImport('../_shared/resilientLoader.ts');
+        const internalSupabase = await createResilientSupabaseClient();
         
         let directErrorMessage = 'Direct Mode not attempted';
         

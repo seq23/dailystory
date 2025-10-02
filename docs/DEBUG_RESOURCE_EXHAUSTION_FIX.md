@@ -186,3 +186,43 @@ All 8 phases implemented successfully. System now has:
 - ✅ Production-safe PII-protected logging
 - ✅ CPU budget guards prevent timeouts
 - ✅ Improved performance and maintainability
+
+---
+
+## Phase 7: Fallout Hardening (2025-10-02)
+
+**Objective**: Eliminate POST 546 (RUNTIME_ERROR) by standardizing orchestrator fallback client and adding Tier 2.5A CPU guard.
+
+### Changes Implemented
+
+#### 1. Orchestrator Fallback Client Standardization
+**File**: `supabase/functions/runware-generate-image/index.ts`
+- **Lines 942-943**: Replaced `esm.sh/@supabase/supabase-js` remote import with `createResilientSupabaseClient` from resilient loader
+- **Line 742**: Routed `RunwareWebSocketService` import via `memoizedImport` for loader consistency
+- **Line 425**: Removed unused `skinTone` variable
+
+**Impact**: Eliminates runtime remote module fetch overhead in Direct Mode fallback path, reducing cold-boot CPU variance that contributed to 546 errors.
+
+#### 2. Tier 2.5A CPU Budget Guard
+**File**: `supabase/functions/runware-template-ab/index.js`
+- **Line 1706**: Added `tier25aStart` timer before CCS operations
+- **Lines 1787-1800**: Added CPU budget check (1500ms) after `getColoredObjects`
+  - On exceeding budget: escalates to Tier 2.5B immediately
+  - Preserves CCS functionality when fast enough
+  - Prevents "CPU Time exceeded" errors in edge logs
+
+**Impact**: Template AB now gracefully escalates under load instead of hitting Deno CPU limits, aligning with the proven 2.5C success path.
+
+### Verification Steps
+1. Monitor edge function logs for:
+   - Absence of `esm.sh` module fetches in runware-generate-image POST logs
+   - Tier 2.5A escalations with reason `tier25a_cpu_budget_exceeded`
+   - Reduction in 546 RUNTIME_ERROR status codes
+2. E2E test: Tier 1 → Direct Mode fallback should complete without remote imports
+3. Load test: Multiple concurrent AB requests should escalate cleanly to 2.5B/2.5C
+
+### Architecture Notes
+- Orchestrator now uses unified `createResilientSupabaseClient` across all paths (Tier 1, Direct Mode, template invocations)
+- All edge functions now have CPU guards at critical points: Tier 1 (2200ms), Tier 2.5A (1500ms)
+- Cascade remains: 1 → Direct Mode → 2.5A → 2.5B → 2.5C → 2.5D
+- No functionality removed; only early escalation added under CPU pressure

@@ -1703,6 +1703,7 @@ async function handleRequest(req) {
       let detectedSecondaryCharacters = [];
       let secondaryDescriptions = [];
       let coloredObjects = '';
+      const tier25aStart = Date.now();
       
       try {
         const { characterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
@@ -1782,6 +1783,21 @@ async function handleRequest(req) {
             
             // Get environmental consistency
             coloredObjects = await characterConsistencyService.getColoredObjects(sessionId) || '';
+            
+            // CPU budget guard for Tier 2.5A
+            const TIER25A_CPU_BUDGET_MS = 1500;
+            const elapsed25A = Date.now() - tier25aStart;
+            if (elapsed25A > TIER25A_CPU_BUDGET_MS) {
+              console.warn(`⚠️ [${requestId}] Tier 2.5A CPU budget exceeded (${elapsed25A}ms > ${TIER25A_CPU_BUDGET_MS}ms) — escalating to Tier 2.5B`);
+              const escalatedPayload = { ...payload, templateComplexity: 'B' };
+              const escalated = await escalateToNextTier(escalatedPayload);
+              return createResponse({
+                success: true,
+                escalated: true,
+                reason: 'tier25a_cpu_budget_exceeded',
+                escalationResult: escalated
+              }, 200);
+            }
           } catch (characterError) {
             console.error(`🚨 [${requestId}] Tier 2.5A: CharacterConsistencyService FAILED - Escalating to Tier 2.5B`, characterError.message);
             console.log(`⚡ [${requestId}] Tier 2.5A→2.5B Escalation Reason: Character consistency unavailable`);
