@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-09-26T15:15:00Z - Force fresh deployment sync with receptionist
+// DEPLOY_MARKER: 2025-10-02T21:00:00Z - Boot hardening: removed ethnicity auto-inference, fixed receptionist fallbacks, proper HTTP status codes
 import { RunwareErrorHandler } from "../_shared/runwareErrorHandler.ts";
 import * as ProviderGate from "../_shared/ProviderGate.ts";
 // Handles Level A (basic shapes/colors) and Level B (simple scenes)
@@ -56,7 +56,14 @@ function getHairBySkintone(skinTone, sessionId) {
 }
 
 function getSkinBySkintone(skinTone) {
-  return LEAN_AFRICAN_AMERICAN_FEATURES[0]; // Default to first option
+  const normalized = (skinTone || 'medium').toLowerCase();
+  const mapping = {
+    'pale': LEAN_AFRICAN_AMERICAN_FEATURES[0],
+    'light': LEAN_AFRICAN_AMERICAN_FEATURES[1],
+    'medium': LEAN_AFRICAN_AMERICAN_FEATURES[2],
+    'dark': LEAN_AFRICAN_AMERICAN_FEATURES[2]
+  };
+  return mapping[normalized] || LEAN_AFRICAN_AMERICAN_FEATURES[0];
 }
 
 function getAfricanAmericanHair(gender, sessionId) {
@@ -120,10 +127,10 @@ function generateInlineNuclearNegative(culturalProfile, avatarType, difficulty) 
   // CHILDREN'S BOOK ILLUSTRATION PROTECTION - Prevent adult photos and realistic photography
   const childrenBookNegativeBlock = 'NO adult faces, adult features, mature faces, adult photos, realistic photography, photorealistic adults, adult portraits, grown-up faces, realistic human photos, photo of adults, adult photography, mature portraits, realistic adult imagery, photo-realistic people, adult subjects, mature individuals, realistic human photography, adult models, stock photos of adults, professional adult photography';
   
-  // GENDER-SPECIFIC NEGATIVES - Word-for-Word as Specified
-  const boysNegative = 'NO feminine features, makeup, female anatomy, girl clothing, long feminine hairstyles, feminine accessories, narrow shoulders, feminine body structure, female proportions, feminine expressions, girl toys, female-coded activities exclusively';
-  const girlsNegative = 'NO masculine features, facial hair, male anatomy, boy clothing, short masculine haircuts, broad shoulders, angular jaw, masculine body structure, male proportions, masculine expressions, boy toys, male-coded activities exclusively';
-  const genderNeutralNegative = 'NO overly gendered features, extreme masculine traits, extreme feminine traits, gender-specific clothing, highly gendered toys, overly masculine expressions, overly feminine expressions, binary gender stereotypes, gendered color schemes exclusively';
+  // GENDER-SPECIFIC NEGATIVES - Softened for better output quality
+  const boysNegative = 'minimal feminine features, limited makeup, excessive female anatomy, overly feminine clothing, exclusively long feminine hairstyles, excessive feminine accessories, overly narrow shoulders, exclusively feminine body structure, extreme female proportions, overly feminine expressions, exclusively girl toys, only female-coded activities';
+  const girlsNegative = 'minimal masculine features, facial hair, excessive male anatomy, overly masculine clothing, exclusively short masculine haircuts, excessively broad shoulders, overly angular jaw, exclusively masculine body structure, extreme male proportions, overly masculine expressions, exclusively boy toys, only male-coded activities';
+  const genderNeutralNegative = 'excessive gendered features, extreme masculine traits, extreme feminine traits, exclusively gender-specific clothing, only highly gendered toys, overly masculine expressions, overly feminine expressions, extreme binary gender stereotypes, exclusively gendered color schemes';
   
   // COMPREHENSIVE AFRICAN AMERICAN PROTECTION (Complete 25+ Item List)
   const africanAmericanNegativeBlock = 'skin lightening, whitewashing, pale skin, light skin, caucasian features, european features, fair complexion, light complexion, white skin tone, bleached skin, lightened skin, washed out skin, faded skin tone, stereotypes, caricature, exaggerated features, cultural appropriation, offensive stereotypes, racial caricature, minstrel imagery, tokenism, straight hair texture, caucasian hair, european hair texture, fine hair texture, silky straight hair, pin straight hair, unnaturally straight hair, narrow nose, thin lips, small features, delicate bone structure, european bone structure, caucasian facial structure, non-African features';
@@ -164,50 +171,10 @@ async function getPhaseOrchestrator() {
   return null;
 }
 
-// ============= FIXED REGIONAL ETHNICITY DERIVATION =============
+// ============= ETHNICITY DERIVATION - REQUIRES EXPLICIT USER INPUT =============
 function deriveRegionalEthnicity(userInfo, avatarIdentity) {
-  // Primary: Use avatar ethnicity if available
-  if (avatarIdentity?.ethnicity) {
-    return avatarIdentity.ethnicity;
-  }
-  
-  // Secondary: Derive from language and skin tone
-  const nativeLanguage = userInfo?.nativeLanguage || userInfo?.language || 'en';
-  const skinTone = userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium';
-  
-  // Language-based ethnicity mapping
-  const languageEthnicityMap = {
-    'es': 'Hispanic',
-    'pt': 'Portuguese',
-    'fr': 'French',
-    'it': 'Italian',
-    'de': 'German',
-    'zh': 'Chinese',
-    'ja': 'Japanese',
-    'ko': 'Korean',
-    'ar': 'Arabic',
-    'hi': 'Indian',
-    'ru': 'Russian'
-  };
-  
-  // For dark skin tones, enforce ethnicity
-  if (skinTone === 'dark' || skinTone === 'darker') {
-    if (['en', 'fr'].includes(nativeLanguage)) {
-      return 'African American';
-    } else if (nativeLanguage === 'pt') {
-      return 'Afro-Brazilian';
-    } else if (nativeLanguage === 'es') {
-      return 'Afro-Latino';
-    }
-  }
-  
-  // For light/pale/medium/olive skin with English - NO ethnicity (empty string)
-  if (nativeLanguage === 'en' && ['light', 'pale', 'medium', 'olive'].includes(skinTone)) {
-    return '';
-  }
-  
-  // Use language mapping for other cases
-  return languageEthnicityMap[nativeLanguage] || '';
+  // ONLY use explicit ethnicity - NO AUTO-INFERENCE from language or skin tone
+  return avatarIdentity?.ethnicity || userInfo?.ethnicity || '';
 }
 
 // ============= MISSING HELPER FUNCTIONS =============
@@ -227,7 +194,7 @@ function getFeatures(skinTone) {
 
 // Function mappings for 2.5B compatibility - map to existing StaticDataCache functions
 function deriveEthnicityFromAvatar(avatar) {
-  return deriveRegionalEthnicity({ avatar }, avatar?.type || 'child');
+  return deriveRegionalEthnicity({ avatar, ethnicity: avatar?.ethnicity }, avatar);
 }
 
 function getFacialFeatures(avatar) {
@@ -290,7 +257,8 @@ async function processWithOrchestrator(sessionId, pageText, userInfo, avatarIden
 
 // ============= PAGE TEXT SUMMARIZATION FOR LEVELS 2-4 =============
 function mapDifficultyToLevel(difficulty) {
-  if (typeof difficulty === 'number') return difficulty;
+  // Sanitize input: ensure difficulty is valid
+  if (typeof difficulty === 'number' && difficulty >= 1 && difficulty <= 5) return difficulty;
   const difficultyMap = {
     'beginner': 1,
     'easy': 2, 
@@ -298,7 +266,8 @@ function mapDifficultyToLevel(difficulty) {
     'hard': 4,
     'expert': 5
   };
-  return difficultyMap[difficulty?.toLowerCase()] || 2;
+  const normalized = String(difficulty || 'medium').toLowerCase();
+  return difficultyMap[normalized] || 3; // Default to level 3
 }
 
 function summarizePageText(text, difficulty) {
@@ -349,18 +318,11 @@ function createErrorResponse(error, status = 500) {
   }, status);
 }
 
-// Inline cultural detection for proper profile resolution
+// Cultural profile detection - NO AUTO-INFERENCE, uses explicit attributes only
 function inlineDetectCultural(userInfo, avatarIdentity) {
-  const culturalProfile = {
-    nativeLanguage: userInfo?.nativeLanguage || 'en',
-    skinTone: userInfo?.avatar?.skinTone || avatarIdentity?.skinTone || 'light',
-    includes: function(term) {
-      return this.nativeLanguage === term || this.skinTone === term;
-    }
-  };
-  
-  if (culturalProfile.nativeLanguage !== 'en' || 
-      ['dark', 'medium-dark', 'brown'].includes(culturalProfile.skinTone)) {
+  // Only use explicit ethnicity - removed auto-inference from language/skin tone
+  const explicitEthnicity = avatarIdentity?.ethnicity || userInfo?.ethnicity;
+  if (explicitEthnicity === 'African American' || explicitEthnicity === 'african-american') {
     return 'african-american';
   }
   return 'general';
@@ -1533,7 +1495,16 @@ async function handleRequest(req) {
     // FLEXIBLE PAYLOAD HANDLING: Handle nested {bundle: {...}, config: {...}} OR flat payloads
     const rawPayload = await req.json();
     console.log(`🔍 [${requestId}] Template AB: Request payload keys:`, Object.keys(rawPayload));
-    console.log(`🔍 [${requestId}] Template AB: Full payload structure:`, JSON.stringify(rawPayload, null, 2));
+    // Log sanitized payload structure (mask PII)
+    const sanitizedPayload = {
+      ...rawPayload,
+      userInfo: rawPayload.userInfo ? { 
+        name: '[MASKED]', 
+        childName: '[MASKED]',
+        ...Object.fromEntries(Object.keys(rawPayload.userInfo).filter(k => !['name', 'childName', 'email'].includes(k)).map(k => [k, rawPayload.userInfo[k]]))
+      } : undefined
+    };
+    console.log(`🔍 [${requestId}] Template AB: Payload structure (PII masked):`, JSON.stringify(sanitizedPayload, null, 2));
     
     // Detect nested payload structure from ImageTierTester
     let payload;
@@ -1669,7 +1640,7 @@ async function handleRequest(req) {
       console.log('🚀 Processing Tier 2.5A: Premium Template with full features');
       
       // Use semantic scene extraction for Tier A
-      const extractedScene = extractSemanticScene(storyText);
+      let extractedScene = extractSemanticScene(storyText);
       
       console.log(`🔍 [DEBUG] Tier 2.5A Scene Extraction Result: "${typeof extractedScene === 'object' && extractedScene?.scene ? extractedScene.scene : extractedScene}"`);
       console.log(`🔍 [DEBUG] Tier 2.5A Action Validation Input: ${JSON.stringify({
@@ -1734,8 +1705,8 @@ async function handleRequest(req) {
               timing: `${Date.now() - tier25aStart}ms`
             });
             
-            // Get enhanced character seed with proper avatarIdentity
-            const avatarIdentity = {
+            // Get enhanced character seed with proper avatarIdentity (reuse outer scope)
+            const avatarDataForSeed = {
               name: characterName,
               type: userInfo?.avatar?.type || 'child',
               skinTone: userInfo?.avatar?.skinTone || 'medium'
@@ -1745,7 +1716,7 @@ async function handleRequest(req) {
             try {
               characterSeed = await characterConsistencyService.getEnhancedCharacterSeed(
                 sessionId,
-                avatarIdentity,
+                avatarDataForSeed,
                 storyText || '',
                 'continuing'
               );
@@ -1753,12 +1724,12 @@ async function handleRequest(req) {
               console.log(`🔍 [${requestId}] [TIER_2.5A] getEnhancedCharacterSeed: SUCCESS`, {
                 sessionId,
                 pageNumber,
-                inputs: { avatarIdentity, textLength: (storyText || '').length },
+                inputs: { avatarIdentity: avatarDataForSeed, textLength: (storyText || '').length },
                 outputs: characterSeed
               });
             } catch (enhancedError) {
               console.warn(`⚠️ Enhanced character seed failed, using basic seed fallback:`, enhancedError.message);
-              characterSeed = await characterConsistencyService.getBasicCharacterSeed(avatarIdentity, sessionId);
+              characterSeed = await characterConsistencyService.getBasicCharacterSeed(avatarDataForSeed, sessionId);
             }
             
             // Secondary character detection using consolidated API
@@ -2234,8 +2205,9 @@ async function handleRequest(req) {
       supabaseClient = null;
     }
 
-          await supabaseClient.from('cost_tracking').insert({
-            session_id: sessionId || 'template-ab-session',
+          if (supabaseClient) {
+            await supabaseClient.from('cost_tracking').insert({
+              session_id: sessionId || 'template-ab-session',
             user_id: null,
             input_tokens: 0,
             output_tokens: 0,
@@ -2245,11 +2217,13 @@ async function handleRequest(req) {
             provider: 'runware',
             api_endpoint: 'v1/imageInference',
             pricing_model: 'images',
-            quantity_used: 1,
-            unit_cost: cost
-          });
-
-          console.log('💰 Runware cost tracked: $' + cost.toFixed(4) + ' for image generation');
+              quantity_used: 1,
+              unit_cost: cost
+            });
+            console.log('💰 Runware cost tracked: $' + cost.toFixed(4) + ' for image generation');
+          } else {
+            console.warn('💰 Cost tracking skipped: Supabase client unavailable');
+          }
         } catch (costTrackingError) {
           console.warn('Failed to track Runware cost:', costTrackingError.message);
         }
@@ -2330,6 +2304,10 @@ async function handleRequest(req) {
     const runwareError = RunwareErrorHandler.categorizeRunwareError(error);
     console.error('❌ [Template AB] Error:', runwareError);
     
+    // Return appropriate HTTP status based on error type
+    const httpStatus = runwareError.type === 'quota_exceeded' ? 429 : 
+                       runwareError.type === 'validation_failure' ? 400 : 500;
+    
     return new Response(JSON.stringify({ 
       success: false,
       error: runwareError.message,
@@ -2338,7 +2316,7 @@ async function handleRequest(req) {
       retry: runwareError.retry,
       code: runwareError.code
     }), {
-      status: runwareError.type === 'quota_exceeded' ? 429 : 500,
+      status: httpStatus,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }

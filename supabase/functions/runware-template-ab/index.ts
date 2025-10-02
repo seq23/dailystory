@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-10-01T21:20:00Z - Force redeploy to resolve boot sync issue
+// DEPLOY_MARKER: 2025-10-02T21:00:00Z - Boot hardening: cache-busted fallbacks, HTTP status codes (503/502/400), cold-start stampede fix, maxTotalTime enforcement
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 const SERVICE_NAME = "runware-template-ab";
 
@@ -39,9 +39,13 @@ const BACKOFF_MS = 2_000; // Reduced from 5s to 2s for faster retry
 async function loadHandler(allowRetry = false): Promise<HandlerFn | null> {
   if (cachedHandler) return cachedHandler;
   
-  // Prevent concurrent loading attempts
+  // Prevent concurrent loading attempts with cold-start stampede protection
   if (isLoading && !allowRetry) {
-    await new Promise(resolve => setTimeout(resolve, 100));
+    const maxWait = 5000;
+    const start = Date.now();
+    while (isLoading && Date.now() - start < maxWait) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
     return cachedHandler;
   }
   
@@ -64,9 +68,9 @@ async function loadHandler(allowRetry = false): Promise<HandlerFn | null> {
       // First attempt: Direct import (bundle-first)
       mod = await import("./index.js");
     } catch (bundleError) {
-      console.warn(`Bundle import failed: ${bundleError instanceof Error ? bundleError.message : String(bundleError)}, trying source fallback`);
-      // Second attempt: Source fallback (original strategy)  
-      mod = await import("./index.js");
+      console.warn(`Bundle import failed: ${bundleError instanceof Error ? bundleError.message : String(bundleError)}, trying cache-busted fallback`);
+      // Second attempt: Cache-busted fallback
+      mod = await import(`./index.js?v=${Date.now()}`);
     }
     
     const fn = (mod as any)?.default as HandlerFn | undefined;
@@ -79,7 +83,7 @@ async function loadHandler(allowRetry = false): Promise<HandlerFn | null> {
     lastLoadError = null;
     isLoading = false;
     
-    console.log(`✅ Handler loaded successfully`);
+    console.log(`✅ Handler loaded successfully from ${mod.url || './index.js'}`);
     return cachedHandler;
     
   } catch (err: any) {
@@ -127,12 +131,13 @@ serve(async (req) => {
 
     // Any GET → boring 200 JSON (never fails)
     if (req.method === "GET") {
+      const DEPLOY_MARKER = "2025-10-01T21:20:00Z";
       const payload = {
         status: "healthy",
         service: SERVICE_NAME,
         tier: "2.5A/2.5B",
         timestamp: new Date().toISOString(),
-        deployment_version: "2025-09-27T15:30:00Z",
+        deployment_version: DEPLOY_MARKER,
         handler_cached: !!cachedHandler,
         last_error: lastLoadError?.message ?? null,
         capabilities: ["character_consistency", "visual_tracking", "cultural_enhancement"]
@@ -147,8 +152,15 @@ serve(async (req) => {
 
     // POST → fast boot sync recovery with handler loading
     if (req.method === "POST") {
-      // Fast retry wrapper for handler loading
+      // Fast retry wrapper with timeout enforcement
+      const startTime = Date.now();
       for (let attempt = 0; attempt <= FAST_BOOT_SYNC.maxRetries; attempt++) {
+        // Enforce maxTotalTime
+        if (Date.now() - startTime > FAST_BOOT_SYNC.maxTotalTime) {
+          console.warn(`⚠️ [TEMPLATE_AB] Max total time exceeded (${FAST_BOOT_SYNC.maxTotalTime}ms)`);
+          break;
+        }
+        
         try {
           let handler = await loadHandler(false);
           if (!handler) handler = await loadHandler(true);
@@ -165,7 +177,6 @@ serve(async (req) => {
           const isValidationError = errorMessage.includes('Missing required field') || 
                                    errorMessage.includes('MISSING_STORY_CONTENT') ||
                                    errorMessage.includes('NO_STORY_CONTENT');
-          const isRuntimeError = !isBootError && !isValidationError;
           
           // Only retry boot errors, not validation or runtime errors
           if (isBootError && attempt < FAST_BOOT_SYNC.maxRetries) {
@@ -175,10 +186,11 @@ serve(async (req) => {
             continue;
           }
           
-          // Return appropriate error based on category
+          // Return appropriate error based on category with correct HTTP status
           const errorType = isBootError ? "BOOT_ERROR" : 
                           isValidationError ? "VALIDATION_ERROR" : 
                           "HANDLER_UNAVAILABLE";
+          const httpStatus = isBootError ? 503 : isValidationError ? 400 : 502;
           
           return withCors(new Response(JSON.stringify({
             success: false,
@@ -186,7 +198,7 @@ serve(async (req) => {
             message: errorMessage,
             service: SERVICE_NAME,
             timestamp: new Date().toISOString(),
-          }), { status: 200, headers: { "Content-Type": "application/json" } }));
+          }), { status: httpStatus, headers: { "Content-Type": "application/json" } }));
           
         } catch (handlerError: any) {
           const errorMessage = handlerError?.message ?? String(handlerError);
@@ -205,10 +217,11 @@ serve(async (req) => {
             continue;
           }
           
-          // Return appropriate error based on category
+          // Return appropriate error based on category with correct HTTP status
           const errorType = isBootError ? "BOOT_ERROR" : 
                           isValidationError ? "VALIDATION_ERROR" : 
                           "HANDLER_ERROR";
+          const httpStatus = isBootError ? 503 : isValidationError ? 400 : 502;
           
           return withCors(new Response(JSON.stringify({
             success: false,
@@ -216,7 +229,7 @@ serve(async (req) => {
             message: errorMessage,
             service: SERVICE_NAME,
             timestamp: new Date().toISOString(),
-          }), { status: 200, headers: { "Content-Type": "application/json" } }));
+          }), { status: httpStatus, headers: { "Content-Type": "application/json" } }));
         }
       }
     }
