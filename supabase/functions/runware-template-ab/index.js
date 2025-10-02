@@ -1924,7 +1924,7 @@ async function handleRequest(req) {
             
             return createResponse({
               success: true,
-              imageUrl: imageResult.imageURL,
+              imageURL: imageResult.imageURL,
               template: templateResult,
               escalated: true,
               escalationReason: 'character_consistency_failure',

@@ -235,12 +235,13 @@ function validatePayloadFast(payload: any): boolean {
 }
 
 // ============= INLINED TIER 1 PROCESSING (from PhaseIntegrationOrchestrator) =============
-async function processInlinedTier1(payload: any, memoizedImport: any, logTier1Step: Function, tier1ErrorLog: any[]): Promise<any> {
+async function processInlinedTier1(payload: any, memoizedImport: any, logTier1Step: Function, tier1ErrorLog: any[], requestId: string): Promise<any> {
   const { pageText, storyText, userInfo, sessionId } = payload;
   const userId = userInfo?.id || userInfo?.userId || 'anonymous';
   const characterName = userInfo?.name || userInfo?.childName || 'Child';
   
   console.log(`🎨 INLINED TIER 1: Processing for ${characterName} in session ${sessionId}`);
+  const tier1Start = Date.now();
   
   // Import CharacterConsistencyService with resilient multi-path fallback (ERROR-046 fix)
   let characterConsistencyService;
@@ -946,7 +947,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       try {
         // INLINED TIER 1 PROCESSING - Direct orchestration without PhaseIntegrationOrchestrator
         console.log(`🎨 INLINED TIER 1: Processing for ${payload.userInfo?.name || 'Child'} in session ${payload.sessionId}`);
-        enhancedPrompt = await processInlinedTier1(payload, memoizedImport, logTier1Step, tier1ErrorLog);
+        enhancedPrompt = await processInlinedTier1(payload, memoizedImport, logTier1Step, tier1ErrorLog, requestId);
         
         if (!enhancedPrompt || !validatePrimarySceneQuality(enhancedPrompt.primaryScene || enhancedPrompt.enhancedPrompt || '')) {
           throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_25A');
