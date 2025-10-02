@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-10-03T00:00:00Z - Parser hardening: removed trailing commas from all corsResponse function calls (Deno graph parser compatibility)
+// DEPLOY_MARKER: 2025-10-03T00:20:00Z - Timeout hardening: added AbortSignal support to RunwareWebSocketService and aligned timeouts to 20s
 
 // Inlined orchestrator logic - no more lazy loading
 
@@ -1129,9 +1129,9 @@ Deno.serve(async (req) => {
 
         logTier1Step("Image Generation", "attempt", "Calling RunwareWebSocketService.generateImage");
 
-        // Add 30-second timeout for Runware WebSocket call
+        // Add 20-second timeout for Runware WebSocket call (aligned with frontend expectations)
         const runwareController = new AbortController();
-        const runwareTimeout = setTimeout(() => runwareController.abort(), 30000);
+        const runwareTimeout = setTimeout(() => runwareController.abort(), 20000);
 
         let imageResult: any;
         try {
@@ -1151,7 +1151,7 @@ Deno.serve(async (req) => {
         } catch (e: any) {
           // Handle timeout/abort as 504 instead of generic network error
           if (e?.name === "AbortError") {
-            logTier1Step("Image Generation", "failed", "Runware timeout (30s)");
+            logTier1Step("Image Generation", "failed", "Runware timeout (20s)");
             return corsResponse(
               {
                 success: false,

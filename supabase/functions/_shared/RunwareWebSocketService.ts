@@ -9,6 +9,7 @@ interface GenerateImageParams {
   negativePrompt?: string;
   parameters?: ImageParameters;
   timeout?: number;
+  signal?: AbortSignal;
 }
 
 interface ImageParameters {
@@ -66,20 +67,53 @@ class RunwareWebSocketService {
     positivePrompt,
     negativePrompt = '',
     parameters = {},
-    timeout = 120000 // Increased from 30s to 120s for image generation
+    timeout = 20000, // Aligned with frontend expectations (20s default)
+    signal
   }: GenerateImageParams): Promise<ImageGenerationResult> {
     return new Promise((resolve, reject) => {
       const ws = new WebSocket('wss://ws-api.runware.ai/v1');
       let authCompleted = false;
       let resolved = false;
       let keepaliveInterval: number | null = null;
+      let abortListener: (() => void) | null = null;
+      
+      // Cleanup function to handle all resource disposal
+      const cleanup = () => {
+        resolved = true;
+        if (keepaliveInterval) clearInterval(keepaliveInterval);
+        if (abortListener && signal) {
+          signal.removeEventListener('abort', abortListener);
+        }
+        ws.close();
+      };
+
+      // Handle external abort signal
+      if (signal) {
+        abortListener = () => {
+          if (!resolved) {
+            cleanup();
+            const abortError: ErrorWithMetadata = {
+              name: 'AbortError',
+              message: 'Image generation aborted by caller',
+              type: 'ABORT',
+              nextAction: 'ESCALATE_TIER_2_5'
+            };
+            reject(abortError);
+          }
+        };
+        signal.addEventListener('abort', abortListener);
+        
+        // Check if already aborted
+        if (signal.aborted) {
+          abortListener();
+          return;
+        }
+      }
       
       // WebSocket timeout handler with tier escalation metadata (ERROR-061 fix)
       const timeoutId = setTimeout(() => {
         if (!resolved) {
-          resolved = true;
-          if (keepaliveInterval) clearInterval(keepaliveInterval);
-          ws.close();
+          cleanup();
           console.error(`❌ Image generation timeout after ${timeout}ms`);
           const timeoutError: ErrorWithMetadata = {
             name: 'RunwareTimeout',
@@ -129,10 +163,8 @@ class RunwareWebSocketService {
         // Handle errors
         if (response.error || response.errors) {
           console.error('❌ Runware error during image generation:', response);
-          resolved = true;
+          cleanup();
           clearTimeout(timeoutId);
-          if (keepaliveInterval) clearInterval(keepaliveInterval);
-          ws.close();
           const errorMessage = response.errorMessage || response.errors?.[0]?.message || 'Image generation failed';
           reject(new Error(errorMessage));
           return;
@@ -167,10 +199,8 @@ class RunwareWebSocketService {
               
             } else if (item.taskType === "imageInference") {
               console.log('🎯 Image generated successfully:', item.imageURL);
-              resolved = true;
+              cleanup();
               clearTimeout(timeoutId);
-              if (keepaliveInterval) clearInterval(keepaliveInterval);
-              ws.close();
               
               resolve({
                 success: true,
@@ -186,10 +216,9 @@ class RunwareWebSocketService {
 
       ws.onerror = (error: Event) => {
         if (!resolved) {
-          resolved = true;
           console.error('❌ WebSocket error during image generation:', error);
+          cleanup();
           clearTimeout(timeoutId);
-          if (keepaliveInterval) clearInterval(keepaliveInterval);
           
           // Phase 2: Enhanced error classification
           const errorType = this.classifyWebSocketError(error as any);
@@ -203,10 +232,9 @@ class RunwareWebSocketService {
 
       ws.onclose = (event: CloseEvent) => {
         if (!resolved) {
-          resolved = true;
           console.log(`🔌 WebSocket closed unexpectedly during image generation (code: ${event.code})`);
+          cleanup();
           clearTimeout(timeoutId);
-          if (keepaliveInterval) clearInterval(keepaliveInterval);
           
           // Phase 2: Enhanced close code handling
           const closeReason = this.getCloseReason(event.code);

@@ -1580,7 +1580,7 @@ export class SimpleImageService {
   private static async checkOrchestratorServiceHealth(): Promise<'healthy' | 'degraded' | 'down'> {
     try {
       const response = await supabase.functions.invoke('runware-generate-image', {
-        body: { healthCheck: true }
+        method: 'GET'
       });
       
       if (response.error) {
