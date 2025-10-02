@@ -61,6 +61,34 @@ export async function memoizedImport(path: string): Promise<any>
 
 The system provides FIVE specialized Supabase client creation functions, each optimized for different use cases:
 
+┌─────────────────────────────────────────────────────────────┐
+│         SUPABASE CLIENT CREATION HIERARCHY                   │
+├─────────────────────────────────────────────────────────────┤
+│                                                               │
+│  🚀 createVendorFirstSupabaseClient()  (NEW - 3 functions)  │
+│     └─ Tier 1: Vendor Bundle (5ms)                          │
+│     └─ Tier 2: Network CDN Fallback                         │
+│     Used by: CCS, runware-generate-image, runware-template-ab│
+│                                                               │
+│  📊 createDatabaseSupabaseClient()  (Existing - General DB)  │
+│     └─ Tier 1: Network CDN                                  │
+│     └─ Tier 2: Vendor Bundle                                │
+│     Used by: Analytics, logging, general services            │
+│                                                               │
+│  💳 createPaymentSupabaseClient()  (Existing - Payments)    │
+│     └─ Tier 1: Network CDN                                  │
+│     └─ Tier 2: Vendor Bundle                                │
+│     └─ Returns null on failure                              │
+│     Used by: Payment functions only                          │
+│                                                               │
+│  📖 createTieredSupabaseClient()  (Existing - Story Gen)    │
+│     └─ Tier 1: Network CDN                                  │
+│     └─ Tier 2: Vendor Bundle                                │
+│     └─ Tier 3: Template Service Signal                      │
+│     Used by: Story generation functions                      │
+│                                                               │
+└─────────────────────────────────────────────────────────────┘
+
 ### 1. `createVendorFirstSupabaseClient()` ⚡ **NEW - RECOMMENDED FOR CRITICAL FUNCTIONS**
 **Location:** `supabase/functions/_shared/resilientLoader.ts` (lines 318-350)
 
