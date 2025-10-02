@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-10-02T23:30:00Z - Critical parser fix: removed return type annotation from Deno.serve handler
+// DEPLOY_MARKER: 2025-10-02T23:45:00Z - Parser hardening: removed inline comment from object destructuring (Deno graph parser compatibility)
 
 // Inlined orchestrator logic - no more lazy loading
 
@@ -910,7 +910,7 @@ Deno.serve(async (req) => {
 
       // CRITICAL: Lazy load shared services after validation to prevent boot failures
       const ProviderGateModule = await import("../_shared/ProviderGate.ts");
-      const { acquire, release /* getStatus */ } = ProviderGateModule;
+      const { acquire, release } = ProviderGateModule;
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const IdempotencyMemory = await import("../_shared/IdempotencyMemory.ts");
 
