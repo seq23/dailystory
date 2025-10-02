@@ -413,6 +413,8 @@ export class CharacterConsistencyService {
           ...TIER_25_UNIFIED_VOCABULARY_EXTENDED.contextDetection.indoor,
           ...TIER_25_UNIFIED_VOCABULARY_EXTENDED.contextDetection.outdoor
         ],
+        indoorWords: TIER_25_UNIFIED_VOCABULARY_EXTENDED.contextDetection.indoor || [],
+        outdoorWords: TIER_25_UNIFIED_VOCABULARY_EXTENDED.contextDetection.outdoor || [],
         relationships: this.extractRelationshipsFromTier25(TIER_25_UNIFIED_VOCABULARY_EXTENDED),
         clothing: CLOTHING_DETECTION_KEYWORDS || [],
         actions: Object.values(TIER_25_UNIFIED_VOCABULARY_EXTENDED.actions).flat()
@@ -512,6 +514,32 @@ export class CharacterConsistencyService {
   }
 
   // ============= TIER25-POWERED DETECTION (PHASE 2) =============
+
+  /**
+   * Detect simple atmosphere from page text using tier25Vocabulary
+   * @param {string} pageText - Text to analyze
+   * @returns {string} 'indoor', 'outdoor', or ''
+   */
+  detectSimpleAtmosphere(pageText) {
+    if (!pageText) return '';
+    
+    // Ensure vocabulary is loaded
+    if (!this.vocabulary?.indoorWords || !this.vocabulary?.outdoorWords) {
+      console.warn('⚠️ Vocabulary not loaded, cannot detect atmosphere');
+      return '';
+    }
+    
+    const text = pageText.toLowerCase();
+    const indoorWords = this.vocabulary.indoorWords;
+    const outdoorWords = this.vocabulary.outdoorWords;
+    
+    const indoorCount = indoorWords.filter(word => text.includes(word.toLowerCase())).length;
+    const outdoorCount = outdoorWords.filter(word => text.includes(word.toLowerCase())).length;
+    
+    if (outdoorCount > indoorCount) return 'outdoor';
+    if (indoorCount > outdoorCount) return 'indoor';
+    return '';
+  }
 
   /**
    * Detect colored objects using tier25Vocabulary
@@ -716,11 +744,9 @@ export class CharacterConsistencyService {
     // Detect all objects/characters
     await this.detectAllCharacters(pageText, { sessionId, pageNumber });
 
-    // AUTO-DETECT SCENE CONTEXT using UnifiedPlaceholderResolver
+    // AUTO-DETECT SCENE CONTEXT using tier25Vocabulary
     try {
-      const { UnifiedPlaceholderResolver } = await memoizedServiceImport('./UnifiedPlaceholderResolver.js');
-      const resolver = new UnifiedPlaceholderResolver({});
-      const detectedSetting = resolver.detectAtmosphere(pageText);
+      const detectedSetting = this.detectSimpleAtmosphere(pageText);
       
       if (detectedSetting) {
         await this.saveSessionSetting(sessionId, 'context', detectedSetting);
