@@ -147,10 +147,10 @@ const { autoRefresh = false, refreshInterval = 300000 } = options || {};
    - Max wait: 2s for gate acquisition
 
 4. **Function Updates**:
-   - **ai-visual-scene-creator**: Gate before OpenAI calls, idempotency cache, jittered retries, 503 on gate deny
-   - **runware-generate-image**: Sampled logging (10% default), error-only DB writes, gates planned for tier calls
-   - **runware-template-ab**: Gate planned before Runware calls, idempotency for page renders
-   - **runware-template-cd**: Gate planned before Runware calls, idempotency for page renders
+   - ✅ **ai-visual-scene-creator**: Gate before OpenAI calls, idempotency cache, jittered retries, 503 on gate deny
+   - ✅ **runware-generate-image**: Sampled logging (10% default), error-only DB writes, gates on DM & T25A/C/D
+   - ✅ **runware-template-ab**: Gate keys `T25A:runware-template-ab`, `T25B:runware-template-ab` before Runware calls
+   - ✅ **runware-template-cd**: Gate keys `T25C:runware-template-cd`, `DM:runware-template-cd` before Runware calls
 
 5. **HTTP Semantics**:
    - Return 503 with `Retry-After` header (3-8s) on gate denies or upstream exhaustion
@@ -269,5 +269,6 @@ After these changes:
 **Status**: Emergency throttling implemented ✅  
 **Usage Impact**: ~95% reduction in monitoring polls ✅
 **ProviderGate Impact**: ~70% reduction in incident load ✅
+**ProviderGate Status**: COMPLETE - All functions wired ✅
 **User Experience**: Manual control maintained ✅
 **Cascade Order**: Unchanged ✅

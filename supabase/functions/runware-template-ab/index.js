@@ -1,5 +1,6 @@
 // DEPLOY_MARKER: 2025-09-26T15:15:00Z - Force fresh deployment sync with receptionist
 import { RunwareErrorHandler } from "../_shared/runwareErrorHandler.ts";
+import * as ProviderGate from "../_shared/ProviderGate.ts";
 // Handles Level A (basic shapes/colors) and Level B (simple scenes)
 // Lightweight, fast deployment - optimized for simple template generation with character consistency
 
@@ -2084,11 +2085,36 @@ async function handleRequest(req) {
       throw new Error('RUNWARE_API_KEY not configured');
     }
 
+    // ProviderGate: Check circuit and acquire slot before Runware call
+    const gateKey = templateComplexity === 'A' ? 'T25A:runware-template-ab' : 'T25B:runware-template-ab';
+    const gateResult = await ProviderGate.acquire(gateKey);
+    
+    if (!gateResult.acquired) {
+      console.warn(`⚠️ [GATE] ${gateKey} unavailable: ${gateResult.reason}`);
+      return new Response(JSON.stringify({
+        success: false,
+        error: gateResult.reason === 'CIRCUIT_OPEN' 
+          ? 'Image generation service temporarily unavailable - circuit breaker active'
+          : 'Image generation service at capacity - please retry',
+        retryAfterSeconds: gateResult.retryAfterSeconds || 8,
+        errorType: 'service_unavailable'
+      }), {
+        status: 503,
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json',
+          'Retry-After': String(gateResult.retryAfterSeconds || 8)
+        }
+      });
+    }
+
     const MAX_RETRIES = 3;
     let imageURL = null;
     let lastError = null;
+    let gateReleased = false;
 
-    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
       try {
         if (attempt > 0) {
           const delay = Math.pow(2, attempt - 1) * 1000;
@@ -2188,6 +2214,19 @@ async function handleRequest(req) {
           throw new Error(`Runware API failed after ${MAX_RETRIES + 1} attempts: ${error.message}`);
         }
       }
+      }
+      
+      // Release gate on success
+      ProviderGate.release(gateKey, true);
+      gateReleased = true;
+      
+    } catch (runwareError) {
+      // Release gate on failure
+      if (!gateReleased) {
+        ProviderGate.release(gateKey, false);
+        gateReleased = true;
+      }
+      throw runwareError;
     }
 
     const result = {

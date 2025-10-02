@@ -1,5 +1,6 @@
 // DEPLOY_MARKER: 2025-09-26T15:15:00Z - Force fresh deployment sync with receptionist
 import { RunwareErrorHandler } from "../_shared/runwareErrorHandler.ts";
+import * as ProviderGate from "../_shared/ProviderGate.ts";
 
 // ============= RUNWARE TEMPLATE CD: TIER 2.5C & 2.5D =============
 // Implementation of complexity levels C and D for advanced template generation
@@ -450,8 +451,48 @@ async function handleRequest(req) {
     templateResult = generateTier25D();
   }
 
-  // Call Runware API
-  const imageURL = await callRunwareAPI(templateResult.positivePrompt, templateResult.negativePrompt);
+  // ProviderGate: Check circuit and acquire slot before Runware call
+  const gateKey = complexityLevel === 'C' ? 'T25C:runware-template-cd' : 'DM:runware-template-cd';
+  const gateResult = await ProviderGate.acquire(gateKey);
+  
+  if (!gateResult.acquired) {
+    console.warn(`⚠️ [GATE] ${gateKey} unavailable: ${gateResult.reason}`);
+    return new Response(JSON.stringify({
+      success: false,
+      error: gateResult.reason === 'CIRCUIT_OPEN' 
+        ? 'Image generation service temporarily unavailable - circuit breaker active'
+        : 'Image generation service at capacity - please retry',
+      retryAfterSeconds: gateResult.retryAfterSeconds || 8,
+      errorType: 'service_unavailable'
+    }), {
+      status: 503,
+      headers: { 
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+        'Content-Type': 'application/json',
+        'Retry-After': String(gateResult.retryAfterSeconds || 8)
+      }
+    });
+  }
+
+  let imageURL;
+  let gateReleased = false;
+  
+  try {
+    // Call Runware API
+    imageURL = await callRunwareAPI(templateResult.positivePrompt, templateResult.negativePrompt);
+    
+    // Release gate on success
+    ProviderGate.release(gateKey, true);
+    gateReleased = true;
+  } catch (runwareError) {
+    // Release gate on failure
+    if (!gateReleased) {
+      ProviderGate.release(gateKey, false);
+      gateReleased = true;
+    }
+    throw runwareError;
+  }
 
   const result = {
     success: true,
