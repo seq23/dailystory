@@ -527,14 +527,12 @@ serve(async (req) => {
     } catch (schemaError) {
       const errorMessage = schemaError instanceof Error ? schemaError.message : String(schemaError);
       console.error(`❌ [${requestId}] Visual schema generation failed:`, errorMessage);
-      return new Response(JSON.stringify({
+      return {
         success: false,
         error: `Visual schema generation failed: ${errorMessage}`,
-        tier: 'SCHEMA_GENERATION_FAILED'
-      }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
+        tier: 'SCHEMA_GENERATION_FAILED',
+        httpStatus: 500
+      };
     }
 
     // CRITICAL FIX: Import characterConsistencyService at main scope (non-fatal)
@@ -825,6 +823,7 @@ serve(async (req) => {
     });
 
     return new Response(JSON.stringify(result), {
+      status: result.httpStatus ?? 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
 
