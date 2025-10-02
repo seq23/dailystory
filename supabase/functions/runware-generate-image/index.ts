@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-10-02T22:56:00Z - Fixed CORS & network errors: removed Access-Control-Allow-Credentials false, added AbortError handling, replaced invoke with fetch+signal
+// DEPLOY_MARKER: 2025-10-02T23:30:00Z - Critical parser fix: removed return type annotation from Deno.serve handler
 
 // Inlined orchestrator logic - no more lazy loading
 
@@ -853,7 +853,7 @@ const FAST_BOOT_SYNC = {
 };
 
 // OPTIMIZED SERVE HANDLER WITH FAST BOOT SYNC RECOVERY AND COMPLETE TIER CASCADE
-Deno.serve(async (req: Request): Promise<Response> => {
+Deno.serve(async (req) => {
   // PHASE 1: OPTIONS fast path (immediate return)
   if (req.method === "OPTIONS") {
     const corsHeaders = generateEchoCorsHeaders(req);
