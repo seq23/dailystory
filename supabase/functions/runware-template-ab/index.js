@@ -1598,21 +1598,22 @@ async function handleRequest(req) {
       console.log('📦 Template AB: Detected nested payload structure');
       const bundle = payload.bundle;
       const config = payload.config;
-      storyText = bundle.pageText || bundle.storyText; // FIX: Support both pageText and storyText in bundle
-      enhancedStoryData = { userInfo: bundle.userInfo };
-      pageNumber = bundle.pageNumber;
-      avatarIdentity = bundle.userInfo?.avatar;
-      templateComplexity = config.templateComplexity;
-      sessionId = bundle.sessionId;
-      preAnalyzedData = bundle.preAnalyzedData; // Extract cascade data
+      // ENHANCED: Support multiple text field names with cascading fallbacks
+      storyText = bundle.pageText || bundle.storyText || payload.pageText || payload.storyText;
+      enhancedStoryData = { userInfo: bundle.userInfo || payload.userInfo };
+      pageNumber = bundle.pageNumber || payload.pageNumber || 1;
+      avatarIdentity = bundle.userInfo?.avatar || payload.userInfo?.avatar;
+      templateComplexity = config.templateComplexity || payload.templateComplexity || 'A';
+      sessionId = bundle.sessionId || payload.sessionId;
+      preAnalyzedData = bundle.preAnalyzedData || payload.preAnalyzedData; // Extract cascade data
     } else if (payload.pageText) {
       // Current format: {pageText, userInfo, sessionId, pageNumber}
       console.log('📄 Template AB: Using pageText format');
-      storyText = payload.pageText;
+      storyText = payload.pageText || payload.storyText;
       enhancedStoryData = payload.enhancedStoryData || { userInfo: payload.userInfo };
-      pageNumber = payload.pageNumber;
+      pageNumber = payload.pageNumber || 1;
       avatarIdentity = payload.userInfo?.avatar;
-      templateComplexity = payload.templateComplexity;
+      templateComplexity = payload.templateComplexity || 'A';
       sessionId = payload.sessionId;
       preAnalyzedData = payload.preAnalyzedData; // Extract cascade data
     } else if (payload.storyText) {

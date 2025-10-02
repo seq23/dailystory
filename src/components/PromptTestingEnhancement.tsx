@@ -59,9 +59,18 @@ export function PromptTestingEnhancement() {
         await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
         return testEnhancedPrompts(retryCount + 1);
       } else {
+        // Enhanced error display: Parse specific CCS method failures
+        const errorMsg = response.error?.message || 'Test failed';
+        let specificError = errorMsg;
+        if (errorMsg.includes('CCS_METHOD_FAILED:')) {
+          const match = errorMsg.match(/CCS_METHOD_FAILED:([^:]+):(.+)/);
+          if (match) {
+            specificError = `CCS method "${match[1]}" failed: ${match[2]}`;
+          }
+        }
         setTestResult({
           success: false,
-          error: response.error?.message || 'Test failed'
+          error: specificError
         });
       }
     } catch (error) {
@@ -72,9 +81,18 @@ export function PromptTestingEnhancement() {
         await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
         return testEnhancedPrompts(retryCount + 1);
       }
+      // Enhanced error display: Parse specific CCS method failures
+      const errorMsg = error.message || 'Unknown error';
+      let specificError = errorMsg;
+      if (errorMsg.includes('CCS_METHOD_FAILED:')) {
+        const match = errorMsg.match(/CCS_METHOD_FAILED:([^:]+):(.+)/);
+        if (match) {
+          specificError = `CCS method "${match[1]}" failed: ${match[2]}`;
+        }
+      }
       setTestResult({
         success: false,
-        error: error.message || 'Unknown error'
+        error: specificError
       });
     }
     setIsLoading(false);

@@ -270,6 +270,16 @@ async function processInlinedTier1(payload: any, memoizedImport: any, logTier1St
       typeof characterConsistencyService?.[method] !== 'function'
     );
     
+    // Enhanced logging: Log typeof for each required method for debugging
+    console.log(`🔍 [${requestId}] [TIER_1] CCS Method Availability Check:`, {
+      sessionId,
+      methods: requiredMethods.reduce((acc, method) => {
+        acc[method] = typeof characterConsistencyService?.[method];
+        return acc;
+      }, {} as Record<string, string>),
+      missingMethods
+    });
+    
     if (missingMethods.length > 0) {
       throw new Error(`CharacterConsistencyService missing required methods: ${missingMethods.join(', ')}`);
     }
@@ -325,11 +335,23 @@ async function processInlinedTier1(payload: any, memoizedImport: any, logTier1St
   
   // Runtime guard for getStructuredAvatarData method (ERROR-055 fix)
   let structuredAvatarData;
-  if (typeof characterConsistencyService?.getStructuredAvatarData === 'function') {
-    structuredAvatarData = await characterConsistencyService.getStructuredAvatarData(sessionId, userInfo);
-  } else {
-    console.warn(`⚠️ getStructuredAvatarData not available, escalating to Tier 2.5B`);
-    throw new Error('GETSTRUCTUREDAVATARDATA_UNAVAILABLE_ESCALATE_TO_25B');
+  try {
+    if (typeof characterConsistencyService?.getStructuredAvatarData === 'function') {
+      structuredAvatarData = await characterConsistencyService.getStructuredAvatarData(sessionId, userInfo);
+    } else {
+      console.warn(`⚠️ getStructuredAvatarData not available, escalating to Tier 2.5B`);
+      throw new Error('GETSTRUCTUREDAVATARDATA_UNAVAILABLE_ESCALATE_TO_25B');
+    }
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(`❌ [${requestId}] [TIER_1] getStructuredAvatarData: FAILED`, { sessionId, error: errorMessage });
+    logTier1Step('Avatar Data Extraction', 'failed', `getStructuredAvatarData: ${errorMessage}`);
+    
+    // For forced Tier 1, return specific method failure (no cascade)
+    if (payload.forceCompleteTier1) {
+      throw new Error(`CCS_METHOD_FAILED:getStructuredAvatarData:${errorMessage}`);
+    }
+    throw new Error('CHARACTERSERVICE_UNAVAILABLE_TRY_DIRECT_MODE');
   }
 
   // DEFENSIVE DATA REPAIR: Ensure structuredAvatarData has valid hairColor
@@ -378,63 +400,127 @@ async function processInlinedTier1(payload: any, memoizedImport: any, logTier1St
   logTier1Step('Avatar Data Extraction', 'success', `Avatar data: ${structuredAvatarData?.skinTone}, ${structuredAvatarData?.hairColor}`);
   
   // Get enhanced character consistency data (CRITICAL - will throw on failure to trigger tier escalation)
-  const characterSeed = await characterConsistencyService.getEnhancedCharacterSeed(
-    sessionId,
-    avatarIdentity,
-    storyText || pageText || '',
-    'continuing'
-  );
-  
-  console.log(`🔍 [${requestId}] [TIER_1] getEnhancedCharacterSeed: SUCCESS`, {
-    sessionId,
-    pageNumber: payload.pageNumber,
-    inputs: { avatarIdentity, textLength: (storyText || pageText || '').length },
-    outputs: characterSeed
-  });
+  let characterSeed;
+  try {
+    characterSeed = await characterConsistencyService.getEnhancedCharacterSeed(
+      sessionId,
+      avatarIdentity,
+      storyText || pageText || '',
+      'continuing'
+    );
+    console.log(`🔍 [${requestId}] [TIER_1] getEnhancedCharacterSeed: SUCCESS`, {
+      sessionId,
+      pageNumber: payload.pageNumber,
+      inputs: { avatarIdentity, textLength: (storyText || pageText || '').length },
+      outputs: characterSeed
+    });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(`❌ [${requestId}] [TIER_1] getEnhancedCharacterSeed: FAILED`, { sessionId, error: errorMessage });
+    logTier1Step('Enhanced Character Seed', 'failed', `getEnhancedCharacterSeed: ${errorMessage}`);
+    
+    // For forced Tier 1, return specific method failure (no cascade)
+    if (payload.forceCompleteTier1) {
+      throw new Error(`CCS_METHOD_FAILED:getEnhancedCharacterSeed:${errorMessage}`);
+    }
+    throw new Error('CHARACTERSERVICE_UNAVAILABLE_TRY_DIRECT_MODE');
+  }
   
   // Get cultural enhancements using the service
-  const culturalBundle = await characterConsistencyService.getCulturalEnhancements(userInfo, sessionId, characterName);
-  
-  console.log(`🔍 [${requestId}] [TIER_1] getCulturalEnhancements: SUCCESS`, {
-    sessionId,
-    pageNumber: payload.pageNumber,
-    skinTone: userInfo?.avatar?.skinTone || userInfo?.skinTone,
-    result: culturalBundle
-  });
+  let culturalBundle;
+  try {
+    culturalBundle = await characterConsistencyService.getCulturalEnhancements(userInfo, sessionId, characterName);
+    console.log(`🔍 [${requestId}] [TIER_1] getCulturalEnhancements: SUCCESS`, {
+      sessionId,
+      pageNumber: payload.pageNumber,
+      skinTone: userInfo?.avatar?.skinTone || userInfo?.skinTone,
+      result: culturalBundle
+    });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(`❌ [${requestId}] [TIER_1] getCulturalEnhancements: FAILED`, { sessionId, error: errorMessage });
+    logTier1Step('Cultural Enhancements', 'failed', `getCulturalEnhancements: ${errorMessage}`);
+    
+    // For forced Tier 1, return specific method failure (no cascade)
+    if (payload.forceCompleteTier1) {
+      throw new Error(`CCS_METHOD_FAILED:getCulturalEnhancements:${errorMessage}`);
+    }
+    throw new Error('CHARACTERSERVICE_UNAVAILABLE_TRY_DIRECT_MODE');
+  }
   
   // Analyze visual details from story text
   const tier1Start = Date.now();
-  await characterConsistencyService.analyzeVisualDetails(sessionId, storyText || pageText, payload.pageNumber || 1);
-  const coloredObjects = await characterConsistencyService.getColoredObjects(sessionId);
-  
-  console.log(`🔍 [${requestId}] [TIER_1] analyzeVisualDetails: SUCCESS`, {
-    sessionId,
-    pageNumber: payload.pageNumber,
-    timing: `${Date.now() - tier1Start}ms`
-  });
+  let coloredObjects = '';
+  try {
+    await characterConsistencyService.analyzeVisualDetails(sessionId, storyText || pageText, payload.pageNumber || 1);
+    coloredObjects = await characterConsistencyService.getColoredObjects(sessionId);
+    console.log(`🔍 [${requestId}] [TIER_1] analyzeVisualDetails: SUCCESS`, {
+      sessionId,
+      pageNumber: payload.pageNumber,
+      timing: `${Date.now() - tier1Start}ms`
+    });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(`❌ [${requestId}] [TIER_1] analyzeVisualDetails/getColoredObjects: FAILED`, { sessionId, error: errorMessage });
+    logTier1Step('Visual Details Analysis', 'failed', `analyzeVisualDetails: ${errorMessage}`);
+    
+    // For forced Tier 1, return specific method failure (no cascade)
+    if (payload.forceCompleteTier1) {
+      throw new Error(`CCS_METHOD_FAILED:analyzeVisualDetails:${errorMessage}`);
+    }
+    throw new Error('CHARACTERSERVICE_UNAVAILABLE_TRY_DIRECT_MODE');
+  }
 
   // Reuse session-cached secondary characters to avoid duplicate heavy detection
-  const secondaryCharacters = await characterConsistencyService.getSecondaryCharactersForSession(sessionId);
-  
-  // PHASE 1: Get main character appearance data
-  const detectionResults = await characterConsistencyService.detectAllCharacters(storyText || pageText, { 
-    sessionId, 
-    pageNumber: payload.pageNumber || 1 
-  });
-  const mainCharacterAppearance = detectionResults.mainCharacterAppearance || {};
-  
-  console.log(`🔍 [${requestId}] [TIER_1] detectAllCharacters: SUCCESS`, {
-    sessionId,
-    pageNumber: payload.pageNumber,
-    resultCount: (detectionResults.secondaryCharacters || []).length,
-    timing: `${Date.now() - tier1Start}ms`
-  });
+  let secondaryCharacters: any[] = [];
+  let detectionResults: any = {};
+  let mainCharacterAppearance: any = {};
+  try {
+    secondaryCharacters = await characterConsistencyService.getSecondaryCharactersForSession(sessionId);
+    
+    // PHASE 1: Get main character appearance data
+    detectionResults = await characterConsistencyService.detectAllCharacters(storyText || pageText, { 
+      sessionId, 
+      pageNumber: payload.pageNumber || 1 
+    });
+    mainCharacterAppearance = detectionResults.mainCharacterAppearance || {};
+    
+    console.log(`🔍 [${requestId}] [TIER_1] detectAllCharacters: SUCCESS`, {
+      sessionId,
+      pageNumber: payload.pageNumber,
+      resultCount: (detectionResults.secondaryCharacters || []).length,
+      timing: `${Date.now() - tier1Start}ms`
+    });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(`❌ [${requestId}] [TIER_1] detectAllCharacters: FAILED`, { sessionId, error: errorMessage });
+    logTier1Step('Character Detection', 'failed', `detectAllCharacters: ${errorMessage}`);
+    
+    // For forced Tier 1, return specific method failure (no cascade)
+    if (payload.forceCompleteTier1) {
+      throw new Error(`CCS_METHOD_FAILED:detectAllCharacters:${errorMessage}`);
+    }
+    throw new Error('CHARACTERSERVICE_UNAVAILABLE_TRY_DIRECT_MODE');
+  }
   
   // Keep animals lean to avoid extra passes; not required for templates currently
   const detectedAnimals: any[] = [];
 
   // Get session setting (indoor/outdoor context) - CCS should auto-detect, no hardcoded fallback
-  const sessionSetting = await characterConsistencyService.getSessionSetting(sessionId, 'context', '');
+  let sessionSetting = '';
+  try {
+    sessionSetting = await characterConsistencyService.getSessionSetting(sessionId, 'context', '');
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(`❌ [${requestId}] [TIER_1] getSessionSetting: FAILED`, { sessionId, error: errorMessage });
+    logTier1Step('Session Setting', 'failed', `getSessionSetting: ${errorMessage}`);
+    
+    // For forced Tier 1, return specific method failure (no cascade)
+    if (payload.forceCompleteTier1) {
+      throw new Error(`CCS_METHOD_FAILED:getSessionSetting:${errorMessage}`);
+    }
+    throw new Error('CHARACTERSERVICE_UNAVAILABLE_TRY_DIRECT_MODE');
+  }
 
   // Lean CPU budget guard for Tier 1 analysis
   const TIER1_CPU_BUDGET_MS = 2200;
