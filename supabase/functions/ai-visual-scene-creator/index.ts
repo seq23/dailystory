@@ -21,7 +21,9 @@ async function generateCompleteVisualSchema(
   userInfo: any, 
   sessionId: string, 
   pageNumber: number = 1,
-  inputStructuredAvatarData: any = null
+  inputStructuredAvatarData: any = null,
+  mainCharacterAppearance: any = null,
+  secondaryCharacters: any[] = []
 ): Promise<{ visualSchema: any; aiDebugSchema: any; structuredAvatarData: any }> {
   const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
   if (!openaiApiKey) {
@@ -518,6 +520,10 @@ serve(async (req) => {
     const sessionId = payload.sessionId || `session-${requestId}`;
     const pageNumber = payload.pageNumber || 1;
     const directMode = payload.directMode === true;
+    
+    // PHASE 1 FIX: Extract appearance data from payload for character consistency
+    const mainCharacterAppearance = payload.mainCharacterAppearance || null;
+    const secondaryCharacters = payload.secondaryCharacters || [];
 
     console.log(`✅ [${requestId}] Payload validated - Direct Mode: ${directMode}`);
     
@@ -546,7 +552,15 @@ serve(async (req) => {
     let aiDebugSchema: any;
     
     try {
-      const result = await generateCompleteVisualSchema(content, userInfo, sessionId, pageNumber, structuredAvatarData);
+      const result = await generateCompleteVisualSchema(
+        content, 
+        userInfo, 
+        sessionId, 
+        pageNumber, 
+        structuredAvatarData,
+        mainCharacterAppearance,
+        secondaryCharacters
+      );
       visualSchema = result.visualSchema;
       aiDebugSchema = result.aiDebugSchema;
       structuredAvatarData = result.structuredAvatarData;

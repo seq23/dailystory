@@ -11,7 +11,28 @@
 
 // TypeScript type imports
 import type { UserInfo, SessionId } from "../_shared/types/index.ts";
-import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from '../_shared/NuclearNegativePrompts.js';
+
+// CRITICAL FIX: Failsafe import for NuclearNegativePrompts - prevents boot failures
+// If module fails, use hardcoded base negative prompt fallback
+let generateNuclearNegativePrompt: any;
+let detectCulturalProfileForNegatives: any;
+
+try {
+  const nuclearModule = await import('../_shared/NuclearNegativePrompts.js');
+  generateNuclearNegativePrompt = nuclearModule.generateNuclearNegativePrompt;
+  detectCulturalProfileForNegatives = nuclearModule.detectCulturalProfileForNegatives;
+  console.log('✅ NuclearNegativePrompts module loaded successfully');
+} catch (error) {
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  console.warn('⚠️ NuclearNegativePrompts unavailable, using hardcoded base fallback:', errorMessage);
+  
+  // HARDCODED BASE FALLBACK (as specified by user - prevents deployment failures)
+  const BASE_NEGATIVE_FALLBACK = "NO TEXT, no words, no letters, no writing, no captions, no watermarks, no signatures, no logos, bad anatomy, deformed, blurry, low quality, distorted face, extra limbs, malformed hands, poorly drawn, artifacts, noise, oversaturated, underexposed, overexposed, duplicate, cropped, watermark, signature, text, logo, bad lighting, flat lighting, plastic skin, waxy skin, artificial look, uncanny valley";
+  
+  generateNuclearNegativePrompt = () => BASE_NEGATIVE_FALLBACK;
+  detectCulturalProfileForNegatives = () => ({});
+}
+
 import * as ProviderGate from "../_shared/ProviderGate.ts";
 import * as IdempotencyMemory from "../_shared/IdempotencyMemory.ts";
 
