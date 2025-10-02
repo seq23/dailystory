@@ -122,9 +122,10 @@ All 4 image generation functions use "Option A":
 
 ### **Functions Using Pattern**
 - ✅ `runware-generate-image` (Orchestrator)
-- ✅ `ai-visual-scene-creator` (Tier 1)
 - ✅ `runware-template-ab` (Tier 2.5A/B)
 - ✅ `runware-template-cd` (Tier 2.5C/D)
+
+**Note**: `ai-visual-scene-creator` is a Pure TypeScript Orchestrator (NOT Option A) - uses complete lazy loading pattern instead.
 
 ## **Boot Process Flow**
 
@@ -215,6 +216,26 @@ if (req.method === 'OPTIONS') {
 2. Verify `index.js` exists and exports `handleRequest`
 3. Test CORS preflight handling
 4. Monitor for 503 errors in production
+
+## **Orchestrator Pattern (Pure TypeScript Edge Functions)**
+
+Some edge functions serve as main orchestrators using pure TypeScript implementation:
+
+### **Pattern Characteristics**
+1. **Pure TypeScript**: Single `.ts` file (no separate `.js` implementation)
+2. **Main Orchestrator**: Coordinates multiple services and providers
+3. **Complete Lazy Loading**: ALL `_shared` imports MUST be lazy-loaded
+4. **Boot Independence**: Zero boot-time dependencies for maximum reliability
+5. **Request-Time Loading**: All heavy modules loaded on-demand
+
+### **Example: `ai-visual-scene-creator`**
+- Main orchestrator for visual scene generation pipeline
+- Lazy loads: `CharacterConsistencyService.js`, `StaticDataCache.js`, `ProviderGate.ts`, `IdempotencyMemory.ts`
+- Can boot successfully even if ALL CDNs fail
+- All imports happen inside request handlers, never at module level
+
+### **Critical Rule**
+Orchestrator functions must use **complete lazy loading** - NO top-level `_shared` imports allowed. This prevents boot failures and ensures maximum reliability.
 
 ## **Migration History**
 

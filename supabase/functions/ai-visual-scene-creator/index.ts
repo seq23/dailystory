@@ -3,7 +3,6 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // TypeScript type imports
 import type { UserInfo } from "../_shared/types/index.ts";
-import * as IdempotencyMemory from "../_shared/IdempotencyMemory.ts";
 
 // ============= PERFECT AI VISUAL SCENE CREATOR WITH CHARACTER CONSISTENCY =============
 // Complete implementation with word-for-word OpenAI prompts and CharacterConsistencyService integration
@@ -502,6 +501,9 @@ serve(async (req) => {
     console.log(`✅ [${requestId}] Payload validated - Direct Mode: ${directMode}`);
     
     // ============= IDEMPOTENCY: Coalesce duplicate requests =============
+    // Lazy load IdempotencyMemory to prevent boot failures
+    const IdempotencyMemory = await import("../_shared/IdempotencyMemory.ts");
+    
     const idempotencyKey = IdempotencyMemory.generateKey({
       sessionId,
       pageNumber: pageNumber || 1,
