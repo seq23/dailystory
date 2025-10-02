@@ -53,6 +53,7 @@ class SupabaseQueryBuilder {
     this.client = client;
     this.table = table;
     this.queryParams = [];
+    this.singleMode = false;
   }
 
   select(columns = '*') {
@@ -72,8 +73,22 @@ class SupabaseQueryBuilder {
     return this;
   }
 
+  upsert(data, options = {}) {
+    this.method = 'POST';
+    this.data = data;
+    this.client.headers['Prefer'] = options.onConflict 
+      ? `resolution=merge-duplicates,return=representation`
+      : 'resolution=merge-duplicates,return=representation';
+    return this;
+  }
+
   eq(column, value) {
     this.queryParams.push(`${column}=eq.${value}`);
+    return this;
+  }
+
+  single() {
+    this.singleMode = true;
     return this;
   }
 
@@ -92,6 +107,18 @@ class SupabaseQueryBuilder {
       }
 
       const data = await response.json();
+      
+      // Handle single mode
+      if (this.singleMode) {
+        if (Array.isArray(data) && data.length === 0) {
+          return { data: null, error: { message: 'No rows found', code: 'PGRST116' } };
+        }
+        if (Array.isArray(data) && data.length > 1) {
+          return { data: null, error: { message: 'Multiple rows returned', code: 'PGRST116' } };
+        }
+        return { data: Array.isArray(data) ? data[0] : data, error: null };
+      }
+
       return { data, error: null };
     } catch (error) {
       return { data: null, error };
