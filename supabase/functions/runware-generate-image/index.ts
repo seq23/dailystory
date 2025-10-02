@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-10-02T21:00:00Z - Boot hardening: removed static imports, lazy load ProviderGate/IdempotencyMemory/NuclearNegativePrompts, CORS fixes, scope fixes  
+// DEPLOY_MARKER: 2025-10-02T21:00:00Z - Boot hardening: removed ALL static imports, fixed scope issues, added timeouts, CORS fixes
 
 // Inlined orchestrator logic - no more lazy loading
 
@@ -9,8 +9,8 @@
 // ENHANCED: Complete tier cascade logic: 1 → Direct Mode → 2.5A → 2.5B → 2.5C → 2.5D
 // ============================================================================
 
-// TypeScript type imports
-import type { UserInfo, SessionId } from "../_shared/types/index.ts";
+// NO STATIC IMPORTS - All imports are lazy-loaded inside the handler to prevent boot failures
+// Types are inferred at runtime
 
 // CRITICAL FIX: NuclearNegativePrompts now lazy-loaded inside POST handler to prevent boot delay
 
@@ -158,6 +158,7 @@ function generateEchoCorsHeaders(req: Request): Record<string, string> {
     'Access-Control-Allow-Origin': origin || '*',
     'Access-Control-Allow-Headers': requestHeaders || 'authorization, x-client-info, apikey, content-type',
     'Access-Control-Allow-Methods': 'GET, HEAD, POST, OPTIONS',
+    'Access-Control-Allow-Credentials': 'true',
     'Access-Control-Max-Age': '600',
     'Vary': 'Origin, Access-Control-Request-Headers',
   };
@@ -215,7 +216,15 @@ function validatePayloadFast(payload: any): boolean {
 }
 
 // ============= INLINED TIER 1 PROCESSING (from PhaseIntegrationOrchestrator) =============
-async function processInlinedTier1(payload: any, memoizedImport: any, logTier1Step: Function, tier1ErrorLog: any[], requestId: string): Promise<any> {
+async function processInlinedTier1(
+  payload: any, 
+  memoizedImport: any, 
+  logTier1Step: Function, 
+  tier1ErrorLog: any[], 
+  requestId: string,
+  generateNuclearNegativePrompt: Function,
+  detectCulturalProfileForNegatives: Function
+): Promise<any> {
   const { pageText, storyText, userInfo, sessionId } = payload;
   const userId = userInfo?.id || userInfo?.userId || 'anonymous';
   const characterName = userInfo?.name || userInfo?.childName || 'Child';
@@ -800,7 +809,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       status: 'healthy',
       service: 'runware-generate-image',
       tier: 'Main Orchestrator',
-      deployment_version: '2025-10-01T21:45:00Z',
+      deployment_version: '2025-10-02T21:00:00Z',
       timestamp: new Date().toISOString(),
       environment: {
         hasRunwareApiKey: !!runwareKey,
@@ -831,7 +840,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
       console.log(`✅ [${requestId}] Fast validation passed`);
       
       // CRITICAL: Lazy load shared services after validation to prevent boot failures
-      const ProviderGate = await import("../_shared/ProviderGate.ts");
+      const ProviderGateModule = await import("../_shared/ProviderGate.ts");
+      const { acquire, release, getStatus } = ProviderGateModule;
       const IdempotencyMemory = await import("../_shared/IdempotencyMemory.ts");
       
       // Lazy load NuclearNegativePrompts to prevent boot delay
@@ -949,7 +959,15 @@ Deno.serve(async (req: Request): Promise<Response> => {
       try {
         // INLINED TIER 1 PROCESSING - Direct orchestration without PhaseIntegrationOrchestrator
         console.log(`🎨 INLINED TIER 1: Processing for ${payload.userInfo?.name || 'Child'} in session ${payload.sessionId}`);
-        enhancedPrompt = await processInlinedTier1(payload, memoizedImport, logTier1Step, tier1ErrorLog, requestId);
+        enhancedPrompt = await processInlinedTier1(
+          payload, 
+          memoizedImport, 
+          logTier1Step, 
+          tier1ErrorLog, 
+          requestId,
+          generateNuclearNegativePrompt,
+          detectCulturalProfileForNegatives
+        );
         
         if (!enhancedPrompt || !validatePrimarySceneQuality(enhancedPrompt.primaryScene || enhancedPrompt.enhancedPrompt || '')) {
           throw new Error('NO_PRIMARY_SCENE_ESCALATE_TO_25A');
@@ -1017,25 +1035,33 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
         logTier1Step('Image Generation', 'attempt', 'Calling RunwareWebSocketService.generateImage');
 
-        const imageResult = await RunwareWebSocketService.generateImage({
-          apiKey: runwareApiKey,
-          positivePrompt: enhancedPrompt.enhancedPrompt,
-          negativePrompt: enhancedPrompt.negativePrompt || '',
-          parameters: {
-            width: 1024,
-            height: 1024,
-            model: 'runware:100@1',
-            numberResults: 1,
-            outputFormat: 'WEBP'
+        // Add 30-second timeout for Runware WebSocket call
+        const runwareController = new AbortController();
+        const runwareTimeout = setTimeout(() => runwareController.abort(), 30000);
+        
+        try {
+          const imageResult = await RunwareWebSocketService.generateImage({
+            apiKey: runwareApiKey,
+            positivePrompt: enhancedPrompt.enhancedPrompt,
+            negativePrompt: enhancedPrompt.negativePrompt || '',
+            parameters: {
+              width: 1024,
+              height: 1024,
+              model: 'runware:100@1',
+              numberResults: 1,
+              outputFormat: 'WEBP'
+            },
+            signal: runwareController.signal
+          });
+
+          clearTimeout(runwareTimeout);
+
+          if (!imageResult.success || !imageResult.imageURL) {
+            logTier1Step('Image Generation', 'failed', 'RunwareWebSocketService image generation failed');
+            throw new Error('TIER_1_PROCESSING_FAILED: Image generation failed');
           }
-        });
 
-        if (!imageResult.success || !imageResult.imageURL) {
-          logTier1Step('Image Generation', 'failed', 'RunwareWebSocketService image generation failed');
-          throw new Error('TIER_1_PROCESSING_FAILED: Image generation failed');
-        }
-
-        logTier1Step('Image Generation', 'success', `Image generated successfully: ${imageResult.imageURL?.substring(0, 50)}...`);
+          logTier1Step('Image Generation', 'success', `Image generated successfully: ${imageResult.imageURL?.substring(0, 50)}...`);
 
         // Return successful COMPLETE_TIER_1 response
         tierLogger.success('TIER_1', {
@@ -1211,7 +1237,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
           
         try {
           // Gate check for Direct Mode (shares T1 gate key)
-          const dmGateResult = await ProviderGate.acquire('DM:runware-template-cd');
+          const dmGateResult = await acquire('DM:runware-template-cd');
           if (!dmGateResult.acquired) {
             console.warn(`⚠️ [GATE] Direct Mode denied: ${dmGateResult.reason}`);
             directErrorMessage = `GATE_DENIED: ${dmGateResult.reason}`;
@@ -1219,18 +1245,32 @@ Deno.serve(async (req: Request): Promise<Response> => {
           }
           
           try {
-            const directModeResponse = await internalSupabase.functions.invoke('ai-visual-scene-creator', {
-              body: {
-                ...payload,
-                // Pass structuredAvatarData from orchestrator if Tier 1 partially succeeded
-                userInfo: {
-                  ...payload.userInfo,
-                  structuredAvatarData: enhancedPrompt?.structuredAvatarData || payload.userInfo?.structuredAvatarData
+            // Add 15-second timeout for Direct Mode call
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 15000);
+            
+            try {
+              const directModeResponse = await internalSupabase.functions.invoke('ai-visual-scene-creator', {
+                body: {
+                  ...payload,
+                  // Pass structuredAvatarData from orchestrator if Tier 1 partially succeeded
+                  userInfo: {
+                    ...payload.userInfo,
+                    structuredAvatarData: enhancedPrompt?.structuredAvatarData || payload.userInfo?.structuredAvatarData
+                  },
+                  directMode: true,
+                  tier1FailureReason: errorMessage
                 },
-                directMode: true,
-                tier1FailureReason: errorMessage
-              }
-            });
+                options: {
+                  signal: controller.signal
+                }
+              });
+              
+              clearTimeout(timeout);
+            } catch (timeoutError) {
+              clearTimeout(timeout);
+              throw timeoutError;
+            }
             
             // FIX: Direct Mode returns primaryScene (text), not imageURL. It's a scene generator, not an image generator.
             if (directModeResponse.data?.success && (directModeResponse.data?.imageURL || directModeResponse.data?.primaryScene)) {
@@ -1273,11 +1313,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
             }
           } finally {
             // Ensure gate is released
-            if (directErrorMessage.includes('GATE_DENIED')) {
-              // Already handled
-            } else {
-              ProviderGate.release('DM:runware-template-cd', !directErrorMessage || directErrorMessage === 'Direct Mode not attempted');
-            }
+            release('DM:runware-template-cd');
           }
             
           } catch (directModeError: unknown) {
@@ -1302,14 +1338,28 @@ Deno.serve(async (req: Request): Promise<Response> => {
           console.log(`[TIER_2.5B] Attempting fallback (2.5A skipped due to missing service)`);
           
           try {
-            const tier25bResponse = await internalSupabase.functions.invoke('runware-template-ab', {
-              body: {
-                ...payload,
-                templateComplexity: 'B',
-                tier1FailureReason: errorMessage,
-                tier25aFailureReason: tier25aErrorMessage
-              }
-            });
+            // Add 15-second timeout for Tier 2.5B call
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 15000);
+            
+            try {
+              const tier25bResponse = await internalSupabase.functions.invoke('runware-template-ab', {
+                body: {
+                  ...payload,
+                  templateComplexity: 'B',
+                  tier1FailureReason: errorMessage,
+                  tier25aFailureReason: tier25aErrorMessage
+                },
+                options: {
+                  signal: controller.signal
+                }
+              });
+              
+              clearTimeout(timeout);
+            } catch (timeoutError) {
+              clearTimeout(timeout);
+              throw timeoutError;
+            }
             
             if (tier25bResponse.data?.success && tier25bResponse.data?.imageURL) {
               const result = {
@@ -1357,7 +1407,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
           
           try {
             // Gate check for Tier 2.5A
-            const t25aGateResult = await ProviderGate.acquire('T25A:runware-template-ab');
+            const t25aGateResult = await acquire('T25A:runware-template-ab');
             if (!t25aGateResult.acquired) {
               console.warn(`⚠️ [GATE] Tier 2.5A denied: ${t25aGateResult.reason}`);
               tier25aErrorMessage = `GATE_DENIED: ${t25aGateResult.reason}`;
@@ -1365,15 +1415,29 @@ Deno.serve(async (req: Request): Promise<Response> => {
             }
             
             try {
-              const tier25aResponse = await internalSupabase.functions.invoke('runware-template-ab', {
-                body: {
-                  ...payload,
-                  templateComplexity: 'A',
-                  tier1FailureReason: errorMessage
-                }
-              });
-          
-          if (tier25aResponse.data?.success && tier25aResponse.data?.imageURL) {
+              // Add 15-second timeout for Tier 2.5A call
+              const controller = new AbortController();
+              const timeout = setTimeout(() => controller.abort(), 15000);
+              
+              try {
+                const tier25aResponse = await internalSupabase.functions.invoke('runware-template-ab', {
+                  body: {
+                    ...payload,
+                    templateComplexity: 'A',
+                    tier1FailureReason: errorMessage
+                  },
+                  options: {
+                    signal: controller.signal
+                  }
+                });
+                
+                clearTimeout(timeout);
+              } catch (timeoutError) {
+                clearTimeout(timeout);
+                throw timeoutError;
+              }
+              
+              if (tier25aResponse.data?.success && tier25aResponse.data?.imageURL) {
               const result = {
                 success: true,
                 imageURL: tier25aResponse.data.imageURL,
@@ -1404,7 +1468,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
             }
             } finally {
               // Ensure gate is released
-              ProviderGate.release('T25A:runware-template-ab', !tier25aErrorMessage);
+              release('T25A:runware-template-ab');
             }
           
         } catch (tier25aError: unknown) {
@@ -1416,14 +1480,28 @@ Deno.serve(async (req: Request): Promise<Response> => {
           console.log(`[TIER_2.5B] Attempting fallback after 2.5A failure`);
           
           try {
-            const tier25bResponse = await internalSupabase.functions.invoke('runware-template-ab', {
-              body: {
-                ...payload,
-                templateComplexity: 'B',
-                tier1FailureReason: errorMessage,
-                tier25aFailureReason: tier25aErrorMessage
-              }
-            });
+            // Add 15-second timeout for Tier 2.5B call
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 15000);
+            
+            try {
+              const tier25bResponse = await internalSupabase.functions.invoke('runware-template-ab', {
+                body: {
+                  ...payload,
+                  templateComplexity: 'B',
+                  tier1FailureReason: errorMessage,
+                  tier25aFailureReason: tier25aErrorMessage
+                },
+                options: {
+                  signal: controller.signal
+                }
+              });
+              
+              clearTimeout(timeout);
+            } catch (timeoutError) {
+              clearTimeout(timeout);
+              throw timeoutError;
+            }
             
             if (tier25bResponse.data?.success && tier25bResponse.data?.imageURL) {
               const result = {
@@ -1474,7 +1552,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
           let tier25cErrorMessage: string | undefined;
           try {
             // Gate check for Tier 2.5C
-            const t25cGateResult = await ProviderGate.acquire('T25C:runware-template-cd');
+            const t25cGateResult = await acquire('T25C:runware-template-cd');
             if (!t25cGateResult.acquired) {
               console.warn(`⚠️ [GATE] Tier 2.5C denied: ${t25cGateResult.reason}`);
               const tier25cErrorMessage = `GATE_DENIED: ${t25cGateResult.reason}`;
@@ -1483,17 +1561,31 @@ Deno.serve(async (req: Request): Promise<Response> => {
             }
             
             try {
-              const tier25cResponse = await internalSupabase.functions.invoke('runware-template-cd', {
-                body: {
-                  ...payload,
-                  templateComplexity: 'C',
-                  tier1FailureReason: errorMessage,
-                  tier25aFailureReason: tier25aErrorMessage,
-                  tier25bFailureReason: tier25bErrorMessage
-                }
-              });
+              // Add 15-second timeout for Tier 2.5C call
+              const controller = new AbortController();
+              const timeout = setTimeout(() => controller.abort(), 15000);
               
-            if (tier25cResponse.data?.success && tier25cResponse.data?.imageURL) {
+              try {
+                const tier25cResponse = await internalSupabase.functions.invoke('runware-template-cd', {
+                  body: {
+                    ...payload,
+                    templateComplexity: 'C',
+                    tier1FailureReason: errorMessage,
+                    tier25aFailureReason: tier25aErrorMessage,
+                    tier25bFailureReason: tier25bErrorMessage
+                  },
+                  options: {
+                    signal: controller.signal
+                  }
+                });
+                
+                clearTimeout(timeout);
+              } catch (timeoutError) {
+                clearTimeout(timeout);
+                throw timeoutError;
+              }
+              
+              if (tier25cResponse.data?.success && tier25cResponse.data?.imageURL) {
               const result = {
                 success: true,
                 imageURL: tier25cResponse.data.imageURL,
@@ -1527,7 +1619,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
             }
             } finally {
               // Ensure gate is released
-              ProviderGate.release('T25C:runware-template-cd', !tier25cErrorMessage);
+              release('T25C:runware-template-cd');
             }
             
           } catch (tier25cError: unknown) {
@@ -1541,7 +1633,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
             let tier25dErrorMessage: string | undefined;
             try {
               // Gate check for Tier 2.5D
-              const t25dGateResult = await ProviderGate.acquire('T25C:runware-template-cd'); // Same gate as 2.5C (same service)
+              const t25dGateResult = await acquire('T25D:runware-template-cd');
               if (!t25dGateResult.acquired) {
                 console.warn(`⚠️ [GATE] Tier 2.5D denied: ${t25dGateResult.reason}`);
                 const tier25dErrorMessage = `GATE_DENIED: ${t25dGateResult.reason}`;
@@ -1550,18 +1642,36 @@ Deno.serve(async (req: Request): Promise<Response> => {
               }
               
               try {
-                const tier25dResponse = await internalSupabase.functions.invoke('runware-template-cd', {
-                  body: {
-                    ...payload,
-                    templateComplexity: 'D',
-                    tier1FailureReason: errorMessage,
-                    tier25aFailureReason: tier25aErrorMessage,
-                    tier25bFailureReason: tier25bErrorMessage,
-                    tier25cFailureReason: tier25cErrorMessage
-                  }
-                });
-              
-              if (tier25dResponse.data?.success && tier25dResponse.data?.imageURL) {
+                // Add 15-second timeout for Tier 2.5D call
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 15000);
+                
+                try {
+                  const tier25dResponse = await internalSupabase.functions.invoke('runware-template-cd', {
+                    body: {
+                      ...payload,
+                      templateComplexity: 'D',
+                      tier1FailureReason: errorMessage,
+                      tier25aFailureReason: tier25aErrorMessage,
+                      tier25bFailureReason: tier25bErrorMessage,
+                      tier25cFailureReason: tier25cErrorMessage
+                    },
+                    options: {
+                      signal: controller.signal
+                    }
+                  });
+                  
+                  clearTimeout(timeout);
+                } catch (timeoutError) {
+                  clearTimeout(timeout);
+                  throw timeoutError;
+                }
+                } catch (timeoutError) {
+                  clearTimeout(timeout);
+                  throw timeoutError;
+                }
+                
+                if (tier25dResponse.data?.success && tier25dResponse.data?.imageURL) {
                 const result = {
                   success: true,
                   imageURL: tier25dResponse.data.imageURL,
@@ -1596,7 +1706,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
               }
               } finally {
                 // Ensure gate is released
-                ProviderGate.release('T25C:runware-template-cd', !tier25dErrorMessage);
+                release('T25D:runware-template-cd');
               }
               
             } catch (tier25dError: unknown) {
