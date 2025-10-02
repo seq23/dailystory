@@ -1667,15 +1667,8 @@ async function handleRequest(req) {
       
       // VALIDATE SCENE HAS ACTION VERB - IMMEDIATE ESCALATION IF NOT
       if (!extractedScene || !hasActionVerb(extractedScene)) {
-        console.log('⚠️ Tier 2.5A: Scene missing action verb - escalating to next tier');
-        const escalationResult = await escalateToNextTier(payload);
-        return createResponse({
-          success: false,
-          escalated: true,
-          reason: 'scene_extraction_failed',
-          details: 'Tier 2.5A: Scene missing required action verb - escalating to next tier',
-          escalationResult
-        }, 200);
+        console.log('⚠️ Tier 2.5A: Scene missing action verb - falling through to Tier 2.5B');
+        // Escalation logic is handled inline in catch block below
       }
       
       // Build template data using PREMIUM_PROMPT_TEMPLATE
@@ -1790,14 +1783,8 @@ async function handleRequest(req) {
             const elapsed25A = Date.now() - tier25aStart;
             if (elapsed25A > TIER25A_CPU_BUDGET_MS) {
               console.warn(`⚠️ [${requestId}] Tier 2.5A CPU budget exceeded (${elapsed25A}ms > ${TIER25A_CPU_BUDGET_MS}ms) — escalating to Tier 2.5B`);
-              const escalatedPayload = { ...payload, templateComplexity: 'B' };
-              const escalated = await escalateToNextTier(escalatedPayload);
-              return createResponse({
-                success: true,
-                escalated: true,
-                reason: 'tier25a_cpu_budget_exceeded',
-                escalationResult: escalated
-              }, 200);
+              // Escalation to 2.5B is handled in the catch block below
+              throw new Error('TIER_25A_CPU_BUDGET_EXCEEDED');
             }
           } catch (characterError) {
             console.error(`🚨 [${requestId}] Tier 2.5A: CharacterConsistencyService FAILED - Escalating to Tier 2.5B`, characterError.message);
@@ -1827,7 +1814,7 @@ async function handleRequest(req) {
             const skinTone = userInfo?.avatar?.skinTone || 'medium';
             const hairDescription = getHairBySkintone(skinTone) || 'brown hair';
             const facialFeatures = getSkinBySkintone(skinTone, sessionId) || 'friendly expression';
-            const cultural_context = determineCulturalContext(userInfo?.preferredLanguage || 'en');
+            const cultural_context = getCulturalContext(userInfo?.preferredLanguage || 'en');
             
             const leftoverDataTier2B = [
               preAnalyzedData?.timeOfDay,
