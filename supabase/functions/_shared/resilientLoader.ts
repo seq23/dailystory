@@ -237,6 +237,44 @@ export async function createTieredSupabaseClient() {
 }
 
 /**
+ * Create generic database Supabase client with 2-tier fallback system
+ * Tier 1: Network CDN imports (with resilient fallbacks)
+ * Tier 2: Local vendor fallback
+ * 
+ * For services requiring database operations (.upsert, .single, etc.) without template fallbacks.
+ * Use cases: CharacterConsistencyService, general database services, etc.
+ * Throws error on complete failure for proper error handling.
+ */
+export async function createDatabaseSupabaseClient() {
+  try {
+    // Tier 1: Network CDN imports
+    console.log('💾 Database Client Tier 1: Attempting network CDN imports');
+    return await createResilientSupabaseClient();
+  } catch (networkError: any) {
+    console.warn('💾 Database Client Tier 1 failed, attempting Tier 2:', networkError?.message || 'Unknown error');
+    
+    try {
+      // Tier 2: Local vendor fallback
+      console.log('💾 Database Client Tier 2: Attempting vendor fallback');
+      const { createClient } = await import('../_vendor/supabase-js@2.57.4.mjs');
+      
+      const supabaseUrl = Deno.env.get('SUPABASE_URL');
+      const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY');
+
+      if (!supabaseUrl || !supabaseKey) {
+        throw new Error('Missing Supabase environment variables');
+      }
+
+      console.log('✅ Database Client Tier 2 successful: Using vendor fallback');
+      return createClient(supabaseUrl, supabaseKey);
+    } catch (vendorError: any) {
+      console.error('💾 Database Client: Both network and vendor failed:', vendorError?.message || 'Unknown vendor error');
+      throw new Error('Database connection unavailable - both network and vendor failed');
+    }
+  }
+}
+
+/**
  * Create payment-specific Supabase client with 2-tier fallback system
  * Tier 1: Network CDN imports (with resilient fallbacks)
  * Tier 2: Local vendor fallback

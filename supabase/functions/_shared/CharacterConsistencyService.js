@@ -816,16 +816,21 @@ export class CharacterConsistencyService {
   async getSupabaseClient() {
     if (!this.supabase) {
       try {
-        // Try resilient loader first
+        // CRITICAL: Use createDatabaseSupabaseClient() for 2-tier database operations
+        // - createResilientSupabaseClient() = Network only (incomplete, deprecated)
+        // - createDatabaseSupabaseClient() = 2-tier database client (CCS, general DB)  
+        // - createPaymentSupabaseClient() = 2-tier payment client (payment functions only)
+        // - createTieredSupabaseClient() = 3-tier story client (story generation only)
+        // CCS needs database .upsert()/.single() methods from vendor fallback
         const resilientModule = await import('./resilientLoader.ts');
-        if (resilientModule?.createResilientSupabaseClient && typeof resilientModule.createResilientSupabaseClient === 'function') {
-          this.supabase = await resilientModule.createResilientSupabaseClient();
-          console.log('✅ Resilient Supabase client created');
+        if (resilientModule?.createDatabaseSupabaseClient && typeof resilientModule.createDatabaseSupabaseClient === 'function') {
+          this.supabase = await resilientModule.createDatabaseSupabaseClient();
+          console.log('✅ [CDN_IMPORT_SUCCESS] Database Supabase client created for CharacterConsistencyService');
         } else {
-          throw new Error('createResilientSupabaseClient not available');
+          throw new Error('createDatabaseSupabaseClient not available');
         }
       } catch (error) {
-        console.warn('⚠️ Resilient loader failed, attempting direct supabase-js fallback:', error);
+        console.warn('⚠️ Database client failed, attempting direct supabase-js fallback:', error);
         
         // Direct supabase-js fallback
         try {

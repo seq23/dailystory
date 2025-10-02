@@ -55,25 +55,72 @@ export async function memoizedImport(path: string): Promise<any>
 - Tracks failures to avoid repeated attempts
 - Provides structured error handling with detailed logging
 
-### createResilientSupabaseClient
+### Supabase Client Architecture
 
+The system provides four different client creation functions for different use cases:
+
+#### createResilientSupabaseClient (Network Only - DEPRECATED)
 ```typescript
 export async function createResilientSupabaseClient(): Promise<SupabaseClient>
 ```
+- **Tiers:** Network CDN only (no vendor fallback)
+- **Status:** DEPRECATED - Should not be used directly
+- **Behavior:** Tries CDN fallbacks, fails without vendor bundle
+- **Use Case:** None - superseded by specialized clients
 
-- Factory function for creating Supabase clients with resilient loading
-- Handles environment variable validation
-- Provides structured error responses on failure
+#### createDatabaseSupabaseClient (2-Tier Database)
+```typescript
+export async function createDatabaseSupabaseClient(): Promise<SupabaseClient>
+```
+- **Tiers:** Network CDN → Vendor Bundle
+- **Behavior:** Always provides working `.upsert()` and `.single()` methods
+- **Use Case:** CharacterConsistencyService, general database services
+- **Failure:** Throws error for proper error handling
+
+#### createPaymentSupabaseClient (2-Tier Payment)
+```typescript
+export async function createPaymentSupabaseClient(): Promise<SupabaseClient | null>
+```
+- **Tiers:** Network CDN → Vendor Bundle
+- **Behavior:** Database operations for payment functions
+- **Use Case:** Payment-specific edge functions only
+- **Failure:** Returns null for graceful degradation
+
+#### createTieredSupabaseClient (3-Tier Story Generation)
+```typescript
+export async function createTieredSupabaseClient(): Promise<SupabaseClient>
+```
+- **Tiers:** Network CDN → Vendor Bundle → Template Service Signal
+- **Behavior:** Full fallback cascade including template fallback
+- **Use Case:** Story generation functions only
+- **Failure:** Throws 'SUPABASE_UNAVAILABLE' for template service activation
 
 ## Usage Patterns
 
 ### ✅ Correct Usage
 
-**For Supabase Client:**
+**For Database Services (CharacterConsistencyService, etc.):**
 ```typescript
-// Inside edge function handlers
-const { createResilientSupabaseClient } = await import('../_shared/resilientLoader.ts');
-const supabase = await createResilientSupabaseClient();
+// Inside services requiring database operations
+const { createDatabaseSupabaseClient } = await import('../_shared/resilientLoader.ts');
+const supabase = await createDatabaseSupabaseClient();
+```
+
+**For Payment Functions:**
+```typescript
+// Inside payment edge functions
+const { createPaymentSupabaseClient } = await import('../_shared/resilientLoader.ts');
+const supabase = await createPaymentSupabaseClient();
+if (!supabase) {
+  return createPaymentUnavailableResponse('function-name');
+}
+```
+
+**For Story Generation Functions:**
+```typescript
+// Inside story generation handlers
+const { createTieredSupabaseClient } = await import('../_shared/resilientLoader.ts');
+const supabase = await createTieredSupabaseClient();
 ```
 
 **For Stripe Integration:**
