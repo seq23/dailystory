@@ -75,7 +75,7 @@ function redactPII(value: any): any {
   return value;
 }
 
-async function bindTierLogger(sessionId: SessionId, requestId: string, authHeader: string | null = null, memoizedImport: any): Promise<TierLogger> {
+async function bindTierLogger(sessionId: string, requestId: string, authHeader: string | null = null, memoizedImport: any): Promise<TierLogger> {
   const isProd = Deno.env.get('ENVIRONMENT') === 'production';
   const logSampleRate = parseFloat(Deno.env.get('DEBUG_TIER_LOG_SAMPLE') || '0.1'); // Default 10% sampling
   
@@ -856,8 +856,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
         const errorMessage = error instanceof Error ? error.message : String(error);
         console.warn('⚠️ NuclearNegativePrompts unavailable, using hardcoded base fallback:', errorMessage);
         const BASE_NEGATIVE_FALLBACK = "NO TEXT, no words, no letters, no writing, no captions, no watermarks, no signatures, no logos, bad anatomy, deformed, blurry, low quality, distorted face, extra limbs, malformed hands, poorly drawn, artifacts, noise, oversaturated, underexposed, overexposed, duplicate, cropped, watermark, signature, text, logo, bad lighting, flat lighting, plastic skin, waxy skin, artificial look, uncanny valley";
-        generateNuclearNegativePrompt = () => BASE_NEGATIVE_FALLBACK;
-        detectCulturalProfileForNegatives = () => ({});
+        generateNuclearNegativePrompt = (userInfo: any) => BASE_NEGATIVE_FALLBACK;
+        detectCulturalProfileForNegatives = (userInfo: any) => ({ ethnicity: '', culturalContext: '' });
       }
       
       // PHASE 4.1: DRY RUN MODE DETECTION
@@ -1204,7 +1204,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
             
             metadata: {
               errorMessage,
-              errorStack: errorStack?.substring(0, 500) || 'No stack trace available',
+              errorStack: typeof errorStack === 'string' ? errorStack.substring(0, 500) : String(errorStack || 'No stack trace available').substring(0, 500),
               forceCompleteTier1: true,
               failureCategory: failureCategory,
               cascadeHistory: [
@@ -1230,6 +1230,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
         const { createVendorFirstSupabaseClient } = await memoizedImport('../_shared/resilientLoader.ts');
         const internalSupabase = await createVendorFirstSupabaseClient();
         
+        // Hoist response variables to outer scope for proper access across try/catch blocks
+        let directModeResponse: any = null;
+        let tier25aResponse: any = null;
+        let tier25bResponse: any = null;
+        let tier25cResponse: any = null;
+        let tier25dResponse: any = null;
+        
         let directErrorMessage = 'Direct Mode not attempted';
         
         // CORRECTED CASCADE: Always try Direct Mode after Tier 1 failure (Direct Mode works without Tier 1 scene)
@@ -1250,7 +1257,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
             const timeout = setTimeout(() => controller.abort(), 15000);
             
             try {
-              const directModeResponse = await internalSupabase.functions.invoke('ai-visual-scene-creator', {
+              directModeResponse = await internalSupabase.functions.invoke('ai-visual-scene-creator', {
                 body: {
                   ...payload,
                   // Pass structuredAvatarData from orchestrator if Tier 1 partially succeeded
@@ -1316,7 +1323,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
             release('DM:runware-template-cd');
           }
             
-          } catch (directModeError: unknown) {
+          } catch (directModeError) {
             directErrorMessage = directModeError instanceof Error ? directModeError.message : String(directModeError);
             console.log(`[DIRECT_MODE] Failed: ${directErrorMessage}`);
             tierLogger.failure('DIRECT_MODE', { error: directErrorMessage });
@@ -1343,7 +1350,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
             const timeout = setTimeout(() => controller.abort(), 15000);
             
             try {
-              const tier25bResponse = await internalSupabase.functions.invoke('runware-template-ab', {
+              tier25bResponse = await internalSupabase.functions.invoke('runware-template-ab', {
                 body: {
                   ...payload,
                   templateComplexity: 'B',
@@ -1420,7 +1427,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
               const timeout = setTimeout(() => controller.abort(), 15000);
               
               try {
-                const tier25aResponse = await internalSupabase.functions.invoke('runware-template-ab', {
+                tier25aResponse = await internalSupabase.functions.invoke('runware-template-ab', {
                   body: {
                     ...payload,
                     templateComplexity: 'A',
@@ -1471,7 +1478,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
               release('T25A:runware-template-ab');
             }
           
-        } catch (tier25aError: unknown) {
+        } catch (tier25aError) {
           tier25aErrorMessage = tier25aError instanceof Error ? tier25aError.message : String(tier25aError);
           console.log(`[TIER_2.5A] Failed: ${tier25aErrorMessage}`);
           tierLogger.failure('TIER_2.5A', { error: tier25aErrorMessage });
@@ -1485,7 +1492,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
             const timeout = setTimeout(() => controller.abort(), 15000);
             
             try {
-              const tier25bResponse = await internalSupabase.functions.invoke('runware-template-ab', {
+              tier25bResponse = await internalSupabase.functions.invoke('runware-template-ab', {
                 body: {
                   ...payload,
                   templateComplexity: 'B',
@@ -1535,7 +1542,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
               throw new Error('TIER_2.5B_FAILED: Template B processing failed');
             }
             
-          } catch (tier25bError: unknown) {
+          } catch (tier25bError) {
             tier25bErrorMessage = tier25bError instanceof Error ? tier25bError.message : String(tier25bError);
             console.log(`[TIER_2.5B] Failed: ${tier25bErrorMessage}`);
             tierLogger.failure('TIER_2.5B', { error: tier25bErrorMessage });
@@ -1555,7 +1562,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
             const t25cGateResult = await acquire('T25C:runware-template-cd');
             if (!t25cGateResult.acquired) {
               console.warn(`⚠️ [GATE] Tier 2.5C denied: ${t25cGateResult.reason}`);
-              const tier25cErrorMessage = `GATE_DENIED: ${t25cGateResult.reason}`;
+              tier25cErrorMessage = `GATE_DENIED: ${t25cGateResult.reason}`;
               tierLogger.failure('TIER_2.5C', { error: tier25cErrorMessage });
               throw new Error(tier25cErrorMessage);
             }
@@ -1566,7 +1573,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
               const timeout = setTimeout(() => controller.abort(), 15000);
               
               try {
-                const tier25cResponse = await internalSupabase.functions.invoke('runware-template-cd', {
+                tier25cResponse = await internalSupabase.functions.invoke('runware-template-cd', {
                   body: {
                     ...payload,
                     templateComplexity: 'C',
@@ -1622,8 +1629,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
               release('T25C:runware-template-cd');
             }
             
-          } catch (tier25cError: unknown) {
-            const tier25cErrorMessage = tier25cError instanceof Error ? tier25cError.message : String(tier25cError);
+          } catch (tier25cError) {
+            tier25cErrorMessage = tier25cError instanceof Error ? tier25cError.message : String(tier25cError);
             console.log(`[TIER_2.5C] Failed: ${tier25cErrorMessage}`);
             tierLogger.failure('TIER_2.5C', { error: tier25cErrorMessage });
             
@@ -1636,7 +1643,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
               const t25dGateResult = await acquire('T25D:runware-template-cd');
               if (!t25dGateResult.acquired) {
                 console.warn(`⚠️ [GATE] Tier 2.5D denied: ${t25dGateResult.reason}`);
-                const tier25dErrorMessage = `GATE_DENIED: ${t25dGateResult.reason}`;
+                tier25dErrorMessage = `GATE_DENIED: ${t25dGateResult.reason}`;
                 tierLogger.failure('TIER_2.5D', { error: tier25dErrorMessage });
                 throw new Error(tier25dErrorMessage);
               }
@@ -1647,7 +1654,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
                 const timeout = setTimeout(() => controller.abort(), 15000);
                 
                 try {
-                  const tier25dResponse = await internalSupabase.functions.invoke('runware-template-cd', {
+                  tier25dResponse = await internalSupabase.functions.invoke('runware-template-cd', {
                     body: {
                       ...payload,
                       templateComplexity: 'D',
@@ -1662,10 +1669,6 @@ Deno.serve(async (req: Request): Promise<Response> => {
                   });
                   
                   clearTimeout(timeout);
-                } catch (timeoutError) {
-                  clearTimeout(timeout);
-                  throw timeoutError;
-                }
                 } catch (timeoutError) {
                   clearTimeout(timeout);
                   throw timeoutError;
@@ -1709,8 +1712,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
                 release('T25D:runware-template-cd');
               }
               
-            } catch (tier25dError: unknown) {
-              const tier25dErrorMessage = tier25dError instanceof Error ? tier25dError.message : String(tier25dError);
+            } catch (tier25dError) {
+              tier25dErrorMessage = tier25dError instanceof Error ? tier25dError.message : String(tier25dError);
               console.log(`[TIER_2.5D] Failed: ${tier25dErrorMessage}`);
               tierLogger.failure('TIER_2.5D', { error: tier25dErrorMessage });
               
