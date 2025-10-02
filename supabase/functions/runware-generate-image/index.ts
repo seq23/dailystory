@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-10-02T21:00:00Z - Boot hardening: removed ALL static imports, fixed scope issues, added timeouts, CORS fixes
+// DEPLOY_MARKER: 2025-10-02T22:56:00Z - Fixed CORS & network errors: removed Access-Control-Allow-Credentials false, added AbortError handling, replaced invoke with fetch+signal
 
 // Inlined orchestrator logic - no more lazy loading
 
@@ -159,19 +159,23 @@ async function bindTierLogger(
 // Echoing CORS with Vary headers for preflight consistency
 function generateEchoCorsHeaders(req: Request): Record<string, string> {
   const origin = req.headers.get("Origin");
-  // If credentials are allowed, we must NOT use "*"
   const allowOrigin = origin || "*";
-  const allowCredentials = origin ? "true" : "false";
 
   const requestHeaders = req.headers.get("Access-Control-Request-Headers");
-  return {
+  const headers: Record<string, string> = {
     "Access-Control-Allow-Origin": allowOrigin,
     "Access-Control-Allow-Headers": requestHeaders || "authorization, x-client-info, apikey, content-type",
     "Access-Control-Allow-Methods": "GET, HEAD, POST, OPTIONS",
-    "Access-Control-Allow-Credentials": allowCredentials,
     "Access-Control-Max-Age": "600",
     Vary: "Origin, Access-Control-Request-Headers",
   };
+  
+  // Only set credentials header when Origin is present (browsers expect absent or "true", not "false")
+  if (origin) {
+    headers["Access-Control-Allow-Credentials"] = "true";
+  }
+  
+  return headers;
 }
 
 function corsResponse(data: any, req: Request, status = 200): Response {
@@ -562,13 +566,27 @@ async function processInlinedTier1(
     const { createVendorFirstSupabaseClient } = await memoizedImport("../_shared/resilientLoader.ts");
     const supabase = await createVendorFirstSupabaseClient();
 
-    const { data: aiResult, error: aiError } = await supabase.functions.invoke("ai-visual-scene-creator", {
-      body: {
-        pageText: storyText || pageText,
-        userInfo: {
-          ...userInfo,
-          structuredAvatarData,
+    // Use raw fetch with proper AbortController signal (supabase.functions.invoke ignores signal)
+    const aiController = new AbortController();
+    const aiTimeout = setTimeout(() => aiController.abort(), 15000);
+    
+    let aiResult: any, aiError: any;
+    try {
+      const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+      const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/ai-visual-scene-creator`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+          "apikey": SUPABASE_ANON_KEY || "",
         },
+        body: JSON.stringify({
+          pageText: storyText || pageText,
+          userInfo: {
+            ...userInfo,
+            structuredAvatarData,
+          },
         sessionId,
         pageNumber: payload.pageNumber || 1,
         avatarIdentity,
@@ -583,8 +601,26 @@ async function processInlinedTier1(
         requestId: `tier1-${sessionId}`,
         source: "inlined_orchestrator",
         directMode: false, // Scene-Only mode - AI uses character context to inform scene
-      },
-    });
+        }),
+        signal: aiController.signal,
+      });
+      
+      if (!response.ok) {
+        aiError = { message: `HTTP ${response.status}: ${response.statusText}` };
+        aiResult = null;
+      } else {
+        aiResult = await response.json();
+      }
+    } catch (e: any) {
+      if (e?.name === "AbortError") {
+        aiError = { message: "AI scene creator timeout (15s)" };
+        aiResult = null;
+      } else {
+        throw e;
+      }
+    } finally {
+      clearTimeout(aiTimeout);
+    }
 
     console.log(`✅ AI SCENE GENERATION: Called with complete character context`, {
       hasCharacterSeed: !!characterSeed,
@@ -1112,6 +1148,23 @@ Deno.serve(async (req: Request): Promise<Response> => {
             },
             signal: runwareController.signal,
           });
+        } catch (e: any) {
+          // Handle timeout/abort as 504 instead of generic network error
+          if (e?.name === "AbortError") {
+            logTier1Step("Image Generation", "failed", "Runware timeout (30s)");
+            return corsResponse(
+              {
+                success: false,
+                error: "Image generation timeout",
+                tier: "TIER_1",
+                retryAfterSeconds: 6,
+                requestId: requestId,
+              },
+              req,
+              504,
+            );
+          }
+          throw e;
         } finally {
           clearTimeout(runwareTimeout);
         }
@@ -1342,8 +1395,16 @@ Deno.serve(async (req: Request): Promise<Response> => {
             const timeout = setTimeout(() => controller.abort(), 15000);
 
             try {
-              directModeResponse = await internalSupabase.functions.invoke("ai-visual-scene-creator", {
-                body: {
+              const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+              const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
+              const response = await fetch(`${SUPABASE_URL}/functions/v1/ai-visual-scene-creator`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+                  "apikey": SUPABASE_ANON_KEY || "",
+                },
+                body: JSON.stringify({
                   ...payload,
                   // Pass structuredAvatarData from orchestrator if Tier 1 partially succeeded
                   userInfo: {
@@ -1353,11 +1414,22 @@ Deno.serve(async (req: Request): Promise<Response> => {
                   },
                   directMode: true,
                   tier1FailureReason: errorMessage,
-                },
-                options: {
-                  signal: controller.signal,
-                },
+                }),
+                signal: controller.signal,
               });
+              
+              if (!response.ok) {
+                directModeResponse = { error: { message: `HTTP ${response.status}: ${response.statusText}` } };
+              } else {
+                const data = await response.json();
+                directModeResponse = { data };
+              }
+            } catch (e: any) {
+              if (e?.name === "AbortError") {
+                directModeResponse = { error: { message: "Direct Mode timeout (15s)" } };
+              } else {
+                throw e;
+              }
             } finally {
               clearTimeout(timeout);
             }
@@ -1436,18 +1508,39 @@ Deno.serve(async (req: Request): Promise<Response> => {
             const timeout = setTimeout(() => controller.abort(), 15000);
 
             try {
-              tier25bResponse = await internalSupabase.functions.invoke("runware-template-ab", {
-                body: {
+              const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+              const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
+              const response = await fetch(`${SUPABASE_URL}/functions/v1/runware-template-ab`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+                  "apikey": SUPABASE_ANON_KEY || "",
+                },
+                body: JSON.stringify({
                   ...payload,
                   templateComplexity: "B",
                   tier1FailureReason: errorMessage,
                   tier25aFailureReason: tier25aErrorMessage,
-                },
-                options: {
-                  signal: controller.signal,
-                },
+                }),
+                signal: controller.signal,
               });
+              
+              if (!response.ok) {
+                tier25bResponse = { error: { message: `HTTP ${response.status}: ${response.statusText}` } };
+              } else {
+                const data = await response.json();
+                tier25bResponse = { data };
+              }
+            } catch (e: any) {
+              if (e?.name === "AbortError") {
+                tier25bResponse = { error: { message: "Tier 2.5B timeout (15s)" } };
+              } else {
+                throw e;
+              }
             } finally {
+              clearTimeout(timeout);
+            }
               clearTimeout(timeout);
             }
 
@@ -1511,16 +1604,35 @@ Deno.serve(async (req: Request): Promise<Response> => {
               const timeout = setTimeout(() => controller.abort(), 15000);
 
               try {
-                tier25aResponse = await internalSupabase.functions.invoke("runware-template-ab", {
-                  body: {
+                const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+                const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/runware-template-ab`, {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+                    "apikey": SUPABASE_ANON_KEY || "",
+                  },
+                  body: JSON.stringify({
                     ...payload,
                     templateComplexity: "A",
                     tier1FailureReason: errorMessage,
-                  },
-                  options: {
-                    signal: controller.signal,
-                  },
+                  }),
+                  signal: controller.signal,
                 });
+                
+                if (!response.ok) {
+                  tier25aResponse = { error: { message: `HTTP ${response.status}: ${response.statusText}` } };
+                } else {
+                  const data = await response.json();
+                  tier25aResponse = { data };
+                }
+              } catch (e: any) {
+                if (e?.name === "AbortError") {
+                  tier25aResponse = { error: { message: "Tier 2.5A timeout (15s)" } };
+                } else {
+                  throw e;
+                }
               } finally {
                 clearTimeout(timeout);
               }
@@ -1577,17 +1689,36 @@ Deno.serve(async (req: Request): Promise<Response> => {
               const timeout = setTimeout(() => controller.abort(), 15000);
 
               try {
-                tier25bResponse = await internalSupabase.functions.invoke("runware-template-ab", {
-                  body: {
+                const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+                const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/runware-template-ab`, {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+                    "apikey": SUPABASE_ANON_KEY || "",
+                  },
+                  body: JSON.stringify({
                     ...payload,
                     templateComplexity: "B",
                     tier1FailureReason: errorMessage,
                     tier25aFailureReason: tier25aErrorMessage,
-                  },
-                  options: {
-                    signal: controller.signal,
-                  },
+                  }),
+                  signal: controller.signal,
                 });
+                
+                if (!response.ok) {
+                  tier25bResponse = { error: { message: `HTTP ${response.status}: ${response.statusText}` } };
+                } else {
+                  const data = await response.json();
+                  tier25bResponse = { data };
+                }
+              } catch (e: any) {
+                if (e?.name === "AbortError") {
+                  tier25bResponse = { error: { message: "Tier 2.5B timeout (15s)" } };
+                } else {
+                  throw e;
+                }
               } finally {
                 clearTimeout(timeout);
               }
@@ -1660,18 +1791,37 @@ Deno.serve(async (req: Request): Promise<Response> => {
               const timeout = setTimeout(() => controller.abort(), 15000);
 
               try {
-                tier25cResponse = await internalSupabase.functions.invoke("runware-template-cd", {
-                  body: {
+                const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+                const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/runware-template-cd`, {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+                    "apikey": SUPABASE_ANON_KEY || "",
+                  },
+                  body: JSON.stringify({
                     ...payload,
                     templateComplexity: "C",
                     tier1FailureReason: errorMessage,
                     tier25aFailureReason: tier25aErrorMessage,
                     tier25bFailureReason: tier25bErrorMessage,
-                  },
-                  options: {
-                    signal: controller.signal,
-                  },
+                  }),
+                  signal: controller.signal,
                 });
+                
+                if (!response.ok) {
+                  tier25cResponse = { error: { message: `HTTP ${response.status}: ${response.statusText}` } };
+                } else {
+                  const data = await response.json();
+                  tier25cResponse = { data };
+                }
+              } catch (e: any) {
+                if (e?.name === "AbortError") {
+                  tier25cResponse = { error: { message: "Tier 2.5C timeout (15s)" } };
+                } else {
+                  throw e;
+                }
               } finally {
                 clearTimeout(timeout);
               }
@@ -1740,19 +1890,38 @@ Deno.serve(async (req: Request): Promise<Response> => {
                 const timeout = setTimeout(() => controller.abort(), 15000);
 
                 try {
-                  tier25dResponse = await internalSupabase.functions.invoke("runware-template-cd", {
-                    body: {
+                  const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+                  const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
+                  const response = await fetch(`${SUPABASE_URL}/functions/v1/runware-template-cd`, {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                      "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+                      "apikey": SUPABASE_ANON_KEY || "",
+                    },
+                    body: JSON.stringify({
                       ...payload,
                       templateComplexity: "D",
                       tier1FailureReason: errorMessage,
                       tier25aFailureReason: tier25aErrorMessage,
                       tier25bFailureReason: tier25bErrorMessage,
                       tier25cFailureReason: tier25cErrorMessage,
-                    },
-                    options: {
-                      signal: controller.signal,
-                    },
+                    }),
+                    signal: controller.signal,
                   });
+                  
+                  if (!response.ok) {
+                    tier25dResponse = { error: { message: `HTTP ${response.status}: ${response.statusText}` } };
+                  } else {
+                    const data = await response.json();
+                    tier25dResponse = { data };
+                  }
+                } catch (e: any) {
+                  if (e?.name === "AbortError") {
+                    tier25dResponse = { error: { message: "Tier 2.5D timeout (15s)" } };
+                  } else {
+                    throw e;
+                  }
                 } finally {
                   clearTimeout(timeout);
                 }
