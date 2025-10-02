@@ -3,7 +3,6 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // TypeScript type imports
 import type { UserInfo } from "../_shared/types/index.ts";
-import * as ProviderGate from "../_shared/ProviderGate.ts";
 import * as IdempotencyMemory from "../_shared/IdempotencyMemory.ts";
 
 // ============= PERFECT AI VISUAL SCENE CREATOR WITH CHARACTER CONSISTENCY =============
@@ -404,6 +403,8 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  console.log("✅ ai-visual-scene-creator: Successfully booted and reachable");
+
   // Health check endpoints
   if (req.method === 'HEAD' && req.url.includes('/health')) {
     return new Response(null, { 
@@ -433,6 +434,9 @@ serve(async (req) => {
   try {
     const requestId = `${Math.random().toString(36).substring(2)}`;
     console.log(`🚀 [${requestId}] ai-visual-scene-creator: POST ${req.url}`);
+
+    // Lazy load ProviderGate to prevent boot failures
+    const ProviderGate = await import("../_shared/ProviderGate.ts");
 
     // ============= PROVIDER GATE: Pre-call health check =============
     const gateKey = 'T1:ai-visual-scene-creator';
