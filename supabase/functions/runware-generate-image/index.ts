@@ -1036,12 +1036,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
               tierLogger.success('DIRECT_MODE', { result });
               console.log(`SUCCESS [${requestId}] Direct Mode fallback completed`);
               
-              ProviderGate.release('DM:runware-template-cd', true);
               return corsResponse({
                 ...result
               }, req);
             } else {
-              ProviderGate.release('DM:runware-template-cd', false);
               throw new Error('DIRECT_MODE_FAILED: ' + (directModeResponse.error?.message || 'Direct mode processing failed'));
             }
           } finally {
@@ -1169,12 +1167,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
               tierLogger.success('TIER_2.5A', { result });
               console.log(`SUCCESS [${requestId}] Tier 2.5A fallback completed`);
               
-              ProviderGate.release('T25A:runware-template-ab', true);
               return corsResponse({
                 ...result
               }, req);
             } else {
-              ProviderGate.release('T25A:runware-template-ab', false);
               throw new Error('TIER_2.5A_FAILED: Template A processing failed');
             }
             } finally {
@@ -1292,18 +1288,16 @@ Deno.serve(async (req: Request): Promise<Response> => {
               tierLogger.success('TIER_2.5C', { result });
               console.log(`SUCCESS [${requestId}] Tier 2.5C universal fallback completed`);
               
-              ProviderGate.release('T25C:runware-template-cd', true);
               return corsResponse({
                 success: true,
                 ...result
               }, req);
             } else {
-              ProviderGate.release('T25C:runware-template-cd', false);
               throw new Error('TIER_2.5C_FAILED: Template C processing failed');
             }
             } finally {
               // Ensure gate is released
-              ProviderGate.release('T25C:runware-template-cd', tier25cResponse?.data?.success || false);
+              ProviderGate.release('T25C:runware-template-cd', !tier25cErrorMessage);
             }
             
           } catch (tier25cError: unknown) {
@@ -1362,18 +1356,16 @@ Deno.serve(async (req: Request): Promise<Response> => {
                 tierLogger.success('TIER_2.5D', { result });
                 console.log(`SUCCESS [${requestId}] Tier 2.5D emergency fallback completed`);
                 
-                ProviderGate.release('T25C:runware-template-cd', true);
                 return corsResponse({
                   success: true,
                   ...result
                 }, req);
               } else {
-                ProviderGate.release('T25C:runware-template-cd', false);
                 throw new Error('TIER_2.5D_FAILED: Template D processing failed');
               }
               } finally {
                 // Ensure gate is released
-                ProviderGate.release('T25C:runware-template-cd', tier25dResponse?.data?.success || false);
+                ProviderGate.release('T25C:runware-template-cd', !tier25dErrorMessage);
               }
               
             } catch (tier25dError: unknown) {
