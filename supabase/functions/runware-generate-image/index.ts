@@ -450,7 +450,7 @@ async function processInlinedTier1(payload: any, memoizedImport: any, logTier1St
   }
   
   // Analyze visual details from story text
-  const tier1Start = Date.now();
+  const vizStageStart = Date.now();
   let coloredObjects = '';
   try {
     await characterConsistencyService.analyzeVisualDetails(sessionId, storyText || pageText, payload.pageNumber || 1);
@@ -458,7 +458,7 @@ async function processInlinedTier1(payload: any, memoizedImport: any, logTier1St
     console.log(`🔍 [${requestId}] [TIER_1] analyzeVisualDetails: SUCCESS`, {
       sessionId,
       pageNumber: payload.pageNumber,
-      timing: `${Date.now() - tier1Start}ms`
+      timing: `${Date.now() - vizStageStart}ms`
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -490,7 +490,7 @@ async function processInlinedTier1(payload: any, memoizedImport: any, logTier1St
       sessionId,
       pageNumber: payload.pageNumber,
       resultCount: (detectionResults.secondaryCharacters || []).length,
-      timing: `${Date.now() - tier1Start}ms`
+      timing: `${Date.now() - vizStageStart}ms`
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
