@@ -242,22 +242,25 @@ async function processInlinedTier1(payload: any, memoizedImport: any, logTier1St
   const culturalBundle = await characterConsistencyService.getCulturalEnhancements(userInfo, sessionId, characterName);
   
   // Analyze visual details from story text
+  const tier1Start = Date.now();
   await characterConsistencyService.analyzeVisualDetails(sessionId, storyText || pageText, 1);
   const coloredObjects = await characterConsistencyService.getColoredObjects(sessionId);
-  
-  // Detect ALL characters (secondary characters, animals, relationships) using unified API
-  const detectedAllCharacters = await characterConsistencyService.detectAllCharacters(storyText || pageText, {
-    sessionId,
-    pageNumber: payload.pageNumber || 1,
-    userInfo
-  });
-  
-  // Extract secondary characters and animals for AI context
-  const secondaryCharacters = detectedAllCharacters.secondaryCharacters || [];
-  const detectedAnimals = detectedAllCharacters.animals || [];
-  
+
+  // Reuse session-cached secondary characters to avoid duplicate heavy detection
+  const secondaryCharacters = await characterConsistencyService.getSecondaryCharactersForSession(sessionId);
+  // Keep animals lean to avoid extra passes; not required for templates currently
+  const detectedAnimals: any[] = [];
+
   // Get session setting (indoor/outdoor context) - CCS should auto-detect, no hardcoded fallback
   const sessionSetting = await characterConsistencyService.getSessionSetting(sessionId, 'context', '');
+
+  // Lean CPU budget guard for Tier 1 analysis
+  const TIER1_CPU_BUDGET_MS = 2200;
+  const elapsedTier1 = Date.now() - tier1Start;
+  if (elapsedTier1 > TIER1_CPU_BUDGET_MS) {
+    console.warn(`[TIER_1] CPU budget exceeded (${elapsedTier1}ms > ${TIER1_CPU_BUDGET_MS}ms). Escalating to Direct Mode early.`);
+    throw new Error('CHARACTERSERVICE_BUDGET_EXCEEDED_TRY_DIRECT_MODE');
+  }
   
   console.log(`✅ CHARACTER FOUNDATION: Established complete character consistency data`, {
     hasCharacterSeed: !!characterSeed,

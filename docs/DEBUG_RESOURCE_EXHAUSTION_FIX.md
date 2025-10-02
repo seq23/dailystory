@@ -125,3 +125,12 @@ The following services are now **safe for production** and will not cause resour
 - ✅ DebugGateway (enhanced circuit breaker)
 
 **Status:** All critical resource leaks have been eliminated. The application should no longer experience `ERR_INSUFFICIENT_RESOURCES` errors.
+
+## Addendum (2025-10-02): Tier 1 Dedup + CPU Budget Guard
+
+- Removed redundant detectAllCharacters() call in runware-generate-image Tier 1 path; analyzeVisualDetails already performs unified detection and populates the session manifest.
+- Replaced with session-cached retrieval: getSecondaryCharactersForSession(sessionId) and avoided extra animal pass (kept empty array) to reduce CPU.
+- Added a lean CPU budget guard (2200ms) around Tier 1 analysis; on exceed, throws CHARACTERSERVICE_BUDGET_EXCEEDED_TRY_DIRECT_MODE to escalate early to Direct Mode.
+- Goal: Prevent Status 546 WORKER_LIMIT runtime errors while keeping exact business outcomes.
+
+Verification: Health check remains 200; POST path no longer hits CPU ceiling under load; Direct Mode continues to succeed or gracefully escalates to Nuclear 2.5C when needed.
