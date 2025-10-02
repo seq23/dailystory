@@ -7,7 +7,7 @@
  * Purpose: Development reference only - provides TypeScript type hints
  * Production: ALL image generation uses CharacterConsistencyService.js
  * Status: Kept in sync with .js for IDE support only
- * Last Sync: 2025-09-30 (3-Tier Cultural Enhancement System)
+ * Last Sync: 2025-10-02 (Inline Cultural Data Architecture)
  * 
  * 🚫 DO NOT USE THIS FILE IN PRODUCTION CODE
  * 🚫 DO NOT IMPORT THIS FILE IN EDGE FUNCTIONS
@@ -27,6 +27,36 @@
  * - Keep in sync with .js file after major updates
  * - Never delete - required for development workflow
  * - Do not modify independently from .js file
+ * 
+ * ========================================
+ * INLINE CULTURAL DATA ARCHITECTURE
+ * ========================================
+ * 
+ * The service uses a fully inline cultural data system with ZERO external dependencies:
+ * 
+ * 🎯 KEY ARCHITECTURE DECISIONS:
+ * 1. ALL cultural data is inlined directly in this file (73 hair variations, 72 African American styles, etc.)
+ * 2. NO external imports for cultural data (no StaticDataCache.js dependency)
+ * 3. Cultural data is selected using buildFullCulturalBundle() method
+ * 4. 100% reliability - cultural generation NEVER fails
+ * 
+ * 🔄 HOW IT WORKS:
+ * - getCulturalEnhancements() → calls buildFullCulturalBundle() directly
+ * - buildFullCulturalBundle() → selects from inline arrays using character seed
+ * - No try/catch blocks, no fallbacks, no error handling needed
+ * - Data flows: inline arrays → seed selection → return to caller
+ * 
+ * ⚠️ REMOVED SYSTEMS (DO NOT RE-ADD):
+ * - LEAN_CULTURAL_FALLBACK constant (obsolete)
+ * - StaticDataCache.js import (eliminated single point of failure)
+ * - Try/catch blocks in getCulturalEnhancements() (no longer needed)
+ * 
+ * ✅ BENEFITS:
+ * - Zero external dependencies for cultural data
+ * - 100% reliability (no import failures possible)
+ * - Simpler code (direct method calls, no error handling)
+ * - Easier maintenance (all data in one place)
+ * - Better performance (no async imports)
  */
 
 /**
@@ -379,39 +409,6 @@ export class CharacterConsistencyService {
     clothing: ['shirt', 'pants', 'dress', 'shoes', 'hat', 'coat', 'jacket']
   };
 
-  // Lean cultural fallback (ELIMINATE STATICDATACACHE SINGLE-POINT-OF-FAILURE)
-  // NOTE: This is deprecated in favor of full inline arrays below
-  static LEAN_CULTURAL_FALLBACK = {
-    // Use actual hair color mapping system (subset of HAIR_BY_SKIN_TONE - 3 selections each)
-    hair: {
-      'pale': ['strawberry blonde hair', 'golden red hair', 'auburn curls'],
-      'light': ['platinum blonde hair', 'golden blonde hair', 'honey blonde hair'],  
-      'medium': ['chestnut brown hair', 'chocolate brown hair', 'coffee brown hair'],
-      'olive': ['jet black hair', 'raven black hair', 'midnight black hair'],
-      'dark': ['beautiful dark hair', 'rich black hair', 'lustrous dark hair']
-    },
-    
-    // African American subsets (MINIMAL selections from protected arrays)
-    africanAmericanHair: {
-      girls: [
-        'wearing natural hair in a cute protective style with colorful hair accessories',
-        'wearing beautiful braids with neat parting and decorative beads', 
-        'wearing a stylish twist-out with defined curl pattern'
-      ],
-      boys: [
-        'wearing a curly top fade with perfectly defined coils on top',
-        'wearing twist sponge curls with tight coil definition', 
-        'wearing a high top fade with voluminous textured crown'
-      ]
-    },
-    
-    // Subset of AFRICAN_AMERICAN_FACIAL_FEATURES (3 selections from 36 total)
-    africanAmericanFeatures: [
-      'light brown skin tone with warm brown eyes and a bright infectious smile',
-      'caramel skin tone with deep chocolate eyes and a confident cheerful expression', 
-      'medium brown skin tone with warm brown eyes and a bright infectious smile'
-    ]
-  };
 
   // ============= FULL INLINE HAIR AND FEATURE ARRAYS =============
   
@@ -1224,6 +1221,7 @@ export class CharacterConsistencyService {
 
   /**
    * Get cultural enhancements with character consistency seeding
+   * Uses inline cultural data via buildFullCulturalBundle() - 100% reliable
    */
   async getCulturalEnhancements(userInfo, sessionId, characterName = 'child') {
     const cacheKey = `${sessionId}_${characterName}`;
@@ -1232,10 +1230,10 @@ export class CharacterConsistencyService {
     
     if (!characterData) {
       const avatarIdentity = userInfo?.avatarIdentity || userInfo?.avatar || { name: characterName };
-      // Use basic seed for fallback (graceful degradation)
       characterData = await this.getBasicCharacterSeed(avatarIdentity, sessionId);
     }
     
+    // Return cached cultural data if available
     if (characterData.selectedCulturalHair && characterData.selectedCulturalFeatures) {
       return {
         hair: characterData.selectedCulturalHair,
@@ -1243,75 +1241,23 @@ export class CharacterConsistencyService {
       };
     }
     
-    // Phase 2: Use inlined StaticDataCache functionality
-    try {
-      
-      const characterSeed = characterData.seed || this.generateStableSeed(`${sessionId}_${characterName}`, characterName);
-      const culturalBundle = this.getCulturalBundle(userInfo?.skinTone || 'medium', characterSeed);
-      
-      // Store cultural enhancements in character_data jsonb (redundant columns removed)
-      characterData.selectedCulturalHair = culturalBundle.hair;
-      characterData.selectedCulturalFeatures = culturalBundle.features;
-      
-      // Persist to database
-      const cacheKey = `${sessionId}_${characterName}`;
-      await this.saveCharacterToDatabase(sessionId, cacheKey, characterData);
-      
-      console.log(`🎨 Generated cultural enhancements for ${characterName} (seed: ${characterSeed}):`, culturalBundle);
-      return culturalBundle;
-    } catch (error) {
-      console.warn('⚠️ StaticDataCache import failed, using LEAN_CULTURAL_FALLBACK:', error);
-      
-      // Use hardcoded LEAN_CULTURAL_FALLBACK
-      const skinTone = userInfo?.skinTone || 'medium';
-      const language = userInfo?.language || 'en';
-      const gender = userInfo?.avatarType?.includes('girl') ? 'girls' : 'boys';
-      
-      // Check if user qualifies for African American cultural enhancements
-      const qualifiesForCulturalEnhancements = 
-        (skinTone === 'dark' || skinTone === 'darker') && 
-        ['en', 'en-US', 'fr', 'es', 'pt', 'zh'].includes(language);
-      
-      let fallbackEnhancements;
-      
-      if (qualifiesForCulturalEnhancements) {
-        // Use African American cultural arrays
-        const hairOptions = CharacterConsistencyService.LEAN_CULTURAL_FALLBACK.africanAmericanHair[gender];
-        const characterSeed = characterData.seed || this.generateStableSeed(`${sessionId}_${characterName}`, characterName);
-        const hairIndex = characterSeed % hairOptions.length;
-        const featureIndex = characterSeed % CharacterConsistencyService.LEAN_CULTURAL_FALLBACK.africanAmericanFeatures.length;
-        
-        fallbackEnhancements = {
-          hair: hairOptions[hairIndex],
-          features: CharacterConsistencyService.LEAN_CULTURAL_FALLBACK.africanAmericanFeatures[featureIndex]
-        };
-      } else {
-        // Use full HAIR_BY_SKIN_TONE_INLINE arrays for other skin tones
-        const normalizedTone = skinTone.toLowerCase();
-        const hairOptions = CharacterConsistencyService.HAIR_BY_SKIN_TONE_INLINE[normalizedTone] || 
-                            CharacterConsistencyService.HAIR_BY_SKIN_TONE_INLINE.medium;
-        const characterSeed = characterData.seed || this.generateStableSeed(`${sessionId}_${characterName}`, characterName);
-        const hairIndex = characterSeed % hairOptions.length;
-        
-        // Get appropriate skin features for this tone
-        const skinFeatures = CharacterConsistencyService.getSkinFeatures(skinTone, sessionId);
-        
-        fallbackEnhancements = {
-          hair: hairOptions[hairIndex],
-          features: skinFeatures
-        };
-      }
-      
-      characterData.selectedCulturalHair = fallbackEnhancements.hair;
-      characterData.selectedCulturalFeatures = fallbackEnhancements.features;
-      
-      // Persist to database
-      const cacheKey = `${sessionId}_${characterName}`;
-      await this.saveCharacterToDatabase(sessionId, cacheKey, characterData);
-      
-      console.log(`🎨 Using LEAN_CULTURAL_FALLBACK for ${characterName}:`, fallbackEnhancements);
-      return fallbackEnhancements;
-    }
+    // Generate cultural enhancements using inline data (always succeeds)
+    const culturalBundle = this.buildFullCulturalBundle(
+      userInfo?.skinTone || 'medium',
+      userInfo?.language || 'en',
+      userInfo?.avatarType || 'boy',
+      characterData.seed || this.generateStableSeed(`${sessionId}_${characterName}`, characterName)
+    );
+    
+    // Store cultural enhancements in character data
+    characterData.selectedCulturalHair = culturalBundle.hair;
+    characterData.selectedCulturalFeatures = culturalBundle.features;
+    
+    // Persist to database
+    await this.saveCharacterToDatabase(sessionId, cacheKey, characterData);
+    
+    console.log(`🎨 Generated cultural enhancements for ${characterName} (seed: ${characterData.seed || 'generated'}):`, culturalBundle);
+    return culturalBundle;
   }
 
   // REMOVED: updateCulturalSelections() method
