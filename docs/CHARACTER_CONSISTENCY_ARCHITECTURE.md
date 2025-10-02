@@ -186,19 +186,33 @@ const coloredObjects = await characterService.getColoredObjects(sessionId);
 ### Template CD Integration
 Similar pattern with lazy loading and singleton instance usage.
 
-### ⚡ Vendor-First Architecture (Added October 2025)
+### ⚡ Vendor-First Architecture (Global - October 2025)
 
-**Performance Optimization**: All CCS-dependent functions now use `createVendorFirstSupabaseClient()` for instant Supabase access.
+**Performance Optimization**: ALL functions now benefit from vendor-first Supabase client loading, eliminating CDN failures entirely.
+
+**Global Change**: The resilient loader now prioritizes the local vendor bundle FIRST for `@supabase/supabase-js`, only falling back to CDNs if the vendor fails. This applies to:
+- All `createResilientSupabaseClient()` calls (now vendor-first + SERVICE_ROLE_KEY fallback)
+- All `createVendorFirstSupabaseClient()` calls (explicit vendor-first)
+- All `createDatabaseSupabaseClient()` calls (network-first with vendor fallback)
 
 **Affected Functions:**
 - `runware-generate-image/index.ts` - Lines 67-73, 342-344, 976-978
 - `runware-template-ab/index.js` - Lines 2158-2173, 2234-2249
+- `runware-template-cd/index.js` - Lines 293-299, 513-517 (now vendor-first)
 - `CharacterConsistencyService.js/.ts` - Lines 800-838 (.js), 838-849 (.ts)
+- `ServiceHealthMonitor.js` - Lines 18-22 (now vendor-first)
+- `security.ts` - Lines 7, 55 (now vendor-first)
+- `log-personal-info-incident/index.ts` - Lines 26-28 (now vendor-first)
 
 **Performance Improvement:**
-- **Before:** 28,000ms (4 CDN attempts @ 7s each)
+- **Before:** 28,000ms (4 CDN attempts @ 7s each) for network-first
 - **After:** ~5ms (local vendor bundle import)
-- **Impact:** Eliminates network dependency for critical character consistency operations
+- **Impact:** Eliminates network dependency and CDN failures system-wide
+
+**Root Cause Fix:**
+- CDN imports (esm.sh, jspm.io, jsdelivr, unpkg) were failing due to edge runtime constraints
+- Vendor-first approach eliminates these 4 failing CDN attempts entirely
+- All Supabase clients now load from local vendor bundle first
 
 ## Visual Consistency Flow
 

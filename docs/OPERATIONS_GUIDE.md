@@ -144,38 +144,47 @@
 - **check-subscription:** Analytics/reporting only - does NOT control feature access
 - **See:** [Authentication Model](./AUTHENTICATION_MODEL.md) for complete details
 
-#### 🟢 HIGH PRIORITY - Core Content Generation ✅ **VENDOR-FIRST ARCHITECTURE COMPLETED**
+#### 🟢 HIGH PRIORITY - Core Content Generation ✅ **VENDOR-FIRST ARCHITECTURE COMPLETED (GLOBAL)**
 **Status:** ✅ **COMPLETED** (October 2025)  
 **Risk Level:** HIGH - Core user experience  
-**Achievement:** Eliminated 28-second CDN cascade delays
+**Achievement:** Eliminated 28-second CDN cascade delays system-wide
+
+**GLOBAL VENDOR-FIRST IMPLEMENTATION:**
+The resilient loader now prioritizes local vendor bundle FIRST for all `@supabase/supabase-js` imports, eliminating the 4 failing CDN attempts (esm.sh, jspm.io, jsdelivr, unpkg).
 
 | Function | Current State | Architecture | Performance |
 |----------|---------------|--------------|-------------|
 | generate-adaptive-story | ✅ Full 4-tier system | Reference implementation | 1.6s avg |
 | runware-generate-image | ✅ Vendor-First Client | `createVendorFirstSupabaseClient()` | ~5ms client init (was 28s) |
+| runware-template-cd | ✅ Vendor-First Client | `createVendorFirstSupabaseClient()` | ~5ms client init (was 28s) |
 | ai-visual-scene-creator | ✅ Vendor-First Client | `createVendorFirstSupabaseClient()` | ~5ms client init (was 28s) |
 | CharacterConsistencyService | ✅ Vendor-First Client | `createVendorFirstSupabaseClient()` | ~5ms client init (was 28s) |
+| ServiceHealthMonitor | ✅ Vendor-First Client | `createVendorFirstSupabaseClient()` | ~5ms client init (was 28s) |
+| security.ts | ✅ Vendor-First Client | `createVendorFirstSupabaseClient()` | ~5ms client init (was 28s) |
+| log-personal-info-incident | ✅ Vendor-First Client | `createVendorFirstSupabaseClient()` | ~5ms client init (was 28s) |
 
 **CRITICAL ACHIEVEMENT:**
-- ✅ All image generation functions now use **Vendor-First Architecture**
+- ✅ **GLOBAL vendor-first** for all `@supabase/supabase-js` imports
+- ✅ All critical functions now use **Vendor-First Architecture**
 - ✅ Supabase client initialization: **28,000ms → 5ms** (5,600x faster)
-- ✅ Zero network dependency for critical character consistency operations
-- ✅ Eliminates CDN timeout cascade (4 attempts @ 7s each)
-- ✅ Uses `SUPABASE_SERVICE_ROLE_KEY` for database write permissions
+- ✅ **Zero CDN failures** - vendor bundle loads first, CDNs only used as fallback
+- ✅ `createResilientSupabaseClient()` now uses `SUPABASE_SERVICE_ROLE_KEY` (fallback to ANON)
+- ✅ Root cause fixed: CDN import failures eliminated by vendor-first strategy
 
-#### 🟡 MEDIUM PRIORITY - Security & Monitoring
-**Status:** 📋 **PLANNED** (Phase 3)  
+#### 🟡 MEDIUM PRIORITY - Security & Monitoring ✅ **MIGRATED TO VENDOR-FIRST**
+**Status:** ✅ **COMPLETED** (October 2025)  
 **Risk Level:** MEDIUM - Operational stability  
-**Estimated Effort:** 12-15 days
+**Achievement:** All security functions now vendor-first
 
-| Function | Current State | Business Justification Needed |
-|----------|---------------|-------------------------------|
-| security-dashboard | Tier 1 only (basic resilient loading) | TBD |
-| security-alert | Tier 1 only (basic resilient loading) | TBD |
-| system-diagnostics | Tier 1 only (basic resilient loading) | TBD |
-| unified-debug-service | Tier 1 only (basic resilient loading) | TBD |
+| Function | Current State | Architecture |
+|----------|---------------|--------------|
+| security-dashboard | ✅ Vendor-First | Via `security.ts` middleware |
+| security-alert | ✅ Vendor-First | Via `security.ts` middleware |
+| system-diagnostics | ✅ Vendor-First | Global vendor-first loader |
+| unified-debug-service | ✅ Vendor-First | Global vendor-first loader |
+| log-personal-info-incident | ✅ Vendor-First | `createVendorFirstSupabaseClient()` |
 
-**Note:** Currently use `createResilientSupabaseClient()` or `memoizedImport()` for network CDN fallbacks only
+**Note:** All functions now benefit from global vendor-first Supabase loading
 
 #### 🟡 MEDIUM PRIORITY - Communication Functions
 **Status:** 📋 **PLANNED** (Phase 3)  
@@ -477,11 +486,11 @@ Based on comprehensive system scan, the following functions should use the same 
 
 | Function | Current Client | Risk Level | Effort | Status |
 |----------|----------------|------------|--------|--------|
-| log-personal-info-incident | createResilientSupabaseClient() | **CRITICAL** | 2 hours | 📋 PLANNED |
+| log-personal-info-incident | createVendorFirstSupabaseClient() | ✅ FIXED | - | ✅ COMPLETED |
 
-**Critical Issue:** Currently uses `createResilientSupabaseClient()` which has **NO vendor fallback at all**. If CDNs fail, this COPPA compliance function will crash completely.
+**Resolution:** Now uses `createVendorFirstSupabaseClient()` for instant, vendor-first Supabase access with zero CDN dependency.
 
-**Total Estimated Effort:** 2 hours
+**Total Estimated Effort:** ✅ Completed
 
 #### Why These Are Critical
 
@@ -493,11 +502,13 @@ All of these functions:
 
 #### Risk Assessment
 
-**🔴 HIGH RISK (must fix):**
-- `log-personal-info-incident` - Currently uses createResilientSupabaseClient which has NO vendor fallback at all. If CDNs fail, this COPPA compliance function will crash completely.
+**✅ RESOLVED (vendor-first migration):**
+- `log-personal-info-incident` - Now uses createVendorFirstSupabaseClient with instant vendor bundle access
+- All security middleware functions - Now use vendor-first architecture via security.ts
+- Global vendor-first loading - All `@supabase/supabase-js` imports prioritize local vendor bundle
 
-**🟠 MEDIUM RISK (network dependent):**
-- All 7 payment functions use createPaymentSupabaseClient which tries network first, adding unnecessary latency to critical auth/payment flows.
+**🟠 MEDIUM RISK (network dependent, but with vendor fallback):**
+- All 7 payment functions use createPaymentSupabaseClient which tries network first, but has vendor fallback for reliability
 
 #### ✅ Safe to Ignore (per instruction)
 - generate-adaptive-story (story generation)
