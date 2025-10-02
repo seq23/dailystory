@@ -246,33 +246,6 @@ export const TIER_25_UNIFIED_VOCABULARY_EXTENDED = {
     'service animal', 'therapy pet', 'emotional support'
   ],
 
-  // ============= NEW CHARACTER DETECTION ARRAYS (TEMPLATE ANALYSIS PHASE 1) =============
-  
-  // Clothing descriptors for secondary character appearance (Level 0 + Grade 3+ Templates)
-  CLOTHING_DESCRIPTORS: [
-    'shirt', 'dress', 'pants', 'shoes', 'coat', 'jacket', 'hat',
-    'boots', 'sneakers', 'sandals', 'socks', 'sweater', 'hoodie',
-    'skirt', 'shorts', 'jeans', 'uniform', 'costume', 'outfit',
-    'glasses', 'helmet', 'gloves', 'scarf', 'tie', 'belt',
-    'backpack', 'bag', 'purse'
-  ],
-  
-  // Emotional/personality descriptors (Grade 6-10 Heavy Usage - Professional Context)
-  EMOTIONAL_PERSONALITY_DESCRIPTORS: [
-    'nervous', 'excited', 'confident', 'proud', 'shy', 'brave', 'kind',
-    'mysterious', 'clever', 'determined', 'skeptical', 'warm', 'gentle',
-    'enthusiastic', 'frustrated', 'amazed', 'worried', 'joyful', 'grateful',
-    'patient', 'persistent', 'caring', 'thoughtful', 'curious', 'creative',
-    'sophisticated', 'organized', 'professional', 'genuine', 'authentic'
-  ],
-  
-  // Action/movement descriptors for secondary character behavior (All Levels)
-  ACTION_DESCRIPTORS: [
-    'runs', 'walks', 'jumps', 'climbs', 'rides', 'sits', 'stands', 'plays',
-    'works', 'helps', 'teaches', 'learns', 'watches', 'looks', 'listens',
-    'talks', 'speaks', 'waves', 'points', 'reaches', 'holds', 'carries',
-    'builds', 'creates', 'designs', 'demonstrates', 'presents', 'explains'
-  ]
 };
 
 // ============= VOCABULARY ALIAS FOR EASY ACCESS =============
@@ -437,7 +410,7 @@ const UNIVERSAL_ACTION_TEMPLATES = [
   'skillfully avoids the tricky {object}', 'cleverly outsmarts the cunning {object}', 'successfully captures the quick {object}'
 ];
 
-// ============= UNIVERSAL EMOTION ARRAYS =============
+// ============= UNIVERSAL EMOTION ARRAYS (EXPANDED - Template Analysis Phase 1) =============
 const UNIVERSAL_EMOTION_ARRAYS = [
   // Positive emotions (high energy)
   'excited', 'thrilled', 'delighted', 'overjoyed', 'ecstatic', 'jubilant', 'elated',
@@ -461,14 +434,22 @@ const UNIVERSAL_EMOTION_ARRAYS = [
   
   // Creative & Imaginative
   'creative', 'imaginative', 'artistic', 'innovative', 'original', 'inventive',
-  'playful', 'whimsical', 'dreamy', 'fantastical', 'magical', 'wonder-filled'
+  'playful', 'whimsical', 'dreamy', 'fantastical', 'magical', 'wonder-filled',
+  
+  // NEW - Professional/Advanced Personality (Grade 6-10 Template Usage)
+  'nervous', 'skeptical', 'mysterious', 'clever', 'frustrated', 'amazed', 'worried',
+  'joyful', 'grateful', 'patient', 'persistent', 'sophisticated', 'organized',
+  'professional', 'genuine', 'authentic', 'shy'
 ];
 
-// ============= CLOTHING DETECTION KEYWORDS =============
+// ============= CLOTHING DETECTION KEYWORDS (EXPANDED - Template Analysis Phase 1) =============
 export const CLOTHING_DETECTION_KEYWORDS = [
   'shirt', 'dress', 'pants', 'shorts', 'skirt', 'jacket', 'sweater', 'hoodie',
   'jeans', 'overalls', 'uniform', 'costume', 'pajamas', 'robe', 'coat',
-  'blouse', 'tunic', 'cardigan', 'vest', 'tank top', 'polo', 'turtleneck'
+  'blouse', 'tunic', 'cardigan', 'vest', 'tank top', 'polo', 'turtleneck',
+  // NEW - Template-Validated Additions (Level 0 + Grade 3+ Templates)
+  'shoes', 'boots', 'sneakers', 'sandals', 'socks', 'hat', 'glasses', 'helmet',
+  'gloves', 'scarf', 'tie', 'belt', 'backpack', 'bag', 'purse', 'outfit'
 ];
 
 // ============= CULTURAL ARRAYS - CONSOLIDATED SOURCE OF TRUTH =============
