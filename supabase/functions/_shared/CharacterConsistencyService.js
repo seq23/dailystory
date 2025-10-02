@@ -1505,8 +1505,7 @@ export class CharacterConsistencyService {
     characterData.selectedCulturalHair = culturalBundle.hair;
     characterData.selectedCulturalFeatures = culturalBundle.features;
     
-    // Persist to database
-    const cacheKey = `${sessionId}_${characterName}`;
+    // Persist to database (cacheKey already declared at line 1482)
     await this.saveCharacterToDatabase(sessionId, cacheKey, characterData);
     
     console.log(`🎨 Generated full cultural enhancements for ${characterName} (seed: ${characterData.seed || 'generated'}):`, culturalBundle);
