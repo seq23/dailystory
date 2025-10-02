@@ -521,35 +521,96 @@ export class CharacterConsistencyService {
     const vocab = await this.getVocabulary();
     const manifest = this.getSessionManifest(sessionId);
     const detections = [];
+    const lowerText = text.toLowerCase();
 
-    // Dynamic pattern: [color] + [object from tier25]
+    // ENHANCED: Multi-strategy detection for compound objects
+    // Strategy 1: Direct match (e.g., "red picnic blanket")
     for (const color of vocab.colors) {
       for (const object of vocab.objects) {
-        // Escape regex metacharacters to prevent SyntaxError
         const safeColor = escapeRegExp(color);
         const safeObject = escapeRegExp(object);
-        const pattern = new RegExp(`\\b${safeColor}\\s+${safeObject}\\b`, 'gi');
-        const matches = text.match(pattern);
         
-        if (matches) {
-          matches.forEach(match => {
+        // Try exact phrase match first
+        const exactPattern = new RegExp(`\\b${safeColor}\\s+${safeObject}\\b`, 'gi');
+        const exactMatches = text.match(exactPattern);
+        
+        if (exactMatches) {
+          exactMatches.forEach(match => {
             const normalized = match.toLowerCase();
-            detections.push({
-              fullDescription: normalized,
-              color,
-              object,
-              source: 'tier25Vocabulary',
-              pageNumber
-            });
-            
-            // Add to session manifest for pronoun resolution
-            manifest.addObject(object, color, normalized, pageNumber);
-            console.log(`🎨 Detected colored object: ${normalized} (tier25)`);
+            if (!detections.some(d => d.fullDescription === normalized)) {
+              detections.push({
+                fullDescription: normalized,
+                color,
+                object,
+                source: 'tier25Vocabulary_exact',
+                pageNumber
+              });
+              manifest.addObject(object, color, normalized, pageNumber);
+              console.log(`🎨 Detected colored object (exact): ${normalized} (tier25)`);
+            }
+          });
+        }
+        
+        // Strategy 2: Compound object proximity (e.g., "bright red picnic blanket")
+        // Match: [optional adjective] + [color] + [multi-word object]
+        const compoundPattern = new RegExp(
+          `\\b(?:\\w+\\s+)?${safeColor}\\s+(?:\\w+\\s+)?${safeObject}\\b`,
+          'gi'
+        );
+        const compoundMatches = text.match(compoundPattern);
+        
+        if (compoundMatches) {
+          compoundMatches.forEach(match => {
+            const normalized = match.toLowerCase().trim();
+            // Only add if not already detected
+            if (!detections.some(d => d.fullDescription === normalized)) {
+              detections.push({
+                fullDescription: normalized,
+                color,
+                object,
+                source: 'tier25Vocabulary_compound',
+                pageNumber
+              });
+              manifest.addObject(object, color, normalized, pageNumber);
+              console.log(`🎨 Detected colored object (compound): ${normalized} (tier25)`);
+            }
           });
         }
       }
     }
 
+    // Strategy 3: Proximity matching within same sentence
+    // Find sentences with both color and object words close together
+    const sentences = text.split(/[.!?]+/);
+    for (const sentence of sentences) {
+      const sentenceLower = sentence.toLowerCase();
+      for (const color of vocab.colors) {
+        for (const object of vocab.objects) {
+          const hasColor = sentenceLower.includes(color.toLowerCase());
+          const hasObject = sentenceLower.includes(object.toLowerCase());
+          
+          if (hasColor && hasObject) {
+            // Create a description combining them
+            const proximityDesc = `${color} ${object}`;
+            
+            // Only add if not already detected
+            if (!detections.some(d => d.fullDescription === proximityDesc.toLowerCase())) {
+              detections.push({
+                fullDescription: proximityDesc.toLowerCase(),
+                color,
+                object,
+                source: 'tier25Vocabulary_proximity',
+                pageNumber
+              });
+              manifest.addObject(object, color, proximityDesc, pageNumber);
+              console.log(`🎨 Detected colored object (proximity): ${proximityDesc} (tier25)`);
+            }
+          }
+        }
+      }
+    }
+
+    console.log(`📊 Total colored objects detected: ${detections.length} (exact + compound + proximity)`);
     return detections;
   }
 
@@ -646,6 +707,7 @@ export class CharacterConsistencyService {
 
   /**
    * Analyze page with pronoun resolution for visual consistency
+   * ENHANCED: Auto-detects and saves scene context (indoor/outdoor)
    */
   async analyzeVisualDetails(sessionId, pageText, pageNumber, characterName) {
     const manifest = this.getSessionManifest(sessionId);
@@ -653,6 +715,22 @@ export class CharacterConsistencyService {
 
     // Detect all objects/characters
     await this.detectAllCharacters(pageText, { sessionId, pageNumber });
+
+    // AUTO-DETECT SCENE CONTEXT using UnifiedPlaceholderResolver
+    try {
+      const { UnifiedPlaceholderResolver } = await memoizedServiceImport('./UnifiedPlaceholderResolver.js');
+      const resolver = new UnifiedPlaceholderResolver({});
+      const detectedSetting = resolver.detectAtmosphere(pageText);
+      
+      if (detectedSetting) {
+        await this.saveSessionSetting(sessionId, 'context', detectedSetting);
+        console.log(`🏠 CCS AUTO-DETECTED scene context: ${detectedSetting} (from "${pageText.substring(0, 50)}...")`);
+      } else {
+        console.log(`🏠 CCS: No clear scene context detected, leaving empty`);
+      }
+    } catch (error) {
+      console.warn(`⚠️ Failed to auto-detect scene context:`, error);
+    }
 
     // Resolve pronouns for better image generation
     const resolvedText = this.pronounResolver.resolvePronounsToObjects(pageText, manifest);

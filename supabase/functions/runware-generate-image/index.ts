@@ -11,6 +11,7 @@
 
 // TypeScript type imports
 import type { UserInfo, SessionId } from "../_shared/types/index.ts";
+import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from '../_shared/NuclearNegativePrompts.js';
 
 // COMPLETE_TIER_1_TEMPLATE: 4-section structured template 
 const COMPLETE_TIER_1_TEMPLATE = `PRIMARY SCENE: {primaryScene}.
@@ -255,8 +256,8 @@ async function processInlinedTier1(payload: any, memoizedImport: any, logTier1St
   const secondaryCharacters = detectedAllCharacters.secondaryCharacters || [];
   const detectedAnimals = detectedAllCharacters.animals || [];
   
-  // Get session setting (indoor/outdoor context)
-  const sessionSetting = await characterConsistencyService.getSessionSetting(sessionId, 'context', 'indoor');
+  // Get session setting (indoor/outdoor context) - CCS should auto-detect, no hardcoded fallback
+  const sessionSetting = await characterConsistencyService.getSessionSetting(sessionId, 'context', '');
   
   console.log(`✅ CHARACTER FOUNDATION: Established complete character consistency data`, {
     hasCharacterSeed: !!characterSeed,
@@ -434,7 +435,24 @@ async function processInlinedTier1(payload: any, memoizedImport: any, logTier1St
     totalPromptLength: enhancedPrompt?.length || 0
   });
   
-  const negativePrompt = "blurry, low quality, distorted, deformed, disfigured, bad anatomy, extra limbs, missing limbs, floating limbs, disconnected limbs, malformed hands, missing fingers, extra fingers, bad hands, signature, username, artist name, watermark, copyright";
+  // Generate nuclear negative prompt with cultural and gender awareness
+  const culturalProfile = detectCulturalProfileForNegatives(
+    userInfo?.nativeLanguage || userInfo?.language,
+    structuredAvatarData?.skinTone
+  );
+  const avatarType = userInfo?.avatarType || 
+    (userInfo?.gender === 'girl' ? 'girl' : 
+     userInfo?.gender === 'boy' ? 'boy' : 'child');
+  
+  const negativePrompt = generateNuclearNegativePrompt(
+    culturalProfile,
+    avatarType,
+    userInfo?.difficulty || 'medium',
+    payload.pageNumber || 1,
+    secondaryCharacters
+  );
+  
+  console.log(`✅ NUCLEAR NEGATIVE: Generated with profile=${culturalProfile}, type=${avatarType}`);
   
   console.log(`✅ INLINED TIER 1: Generated enhanced prompt for ${characterName}`);
   
