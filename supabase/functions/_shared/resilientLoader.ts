@@ -2,6 +2,30 @@
  * RESILIENT LOADER SYSTEM
  * Enhanced memoizedImport with multi-CDN fallbacks and structured error handling
  * Replaces fragile esm.sh imports with resilient CDN cascade
+ * 
+ * =================== CLIENT CREATION STRATEGY GUIDE ===================
+ * 
+ * USE createVendorFirstSupabaseClient() FOR:
+ * ✅ CharacterConsistencyService (needs instant .upsert()/.single() access)
+ * ✅ Image generation orchestrators (runware-generate-image, templates)
+ * ✅ Functions requiring 100% availability without network dependency
+ * 
+ * USE createDatabaseSupabaseClient() FOR:
+ * 📊 General database services (analytics, logging, etc.)
+ * 📊 Services that can tolerate 7-second network timeout
+ * 
+ * USE createPaymentSupabaseClient() FOR:
+ * 💳 Payment processing functions (Stripe integration)
+ * 💳 Must return null on failure (no template fallback)
+ * 
+ * USE createTieredSupabaseClient() FOR:
+ * 📖 Story generation functions with template fallback
+ * 📖 3-tier system: Network → Vendor → Template Service signal
+ * 
+ * =================== PERFORMANCE COMPARISON ===================
+ * createVendorFirstSupabaseClient():  ~5ms (local import)
+ * createResilientSupabaseClient():    ~28,000ms (4 CDN attempts @ 7s each)
+ * createDatabaseSupabaseClient():     ~7,000ms - ~28,000ms (network first)
  */
 
 // Multi-CDN fallback configuration
@@ -270,6 +294,43 @@ export async function createDatabaseSupabaseClient() {
     } catch (vendorError: any) {
       console.error('💾 Database Client: Both network and vendor failed:', vendorError?.message || 'Unknown vendor error');
       throw new Error('Database connection unavailable - both network and vendor failed');
+    }
+  }
+}
+
+/**
+ * Create vendor-first Supabase client with REVERSED priority
+ * Optimized for CharacterConsistencyService and image generation functions
+ * that need guaranteed availability without network dependency.
+ * 
+ * Tier 1: Local vendor bundle (instant, 100% reliable)
+ * Tier 2: Network CDN fallback (if vendor somehow fails)
+ */
+export async function createVendorFirstSupabaseClient() {
+  try {
+    // Tier 1: Try vendor bundle FIRST (no network delay)
+    console.log('📦 Vendor-First Client Tier 1: Attempting local vendor bundle');
+    const { createClient } = await import('../_vendor/supabase-js@2.57.4.mjs');
+    
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error('Missing Supabase environment variables');
+    }
+
+    console.log('✅ Vendor-First Client Tier 1 successful: Using vendor bundle (0ms network delay)');
+    return createClient(supabaseUrl, supabaseKey);
+  } catch (vendorError: any) {
+    console.warn('📦 Vendor-First Client Tier 1 failed, attempting Tier 2:', vendorError?.message || 'Unknown error');
+    
+    try {
+      // Tier 2: Fallback to network CDN (inverted priority)
+      console.log('🌐 Vendor-First Client Tier 2: Attempting network CDN fallback');
+      return await createResilientSupabaseClient();
+    } catch (networkError: any) {
+      console.error('🌐 Vendor-First Client: Both vendor and network failed:', networkError?.message || 'Unknown error');
+      throw new Error('Supabase client unavailable - both vendor and network failed');
     }
   }
 }

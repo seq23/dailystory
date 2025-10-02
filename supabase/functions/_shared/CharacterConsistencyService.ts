@@ -838,10 +838,18 @@ export class CharacterConsistencyService {
   async getSupabaseClient() {
     if (!this.supabase) {
       try {
-        const { createResilientSupabaseClient } = await import('./resilientLoader.ts');
-        this.supabase = await createResilientSupabaseClient();
+        // CRITICAL: Use createVendorFirstSupabaseClient() for instant availability
+        // Skips 4 CDN cascade attempts (28 seconds timeout) - goes straight to vendor
+        // CCS needs .upsert()/.single() methods from vendor bundle for database ops
+        const resilientModule = await import('./resilientLoader.ts');
+        if (resilientModule?.createVendorFirstSupabaseClient && typeof resilientModule.createVendorFirstSupabaseClient === 'function') {
+          this.supabase = await resilientModule.createVendorFirstSupabaseClient();
+          console.log('✅ [VENDOR_FIRST] Supabase client created for CharacterConsistencyService (0ms network delay)');
+        } else {
+          throw new Error('createVendorFirstSupabaseClient not available');
+        }
       } catch (error) {
-        console.warn('Failed to create Supabase client:', error);
+        console.error('❌ [VENDOR_FIRST] Failed to create Supabase client:', error);
         this.supabase = null;
       }
     }

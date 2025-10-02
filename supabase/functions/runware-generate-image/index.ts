@@ -65,12 +65,12 @@ async function bindTierLogger(sessionId: SessionId, requestId: string, authHeade
   const logSampleRate = parseFloat(Deno.env.get('DEBUG_TIER_LOG_SAMPLE') || '0.1'); // Default 10% sampling
   
   try {
-    const [{ createResilientSupabaseClient }, tierLogging] = await Promise.all([
+    const [{ createVendorFirstSupabaseClient }, tierLogging] = await Promise.all([
       memoizedImport("../_shared/resilientLoader.ts"),
       memoizedImport("../_shared/tierLogging.js")
     ]);
     
-    const supabaseClient = await createResilientSupabaseClient();
+    const supabaseClient = await createVendorFirstSupabaseClient();
     
     // Sampling helper: only log to DB if sampled or failure
     const shouldLogToDB = (status: string = 'info') => {
@@ -340,8 +340,8 @@ async function processInlinedTier1(payload: any, memoizedImport: any, logTier1St
   let aiDebugSchema: any = null;
   try {
     logTier1Step('AI Scene Creator Call', 'attempt', 'Invoking ai-visual-scene-creator');
-    const { createResilientSupabaseClient } = await memoizedImport('../_shared/resilientLoader.ts');
-    const supabase = await createResilientSupabaseClient();
+    const { createVendorFirstSupabaseClient } = await memoizedImport('../_shared/resilientLoader.ts');
+    const supabase = await createVendorFirstSupabaseClient();
     
     // ============================================================================
     // PHASE 2: AI SCENE GENERATION (Informed by Complete Character Context)
@@ -974,8 +974,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
         }
         
         // Create Supabase client once for all fallback attempts
-        const { createResilientSupabaseClient } = await memoizedImport('../_shared/resilientLoader.ts');
-        const internalSupabase = await createResilientSupabaseClient();
+        const { createVendorFirstSupabaseClient } = await memoizedImport('../_shared/resilientLoader.ts');
+        const internalSupabase = await createVendorFirstSupabaseClient();
         
         let directErrorMessage = 'Direct Mode not attempted';
         

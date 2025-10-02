@@ -2155,22 +2155,16 @@ async function handleRequest(req) {
           const cost = 0.0013;
           let supabaseClient = null;
           
-    // Phase 1: Use resilient Supabase client (standardized across all functions)
+    // Use vendor-first client for instant availability (no 28s CDN cascade)
     try {
-      console.log('🔍 [RESILIENT_LOADER] Using createResilientSupabaseClient for cost tracking');
-      const { createResilientSupabaseClient } = await import('../_shared/resilientLoader.ts');
-      supabaseClient = await createResilientSupabaseClient();
-      console.log('✅ [RESILIENT_LOADER] Supabase client initialized successfully');
-        } catch (cdnError) {
-          console.warn('⚠️ [2-TIER-CDN] Tier 1 FAILED: CDN import failed, activating Tier 2 fallback:', cdnError.message);
-          // Tier 2: Fall back to local vendor bundle
-          const { createClient } = await import('../_vendor/supabase-js@2.57.4.mjs');
-          supabaseClient = createClient(
-            Deno.env.get('SUPABASE_URL') ?? '',
-            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-          );
-          console.log('✅ [2-TIER-CDN] Tier 2 SUCCESS: Local vendor fallback successful');
-        }
+      console.log('🔍 [VENDOR_FIRST] Using createVendorFirstSupabaseClient for cost tracking');
+      const { createVendorFirstSupabaseClient } = await import('../_shared/resilientLoader.ts');
+      supabaseClient = await createVendorFirstSupabaseClient();
+      console.log('✅ [VENDOR_FIRST] Supabase client initialized successfully (0ms network delay)');
+    } catch (vendorError) {
+      console.error('❌ [VENDOR_FIRST] Failed to create Supabase client:', vendorError);
+      supabaseClient = null;
+    }
 
           await supabaseClient.from('cost_tracking').insert({
             session_id: sessionId || 'template-ab-session',
@@ -2231,21 +2225,15 @@ async function handleRequest(req) {
     try {
       let supabaseClient = null;
       
-      // Use resilient loader (standardized across all functions)
+      // Use vendor-first client for instant availability (no 28s CDN cascade)
       try {
-        console.log('🔍 [RESILIENT_LOADER] Using createResilientSupabaseClient for logging');
-        const { createResilientSupabaseClient } = await import('../_shared/resilientLoader.ts');
-        supabaseClient = await createResilientSupabaseClient();
-        console.log('✅ [RESILIENT_LOADER] Supabase client initialized successfully for logging');
-      } catch (loaderError) {
-        console.warn('⚠️ [RESILIENT_LOADER] Failed, using fallback:', loaderError.message);
-        // Fallback to local vendor bundle
-        const { createClient } = await import('../_vendor/supabase-js@2.57.4.mjs');
-        supabaseClient = createClient(
-          Deno.env.get('SUPABASE_URL'),
-          Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY')
-        );
-        console.log('✅ [RESILIENT_LOADER] Local vendor fallback successful for logging');
+        console.log('🔍 [VENDOR_FIRST] Using createVendorFirstSupabaseClient for logging');
+        const { createVendorFirstSupabaseClient } = await import('../_shared/resilientLoader.ts');
+        supabaseClient = await createVendorFirstSupabaseClient();
+        console.log('✅ [VENDOR_FIRST] Supabase client initialized successfully for logging');
+      } catch (vendorError) {
+        console.error('❌ [VENDOR_FIRST] Failed to create Supabase client:', vendorError);
+        supabaseClient = null;
       }
       
       const { logTierAttempt } = await import("../_shared/tierLogging.js");

@@ -800,38 +800,19 @@ export class CharacterConsistencyService {
   async getSupabaseClient() {
     if (!this.supabase) {
       try {
-        // CRITICAL: Use createDatabaseSupabaseClient() for 2-tier database operations
-        // - createResilientSupabaseClient() = Network only (incomplete, deprecated)
-        // - createDatabaseSupabaseClient() = 2-tier database client (CCS, general DB)  
-        // - createPaymentSupabaseClient() = 2-tier payment client (payment functions only)
-        // - createTieredSupabaseClient() = 3-tier story client (story generation only)
-        // CCS needs database .upsert()/.single() methods from vendor fallback
+        // CRITICAL: Use createVendorFirstSupabaseClient() for instant availability
+        // Skips 4 CDN cascade attempts (28 seconds timeout) - goes straight to vendor
+        // CCS needs .upsert()/.single() methods from vendor bundle for database ops
         const resilientModule = await import('./resilientLoader.ts');
-        if (resilientModule?.createDatabaseSupabaseClient && typeof resilientModule.createDatabaseSupabaseClient === 'function') {
-          this.supabase = await resilientModule.createDatabaseSupabaseClient();
-          console.log('✅ [CDN_IMPORT_SUCCESS] Database Supabase client created for CharacterConsistencyService');
+        if (resilientModule?.createVendorFirstSupabaseClient && typeof resilientModule.createVendorFirstSupabaseClient === 'function') {
+          this.supabase = await resilientModule.createVendorFirstSupabaseClient();
+          console.log('✅ [VENDOR_FIRST] Supabase client created for CharacterConsistencyService (0ms network delay)');
         } else {
-          throw new Error('createDatabaseSupabaseClient not available');
+          throw new Error('createVendorFirstSupabaseClient not available');
         }
       } catch (error) {
-        console.warn('⚠️ Database client failed, attempting direct supabase-js fallback:', error);
-        
-        // Direct supabase-js fallback
-        try {
-          const { createClient } = await import('../_vendor/supabase-js@2.57.4.mjs');
-          const supabaseUrl = Deno.env.get('SUPABASE_URL');
-          const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-          
-          if (!supabaseUrl || !supabaseKey) {
-            throw new Error('Missing Supabase environment variables');
-          }
-          
-          this.supabase = createClient(supabaseUrl, supabaseKey);
-          console.log('✅ Direct Supabase client created as fallback');
-        } catch (fallbackError) {
-          console.error('❌ All Supabase client creation methods failed:', fallbackError);
-          this.supabase = null;
-        }
+        console.error('❌ [VENDOR_FIRST] Failed to create Supabase client:', error);
+        this.supabase = null;
       }
     }
     return this.supabase;
