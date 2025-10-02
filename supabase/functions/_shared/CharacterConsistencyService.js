@@ -401,7 +401,11 @@ export class CharacterConsistencyService {
         outdoorWords: TIER_25_UNIFIED_VOCABULARY_EXTENDED.contextDetection.outdoor || [],
         relationships: this.extractRelationshipsFromTier25(TIER_25_UNIFIED_VOCABULARY_EXTENDED),
         clothing: CLOTHING_DETECTION_KEYWORDS || [],
-        actions: Object.values(TIER_25_UNIFIED_VOCABULARY_EXTENDED.actions).flat()
+        actions: Object.values(TIER_25_UNIFIED_VOCABULARY_EXTENDED.actions).flat(),
+        // NEW: Secondary character visual detection vocabularies (Phase 1)
+        HAIR_DESCRIPTORS: TIER_25_UNIFIED_VOCABULARY_EXTENDED.HAIR_DESCRIPTORS || [],
+        SIZE_AGE_DESCRIPTORS: TIER_25_UNIFIED_VOCABULARY_EXTENDED.SIZE_AGE_DESCRIPTORS || [],
+        ANIMAL_RELATIONSHIPS: TIER_25_UNIFIED_VOCABULARY_EXTENDED.ANIMAL_RELATIONSHIPS || []
       };
       
       console.log(`✅ Tier25Vocabulary loaded: ${this.vocabulary.objects.length} objects, ${this.vocabulary.colors.length} colors`);
