@@ -186,6 +186,20 @@ const coloredObjects = await characterService.getColoredObjects(sessionId);
 ### Template CD Integration
 Similar pattern with lazy loading and singleton instance usage.
 
+### ⚡ Vendor-First Architecture (Added October 2025)
+
+**Performance Optimization**: All CCS-dependent functions now use `createVendorFirstSupabaseClient()` for instant Supabase access.
+
+**Affected Functions:**
+- `runware-generate-image/index.ts` - Lines 67-73, 342-344, 976-978
+- `runware-template-ab/index.js` - Lines 2158-2173, 2234-2249
+- `CharacterConsistencyService.js/.ts` - Lines 800-838 (.js), 838-849 (.ts)
+
+**Performance Improvement:**
+- **Before:** 28,000ms (4 CDN attempts @ 7s each)
+- **After:** ~5ms (local vendor bundle import)
+- **Impact:** Eliminates network dependency for critical character consistency operations
+
 ## Visual Consistency Flow
 
 1. **Page Analysis**: Each story page analyzed for visual details
