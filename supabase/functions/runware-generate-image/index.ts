@@ -1107,7 +1107,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
           }
         }, req, 200);
 
-      } catch (tier1Error: unknown) {
+      } catch (tier1Error) {
         const errorMessage = tier1Error instanceof Error ? tier1Error.message : String(tier1Error);
         const errorStack = tier1Error instanceof Error ? tier1Error.stack : undefined;
         console.log(`[TIER_1] Failed: ${errorMessage}`);
@@ -1399,7 +1399,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
               throw new Error('TIER_2.5B_FAILED: Template B processing failed');
             }
             
-          } catch (tier25bError: unknown) {
+          } catch (tier25bError) {
             tier25bErrorMessage = tier25bError instanceof Error ? tier25bError.message : String(tier25bError);
             console.log(`[TIER_2.5B] Failed: ${tier25bErrorMessage}`);
             tierLogger.failure('TIER_2.5B', { error: tier25bErrorMessage });
@@ -1734,7 +1734,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         }
       } // Close Tier 1 catch block
 
-    } catch (error: unknown) {
+    } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       
       // Check if this is a boot sync error that should be retried
