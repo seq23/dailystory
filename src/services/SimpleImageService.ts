@@ -315,7 +315,7 @@ export class SimpleImageService {
       };
     }
 
-    const cleanScene = storyText.trim().substring(0, 3000);
+    const cleanScene = storyText.trim(); // Keep full content for logging
     DebugLogger.log('image', `Clean scene (${cleanScene.length} chars)`, cleanScene.substring(0, 200) + '...');
 
     // Enhance character description with universal hair color mapping
@@ -339,12 +339,11 @@ export class SimpleImageService {
     }
 
     // PERFORMANCE: Skip processing for simple content
-    const enhancedPrompt = cleanScene;
     let backendDifficulty: string;
     
     if (OptimizedImageCache.shouldSkipProcessing(cleanScene)) {
       DebugLogger.log('image', '⚡ Skipping processing for simple content', { 
-        contentLength: enhancedPrompt.length
+        contentLength: storyText.length
       });
       backendDifficulty = 'easy'; // Default for simple content
     } else {
@@ -385,7 +384,7 @@ export class SimpleImageService {
       try {
         let templateResult = await supabase.functions.invoke(bypassDecision.targetTemplate || 'runware-template-cd', {
           body: {
-            pageText: enhancedPrompt,
+            pageText: storyText,
             userInfo,
             sessionId: normalizedSessionId,
             pageNumber,
@@ -402,7 +401,7 @@ export class SimpleImageService {
           
           templateResult = await supabase.functions.invoke(bypassDecision.targetTemplate || 'runware-template-cd', {
             body: {
-              pageText: enhancedPrompt,
+              pageText: storyText,
               userInfo,
               sessionId: normalizedSessionId,
               pageNumber,
@@ -467,7 +466,7 @@ export class SimpleImageService {
       
       // Debug payload before sending
       const orchestratorPayload = {
-        storyText: enhancedPrompt,
+        storyText: storyText,
         userInfo,
         sessionId: normalizedSessionId,
         storyId: normalizedSessionId, // Use normalized sessionId as storyId for consistency
@@ -724,7 +723,8 @@ export class SimpleImageService {
         DebugLogger.log('image', 'Attempting Direct Mode via ai-visual-scene-creator');
         const directModeResult = await supabase.functions.invoke('ai-visual-scene-creator', {
           body: {
-            storyText: enhancedPrompt,
+            storyText: storyText,
+            pageText: storyText,
             userInfo,
             sessionId: normalizedSessionId,
             pageNumber,
@@ -849,7 +849,7 @@ export class SimpleImageService {
     
     try {
       // Apply the same preprocessing as orchestrator
-      const cleanScene = storyText.trim().substring(0, 3000);
+      const cleanScene = storyText.trim(); // Keep full content for logging
       
       // Enhance character description
       if (userInfo?.ethnicity && userInfo?.skinTone) {
@@ -863,7 +863,6 @@ export class SimpleImageService {
       }
 
       // Use raw story content directly - no protection enhancement
-      const enhancedPrompt = cleanScene;
       const protectionNegatives: string[] = [];
       
       // Map difficulty level
@@ -873,7 +872,7 @@ export class SimpleImageService {
       
       const { data: result, error } = await supabase.functions.invoke('ai-visual-scene-creator', {
         body: {
-          storyText: enhancedPrompt,
+          storyText: storyText,
           userInfo,
           sessionId: normalizedSessionId,
           storyId: normalizedSessionId,
