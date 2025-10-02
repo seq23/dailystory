@@ -16,6 +16,19 @@ const LEAN_HAIR_BY_SKIN = {
   'dark': ['beautiful dark hair', 'rich black hair', 'lustrous dark hair']
 };
 
+// Emergency hair fallback - skin-tone-specific defaults (NO "lighter"/"darker" - only pale/light/medium/olive/dark)
+function emergencyHairFallback(skinTone) {
+  const normalized = (skinTone || 'medium').toLowerCase();
+  const EMERGENCY_HAIR_MAP = {
+    'pale': 'red hair',
+    'light': 'blonde hair',
+    'medium': 'brown hair',
+    'olive': 'dark brown hair',
+    'dark': 'black textured 4C hair'
+  };
+  return EMERGENCY_HAIR_MAP[normalized] || EMERGENCY_HAIR_MAP['medium'];
+}
+
 const LEAN_AFRICAN_AMERICAN_HAIR = {
   girls: [
     'wearing natural hair in a cute protective style with colorful hair accessories',
@@ -1702,11 +1715,23 @@ async function handleRequest(req) {
       try {
         const { characterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
         
+        console.log(`🔍 [${requestId}] [TIER_2.5A] CCS Import: SUCCESS`, {
+          sessionId,
+          pageNumber,
+          availableMethods: Object.keys(characterConsistencyService).filter(k => typeof characterConsistencyService[k] === 'function')
+        });
+        
         if (sessionId) {
           try {
             // Main character analysis
             await characterConsistencyService.analyzeVisualDetails(sessionId, storyText, pageNumber || 1, characterName);
             characterAppearance = await characterConsistencyService.getCharacterAppearanceFromStory(sessionId, characterName) || '';
+            
+            console.log(`🔍 [${requestId}] [TIER_2.5A] analyzeVisualDetails: SUCCESS`, {
+              sessionId,
+              pageNumber,
+              timing: `${Date.now() - tier25aStart}ms`
+            });
             
             // Get enhanced character seed with proper avatarIdentity
             const avatarIdentity = {
@@ -1723,6 +1748,13 @@ async function handleRequest(req) {
                 storyText || '',
                 'continuing'
               );
+              
+              console.log(`🔍 [${requestId}] [TIER_2.5A] getEnhancedCharacterSeed: SUCCESS`, {
+                sessionId,
+                pageNumber,
+                inputs: { avatarIdentity, textLength: (storyText || '').length },
+                outputs: characterSeed
+              });
             } catch (enhancedError) {
               console.warn(`⚠️ Enhanced character seed failed, using basic seed fallback:`, enhancedError.message);
               characterSeed = await characterConsistencyService.getBasicCharacterSeed(avatarIdentity, sessionId);
@@ -1737,6 +1769,13 @@ async function handleRequest(req) {
             });
             detectedSecondaryCharacters = detections?.secondaryCharacters || [];
             
+            console.log(`🔍 [${requestId}] [TIER_2.5A] detectAllCharacters: SUCCESS`, {
+              sessionId,
+              pageNumber,
+              resultCount: detectedSecondaryCharacters.length,
+              timing: `${Date.now() - tier25aStart}ms`
+            });
+            
             // PHASE 3: Build secondary character descriptions with FULL visual details
             const safeSecondaryCharacters = (detectedSecondaryCharacters || []).filter(character => character && character.name);
             for (const character of safeSecondaryCharacters) {
@@ -1748,6 +1787,8 @@ async function handleRequest(req) {
                     character.name,
                     character.type || 'secondary_character',
                     {
+                  
+                  console.log(`🔍 [${requestId}] [TIER_2.5A] CCS Method Availability: generateCharacterForConsistency=${typeof characterConsistencyService?.generateCharacterForConsistency}`);
                       sessionId,
                       userInfo,
                       storyContext: storyText || '',
@@ -2007,19 +2048,32 @@ async function handleRequest(req) {
       const culturalProfile = inlineDetectCultural(userInfo, avatarIdentity);
       const characterName = userInfo?.name || userInfo?.childName || 'child';
       const age = userInfo?.age || 'young child';
-      const skinTone = userInfo?.avatar?.skinTone || 'medium';
+      const skinTone = (userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium').toLowerCase();
+      const language = userInfo?.nativeLanguage || 'en';
+      
       // Get cultural bundle with character consistency
       let culturalBundle;
       try {
         const { characterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
         culturalBundle = await characterConsistencyService.getCulturalEnhancements(userInfo, sessionId, characterName);
+        console.log(`🔍 [TIER_2.5B] CCS cultural bundle loaded: hair=${culturalBundle?.hair}, features=${culturalBundle?.features}`);
       } catch (error) {
         console.error('❌ Failed to get cultural bundle with consistency:', error);
-        // Use emergency fallback
-        culturalBundle = { hair: 'natural hair', features: 'diverse features' };
+        // Skin-tone-aware emergency fallback (NO "diverse" for light skin)
+        culturalBundle = { 
+          hair: emergencyHairFallback(skinTone),
+          features: getSkinBySkintone(skinTone)
+        };
+        console.log(`🔍 [TIER_2.5B] Emergency fallback applied: skinTone=${skinTone}, hair=${culturalBundle.hair}`);
       }
-      const hairColor = culturalBundle?.hair || getHair(skinTone) || 'brown hair';
-      const ethnicity = userInfo?.avatar?.ethnicity || deriveEthnicityFromAvatar(userInfo?.avatar) || 'diverse background';
+      const hairColor = culturalBundle?.hair || getHairBySkintone(skinTone, sessionId) || emergencyHairFallback(skinTone);
+      
+      // Ethnicity: Only african-american for dark skin + supported language, else Euro-American
+      const ethnicity = (skinTone === 'dark' && ['en', 'es'].includes(language))
+        ? 'african-american'
+        : 'Euro-American';
+      
+      console.log(`🔍 [TIER_2.5B] Cultural assignment: skinTone=${skinTone}, hair=${hairColor}, ethnicity=${ethnicity}`);
       
       // Character description components - Use avatar type instead of generic "young child"
       const avatarTypeForB = userInfo?.avatar?.type || 'child';

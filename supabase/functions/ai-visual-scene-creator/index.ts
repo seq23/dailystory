@@ -13,6 +13,19 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Emergency hair fallback - skin-tone-specific defaults (NO "lighter"/"darker" - only pale/light/medium/olive/dark)
+function emergencyHairFallback(skinTone: string): string {
+  const normalized = (skinTone || 'medium').toLowerCase();
+  const EMERGENCY_HAIR_MAP: Record<string, string> = {
+    'pale': 'red hair',
+    'light': 'blonde hair',
+    'medium': 'brown hair',
+    'olive': 'dark brown hair',
+    'dark': 'black textured 4C hair'
+  };
+  return EMERGENCY_HAIR_MAP[normalized] || EMERGENCY_HAIR_MAP['medium'];
+}
+
 // Character consistency service - Loaded conditionally for Direct Mode only
 
 // Generate complete visual schema using OpenAI with word-for-word prompts
@@ -54,22 +67,23 @@ async function generateCompleteVisualSchema(
         
         structuredAvatarData = {
           resolvedSkinTone: skinTone,
-          assignedHairColor: hairColor || 'brown hair',
+          hairColor: hairColor || emergencyHairFallback(skinTone),
           skinFeatures: skinFeatures || 'medium skin tone with brown eyes',
           ethnicity: 'Euro-American',
           source: 'static_data_cache'
         };
-        console.log(`✅ [AISCHEMA_FALLBACK] source=static_data_cache`);
+        console.log(`✅ [AISCHEMA_FALLBACK] source=static_data_cache, hairColor=${structuredAvatarData.hairColor}`);
       } catch (staticError) {
         console.warn(`⚠️ StaticDataCache fallback failed, using hardcoded:`, staticError);
+        const fallbackSkinTone = userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium';
         structuredAvatarData = {
-          resolvedSkinTone: userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium',
-          assignedHairColor: 'brown hair',
+          resolvedSkinTone: fallbackSkinTone,
+          hairColor: emergencyHairFallback(fallbackSkinTone),
           skinFeatures: 'medium skin tone with brown eyes',
           ethnicity: 'Euro-American',
           source: 'hardcoded_fallback'
         };
-        console.log(`✅ [AISCHEMA_FALLBACK] source=hardcoded`);
+        console.log(`✅ [AISCHEMA_FALLBACK] source=hardcoded, hairColor=${structuredAvatarData.hairColor}`);
       }
     }
   }
@@ -80,8 +94,10 @@ async function generateCompleteVisualSchema(
   
   // Build complete character data string for OpenAI including hair and skin features from structuredAvatarData
   const characterData = structuredAvatarData 
-    ? `${characterName} with ${structuredAvatarData.hairColor || 'natural hair'} and ${structuredAvatarData.skinFeatures || 'medium skin tone'}, ${ethnicity} ethnicity`
+    ? `${characterName} with ${structuredAvatarData.hairColor || emergencyHairFallback(structuredAvatarData.resolvedSkinTone || 'medium')} and ${structuredAvatarData.skinFeatures || 'medium skin tone'}, ${ethnicity} ethnicity`
     : `${characterName}, character appearance data from orchestrator`;
+  
+  console.log(`🔍 [HAIR_FALLBACK_TIER] Hair source: ${structuredAvatarData?.source || 'unknown'}, hairColor=${structuredAvatarData?.hairColor}`);
   
   console.log(`🎨 Complete character data for OpenAI:`, {
     characterName,

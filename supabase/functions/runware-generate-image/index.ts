@@ -260,7 +260,12 @@ async function processInlinedTier1(payload: any, memoizedImport: any, logTier1St
     }
     
     logTier1Step('CharacterConsistencyService Import', 'success', 'Service loaded successfully');
-    console.log(`[TIER_1] ✅ CharacterConsistencyService loaded successfully`);
+    console.log(`🔍 [${requestId}] [TIER_1] CCS Import: SUCCESS`, {
+      sessionId,
+      pageNumber: payload.pageNumber,
+      availableMethods: requiredMethods,
+      timing: `${Date.now() - tier1Start}ms`
+    });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logTier1Step('CharacterConsistencyService Import', 'failed', errorMessage);
@@ -312,6 +317,13 @@ async function processInlinedTier1(payload: any, memoizedImport: any, logTier1St
     throw new Error('GETSTRUCTUREDAVATARDATA_UNAVAILABLE_ESCALATE_TO_25B');
   }
 
+  console.log(`🔍 [${requestId}] [TIER_1] getStructuredAvatarData: SUCCESS`, {
+    sessionId,
+    pageNumber: payload.pageNumber,
+    skinTone: structuredAvatarData?.skinTone,
+    hairColor: structuredAvatarData?.hairColor,
+    result: structuredAvatarData
+  });
   logTier1Step('Avatar Data Extraction', 'success', `Avatar data: ${structuredAvatarData?.skinTone}, ${structuredAvatarData?.hairColor}`);
   
   // Get enhanced character consistency data (CRITICAL - will throw on failure to trigger tier escalation)
@@ -322,13 +334,33 @@ async function processInlinedTier1(payload: any, memoizedImport: any, logTier1St
     'continuing'
   );
   
+  console.log(`🔍 [${requestId}] [TIER_1] getEnhancedCharacterSeed: SUCCESS`, {
+    sessionId,
+    pageNumber: payload.pageNumber,
+    inputs: { avatarIdentity, textLength: (storyText || pageText || '').length },
+    outputs: characterSeed
+  });
+  
   // Get cultural enhancements using the service
   const culturalBundle = await characterConsistencyService.getCulturalEnhancements(userInfo, sessionId, characterName);
+  
+  console.log(`🔍 [${requestId}] [TIER_1] getCulturalEnhancements: SUCCESS`, {
+    sessionId,
+    pageNumber: payload.pageNumber,
+    skinTone: userInfo?.avatar?.skinTone || userInfo?.skinTone,
+    result: culturalBundle
+  });
   
   // Analyze visual details from story text
   const tier1Start = Date.now();
   await characterConsistencyService.analyzeVisualDetails(sessionId, storyText || pageText, payload.pageNumber || 1);
   const coloredObjects = await characterConsistencyService.getColoredObjects(sessionId);
+  
+  console.log(`🔍 [${requestId}] [TIER_1] analyzeVisualDetails: SUCCESS`, {
+    sessionId,
+    pageNumber: payload.pageNumber,
+    timing: `${Date.now() - tier1Start}ms`
+  });
 
   // Reuse session-cached secondary characters to avoid duplicate heavy detection
   const secondaryCharacters = await characterConsistencyService.getSecondaryCharactersForSession(sessionId);
@@ -339,6 +371,13 @@ async function processInlinedTier1(payload: any, memoizedImport: any, logTier1St
     pageNumber: payload.pageNumber || 1 
   });
   const mainCharacterAppearance = detectionResults.mainCharacterAppearance || {};
+  
+  console.log(`🔍 [${requestId}] [TIER_1] detectAllCharacters: SUCCESS`, {
+    sessionId,
+    pageNumber: payload.pageNumber,
+    resultCount: (detectionResults.secondaryCharacters || []).length,
+    timing: `${Date.now() - tier1Start}ms`
+  });
   
   // Keep animals lean to avoid extra passes; not required for templates currently
   const detectedAnimals: any[] = [];
