@@ -33,6 +33,20 @@ try {
   detectCulturalProfileForNegatives = () => ({});
 }
 
+// Emergency hair fallback - last resort when CCS data incomplete
+const EMERGENCY_HAIR_MAP: Record<string, string> = {
+  'pale': 'red hair',
+  'light': 'blonde hair',
+  'medium': 'brown hair',
+  'olive': 'dark brown hair',
+  'dark': 'black textured 4C hair'
+};
+
+function emergencyHairFallback(skinTone: string | undefined): string {
+  const normalized = (skinTone || 'medium').toLowerCase().trim();
+  return EMERGENCY_HAIR_MAP[normalized] || EMERGENCY_HAIR_MAP['medium'];
+}
+
 import * as ProviderGate from "../_shared/ProviderGate.ts";
 import * as IdempotencyMemory from "../_shared/IdempotencyMemory.ts";
 
@@ -317,12 +331,48 @@ async function processInlinedTier1(payload: any, memoizedImport: any, logTier1St
     throw new Error('GETSTRUCTUREDAVATARDATA_UNAVAILABLE_ESCALATE_TO_25B');
   }
 
+  // DEFENSIVE DATA REPAIR: Ensure structuredAvatarData has valid hairColor
+  // This prevents downstream "natural hair" fallbacks in Tier 2.5A/2.5B
+  if (structuredAvatarData) {
+    const hasValidHair = structuredAvatarData.hairColor && 
+                         structuredAvatarData.hairColor.trim() !== '' &&
+                         structuredAvatarData.hairColor !== 'natural hair';
+    
+    if (!hasValidHair) {
+      const fallbackSkinTone = structuredAvatarData.skinTone || 
+                               userInfo?.avatar?.skinTone || 
+                               userInfo?.skinTone || 
+                               'medium';
+      
+      const repairedHairColor = emergencyHairFallback(fallbackSkinTone);
+      
+      console.log(`🔧 [${requestId}] [TIER_1] REPAIRING structuredAvatarData: hairColor missing or invalid`, {
+        sessionId,
+        pageNumber: payload.pageNumber,
+        original: {
+          hairColor: structuredAvatarData.hairColor || '(empty)',
+          skinTone: structuredAvatarData.skinTone
+        },
+        repaired: {
+          hairColor: repairedHairColor,
+          skinTone: fallbackSkinTone
+        },
+        repairSource: 'emergencyHairFallback'
+      });
+      
+      structuredAvatarData.hairColor = repairedHairColor;
+    }
+  }
+
   console.log(`🔍 [${requestId}] [TIER_1] getStructuredAvatarData: SUCCESS`, {
     sessionId,
     pageNumber: payload.pageNumber,
     skinTone: structuredAvatarData?.skinTone,
     hairColor: structuredAvatarData?.hairColor,
-    result: structuredAvatarData
+    result: structuredAvatarData,
+    wasRepaired: !!(structuredAvatarData && 
+                    (!structuredAvatarData.hairColor || 
+                     structuredAvatarData.hairColor === 'natural hair'))
   });
   logTier1Step('Avatar Data Extraction', 'success', `Avatar data: ${structuredAvatarData?.skinTone}, ${structuredAvatarData?.hairColor}`);
   
