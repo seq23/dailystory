@@ -212,25 +212,66 @@ export const TIER_25_UNIFIED_VOCABULARY_EXTENDED = {
 
   // ============= PHASE 1 NEW VOCABULARY FOR CHARACTER DETECTION =============
   
-  // Hair descriptors for secondary character visual capture
+  // Hair descriptors for secondary character visual capture (EXPANDED - Template Analysis Complete)
   HAIR_DESCRIPTORS: [
     'blonde', 'brown', 'black', 'red', 'gray', 'white', 'silver', 'golden',
     'curly', 'straight', 'wavy', 'braided', 'short', 'long', 'thick', 'thin',
-    'ponytail', 'pigtails', 'bun', 'bangs', 'messy', 'neat', 'spiky'
+    'ponytail', 'pigtails', 'bun', 'bangs', 'messy', 'neat', 'spiky',
+    // NEW - Template-Validated Additions
+    'dark', 'light', 'shoulder-length', 'frizzy', 'smooth'
   ],
   
-  // Size and age descriptors for secondary characters
+  // Size and age descriptors for secondary characters (EXPANDED - Grade 6-10 Template Coverage)
   SIZE_AGE_DESCRIPTORS: [
     'tall', 'short', 'big', 'small', 'tiny', 'giant', 'little',
     'young', 'old', 'older', 'younger', 'baby', 'toddler', 'child',
-    'adult', 'elderly', 'middle-aged', 'teenage'
+    'adult', 'elderly', 'middle-aged', 'teenage',
+    // NEW - Age/Family Indicators (Grade 6-10 Heavy Usage)
+    'seventeen-year-old', 'teen', 'adolescent', 'youth', 'senior',
+    'grown-up', 'kid', 'youngster', 'infant', 'preteen',
+    'grandmother', 'grandfather', 'grandma', 'grandpa',
+    // NEW - Size Variations
+    'towering', 'petite', 'lanky', 'stout', 'stocky'
   ],
   
-  // Animal relationship words for pet detection
+  // Animal relationship words for pet detection (EXPANDED - Emotional/Family Context)
   ANIMAL_RELATIONSHIPS: [
     'pet', 'puppy', 'kitten', 'family dog', 'family cat', 'my dog', 'my cat',
     'her pet', 'his pet', 'their pet', 'our pet', 'pet rabbit', 'pet bird',
-    'pet hamster', 'best friend', 'companion', 'buddy'
+    'pet hamster', 'best friend', 'companion', 'buddy',
+    // NEW - Relationship/Emotional Descriptors (Level 2+ Template Usage)
+    'beloved', 'family', 'family of', 'loyal', 'faithful', 'trusted',
+    'escaped pet', 'missing pet', 'stray', 'wild', 'neighborhood',
+    'furry friend', 'animal friend', 'critter', 'creature',
+    'service animal', 'therapy pet', 'emotional support'
+  ],
+
+  // ============= NEW CHARACTER DETECTION ARRAYS (TEMPLATE ANALYSIS PHASE 1) =============
+  
+  // Clothing descriptors for secondary character appearance (Level 0 + Grade 3+ Templates)
+  CLOTHING_DESCRIPTORS: [
+    'shirt', 'dress', 'pants', 'shoes', 'coat', 'jacket', 'hat',
+    'boots', 'sneakers', 'sandals', 'socks', 'sweater', 'hoodie',
+    'skirt', 'shorts', 'jeans', 'uniform', 'costume', 'outfit',
+    'glasses', 'helmet', 'gloves', 'scarf', 'tie', 'belt',
+    'backpack', 'bag', 'purse'
+  ],
+  
+  // Emotional/personality descriptors (Grade 6-10 Heavy Usage - Professional Context)
+  EMOTIONAL_PERSONALITY_DESCRIPTORS: [
+    'nervous', 'excited', 'confident', 'proud', 'shy', 'brave', 'kind',
+    'mysterious', 'clever', 'determined', 'skeptical', 'warm', 'gentle',
+    'enthusiastic', 'frustrated', 'amazed', 'worried', 'joyful', 'grateful',
+    'patient', 'persistent', 'caring', 'thoughtful', 'curious', 'creative',
+    'sophisticated', 'organized', 'professional', 'genuine', 'authentic'
+  ],
+  
+  // Action/movement descriptors for secondary character behavior (All Levels)
+  ACTION_DESCRIPTORS: [
+    'runs', 'walks', 'jumps', 'climbs', 'rides', 'sits', 'stands', 'plays',
+    'works', 'helps', 'teaches', 'learns', 'watches', 'looks', 'listens',
+    'talks', 'speaks', 'waves', 'points', 'reaches', 'holds', 'carries',
+    'builds', 'creates', 'designs', 'demonstrates', 'presents', 'explains'
   ]
 };
 
