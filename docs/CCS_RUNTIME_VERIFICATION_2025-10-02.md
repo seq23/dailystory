@@ -101,6 +101,43 @@ sessionId = bundle.sessionId || payload.sessionId;
 
 ---
 
+## Payload Field Standardization (Image Generation Only)
+
+### Critical Field Equivalence
+
+**For ALL image generation edge functions:**
+
+```
+pageText === storyText  (IDENTICAL FIELDS)
+```
+
+These field names are **interchangeable** and represent the same data: the story content/page text to be visualized.
+
+### Cascading Fallback Order
+
+All 4 image generation functions MUST use this **exact fallback order**:
+
+```javascript
+storyText = bundle.pageText || bundle.storyText || payload.pageText || payload.storyText;
+```
+
+### Functions Using Standardized Extraction
+
+| Function | Status | Location |
+|----------|--------|----------|
+| `runware-generate-image` | ✅ Verified | Lines 218-222 |
+| `runware-template-ab` | ✅ Verified | Line 1602 |
+| `runware-template-cd` | ✅ Fixed | Lines 388, 416, 428, 438 |
+| `ai-visual-scene-creator` | ✅ Verified | Line 521 |
+
+### Why This Matters
+
+- **Prevents:** `Missing required field: pageText OR storyText` errors
+- **Ensures:** Bundle-structured payloads from tier cascades work correctly
+- **Maintains:** Backwards compatibility with legacy payload formats
+
+---
+
 ## Prompt Testing UI Enhancements
 
 **Component:** `src/components/PromptTestingEnhancement.tsx`

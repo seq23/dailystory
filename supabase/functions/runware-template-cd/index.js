@@ -380,44 +380,45 @@ async function handleRequest(req) {
     
     let enhancedStoryData, storyText, pageNumber, avatarIdentity, templateComplexity, failedTierData, sessionId;
     
-    if (payload.pageText) {
-      // Current format: {pageText, userInfo, sessionId, pageNumber}
-      console.log('📄 Template CD: Using pageText format');
-      storyText = payload.pageText;
+    // PRIORITY 1: Handle bundle-structured payloads (from tier cascades)
+    if (payload.bundle && payload.config) {
+      console.log('📦 Template CD: Detected nested payload structure (bundle format)');
+      const bundle = payload.bundle;
+      storyText = bundle.pageText || bundle.storyText || payload.pageText || payload.storyText;
+      enhancedStoryData = { userInfo: bundle.userInfo || payload.userInfo };
+      pageNumber = bundle.pageNumber || payload.pageNumber || 1;
+      avatarIdentity = bundle.userInfo?.avatar || payload.userInfo?.avatar;
+      templateComplexity = payload.config?.templateComplexity || payload.templateComplexity || 'C';
+      sessionId = bundle.sessionId || payload.sessionId;
+      failedTierData = bundle.failedTierData || payload.failedTierData;
+    } else if (payload.pageText || payload.storyText) {
+      // PRIORITY 2: Direct pageText or storyText format (pageText === storyText)
+      console.log('📄 Template CD: Using direct pageText/storyText format');
+      storyText = payload.pageText || payload.storyText;
       enhancedStoryData = { userInfo: payload.userInfo };
-      pageNumber = payload.pageNumber;
+      pageNumber = payload.pageNumber || 1;
       avatarIdentity = payload.userInfo?.avatar;
-      templateComplexity = payload.templateComplexity;
-      sessionId = payload.sessionId;
-      failedTierData = payload.failedTierData;
-    } else if (payload.storyText) {
-      // storyText format: {storyText, userInfo, sessionId, pageNumber, templateComplexity} 
-      console.log('📝 Template CD: Using storyText format');
-      storyText = payload.storyText;
-      enhancedStoryData = { userInfo: payload.userInfo };
-      pageNumber = payload.pageNumber;
-      avatarIdentity = payload.userInfo?.avatar;
-      templateComplexity = payload.templateComplexity;
+      templateComplexity = payload.templateComplexity || 'C';
       sessionId = payload.sessionId;
       failedTierData = payload.failedTierData;
     } else if (payload.enhancedStoryData?.storyText) {
-      // Nested enhancedStoryData format
+      // PRIORITY 3: Nested enhancedStoryData format
       console.log('📦 Template CD: Using nested enhancedStoryData.storyText format');
       enhancedStoryData = payload.enhancedStoryData;
-      storyText = payload.enhancedStoryData.storyText;
-      pageNumber = payload.pageNumber || payload.enhancedStoryData.pageNumber;
+      storyText = payload.enhancedStoryData.storyText || payload.enhancedStoryData.pageText;
+      pageNumber = payload.pageNumber || payload.enhancedStoryData.pageNumber || 1;
       avatarIdentity = payload.enhancedStoryData.userInfo?.avatar || payload.avatarIdentity;
-      templateComplexity = payload.templateComplexity;
+      templateComplexity = payload.templateComplexity || 'C';
       sessionId = payload.sessionId || payload.enhancedStoryData.sessionId;
       failedTierData = payload.failedTierData;
     } else {
-      // Enhanced legacy format: {enhancedStoryData, storyText, pageNumber, avatarIdentity, templateComplexity, failedTierData}
+      // PRIORITY 4: Enhanced legacy format
       console.log('📚 Template CD: Using enhanced legacy format');
       enhancedStoryData = payload.enhancedStoryData;
-      storyText = payload.storyText;
-      pageNumber = payload.pageNumber;
+      storyText = payload.storyText || payload.pageText;
+      pageNumber = payload.pageNumber || 1;
       avatarIdentity = payload.avatarIdentity;
-      templateComplexity = payload.templateComplexity;
+      templateComplexity = payload.templateComplexity || 'C';
       sessionId = payload.sessionId;
       failedTierData = payload.failedTierData;
     }
