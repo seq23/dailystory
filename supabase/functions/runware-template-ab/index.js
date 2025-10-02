@@ -1598,7 +1598,7 @@ async function handleRequest(req) {
       console.log('📦 Template AB: Detected nested payload structure');
       const bundle = payload.bundle;
       const config = payload.config;
-      storyText = bundle.pageText;
+      storyText = bundle.pageText || bundle.storyText; // FIX: Support both pageText and storyText in bundle
       enhancedStoryData = { userInfo: bundle.userInfo };
       pageNumber = bundle.pageNumber;
       avatarIdentity = bundle.userInfo?.avatar;

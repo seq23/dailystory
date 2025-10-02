@@ -217,10 +217,11 @@ function validatePayloadFast(payload: any): boolean {
   // Check for story content at multiple locations
   const hasPageText = payload.pageText && typeof payload.pageText === 'string' && payload.pageText.trim().length > 0;
   const hasStoryText = payload.storyText && typeof payload.storyText === 'string' && payload.storyText.trim().length > 0;
+  const hasBundlePageText = payload.bundle?.pageText && typeof payload.bundle.pageText === 'string' && payload.bundle.pageText.trim().length > 0;
   const hasBundleStoryText = payload.bundle?.storyText && typeof payload.bundle.storyText === 'string' && payload.bundle.storyText.trim().length > 0;
   const hasEnhancedStoryText = payload.enhancedStoryData?.storyText && typeof payload.enhancedStoryData.storyText === 'string' && payload.enhancedStoryData.storyText.trim().length > 0;
   
-  if (!hasPageText && !hasStoryText && !hasBundleStoryText && !hasEnhancedStoryText) {
+  if (!hasPageText && !hasStoryText && !hasBundlePageText && !hasBundleStoryText && !hasEnhancedStoryText) {
     console.error("[runware-generate-image] Final error after retries: NO_STORY_CONTENT");
     throw new Error("NO_STORY_CONTENT");
   }
@@ -1124,10 +1125,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
               }
             });
             
-            if (directModeResponse.data?.success && directModeResponse.data?.imageURL) {
+            // FIX: Direct Mode returns primaryScene (text), not imageURL. It's a scene generator, not an image generator.
+            if (directModeResponse.data?.success && (directModeResponse.data?.imageURL || directModeResponse.data?.primaryScene)) {
               const result = {
                 success: true,
                 imageURL: directModeResponse.data.imageURL,
+                primaryScene: directModeResponse.data.primaryScene, // Include primaryScene for downstream processing
                 provider: 'direct-mode-fallback',
                 tier: 'DIRECT_MODE',
                 pathUsed: 'direct-mode',
