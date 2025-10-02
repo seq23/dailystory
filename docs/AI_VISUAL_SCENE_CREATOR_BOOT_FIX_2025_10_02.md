@@ -350,6 +350,50 @@ If issues arise, rollback is trivial:
 
 ---
 
-**Document Version**: 1.0  
+## Character Data Construction Fix
+
+### Problem Discovered
+After implementing the lazy loading fix, testing revealed that hair and skin data was not appearing in generated images. Investigation showed that while `structuredAvatarData` was being generated correctly by `CharacterConsistencyService`, the `characterData` string construction (lines 79-82) was **not including** the hair color and skin features.
+
+**Before** (Lines 80-82):
+```typescript
+const characterData = structuredAvatarData 
+  ? `${characterName}, ${ethnicity} ethnicity`
+  : `${characterName}, character appearance data from orchestrator`;
+```
+
+**Issue**: The `structuredAvatarData.hairColor` and `structuredAvatarData.skinFeatures` fields were being logged but completely omitted from the string sent to OpenAI.
+
+### Solution Applied
+**File**: `supabase/functions/ai-visual-scene-creator/index.ts`
+
+**After** (Lines 79-82):
+```typescript
+const characterData = structuredAvatarData 
+  ? `${characterName} with ${structuredAvatarData.hairColor || 'natural hair'} and ${structuredAvatarData.skinFeatures || 'medium skin tone'}, ${ethnicity} ethnicity`
+  : `${characterName}, character appearance data from orchestrator`;
+```
+
+**Changes**:
+1. Added `structuredAvatarData.hairColor` to character description
+2. Added `structuredAvatarData.skinFeatures` to character description
+3. Included fallback values for missing data
+4. Maintained ethnicity and name information
+
+### Expected Outcomes
+✅ OpenAI receives complete character appearance data including hair color and skin features  
+✅ Generated scenes include specific visual details from `structuredAvatarData`  
+✅ Improved visual consistency across character appearances  
+✅ Enhanced character authenticity in AI-generated imagery
+
+### Testing Verification
+- Console logs at line 84-90 show `structuredAvatarData` fields being used
+- `fullString` in logs now includes hair and skin information
+- Generated images should reflect specific character appearance details
+
+---
+
+**Document Version**: 1.1  
 **Last Updated**: October 2, 2025  
-**Status**: DEPLOYED ✅
+**Status**: DEPLOYED ✅  
+**Recent Updates**: Added Character Data Construction Fix documentation

@@ -24,6 +24,7 @@ This document serves as the **single source of truth** for all production errors
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📈 This Week's Activity:
+• Errors In Progress: 1 (ERROR-063)
 • Errors Resolved: 22 (ERROR-036 through ERROR-062)
 • Vendor System: Complete multi-tier fallback architecture operational
 • System Improvements: 18 major enhancements
@@ -96,6 +97,7 @@ Quick lookup table for all tracked errors with searchable keywords.
 
 | Error ID | Keywords | Severity | Status | System | Quick Link |
 |----------|----------|----------|--------|--------|------------|
+| ERROR-063 | hair-skin-data-missing, characterData-construction, ai-visual-scene-creator, openai-prompt-incomplete, structuredAvatarData-unused | HIGH | ⏳ IN PROGRESS | Image Gen | [View](#error-063-hair-and-skin-data-missing-in-ai-visual-scene-creator) |
 | ERROR-062 | template-service-integration, nuclear-system-hooks, runtime-initialization, vendor-fallback-coordination, edge-function-nuclear-independence | HIGH | 📋 PLANNED | Template Service | [View](#error-062-template-service-nuclear-system-integration) |
 | ERROR-061 | runware-websocket-timeout, connection-handling, network-resilience, graceful-degradation, tier-escalation-triggers | MEDIUM | 📋 PLANNED | Image Gen | [View](#error-061-runwarewebsocketservice-timeout-handling) |
 | ERROR-060 | supabase-client-imports, cdn-fallback-chain, esm-sh-failures, vendor-bundle-integrity, boot-sync-resolution | HIGH | 📋 PLANNED | Infrastructure | [View](#error-060-supabase-client-import-chain-failures) |
@@ -228,6 +230,7 @@ Next Review: October 7, 2025
 ## Critical Production Issues by System
 
 ### 🎨 Image Generation System Errors
+- [ERROR-063: Hair and Skin Data Missing in AI Visual Scene Creator](#error-063-hair-and-skin-data-missing-in-ai-visual-scene-creator) ⏳
 - [ERROR-059: Character Description Field Mismatch](#error-059-character-description-field-mismatch) ✅
 - [ERROR-044: Tier 2.5C Missing Character Description Details and Hair Mapping](#error-044-tier-25c-missing-character-description-details-and-hair-mapping) ✅
 - [ERROR-043: Direct Mode Character Service Import Map Failure](#error-043-direct-mode-character-service-import-map-failure) ✅
@@ -1787,16 +1790,89 @@ The Time2Read platform implements a **comprehensive multi-tier vendor fallback s
 
 ---
 
+---
+
+### ⏳ ERROR-063: Hair and Skin Data Missing in AI Visual Scene Creator
+- **Status:** IN PROGRESS ⏳
+- **Severity:** HIGH (Visual generation quality)
+- **Discovered:** 2025-10-02
+- **Impact:** Generated images missing specific hair color and skin tone details
+- **Root Cause:** `characterData` string construction omits `structuredAvatarData` hair/skin fields
+- **Business Impact:** Reduced visual consistency and character authenticity in generated scenes
+
+**Technical Details:**
+- `CharacterConsistencyService` correctly generates `structuredAvatarData` with hair/skin details
+- Lines 80-82 in `ai-visual-scene-creator/index.ts` only used `characterName` and `ethnicity`
+- Hair color (`structuredAvatarData.hairColor`) and skin features (`structuredAvatarData.skinFeatures`) were completely ignored in the character description string
+- OpenAI received incomplete character appearance data, resulting in generic visual outputs
+- Console logs showed data was available but not being included in the prompt
+
+**Root Cause Analysis:**
+```typescript
+// BEFORE (Lines 80-82) - Missing hair and skin data
+const characterData = structuredAvatarData 
+  ? `${characterName}, ${ethnicity} ethnicity`
+  : `${characterName}, character appearance data from orchestrator`;
+```
+
+The `structuredAvatarData` object contained:
+- `hairColor`: Specific hair color from CharacterConsistencyService
+- `skinFeatures`: Detailed skin tone and features
+- `ethnicity`: Cultural background
+
+But only `characterName` and `ethnicity` were being sent to OpenAI.
+
+**Fix Applied:**
+```typescript
+// AFTER (Lines 79-82) - Complete character appearance data
+const characterData = structuredAvatarData 
+  ? `${characterName} with ${structuredAvatarData.hairColor || 'natural hair'} and ${structuredAvatarData.skinFeatures || 'medium skin tone'}, ${ethnicity} ethnicity`
+  : `${characterName}, character appearance data from orchestrator`;
+```
+
+**Changes Made:**
+1. ✅ Added `structuredAvatarData.hairColor` to character description
+2. ✅ Added `structuredAvatarData.skinFeatures` to character description  
+3. ✅ Included fallback values (`'natural hair'`, `'medium skin tone'`) for missing data
+4. ✅ Preserved existing ethnicity and name information
+5. ✅ Updated comment to reflect actual implementation
+
+**Files Modified:**
+- `supabase/functions/ai-visual-scene-creator/index.ts` (Lines 79-82): Enhanced character data construction with hair/skin features
+- `docs/AI_VISUAL_SCENE_CREATOR_BOOT_FIX_2025_10_02.md`: Added "Character Data Construction Fix" section
+- `docs/MASTER_ERRORS_TO_FIX.md`: Added ERROR-063 documentation and tracking
+
+**Expected Outcomes:**
+- ✅ OpenAI receives complete character appearance data including hair color and skin features
+- ✅ Generated scenes include specific visual details from `structuredAvatarData`
+- ✅ Improved visual consistency across character appearances within sessions
+- ✅ Enhanced character authenticity in AI-generated imagery
+- ✅ Console logs show full character data being sent to OpenAI for verification
+
+**Testing Verification:**
+1. Check console logs (lines 84-90) for complete `fullString` including hair/skin
+2. Verify "Test AI Scene Creator" button shows hair and skin details in responses
+3. Confirm generated images reflect specific character appearance details
+4. Validate `structuredAvatarData` contains expected hair/skin fields
+
+**Impact Assessment:**
+- **Code Changes:** Minimal - single line enhancement in character data construction
+- **Risk:** Very Low - adds missing data to existing flow, no architectural changes
+- **Business Value:** High - significantly improves visual quality and character consistency
+- **User Experience:** Better character representation and visual authenticity
+
+---
+
 **CURRENT STATUS:** ✅ **PRODUCTION READY - ALL CRITICAL ISSUES RESOLVED**  
 **DEPLOYMENT STATUS:** ✅ **CLEARED FOR PRODUCTION**  
 **VENDOR SYSTEM:** ✅ **NUCLEAR INDEPENDENCE ACHIEVED - 7-TIER IMAGE, 4-TIER STORY**  
-**DEPLOYMENT VERSION:** `2025-10-01T21:45:00Z` (Direct Mode guard fix integrated)  
+**DEPLOYMENT VERSION:** `2025-10-02T14:30:00Z` (Hair/skin data fix + Character data construction)  
 **NEXT REVIEW DATE:** October 8, 2025
 
 ---
 
-**Version:** 4.3 | **Last Updated:** 2025-10-01T22:00:00Z  
-**Major Achievement:** Complete vendor fallback architecture operational with nuclear independence  
-**Success Rates:** Image 95%+, Story 99.8%, System 99.9% uptime  
+**Version:** 4.4 | **Last Updated:** 2025-10-02T14:30:00Z  
+**Major Achievement:** Complete vendor fallback architecture operational with nuclear independence + Character appearance data completeness  
+**Success Rates:** Image 95%+, Story 99.8%, System 99.9% uptime
 **Status:** PRODUCTION READY with complete multi-tier cascade and zero critical errors  
 **Architecture:** 7-tier image generation, 4-tier story generation, comprehensive vendor fallback

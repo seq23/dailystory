@@ -76,9 +76,9 @@ async function generateCompleteVisualSchema(
   ethnicity = structuredAvatarData?.ethnicity || 'Euro-American';
   const nativeLanguage = userInfo?.native_language || userInfo?.nativeLanguage || 'en';
   
-  // Build complete character data string for OpenAI with structured data (hair/skin handled by culturalBundle separately)
+  // Build complete character data string for OpenAI including hair and skin features from structuredAvatarData
   const characterData = structuredAvatarData 
-    ? `${characterName}, ${ethnicity} ethnicity`
+    ? `${characterName} with ${structuredAvatarData.hairColor || 'natural hair'} and ${structuredAvatarData.skinFeatures || 'medium skin tone'}, ${ethnicity} ethnicity`
     : `${characterName}, character appearance data from orchestrator`;
   
   console.log(`🎨 Complete character data for OpenAI:`, {
