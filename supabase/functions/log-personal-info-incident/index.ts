@@ -23,8 +23,8 @@ const handler = async (req: Request, user?: AuthenticatedUser): Promise<Response
   
   try {
     // Create Supabase client using resilient loader
-    const { createResilientSupabaseClient } = await import("../_shared/resilientLoader.ts");
-    const supabase = await createResilientSupabaseClient();
+    const { createVendorFirstSupabaseClient } = await import("../_shared/resilientLoader.ts");
+    const supabase = await createVendorFirstSupabaseClient();
     const { 
       childProfileId,
       violationType,

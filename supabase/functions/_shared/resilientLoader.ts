@@ -137,33 +137,61 @@ async function attemptImportWithTimeoutAndFallbacks(path: string): Promise<any> 
   const cdnConfig = CDN_FALLBACKS[packageName as keyof typeof CDN_FALLBACKS];
 
   if (cdnConfig) {
-    // Try primary CDN first with timeout
-    try {
-      return await timeoutImport(cdnConfig.primary);
-    } catch (primaryError) {
-      console.warn(`Primary CDN failed for ${packageName}:`, primaryError);
+    // Special-case: prefer vendor FIRST for @supabase/supabase-js to avoid CDN flakiness
+    const preferVendorFirst = packageName === '@supabase/supabase-js' && !!(cdnConfig as any).vendor;
 
-      // Try fallbacks with timeout
-      for (const fallbackUrl of cdnConfig.fallbacks) {
-        try {
-          console.log(`Trying fallback CDN: ${fallbackUrl}`);
-          return await timeoutImport(fallbackUrl);
-        } catch (fallbackError) {
-          console.warn(`Fallback CDN failed: ${fallbackUrl}`, fallbackError);
-        }
+    if (preferVendorFirst) {
+      // Try vendor bundle first
+      try {
+        console.log(`Trying vendor bundle first for ${packageName}: ${(cdnConfig as any).vendor}`);
+        return await timeoutImport((cdnConfig as any).vendor as string);
+      } catch (vendorError) {
+        console.warn(`Vendor bundle failed for ${packageName}:`, vendorError);
       }
-
-      // Try vendor bundle if available
-      if (cdnConfig.vendor) {
-        try {
-          console.log(`Trying vendor bundle: ${cdnConfig.vendor}`);
-          return await timeoutImport(cdnConfig.vendor);
-        } catch (vendorError) {
-          console.warn(`Vendor bundle failed: ${cdnConfig.vendor}`, vendorError);
+      // Fallback to primary CDN then fallbacks
+      try {
+        return await timeoutImport(cdnConfig.primary);
+      } catch (primaryError) {
+        console.warn(`Primary CDN failed for ${packageName}:`, primaryError);
+        for (const fallbackUrl of cdnConfig.fallbacks) {
+          try {
+            console.log(`Trying fallback CDN: ${fallbackUrl}`);
+            return await timeoutImport(fallbackUrl);
+          } catch (fallbackError) {
+            console.warn(`Fallback CDN failed: ${fallbackUrl}`, fallbackError);
+          }
         }
+        throw new Error(`All sources failed for ${packageName}`);
       }
+    } else {
+      // Default behavior: primary → fallbacks → vendor
+      try {
+        return await timeoutImport(cdnConfig.primary);
+      } catch (primaryError) {
+        console.warn(`Primary CDN failed for ${packageName}:`, primaryError);
 
-      throw new Error(`All CDN fallbacks failed for ${packageName}`);
+        // Try fallbacks with timeout
+        for (const fallbackUrl of cdnConfig.fallbacks) {
+          try {
+            console.log(`Trying fallback CDN: ${fallbackUrl}`);
+            return await timeoutImport(fallbackUrl);
+          } catch (fallbackError) {
+            console.warn(`Fallback CDN failed: ${fallbackUrl}`, fallbackError);
+          }
+        }
+
+        // Try vendor bundle if available
+        if ((cdnConfig as any).vendor) {
+          try {
+            console.log(`Trying vendor bundle: ${(cdnConfig as any).vendor}`);
+            return await timeoutImport((cdnConfig as any).vendor as string);
+          } catch (vendorError) {
+            console.warn(`Vendor bundle failed: ${(cdnConfig as any).vendor}`, vendorError);
+          }
+        }
+
+        throw new Error(`All CDN fallbacks failed for ${packageName}`);
+      }
     }
   }
 
@@ -206,7 +234,7 @@ export async function createResilientSupabaseClient() {
     const { createClient } = await memoizedImport('@supabase/supabase-js');
     
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY');
 
     if (!supabaseUrl || !supabaseKey) {
       throw new Error('Missing Supabase environment variables');

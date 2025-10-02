@@ -19,12 +19,14 @@ The system uses a multi-CDN approach with primary and fallback URLs:
 ```typescript
 const CDN_FALLBACKS = {
   '@supabase/supabase-js': {
-    primary: 'https://deno.land/x/supabase@2.0.2/mod.ts',
+    primary: 'https://esm.sh/@supabase/supabase-js@2.57.4?target=deno&bundle',
     fallbacks: [
-      'https://esm.sh/@supabase/supabase-js@2.55.0?pin=v135',
-      'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.55.0/+esm',
-      'https://unpkg.com/@supabase/supabase-js@2.55.0?module'
-    ]
+      'https://esm.sh/v135/@supabase/supabase-js@2.57.4?target=deno&bundle',
+      'https://ga.jspm.io/npm:@supabase/supabase-js@2.57.4/+esm',
+      'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/+esm',
+      'https://unpkg.com/@supabase/supabase-js@2.57.4?module'
+    ],
+    vendor: '../_vendor/supabase-js@2.57.4.mjs'
   },
   'openai': {
     primary: 'https://deno.land/x/openai@v4.28.0/mod.ts',

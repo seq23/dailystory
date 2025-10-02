@@ -290,12 +290,12 @@ async function callRunwareAPI(positivePrompt, negativePrompt, retries = 2) {
         
         let supabaseClient = null;
         
-    // Phase 1: Use resilient Supabase client (standardized across all functions)
+    // Phase 1: Use vendor-first Supabase client (standardized across all functions)
     try {
-      console.log('🔍 [RESILIENT_LOADER] Using createResilientSupabaseClient for cost tracking');
-      const { createResilientSupabaseClient } = await import('../_shared/resilientLoader.ts');
-      supabaseClient = await createResilientSupabaseClient();
-      console.log('✅ [RESILIENT_LOADER] Supabase client initialized successfully');
+      console.log('🔍 [VENDOR_FIRST] Using createVendorFirstSupabaseClient for cost tracking');
+      const { createVendorFirstSupabaseClient } = await import('../_shared/resilientLoader.ts');
+      supabaseClient = await createVendorFirstSupabaseClient();
+      console.log('✅ [VENDOR_FIRST] Supabase client initialized successfully (0ms network delay)');
     } catch (cdnError) {
       console.warn('⚠️ [2-TIER-CDN] Tier 1 FAILED: CDN import failed, activating Tier 2 fallback:', cdnError.message);
       // Tier 2: Fall back to local vendor bundle
@@ -511,10 +511,10 @@ async function handleRequest(req) {
     
     // Use resilient loader (standardized across all functions)
     try {
-      console.log('🔍 [RESILIENT_LOADER] Using createResilientSupabaseClient for logging');
-      const { createResilientSupabaseClient } = await import('../_shared/resilientLoader.ts');
-      supabase = await createResilientSupabaseClient();
-      console.log('✅ [RESILIENT_LOADER] Supabase client initialized successfully for logging');
+      console.log('🔍 [VENDOR_FIRST] Using createVendorFirstSupabaseClient for logging');
+      const { createVendorFirstSupabaseClient } = await import('../_shared/resilientLoader.ts');
+      supabase = await createVendorFirstSupabaseClient();
+      console.log('✅ [VENDOR_FIRST] Supabase client initialized successfully for logging');
     } catch (loaderError) {
       console.warn('⚠️ [RESILIENT_LOADER] Failed, using fallback:', loaderError.message);
       // Fallback to local vendor bundle
