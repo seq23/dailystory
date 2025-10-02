@@ -5,6 +5,31 @@ Comprehensive refactoring of character detection system to unify human and anima
 
 ## Critical Changes
 
+## Architectural Pattern: analyzeVisualDetails() Call Hierarchy
+
+```
+ARCHITECTURAL PATTERN
+analyzeVisualDetails() ← MAIN ENTRY POINT (called by orchestrator)
+├── detectAllCharacters() ← Parallel orchestrator for page-specific entities
+│   ├── detectColoredObjects()
+│   ├── detectSecondaryCharacters() ← UNIFIED human + animal detection
+│   ├── detectAppearance() ← NEW main character appearance
+│   └── captureSecondaryCharacterVisuals() ← NEW visual detail extraction
+├── detectSimpleAtmosphere() ← NEW context detection
+└── pronounResolver.resolvePronounsToObjects() ← Pronoun resolution
+```
+
+**Key Principles:**
+- `analyzeVisualDetails()` is the single entry point called by image generation orchestrators (`runware-generate-image`)
+- `detectAllCharacters()` orchestrates parallel detection of all page-specific entities
+- `detectSecondaryCharacters()` unifies the old separate `detectCharacters()` and `detectAnimals()` methods
+- Main character appearance is now explicitly tracked via `detectAppearance()`
+- Secondary character visual details are captured through proximity-based keyword extraction
+- Session-wide context (atmosphere/setting) is detected separately via `detectSimpleAtmosphere()`
+- Pronoun resolution ensures character references remain consistent across pages
+
+---
+
 ### 1. New Detection Methods (`CharacterConsistencyService.js`)
 
 #### `detectSecondaryCharacters(pageText, userInfo)`
