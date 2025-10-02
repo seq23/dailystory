@@ -829,7 +829,7 @@ export class CharacterConsistencyService {
         
         // Direct supabase-js fallback
         try {
-          const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.39.3');
+          const { createClient } = await import('../_vendor/supabase-js@2.57.4.mjs');
           const supabaseUrl = Deno.env.get('SUPABASE_URL');
           const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
           
