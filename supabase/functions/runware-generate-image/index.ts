@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-10-01T21:45:00Z - Fixed Direct Mode guard: now always attempts after Tier 1 failure (removed NO_PRIMARY_SCENE skip logic)  
+// DEPLOY_MARKER: 2025-10-02T15:30:00Z - Force redeployment: Updated vendor bundle with complete Supabase client (.upsert() and .single() methods)  
 
 // Inlined orchestrator logic - no more lazy loading
 
