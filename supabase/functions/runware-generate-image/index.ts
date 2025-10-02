@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-10-02T23:45:00Z - Parser hardening: removed inline comment from object destructuring (Deno graph parser compatibility)
+// DEPLOY_MARKER: 2025-10-03T00:00:00Z - Parser hardening: removed trailing commas from all corsResponse function calls (Deno graph parser compatibility)
 
 // Inlined orchestrator logic - no more lazy loading
 
@@ -885,7 +885,7 @@ Deno.serve(async (req) => {
         },
         capabilities: ["tier_orchestration", "image_generation", "complete_cascade_1_DirectMode_2.5A_2.5B_2.5C_2.5D"],
       },
-      req,
+      req
     );
   }
 
@@ -1109,7 +1109,7 @@ Deno.serve(async (req) => {
               },
             },
             req,
-            200,
+            200
           );
         }
 
@@ -1161,7 +1161,7 @@ Deno.serve(async (req) => {
                 requestId: requestId,
               },
               req,
-              504,
+              504
             );
           }
           throw e;
@@ -1225,7 +1225,7 @@ Deno.serve(async (req) => {
             },
           },
           req,
-          200,
+          200
         );
       } catch (tier1Error) {
         const errorMessage = tier1Error instanceof Error ? tier1Error.message : String(tier1Error);
@@ -1347,7 +1347,7 @@ Deno.serve(async (req) => {
               },
             },
             req,
-            200,
+            200
           );
         }
 
@@ -1471,7 +1471,7 @@ Deno.serve(async (req) => {
                 {
                   ...result,
                 },
-                req,
+                req
               );
             } else {
               throw new Error("DIRECT_MODE_FAILED: " + (directModeResponse?.error?.message || "Direct mode processing failed"));
@@ -1572,7 +1572,7 @@ Deno.serve(async (req) => {
                 {
                   ...result,
                 },
-                req,
+                req
               );
             } else {
               throw new Error("TIER_2.5B_FAILED: Template B processing failed");
@@ -1666,7 +1666,7 @@ Deno.serve(async (req) => {
                   {
                     ...result,
                   },
-                  req,
+                  req
                 );
               } else {
                 throw new Error("TIER_2.5A_FAILED: Template A processing failed");
@@ -1752,7 +1752,7 @@ Deno.serve(async (req) => {
                     success: true,
                     ...result,
                   },
-                  req,
+                  req
                 );
               } else {
                 throw new Error("TIER_2.5B_FAILED: Template B processing failed");
@@ -1856,7 +1856,7 @@ Deno.serve(async (req) => {
                     success: true,
                     ...result,
                   },
-                  req,
+                  req
                 );
               } else {
                 throw new Error("TIER_2.5C_FAILED: Template C processing failed");
@@ -1963,7 +1963,7 @@ Deno.serve(async (req) => {
                       success: true,
                       ...result,
                     },
-                    req,
+                    req
                   );
                 } else {
                   throw new Error("TIER_2.5D_FAILED: Template D processing failed");
@@ -1991,7 +1991,7 @@ Deno.serve(async (req) => {
                   retryAfterSeconds: 8,
                 },
                 req,
-                503,
+                503
               );
             }
           }
@@ -2012,7 +2012,7 @@ Deno.serve(async (req) => {
             escalationTarget: "TIER_4",
           },
           req,
-          500,
+          500
         );
       }
 
@@ -2031,6 +2031,6 @@ Deno.serve(async (req) => {
       escalationTarget: "TIER_4",
     },
     req,
-    500,
+    500
   );
 });

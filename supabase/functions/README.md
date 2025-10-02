@@ -73,6 +73,7 @@ All functions use `index.ts` as their entry point. JavaScript-only functions hav
 4. **Entry Files**: JavaScript-only functions use TypeScript shim files that import the JavaScript implementation
 5. **CI Resilience**: Generic deploy step uses `continue-on-error: true` to ensure explicit per-function deploys always run even if bundling fails
 6. **Debug Data Exposure**: Critical functions (`ai-visual-scene-creator`, `runware-generate-image`) must maintain complete debug data exposure. See [DEBUG_DATA_EXPOSURE_CHECKLIST.md](../docs/DEBUG_DATA_EXPOSURE_CHECKLIST.md) for anti-regression requirements when modifying these functions.
+7. **Parser Hardening**: Avoid trailing commas in function call argument lists. While modern JS/TS runtimes handle trailing commas in objects and arrays, Deno's graph parser may misinterpret them in function calls during deployment bundling, causing "Expected ',', got 'return'" errors.
 
 ## CRITICAL: Edge Function Boot Analysis
 
