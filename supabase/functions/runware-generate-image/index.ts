@@ -12,6 +12,8 @@
 // TypeScript type imports
 import type { UserInfo, SessionId } from "../_shared/types/index.ts";
 import { generateNuclearNegativePrompt, detectCulturalProfileForNegatives } from '../_shared/NuclearNegativePrompts.js';
+import * as ProviderGate from "../_shared/ProviderGate.ts";
+import * as IdempotencyMemory from "../_shared/IdempotencyMemory.ts";
 
 // COMPLETE_TIER_1_TEMPLATE: 4-section structured template 
 const COMPLETE_TIER_1_TEMPLATE = `PRIMARY SCENE: {primaryScene}.
@@ -60,6 +62,7 @@ function redactPII(value: any): any {
 
 async function bindTierLogger(sessionId: SessionId, requestId: string, authHeader: string | null = null, memoizedImport: any): Promise<TierLogger> {
   const isProd = Deno.env.get('ENVIRONMENT') === 'production';
+  const logSampleRate = parseFloat(Deno.env.get('DEBUG_TIER_LOG_SAMPLE') || '0.1'); // Default 10% sampling
   
   try {
     const [{ createResilientSupabaseClient }, tierLogging] = await Promise.all([
@@ -69,25 +72,47 @@ async function bindTierLogger(sessionId: SessionId, requestId: string, authHeade
     
     const supabaseClient = await createResilientSupabaseClient();
     
-    // Wrap logging functions with PII redaction
-    const wrapWithRedaction = (fn: Function) => (msg: string, ctx: any = {}) => {
+    // Sampling helper: only log to DB if sampled or failure
+    const shouldLogToDB = (status: string = 'info') => {
+      if (status === 'failed' || status === 'failure') return true; // Always log failures
+      return Math.random() < logSampleRate; // Sample for success/info logs
+    };
+    
+    // Wrap logging functions with PII redaction and sampling
+    const wrapWithRedactionAndSampling = (fn: Function) => (msg: string, ctx: any = {}) => {
       const safeCtx = isProd ? redactPII(ctx) : ctx;
-      return fn(msg, safeCtx, supabaseClient, sessionId, requestId);
+      
+      // Always console log
+      console.log(`[TIER_LOG] ${msg}`, safeCtx);
+      
+      // Conditionally log to DB (sample or failure)
+      const status = String(safeCtx.status || 'info');
+      if (shouldLogToDB(status)) {
+        return fn(msg, safeCtx, supabaseClient, sessionId, requestId);
+      }
     };
   
     return {
-      t1: wrapWithRedaction(tierLogging.logTier1),
-      t2: wrapWithRedaction(tierLogging.logTier2),
+      t1: wrapWithRedactionAndSampling(tierLogging.logTier1),
+      t2: wrapWithRedactionAndSampling(tierLogging.logTier2),
       attempt: (tier, ctx = {}) => {
         const safeCtx = isProd ? redactPII(ctx) : ctx;
-        return tierLogging.logTierAttempt(supabaseClient, sessionId, requestId, tier, 'attempting', safeCtx);
+        console.log(`[${tier}] Attempting`, safeCtx);
+        if (shouldLogToDB('attempting')) {
+          return tierLogging.logTierAttempt(supabaseClient, sessionId, requestId, tier, 'attempting', safeCtx);
+        }
       },
       success: (tier, ctx = {}) => {
         const safeCtx = isProd ? redactPII(ctx) : ctx;
-        return tierLogging.logTierSuccess(supabaseClient, sessionId, requestId, tier, safeCtx);
+        console.log(`[${tier}] Success`, safeCtx);
+        if (shouldLogToDB('success')) {
+          return tierLogging.logTierSuccess(supabaseClient, sessionId, requestId, tier, safeCtx);
+        }
       },
       failure: (tier, ctx = {}) => {
         const safeCtx = isProd ? redactPII(ctx) : ctx;
+        console.error(`[${tier}] Failure`, safeCtx);
+        // Always log failures to DB
         return tierLogging.logTierFailure(supabaseClient, sessionId, requestId, tier, safeCtx);
       },
     };
