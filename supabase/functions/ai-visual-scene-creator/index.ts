@@ -1,8 +1,8 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // TypeScript type imports
 import type { UserInfo } from "../_shared/types/index.ts";
+import * as ProviderGate from "../_shared/ProviderGate.ts";
 
 // ============= PERFECT AI VISUAL SCENE CREATOR WITH CHARACTER CONSISTENCY =============
 // Complete implementation with word-for-word OpenAI prompts and CharacterConsistencyService integration
@@ -449,7 +449,12 @@ async function httpFallbackCall(endpoint: string, payload: any): Promise<any> {
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { 
+      headers: {
+        ...corsHeaders,
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, HEAD'
+      }
+    });
   }
 
   console.log("✅ ai-visual-scene-creator: Successfully booted and reachable");
@@ -876,8 +881,8 @@ serve(async (req) => {
           tier: response.tier,
           hasPrimaryScene: !!response.primaryScene,
           hasImageURL: !!response.imageURL,
-          secondaryCharacterCount: response.secondaryCharacters.length,
-          objectCount: response.objects.length
+          secondaryCharacterCount: response.secondaryCharacters?.humans?.length || 0,
+          objectCount: response.objects?.length || 0
         });
 
         operationSuccess = true;

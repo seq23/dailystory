@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-10-02T15:30:00Z - Force redeployment: Updated vendor bundle with complete Supabase client (.upsert() and .single() methods)  
+// DEPLOY_MARKER: 2025-10-02T21:00:00Z - Boot hardening: removed static imports, lazy load ProviderGate/IdempotencyMemory/NuclearNegativePrompts, CORS fixes, scope fixes  
 
 // Inlined orchestrator logic - no more lazy loading
 
@@ -12,26 +12,7 @@
 // TypeScript type imports
 import type { UserInfo, SessionId } from "../_shared/types/index.ts";
 
-// CRITICAL FIX: Failsafe import for NuclearNegativePrompts - prevents boot failures
-// If module fails, use hardcoded base negative prompt fallback
-let generateNuclearNegativePrompt: any;
-let detectCulturalProfileForNegatives: any;
-
-try {
-  const nuclearModule = await import('../_shared/NuclearNegativePrompts.js');
-  generateNuclearNegativePrompt = nuclearModule.generateNuclearNegativePrompt;
-  detectCulturalProfileForNegatives = nuclearModule.detectCulturalProfileForNegatives;
-  console.log('✅ NuclearNegativePrompts module loaded successfully');
-} catch (error) {
-  const errorMessage = error instanceof Error ? error.message : String(error);
-  console.warn('⚠️ NuclearNegativePrompts unavailable, using hardcoded base fallback:', errorMessage);
-  
-  // HARDCODED BASE FALLBACK (as specified by user - prevents deployment failures)
-  const BASE_NEGATIVE_FALLBACK = "NO TEXT, no words, no letters, no writing, no captions, no watermarks, no signatures, no logos, bad anatomy, deformed, blurry, low quality, distorted face, extra limbs, malformed hands, poorly drawn, artifacts, noise, oversaturated, underexposed, overexposed, duplicate, cropped, watermark, signature, text, logo, bad lighting, flat lighting, plastic skin, waxy skin, artificial look, uncanny valley";
-  
-  generateNuclearNegativePrompt = () => BASE_NEGATIVE_FALLBACK;
-  detectCulturalProfileForNegatives = () => ({});
-}
+// CRITICAL FIX: NuclearNegativePrompts now lazy-loaded inside POST handler to prevent boot delay
 
 // Emergency hair fallback - last resort when CCS data incomplete
 const EMERGENCY_HAIR_MAP: Record<string, string> = {
@@ -47,8 +28,7 @@ function emergencyHairFallback(skinTone: string | undefined): string {
   return EMERGENCY_HAIR_MAP[normalized] || EMERGENCY_HAIR_MAP['medium'];
 }
 
-import * as ProviderGate from "../_shared/ProviderGate.ts";
-import * as IdempotencyMemory from "../_shared/IdempotencyMemory.ts";
+// CRITICAL: ProviderGate and IdempotencyMemory now lazy-loaded inside serve handler to prevent boot failures
 
 // COMPLETE_TIER_1_TEMPLATE: 4-section structured template 
 const COMPLETE_TIER_1_TEMPLATE = `PRIMARY SCENE: {primaryScene}.
@@ -802,7 +782,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
   // PHASE 1: OPTIONS fast path (immediate return)
   if (req.method === 'OPTIONS') {
     const corsHeaders = generateEchoCorsHeaders(req);
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { 
+      headers: {
+        ...corsHeaders,
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, HEAD'
+      }
+    });
   }
 
   // PHASE 2: GET/HEAD health checks with environment info
@@ -818,12 +803,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
       deployment_version: '2025-10-01T21:45:00Z',
       timestamp: new Date().toISOString(),
       environment: {
-        runwareApiKeyPresent: !!runwareKey,
-        runwareApiKeyLength: runwareKey ? runwareKey.length : 0,
-        openaiApiKeyPresent: !!openaiKey,
-        openaiApiKeyLength: openaiKey ? openaiKey.length : 0,
-        supabaseServiceRoleKeyPresent: !!supabaseKey,
-        supabaseServiceRoleKeyLength: supabaseKey ? supabaseKey.length : 0
+        hasRunwareApiKey: !!runwareKey,
+        hasOpenAiApiKey: !!openaiKey,
+        hasSupabaseServiceRoleKey: !!supabaseKey
       },
       capabilities: ["tier_orchestration", "image_generation", "complete_cascade_1_DirectMode_2.5A_2.5B_2.5C_2.5D"]
     }, req);
@@ -847,6 +829,26 @@ Deno.serve(async (req: Request): Promise<Response> => {
       // PHASE 4: Fast validation
       validatePayloadFast(payload);
       console.log(`✅ [${requestId}] Fast validation passed`);
+      
+      // CRITICAL: Lazy load shared services after validation to prevent boot failures
+      const ProviderGate = await import("../_shared/ProviderGate.ts");
+      const IdempotencyMemory = await import("../_shared/IdempotencyMemory.ts");
+      
+      // Lazy load NuclearNegativePrompts to prevent boot delay
+      let generateNuclearNegativePrompt: any;
+      let detectCulturalProfileForNegatives: any;
+      try {
+        const nuclearModule = await import('../_shared/NuclearNegativePrompts.js');
+        generateNuclearNegativePrompt = nuclearModule.generateNuclearNegativePrompt;
+        detectCulturalProfileForNegatives = nuclearModule.detectCulturalProfileForNegatives;
+        console.log('✅ NuclearNegativePrompts module loaded successfully');
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.warn('⚠️ NuclearNegativePrompts unavailable, using hardcoded base fallback:', errorMessage);
+        const BASE_NEGATIVE_FALLBACK = "NO TEXT, no words, no letters, no writing, no captions, no watermarks, no signatures, no logos, bad anatomy, deformed, blurry, low quality, distorted face, extra limbs, malformed hands, poorly drawn, artifacts, noise, oversaturated, underexposed, overexposed, duplicate, cropped, watermark, signature, text, logo, bad lighting, flat lighting, plastic skin, waxy skin, artificial look, uncanny valley";
+        generateNuclearNegativePrompt = () => BASE_NEGATIVE_FALLBACK;
+        detectCulturalProfileForNegatives = () => ({});
+      }
       
       // PHASE 4.1: DRY RUN MODE DETECTION
       const isDryRun = payload.dryRun === true;
@@ -1469,6 +1471,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         if (tier25bErrorMessage) {
           console.log(`[TIER_2.5C] Attempting universal fallback after 2.5B failure (from ${isCharacterServiceUnavailable ? 'direct 2.5B' : '2.5A→2.5B'} path)`);
           
+          let tier25cErrorMessage: string | undefined;
           try {
             // Gate check for Tier 2.5C
             const t25cGateResult = await ProviderGate.acquire('T25C:runware-template-cd');
@@ -1535,6 +1538,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
             // Try Tier 2.5D before escalating to TIER_4
             console.log(`[TIER_2.5D] Attempting emergency fallback after 2.5C failure`);
             
+            let tier25dErrorMessage: string | undefined;
             try {
               // Gate check for Tier 2.5D
               const t25dGateResult = await ProviderGate.acquire('T25C:runware-template-cd'); // Same gate as 2.5C (same service)
