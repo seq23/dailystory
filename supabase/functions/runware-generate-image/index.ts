@@ -306,11 +306,19 @@ async function processInlinedTier1(payload: any, memoizedImport: any, logTier1St
   
   // Analyze visual details from story text
   const tier1Start = Date.now();
-  await characterConsistencyService.analyzeVisualDetails(sessionId, storyText || pageText, 1);
+  await characterConsistencyService.analyzeVisualDetails(sessionId, storyText || pageText, payload.pageNumber || 1);
   const coloredObjects = await characterConsistencyService.getColoredObjects(sessionId);
 
   // Reuse session-cached secondary characters to avoid duplicate heavy detection
   const secondaryCharacters = await characterConsistencyService.getSecondaryCharactersForSession(sessionId);
+  
+  // PHASE 1: Get main character appearance data
+  const detectionResults = await characterConsistencyService.detectAllCharacters(storyText || pageText, { 
+    sessionId, 
+    pageNumber: payload.pageNumber || 1 
+  });
+  const mainCharacterAppearance = detectionResults.mainCharacterAppearance || {};
+  
   // Keep animals lean to avoid extra passes; not required for templates currently
   const detectedAnimals: any[] = [];
 
@@ -363,7 +371,8 @@ async function processInlinedTier1(payload: any, memoizedImport: any, logTier1St
         characterSeed,
         culturalBundle,
         coloredObjects,
-        secondaryCharacters,
+        secondaryCharacters, // Now includes visualDetails from Phase 1
+        mainCharacterAppearance, // PHASE 1: Pass main character appearance
         detectedAnimals,
         sessionSetting,
         requestId: `tier1-${sessionId}`,

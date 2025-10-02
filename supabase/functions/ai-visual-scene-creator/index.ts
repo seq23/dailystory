@@ -141,6 +141,14 @@ RULES:
 7. Atmospheric details: infer time of day, weather, indoor/outdoor context from story
 8. Visual continuity on pages 2+: track object colors/details ('red ball' stays 'red ball'), resolve pronouns to same objects/characters, use previous scene context for consistency
 
+PHASE 1 ENHANCEMENT - MAIN CHARACTER APPEARANCE:
+- If mainCharacterAppearance physical features are provided (e.g., 'brown eyes', 'curly hair'), incorporate them into the scene description
+- If mainCharacterAppearance clothing is provided (e.g., 'blue shirt', 'red sneakers'), ensure they're visible in the scene
+
+PHASE 1 ENHANCEMENT - SECONDARY CHARACTER VISUALS:
+- If secondary characters have visualDetails (e.g., ['blonde', 'tall', 'blue dress']), incorporate these descriptors into their appearance in the scene
+- Use visualDetails to create consistent appearances for recurring secondary characters across pages
+
 CULTURAL CONTEXT:
 ${isNonEnglish ? `
 CRITICAL: Enhance story settings with specific cultural elements for ${nativeLanguage} speakers:
@@ -154,6 +162,19 @@ Use cultural detail naturally without contradicting explicit story settings.` : 
   const userPrompt = `Create a visual scene description for this story page.
 
 CHARACTER APPEARANCE: ${characterData}
+
+${mainCharacterAppearance ? `
+MAIN CHARACTER APPEARANCE DETAILS:
+- Physical features: ${JSON.stringify(mainCharacterAppearance.physicalFeatures || [])}
+- Clothing: ${JSON.stringify(mainCharacterAppearance.clothing || [])}
+` : ''}
+
+${secondaryCharacters && secondaryCharacters.length > 0 ? `
+SECONDARY CHARACTERS WITH VISUAL DETAILS:
+${secondaryCharacters.map(char => 
+  `- ${char.name} (${char.type}): ${char.visualDetails ? char.visualDetails.join(', ') : 'no visual details'}`
+).join('\n')}
+` : ''}
 
 STORY TEXT:
 "${storyText}"
@@ -302,7 +323,7 @@ Generate a comprehensive scene with complete visual elements including backgroun
       characterAppearance: structuredAvatarData,
       // Merge secondary characters from OpenAI and cache
       secondaryCharacters: mergedSecondaryCharacters,
-      // Add detailed secondary character data for consistency
+      // Add detailed secondary character data for consistency (PHASE 1: includes visualDetails)
       secondaryCharacterDetails: cachedSecondaryCharacters,
       objects: visualSchema.objects || []
     };

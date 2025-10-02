@@ -188,7 +188,7 @@ export const TIER_25_UNIFIED_VOCABULARY_EXTENDED = {
     ]
   },
 
-  // ============= ENHANCED SETTINGS VOCABULARY =============  
+// ============= ENHANCED SETTINGS VOCABULARY =============  
   environments: {
     // Time-based settings
     timeOfDay: [
@@ -208,7 +208,30 @@ export const TIER_25_UNIFIED_VOCABULARY_EXTENDED = {
       'candlelight', 'firelight', 'starlight', 'fluorescent lighting',
       'natural light', 'artificial light', 'dim lighting', 'harsh lighting'
     ]
-  }
+  },
+
+  // ============= PHASE 1 NEW VOCABULARY FOR CHARACTER DETECTION =============
+  
+  // Hair descriptors for secondary character visual capture
+  HAIR_DESCRIPTORS: [
+    'blonde', 'brown', 'black', 'red', 'gray', 'white', 'silver', 'golden',
+    'curly', 'straight', 'wavy', 'braided', 'short', 'long', 'thick', 'thin',
+    'ponytail', 'pigtails', 'bun', 'bangs', 'messy', 'neat', 'spiky'
+  ],
+  
+  // Size and age descriptors for secondary characters
+  SIZE_AGE_DESCRIPTORS: [
+    'tall', 'short', 'big', 'small', 'tiny', 'giant', 'little',
+    'young', 'old', 'older', 'younger', 'baby', 'toddler', 'child',
+    'adult', 'elderly', 'middle-aged', 'teenage'
+  ],
+  
+  // Animal relationship words for pet detection
+  ANIMAL_RELATIONSHIPS: [
+    'pet', 'puppy', 'kitten', 'family dog', 'family cat', 'my dog', 'my cat',
+    'her pet', 'his pet', 'their pet', 'our pet', 'pet rabbit', 'pet bird',
+    'pet hamster', 'best friend', 'companion', 'buddy'
+  ]
 };
 
 // ============= VOCABULARY ALIAS FOR EASY ACCESS =============

@@ -627,14 +627,42 @@ export class CharacterConsistencyService {
   }
 
   /**
-   * Detect characters using tier25Vocabulary relationships
+   * PHASE 1: Unified secondary character detection (humans + animals)
+   * Detects proper names, relationships, and animals with context analysis
    */
-  async detectCharacters(text, sessionId, pageNumber) {
+  async detectSecondaryCharacters(text, sessionId, pageNumber) {
     const vocab = await this.getVocabulary();
     const manifest = this.getSessionManifest(sessionId);
     const detections = [];
 
-    // Check for relationship-based characters (mom, friend, etc.)
+    // 1. Proper names (human or animal) - enhanced pattern with animal action verbs
+    const namePattern = /\b([A-Z][a-z]+)\s+(has|is|was|walked|ran|played|said|barked|purred|meowed|wagged|chirped|flew|swam)/g;
+    let nameMatch;
+    while ((nameMatch = namePattern.exec(text)) !== null) {
+      const name = nameMatch[1];
+      const actionVerb = nameMatch[2].toLowerCase();
+      
+      // Determine if animal based on action verb or nearby context
+      const animalVerbs = ['barked', 'purred', 'meowed', 'wagged', 'chirped', 'flew', 'swam'];
+      const isAnimal = animalVerbs.includes(actionVerb);
+      
+      // Check for animal context clues (e.g., "Max the dog")
+      const animalContextPattern = new RegExp(`${name}\\s+the\\s+(dog|cat|bird|rabbit|hamster|fish|pet)`, 'i');
+      const hasAnimalContext = animalContextPattern.test(text);
+      
+      const characterType = (isAnimal || hasAnimalContext) ? 'animal' : 'proper_name';
+      
+      detections.push({
+        name,
+        type: characterType,
+        source: 'proper_name_pattern',
+        pageNumber
+      });
+      manifest.addCharacter(name, { type: characterType }, pageNumber);
+      console.log(`👤 Detected named ${characterType}: ${name}`);
+    }
+
+    // 2. Relationship-based characters (human)
     for (const relationship of vocab.relationships) {
       const pattern = new RegExp(`\\b${relationship}\\b`, 'gi');
       if (pattern.test(text)) {
@@ -645,47 +673,49 @@ export class CharacterConsistencyService {
           pageNumber
         });
         manifest.addCharacter(relationship, { type: 'relationship' }, pageNumber);
-        console.log(`👥 Detected relationship character: ${relationship} (tier25)`);
+        console.log(`👥 Detected relationship character: ${relationship}`);
       }
     }
 
-    // Check for proper names (capitalized words not at sentence start)
-    const namePattern = /\b([A-Z][a-z]+)\s+(has|is|was|walked|ran|played|said)/g;
-    let nameMatch;
-    while ((nameMatch = namePattern.exec(text)) !== null) {
-      const name = nameMatch[1];
-      detections.push({
-        name,
-        type: 'proper_name',
-        source: 'pattern_match',
-        pageNumber
-      });
-      manifest.addCharacter(name, { type: 'protagonist' }, pageNumber);
-      console.log(`👤 Detected named character: ${name} (pattern)`);
+    // 3. Animal relationships (pets with relationships)
+    const animalRelationships = vocab.ANIMAL_RELATIONSHIPS || [
+      'pet', 'puppy', 'kitten', 'family dog', 'family cat', 'my dog', 'my cat',
+      'her pet', 'his pet', 'their pet', 'our pet'
+    ];
+    
+    for (const animalRel of animalRelationships) {
+      const pattern = new RegExp(`\\b${escapeRegExp(animalRel)}\\b`, 'gi');
+      if (pattern.test(text)) {
+        detections.push({
+          name: animalRel,
+          type: 'animal_relationship',
+          source: 'animal_relationships',
+          pageNumber
+        });
+        manifest.addCharacter(animalRel, { type: 'pet' }, pageNumber);
+        console.log(`🐾 Detected animal relationship: ${animalRel}`);
+      }
     }
 
-    return detections;
-  }
-
-  /**
-   * Detect animals using tier25Vocabulary
-   */
-  async detectAnimals(text, sessionId, pageNumber) {
-    const vocab = await this.getVocabulary();
-    const manifest = this.getSessionManifest(sessionId);
-    const detections = [];
-
+    // 4. Generic animals (fallback for unnamed animals)
     for (const animal of vocab.animals) {
       const pattern = new RegExp(`\\b${animal}\\b`, 'gi');
       if (pattern.test(text)) {
-        detections.push({
-          name: animal,
-          type: 'animal',
-          source: 'tier25Vocabulary',
-          pageNumber
-        });
-        manifest.addCharacter(animal, { type: 'animal' }, pageNumber);
-        console.log(`🐾 Detected animal: ${animal} (tier25)`);
+        // Skip if already detected as named animal
+        const alreadyDetected = detections.some(d => 
+          d.name.toLowerCase() === animal.toLowerCase() && d.type === 'animal'
+        );
+        
+        if (!alreadyDetected) {
+          detections.push({
+            name: animal,
+            type: 'animal',
+            source: 'tier25Vocabulary',
+            pageNumber
+          });
+          manifest.addCharacter(animal, { type: 'animal' }, pageNumber);
+          console.log(`🐾 Detected generic animal: ${animal}`);
+        }
       }
     }
 
@@ -693,24 +723,147 @@ export class CharacterConsistencyService {
   }
 
   /**
-   * Comprehensive detection orchestrator
-   * Replaces multiple hardcoded detection methods with tier25-powered unified approach
+   * PHASE 1: Capture visual details for secondary characters
+   * Uses proximity-based keyword matching (±50 character window)
+   */
+  captureSecondaryCharacterVisuals(text, characterName) {
+    const vocab = this.vocabulary;
+    if (!vocab) return [];
+    
+    const visualKeywords = [];
+    const searchRadius = 50; // Character window around name mention
+    
+    // Find all mentions of the character
+    const namePattern = new RegExp(`\\b${escapeRegExp(characterName)}\\b`, 'gi');
+    let match;
+    
+    while ((match = namePattern.exec(text)) !== null) {
+      const startPos = Math.max(0, match.index - searchRadius);
+      const endPos = Math.min(text.length, match.index + match[0].length + searchRadius);
+      const contextWindow = text.substring(startPos, endPos);
+      
+      // Check for hair descriptors
+      const hairDescriptors = vocab.HAIR_DESCRIPTORS || [];
+      for (const descriptor of hairDescriptors) {
+        const pattern = new RegExp(`\\b${escapeRegExp(descriptor)}\\b`, 'i');
+        if (pattern.test(contextWindow) && !visualKeywords.includes(descriptor)) {
+          visualKeywords.push(descriptor);
+        }
+      }
+      
+      // Check for size/age descriptors
+      const sizeAgeDescriptors = vocab.SIZE_AGE_DESCRIPTORS || [];
+      for (const descriptor of sizeAgeDescriptors) {
+        const pattern = new RegExp(`\\b${escapeRegExp(descriptor)}\\b`, 'i');
+        if (pattern.test(contextWindow) && !visualKeywords.includes(descriptor)) {
+          visualKeywords.push(descriptor);
+        }
+      }
+      
+      // Check for colors
+      for (const color of vocab.colors) {
+        const pattern = new RegExp(`\\b${escapeRegExp(color)}\\b`, 'i');
+        if (pattern.test(contextWindow) && !visualKeywords.includes(color)) {
+          visualKeywords.push(color);
+        }
+      }
+      
+      // Check for clothing
+      for (const clothingItem of vocab.clothing) {
+        const pattern = new RegExp(`\\b${escapeRegExp(clothingItem)}\\b`, 'i');
+        if (pattern.test(contextWindow) && !visualKeywords.includes(clothingItem)) {
+          visualKeywords.push(clothingItem);
+        }
+      }
+    }
+    
+    console.log(`👁️ Captured visuals for ${characterName}:`, visualKeywords);
+    return visualKeywords;
+  }
+
+  /**
+   * PHASE 1: Unified main character appearance detection
+   * Detects physical features and clothing for main character
+   */
+  async detectAppearance(text, sessionId, pageNumber) {
+    const vocab = await this.getVocabulary();
+    const detections = {
+      physicalFeatures: [],
+      clothing: []
+    };
+    
+    // Physical feature keywords
+    const physicalKeywords = ['eyes', 'hair', 'skin', 'face', 'smile', 'freckles', 'dimples', 'scar'];
+    
+    for (const feature of physicalKeywords) {
+      const pattern = new RegExp(`\\b${feature}\\b`, 'gi');
+      if (pattern.test(text)) {
+        // Capture descriptive words near the feature
+        const featurePattern = new RegExp(`(\\w+)\\s+${feature}`, 'gi');
+        let featureMatch;
+        while ((featureMatch = featurePattern.exec(text)) !== null) {
+          const descriptor = featureMatch[1];
+          detections.physicalFeatures.push({
+            feature,
+            descriptor,
+            fullDescription: `${descriptor} ${feature}`,
+            pageNumber
+          });
+        }
+      }
+    }
+    
+    // Clothing detection (color + item combinations)
+    for (const color of vocab.colors) {
+      for (const clothingItem of vocab.clothing) {
+        const pattern = new RegExp(`${escapeRegExp(color)}\\s+${escapeRegExp(clothingItem)}`, 'gi');
+        if (pattern.test(text)) {
+          detections.clothing.push({
+            color,
+            item: clothingItem,
+            fullDescription: `${color} ${clothingItem}`,
+            pageNumber
+          });
+        }
+      }
+    }
+    
+    console.log(`👔 Main character appearance detected:`, {
+      physicalFeaturesCount: detections.physicalFeatures.length,
+      clothingCount: detections.clothing.length
+    });
+    
+    return detections;
+  }
+
+  /**
+   * PHASE 1 UPDATED: Comprehensive detection orchestrator
+   * Now uses unified detectSecondaryCharacters() and detectAppearance()
    */
   async detectAllCharacters(pageText, context = {}) {
     const { sessionId, pageNumber = 1 } = context;
     
-    const [coloredObjects, characters, animals] = await Promise.all([
+    // Run detections in parallel
+    const [coloredObjects, secondaryCharacters, mainCharacterAppearance] = await Promise.all([
       this.detectColoredObjects(pageText, sessionId, pageNumber),
-      this.detectCharacters(pageText, sessionId, pageNumber),
-      this.detectAnimals(pageText, sessionId, pageNumber)
+      this.detectSecondaryCharacters(pageText, sessionId, pageNumber),
+      this.detectAppearance(pageText, sessionId, pageNumber)
     ]);
+
+    // Enhance secondary characters with visual details
+    const enhancedSecondaryCharacters = secondaryCharacters.map(char => {
+      const visualDetails = this.captureSecondaryCharacterVisuals(pageText, char.name);
+      return {
+        ...char,
+        visualDetails
+      };
+    });
 
     return {
       coloredObjects,
-      secondaryCharacters: [...characters, ...animals], // For backwards compatibility
-      characters,
-      animals,
-      source: 'tier25Vocabulary',
+      secondaryCharacters: enhancedSecondaryCharacters,
+      mainCharacterAppearance,
+      source: 'tier25Vocabulary_phase1',
       pageNumber
     };
   }
@@ -718,15 +871,22 @@ export class CharacterConsistencyService {
   // ============= PRONOUN RESOLUTION (PHASE 1) =============
 
   /**
-   * Analyze page with pronoun resolution for visual consistency
+   * PHASE 4 OPTIMIZED: Analyze page with pronoun resolution for visual consistency
+   * Database optimization: Single batch load on page 1, memory-first reads after
    * ENHANCED: Auto-detects and saves scene context (indoor/outdoor)
    */
   async analyzeVisualDetails(sessionId, pageText, pageNumber, characterName) {
     const manifest = this.getSessionManifest(sessionId);
     manifest.setPageNumber(pageNumber);
 
+    // PHASE 4: Single batch load on page 1
+    if (pageNumber === 1) {
+      console.log(`📊 PHASE 4: Loading complete session data for ${sessionId} (page 1 batch load)`);
+      await this.loadCompleteSessionData(sessionId);
+    }
+
     // Detect all objects/characters
-    await this.detectAllCharacters(pageText, { sessionId, pageNumber });
+    const detectionResults = await this.detectAllCharacters(pageText, { sessionId, pageNumber });
 
     // AUTO-DETECT SCENE CONTEXT using tier25Vocabulary
     try {
@@ -751,6 +911,9 @@ export class CharacterConsistencyService {
       await this.detectAllCharacters(resolvedText, { sessionId, pageNumber });
     }
 
+    // PHASE 2: Batch write new detections to database
+    await this.batchWriteDetections(sessionId, pageNumber, detectionResults);
+
     return {
       originalText: pageText,
       resolvedText,
@@ -760,9 +923,20 @@ export class CharacterConsistencyService {
   }
 
   /**
-   * Get colored objects for session (backwards compatible)
+   * PHASE 4: Get colored objects for session - MEMORY-FIRST
+   * Checks cache first, falls back to DB only if needed
    */
   async getColoredObjects(sessionId) {
+    // Check memory cache first (PHASE 4)
+    const cacheKey = `${sessionId}_colored_objects`;
+    const cached = this.storyCache.read(cacheKey);
+    
+    if (cached) {
+      console.log(`💾 CACHE HIT: Colored objects for ${sessionId}`);
+      return cached;
+    }
+    
+    // Fallback to manifest (in-memory)
     const manifest = this.getSessionManifest(sessionId);
     const objects = manifest.getAllObjects();
     
@@ -773,26 +947,177 @@ export class CharacterConsistencyService {
       .filter(Boolean)
       .join(', ');
     
+    // Cache result
+    this.storyCache.smartWrite(cacheKey, descriptions);
+    
     console.log(`🎨 Colored objects for ${sessionId}: ${descriptions}`);
     return descriptions;
   }
 
   /**
-   * Get secondary characters for session (backwards compatible)
+   * PHASE 4: Get secondary characters for session - MEMORY-FIRST
+   * Checks cache first, falls back to DB only if needed
    */
   async getSecondaryCharactersForSession(sessionId) {
+    // Check memory cache first (PHASE 4)
+    const cacheKey = `${sessionId}_secondary_characters`;
+    const cached = this.storyCache.read(cacheKey);
+    
+    if (cached) {
+      console.log(`💾 CACHE HIT: Secondary characters for ${sessionId}`);
+      return cached;
+    }
+    
+    // Fallback to manifest (in-memory)
     const manifest = this.getSessionManifest(sessionId);
     const characters = manifest.getAllCharacters();
     
-    return characters.map(char => ({
+    const result = characters.map(char => ({
       name: char.name,
       relationship: char.appearance?.type || 'character',
       appearance: char.appearance,
-      traits: []
+      traits: [],
+      visualDetails: char.visualDetails || [] // PHASE 1: Include visual details
     }));
+    
+    // Cache result
+    this.storyCache.smartWrite(cacheKey, result);
+    
+    return result;
   }
 
-  // ============= DATABASE OPERATIONS (PRESERVED 100%) =============
+  // ============= DATABASE OPERATIONS (PHASE 2 & 4 ENHANCED) =============
+
+  /**
+   * PHASE 4: Load complete session data in single batch query
+   * Pre-populates cache on page 1 for memory-first reads
+   */
+  async loadCompleteSessionData(sessionId) {
+    try {
+      const supabase = await this.getSupabaseClient();
+      if (!supabase) {
+        console.warn(`⚠️ Supabase unavailable, skipping batch load`);
+        return null;
+      }
+
+      console.log(`📊 Loading complete session data for ${sessionId}`);
+      
+      // Single query to get all visual details for session
+      const { data, error } = await supabase
+        .from('visual_details_cache')
+        .select('*')
+        .eq('session_id', sessionId);
+
+      if (error) {
+        console.error(`❌ Failed to load session data:`, error);
+        return null;
+      }
+
+      if (!data || data.length === 0) {
+        console.log(`📊 No existing session data for ${sessionId}`);
+        return null;
+      }
+
+      // Populate cache with loaded data
+      for (const record of data) {
+        const cacheKey = `${sessionId}_${record.detail_type}_${record.detail_key}`;
+        this.storyCache.smartWrite(cacheKey, record.detail_value);
+      }
+
+      console.log(`✅ Loaded ${data.length} cached records for ${sessionId}`);
+      return data;
+    } catch (error) {
+      console.error(`❌ Error in loadCompleteSessionData:`, error);
+      return null;
+    }
+  }
+
+  /**
+   * PHASE 2: Batch write detection results to database
+   * Handles main character appearance, secondary character visuals, and colored objects
+   */
+  async batchWriteDetections(sessionId, pageNumber, detectionResults) {
+    try {
+      const supabase = await this.getSupabaseClient();
+      if (!supabase) {
+        console.warn(`⚠️ Supabase unavailable, skipping batch write`);
+        return;
+      }
+
+      const recordsToWrite = [];
+
+      // Write main character physical features
+      if (detectionResults.mainCharacterAppearance?.physicalFeatures) {
+        for (const feature of detectionResults.mainCharacterAppearance.physicalFeatures) {
+          recordsToWrite.push({
+            session_id: sessionId,
+            character_name: 'main_character',
+            detail_type: 'physical_feature',
+            detail_key: feature.feature,
+            detail_value: feature.fullDescription,
+            page_first_seen: pageNumber,
+            page_last_seen: pageNumber,
+            visual_elements: { descriptor: feature.descriptor }
+          });
+        }
+      }
+
+      // Write main character clothing
+      if (detectionResults.mainCharacterAppearance?.clothing) {
+        for (const clothing of detectionResults.mainCharacterAppearance.clothing) {
+          recordsToWrite.push({
+            session_id: sessionId,
+            character_name: 'main_character',
+            detail_type: 'clothing',
+            detail_key: clothing.item,
+            detail_value: clothing.fullDescription,
+            page_first_seen: pageNumber,
+            page_last_seen: pageNumber,
+            visual_elements: { color: clothing.color, item: clothing.item }
+          });
+        }
+      }
+
+      // Write secondary character visuals
+      if (detectionResults.secondaryCharacters) {
+        for (const char of detectionResults.secondaryCharacters) {
+          if (char.visualDetails && char.visualDetails.length > 0) {
+            recordsToWrite.push({
+              session_id: sessionId,
+              character_name: char.name,
+              detail_type: 'secondary_visual',
+              detail_key: char.name,
+              detail_value: char.visualDetails.join(', '),
+              page_first_seen: pageNumber,
+              page_last_seen: pageNumber,
+              visual_elements: { keywords: char.visualDetails, type: char.type }
+            });
+          }
+        }
+      }
+
+      if (recordsToWrite.length === 0) {
+        console.log(`📊 No new detections to write for ${sessionId} page ${pageNumber}`);
+        return;
+      }
+
+      // Batch upsert with conflict resolution
+      const { error } = await supabase
+        .from('visual_details_cache')
+        .upsert(recordsToWrite, {
+          onConflict: 'session_id,character_name,detail_type,detail_key'
+        });
+
+      if (error) {
+        console.error(`❌ Batch write failed:`, error);
+        return;
+      }
+
+      console.log(`✅ Batch wrote ${recordsToWrite.length} detection records for ${sessionId} page ${pageNumber}`);
+    } catch (error) {
+      console.error(`❌ Error in batchWriteDetections:`, error);
+    }
+  }
 
   /**
    * Get or create Supabase client using resilient loader with enhanced fallback
@@ -891,62 +1216,6 @@ export class CharacterConsistencyService {
     } catch (importError) {
       console.warn('Failed to get character from database:', importError);
       return null;
-    }
-  }
-
-  /**
-   * Save visual detail to database (visual_details_cache only)
-   */
-  async saveVisualDetailToDatabase(sessionId, characterName, detailType, detailKey, detailValue, pageNumber) {
-    try {
-      const supabase = await this.getSupabaseClient();
-      if (!supabase) return;
-
-      const { data: existing } = await supabase
-        .from('visual_details_cache')
-        .select('*')
-        .eq('session_id', sessionId)
-        .eq('character_name', characterName)
-        .eq('detail_type', detailType)
-        .eq('detail_key', detailKey)
-        .single();
-
-      if (existing) {
-        const { error } = await supabase
-          .from('visual_details_cache')
-          .update({
-            detail_value: detailValue,
-            page_last_seen: pageNumber,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', existing.id);
-
-        if (error) {
-          console.error('Error updating visual detail:', error);
-        } else {
-          console.log(`✅ Updated visual detail: ${characterName} ${detailType} ${detailKey} = ${detailValue}`);
-        }
-      } else {
-        const { error } = await supabase
-          .from('visual_details_cache')
-          .insert({
-            session_id: sessionId,
-            character_name: characterName,
-            detail_type: detailType,
-            detail_key: detailKey,
-            detail_value: detailValue,
-            page_first_seen: pageNumber,
-            page_last_seen: pageNumber
-          });
-
-        if (error) {
-          console.error('Error inserting visual detail:', error);
-        } else {
-          console.log(`✅ Stored new visual detail: ${characterName} ${detailType} ${detailKey} = ${detailValue}`);
-        }
-      }
-    } catch (error) {
-      console.error('Database error in saveVisualDetailToDatabase:', error);
     }
   }
 
