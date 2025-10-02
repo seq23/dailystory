@@ -1,4 +1,13 @@
-# Phase 1: Character Detection Refactoring (2025-10-02)
+# Phase 1: Character Detection Refactoring [ARCHIVED]
+
+**Status**: ✅ COMPLETED - October 2, 2025  
+**Consolidated Into**: 
+- `MASTER_SYSTEM_GUIDE.md` § 3.2 Image Generation System - Character Consistency Service Integration
+- `CHARACTER_CONSISTENCY_ARCHITECTURE.md` § analyzeVisualDetails() Method Reference
+
+**Archive Note**: This phase-specific documentation has been consolidated into the canonical system documentation. For current architectural details, see the documents listed above.
+
+---
 
 ## Overview
 Comprehensive refactoring of character detection system to unify human and animal detection, enhance main character appearance tracking, and optimize database operations.

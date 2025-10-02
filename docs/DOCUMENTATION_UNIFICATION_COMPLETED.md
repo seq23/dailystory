@@ -230,6 +230,9 @@ docs/
 - **Zero Content Loss**: All original documentation preserved in archive folder
 - **Complete Navigation Update**: All internal links now point to unified document structure
 
+**Additional Archives (October 2025)**:
+- `docs/archive/PHASE1_CHARACTER_DETECTION_REFACTORING.md` - Phase-specific refactoring documentation (consolidated into MASTER_SYSTEM_GUIDE.md and CHARACTER_CONSISTENCY_ARCHITECTURE.md)
+
 ### Verification Complete
 - ✅ No broken links in main documentation
 - ✅ All role-based navigation updated
