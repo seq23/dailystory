@@ -150,9 +150,19 @@ function generateEchoCorsHeaders(req: Request): Record<string, string> {
 
 function corsResponse(data: any, req: Request, status = 200): Response {
   const corsHeaders = generateEchoCorsHeaders(req);
+  const headers: Record<string, string> = { 
+    ...corsHeaders, 
+    'Content-Type': 'application/json' 
+  };
+  
+  // Add Retry-After header for 503 responses
+  if (status === 503 && data?.retryAfterSeconds) {
+    headers['Retry-After'] = String(data.retryAfterSeconds);
+  }
+  
   return new Response(JSON.stringify(data), {
     status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    headers
   });
 }
 
@@ -973,17 +983,26 @@ Deno.serve(async (req: Request): Promise<Response> => {
         console.log(`[DIRECT_MODE] Attempting Direct Mode fallback after Tier 1 failure`);
           
         try {
-          const directModeResponse = await internalSupabase.functions.invoke('ai-visual-scene-creator', {
-            body: {
-              ...payload,
-              // Pass structuredAvatarData from orchestrator if Tier 1 partially succeeded
-              userInfo: {
-                ...payload.userInfo,
-                structuredAvatarData: enhancedPrompt?.structuredAvatarData || payload.userInfo?.structuredAvatarData
-              },
-              directMode: true,
-              tier1FailureReason: errorMessage
-            }
+          // Gate check for Direct Mode (shares T1 gate key)
+          const dmGateResult = await ProviderGate.acquire('DM:runware-template-cd');
+          if (!dmGateResult.acquired) {
+            console.warn(`⚠️ [GATE] Direct Mode denied: ${dmGateResult.reason}`);
+            directErrorMessage = `GATE_DENIED: ${dmGateResult.reason}`;
+            throw new Error(directErrorMessage);
+          }
+          
+          try {
+            const directModeResponse = await internalSupabase.functions.invoke('ai-visual-scene-creator', {
+              body: {
+                ...payload,
+                // Pass structuredAvatarData from orchestrator if Tier 1 partially succeeded
+                userInfo: {
+                  ...payload.userInfo,
+                  structuredAvatarData: enhancedPrompt?.structuredAvatarData || payload.userInfo?.structuredAvatarData
+                },
+                directMode: true,
+                tier1FailureReason: errorMessage
+              }
             });
             
             if (directModeResponse.data?.success && directModeResponse.data?.imageURL) {
@@ -1017,12 +1036,22 @@ Deno.serve(async (req: Request): Promise<Response> => {
               tierLogger.success('DIRECT_MODE', { result });
               console.log(`SUCCESS [${requestId}] Direct Mode fallback completed`);
               
+              ProviderGate.release('DM:runware-template-cd', true);
               return corsResponse({
                 ...result
               }, req);
             } else {
+              ProviderGate.release('DM:runware-template-cd', false);
               throw new Error('DIRECT_MODE_FAILED: ' + (directModeResponse.error?.message || 'Direct mode processing failed'));
             }
+          } finally {
+            // Ensure gate is released
+            if (directErrorMessage.includes('GATE_DENIED')) {
+              // Already handled
+            } else {
+              ProviderGate.release('DM:runware-template-cd', !directErrorMessage || directErrorMessage === 'Direct Mode not attempted');
+            }
+          }
             
           } catch (directModeError: unknown) {
             directErrorMessage = directModeError instanceof Error ? directModeError.message : String(directModeError);
@@ -1100,13 +1129,22 @@ Deno.serve(async (req: Request): Promise<Response> => {
           console.log(`[TIER_2.5A] Attempting fallback after Direct Mode or if no primaryScene`);
           
           try {
-          const tier25aResponse = await internalSupabase.functions.invoke('runware-template-ab', {
-            body: {
-              ...payload,
-              templateComplexity: 'A',
-              tier1FailureReason: errorMessage
+            // Gate check for Tier 2.5A
+            const t25aGateResult = await ProviderGate.acquire('T25A:runware-template-ab');
+            if (!t25aGateResult.acquired) {
+              console.warn(`⚠️ [GATE] Tier 2.5A denied: ${t25aGateResult.reason}`);
+              tier25aErrorMessage = `GATE_DENIED: ${t25aGateResult.reason}`;
+              throw new Error(tier25aErrorMessage);
             }
-          });
+            
+            try {
+              const tier25aResponse = await internalSupabase.functions.invoke('runware-template-ab', {
+                body: {
+                  ...payload,
+                  templateComplexity: 'A',
+                  tier1FailureReason: errorMessage
+                }
+              });
           
           if (tier25aResponse.data?.success && tier25aResponse.data?.imageURL) {
               const result = {
@@ -1128,15 +1166,21 @@ Deno.serve(async (req: Request): Promise<Response> => {
                 }
               };
             
-            tierLogger.success('TIER_2.5A', { result });
-            console.log(`SUCCESS [${requestId}] Tier 2.5A fallback completed`);
-            
-            return corsResponse({
-              ...result
-            }, req);
-          } else {
-            throw new Error('TIER_2.5A_FAILED: Template A processing failed');
-          }
+              tierLogger.success('TIER_2.5A', { result });
+              console.log(`SUCCESS [${requestId}] Tier 2.5A fallback completed`);
+              
+              ProviderGate.release('T25A:runware-template-ab', true);
+              return corsResponse({
+                ...result
+              }, req);
+            } else {
+              ProviderGate.release('T25A:runware-template-ab', false);
+              throw new Error('TIER_2.5A_FAILED: Template A processing failed');
+            }
+            } finally {
+              // Ensure gate is released
+              ProviderGate.release('T25A:runware-template-ab', !tier25aErrorMessage);
+            }
           
         } catch (tier25aError: unknown) {
           tier25aErrorMessage = tier25aError instanceof Error ? tier25aError.message : String(tier25aError);
@@ -1203,15 +1247,25 @@ Deno.serve(async (req: Request): Promise<Response> => {
           console.log(`[TIER_2.5C] Attempting universal fallback after 2.5B failure (from ${isCharacterServiceUnavailable ? 'direct 2.5B' : '2.5A→2.5B'} path)`);
           
           try {
-            const tier25cResponse = await internalSupabase.functions.invoke('runware-template-cd', {
-              body: {
-                ...payload,
-                templateComplexity: 'C',
-                tier1FailureReason: errorMessage,
-                tier25aFailureReason: tier25aErrorMessage,
-                tier25bFailureReason: tier25bErrorMessage
-              }
-            });
+            // Gate check for Tier 2.5C
+            const t25cGateResult = await ProviderGate.acquire('T25C:runware-template-cd');
+            if (!t25cGateResult.acquired) {
+              console.warn(`⚠️ [GATE] Tier 2.5C denied: ${t25cGateResult.reason}`);
+              const tier25cErrorMessage = `GATE_DENIED: ${t25cGateResult.reason}`;
+              tierLogger.failure('TIER_2.5C', { error: tier25cErrorMessage });
+              throw new Error(tier25cErrorMessage);
+            }
+            
+            try {
+              const tier25cResponse = await internalSupabase.functions.invoke('runware-template-cd', {
+                body: {
+                  ...payload,
+                  templateComplexity: 'C',
+                  tier1FailureReason: errorMessage,
+                  tier25aFailureReason: tier25aErrorMessage,
+                  tier25bFailureReason: tier25bErrorMessage
+                }
+              });
               
             if (tier25cResponse.data?.success && tier25cResponse.data?.imageURL) {
               const result = {
@@ -1238,12 +1292,18 @@ Deno.serve(async (req: Request): Promise<Response> => {
               tierLogger.success('TIER_2.5C', { result });
               console.log(`SUCCESS [${requestId}] Tier 2.5C universal fallback completed`);
               
+              ProviderGate.release('T25C:runware-template-cd', true);
               return corsResponse({
                 success: true,
                 ...result
               }, req);
             } else {
+              ProviderGate.release('T25C:runware-template-cd', false);
               throw new Error('TIER_2.5C_FAILED: Template C processing failed');
+            }
+            } finally {
+              // Ensure gate is released
+              ProviderGate.release('T25C:runware-template-cd', tier25cResponse?.data?.success || false);
             }
             
           } catch (tier25cError: unknown) {
@@ -1255,16 +1315,26 @@ Deno.serve(async (req: Request): Promise<Response> => {
             console.log(`[TIER_2.5D] Attempting emergency fallback after 2.5C failure`);
             
             try {
-              const tier25dResponse = await internalSupabase.functions.invoke('runware-template-cd', {
-                body: {
-                  ...payload,
-                  templateComplexity: 'D',
-                  tier1FailureReason: errorMessage,
-                  tier25aFailureReason: tier25aErrorMessage,
-                  tier25bFailureReason: tier25bErrorMessage,
-                  tier25cFailureReason: tier25cErrorMessage
-                }
-              });
+              // Gate check for Tier 2.5D
+              const t25dGateResult = await ProviderGate.acquire('T25C:runware-template-cd'); // Same gate as 2.5C (same service)
+              if (!t25dGateResult.acquired) {
+                console.warn(`⚠️ [GATE] Tier 2.5D denied: ${t25dGateResult.reason}`);
+                const tier25dErrorMessage = `GATE_DENIED: ${t25dGateResult.reason}`;
+                tierLogger.failure('TIER_2.5D', { error: tier25dErrorMessage });
+                throw new Error(tier25dErrorMessage);
+              }
+              
+              try {
+                const tier25dResponse = await internalSupabase.functions.invoke('runware-template-cd', {
+                  body: {
+                    ...payload,
+                    templateComplexity: 'D',
+                    tier1FailureReason: errorMessage,
+                    tier25aFailureReason: tier25aErrorMessage,
+                    tier25bFailureReason: tier25bErrorMessage,
+                    tier25cFailureReason: tier25cErrorMessage
+                  }
+                });
               
               if (tier25dResponse.data?.success && tier25dResponse.data?.imageURL) {
                 const result = {
@@ -1292,12 +1362,18 @@ Deno.serve(async (req: Request): Promise<Response> => {
                 tierLogger.success('TIER_2.5D', { result });
                 console.log(`SUCCESS [${requestId}] Tier 2.5D emergency fallback completed`);
                 
+                ProviderGate.release('T25C:runware-template-cd', true);
                 return corsResponse({
                   success: true,
                   ...result
                 }, req);
               } else {
+                ProviderGate.release('T25C:runware-template-cd', false);
                 throw new Error('TIER_2.5D_FAILED: Template D processing failed');
+              }
+              } finally {
+                // Ensure gate is released
+                ProviderGate.release('T25C:runware-template-cd', tier25dResponse?.data?.success || false);
               }
               
             } catch (tier25dError: unknown) {
@@ -1305,15 +1381,18 @@ Deno.serve(async (req: Request): Promise<Response> => {
               console.log(`[TIER_2.5D] Failed: ${tier25dErrorMessage}`);
               tierLogger.failure('TIER_2.5D', { error: tier25dErrorMessage });
               
-              // All tiers exhausted - final error
+              // All tiers exhausted - final error - return 503 to signal client backoff
               const finalError = `All tiers exhausted. Final errors: Tier1: ${errorMessage}, 2.5A: ${tier25aErrorMessage}, 2.5B: ${tier25bErrorMessage}, 2.5C: ${tier25cErrorMessage}, 2.5D: ${tier25dErrorMessage}`;
               tierLogger.failure('ALL_TIERS', { finalError });
               console.error(`❌ [${requestId}] All tiers failed`);
               
               return corsResponse({ 
+                success: false,
                 error: finalError,
-                escalationTarget: "TIER_4" 
-              }, req, 500);
+                escalationTarget: "TIER_4",
+                message: "All image generation tiers failed. Please try again.",
+                retryAfterSeconds: 8
+              }, req, 503);
             }
           }
         }
