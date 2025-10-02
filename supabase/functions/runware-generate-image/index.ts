@@ -405,10 +405,13 @@ async function processInlinedTier1(payload: any, memoizedImport: any, logTier1St
   
   logTier1Step('Template Building', 'attempt', 'Constructing COMPLETE_TIER_1 template');
   
-  // Build COMPLETE_TIER_1 template using 4-section structured format - only include physical descriptions when complete
-  const hasCompletePhysicalData = structuredAvatarData?.skinTone && structuredAvatarData?.hairColor;
-  const physicalDescription = hasCompletePhysicalData ? ` with ${structuredAvatarData.skinTone} skin and ${structuredAvatarData.hairColor}` : '';
-  const mainCharacterDetails = `Beautiful ${characterReference} character ${characterName}, age ${userInfo?.age || 6}${physicalDescription}${characterSeed?.characterDescription ? `, ${characterSeed.characterDescription}` : ''}${culturalBundle?.hair ? `, ${culturalBundle.hair}` : ''}${culturalBundle?.features ? `, ${culturalBundle.features}` : ''}`;
+  // Build COMPLETE_TIER_1 template with deduplication logic
+  // Hair and skin are already in culturalBundle, no need for physicalDescription
+  const characterAge = userInfo?.age || 6;
+  const hasAgeInDescription = characterSeed?.characterDescription?.includes('age');
+  const ageText = `, age ${characterAge}`;
+  
+  const mainCharacterDetails = `Beautiful ${characterReference} character ${characterName}${ageText}${characterSeed?.characterDescription && !hasAgeInDescription ? `, ${characterSeed.characterDescription}` : ''}${culturalBundle?.hair ? `, ${culturalBundle.hair}` : ''}${culturalBundle?.features ? `, ${culturalBundle.features}` : ''}`;
   
   const secondaryCharsText = secondaryCharacterSeeds.length > 0 ? `With ${secondaryCharacterSeeds.map(s => s.visualDescription).join(', ')}` : '';
   const animalsText = detectedAnimals?.length > 0 ? `Including ${detectedAnimals.map(a => a.name || a.type).join(', ')}` : '';

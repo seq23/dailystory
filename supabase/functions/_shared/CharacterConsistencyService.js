@@ -1230,8 +1230,8 @@ export class CharacterConsistencyService {
     // Phase 2: Use full cultural data buffet (not LEAN_CULTURAL_FALLBACK)
     try {
       const skinTone = userInfo?.skinTone || 'medium';
-      const characterSeed = characterData.seed || this.generateStableSeed(`${sessionId}_${characterName}`, characterName);
-      const culturalBundle = this.buildFullCulturalBundle(skinTone, characterSeed, userInfo);
+      // Use sessionId directly for consistency with structuredAvatarData
+      const culturalBundle = this.buildFullCulturalBundle(skinTone, sessionId, userInfo);
       
       // Store cultural enhancements in character_data jsonb (redundant columns removed)
       characterData.selectedCulturalHair = culturalBundle.hair;
@@ -1301,16 +1301,18 @@ export class CharacterConsistencyService {
   /**
    * Build full cultural bundle using complete inline data (not LEAN_CULTURAL_FALLBACK)
    * Uses all 73+ hair variations, 30 African American hair, 36 African American features, 48 skin descriptions
+   * FIXED: Uses sessionId for consistency with structuredAvatarData
    */
-  buildFullCulturalBundle(skinTone, characterSeed, userInfo) {
+  buildFullCulturalBundle(skinTone, sessionId, userInfo) {
     const normalizedTone = (skinTone || 'medium').toLowerCase();
     const language = userInfo?.language || 'en';
     const gender = userInfo?.avatarType?.includes('girl') ? 'girls' : 'boys';
     
-    // Check if user qualifies for African American cultural enhancements
+    // STANDARDIZED: Check if user qualifies for African American cultural enhancements
+    // Must match detectEthnicity() criteria exactly
     const qualifiesForAfricanAmericanEnhancements = 
-      (normalizedTone === 'dark' || normalizedTone === 'darker') && 
-      ['en', 'en-US', 'fr', 'es', 'pt', 'zh'].includes(language);
+      (normalizedTone === 'dark') && 
+      ['en', 'en-US', 'es', 'fr', 'pt'].includes(language);
     
     if (qualifiesForAfricanAmericanEnhancements) {
       // Use complete African American arrays (30 hair + 36 features)
@@ -1318,8 +1320,8 @@ export class CharacterConsistencyService {
       const featureOptions = CharacterConsistencyService.AFRICAN_AMERICAN_FACIAL_FEATURES_INLINE;
       
       return {
-        hair: CharacterConsistencyService.seededPick(hairOptions, characterSeed),
-        features: CharacterConsistencyService.seededPick(featureOptions, characterSeed)
+        hair: CharacterConsistencyService.seededPick(hairOptions, sessionId),
+        features: CharacterConsistencyService.seededPick(featureOptions, sessionId)
       };
     } else {
       // Use full HAIR_BY_SKIN_TONE_INLINE arrays (73 total variations)
@@ -1327,10 +1329,10 @@ export class CharacterConsistencyService {
                           CharacterConsistencyService.HAIR_BY_SKIN_TONE_INLINE.medium;
       
       // Use existing getSkinFeatures() method (already handles 48 total variations)
-      const features = CharacterConsistencyService.getSkinFeatures(normalizedTone, characterSeed);
+      const features = CharacterConsistencyService.getSkinFeatures(normalizedTone, sessionId);
       
       return {
-        hair: CharacterConsistencyService.seededPick(hairOptions, characterSeed),
+        hair: CharacterConsistencyService.seededPick(hairOptions, sessionId),
         features
       };
     }
@@ -1603,10 +1605,18 @@ export class CharacterConsistencyService {
 
   /**
    * Detect ethnicity from userInfo
+   * STANDARDIZED: Only 'dark' skin tone + Afro heritage languages qualify
    */
   static detectEthnicity(userInfo) {
     const skinTone = (userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium').toLowerCase();
-    return (skinTone === 'dark' || skinTone === 'deep' || skinTone === 'darker') ? 'african-american' : 'Euro-American';
+    const language = userInfo?.language || 'en';
+    
+    // Standardized criteria: DARK skin + Afro heritage languages (English, Spanish, French, Portuguese)
+    const qualifiesForAfricanAmericanFeatures = 
+      (skinTone === 'dark') && 
+      ['en', 'en-US', 'es', 'fr', 'pt'].includes(language);
+      
+    return qualifiesForAfricanAmericanFeatures ? 'african-american' : 'Euro-American';
   }
 
   /**
@@ -1650,19 +1660,17 @@ export class CharacterConsistencyService {
 
   /**
    * SIMPLIFIED: Get skin tone and facial features (Switch statement for clean mapping)
+   * STANDARDIZED: Only supports 5 standard skin tones (pale, light, medium, olive, dark)
    */
   static getSkinFeatures(skinTone, sessionId) {
     const normalizedTone = (skinTone || 'medium').toLowerCase();
     
     switch (normalizedTone) {
       case 'dark':
-      case 'darker':
         return CharacterConsistencyService.seededPick(CharacterConsistencyService.AFRICAN_AMERICAN_FACIAL_FEATURES_INLINE, sessionId);
       case 'pale':
         return CharacterConsistencyService.seededPick(CharacterConsistencyService.PALE_SKIN_TONES_INLINE, sessionId);
       case 'light':
-      case 'lighter':
-      case 'fair':
         return CharacterConsistencyService.seededPick(CharacterConsistencyService.LIGHT_SKIN_TONES_INLINE, sessionId);
       case 'olive':
         return CharacterConsistencyService.seededPick(CharacterConsistencyService.OLIVE_SKIN_TONES_INLINE, sessionId);
