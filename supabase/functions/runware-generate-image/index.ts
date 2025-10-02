@@ -6,7 +6,7 @@
 // 🎯 ORCHESTRATOR: RESILIENT IMAGE GENERATION ORCHESTRATOR
 // **CRITICAL SYSTEM NOTICE**: This function serves as the MAIN ORCHESTRATOR for image generation
 // Handles all image generation tiers, fallbacks, and service coordination
-// ENHANCED: Complete tier cascade logic with 1→2.5A→2.5B→Direct Mode→2.5C→SVG fallback
+// ENHANCED: Complete tier cascade logic: 1 → Direct Mode → 2.5A → 2.5B → 2.5C → 2.5D
 // ============================================================================
 
 // TypeScript type imports
@@ -31,28 +31,36 @@ interface TierLogger {
   failure: (tier: string, ctx?: Record<string, any>) => void;
 }
 
-interface CircuitBreakerConfig {
-  DIRECT_MODE: number;
-  TIER_1: number;
-  AI_GENERATION: number;
-  RUNWARE_API: number;
-}
-
-interface ErrorContext {
-  sessionId?: string;
-  requestId?: string;
-  details?: any;
-}
-
-interface ValidationPayload {
-  pageText?: string;
-  storyText?: string;
-  sessionId?: string;
-  userInfo?: UserInfo;
-}
+// Unused interfaces removed - see Phase 3 of comprehensive fix plan
 
 // ---- Async Tier logger binder with memoized dependencies ----
+// Phase 6: PII Protection - redact sensitive data in production
+function redactPII(value: any): any {
+  if (typeof value === 'string') {
+    // Mask potential emails, phone numbers, addresses
+    return value
+      .replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, '[EMAIL-REDACTED]')
+      .replace(/\b\d{3}-\d{3}-\d{4}\b/g, '[PHONE-REDACTED]')
+      .replace(/\b\d{3}-\d{2}-\d{4}\b/g, '[SSN-REDACTED]');
+  }
+  if (typeof value === 'object' && value !== null) {
+    const redacted: any = Array.isArray(value) ? [] : {};
+    for (const key in value) {
+      // Redact known sensitive fields
+      if (['characterName', 'sessionId', 'email', 'phone', 'address'].includes(key)) {
+        redacted[key] = '[REDACTED]';
+      } else {
+        redacted[key] = redactPII(value[key]);
+      }
+    }
+    return redacted;
+  }
+  return value;
+}
+
 async function bindTierLogger(sessionId: SessionId, requestId: string, authHeader: string | null = null, memoizedImport: any): Promise<TierLogger> {
+  const isProd = Deno.env.get('ENVIRONMENT') === 'production';
+  
   try {
     const [{ createResilientSupabaseClient }, tierLogging] = await Promise.all([
       memoizedImport("../_shared/resilientLoader.ts"),
@@ -60,23 +68,43 @@ async function bindTierLogger(sessionId: SessionId, requestId: string, authHeade
     ]);
     
     const supabaseClient = await createResilientSupabaseClient();
+    
+    // Wrap logging functions with PII redaction
+    const wrapWithRedaction = (fn: Function) => (msg: string, ctx: any = {}) => {
+      const safeCtx = isProd ? redactPII(ctx) : ctx;
+      return fn(msg, safeCtx, supabaseClient, sessionId, requestId);
+    };
   
     return {
-      t1: (msg, ctx = {}) => tierLogging.logTier1(msg, ctx, supabaseClient, sessionId, requestId),
-      t2: (msg, ctx = {}) => tierLogging.logTier2(msg, ctx, supabaseClient, sessionId, requestId),
-      attempt: (tier, ctx = {}) => tierLogging.logTierAttempt(supabaseClient, sessionId, requestId, tier, 'attempting', ctx),
-      success: (tier, ctx = {}) => tierLogging.logTierSuccess(supabaseClient, sessionId, requestId, tier, ctx),
-      failure: (tier, ctx = {}) => tierLogging.logTierFailure(supabaseClient, sessionId, requestId, tier, ctx),
+      t1: wrapWithRedaction(tierLogging.logTier1),
+      t2: wrapWithRedaction(tierLogging.logTier2),
+      attempt: (tier, ctx = {}) => {
+        const safeCtx = isProd ? redactPII(ctx) : ctx;
+        return tierLogging.logTierAttempt(supabaseClient, sessionId, requestId, tier, 'attempting', safeCtx);
+      },
+      success: (tier, ctx = {}) => {
+        const safeCtx = isProd ? redactPII(ctx) : ctx;
+        return tierLogging.logTierSuccess(supabaseClient, sessionId, requestId, tier, safeCtx);
+      },
+      failure: (tier, ctx = {}) => {
+        const safeCtx = isProd ? redactPII(ctx) : ctx;
+        return tierLogging.logTierFailure(supabaseClient, sessionId, requestId, tier, safeCtx);
+      },
     };
   } catch (error) {
     console.warn(`Failed to create Supabase client: ${error}`);
     // Return console-only logger to prevent function crashes
+    const wrapConsoleWithRedaction = (prefix: string) => (msg: string, ctx: any = {}) => {
+      const safeCtx = isProd ? redactPII(ctx) : ctx;
+      console.log(`[${prefix}] ${msg}`, safeCtx);
+    };
+    
     return {
-      t1: (msg, ctx = {}) => console.log(`[T1] ${msg}`, ctx),
-      t2: (msg, ctx = {}) => console.log(`[T2] ${msg}`, ctx),
-      attempt: (tier, ctx = {}) => console.log(`[${tier}] Attempting`, ctx),
-      success: (tier, ctx = {}) => console.log(`[${tier}] Success`, ctx),
-      failure: (tier, ctx = {}) => console.log(`[${tier}] Failure`, ctx),
+      t1: wrapConsoleWithRedaction('T1'),
+      t2: wrapConsoleWithRedaction('T2'),
+      attempt: (tier, ctx = {}) => wrapConsoleWithRedaction(tier)('Attempting', ctx),
+      success: (tier, ctx = {}) => wrapConsoleWithRedaction(tier)('Success', ctx),
+      failure: (tier, ctx = {}) => wrapConsoleWithRedaction(tier)('Failure', ctx),
     };
   }
 }
@@ -418,10 +446,10 @@ async function processInlinedTier1(payload: any, memoizedImport: any, logTier1St
   
   const secondaryCharsText = secondaryCharacterSeeds.length > 0 ? `With ${secondaryCharacterSeeds.map(s => s.visualDescription).join(', ')}` : '';
   const animalsText = detectedAnimals?.length > 0 ? `Including ${detectedAnimals.map(a => a.name || a.type).join(', ')}` : '';
+  // Phase 2: Remove sessionSetting duplication - it's already in aiSchema.sceneSettings
   const consistencyElements = [
     secondaryCharsText,
-    animalsText,
-    sessionSetting ? `${sessionSetting} setting` : ''
+    animalsText
   ].filter(Boolean).join(', ');
   
   const enhancedPrompt = COMPLETE_TIER_1_TEMPLATE
@@ -605,10 +633,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
       const forceCompleteTier1 = payload.forceCompleteTier1 === true;
 
       // Initialize Tier 1 Timeline tracking at handler scope (CRITICAL FIX: was inside processInlinedTier1)
+      // Phase 4: Keep last 20 entries (sliding window) to preserve most recent failures
       const tier1ErrorLog: Array<{step: string, status: 'attempt' | 'success' | 'failed' | 'skipped', message: string, at: string}> = [];
       const logTier1Step = (step: string, status: 'attempt' | 'success' | 'failed' | 'skipped', message: string) => {
-        if (tier1ErrorLog.length < 20) { // Cap at 20 entries
-          tier1ErrorLog.push({ step, status, message: message.substring(0, 200), at: new Date().toISOString() });
+        tier1ErrorLog.push({ step, status, message: message.substring(0, 200), at: new Date().toISOString() });
+        // Keep only last 20 entries (sliding window)
+        if (tier1ErrorLog.length > 20) {
+          tier1ErrorLog.splice(0, tier1ErrorLog.length - 20);
         }
       };
 

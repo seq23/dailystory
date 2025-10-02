@@ -289,15 +289,12 @@ async function callRunwareAPI(positivePrompt, negativePrompt, retries = 2) {
         
         let supabaseClient = null;
         
-    // Tier 1: Try primary CDN
+    // Phase 1: Use resilient Supabase client (standardized across all functions)
     try {
-      console.log('🔍 [2-TIER-CDN] Attempting Tier 1: Primary CDN import for cost tracking');
-      const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4');
-      supabaseClient = createClient(
-        Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-      );
-      console.log('✅ [2-TIER-CDN] Tier 1 SUCCESS: Primary CDN import successful');
+      console.log('🔍 [RESILIENT_LOADER] Using createResilientSupabaseClient for cost tracking');
+      const { createResilientSupabaseClient } = await import('../_shared/resilientLoader.ts');
+      supabaseClient = await createResilientSupabaseClient();
+      console.log('✅ [RESILIENT_LOADER] Supabase client initialized successfully');
     } catch (cdnError) {
       console.warn('⚠️ [2-TIER-CDN] Tier 1 FAILED: CDN import failed, activating Tier 2 fallback:', cdnError.message);
       // Tier 2: Fall back to local vendor bundle
@@ -467,28 +464,25 @@ async function handleRequest(req) {
     negativePrompt: templateResult.negativePrompt
   };
 
-  // Log successful template generation with 2-tier CDN fallback
+  // Log successful template generation with resilient Supabase client
   try {
     let supabase = null;
     
-    // Tier 1: Try primary CDN
+    // Use resilient loader (standardized across all functions)
     try {
-      console.log('🔍 [2-TIER-CDN] Attempting Tier 1: Primary CDN import for logging');
-      const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.57.4');
-      supabase = createClient(
-        Deno.env.get('SUPABASE_URL'),
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY')
-      );
-      console.log('✅ [2-TIER-CDN] Tier 1 SUCCESS: Primary CDN import successful for logging');
-    } catch (cdnError) {
-      console.warn('⚠️ [2-TIER-CDN] Tier 1 FAILED: CDN import failed for logging, activating Tier 2 fallback:', cdnError.message);
-      // Tier 2: Fall back to local vendor bundle
+      console.log('🔍 [RESILIENT_LOADER] Using createResilientSupabaseClient for logging');
+      const { createResilientSupabaseClient } = await import('../_shared/resilientLoader.ts');
+      supabase = await createResilientSupabaseClient();
+      console.log('✅ [RESILIENT_LOADER] Supabase client initialized successfully for logging');
+    } catch (loaderError) {
+      console.warn('⚠️ [RESILIENT_LOADER] Failed, using fallback:', loaderError.message);
+      // Fallback to local vendor bundle
       const { createClient } = await import('../_vendor/supabase-js@2.57.4.mjs');
       supabase = createClient(
         Deno.env.get('SUPABASE_URL'),
         Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY')
       );
-      console.log('✅ [2-TIER-CDN] Tier 2 SUCCESS: Local vendor fallback successful for logging');
+      console.log('✅ [RESILIENT_LOADER] Local vendor fallback successful for logging');
     }
     
     const { logTierAttempt } = await import("../_shared/tierLogging.js");

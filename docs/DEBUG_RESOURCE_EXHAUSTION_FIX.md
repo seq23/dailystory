@@ -134,3 +134,55 @@ The following services are now **safe for production** and will not cause resour
 - Goal: Prevent Status 546 WORKER_LIMIT runtime errors while keeping exact business outcomes.
 
 Verification: Health check remains 200; POST path no longer hits CPU ceiling under load; Direct Mode continues to succeed or gracefully escalates to Nuclear 2.5C when needed.
+
+## Addendum (2025-10-02): Comprehensive Architecture & Security Fixes
+
+### Phase 1: Fixed Supabase Client Inconsistency ✅
+- **Problem**: Tier-1 used `createResilientSupabaseClient` while template fallbacks (AB/CD) used direct ESM imports (`esm.sh/@supabase/supabase-js`)
+- **Solution**: Standardized ALL functions to use `createResilientSupabaseClient` from `_shared/resilientLoader.ts`
+- **Impact**: Eliminates version skew, duplicate bundles, and ensures consistent retry logic across all tiers
+- **Files Modified**: `runware-template-ab/index.js` (lines 292-300, 2188-2210), `runware-template-cd/index.js` (lines 292-300, 467-489)
+
+### Phase 2: Fixed Prompt Duplication ✅
+- **Problem**: `sessionSetting` appeared twice in prompts - once in `consistencyElements` (line 424) and again in `aiSchema.sceneSettings` (line 432)
+- **Solution**: Removed `sessionSetting` from `consistencyElements` array, kept only `aiSchema.sceneSettings` in `{settingContext}` slot
+- **Impact**: Eliminates duplicate setting information, cleaner prompts, reduces token usage
+- **File Modified**: `runware-generate-image/index.ts` (lines 419-425)
+
+### Phase 3: Removed Dead Code ✅
+- **Problem**: Unused TypeScript interfaces cluttering the codebase
+- **Solution**: Deleted `CircuitBreakerConfig`, `ErrorContext`, `ValidationPayload` interfaces (lines 34-52)
+- **Impact**: Cleaner code, faster TypeScript compilation, improved maintainability
+- **File Modified**: `runware-generate-image/index.ts` (lines 34-52)
+
+### Phase 4: Fixed Timeline/Breadcrumb Logic ✅
+- **Problem**: Timeline capped at 20 entries by dropping EARLY entries, potentially losing most recent critical failures
+- **Solution**: Changed to sliding window - keeps LAST 20 entries using array splice when exceeding limit
+- **Impact**: Preserves most recent debugging breadcrumbs for better error diagnosis
+- **File Modified**: `runware-generate-image/index.ts` (lines 607-616)
+
+### Phase 5: Updated Header Comment ✅
+- **Problem**: Header claimed cascade: `1→2.5A→2.5B→Direct Mode→2.5C→SVG` but actual flow: `1 → Direct Mode → 2.5A → 2.5B → 2.5C → 2.5D` (no SVG)
+- **Solution**: Fixed header documentation to match reality, removed non-existent SVG reference
+- **Impact**: Accurate documentation prevents developer confusion
+- **File Modified**: `runware-generate-image/index.ts` (lines 5-10)
+
+### Phase 6: Added PII Protection ✅
+- **Problem**: `characterName` and `sessionId` logged widely without redaction, potential privacy violation in production
+- **Solution**: 
+  - Added `redactPII()` function with regex-based email/phone/SSN masking
+  - Wrapped all tier logging calls with PII redaction when `ENVIRONMENT=production`
+  - Redacts known sensitive fields: `characterName`, `sessionId`, `email`, `phone`, `address`
+- **Impact**: Production-safe logging, GDPR/COPPA compliance, prevents accidental PII exposure
+- **File Modified**: `runware-generate-image/index.ts` (lines 54-103)
+
+### Summary
+All 8 phases implemented successfully. System now has:
+- ✅ Consistent Supabase client usage across all tiers
+- ✅ Eliminated prompt duplication
+- ✅ Cleaner codebase without dead interfaces
+- ✅ Better debugging with sliding window timeline
+- ✅ Accurate cascade documentation
+- ✅ Production-safe PII-protected logging
+- ✅ CPU budget guards prevent timeouts
+- ✅ Improved performance and maintainability
