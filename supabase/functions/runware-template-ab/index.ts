@@ -157,47 +157,66 @@ serve(async (req) => {
             return withCors(asResponse(out));
           }
           
-          // Handler unavailable - check if boot sync error
+          // Handler unavailable - categorize error type
           const errorMessage = lastLoadError?.message ?? "index.js failed to load";
-          const isSyncFailure = FAST_BOOT_SYNC.bootErrors.some(msg => 
-            errorMessage.includes(msg)
-          );
           
-          if (!isSyncFailure || attempt === FAST_BOOT_SYNC.maxRetries) {
-            // Final failure or non-sync error - return 200 with success: false
-            return withCors(new Response(JSON.stringify({
-              success: false,
-              error: "HANDLER_UNAVAILABLE",
-              message: errorMessage,
-              service: SERVICE_NAME,
-              timestamp: new Date().toISOString(),
-            }), { status: 200, headers: { "Content-Type": "application/json" } }));
+          // CRITICAL: Distinguish boot errors from runtime validation errors
+          const isBootError = FAST_BOOT_SYNC.bootErrors.some(msg => errorMessage.includes(msg));
+          const isValidationError = errorMessage.includes('Missing required field') || 
+                                   errorMessage.includes('MISSING_STORY_CONTENT') ||
+                                   errorMessage.includes('NO_STORY_CONTENT');
+          const isRuntimeError = !isBootError && !isValidationError;
+          
+          // Only retry boot errors, not validation or runtime errors
+          if (isBootError && attempt < FAST_BOOT_SYNC.maxRetries) {
+            const delay = FAST_BOOT_SYNC.delays[attempt];
+            console.warn(`🔄 [TEMPLATE_AB] Boot error retry ${attempt + 1}/${FAST_BOOT_SYNC.maxRetries} in ${delay}ms: ${errorMessage}`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            continue;
           }
           
-          const delay = FAST_BOOT_SYNC.delays[attempt];
-          console.warn(`🔄 [TEMPLATE_AB] Fast boot retry ${attempt + 1}/${FAST_BOOT_SYNC.maxRetries} in ${delay}ms: ${errorMessage}`);
-          await new Promise(resolve => setTimeout(resolve, delay));
+          // Return appropriate error based on category
+          const errorType = isBootError ? "BOOT_ERROR" : 
+                          isValidationError ? "VALIDATION_ERROR" : 
+                          "HANDLER_UNAVAILABLE";
+          
+          return withCors(new Response(JSON.stringify({
+            success: false,
+            error: errorType,
+            message: errorMessage,
+            service: SERVICE_NAME,
+            timestamp: new Date().toISOString(),
+          }), { status: 200, headers: { "Content-Type": "application/json" } }));
           
         } catch (handlerError: any) {
           const errorMessage = handlerError?.message ?? String(handlerError);
-          const isSyncFailure = FAST_BOOT_SYNC.bootErrors.some(msg => 
-            errorMessage.includes(msg)
-          );
           
-          if (!isSyncFailure || attempt === FAST_BOOT_SYNC.maxRetries) {
-            // Final failure or non-sync error - return 200 with success: false
-            return withCors(new Response(JSON.stringify({
-              success: false,
-              error: "HANDLER_ERROR",
-              message: errorMessage,
-              service: SERVICE_NAME,
-              timestamp: new Date().toISOString(),
-            }), { status: 200, headers: { "Content-Type": "application/json" } }));
+          // CRITICAL: Distinguish boot errors from runtime validation errors
+          const isBootError = FAST_BOOT_SYNC.bootErrors.some(msg => errorMessage.includes(msg));
+          const isValidationError = errorMessage.includes('Missing required field') || 
+                                   errorMessage.includes('MISSING_STORY_CONTENT') ||
+                                   errorMessage.includes('NO_STORY_CONTENT');
+          
+          // Only retry boot errors
+          if (isBootError && attempt < FAST_BOOT_SYNC.maxRetries) {
+            const delay = FAST_BOOT_SYNC.delays[attempt];
+            console.warn(`🔄 [TEMPLATE_AB] Boot error retry ${attempt + 1}/${FAST_BOOT_SYNC.maxRetries} in ${delay}ms: ${errorMessage}`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            continue;
           }
           
-          const delay = FAST_BOOT_SYNC.delays[attempt];
-          console.warn(`🔄 [TEMPLATE_AB] Fast boot retry ${attempt + 1}/${FAST_BOOT_SYNC.maxRetries} in ${delay}ms: ${errorMessage}`);
-          await new Promise(resolve => setTimeout(resolve, delay));
+          // Return appropriate error based on category
+          const errorType = isBootError ? "BOOT_ERROR" : 
+                          isValidationError ? "VALIDATION_ERROR" : 
+                          "HANDLER_ERROR";
+          
+          return withCors(new Response(JSON.stringify({
+            success: false,
+            error: errorType,
+            message: errorMessage,
+            service: SERVICE_NAME,
+            timestamp: new Date().toISOString(),
+          }), { status: 200, headers: { "Content-Type": "application/json" } }));
         }
       }
     }

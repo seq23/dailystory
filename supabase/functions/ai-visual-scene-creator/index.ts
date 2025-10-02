@@ -76,14 +76,25 @@ async function generateCompleteVisualSchema(
       } catch (staticError) {
         console.warn(`⚠️ StaticDataCache fallback failed, using hardcoded:`, staticError);
         const fallbackSkinTone = userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium';
+        
+        // CRITICAL: Derive ethnicity from skinTone, not hardcoded 'Euro-American'
+        const ethnicityMap: Record<string, string> = {
+          'pale': 'Euro-American',
+          'light': 'Euro-American',
+          'medium': 'Mediterranean',
+          'olive': 'Middle Eastern',
+          'dark': 'African'
+        };
+        const derivedEthnicity = ethnicityMap[fallbackSkinTone] || 'Euro-American';
+        
         structuredAvatarData = {
           resolvedSkinTone: fallbackSkinTone,
           hairColor: emergencyHairFallback(fallbackSkinTone),
-          skinFeatures: 'medium skin tone with brown eyes',
-          ethnicity: 'Euro-American',
+          skinFeatures: `${fallbackSkinTone} skin tone with brown eyes`,
+          ethnicity: derivedEthnicity,
           source: 'hardcoded_fallback'
         };
-        console.log(`✅ [AISCHEMA_FALLBACK] source=hardcoded, hairColor=${structuredAvatarData.hairColor}`);
+        console.log(`✅ [AISCHEMA_FALLBACK] source=hardcoded, skinTone=${fallbackSkinTone}, ethnicity=${derivedEthnicity}, hairColor=${structuredAvatarData.hairColor}`);
       }
     }
   }

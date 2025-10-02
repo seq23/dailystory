@@ -263,7 +263,7 @@ async function processInlinedTier1(payload: any, memoizedImport: any, logTier1St
       'getColoredObjects',
       'detectAllCharacters',
       'getSessionSetting',
-      'getSecondaryCharacterSeed'
+      'getSecondaryCharactersForSession'
     ];
     
     const missingMethods = requiredMethods.filter(method => 
@@ -646,19 +646,12 @@ async function processInlinedTier1(payload: any, memoizedImport: any, logTier1St
   
   // Generate secondary character seeds for template building
   let secondaryCharacterSeeds = [];
-  for (const detectedChar of secondaryCharacters || []) {
-    try {
-      const charSeed = await characterConsistencyService.getSecondaryCharacterSeed(
-        sessionId, 
-        detectedChar.name || detectedChar.displayName || 'secondary character', 
-        detectedChar.type || detectedChar.relationshipType || 'secondary_character'
-      );
-      if (charSeed) {
-        secondaryCharacterSeeds.push(charSeed);
-      }
-    } catch (error) {
-      console.warn(`Failed to get secondary character seed for ${detectedChar.name}:`, error);
-    }
+  try {
+    const allSecondaryChars = await characterConsistencyService.getSecondaryCharactersForSession(sessionId);
+    secondaryCharacterSeeds = allSecondaryChars || [];
+    console.log(`✅ Retrieved ${secondaryCharacterSeeds.length} secondary characters for session`);
+  } catch (error) {
+    console.warn(`Failed to get secondary characters for session:`, error);
   }
   
   // Build enhanced prompt
@@ -677,6 +670,31 @@ async function processInlinedTier1(payload: any, memoizedImport: any, logTier1St
   
   logTier1Step('Template Building', 'attempt', 'Constructing COMPLETE_TIER_1 template');
   
+  // CRITICAL: Validate required data before template building
+  if (!characterSeed || !characterSeed.characterDescription) {
+    const error = 'characterSeed missing or incomplete';
+    logTier1Step('Template Building', 'failed', error);
+    if (payload.forceCompleteTier1) {
+      throw new Error(`CCS_METHOD_FAILED:getEnhancedCharacterSeed:${error}`);
+    }
+    throw new Error('CHARACTERSERVICE_UNAVAILABLE_TRY_DIRECT_MODE');
+  }
+  
+  if (!culturalBundle || (!culturalBundle.hair && !culturalBundle.features)) {
+    const error = 'culturalBundle missing or incomplete';
+    logTier1Step('Template Building', 'failed', error);
+    if (payload.forceCompleteTier1) {
+      throw new Error(`CCS_METHOD_FAILED:getCulturalEnhancements:${error}`);
+    }
+    throw new Error('CHARACTERSERVICE_UNAVAILABLE_TRY_DIRECT_MODE');
+  }
+  
+  if (!primaryScene || primaryScene.length < 30) {
+    const error = `primaryScene invalid (length: ${primaryScene?.length || 0})`;
+    logTier1Step('Template Building', 'failed', error);
+    throw new Error('AI_SCHEMA_INCOMPLETE');
+  }
+  
   // Build COMPLETE_TIER_1 template with deduplication logic
   // Hair and skin are already in culturalBundle, no need for physicalDescription
   const characterAge = userInfo?.age || 6;
@@ -685,7 +703,7 @@ async function processInlinedTier1(payload: any, memoizedImport: any, logTier1St
   
   const mainCharacterDetails = `Beautiful ${characterReference} character ${characterName}${ageText}${characterSeed?.characterDescription && !hasAgeInDescription ? `, ${characterSeed.characterDescription}` : ''}${culturalBundle?.hair ? `, ${culturalBundle.hair}` : ''}${culturalBundle?.features ? `, ${culturalBundle.features}` : ''}`;
   
-  const secondaryCharsText = secondaryCharacterSeeds.length > 0 ? `With ${secondaryCharacterSeeds.map(s => s.visualDescription).join(', ')}` : '';
+  const secondaryCharsText = secondaryCharacterSeeds.length > 0 ? `With ${secondaryCharacterSeeds.map(s => s.visualDescription || s.name).join(', ')}` : '';
   const animalsText = detectedAnimals?.length > 0 ? `Including ${detectedAnimals.map(a => a.name || a.type).join(', ')}` : '';
   // Phase 2: Remove sessionSetting duplication - it's already in aiSchema.sceneSettings
   const consistencyElements = [

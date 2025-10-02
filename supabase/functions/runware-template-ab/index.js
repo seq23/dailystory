@@ -2203,6 +2203,19 @@ async function handleRequest(req) {
         }
 
         imageURL = imageTask.imageURL;
+        
+        // CRITICAL: Verify image URL is accessible before returning
+        try {
+          const headResponse = await fetch(imageURL, { method: 'HEAD' });
+          if (!headResponse.ok) {
+            throw new Error(`Image URL verification failed: ${headResponse.status}`);
+          }
+          console.log(`✅ Image URL verified accessible: ${imageURL}`);
+        } catch (verifyError) {
+          console.error(`❌ Image URL verification failed:`, verifyError);
+          throw new Error(`Generated image URL not accessible: ${verifyError.message}`);
+        }
+        
         console.log(`✅ Runware API call successful on attempt ${attempt + 1}`);
         
         // Track Runware cost for analytics with 2-tier CDN fallback
