@@ -798,7 +798,7 @@ export class CharacterConsistencyService {
       }
       
       // Check for clothing
-      for (const clothingItem of vocab.CLOTHING_DETECTION_KEYWORDS) {
+      for (const clothingItem of vocab.clothing) {
         const pattern = new RegExp(`\\b${escapeRegExp(clothingItem)}\\b`, 'i');
         if (pattern.test(contextWindow) && !visualKeywords.includes(clothingItem)) {
           visualKeywords.push(clothingItem);
@@ -844,7 +844,7 @@ export class CharacterConsistencyService {
     
     // Clothing detection (color + item combinations)
     for (const color of vocab.colors) {
-      for (const clothingItem of vocab.CLOTHING_DETECTION_KEYWORDS) {
+      for (const clothingItem of vocab.clothing) {
         const pattern = new RegExp(`${escapeRegExp(color)}\\s+${escapeRegExp(clothingItem)}`, 'gi');
         if (pattern.test(text)) {
           detections.clothing.push({

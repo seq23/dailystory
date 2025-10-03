@@ -293,9 +293,9 @@ export const TIER_25_UNIFIED_VOCABULARY_EXTENDED = {
 
   // ============= UNIFIED OBJECT VOCABULARY =============
   objectCategories: {
-    // Living creatures (75+ items)
+    // Living creatures (72 items - puppy, kitten, bunny moved to animalRelationships)
     animals: [
-      'puppy', 'dog', 'cat', 'kitten', 'bunny', 'rabbit', 'hamster', 'guinea pig',
+      'dog', 'cat', 'rabbit', 'hamster', 'guinea pig',
       'bird', 'parrot', 'duck', 'chicken', 'horse', 'pony', 'cow', 'pig',
       'sheep', 'goat', 'turtle', 'fish', 'frog', 'butterfly', 'bee', 'ladybug',
       'squirrel', 'mouse', 'chipmunk', 'raccoon', 'deer', 'fox', 'owl', 'robin',
@@ -309,9 +309,9 @@ export const TIER_25_UNIFIED_VOCABULARY_EXTENDED = {
       'rainbow', 'sun', 'moon', 'star', 'pond', 'river', 'ocean', 'beach'
     ],
 
-    // Toys & play items (60+ items)
+    // Toys & play items (59 items - ball moved to sports category)
     toys: [
-      'ball', 'doll', 'teddy bear', 'toy car', 'truck', 'train', 'airplane',
+      'doll', 'teddy bear', 'toy car', 'truck', 'train', 'airplane',
       'blocks', 'puzzle', 'crayons', 'markers', 'paints', 'clay', 'book',
       'game', 'bike', 'scooter', 'swing', 'slide', 'seesaw', 'kite',
       'balloon', 'bubbles', 'frisbee', 'jump rope', 'hula hoop', 'marbles'
@@ -441,31 +441,7 @@ export const TIER_25_UNIFIED_VOCABULARY_EXTENDED = {
 export const VOCABULARY = TIER_25_UNIFIED_VOCABULARY_EXTENDED;
 
 // ============= ENHANCED COLOR DETECTION ARRAYS =============
-export const EXPANDED_COLOR_ARRAY = [
-  // Primary Colors
-  'red', 'blue', 'yellow', 'green', 'orange', 'purple', 'pink', 'brown', 'black', 'white',
-  // Extended Colors  
-  'turquoise', 'coral', 'lavender', 'mint', 'peach', 'gold', 'silver', 'bronze',
-  'maroon', 'navy', 'teal', 'lime', 'magenta', 'cyan', 'beige', 'tan',
-  // Descriptive Colors
-  'bright red', 'deep blue', 'sunny yellow', 'forest green', 'soft pink', 'rich purple',
-  'warm orange', 'sky blue', 'grass green', 'snow white', 'charcoal black',
-  // Vibrant Colors
-  'bright red', 'bright blue', 'bright green', 'bright yellow', 'bright orange', 'bright purple', 'bright pink',
-  'vivid red', 'vivid blue', 'vivid green', 'vivid yellow', 'vivid orange', 'vivid purple', 'vivid pink',
-  'deep red', 'deep blue', 'deep green', 'deep purple', 'deep orange', 'deep pink', 'deep brown',
-  'dark red', 'dark blue', 'dark green', 'dark purple', 'dark orange', 'dark pink', 'dark brown',
-  'light red', 'light blue', 'light green', 'light yellow', 'light purple', 'light pink', 'light brown',
-  'pale red', 'pale blue', 'pale green', 'pale yellow', 'pale purple', 'pale pink', 'pale brown',
-  // Shades and Tints
-  'crimson', 'scarlet', 'ruby', 'cherry', 'rose', 'salmon', 'coral', 'peach', 'apricot',
-  'navy', 'royal blue', 'sky blue', 'teal', 'turquoise', 'aqua', 'cyan', 'powder blue',
-  'forest green', 'lime green', 'emerald', 'jade', 'mint', 'seafoam', 'olive', 'sage',
-  'golden', 'lemon', 'butter', 'cream', 'ivory', 'beige', 'tan', 'khaki', 'sand',
-  'violet', 'lavender', 'lilac', 'plum', 'magenta', 'fuchsia', 'orchid', 'amethyst',
-  'tangerine', 'amber', 'rust', 'copper', 'bronze', 'gold', 'honey', 'caramel',
-  'cotton candy pink', 'bubblegum pink', 'hot pink', 'flamingo', 'blush', 'dusty rose'
-];
+// REMOVED DUPLICATE: EXPANDED_COLOR_ARRAY now aliases to UNIVERSAL_VOCAB.colors at line 222
 
 // ============= UNIVERSAL ATMOSPHERE ARRAYS =============
 const UNIVERSAL_LIGHTING_ARRAYS = [
@@ -632,14 +608,7 @@ const UNIVERSAL_EMOTION_ARRAYS = [
 ];
 
 // ============= CLOTHING DETECTION KEYWORDS (EXPANDED - Template Analysis Phase 1) =============
-export const CLOTHING_DETECTION_KEYWORDS = [
-  'shirt', 'dress', 'pants', 'shorts', 'skirt', 'jacket', 'sweater', 'hoodie',
-  'jeans', 'overalls', 'uniform', 'costume', 'pajamas', 'robe', 'coat',
-  'blouse', 'tunic', 'cardigan', 'vest', 'tank top', 'polo', 'turtleneck',
-  // NEW - Template-Validated Additions (Level 0 + Grade 3+ Templates)
-  'shoes', 'boots', 'sneakers', 'sandals', 'socks', 'hat', 'glasses', 'helmet',
-  'gloves', 'scarf', 'tie', 'belt', 'backpack', 'bag', 'purse', 'outfit'
-];
+// REMOVED DUPLICATE: CLOTHING_DETECTION_KEYWORDS now aliases to UNIVERSAL_VOCAB.clothing at line 223
 
 // ============= CULTURAL ARRAYS - CONSOLIDATED SOURCE OF TRUTH =============
 const CULTURAL_ARRAYS_EXTENDED = {
