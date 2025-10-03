@@ -2085,9 +2085,11 @@ Deno.serve(async (req) => {
                 req,
                 503
               );
+              }
             }
           }
         }
+        } // Close tier25aError catch block
       } // Close Tier 1 catch block
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
