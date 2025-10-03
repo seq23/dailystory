@@ -1,16 +1,22 @@
-// ============= TIER 2.5 UNIVERSAL VOCABULARY - SINGLE SOURCE OF TRUTH =============
-// PHASE 1 CONSOLIDATION: All fragmented exports unified into UNIVERSAL_VOCAB
-// Lazy-loaded vocabulary module for performance optimization
-// Contains all large constant arrays to prevent cold-boot failures
-
-// ============= CULTURAL ARRAYS - MOVED TO StaticDataCache.js =============
-// African American arrays moved to StaticDataCache.js for centralized management
-// All cultural selections now handled by CharacterConsistencyService for character-consistent seeding
-// This file now contains only pure vocabulary arrays for performance optimization
-
-// ============= PROPER VOCABULARY ACCESS - Use UNIVERSAL_VOCAB =============
-// All vocabulary should use the structured UNIVERSAL_VOCAB system below
-// OLD EXPORTS REMOVED: TIER_25_UNIFIED_VOCABULARY_EXTENDED, EXPANDED_COLOR_ARRAY, CLOTHING_DETECTION_KEYWORDS
+// ============= VOCABULARY ARCHITECTURE (Updated Oct 3, 2025) =============
+// 
+// **PRIMARY SYSTEM**: UNIVERSAL_VOCAB (flat, predictable structure)
+//   - Use for: All new code, CharacterConsistencyService, image generation
+//   - Structure: UNIVERSAL_VOCAB.{clothing, colors, actions, objects, context, etc.}
+//   - Benefits: Single source of truth, no nested complexity, full Array.isArray() safety
+// 
+// **BACKWARD COMPATIBILITY**: TIER_25_UNIFIED_VOCABULARY_EXTENDED + aliases
+//   - Purpose: Support legacy code (ExactWordExtractor, UnifiedDebugValidator, etc.)
+//   - Aliases: EXPANDED_COLOR_ARRAY → UNIVERSAL_VOCAB.colors
+//             CLOTHING_DETECTION_KEYWORDS → UNIVERSAL_VOCAB.clothing
+//   - Migration: Replace old imports with UNIVERSAL_VOCAB + add Array.isArray() guards
+// 
+// **MIGRATION GUIDE**:
+// Old: const { TIER_25_UNIFIED_VOCABULARY_EXTENDED, CLOTHING_DETECTION_KEYWORDS } = await import('./tier25Vocabulary.js');
+// New: const { UNIVERSAL_VOCAB } = await import('./tier25Vocabulary.js');
+//      if (Array.isArray(UNIVERSAL_VOCAB.clothing)) { ... }
+//
+// Phase 2-5 Complete: Vocabulary migration, guards, logging, documentation updated
 
 // ============= UTILITY FUNCTIONS =============
 export function pick(arr, seed) {

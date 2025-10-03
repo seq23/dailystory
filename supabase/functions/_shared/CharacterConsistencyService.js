@@ -406,11 +406,14 @@ export class CharacterConsistencyService {
         relationships: this.extractRelationshipsFromTier25(UNIVERSAL_VOCAB),
         HAIR_DESCRIPTORS: UNIVERSAL_VOCAB.hair,
         SIZE_AGE_DESCRIPTORS: UNIVERSAL_VOCAB.sizeAge,
-        ANIMAL_RELATIONSHIPS: UNIVERSAL_VOCAB.animalRelationships
-      };
-      
-      console.log(`✅ UNIVERSAL_VOCAB loaded: ${this.vocabulary.objects.length} objects, ${this.vocabulary.colors.length} colors (Status 546 FIXED)`);
-      return this.vocabulary;
+      ANIMAL_RELATIONSHIPS: UNIVERSAL_VOCAB.animalRelationships
+    };
+    
+    // Backward compatibility alias for legacy code
+    this.vocabulary.CLOTHING_DETECTION_KEYWORDS = this.vocabulary.clothing;
+    
+    console.log(`✅ UNIVERSAL_VOCAB loaded: ${this.vocabulary.objects.length} objects, ${this.vocabulary.colors.length} colors (Status 546 FIXED)`);
+    return this.vocabulary;
     } catch (error) {
       console.error('❌ CCS: Failed to load UNIVERSAL_VOCAB', error);
       this.vocabulary = CharacterConsistencyService.ESSENTIAL_VOCABULARY;
@@ -542,6 +545,15 @@ export class CharacterConsistencyService {
 
     // ENHANCED: Multi-strategy detection for compound objects
     // Strategy 1: Direct match (e.g., "red picnic blanket")
+    if (!Array.isArray(vocab.colors)) {
+      console.warn('⚠️ vocab.colors is not an array, skipping color detection');
+      return detections;
+    }
+    if (!Array.isArray(vocab.objects)) {
+      console.warn('⚠️ vocab.objects is not an array, skipping object detection');
+      return detections;
+    }
+    
     for (const color of vocab.colors) {
       for (const object of vocab.objects) {
         const safeColor = escapeRegExp(color);
@@ -563,7 +575,9 @@ export class CharacterConsistencyService {
                 pageNumber
               });
               manifest.addObject(object, color, normalized, pageNumber);
-              console.log(`🎨 Detected colored object (exact): ${normalized} (tier25)`);
+              if (Deno.env.get('LOG_LEVEL') === 'debug') {
+                console.log(`🎨 Detected colored object (exact): ${normalized} (tier25)`);
+              }
             }
           });
         }
@@ -589,7 +603,9 @@ export class CharacterConsistencyService {
                 pageNumber
               });
               manifest.addObject(object, color, normalized, pageNumber);
-              console.log(`🎨 Detected colored object (compound): ${normalized} (tier25)`);
+              if (Deno.env.get('LOG_LEVEL') === 'debug') {
+                console.log(`🎨 Detected colored object (compound): ${normalized} (tier25)`);
+              }
             }
           });
         }
@@ -620,7 +636,9 @@ export class CharacterConsistencyService {
                 pageNumber
               });
               manifest.addObject(object, color, proximityDesc, pageNumber);
-              console.log(`🎨 Detected colored object (proximity): ${proximityDesc} (tier25)`);
+              if (Deno.env.get('LOG_LEVEL') === 'debug') {
+                console.log(`🎨 Detected colored object (proximity): ${proximityDesc} (tier25)`);
+              }
             }
           }
         }
@@ -646,7 +664,9 @@ export class CharacterConsistencyService {
             pageNumber
           });
           manifest.addObject(objectName, null, objectName, pageNumber);
-          console.log(`🎨 Detected standalone object: ${objectName} (tier25, no color)`);
+          if (Deno.env.get('LOG_LEVEL') === 'debug') {
+            console.log(`🎨 Detected standalone object: ${objectName} (tier25, no color)`);
+          }
         }
       });
     }
@@ -688,11 +708,16 @@ export class CharacterConsistencyService {
         pageNumber
       });
       manifest.addCharacter(name, { type: characterType }, pageNumber);
-      console.log(`👤 Detected named ${characterType}: ${name}`);
+      if (Deno.env.get('LOG_LEVEL') === 'debug') {
+        console.log(`👤 Detected named ${characterType}: ${name}`);
+      }
     }
 
     // 2. Relationship-based characters (human)
-    for (const relationship of vocab.relationships) {
+    if (!Array.isArray(vocab.relationships)) {
+      console.warn('⚠️ vocab.relationships is not an array');
+    } else {
+      for (const relationship of vocab.relationships) {
       const pattern = new RegExp(`\\b${relationship}\\b`, 'gi');
       if (pattern.test(text)) {
         detections.push({
@@ -702,8 +727,11 @@ export class CharacterConsistencyService {
           pageNumber
         });
         manifest.addCharacter(relationship, { type: 'relationship' }, pageNumber);
-        console.log(`👥 Detected relationship character: ${relationship}`);
+        if (Deno.env.get('LOG_LEVEL') === 'debug') {
+          console.log(`👥 Detected relationship character: ${relationship}`);
+        }
       }
+    }
     }
 
     // 3. Animal relationships (pets with relationships)
@@ -712,7 +740,8 @@ export class CharacterConsistencyService {
       'her pet', 'his pet', 'their pet', 'our pet'
     ];
     
-    for (const animalRel of animalRelationships) {
+    if (Array.isArray(animalRelationships)) {
+      for (const animalRel of animalRelationships) {
       const pattern = new RegExp(`\\b${escapeRegExp(animalRel)}\\b`, 'gi');
       if (pattern.test(text)) {
         detections.push({
@@ -722,12 +751,18 @@ export class CharacterConsistencyService {
           pageNumber
         });
         manifest.addCharacter(animalRel, { type: 'pet' }, pageNumber);
-        console.log(`🐾 Detected animal relationship: ${animalRel}`);
+        if (Deno.env.get('LOG_LEVEL') === 'debug') {
+          console.log(`🐾 Detected animal relationship: ${animalRel}`);
+        }
       }
+    }
     }
 
     // 4. Generic animals (fallback for unnamed animals)
-    for (const animal of vocab.animals) {
+    if (!Array.isArray(vocab.animals)) {
+      console.warn('⚠️ vocab.animals is not an array');
+    } else {
+      for (const animal of vocab.animals) {
       const pattern = new RegExp(`\\b${animal}\\b`, 'gi');
       if (pattern.test(text)) {
         // Skip if already detected as named animal
@@ -743,9 +778,12 @@ export class CharacterConsistencyService {
             pageNumber
           });
           manifest.addCharacter(animal, { type: 'animal' }, pageNumber);
-          console.log(`🐾 Detected generic animal: ${animal}`);
+          if (Deno.env.get('LOG_LEVEL') === 'debug') {
+            console.log(`🐾 Detected generic animal: ${animal}`);
+          }
         }
       }
+    }
     }
 
     return detections;
@@ -773,36 +811,44 @@ export class CharacterConsistencyService {
       
       // Check for hair descriptors
       const hairDescriptors = vocab.HAIR_DESCRIPTORS || [];
-      for (const descriptor of hairDescriptors) {
+      if (Array.isArray(hairDescriptors)) {
+        for (const descriptor of hairDescriptors) {
         const pattern = new RegExp(`\\b${escapeRegExp(descriptor)}\\b`, 'i');
         if (pattern.test(contextWindow) && !visualKeywords.includes(descriptor)) {
           visualKeywords.push(descriptor);
         }
+      }
       }
       
       // Check for size/age descriptors
       const sizeAgeDescriptors = vocab.SIZE_AGE_DESCRIPTORS || [];
-      for (const descriptor of sizeAgeDescriptors) {
+      if (Array.isArray(sizeAgeDescriptors)) {
+        for (const descriptor of sizeAgeDescriptors) {
         const pattern = new RegExp(`\\b${escapeRegExp(descriptor)}\\b`, 'i');
         if (pattern.test(contextWindow) && !visualKeywords.includes(descriptor)) {
           visualKeywords.push(descriptor);
         }
       }
+      }
       
       // Check for colors
-      for (const color of vocab.colors) {
+      if (Array.isArray(vocab.colors)) {
+        for (const color of vocab.colors) {
         const pattern = new RegExp(`\\b${escapeRegExp(color)}\\b`, 'i');
         if (pattern.test(contextWindow) && !visualKeywords.includes(color)) {
           visualKeywords.push(color);
         }
       }
+      }
       
       // Check for clothing
-      for (const clothingItem of vocab.clothing) {
+      if (Array.isArray(vocab.clothing)) {
+        for (const clothingItem of vocab.clothing) {
         const pattern = new RegExp(`\\b${escapeRegExp(clothingItem)}\\b`, 'i');
         if (pattern.test(contextWindow) && !visualKeywords.includes(clothingItem)) {
           visualKeywords.push(clothingItem);
         }
+      }
       }
     }
     
@@ -843,8 +889,9 @@ export class CharacterConsistencyService {
     }
     
     // Clothing detection (color + item combinations)
-    for (const color of vocab.colors) {
-      for (const clothingItem of vocab.clothing) {
+    if (Array.isArray(vocab.colors) && Array.isArray(vocab.clothing)) {
+      for (const color of vocab.colors) {
+        for (const clothingItem of vocab.clothing) {
         const pattern = new RegExp(`${escapeRegExp(color)}\\s+${escapeRegExp(clothingItem)}`, 'gi');
         if (pattern.test(text)) {
           detections.clothing.push({

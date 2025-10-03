@@ -4,7 +4,7 @@
  * Integrates with tier25Vocabulary for comprehensive object tracking
  */
 
-import { VOCABULARY, pick } from './tier25Vocabulary.js';
+import { UNIVERSAL_VOCAB as VOCABULARY, pick } from './tier25Vocabulary.js';
 
 export class ColoredObjectTracker {
   constructor() {

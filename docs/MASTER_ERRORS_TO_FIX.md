@@ -237,6 +237,7 @@ Next Review: October 7, 2025
 ## Critical Production Issues by System
 
 ### 🎨 Image Generation System Errors
+- [ERROR-071: Vocabulary Import Inconsistencies & "is not iterable" Crashes](#error-071-vocabulary-import-inconsistencies-and-is-not-iterable-crashes) ✅
 - [ERROR-065: Network Timeout and False Health Check Failures](#error-065-network-timeout-and-false-health-check-failures) ✅
 - [ERROR-063: Hair and Skin Data Missing in AI Visual Scene Creator](#error-063-hair-and-skin-data-missing-in-ai-visual-scene-creator) ⏳
 - [ERROR-059: Character Description Field Mismatch](#error-059-character-description-field-mismatch) ✅
@@ -246,6 +247,298 @@ Next Review: October 7, 2025
 - [ERROR-035: Image Generation System Failure](#error-035-image-generation-system-failure) ✅
 - [ERROR-033: Template Generation Logic Failure](#error-033-template-generation-logic-failure) ✅
 - [ERROR-032: Network/WebSocket Connection Failures](#error-032-networkwebsocket-connection-failures) ✅
+
+---
+
+## ERROR-071: Vocabulary Import Inconsistencies & "is not iterable" Crashes
+
+**Status**: ✅ RESOLVED (October 3, 2025)  
+**Severity**: HIGH (Image generation crashes)  
+**System**: Character Consistency Service, Image Generation  
+**Root Cause**: Vocabulary system had inconsistent nested structure and missing Array.isArray() guards
+
+### Problem Description
+
+The vocabulary system had multiple critical issues causing "is not iterable" crashes in production:
+
+1. **Inconsistent Nested Structure**: `TIER_25_UNIFIED_VOCABULARY_EXTENDED` had missing/incorrect nested properties
+   - Missing `colors` object entirely
+   - Incorrect `actions` subcategories (missing `movement`, `physical`, `emotional`)
+   - Confusion between `objects` vs `objectCategories` paths
+
+2. **No Safety Guards**: No `Array.isArray()` checks before `for...of` loops
+   - Crashes when vocabulary properties were undefined
+   - No fallback handling when imports failed
+
+3. **Excessive Logging**: 28+ verbose per-item logs polluting production logs
+   - Made debugging difficult
+   - Performance impact from excessive console.log calls
+
+4. **Import Confusion**: Multiple named exports with overlapping functionality
+   - `TIER_25_UNIFIED_VOCABULARY_EXTENDED`
+   - `EXPANDED_COLOR_ARRAY`
+   - `CLOTHING_DETECTION_KEYWORDS`
+   - No clear single source of truth
+
+### Impact
+
+- **Image Generation**: Crashes in CharacterConsistencyService causing image generation failures
+- **Object Detection**: ExactWordExtractor crashes when accessing vocabulary properties
+- **Validation**: UnifiedDebugValidator failures when checking vocabulary compliance
+- **Production Logs**: Excessive noise making real errors hard to find
+
+### Resolution (5-Phase Migration)
+
+#### **Phase 1: Fix TIER_25_UNIFIED_VOCABULARY_EXTENDED Structure** ✅
+```javascript
+// Added missing nested properties in tier25Vocabulary.js:
+colors: {
+  basic: ['red', 'blue', 'green', ...],
+  advanced: UNIVERSAL_VOCAB.colors
+},
+actions: {
+  movement: ['run', 'walk', 'jump', ...],
+  physical: ['throw', 'catch', 'kick', ...],
+  emotional: ['laugh', 'smile', 'hug', ...]
+},
+// Added objects alias for backward compatibility
+TIER_25_UNIFIED_VOCABULARY_EXTENDED.objects = {
+  toys: TIER_25_UNIFIED_VOCABULARY_EXTENDED.objectCategories.toys,
+  nature: TIER_25_UNIFIED_VOCABULARY_EXTENDED.objectCategories.nature,
+  // ...
+};
+```
+
+#### **Phase 2: Update CharacterConsistencyService.js** ✅
+```javascript
+// Added 12 Array.isArray() guards before loops:
+if (!Array.isArray(vocab.colors)) {
+  console.warn('⚠️ vocab.colors unavailable');
+  return detections;
+}
+for (const color of vocab.colors) { /* safe iteration */ }
+
+// Added backward compatibility alias:
+this.vocabulary.CLOTHING_DETECTION_KEYWORDS = this.vocabulary.clothing;
+
+// Gated 28 verbose logs behind LOG_LEVEL:
+if (Deno.env.get('LOG_LEVEL') === 'debug') {
+  console.log(`🎨 Detected: ${item}`);
+}
+```
+
+#### **Phase 3: Update CharacterConsistencyService.ts** ✅
+```javascript
+// Migrated to UNIVERSAL_VOCAB (matches .js version):
+const { UNIVERSAL_VOCAB } = await import('./tier25Vocabulary.js');
+this.vocabulary = {
+  clothing: UNIVERSAL_VOCAB.clothing,
+  colors: UNIVERSAL_VOCAB.colors,
+  // Single source structure
+};
+```
+
+#### **Phase 4: Clean Up Import Dependencies** ✅
+```javascript
+// Fixed ColoredObjectTracker.js import:
+import { UNIVERSAL_VOCAB as VOCABULARY, pick } from './tier25Vocabulary.js';
+```
+
+#### **Phase 5: Documentation & Verification** ✅
+- Created `docs/VOCABULARY_MIGRATION_GUIDE.md` with migration patterns
+- Updated `tier25Vocabulary.js` header comments
+- Added ERROR-071 to this master error tracking document
+
+### Files Modified
+
+1. **supabase/functions/_shared/tier25Vocabulary.js**
+   - Added `colors`, `actions.movement/physical/emotional`, `objects` alias
+   - Updated header comments with new architecture
+
+2. **supabase/functions/_shared/CharacterConsistencyService.js**
+   - Added 12 Array.isArray() guards
+   - Added backward compatibility alias
+   - Gated 28 verbose logs behind LOG_LEVEL
+
+3. **supabase/functions/_shared/CharacterConsistencyService.ts**
+   - Updated getVocabulary() to use UNIVERSAL_VOCAB
+   - Matched .js version structure
+
+4. **supabase/functions/_shared/ColoredObjectTracker.js**
+   - Updated import to use UNIVERSAL_VOCAB alias
+
+5. **docs/VOCABULARY_MIGRATION_GUIDE.md** (new)
+   - Complete migration guide with code examples
+   - Before/after patterns
+   - Troubleshooting section
+
+### Verification Steps
+
+**Test in `/prompt-testing?debug=1`:**
+1. ✅ Test Connectivity shows no 546 errors
+2. ✅ Edge function logs show zero "is not iterable" errors
+3. ✅ Image generation succeeds with proper vocabulary
+4. ✅ Character consistency tracks objects properly
+5. ✅ Logs are clean (no verbose spam unless LOG_LEVEL=debug)
+
+### Prevention
+
+1. **Always use Array.isArray() guards** before iterating vocabulary arrays
+2. **Use UNIVERSAL_VOCAB** for all new code (single source of truth)
+3. **Gate verbose logs** behind `Deno.env.get('LOG_LEVEL') === 'debug'`
+4. **Test with missing data** scenarios to ensure graceful degradation
+
+### Related Documentation
+- `docs/VOCABULARY_MIGRATION_GUIDE.md` - Complete migration guide
+- `supabase/functions/_shared/tier25Vocabulary.js` - Vocabulary source
+- `docs/CCS_RUNTIME_VERIFICATION_2025-10-02.md` - Character service integration
+
+---
+
+## ERROR-071: Vocabulary Import Inconsistencies & "is not iterable" Crashes
+
+**Status**: ✅ RESOLVED (October 3, 2025)  
+**Severity**: HIGH (Image generation crashes)  
+**System**: Character Consistency Service, Image Generation  
+**Root Cause**: Vocabulary system had inconsistent nested structure and missing Array.isArray() guards
+
+### Problem Description
+
+The vocabulary system had multiple critical issues causing "is not iterable" crashes in production:
+
+1. **Inconsistent Nested Structure**: `TIER_25_UNIFIED_VOCABULARY_EXTENDED` had missing/incorrect nested properties
+   - Missing `colors` object entirely
+   - Incorrect `actions` subcategories (missing `movement`, `physical`, `emotional`)
+   - Confusion between `objects` vs `objectCategories` paths
+
+2. **No Safety Guards**: No `Array.isArray()` checks before `for...of` loops
+   - Crashes when vocabulary properties were undefined
+   - No fallback handling when imports failed
+
+3. **Excessive Logging**: 28+ verbose per-item logs polluting production logs
+   - Made debugging difficult
+   - Performance impact from excessive console.log calls
+
+4. **Import Confusion**: Multiple named exports with overlapping functionality
+   - `TIER_25_UNIFIED_VOCABULARY_EXTENDED`
+   - `EXPANDED_COLOR_ARRAY`
+   - `CLOTHING_DETECTION_KEYWORDS`
+   - No clear single source of truth
+
+### Impact
+
+- **Image Generation**: Crashes in CharacterConsistencyService causing image generation failures
+- **Object Detection**: ExactWordExtractor crashes when accessing vocabulary properties
+- **Validation**: UnifiedDebugValidator failures when checking vocabulary compliance
+- **Production Logs**: Excessive noise making real errors hard to find
+
+### Resolution (5-Phase Migration)
+
+#### **Phase 1: Fix TIER_25_UNIFIED_VOCABULARY_EXTENDED Structure** ✅
+```javascript
+// Added missing nested properties in tier25Vocabulary.js:
+colors: {
+  basic: ['red', 'blue', 'green', ...],
+  advanced: UNIVERSAL_VOCAB.colors
+},
+actions: {
+  movement: ['run', 'walk', 'jump', ...],
+  physical: ['throw', 'catch', 'kick', ...],
+  emotional: ['laugh', 'smile', 'hug', ...]
+},
+// Added objects alias for backward compatibility
+TIER_25_UNIFIED_VOCABULARY_EXTENDED.objects = {
+  toys: TIER_25_UNIFIED_VOCABULARY_EXTENDED.objectCategories.toys,
+  nature: TIER_25_UNIFIED_VOCABULARY_EXTENDED.objectCategories.nature,
+  // ...
+};
+```
+
+#### **Phase 2: Update CharacterConsistencyService.js** ✅
+```javascript
+// Added 12 Array.isArray() guards before loops:
+if (!Array.isArray(vocab.colors)) {
+  console.warn('⚠️ vocab.colors unavailable');
+  return detections;
+}
+for (const color of vocab.colors) { /* safe iteration */ }
+
+// Added backward compatibility alias:
+this.vocabulary.CLOTHING_DETECTION_KEYWORDS = this.vocabulary.clothing;
+
+// Gated 28 verbose logs behind LOG_LEVEL:
+if (Deno.env.get('LOG_LEVEL') === 'debug') {
+  console.log(`🎨 Detected: ${item}`);
+}
+```
+
+#### **Phase 3: Update CharacterConsistencyService.ts** ✅
+```javascript
+// Migrated to UNIVERSAL_VOCAB (matches .js version):
+const { UNIVERSAL_VOCAB } = await import('./tier25Vocabulary.js');
+this.vocabulary = {
+  clothing: UNIVERSAL_VOCAB.clothing,
+  colors: UNIVERSAL_VOCAB.colors,
+  // Single source structure
+};
+```
+
+#### **Phase 4: Clean Up Import Dependencies** ✅
+```javascript
+// Fixed ColoredObjectTracker.js import:
+import { UNIVERSAL_VOCAB as VOCABULARY, pick } from './tier25Vocabulary.js';
+```
+
+#### **Phase 5: Documentation & Verification** ✅
+- Created `docs/VOCABULARY_MIGRATION_GUIDE.md` with migration patterns
+- Updated `tier25Vocabulary.js` header comments
+- Added ERROR-071 to this master error tracking document
+
+### Files Modified
+
+1. **supabase/functions/_shared/tier25Vocabulary.js**
+   - Added `colors`, `actions.movement/physical/emotional`, `objects` alias
+   - Updated header comments with new architecture
+
+2. **supabase/functions/_shared/CharacterConsistencyService.js**
+   - Added 12 Array.isArray() guards
+   - Added backward compatibility alias
+   - Gated 28 verbose logs behind LOG_LEVEL
+
+3. **supabase/functions/_shared/CharacterConsistencyService.ts**
+   - Updated getVocabulary() to use UNIVERSAL_VOCAB
+   - Matched .js version structure
+
+4. **supabase/functions/_shared/ColoredObjectTracker.js**
+   - Updated import to use UNIVERSAL_VOCAB alias
+
+5. **docs/VOCABULARY_MIGRATION_GUIDE.md** (new)
+   - Complete migration guide with code examples
+   - Before/after patterns
+   - Troubleshooting section
+
+### Verification Steps
+
+**Test in `/prompt-testing?debug=1`:**
+1. ✅ Test Connectivity shows no 546 errors
+2. ✅ Edge function logs show zero "is not iterable" errors
+3. ✅ Image generation succeeds with proper vocabulary
+4. ✅ Character consistency tracks objects properly
+5. ✅ Logs are clean (no verbose spam unless LOG_LEVEL=debug)
+
+### Prevention
+
+1. **Always use Array.isArray() guards** before iterating vocabulary arrays
+2. **Use UNIVERSAL_VOCAB** for all new code (single source of truth)
+3. **Gate verbose logs** behind `Deno.env.get('LOG_LEVEL') === 'debug'`
+4. **Test with missing data** scenarios to ensure graceful degradation
+
+### Related Documentation
+- `docs/VOCABULARY_MIGRATION_GUIDE.md` - Complete migration guide
+- `supabase/functions/_shared/tier25Vocabulary.js` - Vocabulary source
+- `docs/CCS_RUNTIME_VERIFICATION_2025-10-02.md` - Character service integration
+
+---
 
 ### 📖 Story Generation System Errors
 - [ERROR-058: StaticDataCache Removal Breaking Story Generation](#error-058-staticdatacache-removal-breaking-story-generation) ✅

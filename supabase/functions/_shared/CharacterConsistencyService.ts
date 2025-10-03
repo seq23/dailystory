@@ -542,29 +542,34 @@ export class CharacterConsistencyService {
     if (this.vocabulary) return this.vocabulary;
 
     try {
-      // Phase 2: Use resilient loader for 99.99% reliability
-      const { memoizedImport } = await import('./resilientLoader.ts');
-      const { TIER_25_UNIFIED_VOCABULARY_EXTENDED, EXPANDED_COLOR_ARRAY, CLOTHING_DETECTION_KEYWORDS } = 
-        await memoizedImport('./tier25Vocabulary.js');
+      // Phase 3: Use UNIVERSAL_VOCAB single source of truth (matches .js version)
+      const { UNIVERSAL_VOCAB } = await import('./tier25Vocabulary.js');
+      if (!UNIVERSAL_VOCAB) {
+        throw new Error('UNIVERSAL_VOCAB not found in tier25Vocabulary');
+      }
       
       this.vocabulary = {
-        // Dynamic arrays from tier25Vocabulary
-        colors: EXPANDED_COLOR_ARRAY || [],
-        objects: Object.values(TIER_25_UNIFIED_VOCABULARY_EXTENDED.objectCategories).flat(),
-        animals: TIER_25_UNIFIED_VOCABULARY_EXTENDED.objectCategories.animals || [],
-        toys: TIER_25_UNIFIED_VOCABULARY_EXTENDED.objectCategories.toys || [],
-        nature: TIER_25_UNIFIED_VOCABULARY_EXTENDED.objectCategories.nature || [],
-        food: TIER_25_UNIFIED_VOCABULARY_EXTENDED.objectCategories.food || [],
+        // Single source arrays from UNIVERSAL_VOCAB
+        clothing: UNIVERSAL_VOCAB.clothing,
+        colors: UNIVERSAL_VOCAB.colors,
+        actions: UNIVERSAL_VOCAB.actions,
+        objects: Object.values(UNIVERSAL_VOCAB.objects).flat(), // Flatten all object categories
+        animals: UNIVERSAL_VOCAB.objects.animals,
+        toys: UNIVERSAL_VOCAB.objects.toys,
+        nature: UNIVERSAL_VOCAB.objects.nature,
+        food: UNIVERSAL_VOCAB.objects.food,
         settings: [
-          ...TIER_25_UNIFIED_VOCABULARY_EXTENDED.contextDetection.indoor,
-          ...TIER_25_UNIFIED_VOCABULARY_EXTENDED.contextDetection.outdoor
+          ...UNIVERSAL_VOCAB.context.indoor,
+          ...UNIVERSAL_VOCAB.context.outdoor
         ],
-        relationships: this.extractRelationshipsFromTier25(TIER_25_UNIFIED_VOCABULARY_EXTENDED),
-        clothing: CLOTHING_DETECTION_KEYWORDS || [],
-        actions: Object.values(TIER_25_UNIFIED_VOCABULARY_EXTENDED.actions).flat()
+        relationships: this.extractRelationshipsFromTier25(UNIVERSAL_VOCAB),
+        HAIR_DESCRIPTORS: UNIVERSAL_VOCAB.hair,
+        SIZE_AGE_DESCRIPTORS: UNIVERSAL_VOCAB.sizeAge,
+        ANIMAL_RELATIONSHIPS: UNIVERSAL_VOCAB.animalRelationships,
+        CLOTHING_DETECTION_KEYWORDS: UNIVERSAL_VOCAB.clothing // Backward compat alias
       };
       
-      console.log(`✅ Tier25Vocabulary loaded: ${this.vocabulary.objects.length} objects, ${this.vocabulary.colors.length} colors`);
+      console.log(`✅ UNIVERSAL_VOCAB loaded: ${this.vocabulary.objects.length} objects, ${this.vocabulary.colors.length} colors (TypeScript mirror)`);
       return this.vocabulary;
     } catch (error) {
       console.warn('⚠️ Tier25Vocabulary import failed, using essential vocabulary:', error);
