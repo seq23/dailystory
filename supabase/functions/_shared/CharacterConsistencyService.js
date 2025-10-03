@@ -617,6 +617,21 @@ export class CharacterConsistencyService {
     const sentences = text.split(/[.!?]+/);
     for (const sentence of sentences) {
       const sentenceLower = sentence.toLowerCase();
+      
+      // Safety guards for proximity matching
+      if (!Array.isArray(vocab.colors)) {
+        if (Deno.env.get('LOG_LEVEL') === 'debug') {
+          console.warn('⚠️ vocab.colors is not an array, skipping proximity matching');
+        }
+        continue;
+      }
+      if (!Array.isArray(vocab.objects)) {
+        if (Deno.env.get('LOG_LEVEL') === 'debug') {
+          console.warn('⚠️ vocab.objects is not an array, skipping proximity matching');
+        }
+        continue;
+      }
+      
       for (const color of vocab.colors) {
         for (const object of vocab.objects) {
           const hasColor = sentenceLower.includes(color.toLowerCase());

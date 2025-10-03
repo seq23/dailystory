@@ -656,6 +656,16 @@ export class CharacterConsistencyService {
     const manifest = this.getSessionManifest(sessionId);
     const detections = [];
 
+    // Safety guards
+    if (!Array.isArray(vocab.colors)) {
+      console.warn('⚠️ vocab.colors is not an array, skipping colored object detection');
+      return detections;
+    }
+    if (!Array.isArray(vocab.objects)) {
+      console.warn('⚠️ vocab.objects is not an array, skipping colored object detection');
+      return detections;
+    }
+
     // Dynamic pattern: [color] + [object from tier25]
     for (const color of vocab.colors) {
       for (const object of vocab.objects) {
@@ -675,7 +685,9 @@ export class CharacterConsistencyService {
             
             // Add to session manifest for pronoun resolution
             manifest.addObject(object, color, normalized, pageNumber);
-            console.log(`🎨 Detected colored object: ${normalized} (tier25)`);
+            if (Deno.env.get('LOG_LEVEL') === 'debug') {
+              console.log(`🎨 Detected colored object: ${normalized} (tier25)`);
+            }
           });
         }
       }
@@ -692,6 +704,12 @@ export class CharacterConsistencyService {
     const manifest = this.getSessionManifest(sessionId);
     const detections = [];
 
+    // Safety guard for relationships
+    if (!Array.isArray(vocab.relationships)) {
+      console.warn('⚠️ vocab.relationships is not an array, skipping relationship detection');
+      return detections;
+    }
+
     // Check for relationship-based characters (mom, friend, etc.)
     for (const relationship of vocab.relationships) {
       const pattern = new RegExp(`\\b${relationship}\\b`, 'gi');
@@ -703,7 +721,9 @@ export class CharacterConsistencyService {
           pageNumber
         });
         manifest.addCharacter(relationship, { type: 'relationship' }, pageNumber);
-        console.log(`👥 Detected relationship character: ${relationship} (tier25)`);
+        if (Deno.env.get('LOG_LEVEL') === 'debug') {
+          console.log(`👥 Detected relationship character: ${relationship} (tier25)`);
+        }
       }
     }
 
@@ -719,7 +739,9 @@ export class CharacterConsistencyService {
         pageNumber
       });
       manifest.addCharacter(name, { type: 'protagonist' }, pageNumber);
-      console.log(`👤 Detected named character: ${name} (pattern)`);
+      if (Deno.env.get('LOG_LEVEL') === 'debug') {
+        console.log(`👤 Detected named character: ${name} (pattern)`);
+      }
     }
 
     return detections;
@@ -733,6 +755,12 @@ export class CharacterConsistencyService {
     const manifest = this.getSessionManifest(sessionId);
     const detections = [];
 
+    // Safety guard for animals
+    if (!Array.isArray(vocab.animals)) {
+      console.warn('⚠️ vocab.animals is not an array, skipping animal detection');
+      return detections;
+    }
+
     for (const animal of vocab.animals) {
       const pattern = new RegExp(`\\b${animal}\\b`, 'gi');
       if (pattern.test(text)) {
@@ -743,7 +771,9 @@ export class CharacterConsistencyService {
           pageNumber
         });
         manifest.addCharacter(animal, { type: 'animal' }, pageNumber);
-        console.log(`🐾 Detected animal: ${animal} (tier25)`);
+        if (Deno.env.get('LOG_LEVEL') === 'debug') {
+          console.log(`🐾 Detected animal: ${animal} (tier25)`);
+        }
       }
     }
 
