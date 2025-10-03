@@ -1032,7 +1032,9 @@ Deno.serve(async (req) => {
       let memoizedImport: <T = any>(href: string) => Promise<T>;
       let usingResilientLoader = false;
       try {
-        ({ memoizedImport } = await import(new URL("../_shared/resilientLoader.ts", import.meta.url).href));
+        // CRITICAL: Use direct relative import for local files (ERROR-048 prevention)
+        // Never use new URL(..., import.meta.url) for local TypeScript files in Deno edge functions
+        ({ memoizedImport } = await import("../_shared/resilientLoader.ts"));
         usingResilientLoader = true;
         console.log(`✅ [CDN_HEALTH] Using resilient loader with multi-CDN fallback support`);
       } catch (loaderError) {

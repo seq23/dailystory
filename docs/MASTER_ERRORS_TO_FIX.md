@@ -10,6 +10,22 @@ This document serves as the **single source of truth** for all production errors
 
 ---
 
+## ⚠️ CRITICAL IMPORT PATTERN WARNINGS
+
+**🚫 DO NOT USE THESE PATTERNS - THEY HAVE FAILED MULTIPLE TIMES IN PRODUCTION:**
+
+1. **#shared/ Import Map Aliases** (ERROR-046, ERROR-052, ERROR-053)
+   - ❌ `await import("#shared/file.ts")` - Deno import maps don't work in dynamic imports
+   - ✅ `await import("../_shared/file.ts")` - Use direct relative paths instead
+
+2. **import.meta.url for Local Files** (ERROR-048)
+   - ❌ `await import(new URL("../_shared/file.ts", import.meta.url).href)` - Creates file:// URLs that can't be imported
+   - ✅ `await import("../_shared/file.ts")` - Use direct relative paths instead
+
+**📖 Full Documentation**: See `docs/WHY_SHARED_IMPORTS_DONT_WORK.md` for complete explanation and prevention guidelines.
+
+---
+
 ## 🎛️ Quick Status Dashboard
 
 ```
