@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-10-02T21:00:00Z - Boot hardening: removed ethnicity auto-inference, fixed receptionist fallbacks, proper HTTP status codes
+// DEPLOY_MARKER: 2025-10-03T17:15:00Z - CCS standardization + runtime error fix: added getStructuredAvatarData/getSessionSetting/getSecondaryCharactersForSession, fixed UNIVERSAL_NEGATIVE_PROMPT undefined error, removed 108 lines of dead code
 import { RunwareErrorHandler } from "../_shared/runwareErrorHandler.ts";
 import * as ProviderGate from "../_shared/ProviderGate.ts";
 // Handles Level A (basic shapes/colors) and Level B (simple scenes)
@@ -171,6 +171,20 @@ async function getPhaseOrchestrator() {
   return null;
 }
 
+// ============= HELPER FUNCTION: VENDOR-FIRST SUPABASE CLIENT =============
+async function getVendorFirstSupabaseClient() {
+  try {
+    console.log('🔍 [VENDOR_FIRST] Using createVendorFirstSupabaseClient');
+    const { createVendorFirstSupabaseClient } = await import('../_shared/resilientLoader.ts');
+    const client = await createVendorFirstSupabaseClient();
+    console.log('✅ [VENDOR_FIRST] Supabase client initialized successfully (0ms network delay)');
+    return client;
+  } catch (vendorError) {
+    console.error('❌ [VENDOR_FIRST] Failed to create Supabase client:', vendorError);
+    return null;
+  }
+}
+
 // ============= ETHNICITY DERIVATION - REQUIRES EXPLICIT USER INPUT =============
 function deriveRegionalEthnicity(userInfo, avatarIdentity) {
   // ONLY use explicit ethnicity - NO AUTO-INFERENCE from language or skin tone
@@ -178,24 +192,12 @@ function deriveRegionalEthnicity(userInfo, avatarIdentity) {
 }
 
 // ============= MISSING HELPER FUNCTIONS =============
-// These map to existing StaticDataCache functions
-function getHair(skinTone) {
-  const sessionId = 'default-session';
-  return getHairBySkintone(skinTone, sessionId);
-}
-
-function getFeatures(skinTone) {
-  const sessionId = 'default-session';
-  return getSkinBySkintone(skinTone, sessionId);
-}
+// Removed unused getHair() and getFeatures() - no callers found
 
 // PHASE 4: Session management removed - orchestrator handles all session state
 // Session data flows via function parameters only
 
-// Function mappings for 2.5B compatibility - map to existing StaticDataCache functions
-function deriveEthnicityFromAvatar(avatar) {
-  return deriveRegionalEthnicity({ avatar, ethnicity: avatar?.ethnicity }, avatar);
-}
+// Function mappings for 2.5B compatibility - removed unused deriveEthnicityFromAvatar()
 
 function getFacialFeatures(avatar) {
   const skinTone = avatar?.skinTone || 'medium';
@@ -220,40 +222,7 @@ function deriveLeftoverCulturalData(userInfo) {
 }
 
 // ============= DEFENSIVE ORCHESTRATOR PROCESSING =============
-async function processWithOrchestrator(sessionId, pageText, userInfo, avatarIdentity, pageNumber) {
-  const orchestrator = await getPhaseOrchestrator();
-  if (!orchestrator) {
-    console.warn('🔄 Orchestrator unavailable, using nuclear fallback');
-    return null;
-  }
-
-  try {
-    console.log('🎯 Processing content through PhaseIntegrationOrchestrator');
-    
-    // Create context for orchestrator processing
-    const context = {
-      sessionId,
-      userInfo,
-      avatarIdentity,
-      pageNumber: pageNumber || 1,
-      isGuestUser: false // Default to premium processing
-    };
-
-    // Process through all phases for enhanced data
-    const processedResult = await orchestrator.executeCompleteWorkflow(userInfo, pageText, sessionId, 'template-ab');
-    
-    if (processedResult && processedResult.success) {
-      console.log('✅ Orchestrator processing successful');
-      return processedResult;
-    } else {
-      console.warn('⚠️ Orchestrator processing failed, using fallback');
-      return null;
-    }
-  } catch (error) {
-    console.warn('⚠️ Orchestrator processing error:', error.message);
-    return null;
-  }
-}
+// Removed unused processWithOrchestrator() - orchestrator consolidated into CharacterConsistencyService
 
 // ============= PAGE TEXT SUMMARIZATION FOR LEVELS 2-4 =============
 function mapDifficultyToLevel(difficulty) {
@@ -1454,7 +1423,7 @@ Context: {cultural_context} {leftover_data}.
 Brand Suffix: {fullFrameworkPrompt}.`;
 
 // ============= EXPORT TEMPLATES FOR VALIDATION =============
-export { TIER_25A_TEMPLATE, TIER_25B_TEMPLATE };
+// Removed duplicate export - templates already exported at end of file
 
 // ============= TEMPLATE NAME ALIASES FOR COMPATIBILITY =============
 export const PREMIUM_PROMPT_TEMPLATE = TIER_25A_TEMPLATE;
@@ -1650,11 +1619,7 @@ async function handleRequest(req) {
         sceneLength: (typeof extractedScene === 'object' && extractedScene?.scene ? extractedScene.scene : extractedScene)?.length || 0
       })}`);
       
-      // VALIDATE SCENE HAS ACTION VERB - IMMEDIATE ESCALATION IF NOT
-      if (!extractedScene || !hasActionVerb(extractedScene)) {
-        console.log('⚠️ Tier 2.5A: Scene missing action verb - falling through to Tier 2.5B');
-        // Escalation logic is handled inline in catch block below
-      }
+      // VALIDATE SCENE HAS ACTION VERB - actual escalation happens in CCS fallback check below
       
       // Build template data using PREMIUM_PROMPT_TEMPLATE
       const styleFramework = getNuclearStyleFramework(userInfo?.difficulty || 'medium');
@@ -1734,7 +1699,7 @@ async function handleRequest(req) {
           .replace('{cultural_context}', cultural_context)
           .replace('{leftover_data}', '')
           .replace('{fullFrameworkPrompt}', fullFrameworkPrompt)
-          .replace('{negativePrompt}', UNIVERSAL_NEGATIVE_PROMPT);
+          .replace('{negativePrompt}', generateInlineNuclearNegative(culturalProfile, userInfo?.avatar?.type, userInfo?.difficulty) || 'NO TEXT, no words, no letters, blurry, low quality, deformed, distorted face');
         
         console.log(`🎯 [${requestId}] Tier 2.5B Prompt Length: ${tier2BPrompt.length} chars`);
         
@@ -2091,9 +2056,10 @@ async function handleRequest(req) {
         .replace(/\s*\.\s*\./g, '.')
         .trim();
     
+      const avatarType = userInfo?.avatar?.type || 'child';
       templateResult = {
         positivePrompt: finalPositivePrompt,
-        negativePrompt: generateInlineNuclearNegative(culturalProfile, userInfo?.avatar?.type, userInfo?.difficulty) || 'blurry, low quality',
+        negativePrompt: generateInlineNuclearNegative(culturalProfile, avatarType, userInfo?.difficulty) || 'blurry, low quality',
         templateType: 'Premium Template A - Full Features',
         tier: '2.5A',
         styleFrameworkUsed: styleFramework.name,
@@ -2305,18 +2271,7 @@ async function handleRequest(req) {
         // Track Runware cost for analytics with 2-tier CDN fallback
         try {
           const cost = 0.0013;
-          let supabaseClient = null;
-          
-    // Use vendor-first client for instant availability (no 28s CDN cascade)
-    try {
-      console.log('🔍 [VENDOR_FIRST] Using createVendorFirstSupabaseClient for cost tracking');
-      const { createVendorFirstSupabaseClient } = await import('../_shared/resilientLoader.ts');
-      supabaseClient = await createVendorFirstSupabaseClient();
-      console.log('✅ [VENDOR_FIRST] Supabase client initialized successfully (0ms network delay)');
-    } catch (vendorError) {
-      console.error('❌ [VENDOR_FIRST] Failed to create Supabase client:', vendorError);
-      supabaseClient = null;
-    }
+          const supabaseClient = await getVendorFirstSupabaseClient();
 
           if (supabaseClient) {
             await supabaseClient.from('cost_tracking').insert({
@@ -2378,18 +2333,7 @@ async function handleRequest(req) {
 
     // Log successful template generation with resilient Supabase client
     try {
-      let supabaseClient = null;
-      
-      // Use vendor-first client for instant availability (no 28s CDN cascade)
-      try {
-        console.log('🔍 [VENDOR_FIRST] Using createVendorFirstSupabaseClient for logging');
-        const { createVendorFirstSupabaseClient } = await import('../_shared/resilientLoader.ts');
-        supabaseClient = await createVendorFirstSupabaseClient();
-        console.log('✅ [VENDOR_FIRST] Supabase client initialized successfully for logging');
-      } catch (vendorError) {
-        console.error('❌ [VENDOR_FIRST] Failed to create Supabase client:', vendorError);
-        supabaseClient = null;
-      }
+      const supabaseClient = await getVendorFirstSupabaseClient();
       
       const { logTierAttempt } = await import("../_shared/tierLogging.js");
       await logTierAttempt(
