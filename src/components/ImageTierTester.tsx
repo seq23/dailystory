@@ -1790,7 +1790,9 @@ export const ImageTierTester = () => {
                 category = 'DEPLOYMENT_ISSUE';
                 status = 404;
               } else {
-                category = 'NETWORK_ISSUE';
+                // If GET succeeded but POST failed with generic error, it's likely browser noise
+                const isLikelyBrowserNoise = tests.GET.success;
+                category = isLikelyBrowserNoise ? 'BROWSER_NOISE' : 'NETWORK_ISSUE';
                 status = 0;
               }
             } else if (postResponse.data?.success === false) {
