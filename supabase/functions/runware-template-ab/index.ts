@@ -158,7 +158,21 @@ serve(async (req) => {
         // Enforce maxTotalTime
         if (Date.now() - startTime > FAST_BOOT_SYNC.maxTotalTime) {
           console.warn(`⚠️ [TEMPLATE_AB] Max total time exceeded (${FAST_BOOT_SYNC.maxTotalTime}ms)`);
-          break;
+          // Return 503 with Retry-After instead of falling through to 405
+          return withCors(new Response(JSON.stringify({
+            success: false,
+            error: "SERVICE_TIMEOUT",
+            message: "Handler loading timeout exceeded",
+            service: SERVICE_NAME,
+            timestamp: new Date().toISOString(),
+            retryAfterSeconds: 8
+          }), {
+            status: 503,
+            headers: {
+              "Content-Type": "application/json",
+              "Retry-After": "8"
+            }
+          }));
         }
         
         try {
