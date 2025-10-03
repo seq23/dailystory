@@ -1,3 +1,5 @@
+// DEPLOY_MARKER: 2025-10-03T18:50:00Z - CCS vendor fallback with explicit logging
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // TypeScript type imports
@@ -51,7 +53,18 @@ async function generateCompleteVisualSchema(
   // If missing, generate complete structured avatar data using CharacterConsistencyService
   if (!structuredAvatarData) {
     try {
-      const { characterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
+      // Try _shared import first
+      let ccsModule;
+      try {
+        ccsModule = await import('../_shared/CharacterConsistencyService.js');
+        console.log(`✅ [CCS_IMPORT_DM] _shared loaded`);
+      } catch (sharedError) {
+        console.warn(`⚠️ [CCS_IMPORT_DM] _shared failed, trying _vendor:`, sharedError);
+        ccsModule = await import('../_vendor/CharacterConsistencyService.mjs');
+        console.log(`✅ [CCS_IMPORT_DM] _vendor loaded`);
+      }
+      
+      const { characterConsistencyService } = ccsModule;
       structuredAvatarData = await characterConsistencyService.getStructuredAvatarData(sessionId, userInfo);
       console.log(`✅ Generated complete structuredAvatarData via CharacterConsistencyService:`, structuredAvatarData);
     } catch (error) {
@@ -314,7 +327,18 @@ Generate a comprehensive scene with complete visual elements including backgroun
     let cachedSecondaryCharacters: any[] = [];
     
     try {
-      const { characterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
+      // Try _shared import first, fallback to _vendor
+      let ccsModule;
+      try {
+        ccsModule = await import('../_shared/CharacterConsistencyService.js');
+        console.log(`✅ [CCS_IMPORT_DM] _shared loaded for secondary characters`);
+      } catch (sharedError) {
+        console.warn(`⚠️ [CCS_IMPORT_DM] _shared failed, trying _vendor:`, sharedError);
+        ccsModule = await import('../_vendor/CharacterConsistencyService.mjs');
+        console.log(`✅ [CCS_IMPORT_DM] _vendor loaded for secondary characters`);
+      }
+      
+      const { characterConsistencyService } = ccsModule;
       cachedSecondaryCharacters = await characterConsistencyService.getSecondaryCharactersForSession(sessionId);
       console.log(`✅ [CDN_IMPORT_SUCCESS] Retrieved ${cachedSecondaryCharacters.length} cached secondary characters for session ${sessionId}`);
     } catch (error) {

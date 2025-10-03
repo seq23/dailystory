@@ -234,6 +234,68 @@ After deployment:
 
 ---
 
+## Vendor Fallback Verification (2025-10-03)
+
+### Production Deployment
+**DEPLOY_MARKER**: 2025-10-03T18:50:00Z
+
+### Changes Since Last Verification
+1. **Hardened CCS Import Logging** in both orchestrator and Direct Mode:
+   - Added explicit `[CCS_IMPORT]` logs showing which path succeeded
+   - Implemented nested try/catch to prove vendor fallback execution
+2. **Direct Mode Integration**: Added vendor fallback to `ai-visual-scene-creator`
+3. **Timeout Adjustment**: Temporarily raised Direct Mode timeout to 20s for verification
+
+### Expected Verification Results
+
+#### Tier 1 (Orchestrator)
+**If bundling works**:
+```
+[TIER_1] Attempting CharacterConsistencyService import with resilient pattern
+✅ [CCS_IMPORT] _shared loaded successfully
+🔍 [TIER_1] CCS Import: SUCCESS
+```
+
+**If vendor fallback needed**:
+```
+[TIER_1] Attempting CharacterConsistencyService import with resilient pattern
+⚠️ [CCS_IMPORT] _shared import failed, trying _vendor: Module not found...
+✅ [CCS_IMPORT] _vendor loaded successfully
+🔍 [TIER_1] CCS Import: SUCCESS
+```
+
+#### Direct Mode
+**If bundling works**:
+```
+✅ [CCS_IMPORT_DM] _shared loaded
+✅ Generated complete structuredAvatarData via CharacterConsistencyService
+```
+
+**If vendor fallback needed**:
+```
+⚠️ [CCS_IMPORT_DM] _shared failed, trying _vendor: Module not found...
+✅ [CCS_IMPORT_DM] _vendor loaded
+✅ Generated complete structuredAvatarData via CharacterConsistencyService
+```
+
+### Success Criteria
+- ✅ No `Module not found: _shared/CharacterConsistencyService.js` errors
+- ✅ Tier 1 achieves >95% success rate
+- ✅ Logs explicitly show which import path was used
+- ✅ Vendor fallback logs appear if bundling fails
+
+### Rollback Plan
+If vendor fallback does not resolve the issue:
+1. Revert `import_map` additions to `supabase/config.toml`
+2. Revert CCS import changes in both functions
+3. Document root cause for Deno Deploy bundler team
+
+### Related Documentation
+- [TIER1_IMPORT_RESOLUTION_VERIFICATION_2025-10-03.md](./TIER1_IMPORT_RESOLUTION_VERIFICATION_2025-10-03.md) - Full verification plan
+- [WHY_SHARED_IMPORTS_DONT_WORK.md](./WHY_SHARED_IMPORTS_DONT_WORK.md) - Import pattern documentation
+
+---
+
 **Hardening Status:** ✅ COMPLETE  
 **Documentation Status:** ✅ COMPLETE  
 **Ready for Deployment:** ✅ YES

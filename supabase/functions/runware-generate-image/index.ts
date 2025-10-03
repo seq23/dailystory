@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-10-03T00:20:00Z - Timeout hardening: added AbortSignal support to RunwareWebSocketService and aligned timeouts to 20s
+// DEPLOY_MARKER: 2025-10-03T18:50:00Z - CCS vendor fallback with explicit logging + Direct Mode timeout 20s
 
 // Inlined orchestrator logic - no more lazy loading
 
@@ -271,13 +271,18 @@ async function processInlinedTier1(
     try {
       const sharedModule = await import("../_shared/CharacterConsistencyService.js");
       service = sharedModule.characterConsistencyService;
-      console.log(`✅ [VENDOR_FALLBACK] Loaded from _shared (bundled)`);
+      console.log(`✅ [CCS_IMPORT] _shared loaded successfully`);
     } catch (sharedError) {
       // Tier 2: Vendor fallback for production reliability
-      console.warn(`⚠️ [VENDOR_FALLBACK] _shared import failed, using vendor bundle:`, sharedError);
-      const vendorModule = await import("../_vendor/CharacterConsistencyService.mjs");
-      service = vendorModule.characterConsistencyService;
-      console.log(`✅ [VENDOR_FALLBACK] Loaded from _vendor bundle`);
+      console.warn(`⚠️ [CCS_IMPORT] _shared import failed, trying _vendor:`, sharedError);
+      try {
+        const vendorModule = await import("../_vendor/CharacterConsistencyService.mjs");
+        service = vendorModule.characterConsistencyService;
+        console.log(`✅ [CCS_IMPORT] _vendor loaded successfully`);
+      } catch (vendorError) {
+        console.error(`❌ [CCS_IMPORT] both _shared and _vendor paths failed`, { sharedError, vendorError });
+        throw new Error(`CCS_IMPORT_FAILURE: both paths failed`);
+      }
     }
     
     characterConsistencyService = service;
@@ -1462,9 +1467,9 @@ Deno.serve(async (req) => {
           }
 
           try {
-            // Add 15-second timeout for Direct Mode call
+            // Add 20-second timeout for Direct Mode call (temporarily increased for verification)
             const controller = new AbortController();
-            const timeout = setTimeout(() => controller.abort(), 15000);
+            const timeout = setTimeout(() => controller.abort(), 20000);
 
             try {
               const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
@@ -1511,7 +1516,7 @@ Deno.serve(async (req) => {
               }
             } catch (e: any) {
               if (e?.name === "AbortError") {
-                directModeResponse = { error: { message: "Direct Mode timeout (15s)" } };
+                directModeResponse = { error: { message: "Direct Mode timeout (20s)" } };
               } else {
                 throw e;
               }

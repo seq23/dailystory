@@ -144,6 +144,74 @@ try {
 
 ---
 
+## Solution Implemented (2025-10-03)
+
+### Two-Tier Vendor Fallback for Internal Modules
+
+**Phase 1**: Explicit Bundler Configuration
+- Created `supabase/functions/deno.jsonc` with explicit `include` paths for `_shared/**/*.js` and `_vendor/**/*.mjs`
+- Updated `supabase/config.toml` to add `import_map = "./deno.jsonc"` for:
+  - `runware-generate-image` (Tier 1 orchestrator)
+  - `runware-template-ab` (Tier 2.5A)
+  - `runware-template-cd` (Tier 2.5C/2.5D)
+  - `ai-visual-scene-creator` (Direct Mode)
+
+**Phase 2**: Vendor Bundle for CharacterConsistencyService
+- Created `supabase/functions/_vendor/CharacterConsistencyService.mjs` (copy of shared service)
+- Implemented two-tier import pattern in critical functions:
+
+```typescript
+// Tier 1: Try _shared import (bundled)
+let service;
+try {
+  const sharedModule = await import("../_shared/CharacterConsistencyService.js");
+  service = sharedModule.characterConsistencyService;
+  console.log(`✅ [CCS_IMPORT] _shared loaded successfully`);
+} catch (sharedError) {
+  // Tier 2: Vendor fallback for production reliability
+  console.warn(`⚠️ [CCS_IMPORT] _shared import failed, trying _vendor:`, sharedError);
+  try {
+    const vendorModule = await import("../_vendor/CharacterConsistencyService.mjs");
+    service = vendorModule.characterConsistencyService;
+    console.log(`✅ [CCS_IMPORT] _vendor loaded successfully`);
+  } catch (vendorError) {
+    console.error(`❌ [CCS_IMPORT] both _shared and _vendor paths failed`, { sharedError, vendorError });
+    throw new Error(`CCS_IMPORT_FAILURE: both paths failed`);
+  }
+}
+```
+
+**Phase 3**: Explicit Logging for Verification
+- Added deployment marker: `DEPLOY_MARKER: 2025-10-03T18:50:00Z`
+- Added explicit logs to prove which import path is used:
+  - `✅ [CCS_IMPORT] _shared loaded successfully` - Bundled import worked
+  - `✅ [CCS_IMPORT] _vendor loaded successfully` - Vendor fallback used
+  - `❌ [CCS_IMPORT] both paths failed` - Total failure (should never happen)
+
+**Phase 4**: Direct Mode Enhancement
+- Applied same two-tier import pattern to `ai-visual-scene-creator` in two locations:
+  - `getStructuredAvatarData` (line ~54)
+  - `getSecondaryCharactersForSession` (line ~317)
+- Added `[CCS_IMPORT_DM]` logs to distinguish Direct Mode imports
+
+**Phase 5**: Timeout Increase for Verification
+- Temporarily increased Direct Mode timeout from 15s → 20s
+- Allows distinguishing CCS import failures from legitimate Direct Mode timeouts
+- Will revert to 15s after verification confirms vendor fallback works
+
+### Verification
+See [TIER1_IMPORT_RESOLUTION_VERIFICATION_2025-10-03.md](./TIER1_IMPORT_RESOLUTION_VERIFICATION_2025-10-03.md) for:
+- Test plan (3 verification runs)
+- Expected logs
+- Success criteria
+- Rollback plan
+
+### Related Documentation
+- [TIER_1_IMPORT_FAILURE_POSTMORTEM.md](./TIER_1_IMPORT_FAILURE_POSTMORTEM.md) - Root cause analysis
+- [CCS_RUNTIME_VERIFICATION_2025-10-02.md](./CCS_RUNTIME_VERIFICATION_2025-10-02.md) - CCS method verification
+
+---
+
 ## 📋 Import Pattern Decision Matrix
 
 | File Location | Import Type | Correct Pattern | Never Use |
