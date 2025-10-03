@@ -34,8 +34,195 @@ export function createSeededRandom(seed) {
   };
 }
 
+// ============= UNIVERSAL_VOCAB - SINGLE SOURCE OF TRUTH (PHASE 1) =============
+export const UNIVERSAL_VOCAB = {
+  // Deduplicated clothing items (31 items)
+  clothing: [
+    'shirt', 'pants', 'dress', 'skirt', 'jacket', 'coat', 'sweater', 
+    'hoodie', 'shoes', 'boots', 'sandals', 'sneakers', 'socks', 
+    'hat', 'cap', 'beanie', 'scarf', 'gloves', 'mittens', 'belt', 
+    'tie', 'bowtie', 'uniform', 'costume', 'pajamas', 'robe', 
+    'apron', 'vest', 'shorts', 'jeans', 'overalls'
+  ],
+  
+  // Full color array (136 items)
+  colors: [
+    'red', 'blue', 'yellow', 'green', 'orange', 'purple', 'pink', 'brown', 'black', 'white',
+    'turquoise', 'coral', 'lavender', 'mint', 'peach', 'gold', 'silver', 'bronze',
+    'maroon', 'navy', 'teal', 'lime', 'magenta', 'cyan', 'beige', 'tan',
+    'bright red', 'deep blue', 'sunny yellow', 'forest green', 'soft pink', 'rich purple',
+    'warm orange', 'sky blue', 'grass green', 'snow white', 'charcoal black',
+    'bright blue', 'bright green', 'bright yellow', 'bright orange', 'bright purple', 'bright pink',
+    'vivid red', 'vivid blue', 'vivid green', 'vivid yellow', 'vivid orange', 'vivid purple', 'vivid pink',
+    'deep red', 'deep green', 'deep purple', 'deep orange', 'deep pink', 'deep brown',
+    'dark red', 'dark blue', 'dark green', 'dark purple', 'dark orange', 'dark pink', 'dark brown',
+    'light red', 'light blue', 'light green', 'light yellow', 'light purple', 'light pink', 'light brown',
+    'pale red', 'pale blue', 'pale green', 'pale yellow', 'pale purple', 'pale pink', 'pale brown',
+    'crimson', 'scarlet', 'ruby', 'cherry', 'rose', 'salmon', 'apricot',
+    'royal blue', 'aqua', 'powder blue',
+    'lime green', 'emerald', 'jade', 'seafoam', 'olive', 'sage',
+    'golden', 'lemon', 'butter', 'cream', 'ivory', 'khaki', 'sand',
+    'violet', 'lilac', 'plum', 'fuchsia', 'orchid', 'amethyst',
+    'tangerine', 'amber', 'rust', 'copper', 'honey', 'caramel',
+    'cotton candy pink', 'bubblegum pink', 'hot pink', 'flamingo', 'blush', 'dusty rose'
+  ],
+  
+  // Flattened actions array (150+ items with all verb forms)
+  actions: [
+    'run', 'runs', 'ran', 'running', 'jump', 'jumps', 'jumped', 'jumping', 
+    'walk', 'walks', 'walked', 'walking', 'play', 'plays', 'played', 'playing',
+    'dance', 'dances', 'danced', 'dancing', 'climb', 'climbs', 'climbed', 'climbing',
+    'throw', 'throws', 'threw', 'throwing', 'catch', 'catches', 'caught', 'catching',
+    'swim', 'swims', 'swam', 'swimming', 'slide', 'slides', 'slid', 'sliding',
+    'roll', 'rolls', 'rolled', 'rolling', 'hide', 'hides', 'hid', 'hiding',
+    'dig', 'digs', 'dug', 'digging', 'kick', 'kicks', 'kicked', 'kicking',
+    'draw', 'draws', 'drew', 'drawing', 'write', 'writes', 'wrote', 'writing',
+    'build', 'builds', 'built', 'building', 'create', 'creates', 'created', 'creating',
+    'paint', 'paints', 'painted', 'painting', 'read', 'reads', 'reading',
+    'cook', 'cooks', 'cooked', 'cooking', 'study', 'studies', 'studied', 'studying',
+    'see', 'sees', 'saw', 'seeing', 'hear', 'hears', 'heard', 'hearing',
+    'feel', 'feels', 'felt', 'feeling', 'smell', 'smells', 'smelled', 'smelling',
+    'taste', 'tastes', 'tasted', 'tasting', 'touch', 'touches', 'touched', 'touching',
+    'wake', 'wakes', 'woke', 'waking', 'sleep', 'sleeps', 'slept', 'sleeping',
+    'lay', 'lays', 'laid', 'laying', 'sit', 'sits', 'sat', 'sitting',
+    'stand', 'stands', 'stood', 'standing', 'lie', 'lies', 'lying',
+    'fly', 'flies', 'flew', 'flying', 'float', 'floats', 'floated', 'floating',
+    'magic', 'magical', 'transform', 'transforms', 'transformed', 'transforming',
+    'disappear', 'disappears', 'disappeared', 'disappearing', 'sparkle', 'sparkles', 'sparkling',
+    'glow', 'glows', 'glowed', 'glowing', 'enchant', 'enchants', 'enchanted', 'enchanting',
+    'help', 'helps', 'helped', 'helping', 'share', 'shares', 'shared', 'sharing',
+    'laugh', 'laughs', 'laughed', 'laughing', 'smile', 'smiles', 'smiled', 'smiling',
+    'hug', 'hugs', 'hugged', 'hugging', 'explore', 'explores', 'explored', 'exploring'
+  ],
+  
+  // Deduplicated objects by category (238+ items with new template nouns)
+  objects: {
+    animals: [
+      'dog', 'cat', 'rabbit', 'hamster', 'guinea pig', 'bird', 'parrot', 'duck', 
+      'chicken', 'horse', 'pony', 'cow', 'pig', 'sheep', 'goat', 'turtle', 'fish', 
+      'frog', 'butterfly', 'bee', 'ladybug', 'squirrel', 'mouse', 'chipmunk', 
+      'raccoon', 'deer', 'fox', 'owl', 'robin', 'cardinal', 'blue jay', 'eagle', 
+      'dolphin', 'whale', 'seal', 'penguin', 'bear', 'lion', 'tiger', 'elephant', 
+      'giraffe', 'zebra', 'monkey', 'kangaroo'
+    ],
+    
+    nature: [
+      'tree', 'flower', 'rose', 'sunflower', 'tulip', 'daisy', 'lily', 'bush',
+      'grass', 'leaf', 'branch', 'rock', 'stone', 'mountain', 'hill', 'cloud',
+      'rainbow', 'sun', 'moon', 'star', 'stars', 'pond', 'river', 'ocean', 'beach',
+      'snow', 'rain'
+    ],
+    
+    toys: [
+      'doll', 'teddy bear', 'toy car', 'blocks', 'puzzle', 'crayons', 'markers', 
+      'paints', 'clay', 'kite', 'balloon', 'bubbles', 'frisbee', 'jump rope', 
+      'hula hoop', 'marbles'
+    ],
+    
+    sports: [
+      'ball', 'bat', 'glove', 'helmet', 'uniform', 'goal', 'net', 'racket', 
+      'paddle', 'skates', 'skateboard', 'surfboard', 'sneakers'
+    ],
+    
+    vehicles: [
+      'car', 'bus', 'truck', 'train', 'airplane', 'boat', 'ship', 'bicycle', 
+      'bike', 'scooter', 'tricycle', 'skateboard', 'motorcycle', 'helicopter', 
+      'rocket', 'taxi', 'fire truck', 'police car', 'ambulance', 'school bus', 
+      'van'
+    ],
+    
+    places: [
+      'school', 'park', 'home', 'house', 'restaurant', 'library', 'store', 
+      'hospital', 'bank', 'post office', 'fire station', 'police station', 
+      'playground', 'garden', 'yard', 'kitchen', 'bedroom', 'classroom'
+    ],
+    
+    household: [
+      'chair', 'table', 'bed', 'lamp', 'pillow', 'blanket', 'cup', 'plate',
+      'bowl', 'spoon', 'fork', 'knife', 'pot', 'pan', 'oven', 'fridge',
+      'door', 'window', 'mirror', 'clock', 'phone', 'computer', 'TV',
+      'gift', 'present'
+    ],
+    
+    food: [
+      'apple', 'banana', 'orange', 'cookie', 'cake', 'ice cream', 'pizza',
+      'sandwich', 'milk', 'juice', 'water', 'bread', 'cheese', 'yogurt',
+      'carrots', 'broccoli', 'pasta', 'soup', 'cereal', 'muffin', 'pie'
+    ],
+    
+    school: [
+      'pencil', 'pen', 'paper', 'notebook', 'book', 'backpack', 'desk',
+      'whiteboard', 'chalkboard', 'eraser', 'ruler', 'scissors', 'glue',
+      'tablet', 'calculator', 'globe', 'map', 'calendar'
+    ],
+    
+    music: [
+      'piano', 'guitar', 'drums', 'violin', 'flute', 'trumpet', 'saxophone',
+      'harmonica', 'xylophone', 'tambourine', 'maracas', 'recorder'
+    ],
+    
+    playground: [
+      'swing', 'slide', 'sandbox', 'seesaw', 'hopscotch', 'monkey bars', 
+      'climbing wall', 'merry-go-round'
+    ],
+    
+    people: [
+      'firefighter', 'teacher', 'doctor', 'nurse', 'police officer', 
+      'dentist', 'barber', 'chef', 'artist', 'musician', 'pilot'
+    ]
+  },
+  
+  // Context detection vocabulary
+  context: {
+    indoor: [
+      'kitchen', 'bedroom', 'bathroom', 'living room', 'classroom', 'library',
+      'office', 'hospital', 'store', 'restaurant', 'gym', 'theater',
+      'museum', 'house', 'home', 'school', 'building', 'room',
+      'inside', 'indoors', 'ceiling', 'floor', 'wall', 'furniture', 'table'
+    ],
+    
+    outdoor: [
+      'park', 'garden', 'playground', 'beach', 'forest', 'mountain', 'lake',
+      'river', 'field', 'yard', 'street', 'road', 'path', 'trail',
+      'outside', 'outdoors', 'sky', 'clouds', 'trees', 'grass',
+      'flowers', 'nature', 'weather', 'sunshine', 'rain'
+    ]
+  },
+  
+  // Character detection vocabulary
+  hair: [
+    'blonde', 'brown', 'black', 'red', 'gray', 'white', 'silver', 'golden',
+    'curly', 'straight', 'wavy', 'braided', 'short', 'long', 'thick', 'thin',
+    'ponytail', 'pigtails', 'bun', 'bangs', 'messy', 'neat', 'spiky',
+    'dark', 'light', 'shoulder-length', 'frizzy', 'smooth'
+  ],
+  
+  sizeAge: [
+    'tall', 'short', 'big', 'small', 'tiny', 'giant', 'little',
+    'young', 'old', 'older', 'younger', 'baby', 'toddler', 'child',
+    'adult', 'elderly', 'middle-aged', 'teenage',
+    'seventeen-year-old', 'teen', 'adolescent', 'youth', 'senior',
+    'grown-up', 'kid', 'youngster', 'infant', 'preteen',
+    'grandmother', 'grandfather', 'grandma', 'grandpa',
+    'towering', 'petite', 'lanky', 'stout', 'stocky'
+  ],
+  
+  animalRelationships: [
+    'pet', 'puppy', 'kitten', 'bunny', 'family dog', 'family cat', 'my dog', 'my cat',
+    'her pet', 'his pet', 'their pet', 'our pet', 'pet rabbit', 'pet bird',
+    'pet hamster', 'best friend', 'companion', 'buddy',
+    'beloved', 'family', 'family of', 'loyal', 'faithful', 'trusted',
+    'escaped pet', 'missing pet', 'stray', 'wild', 'neighborhood',
+    'furry friend', 'animal friend', 'critter', 'creature',
+    'service animal', 'therapy pet', 'emotional support'
+  ]
+};
 
-// ============= UNIFIED VOCABULARY - EXTENDED VERSION =============
+// ============= BACKWARD COMPATIBILITY ALIASES =============
+export const EXPANDED_COLOR_ARRAY = UNIVERSAL_VOCAB.colors;
+export const CLOTHING_DETECTION_KEYWORDS = UNIVERSAL_VOCAB.clothing;
+
+// ============= UNIFIED VOCABULARY - EXTENDED VERSION (V2 - Backward Compatibility) =============
 export const TIER_25_UNIFIED_VOCABULARY_EXTENDED = {
   // ============= UNIFIED ACTION VOCABULARY =============
   actions: {
