@@ -382,12 +382,15 @@ async function generateImageWithRunware(positivePrompt, pageNumber, sessionId) {
   try {
     const defaultNegativePrompt = 'NO TEXT, no words, no letters, no writing, no captions, no watermarks, no signatures, no logos, bad anatomy, deformed, blurry, low quality, distorted face, extra limbs, malformed hands, poorly drawn, artifacts, noise, oversaturated, underexposed, overexposed, duplicate, cropped, watermark, signature, text, logo, bad lighting, flat lighting, plastic skin, waxy skin, artificial look, uncanny valley';
 
-    const imageURL = await callRunwareAPI(
+    const imageGenResult = await callRunwareAPI(
       positivePrompt,
       defaultNegativePrompt,
       { sessionId, pageNumber },
       2
     );
+
+    // Defensive fallback: handle both string and object returns
+    const imageURL = typeof imageGenResult === 'string' ? imageGenResult : imageGenResult?.imageURL;
 
     return {
       success: true,
@@ -405,7 +408,7 @@ async function generateImageWithRunware(positivePrompt, pageNumber, sessionId) {
 // ============= RUNWARE API: PAYLOAD-BASED WRAPPER FOR TIER 2.5A→2.5B ESCALATION =============
 async function callRunwareWithRetry(runwarePayload, apiKey) {
   try {
-    const imageURL = await callRunwareAPI(
+    const imageGenResult = await callRunwareAPI(
       runwarePayload.positivePrompt,
       runwarePayload.negativePrompt,
       {
@@ -418,6 +421,9 @@ async function callRunwareWithRetry(runwarePayload, apiKey) {
       },
       2
     );
+
+    // Defensive fallback: handle both string and object returns
+    const imageURL = typeof imageGenResult === 'string' ? imageGenResult : imageGenResult?.imageURL;
 
     return { imageURL };
   } catch (error) {

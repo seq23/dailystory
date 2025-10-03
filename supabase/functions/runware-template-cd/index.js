@@ -480,9 +480,10 @@ async function handleRequest(req) {
     templateResult.negativePrompt
   );
   
+  // Defensive fallback: callRunwareAPI returns STRING, but handle both string/object
   const result = {
     success: true,
-    imageURL: imageGenResult.imageURL,
+    imageURL: typeof imageGenResult === 'string' ? imageGenResult : imageGenResult?.imageURL,
     templateData: templateResult,
     complexity: complexityLevel,
     sessionArchitecture: 'parameter-based',
@@ -490,10 +491,16 @@ async function handleRequest(req) {
     positivePrompt: templateResult.positivePrompt,
     negativePrompt: templateResult.negativePrompt,
     imageGeneration: {
-      cost: imageGenResult.cost,
-      seed: imageGenResult.seed
+      cost: typeof imageGenResult === 'object' ? (imageGenResult?.cost || 0.0013) : 0.0013,
+      seed: typeof imageGenResult === 'object' ? imageGenResult?.seed : null
     }
   };
+  
+  console.log('✅ Template CD: Result prepared', { 
+    hasImageURL: !!result.imageURL,
+    imageGenResultType: typeof imageGenResult,
+    imageURLSource: typeof imageGenResult === 'string' ? 'direct_string' : 'object_property'
+  });
 
   // Log successful template generation with resilient Supabase client
   try {

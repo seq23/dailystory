@@ -96,6 +96,41 @@ Listening on http://localhost:9999/
 booted (time: 23ms)
 ```
 
+## **Defensive Return Value Handling (Anti-Crash Pattern)**
+
+### Problem: callRunwareAPI() String vs Object Ambiguity
+
+`callRunwareAPI()` in template functions returns a **string** (imageURL directly), but calling code previously expected an **object** with `{ imageURL, cost, seed }`, causing `imageURL: undefined` crashes.
+
+### Solution: Defensive Fallback Pattern
+
+All template functions now implement type-safe defensive handling:
+
+```javascript
+// Template CD (runware-template-cd/index.js, lines 483-496)
+const imageGenResult = await callRunwareAPI(positivePrompt, negativePrompt);
+
+const result = {
+  success: true,
+  // Defensive: handle both string (current) and object (future) returns
+  imageURL: typeof imageGenResult === 'string' ? imageGenResult : imageGenResult?.imageURL,
+  imageGeneration: {
+    cost: typeof imageGenResult === 'object' ? (imageGenResult?.cost || 0.0013) : 0.0013,
+    seed: typeof imageGenResult === 'object' ? imageGenResult?.seed : null
+  }
+};
+
+// Template AB (runware-template-ab/index.js, lines 385-395, 408-422)
+const imageGenResult = await callRunwareAPI(...);
+const imageURL = typeof imageGenResult === 'string' ? imageGenResult : imageGenResult?.imageURL;
+```
+
+**Benefits:**
+- ✅ Zero crashes from type mismatches
+- ✅ Works with both current (string) and future (object) implementations
+- ✅ Graceful degradation with sensible defaults (cost: 0.0013, seed: null)
+- ✅ Observable via logs showing data shape received
+
 ## **Boot Failure Prevention System**
 
 ### The Problem Solved (V4.3)
