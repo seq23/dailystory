@@ -2093,7 +2093,12 @@ async function handleRequest(req) {
               const skinTone = userInfo?.avatar?.skinTone || 'medium';
               const culturalData = StaticDataCache.getCulturalBundle(skinTone, sessionId);
               const culturalProfile = inlineDetectCultural(userInfo, avatarIdentity);
-              characterAppearance = `${culturalData?.hair || getHairBySkintone(skinTone, sessionId)}, ${culturalData?.features || getSkinBySkintone(skinTone, culturalProfile)}`;
+              
+              // Set ALL required variables: hairDescription, facialFeatures, characterAppearance
+              hairDescription = culturalData?.hair || getHairBySkintone(skinTone, sessionId);
+              facialFeatures = culturalData?.features || getSkinBySkintone(skinTone, culturalProfile);
+              characterAppearance = `${hairDescription}, ${facialFeatures}`;
+              
               console.log(`✅ [TIER_2.5A] Tier 2 StaticDataCache SUCCESS: ${characterAppearance}`);
             } catch (staticError) {
               console.warn(`⚠️ [TIER_2.5A] Tier 2 failed, using Tier 3 inline arrays - Escalating to Tier 2.5B`, staticError.message);
@@ -2208,13 +2213,82 @@ async function handleRequest(req) {
         // ESCALATE TO TIER 2.5B on ANY CharacterConsistencyService failure (import or method)
         console.error(`🚨 [${requestId}] Tier 2.5A: CharacterConsistencyService FAILED (outer catch) - Escalating to Tier 2.5B`, characterError.message);
         
+        // INTERNAL ESCALATION: Build Tier 2.5B prompt and call Runware
+        const extractedScene = extractSimpleScene(storyText);
+        const styleFramework = getStyleFramework(userInfo?.difficulty || 'medium');
+        const culturalProfile = inlineDetectCultural(userInfo, avatarIdentity);
+        const characterName = userInfo?.name || userInfo?.childName || 'child';
+        const age = userInfo?.age || 'young child';
+        const ethnicity = deriveRegionalEthnicity(userInfo, avatarIdentity);
+        const skinTone = userInfo?.avatar?.skinTone || 'medium';
+        const hairDescription = getHairBySkintone(skinTone, sessionId) || 'brown hair';
+        const facialFeatures = getSkinBySkintone(skinTone, culturalProfile) || 'friendly expression';
+        const cultural_context = getCulturalContext(userInfo?.preferredLanguage || 'en');
+        
+        const leftoverDataTier2B = [
+          preAnalyzedData?.timeOfDay,
+          preAnalyzedData?.mood,
+          preAnalyzedData?.lighting,
+          preAnalyzedData?.atmosphere
+        ].filter(Boolean).join(', ');
+        
+        const fullFrameworkPrompt = `${styleFramework.frameworkPrompt}, medium shot, child-safe, age-appropriate`;
+        
+        const tier2BPrompt = TIER_25B_TEMPLATE
+          .replace('{pageText}', storyText)
+          .replace('{character}', characterName)
+          .replace('{age}', age)
+          .replace('{ethnicity}', ethnicity)
+          .replace('{hairDescription}', hairDescription)
+          .replace('{facialFeatures}', facialFeatures)
+          .replace('{scene}', extractedScene || storyText)
+          .replace('{cultural_context}', cultural_context)
+          .replace('{leftover_data}', leftoverDataTier2B)
+          .replace('{fullFrameworkPrompt}', fullFrameworkPrompt)
+          .replace(/\{[^}]+\}/g, '')
+          .replace(/[ \t]+/g, ' ')
+          .replace(/\s*\.\s*\./g, '.')
+          .trim();
+        
+        const escalatedTemplate = {
+          positivePrompt: tier2BPrompt,
+          negativePrompt: generateNegativePrompt(culturalProfile, userInfo?.avatar?.type, userInfo?.difficulty) || 'blurry, low quality',
+          templateType: 'Basic Template B - Escalated from 2.5A Outer Catch',
+          tier: '2.5B',
+          styleFrameworkUsed: styleFramework.name,
+          escalated: true,
+          escalationReason: 'character_consistency_service_outer_failure'
+        };
+        
+        console.log(`✅ [${requestId}] Tier 2.5A→2.5B Outer Catch Escalation - Calling Runware...`);
+        
+        const runwareApiKey = Deno.env.get('RUNWARE_API_KEY');
+        if (!runwareApiKey) {
+          throw new Error('RUNWARE_API_KEY not configured');
+        }
+        
+        const runwarePayload = {
+          positivePrompt: escalatedTemplate.positivePrompt,
+          negativePrompt: escalatedTemplate.negativePrompt,
+          width: 1024,
+          height: 1024,
+          numberResults: 1,
+          outputFormat: "WEBP",
+          model: "runware:100@1",
+          steps: 4,
+          CFGScale: 1,
+          scheduler: "FlowMatchEulerDiscreteScheduler"
+        };
+        
+        const imageResult = await callRunwareWithRetry(runwarePayload, runwareApiKey);
+        
         return createResponse({
-          success: false,
-          escalateToTier: '2.5B',
-          reason: 'character_consistency_service_failure',
-          sessionId: sessionId,
-          complexity: 'B',
-          errorDetails: characterError.message
+          success: true,
+          imageURL: imageResult.imageURL,
+          template: escalatedTemplate,
+          escalated: true,
+          escalationReason: 'character_consistency_service_outer_failure',
+          tier: '2.5B'
         }, 200);
       }
       
