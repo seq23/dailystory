@@ -98,6 +98,7 @@ Quick lookup table for all tracked errors with searchable keywords.
 
 | Error ID | Keywords | Severity | Status | System | Quick Link |
 |----------|----------|----------|--------|--------|------------|
+| ERROR-067 | diagnostic-field-mismatch, system-diagnostics, apikey-diagnostic, service_key_present, openai-detection, environment-keys | MEDIUM | ✅ RESOLVED | Diagnostics | [View](#error-067-diagnostic-field-name-mismatch-in-apikey-diagnostic) |
 | ERROR-066 | deno-parser, brace-alignment, scope-closure, clearTimeout-duplicate, try-catch-finally, tier-2.5b-fast-path, cascade-tail, head-response, deployment-blocking | CRITICAL | ✅ RESOLVED | Infrastructure | [View](#error-066-deno-parser-syntax-errors---brace-alignment-and-scope-closure) |
 | ERROR-065 | abortsignal, timeout-handling, runware-websocket, health-check, false-negative, failed-to-fetch, 45s-timeout | CRITICAL | ✅ RESOLVED | Image Gen | [View](#error-065-network-timeout-and-false-health-check-failures) |
 | ERROR-064 | deno-parser, trailing-commas, corsResponse, expected-comma-got-return, deployment-failure, runware-generate-image | CRITICAL | ✅ RESOLVED | Infrastructure | [View](#error-064-deno-parser-error---trailing-commas-in-function-calls) |
@@ -2261,7 +2262,66 @@ return corsResponse(
 
 ---
 
-**CURRENT STATUS:** ✅ **PRODUCTION READY - ALL CRITICAL ISSUES RESOLVED**  
+### ✅ ERROR-067: Diagnostic Field Name Mismatch in ApiKeyDiagnostic
+- **Status:** RESOLVED ✅
+- **Severity:** MEDIUM (User-facing diagnostic tool inaccurate)
+- **Discovered:** 2025-10-03
+- **Resolved:** 2025-10-03
+- **Impact:** "Run Full Diagnostic" button incorrectly reports API keys as missing when they are present
+- **Root Cause:** Field name mismatch between `system-diagnostics` edge function response and `ApiKeyDiagnostic.tsx` expectations, plus missing OpenAI key detection
+
+**Technical Details:**
+- **Field Mismatch**: `system-diagnostics` returns `supabase_service_key` but `ApiKeyDiagnostic.tsx` checks for `service_key_present`
+- **Missing Detection**: `system-diagnostics` did not report `OPENAI_API_KEY` status
+- **Fallback Path**: ApiKeyDiagnostic fallback to system-diagnostics had incorrect field names
+- **User Impact**: False negatives showing "❌ API key missing" when keys were actually configured
+
+**Problematic Pattern:**
+```typescript
+// system-diagnostics/index.ts - Returns this
+environment: {
+  runware_api_key: !!runwareApiKey,
+  supabase_service_key: !!supabaseServiceKey  // Field name here
+}
+
+// ApiKeyDiagnostic.tsx - Checks for wrong field name
+addResult(sysData.environment.service_key_present ? 'success' : 'error',  // ❌ Wrong field
+  `SUPABASE_SERVICE_ROLE_KEY: ${sysData.environment.service_key_present ? 'Present' : 'Missing'}`);
+```
+
+**Changes Made:**
+1. ✅ **system-diagnostics/index.ts**: Added `OPENAI_API_KEY` detection (line 20, 43, 55)
+2. ✅ **ApiKeyDiagnostic.tsx**: Fixed field name from `service_key_present` to `supabase_service_key` (line 80)
+3. ✅ **ApiKeyDiagnostic.tsx**: Added OpenAI key check in fallback path (line 81)
+4. ✅ **docs/MASTER_ERRORS_TO_FIX.md**: Added ERROR-067 tracking
+
+**Files Modified:**
+- `supabase/functions/system-diagnostics/index.ts` (Lines 19-21, 41-45, 53-57): Added OpenAI key detection
+- `src/components/ApiKeyDiagnostic.tsx` (Lines 78-81): Fixed field names and added OpenAI check
+- `docs/MASTER_ERRORS_TO_FIX.md` (Line 101): Added ERROR-067 to error index
+
+**Expected Outcomes:**
+- ✅ "Run Full Diagnostic" correctly reports RUNWARE_API_KEY status
+- ✅ "Run Full Diagnostic" correctly reports OPENAI_API_KEY status (new)
+- ✅ "Run Full Diagnostic" correctly reports SUPABASE_SERVICE_ROLE_KEY status
+- ✅ No more false negatives for configured API keys
+- ✅ Improved diagnostic accuracy for troubleshooting
+
+**Prevention Measures:**
+1. **Type Safety**: Consider adding TypeScript interfaces for diagnostic response structures
+2. **Documentation**: Document expected field names in both edge function and frontend
+3. **Testing**: Add integration tests for diagnostic tool accuracy
+
+**Business Impact:**
+- **Improved Support**: More accurate diagnostics reduce troubleshooting time
+- **User Confidence**: Correct status reporting builds trust in system health indicators
+- **Developer Experience**: Clearer feedback when debugging API key issues
+
+[↑ Back to Top](#master-error-tracking-document) | [📋 TOC](#table-of-contents)
+
+---
+
+**CURRENT STATUS:** ✅ **PRODUCTION READY - ALL CRITICAL ISSUES RESOLVED**
 **DEPLOYMENT STATUS:** ✅ **CLEARED FOR PRODUCTION**  
 **VENDOR SYSTEM:** ✅ **NUCLEAR INDEPENDENCE ACHIEVED - 7-TIER IMAGE, 4-TIER STORY**  
 **DEPLOYMENT VERSION:** `2025-10-03T00:20:00Z` (Timeout management + Parser hardening + Hair/skin data fix)  

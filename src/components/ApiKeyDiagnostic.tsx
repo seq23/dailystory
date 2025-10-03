@@ -77,8 +77,10 @@ export const ApiKeyDiagnostic: React.FC = () => {
             } else if (sysData?.environment) {
               addResult(sysData.environment.runware_api_key ? 'success' : 'error', 
                 `${sysData.environment.runware_api_key ? '✅' : '❌'} RUNWARE_API_KEY: ${sysData.environment.runware_api_key ? 'Present' : 'Missing'}`);
-              addResult(sysData.environment.service_key_present ? 'success' : 'error', 
-                `${sysData.environment.service_key_present ? '✅' : '❌'} SUPABASE_SERVICE_ROLE_KEY: ${sysData.environment.service_key_present ? 'Present' : 'Missing'}`);
+              addResult(sysData.environment.openai_api_key ? 'success' : 'warning', 
+                `${sysData.environment.openai_api_key ? '✅' : '⚠️'} OPENAI_API_KEY: ${sysData.environment.openai_api_key ? 'Present' : 'Missing'}`);
+              addResult(sysData.environment.supabase_service_key ? 'success' : 'error', 
+                `${sysData.environment.supabase_service_key ? '✅' : '❌'} SUPABASE_SERVICE_ROLE_KEY: ${sysData.environment.supabase_service_key ? 'Present' : 'Missing'}`);
             }
           } catch (fallbackError) {
             addResult('warning', '⚠️ Fallback diagnostic check failed', fallbackError);

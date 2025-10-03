@@ -17,6 +17,7 @@ interface DiagnosticTest {
 }
 
 const runwareApiKey = Deno.env.get('RUNWARE_API_KEY');
+const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
@@ -40,6 +41,7 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
           timestamp: new Date().toISOString(),
           environment: {
             runware_api_key: !!runwareApiKey,
+            openai_api_key: !!openaiApiKey,
             supabase_url: !!supabaseUrl,
             supabase_service_key: !!supabaseServiceKey
           },
@@ -52,6 +54,7 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
           status: runwareApiKey && supabaseUrl && supabaseServiceKey ? 'PASS' : 'FAIL',
           details: {
             runware_key_present: !!runwareApiKey,
+            openai_key_present: !!openaiApiKey,
             supabase_url_present: !!supabaseUrl,
             service_key_present: !!supabaseServiceKey
           }
