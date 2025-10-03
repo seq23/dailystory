@@ -2092,7 +2092,8 @@ async function handleRequest(req) {
               const { StaticDataCache } = await import("../_shared/StaticDataCache.js");
               const skinTone = userInfo?.avatar?.skinTone || 'medium';
               const culturalData = StaticDataCache.getCulturalBundle(skinTone, sessionId);
-              characterAppearance = `${culturalData?.hair || getHairBySkintone(skinTone, sessionId)}, ${culturalData?.features || getSkinBySkintone(skinTone, inlineDetectCultural(userInfo, avatarIdentity))}`;
+              const culturalProfile = inlineDetectCultural(userInfo, avatarIdentity);
+              characterAppearance = `${culturalData?.hair || getHairBySkintone(skinTone, sessionId)}, ${culturalData?.features || getSkinBySkintone(skinTone, culturalProfile)}`;
               console.log(`✅ [TIER_2.5A] Tier 2 StaticDataCache SUCCESS: ${characterAppearance}`);
             } catch (staticError) {
               console.warn(`⚠️ [TIER_2.5A] Tier 2 failed, using Tier 3 inline arrays - Escalating to Tier 2.5B`, staticError.message);
