@@ -1299,6 +1299,16 @@ Deno.serve(async (req) => {
       // PHASE 6: Process request with lazy-loaded services
       tierLogger.attempt("TIER_1", { storyLength: payload.pageText?.length || payload.storyText?.length });
 
+      // Check if Tier 1 gate is available BEFORE attempting Tier 1
+      const tier1GateResult = await acquire("T1:ai-visual-scene-creator");
+      if (!tier1GateResult.acquired) {
+        console.log(`⚠️ [TIER_1] Gate denied: ${tier1GateResult.reason}`);
+        console.log(`⚡ [TIER_1] Skipping directly to Direct Mode (no throttling)`);
+        
+        // Skip Tier 1 entirely and go straight to Direct Mode
+        payload.skipTier1DueToOverload = true;
+      }
+
       // Attempt real Tier 1 processing with actual orchestrator
       console.log(`[TIER_1] Attempting orchestrator enhancement`);
 
@@ -1306,6 +1316,10 @@ Deno.serve(async (req) => {
       let enhancedPrompt: any = null;
 
       try {
+        // Skip Tier 1 if gate was denied (overload detected)
+        if (payload.skipTier1DueToOverload) {
+          throw new Error("TIER_1_OVERLOAD_SKIP_TO_DIRECT_MODE");
+        }
         // INLINED TIER 1 PROCESSING - Direct orchestration without PhaseIntegrationOrchestrator
         console.log(
           `🎨 INLINED TIER 1: Processing for ${payload.userInfo?.name || "Child"} in session ${payload.sessionId}`,
@@ -1491,7 +1505,18 @@ Deno.serve(async (req) => {
           req,
           200
         );
+        
+        // Release Tier 1 gate on success
+        if (!payload.skipTier1DueToOverload && tier1GateResult.acquired) {
+          release("T1:ai-visual-scene-creator");
+        }
+        
+        return; // Early return on success
       } catch (tier1Error) {
+        // Release Tier 1 gate on failure
+        if (!payload.skipTier1DueToOverload && tier1GateResult.acquired) {
+          release("T1:ai-visual-scene-creator");
+        }
         const errorMessage = tier1Error instanceof Error ? tier1Error.message : String(tier1Error);
         const errorStack = tier1Error instanceof Error ? tier1Error.stack : undefined;
         console.log(`[TIER_1] Failed: ${errorMessage}`);
@@ -1642,16 +1667,13 @@ Deno.serve(async (req) => {
         let directErrorMessage = "Direct Mode not attempted";
 
         // CORRECTED CASCADE: Always try Direct Mode after Tier 1 failure (Direct Mode works without Tier 1 scene)
-        console.log(`[DIRECT_MODE] Attempting Direct Mode fallback after Tier 1 failure`);
+        const skipReason = payload.skipTier1DueToOverload 
+          ? "Tier 1 overload detected" 
+          : "Tier 1 failure";
+        console.log(`[DIRECT_MODE] Attempting Direct Mode fallback (${skipReason})`);
+        console.log(`🚀 [DIRECT_MODE] Proceeding without gate check (always available - zero throttling)`);
 
         try {
-          // Gate check for Direct Mode (shares T1 gate key)
-          const dmGateResult = await acquire("DM:runware-template-cd");
-          if (!dmGateResult.acquired) {
-            console.warn(`⚠️ [GATE] Direct Mode denied: ${dmGateResult.reason}`);
-            directErrorMessage = `GATE_DENIED: ${dmGateResult.reason}`;
-            throw new Error(directErrorMessage);
-          }
 
           try {
             // Add 20-second timeout for Direct Mode call (temporarily increased for verification)
@@ -1754,8 +1776,7 @@ Deno.serve(async (req) => {
               throw new Error("DIRECT_MODE_FAILED: " + (directModeResponse?.error?.message || "Direct mode processing failed"));
             }
           } finally {
-            // Ensure gate is released
-            release("DM:runware-template-cd");
+            // Direct Mode has no gate - nothing to release
           }
         } catch (directModeError) {
           directErrorMessage =
