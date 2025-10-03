@@ -884,23 +884,35 @@ Deno.serve(async (req) => {
     const runwareKey = Deno.env.get("RUNWARE_API_KEY");
     const openaiKey = Deno.env.get("OPENAI_API_KEY");
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-
-    return corsResponse(
-      {
-        status: "healthy",
-        service: "runware-generate-image",
-        tier: "Main Orchestrator",
-        deployment_version: "2025-10-02T21:00:00Z",
-        timestamp: new Date().toISOString(),
-        environment: {
-          hasRunwareApiKey: !!runwareKey,
-          hasOpenAiApiKey: !!openaiKey,
-          hasSupabaseServiceRoleKey: !!supabaseKey,
-        },
-        capabilities: ["tier_orchestration", "image_generation", "complete_cascade_1_DirectMode_2.5A_2.5B_2.5C_2.5D"],
+    
+    const corsHeaders = generateEchoCorsHeaders(req);
+    const healthData = {
+      status: "healthy",
+      service: "runware-generate-image",
+      tier: "Main Orchestrator",
+      deployment_version: "2025-10-03T00:30:00Z",
+      timestamp: new Date().toISOString(),
+      environment: {
+        hasRunwareApiKey: !!runwareKey,
+        hasOpenAiApiKey: !!openaiKey,
+        hasSupabaseServiceRoleKey: !!supabaseKey,
       },
-      req
-    );
+      capabilities: ["tier_orchestration", "image_generation", "complete_cascade_1_DirectMode_2.5A_2.5B_2.5C_2.5D"],
+    };
+
+    // HEAD should return no body
+    if (req.method === "HEAD") {
+      return new Response(null, {
+        status: 200,
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+        },
+      });
+    }
+
+    // GET returns full health data
+    return corsResponse(healthData, req);
   }
 
   // PHASE 3: Method validation before JSON parsing
@@ -1578,13 +1590,11 @@ Deno.serve(async (req) => {
               } else {
                 throw e;
               }
-            } finally {
-              clearTimeout(timeout);
-            }
-              clearTimeout(timeout);
-            }
+              } finally {
+                clearTimeout(timeout);
+              }
 
-            if (tier25bResponse?.data?.success && tier25bResponse.data?.imageURL) {
+              if (tier25bResponse?.data?.success && tier25bResponse.data?.imageURL) {
               const result = {
                 success: true,
                 imageURL: tier25bResponse.data.imageURL,
@@ -2085,12 +2095,10 @@ Deno.serve(async (req) => {
                 req,
                 503
               );
-              }
             }
           }
         }
-        } // Close tier25aError catch block
-      } // Close Tier 1 catch block
+      } // Close if (!isCharacterServiceUnavailable)
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
 
