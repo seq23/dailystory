@@ -133,8 +133,8 @@ serve(async (req) => {
         tier: "2.5C/2.5D",
         timestamp: new Date().toISOString(),
         deployment_version: "2025-09-27T15:30:00Z",
-        handler_cached: !!cachedHandler,
-        last_error: lastLoadError?.message ?? null,
+        handlerCached: !!cachedHandler,
+        lastError: lastLoadError?.message ?? null,
         capabilities: ["advanced_consistency", "detailed_tracking", "premium_enhancement"]
       };
       return withCors(new Response(JSON.stringify(payload), { status: 200, headers: { "Content-Type": "application/json" } }));
