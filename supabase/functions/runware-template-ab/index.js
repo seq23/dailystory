@@ -1755,12 +1755,11 @@ async function handleRequest(req) {
                 // Runtime guard for generateCharacterForConsistency (ERROR-055 fix)
                 let fullCharacterData;
                 if (typeof characterConsistencyService?.generateCharacterForConsistency === 'function') {
+                  console.log(`🔍 [${requestId}] [TIER_2.5A] CCS Method Availability: generateCharacterForConsistency=${typeof characterConsistencyService?.generateCharacterForConsistency}`);
                   fullCharacterData = await characterConsistencyService.generateCharacterForConsistency(
                     character.name,
                     character.type || 'secondary_character',
                     {
-                  
-                  console.log(`🔍 [${requestId}] [TIER_2.5A] CCS Method Availability: generateCharacterForConsistency=${typeof characterConsistencyService?.generateCharacterForConsistency}`);
                       sessionId,
                       userInfo,
                       storyContext: storyText || '',
