@@ -2297,11 +2297,18 @@ addResult(sysData.environment.service_key_present ? 'success' : 'error',  // ❌
    - Changed `env.supabaseServiceRoleKeyPresent` → `env.hasSupabaseServiceRoleKey`
    - Changed `env.runwareApiKeyPresent` → `env.hasRunwareApiKey`
    - Changed `env.openaiApiKeyPresent` → `env.hasOpenAiApiKey`
-5. ✅ **docs/MASTER_ERRORS_TO_FIX.md**: Added ERROR-067 tracking
+5. ✅ **RunwareConnectionTest.tsx**: Fixed field names to match orchestrator response (lines 57-73):
+   - Changed `env.runwareApiKeyPresent` → `env.hasRunwareApiKey`
+   - Changed `env.openaiApiKeyPresent` → `env.hasOpenAiApiKey`
+   - Changed `env.supabaseServiceRoleKeyPresent` → `env.hasSupabaseServiceRoleKey`
+   - Changed `env.runwareApiKeyLength` → `env.runwareKeyLength`
+   - Changed `env.openaiApiKeyLength` → `env.openaiKeyLength`
+6. ✅ **docs/MASTER_ERRORS_TO_FIX.md**: Added ERROR-067 tracking
 
 **Files Modified:**
 - `supabase/functions/system-diagnostics/index.ts` (Lines 19-21, 41-45, 53-57): Added OpenAI key detection
 - `src/components/ApiKeyDiagnostic.tsx` (Lines 52-65, 78-81): Fixed field names in both primary and fallback paths
+- `src/components/RunwareConnectionTest.tsx` (Lines 57-73): Fixed field names to match orchestrator response
 - `docs/MASTER_ERRORS_TO_FIX.md` (Line 101): Added ERROR-067 to error index
 
 **Expected Outcomes:**

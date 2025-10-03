@@ -54,23 +54,23 @@ export const RunwareConnectionTest: React.FC = () => {
             
             // Build detailed status message
             const apiStatuses = [];
-            if (env.runwareApiKeyPresent) {
-              apiStatuses.push(`Runware: ✓ (${env.runwareApiKeyLength} chars)`);
+            if (env.hasRunwareApiKey) {
+              apiStatuses.push(`Runware: ✓ (${env.runwareKeyLength} chars)`);
             } else {
               apiStatuses.push(`Runware: ❌ Missing`);
             }
-            if (env.openaiApiKeyPresent) {
-              apiStatuses.push(`OpenAI: ✓ (${env.openaiApiKeyLength} chars)`);
+            if (env.hasOpenAiApiKey) {
+              apiStatuses.push(`OpenAI: ✓ (${env.openaiKeyLength} chars)`);
             } else {
               apiStatuses.push(`OpenAI: ❌ Missing`);
             }
-            if (env.supabaseServiceRoleKeyPresent) {
+            if (env.hasSupabaseServiceRoleKey) {
               apiStatuses.push(`Supabase: ✓`);
             } else {
               apiStatuses.push(`Supabase: ❌ Missing`);
             }
             
-            const hasAllKeys = env.runwareApiKeyPresent && env.openaiApiKeyPresent && env.supabaseServiceRoleKeyPresent;
+            const hasAllKeys = env.hasRunwareApiKey && env.hasOpenAiApiKey && env.hasSupabaseServiceRoleKey;
             
             testResults.push({
               name: 'Main Orchestrator Health',
