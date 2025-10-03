@@ -2293,11 +2293,15 @@ addResult(sysData.environment.service_key_present ? 'success' : 'error',  // ❌
 1. ✅ **system-diagnostics/index.ts**: Added `OPENAI_API_KEY` detection (line 20, 43, 55)
 2. ✅ **ApiKeyDiagnostic.tsx**: Fixed field name from `service_key_present` to `supabase_service_key` (line 80)
 3. ✅ **ApiKeyDiagnostic.tsx**: Added OpenAI key check in fallback path (line 81)
-4. ✅ **docs/MASTER_ERRORS_TO_FIX.md**: Added ERROR-067 tracking
+4. ✅ **ApiKeyDiagnostic.tsx**: Fixed primary diagnostic path field names (lines 52-65):
+   - Changed `env.supabaseServiceRoleKeyPresent` → `env.hasSupabaseServiceRoleKey`
+   - Changed `env.runwareApiKeyPresent` → `env.hasRunwareApiKey`
+   - Changed `env.openaiApiKeyPresent` → `env.hasOpenAiApiKey`
+5. ✅ **docs/MASTER_ERRORS_TO_FIX.md**: Added ERROR-067 tracking
 
 **Files Modified:**
 - `supabase/functions/system-diagnostics/index.ts` (Lines 19-21, 41-45, 53-57): Added OpenAI key detection
-- `src/components/ApiKeyDiagnostic.tsx` (Lines 78-81): Fixed field names and added OpenAI check
+- `src/components/ApiKeyDiagnostic.tsx` (Lines 52-65, 78-81): Fixed field names in both primary and fallback paths
 - `docs/MASTER_ERRORS_TO_FIX.md` (Line 101): Added ERROR-067 to error index
 
 **Expected Outcomes:**

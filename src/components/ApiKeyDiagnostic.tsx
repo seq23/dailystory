@@ -49,7 +49,7 @@ export const ApiKeyDiagnostic: React.FC = () => {
         
         // Test service role key availability for Direct Mode
         addResult('warning', '🔑 Testing SUPABASE_SERVICE_ROLE_KEY availability for Direct Mode...');
-        if (env.supabaseServiceRoleKeyPresent) {
+        if (env.hasSupabaseServiceRoleKey) {
           addResult('success', '✅ SUPABASE_SERVICE_ROLE_KEY is available - Direct Mode should work');
         } else {
           addResult('warning', '⚠️ SUPABASE_SERVICE_ROLE_KEY not found - Direct Mode may fail');
@@ -57,12 +57,12 @@ export const ApiKeyDiagnostic: React.FC = () => {
         
         // Handle environment info - if missing, show warning instead of error
         if (healthData?.environment) {
-          addResult(env.runwareApiKeyPresent ? 'success' : 'error', 
-            `${env.runwareApiKeyPresent ? '✅' : '❌'} RUNWARE_API_KEY: ${env.runwareApiKeyPresent ? 'Present' : 'Missing'} (${env.runwareKeyLength || 0} chars)`);
-          addResult(env.openaiApiKeyPresent ? 'success' : 'warning', 
-            `${env.openaiApiKeyPresent ? '✅' : '⚠️'} OPENAI_API_KEY: ${env.openaiApiKeyPresent ? 'Present' : 'Missing'} (${env.openaiKeyLength || 0} chars)`);
-          addResult(env.supabaseServiceRoleKeyPresent ? 'success' : 'error', 
-            `${env.supabaseServiceRoleKeyPresent ? '✅' : '❌'} SUPABASE_SERVICE_ROLE_KEY: ${env.supabaseServiceRoleKeyPresent ? 'Present' : 'Missing'}`);
+          addResult(env.hasRunwareApiKey ? 'success' : 'error', 
+            `${env.hasRunwareApiKey ? '✅' : '❌'} RUNWARE_API_KEY: ${env.hasRunwareApiKey ? 'Present' : 'Missing'} (${env.runwareKeyLength || 0} chars)`);
+          addResult(env.hasOpenAiApiKey ? 'success' : 'warning', 
+            `${env.hasOpenAiApiKey ? '✅' : '⚠️'} OPENAI_API_KEY: ${env.hasOpenAiApiKey ? 'Present' : 'Missing'} (${env.openaiKeyLength || 0} chars)`);
+          addResult(env.hasSupabaseServiceRoleKey ? 'success' : 'error', 
+            `${env.hasSupabaseServiceRoleKey ? '✅' : '❌'} SUPABASE_SERVICE_ROLE_KEY: ${env.hasSupabaseServiceRoleKey ? 'Present' : 'Missing'}`);
         } else {
           addResult('warning', '⚠️ Environment information not available - using system-diagnostics for detailed API key status...');
           
