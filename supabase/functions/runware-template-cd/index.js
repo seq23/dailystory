@@ -473,15 +473,26 @@ async function handleRequest(req) {
 
   // ProviderGate is now handled at receptionist level (index.ts) - no gating in .js implementation
 
+  // Generate the actual image using Runware API
+  console.log('🎨 Template CD: Generating image with Runware API');
+  const imageGenResult = await callRunwareAPI(
+    templateResult.positivePrompt,
+    templateResult.negativePrompt
+  );
+  
   const result = {
     success: true,
-    imageURL,
+    imageURL: imageGenResult.imageURL,
     templateData: templateResult,
     complexity: complexityLevel,
     sessionArchitecture: 'parameter-based',
     processedAt: new Date().toISOString(),
     positivePrompt: templateResult.positivePrompt,
-    negativePrompt: templateResult.negativePrompt
+    negativePrompt: templateResult.negativePrompt,
+    imageGeneration: {
+      cost: imageGenResult.cost,
+      seed: imageGenResult.seed
+    }
   };
 
   // Log successful template generation with resilient Supabase client
