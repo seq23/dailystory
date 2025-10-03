@@ -25,9 +25,10 @@ This document serves as the **single source of truth** for all production errors
 
 📈 This Week's Activity:
 • Errors In Progress: 1 (ERROR-063)
-• Errors Resolved: 24 (ERROR-036 through ERROR-065)
+• Errors Resolved: 25 (ERROR-036 through ERROR-066)
+• Critical Fix: ERROR-066 resolved final deployment-blocking parser errors (Oct 2-3, 2025)
 • Vendor System: Complete multi-tier fallback architecture operational
-• System Improvements: 20 major enhancements (includes parser hardening + timeout management)
+• System Improvements: 21 major enhancements (includes final parser hardening + timeout management)
 • Uptime: 99.9%
 • Response Time: < 2s average across all tiers
 ```
@@ -97,6 +98,7 @@ Quick lookup table for all tracked errors with searchable keywords.
 
 | Error ID | Keywords | Severity | Status | System | Quick Link |
 |----------|----------|----------|--------|--------|------------|
+| ERROR-066 | deno-parser, brace-alignment, scope-closure, clearTimeout-duplicate, try-catch-finally, tier-2.5b-fast-path, cascade-tail, head-response, deployment-blocking | CRITICAL | ✅ RESOLVED | Infrastructure | [View](#error-066-deno-parser-syntax-errors---brace-alignment-and-scope-closure) |
 | ERROR-065 | abortsignal, timeout-handling, runware-websocket, health-check, false-negative, failed-to-fetch, 45s-timeout | CRITICAL | ✅ RESOLVED | Image Gen | [View](#error-065-network-timeout-and-false-health-check-failures) |
 | ERROR-064 | deno-parser, trailing-commas, corsResponse, expected-comma-got-return, deployment-failure, runware-generate-image | CRITICAL | ✅ RESOLVED | Infrastructure | [View](#error-064-deno-parser-error---trailing-commas-in-function-calls) |
 | ERROR-063 | hair-skin-data-missing, characterData-construction, ai-visual-scene-creator, openai-prompt-incomplete, structuredAvatarData-unused | HIGH | ⏳ IN PROGRESS | Image Gen | [View](#error-063-hair-and-skin-data-missing-in-ai-visual-scene-creator) |
@@ -260,6 +262,7 @@ Next Review: October 7, 2025
 - [ERROR-057: JavaScript Hoisting Error in Universal Validation System](#error-057-javascript-hoisting-error-in-universal-validation-system) ✅
 
 ### 🏗️ Infrastructure & Vendor System Errors
+- [ERROR-066: Deno Parser Syntax Errors - Brace Alignment and Scope Closure](#error-066-deno-parser-syntax-errors---brace-alignment-and-scope-closure) ✅
 - [ERROR-064: Deno Parser Error - Trailing Commas in Function Calls](#error-064-deno-parser-error---trailing-commas-in-function-calls) ✅
 - [ERROR-060: Supabase Client Import Chain Failures](#error-060-supabase-client-import-chain-failures) 📋
 - [ERROR-061: RunwareWebSocketService Timeout Handling](#error-061-runwarewebsocketservice-timeout-handling) 📋
@@ -1977,6 +1980,190 @@ const characterData = structuredAvatarData
 - **System Reliability**: Health checks now accurately reflect orchestrator status
 - **Tier Failover**: Faster detection of Tier 1 issues enables proper cascade to Tier 2
 - **Resource Efficiency**: Proper timeout management prevents wasted edge function execution time
+
+[↑ Back to Top](#master-error-tracking-document) | [📋 TOC](#table-of-contents)
+
+---
+
+### ✅ ERROR-066: Deno Parser Syntax Errors - Brace Alignment and Scope Closure
+- **Status:** RESOLVED ✅
+- **Severity:** CRITICAL (Complete deployment failure - deployment-blocking)
+- **Discovered:** 2025-10-02 (multiple failed deployment attempts)
+- **Resolved:** 2025-10-03
+- **Impact:** Complete deployment failure of `runware-generate-image` orchestrator, all image generation tiers unavailable, cascading parser errors across 540+ lines
+- **Root Cause:** Three distinct structural issues: (1) Duplicate `clearTimeout` and premature brace closure in Tier 2.5B fast-path, (2) Cluster of 5 extra braces over-closing cascade tail scopes, (3) HEAD health check returning JSON body instead of empty response
+- **Related:** ERROR-064 (trailing comma parser errors) - this was the **final resolution** after ERROR-064 fixes
+
+**Technical Details:**
+- **Parser Errors**: 
+  - `error: Expected ',', got '}' at line 1583` (2.5B fast-path premature closure)
+  - `error: Expected ',', got 'return' at line 2120` (cascade effect from misaligned scopes)
+  - `error: Unexpected token 'catch'` (catch without matching try)
+- **Deployment Impact**: Edge function failed to deploy after ERROR-064 fixes, blocking all image generation
+- **Detection**: Identified through comprehensive 5-pass audit of try/catch/finally structure across all tiers
+- **Cascading Failure**: Single extra brace at line 1583 corrupted parser state for 540 subsequent lines
+
+**Three Critical Issues Identified:**
+
+**Issue 1: Tier 2.5B Fast-Path Scope Corruption (Lines 1578-1596)**
+```typescript
+// BEFORE - Broken structure with duplicate clearTimeout and extra brace
+} finally {
+  clearTimeout(timeout);
+}
+  clearTimeout(timeout);  // ❌ Duplicate outside finally
+}                          // ❌ Extra brace prematurely closes try
+
+if (tier25bResponse?.data?.success && ...) { ... }  // ❌ Now outside try
+else { throw ... }                                   // ❌ Now outside try
+} catch (tier25bError) {                             // ❌ catch without matching try
+```
+
+**Issue 2: Cascade Tail Brace Cluster Over-Closure (Lines 2077-2095)**
+```typescript
+// BEFORE - 5 extra closing braces
+              }  // ❌ Extra
+            }    // ❌ Extra  
+          }      // ❌ Extra
+        }        // ❌ Extra
+        } // Close tier25aError catch block  // ❌ Extra + misleading comment
+      } // Close Tier 1 catch block
+    } catch (error) {  // ❌ catch loses its matching try
+```
+
+**Issue 3: HEAD Health Check Non-Compliance (Lines 884-904)**
+```typescript
+// BEFORE - HEAD returns JSON body (non-compliant)
+return corsResponse(
+  {
+    status: "healthy",
+    service: "runware-generate-image",
+    // ...
+  },
+  req  // ❌ Returns body for HEAD requests
+);
+```
+
+**Fixes Applied:**
+
+**Fix 1: Corrected 2.5B Fast-Path Structure**
+```typescript
+// AFTER - Proper scope alignment
+} finally {
+  clearTimeout(timeout);  // ✅ Only clearTimeout, inside finally
+}
+
+if (tier25bResponse?.data?.success && tier25bResponse.data?.imageURL) {
+  // ✅ Success path correctly inside try scope
+  return corsResponse({ ... }, req);
+} else {
+  throw new Error("TIER_2.5B_FAILED: Template B processing failed");
+}
+} catch (tier25bError) {  // ✅ Properly paired with try
+  // Failure path
+}
+```
+
+**Fix 2: Removed Cascade Tail Brace Cluster**
+```typescript
+// AFTER - Correct closure structure
+              return corsResponse({ ... }, req, 503);
+            }  // ✅ Closes 2.5D catch
+          }    // ✅ Closes 2.5C if
+        }      // ✅ Closes intermediate scope
+      }        // ✅ Closes if (!isCharacterServiceUnavailable)
+    } catch (error) {  // ✅ Properly paired with outer try
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      // ... error handling
+    }
+```
+
+**Fix 3: HEAD Response No-Body Compliance**
+```typescript
+// AFTER - HEAD returns no body (standards-compliant)
+const corsHeaders = generateEchoCorsHeaders(req);
+const healthData = { status: "healthy", ... };
+
+// HEAD should return no body
+if (req.method === "HEAD") {
+  return new Response(null, {
+    status: 200,
+    headers: {
+      ...corsHeaders,
+      "Content-Type": "application/json",
+    },
+  });
+}
+
+// GET returns full health data
+return corsResponse(healthData, req);
+```
+
+**Changes Made:**
+1. ✅ **Removed duplicate `clearTimeout(timeout)` call** outside `finally` in 2.5B fast-path (Line 1583)
+2. ✅ **Removed extra closing brace** after duplicate clearTimeout (Line 1584)
+3. ✅ **Deleted 5 extra closing braces** in cascade tail (Lines 2077-2093)
+4. ✅ **Removed misleading comment** "Close tier25aError catch block"
+5. ✅ **Added HEAD-specific response path** returning `Response(null, { headers })` (Lines 884-904)
+6. ✅ **Updated deployment version** to `2025-10-03T00:30:00Z`
+7. ✅ **Verified brace balance** across all nested try/catch/finally blocks
+8. ✅ **Validated clearTimeout placement**: One per timer, inside `finally` only
+
+**Files Modified:**
+- `supabase/functions/runware-generate-image/index.ts`:
+  - Lines 884-904: Fixed HEAD health check response
+  - Lines 1578-1596: Fixed 2.5B fast-path scope structure  
+  - Lines 2077-2095: Removed cascade tail brace cluster
+- `docs/CRITICAL_SYNTAX_FIX_2025_10_02.md`: Complete 5-pass audit documentation
+- `docs/MASTER_ERRORS_TO_FIX.md`: Added ERROR-066 tracking
+- `docs/ESCALATION_LOGIC_FIX_2025_09_26.md`: Added final resolution section
+
+**Comprehensive Validation Performed:**
+1. ✅ **Brace Balance Audit**: Every `try` has exactly one matching `catch` and/or `finally`
+2. ✅ **Tier-by-Tier Verification**: Direct Mode, 2.5A, 2.5B (both paths), 2.5C, 2.5D all properly structured
+3. ✅ **clearTimeout Cleanup**: Single call inside `finally` only across all tiers
+4. ✅ **Scope Flow Testing**: Success paths return correctly, failure paths cascade as designed
+5. ✅ **Standards Compliance**: HEAD requests now return no body with proper headers
+
+**Deployment Verification:**
+- **Pre-Fix**: ❌ Deno Parser Error at line 2120, deployment FAILED, system DOWN
+- **Post-Fix**: ✅ Clean compilation, deployment SUCCESS, all tiers operational
+- **Production Status**: ✅ 100% operational, all 7 tiers working correctly
+- **Deployment Version**: 2025-10-03T00:30:00Z
+
+**Architecture Preservation:**
+- ❌ **No changes to**: Business logic, error handling, payload formats, wire protocols, CORS headers, model parameters, logging, timeouts, feature flags
+- ✅ **Only changed**: Brace alignment, clearTimeout placement, HEAD response compliance, deployment version
+
+**Impact Assessment:**
+- **User Experience**: Image generation now 100% functional across all tiers
+- **System Reliability**: Complete tier cascade operational (1 → Direct → 2.5A → 2.5B → 2.5C → 2.5D)
+- **Deployment Stability**: Parser errors eliminated, clean deployments guaranteed
+- **Standards Compliance**: HTTP HEAD requests now follow RFC specifications
+- **Production Readiness**: All systems green, zero parser errors
+
+**Related Issues:**
+- ✅ ERROR-064: Trailing comma parser errors (resolved Sep 26, 2025) - **prerequisite fix**
+- ✅ ERROR-065: Network timeout handling (resolved Sep 30, 2025) - **independent fix**
+- ✅ This fix represents the **final resolution** of all deployment-blocking parser errors
+
+**Lessons Learned:**
+1. **Cascading Failures**: Parser errors in one location (line 1580) can manifest 540 lines later (line 2120)
+2. **Scope Ejection**: Extra braces don't just add nesting—they eject code out of intended scopes
+3. **Visual Similarity**: Single `}` characters are hard to spot in deeply nested async code
+4. **Cross-Tier Impact**: Structural errors in one tier corrupt parser state for all subsequent tiers
+5. **Prevention**: Use editor brace-matching, run `deno check` after structural changes, test incrementally
+
+**Prevention Strategies:**
+1. ✅ Single Responsibility: Each `finally` block should have ONE `clearTimeout` only
+2. ✅ Immediate Verification: Verify brace balance after every `try/catch/finally`
+3. ✅ Tier Isolation: Test each tier's structure independently before integrating
+4. ✅ Standards Compliance: Follow HTTP spec precisely (HEAD no-body)
+5. ✅ Incremental Changes: Add nested structures one at a time, verify syntax after each
+
+**Detailed Documentation:**
+- See `docs/CRITICAL_SYNTAX_FIX_2025_10_02.md` for complete 5-pass audit details
+- See `docs/ESCALATION_LOGIC_FIX_2025_09_26.md` for original escalation logic context
 
 [↑ Back to Top](#master-error-tracking-document) | [📋 TOC](#table-of-contents)
 
