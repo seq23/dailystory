@@ -373,3 +373,5 @@ This ensures the service remains observable and debuggable even during critical 
 - ✅ No more `RUNTIME_ERROR` - all functions defined
 - ✅ Dynamic imports work with graceful fallback
 - ✅ All template paths produce valid output
+- ✅ All 7 direct utility calls replaced with dynamic import wrappers
+- ✅ Deployment version bumped to 2025-10-03T18:15:00Z

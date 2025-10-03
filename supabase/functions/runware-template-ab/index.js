@@ -1813,7 +1813,7 @@ async function handleRequest(req) {
       // VALIDATE SCENE HAS ACTION VERB - actual escalation happens in CCS fallback check below
       
       // Build template data using PREMIUM_PROMPT_TEMPLATE
-      const styleFramework = getNuclearStyleFramework(userInfo?.difficulty || 'medium');
+      const styleFramework = getStyleFramework(userInfo?.difficulty || 'medium');
       const culturalProfile = inlineDetectCultural(userInfo, avatarIdentity);
       const characterName = userInfo?.name || userInfo?.childName || 'child';
       const age = userInfo?.age || 'young child';
@@ -1867,7 +1867,7 @@ async function handleRequest(req) {
         
         // Prepare Tier 2.5B processing (simplified, no CCS)
         const extractedScene = extractSimpleScene(storyText);
-        const styleFramework = getNuclearStyleFramework(userInfo?.difficulty || 'medium');
+      const styleFramework = getStyleFramework(userInfo?.difficulty || 'medium');
         const culturalProfile = inlineDetectCultural(userInfo, avatarIdentity);
         const tier2BCharacterName = userInfo?.name || userInfo?.childName || 'child';
         const tier2BAge = userInfo?.age || 'young child';
@@ -2088,7 +2088,7 @@ async function handleRequest(req) {
             const extractedScene = extractSimpleScene(storyText);
             console.log(`🎯 [${requestId}] Tier 2.5B Escalation Scene: "${extractedScene}"`);
             
-            const styleFramework = getNuclearStyleFramework(userInfo?.difficulty || 'medium');
+    const styleFramework = getStyleFramework(userInfo?.difficulty || 'medium');
             const culturalProfile = inlineDetectCultural(userInfo, avatarIdentity);
             const characterName = userInfo?.name || userInfo?.childName || 'child';
             const age = userInfo?.age || 'young child';
@@ -2125,7 +2125,7 @@ async function handleRequest(req) {
             
             templateResult = {
               positivePrompt: tier2BPrompt,
-              negativePrompt: generateInlineNuclearNegative(culturalProfile, userInfo?.avatar?.type, userInfo?.difficulty) || 'blurry, low quality',
+              negativePrompt: generateNegativePrompt(culturalProfile, userInfo?.avatar?.type, userInfo?.difficulty) || 'blurry, low quality',
               templateType: 'Basic Template B - Escalated from 2.5A',
               tier: '2.5B',
               styleFrameworkUsed: styleFramework.name,
@@ -2253,7 +2253,7 @@ async function handleRequest(req) {
       // ✅ avatarType already declared at line ~2024 - reusing it here
       templateResult = {
         positivePrompt: finalPositivePrompt,
-        negativePrompt: generateInlineNuclearNegative(culturalProfile, avatarType, userInfo?.difficulty) || 'blurry, low quality',
+        negativePrompt: generateNegativePrompt(culturalProfile, avatarType, userInfo?.difficulty) || 'blurry, low quality',
         templateType: 'Premium Template A - Full Features',
         tier: '2.5A',
         styleFrameworkUsed: styleFramework.name,
@@ -2289,7 +2289,7 @@ async function handleRequest(req) {
       }
       
       // Build template data with proper placeholders
-      const styleFramework = getNuclearStyleFramework(userInfo?.difficulty || 'medium');
+      const styleFramework = getStyleFramework(userInfo?.difficulty || 'medium');
       const culturalProfile = inlineDetectCultural(userInfo, avatarIdentity);
       const characterName = userInfo?.name || userInfo?.childName || 'child';
       const age = userInfo?.age || 'young child';
@@ -2357,7 +2357,7 @@ async function handleRequest(req) {
       
       templateResult = {
         positivePrompt: finalPositivePrompt,
-        negativePrompt: generateInlineNuclearNegative(culturalProfile, userInfo?.avatar?.type, userInfo?.difficulty) || 'blurry, low quality',
+        negativePrompt: generateNegativePrompt(culturalProfile, userInfo?.avatar?.type, userInfo?.difficulty) || 'blurry, low quality',
         templateType: 'Basic Template B - Reduced Features',
         tier: '2.5B',
         styleFrameworkUsed: styleFramework.name

@@ -127,7 +127,7 @@ serve(async (req) => {
         service: SERVICE_NAME,
         tier: "2.5A/2.5B",
         timestamp: new Date().toISOString(),
-        deployment_version: "2025-10-03T03:00:00Z",
+        deployment_version: "2025-10-03T18:15:00Z",
         handlerCached: !!cachedHandler,
         lastError: lastLoadError?.message ?? null,
         capabilities: ["character_consistency", "visual_tracking", "cultural_enhancement"]
