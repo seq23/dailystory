@@ -1771,7 +1771,9 @@ export const ImageTierTester = () => {
               sessionId: "test-session",
               pageNumber: 1,
               // Add required flags for ai-visual-scene-creator
-              ...(endpoint.name === 'ai-visual-scene-creator' ? { isDebugMode: true } : {})
+              ...(endpoint.name === 'ai-visual-scene-creator' ? { isDebugMode: true } : {}),
+              // Add dryRun flag for runware-generate-image to prevent timeouts
+              ...(endpoint.name === 'runware-generate-image' ? { dryRun: true } : {})
             };
             
             const postResponse = await supabase.functions.invoke(endpoint.name, { 

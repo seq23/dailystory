@@ -1626,8 +1626,8 @@ async function handleRequest(req) {
 
     console.log(`🎯 Template AB processing complexity: ${templateComplexity || 'A'}`);
 
-    // Extract user info from enhancedStoryData
-    const userInfo = enhancedStoryData.userInfo || {};
+    // Extract user info from enhancedStoryData with safe null access
+    const userInfo = (enhancedStoryData?.userInfo) || (payload?.userInfo) || {};
     
     // Select template based on complexity (A or B)
     const selectedTemplate = selectTemplate(templateComplexity || 'A');
