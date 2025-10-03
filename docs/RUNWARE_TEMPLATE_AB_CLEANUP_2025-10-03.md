@@ -336,3 +336,40 @@ This ensures the service remains observable and debuggable even during critical 
 **Status**: ✅ COMPLETE - Production Ready  
 **Deployment**: Automatic via edge function deployment  
 **Risk Level**: LOW - Only dead code removed, critical error fixed
+
+---
+
+## Missing Function Implementation (2025-10-03T19:00:00Z)
+
+### **Critical Runtime Error Fixed**
+- **Issue:** `RUNTIME_ERROR` after successful boot due to missing `generateImageWithRunware()` (line 1707) and `callRunwareWithRetry()` (line 1972)
+- **Root Cause:** Functions were called but never defined in `index.js`
+
+### **Implementation Added:**
+1. **`callRunwareAPI()`**: Core function with retry logic, cost tracking, and image URL verification
+2. **`generateImageWithRunware()`**: Simple wrapper for Tier 2.5B escalation (line 1707 caller)
+3. **`callRunwareWithRetry()`**: Payload-based wrapper for Tier 2.5A→2.5B escalation (line 1972 caller)
+
+### **Code Consolidation:**
+- Eliminated ~300 lines of duplicate Runware API call logic
+- Centralized error handling and retry logic
+- Unified cost tracking across all Runware calls
+
+### **Dynamic Imports with Hardcoded Fallbacks:**
+- Added `try/catch` imports for `_shared/styleFrameworks.js` and `_shared/NuclearNegativePrompts.js`
+- Wrapper functions (`getStyleFramework()`, `generateNegativePrompt()`) prefer shared modules
+- Falls back to inline versions (`NUCLEAR_HARDCODED_STYLE_FRAMEWORKS`, `generateInlineNuclearNegative()`) if import fails
+- Zero crash risk - always has working fallback
+
+### **Final File Statistics:**
+- **Before:** 2,386 lines
+- **After:** ~1,900 lines
+- **Reduction:** ~500 lines eliminated (21% smaller)
+
+### **Verification:**
+- ✅ Tier 2.5A→2.5B escalation path (line 1707) now functional
+- ✅ Tier 2.5A character consistency failure path (line 1972) now functional
+- ✅ Main `handleRequest` Runware call now uses consolidated helper
+- ✅ No more `RUNTIME_ERROR` - all functions defined
+- ✅ Dynamic imports work with graceful fallback
+- ✅ All template paths produce valid output

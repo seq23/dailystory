@@ -160,6 +160,41 @@ function generateInlineNuclearNegative(culturalProfile, avatarType, difficulty) 
   return negativeComponents.join(', ');
 }
 
+// ============= DYNAMIC IMPORTS WITH HARDCODED FALLBACKS =============
+let importedGetNuclearStyleFramework = null;
+let importedGenerateNuclearNegativePrompt = null;
+
+try {
+  const styleModule = await import('../_shared/styleFrameworks.js');
+  importedGetNuclearStyleFramework = styleModule.getNuclearStyleFramework || styleModule.getStyleFramework || styleModule.default;
+  console.log('✅ [IMPORT] styleFrameworks.js loaded successfully');
+} catch (error) {
+  console.warn('⚠️ [IMPORT] styleFrameworks.js unavailable, using inline fallback:', error.message);
+}
+
+try {
+  const negativeModule = await import('../_shared/NuclearNegativePrompts.js');
+  importedGenerateNuclearNegativePrompt = negativeModule.generateNuclearNegativePrompt;
+  console.log('✅ [IMPORT] NuclearNegativePrompts.js loaded successfully');
+} catch (error) {
+  console.warn('⚠️ [IMPORT] NuclearNegativePrompts.js unavailable, using inline fallback:', error.message);
+}
+
+// Wrapper functions with fallback behavior
+function getStyleFramework(difficulty) {
+  if (importedGetNuclearStyleFramework) {
+    return importedGetNuclearStyleFramework(difficulty);
+  }
+  return getNuclearStyleFramework(difficulty);
+}
+
+function generateNegativePrompt(culturalProfile, avatarType, difficulty) {
+  if (importedGenerateNuclearNegativePrompt) {
+    return importedGenerateNuclearNegativePrompt(culturalProfile, avatarType, difficulty);
+  }
+  return generateInlineNuclearNegative(culturalProfile, avatarType, difficulty);
+}
+
 // Template AB service initialization
 
 // ============= LAZY LOADING FUNCTIONS FOR HEAVY DEPENDENCIES =============
@@ -182,6 +217,162 @@ async function getVendorFirstSupabaseClient() {
   } catch (vendorError) {
     console.error('❌ [VENDOR_FIRST] Failed to create Supabase client:', vendorError);
     return null;
+  }
+}
+
+// ============= RUNWARE API: CORE FUNCTION WITH RETRY LOGIC =============
+async function callRunwareAPI(positivePrompt, negativePrompt, options = {}, retries = 2) {
+  const {
+    sessionId = 'unknown-session',
+    pageNumber = 1,
+    characterSeed = null,
+    width = 1024,
+    height = 1024,
+    model = 'runware:100@1'
+  } = options;
+
+  const runwareApiKey = Deno.env.get('RUNWARE_API_KEY');
+  if (!runwareApiKey) {
+    throw new Error('RUNWARE_API_KEY not configured');
+  }
+
+  const payload = {
+    taskType: 'imageInference',
+    taskUUID: crypto.randomUUID(),
+    positivePrompt,
+    negativePrompt,
+    width,
+    height,
+    model,
+    numberResults: 1,
+    outputFormat: 'WEBP',
+    steps: 4,
+    CFGScale: 1,
+    scheduler: 'FlowMatchEulerDiscreteScheduler'
+  };
+
+  if (characterSeed) {
+    payload.seed = characterSeed;
+  }
+
+  let lastError = null;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      if (attempt > 0) {
+        const delay = Math.pow(2, attempt - 1) * 1000;
+        console.log(`⏱️ Runware retry ${attempt}/${retries} after ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+
+      const response = await fetch('https://api.runware.ai/v1', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify([
+          { taskType: 'authentication', apiKey: runwareApiKey },
+          payload
+        ])
+      });
+
+      if (!response.ok) {
+        throw new Error(`Runware API HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      const imageTask = data.data?.find(task => task.taskType === 'imageInference');
+
+      if (!imageTask?.imageURL) {
+        throw new Error('No imageURL in Runware response');
+      }
+
+      // Verify image URL accessibility
+      const headCheck = await fetch(imageTask.imageURL, { method: 'HEAD' });
+      if (!headCheck.ok) {
+        throw new Error(`Generated image URL not accessible: HTTP ${headCheck.status}`);
+      }
+
+      console.log(`✅ Runware API success (attempt ${attempt + 1}/${retries + 1})`);
+
+      // Track cost with 2-tier fallback
+      try {
+        const cost = 0.0013;
+        const supabaseClient = await getVendorFirstSupabaseClient();
+        if (supabaseClient) {
+          await supabaseClient.from('cost_tracking').insert({
+            session_id: sessionId,
+            user_id: null,
+            input_tokens: 0,
+            output_tokens: 0,
+            cost,
+            model_used: model,
+            operation_type: 'image_generation',
+            provider: 'runware',
+            api_endpoint: 'v1/imageInference',
+            pricing_model: 'images',
+            quantity_used: 1,
+            unit_cost: cost
+          });
+          console.log(`💰 Cost tracked: $${cost.toFixed(4)}`);
+        }
+      } catch (costError) {
+        console.warn('Cost tracking failed:', costError.message);
+      }
+
+      return imageTask.imageURL;
+
+    } catch (error) {
+      lastError = error;
+      console.error(`❌ Runware attempt ${attempt + 1} failed:`, error.message);
+    }
+  }
+
+  throw new Error(`Runware API failed after ${retries + 1} attempts: ${lastError.message}`);
+}
+
+// ============= RUNWARE API: SIMPLE WRAPPER FOR TIER 2.5B ESCALATION =============
+async function generateImageWithRunware(positivePrompt, pageNumber, sessionId) {
+  try {
+    const defaultNegativePrompt = 'NO TEXT, no words, no letters, no writing, no captions, no watermarks, no signatures, no logos, bad anatomy, deformed, blurry, low quality, distorted face, extra limbs, malformed hands, poorly drawn, artifacts, noise, oversaturated, underexposed, overexposed, duplicate, cropped, watermark, signature, text, logo, bad lighting, flat lighting, plastic skin, waxy skin, artificial look, uncanny valley';
+
+    const imageURL = await callRunwareAPI(
+      positivePrompt,
+      defaultNegativePrompt,
+      { sessionId, pageNumber },
+      2
+    );
+
+    return {
+      success: true,
+      imageURL
+    };
+  } catch (error) {
+    console.error(`❌ generateImageWithRunware failed:`, error.message);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+}
+
+// ============= RUNWARE API: PAYLOAD-BASED WRAPPER FOR TIER 2.5A→2.5B ESCALATION =============
+async function callRunwareWithRetry(runwarePayload, apiKey) {
+  try {
+    const imageURL = await callRunwareAPI(
+      runwarePayload.positivePrompt,
+      runwarePayload.negativePrompt,
+      {
+        sessionId: runwarePayload.sessionId || 'escalation-session',
+        pageNumber: runwarePayload.pageNumber || 1,
+        characterSeed: runwarePayload.seed || null,
+        width: runwarePayload.width || 1024,
+        height: runwarePayload.height || 1024,
+        model: runwarePayload.model || 'runware:100@1'
+      },
+      2
+    );
+
+    return { imageURL };
+  } catch (error) {
+    throw new Error(`callRunwareWithRetry failed: ${error.message}`);
   }
 }
 
@@ -1699,7 +1890,7 @@ async function handleRequest(req) {
           .replace('{cultural_context}', cultural_context)
           .replace('{leftover_data}', '')
           .replace('{fullFrameworkPrompt}', fullFrameworkPrompt)
-          .replace('{negativePrompt}', generateInlineNuclearNegative(culturalProfile, userInfo?.avatar?.type, userInfo?.difficulty) || 'NO TEXT, no words, no letters, blurry, low quality, deformed, distorted face');
+          .replace('{negativePrompt}', generateNegativePrompt(culturalProfile, userInfo?.avatar?.type, userInfo?.difficulty) || 'NO TEXT, no words, no letters, blurry, low quality, deformed, distorted face');
         
         console.log(`🎯 [${requestId}] Tier 2.5B Prompt Length: ${tier2BPrompt.length} chars`);
         
@@ -2209,106 +2400,17 @@ async function handleRequest(req) {
     let gateReleased = false;
 
     try {
-      for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-      try {
-        if (attempt > 0) {
-          const delay = Math.pow(2, attempt - 1) * 1000;
-          console.log(`⏱️ Retry attempt ${attempt}/${MAX_RETRIES} after ${delay}ms delay...`);
-          await new Promise(resolve => setTimeout(resolve, delay));
-        }
-
-        const response = await fetch('https://api.runware.ai/v1', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify([
-            {
-              taskType: 'authentication',
-              apiKey: runwareApiKey,
-            },
-            {
-              taskType: 'imageInference',
-              taskUUID: crypto.randomUUID(),
-              positivePrompt: templateResult.positivePrompt,
-              negativePrompt: templateResult.negativePrompt,
-              width: 1024,
-              height: 1024,
-              model: 'runware:100@1',
-              numberResults: 1,
-              outputFormat: 'WEBP',
-              steps: 4,
-              CFGScale: 1,
-              scheduler: 'FlowMatchEulerDiscreteScheduler',
-            },
-          ]),
-        });
-
-        if (!response.ok) {
-          throw new Error(`Runware API returned ${response.status}: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        const imageTask = data.data?.find(task => task.taskType === 'imageInference');
-        
-        if (!imageTask || !imageTask.imageURL) {
-          throw new Error('No image URL in API response');
-        }
-
-        imageURL = imageTask.imageURL;
-        
-        // CRITICAL: Verify image URL is accessible before returning
-        try {
-          const headResponse = await fetch(imageURL, { method: 'HEAD' });
-          if (!headResponse.ok) {
-            throw new Error(`Image URL verification failed: ${headResponse.status}`);
-          }
-          console.log(`✅ Image URL verified accessible: ${imageURL}`);
-        } catch (verifyError) {
-          console.error(`❌ Image URL verification failed:`, verifyError);
-          throw new Error(`Generated image URL not accessible: ${verifyError.message}`);
-        }
-        
-        console.log(`✅ Runware API call successful on attempt ${attempt + 1}`);
-        
-        // Track Runware cost for analytics with 2-tier CDN fallback
-        try {
-          const cost = 0.0013;
-          const supabaseClient = await getVendorFirstSupabaseClient();
-
-          if (supabaseClient) {
-            await supabaseClient.from('cost_tracking').insert({
-              session_id: sessionId || 'template-ab-session',
-            user_id: null,
-            input_tokens: 0,
-            output_tokens: 0,
-            cost: cost,
-            model_used: 'runware:100@1',
-            operation_type: 'image_generation',
-            provider: 'runware',
-            api_endpoint: 'v1/imageInference',
-            pricing_model: 'images',
-              quantity_used: 1,
-              unit_cost: cost
-            });
-            console.log('💰 Runware cost tracked: $' + cost.toFixed(4) + ' for image generation');
-          } else {
-            console.warn('💰 Cost tracking skipped: Supabase client unavailable');
-          }
-        } catch (costTrackingError) {
-          console.warn('Failed to track Runware cost:', costTrackingError.message);
-        }
-
-        break; // Success, exit retry loop
-      } catch (error) {
-        lastError = error;
-        console.error(`❌ Runware API call failed (attempt ${attempt + 1}/${MAX_RETRIES + 1}):`, error.message);
-        
-        if (attempt === MAX_RETRIES) {
-          throw new Error(`Runware API failed after ${MAX_RETRIES + 1} attempts: ${error.message}`);
-        }
-      }
-      }
+      // Use consolidated Runware API helper
+      imageURL = await callRunwareAPI(
+        templateResult.positivePrompt,
+        templateResult.negativePrompt,
+        {
+          sessionId,
+          pageNumber,
+          characterSeed: templateResult.characterSeed,
+        },
+        MAX_RETRIES
+      );
       
       // Release gate on success
       ProviderGate.release(gateKey, true);
