@@ -1,7 +1,25 @@
-// DEPLOY_MARKER: 2025-10-03T19:30:00Z - Made ProviderGate lazy-load to prevent boot failures
-import { RunwareErrorHandler } from "../_shared/runwareErrorHandler.ts";
+// DEPLOY_MARKER: 2025-10-03T19:30:00Z - Made all top-level imports lazy-load to prevent boot failures
 // Handles Level A (basic shapes/colors) and Level B (simple scenes)
 // Lightweight, fast deployment - optimized for simple template generation with character consistency
+
+// Lazy load RunwareErrorHandler to prevent boot failures
+let RunwareErrorHandler = null;
+let runwareErrorHandlerLoadAttempted = false;
+
+async function getRunwareErrorHandler() {
+  if (!runwareErrorHandlerLoadAttempted) {
+    runwareErrorHandlerLoadAttempted = true;
+    try {
+      const module = await import("../_shared/runwareErrorHandler.ts");
+      RunwareErrorHandler = module.RunwareErrorHandler;
+      console.log("✅ RunwareErrorHandler loaded successfully");
+    } catch (err) {
+      console.warn("⚠️ RunwareErrorHandler unavailable (non-critical):", err.message);
+      RunwareErrorHandler = null;
+    }
+  }
+  return RunwareErrorHandler;
+}
 
 // Lazy load ProviderGate to prevent boot failures
 let ProviderGate = null;
@@ -22,7 +40,25 @@ async function getProviderGate() {
 }
 
 // Supabase client created dynamically via resilient loader
-import { tier25vocabulary } from '../_shared/tier25Vocabulary.js';
+
+// Lazy load tier25vocabulary to prevent boot failures
+let tier25vocabulary = null;
+let tier25vocabularyLoadAttempted = false;
+
+async function getTier25Vocabulary() {
+  if (!tier25vocabularyLoadAttempted) {
+    tier25vocabularyLoadAttempted = true;
+    try {
+      const module = await import('../_shared/tier25Vocabulary.js');
+      tier25vocabulary = module.tier25vocabulary;
+      console.log("✅ tier25vocabulary loaded successfully");
+    } catch (err) {
+      console.warn("⚠️ tier25vocabulary unavailable (non-critical):", err.message);
+      tier25vocabulary = null;
+    }
+  }
+  return tier25vocabulary;
+}
 
 // Inline cultural enhancement functions (no external dependencies)
 const LEAN_HAIR_BY_SKIN = {
@@ -548,7 +584,7 @@ function selectTemplate(templateComplexity) {
 // 3+ secondaries; infers optional signals (timeOfDay, mood, pose, lighting, atmosphere) only if present.
 // Validates with hasActionVerb(); fallback ONLY to extractSimpleScene(); returns empty if both fail.
 
-function extractSemanticScene(storyText) {
+async function extractSemanticScene(storyText) {
   if (!storyText || typeof storyText !== "string") {
     return { scene: "", secondary: [], actions: [], objects: [], settings: [], signals: {} };
   }
@@ -579,17 +615,18 @@ const ACTION_CONTEXT_MAPPING = {
   'reading': 'library'
 };
 
-  // ---------- Pull domain vocabulary from tier25vocabulary ----------
+  // ---------- Pull domain vocabulary from tier25vocabulary (lazy-loaded) ----------
+  const vocab = await getTier25Vocabulary();
   const safeArr = (x) => Array.isArray(x) ? x : [];
-  const COLORS           = safeArr(tier25vocabulary?.getColors?.());
-  const OBJECTS          = safeArr(tier25vocabulary?.getObjects?.());
-  const SETTINGS_VOCAB   = safeArr(tier25vocabulary?.getSettings?.() || tier25vocabulary?.getLocations?.());
-  const SECONDARY_ROLES  = safeArr(tier25vocabulary?.getSecondaryRoles?.() || tier25vocabulary?.getRelationships?.())
-                            .concat(safeArr(tier25vocabulary?.getAnimals?.()));
-  const VERB_ROOTS       = safeArr(tier25vocabulary?.getActionVerbs?.());
-  const IRREG_PROGRESSIVE= tier25vocabulary?.getIrregularProgressiveMap?.() || null;
+  const COLORS           = safeArr(vocab?.getColors?.());
+  const OBJECTS          = safeArr(vocab?.getObjects?.());
+  const SETTINGS_VOCAB   = safeArr(vocab?.getSettings?.() || vocab?.getLocations?.());
+  const SECONDARY_ROLES  = safeArr(vocab?.getSecondaryRoles?.() || vocab?.getRelationships?.())
+                            .concat(safeArr(vocab?.getAnimals?.()));
+  const VERB_ROOTS       = safeArr(vocab?.getActionVerbs?.());
+  const IRREG_PROGRESSIVE= vocab?.getIrregularProgressiveMap?.() || null;
   // Optional: synonyms maps (color/objects/settings/roles) if your vocab provides them
-  const SYNONYMS = tier25vocabulary?.getSynonyms?.() || {}; // { rucksack: 'backpack', crimson: 'red', ... }
+  const SYNONYMS = vocab?.getSynonyms?.() || {}; // { rucksack: 'backpack', crimson: 'red', ... }
 
   // Fast exit if essential vocab missing → we'll still try simple fallback later.
   const vocabOk = VERB_ROOTS.length > 0;
@@ -1829,7 +1866,7 @@ async function handleRequest(req) {
       console.log('🚀 Processing Tier 2.5A: Premium Template with full features');
       
       // Use semantic scene extraction for Tier A
-      let extractedScene = extractSemanticScene(storyText);
+      let extractedScene = await extractSemanticScene(storyText);
       
       console.log(`🔍 [DEBUG] Tier 2.5A Scene Extraction Result: "${typeof extractedScene === 'object' && extractedScene?.scene ? extractedScene.scene : extractedScene}"`);
       console.log(`🔍 [DEBUG] Tier 2.5A Action Validation Input: ${JSON.stringify({
@@ -2596,7 +2633,13 @@ async function handleRequest(req) {
     return createResponse(result);
     
   } catch (error) {
-    const runwareError = RunwareErrorHandler.categorizeRunwareError(error);
+    const ErrorHandler = await getRunwareErrorHandler();
+    const runwareError = ErrorHandler ? ErrorHandler.categorizeRunwareError(error) : {
+      type: 'unknown_runware_error',
+      message: error.message || String(error),
+      escalation: 'TIER_4',
+      retry: false
+    };
     console.error('❌ [Template AB] Error:', runwareError);
     
     // Return appropriate HTTP status based on error type

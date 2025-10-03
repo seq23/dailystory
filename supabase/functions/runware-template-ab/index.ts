@@ -1,5 +1,6 @@
 // DEPLOY_MARKER: 2025-10-03T03:00:00Z - Dynamic import pattern with fast boot sync recovery
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import "./index.js"; // Bundling sentinel - ensures index.js is always in deployment bundle
 const SERVICE_NAME = "runware-template-ab";
 
 const corsHeaders: Record<string, string> = {

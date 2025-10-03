@@ -1,5 +1,23 @@
-// DEPLOY_MARKER: 2025-10-03T19:30:00Z - Made ProviderGate lazy-load to prevent boot failures
-import { RunwareErrorHandler } from "../_shared/runwareErrorHandler.ts";
+// DEPLOY_MARKER: 2025-10-03T19:30:00Z - Made all top-level imports lazy-load to prevent boot failures
+
+// Lazy load RunwareErrorHandler to prevent boot failures
+let RunwareErrorHandler = null;
+let runwareErrorHandlerLoadAttempted = false;
+
+async function getRunwareErrorHandler() {
+  if (!runwareErrorHandlerLoadAttempted) {
+    runwareErrorHandlerLoadAttempted = true;
+    try {
+      const module = await import("../_shared/runwareErrorHandler.ts");
+      RunwareErrorHandler = module.RunwareErrorHandler;
+      console.log("✅ RunwareErrorHandler loaded successfully");
+    } catch (err) {
+      console.warn("⚠️ RunwareErrorHandler unavailable (non-critical):", err.message);
+      RunwareErrorHandler = null;
+    }
+  }
+  return RunwareErrorHandler;
+}
 
 // Lazy load ProviderGate to prevent boot failures
 let ProviderGate = null;
@@ -576,7 +594,13 @@ async function handleRequest(req) {
   return result;
   
   } catch (error) {
-    const runwareError = RunwareErrorHandler.categorizeRunwareError(error);
+    const ErrorHandler = await getRunwareErrorHandler();
+    const runwareError = ErrorHandler ? ErrorHandler.categorizeRunwareError(error) : {
+      type: 'unknown_runware_error',
+      message: error.message || String(error),
+      escalation: 'TIER_4',
+      retry: false
+    };
     console.error('Template CD generation failed:', runwareError);
     
     return {
