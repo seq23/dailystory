@@ -138,9 +138,11 @@ All 4 image generation functions use "Option A":
 ### **Pattern Characteristics**
 1. **TypeScript Entry Point**: `index.ts` handles routing and CORS
 2. **JavaScript Implementation**: `index.js` contains business logic  
-3. **Static Import**: Compile-time import resolution
-4. **Boot Validation**: Verify imports before serving requests
-5. **Error Boundaries**: Graceful degradation on import failures
+3. **Dynamic Loading**: Runtime import resolution only after POST requests
+4. **LKG (Last Known Good)**: Serve-stale behavior using cached handler on dynamic load failures
+5. **Fast Retry Loop**: Multi-attempt dynamic import with exponential backoff
+6. **Boot Validation**: Lightweight boot with no top-level shared imports
+7. **Error Boundaries**: Graceful degradation on import failures
 
 ### **Functions Using Pattern**
 - ✅ `runware-template-ab` (Tier 2.5A/B)
@@ -161,10 +163,9 @@ sequenceDiagram
     
     Note over Receptionist: Function Boot
     Receptionist->>Logger: Log INIT message
-    Receptionist->>Implementation: Static import
-    Implementation-->>Receptionist: Module loaded
-    Receptionist->>Logger: Log V4.2 initialized
-    Receptionist->>Logger: Log bulletproof active
+    Note over Receptionist: No top-level imports
+    Receptionist->>Logger: Log V4.3 initialized
+    Receptionist->>Logger: Log dynamic-after-request active
     
     Note over Client: Request Handling
     Client->>Receptionist: HTTP Request
@@ -264,8 +265,9 @@ Orchestrator functions must use **complete lazy loading** - NO top-level `_share
 
 - **V4.0**: Basic dual-file pattern
 - **V4.1**: Added boot validation
-- **V4.2**: Bulletproof pattern with sync anomaly prevention
-- **Current**: All image functions migrated to V4.2
+- **V4.2**: Bulletproof pattern with sync anomaly prevention (deprecated)
+- **V4.3**: Dynamic-after-request pattern with LKG serve-stale behavior (current)
+- **Current**: All image functions migrated to V4.3
 
 ## **Local Handler Import Best Practices**
 

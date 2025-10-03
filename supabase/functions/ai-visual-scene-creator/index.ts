@@ -712,10 +712,10 @@ serve(async (req) => {
       if (!gateResult.acquired) {
         console.warn(`⚠️ [GATE] ${gateKey} denied: ${gateResult.reason} - proceeding in degraded mode (no blocking)`);
         // Don't return 503 - proceed in degraded mode
+      } else {
+        gateAcquired = true;
+        console.log(`✅ [GATE] ${gateKey} acquired`);
       }
-      
-      gateAcquired = true;
-      console.log(`✅ [GATE] ${gateKey} acquired`);
     } else {
       console.log(`⏭️ [GATE] Provider gating DISABLED via env flag`);
     }
