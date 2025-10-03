@@ -156,6 +156,46 @@ function generateTier25C(storyText, userInfo, avatarIdentity, failedTierData = {
     hasEnhancedSceneData: !!failedTierData.enhancedSceneData
   });
   
+  // ========== PRIMARY PATH: Direct Mode Clean Separation ==========
+  if (failedTierData?.enhancedSceneData && failedTierData?.characterConsistency) {
+    console.log('✅ [DIRECT_MODE] Using CCS data in separate sections (CLEAN SEPARATION)');
+    
+    // Validate data integrity
+    const sceneLength = failedTierData.enhancedSceneData.length;
+    const charLength = failedTierData.characterConsistency.length;
+    
+    if (sceneLength < 50 || charLength < 30) {
+      console.warn(`⚠️ [DIRECT_MODE] Data integrity check failed (scene=${sceneLength}, char=${charLength}) - activating safety net`);
+      // Fall through to safety net below
+    } else {
+      // Use CCS data AS-IS in clean 2-section format
+      const difficulty = userInfo?.difficulty || 'medium';
+      const hardcodedFramework = getNuclearStyleFramework(difficulty);
+      
+      const positivePrompt = `scene: ${failedTierData.enhancedSceneData}.\n\ncharacter: ${failedTierData.characterConsistency}.\n\nbrand suffix: ${hardcodedFramework.frameworkPrompt}`;
+      
+      const culturalProfileType = inlineDetectCultural(userInfo, avatarIdentity);
+      const avatarType = userInfo?.avatar?.type || 'child';
+      const negativePrompt = generateInlineNuclearNegative(culturalProfileType, avatarType, difficulty);
+      
+      console.log('✅ [DIRECT_MODE] Clean separation complete - scene and character in dedicated sections');
+      
+      return {
+        positivePrompt,
+        negativePrompt,
+        templateType: 'Direct Mode Clean Separation (CCS Data)',
+        tier: 'NUCLEAR_2.5C_DIRECT',
+        styleFrameworkUsed: hardcodedFramework.name,
+        directModeUsed: true,
+        sceneSource: 'ai_visual_scene_creator',
+        characterSource: 'character_consistency_service'
+      };
+    }
+  }
+  
+  // ========== SAFETY NET PATH: Original Tier 2.5C Logic ==========
+  console.log('📋 [SAFETY_NET] No Direct Mode data or integrity failed - using original Tier 2.5C logic');
+  
   // Component 1: Scene (1000 character limit) - NO FALLBACKS, trigger 2.5D immediately
   if (!storyText) {
     console.log('🚨 Nuclear 2.5C: No storyText provided - triggering Tier 2.5D immediately');
