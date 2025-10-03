@@ -288,7 +288,36 @@ export const TIER_25_UNIFIED_VOCABULARY_EXTENDED = {
       'leaning forward eagerly', 'tilting head curiously', 'shoulders squared confidently',
       'bouncing on toes excitedly', 'crouching down carefully', 'standing tall proudly',
       'kneeling beside gently', 'bending over attentively'
+    ],
+    
+    // Legacy compatibility for ExactWordExtractor.js
+    movement: [
+      'run', 'runs', 'ran', 'running', 'walk', 'walks', 'walked', 'walking',
+      'jump', 'jumps', 'jumped', 'jumping', 'climb', 'climbs', 'climbed', 'climbing',
+      'swim', 'swims', 'swam', 'swimming', 'fly', 'flies', 'flew', 'flying',
+      'roll', 'rolls', 'rolled', 'rolling', 'slide', 'slides', 'slid', 'sliding',
+      'dance', 'dances', 'danced', 'dancing'
+    ],
+    physical: [
+      'throw', 'throws', 'threw', 'throwing', 'catch', 'catches', 'caught', 'catching',
+      'kick', 'kicks', 'kicked', 'kicking', 'dig', 'digs', 'dug', 'digging',
+      'build', 'builds', 'built', 'building', 'draw', 'draws', 'drew', 'drawing',
+      'write', 'writes', 'wrote', 'writing', 'paint', 'paints', 'painted', 'painting'
+    ],
+    emotional: [
+      'laugh', 'laughs', 'laughed', 'laughing', 'smile', 'smiles', 'smiled', 'smiling',
+      'hug', 'hugs', 'hugged', 'hugging', 'help', 'helps', 'helped', 'helping',
+      'share', 'shares', 'shared', 'sharing', 'cry', 'cries', 'cried', 'crying'
     ]
+  },
+
+  // ============= UNIFIED COLOR VOCABULARY =============
+  colors: {
+    basic: [
+      'red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown',
+      'black', 'white', 'gray', 'grey'
+    ],
+    advanced: UNIVERSAL_VOCAB.colors // All 136 colors from UNIVERSAL_VOCAB
   },
 
   // ============= UNIFIED OBJECT VOCABULARY =============
@@ -435,6 +464,14 @@ export const TIER_25_UNIFIED_VOCABULARY_EXTENDED = {
     'service animal', 'therapy pet', 'emotional support'
   ],
 
+};
+
+// Legacy compatibility alias: objects → objectCategories
+TIER_25_UNIFIED_VOCABULARY_EXTENDED.objects = {
+  toys: TIER_25_UNIFIED_VOCABULARY_EXTENDED.objectCategories.toys,
+  nature: TIER_25_UNIFIED_VOCABULARY_EXTENDED.objectCategories.nature,
+  household: TIER_25_UNIFIED_VOCABULARY_EXTENDED.objectCategories.household,
+  animals: TIER_25_UNIFIED_VOCABULARY_EXTENDED.objectCategories.animals
 };
 
 // ============= VOCABULARY ALIAS FOR EASY ACCESS =============
