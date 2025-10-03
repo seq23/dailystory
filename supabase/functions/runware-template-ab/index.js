@@ -2362,6 +2362,9 @@ async function handleRequest(req) {
       // Apply pageText summarization for levels 2-4
       const processedStoryText = summarizePageText(storyText, userInfo?.difficulty);
       
+      // Get visual consistency elements before building prompt (avoid await in method chain)
+      const visualConsistencyElements = await getVisualConsistencyElements(sessionId, extractedScene, coloredObjects, preAnalyzedData);
+      
       // ⚠️ CRITICAL: avatarType is declared here and used throughout this scope
       // DO NOT re-declare avatarType anywhere in this function block
       // This variable is used for generateInlineNuclearNegative() and prompt building
@@ -2380,7 +2383,7 @@ async function handleRequest(req) {
         .replace('{semantic_scene}', extractedScene?.scene || extractedScene)
         .replace('{secondary_characters}', secondaryDescriptions.length ? secondaryDescriptions.join(', ') : 
           (extractedScene?.secondary?.length ? extractedScene.secondary.join(', ') : ''))
-        .replace('{visual_consistency_elements}', await getVisualConsistencyElements(sessionId, extractedScene, coloredObjects, preAnalyzedData))
+        .replace('{visual_consistency_elements}', visualConsistencyElements)
         .replace('{setting_context}', extractedScene?.settings?.length ? extractedScene.settings.join(', ') : '')
         .replace('{cultural_context}', culturalProfile || 'multicultural setting')
         .replace('{community_context}', '')
