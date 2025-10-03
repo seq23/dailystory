@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "lib": ["deno.worker"],
+    "strict": true,
+    "experimentalDecorators": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "exactOptionalPropertyTypes": true,
+    "noUncheckedIndexedAccess": true
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.js",
+    "_shared/**/*.ts",
+    "_shared/**/*.js",
+    "_vendor/**/*.ts",
+    "_vendor/**/*.js",
+    "_vendor/**/*.mjs"
+  ],
+  "exclude": [
+    "node_modules"
+  ],
+  "imports": {
+    "#types/": "./supabase/functions/_shared/types/",
+    "#shared/": "./supabase/functions/_shared/"
+  }
+}

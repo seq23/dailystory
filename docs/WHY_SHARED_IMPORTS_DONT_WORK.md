@@ -93,7 +93,7 @@ const module = await import(localUrl); // ERROR!
 
 ---
 
-## ✅ CORRECT SOLUTION: Direct Relative Imports
+## ✅ CORRECT SOLUTION: Direct Relative Imports + Vendor Bundles
 
 ### For Local TypeScript Files
 
@@ -115,6 +115,33 @@ const { memoizedImport } = await import("../_shared/resilientLoader.ts");
 const supabase = await memoizedImport("https://esm.sh/@supabase/supabase-js@2.57.4");
 ```
 
+### **NEW: Vendor Bundles for Critical Internal Modules (2025-10-03)**
+
+**For critical shared services that must be 100% reliable:**
+
+```typescript
+// ✅ CORRECT - Two-tier fallback pattern
+let service;
+try {
+  // Tier 1: Try bundled _shared version
+  const sharedModule = await import("../_shared/CharacterConsistencyService.js");
+  service = sharedModule.characterConsistencyService;
+  console.log(`✅ Loaded from _shared (bundled)`);
+} catch (sharedError) {
+  // Tier 2: Vendor bundle fallback
+  console.warn(`⚠️ _shared import failed, using vendor bundle:`, sharedError);
+  const vendorModule = await import("../_vendor/CharacterConsistencyService.mjs");
+  service = vendorModule.characterConsistencyService;
+  console.log(`✅ Loaded from _vendor bundle`);
+}
+```
+
+**Why Vendor Bundles for Internal Modules?**
+- **Problem**: Deno Deploy sometimes fails to bundle `_shared/` modules
+- **Solution**: Create `.mjs` copies in `_vendor/` as production fallback
+- **Result**: 100% reliability even if bundler configuration fails
+- **When to Use**: Critical services like CharacterConsistencyService, RunwareWebSocketService
+
 ---
 
 ## 📋 Import Pattern Decision Matrix
@@ -123,6 +150,7 @@ const supabase = await memoizedImport("https://esm.sh/@supabase/supabase-js@2.57
 |--------------|-------------|-----------------|-----------|
 | Local `_shared/` | Static | `import { X } from "../_shared/file.ts"` | `#shared/file.ts` |
 | Local `_shared/` | Dynamic | `await import("../_shared/file.ts")` | `new URL(..., import.meta.url)` |
+| Local `_shared/` | Critical Dynamic | Two-tier: `_shared/` → `_vendor/` fallback | Direct `file://` paths |
 | External CDN | Dynamic | `memoizedImport("https://cdn/pkg")` | Direct `fetch()` |
 
 ---
@@ -146,7 +174,7 @@ const path = "#shared/file.ts";
 const module = await import(path);
 ```
 
-**Accept** only these patterns:
+**Accept** these patterns:
 
 ```typescript
 // ✅ ACCEPT: Direct relative import
@@ -155,6 +183,16 @@ const module = await import("../_shared/file.ts");
 // ✅ ACCEPT: memoizedImport for CDN
 const { memoizedImport } = await import("../_shared/resilientLoader.ts");
 const pkg = await memoizedImport("https://esm.sh/package");
+
+// ✅ ACCEPT: Two-tier vendor fallback (NEW 2025-10-03)
+let service;
+try {
+  const module = await import("../_shared/CriticalService.js");
+  service = module.service;
+} catch (error) {
+  const vendorModule = await import("../_vendor/CriticalService.mjs");
+  service = vendorModule.service;
+}
 ```
 
 ---

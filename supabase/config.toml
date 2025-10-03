@@ -2,6 +2,7 @@ project_id = "cpzeuogomaixamrtnnmj"
 
 [functions.activate-discount-code]
 verify_jwt = true
+import_map = "./deno.jsonc"
 
 [functions.ai-visual-scene-creator]
 verify_jwt = false
@@ -83,12 +84,15 @@ verify_jwt = false
 
 [functions.runware-generate-image]
 verify_jwt = false
+import_map = "./deno.jsonc"
 
 [functions.runware-template-ab]
 verify_jwt = false
+import_map = "./deno.jsonc"
 
 [functions.runware-template-cd]
 verify_jwt = false
+import_map = "./deno.jsonc"
 
 [functions.security-alert]
 verify_jwt = true

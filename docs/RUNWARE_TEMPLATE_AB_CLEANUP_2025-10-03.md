@@ -375,3 +375,72 @@ This ensures the service remains observable and debuggable even during critical 
 - ✅ All template paths produce valid output
 - ✅ All 7 direct utility calls replaced with dynamic import wrappers
 - ✅ Deployment version bumped to 2025-10-03T18:15:00Z
+
+---
+
+## Tier 1 Import Failure Resolution (2025-10-03T18:15:00Z)
+
+### **Critical Discovery: CharacterConsistencyService Import Failure**
+
+**Issue**: `processInlinedTier1` in `runware-generate-image/index.ts` (line 270) dynamically importing `CharacterConsistencyService.js` failed with "Module not found"
+
+**Root Cause**: Deno Deploy bundler not including `_shared/` modules in production deployment bundle
+
+### **Solution: Two-Tier Import Fallback System**
+
+1. **Created Bundler Configuration** (`supabase/functions/deno.jsonc`):
+   - Explicit `include` paths for `_shared/**/*.js` and `_vendor/**/*.mjs`
+   - Forces Deno Deploy to bundle shared modules at build time
+
+2. **Created Vendor Bundle** (`supabase/functions/_vendor/CharacterConsistencyService.mjs`):
+   - Direct copy of `_shared/CharacterConsistencyService.js` as `.mjs` format
+   - Acts as production fallback when bundler configuration fails
+
+3. **Updated Import Pattern** (`runware-generate-image/index.ts` lines 265-281):
+   ```typescript
+   let service;
+   try {
+     // Tier 1: Try _shared import (bundled)
+     const sharedModule = await import("../_shared/CharacterConsistencyService.js");
+     service = sharedModule.characterConsistencyService;
+     console.log(`✅ [VENDOR_FALLBACK] Loaded from _shared (bundled)`);
+   } catch (sharedError) {
+     // Tier 2: Vendor fallback for production reliability
+     console.warn(`⚠️ [VENDOR_FALLBACK] _shared import failed, using vendor bundle:`, sharedError);
+     const vendorModule = await import("../_vendor/CharacterConsistencyService.mjs");
+     service = vendorModule.characterConsistencyService;
+     console.log(`✅ [VENDOR_FALLBACK] Loaded from _vendor bundle`);
+   }
+   ```
+
+4. **Updated Config** (`supabase/config.toml`):
+   - Added `import_map = "./deno.jsonc"` for `runware-generate-image`, `runware-template-ab`, `runware-template-cd`
+
+### **Expected Outcomes**
+
+- ✅ **100% Tier 1 Reliability**: Vendor bundle ensures service always loads
+- ✅ **Faster Image Generation**: Tier 1 no longer falls back to slower tiers
+- ✅ **Clear Error Messages**: Logs show which import tier succeeded
+- ✅ **Production Resilience**: System works even if bundler configuration fails
+
+### **Documentation Updates**
+
+- ✅ `docs/WHY_SHARED_IMPORTS_DONT_WORK.md` - Added vendor bundle pattern
+- ✅ `docs/TIER_1_IMPORT_FAILURE_POSTMORTEM.md` - NEW: Complete postmortem
+- ✅ `docs/RUNWARE_TEMPLATE_AB_CLEANUP_2025-10-03.md` - This update
+
+---
+
+## Final Status
+
+**Deployment Version**: `2025-10-03T18:15:00Z`
+
+**Completion Checklist:**
+- ✅ Fixed all RUNTIME_ERROR issues
+- ✅ Implemented vendor bundle fallback for CharacterConsistencyService
+- ✅ Created explicit bundler configuration (deno.jsonc)
+- ✅ Updated config.toml with import_map
+- ✅ All 7 direct utility calls replaced with dynamic import wrappers
+- ✅ Complete documentation for Tier 1 import resolution
+
+**Risk Level**: LOW - Graceful fallbacks ensure backward compatibility

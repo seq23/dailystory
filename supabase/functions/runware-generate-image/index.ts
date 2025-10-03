@@ -266,8 +266,20 @@ async function processInlinedTier1(
     logTier1Step("CharacterConsistencyService Import", "attempt", "Loading CharacterConsistencyService");
     console.log(`[TIER_1] Attempting CharacterConsistencyService import with resilient pattern`);
 
-    // Simple, proven import pattern (same as ai-visual-scene-creator)
-    const { characterConsistencyService: service } = await import("../_shared/CharacterConsistencyService.js");
+    // Tier 1: Try _shared import (bundled)
+    let service;
+    try {
+      const sharedModule = await import("../_shared/CharacterConsistencyService.js");
+      service = sharedModule.characterConsistencyService;
+      console.log(`✅ [VENDOR_FALLBACK] Loaded from _shared (bundled)`);
+    } catch (sharedError) {
+      // Tier 2: Vendor fallback for production reliability
+      console.warn(`⚠️ [VENDOR_FALLBACK] _shared import failed, using vendor bundle:`, sharedError);
+      const vendorModule = await import("../_vendor/CharacterConsistencyService.mjs");
+      service = vendorModule.characterConsistencyService;
+      console.log(`✅ [VENDOR_FALLBACK] Loaded from _vendor bundle`);
+    }
+    
     characterConsistencyService = service;
 
     // Validate service instance has ALL required methods
