@@ -131,6 +131,47 @@ const imageURL = typeof imageGenResult === 'string' ? imageGenResult : imageGenR
 - ✅ Graceful degradation with sensible defaults (cost: 0.0013, seed: null)
 - ✅ Observable via logs showing data shape received
 
+### 1000-Foot View: Data Flow Architecture
+
+```
+1000-FOOT VIEW
+┌─────────────────────────────────────────────────────────────┐
+│  callRunwareAPI() [lines 349/369]                           │
+│  Returns: "https://im.runware.ai/..." (STRING)              │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│  DEFENSIVE LAYER (NEW)                                      │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ typeof imageGenResult === 'string'                  │   │
+│  │   ? imageGenResult  ← USE DIRECTLY (current)        │   │
+│  │   : imageGenResult?.imageURL  ← EXTRACT (future)    │   │
+│  └─────────────────────────────────────────────────────┘   │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│  Template Result Object                                     │
+│  { imageURL: "https://...", cost: 0.0013, seed: null }      │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│  Upstream Consumers (NO CHANGES)                            │
+│  • runware-generate-image: tier25cResponse.data.imageURL   │
+│  • ai-visual-scene-creator: result.imageURL                │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Key Architecture Decisions:**
+- **Bottom Layer (callRunwareAPI)**: Returns primitive string for simplicity and reliability
+- **Middle Layer (Defensive)**: Type-safe adapter handles both current and future return formats
+- **Top Layer (Result Object)**: Consistent interface with metadata (cost, seed) for upstream consumers
+- **Zero Breaking Changes**: Upstream functions continue using `.data.imageURL` pattern without modifications
+
+This architecture prevents crashes while maintaining backward compatibility and enabling future enhancements without cascading changes.
+
 ## **Boot Failure Prevention System**
 
 ### The Problem Solved (V4.3)
