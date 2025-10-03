@@ -376,42 +376,43 @@ export class CharacterConsistencyService {
     if (this.vocabulary) return this.vocabulary;
 
     try {
-      // Phase 2: Direct import for local module (ERROR-060 fix)
-      // tier25Vocabulary is co-located in _shared/, no need for resilient loader
+      // PHASE 1: Use UNIVERSAL_VOCAB single source of truth (fixes Status 546)
       const vocabularyModule = await import('./tier25Vocabulary.js');
       if (!vocabularyModule || typeof vocabularyModule !== 'object') {
         throw new Error('Invalid vocabulary module structure');
       }
       
-      const { TIER_25_UNIFIED_VOCABULARY_EXTENDED, EXPANDED_COLOR_ARRAY, CLOTHING_DETECTION_KEYWORDS } = vocabularyModule;
+      const { UNIVERSAL_VOCAB } = vocabularyModule;
+      if (!UNIVERSAL_VOCAB) {
+        throw new Error('UNIVERSAL_VOCAB not found in tier25Vocabulary');
+      }
       
       this.vocabulary = {
-        // Dynamic arrays from tier25Vocabulary with safe extraction
-        colors: EXPANDED_COLOR_ARRAY || [],
-        objects: this.safeObjectExtraction(TIER_25_UNIFIED_VOCABULARY_EXTENDED),
-        animals: TIER_25_UNIFIED_VOCABULARY_EXTENDED.objectCategories.animals || [],
-        toys: TIER_25_UNIFIED_VOCABULARY_EXTENDED.objectCategories.toys || [],
-        nature: TIER_25_UNIFIED_VOCABULARY_EXTENDED.objectCategories.nature || [],
-        food: TIER_25_UNIFIED_VOCABULARY_EXTENDED.objectCategories.food || [],
+        // Single source arrays from UNIVERSAL_VOCAB
+        clothing: UNIVERSAL_VOCAB.clothing,
+        colors: UNIVERSAL_VOCAB.colors,
+        actions: UNIVERSAL_VOCAB.actions,
+        objects: Object.values(UNIVERSAL_VOCAB.objects).flat(), // Flatten all object categories
+        animals: UNIVERSAL_VOCAB.objects.animals,
+        toys: UNIVERSAL_VOCAB.objects.toys,
+        nature: UNIVERSAL_VOCAB.objects.nature,
+        food: UNIVERSAL_VOCAB.objects.food,
         settings: [
-          ...TIER_25_UNIFIED_VOCABULARY_EXTENDED.contextDetection.indoor,
-          ...TIER_25_UNIFIED_VOCABULARY_EXTENDED.contextDetection.outdoor
+          ...UNIVERSAL_VOCAB.context.indoor,
+          ...UNIVERSAL_VOCAB.context.outdoor
         ],
-        indoorWords: TIER_25_UNIFIED_VOCABULARY_EXTENDED.contextDetection.indoor || [],
-        outdoorWords: TIER_25_UNIFIED_VOCABULARY_EXTENDED.contextDetection.outdoor || [],
-        relationships: this.extractRelationshipsFromTier25(TIER_25_UNIFIED_VOCABULARY_EXTENDED),
-        clothing: CLOTHING_DETECTION_KEYWORDS || [],
-        actions: Object.values(TIER_25_UNIFIED_VOCABULARY_EXTENDED.actions).flat(),
-        // NEW: Secondary character visual detection vocabularies (Phase 1)
-        HAIR_DESCRIPTORS: TIER_25_UNIFIED_VOCABULARY_EXTENDED.HAIR_DESCRIPTORS || [],
-        SIZE_AGE_DESCRIPTORS: TIER_25_UNIFIED_VOCABULARY_EXTENDED.SIZE_AGE_DESCRIPTORS || [],
-        ANIMAL_RELATIONSHIPS: TIER_25_UNIFIED_VOCABULARY_EXTENDED.ANIMAL_RELATIONSHIPS || []
+        indoorWords: UNIVERSAL_VOCAB.context.indoor,
+        outdoorWords: UNIVERSAL_VOCAB.context.outdoor,
+        relationships: this.extractRelationshipsFromTier25(UNIVERSAL_VOCAB),
+        HAIR_DESCRIPTORS: UNIVERSAL_VOCAB.hair,
+        SIZE_AGE_DESCRIPTORS: UNIVERSAL_VOCAB.sizeAge,
+        ANIMAL_RELATIONSHIPS: UNIVERSAL_VOCAB.animalRelationships
       };
       
-      console.log(`✅ Tier25Vocabulary loaded: ${this.vocabulary.objects.length} objects, ${this.vocabulary.colors.length} colors`);
+      console.log(`✅ UNIVERSAL_VOCAB loaded: ${this.vocabulary.objects.length} objects, ${this.vocabulary.colors.length} colors (Status 546 FIXED)`);
       return this.vocabulary;
     } catch (error) {
-      console.warn('⚠️ Tier25Vocabulary import failed, using ESSENTIAL_VOCABULARY fallback:', error);
+      console.error('❌ CCS: Failed to load UNIVERSAL_VOCAB', error);
       this.vocabulary = CharacterConsistencyService.ESSENTIAL_VOCABULARY;
       return this.vocabulary;
     }
@@ -626,7 +627,31 @@ export class CharacterConsistencyService {
       }
     }
 
-    console.log(`📊 Total colored objects detected: ${detections.length} (exact + compound + proximity)`);
+    // Strategy 4: Standalone object detection (no color required)
+    // Only add objects that weren't already detected with colors in Strategies 1-3
+    const standaloneObjectMatches = text.match(
+      new RegExp(`\\b(${vocab.objects.join('|')})\\b`, 'gi')
+    );
+
+    if (standaloneObjectMatches && standaloneObjectMatches.length > 0) {
+      standaloneObjectMatches.forEach(match => {
+        const objectName = match.toLowerCase();
+        // Only add if not already detected with a color
+        if (!detections.some(item => item.object === objectName)) {
+          detections.push({
+            fullDescription: objectName,
+            color: null, // Explicitly null for standalone objects
+            object: objectName,
+            source: 'tier25Vocabulary_standalone',
+            pageNumber
+          });
+          manifest.addObject(objectName, null, objectName, pageNumber);
+          console.log(`🎨 Detected standalone object: ${objectName} (tier25, no color)`);
+        }
+      });
+    }
+
+    console.log(`📊 Total objects detected: ${detections.length} (exact + compound + proximity + standalone)`);
     return detections;
   }
 

@@ -1,4 +1,5 @@
-// ============= TIER 2.5 UNIFIED VOCABULARY - NUCLEAR INDEPENDENCE =============
+// ============= TIER 2.5 UNIVERSAL VOCABULARY - SINGLE SOURCE OF TRUTH =============
+// PHASE 1 CONSOLIDATION: All fragmented exports unified into UNIVERSAL_VOCAB
 // Lazy-loaded vocabulary module for performance optimization
 // Contains all large constant arrays to prevent cold-boot failures
 
@@ -7,8 +8,9 @@
 // All cultural selections now handled by CharacterConsistencyService for character-consistent seeding
 // This file now contains only pure vocabulary arrays for performance optimization
 
-// ============= PROPER VOCABULARY ACCESS - Use TIER_25_UNIFIED_VOCABULARY_EXTENDED =============
-// All vocabulary should use the structured VOCABULARY system below, not separate pools
+// ============= PROPER VOCABULARY ACCESS - Use UNIVERSAL_VOCAB =============
+// All vocabulary should use the structured UNIVERSAL_VOCAB system below
+// OLD EXPORTS REMOVED: TIER_25_UNIFIED_VOCABULARY_EXTENDED, EXPANDED_COLOR_ARRAY, CLOTHING_DETECTION_KEYWORDS
 
 // ============= UTILITY FUNCTIONS =============
 export function pick(arr, seed) {
