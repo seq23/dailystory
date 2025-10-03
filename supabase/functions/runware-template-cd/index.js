@@ -19,23 +19,7 @@ async function getRunwareErrorHandler() {
   return RunwareErrorHandler;
 }
 
-// Lazy load ProviderGate to prevent boot failures
-let ProviderGate = null;
-let providerGateLoadAttempted = false;
-
-async function getProviderGate() {
-  if (!providerGateLoadAttempted) {
-    providerGateLoadAttempted = true;
-    try {
-      ProviderGate = await import("../_shared/ProviderGate.ts");
-      console.log("✅ ProviderGate loaded successfully");
-    } catch (err) {
-      console.warn("⚠️ ProviderGate unavailable (non-critical):", err.message);
-      ProviderGate = null;
-    }
-  }
-  return ProviderGate;
-}
+// ProviderGate is now inlined in index.ts receptionist - no dynamic import needed
 
 // ============= RUNWARE TEMPLATE CD: TIER 2.5C & 2.5D =============
 // Implementation of complexity levels C and D for advanced template generation

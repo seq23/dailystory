@@ -1,23 +1,22 @@
 # Receptionist Architecture and Static Imports
 
-## 🔒 **TypeScript Receptionist Pattern V4.2**
+## 🔒 **TypeScript Receptionist Pattern V4.3**
 
 ### Architecture Overview
 
 <lov-mermaid>
 graph TD
-    A[index.ts Entry Point] --> B[Static Import Check]
-    B --> C{Imports Available?}
-    C -->|Yes| D[Load index.js Implementation]
-    C -->|No| E[Boot Failure Protection]
-    
-    D --> F[Initialize Function Logic]
-    F --> G[Log: Bulletproof Pattern Active]
-    G --> H[Function Ready]
-    
-    E --> I[Log: Sync Anomaly Detected]
-    I --> J[Fallback Handler]
-    J --> K[503 Error Response]
+    A[index.ts Entry Point] --> B[CORS/Health Check]
+    B --> C{POST Request?}
+    C -->|Yes| D[Dynamic Load Handler]
+    D --> E{Load Success?}
+    E -->|Yes| F[Cache Handler as LKG]
+    E -->|No| G{LKG Available?}
+    G -->|Yes| H[Serve Stale Handler]
+    G -->|No| I[503 Escalate Tier]
+    F --> J[Execute Handler]
+    H --> J
+    J --> K[Return Response]
 </lov-mermaid>
 
 ## **Dual Architecture Pattern**
@@ -32,81 +31,104 @@ supabase/functions/function-name/
 
 ### **Real Implementation Examples**
 
-#### runware-template-ab Implementation
+#### runware-template-ab Implementation (V4.3)
 ```typescript
 // From actual supabase/functions/runware-template-ab/index.ts
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+const SERVICE_NAME = "runware-template-ab";
 
-// Static Import Architecture V4.2 - Bulletproof pattern
-console.log("INIT runware-template-ab boot at 2025-09-21T23:18:25.658Z | std@0.168.0");
-console.log("🎯 [runware-template-ab] Static Import Architecture V4.2 initialized");
-console.log("🔒 [runware-template-ab] No more sync anomalies - bulletproof pattern active");
+// LKG: Cached successfully loaded handler for serve-stale behavior
+let cachedHandler: HandlerFn | null = null;
 
-// Import the actual implementation
-import { handleRequest } from "./index.js";
-
-serve(async (req) => {
-  // CORS handling
+Deno.serve(async (req: Request) => {
+  // CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response(null, { 
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-      }
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  // Health check
+  if (req.method === 'HEAD' || req.method === 'GET') {
+    return new Response(JSON.stringify({ 
+      service: SERVICE_NAME, 
+      status: 'healthy' 
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }
-  
-  try {
-    // Delegate to implementation
-    const result = await handleRequest(req);
-    return new Response(JSON.stringify(result), {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Content-Type': 'application/json'
+
+  // POST: Dynamic load with LKG fallback
+  if (req.method === 'POST') {
+    try {
+      const handler = await loadHandler();
+      cachedHandler = handler; // Cache for future use
+      return await handler(req);
+    } catch (loadError) {
+      console.error(`❌ Failed to load handler:`, loadError);
+      
+      // LKG serve-stale: Use cached handler if available
+      if (cachedHandler) {
+        console.warn(`⚠️ Using LKG cached handler (serve-stale)`);
+        return await cachedHandler(req);
       }
-    });
-  } catch (error) {
-    console.error("🚨 [runware-template-ab] Handler error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Content-Type': 'application/json'
-      }
-    });
+      
+      // No LKG available
+      return new Response(JSON.stringify({ 
+        error: 'HANDLER_LOAD_FAILED',
+        escalation: 'NEXT_TIER' 
+      }), { 
+        status: 503, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      });
+    }
   }
+
+  return new Response('Method not allowed', { 
+    status: 405, 
+    headers: corsHeaders 
+  });
 });
 ```
 
-#### Actual Boot Logs
+#### Actual Boot Logs (V4.3)
 ```
-INIT runware-template-ab boot at 2025-09-21T23:18:25.658Z | std@0.168.0
-🎯 [runware-template-ab] Static Import Architecture V4.2 initialized
-🔒 [runware-template-ab] No more sync anomalies - bulletproof pattern active
+🔍 [GATE] DM:runware-template-ab acquired
+✅ Handler loaded successfully
 Listening on http://localhost:9999/
-booted (time: 26ms)
+booted (time: 23ms)
 ```
 
-## **503 Error Prevention System**
+## **Boot Failure Prevention System**
 
-### The Problem Solved
-Before V4.2, sync anomalies caused random 503 errors:
-- Import timing issues
-- Module loading race conditions
-- Undefined function references
+### The Problem Solved (V4.3)
+Previously, boot-time static imports could cause failures:
+- Import timing issues during deployment
+- Module not found errors for `.js` files
+- Receptionist trying to load implementation before it's ready
 
-### The Solution: Bulletproof Pattern
+### The Solution: Dynamic Load + LKG Pattern
 ```typescript
-// Static import validation
-try {
-  if (typeof handleRequest !== 'function') {
-    throw new Error('Implementation not loaded');
+// V4.3: No top-level static imports of implementation
+// Load handler dynamically only when POST arrives
+async function loadHandler(): Promise<HandlerFn> {
+  const maxRetries = 3;
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      const module = await import('./index.js');
+      if (!module.handler) throw new Error('No handler export');
+      return module.handler;
+    } catch (err) {
+      if (i === maxRetries - 1) throw err;
+      await new Promise(r => setTimeout(r, 100 * (i + 1)));
+    }
   }
-  console.log("🔒 No more sync anomalies - bulletproof pattern active");
-} catch (error) {
-  console.error("🚨 Sync anomaly detected:", error);
-  return new Response("Service temporarily unavailable", { status: 503 });
+  throw new Error('Handler load failed after retries');
 }
+
+// Last Known Good caching prevents repeated failures
+let cachedHandler: HandlerFn | null = null;
+// ... in POST handler:
+cachedHandler = handler; // Cache after successful load
+// ... on failure:
+if (cachedHandler) return await cachedHandler(req); // Serve stale
 ```
 
 ## **Option A Receptionist Pattern**

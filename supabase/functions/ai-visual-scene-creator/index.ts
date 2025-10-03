@@ -710,21 +710,8 @@ serve(async (req) => {
       const gateResult = await acquire(gateKey);
       
       if (!gateResult.acquired) {
-        console.warn(`⚠️ [GATE] ${gateKey} denied: ${gateResult.reason}`);
-        return new Response(JSON.stringify({
-          success: false,
-          error: 'SERVICE_UNAVAILABLE',
-          reason: gateResult.reason,
-          message: 'AI scene creator is currently at capacity. Please try again.',
-          retryAfterSeconds: gateResult.retryAfterSeconds || 5
-        }), {
-          status: 503,
-          headers: { 
-            ...corsHeaders, 
-            'Content-Type': 'application/json',
-            'Retry-After': String(gateResult.retryAfterSeconds || 5)
-          }
-        });
+        console.warn(`⚠️ [GATE] ${gateKey} denied: ${gateResult.reason} - proceeding in degraded mode (no blocking)`);
+        // Don't return 503 - proceed in degraded mode
       }
       
       gateAcquired = true;
