@@ -1663,18 +1663,95 @@ async function handleRequest(req) {
       const age = userInfo?.age || 'young child';
       const ethnicity = deriveRegionalEthnicity(userInfo, avatarIdentity);
       const skinTone = userInfo?.avatar?.skinTone || 'medium';
-      // Get cultural bundle with character consistency
+      // Get cultural bundle with 3-tier fallback architecture
       let culturalBundle;
+      let culturalBundleSource = 'UNKNOWN';
+
       try {
+        // TIER 1: Try CharacterConsistencyService (preferred)
         const { characterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
         culturalBundle = await characterConsistencyService.getCulturalEnhancements(userInfo, sessionId, characterName);
-      } catch (error) {
-        console.error('❌ Failed to get cultural bundle with consistency:', error);
-        // Use emergency fallback
-        culturalBundle = { hair: 'natural hair', features: 'diverse features' };
+        culturalBundleSource = 'CCS';
+        console.log(`✅ [TIER_1_FALLBACK] CCS cultural bundle loaded successfully`);
+      } catch (ccsError) {
+        console.error(`❌ [TIER_1_FALLBACK] CCS failed:`, ccsError.message);
+        
+        // TIER 2: Use inline helper functions (getHairBySkintone, getSkinBySkintone)
+        console.log(`🔄 [TIER_2_FALLBACK] Using inline helper functions for cultural bundle`);
+        culturalBundle = {
+          hair: getHairBySkintone(skinTone, sessionId),
+          features: getSkinBySkintone(skinTone)
+        };
+        culturalBundleSource = 'Inline';
+        console.log(`✅ [TIER_2_FALLBACK] Inline cultural bundle loaded: hair="${culturalBundle.hair}"`);
       }
-      const hairDescription = culturalBundle?.hair || getHair(skinTone) || 'brown hair';
-      const facialFeatures = culturalBundle?.features || getSkinBySkintone(skinTone, sessionId) || 'friendly expression';
+
+      const hairDescription = culturalBundle?.hair || emergencyHairFallback(skinTone);
+      const facialFeatures = culturalBundle?.features || getSkinBySkintone(skinTone);
+
+      console.log(`🎨 [CULTURAL_BUNDLE] Source: ${culturalBundleSource}, Hair: "${hairDescription}", Features: "${facialFeatures.substring(0, 50)}..."`);
+      
+      // ESCALATION CHECK: If CCS completely failed (import error), escalate to Tier 2.5B immediately
+      if (culturalBundleSource === 'Inline' && templateComplexity === 'A') {
+        console.log(`🚨 [${requestId}] CCS completely unavailable - Escalating Tier 2.5A → 2.5B immediately`);
+        console.log(`⚡ [${requestId}] Reason: CharacterConsistencyService import failed, nuclear independence required`);
+        
+        // Switch to Tier 2.5B (nuclear independent, no CCS dependency)
+        const escalatedPayload = {
+          ...payload,
+          templateComplexity: 'B',
+          escalationReason: 'CCS_IMPORT_FAILURE'
+        };
+        
+        console.log(`🔄 [${requestId}] Re-processing with Tier 2.5B (nuclear independent)...`);
+        
+        // Re-select template with complexity 'B'
+        const escalatedTemplate = selectTemplate('B');
+        console.log(`✅ [${requestId}] Escalated to: ${escalatedTemplate.name}`);
+        
+        // Prepare Tier 2.5B processing (simplified, no CCS)
+        const extractedScene = extractSimpleScene(storyText);
+        const styleFramework = getNuclearStyleFramework(userInfo?.difficulty || 'medium');
+        const culturalProfile = inlineDetectCultural(userInfo, avatarIdentity);
+        const tier2BCharacterName = userInfo?.name || userInfo?.childName || 'child';
+        const tier2BAge = userInfo?.age || 'young child';
+        const tier2BEthnicity = deriveRegionalEthnicity(userInfo, avatarIdentity);
+        const tier2BSkinTone = userInfo?.avatar?.skinTone || 'medium';
+        const tier2BHair = getHairBySkintone(tier2BSkinTone, sessionId) || 'brown hair';
+        const tier2BFeatures = getSkinBySkintone(tier2BSkinTone) || 'friendly expression';
+        const cultural_context = getCulturalContext(userInfo?.preferredLanguage || 'en');
+        
+        const fullFrameworkPrompt = `${styleFramework.frameworkPrompt}, medium shot, child-safe, age-appropriate`;
+        
+        const tier2BPrompt = TIER_25B_TEMPLATE
+          .replace('{pageText}', storyText)
+          .replace('{character}', tier2BCharacterName)
+          .replace('{age}', tier2BAge)
+          .replace('{ethnicity}', tier2BEthnicity)
+          .replace('{hairDescription}', tier2BHair)
+          .replace('{facialFeatures}', tier2BFeatures)
+          .replace('{scene}', extractedScene || storyText)
+          .replace('{cultural_context}', cultural_context)
+          .replace('{leftover_data}', '')
+          .replace('{fullFrameworkPrompt}', fullFrameworkPrompt)
+          .replace('{negativePrompt}', UNIVERSAL_NEGATIVE_PROMPT);
+        
+        console.log(`🎯 [${requestId}] Tier 2.5B Prompt Length: ${tier2BPrompt.length} chars`);
+        
+        // Generate with Tier 2.5B (skip CCS-dependent Tier 2.5A processing)
+        const tier2BResult = await generateImageWithRunware(tier2BPrompt, pageNumber, sessionId);
+        
+        if (tier2BResult?.success) {
+          console.log(`✅ [${requestId}] Tier 2.5B escalation successful: ${tier2BResult.imageURL}`);
+          return new Response(JSON.stringify(tier2BResult), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200
+          });
+        } else {
+          // If Tier 2.5B fails, continue to nuclear templates 2.5C/2.5D (existing flow)
+          console.log(`⚠️ [${requestId}] Tier 2.5B escalation failed, continuing to nuclear templates...`);
+        }
+      }
       
       // Complete Character Consistency Service integration for Tier 2.5A
       let characterAppearance = '';
