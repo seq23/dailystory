@@ -1,8 +1,25 @@
-// DEPLOY_MARKER: 2025-10-03T18:30:00Z - Fixed duplicate avatarType declaration causing NETWORK_ISSUE boot failure (SyntaxError) + added prevention comments
+// DEPLOY_MARKER: 2025-10-03T19:30:00Z - Made ProviderGate lazy-load to prevent boot failures
 import { RunwareErrorHandler } from "../_shared/runwareErrorHandler.ts";
-import * as ProviderGate from "../_shared/ProviderGate.ts";
 // Handles Level A (basic shapes/colors) and Level B (simple scenes)
 // Lightweight, fast deployment - optimized for simple template generation with character consistency
+
+// Lazy load ProviderGate to prevent boot failures
+let ProviderGate = null;
+let providerGateLoadAttempted = false;
+
+async function getProviderGate() {
+  if (!providerGateLoadAttempted) {
+    providerGateLoadAttempted = true;
+    try {
+      ProviderGate = await import("../_shared/ProviderGate.ts");
+      console.log("✅ ProviderGate loaded successfully");
+    } catch (err) {
+      console.warn("⚠️ ProviderGate unavailable (non-critical):", err.message);
+      ProviderGate = null;
+    }
+  }
+  return ProviderGate;
+}
 
 // Supabase client created dynamically via resilient loader
 import { tier25vocabulary } from '../_shared/tier25Vocabulary.js';
@@ -2480,9 +2497,16 @@ async function handleRequest(req) {
 
     // ProviderGate: Check circuit and acquire slot before Runware call
     const gateKey = templateComplexity === 'A' ? 'T25A:runware-template-ab' : 'T25B:runware-template-ab';
-    const gateResult = await ProviderGate.acquire(gateKey);
     
-    if (!gateResult.acquired) {
+    // Lazy load ProviderGate
+    const PG = await getProviderGate();
+    if (!PG) {
+      console.warn('⚠️ [GATE] ProviderGate unavailable, proceeding without rate limiting');
+    }
+    
+    const gateResult = PG ? await PG.acquire(gateKey) : { acquired: true };
+    
+    if (PG && !gateResult.acquired) {
       console.warn(`⚠️ [GATE] ${gateKey} unavailable: ${gateResult.reason}`);
       return new Response(JSON.stringify({
         success: false,
@@ -2520,13 +2544,15 @@ async function handleRequest(req) {
       );
       
       // Release gate on success
-      ProviderGate.release(gateKey, true);
+      if (PG) {
+        PG.release(gateKey, true);
+      }
       gateReleased = true;
       
     } catch (runwareError) {
       // Release gate on failure
-      if (!gateReleased) {
-        ProviderGate.release(gateKey, false);
+      if (!gateReleased && PG) {
+        PG.release(gateKey, false);
         gateReleased = true;
       }
       throw runwareError;

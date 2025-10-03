@@ -1,6 +1,23 @@
-// DEPLOY_MARKER: 2025-09-26T15:15:00Z - Force fresh deployment sync with receptionist
+// DEPLOY_MARKER: 2025-10-03T19:30:00Z - Made ProviderGate lazy-load to prevent boot failures
 import { RunwareErrorHandler } from "../_shared/runwareErrorHandler.ts";
-import * as ProviderGate from "../_shared/ProviderGate.ts";
+
+// Lazy load ProviderGate to prevent boot failures
+let ProviderGate = null;
+let providerGateLoadAttempted = false;
+
+async function getProviderGate() {
+  if (!providerGateLoadAttempted) {
+    providerGateLoadAttempted = true;
+    try {
+      ProviderGate = await import("../_shared/ProviderGate.ts");
+      console.log("✅ ProviderGate loaded successfully");
+    } catch (err) {
+      console.warn("⚠️ ProviderGate unavailable (non-critical):", err.message);
+      ProviderGate = null;
+    }
+  }
+  return ProviderGate;
+}
 
 // ============= RUNWARE TEMPLATE CD: TIER 2.5C & 2.5D =============
 // Implementation of complexity levels C and D for advanced template generation
@@ -454,9 +471,16 @@ async function handleRequest(req) {
 
   // ProviderGate: Check circuit and acquire slot before Runware call
   const gateKey = complexityLevel === 'C' ? 'T25C:runware-template-cd' : 'DM:runware-template-cd';
-  const gateResult = await ProviderGate.acquire(gateKey);
   
-  if (!gateResult.acquired) {
+  // Lazy load ProviderGate
+  const PG = await getProviderGate();
+  if (!PG) {
+    console.warn('⚠️ [GATE] ProviderGate unavailable, proceeding without rate limiting');
+  }
+  
+  const gateResult = PG ? await PG.acquire(gateKey) : { acquired: true };
+  
+  if (PG && !gateResult.acquired) {
     console.warn(`⚠️ [GATE] ${gateKey} unavailable: ${gateResult.reason}`);
     return new Response(JSON.stringify({
       success: false,
@@ -484,12 +508,14 @@ async function handleRequest(req) {
     imageURL = await callRunwareAPI(templateResult.positivePrompt, templateResult.negativePrompt);
     
     // Release gate on success
-    ProviderGate.release(gateKey, true);
+    if (PG) {
+      PG.release(gateKey, true);
+    }
     gateReleased = true;
   } catch (runwareError) {
     // Release gate on failure
-    if (!gateReleased) {
-      ProviderGate.release(gateKey, false);
+    if (!gateReleased && PG) {
+      PG.release(gateKey, false);
       gateReleased = true;
     }
     throw runwareError;
