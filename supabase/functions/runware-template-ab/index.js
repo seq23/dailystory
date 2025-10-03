@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-10-03T17:15:00Z - CCS standardization + runtime error fix: added getStructuredAvatarData/getSessionSetting/getSecondaryCharactersForSession, fixed UNIVERSAL_NEGATIVE_PROMPT undefined error, removed 108 lines of dead code
+// DEPLOY_MARKER: 2025-10-03T18:30:00Z - Fixed duplicate avatarType declaration causing NETWORK_ISSUE boot failure (SyntaxError) + added prevention comments
 import { RunwareErrorHandler } from "../_shared/runwareErrorHandler.ts";
 import * as ProviderGate from "../_shared/ProviderGate.ts";
 // Handles Level A (basic shapes/colors) and Level B (simple scenes)
@@ -2017,6 +2017,9 @@ async function handleRequest(req) {
       // Apply pageText summarization for levels 2-4
       const processedStoryText = summarizePageText(storyText, userInfo?.difficulty);
       
+      // ⚠️ CRITICAL: avatarType is declared here and used throughout this scope
+      // DO NOT re-declare avatarType anywhere in this function block
+      // This variable is used for generateInlineNuclearNegative() and prompt building
       // Use PREMIUM_PROMPT_TEMPLATE with proper placeholder replacement including character consistency
       const avatarType = userInfo?.avatar?.type || 'child';
       let finalPositivePrompt = PREMIUM_PROMPT_TEMPLATE
@@ -2056,7 +2059,7 @@ async function handleRequest(req) {
         .replace(/\s*\.\s*\./g, '.')
         .trim();
     
-      const avatarType = userInfo?.avatar?.type || 'child';
+      // ✅ avatarType already declared at line ~2024 - reusing it here
       templateResult = {
         positivePrompt: finalPositivePrompt,
         negativePrompt: generateInlineNuclearNegative(culturalProfile, avatarType, userInfo?.difficulty) || 'blurry, low quality',

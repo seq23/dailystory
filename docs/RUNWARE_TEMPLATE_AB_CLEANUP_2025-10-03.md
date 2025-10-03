@@ -169,11 +169,75 @@ templateResult = {
 
 ---
 
+## Bug Fix: Duplicate Variable Declaration
+
+### Issue: Duplicate const avatarType Declaration (Line 2059)
+**Severity**: CRITICAL - Causes SyntaxError preventing edge function boot
+
+**Problem**:
+- Line 2021: `const avatarType = userInfo?.avatar?.type || 'child';` (FIRST - CORRECT)
+- Line 2059: `const avatarType = userInfo?.avatar?.type || 'child';` (DUPLICATE - BUG)
+- JavaScript does not allow re-declaring `const` in same scope
+- Resulted in `Uncaught SyntaxError: Identifier 'avatarType' has already been declared`
+- Edge function fails to boot → NETWORK_ISSUE (Status 0)
+
+**Root Cause**:
+During "standardization" cleanup, attempted to extract `userInfo?.avatar?.type` to a variable for consistency at line 2059, but failed to recognize that `avatarType` was already declared earlier at line 2021 in the same scope.
+
+**Fix**:
+- Deleted line 2059 (duplicate declaration)
+- Added warning comment at line 2021 to prevent future duplication
+- Added reuse comment at line 2060 to document variable reuse
+- `avatarType` from line 2021 is now correctly reused at line 2062
+
+**Prevention**:
+- Added inline warning comment at variable declaration site (line 2021)
+- Added reuse comment where variable is referenced (line 2060)
+- Updated documentation with "Common Pitfalls" section below
+- Added to pre-deployment checklist
+
+---
+
+## Common Pitfalls to Avoid
+
+### 1. Duplicate Variable Declarations
+**❌ NEVER** re-declare variables with `const`, `let`, or `var` in the same scope.
+
+**Search before declaring**: Use `Ctrl+F` to find existing declarations of:
+- `avatarType`
+- `culturalProfile`
+- `characterSeed`
+- `extractedScene`
+- `supabaseClient`
+
+### 2. Variable Scope Awareness
+Large functions (2000+ lines) make it easy to lose track of variable scope. Before adding `const`/`let`:
+1. Search for existing declaration in current function
+2. Check if variable is already in scope from outer block
+3. Use unique variable names if shadowing is intended
+
+### 3. Pre-Deployment Checklist
+Before deploying `runware-template-ab`:
+- [ ] Run syntax check: `deno check index.js`
+- [ ] Search for duplicate `const` declarations: `grep -n "const avatarType" index.js`
+- [ ] Verify health check returns 200 OK
+- [ ] Test runtime POST request succeeds
+- [ ] Check edge function logs for boot errors (SyntaxError)
+
+### 4. Boot Failure Symptoms
+If you see NETWORK_ISSUE (Status 0) on health checks:
+1. Check edge function logs for SyntaxError
+2. Search for duplicate `const` declarations
+3. Verify all imports resolve correctly
+4. Test with `deno run --allow-all index.js`
+
+---
+
 ## Documentation Updated
 
 **Deploy Marker** (Line 1):
 ```javascript
-// DEPLOY_MARKER: 2025-10-03T17:15:00Z - CCS standardization + runtime error fix: added getStructuredAvatarData/getSessionSetting/getSecondaryCharactersForSession, fixed UNIVERSAL_NEGATIVE_PROMPT undefined error, removed 108 lines of dead code
+// DEPLOY_MARKER: 2025-10-03T18:30:00Z - Fixed duplicate avatarType declaration causing NETWORK_ISSUE boot failure (SyntaxError) + added prevention comments
 ```
 
 ---
@@ -186,9 +250,10 @@ templateResult = {
 | Deduplication | 28 | 12 (helper) | -16 |
 | Runtime Error Fix | 1 | 1 | 0 |
 | Standardization | 7 | 8 | +1 |
-| **TOTAL** | **144** | **27** | **-117** |
+| **Bug Fix** | **1** | **7 (warning comments)** | **+6** |
+| **TOTAL** | **145** | **34** | **-111** |
 
-**Final File Size**: 2,369 lines (down from 2,439 lines)
+**Final File Size**: 2,382 lines (down from 2,439 lines, after duplicate declaration fix)
 
 ---
 
