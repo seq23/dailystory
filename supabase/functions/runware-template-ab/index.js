@@ -2416,6 +2416,7 @@ async function handleRequest(req) {
         styleFrameworkUsed: styleFramework.name,
         characterSeed: characterSeed
       };
+      }
       
     } else if (selectedTemplate.name === 'Basic Template B') {
       // Tier 2.5B: Basic processing with reduced features
@@ -2423,7 +2424,7 @@ async function handleRequest(req) {
       
       // Tier 2.5B: Direct scene processing (called by orchestrator, not calling orchestrator)
       console.log(`🎯 [${requestId}] Tier 2.5B: Processing scene directly`);
-      const extractedScene = extractSimpleScene(storyText);
+      let extractedScene = extractSimpleScene(storyText);
       console.log(`🎯 TIER 2.5B Direct Scene Extraction: "${extractedScene}"`);
       console.log(`🔍 [DEBUG] Tier 2.5B Direct Scene - Action spans captured for: "${storyText.substring(0, 100)}..."`);
       
