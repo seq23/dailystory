@@ -1573,13 +1573,9 @@ export class CharacterConsistencyService {
     return '';
   }
 
-  /**
-   * Detect secondary characters (backwards compatible)
-   */
-  async detectSecondaryCharacters(text, context = {}) {
-    const result = await this.detectAllCharacters(text, context);
-    return result.secondaryCharacters || [];
-  }
+  // REMOVED: Duplicate detectSecondaryCharacters wrapper that caused infinite recursion (ERROR-069)
+  // The real implementation exists at line 637 with signature: async detectSecondaryCharacters(text, sessionId, pageNumber)
+  // This wrapper was overwriting it and calling detectAllCharacters, which called detectSecondaryCharacters again → stack overflow
 
   /**
    * Generate secondary character seed (backwards compatible)

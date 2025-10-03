@@ -98,6 +98,7 @@ Quick lookup table for all tracked errors with searchable keywords.
 
 | Error ID | Keywords | Severity | Status | System | Quick Link |
 |----------|----------|----------|--------|--------|------------|
+| ERROR-069 | character-consistency-service, stack-overflow, infinite-recursion, method-overloading, detectSecondaryCharacters, detectAllCharacters, browser-noise-misclassification, error-status-codes, test-accuracy | CRITICAL | ✅ RESOLVED | Character System | [View](#error-069-characterconsistencyservice-stack-overflow-and-browser-noise-misclassification) |
 | ERROR-068 | runware-template-ab, boot-failures, receptionist-pattern, static-import, local-cache-bust, module-not-found, option-a-bulletproof, field-names, test-connectivity, status-0, browser-noise | CRITICAL | ✅ RESOLVED | Edge Functions | [View](#error-068-runware-template-ab-boot-failures-and-test-connectivity-false-alarms) |
 | ERROR-067 | diagnostic-field-mismatch, system-diagnostics, apikey-diagnostic, service_key_present, openai-detection, environment-keys | MEDIUM | ✅ RESOLVED | Diagnostics | [View](#error-067-diagnostic-field-name-mismatch-in-apikey-diagnostic) |
 | ERROR-066 | deno-parser, brace-alignment, scope-closure, clearTimeout-duplicate, try-catch-finally, tier-2.5b-fast-path, cascade-tail, head-response, deployment-blocking | CRITICAL | ✅ RESOLVED | Infrastructure | [View](#error-066-deno-parser-syntax-errors---brace-alignment-and-scope-closure) |
@@ -2434,16 +2435,99 @@ serve(async (req) => {
 
 ---
 
+### ✅ ERROR-069: CharacterConsistencyService Stack Overflow and Browser Noise Misclassification
+- **Status:** RESOLVED ✅
+- **Severity:** CRITICAL (Edge function crashes with stack overflow, test misclassification hiding real errors)
+- **Discovered:** 2025-10-03
+- **Resolved:** 2025-10-03
+- **Impact:** `runware-template-ab` crashed with "Maximum call stack size exceeded"; ImageTierTester falsely labeled 500 errors as "BROWSER_NOISE"
+- **Root Cause:** Duplicate method definition caused infinite recursion; error classification logic was too broad
+
+**Technical Details:**
+- **Recursion Bug**: `CharacterConsistencyService` had TWO `detectSecondaryCharacters` methods:
+  1. Line 637: Real implementation `async detectSecondaryCharacters(text, sessionId, pageNumber)`
+  2. Line 1579: Backwards-compatible wrapper `async detectSecondaryCharacters(text, context = {})` that called `detectAllCharacters()`
+  - JavaScript doesn't support method overloading—the second definition OVERWROTE the first
+  - `detectAllCharacters()` called `detectSecondaryCharacters(pageText, sessionId, pageNumber)` → hit the wrapper → infinite loop
+  - Edge logs showed: `RangeError: Maximum call stack size exceeded` at `CharacterConsistencyService.detectColoredObjects`
+
+- **Misclassification Bug**: ImageTesterTester classified errors too broadly:
+  ```typescript
+  // ❌ BEFORE: Any POST error when GET succeeded = "BROWSER_NOISE"
+  if (postResponse.error) {
+    const isLikelyBrowserNoise = tests.GET.success;
+    category = isLikelyBrowserNoise ? 'BROWSER_NOISE' : 'NETWORK_ISSUE';
+  }
+  ```
+  - Real 500 runtime errors were hidden behind "BROWSER_NOISE" label
+  - `supabase.functions.invoke()` returns `{error: {message, status}}` for all failures
+  - Status code wasn't being checked, only error message strings
+
+**Why This Was Confusing:**
+- User never had "browser noise" issues before ERROR-068 fix
+- ERROR-068 switched from raw `fetch()` to `supabase.functions.invoke()` for POST tests
+- `supabase.functions.invoke()` returns different error structures than `fetch()`
+- The broad fallback logic (line 1794-1795) was added to handle fetch CORS issues but caught SDK errors too
+
+**Changes Made:**
+1. ✅ **CharacterConsistencyService.js** (Lines 1576-1582): Removed duplicate wrapper
+   - Deleted the backwards-compatible wrapper that caused recursion
+   - Only the real implementation at line 637 remains
+   - No external callers used the wrapper signature (verified via search)
+
+2. ✅ **CharacterConsistencyService.ts** (Lines 1292-1298): Removed duplicate wrapper
+   - Same fix for TypeScript version
+   - Maintains consistency across both files
+
+3. ✅ **ImageTierTester.tsx** (Lines 1781-1830): Fixed error classification
+   - Now checks `postResponse.error.status` directly:
+     - `503` → `BOOT_SYNC_ANOMALY`
+     - `500` → `RUNTIME_ERROR`
+     - `404` → `DEPLOYMENT_ISSUE`
+     - `400/422` → `VALIDATION_ERROR`
+     - Only `Failed to fetch` or `NetworkError` → `BROWSER_NOISE`
+   - Shows status code in details: `${errorMessage} (HTTP ${status})`
+   - Real errors now properly visible in test results
+
+**Files Modified:**
+- `supabase/functions/_shared/CharacterConsistencyService.js` (Lines 1576-1582)
+- `supabase/functions/_shared/CharacterConsistencyService.ts` (Lines 1292-1298)
+- `src/components/ImageTierTester.tsx` (Lines 1781-1830)
+- `docs/MASTER_ERRORS_TO_FIX.md` (This entry)
+
+**Expected Outcomes:**
+- ✅ `runware-template-ab` no longer crashes with stack overflow
+- ✅ Character detection works correctly across all tiers
+- ✅ Test Connectivity shows accurate error categories
+- ✅ Real 500 errors visible as "RUNTIME_ERROR" not "BROWSER_NOISE"
+- ✅ Status codes displayed in test details for debugging
+
+**Prevention Measures:**
+1. **No Method Overloading**: JavaScript doesn't support it—use different method names
+2. **Type-Based Classification**: Always check error.status before falling back to string matching
+3. **SDK Behavior**: `supabase.functions.invoke()` has different error structure than raw `fetch()`
+4. **Test Accuracy**: Classification logic should reflect production error types
+
+**Business Impact:**
+- **Service Stability**: Eliminated edge function crashes that blocked image generation
+- **Developer Experience**: Test results now accurately show root causes (500 vs browser CORS)
+- **Debugging Speed**: Status codes in test details reduce troubleshooting time
+- **System Reliability**: Character consistency service now stable across all story types
+
+[↑ Back to Top](#master-error-tracking-document) | [📋 TOC](#table-of-contents)
+
+---
+
 **CURRENT STATUS:** ✅ **PRODUCTION READY - ALL CRITICAL ISSUES RESOLVED**
 **DEPLOYMENT STATUS:** ✅ **CLEARED FOR PRODUCTION**  
 **VENDOR SYSTEM:** ✅ **NUCLEAR INDEPENDENCE ACHIEVED - 7-TIER IMAGE, 4-TIER STORY**  
-**DEPLOYMENT VERSION:** `2025-10-03T02:00:00Z` (Boot hardening + Option A static import + Test connectivity fixes)  
+**DEPLOYMENT VERSION:** `2025-10-03T03:00:00Z` (Character recursion fix + Test classification accuracy)  
 **NEXT REVIEW DATE:** October 10, 2025
 
 ---
 
-**Version:** 4.5 | **Last Updated:** 2025-10-03T02:00:00Z  
-**Major Achievement:** Bulletproof receptionist pattern + test connectivity accuracy + Complete vendor fallback architecture  
+**Version:** 4.6 | **Last Updated:** 2025-10-03T03:00:00Z  
+**Major Achievement:** Character service recursion eliminated + Test accuracy restored + Complete vendor fallback architecture
 **Success Rates:** Image 95%+, Story 99.8%, System 99.9% uptime
 **Status:** PRODUCTION READY with complete multi-tier cascade and zero critical errors
 **Architecture:** 7-tier image generation, 4-tier story generation, comprehensive vendor fallback

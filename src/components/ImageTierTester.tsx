@@ -1779,33 +1779,57 @@ export const ImageTierTester = () => {
             let status = 200;
             
             if (postResponse.error) {
-              const errorMsg = postResponse.error.message || '';
-              if (errorMsg.includes('503') || errorMsg.includes('Service Unavailable')) {
+              const errorMessage = postResponse.error.message || String(postResponse.error);
+              const errorStatus = postResponse.error.status;
+              
+              // Classify by actual HTTP status code first (ERROR-069 fix)
+              if (errorStatus === 503) {
                 category = 'BOOT_SYNC_ANOMALY';
                 status = 503;
-              } else if (errorMsg.includes('500') || errorMsg.includes('Internal')) {
+              } else if (errorStatus === 500) {
                 category = 'RUNTIME_ERROR';
                 status = 500;
-              } else if (errorMsg.includes('404') || errorMsg.includes('not found')) {
+              } else if (errorStatus === 404) {
                 category = 'DEPLOYMENT_ISSUE';
                 status = 404;
-              } else {
-                // If GET succeeded but POST failed with generic error, it's likely browser noise
-                const isLikelyBrowserNoise = tests.GET.success;
-                category = isLikelyBrowserNoise ? 'BROWSER_NOISE' : 'NETWORK_ISSUE';
+              } else if (errorStatus === 400 || errorStatus === 422) {
+                category = 'VALIDATION_ERROR';
+                status = errorStatus;
+              } else if (errorMessage.includes('Failed to fetch') || errorMessage.includes('NetworkError')) {
+                // Only real fetch failures are browser noise
+                category = 'BROWSER_NOISE';
                 status = 0;
+              } else {
+                // Unknown error - classify as network issue
+                category = 'NETWORK_ISSUE';
+                status = errorStatus || 0;
               }
+              
+              tests.POST = {
+                success: false,
+                status,
+                statusText: errorMessage,
+                category,
+                details: `${errorMessage}${status ? ` (HTTP ${status})` : ''}`
+              };
             } else if (postResponse.data?.success === false) {
               category = 'RUNTIME_ERROR';
               status = 500;
+              tests.POST = {
+                success: false,
+                status,
+                statusText: 'Function returned success=false',
+                category
+              };
+            } else {
+              // Success case
+              tests.POST = {
+                success: true,
+                status,
+                statusText: 'OK',
+                category
+              };
             }
-            
-            tests.POST = {
-              success: !postResponse.error && postResponse.data?.success !== false,
-              status,
-              statusText: postResponse.error ? 'Error' : 'OK',
-              category
-            };
           } catch (postError: any) {
             // If GET succeeded but POST returns status 0, it's likely browser noise
             const isLikelyBrowserNoise = tests.GET.success && postError.message?.includes('Failed to fetch');
