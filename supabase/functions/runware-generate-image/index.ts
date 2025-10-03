@@ -440,6 +440,35 @@ async function processInlinedTier1(
     throw new Error("CHARACTERSERVICE_UNAVAILABLE_TRY_DIRECT_MODE");
   }
 
+  // Get cumulative character appearance from story (CCS CORE METHOD)
+  let characterAppearance = "";
+  try {
+    characterAppearance = await characterConsistencyService.getCharacterAppearanceFromStory(sessionId, characterName) || "";
+    console.log(`🔍 [${requestId}] [TIER_1] getCharacterAppearanceFromStory: SUCCESS`, {
+      sessionId,
+      pageNumber: payload.pageNumber,
+      result: characterAppearance.substring(0, 100),
+    });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(`❌ [${requestId}] [TIER_1] getCharacterAppearanceFromStory: FAILED`, { sessionId, error: errorMessage });
+    // Graceful fallback - empty string
+  }
+
+  // Get never-ending story setting (CCS CORE METHOD)
+  let neverEndingSetting = "";
+  try {
+    neverEndingSetting = await characterConsistencyService.getSessionSetting(sessionId, "never_ending_story") || "";
+    console.log(`🔍 [${requestId}] [TIER_1] getSessionSetting: SUCCESS`, {
+      sessionId,
+      neverEndingSetting,
+    });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(`❌ [${requestId}] [TIER_1] getSessionSetting: FAILED`, { sessionId, error: errorMessage });
+    // Graceful fallback - empty string
+  }
+
   // Get cultural enhancements using the service
   let culturalBundle: any;
   try {

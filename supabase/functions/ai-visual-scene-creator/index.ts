@@ -558,6 +558,66 @@ serve(async (req) => {
     const secondaryCharacters = payload.secondaryCharacters || [];
 
     console.log(`✅ [${requestId}] Payload validated - Direct Mode: ${directMode}`);
+
+    // ============= TIER 2 CCS STANDARDIZATION: ADD MISSING CORE METHODS =============
+    let enhancedCharacterSeed = null;
+    let detectedAllCharacters = null;
+    let neverEndingSetting = "";
+    
+    try {
+      const { characterConsistencyService } = await import('../_shared/CharacterConsistencyService.js');
+      
+      // Get enhanced character seed with graceful fallback (CCS CORE METHOD)
+      const characterName = userInfo?.name || userInfo?.userName || 'child';
+      const avatarIdentity = {
+        name: characterName,
+        type: userInfo?.avatar?.type || 'child',
+        skinTone: userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium'
+      };
+      
+      try {
+        enhancedCharacterSeed = await characterConsistencyService.getEnhancedCharacterSeed(
+          sessionId,
+          avatarIdentity,
+          content,
+          'continuing'
+        );
+        console.log(`🔍 [${requestId}] [TIER_2] getEnhancedCharacterSeed: SUCCESS`);
+      } catch (enhancedError) {
+        console.warn(`⚠️ [${requestId}] [TIER_2] getEnhancedCharacterSeed: FAILED, using basic fallback`);
+        try {
+          enhancedCharacterSeed = await characterConsistencyService.getBasicCharacterSeed(avatarIdentity, sessionId);
+          console.log(`🔍 [${requestId}] [TIER_2] getBasicCharacterSeed: SUCCESS (fallback)`);
+        } catch (basicError) {
+          console.warn(`⚠️ [${requestId}] [TIER_2] getBasicCharacterSeed: FAILED (graceful)`, basicError.message);
+        }
+      }
+
+      // Detect all characters (CCS CORE METHOD)
+      try {
+        detectedAllCharacters = await characterConsistencyService.detectAllCharacters(content, {
+          sessionId,
+          pageNumber,
+          userInfo
+        });
+        console.log(`🔍 [${requestId}] [TIER_2] detectAllCharacters: SUCCESS`, {
+          secondaryCount: detectedAllCharacters?.secondaryCharacters?.length || 0
+        });
+      } catch (detectError) {
+        console.warn(`⚠️ [${requestId}] [TIER_2] detectAllCharacters: FAILED (graceful)`, detectError.message);
+      }
+
+      // Get never-ending story setting (CCS CORE METHOD)
+      try {
+        neverEndingSetting = await characterConsistencyService.getSessionSetting(sessionId, "never_ending_story") || "";
+        console.log(`🔍 [${requestId}] [TIER_2] getSessionSetting: SUCCESS`, { neverEndingSetting });
+      } catch (settingError) {
+        console.warn(`⚠️ [${requestId}] [TIER_2] getSessionSetting: FAILED (graceful)`, settingError.message);
+      }
+    } catch (ccsImportError) {
+      console.warn(`⚠️ [${requestId}] [TIER_2] CCS Import FAILED (graceful) - all 3 methods unavailable:`, ccsImportError.message);
+    }
+    // ============= END TIER 2 CCS STANDARDIZATION =============
     
     // ============= IDEMPOTENCY: Coalesce duplicate requests =============
     // Lazy load IdempotencyMemory to prevent boot failures

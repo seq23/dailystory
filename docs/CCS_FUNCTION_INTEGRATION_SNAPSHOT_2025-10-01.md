@@ -238,33 +238,60 @@ const serviceColoredObjects = await characterConsistencyService.getColoredObject
 
 ## INTEGRATION PATTERN COMPARISON
 
+**Updated 2025-10-03**: Standardized to use 7 CORE methods across all tiers + tier-specific methods
+
 | Edge Function | Tier | Pattern | CCS Methods | Escalates on Failure? |
 |--------------|------|---------|-------------|----------------------|
-| `runware-generate-image` | 1 | Fail-Fast | 7 | ✅ YES (via `getEnhancedCharacterSeed()`) |
-| `runware-template-ab` | 2.5 | Graceful Fallback | 8 | ❌ NO (catches errors, uses `getBasicCharacterSeed()`) |
-| `ai-visual-scene-creator` | 2 | Always Graceful | 5 | ❌ NO (all methods are graceful) |
+| `runware-generate-image` | 1 | Fail-Fast | 10 (7 core + 3 tier-specific) | ✅ YES (via `getEnhancedCharacterSeed()`) |
+| `runware-template-ab` | 2.5 | Graceful Fallback | 10 (7 core + 3 tier-specific) | ❌ NO (catches errors, uses `getBasicCharacterSeed()`) |
+| `ai-visual-scene-creator` | 2 | Always Graceful | 9 (7 core + 2 tier-specific) | ❌ NO (all methods are graceful) |
+
+**CORE METHODS (7)**: All tiers use these
+1. `getEnhancedCharacterSeed()` (with fallback for Tier 2/2.5)
+2. `getCulturalEnhancements()`
+3. `analyzeVisualDetails()`
+4. `getColoredObjects()`
+5. `detectAllCharacters()`
+6. `getCharacterAppearanceFromStory()`
+7. `getSessionSetting()` ✨ **PROMOTED TO CORE (2025-10-03)**
+
+**TIER-SPECIFIC METHODS (4)**:
+- `getStructuredAvatarData()` - Tier 1, 2.5A only
+- `getSecondaryCharacterSeed()` - Tier 1 only
+- `getSecondaryCharactersForSession()` - Tier 2, 2.5 only
+- `getBasicCharacterSeed()` - Tier 2, 2.5+ fallback only
 
 ---
 
 ## CCS METHOD USAGE FREQUENCY
 
+**Updated 2025-10-03**: Reflects standardization to 7 CORE methods + tier-specific methods
+
 | Method | runware-generate-image | runware-template-ab | ai-visual-scene-creator | Total Calls |
 |--------|----------------------|-------------------|----------------------|------------|
-| `getColoredObjects()` | 1 | 2 | 1 | **4** |
-| `getCulturalEnhancements()` | 1 | 2 | 1 | **4** |
+| `getColoredObjects()` | 1 | 1 | 1 | **3** |
+| `getCulturalEnhancements()` | 1 | 1 | 1 | **3** |
 | `analyzeVisualDetails()` | 1 | 1 | 1 | **3** |
-| `getEnhancedCharacterSeed()` | 1 | 1 | 0 | **2** |
-| `detectAllCharacters()` | 1 | 1 | 0 | **2** |
-| `getCharacterAppearanceFromStory()` | 0 | 1 | 1 | **2** |
+| `getEnhancedCharacterSeed()` | 1 | 1 | 1 | **3** ⬆️ |
+| `detectAllCharacters()` | 1 | 1 | 1 | **3** ⬆️ |
+| `getCharacterAppearanceFromStory()` | 1 | 1 | 1 | **3** ⬆️ |
+| `getSessionSetting()` | 1 | 1 | 1 | **3** ✨ **NEW** |
 | `getSecondaryCharacterSeed()` | 1 (loop) | 0 | 0 | **1+** |
-| `getSecondaryCharactersForSession()` | 0 | 0 | 1 | **1** |
-| `getStructuredAvatarData()` | 1 | 0 | 0 | **1** |
-| `getBasicCharacterSeed()` | 0 | 1 (fallback) | 0 | **1** |
+| `getSecondaryCharactersForSession()` | 1 | 1 | 1 | **3** ⬆️ |
+| `getStructuredAvatarData()` | 1 | 1 | 0 | **2** ⬆️ |
+| `getBasicCharacterSeed()` | 0 | 1 (fallback) | 1 (fallback) | **2** ⬆️ |
 
-**Most Called Methods**:
-1. `getColoredObjects()` - 4 calls
-2. `getCulturalEnhancements()` - 4 calls
-3. `analyzeVisualDetails()` - 3 calls
+**Most Called Methods** (All CORE methods now used equally):
+1. All CORE methods - 3 calls each (complete standardization)
+2. `getSecondaryCharactersForSession()` - 3 calls (tier-specific)
+
+**Key Changes**:
+- ⬆️ `getEnhancedCharacterSeed()`: 2 → 3 (added to Tier 2)
+- ⬆️ `detectAllCharacters()`: 2 → 3 (added to Tier 2)
+- ⬆️ `getCharacterAppearanceFromStory()`: 2 → 3 (added to Tier 1)
+- ✨ `getSessionSetting()`: 0 → 3 (promoted to CORE, added to all tiers)
+- ⬆️ `getStructuredAvatarData()`: 1 → 2 (added to Tier 2.5A)
+- ⬆️ `getSecondaryCharactersForSession()`: 1 → 3 (added to Tier 1 and 2.5A)
 
 ---
 

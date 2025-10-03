@@ -1,14 +1,17 @@
 # AI Visual Scene Creator - CCS Integration Documentation
 
 **Date**: October 3, 2025  
-**Status**: ✅ PRODUCTION READY  
-**Function**: `supabase/functions/ai-visual-scene-creator/index.ts`
+**Status**: ✅ PRODUCTION READY - Standardized CCS Integration  
+**Function**: `supabase/functions/ai-visual-scene-creator/index.ts`  
+**CCS Methods**: 9 (7 CORE + 2 tier-specific) ⬆️ **Updated 2025-10-03**
 
 ---
 
 ## 🎯 Executive Summary
 
-The `ai-visual-scene-creator` function implements a **production-ready 3-tier CCS fallback architecture** that gracefully handles CharacterConsistencyService (CCS) unavailability without requiring tier escalation. This document explains why this function doesn't need escalation logic and how its robust fallback system maintains service continuity.
+The `ai-visual-scene-creator` function implements a **production-ready 3-tier CCS fallback architecture** with **standardized CCS method usage**. As of 2025-10-03, this function now uses **9 CCS methods** (previously 5), including all 7 CORE methods required for consistent character generation across tiers.
+
+**Key Update**: Added `getEnhancedCharacterSeed()`, `detectAllCharacters()`, and `getSessionSetting()` to align with CCS standardization (see `docs/CCS_FIXES_2025-10-03.md`).
 
 ---
 
@@ -163,21 +166,85 @@ The orchestrator makes escalation decisions based on the **quality of the scene 
 
 ---
 
-## 🧪 Secondary Character Handling
+## 🧪 CCS Method Usage (Updated 2025-10-03)
 
-### Implementation (Lines 106-126 in index.ts)
+### All CCS Methods Used by Tier 2 (9 methods)
 
+#### 3.1 `getSecondaryCharactersForSession()` - Line 227
 ```typescript
-// Try to get cached secondary characters
+cachedSecondaryCharacters = await characterConsistencyService.getSecondaryCharactersForSession(sessionId);
+```
+- **Purpose**: Retrieve all tracked secondary characters
+- **Failure Behavior**: **GRACEFUL** - Returns empty array
+- **Integration**: Critical for secondary character rendering
+
+#### 3.2 `analyzeVisualDetails()` - Line 465
+```typescript
+await characterConsistencyService.analyzeVisualDetails(sessionId, enhancedStory, pageNumber || 1, characterName);
+```
+- **Purpose**: Analyze AI-enhanced story text
+- **Failure Behavior**: **GRACEFUL** - Silent failure
+- **Integration**: Updates manifest with AI-enhanced details
+
+#### 3.3 `getCulturalEnhancements()` - Line 494
+```typescript
+culturalBundle = await characterConsistencyService.getCulturalEnhancements(userInfo, sessionId, characterName);
+```
+- **Purpose**: Get cultural hair/features for AI-enhanced visuals
+- **Failure Behavior**: **GRACEFUL** - Fallback to inlined arrays
+- **Integration**: Essential for diverse character representation
+
+#### 3.4 `getCharacterAppearanceFromStory()` - Line 546
+```typescript
+characterAppearance = await characterConsistencyService.getCharacterAppearanceFromStory(sessionId, characterSeed?.characterName || 'child');
+```
+- **Purpose**: Get cumulative character appearance
+- **Failure Behavior**: **GRACEFUL** - Returns empty string
+
+#### 3.5 `getColoredObjects()` - Line 547
+```typescript
+const serviceColoredObjects = await characterConsistencyService.getColoredObjects(sessionId);
+```
+- **Purpose**: Get environmental objects for AI visual scene
+- **Failure Behavior**: **GRACEFUL** - Returns empty string
+
+#### 3.6 `getEnhancedCharacterSeed()` with Fallback - Line ~566 ✨ **NEW (2025-10-03)**
+```typescript
 try {
-  secondaryCharacters = await CharacterService.getSecondaryCharactersForSession(sessionId);
-} catch (error) {
-  console.warn('[SERVICE_UNAVAILABLE] Failed to retrieve cached secondary characters');
-  secondaryCharacters = { humans: [], pets: [] }; // Safe default
+  enhancedCharacterSeed = await characterConsistencyService.getEnhancedCharacterSeed(
+    sessionId, avatarIdentity, content, 'continuing'
+  );
+} catch (enhancedError) {
+  enhancedCharacterSeed = await characterConsistencyService.getBasicCharacterSeed(avatarIdentity, sessionId);
 }
 ```
+- **Purpose**: Get full character seed with graceful fallback (same pattern as Tier 2.5A)
+- **Failure Behavior**: **HYBRID** - Try fail-fast, fallback to graceful
 
-**Design Decision**: Secondary characters are **optional enhancement data**. The function succeeds even if they're unavailable.
+#### 3.7 `detectAllCharacters()` - Line ~593 ✨ **NEW (2025-10-03)**
+```typescript
+detectedAllCharacters = await characterConsistencyService.detectAllCharacters(content, {
+  sessionId, pageNumber, userInfo
+});
+```
+- **Purpose**: Detect all entity types for scene consistency
+- **Failure Behavior**: **GRACEFUL** - Returns empty arrays
+
+#### 3.8 `getSessionSetting()` - Line ~609 ✨ **NEW (2025-10-03)**
+```typescript
+neverEndingSetting = await characterConsistencyService.getSessionSetting(sessionId, "never_ending_story") || "";
+```
+- **Purpose**: Never-ending story support
+- **Failure Behavior**: **GRACEFUL** - Returns empty string
+
+#### 3.9 `getBasicCharacterSeed()` - Fallback Only ✨ **NEW (2025-10-03)**
+```typescript
+enhancedCharacterSeed = await characterConsistencyService.getBasicCharacterSeed(avatarIdentity, sessionId);
+```
+- **Purpose**: Emergency fallback when `getEnhancedCharacterSeed()` fails
+- **Failure Behavior**: **ALWAYS SUCCEEDS** - Pure computation
+
+---
 
 ---
 

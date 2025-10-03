@@ -1772,6 +1772,43 @@ async function handleRequest(req) {
         
         if (sessionId) {
           try {
+            // Get structured avatar data (CCS CORE METHOD - Tier 2.5A only)
+            let structuredAvatarData = null;
+            try {
+              structuredAvatarData = await characterConsistencyService.getStructuredAvatarData(sessionId, userInfo);
+              console.log(`🔍 [${requestId}] [TIER_2.5A] getStructuredAvatarData: SUCCESS`, {
+                sessionId,
+                skinTone: structuredAvatarData?.skinTone,
+                hairColor: structuredAvatarData?.hairColor
+              });
+            } catch (avatarError) {
+              console.warn(`⚠️ [${requestId}] [TIER_2.5A] getStructuredAvatarData: FAILED (graceful)`, avatarError.message);
+            }
+
+            // Get never-ending story setting (CCS CORE METHOD)
+            let neverEndingSetting = "";
+            try {
+              neverEndingSetting = await characterConsistencyService.getSessionSetting(sessionId, "never_ending_story") || "";
+              console.log(`🔍 [${requestId}] [TIER_2.5A] getSessionSetting: SUCCESS`, {
+                sessionId,
+                neverEndingSetting
+              });
+            } catch (settingError) {
+              console.warn(`⚠️ [${requestId}] [TIER_2.5A] getSessionSetting: FAILED (graceful)`, settingError.message);
+            }
+
+            // Get tracked secondary characters (CCS CORE METHOD - Tier 2.5 only)
+            let trackedSecondaryCharacters = [];
+            try {
+              trackedSecondaryCharacters = await characterConsistencyService.getSecondaryCharactersForSession(sessionId);
+              console.log(`🔍 [${requestId}] [TIER_2.5A] getSecondaryCharactersForSession: SUCCESS`, {
+                sessionId,
+                count: trackedSecondaryCharacters.length
+              });
+            } catch (secondaryError) {
+              console.warn(`⚠️ [${requestId}] [TIER_2.5A] getSecondaryCharactersForSession: FAILED (graceful)`, secondaryError.message);
+            }
+
             // Main character analysis
             await characterConsistencyService.analyzeVisualDetails(sessionId, storyText, pageNumber || 1, characterName);
             characterAppearance = await characterConsistencyService.getCharacterAppearanceFromStory(sessionId, characterName) || '';

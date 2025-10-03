@@ -266,6 +266,29 @@ The original `getCharacterSeed()` method was **doing too much with too many fail
 
 ---
 
+## CCS INTEGRATION STANDARDS (Updated 2025-10-03)
+
+### Standardized Method Usage Across All Tiers
+
+**CORE METHODS (7)** - Required for all tiers using CCS:
+1. `getEnhancedCharacterSeed()` - Master orchestrator (with fallback for Tier 2/2.5)
+2. `getCulturalEnhancements()` - Cultural hair/features
+3. `analyzeVisualDetails()` - Update session manifest
+4. `getColoredObjects()` - Environmental consistency
+5. `detectAllCharacters()` - Detect all entity types
+6. `getCharacterAppearanceFromStory()` - Cumulative appearance
+7. `getSessionSetting()` - Never-ending story support ✨ **PROMOTED TO CORE**
+
+**TIER-SPECIFIC METHODS (4)** - Architecture-dependent:
+8. `getStructuredAvatarData()` - Tier 1, 2.5A only (avatar extraction)
+9. `getSecondaryCharacterSeed()` - Tier 1 only (loop-based secondary rendering)
+10. `getSecondaryCharactersForSession()` - Tier 2, 2.5 only (batch secondary retrieval)
+11. `getBasicCharacterSeed()` - Tier 2, 2.5+ only (emergency fallback)
+
+**See**: `docs/CCS_FIXES_2025-10-03.md` for complete implementation details
+
+---
+
 ## FAILURE CLASSIFICATION SUMMARY
 
 ### GRACEFUL FALLBACK METHODS (20 Functions)
@@ -293,19 +316,22 @@ The original `getCharacterSeed()` method was **doing too much with too many fail
 15. `getCulturalEnhancements()` ✅ - **CORRECTED** Uses `getBasicCharacterSeed()` + inlined arrays
 16. `getCharacterAppearanceFromStory()` - Empty string
 
-**Session & Data (4)**:
+**Session & Data (5)**:
 17. `getColoredObjects()` - Empty string
 18. `getSecondaryCharactersForSession()` - Empty array
-19. `clearSession()` - Silent failure
-20. `clearServerState()` - Silent failure
+19. `getSessionSetting()` ✨ - Empty string **PROMOTED TO CORE (2025-10-03)**
+20. `clearSession()` - Silent failure
+21. `clearServerState()` - Silent failure
 
 ### FAIL-FAST METHODS (1 Function)
 **Behavior**: Throws error to trigger tier escalation
 
 **Character Generation (1)**:
-21. `getEnhancedCharacterSeed()` ⚠️ - **THROWS ERROR** for tier escalation
+22. `getEnhancedCharacterSeed()` ⚠️ - **THROWS ERROR** for tier escalation (Tier 1 only)
 
 *Note: `getCharacterSeed()` is deprecated wrapper that inherits fail-fast behavior*
+
+**Important**: `getEnhancedCharacterSeed()` only throws in Tier 1. In Tier 2 and 2.5, it's wrapped in try-catch with `getBasicCharacterSeed()` fallback.
 
 ---
 
