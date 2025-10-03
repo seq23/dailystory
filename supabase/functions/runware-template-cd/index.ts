@@ -1,6 +1,5 @@
-// DEPLOY_MARKER: 2025-09-27T15:30:00Z - Bundle-first dynamic import strategy
+// DEPLOY_MARKER: 2025-10-03T21:00:00Z - Zero static imports + LKG serve-stale pattern
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import "./index.js"; // Bundling sentinel - ensures index.js is always in deployment bundle
 const SERVICE_NAME = "runware-template-cd";
 
 // ========== INLINED: ProviderGate (Concurrency + Circuit Breaker) ==========
@@ -208,9 +207,9 @@ const FAST_BOOT_SYNC = {
   maxTotalTime: 6000
 };
 
-// Dynamic handler loader (cached + fast retry)
+// Dynamic handler loader with LKG (Last Known Good) serve-stale pattern
 type HandlerFn = (req: Request) => Promise<Response> | Response;
-let cachedHandler: HandlerFn | null = null;
+let cachedHandler: HandlerFn | null = null; // LKG: Cached successfully loaded handler
 let lastLoadError: { at: number; message: string; attempt: number } | null = null;
 let isLoading = false;
 const MAX_RETRIES = 3;
@@ -349,6 +348,17 @@ serve(async (req) => {
           if (!handler) handler = await loadHandler(true);
           if (handler) {
             const out = await handler(req);
+            if (gatingEnabled && gateAcquired) {
+              const handlerSuccess = out instanceof Response && out.status < 500;
+              release('DM:runware-template-cd', handlerSuccess);
+            }
+            return withCors(asResponse(out));
+          }
+          
+          // LKG serve-stale: If cachedHandler exists but loadHandler returned null, serve stale
+          if (cachedHandler && !handler) {
+            console.warn(`⚠️ [LKG_SERVE_STALE] Handler load failed but cached handler available - serving stale`);
+            const out = await cachedHandler(req);
             if (gatingEnabled && gateAcquired) {
               const handlerSuccess = out instanceof Response && out.status < 500;
               release('DM:runware-template-cd', handlerSuccess);

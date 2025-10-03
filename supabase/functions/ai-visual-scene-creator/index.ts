@@ -1,9 +1,6 @@
-// DEPLOY_MARKER: 2025-10-03T18:50:00Z - CCS vendor fallback with explicit logging
+// DEPLOY_MARKER: 2025-10-03T21:00:00Z - Zero top-level imports, non-blocking gate, full lazy-loading
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-// TypeScript type imports
-import type { UserInfo } from "../_shared/types/index.ts";
 
 // ========== INLINED: ProviderGate (Concurrency + Circuit Breaker) ==========
 // Inlined to avoid bundling failures with _shared/ dynamic imports
@@ -207,10 +204,21 @@ function emergencyHairFallback(skinTone: string): string {
 
 // Character consistency service - Loaded conditionally for Direct Mode only
 
+// Local inline type for user info (replaces removed top-level import)
+interface UserInfoLocal {
+  name?: string;
+  userName?: string;
+  skinTone?: string;
+  avatar?: { skinTone?: string };
+  structuredAvatarData?: any;
+  native_language?: string;
+  nativeLanguage?: string;
+}
+
 // Generate complete visual schema using OpenAI with word-for-word prompts
 async function generateCompleteVisualSchema(
   storyText: string, 
-  userInfo: any, 
+  userInfo: UserInfoLocal, 
   sessionId: string, 
   pageNumber: number = 1,
   inputStructuredAvatarData: any = null,
