@@ -42,7 +42,17 @@ const LEAN_AFRICAN_AMERICAN_HAIR = {
   ]
 };
 
-const LEAN_AFRICAN_AMERICAN_FEATURES = [
+// TIER 3 EMERGENCY FALLBACK: Lean skin tone descriptions (ONE per tone - NO cultural assumptions)
+const LEAN_SKIN_TONES = {
+  'pale': 'fair porcelain skin with rosy cheeks and bright eyes',
+  'light': 'light peachy skin tone with a warm glow and friendly expression',
+  'medium': 'medium beige skin tone with warm undertones and expressive features',
+  'olive': 'olive-toned skin with golden undertones and bright features',
+  'dark': 'rich brown skin tone with warm undertones and radiant smile'
+};
+
+// AFRICAN AMERICAN CULTURAL FEATURES - ONLY for dark skin + african-american cultural context
+const AFRICAN_AMERICAN_CULTURAL_FEATURES = [
   'light brown skin tone with warm brown eyes and a bright infectious smile',
   'caramel skin tone with deep chocolate eyes and a confident cheerful expression', 
   'medium brown skin tone with warm brown eyes and a bright infectious smile'
@@ -55,15 +65,17 @@ function getHairBySkintone(skinTone, sessionId) {
   return options[seed];
 }
 
-function getSkinBySkintone(skinTone) {
+function getSkinBySkintone(skinTone, culturalContext = null) {
   const normalized = (skinTone || 'medium').toLowerCase();
-  const mapping = {
-    'pale': LEAN_AFRICAN_AMERICAN_FEATURES[0],
-    'light': LEAN_AFRICAN_AMERICAN_FEATURES[1],
-    'medium': LEAN_AFRICAN_AMERICAN_FEATURES[2],
-    'dark': LEAN_AFRICAN_AMERICAN_FEATURES[2]
-  };
-  return mapping[normalized] || LEAN_AFRICAN_AMERICAN_FEATURES[0];
+  
+  // Only use cultural features for dark skin with african-american context
+  if (normalized === 'dark' && culturalContext === 'african-american') {
+    const seed = Math.floor(Math.random() * AFRICAN_AMERICAN_CULTURAL_FEATURES.length);
+    return AFRICAN_AMERICAN_CULTURAL_FEATURES[seed];
+  }
+  
+  // Use generic skin tone descriptions for all other cases
+  return LEAN_SKIN_TONES[normalized] || LEAN_SKIN_TONES['medium'];
 }
 
 function getAfricanAmericanHair(gender, sessionId) {
@@ -74,8 +86,8 @@ function getAfricanAmericanHair(gender, sessionId) {
 }
 
 function getAfricanAmericanFeatures(sessionId) {
-  const seed = sessionId ? sessionId.charCodeAt(0) % LEAN_AFRICAN_AMERICAN_FEATURES.length : 0;
-  return LEAN_AFRICAN_AMERICAN_FEATURES[seed];
+  const seed = sessionId ? sessionId.charCodeAt(0) % AFRICAN_AMERICAN_CULTURAL_FEATURES.length : 0;
+  return AFRICAN_AMERICAN_CULTURAL_FEATURES[seed];
 }
 
 function shouldApplyCulturalEnhancements(userInfo) {
@@ -2069,33 +2081,46 @@ async function handleRequest(req) {
               throw new Error('TIER_25A_CPU_BUDGET_EXCEEDED');
             }
           } catch (characterError) {
-            console.error(`🚨 [${requestId}] Tier 2.5A: CharacterConsistencyService FAILED - Escalating to Tier 2.5B`, characterError.message);
-            console.log(`⚡ [${requestId}] Tier 2.5A→2.5B Escalation Reason: Character consistency unavailable`);
+            console.error(`🚨 [${requestId}] Tier 2.5A CCS FAILED - Attempting Tier 2 StaticDataCache fallback`, characterError.message);
             
-            // ESCALATE TO TIER 2.5B: Switch complexity from 'A' to 'B' and re-process
-            const escalatedPayload = {
-              ...payload,
-              templateComplexity: 'B'
-            };
-            
-            console.log(`🔄 [${requestId}] Re-processing with Tier 2.5B (nuclear independent)...`);
-            
-            // Re-select template with complexity 'B'
-            const escalatedTemplate = selectTemplate('B');
-            console.log(`✅ [${requestId}] Escalated to: ${escalatedTemplate.name}`);
-            
-            // Jump to Tier 2.5B processing (skip to line 1783 logic)
-            const extractedScene = extractSimpleScene(storyText);
-            console.log(`🎯 [${requestId}] Tier 2.5B Escalation Scene: "${extractedScene}"`);
-            
-    const styleFramework = getStyleFramework(userInfo?.difficulty || 'medium');
-            const culturalProfile = inlineDetectCultural(userInfo, avatarIdentity);
-            const characterName = userInfo?.name || userInfo?.childName || 'child';
-            const age = userInfo?.age || 'young child';
-            const ethnicity = deriveRegionalEthnicity(userInfo, avatarIdentity);
-            const skinTone = userInfo?.avatar?.skinTone || 'medium';
-            const hairDescription = getHairBySkintone(skinTone) || 'brown hair';
-            const facialFeatures = getSkinBySkintone(skinTone, sessionId) || 'friendly expression';
+            // COMPLEXITY A: 3-TIER FALLBACK
+            // Tier 1: CCS (failed, we're here)
+            // Tier 2: StaticDataCache (session-seeded)
+            // Tier 3: Inline lean arrays (LEAN_SKIN_TONES, LEAN_HAIR_BY_SKIN)
+            try {
+              console.log(`🔍 [TIER_2.5A] Tier 2: Attempting StaticDataCache...`);
+              const { StaticDataCache } = await import("../_shared/StaticDataCache.js");
+              const skinTone = userInfo?.avatar?.skinTone || 'medium';
+              const culturalData = StaticDataCache.getCulturalBundle(skinTone, sessionId);
+              characterAppearance = `${culturalData?.hair || getHairBySkintone(skinTone, sessionId)}, ${culturalData?.features || getSkinBySkintone(skinTone, inlineDetectCultural(userInfo, avatarIdentity))}`;
+              console.log(`✅ [TIER_2.5A] Tier 2 StaticDataCache SUCCESS: ${characterAppearance}`);
+            } catch (staticError) {
+              console.warn(`⚠️ [TIER_2.5A] Tier 2 failed, using Tier 3 inline arrays - Escalating to Tier 2.5B`, staticError.message);
+              
+              // ESCALATE TO TIER 2.5B: Switch complexity from 'A' to 'B' and re-process
+              const escalatedPayload = {
+                ...payload,
+                templateComplexity: 'B'
+              };
+              
+              console.log(`🔄 [${requestId}] Re-processing with Tier 2.5B (nuclear independent)...`);
+              
+              // Re-select template with complexity 'B'
+              const escalatedTemplate = selectTemplate('B');
+              console.log(`✅ [${requestId}] Escalated to: ${escalatedTemplate.name}`);
+              
+              // Jump to Tier 2.5B processing (skip to line 1783 logic)
+              const extractedScene = extractSimpleScene(storyText);
+              console.log(`🎯 [${requestId}] Tier 2.5B Escalation Scene: "${extractedScene}"`);
+              
+      const styleFramework = getStyleFramework(userInfo?.difficulty || 'medium');
+              const culturalProfile = inlineDetectCultural(userInfo, avatarIdentity);
+              const characterName = userInfo?.name || userInfo?.childName || 'child';
+              const age = userInfo?.age || 'young child';
+              const ethnicity = deriveRegionalEthnicity(userInfo, avatarIdentity);
+              const skinTone = userInfo?.avatar?.skinTone || 'medium';
+              const hairDescription = getHairBySkintone(skinTone, sessionId) || 'brown hair';
+              const facialFeatures = getSkinBySkintone(skinTone, culturalProfile) || 'friendly expression';
             const cultural_context = getCulturalContext(userInfo?.preferredLanguage || 'en');
             
             const leftoverDataTier2B = [
@@ -2296,20 +2321,27 @@ async function handleRequest(req) {
       const skinTone = (userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium').toLowerCase();
       const language = userInfo?.nativeLanguage || 'en';
       
-      // Get cultural bundle with character consistency
+      // COMPLEXITY B: 2-TIER FALLBACK (NO CCS)
+      // Tier 1: StaticDataCache (session-seeded)
+      // Tier 2: Inline lean arrays (LEAN_SKIN_TONES, LEAN_HAIR_BY_SKIN)
       let culturalBundle;
       try {
-        const { characterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
-        culturalBundle = await characterConsistencyService.getCulturalEnhancements(userInfo, sessionId, characterName);
-        console.log(`🔍 [TIER_2.5B] CCS cultural bundle loaded: hair=${culturalBundle?.hair}, features=${culturalBundle?.features}`);
-      } catch (error) {
-        console.error('❌ Failed to get cultural bundle with consistency:', error);
-        // Skin-tone-aware emergency fallback (NO "diverse" for light skin)
-        culturalBundle = { 
-          hair: emergencyHairFallback(skinTone),
-          features: getSkinBySkintone(skinTone)
+        console.log(`🔍 [TIER_2.5B] Tier 1: Attempting StaticDataCache...`);
+        const { StaticDataCache } = await import("../_shared/StaticDataCache.js");
+        const culturalData = StaticDataCache.getCulturalBundle(skinTone, sessionId);
+        culturalBundle = {
+          hair: culturalData?.hair || getHairBySkintone(skinTone, sessionId),
+          features: culturalData?.features || getSkinBySkintone(skinTone, culturalProfile)
         };
-        console.log(`🔍 [TIER_2.5B] Emergency fallback applied: skinTone=${skinTone}, hair=${culturalBundle.hair}`);
+        console.log(`✅ [TIER_2.5B] Tier 1 StaticDataCache SUCCESS: hair=${culturalBundle.hair}`);
+      } catch (staticError) {
+        console.warn(`⚠️ [TIER_2.5B] Tier 1 failed, using Tier 2 inline arrays:`, staticError.message);
+        // Tier 2: Inline lean arrays
+        culturalBundle = { 
+          hair: getHairBySkintone(skinTone, sessionId),
+          features: getSkinBySkintone(skinTone, culturalProfile)
+        };
+        console.log(`✅ [TIER_2.5B] Tier 2 inline fallback: skinTone=${skinTone}, hair=${culturalBundle.hair}`);
       }
       const hairColor = culturalBundle?.hair || getHairBySkintone(skinTone, sessionId) || emergencyHairFallback(skinTone);
       
