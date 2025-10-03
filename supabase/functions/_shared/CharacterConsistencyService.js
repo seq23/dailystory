@@ -1216,6 +1216,22 @@ export class CharacterConsistencyService {
   async getSupabaseClient() {
     if (!this.supabase) {
       try {
+        // TIER 1: Try vendor bundle FIRST (static import, no network dependency, no resilientLoader needed)
+        try {
+          const { createClient } = await import('../_vendor/supabase-js@2.57.4.mjs');
+          const supabaseUrl = Deno.env.get('SUPABASE_URL');
+          const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+          
+          if (supabaseUrl && supabaseKey) {
+            this.supabase = createClient(supabaseUrl, supabaseKey);
+            console.log('✅ [VENDOR_DIRECT] CCS using vendor bundle (skipped resilientLoader)');
+            return this.supabase;
+          }
+        } catch (vendorError) {
+          console.warn('⚠️ [VENDOR_DIRECT] Vendor bundle failed, trying resilientLoader:', vendorError);
+        }
+        
+        // TIER 2: Fallback to resilientLoader (original logic)
         // CRITICAL: Use createVendorFirstSupabaseClient() for instant availability
         // Skips 4 CDN cascade attempts (28 seconds timeout) - goes straight to vendor
         // CCS needs .upsert()/.single() methods from vendor bundle for database ops

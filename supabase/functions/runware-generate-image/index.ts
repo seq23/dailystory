@@ -921,13 +921,16 @@ Deno.serve(async (req) => {
   }
 
   // Fast retry wrapper for boot sync issues
+  let cachedPayload: any | null = null;
+  const requestId = `mg1${Math.random().toString(36).substring(2)}`;
+  
   for (let attempt = 0; attempt <= FAST_BOOT_SYNC.maxRetries; attempt++) {
     try {
-      let payload: any;
-      const requestId = `mg1${Math.random().toString(36).substring(2)}`;
-
-      // PHASE 3: JSON parsing only after method validation
-      payload = await req.json();
+      // PHASE 3: JSON parsing only once (cached for retries to prevent "Body already consumed" error)
+      if (!cachedPayload && attempt === 0) {
+        cachedPayload = await req.json();
+      }
+      const payload = cachedPayload;
       console.log(`🚀 [${requestId}] runware-generate-image ready`);
 
       // PHASE 4: Fast validation

@@ -121,11 +121,12 @@ All 4 image generation functions use "Option A":
 5. **Error Boundaries**: Graceful degradation on import failures
 
 ### **Functions Using Pattern**
-- ✅ `runware-generate-image` (Orchestrator)
 - ✅ `runware-template-ab` (Tier 2.5A/B)
 - ✅ `runware-template-cd` (Tier 2.5C/D)
 
-**Note**: `ai-visual-scene-creator` is a Pure TypeScript Orchestrator (NOT Option A) - uses complete lazy loading pattern instead.
+**Note**: 
+- `runware-generate-image` is a Pure TypeScript Orchestrator (NOT Option A) - uses complete lazy loading pattern
+- `ai-visual-scene-creator` is also a Pure TypeScript Orchestrator (NOT Option A) - uses complete lazy loading pattern
 
 ## **Boot Process Flow**
 
