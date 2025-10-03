@@ -1760,7 +1760,10 @@ export const ImageTierTester = () => {
             }
           }
           
-          // POST Test (Use supabase.functions.invoke to match production)
+          // POST Test (Use supabase.functions.invoke to match production with timeout)
+          const postAbortController = new AbortController();
+          const postTimeoutId = setTimeout(() => postAbortController.abort(), timeoutDuration);
+          
           try {
             const payload = {
               pageText: testStoryText,
@@ -1775,15 +1778,21 @@ export const ImageTierTester = () => {
               body: payload 
             });
             
+            clearTimeout(postTimeoutId);
+            
             let category = 'HEALTHY';
             let status = 200;
             
             if (postResponse.error) {
               const errorMessage = postResponse.error.message || String(postResponse.error);
               const errorStatus = postResponse.error.status;
+              const errorCode = postResponse.error.code;
               
-              // Classify by actual HTTP status code first (ERROR-069 fix)
-              if (errorStatus === 503) {
+              // Classify by actual HTTP status code and error patterns
+              if (errorCode === 'WORKER_LIMIT' || errorStatus === 546 || errorMessage.includes('WORKER_LIMIT')) {
+                category = 'CAPACITY_LIMIT';
+                status = 546;
+              } else if (errorStatus === 503) {
                 category = 'BOOT_SYNC_ANOMALY';
                 status = 503;
               } else if (errorStatus === 500) {
@@ -1795,23 +1804,78 @@ export const ImageTierTester = () => {
               } else if (errorStatus === 400 || errorStatus === 422) {
                 category = 'VALIDATION_ERROR';
                 status = errorStatus;
+              } else if (errorMessage.includes('NO_STORY_CONTENT')) {
+                category = 'VALIDATION_ERROR';
+                status = 400;
               } else if (errorMessage.includes('Failed to fetch') || errorMessage.includes('NetworkError')) {
                 // Only real fetch failures are browser noise
                 category = 'BROWSER_NOISE';
                 status = 0;
+              } else if (!errorStatus && (errorCode || errorMessage)) {
+                // Ambiguous error without status - try raw fetch for diagnostic
+                try {
+                  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://cpzeuogomaixamrtnnmj.supabase.co';
+                  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino';
+                  
+                  const rawResponse = await fetch(
+                    `${supabaseUrl}/functions/v1/${endpoint.name}`,
+                    {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${supabaseAnonKey}`,
+                        'apikey': supabaseAnonKey
+                      },
+                      body: JSON.stringify(payload),
+                      signal: AbortSignal.timeout(5000)
+                    }
+                  );
+                  
+                  status = rawResponse.status;
+                  const rawBody = await rawResponse.text();
+                  
+                  // Re-classify based on raw HTTP status
+                  if (status === 546) category = 'CAPACITY_LIMIT';
+                  else if (status === 503) category = 'BOOT_SYNC_ANOMALY';
+                  else if (status === 500) category = 'RUNTIME_ERROR';
+                  else if (status === 404) category = 'DEPLOYMENT_ISSUE';
+                  else if (status === 400 || status === 422) category = 'VALIDATION_ERROR';
+                  else category = 'NETWORK_ISSUE';
+                  
+                  tests.POST = {
+                    success: false,
+                    status,
+                    statusText: `${errorMessage} (raw: ${rawBody.substring(0, 100)})`,
+                    category,
+                    details: `SDK error mapped via raw fetch: HTTP ${status}`
+                  };
+                } catch (rawFetchError: any) {
+                  // Raw fetch also failed - truly a network issue
+                  category = 'NETWORK_ISSUE';
+                  status = 0;
+                  tests.POST = {
+                    success: false,
+                    status,
+                    statusText: errorMessage,
+                    category,
+                    details: `SDK and raw fetch both failed: ${rawFetchError.message}`
+                  };
+                }
               } else {
                 // Unknown error - classify as network issue
                 category = 'NETWORK_ISSUE';
                 status = errorStatus || 0;
               }
               
-              tests.POST = {
-                success: false,
-                status,
-                statusText: errorMessage,
-                category,
-                details: `${errorMessage}${status ? ` (HTTP ${status})` : ''}`
-              };
+              if (!tests.POST) {
+                tests.POST = {
+                  success: false,
+                  status,
+                  statusText: errorMessage,
+                  category,
+                  details: `${errorMessage}${status ? ` (HTTP ${status})` : ''}`
+                };
+              }
             } else if (postResponse.data?.success === false) {
               category = 'RUNTIME_ERROR';
               status = 500;
@@ -1831,15 +1895,27 @@ export const ImageTierTester = () => {
               };
             }
           } catch (postError: any) {
-            // If GET succeeded but POST returns status 0, it's likely browser noise
-            const isLikelyBrowserNoise = tests.GET.success && postError.message?.includes('Failed to fetch');
+            clearTimeout(postTimeoutId);
             
-            tests.POST = {
-              success: false,
-              status: 0,
-              statusText: postError.message || 'Unknown error',
-              category: isLikelyBrowserNoise ? 'BROWSER_NOISE' : 'NETWORK_ISSUE'
-            };
+            // Check if this was a timeout abort
+            if (postError.name === 'AbortError') {
+              tests.POST = {
+                success: false,
+                status: 0,
+                statusText: `Request timed out after ${timeoutDuration}ms`,
+                category: 'TIMEOUT'
+              };
+            } else {
+              // If GET succeeded but POST returns status 0, it's likely browser noise
+              const isLikelyBrowserNoise = tests.GET.success && postError.message?.includes('Failed to fetch');
+              
+              tests.POST = {
+                success: false,
+                status: 0,
+                statusText: postError.message || 'Unknown error',
+                category: isLikelyBrowserNoise ? 'BROWSER_NOISE' : 'NETWORK_ISSUE'
+              };
+            }
           }
           
           const responseTime = Date.now() - endpointStartTime;

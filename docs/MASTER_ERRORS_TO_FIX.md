@@ -2479,26 +2479,32 @@ serve(async (req) => {
    - Same fix for TypeScript version
    - Maintains consistency across both files
 
-3. ✅ **ImageTierTester.tsx** (Lines 1781-1830): Fixed error classification
-   - Now checks `postResponse.error.status` directly:
+3. ✅ **ImageTierTester.tsx** (Lines 1763-1916): Enhanced error classification
+   - Added new error categories:
+     - `546` or `WORKER_LIMIT` → `CAPACITY_LIMIT` (Supabase compute limits)
+     - Timeout abort → `TIMEOUT` (explicit timeout handling)
      - `503` → `BOOT_SYNC_ANOMALY`
      - `500` → `RUNTIME_ERROR`
      - `404` → `DEPLOYMENT_ISSUE`
-     - `400/422` → `VALIDATION_ERROR`
+     - `400/422` or `NO_STORY_CONTENT` → `VALIDATION_ERROR`
      - Only `Failed to fetch` or `NetworkError` → `BROWSER_NOISE`
+   - Added diagnostic raw fetch fallback for ambiguous SDK errors
+   - Implemented POST timeout using AbortController with configurable duration
    - Shows status code in details: `${errorMessage} (HTTP ${status})`
    - Real errors now properly visible in test results
 
 **Files Modified:**
 - `supabase/functions/_shared/CharacterConsistencyService.js` (Lines 1576-1582)
 - `supabase/functions/_shared/CharacterConsistencyService.ts` (Lines 1292-1298)
-- `src/components/ImageTierTester.tsx` (Lines 1781-1830)
+- `src/components/ImageTierTester.tsx` (Lines 1763-1916)
 - `docs/MASTER_ERRORS_TO_FIX.md` (This entry)
 
 **Expected Outcomes:**
 - ✅ `runware-template-ab` no longer crashes with stack overflow
 - ✅ Character detection works correctly across all tiers
-- ✅ Test Connectivity shows accurate error categories
+- ✅ Test Connectivity accurately identifies CAPACITY_LIMIT (546/WORKER_LIMIT) vs runtime errors
+- ✅ Test Connectivity properly detects and labels TIMEOUT for slow/aborted requests
+- ✅ Diagnostic raw fetch fallback resolves ambiguous SDK errors
 - ✅ Real 500 errors visible as "RUNTIME_ERROR" not "BROWSER_NOISE"
 - ✅ Status codes displayed in test details for debugging
 
