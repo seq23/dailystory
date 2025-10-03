@@ -1,6 +1,5 @@
-// DEPLOY_MARKER: 2025-10-03T02:00:00Z - Option A static import pattern (bulletproof receptionist)
+// DEPLOY_MARKER: 2025-10-03T03:00:00Z - Dynamic import pattern with fast boot sync recovery
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import handleRequest from "./index.js";
 const SERVICE_NAME = "runware-template-ab";
 
 const corsHeaders: Record<string, string> = {
@@ -22,7 +21,90 @@ function asResponse(maybe: unknown, fallbackStatus = 204): Response {
   return new Response(JSON.stringify(maybe), { status: 200, headers: { "Content-Type": "application/json" } });
 }
 
-// Option A: Static import eliminates all boot sync issues
+// Fast Boot Sync Recovery Configuration
+const FAST_BOOT_SYNC = {
+  maxRetries: 3,
+  delays: [500, 2000, 3500], // Total: 6 seconds max
+  bootErrors: ['Module not found', 'index.js failed to load', 'Handler default export not a function', 'boot sync error'],
+  maxTotalTime: 6000
+};
+
+// Dynamic handler loader (cached + fast retry)
+type HandlerFn = (req: Request) => Promise<Response> | Response;
+let cachedHandler: HandlerFn | null = null;
+let lastLoadError: { at: number; message: string; attempt: number } | null = null;
+let isLoading = false;
+const MAX_RETRIES = 3;
+const BACKOFF_MS = 2_000;
+async function loadHandler(allowRetry = false): Promise<HandlerFn | null> {
+  if (cachedHandler) return cachedHandler;
+  
+  // Prevent concurrent loading attempts
+  if (isLoading && !allowRetry) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+    return cachedHandler;
+  }
+  
+  const now = Date.now();
+  const shouldBackoff = lastLoadError && 
+    now - lastLoadError.at < BACKOFF_MS && 
+    !allowRetry && 
+    lastLoadError.attempt < MAX_RETRIES;
+    
+  if (shouldBackoff) return null;
+  
+  isLoading = true;
+  
+  try {
+    console.log(`🔍 Bundle-first dynamic import: ./index.js`);
+    let mod: any;
+    
+    try {
+      mod = await import("./index.js");
+    } catch (bundleError) {
+      console.warn(`Bundle import failed: ${bundleError instanceof Error ? bundleError.message : String(bundleError)}, trying source fallback`);
+      mod = await import("./index.js");
+    }
+    
+    const fn = (mod as any)?.default as HandlerFn | undefined;
+    
+    if (typeof fn !== "function") {
+      throw new Error("Handler default export not a function - boot sync error");
+    }
+    
+    cachedHandler = fn;
+    lastLoadError = null;
+    isLoading = false;
+    
+    console.log(`✅ Handler loaded successfully`);
+    return cachedHandler;
+    
+  } catch (err: any) {
+    const attempt = (lastLoadError?.attempt || 0) + 1;
+    lastLoadError = { 
+      at: Date.now(), 
+      message: `${err?.message ?? String(err)}${err?.stack ? ` | Stack: ${String(err.stack).slice(0, 500)}` : ''}`,
+      attempt 
+    };
+    isLoading = false;
+    
+    const errorMessage = err?.message ?? String(err);
+    const errorCategory = errorMessage.includes('Failed to fetch') || errorMessage.includes('NetworkError') 
+      ? 'CDN_IMPORT_FAILURE' 
+      : errorMessage.includes('Cannot find module') || errorMessage.includes('not found')
+      ? 'FILE_MISSING'
+      : 'HANDLER_CRASH';
+    
+    console.error(`❌ Handler load failed [${errorCategory}] (attempt ${attempt}/${MAX_RETRIES}):`, errorMessage);
+    
+    if (attempt >= MAX_RETRIES) {
+      cachedHandler = null;
+      console.log("🔄 Clearing handler cache after max retries");
+    }
+    
+    return null;
+  }
+}
 
 serve(async (req) => {
   try {
@@ -40,15 +122,14 @@ serve(async (req) => {
 
     // Any GET → boring 200 JSON (never fails)
     if (req.method === "GET") {
-      const DEPLOY_MARKER = "2025-10-03T02:00:00Z";
       const payload = {
         status: "healthy",
         service: SERVICE_NAME,
         tier: "2.5A/2.5B",
         timestamp: new Date().toISOString(),
-        deployment_version: DEPLOY_MARKER,
-        handlerCached: true, // Static import = always available
-        lastError: null,
+        deployment_version: "2025-10-03T03:00:00Z",
+        handlerCached: !!cachedHandler,
+        lastError: lastLoadError?.message ?? null,
         capabilities: ["character_consistency", "visual_tracking", "cultural_enhancement"]
       };
       return withCors(new Response(JSON.stringify(payload), { status: 200, headers: { "Content-Type": "application/json" } }));
@@ -59,22 +140,62 @@ serve(async (req) => {
       return withCors(new Response(null, { status: 200, headers: { "Cache-Control": "no-store", "Content-Length": "0" } }));
     }
 
-    // POST → direct handler invocation (static import = no boot sync needed)
+    // POST → fast boot sync recovery with handler loading
     if (req.method === "POST") {
-      try {
-        const out = await handleRequest(req);
-        return withCors(asResponse(out));
-      } catch (handlerError: any) {
-        const errorMessage = handlerError?.message ?? String(handlerError);
-        console.error(`❌ Handler execution error: ${errorMessage}`);
-        
-        return withCors(new Response(JSON.stringify({
-          success: false,
-          error: "HANDLER_ERROR",
-          message: errorMessage,
-          service: SERVICE_NAME,
-          timestamp: new Date().toISOString(),
-        }), { status: 500, headers: { "Content-Type": "application/json" } }));
+      // Fast retry wrapper for handler loading
+      for (let attempt = 0; attempt <= FAST_BOOT_SYNC.maxRetries; attempt++) {
+        try {
+          let handler = await loadHandler(false);
+          if (!handler) handler = await loadHandler(true);
+          if (handler) {
+            const out = await handler(req);
+            return withCors(asResponse(out));
+          }
+          
+          // Handler unavailable - check if boot sync error
+          const errorMessage = lastLoadError?.message ?? "index.js failed to load";
+          const isSyncFailure = FAST_BOOT_SYNC.bootErrors.some(msg => 
+            errorMessage.includes(msg)
+          );
+          
+          if (!isSyncFailure || attempt === FAST_BOOT_SYNC.maxRetries) {
+            // Final failure or non-sync error
+            return withCors(new Response(JSON.stringify({
+              success: false,
+              error: "HANDLER_UNAVAILABLE",
+              nextAction: 'ESCALATE_TIER_2.5B',
+              escalationReason: 'handler_unavailable',
+              message: errorMessage,
+              service: SERVICE_NAME,
+              timestamp: new Date().toISOString(),
+            }), { status: 200, headers: { "Content-Type": "application/json" } }));
+          }
+          
+          const delay = FAST_BOOT_SYNC.delays[attempt];
+          console.warn(`🔄 [TEMPLATE_AB] Fast boot retry ${attempt + 1}/${FAST_BOOT_SYNC.maxRetries} in ${delay}ms: ${errorMessage}`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          
+        } catch (handlerError: any) {
+          const errorMessage = handlerError?.message ?? String(handlerError);
+          const isSyncFailure = FAST_BOOT_SYNC.bootErrors.some(msg => 
+            errorMessage.includes(msg)
+          );
+          
+          if (!isSyncFailure || attempt === FAST_BOOT_SYNC.maxRetries) {
+            // Final failure or non-sync error
+            return withCors(new Response(JSON.stringify({
+              success: false,
+              error: "HANDLER_ERROR",
+              message: errorMessage,
+              service: SERVICE_NAME,
+              timestamp: new Date().toISOString(),
+            }), { status: 500, headers: { "Content-Type": "application/json" } }));
+          }
+          
+          const delay = FAST_BOOT_SYNC.delays[attempt];
+          console.warn(`🔄 [TEMPLATE_AB] Fast boot retry ${attempt + 1}/${FAST_BOOT_SYNC.maxRetries} in ${delay}ms: ${errorMessage}`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
       }
     }
 

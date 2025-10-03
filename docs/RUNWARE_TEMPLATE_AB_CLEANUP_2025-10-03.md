@@ -233,6 +233,52 @@ If you see NETWORK_ISSUE (Status 0) on health checks:
 
 ---
 
+## Receptionist Architecture Switch (2025-10-03T03:00:00Z)
+
+### Problem: Static Import Fragility
+The previous receptionist (`index.ts`) used a static import pattern:
+```typescript
+import handleRequest from "./index.js";
+```
+
+While this eliminated boot sync issues in normal operation, **any module-evaluation error in `index.js`** (syntax errors, undefined references, etc.) would prevent the entire worker from booting, resulting in:
+- Status 0 `NETWORK_ISSUE` errors (no response at all)
+- Inability to serve even basic health checks
+- Complete service unavailability
+
+### Solution: Dynamic Import with Fast Boot Sync Recovery
+Switched to the proven dynamic import pattern from `runware-template-cd`:
+
+**Key Features:**
+1. **Dynamic Import**: `await import("./index.js")` in try/catch block
+2. **Handler Caching**: Once loaded successfully, handler is cached for subsequent requests
+3. **Fast Boot Sync Recovery**: 3 retries with exponential backoff (500ms, 2000ms, 3500ms)
+4. **Graceful Degradation**: Worker always boots, returns structured JSON errors instead of Status 0
+5. **Detailed Error Categorization**: `CDN_IMPORT_FAILURE`, `FILE_MISSING`, `HANDLER_CRASH`
+
+**Benefits:**
+- Worker **always boots** successfully, can respond to GET/HEAD health checks
+- POST requests return `503 HANDLER_UNAVAILABLE` with detailed error messages instead of Status 0
+- Automatic retry logic handles transient module loading issues
+- Maintains high availability even when handler has errors
+
+**Error Response Example:**
+```json
+{
+  "success": false,
+  "error": "HANDLER_UNAVAILABLE",
+  "nextAction": "ESCALATE_TIER_2.5B",
+  "escalationReason": "handler_unavailable",
+  "message": "SyntaxError: Identifier 'avatarType' has already been declared",
+  "service": "runware-template-ab",
+  "timestamp": "2025-10-03T03:00:00.000Z"
+}
+```
+
+This ensures the service remains observable and debuggable even during critical failures.
+
+---
+
 ## Documentation Updated
 
 **Deploy Marker** (Line 1):
