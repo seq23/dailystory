@@ -1,5 +1,6 @@
 // DEPLOY_MARKER: 2025-09-27T15:30:00Z - Bundle-first dynamic import strategy
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import "./index.js"; // Bundling sentinel - ensures index.js is always in deployment bundle
 const SERVICE_NAME = "runware-template-cd";
 
 const corsHeaders: Record<string, string> = {
