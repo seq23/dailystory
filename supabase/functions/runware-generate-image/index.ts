@@ -185,9 +185,10 @@ function corsResponse(data: any, req: Request, status = 200): Response {
     "Content-Type": "application/json",
   };
 
-  // Add Retry-After header for 503 responses
+  // Add Retry-After header for 503 responses and expose it via CORS
   if (status === 503 && data?.retryAfterSeconds) {
     headers["Retry-After"] = String(data.retryAfterSeconds);
+    headers["Access-Control-Expose-Headers"] = "Retry-After";
   }
 
   return new Response(JSON.stringify(data), {
@@ -574,13 +575,26 @@ async function processInlinedTier1(
     try {
       const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
       const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
+      
+      // Validate SUPABASE_URL
+      if (!SUPABASE_URL || SUPABASE_URL.trim() === "") {
+        throw new Error("SUPABASE_URL environment variable is not set");
+      }
+      
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+      };
+      
+      // Only add apikey header if key exists
+      if (SUPABASE_ANON_KEY) {
+        headers["apikey"] = SUPABASE_ANON_KEY;
+      }
+      
       const response = await fetch(`${SUPABASE_URL}/functions/v1/ai-visual-scene-creator`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
-          "apikey": SUPABASE_ANON_KEY || "",
-        },
+        headers,
         body: JSON.stringify({
           pageText: storyText || pageText,
           userInfo: {
@@ -1397,13 +1411,26 @@ Deno.serve(async (req) => {
             try {
               const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
               const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
+              
+              // Validate SUPABASE_URL
+              if (!SUPABASE_URL || SUPABASE_URL.trim() === "") {
+                throw new Error("SUPABASE_URL environment variable is not set");
+              }
+              
+              const headers: Record<string, string> = {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+              };
+              
+              // Only add apikey header if key exists
+              if (SUPABASE_ANON_KEY) {
+                headers["apikey"] = SUPABASE_ANON_KEY;
+              }
+              
               const response = await fetch(`${SUPABASE_URL}/functions/v1/ai-visual-scene-creator`, {
                 method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
-                  "apikey": SUPABASE_ANON_KEY || "",
-                },
+                headers,
                 body: JSON.stringify({
                   ...payload,
                   // Pass structuredAvatarData from orchestrator if Tier 1 partially succeeded
@@ -1510,13 +1537,26 @@ Deno.serve(async (req) => {
             try {
               const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
               const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
+              
+              // Validate SUPABASE_URL
+              if (!SUPABASE_URL || SUPABASE_URL.trim() === "") {
+                throw new Error("SUPABASE_URL environment variable is not set");
+              }
+              
+              const headers: Record<string, string> = {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+              };
+              
+              // Only add apikey header if key exists
+              if (SUPABASE_ANON_KEY) {
+                headers["apikey"] = SUPABASE_ANON_KEY;
+              }
+              
               const response = await fetch(`${SUPABASE_URL}/functions/v1/runware-template-ab`, {
                 method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
-                  "apikey": SUPABASE_ANON_KEY || "",
-                },
+                headers,
                 body: JSON.stringify({
                   ...payload,
                   templateComplexity: "B",
@@ -1606,13 +1646,26 @@ Deno.serve(async (req) => {
               try {
                 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
                 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
+                
+                // Validate SUPABASE_URL
+                if (!SUPABASE_URL || SUPABASE_URL.trim() === "") {
+                  throw new Error("SUPABASE_URL environment variable is not set");
+                }
+                
+                const headers: Record<string, string> = {
+                  "Content-Type": "application/json",
+                  "Accept": "application/json",
+                  "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+                };
+                
+                // Only add apikey header if key exists
+                if (SUPABASE_ANON_KEY) {
+                  headers["apikey"] = SUPABASE_ANON_KEY;
+                }
+                
                 const response = await fetch(`${SUPABASE_URL}/functions/v1/runware-template-ab`, {
                   method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
-                    "apikey": SUPABASE_ANON_KEY || "",
-                  },
+                  headers,
                   body: JSON.stringify({
                     ...payload,
                     templateComplexity: "A",
@@ -1691,13 +1744,26 @@ Deno.serve(async (req) => {
               try {
                 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
                 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
+                
+                // Validate SUPABASE_URL
+                if (!SUPABASE_URL || SUPABASE_URL.trim() === "") {
+                  throw new Error("SUPABASE_URL environment variable is not set");
+                }
+                
+                const headers: Record<string, string> = {
+                  "Content-Type": "application/json",
+                  "Accept": "application/json",
+                  "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+                };
+                
+                // Only add apikey header if key exists
+                if (SUPABASE_ANON_KEY) {
+                  headers["apikey"] = SUPABASE_ANON_KEY;
+                }
+                
                 const response = await fetch(`${SUPABASE_URL}/functions/v1/runware-template-ab`, {
                   method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
-                    "apikey": SUPABASE_ANON_KEY || "",
-                  },
+                  headers,
                   body: JSON.stringify({
                     ...payload,
                     templateComplexity: "B",
@@ -1793,13 +1859,26 @@ Deno.serve(async (req) => {
               try {
                 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
                 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
+                
+                // Validate SUPABASE_URL
+                if (!SUPABASE_URL || SUPABASE_URL.trim() === "") {
+                  throw new Error("SUPABASE_URL environment variable is not set");
+                }
+                
+                const headers: Record<string, string> = {
+                  "Content-Type": "application/json",
+                  "Accept": "application/json",
+                  "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+                };
+                
+                // Only add apikey header if key exists
+                if (SUPABASE_ANON_KEY) {
+                  headers["apikey"] = SUPABASE_ANON_KEY;
+                }
+                
                 const response = await fetch(`${SUPABASE_URL}/functions/v1/runware-template-cd`, {
                   method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
-                    "apikey": SUPABASE_ANON_KEY || "",
-                  },
+                  headers,
                   body: JSON.stringify({
                     ...payload,
                     templateComplexity: "C",
@@ -1892,13 +1971,26 @@ Deno.serve(async (req) => {
                 try {
                   const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
                   const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
+                  
+                  // Validate SUPABASE_URL
+                  if (!SUPABASE_URL || SUPABASE_URL.trim() === "") {
+                    throw new Error("SUPABASE_URL environment variable is not set");
+                  }
+                  
+                  const headers: Record<string, string> = {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                    "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+                  };
+                  
+                  // Only add apikey header if key exists
+                  if (SUPABASE_ANON_KEY) {
+                    headers["apikey"] = SUPABASE_ANON_KEY;
+                  }
+                  
                   const response = await fetch(`${SUPABASE_URL}/functions/v1/runware-template-cd`, {
                     method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                      "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
-                      "apikey": SUPABASE_ANON_KEY || "",
-                    },
+                    headers,
                     body: JSON.stringify({
                       ...payload,
                       templateComplexity: "D",
