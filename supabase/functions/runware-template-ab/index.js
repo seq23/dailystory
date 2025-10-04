@@ -2251,15 +2251,16 @@ async function handleRequest(req) {
               tier: '2.5B'
             }, 200);
           }
-        }
+        } // Close catch block at line 2132
+      } // Close if(sessionId) block at line 1990
         
-        console.log(`✅ [${requestId}] Tier 2.5A: Complete character consistency applied:`, {
-          characterAppearance: !!characterAppearance,
-          secondaryCharacters: detectedSecondaryCharacters.length,
-          coloredObjects: !!coloredObjects
-        });
+      console.log(`✅ [${requestId}] Tier 2.5A: Complete character consistency applied:`, {
+        characterAppearance: !!characterAppearance,
+        secondaryCharacters: detectedSecondaryCharacters.length,
+        coloredObjects: !!coloredObjects
+      });
       
-      } catch (characterError) {
+    } catch (characterError) {
         // ESCALATE TO TIER 2.5B on ANY CharacterConsistencyService failure (import or method)
         console.error(`🚨 [${requestId}] Tier 2.5A: CharacterConsistencyService FAILED (outer catch) - Escalating to Tier 2.5B`, characterError.message);
         

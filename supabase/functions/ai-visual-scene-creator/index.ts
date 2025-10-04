@@ -697,12 +697,12 @@ serve(async (req) => {
     });
   }
 
+  // Feature flag check - declare outside try block for catch block scope
+  const gatingEnabled = Deno.env.get('DISABLE_PROVIDER_GATE') !== 'true';
+
   try {
     const requestId = `${Math.random().toString(36).substring(2)}`;
     console.log(`🚀 [${requestId}] ai-visual-scene-creator: POST ${req.url}`);
-
-    // Feature flag check
-    const gatingEnabled = Deno.env.get('DISABLE_PROVIDER_GATE') !== 'true';
     
     // ============= PROVIDER GATE: Pre-call health check =============
     const gateKey = 'T1:ai-visual-scene-creator';
