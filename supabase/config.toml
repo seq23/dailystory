@@ -86,9 +86,11 @@ verify_jwt = false
 
 [functions.runware-template-ab]
 verify_jwt = false
+import_map = "./deno.jsonc"
 
 [functions.runware-template-cd]
 verify_jwt = false
+import_map = "./deno.jsonc"
 
 [functions.security-alert]
 verify_jwt = true
