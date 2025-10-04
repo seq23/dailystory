@@ -13,19 +13,30 @@ Phase 3 implements a comprehensive Universal Placeholder Resolution system that 
 
 ## PHASE 3.1: CULTURAL INTELLIGENCE INTEGRATION ✅ UPDATED
 
+### Current Resolver Architecture ✅
+The system uses **two resolver implementations**:
+1. **placeholderResolver.ts** (TypeScript) - Primary resolver for template-service and content processors
+2. **UnifiedPlaceholderResolver.js** (JavaScript) - Legacy resolver, currently orphaned (no active edge function imports)
+
 ### Cultural Enhancement Logic ✅ CURRENT
-The `UnifiedPlaceholderResolver` analyzes user skin tone to determine cultural enhancement application:
+Cultural enhancement is handled by `CharacterConsistencyService.js` which analyzes user skin tone:
 
 - **Dark Skin Detection**: Applied when user has `dark` or `darker` skin tone
 - **Cultural Features**: ALL dark-skinned users get African cultural enhancements
 - **Language Independence**: Skin tone is the ONLY trigger (language irrelevant)
 
 ### Cultural Arrays Integration ✅ CURRENT
-Direct integration with `CULTURAL_ARRAYS.african` from tier25Vocabulary.js:
+**Implementation**: `CharacterConsistencyService.js` integrates with `CULTURAL_ARRAYS.african` from tier25Vocabulary.js:
 - **Hair Styles**: Afros, braids, cornrows, protective styles (38+ options)
 - **Facial Features**: Full lips, broad nose, high cheekbones, warm brown eyes (20+ options)
 - **Seeded Consistency**: User-specific seeds ensure same features across sessions
-- **Template Integration**: Via `{bundle.culturalEnhancements}` placeholder
+- **Template Integration**: Via character seed methods and placeholder resolution
+
+**Active Resolvers**:
+- `placeholderResolver.ts` - Used by template-service, process-story-content, generate-adaptive-story, templateConverter, authorVoicePatterns
+- `UnifiedPlaceholderResolver.js` - Legacy/orphaned, no active edge function imports
+
+The cultural detection works through `CharacterConsistencyService.getCulturalEnhancements()` method that maps dark skin tones to 'african' cultural arrays, with seeded random selection for consistency.
 
 ### Language Support Enhancement ✅ CURRENT
 While cultural features are skin-tone based, language affects regional authenticity:

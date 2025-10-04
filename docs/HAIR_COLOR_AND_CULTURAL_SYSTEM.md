@@ -8,9 +8,11 @@ The system operates through two primary components:
 2. **Cultural Enhancement**: Applies rich cultural context for dark-skinned children (regardless of language)
 
 ## Current Implementation Status ✅
-- **Primary Service**: `UnifiedPlaceholderResolver.js` 
+- **Primary Resolver**: `placeholderResolver.ts` (used by template-service and content processors)
+- **Legacy Resolver**: `UnifiedPlaceholderResolver.js` (orphaned, no active edge function imports)
+- **Character Service**: `CharacterConsistencyService.js` (core character consistency logic)
 - **Cultural Detection**: Skin-tone based (dark skin → African features)
-- **Integration**: `runware-template-ab/index.js` via `{bundle.culturalEnhancements}`
+- **Integration**: Multiple edge functions via respective resolvers
 - **Arrays Location**: `tier25Vocabulary.js` → `CULTURAL_ARRAYS.african`
 
 ## Hair Color Assignment System
@@ -75,11 +77,12 @@ When the trigger condition is satisfied, the system applies:
 - **Template Integration**: Via `{bundle.culturalEnhancements}` placeholder
 
 ### Implementation Details ✅ CURRENT
-- Enhancements are applied through `UnifiedPlaceholderResolver.js`
-- Cultural arrays in `tier25Vocabulary.js` → `CULTURAL_ARRAYS.african`
-- System uses seeded random for character consistency
-- Content integrated into all premium and basic prompt templates
-- Example output: `"with beautiful braids, warm brown eyes"`
+- **Primary Resolution**: `placeholderResolver.ts` for template-service
+- **Character Logic**: `CharacterConsistencyService.js` for cultural enhancements
+- **Cultural Arrays**: `tier25Vocabulary.js` → `CULTURAL_ARRAYS.african`
+- **Seeded Consistency**: Character features consistent across sessions
+- **Template Integration**: Multiple edge functions via their respective resolvers
+- **Example Output**: `"with beautiful braids, warm brown eyes"`
 
 ### Language Support Matrix ✅ NEW
 | Language | Code | Regional Authenticity | Cultural Features |
