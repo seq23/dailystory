@@ -10,7 +10,10 @@ async function insertDebugRow(supabase, row) {
     return;
   }
   try {
-    const { data, error } = await supabase.from('image_generation_debug').insert([row]);
+    const { data, error } = await supabase
+      .from('image_generation_debug')
+      .insert([row])
+      .select();
     if (error) {
       console.error("❌ DB INSERT FAILED:", {
         error: error.message,
@@ -25,13 +28,25 @@ async function insertDebugRow(supabase, row) {
           has_prompts: !!(row.positive_prompt && row.negative_prompt)
         }
       });
+    } else if (!data || (Array.isArray(data) && data.length === 0)) {
+      console.error("❌ DB INSERT SILENTLY REJECTED (likely RLS):", {
+        note: "Insert returned empty data with no error. Verify service_role is used and RLS allows INSERT on image_generation_debug.",
+        table: 'image_generation_debug',
+        expected_role: 'service_role',
+        row_sample: {
+          session_id: row.session_id,
+          tier: row.tier,
+          user_id: row.user_id,
+          has_image_url: !!row.image_url,
+          has_prompts: !!(row.positive_prompt && row.negative_prompt)
+        }
+      });
     } else {
       console.log("✅ Successfully logged to image_generation_debug:", row.session_id);
     }
   } catch (err) {
     console.error("⚠️ Failed DB log insert (caught exception):", err.message, err);
   }
-}
 
 /**
  * Extract user ID from authorization header or return system fallback
