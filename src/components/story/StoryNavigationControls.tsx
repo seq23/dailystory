@@ -1,3 +1,21 @@
+/**
+ * CRITICAL REGRESSION PREVENTION:
+ * 
+ * This component handles NAVIGATION ONLY (Previous/Next page controls).
+ * 
+ * ❌ DO NOT ADD "Next Story" BUTTONS HERE ❌
+ * 
+ * The "Next Story" functionality for guest users is handled by the
+ * Magic Wand button in CleanStoryDisplay.tsx (lines 4057-4132).
+ * 
+ * Separation of Concerns:
+ * - Navigation Controls: Previous/Next page navigation
+ * - Action Buttons (CleanStoryDisplay): Story actions (Next Story, Finish Story)
+ * 
+ * See: docs/NEXT_STORY_BUTTON_REGRESSION_FIX.md
+ * See: docs/UI_COMPONENT_RESPONSIBILITIES.md
+ */
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Plus, RefreshCw, GraduationCap } from "lucide-react";
@@ -17,6 +35,15 @@ interface StoryNavigationControlsProps {
   onNext: () => void;
   onPrevious: () => void;
   onGenerateNext: () => void;
+  /**
+   * IMPORTANT: This prop exists for INTERNAL USE ONLY.
+   * It should NOT be used to render a "Next Story" button in this component.
+   * 
+   * The "Next Story" button is rendered in CleanStoryDisplay.tsx only.
+   * This prop is passed through for potential future use cases.
+   * 
+   * @deprecated in navigation context - use CleanStoryDisplay Magic Wand button
+   */
   onGenerateNewStory: () => void;
   // Audio controls props
   audioEngineRef?: React.RefObject<any>;

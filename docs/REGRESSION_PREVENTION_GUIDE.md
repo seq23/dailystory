@@ -70,6 +70,66 @@ ExpertDifficultyManager.updateProgress(userInfo, sessionData.expertGradeLevel, {
 - ❌ **Data synchronization issues** - Progress service vs difficulty manager mismatch
 - ❌ **Performance degradation** - Multiple progress update calls
 
+### 4. Next Story Button UI Component
+**Files:** 
+- `src/components/story/StoryNavigationControls.tsx` (MUST NOT contain Next Story button)
+- `src/components/CleanStoryDisplay.tsx` (ONLY location for Next Story button)
+
+#### Single Responsibility Principle
+- **Navigation Controls**: Handle page-to-page navigation (Previous/Next)
+- **Story Action Buttons**: Handle story-level actions (Next Story, Finish Story, Rewrite)
+
+#### Critical Component Locations
+```typescript
+// ✅ CORRECT: Magic Wand "Next Story" button
+// File: src/components/CleanStoryDisplay.tsx (lines 4057-4132)
+{!isPremium && currentPage === 5 && story.length >= 6 && (
+  <Button onClick={handleGenerateNewStory}>
+    Get the next story!
+  </Button>
+)}
+
+// ❌ FORBIDDEN: Next Story in navigation controls
+// File: src/components/story/StoryNavigationControls.tsx
+{!isPremium && currentPage === 5 && (
+  <Button onClick={onGenerateNewStory}>Next Story</Button>  // ❌ NEVER ADD THIS
+)}
+```
+
+#### Regression Risks
+- ❌ **Duplicate buttons** - Confuses users with two identical CTAs
+- ❌ **Visual hierarchy break** - Magic Wand button loses prominence
+- ❌ **Business logic violation** - Navigation controls handling story actions
+- ❌ **Maintenance burden** - Two places to update for one feature
+
+#### Automated Tests Required
+```typescript
+describe('Next Story Button Placement', () => {
+  test('Guest user on page 6 sees ONE Next Story button', () => {
+    // Count buttons with text "Next Story" or "Get the next story"
+    const nextStoryButtons = screen.getAllByRole('button', { name: /next story/i });
+    expect(nextStoryButtons).toHaveLength(1);
+  });
+  
+  test('Next Story button is Magic Wand in CleanStoryDisplay', () => {
+    const magicWandButton = screen.getByTestId('magic-wand-free');
+    expect(magicWandButton).toBeInTheDocument();
+    expect(magicWandButton).toHaveTextContent(/get the next story/i);
+  });
+  
+  test('StoryNavigationControls does NOT render Next Story button', () => {
+    const { container } = render(<StoryNavigationControls {...guestUserProps} />);
+    const nextStoryInNav = within(container).queryByText(/next story/i);
+    expect(nextStoryInNav).toBeNull();
+  });
+});
+```
+
+#### Visual Regression Prevention
+- Screenshot test on guest user page 6
+- Verify only ONE prominent CTA button below story image
+- Verify navigation controls show ONLY Previous/Next buttons
+
 ## Automated Testing Strategy
 
 ### Unit Tests Required
@@ -95,6 +155,34 @@ describe('ExpertDifficultyManager', () => {
     // sessionStorage migration handling
   });
 });
+
+describe('StoryNavigationControls - Next Story Button Prevention', () => {
+  test('does not render Next Story button for guest on page 6', () => {
+    render(
+      <StoryNavigationControls
+        currentPage={5}
+        totalPages={12}
+        isPremium={false}
+        onGenerateNewStory={mockFn}
+        {...otherProps}
+      />
+    );
+    
+    const nextStoryButton = screen.queryByText(/next story/i);
+    expect(nextStoryButton).toBeNull();
+  });
+
+  test('renders only Previous and Next navigation buttons', () => {
+    render(<StoryNavigationControls {...guestUserProps} />);
+    
+    const buttons = screen.getAllByRole('button');
+    const buttonTexts = buttons.map(btn => btn.textContent);
+    
+    expect(buttonTexts).toContain('Previous');
+    expect(buttonTexts).toContain('Next');
+    expect(buttonTexts).not.toContain('Next Story');
+  });
+});
 ```
 
 ### Integration Tests Required  
@@ -115,6 +203,30 @@ describe('Toast Notification Integration', () => {
     // Must NOT show progression
   });
 });
+
+describe('CleanStoryDisplay - Next Story Button Integration', () => {
+  test('guest user on page 6 sees exactly one Next Story button', () => {
+    render(<CleanStoryDisplay userInfo={guestUser} currentPage={5} />);
+    
+    const nextStoryButtons = screen.getAllByRole('button', {
+      name: /next story|get the next story/i
+    });
+    
+    expect(nextStoryButtons).toHaveLength(1);
+  });
+
+  test('Magic Wand button has correct attributes', () => {
+    render(<CleanStoryDisplay userInfo={guestUser} currentPage={5} />);
+    
+    const magicWand = screen.getByTestId('magic-wand-free');
+    expect(magicWand).toBeInTheDocument();
+    expect(magicWand).toHaveTextContent(/get the next story/i);
+    
+    // Verify it's in CleanStoryDisplay, not navigation
+    const navControls = screen.getByRole('navigation');
+    expect(navControls).not.toContainElement(magicWand);
+  });
+});
 ```
 
 ### End-to-End Tests Required
@@ -132,6 +244,34 @@ describe('Complete Progression Flow', () => {
     // 2. Complete reading
     // 3. End session → no progression toast
     // 4. Next session → new random grade
+  });
+});
+
+describe('Story Navigation - Next Story Button Flow', () => {
+  test('guest user completes 6-page story flow', async ({ page }) => {
+    await page.goto('/story?user=guest');
+    
+    // Navigate to page 6
+    for (let i = 0; i < 5; i++) {
+      await page.click('button:has-text("Next")');
+    }
+    
+    // Verify on page 6
+    await expect(page.locator('text=Page 6 of')).toBeVisible();
+    
+    // Count "Next Story" buttons
+    const nextStoryButtons = page.locator('button:has-text("Next Story"), button:has-text("Get the next story")');
+    await expect(nextStoryButtons).toHaveCount(1);
+    
+    // Verify it's the Magic Wand button
+    const magicWand = page.locator('[data-id="magic-wand-free"]');
+    await expect(magicWand).toBeVisible();
+    await expect(magicWand).toHaveText(/get the next story/i);
+    
+    // Verify navigation has no Next Story
+    const navArea = page.locator('.story-navigation-controls');
+    const navNextStory = navArea.locator('button:has-text("Next Story")');
+    await expect(navNextStory).toHaveCount(0);
   });
 });
 ```

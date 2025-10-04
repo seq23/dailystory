@@ -75,7 +75,100 @@ A regression where the navigation controls incorrectly added a "Next Story" butt
 - [ ] Magic Wand button has sparkle animations
 - [ ] Clicking Magic Wand generates new story correctly
 
+## Automated Testing Strategy
+
+### Unit Tests
+```typescript
+// Test file: StoryNavigationControls.test.tsx
+
+test('does not render Next Story button for guest on page 6', () => {
+  render(
+    <StoryNavigationControls
+      currentPage={5}
+      totalPages={12}
+      isPremium={false}
+      onGenerateNewStory={mockFn}
+      {...otherProps}
+    />
+  );
+  
+  const nextStoryButton = screen.queryByText(/next story/i);
+  expect(nextStoryButton).toBeNull();
+});
+
+test('renders only Previous and Next navigation buttons', () => {
+  render(<StoryNavigationControls {...guestUserProps} />);
+  
+  const buttons = screen.getAllByRole('button');
+  const buttonTexts = buttons.map(btn => btn.textContent);
+  
+  expect(buttonTexts).toContain('Previous');
+  expect(buttonTexts).toContain('Next');
+  expect(buttonTexts).not.toContain('Next Story');
+});
+```
+
+### Integration Tests
+```typescript
+// Test file: CleanStoryDisplay.test.tsx
+
+test('guest user on page 6 sees exactly one Next Story button', () => {
+  render(<CleanStoryDisplay userInfo={guestUser} currentPage={5} />);
+  
+  const nextStoryButtons = screen.getAllByRole('button', {
+    name: /next story|get the next story/i
+  });
+  
+  expect(nextStoryButtons).toHaveLength(1);
+});
+
+test('Magic Wand button has correct attributes', () => {
+  render(<CleanStoryDisplay userInfo={guestUser} currentPage={5} />);
+  
+  const magicWand = screen.getByTestId('magic-wand-free');
+  expect(magicWand).toBeInTheDocument();
+  expect(magicWand).toHaveTextContent(/get the next story/i);
+  
+  // Verify it's in CleanStoryDisplay, not navigation
+  const navControls = screen.getByRole('navigation');
+  expect(navControls).not.toContainElement(magicWand);
+});
+```
+
+### E2E Tests
+```typescript
+// Test file: story-navigation.spec.ts
+
+test('guest user completes 6-page story flow', async ({ page }) => {
+  await page.goto('/story?user=guest');
+  
+  // Navigate to page 6
+  for (let i = 0; i < 5; i++) {
+    await page.click('button:has-text("Next")');
+  }
+  
+  // Verify on page 6
+  await expect(page.locator('text=Page 6 of')).toBeVisible();
+  
+  // Count "Next Story" buttons
+  const nextStoryButtons = page.locator('button:has-text("Next Story"), button:has-text("Get the next story")');
+  await expect(nextStoryButtons).toHaveCount(1);
+  
+  // Verify it's the Magic Wand button
+  const magicWand = page.locator('[data-id="magic-wand-free"]');
+  await expect(magicWand).toBeVisible();
+  await expect(magicWand).toHaveText(/get the next story/i);
+  
+  // Verify navigation has no Next Story
+  const navArea = page.locator('.story-navigation-controls');
+  const navNextStory = navArea.locator('button:has-text("Next Story")');
+  await expect(navNextStory).toHaveCount(0);
+});
+```
+
 ## Related Documentation
 
 - `docs/IMAGE_LOADING_SESSION_FIX.md` - Session ID alignment for image generation
 - `docs/REGRESSION_PREVENTION_GUIDE.md` - Overall regression prevention strategy
+- `docs/UI_COMPONENT_RESPONSIBILITIES.md` - Component separation of concerns
+- `docs/TESTING_CHECKLIST_NEXT_STORY.md` - Comprehensive testing scenarios

@@ -4053,6 +4053,20 @@ const handleRestartTimer = () => {
                   </div>
                 )}
 
+                {/* 
+                  ✨ SINGLE SOURCE OF TRUTH: "Next Story" Button ✨
+                  
+                  This Magic Wand button is the ONLY place where "Next Story" 
+                  functionality should be triggered for guest users.
+                  
+                  DO NOT add duplicate "Next Story" buttons to:
+                  - StoryNavigationControls.tsx
+                  - Any navigation bar components
+                  - Any header/footer components
+                  
+                  See: docs/NEXT_STORY_BUTTON_REGRESSION_FIX.md
+                  See: docs/UI_COMPONENT_RESPONSIBILITIES.md
+                */}
                 {/* Free User Magic Wand - visible only for free users on page 6 with time left */}
                 {!isPremium && currentPage === 5 && story.length >= 6 && timeRemaining > 0 && (
                   <div className="text-center relative">
