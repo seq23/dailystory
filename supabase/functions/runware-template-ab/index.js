@@ -29,22 +29,22 @@ async function getRunwareErrorHandler() {
 // Supabase client created dynamically via resilient loader
 
 // Lazy load tier25vocabulary to prevent boot failures
-let tier25vocabulary = null;
-let tier25vocabularyLoadAttempted = false;
+let universalVocab = null;
+let vocabularyLoadAttempted = false;
 
-async function getTier25Vocabulary() {
-  if (!tier25vocabularyLoadAttempted) {
-    tier25vocabularyLoadAttempted = true;
+async function getUniversalVocab() {
+  if (!vocabularyLoadAttempted) {
+    vocabularyLoadAttempted = true;
     try {
       const module = await import('../_shared/tier25Vocabulary.js');
-      tier25vocabulary = module.tier25vocabulary;
-      console.log("✅ tier25vocabulary loaded successfully");
+      universalVocab = module.getUniversalVocab(); // Use cached function
+      console.log("✅ UNIVERSAL_VOCAB loaded via cached function");
     } catch (err) {
-      console.warn("⚠️ tier25vocabulary unavailable (non-critical):", err.message);
-      tier25vocabulary = null;
+      console.warn("⚠️ UNIVERSAL_VOCAB unavailable (non-critical):", err.message);
+      universalVocab = null;
     }
   }
-  return tier25vocabulary;
+  return universalVocab;
 }
 
 // Inline cultural enhancement functions (no external dependencies)
@@ -608,16 +608,18 @@ const ACTION_CONTEXT_MAPPING = {
   'reading': 'library'
 };
 
-  // ---------- Pull domain vocabulary from tier25vocabulary (lazy-loaded) ----------
-  const vocab = await getTier25Vocabulary();
+  // ---------- Pull domain vocabulary from UNIVERSAL_VOCAB (cached at module level) ----------
+  const vocab = await getUniversalVocab();
   const safeArr = (x) => Array.isArray(x) ? x : [];
-  const COLORS           = safeArr(vocab?.getColors?.());
-  const OBJECTS          = safeArr(vocab?.getObjects?.());
-  const SETTINGS_VOCAB   = safeArr(vocab?.getSettings?.() || vocab?.getLocations?.());
-  const SECONDARY_ROLES  = safeArr(vocab?.getSecondaryRoles?.() || vocab?.getRelationships?.())
-                            .concat(safeArr(vocab?.getAnimals?.()));
-  const VERB_ROOTS       = safeArr(vocab?.getActionVerbs?.());
-  const IRREG_PROGRESSIVE= vocab?.getIrregularProgressiveMap?.() || null;
+  
+  // Access vocabulary arrays directly from UNIVERSAL_VOCAB structure
+  const COLORS           = safeArr(vocab?.colors);
+  const OBJECTS_RAW      = vocab?.objects || {};
+  const OBJECTS          = safeArr(Object.values(OBJECTS_RAW).flat());
+  const SETTINGS_VOCAB   = safeArr(vocab?.context?.indoor).concat(safeArr(vocab?.context?.outdoor));
+  const SECONDARY_ROLES  = safeArr(vocab?.objects?.people).concat(safeArr(vocab?.objects?.animals));
+  const VERB_ROOTS       = safeArr(vocab?.actions);
+  const IRREG_PROGRESSIVE= null; // Not in UNIVERSAL_VOCAB structure
   // Optional: synonyms maps (color/objects/settings/roles) if your vocab provides them
   const SYNONYMS = vocab?.getSynonyms?.() || {}; // { rucksack: 'backpack', crimson: 'red', ... }
 
