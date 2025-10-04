@@ -2531,6 +2531,34 @@ async function handleRequest(req) {
 
     // ProviderGate is now handled at receptionist level (index.ts) - no gating in .js implementation
 
+    // Build Runware payload
+    const runwarePayload = {
+      positivePrompt: templateResult.positivePrompt,
+      negativePrompt: templateResult.negativePrompt,
+      sessionId: sessionId || 'template-ab-session',
+      pageNumber: pageNumber || 1,
+      seed: templateResult.characterSeed || null,
+      width: 1024,
+      height: 1024,
+      numberResults: 1,
+      outputFormat: "WEBP",
+      model: "runware:100@1",
+      steps: 4,
+      CFGScale: 1,
+      scheduler: "FlowMatchEulerDiscreteScheduler"
+    };
+
+    console.log(`🎨 Calling Runware API with payload:`, {
+      promptLength: runwarePayload.positivePrompt.length,
+      hasSeed: !!runwarePayload.seed
+    });
+
+    // Actually call the API
+    const imageResult = await callRunwareWithRetry(runwarePayload, runwareApiKey);
+    const imageURL = imageResult.imageURL;
+
+    console.log(`✅ Runware API returned imageURL: ${imageURL}`);
+
     const result = {
       success: true,
       imageURL,
