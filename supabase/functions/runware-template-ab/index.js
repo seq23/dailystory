@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-10-04T14:00:00Z - Fixed CCS runtime errors: consolidated imports, corrected method signatures
+// DEPLOY_MARKER: 2025-10-04T14:30:00Z - Removed import_map override, fixed nuclear negative typo
 // Handles Level A (basic shapes/colors) and Level B (simple scenes)
 // Lightweight, fast deployment - optimized for simple template generation with character consistency
 
@@ -266,7 +266,7 @@ async function generateNegativePrompt(culturalProfile, avatarType, difficulty) {
   }
   
   if (importedGenerateNuclearNegativePrompt) {
-    return importedGenerateNegularNegativePrompt(culturalProfile, avatarType, difficulty);
+    return importedGenerateNuclearNegativePrompt(culturalProfile, avatarType, difficulty);
   }
   return generateInlineNuclearNegative(culturalProfile, avatarType, difficulty);
 }
