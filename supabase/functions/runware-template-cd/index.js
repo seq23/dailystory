@@ -576,7 +576,7 @@ async function handleRequest(req) {
         visual_details: failedTierData?.visualDetails,
         edgeFunction: 'runware-template-cd',
         pageNumber: pageNumber || 1,
-        imageUrl: imageURL
+        imageUrl: result.imageURL
       }
     );
   } catch (loggingError) {
