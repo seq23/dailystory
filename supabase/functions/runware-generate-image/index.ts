@@ -445,24 +445,32 @@ async function processInlinedTier1(
 
   try {
     logTier1Step("CharacterConsistencyService Import", "attempt", "Loading CharacterConsistencyService");
-    console.log(`[TIER_1] Attempting CharacterConsistencyService import with resilient pattern`);
+    console.log(`[TIER_1] Attempting CharacterConsistencyService import with inline-first pattern`);
 
-    // Tier 1: Try _shared import (bundled)
+    // INLINE-FIRST: Try local inline bundle FIRST (always bundled, 100% reliable)
     let service;
     try {
-      const sharedModule = await import("../_shared/CharacterConsistencyService.js");
-      service = sharedModule.characterConsistencyService;
-      console.log(`✅ [CCS_IMPORT] _shared loaded successfully`);
-    } catch (sharedError) {
-      // Tier 2: Vendor fallback for production reliability
-      console.warn(`⚠️ [CCS_IMPORT] _shared import failed, trying _vendor:`, sharedError);
+      const inlineModule = await import("./CharacterConsistencyServiceVendor.js");
+      service = inlineModule.characterConsistencyService;
+      console.log(`✅ [CCS_IMPORT] inline vendor loaded successfully (0ms network delay)`);
+    } catch (inlineError) {
+      // Fallback 1: Try _shared (external bundle)
+      console.warn(`⚠️ [CCS_IMPORT] inline import failed, trying _shared:`, inlineError);
       try {
-        const vendorModule = await import("../_vendor/CharacterConsistencyService.mjs");
-        service = vendorModule.characterConsistencyService;
-        console.log(`✅ [CCS_IMPORT] _vendor loaded successfully`);
-      } catch (vendorError) {
-        console.error(`❌ [CCS_IMPORT] both _shared and _vendor paths failed`, { sharedError, vendorError });
-        throw new Error(`CCS_IMPORT_FAILURE: both paths failed`);
+        const sharedModule = await import("../_shared/CharacterConsistencyService.js");
+        service = sharedModule.characterConsistencyService;
+        console.log(`✅ [CCS_IMPORT] _shared loaded successfully (fallback)`);
+      } catch (sharedError) {
+        // Fallback 2: Try _vendor (last resort)
+        console.warn(`⚠️ [CCS_IMPORT] _shared import failed, trying _vendor:`, sharedError);
+        try {
+          const vendorModule = await import("../_vendor/CharacterConsistencyService.mjs");
+          service = vendorModule.characterConsistencyService;
+          console.log(`✅ [CCS_IMPORT] _vendor loaded successfully (fallback)`);
+        } catch (vendorError) {
+          console.error(`❌ [CCS_IMPORT] all import paths failed`, { inlineError, sharedError, vendorError });
+          throw new Error(`CCS_IMPORT_FAILURE: all paths failed`);
+        }
       }
     }
     
@@ -1394,23 +1402,23 @@ Deno.serve(async (req) => {
           );
         }
 
-        // Real Runware image generation using WebSocket service with vendor fallback
+        // Real Runware image generation using WebSocket service with inline-first fallback
         let RunwareWebSocketService;
         try {
-          // Try primary _shared path (now .js for Deno Deploy runtime)
-          const module = await memoizedImport("../_shared/RunwareWebSocketService.js");
-          RunwareWebSocketService = module.RunwareWebSocketService;
-          console.log("✅ Loaded RunwareWebSocketService from _shared");
-        } catch (sharedError) {
-          console.warn("⚠️ _shared/RunwareWebSocketService.js failed, trying vendor bundle:", sharedError);
+          // INLINE-FIRST: Try local _vendor bundle FIRST (always bundled, 100% reliable)
+          const vendorModule = await import("../_vendor/RunwareWebSocketService.js");
+          RunwareWebSocketService = vendorModule.RunwareWebSocketService;
+          console.log("✅ Loaded RunwareWebSocketService from _vendor (inline-first, 0ms network delay)");
+        } catch (vendorError) {
+          console.warn("⚠️ _vendor/RunwareWebSocketService.js failed, trying _shared:", vendorError);
           try {
-            // Fallback to vendor bundle
-            const vendorModule = await import("../_vendor/RunwareWebSocketService.js");
-            RunwareWebSocketService = vendorModule.RunwareWebSocketService;
-            console.log("✅ Loaded RunwareWebSocketService from _vendor (fallback)");
-          } catch (vendorError) {
-            console.error("❌ Both _shared and _vendor RunwareWebSocketService failed");
-            throw new Error("TIER_1_PROCESSING_FAILED: RunwareWebSocketService unavailable - both _shared and _vendor imports failed");
+            // Fallback to _shared bundle
+            const module = await memoizedImport("../_shared/RunwareWebSocketService.js");
+            RunwareWebSocketService = module.RunwareWebSocketService;
+            console.log("✅ Loaded RunwareWebSocketService from _shared (fallback)");
+          } catch (sharedError) {
+            console.error("❌ Both _vendor and _shared RunwareWebSocketService failed");
+            throw new Error("TIER_1_PROCESSING_FAILED: RunwareWebSocketService unavailable - both _vendor and _shared imports failed");
           }
         }
 

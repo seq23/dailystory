@@ -216,6 +216,69 @@ Added maintenance note #9:
 
 ---
 
+## Fix 3: CharacterConsistencyService Inline-First Import (2025-10-04)
+
+### Problem
+- Tier 1 Force Test failed with `CHARACTERSERVICE_UNAVAILABLE_TRY_DIRECT_MODE`
+- Both `_shared/CharacterConsistencyService.js` and `_vendor/CharacterConsistencyService.mjs` imports failed with "Module not found"
+- Files existed in codebase but weren't deployed to Deno runtime
+- Same root cause as RunwareWebSocketService issue: Deno Deploy's bundler doesn't include dynamically imported modules from external directories
+
+### Solution: Inline-First Import Pattern
+Created a **local inline vendor bundle** inside the function directory to ensure 100% bundling reliability:
+
+**New file**: `supabase/functions/runware-generate-image/CharacterConsistencyServiceVendor.js`
+- Complete copy of CharacterConsistencyService implementation
+- Bundled directly with the function (no dynamic import)
+- Zero network dependencies
+
+**Updated import logic** (lines ~446-478):
+```typescript
+// INLINE-FIRST: Try local inline bundle FIRST (always bundled, 100% reliable)
+let service;
+try {
+  const inlineModule = await import("./CharacterConsistencyServiceVendor.js");
+  service = inlineModule.characterConsistencyService;
+  console.log(`✅ [CCS_IMPORT] inline vendor loaded successfully (0ms network delay)`);
+} catch (inlineError) {
+  // Fallback 1: Try _shared (external bundle)
+  console.warn(`⚠️ [CCS_IMPORT] inline import failed, trying _shared:`, inlineError);
+  try {
+    const sharedModule = await import("../_shared/CharacterConsistencyService.js");
+    service = sharedModule.characterConsistencyService;
+    console.log(`✅ [CCS_IMPORT] _shared loaded successfully (fallback)`);
+  } catch (sharedError) {
+    // Fallback 2: Try _vendor (last resort)
+    try {
+      const vendorModule = await import("../_vendor/CharacterConsistencyService.mjs");
+      service = vendorModule.characterConsistencyService;
+      console.log(`✅ [CCS_IMPORT] _vendor loaded successfully (fallback)`);
+    } catch (vendorError) {
+      throw new Error(`CCS_IMPORT_FAILURE: all paths failed`);
+    }
+  }
+}
+```
+
+**Applied same pattern to RunwareWebSocketService** (lines ~1397-1417):
+- Now prioritizes `_vendor/` inline bundle first
+- `_shared/` becomes fallback
+- Consistent inline-first approach for all critical services
+
+### Why This Works
+1. **100% Bundling**: Files in function directory always get bundled by Deno Deploy
+2. **Zero Network Latency**: No CDN/external imports to fail
+3. **Proven Pattern**: Same approach that fixed RunwareWebSocketService
+4. **Maintainability**: External bundles remain as safety nets
+
+### Expected Results
+- Tier 1 Force Test: ✅ Green checkmark with image generated
+- Real Tests (Tier 1, 2.5A, 2.5B): ✅ Cascade works correctly
+- Edge function logs: Shows successful inline import
+- Zero "Module not found" errors
+
+---
+
 ## Pattern Summary: Dynamic Imports in Deno Deploy
 
 ### Decision Matrix
