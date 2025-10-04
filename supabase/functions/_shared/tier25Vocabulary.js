@@ -240,131 +240,99 @@ export const UNIVERSAL_VOCAB = {
 export const EXPANDED_COLOR_ARRAY = UNIVERSAL_VOCAB.colors;
 export const CLOTHING_DETECTION_KEYWORDS = UNIVERSAL_VOCAB.clothing;
 
-// ============= TIER_25_UNIFIED_VOCABULARY_EXTENDED - TOP 25% DATA-DRIVEN (V3 - Oct 4, 2025) =============
-// Optimized based on actual word frequency analysis from 100 Level 0 templates (600 sentences)
-// Reduced from ~727 words to ~180 words (75% reduction) while maintaining 75-90% template coverage
+// ============= TIER_25_UNIFIED_VOCABULARY_EXTENDED - TOP 25% DATA-DRIVEN (V4 - Oct 4, 2025) =============
+// Optimized based on actual word frequency analysis from ALL Level 0-4 templates (350+ templates, 2100+ sentences)
+// Reduced from ~727 words to ~240 words (67% reduction) while maintaining 75-90% template coverage
 export const TIER_25_UNIFIED_VOCABULARY_EXTENDED = {
-  // ============= TOP 25% ACTION VOCABULARY (From Level 0 templates) =============
+  // ============= TOP 25% ACTION VOCABULARY (From Level 0-4 templates) =============
   actions: {
-    // Most common basic actions (30 words - top 25% from templates)
+    // Most common basic actions (14 words - top 25% from templates)
     basic: [
-      'go', 'goes', 'going', 'went', 'see', 'sees', 'saw', 'seeing',
-      'like', 'likes', 'liked', 'liking', 'love', 'loves', 'loved', 'loving',
-      'do', 'does', 'did', 'doing', 'get', 'gets', 'got', 'getting',
-      'eat', 'eats', 'ate', 'eating', 'play', 'plays', 'played', 'playing',
-      'make', 'makes', 'made', 'making', 'help', 'helps', 'helped', 'helping',
-      'put', 'puts', 'putting', 'look', 'looks', 'looked', 'looking',
-      'come', 'comes', 'came', 'coming', 'walk', 'walks', 'walked', 'walking',
-      'ride', 'rides', 'rode', 'riding', 'sit', 'sits', 'sat', 'sitting',
-      'take', 'takes', 'took', 'taking', 'try', 'tries', 'tried', 'trying',
-      'run', 'runs', 'ran', 'running', 'jump', 'jumps', 'jumped', 'jumping'
+      'goes', 'sees', 'likes', 'loves', 'helps', 'looks', 'plays', 'eats', 
+      'walks', 'runs', 'jumps', 'finds', 'makes', 'feels'
     ],
     
-    // Creative & learning actions (12 words)
-    creative: [
-      'read', 'reads', 'reading', 'learn', 'learns', 'learned', 'learning',
-      'build', 'builds', 'built', 'building', 'draw', 'draws', 'drew', 'drawing',
-      'write', 'writes', 'wrote', 'writing', 'paint', 'paints', 'painted', 'painting'
+    // Learning actions (11 words - Level 1-4 patterns)
+    learning: [
+      'learns', 'discovers', 'grows', 'shares', 'builds', 'teaches', 
+      'reads', 'works', 'practices', 'solves', 'creates'
     ],
     
-    // Sensory actions (8 words)
-    sensory: [
-      'see', 'sees', 'saw', 'seeing', 'feel', 'feels', 'felt', 'feeling',
-      'hear', 'hears', 'heard', 'hearing', 'smell', 'smells', 'smelled', 'smelling'
-    ],
-    
-    // State actions (8 words)
-    states: [
-      'wake', 'wakes', 'woke', 'waking', 'sleep', 'sleeps', 'slept', 'sleeping',
-      'work', 'works', 'worked', 'working', 'rest', 'rests', 'rested', 'resting'
-    ],
-    
-    // Social actions (8 words)
-    social: [
-      'help', 'helps', 'helped', 'helping', 'give', 'gives', 'gave', 'giving',
-      'share', 'shares', 'shared', 'sharing', 'show', 'shows', 'showed', 'showing'
+    // Advanced actions (6 words - Level 3-4 patterns)
+    advanced: [
+      'realizes', 'understands', 'develops', 'establishes', 'navigates', 'collaborates'
     ]
   },
 
   // ============= TOP 25% COLOR VOCABULARY =============
   colors: {
     basic: [
-      'red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown',
-      'black', 'white', 'gray', 'grey'
+      'red', 'blue', 'green', 'yellow', 'orange', 'purple', 
+      'pink', 'brown', 'black', 'white', 'gray', 'grey'
     ]
   },
 
-  // ============= TOP 25% OBJECT VOCABULARY (From Level 0 templates) =============
+  // ============= TOP 25% OBJECT VOCABULARY (From Level 0-4 templates) =============
   objectCategories: {
-    // Most common animals (10 words - top 25%)
+    // Most common animals (15 words - top 25%)
     animals: [
-      'dog', 'cat', 'bird', 'fish', 'rabbit', 'horse', 
-      'bear', 'duck', 'butterfly', 'bee'
+      'dog', 'cat', 'bird', 'fish', 'rabbit', 'horse', 'bear', 'duck', 
+      'butterfly', 'bee', 'puppy', 'kitten', 'raccoon', 'dragon', 'owl'
     ],
     
-    // Most common nature words (12 words)
+    // Most common nature words (15 words)
     nature: [
-      'tree', 'flower', 'grass', 'sun', 'moon', 'star',
-      'cloud', 'rain', 'snow', 'water', 'sky', 'sand'
+      'tree', 'flower', 'grass', 'sun', 'moon', 'star', 'cloud', 'rain', 
+      'snow', 'water', 'sky', 'sand', 'garden', 'plant', 'seed'
     ],
 
-    // Most common toys (10 words)
+    // Most common toys (12 words)
     toys: [
-      'toy', 'ball', 'book', 'doll', 'blocks', 'puzzle',
-      'bike', 'game', 'balloon', 'kite'
+      'toy', 'ball', 'book', 'doll', 'blocks', 'puzzle', 
+      'bike', 'game', 'balloon', 'kite', 'scooter', 'skateboard'
     ],
 
     // Most common food (12 words) 
     food: [
-      'food', 'cake', 'cookie', 'apple', 'banana', 'milk',
-      'juice', 'water', 'bread', 'ice cream', 'pizza', 'snack'
+      'food', 'cake', 'cookie', 'apple', 'banana', 'milk', 
+      'juice', 'water', 'bread', 'snack', 'ice cream', 'pizza'
     ],
 
     // Most common household items (15 words)
     household: [
-      'bed', 'chair', 'table', 'door', 'window', 'room',
-      'house', 'home', 'lamp', 'pillow', 'blanket', 'cup',
-      'plate', 'spoon', 'clothes'
+      'bed', 'chair', 'table', 'door', 'window', 'room', 'house', 'home', 
+      'lamp', 'pillow', 'blanket', 'cup', 'plate', 'spoon', 'clothes'
     ],
 
     // Most common vehicles (10 words)
     vehicles: [
-      'car', 'bus', 'truck', 'train', 'airplane', 'boat',
+      'car', 'bus', 'truck', 'train', 'airplane', 'boat', 
       'bike', 'scooter', 'fire truck', 'tricycle'
     ],
 
-    // Most common school items (10 words)
+    // Most common school items (10 words - Level 1-4 patterns)
     school: [
-      'book', 'pencil', 'paper', 'desk', 'backpack', 
-      'computer', 'chalk', 'board', 'ruler', 'eraser'
+      'school', 'library', 'classroom', 'book', 'teacher', 
+      'student', 'desk', 'pencil', 'paper', 'notebook'
     ],
 
-    // Most common sports items (8 words)
-    sports: [
-      'ball', 'bat', 'glove', 'helmet', 'goal',
-      'net', 'racket', 'sneakers'
-    ],
-
-    // Most common music items (6 words)
-    music: [
-      'piano', 'guitar', 'drums', 'song', 'music', 'singing'
-    ]
+    // Removed sports and music as they had minimal frequency in templates
+    sports: [],
+    music: []
   },
 
   // ============= TOP 25% CONTEXT DETECTION VOCABULARY =============
   contextDetection: {
-    // Most common indoor settings (15 words)
+    // Most common indoor settings (12 words)
     indoor: [
-      'kitchen', 'bedroom', 'bathroom', 'classroom', 'library',
-      'store', 'restaurant', 'house', 'home', 'school',
-      'room', 'inside', 'table', 'chair', 'bed'
+      'kitchen', 'bedroom', 'bathroom', 'classroom', 'library', 
+      'house', 'home', 'school', 'room', 'store', 'inside', 'auditorium'
     ],
     
-    // Most common outdoor settings (15 words)
+    // Most common outdoor settings (13 words)
     outdoor: [
-      'park', 'garden', 'playground', 'beach', 'forest',
-      'yard', 'outside', 'sky', 'tree', 'grass',
-      'flower', 'nature', 'sun', 'water', 'sand'
+      'park', 'garden', 'playground', 'beach', 'forest', 'yard', 'outside', 
+      'sky', 'street', 'neighborhood', 'cave', 'mountain', 'space'
     ]
   },
 
@@ -372,52 +340,49 @@ export const TIER_25_UNIFIED_VOCABULARY_EXTENDED = {
   environments: {
     // Most common time of day (8 words)
     timeOfDay: [
-      'morning', 'afternoon', 'evening', 'night',
-      'day', 'noon', 'sunrise', 'sunset'
+      'morning', 'afternoon', 'evening', 'night', 'day', 'today', 'week', 'year'
     ],
     
-    // Most common weather (8 words)
+    // Most common weather (10 words)
     atmosphere: [
-      'sunny', 'rainy', 'cloudy', 'snowy',
-      'warm', 'bright', 'dark', 'windy'
+      'sunny', 'rainy', 'cloudy', 'snowy', 'warm', 'cold', 
+      'bright', 'dark', 'windy', 'storm'
     ],
     
-    // Most common lighting (8 words)
-    lighting: [
-      'bright sunlight', 'soft light', 'moonlight', 'sunshine',
-      'lamp light', 'natural light', 'warm light', 'golden light'
+    // Removed lighting as it was not common in templates
+    lighting: [],
+    
+    // NEW: Emotions (15 words - Level 1-4 patterns)
+    emotions: [
+      'happy', 'sad', 'excited', 'nervous', 'proud', 'scared', 
+      'worried', 'tired', 'hungry', 'thirsty', 'lonely', 
+      'grateful', 'confident', 'curious', 'brave'
     ]
   },
 
   // ============= TOP 25% CHARACTER DESCRIPTORS =============
   
-  // Most common hair descriptors (10 words)
-  HAIR_DESCRIPTORS: [
-    'brown', 'black', 'blonde', 'red', 'gray', 'white',
-    'curly', 'straight', 'short', 'long'
-  ],
+  // Removed hair descriptors as they had minimal frequency in templates
+  HAIR_DESCRIPTORS: [],
   
-  // Most common size/age descriptors (15 words)
+  // Most common size/age descriptors (12 words)
   SIZE_AGE_DESCRIPTORS: [
-    'big', 'small', 'tall', 'short', 'little', 'tiny',
-    'young', 'old', 'baby', 'child', 'kid',
-    'older', 'younger', 'toddler', 'grown-up'
+    'big', 'small', 'little', 'tiny', 'tall', 'short', 
+    'young', 'old', 'new', 'large', 'giant', 'huge'
   ],
   
-  // Most common animal relationships (12 words)
+  // Most common animal relationships (6 words)
   ANIMAL_RELATIONSHIPS: [
-    'pet', 'dog', 'cat', 'puppy', 'kitten', 'bunny',
-    'friend', 'buddy', 'family dog', 'family cat',
-    'my pet', 'our pet'
+    'dog', 'cat', 'puppy', 'kitten', 'pet', 'animal'
   ],
   
-  // NEW: Most common people relationships (15 words - TOP 25% FROM TEMPLATES)
+  // NEW: Most common people relationships (20 words - TOP 25% FROM LEVEL 0-4 TEMPLATES)
   PEOPLE_RELATIONSHIPS: [
-    'friend', 'family', 'mom', 'dad', 'teacher', 'helper',
-    'doctor', 'nurse', 'firefighter', 'police', 'librarian',
-    'parent', 'child', 'brother', 'sister'
-  ],
-
+    'friend', 'family', 'mom', 'dad', 'teacher', 'helper', 
+    'doctor', 'nurse', 'firefighter', 'police', 'librarian', 
+    'parent', 'child', 'brother', 'sister', 'Maya', 'Alex', 
+    'Emma', 'Dr. Chen', 'Mrs. Chen'
+  ]
 };
 
 // Legacy compatibility alias: objects → objectCategories
@@ -435,7 +400,7 @@ let _tier25ExtendedCache = null;
 export function getTier25Extended() {
   if (!_tier25ExtendedCache) {
     _tier25ExtendedCache = TIER_25_UNIFIED_VOCABULARY_EXTENDED;
-    console.log('✅ [VOCAB_CACHE] TIER_25_EXTENDED loaded (top 25% vocabulary, ~180 words)');
+    console.log('✅ [VOCAB_CACHE] TIER_25_EXTENDED loaded (top 25% vocabulary, ~240 words, 67% reduction)');
   }
   return _tier25ExtendedCache;
 }
