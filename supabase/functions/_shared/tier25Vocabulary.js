@@ -382,9 +382,6 @@ export const TIER_25_UNIFIED_VOCABULARY_EXTENDED = {
 
   // ============= TOP 25% CHARACTER DESCRIPTORS =============
   
-  // Top hair descriptors (5 words - added for detectAppearance)
-  HAIR_DESCRIPTORS: ['blonde', 'brown', 'curly', 'long', 'short'],
-  
   // Most common size/age descriptors (12 words)
   SIZE_AGE_DESCRIPTORS: [
     'big', 'small', 'little', 'tiny', 'tall', 'short', 
@@ -435,8 +432,11 @@ TIER_25_UNIFIED_VOCABULARY_EXTENDED.context = TIER_25_UNIFIED_VOCABULARY_EXTENDE
 // Alias for CCS: peopleRelationships → PEOPLE_RELATIONSHIPS
 TIER_25_UNIFIED_VOCABULARY_EXTENDED.peopleRelationships = TIER_25_UNIFIED_VOCABULARY_EXTENDED.PEOPLE_RELATIONSHIPS;
 
-// Alias for CCS: hair → HAIR_DESCRIPTORS (for legacy compatibility)
-TIER_25_UNIFIED_VOCABULARY_EXTENDED.hair = TIER_25_UNIFIED_VOCABULARY_EXTENDED.HAIR_DESCRIPTORS;
+// Alias for CCS: hair → combined hairColors + hairStyles (for legacy compatibility)
+TIER_25_UNIFIED_VOCABULARY_EXTENDED.hair = [
+  ...TIER_25_UNIFIED_VOCABULARY_EXTENDED.appearanceDescriptors.hairColors,
+  ...TIER_25_UNIFIED_VOCABULARY_EXTENDED.appearanceDescriptors.hairStyles
+];
 
 // ============= MODULE-LEVEL CACHING FOR TIER_25_EXTENDED (CPU OPTIMIZATION) =============
 // Reduces vocabulary loading from 6x per request to 1x per cold start (60-70% CPU reduction)
