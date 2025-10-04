@@ -39,7 +39,7 @@ This directory contains all Edge Functions for the project. GitHub is the source
 - `image-proxy` - JWT: false
 - `runware-generate-image` - JWT: false (JS only)
 
-- `runware-template-ab` - JWT: false (JS only)
+- `runware-template-ab` - JWT: false (Single-file TypeScript, thin JS wrapper)
 - `runware-template-cd` - JWT: false (JS only)
 
 ### Security & Monitoring Functions
@@ -61,7 +61,7 @@ This directory contains all Edge Functions for the project. GitHub is the source
 All functions use `index.ts` as their entry point. JavaScript-only functions have TypeScript shim files that import their `index.js` implementations:
 - `ai-visual-scene-creator` - Shim: `index.ts` → Implementation: `index.js`
 - `runware-generate-image` - Shim: `index.ts` → Implementation: `index.js`
-- `runware-template-ab` - Shim: `index.ts` → Implementation: `index.js`
+- `runware-template-ab` - **Single-file TypeScript** (index.js is thin re-export wrapper only)
 - `runware-template-cd` - Shim: `index.ts` → Implementation: `index.js`
 - `background-image-pregeneration` - Shim: `index.ts` → Implementation: `index.js`
 
@@ -110,6 +110,14 @@ All functions use `index.ts` as their entry point. JavaScript-only functions hav
 - `clear-character-cache/index.ts` - Strengthened receptionist ✅
 
 **Migration Status**: **100% COMPLETE** - All 6 critical edge functions now use Option A architecture
+
+**runware-template-ab Special Case**: 
+- Uses single-file TypeScript implementation (727 lines)
+- `index.js` is a thin 5-line re-export wrapper for backward compatibility
+- No dynamic sibling imports (solved bundling failures)
+- LKG pattern preserved for resilience
+- Bundler hint ensures CharacterConsistencyService is included
+- See `docs/RUNWARE_TEMPLATE_AB_REWRITE.md` for complete details
 
 ### Boot Failure Verification Procedures
 

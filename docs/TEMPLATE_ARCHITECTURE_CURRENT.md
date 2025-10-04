@@ -274,3 +274,40 @@ The current template architecture provides:
 **Architecture Status**: Fully operational and production-ready
 **Last Updated**: Post-revert to individual file architecture
 **Template Accessibility**: 100% (all 136 templates functioning)
+
+---
+
+## Runware Template AB/CD Architecture
+
+### Template AB (Tier 2.5A/2.5B)
+**File**: `supabase/functions/runware-template-ab/index.ts` (Single-file TypeScript implementation)
+
+**Architecture Pattern**:
+- **Single-File Implementation**: All business logic, receptionist, and helpers in one TypeScript file (727 lines)
+- **LKG Pattern Preserved**: Last-Known-Good handler caching for resilience
+- **No Dynamic Sibling Imports**: Eliminated `./index.js` import that caused bundling failures
+- **Bundler Hint**: `import { characterConsistencyService as _ccsHint }` ensures CCS is bundled
+- **Complexity A/B Unified**: Single `handleTemplateABRequest` function with mode-based branching
+
+**Key Features**:
+- **Complexity A**: Attempts CharacterConsistencyService via lazy `await import()`, escalates to inline Mode B if CCS fails
+- **Complexity B**: Pure inline logic, no CCS or StaticDataCache imports
+- **Inlined Data**: Style frameworks, negative prompts, and cultural enhancement helpers all inline
+- **ProviderGate Integration**: `T25A:runware-template-ab` and `T25B:runware-template-ab` gates preserved
+- **Orchestrator Contract**: Returns `{ success, imageURL, complexity, positivePrompt, negativePrompt }`
+
+**Backward Compatibility**:
+- `index.js`: Thin 5-line re-export wrapper for `phase2-validation.js`
+- Exports: `default`, `processSecondaryCharacters`, `PREMIUM_PROMPT_TEMPLATES`, `BASIC_PROMPT_TEMPLATES`
+
+**Performance**:
+- Boot time: 23ms
+- No "Module not found" errors
+- Reliable bundling via Deno Deploy
+
+**Documentation**: See `docs/RUNWARE_TEMPLATE_AB_REWRITE.md` for complete implementation details
+
+### Template CD (Tier 2.5C/2.5D)
+**File**: `supabase/functions/runware-template-cd/index.ts`
+- Uses dual-file architecture pattern (receptionist + handler)
+- Serves as fallback tier after Template AB
