@@ -72,6 +72,63 @@ window.sessionCacheDebug.investigate()
 
 All previous debug functionality remains available through the UnifiedDebugMonitor. The scattered `window.debug*` objects have been eliminated, and debug access is properly gated behind debug mode.
 
+## Image Debug Data
+
+### Recent Image Prompts Response Shape
+
+The `recent-image-prompts` operation returns a normalized shape for consistency:
+
+```javascript
+{
+  imagePrompts: [
+    {
+      id: "uuid",
+      session_id: "session-id",
+      positive_prompt: "The actual prompt sent to Runware...",
+      negative_prompt: "NO TEXT, no words...",
+      image_url: "https://...",
+      tier: "TIER_1" | "TIER_2.5A" | "TIER_2.5B" | "TIER_2.5C" | "DIRECT_MODE",
+      status: "success" | "failure" | "attempting",
+      created_at: "timestamp"
+    }
+  ]
+}
+```
+
+**Backward Compatibility**: Both `data` and `imagePrompts` fields are returned:
+- `data`: Array of image prompts (legacy)
+- `imagePrompts`: Array of image prompts (normalized)
+
+Consumers can use either field.
+
+### Prompt Storage
+
+- **positive_prompt**: The actual positive prompt sent to Runware API
+- **negative_prompt**: The actual negative prompt sent to Runware API
+- Both are stored in `image_generation_debug` table for all successful image generations
+
+### Sampling and Reliability
+
+**Default Behavior** (Production):
+- Success logs: 10% sampling rate (configurable via `DEBUG_TIER_LOG_SAMPLE`)
+- Failure logs: 100% (always logged)
+
+**Debug Mode** (Full Logging):
+Set `DEBUG_TIER_LOG_SAMPLE=1` to capture 100% of success logs:
+```bash
+# In Supabase Edge Function Secrets
+DEBUG_TIER_LOG_SAMPLE=1
+```
+
+This ensures "last 6 image prompts" is reliably available during debugging.
+
+**Client-Side Debug Access**:
+```javascript
+// Only works when ?debug=1 is active
+const { data } = await DebugGateway.getRecentImagePrompts(6);
+console.log(data.imagePrompts); // Array of last 6 prompts
+```
+
 ## Common Issues
 
 ### CORS Error with `[object Object]` in URL

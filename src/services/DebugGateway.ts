@@ -88,7 +88,8 @@ class DebugGatewayService {
   private createMockResponse(operation: string): any {
     switch (operation) {
       case 'recent-image-prompts':
-        return { data: { imagePrompts: [] } };
+        // Normalized shape: always return { imagePrompts: [] }
+        return { imagePrompts: [] };
       case 'prompt-history':
         return { data: { data: [], totalEntries: 0, fullDebugData: [] } };
       case 'ai-prompts':
@@ -201,6 +202,18 @@ class DebugGatewayService {
           data: result.data,
           timestamp: Date.now()
         });
+      }
+
+      // Normalize recent-image-prompts response shape
+      if (params.operation === 'recent-image-prompts' && result.data) {
+        // If data is an array, wrap it for consistent shape
+        if (Array.isArray(result.data)) {
+          result.data = { imagePrompts: result.data };
+        }
+        // If data.data exists (old shape), normalize to imagePrompts
+        else if (result.data.data && !result.data.imagePrompts) {
+          result.data = { imagePrompts: result.data.data };
+        }
       }
 
       return result;

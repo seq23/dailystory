@@ -123,7 +123,11 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
           return createCorsErrorResponse('Failed to fetch image generation data', 500);
         }
 
-        return createCorsResponse({ data: imagePrompts || [] }, 200);
+        // Return both shapes for backward compatibility
+        return createCorsResponse({ 
+          data: imagePrompts || [], 
+          imagePrompts: imagePrompts || [] 
+        }, 200);
       }
 
       case 'story-processing': {

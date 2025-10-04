@@ -261,7 +261,8 @@ async function bindTierLogger(
   memoizedImport: any,
 ): Promise<TierLogger> {
   const isProd = Deno.env.get("ENVIRONMENT") === "production";
-  const logSampleRate = parseFloat(Deno.env.get("DEBUG_TIER_LOG_SAMPLE") || "0.1"); // Default 10% sampling
+  const debugTierSample = Deno.env.get("DEBUG_TIER_LOG_SAMPLE");
+  const logSampleRate = debugTierSample === "1" ? 1.0 : parseFloat(debugTierSample || "0.1"); // 100% if DEBUG_TIER_LOG_SAMPLE=1, else default 10%
 
   try {
     const [{ createVendorFirstSupabaseClient }, tierLogging] = await Promise.all([
@@ -274,6 +275,7 @@ async function bindTierLogger(
     // Sampling helper: only log to DB if sampled or failure
     const shouldLogToDB = (status: string = "info") => {
       if (status === "failed" || status === "failure") return true; // Always log failures
+      if (logSampleRate >= 1.0) return true; // Full logging when DEBUG_TIER_LOG_SAMPLE=1
       return Math.random() < logSampleRate; // Sample for success/info logs
     };
 
@@ -1792,7 +1794,14 @@ Deno.serve(async (req) => {
                 },
               };
 
-              tierLogger.success("DIRECT_MODE", { result });
+              tierLogger.success("DIRECT_MODE", { 
+                result,
+                positivePrompt: directModeResponse.data?.runwareDebugData?.positivePrompt || directModeResponse.data?.positivePrompt,
+                negativePrompt: directModeResponse.data?.runwareDebugData?.negativePrompt || directModeResponse.data?.negativePrompt,
+                imageUrl: directModeResponse.data.imageURL,
+                edgeFunction: 'runware-template-cd',
+                pageNumber: pageNumberValue
+              });
               console.log(`SUCCESS [${requestId}] Direct Mode fallback completed`);
 
               return corsResponse(
@@ -1903,7 +1912,14 @@ Deno.serve(async (req) => {
                 },
               };
 
-              tierLogger.success("TIER_2.5B", { result });
+              tierLogger.success("TIER_2.5B", { 
+                result,
+                positivePrompt: tier25bResponse.data.positivePrompt || tier25bResponse.data.templateData?.positivePrompt,
+                negativePrompt: tier25bResponse.data.negativePrompt || tier25bResponse.data.templateData?.negativePrompt,
+                imageUrl: tier25bResponse.data.imageURL,
+                edgeFunction: 'runware-template-ab',
+                pageNumber: pageNumberValue
+              });
               console.log(`SUCCESS [${requestId}] Tier 2.5B fallback completed (2.5A skipped)`);
 
               return corsResponse(
@@ -2010,7 +2026,14 @@ Deno.serve(async (req) => {
                   },
                 };
 
-                tierLogger.success("TIER_2.5A", { result });
+                tierLogger.success("TIER_2.5A", { 
+                  result,
+                  positivePrompt: tier25aResponse.data.positivePrompt || tier25aResponse.data.templateData?.positivePrompt,
+                  negativePrompt: tier25aResponse.data.negativePrompt || tier25aResponse.data.templateData?.negativePrompt,
+                  imageUrl: tier25aResponse.data.imageURL,
+                  edgeFunction: 'runware-template-ab',
+                  pageNumber: pageNumberValue
+                });
                 console.log(`SUCCESS [${requestId}] Tier 2.5A fallback completed`);
 
                 return corsResponse(
@@ -2108,7 +2131,14 @@ Deno.serve(async (req) => {
                   },
                 };
 
-                tierLogger.success("TIER_2.5B", { result });
+                tierLogger.success("TIER_2.5B", { 
+                  result,
+                  positivePrompt: tier25bResponse.data.positivePrompt || tier25bResponse.data.templateData?.positivePrompt,
+                  negativePrompt: tier25bResponse.data.negativePrompt || tier25bResponse.data.templateData?.negativePrompt,
+                  imageUrl: tier25bResponse.data.imageURL,
+                  edgeFunction: 'runware-template-ab',
+                  pageNumber: pageNumberValue
+                });
                 console.log(`SUCCESS [${requestId}] Tier 2.5B fallback completed`);
 
                 return corsResponse(
@@ -2225,7 +2255,14 @@ Deno.serve(async (req) => {
                   },
                 };
 
-                tierLogger.success("TIER_2.5C", { result });
+                tierLogger.success("TIER_2.5C", { 
+                  result,
+                  positivePrompt: tier25cResponse.data.positivePrompt || tier25cResponse.data.templateData?.positivePrompt,
+                  negativePrompt: tier25cResponse.data.negativePrompt || tier25cResponse.data.templateData?.negativePrompt,
+                  imageUrl: tier25cResponse.data.imageURL,
+                  edgeFunction: 'runware-template-cd',
+                  pageNumber: pageNumberValue
+                });
                 console.log(`SUCCESS [${requestId}] Tier 2.5C universal fallback completed`);
 
                 return corsResponse(
@@ -2345,7 +2382,14 @@ Deno.serve(async (req) => {
                     },
                   };
 
-                  tierLogger.success("TIER_2.5D", { result });
+                  tierLogger.success("TIER_2.5D", { 
+                    result,
+                    positivePrompt: tier25dResponse.data.positivePrompt || tier25dResponse.data.templateData?.positivePrompt,
+                    negativePrompt: tier25dResponse.data.negativePrompt || tier25dResponse.data.templateData?.negativePrompt,
+                    imageUrl: tier25dResponse.data.imageURL,
+                    edgeFunction: 'runware-template-cd',
+                    pageNumber: pageNumberValue
+                  });
                   console.log(`SUCCESS [${requestId}] Tier 2.5D emergency fallback completed`);
 
                   return corsResponse(
