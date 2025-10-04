@@ -918,6 +918,7 @@ export class CharacterConsistencyService {
         }
       }
     }
+    } // Close the if statement from line 907
     
     console.log(`👔 Main character appearance detected:`, {
       physicalFeaturesCount: detections.physicalFeatures.length,
