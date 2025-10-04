@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-10-04T14:30:00Z - Removed import_map override, fixed nuclear negative typo
+// DEPLOY_MARKER: 2025-10-04T14:45:00Z - Added safe JSON parsing and runtime probe handling
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 const SERVICE_NAME = "runware-template-ab";
 
