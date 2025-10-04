@@ -22,21 +22,24 @@ import_map = "./deno.jsonc"
 
 Based on TIER_1_IMPORT_FAILURE_POSTMORTEM.md, these functions require `import_map`:
 
-### ✅ Functions Using Receptionist Pattern
+### ✅ Functions Requiring import_map
 
-**Note:** Not all receptionist functions require `import_map`. Only add it when dynamic imports are failing.
+**runware-template-ab** requires `import_map` because its `index.js` has static imports from `_shared/`:
 
 ```toml
-# Example: Functions that may need import_map if they use receptionist pattern
-# Add only if "Module not found: index.js" errors occur
-
-# Currently, runware-template-ab and runware-template-cd work WITHOUT import_map
 [functions.runware-template-ab]
 verify_jwt = false
+import_map = "../deno.jsonc"
+```
 
+**runware-template-cd** does NOT require `import_map` (it uses only lazy-loading):
+
+```toml
 [functions.runware-template-cd]
 verify_jwt = false
 ```
+
+**Path Resolution Note:** Use `../deno.jsonc` because the path is relative to `supabase/functions/<function-name>/`, and `deno.jsonc` lives one level up at `supabase/functions/deno.jsonc`.
 
 ## Why import_map is Required
 
