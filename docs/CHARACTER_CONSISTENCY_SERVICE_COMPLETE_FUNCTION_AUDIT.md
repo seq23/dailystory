@@ -32,6 +32,7 @@ The original `getCharacterSeed()` method was **doing too much with too many fail
 - **Failure Mode**: **GRACEFUL FALLBACK** - Returns empty array on error
 - **Dependencies**: tier25Vocabulary.js (lazy loaded with fallback)
 - **Integration**: Called by `detectAllCharacters()`, `analyzeVisualDetails()`
+- **Line 396 Filter**: The `people` category is intentionally excluded from `vocab.objects` because people are characters with roles (detected by `detectSecondaryCharacters`), not colored objects. This prevents nonsensical detections like "red teacher" while preserving valid colored animals like "pink dog".
 
 #### 1.2 `detectCharacters(pageText, sessionId, pageNumber)`
 - **Lines**: ~550-570 (approximate)

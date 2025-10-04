@@ -393,7 +393,9 @@ export class CharacterConsistencyService {
         clothing: UNIVERSAL_VOCAB.clothing,
         colors: UNIVERSAL_VOCAB.colors,
         actions: UNIVERSAL_VOCAB.actions,
-        objects: Object.values(UNIVERSAL_VOCAB.objects).flat(), // Flatten all object categories
+        objects: Object.entries(UNIVERSAL_VOCAB.objects)
+          .filter(([category]) => category !== 'people')  // Exclude people - they're characters, not objects
+          .flatMap(([_, items]) => items),
         animals: UNIVERSAL_VOCAB.objects.animals,
         toys: UNIVERSAL_VOCAB.objects.toys,
         nature: UNIVERSAL_VOCAB.objects.nature,
