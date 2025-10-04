@@ -2,6 +2,9 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
+// ✅ BUNDLER HINT: Force CCS inclusion in deployment bundle (dynamic import used inside handler)
+import { characterConsistencyService as _ccsHint } from "../_shared/CharacterConsistencyService.js";
+
 // ========== INLINED: ProviderGate (Concurrency + Circuit Breaker) ==========
 // Inlined to avoid bundling failures with _shared/ dynamic imports
 // Feature flag: DISABLE_PROVIDER_GATE=true to skip gating

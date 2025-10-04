@@ -2,6 +2,9 @@
 // Handles Level A (basic shapes/colors) and Level B (simple scenes)
 // Lightweight, fast deployment - optimized for simple template generation with character consistency
 
+// ✅ BUNDLER HINT: Force CCS inclusion in deployment bundle (dynamic import used inside handler)
+import { characterConsistencyService as _ccsHint } from "../_shared/CharacterConsistencyService.js";
+
 // Lazy load RunwareErrorHandler to prevent boot failures
 let RunwareErrorHandler = null;
 let runwareErrorHandlerLoadAttempted = false;

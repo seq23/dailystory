@@ -2,6 +2,9 @@
 
 // Inlined orchestrator logic - no more lazy loading
 
+// ✅ BUNDLER HINT: Force CCS inclusion in deployment bundle (dynamic import used inside handler)
+import { characterConsistencyService as _ccsHint } from "../_shared/CharacterConsistencyService.js";
+
 // ============================================================================
 // 🎯 ORCHESTRATOR: RESILIENT IMAGE GENERATION ORCHESTRATOR
 // **CRITICAL SYSTEM NOTICE**: This function serves as the MAIN ORCHESTRATOR for image generation
