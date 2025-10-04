@@ -63,54 +63,57 @@ export const UNIVERSAL_VOCAB = {
     'apron', 'vest', 'shorts', 'jeans', 'overalls'
   ],
   
-  // Full color array (136 items)
+  // Top 75 Colors for Kids & Teens (Expert-Curated Oct 4, 2025)
   colors: [
-    'red', 'blue', 'yellow', 'green', 'orange', 'purple', 'pink', 'brown', 'black', 'white',
-    'turquoise', 'coral', 'lavender', 'mint', 'peach', 'gold', 'silver', 'bronze',
-    'maroon', 'navy', 'teal', 'lime', 'magenta', 'cyan', 'beige', 'tan',
-    'bright red', 'deep blue', 'sunny yellow', 'forest green', 'soft pink', 'rich purple',
-    'warm orange', 'sky blue', 'grass green', 'snow white', 'charcoal black',
-    'bright blue', 'bright green', 'bright yellow', 'bright orange', 'bright purple', 'bright pink',
-    'vivid red', 'vivid blue', 'vivid green', 'vivid yellow', 'vivid orange', 'vivid purple', 'vivid pink',
-    'deep red', 'deep green', 'deep purple', 'deep orange', 'deep pink', 'deep brown',
-    'dark red', 'dark blue', 'dark green', 'dark purple', 'dark orange', 'dark pink', 'dark brown',
-    'light red', 'light blue', 'light green', 'light yellow', 'light purple', 'light pink', 'light brown',
-    'pale red', 'pale blue', 'pale green', 'pale yellow', 'pale purple', 'pale pink', 'pale brown',
-    'crimson', 'scarlet', 'ruby', 'cherry', 'rose', 'salmon', 'apricot',
-    'royal blue', 'aqua', 'powder blue',
-    'lime green', 'emerald', 'jade', 'seafoam', 'olive', 'sage',
-    'golden', 'lemon', 'butter', 'cream', 'ivory', 'khaki', 'sand',
-    'violet', 'lilac', 'plum', 'fuchsia', 'orchid', 'amethyst',
-    'tangerine', 'amber', 'rust', 'copper', 'honey', 'caramel',
-    'cotton candy pink', 'bubblegum pink', 'hot pink', 'flamingo', 'blush', 'dusty rose'
+    // Core Basics (12)
+    'red', 'blue', 'yellow', 'green', 'orange', 'purple', 'pink', 'brown', 'black', 'white', 'gray', 'grey',
+    
+    // Essential Light/Dark Variants (15)
+    'bright red', 'dark blue', 'light green', 'pale yellow', 'deep purple', 'soft pink', 'dark brown',
+    'light blue', 'bright green', 'bright yellow', 'bright orange', 'bright pink', 'deep red', 'dark green', 'light purple',
+    
+    // Teen-Friendly Modern Colors (12)
+    'neon', 'metallic', 'turquoise', 'coral', 'lavender', 'mint', 'peach', 'teal', 'lime', 'magenta', 'cyan', 'navy',
+    
+    // Nature-Inspired (10)
+    'forest green', 'sky blue', 'grass green', 'ocean blue', 'sunset orange', 'sunshine yellow', 'midnight blue', 'rose pink', 'sand beige', 'snow white',
+    
+    // Precious/Special (8)
+    'gold', 'golden', 'silver', 'bronze', 'ruby', 'emerald', 'sapphire', 'rainbow',
+    
+    // Warm & Rich Tones (10)
+    'warm orange', 'rich purple', 'vivid red', 'vivid blue', 'sunny yellow', 'royal blue', 'cherry red', 'honey gold', 'amber', 'copper',
+    
+    // Soft & Gentle Tones (8)
+    'powder blue', 'cream', 'ivory', 'blush', 'dusty rose', 'sage', 'olive', 'khaki'
   ],
   
-  // Flattened actions array (150+ items with all verb forms)
+  // Top 75 Actions (BASE VERBS ONLY - Expert-Curated Oct 4, 2025)
+  // Note: Conjugations handled by NLP/template system
   actions: [
-    'run', 'runs', 'ran', 'running', 'jump', 'jumps', 'jumped', 'jumping', 
-    'walk', 'walks', 'walked', 'walking', 'play', 'plays', 'played', 'playing',
-    'dance', 'dances', 'danced', 'dancing', 'climb', 'climbs', 'climbed', 'climbing',
-    'throw', 'throws', 'threw', 'throwing', 'catch', 'catches', 'caught', 'catching',
-    'swim', 'swims', 'swam', 'swimming', 'slide', 'slides', 'slid', 'sliding',
-    'roll', 'rolls', 'rolled', 'rolling', 'hide', 'hides', 'hid', 'hiding',
-    'dig', 'digs', 'dug', 'digging', 'kick', 'kicks', 'kicked', 'kicking',
-    'draw', 'draws', 'drew', 'drawing', 'write', 'writes', 'wrote', 'writing',
-    'build', 'builds', 'built', 'building', 'create', 'creates', 'created', 'creating',
-    'paint', 'paints', 'painted', 'painting', 'read', 'reads', 'reading',
-    'cook', 'cooks', 'cooked', 'cooking', 'study', 'studies', 'studied', 'studying',
-    'see', 'sees', 'saw', 'seeing', 'hear', 'hears', 'heard', 'hearing',
-    'feel', 'feels', 'felt', 'feeling', 'smell', 'smells', 'smelled', 'smelling',
-    'taste', 'tastes', 'tasted', 'tasting', 'touch', 'touches', 'touched', 'touching',
-    'wake', 'wakes', 'woke', 'waking', 'sleep', 'sleeps', 'slept', 'sleeping',
-    'lay', 'lays', 'laid', 'laying', 'sit', 'sits', 'sat', 'sitting',
-    'stand', 'stands', 'stood', 'standing', 'lie', 'lies', 'lying',
-    'fly', 'flies', 'flew', 'flying', 'float', 'floats', 'floated', 'floating',
-    'magic', 'magical', 'transform', 'transforms', 'transformed', 'transforming',
-    'disappear', 'disappears', 'disappeared', 'disappearing', 'sparkle', 'sparkles', 'sparkling',
-    'glow', 'glows', 'glowed', 'glowing', 'enchant', 'enchants', 'enchanted', 'enchanting',
-    'help', 'helps', 'helped', 'helping', 'share', 'shares', 'shared', 'sharing',
-    'laugh', 'laughs', 'laughed', 'laughing', 'smile', 'smiles', 'smiled', 'smiling',
-    'hug', 'hugs', 'hugged', 'hugging', 'explore', 'explores', 'explored', 'exploring'
+    // Movement & Physical (15)
+    'run', 'walk', 'jump', 'hop', 'skip', 'climb', 'slide', 'swing', 'roll', 'crawl', 'dance', 'spin', 'march', 'leap', 'bounce',
+    
+    // Daily Life & Routine (12)
+    'wake', 'sleep', 'eat', 'drink', 'wash', 'dress', 'brush', 'sit', 'stand', 'rest', 'lie', 'stretch',
+    
+    // Play & Recreation (10)
+    'play', 'throw', 'catch', 'kick', 'dig', 'build', 'ride', 'splash', 'swing', 'hide',
+    
+    // Learning & School (8)
+    'read', 'write', 'draw', 'count', 'study', 'learn', 'practice', 'spell',
+    
+    // Creative & Artistic (8)
+    'paint', 'color', 'sing', 'create', 'make', 'design', 'craft', 'imagine',
+    
+    // Social & Emotional (10)
+    'help', 'share', 'hug', 'smile', 'laugh', 'talk', 'listen', 'care', 'love', 'thank',
+    
+    // Sensory & Perception (6)
+    'see', 'hear', 'feel', 'touch', 'smell', 'taste',
+    
+    // Nature & Animals (6)
+    'grow', 'plant', 'water', 'feed', 'watch', 'fly'
   ],
   
   // Deduplicated objects by category (238+ items with new template nouns)
