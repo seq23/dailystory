@@ -143,19 +143,6 @@ export const StoryNavigationControls: React.FC<StoryNavigationControlsProps> = (
 
       {/* Next Button */}
       <div className="flex items-center gap-2">
-        {/* Guest Next Story Button */}
-        {!isPremium && currentPage === 5 && (
-          <MobileOptimizedButton
-            onClick={onGenerateNewStory}
-            disabled={isGeneratingNewStory}
-            variant="default"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            {isGeneratingNewStory ? 'Loading...' : 'Next Story'}
-          </MobileOptimizedButton>
-        )}
-        
-        {/* Next Button */}
         <Button
           onClick={handleNext}
           disabled={!canGoNext || isLoadingNextPage}
