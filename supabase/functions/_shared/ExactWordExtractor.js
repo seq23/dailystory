@@ -104,9 +104,9 @@ export class ExactWordExtractor {
    * Extracts the primary action verb from predefined list
    */
   static extractExactAction(text) {
-    const actionWords = TIER_25_UNIFIED_VOCABULARY_EXTENDED.actions.movement
-      .concat(TIER_25_UNIFIED_VOCABULARY_EXTENDED.actions.physical)
-      .concat(TIER_25_UNIFIED_VOCABULARY_EXTENDED.actions.emotional);
+    const actionWords = TIER_25_UNIFIED_VOCABULARY_EXTENDED.actions.basic
+      .concat(TIER_25_UNIFIED_VOCABULARY_EXTENDED.actions.learning)
+      .concat(TIER_25_UNIFIED_VOCABULARY_EXTENDED.actions.advanced);
 
     // Look for exact action word matches
     for (const action of actionWords) {
@@ -128,8 +128,7 @@ export class ExactWordExtractor {
       .concat(TIER_25_UNIFIED_VOCABULARY_EXTENDED.objects.household)
       .concat(TIER_25_UNIFIED_VOCABULARY_EXTENDED.objects.animals);
       
-    const colors = TIER_25_UNIFIED_VOCABULARY_EXTENDED.colors.basic
-      .concat(TIER_25_UNIFIED_VOCABULARY_EXTENDED.colors.advanced);
+    const colors = TIER_25_UNIFIED_VOCABULARY_EXTENDED.colors.basic;
 
     const foundObjects = [];
 

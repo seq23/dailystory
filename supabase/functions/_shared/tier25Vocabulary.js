@@ -503,11 +503,11 @@ const UNIVERSAL_OBJECT_INTERACTION = [
 // ============= NUCLEAR INDEPENDENCE EXPORTS FOR EDGE FUNCTION COMPATIBILITY =============
 export const TIER_25_NUCLEAR_VOCABULARY = TIER_25_UNIFIED_VOCABULARY_EXTENDED;
 export const TIER_25_NUCLEAR_COLORS = EXPANDED_COLOR_ARRAY;
-export const TIER_25_NUCLEAR_LIGHTING = UNIVERSAL_LIGHTING_ARRAYS;
-export const TIER_25_NUCLEAR_WEATHER = UNIVERSAL_WEATHER_ARRAYS;
-export const TIER_25_NUCLEAR_INDOOR = UNIVERSAL_INDOOR_SETTINGS;
-export const TIER_25_NUCLEAR_OUTDOOR = UNIVERSAL_OUTDOOR_SETTINGS;
-export const TIER_25_NUCLEAR_ACTION_TEMPLATES = UNIVERSAL_ACTION_TEMPLATES;
+export const TIER_25_NUCLEAR_LIGHTING = [];
+export const TIER_25_NUCLEAR_WEATHER = [];
+export const TIER_25_NUCLEAR_INDOOR = [];
+export const TIER_25_NUCLEAR_OUTDOOR = [];
+export const TIER_25_NUCLEAR_ACTION_TEMPLATES = [];
 export const TIER_25_NUCLEAR_EMOTION_MODIFIERS = UNIVERSAL_EMOTION_MODIFIERS;
 export const TIER_25_NUCLEAR_INTERACTION_TEMPLATES = UNIVERSAL_INTERACTION_TEMPLATES;
 // ============= SEMANTIC EXTRACTION ARRAYS =============
@@ -677,11 +677,6 @@ export default {
   TIER_25_UNIFIED_VOCABULARY_EXTENDED,
   EXPANDED_COLOR_ARRAY,
   CLOTHING_DETECTION_KEYWORDS,
-  UNIVERSAL_LIGHTING_ARRAYS,
-  UNIVERSAL_WEATHER_ARRAYS,
-  UNIVERSAL_INDOOR_SETTINGS,
-  UNIVERSAL_OUTDOOR_SETTINGS,
-  UNIVERSAL_ACTION_TEMPLATES,
   UNIVERSAL_EMOTION_MODIFIERS,
   UNIVERSAL_INTERACTION_TEMPLATES,
   UNIVERSAL_OBJECT_INTERACTION,
@@ -713,9 +708,7 @@ const tier25vocabulary = {
     const vocab = TIER_25_UNIFIED_VOCABULARY_EXTENDED;
     return [
       ...vocab.contextDetection.indoor,
-      ...vocab.contextDetection.outdoor,
-      ...UNIVERSAL_INDOOR_SETTINGS,
-      ...UNIVERSAL_OUTDOOR_SETTINGS
+      ...vocab.contextDetection.outdoor
     ];
   },
   
@@ -741,11 +734,8 @@ const tier25vocabulary = {
     const vocab = TIER_25_UNIFIED_VOCABULARY_EXTENDED.actions;
     const allActions = [
       ...vocab.basic,
-      ...vocab.creative, 
-      ...vocab.sensory,
-      ...vocab.states,
-      ...vocab.fantasy,
-      ...vocab.social
+      ...vocab.learning,
+      ...vocab.advanced
     ];
     // Extract base verb forms (remove inflections)
     const baseVerbs = [];
