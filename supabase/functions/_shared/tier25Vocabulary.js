@@ -247,23 +247,30 @@ export const CLOTHING_DETECTION_KEYWORDS = UNIVERSAL_VOCAB.clothing;
 // Optimized based on actual word frequency analysis from ALL Level 0-4 templates (350+ templates, 2100+ sentences)
 // Reduced from ~727 words to ~240 words (67% reduction) while maintaining 75-90% template coverage
 export const TIER_25_UNIFIED_VOCABULARY_EXTENDED = {
-  // ============= TOP 25% ACTION VOCABULARY (From Level 0-4 templates) =============
+  // ============= TOP 75 BASE ACTION VERBS (Expert-Curated for CCS, Oct 4, 2025) =============
   actions: {
-    // Most common basic actions (14 words - top 25% from templates)
+    // Basic actions (25 base verbs - fundamental children's story actions)
     basic: [
-      'goes', 'sees', 'likes', 'loves', 'helps', 'looks', 'plays', 'eats', 
-      'walks', 'runs', 'jumps', 'finds', 'makes', 'feels'
+      'go', 'see', 'like', 'love', 'help', 'look', 'play', 'eat', 
+      'walk', 'run', 'jump', 'find', 'make', 'feel', 'come', 'get', 
+      'take', 'give', 'put', 'sit', 'stand', 'turn', 'move', 'stop', 'start'
     ],
     
-    // Learning actions (11 words - Level 1-4 patterns)
+    // Learning actions (25 base verbs - educational & developmental)
     learning: [
-      'learns', 'discovers', 'grows', 'shares', 'builds', 'teaches', 
-      'reads', 'works', 'practices', 'solves', 'creates'
+      'learn', 'discover', 'grow', 'share', 'build', 'teach', 
+      'read', 'work', 'practice', 'solve', 'create', 'explore', 
+      'ask', 'answer', 'think', 'remember', 'forget', 'know', 
+      'understand', 'imagine', 'dream', 'listen', 'watch', 'study', 'try'
     ],
     
-    // Advanced actions (6 words - Level 3-4 patterns)
+    // Advanced actions (25 base verbs - complex behaviors & emotions)
     advanced: [
-      'realizes', 'understands', 'develops', 'establishes', 'navigates', 'collaborates'
+      'realize', 'develop', 'establish', 'navigate', 'collaborate', 
+      'achieve', 'believe', 'wonder', 'hope', 'wish', 'decide', 
+      'choose', 'change', 'become', 'transform', 'adapt', 'overcome', 
+      'persevere', 'celebrate', 'appreciate', 'respect', 'encourage', 
+      'inspire', 'communicate', 'express'
     ]
   },
 

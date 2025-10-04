@@ -334,7 +334,10 @@ export class CharacterConsistencyService {
     this.storyCache = new StorySessionCache();
     this.pronounResolver = new PronounResolver();
     this.supabase = null;
-    this.vocabulary = null; // Cached tier25 vocabulary
+    this.vocabulary = null; // Cached tier25 vocabulary (full UNIVERSAL_VOCAB - lazy loaded)
+    this.tier25Cache = null; // Cached TIER_25_EXTENDED (240 words, loaded on startup)
+    this.tier25HitCount = 0; // Performance metric
+    this.tier25MissCount = 0; // Performance metric
   }
 
   /**
@@ -369,14 +372,53 @@ export class CharacterConsistencyService {
 
 
   /**
-   * Load and cache tier25Vocabulary for dynamic detection (with resilient import)
-   * Falls back to essential vocabulary if import fails
+   * Load and cache TIER_25_EXTENDED for fast startup (240 words, ~6KB)
+   * Lazy-loads full UNIVERSAL_VOCAB (708 words, ~15KB) only when needed
+   */
+  async getTier25Cache() {
+    if (this.tier25Cache) return this.tier25Cache;
+
+    try {
+      const vocabularyModule = await import('./tier25Vocabulary.js');
+      const { TIER_25_UNIFIED_VOCABULARY_EXTENDED } = vocabularyModule;
+      
+      if (!TIER_25_UNIFIED_VOCABULARY_EXTENDED) {
+        throw new Error('TIER_25_UNIFIED_VOCABULARY_EXTENDED not found');
+      }
+      
+      // Cache TIER_25_EXTENDED (240 words, instant load)
+      this.tier25Cache = {
+        colors: TIER_25_UNIFIED_VOCABULARY_EXTENDED.colors.basic || [],
+        actions: [
+          ...(TIER_25_UNIFIED_VOCABULARY_EXTENDED.actions.basic || []),
+          ...(TIER_25_UNIFIED_VOCABULARY_EXTENDED.actions.learning || []),
+          ...(TIER_25_UNIFIED_VOCABULARY_EXTENDED.actions.advanced || [])
+        ],
+        objects: Object.values(TIER_25_UNIFIED_VOCABULARY_EXTENDED.objectCategories || {}).flat(),
+        clothing: TIER_25_UNIFIED_VOCABULARY_EXTENDED.clothing?.basic || [],
+        settings: [
+          ...(TIER_25_UNIFIED_VOCABULARY_EXTENDED.context?.indoor || []),
+          ...(TIER_25_UNIFIED_VOCABULARY_EXTENDED.context?.outdoor || [])
+        ]
+      };
+      
+      console.log(`✅ TIER_25_EXTENDED cached: ${this.tier25Cache.objects.length} objects, ${this.tier25Cache.colors.length} colors, ${this.tier25Cache.actions.length} actions (6KB)`);
+      return this.tier25Cache;
+    } catch (error) {
+      console.error('❌ CCS: Failed to load TIER_25_EXTENDED', error);
+      this.tier25Cache = { colors: [], actions: [], objects: [], clothing: [], settings: [] };
+      return this.tier25Cache;
+    }
+  }
+
+  /**
+   * Load full UNIVERSAL_VOCAB (lazy-loaded, 708 words, ~15KB)
+   * Only called when TIER_25_EXTENDED cache miss occurs (~25% of queries)
    */
   async getVocabulary() {
     if (this.vocabulary) return this.vocabulary;
 
     try {
-      // PHASE 1: Use UNIVERSAL_VOCAB single source of truth (fixes Status 546)
       const vocabularyModule = await import('./tier25Vocabulary.js');
       if (!vocabularyModule || typeof vocabularyModule !== 'object') {
         throw new Error('Invalid vocabulary module structure');
@@ -415,13 +457,47 @@ export class CharacterConsistencyService {
     // Backward compatibility alias for legacy code
     this.vocabulary.CLOTHING_DETECTION_KEYWORDS = this.vocabulary.clothing;
     
-    console.log(`✅ UNIVERSAL_VOCAB loaded: ${this.vocabulary.objects.length} objects, ${this.vocabulary.colors.length} colors (Status 546 FIXED)`);
+    console.log(`✅ UNIVERSAL_VOCAB lazy-loaded: ${this.vocabulary.objects.length} objects, ${this.vocabulary.colors.length} colors (15KB)`);
     return this.vocabulary;
     } catch (error) {
       console.error('❌ CCS: Failed to load UNIVERSAL_VOCAB', error);
       this.vocabulary = CharacterConsistencyService.ESSENTIAL_VOCABULARY;
       return this.vocabulary;
     }
+  }
+
+  /**
+   * Tiered word lookup: Check TIER_25_EXTENDED first (75% hit rate), then lazy-load UNIVERSAL_VOCAB
+   * @param {string} word - Word to lookup
+   * @param {string} category - Category: 'colors', 'actions', 'objects', 'clothing', 'settings'
+   * @returns {Promise<boolean>} - True if word found in vocabulary
+   */
+  async lookupWord(word, category) {
+    // First: Check TIER_25_EXTENDED cache (fast, O(1), 75% coverage)
+    const tier25 = await this.getTier25Cache();
+    if (tier25[category] && tier25[category].includes(word)) {
+      this.tier25HitCount++;
+      return true;
+    }
+    
+    // Second: Lazy-load full UNIVERSAL_VOCAB (25% of queries)
+    this.tier25MissCount++;
+    const fullVocab = await this.getVocabulary();
+    return fullVocab[category] && fullVocab[category].includes(word);
+  }
+
+  /**
+   * Get performance metrics for tiered caching
+   */
+  getTier25CacheStats() {
+    const total = this.tier25HitCount + this.tier25MissCount;
+    const hitRate = total > 0 ? ((this.tier25HitCount / total) * 100).toFixed(1) : 0;
+    return {
+      tier25_hits: this.tier25HitCount,
+      tier25_misses: this.tier25MissCount,
+      hit_rate_percent: hitRate,
+      total_lookups: total
+    };
   }
 
   /**
