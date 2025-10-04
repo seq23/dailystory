@@ -75,6 +75,7 @@ All functions use `index.ts` as their entry point. JavaScript-only functions hav
 6. **Debug Data Exposure**: Critical functions (`ai-visual-scene-creator`, `runware-generate-image`) must maintain complete debug data exposure. See [DEBUG_DATA_EXPOSURE_CHECKLIST.md](../docs/DEBUG_DATA_EXPOSURE_CHECKLIST.md) for anti-regression requirements when modifying these functions.
 7. **Parser Hardening**: Avoid trailing commas in function call argument lists. While modern JS/TS runtimes handle trailing commas in objects and arrays, Deno's graph parser may misinterpret them in function calls during deployment bundling, causing "Expected ',', got 'return'" errors.
 8. **Timeout and Abort Handling**: Edge functions calling external APIs (e.g., `RunwareWebSocketService`) must respect caller-provided `AbortSignal` for proper timeout handling. Pass `signal` to async operations and clean up listeners on completion. Default timeouts should be 20s for image generation to align with frontend expectations and prevent client-side fetch timeouts (typically 45s for supabase-js).
+9. **Dynamic Import Requirements**: Deno Deploy's bundler processes TypeScript at build time but expects JavaScript files for dynamic imports at runtime. Critical services in `_shared/` that use dynamic imports (via `memoizedImport`) must have both `.ts` (for type safety) and `.js` (for runtime) versions. Use two-tier fallback: `_shared/*.js` → `_vendor/*.js`. Example: `RunwareWebSocketService.ts/js` with vendor bundle ensures 100% availability.
 
 ## CRITICAL: Edge Function Boot Analysis
 

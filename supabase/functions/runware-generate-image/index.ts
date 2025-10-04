@@ -1394,8 +1394,25 @@ Deno.serve(async (req) => {
           );
         }
 
-        // Real Runware image generation using WebSocket service
-        const { RunwareWebSocketService } = await memoizedImport("../_shared/RunwareWebSocketService.ts");
+        // Real Runware image generation using WebSocket service with vendor fallback
+        let RunwareWebSocketService;
+        try {
+          // Try primary _shared path (now .js for Deno Deploy runtime)
+          const module = await memoizedImport("../_shared/RunwareWebSocketService.js");
+          RunwareWebSocketService = module.RunwareWebSocketService;
+          console.log("✅ Loaded RunwareWebSocketService from _shared");
+        } catch (sharedError) {
+          console.warn("⚠️ _shared/RunwareWebSocketService.js failed, trying vendor bundle:", sharedError);
+          try {
+            // Fallback to vendor bundle
+            const vendorModule = await import("../_vendor/RunwareWebSocketService.js");
+            RunwareWebSocketService = vendorModule.RunwareWebSocketService;
+            console.log("✅ Loaded RunwareWebSocketService from _vendor (fallback)");
+          } catch (vendorError) {
+            console.error("❌ Both _shared and _vendor RunwareWebSocketService failed");
+            throw new Error("TIER_1_PROCESSING_FAILED: RunwareWebSocketService unavailable - both _shared and _vendor imports failed");
+          }
+        }
 
         // Validate service is functional
         if (!RunwareWebSocketService || typeof RunwareWebSocketService.generateImage !== "function") {
