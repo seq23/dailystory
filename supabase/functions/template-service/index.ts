@@ -103,9 +103,9 @@ serve(async (req) => {
     systemsInitialized = true;
   }
   
-  // Handle CORS preflight requests
+  // Handle CORS preflight requests - MUST return 200, not 204
   if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: corsHeaders });
+    return new Response(null, { status: 200, headers: corsHeaders });
   }
   
   // Handle health check requests

@@ -1103,10 +1103,11 @@ const FAST_BOOT_SYNC = {
 
 // OPTIMIZED SERVE HANDLER WITH FAST BOOT SYNC RECOVERY AND COMPLETE TIER CASCADE
 Deno.serve(async (req) => {
-  // PHASE 1: OPTIONS fast path (immediate return)
+  // PHASE 1: OPTIONS fast path (immediate return) - MUST return 200
   if (req.method === "OPTIONS") {
     const corsHeaders = generateEchoCorsHeaders(req);
     return new Response(null, {
+      status: 200,
       headers: {
         ...corsHeaders,
         "Access-Control-Allow-Methods": "GET, POST, OPTIONS, HEAD",

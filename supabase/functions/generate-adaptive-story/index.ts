@@ -127,10 +127,10 @@ function getHairColorForSkinTone(skinTone: string | undefined): string | null {
 // Removed: getFallbackTemplate and getEnhancedFallbackPages - replaced by template-service calls
 
 serve(async (req) => {
-  // Handle CORS preflight requests
+  // Handle CORS preflight requests - MUST return 200, not 204
   if (req.method === 'OPTIONS') {
     return new Response(null, { 
-      status: 204, 
+      status: 200, 
       headers: corsHeaders 
     });
   }
@@ -355,11 +355,13 @@ serve(async (req) => {
     });
     
   } catch (error) {
-    console.error('💥 Story generation error:', {
+    console.error('💥 Story generation UNHANDLED error:', {
       message: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
       timestamp: new Date().toISOString()
     });
+    
+    // Ensure CORS headers on all error responses
     return new Response(JSON.stringify({
       success: false,
       error: error instanceof Error ? error.message : 'Story generation failed'

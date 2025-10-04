@@ -659,9 +659,10 @@ async function httpFallbackCall(endpoint: string, payload: any): Promise<any> {
 
 // Main request handler
 serve(async (req) => {
-  // Handle CORS preflight requests
+  // Handle CORS preflight requests - MUST return 200, not 204/null
   if (req.method === 'OPTIONS') {
     return new Response(null, { 
+      status: 200,
       headers: {
         ...corsHeaders,
         'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, HEAD'
