@@ -788,10 +788,11 @@ export class CharacterConsistencyService {
       }
     }
 
-    // Strategy 4: Standalone object detection (no color required)
+    // Strategy 4: Standalone object detection (no color required) - tier25 first
     // Only add objects that weren't already detected with colors in Strategies 1-3
+    const objectsForStandalone = tier25Objects.length > 0 ? tier25Objects : (await this.getVocabulary()).objects;
     const standaloneObjectMatches = text.match(
-      new RegExp(`\\b(${vocab.objects.join('|')})\\b`, 'gi')
+      new RegExp(`\\b(${objectsForStandalone.join('|')})\\b`, 'gi')
     );
 
     if (standaloneObjectMatches && standaloneObjectMatches.length > 0) {
