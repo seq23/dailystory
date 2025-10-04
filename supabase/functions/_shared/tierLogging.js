@@ -43,6 +43,39 @@ async function insertDebugRow(supabase, row) {
       });
     } else {
       console.log("✅ Successfully logged to image_generation_debug:", row.session_id);
+      
+      // POST-INSERT VERIFICATION: Immediately re-select to confirm persistence
+      try {
+        const supabaseUrl = Deno?.env?.get('SUPABASE_URL') || 'NOT_SET';
+        const projectRef = supabaseUrl.match(/https:\/\/([^.]+)\.supabase\.co/)?.[1] || 'UNKNOWN';
+        
+        const { data: verifyData, error: verifyError } = await supabase
+          .from('image_generation_debug')
+          .select('id, session_id, tier, created_at')
+          .eq('session_id', row.session_id)
+          .order('created_at', { ascending: false })
+          .limit(1);
+        
+        if (verifyError) {
+          console.error("❌ POST-INSERT VERIFICATION FAILED:", verifyError.message);
+        } else if (!verifyData || verifyData.length === 0) {
+          console.error("❌ POST-INSERT VERIFICATION: Record NOT FOUND after insert!", {
+            session_id: row.session_id,
+            project_ref: projectRef,
+            note: "Insert succeeded but record disappeared - possible RLS SELECT policy issue or wrong database"
+          });
+        } else {
+          console.log("✅ POST-INSERT CONFIRMATION: Record persisted successfully", {
+            id: verifyData[0].id,
+            session_id: verifyData[0].session_id,
+            tier: verifyData[0].tier,
+            project_ref: projectRef,
+            created_at: verifyData[0].created_at
+          });
+        }
+      } catch (verifyErr) {
+        console.error("⚠️ POST-INSERT VERIFICATION: Exception during verification:", verifyErr.message);
+      }
     }
   } catch (err) {
     console.error("⚠️ Failed DB log insert (caught exception):", err.message, err);
