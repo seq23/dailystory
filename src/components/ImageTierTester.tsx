@@ -1773,7 +1773,9 @@ export const ImageTierTester = () => {
               // Add required flags for ai-visual-scene-creator
               ...(endpoint.name === 'ai-visual-scene-creator' ? { isDebugMode: true } : {}),
               // Add dryRun flag for runware-generate-image to prevent timeouts
-              ...(endpoint.name === 'runware-generate-image' ? { dryRun: true } : {})
+              ...(endpoint.name === 'runware-generate-image' ? { dryRun: true } : {}),
+              // Add test flag for template AB/CD to trigger runtime probe short-circuit
+              ...(endpoint.name === 'runware-template-ab' || endpoint.name === 'runware-template-cd' ? { test: true } : {})
             };
             
             const postResponse = await supabase.functions.invoke(endpoint.name, { 

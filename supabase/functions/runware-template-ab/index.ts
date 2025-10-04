@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-10-04T15:00:00Z - Added receptionist-level runtime probe short-circuit
+// DEPLOY_MARKER: 2025-10-04T15:05:00Z - Added dryRun flag recognition for runtime probes
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 const SERVICE_NAME = "runware-template-ab";
 
@@ -327,11 +327,11 @@ serve(async (req) => {
         const payload = await clonedReq.json();
         
         // Check if this is a runtime probe (empty or test payload)
-        const hasTestFlag = payload?.test === true;
+        const hasTestFlag = payload?.test === true || payload?.dryRun === true;
         const hasStoryContent = payload?.pageText || payload?.storyText || payload?.enhancedStoryData?.storyText;
         
         if (hasTestFlag) {
-          console.log('🔍 Runtime probe detected (test flag) - returning success');
+          console.log('🔍 Runtime probe detected (test/dryRun flag) - returning success');
           return withCors(new Response(JSON.stringify({
             success: true,
             message: 'Template AB runtime OK',
