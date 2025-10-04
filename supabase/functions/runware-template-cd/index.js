@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-10-04T15:45:00Z - Fixed imageURL logging bug for prompt persistence
+// DEPLOY_MARKER: 2025-10-04T16:15:00Z - Redeployment trigger: Updated tierLogging.js with detailed error logging
 
 // Lazy load RunwareErrorHandler to prevent boot failures
 let RunwareErrorHandler = null;
