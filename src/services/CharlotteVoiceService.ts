@@ -85,7 +85,7 @@ export class CharlotteVoiceService {
 
     } catch (error) {
       DebugLogger.error('audio', `❌ Charlotte story reading failed: ${requestId}`, error);
-      this.fallbackToBrowserSpeech(text);
+      throw error; // Let caller handle fallback to prevent duplicate browser TTS
     } finally {
       window.dispatchEvent(new CustomEvent('audio:stopped', { 
         detail: { system: 'charlotte-story' } 
@@ -119,7 +119,7 @@ export class CharlotteVoiceService {
 
     } catch (error) {
       DebugLogger.error('audio', `❌ Charlotte multilingual explanation failed: ${requestId}`, error);
-      this.fallbackToBrowserSpeech(text);
+      throw error; // Let caller handle fallback to prevent duplicate browser TTS
     } finally {
       window.dispatchEvent(new CustomEvent('audio:stopped', { 
         detail: { system: 'charlotte-multilingual' } 
@@ -201,7 +201,7 @@ export class CharlotteVoiceService {
         return;
       }
       
-      this.fallbackToBrowserSpeech(text);
+      throw error; // Let caller handle fallback to prevent duplicate browser TTS
     } finally {
       window.dispatchEvent(new CustomEvent('audio:stopped', { 
         detail: { system: 'charlotte-interactive' } 

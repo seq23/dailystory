@@ -1,6 +1,17 @@
 # Audio System Architecture & Recent Updates
 
-## Recent Critical Fixes (2024-09-24)
+## Recent Critical Fixes
+
+### Reading Coach Double Audio Fix (2025-10-04) ✅
+**Issue**: When opening "Help me read / Reading coach", the intro message played in 2 different browser voices simultaneously
+**Root Cause**: `CharlotteVoiceService` had internal `fallbackToBrowserSpeech()` calls that duplicated the fallback already handled by `ReadAloudCoach`
+**Solution**: Removed internal browser TTS fallbacks from Charlotte service - now throws errors for caller to handle
+**Files Modified**: 
+- `src/services/CharlotteVoiceService.ts` - Removed fallback calls from `charlotteReadStory()`, `charlotteMultilingualExplain()`, and `charlotteInteractiveAudio()`
+- Changed all internal fallbacks to `throw error` so calling components handle fallbacks consistently
+**Result**: Only one audio source plays at a time (ElevenLabs Charlotte OR browser TTS, never both)
+
+## Previous Fixes (2024-09-24)
 
 ### 1. Event System Standardization ✅
 **Issue**: Inconsistent event names (`audio:state:change` vs `audio:statechange`) causing UI sync failures
