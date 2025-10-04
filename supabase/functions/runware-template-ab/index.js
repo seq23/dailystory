@@ -2256,6 +2256,7 @@ async function handleRequest(req) {
           secondaryCharacters: detectedSecondaryCharacters.length,
           coloredObjects: !!coloredObjects
         });
+      
       } catch (characterError) {
         // ESCALATE TO TIER 2.5B on ANY CharacterConsistencyService failure (import or method)
         console.error(`🚨 [${requestId}] Tier 2.5A: CharacterConsistencyService FAILED (outer catch) - Escalating to Tier 2.5B`, characterError.message);
