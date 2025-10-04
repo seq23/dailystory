@@ -660,11 +660,14 @@ export class CharacterConsistencyService {
       }
     }
 
-    // Strategy 4: Standalone object detection (no color required)
+    // Strategy 4: Standalone object detection (no color required) - tier25 first
     // Only add objects that weren't already detected with colors in Strategies 1-3
-    const standaloneObjectMatches = text.match(
-      new RegExp(`\\b(${vocab.objects.join('|')})\\b`, 'gi')
-    );
+    const tier25 = await this.getTier25Cache();
+    const tier25Objects = Array.isArray(tier25.objects) ? tier25.objects : [];
+    const objectsForStandalone = tier25Objects.length > 0 ? tier25Objects : (vocab.objects || []);
+    const standaloneObjectMatches = Array.isArray(objectsForStandalone) && objectsForStandalone.length > 0
+      ? text.match(new RegExp(`\\b(${objectsForStandalone.join('|')})\\b`, 'gi'))
+      : null;
 
     if (standaloneObjectMatches && standaloneObjectMatches.length > 0) {
       standaloneObjectMatches.forEach(match => {

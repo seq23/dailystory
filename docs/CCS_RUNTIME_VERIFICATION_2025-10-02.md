@@ -8,6 +8,36 @@
 
 This document details the runtime verification and error handling enhancements made to ensure robust Character Consistency Service (CCS) integration across all image generation tiers.
 
+## Implementation Summary
+
+### Bugfix: Tier 1 detectColoredObjects (2025-10-04)
+
+**Issue:** `ReferenceError: vocab is not defined` in Strategy 4 standalone object detection, causing Tier 1 Force Mode tests to fail with `CCS_METHOD_FAILED:analyzeVisualDetails:vocab is not defined`.
+
+**Root Cause:** 
+- Strategy 4 in `detectColoredObjects()` referenced `vocab.objects` where `vocab` was not in scope
+- Missing `await` on `detectSimpleAtmosphere()` call in `analyzeVisualDetails()`
+- Vendor fallback (`CharacterConsistencyService.mjs`) lacked tier25-aware Strategy 4 implementation
+
+**Solution Applied:**
+1. **Shared CCS** (`supabase/functions/_shared/CharacterConsistencyService.js`):
+   - Lines 791-796: Replaced `vocab.objects` with tier25-aware `objectsForStandalone` + array guard
+   - Line 1162: Added `await` to `this.detectSimpleAtmosphere(pageText)` call
+
+2. **Vendor Fallback** (`supabase/functions/_vendor/CharacterConsistencyService.mjs`):
+   - Lines 663-669: Mirrored tier25-first Strategy 4 fix with tier25Cache loading and array guards
+
+**Expected Log Signatures:**
+- ✅ Success: `🎨 Detected standalone object: [objectName] (tier25, no color)`
+- ✅ Tier25 hit: Strategy 4 uses tier25Objects (~240 words)
+- ✅ Tier25 miss: Strategy 4 lazy-loads full vocab (~708 words)
+- ❌ Old error (now fixed): `CCS_METHOD_FAILED:analyzeVisualDetails:vocab is not defined`
+
+**Testing:**
+- Run `/prompt-testing?debug=1` → TIER_1_FORCE_TEST
+- Verify no `vocab is not defined` errors
+- Confirm prompts and images generate successfully in Force Mode
+
 ---
 
 ## Required CCS Methods (Tier 1 - runware-generate-image)

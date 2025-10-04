@@ -791,9 +791,9 @@ export class CharacterConsistencyService {
     // Strategy 4: Standalone object detection (no color required) - tier25 first
     // Only add objects that weren't already detected with colors in Strategies 1-3
     const objectsForStandalone = tier25Objects.length > 0 ? tier25Objects : (await this.getVocabulary()).objects;
-    const standaloneObjectMatches = text.match(
-      new RegExp(`\\b(${objectsForStandalone.join('|')})\\b`, 'gi')
-    );
+    const standaloneObjectMatches = Array.isArray(objectsForStandalone) && objectsForStandalone.length > 0
+      ? text.match(new RegExp(`\\b(${objectsForStandalone.join('|')})\\b`, 'gi'))
+      : null;
 
     if (standaloneObjectMatches && standaloneObjectMatches.length > 0) {
       standaloneObjectMatches.forEach(match => {
@@ -1159,7 +1159,7 @@ export class CharacterConsistencyService {
 
     // AUTO-DETECT SCENE CONTEXT using tier25Vocabulary
     try {
-      const detectedSetting = this.detectSimpleAtmosphere(pageText);
+      const detectedSetting = await this.detectSimpleAtmosphere(pageText);
       
       if (detectedSetting) {
         await this.saveSessionSetting(sessionId, 'context', detectedSetting);
