@@ -2247,6 +2247,7 @@ async function handleRequest(req) {
             }, 200);
           }
         }
+        } // Close inner catch (staticError) block
         
         console.log(`✅ [${requestId}] Tier 2.5A: Complete character consistency applied:`, {
           characterAppearance: !!characterAppearance,
