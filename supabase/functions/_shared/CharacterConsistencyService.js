@@ -382,7 +382,8 @@ export class CharacterConsistencyService {
         throw new Error('Invalid vocabulary module structure');
       }
       
-      const { UNIVERSAL_VOCAB } = vocabularyModule;
+      const { getUniversalVocab } = vocabularyModule;
+      const UNIVERSAL_VOCAB = getUniversalVocab();
       if (!UNIVERSAL_VOCAB) {
         throw new Error('UNIVERSAL_VOCAB not found in tier25Vocabulary');
       }

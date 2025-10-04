@@ -543,7 +543,8 @@ export class CharacterConsistencyService {
 
     try {
       // Phase 3: Use UNIVERSAL_VOCAB single source of truth (matches .js version)
-      const { UNIVERSAL_VOCAB } = await import('./tier25Vocabulary.js');
+      const { getUniversalVocab } = await import('./tier25Vocabulary.js');
+      const UNIVERSAL_VOCAB = getUniversalVocab();
       if (!UNIVERSAL_VOCAB) {
         throw new Error('UNIVERSAL_VOCAB not found in tier25Vocabulary');
       }
