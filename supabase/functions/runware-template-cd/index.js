@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-10-03T19:30:00Z - Made all top-level imports lazy-load to prevent boot failures
+// DEPLOY_MARKER: 2025-10-04T15:45:00Z - Fixed imageURL logging bug for prompt persistence
 
 // Lazy load RunwareErrorHandler to prevent boot failures
 let RunwareErrorHandler = null;
