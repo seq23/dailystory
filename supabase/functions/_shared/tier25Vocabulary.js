@@ -699,18 +699,6 @@ const tier25vocabulary = {
     ];
   },
   
-  getSettings: () => {
-    const vocab = TIER_25_UNIFIED_VOCABULARY_EXTENDED;
-    return [
-      ...vocab.contextDetection.indoor,
-      ...vocab.contextDetection.outdoor
-    ];
-  },
-  
-  getLocations: () => {
-    return tier25vocabulary.getSettings();
-  },
-  
   getSecondaryRoles: () => {
     const friends = ['best friend', 'school friend', 'neighbor', 'playmate', 'buddy', 'companion'];
     const family = ['mom', 'dad', 'sister', 'brother', 'grandma', 'grandpa', 'aunt', 'uncle'];

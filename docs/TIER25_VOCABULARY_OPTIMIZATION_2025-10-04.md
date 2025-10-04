@@ -114,7 +114,18 @@ Extracted from patterns like: "{userName} goes to...", "{userName} sees a...", "
 4. `UNIVERSAL_OUTDOOR_SETTINGS` (~3-5KB) - 50+ pre-composed outdoor settings
 5. `UNIVERSAL_ACTION_TEMPLATES` (~2-4KB) - 100+ pre-composed action templates
 
-**Total bloat removed**: ~18-30KB per request
+**Deleted unused exports (lines 506-510)**:
+- `TIER_25_NUCLEAR_LIGHTING = []`
+- `TIER_25_NUCLEAR_WEATHER = []`
+- `TIER_25_NUCLEAR_INDOOR = []`
+- `TIER_25_NUCLEAR_OUTDOOR = []`
+- `TIER_25_NUCLEAR_ACTION_TEMPLATES = []`
+
+**Deleted unused methods (lines 702-712)**:
+- `getSettings()` - Only called by `getLocations()`, which had 0 uses
+- `getLocations()` - 0 references in entire codebase
+
+**Total bloat removed**: ~18-30KB per request + 7 dead code items
 
 **Why deleted**: Only used by 2 orphaned modules (`ExactWordExtractor.js`, `UnifiedDebugValidator.js`) that are not part of active image generation or template processing pipelines.
 
@@ -202,6 +213,7 @@ The optimization successfully:
 4. **Removed 85% of bloat** (35% → 5%)
 5. **Improved CPU performance by 83%** (6x loading → 1x cached)
 6. **Added 3 missing categories** (PEOPLE_RELATIONSHIPS, EMOTIONS, school objects)
+7. **Deleted 7 dead code items** (5 nuclear exports + 2 unused methods)
 
 All changes maintain backward compatibility with existing code while providing significant performance improvements for the template system.
 
