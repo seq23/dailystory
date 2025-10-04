@@ -1,4 +1,5 @@
-// DEPLOY_MARKER: 2025-10-04T16:15:00Z - Redeployment trigger: Updated tierLogging.js with detailed error logging
+// DEPLOY_MARKER: 2025-10-04T16:45:00Z - Force redeployment with RLS detection logging
+const TIER_LOGGING_VERSION = '2.0-rls-detection'; // Updated tierLogging with RLS failure detection
 
 // Lazy load RunwareErrorHandler to prevent boot failures
 let RunwareErrorHandler = null;
@@ -148,7 +149,7 @@ function getSimpleHairColor(skinTone) {
 
 // Generate Tier 2.5C template - NUCLEAR HARDCODED VERSION
 function generateTier25C(storyText, userInfo, avatarIdentity, failedTierData = {}) {
-  console.log('🚀 Nuclear Tier 2.5C: Pure hardcoded template - NO imports, NO dependencies');
+  console.log(`🚀 Nuclear Tier 2.5C: Pure hardcoded template - NO imports, NO dependencies [logging: ${TIER_LOGGING_VERSION}]`);
   console.log('📊 Nuclear 2.5C: Received failed tier data', {
     hasCharacterConsistency: !!failedTierData.characterConsistency,
     hasVisualConsistency: !!failedTierData.visualConsistency,
@@ -552,6 +553,11 @@ async function handleRequest(req) {
       const { createVendorFirstSupabaseClient } = await import('../_shared/resilientLoader.ts');
       supabase = await createVendorFirstSupabaseClient();
       console.log('✅ [VENDOR_FIRST] Supabase client initialized successfully for logging');
+      // DIAGNOSTIC: Log Supabase project ref for debugging
+      const supabaseUrl = Deno.env.get('SUPABASE_URL') || 'NOT_SET';
+      const projectRef = supabaseUrl.match(/https:\/\/([^.]+)\.supabase\.co/)?.[1] || 'UNKNOWN';
+      console.log(`🔍 [DIAGNOSTIC] Logging to Supabase project: ${projectRef} (expected: cpzeuogomaixamrtnnmj)`);
+
     } catch (loaderError) {
       console.warn('⚠️ [RESILIENT_LOADER] Failed, using fallback:', loaderError.message);
       // Fallback to local vendor bundle - REQUIRE service role key

@@ -47,6 +47,7 @@ async function insertDebugRow(supabase, row) {
   } catch (err) {
     console.error("⚠️ Failed DB log insert (caught exception):", err.message, err);
   }
+}
 
 /**
  * Extract user ID from authorization header or return system fallback
