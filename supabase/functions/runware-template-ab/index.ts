@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-10-03T21:00:00Z - Zero static imports + LKG serve-stale pattern
+// DEPLOY_MARKER: 2025-10-04T14:00:00Z - Fixed CCS runtime errors
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 const SERVICE_NAME = "runware-template-ab";
 

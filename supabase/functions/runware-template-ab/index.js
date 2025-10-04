@@ -1,8 +1,8 @@
-// DEPLOY_MARKER: 2025-10-03T19:30:00Z - Made all top-level imports lazy-load to prevent boot failures
+// DEPLOY_MARKER: 2025-10-04T14:00:00Z - Fixed CCS runtime errors: consolidated imports, corrected method signatures
 // Handles Level A (basic shapes/colors) and Level B (simple scenes)
 // Lightweight, fast deployment - optimized for simple template generation with character consistency
 
-// ✅ CCS is loaded dynamically when needed (see getCharacterConsistencyService function below)
+// ✅ CCS is loaded dynamically via single getCCS() helper (see below)
 // ⚠️ NO static imports from _shared/ - they cause runtime failures in pure JS handlers
 
 // Lazy load RunwareErrorHandler to prevent boot failures
@@ -22,6 +22,25 @@ async function getRunwareErrorHandler() {
     }
   }
   return RunwareErrorHandler;
+}
+
+// Consolidated CCS loader - single source of truth for all CCS imports
+let characterConsistencyService = null;
+let ccsLoadAttempted = false;
+
+async function getCCS() {
+  if (!ccsLoadAttempted) {
+    ccsLoadAttempted = true;
+    try {
+      const module = await import("../_shared/CharacterConsistencyService.js");
+      characterConsistencyService = module.characterConsistencyService;
+      console.log("✅ CharacterConsistencyService loaded successfully");
+    } catch (err) {
+      console.warn("⚠️ CharacterConsistencyService unavailable:", err.message);
+      characterConsistencyService = null;
+    }
+  }
+  return characterConsistencyService;
 }
 
 // ProviderGate is now inlined in index.ts receptionist - no dynamic import needed
@@ -213,36 +232,41 @@ function generateInlineNuclearNegative(culturalProfile, avatarType, difficulty) 
 }
 
 // ============= DYNAMIC IMPORTS WITH HARDCODED FALLBACKS =============
+// Optional helper imports - loaded lazily inside request handler to avoid boot failures
 let importedGetNuclearStyleFramework = null;
 let importedGenerateNuclearNegativePrompt = null;
 
-try {
-  const styleModule = await import('../_shared/styleFrameworks.js');
-  importedGetNuclearStyleFramework = styleModule.getNuclearStyleFramework || styleModule.getStyleFramework || styleModule.default;
-  console.log('✅ [IMPORT] styleFrameworks.js loaded successfully');
-} catch (error) {
-  console.warn('⚠️ [IMPORT] styleFrameworks.js unavailable, using inline fallback:', error.message);
-}
-
-try {
-  const negativeModule = await import('../_shared/NuclearNegativePrompts.js');
-  importedGenerateNuclearNegativePrompt = negativeModule.generateNuclearNegativePrompt;
-  console.log('✅ [IMPORT] NuclearNegativePrompts.js loaded successfully');
-} catch (error) {
-  console.warn('⚠️ [IMPORT] NuclearNegativePrompts.js unavailable, using inline fallback:', error.message);
-}
-
-// Wrapper functions with fallback behavior
-function getStyleFramework(difficulty) {
+// Wrapper functions with lazy loading fallback behavior
+async function getStyleFramework(difficulty) {
+  if (!importedGetNuclearStyleFramework) {
+    try {
+      const styleModule = await import('../_shared/styleFrameworks.js');
+      importedGetNuclearStyleFramework = styleModule.getNuclearStyleFramework || styleModule.getStyleFramework || styleModule.default;
+      console.log('✅ [IMPORT] styleFrameworks.js loaded successfully');
+    } catch (error) {
+      console.warn('⚠️ [IMPORT] styleFrameworks.js unavailable, using inline fallback:', error.message);
+    }
+  }
+  
   if (importedGetNuclearStyleFramework) {
     return importedGetNuclearStyleFramework(difficulty);
   }
   return getNuclearStyleFramework(difficulty);
 }
 
-function generateNegativePrompt(culturalProfile, avatarType, difficulty) {
+async function generateNegativePrompt(culturalProfile, avatarType, difficulty) {
+  if (!importedGenerateNuclearNegativePrompt) {
+    try {
+      const negativeModule = await import('../_shared/NuclearNegativePrompts.js');
+      importedGenerateNuclearNegativePrompt = negativeModule.generateNuclearNegativePrompt;
+      console.log('✅ [IMPORT] NuclearNegativePrompts.js loaded successfully');
+    } catch (error) {
+      console.warn('⚠️ [IMPORT] NuclearNegativePrompts.js unavailable, using inline fallback:', error.message);
+    }
+  }
+  
   if (importedGenerateNuclearNegativePrompt) {
-    return importedGenerateNuclearNegativePrompt(culturalProfile, avatarType, difficulty);
+    return importedGenerateNegularNegativePrompt(culturalProfile, avatarType, difficulty);
   }
   return generateInlineNuclearNegative(culturalProfile, avatarType, difficulty);
 }
@@ -1768,11 +1792,13 @@ async function handleRequest(req) {
       
       // Second priority: Use consolidated CharacterConsistencyService
       try {
-        const { characterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
-        const coloredObjects = await characterConsistencyService.getColoredObjects(sessionId);
-        if (coloredObjects) {
-          console.log(`✅ [TIER2.5A] Using CharacterConsistencyService colored objects: ${coloredObjects.substring(0, 100)}`);
-          return coloredObjects;
+        const ccs = await getCCS();
+        if (ccs) {
+          const coloredObjects = await ccs.getColoredObjects(sessionId);
+          if (coloredObjects) {
+            console.log(`✅ [TIER2.5A] Using CharacterConsistencyService colored objects: ${coloredObjects.substring(0, 100)}`);
+            return coloredObjects;
+          }
         }
       } catch (error) {
         console.warn('CharacterConsistencyService failed, using fallback:', error.message);
@@ -1886,10 +1912,14 @@ async function handleRequest(req) {
 
       try {
         // TIER 1: Try CharacterConsistencyService (preferred)
-        const { characterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
-        culturalBundle = await characterConsistencyService.getCulturalEnhancements(userInfo, sessionId, characterName);
-        culturalBundleSource = 'CCS';
-        console.log(`✅ [TIER_1_FALLBACK] CCS cultural bundle loaded successfully`);
+        const ccs = await getCCS();
+        if (ccs) {
+          culturalBundle = await ccs.getCulturalEnhancements(userInfo, sessionId, characterName);
+          culturalBundleSource = 'CCS';
+          console.log(`✅ [TIER_1_FALLBACK] CCS cultural bundle loaded successfully`);
+        } else {
+          throw new Error('CCS not available');
+        }
       } catch (ccsError) {
         console.error(`❌ [TIER_1_FALLBACK] CCS failed:`, ccsError.message);
         
@@ -1979,12 +2009,16 @@ async function handleRequest(req) {
       const tier25aStart = Date.now();
       
       try {
-        const { characterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
+        const ccs = await getCCS();
+        
+        if (!ccs) {
+          throw new Error('CCS not available - skipping Tier 2.5A');
+        }
         
         console.log(`🔍 [${requestId}] [TIER_2.5A] CCS Import: SUCCESS`, {
           sessionId,
           pageNumber,
-          availableMethods: Object.keys(characterConsistencyService).filter(k => typeof characterConsistencyService[k] === 'function')
+          availableMethods: Object.keys(ccs).filter(k => typeof ccs[k] === 'function')
         });
         
         if (sessionId) {
@@ -1992,7 +2026,7 @@ async function handleRequest(req) {
             // Get structured avatar data (CCS CORE METHOD - Tier 2.5A only)
             let structuredAvatarData = null;
             try {
-              structuredAvatarData = await characterConsistencyService.getStructuredAvatarData(sessionId, userInfo);
+              structuredAvatarData = await ccs.getStructuredAvatarData(sessionId, userInfo);
               console.log(`🔍 [${requestId}] [TIER_2.5A] getStructuredAvatarData: SUCCESS`, {
                 sessionId,
                 skinTone: structuredAvatarData?.skinTone,
@@ -2005,7 +2039,7 @@ async function handleRequest(req) {
             // Get never-ending story setting (CCS CORE METHOD)
             let neverEndingSetting = "";
             try {
-              neverEndingSetting = await characterConsistencyService.getSessionSetting(sessionId, "never_ending_story") || "";
+              neverEndingSetting = await ccs.getSessionSetting(sessionId, "never_ending_story") || "";
               console.log(`🔍 [${requestId}] [TIER_2.5A] getSessionSetting: SUCCESS`, {
                 sessionId,
                 neverEndingSetting
@@ -2017,7 +2051,7 @@ async function handleRequest(req) {
             // Get tracked secondary characters (CCS CORE METHOD - Tier 2.5 only)
             let trackedSecondaryCharacters = [];
             try {
-              trackedSecondaryCharacters = await characterConsistencyService.getSecondaryCharactersForSession(sessionId);
+              trackedSecondaryCharacters = await ccs.getSecondaryCharactersForSession(sessionId);
               console.log(`🔍 [${requestId}] [TIER_2.5A] getSecondaryCharactersForSession: SUCCESS`, {
                 sessionId,
                 count: trackedSecondaryCharacters.length
@@ -2026,9 +2060,9 @@ async function handleRequest(req) {
               console.warn(`⚠️ [${requestId}] [TIER_2.5A] getSecondaryCharactersForSession: FAILED (graceful)`, secondaryError.message);
             }
 
-            // Main character analysis
-            await characterConsistencyService.analyzeVisualDetails(sessionId, storyText, pageNumber || 1, characterName);
-            characterAppearance = await characterConsistencyService.getCharacterAppearanceFromStory(sessionId, characterName) || '';
+            // Main character analysis - FIXED: correct method signature
+            await ccs.analyzeVisualDetails(sessionId, storyText, pageNumber || 1, characterName);
+            characterAppearance = await ccs.getCharacterAppearanceFromStory(storyText, characterName, sessionId) || '';
             
             console.log(`🔍 [${requestId}] [TIER_2.5A] analyzeVisualDetails: SUCCESS`, {
               sessionId,
@@ -2045,7 +2079,7 @@ async function handleRequest(req) {
             
             // Try enhanced seed first, fallback to basic on failure
             try {
-              characterSeed = await characterConsistencyService.getEnhancedCharacterSeed(
+              characterSeed = await ccs.getEnhancedCharacterSeed(
                 sessionId,
                 avatarDataForSeed,
                 storyText || '',
@@ -2060,12 +2094,12 @@ async function handleRequest(req) {
               });
             } catch (enhancedError) {
               console.warn(`⚠️ Enhanced character seed failed, using basic seed fallback:`, enhancedError.message);
-              characterSeed = await characterConsistencyService.getBasicCharacterSeed(avatarDataForSeed, sessionId);
+              characterSeed = await ccs.getBasicCharacterSeed(avatarDataForSeed, sessionId);
             }
             
             // Secondary character detection using consolidated API
             const pageTextForAnalysis = storyText || extractedScene?.scene || extractedScene || '';
-            const detections = await characterConsistencyService.detectAllCharacters(pageTextForAnalysis, {
+            const detections = await ccs.detectAllCharacters(pageTextForAnalysis, {
               sessionId,
               pageNumber: pageNumber || 1,
               userInfo
@@ -2085,9 +2119,9 @@ async function handleRequest(req) {
               try {
                 // Runtime guard for generateCharacterForConsistency (ERROR-055 fix)
                 let fullCharacterData;
-                if (typeof characterConsistencyService?.generateCharacterForConsistency === 'function') {
-                  console.log(`🔍 [${requestId}] [TIER_2.5A] CCS Method Availability: generateCharacterForConsistency=${typeof characterConsistencyService?.generateCharacterForConsistency}`);
-                  fullCharacterData = await characterConsistencyService.generateCharacterForConsistency(
+                if (ccs && typeof ccs.generateCharacterForConsistency === 'function') {
+                  console.log(`🔍 [${requestId}] [TIER_2.5A] CCS Method Availability: generateCharacterForConsistency=${typeof ccs.generateCharacterForConsistency}`);
+                  fullCharacterData = await ccs.generateCharacterForConsistency(
                     character.name,
                     character.type || 'secondary_character',
                     {
@@ -2119,7 +2153,7 @@ async function handleRequest(req) {
             }
             
             // Get environmental consistency
-            coloredObjects = await characterConsistencyService.getColoredObjects(sessionId) || '';
+            coloredObjects = await ccs.getColoredObjects(sessionId) || '';
             
             // CPU budget guard for Tier 2.5A
             const TIER25A_CPU_BUDGET_MS = 1500;
