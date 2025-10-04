@@ -2362,20 +2362,29 @@ const initializeStory = async () => {
     setIsPreparingImage(true);
     
     try {
+      // CRITICAL: Use stableSessionId for both generation AND loading to ensure cache consistency
+      DebugLogger.log('image', 'Netflix image generation breadcrumb', {
+        sessionIdUsed: stableSessionId,
+        page: currentPage + 1,
+        pageTextPreview: pageText.substring(0, 120),
+        isPremium,
+        currentDifficulty
+      });
+      
       DebugLogger.log('image', 'Calling backend orchestrator for image generation', {
         pageText: pageText.substring(0, 100),
         userInfo: { ...userInfo, difficultyLevel: currentDifficulty },
         currentDifficulty,
         storyId,
         pageNumber: currentPage + 1,
-        characterSessionIdValue,
+        sessionId: stableSessionId, // Fixed: Use stableSessionId (was characterSessionIdValue)
         isPremium
       });
       
       const result = await SimpleImageService.generateStoryImage(
         pageText, // Use pageText instead of storyText for consistency 
         { ...userInfo, difficultyLevel: currentDifficulty, userTier: isPremium ? 'premium' : 'guest' }, 
-        characterSessionIdValue,
+        stableSessionId, // CRITICAL FIX: Use stableSessionId (was characterSessionIdValue) to match useSessionAwareImageLoader
         currentPage + 1,
         isPremium
       );

@@ -8,39 +8,53 @@ Images were breaking after page 1 due to a critical session ID mismatch between 
 
 The application used two different session IDs:
 
-1. **`stableSessionId`**: Used for image generation and caching
+1. **`stableSessionId`**: Used for image loading and caching
    - Premium: `premium_${Date.now()}`
    - Guest: `guest_${Date.now()}`
 
-2. **`characterSessionId`**: Used for image loading and deduplication
+2. **`characterSessionId`**: Used for image generation
    - Format: `session_${Date.now()}_${Math.random().toString(36).substring(2)}`
 
 ### The Issue
 
-- Images were **generated** using `stableSessionId` (lines 562, 717, 1444 in CleanStoryDisplay.tsx)
-- Images were **loaded** using `characterSessionId` (line 474 in CleanStoryDisplay.tsx)
-- These session IDs had completely different values, causing cache misses
-- Result: Images appeared to "break" after page 1 because the loading system couldn't find cached images
+- Images were **generated** using `characterSessionId` (line 2378 in CleanStoryDisplay.tsx)
+- Images were **loaded** using `stableSessionId` (via useSessionAwareImageLoader)
+- These session IDs had completely different values, causing:
+  - Cache misses even when images existed
+  - Deduplication failures in ImageLoadingManager
+  - Image generation prompts not logged to `image_generation_debug` table
+  - Images appearing to "break" after page 1
 
 ## Solution Implemented
 
 ### Primary Fix
 
-Changed `useSessionAwareImageLoader` to use `stableSessionId` instead of `characterSessionId`:
+Changed `CleanStoryDisplay.tsx` to use `stableSessionId` for image generation to match the loading system:
 
 ```typescript
-// BEFORE (line 474)
-const { loadImage } = useSessionAwareImageLoader({
-  sessionId: characterSessionId, // ❌ Wrong session ID
-  timeout: 10000,
-});
+// BEFORE (line 2378)
+const result = await SimpleImageService.generateStoryImage(
+  pageText, 
+  userInfo, 
+  characterSessionIdValue, // ❌ Wrong session ID
+  currentPage + 1,
+  isPremium
+);
 
-// AFTER (line 489) 
-const { loadImage } = useSessionAwareImageLoader({
-  sessionId: stableSessionId, // ✅ Correct session ID
-  timeout: 10000,
-});
+// AFTER (line 2378)
+const result = await SimpleImageService.generateStoryImage(
+  pageText, 
+  userInfo, 
+  stableSessionId, // ✅ Correct session ID - matches loader
+  currentPage + 1,
+  isPremium
+);
 ```
+
+### Additional Changes
+
+1. **Defensive Logging**: Added session context breadcrumb before image generation
+2. **Unified Session Flow**: All image operations (generation, loading, caching, deduplication) now use `stableSessionId`
 
 ### Debugging Infrastructure
 
@@ -63,10 +77,10 @@ To verify the fix:
 
 ## Files Modified
 
-- `src/hooks/useSessionAwareImageLoader.ts` - Added debugging and fixed session ID usage
-- `src/components/CleanStoryDisplay.tsx` - Changed to use `stableSessionId` for image loading
-- `src/utils/imageDebugConsole.ts` - New debugging utility (created)
-- `docs/IMAGE_LOADING_SESSION_FIX.md` - This documentation (created)
+- `src/components/CleanStoryDisplay.tsx` - Changed line 2378 to use `stableSessionId` for image generation (was `characterSessionIdValue`), added defensive logging
+- `src/hooks/useSessionAwareImageLoader.ts` - Already uses `stableSessionId` for loading (unchanged)
+- `src/utils/imageDebugConsole.ts` - Debugging utility for session mismatch detection
+- `docs/IMAGE_LOADING_SESSION_FIX.md` - This documentation
 
 ## Impact
 
