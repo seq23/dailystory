@@ -282,6 +282,14 @@ export const TIER_25_UNIFIED_VOCABULARY_EXTENDED = {
     ]
   },
 
+  // ============= TOP 25% CLOTHING VOCABULARY =============
+  clothing: {
+    basic: [
+      'shirt', 'pants', 'dress', 'shoes', 'hat', 'jacket', 
+      'coat', 'socks', 'boots', 'sweater'
+    ]
+  },
+
   // ============= TOP 25% OBJECT VOCABULARY (From Level 0-4 templates) =============
   objectCategories: {
     // Most common animals (15 words - top 25%)
@@ -326,9 +334,11 @@ export const TIER_25_UNIFIED_VOCABULARY_EXTENDED = {
       'student', 'desk', 'pencil', 'paper', 'notebook'
     ],
 
-    // Removed sports and music as they had minimal frequency in templates
-    sports: [],
-    music: []
+    // Top sports items (5 words - added for detectAppearance)
+    sports: ['ball', 'bat', 'glove', 'helmet', 'sneakers'],
+    
+    // Top music items (5 words - added for detectAppearance)
+    music: ['piano', 'guitar', 'drums', 'flute', 'microphone']
   },
 
   // ============= TOP 25% CONTEXT DETECTION VOCABULARY =============
@@ -359,8 +369,8 @@ export const TIER_25_UNIFIED_VOCABULARY_EXTENDED = {
       'bright', 'dark', 'windy', 'storm'
     ],
     
-    // Removed lighting as it was not common in templates
-    lighting: [],
+    // Top lighting descriptors (5 words - added for detectAppearance)
+    lighting: ['bright', 'dim', 'glowing', 'sparkling', 'shimmering'],
     
     // NEW: Emotions (15 words - Level 1-4 patterns)
     emotions: [
@@ -372,8 +382,8 @@ export const TIER_25_UNIFIED_VOCABULARY_EXTENDED = {
 
   // ============= TOP 25% CHARACTER DESCRIPTORS =============
   
-  // Removed hair descriptors as they had minimal frequency in templates
-  HAIR_DESCRIPTORS: [],
+  // Top hair descriptors (5 words - added for detectAppearance)
+  HAIR_DESCRIPTORS: ['blonde', 'brown', 'curly', 'long', 'short'],
   
   // Most common size/age descriptors (12 words)
   SIZE_AGE_DESCRIPTORS: [
@@ -392,9 +402,25 @@ export const TIER_25_UNIFIED_VOCABULARY_EXTENDED = {
     'doctor', 'nurse', 'firefighter', 'police', 'librarian', 
     'parent', 'child', 'brother', 'sister', 'Maya', 'Alex', 
     'Emma', 'Dr. Chen', 'Mrs. Chen'
-  ]
+  ],
+
+  // ============= NEW: APPEARANCE DESCRIPTORS FOR detectAppearance() =============
+  appearanceDescriptors: {
+    // Hair colors (5 words)
+    hairColors: ['blonde', 'brown', 'black', 'red', 'gray'],
+    
+    // Hair styles (5 words)
+    hairStyles: ['curly', 'straight', 'wavy', 'braided', 'ponytail'],
+    
+    // Skin features (5 words - freckles, scars, etc.)
+    skinFeatures: ['freckles', 'dimples', 'scar', 'birthmark', 'tattoo'],
+    
+    // Eye colors (5 words)
+    eyeColors: ['blue', 'brown', 'green', 'hazel', 'gray']
+  }
 };
 
+// ============= BACKWARD COMPATIBILITY ALIASES FOR CharacterConsistencyService =============
 // Legacy compatibility alias: objects → objectCategories
 TIER_25_UNIFIED_VOCABULARY_EXTENDED.objects = {
   toys: TIER_25_UNIFIED_VOCABULARY_EXTENDED.objectCategories.toys,
@@ -402,6 +428,15 @@ TIER_25_UNIFIED_VOCABULARY_EXTENDED.objects = {
   household: TIER_25_UNIFIED_VOCABULARY_EXTENDED.objectCategories.household,
   animals: TIER_25_UNIFIED_VOCABULARY_EXTENDED.objectCategories.animals
 };
+
+// Alias for CCS: context → contextDetection
+TIER_25_UNIFIED_VOCABULARY_EXTENDED.context = TIER_25_UNIFIED_VOCABULARY_EXTENDED.contextDetection;
+
+// Alias for CCS: peopleRelationships → PEOPLE_RELATIONSHIPS
+TIER_25_UNIFIED_VOCABULARY_EXTENDED.peopleRelationships = TIER_25_UNIFIED_VOCABULARY_EXTENDED.PEOPLE_RELATIONSHIPS;
+
+// Alias for CCS: hair → HAIR_DESCRIPTORS (for legacy compatibility)
+TIER_25_UNIFIED_VOCABULARY_EXTENDED.hair = TIER_25_UNIFIED_VOCABULARY_EXTENDED.HAIR_DESCRIPTORS;
 
 // ============= MODULE-LEVEL CACHING FOR TIER_25_EXTENDED (CPU OPTIMIZATION) =============
 // Reduces vocabulary loading from 6x per request to 1x per cold start (60-70% CPU reduction)
