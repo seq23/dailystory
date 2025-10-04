@@ -59,6 +59,9 @@ function generateInlineNuclearNegative(culturalProfile, avatarType, difficulty) 
   // UNIVERSAL CULTURAL SENSITIVITY 
   const culturalSensitivityNegativeBlock = 'cultural stereotypes, racial stereotypes, ethnic stereotypes, cultural caricature, offensive imagery, discriminatory content, prejudicial representation, cultural mockery, insensitive portrayal, appropriative elements, tokenistic representation, oversimplified culture, cultural reduction';
   
+  // ANTI-MERGING/BLENDING NEGATIVES FOR BEGINNER/EASY
+  const blendingNegative = 'character merged with background, character blending into environment, character same color as background, character hidden by environment, character embedded in scenery, character camouflaged, character invisible, character and environment same texture, character not distinct from surroundings';
+
   let negativeComponents = [base];
   
   // Apply gender-specific negatives
@@ -75,6 +78,11 @@ function generateInlineNuclearNegative(culturalProfile, avatarType, difficulty) 
     negativeComponents.push(africanAmericanNegativeBlock);
   }
   
+  // Apply anti-merging negatives for beginner/easy only
+  if (difficulty === 'beginner' || difficulty === 'easy') {
+    negativeComponents.push(blendingNegative);
+  }
+  
   // Always apply cultural sensitivity
   negativeComponents.push(culturalSensitivityNegativeBlock);
   
@@ -86,11 +94,11 @@ function generateInlineNuclearNegative(culturalProfile, avatarType, difficulty) 
 const NUCLEAR_HARDCODED_STYLE_FRAMEWORKS = {
   'beginner': {
     name: 'Contemporary Children\'s Book Illustration',
-    frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, warm natural lighting'
+    frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, warm natural lighting, character clearly separated from environment, character remains distinct and visible, no character-background blending, character as focal subject'
   },
   'easy': {
     name: 'Contemporary Children\'s Book Illustration', 
-    frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, warm natural lighting'
+    frameworkPrompt: 'Contemporary children\'s book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, warm natural lighting, character clearly separated from environment, character remains distinct and visible, no character-background blending, character as focal subject'
   },
   'medium': {
     name: 'Contemporary Children\'s Book Illustration',
@@ -225,11 +233,22 @@ function generateTier25C(storyText, userInfo, avatarIdentity, failedTierData = {
   const effectiveSkinTone = hasStructuredData ? failedTierData.structuredAvatarData.skinTone : skinTone;
   const effectiveHairColor = hasStructuredData ? failedTierData.structuredAvatarData.hairColor : getSimpleHairColor(skinTone);
   
+  // Component 2 difficulty determination for sandwich structure
+  const difficulty = userInfo?.difficulty || 'medium';
+  
+  // Sandwich components for beginner/easy
+  const antiMergePrefix = (difficulty === 'beginner' || difficulty === 'easy') 
+    ? 'Main character clearly visible as distinct character separate from environment. ' 
+    : '';
+  const cheerfulDirective = (difficulty === 'beginner' || difficulty === 'easy')
+    ? ' with cheerful expression, positioned in clear foreground, fully visible, engaging with viewer'
+    : '';
+  
   let characterDesc;
   if (genderNeutralDescription) {
-    characterDesc = `A ${genderNeutralDescription} named ${characterName} age ${age} ${effectiveSkinTone} skin complexion with ${effectiveHairColor}`;
+    characterDesc = `${antiMergePrefix}A ${genderNeutralDescription} named ${characterName} age ${age} ${effectiveSkinTone} skin complexion with ${effectiveHairColor}${cheerfulDirective}`;
   } else {
-    characterDesc = `A young ${mappedAvatarType} named ${characterName} age ${age} ${effectiveSkinTone} skin complexion with ${effectiveHairColor}`;
+    characterDesc = `${antiMergePrefix}A young ${mappedAvatarType} named ${characterName} age ${age} ${effectiveSkinTone} skin complexion with ${effectiveHairColor}${cheerfulDirective}`;
   }
   
   // Add detailed cultural features for dark skin with supported languages (hair already handled above)
