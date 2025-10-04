@@ -88,46 +88,90 @@ The `recent-image-prompts` operation returns a normalized shape for consistency:
       negative_prompt: "NO TEXT, no words...",
       image_url: "https://...",
       tier: "TIER_1" | "TIER_2.5A" | "TIER_2.5B" | "TIER_2.5C" | "DIRECT_MODE",
+      edge_function: "runware-template-cd" | "runware-template-ab" | "ai-visual-scene-creator",
+      page_number: number,
       status: "success" | "failure" | "attempting",
       created_at: "timestamp"
     }
-  ]
+  ],
+  data: [...]  // Backward compatibility alias (same as imagePrompts)
 }
 ```
 
 **Backward Compatibility**: Both `data` and `imagePrompts` fields are returned:
-- `data`: Array of image prompts (legacy)
-- `imagePrompts`: Array of image prompts (normalized)
+- `data`: Array of image prompts (legacy field for old consumers)
+- `imagePrompts`: Array of image prompts (normalized field)
 
-Consumers can use either field.
+Consumers can use either field - they contain the same data.
 
 ### Prompt Storage
 
 - **positive_prompt**: The actual positive prompt sent to Runware API
-- **negative_prompt**: The actual negative prompt sent to Runware API
-- Both are stored in `image_generation_debug` table for all successful image generations
+- **negative_prompt**: The actual negative prompt sent to Runware API  
+- **edge_function**: Which edge function generated the image (runware-template-cd, runware-template-ab, etc.)
+- **tier**: Which tier succeeded (TIER_1, TIER_2.5A, DIRECT_MODE, etc.)
+- **page_number**: Story page number this image was generated for
+- All fields stored in `image_generation_debug` table via `tierLogger.success()` calls
 
 ### Sampling and Reliability
 
 **Default Behavior** (Production):
 - Success logs: 10% sampling rate (configurable via `DEBUG_TIER_LOG_SAMPLE`)
-- Failure logs: 100% (always logged)
+- Failure logs: 100% (always logged, never sampled)
 
 **Debug Mode** (Full Logging):
-Set `DEBUG_TIER_LOG_SAMPLE=1` to capture 100% of success logs:
+Set `DEBUG_TIER_LOG_SAMPLE=1` to force 100% logging of success events:
 ```bash
 # In Supabase Edge Function Secrets
 DEBUG_TIER_LOG_SAMPLE=1
 ```
 
-This ensures "last 6 image prompts" is reliably available during debugging.
+This ensures "last 6 image prompts" is **always** available during debugging.
 
 **Client-Side Debug Access**:
 ```javascript
 // Only works when ?debug=1 is active
-const { data } = await DebugGateway.getRecentImagePrompts(6);
-console.log(data.imagePrompts); // Array of last 6 prompts
+const { imagePrompts } = await DebugGateway.getRecentImagePrompts(6);
+console.log(imagePrompts); // Array of last 6 prompts with full details
+
+// Manual tier checking (for deep debugging)
+window.checkImageTier();
+// Logs detailed tier information for last 10 images to console
 ```
+
+### CORS Implementation
+
+All debug endpoints return proper CORS headers in both success and error responses:
+- `Access-Control-Allow-Origin: *`
+- `Access-Control-Allow-Headers: authorization, x-client-info, apikey, content-type`
+- `Access-Control-Allow-Methods: GET, POST, OPTIONS`
+- OPTIONS preflight requests return **200 status** (required by browsers)
+
+### Error Handling
+
+**Validation Errors** (400 Bad Request):
+When required fields are missing (e.g., `pageText` or `storyText`), functions return structured error responses:
+
+```json
+{
+  "success": false,
+  "error": "NO_STORY_CONTENT",
+  "message": "Missing required story content. Please provide pageText or storyText in the request body.",
+  "hint": "Check your request body structure and ensure all required fields are present",
+  "requiredFields": {
+    "storyContent": "pageText OR storyText",
+    "sessionId": "string",
+    "userInfo": "object"
+  }
+}
+```
+
+**Server Errors** (500 Internal Server Error):
+- Include escalation information
+- Log full error details server-side
+- Return generic error messages to client
+
+**All error responses include CORS headers** to prevent browser CORS errors from masking the actual error.
 
 ## Common Issues
 

@@ -262,7 +262,8 @@ async function bindTierLogger(
 ): Promise<TierLogger> {
   const isProd = Deno.env.get("ENVIRONMENT") === "production";
   const debugTierSample = Deno.env.get("DEBUG_TIER_LOG_SAMPLE");
-  const logSampleRate = debugTierSample === "1" ? 1.0 : parseFloat(debugTierSample || "0.1"); // 100% if DEBUG_TIER_LOG_SAMPLE=1, else default 10%
+  // Force 100% logging when DEBUG_TIER_LOG_SAMPLE=1, otherwise default 10% sampling
+  const logSampleRate = debugTierSample === "1" ? 1.0 : parseFloat(debugTierSample || "0.1");
 
   try {
     const [{ createVendorFirstSupabaseClient }, tierLogging] = await Promise.all([
@@ -275,7 +276,8 @@ async function bindTierLogger(
     // Sampling helper: only log to DB if sampled or failure
     const shouldLogToDB = (status: string = "info") => {
       if (status === "failed" || status === "failure") return true; // Always log failures
-      if (logSampleRate >= 1.0) return true; // Full logging when DEBUG_TIER_LOG_SAMPLE=1
+      if (debugTierSample === "1") return true; // Force 100% when DEBUG_TIER_LOG_SAMPLE=1 explicitly set
+      if (logSampleRate >= 1.0) return true; // Full logging for other 100% rates
       return Math.random() < logSampleRate; // Sample for success/info logs
     };
 
@@ -2433,6 +2435,35 @@ Deno.serve(async (req) => {
       } // Close if (!isCharacterServiceUnavailable)
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
+
+      // Check if this is a validation error (client error, not server error)
+      const isValidationError = errorMessage.includes("NO_STORY_CONTENT") || 
+                                errorMessage.includes("PAYLOAD_NULL") || 
+                                errorMessage.includes("NO_SESSION_OR_USER_INFO");
+
+      if (isValidationError) {
+        // Return 400 Bad Request for client-side validation errors
+        console.error(`[runware-generate-image] Validation error: ${errorMessage}`);
+        return corsResponse(
+          {
+            success: false,
+            error: errorMessage,
+            message: errorMessage === "NO_STORY_CONTENT" 
+              ? "Missing required story content. Please provide pageText or storyText in the request body."
+              : errorMessage === "NO_SESSION_OR_USER_INFO"
+              ? "Missing required session or user information."
+              : "Invalid request payload",
+            hint: "Check your request body structure and ensure all required fields are present",
+            requiredFields: {
+              storyContent: "pageText OR storyText",
+              sessionId: "string",
+              userInfo: "object"
+            }
+          },
+          req,
+          400
+        );
+      }
 
       // Check if this is a boot sync error that should be retried
       const isSyncFailure = FAST_BOOT_SYNC.bootErrors.some((msg) => errorMessage.includes(msg));
