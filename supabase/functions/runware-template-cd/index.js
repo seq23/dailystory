@@ -571,8 +571,8 @@ async function handleRequest(req) {
       templateResult.tier || 'template-cd',
       'success',
       {
-        positive_prompt: templateResult.positivePrompt,
-        negative_prompt: templateResult.negativePrompt,
+        positivePrompt: templateResult.positivePrompt,
+        negativePrompt: templateResult.negativePrompt,
         visual_details: failedTierData?.visualDetails,
         edgeFunction: 'runware-template-cd',
         pageNumber: pageNumber || 1,
