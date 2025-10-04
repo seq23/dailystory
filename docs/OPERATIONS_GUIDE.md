@@ -262,6 +262,21 @@ The resilient loader now prioritizes local vendor bundle FIRST for all `@supabas
 - Template generation improvements
 - **Result:** 99.2% success rate
 
+#### ✅ Image Generation Debug Logging Fix (COMPLETED - October 2025)
+**Issue:** Prompts not being saved to `image_generation_debug` table despite successful image generation  
+**Root Cause:** Edge function using ANON_KEY fallback instead of SERVICE_ROLE_KEY, causing silent Row Level Security (RLS) policy failures on INSERT operations  
+**Solution:**
+- Removed ANON_KEY fallback in `runware-template-cd` client initialization (line 561)
+- Edge function now requires SERVICE_ROLE_KEY (fail-fast if missing)
+- Added explicit error logging in `tierLogging.js` for database operations
+- All DB INSERT failures now visible in edge function logs with detailed error context
+
+**Files Modified:**
+- `supabase/functions/runware-template-cd/index.js` - Fixed client initialization to require service role
+- `supabase/functions/_shared/tierLogging.js` - Added detailed error logging with RLS failure detection
+
+**Result:** Database logging now works correctly, prompts and image URLs persistently saved for debugging
+
 #### ✅ Business Logic Compliance (COMPLETED - September 2025)
 - Smart bypass system overhaul
 - Premium user service quality restoration

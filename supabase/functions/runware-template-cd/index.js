@@ -554,13 +554,18 @@ async function handleRequest(req) {
       console.log('✅ [VENDOR_FIRST] Supabase client initialized successfully for logging');
     } catch (loaderError) {
       console.warn('⚠️ [RESILIENT_LOADER] Failed, using fallback:', loaderError.message);
-      // Fallback to local vendor bundle
+      // Fallback to local vendor bundle - REQUIRE service role key
+      const supabaseUrl = Deno.env.get('SUPABASE_URL');
+      const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+      
+      if (!supabaseServiceKey) {
+        console.error('❌ CRITICAL: SUPABASE_SERVICE_ROLE_KEY not set - database logging will fail');
+        throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY environment variable');
+      }
+      
       const { createClient } = await import('../_vendor/supabase-js@2.57.4.mjs');
-      supabase = createClient(
-        Deno.env.get('SUPABASE_URL'),
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY')
-      );
-      console.log('✅ [RESILIENT_LOADER] Local vendor fallback successful for logging');
+      supabase = createClient(supabaseUrl, supabaseServiceKey);
+      console.log('✅ [RESILIENT_LOADER] Local vendor fallback successful for logging (using SERVICE_ROLE_KEY)');
     }
     
     const { logTierAttempt } = await import("../_shared/tierLogging.js");

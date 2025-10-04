@@ -10,9 +10,26 @@ async function insertDebugRow(supabase, row) {
     return;
   }
   try {
-    await supabase.from('image_generation_debug').insert([row]);
+    const { data, error } = await supabase.from('image_generation_debug').insert([row]);
+    if (error) {
+      console.error("❌ DB INSERT FAILED:", {
+        error: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+        row_sample: {
+          session_id: row.session_id,
+          tier: row.tier,
+          user_id: row.user_id,
+          has_image_url: !!row.image_url,
+          has_prompts: !!(row.positive_prompt && row.negative_prompt)
+        }
+      });
+    } else {
+      console.log("✅ Successfully logged to image_generation_debug:", row.session_id);
+    }
   } catch (err) {
-    console.warn("⚠️ Failed DB log insert:", err.message);
+    console.error("⚠️ Failed DB log insert (caught exception):", err.message, err);
   }
 }
 
