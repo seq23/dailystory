@@ -1012,7 +1012,7 @@ async function processInlinedTier1(
 
   console.log(`✅ TEMPLATE BUILDING: Enhanced prompt with full context`, {
     primarySceneLength: primaryScene?.length || 0,
-    mainCharacterLength: mainCharacterDetails?.length || 0,
+    mainCharacterLength: characterSeed?.characterDescription?.length || 0,
     consistencyElementsLength: consistencyElements?.length || 0,
     totalPromptLength: enhancedPrompt?.length || 0,
   });

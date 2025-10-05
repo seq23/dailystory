@@ -663,7 +663,13 @@ Subject: ${character}, ${age}, ${ethnicity}, ${hair}, ${features}.
 Action: standing in a friendly pose.
 Context: diverse community setting.
 Brand Suffix: ${styleFramework.frameworkPrompt}.`;
-      console.log(`✅ Tier 2.5B: Using pure inline template with cultural intelligence`);
+      console.log(`✅ Tier 2.5B: Using pure inline template with cultural intelligence`, {
+        culturalProfile,
+        skinTone,
+        avatarType,
+        hairSelected: hair,
+        featuresSelected: features
+      });
     }
     
     // Generate negative prompt
@@ -678,6 +684,15 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
       hasImageURL: !!imageURL,
       imageGenResultType: typeof imageURL,
       imageURLSource: 'runware_api'
+    });
+    
+    console.log(`🔍 PROMPT DEBUG - About to return response:`, {
+      hasPositivePrompt: !!positivePrompt,
+      hasNegativePrompt: !!negativePrompt,
+      positivePromptLength: positivePrompt?.length || 0,
+      negativePromptLength: negativePrompt?.length || 0,
+      positivePromptPreview: positivePrompt?.substring(0, 100),
+      negativePromptPreview: negativePrompt?.substring(0, 100)
     });
     
     return createResponse({
