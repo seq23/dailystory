@@ -371,7 +371,7 @@ async function generateCompleteVisualSchema(
 
 JSON RESPONSE:
 {
-  "primaryScene": "Character name, age X, (weave ethnicity in here) in rich, detailed visual scene description for image generation with main character description (verbatim hair and skin / features provided weaved in naturally), setting, key character actions, any secondary characters including animals, atmosphere, and comprehensive visual details",
+  "primaryScene": "Character name, age X, (weave ethnicity in here) in rich, detailed visual scene description for image generation with main character description (verbatim hair and skin / features provided weaved in naturally), setting, key character actions OR character as observer/in background if action focuses on object/animal, any secondary characters including animals, atmosphere, and comprehensive visual details",
   "backgroundColor": "Background color description (e.g., 'warm golden forest light', 'cool blue sky', 'cozy indoor amber')",
   "lighting": "Lighting description (e.g., 'golden hour sunlight', 'soft morning light', 'magical twilight glow')",
   "composition": "Visual composition description (e.g., 'centered character with forest background', 'close-up with blurred garden')",
@@ -405,10 +405,16 @@ RULES:
    Current Story: "Sarah walked with it to the playground"
    Current Scene: "Sarah, age 6, with brown curly hair and medium skin tone, walks confidently carrying her pink backpack through the sunny park toward the playground"
    
-   WRONG EXAMPLE:
-   Previous: "pink backpack"
-   Current Story: "walked with it"
-   Current Scene: "walks with a blue bag" ❌ (color changed)
+    WRONG EXAMPLE:
+    Previous: "pink backpack"
+    Current Story: "walked with it"
+    Current Scene: "walks with a blue bag" ❌ (color changed)
+9. Main character presence in ALL scenes (children's story requirement): ALWAYS include the main character in EVERY scene for visual continuity
+   - If story text explicitly mentions character doing an action: character is PRIMARY FOCUS of scene
+   - If story text focuses on object/animal WITHOUT mentioning character (e.g., "The dog jumps", "The ball rolls"): position main character as OBSERVER or in BACKGROUND watching/near the action
+   - Example: Story says "The bird flies away" → Scene: "Sarah, age 6, with brown curly hair, watches from the garden as a small bird flies away into the blue sky"
+   - Example: Story says "The toy car zooms across the floor" → Scene: "Jake, age 5, with short black hair, sits nearby on the floor smiling as his red toy car zooms across the wooden floor"
+   - NEVER generate a scene without the main character visible - they must always be present for children's story continuity
 
 PHASE 1 ENHANCEMENT - MAIN CHARACTER APPEARANCE:
 - If mainCharacterAppearance physical features are provided (e.g., 'brown eyes', 'curly hair'), incorporate them into the scene description

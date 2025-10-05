@@ -991,14 +991,6 @@ async function processInlinedTier1(
   }
 
   // Build COMPLETE_TIER_1 template with deduplication logic
-  const characterAge = userInfo?.age || 6;
-  const hasAgeInDescription = characterSeed?.characterDescription?.includes("age");
-  const ageText = `, age ${characterAge}`;
-
-  const mainCharacterDetails = `Beautiful ${characterReference} character ${characterName}${ageText}${
-    characterSeed?.characterDescription && !hasAgeInDescription ? `, ${characterSeed.characterDescription}` : ""
-  }${culturalBundle?.features ? `, ${culturalBundle.features}` : ""}`;
-
   const secondaryCharsText =
     secondaryCharacterSeeds.length > 0
       ? `With ${secondaryCharacterSeeds.map((s) => s.visualDescription || s.name).join(", ")}`
@@ -1011,7 +1003,6 @@ async function processInlinedTier1(
 
   const enhancedPrompt = COMPLETE_TIER_1_TEMPLATE
     .replace("{primaryScene}", primaryScene)
-    .replace("{mainCharacterDetails}", mainCharacterDetails)
     .replace("{secondaryCharacters}", consistencyElements ? `${consistencyElements}. ` : "")
     .replace("{coloredObjects}", coloredObjectsText ? `${coloredObjectsText}. ` : "")
     .replace("{settingContext}", aiSchema?.sceneSettings ? `In ${aiSchema.sceneSettings}. ` : "")
