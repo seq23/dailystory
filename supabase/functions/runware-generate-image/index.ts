@@ -1554,7 +1554,12 @@ Deno.serve(async (req) => {
               primaryScene: enhancedPrompt.primaryScene,
               templateStructure: "COMPLETE_TIER_1",
               cascadeHistory: ["✅ Tier 1 Complete Success"],
-              ccsBootStatus: ccsBootStatus.loaded,
+              ccsBootStatus: {
+                loaded: ccsBootStatus.loaded,
+                tier1: ccsBootStatus.loaded,
+                tier25: false,
+                directMode: false
+              },
               sceneExtracted: !!enhancedPrompt.primaryScene,
             },
           },
@@ -1691,7 +1696,12 @@ Deno.serve(async (req) => {
                   `📋 ${failureDetails}`,
                   "⛔ Cascade Blocked: forceCompleteTier1=true",
                 ],
-                ccsBootStatus: ccsBootStatus.loaded,
+                ccsBootStatus: {
+                  loaded: ccsBootStatus.loaded,
+                  tier1: ccsBootStatus.loaded,
+                  tier25: false,
+                  directMode: false
+                },
                 sceneExtracted: false,
               },
             },
@@ -2052,7 +2062,12 @@ Deno.serve(async (req) => {
                       `❌ Direct Mode Failed: ${directErrorMessage}`,
                       "✅ Tier 2.5A Success",
                     ],
-                    ccsBootStatus: ccsBootStatus.loaded,
+                    ccsBootStatus: {
+                      loaded: ccsBootStatus.loaded,
+                      tier1: false,
+                      tier25: ccsBootStatus.loaded,
+                      directMode: false
+                    },
                     sceneExtracted: true,
                   },
                 };
@@ -2159,7 +2174,12 @@ Deno.serve(async (req) => {
                       `❌ Tier 2.5A Failed: ${tier25aErrorMessage}`,
                       "✅ Tier 2.5B Success",
                     ],
-                    ccsBootStatus: ccsBootStatus.loaded,
+                    ccsBootStatus: {
+                      loaded: ccsBootStatus.loaded,
+                      tier1: false,
+                      tier25: ccsBootStatus.loaded,
+                      directMode: false
+                    },
                     sceneExtracted: true,
                   },
                 };
@@ -2285,7 +2305,12 @@ Deno.serve(async (req) => {
                       `❌ Tier 2.5B Failed: ${tier25bErrorMessage}`,
                       "✅ Tier 2.5C Success (Nuclear Fallback)",
                     ],
-                    ccsBootStatus: ccsBootStatus.loaded,
+                    ccsBootStatus: {
+                      loaded: false,
+                      tier1: false,
+                      tier25: false,
+                      directMode: false
+                    },
                     sceneExtracted: false,
                   },
                 };
@@ -2414,7 +2439,12 @@ Deno.serve(async (req) => {
                         `❌ Tier 2.5C Failed: ${tier25cErrorMessage}`,
                         "✅ Tier 2.5D Success (Emergency Template)",
                       ],
-                      ccsBootStatus: ccsBootStatus.loaded,
+                      ccsBootStatus: {
+                        loaded: false,
+                        tier1: false,
+                        tier25: false,
+                        directMode: false
+                      },
                       sceneExtracted: false,
                     },
                   };

@@ -3,7 +3,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // ✅ BUNDLER HINT: Force CCS inclusion in bundle
 import { characterConsistencyService as _ccsHint } from "../_shared/CharacterConsistencyService.js";
-import { extractSemanticScene, extractSimpleScene } from "../_shared/placeholderResolver.ts";
+import { extractSemanticScene, extractSimpleScene } from "../_shared/placeholderResolver.js";
 
 const SERVICE_NAME = "runware-template-ab";
 
@@ -748,7 +748,12 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
       styleFrameworkUsed: styleFramework.name,
       templateComplexity: mode,
       metadata: {
-        ccsBootStatus: ccsBootStatus.loaded,
+        ccsBootStatus: {
+          loaded: ccsBootStatus.loaded,
+          tier1: false,
+          tier25: ccsBootStatus.loaded,
+          directMode: false
+        },
         sceneExtracted: sceneExtracted,
       }
     });

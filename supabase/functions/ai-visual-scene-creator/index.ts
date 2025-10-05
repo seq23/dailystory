@@ -1284,7 +1284,12 @@ serve(async (req) => {
       timestamp: new Date().toISOString(),
       processingTime: Date.now(),
       metadata: {
-        ccsBootStatus: ccsBootStatus.loaded,
+        ccsBootStatus: {
+          loaded: ccsBootStatus.loaded,
+          tier1: false,
+          tier25: false,
+          directMode: ccsBootStatus.loaded
+        },
         sceneExtracted: !!visualSchema.primaryScene,
       }
     };
