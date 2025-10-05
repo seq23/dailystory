@@ -690,6 +690,19 @@ export class CharacterConsistencyService {
     }
 
     console.log(`📊 Total objects detected: ${detections.length} (exact + compound + proximity + standalone)`);
+    
+    // CHANGE 5: Write session-scoped cache after detection
+    const allSessionObjects = manifest.getAllObjects();
+    if (allSessionObjects.length > 0) {
+      const sessionCacheKey = `${sessionId}_colored_objects_session`;
+      const objectDescriptions = allSessionObjects
+        .map(obj => obj.fullDescription)
+        .filter(Boolean)
+        .join(', ');
+      this.storyCache.smartWrite(sessionCacheKey, objectDescriptions);
+      console.log(`💾 Cached ${allSessionObjects.length} session objects under key: ${sessionCacheKey}`);
+    }
+    
     return detections;
   }
 
@@ -1021,30 +1034,65 @@ export class CharacterConsistencyService {
    * Checks cache first, falls back to DB only if needed
    */
   async getColoredObjects(sessionId) {
-    // Check memory cache first (PHASE 4)
-    const cacheKey = `${sessionId}_colored_objects`;
-    const cached = this.storyCache.read(cacheKey);
+    // CHANGE 1: Clean up old entries from database (7+ days old)
+    try {
+      const supabase = await this.getSupabaseClient();
+      if (supabase) {
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        await supabase
+          .from('visual_details_cache')
+          .delete()
+          .eq('detail_type', 'colored_object')
+          .lt('created_at', sevenDaysAgo.toISOString());
+      }
+    } catch (cleanupError) {
+      console.warn(`⚠️ Cleanup failed for old colored objects:`, cleanupError);
+    }
+
+    // CHANGE 2: Check session-wide cache first (PHASE 4)
+    const sessionCacheKey = `${sessionId}_colored_objects_session`;
+    const cached = this.storyCache.read(sessionCacheKey);
     
     if (cached) {
-      console.log(`💾 CACHE HIT: Colored objects for ${sessionId}`);
+      console.log(`💾 CACHE HIT: Session-wide colored objects for ${sessionId}`);
       return cached;
     }
     
-    // Fallback to manifest (in-memory)
+    // CHANGE 3: Fallback to manifest (in-memory, all session objects)
     const manifest = this.getSessionManifest(sessionId);
-    const objects = manifest.getAllObjects();
+    const objects = manifest.getAllObjects(); // Returns ALL session objects
     
-    if (objects.length === 0) return '';
+    // CHANGE 4: If no objects in manifest, try loading from database
+    if (objects.length === 0) {
+      console.log(`📊 No objects in manifest, checking database for ${sessionId}`);
+      await this.loadCompleteSessionData(sessionId);
+      const reloadedObjects = manifest.getAllObjects();
+      
+      if (reloadedObjects.length === 0) {
+        console.log(`📊 No colored objects found in database for ${sessionId}`);
+        return '';
+      }
+      
+      const descriptions = reloadedObjects
+        .map(obj => obj.fullDescription)
+        .filter(Boolean)
+        .join(', ');
+      
+      this.storyCache.smartWrite(sessionCacheKey, descriptions);
+      console.log(`🎨 Restored ${reloadedObjects.length} colored objects from DB for ${sessionId}`);
+      return descriptions;
+    }
     
     const descriptions = objects
       .map(obj => obj.fullDescription)
       .filter(Boolean)
       .join(', ');
     
-    // Cache result
-    this.storyCache.smartWrite(cacheKey, descriptions);
+    // Cache result with session-scoped key
+    this.storyCache.smartWrite(sessionCacheKey, descriptions);
     
-    console.log(`🎨 Colored objects for ${sessionId}: ${descriptions}`);
+    console.log(`🎨 Session-wide colored objects for ${sessionId}: ${descriptions}`);
     return descriptions;
   }
 
@@ -1112,13 +1160,27 @@ export class CharacterConsistencyService {
         return null;
       }
 
+      // CHANGE 2: Restore colored objects to manifest
+      const manifest = this.getSessionManifest(sessionId);
+      const coloredObjectRecords = data.filter(r => r.detail_type === 'colored_object');
+      
+      for (const record of coloredObjectRecords) {
+        const { detail_key, visual_elements } = record;
+        const color = visual_elements?.color || null;
+        const fullDescription = visual_elements?.fullDescription || detail_key;
+        const pageNumber = record.page_first_seen || 1;
+        
+        manifest.addObject(detail_key, color, fullDescription, pageNumber);
+        console.log(`🔄 Restored colored object from DB: ${fullDescription} (page ${pageNumber})`);
+      }
+
       // Populate cache with loaded data
       for (const record of data) {
         const cacheKey = `${sessionId}_${record.detail_type}_${record.detail_key}`;
         this.storyCache.smartWrite(cacheKey, record.detail_value);
       }
 
-      console.log(`✅ Loaded ${data.length} cached records for ${sessionId}`);
+      console.log(`✅ Loaded ${data.length} cached records for ${sessionId} (${coloredObjectRecords.length} colored objects)`);
       return data;
     } catch (error) {
       console.error(`❌ Error in loadCompleteSessionData:`, error);
@@ -1188,6 +1250,28 @@ export class CharacterConsistencyService {
             });
           }
         }
+      }
+
+      // CHANGE 1: Write colored objects to database
+      if (detectionResults.coloredObjects && detectionResults.coloredObjects.length > 0) {
+        for (const obj of detectionResults.coloredObjects) {
+          recordsToWrite.push({
+            session_id: sessionId,
+            character_name: 'scene_objects',
+            detail_type: 'colored_object',
+            detail_key: obj.object || obj.fullDescription,
+            detail_value: obj.fullDescription,
+            page_first_seen: obj.pageNumber || pageNumber,
+            page_last_seen: obj.pageNumber || pageNumber,
+            visual_elements: {
+              color: obj.color,
+              object: obj.object,
+              fullDescription: obj.fullDescription,
+              source: obj.source
+            }
+          });
+        }
+        console.log(`📝 Prepared ${detectionResults.coloredObjects.length} colored objects for database write`);
       }
 
       if (recordsToWrite.length === 0) {
