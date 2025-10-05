@@ -1015,7 +1015,7 @@ async function processInlinedTier1(
     .replace("{primaryScene}", primaryScene)
     .replace("{mainCharacterDetails}", mainCharacterDetails)
     .replace("{secondaryCharacters}", consistencyElements ? `${consistencyElements}. ` : "")
-    .replace("{coloredObjects}", "")
+    .replace("{coloredObjects}", coloredObjectsText ? `${coloredObjectsText}. ` : "")
     .replace("{settingContext}", aiSchema?.sceneSettings ? `In ${aiSchema.sceneSettings}. ` : "")
     .replace("{styleFramework}", styleFramework);
 
