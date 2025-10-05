@@ -1009,7 +1009,7 @@ async function processInlinedTier1(
     detectedAnimals?.length > 0 ? `Including ${detectedAnimals.map((a) => a.name || a.type).join(", ")}` : "";
   const coloredObjectsText = coloredObjects ? `Featuring ${coloredObjects}` : "";
   // Phase 2: Remove sessionSetting duplication - it's already in aiSchema.sceneSettings
-  const consistencyElements = [secondaryCharsText, animalsText, coloredObjectsText].filter(Boolean).join(", ");
+  const consistencyElements = [secondaryCharsText, animalsText].filter(Boolean).join(", ");
 
   const enhancedPrompt = COMPLETE_TIER_1_TEMPLATE
     .replace("{primaryScene}", primaryScene)

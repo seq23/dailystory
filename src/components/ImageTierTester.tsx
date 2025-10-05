@@ -2888,50 +2888,6 @@ export const ImageTierTester = () => {
                             </div>
                           </details>
                           
-                          {/* Character Processing Pipeline */}
-                          <div className="text-xs border-t pt-2 mt-2">
-                            <div className="font-medium mb-1">🎨 Character Processing Pipeline:</div>
-                            <div className="bg-white p-2 rounded space-y-2">
-                              {/* Hair Selection Process */}
-                              <div className="border-l-2 border-blue-400 pl-2">
-                                <div className="font-medium text-blue-700">Hair Selection:</div>
-                                <div className="text-xs text-gray-600 mt-1">
-                                  Raw Hair: {result.details.aiDebugSchema.rawUserInfoReceived?.fullUserInfo?.hair || 'not provided'} 
-                                  → Simplified: {result.details.aiDebugSchema.characterDataSent?.split(',')[0]?.split(':')[1]?.trim() || 'basic category used'}
-                                </div>
-                              </div>
-                              
-                              {/* Skin Tone Standardization */}
-                              <div className="border-l-2 border-green-400 pl-2">
-                                <div className="font-medium text-green-700">Skin Tone Standardization:</div>
-                                <div className="text-xs text-gray-600 mt-1">
-                                  Raw Skin: {result.details.aiDebugSchema.rawUserInfoReceived?.skinTone || 'undefined'}
-                                  → Standardized: {result.details.aiDebugSchema.characterDataSent?.split(',')[1]?.split(':')[1]?.trim() || 'basic category used'}
-                                </div>
-                              </div>
-                              
-                              {/* Ethnicity Detection */}
-                              <div className="border-l-2 border-purple-400 pl-2">
-                                <div className="font-medium text-purple-700">Ethnicity Detection:</div>
-                                <div className="text-xs text-gray-600 mt-1">
-                                  Language: {result.details.aiDebugSchema.rawUserInfoReceived?.nativeLanguage || 'en'} +
-                                  Skin: {result.details.aiDebugSchema.rawUserInfoReceived?.skinTone || 'undefined'}
-                                  → Ethnicity: {result.details.aiDebugSchema.characterDataSent?.includes('Ethnicity:') ? result.details.aiDebugSchema.characterDataSent.split('Ethnicity:')[1]?.split(',')[0]?.trim() : 'not detected'}
-                                </div>
-                              </div>
-                              
-                              {/* Cultural Context */}
-                              {result.details.aiDebugSchema.culturalContext && (
-                                <div className="border-l-2 border-orange-400 pl-2">
-                                  <div className="font-medium text-orange-700">Cultural Context:</div>
-                                  <div className="text-xs text-gray-600 mt-1">
-                                    {result.details.aiDebugSchema.culturalContext}
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                          
                           {/* Model & Context Info */}
                           <div className="text-xs border-t pt-2 mt-2">
                             <div className="font-medium mb-1">🤖 Model & Context:</div>
@@ -3041,8 +2997,8 @@ export const ImageTierTester = () => {
                         </div>
                       )}
                       
-                      {/* COMPREHENSIVE DEBUG PLAN: Runware Debug Info Section - Hide for Scene-Only mode */}
-                      {!result.details.sceneGenerationOnly && (result.details.positivePrompt || result.details.negativePrompt || result.details.promptSource || 
+                      {/* COMPREHENSIVE DEBUG PLAN: Runware Debug Info Section - Hide for Scene-Only mode and Force Tier 1 */}
+                      {!result.details.sceneGenerationOnly && result.tier !== 'tier-1-forced' && (result.details.positivePrompt || result.details.negativePrompt || result.details.promptSource || 
                         (result.tier === 'tier-1-forced-failure' && result.details.errorDetails?.attemptedPrompts)) && (
                         <div className="text-sm border-2 border-orange-300 rounded p-3 bg-orange-50 mt-3">
                           <div className="font-bold text-orange-700 mb-2">🎨 Runware Debug Info - Prompts Sent to Image API</div>

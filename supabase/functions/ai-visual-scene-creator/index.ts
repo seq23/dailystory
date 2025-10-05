@@ -412,7 +412,7 @@ STORY TEXT:
 PREVIOUS SCENE (for visual consistency):
 "${previousPrimaryScene || 'None - this is the first scene'}"
 
-Generate a comprehensive scene with complete visual elements including background, lighting, composition, setting, mood, style, secondary characters (categorized as humans vs pets), and key objects. Maintain character and setting continuity while showcasing the current page's action. CRITICAL: Use the exact hair description from CHARACTER APPEARANCE word-for-word without any paraphrasing, modification, or simplification. Include the complete hair description and skin tone exactly as provided in the scene description.`;
+Generate a comprehensive scene with complete visual elements including background, lighting, composition, setting, mood, style, secondary characters (categorized as humans vs pets), and key objects. Maintain character and setting continuity while showcasing the current page's action. CRITICAL: Use the exact hair description, skin tone, AND ethnicity from CHARACTER APPEARANCE word-for-word without any paraphrasing, modification, or simplification. Include the complete hair description, skin tone, and ethnicity exactly as provided in the primaryScene description.`;
 
   try {
     // Retry with jitter for 429/503 errors
