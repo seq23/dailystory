@@ -1101,11 +1101,6 @@ const FAST_BOOT_SYNC = {
 
 // OPTIMIZED SERVE HANDLER WITH FAST BOOT SYNC RECOVERY AND COMPLETE TIER CASCADE
 Deno.serve(async (req) => {
-  // Trigger CCS boot verification once (non-blocking)
-  if (ccsBootStatus.loaded === false && ccsBootStatus.error === null) {
-    verifyCCSBoot().catch(err => console.error('CCS boot verification failed:', err));
-  }
-  
   // PHASE 1: OPTIONS fast path (immediate return) - MUST return 200
   if (req.method === "OPTIONS") {
     const corsHeaders = generateEchoCorsHeaders(req);
