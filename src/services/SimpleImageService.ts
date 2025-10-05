@@ -382,13 +382,17 @@ export class SimpleImageService {
       // Route directly to optimized template
       const startTime = Date.now();
       try {
+        // NEW: Check for existing story seed
+        const existingSeed = OptimizedImageCache.getStorySeed(normalizedSessionId);
+        
         let templateResult = await supabase.functions.invoke(bypassDecision.targetTemplate || 'runware-template-cd', {
           body: {
             pageText: storyText,
             userInfo,
             sessionId: normalizedSessionId,
             pageNumber,
-            templateComplexity: bypassDecision.templateComplexity || 'C'
+            templateComplexity: bypassDecision.templateComplexity || 'C',
+            seed: existingSeed // NEW: Pass seed if exists
           }
         });
 
@@ -405,7 +409,8 @@ export class SimpleImageService {
               userInfo,
               sessionId: normalizedSessionId,
               pageNumber,
-              templateComplexity: 'D'
+              templateComplexity: 'D',
+              seed: existingSeed // NEW: Pass seed to fallback as well
             }
           });
         }
@@ -416,6 +421,11 @@ export class SimpleImageService {
         const imageURL = templateResult.data?.imageURL;
         if (templateResult.data?.success && imageURL?.trim()) {
           OptimizedImageCache.cacheImage(storyText, imageURL, normalizedSessionId);
+          
+          // NEW: Store seed from first page for visual consistency
+          if (!existingSeed && templateResult.data?.seed) {
+            OptimizedImageCache.setStorySeed(normalizedSessionId, templateResult.data.seed);
+          }
           
           try {
             window.dispatchEvent(new CustomEvent('image:generation:complete'));
@@ -464,6 +474,9 @@ export class SimpleImageService {
       
       const startTime = Date.now();
       
+      // NEW: Check for existing story seed for visual consistency
+      const existingSeed = OptimizedImageCache.getStorySeed(normalizedSessionId);
+      
       // Debug payload before sending
       const orchestratorPayload = {
         storyText: storyText,
@@ -472,7 +485,8 @@ export class SimpleImageService {
         storyId: normalizedSessionId, // Use normalized sessionId as storyId for consistency
         pageNumber,
         isGuestUser: !isPremium,
-        difficultyLevel: backendDifficulty
+        difficultyLevel: backendDifficulty,
+        seed: existingSeed // NEW: Pass seed for visual consistency across pages
         // Removed protectionNegatives - using raw content only
       };
       
@@ -598,6 +612,11 @@ export class SimpleImageService {
         
         // Store result in fast cache  
         OptimizedImageCache.cacheImage(storyText, imageURL, normalizedSessionId);
+        
+        // NEW: Store seed from first page for visual consistency
+        if (!existingSeed && orchResult?.seed) {
+          OptimizedImageCache.setStorySeed(normalizedSessionId, orchResult.seed);
+        }
 
         // Emit timer resume event
         try {

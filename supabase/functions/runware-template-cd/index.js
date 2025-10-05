@@ -313,7 +313,7 @@ function generateTier25D() {
 }
 
 // Call Runware API with retry logic
-async function callRunwareAPI(positivePrompt, negativePrompt, retries = 2) {
+async function callRunwareAPI(positivePrompt, negativePrompt, seed = null, retries = 2) {
   const apiKey = Deno.env.get('RUNWARE_API_KEY');
   if (!apiKey) {
     throw new Error('RUNWARE_API_KEY not configured');
@@ -344,7 +344,8 @@ async function callRunwareAPI(positivePrompt, negativePrompt, retries = 2) {
             numberResults: 1,
             outputFormat: "WEBP",
             steps: 25,
-            CFGScale: 8
+            CFGScale: 8,
+            ...(seed && { seed: seed }) // NEW: Use provided seed for consistency
           }
         ])
       });
@@ -406,7 +407,12 @@ async function callRunwareAPI(positivePrompt, negativePrompt, retries = 2) {
         console.warn('Failed to track Runware Template CD cost:', error);
       }
       
-      return imageData.imageURL;
+      // NEW: Return object with imageURL and seed for visual consistency
+      return {
+        imageURL: imageData.imageURL,
+        seed: imageData.seed,
+        cost: 0.0013
+      };
 
     } catch (error) {
       console.error(`❌ Runware API attempt ${attempt}/${retries + 1} failed:`, error);
@@ -457,7 +463,7 @@ async function handleRequest(req) {
     const payload = await req.json();
     console.log('🔍 Template CD: Request payload keys:', Object.keys(payload));
     
-    let enhancedStoryData, storyText, pageNumber, avatarIdentity, templateComplexity, failedTierData, sessionId;
+    let enhancedStoryData, storyText, pageNumber, avatarIdentity, templateComplexity, failedTierData, sessionId, seed;
     
     // PRIORITY 1: Handle bundle-structured payloads (from tier cascades)
     if (payload.bundle && payload.config) {
@@ -470,6 +476,7 @@ async function handleRequest(req) {
       templateComplexity = payload.config?.templateComplexity || payload.templateComplexity || 'C';
       sessionId = bundle.sessionId || payload.sessionId;
       failedTierData = bundle.failedTierData || payload.failedTierData;
+      seed = bundle.seed || payload.seed; // NEW: Extract seed for visual consistency
     } else if (payload.pageText || payload.storyText) {
       // PRIORITY 2: Direct pageText or storyText format (pageText === storyText)
       console.log('📄 Template CD: Using direct pageText/storyText format');
@@ -480,6 +487,7 @@ async function handleRequest(req) {
       templateComplexity = payload.templateComplexity || 'C';
       sessionId = payload.sessionId;
       failedTierData = payload.failedTierData;
+      seed = payload.seed; // NEW: Extract seed for visual consistency
     } else if (payload.enhancedStoryData?.storyText) {
       // PRIORITY 3: Nested enhancedStoryData format
       console.log('📦 Template CD: Using nested enhancedStoryData.storyText format');
@@ -490,6 +498,7 @@ async function handleRequest(req) {
       templateComplexity = payload.templateComplexity || 'C';
       sessionId = payload.sessionId || payload.enhancedStoryData.sessionId;
       failedTierData = payload.failedTierData;
+      seed = payload.seed; // NEW: Extract seed for visual consistency
     } else {
       // PRIORITY 4: Enhanced legacy format
       console.log('📚 Template CD: Using enhanced legacy format');
@@ -500,6 +509,7 @@ async function handleRequest(req) {
       templateComplexity = payload.templateComplexity || 'C';
       sessionId = payload.sessionId;
       failedTierData = payload.failedTierData;
+      seed = payload.seed; // NEW: Extract seed for visual consistency
     }
   
     if (!storyText) {
@@ -537,7 +547,8 @@ async function handleRequest(req) {
   console.log('🎨 Template CD: Generating image with Runware API');
   const imageGenResult = await callRunwareAPI(
     templateResult.positivePrompt,
-    templateResult.negativePrompt
+    templateResult.negativePrompt,
+    seed // NEW: Pass seed for visual consistency
   );
   
   // Defensive fallback: callRunwareAPI returns STRING, but handle both string/object

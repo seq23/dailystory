@@ -14,6 +14,7 @@ interface FastCacheEntry {
 
 export class OptimizedImageCache {
   private static cache = new Map<string, FastCacheEntry>();
+  private static storySeedCache = new Map<string, number>();
   private static readonly MAX_CACHE_SIZE = 200; // Increased capacity
   private static readonly CACHE_DURATION = 1800000; // 30 minutes
   private static readonly SIMPLE_CONTENT_THRESHOLD = 50; // Characters
@@ -94,7 +95,31 @@ export class OptimizedImageCache {
         deletedCount++;
       }
     }
+    this.clearStorySeed(sessionId);
     DebugLogger.log('image', '⚡ Fast session cache cleared', { deletedCount });
+  }
+  
+  /**
+   * Get stored seed for story session (visual consistency)
+   */
+  static getStorySeed(sessionId: string): number | null {
+    return this.storySeedCache.get(sessionId) || null;
+  }
+  
+  /**
+   * Store seed for story session
+   */
+  static setStorySeed(sessionId: string, seed: number): void {
+    this.storySeedCache.set(sessionId, seed);
+    DebugLogger.log('image', '🌱 Story seed stored', { sessionId, seed });
+  }
+  
+  /**
+   * Clear story seed (called on "Next Story" or "End Session")
+   */
+  static clearStorySeed(sessionId: string): void {
+    this.storySeedCache.delete(sessionId);
+    DebugLogger.log('image', '🌱 Story seed cleared', { sessionId });
   }
   
   /**
