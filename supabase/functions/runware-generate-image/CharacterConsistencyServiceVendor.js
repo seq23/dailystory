@@ -735,259 +735,194 @@ export class CharacterConsistencyService {
   }
 
   /**
-   * Detect colored objects using tiered vocabulary (tier25 first, full vocab fallback)
-   * Example: "Sally has a blue balloon" → {object: "balloon", color: "blue"}
+   * HELPER: Tokenize text for token-precise matching
+   * Strips punctuation and converts to lowercase tokens
+   */
+  tokenize(text) {
+    return text
+      .toLowerCase()
+      .replace(/[.,!?;:()""'']/g, ' ') // Remove punctuation
+      .split(/\s+/)
+      .filter(t => t.length > 0);
+  }
+
+  /**
+   * Detect colored objects using token-precise, indicator-driven detection
+   * STRATEGY PRIORITY:
+   * 1. Exact adjacency: "brown bag", "white swimsuit"
+   * 2. One-word connector: "small brown bag" (connector: small/little/tiny)
+   * 3. Indicator-verb windows: "carried a small brown bag" → brown bag (within 6 tokens)
+   * 4. Standalone objects: objects without colors (last resort)
+   * 
+   * NO substring matching - "car" will NOT match in "carried"
    */
   async detectColoredObjects(text, sessionId, pageNumber) {
     const tier25 = await this.getTier25Cache();
     const manifest = this.getSessionManifest(sessionId);
     const detections = [];
-    const lowerText = text.toLowerCase();
-
-    // Strategy 1: Check tier25 colors & objects first (75% hit rate, instant)
+    const tokens = this.tokenize(text);
+    
+    // Load vocabularies
     const tier25Colors = tier25.colors || [];
     const tier25Objects = tier25.objects || [];
+    const tier25Clothing = tier25.clothing || [];
     
-    if (!Array.isArray(tier25Colors) || !Array.isArray(tier25Objects)) {
-      console.warn('⚠️ tier25 colors/objects not arrays, falling back to full vocab');
-      const vocab = await this.getVocabulary();
-      tier25Colors.push(...(vocab.colors || []));
-      tier25Objects.push(...(vocab.objects || []));
+    // Indicator verbs for object detection
+    const OBJECT_INDICATOR_VERBS = ['carry', 'carried', 'carrying', 'wear', 'wearing', 'wore', 
+                                     'with', 'has', 'had', 'hold', 'holding', 'held',
+                                     'bring', 'bringing', 'brought', 'take', 'taking', 'took'];
+    
+    // One-word connectors allowed between color and object
+    const ONE_WORD_CONNECTORS = ['small', 'little', 'tiny', 'big', 'large', 'huge', 
+                                  'old', 'new', 'bright', 'dark', 'pretty'];
+    
+    // Combine object/clothing vocabularies
+    const allItems = [...tier25Objects, ...tier25Clothing];
+    const allColors = tier25Colors;
+    
+    if (Deno.env.get('LOG_LEVEL') === 'debug') {
+      console.log(`🔍 [TOKEN-PRECISE] Analyzing ${tokens.length} tokens with ${allColors.length} colors × ${allItems.length} items`);
     }
     
-    // Exact and compound matching with tier25 (OBJECTS)
-    for (const color of tier25Colors) {
-      for (const object of tier25Objects) {
-        const safeColor = escapeRegExp(color);
-        const safeObject = escapeRegExp(object);
-        
-        // Try exact phrase match first
-        const exactPattern = new RegExp(`\\b${safeColor}\\s+${safeObject}\\b`, 'gi');
-        const exactMatches = text.match(exactPattern);
-        
-        if (exactMatches) {
-          exactMatches.forEach(match => {
-            const normalized = match.toLowerCase();
-            if (!detections.some(d => d.fullDescription === normalized)) {
-              detections.push({
-                fullDescription: normalized,
-                color,
-                object,
-                source: 'tier25_cache_exact',
-                pageNumber
-              });
-              manifest.addObject(object, color, normalized, pageNumber);
-              if (Deno.env.get('LOG_LEVEL') === 'debug') {
-                console.log(`🎨 Detected colored object (tier25 exact): ${normalized}`);
-              }
-            }
+    // STRATEGY 1: Exact adjacency (color + item)
+    for (let i = 0; i < tokens.length - 1; i++) {
+      const token = tokens[i];
+      const nextToken = tokens[i + 1];
+      
+      if (allColors.includes(token) && allItems.includes(nextToken)) {
+        const fullDesc = `${token} ${nextToken}`;
+        if (!detections.some(d => d.fullDescription === fullDesc)) {
+          detections.push({
+            fullDescription: fullDesc,
+            color: token,
+            object: nextToken,
+            source: 'exact_adjacency',
+            pageNumber
           });
-        }
-        
-        // Compound object proximity (e.g., "bright red picnic blanket")
-        const compoundPattern = new RegExp(
-          `\\b(?:\\w+\\s+)?${safeColor}\\s+(?:\\w+\\s+)?${safeObject}\\b`,
-          'gi'
-        );
-        const compoundMatches = text.match(compoundPattern);
-        
-        if (compoundMatches) {
-          compoundMatches.forEach(match => {
-            const normalized = match.toLowerCase().trim();
-            if (!detections.some(d => d.fullDescription === normalized)) {
-              detections.push({
-                fullDescription: normalized,
-                color,
-                object,
-                source: 'tier25_cache_compound',
-                pageNumber
-              });
-              manifest.addObject(object, color, normalized, pageNumber);
-              if (Deno.env.get('LOG_LEVEL') === 'debug') {
-                console.log(`🎨 Detected colored object (tier25 compound): ${normalized}`);
-              }
-            }
-          });
-        }
-      }
-    }
-
-    // NEW: Clothing-aware color detection (CLOTHING ITEMS)
-    const tier25ClothingItems = tier25.clothing || [];
-    for (const color of tier25Colors) {
-      for (const clothing of tier25ClothingItems) {
-        const safeColor = escapeRegExp(color);
-        const safeClothing = escapeRegExp(clothing);
-        
-        // Exact match for clothing
-        const exactPattern = new RegExp(`\\b${safeColor}\\s+${safeClothing}\\b`, 'gi');
-        const exactMatches = text.match(exactPattern);
-        
-        if (exactMatches) {
-          exactMatches.forEach(match => {
-            const normalized = match.toLowerCase();
-            if (!detections.some(d => d.fullDescription === normalized)) {
-              detections.push({
-                fullDescription: normalized,
-                color,
-                object: clothing,
-                source: 'tier25_clothing_exact',
-                pageNumber
-              });
-              manifest.addObject(clothing, color, normalized, pageNumber);
-              if (Deno.env.get('LOG_LEVEL') === 'debug') {
-                console.log(`🎨 Detected colored clothing (tier25 exact): ${normalized}`);
-              }
-            }
-          });
-        }
-        
-        // Compound clothing proximity
-        const compoundPattern = new RegExp(
-          `\\b(?:\\w+\\s+)?${safeColor}\\s+(?:\\w+\\s+)?${safeClothing}\\b`,
-          'gi'
-        );
-        const compoundMatches = text.match(compoundPattern);
-        
-        if (compoundMatches) {
-          compoundMatches.forEach(match => {
-            const normalized = match.toLowerCase().trim();
-            if (!detections.some(d => d.fullDescription === normalized)) {
-              detections.push({
-                fullDescription: normalized,
-                color,
-                object: clothing,
-                source: 'tier25_clothing_compound',
-                pageNumber
-              });
-              manifest.addObject(clothing, color, normalized, pageNumber);
-              if (Deno.env.get('LOG_LEVEL') === 'debug') {
-                console.log(`🎨 Detected colored clothing (tier25 compound): ${normalized}`);
-              }
-            }
-          });
+          manifest.addObject(nextToken, token, fullDesc, pageNumber);
+          if (Deno.env.get('LOG_LEVEL') === 'debug') {
+            console.log(`✅ [EXACT] ${fullDesc}`);
+          }
         }
       }
     }
     
-    // Sort detections by source priority and return top results
+    // STRATEGY 2: One-word connector (color + connector + item)
+    for (let i = 0; i < tokens.length - 2; i++) {
+      const token = tokens[i];
+      const connector = tokens[i + 1];
+      const itemToken = tokens[i + 2];
+      
+      if (allColors.includes(token) && ONE_WORD_CONNECTORS.includes(connector) && allItems.includes(itemToken)) {
+        const fullDesc = `${token} ${itemToken}`;
+        if (!detections.some(d => d.fullDescription === fullDesc)) {
+          detections.push({
+            fullDescription: fullDesc,
+            color: token,
+            object: itemToken,
+            source: 'one_word_connector',
+            pageNumber
+          });
+          manifest.addObject(itemToken, token, fullDesc, pageNumber);
+          if (Deno.env.get('LOG_LEVEL') === 'debug') {
+            console.log(`✅ [CONNECTOR] ${token} ${connector} ${itemToken} → ${fullDesc}`);
+          }
+        }
+      }
+    }
+    
+    // STRATEGY 3: Indicator-verb windows (scan forward 6 tokens after verb)
+    for (let i = 0; i < tokens.length; i++) {
+      const token = tokens[i];
+      
+      if (OBJECT_INDICATOR_VERBS.includes(token)) {
+        const windowEnd = Math.min(i + 7, tokens.length); // Look ahead 6 tokens
+        const window = tokens.slice(i + 1, windowEnd);
+        
+        // Look for color + item in window
+        for (let j = 0; j < window.length - 1; j++) {
+          const windowToken = window[j];
+          const windowNext = window[j + 1];
+          
+          if (allColors.includes(windowToken) && allItems.includes(windowNext)) {
+            const fullDesc = `${windowToken} ${windowNext}`;
+            if (!detections.some(d => d.fullDescription === fullDesc)) {
+              detections.push({
+                fullDescription: fullDesc,
+                color: windowToken,
+                object: windowNext,
+                source: 'indicator_verb_window',
+                pageNumber
+              });
+              manifest.addObject(windowNext, windowToken, fullDesc, pageNumber);
+              if (Deno.env.get('LOG_LEVEL') === 'debug') {
+                console.log(`✅ [INDICATOR] After "${token}" → ${fullDesc}`);
+              }
+            }
+          }
+          
+          // Also check for connector pattern within window
+          if (j < window.length - 2) {
+            const connector = window[j + 1];
+            const itemToken = window[j + 2];
+            
+            if (allColors.includes(windowToken) && ONE_WORD_CONNECTORS.includes(connector) && allItems.includes(itemToken)) {
+              const fullDesc = `${windowToken} ${itemToken}`;
+              if (!detections.some(d => d.fullDescription === fullDesc)) {
+                detections.push({
+                  fullDescription: fullDesc,
+                  color: windowToken,
+                  object: itemToken,
+                  source: 'indicator_verb_window_connector',
+                  pageNumber
+                });
+                manifest.addObject(itemToken, windowToken, fullDesc, pageNumber);
+                if (Deno.env.get('LOG_LEVEL') === 'debug') {
+                  console.log(`✅ [INDICATOR+CONNECTOR] After "${token}" → ${windowToken} ${connector} ${itemToken} → ${fullDesc}`);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    
+    // STRATEGY 4: Standalone objects (no color) - only if not already detected
+    if (Deno.env.get('LOG_LEVEL') === 'debug') {
+      console.log(`🔍 [STANDALONE] Checking for objects without colors`);
+    }
+    for (const token of tokens) {
+      if (allItems.includes(token)) {
+        // Only add if not already detected with a color
+        if (!detections.some(d => d.object === token)) {
+          detections.push({
+            fullDescription: token,
+            color: null,
+            object: token,
+            source: 'standalone',
+            pageNumber
+          });
+          manifest.addObject(token, null, token, pageNumber);
+          if (Deno.env.get('LOG_LEVEL') === 'debug') {
+            console.log(`✅ [STANDALONE] ${token}`);
+          }
+        }
+      }
+    }
+    
+    // Sort by priority and deduplicate
     const sourcePriority = {
-      'tier25_cache_exact': 1,
-      'tier25_clothing_exact': 1,
-      'tier25_cache_compound': 2,
-      'tier25_clothing_compound': 2,
-      'tier25Vocabulary_standalone': 3,
-      'full_vocab_fallback': 4
+      'exact_adjacency': 1,
+      'one_word_connector': 2,
+      'indicator_verb_window': 3,
+      'indicator_verb_window_connector': 3,
+      'standalone': 4
     };
     
     detections.sort((a, b) => (sourcePriority[a.source] || 999) - (sourcePriority[b.source] || 999));
     
-    // Log final colored objects with sources for debugging
-    if (detections.length > 0 && Deno.env.get('LOG_LEVEL') === 'debug') {
-      console.log(`🎨 Final colored objects (sorted by confidence):`, detections.map(d => `${d.fullDescription} [${d.source}]`));
-    }
-
-    // Strategy 2: If tier25 yielded < 2 detections, lazy-load full vocab for extended coverage
-    if (detections.length < 2) {
-      const vocab = await this.getVocabulary();
-      const extendedColors = vocab.colors || [];
-      const extendedObjects = vocab.objects || [];
-      
-      for (const color of extendedColors) {
-        if (tier25Colors.includes(color)) continue; // Skip already checked
-        for (const object of extendedObjects) {
-          if (tier25Objects.includes(object)) continue;
-          
-          const safeColor = escapeRegExp(color);
-          const safeObject = escapeRegExp(object);
-          const exactPattern = new RegExp(`\\b${safeColor}\\s+${safeObject}\\b`, 'gi');
-          const exactMatches = text.match(exactPattern);
-          
-          if (exactMatches) {
-            exactMatches.forEach(match => {
-              const normalized = match.toLowerCase();
-              if (!detections.some(d => d.fullDescription === normalized)) {
-                detections.push({
-                  fullDescription: normalized,
-                  color,
-                  object,
-                  source: 'full_vocab_fallback',
-                  pageNumber
-                });
-                manifest.addObject(object, color, normalized, pageNumber);
-                if (Deno.env.get('LOG_LEVEL') === 'debug') {
-                  console.log(`🎨 Detected colored object (full vocab): ${normalized}`);
-                }
-              }
-            });
-          }
-        }
-      }
-    }
-
-    // Strategy 3: Proximity matching within same sentence (tier25 first)
-    const sentences = text.split(/[.!?]+/);
-    for (const sentence of sentences) {
-      const sentenceLower = sentence.toLowerCase();
-      
-      for (const color of tier25Colors) {
-        for (const object of tier25Objects) {
-          const hasColor = sentenceLower.includes(color.toLowerCase());
-          const hasObject = sentenceLower.includes(object.toLowerCase());
-          
-          if (hasColor && hasObject) {
-            // Create a description combining them
-            const proximityDesc = `${color} ${object}`;
-            
-            // Only add if not already detected
-            if (!detections.some(d => d.fullDescription === proximityDesc.toLowerCase())) {
-              detections.push({
-                fullDescription: proximityDesc.toLowerCase(),
-                color,
-                object,
-                source: 'tier25Vocabulary_proximity',
-                pageNumber
-              });
-              manifest.addObject(object, color, proximityDesc, pageNumber);
-              if (Deno.env.get('LOG_LEVEL') === 'debug') {
-                console.log(`🎨 Detected colored object (proximity): ${proximityDesc} (tier25)`);
-              }
-            }
-          }
-        }
-      }
-    }
-
-    // Strategy 4: Standalone object detection (no color required) - tier25 first
-    // Only add objects that weren't already detected with colors in Strategies 1-3
-    const objectsForStandalone = tier25Objects.length > 0 ? tier25Objects : (await this.getVocabulary()).objects;
-    const standaloneObjectMatches = Array.isArray(objectsForStandalone) && objectsForStandalone.length > 0
-      ? text.match(new RegExp(`\\b(${objectsForStandalone.join('|')})\\b`, 'gi'))
-      : null;
-
-    if (standaloneObjectMatches && standaloneObjectMatches.length > 0) {
-      standaloneObjectMatches.forEach(match => {
-        const objectName = match.toLowerCase();
-        // Only add if not already detected with a color
-        if (!detections.some(item => item.object === objectName)) {
-          detections.push({
-            fullDescription: objectName,
-            color: null, // Explicitly null for standalone objects
-            object: objectName,
-            source: 'tier25Vocabulary_standalone',
-            pageNumber
-          });
-          manifest.addObject(objectName, null, objectName, pageNumber);
-          if (Deno.env.get('LOG_LEVEL') === 'debug') {
-            console.log(`🎨 Detected standalone object: ${objectName} (tier25, no color)`);
-          }
-        }
-      });
-    }
-
-    console.log(`📊 Total objects detected: ${detections.length} (exact + compound + proximity + standalone)`);
-    return detections;
-  }
+    console.log(`📊 Total objects detected: ${detections.length} (${detections.map(d => d.source).join(', ')})`);
+    
 
   /**
    * PHASE 1: Unified secondary character detection (humans + animals)
@@ -1362,34 +1297,42 @@ export class CharacterConsistencyService {
   }
 
   /**
-   * PHASE 4: Get colored objects for session - MEMORY-FIRST
+   * PHASE 4: Get colored objects for session - MEMORY-FIRST (PAGE-SCOPED)
    * Checks cache first, falls back to DB only if needed
+   * NOW SCOPED TO CURRENT PAGE to prevent stale object leakage
    */
   async getColoredObjects(sessionId) {
-    // Check memory cache first (PHASE 4)
-    const cacheKey = `${sessionId}_colored_objects`;
+    const manifest = this.getSessionManifest(sessionId);
+    const currentPage = manifest.pageNumber || 1;
+    
+    // Check memory cache first (PHASE 4) - PAGE-SCOPED CACHE KEY
+    const cacheKey = `${sessionId}_colored_objects_page_${currentPage}`;
     const cached = this.storyCache.read(cacheKey);
     
     if (cached) {
-      console.log(`💾 CACHE HIT: Colored objects for ${sessionId}`);
+      console.log(`💾 CACHE HIT: Colored objects for ${sessionId} page ${currentPage}`);
       return cached;
     }
     
-    // Fallback to manifest (in-memory)
-    const manifest = this.getSessionManifest(sessionId);
+    // Fallback to manifest (in-memory) - FILTER TO CURRENT PAGE ONLY
     const objects = manifest.getAllObjects();
     
     if (objects.length === 0) return '';
     
-    const descriptions = objects
+    // CRITICAL FIX: Only include objects from current page
+    const pageObjects = objects.filter(obj => obj.lastPage === currentPage);
+    
+    if (pageObjects.length === 0) return '';
+    
+    const descriptions = pageObjects
       .map(obj => obj.fullDescription)
       .filter(Boolean)
       .join(', ');
     
-    // Cache result
+    // Cache result with page-scoped key
     this.storyCache.smartWrite(cacheKey, descriptions);
     
-    console.log(`🎨 Colored objects for ${sessionId}: ${descriptions}`);
+    console.log(`🎨 Colored objects for ${sessionId} page ${currentPage}: ${descriptions}`);
     return descriptions;
   }
 

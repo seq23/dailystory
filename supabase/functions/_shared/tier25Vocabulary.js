@@ -54,13 +54,13 @@ export function getUniversalVocab() {
 
 // ============= UNIVERSAL_VOCAB - SINGLE SOURCE OF TRUTH (PHASE 1) =============
 export const UNIVERSAL_VOCAB = {
-  // Deduplicated clothing items (31 items)
+  // Deduplicated clothing items (32 items)
   clothing: [
     'shirt', 'pants', 'dress', 'skirt', 'jacket', 'coat', 'sweater', 
     'hoodie', 'shoes', 'boots', 'sandals', 'sneakers', 'socks', 
     'hat', 'cap', 'beanie', 'scarf', 'gloves', 'mittens', 'belt', 
     'tie', 'bowtie', 'uniform', 'costume', 'pajamas', 'robe', 
-    'apron', 'vest', 'shorts', 'jeans', 'overalls'
+    'apron', 'vest', 'shorts', 'jeans', 'overalls', 'swimsuit'
   ],
   
   // Top 75 Colors for Kids & Teens (Expert-Curated Oct 4, 2025)
@@ -287,7 +287,7 @@ export const TIER_25_UNIFIED_VOCABULARY_EXTENDED = {
     basic: [
       'shirt', 'pants', 'dress', 'shoes', 'hat', 'jacket', 
       'coat', 'socks', 'boots', 'sweater', 'sneakers', 'sandals',
-      'shorts', 'skirt', 'gloves', 'scarf', 'purse'
+      'shorts', 'skirt', 'gloves', 'scarf', 'purse', 'swimsuit'
     ]
   },
 
