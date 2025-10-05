@@ -660,7 +660,7 @@ export class CharacterConsistencyService {
       tier25Objects.push(...(vocab.objects || []));
     }
     
-    // Exact and compound matching with tier25
+    // Exact and compound matching with tier25 (OBJECTS)
     for (const color of tier25Colors) {
       for (const object of tier25Objects) {
         const safeColor = escapeRegExp(color);
@@ -711,6 +711,64 @@ export class CharacterConsistencyService {
               manifest.addObject(object, color, normalized, pageNumber);
               if (Deno.env.get('LOG_LEVEL') === 'debug') {
                 console.log(`🎨 Detected colored object (tier25 compound): ${normalized}`);
+              }
+            }
+          });
+        }
+      }
+    }
+
+    // NEW: Clothing-aware color detection (CLOTHING ITEMS)
+    const tier25ClothingItems = tier25.clothing || [];
+    for (const color of tier25Colors) {
+      for (const clothing of tier25ClothingItems) {
+        const safeColor = escapeRegExp(color);
+        const safeClothing = escapeRegExp(clothing);
+        
+        // Exact match for clothing
+        const exactPattern = new RegExp(`\\b${safeColor}\\s+${safeClothing}\\b`, 'gi');
+        const exactMatches = text.match(exactPattern);
+        
+        if (exactMatches) {
+          exactMatches.forEach(match => {
+            const normalized = match.toLowerCase();
+            if (!detections.some(d => d.fullDescription === normalized)) {
+              detections.push({
+                fullDescription: normalized,
+                color,
+                object: clothing,
+                source: 'tier25_clothing_exact',
+                pageNumber
+              });
+              manifest.addObject(clothing, color, normalized, pageNumber);
+              if (Deno.env.get('LOG_LEVEL') === 'debug') {
+                console.log(`🎨 Detected colored clothing (tier25 exact): ${normalized}`);
+              }
+            }
+          });
+        }
+        
+        // Compound clothing proximity
+        const compoundPattern = new RegExp(
+          `\\b${safeColor}\\s+(?:\\w+\\s+)?${safeClothing}\\b`,
+          'gi'
+        );
+        const compoundMatches = text.match(compoundPattern);
+        
+        if (compoundMatches) {
+          compoundMatches.forEach(match => {
+            const normalized = match.toLowerCase().trim();
+            if (!detections.some(d => d.fullDescription === normalized)) {
+              detections.push({
+                fullDescription: normalized,
+                color,
+                object: clothing,
+                source: 'tier25_clothing_compound',
+                pageNumber
+              });
+              manifest.addObject(clothing, color, normalized, pageNumber);
+              if (Deno.env.get('LOG_LEVEL') === 'debug') {
+                console.log(`🎨 Detected colored clothing (tier25 compound): ${normalized}`);
               }
             }
           });
@@ -801,9 +859,10 @@ export class CharacterConsistencyService {
 
     // Strategy 4: Standalone object detection (no color required) - tier25 first
     // Only add objects that weren't already detected with colors in Strategies 1-3
+    // FIXED: Use word boundaries to prevent "car" from matching in "carried"
     const objectsForStandalone = tier25Objects.length > 0 ? tier25Objects : (await this.getVocabulary()).objects;
     const standaloneObjectMatches = Array.isArray(objectsForStandalone) && objectsForStandalone.length > 0
-      ? text.match(new RegExp(`(?<!\\w)(${objectsForStandalone.join('|')})(?!\\w)`, 'gi'))
+      ? text.match(new RegExp(`\\b(${objectsForStandalone.map(escapeRegExp).join('|')})\\b`, 'gi'))
       : null;
 
     if (standaloneObjectMatches && standaloneObjectMatches.length > 0) {
@@ -865,6 +924,25 @@ export class CharacterConsistencyService {
     }
 
     console.log(`📊 Total objects detected: ${detections.length} (exact + compound + proximity + standalone)`);
+    // Sort detections by source priority: exact > compound > single_color_wildcard > multi_color_wildcard > standalone
+    const sourcePriority = {
+      'tier25_cache_exact': 1,
+      'tier25_clothing_exact': 1,
+      'tier25_cache_compound': 2,
+      'tier25_clothing_compound': 2,
+      'single_color_wildcard': 3,
+      'multi_color_wildcard': 4,
+      'tier25Vocabulary_standalone': 5,
+      'full_vocab_fallback': 6
+    };
+    
+    detections.sort((a, b) => (sourcePriority[a.source] || 999) - (sourcePriority[b.source] || 999));
+    
+    // Log final colored objects with sources for debugging
+    if (detections.length > 0 && Deno.env.get('LOG_LEVEL') === 'debug') {
+      console.log(`🎨 Final colored objects (sorted by confidence):`, detections.map(d => `${d.fullDescription} [${d.source}]`));
+    }
+
     return detections;
   }
 

@@ -755,7 +755,7 @@ export class CharacterConsistencyService {
       tier25Objects.push(...(vocab.objects || []));
     }
     
-    // Exact and compound matching with tier25
+    // Exact and compound matching with tier25 (OBJECTS)
     for (const color of tier25Colors) {
       for (const object of tier25Objects) {
         const safeColor = escapeRegExp(color);
@@ -811,7 +811,82 @@ export class CharacterConsistencyService {
         }
       }
     }
+
+    // NEW: Clothing-aware color detection (CLOTHING ITEMS)
+    const tier25ClothingItems = tier25.clothing || [];
+    for (const color of tier25Colors) {
+      for (const clothing of tier25ClothingItems) {
+        const safeColor = escapeRegExp(color);
+        const safeClothing = escapeRegExp(clothing);
+        
+        // Exact match for clothing
+        const exactPattern = new RegExp(`\\b${safeColor}\\s+${safeClothing}\\b`, 'gi');
+        const exactMatches = text.match(exactPattern);
+        
+        if (exactMatches) {
+          exactMatches.forEach(match => {
+            const normalized = match.toLowerCase();
+            if (!detections.some(d => d.fullDescription === normalized)) {
+              detections.push({
+                fullDescription: normalized,
+                color,
+                object: clothing,
+                source: 'tier25_clothing_exact',
+                pageNumber
+              });
+              manifest.addObject(clothing, color, normalized, pageNumber);
+              if (Deno.env.get('LOG_LEVEL') === 'debug') {
+                console.log(`🎨 Detected colored clothing (tier25 exact): ${normalized}`);
+              }
+            }
+          });
+        }
+        
+        // Compound clothing proximity
+        const compoundPattern = new RegExp(
+          `\\b(?:\\w+\\s+)?${safeColor}\\s+(?:\\w+\\s+)?${safeClothing}\\b`,
+          'gi'
+        );
+        const compoundMatches = text.match(compoundPattern);
+        
+        if (compoundMatches) {
+          compoundMatches.forEach(match => {
+            const normalized = match.toLowerCase().trim();
+            if (!detections.some(d => d.fullDescription === normalized)) {
+              detections.push({
+                fullDescription: normalized,
+                color,
+                object: clothing,
+                source: 'tier25_clothing_compound',
+                pageNumber
+              });
+              manifest.addObject(clothing, color, normalized, pageNumber);
+              if (Deno.env.get('LOG_LEVEL') === 'debug') {
+                console.log(`🎨 Detected colored clothing (tier25 compound): ${normalized}`);
+              }
+            }
+          });
+        }
+      }
+    }
     
+    // Sort detections by source priority and return top results
+    const sourcePriority = {
+      'tier25_cache_exact': 1,
+      'tier25_clothing_exact': 1,
+      'tier25_cache_compound': 2,
+      'tier25_clothing_compound': 2,
+      'tier25Vocabulary_standalone': 3,
+      'full_vocab_fallback': 4
+    };
+    
+    detections.sort((a, b) => (sourcePriority[a.source] || 999) - (sourcePriority[b.source] || 999));
+    
+    // Log final colored objects with sources for debugging
+    if (detections.length > 0 && Deno.env.get('LOG_LEVEL') === 'debug') {
+      console.log(`🎨 Final colored objects (sorted by confidence):`, detections.map(d => `${d.fullDescription} [${d.source}]`));
+    }
+
     // Strategy 2: If tier25 yielded < 2 detections, lazy-load full vocab for extended coverage
     if (detections.length < 2) {
       const vocab = await this.getVocabulary();
@@ -2133,83 +2208,83 @@ export class CharacterConsistencyService {
    */
   static AFRICAN_AMERICAN_HAIR_INLINE = {
     boys: [
-      "wearing a curly top fade with perfectly defined coils on top, crisp line-up around the edges, and smooth fade transitions down the sides and back",
-      "wearing twist sponge curls with tight coil definition, fresh line-up with sharp edges, and tapered sides with natural texture",
-      "wearing a high top fade with voluminous textured crown, geometric side part, and precision-cut fade gradation",
-      "wearing starter dreads in neat sections with clean parting lines, natural root texture, and expertly shaped perimeter",
-      "wearing a buzz cut with intricate geometric designs carved into the sides, crisp line-up, and smooth scalp fade",
-      "wearing a classic flat top with perfectly squared edges, uniform height across the crown, and sharp side fade transitions",
-      "wearing a caesar cut with deep 360 waves, brush pattern definition, and clean hairline shaping all around",
-      "wearing lined-up curls with natural coil springs, precision edge work, and graduated fade from crown to neckline",
-      "wearing a tapered afro with rounded natural shape, soft textured crown, and gradually shortened sides and back",
-      "wearing a modern pompadour fade with curly volume swept upward, skin fade sides, and detailed edge definition"
+      "wearing a photorealistic curly top fade with photorealistic perfectly defined coils on top, crisp line-up around the edges, and smooth fade transitions down the sides and back",
+      "wearing photorealistic twist sponge curls with photorealistic tight coil definition, fresh line-up with photorealistic sharp edges, and tapered sides with photorealistic natural texture",
+      "wearing a photorealistic high top fade with photorealistic voluminous textured crown, geometric side part, and precision-cut fade gradation",
+      "wearing photorealistic starter dreads in neat sections with photorealistic clean parting lines, natural root texture, and expertly shaped perimeter",
+      "wearing a photorealistic buzz cut with photorealistic intricate geometric designs carved into the sides, crisp line-up, and smooth scalp fade",
+      "wearing a photorealistic classic flat top with photorealistic perfectly squared edges, uniform height across the crown, and sharp side fade transitions",
+      "wearing a photorealistic caesar cut with photorealistic deep 360 waves, brush pattern definition, and clean hairline shaping all around",
+      "wearing photorealistic lined-up curls with photorealistic natural coil springs, precision edge work, and graduated fade from crown to neckline",
+      "wearing a photorealistic tapered afro with photorealistic rounded natural shape, soft textured crown, and gradually shortened sides and back",
+      "wearing a photorealistic modern pompadour fade with photorealistic curly volume swept upward, skin fade sides, and detailed edge definition"
     ],
     girls: [
-      "wearing a full voluminous afro with authentic coily texture, natural 4B-4C curl pattern, rounded dome shape, dense hair distribution, individual curl spirals visible, matte finish texture, proper afro proportions, natural hair movement",
-      "wearing individual box braids with distinct square sectioning, each braid separately defined and visible, geometric parting pattern, multiple separate braided units, detailed individual braid texture, professional sectioning technique, natural or vibrant color variations",
-      "wearing cornrow braids in straight parallel rows, hair woven tightly against scalp, clean geometric parts showing scalp between rows, traditional African braiding technique, individual row definition, scalp-hugging pattern",
-      "wearing defined twist-out curls with natural curl pattern, bouncy texture, individual curl definition, soft volume, natural hair movement",
-      "wearing well-maintained locs with natural texture, individual strand definition, mature lock formation, organic hair pattern, cultural significance, photorealistic hair texture",
-      "wearing natural wash-and-go curls with defined curl pattern, bouncy texture, individual curl strands, soft volume, natural movement, salon-quality finish",
-      "wearing an elegant flat twist updo with precise parting, neat twisting pattern, decorative arrangement, formal styling, detailed texture work, individual strand definition",
-      "wearing a sleek protective bun with smooth edges, neat hair arrangement, polished finish, professional styling, clean part lines, natural hair movement",
-      "wearing a silky smooth silk press with glossy shine, pin-straight texture, individual strand definition, heat-pressed perfection, natural movement, luminous finish, silk-pressed smoothness",
-      "wearing bone straight relaxed hair with sleek texture, ultra-smooth finish, perfect alignment, chemical straightening results, glossy appearance, flowing movement, chemically straightened texture",
-      "wearing a precision-cut relaxed bob with blunt edges, smooth straight texture, professional salon finish, geometric cut lines, polished styling, professional salon results",
-      "wearing layered relaxed hair with dimensional cutting, smooth straight texture, professional layers, voluminous styling, salon-quality finish, glossy straight hair finish",
-      "wearing hot-pressed straight hair with curled ends, vintage styling technique, smooth shaft with bouncy curl tips, classic salon finish, heat-styled perfection",
-      "wearing a sleek relaxed ponytail with smooth edges, straight hair texture, polished finish, tight hair control, professional styling, light reflection on hair",
-      "wearing silk-pressed hair with clean side part, glossy straight texture, precise parting line, smooth flowing hair, salon-quality finish, glossy hair shine",
-      "wearing relaxed hair with vintage bump styling, smooth straight texture, retro volume technique, polished finish, classic salon look, natural hair highlights",
-      "wearing thermally straightened hair with heat-pressed texture, smooth alignment, individual strand definition, professional hot tool finish, luminous hair finish",
-      "wearing a relaxed wrap hairstyle with smooth curved styling, salon wrap technique, sleek finish, dimensional movement, professional hair wrapping, professional salon results",
-      "wearing afro puffs hairstyle with twin high-positioned hair puffs, natural coily texture pattern, symmetrical rounded shape, authentic Black hair structure, voluminous curl clusters, defined individual strands, traditional afro hair styling",
-      "wearing long pigtails with curled ends, flowing length with bouncy spiral curls, symmetrical pigtail placement, smooth hair shaft with defined curl tips, glossy hair shine"
+      "wearing a photorealistic full voluminous afro with photorealistic authentic coily texture, natural 4B-4C curl pattern, rounded dome shape, dense hair distribution, individual curl spirals visible, matte finish texture, proper afro proportions, natural hair movement",
+      "wearing photorealistic individual box braids with photorealistic distinct square sectioning, each braid separately defined and visible, geometric parting pattern, multiple separate braided units, detailed individual braid texture, professional sectioning technique, natural or vibrant color variations",
+      "wearing photorealistic cornrow braids in straight parallel rows, hair woven tightly against scalp, clean geometric parts showing scalp between rows, traditional African braiding technique, individual row definition, scalp-hugging pattern",
+      "wearing photorealistic defined twist-out curls with photorealistic natural curl pattern, bouncy texture, individual curl definition, soft volume, natural hair movement",
+      "wearing photorealistic well-maintained locs with photorealistic natural texture, individual strand definition, mature lock formation, organic hair pattern, cultural significance, photorealistic hair texture",
+      "wearing photorealistic natural wash-and-go curls with photorealistic defined curl pattern, bouncy texture, individual curl strands, soft volume, natural movement, salon-quality finish",
+      "wearing a photorealistic elegant flat twist updo with photorealistic precise parting, neat twisting pattern, decorative arrangement, formal styling, detailed texture work, individual strand definition",
+      "wearing a photorealistic sleek protective bun with photorealistic smooth edges, neat hair arrangement, polished finish, professional styling, clean part lines, natural hair movement",
+      "wearing a photorealistic silky smooth silk press with photorealistic glossy shine, pin-straight texture, individual strand definition, heat-pressed perfection, natural movement, luminous finish, silk-pressed smoothness",
+      "wearing photorealistic bone straight relaxed hair with photorealistic sleek texture, ultra-smooth finish, perfect alignment, chemical straightening results, glossy appearance, flowing movement, chemically straightened texture",
+      "wearing a photorealistic precision-cut relaxed bob with photorealistic blunt edges, smooth straight texture, professional salon finish, geometric cut lines, polished styling, professional salon results",
+      "wearing photorealistic layered relaxed hair with photorealistic dimensional cutting, smooth straight texture, professional layers, voluminous styling, salon-quality finish, glossy straight hair finish",
+      "wearing photorealistic hot-pressed straight hair with photorealistic curled ends, vintage styling technique, smooth shaft with photorealistic bouncy curl tips, classic salon finish, heat-styled perfection",
+      "wearing a photorealistic sleek relaxed ponytail with photorealistic smooth edges, straight hair texture, polished finish, tight hair control, professional styling, light reflection on hair",
+      "wearing photorealistic silk-pressed hair with photorealistic clean side part, glossy straight texture, precise parting line, smooth flowing hair, salon-quality finish, glossy hair shine",
+      "wearing photorealistic relaxed hair with photorealistic vintage bump styling, smooth straight texture, retro volume technique, polished finish, classic salon look, natural hair highlights",
+      "wearing photorealistic thermally straightened hair with photorealistic heat-pressed texture, smooth alignment, individual strand definition, professional hot tool finish, luminous hair finish",
+      "wearing a photorealistic relaxed wrap hairstyle with photorealistic smooth curved styling, salon wrap technique, sleek finish, dimensional movement, professional hair wrapping, professional salon results",
+      "wearing photorealistic afro puffs hairstyle with photorealistic twin high-positioned hair puffs, natural coily texture pattern, symmetrical rounded shape, authentic Black hair structure, voluminous curl clusters, defined individual strands, traditional afro hair styling",
+      "wearing photorealistic long pigtails with photorealistic curled ends, flowing length with photorealistic bouncy spiral curls, symmetrical pigtail placement, smooth hair shaft with photorealistic defined curl tips, glossy hair shine"
     ]
   };
 
   static AFRICAN_AMERICAN_FACIAL_FEATURES_INLINE = [
     // Light to Medium Tones (12 entries)
-    "light brown skin tone with warm brown eyes and a bright infectious smile",
-    "light brown skin tone with hazel-green eyes and gentle dimples when smiling",
-    "light brown skin tone with amber eyes and expressive eyebrows",
-    "caramel skin tone with deep chocolate eyes and a confident cheerful expression",
-    "caramel skin tone with hazel eyes with golden flecks and soft rounded cheeks",
-    "caramel skin tone with bright brown eyes and an inquisitive thoughtful look",
-    "honey complexion with golden brown eyes and a playful mischievous grin",
-    "honey complexion with warm brown eyes and graceful bone structure",
-    "honey complexion with hazel eyes and a warm welcoming expression",
-    "warm beige skin with dark honey-colored eyes and animated joyful features",
-    "warm beige skin with hazel-green eyes and gentle dimples",
-    "light caramel complexion with rich coffee-colored eyes and expressive eyebrows",
+    "authentic African American light brown skin tone with warm brown eyes and a bright infectious smile",
+    "authentic African American light brown skin tone with hazel-green eyes and gentle dimples when smiling",
+    "authentic African American light brown skin tone with amber eyes and expressive eyebrows",
+    "authentic African American caramel skin tone with deep chocolate eyes and a confident cheerful expression",
+    "authentic African American caramel skin tone with hazel eyes with golden flecks and soft rounded cheeks",
+    "authentic African American caramel skin tone with bright brown eyes and an inquisitive thoughtful look",
+    "authentic African American honey complexion with golden brown eyes and a playful mischievous grin",
+    "authentic African American honey complexion with warm brown eyes and graceful bone structure",
+    "authentic African American honey complexion with hazel eyes and a warm welcoming expression",
+    "authentic African American warm beige skin with dark honey-colored eyes and animated joyful features",
+    "authentic African American warm beige skin with hazel-green eyes and gentle dimples",
+    "authentic African American light caramel complexion with rich coffee-colored eyes and expressive eyebrows",
     
     // Medium Tones (12 entries)
-    "medium brown skin tone with warm brown eyes and a bright infectious smile",
-    "medium brown skin tone with hazel eyes with golden flecks and gentle dimples when smiling",
-    "medium brown skin tone with deep amber eyes and expressive eyebrows",
-    "cocoa skin tone with dark chocolate eyes and a confident cheerful expression",
-    "cocoa skin tone with hazel-green eyes and soft rounded cheeks",
-    "cocoa skin tone with bright brown eyes and an inquisitive thoughtful look",
-    "warm brown complexion with golden brown eyes and a playful mischievous grin",
-    "warm brown complexion with rich coffee-colored eyes and graceful bone structure",
-    "chestnut skin tone with hazel eyes and a warm welcoming expression",
-    "chestnut skin tone with warm brown eyes and animated joyful features",
-    "amber skin tone with dark honey-colored eyes and gentle dimples",
-    "amber skin tone with hazel-green eyes and expressive eyebrows",
+    "authentic African American medium brown skin tone with warm brown eyes and a bright infectious smile",
+    "authentic African American medium brown skin tone with hazel eyes with golden flecks and gentle dimples when smiling",
+    "authentic African American medium brown skin tone with deep amber eyes and expressive eyebrows",
+    "authentic African American cocoa skin tone with dark chocolate eyes and a confident cheerful expression",
+    "authentic African American cocoa skin tone with hazel-green eyes and soft rounded cheeks",
+    "authentic African American cocoa skin tone with bright brown eyes and an inquisitive thoughtful look",
+    "authentic African American warm brown complexion with golden brown eyes and a playful mischievous grin",
+    "authentic African American warm brown complexion with rich coffee-colored eyes and graceful bone structure",
+    "authentic African American chestnut skin tone with hazel eyes and a warm welcoming expression",
+    "authentic African American chestnut skin tone with warm brown eyes and animated joyful features",
+    "authentic African American amber skin tone with dark honey-colored eyes and gentle dimples",
+    "authentic African American amber skin tone with hazel-green eyes and expressive eyebrows",
     
     // Medium-Dark to Dark Tones (12 entries)
-    "deep brown skin tone with warm brown eyes and a bright infectious smile",
-    "deep brown skin tone with dark chocolate eyes and gentle dimples when smiling",
-    "deep brown skin tone with deep amber eyes and expressive eyebrows",
-    "rich chocolate complexion with hazel eyes with golden flecks and a confident cheerful expression",
-    "rich chocolate complexion with bright brown eyes and soft rounded cheeks",
-    "rich chocolate complexion with golden brown eyes and an inquisitive thoughtful look",
-    "dark brown skin tone with rich coffee-colored eyes and a playful mischievous grin",
-    "dark brown skin tone with warm brown eyes and graceful bone structure",
-    "ebony skin tone with dark honey-colored eyes and a warm welcoming expression",
-    "ebony skin tone with hazel-green eyes and animated joyful features",
-    "deep mahogany complexion with hazel eyes and gentle dimples",
-    "deep mahogany complexion with deep amber eyes and expressive eyebrows"
+    "authentic African American deep brown skin tone with warm brown eyes and a bright infectious smile",
+    "authentic African American deep brown skin tone with dark chocolate eyes and gentle dimples when smiling",
+    "authentic African American deep brown skin tone with deep amber eyes and expressive eyebrows",
+    "authentic African American rich chocolate complexion with hazel eyes with golden flecks and a confident cheerful expression",
+    "authentic African American rich chocolate complexion with bright brown eyes and soft rounded cheeks",
+    "authentic African American rich chocolate complexion with golden brown eyes and an inquisitive thoughtful look",
+    "authentic African American dark brown skin tone with rich coffee-colored eyes and a playful mischievous grin",
+    "authentic African American dark brown skin tone with warm brown eyes and graceful bone structure",
+    "authentic African American ebony skin tone with dark honey-colored eyes and a warm welcoming expression",
+    "authentic African American ebony skin tone with hazel-green eyes and animated joyful features",
+    "authentic African American deep mahogany complexion with hazel eyes and gentle dimples",
+    "authentic African American deep mahogany complexion with deep amber eyes and expressive eyebrows"
   ];
 
   /**
