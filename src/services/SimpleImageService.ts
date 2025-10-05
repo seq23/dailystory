@@ -472,6 +472,12 @@ export class SimpleImageService {
       // Call the main orchestrator (runware-generate-image) which handles all tiers
       DebugLogger.log('image', 'Calling main orchestrator: runware-generate-image');
       
+      // Premium Pre-Flight: Skip orchestrator if unhealthy, go straight to Direct Mode
+      if (isPremium && healthStatus?.orchestrator === 'server') {
+        DebugLogger.log('image', '⚡ Premium Pre-Flight Bypass: Orchestrator unhealthy, skipping to Direct Mode');
+        throw new Error('ORCHESTRATOR_UNHEALTHY_PREMIUM_BYPASS');
+      }
+      
       const startTime = Date.now();
       
       // NEW: Check for existing story seed for visual consistency
