@@ -690,8 +690,9 @@ export class CharacterConsistencyService {
         }
         
         // Compound object proximity (e.g., "bright red picnic blanket")
+        // Only allow adjective BETWEEN color and object, not before color
         const compoundPattern = new RegExp(
-          `\\b(?:\\w+\\s+)?${safeColor}\\s+(?:\\w+\\s+)?${safeObject}\\b`,
+          `\\b${safeColor}\\s+(?:\\w+\\s+)?${safeObject}\\b`,
           'gi'
         );
         const compoundMatches = text.match(compoundPattern);
@@ -717,44 +718,6 @@ export class CharacterConsistencyService {
       }
     }
     
-    // Strategy 2: If tier25 yielded < 2 detections, lazy-load full vocab for extended coverage
-    if (detections.length < 2) {
-      const vocab = await this.getVocabulary();
-      const extendedColors = vocab.colors || [];
-      const extendedObjects = vocab.objects || [];
-      
-      for (const color of extendedColors) {
-        if (tier25Colors.includes(color)) continue; // Skip already checked
-        for (const object of extendedObjects) {
-          if (tier25Objects.includes(object)) continue;
-          
-          const safeColor = escapeRegExp(color);
-          const safeObject = escapeRegExp(object);
-          const exactPattern = new RegExp(`\\b${safeColor}\\s+${safeObject}\\b`, 'gi');
-          const exactMatches = text.match(exactPattern);
-          
-          if (exactMatches) {
-            exactMatches.forEach(match => {
-              const normalized = match.toLowerCase();
-              if (!detections.some(d => d.fullDescription === normalized)) {
-                detections.push({
-                  fullDescription: normalized,
-                  color,
-                  object,
-                  source: 'full_vocab_fallback',
-                  pageNumber
-                });
-                manifest.addObject(object, color, normalized, pageNumber);
-                if (Deno.env.get('LOG_LEVEL') === 'debug') {
-                  console.log(`🎨 Detected colored object (full vocab): ${normalized}`);
-                }
-              }
-            });
-          }
-        }
-      }
-    }
-
     // Strategy 3a: Multi-colored objects (e.g., "red, white and blue backpack")
     const allColors = [...new Set([...tier25Colors, ...(await this.getVocabulary()).colors])];
     const multiColorPattern = new RegExp(
@@ -805,10 +768,10 @@ export class CharacterConsistencyService {
       }
     }
     
-    // Strategy 3b: Single color + adjacent noun (ultimate wildcard with compound noun support)
+    // Strategy 3b: Single color + adjacent noun (immediate word only)
     const skipWords = new Set([...NON_NOUN_WORDS, ...allColors.map(c => c.toLowerCase())]);
     const colorAdjacentPattern = new RegExp(
-      `\\b(${allColors.map(escapeRegExp).join('|')})\\s+(\\w+(?:\\s+\\w+)?)\\b`,
+      `\\b(${allColors.map(escapeRegExp).join('|')})\\s+(\\w+)\\b`,
       'gi'
     );
     
@@ -817,25 +780,20 @@ export class CharacterConsistencyService {
       const color = match[1].toLowerCase();
       const adjacentWords = match[2].toLowerCase();
       
-      // Handle compound nouns (e.g., "red fire truck")
-      const wordParts = adjacentWords.split(/\s+/);
-      let objectWord = adjacentWords;
+      // Single word only - validate immediately
+      if (skipWords.has(adjacentWords) || !isLikelyNoun(adjacentWords)) continue;
       
-      // If multi-word, validate all parts
-      const allPartsValid = wordParts.every(part => !skipWords.has(part) && isLikelyNoun(part));
-      if (!allPartsValid) continue;
-      
-      const fullDescription = `${color} ${objectWord}`;
+      const fullDescription = `${color} ${adjacentWords}`;
       if (detections.some(d => d.fullDescription === fullDescription)) continue;
       
       detections.push({
         fullDescription,
         color,
-        object: objectWord,
+        object: adjacentWords,
         source: 'single_color_wildcard',
         pageNumber
       });
-      manifest.addObject(objectWord, color, fullDescription, pageNumber);
+      manifest.addObject(adjacentWords, color, fullDescription, pageNumber);
       if (Deno.env.get('LOG_LEVEL') === 'debug') {
         console.log(`🎨 Detected colored object (wildcard): ${fullDescription}`);
       }
@@ -845,7 +803,7 @@ export class CharacterConsistencyService {
     // Only add objects that weren't already detected with colors in Strategies 1-3
     const objectsForStandalone = tier25Objects.length > 0 ? tier25Objects : (await this.getVocabulary()).objects;
     const standaloneObjectMatches = Array.isArray(objectsForStandalone) && objectsForStandalone.length > 0
-      ? text.match(new RegExp(`\\b(${objectsForStandalone.join('|')})\\b`, 'gi'))
+      ? text.match(new RegExp(`(?<!\\w)(${objectsForStandalone.join('|')})(?!\\w)`, 'gi'))
       : null;
 
     if (standaloneObjectMatches && standaloneObjectMatches.length > 0) {
@@ -866,6 +824,44 @@ export class CharacterConsistencyService {
           }
         }
       });
+    }
+
+    // Strategy 2 (LAST RESORT): Only use full vocab if NO detections found yet
+    if (detections.length < 1) {
+      const vocab = await this.getVocabulary();
+      const extendedColors = vocab.colors || [];
+      const extendedObjects = vocab.objects || [];
+      
+      for (const color of extendedColors) {
+        if (tier25Colors.includes(color)) continue; // Skip already checked
+        for (const object of extendedObjects) {
+          if (tier25Objects.includes(object)) continue;
+          
+          const safeColor = escapeRegExp(color);
+          const safeObject = escapeRegExp(object);
+          const exactPattern = new RegExp(`\\b${safeColor}\\s+${safeObject}\\b`, 'gi');
+          const exactMatches = text.match(exactPattern);
+          
+          if (exactMatches) {
+            exactMatches.forEach(match => {
+              const normalized = match.toLowerCase();
+              if (!detections.some(d => d.fullDescription === normalized)) {
+                detections.push({
+                  fullDescription: normalized,
+                  color,
+                  object,
+                  source: 'full_vocab_fallback',
+                  pageNumber
+                });
+                manifest.addObject(object, color, normalized, pageNumber);
+                if (Deno.env.get('LOG_LEVEL') === 'debug') {
+                  console.log(`🎨 Detected colored object (full vocab): ${normalized}`);
+                }
+              }
+            });
+          }
+        }
+      }
     }
 
     console.log(`📊 Total objects detected: ${detections.length} (exact + compound + proximity + standalone)`);
