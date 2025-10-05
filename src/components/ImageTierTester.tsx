@@ -1533,20 +1533,17 @@ export const ImageTierTester = () => {
           }
         : tier === '2.5A' || tier === '2.5B'
         ? {
-            // Template AB expects {bundle, config} payload shape
-            bundle: {
-              pageText: enhancedPrompt, // FIXED: Use pageText like SimpleImageService
-              userInfo: userInfo,
-              sessionId: crypto.randomUUID(),
-              storyId: crypto.randomUUID(), // ADDED: Missing field
-              pageNumber: 1,
-              isGuestUser: true, // ADDED: Missing field  
-              difficultyLevel: mapDifficultyLevel(userInfo), // ADDED: Missing field
-              protectionNegatives: [] // ADDED: Missing field
-            },
-            config: {
-              templateComplexity: templateMap[tier]
-            },
+            // FLAT payload structure for template AB (no nested bundle/config)
+            pageText: enhancedPrompt,
+            storyText: enhancedPrompt, // Add fallback field
+            userInfo: userInfo,
+            sessionId: crypto.randomUUID(),
+            storyId: crypto.randomUUID(),
+            pageNumber: 1,
+            isGuestUser: true,
+            difficultyLevel: mapDifficultyLevel(userInfo),
+            protectionNegatives: [],
+            templateComplexity: templateMap[tier], // Add directly at root level
             test: true
           }
         : {

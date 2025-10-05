@@ -551,6 +551,19 @@ async function handleTemplateABRequest(req: Request): Promise<Response> {
       payload = rawPayload;
     }
     
+    // Debug logging for payload structure
+    console.log(`🔍 [${requestId}] Payload after extraction:`, {
+      hasPageText: !!payload.pageText,
+      hasStoryText: !!payload.storyText,
+      hasUserInfo: !!payload.userInfo,
+      hasSessionId: !!payload.sessionId,
+      templateComplexity: payload.templateComplexity,
+      isNested: !!(rawPayload.bundle && rawPayload.config),
+      payloadKeys: Object.keys(payload),
+      pageTextLength: payload.pageText?.length || 0,
+      storyTextLength: payload.storyText?.length || 0
+    });
+    
     // Extract storyText with multiple fallbacks
     const storyText = payload.pageText || payload.storyText || payload.enhancedStoryData?.storyText;
     
@@ -578,6 +591,16 @@ async function handleTemplateABRequest(req: Request): Promise<Response> {
     
     // Get cultural profile
     const culturalProfile = inlineDetectCultural(userInfo, avatarIdentity);
+    
+    // Debug logging for cultural detection
+    console.log(`🌍 [${requestId}] Cultural detection:`, {
+      culturalProfile,
+      skinTone: avatarIdentity.skinTone || userInfo?.skinTone,
+      language: userInfo?.nativeLanguage || userInfo?.language,
+      avatarType: avatarIdentity.type || 'unknown',
+      isAfricanAmerican: culturalProfile === 'african-american'
+    });
+    
     const difficulty = userInfo.difficultyLevel || 'medium';
     const styleFramework = getNuclearStyleFramework(difficulty);
     
