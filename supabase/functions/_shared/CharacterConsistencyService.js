@@ -1174,11 +1174,11 @@ export class CharacterConsistencyService {
     const manifest = this.getSessionManifest(sessionId);
     manifest.setPageNumber(pageNumber);
 
-    // CRITICAL FIX: Clear stale page-scoped cache and manifest objects
-    const cacheKey = `${sessionId}_colored_objects_page_${pageNumber}`;
+    // CHANGE #4: Preserve objects across pages - use session-scoped cache key
+    const cacheKey = `${sessionId}_colored_objects_session`;
     this.storyCache.memoryCache.delete(cacheKey);
-    manifest.clearObjectsForPage(pageNumber);
-    console.log(`🧹 Pre-detection cleanup: Cleared cache and manifest for page ${pageNumber}`);
+    // manifest.clearObjectsForPage(pageNumber); // REMOVED: Preserve objects across pages
+    console.log(`🧹 Pre-detection cleanup: Cleared session cache for ${sessionId}`);
 
     // PHASE 4: Single batch load on page 1
     if (pageNumber === 1) {
@@ -1215,17 +1215,17 @@ export class CharacterConsistencyService {
     // PHASE 2: Batch write new detections to database
     await this.batchWriteDetections(sessionId, pageNumber, detectionResults);
 
-    // CRITICAL FIX: Force fresh colored objects into cache after detection
-    const pageObjects = manifest.getAllObjects().filter(obj => obj.lastPage === pageNumber);
-    if (pageObjects.length > 0) {
-      const freshColoredObjects = pageObjects
+    // CHANGE #5: Store session-wide colored objects (no page filtering)
+    const allSessionObjects = manifest.getAllObjects();
+    if (allSessionObjects.length > 0) {
+      const freshColoredObjects = allSessionObjects
         .map(obj => obj.fullDescription)
         .filter(Boolean)
         .join(', ');
       
-      const cacheKey = `${sessionId}_colored_objects_page_${pageNumber}`;
+      const cacheKey = `${sessionId}_colored_objects_session`;
       this.storyCache.smartWrite(cacheKey, freshColoredObjects);
-      console.log(`✅ Post-detection cache write: "${freshColoredObjects}" for page ${pageNumber}`);
+      console.log(`✅ Post-detection cache write (session-wide): "${freshColoredObjects}"`);
     }
 
     return {
@@ -1254,25 +1254,20 @@ export class CharacterConsistencyService {
       return cached;
     }
     
-    // Fallback to manifest (in-memory) - FILTER TO CURRENT PAGE ONLY
+    // CHANGE #3: Return ALL session objects (no page filtering for continuity)
     const objects = manifest.getAllObjects();
     
     if (objects.length === 0) return '';
     
-    // CRITICAL FIX: Only include objects from current page
-    const pageObjects = objects.filter(obj => obj.lastPage === currentPage);
-    
-    if (pageObjects.length === 0) return '';
-    
-    const descriptions = pageObjects
+    const descriptions = objects
       .map(obj => obj.fullDescription)
       .filter(Boolean)
       .join(', ');
     
-    // Cache result with page-scoped key
+    // Cache result with session-scoped key
     this.storyCache.smartWrite(cacheKey, descriptions);
     
-    console.log(`🎨 Colored objects for ${sessionId} page ${currentPage}: ${descriptions}`);
+    console.log(`🎨 Colored objects for ${sessionId} (session-wide): ${descriptions}`);
     return descriptions;
   }
 
@@ -1340,10 +1335,21 @@ export class CharacterConsistencyService {
         return null;
       }
 
-      // Populate cache with loaded data
+      // CHANGE #2: Populate cache AND restore colored objects to manifest
+      const manifest = this.getSessionManifest(sessionId);
       for (const record of data) {
         const cacheKey = `${sessionId}_${record.detail_type}_${record.detail_key}`;
         this.storyCache.smartWrite(cacheKey, record.detail_value);
+        
+        // Restore colored objects to manifest for session continuity
+        if (record.detail_type === 'colored_object' && record.visual_elements) {
+          manifest.addObject(
+            record.visual_elements.object || record.detail_key,
+            record.visual_elements.color || 'unknown',
+            record.page_first_seen,
+            record.detail_value
+          );
+        }
       }
 
       console.log(`✅ Loaded ${data.length} cached records for ${sessionId}`);
@@ -1415,6 +1421,24 @@ export class CharacterConsistencyService {
               visual_elements: { keywords: char.visualDetails, type: char.type }
             });
           }
+        }
+      }
+
+      // CHANGE #1: Add colored objects to database storage
+      const manifest = this.getSessionManifest(sessionId);
+      const coloredObjects = manifest.getAllObjects();
+      for (const obj of coloredObjects) {
+        if (obj.object && obj.color) {
+          recordsToWrite.push({
+            session_id: sessionId,
+            character_name: 'main_character',
+            detail_type: 'colored_object',
+            detail_key: obj.object,
+            detail_value: obj.fullDescription || `${obj.color} ${obj.object}`,
+            page_first_seen: obj.firstPage || pageNumber,
+            page_last_seen: obj.lastPage || pageNumber,
+            visual_elements: { color: obj.color, object: obj.object, source: obj.source || 'detected' }
+          });
         }
       }
 
