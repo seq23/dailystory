@@ -755,36 +755,89 @@ export class CharacterConsistencyService {
       }
     }
 
-    // Strategy 3: Proximity matching within same sentence (tier25 first)
-    const sentences = text.split(/[.!?]+/);
-    for (const sentence of sentences) {
-      const sentenceLower = sentence.toLowerCase();
+    // Strategy 3a: Multi-colored objects (e.g., "red, white and blue backpack")
+    const allColors = [...new Set([...tier25Colors, ...(await this.getVocabulary()).colors])];
+    const multiColorPattern = new RegExp(
+      `\\b(${allColors.map(escapeRegExp).join('|')})(?:(?:,\\s*|\\s+and\\s+|-\\s*)(${allColors.map(escapeRegExp).join('|')}))+\\s+(\\w+(?:\\s+\\w+)?)\\b`,
+      'gi'
+    );
+    
+    // Non-noun blocklist (lean ~100 words)
+    const NON_NOUN_WORDS = new Set([
+      'is', 'are', 'was', 'were', 'be', 'been', 'being', 'runs', 'walks', 'sits', 'jumps', 'flies', 'eats', 'drinks', 'plays', 'reads',
+      'goes', 'comes', 'makes', 'takes', 'gives', 'gets', 'big', 'small', 'large', 'tiny', 'huge', 'happy', 'sad', 'angry', 'calm',
+      'fast', 'slow', 'quick', 'hot', 'cold', 'warm', 'cool', 'quickly', 'slowly', 'very', 'really', 'quite', 'always', 'never', 'often',
+      'here', 'there', 'everywhere', 'nowhere', 'a', 'an', 'the', 'and', 'or', 'with', 'in', 'on', 'at', 'to', 'for', 'of'
+    ]);
+    
+    const isLikelyNoun = (word) => {
+      const lowerWord = word.toLowerCase();
+      if (NON_NOUN_WORDS.has(lowerWord)) return false;
+      if (allColors.some(c => c.toLowerCase() === lowerWord)) return false;
+      const nounSuffixes = ['tion', 'ness', 'ment', 'ship', 'er', 'or', 'ist', 'ity', 'ism', 'ance', 'ence'];
+      if (nounSuffixes.some(suffix => lowerWord.endsWith(suffix))) return true;
+      return true; // Optimistic default
+    };
+    
+    const multiColorMatches = text.matchAll(multiColorPattern);
+    for (const match of multiColorMatches) {
+      const fullMatch = match[0];
+      const colorMatches = fullMatch.match(new RegExp(`\\b(${allColors.map(escapeRegExp).join('|')})\\b`, 'gi')) || [];
+      const objectPart = match[match.length - 1].trim();
       
-      for (const color of tier25Colors) {
-        for (const object of tier25Objects) {
-          const hasColor = sentenceLower.includes(color.toLowerCase());
-          const hasObject = sentenceLower.includes(object.toLowerCase());
-          
-          if (hasColor && hasObject) {
-            // Create a description combining them
-            const proximityDesc = `${color} ${object}`;
-            
-            // Only add if not already detected
-            if (!detections.some(d => d.fullDescription === proximityDesc.toLowerCase())) {
-              detections.push({
-                fullDescription: proximityDesc.toLowerCase(),
-                color,
-                object,
-                source: 'tier25Vocabulary_proximity',
-                pageNumber
-              });
-              manifest.addObject(object, color, proximityDesc, pageNumber);
-              if (Deno.env.get('LOG_LEVEL') === 'debug') {
-                console.log(`🎨 Detected colored object (proximity): ${proximityDesc} (tier25)`);
-              }
-            }
-          }
-        }
+      if (!isLikelyNoun(objectPart)) continue;
+      
+      const colorList = colorMatches.map(c => c.toLowerCase()).join(', ');
+      const fullDescription = `${colorList} ${objectPart.toLowerCase()}`;
+      
+      if (detections.some(d => d.fullDescription === fullDescription)) continue;
+      
+      detections.push({
+        fullDescription,
+        color: colorList,
+        object: objectPart.toLowerCase(),
+        source: 'multi_color_wildcard',
+        pageNumber
+      });
+      manifest.addObject(objectPart, colorList, fullDescription, pageNumber);
+      if (Deno.env.get('LOG_LEVEL') === 'debug') {
+        console.log(`🎨 Detected multi-colored object: ${fullDescription}`);
+      }
+    }
+    
+    // Strategy 3b: Single color + adjacent noun (ultimate wildcard with compound noun support)
+    const skipWords = new Set([...NON_NOUN_WORDS, ...allColors.map(c => c.toLowerCase())]);
+    const colorAdjacentPattern = new RegExp(
+      `\\b(${allColors.map(escapeRegExp).join('|')})\\s+(\\w+(?:\\s+\\w+)?)\\b`,
+      'gi'
+    );
+    
+    const wildcardMatches = text.matchAll(colorAdjacentPattern);
+    for (const match of wildcardMatches) {
+      const color = match[1].toLowerCase();
+      const adjacentWords = match[2].toLowerCase();
+      
+      // Handle compound nouns (e.g., "red fire truck")
+      const wordParts = adjacentWords.split(/\s+/);
+      let objectWord = adjacentWords;
+      
+      // If multi-word, validate all parts
+      const allPartsValid = wordParts.every(part => !skipWords.has(part) && isLikelyNoun(part));
+      if (!allPartsValid) continue;
+      
+      const fullDescription = `${color} ${objectWord}`;
+      if (detections.some(d => d.fullDescription === fullDescription)) continue;
+      
+      detections.push({
+        fullDescription,
+        color,
+        object: objectWord,
+        source: 'single_color_wildcard',
+        pageNumber
+      });
+      manifest.addObject(objectWord, color, fullDescription, pageNumber);
+      if (Deno.env.get('LOG_LEVEL') === 'debug') {
+        console.log(`🎨 Detected colored object (wildcard): ${fullDescription}`);
       }
     }
 

@@ -286,7 +286,8 @@ export const TIER_25_UNIFIED_VOCABULARY_EXTENDED = {
   clothing: {
     basic: [
       'shirt', 'pants', 'dress', 'shoes', 'hat', 'jacket', 
-      'coat', 'socks', 'boots', 'sweater'
+      'coat', 'socks', 'boots', 'sweater', 'sneakers', 'sandals',
+      'shorts', 'skirt', 'gloves', 'scarf'
     ]
   },
 
@@ -304,10 +305,11 @@ export const TIER_25_UNIFIED_VOCABULARY_EXTENDED = {
       'snow', 'water', 'sky', 'sand', 'garden', 'plant', 'seed'
     ],
 
-    // Most common toys (12 words)
+    // Most common toys (16 words)
     toys: [
       'toy', 'ball', 'book', 'doll', 'blocks', 'puzzle', 
-      'bike', 'game', 'balloon', 'kite', 'scooter', 'skateboard'
+      'bike', 'game', 'balloon', 'kite', 'scooter', 'skateboard',
+      'robot', 'cards', 'marbles', 'crayons'
     ],
 
     // Most common food (12 words) 
@@ -316,10 +318,11 @@ export const TIER_25_UNIFIED_VOCABULARY_EXTENDED = {
       'juice', 'water', 'bread', 'snack', 'ice cream', 'pizza'
     ],
 
-    // Most common household items (15 words)
+    // Most common household items (21 words)
     household: [
       'bed', 'chair', 'table', 'door', 'window', 'room', 'house', 'home', 
-      'lamp', 'pillow', 'blanket', 'cup', 'plate', 'spoon', 'clothes'
+      'lamp', 'pillow', 'blanket', 'cup', 'plate', 'spoon', 'clothes',
+      'couch', 'sofa', 'desk', 'shelf', 'bookshelf', 'box'
     ],
 
     // Most common vehicles (10 words)
@@ -328,10 +331,11 @@ export const TIER_25_UNIFIED_VOCABULARY_EXTENDED = {
       'bike', 'scooter', 'fire truck', 'tricycle'
     ],
 
-    // Most common school items (10 words - Level 1-4 patterns)
+    // Most common school items (16 words - Level 1-4 patterns + accessories)
     school: [
       'school', 'library', 'classroom', 'book', 'teacher', 
-      'student', 'desk', 'pencil', 'paper', 'notebook'
+      'student', 'desk', 'pencil', 'paper', 'notebook',
+      'backpack', 'bag', 'lunchbox', 'crayon', 'eraser', 'ruler'
     ],
 
     // Top sports items (5 words - added for detectAppearance)

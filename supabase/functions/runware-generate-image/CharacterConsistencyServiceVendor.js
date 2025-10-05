@@ -397,9 +397,24 @@ export class CharacterConsistencyService {
         importPath = '../../_shared/tier25Vocabulary.js';
         console.log('✅ [VENDOR_CCS] Loaded tier25Vocabulary from ../../_shared/');
       } catch (error2) {
-        console.error('❌ [VENDOR_CCS] Failed to load tier25Vocabulary from both paths, using ESSENTIAL_VOCABULARY fallback');
+        console.error('❌ [VENDOR_CCS] Failed to load tier25Vocabulary from both paths, using emergency hardcoded fallback');
         this.tier25CacheLoadTime = performance.now() - startTime;
-        this.tier25Cache = { colors: [], actions: [], objects: [], clothing: [], settings: [], relationships: [], animals: [], contextDetection: { indoor: [], outdoor: [] } };
+        
+        // Emergency Tier 3: Hardcoded minimal tier25 with essential objects
+        this.tier25Cache = {
+          colors: ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown', 'black', 'white', 'gray', 'grey'],
+          actions: ['run', 'walk', 'jump', 'play', 'eat', 'read', 'sit', 'stand', 'go', 'look', 'see', 'help', 'make', 'take', 'give'],
+          objects: ['ball', 'car', 'bike', 'book', 'toy', 'hat', 'shirt', 'pants', 'dress', 'backpack', 'bag', 'box', 'cup', 'plate', 'dog', 'cat', 'bird', 'tree', 'flower'],
+          clothing: ['shirt', 'pants', 'dress', 'shoes', 'hat', 'jacket', 'coat', 'backpack'],
+          settings: ['park', 'school', 'home', 'bedroom', 'playground', 'classroom', 'garden', 'yard'],
+          relationships: ['friend', 'family', 'mom', 'dad', 'teacher'],
+          animals: ['dog', 'cat', 'bird', 'fish', 'rabbit', 'bear'],
+          contextDetection: {
+            indoor: ['kitchen', 'bedroom', 'classroom', 'house', 'home', 'school', 'room'],
+            outdoor: ['park', 'garden', 'playground', 'beach', 'forest', 'yard', 'outside', 'sky']
+          }
+        };
+        console.log('✅ [VENDOR_CCS] Emergency hardcoded tier25 loaded:', Object.keys(this.tier25Cache));
         return this.tier25Cache;
       }
     }
@@ -468,8 +483,44 @@ export class CharacterConsistencyService {
         importPath = '../../_shared/tier25Vocabulary.js';
         console.log('✅ [VENDOR_CCS] Loaded tier25Vocabulary (full) from ../../_shared/');
       } catch (error2) {
-        console.error('❌ [VENDOR_CCS] Failed to load full vocabulary from both paths, using ESSENTIAL_VOCABULARY fallback');
+        console.error('❌ [VENDOR_CCS] Failed to load full vocabulary from both paths, using emergency hardcoded universal vocab');
         this.fullVocabLoadTime = performance.now() - startTime;
+        
+        // Emergency Tier 3: Hardcoded universal vocab (50 colors + 100 objects)
+        this.vocabulary = {
+          colors: [
+            'red', 'blue', 'yellow', 'green', 'orange', 'purple', 'pink', 'brown', 'black', 'white', 'gray', 'grey',
+            'bright red', 'dark blue', 'light green', 'pale yellow', 'deep purple', 'soft pink', 'dark brown',
+            'light blue', 'bright green', 'bright yellow', 'bright orange', 'bright pink', 'deep red', 'dark green',
+            'turquoise', 'coral', 'lavender', 'mint', 'peach', 'teal', 'lime', 'magenta', 'cyan', 'navy',
+            'gold', 'golden', 'silver', 'bronze', 'crimson', 'emerald', 'sapphire', 'rainbow',
+            'sky blue', 'forest green', 'sunset orange', 'royal blue', 'cherry red'
+          ],
+          objects: [
+            'ball', 'car', 'bike', 'book', 'toy', 'hat', 'shirt', 'pants', 'dress', 'backpack', 'bag', 'box', 'cup', 'plate',
+            'dog', 'cat', 'bird', 'fish', 'rabbit', 'bear', 'lion', 'tiger', 'elephant', 'horse', 'duck',
+            'tree', 'flower', 'grass', 'leaf', 'cloud', 'sun', 'moon', 'star', 'rain', 'snow',
+            'chair', 'table', 'bed', 'door', 'window', 'lamp', 'pillow', 'blanket', 'couch', 'desk',
+            'balloon', 'kite', 'doll', 'blocks', 'puzzle', 'robot', 'scooter', 'skateboard',
+            'apple', 'banana', 'cookie', 'cake', 'pizza', 'sandwich', 'ice cream',
+            'pencil', 'pen', 'paper', 'notebook', 'crayon', 'eraser', 'ruler', 'lunchbox',
+            'shoes', 'boots', 'sneakers', 'sandals', 'jacket', 'coat', 'sweater', 'shorts', 'skirt',
+            'truck', 'bus', 'train', 'airplane', 'boat', 'spaceship', 'rocket', 'fire truck',
+            'swing', 'slide', 'seesaw', 'sandbox', 'guitar', 'piano', 'drums', 'dragon'
+          ],
+          actions: ['run', 'walk', 'jump', 'play', 'eat', 'read', 'write', 'draw', 'sing', 'dance', 'fly', 'swim'],
+          clothing: ['shirt', 'pants', 'dress', 'shoes', 'hat', 'jacket', 'coat', 'backpack', 'boots', 'sneakers', 'shorts'],
+          settings: ['park', 'school', 'home', 'bedroom', 'playground', 'classroom', 'garden', 'yard', 'forest', 'beach'],
+          indoorWords: ['kitchen', 'bedroom', 'bathroom', 'classroom', 'house', 'home', 'school', 'room', 'library'],
+          outdoorWords: ['park', 'garden', 'playground', 'beach', 'forest', 'yard', 'outside', 'sky', 'field'],
+          relationships: ['friend', 'family', 'mom', 'dad', 'teacher', 'brother', 'sister'],
+          animals: ['dog', 'cat', 'bird', 'fish', 'rabbit', 'bear', 'lion', 'tiger', 'elephant', 'horse', 'duck'],
+          HAIR_DESCRIPTORS: ['blonde', 'brown', 'black', 'red', 'curly', 'straight', 'wavy'],
+          SIZE_AGE_DESCRIPTORS: ['big', 'small', 'tall', 'short', 'little', 'tiny', 'young', 'old'],
+          ANIMAL_RELATIONSHIPS: ['pet', 'puppy', 'kitten', 'bunny']
+        };
+        console.log('✅ [VENDOR_CCS] Emergency hardcoded universal vocab loaded:', this.vocabulary.colors.length, 'colors,', this.vocabulary.objects.length, 'objects');
+        return this.vocabulary;
         this.vocabulary = CharacterConsistencyService.ESSENTIAL_VOCABULARY;
         return this.vocabulary;
       }
