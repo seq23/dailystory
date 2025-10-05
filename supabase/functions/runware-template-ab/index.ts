@@ -3,9 +3,370 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // ✅ BUNDLER HINT: Force CCS inclusion in bundle
 import { characterConsistencyService as _ccsHint } from "../_shared/CharacterConsistencyService.js";
-import { extractSemanticScene, extractSimpleScene } from "../_shared/placeholderResolver.ts";
-
 const SERVICE_NAME = "runware-template-ab";
+
+// ========== INLINED SCENE EXTRACTION FUNCTIONS ==========
+// These functions were moved from _shared/placeholderResolver.ts to eliminate import failures
+
+interface MicroContext {
+  characterName?: string;
+  sessionId?: string;
+  difficulty?: string;
+  [key: string]: any;
+}
+
+/**
+ * EXTRACT AND NORMALIZE ACTION VERB
+ */
+function extractAndNormalizeAction(text: string): string {
+  // Enhanced Level 0 action detection using proper vocabulary system
+  const level0Actions = [
+    'wakes up', 'waking up', 'wake up', 'gets up', 'getting up', 'sleeps', 'sleeping', 'sleep',
+    'eats', 'eating', 'eat', 'drinks', 'drinking', 'drink', 'plays', 'playing', 'play',
+    'goes', 'going', 'go', 'comes', 'coming', 'come', 'sits', 'sitting', 'sit',
+    'stands', 'standing', 'stand', 'runs', 'running', 'run', 'walks', 'walking', 'walk',
+    'jumps', 'jumping', 'jump', 'climbs', 'climbing', 'climb', 'swings', 'swinging', 'swing',
+    'draws', 'drawing', 'draw', 'reads', 'reading', 'read', 'sings', 'singing', 'sing',
+    'dances', 'dancing', 'dance', 'builds', 'building', 'build', 'creates', 'creating', 'create'
+  ];
+  
+  // First check for Level 0 specific action patterns with word boundaries
+  for (const action of level0Actions) {
+    const actionRegex = new RegExp(`\\b${action.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+    if (actionRegex.test(text)) {
+      // Normalize Level 0 actions with intelligent inference
+      if (action.includes('wakes up') || action.includes('waking up')) {
+        return 'sitting up in bed with arms stretched';
+      }
+      if (action.includes('sleeps') || action.includes('sleeping')) {
+        return 'lying peacefully in bed';
+      }
+      if (action.includes('eats') || action.includes('eating')) {
+        return 'sitting at table eating';
+      }
+      if (action.includes('plays') || action.includes('playing')) {
+        return 'playing happily';
+      }
+      if (action.includes('runs') || action.includes('running')) {
+        return 'running energetically';
+      }
+      if (action.includes('jumps') || action.includes('jumping')) {
+        return 'jumping excitedly';
+      }
+      if (action.includes('cleans') || action.includes('cleaning')) {
+        return 'helping to clean up';
+      }
+      if (action.includes('reads') || action.includes('reading')) {
+        return 'sitting comfortably reading';
+      }
+      if (action.includes('draws') || action.includes('drawing')) {
+        return 'sitting at table drawing';
+      }
+      if (action.includes('helps') || action.includes('helping')) {
+        return 'standing ready to help';
+      }
+      // Default Level 0 action with pose
+      return `${action} cheerfully`;
+    }
+  }
+
+  // Action verb patterns with enhanced normalization mapping
+  const actionNormalizationMap: Record<string, string> = {
+    'walked': 'walking through',
+    'woke up': 'sitting up in bed with arms stretched',
+    'cooking': 'standing at stove cooking',
+    'walked through': 'walking through',
+    'running around': 'running happily in',
+    'jumped on': 'jumping excitedly on',
+    'sat down': 'sitting comfortably in',
+    'lying down': 'lying peacefully in'
+  };
+
+  // Try enhanced mappings
+  for (const [pattern, normalized] of Object.entries(actionNormalizationMap)) {
+    if (text.includes(pattern)) {
+      return normalized;
+    }
+  }
+
+  // FIXED: Enhanced action verb extraction with proper word boundaries to prevent false positives
+  const actionMatch = text.match(/\b(wake|wakes|woke|waking|sleep|sleeps|slept|sleeping|eat|eats|ate|eating|play|plays|played|playing|walk|walks|walked|walking|run|runs|ran|running|jump|jumps|jumped|jumping|help|helps|helped|helping|clean|cleans|cleaned|cleaning|read|reads|reading|draw|draws|drew|drawing|sing|sings|sang|singing|dance|dances|danced|dancing|build|builds|built|building|climb|climbs|climbed|climbing|sit|sits|sat|sitting|stand|stands|stood|standing|come|comes|came|coming|look|looks|looked|looking|see|sees|saw|seeing)\b/);
+  
+  if (actionMatch) {
+    let action = actionMatch[1];
+    
+    // Enhanced Level 0 specific normalizations with poses
+    if (action === 'wake' || action === 'wakes' || action === 'woke') {
+      return 'sitting up in bed with arms stretched';
+    }
+    if (action === 'sleep' || action === 'sleeps' || action === 'slept') {
+      return 'lying peacefully in bed';
+    }
+    if (action === 'eat' || action === 'eats' || action === 'ate') {
+      return 'sitting at table eating';
+    }
+    
+    // Normalize to present continuous with intelligent inference
+    if (action.endsWith('ed')) {
+      action = action.slice(0, -2) + 'ing';
+    }
+    if (action.endsWith('s') && !action.endsWith('ing')) {
+      action = action.slice(0, -1) + 'ing';
+    }
+    
+    // Add Level 0 appropriate descriptors
+    if (action === 'playing') return 'playing happily';
+    if (action === 'running') return 'running energetically';
+    if (action === 'jumping') return 'jumping excitedly';
+    if (action === 'helping') return 'standing ready to help';
+    if (action === 'reading') return 'sitting comfortably reading';
+    if (action === 'drawing') return 'sitting at table drawing';
+    
+    return action;
+  }
+
+  // Intelligent inference for Level 0 common patterns
+  if (text.includes('ball is red') || text.includes('red ball')) {
+    return 'holding red ball cheerfully';
+  }
+  if (text.includes('ball is') || text.includes('the ball')) {
+    return 'playing with ball happily';
+  }
+
+  return 'playing cheerfully';
+}
+
+/**
+ * INFER OBJECT FROM ACTION CONTEXT
+ */
+function inferObjectFromAction(action: string): string {
+  const actionObjectMap: Record<string, string> = {
+    'cooking': 'food',
+    'standing over stove': 'cooking utensils',
+    'reading': 'book',
+    'drawing': 'crayons',
+    'writing': 'pencil',
+    'playing': 'toys',
+    'building': 'blocks',
+    'swimming': 'pool toys'
+  };
+  return actionObjectMap[action] || '';
+}
+
+/**
+ * INFER LOCATION FROM CONTEXT
+ */
+function inferLocationFromContext(text: string): string {
+  // Enhanced Level 0 location detection using tier25Vocabulary
+  const level0Locations = [
+    'bed', 'bedroom', 'kitchen', 'home', 'house', 'room', 'bathroom', 'living room',
+    'dining room', 'playroom', 'inside', 'indoors', 'park', 'playground', 'garden', 
+    'yard', 'outside', 'outdoors', 'beach', 'forest', 'field', 'street', 'road', 
+    'path', 'tree', 'grass', 'school', 'store', 'shop', 'library', 'hospital', 'farm', 'zoo'
+  ];
+  
+  // Check for Level 0 specific locations first
+  for (const location of level0Locations) {
+    if (text.includes(location)) {
+      // Return intelligent inference based on Level 0 context
+      if (location === 'bed' || location === 'bedroom') return 'cozy bedroom';
+      if (location === 'kitchen') return 'bright kitchen';
+      if (location === 'park' || location === 'playground') return 'sunny park';
+      if (location === 'home' || location === 'house') return 'comfortable home';
+      if (location === 'school') return 'cheerful school';
+      return location;
+    }
+  }
+  
+  // Enhanced context-based inference
+  if (text.includes('kitchen') || text.includes('cooking') || text.includes('stove') || text.includes('eating')) return 'bright kitchen';
+  if (text.includes('bedroom') || text.includes('bed') || text.includes('woke up') || text.includes('sleep')) return 'cozy bedroom';
+  if (text.includes('park') || text.includes('playground') || text.includes('swing')) return 'sunny park';
+  if (text.includes('beach') || text.includes('sand') || text.includes('ocean')) return 'beautiful beach';
+  if (text.includes('forest') || text.includes('trees') || text.includes('woods')) return 'magical forest';
+  if (text.includes('school') || text.includes('classroom') || text.includes('teacher')) return 'cheerful school';
+  if (text.includes('outside') || text.includes('outdoors') || text.includes('garden')) return 'sunny outdoors';
+  if (text.includes('inside') || text.includes('indoors') || text.includes('home') || text.includes('room')) return 'comfortable indoors';
+  
+  // Return empty string if no clear location - maintain text integrity
+  return '';
+}
+
+/**
+ * EXTRACT ATMOSPHERE (enhanced from previous version)
+ */
+function extractAtmosphere(text: string): string {
+  if (text.includes('sunny') || text.includes('bright')) return 'bright sunny day';
+  if (text.includes('rainy') || text.includes('cloudy')) return 'cloudy day';
+  if (text.includes('morning')) return 'morning light';
+  if (text.includes('evening') || text.includes('sunset')) return 'evening atmosphere';
+  if (text.includes('night')) return 'nighttime setting';
+  return 'warm natural lighting';
+}
+
+/**
+ * INFER CHARACTER MOOD FROM TEXT CONTEXT
+ */
+function inferCharacterMood(text: string): string {
+  if (text.includes('happy') || text.includes('excited') || text.includes('joyful')) return 'happy expression';
+  if (text.includes('sad') || text.includes('crying')) return 'sad expression';
+  if (text.includes('angry') || text.includes('mad')) return 'frustrated expression';
+  if (text.includes('surprised') || text.includes('amazed')) return 'surprised expression';
+  if (text.includes('scared') || text.includes('afraid')) return 'worried expression';
+  return 'cheerful expression';
+}
+
+/**
+ * INFER CHARACTER POSE FROM ACTION AND OBJECT
+ */
+function inferCharacterPose(action: string, object: string): string {
+  if (action.includes('sitting')) return 'sitting pose';
+  if (action.includes('standing')) return 'standing pose';
+  if (action.includes('running')) return 'running pose';
+  if (action.includes('jumping')) return 'mid-jump pose';
+  if (action.includes('lying') || action.includes('sleeping')) return 'lying down';
+  if (action.includes('cooking') || action.includes('stove')) return 'standing at counter';
+  if (action.includes('reading')) return 'sitting comfortably';
+  if (action.includes('drawing') || action.includes('writing')) return 'seated at table';
+  return 'natural active pose';
+}
+
+/**
+ * Summarize page text for semantic analysis (stub - implement if needed)
+ */
+function summarizePageText(pageText: string, context: MicroContext = {}): string {
+  // Take first 2 sentences or 200 characters, whichever is shorter
+  const sentences = pageText.match(/[^.!?]+[.!?]+/g) || [pageText];
+  const firstTwoSentences = sentences.slice(0, 2).join(' ');
+  return firstTwoSentences.length > 200 ? firstTwoSentences.substring(0, 200) : firstTwoSentences;
+}
+
+/**
+ * Extract semantic scene description from story text for Tier 2.5A
+ * SOPHISTICATED: Analyzes actions, objects, locations, atmosphere, mood, and pose
+ */
+function extractSemanticScene(pageText: string, context: MicroContext = {}): string {
+  if (!pageText || typeof pageText !== 'string' || pageText.trim().length === 0) {
+    // Return empty string to maintain page text integrity
+    console.log('📝 No semantic scene extractable - maintaining text integrity');
+    return '';
+  }
+
+  // Use summarized pageText first (2 sentences max), fallback to full text
+  let textToAnalyze = summarizePageText(pageText, context);
+  if (!textToAnalyze || textToAnalyze.length < 10) {
+    textToAnalyze = pageText;
+  }
+
+  const text = textToAnalyze.toLowerCase();
+  
+  // ADVANCED ACTION VERB RESOLUTION with normalization
+  const extractedAction = extractAndNormalizeAction(text);
+  
+  // FIXED: Extract Object (what they're interacting with) - fixed regex to prevent character dropping
+  const objectMatch = text.match(/\b(?:with|holding|carrying|using|playing with|reading|eating|building|drawing)\s+(?:a|an|the|some)?\s*([a-zA-Z]+(?:\s+[a-zA-Z]+)*?)(?:\s+(?:in|at|on|through|where|and|,|\.|!|\?)|$)/);
+  const extractedObject = objectMatch ? objectMatch[1].trim() : inferObjectFromAction(extractedAction);
+  
+  // Extract Location 
+  const locationMatch = text.match(/\b(?:in|at|on|near|by|inside|outside|through)\s+(?:the|a|an)?\s*([a-zA-Z]+(?:\s+[a-zA-Z]+)?)/);
+  const extractedLocation = locationMatch ? locationMatch[1] : inferLocationFromContext(text);
+  
+  // Extract Atmosphere (indoor/outdoor, time of day, weather)
+  const atmosphere = extractAtmosphere(text);
+  
+  // Infer Character Mood from context
+  const characterMood = inferCharacterMood(text);
+  
+  // Infer Character Pose from action
+  const characterPose = inferCharacterPose(extractedAction, extractedObject);
+  
+  // Build comprehensive semantic scene with action verb leading
+  const sceneComponents = [
+    extractedAction,
+    extractedObject ? `with ${extractedObject}` : '',
+    extractedLocation ? `in the ${extractedLocation}` : '',
+    atmosphere,
+    characterMood,
+    characterPose
+  ].filter(Boolean);
+  
+  const semanticScene = sceneComponents.join(', ');
+  console.log(`✅ Sophisticated semantic scene extracted: "${semanticScene}"`);
+  return semanticScene;
+}
+
+/**
+ * TIER 2.5B: SIMPLIFIED SCENE EXTRACTION (Basic Regex) - FIXED
+ * Extracts: Action + Object + Location with proper preposition handling
+ */
+function extractSimpleScene(storyText: string): string {
+  if (!storyText || typeof storyText !== 'string') return 'playing outdoors';
+  
+  console.log('🔍 Simple scene extraction from story text');
+  
+  const text = storyText.toLowerCase();
+  
+  // ENHANCED ACTION EXTRACTION with preposition preservation
+  let extractedAction = '';
+  
+  // First check for action + preposition patterns (like "walked through")
+  const actionWithPrepMatch = text.match(/\b(walked|running|going|moving)\s+(through|in|across|around|over|under)\b/);
+  if (actionWithPrepMatch) {
+    const baseAction = actionWithPrepMatch[1];
+    const preposition = actionWithPrepMatch[2];
+    // Normalize to present continuous
+    if (baseAction === 'walked') {
+      extractedAction = `walking ${preposition}`;
+    } else if (baseAction === 'running') {
+      extractedAction = `running ${preposition}`;
+    } else if (baseAction === 'going') {
+      extractedAction = `going ${preposition}`;
+    } else if (baseAction === 'moving') {
+      extractedAction = `moving ${preposition}`;
+    }
+  }
+  
+  // Fallback to basic action normalization if no preposition pattern found
+  if (!extractedAction) {
+    extractedAction = extractAndNormalizeAction(text);
+  }
+  
+  // Enhanced object extraction (suppress for walking scenes to avoid noise)
+  let extractedObject = '';
+  if (!extractedAction.includes('walking') && !extractedAction.includes('running')) {
+    const objectMatch = text.match(/\b(?:carrying|holding|with|playing with|using)\s+(?:a|an|the|some)?\s*([a-zA-Z]+(?:\s+[a-zA-Z]+)*)/);
+    extractedObject = objectMatch ? objectMatch[1] : '';
+  }
+  
+  // Enhanced location extraction with multiple prepositions
+  const locationMatch = text.match(/\b(?:through|in|at|on|outside|inside|near|by)\s+(?:the|a)?\s*([a-zA-Z]+(?:\s+[a-zA-Z]+)?)/);
+  const extractedLocation = locationMatch ? locationMatch[1] : inferLocationFromContext(text);
+  
+  // Build scene avoiding preposition duplication
+  const sceneComponents = [];
+  
+  // Add action (may already include preposition)
+  sceneComponents.push(extractedAction);
+  
+  // Add object if present and not redundant
+  if (extractedObject && !extractedAction.includes(extractedObject)) {
+    sceneComponents.push(`with ${extractedObject}`);
+  }
+  
+  // Add location with smart preposition handling
+  if (extractedLocation) {
+    // If action already has preposition, don't add another one
+    if (extractedAction.includes('through') || extractedAction.includes('in') || extractedAction.includes('across')) {
+      sceneComponents.push(`the ${extractedLocation}`);
+    } else {
+      sceneComponents.push(`in the ${extractedLocation}`);
+    }
+  }
+  
+  const simpleScene = sceneComponents.join(', ').replace(/,\s*,/g, ',').trim();
+  console.log(`✅ Simple scene extracted: "${simpleScene}"`);
+  return simpleScene;
+}
 
 // ========== CCS BOOT VERIFICATION ==========
 let ccsBootStatus = { loaded: false, error: null as string | null };
