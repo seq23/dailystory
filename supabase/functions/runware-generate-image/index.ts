@@ -5,30 +5,6 @@
 // ✅ BUNDLER HINT: Force CCS inclusion in deployment bundle (dynamic import used inside handler)
 import { characterConsistencyService as _ccsHint } from "../_shared/CharacterConsistencyService.js";
 
-// ========== CCS BOOT VERIFICATION ==========
-let ccsBootStatus = { loaded: false, error: null as string | null };
-
-async function verifyCCSBoot() {
-  try {
-    const ccsModule = await import("../_shared/CharacterConsistencyService.js");
-    const ccs = ccsModule.characterConsistencyService;
-    
-    // Test key method
-    const testResult = await ccs.analyzeVisualDetails('test scene', 'TestChar');
-    
-    if (testResult && Array.isArray(testResult.visualElements)) {
-      ccsBootStatus = { loaded: true, error: null };
-      console.log('✅ [BOOT] Direct Mode (runware-generate-image): CCS loaded successfully');
-      return true;
-    } else {
-      throw new Error('CCS method returned invalid result');
-    }
-  } catch (error) {
-    ccsBootStatus = { loaded: false, error: error.message };
-    console.error('❌ [BOOT] Direct Mode (runware-generate-image): CCS load failed -', error.message);
-    return false;
-  }
-}
 
 // ============================================================================
 // 🎯 ORCHESTRATOR: RESILIENT IMAGE GENERATION ORCHESTRATOR
