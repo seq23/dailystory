@@ -1873,11 +1873,17 @@ export class CharacterConsistencyService {
   buildFullCulturalBundle(skinTone, sessionId, userInfo) {
     const normalizedTone = (skinTone || 'medium').toLowerCase();
     const language = userInfo?.language || 'en';
-    const gender = (userInfo?.avatar?.type === 'girl' || userInfo?.avatarType === 'girl') ? 'girls' : 'boys';
+    
+    // FIXED: Proper gender-neutral support for 'child' avatarType
+    const avatarType = userInfo?.avatar?.type || userInfo?.avatarType || 'child';
+    const gender = avatarType === 'girl' ? 'girls' : 
+                   avatarType === 'boy' ? 'boys' : 
+                   'child';
     
     console.log(`🎯 [GENDER_DEBUG] buildFullCulturalBundle gender determination:`, {
       userInfo_avatarType: userInfo?.avatarType,
       userInfo_avatar_type: userInfo?.avatar?.type,
+      avatarType_used: avatarType,
       determined_gender: gender,
       skinTone: normalizedTone,
       sessionId
@@ -1891,7 +1897,10 @@ export class CharacterConsistencyService {
     
     if (qualifiesForAfricanAmericanEnhancements) {
       // Use complete African American arrays (30 hair + 36 features)
-      const hairOptions = CharacterConsistencyService.AFRICAN_AMERICAN_HAIR_INLINE[gender];
+      // FIXED: Add fallback to 'child' gender-neutral options if specific gender not found
+      const hairOptions = CharacterConsistencyService.AFRICAN_AMERICAN_HAIR_INLINE[gender] ||
+                          CharacterConsistencyService.AFRICAN_AMERICAN_HAIR_INLINE['child'] ||
+                          CharacterConsistencyService.AFRICAN_AMERICAN_HAIR_INLINE['boys'];
       
       if (!hairOptions || hairOptions.length === 0) {
         console.error(`🚨 [HAIR_ARRAY_ERROR] No hair options for gender="${gender}", skinTone="${normalizedTone}". This should never happen - check AFRICAN_AMERICAN_HAIR_INLINE data structure.`);
@@ -2026,6 +2035,11 @@ export class CharacterConsistencyService {
     'dark': [
       'beautiful dark hair', 'rich black hair', 'lustrous dark hair', 'silky black hair',
       'gorgeous dark hair', 'shining black hair', 'magnificent dark hair'
+    ],
+    'child': [
+      'soft wavy hair', 'gentle curls', 'smooth hair', 'natural wavy hair',
+      'light curly hair', 'flowing hair', 'bouncy hair', 'textured hair',
+      'loose curls', 'natural hair', 'playful waves', 'tousled hair'
     ]
   };
 
@@ -2131,6 +2145,20 @@ export class CharacterConsistencyService {
       "wearing a relaxed wrap hairstyle with smooth curved styling, salon wrap technique, sleek finish, dimensional movement, professional hair wrapping, professional salon results",
       "wearing afro puffs hairstyle with twin high-positioned hair puffs, natural coily texture pattern, symmetrical rounded shape, authentic Black hair structure, voluminous curl clusters, defined individual strands, traditional afro hair styling",
       "wearing long pigtails with curled ends, flowing length with bouncy spiral curls, symmetrical pigtail placement, smooth hair shaft with defined curl tips, glossy hair shine"
+    ],
+    child: [
+      "wearing a natural mini afro with soft coily texture, rounded shape, and gentle volume",
+      "wearing short twist-out curls with bouncy texture and natural movement",
+      "wearing a tapered natural cut with textured crown and clean edges",
+      "wearing mini puffs with soft coily texture and playful style",
+      "wearing a short curly fade with defined coils on top",
+      "wearing natural wash-and-go curls with soft volume and bounce",
+      "wearing short protective braids with neat sections",
+      "wearing a rounded afro with soft texture and natural shape",
+      "wearing short locs with natural texture and clean styling",
+      "wearing a textured crop with natural curl pattern and volume",
+      "wearing soft finger coils with natural definition",
+      "wearing a natural cut with gentle waves and texture"
     ]
   };
 
