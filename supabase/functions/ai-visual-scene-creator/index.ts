@@ -318,7 +318,31 @@ async function generateCompleteVisualSchema(
     ethnicity,
     fullString: characterData
   });
-  const previousPrimaryScene = null; // Will be implemented with visual history tracking
+  // Retrieve previous page's primary scene for visual continuity
+  let previousPrimaryScene = null;
+  let previousVisualSchema = null;
+
+  if (pageNumber > 1) {
+    try {
+      const { data: prevScene, error } = await supabaseClient
+        .from('visual_details_cache')
+        .select('detail_value, visual_elements')
+        .eq('session_id', sessionId)
+        .eq('detail_type', 'primary_scene')
+        .eq('page_first_seen', pageNumber - 1)
+        .maybeSingle();
+      
+      if (error) {
+        console.warn(`⚠️ Failed to retrieve previous primary scene (non-fatal):`, error);
+      } else if (prevScene) {
+        previousPrimaryScene = prevScene.detail_value; // Full 1500-char primary scene
+        previousVisualSchema = prevScene.visual_elements?.fullSchema || null;
+        console.log(`✅ PREVIOUS_SCENE_LOADED: Retrieved from page ${pageNumber - 1}`);
+      }
+    } catch (error) {
+      console.warn(`⚠️ Exception retrieving previous primary scene (non-fatal):`, error);
+    }
+  }
   const isNonEnglish = nativeLanguage && nativeLanguage !== 'en';
   
   // Build specific cultural enhancement instructions based on native language
@@ -369,7 +393,22 @@ RULES:
 5. Singular/plural intelligence: "a bird" = 1 bird, "the bird" = 1 bird, "birds" = 2-4 birds, "many/lots of birds" = 5+ birds
 6. Extract secondary characters: HUMANS (mom, dad, friend, teacher, people), PETS (household animals like dog, cat), ANIMAL CHARACTERS (talking animals, fantasy creatures with speaking roles in the story)
 7. Atmospheric details: infer time of day, weather, indoor/outdoor context from story
-8. Visual continuity on pages 2+: track object colors/details ('red ball' stays 'red ball'), resolve pronouns to same objects/characters, use previous scene context for consistency
+8. Visual continuity on pages 2+: CRITICAL - maintain exact visual consistency from PREVIOUS SCENE:
+   - Object persistence: if previous scene mentions "pink backpack", current scene MUST show "pink backpack" when story references "it" or "the backpack"
+   - Clothing consistency: if previous scene shows "blue shirt", character keeps "blue shirt" unless story explicitly says they changed
+   - Pronoun resolution: "it", "them", "her toy" MUST match objects/characters from previous scene
+   - Scene element maintenance: if previous scene was "sunny park", continue "sunny park" unless story changes location
+   - Color memory: NEVER change colors ("red ball" stays "red ball", "green jacket" stays "green jacket")
+   
+   CORRECT EXAMPLE:
+   Previous: "Sarah, age 6, with brown curly hair and medium skin tone, holds a pink backpack in a sunny park"
+   Current Story: "Sarah walked with it to the playground"
+   Current Scene: "Sarah, age 6, with brown curly hair and medium skin tone, walks confidently carrying her pink backpack through the sunny park toward the playground"
+   
+   WRONG EXAMPLE:
+   Previous: "pink backpack"
+   Current Story: "walked with it"
+   Current Scene: "walks with a blue bag" ❌ (color changed)
 
 PHASE 1 ENHANCEMENT - MAIN CHARACTER APPEARANCE:
 - If mainCharacterAppearance physical features are provided (e.g., 'brown eyes', 'curly hair'), incorporate them into the scene description
@@ -410,7 +449,18 @@ STORY TEXT:
 "${storyText}"
 
 PREVIOUS SCENE (for visual consistency):
-"${previousPrimaryScene || 'None - this is the first scene'}"
+${previousPrimaryScene ? `
+Primary Scene: "${previousPrimaryScene}"
+${previousVisualSchema ? `
+Additional Context:
+- Background: ${previousVisualSchema.backgroundColor}
+- Lighting: ${previousVisualSchema.lighting}
+- Setting: ${previousVisualSchema.setting}
+- Mood: ${previousVisualSchema.mood}
+- Objects: ${previousVisualSchema.objects?.join(', ') || 'none'}
+- Secondary Characters: ${JSON.stringify(previousVisualSchema.secondaryCharacters || {})}
+` : ''}
+` : 'None - this is the first scene'}
 
 Generate a comprehensive scene with complete visual elements including background, lighting, composition, setting, mood, style, secondary characters (categorized as humans vs pets), and key objects. Maintain character and setting continuity while showcasing the current page's action. CRITICAL: The primaryScene must include the complete CHARACTER APPEARANCE string (ethnicity, hair, and skin tone) exactly as provided, word-for-word, you may not simplify it but you can enhance and weave it into the primary scene naturally. Place ethnicity after age.`;
 
@@ -903,6 +953,61 @@ serve(async (req) => {
         console.log(`✅ [${requestId}] ANALYSIS_APPLIED: Visual details analyzed and cached for page ${pageNumber}`);
       } catch (error) {
         console.warn(`⚠️ [${requestId}] Failed to analyze visual details (non-fatal):`, error);
+      }
+
+      // Save current primary scene with rolling 2-page window cleanup
+      try {
+        const characterName = userInfo?.name || userInfo?.userName || 'Child';
+        
+        // Step 1: Delete old primary scenes (keep only last 2 pages)
+        const { error: deleteError } = await supabaseClient
+          .from('visual_details_cache')
+          .delete()
+          .eq('session_id', sessionId)
+          .eq('detail_type', 'primary_scene')
+          .lt('page_first_seen', pageNumber - 1);
+        
+        if (deleteError) {
+          console.warn(`⚠️ Failed to cleanup old primary scenes (non-fatal):`, deleteError);
+        } else {
+          console.log(`🧹 CLEANUP: Removed primary scenes older than page ${pageNumber - 1}`);
+        }
+        
+        // Step 2: Insert current page's primary scene with full schema backup
+        const { error: insertError } = await supabaseClient
+          .from('visual_details_cache')
+          .insert({
+            session_id: sessionId,
+            character_name: characterName,
+            detail_type: 'primary_scene',
+            detail_key: `page_${pageNumber}`,
+            detail_value: visualSchema.primaryScene, // Full 1500-char primary scene
+            page_first_seen: pageNumber,
+            page_last_seen: pageNumber,
+            visual_elements: {
+              storyText: storyText.substring(0, 200),
+              pageNumber,
+              timestamp: new Date().toISOString(),
+              fullSchema: {
+                backgroundColor: visualSchema.backgroundColor,
+                lighting: visualSchema.lighting,
+                composition: visualSchema.composition,
+                setting: visualSchema.setting,
+                mood: visualSchema.mood,
+                style: visualSchema.style,
+                secondaryCharacters: visualSchema.secondaryCharacters,
+                objects: visualSchema.objects
+              }
+            }
+          });
+        
+        if (insertError) {
+          console.warn(`⚠️ Failed to save primary scene (non-fatal):`, insertError);
+        } else {
+          console.log(`💾 PRIMARY_SCENE_SAVED: Page ${pageNumber} stored for continuity`);
+        }
+      } catch (error) {
+        console.warn(`⚠️ Exception during primary scene storage (non-fatal):`, error);
       }
     }
 
