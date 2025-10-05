@@ -315,11 +315,115 @@ function getSkinBySkintone(skinTone: string, culturalContext: string | null = nu
   return LEAN_SKIN_TONES[normalized] || LEAN_SKIN_TONES['medium'];
 }
 
+// ========== AFRICAN AMERICAN CULTURAL ARRAYS (INLINE) ==========
+const AFRICAN_AMERICAN_HAIR_INLINE = {
+  boys: [
+    "wearing a curly top fade with perfectly defined coils on top, crisp line-up around the edges, and smooth fade transitions down the sides and back",
+    "wearing twist sponge curls with tight coil definition, fresh line-up with sharp edges, and tapered sides with natural texture",
+    "wearing a high top fade with voluminous textured crown, geometric side part, and precision-cut fade gradation",
+    "wearing starter dreads in neat sections with clean parting lines, natural root texture, and expertly shaped perimeter",
+    "wearing a buzz cut with intricate geometric designs carved into the sides, crisp line-up, and smooth scalp fade",
+    "wearing a classic flat top with perfectly squared edges, uniform height across the crown, and sharp side fade transitions",
+    "wearing a caesar cut with deep 360 waves, brush pattern definition, and clean hairline shaping all around",
+    "wearing lined-up curls with natural coil springs, precision edge work, and graduated fade from crown to neckline",
+    "wearing a tapered afro with rounded natural shape, soft textured crown, and gradually shortened sides and back",
+    "wearing a modern pompadour fade with curly volume swept upward, skin fade sides, and detailed edge definition"
+  ],
+  girls: [
+    "wearing a full voluminous afro with authentic coily texture, natural 4B-4C curl pattern, rounded dome shape, dense hair distribution, individual curl spirals visible, matte finish texture, proper afro proportions, natural hair movement",
+    "wearing individual box braids with distinct square sectioning, each braid separately defined and visible, geometric parting pattern, multiple separate braided units, detailed individual braid texture, professional sectioning technique, natural or vibrant color variations",
+    "wearing cornrow braids in straight parallel rows, hair woven tightly against scalp, clean geometric parts showing scalp between rows, traditional African braiding technique, individual row definition, scalp-hugging pattern",
+    "wearing defined twist-out curls with natural curl pattern, bouncy texture, individual curl definition, soft volume, natural hair movement",
+    "wearing well-maintained locs with natural texture, individual strand definition, mature lock formation, organic hair pattern, cultural significance, photorealistic hair texture",
+    "wearing natural wash-and-go curls with defined curl pattern, bouncy texture, individual curl strands, soft volume, natural movement, salon-quality finish",
+    "wearing an elegant flat twist updo with precise parting, neat twisting pattern, decorative arrangement, formal styling, detailed texture work, individual strand definition",
+    "wearing a sleek protective bun with smooth edges, neat hair arrangement, polished finish, professional styling, clean part lines, natural hair movement",
+    "wearing a silky smooth silk press with glossy shine, pin-straight texture, individual strand definition, heat-pressed perfection, natural movement, luminous finish, silk-pressed smoothness",
+    "wearing bone straight relaxed hair with sleek texture, ultra-smooth finish, perfect alignment, chemical straightening results, glossy appearance, flowing movement, chemically straightened texture",
+    "wearing a precision-cut relaxed bob with blunt edges, smooth straight texture, professional salon finish, geometric cut lines, polished styling, professional salon results",
+    "wearing layered relaxed hair with dimensional cutting, smooth straight texture, professional layers, voluminous styling, salon-quality finish, glossy straight hair finish",
+    "wearing hot-pressed straight hair with curled ends, vintage styling technique, smooth shaft with bouncy curl tips, classic salon finish, heat-styled perfection",
+    "wearing a sleek relaxed ponytail with smooth edges, straight hair texture, polished finish, tight hair control, professional styling, light reflection on hair",
+    "wearing silk-pressed hair with clean side part, glossy straight texture, precise parting line, smooth flowing hair, salon-quality finish, glossy hair shine",
+    "wearing relaxed hair with vintage bump styling, smooth straight texture, retro volume technique, polished finish, classic salon look, natural hair highlights",
+    "wearing thermally straightened hair with heat-pressed texture, smooth alignment, individual strand definition, professional hot tool finish, luminous hair finish",
+    "wearing a relaxed wrap hairstyle with smooth curved styling, salon wrap technique, sleek finish, dimensional movement, professional hair wrapping, professional salon results",
+    "wearing afro puffs hairstyle with twin high-positioned hair puffs, natural coily texture pattern, symmetrical rounded shape, authentic Black hair structure, voluminous curl clusters, defined individual strands, traditional afro hair styling",
+    "wearing long pigtails with curled ends, flowing length with bouncy spiral curls, symmetrical pigtail placement, smooth hair shaft with defined curl tips, glossy hair shine"
+  ]
+};
+
+const AFRICAN_AMERICAN_FACIAL_FEATURES_INLINE = [
+  "light brown skin tone with warm brown eyes and a bright infectious smile",
+  "light brown skin tone with hazel-green eyes and gentle dimples when smiling",
+  "light brown skin tone with amber eyes and expressive eyebrows",
+  "caramel skin tone with deep chocolate eyes and a confident cheerful expression",
+  "caramel skin tone with hazel eyes with golden flecks and soft rounded cheeks",
+  "caramel skin tone with bright brown eyes and an inquisitive thoughtful look",
+  "honey complexion with golden brown eyes and a playful mischievous grin",
+  "honey complexion with warm brown eyes and graceful bone structure",
+  "honey complexion with hazel eyes and a warm welcoming expression",
+  "warm beige skin with dark honey-colored eyes and animated joyful features",
+  "warm beige skin with hazel-green eyes and gentle dimples",
+  "light caramel complexion with rich coffee-colored eyes and expressive eyebrows",
+  "medium brown skin tone with warm brown eyes and a bright infectious smile",
+  "medium brown skin tone with hazel eyes with golden flecks and gentle dimples when smiling",
+  "medium brown skin tone with deep amber eyes and expressive eyebrows",
+  "cocoa skin tone with dark chocolate eyes and a confident cheerful expression",
+  "cocoa skin tone with hazel-green eyes and soft rounded cheeks",
+  "cocoa skin tone with bright brown eyes and an inquisitive thoughtful look",
+  "warm brown complexion with golden brown eyes and a playful mischievous grin",
+  "warm brown complexion with rich coffee-colored eyes and graceful bone structure",
+  "chestnut skin tone with hazel eyes and a warm welcoming expression",
+  "chestnut skin tone with warm brown eyes and animated joyful features",
+  "amber skin tone with dark honey-colored eyes and gentle dimples",
+  "amber skin tone with hazel-green eyes and expressive eyebrows",
+  "deep brown skin tone with warm brown eyes and a bright infectious smile",
+  "deep brown skin tone with dark chocolate eyes and gentle dimples when smiling",
+  "deep brown skin tone with deep amber eyes and expressive eyebrows",
+  "rich chocolate complexion with hazel eyes with golden flecks and a confident cheerful expression",
+  "rich chocolate complexion with bright brown eyes and soft rounded cheeks",
+  "rich chocolate complexion with golden brown eyes and an inquisitive thoughtful look",
+  "dark brown skin tone with rich coffee-colored eyes and a playful mischievous grin",
+  "dark brown skin tone with warm brown eyes and graceful bone structure",
+  "ebony skin tone with dark honey-colored eyes and a warm welcoming expression",
+  "ebony skin tone with hazel-green eyes and animated joyful features",
+  "deep mahogany complexion with hazel eyes and gentle dimples",
+  "deep mahogany complexion with deep amber eyes and expressive eyebrows"
+];
+
+// Enhanced getHairBySkintone with African American support
+function getHairBySkintoneEnhanced(skinTone: string, sessionId: string, culturalProfile: string, avatarType: string): string {
+  if (culturalProfile === 'african-american') {
+    const gender = avatarType === 'girl' ? 'girls' : 'boys';
+    const hairOptions = AFRICAN_AMERICAN_HAIR_INLINE[gender] || AFRICAN_AMERICAN_HAIR_INLINE['boys'];
+    const seed = sessionId ? sessionId.charCodeAt(0) % hairOptions.length : 0;
+    return hairOptions[seed];
+  }
+  
+  return getHairBySkintone(skinTone, sessionId);
+}
+
+// Enhanced getSkinBySkintone with African American support
+function getSkinBySkintoneEnhanced(skinTone: string, sessionId: string, culturalProfile: string): string {
+  if (culturalProfile === 'african-american') {
+    const seed = sessionId ? sessionId.charCodeAt(0) % AFRICAN_AMERICAN_FACIAL_FEATURES_INLINE.length : 0;
+    return AFRICAN_AMERICAN_FACIAL_FEATURES_INLINE[seed];
+  }
+  
+  return getSkinBySkintone(skinTone, sessionId);
+}
+
 function inlineDetectCultural(userInfo: any, avatarIdentity: any): string {
-  const explicitEthnicity = avatarIdentity?.ethnicity || userInfo?.ethnicity;
-  if (explicitEthnicity === 'African American' || explicitEthnicity === 'african-american') {
+  const skinTone = avatarIdentity?.skinTone || userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium';
+  const language = userInfo?.nativeLanguage || userInfo?.language || 'en';
+  
+  // Dark skin + supported languages (en/fr/es/pt) get African American enhancements
+  if ((skinTone === 'dark' || skinTone === 'darker') && 
+      ['en', 'fr', 'es', 'pt'].includes(language.toLowerCase())) {
     return 'african-american';
   }
+  
   return 'general';
 }
 
@@ -482,8 +586,9 @@ async function handleTemplateABRequest(req: Request): Promise<Response> {
     const age = userInfo.age || '8 years old';
     const ethnicity = deriveRegionalEthnicity(userInfo, avatarIdentity);
     const skinTone = avatarIdentity.skinTone || 'medium';
-    const hair = getHairBySkintone(skinTone, sessionId);
-    const features = getSkinBySkintone(skinTone, culturalProfile === 'african-american' ? 'african-american' : null);
+    const avatarType = avatarIdentity.type || 'child';
+    const hair = getHairBySkintoneEnhanced(skinTone, sessionId, culturalProfile, avatarType);
+    const features = getSkinBySkintoneEnhanced(skinTone, sessionId, culturalProfile);
     
     // Attempt to load CCS for Mode A
     let positivePrompt: string;
@@ -496,44 +601,45 @@ async function handleTemplateABRequest(req: Request): Promise<Response> {
         const ccsModule = await import("../_shared/CharacterConsistencyService.js");
         const ccs = ccsModule.characterConsistencyService;
         
-        // Try to get cultural bundle from CCS
+        // Try to get cultural enhancements from CCS
         try {
-          const bundle = await ccs.getCulturalBundle(sessionId, userInfo);
+          const characterName = character;
+          const bundle = await ccs.getCulturalEnhancements(userInfo, sessionId, characterName);
           positivePrompt = `Narrative: ${storyText}.
-Character Description: ${character} ${age}, ${ethnicity}, ${bundle.hair || hair}, ${bundle.facialFeatures || features}.
+Character Description: ${character} ${age}, ${ethnicity}, ${bundle.hair || hair}, ${bundle.features || features}.
 Action: standing in a friendly pose.
-Context: ${bundle.culturalContext || 'diverse community setting'}.
+Context: diverse community setting.
 Brand Suffix: ${styleFramework.frameworkPrompt}.`;
           console.log(`✅ Tier 2.5A: Using CCS cultural bundle`);
         } catch (ccsError: any) {
-          console.warn(`⚠️ CCS getCulturalBundle failed, escalating to Mode B inline logic:`, ccsError.message);
-          // Escalate to inline Mode B logic
+          console.warn(`⚠️ CCS getCulturalEnhancements failed, escalating to Mode B inline logic:`, ccsError.message);
+          // Escalate to inline Mode B logic (now with enhanced cultural intelligence)
           positivePrompt = `Narrative: ${storyText}.
 Subject: ${character}, ${age}, ${ethnicity}, ${hair}, ${features}.
 Action: standing in a friendly pose.
 Context: diverse community setting.
 Brand Suffix: ${styleFramework.frameworkPrompt}.`;
-          console.log(`✅ Tier 2.5A→B: Escalated to inline fallback`);
+          console.log(`✅ Tier 2.5A→B: Escalated to inline fallback with enhanced cultural intelligence`);
         }
       } catch (importError: any) {
         console.warn(`⚠️ CCS import failed, using inline Mode B logic:`, importError.message);
-        // Use inline Mode B logic
+        // Use inline Mode B logic (now with enhanced cultural intelligence)
         positivePrompt = `Narrative: ${storyText}.
 Subject: ${character}, ${age}, ${ethnicity}, ${hair}, ${features}.
 Action: standing in a friendly pose.
 Context: diverse community setting.
 Brand Suffix: ${styleFramework.frameworkPrompt}.`;
-        console.log(`✅ Tier 2.5A→B: Using inline fallback`);
+        console.log(`✅ Tier 2.5A→B: Using inline fallback with enhanced cultural intelligence`);
       }
     } else {
-      console.log(`🚀 Processing Tier 2.5B: Lightweight template`);
-      // Mode B: Pure inline, no CCS imports
+      console.log(`🚀 Processing Tier 2.5B: Lightweight template with cultural intelligence`);
+      // Mode B: Pure inline with enhanced cultural intelligence
       positivePrompt = `Narrative: ${storyText}.
 Subject: ${character}, ${age}, ${ethnicity}, ${hair}, ${features}.
 Action: standing in a friendly pose.
 Context: diverse community setting.
 Brand Suffix: ${styleFramework.frameworkPrompt}.`;
-      console.log(`✅ Tier 2.5B: Using pure inline template`);
+      console.log(`✅ Tier 2.5B: Using pure inline template with cultural intelligence`);
     }
     
     // Generate negative prompt
@@ -552,28 +658,21 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
     
     return createResponse({
       success: true,
-      imageURL,
-      complexity: mode,
-      positivePrompt,
-      negativePrompt,
-      templateData: {
-        character,
-        age,
-        ethnicity,
-        hair,
-        features,
-        culturalProfile
-      }
+      imageUrl: imageURL,
+      tier: `tier-2.5${mode}`,
+      service: SERVICE_NAME
     });
-    
   } catch (error: any) {
-    console.error('❌ Template AB handler error:', error);
-    return createResponse({
-      success: false,
-      error: error.message,
-      service: SERVICE_NAME,
-      timestamp: new Date().toISOString()
-    }, 500);
+    console.error(`❌ Template AB error:`, error);
+    
+    return createResponse(
+      {
+        success: false,
+        error: error.message || 'Unknown error',
+        service: SERVICE_NAME
+      },
+      500
+    );
   }
 }
 
