@@ -381,12 +381,34 @@ export class CharacterConsistencyService {
     if (this.tier25Cache) return this.tier25Cache;
 
     const startTime = performance.now();
+    
+    // Try importing from shared directory with multiple fallback paths
+    let vocabularyModule = null;
+    let importPath = null;
+    
     try {
-      const vocabularyModule = await import('./tier25Vocabulary.js');
+      vocabularyModule = await import('../_shared/tier25Vocabulary.js');
+      importPath = '../_shared/tier25Vocabulary.js';
+      console.log('✅ [VENDOR_CCS] Loaded tier25Vocabulary from ../_shared/');
+    } catch (error1) {
+      console.warn('⚠️ [VENDOR_CCS] Failed to load from ../_shared/, trying ../../_shared/', error1.message);
+      try {
+        vocabularyModule = await import('../../_shared/tier25Vocabulary.js');
+        importPath = '../../_shared/tier25Vocabulary.js';
+        console.log('✅ [VENDOR_CCS] Loaded tier25Vocabulary from ../../_shared/');
+      } catch (error2) {
+        console.error('❌ [VENDOR_CCS] Failed to load tier25Vocabulary from both paths, using ESSENTIAL_VOCABULARY fallback');
+        this.tier25CacheLoadTime = performance.now() - startTime;
+        this.tier25Cache = { colors: [], actions: [], objects: [], clothing: [], settings: [], relationships: [], animals: [], contextDetection: { indoor: [], outdoor: [] } };
+        return this.tier25Cache;
+      }
+    }
+    
+    try {
       const { TIER_25_UNIFIED_VOCABULARY_EXTENDED } = vocabularyModule;
       
       if (!TIER_25_UNIFIED_VOCABULARY_EXTENDED) {
-        throw new Error('TIER_25_UNIFIED_VOCABULARY_EXTENDED not found');
+        throw new Error('TIER_25_UNIFIED_VOCABULARY_EXTENDED not found in module');
       }
       
       // Cache TIER_25_EXTENDED (240 words, instant load)
@@ -412,11 +434,11 @@ export class CharacterConsistencyService {
       };
       
       this.tier25CacheLoadTime = performance.now() - startTime;
-      console.log(`✅ TIER_25_EXTENDED cached in ${this.tier25CacheLoadTime.toFixed(2)}ms: ${this.tier25Cache.objects.length} objects, ${this.tier25Cache.colors.length} colors, ${this.tier25Cache.actions.length} actions (~6KB)`);
+      console.log(`✅ [VENDOR_CCS] TIER_25_EXTENDED cached from ${importPath} in ${this.tier25CacheLoadTime.toFixed(2)}ms: ${this.tier25Cache.objects.length} objects, ${this.tier25Cache.colors.length} colors, ${this.tier25Cache.actions.length} actions (~6KB)`);
       return this.tier25Cache;
     } catch (error) {
       this.tier25CacheLoadTime = performance.now() - startTime;
-      console.error('❌ CCS: Failed to load TIER_25_EXTENDED', error);
+      console.error('❌ [VENDOR_CCS] Failed to parse TIER_25_EXTENDED from module', error);
       this.tier25Cache = { colors: [], actions: [], objects: [], clothing: [], settings: [], relationships: [], animals: [], contextDetection: { indoor: [], outdoor: [] } };
       return this.tier25Cache;
     }
@@ -430,8 +452,30 @@ export class CharacterConsistencyService {
     if (this.vocabulary) return this.vocabulary;
 
     const startTime = performance.now();
+    
+    // Try importing from shared directory with multiple fallback paths
+    let vocabularyModule = null;
+    let importPath = null;
+    
     try {
-      const vocabularyModule = await import('./tier25Vocabulary.js');
+      vocabularyModule = await import('../_shared/tier25Vocabulary.js');
+      importPath = '../_shared/tier25Vocabulary.js';
+      console.log('✅ [VENDOR_CCS] Loaded tier25Vocabulary (full) from ../_shared/');
+    } catch (error1) {
+      console.warn('⚠️ [VENDOR_CCS] Failed to load full vocab from ../_shared/, trying ../../_shared/', error1.message);
+      try {
+        vocabularyModule = await import('../../_shared/tier25Vocabulary.js');
+        importPath = '../../_shared/tier25Vocabulary.js';
+        console.log('✅ [VENDOR_CCS] Loaded tier25Vocabulary (full) from ../../_shared/');
+      } catch (error2) {
+        console.error('❌ [VENDOR_CCS] Failed to load full vocabulary from both paths, using ESSENTIAL_VOCABULARY fallback');
+        this.fullVocabLoadTime = performance.now() - startTime;
+        this.vocabulary = CharacterConsistencyService.ESSENTIAL_VOCABULARY;
+        return this.vocabulary;
+      }
+    }
+    
+    try {
       if (!vocabularyModule || typeof vocabularyModule !== 'object') {
         throw new Error('Invalid vocabulary module structure');
       }
@@ -470,11 +514,11 @@ export class CharacterConsistencyService {
     this.vocabulary.CLOTHING_DETECTION_KEYWORDS = this.vocabulary.clothing;
     
     this.fullVocabLoadTime = performance.now() - startTime;
-    console.log(`✅ UNIVERSAL_VOCAB lazy-loaded in ${this.fullVocabLoadTime.toFixed(2)}ms: ${this.vocabulary.objects.length} objects, ${this.vocabulary.colors.length} colors (~15KB)`);
+    console.log(`✅ [VENDOR_CCS] UNIVERSAL_VOCAB lazy-loaded from ${importPath} in ${this.fullVocabLoadTime.toFixed(2)}ms: ${this.vocabulary.objects.length} objects, ${this.vocabulary.colors.length} colors (~15KB)`);
     return this.vocabulary;
     } catch (error) {
       this.fullVocabLoadTime = performance.now() - startTime;
-      console.error('❌ CCS: Failed to load UNIVERSAL_VOCAB', error);
+      console.error('❌ [VENDOR_CCS] Failed to parse UNIVERSAL_VOCAB from module', error);
       this.vocabulary = CharacterConsistencyService.ESSENTIAL_VOCABULARY;
       return this.vocabulary;
     }
