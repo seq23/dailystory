@@ -1824,7 +1824,15 @@ export class CharacterConsistencyService {
   buildFullCulturalBundle(skinTone, sessionId, userInfo) {
     const normalizedTone = (skinTone || 'medium').toLowerCase();
     const language = userInfo?.language || 'en';
-    const gender = userInfo?.avatarType?.includes('girl') ? 'girls' : 'boys';
+    const gender = (userInfo?.avatar?.type === 'girl' || userInfo?.avatarType === 'girl') ? 'girls' : 'boys';
+    
+    console.log(`🎯 [GENDER_DEBUG] buildFullCulturalBundle gender determination:`, {
+      userInfo_avatarType: userInfo?.avatarType,
+      userInfo_avatar_type: userInfo?.avatar?.type,
+      determined_gender: gender,
+      skinTone: normalizedTone,
+      sessionId
+    });
     
     // STANDARDIZED: Check if user qualifies for African American cultural enhancements
     // Must match detectEthnicity() criteria exactly
@@ -1835,6 +1843,10 @@ export class CharacterConsistencyService {
     if (qualifiesForAfricanAmericanEnhancements) {
       // Use complete African American arrays (30 hair + 36 features)
       const hairOptions = CharacterConsistencyService.AFRICAN_AMERICAN_HAIR_INLINE[gender];
+      
+      if (!hairOptions || hairOptions.length === 0) {
+        console.error(`🚨 [HAIR_ARRAY_ERROR] No hair options for gender="${gender}", skinTone="${normalizedTone}". This should never happen - check AFRICAN_AMERICAN_HAIR_INLINE data structure.`);
+      }
       const featureOptions = CharacterConsistencyService.AFRICAN_AMERICAN_FACIAL_FEATURES_INLINE;
       
       return {
