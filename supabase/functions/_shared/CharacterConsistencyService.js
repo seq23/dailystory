@@ -1490,7 +1490,7 @@ export class CharacterConsistencyService {
         // CRITICAL: Use createVendorFirstSupabaseClient() for instant availability
         // Skips 4 CDN cascade attempts (28 seconds timeout) - goes straight to vendor
         // CCS needs .upsert()/.single() methods from vendor bundle for database ops
-        const resilientModule = await import('./resilientLoader.ts');
+        const resilientModule = await import('./resilientLoader.js');
         if (resilientModule?.createVendorFirstSupabaseClient && typeof resilientModule.createVendorFirstSupabaseClient === 'function') {
           this.supabase = await resilientModule.createVendorFirstSupabaseClient();
           console.log('✅ [VENDOR_FIRST] Supabase client created for CharacterConsistencyService (0ms network delay)');

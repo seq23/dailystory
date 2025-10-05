@@ -3,7 +3,7 @@
  * Manages cross-service cache invalidation and health monitoring
  */
 
-import { clearImportCache, getCacheStatus, getLoaderHealth } from './resilientLoader.ts';
+import { clearImportCache, getCacheStatus, getLoaderHealth } from './resilientLoader.js';
 
 interface CacheHealth {
   timestamp: string;
@@ -124,7 +124,7 @@ class CacheCoordinator {
     for (const service of criticalServices) {
       try {
         // This will populate the import cache
-        const { memoizedImport } = await import('./resilientLoader.ts');
+        const { memoizedImport } = await import('./resilientLoader.js');
         await memoizedImport(service);
         console.log(`✅ Warmed cache for ${service}`);
       } catch (error) {

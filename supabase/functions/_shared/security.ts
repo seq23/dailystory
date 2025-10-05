@@ -4,7 +4,7 @@
  * Provides JWT validation, rate limiting, security headers, and audit logging
  */
 
-import { memoizedImport, createVendorFirstSupabaseClient } from '../_shared/resilientLoader.ts';
+import { memoizedImport, createVendorFirstSupabaseClient } from '../_shared/resilientLoader.js';
 
 // Enhanced CORS headers with security policies
 export const secureHeaders = {

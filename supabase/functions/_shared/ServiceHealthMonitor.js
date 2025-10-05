@@ -15,7 +15,7 @@ export class ServiceHealthMonitor {
   // Basic ping test for database
   async pingDatabase() {
     try {
-      const { memoizedImport, createVendorFirstSupabaseClient } = await import('./resilientLoader.ts');
+      const { memoizedImport, createVendorFirstSupabaseClient } = await import('./resilientLoader.js');
       const supabase = await createVendorFirstSupabaseClient();
       
       const { error } = await supabase.from('profiles').select('id').limit(1);
