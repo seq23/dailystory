@@ -347,7 +347,7 @@ async function generateCompleteVisualSchema(
 
 JSON RESPONSE:
 {
-  "primaryScene": "Character name, age X, ethnicity, in rich, detailed visual scene description for image generation with main character description (verbatim hair and features provided), setting, key character actions, any secondary characters including animals, atmosphere, and comprehensive visual details",
+  "primaryScene": "Character name, age X, (weave ethnicity in here) in rich, detailed visual scene description for image generation with main character description (verbatim hair and skin / features provided weaved in naturally), setting, key character actions, any secondary characters including animals, atmosphere, and comprehensive visual details",
   "backgroundColor": "Background color description (e.g., 'warm golden forest light', 'cool blue sky', 'cozy indoor amber')",
   "lighting": "Lighting description (e.g., 'golden hour sunlight', 'soft morning light', 'magical twilight glow')",
   "composition": "Visual composition description (e.g., 'centered character with forest background', 'close-up with blurred garden')",
@@ -364,7 +364,7 @@ JSON RESPONSE:
 RULES:
 1. Story text priority: absolute driver - never contradict visual details
 2. Main action extraction: focus on most visually significant action from story text
-3. Character appearance: use provided appearance data exactly as given WORD FOR WORD IN A SINGLE STRING, enhance unspecified details reasonably (e.g., if hair color provided use it, if not provided skip it or just describe hair styling)
+3. Character appearance: use provided appearance data VERBATIM (word-for-word ethnicity, hair, skin tone) but weave it naturally into flowing prose using connecting phrases like "with her" or "who has" - NEVER simplify core appearance details
 4. Character poses and positioning: infer body positions from story actions ('wakes up' = sitting up in bed with arms stretched, 'runs' = dynamic running pose, 'reads' = sitting/lying with book, 'looks up' = head tilted upward, 'plays' = active engaging pose)
 5. Singular/plural intelligence: "a bird" = 1 bird, "the bird" = 1 bird, "birds" = 2-4 birds, "many/lots of birds" = 5+ birds
 6. Extract secondary characters: HUMANS (mom, dad, friend, teacher, people), PETS (household animals like dog, cat), ANIMAL CHARACTERS (talking animals, fantasy creatures with speaking roles in the story)
@@ -412,7 +412,7 @@ STORY TEXT:
 PREVIOUS SCENE (for visual consistency):
 "${previousPrimaryScene || 'None - this is the first scene'}"
 
-Generate a comprehensive scene with complete visual elements including background, lighting, composition, setting, mood, style, secondary characters (categorized as humans vs pets), and key objects. Maintain character and setting continuity while showcasing the current page's action. CRITICAL: The primaryScene must include the complete CHARACTER APPEARANCE string (hair and skin tone) exactly as provided, word-for-word, you may not simplify it but you can enhance and weave it into the primary scene naturally.`;
+Generate a comprehensive scene with complete visual elements including background, lighting, composition, setting, mood, style, secondary characters (categorized as humans vs pets), and key objects. Maintain character and setting continuity while showcasing the current page's action. CRITICAL: The primaryScene must include the complete CHARACTER APPEARANCE string (ethnicity, hair, and skin tone) exactly as provided, word-for-word, you may not simplify it but you can enhance and weave it into the primary scene naturally. Place ethnicity after age.`;
 
   try {
     // Retry with jitter for 429/503 errors
