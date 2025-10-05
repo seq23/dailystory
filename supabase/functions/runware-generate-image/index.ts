@@ -5,6 +5,8 @@
 // ✅ BUNDLER HINT: Force CCS inclusion in deployment bundle (dynamic import used inside handler)
 import { characterConsistencyService as _ccsHint } from "../_shared/CharacterConsistencyService.js";
 
+// CCS boot status tracking (referenced throughout orchestrator metadata)
+const ccsBootStatus = { loaded: false, error: null };
 
 // ============================================================================
 // 🎯 ORCHESTRATOR: RESILIENT IMAGE GENERATION ORCHESTRATOR
