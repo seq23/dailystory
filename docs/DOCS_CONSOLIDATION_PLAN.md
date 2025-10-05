@@ -6,6 +6,31 @@
 
 ---
 
+## 🛡️ CRITICAL SNAPSHOTS - NEVER CONSOLIDATE
+
+**These files capture fully operational system states and are PERMANENTLY PROTECTED:**
+
+### IMAGE_GENERATION_SYSTEM_SNAPSHOT_2025_10_04.md ⭐
+- **Status**: 🔒 **PROTECTED** - Never consolidate, never delete
+- **Date**: October 4, 2025
+- **Significance**: Captures FULLY OPERATIONAL image generation system
+- **Details**:
+  - TypeScript rewrite of runware-template-ab (eliminates bundling failures)
+  - 4-tier cascade architecture documented
+  - 23ms boot performance (all functions < 30ms)
+  - ~95% success rate achieved
+  - Single-file architecture milestone
+- **Backup Location**: `docs/archive/critical-snapshots/IMAGE_GENERATION_SYSTEM_SNAPSHOT_2025_10_04_BACKUP.md`
+- **Reason for Protection**: This snapshot documents the point where "everything is working finally" (user quote). It represents a stable, production-ready state that must be preserved as a historical reference point and rollback target.
+
+**Protection Rules**:
+1. ✅ Original file remains in `docs/` directory (never moved)
+2. ✅ Backup copy in `docs/archive/critical-snapshots/`
+3. ✅ Explicitly excluded from ALL consolidation phases
+4. ✅ Referenced in DOCS_MASTER_INDEX as protected
+
+---
+
 ## 📊 ACTUAL FILE INVENTORY
 
 ### Files with "*FIX*" pattern (27 files found)

@@ -17,6 +17,30 @@ These documents contain hardcoded business requirements and cultural authenticit
 
 ---
 
+## 🛡️ PROTECTED: Critical System Snapshots
+
+**These capture fully operational system states and must NEVER be consolidated or deleted:**
+
+### IMAGE_GENERATION_SYSTEM_SNAPSHOT_2025_10_04.md ⭐
+- **Status**: 🔒 **PERMANENTLY PROTECTED**
+- **Location**: `docs/IMAGE_GENERATION_SYSTEM_SNAPSHOT_2025_10_04.md` (primary)
+- **Backup**: `docs/archive/critical-snapshots/IMAGE_GENERATION_SYSTEM_SNAPSHOT_2025_10_04_BACKUP.md`
+- **Date**: October 4, 2025
+- **Significance**: Documents the fully operational image generation system
+  - TypeScript rewrite of runware-template-ab (eliminates bundling failures)
+  - 4-tier cascade working perfectly  
+  - 23ms boot performance milestone
+  - ~95% success rate achieved
+- **Protection Reason**: "Everything is working finally" - this is a rollback point and historical reference
+
+**Protection Policy for Critical Snapshots**:
+- ✅ Never consolidate into other documents
+- ✅ Never delete or archive the primary copy
+- ✅ Automatic backup in `docs/archive/critical-snapshots/`
+- ✅ Excluded from ALL consolidation phases
+
+---
+
 ## 📋 CONSOLIDATION RECOMMENDATIONS
 
 ### 🔴 HIGH PRIORITY: Dated Snapshot Consolidation
