@@ -265,7 +265,7 @@ async function bindTierLogger(
 
   try {
     const [{ createVendorFirstSupabaseClient }, tierLogging] = await Promise.all([
-      memoizedImport("../_shared/resilientLoader.ts"),
+      memoizedImport("../_shared/resilientLoader.js"),
       memoizedImport("../_shared/tierLogging.js"),
     ]);
 
@@ -801,7 +801,7 @@ async function processInlinedTier1(
   let aiDebugSchema: any = null;
   try {
     logTier1Step("AI Scene Creator Call", "attempt", "Invoking ai-visual-scene-creator");
-    const { createVendorFirstSupabaseClient } = await memoizedImport("../_shared/resilientLoader.ts");
+    const { createVendorFirstSupabaseClient } = await memoizedImport("../_shared/resilientLoader.js");
     const supabase = await createVendorFirstSupabaseClient();
 
     // Use raw fetch with proper AbortController signal (supabase.functions.invoke ignores signal)
@@ -1171,7 +1171,7 @@ Deno.serve(async (req) => {
       // CRITICAL: Lazy load IdempotencyMemory with fallback to prevent boot failures
       let IdempotencyMemory: any = null;
       try {
-        IdempotencyMemory = await import("../_shared/IdempotencyMemory.ts");
+        IdempotencyMemory = await import("../_shared/IdempotencyMemory.js");
         console.log("✅ IdempotencyMemory loaded");
       } catch (error) {
         console.warn("⚠️ IdempotencyMemory unavailable, proceeding without deduplication:", error);
@@ -1274,7 +1274,7 @@ Deno.serve(async (req) => {
       try {
         // CRITICAL: Use direct relative import for local files (ERROR-048 prevention)
         // Never use new URL(..., import.meta.url) for local TypeScript files in Deno edge functions
-        ({ memoizedImport } = await import("../_shared/resilientLoader.ts"));
+        ({ memoizedImport } = await import("../_shared/resilientLoader.js"));
         usingResilientLoader = true;
         console.log(`✅ [CDN_HEALTH] Using resilient loader with multi-CDN fallback support`);
       } catch (loaderError) {
@@ -1680,7 +1680,7 @@ Deno.serve(async (req) => {
         }
 
         // Create Supabase client once for all fallback attempts
-        const { createVendorFirstSupabaseClient } = await memoizedImport("../_shared/resilientLoader.ts");
+        const { createVendorFirstSupabaseClient } = await memoizedImport("../_shared/resilientLoader.js");
         const internalSupabase = await createVendorFirstSupabaseClient();
 
         // Hoist response variables to outer scope for proper access across try/catch blocks

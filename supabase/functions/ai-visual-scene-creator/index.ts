@@ -884,7 +884,7 @@ serve(async (req) => {
     
     // ============= IDEMPOTENCY: Coalesce duplicate requests =============
     // Lazy load IdempotencyMemory to prevent boot failures
-    const IdempotencyMemory = await import("../_shared/IdempotencyMemory.ts");
+    const IdempotencyMemory = await import("../_shared/IdempotencyMemory.js");
     
     const idempotencyKey = IdempotencyMemory.generateKey({
       sessionId,
