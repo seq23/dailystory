@@ -923,6 +923,8 @@ export class CharacterConsistencyService {
     
     console.log(`📊 Total objects detected: ${detections.length} (${detections.map(d => d.source).join(', ')})`);
     
+    return detections;
+  }
 
   /**
    * PHASE 1: Unified secondary character detection (humans + animals)
