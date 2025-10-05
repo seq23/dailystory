@@ -10,11 +10,11 @@ const path = require('path');
 async function main() {
   try {
     console.log('🚀 Starting complete file copy operation');
-    console.log('🎯 Target: Copy complete ai-visual-scene-creator/index.js to ai-visual-scene-creator.js.temp');
+    console.log('🎯 Target: Copy CharacterConsistencyService.js to runware-generate-image/CharacterConsistencyServiceVendor.js');
     console.log('==========================================');
     
-    const inputPath = path.join(__dirname, '..', 'supabase', 'functions', 'ai-visual-scene-creator', 'index.js');
-    const outputPath = path.join(__dirname, '..', 'ai-visual-scene-creator.js.temp');
+    const inputPath = path.join(__dirname, '..', 'supabase', 'functions', '_shared', 'CharacterConsistencyService.js');
+    const outputPath = path.join(__dirname, '..', 'supabase', 'functions', 'runware-generate-image', 'CharacterConsistencyServiceVendor.js');
     
     console.log('Source:', inputPath);
     console.log('Target:', outputPath);
