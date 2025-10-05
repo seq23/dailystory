@@ -238,6 +238,20 @@ class SessionObjectManifest {
   }
 
   /**
+   * Clear objects for specific page (prevents stale cache entries)
+   */
+  clearObjectsForPage(pageNumber) {
+    const objectsToRemove = [];
+    for (const [name, obj] of this.activeObjects) {
+      if (obj.lastPage === pageNumber) {
+        objectsToRemove.push(name);
+      }
+    }
+    objectsToRemove.forEach(name => this.activeObjects.delete(name));
+    console.log(`🧹 Cleared ${objectsToRemove.length} objects for page ${pageNumber}`);
+  }
+
+  /**
    * Clear manifest for new story
    */
   clear() {
@@ -1255,6 +1269,12 @@ export class CharacterConsistencyService {
     const manifest = this.getSessionManifest(sessionId);
     manifest.setPageNumber(pageNumber);
 
+    // CRITICAL FIX: Clear stale page-scoped cache and manifest objects
+    const cacheKey = `${sessionId}_colored_objects_page_${pageNumber}`;
+    this.storyCache.memoryCache.delete(cacheKey);
+    manifest.clearObjectsForPage(pageNumber);
+    console.log(`🧹 Pre-detection cleanup: Cleared cache and manifest for page ${pageNumber}`);
+
     // PHASE 4: Single batch load on page 1
     if (pageNumber === 1) {
       console.log(`📊 PHASE 4: Loading complete session data for ${sessionId} (page 1 batch load)`);
@@ -1289,6 +1309,19 @@ export class CharacterConsistencyService {
 
     // PHASE 2: Batch write new detections to database
     await this.batchWriteDetections(sessionId, pageNumber, detectionResults);
+
+    // CRITICAL FIX: Force fresh colored objects into cache after detection
+    const pageObjects = manifest.getAllObjects().filter(obj => obj.lastPage === pageNumber);
+    if (pageObjects.length > 0) {
+      const freshColoredObjects = pageObjects
+        .map(obj => obj.fullDescription)
+        .filter(Boolean)
+        .join(', ');
+      
+      const cacheKey = `${sessionId}_colored_objects_page_${pageNumber}`;
+      this.storyCache.smartWrite(cacheKey, freshColoredObjects);
+      console.log(`✅ Post-detection cache write: "${freshColoredObjects}" for page ${pageNumber}`);
+    }
 
     return {
       originalText: pageText,
