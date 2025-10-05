@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-10-03T18:50:00Z - CCS vendor fallback with explicit logging + Direct Mode timeout 20s
+// DEPLOY_MARKER: 2025-10-05T22:20:00Z - Force redeploy to clear stale verifyCCSBoot reference
 
 // Inlined orchestrator logic - no more lazy loading
 

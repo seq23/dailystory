@@ -326,6 +326,31 @@ If vendor fallback does not resolve the issue:
 
 ---
 
+## Stale Bundle Redeploy (2025-10-05)
+
+### Issue
+After removing the orphaned `verifyCCSBoot()` call (lines 1105-1107 deletion), the deployed Edge Function bundle was stale and still contained the old code with the `ReferenceError: verifyCCSBoot is not defined` error at line 904.
+
+### Root Cause
+Edge Function deployments cache the built bundle. Code changes in the repository don't always trigger a fresh build unless the file's modification timestamp changes significantly.
+
+### Solution Applied
+**DEPLOY_MARKER Bump**: Changed line 1 comment from `2025-10-03T18:50:00Z` to `2025-10-05T22:20:00Z` to force a fresh build and deployment.
+
+### Verification Steps
+1. **Health Check**: GET `https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/runware-generate-image` should return 200 with no `verifyCCSBoot` errors in logs
+2. **Dry Run Test**: Send `dryRun=true` payload to confirm `TIER_1_DRY_RUN` response with proper `tier1Debug` structure
+3. **Force Tier 1 Test**: Send `forceCompleteTier1=true` payload to verify clean CCS method execution
+4. **Batch Tier Testing**: Re-run `ImageTierTester` to confirm all tiers (1, 2.5A, 2.5B, 2.5C, 2.5D) respond correctly
+
+### Expected Outcome
+- ✅ No `ReferenceError: verifyCCSBoot is not defined` in edge function logs
+- ✅ Orchestrator boots cleanly without CCS boot verification call
+- ✅ Tier 1 Force Mode works without cascade failures
+- ✅ Batch tier testing completes successfully for all tiers
+
+---
+
 **Hardening Status:** ✅ COMPLETE  
 **Documentation Status:** ✅ COMPLETE  
 **Ready for Deployment:** ✅ YES
