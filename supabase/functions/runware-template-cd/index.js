@@ -144,14 +144,19 @@ function getComplexityLevel(userInfo, templateComplexity) {
 }
 
 // Nuclear hair color mapping - lean and simple
-function getSimpleHairColor(skinTone) {
+function getSimpleHairColor(skinTone, nativeLanguage = 'en') {
+  // For dark skin + supported languages, return empty string (cultural appendage handles hair)
+  if (skinTone === 'dark' && ['en', 'fr', 'es', 'pt'].includes(nativeLanguage)) {
+    return '';
+  }
+  
   switch (skinTone) {
     case 'pale': return 'red hair';
     case 'light': return 'blonde hair';
     case 'medium': return 'brown hair';
     case 'olive': return 'dark black hair';
-    case 'dark': return 'thick textured 4C hair';
-    default: return 'brown hair'; // fallback
+    case 'dark': return 'thick textured 4C hair'; // fallback for non-supported languages
+    default: return 'brown hair';
   }
 }
 
@@ -231,7 +236,7 @@ function generateTier25C(storyText, userInfo, avatarIdentity, failedTierData = {
   // ALWAYS include physical descriptions - use structuredAvatarData or generate from skinTone
   const hasStructuredData = failedTierData?.structuredAvatarData?.skinTone && failedTierData?.structuredAvatarData?.hairColor;
   const effectiveSkinTone = hasStructuredData ? failedTierData.structuredAvatarData.skinTone : skinTone;
-  const effectiveHairColor = hasStructuredData ? failedTierData.structuredAvatarData.hairColor : getSimpleHairColor(skinTone);
+  const effectiveHairColor = hasStructuredData ? failedTierData.structuredAvatarData.hairColor : getSimpleHairColor(skinTone, nativeLanguage);
   
   // Component 2 difficulty determination for sandwich structure
   const difficulty = userInfo?.difficulty || 'medium';
@@ -244,17 +249,25 @@ function generateTier25C(storyText, userInfo, avatarIdentity, failedTierData = {
     ? ' with cheerful expression, positioned in clear foreground, fully visible, engaging with viewer'
     : '';
   
-  let characterDesc;
-  if (genderNeutralDescription) {
-    characterDesc = `${antiMergePrefix}A ${genderNeutralDescription} named ${characterName} age ${age} ${effectiveSkinTone} skin complexion with ${effectiveHairColor}${cheerfulDirective}`;
-  } else {
-    characterDesc = `${antiMergePrefix}A young ${mappedAvatarType} named ${characterName} age ${age} ${effectiveSkinTone} skin complexion with ${effectiveHairColor}${cheerfulDirective}`;
-  }
-  
-  // Add detailed cultural features for dark skin with supported languages (hair already handled above)
+  // Determine if this is dark skin + supported language case
   const activeSkinTone = failedTierData?.structuredAvatarData?.skinTone || skinTone;
-  if ((activeSkinTone.includes('dark') || activeSkinTone.includes('brown')) && ['en', 'fr', 'es', 'pt'].includes(nativeLanguage)) {
-    characterDesc += ' with authentic African American features and naturally occurring melanin-rich skin tones ranging from warm beige to warm caramel to deep ebony with appropriate warm undertones, realistic hazel-green, brown and dark brown eyes with natural depth and authentic iris patterns, genuine African American facial bone structure with appropriate nose width and lip fullness, authentic textured hair ranging from 3B to 4C curl patterns including DETAILED AND PHOTOREALISTIC natural afros, box braids, cornrows, twist-outs, or protective styles with proper hair density and realistic coil definition, accurate representation of Black features without European beauty standard alterations, natural skin luminosity with warm golden or red undertones, detailed individual hair strand texture showing authentic curl patterns and natural shine';
+  const isDarkSkinSupportedLang = (activeSkinTone.includes('dark') || activeSkinTone.includes('brown')) && ['en', 'fr', 'es', 'pt'].includes(nativeLanguage);
+  
+  let characterDesc;
+  if (isDarkSkinSupportedLang) {
+    // For dark skin + supported languages: NO skin tone or hair description, cultural appendage handles everything
+    if (genderNeutralDescription) {
+      characterDesc = `${antiMergePrefix}A ${genderNeutralDescription} named ${characterName} age ${age}${cheerfulDirective} with authentic African American features and naturally occurring melanin-rich skin tones ranging from warm beige to warm caramel to deep ebony with appropriate warm undertones, realistic hazel-green, brown and dark brown eyes with natural depth and authentic iris patterns, genuine African American facial bone structure with appropriate nose width and lip fullness, authentic textured hair ranging from 3B to 4C curl patterns including DETAILED AND PHOTOREALISTIC natural afros, box braids, cornrows, twist-outs, or protective styles with proper hair density and realistic coil definition, accurate representation of Black features without European beauty standard alterations, natural skin luminosity with warm golden or red undertones, detailed individual hair strand texture showing authentic curl patterns and natural shine`;
+    } else {
+      characterDesc = `${antiMergePrefix}A young ${mappedAvatarType} named ${characterName} age ${age}${cheerfulDirective} with authentic African American features and naturally occurring melanin-rich skin tones ranging from warm beige to warm caramel to deep ebony with appropriate warm undertones, realistic hazel-green, brown and dark brown eyes with natural depth and authentic iris patterns, genuine African American facial bone structure with appropriate nose width and lip fullness, authentic textured hair ranging from 3B to 4C curl patterns including DETAILED AND PHOTOREALISTIC natural afros, box braids, cornrows, twist-outs, or protective styles with proper hair density and realistic coil definition, accurate representation of Black features without European beauty standard alterations, natural skin luminosity with warm golden or red undertones, detailed individual hair strand texture showing authentic curl patterns and natural shine`;
+    }
+  } else {
+    // For all other cases: include explicit skin tone and hair color
+    if (genderNeutralDescription) {
+      characterDesc = `${antiMergePrefix}A ${genderNeutralDescription} named ${characterName} age ${age} ${effectiveSkinTone} skin complexion with ${effectiveHairColor}${cheerfulDirective}`;
+    } else {
+      characterDesc = `${antiMergePrefix}A young ${mappedAvatarType} named ${characterName} age ${age} ${effectiveSkinTone} skin complexion with ${effectiveHairColor}${cheerfulDirective}`;
+    }
   }
   
   // Component 3: Brand Suffix (hardcoded framework - ALWAYS LAST)

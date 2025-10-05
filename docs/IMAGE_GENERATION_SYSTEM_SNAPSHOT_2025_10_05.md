@@ -219,6 +219,19 @@ const hairFallback = emergencyHairFallback[normalizedSkinTone] || 'brown hair';
 
 **Location**: `supabase/functions/runware-template-ab/index.ts`
 
+### Special Handling: Tier 2.5C Dark Skin Tone Users (en/fr/es/pt)
+
+**Location**: `supabase/functions/runware-template-cd/index.js` (lines 146-265)
+
+For dark skin tone users in supported languages (English, French, Spanish, Portuguese), Tier 2.5C uses optimized character description format:
+
+- **Character description format**: `"A young {avatarType} named {characterName} age {age} with authentic African American features..."`
+- **NO explicit** "skin complexion with {hair}" insertion
+- **Cultural appendage** provides comprehensive physical descriptions (skin tones, hair textures, facial features)
+- **Non-supported languages** retain fallback: `"dark skin complexion with thick textured 4C hair"`
+
+This optimization eliminates redundancy and lets the comprehensive cultural appendage handle all physical descriptions for dark skin tone users.
+
 ### Tier 2.5A Template (Mode A - CCS Cultural Bundle)
 
 **Location**: Lines 1024-1050
