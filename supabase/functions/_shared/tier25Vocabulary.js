@@ -287,7 +287,7 @@ export const TIER_25_UNIFIED_VOCABULARY_EXTENDED = {
     basic: [
       'shirt', 'pants', 'dress', 'shoes', 'hat', 'jacket', 
       'coat', 'socks', 'boots', 'sweater', 'sneakers', 'sandals',
-      'shorts', 'skirt', 'gloves', 'scarf'
+      'shorts', 'skirt', 'gloves', 'scarf', 'purse'
     ]
   },
 

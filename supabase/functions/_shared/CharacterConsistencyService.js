@@ -720,6 +720,10 @@ export class CharacterConsistencyService {
 
     // NEW: Clothing-aware color detection (CLOTHING ITEMS)
     const tier25ClothingItems = tier25.clothing || [];
+    if (Deno.env.get('LOG_LEVEL') === 'debug') {
+      console.log(`🔍 Clothing detection: checking ${tier25Colors.length} colors × ${tier25ClothingItems.length} clothing items = ${tier25Colors.length * tier25ClothingItems.length} combinations`);
+      console.log(`👔 Clothing items:`, tier25ClothingItems);
+    }
     for (const color of tier25Colors) {
       for (const clothing of tier25ClothingItems) {
         const safeColor = escapeRegExp(color);
@@ -783,12 +787,13 @@ export class CharacterConsistencyService {
       'gi'
     );
     
-    // Non-noun blocklist (lean ~100 words)
+    // Non-noun blocklist (lean ~100 words) - includes common verbs to prevent false positives
     const NON_NOUN_WORDS = new Set([
       'is', 'are', 'was', 'were', 'be', 'been', 'being', 'runs', 'walks', 'sits', 'jumps', 'flies', 'eats', 'drinks', 'plays', 'reads',
       'goes', 'comes', 'makes', 'takes', 'gives', 'gets', 'big', 'small', 'large', 'tiny', 'huge', 'happy', 'sad', 'angry', 'calm',
       'fast', 'slow', 'quick', 'hot', 'cold', 'warm', 'cool', 'quickly', 'slowly', 'very', 'really', 'quite', 'always', 'never', 'often',
-      'here', 'there', 'everywhere', 'nowhere', 'a', 'an', 'the', 'and', 'or', 'with', 'in', 'on', 'at', 'to', 'for', 'of'
+      'here', 'there', 'everywhere', 'nowhere', 'a', 'an', 'the', 'and', 'or', 'with', 'in', 'on', 'at', 'to', 'for', 'of',
+      'carried', 'carrying', 'walking', 'running', 'playing', 'jumping', 'wearing', 'holding', 'bringing', 'taking'
     ]);
     
     const isLikelyNoun = (word) => {
