@@ -1547,6 +1547,8 @@ Deno.serve(async (req) => {
         console.log(`[TIER_1] Error stack:`, errorStack);
         tierLogger.failure("TIER_1", { error: errorMessage });
 
+        const normalizedTier1Reason = (errorMessage && errorMessage.includes("mainCharacterDetails")) ? "character description missing" : errorMessage;
+
         // FORCE MODE: If forceCompleteTier1 is true, return failure immediately without cascading
         if (forceCompleteTier1) {
           console.log(`[TIER_1_FORCE_MODE] forceCompleteTier1=true - returning failure immediately, NO CASCADE`);
@@ -1736,7 +1738,7 @@ Deno.serve(async (req) => {
                       enhancedPrompt?.structuredAvatarData || payload.userInfo?.structuredAvatarData,
                   },
                   directMode: true,
-                  tier1FailureReason: errorMessage,
+                  tier1FailureReason: normalizedTier1Reason,
                 }),
                 signal: controller.signal,
               });
@@ -1772,7 +1774,7 @@ Deno.serve(async (req) => {
                 resultType: "DIRECT_MODE_SUCCESS",
                 requestId: requestId,
                 timestamp: new Date().toISOString(),
-                tier1FailureReason: errorMessage,
+                tier1FailureReason: normalizedTier1Reason,
                 // Expose prompts at top level for easy frontend access
                 positivePrompt: directModeResponse.data?.runwareDebugData?.positivePrompt,
                 negativePrompt: directModeResponse.data?.runwareDebugData?.negativePrompt,
@@ -1862,7 +1864,7 @@ Deno.serve(async (req) => {
                 body: JSON.stringify({
                   ...payload,
                   templateComplexity: "B",
-                  tier1FailureReason: errorMessage,
+                  tier1FailureReason: normalizedTier1Reason,
                   tier25aFailureReason: tier25aErrorMessage,
                 }),
                 signal: controller.signal,
@@ -1894,7 +1896,7 @@ Deno.serve(async (req) => {
                 resultType: "TIER_2.5B_SUCCESS",
                 requestId: requestId,
                 timestamp: new Date().toISOString(),
-                tier1FailureReason: errorMessage,
+                tier1FailureReason: normalizedTier1Reason,
                 metadata: {
                   cascadeHistory: [
                     `❌ Tier 1 Failed: CharacterConsistencyService unavailable`,
@@ -1976,7 +1978,7 @@ Deno.serve(async (req) => {
                   body: JSON.stringify({
                     ...payload,
                     templateComplexity: "A",
-                    tier1FailureReason: errorMessage,
+                     tier1FailureReason: normalizedTier1Reason,
                   }),
                   signal: controller.signal,
                 });
@@ -2007,7 +2009,7 @@ Deno.serve(async (req) => {
                   resultType: "TIER_2.5A_SUCCESS",
                   requestId: requestId,
                   timestamp: new Date().toISOString(),
-                  tier1FailureReason: errorMessage,
+                   tier1FailureReason: normalizedTier1Reason,
                   metadata: {
                     cascadeHistory: [
                       `❌ Tier 1 Failed: ${
@@ -2081,7 +2083,7 @@ Deno.serve(async (req) => {
                   body: JSON.stringify({
                     ...payload,
                     templateComplexity: "B",
-                    tier1FailureReason: errorMessage,
+                     tier1FailureReason: normalizedTier1Reason,
                     tier25aFailureReason: tier25aErrorMessage,
                   }),
                   signal: controller.signal,
@@ -2203,7 +2205,7 @@ Deno.serve(async (req) => {
                   body: JSON.stringify({
                     ...payload,
                     templateComplexity: "C",
-                    tier1FailureReason: errorMessage,
+                     tier1FailureReason: normalizedTier1Reason,
                     tier25aFailureReason: tier25aErrorMessage,
                     tier25bFailureReason: tier25bErrorMessage,
                   }),
@@ -2322,7 +2324,7 @@ Deno.serve(async (req) => {
                     body: JSON.stringify({
                       ...payload,
                       templateComplexity: "D",
-                      tier1FailureReason: errorMessage,
+                      tier1FailureReason: normalizedTier1Reason,
                       tier25aFailureReason: tier25aErrorMessage,
                       tier25bFailureReason: tier25bErrorMessage,
                       tier25cFailureReason: tier25cErrorMessage,

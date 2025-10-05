@@ -608,7 +608,8 @@ async function handleTemplateABRequest(req: Request): Promise<Response> {
     // Build character description
     const character = userInfo.childName || 'the child';
     const age = userInfo.age || '8 years old';
-    const ethnicity = deriveRegionalEthnicity(userInfo, avatarIdentity);
+    const ethnicityBase = deriveRegionalEthnicity(userInfo, avatarIdentity);
+    const ethnicityDesc = culturalProfile === 'african-american' ? 'African American' : ethnicityBase;
     const skinTone = avatarIdentity.skinTone || 'medium';
     const avatarType = avatarIdentity.type || 'child';
     const hair = getHairBySkintoneEnhanced(skinTone, sessionId, culturalProfile, avatarType);
@@ -630,7 +631,7 @@ async function handleTemplateABRequest(req: Request): Promise<Response> {
           const characterName = character;
           const bundle = await ccs.getCulturalEnhancements(userInfo, sessionId, characterName);
           positivePrompt = `Narrative: ${storyText}.
-Character Description: ${character} ${age}, ${ethnicity}, ${bundle.hair || hair}, ${bundle.features || features}.
+Character Description: ${character} ${age}, ${ethnicityDesc}, ${bundle.hair || hair}, ${bundle.features || features}.
 Action: standing in a friendly pose.
 Context: diverse community setting.
 Brand Suffix: ${styleFramework.frameworkPrompt}.`;
@@ -639,7 +640,7 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
           console.warn(`⚠️ CCS getCulturalEnhancements failed, escalating to Mode B inline logic:`, ccsError.message);
           // Escalate to inline Mode B logic (now with enhanced cultural intelligence)
           positivePrompt = `Narrative: ${storyText}.
-Subject: ${character}, ${age}, ${ethnicity}, ${hair}, ${features}.
+Subject: ${character}, ${age}, ${ethnicityDesc}, ${hair}, ${features}.
 Action: standing in a friendly pose.
 Context: diverse community setting.
 Brand Suffix: ${styleFramework.frameworkPrompt}.`;
@@ -649,7 +650,7 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
         console.warn(`⚠️ CCS import failed, using inline Mode B logic:`, importError.message);
         // Use inline Mode B logic (now with enhanced cultural intelligence)
         positivePrompt = `Narrative: ${storyText}.
-Subject: ${character}, ${age}, ${ethnicity}, ${hair}, ${features}.
+Subject: ${character}, ${age}, ${ethnicityDesc}, ${hair}, ${features}.
 Action: standing in a friendly pose.
 Context: diverse community setting.
 Brand Suffix: ${styleFramework.frameworkPrompt}.`;
@@ -659,7 +660,7 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
       console.log(`🚀 Processing Tier 2.5B: Lightweight template with cultural intelligence`);
       // Mode B: Pure inline with enhanced cultural intelligence
       positivePrompt = `Narrative: ${storyText}.
-Subject: ${character}, ${age}, ${ethnicity}, ${hair}, ${features}.
+Subject: ${character}, ${age}, ${ethnicityDesc}, ${hair}, ${features}.
 Action: standing in a friendly pose.
 Context: diverse community setting.
 Brand Suffix: ${styleFramework.frameworkPrompt}.`;
@@ -697,7 +698,7 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
     
     return createResponse({
       success: true,
-      imageUrl: imageURL,
+      imageURL: imageURL,
       tier: `tier-2.5${mode}`,
       service: SERVICE_NAME,
       positivePrompt,
