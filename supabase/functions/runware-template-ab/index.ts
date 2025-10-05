@@ -528,12 +528,13 @@ async function handleTemplateABRequest(req: Request): Promise<Response> {
     
     console.log(`🔍 [${requestId}] Template AB: Request payload keys:`, Object.keys(rawPayload));
     
-    // Handle test/dryRun mode
-    if (rawPayload.test === true || rawPayload.dryRun === true) {
-      console.log('🧪 Template AB: Test mode detected - returning success response');
+    // Handle test/dryRun mode only when no story content is provided
+    const hasStoryContentEarly = rawPayload?.pageText || rawPayload?.storyText || rawPayload?.enhancedStoryData?.storyText;
+    if ((rawPayload.test === true || rawPayload.dryRun === true) && !hasStoryContentEarly) {
+      console.log('🧪 Template AB: Test mode detected without story content - returning runtime OK');
       return createResponse({
         success: true,
-        message: 'Template AB test successful',
+        message: 'Template AB runtime OK',
         service: SERVICE_NAME,
         timestamp: new Date().toISOString()
       });
@@ -683,7 +684,11 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
       success: true,
       imageUrl: imageURL,
       tier: `tier-2.5${mode}`,
-      service: SERVICE_NAME
+      service: SERVICE_NAME,
+      positivePrompt,
+      negativePrompt,
+      styleFrameworkUsed: styleFramework.name,
+      templateComplexity: mode
     });
   } catch (error: any) {
     console.error(`❌ Template AB error:`, error);
@@ -753,10 +758,9 @@ serve(async (req) => {
         const clonedReq = req.clone();
         const payload = await clonedReq.json();
         
-        const hasTestFlag = payload?.test === true || payload?.dryRun === true;
         const hasStoryContent = payload?.pageText || payload?.storyText || payload?.enhancedStoryData?.storyText;
         
-        if (hasTestFlag || !hasStoryContent) {
+        if (!hasStoryContent) {
           console.log('🔍 Runtime probe detected - returning success');
           return withCors(createResponse({
             success: true,

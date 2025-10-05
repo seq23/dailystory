@@ -1544,7 +1544,6 @@ export const ImageTierTester = () => {
             difficultyLevel: mapDifficultyLevel(userInfo),
             protectionNegatives: [],
             templateComplexity: templateMap[tier], // Add directly at root level
-            test: true
           }
         : {
             // Template CD expects flat payload - FIXED: Use pageText and add missing fields
@@ -1557,7 +1556,6 @@ export const ImageTierTester = () => {
             difficultyLevel: mapDifficultyLevel(userInfo), // ADDED: Missing field
             protectionNegatives: [], // ADDED: Missing field
             templateComplexity: templateMap[tier],
-            test: true
           };
       steps[1].status = 'success';
 
