@@ -7,7 +7,7 @@
  * Purpose: Development reference only - provides TypeScript type hints
  * Production: ALL image generation uses CharacterConsistencyService.js
  * Status: Kept in sync with .js for IDE support only
- * Last Sync: 2025-10-02 (Inline Cultural Data Architecture)
+ * Last Sync: 2025-10-05 (Colored Object Session Persistence)
  * 
  * 🚫 DO NOT USE THIS FILE IN PRODUCTION CODE
  * 🚫 DO NOT IMPORT THIS FILE IN EDGE FUNCTIONS
@@ -646,6 +646,79 @@ export class CharacterConsistencyService {
     return summary;
   }
 
+  /**
+   * Load complete session data from database (colored objects, characters, clothing)
+   * Restores session manifest from persistent storage
+   */
+  async loadCompleteSessionData(sessionId) {
+    try {
+      const supabase = await this.getSupabaseClient();
+      if (!supabase) return;
+
+      const { data, error } = await supabase
+        .from('visual_details_cache')
+        .select('*')
+        .eq('session_id', sessionId);
+
+      if (error || !data) return;
+
+      const manifest = this.getSessionManifest(sessionId);
+      
+      for (const record of data) {
+        if (record.detail_type === 'colored_object') {
+          manifest.addObject(
+            record.detail_key,
+            record.visual_elements?.color || 'colored',
+            record.detail_value,
+            record.page_first_seen
+          );
+        }
+      }
+
+      console.log(`✅ Loaded ${data.length} records for session ${sessionId}`);
+    } catch (error) {
+      console.warn('Failed to load session data:', error);
+    }
+  }
+
+  /**
+   * Batch write all detected objects/characters/clothing to database
+   * Called after detection to persist session state
+   */
+  async batchWriteDetections(sessionId, characterName, pageNumber) {
+    try {
+      const supabase = await this.getSupabaseClient();
+      if (!supabase) return;
+
+      const manifest = this.getSessionManifest(sessionId);
+      const allObjects = manifest.getAllObjects();
+
+      // Write colored objects
+      for (const obj of allObjects) {
+        await supabase
+          .from('visual_details_cache')
+          .upsert({
+            session_id: sessionId,
+            character_name: characterName,
+            detail_type: 'colored_object',
+            detail_key: obj.name,
+            detail_value: obj.fullDescription,
+            page_first_seen: obj.lastPage,
+            page_last_seen: pageNumber,
+            visual_elements: {
+              color: obj.color,
+              object: obj.name,
+              source: obj.tier25Source ? 'tier25Vocabulary' : 'detected'
+            }
+          }, { onConflict: 'session_id,character_name,detail_type,detail_key' });
+      }
+
+      console.log(`✅ Batch wrote ${allObjects.length} detections for ${sessionId}`);
+    } catch (error) {
+      console.warn('Batch write failed:', error);
+    }
+  }
+
   // ============= TIER25-POWERED DETECTION (PHASE 2) =============
 
   /**
@@ -655,6 +728,18 @@ export class CharacterConsistencyService {
   async detectColoredObjects(text, sessionId, pageNumber) {
     const vocab = await this.getVocabulary();
     const manifest = this.getSessionManifest(sessionId);
+    
+    // ✅ CHANGE 4: Check session-wide cache first (no page filtering)
+    const cacheKey = `${sessionId}_colored_objects_session`;
+    const cached = this.storyCache.read(cacheKey);
+    if (cached && Array.isArray(cached)) {
+      console.log(`⚡ Using cached colored objects: ${cached.length} items`);
+      return cached;
+    }
+    
+    // ✅ CHANGE 1: REMOVED manifest.clearObjectsForPage() - preserves objects across pages
+    // Previously: manifest.clearObjectsForPage(pageNumber);
+    
     const detections = [];
 
     // Safety guards
@@ -693,6 +778,11 @@ export class CharacterConsistencyService {
         }
       }
     }
+
+    // ✅ CHANGE 5: Cache session-wide objects (not page-specific)
+    const allSessionObjects = manifest.getAllObjects();
+    this.storyCache.smartWrite(cacheKey, allSessionObjects);
+    console.log(`💾 Cached ${allSessionObjects.length} colored objects for session`);
 
     return detections;
   }
@@ -808,6 +898,7 @@ export class CharacterConsistencyService {
 
   /**
    * Analyze page with pronoun resolution for visual consistency
+   * ✅ Enhanced with batch database writes for persistence
    */
   async analyzeVisualDetails(sessionId, pageText, pageNumber, characterName) {
     const manifest = this.getSessionManifest(sessionId);
@@ -825,6 +916,9 @@ export class CharacterConsistencyService {
       await this.detectAllCharacters(resolvedText, { sessionId, pageNumber });
     }
 
+    // ✅ CHANGE 5: Batch write detections to database
+    await this.batchWriteDetections(sessionId, characterName, pageNumber);
+
     return {
       originalText: pageText,
       resolvedText,
@@ -835,8 +929,38 @@ export class CharacterConsistencyService {
 
   /**
    * Get colored objects for session (backwards compatible)
+   * ✅ CHANGE 2: Database cleanup + session-wide cache
+   * ✅ CHANGE 3: Removed page filtering - returns ALL session objects
    */
   async getColoredObjects(sessionId) {
+    // Clean up old database entries (7+ days) on read
+    try {
+      const supabase = await this.getSupabaseClient();
+      if (supabase) {
+        const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+        await supabase
+          .from('visual_details_cache')
+          .delete()
+          .eq('detail_type', 'colored_object')
+          .lt('created_at', sevenDaysAgo);
+      }
+    } catch (cleanupError) {
+      console.log('⚠️ Cleanup failed (non-critical):', cleanupError.message);
+    }
+
+    // Check session-wide cache first
+    const cacheKey = `${sessionId}_colored_objects_session`;
+    const cached = this.storyCache.read(cacheKey);
+    if (cached && Array.isArray(cached) && cached.length > 0) {
+      const descriptions = cached.map(obj => obj.fullDescription).filter(Boolean).join(', ');
+      console.log(`⚡ Cache hit: ${descriptions}`);
+      return descriptions;
+    }
+
+    // Load from database if not in cache
+    await this.loadCompleteSessionData(sessionId);
+    
+    // Get ALL objects (no page filtering)
     const manifest = this.getSessionManifest(sessionId);
     const objects = manifest.getAllObjects();
     
@@ -846,6 +970,9 @@ export class CharacterConsistencyService {
       .map(obj => obj.fullDescription)
       .filter(Boolean)
       .join(', ');
+    
+    // Cache for next read
+    this.storyCache.smartWrite(cacheKey, objects);
     
     console.log(`🎨 Colored objects for ${sessionId}: ${descriptions}`);
     return descriptions;
