@@ -5,6 +5,31 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 // ✅ BUNDLER HINT: Force CCS inclusion in deployment bundle (dynamic import used inside handler)
 import { characterConsistencyService as _ccsHint } from "../_shared/CharacterConsistencyService.js";
 
+// ========== CCS BOOT VERIFICATION ==========
+let ccsBootStatus = { loaded: false, error: null as string | null };
+
+async function verifyCCSBoot() {
+  try {
+    const ccsModule = await import("../_shared/CharacterConsistencyService.js");
+    const ccs = ccsModule.characterConsistencyService;
+    
+    // Test key method
+    const testResult = await ccs.getEnhancedCharacterSeed({ name: 'Test', age: 8 }, 'test-session', 'TestChar');
+    
+    if (testResult && testResult.characterName) {
+      ccsBootStatus = { loaded: true, error: null };
+      console.log('✅ [BOOT] Tier 1 (ai-visual-scene-creator): CCS loaded successfully');
+      return true;
+    } else {
+      throw new Error('CCS method returned invalid result');
+    }
+  } catch (error) {
+    ccsBootStatus = { loaded: false, error: error.message };
+    console.error('❌ [BOOT] Tier 1 (ai-visual-scene-creator): CCS load failed -', error.message);
+    return false;
+  }
+}
+
 // ========== INLINED: ProviderGate (Concurrency + Circuit Breaker) ==========
 // Inlined to avoid bundling failures with _shared/ dynamic imports
 // Feature flag: DISABLE_PROVIDER_GATE=true to skip gating
@@ -715,6 +740,11 @@ async function httpFallbackCall(endpoint: string, payload: any): Promise<any> {
 
 // Main request handler
 serve(async (req) => {
+  // Trigger CCS boot verification once (non-blocking)
+  if (ccsBootStatus.loaded === false && ccsBootStatus.error === null) {
+    verifyCCSBoot().catch(err => console.error('CCS boot verification failed:', err));
+  }
+  
   // Handle CORS preflight requests - MUST return 200, not 204/null
   if (req.method === 'OPTIONS') {
     return new Response(null, { 

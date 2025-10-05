@@ -3,8 +3,34 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // ✅ BUNDLER HINT: Force CCS inclusion in bundle
 import { characterConsistencyService as _ccsHint } from "../_shared/CharacterConsistencyService.js";
+import { extractSemanticScene, extractSimpleScene } from "../_shared/placeholderResolver.ts";
 
 const SERVICE_NAME = "runware-template-ab";
+
+// ========== CCS BOOT VERIFICATION ==========
+let ccsBootStatus = { loaded: false, error: null as string | null };
+
+async function verifyCCSBoot() {
+  try {
+    const ccsModule = await import("../_shared/CharacterConsistencyService.js");
+    const ccs = ccsModule.characterConsistencyService;
+    
+    // Test key method
+    const testResult = await ccs.getCulturalEnhancements({ name: 'Test', age: 8 }, 'test-session', 'TestChar');
+    
+    if (testResult && testResult.features) {
+      ccsBootStatus = { loaded: true, error: null };
+      console.log('✅ [BOOT] Tier 2.5 (runware-template-ab): CCS loaded successfully');
+      return true;
+    } else {
+      throw new Error('CCS method returned invalid result');
+    }
+  } catch (error) {
+    ccsBootStatus = { loaded: false, error: error.message };
+    console.error('❌ [BOOT] Tier 2.5 (runware-template-ab): CCS load failed -', error.message);
+    return false;
+  }
+}
 
 // ========== INLINED: ProviderGate (Concurrency + Circuit Breaker) ==========
 interface GateConfig {
@@ -630,41 +656,52 @@ async function handleTemplateABRequest(req: Request): Promise<Response> {
         try {
           const characterName = character;
           const bundle = await ccs.getCulturalEnhancements(userInfo, sessionId, characterName);
+          const semanticScene = extractSemanticScene(storyText, { userInfo, pageText: storyText });
+          
           positivePrompt = `Narrative: ${storyText}.
 Character Description: ${character} ${age}, ${ethnicityDesc}, ${bundle.hair || hair}, ${bundle.features || features}.
-Action: standing in a friendly pose.
+Action: ${semanticScene}.
 Context: diverse community setting.
 Brand Suffix: ${styleFramework.frameworkPrompt}.`;
-          console.log(`✅ Tier 2.5A: Using CCS cultural bundle`);
+          
+          console.log(`✅ Tier 2.5A: Using CCS cultural bundle with semantic scene: "${semanticScene}"`);
         } catch (ccsError: any) {
           console.warn(`⚠️ CCS getCulturalEnhancements failed, escalating to Mode B inline logic:`, ccsError.message);
+          const semanticScene = extractSemanticScene(storyText, { userInfo, pageText: storyText });
+          
           // Escalate to inline Mode B logic (now with enhanced cultural intelligence)
           positivePrompt = `Narrative: ${storyText}.
 Subject: ${character}, ${age}, ${ethnicityDesc}, ${hair}, ${features}.
-Action: standing in a friendly pose.
+Action: ${semanticScene}.
 Context: diverse community setting.
 Brand Suffix: ${styleFramework.frameworkPrompt}.`;
-          console.log(`✅ Tier 2.5A→B: Escalated to inline fallback with enhanced cultural intelligence`);
+          console.log(`✅ Tier 2.5A→B: Escalated to inline fallback with semantic scene: "${semanticScene}"`);
         }
       } catch (importError: any) {
         console.warn(`⚠️ CCS import failed, using inline Mode B logic:`, importError.message);
+        const semanticScene = extractSemanticScene(storyText, { userInfo, pageText: storyText });
+        
         // Use inline Mode B logic (now with enhanced cultural intelligence)
         positivePrompt = `Narrative: ${storyText}.
 Subject: ${character}, ${age}, ${ethnicityDesc}, ${hair}, ${features}.
-Action: standing in a friendly pose.
+Action: ${semanticScene}.
 Context: diverse community setting.
 Brand Suffix: ${styleFramework.frameworkPrompt}.`;
-        console.log(`✅ Tier 2.5A→B: Using inline fallback with enhanced cultural intelligence`);
+        console.log(`✅ Tier 2.5A→B: Using inline fallback with semantic scene: "${semanticScene}"`);
       }
     } else {
       console.log(`🚀 Processing Tier 2.5B: Lightweight template with cultural intelligence`);
-      // Mode B: Pure inline with enhanced cultural intelligence
+      
+      // Mode B: Pure inline with enhanced cultural intelligence + simple scene extraction
+      const simpleScene = extractSimpleScene(storyText);
+      
       positivePrompt = `Narrative: ${storyText}.
 Subject: ${character}, ${age}, ${ethnicityDesc}, ${hair}, ${features}.
-Action: standing in a friendly pose.
+Action: ${simpleScene}.
 Context: diverse community setting.
 Brand Suffix: ${styleFramework.frameworkPrompt}.`;
-      console.log(`✅ Tier 2.5B: Using pure inline template with cultural intelligence`, {
+      
+      console.log(`✅ Tier 2.5B: Using pure inline template with simple scene: "${simpleScene}"`, {
         culturalProfile,
         skinTone,
         avatarType,
@@ -736,6 +773,11 @@ async function loadHandler(): Promise<HandlerFn | null> {
 // ========== MAIN SERVE HANDLER ==========
 serve(async (req) => {
   try {
+    // Trigger CCS boot verification once (non-blocking)
+    if (ccsBootStatus.loaded === false && ccsBootStatus.error === null) {
+      verifyCCSBoot().catch(err => console.error('CCS boot verification failed:', err));
+    }
+    
     const url = new URL(req.url);
 
     // OPTIONS → 204, empty body

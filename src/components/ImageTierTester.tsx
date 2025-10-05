@@ -1310,6 +1310,13 @@ export const ImageTierTester = () => {
           
           const hasCharacterConsistency = result.metadata?.characterConsistencyActive === true || ccErrors.length === 0;
           
+          // Check CCS boot status from metadata
+          const ccsStatus = {
+            tier1Loaded: result.metadata?.ccsBootStatus?.tier1 || false,
+            tier25Loaded: result.metadata?.ccsBootStatus?.tier25 || false,
+            directModeLoaded: result.metadata?.ccsBootStatus?.directMode || false,
+          };
+          
           resultBadge = `${actualTier}${wasFailover} Success`;
           fallbackPath = `Real user flow succeeded via ${actualTier}${wasFailover}`;
           finalResult = {
@@ -1325,7 +1332,8 @@ export const ImageTierTester = () => {
               error: null,
               pathUsed: actualTier,
               routingDecision: result.metadata?.routingReason || 'Natural tier routing',
-              hasCharacterConsistency
+              hasCharacterConsistency,
+              ccsStatus
             }
           };
         } else {

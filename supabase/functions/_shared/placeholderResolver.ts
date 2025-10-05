@@ -308,4 +308,106 @@ function applyCharacterNameSubstitutions(text: string, characterNames: string[])
   }
 }
 
+/**
+ * Extract semantic scene description from story text for Tier 2.5A
+ * Analyzes the narrative to find meaningful actions and settings
+ */
+export function extractSemanticScene(storyText: string, ctx: MicroContext = {}): string {
+  try {
+    if (!storyText || typeof storyText !== 'string') {
+      return 'standing in a friendly pose';
+    }
+    
+    const text = storyText.toLowerCase();
+    
+    // Extract action verbs (semantic analysis)
+    const actionPatterns = [
+      /\b(exploring|discovering|finding|searching|looking)\b/i,
+      /\b(playing|running|jumping|dancing|singing)\b/i,
+      /\b(reading|learning|studying|thinking|wondering)\b/i,
+      /\b(helping|sharing|giving|caring|protecting)\b/i,
+      /\b(building|creating|making|drawing|painting)\b/i,
+      /\b(climbing|swimming|flying|riding|sailing)\b/i,
+      /\b(talking|laughing|smiling|celebrating|enjoying)\b/i,
+    ];
+    
+    // Extract setting indicators
+    const settingPatterns = [
+      /\b(in|at|near|by)\s+(?:the\s+)?(forest|park|garden|school|home|playground|beach|mountain|lake|river)\b/i,
+      /\b(inside|outside|under|behind|beside)\s+(?:the\s+)?(\w+)\b/i,
+    ];
+    
+    let action = '';
+    let setting = '';
+    
+    // Find first matching action
+    for (const pattern of actionPatterns) {
+      const match = text.match(pattern);
+      if (match) {
+        action = match[1];
+        break;
+      }
+    }
+    
+    // Find first matching setting
+    for (const pattern of settingPatterns) {
+      const match = text.match(pattern);
+      if (match) {
+        setting = match[0];
+        break;
+      }
+    }
+    
+    // Construct semantic scene
+    if (action && setting) {
+      return `${action} ${setting}`;
+    } else if (action) {
+      return `${action} in a vibrant scene`;
+    } else if (setting) {
+      return `standing ${setting}`;
+    }
+    
+    // Fallback
+    return 'standing in a friendly pose';
+    
+  } catch (error) {
+    console.warn('Semantic scene extraction error:', error);
+    return 'standing in a friendly pose';
+  }
+}
+
+/**
+ * Extract simple scene description from story text for Tier 2.5B
+ * Simpler extraction focused on basic actions
+ */
+export function extractSimpleScene(storyText: string): string {
+  try {
+    if (!storyText || typeof storyText !== 'string') {
+      return 'standing in a friendly pose';
+    }
+    
+    const text = storyText.toLowerCase();
+    
+    // Simple action detection
+    const simpleActions = [
+      'playing', 'running', 'jumping', 'walking', 'standing',
+      'sitting', 'reading', 'eating', 'sleeping', 'dancing',
+      'singing', 'laughing', 'smiling', 'helping', 'learning'
+    ];
+    
+    for (const action of simpleActions) {
+      if (text.includes(action)) {
+        return `${action} happily`;
+      }
+    }
+    
+    // Fallback
+    return 'standing in a friendly pose';
+    
+  } catch (error) {
+    console.warn('Simple scene extraction error:', error);
+    return 'standing in a friendly pose';
+  }
+}
+
 export { deriveCompleteGenderInfo };
