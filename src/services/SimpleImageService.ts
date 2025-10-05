@@ -396,13 +396,37 @@ export class SimpleImageService {
           }
         });
 
-        // If Complexity C fails, escalate to Complexity D
+        // If Complexity C fails, check orchestrator health before escalating
         if (!templateResult.data?.success && (bypassDecision.templateComplexity === 'C' || !bypassDecision.templateComplexity)) {
-          DebugLogger.log('image', '⚡ Smart bypass Complexity C failed, escalating to D', {
+          DebugLogger.log('image', '⚡ Smart bypass: Tier 2.5C failed, checking orchestrator health before escalation', {
             sessionId: normalizedSessionId,
+            tier: templateResult.data?.tier,
             error: templateResult.error
           });
           
+          // Check if orchestrator is healthy using existing method
+          const orchestratorCheck = this.checkOrchestratorHealth(healthStatus);
+          
+          if (!orchestratorCheck.unhealthy) {
+            // Orchestrator is healthy - fall back to it instead of trying 2.5D
+            DebugLogger.log('image', '⚡ Smart bypass: Tier 2.5C failed but orchestrator is healthy - falling back to full orchestrator', {
+              sessionId: normalizedSessionId,
+              failureReason: templateResult.data?.tier || 'unknown',
+              orchestratorStatus: 'healthy'
+            });
+            
+            // Throw error to trigger catch block (line 446) which falls back to orchestrator
+            throw new Error('TIER_2_5C_FAILED_FALLBACK_TO_ORCHESTRATOR');
+          }
+          
+          // Orchestrator is ALSO unhealthy - must use 2.5D as last resort
+          DebugLogger.log('image', '⚡ Smart bypass: Both Tier 2.5C and orchestrator failed - escalating to 2.5D emergency', {
+            sessionId: normalizedSessionId,
+            tier2_5C_failure: templateResult.data?.tier || 'unknown',
+            orchestratorReason: orchestratorCheck.reason
+          });
+          
+          // Try 2.5D as absolute last resort
           templateResult = await supabase.functions.invoke(bypassDecision.targetTemplate || 'runware-template-cd', {
             body: {
               pageText: storyText,
