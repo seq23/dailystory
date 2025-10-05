@@ -10,7 +10,7 @@ const systemPrompt = `Generate a comprehensive visual scene description for chil
 
 JSON RESPONSE:
 {
-  "primaryScene": "Character name, age X, in rich, detailed visual scene description for image generation with verbatim hair, skin, and ethnicity main character description, setting, key character actions, any secondary characters including animals, atmosphere, and comprehensive visual details",
+  "primaryScene": "Character name, age X, ethnicity, in rich, detailed visual scene description for image generation with main character description (verbatim hair and features provided), setting, key character actions, any secondary characters including animals, atmosphere, and comprehensive visual details",
   "backgroundColor": "Background color description (e.g., 'warm golden forest light', 'cool blue sky', 'cozy indoor amber')",
   "lighting": "Lighting description (e.g., 'golden hour sunlight', 'soft morning light', 'magical twilight glow')",
   "composition": "Visual composition description (e.g., 'centered character with forest background', 'close-up with blurred garden')",
@@ -52,10 +52,10 @@ Use cultural detail naturally without contradicting explicit story settings.` : 
 **Purpose:** Allow AI to create more natural, flowing scene descriptions while maintaining verbatim character appearance accuracy.
 
 **Changes:**
-1. **JSON Response Example (Line 350)**: Updated primaryScene template from bracketed format to natural description template:
-   - `"Character name, age X, in rich, detailed visual scene description for image generation with verbatim hair, skin, and ethnicity main character description, setting, key character actions, any secondary characters including animals, atmosphere, and comprehensive visual details"`
+1. **JSON Response Example (Line 350)**: Updated primaryScene template to emphasize ethnicity positioning and verbatim requirements:
+   - `"Character name, age X, ethnicity, in rich, detailed visual scene description for image generation with main character description (verbatim hair and features provided), setting, key character actions, any secondary characters including animals, atmosphere, and comprehensive visual details"`
 
-2. **CRITICAL Instruction (Line 415)**: Modified from "without any paraphrasing or simplification" to:
+2. **CRITICAL Instruction (Line 415)**: Updated to require hair and skin tone only (ethnicity handled separately), with enhancement permission:
    - `"you may not simplify it but you can enhance and weave it into the primary scene naturally"`
 
 **Impact:**

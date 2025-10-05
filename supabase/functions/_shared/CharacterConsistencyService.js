@@ -652,6 +652,7 @@ export class CharacterConsistencyService {
     // Strategy 1: Check tier25 colors & objects first (75% hit rate, instant)
     const tier25Colors = tier25.colors || [];
     const tier25Objects = tier25.objects || [];
+    let exactDetectionCount = 0; // Track exact/compound detections for gating fallback strategies
     
     if (!Array.isArray(tier25Colors) || !Array.isArray(tier25Objects)) {
       console.warn('⚠️ tier25 colors/objects not arrays, falling back to full vocab');
@@ -682,6 +683,7 @@ export class CharacterConsistencyService {
                 pageNumber
               });
               manifest.addObject(object, color, normalized, pageNumber);
+              exactDetectionCount++; // Count exact detections
               if (Deno.env.get('LOG_LEVEL') === 'debug') {
                 console.log(`🎨 Detected colored object (tier25 exact): ${normalized}`);
               }
@@ -709,6 +711,7 @@ export class CharacterConsistencyService {
                 pageNumber
               });
               manifest.addObject(object, color, normalized, pageNumber);
+              exactDetectionCount++; // Count compound detections
               if (Deno.env.get('LOG_LEVEL') === 'debug') {
                 console.log(`🎨 Detected colored object (tier25 compound): ${normalized}`);
               }
@@ -745,6 +748,7 @@ export class CharacterConsistencyService {
                 pageNumber
               });
               manifest.addObject(clothing, color, normalized, pageNumber);
+              exactDetectionCount++; // Count clothing exact detections
               if (Deno.env.get('LOG_LEVEL') === 'debug') {
                 console.log(`🎨 Detected colored clothing (tier25 exact): ${normalized}`);
               }
@@ -771,6 +775,7 @@ export class CharacterConsistencyService {
                 pageNumber
               });
               manifest.addObject(clothing, color, normalized, pageNumber);
+              exactDetectionCount++; // Count clothing compound detections
               if (Deno.env.get('LOG_LEVEL') === 'debug') {
                 console.log(`🎨 Detected colored clothing (tier25 compound): ${normalized}`);
               }
@@ -780,7 +785,15 @@ export class CharacterConsistencyService {
       }
     }
     
-    // Strategy 3a: Multi-colored objects (e.g., "red, white and blue backpack")
+    // GATE: Only run fallback strategies (3 & 4) if NO exact/compound detections found
+    if (exactDetectionCount === 0) {
+      console.log(`⚠️ No exact/compound detections found - running fallback strategies 3 & 4`);
+    } else {
+      console.log(`✅ Found ${exactDetectionCount} exact/compound detections - skipping fallback strategies 3 & 4`);
+    }
+    
+    if (exactDetectionCount === 0) {
+      // Strategy 3a: Multi-colored objects (e.g., "red, white and blue backpack")
     const allColors = [...new Set([...tier25Colors, ...(await this.getVocabulary()).colors])];
     const multiColorPattern = new RegExp(
       `\\b(${allColors.map(escapeRegExp).join('|')})(?:(?:,\\s*|\\s+and\\s+|-\\s*)(${allColors.map(escapeRegExp).join('|')}))+\\s+(\\w+(?:\\s+\\w+)?)\\b`,
@@ -838,57 +851,58 @@ export class CharacterConsistencyService {
       'gi'
     );
     
-    const wildcardMatches = text.matchAll(colorAdjacentPattern);
-    for (const match of wildcardMatches) {
-      const color = match[1].toLowerCase();
-      const adjacentWords = match[2].toLowerCase();
-      
-      // Single word only - validate immediately
-      if (skipWords.has(adjacentWords) || !isLikelyNoun(adjacentWords)) continue;
-      
-      const fullDescription = `${color} ${adjacentWords}`;
-      if (detections.some(d => d.fullDescription === fullDescription)) continue;
-      
-      detections.push({
-        fullDescription,
-        color,
-        object: adjacentWords,
-        source: 'single_color_wildcard',
-        pageNumber
-      });
-      manifest.addObject(adjacentWords, color, fullDescription, pageNumber);
-      if (Deno.env.get('LOG_LEVEL') === 'debug') {
-        console.log(`🎨 Detected colored object (wildcard): ${fullDescription}`);
-      }
-    }
-
-    // Strategy 4: Standalone object detection (no color required) - tier25 first
-    // Only add objects that weren't already detected with colors in Strategies 1-3
-    // FIXED: Use word boundaries to prevent "car" from matching in "carried"
-    const objectsForStandalone = tier25Objects.length > 0 ? tier25Objects : (await this.getVocabulary()).objects;
-    const standaloneObjectMatches = Array.isArray(objectsForStandalone) && objectsForStandalone.length > 0
-      ? text.match(new RegExp(`\\b(${objectsForStandalone.map(escapeRegExp).join('|')})\\b`, 'gi'))
-      : null;
-
-    if (standaloneObjectMatches && standaloneObjectMatches.length > 0) {
-      standaloneObjectMatches.forEach(match => {
-        const objectName = match.toLowerCase();
-        // Only add if not already detected with a color
-        if (!detections.some(item => item.object === objectName)) {
-          detections.push({
-            fullDescription: objectName,
-            color: null, // Explicitly null for standalone objects
-            object: objectName,
-            source: 'tier25Vocabulary_standalone',
-            pageNumber
-          });
-          manifest.addObject(objectName, null, objectName, pageNumber);
-          if (Deno.env.get('LOG_LEVEL') === 'debug') {
-            console.log(`🎨 Detected standalone object: ${objectName} (tier25, no color)`);
-          }
+      const wildcardMatches = text.matchAll(colorAdjacentPattern);
+      for (const match of wildcardMatches) {
+        const color = match[1].toLowerCase();
+        const adjacentWords = match[2].toLowerCase();
+        
+        // Single word only - validate immediately
+        if (skipWords.has(adjacentWords) || !isLikelyNoun(adjacentWords)) continue;
+        
+        const fullDescription = `${color} ${adjacentWords}`;
+        if (detections.some(d => d.fullDescription === fullDescription)) continue;
+        
+        detections.push({
+          fullDescription,
+          color,
+          object: adjacentWords,
+          source: 'single_color_wildcard',
+          pageNumber
+        });
+        manifest.addObject(adjacentWords, color, fullDescription, pageNumber);
+        if (Deno.env.get('LOG_LEVEL') === 'debug') {
+          console.log(`🎨 Detected colored object (wildcard): ${fullDescription}`);
         }
-      });
-    }
+      }
+
+      // Strategy 4: Standalone object detection (no color required) - tier25 first
+      // Only add objects that weren't already detected with colors in Strategies 1-3
+      // FIXED: Use word boundaries to prevent "car" from matching in "carried"
+      const objectsForStandalone = tier25Objects.length > 0 ? tier25Objects : (await this.getVocabulary()).objects;
+      const standaloneObjectMatches = Array.isArray(objectsForStandalone) && objectsForStandalone.length > 0
+        ? text.match(new RegExp(`\\b(${objectsForStandalone.map(escapeRegExp).join('|')})\\b`, 'gi'))
+        : null;
+
+      if (standaloneObjectMatches && standaloneObjectMatches.length > 0) {
+        standaloneObjectMatches.forEach(match => {
+          const objectName = match.toLowerCase();
+          // Only add if not already detected with a color
+          if (!detections.some(item => item.object === objectName)) {
+            detections.push({
+              fullDescription: objectName,
+              color: null, // Explicitly null for standalone objects
+              object: objectName,
+              source: 'tier25Vocabulary_standalone',
+              pageNumber
+            });
+            manifest.addObject(objectName, null, objectName, pageNumber);
+            if (Deno.env.get('LOG_LEVEL') === 'debug') {
+              console.log(`🎨 Detected standalone object: ${objectName} (tier25, no color)`);
+            }
+          }
+        });
+      }
+    } // End gate for fallback strategies
 
     // Strategy 2 (LAST RESORT): Only use full vocab if NO detections found yet
     if (detections.length < 1) {
@@ -1324,34 +1338,42 @@ export class CharacterConsistencyService {
   }
 
   /**
-   * PHASE 4: Get colored objects for session - MEMORY-FIRST
+   * PHASE 4: Get colored objects for session - MEMORY-FIRST (PAGE-SCOPED)
    * Checks cache first, falls back to DB only if needed
+   * NOW SCOPED TO CURRENT PAGE to prevent stale object leakage
    */
   async getColoredObjects(sessionId) {
-    // Check memory cache first (PHASE 4)
-    const cacheKey = `${sessionId}_colored_objects`;
+    const manifest = this.getSessionManifest(sessionId);
+    const currentPage = manifest.pageNumber || 1;
+    
+    // Check memory cache first (PHASE 4) - PAGE-SCOPED CACHE KEY
+    const cacheKey = `${sessionId}_colored_objects_page_${currentPage}`;
     const cached = this.storyCache.read(cacheKey);
     
     if (cached) {
-      console.log(`💾 CACHE HIT: Colored objects for ${sessionId}`);
+      console.log(`💾 CACHE HIT: Colored objects for ${sessionId} page ${currentPage}`);
       return cached;
     }
     
-    // Fallback to manifest (in-memory)
-    const manifest = this.getSessionManifest(sessionId);
+    // Fallback to manifest (in-memory) - FILTER TO CURRENT PAGE ONLY
     const objects = manifest.getAllObjects();
     
     if (objects.length === 0) return '';
     
-    const descriptions = objects
+    // CRITICAL FIX: Only include objects from current page
+    const pageObjects = objects.filter(obj => obj.lastPage === currentPage);
+    
+    if (pageObjects.length === 0) return '';
+    
+    const descriptions = pageObjects
       .map(obj => obj.fullDescription)
       .filter(Boolean)
       .join(', ');
     
-    // Cache result
+    // Cache result with page-scoped key
     this.storyCache.smartWrite(cacheKey, descriptions);
     
-    console.log(`🎨 Colored objects for ${sessionId}: ${descriptions}`);
+    console.log(`🎨 Colored objects for ${sessionId} page ${currentPage}: ${descriptions}`);
     return descriptions;
   }
 

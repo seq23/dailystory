@@ -347,7 +347,7 @@ async function generateCompleteVisualSchema(
 
 JSON RESPONSE:
 {
-  "primaryScene": "Character name, age X, in rich, detailed visual scene description for image generation with verbatim hair, skin, and ethnicity main character description, setting, key character actions, any secondary characters including animals, atmosphere, and comprehensive visual details",
+  "primaryScene": "Character name, age X, ethnicity, in rich, detailed visual scene description for image generation with main character description (verbatim hair and features provided), setting, key character actions, any secondary characters including animals, atmosphere, and comprehensive visual details",
   "backgroundColor": "Background color description (e.g., 'warm golden forest light', 'cool blue sky', 'cozy indoor amber')",
   "lighting": "Lighting description (e.g., 'golden hour sunlight', 'soft morning light', 'magical twilight glow')",
   "composition": "Visual composition description (e.g., 'centered character with forest background', 'close-up with blurred garden')",
@@ -412,7 +412,7 @@ STORY TEXT:
 PREVIOUS SCENE (for visual consistency):
 "${previousPrimaryScene || 'None - this is the first scene'}"
 
-Generate a comprehensive scene with complete visual elements including background, lighting, composition, setting, mood, style, secondary characters (categorized as humans vs pets), and key objects. Maintain character and setting continuity while showcasing the current page's action. CRITICAL: The primaryScene must include the complete CHARACTER APPEARANCE string (hair, skin tone, and ethnicity) exactly as provided, word-for-word, you may not simplify it but you can enhance and weave it into the primary scene naturally.`;
+Generate a comprehensive scene with complete visual elements including background, lighting, composition, setting, mood, style, secondary characters (categorized as humans vs pets), and key objects. Maintain character and setting continuity while showcasing the current page's action. CRITICAL: The primaryScene must include the complete CHARACTER APPEARANCE string (hair and skin tone) exactly as provided, word-for-word, you may not simplify it but you can enhance and weave it into the primary scene naturally.`;
 
   try {
     // Retry with jitter for 429/503 errors
