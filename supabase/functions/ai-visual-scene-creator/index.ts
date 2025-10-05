@@ -347,7 +347,7 @@ async function generateCompleteVisualSchema(
 
 JSON RESPONSE:
 {
-  "primaryScene": "Rich, detailed visual scene description for image generation with setting, character actions, atmosphere, and comprehensive visual details",
+  "primaryScene": "Character name, age X, [hair description word-for-word], [skin features word-for-word], [ethnicity] ethnicity [action] [setting details]",
   "backgroundColor": "Background color description (e.g., 'warm golden forest light', 'cool blue sky', 'cozy indoor amber')",
   "lighting": "Lighting description (e.g., 'golden hour sunlight', 'soft morning light', 'magical twilight glow')",
   "composition": "Visual composition description (e.g., 'centered character with forest background', 'close-up with blurred garden')",
@@ -364,7 +364,7 @@ JSON RESPONSE:
 RULES:
 1. Story text priority: absolute driver - never contradict visual details
 2. Main action extraction: focus on most visually significant action from story text
-3. Character appearance: use provided appearance data exactly as given, enhance unspecified details reasonably (e.g., if hair color provided use it, if not provided skip it or just describe hair styling)
+3. Character appearance: use provided appearance data exactly as given WORD FOR WORD IN A SINGLE STRING, enhance unspecified details reasonably (e.g., if hair color provided use it, if not provided skip it or just describe hair styling)
 4. Character poses and positioning: infer body positions from story actions ('wakes up' = sitting up in bed with arms stretched, 'runs' = dynamic running pose, 'reads' = sitting/lying with book, 'looks up' = head tilted upward, 'plays' = active engaging pose)
 5. Singular/plural intelligence: "a bird" = 1 bird, "the bird" = 1 bird, "birds" = 2-4 birds, "many/lots of birds" = 5+ birds
 6. Extract secondary characters: HUMANS (mom, dad, friend, teacher, people), PETS (household animals like dog, cat), ANIMAL CHARACTERS (talking animals, fantasy creatures with speaking roles in the story)
@@ -412,7 +412,7 @@ STORY TEXT:
 PREVIOUS SCENE (for visual consistency):
 "${previousPrimaryScene || 'None - this is the first scene'}"
 
-Generate a comprehensive scene with complete visual elements including background, lighting, composition, setting, mood, style, secondary characters (categorized as humans vs pets), and key objects. Maintain character and setting continuity while showcasing the current page's action. CRITICAL: Use the exact hair description, skin tone, AND ethnicity from CHARACTER APPEARANCE word-for-word without any paraphrasing, modification, or simplification. Include the complete hair description, skin tone, and ethnicity exactly as provided in the primaryScene description.`;
+Generate a comprehensive scene with complete visual elements including background, lighting, composition, setting, mood, style, secondary characters (categorized as humans vs pets), and key objects. Maintain character and setting continuity while showcasing the current page's action. CRITICAL: The primaryScene must include the complete CHARACTER APPEARANCE string (hair, skin tone, and ethnicity) exactly as provided, word-for-word, without any paraphrasing or simplification.`;
 
   try {
     // Retry with jitter for 429/503 errors
