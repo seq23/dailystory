@@ -10,7 +10,7 @@ const systemPrompt = `Generate a comprehensive visual scene description for chil
 
 JSON RESPONSE:
 {
-  "primaryScene": "Rich, detailed visual scene description for image generation with setting, character actions, atmosphere, and comprehensive visual details",
+  "primaryScene": "Character name, age X, in rich, detailed visual scene description for image generation with verbatim hair, skin, and ethnicity main character description, setting, key character actions, any secondary characters including animals, atmosphere, and comprehensive visual details",
   "backgroundColor": "Background color description (e.g., 'warm golden forest light', 'cool blue sky', 'cozy indoor amber')",
   "lighting": "Lighting description (e.g., 'golden hour sunlight', 'soft morning light', 'magical twilight glow')",
   "composition": "Visual composition description (e.g., 'centered character with forest background', 'close-up with blurred garden')",
@@ -44,6 +44,27 @@ EXAMPLE: For a French speaker named Sarah playing in a park, generate:
 
 Use cultural detail naturally without contradicting explicit story settings.` : '- Use universal child-friendly settings with warm, inviting atmospheres'}`;
 ```
+
+## Key Changes (2025-10-05)
+
+### Updated primaryScene Template and CRITICAL Instruction
+
+**Purpose:** Allow AI to create more natural, flowing scene descriptions while maintaining verbatim character appearance accuracy.
+
+**Changes:**
+1. **JSON Response Example (Line 350)**: Updated primaryScene template from bracketed format to natural description template:
+   - `"Character name, age X, in rich, detailed visual scene description for image generation with verbatim hair, skin, and ethnicity main character description, setting, key character actions, any secondary characters including animals, atmosphere, and comprehensive visual details"`
+
+2. **CRITICAL Instruction (Line 415)**: Modified from "without any paraphrasing or simplification" to:
+   - `"you may not simplify it but you can enhance and weave it into the primary scene naturally"`
+
+**Impact:**
+- AI can now weave character appearance naturally into flowing prose
+- Character appearance (hair, skin, ethnicity) remains verbatim (no simplification)
+- Enables contextual enhancements around core appearance data
+- More natural integration with setting, actions, and atmosphere
+
+---
 
 ## Key Changes (2025-10-01)
 
