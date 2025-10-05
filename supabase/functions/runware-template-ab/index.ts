@@ -643,6 +643,7 @@ async function handleTemplateABRequest(req: Request): Promise<Response> {
     
     // Attempt to load CCS for Mode A
     let positivePrompt: string;
+    let sceneExtracted = false;
     
     if (mode === 'A') {
       console.log(`🚀 Processing Tier 2.5A: Full character consistency`);
@@ -657,6 +658,7 @@ async function handleTemplateABRequest(req: Request): Promise<Response> {
           const characterName = character;
           const bundle = await ccs.getCulturalEnhancements(userInfo, sessionId, characterName);
           const semanticScene = extractSemanticScene(storyText, { userInfo, pageText: storyText });
+          sceneExtracted = !!semanticScene;
           
           positivePrompt = `Narrative: ${storyText}.
 Character Description: ${character} ${age}, ${ethnicityDesc}, ${bundle.hair || hair}, ${bundle.features || features}.
@@ -668,6 +670,7 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
         } catch (ccsError: any) {
           console.warn(`⚠️ CCS getCulturalEnhancements failed, escalating to Mode B inline logic:`, ccsError.message);
           const semanticScene = extractSemanticScene(storyText, { userInfo, pageText: storyText });
+          sceneExtracted = !!semanticScene;
           
           // Escalate to inline Mode B logic (now with enhanced cultural intelligence)
           positivePrompt = `Narrative: ${storyText}.
@@ -680,6 +683,7 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
       } catch (importError: any) {
         console.warn(`⚠️ CCS import failed, using inline Mode B logic:`, importError.message);
         const semanticScene = extractSemanticScene(storyText, { userInfo, pageText: storyText });
+        sceneExtracted = !!semanticScene;
         
         // Use inline Mode B logic (now with enhanced cultural intelligence)
         positivePrompt = `Narrative: ${storyText}.
@@ -694,6 +698,7 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
       
       // Mode B: Pure inline with enhanced cultural intelligence + simple scene extraction
       const simpleScene = extractSimpleScene(storyText);
+      sceneExtracted = !!simpleScene;
       
       positivePrompt = `Narrative: ${storyText}.
 Subject: ${character}, ${age}, ${ethnicityDesc}, ${hair}, ${features}.
@@ -741,7 +746,11 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
       positivePrompt,
       negativePrompt,
       styleFrameworkUsed: styleFramework.name,
-      templateComplexity: mode
+      templateComplexity: mode,
+      metadata: {
+        ccsBootStatus: ccsBootStatus.loaded,
+        sceneExtracted: sceneExtracted,
+      }
     });
   } catch (error: any) {
     console.error(`❌ Template AB error:`, error);

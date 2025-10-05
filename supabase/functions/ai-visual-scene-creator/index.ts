@@ -1282,7 +1282,11 @@ serve(async (req) => {
       // Processing metadata
       requestId,
       timestamp: new Date().toISOString(),
-      processingTime: Date.now()
+      processingTime: Date.now(),
+      metadata: {
+        ccsBootStatus: ccsBootStatus.loaded,
+        sceneExtracted: !!visualSchema.primaryScene,
+      }
     };
 
         console.log(`✅ [${requestId}] Response prepared:`, {
