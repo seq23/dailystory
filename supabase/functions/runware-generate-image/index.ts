@@ -838,6 +838,7 @@ async function processInlinedTier1(
           pageText: storyText || pageText,
           userInfo: {
             ...userInfo,
+            age: userInfo?.age || structuredAvatarData?.age || 6,
             structuredAvatarData,
           },
         sessionId,
@@ -998,7 +999,7 @@ async function processInlinedTier1(
 
   const mainCharacterDetails = `Beautiful ${characterReference} character ${characterName}${ageText}${
     characterSeed?.characterDescription && !hasAgeInDescription ? `, ${characterSeed.characterDescription}` : ""
-  }${culturalBundle?.hair ? `, ${culturalBundle.hair}` : ""}${culturalBundle?.features ? `, ${culturalBundle.features}` : ""}`;
+  }${culturalBundle?.features ? `, ${culturalBundle.features}` : ""}`;
 
   const secondaryCharsText =
     secondaryCharacterSeeds.length > 0
@@ -1006,14 +1007,15 @@ async function processInlinedTier1(
       : "";
   const animalsText =
     detectedAnimals?.length > 0 ? `Including ${detectedAnimals.map((a) => a.name || a.type).join(", ")}` : "";
+  const coloredObjectsText = coloredObjects ? `Featuring ${coloredObjects}` : "";
   // Phase 2: Remove sessionSetting duplication - it's already in aiSchema.sceneSettings
-  const consistencyElements = [secondaryCharsText, animalsText].filter(Boolean).join(", ");
+  const consistencyElements = [secondaryCharsText, animalsText, coloredObjectsText].filter(Boolean).join(", ");
 
   const enhancedPrompt = COMPLETE_TIER_1_TEMPLATE
     .replace("{primaryScene}", primaryScene)
     .replace("{mainCharacterDetails}", mainCharacterDetails)
     .replace("{secondaryCharacters}", consistencyElements ? `${consistencyElements}. ` : "")
-    .replace("{coloredObjects}", coloredObjects ? `Featuring ${coloredObjects}. ` : "")
+    .replace("{coloredObjects}", "")
     .replace("{settingContext}", aiSchema?.sceneSettings ? `In ${aiSchema.sceneSettings}. ` : "")
     .replace("{styleFramework}", styleFramework);
 
