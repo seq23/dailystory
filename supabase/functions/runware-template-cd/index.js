@@ -258,7 +258,6 @@ function generateTier25C(storyText, userInfo, avatarIdentity, failedTierData = {
   }
   
   // Component 3: Brand Suffix (hardcoded framework - ALWAYS LAST)
-  const difficulty = userInfo?.difficulty || 'medium';
   const hardcodedFramework = getNuclearStyleFramework(difficulty);
   
   // NUCLEAR CONCATENATION - NO placeholders, NO resolution, NO fallback, WITH LINE BREAKS
