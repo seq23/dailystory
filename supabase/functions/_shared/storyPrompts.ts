@@ -177,11 +177,10 @@ SENTENCE CONSTRUCTION:
 - Simple present/past tense, subject-verb-object structure
 - Mix simple sentences with compound sentences using "and," "but," "so"
 
-VOCABULARY INTEGRATION:
-- PRIORITY 1: VocabularyService.getUserVocabulary() - User-specified words override all grade restrictions
-- PRIORITY 2: getVocabularySet(1) - Level 1 system vocabulary (5-7 years: Dolch 1st grade + CVC expansion)
-- User vocabulary takes absolute priority and must be included regardless of grade level
-- When no user vocabulary exists, enforce Level 1 compliance for developing readers (70% minimum)
+🎯 VOCABULARY REQUIREMENTS:
+- PRIORITY 1 (INCLUDE ALL 100%): User-specified words from VocabularyService.getUserVocabulary() - These words were specifically requested by the user/teacher and must be woven naturally into the story. User vocabulary takes absolute priority and must be included regardless of grade level restrictions.
+- PRIORITY 2 (TARGET 50%+ USAGE): getVocabularySet(1) - Level 1 system vocabulary (5-7 years: Dolch 1st grade + CVC expansion). Use at least half of these grade-appropriate words to support learning goals and reading development.
+- When no user vocabulary exists, focus on Level 1 compliance for developing readers.
 
 CONTENT SAFETY:
 - G-rated content only
@@ -226,11 +225,10 @@ SENTENCE CONSTRUCTION:
 - Mix simple and compound sentences
 - Use descriptive language and varied sentence beginnings
 
-VOCABULARY INTEGRATION:
-- PRIORITY 1: VocabularyService.getUserVocabulary() - User-specified words override all grade restrictions
-- PRIORITY 2: getVocabularySet(2) - Level 2 system vocabulary (7-9 years: Dolch 2nd grade + compound words)
-- User vocabulary takes absolute priority and must be included regardless of grade level
-- When no user vocabulary exists, enforce Level 2 compliance for intermediate readers (60% minimum)
+🎯 VOCABULARY REQUIREMENTS:
+- PRIORITY 1 (INCLUDE ALL 100%): User-specified words from VocabularyService.getUserVocabulary() - These words were specifically requested by the user/teacher and must be woven naturally into the story. User vocabulary takes absolute priority and must be included regardless of grade level restrictions.
+- PRIORITY 2 (TARGET 50%+ USAGE): getVocabularySet(2) - Level 2 system vocabulary (7-9 years: Dolch 2nd grade + compound words). Use at least half of these grade-appropriate words to support learning goals and vocabulary development.
+- When no user vocabulary exists, focus on Level 2 compliance for intermediate readers.
 
 CONTENT SAFETY:
 - Age-appropriate content
@@ -275,11 +273,10 @@ SENTENCE CONSTRUCTION:
 - Complex sentences with dependent clauses
 - Descriptive language and sophisticated vocabulary
 
-VOCABULARY INTEGRATION:
-- PRIORITY 1: VocabularyService.getUserVocabulary() - User-specified words override all grade restrictions
-- PRIORITY 2: getVocabularySet(3) - Level 3 system vocabulary (9-11 years: 3rd-4th grade academic terms)
-- User vocabulary takes absolute priority and must be included regardless of grade level
-- When no user vocabulary exists, enforce Level 3 compliance for advanced elementary readers (50% minimum)
+🎯 VOCABULARY REQUIREMENTS:
+- PRIORITY 1 (INCLUDE ALL 100%): User-specified words from VocabularyService.getUserVocabulary() - These words were specifically requested by the user/teacher and must be woven naturally into the story. User vocabulary takes absolute priority and must be included regardless of grade level restrictions.
+- PRIORITY 2 (TARGET 50%+ USAGE): getVocabularySet(3) - Level 3 system vocabulary (9-11 years: 3rd-4th grade academic terms). Use at least half of these grade-appropriate words to support learning goals and academic vocabulary development.
+- When no user vocabulary exists, focus on Level 3 compliance for advanced elementary readers.
 
 CONTENT SAFETY:
 - Age-appropriate themes
@@ -324,11 +321,10 @@ SENTENCE CONSTRUCTION:
 - Literary devices and advanced vocabulary
 - Nuanced character development
 
-VOCABULARY INTEGRATION:
-- PRIORITY 1: VocabularyService.getUserVocabulary() - User-specified words override all grade restrictions
-- PRIORITY 2: getVocabularySet(4) - Level 4 system vocabulary (11-13+ years: comprehensive 7th-12th grade)
-- User vocabulary takes absolute priority and must be included regardless of grade level
-- When no user vocabulary exists, enforce Level 4 compliance for advanced readers (50% minimum)
+🎯 VOCABULARY REQUIREMENTS:
+- PRIORITY 1 (INCLUDE ALL 100%): User-specified words from VocabularyService.getUserVocabulary() - These words were specifically requested by the user/teacher and must be woven naturally into the story. User vocabulary takes absolute priority and must be included regardless of grade level restrictions.
+- PRIORITY 2 (TARGET 50%+ USAGE): getVocabularySet(4) - Level 4 system vocabulary (11-13+ years: comprehensive 7th-12th grade). Use at least half of these grade-appropriate words to support learning goals and advanced vocabulary development.
+- When no user vocabulary exists, focus on Level 4 compliance for advanced readers.
 
 CONTENT SAFETY:
 - Age-appropriate mature themes
@@ -370,11 +366,10 @@ PAGE TEXT
 ***
 Continue in this exact format, using *** to separate each story page.
 
-VOCABULARY INTEGRATION:
-- PRIORITY 1: VocabularyService.getUserVocabulary() - User-specified words override all grade restrictions
-- PRIORITY 2: getVocabularySet(4) - Level 4 system vocabulary (6th grade uses comprehensive expert-level vocabulary)
-- User vocabulary takes absolute priority and must be included regardless of grade level
-- When no user vocabulary exists, use Level 4 vocabulary with 6th grade sentence complexity
+🎯 VOCABULARY REQUIREMENTS:
+- PRIORITY 1 (INCLUDE ALL 100%): User-specified words from VocabularyService.getUserVocabulary() - These words were specifically requested by the user/teacher and must be woven naturally into the story. User vocabulary takes absolute priority and must be included regardless of grade level restrictions.
+- PRIORITY 2 (TARGET 50%+ USAGE): getVocabularySet(4) - Level 4 system vocabulary (6th grade uses comprehensive expert-level vocabulary). Use at least half of these educational words to support advanced learning goals.
+- When no user vocabulary exists, use Level 4 vocabulary with 6th grade sentence complexity.
 
 CONTENT SAFETY:
 - Age-appropriate content for 6th grade level with mature themes handled sensitively
@@ -417,11 +412,10 @@ PAGE TEXT
 ***
 Continue in this exact format, using *** to separate each story page.
 
-VOCABULARY INTEGRATION:
-- PRIORITY 1: VocabularyService.getUserVocabulary() - User-specified words override all grade restrictions
-- PRIORITY 2: getVocabularySet(4) - Level 4 system vocabulary (7th grade uses comprehensive expert-level vocabulary)
-- User vocabulary takes absolute priority and must be included regardless of grade level
-- When no user vocabulary exists, use Level 4 vocabulary with 7th grade sentence complexity
+🎯 VOCABULARY REQUIREMENTS:
+- PRIORITY 1 (INCLUDE ALL 100%): User-specified words from VocabularyService.getUserVocabulary() - These words were specifically requested by the user/teacher and must be woven naturally into the story. User vocabulary takes absolute priority and must be included regardless of grade level restrictions.
+- PRIORITY 2 (TARGET 50%+ USAGE): getVocabularySet(4) - Level 4 system vocabulary (7th grade uses comprehensive expert-level vocabulary). Use at least half of these educational words to support advanced learning goals.
+- When no user vocabulary exists, use Level 4 vocabulary with 7th grade sentence complexity.
 
 CONTENT SAFETY:
 - Age-appropriate content for 7th grade level with mature themes handled sensitively
@@ -464,11 +458,10 @@ PAGE TEXT
 ***
 Continue in this exact format, using *** to separate each story page.
 
-VOCABULARY INTEGRATION:
-- PRIORITY 1: VocabularyService.getUserVocabulary() - User-specified words override all grade restrictions
-- PRIORITY 2: getVocabularySet(4) - Level 4 system vocabulary (8th grade uses comprehensive expert-level vocabulary)
-- User vocabulary takes absolute priority and must be included regardless of grade level
-- When no user vocabulary exists, use Level 4 vocabulary with 8th grade sentence complexity
+🎯 VOCABULARY REQUIREMENTS:
+- PRIORITY 1 (INCLUDE ALL 100%): User-specified words from VocabularyService.getUserVocabulary() - These words were specifically requested by the user/teacher and must be woven naturally into the story. User vocabulary takes absolute priority and must be included regardless of grade level restrictions.
+- PRIORITY 2 (TARGET 50%+ USAGE): getVocabularySet(4) - Level 4 system vocabulary (8th grade uses comprehensive expert-level vocabulary). Use at least half of these educational words to support advanced learning goals.
+- When no user vocabulary exists, use Level 4 vocabulary with 8th grade sentence complexity.
 
 CONTENT SAFETY:
 - Age-appropriate content for 8th grade level with mature themes handled sensitively
@@ -511,11 +504,10 @@ PAGE TEXT
 ***
 Continue in this exact format, using *** to separate each story page.
 
-VOCABULARY INTEGRATION:
-- PRIORITY 1: VocabularyService.getUserVocabulary() - User-specified words override all grade restrictions
-- PRIORITY 2: getVocabularySet(4) - Level 4 system vocabulary (9th grade uses comprehensive expert-level vocabulary)
-- User vocabulary takes absolute priority and must be included regardless of grade level
-- When no user vocabulary exists, use Level 4 vocabulary with 9th grade sentence complexity
+🎯 VOCABULARY REQUIREMENTS:
+- PRIORITY 1 (INCLUDE ALL 100%): User-specified words from VocabularyService.getUserVocabulary() - These words were specifically requested by the user/teacher and must be woven naturally into the story. User vocabulary takes absolute priority and must be included regardless of grade level restrictions.
+- PRIORITY 2 (TARGET 50%+ USAGE): getVocabularySet(4) - Level 4 system vocabulary (9th grade uses comprehensive expert-level vocabulary). Use at least half of these educational words to support advanced learning goals.
+- When no user vocabulary exists, use Level 4 vocabulary with 9th grade sentence complexity.
 
 CONTENT SAFETY:
 - Age-appropriate content for 9th grade level with mature themes handled sensitively
@@ -558,11 +550,10 @@ PAGE TEXT
 ***
 Continue in this exact format, using *** to separate each story page.
 
-VOCABULARY INTEGRATION:
-- PRIORITY 1: VocabularyService.getUserVocabulary() - User-specified words override all grade restrictions
-- PRIORITY 2: getVocabularySet(4) - Level 4 system vocabulary (10th grade uses comprehensive expert-level vocabulary)
-- User vocabulary takes absolute priority and must be included regardless of grade level
-- When no user vocabulary exists, use Level 4 vocabulary with 10th grade sentence complexity
+🎯 VOCABULARY REQUIREMENTS:
+- PRIORITY 1 (INCLUDE ALL 100%): User-specified words from VocabularyService.getUserVocabulary() - These words were specifically requested by the user/teacher and must be woven naturally into the story. User vocabulary takes absolute priority and must be included regardless of grade level restrictions.
+- PRIORITY 2 (TARGET 50%+ USAGE): getVocabularySet(4) - Level 4 system vocabulary (10th grade uses comprehensive expert-level vocabulary). Use at least half of these educational words to support advanced learning goals.
+- When no user vocabulary exists, use Level 4 vocabulary with 10th grade sentence complexity.
 
 CONTENT SAFETY:
 - Age-appropriate content for 10th grade level with mature themes handled sensitively

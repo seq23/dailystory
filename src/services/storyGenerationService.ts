@@ -340,13 +340,13 @@ export class StoryGenerationService {
 Create a never-ending story for ${essentialUserInfo.name}, age ${essentialUserInfo.age}. ${userPreferences}Theme: ${specialRequestContent}.
 
 ${vocabularyConfig.hasUserWords 
-  ? `Vocabulary System - User Priority Mode:
-1. MANDATORY (100% INCLUSION): Use ALL of these user-specified words: ${vocabularyConfig.userWords.join(', ')} (sources: ${vocabularyConfig.sources.join(', ')})
-2. SUPPLEMENTAL (${Math.round(vocabularyConfig.complianceTarget * 100)}% compliance): ${educationalStandards}
+  ? `🎯 VOCABULARY REQUIREMENTS:
+1. CRITICAL PRIORITY - INCLUDE ALL 100%: Use ALL of these user-specified words naturally in your story: ${vocabularyConfig.userWords.join(', ')} (sources: ${vocabularyConfig.sources.join(', ')}). These words were specifically requested by the user/teacher and must be woven into the narrative.
+2. EDUCATIONAL VOCABULARY - TARGET 50%+ USAGE: ${educationalStandards}. Use at least half of these grade-level words to support learning goals while maintaining story flow.
 3. DIFFICULTY CONTEXT: Story difficulty level is ${vocabularyConfig.difficultyLevel}
 4. FALLBACK: Age-appropriate vocabulary for ${essentialUserInfo.age}-year-olds`
-  : `Vocabulary System - Educational Standards Mode:
-1. PRIMARY (${Math.round(vocabularyConfig.complianceTarget * 100)}% compliance): ${educationalStandards}
+  : `📚 VOCABULARY REQUIREMENTS - EDUCATIONAL FOCUS:
+1. PRIMARY VOCABULARY - TARGET 50%+ USAGE: ${educationalStandards}. Use at least half of these educational words to support grade-level learning goals.
 2. DIFFICULTY CONTEXT: Story difficulty level is ${vocabularyConfig.difficultyLevel}
 3. FALLBACK: Age-appropriate vocabulary for ${essentialUserInfo.age}-year-olds
 4. EMERGENCY: Simple vocabulary for ages 7-10 if needed`}
@@ -490,11 +490,11 @@ ${culturalContext ? `${culturalContext} ` : ''}Character Info: ${JSON.stringify(
    */
   private static getEducationalVocabularyInstructions(gradeLevel: number, difficultyLevel?: string): string {
     const gradeInstructions = {
-      0: "Use Pre-K vocabulary following Dolch Pre-Primer sight words (40 essential words like: a, and, away, big, blue, can, come, down, find, for)",
-      1: "Use 1st-2nd grade vocabulary following Dolch Primer + Fry's First 100 words (includes: after, again, an, any, as, ask, by, could, every, fly, from, give, going, had, has, her, him, his, how, just)",
-      2: "Use 2nd-3rd grade vocabulary following Dolch Grade 1-2 + Fry's words 101-300 (includes: around, because, before, best, both, buy, call, cold, does, don't, fast, first, five, found, gave, goes, green, its, made, many, off, or, pull, read, right, sing, sit, sleep, tell, their, these, those, upon, us, use, very, wash, which, why, wish, work, would, write, your)",
-      3: "Use 4th-5th grade vocabulary following Common Core Grade 4-5 + Fry's words 301-600 (includes more complex words like: beautiful, country, decided, discover, during, enough, especially, February, finally, happened, important, interesting, library, neither, probably, question, surprised, together, usually, weight)",
-      4: "Use middle/high school vocabulary following Academic Word List + Oxford 3000 + Common Core Tier 2 academic vocabulary (includes sophisticated words like: analyze, approach, appropriate, assume, category, concept, consist, constitute, create, define, demonstrate, element, establish, estimate, evaluate, factor, identify, indicate, individual, interpret, method, occur, percent, period, policy, principle, procedure, process, require, research, respond, role, section, significant, similar, source, specific, structure, theory, vary)"
+      0: "📚 VOCABULARY TARGET (use 50%+ of these): Pre-K vocabulary following Dolch Pre-Primer sight words (40 essential words like: a, and, away, big, blue, can, come, down, find, for). These are foundational reading words for Pre-K learners.",
+      1: "📚 VOCABULARY TARGET (use 50%+ of these): 1st-2nd grade vocabulary following Dolch Primer + Fry's First 100 words (includes: after, again, an, any, as, ask, by, could, every, fly, from, give, going, had, has, her, him, his, how, just). These support early reading development.",
+      2: "📚 VOCABULARY TARGET (use 50%+ of these): 2nd-3rd grade vocabulary following Dolch Grade 1-2 + Fry's words 101-300 (includes: around, because, before, best, both, buy, call, cold, does, don't, fast, first, five, found, gave, goes, green, its, made, many, off, or, pull, read, right, sing, sit, sleep, tell, their, these, those, upon, us, use, very, wash, which, why, wish, work, would, write, your). These words build reading fluency.",
+      3: "📚 VOCABULARY TARGET (use 50%+ of these): 4th-5th grade vocabulary following Common Core Grade 4-5 + Fry's words 301-600 (includes more complex words like: beautiful, country, decided, discover, during, enough, especially, February, finally, happened, important, interesting, library, neither, probably, question, surprised, together, usually, weight). These expand academic vocabulary.",
+      4: "📚 VOCABULARY TARGET (use 50%+ of these): Middle/high school vocabulary following Academic Word List + Oxford 3000 + Common Core Tier 2 academic vocabulary (includes sophisticated words like: analyze, approach, appropriate, assume, category, concept, consist, constitute, create, define, demonstrate, element, establish, estimate, evaluate, factor, identify, indicate, individual, interpret, method, occur, percent, period, policy, principle, procedure, process, require, research, respond, role, section, significant, similar, source, specific, structure, theory, vary). These prepare for advanced academic work."
     };
     
     const baseInstruction = gradeInstructions[gradeLevel as keyof typeof gradeInstructions] || gradeInstructions[1];
