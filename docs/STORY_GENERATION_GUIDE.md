@@ -270,6 +270,69 @@ const applyCulturalContext = (story: string, context: CulturalContext) => {
 }
 ```
 
+## Vocabulary Compliance System (Updated 2025-10-05)
+
+### Compliance Targets
+
+The story generation system enforces vocabulary inclusion through AI prompts at multiple layers:
+
+- **User-Defined Words**: **100% inclusion target** (formWords, specialRequestWords, teacherWords)
+- **Educational Vocabulary**: **50%+ inclusion target** (grade-level appropriate: Dolch, Fry, Common Core)
+- **Approach**: Guidance-based (no validation/rejection)
+
+### Priority System
+
+**PRIORITY 1 (100% Target)**: User-specified vocabulary
+- Sources: Form input, special requests, teacher-provided words
+- Treatment: Must be woven naturally into the story narrative
+- Override: Takes absolute priority over grade-level restrictions
+- Example: If a teacher provides "photosynthesis, chlorophyll, oxygen", these must appear regardless of student age
+
+**PRIORITY 2 (50%+ Target)**: Educational vocabulary
+- Sources: Dolch sight words, Fry word lists, Common Core standards
+- Treatment: Use at least half to support learning goals
+- Context: Grade-appropriate vocabulary based on user's age/grade level
+- Example: 2nd graders get Dolch Grade 1-2 + Fry 101-300 words
+
+### Implementation Layers
+
+Vocabulary compliance is enforced through strengthened AI prompts at multiple system layers:
+
+1. **Frontend Bundle Generation** (`src/services/storyGenerationService.ts`)
+   - Collects user vocabulary from multiple sources
+   - Selects grade-appropriate educational vocabulary
+   - Constructs vocabulary requirements with clear priorities
+
+2. **Backend Story Generation** (`supabase/functions/_shared/storyPrompts.ts`)
+   - Level-specific prompts (Easy, Medium, Hard, Expert, 6th-10th grade)
+   - Each level reinforces Priority 1 (100%) and Priority 2 (50%+) targets
+   - Natural integration emphasized over forced vocabulary insertion
+
+### Prompt Characteristics
+
+- **Visual Markers**: Uses 🎯 (critical priority) and 📚 (educational focus) emojis
+- **Explicit Targets**: "INCLUDE ALL 100%" and "TARGET 50%+ USAGE"
+- **Educational Context**: Explains why vocabulary matters (e.g., "support learning goals")
+- **Encouraging Language**: Positive instructions without threat of rejection
+- **Source Attribution**: Identifies where user words came from (form/teacher/special-request)
+
+### Complete Prompt Reference
+
+For **exact word-for-word prompts** used throughout the system, see:
+- **[VOCABULARY_COMPLIANCE_PROMPTS.md](./VOCABULARY_COMPLIANCE_PROMPTS.md)** - Complete prompt reference with line numbers
+
+### Quality Assurance
+
+**No Story Rejection**: Stories are never rejected for vocabulary non-compliance. This ensures:
+- No user frustration from regeneration loops
+- Natural narrative flow takes priority over forced vocabulary
+- Educational goals are encouraged, not mandated
+
+**Monitoring Approach**:
+- Vocabulary inclusion rates logged in analytics
+- User satisfaction metrics tracked
+- A/B testing of compliance rate impact on engagement
+
 ## Difficulty Level Adaptation
 
 ### Level Mapping

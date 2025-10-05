@@ -158,6 +158,87 @@ graph TD
     H --> I[Story Parsing & Return]
 ```
 
+## **Vocabulary Integration - Compliance Targets**
+
+### **Updated System (2025-10-05)**
+
+The vocabulary system was strengthened to achieve higher compliance rates through enhanced AI prompts:
+
+**Compliance Targets:**
+- **User-Defined Vocabulary**: **100% inclusion target**
+  - Sources: formWords, specialRequestWords, teacherWords
+  - Treatment: Absolute priority, must be woven naturally into narrative
+  - Override: Takes precedence over grade-level restrictions
+
+- **Educational Vocabulary**: **50%+ inclusion target**
+  - Sources: Dolch sight words, Fry word lists, Common Core standards
+  - Treatment: At least half of grade-level vocabulary should be used
+  - Context: Supports learning goals while maintaining story flow
+
+### **Prompt Strengthening Changes**
+
+**User Words Enhancement:**
+- **Before**: "Use these user-specified words: [list]"
+- **After**: "🎯 CRITICAL PRIORITY - INCLUDE ALL 100%: Use ALL of these user-specified words naturally..."
+
+**Educational Vocabulary Enhancement:**
+- **Before**: "VOCABULARY COMPLIANCE (70% minimum)"
+- **After**: "📚 EDUCATIONAL VOCABULARY - TARGET 50%+ USAGE: Use at least half of these grade-level words..."
+
+**Key Improvements:**
+- Added explicit percentage targets (100% and 50%+)
+- Introduced priority labels (PRIORITY 1, PRIORITY 2)
+- Added visual emoji markers (🎯 📚) for prominence
+- Included educational context and reasoning
+- Used encouraging language without rejection threats
+
+### **Implementation Architecture**
+
+**Frontend Layer** (`src/services/storyGenerationService.ts`):
+- Lines 342-352: Main vocabulary template with dual priority system
+- Lines 493-497: Grade-level vocabulary instructions (0-4)
+
+**Backend Layer** (`supabase/functions/_shared/storyPrompts.ts`):
+- Level 0 (Pre-Reader): Unchanged 70% system (lines 109-113)
+- Level 1 (Easy): Updated 100%/50%+ system (lines 180-183)
+- Level 2 (Medium): Updated 100%/50%+ system (lines 228-231)
+- Level 3 (Hard): Updated 100%/50%+ system (lines 276-279)
+- Level 4 (Expert): Updated 100%/50%+ system (lines 324-327)
+- Expert Grades 6-10: Updated 100%/50%+ system (multiple locations)
+
+### **Quality Approach**
+
+**Guidance-Based, Not Validation-Based:**
+- No story rejection for vocabulary non-compliance
+- Prompts encourage compliance without enforcement
+- Natural narrative flow prioritized over forced vocabulary
+- User experience preserved (no regeneration loops)
+
+**Monitoring Strategy:**
+- Log vocabulary inclusion rates in analytics
+- Track user satisfaction relative to compliance
+- A/B test compliance impact on engagement
+- Periodic manual review of generated stories
+
+### **Expected Outcomes**
+
+**Compliance Rate Improvements:**
+- User vocabulary: Target 95-100% (up from ~60-75%)
+- System vocabulary: Target 50-70% (up from ~40-60%)
+- Consistent compliance expectations across all levels
+
+**Performance Metrics:**
+- Generation time: No significant impact expected
+- Story quality: Maintained or improved through better vocabulary integration
+- User satisfaction: Improved through better vocabulary delivery
+
+### **Complete Prompt Reference**
+
+For **exact word-for-word prompts** and detailed implementation guide, see:
+- **[VOCABULARY_COMPLIANCE_PROMPTS.md](./VOCABULARY_COMPLIANCE_PROMPTS.md)** - Complete reference
+
+---
+
 ## **Vocabulary Integration System**
 
 ### **VocabularyTrackingService Features**
