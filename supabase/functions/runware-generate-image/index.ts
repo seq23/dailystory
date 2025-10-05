@@ -214,8 +214,6 @@ function emergencyHairFallback(skinTone: string | undefined): string {
 // COMPLETE_TIER_1_TEMPLATE: 4-section structured template
 const COMPLETE_TIER_1_TEMPLATE = `PRIMARY SCENE: {primaryScene}.
 
-MAIN CHARACTER DESCRIPTION (USE IF MAIN CHARACTER IS IN PRIMARY SCENE ONLY): {mainCharacterDetails}.
-
 CONSISTENCY: {secondaryCharacters}{coloredObjects}{settingContext}.
 
 BRAND SUFFIX: {styleFramework}.`;
