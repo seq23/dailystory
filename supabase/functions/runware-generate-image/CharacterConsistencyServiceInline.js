@@ -655,7 +655,8 @@ export class CharacterConsistencyServiceInline {
   async getStructuredAvatarData(sessionId, userInfo) {
     const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
     const avatarType = userInfo?.avatar?.type || userInfo?.avatarType || 'child';
-    const hairColor = userInfo?.avatar?.hairColor || 'brown hair';
+    const hairColor = userInfo?.avatar?.hairColor || 
+                      CharacterConsistencyServiceInline.getHairForSkinTone(skinTone, sessionId, avatarType);
     
     return {
       type: avatarType,
@@ -686,13 +687,40 @@ export class CharacterConsistencyServiceInline {
 
   async getCulturalEnhancements(userInfo, sessionId, characterName = 'child') {
     const skinTone = userInfo?.skinTone || 'medium';
-    const hairOptions = CharacterConsistencyServiceInline.HAIR_BY_SKIN_TONE_INLINE[skinTone] || 
-                        CharacterConsistencyServiceInline.HAIR_BY_SKIN_TONE_INLINE.medium;
+    const normalizedTone = (skinTone || 'medium').toLowerCase();
+    const language = userInfo?.language || userInfo?.nativeLanguage || 'en';
+    const avatarType = userInfo?.avatar?.type || userInfo?.avatarType || 'child';
     
-    const hair = pick(hairOptions, sessionId);
-    const features = CharacterConsistencyServiceInline.getSkinFeatures(skinTone, sessionId);
+    // ✅ BUSINESS RULE: African American enhancements ONLY for dark skin + Western languages
+    const qualifiesForAfricanAmericanEnhancements = 
+      (normalizedTone === 'dark') && 
+      ['en', 'en-US', 'es', 'fr', 'pt'].includes(language);
     
-    return { hair, features };
+    if (qualifiesForAfricanAmericanEnhancements) {
+      // Use African American cultural bundles (30 hair + 36 features)
+      const gender = avatarType === 'girl' ? 'girls' : 
+                     avatarType === 'boy' ? 'boys' : 
+                     'child';
+      const hairOptions = CharacterConsistencyServiceInline.AFRICAN_AMERICAN_HAIR_INLINE[gender] ||
+                          CharacterConsistencyServiceInline.AFRICAN_AMERICAN_HAIR_INLINE['child'] ||
+                          CharacterConsistencyServiceInline.AFRICAN_AMERICAN_HAIR_INLINE['boys'];
+      const featureOptions = CharacterConsistencyServiceInline.AFRICAN_AMERICAN_FACIAL_FEATURES_INLINE;
+      
+      return {
+        hair: CharacterConsistencyServiceInline.seededPick(hairOptions, sessionId),
+        features: CharacterConsistencyServiceInline.seededPick(featureOptions, sessionId)
+      };
+    } else {
+      // Use generic hair/features from skin tone arrays (73 hair variations, generic features)
+      const hairOptions = CharacterConsistencyServiceInline.HAIR_BY_SKIN_TONE_INLINE[normalizedTone] || 
+                          CharacterConsistencyServiceInline.HAIR_BY_SKIN_TONE_INLINE.medium;
+      const features = CharacterConsistencyServiceInline.getSkinFeatures(normalizedTone, sessionId);
+      
+      return { 
+        hair: CharacterConsistencyServiceInline.seededPick(hairOptions, sessionId), 
+        features 
+      };
+    }
   }
 
   // ============= SECTION 5: INLINE CULTURAL DATA =============
@@ -837,6 +865,13 @@ export class CharacterConsistencyServiceInline {
       dark: 'deep brown skin with warm undertones'
     };
     return features[skinTone] || features.medium;
+  }
+
+  static getHairForSkinTone(skinTone, sessionId, avatarType = 'child') {
+    const normalizedTone = (skinTone || 'medium').toLowerCase();
+    const hairArray = CharacterConsistencyServiceInline.HAIR_BY_SKIN_TONE_INLINE[normalizedTone] || 
+                      CharacterConsistencyServiceInline.HAIR_BY_SKIN_TONE_INLINE.medium;
+    return CharacterConsistencyServiceInline.seededPick(hairArray, sessionId);
   }
 }
 

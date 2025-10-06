@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-10-06T02:35:00Z - Fixed Tier 1 strict-mode local variable declarations (characterSeed, culturalBundle, etc.)
+// DEPLOY_MARKER: 2025-10-06T03:40:00Z - Fixed hair fallback + language-based cultural enhancement filter
 
 // Inlined orchestrator logic - no more lazy loading
 
