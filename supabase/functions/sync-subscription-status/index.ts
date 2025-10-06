@@ -29,9 +29,12 @@ serve(async (req) => {
         message: "Payment client unavailable"
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
+        status: 503,
       });
     }
+
+    // Create type-safe constant to prevent undefined access
+    const client = supabaseClient;
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) {
@@ -41,7 +44,7 @@ serve(async (req) => {
         message: "Stripe not configured"
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
+        status: 503,
       });
     }
 
@@ -54,12 +57,24 @@ serve(async (req) => {
         message: "No authorization"
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
+        status: 401,
+      });
+    }
+
+    // Add guard before critical auth operation
+    if (!client || !client.auth) {
+      logStep("Client lost connection before auth check");
+      return new Response(JSON.stringify({
+        success: false,
+        message: "Database connection lost"
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 503,
       });
     }
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: authError } = await supabaseClient.auth.getUser(token);
+    const { data: userData, error: authError } = await client.auth.getUser(token);
     
     if (authError || !userData?.user?.email) {
       logStep("Auth failed", { error: authError?.message });
@@ -68,42 +83,75 @@ serve(async (req) => {
         message: "Authentication failed"
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
+        status: 401,
       });
     }
 
     const user = userData.user;
     logStep("Syncing subscription for user", { email: user.email });
 
-    // Check for manual override first
-    const { data: subRow } = await supabaseClient
-      .from("subscribers")
-      .select("override_premium, override_tier, override_end, stripe_customer_id")
-      .eq("email", user.email)
-      .maybeSingle();
+    // Check for manual override first - wrapped in try-catch
+    try {
+      const { data: subRow, error: dbError } = await client
+        .from("subscribers")
+        .select("override_premium, override_tier, override_end, stripe_customer_id")
+        .eq("email", user.email)
+        .maybeSingle();
 
-    const overrideActive = subRow?.override_premium === true &&
-      (!subRow.override_end || new Date(subRow.override_end) > new Date());
+      if (dbError) {
+        logStep("Database query failed", { error: dbError.message });
+        return new Response(JSON.stringify({
+          success: false,
+          message: "Database operation failed"
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 503,
+        });
+      }
 
-    if (overrideActive) {
-      logStep("Override active - updating cache", { tier: subRow.override_tier });
-      await supabaseClient.from("subscribers").upsert({
-        email: user.email,
-        user_id: user.id,
-        stripe_customer_id: subRow?.stripe_customer_id ?? null,
-        subscribed: true,
-        subscription_tier: subRow?.override_tier ?? "Premium",
-        subscription_end: subRow?.override_end ?? null,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'email' });
+      const overrideActive = subRow?.override_premium === true &&
+        (!subRow.override_end || new Date(subRow.override_end) > new Date());
 
+      if (overrideActive) {
+        logStep("Override active - updating cache", { tier: subRow.override_tier });
+        const { error: upsertError } = await client.from("subscribers").upsert({
+          email: user.email,
+          user_id: user.id,
+          stripe_customer_id: subRow?.stripe_customer_id ?? null,
+          subscribed: true,
+          subscription_tier: subRow?.override_tier ?? "Premium",
+          subscription_end: subRow?.override_end ?? null,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'email' });
+
+        if (upsertError) {
+          logStep("Database upsert failed", { error: upsertError.message });
+          return new Response(JSON.stringify({
+            success: false,
+            message: "Database update failed"
+          }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 503,
+          });
+        }
+
+        return new Response(JSON.stringify({
+          success: true,
+          subscribed: true,
+          source: "manual_override"
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
+    } catch (dbError) {
+      logStep("Unexpected database error", { error: dbError instanceof Error ? dbError.message : String(dbError) });
       return new Response(JSON.stringify({
-        success: true,
-        subscribed: true,
-        source: "manual_override"
+        success: false,
+        message: "Database operation failed"
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
+        status: 503,
       });
     }
 
@@ -116,7 +164,7 @@ serve(async (req) => {
         message: "Stripe service unavailable"
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
+        status: 503,
       });
     }
 
@@ -124,24 +172,47 @@ serve(async (req) => {
     
     if (customers.data.length === 0) {
       logStep("No Stripe customer found - updating cache as unsubscribed");
-      await supabaseClient.from("subscribers").upsert({
-        email: user.email,
-        user_id: user.id,
-        stripe_customer_id: null,
-        subscribed: false,
-        subscription_tier: null,
-        subscription_end: null,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'email' });
+      
+      try {
+        const { error: upsertError } = await client.from("subscribers").upsert({
+          email: user.email,
+          user_id: user.id,
+          stripe_customer_id: null,
+          subscribed: false,
+          subscription_tier: null,
+          subscription_end: null,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'email' });
 
-      return new Response(JSON.stringify({
-        success: true,
-        subscribed: false,
-        source: "stripe_api"
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
+        if (upsertError) {
+          logStep("Database upsert failed", { error: upsertError.message });
+          return new Response(JSON.stringify({
+            success: false,
+            message: "Database update failed"
+          }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 503,
+          });
+        }
+
+        return new Response(JSON.stringify({
+          success: true,
+          subscribed: false,
+          source: "stripe_api"
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      } catch (dbError) {
+        logStep("Unexpected database error", { error: dbError instanceof Error ? dbError.message : String(dbError) });
+        return new Response(JSON.stringify({
+          success: false,
+          message: "Database operation failed"
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 503,
+        });
+      }
     }
 
     const customerId = customers.data[0].id;
@@ -176,33 +247,55 @@ serve(async (req) => {
       logStep("No active subscription");
     }
 
-    // Update database cache with fresh Stripe data
-    await supabaseClient.from("subscribers").upsert({
-      email: user.email,
-      user_id: user.id,
-      stripe_customer_id: customerId,
-      subscribed: hasActiveSub,
-      subscription_tier: subscriptionTier,
-      subscription_end: subscriptionEnd,
-      updated_at: new Date().toISOString(),
-    }, { onConflict: 'email' });
+    // Update database cache with fresh Stripe data - wrapped in try-catch
+    try {
+      const { error: upsertError } = await client.from("subscribers").upsert({
+        email: user.email,
+        user_id: user.id,
+        stripe_customer_id: customerId,
+        subscribed: hasActiveSub,
+        subscription_tier: subscriptionTier,
+        subscription_end: subscriptionEnd,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'email' });
 
-    logStep("Cache updated successfully", { subscribed: hasActiveSub });
-    
-    return new Response(JSON.stringify({
-      success: true,
-      subscribed: hasActiveSub,
-      subscription_tier: subscriptionTier,
-      subscription_end: subscriptionEnd,
-      source: "stripe_api"
-    }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 200,
-    });
+      if (upsertError) {
+        logStep("Database upsert failed", { error: upsertError.message });
+        return new Response(JSON.stringify({
+          success: false,
+          message: "Database update failed"
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 503,
+        });
+      }
+
+      logStep("Cache updated successfully", { subscribed: hasActiveSub });
+      
+      return new Response(JSON.stringify({
+        success: true,
+        subscribed: hasActiveSub,
+        subscription_tier: subscriptionTier,
+        subscription_end: subscriptionEnd,
+        source: "stripe_api"
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    } catch (dbError) {
+      logStep("Unexpected database error", { error: dbError instanceof Error ? dbError.message : String(dbError) });
+      return new Response(JSON.stringify({
+        success: false,
+        message: "Database operation failed"
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 503,
+      });
+    }
 
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logStep("ERROR during sync", { message: errorMessage });
+    logStep("ERROR during sync", { message: errorMessage, stack: error instanceof Error ? error.stack : undefined });
     
     return new Response(JSON.stringify({
       success: false,
@@ -210,7 +303,7 @@ serve(async (req) => {
       error: errorMessage
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 200,
+      status: 500,
     });
   }
 });
