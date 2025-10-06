@@ -99,6 +99,28 @@ To verify correct configuration:
 ✅ **DO**: Check edge function logs for import success/failure
 ✅ **DO**: Add `import_map` for NEW functions following receptionist pattern
 
+## October 6, 2025 - Cross-Function Import Configuration
+
+### Functions Requiring import_map for Inline Service Imports:
+
+**ai-visual-scene-creator** requires `import_map` because it imports from orchestrator:
+```toml
+[functions.ai-visual-scene-creator]
+verify_jwt = false
+import_map = "./deno.jsonc"
+```
+
+**runware-template-ab** requires `import_map` because it imports from orchestrator:
+```toml
+[functions.runware-template-ab]
+verify_jwt = false
+import_map = "./deno.jsonc"
+```
+
+**Reason**: Cross-function imports (importing `CharacterConsistencyServiceInline.js` from `runware-generate-image` into other functions) require bundler configuration to include files from other function directories.
+
+**Critical Rule**: Any function importing from another function's directory MUST have `import_map = "./deno.jsonc"` in config.toml.
+
 ## Receptionist Architecture Functions
 
 Functions using the V4.3 Receptionist Architecture pattern require `import_map`:
