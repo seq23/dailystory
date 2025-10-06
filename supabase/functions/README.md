@@ -153,6 +153,12 @@ Version after fixes: Verify significant improvement
 
 ## Forced Redeploy History
 
+**2025-10-06T03:05:00Z** - ai-visual-scene-creator debug ping and live verification
+- Added DEPLOY_MARKER: 2025-10-06T03:05:00Z
+- Added debug ping short-circuit for POST verification (payload.isDebugMode=true, payload.ping='scene')
+- Added console log to confirm running version in edge logs
+- Purpose: Verify new code is live after Status 0 network issues
+
 **2025-01-30T21:30:00Z** - Documentation update for sync anomaly awareness
 - Added "Known Supabase Sync Anomalies" section
 - Updated DEPLOY_MARKER for affected shim files

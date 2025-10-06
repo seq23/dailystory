@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-10-06T02:35:00Z - Fixed supabaseClient lazy init + CCS strict-mode variable declarations
+// DEPLOY_MARKER: 2025-10-06T03:05:00Z - Force redeploy + debug ping to verify live snapshot
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -822,6 +822,7 @@ serve(async (req) => {
   try {
     const requestId = `${Math.random().toString(36).substring(2)}`;
     console.log(`🚀 [${requestId}] ai-visual-scene-creator: POST ${req.url}`);
+    console.log('✅ DEPLOY_MARKER: 2025-10-06T03:05:00Z');
     
     // ============= PROVIDER GATE: Pre-call health check =============
     gateStartTime = Date.now();
@@ -867,6 +868,19 @@ serve(async (req) => {
         tier: 'VALIDATION_FAILED'
       }), {
         status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Debug ping to validate runtime POST without heavy work
+    if (payload?.isDebugMode === true && payload?.ping === 'scene') {
+      if (gatingEnabled && gateAcquired) release(gateKey, true);
+      return new Response(JSON.stringify({
+        success: true,
+        mode: 'debug-ping',
+        marker: '2025-10-06T03:05:00Z',
+      }), {
+        status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
