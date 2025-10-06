@@ -277,22 +277,32 @@ async function generateCompleteVisualSchema(
   
   // ✅ CRASH-PROOF: CCS is OPTIONAL in Direct Mode - use emergency hair fallback if unavailable
   if (!structuredAvatarData) {
-    try {
-      // Two-tier fallback: _shared first, _vendor last resort
-      let ccsModule;
+    // FIRST: Check if orchestrator already passed structuredAvatarData (avoids redundant CCS call)
+    if (userInfo?.structuredAvatarData) {
+      structuredAvatarData = userInfo.structuredAvatarData;
+      console.log(`✅ [TIER_1_PASSTHROUGH] Using structuredAvatarData from orchestrator:`, {
+        hairColor: structuredAvatarData.hairColor,
+        skinFeatures: structuredAvatarData.skinFeatures,
+        source: 'orchestrator_passthrough'
+      });
+    } else {
+      // FALLBACK: Call CCS to generate it (Direct Mode path)
       try {
-        ccsModule = await import('../_shared/CharacterConsistencyService.js');
-        console.log(`✅ [CCS_IMPORT_DM] _shared loaded`);
-      } catch (sharedError) {
-        console.warn(`⚠️ [CCS_IMPORT_DM] _shared failed, trying _vendor:`, sharedError);
-        ccsModule = await import('../_vendor/CharacterConsistencyService.mjs');
-        console.log(`✅ [CCS_IMPORT_DM] _vendor loaded (last resort)`);
-      }
-      
-      characterConsistencyService = ccsModule.characterConsistencyService;
-      structuredAvatarData = await characterConsistencyService.getStructuredAvatarData(sessionId, userInfo);
-      console.log(`✅ Generated complete structuredAvatarData via CharacterConsistencyService:`, structuredAvatarData);
-    } catch (error) {
+        // Two-tier fallback: _shared first, _vendor last resort
+        let ccsModule;
+        try {
+          ccsModule = await import('../_shared/CharacterConsistencyService.js');
+          console.log(`✅ [CCS_IMPORT_DM] _shared loaded`);
+        } catch (sharedError) {
+          console.warn(`⚠️ [CCS_IMPORT_DM] _shared failed, trying _vendor:`, sharedError);
+          ccsModule = await import('../_vendor/CharacterConsistencyService.mjs');
+          console.log(`✅ [CCS_IMPORT_DM] _vendor loaded (last resort)`);
+        }
+        
+        characterConsistencyService = ccsModule.characterConsistencyService;
+        structuredAvatarData = await characterConsistencyService.getStructuredAvatarData(sessionId, userInfo);
+        console.log(`✅ Generated complete structuredAvatarData via CharacterConsistencyService:`, structuredAvatarData);
+      } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       console.warn(`⚠️ [DM] CCS unavailable (NON-FATAL), using emergency hair fallback:`, errorMessage);
       
@@ -339,6 +349,7 @@ async function generateCompleteVisualSchema(
         };
         console.log(`✅ [AISCHEMA_FALLBACK] source=hardcoded, skinTone=${fallbackSkinTone}, ethnicity=${derivedEthnicity}, hairColor=${structuredAvatarData.hairColor}`);
       }
+    }
     }
   }
 
