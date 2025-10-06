@@ -14,6 +14,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, HEAD',
   'Access-Control-Max-Age': '600',
+  'Vary': 'Origin, Access-Control-Request-Headers',
 }
 
 // Diagnostic function to check API key availability
@@ -127,10 +128,10 @@ function getHairColorForSkinTone(skinTone: string | undefined): string | null {
 // Removed: getFallbackTemplate and getEnhancedFallbackPages - replaced by template-service calls
 
 serve(async (req) => {
-  // Handle CORS preflight requests - MUST return 200, not 204
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { 
-      status: 200, 
+      status: 204, 
       headers: corsHeaders 
     });
   }

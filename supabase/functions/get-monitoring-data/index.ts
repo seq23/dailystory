@@ -15,6 +15,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': COMPREHENSIVE_HEADER_BASELINE.join(', '),
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   'Access-Control-Max-Age': '600',
+  'Vary': 'Origin, Access-Control-Request-Headers',
 };
 
 function createCorsResponse(data: any, status = 200) {

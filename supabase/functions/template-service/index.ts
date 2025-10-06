@@ -8,6 +8,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
   'Access-Control-Max-Age': '600',
+  'Vary': 'Origin, Access-Control-Request-Headers',
 };
 
 // GitHub Integration Test - 2025-01-10 - Testing automatic deployment sync
@@ -103,9 +104,9 @@ serve(async (req) => {
     systemsInitialized = true;
   }
   
-  // Handle CORS preflight requests - MUST return 200, not 204
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 200, headers: corsHeaders });
+    return new Response(null, { status: 204, headers: corsHeaders });
   }
   
   // Handle health check requests

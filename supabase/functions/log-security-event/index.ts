@@ -10,6 +10,7 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Max-Age': '600',
   'Content-Type': 'application/json',
+  'Vary': 'Origin, Access-Control-Request-Headers',
 };
 
 interface SecurityEventRequest {
