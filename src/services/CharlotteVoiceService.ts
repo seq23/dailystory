@@ -84,7 +84,7 @@ export class CharlotteVoiceService {
       DebugLogger.log('audio', `✅ Charlotte story reading completed: ${requestId}`);
 
     } catch (error) {
-      DebugLogger.error('audio', `❌ Charlotte story reading failed: ${requestId}`, error);
+      DebugLogger.logToDebugMonitorOnly('audio', `❌ Charlotte story reading failed: ${requestId}`, error);
       throw error; // Let caller handle fallback to prevent duplicate browser TTS
     } finally {
       window.dispatchEvent(new CustomEvent('audio:stopped', { 

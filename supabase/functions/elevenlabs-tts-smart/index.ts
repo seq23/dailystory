@@ -36,13 +36,15 @@ serve(async (req: Request) => {
     });
   } catch (error) {
     console.error("Error in elevenlabs-tts-smart:", error);
+    // ALWAYS return 200 with error flag (prevents 403/500 console spam)
     return new Response(
       JSON.stringify({ 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Internal server error' 
+        success: false,
+        useFallback: true,
+        error: error instanceof Error ? error.message : 'TTS unavailable' 
       }),
       { 
-        status: 500, 
+        status: 200, // Always 200
         headers: { ...corsHeaders, "Content-Type": "application/json" } 
       }
     );

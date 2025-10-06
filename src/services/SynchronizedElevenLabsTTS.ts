@@ -34,12 +34,26 @@ export class SynchronizedElevenLabsTTS {
     context: 'conversation' | 'learning' = 'conversation',
     voiceId: string = 'XB0fDUnXU5powFXDhCwa'
   ): Promise<SynchronizedTTSResult> {
+    // CRITICAL: Check offline before attempting API call
+    if (!navigator.onLine) {
+      DebugLogger.logToDebugMonitorOnly('audio', '🔌 Offline detected - using browser speech immediately');
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 0.8;
+        utterance.pitch = 1.0;
+        utterance.volume = 0.9;
+        window.speechSynthesis.speak(utterance);
+      }
+      throw new Error('Offline - browser speech used');
+    }
+    
     DebugLogger.log('audio', `🔊 Synchronized TTS: "${text}" [Context: ${context}]`);
 
     // Add timeout and network check
     const startTime = Date.now();
     let retries = 0;
-    const maxRetries = 1;
+    const maxRetries = 0; // Fail-fast approach
     const maxTimeoutMs = 10000;
 
     while (retries <= maxRetries) {
@@ -136,7 +150,7 @@ export class SynchronizedElevenLabsTTS {
         };
 
       } catch (timeoutError) {
-        DebugLogger.error('audio', `TTS request timeout/error on attempt ${retries + 1}`, {
+        DebugLogger.logToDebugMonitorOnly('audio', `TTS request timeout/error on attempt ${retries + 1}`, {
           error: timeoutError.message,
           timeElapsed: Date.now() - startTime,
           attempt: retries + 1
@@ -149,7 +163,7 @@ export class SynchronizedElevenLabsTTS {
         }
         
         // Final fallback - browser speech synthesis
-        DebugLogger.warn('audio', 'All TTS attempts failed, falling back to browser speech');
+        DebugLogger.logToDebugMonitorOnly('audio', 'All TTS attempts failed, falling back to browser speech');
         if ('speechSynthesis' in window) {
           window.speechSynthesis.cancel();
           const utterance = new SpeechSynthesisUtterance(text);
