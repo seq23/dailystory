@@ -2314,6 +2314,16 @@ Deno.serve(async (req) => {
                       tier25: false,
                       directMode: false
                     },
+                    ccsMethodStatus: {
+                      getEnhancedCharacterSeed: 'failed',
+                      getCulturalEnhancements: 'failed',
+                      analyzeVisualDetails: 'failed',
+                      getColoredObjects: 'failed',
+                      getSecondaryCharactersForSession: 'failed',
+                      getCharacterAppearanceFromStory: 'failed'
+                    },
+                    ccsImportSource: 'unavailable',
+                    ccsFallbacksActive: ['Nuclear Template 2.5C'],
                     sceneExtracted: false,
                   },
                 };

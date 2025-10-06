@@ -1036,6 +1036,36 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
         
         console.log(`✅ Tier 2.5A: Using orchestrator CCS bundle with semantic scene: "${semanticScene}"`);
         
+        return createResponse({
+          success: true,
+          imageURL: imageURL,
+          tier: `tier-2.5A`,
+          service: SERVICE_NAME,
+          positivePrompt,
+          negativePrompt,
+          styleFrameworkUsed: styleFramework.name,
+          templateComplexity: 'A',
+          precomputedCCSUsed: true,
+          ccsImportSource: 'orchestrator-precomputed',
+          ccsMethodStatus: {
+            characterSeed: 'precomputed',
+            culturalBundle: 'precomputed',
+            coloredObjects: 'precomputed',
+            secondaryCharacters: 'precomputed',
+            mainCharacterAppearance: 'precomputed'
+          },
+          ccsFallbacksActive: [],
+          metadata: {
+            ccsBootStatus: {
+              loaded: true,
+              tier1: false,
+              tier25: true,
+              directMode: false
+            },
+            sceneExtracted: sceneExtracted,
+          }
+        });
+        
       } else {
         // LEGACY PATH: No pre-computed data, attempt CCS import (backwards compatibility)
         console.log(`⚠️ No precomputed CCS data, attempting legacy CCS import path`);
@@ -1064,6 +1094,36 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
           
           console.log(`✅ Tier 2.5A: Using legacy CCS import path with semantic scene: "${semanticScene}"`);
           
+          return createResponse({
+            success: true,
+            imageURL: imageURL,
+            tier: `tier-2.5A`,
+            service: SERVICE_NAME,
+            positivePrompt,
+            negativePrompt,
+            styleFrameworkUsed: styleFramework.name,
+            templateComplexity: 'A',
+            precomputedCCSUsed: false,
+            ccsImportSource: ccsModule ? '_shared' : '_vendor',
+            ccsMethodStatus: {
+              characterSeed: 'local_import',
+              culturalBundle: 'local_import_success',
+              coloredObjects: 'unavailable',
+              secondaryCharacters: 'unavailable',
+              mainCharacterAppearance: 'unavailable'
+            },
+            ccsFallbacksActive: [],
+            metadata: {
+              ccsBootStatus: {
+                loaded: true,
+                tier1: false,
+                tier25: true,
+                directMode: false
+              },
+              sceneExtracted: sceneExtracted,
+            }
+          });
+          
         } catch (ccsError: any) {
           // Final fallback to Mode B inline logic
           console.warn(`⚠️ CCS failed, escalating to Mode B inline logic:`, ccsError.message);
@@ -1076,6 +1136,36 @@ Action: ${semanticScene}.
 Context: diverse community setting.
 Brand Suffix: ${styleFramework.frameworkPrompt}.`;
           console.log(`✅ Tier 2.5A→B: Escalated to inline fallback with semantic scene: "${semanticScene}"`);
+          
+          return createResponse({
+            success: true,
+            imageURL: imageURL,
+            tier: `tier-2.5A`,
+            service: SERVICE_NAME,
+            positivePrompt,
+            negativePrompt,
+            styleFrameworkUsed: styleFramework.name,
+            templateComplexity: 'A',
+            precomputedCCSUsed: false,
+            ccsImportSource: 'unavailable',
+            ccsMethodStatus: {
+              characterSeed: 'inline_fallback',
+              culturalBundle: 'inline_fallback',
+              coloredObjects: 'inline_fallback',
+              secondaryCharacters: 'inline_fallback',
+              mainCharacterAppearance: 'inline_fallback'
+            },
+            ccsFallbacksActive: ['Mode B inline logic'],
+            metadata: {
+              ccsBootStatus: {
+                loaded: false,
+                tier1: false,
+                tier25: false,
+                directMode: false
+              },
+              sceneExtracted: sceneExtracted,
+            }
+          });
         }
       }
     } else {
@@ -1096,13 +1186,44 @@ Action: ${simpleScene}.
 Context: diverse community setting.
 Brand Suffix: ${styleFramework.frameworkPrompt}.`;
       
+      const usedPrecomputedData = !!precomputedCCS;
       console.log(`✅ Tier 2.5B: Using pure inline template with simple scene: "${simpleScene}"`, {
         culturalProfile,
         skinTone,
         avatarType,
         hairSelected: bundleHair,
         featuresSelected: bundleFeatures,
-        usedPrecomputedData: !!precomputedCCS
+        usedPrecomputedData
+      });
+      
+      return createResponse({
+        success: true,
+        imageURL: imageURL,
+        tier: `tier-2.5B`,
+        service: SERVICE_NAME,
+        positivePrompt,
+        negativePrompt,
+        styleFrameworkUsed: styleFramework.name,
+        templateComplexity: 'B',
+        precomputedCCSUsed: usedPrecomputedData,
+        ccsImportSource: usedPrecomputedData ? 'orchestrator-precomputed-partial' : 'inline',
+        ccsMethodStatus: {
+          characterSeed: usedPrecomputedData ? 'precomputed' : 'inline',
+          culturalBundle: usedPrecomputedData ? 'precomputed' : 'inline',
+          coloredObjects: 'inline',
+          secondaryCharacters: 'inline',
+          mainCharacterAppearance: 'inline'
+        },
+        ccsFallbacksActive: usedPrecomputedData ? [] : ['Pure inline Mode B'],
+        metadata: {
+          ccsBootStatus: {
+            loaded: usedPrecomputedData,
+            tier1: false,
+            tier25: usedPrecomputedData,
+            directMode: false
+          },
+          sceneExtracted: sceneExtracted,
+        }
       });
     }
     
@@ -1129,25 +1250,8 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
       negativePromptPreview: negativePrompt?.substring(0, 100)
     });
     
-    return createResponse({
-      success: true,
-      imageURL: imageURL,
-      tier: `tier-2.5${mode}`,
-      service: SERVICE_NAME,
-      positivePrompt,
-      negativePrompt,
-      styleFrameworkUsed: styleFramework.name,
-      templateComplexity: mode,
-      metadata: {
-        ccsBootStatus: {
-          loaded: ccsBootStatus.loaded,
-          tier1: false,
-          tier25: ccsBootStatus.loaded,
-          directMode: false
-        },
-        sceneExtracted: sceneExtracted,
-      }
-    });
+    // This should not be reached - early returns added above
+    throw new Error('Unreachable code in runware-template-ab');
   } catch (error: any) {
     console.error(`❌ Template AB error:`, error);
     

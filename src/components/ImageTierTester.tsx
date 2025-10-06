@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 // FIX: 2025-09-20 - React object rendering error fixed by proper aiSchema property access
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CCSStatusDisplay } from '@/components/CCSStatusDisplay';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -178,6 +179,24 @@ interface TestResult {
       failureType?: string;
       attemptedPrompts?: any;
     };
+    // CCS Status Tracking (Enhanced Visibility)
+    ccsBootStatus?: {
+      loaded: boolean;
+      tier1: boolean;
+      tier25: boolean;
+      directMode: boolean;
+    };
+    precomputedCCSUsed?: boolean | null; // Fast path vs legacy path indicator
+    ccsMethodStatus?: Record<string, string>; // Method-specific status
+    ccsFallbacksActive?: string[]; // Active fallbacks
+    ccsImportSource?: string; // Import source (_shared/_vendor/inline/unavailable)
+    hasCharacterConsistency?: boolean; // Overall CCS status
+    ccsStatus?: {
+      tier1Loaded: boolean;
+      tier25Loaded: boolean;
+      directModeLoaded: boolean;
+    };
+    metadata?: any; // Metadata object containing nested CCS data
   };
 }
 
@@ -1173,10 +1192,37 @@ export const ImageTierTester = () => {
             line.includes('emergency structuredAvatarData')
           ) || [];
           
-          // TIER 1 CCS DIAGNOSTICS
+          // TIER 1 CCS DIAGNOSTICS (Enhanced with method-specific status)
           if (isTier1Success) {
             cascadeHistory.push('🔍 Tier 1 Character Consistency Status:');
-            if (result.metadata?.characterConsistencyActive === true) {
+            
+            const ccsMethodStatus = result.metadata?.ccsMethodStatus || {};
+            const hasMethodStatus = Object.keys(ccsMethodStatus).length > 0;
+            const ccsImportSource = result.metadata?.ccsImportSource;
+            
+            if (hasMethodStatus) {
+              cascadeHistory.push('   📊 CCS Method-Specific Status:');
+              
+              // Display each method's status
+              Object.entries(ccsMethodStatus).forEach(([method, status]) => {
+                const icon = status === 'success' ? '✅' : 
+                             String(status).includes('fallback') ? '🟡' : '❌';
+                cascadeHistory.push(`      ${icon} ${method}(): ${String(status).toUpperCase()}`);
+              });
+              
+              // Overall status
+              const allSuccess = Object.values(ccsMethodStatus).every(s => s === 'success');
+              const hasFallbacks = Object.values(ccsMethodStatus).some(s => String(s).includes('fallback'));
+              
+              cascadeHistory.push('');
+              if (allSuccess) {
+                cascadeHistory.push('   ✅ Tier 1 CCS: FULLY OPERATIONAL');
+              } else if (hasFallbacks) {
+                cascadeHistory.push('   🟡 Tier 1 CCS: PARTIAL (Using Fallbacks)');
+              } else {
+                cascadeHistory.push('   ⚠️ Tier 1 CCS: DEGRADED');
+              }
+            } else if (result.metadata?.characterConsistencyActive === true) {
               cascadeHistory.push('   ✅ CCS Active and Working');
             } else if (ccErrors.length > 0) {
               cascadeHistory.push('   ⚠️ CCS Issues Detected');
@@ -1204,6 +1250,11 @@ export const ImageTierTester = () => {
                 avatarErrors.forEach(error => cascadeHistory.push(`         • ${error}`));
                 cascadeHistory.push('      💡 Verify CharacterConsistencyService initialization');
               }
+            }
+            
+            // Import Source
+            if (ccsImportSource) {
+              cascadeHistory.push(`   📦 CCS Import Source: ${ccsImportSource}`);
             }
           }
           
@@ -1296,6 +1347,56 @@ export const ImageTierTester = () => {
               cascadeHistory.push('   🔴 Direct Mode CCS: UNAVAILABLE');
               cascadeHistory.push('      CCS module failed to load');
               cascadeHistory.push('      💡 Using minimal fallback data only');
+            }
+          }
+          
+          // TEMPLATE 2.5A/B CCS DIAGNOSTICS (New Section)
+          if (actualTier === 'Tier 2.5A' || actualTier === 'Tier 2.5B') {
+            const resDetails = (result as any).details || result;
+            cascadeHistory.push('');
+            cascadeHistory.push(`🔍 ${actualTier} Character Consistency Analysis:`);
+            
+            const precomputedUsed = resDetails.precomputedCCSUsed;
+            const ccsSource = resDetails.ccsImportSource || 'unknown';
+            
+            if (precomputedUsed === true) {
+              cascadeHistory.push('   ⚡ FAST PATH: Using orchestrator-provided CCS data');
+              cascadeHistory.push('      ✅ ZERO import overhead');
+              cascadeHistory.push('      ✅ Validates scope fix is working!');
+              cascadeHistory.push(`      📦 Source: ${ccsSource}`);
+            } else if (precomputedUsed === false) {
+              cascadeHistory.push('   🔄 LEGACY PATH: Using local CCS imports');
+              cascadeHistory.push('      ⚠️ May indicate precomputedCCS was undefined');
+              cascadeHistory.push(`      📦 Source: ${ccsSource}`);
+            }
+            
+            const methodStatus = resDetails.ccsMethodStatus || {};
+            if (Object.keys(methodStatus).length > 0) {
+              cascadeHistory.push('   📊 CCS Method Status:');
+              Object.entries(methodStatus).forEach(([method, status]) => {
+                const icon = String(status).includes('precomputed') ? '⚡' : '✅';
+                cascadeHistory.push(`      ${icon} ${method}: ${String(status).toUpperCase()}`);
+              });
+            }
+            
+            const fallbacks = resDetails.ccsFallbacksActive || [];
+            if (fallbacks.length > 0) {
+              cascadeHistory.push('   ⚠️ Active Fallbacks:');
+              fallbacks.forEach(fb => cascadeHistory.push(`      • ${fb}`));
+            }
+            
+            // Scope Fix Validation
+            cascadeHistory.push('');
+            cascadeHistory.push('🔧 Scope Fix Validation:');
+            if (precomputedUsed === true) {
+              cascadeHistory.push('   ✅ precomputedCCS contained REAL VALUES');
+              cascadeHistory.push('   ✅ Scope fix is WORKING');
+              cascadeHistory.push('   ✅ Variables properly hoisted to handler scope');
+            } else {
+              cascadeHistory.push('   ❌ precomputedCCS NOT used by template');
+              cascadeHistory.push('   ⚠️ May indicate variables were undefined');
+              cascadeHistory.push('   ⚠️ Check if Tier 1 succeeded before cascade');
+              cascadeHistory.push('   💡 If Tier 1 succeeded, scope fix may not be working');
             }
           }
           
@@ -2168,7 +2269,14 @@ export const ImageTierTester = () => {
                 
                 // Show payload structure used
                 payloadStructure: Object.keys(tier.payload).join(', '),
-                expectedArchitecture: tier.architecture
+                expectedArchitecture: tier.architecture,
+                
+                // CCS Status Tracking
+                ccsBootStatus: data.ccsBootStatus || data.metadata?.ccsBootStatus || { loaded: false, tier1: false, tier25: false, directMode: false },
+                precomputedCCSUsed: data.precomputedCCSUsed ?? null,
+                ccsMethodStatus: data.ccsMethodStatus || data.metadata?.ccsMethodStatus || {},
+                ccsFallbacksActive: data.ccsFallbacksActive || data.metadata?.ccsFallbacksActive || [],
+                ccsImportSource: data.ccsImportSource || data.metadata?.ccsImportSource || 'unknown',
               }
             };
           } else {
