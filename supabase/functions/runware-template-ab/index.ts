@@ -1008,6 +1008,9 @@ async function handleTemplateABRequest(req: Request): Promise<Response> {
     const hair = getHairBySkintoneEnhanced(skinTone, sessionId, culturalProfile, avatarType);
     const features = getSkinBySkintoneEnhanced(skinTone, sessionId, culturalProfile);
     
+    // Generate negative prompt (used by all complexity modes)
+    const negativePrompt = generateInlineNuclearNegative(culturalProfile, avatarIdentity.type || 'child', difficulty);
+    
     // Attempt to load CCS for Mode A
     let positivePrompt: string;
     let sceneExtracted = false;

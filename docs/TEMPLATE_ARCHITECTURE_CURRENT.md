@@ -289,6 +289,8 @@ The current template architecture provides:
 - **Bundler Hint**: `import { characterConsistencyService as _ccsHint }` ensures CCS is bundled
 - **Complexity A/B Unified**: Single `handleTemplateABRequest` function with mode-based branching
 
+**Responsibility**: Template AB generates **prompts and metadata only**. It returns `positivePrompt` (constructed from story text, character data, and CCS) and `negativePrompt` (generated via `generateInlineNuclearNegative`), along with CCS metadata and cultural profile information. Image generation is handled downstream by the orchestrator or calling service.
+
 **Key Features**:
 - **Complexity A**: Attempts CharacterConsistencyService via lazy `await import()`, escalates to inline Mode B if CCS fails
 - **Complexity B**: Pure inline logic, no CCS or StaticDataCache imports
