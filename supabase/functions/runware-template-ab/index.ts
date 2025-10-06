@@ -1038,7 +1038,6 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
         
         return createResponse({
           success: true,
-          imageURL: imageURL,
           tier: `tier-2.5A`,
           service: SERVICE_NAME,
           positivePrompt,
@@ -1096,7 +1095,6 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
           
           return createResponse({
             success: true,
-            imageURL: imageURL,
             tier: `tier-2.5A`,
             service: SERVICE_NAME,
             positivePrompt,
@@ -1139,7 +1137,6 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
           
           return createResponse({
             success: true,
-            imageURL: imageURL,
             tier: `tier-2.5A`,
             service: SERVICE_NAME,
             positivePrompt,
@@ -1198,7 +1195,6 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
       
       return createResponse({
         success: true,
-        imageURL: imageURL,
         tier: `tier-2.5B`,
         service: SERVICE_NAME,
         positivePrompt,
@@ -1226,20 +1222,6 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
         }
       });
     }
-    
-    // Generate negative prompt
-    const negativePrompt = generateInlineNuclearNegative(culturalProfile, avatarIdentity.type || 'child', difficulty);
-    
-    console.log(`🎨 Tier 2.5${mode}: Generating image with Runware API`);
-    
-    // Call Runware API
-    const imageURL = await callRunwareAPI(positivePrompt, negativePrompt, { sessionId, pageNumber });
-    
-    console.log(`✅ Tier 2.5${mode}: Result prepared`, {
-      hasImageURL: !!imageURL,
-      imageGenResultType: typeof imageURL,
-      imageURLSource: 'runware_api'
-    });
     
     console.log(`🔍 PROMPT DEBUG - About to return response:`, {
       hasPositivePrompt: !!positivePrompt,
