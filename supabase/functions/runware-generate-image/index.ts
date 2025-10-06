@@ -455,9 +455,9 @@ async function processInlinedTier1(
     // INLINE-FIRST: Try local inline bundle FIRST (always bundled, 100% reliable)
     let service;
     try {
-      const inlineModule = await import("./CharacterConsistencyServiceVendor.js");
+      const inlineModule = await import("./CharacterConsistencyServiceInline.js");
       service = inlineModule.characterConsistencyService;
-      console.log(`✅ [CCS_IMPORT] inline vendor loaded successfully (0ms network delay)`);
+      console.log(`✅ [CCS_IMPORT] inline service loaded successfully (0ms network delay)`);
     } catch (inlineError) {
       // Fallback 1: Try _shared (external bundle)
       console.warn(`⚠️ [CCS_IMPORT] inline import failed, trying _shared:`, inlineError);
