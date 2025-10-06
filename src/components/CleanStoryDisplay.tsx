@@ -2633,7 +2633,7 @@ const initializeStory = async () => {
 
   // Generate illustration for any page index (batch-safe, no UI spinner)
   const generateImageForIndex = async (index: number) => {
-    if (pageImages[index]) return;
+    if (!imagesEnabled || pageImages[index]) return;
     
     const storyText = displayedStory[index];
     if (!storyText) {

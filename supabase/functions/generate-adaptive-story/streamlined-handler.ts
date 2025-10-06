@@ -349,34 +349,33 @@ FAIL-SOFT RULES:
       const continuationInstructions = `
 
 CONTINUATION INSTRUCTIONS (Premium Live Mode):
-CRITICAL: This is a continuing story session. You must seamlessly pick up exactly where the previous page ended.
+This is a continuing story session. Pick up seamlessly where the previous page ended.
 
-NARRATIVE CONTINUITY RULES:
-- Preserve ALL established characters, their personalities, relationships, and current story state
-- Maintain the exact setting, tone, voice, and established plot arcs
-- Use the same narrative style and voice as the existing content
-- Continue character development trajectories that were established
-- Honor any conflicts, mysteries, or story threads that were set up
+ANTI-RESTART GUARDRAILS:
+- Do not restart the scene or re-introduce the protagonist
+- Do not begin with a recap or formulaic openings like "As [Name] remained..." or "[Name] stood..."
+- Continue the exact scene and respond to the last line of the prior page
+- Vary your opening sentence structure; do not reuse prior opening phrases
+- Build forward momentum naturally without meta "to be continued" signals
 
-FLOW AND TRANSITION REQUIREMENTS:
-- Begin this page as if it's the natural next paragraph of the existing story
-- NO recap, summary, or "meanwhile" transitions unless contextually natural
-- Maintain the emotional momentum and pacing from where the story left off
-- If previous page ended mid-scene, continue that exact scene
-- If previous page ended with dialogue, respond appropriately to that dialogue
+NARRATIVE CONTINUITY:
+- Preserve established characters, personalities, relationships, and story state
+- Maintain setting, tone, voice, and plot arcs
+- Honor conflicts, mysteries, and story threads already set up
+- Continue character development trajectories
 
 NEVER-ENDING STORY MODE:
 - NEVER conclude the story unless config.isEndingPage is explicitly true
-- Always assume the story will continue beyond this page
-- Leave natural hooks, questions, or momentum for future continuation
-- Introduce plot developments that can sustain long-term storytelling
-- Build in character growth opportunities that span multiple pages
+- Always assume the story continues beyond this page
+- Use gentle hooks, twists, pauses, and continuation beats as natural momentum (per voice catalog guidance)
+- Introduce plot developments that sustain long-term storytelling
+- Build character growth opportunities across multiple pages
 
-EXISTING STORY CONTEXT (PRESERVE ALL DETAILS):
+EXISTING STORY CONTEXT:
 ${config.existingStory}
 
 CONTINUATION DIRECTIVE:
-Continue from where the story left off. This page must feel like a natural, seamless continuation of the narrative flow. Maintain complete consistency in characters, setting, tone, and established story elements.`;
+Continue naturally from where the story left off. This page is the next paragraph of an ongoing narrative. Maintain consistency and forward momentum.`;
       
       finalSystemPrompt += '\n\n' + continuationInstructions;
       

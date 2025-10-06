@@ -221,13 +221,14 @@ export class LiveGenerationService {
       const { StoryGenerationService } = await import('./storyGenerationService');
       
       // Create enhanced userInfo with null safety and context preservation
-      const lastContextPage = context?.storyContext?.length ? context.storyContext.slice(-1)[0] : '';
       const contextualUserInfo = {
         ...JSON.parse(JSON.stringify(context?.userInfo || {})), // Deep clone
-        specialRequest: `${context?.userInfo?.specialRequest || 'adventure'} (continuing from: ${
-          lastContextPage?.substring(0, 100) || 'beginning'
-        }...)`
       };
+      
+      // Only include specialRequest if user explicitly provided one
+      if (context?.userInfo?.specialRequest) {
+        contextualUserInfo.specialRequest = context.userInfo.specialRequest;
+      }
       
       // Validate contextual integrity
       if (!contextualUserInfo.name) {
@@ -273,10 +274,15 @@ export class LiveGenerationService {
         setTimeout(() => reject(new Error('Next page generation timeout (40s)')), 40000);
       });
       
+      // Use reduced context window: last 2 pages for non-expert, last 3 for expert
+      const backendDiff = DifficultyLevelMapper.toBackend(context.difficulty) as DifficultyLevel;
+      const contextWindow = (backendDiff === 'expert' || context.expertGradeLevel) ? 3 : 2;
+      const recentContext = (context.storyContext || []).slice(-contextWindow).join('\n\n');
+      
       const generationPromise = StoryGenerationService.generateStory(contextualUserInfo, {
         sessionType: 'premium',
         pageNumber: nextPageNumber,
-        existingStory: (context.storyContext || []).join('\n\n'),
+        existingStory: recentContext,
         sessionId: actualSessionId
       });
       
@@ -599,7 +605,7 @@ export class LiveGenerationService {
         body: {
           difficulty: context.difficulty,
           userInfo: context.userInfo,
-          pageCount: pageNumber,
+          pageCount: 1,
           templateIndex: 0
         }
       });
@@ -608,8 +614,8 @@ export class LiveGenerationService {
         throw new Error('Template service failed');
       }
 
-      // Get the appropriate page or use the last available page
-      const content = data.pages[Math.min(pageNumber - 1, data.pages.length - 1)] ||
+      // Get first page from fallback (always single page for continuity)
+      const content = data.pages[0] ||
         (isLastPage ? `${context.userInfo.name} felt happy about the wonderful adventure. The end!` : 
          `${context.userInfo.name} continued the exciting journey.`);
       
