@@ -1408,12 +1408,5 @@ serve(async (req) => {
       tier: 'ERROR',
       retryAfterSeconds: isUpstreamError ? 5 : undefined
     }, req, status);
-  } catch (outerError) {
-    const outerMessage = outerError instanceof Error ? outerError.message : String(outerError);
-    console.error('ai-visual-scene-creator top-level error:', outerMessage);
-    return createDynamicCorsErrorResponse({
-      error: outerMessage,
-      tier: 'HANDLER_CRASH'
-    }, req, 500);
-  }
+}
 });
