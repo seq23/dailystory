@@ -793,13 +793,13 @@ async function httpFallbackCall(endpoint: string, payload: any): Promise<any> {
 
 // Main request handler
 serve(async (req) => {
-  try {
-  // Trigger CCS boot verification once (non-blocking)
+  // Trigger CCS boot verification once (non-blocking) - moved outside try block
   if (ccsBootStatus.loaded === false && ccsBootStatus.error === null) {
     verifyCCSBoot().catch(err => console.error('CCS boot verification failed:', err));
   }
   
-  // Handle CORS preflight requests with dynamic header detection
+  try {
+    // Handle CORS preflight requests with dynamic header detection
   if (req.method === 'OPTIONS') {
     console.log('✅ Handling CORS preflight with dynamic headers');
     return createDynamicCorsOptionsResponse(req);
@@ -1091,7 +1091,7 @@ serve(async (req) => {
             page_first_seen: pageNumber,
             page_last_seen: pageNumber,
             visual_elements: {
-              storyText: storyText.substring(0, 200),
+              storyText: content.substring(0, 200),
               pageNumber,
               timestamp: new Date().toISOString(),
               fullSchema: {
@@ -1263,7 +1263,7 @@ serve(async (req) => {
         }
       };
       
-      // runwareDebugData already declared at line 360 (outer scope)
+      // Prepare debug data for Tier 2.5C escalation
       
       try {
         const response = await fetch('https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/runware-template-cd', {
