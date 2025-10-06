@@ -26,7 +26,8 @@ export interface TierStrategy {
 
 export class HealthCheckService {
   private static readonly HEALTH_CHECK_TIMEOUT = 1000; // 1 second max for health checks (optimized)
-  private static readonly CACHE_DURATION = 300000; // 5 minutes cache for performance optimization
+  private static readonly CACHE_DURATION_HEALTHY = 300000; // 5 minutes cache when healthy
+  private static readonly CACHE_DURATION_DEGRADED = 5000; // 5 seconds cache for network/server errors
   private static cachedHealth: { result: HealthStatus; timestamp: number } | null = null;
   private static activeHealthCheck: Promise<HealthStatus> | null = null;
 
@@ -41,7 +42,7 @@ export class HealthCheckService {
     if (ContentGenerationDetector.isGenerating()) {
       DebugLogger.log('network', 'Skipping health check during content generation for performance');
       // Return cached result if available, otherwise assume healthy
-      if (this.cachedHealth && (Date.now() - this.cachedHealth.timestamp) < this.CACHE_DURATION * 2) {
+      if (this.cachedHealth && (Date.now() - this.cachedHealth.timestamp) < this.CACHE_DURATION_HEALTHY * 2) {
         return this.cachedHealth.result;
       }
       // Return optimistic default when generating content
@@ -55,10 +56,16 @@ export class HealthCheckService {
       };
     }
 
-    // ERROR-004 FIX: Request deduplication to prevent race conditions
-    if (this.cachedHealth && (Date.now() - this.cachedHealth.timestamp) < this.CACHE_DURATION) {
-      DebugLogger.log('network', 'Using cached health status');
-      return this.cachedHealth.result;
+    // ERROR-004 FIX: Request deduplication with adaptive cache duration
+    if (this.cachedHealth) {
+      const cacheDuration = this.cachedHealth.result.overallHealth === 'healthy' 
+        ? this.CACHE_DURATION_HEALTHY 
+        : this.CACHE_DURATION_DEGRADED;
+      
+      if ((Date.now() - this.cachedHealth.timestamp) < cacheDuration) {
+        DebugLogger.log('network', `Using cached health status (${this.cachedHealth.result.overallHealth}, TTL: ${cacheDuration}ms)`);
+        return this.cachedHealth.result;
+      }
     }
 
     // If health check already in progress, return that promise
@@ -250,8 +257,14 @@ export class HealthCheckService {
    * ERROR-001 FIX: Quick health check using HEAD method
    */
   static async quickHealthCheck(): Promise<'healthy' | 'network' | 'server'> {
-    if (this.cachedHealth && (Date.now() - this.cachedHealth.timestamp) < this.CACHE_DURATION) {
-      return this.cachedHealth.result.overallHealth;
+    if (this.cachedHealth) {
+      const cacheDuration = this.cachedHealth.result.overallHealth === 'healthy' 
+        ? this.CACHE_DURATION_HEALTHY 
+        : this.CACHE_DURATION_DEGRADED;
+      
+      if ((Date.now() - this.cachedHealth.timestamp) < cacheDuration) {
+        return this.cachedHealth.result.overallHealth;
+      }
     }
 
     // Use HEAD /health for quick check (no preflight)
