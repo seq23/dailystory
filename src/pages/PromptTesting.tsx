@@ -17,7 +17,7 @@ import { ImageTierTester } from '@/components/ImageTierTester';
 import { AudioE2ETestingPanel } from '@/components/AudioE2ETestingPanel';
 // AudioPlaybackTester integrated into UnifiedDebugMonitor
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { errorSuppressionManager } from '@/utils/errorSuppression';
+import { errorSuppressionManager } from '@/utils/errorSuppressionManager';
 
 export default function PromptTesting() {
   const [searchParams] = useSearchParams();

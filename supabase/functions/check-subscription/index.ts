@@ -30,6 +30,12 @@ serve(async (req) => {
     }
     logStep("Function started with payment client");
 
+    // Hard guard: ensure auth API is present
+    if (!(supabaseClient as any)?.auth) {
+      logStep("Supabase client missing auth API - returning payment unavailable");
+      return createPaymentUnavailableResponse('check-subscription');
+    }
+
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     const stripeConfigured = !!stripeKey;
     logStep(stripeConfigured ? "Stripe key verified" : "Stripe key NOT configured");
@@ -41,8 +47,24 @@ serve(async (req) => {
     const token = authHeader.replace("Bearer ", "");
     logStep("Authenticating user with token");
     
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError) throw new Error(`Authentication error: ${userError.message}`);
+    let userData;
+    try {
+      const { data, error } = await supabaseClient.auth.getUser(token);
+      if (error) {
+        logStep("Authentication error", { message: error.message });
+        return new Response(JSON.stringify({ subscribed: false, message: "Invalid or expired session" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
+      userData = data;
+    } catch (e: any) {
+      logStep("Auth getUser threw", { message: e?.message || String(e) });
+      return new Response(JSON.stringify({ subscribed: false, message: "Auth temporarily unavailable" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
     const user = userData.user;
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });

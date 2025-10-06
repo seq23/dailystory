@@ -5,6 +5,9 @@
 ### "Unchecked runtime.lastError: Could not establish connection"
 This error occurs when browser extensions (Chrome, Firefox, etc.) try to communicate with background scripts but the connection is broken due to page navigation or reload.
 
+**System-Level Suppression:**
+These errors are now automatically suppressed via the `errorSuppressionManager` to prevent console noise. They do not affect application functionality and are safely filtered out.
+
 **Common Causes:**
 - Ad blockers (uBlock Origin, AdBlock Plus)
 - Password managers (LastPass, 1Password, Bitwarden)
@@ -13,7 +16,7 @@ This error occurs when browser extensions (Chrome, Firefox, etc.) try to communi
 - Social media extensions
 
 **Solution:**
-Our app automatically suppresses these errors in production. If you're seeing them in development:
+The app automatically suppresses these errors in production. If you're seeing them in development:
 
 1. **Enable Debug Mode**: Add `?debug=extensions` to your URL to see which extensions are causing issues
 2. **Disable Extensions**: Temporarily disable extensions to identify the culprit

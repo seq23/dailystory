@@ -3,7 +3,7 @@
  * Centralized utilities for mobile-specific enhancements
  */
 import { usePerformanceMonitor } from '@/hooks/usePerformanceMonitor';
-import { errorSuppressionManager } from '@/utils/errorSuppression';
+import { errorSuppressionManager } from '@/utils/errorSuppressionManager';
 
 export interface MobileOptimizationConfig {
   enableTouchOptimizations: boolean;

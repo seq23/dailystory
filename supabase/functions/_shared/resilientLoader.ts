@@ -385,7 +385,7 @@ export async function createPaymentSupabaseClient() {
       const { createClient } = await import('../_vendor/supabase-js@2.57.4.mjs');
       
       const supabaseUrl = Deno.env.get('SUPABASE_URL');
-      const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY');
+      const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
       if (!supabaseUrl || !supabaseKey) {
         throw new Error('Missing Supabase environment variables');
