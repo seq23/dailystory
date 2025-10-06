@@ -98,6 +98,9 @@ import { hashText } from "@/utils/tokenize";
 import { defaultAudioConfig } from "@/config/audioConfig";
 import "@/styles/storyDisplay.css";
 // import { processTextForDesktop } from "@/utils/desktopTextProcessor";
+
+// Static image placeholder for when images are disabled by user
+const IMAGES_DISABLED_PLACEHOLDER = "/assets/cozy-library-readers.png";
 // useWordHighlighting integrated into useAudioControls
 import { VoiceCommandController } from '@/components/VoiceCommandController';
 import { VoiceHoverController } from '@/components/VoiceHoverController';
@@ -832,7 +835,11 @@ const handleImageRegeneration = useCallback(async () => {
   }
   
   if (!imagesEnabled) {
-    DebugLogger.log('image', `Page ${currentPage}: Images disabled, skipping regeneration`);
+    DebugLogger.log('image', `Page ${currentPage}: Images disabled - using static placeholder`);
+    setPageImages(prev => ({
+      ...prev,
+      [currentPage]: IMAGES_DISABLED_PLACEHOLDER
+    }));
     return;
   }
   
@@ -1007,9 +1014,13 @@ useEffect(() => {
       return;
     }
     
-    // Respect global image toggle - don't generate if disabled
+    // Respect global image toggle - use static placeholder if disabled
     if (!imagesEnabled) {
-      DebugLogger.log('image', '🚫 Images disabled globally - skipping auto-generation on story stabilization');
+      DebugLogger.log('image', '🚫 Images disabled - using static placeholder for story stabilization');
+      setPageImages(prev => ({
+        ...prev,
+        [pageToGenerate]: IMAGES_DISABLED_PLACEHOLDER
+      }));
       return;
     }
     
@@ -1174,7 +1185,7 @@ useEffect(() => {
   useEffect(() => {
     if (!isLoading) return;
     
-    const SAFETY_TIMEOUT_MS = 25000; // 25 seconds
+    const SAFETY_TIMEOUT_MS = 60000; // 60 seconds for better reliability
     const safetyTimer = ManagedTimers.setTimeout(() => {
       DebugLogger.warn('story', 'Story loader safety timeout triggered after 25s');
       setIsLoading(false);
@@ -1719,7 +1730,11 @@ useEffect(() => {
       const maxAllowedPage = isPremium ? (story.length - 1) : 5; // Premium: all pages, Guest: pages 0-5
       if (currentPage <= maxAllowedPage) {
         if (!imagesEnabled) {
-          DebugLogger.log('image', `Page ${currentPage}: Images disabled, skipping generation`);
+          DebugLogger.log('image', `Page ${currentPage}: Images disabled - using static placeholder`);
+          setPageImages(prev => ({
+            ...prev,
+            [currentPage]: IMAGES_DISABLED_PLACEHOLDER
+          }));
           return;
         }
         
@@ -2525,7 +2540,11 @@ const initializeStory = async () => {
       });
       
       if (!imagesEnabled) {
-        DebugLogger.log('image', `Page ${currentPage}: Images disabled, skipping generation`);
+        DebugLogger.log('image', `Page ${currentPage}: Images disabled - using static placeholder`);
+        setPageImages(prev => ({
+          ...prev,
+          [currentPage]: IMAGES_DISABLED_PLACEHOLDER
+        }));
         setIsGeneratingImage(false);
         return;
       }
@@ -2650,7 +2669,20 @@ const initializeStory = async () => {
 
   // Generate illustration for any page index (batch-safe, no UI spinner)
   const generateImageForIndex = async (index: number) => {
-    if (!imagesEnabled || pageImages[index]) return;
+    if (pageImages[index]) return;
+    
+    // If images disabled, use static placeholder for all batch pages
+    if (!imagesEnabled) {
+      DebugLogger.log('image', `Batch generation: Images disabled - using static placeholders`);
+      const placeholders: Record<number, string> = {};
+      for (let i = 0; i < displayedStory.length; i++) {
+        if (!pageImages[i]) {
+          placeholders[i] = IMAGES_DISABLED_PLACEHOLDER;
+        }
+      }
+      setPageImages(prev => ({ ...prev, ...placeholders }));
+      return;
+    }
     
     const storyText = displayedStory[index];
     if (!storyText) {
@@ -3782,19 +3814,26 @@ const handleRestartTimer = () => {
     return () => { cancelled = true; };
   }, [currentPage, pageImages, story.length]);
 
-  // PHASE 1: Show proper loading state with phase messages
+  // PHASE 1: Show proper loading state with progressive time-based messages
   if (isLoading || forceLoaderActive) {
-    const loadingMessage = isStoryStable 
-      ? "Preparing your story..." 
-      : "Creating your magical story...";
-    
     return (
-      <AdaptiveEnhancedLoading 
-        isPremium={isPremium} 
-        userName={safeUserInfo.name} 
-        message={loadingMessage}
-        reason="story-init"
-      />
+      <div className="min-h-screen bg-gradient-primary flex items-center justify-center p-4">
+        <div className="text-center max-w-md">
+          <Loader2 className="h-16 w-16 animate-spin text-white mb-6 mx-auto" />
+          <p className="text-white text-xl font-medium mb-2">
+            {(() => {
+              const elapsed = Date.now() - loaderStartRef.current;
+              if (elapsed < 10000) return "Creating your magical story...";
+              if (elapsed < 20000) return "Our story wizards are working hard...";
+              if (elapsed < 40000) return "Almost there! Perfecting every detail...";
+              return "Putting the final touches...";
+            })()}
+          </p>
+          <p className="text-white/70 text-sm">
+            This may take a moment for the best experience
+          </p>
+        </div>
+      </div>
     );
   }
 
