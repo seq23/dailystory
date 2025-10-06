@@ -1378,6 +1378,7 @@ serve(async (req) => {
         // Release gate
         if (gatingEnabled && gateAcquired) {
           release(gateKey, operationSuccess);
+          gateAcquired = false; // Prevent double-release
           const gateElapsed = Date.now() - gateStartTime;
           console.log(`⏱️ [GATE] ${gateKey} released after ${gateElapsed}ms, success=${operationSuccess}`);
         }
@@ -1391,6 +1392,7 @@ serve(async (req) => {
     try {
       if (gatingEnabled && gateAcquired) {
         release(gateKey, false);
+        gateAcquired = false; // Prevent double-release
       }
     } catch (cleanupError) {
       console.warn('⚠️ Gate cleanup error (non-fatal):', cleanupError);
@@ -1408,5 +1410,15 @@ serve(async (req) => {
       tier: 'ERROR',
       retryAfterSeconds: isUpstreamError ? 5 : undefined
     }, req, status);
-}
+  }
+  } catch (outerError) {
+    // Top-level catch for outer try block (syntax fix)
+    const errorMessage = outerError instanceof Error ? outerError.message : String(outerError);
+    console.error('❌ [OUTER_ERROR] ai-visual-scene-creator top-level error:', errorMessage);
+    
+    return createDynamicCorsErrorResponse({
+      error: errorMessage,
+      tier: 'ERROR'
+    }, req, 500);
+  }
 });
