@@ -2348,18 +2348,45 @@ export class CharacterConsistencyService {
     const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
     const avatarType = userInfo?.avatar?.type || userInfo?.type || 'child';
     const ethnicity = CharacterConsistencyService.detectEthnicity(userInfo);
+    const language = userInfo?.language || userInfo?.nativeLanguage || userInfo?.native_language || 'en';
     
-    // Use buildFullCulturalBundle for culturally-aware hair + features (includes African American arrays)
-    const culturalBundle = this.buildFullCulturalBundle(skinTone, sessionId, userInfo);
+    // ✅ INLINE CULTURAL LOGIC (self-contained, no external dependencies)
+    const normalizedTone = (skinTone || 'medium').toLowerCase();
+    const qualifiesForAfricanAmericanEnhancements = 
+      (normalizedTone === 'dark') && 
+      ['en', 'en-US', 'es', 'fr', 'pt'].includes(language);
+    
+    let hairColor, skinFeatures;
+    
+    if (qualifiesForAfricanAmericanEnhancements) {
+      // Use African American arrays (30 hair + 36 features)
+      const gender = avatarType === 'girl' ? 'girls' : 
+                     avatarType === 'boy' ? 'boys' : 
+                     'child';
+      const hairOptions = CharacterConsistencyService.AFRICAN_AMERICAN_HAIR_INLINE[gender] ||
+                          CharacterConsistencyService.AFRICAN_AMERICAN_HAIR_INLINE['child'] ||
+                          CharacterConsistencyService.AFRICAN_AMERICAN_HAIR_INLINE['boys'];
+      const featureOptions = CharacterConsistencyService.AFRICAN_AMERICAN_FACIAL_FEATURES_INLINE;
+      
+      hairColor = CharacterConsistencyService.seededPick(hairOptions, sessionId);
+      skinFeatures = CharacterConsistencyService.seededPick(featureOptions, sessionId);
+    } else {
+      // Use generic arrays (73 hair variations)
+      const hairOptions = CharacterConsistencyService.HAIR_BY_SKIN_TONE_INLINE[normalizedTone] || 
+                          CharacterConsistencyService.HAIR_BY_SKIN_TONE_INLINE['medium'];
+      
+      hairColor = CharacterConsistencyService.seededPick(hairOptions, sessionId);
+      skinFeatures = CharacterConsistencyService.getSkinFeatures(normalizedTone, sessionId);
+    }
     
     return {
       skinTone,
-      hairColor: culturalBundle.hair,
-      skinFeatures: culturalBundle.features,
+      hairColor,
+      skinFeatures,
       type: avatarType,
       name: userInfo?.name || userInfo?.childName || 'Child',
       age: userInfo?.age || userInfo?.childAge || 7,
-      nativeLanguage: userInfo?.nativeLanguage || 'en',
+      nativeLanguage: language,
       ethnicity
     };
   }
