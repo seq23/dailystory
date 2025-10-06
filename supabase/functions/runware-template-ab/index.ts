@@ -601,19 +601,26 @@ function release(key: string, ok: boolean = true): void {
   }
 }
 
-// ========== CORS UTILITIES ==========
-const corsHeaders: Record<string, string> = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "GET, HEAD, POST, OPTIONS",
-  "Access-Control-Max-Age": "600",
-  "Vary": "Origin",
-};
+// ========== CORS UTILITIES (DYNAMIC) ==========
+// Import dynamic CORS system for bulletproof cross-origin support
+import { 
+  createDynamicCorsOptionsResponse, 
+  createDynamicCorsResponse, 
+  createDynamicCorsErrorResponse 
+} from '../_shared/corsAdvanced.ts';
 
-function withCors(res: Response): Response {
-  const h = new Headers(res.headers);
-  for (const [k, v] of Object.entries(corsHeaders)) h.set(k, v);
-  return new Response(res.body, { status: res.status, statusText: res.statusText, headers: h });
+function withCors(res: Response, req?: Request): Response {
+  if (!req) {
+    // Fallback for cases without request object
+    const h = new Headers(res.headers);
+    h.set("Access-Control-Allow-Origin", "*");
+    h.set("Access-Control-Allow-Headers", "authorization, x-client-info, apikey, content-type");
+    return new Response(res.body, { status: res.status, statusText: res.statusText, headers: h });
+  }
+  
+  // Use dynamic CORS for proper header handling
+  const data = res.body ? res.body : null;
+  return createDynamicCorsResponse(data, req, res.status);
 }
 
 function createResponse(data: any, status = 200): Response {
@@ -1419,9 +1426,9 @@ serve(async (req) => {
     
     const url = new URL(req.url);
 
-    // OPTIONS → 204, empty body
+    // OPTIONS → Dynamic CORS preflight with 24hr cache
     if (req.method === "OPTIONS") {
-      return withCors(new Response(null, { status: 204, headers: { "Content-Length": "0" } }));
+      return createDynamicCorsOptionsResponse(req);
     }
 
     // HEAD /health → 200, empty body

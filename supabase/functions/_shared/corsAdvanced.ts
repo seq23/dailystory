@@ -122,9 +122,10 @@ function generateDynamicCorsHeaders(request: Request, config: CorsConfig = DEFAU
     'Access-Control-Allow-Origin': origin || '*',
     'Access-Control-Allow-Methods': config.allowedMethods.join(', '),
     'Access-Control-Allow-Headers': allowedHeaders.join(', '),
-    'Access-Control-Max-Age': config.maxAge.toString(),
+    'Access-Control-Max-Age': '86400', // 24 hours cache
     'Access-Control-Allow-Credentials': 'true',
-    'Vary': 'Origin, Access-Control-Request-Headers'
+    'Vary': 'Origin, Access-Control-Request-Headers',
+    'Accept-Ranges': 'bytes'
   };
   
   if (config.exposedHeaders.length > 0) {

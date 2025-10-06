@@ -221,11 +221,12 @@ function release(key: string, ok: boolean = true): void {
 // ============= PERFECT AI VISUAL SCENE CREATOR WITH CHARACTER CONSISTENCY =============
 // Complete implementation with word-for-word OpenAI prompts and CharacterConsistencyService integration
 
-// CORS headers for cross-origin requests
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+// Import dynamic CORS system for bulletproof cross-origin support
+import { 
+  createDynamicCorsOptionsResponse, 
+  createDynamicCorsResponse, 
+  createDynamicCorsErrorResponse 
+} from '../_shared/corsAdvanced.ts';
 
 // Emergency hair fallback - skin-tone-specific defaults (NO "lighter"/"darker" - only pale/light/medium/olive/dark)
 function emergencyHairFallback(skinTone: string): string {
@@ -792,48 +793,36 @@ async function httpFallbackCall(endpoint: string, payload: any): Promise<any> {
 
 // Main request handler
 serve(async (req) => {
+  try {
   // Trigger CCS boot verification once (non-blocking)
   if (ccsBootStatus.loaded === false && ccsBootStatus.error === null) {
     verifyCCSBoot().catch(err => console.error('CCS boot verification failed:', err));
   }
   
-  // Handle CORS preflight requests - MUST return 200, not 204/null
+  // Handle CORS preflight requests with dynamic header detection
   if (req.method === 'OPTIONS') {
-    return new Response(null, { 
-      status: 200,
-      headers: {
-        ...corsHeaders,
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, HEAD'
-      }
-    });
+    console.log('✅ Handling CORS preflight with dynamic headers');
+    return createDynamicCorsOptionsResponse(req);
   }
 
   console.log("✅ ai-visual-scene-creator: Successfully booted and reachable");
 
   // Health check endpoints
   if (req.method === 'HEAD' && req.url.includes('/health')) {
-    return new Response(null, { 
-      status: 200, 
-      headers: corsHeaders 
-    });
+    return createDynamicCorsResponse(null, req, 200);
   }
 
   if (req.method === 'GET') {
-    return new Response(JSON.stringify({ 
+    return createDynamicCorsResponse({ 
       status: 'healthy', 
       service: 'ai-visual-scene-creator',
       timestamp: new Date().toISOString()
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    });
+    }, req, 200);
   }
 
   // Only allow POST for main functionality
   if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-      status: 405,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    });
+    return createDynamicCorsErrorResponse({ error: 'Method not allowed' }, req, 405);
   }
 
   // Feature flag check - declare outside try block for catch block scope
@@ -872,13 +861,9 @@ serve(async (req) => {
     } catch (error) {
       if (gatingEnabled && gateAcquired) release(gateKey, false);
       console.error(`❌ [${requestId}] Failed to parse JSON:`, error);
-      return new Response(JSON.stringify({
-        success: false,
+      return createDynamicCorsErrorResponse({
         error: 'Invalid JSON payload'
-      }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
+      }, req, 400);
     }
 
     // Validate required fields - enhanced content checking
@@ -886,14 +871,10 @@ serve(async (req) => {
     if (!content.trim()) {
       if (gatingEnabled && gateAcquired) release(gateKey, false);
       console.error(`❌ [${requestId}] Validation failure (no retry): MISSING_STORY_CONTENT`);
-      return new Response(JSON.stringify({
-        success: false,
+      return createDynamicCorsErrorResponse({
         error: 'MISSING_STORY_CONTENT',
         tier: 'VALIDATION_FAILED'
-      }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
+      }, req, 400);
     }
 
     const userInfo = payload.userInfo || {};
@@ -1403,10 +1384,7 @@ serve(async (req) => {
       }
     });
 
-    return new Response(JSON.stringify(result), {
-      status: result.httpStatus ?? 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    });
+    return createDynamicCorsResponse(result, req, result.httpStatus ?? 200);
 
   } catch (error) {
     // Ensure gate is released on error - wrap in try-catch to prevent cleanup errors from masking original error
@@ -1421,21 +1399,14 @@ serve(async (req) => {
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.error('ai-visual-scene-creator error:', errorMessage);
     
-    // Return 503 for upstream errors
+    // Return error with dynamic CORS headers
     const isUpstreamError = errorMessage.includes('429') || errorMessage.includes('503') || errorMessage.includes('OpenAI');
+    const status = isUpstreamError ? 503 : 500;
     
-    return new Response(JSON.stringify({
-      success: false,
+    return createDynamicCorsErrorResponse({
       error: errorMessage,
       tier: 'ERROR',
       retryAfterSeconds: isUpstreamError ? 5 : undefined
-    }), {
-      status: isUpstreamError ? 503 : 500,
-      headers: { 
-        ...corsHeaders, 
-        'Content-Type': 'application/json',
-        ...(isUpstreamError && { 'Retry-After': '5' })
-      }
-    });
+    }, req, status);
   }
 });
