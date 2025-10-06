@@ -180,3 +180,27 @@ This system ensures:
 4. **Comprehensive representation** across all demographics
 
 **The system works exactly as intended. Do not "fix" what isn't broken.**
+
+---
+
+## October 6, 2025 Update: Cultural Bundle Integration Fix
+
+### Issue Resolved
+Fixed missing African American hair and facial features in Tier 1 orchestrator flow for dark-skinned characters.
+
+### Root Cause
+1. **Return key mismatch**: `buildFullCulturalBundle()` returned `skinFeatures` but callers expected `features`
+2. **Missing integration**: `getStructuredAvatarData()` used generic methods instead of cultural bundle
+
+### Changes Made
+**File**: `supabase/functions/_shared/CharacterConsistencyService.js`
+
+1. **Lines 1938-1941, 1950-1953**: Changed return key from `skinFeatures` to `features` for consistency
+2. **Lines 2347-2364**: Integrated `buildFullCulturalBundle()` into `getStructuredAvatarData()` to use:
+   - 30 African American hair variations (instead of 7 generic)
+   - 36 African American facial features (instead of 48 generic)
+
+### Result
+- ✅ E2E simulation now shows "Character Foundation: Present" and "Cultural Bundle: Present"
+- ✅ Dark skin + English → Proper African American arrays applied
+- ✅ Primary scenes include detailed descriptions like "wearing individual box braids with distinct square sectioning, warm caramel skin tone with hazel eyes..."

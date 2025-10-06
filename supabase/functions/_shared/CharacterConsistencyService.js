@@ -1937,7 +1937,7 @@ export class CharacterConsistencyService {
       
       return {
         hair: CharacterConsistencyService.seededPick(hairOptions, sessionId),
-        skinFeatures: CharacterConsistencyService.seededPick(featureOptions, sessionId)
+        features: CharacterConsistencyService.seededPick(featureOptions, sessionId)
       };
     } else {
       // Use full HAIR_BY_SKIN_TONE_INLINE arrays (73 total variations)
@@ -1949,7 +1949,7 @@ export class CharacterConsistencyService {
       
       return {
         hair: CharacterConsistencyService.seededPick(hairOptions, sessionId),
-        skinFeatures: features
+        features: features
       };
     }
   }
@@ -2348,13 +2348,14 @@ export class CharacterConsistencyService {
     const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
     const avatarType = userInfo?.avatar?.type || userInfo?.type || 'child';
     const ethnicity = CharacterConsistencyService.detectEthnicity(userInfo);
-    const hairColor = CharacterConsistencyService.getHair(skinTone, sessionId, ethnicity, avatarType);
-    const skinFeatures = CharacterConsistencyService.getSkinFeatures(skinTone, sessionId);
+    
+    // Use buildFullCulturalBundle for culturally-aware hair + features (includes African American arrays)
+    const culturalBundle = this.buildFullCulturalBundle(skinTone, sessionId, userInfo);
     
     return {
       skinTone,
-      hairColor,
-      skinFeatures,
+      hairColor: culturalBundle.hair,
+      skinFeatures: culturalBundle.features,
       type: avatarType,
       name: userInfo?.name || userInfo?.childName || 'Child',
       age: userInfo?.age || userInfo?.childAge || 7,
