@@ -190,9 +190,25 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const { toast } = useToast();
   const { isMobile, isTablet, isMobileOrTablet, hasTouchCapability } = useIsMobile();
   
+  // Image generation toggle state
+  const [imagesEnabled, setImagesEnabled] = useState<boolean>(() => {
+    try { return localStorage.getItem('storyImagesEnabled') !== '0'; } catch { return true; }
+  });
+  
   // Toast deduplication state - track if fallback toast shown for current story session
   const fallbackToastShownRef = useRef(false);
   const currentToastRef = useRef<{ id: string; dismiss: () => void } | null>(null);
+  
+  // Listen for image toggle events
+  useEffect(() => {
+    const handler = (e: any) => {
+      const enabled = !!(e as CustomEvent).detail;
+      setImagesEnabled(enabled);
+      DebugLogger.log('ui', 'Story images toggled:', { enabled });
+    };
+    window.addEventListener('storyImagesToggle', handler as EventListener);
+    return () => window.removeEventListener('storyImagesToggle', handler as EventListener);
+  }, []);
   
   // Debug device detection
   useEffect(() => {
@@ -786,6 +802,11 @@ const handleImageRegeneration = useCallback(async () => {
   
   if (currentPage > maxAllowedPage) {
     DebugLogger.log('image', `Page ${currentPage}: Beyond allowed generation limit`);
+    return;
+  }
+  
+  if (!imagesEnabled) {
+    DebugLogger.log('image', `Page ${currentPage}: Images disabled, skipping regeneration`);
     return;
   }
   
@@ -1665,6 +1686,11 @@ useEffect(() => {
       // No cached image, trigger generation if page is within allowed range
       const maxAllowedPage = isPremium ? (story.length - 1) : 5; // Premium: all pages, Guest: pages 0-5
       if (currentPage <= maxAllowedPage) {
+        if (!imagesEnabled) {
+          DebugLogger.log('image', `Page ${currentPage}: Images disabled, skipping generation`);
+          return;
+        }
+        
         DebugLogger.log('image', `Page ${currentPage}: No cached image, triggering generation`);
         try {
           const { ImageGenerationTrigger } = await import('@/utils/imageGenerationTrigger');
@@ -2370,6 +2396,12 @@ const initializeStory = async () => {
         isPremium,
         currentDifficulty
       });
+      
+      if (!imagesEnabled) {
+        DebugLogger.log('image', `Page ${currentPage}: Images disabled, skipping generation`);
+        setIsGeneratingImage(false);
+        return;
+      }
       
       DebugLogger.log('image', 'Calling backend orchestrator for image generation', {
         pageText: pageText.substring(0, 100),

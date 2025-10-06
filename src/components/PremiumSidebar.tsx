@@ -30,7 +30,8 @@ import {
   ChevronRight,
   Home,
   BarChart3,
-  Zap
+  Zap,
+  Image
 } from "lucide-react";
 import type { UserInfo } from "@/types";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -127,6 +128,9 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
   const [towersEnabled, setTowersEnabled] = useState<boolean>(() => {
     try { return localStorage.getItem('progressTowersEnabled') !== '0'; } catch { return true; }
   });
+  const [imagesEnabled, setImagesEnabled] = useState<boolean>(() => {
+    try { return localStorage.getItem('storyImagesEnabled') !== '0'; } catch { return true; }
+  });
   const [vocabOpen, setVocabOpen] = useState(false);
 
   useEffect(() => {
@@ -145,6 +149,15 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
     };
     window.addEventListener('progressTowersToggle', handler as EventListener);
     return () => window.removeEventListener('progressTowersToggle', handler as EventListener);
+  }, []);
+
+  useEffect(() => {
+    const handler = (e: any) => {
+      const enabled = !!(e as CustomEvent).detail;
+      setImagesEnabled(enabled);
+    };
+    window.addEventListener('storyImagesToggle', handler as EventListener);
+    return () => window.removeEventListener('storyImagesToggle', handler as EventListener);
   }, []);
 
   // Enhanced active state detection
@@ -183,6 +196,13 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
     setTowersEnabled(next);
     try { localStorage.setItem('progressTowersEnabled', next ? '1' : '0'); } catch {}
     window.dispatchEvent(new CustomEvent('progressTowersToggle', { detail: next }));
+  };
+
+  const toggleImages = () => {
+    const next = !imagesEnabled;
+    setImagesEnabled(next);
+    try { localStorage.setItem('storyImagesEnabled', next ? '1' : '0'); } catch {}
+    window.dispatchEvent(new CustomEvent('storyImagesToggle', { detail: next }));
   };
   return (
     <Sidebar className={`border-r bg-background/95 backdrop-blur-sm ${effectiveCollapsed ? "w-16 md:top-[var(--app-header-height)] md:h-[calc(100svh-var(--app-header-height))]" : "w-64"}`} collapsible="icon">
@@ -372,6 +392,52 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
                           onCheckedChange={() => toggleTowers()}
                           onClick={(e) => e.stopPropagation()}
                           aria-label={towersEnabled ? 'Hide progress towers' : 'Show progress towers'}
+                        />
+                      </div>
+                      </SidebarMenuButton>
+                    )}
+                  </SidebarMenuItem>
+
+                  {/* Story Images toggle */}
+                  <SidebarMenuItem>
+                    {effectiveCollapsed ? (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <SidebarMenuButton
+                              onClick={() => toggleImages()}
+                              className="flex items-center justify-center transition-colors rounded-lg hover:bg-accent hover:text-accent-foreground h-10 w-10 mx-auto"
+                              aria-label="Toggle story images"
+                            >
+                              <Image className="w-5 h-5 flex-shrink-0" />
+                            </SidebarMenuButton>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            Story Images: {imagesEnabled ? 'On' : 'Off'}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    ) : (
+                      <SidebarMenuButton asChild>
+                        <div
+                          role="button"
+                          onClick={() => toggleImages()}
+                          className="flex items-center gap-3 w-full justify-between rounded-full border border-border bg-card hover:bg-accent hover:text-accent-foreground px-3 py-2 min-w-[220px]"
+                          aria-label="Toggle story images"
+                        >
+                        <div className="flex items-center gap-3">
+                          <Image className="w-5 h-5 flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">{imagesEnabled ? 'Hide Images' : 'Show Images'}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <Switch
+                          checked={imagesEnabled}
+                          onCheckedChange={() => toggleImages()}
+                          onClick={(e) => e.stopPropagation()}
+                          aria-label={imagesEnabled ? 'Hide story images' : 'Show story images'}
                         />
                       </div>
                       </SidebarMenuButton>
