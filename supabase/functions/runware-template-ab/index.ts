@@ -898,9 +898,14 @@ async function callRunwareAPI(positivePrompt: string, negativePrompt: string, op
       }
 
       console.log(`🌐 Calling Runware API...`);
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 20000); // 20-second timeout
+      
       const response = await fetch('https://api.runware.ai/v1', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
         body: JSON.stringify([
           { taskType: 'authentication', apiKey: runwareApiKey },
           payload
@@ -919,11 +924,18 @@ async function callRunwareAPI(positivePrompt: string, negativePrompt: string, op
       }
 
       console.log(`✅ Runware API call successful`);
+      clearTimeout(timeoutId);
       return imageTask.imageURL;
 
     } catch (error: any) {
+      clearTimeout(timeoutId);
       lastError = error;
-      console.error(`❌ Runware attempt ${attempt + 1} failed:`, error.message);
+      
+      if (error.name === 'AbortError') {
+        console.error(`❌ Runware API timeout after 20s (attempt ${attempt + 1}/${retries + 1})`);
+      } else {
+        console.error(`❌ Runware attempt ${attempt + 1} failed:`, error.message);
+      }
     }
   }
 

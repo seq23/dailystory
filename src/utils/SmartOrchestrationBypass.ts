@@ -26,39 +26,68 @@ export class SmartOrchestrationBypass {
     healthStatus?: any,
     forceDisable: boolean = false,
     userTier: 'premium' | 'guest' = 'guest'
-  ): { shouldBypass: boolean; reason: string; targetTemplate?: string; templateComplexity?: 'C' | 'D' } {
+  ): { shouldBypass: boolean; reason: string; targetTemplate?: string; templateComplexity?: 'A' | 'C' | 'D' } {
     
-    DebugLogger.log('image', '⚡ Smart Bypass Decision Check', {
+  DebugLogger.log('image', '⚡ Smart Bypass Decision Check', {
+    contentLength: content.length,
+    sessionId,
+    userTier,
+    forceDisable,
+    orchestratorHealth: healthStatus?.orchestrator
+  });
+  
+  // Testing mode: Force disable bypass when requested
+  if (forceDisable) {
+    DebugLogger.log('image', '⚡ Smart Bypass disabled for testing - forcing full orchestrator path', {
       contentLength: content.length,
+      sessionId
+    });
+    return {
+      shouldBypass: false,
+      reason: 'Smart Bypass disabled for testing - forcing full orchestrator path'
+    };
+  }
+  
+  // 🚨 EMERGENCY: Orchestrator unhealthy - bypass for ALL users
+  if (healthStatus?.orchestrator === 'server') {
+    DebugLogger.log('image', '🚨 EMERGENCY BYPASS: Orchestrator unhealthy', {
+      orchestratorHealth: healthStatus.orchestrator,
       sessionId,
       userTier,
-      forceDisable
+      contentLength: content.length,
+      route: userTier === 'premium' ? 'Direct Mode (ai-visual-scene-creator)' : 'Template CD'
     });
     
-    // CRITICAL: Premium users NEVER get bypassed - always use full orchestrator
+    // Route based on user tier
     if (userTier === 'premium') {
-      DebugLogger.log('image', '⚡ Smart Bypass BLOCKED for premium user - forcing full orchestrator', {
-        contentLength: content.length,
-        sessionId,
-        userTier
-      });
       return {
-        shouldBypass: false,
-        reason: 'Premium user - always use full orchestrator for quality'
+        shouldBypass: true,
+        reason: 'Orchestrator unhealthy - emergency Direct Mode for premium',
+        targetTemplate: 'ai-visual-scene-creator',
+        templateComplexity: 'A'
+      };
+    } else {
+      return {
+        shouldBypass: true,
+        reason: 'Orchestrator unhealthy - emergency Template CD for guest',
+        targetTemplate: 'runware-template-cd',
+        templateComplexity: 'C'
       };
     }
-    
-    // Testing mode: Force disable bypass when requested
-    if (forceDisable) {
-      DebugLogger.log('image', '⚡ Smart Bypass disabled for testing - forcing full orchestrator path', {
-        contentLength: content.length,
-        sessionId
-      });
-      return {
-        shouldBypass: false,
-        reason: 'Smart Bypass disabled for testing - forcing full orchestrator path'
-      };
-    }
+  }
+  
+  // CRITICAL: Premium users NEVER get bypassed (in normal conditions) - always use full orchestrator
+  if (userTier === 'premium') {
+    DebugLogger.log('image', '⚡ Smart Bypass BLOCKED for premium user - forcing full orchestrator', {
+      contentLength: content.length,
+      sessionId,
+      userTier
+    });
+    return {
+      shouldBypass: false,
+      reason: 'Premium user - always use full orchestrator for quality'
+    };
+  }
     
     // GUEST USERS ONLY: Bypass for very simple content (short stories)
     if (content.length < this.SIMPLE_CONTENT_THRESHOLD) {

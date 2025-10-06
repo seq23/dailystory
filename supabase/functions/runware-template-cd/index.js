@@ -334,12 +334,16 @@ async function callRunwareAPI(positivePrompt, negativePrompt, seed = null, retri
   console.log('🌐 Calling Runware API...');
   
   for (let attempt = 1; attempt <= retries + 1; attempt++) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 20000); // 20-second timeout
+    
     try {
       const response = await fetch('https://api.runware.ai/v1', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
+        signal: controller.signal,
         body: JSON.stringify([
           {
             taskType: "authentication",
@@ -427,6 +431,19 @@ async function callRunwareAPI(positivePrompt, negativePrompt, seed = null, retri
       };
 
     } catch (error) {
+      clearTimeout(timeoutId);
+      
+      if (error.name === 'AbortError') {
+        console.error(`❌ Runware API timeout after 20s (attempt ${attempt}/${retries + 1})`);
+        if (attempt <= retries) {
+          const delay = attempt * 1000;
+          console.log(`⏳ Retrying after timeout in ${delay}ms...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue;
+        }
+        throw new Error('Runware API timeout after all retries');
+      }
+      
       console.error(`❌ Runware API attempt ${attempt}/${retries + 1} failed:`, error);
       
       if (attempt <= retries) {
@@ -437,6 +454,8 @@ async function callRunwareAPI(positivePrompt, negativePrompt, seed = null, retri
       }
       
       throw error;
+    } finally {
+      clearTimeout(timeoutId);
     }
   }
 }
