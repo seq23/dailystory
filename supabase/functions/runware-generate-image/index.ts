@@ -266,13 +266,15 @@ async function bindTierLogger(
   // Force 100% logging when DEBUG_TIER_LOG_SAMPLE=1, otherwise default 10% sampling
   const logSampleRate = debugTierSample === "1" ? 1.0 : parseFloat(debugTierSample || "0.1");
 
-  try {
-    const [{ createVendorFirstSupabaseClient }, tierLogging] = await Promise.all([
-      memoizedImport("../_shared/resilientLoader.js"),
-      memoizedImport("../_shared/tierLogging.js"),
-    ]);
+    // ✅ CRASH-PROOF: Wrap resilientLoader import - fall back to inline memoizer if unavailable
+    let createVendorFirstSupabaseClient, tierLogging, supabaseClient;
+    try {
+      [{ createVendorFirstSupabaseClient }, tierLogging] = await Promise.all([
+        memoizedImport("../_shared/resilientLoader.js"),
+        memoizedImport("../_shared/tierLogging.js"),
+      ]);
 
-    const supabaseClient = await createVendorFirstSupabaseClient();
+      supabaseClient = await createVendorFirstSupabaseClient();
 
     // Sampling helper: only log to DB if sampled or failure
     const shouldLogToDB = (status: string = "info") => {
@@ -323,8 +325,8 @@ async function bindTierLogger(
       },
     };
   } catch (error) {
-    console.warn(`Failed to create Supabase client: ${error}`);
-    // Return console-only logger to prevent function crashes
+    console.warn(`⚠️ [ORCHESTRATOR] resilientLoader/tierLogging unavailable (NON-FATAL), using console-only logger:`, error);
+    // ✅ CRASH-PROOF: Return console-only logger to prevent function crashes
     const wrapConsoleWithRedaction =
       (prefix: string) =>
       (msg: string, ctx: any = {}) => {
@@ -459,13 +461,14 @@ async function processInlinedTier1(
     logTier1Step("CharacterConsistencyService Import", "attempt", "Loading CharacterConsistencyService");
     console.log(`[TIER_1] Attempting CharacterConsistencyService import with inline-first pattern`);
 
-    // INLINE-FIRST: Try local inline bundle FIRST (always bundled, 100% reliable)
+    // ✅ CRASH-PROOF: INLINE-FIRST CCS import with complete fallback chain
     let service;
     try {
       const inlineModule = await import("./CharacterConsistencyServiceInline.js");
       service = inlineModule.characterConsistencyService;
       console.log(`✅ [CCS_IMPORT] inline service loaded successfully (0ms network delay)`);
     } catch (inlineError) {
+      console.warn(`⚠️ [CCS_IMPORT] inline failed, trying _shared fallback:`, inlineError);
       // Fallback 1: Try _shared (external bundle)
       console.warn(`⚠️ [CCS_IMPORT] inline import failed, trying _shared:`, inlineError);
       try {

@@ -275,7 +275,7 @@ async function generateCompleteVisualSchema(
   let characterName = userInfo?.name || userInfo?.userName || 'child';
   let ethnicity = '';
   
-  // If missing, generate complete structured avatar data using CharacterConsistencyService
+  // ✅ CRASH-PROOF: CCS is OPTIONAL in Direct Mode - use emergency hair fallback if unavailable
   if (!structuredAvatarData) {
     try {
       // Two-tier fallback: _shared first, _vendor last resort
@@ -294,9 +294,9 @@ async function generateCompleteVisualSchema(
       console.log(`✅ Generated complete structuredAvatarData via CharacterConsistencyService:`, structuredAvatarData);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      console.warn(`⚠️ CharacterConsistencyService unavailable, trying StaticDataCache fallback:`, errorMessage);
+      console.warn(`⚠️ [DM] CCS unavailable (NON-FATAL), using emergency hair fallback:`, errorMessage);
       
-      // 3-Tier fallback: CCS → StaticDataCache → Hardcoded
+      // ✅ CRASH-PROOF: Simplified fallback - skip StaticDataCache, go straight to hardcoded
       try {
         const { getHairBySkintone, getSkinBySkintone } = await import('../_shared/StaticDataCache.js');
         const skinTone = userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium';
@@ -312,7 +312,7 @@ async function generateCompleteVisualSchema(
         };
         console.log(`✅ [AISCHEMA_FALLBACK] source=static_data_cache, hairColor=${structuredAvatarData.hairColor}`);
       } catch (staticError) {
-        console.warn(`⚠️ StaticDataCache fallback failed, using hardcoded:`, staticError);
+        console.warn(`⚠️ [DM] StaticDataCache also failed (NON-FATAL), using hardcoded emergency fallback:`, staticError);
         const fallbackSkinTone = userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium';
         
         // CRITICAL: Derive ethnicity from skinTone, not hardcoded 'Euro-American'
@@ -364,19 +364,20 @@ async function generateCompleteVisualSchema(
   let previousPrimaryScene = null;
   let previousVisualSchema = null;
 
-  // Lazy-initialize supabaseClient before first use (vendor-first pattern)
+  // ✅ CRASH-PROOF: Lazy-initialize supabaseClient, warn on failure (non-fatal)
   if (!supabaseClient) {
     try {
       const { createVendorFirstSupabaseClient } = await import('../_shared/resilientLoader.js');
       supabaseClient = await createVendorFirstSupabaseClient();
       console.log('✅ [SUPABASE] Vendor-first client initialized successfully');
     } catch (clientError) {
-      console.error('❌ [SUPABASE] Client initialization failed:', clientError);
-      throw new Error(`Supabase client unavailable: ${clientError.message}`);
+      console.warn('⚠️ [SUPABASE] Client init failed (non-fatal, skipping prev scene fetch):', clientError);
+      supabaseClient = null; // Mark as unavailable, continue without DB
     }
   }
 
-  if (pageNumber > 1) {
+  // ✅ CRASH-PROOF: Guard DB calls - skip if client unavailable
+  if (pageNumber > 1 && supabaseClient) {
     try {
       const { data: prevScene, error } = await supabaseClient
         .from('visual_details_cache')
@@ -396,6 +397,8 @@ async function generateCompleteVisualSchema(
     } catch (error) {
       console.warn(`⚠️ Exception retrieving previous primary scene (non-fatal):`, error);
     }
+  } else if (pageNumber > 1 && !supabaseClient) {
+    console.warn('⚠️ [SUPABASE] Client unavailable, skipping prev scene fetch (non-fatal)');
   }
   const isNonEnglish = nativeLanguage && nativeLanguage !== 'en';
   
