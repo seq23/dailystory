@@ -435,13 +435,37 @@ export class UnifiedValidator {
     level: ValidationLevel,
     language: string = 'en'
   ): { appropriate: boolean; reason?: string } {
-    // Basic inappropriate content detection
+    const lowerContent = content.toLowerCase();
+    
+    // Level 4 (Expert): Allow mature themes with age-appropriate framing
+    // Only block nuclear blacklist (extreme content)
+    if (level === 4) {
+      const nuclearBlacklist = [
+        'rape', 'sexual assault', 'suicide', 'self-harm', 'drug dealing', 
+        'explicit sexual', 'pornography', 'incest', 'pedophilia'
+      ];
+      
+      const foundExtreme = nuclearBlacklist.filter(word => lowerContent.includes(word));
+      
+      if (foundExtreme.length > 0) {
+        return {
+          appropriate: false,
+          reason: `Contains extreme content not appropriate for any level: ${foundExtreme.join(', ')}`
+        };
+      }
+      
+      // ALLOW for Level 4: death, violence (contextual), dark magic, mystery, 
+      // detective, romance (age-appropriate), ghost, monster themes
+      // These themes are handled responsibly by the Level 4 system prompts
+      return { appropriate: true };
+    }
+    
+    // Levels 0-3: Strict filtering for younger readers (unchanged)
     const inappropriateWords = [
       'violence', 'death', 'kill', 'murder', 'blood', 'weapon', 'gun', 'knife',
       'scary', 'horror', 'nightmare', 'monster', 'ghost', 'demon'
     ];
     
-    const lowerContent = content.toLowerCase();
     const foundInappropriate = inappropriateWords.filter(word => lowerContent.includes(word));
     
     if (foundInappropriate.length > 0) {
