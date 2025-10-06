@@ -3,14 +3,21 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // ✅ BUNDLER HINT: Force CCS inclusion in deployment bundle (dynamic import used inside handler)
-import { characterConsistencyService as _ccsHint } from "../runware-generate-image/CharacterConsistencyServiceInline.js";
+import { characterConsistencyService as _ccsHint } from "../_shared/CharacterConsistencyService.js";
 
 // ========== CCS BOOT VERIFICATION ==========
 let ccsBootStatus = { loaded: false, error: null as string | null };
 
 async function verifyCCSBoot() {
+  let ccsModule;
   try {
-    const ccsModule = await import("../runware-generate-image/CharacterConsistencyServiceInline.js");
+    try {
+      ccsModule = await import("../_shared/CharacterConsistencyService.js");
+      console.log('✅ [BOOT] Tier 1 (ai-visual-scene-creator): _shared loaded');
+    } catch (sharedError) {
+      ccsModule = await import("../_vendor/CharacterConsistencyService.mjs");
+      console.log('✅ [BOOT] Tier 1 (ai-visual-scene-creator): _vendor loaded (fallback)');
+    }
     const ccs = ccsModule.characterConsistencyService;
     
     // Test key method
@@ -266,20 +273,15 @@ async function generateCompleteVisualSchema(
   // If missing, generate complete structured avatar data using CharacterConsistencyService
   if (!structuredAvatarData) {
     try {
-      // Try inline import first (zero dependencies)
+      // Two-tier fallback: _shared first, _vendor last resort
       let ccsModule;
       try {
-        ccsModule = await import('../runware-generate-image/CharacterConsistencyServiceInline.js');
-        console.log(`✅ [CCS_IMPORT_DM] inline loaded`);
-      } catch (inlineError) {
-        try {
-          ccsModule = await import('../_shared/CharacterConsistencyService.js');
-          console.log(`✅ [CCS_IMPORT_DM] _shared loaded (fallback)`);
-        } catch (sharedError) {
-          console.warn(`⚠️ [CCS_IMPORT_DM] _shared failed, trying _vendor:`, sharedError);
-          ccsModule = await import('../_vendor/CharacterConsistencyService.mjs');
-          console.log(`✅ [CCS_IMPORT_DM] _vendor loaded (last resort)`);
-        }
+        ccsModule = await import('../_shared/CharacterConsistencyService.js');
+        console.log(`✅ [CCS_IMPORT_DM] _shared loaded`);
+      } catch (sharedError) {
+        console.warn(`⚠️ [CCS_IMPORT_DM] _shared failed, trying _vendor:`, sharedError);
+        ccsModule = await import('../_vendor/CharacterConsistencyService.mjs');
+        console.log(`✅ [CCS_IMPORT_DM] _vendor loaded (last resort)`);
       }
       
       const { characterConsistencyService } = ccsModule;

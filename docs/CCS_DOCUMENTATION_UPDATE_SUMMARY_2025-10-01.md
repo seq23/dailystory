@@ -109,6 +109,24 @@ All documents now cross-reference each other:
 
 ## **Universal Inline Service Adoption (October 6, 2025)**
 
+### Import Order Update (October 6, 2025)
+
+**CRITICAL RULE**: Cross-function imports are prohibited by Supabase bundler. All functions MUST use standard import order:
+
+1. **Primary**: `../_shared/CharacterConsistencyService.js`
+2. **Fallback**: `../_vendor/CharacterConsistencyService.mjs`
+
+**Affected Functions**:
+- `ai-visual-scene-creator`: Updated to _shared/_vendor pattern
+- `runware-template-ab`: Updated to _shared/_vendor pattern  
+- `runware-generate-image`: Continues using local `CharacterConsistencyServiceInline.js` (orchestrator exception)
+
+**Reason**: Supabase bundler creates deployment graph at build time and rejects cross-function imports with "Module not found" errors during graph creation phase.
+
+---
+
+## **Previous Universal Inline Service Adoption (October 6, 2025)**
+
 ### System-Wide Implementation:
 After successfully implementing the inline service for the Orchestrator, we extended it system-wide:
 

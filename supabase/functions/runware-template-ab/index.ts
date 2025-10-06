@@ -2,7 +2,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // ✅ BUNDLER HINT: Force CCS inclusion in bundle
-import { characterConsistencyService as _ccsHint } from "../runware-generate-image/CharacterConsistencyServiceInline.js";
+import { characterConsistencyService as _ccsHint } from "../_shared/CharacterConsistencyService.js";
 const SERVICE_NAME = "runware-template-ab";
 
 // ========== INLINED SCENE EXTRACTION FUNCTIONS ==========
@@ -375,16 +375,11 @@ async function verifyCCSBoot() {
   let ccsModule;
   try {
     try {
-      ccsModule = await import("../runware-generate-image/CharacterConsistencyServiceInline.js");
-      console.log('✅ [BOOT] Tier 2.5 (runware-template-ab): inline service loaded');
-    } catch (inlineError) {
-      try {
-        ccsModule = await import("../_shared/CharacterConsistencyService.js");
-        console.log('✅ [BOOT] Tier 2.5 (runware-template-ab): _shared service loaded (fallback)');
-      } catch (sharedError) {
-        ccsModule = await import("../_vendor/CharacterConsistencyService.mjs");
-        console.log('✅ [BOOT] Tier 2.5 (runware-template-ab): _vendor service loaded (last resort)');
-      }
+      ccsModule = await import("../_shared/CharacterConsistencyService.js");
+      console.log('✅ [BOOT] Tier 2.5 (runware-template-ab): _shared loaded');
+    } catch (sharedError) {
+      ccsModule = await import("../_vendor/CharacterConsistencyService.mjs");
+      console.log('✅ [BOOT] Tier 2.5 (runware-template-ab): _vendor loaded (fallback)');
     }
     const ccs = ccsModule.characterConsistencyService;
     
