@@ -1,7 +1,9 @@
 // DEPLOY_MARKER: 2025-10-06T02:15:00Z - Single-file TypeScript with image generation in REAL mode
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-// Removed bundler hint - orchestrator now provides pre-computed CCS data
+// ✅ BUNDLER HINT: Force Deno Deploy to include _shared/CharacterConsistencyService.js in bundle
+import { characterConsistencyService as _ccsHint } from "../_shared/CharacterConsistencyService.js";
+
 const SERVICE_NAME = "runware-template-ab";
 
 // ========== INLINED SCENE EXTRACTION FUNCTIONS ==========
@@ -367,34 +369,61 @@ function extractSimpleScene(storyText: string): string {
   return simpleScene;
 }
 
-// ========== CCS BOOT VERIFICATION ==========
-let ccsBootStatus = { loaded: false, error: null as string | null };
+// ========== CCS BOOT VERIFICATION (GLOBAL SCOPE) ==========
+const ccsBootStatus = { 
+  loaded: false, 
+  tier1: false,
+  tier25: false,
+  directMode: false,
+  error: null as string | null 
+};
 
-async function verifyCCSBoot() {
-  let ccsModule;
+async function verifyCCSBoot(): Promise<boolean> {
   try {
+    console.log('🔍 [BOOT] Tier 2.5 (runware-template-ab): Starting CCS boot verification');
+    
+    // Try _shared first (bundler hint ensures this is included)
+    let ccsModule;
     try {
       ccsModule = await import("../_shared/CharacterConsistencyService.js");
       console.log('✅ [BOOT] Tier 2.5 (runware-template-ab): _shared loaded');
     } catch (sharedError) {
+      console.warn('⚠️ [BOOT] _shared import failed, trying _vendor:', sharedError);
       ccsModule = await import("../_vendor/CharacterConsistencyService.mjs");
       console.log('✅ [BOOT] Tier 2.5 (runware-template-ab): _vendor loaded (fallback)');
     }
+    
     const ccs = ccsModule.characterConsistencyService;
     
-    // Test key method
+    // Test key methods exist and are callable
+    const requiredMethods = ['getCulturalEnhancements', 'getEnhancedCharacterSeed', 'getBasicCharacterSeed'];
+    const missingMethods = requiredMethods.filter(method => typeof ccs?.[method] !== 'function');
+    
+    if (missingMethods.length > 0) {
+      throw new Error(`CCS missing methods: ${missingMethods.join(', ')}`);
+    }
+    
+    // Quick validation test
     const testResult = await ccs.getCulturalEnhancements({ name: 'Test', age: 8 }, 'test-session', 'TestChar');
     
-    if (testResult && testResult.features) {
-      ccsBootStatus = { loaded: true, error: null };
-      console.log('✅ [BOOT] Tier 2.5 (runware-template-ab): CCS loaded successfully');
-      return true;
-    } else {
+    if (!testResult || !testResult.features) {
       throw new Error('CCS method returned invalid result');
     }
+    
+    // Mark success
+    ccsBootStatus.loaded = true;
+    ccsBootStatus.tier25 = true;
+    ccsBootStatus.error = null;
+    
+    console.log('✅ [BOOT] Tier 2.5 (runware-template-ab): CCS loaded and verified successfully');
+    return true;
+    
   } catch (error) {
-    ccsBootStatus = { loaded: false, error: error.message };
-    console.error('❌ [BOOT] Tier 2.5 (runware-template-ab): CCS load failed -', error.message);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    ccsBootStatus.loaded = false;
+    ccsBootStatus.tier25 = false;
+    ccsBootStatus.error = errorMessage;
+    console.error('❌ [BOOT] Tier 2.5 (runware-template-ab): CCS boot failed -', errorMessage);
     return false;
   }
 }

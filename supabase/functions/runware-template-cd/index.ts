@@ -310,10 +310,15 @@ serve(async (req) => {
         service: SERVICE_NAME,
         tier: "2.5C/2.5D",
         timestamp: new Date().toISOString(),
-        deployment_version: "2025-09-27T15:30:00Z",
+        deployment_version: "2025-10-06T06:00:00Z",
         handlerCached: !!cachedHandler,
         lastError: lastLoadError?.message ?? null,
-        capabilities: ["advanced_consistency", "detailed_tracking", "premium_enhancement"]
+        capabilities: ["advanced_consistency", "detailed_tracking", "premium_enhancement"],
+        ccsBootStatus: {
+          loaded: false,
+          n_a: true,
+          reason: "Template CD does not use CCS (2.5C accepts precomputed data, 2.5D is static error)"
+        }
       };
       return withCors(new Response(JSON.stringify(payload), { status: 200, headers: { "Content-Type": "application/json" } }));
     }

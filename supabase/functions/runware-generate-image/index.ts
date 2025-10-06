@@ -487,6 +487,11 @@ async function processInlinedTier1(
     }
     
     characterConsistencyService = service;
+    
+    // Mark CCS as successfully loaded in boot status
+    ccsBootStatus.loaded = true;
+    ccsBootStatus.error = null;
+    console.log('✅ [CCS_BOOT] CharacterConsistencyService loaded successfully, ccsBootStatus updated');
 
     // Validate service instance has ALL required methods
     const requiredMethods = [
@@ -2276,6 +2281,14 @@ Deno.serve(async (req) => {
                      tier1FailureReason: normalizedTier1Reason,
                     tier25aFailureReason: tier25aErrorMessage,
                     tier25bFailureReason: tier25bErrorMessage,
+                    // Pass pre-computed CCS data to 2.5C (NOT to 2.5D)
+                    precomputedCCS: {
+                      culturalBundle,
+                      mainCharacterAppearance,
+                      coloredObjects,
+                      secondaryCharacters,
+                      characterSeed,
+                    },
                   }),
                   signal: controller.signal,
                 });
