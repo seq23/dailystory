@@ -13,6 +13,7 @@ import { ChildSwitcher } from "@/components/ChildSwitcher";
 import { useLanguageSync } from "@/hooks/useLanguageSync";
 import type { UserInfo, Grade, LanguageCode, DifficultyLevel } from "@/types";
 import { DifficultyManager } from "@/services/difficultyManager";
+import { AvatarPicker } from "@/components/ui/avatar-picker";
 
 interface PremiumProfileEditorProps {
   userInfo: UserInfo;
@@ -222,6 +223,14 @@ export const PremiumProfileEditor = ({ userInfo, onSave, onCancel }: PremiumProf
               <p className="text-xs text-muted-foreground">
                 Changing your native language will update the interface language. Story content and navigation will remain in their original format.
               </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="avatar">Avatar</Label>
+              <AvatarPicker
+                value={formData.avatar || { type: 'prefer-not-to-answer', skinTone: 'medium' }}
+                onChange={(avatar) => setFormData(prev => ({ ...prev, avatar }))}
+              />
             </div>
 
           </CardContent>

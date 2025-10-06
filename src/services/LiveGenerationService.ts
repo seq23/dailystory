@@ -269,9 +269,9 @@ export class LiveGenerationService {
         timestamp: new Date().toISOString()
       });
       
-      // Wrap with 35-45s Promise.race timeout for robust timeout handling
+      // Wrap with 25s Promise.race timeout for faster UX feedback
       const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Next page generation timeout (40s)')), 40000);
+        setTimeout(() => reject(new Error('Next page generation timeout (25s)')), 25000);
       });
       
       // Use reduced context window: last 2 pages for non-expert, last 3 for expert

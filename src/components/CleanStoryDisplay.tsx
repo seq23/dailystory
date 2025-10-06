@@ -996,6 +996,12 @@ useEffect(() => {
       return;
     }
     
+    // Respect global image toggle - don't generate if disabled
+    if (!imagesEnabled) {
+      DebugLogger.log('image', '🚫 Images disabled globally - skipping auto-generation on story stabilization');
+      return;
+    }
+    
     ImageGenerationTrigger.triggerAutoGeneration({
       currentPage: pageToGenerate,
       totalPages: story.length,

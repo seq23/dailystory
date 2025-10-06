@@ -39,8 +39,8 @@ export class SynchronizedElevenLabsTTS {
     // Add timeout and network check
     const startTime = Date.now();
     let retries = 0;
-    const maxRetries = 2;
-    const maxTimeoutMs = 30000;
+    const maxRetries = 1;
+    const maxTimeoutMs = 10000;
 
     while (retries <= maxRetries) {
       const timeoutPromise = new Promise<never>((_, reject) => {

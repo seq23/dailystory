@@ -174,9 +174,9 @@ export class CharlotteVoiceService {
           break;
       }
 
-      // 10-second timeout for interactive requests
+      // 8-second timeout for interactive requests
       const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Charlotte interactive timeout - using browser fallback')), 10000);
+        setTimeout(() => reject(new Error('Charlotte interactive timeout - using browser fallback')), 8000);
       });
 
       // Use fast direct TTS through SmartElevenLabsTTS

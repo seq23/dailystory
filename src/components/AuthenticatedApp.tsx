@@ -253,7 +253,10 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
           difficultyLevel: savedDifficulty as DifficultyLevel, // Load from reading_preferences
           interests: [],
           learningGoal: (preferences.learning_goal as LearningGoal) || 'improve-english-reading',
-          avatar: { type: 'prefer-not-to-answer', skinTone: 'medium' }, // Account holder has neutral avatar
+          avatar: { 
+            type: (preferences.avatar_type as any) || 'prefer-not-to-answer', 
+            skinTone: (preferences.avatar_skin_tone as any) || 'medium' 
+          },
           favoriteColor: 'blue', // Default neutral values
             favoriteAnimal: '',
             hobbies: '',
@@ -447,8 +450,8 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
           grade_level: gradeValue,
           native_language: updatedUserInfo.nativeLanguage,
           learning_goal: updatedUserInfo.learningGoal,
-          avatar_type: 'prefer-not-to-answer', // Account holder has neutral avatar
-          avatar_skin_tone: 'medium',
+          avatar_type: updatedUserInfo.avatar?.type || 'prefer-not-to-answer',
+          avatar_skin_tone: updatedUserInfo.avatar?.skinTone || 'medium',
           is_premium: true,
           reading_preferences: {
             ...currentReadingPrefs,

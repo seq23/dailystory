@@ -263,13 +263,28 @@ useEffect(() => {
         }
       };
       
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      // Step 1: Microphone access with 5-second timeout
+      const micTimeout = new Promise<never>((_, reject) => 
+        setTimeout(() => reject(new Error('Microphone permission timeout')), 5000)
+      );
+      
+      const stream = await Promise.race([
+        navigator.mediaDevices.getUserMedia(constraints),
+        micTimeout
+      ]);
       stream.getTracks().forEach(track => track.stop());
       DebugLogger.log('audio', 'Microphone access granted');
 
-      // Get signed URL from Supabase edge function
+      // Step 2: Get signed URL from Supabase edge function with 8-second timeout
+      const edgeFunctionTimeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Edge function timeout')), 8000)
+      );
+      
       const body = agentId ? { agentId } : {};
-      const { data, error } = await supabase.functions.invoke('elevenlabs-agent-signed-url', { body });
+      const { data, error } = await Promise.race([
+        supabase.functions.invoke('elevenlabs-agent-signed-url', { body }),
+        edgeFunctionTimeout
+      ]);
       
       if (error) {
         DebugLogger.error('audio', 'ElevenLabs API error:', error);
@@ -277,7 +292,7 @@ useEffect(() => {
         
         // Check for specific API key error
         if (errorMsg.includes('API key') || errorMsg.includes('unauthorized') || errorMsg.includes('401')) {
-          throw new Error('ElevenLabs API key not configured. Please set up your API key in project settings.');
+          throw new Error('API_KEY_MISSING');
         }
         
         throw new Error(`ElevenLabs setup failed: ${errorMsg}`);
@@ -294,8 +309,16 @@ useEffect(() => {
         throw new Error('Invalid or missing signed URL from ElevenLabs');
       }
 
+      // Step 3: Start WebSocket session with 10-second timeout
       DebugLogger.log('audio', 'Starting ElevenLabs session...');
-      const id = await (conversation as any).startSession({ url });
+      const sessionTimeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('WebSocket connection timeout')), 10000)
+      );
+      
+      const id = await Promise.race([
+        (conversation as any).startSession({ url }),
+        sessionTimeout
+      ]);
       DebugLogger.log('audio', 'ElevenLabs conversation started:', id);
       
       // Dispatch successful connection
@@ -319,9 +342,24 @@ useEffect(() => {
         detail: { status: 'failed', system: 'elevenlabs', error: e.message } 
       }));
       
+      // Specific error messages for different failure types
+      let errorTitle = 'Voice Assistant Error';
+      let errorDescription = e?.message || 'Could not start voice session';
+      
+      if (e?.message?.includes('Microphone permission')) {
+        errorTitle = 'Microphone Access Required';
+        errorDescription = 'Please allow microphone access to use voice buddy.';
+      } else if (e?.message === 'API_KEY_MISSING') {
+        errorTitle = 'API Key Not Configured';
+        errorDescription = 'ElevenLabs API key is not set up. Please configure it in project settings.';
+      } else if (e?.message?.includes('timeout')) {
+        errorTitle = 'Connection Timeout';
+        errorDescription = 'Voice buddy took too long to connect. Please try again.';
+      }
+      
       toast({ 
-        title: 'Voice Assistant Error', 
-        description: e?.message || 'Could not start voice session', 
+        title: errorTitle, 
+        description: errorDescription, 
         variant: 'destructive' 
       });
     } finally {
