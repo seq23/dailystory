@@ -1937,7 +1937,7 @@ export class CharacterConsistencyService {
       
       return {
         hair: CharacterConsistencyService.seededPick(hairOptions, sessionId),
-        features: CharacterConsistencyService.seededPick(featureOptions, sessionId)
+        skinFeatures: CharacterConsistencyService.seededPick(featureOptions, sessionId)
       };
     } else {
       // Use full HAIR_BY_SKIN_TONE_INLINE arrays (73 total variations)
@@ -1949,7 +1949,7 @@ export class CharacterConsistencyService {
       
       return {
         hair: CharacterConsistencyService.seededPick(hairOptions, sessionId),
-        features
+        skinFeatures: features
       };
     }
   }
@@ -2284,7 +2284,7 @@ export class CharacterConsistencyService {
    * SIMPLIFIED: Get hair description by skin tone (Direct array lookup)
    */
   static getHair(skinTone, sessionId, ethnicity = 'Euro-American', avatarType = 'girl') {
-    if (ethnicity === 'african-american') {
+    if (ethnicity.toLowerCase().includes('african')) {
       const hairArray = CharacterConsistencyService.AFRICAN_AMERICAN_HAIR_INLINE[avatarType === 'boy' ? 'boys' : 'girls'];
       return CharacterConsistencyService.seededPick(hairArray, sessionId);
     }

@@ -241,6 +241,7 @@ function emergencyHairFallback(skinTone: string): string {
 }
 
 // Character consistency service - Loaded conditionally for Direct Mode only
+let characterConsistencyService = null;
 
 // Local inline type for user info (replaces removed top-level import)
 interface UserInfoLocal {
@@ -287,7 +288,7 @@ async function generateCompleteVisualSchema(
         console.log(`✅ [CCS_IMPORT_DM] _vendor loaded (last resort)`);
       }
       
-      const { characterConsistencyService } = ccsModule;
+      characterConsistencyService = ccsModule.characterConsistencyService;
       structuredAvatarData = await characterConsistencyService.getStructuredAvatarData(sessionId, userInfo);
       console.log(`✅ Generated complete structuredAvatarData via CharacterConsistencyService:`, structuredAvatarData);
     } catch (error) {
@@ -323,10 +324,15 @@ async function generateCompleteVisualSchema(
         };
         const derivedEthnicity = ethnicityMap[fallbackSkinTone] || 'Euro-American';
         
+        const avatarType = userInfo?.avatar?.type || 'girl';
         structuredAvatarData = {
           resolvedSkinTone: fallbackSkinTone,
-          hairColor: emergencyHairFallback(fallbackSkinTone),
-          skinFeatures: `${fallbackSkinTone} skin tone with brown eyes`,
+          hairColor: characterConsistencyService 
+            ? characterConsistencyService.getHair(fallbackSkinTone, sessionId, derivedEthnicity, avatarType)
+            : emergencyHairFallback(fallbackSkinTone),
+          skinFeatures: characterConsistencyService
+            ? characterConsistencyService.getSkinFeatures(fallbackSkinTone, sessionId)
+            : `${fallbackSkinTone} skin tone with brown eyes`,
           ethnicity: derivedEthnicity,
           source: 'hardcoded_fallback'
         };
@@ -336,7 +342,6 @@ async function generateCompleteVisualSchema(
   }
 
   // Extract ethnicity from structured data
-  ethnicity = structuredAvatarData?.ethnicity || 'Euro-American';
   const nativeLanguage = userInfo?.native_language || userInfo?.nativeLanguage || 'en';
   
   // Build complete character data string for OpenAI including hair and skin features from structuredAvatarData
