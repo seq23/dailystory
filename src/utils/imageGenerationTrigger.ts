@@ -218,11 +218,17 @@ export class ImageGenerationTrigger {
     }
     
     // Check network status periodically
-    this.networkCheckInterval = setInterval(() => {
-      this.isNetworkAvailable();
-    }, 10000); // Check every 10 seconds
+    this.networkCheckInterval = setInterval(async () => {
+      // Import ReadingStateManager dynamically to avoid circular dependencies
+      const { ReadingStateManager } = await import('@/utils/ReadingStateManager');
+      
+      // Only check network if not actively reading
+      if (!ReadingStateManager.isReading()) {
+        this.isNetworkAvailable();
+      }
+    }, 30000); // Reduced to every 30 seconds
     
-    console.log('🖼️ Image generation monitoring started');
+    console.log('🖼️ Image generation monitoring started (30s intervals)');
   }
   
   /**

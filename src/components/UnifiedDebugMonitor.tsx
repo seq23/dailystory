@@ -17,6 +17,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { X, Download, Trash2, Search, Play, Square, RotateCcw, MoreHorizontal, ChevronDown, Volume2, Loader2, TestTube } from 'lucide-react';
 import { BackendTierChecker } from '@/components/BackendTierChecker';
 import { useToast } from '@/hooks/use-toast';
+import { ReadingStateManager } from '@/utils/ReadingStateManager';
 
 interface NetflixDebugLog {
   timestamp: number;
@@ -57,13 +58,21 @@ export const UnifiedDebugMonitor: React.FC = () => {
 
   // TTS Status polling (integrated from TTSDebugOverlay)
   useEffect(() => {
+    if (!DebugLogger.isDebugEnabled()) return; // Only run in debug mode
+    
     const interval = setInterval(() => {
+      // Pause polling during active reading to prevent interruptions
+      if (ReadingStateManager.isReading() && document.visibilityState === 'visible') {
+        return; // Skip this iteration
+      }
+      
       try {
         const charlotte = (window as any).__CharlotteVoiceService;
         const status = charlotte ? charlotte.getStatus() : { isPlaying: false, currentWordIndex: -1, totalWords: 0, contentHash: '' };
         setTtsStatus(status as any);
       } catch {}
-    }, 500);
+    }, 2000); // Reduced frequency to 2 seconds
+    
     return () => clearInterval(interval);
   }, []);
 
@@ -79,9 +88,14 @@ export const UnifiedDebugMonitor: React.FC = () => {
       }
     };
     
-    // Check immediately and every 5 seconds
+    // Check immediately and every 10 seconds
     detectCurrentSession();
-    const interval = setInterval(detectCurrentSession, 5000);
+    const interval = setInterval(() => {
+      // Only detect session if not actively reading OR in debug mode
+      if (!ReadingStateManager.isReading() || DebugLogger.isDebugEnabled()) {
+        detectCurrentSession();
+      }
+    }, 10000); // Increased to 10 seconds
     
     return () => clearInterval(interval);
   }, [currentSessionId]);

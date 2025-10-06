@@ -219,19 +219,22 @@ export class StoryContentLogger {
   static startImagePromptMonitoring() {
     if (!this.imageDebugEnabled || this.isMonitoring) return;
     
-    console.log('[IMAGE-DEBUG] 🚀 Starting image prompt monitoring (60s intervals - optimized)');
+    console.log('[IMAGE-DEBUG] 🚀 Starting image prompt monitoring (120s intervals - optimized)');
     this.isMonitoring = true;
     
     // Fetch immediately
     this.fetchRecentImagePrompts();
     
     // Set up periodic fetching with singleton protection
-    this.monitoringInterval = setInterval(() => {
-      // Only fetch if page is visible to prevent background resource usage
-      if (document.visibilityState === 'visible') {
+    this.monitoringInterval = setInterval(async () => {
+      // Import ReadingStateManager dynamically to avoid circular dependencies
+      const { ReadingStateManager } = await import('@/utils/ReadingStateManager');
+      
+      // Only fetch if page visible AND not actively reading
+      if (document.visibilityState === 'visible' && !ReadingStateManager.isReading()) {
         this.fetchRecentImagePrompts();
       }
-    }, 60000); // Reduced to 60 seconds to prevent resource exhaustion
+    }, 120000); // Reduced to every 2 minutes
   }
 
   static stopImagePromptMonitoring() {

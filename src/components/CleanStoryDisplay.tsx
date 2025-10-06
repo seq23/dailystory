@@ -5,6 +5,7 @@ import { useStoryLogic } from "@/hooks/useStoryLogic";
 import { useNavigationPersistence } from "@/hooks/useNavigationPersistence";
 import { ImageDeduplicationService } from "@/services/imageDeduplicationService";
 import { NetflixSessionManager } from "@/services/NetflixSessionManager";
+import { ReadingStateManager } from "@/utils/ReadingStateManager";
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { DebugLogger } from '@/services/DebugLogger';
@@ -632,6 +633,16 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     } catch {}
   })();
   }, [isPremium, userInfo?.name]);
+
+  // Track reading state to pause non-essential intervals
+  useEffect(() => {
+    const isActivelyReading = story.length > 0 && !isLoading && !error;
+    ReadingStateManager.setReadingState(isActivelyReading);
+    
+    return () => {
+      ReadingStateManager.setReadingState(false);
+    };
+  }, [story.length, isLoading, error]);
 
   // Monitor network status for image generation
   useEffect(() => {
