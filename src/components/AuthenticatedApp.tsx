@@ -17,11 +17,12 @@ import { MyAccount } from "@/components/MyAccount";
 import { ProgressDashboard } from "@/components/ProgressDashboard";
 import { VocabularyDashboard } from "@/components/VocabularyDashboard";
 import { DismissibleSystemStatus } from "@/components/DismissibleSystemStatus";
+import { NonBlockingSubscriptionBanner } from "@/components/NonBlockingSubscriptionBanner";
 import { EmailVerificationBanner } from "@/components/EmailVerificationBanner";
 import { useSecurityMonitoring } from "@/hooks/useSecurityMonitoring";
 import { BookOpen, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { UserInfo, Grade, LanguageCode, LearningGoal, SessionStats } from "@/types";
+import type { UserInfo, Grade, LanguageCode, LearningGoal, SessionStats, DifficultyLevel } from "@/types";
 import { isUserInfo } from "@/utils/typeGuards";
 import { AdaptiveEnhancedLoading } from "@/components/AdaptiveEnhancedLoading";
 
@@ -129,10 +130,14 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
   }, []);
 
   useEffect(() => {
-    // Load subscription status first, then profile
+    // Load profile immediately (non-blocking)
+    // Check subscription in background (failures won't block UI)
     const initializeUser = async () => {
-      await checkSubscription();
       await loadUserProfile();
+      // Fire-and-forget subscription check
+      checkSubscription().catch(err => {
+        DebugLogger.log('auth', 'Subscription check failed (non-blocking)', err);
+      });
     };
     initializeUser();
   }, [user.id]);
@@ -232,6 +237,11 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
 
         if (!prefError && preferences && isUserInfo(preferences)) {
           setUserProfile(preferences);
+          
+          // CRITICAL: Load difficultyLevel from reading_preferences JSONB
+          const readingPrefs = (preferences.reading_preferences as any) || {};
+          const savedDifficulty = readingPrefs.difficultyLevel || 'beginner';
+          
           // Convert preferences to UserInfo format with proper defaults
           const userInfoData: UserInfo = {
             name: preferences.display_name || 'Reader',
@@ -240,7 +250,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
             gradeLevel: (preferences.grade_level as Grade) || 'K',
           nativeLanguage: (preferences.native_language as LanguageCode) || 'en',
           readingLevel: 'beginner',
-          difficultyLevel: 'beginner',
+          difficultyLevel: savedDifficulty as DifficultyLevel, // Load from reading_preferences
           interests: [],
           learningGoal: (preferences.learning_goal as LearningGoal) || 'improve-english-reading',
           avatar: { type: 'prefer-not-to-answer', skinTone: 'medium' }, // Account holder has neutral avatar
@@ -336,7 +346,8 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
         learning_goal: defaultUserInfo.learningGoal,
         avatar_type: defaultUserInfo.avatar.type,
         avatar_skin_tone: defaultUserInfo.avatar.skinTone,
-        is_premium: true
+        is_premium: true,
+        reading_preferences: { difficultyLevel: 'beginner' } // Include default difficulty
       };
 
       const { error } = await supabase
@@ -604,6 +615,9 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
             />
 
             <main className="flex-1 min-h-0 overflow-y-auto overscroll-auto mobile-scroll h-[calc(100dvh-var(--app-header-height))] p-2 sm:p-4 md:p-6">
+              {/* Subscription status banner - non-blocking */}
+              <NonBlockingSubscriptionBanner userId={user.id} />
+              
               {/* Email verification banner for unverified premium users */}
               {!user.email_confirmed_at && (
                 <EmailVerificationBanner 

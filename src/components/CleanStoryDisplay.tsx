@@ -199,17 +199,6 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const fallbackToastShownRef = useRef(false);
   const currentToastRef = useRef<{ id: string; dismiss: () => void } | null>(null);
   
-  // Listen for image toggle events
-  useEffect(() => {
-    const handler = (e: any) => {
-      const enabled = !!(e as CustomEvent).detail;
-      setImagesEnabled(enabled);
-      DebugLogger.log('ui', 'Story images toggled:', { enabled });
-    };
-    window.addEventListener('storyImagesToggle', handler as EventListener);
-    return () => window.removeEventListener('storyImagesToggle', handler as EventListener);
-  }, []);
-  
   // Debug device detection
   useEffect(() => {
     if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
@@ -516,6 +505,32 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
       }
     })();
   }, [userInfo]);
+  
+  // CRITICAL FIX: Listen for image toggle events (moved after variable declarations)
+  useEffect(() => {
+    const handler = (e: any) => {
+      const enabled = !!(e as CustomEvent).detail;
+      setImagesEnabled(enabled);
+      DebugLogger.log('ui', 'Story images toggled:', { enabled });
+      
+      // Re-trigger image generation for current page if toggled on and no image exists
+      if (enabled && !pageImages[currentPage] && isStoryStable) {
+        ManagedTimers.setTimeout(() => {
+          generateImageForCurrentPage();
+        }, 50, 'CleanStoryDisplay');
+      }
+    };
+    window.addEventListener('storyImagesToggle', handler as EventListener);
+    return () => window.removeEventListener('storyImagesToggle', handler as EventListener);
+  }, [currentPage, pageImages, isStoryStable]);
+  
+  // CRITICAL FIX: Auto-generate image when currentPage changes (for premium page-by-page)
+  useEffect(() => {
+    if (imagesEnabled && isStoryStable && !pageImages[currentPage] && displayedStory[safeCurrentPage]) {
+      DebugLogger.log('image', '🖼️ Auto-triggering image generation for page', currentPage);
+      ManagedTimers.setTimeout(() => generateImageForCurrentPage(), 50, 'CleanStoryDisplay');
+    }
+  }, [currentPage, imagesEnabled, isStoryStable, displayedStory.length]);
 
   // SESSION PERSISTENCE & RESUME MECHANISM OR SAVED STORY LOADING
   // Automatically restores user sessions across page refreshes and browser restarts
