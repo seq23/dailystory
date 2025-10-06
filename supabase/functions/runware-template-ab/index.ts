@@ -623,10 +623,17 @@ function withCors(res: Response, req?: Request): Response {
   return createDynamicCorsResponse(data, req, res.status);
 }
 
+// Fallback CORS headers for internal helper function
+const FALLBACK_CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, HEAD',
+};
+
 function createResponse(data: any, status = 200): Response {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    headers: { ...FALLBACK_CORS_HEADERS, 'Content-Type': 'application/json' }
   });
 }
 
