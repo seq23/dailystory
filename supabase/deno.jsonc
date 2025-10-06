@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "strict": false
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.js",
+    "_shared/**/*",
+    "_vendor/**/*"
+  ]
+}
