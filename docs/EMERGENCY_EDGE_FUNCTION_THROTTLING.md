@@ -132,7 +132,9 @@ const { autoRefresh = false, refreshInterval = 300000 } = options || {};
 
 1. **New Shared Utilities**:
    - `supabase/functions/_shared/ProviderGate.ts` - Concurrency caps, circuit breakers, jittered queuing
-   - `supabase/_shared/IdempotencyMemory.ts` - TTL-based idempotency cache
+   - `supabase/_shared/IdempotencyMemory.ts` - TTL-based idempotency cache (optional with graceful fallback)
+
+**Important Note**: As of 2025-10-06, IdempotencyMemory is now **optional everywhere**. All functions that use it wrap the import in try/catch with a fallback stub that bypasses deduplication if the module is unavailable. This prevents Status 500 boot failures when bundling is flaky while preserving the optimization when available.
 
 2. **Per-Provider Gate Keys**:
    - `T1:ai-visual-scene-creator` - Max concurrency: 6

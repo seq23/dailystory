@@ -153,11 +153,12 @@ Version after fixes: Verify significant improvement
 
 ## Forced Redeploy History
 
-**2025-10-06T03:05:00Z** - ai-visual-scene-creator debug ping and live verification
-- Added DEPLOY_MARKER: 2025-10-06T03:05:00Z
-- Added debug ping short-circuit for POST verification (payload.isDebugMode=true, payload.ping='scene')
-- Added console log to confirm running version in edge logs
-- Purpose: Verify new code is live after Status 0 network issues
+**2025-10-06T03:10:00Z** - IdempotencyMemory made optional everywhere
+- Updated DEPLOY_MARKER: 2025-10-06T03:10:00Z
+- ai-visual-scene-creator: Wrapped IdempotencyMemory import in try/catch with fallback stub
+- runware-generate-image: Already had optional IdempotencyMemory (no change needed)
+- Removed debug ping short-circuit and extra console.log from ai-visual-scene-creator
+- Purpose: Prevent Status 500 boot failures when IdempotencyMemory.js bundling is flaky
 
 **2025-01-30T21:30:00Z** - Documentation update for sync anomaly awareness
 - Added "Known Supabase Sync Anomalies" section
