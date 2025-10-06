@@ -342,6 +342,7 @@ async function generateCompleteVisualSchema(
   }
 
   // Extract ethnicity from structured data
+  ethnicity = structuredAvatarData?.ethnicity || 'Euro-American';
   const nativeLanguage = userInfo?.native_language || userInfo?.nativeLanguage || 'en';
   
   // Build complete character data string for OpenAI including hair and skin features from structuredAvatarData
