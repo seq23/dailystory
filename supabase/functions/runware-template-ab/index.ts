@@ -2,7 +2,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // ✅ BUNDLER HINT: Force CCS inclusion in bundle
-import { characterConsistencyService as _ccsHint } from "../_shared/CharacterConsistencyService.js";
+import { characterConsistencyService as _ccsHint } from "../runware-generate-image/CharacterConsistencyServiceInline.js";
 const SERVICE_NAME = "runware-template-ab";
 
 // ========== INLINED SCENE EXTRACTION FUNCTIONS ==========
@@ -372,8 +372,20 @@ function extractSimpleScene(storyText: string): string {
 let ccsBootStatus = { loaded: false, error: null as string | null };
 
 async function verifyCCSBoot() {
+  let ccsModule;
   try {
-    const ccsModule = await import("../_shared/CharacterConsistencyService.js");
+    try {
+      ccsModule = await import("../runware-generate-image/CharacterConsistencyServiceInline.js");
+      console.log('✅ [BOOT] Tier 2.5 (runware-template-ab): inline service loaded');
+    } catch (inlineError) {
+      try {
+        ccsModule = await import("../_shared/CharacterConsistencyService.js");
+        console.log('✅ [BOOT] Tier 2.5 (runware-template-ab): _shared service loaded (fallback)');
+      } catch (sharedError) {
+        ccsModule = await import("../_vendor/CharacterConsistencyService.mjs");
+        console.log('✅ [BOOT] Tier 2.5 (runware-template-ab): _vendor service loaded (last resort)');
+      }
+    }
     const ccs = ccsModule.characterConsistencyService;
     
     // Test key method
@@ -1009,9 +1021,21 @@ async function handleTemplateABRequest(req: Request): Promise<Response> {
     if (mode === 'A') {
       console.log(`🚀 Processing Tier 2.5A: Full character consistency`);
       
-      // Try to use CCS
+      // Try to use CCS with 3-tier fallback
       try {
-        const ccsModule = await import("../_shared/CharacterConsistencyService.js");
+        let ccsModule;
+        try {
+          ccsModule = await import("../runware-generate-image/CharacterConsistencyServiceInline.js");
+          console.log(`✅ Tier 2.5A: inline service loaded`);
+        } catch (inlineError) {
+          try {
+            ccsModule = await import("../_shared/CharacterConsistencyService.js");
+            console.log(`✅ Tier 2.5A: _shared service loaded (fallback)`);
+          } catch (sharedError) {
+            ccsModule = await import("../_vendor/CharacterConsistencyService.mjs");
+            console.log(`✅ Tier 2.5A: _vendor service loaded (last resort)`);
+          }
+        }
         const ccs = ccsModule.characterConsistencyService;
         
         // Try to get cultural enhancements from CCS
