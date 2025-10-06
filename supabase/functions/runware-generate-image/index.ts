@@ -625,7 +625,7 @@ async function processInlinedTier1(
   );
 
   // Get enhanced character consistency data (CRITICAL - will throw on failure to trigger tier escalation)
-  let characterSeed: any;
+  // characterSeed already declared at main handler scope for cascade availability
   try {
     characterSeed = await characterConsistencyService.getEnhancedCharacterSeed(
       sessionId,
@@ -681,7 +681,7 @@ async function processInlinedTier1(
   }
 
   // Get cultural enhancements using the service
-  let culturalBundle: any;
+  // culturalBundle already declared at main handler scope for cascade availability
   try {
     culturalBundle = await characterConsistencyService.getCulturalEnhancements(userInfo, sessionId, characterName);
     console.log(`🔍 [${requestId}] [TIER_1] getCulturalEnhancements: SUCCESS`, {
@@ -704,7 +704,7 @@ async function processInlinedTier1(
 
   // Analyze visual details from story text
   const vizStageStart = Date.now();
-  let coloredObjects = "";
+  // coloredObjects already declared at main handler scope for cascade availability
   try {
     await characterConsistencyService.analyzeVisualDetails(sessionId, storyText || pageText, payload.pageNumber || 1);
     coloredObjects = await characterConsistencyService.getColoredObjects(sessionId);
@@ -729,9 +729,8 @@ async function processInlinedTier1(
   }
 
   // Reuse session-cached secondary characters to avoid duplicate heavy detection
-  let secondaryCharacters: any[] = [];
+  // secondaryCharacters and mainCharacterAppearance already declared at main handler scope for cascade availability
   let detectionResults: any = {};
-  let mainCharacterAppearance: any = {};
   try {
     secondaryCharacters = await characterConsistencyService.getSecondaryCharactersForSession(sessionId);
 
@@ -1324,6 +1323,13 @@ Deno.serve(async (req) => {
 
       // Declare enhancedPrompt outside try block so it's accessible in catch for Direct Mode
       let enhancedPrompt: any = null;
+
+      // CCS Pre-computation variables (hoisted for cascade availability)
+      let characterSeed: number | undefined = undefined;
+      let culturalBundle: any = undefined;
+      let coloredObjects: string = "";
+      let secondaryCharacters: any[] = [];
+      let mainCharacterAppearance: any = {};
 
       try {
         // Skip Tier 1 if gate was denied (overload detected)
