@@ -1,221 +1,129 @@
-// Clean Deploy: 2025-01-30T12:00:00Z - Force GitHub refresh
+// PURE DATABASE READER - Zero Network Dependencies
+// This function ONLY reads from the subscribers table cache
+// Stripe sync happens in background via sync-subscription-status function
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { memoizedImport, createPaymentSupabaseClient, createPaymentUnavailableResponse, createResilientStripeClient } from '../_shared/resilientLoader.ts';
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Max-Age": "600",
-  "Vary": "Origin, Access-Control-Request-Headers",
 };
 
-// Helper logging function for enhanced debugging
-const logStep = (step: string, details?: any) => {
-  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
-  console.log(`[CHECK-SUBSCRIPTION] ${step}${detailsStr}`);
-};
+// Simple JWT decoder (no library imports needed)
+function decodeJWT(token: string): { email?: string; sub?: string } | null {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    const payload = JSON.parse(atob(parts[1]));
+    return payload;
+  } catch {
+    return null;
+  }
+}
 
 serve(async (req) => {
-  // Handle CORS and health checks
   const healthResponse = handleHealthAndCors(req);
   if (healthResponse) return healthResponse;
 
   try {
-    // Use payment-specific client with 2-tier fallback (network CDNs + vendor bundle)
-    const supabaseClient = await createPaymentSupabaseClient();
-    if (!supabaseClient) {
-      logStep("Payment client unavailable - both network and vendor fallbacks failed");
-      return createPaymentUnavailableResponse('check-subscription');
+    // Get Supabase connection details from env
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    if (!supabaseUrl || !supabaseKey) {
+      return new Response(JSON.stringify({
+        subscribed: false,
+        cached: true,
+        message: "Database configuration unavailable"
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
     }
-    logStep("Function started with payment client");
 
-    // Hard guard: ensure auth API is present
-    if (!(supabaseClient as any)?.auth) {
-      logStep("Supabase client missing auth API - returning payment unavailable");
-      return createPaymentUnavailableResponse('check-subscription');
-    }
-
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    const stripeConfigured = !!stripeKey;
-    logStep(stripeConfigured ? "Stripe key verified" : "Stripe key NOT configured");
-
+    // Extract user email from JWT token
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("No authorization header provided");
-    logStep("Authorization header found");
+    if (!authHeader) {
+      return new Response(JSON.stringify({
+        subscribed: false,
+        cached: true,
+        message: "No authorization provided"
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
 
     const token = authHeader.replace("Bearer ", "");
-    logStep("Authenticating user with token");
-    
-    let userData;
-    try {
-      const { data, error } = await supabaseClient.auth.getUser(token);
-      if (error) {
-        logStep("Authentication error", { message: error.message });
-        return new Response(JSON.stringify({ subscribed: false, message: "Invalid or expired session" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200,
-        });
-      }
-      userData = data;
-    } catch (e: any) {
-      logStep("Auth getUser threw", { message: e?.message || String(e) });
-      return new Response(JSON.stringify({ subscribed: false, message: "Auth temporarily unavailable" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
-    }
-    const user = userData.user;
-    if (!user?.email) {
-      logStep("User email not available - returning unsubscribed");
-      return new Response(JSON.stringify({ subscribed: false, message: "Email not available" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
-    }
-    logStep("User authenticated", { userId: user.id, email: user.email });
+    const payload = decodeJWT(token);
+    const userEmail = payload?.email;
 
-    // Check for manual override before touching Stripe
-    const { data: subRow, error: subErr } = await supabaseClient
-      .from("subscribers")
-      .select("override_premium, override_tier, override_end, stripe_customer_id")
-      .eq("email", user.email)
-      .maybeSingle();
-
-    if (subErr) {
-      logStep("Supabase subscribers fetch error", { message: subErr.message });
-    }
-
-    const overrideActive = subRow?.override_premium === true &&
-      (!subRow.override_end || new Date(subRow.override_end) > new Date());
-
-    if (overrideActive) {
-      const response = {
-        subscribed: true,
-        subscription_tier: subRow?.override_tier ?? "Premium",
-        subscription_end: subRow?.override_end ?? null,
-      };
-
-      // Persist authoritative state so UI fallbacks remain consistent
-      await supabaseClient.from("subscribers").upsert({
-        email: user.email,
-        user_id: user.id,
-        stripe_customer_id: subRow?.stripe_customer_id ?? null,
-        subscribed: true,
-        subscription_tier: response.subscription_tier,
-        subscription_end: response.subscription_end,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'email' });
-
-      logStep("Manual override active, returning premium", response);
-      return new Response(JSON.stringify(response), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
-    }
-
-    // If Stripe is not configured and no override, return unsubscribed
-    if (!stripeConfigured) {
-      logStep("Stripe not configured and no override; returning unsubscribed");
+    if (!userEmail) {
       return new Response(JSON.stringify({
         subscribed: false,
-        message: "Stripe not configured yet"
+        cached: true,
+        message: "Email not available"
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       });
     }
 
-    // Load Stripe using resilient loader with vendor fallback
-    const stripe = await createResilientStripeClient(stripeKey as string);
-    
-    if (!stripe) {
-      logStep("Stripe client creation failed (all tiers exhausted), degrading to unsubscribed");
+    // PURE DATABASE READ - Direct REST API call (no network imports)
+    const dbResponse = await fetch(
+      `${supabaseUrl}/rest/v1/subscribers?email=eq.${encodeURIComponent(userEmail)}&select=*`,
+      {
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+        }
+      }
+    );
+
+    if (!dbResponse.ok) {
       return new Response(JSON.stringify({
         subscribed: false,
-        message: "Stripe service temporarily unavailable"
+        cached: true,
+        message: "Database read failed"
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       });
     }
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+
+    const data = await dbResponse.json();
+    const subscriber = data[0];
+
+    // Return cached subscription status
+    const now = new Date();
+    const hasValidSubscription = subscriber?.subscribed === true;
+    const hasValidOverride = subscriber?.override_premium === true &&
+      (!subscriber.override_end || new Date(subscriber.override_end) > now);
     
-    if (customers.data.length === 0) {
-      logStep("No customer found, updating unsubscribed state");
-      await supabaseClient.from("subscribers").upsert({
-        email: user.email,
-        user_id: user.id,
-        stripe_customer_id: null,
-        subscribed: false,
-        subscription_tier: null,
-        subscription_end: null,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'email' });
-      return new Response(JSON.stringify({ subscribed: false }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
-    }
+    const isActive = hasValidSubscription || hasValidOverride;
 
-    const customerId = customers.data[0].id;
-    logStep("Found Stripe customer", { customerId });
-
-    const subscriptions = await stripe.subscriptions.list({
-      customer: customerId,
-      status: "active",
-      limit: 1,
-    });
-    const hasActiveSub = subscriptions.data.length > 0;
-    let subscriptionTier = null;
-    let subscriptionEnd = null;
-
-    if (hasActiveSub) {
-      const subscription = subscriptions.data[0];
-      subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
-      logStep("Active subscription found", { subscriptionId: subscription.id, endDate: subscriptionEnd });
-      
-      // Determine subscription tier from price amount
-      const priceId = subscription.items.data[0].price.id;
-      const price = await stripe.prices.retrieve(priceId);
-      const amount = price.unit_amount || 0;
-      
-      // $10/month = 1000 cents, $100/year = 10000 cents
-      if (amount === 1000 && price.recurring?.interval === 'month') {
-        subscriptionTier = "Monthly Premium";
-      } else if (amount === 10000 && price.recurring?.interval === 'year') {
-        subscriptionTier = "Annual Premium";
-      } else {
-        subscriptionTier = "Premium";
-      }
-      logStep("Determined subscription tier", { priceId, amount, subscriptionTier });
-    } else {
-      logStep("No active subscription found");
-    }
-
-    await supabaseClient.from("subscribers").upsert({
-      email: user.email,
-      user_id: user.id,
-      stripe_customer_id: customerId,
-      subscribed: hasActiveSub,
-      subscription_tier: subscriptionTier,
-      subscription_end: subscriptionEnd,
-      updated_at: new Date().toISOString(),
-    }, { onConflict: 'email' });
-
-    logStep("Updated database with subscription info", { subscribed: hasActiveSub, subscriptionTier });
     return new Response(JSON.stringify({
-      subscribed: hasActiveSub,
-      subscription_tier: subscriptionTier,
-      subscription_end: subscriptionEnd
+      subscribed: isActive,
+      subscription_tier: subscriber?.subscription_tier ?? null,
+      subscription_end: subscriber?.subscription_end ?? null,
+      cached: true,
+      last_synced: subscriber?.updated_at ?? null,
+      source: "database_cache"
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
+
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    logStep("ERROR in check-subscription", { message: errorMessage });
-    return new Response(JSON.stringify({ subscribed: false, message: "Subscription check failed" }), {
+    // Graceful fallback - always return 200 with unsubscribed state
+    return new Response(JSON.stringify({
+      subscribed: false,
+      cached: true,
+      message: "Could not retrieve subscription status",
+      error: error instanceof Error ? error.message : "Unknown error"
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });

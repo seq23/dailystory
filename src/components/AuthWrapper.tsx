@@ -40,7 +40,7 @@ export const AuthWrapper = () => {
     // 1) Listen for auth changes FIRST (sync-only updates inside handler)
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
       setUser(session?.user ?? null);
       
       // Clear caches when auth state changes
@@ -50,6 +50,16 @@ export const AuthWrapper = () => {
       if (!session?.user) {
         localStorage.removeItem('story-session-data');
         sessionStorage.clear();
+      }
+      
+      // Trigger background subscription sync on sign-in (non-blocking)
+      if (event === 'SIGNED_IN' && session?.user) {
+        supabase.functions.invoke('sync-subscription-status', {
+          headers: { Authorization: `Bearer ${session.access_token}` }
+        }).catch(() => {
+          // Silent failure - cached subscription status will be used
+          DebugLogger.log('auth', 'Background subscription sync skipped (offline/unavailable)');
+        });
       }
     });
 
