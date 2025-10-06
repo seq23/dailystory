@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-10-06T02:15:00Z - Main Orchestrator with Fresh Inline CCS Deployment
+// DEPLOY_MARKER: 2025-10-06T02:35:00Z - Fixed Tier 1 strict-mode local variable declarations (characterSeed, culturalBundle, etc.)
 
 // Inlined orchestrator logic - no more lazy loading
 
@@ -443,6 +443,13 @@ async function processInlinedTier1(
 
   console.log(`🎨 INLINED TIER 1: Processing for ${characterName} in session ${sessionId}`);
   const tier1Start = Date.now();
+
+  // Declare local variables for CCS data (must be in function scope for strict mode)
+  let characterSeed: any = undefined;
+  let culturalBundle: any = undefined;
+  let coloredObjects: string = "";
+  let secondaryCharacters: any[] = [];
+  let mainCharacterAppearance: any = {};
 
   // Import CharacterConsistencyService with resilient multi-path fallback (ERROR-046 fix)
   let characterConsistencyService: any;

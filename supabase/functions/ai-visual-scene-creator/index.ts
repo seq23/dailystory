@@ -1,9 +1,12 @@
-// DEPLOY_MARKER: 2025-10-06T02:18:00Z - Hardened error handling: gate cleanup can't mask original errors
+// DEPLOY_MARKER: 2025-10-06T02:35:00Z - Fixed supabaseClient lazy init + CCS strict-mode variable declarations
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // ✅ BUNDLER HINT: Force CCS inclusion in deployment bundle (dynamic import used inside handler)
 import { characterConsistencyService as _ccsHint } from "../_shared/CharacterConsistencyService.js";
+
+// ========== GLOBAL SUPABASE CLIENT (lazy-initialized) ==========
+let supabaseClient: any = null;
 
 // ========== CCS BOOT VERIFICATION ==========
 let ccsBootStatus = { loaded: false, error: null as string | null };
@@ -353,6 +356,18 @@ async function generateCompleteVisualSchema(
   // Retrieve previous page's primary scene for visual continuity
   let previousPrimaryScene = null;
   let previousVisualSchema = null;
+
+  // Lazy-initialize supabaseClient before first use (vendor-first pattern)
+  if (!supabaseClient) {
+    try {
+      const { createVendorFirstSupabaseClient } = await import('../_shared/resilientLoader.js');
+      supabaseClient = await createVendorFirstSupabaseClient();
+      console.log('✅ [SUPABASE] Vendor-first client initialized successfully');
+    } catch (clientError) {
+      console.error('❌ [SUPABASE] Client initialization failed:', clientError);
+      throw new Error(`Supabase client unavailable: ${clientError.message}`);
+    }
+  }
 
   if (pageNumber > 1) {
     try {
