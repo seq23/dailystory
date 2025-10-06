@@ -4,6 +4,13 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 // ✅ BUNDLER HINT: Force Deno Deploy to include _shared/CharacterConsistencyService.js in bundle
 import { characterConsistencyService as _ccsHint } from "../_shared/CharacterConsistencyService.js";
 
+// Import dynamic CORS system for bulletproof cross-origin support
+import { 
+  createDynamicCorsOptionsResponse, 
+  createDynamicCorsResponse, 
+  createDynamicCorsErrorResponse 
+} from '../_shared/corsAdvanced.ts';
+
 const SERVICE_NAME = "runware-template-ab";
 
 // ========== INLINED SCENE EXTRACTION FUNCTIONS ==========
@@ -602,12 +609,6 @@ function release(key: string, ok: boolean = true): void {
 }
 
 // ========== CORS UTILITIES (DYNAMIC) ==========
-// Import dynamic CORS system for bulletproof cross-origin support
-import { 
-  createDynamicCorsOptionsResponse, 
-  createDynamicCorsResponse, 
-  createDynamicCorsErrorResponse 
-} from '../_shared/corsAdvanced.ts';
 
 function withCors(res: Response, req?: Request): Response {
   if (!req) {

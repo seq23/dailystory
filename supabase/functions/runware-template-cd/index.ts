@@ -1,5 +1,13 @@
 // DEPLOY_MARKER: 2025-10-03T21:00:00Z - Zero static imports + LKG serve-stale pattern
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+
+// Import dynamic CORS system for bulletproof cross-origin support
+import { 
+  createDynamicCorsOptionsResponse, 
+  createDynamicCorsResponse, 
+  createDynamicCorsErrorResponse 
+} from '../_shared/corsAdvanced.ts';
+
 const SERVICE_NAME = "runware-template-cd";
 
 // ========== INLINED: ProviderGate (Concurrency + Circuit Breaker) ==========
@@ -179,13 +187,6 @@ function release(key: string, ok: boolean = true): void {
 }
 
 // ========== END INLINED: ProviderGate ==========
-
-// Import dynamic CORS system for bulletproof cross-origin support
-import { 
-  createDynamicCorsOptionsResponse, 
-  createDynamicCorsResponse, 
-  createDynamicCorsErrorResponse 
-} from '../_shared/corsAdvanced.ts';
 
 function withCors(res: Response, req?: Request): Response {
   if (!req) {

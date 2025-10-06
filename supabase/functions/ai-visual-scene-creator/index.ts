@@ -5,6 +5,13 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 // ✅ BUNDLER HINT: Force CCS inclusion in deployment bundle (dynamic import used inside handler)
 import { characterConsistencyService as _ccsHint } from "../_shared/CharacterConsistencyService.js";
 
+// Import dynamic CORS system for bulletproof cross-origin support
+import { 
+  createDynamicCorsOptionsResponse, 
+  createDynamicCorsResponse, 
+  createDynamicCorsErrorResponse 
+} from '../_shared/corsAdvanced.ts';
+
 // ========== GLOBAL SUPABASE CLIENT (lazy-initialized) ==========
 let supabaseClient: any = null;
 
@@ -220,13 +227,6 @@ function release(key: string, ok: boolean = true): void {
 
 // ============= PERFECT AI VISUAL SCENE CREATOR WITH CHARACTER CONSISTENCY =============
 // Complete implementation with word-for-word OpenAI prompts and CharacterConsistencyService integration
-
-// Import dynamic CORS system for bulletproof cross-origin support
-import { 
-  createDynamicCorsOptionsResponse, 
-  createDynamicCorsResponse, 
-  createDynamicCorsErrorResponse 
-} from '../_shared/corsAdvanced.ts';
 
 // Emergency hair fallback - skin-tone-specific defaults (NO "lighter"/"darker" - only pale/light/medium/olive/dark)
 function emergencyHairFallback(skinTone: string): string {
