@@ -3502,7 +3502,10 @@ export const ImageTierTester = () => {
                           ))}
                         </div>
                       </div>
-                     )}
+                      )}
+                     
+                     {/* CCS Status Display - Batch Tier Testing & E2E */}
+                     <CCSStatusDisplay result={result} />
                      
                      {/* E2E Simulation Cascade History and Fallback Path */}
                      {result.details.cascadeHistory && result.details.cascadeHistory.length > 0 && (
