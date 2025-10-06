@@ -67,6 +67,14 @@ pickFromArray<T>(arr: T[], sessionId: string): T
 - Ensures session-seeded hair is always used
 - Prevents external overrides from breaking consistency
 
+### Inline CCS Alignment (January 2025)
+**Location**: `supabase/functions/runware-generate-image/CharacterConsistencyServiceInline.js`
+- **Updated Method**: `getStructuredAvatarData()` now returns `skinFeatures` to prevent downstream fallbacks
+- **Skin Feature Arrays**: Added `PALE_SKIN_FEATURES_INLINE`, `LIGHT_SKIN_FEATURES_INLINE`, `MEDIUM_SKIN_FEATURES_INLINE`, `OLIVE_SKIN_FEATURES_INLINE` (12 variations each)
+- **African American Features**: Uses `AFRICAN_AMERICAN_FACIAL_FEATURES_INLINE` (36 variations) from StaticDataCache.js
+- **Cultural Routing**: dark + en/es/fr/pt → African American hair (30) + features (36), all other combinations → Generic hair (65) + skin tone feature arrays
+- **Benefit**: Orchestrator (Tier 1) now mirrors shared CCS behavior, preventing "medium skin tone" fallbacks in ai-visual-scene-creator
+
 ## Hair Mapping by Skin Tone (65 Total Variations)
 
 ### Story Mode (Frontend .ts + Backend .ts Failsafe)

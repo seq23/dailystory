@@ -655,17 +655,48 @@ export class CharacterConsistencyServiceInline {
   async getStructuredAvatarData(sessionId, userInfo) {
     const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
     const avatarType = userInfo?.avatar?.type || userInfo?.avatarType || 'child';
+    const language = userInfo?.language || userInfo?.nativeLanguage || 'en';
+    const normalizedTone = skinTone.toLowerCase();
+    
+    // ✅ BUSINESS RULE: African American enhancements ONLY for dark skin + Western languages
+    const qualifiesForAfricanAmericanEnhancements = 
+      (normalizedTone === 'dark') && 
+      ['en', 'en-US', 'es', 'fr', 'pt'].includes(language);
+    
+    let hairColor;
+    let skinFeatures;
+    
+    if (qualifiesForAfricanAmericanEnhancements) {
+      // Use African American cultural bundles (30 hair + 36 features)
+      const gender = avatarType === 'girl' ? 'girls' : 
+                     avatarType === 'boy' ? 'boys' : 
+                     'child';
+      const hairOptions = CharacterConsistencyServiceInline.AFRICAN_AMERICAN_HAIR_INLINE[gender] ||
+                          CharacterConsistencyServiceInline.AFRICAN_AMERICAN_HAIR_INLINE['child'] ||
+                          CharacterConsistencyServiceInline.AFRICAN_AMERICAN_HAIR_INLINE['boys'];
+      
+      hairColor = CharacterConsistencyServiceInline.seededPick(hairOptions, sessionId);
+      skinFeatures = CharacterConsistencyServiceInline.seededPick(
+        CharacterConsistencyServiceInline.AFRICAN_AMERICAN_FACIAL_FEATURES_INLINE,
+        sessionId
+      );
+    } else {
+      // Use generic hair/features from skin tone arrays
+      hairColor = userInfo?.avatar?.hairColor || 
+                  CharacterConsistencyServiceInline.getHairForSkinTone(skinTone, sessionId, avatarType);
+      skinFeatures = CharacterConsistencyServiceInline.getSkinFeatures(skinTone, sessionId);
+    }
+    
     const ethnicity = CharacterConsistencyServiceInline.detectEthnicity(userInfo);
-    const hairColor = userInfo?.avatar?.hairColor || 
-                      CharacterConsistencyServiceInline.getHairForSkinTone(skinTone, sessionId, avatarType);
     
     return {
       type: avatarType,
       skinTone: skinTone,
       hairColor: hairColor,
+      skinFeatures: skinFeatures,  // ✅ CRITICAL: Now included
       ethnicity: ethnicity,
       name: userInfo?.childName || 'child',
-      nativeLanguage: userInfo?.language || 'en'
+      nativeLanguage: language
     };
   }
 
@@ -808,42 +839,107 @@ export class CharacterConsistencyServiceInline {
   };
 
   static AFRICAN_AMERICAN_FACIAL_FEATURES_INLINE = [
-    'authentic African American light brown skin tone with warm brown eyes and a bright infectious smile',
-    'authentic African American light brown skin tone with hazel-green eyes and gentle dimples when smiling',
-    'authentic African American light brown skin tone with amber eyes and expressive eyebrows',
-    'authentic African American caramel skin tone with deep chocolate eyes and a confident cheerful expression',
-    'authentic African American caramel skin tone with hazel eyes with golden flecks and soft rounded cheeks',
-    'authentic African American caramel skin tone with bright brown eyes and an inquisitive thoughtful look',
-    'authentic African American honey complexion with golden brown eyes and a playful mischievous grin',
-    'authentic African American honey complexion with warm brown eyes and graceful bone structure',
-    'authentic African American honey complexion with hazel eyes and a warm welcoming expression',
-    'authentic African American warm beige skin with dark honey-colored eyes and animated joyful features',
-    'authentic African American warm beige skin with hazel-green eyes and gentle dimples',
-    'authentic African American light caramel complexion with rich coffee-colored eyes and expressive eyebrows',
-    'authentic African American medium brown skin tone with warm brown eyes and a bright infectious smile',
-    'authentic African American medium brown skin tone with hazel eyes with golden flecks and gentle dimples when smiling',
-    'authentic African American medium brown skin tone with deep amber eyes and expressive eyebrows',
-    'authentic African American cocoa skin tone with dark chocolate eyes and a confident cheerful expression',
-    'authentic African American cocoa skin tone with hazel-green eyes and soft rounded cheeks',
-    'authentic African American cocoa skin tone with bright brown eyes and an inquisitive thoughtful look',
-    'authentic African American warm brown complexion with golden brown eyes and a playful mischievous grin',
-    'authentic African American warm brown complexion with rich coffee-colored eyes and graceful bone structure',
-    'authentic African American chestnut skin tone with hazel eyes and a warm welcoming expression',
-    'authentic African American chestnut skin tone with warm brown eyes and animated joyful features',
-    'authentic African American amber skin tone with dark honey-colored eyes and gentle dimples',
-    'authentic African American amber skin tone with hazel-green eyes and expressive eyebrows',
-    'authentic African American deep brown skin tone with warm brown eyes and a bright infectious smile',
-    'authentic African American deep brown skin tone with dark chocolate eyes and gentle dimples when smiling',
-    'authentic African American deep brown skin tone with deep amber eyes and expressive eyebrows',
-    'authentic African American rich chocolate complexion with hazel eyes with golden flecks and a confident cheerful expression',
-    'authentic African American rich chocolate complexion with bright brown eyes and soft rounded cheeks',
-    'authentic African American rich chocolate complexion with golden brown eyes and an inquisitive thoughtful look',
-    'authentic African American dark brown skin tone with rich coffee-colored eyes and a playful mischievous grin',
-    'authentic African American dark brown skin tone with warm brown eyes and graceful bone structure',
-    'authentic African American ebony skin tone with dark honey-colored eyes and a warm welcoming expression',
-    'authentic African American ebony skin tone with hazel-green eyes and animated joyful features',
-    'authentic African American deep mahogany complexion with hazel eyes and gentle dimples',
-    'authentic African American deep mahogany complexion with deep amber eyes and expressive eyebrows'
+    // Light to Medium Tones (12 entries)
+    'light brown skin tone with warm brown eyes and a bright infectious smile',
+    'light brown skin tone with hazel-green eyes and gentle dimples when smiling',
+    'light brown skin tone with amber eyes and expressive eyebrows',
+    'caramel skin tone with deep chocolate eyes and a confident cheerful expression',
+    'caramel skin tone with hazel eyes with golden flecks and soft rounded cheeks',
+    'caramel skin tone with bright brown eyes and an inquisitive thoughtful look',
+    'honey complexion with golden brown eyes and a playful mischievous grin',
+    'honey complexion with warm brown eyes and graceful bone structure',
+    'honey complexion with hazel eyes and a warm welcoming expression',
+    'warm beige skin with dark honey-colored eyes and animated joyful features',
+    'warm beige skin with hazel-green eyes and gentle dimples',
+    'light caramel complexion with rich coffee-colored eyes and expressive eyebrows',
+    
+    // Medium Tones (12 entries)
+    'medium brown skin tone with warm brown eyes and a bright infectious smile',
+    'medium brown skin tone with hazel eyes with golden flecks and gentle dimples when smiling', 
+    'medium brown skin tone with deep amber eyes and expressive eyebrows',
+    'cocoa skin tone with dark chocolate eyes and a confident cheerful expression',
+    'cocoa skin tone with hazel-green eyes and soft rounded cheeks',
+    'cocoa skin tone with bright brown eyes and an inquisitive thoughtful look',
+    'warm brown complexion with golden brown eyes and a playful mischievous grin',
+    'warm brown complexion with rich coffee-colored eyes and graceful bone structure',
+    'chestnut skin tone with hazel eyes and a warm welcoming expression',
+    'chestnut skin tone with warm brown eyes and animated joyful features',
+    'amber skin tone with dark honey-colored eyes and gentle dimples',
+    'amber skin tone with hazel-green eyes and expressive eyebrows',
+    
+    // Medium-Dark to Dark Tones (12 entries)
+    'deep brown skin tone with warm brown eyes and a bright infectious smile',
+    'deep brown skin tone with dark chocolate eyes and gentle dimples when smiling',
+    'deep brown skin tone with deep amber eyes and expressive eyebrows',
+    'rich chocolate complexion with hazel eyes with golden flecks and a confident cheerful expression',
+    'rich chocolate complexion with bright brown eyes and soft rounded cheeks',
+    'rich chocolate complexion with golden brown eyes and an inquisitive thoughtful look',
+    'dark brown skin tone with rich coffee-colored eyes and a playful mischievous grin',
+    'dark brown skin tone with warm brown eyes and graceful bone structure',
+    'ebony skin tone with dark honey-colored eyes and a warm welcoming expression',
+    'ebony skin tone with hazel-green eyes and animated joyful features',
+    'deep mahogany complexion with hazel eyes and gentle dimples',
+    'deep mahogany complexion with deep amber eyes and expressive eyebrows'
+  ];
+
+  static PALE_SKIN_FEATURES_INLINE = [
+    "porcelain skin with cool undertones",
+    "fair ivory complexion with pink undertones",
+    "alabaster skin with neutral undertones",
+    "creamy pale skin with warm undertones",
+    "pearl white complexion with subtle pink flush",
+    "milky white skin with cool undertones",
+    "fair skin with peachy undertones",
+    "pale rose-tinted complexion",
+    "translucent fair skin with blue undertones",
+    "cream-colored skin with golden undertones",
+    "snow white complexion with neutral base",
+    "fair skin with subtle yellow undertones"
+  ];
+
+  static LIGHT_SKIN_FEATURES_INLINE = [
+    "light peachy skin tone with warm glow",
+    "soft beige complexion with pink undertones",
+    "warm vanilla skin with golden undertones",
+    "light cream complexion with neutral base",
+    "pale golden skin with honey undertones",
+    "light rose-beige skin tone",
+    "champagne-colored complexion",
+    "light ivory skin with warm peachy glow",
+    "soft bisque skin tone with pink flush",
+    "light caramel undertones with creamy base",
+    "warm light tan with golden highlights",
+    "light sand-colored skin with neutral undertones"
+  ];
+
+  static MEDIUM_SKIN_FEATURES_INLINE = [
+    "warm peachy medium skin tone",
+    "golden medium complexion with honey undertones",
+    "medium beige skin with warm caramel highlights",
+    "soft medium tan with golden glow",
+    "medium caramel skin tone with warm undertones",
+    "warm medium brown with peachy undertones",
+    "medium golden skin with bronze highlights",
+    "caramel medium complexion with honey base",
+    "medium wheat-colored skin with warm glow",
+    "golden medium tan with amber undertones",
+    "medium olive-beige with warm undertones",
+    "warm medium skin with cinnamon undertones"
+  ];
+
+  static OLIVE_SKIN_FEATURES_INLINE = [
+    "light olive complexion with green undertones",
+    "warm olive skin with golden undertones",
+    "medium olive with bronze highlights",
+    "golden olive complexion with warm glow",
+    "olive-beige skin with neutral undertones",
+    "warm olive-tan with amber undertones",
+    "deep olive with rich warm undertones",
+    "olive-brown complexion with golden base",
+    "Mediterranean olive skin with sun-kissed glow",
+    "olive-caramel with warm honey undertones",
+    "rich olive complexion with bronze undertones",
+    "dark olive skin with deep golden highlights"
   ];
 
   // ============= STATIC HELPER METHODS =============
@@ -859,14 +955,39 @@ export class CharacterConsistencyServiceInline {
   }
 
   static getSkinFeatures(skinTone, sessionId) {
-    const features = {
-      pale: 'fair skin with cool undertones',
-      light: 'light skin with neutral undertones',
-      medium: 'medium skin with warm undertones',
-      olive: 'olive skin with golden undertones',
-      dark: 'deep brown skin with warm undertones'
-    };
-    return features[skinTone] || features.medium;
+    const normalizedTone = (skinTone || 'medium').toLowerCase();
+    
+    // Use African American features for dark skin tones
+    if (normalizedTone === 'dark' || normalizedTone === 'darker') {
+      return CharacterConsistencyServiceInline.seededPick(
+        CharacterConsistencyServiceInline.AFRICAN_AMERICAN_FACIAL_FEATURES_INLINE,
+        sessionId
+      );
+    }
+    
+    // Use specific skin tone feature arrays for other tones
+    if (normalizedTone === 'pale') {
+      return CharacterConsistencyServiceInline.seededPick(
+        CharacterConsistencyServiceInline.PALE_SKIN_FEATURES_INLINE,
+        sessionId
+      );
+    } else if (['light', 'lighter', 'fair'].includes(normalizedTone)) {
+      return CharacterConsistencyServiceInline.seededPick(
+        CharacterConsistencyServiceInline.LIGHT_SKIN_FEATURES_INLINE,
+        sessionId
+      );
+    } else if (normalizedTone === 'olive') {
+      return CharacterConsistencyServiceInline.seededPick(
+        CharacterConsistencyServiceInline.OLIVE_SKIN_FEATURES_INLINE,
+        sessionId
+      );
+    } else {
+      // Default to medium for any unmapped tones
+      return CharacterConsistencyServiceInline.seededPick(
+        CharacterConsistencyServiceInline.MEDIUM_SKIN_FEATURES_INLINE,
+        sessionId
+      );
+    }
   }
 
   static getHairForSkinTone(skinTone, sessionId, avatarType = 'child') {
