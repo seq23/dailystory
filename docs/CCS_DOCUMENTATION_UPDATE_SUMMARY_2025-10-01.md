@@ -91,6 +91,11 @@ All documents now cross-reference each other:
    - 100% self-contained service
    - ~50ms faster cold start than vendor bundle
 
+4. **Deleted Redundant Vendor File**
+   - **DELETED:** `CharacterConsistencyServiceVendor.js` (2487 lines)
+   - **REASON:** Completely replaced by `CharacterConsistencyServiceInline.js`
+   - **KEPT:** `_vendor/CharacterConsistencyService.mjs` (emergency fallback for Direct Mode & Tier 2.5A)
+
 ### Impact:
 - ✅ Zero import failures (vocabulary embedded directly)
 - ✅ Full functionality preserved (all 8 methods with complete implementations)
@@ -98,3 +103,4 @@ All documents now cross-reference each other:
 - ✅ Faster cold start (~50ms improvement over vendor bundle)
 - ✅ Perfect parity with _shared/CharacterConsistencyService.js
 - ✅ 3-tier fallback still works: inline → _shared → _vendor
+- ✅ Cleaner codebase (redundant 2487-line file removed)
