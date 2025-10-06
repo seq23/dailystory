@@ -271,3 +271,27 @@ All services now use 3-tier fallback chain:
 - ✅ Perfect parity (all 8 methods, all cultural data, all helper classes)
 - ✅ 3-tier resilience maintained across all services
 - ✅ Universal consistency in character rendering
+
+---
+
+## October 6, 2025 Fix: getStructuredAvatarData Method Conversion
+
+**Issue Identified:** `getStructuredAvatarData` was defined as a **static method** in `CharacterConsistencyServiceInline.js` (line 654), but the orchestrator's method availability check requires **instance methods**. This caused the method to appear as "undefined" when checking `characterConsistencyService.getStructuredAvatarData`.
+
+**Root Cause:** Static methods belong to the class itself, not to instances. The orchestrator checks for methods on the service instance (`characterConsistencyService`), not the class (`CharacterConsistencyServiceInline`).
+
+**Fix Applied:** ✅ Converted `getStructuredAvatarData` from static to async instance method
+
+**Verified CCS Interface (All Instance Methods):**
+```javascript
+characterConsistencyService.getStructuredAvatarData(sessionId, userInfo)        // ✅ NOW AVAILABLE
+characterConsistencyService.getEnhancedCharacterSeed(...)                       // ✅ AVAILABLE  
+characterConsistencyService.getCulturalEnhancements(...)                        // ✅ AVAILABLE
+characterConsistencyService.analyzeVisualDetails(...)                           // ✅ AVAILABLE
+characterConsistencyService.getColoredObjects(...)                              // ✅ AVAILABLE
+characterConsistencyService.detectAllCharacters(...)                            // ✅ AVAILABLE
+characterConsistencyService.getSessionSetting(...)                              // ✅ AVAILABLE
+characterConsistencyService.getSecondaryCharactersForSession(...)               // ✅ AVAILABLE
+```
+
+**Expected Outcome:** Tier 1 Force Mode test passes without `CHARACTERSERVICE_UNAVAILABLE_TRY_DIRECT_MODE` error. All 8 required methods are now accessible as instance methods.

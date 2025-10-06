@@ -651,7 +651,7 @@ export class CharacterConsistencyServiceInline {
 
   // ============= CHARACTER GENERATION =============
 
-  static getStructuredAvatarData(sessionId, userInfo) {
+  async getStructuredAvatarData(sessionId, userInfo) {
     const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
     const avatarType = userInfo?.avatar?.type || userInfo?.avatarType || 'child';
     const hairColor = userInfo?.avatar?.hairColor || 'brown hair';
