@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-10-03T21:00:00Z - Zero top-level imports, non-blocking gate, full lazy-loading
+// DEPLOY_MARKER: 2025-10-06T02:18:00Z - Hardened error handling: gate cleanup can't mask original errors
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -1356,9 +1356,13 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    // Ensure gate is released on error
-    if (gatingEnabled && gateAcquired) {
-      release('T1:ai-visual-scene-creator', false);
+    // Ensure gate is released on error - wrap in try-catch to prevent cleanup errors from masking original error
+    try {
+      if (gatingEnabled && gateAcquired) {
+        release(gateKey, false);
+      }
+    } catch (cleanupError) {
+      console.warn('⚠️ Gate cleanup error (non-fatal):', cleanupError);
     }
     
     const errorMessage = error instanceof Error ? error.message : String(error);
