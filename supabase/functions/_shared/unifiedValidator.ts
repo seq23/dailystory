@@ -439,7 +439,7 @@ export class UnifiedValidator {
     
     // Level 4 (Expert): Allow mature themes with age-appropriate framing
     // Only block nuclear blacklist (extreme content)
-    if (level === 4) {
+    if (level === 'Level4') {
       const nuclearBlacklist = [
         'rape', 'sexual assault', 'suicide', 'self-harm', 'drug dealing', 
         'explicit sexual', 'pornography', 'incest', 'pedophilia'
