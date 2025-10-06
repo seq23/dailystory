@@ -1,8 +1,7 @@
 // DEPLOY_MARKER: 2025-10-04T16:00:00Z - Single-file TypeScript with inlined handler logic
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-// ✅ BUNDLER HINT: Force CCS inclusion in bundle
-import { characterConsistencyService as _ccsHint } from "../_shared/CharacterConsistencyService.js";
+// Removed bundler hint - orchestrator now provides pre-computed CCS data
 const SERVICE_NAME = "runware-template-ab";
 
 // ========== INLINED SCENE EXTRACTION FUNCTIONS ==========
@@ -1016,25 +1015,42 @@ async function handleTemplateABRequest(req: Request): Promise<Response> {
     if (mode === 'A') {
       console.log(`🚀 Processing Tier 2.5A: Full character consistency`);
       
-      // Try to use CCS with 3-tier fallback
-      try {
-        let ccsModule;
+      // Check if orchestrator provided pre-computed CCS data
+      const precomputedCCS = payload.precomputedCCS || null;
+      const hasPrecomputedData = precomputedCCS?.culturalBundle?.hair && 
+                                 precomputedCCS?.culturalBundle?.features;
+      
+      if (hasPrecomputedData) {
+        // FAST PATH: Use orchestrator's pre-computed data (NO CCS IMPORT)
+        console.log(`✅ Using orchestrator-provided CCS data (ZERO import overhead)`);
+        
+        const bundle = precomputedCCS.culturalBundle;
+        const semanticScene = extractSemanticScene(storyText, { userInfo, pageText: storyText });
+        sceneExtracted = !!semanticScene;
+        
+        positivePrompt = `Narrative: ${storyText}.
+Character Description: ${character} ${age}, ${ethnicityDesc}, ${bundle.hair}, ${bundle.features}.
+Action: ${semanticScene}.
+Context: diverse community setting.
+Brand Suffix: ${styleFramework.frameworkPrompt}.`;
+        
+        console.log(`✅ Tier 2.5A: Using orchestrator CCS bundle with semantic scene: "${semanticScene}"`);
+        
+      } else {
+        // LEGACY PATH: No pre-computed data, attempt CCS import (backwards compatibility)
+        console.log(`⚠️ No precomputed CCS data, attempting legacy CCS import path`);
+        
         try {
-          ccsModule = await import("../runware-generate-image/CharacterConsistencyServiceInline.js");
-          console.log(`✅ Tier 2.5A: inline service loaded`);
-        } catch (inlineError) {
+          let ccsModule;
           try {
             ccsModule = await import("../_shared/CharacterConsistencyService.js");
-            console.log(`✅ Tier 2.5A: _shared service loaded (fallback)`);
+            console.log(`✅ Tier 2.5A: _shared service loaded (legacy fallback)`);
           } catch (sharedError) {
             ccsModule = await import("../_vendor/CharacterConsistencyService.mjs");
             console.log(`✅ Tier 2.5A: _vendor service loaded (last resort)`);
           }
-        }
-        const ccs = ccsModule.characterConsistencyService;
-        
-        // Try to get cultural enhancements from CCS
-        try {
+          const ccs = ccsModule.characterConsistencyService;
+          
           const characterName = character;
           const bundle = await ccs.getCulturalEnhancements(userInfo, sessionId, characterName);
           const semanticScene = extractSemanticScene(storyText, { userInfo, pageText: storyText });
@@ -1046,13 +1062,14 @@ Action: ${semanticScene}.
 Context: diverse community setting.
 Brand Suffix: ${styleFramework.frameworkPrompt}.`;
           
-          console.log(`✅ Tier 2.5A: Using CCS cultural bundle with semantic scene: "${semanticScene}"`);
+          console.log(`✅ Tier 2.5A: Using legacy CCS import path with semantic scene: "${semanticScene}"`);
+          
         } catch (ccsError: any) {
-          console.warn(`⚠️ CCS getCulturalEnhancements failed, escalating to Mode B inline logic:`, ccsError.message);
+          // Final fallback to Mode B inline logic
+          console.warn(`⚠️ CCS failed, escalating to Mode B inline logic:`, ccsError.message);
           const semanticScene = extractSemanticScene(storyText, { userInfo, pageText: storyText });
           sceneExtracted = !!semanticScene;
           
-          // Escalate to inline Mode B logic (now with enhanced cultural intelligence)
           positivePrompt = `Narrative: ${storyText}.
 Subject: ${character}, ${age}, ${ethnicityDesc}, ${hair}, ${features}.
 Action: ${semanticScene}.
@@ -1060,28 +1077,21 @@ Context: diverse community setting.
 Brand Suffix: ${styleFramework.frameworkPrompt}.`;
           console.log(`✅ Tier 2.5A→B: Escalated to inline fallback with semantic scene: "${semanticScene}"`);
         }
-      } catch (importError: any) {
-        console.warn(`⚠️ CCS import failed, using inline Mode B logic:`, importError.message);
-        const semanticScene = extractSemanticScene(storyText, { userInfo, pageText: storyText });
-        sceneExtracted = !!semanticScene;
-        
-        // Use inline Mode B logic (now with enhanced cultural intelligence)
-        positivePrompt = `Narrative: ${storyText}.
-Subject: ${character}, ${age}, ${ethnicityDesc}, ${hair}, ${features}.
-Action: ${semanticScene}.
-Context: diverse community setting.
-Brand Suffix: ${styleFramework.frameworkPrompt}.`;
-        console.log(`✅ Tier 2.5A→B: Using inline fallback with semantic scene: "${semanticScene}"`);
       }
     } else {
       console.log(`🚀 Processing Tier 2.5B: Lightweight template with cultural intelligence`);
+      
+      // Use precomputed cultural data if available
+      const precomputedCCS = payload.precomputedCCS || null;
+      const bundleHair = precomputedCCS?.culturalBundle?.hair || hair;
+      const bundleFeatures = precomputedCCS?.culturalBundle?.features || features;
       
       // Mode B: Pure inline with enhanced cultural intelligence + simple scene extraction
       const simpleScene = extractSimpleScene(storyText);
       sceneExtracted = !!simpleScene;
       
       positivePrompt = `Narrative: ${storyText}.
-Subject: ${character}, ${age}, ${ethnicityDesc}, ${hair}, ${features}.
+Subject: ${character}, ${age}, ${ethnicityDesc}, ${bundleHair}, ${bundleFeatures}.
 Action: ${simpleScene}.
 Context: diverse community setting.
 Brand Suffix: ${styleFramework.frameworkPrompt}.`;
@@ -1090,8 +1100,9 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
         culturalProfile,
         skinTone,
         avatarType,
-        hairSelected: hair,
-        featuresSelected: features
+        hairSelected: bundleHair,
+        featuresSelected: bundleFeatures,
+        usedPrecomputedData: !!precomputedCCS
       });
     }
     

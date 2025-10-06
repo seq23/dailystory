@@ -1883,6 +1883,14 @@ Deno.serve(async (req) => {
                   templateComplexity: "B",
                   tier1FailureReason: normalizedTier1Reason,
                   tier25aFailureReason: tier25aErrorMessage,
+                  // Pass pre-computed CCS data to Mode B
+                  precomputedCCS: {
+                    culturalBundle,
+                    mainCharacterAppearance,
+                    coloredObjects,
+                    secondaryCharacters,
+                    characterSeed,
+                  },
                 }),
                 signal: controller.signal,
               });
@@ -1992,11 +2000,19 @@ Deno.serve(async (req) => {
                 const response = await fetch(`${SUPABASE_URL}/functions/v1/runware-template-ab`, {
                   method: "POST",
                   headers,
-                  body: JSON.stringify({
-                    ...payload,
-                    templateComplexity: "A",
-                     tier1FailureReason: normalizedTier1Reason,
-                  }),
+                body: JSON.stringify({
+                  ...payload,
+                  templateComplexity: "A",
+                   tier1FailureReason: normalizedTier1Reason,
+                  // Pass pre-computed CCS data to Mode A
+                  precomputedCCS: {
+                    culturalBundle,
+                    mainCharacterAppearance,
+                    coloredObjects,
+                    secondaryCharacters,
+                    characterSeed,
+                  },
+                }),
                   signal: controller.signal,
                 });
                 
@@ -2109,6 +2125,14 @@ Deno.serve(async (req) => {
                     templateComplexity: "B",
                      tier1FailureReason: normalizedTier1Reason,
                     tier25aFailureReason: tier25aErrorMessage,
+                    // Pass pre-computed CCS data to Mode B
+                    precomputedCCS: {
+                      culturalBundle,
+                      mainCharacterAppearance,
+                      coloredObjects,
+                      secondaryCharacters,
+                      characterSeed,
+                    },
                   }),
                   signal: controller.signal,
                 });

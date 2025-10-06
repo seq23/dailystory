@@ -171,3 +171,51 @@ try {
 - ✅ Universal character consistency (all services use same source)
 - ✅ Maintained backward compatibility with 3-tier fallback
 - ✅ Production-ready resilience (3 layers of protection)
+
+---
+
+## Phase 5: Orchestrator Pre-Computation Pattern (October 6, 2025)
+
+### Problem Solved
+- Template-AB was importing CCS causing cross-function bundler errors (line 1023)
+- Duplicate CCS computation: orchestrator computed data, then template-ab re-computed same data
+- Performance overhead on every page
+- Cascade complexity: DIRECT MODE → Tier 2.5A (if CCS available) → Tier 2.5B
+
+### Solution Architecture
+**Orchestrator becomes single CCS computation point:**
+1. Computes CCS data once per page (lines 700-850)
+2. Passes `precomputedCCS` object to both Tier 2.5A and Tier 2.5B
+3. Template-AB receives and consumes pre-computed data
+
+**Data Passed in `precomputedCCS`:**
+- `culturalBundle` (hair, features, culturalContext)
+- `mainCharacterAppearance` (Phase 1 appearance tracking)
+- `coloredObjects` (visual consistency)
+- `secondaryCharacters` (secondary character details)
+- `characterSeed` (character uniqueness)
+
+### Template-AB Changes
+**Mode A (Tier 2.5A):**
+- **Fast path:** Uses `payload.precomputedCCS.culturalBundle` directly (no import)
+- **Legacy path:** Falls back to `_shared` → `_vendor` if no precomputed data
+- **Removed:** Cross-function import from `../runware-generate-image/` (line 1023)
+
+**Mode B (Tier 2.5B):**
+- Uses `precomputedCCS` if available
+- Maintains complete inline fallbacks
+- Zero breaking changes
+
+### Benefits
+✅ Eliminates cross-function bundler errors  
+✅ Zero duplicate CCS computation  
+✅ Faster Mode A performance (one CCS load vs two)  
+✅ Consistent character appearance across pages  
+✅ Cleaner architecture: orchestrator owns CCS, template-AB is renderer  
+✅ Backward compatible: legacy path still works  
+
+### Verification
+- Logs show "Using orchestrator-provided CCS data (ZERO import overhead)"
+- No "Module not found" bundler errors
+- Multi-page character consistency maintained
+- Legacy fallback tested and functional

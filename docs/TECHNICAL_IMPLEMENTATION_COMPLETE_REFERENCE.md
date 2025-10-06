@@ -35,19 +35,43 @@ graph TD
 
 #### Tier 2.5A: Premium Template (Sophisticated)
 - **Service:** `runware-template-ab` (complexity: 'A')
-- **Dependencies:** PhaseIntegrationOrchestrator, ai-visual-scene-creator
-- **Nuclear Status:** ❌ Orchestrator dependencies by design
+- **Dependencies:** Receives pre-computed CCS data from orchestrator
+- **Nuclear Status:** ⚠️ Requires orchestrator CCS data (fast path) or falls back to _shared/_vendor
 - **Hair Mapping:** 73-variation sophisticated system
 - **Features:** Semantic scene extraction, full cultural intelligence
+
+**Payload Structure (Updated October 6, 2025):**
+```typescript
+{
+  pageText: string,
+  storyText: string,
+  userInfo: object,
+  sessionId: string,
+  templateComplexity: "A",
+  tier1FailureReason: string,
+  // NEW: Pre-computed CCS data from orchestrator
+  precomputedCCS: {
+    culturalBundle: {
+      hair: string,           // Cultural hair description
+      features: string,       // Cultural facial features
+      culturalContext: string // Cultural context metadata
+    },
+    mainCharacterAppearance: object,  // Accumulated appearance
+    coloredObjects: string,            // Visual detail tracking
+    secondaryCharacters: array,       // Secondary character data
+    characterSeed: number             // Character consistency seed
+  }
+}
+```
 
 **Template Structure:**
 ```
 Narrative: {pageText}. 
-Character Description: {character} {age}, {ethnicity}, {hair}, {features} {bundle.culturalEnhancements}. 
+Character Description: {character} {age}, {ethnicity}, {precomputedCCS.culturalBundle.hair}, {precomputedCCS.culturalBundle.features}. 
 Action: {semantic_scene}. 
-Secondary elements: {secondary_characters}. 
-Consistency: {visual_consistency_elements} {setting_context}. 
-Context: {cultural_context}, {community_context}. 
+Secondary elements: {precomputedCCS.secondaryCharacters}. 
+Consistency: {precomputedCCS.coloredObjects} {setting_context}. 
+Context: {cultural_context}, {community_context}.
 Brand Suffix: {frameworkPrompt}, {cameraDirective}.
 ```
 
