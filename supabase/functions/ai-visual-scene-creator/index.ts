@@ -798,15 +798,18 @@ serve(async (req) => {
 
   // Feature flag check - declare outside try block for catch block scope
   const gatingEnabled = Deno.env.get('DISABLE_PROVIDER_GATE') !== 'true';
+  
+  // Hoist gate variables outside try block to prevent ReferenceError in catch block
+  const gateKey = 'T1:ai-visual-scene-creator';
+  let gateAcquired = false;
+  let gateStartTime = Date.now();
 
   try {
     const requestId = `${Math.random().toString(36).substring(2)}`;
     console.log(`🚀 [${requestId}] ai-visual-scene-creator: POST ${req.url}`);
     
     // ============= PROVIDER GATE: Pre-call health check =============
-    const gateKey = 'T1:ai-visual-scene-creator';
-    let gateAcquired = false;
-    const gateStartTime = Date.now();
+    gateStartTime = Date.now();
     
     if (gatingEnabled) {
       const gateResult = await acquire(gateKey);

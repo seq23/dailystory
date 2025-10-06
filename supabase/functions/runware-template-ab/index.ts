@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-10-04T16:00:00Z - Single-file TypeScript with inlined handler logic
+// DEPLOY_MARKER: 2025-10-06T02:15:00Z - Single-file TypeScript with image generation in REAL mode
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // Removed bundler hint - orchestrator now provides pre-computed CCS data
@@ -1039,12 +1039,38 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
         
         console.log(`✅ Tier 2.5A: Using orchestrator CCS bundle with semantic scene: "${semanticScene}"`);
         
+        // Detect REAL vs TEST mode
+        const isRealMode = payload.test !== true && payload.dryRun !== true;
+        let imageURL: string | undefined;
+        
+        if (isRealMode) {
+          // REAL mode: Generate image with Runware API
+          try {
+            console.log(`🎨 [${requestId}] REAL Mode: Generating image for Tier 2.5A`);
+            imageURL = await callRunwareAPI(positivePrompt, negativePrompt, { sessionId, pageNumber, model: 'runware:100@1' });
+            console.log(`✅ [${requestId}] Image generated successfully:`, imageURL);
+          } catch (imageError: any) {
+            console.error(`❌ [${requestId}] Image generation failed:`, imageError.message);
+            return createResponse({
+              success: false,
+              error: `Image generation failed: ${imageError.message}`,
+              tier: 'tier-2.5A',
+              service: SERVICE_NAME,
+              positivePrompt,
+              negativePrompt
+            }, 500);
+          }
+        } else {
+          console.log(`🧪 [${requestId}] TEST/DryRun Mode: Skipping image generation for Tier 2.5A`);
+        }
+        
         return createResponse({
           success: true,
           tier: `tier-2.5A`,
           service: SERVICE_NAME,
           positivePrompt,
           negativePrompt,
+          ...(imageURL && { imageURL }),
           styleFrameworkUsed: styleFramework.name,
           templateComplexity: 'A',
           precomputedCCSUsed: true,
@@ -1096,12 +1122,38 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
           
           console.log(`✅ Tier 2.5A: Using legacy CCS import path with semantic scene: "${semanticScene}"`);
           
+          // Detect REAL vs TEST mode
+          const isRealMode = payload.test !== true && payload.dryRun !== true;
+          let imageURL: string | undefined;
+          
+          if (isRealMode) {
+            // REAL mode: Generate image with Runware API
+            try {
+              console.log(`🎨 [${requestId}] REAL Mode: Generating image for Tier 2.5A (legacy path)`);
+              imageURL = await callRunwareAPI(positivePrompt, negativePrompt, { sessionId, pageNumber, model: 'runware:100@1' });
+              console.log(`✅ [${requestId}] Image generated successfully:`, imageURL);
+            } catch (imageError: any) {
+              console.error(`❌ [${requestId}] Image generation failed:`, imageError.message);
+              return createResponse({
+                success: false,
+                error: `Image generation failed: ${imageError.message}`,
+                tier: 'tier-2.5A',
+                service: SERVICE_NAME,
+                positivePrompt,
+                negativePrompt
+              }, 500);
+            }
+          } else {
+            console.log(`🧪 [${requestId}] TEST/DryRun Mode: Skipping image generation for Tier 2.5A (legacy path)`);
+          }
+          
           return createResponse({
             success: true,
             tier: `tier-2.5A`,
             service: SERVICE_NAME,
             positivePrompt,
             negativePrompt,
+            ...(imageURL && { imageURL }),
             styleFrameworkUsed: styleFramework.name,
             templateComplexity: 'A',
             precomputedCCSUsed: false,
@@ -1138,12 +1190,38 @@ Context: diverse community setting.
 Brand Suffix: ${styleFramework.frameworkPrompt}.`;
           console.log(`✅ Tier 2.5A→B: Escalated to inline fallback with semantic scene: "${semanticScene}"`);
           
+          // Detect REAL vs TEST mode
+          const isRealMode = payload.test !== true && payload.dryRun !== true;
+          let imageURL: string | undefined;
+          
+          if (isRealMode) {
+            // REAL mode: Generate image with Runware API
+            try {
+              console.log(`🎨 [${requestId}] REAL Mode: Generating image for Tier 2.5A (inline fallback)`);
+              imageURL = await callRunwareAPI(positivePrompt, negativePrompt, { sessionId, pageNumber, model: 'runware:100@1' });
+              console.log(`✅ [${requestId}] Image generated successfully:`, imageURL);
+            } catch (imageError: any) {
+              console.error(`❌ [${requestId}] Image generation failed:`, imageError.message);
+              return createResponse({
+                success: false,
+                error: `Image generation failed: ${imageError.message}`,
+                tier: 'tier-2.5A',
+                service: SERVICE_NAME,
+                positivePrompt,
+                negativePrompt
+              }, 500);
+            }
+          } else {
+            console.log(`🧪 [${requestId}] TEST/DryRun Mode: Skipping image generation for Tier 2.5A (inline fallback)`);
+          }
+          
           return createResponse({
             success: true,
             tier: `tier-2.5A`,
             service: SERVICE_NAME,
             positivePrompt,
             negativePrompt,
+            ...(imageURL && { imageURL }),
             styleFrameworkUsed: styleFramework.name,
             templateComplexity: 'A',
             precomputedCCSUsed: false,
@@ -1196,12 +1274,38 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
         usedPrecomputedData
       });
       
+      // Detect REAL vs TEST mode
+      const isRealMode = payload.test !== true && payload.dryRun !== true;
+      let imageURL: string | undefined;
+      
+      if (isRealMode) {
+        // REAL mode: Generate image with Runware API
+        try {
+          console.log(`🎨 [${requestId}] REAL Mode: Generating image for Tier 2.5B`);
+          imageURL = await callRunwareAPI(positivePrompt, negativePrompt, { sessionId, pageNumber, model: 'runware:100@1' });
+          console.log(`✅ [${requestId}] Image generated successfully:`, imageURL);
+        } catch (imageError: any) {
+          console.error(`❌ [${requestId}] Image generation failed:`, imageError.message);
+          return createResponse({
+            success: false,
+            error: `Image generation failed: ${imageError.message}`,
+            tier: 'tier-2.5B',
+            service: SERVICE_NAME,
+            positivePrompt,
+            negativePrompt
+          }, 500);
+        }
+      } else {
+        console.log(`🧪 [${requestId}] TEST/DryRun Mode: Skipping image generation for Tier 2.5B`);
+      }
+      
       return createResponse({
         success: true,
         tier: `tier-2.5B`,
         service: SERVICE_NAME,
         positivePrompt,
         negativePrompt,
+        ...(imageURL && { imageURL }),
         styleFrameworkUsed: styleFramework.name,
         templateComplexity: 'B',
         precomputedCCSUsed: usedPrecomputedData,

@@ -1,8 +1,9 @@
 /**
  * ========================================
  * CHARACTER CONSISTENCY SERVICE INLINE - COMPLETE IMPLEMENTATION
+ * DEPLOY_MARKER: 2025-10-06T02:15:00Z - Async instance methods for Tier 1 compatibility
  * ========================================
- * 
+ *
  * PURPOSE: Self-contained service with zero external dependencies
  * ARCHITECTURE: All vocabulary data, helper classes, and methods embedded directly
  * SIZE: ~2200 lines - complete parity with _shared/CharacterConsistencyService.js
