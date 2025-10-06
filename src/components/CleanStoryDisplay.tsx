@@ -2271,6 +2271,101 @@ const initializeStory = async () => {
     }
   };
 
+  // CRITICAL FIX (Oct 6, 2025): Premium live generation wrapper
+  // This function calls generateNextPage() and properly advances the story state
+  // Restores "never-ending" premium story experience
+  const handleGenerateNextPageAndAdvance = useCallback(async () => {
+    DebugLogger.log('story', '🚀 Premium: handleGenerateNextPageAndAdvance invoked', {
+      currentPage,
+      storyLength: story.length,
+      hasLiveContext: !!liveContext,
+      isLoadingNextPage
+    });
+
+    if (!isPremium) {
+      DebugLogger.warn('story', '⚠️ handleGenerateNextPageAndAdvance called for non-premium user');
+      return;
+    }
+
+    if (isLoadingNextPage) {
+      DebugLogger.log('story', '⏳ Already loading next page, skipping duplicate call');
+      return;
+    }
+
+    try {
+      // Call the existing generateNextPage function
+      const result = await generateNextPage();
+      
+      if (!result) {
+        DebugLogger.warn('story', '⚠️ generateNextPage returned undefined result');
+        return;
+      }
+
+      if (result.error) {
+        DebugLogger.error('story', '❌ generateNextPage returned error', result.error);
+        return;
+      }
+
+      // Extract page text from result
+      const pageText = Array.isArray(result.content) ? result.content[0] : result.content;
+      
+      if (!pageText) {
+        DebugLogger.error('story', '❌ No page text in result', result);
+        return;
+      }
+
+      DebugLogger.log('story', '✅ Premium: Appending new page to story', {
+        newPageLength: pageText.length,
+        previousStoryLength: story.length,
+        newStoryLength: story.length + 1
+      });
+
+      // Append new page to story array
+      setStory(prev => [...prev, pageText]);
+
+      // Update live context for next generation
+      if (result.nextContext) {
+        setLiveContext(result.nextContext);
+        DebugLogger.log('story', '✅ Premium: Updated liveContext', {
+          nextContextPage: result.nextContext.currentPage,
+          nextContextStoryLength: result.nextContext.storyContext?.length
+        });
+      }
+
+      // Advance to the new page
+      setCurrentPage(prev => prev + 1);
+      
+      DebugLogger.log('story', '✅ Premium: Advanced to new page', {
+        newCurrentPage: currentPage + 1
+      });
+
+      // Mark story complete if indicated
+      if (result.isComplete) {
+        setIsStoryComplete(true);
+        DebugLogger.log('story', '🎉 Premium: Story marked complete');
+      }
+
+      // Generate image for the new page if images are enabled
+      try {
+        const imagesEnabledCheck = localStorage.getItem('storyImagesEnabled') !== '0';
+        if (imagesEnabledCheck) {
+          DebugLogger.log('image', '📸 Premium: Triggering image generation for new page');
+          ManagedTimers.setTimeout(() => {
+            generateImageForCurrentPage();
+          }, 100, 'CleanStoryDisplay');
+        } else {
+          DebugLogger.log('image', '⏭️ Premium: Images disabled, skipping generation');
+        }
+      } catch (imgError) {
+        DebugLogger.warn('image', 'Failed to trigger image generation', imgError);
+      }
+
+    } catch (error) {
+      DebugLogger.error('story', '💥 Premium: Exception in handleGenerateNextPageAndAdvance', error);
+      setError('Failed to generate next page. Please try again.');
+    }
+  }, [isPremium, isLoadingNextPage, currentPage, story.length, liveContext, generateNextPage, setStory, setLiveContext, setCurrentPage, setIsStoryComplete, setError]);
+
   const generateImageForCurrentPage = async () => {
     // 🔍 COMPREHENSIVE DEBUG: Track function entry
     DebugLogger.log('image', 'generateImageForCurrentPage() called', {
@@ -3756,7 +3851,7 @@ const handleRestartTimer = () => {
                     canGoPrevious={currentPage > 0 && !controlsBlocked}
                     onNext={handleNext}
                     onPrevious={handlePrevious}
-                    onGenerateNext={handleNext}
+                    onGenerateNext={handleGenerateNextPageAndAdvance}
                     onGenerateNewStory={() => handleGenerateNewStory()}
                     audioEngineRef={audioEngineRef}
                     isAudioPlaying={isAudioPlaying}

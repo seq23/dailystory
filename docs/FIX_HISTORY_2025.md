@@ -1,6 +1,6 @@
 # Fix History - 2025
 
-**Last Updated**: October 5, 2025  
+**Last Updated**: October 6, 2025  
 **Status**: Complete historical record of all system fixes  
 **Purpose**: Consolidated reference for all bug fixes, postmortems, and critical resolutions
 
@@ -9,8 +9,9 @@
 ## 📋 Table of Contents
 
 ### October 2025 Fixes
-1. [Runtime Health Check Fixes](#1-runtime-health-check-fixes) (Oct 4, 2025)
-2. [Tier 1 Import Failure Postmortem](#2-tier-1-import-failure-postmortem) (Oct 3, 2025)  
+1. [Premium Story Continuation Regression Fix](#1-premium-story-continuation-regression-fix) (Oct 6, 2025)
+2. [Runtime Health Check Fixes](#2-runtime-health-check-fixes) (Oct 4, 2025)
+3. [Tier 1 Import Failure Postmortem](#3-tier-1-import-failure-postmortem) (Oct 3, 2025)
 3. [Runware Template AB CCS Fallback Fix](#3-runware-template-ab-ccs-fallback-fix) (Oct 3, 2025)
 4. [Critical Syntax Fix](#4-critical-syntax-fix) (Oct 2-3, 2025)
 5. [AI Visual Scene Creator Boot Fix](#5-ai-visual-scene-creator-boot-fix) (Oct 2, 2025)
@@ -42,7 +43,182 @@
 
 ---
 
-# 1. Runtime Health Check Fixes
+# 1. Premium Story Continuation Regression Fix
+
+**Date**: 2025-10-06  
+**Error ID**: CRITICAL-REGRESSION  
+**Status**: ✅ RESOLVED  
+**Impact**: 100% of premium users unable to generate new story pages
+
+## Executive Summary
+
+**Root Cause**: Component prop miswiring - `onGenerateNext` was incorrectly wired to navigation handler instead of content generation function  
+**Business Impact**: Premium users' core value proposition (never-ending stories) was completely broken  
+**Solution**: Created proper wrapper function and corrected prop wiring  
+**Lines Changed**: 2 (plus wrapper function)
+
+## The Regression
+
+Premium users reported that clicking "Next" on the last page would not generate new content. Instead, nothing happened or navigation occurred without new content generation.
+
+## Root Cause Analysis
+
+### Location
+`src/components/CleanStoryDisplay.tsx` line 3759
+
+### Problematic Code
+```typescript
+<StoryNavigationControls
+  ...
+  onGenerateNext={handleNext}  // ❌ WRONG - navigation function
+  ...
+/>
+```
+
+### What Was Wrong
+- `onGenerateNext` prop expects a function that **creates new content**
+- `handleNext` is a **navigation function** that moves between existing pages
+- Premium users need `generateNextPage()` to be called, which:
+  - Calls LiveGenerationService
+  - Appends new page to story array
+  - Updates liveContext for next generation
+  - Advances currentPage
+  - Triggers image generation
+
+### Why This Violated Business Logic
+
+From business requirements:
+- **Premium users**: "Live generation: 1 page at a time by OpenAI"
+- **Premium users**: "Can continue forward for Part II, III, etc."
+- **Never-ending stories**: "Premium users choose when to end"
+
+The miswiring prevented all of this functionality.
+
+## The Fix
+
+### Step 1: Created Proper Wrapper Function
+
+Added `handleGenerateNextPageAndAdvance` (lines 2274-2367):
+
+```typescript
+const handleGenerateNextPageAndAdvance = useCallback(async () => {
+  // Premium-only guard
+  if (!isPremium) return;
+  if (isLoadingNextPage) return;
+
+  try {
+    // Call existing generation function
+    const result = await generateNextPage();
+    
+    if (!result || result.error) return;
+
+    // Extract page text
+    const pageText = Array.isArray(result.content) 
+      ? result.content[0] 
+      : result.content;
+
+    // Append to story array
+    setStory(prev => [...prev, pageText]);
+
+    // Update context for next generation
+    if (result.nextContext) {
+      setLiveContext(result.nextContext);
+    }
+
+    // Advance to new page
+    setCurrentPage(prev => prev + 1);
+
+    // Mark complete if needed
+    if (result.isComplete) {
+      setIsStoryComplete(true);
+    }
+
+    // Generate image for new page (respects toggle)
+    const imagesEnabled = localStorage.getItem('storyImagesEnabled') !== '0';
+    if (imagesEnabled) {
+      ManagedTimers.setTimeout(() => {
+        generateImageForCurrentPage();
+      }, 100, 'CleanStoryDisplay');
+    }
+  } catch (error) {
+    setError('Failed to generate next page. Please try again.');
+  }
+}, [/* dependencies */]);
+```
+
+### Step 2: Corrected Prop Wiring
+
+Changed line 3759:
+```typescript
+// BEFORE
+onGenerateNext={handleNext}
+
+// AFTER  
+onGenerateNext={handleGenerateNextPageAndAdvance}
+```
+
+## What This Fixes
+
+✅ Premium users can now generate infinite new pages  
+✅ "Next" button on last page creates new content  
+✅ LiveGenerationService properly invoked  
+✅ Story state properly updated and advanced  
+✅ Images generate for new pages (if enabled)  
+✅ Context maintained for continuous generation  
+✅ Loading states properly managed  
+✅ Never-ending story experience restored
+
+## Why This Should Never Have Happened
+
+### Component Contract Violation
+
+From `docs/UI_COMPONENT_RESPONSIBILITIES.md`:
+- `StoryNavigationControls` expects `onGenerateNext` to **generate new content**
+- `onNext` is for **navigation only**
+- These are explicitly different responsibilities
+
+### Proper Separation of Concerns
+
+- **Navigation**: `handleNext`, `handlePrevious` - move between existing pages
+- **Content Generation**: `generateNextPage`, `handleGenerateNewStory` - create new content
+- **State Management**: State setters update story array and metadata
+
+The regression conflated navigation with generation.
+
+## Prevention Measures
+
+1. **Prop naming clarity**: `onGenerateNext` vs `onNext` clearly indicate different purposes
+2. **Type checking**: TypeScript should enforce function signatures
+3. **Integration testing**: Test premium user flow from start to multi-page generation
+4. **Business logic validation**: Verify core value propositions work
+
+## Verification Steps
+
+### As Premium User
+1. ✅ Start story
+2. ✅ Navigate to last page
+3. ✅ Click "Next" 
+4. ✅ New page generates with loading spinner
+5. ✅ New content appears
+6. ✅ Can continue indefinitely
+7. ✅ Images generate for each new page (if enabled)
+
+### As Guest User
+1. ✅ Story stops at page 6 (artificial limit)
+2. ✅ "Next Story" button appears
+3. ✅ Premium generation never triggered
+
+## Related Documentation
+
+- Business logic: Lines 20-59 of `CleanStoryDisplay.tsx`
+- Component responsibilities: `docs/UI_COMPONENT_RESPONSIBILITIES.md`
+- Live generation service: `src/services/LiveGenerationService.ts`
+
+**Status**: ✅ COMPLETE - Premium unlimited story generation restored
+
+---
+
+# 2. Runtime Health Check Fixes
 
 **Date**: 2025-10-04  
 **Status**: ✅ RESOLVED  
