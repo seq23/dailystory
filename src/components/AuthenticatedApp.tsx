@@ -429,6 +429,18 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
 
       if (isPremium) {
         // Premium users save to user_preferences table
+        
+        // First, fetch existing reading_preferences to preserve guardrails
+        const { data: existingPrefs } = await supabase
+          .from('user_preferences')
+          .select('reading_preferences')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        const currentReadingPrefs = (existingPrefs?.reading_preferences && typeof existingPrefs.reading_preferences === 'object') 
+          ? existingPrefs.reading_preferences as Record<string, any>
+          : {};
+
         const payload = {
           display_name: updatedUserInfo.name,
           age: updatedUserInfo.age,
@@ -437,7 +449,11 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
           learning_goal: updatedUserInfo.learningGoal,
           avatar_type: 'prefer-not-to-answer', // Account holder has neutral avatar
           avatar_skin_tone: 'medium',
-          is_premium: true
+          is_premium: true,
+          reading_preferences: {
+            ...currentReadingPrefs,
+            difficultyLevel: updatedUserInfo.difficultyLevel
+          }
         };
 
         DebugLogger.log('auth', 'Payload to save to user_preferences:', JSON.stringify(payload, null, 2));
