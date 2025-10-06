@@ -107,19 +107,21 @@ To verify correct configuration:
 ```toml
 [functions.ai-visual-scene-creator]
 verify_jwt = false
-import_map = "./deno.jsonc"
+import_map = "../deno.jsonc"
 ```
 
 **runware-template-ab** requires `import_map` because it imports from orchestrator:
 ```toml
 [functions.runware-template-ab]
 verify_jwt = false
-import_map = "./deno.jsonc"
+import_map = "../deno.jsonc"
 ```
 
 **Reason**: Cross-function imports (importing `CharacterConsistencyServiceInline.js` from `runware-generate-image` into other functions) require bundler configuration to include files from other function directories.
 
-**Critical Rule**: Any function importing from another function's directory MUST have `import_map = "./deno.jsonc"` in config.toml.
+**Critical Rule**: Any function importing from another function's directory MUST have `import_map = "../deno.jsonc"` in config.toml.
+
+**Path Resolution Note**: `import_map` is relative to the function directory (`supabase/functions/[function-name]/`), so to reference `deno.jsonc` at `supabase/functions/deno.jsonc`, use `"../deno.jsonc"` (not `"./deno.jsonc"`).
 
 ## Receptionist Architecture Functions
 
