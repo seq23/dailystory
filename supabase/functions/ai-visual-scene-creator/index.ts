@@ -701,12 +701,31 @@ Generate a comprehensive scene with complete visual elements including backgroun
 // Generate character seed - simplified for Scene-Only mode
 function generateCharacterSeed(sessionId: string, userInfo: any) {
   const characterName = userInfo?.name || userInfo?.userName || 'child';
+  const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
+  const language = userInfo?.language || userInfo?.nativeLanguage || 'en';
+  
+  // Detect ethnicity using same logic as CCS
+  let ethnicity = 'Euro-American';
+  if (['hi', 'hi-IN'].includes(language)) ethnicity = 'Indian';
+  else if (['zh', 'zh-CN'].includes(language)) ethnicity = 'Chinese';
+  else if (['ar', 'ar-SA'].includes(language)) ethnicity = 'MENA region';
+  else if (skinTone.toLowerCase() === 'dark') {
+    if (['en', 'en-US'].includes(language)) ethnicity = 'African American';
+    else if (language === 'es') ethnicity = 'Afro-Latino';
+    else if (language === 'fr') ethnicity = 'Francophone African';
+    else if (language === 'pt') ethnicity = 'Afro-Brazilian';
+  } else {
+    if (language === 'fr') ethnicity = 'French';
+    else if (language === 'es') ethnicity = 'Spanish / Latino';
+    else if (language === 'pt') ethnicity = 'Portuguese';
+  }
   
   return {
     seed: Math.floor(Math.random() * 999999),
     characterName,
     avatarType: userInfo?.avatar?.type || 'child',
-    skinTone: userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium',
+    skinTone,
+    ethnicity,
     culturalProfile: userInfo?.nativeLanguage !== 'en' ? userInfo?.nativeLanguage : undefined
   };
 }

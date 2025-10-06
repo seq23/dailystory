@@ -655,6 +655,7 @@ export class CharacterConsistencyServiceInline {
   async getStructuredAvatarData(sessionId, userInfo) {
     const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
     const avatarType = userInfo?.avatar?.type || userInfo?.avatarType || 'child';
+    const ethnicity = CharacterConsistencyServiceInline.detectEthnicity(userInfo);
     const hairColor = userInfo?.avatar?.hairColor || 
                       CharacterConsistencyServiceInline.getHairForSkinTone(skinTone, sessionId, avatarType);
     
@@ -662,6 +663,7 @@ export class CharacterConsistencyServiceInline {
       type: avatarType,
       skinTone: skinTone,
       hairColor: hairColor,
+      ethnicity: ethnicity,
       name: userInfo?.childName || 'child',
       nativeLanguage: userInfo?.language || 'en'
     };
@@ -872,6 +874,31 @@ export class CharacterConsistencyServiceInline {
     const hairArray = CharacterConsistencyServiceInline.HAIR_BY_SKIN_TONE_INLINE[normalizedTone] || 
                       CharacterConsistencyServiceInline.HAIR_BY_SKIN_TONE_INLINE.medium;
     return CharacterConsistencyServiceInline.seededPick(hairArray, sessionId);
+  }
+
+  static detectEthnicity(userInfo) {
+    const skinTone = (userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium').toLowerCase();
+    const language = userInfo?.language || userInfo?.nativeLanguage || 'en';
+    
+    // Language-first ethnicity detection
+    if (['hi', 'hi-IN'].includes(language)) return 'Indian';
+    if (['zh', 'zh-CN'].includes(language)) return 'Chinese';
+    if (['ar', 'ar-SA'].includes(language)) return 'MENA region';
+    
+    // Dark skin + African diaspora languages
+    if (skinTone === 'dark') {
+      if (['en', 'en-US'].includes(language)) return 'African American';
+      if (language === 'es') return 'Afro-Latino';
+      if (language === 'fr') return 'Francophone African';
+      if (language === 'pt') return 'Afro-Brazilian';
+    }
+    
+    // Light/Medium/Olive/Pale + European languages
+    if (language === 'fr') return 'French';
+    if (language === 'es') return 'Spanish / Latino';
+    if (language === 'pt') return 'Portuguese';
+    
+    return 'Euro-American';
   }
 }
 

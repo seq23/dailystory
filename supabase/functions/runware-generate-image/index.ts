@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-10-06T03:40:00Z - Fixed hair fallback + language-based cultural enhancement filter
+// DEPLOY_MARKER: 2025-10-06T04:20:00Z - Added granular ethnicity labels (Indian/Chinese/MENA/French/Spanish/Portuguese/African diaspora) for AI prompt context
 
 // Inlined orchestrator logic - no more lazy loading
 

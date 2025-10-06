@@ -2242,12 +2242,25 @@ export class CharacterConsistencyService {
     const skinTone = (userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium').toLowerCase();
     const language = userInfo?.language || 'en';
     
-    // Standardized criteria: DARK skin + Afro heritage languages (English, Spanish, French, Portuguese)
-    const qualifiesForAfricanAmericanFeatures = 
-      (skinTone === 'dark') && 
-      ['en', 'en-US', 'es', 'fr', 'pt'].includes(language);
-      
-    return qualifiesForAfricanAmericanFeatures ? 'african-american' : 'Euro-American';
+    // Language-first ethnicity detection
+    if (['hi', 'hi-IN'].includes(language)) return 'Indian';
+    if (['zh', 'zh-CN'].includes(language)) return 'Chinese';
+    if (['ar', 'ar-SA'].includes(language)) return 'MENA region';
+    
+    // Dark skin + African diaspora languages
+    if (skinTone === 'dark') {
+      if (['en', 'en-US'].includes(language)) return 'African American';
+      if (language === 'es') return 'Afro-Latino';
+      if (language === 'fr') return 'Francophone African';
+      if (language === 'pt') return 'Afro-Brazilian';
+    }
+    
+    // Light/Medium/Olive/Pale + European languages
+    if (language === 'fr') return 'French';
+    if (language === 'es') return 'Spanish / Latino';
+    if (language === 'pt') return 'Portuguese';
+    
+    return 'Euro-American';
   }
 
   /**
