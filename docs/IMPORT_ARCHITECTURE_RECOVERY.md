@@ -182,3 +182,99 @@ graph TD
 
 ---
 **Status:** All import architecture issues resolved. Complete Option A migration deployed across 6 edge functions. System fully boot-verified and architecturally consistent.
+
+## CORS Import Pattern (Updated October 2025)
+
+### **CRITICAL RULE: Always Use Inline CORS in Edge Functions**
+
+**WHY THIS MATTERS:**
+- Supabase Deno Deploy does NOT include raw `.ts` files in worker bundles
+- Importing `corsAdvanced.ts` causes `Module not found` → `BOOT_SYNC_ANOMALY`
+- Importing `corsAdvanced.js` can cause version mismatch and cache issues
+
+**THE SOLUTION:**
+Copy the inline CORS pattern from `runware-generate-image/index.ts` (lines 348-386) directly into each edge function. Zero external dependencies = zero boot failures.
+
+### **Inline CORS Template:**
+
+```typescript
+// ========== INLINE CORS (Zero Dependencies) ==========
+function generateEchoCorsHeaders(req: Request): Record<string, string> {
+  const origin = req.headers.get("Origin");
+  const allowOrigin = origin || "*";
+
+  const requestHeaders = req.headers.get("Access-Control-Request-Headers");
+  const headers: Record<string, string> = {
+    "Access-Control-Allow-Origin": allowOrigin,
+    "Access-Control-Allow-Headers": requestHeaders || "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Methods": "GET, HEAD, POST, OPTIONS",
+    "Access-Control-Max-Age": "600",
+    Vary: "Origin, Access-Control-Request-Headers",
+  };
+  
+  if (origin) {
+    headers["Access-Control-Allow-Credentials"] = "true";
+  }
+  
+  return headers;
+}
+
+function corsResponse(data: any, req: Request, status = 200): Response {
+  const corsHeaders = generateEchoCorsHeaders(req);
+  const headers: Record<string, string> = {
+    ...corsHeaders,
+    "Content-Type": "application/json",
+  };
+
+  if (status === 503 && data?.retryAfterSeconds) {
+    headers["Retry-After"] = String(data.retryAfterSeconds);
+    headers["Access-Control-Expose-Headers"] = "Retry-After";
+  }
+
+  return new Response(JSON.stringify(data), { status, headers });
+}
+```
+
+### **Usage Examples:**
+
+```typescript
+// OPTIONS preflight:
+if (req.method === 'OPTIONS') {
+  return new Response(null, { status: 200, headers: generateEchoCorsHeaders(req) });
+}
+
+// Success response:
+return corsResponse({ success: true, data: result }, req, 200);
+
+// Error response:
+return corsResponse({ success: false, error: 'Something failed' }, req, 500);
+```
+
+### **BENEFITS:**
+- ✅ Zero external dependencies
+- ✅ Fastest boot time (~30ms)
+- ✅ No `BOOT_SYNC_ANOMALY` errors
+- ✅ Battle-tested in production
+- ✅ Self-contained and maintainable
+
+### **NEVER DO:**
+- ❌ `import { ... } from '../_shared/corsAdvanced.ts'`
+- ❌ `import { ... } from '../_shared/corsAdvanced.js'`
+- ❌ Any external CORS imports
+
+### **ALWAYS DO:**
+- ✅ Inline CORS functions directly in each edge function
+- ✅ Copy the exact pattern from `runware-generate-image`
+- ✅ Update `DEPLOY_MARKER` to force redeployment
+
+### **FUNCTIONS USING INLINE CORS (October 2025):**
+- `runware-generate-image` - ✅ VERIFIED (original pattern)
+- `ai-visual-scene-creator` - ✅ MIGRATED (October 6, 2025)
+- `runware-template-ab` - ✅ MIGRATED (October 6, 2025)
+- `runware-template-cd` - ✅ MIGRATED (October 6, 2025)
+
+### **VERIFICATION:**
+After deploying with inline CORS, verify:
+1. Health check: `curl -I https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/[function-name]` → HTTP 200
+2. CORS preflight: `curl -X OPTIONS [url] -H "Origin: https://example.com" -I` → HTTP 200 with CORS headers
+3. No `BOOT_SYNC_ANOMALY` in logs

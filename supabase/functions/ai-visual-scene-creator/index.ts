@@ -1,16 +1,50 @@
-// DEPLOY_MARKER: 2025-10-06T03:10:00Z - IdempotencyMemory optional everywhere + debug cleanup
+// DEPLOY_MARKER: 2025-10-06T18:15:00Z - Inline CORS (zero imports, boot-safe)
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // ✅ BUNDLER HINT: Force CCS inclusion in deployment bundle (dynamic import used inside handler)
 import { characterConsistencyService as _ccsHint } from "../_shared/CharacterConsistencyService.js";
 
-// Import dynamic CORS system for bulletproof cross-origin support
-import { 
-  createDynamicCorsOptionsResponse, 
-  createDynamicCorsResponse, 
-  createDynamicCorsErrorResponse 
-} from '../_shared/corsAdvanced.ts';
+// ========== INLINE CORS (Zero Dependencies) ==========
+function generateEchoCorsHeaders(req: Request): Record<string, string> {
+  const origin = req.headers.get("Origin");
+  const allowOrigin = origin || "*";
+
+  const requestHeaders = req.headers.get("Access-Control-Request-Headers");
+  const headers: Record<string, string> = {
+    "Access-Control-Allow-Origin": allowOrigin,
+    "Access-Control-Allow-Headers": requestHeaders || "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Methods": "GET, HEAD, POST, OPTIONS",
+    "Access-Control-Max-Age": "600",
+    Vary: "Origin, Access-Control-Request-Headers",
+  };
+  
+  // Only set credentials header when Origin is present
+  if (origin) {
+    headers["Access-Control-Allow-Credentials"] = "true";
+  }
+  
+  return headers;
+}
+
+function corsResponse(data: any, req: Request, status = 200): Response {
+  const corsHeaders = generateEchoCorsHeaders(req);
+  const headers: Record<string, string> = {
+    ...corsHeaders,
+    "Content-Type": "application/json",
+  };
+
+  // Add Retry-After header for 503 responses and expose it via CORS
+  if (status === 503 && data?.retryAfterSeconds) {
+    headers["Retry-After"] = String(data.retryAfterSeconds);
+    headers["Access-Control-Expose-Headers"] = "Retry-After";
+  }
+
+  return new Response(JSON.stringify(data), {
+    status,
+    headers,
+  });
+}
 
 // ========== GLOBAL SUPABASE CLIENT (lazy-initialized) ==========
 let supabaseClient: any = null;
@@ -816,18 +850,18 @@ serve(async (req) => {
     // Handle CORS preflight requests with dynamic header detection
   if (req.method === 'OPTIONS') {
     console.log('✅ Handling CORS preflight with dynamic headers');
-    return createDynamicCorsOptionsResponse(req);
+    return new Response(null, { status: 200, headers: generateEchoCorsHeaders(req) });
   }
 
   console.log("✅ ai-visual-scene-creator: Successfully booted and reachable");
 
   // Health check endpoints
   if (req.method === 'HEAD' && req.url.includes('/health')) {
-    return createDynamicCorsResponse(null, req, 200);
+    return corsResponse(null, req, 200);
   }
 
   if (req.method === 'GET') {
-    return createDynamicCorsResponse({ 
+    return corsResponse({ 
       status: 'healthy', 
       service: 'ai-visual-scene-creator',
       timestamp: new Date().toISOString()
@@ -836,7 +870,7 @@ serve(async (req) => {
 
   // Only allow POST for main functionality
   if (req.method !== 'POST') {
-    return createDynamicCorsErrorResponse({ error: 'Method not allowed' }, req, 405);
+    return corsResponse({ success: false, error: 'Method not allowed' }, req, 405);
   }
 
   // Feature flag check - declare outside try block for catch block scope
@@ -875,7 +909,8 @@ serve(async (req) => {
     } catch (error) {
       if (gatingEnabled && gateAcquired) release(gateKey, false);
       console.error(`❌ [${requestId}] Failed to parse JSON:`, error);
-      return createDynamicCorsErrorResponse({
+      return corsResponse({
+        success: false,
         error: 'Invalid JSON payload'
       }, req, 400);
     }
@@ -885,7 +920,8 @@ serve(async (req) => {
     if (!content.trim()) {
       if (gatingEnabled && gateAcquired) release(gateKey, false);
       console.error(`❌ [${requestId}] Validation failure (no retry): MISSING_STORY_CONTENT`);
-      return createDynamicCorsErrorResponse({
+      return corsResponse({
+        success: false,
         error: 'MISSING_STORY_CONTENT',
         tier: 'VALIDATION_FAILED'
       }, req, 400);
@@ -1399,7 +1435,7 @@ serve(async (req) => {
       }
     });
 
-    return createDynamicCorsResponse(result, req, result.httpStatus ?? 200);
+    return corsResponse(result, req, result.httpStatus ?? 200);
 
   } catch (error) {
     // Ensure gate is released on error - wrap in try-catch to prevent cleanup errors from masking original error
@@ -1419,7 +1455,8 @@ serve(async (req) => {
     const isUpstreamError = errorMessage.includes('429') || errorMessage.includes('503') || errorMessage.includes('OpenAI');
     const status = isUpstreamError ? 503 : 500;
     
-    return createDynamicCorsErrorResponse({
+    return corsResponse({
+      success: false,
       error: errorMessage,
       tier: 'ERROR',
       retryAfterSeconds: isUpstreamError ? 5 : undefined
@@ -1430,7 +1467,8 @@ serve(async (req) => {
     const errorMessage = outerError instanceof Error ? outerError.message : String(outerError);
     console.error('❌ [OUTER_ERROR] ai-visual-scene-creator top-level error:', errorMessage);
     
-    return createDynamicCorsErrorResponse({
+    return corsResponse({
+      success: false,
       error: errorMessage,
       tier: 'ERROR'
     }, req, 500);

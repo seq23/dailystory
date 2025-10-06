@@ -1,12 +1,44 @@
-// DEPLOY_MARKER: 2025-10-03T21:00:00Z - Zero static imports + LKG serve-stale pattern
+// DEPLOY_MARKER: 2025-10-06T18:15:00Z - Inline CORS (zero imports, boot-safe)
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-// Import dynamic CORS system for bulletproof cross-origin support
-import { 
-  createDynamicCorsOptionsResponse, 
-  createDynamicCorsResponse, 
-  createDynamicCorsErrorResponse 
-} from '../_shared/corsAdvanced.ts';
+// ========== INLINE CORS (Zero Dependencies) ==========
+function generateEchoCorsHeaders(req: Request): Record<string, string> {
+  const origin = req.headers.get("Origin");
+  const allowOrigin = origin || "*";
+
+  const requestHeaders = req.headers.get("Access-Control-Request-Headers");
+  const headers: Record<string, string> = {
+    "Access-Control-Allow-Origin": allowOrigin,
+    "Access-Control-Allow-Headers": requestHeaders || "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Methods": "GET, HEAD, POST, OPTIONS",
+    "Access-Control-Max-Age": "600",
+    Vary: "Origin, Access-Control-Request-Headers",
+  };
+  
+  if (origin) {
+    headers["Access-Control-Allow-Credentials"] = "true";
+  }
+  
+  return headers;
+}
+
+function corsResponse(data: any, req: Request, status = 200): Response {
+  const corsHeaders = generateEchoCorsHeaders(req);
+  const headers: Record<string, string> = {
+    ...corsHeaders,
+    "Content-Type": "application/json",
+  };
+
+  if (status === 503 && data?.retryAfterSeconds) {
+    headers["Retry-After"] = String(data.retryAfterSeconds);
+    headers["Access-Control-Expose-Headers"] = "Retry-After";
+  }
+
+  return new Response(JSON.stringify(data), {
+    status,
+    headers,
+  });
+}
 
 const SERVICE_NAME = "runware-template-cd";
 
@@ -199,7 +231,7 @@ function withCors(res: Response, req?: Request): Response {
   
   // Use dynamic CORS for proper header handling
   const data = res.body ? res.body : null;
-  return createDynamicCorsResponse(data, req, res.status);
+  return corsResponse(data, req, res.status);
 }
 function asResponse(maybe: unknown, fallbackStatus = 204): Response {
   if (maybe instanceof Response) return maybe;
@@ -304,7 +336,7 @@ serve(async (req) => {
 
     // OPTIONS → Dynamic CORS preflight with 24hr cache
     if (req.method === "OPTIONS") {
-      return createDynamicCorsOptionsResponse(req);
+      return new Response(null, { status: 200, headers: generateEchoCorsHeaders(req) });
     }
 
     // HEAD /health → 200, empty body
