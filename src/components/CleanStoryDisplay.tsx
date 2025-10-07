@@ -100,7 +100,7 @@ import "@/styles/storyDisplay.css";
 // import { processTextForDesktop } from "@/utils/desktopTextProcessor";
 
 // Static image placeholder for when images are disabled by user
-const IMAGES_DISABLED_PLACEHOLDER = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%23f8f9fa'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='80' fill='%23adb5bd'%3E📚%3C/text%3E%3C/svg%3E`;
+const IMAGES_DISABLED_PLACEHOLDER = '/serious-readers-corner.png';
 // useWordHighlighting integrated into useAudioControls
 import { VoiceCommandController } from '@/components/VoiceCommandController';
 import { VoiceHoverController } from '@/components/VoiceHoverController';

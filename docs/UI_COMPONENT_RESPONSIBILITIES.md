@@ -138,7 +138,12 @@ Premium users can disable image generation to focus on reading. The toggle syste
 
 **Mobile/Tablet:**
 - Images ON: AspectRatio image header + text below
-- Images OFF: 120px compact icon header (📚) + expanded text container (flex-1)
+- Images OFF: 120px compact header with custom library illustration + expanded text container (flex-1)
+  
+**Images Disabled Placeholder:**
+- Custom library illustration: `/serious-readers-corner.png`
+- Features diverse children reading with "THIS CORNER IS FOR SERIOUS READERS" sign
+- Used in both desktop corner thumbnail and mobile/tablet compact header
 
 ### Image Generation Checkpoints
 CleanStoryDisplay respects `imagesEnabled` state at these locations:

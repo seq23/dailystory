@@ -25,6 +25,10 @@ Completed comprehensive line-by-line audit of the entire "disable images" system
 
 ## System Architecture Analysis
 
+### Constants
+
+**IMAGES_DISABLED_PLACEHOLDER**: Custom library illustration at `/serious-readers-corner.png` showing diverse children reading with "THIS CORNER IS FOR SERIOUS READERS" sign
+
 ### 1. Toggle Control (PremiumSidebar.tsx)
 
 **Location**: `src/components/PremiumSidebar.tsx`
