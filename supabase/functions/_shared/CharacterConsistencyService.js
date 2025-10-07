@@ -1827,29 +1827,15 @@ export class CharacterConsistencyService {
             .join(', ');
 
           if (clothingPieces) {
+            console.log(`👕 Using story-detected clothing: ${clothingPieces}`);
             return `wearing ${clothingPieces}`;
           }
         }
       }
       
-      // 2. Fallback to tier25 vocabulary (new sessions, instant)
-      const tier25 = await this.getTier25Cache();
-      const tier25Colors = tier25.colors || [];
-      const tier25Clothing = tier25.clothing || [];
-      
-      if (tier25Colors.length > 0 && tier25Clothing.length > 0) {
-        const randomColor = tier25Colors[Math.floor(Math.random() * tier25Colors.length)];
-        const randomClothing = tier25Clothing[Math.floor(Math.random() * tier25Clothing.length)];
-        console.log(`👕 Using tier25 fallback clothing: ${randomColor} ${randomClothing}`);
-        return `wearing ${randomColor} ${randomClothing}`;
-      }
-      
-      // 3. Final fallback to full vocab (rare)
-      const vocab = await this.getVocabulary();
-      const randomColor = vocab.colors[Math.floor(Math.random() * vocab.colors.length)];
-      const randomClothing = vocab.clothing[Math.floor(Math.random() * vocab.clothing.length)];
-      console.log(`👕 Using full vocab fallback clothing: ${randomColor} ${randomClothing}`);
-      return `wearing ${randomColor} ${randomClothing}`;
+      // ✅ No story-detected clothing found - let Runware decide naturally
+      console.log(`👕 No story clothing detected - letting Runware generate clothing naturally`);
+      return '';
     } catch (error) {
       console.log('⚠️ All clothing description fallbacks failed:', error.message);
       return '';
