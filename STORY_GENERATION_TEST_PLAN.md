@@ -179,9 +179,200 @@ grep -n "Primary Scene" src/components/ImageTierTester.tsx
 - **Monitoring:** Track debug data completeness metrics
 - **Alerts:** Set up alerts for missing debug fields
 
-## Risk Areas
+## Emergency Fallback Protection (October 2025)
+
+### Objective
+Verify that users **never** see diagnostic error pages, even during complete system failure.
+
+### Test Cases
+
+#### Test 1: Guest User Emergency Fallback
+**Steps**:
+1. Open application as guest user
+2. Force story generation failure (disable AI service)
+3. Observe system behavior
+
+**Expected Behavior**:
+- ❌ No diagnostic page displayed
+- ✅ Emergency story content displays
+- ✅ Toast notification: "📖 System Recovery Mode"
+- ✅ Source tracking: `window.__LAST_STORY_SOURCE__ === 'emergency'`
+- ✅ Timer continues normally
+- ✅ Images generate for emergency pages
+- ✅ Navigation (forward/back) works
+
+**Success Criteria**:
+- User sees story content (not error page)
+- Session continues uninterrupted
+- User can click "Next Story" at page 6
+
+#### Test 2: Premium User Emergency Fallback
+**Steps**:
+1. Open application as premium user
+2. Force story generation failure
+3. Observe system behavior
+
+**Expected Behavior**:
+- ❌ No diagnostic page displayed
+- ✅ Emergency story content displays
+- ✅ Toast notification: "📖 Story Recovery Mode"
+- ✅ Source tracking: `window.__LAST_STORY_SOURCE__ === 'emergency'`
+- ✅ Session persists indefinitely
+- ✅ "Finish Story" button appears
+- ✅ Can save emergency story to library
+
+**Success Criteria**:
+- User sees story content (not error page)
+- Premium features remain accessible
+- Story library accepts emergency stories
+
+#### Test 3: Emergency Content Generation
+**Steps**:
+1. Open browser console
+2. Run:
+   ```javascript
+   const content = ErrorHandlingManager.getEmergencyContent({ name: 'Test User' });
+   console.log(content);
+   ```
+
+**Expected Behavior**:
+- ✅ Returns rhyming story content
+- ✅ Includes user name
+- ✅ Never throws exception
+- ✅ Content is unique (randomized templates)
+
+**Success Criteria**:
+- Content is valid string
+- Content length > 0
+- Content is creative and engaging
+
+#### Test 4: Outer Safety Net Verification
+**Steps**:
+1. Review `src/services/NetflixStyleStoryService.ts` lines 61-236
+2. Review `src/services/LiveGenerationService.ts` lines 555-595
+3. Verify outer try/catch wrappers exist
+4. Force complete service failure
+
+**Expected Behavior**:
+- ✅ Outer catch block activates
+- ✅ Returns valid `NetflixStoryResult` or `LiveGenerationResult`
+- ✅ Never throws unhandled exception
+- ✅ Emergency content included in result
+
+**Success Criteria**:
+- Services never throw
+- Always return valid result structure
+- Emergency content generation succeeds
+
+#### Test 5: Diagnostic Gating Verification
+**Steps**:
+1. Open application (fresh session)
+2. Check flag state:
+   ```javascript
+   console.log(window.__ENABLE_DIAGNOSTICS__);
+   // Expected: undefined
+   ```
+3. Inspect DOM for diagnostic components
+4. Manually enable diagnostics:
+   ```javascript
+   window.__ENABLE_DIAGNOSTICS__ = true;
+   ```
+5. Refresh page
+6. Verify diagnostic panels appear
+
+**Expected Behavior**:
+- ✅ Default state: `__ENABLE_DIAGNOSTICS__` is `undefined`
+- ✅ No diagnostic components in DOM by default
+- ✅ Enabling flag makes components appear
+- ✅ Flag resets on page refresh
+
+**Success Criteria**:
+- Users can't accidentally see diagnostics
+- Developers can access diagnostics manually
+- No persistent storage of flag
+
+#### Test 6: Source Tracking Across Tiers
+**Steps**:
+1. Generate story with AI (Tier 1)
+2. Check: `window.__LAST_STORY_SOURCE__ === 'ai'`
+3. Force AI failure, use template (Tier 2)
+4. Check: `window.__LAST_STORY_SOURCE__ === 'template'`
+5. Force template failure, use emergency (Tier 3)
+6. Check: `window.__LAST_STORY_SOURCE__ === 'emergency'`
+
+**Expected Behavior**:
+- ✅ Each tier sets source correctly
+- ✅ Source persists during session
+- ✅ Source tracked in analytics
+
+**Success Criteria**:
+- Source tracking works for all tiers
+- Can differentiate failure modes
+- Analytics can track tier usage
+
+### Integration Testing
+
+#### Integration Test 1: Emergency + Timer
+**Objective**: Verify timer works with emergency content
+
+**Steps**:
+1. Start guest session with emergency fallback
+2. Verify 20-minute timer starts
+3. Pause/resume timer
+4. Wait for timer to expire
+
+**Expected**: Timer functions identically with emergency content
+
+#### Integration Test 2: Emergency + Images
+**Objective**: Verify images generate for emergency pages
+
+**Steps**:
+1. Generate emergency story
+2. Verify `runware-generate-image` receives `pageText`
+3. Check image URL returned
+4. Verify image displays
+
+**Expected**: Image generation works with emergency content
+
+#### Integration Test 3: Emergency + Navigation
+**Objective**: Verify navigation works with emergency stories
+
+**Steps**:
+1. Generate multi-page emergency story
+2. Navigate forward/backward
+3. Verify cached pages display
+4. Check images persist
+
+**Expected**: Navigation seamless with emergency content
+
+#### Integration Test 4: Emergency + Cache
+**Objective**: Verify emergency stories cache/restore correctly
+
+**Steps**:
+1. Generate emergency story
+2. Verify cached
+3. Clear state
+4. Restore from cache
+5. Check source tracking shows `'restored'`
+
+**Expected**: Emergency stories cache like normal stories
+
+### Success Metrics
+
+- ✅ **Zero diagnostic page views** by end users
+- ✅ **100% story delivery** (even in complete failure)
+- ✅ **Emergency fallback < 5%** of total stories (healthy system)
+- ✅ **Toast notifications display** in all emergency scenarios
+- ✅ **Source tracking accurate** for all tiers
+- ✅ **Integration maintained** with timer, images, navigation, cache
+
+### Risk Areas (Updated October 2025)
+
 - Template service must be independent and working
 - Vendor fallback file must be accessible
 - Content flow between story → image generation functions
-- **NEW:** Debug data variable shadowing in edge functions
-- **NEW:** Incomplete debug data propagation through orchestrator
+- **NEW:** Emergency content generator must never throw
+- **NEW:** Outer safety nets must remain in both services
+- **NEW:** Diagnostic gating must prevent user exposure
+- **NEW:** Toast notifications must display correctly
+- **NEW:** Source tracking must work across all tiers
