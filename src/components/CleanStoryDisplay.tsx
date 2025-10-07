@@ -2973,10 +2973,7 @@ useEffect(() => {
         // Initiate audio playback
         const audioPromise = audioEngineRef.current.charlotteReadStory(currentStoryText || "", onWordHighlight);
         
-        // Immediately show Stop button for responsive UX
-        setIsAudioLoading(false);
-        setIsAudioPlaying(true);
-        
+        // Keep loading until audio:statechange signals playback start
         // Wait for audio to complete
         await audioPromise;
         

@@ -45,9 +45,7 @@ export const StoryAudioControls: React.FC<StoryAudioControlsProps> = ({
         // Initiate audio playback
         const audioPromise = audioEngineRef.current.speak(currentStoryText);
         
-        // Immediately show Stop button
-        onAudioStateChange(true, false);
-        
+        // Keep loading until audio:statechange signals playback start
         // Wait for audio to complete
         await audioPromise;
         onAudioPlayed(currentPage);

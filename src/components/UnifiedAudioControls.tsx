@@ -180,18 +180,11 @@ export const UnifiedAudioControls: React.FC<UnifiedAudioControlsProps> = ({
       
       DebugLogger.log('audio', `Audio highlighting ${shouldHighlight ? 'ENABLED' : 'DISABLED'} for difficulty: "${difficulty}"`);
       
-      // Initiate audio playback first
+      // Initiate audio playback
       const audioPromise = charlotteVoiceService.charlotteReadStory(text, highlightCallback, audioSpeed);
       
-      // Then immediately show Stop button for responsive UX
-      setIsLoading(false);
-      setIsPlaying(true);
-      onPlayingChange?.(true);
-      
-      // Emit state change event
-      window.dispatchEvent(new CustomEvent('audio:statechange', { 
-        detail: { isPlaying: true } 
-      }));
+      // Keep loading until we receive audio:statechange (isPlaying: true)
+      // State transitions handled by global event listener
       
       // Wait for audio to complete
       await audioPromise;

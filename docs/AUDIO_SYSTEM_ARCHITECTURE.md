@@ -188,43 +188,37 @@ const result = await supabase.functions.invoke('translate-universal', {
 });
 ```
 
-## Audio Button State Transitions
+## Audio Button State Transitions (Event-Driven)
 
-### Correct Flow (All Entry Points):
-1. **Idle State**: "Play Audio" button visible
-2. **User Clicks Play**: 
-   - Set `isLoading=true` (show "Loading Audio..." spinner)
-   - Set `isPlaying=false`
-3. **Audio Generation Starts**:
-   - Initiate `charlotteReadStory()` and store promise (don't await yet)
-4. **Immediately After Initiation**:
-   - Set `isLoading=false` (hide spinner)
-   - Set `isPlaying=true` (show "Stop" button)
-5. **Audio Plays**: User hears audio and can click Stop at any time
+### Correct Flow (All Entry Points)
+1. Idle: "Play Audio" button visible
+2. User clicks Play:
+   - Set isLoading=true (show "Loading Audio..." spinner)
+   - Set isPlaying=false
+3. Start audio generation/playback (do not await):
+   - const audioPromise = charlotteReadStory(...)
+   - Keep isLoading=true until actual playback begins
+4. When audio actually starts (Charlotte or Browser TTS):
+   - A global `audio:statechange` event with `{ isPlaying: true }` is dispatched
+   - UI listeners set isLoading=false and isPlaying=true (Stop button becomes visible)
+5. Completion/Stop/Error:
+   - On finish or stop, `audio:statechange` with `{ isPlaying: false }` updates UI
 
-### Anti-Pattern (DO NOT DO THIS):
-❌ Setting `isLoading=false` BEFORE initiating audio generation
-❌ Setting `isPlaying=true` without showing loading state first
-❌ Awaiting audio before updating to playing state
-
-### Correct Implementation Pattern:
-```typescript
-// ✅ CORRECT: Show loading → Start audio → Show stop → Wait for completion
+### Correct Implementation Pattern
+```ts
 setIsLoading(true);
 setIsPlaying(false);
 
 const audioPromise = charlotteReadStory(text, highlightCallback, audioSpeed);
+// Do not flip to playing immediately; wait for `audio:statechange` (isPlaying: true)
 
-setIsLoading(false);
-setIsPlaying(true);
-
-await audioPromise;
+await audioPromise; // Handle errors to revert to idle states
 ```
 
-### Entry Points Using This Pattern:
-- `src/components/UnifiedAudioControls.tsx` - Lines 176-196
-- `src/components/CleanStoryDisplay.tsx` - Lines 2967-2987
-- `src/components/story/StoryAudioControls.tsx` - Lines 34-56
+### Entry Points Using This Pattern
+- src/components/UnifiedAudioControls.tsx
+- src/components/CleanStoryDisplay.tsx
+- src/components/story/StoryAudioControls.tsx
 
 ## Debugging & Troubleshooting
 
