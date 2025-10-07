@@ -415,6 +415,232 @@ const StylePreview: React.FC = () => {
         </Card>
       </section>
 
+      {/* Hide Images Mode Layout Options */}
+      <section className="max-w-5xl mx-auto mt-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Hide Images Mode - Layout Options (Premium Users)</CardTitle>
+            <CardDescription>Compare reading experience when images are disabled across different devices</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-6">
+              
+              {/* Desktop - Images ON (Current) */}
+              <div className="border rounded-lg p-6 bg-muted/20">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-lg font-semibold">Desktop - Images ON (Current)</h3>
+                    <p className="text-sm text-muted-foreground">50/50 split - balanced layout</p>
+                  </div>
+                  <Badge variant="secondary">XL Breakpoint</Badge>
+                </div>
+                
+                <div className="relative rounded-lg overflow-hidden shadow-lg bg-background">
+                  {/* 50/50 Desktop Layout */}
+                  <div className="grid grid-cols-2 gap-0 min-h-[500px]">
+                    {/* Image Card */}
+                    <div className="bg-muted/30 flex items-center justify-center p-4 border-r">
+                      <div className="text-center space-y-2">
+                        <div className="w-full h-[450px] bg-gradient-to-br from-primary/20 to-primary/5 rounded-lg flex items-center justify-center">
+                          <span className="text-6xl">🖼️</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">Image Card - 50% width</p>
+                      </div>
+                    </div>
+                    
+                    {/* Text Card */}
+                    <div className="bg-card flex items-center justify-center p-8">
+                      <div className="space-y-4 max-w-2xl">
+                        <div className="h-4 bg-foreground/10 rounded w-full"></div>
+                        <div className="h-4 bg-foreground/10 rounded w-5/6"></div>
+                        <div className="h-4 bg-foreground/10 rounded w-4/6"></div>
+                        <div className="h-4 bg-foreground/10 rounded w-full"></div>
+                        <div className="h-4 bg-foreground/10 rounded w-3/4"></div>
+                        <p className="text-xs text-muted-foreground text-center mt-8">Text Card - 50% width</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-4 flex items-center gap-2 text-sm">
+                  <Badge variant="outline" className="bg-green-500/10">✓ Balanced</Badge>
+                  <span className="text-muted-foreground">Reading area: ~50% | Image area: ~50%</span>
+                </div>
+              </div>
+
+              {/* Desktop - Images OFF (Option A: Corner Thumbnail) */}
+              <div className="border rounded-lg p-6 bg-amber-500/5 border-amber-500/20">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      Desktop - Images OFF: Corner Thumbnail
+                      <Badge variant="default" className="bg-amber-500">Recommended</Badge>
+                    </h3>
+                    <p className="text-sm text-muted-foreground">Full-width text + thumbnail overlay</p>
+                  </div>
+                  <Badge variant="secondary">XL Breakpoint</Badge>
+                </div>
+                
+                <div className="relative rounded-lg overflow-hidden shadow-lg bg-background">
+                  {/* Full Width Text with Corner Thumbnail */}
+                  <div className="relative min-h-[500px] bg-card p-8">
+                    {/* Corner Thumbnail */}
+                    <div className="absolute top-4 right-4 w-[220px] h-[220px] bg-gradient-to-br from-primary/20 to-primary/5 rounded-lg flex items-center justify-center opacity-60 shadow-md border border-border/50 z-10">
+                      <span className="text-4xl">🖼️</span>
+                    </div>
+                    
+                    {/* Text Content */}
+                    <div className="max-w-5xl mx-auto space-y-4 pr-[240px]">
+                      <div className="h-4 bg-foreground/10 rounded w-full"></div>
+                      <div className="h-4 bg-foreground/10 rounded w-5/6"></div>
+                      <div className="h-4 bg-foreground/10 rounded w-4/6"></div>
+                      <div className="h-4 bg-foreground/10 rounded w-full"></div>
+                      <div className="h-4 bg-foreground/10 rounded w-3/4"></div>
+                      <div className="h-4 bg-foreground/10 rounded w-5/6"></div>
+                      <div className="h-4 bg-foreground/10 rounded w-full"></div>
+                      <div className="h-4 bg-foreground/10 rounded w-2/3"></div>
+                      <div className="h-4 bg-foreground/10 rounded w-5/6"></div>
+                      <div className="h-4 bg-foreground/10 rounded w-full"></div>
+                      <p className="text-xs text-muted-foreground text-center mt-8">Text expands to full width (with right padding for thumbnail)</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-4 space-y-2">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Badge variant="outline" className="bg-green-500/10">✓ Maximum Reading Space</Badge>
+                    <span className="text-muted-foreground">Reading area: ~75% | Thumbnail: 220px × 220px (corner)</span>
+                  </div>
+                  <div className="text-xs text-muted-foreground pl-2 border-l-2 border-amber-500/50">
+                    <strong>Benefits:</strong> Text gets 50% more horizontal space, image stays visible but non-intrusive, smooth transition
+                  </div>
+                </div>
+              </div>
+
+              {/* Mobile/Tablet - Images ON (Current) */}
+              <div className="border rounded-lg p-6 bg-muted/20">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-lg font-semibold">Mobile/Tablet - Images ON (Current)</h3>
+                    <p className="text-sm text-muted-foreground">Stacked layout with AspectRatio image</p>
+                  </div>
+                  <Badge variant="secondary">SM-LG Breakpoints</Badge>
+                </div>
+                
+                <div className="max-w-md mx-auto">
+                  <div className="relative rounded-lg overflow-hidden shadow-lg bg-background">
+                    {/* Stacked Layout */}
+                    <div className="flex flex-col">
+                      {/* Image Card */}
+                      <div className="bg-gradient-to-br from-primary/20 to-primary/5 aspect-[4/3] flex items-center justify-center border-b">
+                        <span className="text-6xl">🖼️</span>
+                      </div>
+                      
+                      {/* Text Card */}
+                      <div className="bg-card p-6 space-y-3">
+                        <div className="h-3 bg-foreground/10 rounded w-full"></div>
+                        <div className="h-3 bg-foreground/10 rounded w-5/6"></div>
+                        <div className="h-3 bg-foreground/10 rounded w-4/6"></div>
+                        <div className="h-3 bg-foreground/10 rounded w-full"></div>
+                        <p className="text-xs text-muted-foreground text-center mt-6">Text below image (stacked)</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-4 flex items-center gap-2 text-sm justify-center">
+                  <Badge variant="outline" className="bg-green-500/10">✓ Standard</Badge>
+                  <span className="text-muted-foreground">Image: aspect-[4/3] | Text: flex-1</span>
+                </div>
+              </div>
+
+              {/* Mobile/Tablet - Images OFF (Option B: Icon Mode) */}
+              <div className="border rounded-lg p-6 bg-blue-500/5 border-blue-500/20">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      Mobile/Tablet - Images OFF: Minimalist Icon
+                      <Badge variant="default" className="bg-blue-500">Clean</Badge>
+                    </h3>
+                    <p className="text-sm text-muted-foreground">Compact icon header + expanded text</p>
+                  </div>
+                  <Badge variant="secondary">SM-LG Breakpoints</Badge>
+                </div>
+                
+                <div className="max-w-md mx-auto">
+                  <div className="relative rounded-lg overflow-hidden shadow-lg bg-background">
+                    {/* Stacked Layout with Compact Icon */}
+                    <div className="flex flex-col">
+                      {/* Compact Icon Bar */}
+                      <div className="bg-gradient-to-br from-primary/10 to-primary/5 h-[120px] flex items-center justify-center border-b">
+                        <span className="text-5xl opacity-40">📚</span>
+                      </div>
+                      
+                      {/* Expanded Text Card */}
+                      <div className="bg-card p-6 space-y-3 min-h-[300px]">
+                        <div className="h-3 bg-foreground/10 rounded w-full"></div>
+                        <div className="h-3 bg-foreground/10 rounded w-5/6"></div>
+                        <div className="h-3 bg-foreground/10 rounded w-4/6"></div>
+                        <div className="h-3 bg-foreground/10 rounded w-full"></div>
+                        <div className="h-3 bg-foreground/10 rounded w-3/4"></div>
+                        <div className="h-3 bg-foreground/10 rounded w-5/6"></div>
+                        <div className="h-3 bg-foreground/10 rounded w-full"></div>
+                        <div className="h-3 bg-foreground/10 rounded w-2/3"></div>
+                        <p className="text-xs text-muted-foreground text-center mt-6">Text expands vertically (70% more space)</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-4 space-y-2">
+                  <div className="flex items-center gap-2 text-sm justify-center">
+                    <Badge variant="outline" className="bg-green-500/10">✓ More Reading Space</Badge>
+                    <span className="text-muted-foreground">Icon: 120px fixed | Text: expanded</span>
+                  </div>
+                  <div className="text-xs text-muted-foreground text-center pl-2 border-l-2 border-blue-500/50 ml-auto mr-auto max-w-md">
+                    <strong>Benefits:</strong> Minimalist icon reduces vertical space by ~70%, text area expands significantly for better mobile reading
+                  </div>
+                </div>
+              </div>
+
+              {/* Comparison Summary */}
+              <div className="border rounded-lg p-6 bg-gradient-to-br from-primary/5 to-secondary/5">
+                <h3 className="text-lg font-semibold mb-4">📊 Reading Space Comparison</h3>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium">Desktop (XL)</h4>
+                    <div className="space-y-1 text-xs">
+                      <div className="flex justify-between items-center p-2 bg-background rounded">
+                        <span>Images ON:</span>
+                        <Badge variant="outline">50% text area</Badge>
+                      </div>
+                      <div className="flex justify-between items-center p-2 bg-amber-500/10 rounded border border-amber-500/20">
+                        <span>Images OFF (Corner):</span>
+                        <Badge variant="default" className="bg-amber-500">~75% text area (+50%)</Badge>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium">Mobile/Tablet (SM-LG)</h4>
+                    <div className="space-y-1 text-xs">
+                      <div className="flex justify-between items-center p-2 bg-background rounded">
+                        <span>Images ON:</span>
+                        <Badge variant="outline">aspect-[4/3]</Badge>
+                      </div>
+                      <div className="flex justify-between items-center p-2 bg-blue-500/10 rounded border border-blue-500/20">
+                        <span>Images OFF (Icon):</span>
+                        <Badge variant="default" className="bg-blue-500">120px icon (~70% less)</Badge>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+
       {/* Saved Story Preview */}
       <section className="max-w-5xl mx-auto mt-8">
         <Card>
