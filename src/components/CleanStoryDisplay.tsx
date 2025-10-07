@@ -2748,7 +2748,10 @@ const initializeStory = async () => {
   };
 
   // Update ref for story:stabilized listener to avoid ReferenceError
-  generateImageRef.current = generateImageForCurrentPage;
+  // Update ref for story:stabilized listener to avoid ReferenceError
+  useEffect(() => {
+    generateImageRef.current = generateImageForCurrentPage;
+  }, [generateImageForCurrentPage]);
 
   // FLICKER FIX: Trigger image generation ONLY after React has completed story state update
   useEffect(() => {
