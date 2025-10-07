@@ -33,10 +33,15 @@ class ErrorSuppressionManager {
       return true;
     }
 
-    // Network errors that are already handled
+    // Network errors that are already handled (including Lovable platform errors)
     if (fullMessage.includes('err_http2_protocol_error') ||
+        fullMessage.includes('err_http2_ping_failed') ||
+        fullMessage.includes('err_connection_closed') ||
         fullMessage.includes('502 ()') ||
-        fullMessage.includes('failed to load resource')) {
+        fullMessage.includes('500 ()') ||
+        fullMessage.includes('404 ()') ||
+        fullMessage.includes('failed to load resource') ||
+        fullMessage.includes('lovable-api.com')) {
       return true;
     }
 

@@ -47,6 +47,18 @@ window.browserErrorSuppressionStatus()
 2. **Extension Whitelist**: Maintain a list of tested-compatible extensions
 3. **User Communication**: If users report issues, ask them to try incognito mode first
 
+## Lovable Platform Network Errors
+
+### HTTP/2 Connection Errors
+These are transient network errors from the Lovable development platform and do not affect your application:
+
+- `ERR_HTTP2_PING_FAILED`: HTTP/2 keepalive ping failed (auto-reconnects)
+- `ERR_CONNECTION_CLOSED`: WebSocket connection closed (auto-reconnects)
+- `404 ()` or `500 ()` on lovable-api.com: Platform API errors (handled gracefully)
+
+**System-Level Suppression:**
+These platform errors are automatically suppressed via `errorSuppressionManager` to prevent console noise. Your application handles reconnection automatically.
+
 ## Technical Implementation
 
 Our error suppression system handles:
@@ -54,5 +66,6 @@ Our error suppression system handles:
 - Unhandled promise rejections from extension scripts
 - Console message filtering for extension noise
 - Automatic detection of problematic extension patterns
+- Lovable platform HTTP/2 and WebSocket errors
 
 The suppression is automatically disabled in debug mode to help with development.

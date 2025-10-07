@@ -21,6 +21,15 @@ interface NewChildInput {
 // Simplified per-instance caching to prevent race conditions
 const CACHE_DURATION = 5000; // 5 seconds
 
+// Helper: Only log for authenticated users or when ?debug=1 is present
+const shouldLog = () => {
+  if (typeof window !== 'undefined' && window.location.search.includes('debug=1')) {
+    return true;
+  }
+  // Check for authenticated user via supabase singleton (non-async check)
+  return false; // Default to silent for guest users
+};
+
 export function useChildProfiles() {
   const [children, setChildren] = useState<ChildProfile[]>([]);
   const [activeChildId, setActiveChildId] = useState<string | null>(null);
@@ -31,19 +40,19 @@ export function useChildProfiles() {
   const lastRequestRef = useRef<{ userId: string; promise: Promise<any>; timestamp: number } | null>(null);
 
   const load = useCallback(async () => {
-    DebugLogger.log('auth', 'useChildProfiles: Starting load');
+    if (shouldLog()) DebugLogger.log('auth', 'useChildProfiles: Starting load');
     
     // Check if we have a recent request for the current user
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError) {
-      DebugLogger.warn('auth', 'Auth error in useChildProfiles', authError);
+      if (shouldLog()) DebugLogger.warn('auth', 'Auth error in useChildProfiles', authError);
       setError(authError.message);
       setLoading(false);
       return;
     }
     
     if (!user) {
-      DebugLogger.log('auth', 'useChildProfiles: No authenticated user, clearing child profiles');
+      if (shouldLog()) DebugLogger.log('auth', 'useChildProfiles: No authenticated user, clearing child profiles');
       setChildren([]);
       setActiveChildId(null);
       setLoading(false);
@@ -55,7 +64,7 @@ export function useChildProfiles() {
     if (lastRequestRef.current && 
         lastRequestRef.current.userId === user.id && 
         now - lastRequestRef.current.timestamp < CACHE_DURATION) {
-      DebugLogger.log('auth', 'useChildProfiles: Using cached request');
+      if (shouldLog()) DebugLogger.log('auth', 'useChildProfiles: Using cached request');
       try {
         await lastRequestRef.current.promise;
         return;
@@ -64,13 +73,13 @@ export function useChildProfiles() {
       }
     }
     
-    DebugLogger.log('auth', 'useChildProfiles: Setting loading to true');
+    if (shouldLog()) DebugLogger.log('auth', 'useChildProfiles: Setting loading to true');
     setLoading(true);
     setError(null);
     
     const loadPromise = (async () => {
       try {
-        DebugLogger.log('auth', 'useChildProfiles: Fetching fresh data from database');
+        if (shouldLog()) DebugLogger.log('auth', 'useChildProfiles: Fetching fresh data from database');
         const [{ data: prefs }, { data: kids, error: kidsErr }] = await Promise.all([
           supabase
             .from('user_preferences')
@@ -88,7 +97,7 @@ export function useChildProfiles() {
         
         const resultData = { children: kids || [], activeChildId: (prefs as any)?.active_child_id ?? null };
         
-        DebugLogger.log('auth', 'useChildProfiles: Data loaded successfully', {
+        if (shouldLog()) DebugLogger.log('auth', 'useChildProfiles: Data loaded successfully', {
           childrenCount: resultData.children.length,
           activeChildId: resultData.activeChildId
         });
@@ -97,11 +106,11 @@ export function useChildProfiles() {
         setActiveChildId(resultData.activeChildId);
         
       } catch (e: any) {
-        DebugLogger.error('auth', 'useChildProfiles: Load failed', e);
+        if (shouldLog()) DebugLogger.error('auth', 'useChildProfiles: Load failed', e);
         LeanErrorService.logError(e, 'useChildProfiles');
         setError(e?.message || 'Failed to load child profiles');
       } finally {
-        DebugLogger.log('auth', 'useChildProfiles: Setting loading to false');
+        if (shouldLog()) DebugLogger.log('auth', 'useChildProfiles: Setting loading to false');
         setLoading(false);
       }
     })();
@@ -119,10 +128,10 @@ export function useChildProfiles() {
   // Auth state subscription and initial load - wait for auth to be ready
   useEffect(() => {
     let hasInitialLoad = false;
-    DebugLogger.log('auth', 'useChildProfiles: Setting up auth state listener');
+    if (shouldLog()) DebugLogger.log('auth', 'useChildProfiles: Setting up auth state listener');
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      DebugLogger.log('auth', 'useChildProfiles: Auth state changed', { event, hasUser: !!session?.user });
+      if (shouldLog()) DebugLogger.log('auth', 'useChildProfiles: Auth state changed', { event, hasUser: !!session?.user });
       
       if (event === 'SIGNED_IN') {
         // Clear any stale state and reload fresh data for this user
@@ -132,7 +141,7 @@ export function useChildProfiles() {
       }
       if (event === 'SIGNED_OUT') {
         // Clear state on sign out
-        DebugLogger.log('auth', 'useChildProfiles: User signed out, clearing state');
+        if (shouldLog()) DebugLogger.log('auth', 'useChildProfiles: User signed out, clearing state');
         setChildren([]);
         setActiveChildId(null);
         setLoading(false);
@@ -143,15 +152,15 @@ export function useChildProfiles() {
 
     // Check for existing session after setting up listener
     supabase.auth.getSession().then(({ data: { session } }) => {
-      DebugLogger.log('auth', 'useChildProfiles: Initial session check', { hasUser: !!session?.user, hasInitialLoad });
+      if (shouldLog()) DebugLogger.log('auth', 'useChildProfiles: Initial session check', { hasUser: !!session?.user, hasInitialLoad });
       
       if (!hasInitialLoad) {
         if (session?.user) {
-          DebugLogger.log('auth', 'useChildProfiles: Found existing session, loading');
+          if (shouldLog()) DebugLogger.log('auth', 'useChildProfiles: Found existing session, loading');
           load();
         } else {
           // No session, clear state and stop loading
-          DebugLogger.log('auth', 'useChildProfiles: No session, clearing state');
+          if (shouldLog()) DebugLogger.log('auth', 'useChildProfiles: No session, clearing state');
           setChildren([]);
           setActiveChildId(null);
           setLoading(false);
@@ -161,7 +170,7 @@ export function useChildProfiles() {
     });
 
     return () => {
-      DebugLogger.log('auth', 'useChildProfiles: Cleaning up auth listener');
+      if (shouldLog()) DebugLogger.log('auth', 'useChildProfiles: Cleaning up auth listener');
       subscription.unsubscribe();
     };
   }, [load]);
