@@ -94,7 +94,7 @@ serve(async (req) => {
     try {
       const { data: subRow, error: dbError } = await client
         .from("subscribers")
-        .select("override_premium, override_tier, override_end, stripe_customer_id")
+        .select("override_premium, override_tier, override_end, stripe_customer_id, discount_activated, discount_activated_at")
         .eq("email", user.email)
         .maybeSingle();
 
@@ -109,11 +109,16 @@ serve(async (req) => {
         });
       }
 
-      const overrideActive = subRow?.override_premium === true &&
-        (!subRow.override_end || new Date(subRow.override_end) > new Date());
+      const overrideActive = (subRow?.override_premium === true &&
+        (!subRow.override_end || new Date(subRow.override_end) > new Date())) ||
+        subRow?.discount_activated === true;
 
       if (overrideActive) {
-        logStep("Override active - updating cache", { tier: subRow.override_tier });
+        logStep("Override or discount active - preserving status", { 
+          tier: subRow.override_tier,
+          discountActivated: subRow.discount_activated,
+          discountActivatedAt: subRow.discount_activated_at
+        });
         const { error: upsertError } = await client.from("subscribers").upsert({
           email: user.email,
           user_id: user.id,
@@ -121,6 +126,8 @@ serve(async (req) => {
           subscribed: true,
           subscription_tier: subRow?.override_tier ?? "Premium",
           subscription_end: subRow?.override_end ?? null,
+          discount_activated: subRow?.discount_activated ?? false,
+          discount_activated_at: subRow?.discount_activated_at ?? null,
           updated_at: new Date().toISOString(),
         }, { onConflict: 'email' });
 
@@ -171,7 +178,28 @@ serve(async (req) => {
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     
     if (customers.data.length === 0) {
-      logStep("No Stripe customer found - updating cache as unsubscribed");
+      // Check if user has discount activation BEFORE marking as unsubscribed
+      const { data: subCheck } = await client
+        .from("subscribers")
+        .select("discount_activated, override_premium, override_end")
+        .eq("email", user.email)
+        .maybeSingle();
+      
+      if (subCheck?.discount_activated === true || 
+          (subCheck?.override_premium === true && 
+           (!subCheck?.override_end || new Date(subCheck.override_end) > new Date()))) {
+        logStep("No Stripe customer but discount/override active - preserving status");
+        return new Response(JSON.stringify({
+          success: true,
+          subscribed: true,
+          source: "discount_protection"
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
+      
+      logStep("No Stripe customer found AND no discount - updating cache as unsubscribed");
       
       try {
         const { error: upsertError } = await client.from("subscribers").upsert({
