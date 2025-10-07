@@ -203,6 +203,9 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   // Page-specific generation lock to prevent race conditions
   const [generatingPages, setGeneratingPages] = useState<Set<number>>(new Set());
   
+  // Synchronous generation lock (immediate, non-async) - prevents race conditions
+  const imageGenerationLocks = useRef<Set<number>>(new Set());
+  
   // Stable reference for generateImageForCurrentPage to avoid ReferenceError in event listeners
   const generateImageRef = useRef<(() => Promise<void>) | null>(null);
   
@@ -2468,18 +2471,22 @@ const initializeStory = async () => {
   }, [isPremium, isLoadingNextPage, currentPage, story.length, liveContext, generateNextPage, setStory, setLiveContext, setCurrentPage, setIsStoryComplete, setError]);
 
   const generateImageForCurrentPage = async () => {
-    // CRITICAL: Page-specific lock to prevent race conditions
-    if (generatingPages.has(currentPage)) {
-      DebugLogger.log('image', '🔒 BLOCKED: Page already generating', { currentPage });
+    // ✅ SYNCHRONOUS LOCK: Check and set in same execution frame
+    if (imageGenerationLocks.current.has(currentPage)) {
+      DebugLogger.log('image', '🔒 BLOCKED: Page already generating (sync lock)', { currentPage });
       return;
     }
     
+    // Acquire synchronous lock IMMEDIATELY
+    imageGenerationLocks.current.add(currentPage);
+    DebugLogger.log('image', '🔓 SYNC LOCK ACQUIRED', { currentPage });
+    
+    // Also set React state for UI feedback (async, but doesn't matter for race prevention)
     setGeneratingPages(prev => {
       const next = new Set(prev);
       next.add(currentPage);
       return next;
     });
-    DebugLogger.log('image', '🔓 LOCK ACQUIRED', { currentPage });
     
     // 🔍 COMPREHENSIVE DEBUG: Track function entry
     DebugLogger.log('image', 'generateImageForCurrentPage() called', {
@@ -2511,6 +2518,16 @@ const initializeStory = async () => {
         storyLength: story.length,
         currentPage
       });
+      
+      // ✅ CRITICAL: Release sync lock before returning
+      imageGenerationLocks.current.delete(currentPage);
+      
+      setGeneratingPages(prev => {
+        const next = new Set(prev);
+        next.delete(currentPage);
+        return next;
+      });
+      
       return;
     }
     
@@ -2734,13 +2751,16 @@ const initializeStory = async () => {
     } catch (error) {
       DebugLogger.log('image', 'Image generation failed, continuing without image', error);
     } finally {
-      // CRITICAL: Always release lock even on error
+      // ✅ CRITICAL: Release BOTH locks (sync + async)
+      imageGenerationLocks.current.delete(currentPage);
+      
       setGeneratingPages(prev => {
         const next = new Set(prev);
         next.delete(currentPage);
         return next;
       });
-      DebugLogger.log('image', '🔓 LOCK RELEASED', { currentPage });
+      
+      DebugLogger.log('image', '🔓 LOCKS RELEASED (sync + async)', { currentPage });
       
       setIsGeneratingImage(false);
       setIsPreparingImage(false);
