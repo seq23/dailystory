@@ -83,16 +83,16 @@ CULTURAL_ARRAYS = {
 
 Direct Mode uses a **2-tier fallback** system for initial character descriptors (before primary scene generation):
 
-#### Tier 1: StaticDataCache (Session-Seeded)
-- `getCulturalBundle('african', sessionId)` for dark/darker skin tones
-- `getHairBySkinTone(skinTone, sessionId)` for other skin tones
-- Provides session-seeded consistency with full 73-hair mapping
+#### Tier 1: CCS Inline Arrays (Session-Seeded)
+- CCS inline cultural arrays for dark/darker skin tones (African American)
+- CCS inline hair/skin arrays for other skin tones
+- Provides session-seeded consistency within CharacterConsistencyService
 - Same hair within session, different across sessions
 
 #### Tier 2: Emergency Hardcoded (Fallback Only)
-- Only used if StaticDataCache import/call fails
+- Only used if CCS completely fails (import/call failure)
 - "photorealistic detailed textured 4C African American hairstyle" for dark skin
-- Generic fallbacks for other skin tones
+- Generic hardcoded fallbacks for other skin tones
 
 ### After Primary Scene Analysis
 
@@ -137,8 +137,8 @@ sequenceDiagram
   participant DB as visual_details_cache
 
   Note over AIVSC: Page 1 - Direct Mode
-  AIVSC->>SDC: getHairBySkinTone(skinTone, sessionId)
-  SDC-->>AIVSC: Session-seeded hair (Tier 1)
+  AIVSC->>CCS: Get inline hair/skin from CCS
+  CCS-->>AIVSC: Session-seeded hair (Tier 1)
   AIVSC->>OpenAI: Generate primaryScene with initial descriptor
   OpenAI-->>AIVSC: primaryScene text
   AIVSC->>CCS: analyzeVisualDetails(sessionId, primaryScene, 1, name)
@@ -148,8 +148,8 @@ sequenceDiagram
   CCS-->>AIVSC: Cumulative appearance (page 1)
   
   Note over AIVSC: Page 2+ - Accumulation
-  AIVSC->>SDC: getHairBySkinTone(skinTone, sessionId)
-  SDC-->>AIVSC: SAME session-seeded hair (consistent)
+  AIVSC->>CCS: Get inline hair/skin from CCS
+  CCS-->>AIVSC: SAME session-seeded hair (consistent)
   AIVSC->>CCS: getCharacterAppearanceFromStory(sessionId, name)
   CCS->>DB: Read cached details from page 1
   CCS-->>AIVSC: Cumulative appearance from previous pages
@@ -166,11 +166,11 @@ sequenceDiagram
 
 | Feature | Direct Mode | Tier 1 (Orchestrator) |
 |---------|-------------|----------------------|
-| Initial Descriptor Source | StaticDataCache first | CharacterConsistencyService |
+| Initial Descriptor Source | CCS inline arrays | CharacterConsistencyService |
 | Character Foundation | Built during generation | Built before generation |
 | analyzeVisualDetails() | After primary scene | Before AI scene call |
 | Accumulation | Page-by-page via analyzeVisualDetails | All at once in Phase 1 |
-| Tier System | 2-tier (StaticDataCache → hardcoded) | Full character-first flow |
+| Tier System | 2-tier (CCS inline → hardcoded) | Full character-first flow |
 
 ## Granular Ethnicity Detection System (October 2025)
 
@@ -189,10 +189,10 @@ sequenceDiagram
 Ethnicity labels are **AI prompt context only**. They provide cultural authenticity to AI-generated scene descriptions but **DO NOT** trigger new hair/features arrays.
 
 **ONLY African diaspora ethnicities** (dark/darker skin + en/es/fr/pt languages) use specialized arrays:
-- `AFRICAN_AMERICAN_HAIR_INLINE` (100+ styles)
-- `AFRICAN_AMERICAN_FACIAL_FEATURES_INLINE` (20+ features)
+- `AFRICAN_AMERICAN_HAIR_INLINE` (100+ styles) within CCS
+- `AFRICAN_AMERICAN_FACIAL_FEATURES_INLINE` (20+ features) within CCS
 
-**All other ethnicities** (Indian, Chinese, MENA, Euro-American, etc.) use **generic skin-tone-based arrays** from `getHairBySkinTone()` and `getSkinFeatures()`.
+**All other ethnicities** (Indian, Chinese, MENA, Euro-American, etc.) use **generic skin-tone-based inline arrays** within CharacterConsistencyService.
 
 ### Ethnicity Mapping Table
 
@@ -363,7 +363,7 @@ function generateCharacterSeed(userInfo, sessionId) {
 3. ✅ **DO**: Keep African diaspora detection (dark skin + en/es/fr/pt)
 4. ❌ **DO NOT**: Create new hair/features arrays for non-African diaspora
 5. ❌ **DO NOT**: Modify existing `AFRICAN_AMERICAN_HAIR_INLINE` or `AFRICAN_AMERICAN_FACIAL_FEATURES_INLINE`
-6. ❌ **DO NOT**: Change `getHairBySkinTone()` or `getSkinFeatures()` logic
+6. ❌ **DO NOT**: Move hair/skin arrays out of CCS to StaticDataCache
 7. ❌ **DO NOT**: Add skin-tone-based detection for non-Western languages
 
 **If adding a new ethnicity label:**
@@ -389,8 +389,8 @@ userInfo = { language: 'en', skinTone: 'dark' }
 userInfo = { language: 'en', skinTone: 'medium' }
 // Output:
 // ethnicity: 'Indian'
-// hairColor: from getHairBySkinTone('medium') (e.g., "straight black hair")
-// skinFeatures: from getSkinFeatures('medium') (e.g., "warm tan skin")
+// hairColor: from CCS inline arrays ('medium') (e.g., "straight black hair")
+// skinFeatures: from CCS inline arrays ('medium') (e.g., "warm tan skin")
 // AI Prompt: "Raj, age 10, straight black hair, warm tan skin, Indian ethnicity"
 ```
 
@@ -399,8 +399,8 @@ userInfo = { language: 'en', skinTone: 'medium' }
 userInfo = { language: 'zh', skinTone: 'light' }
 // Output:
 // ethnicity: 'Chinese'
-// hairColor: from getHairBySkinTone('light') (e.g., "silky black hair")
-// skinFeatures: from getSkinFeatures('light') (e.g., "fair skin")
+// hairColor: from CCS inline arrays ('light') (e.g., "silky black hair")
+// skinFeatures: from CCS inline arrays ('light') (e.g., "fair skin")
 // AI Prompt: "Li Wei, age 9, silky black hair, fair skin, Chinese ethnicity"
 ```
 
@@ -409,8 +409,8 @@ userInfo = { language: 'zh', skinTone: 'light' }
 userInfo = { language: 'en', skinTone: 'fair' }
 // Output:
 // ethnicity: 'Euro-American'
-// hairColor: from getHairBySkinTone('fair') (e.g., "blonde wavy hair")
-// skinFeatures: from getSkinFeatures('fair') (e.g., "fair skin with freckles")
+// hairColor: from CCS inline arrays ('fair') (e.g., "blonde wavy hair")
+// skinFeatures: from CCS inline arrays ('fair') (e.g., "fair skin with freckles")
 // AI Prompt: "Emma, age 8, blonde wavy hair, fair skin with freckles, Euro-American ethnicity"
 ```
 

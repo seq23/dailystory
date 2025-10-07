@@ -115,6 +115,8 @@ serve(async (req) => {
 ### CharacterConsistencyService Vendor Fallbacks
 **Status**: ✅ FULLY OPERATIONAL - No changes needed
 
+**⚠️ DEPRECATED (October 2025)**: The 3-tier fallback pattern documented here was replaced with a 2-tier system.
+
 **Implementation** (lines 41-74):
 ```typescript
 try {
@@ -122,22 +124,16 @@ try {
   structuredAvatarData = await characterConsistencyService.getStructuredAvatarData(sessionId, userInfo);
   console.log(`✅ Generated complete structuredAvatarData via CharacterConsistencyService:`, structuredAvatarData);
 } catch (error) {
-  console.warn(`⚠️ CharacterConsistencyService unavailable, trying StaticDataCache fallback:`, errorMessage);
+  console.warn(`⚠️ CharacterConsistencyService unavailable, using emergency hardcoded fallback:`, errorMessage);
   
-  // 3-Tier fallback: CCS → StaticDataCache → Hardcoded
-  try {
-    const { getHairBySkintone, getSkinBySkintone } = await import('../_shared/StaticDataCache.js');
-    // ... StaticDataCache fallback logic
-  } catch (staticError) {
-    // ... Hardcoded fallback logic
-  }
+  // 2-Tier fallback: CCS (inline) → Hardcoded Emergency
+  // ... Hardcoded fallback logic
 }
 ```
 
-**Fallback Chain**:
-1. **Tier 1**: CharacterConsistencyService via resilientLoader (attempts multiple CDNs + vendor bundle)
-2. **Tier 2**: StaticDataCache with deterministic lookups
-3. **Tier 3**: Hardcoded emergency values
+**Fallback Chain (UPDATED October 2025)**:
+1. **Tier 1**: CharacterConsistencyService with inline hair/skin arrays
+2. **Tier 2**: Hardcoded emergency values (direct fallback, no StaticDataCache)
 
 **Why This System Works**:
 - All imports use lazy loading (`await import()`)
@@ -146,24 +142,14 @@ try {
 - System degrades gracefully through tiers
 
 ### StaticDataCache Lazy Loading
-**Status**: ✅ FULLY OPERATIONAL - No changes needed
+**Status**: ⚠️ DEPRECATED (October 2025) - StaticDataCache is no longer used as fallback
 
-**Implementation** (lines 50-63):
+**⚠️ DEPRECATED**: The StaticDataCache tier was removed from the fallback chain. Hair/skin mappings are now inline within CharacterConsistencyService.
+
+**Implementation** (lines 50-63 - DEPRECATED):
 ```typescript
-try {
-  const { getHairBySkintone, getSkinBySkintone } = await import('../_shared/StaticDataCache.js');
-  const skinTone = userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium';
-  const hairColor = getHairBySkintone(skinTone, sessionId);
-  const skinFeatures = getSkinBySkintone(skinTone, sessionId);
-  
-  structuredAvatarData = {
-    resolvedSkinTone: skinTone,
-    assignedHairColor: hairColor || 'brown hair',
-    skinFeatures: skinFeatures || 'medium skin tone with brown eyes',
-    ethnicity: 'Euro-American',
-    source: 'static_data_cache'
-  };
-}
+// This pattern is NO LONGER USED as of October 2025
+// getHairBySkintone and getSkinBySkintone do NOT exist in StaticDataCache
 ```
 
 ### Emergency Hardcoded Fallback

@@ -162,6 +162,8 @@ difficultyToEducationalLevel('beginner') === 0 ✅
   ```
 - **Result:** Cleaned up codebase and eliminated potential confusion
 
+**⚠️ Note (October 2025)**: This fix was part of a larger cleanup. StaticDataCache references in UnifiedPlaceholderResolver are historical.
+
 #### Issue 9.3: Broken Function References (Lines 1105 & 1139)
 - **Problem:** Two locations calling deleted `shouldApplyCulturalFeatures()` function
 - **Root Cause:** Function references not updated when function was removed

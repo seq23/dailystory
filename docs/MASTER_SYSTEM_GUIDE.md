@@ -270,7 +270,7 @@ Template 3: "Hello there ${userName}, our story box needs a snack..."
   - `getColoredObjects()` fails
   - `detectAllCharacters()` fails
 - **Non-Critical CCS Failures** (use fallbacks, continue Tier 1):
-  - `getStructuredAvatarData()` fails → Use `StaticDataCache.HAIR_BY_SKIN_TONE` + `userInfo`
+  - `getStructuredAvatarData()` fails → Use CCS inline hair/skin arrays + `userInfo`
   - `getCharacterSeed()` fails → Use random seed with basic `userInfo`
 
 **Direct Mode CCS Failure Handling**:

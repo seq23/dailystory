@@ -45,7 +45,7 @@ function getFeatures(skinTone) {
 }
 ```
 
-**Reason**: No callers found in codebase. Direct calls to `getHairBySkintone()` and `getSkinBySkintone()` are used instead.
+**Reason**: No callers found in codebase. **Note**: `getHairBySkintone()` and `getSkinBySkintone()` do NOT exist - hair/skin mappings are inline within CharacterConsistencyService.
 
 ---
 

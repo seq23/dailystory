@@ -44,41 +44,39 @@ The `ai-visual-scene-creator` function implements a **production-ready 3-tier CC
 
 ### Implementation (Lines 52-99 in index.ts)
 
+**⚠️ DEPRECATED (October 2025)**: This fallback pattern was replaced. StaticDataCache is NO LONGER used.
+
 ```typescript
-// TIER 1: CharacterConsistencyService (Full Consistency)
+// TIER 1: CharacterConsistencyService (Full Consistency - with inline arrays)
 try {
   structuredAvatarData = await CharacterService.getStructuredAvatarData(sessionId);
-  // Returns: 30 hairstyles + 36 feature combinations
+  // Returns: Hair/skin from CCS inline arrays
 } catch (error) {
-  console.warn('⚠️ CCS unavailable, trying StaticDataCache fallback');
+  console.warn('⚠️ CCS unavailable, using emergency hardcoded fallback');
   
-  // TIER 2: StaticDataCache (Session-Seeded Fallback)
-  try {
-    structuredAvatarData = await StaticDataCache.getStructuredAvatarData(sessionId);
-    // Returns: 65 hair variations, session-seeded selection
-  } catch (fallbackError) {
-    console.warn('⚠️ StaticDataCache unavailable, using minimal fallback');
-    
-    // TIER 3: Hardcoded Emergency Fallback
-    const skinTone = userInfo?.skinTone || 'light';
-    structuredAvatarData = {
-      hairColor: emergencyHairFallback(skinTone, sessionId),
-      // Returns: Skin-tone-specific hair selection
-      skinTone: skinTone,
-      ethnicity: userInfo?.ethnicity || 'Euro-American',
-      source: 'hardcoded_emergency'
-    };
-  }
+  // TIER 2: Hardcoded Emergency Fallback (CURRENT)
+  const skinTone = userInfo?.skinTone || 'light';
+  structuredAvatarData = {
+    hairColor: emergencyHairFallback(skinTone, sessionId),
+    // Returns: Skin-tone-specific hair selection
+    skinTone: skinTone,
+    ethnicity: userInfo?.ethnicity || 'Euro-American',
+    source: 'hardcoded_emergency'
+  };
 }
 ```
 
+**Note**: The intermediate StaticDataCache tier (Tier 2) was removed. Hair/skin mappings are now inline within CharacterConsistencyService.
+
 ### Fallback Tier Comparison
+
+**⚠️ DEPRECATED (October 2025)**: The 3-tier fallback architecture documented here (CCS → StaticDataCache → Hardcoded) was replaced with a 2-tier system (CCS inline → Emergency Hardcoded). StaticDataCache is NO LONGER used as an intermediary fallback.
 
 | Tier | Source | Hair Options | Skin Features | Consistency | Use Case |
 |------|--------|--------------|---------------|-------------|----------|
 | **Tier 1** | CharacterConsistencyService | 30 styles | 36 combinations | Session + Page | CCS operational |
-| **Tier 2** | StaticDataCache | 65 variations | Basic mapping | Session-seeded | CCS import fails |
-| **Tier 3** | Hardcoded Emergency | Skin-tone-specific | Minimal | Per-request | Total CCS failure |
+| **Tier 2 (DEPRECATED)** | ~~StaticDataCache~~ | ~~65 variations~~ | ~~Basic mapping~~ | ~~Session-seeded~~ | ~~CCS import fails~~ |
+| **Tier 2 (CURRENT)** | Emergency Hardcoded | Skin-tone-specific | Minimal | Per-request | CCS failure |
 
 ---
 

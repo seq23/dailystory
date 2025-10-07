@@ -215,7 +215,7 @@ This document details complete user journey scenarios for both Guest and Premium
 - `detectAllCharacters()` fails → Escalate to Direct Mode
 
 **Non-Critical CCS Failures (Use Fallbacks)**:
-- `getStructuredAvatarData()` fails → Use `StaticDataCache.HAIR_BY_SKIN_TONE` + `userInfo`
+- `getStructuredAvatarData()` fails → Use CCS inline hair/skin arrays + `userInfo`
 - `getCharacterSeed()` fails → Use random seed with basic `userInfo` data
 
 **User Experience**:
@@ -252,7 +252,7 @@ This document details complete user journey scenarios for both Guest and Premium
 - `detectAllCharacters()` fails → Escalate to Tier 2.5B
 
 **Non-Critical CCS Failures (Use Fallbacks)**:
-- `getStructuredAvatarData()` fails → Use `StaticDataCache.HAIR_BY_SKIN_TONE` (73 variations)
+- `getStructuredAvatarData()` fails → Use CCS inline hair/skin arrays from emergency fallback
 - `getCharacterSeed()` fails → Use session-based hash seed
 
 **User Experience**:
@@ -265,18 +265,18 @@ This document details complete user journey scenarios for both Guest and Premium
 
 **Nuclear Independent**:
 - ✅ No CCS critical dependencies (orchestrator removed)
-- Uses `StaticDataCache` for 73-variation hair mapping
+- Uses emergency hardcoded fallbacks for hair mapping
 - Direct `extractSimpleScene()` for action detection
 
 **Fallback Strategy**:
 - All CCS methods treated as non-critical
-- Uses `StaticDataCache` and `userInfo` for all avatar data
+- Uses emergency hardcoded values and `userInfo` for all avatar data
 - Cannot escalate due to CCS (escalates only on scene extraction failure)
 
 **User Experience**:
 - **Reliable**: Nuclear independence ensures consistency
 - **No CCS Escalation**: CCS failures don't cause tier changes
-- **Quality**: 73-variation hair mapping maintained
+- **Quality**: Emergency hardcoded fallbacks ensure basic character consistency
 
 ## Business Logic Integration
 

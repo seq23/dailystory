@@ -71,9 +71,10 @@ pickFromArray<T>(arr: T[], sessionId: string): T
 **Location**: `supabase/functions/runware-generate-image/CharacterConsistencyServiceInline.js`
 - **Updated Method**: `getStructuredAvatarData()` now returns `skinFeatures` to prevent downstream fallbacks
 - **Skin Feature Arrays**: Added `PALE_SKIN_FEATURES_INLINE`, `LIGHT_SKIN_FEATURES_INLINE`, `MEDIUM_SKIN_FEATURES_INLINE`, `OLIVE_SKIN_FEATURES_INLINE` (12 variations each)
-- **African American Features**: Uses `AFRICAN_AMERICAN_FACIAL_FEATURES_INLINE` (36 variations) from StaticDataCache.js
+- **African American Features**: Uses `AFRICAN_AMERICAN_FACIAL_FEATURES_INLINE` (36 variations) inline within CCS
 - **Cultural Routing**: dark + en/es/fr/pt → African American hair (30) + features (36), all other combinations → Generic hair (65) + skin tone feature arrays
-- **Benefit**: Orchestrator (Tier 1) now mirrors shared CCS behavior, preventing "medium skin tone" fallbacks in ai-visual-scene-creator
+- **Benefit**: All hair/skin mappings are inline in CCS - NO StaticDataCache dependency
+- **Note**: StaticDataCache DOES NOT contain getHairBySkintone/getSkinBySkintone functions
 
 ## Hair Mapping by Skin Tone (65 Total Variations)
 

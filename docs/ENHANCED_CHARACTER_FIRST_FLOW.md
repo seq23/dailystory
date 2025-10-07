@@ -193,15 +193,15 @@ const enhancedPrompt = COMPLETE_TIER_1_TEMPLATE
 ✅ **Secondary Characters Tracked**  
 ✅ **Colored Objects Cached**  
 
-### Direct Mode (September 2025 - StaticDataCache-First):
-✅ **StaticDataCache-First Initial Descriptor** (session-seeded 73-hair mapping)  
+### Direct Mode (September 2025 - CCS-First):
+✅ **CCS Inline Arrays Initial Descriptor** (session-seeded within CCS)  
 ✅ **AI Generates Primary Scene**  
 ✅ **analyzeVisualDetails() After Primary Scene** (extracts & caches visual details)  
 ✅ **Page-by-Page Accumulation** (getCharacterAppearanceFromStory() grows across pages)  
 ✅ **Session-Seeded Hair Consistency** (same hair within session)  
-✅ **Cultural Bundle from StaticDataCache** (session-seeded)  
+✅ **Cultural Bundle from CCS Inline** (session-seeded)  
 ⚠️ **Character Foundation Built During Generation** (not before)  
-⚠️ **2-Tier Fallback** (StaticDataCache → Emergency Hardcoded)
+⚠️ **2-Tier Fallback** (CCS Inline → Emergency Hardcoded)
 
 ---
 

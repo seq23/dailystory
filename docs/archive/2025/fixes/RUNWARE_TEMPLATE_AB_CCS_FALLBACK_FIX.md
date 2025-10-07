@@ -10,11 +10,13 @@
 culturalBundle = { hair: 'natural hair', features: 'diverse features' };
 ```
 
-**Problems:**
-1. Generic strings like `'natural hair'` don't match the 65 hair variations from inline `getHairBySkintone()` function
-2. No use of inline helper functions (`getHairBySkintone`, `getSkinBySkintone`) as proper fallback
-3. Breaks visual consistency across sessions
-4. Violates 3-tier fallback architecture
+**⚠️ DEPRECATED (October 2025)**: This fix was superseded. The functions `getHairBySkintone` and `getSkinBySkintone` do NOT exist in the current architecture. Hair/skin mappings are inline within CharacterConsistencyService.
+
+**Problems (Historical):**
+1. Generic strings like `'natural hair'` don't match hair variations
+2. Referenced non-existent inline helper functions
+3. Broke visual consistency across sessions
+4. Violated the intended fallback architecture
 
 ### Issue 2: No Escalation on CCS Complete Failure
 **Location:** Same section (lines 1668-1678)
@@ -31,10 +33,10 @@ culturalBundle = { hair: 'natural hair', features: 'diverse features' };
 - Full character consistency with session seeding
 - Uses comprehensive cultural arrays (30 hairstyles + 36 features)
 
-**Tier 2 (Fallback):** Inline helper functions (`getHairBySkintone`, `getSkinBySkintone`)
-- `getHairBySkintone(skinTone, sessionId)` - 65 hair variations with session seeding
-- `getSkinBySkintone(skinTone)` - Authentic skin tone descriptions
-- Already exists in runware-template-ab/index.js at lines 182-220
+**Tier 2 (Fallback - DEPRECATED):** ~~Inline helper functions~~ **Emergency Hardcoded**
+- ⚠️ `getHairBySkintone` and `getSkinBySkintone` do NOT exist
+- Current architecture: CCS inline arrays → Emergency hardcoded fallback
+- No intermediate StaticDataCache tier
 
 **Tier 3 (Emergency):** Final fallback in hairDescription/facialFeatures assignment
 - `emergencyHairFallback(skinTone)` - Skin-tone-specific defaults
@@ -157,14 +159,12 @@ Run in `/prompt-testing?debug=1`:
    - Generate image with working CCS
    - Expect: `✅ [TIER_1_FALLBACK] CCS cultural bundle loaded successfully`
 
-2. **Test Inline Functions Tier 2 Fallback:**
-   - Simulate CCS import failure (e.g., temporarily rename CharacterConsistencyService.js)
-   - Expect: `✅ [TIER_2_FALLBACK] Inline cultural bundle loaded: hair="..."`
-   - Verify: Hair value matches one of 65 variations from inline function
+2. **Test Emergency Tier 2 Fallback (UPDATED):**
+   - Simulate CCS complete failure
+   - Expect: Emergency hardcoded fallback used
+   - Verify: Hair value uses hardcoded emergency values
 
-3. **Test Emergency Tier 3 Fallback:**
-   - Both CCS and inline functions fail (edge case)
-   - Expect: Final fallback uses `emergencyHairFallback(skinTone)` in hairDescription assignment
+**⚠️ Note**: Inline helper functions `getHairBySkintone` and `getSkinBySkintone` do NOT exist. This test scenario is DEPRECATED.
 
 4. **Test Escalation to Tier 2.5B:**
    - When Tier 2 fallback used with `templateComplexity: 'A'`

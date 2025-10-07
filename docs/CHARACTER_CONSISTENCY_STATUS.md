@@ -455,19 +455,19 @@ The Character Consistency Service (CCS) employs a sophisticated failure classifi
 ### Failure Classification
 
 #### 🟢 Acceptable Graceful Fallbacks (Non-Critical)
-These method failures use bulletproof fallbacks from `StaticDataCache.js` and `userInfo` without escalating:
+These method failures use bulletproof fallbacks from **CCS inline arrays** and `userInfo` without escalating:
 
 **1. `getStructuredAvatarData()` Failures**
-- **Fallback Strategy**: Extract from `userInfo` + `StaticDataCache.HAIR_BY_SKIN_TONE`
-- **Fallback Source**: Direct access to 73 hair variations across 10 skin tone categories
+- **Fallback Strategy**: Extract from `userInfo` + CCS inline hair/skin arrays
+- **Fallback Source**: Direct access to inline arrays within CharacterConsistencyService
 - **Implementation**: 
   ```javascript
-  // Emergency fallback using StaticDataCache
+  // Emergency fallback using CCS inline arrays
   const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
-  const hairOptions = StaticDataCache.HAIR_BY_SKIN_TONE[skinTone] || StaticDataCache.HAIR_BY_SKIN_TONE['medium'];
+  const hairOptions = HAIR_BY_SKIN_TONE_INLINE[skinTone] || HAIR_BY_SKIN_TONE_INLINE['medium'];
   const seededHairChoice = hairOptions[seedIndex % hairOptions.length];
   ```
-- **Why Non-Critical**: Avatar appearance can be constructed from reliable static data
+- **Why Non-Critical**: Avatar appearance can be constructed from CCS inline data
 - **Result**: Continue image generation with emergency avatar data
 
 **2. `getCharacterSeed()` Failures**
