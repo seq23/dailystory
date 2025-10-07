@@ -186,7 +186,16 @@ function generateTier25C(storyText, userInfo, avatarIdentity, failedTierData = {
       const difficulty = userInfo?.difficulty || 'medium';
       const hardcodedFramework = getNuclearStyleFramework(difficulty);
       
-      const positivePrompt = `scene: ${failedTierData.enhancedSceneData}.\n\ncharacter: ${failedTierData.characterConsistency}.\n\nbrand suffix: ${hardcodedFramework.frameworkPrompt}`;
+      const positivePrompt = `scene: ${failedTierData.enhancedSceneData}.${failedTierData.coloredObjects ? `\n\ncolored objects: ${failedTierData.coloredObjects}.` : ''}${failedTierData.sceneContext ? `\n\nlocation context: ${failedTierData.sceneContext}.` : ''}\n\ncharacter: ${failedTierData.characterConsistency}.\n\nbrand suffix: ${hardcodedFramework.frameworkPrompt}`;
+      
+      console.log('🎨 [DIRECT_MODE] Prompt components:', {
+        hasEnhancedScene: !!failedTierData.enhancedSceneData,
+        hasColoredObjects: !!failedTierData.coloredObjects,
+        hasSceneContext: !!failedTierData.sceneContext,
+        hasCharacterConsistency: !!failedTierData.characterConsistency,
+        coloredObjectsPreview: failedTierData.coloredObjects?.substring(0, 50),
+        sceneContextPreview: failedTierData.sceneContext?.substring(0, 50)
+      });
       
       const culturalProfileType = inlineDetectCultural(userInfo, avatarIdentity);
       const avatarType = userInfo?.avatar?.type || 'child';
