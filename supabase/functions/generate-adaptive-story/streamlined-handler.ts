@@ -371,11 +371,15 @@ NEVER-ENDING STORY MODE:
 - Introduce plot developments that sustain long-term storytelling
 - Build character growth opportunities across multiple pages
 
-EXISTING STORY CONTEXT:
-${config.existingStory}
+PAGE COMPLETION RULES:
+1. Always write complete sentences with proper punctuation (. ! ?)
+2. End each page with proper punctuation (. ! ?)
+3. If you reach your target length mid-sentence, COMPLETE that sentence before stopping
+4. Each output is ONE PAGE of a never-ending multi-page story
+5. Never conclude the story unless explicitly requested with config.isEndingPage=true
 
 CONTINUATION DIRECTIVE:
-Continue naturally from where the story left off. This page is the next paragraph of an ongoing narrative. Maintain consistency and forward momentum.`;
+This is page ${config.pageNumber || 1} of an ongoing story. The previous page's content has been provided in the conversation history above. Continue naturally from where you left off, maintaining consistency and forward momentum.`;
       
       finalSystemPrompt += '\n\n' + continuationInstructions;
       
@@ -873,7 +877,12 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
         model: safePropertyAccess(currentModel, 'name', 'gpt-5-2025-08-07'),
         messages: [
           { role: 'system', content: enhancedSystemPrompt },
-          { role: 'user', content: finalUserPrompt }
+          { role: 'user', content: finalUserPrompt },
+          // Multi-turn conversation for continuation pages
+          ...(config.existingStory ? [
+            { role: 'assistant', content: config.existingStory },
+            { role: 'user', content: 'Continue the story from where you left off. If the last sentence was incomplete, complete it first, then continue naturally with the next action.' }
+          ] : [])
         ]
       };
       

@@ -335,9 +335,18 @@ export class StoryGenerationService {
         vocabularyConfig.difficultyLevel
       );
 
+    // Determine main character: default to user unless specialRequest specifies custom character
+    const hasCustomCharacter = /about (a|an|the) .+/i.test(specialRequestContent) || 
+                              /story of .+/i.test(specialRequestContent) ||
+                              /featuring .+/i.test(specialRequestContent);
+
+    const mainCharacterPrompt = hasCustomCharacter
+      ? `Create a never-ending story about: ${specialRequestContent}. The reader is ${essentialUserInfo.name}, age ${essentialUserInfo.age}.`
+      : `Create a never-ending story for ${essentialUserInfo.name}, age ${essentialUserInfo.age}. ${userPreferences}Theme: ${specialRequestContent}.`;
+
     const STORY_TEMPLATE = `${ctrlLine}
 
-Create a never-ending story for ${essentialUserInfo.name}, age ${essentialUserInfo.age}. ${userPreferences}Theme: ${specialRequestContent}.
+${mainCharacterPrompt}
 
 ${vocabularyConfig.hasUserWords 
   ? `🎯 VOCABULARY REQUIREMENTS:
