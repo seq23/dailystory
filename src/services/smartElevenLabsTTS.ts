@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { DebugLogger } from '@/services/DebugLogger';
+import { AdaptiveTimeout } from '@/utils/adaptiveTimeout';
 
 /**
  * Smart ElevenLabs TTS service that applies phonetic lexicon only for learning contexts
@@ -24,9 +25,13 @@ export class SmartElevenLabsTTS {
       window.dispatchEvent(new CustomEvent('audio:request', { detail: { system: 'charlotte' } }));
     }
 
-    // Add timeout protection - 30 seconds for TTS requests (increased for story reading)
+    // TIMEOUT AUTHORITY: This is the ONLY timeout for all TTS requests
+    // Adaptive: 15s for good connections, 25s for 3g, 30s for 2g/slow-2g
+    const adaptiveTimeoutMs = AdaptiveTimeout.getTTSTimeout();
+    DebugLogger.log('audio', `Using adaptive timeout: ${adaptiveTimeoutMs}ms`);
+    
     const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error('TTS request timeout - falling back to browser speech')), 30000);
+      setTimeout(() => reject(new Error(`TTS request timeout after ${adaptiveTimeoutMs}ms - falling back to browser speech`)), adaptiveTimeoutMs);
     });
 
     try {

@@ -2966,15 +2966,17 @@ useEffect(() => {
       }
     } else {
       try {
-        setIsAudioLoading(true);
-        await audioEngineRef.current.charlotteReadStory(currentStoryText || "", onWordHighlight);
-        // State will be updated via callback, but ensure it's set for immediate feedback
-        setIsAudioPlaying(true);
+        // Set playing state BEFORE starting audio for immediate Stop button visibility
         setIsAudioLoading(false);
+        setIsAudioPlaying(true);
+        
+        await audioEngineRef.current.charlotteReadStory(currentStoryText || "", onWordHighlight);
+        
         if (!isPremium) setAudioPlayedPage(currentPage);
       } catch (error) {
         DebugLogger.warn('audio', 'Dock play failed', error);
-        setIsAudioPlaying(false); // Reset on error
+        // Revert state on error
+        setIsAudioPlaying(false);
         setIsAudioLoading(false);
       }
     }

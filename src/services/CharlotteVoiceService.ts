@@ -68,20 +68,13 @@ export class CharlotteVoiceService {
         detail: { system: 'charlotte-story', priority: 4, source: 'story-reading' } 
       }));
 
-      // 15-second timeout for story reading (balanced between 8s interactive and 30s ultimate failsafe)
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Story reading timeout after 15 seconds')), 15000);
-      });
-
+      // CRITICAL: No timeout here - managed by SmartElevenLabsTTS (adaptive 15-30s)
       // Use synchronized TTS for story reading (maintains word timing sophistication)
-      const result = await Promise.race([
-        SynchronizedElevenLabsTTS.generateSynchronizedSpeech(
-          text, 
-          'conversation', // Natural conversation tone for story reading
-          CharlotteVoiceService.charlotteVoiceId
-        ),
-        timeoutPromise
-      ]);
+      const result = await SynchronizedElevenLabsTTS.generateSynchronizedSpeech(
+        text, 
+        'conversation', // Natural conversation tone for story reading
+        CharlotteVoiceService.charlotteVoiceId
+      );
 
       this.wordTimings = result.wordTimings;
       this.onWordHighlight = onWordHighlight;
@@ -182,16 +175,8 @@ export class CharlotteVoiceService {
           break;
       }
 
-      // 8-second timeout for interactive requests
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Charlotte interactive timeout - using browser fallback')), 8000);
-      });
-
-      // Use fast direct TTS through SmartElevenLabsTTS
-      const audioBuffer = await Promise.race([
-        SmartElevenLabsTTS.generateSpeech(finalText, ttsContext, CharlotteVoiceService.charlotteVoiceId),
-        timeoutPromise
-      ]);
+      // CRITICAL: No timeout here - managed by SmartElevenLabsTTS (adaptive 15-30s)
+      const audioBuffer = await SmartElevenLabsTTS.generateSpeech(finalText, ttsContext, CharlotteVoiceService.charlotteVoiceId);
 
       await this.playCharlotteAudio(audioBuffer, false);
       

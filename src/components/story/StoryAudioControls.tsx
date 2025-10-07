@@ -61,6 +61,8 @@ export const StoryAudioControls: React.FC<StoryAudioControlsProps> = ({
   return (
     <SynchronizedAudioControls
       text={currentStoryText}
+      userInfo={userInfo}
+      isPremium={isPremium}
       onPlayingChange={(playing) => onAudioStateChange(playing, false)}
       onWordHighlight={handleWordHighlight}
     />

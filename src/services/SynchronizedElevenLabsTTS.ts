@@ -34,150 +34,83 @@ export class SynchronizedElevenLabsTTS {
     context: 'conversation' | 'learning' = 'conversation',
     voiceId: string = 'XB0fDUnXU5powFXDhCwa'
   ): Promise<SynchronizedTTSResult> {
-    // CRITICAL: Check offline before attempting API call
-    if (!navigator.onLine) {
-      DebugLogger.logToDebugMonitorOnly('audio', '🔌 Offline detected - using browser speech immediately');
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.rate = 0.8;
-        utterance.pitch = 1.0;
-        utterance.volume = 0.9;
-        window.speechSynthesis.speak(utterance);
-      }
-      throw new Error('Offline - browser speech used');
-    }
+    // CRITICAL: No timeout management here - SmartElevenLabsTTS is the SOLE timeout authority (adaptive 15-30s)
+    // This service focuses purely on TTS generation + word timing conversion
     
     DebugLogger.log('audio', `🔊 Synchronized TTS: "${text}" [Context: ${context}]`);
 
-    // Add timeout and network check
-    const startTime = Date.now();
-    let retries = 0;
-    const maxRetries = 0; // Fail-fast approach
-    const maxTimeoutMs = 10000;
-
-    while (retries <= maxRetries) {
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('TTS request timeout')), maxTimeoutMs - (Date.now() - startTime));
+    try {
+      DebugLogger.log('audio', 'TTS request starting', {
+        text: text.substring(0, 50) + '...',
+        context,
+        voiceId
       });
 
-      try {
-        DebugLogger.log('audio', `TTS request attempt ${retries + 1}/${maxRetries + 1}`, {
-          text: text.substring(0, 50) + '...',
+      const { data, error } = await supabase.functions.invoke('elevenlabs-tts-smart', {
+        body: {
+          text,
+          voice_id: voiceId,
           context,
-          voiceId,
-          timeoutMs: maxTimeoutMs - (Date.now() - startTime)
+          useTimestamps: true
+        }
+      });
+
+      DebugLogger.log('audio', 'ElevenLabs TTS Response received', {
+        hasData: !!data,
+        error: error?.message,
+        dataKeys: data ? Object.keys(data) : [],
+        hasAudioContent: !!(data?.audioContent),
+        hasAudioBase64: !!(data?.audio_base64),
+        responseSize: data ? JSON.stringify(data).length : 0
+      });
+
+      if (error) {
+        DebugLogger.error('audio', '❌ Synchronized TTS API Error', {
+          error: error.message,
+          context,
+          text: text.substring(0, 100)
         });
-
-        const { data, error } = await Promise.race([
-          supabase.functions.invoke('elevenlabs-tts-smart', {
-            body: {
-              text,
-              voice_id: voiceId,
-              context,
-              useTimestamps: true
-            }
-          }),
-          timeoutPromise
-        ]);
-
-        DebugLogger.log('audio', 'ElevenLabs TTS Response received', {
-          hasData: !!data,
-          error: error?.message,
-          dataKeys: data ? Object.keys(data) : [],
-          hasAudioContent: !!(data?.audioContent),
-          hasAudioBase64: !!(data?.audio_base64),
-          responseSize: data ? JSON.stringify(data).length : 0
-        });
-
-        if (error) {
-          DebugLogger.error('audio', '❌ Synchronized TTS API Error', {
-            error: error.message,
-            attempt: retries + 1,
-            context,
-            text: text.substring(0, 100)
-          });
-          
-          if (retries < maxRetries) {
-            retries++;
-            await new Promise(resolve => setTimeout(resolve, Math.pow(2, retries) * 1000));
-            continue;
-          }
-          throw new Error(`Synchronized TTS failed after ${maxRetries + 1} attempts: ${error.message}`);
-        }
-
-        // Handle both response formats: audioContent (old) and audio_base64 (new)
-        const audioData = data?.audioContent || data?.audio_base64;
-        if (!audioData) {
-          const errorMsg = `No audio content received. Response structure: ${JSON.stringify(data)}`;
-          DebugLogger.error('audio', errorMsg, {
-            dataKeys: data ? Object.keys(data) : [],
-            dataStructure: data,
-            attempt: retries + 1
-          });
-          
-          if (retries < maxRetries) {
-            retries++;
-            await new Promise(resolve => setTimeout(resolve, Math.pow(2, retries) * 1000));
-            continue;
-          }
-          throw new Error(errorMsg);
-        }
-
-        DebugLogger.log('audio', '✅ Audio content received successfully', {
-          audioDataLength: audioData.length,
-          attempt: retries + 1,
-          totalTime: Date.now() - startTime
-        });
-
-        // Convert base64 audio to ArrayBuffer
-        const binaryString = atob(audioData);
-        const bytes = new Uint8Array(binaryString.length);
-        for (let i = 0; i < binaryString.length; i++) {
-          bytes[i] = binaryString.charCodeAt(i);
-        }
-
-        // Convert character-level timing to word-level timing using unified tokenization
-        const wordTimings = data.alignment 
-          ? this.convertCharacterTimingsToWords(text, data.alignment)
-          : this.generateFallbackWordTimings(UnifiedTokenizationService.getWords(text));
-
-        DebugLogger.log('audio', `✅ Synchronized TTS Success: ${bytes.byteLength} bytes, ${wordTimings.length} word timings`);
-        
-        return {
-          audioBuffer: bytes.buffer,
-          wordTimings
-        };
-
-      } catch (timeoutError) {
-        DebugLogger.logToDebugMonitorOnly('audio', `TTS request timeout/error on attempt ${retries + 1}`, {
-          error: timeoutError.message,
-          timeElapsed: Date.now() - startTime,
-          attempt: retries + 1
-        });
-        
-        if (retries < maxRetries && (Date.now() - startTime) < maxTimeoutMs * 0.8) {
-          retries++;
-          await new Promise(resolve => setTimeout(resolve, Math.pow(2, retries) * 1000));
-          continue;
-        }
-        
-        // Final fallback - browser speech synthesis
-        DebugLogger.logToDebugMonitorOnly('audio', 'All TTS attempts failed, falling back to browser speech');
-        if ('speechSynthesis' in window) {
-          window.speechSynthesis.cancel();
-          const utterance = new SpeechSynthesisUtterance(text);
-          utterance.rate = 0.8;
-          utterance.pitch = 1.0;
-          utterance.volume = 0.9;
-          window.speechSynthesis.speak(utterance);
-        }
-        
-        throw timeoutError;
+        throw new Error(`Synchronized TTS failed: ${error.message}`);
       }
-    }
 
-     throw new Error('Maximum retries exceeded');
+      // Handle both response formats: audioContent (old) and audio_base64 (new)
+      const audioData = data?.audioContent || data?.audio_base64;
+      if (!audioData) {
+        const errorMsg = `No audio content received. Response structure: ${JSON.stringify(data)}`;
+        DebugLogger.error('audio', errorMsg, {
+          dataKeys: data ? Object.keys(data) : [],
+          dataStructure: data
+        });
+        throw new Error(errorMsg);
+      }
+
+      DebugLogger.log('audio', '✅ Audio content received successfully', {
+        audioDataLength: audioData.length
+      });
+
+      // Convert base64 audio to ArrayBuffer
+      const binaryString = atob(audioData);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+
+      // Convert character-level timing to word-level timing using unified tokenization
+      const wordTimings = data.alignment 
+        ? this.convertCharacterTimingsToWords(text, data.alignment)
+        : this.generateFallbackWordTimings(UnifiedTokenizationService.getWords(text));
+
+      DebugLogger.log('audio', `✅ Synchronized TTS Success: ${bytes.byteLength} bytes, ${wordTimings.length} word timings`);
+      
+      return {
+        audioBuffer: bytes.buffer,
+        wordTimings
+      };
+
+    } catch (error) {
+      DebugLogger.error('audio', 'Synchronized TTS failed', error);
+      throw error;
+    }
   }
 
   /**

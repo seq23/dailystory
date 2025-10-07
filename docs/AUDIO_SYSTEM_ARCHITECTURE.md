@@ -1,5 +1,40 @@
 # Audio System Architecture & Recent Updates
 
+## ⚠️ TIMEOUT AUTHORITY: CRITICAL ARCHITECTURE RULE
+
+**SINGLE SOURCE OF TRUTH FOR ALL TTS TIMEOUTS:**
+
+- **SmartElevenLabsTTS** is the **ONLY** service that implements timeout logic
+- **Adaptive timeout:** 15s for good connections (4g/5g), 25s for 3g, 30s for 2g/slow-2g
+- **ALL other services** (SynchronizedElevenLabsTTS, CharlotteVoiceService) must **NEVER** add their own timeouts
+- **Why:** Multiple timeout layers create race conditions where the shortest timeout always wins, causing premature failures
+
+**FORBIDDEN PATTERNS:**
+```typescript
+// ❌ NEVER DO THIS in any service other than SmartElevenLabsTTS:
+const timeoutPromise = new Promise((_, reject) => {
+  setTimeout(() => reject(new Error('timeout')), SOME_MS);
+});
+await Promise.race([someOperation(), timeoutPromise]);
+```
+
+**CORRECT PATTERN:**
+```typescript
+// ✅ ONLY in SmartElevenLabsTTS:
+const adaptiveTimeoutMs = AdaptiveTimeout.getTTSTimeout(); // 15-30s based on network
+const timeoutPromise = new Promise((_, reject) => {
+  setTimeout(() => reject(new Error('timeout')), adaptiveTimeoutMs);
+});
+await Promise.race([ttsRequest(), timeoutPromise]);
+```
+
+**Regression Prevention:**
+- Automated test: `src/__tests__/audioTimeout.test.ts` validates single-timeout architecture
+- This documentation serves as the authoritative reference
+- Code comments in all services enforce this rule
+
+---
+
 ## Recent Critical Fixes
 
 ### Reading Coach Double Audio Fix (2025-10-04) ✅
