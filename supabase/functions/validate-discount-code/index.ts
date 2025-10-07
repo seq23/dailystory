@@ -16,7 +16,7 @@ serve(async (req) => {
     const { code } = await req.json();
     
     if (!code || typeof code !== 'string') {
-      return createDynamicCorsErrorResponse('Discount code is required', null, 400);
+      return createDynamicCorsErrorResponse('Discount code is required', req, 400);
     }
 
     // Create payment-specific Supabase client (Tier 1 + Tier 2 only)
@@ -57,10 +57,10 @@ serve(async (req) => {
         return createDynamicCorsResponse({ 
           valid: false, 
           message: 'Invalid or expired discount code' 
-        }, undefined, 400);
+        }, req, 400);
       }
       console.error('[Validate Discount] Database error:', error);
-      return createDynamicCorsErrorResponse('Error validating discount code', undefined, 500);
+      return createDynamicCorsErrorResponse('Error validating discount code', req, 500);
     }
 
     if (!discountCode) {
@@ -68,7 +68,7 @@ serve(async (req) => {
       return createDynamicCorsResponse({ 
         valid: false, 
         message: 'Invalid or expired discount code' 
-      }, undefined, 400);
+      }, req, 400);
     }
 
     // Check usage limits if set
@@ -77,7 +77,7 @@ serve(async (req) => {
       return createDynamicCorsResponse({
         valid: false,
         message: 'This discount code has reached its usage limit'
-      }, null);
+      }, req, 400);
     }
 
     console.log(`[Validate Discount] Code valid: ${code} - ${discountCode.description}`);
@@ -88,10 +88,10 @@ serve(async (req) => {
       code: discountCode.code,
       description: discountCode.description,
       duration_days: discountCode.duration_days
-    }, undefined, 200);
+    }, req, 200);
 
   } catch (error) {
     console.error('[Validate Discount] Error:', error);
-    return createDynamicCorsErrorResponse(error instanceof Error ? error.message : 'Internal server error', undefined, 500);
+    return createDynamicCorsErrorResponse(error instanceof Error ? error.message : 'Internal server error', req, 500);
   }
 });
