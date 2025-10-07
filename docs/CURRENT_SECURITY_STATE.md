@@ -111,6 +111,84 @@ SET search_path TO 'public'
 
 ---
 
+## Service Role Key Architecture (CRITICAL)
+
+### How Edge Functions Bypass RLS
+
+**All payment-related edge functions use `SUPABASE_SERVICE_ROLE_KEY`**, which automatically bypasses ALL RLS policies:
+
+**Edge Functions Using Service Role Key**:
+- `check-subscription`
+- `sync-subscription-status`
+- `create-checkout`
+- `activate-discount-code`
+- `apply-discount-code`
+- `customer-portal`
+
+**Key Architecture Principle**:
+```typescript
+// Edge function initialization
+const supabase = createClient<Database>(
+  Deno.env.get('SUPABASE_URL')!,
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!  // ⚠️ Bypasses ALL RLS
+);
+```
+
+**What This Means**:
+- ✅ Service role key has **full database access** (no RLS enforcement)
+- ✅ Edge functions handle their own authorization logic
+- ✅ RLS policies protect **client-side queries only** (anonymous key)
+- ⚠️ Adding service role exceptions to RLS policies is **redundant and unnecessary**
+
+### Security Architecture Layers
+
+#### Layer 1: Client-Side Protection (RLS Policies)
+```sql
+-- Protects direct client queries using anonymous key
+CREATE POLICY "subscribers_lean_access" 
+ON public.subscribers 
+FOR ALL
+USING ((auth.uid() = user_id) AND (auth.uid() IS NOT NULL));
+```
+**Protects Against**: Users querying database directly from frontend
+
+#### Layer 2: Edge Function Protection (Authorization Logic)
+```typescript
+// Edge functions handle their own security
+const { data: { user } } = await supabase.auth.getUser();
+if (!user) throw new Error('Unauthorized');
+
+// Service role key bypasses RLS automatically
+const { data } = await supabase
+  .from('subscribers')
+  .select('*')
+  .eq('user_id', user.id);  // Manual authorization check
+```
+**Protects Against**: Unauthorized edge function calls
+
+### Why This Design Is Correct
+
+1. **Separation of Concerns**:
+   - RLS = Client-side data access control
+   - Service role = Backend operations with manual authorization
+
+2. **No Policy Conflicts**:
+   - Adding service role to RLS policy would be redundant
+   - Service role already bypasses ALL policies by design
+
+3. **Clear Authorization**:
+   - Edge functions explicitly validate user identity
+   - Authorization logic is visible and auditable in code
+
+### Common Misconception
+
+❌ **WRONG**: "Edge functions need service role exception in RLS policy"  
+✅ **CORRECT**: "Service role key automatically bypasses all RLS policies"
+
+**If edge functions are failing, the issue is NOT the RLS policy** - it's authorization logic within the edge function itself.
+
+---
+
 ## Live Verification Results (2025-10-07)
 
 ### Tests Performed
