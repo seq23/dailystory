@@ -340,7 +340,14 @@ Setting: magical forest AND cozy cottage --> Enter`}
             </div>
           )}
           
-          <p className="text-xs text-muted-foreground">This format helps our system provide best results.</p>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            <span className="font-medium">This format helps our system provide best results:</span><br/>
+            <span className="text-muted-foreground/80">
+              Themes: underwater adventure AND friendship →Enter<br/>
+              Setting: Pacific Ocean AND Hawaii →Enter<br/>
+              Characters: story about a dolphin named Brian →Enter
+            </span>
+          </p>
         </div>
         <div className="space-y-2 mt-4">
           <label htmlFor="target-vocab" className="text-sm font-medium text-muted-foreground">
