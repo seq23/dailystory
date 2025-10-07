@@ -171,3 +171,201 @@ export const getCulturalBundle = () => {
     culturalArrays: getCulturalContextArrays()
   };
 };
+
+// ============================================================================
+// Session-Seeded Hair & Skin Mapping Functions
+// ============================================================================
+// 1:1 PARITY with StaticDataCache.js - DO NOT MODIFY WITHOUT SYNCING BOTH FILES
+
+// ============= HAIR BY SKIN TONE MAPPING - 73 VARIATIONS =============
+export const HAIR_BY_SKIN_TONE: Record<string, string[]> = {
+  'pale': [
+    'strawberry blonde hair', 'golden red hair', 'auburn curls', 'copper hair',
+    'reddish brown hair', 'ginger hair', 'red-gold hair', 'russet hair',
+    'mahogany red hair', 'burgundy hair', 'crimson hair', 'rose gold hair',
+    'amber red hair', 'cinnamon red hair'
+  ],
+  'light': [
+    'platinum blonde hair', 'golden blonde hair', 'honey blonde hair', 'ash blonde hair',
+    'sandy blonde hair', 'wheat blonde hair', 'butter blonde hair', 'cream blonde hair',
+    'champagne blonde hair', 'vanilla blonde hair', 'pearl blonde hair', 'silver blonde hair',
+    'moonlight blonde hair', 'sunshine blonde hair', 'caramel blonde hair'
+  ],
+  'medium': [
+    'chestnut brown hair', 'chocolate brown hair', 'coffee brown hair', 'walnut brown hair',
+    'hazelnut brown hair', 'mahogany brown hair', 'amber brown hair', 'bronze brown hair',
+    'toffee brown hair', 'mocha brown hair', 'caramel brown hair', 'russet brown hair',
+    'cedar brown hair', 'oak brown hair', 'maple brown hair'
+  ],
+  'olive': [
+    'jet black hair', 'raven black hair', 'midnight black hair', 'obsidian hair',
+    'coal black hair', 'ebony hair', 'onyx hair', 'charcoal hair',
+    'deep black hair', 'ink black hair', 'shadow black hair', 'pitch black hair',
+    'dark espresso hair', 'blackest brown hair'
+  ],
+  'dark': [
+    'beautiful dark hair', 'rich black hair', 'lustrous dark hair', 'silky black hair',
+    'gorgeous dark hair', 'shining black hair', 'magnificent dark hair'
+  ]
+};
+
+// ============= SKIN TONE VARIATIONS =============
+const PALE_SKIN_TONES = [
+  'porcelain skin with cool undertones',
+  'fair ivory complexion with pink undertones',
+  'alabaster skin with neutral undertones',
+  'creamy pale skin with warm undertones',
+  'pearl white complexion with subtle pink flush',
+  'milky white skin with cool undertones',
+  'fair skin with peachy undertones',
+  'pale rose-tinted complexion',
+  'translucent fair skin with blue undertones',
+  'cream-colored skin with golden undertones',
+  'snow white complexion with neutral base',
+  'fair skin with subtle yellow undertones'
+];
+
+const LIGHT_SKIN_TONES = [
+  'light peachy skin tone with warm glow',
+  'soft beige complexion with pink undertones',
+  'warm vanilla skin with golden undertones',
+  'light cream complexion with neutral base',
+  'pale golden skin with honey undertones',
+  'light rose-beige skin tone',
+  'champagne-colored complexion',
+  'light ivory skin with warm peachy glow',
+  'soft bisque skin tone with pink flush',
+  'light caramel undertones with creamy base',
+  'warm light tan with golden highlights',
+  'light sand-colored skin with neutral undertones'
+];
+
+const MEDIUM_SKIN_TONES = [
+  'warm peachy medium skin tone',
+  'golden medium complexion with honey undertones',
+  'medium beige skin with warm caramel highlights',
+  'soft medium tan with golden glow',
+  'medium caramel skin tone with warm undertones',
+  'warm medium brown with peachy undertones',
+  'medium golden skin with bronze highlights',
+  'caramel medium complexion with honey base',
+  'medium wheat-colored skin with warm glow',
+  'golden medium tan with amber undertones',
+  'medium olive-beige with warm undertones',
+  'warm medium skin with cinnamon undertones'
+];
+
+const OLIVE_SKIN_TONES = [
+  'light olive complexion with green undertones',
+  'warm olive skin with golden undertones',
+  'medium olive with bronze highlights',
+  'golden olive complexion with warm glow',
+  'olive-beige skin with neutral undertones',
+  'warm olive-tan with amber undertones',
+  'deep olive with rich warm undertones',
+  'olive-brown complexion with golden base',
+  'Mediterranean olive skin with sun-kissed glow',
+  'olive-caramel with warm honey undertones',
+  'rich olive complexion with bronze undertones',
+  'dark olive skin with deep golden highlights'
+];
+
+export const AFRICAN_AMERICAN_FACIAL_FEATURES = [
+  // Light to Medium Tones (12 entries)
+  'light brown skin tone with warm brown eyes and a bright infectious smile',
+  'light brown skin tone with hazel-green eyes and gentle dimples when smiling',
+  'light brown skin tone with amber eyes and expressive eyebrows',
+  'caramel skin tone with deep chocolate eyes and a confident cheerful expression',
+  'caramel skin tone with hazel eyes with golden flecks and soft rounded cheeks',
+  'caramel skin tone with bright brown eyes and an inquisitive thoughtful look',
+  'honey complexion with golden brown eyes and a playful mischievous grin',
+  'honey complexion with warm brown eyes and graceful bone structure',
+  'honey complexion with hazel eyes and a warm welcoming expression',
+  'warm beige skin with dark honey-colored eyes and animated joyful features',
+  'warm beige skin with hazel-green eyes and gentle dimples',
+  'light caramel complexion with rich coffee-colored eyes and expressive eyebrows',
+  
+  // Medium Tones (12 entries)
+  'medium brown skin tone with warm brown eyes and a bright infectious smile',
+  'medium brown skin tone with hazel eyes with golden flecks and gentle dimples when smiling', 
+  'medium brown skin tone with deep amber eyes and expressive eyebrows',
+  'cocoa skin tone with dark chocolate eyes and a confident cheerful expression',
+  'cocoa skin tone with hazel-green eyes and soft rounded cheeks',
+  'cocoa skin tone with bright brown eyes and an inquisitive thoughtful look',
+  'warm brown complexion with golden brown eyes and a playful mischievous grin',
+  'warm brown complexion with rich coffee-colored eyes and graceful bone structure',
+  'chestnut skin tone with hazel eyes and a warm welcoming expression',
+  'chestnut skin tone with warm brown eyes and animated joyful features',
+  'amber skin tone with dark honey-colored eyes and gentle dimples',
+  'amber skin tone with hazel-green eyes and expressive eyebrows',
+  
+  // Medium-Dark to Dark Tones (12 entries)
+  'deep brown skin tone with warm brown eyes and a bright infectious smile',
+  'deep brown skin tone with dark chocolate eyes and gentle dimples when smiling',
+  'deep brown skin tone with deep amber eyes and expressive eyebrows',
+  'rich chocolate complexion with hazel eyes with golden flecks and a confident cheerful expression',
+  'rich chocolate complexion with bright brown eyes and soft rounded cheeks',
+  'rich chocolate complexion with golden brown eyes and an inquisitive thoughtful look',
+  'dark brown skin tone with rich coffee-colored eyes and a playful mischievous grin',
+  'dark brown skin tone with warm brown eyes and graceful bone structure',
+  'ebony skin tone with dark honey-colored eyes and a warm welcoming expression',
+  'ebony skin tone with hazel-green eyes and animated joyful features',
+  'deep mahogany complexion with hazel eyes and gentle dimples',
+  'deep mahogany complexion with deep amber eyes and expressive eyebrows'
+];
+
+// ============= HELPER FUNCTIONS =============
+
+// Simple PRNG for deterministic selection
+function seededRandom(seed: string): number {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    const char = seed.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return Math.abs(hash % 1000) / 1000;
+}
+
+export function getHairBySkintone(skinTone: string, sessionId: string): string {
+  const normalizedSkinTone = (skinTone || 'medium').toLowerCase();
+  
+  // Map skin tone variations to our 5 categories
+  let mappedTone = 'medium';
+  if (['pale'].includes(normalizedSkinTone)) {
+    mappedTone = 'pale';
+  } else if (['light', 'lighter', 'fair'].includes(normalizedSkinTone)) {
+    mappedTone = 'light';
+  } else if (['olive'].includes(normalizedSkinTone)) {
+    mappedTone = 'olive';
+  } else if (['dark', 'darker', 'deep', 'rich'].includes(normalizedSkinTone)) {
+    mappedTone = 'dark';
+  }
+  
+  const hairOptions = HAIR_BY_SKIN_TONE[mappedTone] || HAIR_BY_SKIN_TONE['medium'];
+  const index = Math.floor(seededRandom(sessionId) * hairOptions.length);
+  return hairOptions[index];
+}
+
+export function getSkinBySkintone(skinTone: string, sessionId: string): string {
+  const normalizedSkinTone = (skinTone || 'medium').toLowerCase();
+  
+  // Use African American features for dark skin tones
+  if (normalizedSkinTone === 'dark' || normalizedSkinTone === 'darker') {
+    const index = Math.floor(seededRandom(sessionId) * AFRICAN_AMERICAN_FACIAL_FEATURES.length);
+    return AFRICAN_AMERICAN_FACIAL_FEATURES[index];
+  }
+  
+  // Use specific skin tone descriptions for other tones
+  let skinOptions = MEDIUM_SKIN_TONES;
+  if (normalizedSkinTone === 'pale') {
+    skinOptions = PALE_SKIN_TONES;
+  } else if (['light', 'lighter', 'fair'].includes(normalizedSkinTone)) {
+    skinOptions = LIGHT_SKIN_TONES;
+  } else if (normalizedSkinTone === 'olive') {
+    skinOptions = OLIVE_SKIN_TONES;
+  }
+  
+  const index = Math.floor(seededRandom(sessionId + '_skin') * skinOptions.length);
+  return skinOptions[index];
+}

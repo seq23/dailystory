@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-10-06T18:30:00Z - Inline CORS (zero imports, boot-safe)
+// DEPLOY_MARKER: 2025-10-07T13:30:00Z - Fixed returnedSeed scope + removed StaticDataCache fallback
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -338,25 +338,7 @@ async function generateCompleteVisualSchema(
         console.log(`✅ Generated complete structuredAvatarData via CharacterConsistencyService:`, structuredAvatarData);
       } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      console.warn(`⚠️ [DM] CCS unavailable (NON-FATAL), using emergency hair fallback:`, errorMessage);
-      
-      // ✅ CRASH-PROOF: Simplified fallback - skip StaticDataCache, go straight to hardcoded
-      try {
-        const { getHairBySkintone, getSkinBySkintone } = await import('../_shared/StaticDataCache.js');
-        const skinTone = userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium';
-        const hairColor = getHairBySkintone(skinTone, sessionId);
-        const skinFeatures = getSkinBySkintone(skinTone, sessionId);
-        
-        structuredAvatarData = {
-          resolvedSkinTone: skinTone,
-          hairColor: hairColor || emergencyHairFallback(skinTone),
-          skinFeatures: skinFeatures || 'medium skin tone with brown eyes',
-          ethnicity: 'Euro-American',
-          source: 'static_data_cache'
-        };
-        console.log(`✅ [AISCHEMA_FALLBACK] source=static_data_cache, hairColor=${structuredAvatarData.hairColor}`);
-      } catch (staticError) {
-        console.warn(`⚠️ [DM] StaticDataCache also failed (NON-FATAL), using hardcoded emergency fallback:`, staticError);
+      console.warn(`⚠️ [DM] CCS unavailable (NON-FATAL), using hardcoded emergency fallback:`, errorMessage);
         const fallbackSkinTone = userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium';
         
         // CRITICAL: Derive ethnicity from skinTone, not hardcoded 'Euro-American'
@@ -1248,6 +1230,7 @@ serve(async (req) => {
 
     // PHASE 3: Handle Direct Mode vs Scene-Only Mode
     let imageURL: string | undefined;
+    let returnedSeed: number | null = null;  // ✅ Declare at function scope for proper scoping
     let tier: string;
     let runwareDebugData: any = {};
 
