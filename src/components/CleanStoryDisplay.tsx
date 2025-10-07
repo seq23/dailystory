@@ -2159,19 +2159,43 @@ const initializeStory = async () => {
         return;
       }
       
-      const result = await NetflixStyleStoryService.generateCompleteStory(effectiveUser);
-      
-      DebugLogger.log('story', 'DIAGNOSTIC: NetflixStyleStoryService result received', {
-        hasError: !!result.error,
-        pagesCount: result.content?.length,
-        pageCount: result.pageCount,
-        sampleContent: result.content?.[0]?.substring(0, 50)
-      });
+      let result;
+      try {
+        result = await NetflixStyleStoryService.generateCompleteStory(effectiveUser);
+        
+        DebugLogger.log('story', 'DIAGNOSTIC: NetflixStyleStoryService result received', {
+          hasError: !!result.error,
+          pagesCount: result.content?.length,
+          pageCount: result.pageCount,
+          sampleContent: result.content?.[0]?.substring(0, 50)
+        });
 
-      if (result.error) {
-        DebugLogger.error('story', 'DIAGNOSTIC: Story generation returned error', result.error);
-        setError(result.error);
-        return;
+        // If result has error property, treat it as exception
+        if (result.error) {
+          throw new Error(result.error);
+        }
+      } catch (error) {
+        DebugLogger.error('story', 'CRITICAL: Guest story generation failed - showing emergency content', { error });
+        
+        // Generate emergency content and display it as a normal story
+        const emergencyPages = await ErrorHandlingManager.getEmergencyContent(effectiveUser);
+        
+        // Create a valid result object with emergency content
+        result = {
+          content: emergencyPages,
+          pageCount: emergencyPages.length,
+          source: 'emergency' as const
+        };
+        
+        // Show friendly toast instead of blocking error
+        toast({
+          title: "📖 System Recovery Mode",
+          description: "Reading backup content while our story magic recharges!",
+          duration: 5000,
+        });
+        
+        // Set global emergency source tracking
+        (globalThis as any).__LAST_STORY_SOURCE__ = 'emergency';
       }
       
       DebugLogger.log('story', 'DIAGNOSTIC: Pre-processing story for placeholders BEFORE setStory', {
