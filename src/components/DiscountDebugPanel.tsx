@@ -21,9 +21,11 @@ export const DiscountDebugPanel = () => {
       if (result.success) {
         // Refresh subscription status
         await EnhancedSubscriptionManager.forceRefresh();
+        
+        // Give cache time to update, then reload
         setTimeout(() => {
           window.location.reload();
-        }, 2000);
+        }, 1500);
       }
     } catch (error) {
       setMessage(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);

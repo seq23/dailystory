@@ -19,6 +19,11 @@ export const activateSequoiaDiscount = async () => {
     
     if (data?.success) {
       console.log("✅ SEQUOIA90 discount code activated successfully:", data.message);
+      
+      // Force subscription cache refresh
+      const { EnhancedSubscriptionManager } = await import("@/services/enhancedSubscriptionManager");
+      await EnhancedSubscriptionManager.forceRefresh();
+      
       return { 
         success: true, 
         message: data.message,
