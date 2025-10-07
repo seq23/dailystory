@@ -203,6 +203,9 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   // Page-specific generation lock to prevent race conditions
   const [generatingPages, setGeneratingPages] = useState<Set<number>>(new Set());
   
+  // Stable reference for generateImageForCurrentPage to avoid ReferenceError in event listeners
+  const generateImageRef = useRef<(() => Promise<void>) | null>(null);
+  
   // ANTI-FLICKER: Preload images-disabled placeholder to prevent network delay flicker
   useEffect(() => {
     const img = new Image();
@@ -2744,18 +2747,21 @@ const initializeStory = async () => {
     }
   };
 
+  // Update ref for story:stabilized listener to avoid ReferenceError
+  generateImageRef.current = generateImageForCurrentPage;
+
   // FLICKER FIX: Trigger image generation ONLY after React has completed story state update
   useEffect(() => {
     const handleStoryStabilized = () => {
       if (imagesEnabled && !pageImages[currentPage] && displayedStory[safeCurrentPage]) {
         DebugLogger.log('image', '🖼️ story:stabilized triggered - generating image with FINAL story');
-        generateImageForCurrentPage();
+        generateImageRef.current?.();
       }
     };
 
     window.addEventListener('story:stabilized', handleStoryStabilized);
     return () => window.removeEventListener('story:stabilized', handleStoryStabilized);
-  }, [currentPage, imagesEnabled, pageImages, displayedStory, safeCurrentPage, generateImageForCurrentPage]);
+  }, [currentPage, imagesEnabled, pageImages, displayedStory, safeCurrentPage]);
 
   // Generate illustration for any page index (batch-safe, no UI spinner)
   const generateImageForIndex = async (index: number) => {
