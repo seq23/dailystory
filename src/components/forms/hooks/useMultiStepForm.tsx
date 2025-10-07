@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { LeanErrorService } from "@/utils/LeanErrorService";
+import { DebugLogger } from "@/services/DebugLogger";
 import { useValidationOnSubmit } from "@/hooks/useValidationOnSubmit";
 import { DifficultyLevelMapper } from "@/services/DifficultyLevelMapper";
 import type { UserInfo, DifficultyLevel } from "@/types";
@@ -131,12 +131,12 @@ export const useMultiStepForm = () => {
     // For analytics/logging only, derive backend difficulty
     const backendDifficulty: DifficultyLevel = DifficultyLevelMapper.toBackend(frontendDifficultyLevel);
     
-    LeanErrorService.logError({
+    DebugLogger.log('story', 'Form submission success', {
       frontendDifficultyLevel,
       backendDifficulty,
       age: formData.age,
       grade: formData.grade
-    }, 'form_submission_success');
+    });
     
     // Return userInfo with FRONTEND difficulty value
     return { ...formData, specialRequest: combinedSpecialRequest, difficultyLevel: frontendDifficultyLevel };

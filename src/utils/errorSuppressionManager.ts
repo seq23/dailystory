@@ -245,6 +245,16 @@ class ErrorSuppressionManager {
       return true;
     }
 
+    // Form analytics and logging messages (should use DebugLogger, not console.error)
+    if (fullMessage.includes('form_submission_success') ||
+        fullMessage.includes('form_submission') ||
+        fullMessage.includes('form_validation') ||
+        fullMessage.includes('form_analytics') ||
+        fullMessage.includes('[error] form_')) {
+      this.incrementErrorCount('Form Analytics Messages');
+      return true;
+    }
+
     // Backend tier checking and WebSocket messages
     if (fullMessage.includes('tier success') ||
         fullMessage.includes('websocket') ||
@@ -309,15 +319,19 @@ class ErrorSuppressionManager {
   enable() {
     if (this.suppressionEnabled) return;
 
+    const originalError = this.originalConsoleError;
+    const originalWarn = this.originalConsoleWarn;
+    const shouldSuppressFn = this.shouldSuppress.bind(this);
+
     console.error = (message: any, ...args: any[]) => {
-      if (!this.shouldSuppress(String(message), ...args)) {
-        this.originalConsoleError(message, ...args);
+      if (!shouldSuppressFn(String(message), ...args)) {
+        originalError(message, ...args);
       }
     };
 
     console.warn = (message: any, ...args: any[]) => {
-      if (!this.shouldSuppress(String(message), ...args)) {
-        this.originalConsoleWarn(message, ...args);
+      if (!shouldSuppressFn(String(message), ...args)) {
+        originalWarn(message, ...args);
       }
     };
 
