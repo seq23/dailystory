@@ -48,15 +48,23 @@ serve(async (req) => {
       .select('*')
       .eq('code', code.toUpperCase())
       .eq('active', true)
-      .maybeSingle();
+      .single();
 
     if (error) {
+      // Handle "no rows returned" error separately
+      if (error.code === 'PGRST116') {
+        console.log(`[Validate Discount] Code not found or inactive: ${code}`);
+        return createDynamicCorsResponse({ 
+          valid: false, 
+          message: 'Invalid or expired discount code' 
+        }, undefined, 400);
+      }
       console.error('[Validate Discount] Database error:', error);
       return createDynamicCorsErrorResponse('Error validating discount code', undefined, 500);
     }
 
     if (!discountCode) {
-      console.log(`[Validate Discount] Code not found or inactive: ${code}`);
+      console.log(`[Validate Discount] Code not found: ${code}`);
       return createDynamicCorsResponse({ 
         valid: false, 
         message: 'Invalid or expired discount code' 

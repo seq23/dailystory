@@ -19,6 +19,7 @@ import { VocabularyDashboard } from "@/components/VocabularyDashboard";
 import { DismissibleSystemStatus } from "@/components/DismissibleSystemStatus";
 import { NonBlockingSubscriptionBanner } from "@/components/NonBlockingSubscriptionBanner";
 import { EmailVerificationBanner } from "@/components/EmailVerificationBanner";
+import { DiscountActivationBanner } from "@/components/DiscountActivationBanner";
 import { useSecurityMonitoring } from "@/hooks/useSecurityMonitoring";
 import { BookOpen, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -157,7 +158,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
       // LOCAL-FIRST: Check database directly with timeout (no network dependency)
       const dbCheckPromise = supabase
         .from('subscribers')
-        .select('subscribed, subscription_tier, subscription_end, override_premium, override_end')
+        .select('subscribed, subscription_tier, subscription_end, override_premium, override_end, discount_code_pending, discount_activated')
         .eq('user_id', user.id)
         .maybeSingle();
 
@@ -169,6 +170,65 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
         dbCheckPromise,
         timeoutPromise
       ]) as any;
+
+      // AUTO-APPLY PENDING DISCOUNT CODE
+      if (!dbError && dbData && dbData.discount_code_pending && !dbData.discount_activated) {
+        DebugLogger.log('auth', 'Auto-applying pending discount code:', dbData.discount_code_pending);
+        try {
+          const session = await supabase.auth.getSession();
+          const { data: activationResult, error: activationError } = await supabase.functions.invoke('apply-discount-code', {
+            headers: {
+              Authorization: `Bearer ${session.data.session?.access_token}`,
+            },
+          });
+
+          if (!activationError && activationResult?.activated) {
+            DebugLogger.log('auth', 'Discount auto-applied successfully:', activationResult);
+            
+            // Dispatch custom event for banner display
+            window.dispatchEvent(new CustomEvent('discount-activated', { 
+              detail: {
+                code: activationResult.code,
+                description: activationResult.description,
+                endDate: activationResult.end_date,
+                durationDays: activationResult.duration_days
+              }
+            }));
+
+            // Update local state immediately
+            setIsPremium(true);
+            setSubscriptionTier('Premium');
+            setSubscriptionEnd(activationResult.end_date);
+            
+            // Re-check subscription to get fresh data
+            const { data: refreshedData } = await supabase
+              .from('subscribers')
+              .select('subscribed, subscription_tier, subscription_end, override_premium, override_end')
+              .eq('user_id', user.id)
+              .maybeSingle();
+            
+            if (refreshedData) {
+              const isSubscribed = refreshedData.subscribed;
+              const isNotExpired = !refreshedData.subscription_end || new Date(refreshedData.subscription_end) > new Date();
+              const hasOverride = refreshedData.override_premium;
+              const overrideNotExpired = !refreshedData.override_end || new Date(refreshedData.override_end) > new Date();
+              
+              const isPremiumActive = (isSubscribed && isNotExpired) || (hasOverride && overrideNotExpired);
+              
+              if (isPremiumActive) {
+                setIsPremium(true);
+                setSubscriptionTier(refreshedData.subscription_tier || 'Premium');
+                setSubscriptionEnd(refreshedData.subscription_end);
+              }
+            }
+            return;
+          } else {
+            DebugLogger.warn('auth', 'Discount auto-apply failed:', activationError);
+          }
+        } catch (autoApplyError) {
+          DebugLogger.error('auth', 'Error auto-applying discount:', autoApplyError);
+        }
+      }
 
       // Check if subscription is active (normal or override)
       if (!dbError && dbData) {
@@ -643,6 +703,12 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
             />
 
             <main className="flex-1 min-h-0 overflow-y-auto overscroll-auto mobile-scroll h-[calc(100dvh-var(--app-header-height))] p-2 sm:p-4 md:p-6">
+              {/* System status banner */}
+              <DismissibleSystemStatus />
+              
+              {/* Discount activation success banner */}
+              <DiscountActivationBanner />
+              
               {/* Subscription status banner - non-blocking */}
               <NonBlockingSubscriptionBanner userId={user.id} />
               
