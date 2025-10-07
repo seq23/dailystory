@@ -2508,7 +2508,7 @@ const initializeStory = async () => {
       
       cachedImageUrl = EnhancedImageCache.getCachedImage(
         pageText.slice(0, 120),
-        characterSessionIdValue, 
+        stableSessionId, // ✅ CRITICAL FIX: Use stableSessionId for current page cache consistency
         currentPage,
         storyId,
         storyMarkers
