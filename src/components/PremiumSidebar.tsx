@@ -131,6 +131,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
   const [imagesEnabled, setImagesEnabled] = useState<boolean>(() => {
     try { return localStorage.getItem('storyImagesEnabled') !== '0'; } catch { return true; }
   });
+  const [imageToggleFeedback, setImageToggleFeedback] = useState(false);
   const [vocabOpen, setVocabOpen] = useState(false);
 
   useEffect(() => {
@@ -203,6 +204,10 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
     setImagesEnabled(next);
     try { localStorage.setItem('storyImagesEnabled', next ? '1' : '0'); } catch {}
     window.dispatchEvent(new CustomEvent('storyImagesToggle', { detail: next }));
+    
+    // Trigger feedback animation
+    setImageToggleFeedback(true);
+    setTimeout(() => setImageToggleFeedback(false), 600);
   };
   return (
     <Sidebar className={`border-r bg-background/95 backdrop-blur-sm ${effectiveCollapsed ? "w-16 md:top-[var(--app-header-height)] md:h-[calc(100svh-var(--app-header-height))]" : "w-64"}`} collapsible="icon">
@@ -406,7 +411,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
                           <TooltipTrigger asChild>
                             <SidebarMenuButton
                               onClick={() => toggleImages()}
-                              className="flex items-center justify-center transition-colors rounded-lg hover:bg-accent hover:text-accent-foreground h-10 w-10 mx-auto"
+                              className={`flex items-center justify-center transition-colors rounded-lg hover:bg-accent hover:text-accent-foreground h-10 w-10 mx-auto ${imageToggleFeedback ? 'ring-2 ring-primary animate-pulse' : ''}`}
                               aria-label="Toggle story images"
                             >
                               <Image className="w-5 h-5 flex-shrink-0" />
@@ -438,6 +443,7 @@ export const PremiumSidebar = ({ currentView, onViewChange, userInfo, isPremium 
                           onCheckedChange={() => toggleImages()}
                           onClick={(e) => e.stopPropagation()}
                           aria-label={imagesEnabled ? 'Hide story images' : 'Show story images'}
+                          className={imageToggleFeedback ? 'ring-2 ring-primary animate-pulse' : ''}
                         />
                       </div>
                       </SidebarMenuButton>

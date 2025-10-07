@@ -9,6 +9,7 @@
 ## 📋 Quick Navigation
 
 ### 🆕 Recent Changes (October 7, 2025)
+- [Image Toggle Complete Audit](IMAGE_TOGGLE_COMPLETE_AUDIT_2025_10_07.md) - ⭐ NEW - System audit + animation feedback
 - [Premium Live Story 3-Layer Fix](PREMIUM_LIVE_STORY_3LAYER_FIX.md) - Natural continuation for premium users
 - [Image Toggle & SVG Fallback](IMAGE_TOGGLE_SVG_FALLBACK_FIX_2025_10_07.md) - UX enhancement and performance
 - [Level 4 Mature Content](LEVEL_4_MATURE_CONTENT_IMPLEMENTATION.md) - Content filtering fix
@@ -37,6 +38,7 @@
 - [Emergency Content System](EMERGENCY_CONTENT_SYSTEM.md) - Rhyming fallback
 
 ### 🎨 Image Generation
+- [Image Toggle Complete Audit](IMAGE_TOGGLE_COMPLETE_AUDIT_2025_10_07.md) - ⭐ NEW Oct 7, 2025 - System audit + UX
 - [Image Toggle & SVG Fallback](IMAGE_TOGGLE_SVG_FALLBACK_FIX_2025_10_07.md) - ⭐ NEW Oct 7, 2025
 - [Image Generation System Snapshot](IMAGE_GENERATION_SYSTEM_SNAPSHOT_2025_10_04.md) - Protected snapshot
 - [CCS Complete Reference](CCS_COMPLETE_REFERENCE.md) - Character consistency
@@ -70,6 +72,7 @@
 ## 📅 By Date
 
 ### October 2025
+- **October 7** - [Image Toggle Complete Audit](IMAGE_TOGGLE_COMPLETE_AUDIT_2025_10_07.md) - System audit + animation
 - **October 7** - [Premium Live Story 3-Layer Fix](PREMIUM_LIVE_STORY_3LAYER_FIX.md)
 - **October 7** - [Image Toggle & SVG Fallback](IMAGE_TOGGLE_SVG_FALLBACK_FIX_2025_10_07.md)
 - **October 7** - [Level 4 Mature Content](LEVEL_4_MATURE_CONTENT_IMPLEMENTATION.md)
