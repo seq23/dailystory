@@ -3,7 +3,7 @@ import { DebugLogger } from '@/services/DebugLogger';
 import { MobileKeyboardHandler } from "@/components/MobileKeyboardHandler";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { UserInfoForm } from "@/components/UserInfoForm";
+import { MultiStepUserForm } from "@/components/forms/MultiStepUserForm";
 import { PremiumProfileEditor } from "@/components/PremiumProfileEditor";
 import { PremiumMyStoriesView } from "@/components/PremiumMyStoriesView";
 import { PremiumHeader } from "@/components/PremiumHeader";
@@ -607,7 +607,7 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
               <h1 className="text-4xl font-bold text-gray-800 mb-2">Welcome to Time2Read!</h1>
               <p className="text-gray-600">Let's set up your reading profile</p>
             </div>
-            <UserInfoForm
+            <MultiStepUserForm
               onSubmit={async (info) => {
                 await handleInitialProfileSetup(info);
               }}

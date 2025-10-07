@@ -42,7 +42,7 @@
 import { useState, useEffect } from "react";
 import { DebugLogger } from '@/services/DebugLogger';
 import { WelcomeHero } from "@/components/WelcomeHero";
-import { UserInfoForm } from "@/components/UserInfoForm";
+import { MultiStepUserForm } from "@/components/forms/MultiStepUserForm";
 import { FreeReadingSession } from "@/components/FreeReadingSession";
 import { PremiumUpgrade } from "@/components/PremiumUpgrade";
 
@@ -214,7 +214,7 @@ const handleBackToWelcome = () => {
     case "form":
       return (
         <div className="animate-fade-in">
-          <UserInfoForm 
+          <MultiStepUserForm 
             onSubmit={handleFormSubmit} 
             onBack={handleBackToWelcome}
             isPremium={false}

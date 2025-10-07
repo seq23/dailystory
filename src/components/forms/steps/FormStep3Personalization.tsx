@@ -606,6 +606,15 @@ Setting: magical forest AND cozy cottage → Enter`}
                   </div>
                 )}
                 
+                <p className="text-xs text-muted-foreground leading-relaxed mt-2">
+                  <span className="font-medium">This format helps our system provide best results:</span><br/>
+                  <span className="text-muted-foreground/80">
+                    Themes: underwater adventure AND friendship →Enter<br/>
+                    Setting: Pacific Ocean AND Hawaii →Enter<br/>
+                    Characters: story about a dolphin named Brian →Enter
+                  </span>
+                </p>
+                
                 {/* Spellcheck suggestion */}
                 {spellcheckSuggestions.specialRequest && (
                   <div className="flex items-center justify-between bg-warning/10 border border-warning/20 rounded p-2">

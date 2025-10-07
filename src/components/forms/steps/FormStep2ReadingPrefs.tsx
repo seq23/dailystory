@@ -211,34 +211,32 @@ export const FormStep2ReadingPrefs = ({
       </Collapsible>
 
       {/* Action Buttons */}
-      <div className="flex flex-col sm:flex-row gap-4 pt-6">
-        <MobileOptimizedButton
-          onClick={onBack}
-          variant="outline"
-          className="py-3"
-        >
-          <ChevronLeft className="w-4 h-4 mr-2" />
-          {t("formStep2.back", "Back")}
-        </MobileOptimizedButton>
-
-        <MobileTooltip content="Story will use your reading level but won't be fully personalized. Complete all steps for maximum personalization.">
+      <div className="space-y-3 pt-6">
+        <div className="flex gap-4">
           <MobileOptimizedButton
-            onClick={onSubmit}
+            onClick={onBack}
+            variant="outline"
+            className="py-3"
+          >
+            <ChevronLeft className="w-4 h-4 mr-2" />
+            {t("formStep2.back", "Back")}
+          </MobileOptimizedButton>
+
+          <MobileOptimizedButton
+            onClick={onAdvanceToStep}
             className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-3"
           >
-            <BookOpen className="w-4 h-4 mr-2" />
-            {t("formStep2.createStory", "Create Story Now")}
+            {t("formStep2.addPersonalDetails", "Add Personal Details")}
+            <ArrowRight className="w-4 h-4 ml-2" />
           </MobileOptimizedButton>
-        </MobileTooltip>
-
-        <MobileOptimizedButton
-          onClick={onAdvanceToStep}
-          variant="outline"
-          className="py-3"
+        </div>
+        
+        <button
+          onClick={onSubmit}
+          className="w-full text-center text-sm text-muted-foreground hover:text-foreground underline transition-colors"
         >
-          {t("formStep2.addPersonalDetails", "Add Personal Details")}
-          <ArrowRight className="w-4 h-4 ml-2" />
-        </MobileOptimizedButton>
+          {t("formStep2.skipAndCreate", "Skip and create story now")}
+        </button>
       </div>
 
       {/* Educational encouragement */}

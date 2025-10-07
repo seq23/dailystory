@@ -263,27 +263,23 @@ export const FormStep1Essential = ({
       </div>
 
       {/* Action Buttons */}
-      <div className="flex flex-col sm:flex-row gap-4 pt-6">
-        <MobileTooltip content="Story will not be personalized. To get a fully personalized story, continue to the next steps.">
-          <MobileOptimizedButton
-            onClick={onQuickSubmit}
-            disabled={!canSubmit}
-            className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-3 transition-all duration-300 disabled:opacity-50"
-          >
-            <Sparkles className="w-4 h-4 mr-2" />
-            {t("formStep1.createFirstStory", "Create My First Story")}
-          </MobileOptimizedButton>
-        </MobileTooltip>
-
+      <div className="space-y-3 pt-6">
         <MobileOptimizedButton
           onClick={onAdvanceToStep}
           disabled={!canAdvance}
-          variant="outline"
-          className="flex-1 py-3 transition-all duration-300 disabled:opacity-50"
+          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-3 transition-all duration-300 disabled:opacity-50"
         >
           {t("formStep1.addReadingPrefs", "Add Reading Preferences")}
           <ArrowRight className="w-4 h-4 ml-2" />
         </MobileOptimizedButton>
+        
+        <button
+          onClick={onQuickSubmit}
+          disabled={!canSubmit}
+          className="w-full text-center text-sm text-muted-foreground hover:text-foreground underline transition-colors disabled:opacity-50"
+        >
+          {t("formStep1.skipAndCreate", "Skip and create story now")}
+        </button>
       </div>
 
       {/* Encouraging note */}

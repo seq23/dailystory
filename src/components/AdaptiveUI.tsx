@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { HelpCircle, Languages, BookOpen, Globe, Target, Heart } from 'lucide-react';
-import type { UserInfo } from './UserInfoForm';
+import type { UserInfo } from '@/types';
 
 interface AdaptiveUIProps {
   userInfo: UserInfo;
