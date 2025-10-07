@@ -134,6 +134,7 @@ import { BackendTierChecker } from "@/components/BackendTierChecker";
 import { PremiumStoryManager } from "@/services/premiumStoryManager";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ErrorHandler, ErrorType } from "@/utils/errorHandling";
+import { ErrorHandlingManager } from "@/services/errorHandlingManager";
 import { DiagnosticPanel } from "@/components/DiagnosticPanel";
 import { ApiKeyDiagnostic } from "@/components/ApiKeyDiagnostic";
 import { ParentGuardrailsService } from "@/services/parentGuardrailsService";
@@ -1970,8 +1971,29 @@ const initializeStory = async () => {
       DebugLogger.log('story', 'Premium user: Starting live generation');
       const result = await LiveGenerationService.generateFirstPage(effectiveUser, undefined, vocabularyData);
       
+      // CRITICAL: LiveGenerationService should never return error - it should always return content
+      // If error exists, it means upstream fallbacks failed - show emergency content as story
       if (result.error) {
-        setError(result.error);
+        DebugLogger.error('story', 'CRITICAL: generateFirstPage returned error - showing emergency content as story', { error: result.error });
+        
+        // Generate emergency content and display it as a normal story
+        const emergencyPages = await ErrorHandlingManager.getEmergencyContent(effectiveUser);
+        const emergencyContent = emergencyPages[0] || `${effectiveUser.name} began a wonderful adventure in a magical place where anything was possible.`;
+        
+        setStory([emergencyContent]);
+        setIsStoryComplete(false);
+        setStoryTitle(`${safeUserInfo.name}'s Emergency Adventure`);
+        setStorySource('emergency');
+        
+        // Show small toast instead of blocking error
+        toast({
+          title: "📖 System Recovery Mode",
+          description: "Reading backup content while our story magic recharges!",
+          duration: 5000,
+        });
+        
+        // Don't return - continue with the story display
+        setIsStoryStable(true);
         return;
       }
       
@@ -3964,34 +3986,40 @@ const handleRestartTimer = () => {
     );
   }
 
+  // CRITICAL: Never show diagnostic panel to users - this path should never render
+  // All failures should be caught upstream and show emergency content as a story
   if (error) {
+    DebugLogger.error('story', 'CRITICAL: Error UI should not render - emergency content should be shown as story', { error });
+    
+    // If we somehow reach here, show a minimal recovery UI but NO diagnostics
     return (
       <div className="min-h-screen bg-gradient-primary flex items-center justify-center p-4">
         <div className="text-center max-w-4xl w-full">
           <div className="text-6xl mb-4">🎭</div>
-          <h2 className="text-2xl font-bold text-white mb-4">Story Magic Taking a Break</h2>
+          <h2 className="text-2xl font-bold text-white mb-4">Restarting Story Magic...</h2>
           
-          {/* Show rhyming emergency content if available */}
           <div className="mb-6 bg-white/10 backdrop-blur-sm rounded-lg p-6">
             <p className="text-white/90 text-lg leading-relaxed mb-4">
-              Don't worry, {safeUserInfo.name}! Our story elves are working hard to fix things.
+              {safeUserInfo.name}'s adventure is loading with special backup content!
             </p>
-            <p className="text-white/70 text-sm mb-4">
-              Try clicking "Try Again" or come back in a few minutes for fresh stories!
+            <p className="text-white/70 text-sm">
+              Click below to start your magical journey.
             </p>
-            <div className="text-xs text-white/60 mb-4">
-              Error details: {error}
-            </div>
           </div>
           
-          {/* Diagnostic Panel for troubleshooting */}
-          <div className="mb-6">
-            <DiagnosticPanel userInfo={userInfo} />
-            <ApiKeyDiagnostic />
-          </div>
+          {/* Developer diagnostics only - hidden by default */}
+          {typeof window !== 'undefined' && (window as any).__ENABLE_DIAGNOSTICS__ && (
+            <div className="mb-6 text-xs text-white/40">
+              <details className="bg-white/5 rounded p-2">
+                <summary className="cursor-pointer">Developer Diagnostics</summary>
+                <DiagnosticPanel userInfo={userInfo} />
+                <ApiKeyDiagnostic />
+              </details>
+            </div>
+          )}
           
           <MobileOptimizedButton onClick={() => (onNewStory ? onNewStory() : window.location.reload())} className="bg-white text-primary">
-            Try Again
+            Start Adventure
           </MobileOptimizedButton>
         </div>
       </div>

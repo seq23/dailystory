@@ -516,12 +516,17 @@ export class LiveGenerationService {
 
       const content = data.pages[0];
       
-      // Get proper prompt config to preserve page expectations
+      // Get proper prompt config to preserve page expectations with safe defaults
       let promptConfig: any;
       if (difficulty === 'expert') {
         promptConfig = { expectedPages: 14 }; // Middle-ground for expert stories (12-16 pages)
       } else {
-        promptConfig = getStoryPrompt(difficulty);
+        try {
+          promptConfig = getStoryPrompt(difficulty) || { expectedPages: 12 };
+        } catch (promptError) {
+          DebugLogger.warn('story', 'getStoryPrompt failed, using safe default', { difficulty, promptError });
+          promptConfig = { expectedPages: 12 };
+        }
       }
 
       const context: LiveGenerationContext = {
@@ -547,21 +552,27 @@ export class LiveGenerationService {
         isComplete: false,
         nextContext: context
       };
-    } catch (error) {
-      DebugLogger.error('story', 'Fallback failed', error);
-      // Emergency fallback with rhyming educational content
+    } catch (templateError) {
+      DebugLogger.error('story', 'Template service failed, using emergency content', templateError);
+      
+      // Emergency fallback with rhyming educational content - ALWAYS returns content
       const emergencyContent = await ErrorHandlingManager.getEmergencyContent(userInfo);
-      const content = emergencyContent[0] || `${userInfo.name} began a wonderful adventure.`;
+      const content = emergencyContent[0] || `${userInfo.name} began a wonderful adventure in a magical place where anything was possible. The sun shone brightly overhead as ${userInfo.name} took the first step into this exciting new world.`;
       
       // Set global emergency source tracking
       (globalThis as any).__LAST_STORY_SOURCE__ = 'emergency';
       (globalThis as any).__LAST_PAGE_SOURCE__ = 'emergency';
       
-      let promptConfig: any;
-      if (difficulty === 'expert') {
-        promptConfig = { expectedPages: 14 };
-      } else {
-        promptConfig = getStoryPrompt(difficulty);
+      // Safe prompt config with guaranteed fallback
+      let promptConfig: any = { expectedPages: 12 };
+      try {
+        if (difficulty === 'expert') {
+          promptConfig = { expectedPages: 14 };
+        } else {
+          promptConfig = getStoryPrompt(difficulty) || { expectedPages: 12 };
+        }
+      } catch {
+        // Keep default promptConfig
       }
       
       const context: LiveGenerationContext = {
@@ -572,6 +583,9 @@ export class LiveGenerationService {
         totalExpectedPages: promptConfig.expectedPages || 999,
         characters: [userInfo.name, userInfo.favoriteAnimal ? userInfo.favoriteAnimal : 'friendly companion']
       };
+
+      // Emit story generation complete event even for emergency content
+      window.dispatchEvent(new CustomEvent('story:generation:complete'));
 
       return {
         content,
