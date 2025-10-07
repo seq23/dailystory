@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-10-06T18:30:00Z - Inline CORS (zero imports, boot-safe)
+// DEPLOY_MARKER: 2025-10-07T12:45:00Z - Fixed returnedSeed scope error across all 4 tiers
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // ✅ BUNDLER HINT: Force Deno Deploy to include _shared/CharacterConsistencyService.js in bundle
