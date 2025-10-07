@@ -1785,18 +1785,8 @@ export class CharacterConsistencyService {
       }
     }
 
-    if (!clothingStyle) {
-      const hasStoryClothing = pageTextClothing && (
-        pageTextClothing.includes('wearing') || 
-        pageTextClothing.includes('dressed') || 
-        pageTextClothing.includes('shirt') ||
-        pageTextClothing.includes('pants') ||
-        pageTextClothing.includes('dress')
-      );
-      if (!hasStoryClothing) {
-        clothingStyle = `wearing ${seedData.consistentClothingStyle} clothing`;
-      }
-    }
+    // ✅ Let clothingStyle remain empty if no story clothing detected
+    // Runware will generate clothing naturally when clothingStyle is empty
 
     const avatarType = seedData.avatarType || seedData.type || 'child';
     return `${characterName} is a ${avatarType} age ${age}${clothingStyle ? ' ' + clothingStyle : ''}`;

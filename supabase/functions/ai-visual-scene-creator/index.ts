@@ -1218,6 +1218,7 @@ serve(async (req) => {
       
       // DIRECT MODE: Get character appearance and colored objects from service
       let characterAppearance: string | null = null;
+      let sessionSetting = ''; // ✅ Scene context for consistency
       
       if (characterServiceAvailable && characterConsistencyService) {
         try {
@@ -1226,6 +1227,14 @@ serve(async (req) => {
           if (serviceColoredObjects) {
             coloredObjects = serviceColoredObjects;
           }
+          
+          // Get saved scene context
+          const savedContext = await characterConsistencyService.getSessionSetting(sessionId, 'context', null);
+          if (savedContext) {
+            sessionSetting = savedContext;
+            console.log(`🏠 [${requestId}] Using saved scene context: ${savedContext}`);
+          }
+          
           console.log(`✅ [${requestId}] Character data retrieved from service`);
         } catch (error) {
           console.warn(`⚠️ [${requestId}] Failed to retrieve character data from service (non-fatal):`, error);
@@ -1271,6 +1280,8 @@ serve(async (req) => {
           characterConsistency: characterAppearance || `${characterSeed.characterName} is a ${characterSeed.avatarType}, age ${userInfo?.age || 6}${culturalBundle?.hair ? `, ${culturalBundle.hair}` : ''}${culturalBundle?.features ? `, ${culturalBundle.features}` : ''}`,
           visualConsistency: `${visualSchema.backgroundColor}, ${visualSchema.lighting}`,
           culturalEnhancements: `${culturalBundle.hair}, ${culturalBundle.features}`,
+          coloredObjects: coloredObjects, // ✅ Colored objects for cross-page consistency
+          sceneContext: sessionSetting, // ✅ Scene context for location consistency
           structuredAvatarData // Always provide structured avatar data
         }
       };
