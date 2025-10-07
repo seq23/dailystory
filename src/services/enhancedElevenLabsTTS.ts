@@ -138,7 +138,7 @@ export class EnhancedElevenLabsTTS {
         if (data instanceof ArrayBuffer) {
           audioData = data;
         } else if (data instanceof Uint8Array) {
-          audioData = data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength);
+          audioData = data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) as ArrayBuffer;
         } else if (typeof data === 'string') {
           // Handle base64 encoded response with UTF-8 safe decoder
           audioData = safeBase64Decode(data);
