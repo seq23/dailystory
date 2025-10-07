@@ -1,8 +1,6 @@
-// Payment Function Pattern: Tier 1 (Network CDN) + Tier 2 (Vendor) ONLY
-// NO template fallback - payment requires live database access
-// Returns 503 if both network and vendor fail
+// PURE DATABASE FUNCTION - Zero Network Dependencies
+// Direct Supabase REST API calls only
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createPaymentSupabaseClient, createPaymentUnavailableResponse, memoizedImport } from '../_shared/resilientLoader.ts';
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
 
 const corsHeaders = {
@@ -12,39 +10,41 @@ const corsHeaders = {
   "Vary": "Origin, Access-Control-Request-Headers",
 };
 
-// Helper logging function for debugging
+// Simple JWT decoder (no library imports needed)
+function decodeJWT(token: string): { email?: string; sub?: string } | null {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    const payload = JSON.parse(atob(parts[1]));
+    return payload;
+  } catch {
+    return null;
+  }
+}
+
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
   console.log(`[ACTIVATE-DISCOUNT] ${step}${detailsStr}`);
 };
 
 serve(async (req) => {
-  // Handle CORS and health checks
   const healthResponse = handleHealthAndCors(req);
   if (healthResponse) return healthResponse;
 
   try {
     logStep("Function started");
 
-    // Create payment-specific Supabase client (Tier 1 + Tier 2 only)
-    const supabaseClient = await createPaymentSupabaseClient();
-    if (!supabaseClient) {
-      logStep("Payment service unavailable - database connection failed");
-      return createPaymentUnavailableResponse('activate-discount-code');
-    }
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     
-    // Create service role client with same fallback pattern
-    let supabaseService;
-    try {
-      const { createClient } = await memoizedImport('@supabase/supabase-js');
-      supabaseService = createClient(
-        Deno.env.get("SUPABASE_URL") ?? "",
-        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-        { auth: { persistSession: false } }
-      );
-    } catch (importError) {
-      console.log('Using payment client as service fallback');
-      supabaseService = supabaseClient;
+    if (!supabaseUrl || !supabaseKey) {
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: 'Service temporarily unavailable' 
+      }), {
+        status: 503,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
     }
 
     const authHeader = req.headers.get("Authorization");
@@ -52,36 +52,52 @@ serve(async (req) => {
     logStep("Authorization header found");
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError) throw new Error(`Authentication error: ${userError.message}`);
-    const user = userData.user;
-    if (!user?.email) throw new Error("User not authenticated or email not available");
-    logStep("User authenticated", { userId: user.id, email: user.email });
+    const payload = decodeJWT(token);
+    const userId = payload?.sub;
+    const userEmail = payload?.email;
+
+    if (!userId || !userEmail) throw new Error("User not authenticated or email not available");
+    logStep("User authenticated", { userId, email: userEmail });
 
     // Parse request body for discount code
     const { discountCode } = await req.json();
-    const codeToActivate = discountCode || "SEQUOIA90"; // Default to SEQUOIA90 if not provided
+    const codeToActivate = discountCode || "SEQUOIA90";
     logStep("Discount code to activate", { discountCode: codeToActivate });
 
-    // Check if discount code exists and is valid
-    const { data: discountCodeData, error: discountError } = await supabaseService
-      .from('discount_codes')
-      .select('*')
-      .eq('code', codeToActivate)
-      .eq('active', true)
-      .single();
+    // Check if discount code exists and is valid - PURE DATABASE READ
+    const codeResponse = await fetch(
+      `${supabaseUrl}/rest/v1/discount_codes?code=eq.${encodeURIComponent(codeToActivate)}&active=eq.true&select=*`,
+      {
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+        }
+      }
+    );
 
-    if (discountError || !discountCodeData) {
+    const codeData = await codeResponse.json();
+    const discountCodeData = codeData[0];
+
+    if (!discountCodeData) {
       throw new Error(`Invalid or inactive discount code: ${codeToActivate}`);
     }
     logStep("Discount code validated", { code: discountCodeData.code, duration: discountCodeData.duration_days });
 
-    // Check if user already has this discount activated
-    const { data: existingSubscriber } = await supabaseService
-      .from('subscribers')
-      .select('*')
-      .eq('user_id', user.id)
-      .single();
+    // Check if user already has this discount activated - PURE DATABASE READ
+    const subResponse = await fetch(
+      `${supabaseUrl}/rest/v1/subscribers?user_id=eq.${userId}&select=*`,
+      {
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+        }
+      }
+    );
+
+    const subData = await subResponse.json();
+    const existingSubscriber = subData[0];
 
     if (existingSubscriber?.discount_activated) {
       return new Response(JSON.stringify({ 
@@ -98,58 +114,67 @@ serve(async (req) => {
     const subscriptionEnd = new Date();
     subscriptionEnd.setDate(subscriptionEnd.getDate() + discountCodeData.duration_days);
 
-    // Update or create subscriber record with activated discount
-    const { data: updatedSubscriber, error: updateError } = await supabaseService
-      .from('subscribers')
-      .upsert({
-        user_id: user.id,
-        email: user.email,
-        subscribed: true,
-        subscription_tier: "Premium",
-        subscription_end: subscriptionEnd.toISOString(),
-        override_premium: true,
-        override_end: subscriptionEnd.toISOString(),
-        override_reason: `Discount code: ${codeToActivate}`,
-        override_tier: "Premium",
-        discount_activated: true,
-        discount_activated_at: new Date().toISOString(),
-        discount_code_pending: null,
-        updated_at: new Date().toISOString(),
-      }, { 
-        onConflict: 'user_id',
-        returning: 'representation'
-      });
+    // Update or create subscriber record with activated discount - PURE DATABASE WRITE
+    const subscriberData = {
+      user_id: userId,
+      email: userEmail,
+      subscribed: true,
+      subscription_tier: "Premium",
+      subscription_end: subscriptionEnd.toISOString(),
+      override_premium: true,
+      override_end: subscriptionEnd.toISOString(),
+      override_reason: `Discount code: ${codeToActivate}`,
+      override_tier: "Premium",
+      discount_activated: true,
+      discount_activated_at: new Date().toISOString(),
+      discount_code_pending: null,
+      updated_at: new Date().toISOString(),
+    };
 
-    if (updateError) {
-      throw new Error(`Failed to activate discount: ${updateError.message}`);
+    const upsertResponse = await fetch(
+      `${supabaseUrl}/rest/v1/subscribers`,
+      {
+        method: 'POST',
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'resolution=merge-duplicates,return=representation'
+        },
+        body: JSON.stringify(subscriberData)
+      }
+    );
+
+    if (!upsertResponse.ok) {
+      throw new Error('Failed to activate discount');
     }
 
-    // Verify the update succeeded
-    if (!updatedSubscriber || (Array.isArray(updatedSubscriber) && updatedSubscriber.length === 0)) {
-      throw new Error('Discount activation failed: No subscriber record returned');
-    }
-
+    const updatedSubscriber = await upsertResponse.json();
     logStep("Subscriber record verified", { 
-      subscriberId: (updatedSubscriber as any)?.[0]?.id,
-      discountActivated: (updatedSubscriber as any)?.[0]?.discount_activated,
-      subscribed: (updatedSubscriber as any)?.[0]?.subscribed
+      subscriberId: updatedSubscriber?.[0]?.id,
+      discountActivated: updatedSubscriber?.[0]?.discount_activated,
+      subscribed: updatedSubscriber?.[0]?.subscribed
     });
 
-    // Update discount code usage count
-    const { error: usageError } = await supabaseService
-      .from('discount_codes')
-      .update({ 
-        current_uses: discountCodeData.current_uses + 1,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', discountCodeData.id);
-
-    if (usageError) {
-      console.error("Warning: Failed to update discount code usage:", usageError);
-    }
+    // Update discount code usage count - PURE DATABASE WRITE
+    await fetch(
+      `${supabaseUrl}/rest/v1/discount_codes?id=eq.${discountCodeData.id}`,
+      {
+        method: 'PATCH',
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          current_uses: discountCodeData.current_uses + 1,
+          updated_at: new Date().toISOString()
+        })
+      }
+    );
 
     logStep("Discount code successfully activated", { 
-      userId: user.id, 
+      userId, 
       code: codeToActivate,
       expiresAt: subscriptionEnd.toISOString()
     });

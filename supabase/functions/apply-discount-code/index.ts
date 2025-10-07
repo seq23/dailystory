@@ -1,148 +1,196 @@
-// Payment Function Pattern: Tier 1 (Network CDN) + Tier 2 (Vendor) ONLY
-// NO template fallback - payment requires live database access
-// Returns 503 if both network and vendor fail
+// PURE DATABASE FUNCTION - Zero Network Dependencies
+// Direct Supabase REST API calls only
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createPaymentSupabaseClient, createPaymentUnavailableResponse, memoizedImport } from '../_shared/resilientLoader.ts';
-import { createDynamicCorsResponse, createDynamicCorsErrorResponse, createDynamicCorsOptionsResponse } from "../_shared/corsAdvanced.js";
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+// Simple JWT decoder (no library imports needed)
+function decodeJWT(token: string): { email?: string; sub?: string } | null {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    const payload = JSON.parse(atob(parts[1]));
+    return payload;
+  } catch {
+    return null;
+  }
+}
+
 serve(async (req) => {
-  // Handle health check and CORS preflight
-  const healthCorsResponse = handleHealthAndCors(req);
-  if (healthCorsResponse) return healthCorsResponse;
+  const healthResponse = handleHealthAndCors(req);
+  if (healthResponse) return healthResponse;
 
   try {
-    // Create payment-specific Supabase client (Tier 1 + Tier 2 only)
-    const supabaseClient = await createPaymentSupabaseClient();
-    if (!supabaseClient) {
-      console.error('[Apply Discount] Payment service unavailable - database connection failed');
-      return createPaymentUnavailableResponse('apply-discount-code');
-    }
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     
-    // Create service role client with same fallback pattern
-    let supabaseService;
-    try {
-      const { createClient } = await memoizedImport('@supabase/supabase-js');
-      supabaseService = createClient(
-        Deno.env.get("SUPABASE_URL") ?? "",
-        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-        { auth: { persistSession: false } }
-      );
-    } catch (importError) {
-      console.log('[Apply Discount] Using payment client as service fallback');
-      supabaseService = supabaseClient;
+    if (!supabaseUrl || !supabaseKey) {
+      return new Response(JSON.stringify({ 
+        activated: false, 
+        message: 'Service temporarily unavailable' 
+      }), {
+        status: 503,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
     }
 
-    // Get user from auth header
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
-      return createDynamicCorsErrorResponse('Authorization required', null, 401);
+      return new Response(JSON.stringify({ 
+        activated: false, 
+        message: 'Authorization required' 
+      }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
     }
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
-    
-    if (authError || !user) {
-      return createDynamicCorsErrorResponse('Invalid authentication', null, 401);
-    }
+    const payload = decodeJWT(token);
+    const userId = payload?.sub;
 
-    console.log(`[Apply Discount] Processing for user: ${user.id}`);
-
-    // Check if user has a pending discount code
-    const { data: subscriber, error: subError } = await supabaseService
-      .from('subscribers')
-      .select('*')
-      .eq('user_id', user.id)
-      .single();
-    
-    // Handle case where subscriber record doesn't exist yet
-    if (subError && subError.code === 'PGRST116') {
-      return createDynamicCorsResponse({ 
+    if (!userId) {
+      return new Response(JSON.stringify({ 
         activated: false, 
-        message: 'No subscriber record found' 
-      }, null);
+        message: 'Invalid authentication' 
+      }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
     }
 
-    if (subError) {
-      console.error('[Apply Discount] Error fetching subscriber:', subError);
-      return createDynamicCorsErrorResponse('Error checking subscription status', null, 500);
-    }
+    console.log(`[Apply Discount] Processing for user: ${userId}`);
+
+    // Check if user has a pending discount code - PURE DATABASE READ
+    const subResponse = await fetch(
+      `${supabaseUrl}/rest/v1/subscribers?user_id=eq.${userId}&select=*`,
+      {
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+        }
+      }
+    );
+
+    const subData = await subResponse.json();
+    const subscriber = subData[0];
 
     if (!subscriber?.discount_code_pending) {
-      return createDynamicCorsResponse({ 
+      return new Response(JSON.stringify({ 
         activated: false, 
         message: 'No pending discount code found' 
-      }, null);
+      }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
     }
 
     if (subscriber.discount_activated) {
-      return createDynamicCorsResponse({ 
+      return new Response(JSON.stringify({ 
         activated: false, 
         message: 'Discount code already activated' 
-      }, null);
+      }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
     }
 
     const discountCode = subscriber.discount_code_pending;
-    console.log(`[Apply Discount] Activating code: ${discountCode} for user: ${user.id}`);
+    console.log(`[Apply Discount] Activating code: ${discountCode} for user: ${userId}`);
 
-    // Get discount code details
-    const { data: codeDetails, error: codeError } = await supabaseService
-      .from('discount_codes')
-      .select('*')
-      .eq('code', discountCode)
-      .eq('active', true)
-      .single();
+    // Get discount code details - PURE DATABASE READ
+    const codeResponse = await fetch(
+      `${supabaseUrl}/rest/v1/discount_codes?code=eq.${encodeURIComponent(discountCode)}&active=eq.true&select=*`,
+      {
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+        }
+      }
+    );
 
-    if (codeError || !codeDetails) {
-      console.error('[Apply Discount] Error fetching code details:', codeError);
-      return createDynamicCorsErrorResponse('Invalid discount code', null, 400);
+    const codeData = await codeResponse.json();
+    const codeDetails = codeData[0];
+
+    if (!codeDetails) {
+      console.error('[Apply Discount] Invalid discount code');
+      return new Response(JSON.stringify({ 
+        activated: false, 
+        message: 'Invalid discount code' 
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
     }
 
-    // Calculate end date (duration_days from now)
+    // Calculate end date
     const activationDate = new Date();
     const endDate = new Date(activationDate);
     endDate.setDate(endDate.getDate() + codeDetails.duration_days);
 
-    // Update subscriber with discount activation
-    const { error: updateError } = await supabaseService
-      .from('subscribers')
-      .update({
-        subscribed: true,
-        subscription_tier: 'premium',
-        subscription_end: endDate.toISOString(),
-        discount_activated: true,
-        discount_activated_at: activationDate.toISOString(),
-        override_premium: true,
-        override_tier: 'premium',
-        override_end: endDate.toISOString(),
-        override_reason: `Discount code: ${discountCode}`,
-        override_set_by: 'system',
-        updated_at: new Date().toISOString()
-      })
-      .eq('user_id', user.id);
+    // Update subscriber with discount activation - PURE DATABASE WRITE
+    const updateResponse = await fetch(
+      `${supabaseUrl}/rest/v1/subscribers?user_id=eq.${userId}`,
+      {
+        method: 'PATCH',
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          subscribed: true,
+          subscription_tier: 'premium',
+          subscription_end: endDate.toISOString(),
+          discount_activated: true,
+          discount_activated_at: activationDate.toISOString(),
+          override_premium: true,
+          override_tier: 'premium',
+          override_end: endDate.toISOString(),
+          override_reason: `Discount code: ${discountCode}`,
+          override_set_by: 'system',
+          updated_at: new Date().toISOString()
+        })
+      }
+    );
 
-    if (updateError) {
-      console.error('[Apply Discount] Error updating subscriber:', updateError);
-      return createDynamicCorsErrorResponse('Error activating discount', null, 500);
+    if (!updateResponse.ok) {
+      console.error('[Apply Discount] Error updating subscriber');
+      return new Response(JSON.stringify({ 
+        activated: false, 
+        message: 'Error activating discount' 
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
     }
 
-    // Update discount code usage count
-    const { error: usageError } = await supabaseService
-      .from('discount_codes')
-      .update({
-        current_uses: codeDetails.current_uses + 1,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', codeDetails.id);
+    // Update discount code usage count - PURE DATABASE WRITE
+    await fetch(
+      `${supabaseUrl}/rest/v1/discount_codes?id=eq.${codeDetails.id}`,
+      {
+        method: 'PATCH',
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          current_uses: codeDetails.current_uses + 1,
+          updated_at: new Date().toISOString()
+        })
+      }
+    );
 
-    if (usageError) {
-      console.warn('[Apply Discount] Error updating usage count:', usageError);
-      // Don't fail the request for this
-    }
+    console.log(`[Apply Discount] Successfully activated ${discountCode} for user ${userId} until ${endDate.toISOString()}`);
 
-    console.log(`[Apply Discount] Successfully activated ${discountCode} for user ${user.id} until ${endDate.toISOString()}`);
-
-    return createDynamicCorsResponse({
+    return new Response(JSON.stringify({
       activated: true,
       message: `Welcome! Your ${codeDetails.duration_days} days of free premium starts now!`,
       code: discountCode,
@@ -150,11 +198,19 @@ serve(async (req) => {
       duration_days: codeDetails.duration_days,
       activation_date: activationDate.toISOString(),
       end_date: endDate.toISOString()
-    }, null);
+    }), {
+      status: 200,
+      headers: { ...corsHeaders, "Content-Type": "application/json" }
+    });
 
   } catch (error) {
     console.error('[Apply Discount] Error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
-    return createDynamicCorsErrorResponse(errorMessage, null, 500);
+    return new Response(JSON.stringify({ 
+      activated: false, 
+      message: error instanceof Error ? error.message : 'Internal server error' 
+    }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" }
+    });
   }
 });

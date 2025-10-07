@@ -1,97 +1,115 @@
-// Payment Function Pattern: Tier 1 (Network CDN) + Tier 2 (Vendor) ONLY
-// NO template fallback - payment requires live database access
-// Returns 503 if both network and vendor fail
+// PURE DATABASE FUNCTION - Zero Network Dependencies
+// Direct Supabase REST API calls only
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createDynamicCorsResponse, createDynamicCorsErrorResponse, createDynamicCorsOptionsResponse } from "../_shared/corsAdvanced.js";
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
 
-serve(async (req) => {
-  // Handle health check and CORS preflight
-  const healthCorsResponse = handleHealthAndCors(req);
-  if (healthCorsResponse) return healthCorsResponse;
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
 
-  
+serve(async (req) => {
+  const healthResponse = handleHealthAndCors(req);
+  if (healthResponse) return healthResponse;
 
   try {
     const { code } = await req.json();
     
     if (!code || typeof code !== 'string') {
-      return createDynamicCorsErrorResponse('Discount code is required', req, 400);
+      return new Response(JSON.stringify({ 
+        valid: false, 
+        message: 'Discount code is required' 
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
     }
 
-    // Create payment-specific Supabase client (Tier 1 + Tier 2 only)
-    const { createPaymentSupabaseClient, createPaymentUnavailableResponse, memoizedImport } = await import("../_shared/resilientLoader.ts");
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     
-    let supabase;
-    try {
-      const { createClient } = await memoizedImport('@supabase/supabase-js');
-      supabase = createClient(
-        Deno.env.get("SUPABASE_URL") ?? "",
-        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-        { auth: { persistSession: false } }
-      );
-    } catch (importError) {
-      console.log('[Validate Discount] Using payment client fallback');
-      supabase = await createPaymentSupabaseClient();
-    }
-    
-    if (!supabase) {
-      console.error('[Validate Discount] Payment service unavailable - database connection failed');
-      return createPaymentUnavailableResponse('validate-discount-code');
+    if (!supabaseUrl || !supabaseKey) {
+      return new Response(JSON.stringify({ 
+        valid: false, 
+        message: 'Service temporarily unavailable' 
+      }), {
+        status: 503,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
     }
 
     console.log(`[Validate Discount] Checking code: ${code}`);
 
-    // Check if code exists and is active
-    const { data: discountCode, error } = await supabase
-      .from('discount_codes')
-      .select('*')
-      .eq('code', code.toUpperCase())
-      .eq('active', true)
-      .single();
-
-    if (error) {
-      // Handle "no rows returned" error separately
-      if (error.code === 'PGRST116') {
-        console.log(`[Validate Discount] Code not found or inactive: ${code}`);
-        return createDynamicCorsResponse({ 
-          valid: false, 
-          message: 'Invalid or expired discount code' 
-        }, req, 400);
+    // PURE DATABASE READ - Direct REST API call
+    const dbResponse = await fetch(
+      `${supabaseUrl}/rest/v1/discount_codes?code=eq.${encodeURIComponent(code.toUpperCase())}&active=eq.true&select=*`,
+      {
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+        }
       }
-      console.error('[Validate Discount] Database error:', error);
-      return createDynamicCorsErrorResponse('Error validating discount code', req, 500);
+    );
+
+    if (!dbResponse.ok) {
+      console.error('[Validate Discount] Database error');
+      return new Response(JSON.stringify({ 
+        valid: false, 
+        message: 'Error validating discount code' 
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
     }
+
+    const data = await dbResponse.json();
+    const discountCode = data[0];
 
     if (!discountCode) {
       console.log(`[Validate Discount] Code not found: ${code}`);
-      return createDynamicCorsResponse({ 
+      return new Response(JSON.stringify({ 
         valid: false, 
         message: 'Invalid or expired discount code' 
-      }, req, 400);
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
     }
 
     // Check usage limits if set
     if (discountCode.max_uses && discountCode.current_uses >= discountCode.max_uses) {
       console.log(`[Validate Discount] Code usage limit reached: ${code}`);
-      return createDynamicCorsResponse({
+      return new Response(JSON.stringify({
         valid: false,
         message: 'This discount code has reached its usage limit'
-      }, req, 400);
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
     }
 
     console.log(`[Validate Discount] Code valid: ${code} - ${discountCode.description}`);
     
-    return createDynamicCorsResponse({
+    return new Response(JSON.stringify({
       valid: true,
       message: `✅ Code validated! ${discountCode.description}`,
       code: discountCode.code,
       description: discountCode.description,
       duration_days: discountCode.duration_days
-    }, req, 200);
+    }), {
+      status: 200,
+      headers: { ...corsHeaders, "Content-Type": "application/json" }
+    });
 
   } catch (error) {
     console.error('[Validate Discount] Error:', error);
-    return createDynamicCorsErrorResponse(error instanceof Error ? error.message : 'Internal server error', req, 500);
+    return new Response(JSON.stringify({ 
+      valid: false, 
+      message: error instanceof Error ? error.message : 'Internal server error' 
+    }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" }
+    });
   }
 });

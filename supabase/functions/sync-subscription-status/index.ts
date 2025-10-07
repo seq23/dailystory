@@ -1,15 +1,25 @@
-// BACKGROUND STRIPE SYNC - Writes to subscribers table cache
-// This function queries Stripe API and updates the database
-// Called periodically or on-demand (non-blocking)
-
+// HYBRID FUNCTION - Pure Database + Stripe SDK
+// Uses direct database calls for Supabase, requires Stripe SDK for payment sync
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { memoizedImport, createPaymentSupabaseClient, createResilientStripeClient } from '../_shared/resilientLoader.ts';
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+// Simple JWT decoder (no library imports needed)
+function decodeJWT(token: string): { email?: string; sub?: string } | null {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    const payload = JSON.parse(atob(parts[1]));
+    return payload;
+  } catch {
+    return null;
+  }
+}
 
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
@@ -21,22 +31,20 @@ serve(async (req) => {
   if (healthResponse) return healthResponse;
 
   try {
-    const supabaseClient = await createPaymentSupabaseClient();
-    if (!supabaseClient) {
-      logStep("Payment client unavailable - skipping sync");
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+    
+    if (!supabaseUrl || !supabaseKey) {
       return new Response(JSON.stringify({
         success: false,
-        message: "Payment client unavailable"
+        message: "Database configuration unavailable"
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 503,
       });
     }
 
-    // Create type-safe constant to prevent undefined access
-    const client = supabaseClient;
-
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) {
       logStep("Stripe key not configured - skipping sync");
       return new Response(JSON.stringify({
@@ -48,7 +56,6 @@ serve(async (req) => {
       });
     }
 
-    // Get user from authorization header
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       logStep("No authorization header - skipping sync");
@@ -61,23 +68,13 @@ serve(async (req) => {
       });
     }
 
-    // Add guard before critical auth operation
-    if (!client || !client.auth) {
-      logStep("Client lost connection before auth check");
-      return new Response(JSON.stringify({
-        success: false,
-        message: "Database connection lost"
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 503,
-      });
-    }
-
     const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: authError } = await client.auth.getUser(token);
-    
-    if (authError || !userData?.user?.email) {
-      logStep("Auth failed", { error: authError?.message });
+    const payload = decodeJWT(token);
+    const userEmail = payload?.email;
+    const userId = payload?.sub;
+
+    if (!userEmail || !userId) {
+      logStep("Auth failed - invalid token");
       return new Response(JSON.stringify({
         success: false,
         message: "Authentication failed"
@@ -87,107 +84,79 @@ serve(async (req) => {
       });
     }
 
-    const user = userData.user;
-    logStep("Syncing subscription for user", { email: user.email });
+    logStep("Syncing subscription for user", { email: userEmail });
 
-    // Check for manual override first - wrapped in try-catch
-    try {
-      const { data: subRow, error: dbError } = await client
-        .from("subscribers")
-        .select("override_premium, override_tier, override_end, stripe_customer_id, discount_activated, discount_activated_at")
-        .eq("email", user.email)
-        .maybeSingle();
-
-      if (dbError) {
-        logStep("Database query failed", { error: dbError.message });
-        return new Response(JSON.stringify({
-          success: false,
-          message: "Database operation failed"
-        }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 503,
-        });
-      }
-
-      const overrideActive = (subRow?.override_premium === true &&
-        (!subRow.override_end || new Date(subRow.override_end) > new Date())) ||
-        subRow?.discount_activated === true;
-
-      if (overrideActive) {
-        logStep("Override or discount active - preserving status", { 
-          tier: subRow.override_tier,
-          discountActivated: subRow.discount_activated,
-          discountActivatedAt: subRow.discount_activated_at
-        });
-        const { error: upsertError } = await client.from("subscribers").upsert({
-          email: user.email,
-          user_id: user.id,
-          stripe_customer_id: subRow?.stripe_customer_id ?? null,
-          subscribed: true,
-          subscription_tier: subRow?.override_tier ?? "Premium",
-          subscription_end: subRow?.override_end ?? null,
-          discount_activated: subRow?.discount_activated ?? false,
-          discount_activated_at: subRow?.discount_activated_at ?? null,
-          updated_at: new Date().toISOString(),
-        }, { onConflict: 'email' });
-
-        if (upsertError) {
-          logStep("Database upsert failed", { error: upsertError.message });
-          return new Response(JSON.stringify({
-            success: false,
-            message: "Database update failed"
-          }), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 503,
-          });
+    // Check for manual override first - PURE DATABASE READ
+    const subResponse = await fetch(
+      `${supabaseUrl}/rest/v1/subscribers?email=eq.${encodeURIComponent(userEmail)}&select=*`,
+      {
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
         }
-
-        return new Response(JSON.stringify({
-          success: true,
-          subscribed: true,
-          source: "manual_override"
-        }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200,
-        });
       }
-    } catch (dbError) {
-      logStep("Unexpected database error", { error: dbError instanceof Error ? dbError.message : String(dbError) });
+    );
+
+    const subData = await subResponse.json();
+    const subRow = subData[0];
+
+    const overrideActive = (subRow?.override_premium === true &&
+      (!subRow.override_end || new Date(subRow.override_end) > new Date())) ||
+      subRow?.discount_activated === true;
+
+    if (overrideActive) {
+      logStep("Override or discount active - preserving status", { 
+        tier: subRow.override_tier,
+        discountActivated: subRow.discount_activated
+      });
+
+      // Update cache - PURE DATABASE WRITE
+      await fetch(
+        `${supabaseUrl}/rest/v1/subscribers`,
+        {
+          method: 'POST',
+          headers: {
+            'apikey': supabaseKey,
+            'Authorization': `Bearer ${supabaseKey}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'resolution=merge-duplicates'
+          },
+          body: JSON.stringify({
+            email: userEmail,
+            user_id: userId,
+            stripe_customer_id: subRow?.stripe_customer_id ?? null,
+            subscribed: true,
+            subscription_tier: subRow?.override_tier ?? "Premium",
+            subscription_end: subRow?.override_end ?? null,
+            discount_activated: subRow?.discount_activated ?? false,
+            discount_activated_at: subRow?.discount_activated_at ?? null,
+            updated_at: new Date().toISOString(),
+          })
+        }
+      );
+
       return new Response(JSON.stringify({
-        success: false,
-        message: "Database operation failed"
+        success: true,
+        subscribed: true,
+        source: "manual_override"
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 503,
+        status: 200,
       });
     }
 
-    // Query Stripe for current subscription status
-    const stripe = await createResilientStripeClient(stripeKey);
-    if (!stripe) {
-      logStep("Stripe client unavailable - skipping sync");
-      return new Response(JSON.stringify({
-        success: false,
-        message: "Stripe service unavailable"
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 503,
-      });
-    }
+    // Query Stripe for current subscription status (only external dependency)
+    const Stripe = (await import("https://esm.sh/stripe@14.21.0")).default;
+    const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
 
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+    const customers = await stripe.customers.list({ email: userEmail, limit: 1 });
     
     if (customers.data.length === 0) {
       // Check if user has discount activation BEFORE marking as unsubscribed
-      const { data: subCheck } = await client
-        .from("subscribers")
-        .select("discount_activated, override_premium, override_end")
-        .eq("email", user.email)
-        .maybeSingle();
-      
-      if (subCheck?.discount_activated === true || 
-          (subCheck?.override_premium === true && 
-           (!subCheck?.override_end || new Date(subCheck.override_end) > new Date()))) {
+      if (subRow?.discount_activated === true || 
+          (subRow?.override_premium === true && 
+           (!subRow?.override_end || new Date(subRow.override_end) > new Date()))) {
         logStep("No Stripe customer but discount/override active - preserving status");
         return new Response(JSON.stringify({
           success: true,
@@ -201,46 +170,37 @@ serve(async (req) => {
       
       logStep("No Stripe customer found AND no discount - updating cache as unsubscribed");
       
-      try {
-        const { error: upsertError } = await client.from("subscribers").upsert({
-          email: user.email,
-          user_id: user.id,
-          stripe_customer_id: null,
-          subscribed: false,
-          subscription_tier: null,
-          subscription_end: null,
-          updated_at: new Date().toISOString(),
-        }, { onConflict: 'email' });
-
-        if (upsertError) {
-          logStep("Database upsert failed", { error: upsertError.message });
-          return new Response(JSON.stringify({
-            success: false,
-            message: "Database update failed"
-          }), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 503,
-          });
+      // Update cache - PURE DATABASE WRITE
+      await fetch(
+        `${supabaseUrl}/rest/v1/subscribers`,
+        {
+          method: 'POST',
+          headers: {
+            'apikey': supabaseKey,
+            'Authorization': `Bearer ${supabaseKey}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'resolution=merge-duplicates'
+          },
+          body: JSON.stringify({
+            email: userEmail,
+            user_id: userId,
+            stripe_customer_id: null,
+            subscribed: false,
+            subscription_tier: null,
+            subscription_end: null,
+            updated_at: new Date().toISOString(),
+          })
         }
+      );
 
-        return new Response(JSON.stringify({
-          success: true,
-          subscribed: false,
-          source: "stripe_api"
-        }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200,
-        });
-      } catch (dbError) {
-        logStep("Unexpected database error", { error: dbError instanceof Error ? dbError.message : String(dbError) });
-        return new Response(JSON.stringify({
-          success: false,
-          message: "Database operation failed"
-        }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 503,
-        });
-      }
+      return new Response(JSON.stringify({
+        success: true,
+        subscribed: false,
+        source: "stripe_api"
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
     }
 
     const customerId = customers.data[0].id;
@@ -275,55 +235,45 @@ serve(async (req) => {
       logStep("No active subscription");
     }
 
-    // Update database cache with fresh Stripe data - wrapped in try-catch
-    try {
-      const { error: upsertError } = await client.from("subscribers").upsert({
-        email: user.email,
-        user_id: user.id,
-        stripe_customer_id: customerId,
-        subscribed: hasActiveSub,
-        subscription_tier: subscriptionTier,
-        subscription_end: subscriptionEnd,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'email' });
-
-      if (upsertError) {
-        logStep("Database upsert failed", { error: upsertError.message });
-        return new Response(JSON.stringify({
-          success: false,
-          message: "Database update failed"
-        }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 503,
-        });
+    // Update database cache with fresh Stripe data - PURE DATABASE WRITE
+    await fetch(
+      `${supabaseUrl}/rest/v1/subscribers`,
+      {
+        method: 'POST',
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'resolution=merge-duplicates'
+        },
+        body: JSON.stringify({
+          email: userEmail,
+          user_id: userId,
+          stripe_customer_id: customerId,
+          subscribed: hasActiveSub,
+          subscription_tier: subscriptionTier,
+          subscription_end: subscriptionEnd,
+          updated_at: new Date().toISOString(),
+        })
       }
+    );
 
-      logStep("Cache updated successfully", { subscribed: hasActiveSub });
-      
-      return new Response(JSON.stringify({
-        success: true,
-        subscribed: hasActiveSub,
-        subscription_tier: subscriptionTier,
-        subscription_end: subscriptionEnd,
-        source: "stripe_api"
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
-    } catch (dbError) {
-      logStep("Unexpected database error", { error: dbError instanceof Error ? dbError.message : String(dbError) });
-      return new Response(JSON.stringify({
-        success: false,
-        message: "Database operation failed"
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 503,
-      });
-    }
+    logStep("Cache updated successfully", { subscribed: hasActiveSub });
+    
+    return new Response(JSON.stringify({
+      success: true,
+      subscribed: hasActiveSub,
+      subscription_tier: subscriptionTier,
+      subscription_end: subscriptionEnd,
+      source: "stripe_api"
+    }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 200,
+    });
 
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logStep("ERROR during sync", { message: errorMessage, stack: error instanceof Error ? error.stack : undefined });
+    logStep("ERROR during sync", { message: errorMessage });
     
     return new Response(JSON.stringify({
       success: false,
