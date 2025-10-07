@@ -52,14 +52,51 @@ export const AuthWrapper = () => {
         sessionStorage.clear();
       }
       
-      // Trigger background subscription sync on sign-in (non-blocking)
+      // CIRCUIT BREAKER: Trigger background subscription sync on sign-in (non-blocking, with backoff)
       if (event === 'SIGNED_IN' && session?.user) {
-        supabase.functions.invoke('sync-subscription-status', {
+        // Check dev feature flag
+        const syncEnabled = localStorage.getItem('billing_sync_enabled') !== 'false';
+        if (!syncEnabled) {
+          DebugLogger.log('auth', 'Background subscription sync disabled by dev flag');
+          return;
+        }
+        
+        // Check circuit breaker backoff
+        const backoffUntil = sessionStorage.getItem('billing_sync_backoff_until');
+        if (backoffUntil && Date.now() < parseInt(backoffUntil)) {
+          DebugLogger.log('auth', 'Background subscription sync skipped (circuit breaker backoff)');
+          return;
+        }
+        
+        // Attempt sync with timeout and circuit breaker
+        const syncPromise = supabase.functions.invoke('sync-subscription-status', {
           headers: { Authorization: `Bearer ${session.access_token}` }
-        }).catch(() => {
-          // Silent failure - cached subscription status will be used
-          DebugLogger.log('auth', 'Background subscription sync skipped (offline/unavailable)');
         });
+        
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('sync timeout')), 2500)
+        );
+        
+        Promise.race([syncPromise, timeoutPromise])
+          .catch(() => {
+            // Track failure and implement circuit breaker
+            const failureCount = parseInt(sessionStorage.getItem('billing_sync_failures') || '0') + 1;
+            sessionStorage.setItem('billing_sync_failures', String(failureCount));
+            
+            if (failureCount >= 2) {
+              // Activate circuit breaker: 15-minute backoff
+              const backoffUntil = Date.now() + (15 * 60 * 1000);
+              sessionStorage.setItem('billing_sync_backoff_until', String(backoffUntil));
+              DebugLogger.log('auth', `Circuit breaker activated: billing sync backoff until ${new Date(backoffUntil).toISOString()}`);
+            }
+            
+            DebugLogger.log('auth', 'Background subscription sync skipped (offline/unavailable)');
+          })
+          .then(() => {
+            // Reset failure count on success
+            sessionStorage.removeItem('billing_sync_failures');
+            sessionStorage.removeItem('billing_sync_backoff_until');
+          });
       }
     });
 

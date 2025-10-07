@@ -128,12 +128,19 @@ export const UnifiedDebugMonitor: React.FC = () => {
             typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
           ).join(' ');
           
-          // Capture debug-related messages
-          if (message.includes('Netflix') || message.includes('netflix') || 
+          // Filter non-core errors (third-party services that don't impact UX)
+          const isNonCore = message.includes('firestore.googleapis.com') || 
+                           message.includes('api.zilliqa.com') ||
+                           message.includes('QUIC_PROTOCOL_ERROR') ||
+                           message.includes('ERR_NETWORK_IO_SUSPENDED');
+          
+          // Capture debug-related messages (excluding non-core third-party noise)
+          if (!isNonCore && (message.includes('Netflix') || message.includes('netflix') || 
               message.includes('circuit') || message.includes('retry') ||
               message.includes('🎬') || message.includes('🔄') || message.includes('❌') ||
               message.includes('Failed to fetch') || message.includes('TypeError: Failed to fetch') ||
-              message.includes('504') || message.includes('api.zilliqa.com')) {
+              message.includes('504') || message.includes('sync-subscription-status') ||
+              message.includes('check-subscription'))) {
             
             const logEntry: NetflixDebugLog = {
               timestamp: Date.now(),

@@ -12,15 +12,20 @@ interface SubscriptionCache {
 export class EnhancedSubscriptionManager {
   private static cache: SubscriptionCache | null = null;
   private static readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+  private static readonly CACHE_JITTER = 0.1; // ±10% jitter to prevent cache stampede
   private static isChecking = false;
 
   /**
    * Check if current user has premium subscription with caching
    */
   static async isPremiumUser(): Promise<boolean> {
-    // Return cached result if still valid
-    if (this.cache && Date.now() - this.cache.timestamp < this.CACHE_DURATION) {
-      return this.cache.isPremium;
+    // Return cached result if still valid (with jittered expiry)
+    if (this.cache) {
+      const jitter = this.CACHE_DURATION * this.CACHE_JITTER * (Math.random() - 0.5);
+      const effectiveDuration = this.CACHE_DURATION + jitter;
+      if (Date.now() - this.cache.timestamp < effectiveDuration) {
+        return this.cache.isPremium;
+      }
     }
 
     // Prevent multiple concurrent checks
@@ -39,16 +44,16 @@ export class EnhancedSubscriptionManager {
         return false;
       }
 
-      // Check subscription status with timeout
+      // Check subscription status with strict timeout (local-first, no external network deps)
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Subscription check timeout')), 3000)
+        setTimeout(() => reject(new Error('Subscription check timeout')), 2000)
       );
 
       const subscriptionPromise = supabase
         .from('subscribers')
         .select('subscribed, subscription_end, subscription_tier, override_premium, override_end')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       const { data: subscription, error } = await Promise.race([
         subscriptionPromise,

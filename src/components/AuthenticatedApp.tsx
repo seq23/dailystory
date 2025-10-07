@@ -154,42 +154,51 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
         return;
       }
 
-      const { data, error } = await supabase.functions.invoke('check-subscription', {
+      // LOCAL-FIRST: Check database directly with timeout (no network dependency)
+      const dbCheckPromise = supabase
+        .from('subscribers')
+        .select('subscribed, subscription_tier, subscription_end, override_premium, override_end')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('DB check timeout')), 3000)
+      );
+
+      const { data: dbData, error: dbError } = await Promise.race([
+        dbCheckPromise,
+        timeoutPromise
+      ]) as any;
+
+      // Check if subscription is active (normal or override)
+      if (!dbError && dbData) {
+        const isSubscribed = dbData.subscribed;
+        const isNotExpired = !dbData.subscription_end || new Date(dbData.subscription_end) > new Date();
+        const hasOverride = dbData.override_premium;
+        const overrideNotExpired = !dbData.override_end || new Date(dbData.override_end) > new Date();
+        
+        const isPremiumActive = (isSubscribed && isNotExpired) || (hasOverride && overrideNotExpired);
+        
+        if (isPremiumActive) {
+          setIsPremium(true);
+          setSubscriptionTier(dbData.subscription_tier || 'Premium');
+          setSubscriptionEnd(dbData.subscription_end);
+        }
+      }
+
+      // ANALYTICS ONLY: Fire-and-forget check-subscription (never gates UX)
+      supabase.functions.invoke('check-subscription', {
         headers: {
           Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
         },
+      }).catch(() => {
+        // Silent - analytics only
       });
 
-      if (!error && data?.subscribed) {
-        setIsPremium(true);
-        setSubscriptionTier(data.subscription_tier || 'Premium');
-        setSubscriptionEnd(data.subscription_end);
-      }
       // Note: We never downgrade authenticated users from premium status
     } catch (error) {
-      // Subscription check failures are non-blocking; only log in debug mode
-      if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
-        DebugLogger.log('auth', 'Subscription service unavailable, checking database fallback', error);
-      }
-      // Fallback to check database directly
-      try {
-        const { data, error: dbError } = await supabase
-          .from('subscribers')
-          .select('subscribed, subscription_tier, subscription_end')
-          .eq('user_id', user.id)
-          .single();
-
-        if (!dbError && data?.subscribed) {
-          setIsPremium(true);
-          setSubscriptionTier(data.subscription_tier || 'Premium');
-          setSubscriptionEnd(data.subscription_end);
-        }
-        // Note: We never downgrade authenticated users from premium status
-      } catch (dbError) {
-        if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1') {
-          DebugLogger.log('auth', 'Database subscription fallback also unavailable', dbError);
-        }
-      }
+      // All errors are non-blocking; authenticated users remain premium
+      DebugLogger.log('auth', 'Subscription check error (non-blocking)', error);
     }
   };
 
