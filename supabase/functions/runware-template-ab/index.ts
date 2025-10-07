@@ -970,9 +970,9 @@ async function callRunwareAPI(positivePrompt: string, negativePrompt: string, op
         throw new Error('No imageURL in Runware response');
       }
 
-      console.log(`✅ Runware API call successful`);
+      console.log(`✅ Runware API call successful`, { imageURL: imageTask.imageURL, seed: imageTask.seed });
       clearTimeout(timeoutId);
-      return imageTask.imageURL;
+      return { imageURL: imageTask.imageURL, seed: imageTask.seed }; // ✅ Return object with seed
 
     } catch (error: any) {
       clearTimeout(timeoutId);
@@ -1218,8 +1218,10 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
             // REAL mode: Generate image with Runware API
             try {
               console.log(`🎨 [${requestId}] REAL Mode: Generating image for Tier 2.5A (legacy path)`);
-              imageURL = await callRunwareAPI(positivePrompt, negativePrompt, { sessionId, pageNumber, model: 'runware:100@1' });
-              console.log(`✅ [${requestId}] Image generated successfully:`, imageURL);
+              const runwareResult = await callRunwareAPI(positivePrompt, negativePrompt, { sessionId, pageNumber, model: 'runware:100@1' });
+              imageURL = typeof runwareResult === 'string' ? runwareResult : runwareResult?.imageURL; // ✅ Handle object response
+              const returnedSeed = typeof runwareResult === 'object' ? runwareResult?.seed : null;
+              console.log(`✅ [${requestId}] Image generated successfully:`, { imageURL, seed: returnedSeed });
             } catch (imageError: any) {
               console.error(`❌ [${requestId}] Image generation failed:`, imageError.message);
               return createResponse({
@@ -1241,7 +1243,7 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
             service: SERVICE_NAME,
             positivePrompt,
             negativePrompt,
-            ...(imageURL && { imageURL }),
+            ...(imageURL && { imageURL, seed: returnedSeed || null }), // ✅ Add seed when imageURL present
             styleFrameworkUsed: styleFramework.name,
             templateComplexity: 'A',
             precomputedCCSUsed: false,
@@ -1286,8 +1288,10 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
             // REAL mode: Generate image with Runware API
             try {
               console.log(`🎨 [${requestId}] REAL Mode: Generating image for Tier 2.5A (inline fallback)`);
-              imageURL = await callRunwareAPI(positivePrompt, negativePrompt, { sessionId, pageNumber, model: 'runware:100@1' });
-              console.log(`✅ [${requestId}] Image generated successfully:`, imageURL);
+              const runwareResult = await callRunwareAPI(positivePrompt, negativePrompt, { sessionId, pageNumber, model: 'runware:100@1' });
+              imageURL = typeof runwareResult === 'string' ? runwareResult : runwareResult?.imageURL; // ✅ Handle object response
+              const returnedSeed = typeof runwareResult === 'object' ? runwareResult?.seed : null;
+              console.log(`✅ [${requestId}] Image generated successfully:`, { imageURL, seed: returnedSeed });
             } catch (imageError: any) {
               console.error(`❌ [${requestId}] Image generation failed:`, imageError.message);
               return createResponse({
@@ -1309,7 +1313,7 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
             service: SERVICE_NAME,
             positivePrompt,
             negativePrompt,
-            ...(imageURL && { imageURL }),
+            ...(imageURL && { imageURL, seed: returnedSeed || null }), // ✅ Add seed when imageURL present
             styleFrameworkUsed: styleFramework.name,
             templateComplexity: 'A',
             precomputedCCSUsed: false,
@@ -1370,8 +1374,10 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
         // REAL mode: Generate image with Runware API
         try {
           console.log(`🎨 [${requestId}] REAL Mode: Generating image for Tier 2.5B`);
-          imageURL = await callRunwareAPI(positivePrompt, negativePrompt, { sessionId, pageNumber, model: 'runware:100@1' });
-          console.log(`✅ [${requestId}] Image generated successfully:`, imageURL);
+          const runwareResult = await callRunwareAPI(positivePrompt, negativePrompt, { sessionId, pageNumber, model: 'runware:100@1' });
+          imageURL = typeof runwareResult === 'string' ? runwareResult : runwareResult?.imageURL; // ✅ Handle object response
+          const returnedSeed = typeof runwareResult === 'object' ? runwareResult?.seed : null;
+          console.log(`✅ [${requestId}] Image generated successfully:`, { imageURL, seed: returnedSeed });
         } catch (imageError: any) {
           console.error(`❌ [${requestId}] Image generation failed:`, imageError.message);
           return createResponse({
@@ -1393,7 +1399,7 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
         service: SERVICE_NAME,
         positivePrompt,
         negativePrompt,
-        ...(imageURL && { imageURL }),
+        ...(imageURL && { imageURL, seed: returnedSeed || null }), // ✅ Add seed when imageURL present
         styleFrameworkUsed: styleFramework.name,
         templateComplexity: 'B',
         precomputedCCSUsed: usedPrecomputedData,

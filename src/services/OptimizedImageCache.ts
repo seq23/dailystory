@@ -123,6 +123,23 @@ export class OptimizedImageCache {
   }
   
   /**
+   * Validate seed consistency - warn about mismatches
+   */
+  static validateSeedConsistency(sessionId: string, newSeed: number): boolean {
+    const existingSeed = this.storySeedCache.get(sessionId);
+    if (existingSeed && existingSeed !== newSeed) {
+      DebugLogger.warn('image', '⚠️ SEED MISMATCH DETECTED', {
+        sessionId,
+        existingSeed,
+        newSeed,
+        impact: 'Character appearance may change'
+      });
+      return false;
+    }
+    return true;
+  }
+  
+  /**
    * Skip content processing for simple content
    */
   static shouldSkipProcessing(content: string): boolean {

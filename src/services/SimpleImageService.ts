@@ -449,6 +449,15 @@ export class SimpleImageService {
           // NEW: Store seed from first page for visual consistency
           if (!existingSeed && templateResult.data?.seed) {
             OptimizedImageCache.setStorySeed(normalizedSessionId, templateResult.data.seed);
+            DebugLogger.log('image', '🌱 SEED STORED from template', { 
+              sessionId: normalizedSessionId, 
+              seed: templateResult.data.seed 
+            });
+          } else if (!templateResult.data?.seed) {
+            DebugLogger.warn('image', '⚠️ NO SEED RETURNED from template', { 
+              sessionId: normalizedSessionId,
+              response: templateResult.data 
+            });
           }
           
           try {
@@ -646,6 +655,16 @@ export class SimpleImageService {
         // NEW: Store seed from first page for visual consistency
         if (!existingSeed && orchResult?.seed) {
           OptimizedImageCache.setStorySeed(normalizedSessionId, orchResult.seed);
+          DebugLogger.log('image', '🌱 SEED STORED from orchestrator', { 
+            sessionId: normalizedSessionId, 
+            seed: orchResult.seed 
+          });
+        } else if (!orchResult?.seed) {
+          DebugLogger.warn('image', '⚠️ NO SEED RETURNED from orchestrator', { 
+            sessionId: normalizedSessionId,
+            tier: orchResult?.tier,
+            response: orchResult 
+          });
         }
 
         // Emit timer resume event

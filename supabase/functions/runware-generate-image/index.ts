@@ -1805,6 +1805,7 @@ Deno.serve(async (req) => {
               const result = {
                 success: true,
                 imageURL: directModeResponse.data.imageURL,
+                seed: directModeResponse.data?.seed || directModeResponse.data?.runwareDebugData?.seed || null, // ✅ Extract seed
                 primaryScene: directModeResponse.data.primaryScene, // Include primaryScene for downstream processing
                 provider: "direct-mode-fallback",
                 tier: "DIRECT_MODE",
@@ -1936,6 +1937,7 @@ Deno.serve(async (req) => {
               const result = {
                 success: true,
                 imageURL: tier25bResponse.data.imageURL,
+                seed: tier25bResponse.data?.seed || tier25bResponse.data?.imageGeneration?.seed || null, // ✅ Extract seed
                 provider: "tier-2.5b-fallback",
                 tier: "TIER_2.5B",
                 pathUsed: "template-cascade",
@@ -2057,6 +2059,7 @@ Deno.serve(async (req) => {
                 const result = {
                   success: true,
                   imageURL: tier25aResponse.data.imageURL,
+                  seed: tier25aResponse.data?.seed || tier25aResponse.data?.imageGeneration?.seed || null, // ✅ Extract seed
                   provider: "tier-2.5a-fallback",
                   tier: "TIER_2.5A",
                   pathUsed: "template-cascade",
@@ -2178,6 +2181,7 @@ Deno.serve(async (req) => {
                 const result = {
                   success: true,
                   imageURL: tier25bResponse.data.imageURL,
+                  seed: tier25bResponse.data?.seed || tier25bResponse.data?.imageGeneration?.seed || null, // ✅ Extract seed
                   provider: "tier-2.5b-fallback",
                   tier: "TIER_2.5B",
                   pathUsed: "template-cascade",
@@ -2316,6 +2320,7 @@ Deno.serve(async (req) => {
                 const result = {
                   success: true,
                   imageURL: tier25cResponse.data.imageURL,
+                  seed: tier25cResponse.data?.seed || tier25cResponse.data?.imageGeneration?.seed || null, // ✅ Extract seed
                   provider: "tier-2.5c-fallback",
                   tier: "TIER_2.5C",
                   pathUsed: "template-cascade",

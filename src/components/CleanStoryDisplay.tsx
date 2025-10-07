@@ -2712,7 +2712,7 @@ const initializeStory = async () => {
       const storyMarkers = EnhancedImageCache.extractStoryMarkers(storyText, userInfo);
       const cachedImageUrl = EnhancedImageCache.getCachedImage(
         storyText.slice(0, 120),
-        characterSessionIdValue, 
+        stableSessionId, // ✅ CRITICAL FIX: Use stableSessionId for cache consistency
         index,
         storyId,
         storyMarkers
@@ -2728,7 +2728,7 @@ const initializeStory = async () => {
     }
     
     try {
-      const sessionId = generateSessionId();
+      const sessionId = stableSessionId; // ✅ CRITICAL FIX: Use stableSessionId for batch generation
       const result = await SimpleImageService.generateStoryImage(
         storyText,
         { ...userInfo, difficultyLevel: currentDifficulty, userTier: isPremium ? 'premium' : 'guest' },

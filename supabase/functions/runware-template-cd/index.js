@@ -586,6 +586,7 @@ async function handleRequest(req) {
   const result = {
     success: true,
     imageURL: typeof imageGenResult === 'string' ? imageGenResult : imageGenResult?.imageURL,
+    seed: typeof imageGenResult === 'object' ? imageGenResult?.seed : null, // ✅ TOP LEVEL for frontend capture
     templateData: templateResult,
     complexity: complexityLevel,
     sessionArchitecture: 'parameter-based',
@@ -593,8 +594,7 @@ async function handleRequest(req) {
     positivePrompt: templateResult.positivePrompt,
     negativePrompt: templateResult.negativePrompt,
     imageGeneration: {
-      cost: typeof imageGenResult === 'object' ? (imageGenResult?.cost || 0.0013) : 0.0013,
-      seed: typeof imageGenResult === 'object' ? imageGenResult?.seed : null
+      cost: typeof imageGenResult === 'object' ? (imageGenResult?.cost || 0.0013) : 0.0013
     }
   };
   

@@ -1336,6 +1336,7 @@ serve(async (req) => {
         }
 
         imageURL = result.imageURL;
+        returnedSeed = result.seed || result.imageGeneration?.seed || null; // ✅ Extract seed from template-cd
         
         // Capture Runware debug data for Direct Mode
         runwareDebugData = {
@@ -1385,6 +1386,9 @@ serve(async (req) => {
       
       // CRITICAL FIX: Include structuredAvatarData in ALL modes for orchestrator
       ...(structuredAvatarData && { structuredAvatarData }),
+      
+      // ✅ SEED: Include seed when Direct Mode generated image
+      ...(directMode && returnedSeed && { seed: returnedSeed }),
       
       // Metadata for orchestrator
       templateStructure: directMode ? undefined : 'COMPLETE_TIER_1',
