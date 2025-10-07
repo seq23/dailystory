@@ -68,12 +68,20 @@ export class CharlotteVoiceService {
         detail: { system: 'charlotte-story', priority: 4, source: 'story-reading' } 
       }));
 
+      // 15-second timeout for story reading (balanced between 8s interactive and 30s ultimate failsafe)
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Story reading timeout after 15 seconds')), 15000);
+      });
+
       // Use synchronized TTS for story reading (maintains word timing sophistication)
-      const result = await SynchronizedElevenLabsTTS.generateSynchronizedSpeech(
-        text, 
-        'conversation', // Natural conversation tone for story reading
-        CharlotteVoiceService.charlotteVoiceId
-      );
+      const result = await Promise.race([
+        SynchronizedElevenLabsTTS.generateSynchronizedSpeech(
+          text, 
+          'conversation', // Natural conversation tone for story reading
+          CharlotteVoiceService.charlotteVoiceId
+        ),
+        timeoutPromise
+      ]);
 
       this.wordTimings = result.wordTimings;
       this.onWordHighlight = onWordHighlight;

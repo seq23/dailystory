@@ -180,6 +180,16 @@ export const UnifiedAudioControls: React.FC<UnifiedAudioControlsProps> = ({
       
       DebugLogger.log('audio', `Audio highlighting ${shouldHighlight ? 'ENABLED' : 'DISABLED'} for difficulty: "${difficulty}"`);
       
+      // Set playing state BEFORE starting audio for immediate Stop button visibility
+      setIsLoading(false);
+      setIsPlaying(true);
+      onPlayingChange?.(true);
+      
+      // Emit state change event
+      window.dispatchEvent(new CustomEvent('audio:statechange', { 
+        detail: { isPlaying: true } 
+      }));
+      
       await charlotteVoiceService.charlotteReadStory(text, highlightCallback, audioSpeed);
       
       // Mark as played for free users
@@ -197,14 +207,6 @@ export const UnifiedAudioControls: React.FC<UnifiedAudioControlsProps> = ({
       }
       
       setRetryCount(0);
-      setIsLoading(false);
-      setIsPlaying(true);
-      onPlayingChange?.(true);
-      
-      // Emit state change event
-      window.dispatchEvent(new CustomEvent('audio:statechange', { 
-        detail: { isPlaying: true } 
-      }));
       
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Audio playback failed';
@@ -240,7 +242,10 @@ export const UnifiedAudioControls: React.FC<UnifiedAudioControlsProps> = ({
   };
 
   const onRetry = async () => {
-    if (retryCount >= 3) return; // Max 3 retries
+    // Premium users don't use retry logic - they get clean single attempts
+    if (isPremium) return;
+    
+    if (retryCount >= 3) return; // Max 3 retries for guest users
     
     const newRetryCount = retryCount + 1;
     setRetryCount(newRetryCount);
@@ -327,7 +332,7 @@ export const UnifiedAudioControls: React.FC<UnifiedAudioControlsProps> = ({
           className="gap-2 text-orange-600 border-orange-300 hover:bg-orange-50"
         >
           <RotateCcw className="w-4 h-4" />
-          {t("audioReading.tryAgain", "Try Again")} {retryCount > 0 && `(${retryCount}/3)`}
+          {t("audioReading.tryAgain", "Try Again")} {!isPremium && retryCount > 0 && `(${retryCount}/3)`}
         </Button>
       ) : (
         <Button
