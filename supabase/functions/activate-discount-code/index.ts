@@ -1,7 +1,6 @@
 // PURE DATABASE FUNCTION - Zero Network Dependencies
 // Direct Supabase REST API calls only
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { handleHealthAndCors } from "../_shared/healthCors.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -28,8 +27,22 @@ const logStep = (step: string, details?: any) => {
 };
 
 serve(async (req) => {
-  const healthResponse = handleHealthAndCors(req);
-  if (healthResponse) return healthResponse;
+  // Inline CORS and health check handling
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }
+  
+  const url = new URL(req.url);
+  if (req.method === 'HEAD' && (url.pathname === '/health' || url.pathname === '/')) {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }
+  
+  if (req.method === 'GET' && (url.pathname === '/health' || url.pathname === '/')) {
+    return new Response(JSON.stringify({ ok: true }), { 
+      status: 200, 
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+    });
+  }
 
   try {
     logStep("Function started");
