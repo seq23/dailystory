@@ -250,3 +250,43 @@ This prevents potential race conditions where the gate could be released twice (
 - **Deployment**: Resolves syntax parsing error, enables successful deployment
 - **Reliability**: Prevents gate double-release edge cases
 - **Architectural compliance**: Maintains fail-fast and nuclear independence principles
+
+---
+
+## October 7, 2025 Update: Complete StaticDataCache Decoupling
+
+### Changes Made:
+1. **Fixed critical syntax error:** Removed stray closing brace at line 370 causing `SUPABASE_CODEGEN_ERROR`
+2. **Removed cultural bundle StaticDataCache fallback:** Lines 1167-1201 refactored to 2-tier system
+3. **Enforced 2-tier fallback architecture:** CCS → Emergency Hardcoded (no StaticDataCache middleman)
+
+### Rationale:
+- CharacterConsistencyService.js has ALL arrays inline (77 hair + 48 skin + 36 features + 42 AA styles)
+- CCS arrays are SUPERIOR to StaticDataCache (extra "child" variations, "authentic"/"photorealistic" prefixes)
+- StaticDataCache should ONLY be used by emergency template service per architecture docs
+- Eliminates unnecessary import dependency and potential failure point
+
+### Technical Details:
+**Before (3-tier):**
+```
+CCS → StaticDataCache → Emergency Hardcoded
+```
+
+**After (2-tier):**
+```
+CCS → Emergency Hardcoded
+```
+
+### Implementation:
+- **File:** `supabase/functions/ai-visual-scene-creator/index.ts`
+- **Lines modified:** 1-1, 365-370, 1166-1217
+- **Removed:** StaticDataCache import and fallback try-catch block
+- **Simplified:** Direct fallback to emergency hardcoded cultural bundle when CCS fails
+- **Maintained:** All existing emergency fallback logic (African American detection, hair/features defaults)
+
+### Result:
+- ✅ Direct Mode now has clean 2-tier fallback: CCS → Emergency Hardcoded
+- ✅ No more StaticDataCache imports anywhere in ai-visual-scene-creator
+- ✅ Matches updated documentation from October 7, 2025 doc refresh
+- ✅ Reduced code complexity and potential points of failure
+- ✅ Parse error resolved - function deploys successfully

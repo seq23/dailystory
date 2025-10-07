@@ -1,4 +1,4 @@
-// DEPLOY_MARKER: 2025-10-07T13:30:00Z - Fixed returnedSeed scope + removed StaticDataCache fallback
+// DEPLOY_MARKER: 2025-10-07T14:30:00Z - Fix stray brace + enforce 2-tier fallback (CCS→Hardcoded)
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -365,7 +365,6 @@ async function generateCompleteVisualSchema(
         };
         console.log(`✅ [AISCHEMA_FALLBACK] source=hardcoded, skinTone=${fallbackSkinTone}, ethnicity=${derivedEthnicity}, hairColor=${structuredAvatarData.hairColor}`);
       }
-    }
     }
   }
 
@@ -1164,6 +1163,7 @@ serve(async (req) => {
       characterSeed = await generateCharacterSeed(sessionId, userInfo);
 
       // Generate culturalBundle using CharacterConsistencyService with aligned sessionId
+      // 2-Tier fallback: CCS → Emergency Hardcoded (no StaticDataCache)
       if (characterServiceAvailable && characterConsistencyService) {
         try {
           culturalBundle = await characterConsistencyService.getCulturalEnhancements(
@@ -1173,47 +1173,26 @@ serve(async (req) => {
           );
           console.log(`✅ [${requestId}] INITIAL_DESCRIPTOR_SOURCE: CharacterConsistencyService (inlined)`);
         } catch (tier1Error) {
-          console.warn(`⚠️ [${requestId}] CharacterConsistencyService.getCulturalEnhancements failed, trying StaticDataCache`, tier1Error);
+          console.warn(`⚠️ [${requestId}] CharacterConsistencyService.getCulturalEnhancements failed, using emergency hardcoded`, tier1Error);
           characterServiceAvailable = false;
         }
       }
       
-      // 3-Tier fallback: CCS → StaticDataCache → Hardcoded
+      // Emergency hardcoded fallback if CCS unavailable
       if (!culturalBundle) {
-        try {
-          console.log(`🔄 [${requestId}] Trying StaticDataCache for cultural bundle (Tier 2)`);
-          const { getHairBySkintone, getSkinBySkintone } = await import('../_shared/StaticDataCache.js');
-          const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
-          const nativeLanguage = userInfo?.native_language || userInfo?.nativeLanguage || 'en';
-          const hairColor = getHairBySkintone(skinTone, sessionId);
-          const skinFeatures = getSkinBySkintone(skinTone, sessionId);
-          
-          // Standardized ethnicity detection: dark skin + afro heritage languages (en, es, fr, pt)
-          const isAfricanAmerican = (skinTone === 'dark') && ['en', 'en-US', 'es', 'fr', 'pt'].includes(nativeLanguage);
-          
-          culturalBundle = {
-            hair: hairColor || (isAfricanAmerican ? 'photorealistic detailed textured 4C African American hairstyle' : 'brown hair'),
-            features: skinFeatures || (isAfricanAmerican ? 'authentic African American features' : 'diverse features'),
-            profile: characterSeed?.culturalProfile || null,
-            source: 'static_data_cache'
-          };
-          console.log(`✅ [${requestId}] [CULTURAL_BUNDLE_FALLBACK] source=static_data_cache`);
-        } catch (staticError) {
-          console.log(`🔄 [${requestId}] StaticDataCache failed, using emergency hardcoded (Tier 3)`);
-          const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
-          const nativeLanguage = userInfo?.native_language || userInfo?.nativeLanguage || 'en';
-          
-          // Standardized ethnicity detection: dark skin + afro heritage languages (en, es, fr, pt)
-          const isAfricanAmerican = (skinTone === 'dark') && ['en', 'en-US', 'es', 'fr', 'pt'].includes(nativeLanguage);
-          
-          culturalBundle = {
-            hair: isAfricanAmerican ? 'photorealistic detailed textured 4C African American hairstyle' : userInfo?.avatar?.hairColor || 'brown hair',
-            features: isAfricanAmerican ? 'authentic African American features' : 'diverse features',
-            profile: characterSeed?.culturalProfile || null,
-            source: 'emergency_hardcoded'
-          };
-          console.log(`✅ [${requestId}] [CULTURAL_BUNDLE_FALLBACK] source=hardcoded`);
-        }
+        const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
+        const nativeLanguage = userInfo?.native_language || userInfo?.nativeLanguage || 'en';
+        
+        // Standardized ethnicity detection: dark skin + afro heritage languages (en, es, fr, pt)
+        const isAfricanAmerican = (skinTone === 'dark') && ['en', 'en-US', 'es', 'fr', 'pt'].includes(nativeLanguage);
+        
+        culturalBundle = {
+          hair: isAfricanAmerican ? 'photorealistic detailed textured 4C African American hairstyle' : userInfo?.avatar?.hairColor || 'brown hair',
+          features: isAfricanAmerican ? 'authentic African American features' : 'diverse features',
+          profile: characterSeed?.culturalProfile || null,
+          source: 'emergency_hardcoded'
+        };
+        console.log(`✅ [${requestId}] [CULTURAL_BUNDLE_FALLBACK] source=emergency_hardcoded (2-tier: CCS→Hardcoded)`);
       }
     } else {
       // Fallback for Scene-Only mode without orchestrator bundle
