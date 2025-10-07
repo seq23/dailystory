@@ -453,10 +453,13 @@ export class SimpleImageService {
               sessionId: normalizedSessionId, 
               seed: templateResult.data.seed 
             });
-          } else if (!templateResult.data?.seed) {
-            DebugLogger.warn('image', '⚠️ NO SEED RETURNED from template', { 
+          } else if (!existingSeed && !templateResult.data?.seed) {
+            // Generate fallback seed for consistency
+            const fallbackSeed = Math.floor(Math.random() * 4294967296);
+            OptimizedImageCache.setStorySeed(normalizedSessionId, fallbackSeed);
+            DebugLogger.warn('image', '⚠️ NO SEED - Using fallback for consistency', { 
               sessionId: normalizedSessionId,
-              response: templateResult.data 
+              fallbackSeed 
             });
           }
           
@@ -659,11 +662,13 @@ export class SimpleImageService {
             sessionId: normalizedSessionId, 
             seed: orchResult.seed 
           });
-        } else if (!orchResult?.seed) {
-          DebugLogger.warn('image', '⚠️ NO SEED RETURNED from orchestrator', { 
+        } else if (!existingSeed && !orchResult?.seed) {
+          // Generate fallback seed for consistency
+          const fallbackSeed = Math.floor(Math.random() * 4294967296);
+          OptimizedImageCache.setStorySeed(normalizedSessionId, fallbackSeed);
+          DebugLogger.warn('image', '⚠️ NO SEED - Using fallback for consistency', { 
             sessionId: normalizedSessionId,
-            tier: orchResult?.tier,
-            response: orchResult 
+            fallbackSeed 
           });
         }
 

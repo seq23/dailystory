@@ -586,7 +586,7 @@ async function handleRequest(req) {
   const result = {
     success: true,
     imageURL: typeof imageGenResult === 'string' ? imageGenResult : imageGenResult?.imageURL,
-    seed: typeof imageGenResult === 'object' ? imageGenResult?.seed : null, // ✅ TOP LEVEL for frontend capture
+    seed: typeof imageGenResult === 'object' ? (imageGenResult?.seed || imageGenResult?.imageGeneration?.seed || null) : null, // ✅ Extract from both top-level and nested paths
     templateData: templateResult,
     complexity: complexityLevel,
     sessionArchitecture: 'parameter-based',

@@ -484,3 +484,31 @@ const cachedImageUrl = EnhancedImageCache.getCachedImage(
 #### All Backend Seed Fixes (DEPLOYED ✅)
 
 See sections 1.1-1.4 above for complete word-for-word backend modifications. All backend changes have been deployed and are functioning correctly.
+
+---
+
+## Related Fix: Page Flicker & Missing Seed Prevention (2025-10-07)
+
+### Additional Stability Improvements
+
+While verifying session ID fixes, we discovered and resolved two related issues:
+
+1. **Duplicate `story:stabilized` Event Prevention**
+   - **Issue:** Rapid component mount/unmount causing duplicate event dispatches
+   - **Fix:** 500ms dispatch guard in CleanStoryDisplay.tsx (Line 1292)
+   - **Result:** Eliminates duplicate image generation calls and visual flicker
+
+2. **Seed Extraction from Nested API Response**
+   - **Issue:** Runware returns seed as `imageGeneration.seed`, not top-level
+   - **Fix:** Corrected extraction path in runware-template-cd (Line 589)
+   - **Result:** Frontend now receives seed for character consistency
+
+3. **Fallback Seed Generation**
+   - **Issue:** Missing seeds cause character appearance changes
+   - **Fix:** Generate fallback seed when backend returns none (SimpleImageService.ts lines 456-461, 662-668)
+   - **Result:** Character consistency guaranteed even with backend failures
+
+**Integration with CharacterConsistencyService:**
+- These fixes operate on seed propagation layer (independent)
+- CCS handles character trait extraction (separate layer)
+- No interference between systems - both work together for consistency

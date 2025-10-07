@@ -1289,6 +1289,15 @@ useEffect(() => {
     
     // Debounce for rapid updates (100ms)
     const timeoutId = ManagedTimers.setTimeout(() => {
+      // Guard against duplicate dispatch
+      const lastDispatch = (window as any).__lastStoryStabilizedDispatch || 0;
+      const now = Date.now();
+      if (now - lastDispatch < 500) {
+        DebugLogger.log('story', 'Skipping duplicate story:stabilized dispatch (too soon)', { timeSince: now - lastDispatch });
+        return;
+      }
+      
+      (window as any).__lastStoryStabilizedDispatch = now;
       DebugLogger.log('story', 'BULLETPROOF: Dispatching story:stabilized with fresh story data');
       window.dispatchEvent(new CustomEvent('story:stabilized'));
     }, 100, 'CleanStoryDisplay');
