@@ -63,7 +63,10 @@ export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
         src={imageSrc}
         alt={alt}
         className={smartObjectFit ? `w-full h-full ${objectFitStyle.objectFit} rounded-lg` : className}
-        style={{ display: 'block' }}
+        style={{ 
+          display: 'block',
+          transition: 'opacity 200ms ease-in-out'
+        }}
         onLoad={(e) => {
           if (smartObjectFit) {
             onImageLoad(e.currentTarget);

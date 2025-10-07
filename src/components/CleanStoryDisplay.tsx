@@ -200,6 +200,12 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     try { return localStorage.getItem('storyImagesEnabled') !== '0'; } catch { return true; }
   });
   
+  // ANTI-FLICKER: Preload images-disabled placeholder to prevent network delay flicker
+  useEffect(() => {
+    const img = new Image();
+    img.src = IMAGES_DISABLED_PLACEHOLDER;
+  }, []);
+  
   // Toast deduplication state - track if fallback toast shown for current story session
   const fallbackToastShownRef = useRef(false);
   const currentToastRef = useRef<{ id: string; dismiss: () => void } | null>(null);
@@ -530,6 +536,28 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     window.addEventListener('storyImagesToggle', handler as EventListener);
     return () => window.removeEventListener('storyImagesToggle', handler as EventListener);
   }, [isPremium, currentPage, pageImages, isStoryStable]);
+  
+  // NETWORK RESILIENCE: Listen for offline/online events for graceful degradation
+  useEffect(() => {
+    const handleOffline = () => {
+      DebugLogger.warn('network', 'Device went offline - pausing image generation');
+    };
+    
+    const handleOnline = () => {
+      DebugLogger.log('network', 'Device back online - resuming image generation');
+      if (imagesEnabled && !pageImages[currentPage] && isStoryStable) {
+        generateImageForCurrentPage();
+      }
+    };
+    
+    window.addEventListener('offline', handleOffline);
+    window.addEventListener('online', handleOnline);
+    
+    return () => {
+      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('online', handleOnline);
+    };
+  }, [imagesEnabled, currentPage, pageImages, isStoryStable]);
   
   // DEFENSIVE: Force images enabled for guest users if somehow disabled
   useEffect(() => {
@@ -3736,7 +3764,8 @@ const handleRestartTimer = () => {
 
 
   // Get difficulty-based text configuration optimized for each reading level
-  const currentImage = pageImages[currentPage];
+  // ANTI-FLICKER FIX: Respect imagesEnabled state to prevent flash during toggle/navigation
+  const currentImage = imagesEnabled ? pageImages[currentPage] : IMAGES_DISABLED_PLACEHOLDER;
   const hasCurrentImage = !!currentImage;
   
   // 🔍 ENHANCED IMAGE DEBUGGING: Track what image is actually being displayed
@@ -4047,8 +4076,12 @@ const handleRestartTimer = () => {
                         />
                       </AspectRatio>
                     ) : (
-                      <div className="relative w-full h-[120px] rounded-2xl overflow-hidden shadow-md bg-muted/20 flex items-center justify-center">
-                        <div className="text-6xl opacity-40">📚</div>
+                      <div className="relative w-full h-[120px] rounded-2xl overflow-hidden shadow-md bg-muted/20">
+                        <img 
+                          src={IMAGES_DISABLED_PLACEHOLDER} 
+                          alt="Reading corner for serious readers"
+                          className="w-full h-full object-cover transition-opacity duration-300"
+                        />
                       </div>
                     )
                   ) : (

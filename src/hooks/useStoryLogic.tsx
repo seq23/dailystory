@@ -142,20 +142,42 @@ export const useStoryLogic = ({
   // Navigation handlers
   const handleNext = useCallback(() => {
     if (currentPage < story.length - 1) {
+      // ANTI-FLICKER: Mark story unstable during navigation (50ms debounce as per Anti-Flicker System)
+      setIsStoryStable(false);
+      
       setCurrentPage(currentPage + 1);
+      
       DebugLogger.logToDebugMonitorOnly('story', 'Navigated to next page', { 
         newPage: currentPage + 1, 
-        totalPages: story.length 
+        totalPages: story.length,
+        markedUnstable: true
       });
+      
+      // Debounced re-stabilization to prevent image generation race conditions
+      setTimeout(() => {
+        setIsStoryStable(true);
+        DebugLogger.logToDebugMonitorOnly('story', 'Story re-stabilized after navigation');
+      }, 50);
     }
   }, [currentPage, story.length]);
 
   const handlePrevious = useCallback(() => {
     if (currentPage > 0) {
+      // ANTI-FLICKER: Mark story unstable during navigation (50ms debounce as per Anti-Flicker System)
+      setIsStoryStable(false);
+      
       setCurrentPage(currentPage - 1);
+      
       DebugLogger.logToDebugMonitorOnly('story', 'Navigated to previous page', { 
-        newPage: currentPage - 1 
+        newPage: currentPage - 1,
+        markedUnstable: true
       });
+      
+      // Debounced re-stabilization to prevent image generation race conditions
+      setTimeout(() => {
+        setIsStoryStable(true);
+        DebugLogger.logToDebugMonitorOnly('story', 'Story re-stabilized after navigation');
+      }, 50);
     }
   }, [currentPage]);
 

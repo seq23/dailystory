@@ -24,7 +24,7 @@ export class NetworkQualityService {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 5000);
         
-        // Use internal health endpoint instead of external gstatic
+        // Try primary health endpoint first
         const response = await fetch(`${window.location.origin}/api/health`, {
           method: 'HEAD',
           signal: controller.signal,
@@ -32,7 +32,29 @@ export class NetworkQualityService {
         });
         
         clearTimeout(timeoutId);
-        return response.ok;
+        
+        if (response.ok) {
+          return true;
+        }
+        
+        // SUPABASE FALLBACK: If health endpoint failed, try backend check
+        try {
+          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+          if (supabaseUrl) {
+            const supabaseCheck = await fetch(`${supabaseUrl}/rest/v1/`, {
+              method: 'HEAD',
+              signal: controller.signal
+            });
+            if (supabaseCheck.ok) {
+              console.info('Health endpoint failed but Supabase reachable');
+              return true;
+            }
+          }
+        } catch (supabaseError) {
+          // Supabase also unreachable, continue to retry loop
+        }
+        
+        return false;
       } catch (error) {
         attempt++;
         if (attempt < maxRetries) {
@@ -43,7 +65,14 @@ export class NetworkQualityService {
       }
     }
     
-    // If all retries failed, assume online (optimistic default)
+    // GRACEFUL DEGRADATION: Check browser's online status first
+    if (!navigator.onLine) {
+      console.warn('Browser reports offline - respecting navigator.onLine');
+      return false;
+    }
+
+    // If browser says online but health checks failed, cautiously assume online
+    console.info('Health checks failed but browser reports online - optimistic fallback');
     return true;
   }
   
