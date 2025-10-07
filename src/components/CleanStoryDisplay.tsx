@@ -577,19 +577,6 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
       generateImageForCurrentPage();
     }
   }, [currentPage, imagesEnabled, isStoryStable]);
-  
-  // FLICKER FIX: Trigger image generation ONLY after React has completed story state update
-  useEffect(() => {
-    const handleStoryStabilized = () => {
-      if (imagesEnabled && !pageImages[currentPage] && displayedStory[safeCurrentPage]) {
-        DebugLogger.log('image', '🖼️ story:stabilized triggered - generating image with FINAL story');
-        generateImageForCurrentPage();
-      }
-    };
-
-    window.addEventListener('story:stabilized', handleStoryStabilized);
-    return () => window.removeEventListener('story:stabilized', handleStoryStabilized);
-  }, [currentPage, imagesEnabled, pageImages, displayedStory, safeCurrentPage]);
 
   // SESSION PERSISTENCE & RESUME MECHANISM OR SAVED STORY LOADING
   // Automatically restores user sessions across page refreshes and browser restarts
@@ -2756,6 +2743,19 @@ const initializeStory = async () => {
       setIsPreparingImage(false);
     }
   };
+
+  // FLICKER FIX: Trigger image generation ONLY after React has completed story state update
+  useEffect(() => {
+    const handleStoryStabilized = () => {
+      if (imagesEnabled && !pageImages[currentPage] && displayedStory[safeCurrentPage]) {
+        DebugLogger.log('image', '🖼️ story:stabilized triggered - generating image with FINAL story');
+        generateImageForCurrentPage();
+      }
+    };
+
+    window.addEventListener('story:stabilized', handleStoryStabilized);
+    return () => window.removeEventListener('story:stabilized', handleStoryStabilized);
+  }, [currentPage, imagesEnabled, pageImages, displayedStory, safeCurrentPage, generateImageForCurrentPage]);
 
   // Generate illustration for any page index (batch-safe, no UI spinner)
   const generateImageForIndex = async (index: number) => {
