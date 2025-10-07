@@ -127,79 +127,84 @@ export const WelcomeHero = ({ onGetStarted, onSignIn }: WelcomeHeroProps) => {
             </div>
           </div>
 
-          {/* Desktop Layout - Unchanged */}
-          <div className="hidden sm:flex items-center justify-between">
-            {/* Language Selector */}
-            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-2 sm:px-3 py-1 sm:py-2 border border-white/20">
-              <Globe className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
-              <Select value={i18n.language} onValueChange={handleLanguageChange}>
-                <SelectTrigger className="w-[100px] sm:w-[140px] border-none bg-transparent text-white text-xs sm:text-sm h-auto p-0 focus:ring-0">
-                  <SelectValue placeholder={t("welcomeHero.languageSelector.placeholder")} />
-                </SelectTrigger>
-                <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
-                  <SelectItem value="en">English</SelectItem>
-                  <SelectItem value="ar">العربية</SelectItem>
-                  <SelectItem value="es">Español</SelectItem>
-                  <SelectItem value="zh">中文</SelectItem>
-                  <SelectItem value="hi">हिंदी</SelectItem>
-                  <SelectItem value="pt">Português</SelectItem>
-                  <SelectItem value="fr">Français</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          {/* Desktop Layout - Two Row Structure */}
+          <div className="hidden sm:flex flex-col gap-4">
+            {/* Row 1: Utility Actions */}
+            <div className="flex items-center justify-between">
+              {/* Language Selector */}
+              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-2 sm:px-3 py-1 sm:py-2 border border-white/20">
+                <Globe className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+                <Select value={i18n.language} onValueChange={handleLanguageChange}>
+                  <SelectTrigger className="w-[100px] sm:w-[140px] border-none bg-transparent text-white text-xs sm:text-sm h-auto p-0 focus:ring-0">
+                    <SelectValue placeholder={t("welcomeHero.languageSelector.placeholder")} />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
+                    <SelectItem value="en">English</SelectItem>
+                    <SelectItem value="ar">العربية</SelectItem>
+                    <SelectItem value="es">Español</SelectItem>
+                    <SelectItem value="zh">中文</SelectItem>
+                    <SelectItem value="hi">हिंदी</SelectItem>
+                    <SelectItem value="pt">Português</SelectItem>
+                    <SelectItem value="fr">Français</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-            {/* Company Logo */}
-            <div className="flex items-center gap-2 sm:gap-4 hover-scale transition-all duration-300">
-              <img 
-                src={logoImage} 
-                alt="Time 2 Read Logo" 
-                className="w-8 h-8 sm:w-12 sm:h-12 md:w-16 md:h-16 drop-shadow-lg"
-              />
-              <div className="flex flex-col">
-                <div className="flex items-center font-comic">
-                  <h1 className="text-lg sm:text-2xl md:text-4xl font-bold text-white drop-shadow-lg">
-                    Time
-                  </h1>
-                  <span className="text-2xl sm:text-4xl md:text-6xl font-schoolbell text-yellow-300 drop-shadow-lg mx-0.5 transform rotate-3">
-                    2
-                  </span>
-                  <h1 className="text-lg sm:text-2xl md:text-4xl font-bold text-white drop-shadow-lg">
-                    Read!
-                  </h1>
-                </div>
-                <p className="text-xs sm:text-sm text-white/80 hidden sm:block">{t("welcomeHero.companyTagline")}</p>
+              {/* Sign In Button - Premium Users */}
+              <div className="flex items-center">
+                {onSignIn && (
+                  <MobileTooltip
+                    content={
+                      <div>
+                        <div className="flex items-center gap-2 p-2">
+                          <Crown className="w-4 h-4 text-purple-600" />
+                          <span className="font-medium">Premium Users Only</span>
+                        </div>
+                        <p className="text-xs text-gray-600 mt-1">
+                          Access unlimited stories, AI images, advanced features & more!
+                        </p>
+                      </div>
+                    }
+                    side="bottom"
+                  >
+                    <MobileOptimizedButton 
+                      variant="outline" 
+                      size="sm"
+                      onClick={onSignIn}
+                      className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-purple-300/50 text-white hover:bg-purple-400/30 text-xs sm:text-sm font-semibold shadow-lg px-2 sm:px-3 py-1 sm:py-2"
+                    >
+                      <Crown className="w-3 h-3 mr-1 flex-shrink-0" />
+                      <span className="hidden sm:inline">{t("welcomeHero.signIn")} - Premium</span>
+                      <span className="sm:hidden">Sign In</span>
+                    </MobileOptimizedButton>
+                  </MobileTooltip>
+                )}
               </div>
             </div>
 
-            {/* Sign In Button - Premium Users */}
-            <div className="flex items-center flex-shrink-0">
-              {onSignIn && (
-                <MobileTooltip
-                  content={
-                    <div>
-                      <div className="flex items-center gap-2 p-2">
-                        <Crown className="w-4 h-4 text-purple-600" />
-                        <span className="font-medium">Premium Users Only</span>
-                      </div>
-                      <p className="text-xs text-gray-600 mt-1">
-                        Access unlimited stories, AI images, advanced features & more!
-                      </p>
-                    </div>
-                  }
-                  side="bottom"
-                >
-                  <MobileOptimizedButton 
-                    variant="outline" 
-                    size="sm"
-                    onClick={onSignIn}
-                    className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-purple-300/50 text-white hover:bg-purple-400/30 text-xs sm:text-sm font-semibold shadow-lg px-2 sm:px-3 py-1 sm:py-2"
-                  >
-                    <Crown className="w-3 h-3 mr-1 flex-shrink-0" />
-                    <span className="hidden sm:inline">{t("welcomeHero.signIn")} - Premium</span>
-                    <span className="sm:hidden">Sign In</span>
-                  </MobileOptimizedButton>
-                </MobileTooltip>
-              )}
+            {/* Row 2: Brand Hero - Centered */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="flex items-center gap-2 sm:gap-4 hover-scale transition-all duration-300">
+                <img 
+                  src={logoImage} 
+                  alt="Time 2 Read Logo" 
+                  className="w-8 h-8 sm:w-12 sm:h-12 md:w-16 md:h-16 drop-shadow-lg"
+                />
+                <div className="flex flex-col">
+                  <div className="flex items-center font-comic">
+                    <h1 className="text-lg sm:text-2xl md:text-4xl font-bold text-white drop-shadow-lg">
+                      Time
+                    </h1>
+                    <span className="text-2xl sm:text-4xl md:text-6xl font-schoolbell text-yellow-300 drop-shadow-lg mx-0.5 transform rotate-3">
+                      2
+                    </span>
+                    <h1 className="text-lg sm:text-2xl md:text-4xl font-bold text-white drop-shadow-lg">
+                      Read!
+                    </h1>
+                  </div>
+                  <p className="text-xs sm:text-sm text-white/80 whitespace-nowrap">{t("welcomeHero.companyTagline")}</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
