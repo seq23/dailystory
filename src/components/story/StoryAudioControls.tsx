@@ -39,9 +39,17 @@ export const StoryAudioControls: React.FC<StoryAudioControlsProps> = ({
         await audioEngineRef.current.stop();
         onAudioStateChange(false, false);
       } else {
+        // Show loading state
         onAudioStateChange(false, true);
-        await audioEngineRef.current.speak(currentStoryText);
+        
+        // Initiate audio playback
+        const audioPromise = audioEngineRef.current.speak(currentStoryText);
+        
+        // Immediately show Stop button
         onAudioStateChange(true, false);
+        
+        // Wait for audio to complete
+        await audioPromise;
         onAudioPlayed(currentPage);
       }
     } catch (error) {

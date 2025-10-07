@@ -2966,11 +2966,19 @@ useEffect(() => {
       }
     } else {
       try {
-        // Set playing state BEFORE starting audio for immediate Stop button visibility
+        // Show loading state first
+        setIsAudioLoading(true);
+        setIsAudioPlaying(false);
+        
+        // Initiate audio playback
+        const audioPromise = audioEngineRef.current.charlotteReadStory(currentStoryText || "", onWordHighlight);
+        
+        // Immediately show Stop button for responsive UX
         setIsAudioLoading(false);
         setIsAudioPlaying(true);
         
-        await audioEngineRef.current.charlotteReadStory(currentStoryText || "", onWordHighlight);
+        // Wait for audio to complete
+        await audioPromise;
         
         if (!isPremium) setAudioPlayedPage(currentPage);
       } catch (error) {

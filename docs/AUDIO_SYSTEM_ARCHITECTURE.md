@@ -188,6 +188,44 @@ const result = await supabase.functions.invoke('translate-universal', {
 });
 ```
 
+## Audio Button State Transitions
+
+### Correct Flow (All Entry Points):
+1. **Idle State**: "Play Audio" button visible
+2. **User Clicks Play**: 
+   - Set `isLoading=true` (show "Loading Audio..." spinner)
+   - Set `isPlaying=false`
+3. **Audio Generation Starts**:
+   - Initiate `charlotteReadStory()` and store promise (don't await yet)
+4. **Immediately After Initiation**:
+   - Set `isLoading=false` (hide spinner)
+   - Set `isPlaying=true` (show "Stop" button)
+5. **Audio Plays**: User hears audio and can click Stop at any time
+
+### Anti-Pattern (DO NOT DO THIS):
+❌ Setting `isLoading=false` BEFORE initiating audio generation
+❌ Setting `isPlaying=true` without showing loading state first
+❌ Awaiting audio before updating to playing state
+
+### Correct Implementation Pattern:
+```typescript
+// ✅ CORRECT: Show loading → Start audio → Show stop → Wait for completion
+setIsLoading(true);
+setIsPlaying(false);
+
+const audioPromise = charlotteReadStory(text, highlightCallback, audioSpeed);
+
+setIsLoading(false);
+setIsPlaying(true);
+
+await audioPromise;
+```
+
+### Entry Points Using This Pattern:
+- `src/components/UnifiedAudioControls.tsx` - Lines 176-196
+- `src/components/CleanStoryDisplay.tsx` - Lines 2967-2987
+- `src/components/story/StoryAudioControls.tsx` - Lines 34-56
+
 ## Debugging & Troubleshooting
 
 ### Common Issues
@@ -195,6 +233,7 @@ const result = await supabase.functions.invoke('translate-universal', {
 2. **Wrong Syllables**: Verify morphological patterns in morphologicalPatterns.ts
 3. **Translation Failures**: Check translate-universal edge function logs
 4. **Audio Conflicts**: Monitor SimpleAudioCoordinator priority system
+5. **Missing Loading State**: Verify audio promise is created before state updates
 
 ### Debug Logging
 - **Audio System**: `DebugLogger.log('audio', message)`

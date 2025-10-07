@@ -180,7 +180,10 @@ export const UnifiedAudioControls: React.FC<UnifiedAudioControlsProps> = ({
       
       DebugLogger.log('audio', `Audio highlighting ${shouldHighlight ? 'ENABLED' : 'DISABLED'} for difficulty: "${difficulty}"`);
       
-      // Set playing state BEFORE starting audio for immediate Stop button visibility
+      // Initiate audio playback first
+      const audioPromise = charlotteVoiceService.charlotteReadStory(text, highlightCallback, audioSpeed);
+      
+      // Then immediately show Stop button for responsive UX
       setIsLoading(false);
       setIsPlaying(true);
       onPlayingChange?.(true);
@@ -190,7 +193,8 @@ export const UnifiedAudioControls: React.FC<UnifiedAudioControlsProps> = ({
         detail: { isPlaying: true } 
       }));
       
-      await charlotteVoiceService.charlotteReadStory(text, highlightCallback, audioSpeed);
+      // Wait for audio to complete
+      await audioPromise;
       
       // Mark as played for free users
       if (!isPremium) {
