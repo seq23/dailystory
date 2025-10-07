@@ -1,5 +1,30 @@
 # Image Generation Improvements - September 28, 2025
 
+## 🆕 Guest Image Toggle Hardening (October 7, 2025)
+
+### Critical Fix: Guest Users Image Lock
+
+**Status:** ✅ Production Ready  
+**Impact:** P0 Critical - Guest users cannot disable images (no UI toggle to re-enable)
+
+#### Problem Solved
+- **Critical Bug:** Guest users could disable images via global localStorage/window events
+- **No Recovery:** No UI toggle for guests to re-enable images once disabled
+- **Premium Function Leak:** Image toggle was meant for premium users only
+
+#### Solution Implemented
+- ✅ **FreeReadingSession Force-Enable:** Sets `storyImagesEnabled=1` on mount for all guests
+- ✅ **CleanStoryDisplay Premium-Only Toggle:** Event listener only attached if `isPremium=true`
+- ✅ **Defensive Guard:** Automatic re-enable if guest somehow has images disabled
+- ✅ **Test Coverage:** `guestImagesEnforced.test.tsx` verifies enforcement
+
+**Files Modified:**
+- `src/components/FreeReadingSession.tsx` - Force-enable images on mount
+- `src/components/CleanStoryDisplay.tsx` - Premium-only toggle listener + defensive guard
+- `src/__tests__/guestImagesEnforced.test.tsx` - Test coverage
+
+---
+
 ## 🆕 Universal Image Validation System (September 30, 2025)
 
 ### Major Update: Validation Consolidation

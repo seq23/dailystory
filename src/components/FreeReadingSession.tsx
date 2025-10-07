@@ -25,10 +25,14 @@ export const FreeReadingSession: React.FC<FreeReadingSessionProps> = ({
 }) => {
   DebugLogger.log('ui', 'FreeReadingSession: Using new CleanStoryDisplay architecture');
 
-  // Force-enable timer for guest sessions on entry
+  // Force-enable timer AND images for guest sessions on entry
   useEffect(() => {
     try { localStorage.setItem('readingTimerEnabled','1'); } catch {}
     try { window.dispatchEvent(new CustomEvent('readingTimerToggle', { detail: true })); } catch {}
+    
+    // CRITICAL: Guest users MUST have images enabled - no toggle allowed
+    try { localStorage.setItem('storyImagesEnabled', '1'); } catch {}
+    try { window.dispatchEvent(new CustomEvent('storyImagesToggle', { detail: true })); } catch {}
   }, []);
   
   return (

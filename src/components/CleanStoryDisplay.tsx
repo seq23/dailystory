@@ -194,8 +194,9 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   const { toast } = useToast();
   const { isMobile, isTablet, isMobileOrTablet, hasTouchCapability } = useIsMobile();
   
-  // Image generation toggle state
+  // Image generation toggle state - CRITICAL: Guests ALWAYS have images enabled
   const [imagesEnabled, setImagesEnabled] = useState<boolean>(() => {
+    if (!isPremium) return true; // Guest users: images ALWAYS on
     try { return localStorage.getItem('storyImagesEnabled') !== '0'; } catch { return true; }
   });
   
@@ -510,8 +511,10 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     })();
   }, [userInfo]);
   
-  // CRITICAL FIX: Listen for image toggle events (moved after variable declarations)
+  // CRITICAL FIX: Listen for image toggle events - PREMIUM ONLY
   useEffect(() => {
+    if (!isPremium) return; // Guest users cannot toggle images
+    
     const handler = (e: any) => {
       const enabled = !!(e as CustomEvent).detail;
       setImagesEnabled(enabled);
@@ -526,7 +529,15 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     };
     window.addEventListener('storyImagesToggle', handler as EventListener);
     return () => window.removeEventListener('storyImagesToggle', handler as EventListener);
-  }, [currentPage, pageImages, isStoryStable]);
+  }, [isPremium, currentPage, pageImages, isStoryStable]);
+  
+  // DEFENSIVE: Force images enabled for guest users if somehow disabled
+  useEffect(() => {
+    if (!isPremium && !imagesEnabled) {
+      DebugLogger.warn('ui', 'Guest user had images disabled - forcing back on');
+      setImagesEnabled(true);
+    }
+  }, [isPremium, imagesEnabled]);
   
   // CRITICAL FIX: Auto-generate image when currentPage changes (for premium page-by-page)
   useEffect(() => {
