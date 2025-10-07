@@ -392,12 +392,12 @@ export const FormStep3Personalization = ({
               {/* Favorite Animal */}
               <div className="space-y-2">
                 <Label className="text-sm font-medium text-foreground">
-                  {t("formStep3.favoriteAnimal", "Favorite Animal")}
+                  {t("formStep3.favoriteAnimal", "Favorite Animal (Optional)")}
                 </Label>
                 <TagInput
                   value={formData.favoriteAnimal || ''}
                   onChange={(value) => handleInputChange('favoriteAnimal', value)}
-                  placeholder={t("formStep3.favoriteAnimalPlaceholder", "dog, elephant, dolphin...")}
+                  placeholder={t("formStep3.favoriteAnimalPlaceholder", "example: dog, elephant, dolphin...")}
                   className="w-full"
                   validateInput={(text) => InputSanitizer.validateChildSafeInput(text, 'interest')}
                   validationError={validationErrors.favoriteAnimal}
@@ -453,12 +453,12 @@ export const FormStep3Personalization = ({
               {/* Favorite Food */}
               <div className="space-y-2">
                 <Label className="text-sm font-medium text-foreground">
-                  {t("formStep3.favoriteFood", "Favorite Food")}
+                  {t("formStep3.favoriteFood", "Favorite Food (Optional)")}
                 </Label>
                 <TagInput
                   value={formData.favoriteFood || ''}
                   onChange={(value) => handleInputChange('favoriteFood', value)}
-                  placeholder={t("formStep3.favoriteFoodPlaceholder", "pizza, ice cream, fruit...")}
+                  placeholder={t("formStep3.favoriteFoodPlaceholder", "example: pizza, ice cream, fruit...")}
                   className="w-full"
                   validateInput={(text) => InputSanitizer.validateChildSafeInput(text, 'interest')}
                   validationError={validationErrors.favoriteFood}
@@ -514,12 +514,12 @@ export const FormStep3Personalization = ({
               {/* Hobbies */}
               <div className="space-y-2">
                 <Label className="text-sm font-medium text-foreground">
-                  {t("formStep3.hobbies", "Hobbies & Activities")}
+                  {t("formStep3.hobbies", "Hobbies & Activities (Optional)")}
                 </Label>
                 <TagInput
                   value={formData.hobbies || ''}
                   onChange={(value) => handleInputChange('hobbies', value)}
-                  placeholder={t("formStep3.hobbiesPlaceholder", "soccer, drawing, music...")}
+                  placeholder={t("formStep3.hobbiesPlaceholder", "example: soccer, drawing, music...")}
                   className="w-full"
                   validateInput={(text) => InputSanitizer.validateChildSafeInput(text, 'interest')}
                   validationError={validationErrors.hobbies}
@@ -655,7 +655,7 @@ Setting: magical forest AND cozy cottage → Enter`}
                 <TagInput
                   value={formData.targetVocabulary || ''}
                   onChange={(value) => handleInputChange('targetVocabulary', value)}
-                  placeholder="ocean, brave, explore"
+                  placeholder="example: ocean, brave, explore"
                   className="w-full"
                   validateInput={(text) => InputSanitizer.validateChildSafeInput(text, 'general')}
                   validationError={validationErrors.targetVocabulary}
