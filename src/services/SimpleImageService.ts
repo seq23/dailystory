@@ -381,6 +381,8 @@ export class SimpleImageService {
       
       // Route directly to optimized template
       const startTime = Date.now();
+      let cascadePathTaken: string[] = ['2.5C_ATTEMPT'];
+      
       try {
         // NEW: Check for existing story seed
         const existingSeed = OptimizedImageCache.getStorySeed(normalizedSessionId);
@@ -398,6 +400,7 @@ export class SimpleImageService {
 
         // If Complexity C fails, check orchestrator health before escalating
         if (!templateResult.data?.success && (bypassDecision.templateComplexity === 'C' || !bypassDecision.templateComplexity)) {
+          cascadePathTaken.push('2.5C_FAILED');
           DebugLogger.log('image', '⚡ Smart bypass: Tier 2.5C failed, checking orchestrator health before escalation', {
             sessionId: normalizedSessionId,
             tier: templateResult.data?.tier,
@@ -409,6 +412,7 @@ export class SimpleImageService {
           
           if (!orchestratorCheck.unhealthy) {
             // Orchestrator is healthy - fall back to it instead of trying 2.5D
+            cascadePathTaken.push('ORCH_HEALTHY', 'FALLBACK_TO_ORCH');
             DebugLogger.log('image', '⚡ Smart bypass: Tier 2.5C failed but orchestrator is healthy - falling back to full orchestrator', {
               sessionId: normalizedSessionId,
               failureReason: templateResult.data?.tier || 'unknown',
@@ -419,14 +423,76 @@ export class SimpleImageService {
             throw new Error('TIER_2_5C_FAILED_FALLBACK_TO_ORCHESTRATOR');
           }
           
-          // Orchestrator is ALSO unhealthy - must use 2.5D as last resort
-          DebugLogger.log('image', '⚡ Smart bypass: Both Tier 2.5C and orchestrator failed - escalating to 2.5D emergency', {
+          cascadePathTaken.push('ORCH_UNHEALTHY');
+          
+          // Orchestrator is ALSO unhealthy - try Direct Mode first, then 2.5D
+          DebugLogger.log('image', '⚡ Smart bypass: 2.5C failed, orchestrator unhealthy → trying Direct Mode', {
             sessionId: normalizedSessionId,
             tier2_5C_failure: templateResult.data?.tier || 'unknown',
             orchestratorReason: orchestratorCheck.reason
           });
           
-          // Try 2.5D as absolute last resort
+          // Try Direct Mode first
+          try {
+            cascadePathTaken.push('DIRECT_MODE_ATTEMPT');
+            const directModeResult = await this.generateWithDirectAiVisualSceneCreator(
+              storyText,
+              userInfo,
+              normalizedSessionId,
+              pageNumber,
+              isPremium,
+              healthStatus
+            );
+            
+            if (directModeResult.success && directModeResult.url?.trim()) {
+              cascadePathTaken.push('DIRECT_MODE_SUCCESS');
+              DebugLogger.log('image', '✅ Direct Mode success (smart bypass)', {
+                sessionId: normalizedSessionId,
+                cascadeHistory: cascadePathTaken
+              });
+              
+              OptimizedImageCache.cacheImage(storyText, directModeResult.url, normalizedSessionId);
+              
+              if (!existingSeed && directModeResult.metadata?.seed) {
+                OptimizedImageCache.setStorySeed(normalizedSessionId, directModeResult.metadata.seed);
+                DebugLogger.log('image', '🌱 SEED STORED from Direct Mode', { 
+                  sessionId: normalizedSessionId, 
+                  seed: directModeResult.metadata.seed 
+                });
+              }
+              
+              try {
+                window.dispatchEvent(new CustomEvent('image:generation:complete'));
+              } catch {}
+              
+              return {
+                success: true,
+                url: directModeResult.url,
+                generatedAt: new Date().toISOString(),
+                tier: 'AI_VISUAL_SCENE_DIRECT',
+                metadata: {
+                  ...directModeResult.metadata,
+                  bypassReason: bypassDecision.reason,
+                  cascadeHistory: cascadePathTaken
+                }
+              };
+            } else {
+              cascadePathTaken.push('DIRECT_MODE_NO_RESULT');
+            }
+          } catch (directModeError) {
+            cascadePathTaken.push('DIRECT_MODE_FAILED');
+            DebugLogger.warn('image', '⚡ Direct Mode failed → trying 2.5D', {
+              sessionId: normalizedSessionId,
+              error: directModeError.message
+            });
+          }
+          
+          // Direct Mode failed - try 2.5D as last resort before SVG
+          cascadePathTaken.push('2.5D_ATTEMPT');
+          DebugLogger.log('image', '⚡ Smart bypass: Escalating to 2.5D emergency', {
+            sessionId: normalizedSessionId
+          });
+          
           templateResult = await supabase.functions.invoke(bypassDecision.targetTemplate || 'runware-template-cd', {
             body: {
               pageText: storyText,
@@ -434,9 +500,17 @@ export class SimpleImageService {
               sessionId: normalizedSessionId,
               pageNumber,
               templateComplexity: 'D',
-              seed: existingSeed // NEW: Pass seed to fallback as well
+              seed: existingSeed
             }
           });
+          
+          if (templateResult.data?.success && templateResult.data?.imageURL?.trim()) {
+            cascadePathTaken.push('2.5D_SUCCESS');
+          } else {
+            cascadePathTaken.push('2.5D_FAILED');
+          }
+        } else {
+          cascadePathTaken.push('2.5C_SUCCESS');
         }
         
         const responseTime = Date.now() - startTime;
@@ -475,13 +549,22 @@ export class SimpleImageService {
             metadata: { 
               ...templateResult.data, 
               bypassReason: bypassDecision.reason,
-              responseTime
+              responseTime,
+              cascadeHistory: cascadePathTaken
             }
           };
+        } else {
+          // Template failed completely - fall through to Tier 4
+          cascadePathTaken.push('FALLBACK_TO_SVG');
+          DebugLogger.warn('image', '⚡ Smart bypass: All attempts failed → SVG fallback', {
+            sessionId: normalizedSessionId,
+            cascadeHistory: cascadePathTaken
+          });
         }
       } catch (bypassError) {
         DebugLogger.warn('image', '⚡ Smart bypass failed, falling back to orchestrator', {
-          error: bypassError.message
+          error: bypassError.message,
+          cascadeHistory: cascadePathTaken
         });
         SmartOrchestrationBypass.recordTemplateResponse(normalizedSessionId, Date.now() - startTime);
         // Fall through to orchestrator
