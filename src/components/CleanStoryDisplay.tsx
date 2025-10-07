@@ -200,6 +200,9 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
     try { return localStorage.getItem('storyImagesEnabled') !== '0'; } catch { return true; }
   });
   
+  // Page-specific generation lock to prevent race conditions
+  const [generatingPages, setGeneratingPages] = useState<Set<number>>(new Set());
+  
   // ANTI-FLICKER: Preload images-disabled placeholder to prevent network delay flicker
   useEffect(() => {
     const img = new Image();
@@ -571,9 +574,22 @@ const CleanStoryDisplay: React.FC<CleanStoryDisplayProps> = ({
   useEffect(() => {
     if (imagesEnabled && isStoryStable && !pageImages[currentPage] && displayedStory[safeCurrentPage]) {
       DebugLogger.log('image', '🖼️ Auto-triggering image generation for page', currentPage);
-      ManagedTimers.setTimeout(() => generateImageForCurrentPage(), 50, 'CleanStoryDisplay');
+      generateImageForCurrentPage();
     }
-  }, [currentPage, imagesEnabled, isStoryStable, displayedStory.length]);
+  }, [currentPage, imagesEnabled, isStoryStable]);
+  
+  // FLICKER FIX: Trigger image generation ONLY after React has completed story state update
+  useEffect(() => {
+    const handleStoryStabilized = () => {
+      if (imagesEnabled && !pageImages[currentPage] && displayedStory[safeCurrentPage]) {
+        DebugLogger.log('image', '🖼️ story:stabilized triggered - generating image with FINAL story');
+        generateImageForCurrentPage();
+      }
+    };
+
+    window.addEventListener('story:stabilized', handleStoryStabilized);
+    return () => window.removeEventListener('story:stabilized', handleStoryStabilized);
+  }, [currentPage, imagesEnabled, pageImages, displayedStory, safeCurrentPage]);
 
   // SESSION PERSISTENCE & RESUME MECHANISM OR SAVED STORY LOADING
   // Automatically restores user sessions across page refreshes and browser restarts
@@ -2462,6 +2478,19 @@ const initializeStory = async () => {
   }, [isPremium, isLoadingNextPage, currentPage, story.length, liveContext, generateNextPage, setStory, setLiveContext, setCurrentPage, setIsStoryComplete, setError]);
 
   const generateImageForCurrentPage = async () => {
+    // CRITICAL: Page-specific lock to prevent race conditions
+    if (generatingPages.has(currentPage)) {
+      DebugLogger.log('image', '🔒 BLOCKED: Page already generating', { currentPage });
+      return;
+    }
+    
+    setGeneratingPages(prev => {
+      const next = new Set(prev);
+      next.add(currentPage);
+      return next;
+    });
+    DebugLogger.log('image', '🔓 LOCK ACQUIRED', { currentPage });
+    
     // 🔍 COMPREHENSIVE DEBUG: Track function entry
     DebugLogger.log('image', 'generateImageForCurrentPage() called', {
       currentPage,
@@ -2476,6 +2505,11 @@ const initializeStory = async () => {
       DebugLogger.log('image', 'Early return - already generating or image exists', {
         isGeneratingImage,
         hasExistingImage: !!pageImages[currentPage]
+      });
+      setGeneratingPages(prev => {
+        const next = new Set(prev);
+        next.delete(currentPage);
+        return next;
       });
       return;
     }
@@ -2710,6 +2744,14 @@ const initializeStory = async () => {
     } catch (error) {
       DebugLogger.log('image', 'Image generation failed, continuing without image', error);
     } finally {
+      // CRITICAL: Always release lock even on error
+      setGeneratingPages(prev => {
+        const next = new Set(prev);
+        next.delete(currentPage);
+        return next;
+      });
+      DebugLogger.log('image', '🔓 LOCK RELEASED', { currentPage });
+      
       setIsGeneratingImage(false);
       setIsPreparingImage(false);
     }

@@ -21,7 +21,7 @@ class ImageLoadingManagerClass {
   // Circuit breaker: stop retrying after consecutive failures from same domain
   private readonly FAILURE_THRESHOLD = 5;
   private readonly FAILURE_WINDOW = 30000; // 30 seconds
-  private readonly FAST_FAIL_TIMEOUT = 10000; // 10 seconds for debug mode
+  private readonly FAST_FAIL_TIMEOUT = 15000; // 15 seconds for debug mode
   private readonly CASCADE_FAILURE_THRESHOLD = 10; // Stop after 10 cascade failures
   
   static getInstance(): ImageLoadingManagerClass {
@@ -46,7 +46,7 @@ class ImageLoadingManagerClass {
     if (!url) return false;
 
     const { timeout = 10000, isDebugMode = false, sessionId } = options;
-    const effectiveTimeout = isDebugMode ? this.FAST_FAIL_TIMEOUT : timeout;
+    const effectiveTimeout = Math.max(isDebugMode ? this.FAST_FAIL_TIMEOUT : timeout, 12000); // Min 12 seconds
     
     // Check cascade failure circuit breaker
     if (this.cascadeFailureCount >= this.CASCADE_FAILURE_THRESHOLD) {
