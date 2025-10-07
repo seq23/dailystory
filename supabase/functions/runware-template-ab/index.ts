@@ -1130,13 +1130,16 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
         // Detect REAL vs TEST mode
         const isRealMode = payload.test !== true && payload.dryRun !== true;
         let imageURL: string | undefined;
+        let returnedSeed: number | null = null;
         
         if (isRealMode) {
           // REAL mode: Generate image with Runware API
           try {
             console.log(`🎨 [${requestId}] REAL Mode: Generating image for Tier 2.5A`);
-            imageURL = await callRunwareAPI(positivePrompt, negativePrompt, { sessionId, pageNumber, model: 'runware:100@1' });
-            console.log(`✅ [${requestId}] Image generated successfully:`, imageURL);
+            const runwareResult = await callRunwareAPI(positivePrompt, negativePrompt, { sessionId, pageNumber, model: 'runware:100@1' });
+            imageURL = typeof runwareResult === 'string' ? runwareResult : runwareResult?.imageURL;
+            returnedSeed = typeof runwareResult === 'object' ? runwareResult?.seed : null;
+            console.log(`✅ [${requestId}] Image generated successfully:`, { imageURL, seed: returnedSeed });
           } catch (imageError: any) {
             console.error(`❌ [${requestId}] Image generation failed:`, imageError.message);
             return createResponse({
@@ -1158,7 +1161,7 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
           service: SERVICE_NAME,
           positivePrompt,
           negativePrompt,
-          ...(imageURL && { imageURL }),
+          ...(imageURL && { imageURL, seed: returnedSeed || null }),
           styleFrameworkUsed: styleFramework.name,
           templateComplexity: 'A',
           precomputedCCSUsed: true,
@@ -1213,6 +1216,7 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
           // Detect REAL vs TEST mode
           const isRealMode = payload.test !== true && payload.dryRun !== true;
           let imageURL: string | undefined;
+          let returnedSeed: number | null = null;
           
           if (isRealMode) {
             // REAL mode: Generate image with Runware API
@@ -1220,7 +1224,7 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
               console.log(`🎨 [${requestId}] REAL Mode: Generating image for Tier 2.5A (legacy path)`);
               const runwareResult = await callRunwareAPI(positivePrompt, negativePrompt, { sessionId, pageNumber, model: 'runware:100@1' });
               imageURL = typeof runwareResult === 'string' ? runwareResult : runwareResult?.imageURL; // ✅ Handle object response
-              const returnedSeed = typeof runwareResult === 'object' ? runwareResult?.seed : null;
+              returnedSeed = typeof runwareResult === 'object' ? runwareResult?.seed : null;
               console.log(`✅ [${requestId}] Image generated successfully:`, { imageURL, seed: returnedSeed });
             } catch (imageError: any) {
               console.error(`❌ [${requestId}] Image generation failed:`, imageError.message);
@@ -1283,6 +1287,7 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
           // Detect REAL vs TEST mode
           const isRealMode = payload.test !== true && payload.dryRun !== true;
           let imageURL: string | undefined;
+          let returnedSeed: number | null = null;
           
           if (isRealMode) {
             // REAL mode: Generate image with Runware API
@@ -1290,7 +1295,7 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
               console.log(`🎨 [${requestId}] REAL Mode: Generating image for Tier 2.5A (inline fallback)`);
               const runwareResult = await callRunwareAPI(positivePrompt, negativePrompt, { sessionId, pageNumber, model: 'runware:100@1' });
               imageURL = typeof runwareResult === 'string' ? runwareResult : runwareResult?.imageURL; // ✅ Handle object response
-              const returnedSeed = typeof runwareResult === 'object' ? runwareResult?.seed : null;
+              returnedSeed = typeof runwareResult === 'object' ? runwareResult?.seed : null;
               console.log(`✅ [${requestId}] Image generated successfully:`, { imageURL, seed: returnedSeed });
             } catch (imageError: any) {
               console.error(`❌ [${requestId}] Image generation failed:`, imageError.message);
@@ -1369,6 +1374,7 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
       // Detect REAL vs TEST mode
       const isRealMode = payload.test !== true && payload.dryRun !== true;
       let imageURL: string | undefined;
+      let returnedSeed: number | null = null;
       
       if (isRealMode) {
         // REAL mode: Generate image with Runware API
@@ -1376,7 +1382,7 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
           console.log(`🎨 [${requestId}] REAL Mode: Generating image for Tier 2.5B`);
           const runwareResult = await callRunwareAPI(positivePrompt, negativePrompt, { sessionId, pageNumber, model: 'runware:100@1' });
           imageURL = typeof runwareResult === 'string' ? runwareResult : runwareResult?.imageURL; // ✅ Handle object response
-          const returnedSeed = typeof runwareResult === 'object' ? runwareResult?.seed : null;
+          returnedSeed = typeof runwareResult === 'object' ? runwareResult?.seed : null;
           console.log(`✅ [${requestId}] Image generated successfully:`, { imageURL, seed: returnedSeed });
         } catch (imageError: any) {
           console.error(`❌ [${requestId}] Image generation failed:`, imageError.message);
