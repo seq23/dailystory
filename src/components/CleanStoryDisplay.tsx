@@ -100,7 +100,7 @@ import "@/styles/storyDisplay.css";
 // import { processTextForDesktop } from "@/utils/desktopTextProcessor";
 
 // Static image placeholder for when images are disabled by user
-const IMAGES_DISABLED_PLACEHOLDER = "/assets/cozy-library-readers.png";
+const IMAGES_DISABLED_PLACEHOLDER = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%23f8f9fa'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='80' fill='%23adb5bd'%3E📚%3C/text%3E%3C/svg%3E`;
 // useWordHighlighting integrated into useAudioControls
 import { VoiceCommandController } from '@/components/VoiceCommandController';
 import { VoiceHoverController } from '@/components/VoiceHoverController';
@@ -4019,32 +4019,38 @@ const handleRestartTimer = () => {
                 <div className="xl:hidden flex-1 min-h-0 flex flex-col gap-3">
                   {/* Top Half: Image - Dynamic aspect ratio to prevent whitespace */}
                   {currentImage ? (
-                    <AspectRatio 
-                      ratio={imageAspectRatios[currentPage] || 4/3} 
-                      className="relative w-full rounded-2xl overflow-hidden shadow-2xl bg-muted/30"
-                    >
-                      {isPremium && (Object.keys(pageImages).length < story.length) && !isBatchGenerating && !isGeneratingImage && !isPreparingImage && !imageLoadingStates[currentPage] && (
-                        <div className="absolute top-3 right-3 z-20">
-                            <Button size="sm" variant="secondary" onClick={handleBatchGenerateImages} disabled={false} aria-label="Fix missing illustrations">
-                            <Sparkles className="w-4 h-4 mr-1" />
-                            Fix Images
-                          </Button>
-                        </div>
-                      )}
-                      {isBatchGenerating && (
-                        <div className="absolute top-3 right-3 z-20 rounded-md bg-card/90 border px-2 py-1 text-xs">
-                          {batchDone}/{batchTotal}
-                        </div>
-                      )}
-                      <ImageWithFallback
-                        src={currentImage}
-        alt={`Story illustration for page ${currentPage + 1}: ${displayedStory[safeCurrentPage]?.substring(0, 100)}...`}
-                        className="w-full h-full object-cover rounded-lg"
-                        fallbackText={`📖 Page ${currentPage + 1}`}
-                        onLoadingChange={handleImageLoadingChange}
-                        onFallbackUsed={handleImageFallbackUsed}
-                      />
-                    </AspectRatio>
+                    imagesEnabled ? (
+                      <AspectRatio 
+                        ratio={imageAspectRatios[currentPage] || 4/3} 
+                        className="relative w-full rounded-2xl overflow-hidden shadow-2xl bg-muted/30"
+                      >
+                        {isPremium && (Object.keys(pageImages).length < story.length) && !isBatchGenerating && !isGeneratingImage && !isPreparingImage && !imageLoadingStates[currentPage] && (
+                          <div className="absolute top-3 right-3 z-20">
+                              <Button size="sm" variant="secondary" onClick={handleBatchGenerateImages} disabled={false} aria-label="Fix missing illustrations">
+                              <Sparkles className="w-4 h-4 mr-1" />
+                              Fix Images
+                            </Button>
+                          </div>
+                        )}
+                        {isBatchGenerating && (
+                          <div className="absolute top-3 right-3 z-20 rounded-md bg-card/90 border px-2 py-1 text-xs">
+                            {batchDone}/{batchTotal}
+                          </div>
+                        )}
+                        <ImageWithFallback
+                          src={currentImage}
+          alt={`Story illustration for page ${currentPage + 1}: ${displayedStory[safeCurrentPage]?.substring(0, 100)}...`}
+                          className="w-full h-full object-cover rounded-lg"
+                          fallbackText={`📖 Page ${currentPage + 1}`}
+                          onLoadingChange={handleImageLoadingChange}
+                          onFallbackUsed={handleImageFallbackUsed}
+                        />
+                      </AspectRatio>
+                    ) : (
+                      <div className="relative w-full h-[120px] rounded-2xl overflow-hidden shadow-md bg-muted/20 flex items-center justify-center">
+                        <div className="text-6xl opacity-40">📚</div>
+                      </div>
+                    )
                   ) : (
                     <div className="relative w-full rounded-2xl overflow-hidden shadow-2xl bg-muted/30 flex items-center justify-center" style={{ aspectRatio: '4/3' }}>
                       <ImageMixingLoading />
@@ -4053,7 +4059,10 @@ const handleRestartTimer = () => {
                   {/* Image Status moved to main content area */}
 
                   {/* Bottom Half: Text - Fixed size to prevent layout shifts */}
-                  <div className="flex-[0.4] w-full rounded-2xl shadow-2xl bg-card overflow-hidden flex flex-col relative">
+                  <div className={cn(
+                    "w-full rounded-2xl shadow-2xl bg-card overflow-hidden flex flex-col relative transition-all duration-300",
+                    imagesEnabled ? "flex-[0.4]" : "flex-1 min-h-[400px]"
+                  )}>
                      {isPremium && isLoadingNextPage && currentPage === story.length - 1 && !isStoryComplete && (
                       <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/60 backdrop-blur-sm pointer-events-none">
                         <div className="rounded-xl px-4 py-3 bg-card/90 shadow-lg border border-primary/20 animate-enter">
@@ -4099,12 +4108,23 @@ const handleRestartTimer = () => {
                 </div>
 
                   {/* Desktop: Perfectly mirrored split columns */}
-                <div className="hidden xl:grid grid-cols-2 gap-0 flex-1 min-h-0">
+                <div className={cn(
+                  "hidden xl:flex flex-1 min-h-0 transition-all duration-300",
+                  imagesEnabled ? "xl:grid xl:grid-cols-2 gap-0" : "flex-col gap-4 relative"
+                )}>
                   {/* Image Section - LEFT SIDE - Equal size on desktop */}
                   {/* DESKTOP IMAGE FIX: Always show images on desktop (xl breakpoint already filters) */}
                   {(
-                    <div className="xl:order-1 h-full min-h-0">
-                      <div className={`${containerClassName} w-full rounded-2xl overflow-hidden shadow-2xl bg-muted/30`} style={heightStyle}>
+                    <div className={cn(
+                      "transition-all duration-300",
+                      imagesEnabled ? "xl:order-1 h-full min-h-0" : "xl:order-2 w-full"
+                    )}>
+                      <div className={cn(
+                        "rounded-2xl overflow-hidden bg-muted/30 transition-all duration-300",
+                        imagesEnabled 
+                          ? `${containerClassName} w-full shadow-2xl` 
+                          : "w-[220px] h-[220px] shadow-md opacity-60 absolute top-4 right-4 z-10"
+                      )} style={imagesEnabled ? heightStyle : undefined}>
                         {isPremium && (Object.keys(pageImages).length < story.length) && !isBatchGenerating && !isGeneratingImage && !isPreparingImage && !imageLoadingStates[currentPage] && (
                           <div className="absolute top-3 right-3 z-20">
                             <Button size="sm" variant="secondary" onClick={handleBatchGenerateImages} disabled={false} aria-label="Fix missing illustrations">
@@ -4138,7 +4158,10 @@ const handleRestartTimer = () => {
                   )}
 
                   {/* Text Content - RIGHT SIDE - Equal size on desktop */}
-                  <div className="xl:order-2 flex flex-col" style={heightStyle}>
+                  <div className={cn(
+                    "flex flex-col transition-all duration-300",
+                    imagesEnabled ? "xl:order-2" : "xl:order-1 w-full max-w-5xl mx-auto"
+                  )} style={imagesEnabled ? heightStyle : { minHeight: '500px' }}>
                     <div className={`${containerClassName} w-full min-h-0 rounded-2xl overflow-hidden shadow-2xl bg-card relative`}>
                       {isPremium && isLoadingNextPage && currentPage === story.length - 1 && !isStoryComplete && (
                         <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/60 backdrop-blur-sm pointer-events-none">
