@@ -53,7 +53,15 @@ serve(async (req) => {
       .from('subscribers')
       .select('*')
       .eq('user_id', user.id)
-      .maybeSingle();
+      .single();
+    
+    // Handle case where subscriber record doesn't exist yet
+    if (subError && subError.code === 'PGRST116') {
+      return createDynamicCorsResponse({ 
+        activated: false, 
+        message: 'No subscriber record found' 
+      }, null);
+    }
 
     if (subError) {
       console.error('[Apply Discount] Error fetching subscriber:', subError);
