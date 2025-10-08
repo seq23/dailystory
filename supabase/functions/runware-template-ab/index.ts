@@ -1360,7 +1360,7 @@ serve(async (req) => {
       
       const result = await handler(req);
       if (gatingEnabled && gateAcquired) {
-        const handlerSuccess = result instanceof Response && result.status < 500;
+        const handlerSuccess = result instanceof Response && (result.status < 500 || result.status === 503);
         release('T25A:runware-template-ab', handlerSuccess);
       }
       return withCors(result);
