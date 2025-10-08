@@ -119,6 +119,14 @@ All functions use `index.ts` as their entry point. JavaScript-only functions hav
 - Bundler hint ensures CharacterConsistencyService is included
 - See `docs/RUNWARE_TEMPLATE_AB_REWRITE.md` for complete details
 
+## Recent Structural Fixes
+
+### runware-generate-image Brace Structure Normalization (Oct 8, 2025)
+- **Lines 2488-2495**: Corrected misleading closing-brace comments that caused parser ambiguity
+- **Change**: Replaced incorrect "end Direct Mode execution block" comment with accurate scope labels
+- **Impact**: Eliminates flip-flopping "Expected a semicolon" parser errors
+- **Behavior**: No logic changes - only structural clarification of nested try/catch/if blocks
+
 ### Boot Failure Verification Procedures
 
 **Step 1: Check Analytics**

@@ -2488,11 +2488,11 @@ serve(async (req) => {
                 req,
                 503
               );
-            }
-          }
-        }
-      } // end Direct Mode execution block
-    } // end tier1Error catch
+            } // END catch (tier25dError)
+          } // END try for 2.5C outer block (includes 2.5C+2.5D cascade attempts)
+        } // END if (tier25bErrorMessage) - universal 2.5C fallback
+      } // END try - TEMPLATE FALLBACK CASCADE (started at line 1885)
+    } // END catch (tier1Error)
   } catch (cascadeError) {
     // Outer catch for entire cascade - handles validation and boot errors
     const errorMessage = cascadeError instanceof Error ? cascadeError.message : String(cascadeError);
