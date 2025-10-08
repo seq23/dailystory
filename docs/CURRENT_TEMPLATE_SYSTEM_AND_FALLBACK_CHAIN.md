@@ -31,12 +31,16 @@ User sees story content (NOT diagnostic page)
 3. **Toast notifications** - Replace error pages
 4. **Outer safety nets** - Services never throw exceptions
 5. **Source tracking** - Analytics for tier usage
+6. **CCS data flow fixed** - Template-AB nested payload now preserves precomputedCCS
+7. **Template-CD handler bundling** - Static import ensures handler availability
 
 ### Implementation Files
 - `src/components/CleanStoryDisplay.tsx` (lines 1974-1998, 2162-2199, 4035-4043)
 - `src/services/NetflixStyleStoryService.ts` (lines 61-236)
 - `src/services/LiveGenerationService.ts` (lines 555-595)
 - `src/services/errorHandlingManager.ts` (lines 112-183)
+- `supabase/functions/runware-template-ab/index.ts` (lines 964-974) - Nested payload CCS preservation
+- `supabase/functions/runware-template-cd/index.ts` (lines 1-5, 260-289) - Static handler import
 
 ### User Experience Guarantee
 ✅ Users ALWAYS see story content  

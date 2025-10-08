@@ -967,7 +967,8 @@ async function handleTemplateABRequest(req: Request): Promise<Response> {
       console.log('📦 Template AB: Detected nested payload structure');
       payload = {
         ...rawPayload.bundle,
-        templateComplexity: rawPayload.config.templateComplexity
+        templateComplexity: rawPayload.config.templateComplexity,
+        precomputedCCS: rawPayload.precomputedCCS
       };
     } else {
       payload = rawPayload;

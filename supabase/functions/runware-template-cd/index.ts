@@ -2,6 +2,7 @@
 // Last deployed: 2025-01-08
 // Changes: CCS boot coordination fixes (inline orchestrator, _shared fallback, bundler hints)
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import handlerModule from "./index.js";
 
 // ========== INLINE CORS (Zero Dependencies) ==========
 function generateEchoCorsHeaders(req: Request): Record<string, string> {
@@ -277,20 +278,9 @@ async function loadHandler(allowRetry = false): Promise<HandlerFn | null> {
   isLoading = true;
   
   try {
-    // Bundle-first dynamic import strategy with multiple fallback attempts
-    console.log(`🔍 Bundle-first dynamic import: ./index.js`);
-    let mod: any;
-    
-    try {
-      // First attempt: Direct import (bundle-first)
-      mod = await import("./index.js");
-    } catch (bundleError) {
-      console.warn(`Bundle import failed: ${bundleError instanceof Error ? bundleError.message : String(bundleError)}, trying source fallback`);
-      // Second attempt: Source fallback (original strategy)
-      mod = await import("./index.js");
-    }
-    
-    const fn = (mod as any)?.default as HandlerFn | undefined;
+    // Static import path (bundler ensures availability)
+    console.log(`✅ Static handler loaded from import`);
+    const fn = (handlerModule as any)?.default as HandlerFn | undefined;
     
     if (typeof fn !== "function") {
       throw new Error("Handler default export not a function - boot sync error");
