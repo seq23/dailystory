@@ -1,8 +1,10 @@
-// 🚀 DEPLOYMENT MARKER: v2025-01-08-CCS-BOOT-FIX
+// 🚀 DEPLOYMENT MARKER: v2025-01-08-FLATTEN-CASCADE
 // Last deployed: 2025-01-08
-// Changes: CCS boot coordination fixes (inline orchestrator, _shared fallback, bundler hints)
+// Changes: Flattened cascade with helper functions to fix parser errors
 
-// Inlined orchestrator logic - no more lazy loading
+// Standard imports for Supabase edge functions
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // ✅ BUNDLER HINT: Force inline CCS inclusion in deployment bundle (dynamic import used inside handler)
 import { characterConsistencyService as _ccsHint } from "./CharacterConsistencyServiceInline.js";
@@ -73,6 +75,12 @@ const DEFAULT_CONFIGS: Record<string, GateConfig> = {
     maxWaitMs: 2000
   },
   'T25C:runware-template-cd': {
+    maxConcurrency: parseInt(Deno.env.get('PROVIDER_CONCURRENCY_RUNWARE') || '4'),
+    failThreshold: parseInt(Deno.env.get('CIRCUIT_FAIL_THRESHOLD') || '5'),
+    cooldownMs: parseInt(Deno.env.get('CIRCUIT_COOLDOWN_MS') || '45000'),
+    maxWaitMs: 2000
+  },
+  'T25D:runware-template-cd': {
     maxConcurrency: parseInt(Deno.env.get('PROVIDER_CONCURRENCY_RUNWARE') || '4'),
     failThreshold: parseInt(Deno.env.get('CIRCUIT_FAIL_THRESHOLD') || '5'),
     cooldownMs: parseInt(Deno.env.get('CIRCUIT_COOLDOWN_MS') || '45000'),
@@ -1162,7 +1170,7 @@ const FAST_BOOT_SYNC = {
 };
 
 // OPTIMIZED SERVE HANDLER WITH FAST BOOT SYNC RECOVERY AND COMPLETE TIER CASCADE
-Deno.serve(async (req) => {
+serve(async (req) => {
   // PHASE 1: OPTIONS fast path (immediate return) - MUST return 200
   if (req.method === "OPTIONS") {
     const corsHeaders = generateEchoCorsHeaders(req);
