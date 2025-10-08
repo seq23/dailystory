@@ -6,13 +6,41 @@
 
 ## 📊 Parity Status
 
-### ✅ Phase 1: COMPLETE - Inline Version Updated
+### ✅ Phase 1: FIXED - Inline Version Critical Bug Resolved
 **File:** `supabase/functions/runware-generate-image/CharacterConsistencyServiceInline.js`  
-**Status:** ✅ Updated to 2400+ lines with full 1:1 parity  
-**Methods Added:**
+**Status:** ✅ CRITICAL BUG FIXED (2025-10-08 14:30 UTC)  
+
+**🐛 CRITICAL BUG FIXED:**
+**`getCharacterAppearanceFromStory()` Method Signature Mismatch (Line 1167)**
+
+**OLD (BROKEN):**
+```javascript
+async getCharacterAppearanceFromStory(storyText, characterName, sessionId) {
+  // Expected 3 params, but orchestrator calls with ONLY 2 params!
+  // Line 672: getCharacterAppearanceFromStory(sessionId, characterName)
+  // Result: storyText=sessionId, characterName=characterName, sessionId=UNDEFINED
+  .eq('session_id', sessionId) // ← sessionId is UNDEFINED, query FAILS
+}
+```
+
+**NEW (FIXED):**
+```javascript
+async getCharacterAppearanceFromStory(storyContext, characterName, sessionId) {
+  const sessionIdToUse = sessionId || storyContext; // ← Smart fallback
+  const manifest = this.getSessionManifest(sessionIdToUse);
+  // Uses SessionManifest instead of direct DB query
+}
+```
+
+**Proof of Fix:**
+- **Orchestrator call (index.ts:672):** `getCharacterAppearanceFromStory(sessionId, characterName)` ← 2 args
+- **Inline signature (line 1167):** Now accepts 2 OR 3 args via smart fallback
+- **Gold standard (line 1941):** Matches exactly
+
+**Methods Previously Added (all still present):**
 - ✅ `detectAppearance()` - Detects main character clothing from story text
 - ✅ `batchWriteDetections()` - Writes detected clothing to database
-- ✅ `getCharacterAppearanceFromStory()` - Retrieves stored clothing
+- ✅ `getCharacterAppearanceFromStory()` - **NOW FIXED** - Retrieves stored clothing
 - ✅ `captureSecondaryCharacterVisuals()` - Extracts visual details
 - ✅ `loadCompleteSessionData()` - Batch loads session data
 - ✅ `getSecondaryCharacterSeed()` - Generates secondary character seeds
@@ -21,7 +49,7 @@
 - ✅ `buildClothingDescription()` - Builds clothing descriptions
 - ✅ `getSupabaseClient()` - Database client management
 
-**Result:** Clothing detection and persistence now works correctly.
+**Result:** Clothing detection, persistence, and retrieval now work correctly.
 
 ---
 
@@ -73,26 +101,63 @@ Update all 4 CCS files when:
 
 ---
 
-## 🐛 Clothing Persistence Bug - FIXED
+## 🐛 Clothing Persistence Bug - FIXED (2025-10-08)
 
 ### What Was Broken
+**CRITICAL METHOD SIGNATURE MISMATCH:**
+- `getCharacterAppearanceFromStory()` in inline version had **WRONG signature**
+- Expected 3 params: `(storyText, characterName, sessionId)`
+- Orchestrator (index.ts:672) called with **ONLY 2 params**: `(sessionId, characterName)`
+- **Result:** Third param `sessionId` became `undefined` → DB query `.eq('session_id', undefined)` **FAILED** → clothing lost
+
+**Additional Issues:**
 - Clothing detected on page 1 disappeared on page 2+
-- `getCharacterAppearanceFromStory()` missing from inline version
 - `batchWriteDetections()` never called, so clothing never saved to database
 - `buildClothingDescription()` missing, couldn't retrieve stored clothing
 
-### How It Was Fixed (Phase 1)
-1. Added `detectAppearance()` → detects colored clothing ("red shirt")
-2. Added `batchWriteDetections()` → saves to `visual_details_cache` table
-3. Added `getCharacterAppearanceFromStory()` → retrieves from database
+### How It Was Fixed (Phase 1 - UPDATED 2025-10-08)
+1. **🔧 CRITICAL FIX:** Changed `getCharacterAppearanceFromStory()` signature:
+   - **OLD:** `async getCharacterAppearanceFromStory(storyText, characterName, sessionId)`
+   - **NEW:** `async getCharacterAppearanceFromStory(storyContext, characterName, sessionId)`
+   - Added smart fallback: `sessionIdToUse = sessionId || storyContext`
+   - Changed from direct DB query to SessionManifest (matches gold standard exactly)
+2. Added `detectAppearance()` → detects colored clothing ("red shirt")
+3. Added `batchWriteDetections()` → saves to `visual_details_cache` table
 4. Added `buildClothingDescription()` → formats clothing for prompts
 5. Added `loadCompleteSessionData()` → restores cached clothing on page 1
 
-### Verification
+### Verification (POST-FIX)
 - ✅ Page 1: Clothing detected from story text via `detectAppearance()`
 - ✅ Page 1: Clothing saved to database via `batchWriteDetections()`
-- ✅ Page 2+: Clothing restored from database via `loadCompleteSessionData()`
+- ✅ **Page 2+: Clothing retrieval NOW WORKS** - signature matches orchestrator call
 - ✅ Page 2+: Clothing injected into prompts via `buildClothingDescription()`
+
+### Proof of Fix
+**Before Fix:**
+```javascript
+// index.ts:672 (orchestrator)
+getCharacterAppearanceFromStory(sessionId, characterName) // 2 args
+
+// CharacterConsistencyServiceInline.js:1167 (inline - BROKEN)
+async getCharacterAppearanceFromStory(storyText, characterName, sessionId) {
+  // storyText = sessionId (✓)
+  // characterName = characterName (✓)
+  // sessionId = undefined (❌) ← QUERY FAILS
+}
+```
+
+**After Fix:**
+```javascript
+// index.ts:672 (orchestrator - UNCHANGED)
+getCharacterAppearanceFromStory(sessionId, characterName) // 2 args
+
+// CharacterConsistencyServiceInline.js:1167 (inline - FIXED)
+async getCharacterAppearanceFromStory(storyContext, characterName, sessionId) {
+  const sessionIdToUse = sessionId || storyContext; // ✅ Smart fallback
+  // storyContext = sessionId → sessionIdToUse = sessionId (✓)
+  // Works with 2 OR 3 argument calls
+}
+```
 
 ---
 

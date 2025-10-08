@@ -1164,26 +1164,24 @@ export class CharacterConsistencyServiceInline {
     }
   }
 
-  async getCharacterAppearanceFromStory(storyText, characterName, sessionId) {
-    try {
-      const supabase = await this.getSupabaseClient();
-      if (!supabase) return '';
-      const { data, error } = await supabase
-        .from('visual_details_cache')
-        .select('detail_value, visual_elements')
-        .eq('session_id', sessionId)
-        .eq('character_name', characterName)
-        .in('detail_type', ['clothing', 'physical_feature', 'secondary_visual']);
-      if (error || !data || data.length === 0) return '';
-      const appearanceParts = data.map(d => d.detail_value).filter(Boolean);
-      if (appearanceParts.length === 0) return '';
-      const appearance = appearanceParts.join(', ');
-      console.log(`👁️ Retrieved ${characterName} appearance from story: ${appearance}`);
-      return appearance;
-    } catch (error) {
-      console.warn('⚠️ Failed to get character appearance from story:', error);
-      return '';
+  /**
+   * Get character appearance from story (FIXED: Now matches gold standard signature)
+   * Accepts 2 OR 3 params for backwards compatibility with orchestrator
+   * Called from index.ts line 672: getCharacterAppearanceFromStory(sessionId, characterName)
+   */
+  async getCharacterAppearanceFromStory(storyContext, characterName, sessionId) {
+    // Use sessionId if provided (3-arg call), fallback to storyContext (2-arg call from orchestrator)
+    const sessionIdToUse = sessionId || storyContext;
+    const manifest = this.getSessionManifest(sessionIdToUse);
+    const character = manifest.getCharacter || manifest.getAllCharacters().find(c => c.name === characterName);
+    
+    if (character?.appearance) {
+      console.log(`👁️ [CCS-INLINE] Retrieved ${characterName} appearance from manifest: ${JSON.stringify(character.appearance).substring(0, 100)}`);
+      return JSON.stringify(character.appearance);
     }
+    
+    console.log(`⚠️ [CCS-INLINE] No appearance found in manifest for ${characterName}`);
+    return '';
   }
 
   async getSecondaryCharacterSeed(sessionId, characterName, characterType = 'secondary_character') {
