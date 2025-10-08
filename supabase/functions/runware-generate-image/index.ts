@@ -682,23 +682,13 @@ async function processInlinedTier1(
     console.error(`❌ [${requestId}] [TIER_1] getCulturalEnhancements: FAILED`, { sessionId, error: errorMessage });
     logTier1Step("Cultural Enhancements", "failed", `getCulturalEnhancements: ${errorMessage}`);
 
-    // RESILIENCE: Create emergency culturalBundle to allow Tier 2.5A to run
-    const skinToneForFallback = userInfo?.avatar?.skinTone || userInfo?.skinTone || structuredAvatarData?.skinTone || "medium";
-    culturalBundle = {
-      hair: emergencyHairFallback(skinToneForFallback),
-      features: "friendly features",
-    };
-    console.log(`🛡️ [${requestId}] [TIER_1] Emergency culturalBundle created`, {
-      sessionId,
-      culturalBundle,
-      reason: errorMessage,
-    });
-
     // For forced Tier 1, return specific method failure (no cascade)
     if (payload.forceCompleteTier1) {
       throw new Error(`CCS_METHOD_FAILED:getCulturalEnhancements:${errorMessage}`);
     }
-    // Continue with emergency bundle instead of throwing
+    
+    // Fail-fast: throw to trigger cascade (emergency data constructed in main catch block)
+    throw new Error("CHARACTERSERVICE_UNAVAILABLE_TRY_DIRECT_MODE");
   }
 
   // Analyze visual details from story text
@@ -1859,6 +1849,33 @@ serve(async (req) => {
           // Continue to 2.5A cascade below
         }
 
+        // ✅ PHASE 1: Construct emergency CCS data OUTSIDE Tier 1 try/catch
+        // This guarantees culturalBundle/characterSeed exist for Tier 2.5A even if Tier 1 failed early
+        if (!culturalBundle) {
+          const skinToneForFallback = userInfo?.avatar?.skinTone || userInfo?.skinTone || structuredAvatarData?.skinTone || "medium";
+          culturalBundle = {
+            hair: emergencyHairFallback(skinToneForFallback),
+            features: "friendly features",
+          };
+          console.log(`🛡️ [${requestId}] Emergency culturalBundle created (Tier 1 failed early)`, {
+            sessionId,
+            culturalBundle,
+            reason: "Tier 1 CCS method failed before culturalBundle could be populated",
+          });
+        }
+
+        if (!characterSeed) {
+          characterSeed = {
+            hair: culturalBundle?.hair || emergencyHairFallback("medium"),
+            skin: "friendly features",
+            eyes: "expressive eyes",
+          };
+          console.log(`🛡️ [${requestId}] Emergency characterSeed created (Tier 1 failed early)`, {
+            sessionId,
+            characterSeed,
+          });
+        }
+
         // Track error messages from all tier attempts for universal 2.5C fallback
         let tier25aErrorMessage = "";
         let tier25bErrorMessage = "";
@@ -1926,6 +1943,17 @@ serve(async (req) => {
                 if (SUPABASE_ANON_KEY) {
                   headers["apikey"] = SUPABASE_ANON_KEY;
                 }
+
+                // ✅ PHASE 3: Validate precomputedCCS before sending to Tier 2.5A
+                console.log(`🔍 [${requestId}] [TIER_2.5A] Validating precomputedCCS before call:`, {
+                  hasCulturalBundle: !!culturalBundle,
+                  culturalBundle,
+                  hasCharacterSeed: !!characterSeed,
+                  characterSeed,
+                  hasMainCharacterAppearance: !!mainCharacterAppearance,
+                  hasColoredObjects: !!coloredObjects,
+                  hasSecondaryCharacters: !!secondaryCharacters,
+                });
                 
                 const response = await fetch(`${SUPABASE_URL}/functions/v1/runware-template-ab`, {
                   method: "POST",
