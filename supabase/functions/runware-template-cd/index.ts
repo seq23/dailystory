@@ -1,4 +1,6 @@
-// DEPLOY_MARKER: 2025-10-06T18:15:00Z - Inline CORS (zero imports, boot-safe)
+// 🚀 DEPLOYMENT MARKER: v2025-01-08-CCS-BOOT-FIX
+// Last deployed: 2025-01-08
+// Changes: CCS boot coordination fixes (inline orchestrator, _shared fallback, bundler hints)
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // ========== INLINE CORS (Zero Dependencies) ==========

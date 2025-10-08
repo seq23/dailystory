@@ -1,4 +1,6 @@
-// DEPLOY_MARKER: 2025-10-07T14:30:00Z - Fix stray brace + enforce 2-tier fallback (CCS→Hardcoded)
+// 🚀 DEPLOYMENT MARKER: v2025-01-08-CCS-BOOT-FIX
+// Last deployed: 2025-01-08
+// Changes: CCS boot coordination fixes (inline orchestrator, _shared fallback, bundler hints)
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
