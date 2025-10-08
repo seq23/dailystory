@@ -203,3 +203,12 @@ Force a fresh deploy for any function by bumping the DEPLOY_MARKER comment at th
 - `runware-template-ab` (Tier 2.5A) returns 503 when escalating to upstream tiers (by design)
 - Monitoring systems should treat 503 from 2.5A as a non-fatal escalation signal
 - Circuit breakers configured to not trip on 503 status codes from template services
+
+**Diagnostic Runtime Probes (NEW):**
+- Receptionist functions accept POST payloads with `{ diagnostic: true | 'health_check' }` or `{ test: true }`
+- They short-circuit and return `{ success: true, message: 'Runtime OK' }` with 200, avoiding deeper logic
+- Implemented in: `ai-visual-scene-creator`, `runware-template-ab`
+
+**Import Map Requirement (RUNWARE):**
+- `runware-generate-image` relies on dynamic imports; ensure `import_map = "../deno.jsonc"` is set in `supabase/config.toml`
+- This prevents bundler graph resolution failures for vendor-first client loading

@@ -1058,6 +1058,17 @@ serve(async (req) => {
       }, req, 400);
     }
 
+    // Diagnostic short-circuit for runtime probes
+    if (payload?.diagnostic === true || payload?.diagnostic === 'health_check' || payload?.test === true) {
+      if (gatingEnabled && gateAcquired) release(gateKey, true);
+      return corsResponse({
+        success: true,
+        service: 'ai-visual-scene-creator',
+        message: 'Runtime OK',
+        timestamp: new Date().toISOString()
+      }, req, 200);
+    }
+
     // Validate required fields - enhanced content checking
     const content = payload.pageText || payload.storyText || payload.content || '';
     if (!content.trim()) {
