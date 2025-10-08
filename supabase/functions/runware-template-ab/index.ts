@@ -66,7 +66,8 @@ function extractAndNormalizeAction(text: string): string {
     'stands', 'standing', 'stand', 'runs', 'running', 'run', 'walks', 'walking', 'walk',
     'jumps', 'jumping', 'jump', 'climbs', 'climbing', 'climb', 'swings', 'swinging', 'swing',
     'draws', 'drawing', 'draw', 'reads', 'reading', 'read', 'sings', 'singing', 'sing',
-    'dances', 'dancing', 'dance', 'builds', 'building', 'build', 'creates', 'creating', 'create'
+    'dances', 'dancing', 'dance', 'builds', 'building', 'build', 'creates', 'creating', 'create',
+    'cleans', 'cleaning', 'helps', 'helping'
   ];
   
   // First check for Level 0 specific action patterns with word boundaries
@@ -181,7 +182,6 @@ function extractAndNormalizeAction(text: string): string {
 function inferObjectFromAction(action: string): string {
   const actionObjectMap: Record<string, string> = {
     'cooking': 'food',
-    'standing over stove': 'cooking utensils',
     'reading': 'book',
     'drawing': 'crayons',
     'writing': 'pencil',
@@ -820,16 +820,17 @@ function getSkinBySkintoneEnhanced(skinTone: string, sessionId: string, cultural
     return AFRICAN_AMERICAN_FACIAL_FEATURES_INLINE[seed];
   }
   
-  return getSkinBySkintone(skinTone, sessionId);
+  return getSkinBySkintone(skinTone, culturalProfile);
 }
 
 function inlineDetectCultural(userInfo: any, avatarIdentity: any): string {
   const skinTone = avatarIdentity?.skinTone || userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium';
   const language = userInfo?.nativeLanguage || userInfo?.language || 'en';
   
-  // Dark skin + supported languages (en/fr/es/pt) get African American enhancements
-  if ((skinTone === 'dark' || skinTone === 'darker') && 
-      ['en', 'fr', 'es', 'pt'].includes(language.toLowerCase())) {
+  // Dark skin gets African American enhancements
+  // - For supported languages (en/fr/es/pt): full cultural profile
+  // - For other languages: still use African American profile for visual consistency
+  if (skinTone === 'dark' || skinTone === 'darker') {
     return 'african-american';
   }
   
@@ -841,7 +842,7 @@ function deriveRegionalEthnicity(userInfo: any, avatarIdentity: any): string {
 }
 
 // ========== INLINED: RUNWARE API ==========
-async function callRunwareAPI(positivePrompt: string, negativePrompt: string, options: any = {}, retries = 2): Promise<string> {
+async function callRunwareAPI(positivePrompt: string, negativePrompt: string, options: any = {}, retries = 2): Promise<{ imageURL: string; seed?: number }> {
   const {
     sessionId = 'unknown-session',
     pageNumber = 1,
@@ -1024,7 +1025,7 @@ async function handleTemplateABRequest(req: Request): Promise<Response> {
       isAfricanAmerican: culturalProfile === 'african-american'
     });
     
-    const difficulty = userInfo.difficultyLevel || 'medium';
+    const difficulty = userInfo.difficultyLevel || userInfo.difficulty || context?.difficulty || 'medium';
     const styleFramework = getNuclearStyleFramework(difficulty);
     
     // Build character description
@@ -1374,7 +1375,7 @@ serve(async (req) => {
     
   } catch (err: any) {
     return withCors(createResponse({
-      error: "Internal receptionist error",
+      error: "Internal error",
       message: err?.message ?? String(err),
       service: SERVICE_NAME,
       timestamp: new Date().toISOString()
