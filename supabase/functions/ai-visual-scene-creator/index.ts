@@ -689,16 +689,9 @@ Generate a comprehensive scene with complete visual elements including backgroun
     let cachedSecondaryCharacters: any[] = [];
     
     try {
-      // Try _shared import first, fallback to _vendor
-    let ccsModule;
-    try {
-      ccsModule = await import('../_shared/CharacterConsistencyService.js');
-      console.log(`✅ [CCS_IMPORT_DM] _shared loaded for secondary characters`);
-    } catch (sharedError) {
-      console.warn(`⚠️ [CCS_IMPORT_DM] _shared failed, trying _vendor:`, sharedError);
-      ccsModule = await import('../_vendor/CharacterConsistencyService.mjs');
-      console.log(`✅ [CCS_IMPORT_DM] _vendor loaded for secondary characters (last resort)`);
-    }
+      // Direct database query for secondary characters (no CCS dependency)
+      console.log(`⚠️ [SERVICE_UNAVAILABLE] CCS removed - secondary characters unavailable`);
+      throw new Error('CCS service removed - secondary characters not available');
       
       const { characterConsistencyService } = ccsModule;
       cachedSecondaryCharacters = await characterConsistencyService.getSecondaryCharactersForSession(sessionId);
@@ -955,16 +948,9 @@ serve(async (req) => {
     let neverEndingSetting = "";
     
     try {
-      let ccsImportResult;
-      try {
-        ccsImportResult = await import('../_shared/CharacterConsistencyService.js');
-        console.log(`✅ [CCS_IMPORT_TIER2] _shared loaded`);
-      } catch (sharedError) {
-        console.warn(`⚠️ [CCS_IMPORT_TIER2] _shared failed, trying _vendor:`, sharedError);
-        ccsImportResult = await import('../_vendor/CharacterConsistencyService.mjs');
-        console.log(`✅ [CCS_IMPORT_TIER2] _vendor loaded (last resort)`);
-      }
-      const { characterConsistencyService } = ccsImportResult;
+      // CCS removed - throw error to trigger graceful fallback
+      console.warn(`⚠️ [CCS_IMPORT_TIER2] CCS service removed - using inline fallback`);
+      throw new Error('CCS service removed - all 3 methods unavailable');
       
       // Get enhanced character seed with graceful fallback (CCS CORE METHOD)
       const characterName = userInfo?.name || userInfo?.userName || 'child';
@@ -1085,17 +1071,10 @@ serve(async (req) => {
     let characterServiceAvailable = false;
     
     try {
-      let importResult;
-      try {
-        importResult = await import('../_shared/CharacterConsistencyService.js');
-        console.log(`✅ [${requestId}] CharacterConsistencyService loaded from _shared`);
-      } catch (sharedError) {
-        console.warn(`⚠️ [${requestId}] _shared failed, trying _vendor:`, sharedError);
-        importResult = await import('../_vendor/CharacterConsistencyService.mjs');
-        console.log(`✅ [${requestId}] CharacterConsistencyService loaded from _vendor (last resort)`);
-      }
-      characterConsistencyService = importResult.characterConsistencyService;
-      characterServiceAvailable = true;
+      // CCS removed - mark service as unavailable (non-fatal)
+      console.warn(`⚠️ [${requestId}] CharacterConsistencyService removed from system (non-fatal)`);
+      characterServiceAvailable = false;
+      throw new Error('CCS service removed');
     } catch (importError) {
       const errorMessage = importError instanceof Error ? importError.message : String(importError);
       console.warn(`⚠️ [${requestId}] CharacterConsistencyService unavailable (non-fatal):`, errorMessage);

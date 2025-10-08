@@ -26,9 +26,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { handleHealthAndCors } from "../_shared/healthCors.ts";
 
-// ✅ BUNDLER HINT: Force CCS inclusion in deployment bundle (dynamic import used inside handler)
-import { characterConsistencyService as _ccsHint } from "../_shared/CharacterConsistencyService.js";
-
 // CORS headers for cross-origin requests
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

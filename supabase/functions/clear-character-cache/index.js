@@ -2,16 +2,29 @@
 console.log("[clear-character-cache] Loaded: 2025-09-12T18:45:32Z");
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-// ============= LAZY LOADING FUNCTIONS FOR HEAVY DEPENDENCIES =============
+// ============= DIRECT DATABASE CLEARING (NO CCS DEPENDENCY) =============
 
-async function getCharacterService() {
-  try {
-    const { characterConsistencyService } = await import("../_shared/CharacterConsistencyService.js");
-    return characterConsistencyService;
-  } catch (error) {
-    console.warn('CharacterService lazy load failed:', error);
-    return null;
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+
+async function clearCharacterCache() {
+  const supabaseUrl = Deno.env.get('SUPABASE_URL');
+  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Missing Supabase credentials');
   }
+  
+  const supabase = createClient(supabaseUrl, supabaseKey);
+  
+  // Clear character consistency cache table
+  const { error } = await supabase
+    .from('character_consistency_cache')
+    .delete()
+    .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all records
+  
+  if (error) throw error;
+  
+  return { cleared: true, timestamp: new Date().toISOString() };
 }
 
 // Inline CORS utilities to fix boot failure
@@ -33,19 +46,8 @@ async function handleRequest(req) {
   // Force deployment sync - 2025-01-30
 
   try {
-    const characterService = await getCharacterService();
-    
-    if (!characterService) {
-      return new Response(JSON.stringify({ 
-        error: 'Character service not available' 
-      }), {
-        status: 503,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-    }
-
-    // Clear character cache using correct method
-    const result = await characterService.clearServerState();
+    // Clear character cache directly from database
+    const result = await clearCharacterCache();
     
     return new Response(JSON.stringify({ 
       status: 'success',

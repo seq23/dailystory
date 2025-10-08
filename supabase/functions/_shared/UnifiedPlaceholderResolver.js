@@ -96,17 +96,16 @@ export class UnifiedPlaceholderResolver {
   }
 
   /**
-   * Helper method to get cultural enhancements with character consistency
+   * Helper method to get cultural enhancements (CCS removed - inline fallback)
    */
   async getCulturalBundleWithConsistency(userInfo, sessionId, characterName = 'child') {
-    try {
-      const { characterConsistencyService } = await import('./CharacterConsistencyService.js');
-      return await characterConsistencyService.getCulturalEnhancements(userInfo, sessionId, characterName);
-    } catch (error) {
-      console.error('❌ Failed to get cultural bundle with consistency:', error);
-      // Return emergency fallback
-      return { hair: 'natural hair', features: 'diverse features' };
-    }
+    console.warn('⚠️ CCS removed - using inline cultural fallback');
+    // Return emergency fallback (CCS service removed)
+    const skinTone = userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium';
+    return { 
+      hair: skinTone === 'dark' ? 'natural textured hair' : 'natural hair', 
+      features: 'diverse features' 
+    };
   }
 
   /**
@@ -280,7 +279,7 @@ export class UnifiedPlaceholderResolver {
 
     // Get lazy loaded modules (ERROR-060 fix: direct import for local modules)
     const { VOCABULARY, pick } = await import('./tier25Vocabulary.js');
-    const { characterConsistencyService } = await memoizedImport('./CharacterConsistencyService.js');
+    // CCS removed - no longer importing CharacterConsistencyService
 
     // Use seeded values if available, otherwise pick from vocabulary
     const getSeededValue = (key, fallbackArray) => {
