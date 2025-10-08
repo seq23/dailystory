@@ -1050,6 +1050,73 @@ export const ImageTierTester = () => {
     return ethnicityMap[skinTone] || 'Euro-American';
   };
 
+  // Helper: Extract clothing from story text
+  const extractClothingFromStory = (storyText: string): string[] => {
+    const clothing: string[] = [];
+    const clothingPatterns = [
+      /wore (?:a |an |her |his |their )?([^.]+)/gi,
+      /wearing (?:a |an |her |his |their )?([^.]+)/gi,
+      /dressed in (?:a |an )?([^.]+)/gi,
+      /carried (?:a |an )?([^.]+)/gi,
+      /had (?:on )?(?:a |an )?([^.]+backpack|[^.]+dress|[^.]+shirt|[^.]+pants)/gi
+    ];
+    
+    clothingPatterns.forEach(pattern => {
+      const matches = storyText.matchAll(pattern);
+      for (const match of matches) {
+        if (match[1]) {
+          clothing.push(match[1].trim());
+        }
+      }
+    });
+    
+    return clothing.length > 0 ? clothing : ['casual comfortable clothing appropriate for the scene'];
+  };
+
+  // Helper: Extract secondary characters from story text  
+  const extractSecondaryCharacters = (storyText: string, mainCharName: string) => {
+    const characters: Array<{name: string, visualDetails: string, category: string}> = [];
+    
+    // Simple pattern matching for common character introductions
+    const namePatterns = [
+      /met (?:a )?(\w+)/gi,
+      /saw (?:a )?(\w+)/gi,
+      /with (?:her |his )?(?:friend |companion )?(\w+)/gi
+    ];
+    
+    const animalPatterns = [
+      /(cat|dog|bird|rabbit|fox|deer|bear|wolf|squirrel|owl)/gi
+    ];
+    
+    // Extract named characters
+    namePatterns.forEach(pattern => {
+      const matches = storyText.matchAll(pattern);
+      for (const match of matches) {
+        const name = match[1];
+        if (name && name.toLowerCase() !== mainCharName.toLowerCase()) {
+          characters.push({
+            name: name,
+            visualDetails: `${name}, a friendly companion in the scene`,
+            category: 'human'
+          });
+        }
+      }
+    });
+    
+    // Extract animals/pets
+    const animalMatches = storyText.matchAll(animalPatterns[0]);
+    for (const match of animalMatches) {
+      const animal = match[1];
+      characters.push({
+        name: animal,
+        visualDetails: `a ${animal} in the scene`,
+        category: 'pet'
+      });
+    }
+    
+    return characters;
+  };
+
   // Test AI Scene Creator (scene generation only, no image)
   const testAISceneCreator = async () => {
     setIsLoading(true);
@@ -1082,6 +1149,29 @@ export const ImageTierTester = () => {
         source: 'test_enriched'
       };
 
+      // Extract clothing from test story text
+      const clothingItems = extractClothingFromStory(testStoryText);
+      
+      // Build main character appearance object (matches orchestrator structure)
+      const mainCharacterAppearance = {
+        physicalFeatures: [
+          `${userInfo.name}, age ${age}`,
+          hairColor,
+          skinFeatures,
+          `${ethnicity} ethnicity`
+        ],
+        clothing: clothingItems
+      };
+
+      // Extract secondary characters from story
+      const secondaryCharacters = extractSecondaryCharacters(testStoryText, userInfo.name);
+
+      DebugLogger.log('image', '🧪 Test Scene Creator - Enriched Payload:', {
+        structuredAvatarData,
+        mainCharacterAppearance,
+        secondaryCharacters
+      });
+
       const startTime = Date.now();
       const response = await supabase.functions.invoke('ai-visual-scene-creator', {
         body: {
@@ -1090,6 +1180,9 @@ export const ImageTierTester = () => {
             ...userInfo,
             structuredAvatarData: structuredAvatarData
           },
+          mainCharacterAppearance: mainCharacterAppearance,
+          secondaryCharacters: secondaryCharacters,
+          previousScene: null, // First scene has no previous
           sessionId: sessionId,
           storyId: sessionId,
           pageNumber: 1,
