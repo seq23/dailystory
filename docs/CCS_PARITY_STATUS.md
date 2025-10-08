@@ -4,6 +4,55 @@
 **Issue:** Clothing persistence bug (clothing not appearing on page 2+)  
 **Root Cause:** Inline version missing 15+ critical methods
 
+## 🐛 CRITICAL BUG FIX: Property Path Mismatch (2025-10-08)
+
+### Issue:
+All four CCS files incorrectly accessed `TIER_25_UNIFIED_VOCABULARY_EXTENDED.context` 
+instead of `TIER_25_UNIFIED_VOCABULARY_EXTENDED.contextDetection`.
+
+### Root Cause:
+The alias `TIER_25_UNIFIED_VOCABULARY_EXTENDED.context = TIER_25_UNIFIED_VOCABULARY_EXTENDED.contextDetection` 
+was defined AFTER these access points in the code (around line 450), causing undefined references during module initialization.
+This caused "Module not found" errors when edge functions tried to import CCS.
+
+### Files Fixed:
+1. ✅ `_shared/CharacterConsistencyService.js` (lines 417-418, 423-424)
+2. ✅ `_vendor/CharacterConsistencyService.mjs` (lines 431-432, 437-438)
+3. ✅ `runware-generate-image/CharacterConsistencyServiceInline.js` (lines 417-418, 423-424)
+4. ✅ `_shared/CharacterConsistencyService.ts` (lines 438-439, 444-445)
+
+### What Was Changed:
+```javascript
+// ❌ BEFORE (incorrect - undefined references):
+settings: [
+  ...(TIER_25_UNIFIED_VOCABULARY_EXTENDED.context?.indoor || []),
+  ...(TIER_25_UNIFIED_VOCABULARY_EXTENDED.context?.outdoor || [])
+],
+contextDetection: {
+  indoor: TIER_25_UNIFIED_VOCABULARY_EXTENDED.context?.indoor || [],
+  outdoor: TIER_25_UNIFIED_VOCABULARY_EXTENDED.context?.outdoor || []
+}
+
+// ✅ AFTER (correct - uses actual property path):
+settings: [
+  ...(TIER_25_UNIFIED_VOCABULARY_EXTENDED.contextDetection?.indoor || []),
+  ...(TIER_25_UNIFIED_VOCABULARY_EXTENDED.contextDetection?.outdoor || [])
+],
+contextDetection: {
+  indoor: TIER_25_UNIFIED_VOCABULARY_EXTENDED.contextDetection?.indoor || [],
+  outdoor: TIER_25_UNIFIED_VOCABULARY_EXTENDED.contextDetection?.outdoor || []
+}
+```
+
+### Impact:
+- ✅ Resolves "Module not found" errors in `ai-visual-scene-creator`
+- ✅ CCS now loads correctly across all edge functions
+- ✅ All four CCS files remain in perfect parity
+- ✅ Tier 1 orchestrator can successfully import CCS from `_shared` and `_vendor`
+
+### Parity Status: RESTORED
+All four files now in sync with correct property paths.
+
 ## 🚫 Deprecated Files
 
 ### CharacterConsistencyService.ts

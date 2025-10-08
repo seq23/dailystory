@@ -428,14 +428,14 @@ export class CharacterConsistencyService {
         objects: Object.values(TIER_25_UNIFIED_VOCABULARY_EXTENDED.objectCategories || {}).flat(),
         clothing: TIER_25_UNIFIED_VOCABULARY_EXTENDED.clothing?.basic || [],
         settings: [
-          ...(TIER_25_UNIFIED_VOCABULARY_EXTENDED.context?.indoor || []),
-          ...(TIER_25_UNIFIED_VOCABULARY_EXTENDED.context?.outdoor || [])
+          ...(TIER_25_UNIFIED_VOCABULARY_EXTENDED.contextDetection?.indoor || []),
+          ...(TIER_25_UNIFIED_VOCABULARY_EXTENDED.contextDetection?.outdoor || [])
         ],
         relationships: TIER_25_UNIFIED_VOCABULARY_EXTENDED.peopleRelationships || [],
         animals: TIER_25_UNIFIED_VOCABULARY_EXTENDED.objectCategories?.animals || [],
         contextDetection: {
-          indoor: TIER_25_UNIFIED_VOCABULARY_EXTENDED.context?.indoor || [],
-          outdoor: TIER_25_UNIFIED_VOCABULARY_EXTENDED.context?.outdoor || []
+          indoor: TIER_25_UNIFIED_VOCABULARY_EXTENDED.contextDetection?.indoor || [],
+          outdoor: TIER_25_UNIFIED_VOCABULARY_EXTENDED.contextDetection?.outdoor || []
         }
       };
       
