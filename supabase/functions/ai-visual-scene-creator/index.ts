@@ -1,6 +1,6 @@
-// 🚀 DEPLOYMENT MARKER: v2025-01-08-CCS-BOOT-FIX-NO-CROSS-IMPORT
-// Last deployed: 2025-01-08
-// Changes: Removed cross-function inline imports, enforced _shared→_vendor fallback only
+// 🚀 DEPLOYMENT MARKER: v2025-10-08-SESSION-WIDE-CHARACTER-MEMORY-PROMPT
+// Last deployed: 2025-10-08
+// Changes: Updated user prompt to include session-wide character memory structure with secondary character consistency
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
