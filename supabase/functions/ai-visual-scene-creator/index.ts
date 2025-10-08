@@ -5,6 +5,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 // CCS completely removed from Direct Mode - using inline static avatar system
+// CCS boot status tracking (for metadata reporting only)
+const ccsBootStatus = { loaded: false, error: null };
 
 // ========== INLINE CORS (Zero Dependencies) ==========
 function generateEchoCorsHeaders(req: Request): Record<string, string> {

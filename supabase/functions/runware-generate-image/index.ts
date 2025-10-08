@@ -2547,30 +2547,7 @@ serve(async (req) => {
       await new Promise((resolve) => setTimeout(resolve, delay));
     } // end cascadeError catch
   } // end tier1Error catch
-} // Close outer try from line 1151
-catch (outerSyncError) {
-  // Handle boot sync errors for outer retry loop
-  const outerErrorMessage = outerSyncError instanceof Error ? outerSyncError.message : String(outerSyncError);
-  console.error(`[runware-generate-image] Boot sync error: ${outerErrorMessage}`);
-  
-  const isSyncFailure = FAST_BOOT_SYNC.bootErrors.some((msg) => outerErrorMessage.includes(msg));
-  
-  if (!isSyncFailure || attempt === FAST_BOOT_SYNC.maxRetries) {
-    return corsResponse(
-      {
-        error: outerErrorMessage,
-        escalationTarget: "TIER_4",
-      },
-      req,
-      500
-    );
-  }
-  
-  const delay = FAST_BOOT_SYNC.delays[attempt];
-  console.warn(`🔄 Boot sync retry ${attempt + 1}/${FAST_BOOT_SYNC.maxRetries} in ${delay}ms`);
-  await new Promise((resolve) => setTimeout(resolve, delay));
-}
-  } // Close for loop
+} // Close for loop
 
   // Should never reach here, but fallback
   return corsResponse(
