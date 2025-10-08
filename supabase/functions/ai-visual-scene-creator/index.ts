@@ -1,6 +1,6 @@
-// 🚀 DEPLOYMENT MARKER: v2025-01-08-CCS-BOOT-FIX
+// 🚀 DEPLOYMENT MARKER: v2025-01-08-CCS-BOOT-FIX-NO-CROSS-IMPORT
 // Last deployed: 2025-01-08
-// Changes: CCS boot coordination fixes (inline orchestrator, _shared fallback, bundler hints)
+// Changes: Removed cross-function inline imports, enforced _shared→_vendor fallback only
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -726,17 +726,12 @@ Generate a comprehensive scene with complete visual elements including backgroun
       // Try _shared import first, fallback to _vendor
     let ccsModule;
     try {
-      ccsModule = await import('../runware-generate-image/CharacterConsistencyServiceInline.js');
-      console.log(`✅ [CCS_IMPORT_DM] inline loaded for secondary characters`);
-    } catch (inlineError) {
-      try {
-        ccsModule = await import('../_shared/CharacterConsistencyService.js');
-        console.log(`✅ [CCS_IMPORT_DM] _shared loaded for secondary characters (fallback)`);
-      } catch (sharedError) {
-        console.warn(`⚠️ [CCS_IMPORT_DM] _shared failed, trying _vendor:`, sharedError);
-        ccsModule = await import('../_vendor/CharacterConsistencyService.mjs');
-        console.log(`✅ [CCS_IMPORT_DM] _vendor loaded for secondary characters (last resort)`);
-      }
+      ccsModule = await import('../_shared/CharacterConsistencyService.js');
+      console.log(`✅ [CCS_IMPORT_DM] _shared loaded for secondary characters`);
+    } catch (sharedError) {
+      console.warn(`⚠️ [CCS_IMPORT_DM] _shared failed, trying _vendor:`, sharedError);
+      ccsModule = await import('../_vendor/CharacterConsistencyService.mjs');
+      console.log(`✅ [CCS_IMPORT_DM] _vendor loaded for secondary characters (last resort)`);
     }
       
       const { characterConsistencyService } = ccsModule;
@@ -996,13 +991,12 @@ serve(async (req) => {
     try {
       let ccsImportResult;
       try {
-        ccsImportResult = await import('../runware-generate-image/CharacterConsistencyServiceInline.js');
-      } catch (inlineError) {
-        try {
-          ccsImportResult = await import('../_shared/CharacterConsistencyService.js');
-        } catch (sharedError) {
-          ccsImportResult = await import('../_vendor/CharacterConsistencyService.mjs');
-        }
+        ccsImportResult = await import('../_shared/CharacterConsistencyService.js');
+        console.log(`✅ [CCS_IMPORT_TIER2] _shared loaded`);
+      } catch (sharedError) {
+        console.warn(`⚠️ [CCS_IMPORT_TIER2] _shared failed, trying _vendor:`, sharedError);
+        ccsImportResult = await import('../_vendor/CharacterConsistencyService.mjs');
+        console.log(`✅ [CCS_IMPORT_TIER2] _vendor loaded (last resort)`);
       }
       const { characterConsistencyService } = ccsImportResult;
       
@@ -1127,16 +1121,12 @@ serve(async (req) => {
     try {
       let importResult;
       try {
-        importResult = await import('../runware-generate-image/CharacterConsistencyServiceInline.js');
-        console.log(`✅ [${requestId}] CharacterConsistencyService loaded from inline`);
-      } catch (inlineError) {
-        try {
-          importResult = await import('../_shared/CharacterConsistencyService.js');
-          console.log(`✅ [${requestId}] CharacterConsistencyService loaded from _shared (fallback)`);
-        } catch (sharedError) {
-          importResult = await import('../_vendor/CharacterConsistencyService.mjs');
-          console.log(`✅ [${requestId}] CharacterConsistencyService loaded from _vendor (last resort)`);
-        }
+        importResult = await import('../_shared/CharacterConsistencyService.js');
+        console.log(`✅ [${requestId}] CharacterConsistencyService loaded from _shared`);
+      } catch (sharedError) {
+        console.warn(`⚠️ [${requestId}] _shared failed, trying _vendor:`, sharedError);
+        importResult = await import('../_vendor/CharacterConsistencyService.mjs');
+        console.log(`✅ [${requestId}] CharacterConsistencyService loaded from _vendor (last resort)`);
       }
       characterConsistencyService = importResult.characterConsistencyService;
       characterServiceAvailable = true;
