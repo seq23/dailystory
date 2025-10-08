@@ -121,6 +121,15 @@ All functions use `index.ts` as their entry point. JavaScript-only functions hav
 
 ## Recent Structural Fixes
 
+### ai-visual-scene-creator Critical Bug Fixes (Oct 8, 2025)
+- **Line 1339**: Fixed undefined `sessionSetting` variable causing ReferenceError
+- **Lines 254-271**: Added `parseIntSafe()` helper to prevent NaN propagation from env variables
+- **Lines 840-853**: Removed unreachable dead code referencing undefined `ccsModule`
+- **Line 1437**: Fixed `processingTime` telemetry (now calculates elapsed time instead of absolute timestamp)
+- **Lines 52-68**: Added boot-time validation for critical environment variables (SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, OPENAI_API_KEY)
+- **Line 1205**: Improved DB cleanup error handling with specific 42P01 (table not found) detection
+- **Impact**: Eliminates ReferenceErrors, prevents gate config NaN failures, fixes telemetry accuracy, provides early env validation
+
 ### runware-generate-image Brace Structure Normalization (Oct 8, 2025)
 - **Lines 2488-2495**: Corrected misleading closing-brace comments that caused parser ambiguity
 - **Change**: Replaced incorrect "end Direct Mode execution block" comment with accurate scope labels

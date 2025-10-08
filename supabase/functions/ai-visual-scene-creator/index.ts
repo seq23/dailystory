@@ -52,6 +52,22 @@ function corsResponse(data: any, req: Request, status = 200): Response {
 // ========== GLOBAL SUPABASE CLIENT (lazy-initialized) ==========
 let supabaseClient: any = null;
 
+// ========== ENVIRONMENT VALIDATION (Boot-time) ==========
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
+
+// Validate critical env vars at boot
+if (!SUPABASE_URL) {
+  console.error('❌ CRITICAL: SUPABASE_URL environment variable is missing');
+}
+if (!SUPABASE_SERVICE_ROLE_KEY) {
+  console.error('❌ CRITICAL: SUPABASE_SERVICE_ROLE_KEY environment variable is missing');
+}
+if (!OPENAI_API_KEY) {
+  console.error('❌ CRITICAL: OPENAI_API_KEY environment variable is missing');
+}
+
 // ========== INLINE STATIC AVATAR DATA SYSTEM (NO CCS) ==========
 // 73-variation hair system by skin tone (session-seeded for consistency)
 // 65-variation hair system by skin tone (session-seeded for consistency) - 1:1 PARITY WITH ORCHESTRATOR
@@ -249,23 +265,30 @@ interface GateState {
 
 const gates = new Map<string, GateState>();
 
+// Safe parseInt helper to prevent NaN propagation
+function parseIntSafe(value: string | undefined, defaultValue: number): number {
+  if (!value) return defaultValue;
+  const parsed = parseInt(value, 10);
+  return isNaN(parsed) ? defaultValue : parsed;
+}
+
 const DEFAULT_CONFIGS: Record<string, GateConfig> = {
   'T1:ai-visual-scene-creator': {
-    maxConcurrency: parseInt(Deno.env.get('PROVIDER_CONCURRENCY_T1') || '6'),
-    failThreshold: parseInt(Deno.env.get('CIRCUIT_FAIL_THRESHOLD') || '5'),
-    cooldownMs: parseInt(Deno.env.get('CIRCUIT_COOLDOWN_MS') || '30000'),
+    maxConcurrency: parseIntSafe(Deno.env.get('PROVIDER_CONCURRENCY_T1'), 6),
+    failThreshold: parseIntSafe(Deno.env.get('CIRCUIT_FAIL_THRESHOLD'), 5),
+    cooldownMs: parseIntSafe(Deno.env.get('CIRCUIT_COOLDOWN_MS'), 30000),
     maxWaitMs: 2000
   },
   'DM:runware-template-cd': {
-    maxConcurrency: parseInt(Deno.env.get('PROVIDER_CONCURRENCY_RUNWARE') || '4'),
-    failThreshold: parseInt(Deno.env.get('CIRCUIT_FAIL_THRESHOLD') || '5'),
-    cooldownMs: parseInt(Deno.env.get('CIRCUIT_COOLDOWN_MS') || '45000'),
+    maxConcurrency: parseIntSafe(Deno.env.get('PROVIDER_CONCURRENCY_RUNWARE'), 4),
+    failThreshold: parseIntSafe(Deno.env.get('CIRCUIT_FAIL_THRESHOLD'), 5),
+    cooldownMs: parseIntSafe(Deno.env.get('CIRCUIT_COOLDOWN_MS'), 45000),
     maxWaitMs: 2000
   },
   'T25A:runware-template-ab': {
-    maxConcurrency: parseInt(Deno.env.get('PROVIDER_CONCURRENCY_RUNWARE') || '4'),
-    failThreshold: parseInt(Deno.env.get('CIRCUIT_FAIL_THRESHOLD') || '5'),
-    cooldownMs: parseInt(Deno.env.get('CIRCUIT_COOLDOWN_MS') || '45000'),
+    maxConcurrency: parseIntSafe(Deno.env.get('PROVIDER_CONCURRENCY_RUNWARE'), 4),
+    failThreshold: parseIntSafe(Deno.env.get('CIRCUIT_FAIL_THRESHOLD'), 5),
+    cooldownMs: parseIntSafe(Deno.env.get('CIRCUIT_COOLDOWN_MS'), 45000),
     maxWaitMs: 2000
   },
   'T25B:runware-template-ab': {
@@ -833,23 +856,12 @@ Generate a comprehensive scene with complete visual elements including backgroun
     let cachedSecondaryCharacters: any[] = [];
     
     try {
-      // Direct database query for secondary characters (no CCS dependency)
+      // CCS removed - secondary characters unavailable
       console.log(`⚠️ [SERVICE_UNAVAILABLE] CCS removed - secondary characters unavailable`);
       throw new Error('CCS service removed - secondary characters not available');
-      
-      const { characterConsistencyService } = ccsModule;
-      cachedSecondaryCharacters = await characterConsistencyService.getSecondaryCharactersForSession(sessionId);
-      console.log(`✅ [CDN_IMPORT_SUCCESS] Retrieved ${cachedSecondaryCharacters.length} cached secondary characters for session ${sessionId}`);
     } catch (error) {
-      // Categorize import failure
       const errorMessage = error instanceof Error ? error.message : String(error);
-      const errorCategory = errorMessage.includes('Failed to fetch') || errorMessage.includes('NetworkError')
-        ? 'CDN_IMPORT_FAILURE'
-        : errorMessage.includes('Cannot find module') || errorMessage.includes('not found')
-        ? 'SERVICE_UNAVAILABLE'
-        : 'IMPORT_ERROR';
-      
-      console.warn(`⚠️ [${errorCategory}] Failed to retrieve cached secondary characters:`, errorMessage);
+      console.warn(`⚠️ [SERVICE_UNAVAILABLE] Failed to retrieve cached secondary characters:`, errorMessage);
     }
     
     // Merge OpenAI-detected and cached secondary characters
@@ -1203,7 +1215,13 @@ serve(async (req) => {
           .lt('page_first_seen', pageNumber - 1);
         
         if (deleteError) {
-          console.warn(`⚠️ Failed to cleanup old primary scenes (non-fatal):`, deleteError);
+          // Check for table not found error (42P01)
+          const errorCode = (deleteError as any)?.code;
+          if (errorCode === '42P01') {
+            console.warn(`⚠️ Table 'visual_details_cache' not found (schema mismatch):`, deleteError);
+          } else {
+            console.warn(`⚠️ Failed to cleanup old primary scenes (non-fatal):`, deleteError);
+          }
         } else {
           console.log(`🧹 CLEANUP: Removed primary scenes older than page ${pageNumber - 1}`);
         }
@@ -1316,6 +1334,9 @@ serve(async (req) => {
         ethnicity: structuredAvatarData?.ethnicity,
         source: structuredAvatarData?.source
       });
+      
+      // CRITICAL FIX: Declare sessionSetting variable
+      const sessionSetting = neverEndingSetting || visualSchema.setting || '';
       
       // Prepare payload for runware-template-cd with character consistency data
       const templatePayload = {
@@ -1434,7 +1455,7 @@ serve(async (req) => {
       // Processing metadata
       requestId,
       timestamp: new Date().toISOString(),
-      processingTime: Date.now(),
+      processingTime: Date.now() - gateStartTime, // CRITICAL FIX: Elapsed time, not absolute timestamp
       metadata: {
         ccsBootStatus: {
           loaded: ccsBootStatus.loaded,
