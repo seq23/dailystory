@@ -327,7 +327,7 @@ async function generateCompleteVisualSchema(
       
       structuredAvatarData = {
         resolvedSkinTone: fallbackSkinTone,
-        assignedHairColor: getSessionSeededHair(fallbackSkinTone, sessionId),
+        hairColor: getSessionSeededHair(fallbackSkinTone, sessionId),
         skinFeatures: getSessionSeededFeatures(fallbackSkinTone, sessionId),
         ethnicity: derivedEthnicity,
         source: 'inline_static'
@@ -342,14 +342,14 @@ async function generateCompleteVisualSchema(
   
   // Build complete character data string for OpenAI including hair and skin features from structuredAvatarData
   const characterData = structuredAvatarData 
-    ? `${characterName}, age ${userInfo?.age || structuredAvatarData?.age || 6}, ${structuredAvatarData.assignedHairColor || emergencyHairFallback(structuredAvatarData.resolvedSkinTone || 'medium')}, ${structuredAvatarData.skinFeatures || 'medium skin tone'}, ${ethnicity} ethnicity`
+    ? `${characterName}, age ${userInfo?.age || structuredAvatarData?.age || 6}, ${structuredAvatarData.hairColor || emergencyHairFallback(structuredAvatarData.resolvedSkinTone || 'medium')}, ${structuredAvatarData.skinFeatures || 'medium skin tone'}, ${ethnicity} ethnicity`
     : `${characterName}, character appearance data from orchestrator`;
   
-  console.log(`🔍 [HAIR_FALLBACK_TIER] Hair source: ${structuredAvatarData?.source || 'unknown'}, assignedHairColor=${structuredAvatarData?.assignedHairColor}`);
+  console.log(`🔍 [HAIR_FALLBACK_TIER] Hair source: ${structuredAvatarData?.source || 'unknown'}, hairColor=${structuredAvatarData?.hairColor}`);
   
   console.log(`🎨 Complete character data for OpenAI:`, {
     characterName,
-    hair: structuredAvatarData?.assignedHairColor,
+    hair: structuredAvatarData?.hairColor,
     skinFeatures: structuredAvatarData?.skinFeatures,
     ethnicity,
     fullString: characterData
@@ -542,7 +542,7 @@ CRITICAL: Enhance story settings with specific cultural elements for ${nativeLan
 ${culturalContext}
 
 EXAMPLE: For a French speaker named Sarah playing in a park, generate:
-"Sarah with ${structuredAvatarData?.assignedHairColor || 'natural hair'} and ${structuredAvatarData?.resolvedSkinTone || 'medium'} skin tone plays joyfully in a charming Parisian park near the Eiffel Tower, with the Seine River visible in the background, surrounded by elegant French gardens with lavender and a quaint café district with outdoor seating. Warm, sophisticated European aesthetic with golden afternoon light."
+"Sarah with ${structuredAvatarData?.hairColor || 'natural hair'} and ${structuredAvatarData?.resolvedSkinTone || 'medium'} skin tone plays joyfully in a charming Parisian park near the Eiffel Tower, with the Seine River visible in the background, surrounded by elegant French gardens with lavender and a quaint café district with outdoor seating. Warm, sophisticated European aesthetic with golden afternoon light."
 
 Use cultural detail naturally without contradicting explicit story settings.` : '- Use universal child-friendly settings with warm, inviting atmospheres'}`;
 
@@ -1153,7 +1153,7 @@ serve(async (req) => {
         console.error(`❌ [${requestId}] structuredAvatarData missing, using emergency fallback`);
         structuredAvatarData = {
           resolvedSkinTone: 'medium',
-          assignedHairColor: 'brown hair',
+          hairColor: 'brown hair',
           skinFeatures: 'medium skin tone with brown eyes',
           ethnicity: 'Euro-American',
           source: 'emergency_fallback'
@@ -1161,7 +1161,7 @@ serve(async (req) => {
       }
       
       console.log(`✅ [${requestId}] Using structuredAvatarData:`, {
-        hairColor: structuredAvatarData?.assignedHairColor,
+        hairColor: structuredAvatarData?.hairColor,
         skinTone: structuredAvatarData?.resolvedSkinTone,
         ethnicity: structuredAvatarData?.ethnicity,
         source: structuredAvatarData?.source
