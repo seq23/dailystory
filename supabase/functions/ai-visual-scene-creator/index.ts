@@ -189,13 +189,41 @@ const INLINE_SKIN_FEATURES: Record<string, string[]> = {
   dark: ['rich brown with warm undertones', 'deep brown with dark eyes', 'mahogany with strong features', 'ebony with beautiful complexion', 'dark brown with radiant glow']
 };
 
-function getSessionSeededHair(skinTone: string, sessionId: string): string {
+// 5-variation African American skin features (matches orchestrator)
+const AFRICAN_AMERICAN_SKIN_FEATURES_INLINE = [
+  'dark skin tone with brown eyes',
+  'rich brown skin with expressive dark eyes',
+  'deep brown complexion with warm brown eyes',
+  'beautiful dark skin with bright brown eyes',
+  'gorgeous dark skin tone with dark brown eyes'
+];
+
+function getSessionSeededHair(skinTone: string, sessionId: string, avatarType?: string): string {
+  // CRITICAL: Route dark skin to African American variations
+  if (skinTone === 'dark') {
+    const category = avatarType === 'boy' ? 'boys' : 
+                     avatarType === 'girl' ? 'girls' : 
+                     'child';
+    const options = AFRICAN_AMERICAN_HAIR_INLINE[category] || AFRICAN_AMERICAN_HAIR_INLINE.child;
+    const seed = sessionId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return options[seed % options.length];
+  }
+  
+  // Existing logic for other skin tones
   const options = INLINE_HAIR_BY_SKIN[skinTone] || INLINE_HAIR_BY_SKIN.medium;
   const seed = sessionId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
   return options[seed % options.length];
 }
 
 function getSessionSeededFeatures(skinTone: string, sessionId: string): string {
+  // CRITICAL: Route dark skin to African American features
+  if (skinTone === 'dark') {
+    const options = AFRICAN_AMERICAN_SKIN_FEATURES_INLINE;
+    const seed = sessionId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return options[seed % options.length];
+  }
+  
+  // Existing logic
   const options = INLINE_SKIN_FEATURES[skinTone] || INLINE_SKIN_FEATURES.medium;
   const seed = sessionId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
   return options[seed % options.length];
@@ -448,7 +476,7 @@ async function generateCompleteVisualSchema(
       
       structuredAvatarData = {
         resolvedSkinTone: fallbackSkinTone,
-        hairColor: getSessionSeededHair(fallbackSkinTone, sessionId),
+        hairColor: getSessionSeededHair(fallbackSkinTone, sessionId, userInfo?.avatar?.type),
         skinFeatures: getSessionSeededFeatures(fallbackSkinTone, sessionId),
         ethnicity: derivedEthnicity,
         source: 'inline_static'
@@ -1233,7 +1261,7 @@ serve(async (req) => {
 
       // Generate culturalBundle using inline static data (session-seeded)
       const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
-      const hair = getSessionSeededHair(skinTone, sessionId);
+      const hair = getSessionSeededHair(skinTone, sessionId, userInfo?.avatar?.type);
       const features = getSessionSeededFeatures(skinTone, sessionId);
       
       culturalBundle = {

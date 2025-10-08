@@ -977,6 +977,79 @@ export const ImageTierTester = () => {
     setIsLoading(false);
   };
 
+  // Helper: Get test hair variation (mimics orchestrator CCS inline)
+  const getTestHairVariation = (skinTone: string, sessionId: string, avatarType?: string): string => {
+    const AFRICAN_AMERICAN_HAIR = {
+      boys: [
+        "photorealistic detailed textured 4C African American hairstyle",
+        "natural short textured 4C African American hair",
+        "photorealistic short curly 3C African American hair",
+        "wearing authentic tight curly 4C African American hair",
+        "textured short 3B-4A African American curly hair",
+        "natural textured 4B African American coils",
+        "wearing detailed short 3C African American curls"
+      ],
+      girls: [
+        "photorealistic long goddess locs with beads African American hairstyle",
+        "wearing natural textured 4C African American hair in two puff buns",
+        "photorealistic detailed box braids African American hairstyle",
+        "natural textured 4C African American hair in cornrow braids",
+        "wearing authentic twist-out 3C-4A African American curls",
+        "photorealistic shoulder-length goddess braids African American hairstyle",
+        "textured 4B African American hair in protective style with beads"
+      ],
+      child: [
+        "photorealistic detailed textured 4C African American hairstyle",
+        "wearing natural textured 4C African American hair",
+        "natural short textured 3C-4A African American curls",
+        "photorealistic textured 4B African American coils"
+      ]
+    };
+
+    if (skinTone === 'dark') {
+      const category = avatarType === 'boy' ? 'boys' : avatarType === 'girl' ? 'girls' : 'child';
+      const options = AFRICAN_AMERICAN_HAIR[category];
+      const seed = sessionId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+      return options[seed % options.length];
+    }
+
+    const genericOptions = ['beautiful wavy hair', 'short straight hair', 'curly shoulder-length hair'];
+    const seed = sessionId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return genericOptions[seed % genericOptions.length];
+  };
+
+  // Helper: Get test skin features (mimics orchestrator CCS inline)
+  const getTestSkinFeatures = (skinTone: string, sessionId: string): string => {
+    const AFRICAN_AMERICAN_FEATURES = [
+      'dark skin tone with brown eyes',
+      'rich brown skin with expressive dark eyes',
+      'deep brown complexion with warm brown eyes',
+      'beautiful dark skin with bright brown eyes',
+      'gorgeous dark skin tone with dark brown eyes'
+    ];
+
+    if (skinTone === 'dark') {
+      const seed = sessionId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+      return AFRICAN_AMERICAN_FEATURES[seed % AFRICAN_AMERICAN_FEATURES.length];
+    }
+
+    const genericOptions = ['medium skin with brown eyes', 'light skin with hazel eyes', 'fair skin with blue eyes'];
+    const seed = sessionId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return genericOptions[seed % genericOptions.length];
+  };
+
+  // Helper: Get ethnicity from skin tone
+  const getEthnicityFromSkinTone = (skinTone: string): string => {
+    const ethnicityMap: Record<string, string> = {
+      'pale': 'Euro-American',
+      'light': 'Euro-American',
+      'medium': 'Mediterranean',
+      'olive': 'Middle Eastern',
+      'dark': 'African'
+    };
+    return ethnicityMap[skinTone] || 'Euro-American';
+  };
+
   // Test AI Scene Creator (scene generation only, no image)
   const testAISceneCreator = async () => {
     setIsLoading(true);
@@ -990,16 +1063,38 @@ export const ImageTierTester = () => {
       const userInfo = buildUserInfo();
       const sessionId = crypto.randomUUID();
 
+      // Build complete structuredAvatarData like orchestrator does
+      const skinTone = userInfo.skinTone || 'medium';
+      const age = userInfo.age || 8;
+      
+      // Use session-seeded hair/skin selection
+      const hairColor = getTestHairVariation(skinTone, sessionId, userInfo.avatar?.type);
+      const skinFeatures = getTestSkinFeatures(skinTone, sessionId);
+      const ethnicity = getEthnicityFromSkinTone(skinTone);
+      
+      const structuredAvatarData = {
+        characterName: userInfo.name,
+        age: age,
+        resolvedSkinTone: skinTone,
+        hairColor: hairColor,
+        skinFeatures: skinFeatures,
+        ethnicity: ethnicity,
+        source: 'test_enriched'
+      };
+
       const startTime = Date.now();
       const response = await supabase.functions.invoke('ai-visual-scene-creator', {
         body: {
-          storyText: testStoryText, // Use raw story text to get "word-for-word" primaryScene
-          userInfo: userInfo,
+          storyText: testStoryText,
+          userInfo: {
+            ...userInfo,
+            structuredAvatarData: structuredAvatarData
+          },
           sessionId: sessionId,
-          storyId: sessionId, // ADDED: Missing field
+          storyId: sessionId,
           pageNumber: 1,
-          isGuestUser: true, // ADDED: Missing field (default to guest for testing)
-          difficultyLevel: mapDifficultyLevel(userInfo), // ADDED: Missing field
+          isGuestUser: true,
+          difficultyLevel: mapDifficultyLevel(userInfo),
           isDebugMode: true
         }
       });
