@@ -1369,14 +1369,12 @@ Deno.serve(async (req) => {
         );
 
         // Extract enhanced prompt and CCS data for cascade
-        enhancedPrompt = tier1Result;
-        if (tier1Result) {
-          characterSeed = tier1Result.characterSeed;
-          culturalBundle = tier1Result.culturalBundle;
-          coloredObjects = tier1Result.coloredObjects || "";
-          secondaryCharacters = tier1Result.secondaryCharacters || [];
-          mainCharacterAppearance = tier1Result.mainCharacterAppearance || {};
-        }
+        enhancedPrompt = tier1Result.enhancedPrompt;
+        characterSeed = tier1Result.characterSeed;
+        culturalBundle = tier1Result.culturalBundle;
+        coloredObjects = tier1Result.coloredObjects || "";
+        secondaryCharacters = tier1Result.secondaryCharacters || [];
+        mainCharacterAppearance = tier1Result.mainCharacterAppearance || {};
 
         console.log(`🔍 [${requestId}] CCS Data Captured for Cascade:`, {
           hasCulturalBundle: !!culturalBundle,
