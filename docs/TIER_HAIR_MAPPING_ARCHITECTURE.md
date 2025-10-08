@@ -3,38 +3,46 @@
 ## Overview
 This document defines the 3-way hair mapping architecture across frontend and backend systems to ensure proper separation of concerns and prevent regressions.
 
-## 3-Way Hair Mapping Architecture (October 2025)
+## 3-Way Hair Mapping Architecture (October 2025 - Updated with Direct Mode Parity)
 
 ### File Structure and Responsibilities
 - **Frontend Story** (`src/services/StaticDataCache.ts`): 65 variations - FOR STORY GENERATION ONLY
 - **Backend Failsafe** (`supabase/functions/generate-adaptive-story/StaticDataCache.ts`): 65 story + 65 image - FAILSAFE CATCH-ALL  
 - **Backend Image** (`supabase/functions/_shared/StaticDataCache.js`): 65 variations - FOR IMAGE GENERATION ONLY
+- **Direct Mode** (`supabase/functions/ai-visual-scene-creator/index.ts`): 65 general + 42 African American = **107 total variations** - 1:1 PARITY WITH ORCHESTRATOR
 
 ### Architecture Rules
 1. Frontend and Backend must maintain identical 65 styling variations for story consistency
 2. Backend .js provides image-optimized descriptors for visual generation
 3. Backend .ts failsafe contains BOTH modes to handle either scenario
-4. All three files must be updated together when hair mappings change
+4. **Direct Mode now has 1:1 parity with orchestrator** for all hair arrays and African American cultural arrays
+5. All files must be updated together when hair mappings change
 
 ## Cultural Enhancement System
 - **Only African American enhancements are supported**
-- Uses comprehensive arrays: 30 hairstyles + 36 facial features
+- Uses comprehensive arrays: **42 hairstyles** (10 boys + 20 girls + 12 child) + **36 facial features**
+- **Direct Mode now includes full African American cultural arrays** (previously missing)
 - All other cultural arrays removed as unused (asian, hispanic, etc.)
 
 ## Tier Responsibilities
 - **Tier 2.5B**: Uses `bundle.culturalEnhancements` via `UniversalPlaceholderResolver`
 - **Tier 2.5C**: Uses `{cultural.hair}` + `{cultural.features}` via `UnifiedPlaceholderResolver`
+- **Direct Mode**: Uses inline `AFRICAN_AMERICAN_HAIR_INLINE` + `AFRICAN_AMERICAN_FACIAL_FEATURES_INLINE` arrays
 
 ## Protected Arrays
-- `HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES` (30 items total)
-- `HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES` (36 items)
-- `HAIR_BY_SKIN_TONE` mapping (65 items total across all 3 files)
+- `HARDCODED_AFRICAN_AMERICAN_HAIRSTYLES` (30 items total - Template Service)
+- `AFRICAN_AMERICAN_HAIR_INLINE` (42 items total - Direct Mode) - **NEW**
+- `HARDCODED_AFRICAN_AMERICAN_FACIAL_FEATURES` (36 items - Template Service)
+- `AFRICAN_AMERICAN_FACIAL_FEATURES_INLINE` (36 items - Direct Mode) - **NEW**
+- `HAIR_BY_SKIN_TONE` mapping (65 items total across all files)
+- `INLINE_HAIR_BY_SKIN` mapping (65 items - Direct Mode) - **NOW 1:1 PARITY**
 
 ## Modification Rules
-1. Never modify hair arrays without updating both frontend and backend
+1. Never modify hair arrays without updating both frontend, backend, AND Direct Mode
 2. Cultural enhancements only support 'african' cultural type
 3. getCulturalSelection() only routes 'african' requests to comprehensive arrays
 4. All other cultural requests return empty string
+5. **Direct Mode hair arrays MUST maintain 1:1 parity with orchestrator** (including " hair" suffix)
 
 ## Session-Seeded Hair Selection (September 2025)
 

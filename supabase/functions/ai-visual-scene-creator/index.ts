@@ -52,13 +52,134 @@ let supabaseClient: any = null;
 
 // ========== INLINE STATIC AVATAR DATA SYSTEM (NO CCS) ==========
 // 73-variation hair system by skin tone (session-seeded for consistency)
+// 65-variation hair system by skin tone (session-seeded for consistency) - 1:1 PARITY WITH ORCHESTRATOR
 const INLINE_HAIR_BY_SKIN: Record<string, string[]> = {
-  pale: ['strawberry blonde', 'golden red', 'auburn', 'copper blonde', 'light auburn', 'sandy blonde', 'platinum blonde', 'ash blonde', 'honey blonde', 'caramel blonde', 'light brown', 'golden brown', 'chestnut', 'red-brown', 'light ginger'],
-  light: ['platinum blonde', 'honey blonde', 'ash blonde', 'golden blonde', 'sandy blonde', 'light brown', 'caramel brown', 'dirty blonde', 'strawberry blonde', 'golden brown', 'hazel brown', 'chestnut', 'medium brown', 'warm brown', 'cool brown'],
-  medium: ['chestnut brown', 'chocolate brown', 'dark brown', 'warm brown', 'cool brown', 'mahogany', 'auburn brown', 'espresso', 'caramel brown', 'honey brown', 'hazelnut', 'walnut', 'cinnamon', 'mocha', 'toffee'],
-  olive: ['jet black', 'raven black', 'dark brown', 'espresso', 'chocolate', 'warm black', 'cool black', 'blue-black', 'brown-black', 'mahogany', 'dark chestnut', 'deep brown', 'umber', 'sable'],
-  dark: ['textured 4C black', 'tight coils black', 'kinky curls black', 'natural afro texture', 'coily 4B texture', 'tight ringlets', 'springy coils', 'dense curls', 'voluminous afro', 'natural black coils', 'textured black curls', 'kinky black hair', '4C natural texture', 'coiled black hair']
+  pale: [
+    'strawberry blonde hair', 'golden red hair', 'auburn curls', 'copper hair',
+    'reddish brown hair', 'ginger hair', 'red-gold hair', 'russet hair',
+    'mahogany red hair', 'burgundy hair', 'crimson hair', 'rose gold hair',
+    'amber red hair', 'cinnamon red hair'
+  ],
+  light: [
+    'platinum blonde hair', 'golden blonde hair', 'honey blonde hair', 'ash blonde hair',
+    'sandy blonde hair', 'wheat blonde hair', 'butter blonde hair', 'cream blonde hair',
+    'champagne blonde hair', 'vanilla blonde hair', 'pearl blonde hair', 'silver blonde hair',
+    'moonlight blonde hair', 'sunshine blonde hair', 'caramel blonde hair'
+  ],
+  medium: [
+    'chestnut brown hair', 'chocolate brown hair', 'coffee brown hair', 'walnut brown hair',
+    'hazelnut brown hair', 'mahogany brown hair', 'amber brown hair', 'bronze brown hair',
+    'toffee brown hair', 'mocha brown hair', 'caramel brown hair', 'russet brown hair',
+    'cedar brown hair', 'oak brown hair', 'maple brown hair'
+  ],
+  olive: [
+    'jet black hair', 'raven black hair', 'midnight black hair', 'obsidian hair',
+    'coal black hair', 'ebony hair', 'onyx hair', 'charcoal hair',
+    'deep black hair', 'ink black hair', 'shadow black hair', 'pitch black hair',
+    'dark espresso hair', 'blackest brown hair'
+  ],
+  dark: [
+    'beautiful dark hair', 'rich black hair', 'lustrous dark hair', 'silky black hair',
+    'gorgeous dark hair', 'shining black hair', 'magnificent dark hair'
+  ]
 };
+
+// 42-variation African American hair system (boys: 10, girls: 20, child: 12) - 1:1 PARITY WITH ORCHESTRATOR
+const AFRICAN_AMERICAN_HAIR_INLINE = {
+  boys: [
+    "wearing a photorealistic curly top fade with perfectly defined coils on top, crisp line-up around the edges, and smooth fade transitions down the sides and back",
+    "wearing photorealistic twist sponge curls with tight coil definition, fresh line-up with sharp edges, and tapered sides with natural texture",
+    "wearing a photorealistic high top fade with voluminous textured crown, geometric side part, and precision-cut fade gradation",
+    "wearing photorealistic starter dreads in neat sections with clean parting lines, natural root texture, and expertly shaped perimeter",
+    "wearing a photorealistic buzz cut with intricate geometric designs carved into the sides, crisp line-up, and smooth scalp fade",
+    "wearing a photorealistic classic flat top with perfectly squared edges, uniform height across the crown, and sharp side fade transitions",
+    "wearing a photorealistic caesar cut with deep 360 waves, brush pattern definition, and clean hairline shaping all around",
+    "wearing photorealistic lined-up curls with natural coil springs, precision edge work, and graduated fade from crown to neckline",
+    "wearing a photorealistic tapered afro with rounded natural shape, soft textured crown, and gradually shortened sides and back",
+    "wearing a photorealistic modern pompadour fade with curly volume swept upward, skin fade sides, and detailed edge definition"
+  ],
+  girls: [
+    "wearing a photorealistic full voluminous afro with authentic coily texture, natural 4B-4C curl pattern, rounded dome shape, dense hair distribution, individual curl spirals visible, matte finish texture, proper afro proportions, natural hair movement",
+    "wearing photorealistic individual box braids with distinct square sectioning, each braid separately defined and visible, geometric parting pattern, multiple separate braided units, detailed individual braid texture, professional sectioning technique, natural or vibrant color variations",
+    "wearing photorealistic cornrow braids in straight parallel rows, hair woven tightly against scalp, clean geometric parts showing scalp between rows, traditional African braiding technique, individual row definition, scalp-hugging pattern",
+    "wearing photorealistic defined twist-out curls with natural curl pattern, bouncy texture, individual curl definition, soft volume, natural hair movement",
+    "wearing photorealistic well-maintained locs with natural texture, individual strand definition, mature lock formation, organic hair pattern, cultural significance",
+    "wearing photorealistic natural wash-and-go curls with defined curl pattern, bouncy texture, individual curl strands, soft volume, natural movement, salon-quality finish",
+    "wearing a photorealistic elegant flat twist updo with precise parting, neat twisting pattern, decorative arrangement, formal styling, detailed texture work, individual strand definition",
+    "wearing a photorealistic sleek protective bun with smooth edges, neat hair arrangement, polished finish, professional styling, clean part lines, natural hair movement",
+    "wearing a photorealistic silky smooth silk press with glossy shine, pin-straight texture, individual strand definition, heat-pressed perfection, natural movement, luminous finish, silk-pressed smoothness",
+    "wearing photorealistic bone straight relaxed hair with sleek texture, ultra-smooth finish, perfect alignment, chemical straightening results, glossy appearance, flowing movement, chemically straightened texture",
+    "wearing a photorealistic precision-cut relaxed bob with blunt edges, smooth straight texture, professional salon finish, geometric cut lines, polished styling, professional salon results",
+    "wearing photorealistic layered relaxed hair with dimensional cutting, smooth straight texture, professional layers, voluminous styling, salon-quality finish, glossy straight hair finish",
+    "wearing photorealistic hot-pressed straight hair with curled ends, vintage styling technique, smooth shaft with bouncy curl tips, classic salon finish, heat-styled perfection",
+    "wearing a photorealistic sleek relaxed ponytail with smooth edges, straight hair texture, polished finish, tight hair control, professional styling, light reflection on hair",
+    "wearing photorealistic silk-pressed hair with clean side part, glossy straight texture, precise parting line, smooth flowing hair, salon-quality finish, glossy hair shine",
+    "wearing photorealistic relaxed hair with vintage bump styling, smooth straight texture, retro volume technique, polished finish, classic salon look, natural hair highlights",
+    "wearing photorealistic thermally straightened hair with heat-pressed texture, smooth alignment, individual strand definition, professional hot tool finish, luminous hair finish",
+    "wearing a photorealistic relaxed wrap hairstyle with smooth curved styling, salon wrap technique, sleek finish, dimensional movement, professional hair wrapping, professional salon results",
+    "wearing photorealistic afro puffs hairstyle with twin high-positioned hair puffs, natural coily texture pattern, symmetrical rounded shape, authentic Black hair structure, voluminous curl clusters, defined individual strands, traditional afro hair styling",
+    "wearing photorealistic long pigtails with curled ends, flowing length with bouncy spiral curls, symmetrical pigtail placement, smooth hair shaft with defined curl tips, glossy hair shine"
+  ],
+  child: [
+    "wearing a photorealistic natural mini afro with photorealistic soft coily texture, rounded shape, and gentle volume",
+    "wearing photorealistic short twist-out curls with photorealistic bouncy texture and natural movement",
+    "wearing a photorealistic tapered natural cut with photorealistic textured crown and clean edges",
+    "wearing photorealistic mini puffs with photorealistic soft coily texture and playful style",
+    "wearing a photorealistic short curly fade with photorealistic defined coils on top",
+    "wearing photorealistic natural wash-and-go curls with photorealistic soft volume and bounce",
+    "wearing photorealistic short protective braids with photorealistic neat sections",
+    "wearing a photorealistic rounded afro with photorealistic soft texture and natural shape",
+    "wearing photorealistic short locs with photorealistic natural texture and clean styling",
+    "wearing a photorealistic textured crop with photorealistic natural curl pattern and volume",
+    "wearing photorealistic soft finger coils with photorealistic natural definition",
+    "wearing a photorealistic natural cut with photorealistic gentle waves and texture"
+  ]
+};
+
+// 36-variation African American facial features system - 1:1 PARITY WITH ORCHESTRATOR
+const AFRICAN_AMERICAN_FACIAL_FEATURES_INLINE = [
+  // Light to Medium Tones (12 entries)
+  "authentic African American light brown skin tone with warm brown eyes and a bright infectious smile",
+  "authentic African American light brown skin tone with hazel-green eyes and gentle dimples when smiling",
+  "authentic African American light brown skin tone with amber eyes and expressive eyebrows",
+  "authentic African American caramel skin tone with deep chocolate eyes and a confident cheerful expression",
+  "authentic African American caramel skin tone with hazel eyes with golden flecks and soft rounded cheeks",
+  "authentic African American caramel skin tone with bright brown eyes and an inquisitive thoughtful look",
+  "authentic African American honey complexion with golden brown eyes and a playful mischievous grin",
+  "authentic African American honey complexion with warm brown eyes and graceful bone structure",
+  "authentic African American honey complexion with hazel eyes and a warm welcoming expression",
+  "authentic African American warm beige skin with dark honey-colored eyes and animated joyful features",
+  "authentic African American warm beige skin with hazel-green eyes and gentle dimples",
+  "authentic African American light caramel complexion with rich coffee-colored eyes and expressive eyebrows",
+  
+  // Medium Tones (12 entries)
+  "authentic African American medium brown skin tone with warm brown eyes and a bright infectious smile",
+  "authentic African American medium brown skin tone with hazel eyes with golden flecks and gentle dimples when smiling",
+  "authentic African American medium brown skin tone with deep amber eyes and expressive eyebrows",
+  "authentic African American cocoa skin tone with dark chocolate eyes and a confident cheerful expression",
+  "authentic African American cocoa skin tone with hazel-green eyes and soft rounded cheeks",
+  "authentic African American cocoa skin tone with bright brown eyes and an inquisitive thoughtful look",
+  "authentic African American warm brown complexion with golden brown eyes and a playful mischievous grin",
+  "authentic African American warm brown complexion with rich coffee-colored eyes and graceful bone structure",
+  "authentic African American chestnut skin tone with hazel eyes and a warm welcoming expression",
+  "authentic African American chestnut skin tone with warm brown eyes and animated joyful features",
+  "authentic African American amber skin tone with dark honey-colored eyes and gentle dimples",
+  "authentic African American amber skin tone with hazel-green eyes and expressive eyebrows",
+  
+  // Medium-Dark to Dark Tones (12 entries)
+  "authentic African American deep brown skin tone with warm brown eyes and a bright infectious smile",
+  "authentic African American deep brown skin tone with dark chocolate eyes and gentle dimples when smiling",
+  "authentic African American deep brown skin tone with deep amber eyes and expressive eyebrows",
+  "authentic African American rich chocolate complexion with hazel eyes with golden flecks and a confident cheerful expression",
+  "authentic African American rich chocolate complexion with bright brown eyes and soft rounded cheeks",
+  "authentic African American rich chocolate complexion with golden brown eyes and an inquisitive thoughtful look",
+  "authentic African American dark brown skin tone with rich coffee-colored eyes and a playful mischievous grin",
+  "authentic African American dark brown skin tone with warm brown eyes and graceful bone structure",
+  "authentic African American ebony skin tone with dark honey-colored eyes and a warm welcoming expression",
+  "authentic African American ebony skin tone with hazel-green eyes and animated joyful features",
+  "authentic African American deep mahogany complexion with hazel eyes and gentle dimples",
+  "authentic African American deep mahogany complexion with deep amber eyes and expressive eyebrows"
+];
 
 const INLINE_SKIN_FEATURES: Record<string, string[]> = {
   pale: ['fair porcelain with rosy cheeks', 'light ivory with freckles', 'pale peachy with soft glow', 'fair cream with delicate features', 'porcelain with pink undertones'],
@@ -261,15 +382,15 @@ function release(key: string, ok: boolean = true): void {
 // ============= PERFECT AI VISUAL SCENE CREATOR WITH CHARACTER CONSISTENCY =============
 // Complete implementation with word-for-word OpenAI prompts and CharacterConsistencyService integration
 
-// Emergency hair fallback - skin-tone-specific defaults (NO "lighter"/"darker" - only pale/light/medium/olive/dark)
+// Emergency hair fallback - skin-tone-specific defaults with " hair" suffix for consistency
 function emergencyHairFallback(skinTone: string): string {
   const normalized = (skinTone || 'medium').toLowerCase();
   const EMERGENCY_HAIR_MAP: Record<string, string> = {
-    'pale': 'red hair',
-    'light': 'blonde hair',
-    'medium': 'brown hair',
-    'olive': 'dark brown hair',
-    'dark': 'black textured 4C hair'
+    'pale': 'strawberry blonde hair',
+    'light': 'golden blonde hair',
+    'medium': 'chestnut brown hair',
+    'olive': 'jet black hair',
+    'dark': 'beautiful dark hair'
   };
   return EMERGENCY_HAIR_MAP[normalized] || EMERGENCY_HAIR_MAP['medium'];
 }
