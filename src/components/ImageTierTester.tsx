@@ -2036,31 +2036,26 @@ export const ImageTierTester = () => {
               const errorStatus = postResponse.error.status;
               const errorCode = postResponse.error.code;
               
+              // Parse response data for escalation signals (supabase.functions.invoke doesn't expose raw body)
+              const responseBody = JSON.stringify(postResponse.data || {});
+              
               // Classify by actual HTTP status code and error patterns
               if (errorCode === 'WORKER_LIMIT' || errorStatus === 546 || errorMessage.includes('WORKER_LIMIT')) {
                 category = 'CAPACITY_LIMIT';
                 status = 546;
               } else if (errorStatus === 503) {
-                // Template-AB/CD return 503 with NO_PRECOMPUTED_CCS = correct escalation (not boot failure)
-                // DEBUG: Log response structure to understand why classification fails on 503
-                console.log('[TEST_DEBUG] 503 Response Structure:', {
-                  endpointName: endpoint.name,
-                  hasError: !!postResponse.error,
-                  errorMessage: postResponse.error?.message,
-                  hasData: !!postResponse.data,
-                  dataKeys: postResponse.data ? Object.keys(postResponse.data) : 'undefined',
-                  dataError: postResponse.data?.error,
-                  dataEscalation: postResponse.data?.escalation,
-                  fullDataSample: (() => { try { return JSON.stringify(postResponse.data).substring(0, 300) } catch { return 'unserializable' } })()
-                });
-                const errorBody = postResponse.error?.message || postResponse.error?.error || '';
-                const dataError = postResponse.data?.error || '';
-                const dataEscalation = postResponse.data?.escalation || '';
-                if ((endpoint.name === 'runware-template-ab' || endpoint.name === 'runware-template-cd') &&
-                    (errorBody.includes('NO_PRECOMPUTED_CCS') || errorBody.includes('escalation') ||
-                     dataError.includes('NO_PRECOMPUTED_CCS') || dataEscalation === 'NEXT_TIER')) {
+                // Check for template AB/CD healthy escalation
+                const isTemplateEndpoint = endpoint.name === 'runware-template-ab' || endpoint.name === 'runware-template-cd';
+                const hasEscalationSignal = errorMessage.includes('NO_PRECOMPUTED_CCS') || 
+                                            errorMessage.includes('HEALTHY_ESCALATION') ||
+                                            errorMessage.includes('escalation') ||
+                                            responseBody.includes('NO_PRECOMPUTED_CCS') ||
+                                            responseBody.includes('escalation') ||
+                                            postResponse.data?.escalation === 'NEXT_TIER';
+                
+                if (isTemplateEndpoint && hasEscalationSignal) {
                   category = 'HEALTHY_ESCALATION';
-                  status = 503;
+                  status = 200; // Override to 200 for healthy escalation
                 } else {
                   category = 'BOOT_SYNC_ANOMALY';
                   status = 503;

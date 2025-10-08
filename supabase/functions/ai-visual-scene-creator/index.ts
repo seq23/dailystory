@@ -189,14 +189,7 @@ const INLINE_SKIN_FEATURES: Record<string, string[]> = {
   dark: ['rich brown with warm undertones', 'deep brown with dark eyes', 'mahogany with strong features', 'ebony with beautiful complexion', 'dark brown with radiant glow']
 };
 
-// 5-variation African American skin features (matches orchestrator)
-const AFRICAN_AMERICAN_SKIN_FEATURES_INLINE = [
-  'dark skin tone with brown eyes',
-  'rich brown skin with expressive dark eyes',
-  'deep brown complexion with warm brown eyes',
-  'beautiful dark skin with bright brown eyes',
-  'gorgeous dark skin tone with dark brown eyes'
-];
+// REMOVED: 5-variation array replaced with 36-variation AFRICAN_AMERICAN_FACIAL_FEATURES_INLINE above
 
 function getSessionSeededHair(skinTone: string, sessionId: string, avatarType?: string): string {
   // CRITICAL: Route dark skin to African American variations
@@ -216,14 +209,14 @@ function getSessionSeededHair(skinTone: string, sessionId: string, avatarType?: 
 }
 
 function getSessionSeededFeatures(skinTone: string, sessionId: string): string {
-  // CRITICAL: Route dark skin to African American features
+  // CRITICAL: Route dark skin to 36-variation African American features (1:1 parity with orchestrator)
   if (skinTone === 'dark') {
-    const options = AFRICAN_AMERICAN_SKIN_FEATURES_INLINE;
+    const options = AFRICAN_AMERICAN_FACIAL_FEATURES_INLINE; // Use full 36-variation array
     const seed = sessionId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return options[seed % options.length];
   }
   
-  // Existing logic
+  // Existing logic for other skin tones
   const options = INLINE_SKIN_FEATURES[skinTone] || INLINE_SKIN_FEATURES.medium;
   const seed = sessionId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
   return options[seed % options.length];

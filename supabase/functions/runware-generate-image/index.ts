@@ -1944,15 +1944,22 @@ serve(async (req) => {
                   headers["apikey"] = SUPABASE_ANON_KEY;
                 }
 
-                // ✅ PHASE 3: Validate precomputedCCS before sending to Tier 2.5A
-                console.log(`🔍 [${requestId}] [TIER_2.5A] Validating precomputedCCS before call:`, {
+                // ✅ Construct precomputedCCS from Tier 1 CCS inline data
+                const precomputedCCS = {
+                  culturalBundle: culturalBundle || null,
+                  mainCharacterAppearance: mainCharacterAppearance || null,
+                  coloredObjects: coloredObjects || null,
+                  secondaryCharacters: secondaryCharacters || [],
+                  characterSeed: characterSeed || null,
+                  source: 'tier1_ccs_inline'
+                };
+                
+                console.log(`✅ [TIER_2.5A] precomputedCCS constructed from Tier 1 CCS`, {
                   hasCulturalBundle: !!culturalBundle,
-                  culturalBundle,
                   hasCharacterSeed: !!characterSeed,
-                  characterSeed,
-                  hasMainCharacterAppearance: !!mainCharacterAppearance,
                   hasColoredObjects: !!coloredObjects,
-                  hasSecondaryCharacters: !!secondaryCharacters,
+                  secondaryCharCount: secondaryCharacters?.length || 0,
+                  hasMainCharacterAppearance: !!mainCharacterAppearance
                 });
                 
                 const response = await fetch(`${SUPABASE_URL}/functions/v1/runware-template-ab`, {
@@ -1963,13 +1970,7 @@ serve(async (req) => {
                   templateComplexity: "A",
                    tier1FailureReason: normalizedTier1Reason,
                   // Pass pre-computed CCS data to Mode A
-                  precomputedCCS: {
-                    culturalBundle,
-                    mainCharacterAppearance,
-                    coloredObjects,
-                    secondaryCharacters,
-                    characterSeed,
-                  },
+                  precomputedCCS: precomputedCCS,
                 }),
                   signal: controller.signal,
                 });
