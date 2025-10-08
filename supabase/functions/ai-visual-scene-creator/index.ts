@@ -989,11 +989,6 @@ async function httpFallbackCall(endpoint: string, payload: any): Promise<any> {
 
 // Main request handler
 serve(async (req) => {
-  // Trigger CCS boot verification once (non-blocking) - moved outside try block
-  if (ccsBootStatus.loaded === false && ccsBootStatus.error === null) {
-    verifyCCSBoot().catch(err => console.error('CCS boot verification failed:', err));
-  }
-  
   try {
     // Handle CORS preflight requests with dynamic header detection
   if (req.method === 'OPTIONS') {
