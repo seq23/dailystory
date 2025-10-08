@@ -28,10 +28,11 @@ import { APP_CONFIG } from "@/config/appConfig";
 interface PremiumMyStoriesViewProps {
   userInfo: UserInfo;
   isPremium: boolean;
+  isSubscriptionActive: boolean;
   onSessionEnded: (stats: SessionStats) => void;
 }
 
-export const PremiumMyStoriesView = ({ userInfo, isPremium, onSessionEnded }: PremiumMyStoriesViewProps) => {
+export const PremiumMyStoriesView = ({ userInfo, isPremium, isSubscriptionActive, onSessionEnded }: PremiumMyStoriesViewProps) => {
   const [currentView, setCurrentView] = useState<'library' | 'reading'>('library');
   const [currentStory, setCurrentStory] = useState<Story | null>(null);
   const [showTutorial, setShowTutorial] = useState(false);
@@ -79,6 +80,23 @@ export const PremiumMyStoriesView = ({ userInfo, isPremium, onSessionEnded }: Pr
     return undefined;
   }, [currentView, activeChild?.display_name, userInfo.name]);
 
+  // Hard-block entire premium display if subscription is inactive
+  if (!isSubscriptionActive) {
+    return (
+      <div className="space-y-6">
+        <div className="border-red-200 bg-red-50 rounded-lg p-8 text-center">
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Subscription Required</h2>
+          <p className="text-gray-600 mb-6">
+            Your subscription is inactive. Please update your billing to continue.
+          </p>
+          <div className="flex gap-3 justify-center">
+            <Button onClick={() => window.location.href = '/account'}>Manage Billing</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Check if user has read stories before to prevent auto-tutorial
   useEffect(() => {
     const hasReadStoriesBefore = localStorage.getItem(`user_${userInfo.name}_has_read_stories`);
@@ -93,6 +111,9 @@ export const PremiumMyStoriesView = ({ userInfo, isPremium, onSessionEnded }: Pr
 useEffect(() => {
   (async () => {
     try {
+      // Don't auto-resume if subscription is inactive
+      if (!isSubscriptionActive) return;
+      
       const urlParams = new URLSearchParams(window.location.search);
       const allowOverride = APP_CONFIG.features.resumeOnRefresh.allowUrlOverride;
       const viaUrl = allowOverride && urlParams.get('resume') === '1';
@@ -121,7 +142,7 @@ useEffect(() => {
       }
     } catch {}
   })();
-}, [userInfo?.name]);
+}, [userInfo?.name, isSubscriptionActive]);
 
 
   const handleLoadStory = (story: Story) => {
@@ -175,7 +196,7 @@ useEffect(() => {
         
         <div className="flex items-center gap-2 -ml-11 sm:-ml-2">
           <NewStoryCTA
-            isPremium={isPremium}
+            isPremium={isSubscriptionActive}
             iconOnly={false}
             onNewStory={() => setRequestDialogOpen(true)}
             onUpgrade={() => {}}

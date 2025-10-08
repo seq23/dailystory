@@ -3,6 +3,7 @@ import { DebugLogger } from '@/services/DebugLogger';
 import { MobileKeyboardHandler } from "@/components/MobileKeyboardHandler";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { useCachedSubscriptionStatus } from "@/hooks/useCachedSubscriptionStatus";
 import { MultiStepUserForm } from "@/components/forms/MultiStepUserForm";
 import { PremiumProfileEditor } from "@/components/PremiumProfileEditor";
 import { PremiumMyStoriesView } from "@/components/PremiumMyStoriesView";
@@ -87,6 +88,9 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [isPremium, setIsPremium] = useState(true); // All authenticated users are premium
+  
+  // Authoritative billing status from database for gating premium features
+  const { isPremium: isSubscriptionActive, loading: subLoading } = useCachedSubscriptionStatus(user.id);
   const [subscriptionTier, setSubscriptionTier] = useState<string | null>(null);
   const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
   const [devTestMode, setDevTestMode] = useState(false);
@@ -686,7 +690,16 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
         <div className="min-h-screen flex w-full bg-gradient-to-br from-blue-50 to-purple-50">
           <PremiumSidebar
             currentView={currentView}
-            onViewChange={(view: string) => setCurrentView(view as AppView)}
+            onViewChange={(view: string) => {
+              // Block navigation to premium views if subscription is inactive
+              const premiumViews = ['stories', 'library', 'reading', 'premium', 'progress', 'parent', 'profile'];
+              if (!isSubscriptionActive && premiumViews.includes(view)) {
+                // Stay on current view (stories), don't navigate
+                setCurrentView('stories');
+                return;
+              }
+              setCurrentView(view as AppView);
+            }}
             userInfo={userInfo}
             isPremium={isPremium}
           />
@@ -731,14 +744,16 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
               ) : (
                 <>
                   {currentView === "stories" && (
-                    <PremiumMyStoriesView
-                      userInfo={userInfo}
-                      isPremium={isPremium}
-                      onSessionEnded={handleSessionEnded}
-                    />
+          <PremiumMyStoriesView
+            userInfo={userInfo}
+            isPremium={isPremium}
+            isSubscriptionActive={isSubscriptionActive}
+            onSessionEnded={handleSessionEnded}
+          />
                   )}
 
                   {currentView === "library" && (
+                    isSubscriptionActive ? (
                     <div className="space-y-6">
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-gradient-primary/20 rounded-full">
@@ -811,6 +826,19 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                          pageImages={currentPageImages}
                        />
                     </div>
+                    ) : (
+                      <div className="space-y-6">
+                        <div className="border-red-200 bg-red-50 rounded-lg p-8 text-center">
+                          <h2 className="text-xl font-semibold text-gray-900 mb-2">Subscription Required</h2>
+                          <p className="text-gray-600 mb-6">
+                            Your subscription is inactive. Please update your billing to continue.
+                          </p>
+                          <div className="flex gap-3 justify-center">
+                            <Button onClick={() => setCurrentView('account')}>Manage Billing</Button>
+                          </div>
+                        </div>
+                      </div>
+                    )
                   )}
 
 
@@ -842,7 +870,8 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                     />
                   )}
 
-                  {currentView === "reading" && currentStory && (
+                  {currentView === "reading" && (
+                    isSubscriptionActive && currentStory ? (
                     <div className="space-y-6">
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-gradient-primary/20 rounded-full">
@@ -867,6 +896,19 @@ export const AuthenticatedApp = ({ user }: AuthenticatedAppProps) => {
                          onPageImagesUpdate={(images) => setCurrentPageImages(images)}
                        />
                     </div>
+                    ) : (
+                      <div className="space-y-6">
+                        <div className="border-red-200 bg-red-50 rounded-lg p-8 text-center">
+                          <h2 className="text-xl font-semibold text-gray-900 mb-2">Subscription Required</h2>
+                          <p className="text-gray-600 mb-6">
+                            Your subscription is inactive. Please update your billing to continue.
+                          </p>
+                          <div className="flex gap-3 justify-center">
+                            <Button onClick={() => setCurrentView('account')}>Manage Billing</Button>
+                          </div>
+                        </div>
+                      </div>
+                    )
                   )}
 
                   {currentView === "progress" && (
