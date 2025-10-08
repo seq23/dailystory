@@ -2493,7 +2493,6 @@ serve(async (req) => {
         }
       } // end Direct Mode execution block
     } // end tier1Error catch
-  } // end outer try block (before cascadeError catch)
   } catch (cascadeError) {
     // Outer catch for entire cascade - handles validation and boot errors
     const errorMessage = cascadeError instanceof Error ? cascadeError.message : String(cascadeError);

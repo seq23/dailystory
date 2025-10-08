@@ -1,6 +1,6 @@
-// 🚀 DEPLOYMENT MARKER: v2025-10-08-SESSION-WIDE-CHARACTER-MEMORY-PROMPT
+// 🚀 DEPLOYMENT MARKER: v2025-10-08-STABILITY-REFRESH
 // Last deployed: 2025-10-08
-// Changes: Updated user prompt to include session-wide character memory structure with secondary character consistency
+// Changes: Stability refresh - clean deployment with parser hardening, no logic changes
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 

@@ -191,3 +191,15 @@ You can priority-deploy specific functions without waiting for the full batch:
 - Then it continues with the normal batched deployment for the rest
 
 Force a fresh deploy for any function by bumping the DEPLOY_MARKER comment at the top of its index.ts or index.js.
+
+## Parser Hardening & Stability (2025-10-08)
+
+**Critical parser fixes applied to prevent "Expected ',' got 'return'" errors:**
+- Removed extra closing braces that caused premature block termination in runware-generate-image
+- All edge functions follow correct try/catch/finally nesting structure
+- Circuit breaker logic in runware-template-ab now treats 503 as success (escalation signal, not failure)
+
+**503 Response Handling:**
+- `runware-template-ab` (Tier 2.5A) returns 503 when escalating to upstream tiers (by design)
+- Monitoring systems should treat 503 from 2.5A as a non-fatal escalation signal
+- Circuit breakers configured to not trip on 503 status codes from template services
