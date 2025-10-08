@@ -246,7 +246,7 @@ function redactPII(value: any): any {
   if (typeof value === "string") {
     // Mask potential emails, phone numbers, addresses
     return value
-      .replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, "[EMAIL-REDACTED]")
+      .replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g, "[EMAIL-REDACTED]")
       .replace(/\b\d{3}-\d{3}-\d{4}\b/g, "[PHONE-REDACTED]")
       .replace(/\b\d{3}-\d{2}-\d{4}\b/g, "[SSN-REDACTED]");
   }
@@ -457,7 +457,7 @@ async function processInlinedTier1(
   const tier1Start = Date.now();
 
   // Declare local variables for CCS data (must be in function scope for strict mode)
-  let characterSeed: any = undefined;
+  let characterSeed: { hair: string; skin: string; eyes: string } | undefined = undefined;
   let culturalBundle: any = undefined;
   let coloredObjects: string = "";
   let secondaryCharacters: any[] = [];
@@ -1071,8 +1071,11 @@ function getInlinedStyleFramework(difficulty: string): string {
       "2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation",
   };
 
-  // @ts-ignore
-  return frameworks[difficulty?.toLowerCase()] || frameworks["medium"];
+  const key = difficulty?.toLowerCase();
+  if (key && key in frameworks) {
+    return frameworks[key as keyof typeof frameworks];
+  }
+  return frameworks["medium"];
 }
 
 // Fast Boot Sync Recovery Configuration
@@ -1311,11 +1314,21 @@ serve(async (req) => {
       // Attempt real Tier 1 processing with actual orchestrator
       console.log(`[TIER_1] Attempting orchestrator enhancement`);
 
+      // TypeScript interface for enhanced prompt result
+      interface EnhancedPromptResult {
+        enhancedPrompt: string;
+        negativePrompt: string;
+        primaryScene: string;
+        aiSchema: Record<string, any>;
+        aiDebugSchema: any;
+        templateStructure: string;
+      }
+
       // Declare enhancedPrompt outside try block so it's accessible in catch for Direct Mode
-      let enhancedPrompt: any = null;
+      let enhancedPrompt: EnhancedPromptResult | null = null;
 
       // CCS Pre-computation variables (hoisted for cascade availability)
-      let characterSeed: number | undefined = undefined;
+      let characterSeed: { hair: string; skin: string; eyes: string } | undefined = undefined;
       let culturalBundle: any = undefined;
       let coloredObjects: string = "";
       let secondaryCharacters: any[] = [];
@@ -1505,6 +1518,11 @@ serve(async (req) => {
           negativePrompt: enhancedPrompt.negativePrompt,
         });
 
+        // Release Tier 1 gate BEFORE returning (critical fix for gate leak)
+        if (!payload.skipTier1DueToOverload && tier1GateResult.acquired) {
+          release("T1:ai-visual-scene-creator");
+        }
+
         return corsResponse(
           {
             success: true,
@@ -1551,13 +1569,6 @@ serve(async (req) => {
           req,
           200
         );
-        
-        // Release Tier 1 gate on success
-        if (!payload.skipTier1DueToOverload && tier1GateResult.acquired) {
-          release("T1:ai-visual-scene-creator");
-        }
-        
-        return; // Early return on success
       } catch (tier1Error) {
         // Release Tier 1 gate on failure
         if (!payload.skipTier1DueToOverload && tier1GateResult.acquired) {
