@@ -2,7 +2,6 @@ import { useState, useRef } from 'react';
 // FIX: 2025-09-20 - React object rendering error fixed by proper aiSchema property access
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CCSStatusDisplay } from '@/components/CCSStatusDisplay';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -1854,8 +1853,10 @@ export const ImageTierTester = () => {
                 category = 'CAPACITY_LIMIT';
                 status = 546;
               } else if (errorStatus === 503) {
-                // Template-AB/CD return 503 as escalation signal (not boot failure)
-                if (endpoint.name === 'runware-template-ab' || endpoint.name === 'runware-template-cd') {
+                // Template-AB/CD return 503 with NO_PRECOMPUTED_CCS = correct escalation (not boot failure)
+                const errorBody = postResponse.error?.message || postResponse.error?.error || '';
+                if ((endpoint.name === 'runware-template-ab' || endpoint.name === 'runware-template-cd') &&
+                    (errorBody.includes('NO_PRECOMPUTED_CCS') || errorBody.includes('escalation'))) {
                   category = 'HEALTHY_ESCALATION';
                   status = 503;
                 } else {
@@ -3468,10 +3469,7 @@ export const ImageTierTester = () => {
                       </div>
                       )}
                      
-                     {/* CCS Status Display - Batch Tier Testing & E2E */}
-                     <CCSStatusDisplay result={result} />
-                     
-                     {/* E2E Simulation Cascade History and Fallback Path */}
+                      {/* E2E Simulation Cascade History and Fallback Path */}
                      {result.details.cascadeHistory && result.details.cascadeHistory.length > 0 && (
                        <>
                          {/* Fallback Path Summary */}

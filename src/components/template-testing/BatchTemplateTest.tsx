@@ -13,7 +13,6 @@ interface BatchResult {
   error?: string;
   result?: any;
   duration: number;
-  ccsLoaded?: boolean;
   sceneExtracted?: boolean;
 }
 
@@ -74,12 +73,8 @@ export function BatchTemplateTest() {
         const result = await generateStory(userInfo);
         const duration = Date.now() - startTime;
 
-        // Check for CCS and scene extraction from result metadata (with safe access)
+        // Check for scene extraction from result metadata (with safe access)
         const metadata = result?.metadata as any;
-        const ccsLoaded = metadata?.ccsBootStatus ? 
-          (metadata.ccsBootStatus.tier1 || metadata.ccsBootStatus.tier25 || metadata.ccsBootStatus.directMode) : 
-          false;
-        
         const sceneExtracted = metadata?.sceneExtracted || false;
 
         batchResults.push({
@@ -87,7 +82,6 @@ export function BatchTemplateTest() {
           success: true,
           result,
           duration,
-          ccsLoaded,
           sceneExtracted,
         });
       } catch (error) {
@@ -123,7 +117,6 @@ export function BatchTemplateTest() {
   const successCount = results.filter(r => r.success).length;
   const failureCount = results.filter(r => !r.success).length;
   const avgDuration = results.length > 0 ? Math.round(results.reduce((sum, r) => sum + r.duration, 0) / results.length) : 0;
-  const ccsSuccessCount = results.filter(r => r.ccsLoaded).length;
   const sceneExtractionCount = results.filter(r => r.sceneExtracted).length;
 
   return (
@@ -174,7 +167,7 @@ export function BatchTemplateTest() {
           )}
 
           {results.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4 p-4 bg-muted rounded-lg">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-muted rounded-lg">
               <div className="text-center">
                 <div className="text-2xl font-bold text-success">{successCount}</div>
                 <div className="text-sm text-muted-foreground">Successful</div>
@@ -186,10 +179,6 @@ export function BatchTemplateTest() {
               <div className="text-center">
                 <div className="text-2xl font-bold">{avgDuration}ms</div>
                 <div className="text-sm text-muted-foreground">Avg Duration</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-primary">{ccsSuccessCount}/{results.length}</div>
-                <div className="text-sm text-muted-foreground">CCS Loaded</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-primary">{sceneExtractionCount}/{results.length}</div>
@@ -228,7 +217,6 @@ export function BatchTemplateTest() {
                       {result.success && result.result && (
                         <div className="text-sm text-muted-foreground">
                           Generated {result.result.pages?.length || 0} pages • 
-                          CCS: {result.ccsLoaded ? '✅' : '❌'} • 
                           Scene: {result.sceneExtracted ? '✅' : '❌'}
                         </div>
                       )}

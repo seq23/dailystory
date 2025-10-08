@@ -463,98 +463,27 @@ async function processInlinedTier1(
   let secondaryCharacters: any[] = [];
   let mainCharacterAppearance: any = {};
 
-  // Import CharacterConsistencyService with resilient multi-path fallback (ERROR-046 fix)
+  // INLINE CCS ATTEMPT - FAIL-FAST TO DIRECT MODE (NO RETRIES, NO FALLBACKS)
   let characterConsistencyService: any;
   let characterServiceUnavailable = false;
 
   try {
-    logTier1Step("CharacterConsistencyService Import", "attempt", "Loading CharacterConsistencyService");
-    console.log(`[TIER_1] Attempting CharacterConsistencyService import with inline-first pattern`);
+    logTier1Step("CharacterConsistencyService Import", "attempt", "Attempting inline CCS (fail-fast mode)");
+    console.log(`[TIER_1] Inline CCS attempt - escalates to Direct Mode immediately on failure`);
 
-    // ✅ CRASH-PROOF: INLINE-FIRST CCS import with complete fallback chain
-    let service;
-    try {
-      const inlineModule = await import("./CharacterConsistencyServiceInline.js");
-      service = inlineModule.characterConsistencyService;
-      console.log(`✅ [CCS_IMPORT] inline service loaded successfully (0ms network delay)`);
-    } catch (inlineError) {
-      console.warn(`⚠️ [CCS_IMPORT] inline failed, trying _shared fallback:`, inlineError);
-      // Fallback 1: Try _shared (external bundle)
-      console.warn(`⚠️ [CCS_IMPORT] inline import failed, trying _shared:`, inlineError);
-      try {
-        const sharedModule = await import("../_shared/CharacterConsistencyService.js");
-        service = sharedModule.characterConsistencyService;
-        console.log(`✅ [CCS_IMPORT] _shared loaded successfully (fallback)`);
-      } catch (sharedError) {
-        // Fallback 2: Try _vendor (last resort)
-        console.warn(`⚠️ [CCS_IMPORT] _shared import failed, trying _vendor:`, sharedError);
-        try {
-          const vendorModule = await import("../_vendor/CharacterConsistencyService.mjs");
-          service = vendorModule.characterConsistencyService;
-          console.log(`✅ [CCS_IMPORT] _vendor loaded successfully (fallback)`);
-        } catch (vendorError) {
-          console.error(`❌ [CCS_IMPORT] all import paths failed`, { inlineError, sharedError, vendorError });
-          throw new Error(`CCS_IMPORT_FAILURE: all paths failed`);
-        }
-      }
-    }
+    // INLINE-ONLY CCS - NO FALLBACK CHAIN
+    const inlineModule = await import("./CharacterConsistencyServiceInline.js");
+    characterConsistencyService = inlineModule.characterConsistencyService;
     
-    characterConsistencyService = service;
-    
-    // Mark CCS as successfully loaded in boot status
+    console.log(`✅ [CCS_INLINE] Loaded successfully - proceeding with Tier 1`);
     ccsBootStatus.loaded = true;
     ccsBootStatus.error = null;
-    console.log('✅ [CCS_BOOT] CharacterConsistencyService loaded successfully, ccsBootStatus updated');
-
-    // Validate service instance has ALL required methods
-    const requiredMethods = [
-      "getStructuredAvatarData",
-      "getEnhancedCharacterSeed",
-      "getCulturalEnhancements",
-      "analyzeVisualDetails",
-      "getColoredObjects",
-      "detectAllCharacters",
-      "getSessionSetting",
-      "getSecondaryCharactersForSession",
-    ];
-
-    const missingMethods = requiredMethods.filter(
-      (method) => typeof characterConsistencyService?.[method] !== "function",
-    );
-
-    // Enhanced logging: Log typeof for each required method for debugging
-    console.log(`🔍 [${requestId}] [TIER_1] CCS Method Availability Check:`, {
-      sessionId,
-      methods: requiredMethods.reduce((acc, method) => {
-        acc[method] = typeof characterConsistencyService?.[method];
-        return acc;
-      }, {} as Record<string, string>),
-      missingMethods,
-    });
-
-    if (missingMethods.length > 0) {
-      throw new Error(`CharacterConsistencyService missing required methods: ${missingMethods.join(", ")}`);
-    }
-
-    logTier1Step("CharacterConsistencyService Import", "success", "Service loaded successfully");
-    console.log(`🔍 [${requestId}] [TIER_1] CCS Import: SUCCESS`, {
-      sessionId,
-      pageNumber: payload.pageNumber,
-      availableMethods: requiredMethods,
-      timing: `${Date.now() - tier1Start}ms`,
-    });
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    logTier1Step("CharacterConsistencyService Import", "failed", errorMessage);
-    console.warn(`[TIER_1] ⚠️ CharacterConsistencyService unavailable:`, errorMessage);
-    console.log(`[TIER_1] Will escalate to Direct Mode (CCS is copilot there, not required)`);
-    // Set flag but don't throw - let escalation logic handle it gracefully
-    characterServiceUnavailable = true;
-  }
-
-  // If service is unavailable, escalate to Direct Mode (CCS is copilot, not required)
-  if (characterServiceUnavailable) {
-    throw new Error("CHARACTERSERVICE_UNAVAILABLE_TRY_DIRECT_MODE");
+    logTier1Step("CharacterConsistencyService Import", "success", "Inline CCS loaded");
+  } catch (inlineError) {
+    const errorMessage = inlineError instanceof Error ? inlineError.message : String(inlineError);
+    console.log(`⚠️ [CCS_INLINE] Failed - escalating to Direct Mode immediately: ${errorMessage}`);
+    logTier1Step("CharacterConsistencyService Import", "failed", `Inline CCS failed - escalating to Direct Mode`);
+    throw new Error("INLINE_CCS_FAILED_ESCALATE_DIRECT_MODE");
   }
 
   // Check for force flag (now passed from handler scope)
@@ -2588,7 +2517,6 @@ serve(async (req) => {
       );
       await new Promise((resolve) => setTimeout(resolve, delay));
     }
-  }
 
   // Should never reach here, but fallback
   return corsResponse(

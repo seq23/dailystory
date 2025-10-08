@@ -4,8 +4,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-// ✅ BUNDLER HINT: Force CCS inclusion in deployment bundle (dynamic import used inside handler)
-import { characterConsistencyService as _ccsHint } from "../_shared/CharacterConsistencyService.js";
+// CCS completely removed from Direct Mode - using inline static avatar system
 
 // ========== INLINE CORS (Zero Dependencies) ==========
 function generateEchoCorsHeaders(req: Request): Record<string, string> {
@@ -51,36 +50,34 @@ function corsResponse(data: any, req: Request, status = 200): Response {
 // ========== GLOBAL SUPABASE CLIENT (lazy-initialized) ==========
 let supabaseClient: any = null;
 
-// ========== CCS BOOT VERIFICATION ==========
-let ccsBootStatus = { loaded: false, error: null as string | null };
+// ========== INLINE STATIC AVATAR DATA SYSTEM (NO CCS) ==========
+// 73-variation hair system by skin tone (session-seeded for consistency)
+const INLINE_HAIR_BY_SKIN: Record<string, string[]> = {
+  pale: ['strawberry blonde', 'golden red', 'auburn', 'copper blonde', 'light auburn', 'sandy blonde', 'platinum blonde', 'ash blonde', 'honey blonde', 'caramel blonde', 'light brown', 'golden brown', 'chestnut', 'red-brown', 'light ginger'],
+  light: ['platinum blonde', 'honey blonde', 'ash blonde', 'golden blonde', 'sandy blonde', 'light brown', 'caramel brown', 'dirty blonde', 'strawberry blonde', 'golden brown', 'hazel brown', 'chestnut', 'medium brown', 'warm brown', 'cool brown'],
+  medium: ['chestnut brown', 'chocolate brown', 'dark brown', 'warm brown', 'cool brown', 'mahogany', 'auburn brown', 'espresso', 'caramel brown', 'honey brown', 'hazelnut', 'walnut', 'cinnamon', 'mocha', 'toffee'],
+  olive: ['jet black', 'raven black', 'dark brown', 'espresso', 'chocolate', 'warm black', 'cool black', 'blue-black', 'brown-black', 'mahogany', 'dark chestnut', 'deep brown', 'umber', 'sable'],
+  dark: ['textured 4C black', 'tight coils black', 'kinky curls black', 'natural afro texture', 'coily 4B texture', 'tight ringlets', 'springy coils', 'dense curls', 'voluminous afro', 'natural black coils', 'textured black curls', 'kinky black hair', '4C natural texture', 'coiled black hair']
+};
 
-async function verifyCCSBoot() {
-  let ccsModule;
-  try {
-    try {
-      ccsModule = await import("../_shared/CharacterConsistencyService.js");
-      console.log('✅ [BOOT] Tier 1 (ai-visual-scene-creator): _shared loaded');
-    } catch (sharedError) {
-      ccsModule = await import("../_vendor/CharacterConsistencyService.mjs");
-      console.log('✅ [BOOT] Tier 1 (ai-visual-scene-creator): _vendor loaded (fallback)');
-    }
-    const ccs = ccsModule.characterConsistencyService;
-    
-    // Test key method
-    const testResult = await ccs.getEnhancedCharacterSeed({ name: 'Test', age: 8 }, 'test-session', 'TestChar');
-    
-    if (testResult && testResult.characterName) {
-      ccsBootStatus = { loaded: true, error: null };
-      console.log('✅ [BOOT] Tier 1 (ai-visual-scene-creator): CCS loaded successfully');
-      return true;
-    } else {
-      throw new Error('CCS method returned invalid result');
-    }
-  } catch (error) {
-    ccsBootStatus = { loaded: false, error: error.message };
-    console.error('❌ [BOOT] Tier 1 (ai-visual-scene-creator): CCS load failed -', error.message);
-    return false;
-  }
+const INLINE_SKIN_FEATURES: Record<string, string[]> = {
+  pale: ['fair porcelain with rosy cheeks', 'light ivory with freckles', 'pale peachy with soft glow', 'fair cream with delicate features', 'porcelain with pink undertones'],
+  light: ['light peachy with warm glow', 'fair beige with soft features', 'light cream with natural blush', 'peachy-beige with bright eyes', 'light warm with gentle features'],
+  medium: ['medium beige with warm undertones', 'golden tan with brown eyes', 'olive-beige with hazel eyes', 'warm tan with dark lashes', 'medium peachy with expressive eyes'],
+  olive: ['olive-toned with golden undertones', 'Mediterranean olive with dark eyes', 'warm olive with rich features', 'golden olive with expressive eyes', 'deep olive with strong features'],
+  dark: ['rich brown with warm undertones', 'deep brown with dark eyes', 'mahogany with strong features', 'ebony with beautiful complexion', 'dark brown with radiant glow']
+};
+
+function getSessionSeededHair(skinTone: string, sessionId: string): string {
+  const options = INLINE_HAIR_BY_SKIN[skinTone] || INLINE_HAIR_BY_SKIN.medium;
+  const seed = sessionId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  return options[seed % options.length];
+}
+
+function getSessionSeededFeatures(skinTone: string, sessionId: string): string {
+  const options = INLINE_SKIN_FEATURES[skinTone] || INLINE_SKIN_FEATURES.medium;
+  const seed = sessionId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  return options[seed % options.length];
 }
 
 // ========== INLINED: ProviderGate (Concurrency + Circuit Breaker) ==========
@@ -311,62 +308,31 @@ async function generateCompleteVisualSchema(
   let characterName = userInfo?.name || userInfo?.userName || 'child';
   let ethnicity = '';
   
-  // ✅ CRASH-PROOF: CCS is OPTIONAL in Direct Mode - use emergency hair fallback if unavailable
+  // Generate structuredAvatarData using inline static system (NO CCS)
   if (!structuredAvatarData) {
-    // FIRST: Check if orchestrator already passed structuredAvatarData (avoids redundant CCS call)
     if (userInfo?.structuredAvatarData) {
       structuredAvatarData = userInfo.structuredAvatarData;
-      console.log(`✅ [TIER_1_PASSTHROUGH] Using structuredAvatarData from orchestrator:`, {
-        hairColor: structuredAvatarData.hairColor,
-        skinFeatures: structuredAvatarData.skinFeatures,
-        source: 'orchestrator_passthrough'
-      });
+      console.log(`✅ [TIER_1_PASSTHROUGH] Using structuredAvatarData from orchestrator`);
     } else {
-      // FALLBACK: Call CCS to generate it (Direct Mode path)
-      try {
-        // Two-tier fallback: _shared first, _vendor last resort
-        let ccsModule;
-        try {
-          ccsModule = await import('../_shared/CharacterConsistencyService.js');
-          console.log(`✅ [CCS_IMPORT_DM] _shared loaded`);
-        } catch (sharedError) {
-          console.warn(`⚠️ [CCS_IMPORT_DM] _shared failed, trying _vendor:`, sharedError);
-          ccsModule = await import('../_vendor/CharacterConsistencyService.mjs');
-          console.log(`✅ [CCS_IMPORT_DM] _vendor loaded (last resort)`);
-        }
-        
-        characterConsistencyService = ccsModule.characterConsistencyService;
-        structuredAvatarData = await characterConsistencyService.getStructuredAvatarData(sessionId, userInfo);
-        console.log(`✅ Generated complete structuredAvatarData via CharacterConsistencyService:`, structuredAvatarData);
-      } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      console.warn(`⚠️ [DM] CCS unavailable (NON-FATAL), using hardcoded emergency fallback:`, errorMessage);
-        const fallbackSkinTone = userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium';
-        
-        // CRITICAL: Derive ethnicity from skinTone, not hardcoded 'Euro-American'
-        const ethnicityMap: Record<string, string> = {
-          'pale': 'Euro-American',
-          'light': 'Euro-American',
-          'medium': 'Mediterranean',
-          'olive': 'Middle Eastern',
-          'dark': 'African'
-        };
-        const derivedEthnicity = ethnicityMap[fallbackSkinTone] || 'Euro-American';
-        
-        const avatarType = userInfo?.avatar?.type || 'girl';
-        structuredAvatarData = {
-          resolvedSkinTone: fallbackSkinTone,
-          hairColor: characterConsistencyService 
-            ? characterConsistencyService.getHair(fallbackSkinTone, sessionId, derivedEthnicity, avatarType)
-            : emergencyHairFallback(fallbackSkinTone),
-          skinFeatures: characterConsistencyService
-            ? characterConsistencyService.getSkinFeatures(fallbackSkinTone, sessionId)
-            : `${fallbackSkinTone} skin tone with brown eyes`,
-          ethnicity: derivedEthnicity,
-          source: 'hardcoded_fallback'
-        };
-        console.log(`✅ [AISCHEMA_FALLBACK] source=hardcoded, skinTone=${fallbackSkinTone}, ethnicity=${derivedEthnicity}, hairColor=${structuredAvatarData.hairColor}`);
-      }
+      // Generate from inline static data
+      const fallbackSkinTone = userInfo?.skinTone || userInfo?.avatar?.skinTone || 'medium';
+      const ethnicityMap: Record<string, string> = {
+        'pale': 'Euro-American',
+        'light': 'Euro-American',
+        'medium': 'Mediterranean',
+        'olive': 'Middle Eastern',
+        'dark': 'African'
+      };
+      const derivedEthnicity = ethnicityMap[fallbackSkinTone] || 'Euro-American';
+      
+      structuredAvatarData = {
+        resolvedSkinTone: fallbackSkinTone,
+        assignedHairColor: getSessionSeededHair(fallbackSkinTone, sessionId),
+        skinFeatures: getSessionSeededFeatures(fallbackSkinTone, sessionId),
+        ethnicity: derivedEthnicity,
+        source: 'inline_static'
+      };
+      console.log(`✅ [INLINE_STATIC] Generated structuredAvatarData: ${JSON.stringify(structuredAvatarData)}`);
     }
   }
 
@@ -1215,44 +1181,24 @@ serve(async (req) => {
     let culturalBundle: any = null;
 
     if (directMode) {
-      // DIRECT MODE ONLY: Generate character seed and cultural bundle
-      console.log(`🎨 [${requestId}] Direct Mode: Generating initial character descriptor with 2-tier fallback`);
+      // DIRECT MODE: Use inline static avatar system (NO CCS)
+      console.log(`🎨 [${requestId}] Direct Mode: Using inline static avatar system (session-seeded)`);
       
       // Generate character seed for consistency
       characterSeed = await generateCharacterSeed(sessionId, userInfo);
 
-      // Generate culturalBundle using CharacterConsistencyService with aligned sessionId
-      // 2-Tier fallback: CCS → Emergency Hardcoded (no StaticDataCache)
-      if (characterServiceAvailable && characterConsistencyService) {
-        try {
-          culturalBundle = await characterConsistencyService.getCulturalEnhancements(
-            userInfo, 
-            sessionId, 
-            sessionId // Use sessionId directly for alignment with other character data
-          );
-          console.log(`✅ [${requestId}] INITIAL_DESCRIPTOR_SOURCE: CharacterConsistencyService (inlined)`);
-        } catch (tier1Error) {
-          console.warn(`⚠️ [${requestId}] CharacterConsistencyService.getCulturalEnhancements failed, using emergency hardcoded`, tier1Error);
-          characterServiceAvailable = false;
-        }
-      }
+      // Generate culturalBundle using inline static data (session-seeded)
+      const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
+      const hair = getSessionSeededHair(skinTone, sessionId);
+      const features = getSessionSeededFeatures(skinTone, sessionId);
       
-      // Emergency hardcoded fallback if CCS unavailable
-      if (!culturalBundle) {
-        const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
-        const nativeLanguage = userInfo?.native_language || userInfo?.nativeLanguage || 'en';
-        
-        // Standardized ethnicity detection: dark skin + afro heritage languages (en, es, fr, pt)
-        const isAfricanAmerican = (skinTone === 'dark') && ['en', 'en-US', 'es', 'fr', 'pt'].includes(nativeLanguage);
-        
-        culturalBundle = {
-          hair: isAfricanAmerican ? 'photorealistic detailed textured 4C African American hairstyle' : userInfo?.avatar?.hairColor || 'brown hair',
-          features: isAfricanAmerican ? 'authentic African American features' : 'diverse features',
-          profile: characterSeed?.culturalProfile || null,
-          source: 'emergency_hardcoded'
-        };
-        console.log(`✅ [${requestId}] [CULTURAL_BUNDLE_FALLBACK] source=emergency_hardcoded (2-tier: CCS→Hardcoded)`);
-      }
+      culturalBundle = {
+        hair,
+        features,
+        profile: characterSeed?.culturalProfile || null,
+        source: 'inline_static'
+      };
+      console.log(`✅ [${requestId}] Cultural bundle from inline static: hair="${hair}", features="${features}"`);
     } else {
       // Fallback for Scene-Only mode without orchestrator bundle
       culturalBundle = {
@@ -1275,32 +1221,9 @@ serve(async (req) => {
     if (directMode) {
       console.log(`🖼️ [${requestId}] Direct Mode: Full character processing with service`);
       
-      // DIRECT MODE: Get character appearance and colored objects from service
-      let characterAppearance: string | null = null;
-      let sessionSetting = ''; // ✅ Scene context for consistency
-      
-      if (characterServiceAvailable && characterConsistencyService) {
-        try {
-          characterAppearance = await characterConsistencyService.getCharacterAppearanceFromStory(sessionId, characterSeed?.characterName || 'child');
-          const serviceColoredObjects = await characterConsistencyService.getColoredObjects(sessionId);
-          if (serviceColoredObjects) {
-            coloredObjects = serviceColoredObjects;
-          }
-          
-          // Get saved scene context
-          const savedContext = await characterConsistencyService.getSessionSetting(sessionId, 'context', null);
-          if (savedContext) {
-            sessionSetting = savedContext;
-            console.log(`🏠 [${requestId}] Using saved scene context: ${savedContext}`);
-          }
-          
-          console.log(`✅ [${requestId}] Character data retrieved from service`);
-        } catch (error) {
-          console.warn(`⚠️ [${requestId}] Failed to retrieve character data from service (non-fatal):`, error);
-        }
-      } else {
-        console.warn(`⚠️ [${requestId}] CharacterConsistencyService unavailable, using minimal fallback data`);
-      }
+      // DIRECT MODE: Build character appearance from inline static data (NO CCS)
+      const characterAppearance = `${characterSeed.characterName} is a ${characterSeed.avatarType}, age ${userInfo?.age || 6}, ${culturalBundle.hair}, ${culturalBundle.features}`;
+      console.log(`✅ [${requestId}] Character appearance from inline static: ${characterAppearance}`);
       
       // Validate structuredAvatarData exists
       if (!structuredAvatarData) {
