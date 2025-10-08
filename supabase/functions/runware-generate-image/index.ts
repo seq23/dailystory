@@ -1926,8 +1926,10 @@ Deno.serve(async (req) => {
         let tier25aErrorMessage = "";
         let tier25bErrorMessage = "";
 
-        // CRITICAL FIX: Skip 2.5A if CharacterConsistencyService is unavailable
-        if (isCharacterServiceUnavailable) {
+        // =================== TEMPLATE FALLBACK CASCADE ===================
+        try {
+          // CRITICAL FIX: Skip 2.5A if CharacterConsistencyService is unavailable
+          if (isCharacterServiceUnavailable) {
           console.log(
             `[CASCADE] Skipping 2.5A - CharacterConsistencyService unavailable, routing directly to 2.5B`,
           );
@@ -2199,7 +2201,7 @@ Deno.serve(async (req) => {
         // Try Tier 2.5B (reached either from 2.5A failure OR 2.5A skip)
         console.log(`[TIER_2.5B] Attempting fallback after 2.5A failure or skip`);
 
-            try {
+        try {
               // Add 15-second timeout for Tier 2.5B call
               const controller = new AbortController();
               const timeout = setTimeout(() => controller.abort(), 15000);
@@ -2315,8 +2317,6 @@ Deno.serve(async (req) => {
               tierLogger.failure("TIER_2.5B", { error: tier25bErrorMessage });
               // Error stored - will attempt 2.5C in universal fallback block below
             }
-          }
-        } // Close if (!isCharacterServiceUnavailable)
 
         // UNIVERSAL 2.5C FALLBACK: Attempt 2.5C if ANY 2.5B failed (from either path)
         if (tier25bErrorMessage) {
