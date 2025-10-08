@@ -2491,63 +2491,63 @@ serve(async (req) => {
             }
           }
         }
-      } catch (cascadeError) {
-        // Close outer try (cascade block)
-        const errorMessage = cascadeError instanceof Error ? cascadeError.message : String(cascadeError);
+      } // end Direct Mode execution block
+    } // end tier1Error catch
+  } catch (cascadeError) {
+    // Outer catch for entire cascade - handles validation and boot errors
+    const errorMessage = cascadeError instanceof Error ? cascadeError.message : String(cascadeError);
 
-      // Check if this is a validation error (client error, not server error)
-      const isValidationError = errorMessage.includes("NO_STORY_CONTENT") || 
-                                errorMessage.includes("PAYLOAD_NULL") || 
-                                errorMessage.includes("NO_SESSION_OR_USER_INFO");
+    // Check if this is a validation error (client error, not server error)
+    const isValidationError = errorMessage.includes("NO_STORY_CONTENT") || 
+                              errorMessage.includes("PAYLOAD_NULL") || 
+                              errorMessage.includes("NO_SESSION_OR_USER_INFO");
 
-      if (isValidationError) {
-        // Return 400 Bad Request for client-side validation errors
-        console.error(`[runware-generate-image] Validation error: ${errorMessage}`);
-        return corsResponse(
-          {
-            success: false,
-            error: errorMessage,
-            message: errorMessage === "NO_STORY_CONTENT" 
-              ? "Missing required story content. Please provide pageText or storyText in the request body."
-              : errorMessage === "NO_SESSION_OR_USER_INFO"
-              ? "Missing required session or user information."
-              : "Invalid request payload",
-            hint: "Check your request body structure and ensure all required fields are present",
-            requiredFields: {
-              storyContent: "pageText OR storyText",
-              sessionId: "string",
-              userInfo: "object"
-            }
-          },
-          req,
-          400
-        );
-      }
-
-      // Check if this is a boot sync error that should be retried
-      const isSyncFailure = FAST_BOOT_SYNC.bootErrors.some((msg) => errorMessage.includes(msg));
-
-      if (!isSyncFailure || attempt === FAST_BOOT_SYNC.maxRetries) {
-        // Final failure or non-sync error
-        console.error(`[runware-generate-image] Final error after retries: ${errorMessage}`);
-        return corsResponse(
-          {
-            error: errorMessage,
-            escalationTarget: "TIER_4",
-          },
-          req,
-          500
-        );
-      }
-
-      const delay = FAST_BOOT_SYNC.delays[attempt];
-      console.warn(
-        `🔄 [RUNWARE_GEN] Fast boot retry ${attempt + 1}/${FAST_BOOT_SYNC.maxRetries} in ${delay}ms: ${errorMessage}`,
+    if (isValidationError) {
+      // Return 400 Bad Request for client-side validation errors
+      console.error(`[runware-generate-image] Validation error: ${errorMessage}`);
+      return corsResponse(
+        {
+          success: false,
+          error: errorMessage,
+          message: errorMessage === "NO_STORY_CONTENT" 
+            ? "Missing required story content. Please provide pageText or storyText in the request body."
+            : errorMessage === "NO_SESSION_OR_USER_INFO"
+            ? "Missing required session or user information."
+            : "Invalid request payload",
+          hint: "Check your request body structure and ensure all required fields are present",
+          requiredFields: {
+            storyContent: "pageText OR storyText",
+            sessionId: "string",
+            userInfo: "object"
+          }
+        },
+        req,
+        400
       );
-      await new Promise((resolve) => setTimeout(resolve, delay));
-    } // end cascadeError catch
-  } // end tier1Error catch
-  } // end outer try from line 1151
+    }
+
+    // Check if this is a boot sync error that should be retried
+    const isSyncFailure = FAST_BOOT_SYNC.bootErrors.some((msg) => errorMessage.includes(msg));
+
+    if (!isSyncFailure || attempt === FAST_BOOT_SYNC.maxRetries) {
+      // Final failure or non-sync error
+      console.error(`[runware-generate-image] Final error after retries: ${errorMessage}`);
+      return corsResponse(
+        {
+          error: errorMessage,
+          escalationTarget: "TIER_4",
+        },
+        req,
+        500
+      );
+    }
+
+    const delay = FAST_BOOT_SYNC.delays[attempt];
+    console.warn(
+      `🔄 [RUNWARE_GEN] Fast boot retry ${attempt + 1}/${FAST_BOOT_SYNC.maxRetries} in ${delay}ms: ${errorMessage}`,
+    );
+    await new Promise((resolve) => setTimeout(resolve, delay));
+  } // end cascadeError catch (outer try from line 1151)
 } // end for loop
 
   // Should never reach here, but fallback
