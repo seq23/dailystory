@@ -1,22 +1,5 @@
 /**
  * ========================================
- * INLINE VERSION (1:1 PARITY WITH GOLD STANDARD)
- * ========================================
- * 
- * ⚠️ CRITICAL: This file must maintain 1:1 code parity with gold standard
- * 
- * Gold Standard: supabase/functions/_shared/CharacterConsistencyService.js (2473 lines)
- * This File: Complete copy for runware-generate-image inline use
- * Updated: 2025-10-08
- * Status: TRUE 1:1 PARITY ACHIEVED (was 1590 lines, now 2473 lines)
- * 
- * FIXED: 883 missing lines restored including:
- * - All 8 critical methods (getCharacterAppearanceFromStory, detectAppearance, etc.)
- * - Complete cultural data arrays (73+ hair, 30 AA hair, 36 AA features)
- * - Full pronoun resolution system
- * - Complete tier25Vocabulary integration
- * 
- * ========================================
  * CHARACTER CONSISTENCY SERVICE - CHILDREN'S STORYBOOK OPTIMIZED (PRODUCTION)
  * ========================================
  * 
