@@ -80,22 +80,6 @@ export const PremiumMyStoriesView = ({ userInfo, isPremium, isSubscriptionActive
     return undefined;
   }, [currentView, activeChild?.display_name, userInfo.name]);
 
-  // Hard-block entire premium display if subscription is inactive
-  if (!isSubscriptionActive) {
-    return (
-      <div className="space-y-6">
-        <div className="border-red-200 bg-red-50 rounded-lg p-8 text-center">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Subscription Required</h2>
-          <p className="text-gray-600 mb-6">
-            Your subscription is inactive. Please update your billing to continue.
-          </p>
-          <div className="flex gap-3 justify-center">
-            <Button onClick={() => window.location.href = '/account'}>Manage Billing</Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   // Check if user has read stories before to prevent auto-tutorial
   useEffect(() => {
@@ -140,10 +124,26 @@ useEffect(() => {
       if (cached && cached.pages?.length && endRaw > Date.now()) {
         setCurrentView('reading');
       }
-    } catch {}
+  } catch {}
   })();
 }, [userInfo?.name, isSubscriptionActive]);
 
+  // Hard-block entire premium display if subscription is inactive
+  if (!isSubscriptionActive) {
+    return (
+      <div className="space-y-6">
+        <div className="border-red-200 bg-red-50 rounded-lg p-8 text-center">
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Subscription Required</h2>
+          <p className="text-gray-600 mb-6">
+            Your subscription is inactive. Please update your billing to continue.
+          </p>
+          <div className="flex gap-3 justify-center">
+            <Button onClick={() => window.location.href = '/account'}>Manage Billing</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleLoadStory = (story: Story) => {
     setCurrentStory(story);
