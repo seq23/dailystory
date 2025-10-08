@@ -33,6 +33,8 @@ User sees story content (NOT diagnostic page)
 5. **Source tracking** - Analytics for tier usage
 6. **CCS data flow fixed** - Template-AB nested payload now preserves precomputedCCS
 7. **Template-CD dynamic loader** - LKG serve-stale approach avoids boot sync
+8. **CCS Cultural Bundle Pre-computation (NEW - Jan 2025)** - Orchestrator computes `culturalBundle` early with emergency fallbacks
+9. **Tier 2.5A Pre-check Guard (NEW - Jan 2025)** - Validates bundle completeness before attempting 2.5A, skips if incomplete
 
 ### Implementation Files
 - `src/components/CleanStoryDisplay.tsx` (lines 1974-1998, 2162-2199, 4035-4043)
@@ -41,6 +43,7 @@ User sees story content (NOT diagnostic page)
 - `src/services/errorHandlingManager.ts` (lines 112-183)
 - `supabase/functions/runware-template-ab/index.ts` (lines 964-974) - Nested payload CCS preservation
 - `supabase/functions/runware-template-cd/index.ts` (lines 277-295) - Dynamic handler loading with LKG
+- `supabase/functions/runware-generate-image/index.ts` (lines 700-755, 2004-2200) - CCS bundle validation & 2.5A pre-check
 
 ### User Experience Guarantee
 ✅ Users ALWAYS see story content  

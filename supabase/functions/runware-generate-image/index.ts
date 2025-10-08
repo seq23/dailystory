@@ -701,22 +701,67 @@ async function processInlinedTier1(
   // culturalBundle already declared at main handler scope for cascade availability
   try {
     culturalBundle = await characterConsistencyService.getCulturalEnhancements(userInfo, sessionId, characterName);
-    console.log(`🔍 [${requestId}] [TIER_1] getCulturalEnhancements: SUCCESS`, {
+    console.log(`🔍 [${requestId}] [TIER_1] getCulturalEnhancements: SUCCESS (raw)`, {
       sessionId,
       pageNumber: payload.pageNumber,
       skinTone: userInfo?.avatar?.skinTone || userInfo?.skinTone,
       result: culturalBundle,
+    });
+    
+    // CRITICAL: Ensure culturalBundle has valid hair and features for Tier 2.5A
+    const skinToneForFallback = userInfo?.avatar?.skinTone || userInfo?.skinTone || structuredAvatarData?.skinTone || "medium";
+    
+    if (!culturalBundle?.hair || culturalBundle.hair.trim() === "" || culturalBundle.hair === "natural hair") {
+      const repairedHair = emergencyHairFallback(skinToneForFallback);
+      console.log(`🔧 [${requestId}] [TIER_1] REPAIRING culturalBundle.hair`, {
+        sessionId,
+        original: culturalBundle?.hair || "(empty)",
+        repaired: repairedHair,
+        skinTone: skinToneForFallback,
+      });
+      if (!culturalBundle) culturalBundle = {};
+      culturalBundle.hair = repairedHair;
+    }
+    
+    if (!culturalBundle?.features || culturalBundle.features.trim() === "") {
+      console.log(`🔧 [${requestId}] [TIER_1] REPAIRING culturalBundle.features`, {
+        sessionId,
+        original: culturalBundle?.features || "(empty)",
+        repaired: "friendly features",
+      });
+      if (!culturalBundle) culturalBundle = {};
+      culturalBundle.features = "friendly features";
+    }
+    
+    console.log(`✅ [${requestId}] [TIER_1] culturalBundle VALIDATED`, {
+      sessionId,
+      hasHair: !!culturalBundle?.hair,
+      hasFeatures: !!culturalBundle?.features,
+      hair: culturalBundle?.hair,
+      features: culturalBundle?.features,
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.error(`❌ [${requestId}] [TIER_1] getCulturalEnhancements: FAILED`, { sessionId, error: errorMessage });
     logTier1Step("Cultural Enhancements", "failed", `getCulturalEnhancements: ${errorMessage}`);
 
+    // RESILIENCE: Create emergency culturalBundle to allow Tier 2.5A to run
+    const skinToneForFallback = userInfo?.avatar?.skinTone || userInfo?.skinTone || structuredAvatarData?.skinTone || "medium";
+    culturalBundle = {
+      hair: emergencyHairFallback(skinToneForFallback),
+      features: "friendly features",
+    };
+    console.log(`🛡️ [${requestId}] [TIER_1] Emergency culturalBundle created`, {
+      sessionId,
+      culturalBundle,
+      reason: errorMessage,
+    });
+
     // For forced Tier 1, return specific method failure (no cascade)
     if (payload.forceCompleteTier1) {
       throw new Error(`CCS_METHOD_FAILED:getCulturalEnhancements:${errorMessage}`);
     }
-    throw new Error("CHARACTERSERVICE_UNAVAILABLE_TRY_DIRECT_MODE");
+    // Continue with emergency bundle instead of throwing
   }
 
   // Analyze visual details from story text
@@ -2001,9 +2046,24 @@ Deno.serve(async (req) => {
           }
         }
 
-        // Try Tier 2.5A (only if CharacterConsistencyService is available)
+        // Try Tier 2.5A (only if CharacterConsistencyService is available AND culturalBundle is complete)
         if (!isCharacterServiceUnavailable) {
-          console.log(`[TIER_2.5A] Attempting fallback after Direct Mode or if no primaryScene`);
+          // CRITICAL PRE-CHECK: Tier 2.5A requires complete culturalBundle (hair + features)
+          const hasCulturalBundleData = !!(culturalBundle?.hair && culturalBundle?.features);
+          console.log(`[TIER_2.5A] Pre-check`, {
+            hasHair: !!culturalBundle?.hair,
+            hasFeatures: !!culturalBundle?.features,
+            hair: culturalBundle?.hair,
+            features: culturalBundle?.features,
+            canAttempt2_5A: hasCulturalBundleData,
+          });
+          
+          if (!hasCulturalBundleData) {
+            console.log(`⏭️ [TIER_2.5A] Skipping - incomplete culturalBundle (missing hair or features)`);
+            tier25aErrorMessage = "INCOMPLETE_CULTURAL_BUNDLE_SKIP_TO_25B";
+            console.log(`[TIER_2.5B] Attempting fallback (Tier 2.5A skipped due to incomplete bundle)`);
+          } else {
+            console.log(`[TIER_2.5A] Attempting fallback after Direct Mode or if no primaryScene`);
 
           try {
             // Gate check for Tier 2.5A
@@ -2131,9 +2191,13 @@ Deno.serve(async (req) => {
             tier25aErrorMessage = tier25aError instanceof Error ? tier25aError.message : String(tier25aError);
             console.log(`[TIER_2.5A] Failed: ${tier25aErrorMessage}`);
             tierLogger.failure("TIER_2.5A", { error: tier25aErrorMessage });
-
-            // Try Tier 2.5B
-            console.log(`[TIER_2.5B] Attempting fallback after 2.5A failure`);
+          } // END catch for Tier 2.5A
+          
+          } // END else block for hasCulturalBundleData check
+        } // END if (!isCharacterServiceUnavailable)
+        
+        // Try Tier 2.5B (reached either from 2.5A failure OR 2.5A skip)
+        console.log(`[TIER_2.5B] Attempting fallback after 2.5A failure or skip`);
 
             try {
               // Add 15-second timeout for Tier 2.5B call

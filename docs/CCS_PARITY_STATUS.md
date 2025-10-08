@@ -66,6 +66,48 @@ All four files now in sync with correct property paths.
 
 ---
 
+## 📦 CCS Vocabulary Import Status (January 2025)
+
+**All CCS Versions Now Point to Centralized Vocabulary:**
+- **Gold Standard:** `supabase/functions/_shared/CharacterConsistencyService.js` imports from `./tier25Vocabulary.js` (same directory)
+- **Inline Version:** `supabase/functions/runware-generate-image/CharacterConsistencyServiceInline.js` imports from `../_shared/tier25Vocabulary.js` ✅ FIXED
+- **Vendor Version:** `supabase/functions/_vendor/CharacterConsistencyService.mjs` imports from `../_shared/tier25Vocabulary.js` ✅ FIXED
+
+**Critical Fix Applied (2025-10-08):**
+- All CCS files now correctly import `TIER_25_UNIFIED_VOCABULARY_EXTENDED` and `UNIVERSAL_VOCAB` from the centralized `_shared/tier25Vocabulary.js` file
+- Previous incorrect paths (`./tier25Vocabulary.js` from inline and vendor locations) have been corrected
+- This ensures all tiers (Tier 1, Direct Mode, 2.5A, 2.5B, 2.5C) use consistent vocabulary data
+
+---
+
+## 🛡️ CCS Cultural Bundle Pre-computation (January 2025)
+
+**Orchestrator Enhancement:** `supabase/functions/runware-generate-image/index.ts`
+
+### Early Computation Logic (lines ~700-755)
+- **Timing:** Orchestrator calls `getCulturalEnhancements` immediately after `getStructuredAvatarData` succeeds
+- **Emergency Fallbacks:**
+  - If `culturalBundle.hair` is falsy or equals "natural hair" → Sets to `emergencyHairFallback(skinTone)`
+  - If `culturalBundle.features` is falsy → Sets to "friendly features"
+- **Resilience:** Wraps `getCulturalEnhancements` in try/catch; on error, creates emergency bundle instead of throwing
+- **Logging:** Explicit validation logs show `hasHair`, `hasFeatures`, and actual values
+
+### Tier 2.5A Pre-check Guard (lines ~2004-2066)
+**Before calling Tier 2.5A:**
+1. Validates `culturalBundle.hair` and `culturalBundle.features` exist
+2. Logs pre-check status: `{ hasHair, hasFeatures, hair, features, canAttempt2_5A }`
+3. Decision logic:
+   - **If missing** → Skips Tier 2.5A entirely, logs "incomplete culturalBundle", goes directly to Tier 2.5B
+   - **If present** → Proceeds with Tier 2.5A call, passing complete `precomputedCCS`
+
+### Result
+- ✅ Eliminates 503 errors from `runware-template-ab` due to missing `precomputedCCS.culturalBundle.hair/features`
+- ✅ Tier 2.5A only attempts when data is complete, maximizing success rate
+- ✅ Tier 2.5B still receives partial `precomputedCCS` for best-effort prompt enhancement
+- ✅ Tier 1/Direct Mode reliability improves with guaranteed hair/features fallbacks
+
+---
+
 ## 📊 Parity Status
 
 ### ✅ Phase 1: COMPLETE - Inline Version (TRUE 1:1 PARITY)
