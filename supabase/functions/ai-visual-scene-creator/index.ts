@@ -426,6 +426,49 @@ async function generateCompleteVisualSchema(
   } else if (pageNumber > 1 && !supabaseClient) {
     console.warn('⚠️ [SUPABASE] Client unavailable, skipping prev scene fetch (non-fatal)');
   }
+
+  // ✅ SESSION-WIDE SECONDARY CHARACTER RETRIEVAL (Option B2)
+  if (pageNumber > 1 && supabaseClient) {
+    try {
+      const { data: recentCharacters, error: charError } = await supabaseClient
+        .from('visual_details_cache')
+        .select('visual_elements')
+        .eq('session_id', sessionId)
+        .eq('detail_type', 'secondary_characters')
+        .lt('page_first_seen', pageNumber) // All pages before current
+        .order('page_first_seen', { ascending: false });
+
+      if (!charError && recentCharacters && recentCharacters.length > 0) {
+        const allHumans = new Map();
+        const allPets = new Map();
+        
+        // Merge all secondary characters from session
+        for (const record of recentCharacters) {
+          const chars = record.visual_elements?.secondaryCharacters;
+          if (chars) {
+            // Dedupe humans by name (keep first occurrence = most recent)
+            chars.humans?.forEach((h: string) => {
+              if (!allHumans.has(h)) allHumans.set(h, h);
+            });
+            chars.pets?.forEach((p: string) => {
+              if (!allPets.has(p)) allPets.set(p, p);
+            });
+          }
+        }
+        
+        // Inject into previousVisualSchema
+        if (!previousVisualSchema) previousVisualSchema = {};
+        previousVisualSchema.secondaryCharacters = {
+          humans: Array.from(allHumans.values()),
+          pets: Array.from(allPets.values())
+        };
+        
+        console.log(`✅ SESSION_CHARACTERS_LOADED: ${allHumans.size} humans, ${allPets.size} pets from ${recentCharacters.length} previous pages`);
+      }
+    } catch (error) {
+      console.warn(`⚠️ Exception retrieving session characters (non-fatal):`, error);
+    }
+  }
   const isNonEnglish = nativeLanguage && nativeLanguage !== 'en';
   
   // Build specific cultural enhancement instructions based on native language
@@ -475,7 +518,18 @@ RULES:
 3. Character appearance: use provided appearance data VERBATIM (word-for-word ethnicity, hair, skin tone) but weave it naturally into flowing prose using connecting phrases like "with her" or "who has" - NEVER simplify core appearance details
 4. Character poses and positioning: infer body positions from story actions ('wakes up' = sitting up in bed with arms stretched, 'runs' = dynamic running pose, 'reads' = sitting/lying with book, 'looks up' = head tilted upward, 'plays' = active engaging pose)
 5. Singular/plural intelligence: "a bird" = 1 bird, "the bird" = 1 bird, "birds" = 2-4 birds, "many/lots of birds" = 5+ birds
-6. Extract secondary characters: HUMANS (mom, dad, friend, teacher, people), PETS (household animals like dog, cat), ANIMAL CHARACTERS (talking animals, fantasy creatures with speaking roles in the story)
+6. **Secondary Characters - SESSION CONSISTENCY**: Extract ONLY characters explicitly mentioned in the CURRENT STORY TEXT:
+   - HUMANS: Named people (Jake, mom, teacher) or unnamed groups (friends, children, people)
+   - PETS: Named or unnamed animals (Whiskers the cat, dog, birds)
+   
+   **CRITICAL CONSISTENCY RULES:**
+   - Only include characters mentioned/implied in CURRENT story text
+   - If a character from PREVIOUS SCENE data reappears by NAME, reuse their EXACT details for visual consistency
+   - Do NOT carry forward characters unless they appear in current story
+   - Do NOT invent names for unnamed characters (use "friends", "people", "dog")
+   - For unnamed groups, use collective descriptions in primaryScene (Rule #1)
+   
+   Example: If PREVIOUS SCENE has "Jake: boy with curly hair, red shirt, blue cap" and current story mentions "Jake ran to the door" → Include "Jake: boy with curly hair, red shirt, blue cap" in output
 7. Atmospheric details: infer time of day, weather, indoor/outdoor context from story
 8. Visual continuity on pages 2+: CRITICAL - maintain exact visual consistency from PREVIOUS SCENE:
    - Object persistence: if previous scene mentions "pink backpack", current scene MUST show "pink backpack" when story references "it" or "the backpack"
@@ -544,19 +598,21 @@ ${secondaryCharacters.map(char =>
 STORY TEXT:
 "${storyText}"
 
-PREVIOUS SCENE (for visual consistency):
+PREVIOUS SCENE (Session-Wide Character Memory):
 ${previousPrimaryScene ? `
 ${previousVisualSchema ? `
 STRUCTURED VISUAL CONSISTENCY DATA (use these exact details):
 - Main Character Clothing: ${JSON.stringify(previousVisualSchema.clothing || [])}
 - Objects in Scene: ${JSON.stringify(previousVisualSchema.objects || [])}
-- Secondary Characters: ${JSON.stringify(previousVisualSchema.secondaryCharacters || { humans: [], pets: [] })}
+- Previous Secondary Characters (from ALL previous pages in session): ${JSON.stringify(previousVisualSchema.secondaryCharacters || { humans: [], pets: [] })}
 - Setting: ${previousVisualSchema.setting || 'outdoor scene'}
 - Mood: ${previousVisualSchema.mood || 'cheerful'}
 - Lighting: ${previousVisualSchema.lighting || 'natural daylight'}
 - Background: ${previousVisualSchema.backgroundColor || 'bright and colorful'}
 
 CRITICAL: Maintain the same clothing, objects, and character appearances across pages. The main character must wear the same clothing items from the previous scene unless the story explicitly describes a change.
+
+**IMPORTANT**: Previous Secondary Characters data is for CONSISTENCY REFERENCE ONLY. Only include characters in your output if they are mentioned/implied in CURRENT story text.
 
 Primary Scene (prose context): "${previousPrimaryScene}"
 ` : `Primary Scene (prose only): "${previousPrimaryScene}"`}
