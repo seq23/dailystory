@@ -1927,126 +1927,15 @@ Deno.serve(async (req) => {
         let tier25bErrorMessage = "";
 
         // =================== TEMPLATE FALLBACK CASCADE ===================
+        // Open outer try (cascade block)
         try {
           // CRITICAL FIX: Skip 2.5A if CharacterConsistencyService is unavailable
           if (isCharacterServiceUnavailable) {
-          console.log(
-            `[CASCADE] Skipping 2.5A - CharacterConsistencyService unavailable, routing directly to 2.5B`,
-          );
-          tier25aErrorMessage = "SKIPPED: CharacterConsistencyService unavailable";
-
-          // Try Tier 2.5B directly
-          console.log(`[TIER_2.5B] Attempting fallback (2.5A skipped due to missing service)`);
-
-          try {
-            // Add 15-second timeout for Tier 2.5B call
-            const controller = new AbortController();
-            const timeout = setTimeout(() => controller.abort(), 15000);
-
-            try {
-              const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
-              const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
-              
-              // Validate SUPABASE_URL
-              if (!SUPABASE_URL || SUPABASE_URL.trim() === "") {
-                throw new Error("SUPABASE_URL environment variable is not set");
-              }
-              
-              const headers: Record<string, string> = {
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-                "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
-              };
-              
-              // Only add apikey header if key exists
-              if (SUPABASE_ANON_KEY) {
-                headers["apikey"] = SUPABASE_ANON_KEY;
-              }
-              
-              const response = await fetch(`${SUPABASE_URL}/functions/v1/runware-template-ab`, {
-                method: "POST",
-                headers,
-                body: JSON.stringify({
-                  ...payload,
-                  templateComplexity: "B",
-                  tier1FailureReason: normalizedTier1Reason,
-                  tier25aFailureReason: tier25aErrorMessage,
-                  // Pass pre-computed CCS data to Mode B
-                  precomputedCCS: {
-                    culturalBundle,
-                    mainCharacterAppearance,
-                    coloredObjects,
-                    secondaryCharacters,
-                    characterSeed,
-                  },
-                }),
-                signal: controller.signal,
-              });
-              
-              if (!response.ok) {
-                tier25bResponse = { error: { message: `HTTP ${response.status}: ${response.statusText}` } };
-              } else {
-                const data = await response.json();
-                tier25bResponse = { data };
-              }
-            } catch (e: any) {
-              if (e?.name === "AbortError") {
-                tier25bResponse = { error: { message: "Tier 2.5B timeout (15s)" } };
-              } else {
-                throw e;
-              }
-              } finally {
-                clearTimeout(timeout);
-              }
-
-              if (tier25bResponse?.data?.success && tier25bResponse.data?.imageURL) {
-              const result = {
-                success: true,
-                imageURL: tier25bResponse.data.imageURL,
-                seed: tier25bResponse.data?.seed || tier25bResponse.data?.imageGeneration?.seed || null, // ✅ Extract seed
-                provider: "tier-2.5b-fallback",
-                tier: "TIER_2.5B",
-                pathUsed: "template-cascade",
-                resultType: "TIER_2.5B_SUCCESS",
-                requestId: requestId,
-                timestamp: new Date().toISOString(),
-                tier1FailureReason: normalizedTier1Reason,
-                metadata: {
-                  cascadeHistory: [
-                    `❌ Tier 1 Failed: CharacterConsistencyService unavailable`,
-                    `❌ Direct Mode Failed: ${directErrorMessage}`,
-                    `⏭️ Tier 2.5A Skipped: CharacterConsistencyService unavailable`,
-                    "✅ Tier 2.5B Success (Nuclear Independence)",
-                  ],
-                },
-              };
-
-              tierLogger.success("TIER_2.5B", { 
-                result,
-                positivePrompt: tier25bResponse.data.positivePrompt || tier25bResponse.data.templateData?.positivePrompt,
-                negativePrompt: tier25bResponse.data.negativePrompt || tier25bResponse.data.templateData?.negativePrompt,
-                imageUrl: tier25bResponse.data.imageURL,
-                edgeFunction: 'runware-template-ab',
-                pageNumber: pageNumberValue
-              });
-              console.log(`SUCCESS [${requestId}] Tier 2.5B fallback completed (2.5A skipped)`);
-
-              return corsResponse(
-                {
-                  ...result,
-                },
-                req
-              );
-            } else {
-              throw new Error("TIER_2.5B_FAILED: Template B processing failed");
-            }
-          } catch (tier25bError) {
-            tier25bErrorMessage = tier25bError instanceof Error ? tier25bError.message : String(tier25bError);
-            console.log(`[TIER_2.5B] Failed: ${tier25bErrorMessage}`);
-            tierLogger.failure("TIER_2.5B", { error: tier25bErrorMessage });
-            // Error stored - will attempt 2.5C in universal fallback block below
+            console.log(
+              `[CASCADE] Skipping 2.5A - CharacterConsistencyService unavailable, routing directly to 2.5B`,
+            );
+            tier25aErrorMessage = "SKIPPED: CharacterConsistencyService unavailable";
           }
-        }
 
         // Try Tier 2.5A (only if CharacterConsistencyService is available AND culturalBundle is complete)
         if (!isCharacterServiceUnavailable) {
@@ -2199,9 +2088,19 @@ Deno.serve(async (req) => {
         } // END if (!isCharacterServiceUnavailable)
         
         // Try Tier 2.5B (reached either from 2.5A failure OR 2.5A skip)
-        console.log(`[TIER_2.5B] Attempting fallback after 2.5A failure or skip`);
+        // Only attempt if we have a reason to (2.5A failed/skipped or CCS unavailable)
+        const shouldAttempt25B = isCharacterServiceUnavailable || !!tier25aErrorMessage;
+        
+        if (shouldAttempt25B) {
+          console.log(`[TIER_2.5B] Attempting fallback after 2.5A failure or skip`);
 
-        try {
+          // Gate check for Tier 2.5B
+          const t25bGateResult = await acquire("T25B:runware-template-ab");
+          if (!t25bGateResult.acquired) {
+            console.warn(`⚠️ [GATE] Tier 2.5B denied: ${t25bGateResult.reason}`);
+            tier25bErrorMessage = `GATE_DENIED: ${t25bGateResult.reason}`;
+          } else {
+            try {
               // Add 15-second timeout for Tier 2.5B call
               const controller = new AbortController();
               const timeout = setTimeout(() => controller.abort(), 15000);
@@ -2316,7 +2215,12 @@ Deno.serve(async (req) => {
               console.log(`[TIER_2.5B] Failed: ${tier25bErrorMessage}`);
               tierLogger.failure("TIER_2.5B", { error: tier25bErrorMessage });
               // Error stored - will attempt 2.5C in universal fallback block below
+            } finally {
+              // Ensure gate is released
+              release("T25B:runware-template-ab");
             }
+          }
+        } // END if (shouldAttempt25B)
 
         // UNIVERSAL 2.5C FALLBACK: Attempt 2.5C if ANY 2.5B failed (from either path)
         if (tier25bErrorMessage) {
@@ -2621,8 +2525,8 @@ Deno.serve(async (req) => {
             }
           }
         }
-      } // Close if (!isCharacterServiceUnavailable)
-    } catch (error) {
+      // Close outer try (cascade block)
+      } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
 
       // Check if this is a validation error (client error, not server error)
