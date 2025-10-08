@@ -269,7 +269,7 @@ async function bindTierLogger(
   sessionId: string,
   requestId: string,
   authHeader: string | null = null,
-  memoizedImport: any,
+  memoizedImport: any
 ): Promise<TierLogger> {
   const isProd = Deno.env.get("ENVIRONMENT") === "production";
   const debugTierSample = Deno.env.get("DEBUG_TIER_LOG_SAMPLE");
@@ -448,7 +448,7 @@ async function processInlinedTier1(
   tier1ErrorLog: any[],
   requestId: string,
   generateNuclearNegativePrompt: Function,
-  detectCulturalProfileForNegatives: Function,
+  detectCulturalProfileForNegatives: Function
 ): Promise<any> {
   const { pageText, storyText, userInfo, sessionId } = payload;
   const characterName = userInfo?.name || userInfo?.childName || "Child";
