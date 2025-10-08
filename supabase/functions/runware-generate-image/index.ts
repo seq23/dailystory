@@ -1078,6 +1078,7 @@ async function processInlinedTier1(
     secondaryCharacters, // ← NEW: All detected secondary characters
     detectedAnimals, // ← NEW: All detected animals
     sessionSetting, // ← NEW: Indoor/outdoor context
+    mainCharacterAppearance, // ← CRITICAL: Pass main character appearance to cascade
     structuredAvatarData, // ← CRITICAL: Pass 73-variation session-seeded hair to Direct Mode
     templateStructure: "COMPLETE_TIER_1",
   };
@@ -1357,7 +1358,7 @@ Deno.serve(async (req) => {
         console.log(
           `🎨 INLINED TIER 1: Processing for ${payload.userInfo?.name || "Child"} in session ${payload.sessionId}`,
         );
-        enhancedPrompt = await processInlinedTier1(
+        const tier1Result = await processInlinedTier1(
           payload,
           memoizedImport,
           logTier1Step,
@@ -1366,6 +1367,24 @@ Deno.serve(async (req) => {
           generateNuclearNegativePrompt,
           detectCulturalProfileForNegatives,
         );
+
+        // Extract enhanced prompt and CCS data for cascade
+        enhancedPrompt = tier1Result;
+        if (tier1Result) {
+          characterSeed = tier1Result.characterSeed;
+          culturalBundle = tier1Result.culturalBundle;
+          coloredObjects = tier1Result.coloredObjects || "";
+          secondaryCharacters = tier1Result.secondaryCharacters || [];
+          mainCharacterAppearance = tier1Result.mainCharacterAppearance || {};
+        }
+
+        console.log(`🔍 [${requestId}] CCS Data Captured for Cascade:`, {
+          hasCulturalBundle: !!culturalBundle,
+          hasMainCharacterAppearance: !!mainCharacterAppearance && Object.keys(mainCharacterAppearance).length > 0,
+          hasColoredObjects: !!coloredObjects && coloredObjects.length > 0,
+          hasSecondaryCharacters: !!secondaryCharacters && secondaryCharacters.length > 0,
+          hasCharacterSeed: characterSeed !== undefined,
+        });
 
         if (
           !enhancedPrompt ||
