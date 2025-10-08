@@ -1854,8 +1854,14 @@ export const ImageTierTester = () => {
                 category = 'CAPACITY_LIMIT';
                 status = 546;
               } else if (errorStatus === 503) {
-                category = 'BOOT_SYNC_ANOMALY';
-                status = 503;
+                // Template-AB/CD return 503 as escalation signal (not boot failure)
+                if (endpoint.name === 'runware-template-ab' || endpoint.name === 'runware-template-cd') {
+                  category = 'HEALTHY_ESCALATION';
+                  status = 503;
+                } else {
+                  category = 'BOOT_SYNC_ANOMALY';
+                  status = 503;
+                }
               } else if (errorStatus === 500) {
                 category = 'RUNTIME_ERROR';
                 status = 500;
@@ -1990,6 +1996,7 @@ export const ImageTierTester = () => {
           
           const overallCategory = wasAborted ? 'ABORTED' :
             isBrowserNoise ? 'HEALTHY_WITH_NOISE' :
+            tests.POST.category === 'HEALTHY_ESCALATION' ? 'HEALTHY' : // Treat escalation as healthy
             (tests.GET.category === 'HEALTHY' && tests.POST.category === 'HEALTHY' 
               ? 'HEALTHY' 
               : tests.POST.category); // POST reveals more issues
@@ -2002,10 +2009,14 @@ export const ImageTierTester = () => {
           } else if (overallSuccess) {
             humanReadableReason = `${endpoint.type} - Both GET and POST working`;
           } else if (tests.GET.success && !tests.POST.success) {
-            const bootExpected = endpoint.architecture === 'RECEPTIONIST_PATTERN' ? 
-              'Can have boot failures (has receptionist)' : 
-              'Should not have boot failures (pure .ts)';
-            humanReadableReason = `Boot OK but runtime issues (${tests.POST.category}) - ${bootExpected}`;
+            if (tests.POST.category === 'HEALTHY_ESCALATION') {
+              humanReadableReason = `${endpoint.type} - Healthy (503 = expected triage escalation)`;
+            } else {
+              const bootExpected = endpoint.architecture === 'RECEPTIONIST_PATTERN' ? 
+                'Can have boot failures (has receptionist)' : 
+                'Should not have boot failures (pure .ts)';
+              humanReadableReason = `Boot OK but runtime issues (${tests.POST.category}) - ${bootExpected}`;
+            }
           } else if (!tests.GET.success && !tests.POST.success) {
             humanReadableReason = `Complete failure (${overallCategory}) - ${endpoint.type}`;
           } else {
