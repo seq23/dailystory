@@ -2517,6 +2517,7 @@ serve(async (req) => {
       );
       await new Promise((resolve) => setTimeout(resolve, delay));
     }
+  } // Close for loop
 
   // Should never reach here, but fallback
   return corsResponse(

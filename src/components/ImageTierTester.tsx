@@ -1855,8 +1855,11 @@ export const ImageTierTester = () => {
               } else if (errorStatus === 503) {
                 // Template-AB/CD return 503 with NO_PRECOMPUTED_CCS = correct escalation (not boot failure)
                 const errorBody = postResponse.error?.message || postResponse.error?.error || '';
+                const dataError = postResponse.data?.error || '';
+                const dataEscalation = postResponse.data?.escalation || '';
                 if ((endpoint.name === 'runware-template-ab' || endpoint.name === 'runware-template-cd') &&
-                    (errorBody.includes('NO_PRECOMPUTED_CCS') || errorBody.includes('escalation'))) {
+                    (errorBody.includes('NO_PRECOMPUTED_CCS') || errorBody.includes('escalation') ||
+                     dataError.includes('NO_PRECOMPUTED_CCS') || dataEscalation === 'NEXT_TIER')) {
                   category = 'HEALTHY_ESCALATION';
                   status = 503;
                 } else {

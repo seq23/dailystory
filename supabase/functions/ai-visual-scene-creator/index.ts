@@ -952,53 +952,8 @@ serve(async (req) => {
       console.warn(`⚠️ [CCS_IMPORT_TIER2] CCS service removed - using inline fallback`);
       throw new Error('CCS service removed - all 3 methods unavailable');
       
-      // Get enhanced character seed with graceful fallback (CCS CORE METHOD)
-      const characterName = userInfo?.name || userInfo?.userName || 'child';
-      const avatarIdentity = {
-        name: characterName,
-        type: userInfo?.avatar?.type || 'child',
-        skinTone: userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium'
-      };
-      
-      try {
-        enhancedCharacterSeed = await characterConsistencyService.getEnhancedCharacterSeed(
-          sessionId,
-          avatarIdentity,
-          content,
-          'continuing'
-        );
-        console.log(`🔍 [${requestId}] [TIER_2] getEnhancedCharacterSeed: SUCCESS`);
-      } catch (enhancedError) {
-        console.warn(`⚠️ [${requestId}] [TIER_2] getEnhancedCharacterSeed: FAILED, using basic fallback`);
-        try {
-          enhancedCharacterSeed = await characterConsistencyService.getBasicCharacterSeed(avatarIdentity, sessionId);
-          console.log(`🔍 [${requestId}] [TIER_2] getBasicCharacterSeed: SUCCESS (fallback)`);
-        } catch (basicError) {
-          console.warn(`⚠️ [${requestId}] [TIER_2] getBasicCharacterSeed: FAILED (graceful)`, basicError.message);
-        }
-      }
-
-      // Detect all characters (CCS CORE METHOD)
-      try {
-        detectedAllCharacters = await characterConsistencyService.detectAllCharacters(content, {
-          sessionId,
-          pageNumber,
-          userInfo
-        });
-        console.log(`🔍 [${requestId}] [TIER_2] detectAllCharacters: SUCCESS`, {
-          secondaryCount: detectedAllCharacters?.secondaryCharacters?.length || 0
-        });
-      } catch (detectError) {
-        console.warn(`⚠️ [${requestId}] [TIER_2] detectAllCharacters: FAILED (graceful)`, detectError.message);
-      }
-
-      // Get never-ending story setting (CCS CORE METHOD)
-      try {
-        neverEndingSetting = await characterConsistencyService.getSessionSetting(sessionId, "never_ending_story") || "";
-        console.log(`🔍 [${requestId}] [TIER_2] getSessionSetting: SUCCESS`, { neverEndingSetting });
-      } catch (settingError) {
-        console.warn(`⚠️ [${requestId}] [TIER_2] getSessionSetting: FAILED (graceful)`, settingError.message);
-      }
+      // CCS removed - all methods unavailable
+      console.log(`ℹ️ [${requestId}] [TIER_2] CCS removed - character consistency handled via inline static avatar system`);
     } catch (ccsImportError) {
       console.warn(`⚠️ [${requestId}] [TIER_2] CCS Import FAILED (graceful) - all 3 methods unavailable:`, ccsImportError.message);
     }
@@ -1081,21 +1036,10 @@ serve(async (req) => {
       characterServiceAvailable = false;
     }
 
-    // DIRECT MODE ONLY: After primary scene generation, analyze visual details
-    if (directMode && characterServiceAvailable && characterConsistencyService) {
-      try {
-        const characterName = userInfo?.name || userInfo?.userName || 'Child';
-        await characterConsistencyService.analyzeVisualDetails(
-          sessionId,
-          visualSchema.primaryScene,
-          pageNumber,
-          characterName
-        );
-        console.log(`✅ [${requestId}] ANALYSIS_APPLIED: Visual details analyzed and cached for page ${pageNumber}`);
-      } catch (error) {
-        console.warn(`⚠️ [${requestId}] Failed to analyze visual details (non-fatal):`, error);
-      }
-
+    // CCS removed - visual analysis no longer available
+    
+    // DIRECT MODE ONLY: Save current primary scene with rolling 2-page window cleanup
+    if (directMode) {
       // Save current primary scene with rolling 2-page window cleanup
       try {
         const characterName = userInfo?.name || userInfo?.userName || 'Child';
