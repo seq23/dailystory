@@ -1,6 +1,6 @@
 # Authentication & Premium Access Model
-**Last Updated:** 2025-09-29  
-**Version:** 1.0  
+**Last Updated:** 2025-10-08  
+**Version:** 2.0  
 **Status:** ✅ Production Ready
 
 ---
@@ -8,10 +8,11 @@
 ## 📋 Table of Contents
 
 - [1. Core Authentication Model](#1-core-authentication-model)
-- [2. User Tiers Explained](#2-user-tiers-explained)
-- [3. Implementation Details](#3-implementation-details)
-- [4. Payment System Role](#4-payment-system-role)
-- [5. Migration from Old Model](#5-migration-from-old-model)
+- [2. Dual-Gating System](#2-dual-gating-system)
+- [3. User Tiers Explained](#3-user-tiers-explained)
+- [4. Implementation Details](#4-implementation-details)
+- [5. Payment System Role](#5-payment-system-role)
+- [6. Migration from Old Model](#6-migration-from-old-model)
 - [📚 Related Documentation](#related-documentation)
 
 ---
@@ -20,7 +21,7 @@
 
 ### 🎯 Fundamental Principle
 
-**ALL authenticated users are premium users. Authentication = Premium Access.**
+**ALL authenticated users have `isPremium=true` status. Feature access is controlled by subscription billing status.**
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -32,37 +33,106 @@
               │                         │
         ┌─────▼─────┐           ┌──────▼──────┐
         │ SIGNED IN │           │ SIGNED OUT  │
-        │ (Premium) │           │   (Guest)   │
+        │           │           │   (Guest)   │
         └───────────┘           └─────────────┘
               │                         │
               ▼                         ▼
     ┌─────────────────┐       ┌──────────────────┐
     │ isPremium=true  │       │ isPremium=false  │
-    │ Unlimited access│       │ 20-min, 6-page   │
-    │ All features    │       │ Limited features │
-    └─────────────────┘       └──────────────────┘
+    │ (Layer 1)       │       │ 20-min, 6-page   │
+    └─────────────────┘       │ Limited features │
+              │               └──────────────────┘
+              ▼
+    ┌───────────────────┐
+    │ Subscription DB   │
+    │ (Layer 2)         │
+    └───────────────────┘
+              │
+              ▼
+    ┌─────────┴─────────┐
+    │                   │
+┌───▼────────┐  ┌───────▼────────┐
+│  ACTIVE    │  │   INACTIVE     │
+│Full Access │  │ Hard Paywall   │
+└────────────┘  └────────────────┘
 ```
 
 ### ✅ What This Means
 
-1. **Authentication Check = Premium Check**
-   - No separate subscription verification required
-   - No `subscribers` table queries for access control
-   - Window flag: `window.__IS_PREMIUM = !!user`
+1. **Two-Layer Access Control**
+   - **Layer 1 (`isPremium`):** Always `true` for authenticated users (general app context)
+   - **Layer 2 (`isSubscriptionActive`):** Billing status from database (feature gating)
+   - Window flag: `window.__IS_PREMIUM = !!user` (Layer 1 only)
 
-2. **No Feature Gating**
-   - Authenticated users see ALL premium features immediately
-   - No "upgrade to premium" prompts for logged-in users
-   - No subscription status checks before feature access
+2. **Hard Paywall Enforcement**
+   - Users with inactive subscriptions are blocked from premium features
+   - Non-blocking banner displays subscription status
+   - Only "My Account" section remains accessible for payment
 
-3. **Simple Binary System**
-   - User is either `authenticated` (premium) or `unauthenticated` (guest)
-   - No "logged in but not premium" state exists
-   - Clear, predictable user experience
+3. **Never Downgrade Rule**
+   - `isPremium` status NEVER changes to `false` for authenticated users
+   - Billing enforcement happens through separate `isSubscriptionActive` flag
+   - Clear separation between app context and billing logic
 
 ---
 
-## 2. User Tiers Explained
+## 2. Dual-Gating System
+
+### 🏗️ Architecture Overview
+
+The system uses **two separate flags** for access control:
+
+| Layer | Flag | Source | Purpose | Changes For Auth Users? |
+|-------|------|--------|---------|------------------------|
+| **Layer 1** | `isPremium` | `!!user` | General app context, dev workflow | ❌ Never (always `true`) |
+| **Layer 2** | `isSubscriptionActive` | `public.subscribers` table | Feature access gating | ✅ Yes (based on billing) |
+
+### 🔑 Why Two Layers?
+
+1. **Layer 1 (`isPremium`):**
+   - Maintains "never downgrade authenticated users" rule
+   - Used for general app context and settings
+   - Simplifies dev workflow and debugging
+   - Prevents breaking existing systems
+
+2. **Layer 2 (`isSubscriptionActive`):**
+   - Authoritative billing status from database
+   - Controls actual feature access
+   - Enables hard paywall enforcement
+   - Separate from authentication state
+
+### 📊 Access Control Flow
+
+```typescript
+// Layer 1: General premium status (always true for authenticated)
+const isPremium = !!user; // Never changes
+
+// Layer 2: Authoritative billing status (from database)
+const { isPremium: isSubscriptionActive } = useCachedSubscriptionStatus(user.id);
+
+// Feature gating uses Layer 2
+if (!isSubscriptionActive) {
+  return <SubscriptionRequiredCard />;
+}
+```
+
+### 🎯 Use Cases by Layer
+
+**Use Layer 1 (`isPremium`) for:**
+- General UI context (guest vs authenticated flow)
+- Development flags and debugging
+- Analytics and logging
+- Non-billing UI decisions
+
+**Use Layer 2 (`isSubscriptionActive`) for:**
+- Feature access gating (New Story button, Library, Reading)
+- Navigation guards (blocking premium sections)
+- Auto-resume prevention
+- Any billing-related restrictions
+
+---
+
+## 3. User Tiers Explained
 
 ### 🆓 Guest Users (Unauthenticated)
 
@@ -97,11 +167,12 @@ if (!user) {
 
 ---
 
-### 💎 Premium Users (Authenticated)
+### 💎 Premium Users (Authenticated - Active Subscription)
 
 **Access Level:** Full Platform Access  
 **Authentication Status:** `user !== null`  
-**Premium Status:** `isPremium === true` (always)
+**Premium Status:** `isPremium === true` (always)  
+**Subscription Status:** `isSubscriptionActive === true`
 
 #### Features
 - ✅ Unlimited session time (dismissible timer)
@@ -112,11 +183,42 @@ if (!user) {
 - ✅ Story library with full image caching
 - ✅ Magic wand story re-writing
 - ✅ All future premium features automatically
+- ✅ Full navigation access (all sections)
+- ✅ Auto-resume enabled
 
 #### Business Purpose
 - Provide full value proposition
 - Encourage account creation
 - Build user engagement and loyalty
+
+---
+
+### 🔒 Authenticated Users (Inactive Subscription)
+
+**Access Level:** Hard Paywall  
+**Authentication Status:** `user !== null`  
+**Premium Status:** `isPremium === true` (never changes)  
+**Subscription Status:** `isSubscriptionActive === false`
+
+#### Blocked Features
+- ❌ "New Story" button (disabled)
+- ❌ Story library access (shows lock card)
+- ❌ Reading view (shows lock card)
+- ❌ Premium sections navigation (redirects to Stories)
+- ❌ Progress tracking
+- ❌ Parent dashboard
+- ❌ Profile settings
+- ❌ Auto-resume (disabled)
+
+#### Available Features
+- ✅ My Account section (for billing management)
+- ✅ Non-blocking subscription banner (persistent red alert)
+- ✅ "Manage Billing" button
+
+#### Business Purpose
+- Enforce subscription payment
+- Provide clear path to billing management
+- Prevent feature access without breaking app
 
 #### Technical Implementation
 ```typescript
@@ -126,18 +228,34 @@ if (user) {
 }
 
 // src/components/AuthenticatedApp.tsx
-const [isPremium, setIsPremium] = useState(true); // ALWAYS true on init
+const isPremium = !!user; // Layer 1: ALWAYS true
 
-// CRITICAL: Never downgrade authenticated users
-const checkSubscription = async () => {
-  // ... subscription logic for business analytics only
-  // NEVER: setIsPremium(false) for authenticated users
+// Layer 2: Authoritative billing status
+const { isPremium: isSubscriptionActive } = useCachedSubscriptionStatus(user.id);
+
+// Navigation guard
+const handleViewChange = (view: string) => {
+  const premiumViews = ['stories', 'library', 'reading', 'premium', 'progress', 'parent', 'profile'];
+  
+  if (!isSubscriptionActive && premiumViews.includes(view)) {
+    setCurrentView('stories'); // Block navigation
+    return;
+  }
+  
+  setCurrentView(view as AppView); // Allow account view
 };
+
+// Pass both flags to children
+<PremiumMyStoriesView
+  isPremium={isPremium}                    // Layer 1
+  isSubscriptionActive={isSubscriptionActive} // Layer 2
+  onSessionEnded={handleSessionEnded}
+/>
 ```
 
 ---
 
-## 3. Implementation Details
+## 4. Implementation Details
 
 ### 🔧 Component Architecture
 
@@ -271,7 +389,7 @@ if (user) {
 
 ---
 
-## 4. Payment System Role
+## 5. Payment System Role
 
 ### 💳 What Payment Functions DO
 
@@ -358,7 +476,7 @@ const checkSubscription = async () => {
 
 ---
 
-## 5. Migration from Old Model
+## 6. Migration from Old Model
 
 ### 🔄 What Changed
 
@@ -449,12 +567,14 @@ useEffect(() => {
 - 📘 [Master System Guide](./MASTER_SYSTEM_GUIDE.md) - Complete system architecture
 - 💻 [Development Guide](./DEVELOPMENT_GUIDE.md) - Technical implementation patterns
 - 📊 [Operations Guide](./OPERATIONS_GUIDE.md) - System status and monitoring
+- 🔒 [Subscription Enforcement](./SUBSCRIPTION_ENFORCEMENT.md) - **NEW:** Dual-gating and paywall implementation
 - 🏠 [Documentation Hub](./README.md) - Central navigation
 
 ### Implementation References
 - 📡 [API Reference](../supabase/functions/_shared/API_REFERENCE.md) - Payment functions (business operations)
 - 🔧 [appConfig.ts](../src/config/appConfig.ts) - Feature flags and settings
 - 👥 [User Flow Diagram](./MASTER_SYSTEM_GUIDE.md#user-flows) - Visual representation
+- 🔌 [useCachedSubscriptionStatus Hook](../src/hooks/useCachedSubscriptionStatus.ts) - Billing status source
 
 ### Testing & Verification
 - 🧪 [Development Guide - Testing](./DEVELOPMENT_GUIDE.md#testing--debugging)
@@ -466,11 +586,11 @@ useEffect(() => {
 
 ### For Developers
 - **Question:** "Should I check subscription status?"
-- **Answer:** Only for business analytics, NEVER for feature access
+- **Answer:** Use `isSubscriptionActive` for feature gating, `isPremium` for general context
 
 ### For Product
 - **Question:** "Can authenticated users lose premium access?"
-- **Answer:** No. Authentication = Premium, always.
+- **Answer:** `isPremium` stays true, but `isSubscriptionActive` enforces billing
 
 ### For Operations
 - **Question:** "Why do payment functions exist?"
@@ -478,13 +598,13 @@ useEffect(() => {
 
 ### For Support
 - **Question:** "User says they're logged in but can't access features"
-- **Answer:** Impossible with current model - investigate auth state, not subscription
+- **Answer:** Check `isSubscriptionActive` billing status, not auth state
 
 ---
 
 **Document Status:** ✅ Complete and Current  
-**Next Review:** 2025-10-06  
+**Next Review:** 2025-11-08  
 **Maintained By:** Engineering Team  
-**Version:** 1.0 (Initial Release)
+**Version:** 2.0 (Dual-Gating System)
 
 [↑ Back to Top](#authentication--premium-access-model)
