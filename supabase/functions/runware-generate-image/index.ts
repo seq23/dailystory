@@ -1849,18 +1849,18 @@ serve(async (req) => {
           // Continue to 2.5A cascade below
         }
 
-        // ✅ PHASE 1: Construct emergency CCS data OUTSIDE Tier 1 try/catch
-        // This guarantees culturalBundle/characterSeed exist for Tier 2.5A even if Tier 1 failed early
+        // ✅ PHASE 1: Construct emergency CCS data for template tiers
+        const userInfo = payload.userInfo;
+        const structuredAvatarData = payload.userInfo?.structuredAvatarData;
         if (!culturalBundle) {
           const skinToneForFallback = userInfo?.avatar?.skinTone || userInfo?.skinTone || structuredAvatarData?.skinTone || "medium";
           culturalBundle = {
             hair: emergencyHairFallback(skinToneForFallback),
             features: "friendly features",
           };
-          console.log(`🛡️ [${requestId}] Emergency culturalBundle created (Tier 1 failed early)`, {
-            sessionId,
+          console.log(`🛡️ [${requestId}] Emergency culturalBundle created`, {
+            sessionId: payload.sessionId,
             culturalBundle,
-            reason: "Tier 1 CCS method failed before culturalBundle could be populated",
           });
         }
 
@@ -1870,8 +1870,8 @@ serve(async (req) => {
             skin: "friendly features",
             eyes: "expressive eyes",
           };
-          console.log(`🛡️ [${requestId}] Emergency characterSeed created (Tier 1 failed early)`, {
-            sessionId,
+          console.log(`🛡️ [${requestId}] Emergency characterSeed created`, {
+            sessionId: payload.sessionId,
             characterSeed,
           });
         }
@@ -2490,9 +2490,9 @@ serve(async (req) => {
             }
           }
         }
-      // Close outer try (cascade block)
-      } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      } catch (cascadeError) {
+        // Close outer try (cascade block)
+        const errorMessage = cascadeError instanceof Error ? cascadeError.message : String(cascadeError);
 
       // Check if this is a validation error (client error, not server error)
       const isValidationError = errorMessage.includes("NO_STORY_CONTENT") || 
@@ -2544,7 +2544,7 @@ serve(async (req) => {
         `🔄 [RUNWARE_GEN] Fast boot retry ${attempt + 1}/${FAST_BOOT_SYNC.maxRetries} in ${delay}ms: ${errorMessage}`,
       );
       await new Promise((resolve) => setTimeout(resolve, delay));
-    }
+    } // end attempt catch
   } // Close for loop
 
   // Should never reach here, but fallback
@@ -2556,4 +2556,4 @@ serve(async (req) => {
     req,
     500
   );
-});
+}); // end serve handler

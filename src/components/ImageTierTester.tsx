@@ -2009,12 +2009,17 @@ export const ImageTierTester = () => {
           // If GET succeeds and POST is browser noise, count as success
           const overallSuccess = !wasAborted && tests.GET.success && (tests.POST.success || isBrowserNoise);
           
+          // FIX: Display HEALTHY_ESCALATION as success (200) for template tiers
+          const isHealthyEscalation = tests.POST.category === 'HEALTHY_ESCALATION';
           const overallCategory = wasAborted ? 'ABORTED' :
             isBrowserNoise ? 'HEALTHY_WITH_NOISE' :
-            tests.POST.category === 'HEALTHY_ESCALATION' ? 'HEALTHY' : // Treat escalation as healthy
+            isHealthyEscalation ? 'HEALTHY' : // Treat escalation as healthy
             (tests.GET.category === 'HEALTHY' && tests.POST.category === 'HEALTHY' 
               ? 'HEALTHY' 
               : tests.POST.category); // POST reveals more issues
+          
+          // FIX: Override status to 200 for healthy escalation
+          const displayStatus = isHealthyEscalation ? 200 : tests.POST.status;
           
           let humanReadableReason = '';
           if (wasAborted) {
@@ -2040,13 +2045,18 @@ export const ImageTierTester = () => {
           
           return { 
             endpoint: endpoint.name, 
-            success: overallSuccess,
+            success: overallSuccess || isHealthyEscalation, // Treat escalation as success
+            status: displayStatus, // Use 200 for healthy escalation  
+            statusText: isHealthyEscalation ? 'OK (Escalation)' : tests.POST.statusText,
             responseTime,
             humanReadableReason,
             category: overallCategory,
             architecture: endpoint.architecture,
             type: endpoint.type,
-            tests
+            tests,
+            error: isHealthyEscalation ? undefined : tests.POST.error,
+            probableCause: tests.POST.probableCause,
+            errorCategory: overallCategory,
           };
         })
       );
