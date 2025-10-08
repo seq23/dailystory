@@ -465,7 +465,8 @@ JSON RESPONSE:
     "humans": ["list of human characters mentioned in story (e.g., 'mom', 'friend', 'teacher')"],
     "pets": ["list of animals/pets mentioned in story (e.g., 'dog', 'cat', 'bird')"]
   },
-  "objects": ["key props and objects in scene (e.g., 'ball', 'tree', 'flowers', 'toys')"]
+  "objects": ["key props and objects in scene (e.g., 'ball', 'tree', 'flowers', 'toys')"],
+  "clothing": ["blue shirt", "red sneakers", "yellow hat"]
 }
 
 RULES:
@@ -498,6 +499,12 @@ RULES:
    - Example: Story says "The bird flies away" → Scene: "Sarah, age 6, with brown curly hair, watches from the garden as a small bird flies away into the blue sky"
    - Example: Story says "The toy car zooms across the floor" → Scene: "Jake, age 5, with short black hair, sits nearby on the floor smiling as his red toy car zooms across the wooden floor"
    - NEVER generate a scene without the main character visible - they must always be present for children's story continuity
+10. CLOTHING CONSISTENCY RULES:
+    - If PREVIOUS SCENE provides clothing data in the structured schema, the main character MUST wear those exact clothing items in the current scene
+    - Clothing colors and items must remain consistent across pages unless the story explicitly describes a clothing change (e.g., "she put on a jacket", "he changed into pajamas")
+    - Track all visible clothing items in the "clothing" field of the JSON response for continuity on the next page
+    - Examples of clothing items to track: "blue shirt", "red sneakers", "yellow dress", "green jacket", "striped pants", "pink hat"
+    - Document all clothing in the response even if not explicitly mentioned in current story text (carry forward from previous scene)
 
 PHASE 1 ENHANCEMENT - MAIN CHARACTER APPEARANCE:
 - If mainCharacterAppearance physical features are provided (e.g., 'brown eyes', 'curly hair'), incorporate them into the scene description
@@ -539,16 +546,20 @@ STORY TEXT:
 
 PREVIOUS SCENE (for visual consistency):
 ${previousPrimaryScene ? `
-Primary Scene: "${previousPrimaryScene}"
 ${previousVisualSchema ? `
-Additional Context:
-- Background: ${previousVisualSchema.backgroundColor}
-- Lighting: ${previousVisualSchema.lighting}
-- Setting: ${previousVisualSchema.setting}
-- Mood: ${previousVisualSchema.mood}
-- Objects: ${previousVisualSchema.objects?.join(', ') || 'none'}
-- Secondary Characters: ${JSON.stringify(previousVisualSchema.secondaryCharacters || {})}
-` : ''}
+STRUCTURED VISUAL CONSISTENCY DATA (use these exact details):
+- Main Character Clothing: ${JSON.stringify(previousVisualSchema.clothing || [])}
+- Objects in Scene: ${JSON.stringify(previousVisualSchema.objects || [])}
+- Secondary Characters: ${JSON.stringify(previousVisualSchema.secondaryCharacters || { humans: [], pets: [] })}
+- Setting: ${previousVisualSchema.setting || 'outdoor scene'}
+- Mood: ${previousVisualSchema.mood || 'cheerful'}
+- Lighting: ${previousVisualSchema.lighting || 'natural daylight'}
+- Background: ${previousVisualSchema.backgroundColor || 'bright and colorful'}
+
+CRITICAL: Maintain the same clothing, objects, and character appearances across pages. The main character must wear the same clothing items from the previous scene unless the story explicitly describes a change.
+
+Primary Scene (prose context): "${previousPrimaryScene}"
+` : `Primary Scene (prose only): "${previousPrimaryScene}"`}
 ` : 'None - this is the first scene'}
 
 Generate a comprehensive scene with complete visual elements including background, lighting, composition, setting, mood, style, secondary characters (categorized as humans vs pets), and key objects. Maintain character and setting continuity while showcasing the current page's action. CRITICAL: The primaryScene must include the complete CHARACTER APPEARANCE string (ethnicity, hair, and skin tone) exactly as provided, word-for-word, you may not simplify it but you can enhance and weave it into the primary scene naturally. Place ethnicity after age.`;

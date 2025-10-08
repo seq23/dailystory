@@ -45,6 +45,26 @@ EXAMPLE: For a French speaker named Sarah playing in a park, generate:
 Use cultural detail naturally without contradicting explicit story settings.` : '- Use universal child-friendly settings with warm, inviting atmospheres'}`;
 ```
 
+## Key Changes (2025-10-08)
+
+### Added Clothing Consistency System
+
+**Purpose:** Track clothing across pages to maintain visual continuity with explicit carry-forward rules.
+
+**Changes:**
+1. **JSON Schema Update (Line 469)**: Added `"clothing": ["blue shirt", "red sneakers", "yellow hat"]` field to response format
+2. **Rule 10 Added (Lines 502-506)**: CLOTHING CONSISTENCY RULES section with 5 specific guidelines
+3. **PREVIOUS SCENE Enhancement (Lines 540-556)**: Clothing data now appears FIRST in structured schema (highest priority)
+4. **Carry-Forward Rule**: AI must document all clothing in response even if not mentioned in current story text
+
+**Impact:**
+- Clothing colors/items persist across pages (e.g., "blue shirt" stays "blue shirt")
+- Story-driven clothing changes supported (e.g., "put on a jacket")
+- AI carries forward clothing from previous scenes automatically
+- Structured clothing data prioritized over prose inference
+
+---
+
 ## Key Changes (2025-10-05)
 
 ### Updated primaryScene Template and CRITICAL Instruction

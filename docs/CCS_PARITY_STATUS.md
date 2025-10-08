@@ -4,6 +4,19 @@
 **Issue:** Clothing persistence bug (clothing not appearing on page 2+)  
 **Root Cause:** Inline version missing 15+ critical methods
 
+## 🚫 Deprecated Files
+
+### CharacterConsistencyService.ts
+**File:** `supabase/functions/_shared/CharacterConsistencyService.ts`  
+**Status:** ❌ DEPRECATED FOR RUNTIME USE (Reference only)  
+**Deprecated:** 2025-10-08  
+**Reason:** Deno edge functions cannot import .ts files across function boundaries  
+**Replacement:** Use `.js` or `.mjs` versions for runtime imports
+
+**Note:** This file is kept as the TypeScript source for generating production-ready `.js` and `.mjs` bundles. DO NOT import it in edge functions.
+
+---
+
 ## 📊 Parity Status
 
 ### ✅ Phase 1: COMPLETE - Inline Version (TRUE 1:1 PARITY)
