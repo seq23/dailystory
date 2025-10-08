@@ -1854,6 +1854,17 @@ export const ImageTierTester = () => {
                 status = 546;
               } else if (errorStatus === 503) {
                 // Template-AB/CD return 503 with NO_PRECOMPUTED_CCS = correct escalation (not boot failure)
+                // DEBUG: Log response structure to understand why classification fails on 503
+                console.log('[TEST_DEBUG] 503 Response Structure:', {
+                  endpointName: endpoint.name,
+                  hasError: !!postResponse.error,
+                  errorMessage: postResponse.error?.message,
+                  hasData: !!postResponse.data,
+                  dataKeys: postResponse.data ? Object.keys(postResponse.data) : 'undefined',
+                  dataError: postResponse.data?.error,
+                  dataEscalation: postResponse.data?.escalation,
+                  fullDataSample: (() => { try { return JSON.stringify(postResponse.data).substring(0, 300) } catch { return 'unserializable' } })()
+                });
                 const errorBody = postResponse.error?.message || postResponse.error?.error || '';
                 const dataError = postResponse.data?.error || '';
                 const dataEscalation = postResponse.data?.escalation || '';
