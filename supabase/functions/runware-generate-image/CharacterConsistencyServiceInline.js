@@ -396,7 +396,7 @@ export class CharacterConsistencyService {
 
     const startTime = performance.now();
     try {
-      const vocabularyModule = await import('./tier25Vocabulary.js');
+      const vocabularyModule = await import('../_shared/tier25Vocabulary.js');
       const { TIER_25_UNIFIED_VOCABULARY_EXTENDED } = vocabularyModule;
       
       if (!TIER_25_UNIFIED_VOCABULARY_EXTENDED) {
@@ -445,7 +445,7 @@ export class CharacterConsistencyService {
 
     const startTime = performance.now();
     try {
-      const vocabularyModule = await import('./tier25Vocabulary.js');
+      const vocabularyModule = await import('../_shared/tier25Vocabulary.js');
       if (!vocabularyModule || typeof vocabularyModule !== 'object') {
         throw new Error('Invalid vocabulary module structure');
       }
