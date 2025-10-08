@@ -1,10 +1,7 @@
-// 🚀 DEPLOYMENT MARKER: v2025-01-08-CCS-BOOT-FIX
+// 🚀 DEPLOYMENT MARKER: v2025-01-08-TIER-2.5A-PURE-PRECOMPUTED-CCS
 // Last deployed: 2025-01-08
-// Changes: CCS boot coordination fixes (inline orchestrator, _shared fallback, bundler hints)
+// Changes: Tier 2.5A now pure precomputedCCS consumer, escalates to 2.5B if missing
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-// ✅ BUNDLER HINT: Force Deno Deploy to include _shared/CharacterConsistencyService.js in bundle
-import { characterConsistencyService as _ccsHint } from "../_shared/CharacterConsistencyService.js";
 
 // ========== INLINE CORS (Zero Dependencies) ==========
 function generateEchoCorsHeaders(req: Request): Record<string, string> {
@@ -408,65 +405,6 @@ function extractSimpleScene(storyText: string): string {
   const simpleScene = sceneComponents.join(', ').replace(/,\s*,/g, ',').trim();
   console.log(`✅ Simple scene extracted: "${simpleScene}"`);
   return simpleScene;
-}
-
-// ========== CCS BOOT VERIFICATION (GLOBAL SCOPE) ==========
-const ccsBootStatus = { 
-  loaded: false, 
-  tier1: false,
-  tier25: false,
-  directMode: false,
-  error: null as string | null 
-};
-
-async function verifyCCSBoot(): Promise<boolean> {
-  try {
-    console.log('🔍 [BOOT] Tier 2.5 (runware-template-ab): Starting CCS boot verification');
-    
-    // Try _shared first (bundler hint ensures this is included)
-    let ccsModule;
-    try {
-      ccsModule = await import("../_shared/CharacterConsistencyService.js");
-      console.log('✅ [BOOT] Tier 2.5 (runware-template-ab): _shared loaded');
-    } catch (sharedError) {
-      console.warn('⚠️ [BOOT] _shared import failed, trying _vendor:', sharedError);
-      ccsModule = await import("../_vendor/CharacterConsistencyService.mjs");
-      console.log('✅ [BOOT] Tier 2.5 (runware-template-ab): _vendor loaded (fallback)');
-    }
-    
-    const ccs = ccsModule.characterConsistencyService;
-    
-    // Test key methods exist and are callable
-    const requiredMethods = ['getCulturalEnhancements', 'getEnhancedCharacterSeed', 'getBasicCharacterSeed'];
-    const missingMethods = requiredMethods.filter(method => typeof ccs?.[method] !== 'function');
-    
-    if (missingMethods.length > 0) {
-      throw new Error(`CCS missing methods: ${missingMethods.join(', ')}`);
-    }
-    
-    // Quick validation test
-    const testResult = await ccs.getCulturalEnhancements({ name: 'Test', age: 8 }, 'test-session', 'TestChar');
-    
-    if (!testResult || !testResult.features) {
-      throw new Error('CCS method returned invalid result');
-    }
-    
-    // Mark success
-    ccsBootStatus.loaded = true;
-    ccsBootStatus.tier25 = true;
-    ccsBootStatus.error = null;
-    
-    console.log('✅ [BOOT] Tier 2.5 (runware-template-ab): CCS loaded and verified successfully');
-    return true;
-    
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    ccsBootStatus.loaded = false;
-    ccsBootStatus.tier25 = false;
-    ccsBootStatus.error = errorMessage;
-    console.error('❌ [BOOT] Tier 2.5 (runware-template-ab): CCS boot failed -', errorMessage);
-    return false;
-  }
 }
 
 // ========== INLINED: ProviderGate (Concurrency + Circuit Breaker) ==========
@@ -1188,162 +1126,22 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
         });
         
       } else {
-        // LEGACY PATH: No pre-computed data, attempt CCS import (backwards compatibility)
-        console.log(`⚠️ No precomputed CCS data, attempting legacy CCS import path`);
-        
-        try {
-          let ccsModule;
-          try {
-            ccsModule = await import("../_shared/CharacterConsistencyService.js");
-            console.log(`✅ Tier 2.5A: _shared service loaded (legacy fallback)`);
-          } catch (sharedError) {
-            ccsModule = await import("../_vendor/CharacterConsistencyService.mjs");
-            console.log(`✅ Tier 2.5A: _vendor service loaded (last resort)`);
+        // NO PRECOMPUTED CCS: Orchestrator failed, escalate immediately to Tier 2.5B
+        console.error(`❌ Tier 2.5A: No precomputed CCS from orchestrator, escalating to Tier 2.5B`);
+        return createResponse({
+          success: false,
+          error: 'NO_PRECOMPUTED_CCS',
+          escalation: 'NEXT_TIER',
+          tier: 'tier-2.5A',
+          service: SERVICE_NAME,
+          message: 'Tier 2.5A requires precomputed CCS from orchestrator. Escalating to Tier 2.5B.',
+          details: {
+            reason: 'orchestrator_ccs_failure',
+            expectedData: 'precomputedCCS.culturalBundle',
+            receivedKeys: Object.keys(payload),
+            recommendation: 'Check orchestrator CCS inline computation'
           }
-          const ccs = ccsModule.characterConsistencyService;
-          
-          const characterName = character;
-          const bundle = await ccs.getCulturalEnhancements(userInfo, sessionId, characterName);
-          const semanticScene = extractSemanticScene(storyText, { userInfo, pageText: storyText });
-          sceneExtracted = !!semanticScene;
-          
-          positivePrompt = `Narrative: ${storyText}.
-Character Description: ${character} ${age}, ${ethnicityDesc}, ${bundle.hair || hair}, ${bundle.features || features}.
-Action: ${semanticScene}.
-Context: diverse community setting.
-Brand Suffix: ${styleFramework.frameworkPrompt}.`;
-          
-          console.log(`✅ Tier 2.5A: Using legacy CCS import path with semantic scene: "${semanticScene}"`);
-          
-          // Detect REAL vs TEST mode
-          const isRealMode = payload.test !== true && payload.dryRun !== true;
-          let imageURL: string | undefined;
-          let returnedSeed: number | null = null;
-          
-          if (isRealMode) {
-            // REAL mode: Generate image with Runware API
-            try {
-              console.log(`🎨 [${requestId}] REAL Mode: Generating image for Tier 2.5A (legacy path)`);
-              const runwareResult = await callRunwareAPI(positivePrompt, negativePrompt, { sessionId, pageNumber, model: 'runware:100@1' });
-              imageURL = typeof runwareResult === 'string' ? runwareResult : runwareResult?.imageURL; // ✅ Handle object response
-              returnedSeed = typeof runwareResult === 'object' ? runwareResult?.seed : null;
-              console.log(`✅ [${requestId}] Image generated successfully:`, { imageURL, seed: returnedSeed });
-            } catch (imageError: any) {
-              console.error(`❌ [${requestId}] Image generation failed:`, imageError.message);
-              return createResponse({
-                success: false,
-                error: `Image generation failed: ${imageError.message}`,
-                tier: 'tier-2.5A',
-                service: SERVICE_NAME,
-                positivePrompt,
-                negativePrompt
-              }, 500);
-            }
-          } else {
-            console.log(`🧪 [${requestId}] TEST/DryRun Mode: Skipping image generation for Tier 2.5A (legacy path)`);
-          }
-          
-          return createResponse({
-            success: true,
-            tier: `tier-2.5A`,
-            service: SERVICE_NAME,
-            positivePrompt,
-            negativePrompt,
-            ...(imageURL && { imageURL, seed: returnedSeed || null }), // ✅ Add seed when imageURL present
-            styleFrameworkUsed: styleFramework.name,
-            templateComplexity: 'A',
-            precomputedCCSUsed: false,
-            ccsImportSource: ccsModule ? '_shared' : '_vendor',
-            ccsMethodStatus: {
-              characterSeed: 'local_import',
-              culturalBundle: 'local_import_success',
-              coloredObjects: 'unavailable',
-              secondaryCharacters: 'unavailable',
-              mainCharacterAppearance: 'unavailable'
-            },
-            ccsFallbacksActive: [],
-            metadata: {
-              ccsBootStatus: {
-                loaded: true,
-                tier1: false,
-                tier25: true,
-                directMode: false
-              },
-              sceneExtracted: sceneExtracted,
-            }
-          });
-          
-        } catch (ccsError: any) {
-          // Final fallback to Mode B inline logic
-          console.warn(`⚠️ CCS failed, escalating to Mode B inline logic:`, ccsError.message);
-          const semanticScene = extractSemanticScene(storyText, { userInfo, pageText: storyText });
-          sceneExtracted = !!semanticScene;
-          
-          positivePrompt = `Narrative: ${storyText}.
-Subject: ${character}, ${age}, ${ethnicityDesc}, ${hair}, ${features}.
-Action: ${semanticScene}.
-Context: diverse community setting.
-Brand Suffix: ${styleFramework.frameworkPrompt}.`;
-          console.log(`✅ Tier 2.5A→B: Escalated to inline fallback with semantic scene: "${semanticScene}"`);
-          
-          // Detect REAL vs TEST mode
-          const isRealMode = payload.test !== true && payload.dryRun !== true;
-          let imageURL: string | undefined;
-          let returnedSeed: number | null = null;
-          
-          if (isRealMode) {
-            // REAL mode: Generate image with Runware API
-            try {
-              console.log(`🎨 [${requestId}] REAL Mode: Generating image for Tier 2.5A (inline fallback)`);
-              const runwareResult = await callRunwareAPI(positivePrompt, negativePrompt, { sessionId, pageNumber, model: 'runware:100@1' });
-              imageURL = typeof runwareResult === 'string' ? runwareResult : runwareResult?.imageURL; // ✅ Handle object response
-              returnedSeed = typeof runwareResult === 'object' ? runwareResult?.seed : null;
-              console.log(`✅ [${requestId}] Image generated successfully:`, { imageURL, seed: returnedSeed });
-            } catch (imageError: any) {
-              console.error(`❌ [${requestId}] Image generation failed:`, imageError.message);
-              return createResponse({
-                success: false,
-                error: `Image generation failed: ${imageError.message}`,
-                tier: 'tier-2.5A',
-                service: SERVICE_NAME,
-                positivePrompt,
-                negativePrompt
-              }, 500);
-            }
-          } else {
-            console.log(`🧪 [${requestId}] TEST/DryRun Mode: Skipping image generation for Tier 2.5A (inline fallback)`);
-          }
-          
-          return createResponse({
-            success: true,
-            tier: `tier-2.5A`,
-            service: SERVICE_NAME,
-            positivePrompt,
-            negativePrompt,
-            ...(imageURL && { imageURL, seed: returnedSeed || null }), // ✅ Add seed when imageURL present
-            styleFrameworkUsed: styleFramework.name,
-            templateComplexity: 'A',
-            precomputedCCSUsed: false,
-            ccsImportSource: 'unavailable',
-            ccsMethodStatus: {
-              characterSeed: 'inline_fallback',
-              culturalBundle: 'inline_fallback',
-              coloredObjects: 'inline_fallback',
-              secondaryCharacters: 'inline_fallback',
-              mainCharacterAppearance: 'inline_fallback'
-            },
-            ccsFallbacksActive: ['Mode B inline logic'],
-            metadata: {
-              ccsBootStatus: {
-                loaded: false,
-                tier1: false,
-                tier25: false,
-                directMode: false
-              },
-              sceneExtracted: sceneExtracted,
-            }
-          });
-        }
+        }, 503);
       }
     } else {
       console.log(`🚀 Processing Tier 2.5B: Lightweight template with cultural intelligence`);
@@ -1473,11 +1271,6 @@ async function loadHandler(): Promise<HandlerFn | null> {
 // ========== MAIN SERVE HANDLER ==========
 serve(async (req) => {
   try {
-    // Trigger CCS boot verification once (non-blocking)
-    if (ccsBootStatus.loaded === false && ccsBootStatus.error === null) {
-      verifyCCSBoot().catch(err => console.error('CCS boot verification failed:', err));
-    }
-    
     const url = new URL(req.url);
 
     // OPTIONS → Dynamic CORS preflight with 24hr cache
