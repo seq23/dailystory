@@ -2547,7 +2547,8 @@ serve(async (req) => {
       await new Promise((resolve) => setTimeout(resolve, delay));
     } // end cascadeError catch
   } // end tier1Error catch
-} // Close for loop
+  } // end outer try from line 1151
+} // end for loop
 
   // Should never reach here, but fallback
   return corsResponse(
