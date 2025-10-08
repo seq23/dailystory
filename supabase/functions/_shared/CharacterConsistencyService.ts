@@ -3,11 +3,13 @@
  * 
  * ⚠️ CRITICAL: THIS FILE IS NOT USED FOR IMAGE GENERATION
  * ⚠️ CRITICAL: THIS FILE WILL BE KEPT AND NEVER DELETED
+ * ⚠️ OUT OF SYNC: Run `node scripts/js-to-ts-conversion.js` to update
  * 
  * Purpose: Development reference only - provides TypeScript type hints
  * Production: ALL image generation uses CharacterConsistencyService.js
- * Status: Kept in sync with .js for IDE support only
+ * Status: OUT OF SYNC - Gold standard is 2473 lines, this is 1556 lines
  * Last Sync: 2025-10-05 (Colored Object Session Persistence)
+ * Required Update: 2025-10-08 (Missing 15+ methods including clothing detection)
  * 
  * 🚫 DO NOT USE THIS FILE IN PRODUCTION CODE
  * 🚫 DO NOT IMPORT THIS FILE IN EDGE FUNCTIONS
