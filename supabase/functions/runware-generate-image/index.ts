@@ -762,8 +762,11 @@ async function processInlinedTier1(
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error(`❌ [${requestId}] [TIER_1] getCharacterAppearanceFromStory: FAILED`, { sessionId, error: errorMessage });
-    // Graceful fallback - empty string
+    console.error(`❌ [${requestId}] [TIER_1] getCharacterAppearanceFromStory: FAILED - core CCS method failure`, { sessionId, error: errorMessage });
+    if (forceCompleteTier1) {
+      throw new Error('CCS_METHOD_FAILED: getCharacterAppearanceFromStory failed in forced Tier 1 mode');
+    }
+    throw new Error('CHARACTERSERVICE_UNAVAILABLE_TRY_DIRECT_MODE: getCharacterAppearanceFromStory failed');
   }
 
   // Get never-ending story setting (CCS CORE METHOD)
@@ -776,8 +779,11 @@ async function processInlinedTier1(
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error(`❌ [${requestId}] [TIER_1] getSessionSetting: FAILED`, { sessionId, error: errorMessage });
-    // Graceful fallback - empty string
+    console.error(`❌ [${requestId}] [TIER_1] getSessionSetting: FAILED - core CCS method failure`, { sessionId, error: errorMessage });
+    if (forceCompleteTier1) {
+      throw new Error('CCS_METHOD_FAILED: getSessionSetting failed in forced Tier 1 mode');
+    }
+    throw new Error('CHARACTERSERVICE_UNAVAILABLE_TRY_DIRECT_MODE: getSessionSetting failed');
   }
 
   // Get cultural enhancements using the service

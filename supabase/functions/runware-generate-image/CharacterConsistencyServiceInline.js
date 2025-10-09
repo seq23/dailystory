@@ -1723,8 +1723,8 @@ export class CharacterConsistencyService {
         });
 
       if (error) {
-        console.error('❌ Database save error:', error);
-        throw new Error(`CharacterConsistencyService.saveCharacterToDatabase failed: ${safeErrorMessage(error)}`);
+        console.error(`❌ [CCS] Database save error (continuing with in-memory cache):`, error.message);
+        return false; // Save failed, but data is still in smart cache
       }
       
       this.storyCache.markClean(`${sessionId}_${characterKey}`);
@@ -1758,8 +1758,8 @@ export class CharacterConsistencyService {
         .single();
 
       if (error && error.code !== 'PGRST116') {
-        console.error('❌ Database fetch error:', error);
-        throw new Error(`CharacterConsistencyService.getCharacterFromDatabase failed: ${safeErrorMessage(error)}`);
+        console.error(`❌ [CCS] Database fetch error (gracefully degrading to fresh generation):`, error.message);
+        return null; // Let caller generate fresh seed
       }
       
       if (data?.character_data) {
@@ -1785,54 +1785,9 @@ export class CharacterConsistencyService {
    * Pure computation with no database dependencies
    * Used for graceful degradation when enhanced seed generation fails
    */
-  async getBasicCharacterSeed(avatarIdentity, sessionId) {
-    const characterName = avatarIdentity?.name || 'child';
-    const avatarType = avatarIdentity?.type || 'child';
-    const skinTone = avatarIdentity?.skinTone || 'medium';
-    const gender = avatarType?.includes('girl') ? 'girls' : 'boys';
-    
-    // Generate seed using simple hash
-    const characterSpecificSeed = `${sessionId}_${characterName}_${skinTone}`;
-    const baseSeed = this.generateStableSeed(characterSpecificSeed, characterName);
-    
-    // Get hair from full inlined arrays (no external dependencies)
-    let selectedCulturalHair = null;
-    let selectedCulturalFeatures = null;
-    
-    const normalizedSkinTone = skinTone.toLowerCase();
-    
-    // For dark skin tones, use African American cultural arrays
-    if (normalizedSkinTone === 'dark' || normalizedSkinTone === 'darker') {
-      const hairArray = CharacterConsistencyService.AFRICAN_AMERICAN_HAIR_INLINE[gender];
-      selectedCulturalHair = CharacterConsistencyService.seededPick(hairArray, sessionId);
-      selectedCulturalFeatures = CharacterConsistencyService.seededPick(
-        CharacterConsistencyService.AFRICAN_AMERICAN_FACIAL_FEATURES_INLINE, 
-        sessionId
-      );
-    } else {
-      // For all other skin tones, use HAIR_BY_SKIN_TONE_INLINE
-      const hairArray = CharacterConsistencyService.HAIR_BY_SKIN_TONE_INLINE[normalizedSkinTone] || 
-                        CharacterConsistencyService.HAIR_BY_SKIN_TONE_INLINE.medium;
-      selectedCulturalHair = CharacterConsistencyService.seededPick(hairArray, sessionId);
-      
-      // Get appropriate skin feature description
-      selectedCulturalFeatures = CharacterConsistencyService.getSkinFeatures(skinTone, sessionId);
-    }
-    
-    return {
-      baseSeed,
-      characterName,
-      avatarType,
-      skinTone,
-      consistentClothingStyle: 'casual', // Default
-      selectedCulturalHair,
-      selectedCulturalFeatures,
-      characterSpecificSeed,
-      physicalTraits: {},
-      characterDescription: `${characterName} is a ${avatarType} age 6-8 wearing casual clothing`,
-      generatedAt: Date.now()
-    };
-  }
+  // METHOD REMOVED: getBasicCharacterSeed() - Overengineered fallback removed (2025-10-09)
+  // Rationale: Database errors should degrade gracefully to fresh generation with inline vocabulary,
+  // not to an incomplete "basic" seed with hardcoded clothing. CCS failures should escalate to Direct Mode.
 
   /**
    * Get character from cache only - SIMPLE DATABASE LOOKUP
@@ -1874,10 +1829,17 @@ export class CharacterConsistencyService {
     const characterName = avatarIdentity.name || 'child';
     const cacheKey = `${sessionId}_${characterName}`;
     
-    // Check cache first
-    const cached = await this.getCharacterFromDatabase(sessionId, cacheKey);
-    if (cached) {
-      return cached;
+    // Check cache first with graceful database error handling
+    try {
+      const cached = await this.getCharacterFromDatabase(sessionId, cacheKey);
+      if (cached) {
+        this.smartCache.set(cacheKey, cached);
+        console.log(`✅ [CCS] Using cached character data for ${characterName}`);
+        return cached;
+      }
+    } catch (dbError) {
+      console.warn(`⚠️ [CCS] Database fetch failed for ${characterName}, generating fresh seed:`, dbError.message);
+      // Continue to generation below with inline vocabulary
     }
     
     // Generate new character seed with full orchestration
@@ -1900,8 +1862,16 @@ export class CharacterConsistencyService {
         generatedAt: Date.now()
       };
       
-      await this.saveCharacterToDatabase(sessionId, cacheKey, characterData);
+      // Save to database with graceful error handling
+      try {
+        await this.saveCharacterToDatabase(sessionId, cacheKey, characterData);
+        console.log(`✅ [CCS] Saved character data for ${characterName} to database`);
+      } catch (saveError) {
+        console.warn(`⚠️ [CCS] Database save failed for ${characterName}, continuing with in-memory cache:`, saveError.message);
+        // Character data is still in smart cache, continue anyway
+      }
       
+      this.smartCache.set(cacheKey, characterData);
       return characterData;
     } catch (error) {
       console.error('❌ Enhanced character seed generation failed:', error);
@@ -2035,12 +2005,17 @@ export class CharacterConsistencyService {
   async getCulturalEnhancements(userInfo, sessionId, characterName = 'child') {
     const cacheKey = `${sessionId}_${characterName}`;
     
-    let characterData = await this.getCharacterFromDatabase(sessionId, cacheKey);
+    // Fetch character data with graceful database error handling
+    let characterData = null;
+    try {
+      characterData = await this.getCharacterFromDatabase(sessionId, cacheKey);
+    } catch (dbError) {
+      console.warn(`⚠️ [CCS] Database fetch failed in getCulturalEnhancements:`, dbError.message);
+    }
     
     if (!characterData) {
-      const avatarIdentity = userInfo?.avatarIdentity || userInfo?.avatar || { name: characterName };
-      // Use basic seed for fallback (graceful degradation)
-      characterData = await this.getBasicCharacterSeed(avatarIdentity, sessionId);
+      // No fallback - if enhanced seed unavailable, fail fast and escalate
+      throw new Error(`CCS_CULTURAL_ENHANCEMENTS_FAILED: No character data available for ${characterName}`);
     }
     
     if (characterData.selectedCulturalHair && characterData.selectedCulturalFeatures) {
@@ -2059,8 +2034,13 @@ export class CharacterConsistencyService {
     characterData.selectedCulturalHair = culturalBundle.hair;
     characterData.selectedCulturalFeatures = culturalBundle.features;
     
-    // Persist to database (cacheKey already declared at line 1482)
-    await this.saveCharacterToDatabase(sessionId, cacheKey, characterData);
+    // Persist to database with graceful error handling
+    try {
+      await this.saveCharacterToDatabase(sessionId, cacheKey, characterData);
+      console.log(`✅ [CCS] Saved cultural enhancements for ${characterName}`);
+    } catch (saveError) {
+      console.warn(`⚠️ [CCS] Database save failed for ${characterName}, continuing with in-memory cache:`, saveError.message);
+    }
     
     console.log(`🎨 Generated full cultural enhancements for ${characterName} (seed: ${characterData.seed || 'generated'}):`, culturalBundle);
     return culturalBundle;
