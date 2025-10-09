@@ -1534,7 +1534,24 @@ const executeDirectMode: TierFn = async (ctx) => {
           console.log(`✅ [${ctx.requestId}] [CCS_RETRY] getEnhancedCharacterSeed: SUCCESS (fresh generation)`);
         } catch (seedError) {
           console.error(`❌ [${ctx.requestId}] [CCS_RETRY] getEnhancedCharacterSeed: FAILED`, seedError);
-          throw new Error("CCS_RETRY_CHARACTER_SEED_FAILED");
+          
+          // ✅ NEW: Synthesize minimal characterSeed from available inline data
+          console.log(`🔧 [${ctx.requestId}] [CCS_RETRY] Synthesizing minimal characterSeed from inline data`);
+          
+          const skinTone = avatarIdentity.skinTone || "medium";
+          const hairColor = emergencyHairFallback(skinTone);
+          const characterDescription = `${avatarIdentity.name || "the child"}, ${avatarIdentity.type || "child"}`;
+          
+          characterSeed = {
+            selectedCulturalHair: hairColor,
+            selectedCulturalFeatures: "",
+            physicalTraits: { hair: hairColor, skinFeatures: "" },
+            characterDescription,
+            seed: `synthetic_${sessionId}_${Date.now()}`,
+            source: 'synthetic_ccs_retry_fallback'
+          };
+          
+          console.log(`✅ [${ctx.requestId}] [CCS_RETRY] Synthetic characterSeed created`, { hairColor, characterDescription, source: 'synthetic_ccs_retry_fallback' });
         }
       }
       
@@ -1598,11 +1615,18 @@ const executeDirectMode: TierFn = async (ctx) => {
       
       console.log(`✅ [CCS_RETRY] SUCCESS - ctx.tier1 populated`, {
         hasCharacterSeed: !!ctx.tier1.characterSeed,
+        characterSeedSource: ctx.tier1.characterSeed?.source || 'unknown',
         hasCulturalBundle: !!ctx.tier1.culturalBundle,
         hasHair: !!ctx.tier1.culturalBundle?.hair,
         hasFeatures: !!ctx.tier1.culturalBundle?.features,
         hair: ctx.tier1.culturalBundle?.hair,
         features: ctx.tier1.culturalBundle?.features,
+      });
+      
+      console.log(`📊 [${ctx.requestId}] [CCS_RETRY] CharacterSeed source tracking`, {
+        seedMethod: ctx.tier1.characterSeed?.source === 'synthetic_ccs_retry_fallback' ? 'SYNTHETIC' : 
+                    batchCCSData?.characterSeed ? 'CACHED' : 'FRESH_GENERATED',
+        source: ctx.tier1.characterSeed?.source || 'unknown'
       });
       
       ctx.tierLogger.success("CCS_RETRY", { ccsRetry: true, path: "afterDirectMode" });

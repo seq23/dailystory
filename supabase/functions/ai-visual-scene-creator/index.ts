@@ -748,10 +748,12 @@ Generate a comprehensive scene... The primaryScene must include the complete CHA
 
   function parseVisual(content: string): Promise<{ 
     schema: any | null; 
-    parseMethod: 'json' | 'regex' | 'none';
+    parseMethod: 'json' | 'regex' | 'prose' | 'none';
     extractedPrimaryScene?: string;
     jsonParseError?: string;
   }> {
+    console.log(`🔍 [PARSE_DEBUG] OpenAI response preview (first 180 chars): "${content.substring(0, 180)}..."`);
+    
     return safeJsonParse(content).then((json) => {
       if (json && json.primaryScene) {
         const len = json.primaryScene.length;
@@ -777,10 +779,29 @@ Generate a comprehensive scene... The primaryScene must include the complete CHA
         };
       }
       
+      // ✅ NEW: If OpenAI returned prose without JSON structure, use entire response as primaryScene
+      const trimmedContent = content.trim();
+      if (trimmedContent.length > 50) {
+        console.log(`🔧 [PROSE_FALLBACK] Using entire OpenAI response as primaryScene (${trimmedContent.length} chars)`);
+        if (trimmedContent.length < 200) {
+          console.warn(`⚠️ [PROSE_WARNING] primaryScene length (${trimmedContent.length} chars) is below recommended 200 characters. Using anyway.`);
+        }
+        return {
+          schema: null,
+          parseMethod: 'prose' as const,
+          extractedPrimaryScene: trimmedContent,
+          jsonParseError: 'No JSON structure, using full prose as primaryScene'
+        };
+      }
+      
+      console.error(`❌ [PARSE_REJECTION] OpenAI content too short or empty`, {
+        contentLength: content.length,
+        contentPreview: content.substring(0, 100)
+      });
       return { 
         schema: null, 
         parseMethod: 'none' as const,
-        jsonParseError: 'No valid JSON and no regex match for primaryScene'
+        jsonParseError: `Content too short (${content.length} chars) or empty - no primaryScene extracted`
       };
     }).catch((err) => {
       return {
