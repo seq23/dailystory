@@ -1841,7 +1841,7 @@ async function runTierCascade(
   ctx: TierContext
 ): Promise<TierResult> {
   
-  const trace: Array<{ tier: string; ms: number; ok: boolean; code?: string }> = [];
+  const trace: Array<{ tier: string; ms: number; ok: boolean; code?: string; details?: any }> = [];
   
   for (const { name, fn, precondition } of tiers) {
     // Skip if precondition fails (e.g., T25A needs culturalBundle)
