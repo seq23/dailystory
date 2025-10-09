@@ -950,9 +950,9 @@ Generate a comprehensive scene... The primaryScene must include the complete CHA
         parseMethod,
         attemptsUsed,
         encounteredBackoff,
-        ...(parseMethod === 'regex' && {
+        ...((parseMethod === 'regex' || parseMethod === 'prose') && {
           rawResponse: lastOpenAIResponse?.content?.substring(0, 500) || null,
-          parseError: 'schema_not_valid_json',
+          parseError: parseMethod === 'prose' ? 'prose_without_json_structure' : 'schema_not_valid_json',
           parseErrorDetails: result.jsonParseError || null
         })
       };
