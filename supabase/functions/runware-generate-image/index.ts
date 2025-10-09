@@ -1169,6 +1169,7 @@ async function processInlinedTier1(
     sessionSetting, // ← NEW: Indoor/outdoor context
     mainCharacterAppearance, // ← CRITICAL: Pass main character appearance to cascade
     structuredAvatarData, // ← CRITICAL: Pass 73-variation session-seeded hair to Direct Mode
+    latestClothing, // ← NEW: Most recent clothing for consistency
     templateStructure: "COMPLETE_TIER_1",
   };
 }
@@ -1257,6 +1258,7 @@ const executeTier1: TierFn = async (ctx) => {
       mainCharacterAppearance: tier1Result.mainCharacterAppearance || {},
       structuredAvatarData: tier1Result.structuredAvatarData,
       sessionSetting: tier1Result.sessionSetting || ctx.payload.sessionSetting, // ✅ Capture session setting
+      latestClothing: tier1Result.latestClothing || null, // ✅ NEW: Capture latest clothing
     };
     
     // 4. Validate scene quality
@@ -1460,8 +1462,8 @@ const executeDirectMode: TierFn = async (ctx) => {
     const errorMessage = error instanceof Error ? error.message : String(error);
     ctx.tierLogger.failure("DIRECT_MODE", { error: errorMessage });
     
-    // ============= CCS RETRY: Attempt full CCS bundle after Direct Mode failure =============
-    console.log(`⚡ [CCS_RETRY] Direct Mode failed, attempting CCS retry to populate ctx.tier1 for T2.5A`);
+    // ============= CCS RETRY: Attempt lightweight batch CCS fetch after Direct Mode failure =============
+    console.log(`⚡ [CCS_RETRY] Direct Mode failed, attempting lightweight batch CCS fetch to populate ctx.tier1 for T2.5A`);
     
     try {
       // Import CCS service (same as Tier 1)
@@ -1481,67 +1483,114 @@ const executeDirectMode: TierFn = async (ctx) => {
         skinTone: avatarSkinTone,
       };
       
-      // 1. getStructuredAvatarData (with hairColor repair)
-      let structuredAvatarData = await characterConsistencyService.getStructuredAvatarData(sessionId, userInfo);
-      if (!structuredAvatarData?.hairColor || structuredAvatarData.hairColor === "natural hair") {
-        const fallbackSkinTone = structuredAvatarData?.skinTone || avatarSkinTone;
+      // ============= BATCH FETCH ALL CCS DATA (1 DB CALL) =============
+      let batchCCSData;
+      try {
+        batchCCSData = await characterConsistencyService.batchFetchCCSData(sessionId, characterName);
+        console.log(`✅ [${ctx.requestId}] [CCS_RETRY] batchFetchCCSData: SUCCESS`, {
+          sessionId,
+          hasCharacterSeed: !!batchCCSData.characterSeed,
+          visualDetailsCount: batchCCSData.visualDetails.length,
+          coloredObjectsCount: batchCCSData.coloredObjects.length,
+          latestClothing: batchCCSData.latestClothing || 'none'
+        });
+      } catch (batchError) {
+        console.error(`❌ [${ctx.requestId}] [CCS_RETRY] batchFetchCCSData: FAILED`, batchError);
+        throw new Error("CCS_RETRY_BATCH_FETCH_FAILED");
+      }
+      
+      // Unpack batch data
+      let characterSeed = batchCCSData.characterSeed;
+      const coloredObjects = batchCCSData.coloredObjects.map(obj => obj.fullDescription).join(', ');
+      const latestClothing = batchCCSData.latestClothing;
+      
+      // ============= GENERATE FRESH AVATAR DATA (ALWAYS NEEDED) =============
+      let structuredAvatarData;
+      try {
+        structuredAvatarData = await characterConsistencyService.getStructuredAvatarData(sessionId, userInfo);
+        console.log(`✅ [${ctx.requestId}] [CCS_RETRY] getStructuredAvatarData: SUCCESS`);
+      } catch (avatarError) {
+        console.error(`❌ [${ctx.requestId}] [CCS_RETRY] getStructuredAvatarData: FAILED`, avatarError);
+        throw new Error("CCS_RETRY_AVATAR_DATA_FAILED");
+      }
+      
+      // Defensive repair for hairColor
+      if (structuredAvatarData && (!structuredAvatarData.hairColor || structuredAvatarData.hairColor.trim() === "")) {
+        const fallbackSkinTone = structuredAvatarData.skinTone || avatarSkinTone;
         structuredAvatarData.hairColor = emergencyHairFallback(fallbackSkinTone);
-        console.log(`🔧 [CCS_RETRY] Repaired structuredAvatarData.hairColor: ${structuredAvatarData.hairColor}`);
+        console.log(`🔧 [${ctx.requestId}] [CCS_RETRY] REPAIRED structuredAvatarData.hairColor to "${structuredAvatarData.hairColor}"`);
       }
       
-      // 2. getEnhancedCharacterSeed
-      const characterSeed = await characterConsistencyService.getEnhancedCharacterSeed(
-        sessionId,
-        avatarIdentity,
-        storyText || pageText || "",
-        "continuing"
-      );
-      
-      // 3. getCharacterAppearanceFromStory
-      const characterAppearance = await characterConsistencyService.getCharacterAppearanceFromStory(sessionId, characterName) || "";
-      
-      // 4. getSessionSetting (never_ending_story)
-      const neverEndingSetting = await characterConsistencyService.getSessionSetting(sessionId, "never_ending_story") || "";
-      
-      // 5. getCulturalEnhancements (with hair/features repair)
-      let culturalBundle = await characterConsistencyService.getCulturalEnhancements(userInfo, sessionId, characterName);
-      const skinToneForFallback = avatarSkinTone || structuredAvatarData?.skinTone || "medium";
-      
-      if (!culturalBundle?.hair || culturalBundle.hair.trim() === "" || culturalBundle.hair === "natural hair") {
-        const repairedHair = emergencyHairFallback(skinToneForFallback);
-        if (!culturalBundle) culturalBundle = {};
-        culturalBundle.hair = repairedHair;
-        console.log(`🔧 [CCS_RETRY] Repaired culturalBundle.hair: ${repairedHair}`);
+      // ============= GENERATE FRESH CHARACTER SEED IF CACHE MISS =============
+      if (!characterSeed) {
+        try {
+          characterSeed = await characterConsistencyService.getEnhancedCharacterSeed(
+            sessionId,
+            avatarIdentity,
+            storyText || pageText || "",
+            "continuing",
+            latestClothing // Pass latest clothing for consistency
+          );
+          console.log(`✅ [${ctx.requestId}] [CCS_RETRY] getEnhancedCharacterSeed: SUCCESS (fresh generation)`);
+        } catch (seedError) {
+          console.error(`❌ [${ctx.requestId}] [CCS_RETRY] getEnhancedCharacterSeed: FAILED`, seedError);
+          throw new Error("CCS_RETRY_CHARACTER_SEED_FAILED");
+        }
       }
       
-      if (!culturalBundle?.features || culturalBundle.features.trim() === "") {
-        if (!culturalBundle) culturalBundle = {};
-        culturalBundle.features = "friendly features";
-        console.log(`🔧 [CCS_RETRY] Repaired culturalBundle.features: friendly features`);
+      // ============= EXTRACT CULTURAL BUNDLE FROM CHARACTER SEED =============
+      let culturalBundle;
+      try {
+        if (!characterSeed) {
+          throw new Error("Character seed unavailable for cultural extraction");
+        }
+        
+        culturalBundle = {
+          hair: characterSeed.selectedCulturalHair || characterSeed.physicalTraits?.hair || "",
+          features: characterSeed.selectedCulturalFeatures || characterSeed.physicalTraits?.skinFeatures || ""
+        };
+        
+        const skinToneForFallback = structuredAvatarData?.skinTone || avatarSkinTone;
+        
+        if (!culturalBundle?.hair || culturalBundle.hair.trim() === "") {
+          culturalBundle.hair = emergencyHairFallback(skinToneForFallback);
+          console.log(`🔧 [${ctx.requestId}] [CCS_RETRY] REPAIRED culturalBundle.hair to "${culturalBundle.hair}"`);
+        }
+        
+        if (!culturalBundle?.features || culturalBundle.features.trim() === "") {
+          culturalBundle.features = "friendly features";
+          console.log(`🔧 [${ctx.requestId}] [CCS_RETRY] REPAIRED culturalBundle.features to "${culturalBundle.features}"`);
+        }
+        
+        console.log(`✅ [${ctx.requestId}] [CCS_RETRY] culturalBundle VALIDATED`);
+      } catch (culturalError) {
+        console.error(`❌ [${ctx.requestId}] [CCS_RETRY] Cultural bundle extraction: FAILED`, culturalError);
+        throw new Error("CCS_RETRY_CULTURAL_BUNDLE_FAILED");
       }
       
-      // 6. analyzeVisualDetails + getColoredObjects
-      await characterConsistencyService.analyzeVisualDetails(sessionId, storyText || pageText, ctx.payload.pageNumber || 1);
-      const coloredObjects = await characterConsistencyService.getColoredObjects(sessionId);
+      // ============= DETECT ATMOSPHERE (INDOOR/OUTDOOR) =============
+      let sessionSetting = "";
+      try {
+        sessionSetting = await characterConsistencyService.detectSimpleAtmosphere(storyText || pageText || "");
+        console.log(`🔍 [${ctx.requestId}] [CCS_RETRY] detectSimpleAtmosphere: ${sessionSetting || "undetected"}`);
+      } catch (atmosphereError) {
+        console.error(`❌ [${ctx.requestId}] [CCS_RETRY] detectSimpleAtmosphere: FAILED (non-critical)`, atmosphereError);
+        sessionSetting = ""; // Non-critical, continue without context
+      }
       
-      // 7. getSecondaryCharactersForSession + detectAllCharacters
-      const secondaryCharacters = await characterConsistencyService.getSecondaryCharactersForSession(sessionId);
-      const detectionResults = await characterConsistencyService.detectAllCharacters(storyText || pageText, {
-        sessionId,
-        pageNumber: ctx.payload.pageNumber || 1,
-      });
-      const mainCharacterAppearance = detectionResults.mainCharacterAppearance || {};
+      // ============= SKIP VISUAL DETAILS & CHARACTER DETECTION IN RETRY =============
+      // CCS_RETRY is a lightweight fallback - skip heavy analysis to avoid cascading failures
+      const secondaryCharacters: any[] = [];
+      const mainCharacterAppearance = {};
       
-      // 8. getSessionSetting (context - indoor/outdoor)
-      const sessionSetting = await characterConsistencyService.getSessionSetting(sessionId, "context", "");
-      
-      // Populate ctx.tier1 with full CCS bundle (identical shape to Tier 1 success)
+      // Populate ctx.tier1 with lightweight CCS bundle (optimized for T2.5A)
       ctx.tier1 = {
         enhancedPrompt: undefined, // Not needed for T2.5A
         characterSeed,
         culturalBundle,
         coloredObjects: coloredObjects || "",
-        secondaryCharacters: secondaryCharacters || [],
+        latestClothing: latestClothing || null, // ✅ NEW: Include latest clothing
+        secondaryCharacters,
         mainCharacterAppearance,
         structuredAvatarData,
         sessionSetting: sessionSetting || ctx.payload.sessionSetting,
@@ -1624,7 +1673,21 @@ const executeT25A: TierFn = async (ctx) => {
           secondaryCharacters: ctx.tier1.secondaryCharacters || [],
           characterSeed: ctx.tier1.characterSeed,
           sessionSetting: ctx.tier1.sessionSetting,
+          latestClothing: ctx.tier1.latestClothing || null, // ✅ NEW: Forward latest clothing to Tier 2.5A
           source: 'tier1_ccs_inline'
+        };
+      } else {
+        // ❌ CCS unavailable: Provide minimal emergency data for template fallback
+        console.log(`⚠️ [${ctx.requestId}] [T2.5A] No ctx.tier1 data - providing emergency fallback`);
+        precomputedCCS = {
+          culturalBundle: null,
+          mainCharacterAppearance: null,
+          coloredObjects: null,
+          secondaryCharacters: [],
+          characterSeed: null,
+          sessionSetting: ctx.payload.sessionSetting || "",
+          latestClothing: null, // ✅ NEW: Include in emergency data
+          source: 'emergency_fallback'
         };
       }
       
