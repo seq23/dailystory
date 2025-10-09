@@ -1249,6 +1249,17 @@ const executeTier1: TierFn = async (ctx) => {
   const gateKey = "T1:ai-visual-scene-creator";
   let gateAcquired = false;
   
+  // Hoisted to ensure availability in catch/finally (prevents "tier1ErrorLog is not defined")
+  const tier1ErrorLog: any[] = [];
+  const logTier1Step = (step: string, status: string, message: string) => {
+    tier1ErrorLog.push({
+      step,
+      status,
+      message: message.substring(0, 200),
+      at: new Date().toISOString(),
+    });
+  };
+  
   try {
     // 1. Check gate (skip if overloaded)
     const gateResult = await acquire(gateKey);
@@ -1260,11 +1271,6 @@ const executeTier1: TierFn = async (ctx) => {
     
     // 2. Run existing processInlinedTier1 (no changes to this function!)
     ctx.tierLogger.attempt("TIER_1", { storyLength: ctx.payload.pageText?.length });
-    
-    const tier1ErrorLog: any[] = [];
-    const logTier1Step = (step: string, status: string, message: string) => {
-      tier1ErrorLog.push({ step, status, message: message.substring(0, 200), at: new Date().toISOString() });
-    };
     
     const tier1Result = await processInlinedTier1(
       ctx.payload,
