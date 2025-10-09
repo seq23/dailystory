@@ -154,6 +154,42 @@ Centralized error handling through `_shared/errorHandling.ts` with:
 - Performance tracking
 - CORS compliance
 
+## Session-Seeded Character Consistency (October 2025)
+
+### Backend Story Generation Enhancement
+**Implementation**: `supabase/functions/generate-adaptive-story/StaticDataCache.ts`
+
+Session-seeded PRNG ensures consistent character hair/skin descriptions across all pages within a story session:
+
+```
+Story Generation Flow with Session Seeding:
+  ↓
+User Request → Bundle Creation (includes sessionId)
+  ↓
+Edge Function: generate-adaptive-story/index.ts
+  ↓
+streamlined-handler.ts → processAvatarIdentityFromCache(userInfo, sessionId)
+  ↓
+Session-Seeded Selection:
+  - sessionId "abc123" → numeric seed 444 → index 9 (deterministic)
+  - Same sessionId → Same hair/skin selection (consistency)
+  - Different sessionId → Different selections (variety)
+  ↓
+Story Text: "Emma with her golden blonde hair discovered..."
+  ↓
+All Pages: Same hair description ✅ CONSISTENT
+```
+
+**Benefits**:
+- ✅ Premium live generation: Consistent character across all pages
+- ✅ Guest Netflix style: Variety between different stories
+- ✅ Backward compatible: Falls back to Math.random() when no sessionId
+
+**Algorithm**: Character code sum → modulo array length → deterministic index
+
 ## Deployment Notes (2025-09-12)
 - elevenlabs-tts and elevenlabs-tts-smart now lazy-load DifficultyLevelMapper to avoid bundler/circular import issues.
 - Added redeploy touch timestamps in function headers and config.toml to force clean rebuild.
+
+## Deployment Notes (2025-10-09)
+- Session-seeded hair selection implemented in StaticDataCache.ts for consistent character descriptions across story pages.

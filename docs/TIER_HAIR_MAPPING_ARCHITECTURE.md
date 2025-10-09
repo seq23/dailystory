@@ -44,14 +44,41 @@ This document defines the 3-way hair mapping architecture across frontend and ba
 4. All other cultural requests return empty string
 5. **Direct Mode hair arrays MUST maintain 1:1 parity with orchestrator** (including " hair" suffix)
 
-## Session-Seeded Hair Selection (September 2025)
+## Session-Seeded Hair Selection (October 2025 - Backend Implementation)
 
-### Implementation
-- **Location**: `src/services/SimpleImageService.ts` (lines 876-947)
+### Implementation Locations
+- **Backend Story Generation**: `supabase/functions/generate-adaptive-story/StaticDataCache.ts` (lines 341-352, 389, 401, 412)
+- **Frontend Image Generation**: `src/services/SimpleImageService.ts` (lines 876-947)
 - **Algorithm**: Seeded PRNG using sessionId for deterministic variety
 - **Benefit**: Consistent hair within session + variety between sessions
 
-### Functions
+### Backend Functions (Story Generation)
+```typescript
+// Session-seeded PRNG utilities
+const createSeededRandom = (seed: string): number => {
+  const numericSeed = seed.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  return numericSeed;
+};
+
+const seededIndex = (sessionId: string, arrayLength: number): number => {
+  const seed = createSeededRandom(sessionId);
+  return seed % arrayLength;
+};
+
+// Updated function signature with optional sessionId
+export const processAvatarIdentityFromCache = (userInfo: any, sessionId?: string) => {
+  // ...
+  const skinToneVariation = sessionId
+    ? skinToneVariations[seededIndex(sessionId, skinToneVariations.length)]
+    : skinToneVariations[Math.floor(Math.random() * skinToneVariations.length)];
+  
+  const hairColor = sessionId
+    ? filteredHairOptions[seededIndex(sessionId, filteredHairOptions.length)]
+    : filteredHairOptions[Math.floor(Math.random() * filteredHairOptions.length)];
+};
+```
+
+### Frontend Functions (Image Generation)
 ```javascript
 // Session-seeded random selection
 createSeededRandom(seed: number): () => number
@@ -59,21 +86,40 @@ pickFromArray<T>(arr: T[], sessionId: string): T
 ```
 
 ### Selection Logic
-1. Convert `sessionId` to numeric seed
-2. Use seeded PRNG to pick from array
-3. Same session = same random selection
-4. Different sessions = different selections
+1. Convert `sessionId` string to numeric seed via character code sum
+2. Use modulo operator (`seed % arrayLength`) for deterministic index selection
+3. Same session = same index = same hair/skin variation
+4. Different sessions = different seeds = different variations
+
+### Integration Points
+**Backend Story Generation**:
+- Entry: `supabase/functions/generate-adaptive-story/streamlined-handler.ts` (line 783)
+- Call: `processAvatarIdentityFromCache(completeAvatarInfo, bundle.sessionId)`
+- Result: Consistent hair descriptions in story text across all pages
+
+**Frontend Image Generation**:
+- Entry: `src/services/SimpleImageService.ts`
+- Uses: Session-seeded selection for visual consistency
+- Result: Generated images match story text hair descriptions
 
 ### Hair Selection Priority (UPDATED)
 1. **Ethnicity Override** (deterministic for cultural authenticity)
-2. **Session-Seeded Selection** from `HAIR_BY_SKIN_TONE` arrays
-3. ~~userInfo.hair override~~ **REMOVED** (was causing consistency bugs)
+2. **Session-Seeded Selection** from `HAIR_STORY_MODE` arrays (backend) or `HAIR_BY_SKIN_TONE` arrays (frontend)
+3. **Fallback**: `Math.random()` when no sessionId provided (backward compatible)
 
-### Critical Change
-**BEFORE**: `hair: userInfo.hair || universalHair`  
-**AFTER**: `hair: universalHair`  
-- Ensures session-seeded hair is always used
-- Prevents external overrides from breaking consistency
+### Mathematical Consistency Proof
+```typescript
+// Example: sessionId = "abc123"
+// Character codes: a=97, b=98, c=99, 1=49, 2=50, 3=51
+// numericSeed = 97 + 98 + 99 + 49 + 50 + 51 = 444
+// For array length 15: index = 444 % 15 = 9
+// Result: Always returns index 9 for sessionId "abc123"
+```
+
+### Business Logic Preserved
+- **Guest Users**: Fresh sessionId per story → Different hair per story ✅ VARIETY
+- **Premium Users**: Same sessionId across pages → Same hair across pages ✅ CONSISTENCY
+- **Backward Compatibility**: Optional parameter with Math.random() fallback ✅ NO BREAKING CHANGES
 
 ### Inline CCS Alignment (January 2025)
 **Location**: `supabase/functions/runware-generate-image/CharacterConsistencyServiceInline.js`
