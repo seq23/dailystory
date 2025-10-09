@@ -165,7 +165,6 @@ function generateTier25C(storyText, userInfo, avatarIdentity, failedTierData = {
   console.log(`🚀 Nuclear Tier 2.5C: Pure hardcoded template - NO imports, NO dependencies [logging: ${TIER_LOGGING_VERSION}]`);
   console.log('📊 Nuclear 2.5C: Received failed tier data', {
     hasCharacterConsistency: !!failedTierData.characterConsistency,
-    hasVisualConsistency: !!failedTierData.visualConsistency,
     hasCulturalEnhancements: !!failedTierData.culturalEnhancements,
     hasEnhancedSceneData: !!failedTierData.enhancedSceneData
   });
@@ -297,7 +296,7 @@ function generateTier25C(storyText, userInfo, avatarIdentity, failedTierData = {
     templateType: 'Nuclear Hardcoded Template - Zero Dependencies',
     tier: 'NUCLEAR_2.5C',
     styleFrameworkUsed: hardcodedFramework.name,
-    failedTierDataUsed: !!(failedTierData.enhancedSceneData || failedTierData.characterConsistency || failedTierData.visualConsistency || failedTierData.culturalEnhancements || failedTierData.structuredAvatarData)
+    failedTierDataUsed: !!(failedTierData.enhancedSceneData || failedTierData.characterConsistency || failedTierData.culturalEnhancements || failedTierData.structuredAvatarData)
   };
 }
 

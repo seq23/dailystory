@@ -1235,7 +1235,6 @@ serve((req) => {
           failedTierData: {
             enhancedSceneData: gen.visualSchema.primaryScene,
             characterConsistency: `${characterSeed.characterName} is a ${characterSeed.avatarType}, age ${userInfo?.age || 6}, ${hair}, ${features}`,
-            visualConsistency: `${gen.visualSchema.backgroundColor}, ${gen.visualSchema.lighting}`,
             culturalEnhancements: `${hair}, ${features}`,
             coloredObjects: gen.visualSchema.coloredObjects || '',
             sceneContext: gen.visualSchema.setting || '',

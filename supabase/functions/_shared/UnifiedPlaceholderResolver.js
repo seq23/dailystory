@@ -130,16 +130,14 @@ export class UnifiedPlaceholderResolver {
       // CONTEXT RESOLUTION: Direct context value mappings (must happen first)
       const settingContext = context.setting_context || context.settingContext || '';
       const persistentSetting = context.persistent_setting || context.persistentSetting || '';
-      const visualConsistencyElements = context.visual_consistency_elements || context.visualConsistencyElements || '';
       
       processedText = processedText.replace(/\{setting_context\}/g, settingContext);
       processedText = processedText.replace(/\{persistent_setting\}/g, persistentSetting);
-      processedText = processedText.replace(/\{visual_consistency_elements\}/g, visualConsistencyElements);
       
       const contextResolved = initialCount - (processedText.match(/\{[^}]+\}/g) || []).length;
       if (contextResolved > 0) {
         console.log(`🏠 Context Resolution: Resolved ${contextResolved} setting placeholders`);
-        console.log(`   └─ setting_context="${settingContext}", persistent_setting="${persistentSetting}", visual_consistency_elements="${visualConsistencyElements}"`);
+        console.log(`   └─ setting_context="${settingContext}", persistent_setting="${persistentSetting}"`);
       }
       
       // TIER 1: Character Consistency (highest priority - from backend service)
