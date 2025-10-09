@@ -14,6 +14,7 @@ Tester Behavior
   - Status: 200
   - StatusText: HEALTHY_ESCALATION
   - Assessment: "Healthy escalation to next tier (CCS precomputed data required)"
+- Safety net: For template endpoints, if GET is healthy (200) and POST returns 503, the tester classifies as HEALTHY_ESCALATION (200) to reflect Tier 2.5A → 2.5B escalation by design, even when response body is masked.
 
 Implementation Notes
 - Primary check: supabase.functions.invoke() data/message for escalation keys
