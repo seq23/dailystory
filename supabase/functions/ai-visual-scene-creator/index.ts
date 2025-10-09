@@ -991,7 +991,7 @@ Generate a comprehensive scene... The primaryScene must include the complete CHA
 }
 
 // ========= Character seed (kept) =========
-function generateCharacterSeed(sessionId: string, userInfo: any) {
+function generateCharacterSeed(sessionId: string, userInfo: any, hair: string, features: string) {
   const characterName = userInfo?.name || userInfo?.userName || 'child';
   const skinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || 'medium';
   const language = userInfo?.language || userInfo?.nativeLanguage || 'en';
@@ -1009,13 +1009,20 @@ function generateCharacterSeed(sessionId: string, userInfo: any) {
     else if (language === 'es') ethnicity = 'Spanish / Latino';
     else if (language === 'pt') ethnicity = 'Portuguese';
   }
+  const age = userInfo?.age || 6;
+  const characterDescription = `${characterName}, age ${age}, ${hair}, ${features}, ${ethnicity} ethnicity`;
+  
   return {
     seed: Math.abs(sessionId.split("").reduce((a, c) => a + c.charCodeAt(0), 0)) % 999999,
     characterName,
     avatarType: userInfo?.avatar?.type || 'child',
     skinTone,
+    hairColor: hair,
+    skinFeatures: features,
     ethnicity,
-    culturalProfile: userInfo?.nativeLanguage !== 'en' ? userInfo?.nativeLanguage : undefined
+    culturalProfile: userInfo?.nativeLanguage !== 'en' ? userInfo?.nativeLanguage : undefined,
+    characterDescription,
+    age
   };
 }
 
@@ -1157,7 +1164,7 @@ serve((req) => {
       const features = getSessionSeededFeatures(skinTone, sessionId);
 
       if (directMode) {
-        characterSeed = generateCharacterSeed(sessionId, userInfo);
+        characterSeed = generateCharacterSeed(sessionId, userInfo, hair, features);
         culturalBundle = { hair, features, profile: characterSeed?.culturalProfile || null, source:'inline_static' };
 
         const templatePayload = {
