@@ -1350,6 +1350,456 @@ const executeDirectMode: TierFn = async (ctx) => {
   }
 };
 
+// ============= TIER 2.5A: Template AB Mode A with CCS =============
+const executeT25A: TierFn = async (ctx) => {
+  const startMs = Date.now();
+  const gateKey = "T25A:runware-template-ab";
+  let gateAcquired = false;
+  
+  try {
+    // Gate check
+    const gateResult = await acquire(gateKey);
+    if (!gateResult.acquired) {
+      ctx.tierLogger.failure("TIER_2.5A", { reason: "GATE_DENIED", gateReason: gateResult.reason });
+      return { ok: false, code: "T25A_GATE_DENIED", reason: gateResult.reason };
+    }
+    gateAcquired = true;
+    
+    ctx.tierLogger.attempt("TIER_2.5A", { hasCulturalBundle: !!ctx.tier1?.culturalBundle });
+    
+    // Add 15-second timeout
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+    
+    try {
+      const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+      const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
+      
+      if (!SUPABASE_URL || SUPABASE_URL.trim() === "") {
+        return { ok: false, code: "T25A_NO_URL", reason: "SUPABASE_URL not configured" };
+      }
+      
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+      };
+      
+      if (SUPABASE_ANON_KEY) {
+        headers["apikey"] = SUPABASE_ANON_KEY;
+      }
+      
+      // Construct precomputedCCS from Tier 1 data
+      const precomputedCCS = {
+        culturalBundle: ctx.tier1?.culturalBundle || null,
+        mainCharacterAppearance: ctx.tier1?.mainCharacterAppearance || null,
+        coloredObjects: ctx.tier1?.coloredObjects || null,
+        secondaryCharacters: ctx.tier1?.secondaryCharacters || [],
+        characterSeed: ctx.tier1?.characterSeed || null,
+        source: 'tier1_ccs_inline'
+      };
+      
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/runware-template-ab`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          ...ctx.payload,
+          templateComplexity: "A",
+          precomputedCCS: precomputedCCS,
+        }),
+        signal: controller.signal,
+      });
+      
+      clearTimeout(timeout);
+      
+      if (!response.ok) {
+        return { ok: false, code: "T25A_HTTP_ERROR", reason: `HTTP ${response.status}: ${response.statusText}` };
+      }
+      
+      const data = await response.json();
+      if (!data.success || !data.imageURL) {
+        return { ok: false, code: "T25A_NO_IMAGE", reason: "Template A processing failed" };
+      }
+      
+      // Success
+      ctx.tierLogger.success("TIER_2.5A", { imageURL: data.imageURL });
+      
+      return {
+        ok: true,
+        data: {
+          success: true,
+          imageURL: data.imageURL,
+          seed: data.seed || data.imageGeneration?.seed || null,
+          provider: "tier-2.5a-fallback",
+          tier: "TIER_2.5A",
+          resultType: "TIER_2.5A_SUCCESS",
+          positivePrompt: data.positivePrompt || data.templateData?.positivePrompt,
+          negativePrompt: data.negativePrompt || data.templateData?.negativePrompt,
+          metadata: {
+            cascadeHistory: ["❌ Tier 1 Failed", "❌ Direct Mode Failed", "✅ Tier 2.5A Success"],
+          },
+        },
+        meta: { tier: "TIER_2.5A", ms: Date.now() - startMs }
+      };
+      
+    } catch (fetchError: any) {
+      if (fetchError?.name === "AbortError") {
+        return { ok: false, code: "T25A_TIMEOUT", reason: "Tier 2.5A timeout (15s)" };
+      }
+      throw fetchError;
+    } finally {
+      clearTimeout(timeout);
+    }
+    
+  } catch (error: any) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    ctx.tierLogger.failure("TIER_2.5A", { error: errorMessage });
+    return { ok: false, code: "T25A_FAILED", reason: errorMessage };
+    
+  } finally {
+    if (gateAcquired) release(gateKey);
+  }
+};
+
+// ============= TIER 2.5B: Template AB Mode B Fallback =============
+const executeT25B: TierFn = async (ctx) => {
+  const startMs = Date.now();
+  const gateKey = "T25B:runware-template-ab";
+  let gateAcquired = false;
+  
+  try {
+    // Gate check
+    const gateResult = await acquire(gateKey);
+    if (!gateResult.acquired) {
+      ctx.tierLogger.failure("TIER_2.5B", { reason: "GATE_DENIED", gateReason: gateResult.reason });
+      return { ok: false, code: "T25B_GATE_DENIED", reason: gateResult.reason };
+    }
+    gateAcquired = true;
+    
+    ctx.tierLogger.attempt("TIER_2.5B", {});
+    
+    // Add 15-second timeout
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+    
+    try {
+      const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+      const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
+      
+      if (!SUPABASE_URL || SUPABASE_URL.trim() === "") {
+        return { ok: false, code: "T25B_NO_URL", reason: "SUPABASE_URL not configured" };
+      }
+      
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+      };
+      
+      if (SUPABASE_ANON_KEY) {
+        headers["apikey"] = SUPABASE_ANON_KEY;
+      }
+      
+      // Pass pre-computed CCS data to Mode B
+      const precomputedCCS = {
+        culturalBundle: ctx.tier1?.culturalBundle,
+        mainCharacterAppearance: ctx.tier1?.mainCharacterAppearance,
+        coloredObjects: ctx.tier1?.coloredObjects,
+        secondaryCharacters: ctx.tier1?.secondaryCharacters,
+        characterSeed: ctx.tier1?.characterSeed,
+      };
+      
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/runware-template-ab`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          ...ctx.payload,
+          templateComplexity: "B",
+          precomputedCCS: precomputedCCS,
+        }),
+        signal: controller.signal,
+      });
+      
+      clearTimeout(timeout);
+      
+      if (!response.ok) {
+        return { ok: false, code: "T25B_HTTP_ERROR", reason: `HTTP ${response.status}: ${response.statusText}` };
+      }
+      
+      const data = await response.json();
+      if (!data.success || !data.imageURL) {
+        return { ok: false, code: "T25B_NO_IMAGE", reason: "Template B processing failed" };
+      }
+      
+      // Success
+      ctx.tierLogger.success("TIER_2.5B", { imageURL: data.imageURL });
+      
+      return {
+        ok: true,
+        data: {
+          success: true,
+          imageURL: data.imageURL,
+          seed: data.seed || data.imageGeneration?.seed || null,
+          provider: "tier-2.5b-fallback",
+          tier: "TIER_2.5B",
+          resultType: "TIER_2.5B_SUCCESS",
+          positivePrompt: data.positivePrompt || data.templateData?.positivePrompt,
+          negativePrompt: data.negativePrompt || data.templateData?.negativePrompt,
+          metadata: {
+            cascadeHistory: [
+              "❌ Tier 1 Failed",
+              "❌ Direct Mode Failed", 
+              "❌ Tier 2.5A Failed",
+              "✅ Tier 2.5B Success"
+            ],
+          },
+        },
+        meta: { tier: "TIER_2.5B", ms: Date.now() - startMs }
+      };
+      
+    } catch (fetchError: any) {
+      if (fetchError?.name === "AbortError") {
+        return { ok: false, code: "T25B_TIMEOUT", reason: "Tier 2.5B timeout (15s)" };
+      }
+      throw fetchError;
+    } finally {
+      clearTimeout(timeout);
+    }
+    
+  } catch (error: any) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    ctx.tierLogger.failure("TIER_2.5B", { error: errorMessage });
+    return { ok: false, code: "T25B_FAILED", reason: errorMessage };
+    
+  } finally {
+    if (gateAcquired) release(gateKey);
+  }
+};
+
+// ============= TIER 2.5C: Template CD Mode C Universal Fallback =============
+const executeT25C: TierFn = async (ctx) => {
+  const startMs = Date.now();
+  const gateKey = "T25C:runware-template-cd";
+  let gateAcquired = false;
+  
+  try {
+    // Gate check
+    const gateResult = await acquire(gateKey);
+    if (!gateResult.acquired) {
+      ctx.tierLogger.failure("TIER_2.5C", { reason: "GATE_DENIED", gateReason: gateResult.reason });
+      return { ok: false, code: "T25C_GATE_DENIED", reason: gateResult.reason };
+    }
+    gateAcquired = true;
+    
+    ctx.tierLogger.attempt("TIER_2.5C", {});
+    
+    // Add 15-second timeout
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+    
+    try {
+      const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+      const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
+      
+      if (!SUPABASE_URL || SUPABASE_URL.trim() === "") {
+        return { ok: false, code: "T25C_NO_URL", reason: "SUPABASE_URL not configured" };
+      }
+      
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+      };
+      
+      if (SUPABASE_ANON_KEY) {
+        headers["apikey"] = SUPABASE_ANON_KEY;
+      }
+      
+      // Pass pre-computed CCS data to 2.5C
+      const precomputedCCS = {
+        culturalBundle: ctx.tier1?.culturalBundle,
+        mainCharacterAppearance: ctx.tier1?.mainCharacterAppearance,
+        coloredObjects: ctx.tier1?.coloredObjects,
+        secondaryCharacters: ctx.tier1?.secondaryCharacters,
+        characterSeed: ctx.tier1?.characterSeed,
+      };
+      
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/runware-template-cd`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          ...ctx.payload,
+          templateComplexity: "C",
+          precomputedCCS: precomputedCCS,
+        }),
+        signal: controller.signal,
+      });
+      
+      clearTimeout(timeout);
+      
+      if (!response.ok) {
+        return { ok: false, code: "T25C_HTTP_ERROR", reason: `HTTP ${response.status}: ${response.statusText}` };
+      }
+      
+      const data = await response.json();
+      if (!data.success || !data.imageURL) {
+        return { ok: false, code: "T25C_NO_IMAGE", reason: "Template C processing failed" };
+      }
+      
+      // Success
+      ctx.tierLogger.success("TIER_2.5C", { imageURL: data.imageURL });
+      
+      return {
+        ok: true,
+        data: {
+          success: true,
+          imageURL: data.imageURL,
+          seed: data.seed || data.imageGeneration?.seed || null,
+          provider: "tier-2.5c-fallback",
+          tier: "TIER_2.5C",
+          resultType: "TIER_2.5C_SUCCESS",
+          positivePrompt: data.positivePrompt || data.templateData?.positivePrompt,
+          negativePrompt: data.negativePrompt || data.templateData?.negativePrompt,
+          metadata: {
+            cascadeHistory: [
+              "❌ Tier 1 Failed",
+              "❌ Direct Mode Failed",
+              "❌ Tier 2.5A Failed",
+              "❌ Tier 2.5B Failed",
+              "✅ Tier 2.5C Success (Nuclear Fallback)"
+            ],
+          },
+        },
+        meta: { tier: "TIER_2.5C", ms: Date.now() - startMs }
+      };
+      
+    } catch (fetchError: any) {
+      if (fetchError?.name === "AbortError") {
+        return { ok: false, code: "T25C_TIMEOUT", reason: "Tier 2.5C timeout (15s)" };
+      }
+      throw fetchError;
+    } finally {
+      clearTimeout(timeout);
+    }
+    
+  } catch (error: any) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    ctx.tierLogger.failure("TIER_2.5C", { error: errorMessage });
+    return { ok: false, code: "T25C_FAILED", reason: errorMessage };
+    
+  } finally {
+    if (gateAcquired) release(gateKey);
+  }
+};
+
+// ============= TIER 2.5D: Template CD Mode D Emergency (Zero-CCS) =============
+const executeT25D: TierFn = async (ctx) => {
+  const startMs = Date.now();
+  const gateKey = "T25D:runware-template-cd";
+  let gateAcquired = false;
+  
+  try {
+    // Gate check
+    const gateResult = await acquire(gateKey);
+    if (!gateResult.acquired) {
+      ctx.tierLogger.failure("TIER_2.5D", { reason: "GATE_DENIED", gateReason: gateResult.reason });
+      return { ok: false, code: "T25D_GATE_DENIED", reason: gateResult.reason };
+    }
+    gateAcquired = true;
+    
+    ctx.tierLogger.attempt("TIER_2.5D", { emergencyMode: true });
+    
+    // Add 15-second timeout
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+    
+    try {
+      const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+      const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
+      
+      if (!SUPABASE_URL || SUPABASE_URL.trim() === "") {
+        return { ok: false, code: "T25D_NO_URL", reason: "SUPABASE_URL not configured" };
+      }
+      
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+      };
+      
+      if (SUPABASE_ANON_KEY) {
+        headers["apikey"] = SUPABASE_ANON_KEY;
+      }
+      
+      // CRITICAL: Mode D does NOT receive precomputedCCS (zero-CCS emergency fallback)
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/runware-template-cd`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          ...ctx.payload,
+          templateComplexity: "D",
+        }),
+        signal: controller.signal,
+      });
+      
+      clearTimeout(timeout);
+      
+      if (!response.ok) {
+        return { ok: false, code: "T25D_HTTP_ERROR", reason: `HTTP ${response.status}: ${response.statusText}` };
+      }
+      
+      const data = await response.json();
+      if (!data.success || !data.imageURL) {
+        return { ok: false, code: "T25D_NO_IMAGE", reason: "Template D processing failed" };
+      }
+      
+      // Success
+      ctx.tierLogger.success("TIER_2.5D", { imageURL: data.imageURL });
+      
+      return {
+        ok: true,
+        data: {
+          success: true,
+          imageURL: data.imageURL,
+          seed: data.seed || data.imageGeneration?.seed || null,
+          provider: "tier-2.5d-fallback",
+          tier: "TIER_2.5D",
+          resultType: "TIER_2.5D_SUCCESS",
+          positivePrompt: data.positivePrompt || data.templateData?.positivePrompt,
+          negativePrompt: data.negativePrompt || data.templateData?.negativePrompt,
+          metadata: {
+            cascadeHistory: [
+              "❌ Tier 1 Failed",
+              "❌ Direct Mode Failed",
+              "❌ Tier 2.5A Failed",
+              "❌ Tier 2.5B Failed",
+              "❌ Tier 2.5C Failed",
+              "✅ Tier 2.5D Success (Emergency Template)"
+            ],
+          },
+        },
+        meta: { tier: "TIER_2.5D", ms: Date.now() - startMs }
+      };
+      
+    } catch (fetchError: any) {
+      if (fetchError?.name === "AbortError") {
+        return { ok: false, code: "T25D_TIMEOUT", reason: "Tier 2.5D timeout (15s)" };
+      }
+      throw fetchError;
+    } finally {
+      clearTimeout(timeout);
+    }
+    
+  } catch (error: any) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    ctx.tierLogger.failure("TIER_2.5D", { error: errorMessage });
+    return { ok: false, code: "T25D_FAILED", reason: errorMessage };
+    
+  } finally {
+    if (gateAcquired) release(gateKey);
+  }
+};
+
 // ============= CASCADE PIPELINE EXECUTOR =============
 async function runTierCascade(
   tiers: Array<{ name: string; fn: TierFn; precondition?: (ctx: TierContext) => boolean }>,
@@ -1649,7 +2099,14 @@ serve(async (req) => {
           name: "DIRECT_MODE", 
           fn: executeDirectMode,
         },
-        // TODO: Implement T25A, T25B, T25C, T25D following same pattern
+        { 
+          name: "T25A", 
+          fn: executeT25A,
+          precondition: (ctx) => !!ctx.tier1?.culturalBundle?.hair && !!ctx.tier1?.culturalBundle?.features,
+        },
+        { name: "T25B", fn: executeT25B },
+        { name: "T25C", fn: executeT25C },
+        { name: "T25D", fn: executeT25D },
       ];
       
       // 3. Run cascade
