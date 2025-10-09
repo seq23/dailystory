@@ -2065,7 +2065,11 @@ export const ImageTierTester = () => {
                     hasEscalationInMessage,
                     dataEscalation: postResponse.data?.escalation,
                     dataError: postResponse.data?.error,
-                    willTreatAsHealthy: hasEscalationSignal
+                    willTreatAsHealthy: hasEscalationSignal,
+                    finalCategory: hasEscalationSignal ? 'HEALTHY_ESCALATION (200)' : 'BOOT_SYNC_ANOMALY (503)',
+                    explanation: hasEscalationSignal 
+                      ? 'Template tier correctly escalating due to missing precomputed CCS data'
+                      : 'Genuine boot/sync failure - needs investigation'
                   });
                 }
                 
@@ -2229,7 +2233,7 @@ export const ImageTierTester = () => {
             humanReadableReason = `${endpoint.type} - Both GET and POST working`;
           } else if (tests.GET.success && !tests.POST.success) {
             if (tests.POST.category === 'HEALTHY_ESCALATION') {
-              humanReadableReason = `${endpoint.type} - Healthy (503 = expected triage escalation)`;
+              humanReadableReason = `${endpoint.type} - Healthy escalation to next tier (CCS precomputed data required)`;
             } else {
               const bootExpected = endpoint.architecture === 'RECEPTIONIST_PATTERN' ? 
                 'Can have boot failures (has receptionist)' : 
@@ -2246,7 +2250,7 @@ export const ImageTierTester = () => {
             endpoint: endpoint.name, 
             success: overallSuccess || isHealthyEscalation, // Treat escalation as success
             status: displayStatus, // Use 200 for healthy escalation  
-            statusText: isHealthyEscalation ? 'OK (Escalation)' : tests.POST.statusText,
+            statusText: isHealthyEscalation ? 'HEALTHY_ESCALATION' : tests.POST.statusText,
             responseTime,
             humanReadableReason,
             category: overallCategory,

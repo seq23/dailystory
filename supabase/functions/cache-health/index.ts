@@ -70,7 +70,7 @@ Deno.serve(async (req) => {
 
         case 'emergency': {
           const reason = url.searchParams.get('reason') || 'Manual emergency reset';
-          performEmergencyReset(reason);
+          await performEmergencyReset(reason);
           
           return new Response(
             JSON.stringify({
