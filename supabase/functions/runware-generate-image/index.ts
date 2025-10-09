@@ -1262,6 +1262,9 @@ const executeTier1: TierFn = async (ctx) => {
       latestClothing: tier1Result.latestClothing || null, // ✅ NEW: Capture latest clothing
     };
     
+    // Make primaryScene available in payload for cascade (including Direct Mode)
+    ctx.payload.primaryScene = ctx.tier1.primaryScene;
+    
     // 4. Validate scene quality
     if (!validatePrimarySceneQuality(tier1Result.enhancedPrompt?.primaryScene || "")) {
       ctx.tierLogger.failure("TIER_1", { reason: "POOR_SCENE_QUALITY" });
