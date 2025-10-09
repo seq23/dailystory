@@ -351,6 +351,7 @@ function generateCompleteVisualSchema(
   userInfo: UserInfoLocal,
   sessionId: string,
   pageNumber: number = 1,
+  directMode: boolean = false,
   inputStructuredAvatarData: any = null,
   mainCharacterAppearance: any = null,
   secondaryCharacters: any[] = []
@@ -502,7 +503,8 @@ ${culturalContext}
 EXAMPLE: For a French speaker named Sarah playing in a park, generate:
 "Sarah with ${structuredAvatarData?.hairColor || 'natural hair'} and ${structuredAvatarData?.resolvedSkinTone || 'medium'} skin tone plays joyfully in a charming Parisian park near the Eiffel Tower, with the Seine River visible in the background, surrounded by elegant French gardens with lavender and a quaint café district with outdoor seating. Warm, sophisticated European aesthetic with golden afternoon light."
 
-Use cultural detail naturally without contradicting explicit story settings.` : '- Use universal child-friendly settings with warm, inviting atmospheres'}`;
+Use cultural detail naturally without contradicting explicit story settings.
+` : '- Use universal child-friendly settings with warm, inviting atmospheres'}
 
     const previousBlock = prevData.previousPrimaryScene
       ? (prevData.previousVisualSchema
@@ -673,7 +675,7 @@ Generate a comprehensive scene... The primaryScene must include the complete CHA
     })
     .then((result) => {
       // CRITICAL: Emergency fallback ALWAYS applied if AI generation failed
-      const visualSchema = result.ok && result.visual ? result.visual : buildEmergencyVisualSchema(content, characterData, nativeLanguage);
+      const visualSchema = result.ok && result.visual ? result.visual : buildEmergencyVisualSchema(storyText, characterData, nativeLanguage);
       const ok = !!visualSchema; // Emergency schema is ALWAYS valid
       
       const aiDebugSchema = {
@@ -690,7 +692,7 @@ Generate a comprehensive scene... The primaryScene must include the complete CHA
           nativeLanguage: userInfo?.native_language || userInfo?.nativeLanguage,
           fullUserInfo: userInfo
         },
-        storyTextLength: content.length,
+        storyTextLength: storyText.length,
         isNonEnglish: nativeLanguage && nativeLanguage !== 'en',
       };
       return savePrimaryScene(directMode, visualSchema).then(()=>({ ok:true, visualSchema, aiDebugSchema, structuredAvatarData, upstreamBackoff: result.upstreamBackoff }));
@@ -844,7 +846,7 @@ serve((req) => {
     const result = await IdempotencyMemory.getOrRun(idempotencyKey, 30000, async () => {
       // generate complete visual schema
       const gen = await generateCompleteVisualSchema(
-        content, userInfo, sessionId, pageNumber, null, mainCharacterAppearance, secondaryCharacters
+        content, userInfo, sessionId, pageNumber, directMode, null, mainCharacterAppearance, secondaryCharacters
       );
 
       if (!gen.ok || !gen.visualSchema) {
