@@ -1029,7 +1029,7 @@ serve((req) => {
     
     const requestHash = createRequestHash({ storyText: content, pageNumber, userInfo });
 
-    const result = await IdempotencyMemory.getOrRun(idempotencyKey, 30000, async () => {
+    return await IdempotencyMemory.getOrRun(idempotencyKey, 30000, async () => {
       return await executeWithLKG(requestHash, async () => {
         // generate complete visual schema
         const gen = await generateCompleteVisualSchema(
@@ -1132,7 +1132,6 @@ serve((req) => {
       handlerSuccess = true;
       return corsResponse(result, req, 200);
     }).catch((outerErr) => {
-      clearTimeout(budgetTimer); // Clear budget timer on error
       console.error('❌ [OUTER_ERROR] ai-visual-scene-creator top-level error:', String(outerErr?.message || outerErr));
       return corsResponse({ success:false, error:String(outerErr?.message || outerErr), tier:'ERROR' }, req, 500);
     }).finally(() => {
@@ -1146,5 +1145,16 @@ serve((req) => {
         console.log(`🔓 [GATE] ${gateKey} released (success=${handlerSuccess})`);
       }
     });
-  }); // Close .then(async (payload) => { from line 786
-}); // Close serve((req) => { from line 771
+    
+    } catch (tryBlockError) {
+      // Handle errors from try block (validation, parsing, etc.)
+      clearTimeout(budgetTimer);
+      if (gatingEnabled && gateAcquired) {
+        release(gateKey, false);
+        gateAcquired = false;
+      }
+      console.error('❌ [TRY_BLOCK_ERROR] ai-visual-scene-creator error:', String(tryBlockError?.message || tryBlockError));
+      return corsResponse({ success: false, error: String(tryBlockError?.message || tryBlockError), tier: 'TRY_BLOCK_ERROR' }, req, 500);
+    }
+  }); // Close .then(async (payload) => { from line 964
+}); // Close serve((req) => { from line 949
