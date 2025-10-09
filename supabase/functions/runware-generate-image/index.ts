@@ -1251,6 +1251,7 @@ const executeTier1: TierFn = async (ctx) => {
     // 3. Store results in context for cascade
     ctx.tier1 = {
       enhancedPrompt: tier1Result.enhancedPrompt,
+      primaryScene: tier1Result.enhancedPrompt?.primaryScene || tier1Result.enhancedPrompt, // ✅ Extract primaryScene for Direct Mode
       characterSeed: tier1Result.characterSeed,
       culturalBundle: tier1Result.culturalBundle,
       coloredObjects: tier1Result.coloredObjects || "",
@@ -1413,7 +1414,7 @@ const executeDirectMode: TierFn = async (ctx) => {
         body: {
           ...ctx.payload,
           directMode: true,
-          primaryScene: ctx.tier1?.enhancedPrompt?.primaryScene,
+          primaryScene: ctx.tier1?.primaryScene, // ✅ Use extracted primaryScene
         },
         signal: controller.signal,
       });

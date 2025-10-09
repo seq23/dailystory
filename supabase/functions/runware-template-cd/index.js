@@ -169,16 +169,40 @@ function generateTier25C(storyText, userInfo, avatarIdentity, failedTierData = {
     hasEnhancedSceneData: !!failedTierData.enhancedSceneData
   });
   
-  // ========== PRIMARY PATH: Direct Mode Clean Separation ==========
+  // ========== PRIMARY PATH: Direct Mode Simple (primaryScene + brand suffix) ==========
+  if (payload.primaryScene && typeof payload.primaryScene === 'string' && payload.primaryScene.length >= 30) {
+    console.log('✅ [DIRECT_MODE_SIMPLE] Using top-level primaryScene with brand suffix only');
+    
+    const difficulty = userInfo?.difficulty || userInfo?.difficultyLevel || 'medium';
+    const hardcodedFramework = getNuclearStyleFramework(difficulty);
+    const culturalProfileType = inlineDetectCultural(userInfo, avatarIdentity);
+    const avatarType = userInfo?.avatar?.type || 'child';
+    
+    const positivePrompt = `scene: ${payload.primaryScene}.\n\nbrand suffix: ${hardcodedFramework.frameworkPrompt}`;
+    const negativePrompt = generateInlineNuclearNegative(culturalProfileType, avatarType, difficulty);
+    
+    console.log('✅ [DIRECT_MODE_SIMPLE] Simple prompt constructed - scene + brand suffix only');
+    
+    return {
+      positivePrompt,
+      negativePrompt,
+      templateType: 'Direct Mode Simple',
+      tier: 'DIRECT_MODE_SIMPLE',
+      styleFrameworkUsed: hardcodedFramework.name,
+      directModeUsed: true
+    };
+  }
+  
+  // ========== FALLBACK PATH: Direct Mode CCS (if no primaryScene, use CCS data) ==========
   if (failedTierData?.enhancedSceneData && failedTierData?.characterConsistency) {
-    console.log('✅ [DIRECT_MODE] Using CCS data in separate sections (CLEAN SEPARATION)');
+    console.log('✅ [DIRECT_MODE_CCS] No primaryScene - falling back to CCS data in separate sections');
     
     // Validate data integrity
     const sceneLength = failedTierData.enhancedSceneData.length;
     const charLength = failedTierData.characterConsistency.length;
     
     if (sceneLength < 50 || charLength < 30) {
-      console.warn(`⚠️ [DIRECT_MODE] Data integrity check failed (scene=${sceneLength}, char=${charLength}) - activating safety net`);
+      console.warn(`⚠️ [DIRECT_MODE_CCS] Data integrity check failed (scene=${sceneLength}, char=${charLength}) - activating safety net`);
       // Fall through to safety net below
     } else {
       // Use CCS data AS-IS in clean 2-section format
@@ -187,7 +211,7 @@ function generateTier25C(storyText, userInfo, avatarIdentity, failedTierData = {
       
       const positivePrompt = `scene: ${failedTierData.enhancedSceneData}.${failedTierData.coloredObjects ? `\n\ncolored objects: ${failedTierData.coloredObjects}.` : ''}${failedTierData.sceneContext ? `\n\nlocation context: ${failedTierData.sceneContext}.` : ''}\n\ncharacter: ${failedTierData.characterConsistency}.\n\nbrand suffix: ${hardcodedFramework.frameworkPrompt}`;
       
-      console.log('🎨 [DIRECT_MODE] Prompt components:', {
+      console.log('🎨 [DIRECT_MODE_CCS] Prompt components:', {
         hasEnhancedScene: !!failedTierData.enhancedSceneData,
         hasColoredObjects: !!failedTierData.coloredObjects,
         hasSceneContext: !!failedTierData.sceneContext,
@@ -200,13 +224,13 @@ function generateTier25C(storyText, userInfo, avatarIdentity, failedTierData = {
       const avatarType = userInfo?.avatar?.type || 'child';
       const negativePrompt = generateInlineNuclearNegative(culturalProfileType, avatarType, difficulty);
       
-      console.log('✅ [DIRECT_MODE] Clean separation complete - scene and character in dedicated sections');
+      console.log('✅ [DIRECT_MODE_CCS] Clean separation complete - scene and character in dedicated sections');
       
       return {
         positivePrompt,
         negativePrompt,
-        templateType: 'Direct Mode Clean Separation (CCS Data)',
-        tier: 'NUCLEAR_2.5C_DIRECT',
+        templateType: 'Direct Mode CCS Fallback',
+        tier: 'NUCLEAR_2.5C_DIRECT_CCS',
         styleFrameworkUsed: hardcodedFramework.name,
         directModeUsed: true,
         sceneSource: 'ai_visual_scene_creator',

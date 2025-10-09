@@ -1232,6 +1232,8 @@ serve((req) => {
           pageNumber,
           avatarIdentity: { type: characterSeed.avatarType, skinTone: characterSeed.skinTone, name: characterSeed.characterName },
           templateComplexity: 'C',
+          directMode: true, // ✅ Enable Direct Mode for frontend path
+          primaryScene: gen.visualSchema.primaryScene, // ✅ Top-level primaryScene for simple Direct Mode
           failedTierData: {
             enhancedSceneData: gen.visualSchema.primaryScene,
             characterConsistency: `${characterSeed.characterName} is a ${characterSeed.avatarType}, age ${userInfo?.age || 6}, ${hair}, ${features}`,
