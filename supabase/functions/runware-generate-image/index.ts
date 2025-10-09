@@ -1520,7 +1520,6 @@ const executeDirectMode: TierFn = async (ctx) => {
       let structuredAvatarData = await characterConsistencyService.getStructuredAvatarData(sessionId, userInfo);
       if (!structuredAvatarData?.hairColor || structuredAvatarData.hairColor === "natural hair") {
         const fallbackSkinTone = structuredAvatarData?.skinTone || avatarSkinTone;
-        const { emergencyHairFallback } = await import("../_shared/avatarConsistency.js");
         structuredAvatarData.hairColor = emergencyHairFallback(fallbackSkinTone);
         console.log(`🔧 [CCS_RETRY] Repaired structuredAvatarData.hairColor: ${structuredAvatarData.hairColor}`);
       }
@@ -1544,7 +1543,6 @@ const executeDirectMode: TierFn = async (ctx) => {
       const skinToneForFallback = avatarSkinTone || structuredAvatarData?.skinTone || "medium";
       
       if (!culturalBundle?.hair || culturalBundle.hair.trim() === "" || culturalBundle.hair === "natural hair") {
-        const { emergencyHairFallback } = await import("../_shared/avatarConsistency.js");
         const repairedHair = emergencyHairFallback(skinToneForFallback);
         if (!culturalBundle) culturalBundle = {};
         culturalBundle.hair = repairedHair;
