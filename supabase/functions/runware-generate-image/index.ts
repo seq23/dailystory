@@ -9,6 +9,9 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 // ✅ BUNDLER HINT: Force inline CCS inclusion in deployment bundle (dynamic import used inside handler)
 import { characterConsistencyService as _ccsHint } from "./CharacterConsistencyServiceInline.js";
 
+// ✅ TIER 25 VOCABULARY: Import for emergency bundle computation
+import { TIER_25_UNIFIED_VOCABULARY_EXTENDED } from "../_shared/tier25UnifiedVocabulary.js";
+
 // CCS boot status tracking (referenced throughout orchestrator metadata)
 const ccsBootStatus = { loaded: false, error: null };
 
@@ -1291,6 +1294,7 @@ const executeTier1: TierFn = async (ctx) => {
       secondaryCharacters: tier1Result.secondaryCharacters || [],
       mainCharacterAppearance: tier1Result.mainCharacterAppearance || {},
       structuredAvatarData: tier1Result.structuredAvatarData,
+      sessionSetting: tier1Result.sessionSetting || ctx.payload.sessionSetting, // ✅ Capture session setting
     };
     
     // 4. Validate scene quality
@@ -1537,14 +1541,65 @@ const executeT25A: TierFn = async (ctx) => {
       }
       
       // Construct precomputedCCS from Tier 1 data
-      const precomputedCCS = {
-        culturalBundle: ctx.tier1?.culturalBundle || null,
-        mainCharacterAppearance: ctx.tier1?.mainCharacterAppearance || null,
-        coloredObjects: ctx.tier1?.coloredObjects || null,
-        secondaryCharacters: ctx.tier1?.secondaryCharacters || [],
-        characterSeed: ctx.tier1?.characterSeed || null,
-        source: 'tier1_ccs_inline'
-      };
+      let precomputedCCS: any;
+      
+      if (ctx.tier1?.characterSeed) {
+        // ✅ TIER 1 SUCCESS: Forward complete CCS bundle
+        precomputedCCS = {
+          culturalBundle: ctx.tier1.culturalBundle || null,
+          mainCharacterAppearance: ctx.tier1.mainCharacterAppearance || null,
+          coloredObjects: ctx.tier1.coloredObjects || null,
+          secondaryCharacters: ctx.tier1.secondaryCharacters || [],
+          characterSeed: ctx.tier1.characterSeed,
+          sessionSetting: ctx.tier1.sessionSetting,
+          source: 'tier1_ccs_inline'
+        };
+      } else {
+        // ❌ TIER 1 FAILED: Compute emergency bundle with Tier 25 vocab
+        console.warn(`⚠️ Tier 1 CCS failed, computing emergency bundle for Tier 2.5A`);
+        
+        const vocab = TIER_25_UNIFIED_VOCABULARY_EXTENDED;
+        const userInfo = ctx.payload.userInfo || {};
+        const avatarIdentity = ctx.payload.avatarIdentity || userInfo.avatar || {};
+        
+        // Helper: Pick random from array
+        const pick = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
+        
+        // Compute emergency bundle with Tier 25 vocab (hair/features = empty strings)
+        precomputedCCS = {
+          characterSeed: {
+            hairColor: pick(vocab.descriptors.hairColors || ['brown']),
+            hairStyle: pick(vocab.descriptors.hairStyles || ['short']),
+            eyeColor: pick(vocab.descriptors.eyeColors || ['brown']),
+            skinTone: avatarIdentity.skinTone || 'medium',
+            clothingStyle: pick(vocab.clothing?.basic || ['casual clothes']),
+            personalityTrait: pick(vocab.descriptors.emotions || ['happy']),
+            physicalTrait: pick(vocab.descriptors.sizeAge || ['young']),
+            hair: "", // ← Empty: Tier 2.5A will compute this
+            features: "" // ← Empty: Tier 2.5A will compute this
+          },
+          culturalBundle: {
+            hair: "", // ← Empty: Tier 2.5A will compute this
+            features: "", // ← Empty: Tier 2.5A will compute this
+            greeting: pick(vocab.actions || ['waves']),
+            activity: pick(vocab.actions || ['plays']),
+            setting: pick(vocab.settings.indoor || ['room']),
+            clothing: pick(vocab.clothing?.basic || ['comfortable outfit'])
+          },
+          mainCharacterAppearance: {
+            hairColor: pick(vocab.descriptors.hairColors || ['brown']),
+            hairStyle: pick(vocab.descriptors.hairStyles || ['short']),
+            eyeColor: pick(vocab.descriptors.eyeColors || ['brown']),
+            skinTone: avatarIdentity.skinTone || 'medium'
+          },
+          coloredObjects: pick(vocab.objects.toys || ['toy']),
+          secondaryCharacters: [],
+          sessionSetting: ctx.payload.sessionSetting || 'default',
+          source: 'emergency_tier25_vocab'
+        };
+        
+        console.log(`✅ Emergency bundle computed with Tier 25 vocab (hair/features empty for Tier 2.5A)`);
+      }
       
       const response = await fetch(`${SUPABASE_URL}/functions/v1/runware-template-ab`, {
         method: "POST",

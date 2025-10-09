@@ -1048,12 +1048,53 @@ async function handleTemplateABRequest(req: Request): Promise<Response> {
     if (mode === 'A') {
       console.log(`🚀 Processing Tier 2.5A: Full character consistency`);
       
-      // Check if orchestrator provided pre-computed CCS data
+      // ✅ CRITICAL VALIDATION: Check characterSeed presence (orchestrator provided data)
       const precomputedCCS = payload.precomputedCCS || null;
-      const hasPrecomputedData = precomputedCCS?.culturalBundle?.hair && 
-                                 precomputedCCS?.culturalBundle?.features;
       
-      if (hasPrecomputedData) {
+      if (!precomputedCCS?.characterSeed) {
+        console.error(`❌ Tier 2.5A: No characterSeed from orchestrator, escalating to Tier 2.5B`);
+        return createResponse({
+          success: false,
+          error: 'NO_CHARACTER_SEED',
+          escalation: 'NEXT_TIER',
+          tier: 'tier-2.5A',
+          service: SERVICE_NAME,
+          message: 'Tier 2.5A requires characterSeed from orchestrator. Escalating to Tier 2.5B.'
+        }, 503);
+      }
+      
+      // ✅ BUNDLE VALIDATION: Check all 7 methods present
+      const bundle = precomputedCCS.culturalBundle || {};
+      const requiredMethods = ['greeting', 'activity', 'setting', 'clothing'];
+      const missingMethods = requiredMethods.filter(m => !bundle[m]);
+      
+      if (missingMethods.length > 0) {
+        console.error(`❌ Tier 2.5A: Missing bundle methods: ${missingMethods.join(', ')}, escalating to Tier 2.5B`);
+        return createResponse({
+          success: false,
+          error: 'INCOMPLETE_BUNDLE',
+          escalation: 'NEXT_TIER',
+          tier: 'tier-2.5A',
+          service: SERVICE_NAME,
+          message: `Missing cultural bundle methods: ${missingMethods.join(', ')}`
+        }, 503);
+      }
+      
+      // ✅ INLINE COMPUTATION: If hair/features empty, use existing helper functions
+      if (!bundle.hair || !bundle.features) {
+        console.log(`⚙️ Tier 2.5A: Computing missing hair/features with inline helpers`);
+        const skinTone = precomputedCCS.characterSeed.skinTone || 'medium';
+        const culturalProfile = inlineDetectCultural(payload.userInfo, payload.avatarIdentity);
+        
+        // ✅ REUSE EXISTING MODULE-LEVEL HELPERS (no duplication)
+        bundle.hair = bundle.hair || getHairBySkintone(skinTone, sessionId);
+        bundle.features = bundle.features || getSkinBySkintone(skinTone, culturalProfile);
+        
+        console.log(`✅ Computed: hair="${bundle.hair}", features="${bundle.features}"`);
+      }
+      
+      // ✅ FAST PATH: Use orchestrator's pre-computed data (with computed hair/features if needed)
+      if (true) {
         // FAST PATH: Use orchestrator's pre-computed data (NO CCS IMPORT)
         console.log(`✅ Using orchestrator-provided CCS data (ZERO import overhead)`);
         
@@ -1148,8 +1189,23 @@ Brand Suffix: ${styleFramework.frameworkPrompt}.`;
     } else {
       console.log(`🚀 Processing Tier 2.5B: Lightweight template with cultural intelligence`);
       
-      // Use precomputed cultural data if available
+      // ✅ OPTIONAL PRECONDITION: Only run Tier 2.5B if Tier 1 CCS completely failed
       const precomputedCCS = payload.precomputedCCS || null;
+      const tier1CCSSent = precomputedCCS?.source === 'tier1_ccs_inline';
+      
+      if (tier1CCSSent) {
+        console.log(`⏭️ Tier 2.5B: Tier 1 CCS was sent (should have been handled by Tier 2.5A), skipping Tier 2.5B`);
+        return createResponse({
+          success: false,
+          error: 'TIER1_CCS_PRESENT',
+          escalation: 'NEXT_TIER',
+          tier: 'tier-2.5B',
+          service: SERVICE_NAME,
+          message: 'Tier 2.5B should only run when Tier 1 CCS completely failed. Escalating to next tier.'
+        }, 503);
+      }
+      
+      // Use precomputed cultural data if available (emergency bundle from orchestrator)
       const bundleHair = precomputedCCS?.culturalBundle?.hair || hair;
       const bundleFeatures = precomputedCCS?.culturalBundle?.features || features;
       
