@@ -722,7 +722,7 @@ Generate a comprehensive scene... The primaryScene must include the complete CHA
     return { systemPrompt, userPrompt, isNonEnglish, culturalContext };
   }
 
-  function callOpenAI(prompts: {systemPrompt:string; userPrompt:string}, attempt: number, requestAbort?: AbortController): Promise<{ ok:boolean; content?: string; status?: number }> {
+  function callOpenAI(prompts: {systemPrompt:string; userPrompt:string}, attempt: number): Promise<{ ok:boolean; content?: string; status?: number }> {
     if (!openaiApiKey) return Promise.resolve({ ok: false, status: 0 });
     return safeFetchJson<any>('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -733,7 +733,7 @@ Generate a comprehensive scene... The primaryScene must include the complete CHA
         max_tokens: 500,
         temperature: 0.7
       })
-    }, 25000, requestAbort?.signal).then((res) => {
+    }, 25000).then((res) => {
       const content = res.json?.choices?.[0]?.message?.content?.trim?.();
       return { ok: !!(res.ok && content), content, status: res.status };
     });
@@ -741,9 +741,20 @@ Generate a comprehensive scene... The primaryScene must include the complete CHA
 
   function parseVisual(content: string): Promise<{ schema: any | null }> {
     return safeJsonParse(content).then((json) => {
-      if (json && json.primaryScene) return { schema: json };
+      if (json && json.primaryScene) {
+        const len = json.primaryScene.length;
+        if (len < 200) {
+          console.warn(`⚠️ [SCHEMA_WARNING] primaryScene length (${len} chars) is below recommended 200 characters. Using anyway.`);
+        }
+        return { schema: json };
+      }
+      
       const match = content.match(/"primaryScene":\s*"([^"]+)"/);
-      if (match && match[1] && match[1].length >= 30) {
+      if (match && match[1]) {
+        const len = match[1].length;
+        if (len < 200) {
+          console.warn(`⚠️ [SCHEMA_WARNING] Extracted primaryScene length (${len} chars) is below recommended 200 characters. Using anyway.`);
+        }
         return {
           schema: {
             primaryScene: match[1],
@@ -753,8 +764,9 @@ Generate a comprehensive scene... The primaryScene must include the complete CHA
             setting: 'story scene',
             mood: 'cheerful and engaging',
             style: "children's book illustration",
-            secondaryCharacters: [],
-            objects: []
+            secondaryCharacters: { humans: [], pets: [] },
+            objects: [],
+            clothing: []
           }
         };
       }
@@ -762,27 +774,6 @@ Generate a comprehensive scene... The primaryScene must include the complete CHA
     });
   }
 
-  // ========== EMERGENCY VISUAL SCHEMA FALLBACK ==========
-  function buildEmergencyVisualSchema(storyText: string, characterData: string, nativeLanguage: string): any {
-    const culturalSetting = nativeLanguage === 'fr' ? 'charming Parisian park with Eiffel Tower in background' :
-                           nativeLanguage === 'es' ? 'colorful Mediterranean courtyard with fountain' :
-                           nativeLanguage === 'zh' ? 'traditional Chinese garden with bamboo and stone bridge' :
-                           nativeLanguage === 'ar' ? 'beautiful desert oasis with palm trees' :
-                           'bright, welcoming outdoor scene';
-    
-    return {
-      primaryScene: `${characterData} is present in a clear, friendly ${culturalSetting} inspired by the story: ${storyText.slice(0, 400)}${storyText.length>400?'...':''}. The setting is bright and welcoming, with visible actions matching the text and a consistent children's book composition.`,
-      backgroundColor: 'warm natural light',
-      lighting: 'soft daylight',
-      composition: 'centered character with context',
-      setting: 'story-appropriate environment',
-      mood: 'cheerful and engaging',
-      style: "children's book illustration",
-      secondaryCharacters: { humans: [], pets: [] },
-      objects: [],
-      characterAppearance: structuredAvatarData
-    };
-  }
 
   function savePrimaryScene(directMode: boolean, visualSchema: any): Promise<void> {
     if (!directMode) return Promise.resolve();
@@ -833,8 +824,8 @@ Generate a comprehensive scene... The primaryScene must include the complete CHA
       const prompts = buildPrompts(prev);
       let attempt = 0;
       function loop(lastBackoff = false): Promise<{ ok:boolean; visual:any|null; upstreamBackoff:boolean }> {
-        if (attempt >= 3) return Promise.resolve({ ok: false, visual: null, upstreamBackoff: lastBackoff });
-        return callOpenAI({ systemPrompt: prompts.systemPrompt, userPrompt: prompts.userPrompt }, attempt, requestAbort).then((res) => {
+        if (attempt >= 2) return Promise.resolve({ ok: false, visual: null, upstreamBackoff: lastBackoff });
+        return callOpenAI({ systemPrompt: prompts.systemPrompt, userPrompt: prompts.userPrompt }, attempt).then((res) => {
           if (!res.ok || !res.content) {
             const isBackoff = res.status === 429 || res.status === 503;
             attempt++;
@@ -852,43 +843,53 @@ Generate a comprehensive scene... The primaryScene must include the complete CHA
       return loop();
     })
     .then((result) => {
-      // CRITICAL: Emergency fallback ALWAYS applied if AI generation failed
-      const visualSchema = result.ok && result.visual ? result.visual : buildEmergencyVisualSchema(storyText, characterData, nativeLanguage);
-      const ok = !!visualSchema; // Emergency schema is ALWAYS valid
+      // No primaryScene? Return ok: false immediately
+      if (!result.ok || !result.visual || !result.visual.primaryScene) {
+        console.error('❌ AI failed to generate primaryScene');
+        const aiDebugSchema = {
+          modelUsed: 'gpt-4o-mini',
+          aiGenerationSucceeded: false,
+          failureReason: !result.ok ? 'ai_request_failed' : 'no_primary_scene_in_response',
+          attemptsUsed: 2,
+          characterDataSent: characterData,
+          structuredAvatarData: userInfo?.structuredAvatarData || null,
+          storyTextLength: storyText.length
+        };
+        return { ok: false, visualSchema: null, aiDebugSchema, structuredAvatarData, upstreamBackoff: result.upstreamBackoff };
+      }
       
+      // Got primaryScene? Success (include full schema if available)
       const aiDebugSchema = {
-        modelUsed: (result.ok && result.visual) ? 'gpt-4o-mini' : 'emergency-local-fallback',
-        aiGenerationSucceeded: result.ok && !!result.visual,
-        emergencyFallbackTriggered: !(result.ok && result.visual),
+        modelUsed: 'gpt-4o-mini',
+        aiGenerationSucceeded: true,
+        primarySceneLength: result.visual.primaryScene.length,
         characterDataSent: characterData,
         structuredAvatarData: userInfo?.structuredAvatarData || null,
-        rawUserInfoReceived: {
-          hasStructuredAvatar: !!userInfo?.structuredAvatarData,
-          avatarSkinTone: userInfo?.avatar?.skinTone,
-          skinTone: userInfo?.skinTone,
-          avatarHairColor: userInfo?.avatar?.hairColor,
-          nativeLanguage: userInfo?.native_language || userInfo?.nativeLanguage,
-          fullUserInfo: userInfo
-        },
         storyTextLength: storyText.length,
-        isNonEnglish: nativeLanguage && nativeLanguage !== 'en',
+        isNonEnglish: nativeLanguage && nativeLanguage !== 'en'
       };
-      return savePrimaryScene(directMode, visualSchema).then(()=>({ ok:true, visualSchema, aiDebugSchema, structuredAvatarData, upstreamBackoff: result.upstreamBackoff }));
+      
+      return savePrimaryScene(directMode, result.visual).then(() => ({ 
+        ok: true, 
+        visualSchema: result.visual, 
+        aiDebugSchema, 
+        structuredAvatarData, 
+        upstreamBackoff: result.upstreamBackoff 
+      }));
     })
     .catch((outerSchemaError) => {
-      // OUTER SAFETY NET: If entire AI generation chain fails, use emergency fallback
-      console.error(`❌ [SCHEMA_GENERATION] Complete failure, using emergency fallback:`, String(outerSchemaError?.message || outerSchemaError));
-      const emergencySchema = buildEmergencyVisualSchema(storyText, characterData, nativeLanguage);
+      // Catastrophic failure (unhandled exception) - fail fast
+      console.error('❌ Catastrophic schema generation failure:', String(outerSchemaError?.message || outerSchemaError));
       const aiDebugSchema = {
-        modelUsed: 'emergency-local-fallback-outer-safety-net',
+        modelUsed: 'none',
         aiGenerationSucceeded: false,
-        emergencyFallbackTriggered: true,
+        catastrophicError: true,
         outerError: String(outerSchemaError?.message || outerSchemaError),
         characterDataSent: characterData,
         structuredAvatarData: userInfo?.structuredAvatarData || null,
-        storyTextLength: storyText.length,
+        storyTextLength: storyText.length
       };
-      return savePrimaryScene(directMode, emergencySchema).then(()=>({ ok:true, visualSchema: emergencySchema, aiDebugSchema, structuredAvatarData, upstreamBackoff: false }));
+      return { ok: false, visualSchema: null, aiDebugSchema, structuredAvatarData, upstreamBackoff: false };
     });
 }
 
