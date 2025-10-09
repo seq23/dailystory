@@ -954,3 +954,5 @@ serve((req) => {
         console.log(`🔓 [GATE] ${gateKey} released (success=${handlerSuccess})`);
       }
     });
+  }); // Close .then(async (payload) => { from line 786
+}); // Close serve((req) => { from line 771

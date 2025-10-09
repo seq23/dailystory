@@ -85,7 +85,7 @@ class CacheCoordinator {
   /**
    * Emergency cache reset cascade
    */
-  emergencyReset(reason: string): void {
+  async emergencyReset(reason: string): Promise<void> {
     console.error(`🚨 EMERGENCY CACHE RESET: ${reason}`);
     
     // Clear all import caches
@@ -93,7 +93,7 @@ class CacheCoordinator {
     
     // Clear static data cache
     try {
-      const { EdgeStaticCache } = require('./StaticDataCache.ts');
+      const { EdgeStaticCache } = await import('./StaticDataCache.ts');
       if (EdgeStaticCache?.getInstance()?.clear) {
         EdgeStaticCache.getInstance().clear();
       }
@@ -153,6 +153,6 @@ export function getCacheHealth(): CacheHealth {
 }
 
 // Export emergency reset function
-export function performEmergencyReset(reason: string): void {
-  cacheCoordinator.emergencyReset(reason);
+export function performEmergencyReset(reason: string): Promise<void> {
+  return cacheCoordinator.emergencyReset(reason);
 }
