@@ -1833,7 +1833,7 @@ export class CharacterConsistencyService {
     try {
       const cached = await this.getCharacterFromDatabase(sessionId, cacheKey);
       if (cached) {
-        this.smartCache.set(cacheKey, cached);
+        this.storyCache.smartWrite(cacheKey, cached);
         console.log(`✅ [CCS] Using cached character data for ${characterName}`);
         return cached;
       }
@@ -1871,7 +1871,7 @@ export class CharacterConsistencyService {
         // Character data is still in smart cache, continue anyway
       }
       
-      this.smartCache.set(cacheKey, characterData);
+      this.storyCache.smartWrite(cacheKey, characterData);
       return characterData;
     } catch (error) {
       console.error('❌ Enhanced character seed generation failed:', error);
