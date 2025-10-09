@@ -1026,12 +1026,15 @@ serve((req) => {
       operationName: 'ai-visual-scene',
       promptSignature: content ? content.substring(0, 100) : ''
     });
+    
+    const requestHash = createRequestHash({ storyText: content, pageNumber, userInfo });
 
     const result = await IdempotencyMemory.getOrRun(idempotencyKey, 30000, async () => {
-      // generate complete visual schema
-      const gen = await generateCompleteVisualSchema(
-        content, userInfo, sessionId, pageNumber, directMode, null, mainCharacterAppearance, secondaryCharacters
-      );
+      return await executeWithLKG(requestHash, async () => {
+        // generate complete visual schema
+        const gen = await generateCompleteVisualSchema(
+          content, userInfo, sessionId, pageNumber, directMode, null, mainCharacterAppearance, secondaryCharacters
+        );
 
       if (!gen.ok || !gen.visualSchema) {
         const status = gen.upstreamBackoff ? 503 : 500;
@@ -1119,6 +1122,7 @@ serve((req) => {
       };
 
       return corsResponse(response, req, 200);
+      }); // Close executeWithLKG
     }).then((result) => {
       // Result handling within the promise chain
       if (result instanceof Response) {
@@ -1128,6 +1132,7 @@ serve((req) => {
       handlerSuccess = true;
       return corsResponse(result, req, 200);
     }).catch((outerErr) => {
+      clearTimeout(budgetTimer); // Clear budget timer on error
       console.error('❌ [OUTER_ERROR] ai-visual-scene-creator top-level error:', String(outerErr?.message || outerErr));
       return corsResponse({ success:false, error:String(outerErr?.message || outerErr), tier:'ERROR' }, req, 500);
     }).finally(() => {

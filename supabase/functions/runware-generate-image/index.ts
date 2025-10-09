@@ -2309,6 +2309,7 @@ serve(async (req) => {
 
     if (isValidationError) {
       // Return 400 Bad Request for client-side validation errors
+      clearTimeout(budgetTimer); // Clear budget timer on validation error
       console.error(`[runware-generate-image] Validation error: ${errorMessage}`);
       return corsResponse(
         {
@@ -2336,6 +2337,7 @@ serve(async (req) => {
 
     if (!isSyncFailure || attempt === FAST_BOOT_SYNC.maxRetries) {
       // Final failure or non-sync error
+      clearTimeout(budgetTimer); // Clear budget timer on final error
       console.error(`[runware-generate-image] Final error after retries: ${errorMessage}`);
       return corsResponse(
         {
@@ -2356,6 +2358,7 @@ serve(async (req) => {
 } // end for loop
 
   // Should never reach here, but fallback
+  clearTimeout(budgetTimer); // Clear budget timer on max retries fallback
   return corsResponse(
     {
       error: "Max retries exceeded",
