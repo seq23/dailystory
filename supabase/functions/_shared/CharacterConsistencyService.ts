@@ -1605,10 +1605,23 @@ export class CharacterConsistencyService {
   // ============= CHARACTER GENERATION (REFACTORED WITH FAIL-FAST/FALLBACK SPLIT) =============
 
   /**
-   * Get basic character seed - LIGHTWEIGHT FALLBACK (never fails)
-   * Pure computation with no database dependencies
-   * Used for graceful degradation when enhanced seed generation fails
+   * ⚠️ DEPRECATED AS OF 2025-10-09 ⚠️
+   * 
+   * getBasicCharacterSeed() - REMOVED FROM PRODUCTION
+   * 
+   * This method was removed from the runtime implementations:
+   * - CharacterConsistencyServiceInline.js (Tier 1)
+   * - CharacterConsistencyService.js (Gold Standard)
+   * 
+   * Reason: Overengineered fallback with hardcoded clothing that produced incomplete
+   * character data. Database errors now gracefully degrade to fresh seed generation
+   * using inline vocabulary. Core CCS method failures escalate to Direct Mode.
+   * 
+   * See: docs/CCS_DATABASE_ERROR_HANDLING.md for new error handling strategy
    */
+  
+  // Method definition kept for reference only - DO NOT USE IN PRODUCTION
+  /* 
   async getBasicCharacterSeed(avatarIdentity, sessionId) {
     const characterName = avatarIdentity?.name || 'child';
     const avatarType = avatarIdentity?.type || 'child';
@@ -1657,6 +1670,7 @@ export class CharacterConsistencyService {
       generatedAt: Date.now()
     };
   }
+  */
 
   /**
    * Get character from cache only - SIMPLE DATABASE LOOKUP
@@ -1859,12 +1873,17 @@ export class CharacterConsistencyService {
   async getCulturalEnhancements(userInfo, sessionId, characterName = 'child') {
     const cacheKey = `${sessionId}_${characterName}`;
     
-    let characterData = await this.getCharacterFromDatabase(sessionId, cacheKey);
+    let characterData = null;
+    try {
+      characterData = await this.getCharacterFromDatabase(sessionId, cacheKey);
+    } catch (dbError) {
+      console.warn(`⚠️ [CCS] Database fetch failed in getCulturalEnhancements:`, dbError);
+    }
     
     if (!characterData) {
-      const avatarIdentity = userInfo?.avatarIdentity || userInfo?.avatar || { name: characterName };
-      // Use basic seed for fallback (graceful degradation)
-      characterData = await this.getBasicCharacterSeed(avatarIdentity, sessionId);
+      // ⚠️ UPDATED 2025-10-09: No fallback to getBasicCharacterSeed (method removed)
+      // If enhanced seed unavailable, fail fast and escalate to Direct Mode
+      throw new Error(`CCS_CULTURAL_ENHANCEMENTS_FAILED: No character data available for ${characterName}`);
     }
     
     if (characterData.selectedCulturalHair && characterData.selectedCulturalFeatures) {

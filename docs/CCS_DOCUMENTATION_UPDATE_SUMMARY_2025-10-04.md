@@ -26,7 +26,6 @@
 | Method | Line | Type | Purpose |
 |--------|------|------|---------|
 | `getEnhancedCharacterSeed()` | 1419 | Fail-Fast | Full character seed with DB |
-| `getBasicCharacterSeed()` | 1338 | Graceful | Fallback seed without DB |
 | `getCulturalEnhancements()` | 1586 | Graceful | Cultural features bundle |
 | `detectSecondaryCharacters()` | 698 | Graceful | Find story characters |
 | `detectAllCharacters()` | 936 | Graceful | Comprehensive detection |
