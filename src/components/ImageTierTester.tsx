@@ -2046,16 +2046,32 @@ export const ImageTierTester = () => {
               } else if (errorStatus === 503) {
                 // Check for template AB/CD healthy escalation
                 const isTemplateEndpoint = endpoint.name === 'runware-template-ab' || endpoint.name === 'runware-template-cd';
-                const hasEscalationSignal = errorMessage.includes('NO_PRECOMPUTED_CCS') || 
-                                            errorMessage.includes('HEALTHY_ESCALATION') ||
-                                            errorMessage.includes('escalation') ||
-                                            responseBody.includes('NO_PRECOMPUTED_CCS') ||
-                                            responseBody.includes('escalation') ||
-                                            postResponse.data?.escalation === 'NEXT_TIER';
+                
+                // Check response data for escalation signal (more reliable than error message)
+                const hasEscalationInData = postResponse.data?.escalation === 'NEXT_TIER' ||
+                                            postResponse.data?.error === 'NO_PRECOMPUTED_CCS';
+                
+                // Also check error message patterns
+                const hasEscalationInMessage = errorMessage.includes('NO_PRECOMPUTED_CCS') || 
+                                              errorMessage.includes('HEALTHY_ESCALATION') ||
+                                              errorMessage.includes('escalation');
+                
+                const hasEscalationSignal = hasEscalationInData || hasEscalationInMessage;
+                
+                // Log for debugging
+                if (isTemplateEndpoint) {
+                  console.log(`🔍 Template ${endpoint.name} 503 analysis:`, {
+                    hasEscalationInData,
+                    hasEscalationInMessage,
+                    dataEscalation: postResponse.data?.escalation,
+                    dataError: postResponse.data?.error,
+                    willTreatAsHealthy: hasEscalationSignal
+                  });
+                }
                 
                 if (isTemplateEndpoint && hasEscalationSignal) {
                   category = 'HEALTHY_ESCALATION';
-                  status = 200; // Override to 200 for healthy escalation
+                  status = 200; // Treat as healthy
                 } else {
                   category = 'BOOT_SYNC_ANOMALY';
                   status = 503;
