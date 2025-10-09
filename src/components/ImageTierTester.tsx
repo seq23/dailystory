@@ -2056,7 +2056,7 @@ export const ImageTierTester = () => {
                                               errorMessage.includes('HEALTHY_ESCALATION') ||
                                               errorMessage.includes('escalation');
                 
-                const hasEscalationSignal = hasEscalationInData || hasEscalationInMessage;
+                let hasEscalationSignal = hasEscalationInData || hasEscalationInMessage;
                 
                 // Log for debugging
                 if (isTemplateEndpoint) {
@@ -2071,6 +2071,40 @@ export const ImageTierTester = () => {
                       ? 'Template tier correctly escalating due to missing precomputed CCS data'
                       : 'Genuine boot/sync failure - needs investigation'
                   });
+                }
+                
+                // Raw POST fallback for template endpoints when invoke doesn't surface escalation
+                if (isTemplateEndpoint && !hasEscalationSignal) {
+                  try {
+                    console.log(`🔄 Attempting raw POST fallback for ${endpoint.name} to detect escalation...`);
+                    const rawPostResponse = await fetch(`https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/${endpoint.name}`, {
+                      method: 'POST',
+                      headers: {
+                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino',
+                        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino',
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify(payload)
+                    });
+                    
+                    const rawBody = await rawPostResponse.json();
+                    const foundEscalation = rawBody.escalation === 'NEXT_TIER' || rawBody.error === 'NO_PRECOMPUTED_CCS';
+                    
+                    console.log(`🔍 Raw POST fallback result for ${endpoint.name}:`, {
+                      status: rawPostResponse.status,
+                      escalation: rawBody.escalation,
+                      error: rawBody.error,
+                      foundEscalation
+                    });
+                    
+                    if (foundEscalation) {
+                      hasEscalationSignal = true;
+                      console.log(`✅ Raw POST fallback detected HEALTHY_ESCALATION for ${endpoint.name}`);
+                    }
+                  } catch (fallbackError) {
+                    console.log(`⚠️ Raw POST fallback failed for ${endpoint.name}:`, fallbackError);
+                    // Swallow error, fall back to BOOT_SYNC_ANOMALY
+                  }
                 }
                 
                 if (isTemplateEndpoint && hasEscalationSignal) {
