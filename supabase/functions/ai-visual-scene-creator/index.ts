@@ -831,9 +831,11 @@ Generate a comprehensive scene... The primaryScene must include the complete CHA
     .then((prev) => {
       const prompts = buildPrompts(prev);
       let attempt = 0;
+      let lastOpenAIResponse: { status?: number; content?: string; ok: boolean } | null = null;
       function loop(lastBackoff = false): Promise<{ ok:boolean; visual:any|null; upstreamBackoff:boolean }> {
         if (attempt >= 2) return Promise.resolve({ ok: false, visual: null, upstreamBackoff: lastBackoff });
         return callOpenAI({ systemPrompt: prompts.systemPrompt, userPrompt: prompts.userPrompt }, attempt).then((res) => {
+          lastOpenAIResponse = res;
           if (!res.ok || !res.content) {
             const isBackoff = res.status === 429 || res.status === 503;
             attempt++;
@@ -861,7 +863,13 @@ Generate a comprehensive scene... The primaryScene must include the complete CHA
           attemptsUsed: 2,
           characterDataSent: characterData,
           structuredAvatarData: userInfo?.structuredAvatarData || null,
-          storyTextLength: storyText.length
+          storyTextLength: storyText.length,
+          systemPrompt: prompts.systemPrompt,
+          userPrompt: prompts.userPrompt,
+          culturalContext: prompts.culturalContext,
+          httpStatus: lastOpenAIResponse?.status || 0,
+          rawResponse: lastOpenAIResponse?.content?.substring(0, 500) || null,
+          parseError: !result.visual ? 'no_visual_object_returned' : 'primaryScene_field_missing'
         };
         return { ok: false, visualSchema: null, aiDebugSchema, structuredAvatarData, upstreamBackoff: result.upstreamBackoff };
       }
@@ -874,7 +882,11 @@ Generate a comprehensive scene... The primaryScene must include the complete CHA
         characterDataSent: characterData,
         structuredAvatarData: userInfo?.structuredAvatarData || null,
         storyTextLength: storyText.length,
-        isNonEnglish: nativeLanguage && nativeLanguage !== 'en'
+        isNonEnglish: nativeLanguage && nativeLanguage !== 'en',
+        systemPrompt: prompts.systemPrompt,
+        userPrompt: prompts.userPrompt,
+        culturalContext: prompts.culturalContext,
+        httpStatus: lastOpenAIResponse?.status || 200
       };
       
       return savePrimaryScene(directMode, result.visual).then(() => ({ 
@@ -895,7 +907,13 @@ Generate a comprehensive scene... The primaryScene must include the complete CHA
         outerError: String(outerSchemaError?.message || outerSchemaError),
         characterDataSent: characterData,
         structuredAvatarData: userInfo?.structuredAvatarData || null,
-        storyTextLength: storyText.length
+        storyTextLength: storyText.length,
+        systemPrompt: prompts?.systemPrompt || null,
+        userPrompt: prompts?.userPrompt || null,
+        culturalContext: prompts?.culturalContext || null,
+        httpStatus: 0,
+        rawResponse: null,
+        parseError: 'catastrophic_exception'
       };
       return { ok: false, visualSchema: null, aiDebugSchema, structuredAvatarData, upstreamBackoff: false };
     });
@@ -1114,6 +1132,7 @@ serve((req) => {
         style: gen.visualSchema.style,
         secondaryCharacters: gen.visualSchema.secondaryCharacters || [],
         objects: gen.visualSchema.objects || [],
+        aiSchema: gen.visualSchema,
         ...(directMode && characterSeed && { characterSeed }),
         ...(directMode && culturalBundle && { culturalBundle }),
         ...(gen.structuredAvatarData && { structuredAvatarData: gen.structuredAvatarData }),

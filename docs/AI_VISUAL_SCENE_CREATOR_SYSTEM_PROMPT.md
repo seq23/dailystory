@@ -148,6 +148,31 @@ This rule bridges the gap between textual story actions and visual scene require
 - **Primary Scene Minimum**: 200 characters (warning-only, not rejection)
 - **Failure Behavior**: Returns `ok: false` to escalate to Tier 2 (no emergency fallback for primaryScene)
 
+## Debug Response Fields (October 2025)
+
+When the function returns, `aiDebugSchema` now includes comprehensive debugging data:
+
+**On Success:**
+- `systemPrompt` (string) - Full system prompt sent to OpenAI
+- `userPrompt` (string) - Full user prompt sent to OpenAI
+- `culturalContext` (string) - Cultural enhancement context used
+- `httpStatus` (number) - HTTP status from OpenAI (typically 200)
+- `aiGenerationSucceeded` (boolean) - true
+- `primarySceneLength` (number) - Character count of generated scene
+
+**On Failure:**
+- `systemPrompt` (string) - Full system prompt that was sent
+- `userPrompt` (string) - Full user prompt that was sent
+- `culturalContext` (string) - Cultural context attempted
+- `httpStatus` (number) - HTTP status from OpenAI (0 if network failure, 429 if rate limited, etc.)
+- `rawResponse` (string) - First 500 characters of what OpenAI actually returned
+- `parseError` (string) - Why parsing failed (`no_visual_object_returned`, `primaryScene_field_missing`, `catastrophic_exception`)
+- `aiGenerationSucceeded` (boolean) - false
+- `failureReason` (string) - High-level failure category
+
+**Top-Level Response:**
+- `aiSchema` (object) - The complete visual schema object when present, making schema detection straightforward
+
 ---
 
 ## Complete System and User Prompts (Word-for-Word)
