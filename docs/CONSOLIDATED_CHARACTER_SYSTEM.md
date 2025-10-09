@@ -52,36 +52,55 @@ Explicitly handles OpenAI integration for generating primaryScene descriptions:
 
 ## API Surface
 
-### CharacterConsistencyService Methods
+### CharacterConsistencyService Core Methods (Performance-Optimized)
 
-#### Character Management
-- `getCharacterSeed(sessionId, avatarIdentity, storyContext, sessionType, pageTextClothing?)` - Get/create character with consistency
-  - **CRITICAL**: `avatarIdentity` MUST be an object `{name, type, skinTone}`, NOT a string
-  - **Incorrect**: `getCharacterSeed(sessionId, characterName)` ❌
-  - **Correct**: `getCharacterSeed(sessionId, {name, type, skinTone}, storyContext, 'continuing')` ✅
-- `getCulturalEnhancements(userInfo, sessionId, characterName)` ✅ **ENHANCED (ERROR-054)** - Returns culturally appropriate hair and features via 3-tier system (StaticDataCache → LEAN_CULTURAL_FALLBACK → no generic), persists to database
-- `generateSecondaryCharacter(type, details, userInfo, sessionId)` - Create secondary characters
-- `getSecondaryCharacterSeed(sessionId, characterName, characterType, userInfo?)` - Get secondary character seeds
+#### The 5 Core Methods
 
-#### Visual Detail Management  
-- `analyzeVisualDetails(sessionId, pageText, pageNumber, characterName?)` - Detect and store visual elements
-- `getColoredObjects(sessionId)` - Get detected colored objects for consistency
-  - **CRITICAL**: This method is async, MUST be awaited
-  - **Incorrect**: `const objects = service.getColoredObjects(sessionId)` ❌
-  - **Correct**: `const objects = await service.getColoredObjects(sessionId)` ✅
-- `getCharacterAppearanceFromStory(sessionId, characterName?)` - Build appearance description
-- `buildClothingDescription(sessionId, characterName)` - Get character clothing description
-- `getSessionSetting(sessionId)` - Get persistent setting across pages
+1. **`batchFetchCCSData(sessionId, characterName)`**
+   - **Purpose**: Fetch all CCS data in a single database query
+   - **Returns**: `{ characterSeed, visualDetails, coloredObjects, latestClothing }`
+   - **Performance**: Replaces 6 separate queries with 1 batch query
+   - **Database Tables**: `character_consistency_cache`, `visual_details_cache`
 
-#### Detection & Analysis
-- `detectAllCharacters(text, context)` - **[CONSOLIDATED API]** Unified character detection
-  - **Returns**: `{ secondaryCharacters: [...], coloredObjects: [...], mainCharacterAppearance: {...} }`
-  - **Consolidates**: All detection methods (humans, animals, relationships, objects, appearance)
-  - **Usage**: Primary detection API for all tiers
-- `detectSecondaryCharacters(text, sessionId, pageNumber)` - Detects ALL secondary characters
-  - **Handles**: Proper names, relationships, animals, pets
-  - **Replaces**: `detectAnimals()`, `detectCharacterAnimals()`, `detectRelationships()` (non-existent methods)
-  - **Tiered Caching**: Uses tier25 first (80% hit rate), full vocab fallback
+2. **`getStructuredAvatarData(sessionId, userInfo)`**
+   - **Purpose**: Generate hair/skin consistency from avatar identity
+   - **Returns**: `{ skinTone, hairColor, skinFeatures, type, name, age, nativeLanguage, ethnicity }`
+   - **Data Sources**: Inline vocabulary (HAIR_BY_SKIN_TONE_INLINE, AFRICAN_AMERICAN_HAIR_INLINE, AFRICAN_AMERICAN_FACIAL_FEATURES_INLINE)
+   - **Eye Color**: Embedded in `skinFeatures` for African American users, inferred from story for others
+
+3. **`getEnhancedCharacterSeed(sessionId, avatarIdentity, storyContext, sessionType, pageTextClothing)`**
+   - **Purpose**: Fetch or generate full character seed **including cultural enhancements**
+   - **Returns**: Character seed with `selectedCulturalHair` and `selectedCulturalFeatures`
+   - **Database Tables**: `character_consistency_cache` (read/write)
+   - **Critical**: Includes cultural bundle - no need for separate `getCulturalEnhancements()` call
+   - **Clothing Persistence**: Uses `pageTextClothing` parameter to maintain clothing across pages
+
+4. **`analyzeVisualDetails(sessionId, pageText, pageNumber) + getColoredObjects(sessionId)`**
+   - **Purpose**: Extract colored objects and cache them
+   - **Returns**: Array of colored object strings (e.g., `["red ball", "blue shirt"]`)
+   - **Database Tables**: `visual_details_cache` (write)
+   - **Vocabulary**: Uses Tier 25 cache first (240 words), lazy-loads full vocab if needed
+
+5. **`detectAllCharacters(text, context) + batchWriteDetections(sessionId, pageNumber, detectionResults)`**
+   - **Purpose**: Detect secondary characters and main character appearance, batch write to database
+   - **Returns**: `{ secondaryCharacters: [...], mainCharacterAppearance: {...} }`
+   - **Database Tables**: `visual_details_cache` (write)
+   - **Clothing Detection**: Stores clothing in `visual_details_cache` with `detail_type: 'clothing'`
+   - **Performance**: Batch writes all detections in 1 query
+
+#### Helper Methods
+
+- **`buildClothingDescription(sessionId, characterName)`** - Get most recent clothing (fixed to return only latest, not all)
+- **`detectSimpleAtmosphere(pageText)`** - Detect indoor/outdoor context using tiered vocabulary
+- **`generateSecondaryCharacter(characterName, characterType, userInfo, sessionId)`** - Create secondary characters
+- **`getSecondaryCharacterSeed(sessionId, characterName, characterType, userInfo)`** - Get secondary character seeds
+
+#### Deprecated Methods (Removed from Orchestrator)
+
+- ~~`getCulturalEnhancements(userInfo, sessionId, characterName)`~~ - **REDUNDANT** (duplicates `getEnhancedCharacterSeed`)
+- ~~`getCharacterAppearanceFromStory(sessionId, characterName)`~~ - **DEAD CODE** (never used in orchestrator)
+- ~~`getSessionSetting(sessionId, "never_ending_story")`~~ - **DEAD CODE** (never used)
+- ~~`getSessionSetting(sessionId, "context")`~~ - **REPLACED** by `detectSimpleAtmosphere()`
 
 #### Session Management
 - `clearSession(sessionId)` - Clear all session data from both authoritative tables

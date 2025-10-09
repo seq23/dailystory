@@ -1663,6 +1663,79 @@ export class CharacterConsistencyService {
   }
 
   /**
+   * Batch fetch all CCS data in a single database query
+   * Returns: { characterSeed, visualDetails, coloredObjects, latestClothing }
+   */
+  async batchFetchCCSData(sessionId, characterName = 'main_character') {
+    try {
+      const supabase = await this.getSupabaseClient();
+      if (!supabase) {
+        console.warn('⚠️ Supabase client unavailable for batch fetch');
+        return { characterSeed: null, visualDetails: [], coloredObjects: [], latestClothing: null };
+      }
+      
+      const cacheKey = `${sessionId}_${characterName}`;
+      
+      // Single query to fetch character data
+      const { data: characterData, error: charError } = await supabase
+        .from('character_consistency_cache')
+        .select('character_data')
+        .eq('session_id', sessionId)
+        .eq('character_key', cacheKey)
+        .maybeSingle();
+      
+      if (charError) {
+        console.error('❌ Batch fetch character error:', charError);
+      }
+      
+      // Single query to fetch visual details
+      const { data: visualData, error: vizError } = await supabase
+        .from('visual_details_cache')
+        .select('detail_type, detail_key, detail_value, page_first_seen, visual_elements')
+        .eq('session_id', sessionId)
+        .order('page_first_seen', { ascending: false });
+      
+      if (vizError) {
+        console.error('❌ Batch fetch visual details error:', vizError);
+      }
+      
+      // Parse colored objects from visual details
+      const coloredObjects = (visualData || [])
+        .filter(v => v.detail_type === 'colored_object')
+        .map(v => ({
+          object: v.detail_key,
+          color: v.visual_elements?.color,
+          fullDescription: v.detail_value
+        }));
+      
+      // FIX: Extract ONLY the most recent clothing item (highest page_first_seen)
+      const clothingRecords = (visualData || [])
+        .filter(v => v.detail_type === 'clothing');
+      
+      const latestClothing = clothingRecords.length > 0 
+        ? clothingRecords[0].detail_value  // Already sorted descending by page_first_seen
+        : null;
+      
+      console.log(`✅ Batch fetched CCS data for ${sessionId}:`, {
+        hasCharacterSeed: !!characterData?.character_data,
+        visualDetailsCount: visualData?.length || 0,
+        coloredObjectsCount: coloredObjects.length,
+        latestClothing: latestClothing || 'none'
+      });
+      
+      return {
+        characterSeed: characterData?.character_data || null,
+        visualDetails: visualData || [],
+        coloredObjects,
+        latestClothing
+      };
+    } catch (error) {
+      console.error('❌ batchFetchCCSData failed:', error);
+      return { characterSeed: null, visualDetails: [], coloredObjects: [], latestClothing: null };
+    }
+  }
+
+  /**
    * Get or create Supabase client using resilient loader with enhanced fallback
    */
   async getSupabaseClient() {
@@ -1965,38 +2038,29 @@ export class CharacterConsistencyService {
    * 2. Tier25 vocabulary (fast, 9% of requests - new sessions)
    * 3. Full vocabulary (rare, 1% of requests)
    */
+  /**
+   * Build clothing description from most recent page detection
+   * FIX: Returns ONLY the most recent clothing item (highest page_first_seen)
+   * to ensure characters wear the same clothes across pages until story changes them
+   */
   async buildClothingDescription(sessionId, characterName) {
-    try {
-      // 1. Try database cache first (fastest path)
-      const supabase = await this.getSupabaseClient();
-      if (supabase) {
-        const { data: clothingDetails, error } = await supabase
-          .from('visual_details_cache')
-          .select('detail_value')
-          .eq('session_id', sessionId)
-          .eq('character_name', characterName)
-          .eq('detail_type', 'clothing');
-
-        if (!error && clothingDetails && clothingDetails.length > 0) {
-          const clothingPieces = clothingDetails
-            .map(detail => detail.detail_value)
-            .filter(Boolean)
-            .join(', ');
-
-          if (clothingPieces) {
-            console.log(`👕 Using story-detected clothing: ${clothingPieces}`);
-            return `wearing ${clothingPieces}`;
-          }
-        }
-      }
-      
-      // ✅ No story-detected clothing found - let Runware decide naturally
-      console.log(`👕 No story clothing detected - letting Runware generate clothing naturally`);
-      return '';
-    } catch (error) {
-      console.log('⚠️ All clothing description fallbacks failed:', error.message);
-      return '';
-    }
+    const supabase = await this.getSupabaseClient();
+    if (!supabase) return '';
+    
+    const { data, error } = await supabase
+      .from('visual_details_cache')
+      .select('detail_value, page_first_seen')
+      .eq('session_id', sessionId)
+      .eq('character_name', characterName)
+      .eq('detail_type', 'clothing')
+      .order('page_first_seen', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    
+    if (error || !data) return '';
+    
+    console.log(`👔 Latest clothing for ${characterName}: "${data.detail_value}" (first seen page ${data.page_first_seen})`);
+    return data.detail_value;
   }
 
   /**
