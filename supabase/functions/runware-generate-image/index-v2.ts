@@ -398,7 +398,35 @@ function validatePayloadFast(payload: any): boolean {
   return true;
 }
 
-// ============= KEEP EXISTING processInlinedTier1 (unchanged) =============
+// ============================================================================
+// HELPER FUNCTION FOR TIER 1
+// ============================================================================
+
+function getInlinedStyleFramework(difficulty: string): string {
+  const frameworks = {
+    beginner:
+      "Contemporary children's book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, warm natural lighting",
+    easy:
+      "Contemporary children's book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, warm natural lighting",
+    medium:
+      "Contemporary children's book illustration with sharp facial definition, refined features, detailed eye rendering with clear highlights, charming expressions, character-focused composition, shallow DOF, high rendering quality, facial detail emphasis, detailed hair strands, artistic lighting, vibrant color harmony, consistent character design, child-friendly aesthetic, diverse representation, warm natural lighting",
+    hard:
+      "2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation",
+    expert:
+      "2.9D rendered illustration with golden hour volumetric lighting, SSS, AO, GI, beautiful child characters with graceful features, charming expressions, semi-realistic digital art, photorealism-artistic balance, detailed hair strands, dimensional skin rendering, matte finish, realistic materials, AA, raytraced shadows, shallow DOF, high-end rendering, consistent topology & proportions, child-friendly, diverse representation",
+  };
+
+  const key = difficulty?.toLowerCase();
+  if (key && key in frameworks) {
+    return frameworks[key as keyof typeof frameworks];
+  }
+  return frameworks["medium"];
+}
+
+// ============================================================================
+// TIER 1: INLINED CHARACTER CONSISTENCY (FULL IMPLEMENTATION)
+// ============================================================================
+
 async function processInlinedTier1(
   payload: any,
   memoizedImport: any,
@@ -414,29 +442,604 @@ async function processInlinedTier1(
   console.log(`🎨 INLINED TIER 1: Processing for ${characterName} in session ${sessionId}`);
   const tier1Start = Date.now();
 
+  // Declare local variables for CCS data (must be in function scope for strict mode)
   let characterSeed: { hair: string; skin: string; eyes: string } | undefined = undefined;
   let culturalBundle: any = undefined;
   let coloredObjects: string = "";
   let secondaryCharacters: any[] = [];
   let mainCharacterAppearance: any = {};
 
+  // INLINE CCS ATTEMPT - FAIL-FAST TO DIRECT MODE (NO RETRIES, NO FALLBACKS)
   let characterConsistencyService: any;
   let characterServiceUnavailable = false;
 
   try {
+    logTier1Step("CharacterConsistencyService Import", "attempt", "Attempting inline CCS (fail-fast mode)");
+    console.log(`[TIER_1] Inline CCS attempt - escalates to Direct Mode immediately on failure`);
+
+    // INLINE-ONLY CCS - NO FALLBACK CHAIN
     const inlineModule = await import("./CharacterConsistencyServiceInline.js");
     characterConsistencyService = inlineModule.characterConsistencyService;
     
     console.log(`✅ [CCS_INLINE] Loaded successfully - proceeding with Tier 1`);
     ccsBootStatus.loaded = true;
     ccsBootStatus.error = null;
+    logTier1Step("CharacterConsistencyService Import", "success", "Inline CCS loaded");
   } catch (inlineError) {
     const errorMessage = inlineError instanceof Error ? inlineError.message : String(inlineError);
     console.log(`⚠️ [CCS_INLINE] Failed - escalating to Direct Mode immediately: ${errorMessage}`);
+    logTier1Step("CharacterConsistencyService Import", "failed", `Inline CCS failed - escalating to Direct Mode`);
     throw new Error("INLINE_CCS_FAILED_ESCALATE_DIRECT_MODE");
   }
 
-  throw new Error("processInlinedTier1 not fully implemented in v2 - use original");
+  // Check for force flag (now passed from handler scope)
+  const forceCompleteTier1 = payload.forceCompleteTier1 === true;
+  if (forceCompleteTier1) {
+    console.log(
+      `🎯 FORCE TIER 1 MODE: Bypassing health checks, proceeding directly to Enhanced Character-First Flow`,
+    );
+    console.log(`📋 Force mode payload validation:`, {
+      hasStoryText: !!payload.storyText,
+      hasPageText: !!payload.pageText,
+      hasCharacterName: !!payload.characterName,
+      hasUserInfo: !!payload.userInfo,
+    });
+  }
+
+  // Generate structured avatar data using centralized method (single source of truth)
+  logTier1Step("Avatar Data Extraction", "attempt", "Building structured avatar data");
+  const avatarSkinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || "medium";
+  const avatarIdentity = {
+    name: characterName,
+    type: userInfo?.avatar?.type || "child",
+    skinTone: avatarSkinTone,
+  };
+
+  // Runtime guard for getStructuredAvatarData method (ERROR-055 fix)
+  let structuredAvatarData: any;
+  try {
+    if (typeof characterConsistencyService?.getStructuredAvatarData === "function") {
+      structuredAvatarData = await characterConsistencyService.getStructuredAvatarData(sessionId, userInfo);
+    } else {
+      console.warn(`⚠️ getStructuredAvatarData not available, escalating to Tier 2.5B`);
+      throw new Error("GETSTRUCTUREDAVATARDATA_UNAVAILABLE_ESCALATE_TO_25B");
+    }
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(`❌ [${requestId}] [TIER_1] getStructuredAvatarData: FAILED`, { sessionId, error: errorMessage });
+    logTier1Step("Avatar Data Extraction", "failed", `getStructuredAvatarData: ${errorMessage}`);
+
+    // For forced Tier 1, return specific method failure (no cascade)
+    if (payload.forceCompleteTier1) {
+      throw new Error(`CCS_METHOD_FAILED:getStructuredAvatarData:${errorMessage}`);
+    }
+    throw new Error("CHARACTERSERVICE_UNAVAILABLE_TRY_DIRECT_MODE");
+  }
+
+  // DEFENSIVE DATA REPAIR: Ensure structuredAvatarData has valid hairColor
+  if (structuredAvatarData) {
+    const hasValidHair =
+      structuredAvatarData.hairColor &&
+      structuredAvatarData.hairColor.trim() !== "" &&
+      structuredAvatarData.hairColor !== "natural hair";
+
+    if (!hasValidHair) {
+      const fallbackSkinTone =
+        structuredAvatarData.skinTone || userInfo?.avatar?.skinTone || userInfo?.skinTone || "medium";
+
+      const repairedHairColor = emergencyHairFallback(fallbackSkinTone);
+
+      console.log(`🔧 [${requestId}] [TIER_1] REPAIRING structuredAvatarData: hairColor missing or invalid`, {
+        sessionId,
+        pageNumber: payload.pageNumber,
+        original: {
+          hairColor: structuredAvatarData.hairColor || "(empty)",
+          skinTone: structuredAvatarData.skinTone,
+        },
+        repaired: {
+          hairColor: repairedHairColor,
+          skinTone: fallbackSkinTone,
+        },
+        repairSource: "emergencyHairFallback",
+      });
+
+      structuredAvatarData.hairColor = repairedHairColor;
+    }
+  }
+
+  console.log(`🔍 [${requestId}] [TIER_1] getStructuredAvatarData: SUCCESS`, {
+    sessionId,
+    pageNumber: payload.pageNumber,
+    skinTone: structuredAvatarData?.skinTone,
+    hairColor: structuredAvatarData?.hairColor,
+    result: structuredAvatarData,
+    wasRepaired: !!(
+      structuredAvatarData &&
+      (!structuredAvatarData.hairColor || structuredAvatarData.hairColor === "natural hair")
+    ),
+  });
+  logTier1Step(
+    "Avatar Data Extraction",
+    "success",
+    `Avatar data: ${structuredAvatarData?.skinTone}, ${structuredAvatarData?.hairColor}`,
+  );
+
+  // Get enhanced character consistency data (CRITICAL - will throw on failure to trigger tier escalation)
+  // characterSeed already declared at main handler scope for cascade availability
+  try {
+    characterSeed = await characterConsistencyService.getEnhancedCharacterSeed(
+      sessionId,
+      avatarIdentity,
+      storyText || pageText || "",
+      "continuing",
+    );
+    console.log(`🔍 [${requestId}] [TIER_1] getEnhancedCharacterSeed: SUCCESS`, {
+      sessionId,
+      pageNumber: payload.pageNumber,
+      inputs: { avatarIdentity, textLength: (storyText || pageText || "").length },
+      outputs: characterSeed,
+    });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(`❌ [${requestId}] [TIER_1] getEnhancedCharacterSeed: FAILED`, { sessionId, error: errorMessage });
+    logTier1Step("Enhanced Character Seed", "failed", `getEnhancedCharacterSeed: ${errorMessage}`);
+
+    // For forced Tier 1, return specific method failure (no cascade)
+    if (payload.forceCompleteTier1) {
+      throw new Error(`CCS_METHOD_FAILED:getEnhancedCharacterSeed:${errorMessage}`);
+    }
+    throw new Error("CHARACTERSERVICE_UNAVAILABLE_TRY_DIRECT_MODE");
+  }
+
+  // Get cumulative character appearance from story (CCS CORE METHOD)
+  let characterAppearance = "";
+  try {
+    characterAppearance = await characterConsistencyService.getCharacterAppearanceFromStory(sessionId, characterName) || "";
+    console.log(`🔍 [${requestId}] [TIER_1] getCharacterAppearanceFromStory: SUCCESS`, {
+      sessionId,
+      pageNumber: payload.pageNumber,
+      result: characterAppearance.substring(0, 100),
+    });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(`❌ [${requestId}] [TIER_1] getCharacterAppearanceFromStory: FAILED`, { sessionId, error: errorMessage });
+    // Graceful fallback - empty string
+  }
+
+  // Get never-ending story setting (CCS CORE METHOD)
+  let neverEndingSetting = "";
+  try {
+    neverEndingSetting = await characterConsistencyService.getSessionSetting(sessionId, "never_ending_story") || "";
+    console.log(`🔍 [${requestId}] [TIER_1] getSessionSetting: SUCCESS`, {
+      sessionId,
+      neverEndingSetting,
+    });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(`❌ [${requestId}] [TIER_1] getSessionSetting: FAILED`, { sessionId, error: errorMessage });
+    // Graceful fallback - empty string
+  }
+
+  // Get cultural enhancements using the service
+  // culturalBundle already declared at main handler scope for cascade availability
+  try {
+    culturalBundle = await characterConsistencyService.getCulturalEnhancements(userInfo, sessionId, characterName);
+    console.log(`🔍 [${requestId}] [TIER_1] getCulturalEnhancements: SUCCESS (raw)`, {
+      sessionId,
+      pageNumber: payload.pageNumber,
+      skinTone: userInfo?.avatar?.skinTone || userInfo?.skinTone,
+      result: culturalBundle,
+    });
+    
+    // CRITICAL: Ensure culturalBundle has valid hair and features for Tier 2.5A
+    const skinToneForFallback = userInfo?.avatar?.skinTone || userInfo?.skinTone || structuredAvatarData?.skinTone || "medium";
+    
+    if (!culturalBundle?.hair || culturalBundle.hair.trim() === "" || culturalBundle.hair === "natural hair") {
+      const repairedHair = emergencyHairFallback(skinToneForFallback);
+      console.log(`🔧 [${requestId}] [TIER_1] REPAIRING culturalBundle.hair`, {
+        sessionId,
+        original: culturalBundle?.hair || "(empty)",
+        repaired: repairedHair,
+        skinTone: skinToneForFallback,
+      });
+      if (!culturalBundle) culturalBundle = {};
+      culturalBundle.hair = repairedHair;
+    }
+    
+    if (!culturalBundle?.features || culturalBundle.features.trim() === "") {
+      console.log(`🔧 [${requestId}] [TIER_1] REPAIRING culturalBundle.features`, {
+        sessionId,
+        original: culturalBundle?.features || "(empty)",
+        repaired: "friendly features",
+      });
+      if (!culturalBundle) culturalBundle = {};
+      culturalBundle.features = "friendly features";
+    }
+    
+    console.log(`✅ [${requestId}] [TIER_1] culturalBundle VALIDATED`, {
+      sessionId,
+      hasHair: !!culturalBundle?.hair,
+      hasFeatures: !!culturalBundle?.features,
+      hair: culturalBundle?.hair,
+      features: culturalBundle?.features,
+    });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(`❌ [${requestId}] [TIER_1] getCulturalEnhancements: FAILED`, { sessionId, error: errorMessage });
+    logTier1Step("Cultural Enhancements", "failed", `getCulturalEnhancements: ${errorMessage}`);
+
+    // For forced Tier 1, return specific method failure (no cascade)
+    if (payload.forceCompleteTier1) {
+      throw new Error(`CCS_METHOD_FAILED:getCulturalEnhancements:${errorMessage}`);
+    }
+    
+    // Fail-fast: throw to trigger cascade (emergency data constructed in main catch block)
+    throw new Error("CHARACTERSERVICE_UNAVAILABLE_TRY_DIRECT_MODE");
+  }
+
+  // Analyze visual details from story text
+  const vizStageStart = Date.now();
+  // coloredObjects already declared at main handler scope for cascade availability
+  try {
+    await characterConsistencyService.analyzeVisualDetails(sessionId, storyText || pageText, payload.pageNumber || 1);
+    coloredObjects = await characterConsistencyService.getColoredObjects(sessionId);
+    console.log(`🔍 [${requestId}] [TIER_1] analyzeVisualDetails: SUCCESS`, {
+      sessionId,
+      pageNumber: payload.pageNumber,
+      timing: `${Date.now() - vizStageStart}ms`,
+    });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(`❌ [${requestId}] [TIER_1] analyzeVisualDetails/getColoredObjects: FAILED`, {
+      sessionId,
+      error: errorMessage,
+    });
+    logTier1Step("Visual Details Analysis", "failed", `analyzeVisualDetails: ${errorMessage}`);
+
+    // For forced Tier 1, return specific method failure (no cascade)
+    if (payload.forceCompleteTier1) {
+      throw new Error(`CCS_METHOD_FAILED:analyzeVisualDetails:${errorMessage}`);
+    }
+    throw new Error("CHARACTERSERVICE_UNAVAILABLE_TRY_DIRECT_MODE");
+  }
+
+  // Reuse session-cached secondary characters to avoid duplicate heavy detection
+  // secondaryCharacters and mainCharacterAppearance already declared at main handler scope for cascade availability
+  let detectionResults: any = {};
+  try {
+    secondaryCharacters = await characterConsistencyService.getSecondaryCharactersForSession(sessionId);
+
+    // PHASE 1: Get main character appearance data
+    detectionResults = await characterConsistencyService.detectAllCharacters(storyText || pageText, {
+      sessionId,
+      pageNumber: payload.pageNumber || 1,
+    });
+    mainCharacterAppearance = detectionResults.mainCharacterAppearance || {};
+
+    console.log(`🔍 [${requestId}] [TIER_1] detectAllCharacters: SUCCESS`, {
+      sessionId,
+      pageNumber: payload.pageNumber,
+      resultCount: (detectionResults.secondaryCharacters || []).length,
+      timing: `${Date.now() - vizStageStart}ms`,
+    });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(`❌ [${requestId}] [TIER_1] detectAllCharacters: FAILED`, { sessionId, error: errorMessage });
+    logTier1Step("Character Detection", "failed", `detectAllCharacters: ${errorMessage}`);
+
+    // For forced Tier 1, return specific method failure (no cascade)
+    if (payload.forceCompleteTier1) {
+      throw new Error(`CCS_METHOD_FAILED:detectAllCharacters:${errorMessage}`);
+    }
+    throw new Error("CHARACTERSERVICE_UNAVAILABLE_TRY_DIRECT_MODE");
+  }
+
+  // Keep animals lean to avoid extra passes; not required for templates currently
+  const detectedAnimals: any[] = [];
+
+  // Get session setting (indoor/outdoor context) - CCS should auto-detect, no hardcoded fallback
+  let sessionSetting = "";
+  try {
+    sessionSetting = await characterConsistencyService.getSessionSetting(sessionId, "context", "");
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(`❌ [${requestId}] [TIER_1] getSessionSetting: FAILED`, { sessionId, error: errorMessage });
+    logTier1Step("Session Setting", "failed", `getSessionSetting: ${errorMessage}`);
+
+    // For forced Tier 1, return specific method failure (no cascade)
+    if (payload.forceCompleteTier1) {
+      throw new Error(`CCS_METHOD_FAILED:getSessionSetting:${errorMessage}`);
+    }
+    throw new Error("CHARACTERSERVICE_UNAVAILABLE_TRY_DIRECT_MODE");
+  }
+
+  // Lean CPU budget guard for Tier 1 analysis
+  const TIER1_CPU_BUDGET_MS = 2200;
+  const elapsedTier1 = Date.now() - tier1Start;
+  if (elapsedTier1 > TIER1_CPU_BUDGET_MS) {
+    console.warn(
+      `[TIER_1] CPU budget exceeded (${elapsedTier1}ms > ${TIER1_CPU_BUDGET_MS}ms). Escalating to Direct Mode early.`,
+    );
+    throw new Error("CHARACTERSERVICE_BUDGET_EXCEEDED_TRY_DIRECT_MODE");
+  }
+
+  console.log(`✅ CHARACTER FOUNDATION: Established complete character consistency data`, {
+    hasCharacterSeed: !!characterSeed,
+    hasCulturalBundle: !!culturalBundle,
+    coloredObjectsCount: coloredObjects?.split(",").length || 0,
+    secondaryCharactersCount: secondaryCharacters.length,
+    detectedAnimalsCount: detectedAnimals.length,
+    sessionSetting,
+  });
+
+  // Get AI-generated primary scene and complete schema
+  let primaryScene: string | undefined;
+  let aiSchema: Record<string, any> = {};
+  let aiDebugSchema: any = null;
+  try {
+    logTier1Step("AI Scene Creator Call", "attempt", "Invoking ai-visual-scene-creator");
+    const { createVendorFirstSupabaseClient } = await memoizedImport("../_shared/resilientLoader.js");
+    const supabase = await createVendorFirstSupabaseClient();
+
+    // Use raw fetch with proper AbortController signal (supabase.functions.invoke ignores signal)
+    const aiController = new AbortController();
+    const aiTimeout = setTimeout(() => aiController.abort(), 15000);
+    
+    let aiResult: any, aiError: any;
+    try {
+      const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+      const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
+      
+      // Validate SUPABASE_URL
+      if (!SUPABASE_URL || SUPABASE_URL.trim() === "") {
+        throw new Error("SUPABASE_URL environment variable is not set");
+      }
+      
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+      };
+      
+      // Only add apikey header if key exists
+      if (SUPABASE_ANON_KEY) {
+        headers["apikey"] = SUPABASE_ANON_KEY;
+      }
+      
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/ai-visual-scene-creator`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          pageText: storyText || pageText,
+          userInfo: {
+            ...userInfo,
+            age: userInfo?.age || structuredAvatarData?.age || 6,
+            structuredAvatarData,
+          },
+        sessionId,
+        pageNumber: payload.pageNumber || 1,
+        avatarIdentity,
+        // Pass COMPLETE character consistency context to AI
+        characterSeed,
+        culturalBundle,
+        coloredObjects,
+        secondaryCharacters, // Now includes visualDetails from Phase 1
+        mainCharacterAppearance, // PHASE 1: Pass main character appearance
+        detectedAnimals,
+        sessionSetting,
+        requestId: `tier1-${sessionId}`,
+        source: "inlined_orchestrator",
+        directMode: false, // Scene-Only mode - AI uses character context to inform scene
+        }),
+        signal: aiController.signal,
+      });
+      
+      if (!response.ok) {
+        aiError = { message: `HTTP ${response.status}: ${response.statusText}` };
+        aiResult = null;
+      } else {
+        aiResult = await response.json();
+      }
+    } catch (e: any) {
+      if (e?.name === "AbortError") {
+        aiError = { message: "AI scene creator timeout (15s)" };
+        aiResult = null;
+      } else {
+        throw e;
+      }
+    } finally {
+      clearTimeout(aiTimeout);
+    }
+
+    console.log(`✅ AI SCENE GENERATION: Called with complete character context`, {
+      hasCharacterSeed: !!characterSeed,
+      hasCulturalBundle: !!culturalBundle,
+      hasColoredObjects: !!coloredObjects,
+      secondaryCharactersCount: secondaryCharacters?.length || 0,
+      hasDetectedAnimals: detectedAnimals.length > 0,
+      hasSessionSetting: !!sessionSetting,
+    });
+
+    if (aiError || !aiResult?.primaryScene) {
+      logTier1Step("AI Scene Creator Call", "failed", `AI error: ${aiError?.message || "No primary scene"}`);
+      throw new Error("NO_PRIMARY_SCENE_ESCALATE_TO_25A");
+    }
+
+    primaryScene = aiResult.primaryScene;
+    aiDebugSchema = aiResult.aiDebugSchema || null;
+    logTier1Step(
+      "AI Scene Creator Call",
+      "success",
+      `Primary scene generated: ${primaryScene?.substring(0, 50)}...`,
+    );
+
+    // Collect complete AI schema for debugging (only primaryScene used in template)
+    aiSchema = {
+      backgroundColor: aiResult?.backgroundColor || "",
+      lighting: aiResult?.lighting || "",
+      composition: aiResult?.composition || "",
+      mood: aiResult?.mood || "",
+      visualElements: aiResult?.visualElements || "",
+      sceneSettings: aiResult?.sceneSettings || "",
+      atmosphericDetails: aiResult?.atmosphericDetails || "",
+    };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logTier1Step("AI Scene Creator Call", "failed", errorMessage);
+    console.warn("AI scene creator failed:", error);
+    throw new Error("NO_PRIMARY_SCENE_ESCALATE_TO_25A");
+  }
+
+  // ============================================================================
+  // PHASE 3: POST-AI CONSISTENCY VALIDATION
+  // ============================================================================
+
+  logTier1Step("Scene Validation", "attempt", "Validating primary scene quality");
+  console.log(`🔍 CONSISTENCY VALIDATION: Checking AI scene against character data`);
+
+  // Validate primary scene quality
+  if (!validatePrimarySceneQuality(primaryScene!)) {
+    logTier1Step("Scene Validation", "failed", "Primary scene quality check failed");
+    console.warn(`⚠️ CONSISTENCY WARNING: Primary scene quality validation failed`);
+  } else {
+    logTier1Step("Scene Validation", "success", "Primary scene validated");
+  }
+
+  // Log consistency check for debugging
+  const consistencyCheck = {
+    primarySceneLength: primaryScene?.length || 0,
+    hasCharacterSeed: !!characterSeed,
+    hasCulturalBundle: !!culturalBundle,
+    hasColoredObjects: !!coloredObjects,
+    secondaryCharactersMatched: secondaryCharacters?.length || 0,
+    animalsDetected: detectedAnimals.length,
+    sessionSetting,
+    aiSchemaComplete: Object.values(aiSchema).filter(Boolean).length,
+  };
+
+  console.log(`✅ CONSISTENCY VALIDATION: Complete`, consistencyCheck);
+
+  // Generate secondary character seeds for template building
+  let secondaryCharacterSeeds: any[] = [];
+  try {
+    const allSecondaryChars = await characterConsistencyService.getSecondaryCharactersForSession(sessionId);
+    secondaryCharacterSeeds = allSecondaryChars || [];
+    console.log(`✅ Retrieved ${secondaryCharacterSeeds.length} secondary characters for session`);
+  } catch (error) {
+    console.warn(`Failed to get secondary characters for session:`, error);
+  }
+
+  // Build enhanced prompt
+  const characterReference = avatarIdentity.type === "prefer-not-to-answer" ? "gender neutral child" : avatarIdentity.type;
+
+  // Get style framework with safe type coercion
+  const difficulty = String(userInfo?.difficulty || userInfo?.gradeLevel || "medium").toLowerCase();
+  const styleFramework = getInlinedStyleFramework(difficulty);
+
+  // ============================================================================
+  // PHASE 4: TEMPLATE BUILDING WITH FULL CONTEXT
+  // ============================================================================
+
+  logTier1Step("Template Building", "attempt", "Constructing COMPLETE_TIER_1 template");
+
+  // CRITICAL: Validate required data before template building
+  if (!characterSeed || !characterSeed.characterDescription) {
+    const error = "characterSeed missing or incomplete";
+    logTier1Step("Template Building", "failed", error);
+    if (payload.forceCompleteTier1) {
+      throw new Error(`CCS_METHOD_FAILED:getEnhancedCharacterSeed:${error}`);
+    }
+    throw new Error("CHARACTERSERVICE_UNAVAILABLE_TRY_DIRECT_MODE");
+  }
+
+  if (!culturalBundle || (!culturalBundle.hair && !culturalBundle.features)) {
+    const error = "culturalBundle missing or incomplete";
+    logTier1Step("Template Building", "failed", error);
+    if (payload.forceCompleteTier1) {
+      throw new Error(`CCS_METHOD_FAILED:getCulturalEnhancements:${error}`);
+    }
+    throw new Error("CHARACTERSERVICE_UNAVAILABLE_TRY_DIRECT_MODE");
+  }
+
+  if (!primaryScene || primaryScene.length < 30) {
+    const error = `primaryScene invalid (length: ${primaryScene?.length || 0})`;
+    logTier1Step("Template Building", "failed", error);
+    throw new Error("AI_SCHEMA_INCOMPLETE");
+  }
+
+  // Build COMPLETE_TIER_1 template with deduplication logic
+  const secondaryCharsText =
+    secondaryCharacterSeeds.length > 0
+      ? `With ${secondaryCharacterSeeds.map((s) => s.visualDescription || s.name).join(", ")}`
+      : "";
+  const animalsText =
+    detectedAnimals?.length > 0 ? `Including ${detectedAnimals.map((a) => a.name || a.type).join(", ")}` : "";
+  const coloredObjectsText = coloredObjects ? `Featuring ${coloredObjects}` : "";
+  // Phase 2: Remove sessionSetting duplication - it's already in aiSchema.sceneSettings
+  const consistencyElements = [secondaryCharsText, animalsText].filter(Boolean).join(", ");
+
+  const enhancedPrompt = COMPLETE_TIER_1_TEMPLATE
+    .replace("{primaryScene}", primaryScene)
+    .replace("{secondaryCharacters}", consistencyElements ? `${consistencyElements}. ` : "")
+    .replace("{coloredObjects}", coloredObjectsText ? `${coloredObjectsText}. ` : "")
+    .replace("{settingContext}", aiSchema?.sceneSettings ? `In ${aiSchema.sceneSettings}. ` : "")
+    .replace("{styleFramework}", styleFramework);
+
+  logTier1Step("Template Building", "success", `Template built, length: ${enhancedPrompt.length}`);
+
+  console.log(`✅ TEMPLATE BUILDING: Enhanced prompt with full context`, {
+    primarySceneLength: primaryScene?.length || 0,
+    mainCharacterLength: characterSeed?.characterDescription?.length || 0,
+    consistencyElementsLength: consistencyElements?.length || 0,
+    totalPromptLength: enhancedPrompt?.length || 0,
+  });
+
+  // Generate nuclear negative prompt with cultural and gender awareness
+  const culturalProfile = detectCulturalProfileForNegatives(
+    userInfo?.nativeLanguage || userInfo?.language,
+    structuredAvatarData?.skinTone,
+  );
+  const avatarType =
+    userInfo?.avatarType || (userInfo?.gender === "girl" ? "girl" : userInfo?.gender === "boy" ? "boy" : "child");
+
+  const negativePrompt = generateNuclearNegativePrompt(
+    culturalProfile,
+    avatarType,
+    userInfo?.difficulty || "medium",
+    payload.pageNumber || 1,
+    secondaryCharacters,
+  );
+
+  console.log(`✅ NUCLEAR NEGATIVE: Generated with profile=${culturalProfile}, type=${avatarType}`);
+
+  console.log(`✅ INLINED TIER 1: Generated enhanced prompt for ${characterName}`);
+
+  return {
+    enhancedPrompt, // ← Structured COMPLETE_TIER_1 template
+    negativePrompt,
+    primaryScene, // ← Used in template
+    aiSchema: {
+      // ← Complete schema for debugging
+      backgroundColor: aiSchema?.backgroundColor || "",
+      lighting: aiSchema?.lighting || "",
+      composition: aiSchema?.composition || "",
+      mood: aiSchema?.mood || "",
+      visualElements: aiSchema?.visualElements || "",
+      sceneSettings: aiSchema?.sceneSettings || "",
+      atmosphericDetails: aiSchema?.atmosphericDetails || "",
+    },
+    aiDebugSchema, // ← NEW: Full OpenAI debug data from ai-visual-scene-creator
+    characterSeed,
+    culturalBundle,
+    coloredObjects,
+    secondaryCharacterSeeds,
+    secondaryCharacters, // ← NEW: All detected secondary characters
+    detectedAnimals, // ← NEW: All detected animals
+    sessionSetting, // ← NEW: Indoor/outdoor context
+    mainCharacterAppearance, // ← CRITICAL: Pass main character appearance to cascade
+    structuredAvatarData, // ← CRITICAL: Pass 73-variation session-seeded hair to Direct Mode
+    templateStructure: "COMPLETE_TIER_1",
+  };
 }
 
 // ============= NEW: Result Types =============
