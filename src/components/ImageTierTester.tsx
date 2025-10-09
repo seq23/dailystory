@@ -200,6 +200,13 @@ interface TestResult {
     executionStatus?: 'SUCCESS' | 'TIMEOUT_OR_HANGING' | 'EXECUTION_FAILED';
     bootStatus?: 'HEALTHY' | 'UNHEALTHY';
     clarification?: string; // Human-readable clarification for execution status
+    // Test Mode - OpenAI prompt capture
+    systemPrompt?: string; // System prompt sent to OpenAI
+    userPrompt?: string; // User prompt sent to OpenAI
+    structuredAvatarData?: any; // Structured avatar data used in generation
+    hairColor?: string; // Hair color used
+    skinFeatures?: string; // Skin features used
+    ethnicity?: string; // Ethnicity derived from skin tone
   };
 }
 
@@ -1197,7 +1204,9 @@ export const ImageTierTester = () => {
             pageNumber: 1,
             isGuestUser: true,
             difficultyLevel: mapDifficultyLevel(userInfo),
-            isDebugMode: true
+            isDebugMode: true,
+            testMode: true, // NEW: Enable test mode to capture prompts without generating image
+            directMode: false // NEW: Disable Direct Mode to prevent image generation
           }
         }),
         timeoutPromise
@@ -1240,6 +1249,14 @@ export const ImageTierTester = () => {
           sceneGenerationOnly: true,
           testType: 'REAL',
           debug: response.data?.debug, // Include debug information
+          // NEW: OpenAI prompts for debugging
+          systemPrompt: response.data?.systemPrompt,
+          userPrompt: response.data?.userPrompt,
+          // NEW: Character details
+          structuredAvatarData: structuredAvatarData,
+          hairColor: hairColor,
+          skinFeatures: skinFeatures,
+          ethnicity: ethnicity,
           errorCategory: category as any,
           probableCause,
           executionStatus: isTimeout ? 'TIMEOUT_OR_HANGING' : 
@@ -3092,6 +3109,46 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
                      {result.details.sceneGenerationOnly && (
                        <div className="text-sm">
                          <span className="font-medium text-blue-600">Scene Generation Only (No Image)</span>
+                       </div>
+                     )}
+                     
+                     {/* Test Mode: OpenAI Prompts Display */}
+                     {result.details.systemPrompt && result.details.userPrompt && (
+                       <div className="mt-3 space-y-2">
+                         <div className="text-sm border-2 border-purple-300 rounded p-3 bg-purple-50">
+                           <div className="font-bold text-purple-700 mb-2">🧪 Test Mode - OpenAI Prompts</div>
+                           
+                           <details className="mb-2">
+                             <summary className="cursor-pointer text-sm font-medium text-purple-600 hover:text-purple-700">
+                               📝 System Prompt ({result.details.systemPrompt.length} characters)
+                             </summary>
+                             <pre className="text-xs bg-white p-3 rounded border mt-2 overflow-x-auto max-h-96 overflow-y-auto whitespace-pre-wrap">
+                               {result.details.systemPrompt}
+                             </pre>
+                           </details>
+                           
+                           <details>
+                             <summary className="cursor-pointer text-sm font-medium text-purple-600 hover:text-purple-700">
+                               👤 User Prompt ({result.details.userPrompt.length} characters)
+                             </summary>
+                             <pre className="text-xs bg-white p-3 rounded border mt-2 overflow-x-auto max-h-96 overflow-y-auto whitespace-pre-wrap">
+                               {result.details.userPrompt}
+                             </pre>
+                           </details>
+                         </div>
+                         
+                         {/* Character Details Display */}
+                         {result.details.structuredAvatarData && (
+                           <div className="text-sm border-2 border-blue-300 rounded p-3 bg-blue-50">
+                             <div className="font-bold text-blue-700 mb-2">🧬 Character Details (Session-Seeded)</div>
+                             <div className="space-y-1 text-xs">
+                               <div><span className="font-medium">Hair:</span> {result.details.hairColor}</div>
+                               <div><span className="font-medium">Skin Features:</span> {result.details.skinFeatures}</div>
+                               <div><span className="font-medium">Ethnicity:</span> {result.details.ethnicity}</div>
+                               <div><span className="font-medium">Resolved Skin Tone:</span> {result.details.structuredAvatarData.resolvedSkinTone}</div>
+                             </div>
+                           </div>
+                         )}
                        </div>
                      )}
                      

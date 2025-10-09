@@ -590,8 +590,9 @@ function generateCompleteVisualSchema(
   directMode: boolean = false,
   inputStructuredAvatarData: any = null,
   mainCharacterAppearance: any = null,
-  secondaryCharacters: any[] = []
-): Promise<{ ok: boolean; visualSchema?: any; aiDebugSchema?: any; structuredAvatarData?: any; error?: string; upstreamBackoff?: boolean }> {
+  secondaryCharacters: any[] = [],
+  capturePrompts: boolean = false // NEW: Flag to capture prompts for test mode
+): Promise<{ ok: boolean; visualSchema?: any; aiDebugSchema?: any; structuredAvatarData?: any; error?: string; upstreamBackoff?: boolean; capturedPrompts?: { systemPrompt: string; userPrompt: string } }> {
 
   const openaiApiKey = Deno.env.get('OPENAI_API_KEY') || "";
   const characterName = userInfo?.name || userInfo?.userName || 'child';
@@ -986,7 +987,7 @@ Generate a comprehensive scene... The primaryScene must include the complete CHA
           parseError: !result.visual ? 'no_content_or_unparseable' : 'primaryScene_field_missing',
           parseErrorDetails: result.jsonParseError || null
         };
-        return { ok: false, visualSchema: null, aiDebugSchema, structuredAvatarData, upstreamBackoff: result.upstreamBackoff };
+        return { ok: false, visualSchema: null, aiDebugSchema, structuredAvatarData, upstreamBackoff: result.upstreamBackoff, ...(capturePrompts && prompts && { capturedPrompts: { systemPrompt: prompts.systemPrompt, userPrompt: prompts.userPrompt } }) };
       }
       
       // Got primaryScene - check if we have full schema or regex-only
@@ -1020,7 +1021,13 @@ Generate a comprehensive scene... The primaryScene must include the complete CHA
         visualSchema: result.visual, 
         aiDebugSchema, 
         structuredAvatarData, 
-        upstreamBackoff: result.upstreamBackoff 
+        upstreamBackoff: result.upstreamBackoff,
+        ...(capturePrompts && prompts && {
+          capturedPrompts: {
+            systemPrompt: prompts.systemPrompt,
+            userPrompt: prompts.userPrompt
+          }
+        })
       }));
     })
     .catch((outerSchemaError) => {
@@ -1044,7 +1051,7 @@ Generate a comprehensive scene... The primaryScene must include the complete CHA
         attemptsUsed,
         encounteredBackoff
       };
-      return { ok: false, visualSchema: null, aiDebugSchema, structuredAvatarData, upstreamBackoff: false };
+      return { ok: false, visualSchema: null, aiDebugSchema, structuredAvatarData, upstreamBackoff: false, ...(capturePrompts && prompts && { capturedPrompts: { systemPrompt: prompts.systemPrompt, userPrompt: prompts.userPrompt } }) };
     });
 }
 
@@ -1165,6 +1172,7 @@ serve((req) => {
     const sessionId: string = payload.sessionId || `session-${requestId}`;
     const pageNumber: number = payload.pageNumber || 1;
     const directMode: boolean = payload.directMode === true;
+    const testMode: boolean = payload.testMode === true; // NEW: Test mode for debugging prompts
     const mainCharacterAppearance = payload.mainCharacterAppearance || null;
     const secondaryCharacters = payload.secondaryCharacters || [];
 
@@ -1196,7 +1204,7 @@ serve((req) => {
       return await executeWithLKG(requestHash, async () => {
         // generate complete visual schema
         const gen = await generateCompleteVisualSchema(
-          content, userInfo, sessionId, pageNumber, directMode, null, mainCharacterAppearance, secondaryCharacters
+          content, userInfo, sessionId, pageNumber, directMode, null, mainCharacterAppearance, secondaryCharacters, testMode // NEW: Pass testMode for prompt capture
         );
 
       if (!gen.ok || !gen.visualSchema) {
@@ -1244,14 +1252,20 @@ serve((req) => {
           }
         };
 
-        const runware = await callRunwareTemplateCD(templatePayload, requestAbort);
-        if (runware.ok) {
-          imageURL = runware.imageURL;
-          tier = 'DIRECT_MODE';
-          runwareDebugData = { templateUsed: 'runware-template-cd', templateComplexity: 'C', templatePayloadSent: templatePayload };
+        // Skip image generation in test mode
+        if (!testMode) {
+          const runware = await callRunwareTemplateCD(templatePayload, requestAbort);
+          if (runware.ok) {
+            imageURL = runware.imageURL;
+            tier = 'DIRECT_MODE';
+            runwareDebugData = { templateUsed: 'runware-template-cd', templateComplexity: 'C', templatePayloadSent: templatePayload };
+          } else {
+            console.error(`❌ [${requestId}] Direct Mode failed, falling back to Scene-Only: ${runware.error}`);
+            tier = 'TIER_1_SCENE_ONLY';
+          }
         } else {
-          console.error(`❌ [${requestId}] Direct Mode failed, falling back to Scene-Only: ${runware.error}`);
-          tier = 'TIER_1_SCENE_ONLY';
+          console.log(`🧪 [TEST_MODE] Skipping image generation, returning prompts only`);
+          tier = 'TEST_MODE_SCENE_ONLY';
         }
       }
 
@@ -1279,6 +1293,11 @@ serve((req) => {
         aiDebugSchema: gen.aiDebugSchema,
         ...(directMode && imageURL && runwareDebugData && { runwareDebugData }),
         ...(imageURL && { imageURL }),
+        // NEW: Include prompts in test mode for debugging
+        ...(testMode && gen.capturedPrompts && {
+          systemPrompt: gen.capturedPrompts.systemPrompt,
+          userPrompt: gen.capturedPrompts.userPrompt
+        }),
         requestId,
         timestamp: new Date().toISOString(),
         processingTime: Date.now() - gateStartTime,
