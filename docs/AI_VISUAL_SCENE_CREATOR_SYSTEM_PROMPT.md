@@ -140,10 +140,13 @@ This rule bridges the gap between textual story actions and visual scene require
 ## Architecture Notes
 
 - This system prompt is the **Phase 1** AI enhancement in the Tier 1 image generation pipeline
-- It feeds into the full 6-tier cascade architecture
+- It feeds into the full 4-tier fallback architecture
 - Character appearance data is passed from the orchestrator and must be used exactly as provided
 - Cultural context is dynamically injected based on user language settings
 - The prompt is designed to generate 200-1500 character primary scenes for optimal image generation
+- **Retry Policy**: 2 attempts maximum (not 3)
+- **Primary Scene Minimum**: 200 characters (warning-only, not rejection)
+- **Failure Behavior**: Returns `ok: false` to escalate to Tier 2 (no emergency fallback for primaryScene)
 
 ---
 

@@ -709,7 +709,14 @@ ${mainCharacterAppearance ? `MAIN CHARACTER APPEARANCE DETAILS:
 - Clothing: ${JSON.stringify(mainCharacterAppearance.clothing || [])}` : ''}
 
 ${secondaryCharacters && secondaryCharacters.length > 0 ? `SECONDARY CHARACTERS WITH VISUAL DETAILS:
-${secondaryCharacters.map((c:any)=>`- ${c.name} (${c.type}): ${c.visualDetails ? c.visualDetails.join(', ') : 'no visual details'}`).join('\n')}` : ''}
+${secondaryCharacters.map((c:any)=>{
+  const details = Array.isArray(c.visualDetails) 
+    ? c.visualDetails.join(', ')
+    : typeof c.visualDetails === 'string'
+    ? c.visualDetails
+    : 'no visual details';
+  return `- ${c.name} (${c.type}): ${details}`;
+}).join('\n')}` : ''}
 
 STORY TEXT:
 "${storyText}"
@@ -809,7 +816,8 @@ Generate a comprehensive scene... The primaryScene must include the complete CHA
               mood: visualSchema.mood,
               style: visualSchema.style,
               secondaryCharacters: visualSchema.secondaryCharacters,
-              objects: visualSchema.objects
+              objects: visualSchema.objects,
+              clothing: visualSchema.clothing || []
             }
           }
         }))

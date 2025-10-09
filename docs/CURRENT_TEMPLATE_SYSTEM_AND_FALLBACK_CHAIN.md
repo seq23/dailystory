@@ -14,13 +14,23 @@ Time2Read employs a **4-tier fallback system** that ensures story content is alw
 ## Fallback Architecture
 
 ```
-Tier 1: AI Generation (95% success)
-    ↓ (on failure)
-Tier 2: Template Service (99% success)
-    ↓ (on failure)
-Tier 3: Emergency Content (100% success - NEVER FAILS)
+Tier 1: AI Generation (ai-visual-scene-creator)
+    - Returns primaryScene + schema OR ok: false
+    - 2 retry attempts maximum
+    - 200-char minimum for primaryScene (warning only)
+    - No emergency fallback: returns ok: false if primaryScene missing
+    ↓ (on ok: false → escalate to Tier 2.5A)
+Tier 2.5A: Template Service with Character Consistency (runware-template-ab)
+    - Attempts Direct Mode if Tier 1 succeeded with primaryScene
+    - Full character consistency with precomputed CCS bundle
+    ↓ (on failure → escalate to Tier 2.5B)
+Tier 2.5B: Template Service Scene-Only (runware-template-cd)
+    - Uses primaryScene only (no schema required)
+    ↓ (on failure → escalate to Tier 3)
+Tier 3: Emergency Content (ErrorHandlingManager)
+    - Generates rhyming fallback content (NEVER FAILS)
     ↓
-User sees story content (NOT diagnostic page)
+User sees story content (NEVER sees diagnostic page)
 ```
 
 ## October 2025 Updates: Never-Show-Diagnostics Protection
