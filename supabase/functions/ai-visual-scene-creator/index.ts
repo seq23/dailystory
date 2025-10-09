@@ -693,7 +693,7 @@ Generate a comprehensive scene... The primaryScene must include the complete CHA
         storyTextLength: content.length,
         isNonEnglish: nativeLanguage && nativeLanguage !== 'en',
       };
-      return savePrimaryScene(ok, visualSchema).then(()=>({ ok:true, visualSchema, aiDebugSchema, structuredAvatarData, upstreamBackoff: result.upstreamBackoff }));
+      return savePrimaryScene(directMode, visualSchema).then(()=>({ ok:true, visualSchema, aiDebugSchema, structuredAvatarData, upstreamBackoff: result.upstreamBackoff }));
     })
     .catch((outerSchemaError) => {
       // OUTER SAFETY NET: If entire AI generation chain fails, use emergency fallback
@@ -785,6 +785,7 @@ serve((req) => {
     const requestId = `${Math.random().toString(36).substring(2)}`;
     const gateStartTime = Date.now();
     let gateAcquired = false;
+    let handlerSuccess = false;
 
     // GATE acquire (non-blocking degradation)
     if (gatingEnabled) {
@@ -934,7 +935,11 @@ serve((req) => {
       return corsResponse(response, req, 200);
     }).then((result) => {
       // Result handling within the promise chain
-      if (result instanceof Response) return result;
+      if (result instanceof Response) {
+        handlerSuccess = result.status < 500 || result.status === 503;
+        return result;
+      }
+      handlerSuccess = true;
       return corsResponse(result, req, 200);
     }).catch((outerErr) => {
       console.error('❌ [OUTER_ERROR] ai-visual-scene-creator top-level error:', String(outerErr?.message || outerErr));
@@ -942,8 +947,8 @@ serve((req) => {
     }).finally(() => {
       // GUARANTEED GATE RELEASE - executes regardless of success/failure/early-return
       if (gatingEnabled && gateAcquired) {
-        release(gateKey, false);
+        release(gateKey, handlerSuccess);
         gateAcquired = false;
-        console.log(`🔓 [GATE] ${gateKey} released in finally block`);
+        console.log(`🔓 [GATE] ${gateKey} released (success=${handlerSuccess})`);
       }
     });
