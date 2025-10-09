@@ -504,7 +504,7 @@ EXAMPLE: For a French speaker named Sarah playing in a park, generate:
 "Sarah with ${structuredAvatarData?.hairColor || 'natural hair'} and ${structuredAvatarData?.resolvedSkinTone || 'medium'} skin tone plays joyfully in a charming Parisian park near the Eiffel Tower, with the Seine River visible in the background, surrounded by elegant French gardens with lavender and a quaint café district with outdoor seating. Warm, sophisticated European aesthetic with golden afternoon light."
 
 Use cultural detail naturally without contradicting explicit story settings.
-` : '- Use universal child-friendly settings with warm, inviting atmospheres'}
+` : '- Use universal child-friendly settings with warm, inviting atmospheres'}`
 
     const previousBlock = prevData.previousPrimaryScene
       ? (prevData.previousVisualSchema
