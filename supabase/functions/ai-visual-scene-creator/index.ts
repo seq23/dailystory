@@ -746,38 +746,48 @@ Generate a comprehensive scene... The primaryScene must include the complete CHA
     });
   }
 
-  function parseVisual(content: string): Promise<{ schema: any | null }> {
+  function parseVisual(content: string): Promise<{ 
+    schema: any | null; 
+    parseMethod: 'json' | 'regex' | 'none';
+    extractedPrimaryScene?: string;
+    jsonParseError?: string;
+  }> {
     return safeJsonParse(content).then((json) => {
       if (json && json.primaryScene) {
         const len = json.primaryScene.length;
         if (len < 200) {
           console.warn(`⚠️ [SCHEMA_WARNING] primaryScene length (${len} chars) is below recommended 200 characters. Using anyway.`);
         }
-        return { schema: json };
+        return { schema: json, parseMethod: 'json' as const };
       }
       
+      // JSON parsing failed - try regex extraction
       const match = content.match(/"primaryScene":\s*"([^"]+)"/);
       if (match && match[1]) {
         const len = match[1].length;
         if (len < 200) {
           console.warn(`⚠️ [SCHEMA_WARNING] Extracted primaryScene length (${len} chars) is below recommended 200 characters. Using anyway.`);
         }
+        // Return regex-extracted primaryScene but NO SYNTHETIC SCHEMA
         return {
-          schema: {
-            primaryScene: match[1],
-            backgroundColor: 'warm natural lighting',
-            lighting: 'soft daylight',
-            composition: 'centered character',
-            setting: 'story scene',
-            mood: 'cheerful and engaging',
-            style: "children's book illustration",
-            secondaryCharacters: { humans: [], pets: [] },
-            objects: [],
-            clothing: []
-          }
+          schema: null,
+          parseMethod: 'regex' as const,
+          extractedPrimaryScene: match[1],
+          jsonParseError: 'JSON parsing failed but primaryScene extracted via regex'
         };
       }
-      return { schema: null };
+      
+      return { 
+        schema: null, 
+        parseMethod: 'none' as const,
+        jsonParseError: 'No valid JSON and no regex match for primaryScene'
+      };
+    }).catch((err) => {
+      return {
+        schema: null,
+        parseMethod: 'none' as const,
+        jsonParseError: String(err?.message || err).substring(0, 120)
+      };
     });
   }
 
@@ -825,28 +835,51 @@ Generate a comprehensive scene... The primaryScene must include the complete CHA
       .catch(()=>undefined);
   }
 
+  // Hoist variables to outer scope for debug access in all paths
+  let prompts: { systemPrompt: string; userPrompt: string; culturalContext?: string; isNonEnglish?: boolean } | null = null;
+  let lastOpenAIResponse: { status?: number; content?: string; ok: boolean } | null = null;
+  let attemptsUsed = 0;
+  let encounteredBackoff = false;
+
   // chain execution (no try/catch) - ENHANCED WITH EMERGENCY FALLBACK
   return ensureSupabase()
     .then(()=> fetchPrevious(pageNumber))
     .then((prev) => {
-      const prompts = buildPrompts(prev);
+      prompts = buildPrompts(prev);
       let attempt = 0;
-      let lastOpenAIResponse: { status?: number; content?: string; ok: boolean } | null = null;
-      function loop(lastBackoff = false): Promise<{ ok:boolean; visual:any|null; upstreamBackoff:boolean }> {
-        if (attempt >= 2) return Promise.resolve({ ok: false, visual: null, upstreamBackoff: lastBackoff });
-        return callOpenAI({ systemPrompt: prompts.systemPrompt, userPrompt: prompts.userPrompt }, attempt).then((res) => {
+      function loop(lastBackoff = false): Promise<{ ok:boolean; visual:any|null; parseMethod?:string; extractedPrimaryScene?:string; jsonParseError?:string; upstreamBackoff:boolean }> {
+        if (attempt >= 2) {
+          attemptsUsed = 2;
+          return Promise.resolve({ ok: false, visual: null, upstreamBackoff: lastBackoff });
+        }
+        return callOpenAI({ systemPrompt: prompts!.systemPrompt, userPrompt: prompts!.userPrompt }, attempt).then((res) => {
           lastOpenAIResponse = res;
+          attemptsUsed = attempt + 1;
           if (!res.ok || !res.content) {
             const isBackoff = res.status === 429 || res.status === 503;
+            if (isBackoff) encounteredBackoff = true;
             attempt++;
             const delayMs = isBackoff ? Math.min(1000 * Math.pow(2, attempt-1), 8000) + Math.floor(Math.random()*1000) : 100 + Math.floor(Math.random()*200);
-            return new Promise<{ ok:boolean; visual:any|null; upstreamBackoff:boolean }>((resolve) =>
+            return new Promise<{ ok:boolean; visual:any|null; parseMethod?:string; extractedPrimaryScene?:string; jsonParseError?:string; upstreamBackoff:boolean }>((resolve) =>
               setTimeout(()=> resolve(loop(isBackoff)), delayMs)
             );
           }
-          return parseVisual(res.content).then(({ schema }) => {
-            if (!schema) return { ok:false, visual:null, upstreamBackoff:false };
-            return { ok:true, visual:schema, upstreamBackoff:false };
+          return parseVisual(res.content).then((result) => {
+            if (!result.schema && !result.extractedPrimaryScene) {
+              return { ok:false, visual:null, parseMethod: result.parseMethod, jsonParseError: result.jsonParseError, upstreamBackoff:false };
+            }
+            // If we have a schema (JSON), use it
+            if (result.schema) {
+              return { ok:true, visual:result.schema, parseMethod: result.parseMethod, upstreamBackoff:false };
+            }
+            // If only regex extraction, return primaryScene only (no schema)
+            return { 
+              ok: true, 
+              visual: { primaryScene: result.extractedPrimaryScene }, 
+              parseMethod: result.parseMethod,
+              jsonParseError: result.jsonParseError,
+              upstreamBackoff: false 
+            };
           });
         });
       }
@@ -860,21 +893,27 @@ Generate a comprehensive scene... The primaryScene must include the complete CHA
           modelUsed: 'gpt-4o-mini',
           aiGenerationSucceeded: false,
           failureReason: !result.ok ? 'ai_request_failed' : 'no_primary_scene_in_response',
-          attemptsUsed: 2,
+          attemptsUsed,
+          encounteredBackoff,
           characterDataSent: characterData,
           structuredAvatarData: userInfo?.structuredAvatarData || null,
           storyTextLength: storyText.length,
-          systemPrompt: prompts.systemPrompt,
-          userPrompt: prompts.userPrompt,
-          culturalContext: prompts.culturalContext,
+          systemPrompt: prompts?.systemPrompt || null,
+          userPrompt: prompts?.userPrompt || null,
+          culturalContext: prompts?.culturalContext || null,
           httpStatus: lastOpenAIResponse?.status || 0,
           rawResponse: lastOpenAIResponse?.content?.substring(0, 500) || null,
-          parseError: !result.visual ? 'no_visual_object_returned' : 'primaryScene_field_missing'
+          parseMethod: result.parseMethod || 'none',
+          parseError: !result.visual ? 'no_content_or_unparseable' : 'primaryScene_field_missing',
+          parseErrorDetails: result.jsonParseError || null
         };
         return { ok: false, visualSchema: null, aiDebugSchema, structuredAvatarData, upstreamBackoff: result.upstreamBackoff };
       }
       
-      // Got primaryScene? Success (include full schema if available)
+      // Got primaryScene - check if we have full schema or regex-only
+      const hasFullSchema = result.parseMethod === 'json';
+      const parseMethod = result.parseMethod || 'json';
+      
       const aiDebugSchema = {
         modelUsed: 'gpt-4o-mini',
         aiGenerationSucceeded: true,
@@ -883,14 +922,22 @@ Generate a comprehensive scene... The primaryScene must include the complete CHA
         structuredAvatarData: userInfo?.structuredAvatarData || null,
         storyTextLength: storyText.length,
         isNonEnglish: nativeLanguage && nativeLanguage !== 'en',
-        systemPrompt: prompts.systemPrompt,
-        userPrompt: prompts.userPrompt,
-        culturalContext: prompts.culturalContext,
-        httpStatus: lastOpenAIResponse?.status || 200
+        systemPrompt: prompts?.systemPrompt || null,
+        userPrompt: prompts?.userPrompt || null,
+        culturalContext: prompts?.culturalContext || null,
+        httpStatus: lastOpenAIResponse?.status || 200,
+        parseMethod,
+        attemptsUsed,
+        encounteredBackoff,
+        ...(parseMethod === 'regex' && {
+          rawResponse: lastOpenAIResponse?.content?.substring(0, 500) || null,
+          parseError: 'schema_not_valid_json',
+          parseErrorDetails: result.jsonParseError || null
+        })
       };
       
       return savePrimaryScene(directMode, result.visual).then(() => ({ 
-        ok: true, 
+        ok: hasFullSchema, // Only true success if we got valid JSON schema
         visualSchema: result.visual, 
         aiDebugSchema, 
         structuredAvatarData, 
@@ -901,7 +948,7 @@ Generate a comprehensive scene... The primaryScene must include the complete CHA
       // Catastrophic failure (unhandled exception) - fail fast
       console.error('❌ Catastrophic schema generation failure:', String(outerSchemaError?.message || outerSchemaError));
       const aiDebugSchema = {
-        modelUsed: 'none',
+        modelUsed: 'gpt-4o-mini',
         aiGenerationSucceeded: false,
         catastrophicError: true,
         outerError: String(outerSchemaError?.message || outerSchemaError),
@@ -911,9 +958,12 @@ Generate a comprehensive scene... The primaryScene must include the complete CHA
         systemPrompt: prompts?.systemPrompt || null,
         userPrompt: prompts?.userPrompt || null,
         culturalContext: prompts?.culturalContext || null,
-        httpStatus: 0,
-        rawResponse: null,
-        parseError: 'catastrophic_exception'
+        httpStatus: lastOpenAIResponse?.status || 0,
+        rawResponse: lastOpenAIResponse?.content?.substring(0, 500) || null,
+        parseMethod: 'none',
+        parseError: 'catastrophic_exception',
+        attemptsUsed,
+        encounteredBackoff
       };
       return { ok: false, visualSchema: null, aiDebugSchema, structuredAvatarData, upstreamBackoff: false };
     });
@@ -1124,15 +1174,17 @@ serve((req) => {
         primaryScene: gen.visualSchema.primaryScene,
         enhancedPrompt: gen.visualSchema.primaryScene,
         negativePrompt: 'blurry, low quality, dark, scary, violent, inappropriate, adult content, text, watermarks',
-        backgroundColor: gen.visualSchema.backgroundColor,
-        lighting: gen.visualSchema.lighting,
-        composition: gen.visualSchema.composition,
-        setting: gen.visualSchema.setting,
-        mood: gen.visualSchema.mood,
-        style: gen.visualSchema.style,
-        secondaryCharacters: gen.visualSchema.secondaryCharacters || [],
-        objects: gen.visualSchema.objects || [],
-        aiSchema: gen.visualSchema,
+        ...(gen.aiDebugSchema?.parseMethod === 'json' && {
+          backgroundColor: gen.visualSchema.backgroundColor,
+          lighting: gen.visualSchema.lighting,
+          composition: gen.visualSchema.composition,
+          setting: gen.visualSchema.setting,
+          mood: gen.visualSchema.mood,
+          style: gen.visualSchema.style,
+          secondaryCharacters: gen.visualSchema.secondaryCharacters || [],
+          objects: gen.visualSchema.objects || [],
+          aiSchema: gen.visualSchema
+        }),
         ...(directMode && characterSeed && { characterSeed }),
         ...(directMode && culturalBundle && { culturalBundle }),
         ...(gen.structuredAvatarData && { structuredAvatarData: gen.structuredAvatarData }),

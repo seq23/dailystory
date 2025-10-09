@@ -1174,24 +1174,34 @@ export const ImageTierTester = () => {
       });
 
       const startTime = Date.now();
-      const response = await supabase.functions.invoke('ai-visual-scene-creator', {
-        body: {
-          storyText: testStoryText,
-          userInfo: {
-            ...userInfo,
-            structuredAvatarData: structuredAvatarData
-          },
-          mainCharacterAppearance: mainCharacterAppearance,
-          secondaryCharacters: secondaryCharacters,
-          previousScene: null, // First scene has no previous
-          sessionId: sessionId,
-          storyId: sessionId,
-          pageNumber: 1,
-          isGuestUser: true,
-          difficultyLevel: mapDifficultyLevel(userInfo),
-          isDebugMode: true
-        }
-      });
+      
+      // Create timeout promise (12 seconds for AI generation)
+      const timeoutPromise = new Promise<never>((_, reject) => 
+        setTimeout(() => reject(new Error('AI Scene Creator timeout after 12 seconds')), 12000)
+      );
+      
+      // Race between the actual call and timeout
+      const response = await Promise.race([
+        supabase.functions.invoke('ai-visual-scene-creator', {
+          body: {
+            storyText: testStoryText,
+            userInfo: {
+              ...userInfo,
+              structuredAvatarData: structuredAvatarData
+            },
+            mainCharacterAppearance: mainCharacterAppearance,
+            secondaryCharacters: secondaryCharacters,
+            previousScene: null, // First scene has no previous
+            sessionId: sessionId,
+            storyId: sessionId,
+            pageNumber: 1,
+            isGuestUser: true,
+            difficultyLevel: mapDifficultyLevel(userInfo),
+            isDebugMode: true
+          }
+        }),
+        timeoutPromise
+      ]);
 
       const processingTime = Date.now() - startTime;
       

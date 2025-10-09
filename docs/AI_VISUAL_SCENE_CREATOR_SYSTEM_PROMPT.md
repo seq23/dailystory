@@ -152,26 +152,48 @@ This rule bridges the gap between textual story actions and visual scene require
 
 When the function returns, `aiDebugSchema` now includes comprehensive debugging data:
 
-**On Success:**
+**On Success (Valid JSON Schema - parseMethod: 'json'):**
 - `systemPrompt` (string) - Full system prompt sent to OpenAI
 - `userPrompt` (string) - Full user prompt sent to OpenAI
 - `culturalContext` (string) - Cultural enhancement context used
 - `httpStatus` (number) - HTTP status from OpenAI (typically 200)
 - `aiGenerationSucceeded` (boolean) - true
 - `primarySceneLength` (number) - Character count of generated scene
+- `parseMethod` (string) - 'json' (valid JSON schema returned)
+- `attemptsUsed` (number) - Number of retry attempts (1-2)
+- `encounteredBackoff` (boolean) - Whether 429/503 backoff was encountered
 
-**On Failure:**
+**On Partial Success (Regex Extraction Only - parseMethod: 'regex'):**
+- `systemPrompt` (string) - Full system prompt that was sent
+- `userPrompt` (string) - Full user prompt that was sent
+- `culturalContext` (string) - Cultural context attempted
+- `httpStatus` (number) - HTTP status from OpenAI (typically 200)
+- `rawResponse` (string) - First 500 characters of what OpenAI actually returned
+- `parseMethod` (string) - 'regex' (primaryScene extracted but no valid JSON)
+- `parseError` (string) - 'schema_not_valid_json'
+- `parseErrorDetails` (string) - Details of JSON parsing failure
+- `aiGenerationSucceeded` (boolean) - true (primaryScene exists)
+- `primarySceneLength` (number) - Character count of extracted scene
+- `attemptsUsed` (number) - Number of retry attempts
+- `encounteredBackoff` (boolean) - Whether backoff was encountered
+
+**On Failure (parseMethod: 'none'):**
 - `systemPrompt` (string) - Full system prompt that was sent
 - `userPrompt` (string) - Full user prompt that was sent
 - `culturalContext` (string) - Cultural context attempted
 - `httpStatus` (number) - HTTP status from OpenAI (0 if network failure, 429 if rate limited, etc.)
-- `rawResponse` (string) - First 500 characters of what OpenAI actually returned
-- `parseError` (string) - Why parsing failed (`no_visual_object_returned`, `primaryScene_field_missing`, `catastrophic_exception`)
+- `rawResponse` (string) - First 500 characters of what OpenAI returned (if any)
+- `parseMethod` (string) - 'none' (no primaryScene, no schema)
+- `parseError` (string) - Why parsing failed ('no_content_or_unparseable', 'primaryScene_field_missing', 'catastrophic_exception')
+- `parseErrorDetails` (string) - Detailed error message from parser
 - `aiGenerationSucceeded` (boolean) - false
 - `failureReason` (string) - High-level failure category
+- `attemptsUsed` (number) - Number of retry attempts
+- `encounteredBackoff` (boolean) - Whether backoff was encountered
 
 **Top-Level Response:**
-- `aiSchema` (object) - The complete visual schema object when present, making schema detection straightforward
+- `aiSchema` (object) - **Only present when parseMethod is 'json'** - The complete visual schema object, making schema detection straightforward and truthful
+- `primaryScene` (string) - Present when parseMethod is 'json' or 'regex'
 
 ---
 
