@@ -338,6 +338,19 @@ const CULTURAL_SKIN_TONE_VARIATIONS = {
   ]
 };
 
+// ============================================================================
+// SESSION-SEEDED PRNG - For deterministic hair/skin selection within sessions
+// ============================================================================
+const createSeededRandom = (seed: string): number => {
+  const numericSeed = seed.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  return numericSeed;
+};
+
+const seededIndex = (sessionId: string, arrayLength: number): number => {
+  const seed = createSeededRandom(sessionId);
+  return seed % arrayLength;
+};
+
 // Cultural profile detection for enhanced representation
 export const detectCulturalProfile = (userInfo: any): string => {
   const nativeLanguage = userInfo?.nativeLanguage || 'en';
@@ -373,7 +386,7 @@ export const validateAvatarIdentityCompleteness = (userInfo: any): { isComplete:
 };
 
 // Enhanced avatar identity processor with binary validation
-export const processAvatarIdentityFromCache = (userInfo: any) => {
+export const processAvatarIdentityFromCache = (userInfo: any, sessionId?: string) => {
   console.log('🔍 PHASE 8: Processing avatar identity with binary validation');
   
   // Step 1: Binary completeness validation
@@ -398,7 +411,9 @@ export const processAvatarIdentityFromCache = (userInfo: any) => {
   
   // Step 4: Enhanced skin tone variation selection
   const skinToneVariations = (CULTURAL_SKIN_TONE_VARIATIONS as any)[skinTone] || CULTURAL_SKIN_TONE_VARIATIONS['medium'];
-  const skinToneVariation = skinToneVariations[Math.floor(Math.random() * skinToneVariations.length)];
+  const skinToneVariation = sessionId
+    ? skinToneVariations[seededIndex(sessionId, skinToneVariations.length)]
+    : skinToneVariations[Math.floor(Math.random() * skinToneVariations.length)];
   
   // Step 5: Hair color processing with cultural awareness
   const hairOptions = hairMapping[skinTone] || hairMapping['medium'];
@@ -409,7 +424,9 @@ export const processAvatarIdentityFromCache = (userInfo: any) => {
                                  !hair.toLowerCase().includes('bun'))
     : hairOptions;
   
-  const hairColor = filteredHairOptions[Math.floor(Math.random() * filteredHairOptions.length)];
+  const hairColor = sessionId
+    ? filteredHairOptions[seededIndex(sessionId, filteredHairOptions.length)]
+    : filteredHairOptions[Math.floor(Math.random() * filteredHairOptions.length)];
   
   // Step 6: Gender/pronoun processing
   const pronoun = genderMapping.pronouns[avatarType] || 'they';

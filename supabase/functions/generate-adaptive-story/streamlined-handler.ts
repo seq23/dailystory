@@ -780,7 +780,7 @@ async function generateWithOpenAI(prompt: { systemPrompt: string; userPrompt: st
   try {
     // Use userInfo which already contains avatar data from bundle
     const completeAvatarInfo = userInfo;
-    const avatarInfo = processAvatarIdentityFromCache(completeAvatarInfo);
+    const avatarInfo = processAvatarIdentityFromCache(completeAvatarInfo, bundle.sessionId);
     
     // Universal hair color enhancement (no language restriction)
     if (avatarInfo && avatarInfo.hairColor && avatarInfo.name) {
