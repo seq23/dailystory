@@ -1,4 +1,4 @@
-// 🚀 DEPLOYMENT MARKER: v2025-10-08-STABILITY-REFRESH (FLAT-NO-TRYCATCH)
+// 🚀 DEPLOYMENT MARKER: v2025-10-09-FLAT-TIER-PRODUCTION (ZERO-NESTING)
 // Last deployed: 2025-10-08
 // Changes: Flattened architecture, removed try/catch, preserved unique app functionality & imports
 
@@ -244,21 +244,21 @@ const DEFAULT_CONFIGS: Record<string, GateConfig> = {
     maxWaitMs: 2000
   },
   'T25B:runware-template-ab': {
-    maxConcurrency: parseInt(Deno.env.get('PROVIDER_CONCURRENCY_RUNWARE') || '4'),
-    failThreshold: parseInt(Deno.env.get('CIRCUIT_FAIL_THRESHOLD') || '5'),
-    cooldownMs: parseInt(Deno.env.get('CIRCUIT_COOLDOWN_MS') || '45000'),
+    maxConcurrency: parseIntSafe(Deno.env.get('PROVIDER_CONCURRENCY_RUNWARE'), 4),
+    failThreshold: parseIntSafe(Deno.env.get('CIRCUIT_FAIL_THRESHOLD'), 5),
+    cooldownMs: parseIntSafe(Deno.env.get('CIRCUIT_COOLDOWN_MS'), 45000),
     maxWaitMs: 2000
   },
   'T25C:runware-template-cd': {
-    maxConcurrency: parseInt(Deno.env.get('PROVIDER_CONCURRENCY_RUNWARE') || '4'),
-    failThreshold: parseInt(Deno.env.get('CIRCUIT_FAIL_THRESHOLD') || '5'),
-    cooldownMs: parseInt(Deno.env.get('CIRCUIT_COOLDOWN_MS') || '45000'),
+    maxConcurrency: parseIntSafe(Deno.env.get('PROVIDER_CONCURRENCY_RUNWARE'), 4),
+    failThreshold: parseIntSafe(Deno.env.get('CIRCUIT_FAIL_THRESHOLD'), 5),
+    cooldownMs: parseIntSafe(Deno.env.get('CIRCUIT_COOLDOWN_MS'), 45000),
     maxWaitMs: 2000
   },
   'IMG:runware-generate-image': {
-    maxConcurrency: parseInt(Deno.env.get('PROVIDER_CONCURRENCY_RUNWARE') || '4'),
-    failThreshold: parseInt(Deno.env.get('CIRCUIT_FAIL_THRESHOLD') || '5'),
-    cooldownMs: parseInt(Deno.env.get('CIRCUIT_COOLDOWN_MS') || '45000'),
+    maxConcurrency: parseIntSafe(Deno.env.get('PROVIDER_CONCURRENCY_RUNWARE'), 4),
+    failThreshold: parseIntSafe(Deno.env.get('CIRCUIT_FAIL_THRESHOLD'), 5),
+    cooldownMs: parseIntSafe(Deno.env.get('CIRCUIT_COOLDOWN_MS'), 45000),
     maxWaitMs: 2000
   }
 };
@@ -419,7 +419,90 @@ function generateCompleteVisualSchema(
         `${nativeLanguage} cultural context with authentic local settings and architecture`;
     }
 
-    const systemPrompt = `Generate a comprehensive visual scene description for children's story image generation. Create rich primary scenes... (truncated for brevity in code)`;
+    const systemPrompt = `Generate a comprehensive visual scene description for children's story image generation. Create rich primary scenes (200-2000 characters preferred) with key actions, setting, character descriptions, and other visual details derived from story text with intelligent enhancements and inferences.
+
+JSON RESPONSE:
+{
+  "primaryScene": "Character name, age X, (weave ethnicity in here) in rich, detailed visual scene description for image generation with main character description (verbatim hair and skin / features provided weaved in naturally), setting, key character actions OR character as observer/in background if action focuses on object/animal, any secondary characters including animals, atmosphere, and comprehensive visual details",
+  "backgroundColor": "Background color description (e.g., 'warm golden forest light', 'cool blue sky', 'cozy indoor amber')",
+  "lighting": "Lighting description (e.g., 'golden hour sunlight', 'soft morning light', 'magical twilight glow')",
+  "composition": "Visual composition description (e.g., 'centered character with forest background', 'close-up with blurred garden')",
+  "setting": "Location and environment (e.g., 'magical forest clearing', 'cozy bedroom', 'sunny playground')",
+  "mood": "Emotional atmosphere (e.g., 'adventurous and curious', 'peaceful and content', 'excited and playful')",
+  "style": "Artistic style (e.g., 'watercolor illustration', 'digital painting', 'children's book art')",
+  "secondaryCharacters": {
+    "humans": ["list of human characters mentioned in story (e.g., 'mom', 'friend', 'teacher')"],
+    "pets": ["list of animals/pets mentioned in story (e.g., 'dog', 'cat', 'bird')"]
+  },
+  "objects": ["key props and objects in scene (e.g., 'ball', 'tree', 'flowers', 'toys')"],
+  "clothing": ["blue shirt", "red sneakers", "yellow hat"]
+}
+
+RULES:
+1. Story text priority: absolute driver - never contradict visual details
+2. Main action extraction: focus on most visually significant action from story text
+3. Character appearance: use provided appearance data VERBATIM (word-for-word ethnicity, hair, skin tone) but weave it naturally into flowing prose using connecting phrases like "with her" or "who has" - NEVER simplify core appearance details
+4. Character poses and positioning: infer body positions from story actions ('wakes up' = sitting up in bed with arms stretched, 'runs' = dynamic running pose, 'reads' = sitting/lying with book, 'looks up' = head tilted upward, 'plays' = active engaging pose)
+5. Singular/plural intelligence: "a bird" = 1 bird, "the bird" = 1 bird, "birds" = 2-4 birds, "many/lots of birds" = 5+ birds
+6. **Secondary Characters - SESSION CONSISTENCY**: Extract ONLY characters explicitly mentioned in the CURRENT STORY TEXT:
+   - HUMANS: Named people (Jake, mom, teacher) or unnamed groups (friends, children, people)
+   - PETS: Named or unnamed animals (Whiskers the cat, dog, birds)
+   
+   **CRITICAL CONSISTENCY RULES:**
+   - Only include characters mentioned/implied in CURRENT story text
+   - If a character from PREVIOUS SCENE data reappears by NAME, reuse their EXACT details for visual consistency
+   - Do NOT carry forward characters unless they appear in current story
+   - Do NOT invent names for unnamed characters (use "friends", "people", "dog")
+   - For unnamed groups, use collective descriptions in primaryScene (Rule #1)
+   
+   Example: If PREVIOUS SCENE has "Jake: boy with curly hair, red shirt, blue cap" and current story mentions "Jake ran to the door" → Include "Jake: boy with curly hair, red shirt, blue cap" in output
+7. Atmospheric details: infer time of day, weather, indoor/outdoor context from story
+8. Visual continuity on pages 2+: CRITICAL - maintain exact visual consistency from PREVIOUS SCENE:
+   - Object persistence: if previous scene mentions "pink backpack", current scene MUST show "pink backpack" when story references "it" or "the backpack"
+   - Clothing consistency: if previous scene shows "blue shirt", character keeps "blue shirt" unless story explicitly says they changed
+   - Pronoun resolution: "it", "them", "her toy" MUST match objects/characters from previous scene
+   - Scene element maintenance: if previous scene was "sunny park", continue "sunny park" unless story changes location
+   - Color memory: NEVER change colors ("red ball" stays "red ball", "green jacket" stays "green jacket")
+   
+   CORRECT EXAMPLE:
+   Previous: "Sarah, age 6, with brown curly hair and medium skin tone, holds a pink backpack in a sunny park"
+   Current Story: "Sarah walked with it to the playground"
+   Current Scene: "Sarah, age 6, with brown curly hair and medium skin tone, walks confidently carrying her pink backpack through the sunny park toward the playground"
+   
+    WRONG EXAMPLE:
+    Previous: "pink backpack"
+    Current Story: "walked with it"
+    Current Scene: "walks with a blue bag" ❌ (color changed)
+9. Main character presence in ALL scenes (children's story requirement): ALWAYS include the main character in EVERY scene for visual continuity
+   - If story text explicitly mentions character doing an action: character is PRIMARY FOCUS of scene
+   - If story text focuses on object/animal WITHOUT mentioning character (e.g., "The dog jumps", "The ball rolls"): position main character as OBSERVER or in BACKGROUND watching/near the action
+   - Example: Story says "The bird flies away" → Scene: "Sarah, age 6, with brown curly hair, watches from the garden as a small bird flies away into the blue sky"
+   - Example: Story says "The toy car zooms across the floor" → Scene: "Jake, age 5, with short black hair, sits nearby on the floor smiling as his red toy car zooms across the wooden floor"
+   - NEVER generate a scene without the main character visible - they must always be present for children's story continuity
+10. CLOTHING CONSISTENCY RULES:
+    - If PREVIOUS SCENE provides clothing data in the structured schema, the main character MUST wear those exact clothing items in the current scene
+    - Clothing colors and items must remain consistent across pages unless the story explicitly describes a clothing change (e.g., "she put on a jacket", "he changed into pajamas")
+    - Track all visible clothing items in the "clothing" field of the JSON response for continuity on the next page
+    - Examples of clothing items to track: "blue shirt", "red sneakers", "yellow dress", "green jacket", "striped pants", "pink hat"
+    - Document all clothing in the response even if not explicitly mentioned in current story text (carry forward from previous scene)
+
+PHASE 1 ENHANCEMENT - MAIN CHARACTER APPEARANCE:
+- If mainCharacterAppearance physical features are provided (e.g., 'brown eyes', 'curly hair'), incorporate them into the scene description
+- If mainCharacterAppearance clothing is provided (e.g., 'blue shirt', 'red sneakers'), ensure they're visible in the scene
+
+PHASE 1 ENHANCEMENT - SECONDARY CHARACTER VISUALS:
+- If secondary characters have visualDetails (e.g., ['blonde', 'tall', 'blue dress']), incorporate these descriptors into their appearance in the scene
+- Use visualDetails to create consistent appearances for recurring secondary characters across pages
+
+CULTURAL CONTEXT:
+${isNonEnglish ? `
+CRITICAL: Enhance story settings with specific cultural elements for ${nativeLanguage} speakers:
+${culturalContext}
+
+EXAMPLE: For a French speaker named Sarah playing in a park, generate:
+"Sarah with ${structuredAvatarData?.hairColor || 'natural hair'} and ${structuredAvatarData?.resolvedSkinTone || 'medium'} skin tone plays joyfully in a charming Parisian park near the Eiffel Tower, with the Seine River visible in the background, surrounded by elegant French gardens with lavender and a quaint café district with outdoor seating. Warm, sophisticated European aesthetic with golden afternoon light."
+
+Use cultural detail naturally without contradicting explicit story settings.` : '- Use universal child-friendly settings with warm, inviting atmospheres'}`;
 
     const previousBlock = prevData.previousPrimaryScene
       ? (prevData.previousVisualSchema
@@ -499,6 +582,28 @@ Generate a comprehensive scene... The primaryScene must include the complete CHA
     });
   }
 
+  // ========== EMERGENCY VISUAL SCHEMA FALLBACK ==========
+  function buildEmergencyVisualSchema(storyText: string, characterData: string, nativeLanguage: string): any {
+    const culturalSetting = nativeLanguage === 'fr' ? 'charming Parisian park with Eiffel Tower in background' :
+                           nativeLanguage === 'es' ? 'colorful Mediterranean courtyard with fountain' :
+                           nativeLanguage === 'zh' ? 'traditional Chinese garden with bamboo and stone bridge' :
+                           nativeLanguage === 'ar' ? 'beautiful desert oasis with palm trees' :
+                           'bright, welcoming outdoor scene';
+    
+    return {
+      primaryScene: `${characterData} is present in a clear, friendly ${culturalSetting} inspired by the story: ${storyText.slice(0, 400)}${storyText.length>400?'...':''}. The setting is bright and welcoming, with visible actions matching the text and a consistent children's book composition.`,
+      backgroundColor: 'warm natural light',
+      lighting: 'soft daylight',
+      composition: 'centered character with context',
+      setting: 'story-appropriate environment',
+      mood: 'cheerful and engaging',
+      style: "children's book illustration",
+      secondaryCharacters: { humans: [], pets: [] },
+      objects: [],
+      characterAppearance: structuredAvatarData
+    };
+  }
+
   function savePrimaryScene(directMode: boolean, visualSchema: any): Promise<void> {
     if (!directMode) return Promise.resolve();
     if (!supabaseClient) return Promise.resolve();
@@ -541,7 +646,7 @@ Generate a comprehensive scene... The primaryScene must include the complete CHA
       .catch(()=>undefined);
   }
 
-  // chain execution (no try/catch)
+  // chain execution (no try/catch) - ENHANCED WITH EMERGENCY FALLBACK
   return ensureSupabase()
     .then(()=> fetchPrevious(pageNumber))
     .then((prev) => {
@@ -560,37 +665,21 @@ Generate a comprehensive scene... The primaryScene must include the complete CHA
           }
           return parseVisual(res.content).then(({ schema }) => {
             if (!schema) return { ok:false, visual:null, upstreamBackoff:false };
-            // merge secondary character cache placeholder (CCS removed)
-            const merged = {
-              ...schema,
-              characterAppearance: structuredAvatarData,
-              secondaryCharacters: schema.secondaryCharacters || { humans: [], pets: [] },
-              objects: schema.objects || []
-            };
-            return { ok:true, visual: merged, upstreamBackoff:false };
+            return { ok:true, visual:schema, upstreamBackoff:false };
           });
         });
       }
-      return loop().then((result) => ({ result, prompts }));
+      return loop();
     })
-    .then(({ result, prompts }) => {
-      const ok = result.ok;
-      const visualSchema = ok ? result.visual : {
-        primaryScene: `${characterData} is present in a clear, friendly scene inspired by the story: ${storyText.slice(0, 400)}${storyText.length>400?'...':''}. The setting is bright and welcoming, with visible actions matching the text and a consistent children's book composition.`,
-        backgroundColor: 'warm natural light',
-        lighting: 'soft daylight',
-        composition: 'centered character with context',
-        setting: 'story-appropriate environment',
-        mood: 'cheerful and engaging',
-        style: "children's book illustration",
-        secondaryCharacters: { humans: [], pets: [] },
-        objects: [],
-        characterAppearance: structuredAvatarData
-      };
+    .then((result) => {
+      // CRITICAL: Emergency fallback ALWAYS applied if AI generation failed
+      const visualSchema = result.ok && result.visual ? result.visual : buildEmergencyVisualSchema(content, characterData, nativeLanguage);
+      const ok = !!visualSchema; // Emergency schema is ALWAYS valid
+      
       const aiDebugSchema = {
-        modelUsed: ok ? 'gpt-4o-mini' : 'local-fallback',
-        systemPrompt: prompts.systemPrompt,
-        userPrompt: prompts.userPrompt,
+        modelUsed: (result.ok && result.visual) ? 'gpt-4o-mini' : 'emergency-local-fallback',
+        aiGenerationSucceeded: result.ok && !!result.visual,
+        emergencyFallbackTriggered: !(result.ok && result.visual),
         characterDataSent: characterData,
         structuredAvatarData: userInfo?.structuredAvatarData || null,
         rawUserInfoReceived: {
@@ -601,10 +690,25 @@ Generate a comprehensive scene... The primaryScene must include the complete CHA
           nativeLanguage: userInfo?.native_language || userInfo?.nativeLanguage,
           fullUserInfo: userInfo
         },
-        storyTextLength: storyText.length,
+        storyTextLength: content.length,
         isNonEnglish: nativeLanguage && nativeLanguage !== 'en',
       };
-      return savePrimaryScene(true, visualSchema).then(()=>({ ok:true, visualSchema, aiDebugSchema, structuredAvatarData, upstreamBackoff: result.upstreamBackoff }));
+      return savePrimaryScene(ok, visualSchema).then(()=>({ ok:true, visualSchema, aiDebugSchema, structuredAvatarData, upstreamBackoff: result.upstreamBackoff }));
+    })
+    .catch((outerSchemaError) => {
+      // OUTER SAFETY NET: If entire AI generation chain fails, use emergency fallback
+      console.error(`❌ [SCHEMA_GENERATION] Complete failure, using emergency fallback:`, String(outerSchemaError?.message || outerSchemaError));
+      const emergencySchema = buildEmergencyVisualSchema(content, characterData, nativeLanguage);
+      const aiDebugSchema = {
+        modelUsed: 'emergency-local-fallback-outer-safety-net',
+        aiGenerationSucceeded: false,
+        emergencyFallbackTriggered: true,
+        outerError: String(outerSchemaError?.message || outerSchemaError),
+        characterDataSent: characterData,
+        structuredAvatarData: userInfo?.structuredAvatarData || null,
+        storyTextLength: content.length,
+      };
+      return savePrimaryScene(true, emergencySchema).then(()=>({ ok:true, visualSchema: emergencySchema, aiDebugSchema, structuredAvatarData, upstreamBackoff: false }));
     });
 }
 
@@ -628,7 +732,7 @@ function generateCharacterSeed(sessionId: string, userInfo: any) {
     else if (language === 'pt') ethnicity = 'Portuguese';
   }
   return {
-    seed: Math.floor(Math.random() * 999999),
+    seed: Math.abs(sessionId.split("").reduce((a, c) => a + c.charCodeAt(0), 0)) % 999999,
     characterName,
     avatarType: userInfo?.avatar?.type || 'child',
     skinTone,
@@ -695,18 +799,15 @@ serve((req) => {
 
     // Guard clauses
     if (!payload || typeof payload !== 'object') {
-      if (gatingEnabled && gateAcquired) { release(gateKey, false); gateAcquired = false; }
       return corsResponse({ success:false, error:'Invalid JSON payload' }, req, 400);
     }
 
     if (payload?.diagnostic === true || payload?.diagnostic === 'health_check' || payload?.test === true) {
-      if (gatingEnabled && gateAcquired) { release(gateKey, true); gateAcquired = false; }
       return corsResponse({ success:true, service:'ai-visual-scene-creator', message:'Runtime OK', timestamp:new Date().toISOString() }, req, 200);
     }
 
     const content: string = payload.pageText || payload.storyText || payload.content || '';
     if (!content.trim()) {
-      if (gatingEnabled && gateAcquired) { release(gateKey, false); gateAcquired = false; }
       return corsResponse({ success:false, error:'MISSING_STORY_CONTENT', tier:'VALIDATION_FAILED' }, req, 400);
     }
 
@@ -746,7 +847,6 @@ serve((req) => {
       );
 
       if (!gen.ok || !gen.visualSchema) {
-        if (gatingEnabled && gateAcquired) { release(gateKey, false); gateAcquired = false; }
         const status = gen.upstreamBackoff ? 503 : 500;
         return corsResponse({
           success:false,
@@ -831,7 +931,6 @@ serve((req) => {
         }
       };
 
-      if (gatingEnabled && gateAcquired) { release(gateKey, true); gateAcquired = false; }
       return corsResponse(response, req, 200);
     });
 
