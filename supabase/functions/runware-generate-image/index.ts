@@ -9,9 +9,6 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 // ✅ BUNDLER HINT: Force inline CCS inclusion in deployment bundle (dynamic import used inside handler)
 import { characterConsistencyService as _ccsHint } from "./CharacterConsistencyServiceInline.js";
 
-// ✅ TIER 25 VOCABULARY: Import for emergency bundle computation
-import { TIER_25_UNIFIED_VOCABULARY_EXTENDED } from "../_shared/tier25UnifiedVocabulary.js";
-
 // CCS boot status tracking (referenced throughout orchestrator metadata)
 const ccsBootStatus = { loaded: false, error: null };
 
@@ -1497,7 +1494,118 @@ const executeDirectMode: TierFn = async (ctx) => {
   } catch (error: any) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     ctx.tierLogger.failure("DIRECT_MODE", { error: errorMessage });
-    return { ok: false, code: "DM_FAILED", reason: errorMessage };
+    
+    // ============= CCS RETRY: Attempt full CCS bundle after Direct Mode failure =============
+    console.log(`⚡ [CCS_RETRY] Direct Mode failed, attempting CCS retry to populate ctx.tier1 for T2.5A`);
+    
+    try {
+      // Import CCS service (same as Tier 1)
+      const { characterConsistencyService } = await import("./CharacterConsistencyServiceInline.js");
+      
+      const sessionId = ctx.payload.sessionId;
+      const userInfo = ctx.payload.userInfo || {};
+      const storyText = ctx.payload.storyText || "";
+      const pageText = ctx.payload.pageText || "";
+      const characterName = userInfo?.name || userInfo?.characterName || userInfo?.avatar?.name || "the child";
+      
+      // Extract avatar identity
+      const avatarSkinTone = userInfo?.avatar?.skinTone || userInfo?.skinTone || "medium";
+      const avatarIdentity = {
+        name: characterName,
+        type: userInfo?.avatar?.type || "child",
+        skinTone: avatarSkinTone,
+      };
+      
+      // 1. getStructuredAvatarData (with hairColor repair)
+      let structuredAvatarData = await characterConsistencyService.getStructuredAvatarData(sessionId, userInfo);
+      if (!structuredAvatarData?.hairColor || structuredAvatarData.hairColor === "natural hair") {
+        const fallbackSkinTone = structuredAvatarData?.skinTone || avatarSkinTone;
+        const { emergencyHairFallback } = await import("../_shared/avatarConsistency.js");
+        structuredAvatarData.hairColor = emergencyHairFallback(fallbackSkinTone);
+        console.log(`🔧 [CCS_RETRY] Repaired structuredAvatarData.hairColor: ${structuredAvatarData.hairColor}`);
+      }
+      
+      // 2. getEnhancedCharacterSeed
+      const characterSeed = await characterConsistencyService.getEnhancedCharacterSeed(
+        sessionId,
+        avatarIdentity,
+        storyText || pageText || "",
+        "continuing"
+      );
+      
+      // 3. getCharacterAppearanceFromStory
+      const characterAppearance = await characterConsistencyService.getCharacterAppearanceFromStory(sessionId, characterName) || "";
+      
+      // 4. getSessionSetting (never_ending_story)
+      const neverEndingSetting = await characterConsistencyService.getSessionSetting(sessionId, "never_ending_story") || "";
+      
+      // 5. getCulturalEnhancements (with hair/features repair)
+      let culturalBundle = await characterConsistencyService.getCulturalEnhancements(userInfo, sessionId, characterName);
+      const skinToneForFallback = avatarSkinTone || structuredAvatarData?.skinTone || "medium";
+      
+      if (!culturalBundle?.hair || culturalBundle.hair.trim() === "" || culturalBundle.hair === "natural hair") {
+        const { emergencyHairFallback } = await import("../_shared/avatarConsistency.js");
+        const repairedHair = emergencyHairFallback(skinToneForFallback);
+        if (!culturalBundle) culturalBundle = {};
+        culturalBundle.hair = repairedHair;
+        console.log(`🔧 [CCS_RETRY] Repaired culturalBundle.hair: ${repairedHair}`);
+      }
+      
+      if (!culturalBundle?.features || culturalBundle.features.trim() === "") {
+        if (!culturalBundle) culturalBundle = {};
+        culturalBundle.features = "friendly features";
+        console.log(`🔧 [CCS_RETRY] Repaired culturalBundle.features: friendly features`);
+      }
+      
+      // 6. analyzeVisualDetails + getColoredObjects
+      await characterConsistencyService.analyzeVisualDetails(sessionId, storyText || pageText, ctx.payload.pageNumber || 1);
+      const coloredObjects = await characterConsistencyService.getColoredObjects(sessionId);
+      
+      // 7. getSecondaryCharactersForSession + detectAllCharacters
+      const secondaryCharacters = await characterConsistencyService.getSecondaryCharactersForSession(sessionId);
+      const detectionResults = await characterConsistencyService.detectAllCharacters(storyText || pageText, {
+        sessionId,
+        pageNumber: ctx.payload.pageNumber || 1,
+      });
+      const mainCharacterAppearance = detectionResults.mainCharacterAppearance || {};
+      
+      // 8. getSessionSetting (context - indoor/outdoor)
+      const sessionSetting = await characterConsistencyService.getSessionSetting(sessionId, "context", "");
+      
+      // Populate ctx.tier1 with full CCS bundle (identical shape to Tier 1 success)
+      ctx.tier1 = {
+        enhancedPrompt: undefined, // Not needed for T2.5A
+        characterSeed,
+        culturalBundle,
+        coloredObjects: coloredObjects || "",
+        secondaryCharacters: secondaryCharacters || [],
+        mainCharacterAppearance,
+        structuredAvatarData,
+        sessionSetting: sessionSetting || ctx.payload.sessionSetting,
+      };
+      
+      console.log(`✅ [CCS_RETRY] SUCCESS - ctx.tier1 populated`, {
+        hasCharacterSeed: !!ctx.tier1.characterSeed,
+        hasCulturalBundle: !!ctx.tier1.culturalBundle,
+        hasHair: !!ctx.tier1.culturalBundle?.hair,
+        hasFeatures: !!ctx.tier1.culturalBundle?.features,
+        hair: ctx.tier1.culturalBundle?.hair,
+        features: ctx.tier1.culturalBundle?.features,
+      });
+      
+      ctx.tierLogger.success("CCS_RETRY", { ccsRetry: true, path: "afterDirectMode" });
+      
+      // Return DM failure so cascade proceeds to T2.5A (which will pass precondition now)
+      return { ok: false, code: "DM_FAILED", reason: errorMessage };
+      
+    } catch (ccsError: any) {
+      const ccsErrorMessage = ccsError instanceof Error ? ccsError.message : String(ccsError);
+      console.error(`❌ [CCS_RETRY] FAILED - escalating to T2.5B`, { error: ccsErrorMessage });
+      ctx.tierLogger.failure("CCS_RETRY", { error: ccsErrorMessage });
+      
+      // CCS retry failed - return DM failure and let cascade skip T2.5A (precondition fails) and go to T2.5B
+      return { ok: false, code: "DM_FAILED", reason: errorMessage };
+    }
   }
 };
 
@@ -1543,6 +1651,7 @@ const executeT25A: TierFn = async (ctx) => {
       // Construct precomputedCCS from Tier 1 data
       let precomputedCCS: any;
       
+      // T1 was successful (or CCS retry succeeded), use inline data
       if (ctx.tier1?.characterSeed) {
         // ✅ TIER 1 SUCCESS: Forward complete CCS bundle
         precomputedCCS = {
@@ -1554,51 +1663,6 @@ const executeT25A: TierFn = async (ctx) => {
           sessionSetting: ctx.tier1.sessionSetting,
           source: 'tier1_ccs_inline'
         };
-      } else {
-        // ❌ TIER 1 FAILED: Compute emergency bundle with Tier 25 vocab
-        console.warn(`⚠️ Tier 1 CCS failed, computing emergency bundle for Tier 2.5A`);
-        
-        const vocab = TIER_25_UNIFIED_VOCABULARY_EXTENDED;
-        const userInfo = ctx.payload.userInfo || {};
-        const avatarIdentity = ctx.payload.avatarIdentity || userInfo.avatar || {};
-        
-        // Helper: Pick random from array
-        const pick = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
-        
-        // Compute emergency bundle with Tier 25 vocab (hair/features = empty strings)
-        precomputedCCS = {
-          characterSeed: {
-            hairColor: pick(vocab.descriptors.hairColors || ['brown']),
-            hairStyle: pick(vocab.descriptors.hairStyles || ['short']),
-            eyeColor: pick(vocab.descriptors.eyeColors || ['brown']),
-            skinTone: avatarIdentity.skinTone || 'medium',
-            clothingStyle: pick(vocab.clothing?.basic || ['casual clothes']),
-            personalityTrait: pick(vocab.descriptors.emotions || ['happy']),
-            physicalTrait: pick(vocab.descriptors.sizeAge || ['young']),
-            hair: "", // ← Empty: Tier 2.5A will compute this
-            features: "" // ← Empty: Tier 2.5A will compute this
-          },
-          culturalBundle: {
-            hair: "", // ← Empty: Tier 2.5A will compute this
-            features: "", // ← Empty: Tier 2.5A will compute this
-            greeting: pick(vocab.actions || ['waves']),
-            activity: pick(vocab.actions || ['plays']),
-            setting: pick(vocab.settings.indoor || ['room']),
-            clothing: pick(vocab.clothing?.basic || ['comfortable outfit'])
-          },
-          mainCharacterAppearance: {
-            hairColor: pick(vocab.descriptors.hairColors || ['brown']),
-            hairStyle: pick(vocab.descriptors.hairStyles || ['short']),
-            eyeColor: pick(vocab.descriptors.eyeColors || ['brown']),
-            skinTone: avatarIdentity.skinTone || 'medium'
-          },
-          coloredObjects: pick(vocab.objects.toys || ['toy']),
-          secondaryCharacters: [],
-          sessionSetting: ctx.payload.sessionSetting || 'default',
-          source: 'emergency_tier25_vocab'
-        };
-        
-        console.log(`✅ Emergency bundle computed with Tier 25 vocab (hair/features empty for Tier 2.5A)`);
       }
       
       const response = await fetch(`${SUPABASE_URL}/functions/v1/runware-template-ab`, {

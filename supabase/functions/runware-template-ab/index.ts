@@ -1063,20 +1063,17 @@ async function handleTemplateABRequest(req: Request): Promise<Response> {
         }, 503);
       }
       
-      // ✅ BUNDLE VALIDATION: Check all 7 methods present
+      // ✅ BUNDLE VALIDATION: Ensure characterSeed and culturalBundle exist
       const bundle = precomputedCCS.culturalBundle || {};
-      const requiredMethods = ['greeting', 'activity', 'setting', 'clothing'];
-      const missingMethods = requiredMethods.filter(m => !bundle[m]);
-      
-      if (missingMethods.length > 0) {
-        console.error(`❌ Tier 2.5A: Missing bundle methods: ${missingMethods.join(', ')}, escalating to Tier 2.5B`);
+      if (!precomputedCCS.characterSeed || !bundle) {
+        console.error(`❌ Tier 2.5A: Missing characterSeed or culturalBundle, escalating to Tier 2.5B`);
         return createResponse({
           success: false,
           error: 'INCOMPLETE_BUNDLE',
           escalation: 'NEXT_TIER',
           tier: 'tier-2.5A',
           service: SERVICE_NAME,
-          message: `Missing cultural bundle methods: ${missingMethods.join(', ')}`
+          message: 'Missing characterSeed or culturalBundle'
         }, 503);
       }
       
