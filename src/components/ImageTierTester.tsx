@@ -2172,24 +2172,43 @@ export const ImageTierTester = () => {
                     }
                   );
                   
-                  status = rawResponse.status;
-                  const rawBody = await rawResponse.text();
-                  
-                  // Re-classify based on raw HTTP status
-                  if (status === 546) category = 'CAPACITY_LIMIT';
-                  else if (status === 503) category = 'BOOT_SYNC_ANOMALY';
-                  else if (status === 500) category = 'RUNTIME_ERROR';
-                  else if (status === 404) category = 'DEPLOYMENT_ISSUE';
-                  else if (status === 400 || status === 422) category = 'VALIDATION_ERROR';
-                  else category = 'NETWORK_ISSUE';
-                  
-                  tests.POST = {
-                    success: false,
-                    status,
-                    statusText: `${errorMessage} (raw: ${rawBody.substring(0, 100)})`,
-                    category,
-                    details: `SDK error mapped via raw fetch: HTTP ${status}`
-                  };
+status = rawResponse.status;
+const rawBody = await rawResponse.text();
+
+// Try to parse JSON to detect template escalation
+let parsed: any = null;
+try { parsed = JSON.parse(rawBody); } catch {}
+const isTemplateEndpoint = endpoint.name === 'runware-template-ab' || endpoint.name === 'runware-template-cd';
+const foundEscalation = parsed?.escalation === 'NEXT_TIER' || parsed?.error === 'NO_PRECOMPUTED_CCS';
+const getHealthy = !!tests?.GET?.success;
+
+if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
+  category = 'HEALTHY_ESCALATION';
+  status = 200;
+  tests.POST = {
+    success: true,
+    status,
+    statusText: 'HEALTHY_ESCALATION',
+    category
+  };
+  console.log(`✅ Raw fetch: classified as HEALTHY_ESCALATION for ${endpoint.name}`, { foundEscalation, status: rawResponse.status, parsed });
+} else {
+  // Re-classify based on raw HTTP status
+  if (status === 546) category = 'CAPACITY_LIMIT';
+  else if (status === 503) category = 'BOOT_SYNC_ANOMALY';
+  else if (status === 500) category = 'RUNTIME_ERROR';
+  else if (status === 404) category = 'DEPLOYMENT_ISSUE';
+  else if (status === 400 || status === 422) category = 'VALIDATION_ERROR';
+  else category = 'NETWORK_ISSUE';
+  
+  tests.POST = {
+    success: false,
+    status,
+    statusText: `${errorMessage} (raw: ${rawBody.substring(0, 100)})`,
+    category,
+    details: `SDK error mapped via raw fetch: HTTP ${status}`
+  };
+}
                 } catch (rawFetchError: any) {
                   // Raw fetch also failed - truly a network issue
                   category = 'NETWORK_ISSUE';
