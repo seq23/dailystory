@@ -2392,7 +2392,7 @@ serve(async (req) => {
         { 
           name: "T25A", 
           fn: executeT25A,
-          precondition: (ctx) => !!ctx.tier1?.culturalBundle?.hair && !!ctx.tier1?.culturalBundle?.features,
+          precondition: (ctx) => !!ctx.tier1?.characterSeed,
         },
         { name: "T25B", fn: executeT25B },
         { name: "T25C", fn: executeT25C },
