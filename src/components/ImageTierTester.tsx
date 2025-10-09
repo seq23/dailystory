@@ -598,15 +598,12 @@ export const ImageTierTester = () => {
     const startTime = Date.now();
     
     try {
-      // Simple GET request to check endpoint availability using environment variables
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://cpzeuogomaixamrtnnmj.supabase.co';
-      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino';
-      
-      const response = await fetch(`${supabaseUrl}/functions/v1/${endpoint}`, {
+      // Simple GET request to check endpoint availability
+      const response = await fetch(`https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/${endpoint}`, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${supabaseAnonKey}`,
-          'apikey': supabaseAnonKey
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino',
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino'
         }
       });
       
@@ -2110,9 +2107,22 @@ export const ImageTierTester = () => {
                 if (isTemplateEndpoint && hasEscalationSignal) {
                   category = 'HEALTHY_ESCALATION';
                   status = 200; // Treat as healthy
+                  tests.POST = {
+                    success: true,
+                    status,
+                    statusText: 'HEALTHY_ESCALATION',
+                    category
+                  };
+                  console.log(`✅ Classified as HEALTHY_ESCALATION → POST=200 for ${endpoint.name}`);
                 } else {
                   category = 'BOOT_SYNC_ANOMALY';
                   status = 503;
+                  tests.POST = {
+                    success: false,
+                    status,
+                    statusText: errorMessage,
+                    category
+                  };
                 }
               } else if (errorStatus === 500) {
                 category = 'RUNTIME_ERROR';
@@ -2133,17 +2143,14 @@ export const ImageTierTester = () => {
               } else if (!errorStatus && (errorCode || errorMessage)) {
                 // Ambiguous error without status - try raw fetch for diagnostic
                 try {
-                  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://cpzeuogomaixamrtnnmj.supabase.co';
-                  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino';
-                  
                   const rawResponse = await fetch(
-                    `${supabaseUrl}/functions/v1/${endpoint.name}`,
+                    `https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/${endpoint.name}`,
                     {
                       method: 'POST',
                       headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${supabaseAnonKey}`,
-                        'apikey': supabaseAnonKey
+                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino',
+                        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwemV1b2dvbWFpeGFtcnRubm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5ODQ2NTEsImV4cCI6MjA2OTU2MDY1MX0.3ziDSHAS6XNd73eF5GVEOHW8GpnP03h3NJKqElMyino'
                       },
                       body: JSON.stringify(payload),
                       signal: AbortSignal.timeout(5000)
