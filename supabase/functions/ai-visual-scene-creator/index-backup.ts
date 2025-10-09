@@ -938,13 +938,15 @@ serve((req) => {
     if (result instanceof Response) return result;
 
     // Safety: if Idempotency returned an object (shouldn’t), coerce.
-    if (gatingEnabled && gateAcquired) { release(gateKey, true); gateAcquired = false; }
-    return corsResponse(result, req, 200);
+        return corsResponse(result, req, 200);
   }).catch((outerErr) => {
     console.error('❌ [OUTER_ERROR] ai-visual-scene-creator top-level error:', String(outerErr?.message || outerErr));
-    // Release gate on outer error
-    // Note: we can’t know gate state here, so attempt a safe release path:
-    release(gateKey, false);
     return corsResponse({ success:false, error:String(outerErr?.message || outerErr), tier:'ERROR' }, req, 500);
+  }).finally(() => {
+    // GUARANTEED GATE RELEASE - executes regardless of success/failure/early-return
+    if (gatingEnabled && gateAcquired) {
+      release(gateKey, false);
+      gateAcquired = false;
+      console.log(`🔓 [GATE] ${gateKey} released in finally block`);
+    }
   });
-});
