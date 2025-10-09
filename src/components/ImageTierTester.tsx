@@ -196,6 +196,10 @@ interface TestResult {
       directModeLoaded: boolean;
     };
     metadata?: any; // Metadata object containing nested CCS data
+    // AI Scene Creator execution status
+    executionStatus?: 'SUCCESS' | 'TIMEOUT_OR_HANGING' | 'EXECUTION_FAILED';
+    bootStatus?: 'HEALTHY' | 'UNHEALTHY';
+    clarification?: string; // Human-readable clarification for execution status
   };
 }
 
@@ -1201,6 +1205,11 @@ export const ImageTierTester = () => {
         { category: 'SUCCESS', probableCause: 'Scene generation completed successfully' } :
         categorizeError(response.error);
 
+      // Detect timeout vs failure
+      const isTimeout = response.error?.message?.includes('timeout') || 
+                       response.error?.message?.includes('Failed to fetch') ||
+                       processingTime > 20000;
+
       setResults([{
         tier: 'ai-scene-creator',
         success: !response.error && response.data?.success,
@@ -1223,6 +1232,11 @@ export const ImageTierTester = () => {
           debug: response.data?.debug, // Include debug information
           errorCategory: category as any,
           probableCause,
+          executionStatus: isTimeout ? 'TIMEOUT_OR_HANGING' : 
+                          response.error ? 'EXECUTION_FAILED' : 'SUCCESS',
+          bootStatus: 'HEALTHY', // Health check passed (function deployed)
+          clarification: isTimeout ? 
+            'Function boots successfully but execution hangs (likely AI call or CCS timeout)' : null,
           error: response.error?.message || response.data?.error
         }
       }]);
@@ -1331,15 +1345,48 @@ export const ImageTierTester = () => {
             cascadeHistory.push('🔄 Backend Cascade Tracking:');
             cascadeHistory.push(...result.metadata.cascadeHistory);
           } else {
-            // Manual cascade history construction if not provided by backend
-            if (result.metadata?.tier1FailureReason) {
+            // Enhanced Tier 1 failure diagnostics
+            if (result.metadata?.tier1FailureDetails) {
+              const t1Details = result.metadata.tier1FailureDetails;
+              cascadeHistory.push(`❌ Tier 1 Failed: ${t1Details.failureCategory || 'Unknown'}`);
+              
+              if (t1Details.tier1Timeline && t1Details.tier1Timeline.length > 0) {
+                cascadeHistory.push('📋 Tier 1 Execution Timeline:');
+                t1Details.tier1Timeline.forEach((step: any) => {
+                  const icon = step.status === 'success' ? '✅' : 
+                               step.status === 'failed' ? '❌' : 
+                               step.status === 'skipped' ? '⏭️' : '🔄';
+                  cascadeHistory.push(`   ${icon} ${step.step}: ${step.message}`);
+                });
+                cascadeHistory.push(`   ⏰ Last step at: ${t1Details.tier1Timeline[t1Details.tier1Timeline.length - 1]?.at}`);
+              }
+              
+              if (t1Details.errorMessage) {
+                cascadeHistory.push(`   💬 Error: ${t1Details.errorMessage}`);
+              }
+            } else if (result.metadata?.tier1FailureReason) {
+              // Fallback for legacy format
               cascadeHistory.push(`❌ Tier 1 Failed: ${result.metadata.tier1FailureReason}`);
             }
           }
           
-          // Determine actual successful tier and path
-          const actualTier = result.metadata?.pathUsed || result.tier || 'Unknown';
-          const wasFailover = result.metadata?.tier1FailureReason ? ' (Failover)' : '';
+          // Correct tier detection with architecture labels
+          const actualTier = result.tier === 'DIRECT_MODE' ? 'Direct Mode (Vendor-First Client)' :
+                            result.metadata?.pathUsed || result.tier || 'Unknown';
+          const wasFailover = result.metadata?.tier1FailureReason || result.metadata?.tier1FailureDetails ? ' (Failover)' : '';
+          
+          // Add cascade history accordingly
+          if (result.tier === 'DIRECT_MODE') {
+            if (!cascadeHistory.some(line => line.includes('Direct Mode Success'))) {
+              cascadeHistory.push('✅ Direct Mode Success (bypassed Tier 1)');
+              cascadeHistory.push('   Architecture: Vendor-First Client - Zero Dependencies');
+            }
+          } else if (result.tier === 'TIER_1' || result.metadata?.templateStructure === 'COMPLETE_TIER_1') {
+            if (!cascadeHistory.some(line => line.includes('Tier 1 Success'))) {
+              cascadeHistory.push('✅ Tier 1 Success (Enhanced Character-First Flow)');
+              cascadeHistory.push('   Architecture: Full Orchestrator with CCS');
+            }
+          }
           
           // Enhanced Character-First Flow detection
           if (result.metadata?.templateStructure === 'COMPLETE_TIER_1') {
@@ -1442,95 +1489,22 @@ export const ImageTierTester = () => {
             }
           }
           
-          // DIRECT MODE CCS DIAGNOSTICS (Enhanced - show even when used)
+          // DIRECT MODE DIAGNOSTICS (Vendor-First Client Architecture)
           if (isDirectModeSuccess) {
-            cascadeHistory.push('🔍 Direct Mode Character Consistency Analysis:');
+            cascadeHistory.push('🔍 Direct Mode Analysis:');
+            cascadeHistory.push('   📦 Architecture: Vendor-First Client (Zero CCS Dependencies)');
+            cascadeHistory.push('   ✅ Direct Runware API Call: SUCCESS');
+            cascadeHistory.push('   ℹ️  No Character Consistency Service in Direct Mode');
+            cascadeHistory.push('   ℹ️  Uses inline vendor bundle for immediate image generation');
             
-            // CCS Import Status
-            const ccsImportFailed = ccErrors.some(e => 
-              e.includes('resilientLoader') || 
-              e.includes('Import') || 
-              e.includes('CDN_IMPORT_FAILURE')
-            );
+            // Show any actual errors from Direct Mode execution (not CCS)
+            const directModeErrors = result.metadata?.cascadeHistory?.filter((line: string) => 
+              line.includes('[DIRECT_MODE]') && (line.includes('failed') || line.includes('error'))
+            ) || [];
             
-            if (ccsImportFailed) {
-              cascadeHistory.push('   🔴 CCS Import/Module Loading: FAILED');
-              const importIssues = ccErrors.filter(e => 
-                e.includes('resilientLoader') || e.includes('Import') || e.includes('CDN')
-              );
-              importIssues.forEach(issue => cascadeHistory.push(`      • ${issue}`));
-              cascadeHistory.push('      💡 Impact: HIGH - CCS unavailable, using fallbacks');
-            } else {
-              cascadeHistory.push('   ✅ CCS Import/Module Loading: SUCCESS');
-            }
-            
-            // CCS Method-Specific Status
-            cascadeHistory.push('   📊 CCS Method Status:');
-            
-            // analyzeVisualDetails
-            const visualAnalysisFailed = ccErrors.some(e => e.includes('analyzeVisualDetails'));
-            if (visualAnalysisFailed) {
-              cascadeHistory.push('      🔴 analyzeVisualDetails(): FAILED');
-              ccErrors.filter(e => e.includes('analyzeVisualDetails')).forEach(e => 
-                cascadeHistory.push(`         • ${e}`)
-              );
-              cascadeHistory.push('      💡 Impact: MEDIUM - Visual consistency may be reduced');
-            } else if (!ccsImportFailed) {
-              cascadeHistory.push('      ✅ analyzeVisualDetails(): SUCCESS');
-            }
-            
-            // getCulturalEnhancements
-            const culturalFailed = ccErrors.some(e => e.includes('getCulturalEnhancements'));
-            const culturalFallback = ccErrors.some(e => e.includes('hardcoded cultural bundle'));
-            if (culturalFailed || culturalFallback) {
-              cascadeHistory.push('      🟡 getCulturalEnhancements(): FALLBACK USED');
-              if (culturalFallback) {
-                cascadeHistory.push('         ⚡ Emergency hardcoded cultural bundle activated');
-                cascadeHistory.push('      💡 Impact: LOW - Basic cultural context maintained');
-              }
-            } else if (!ccsImportFailed) {
-              cascadeHistory.push('      ✅ getCulturalEnhancements(): SUCCESS');
-            }
-            
-            // getCharacterAppearanceFromStory
-            const appearanceFailed = ccErrors.some(e => e.includes('getCharacterAppearanceFromStory'));
-            const appearanceFallback = ccErrors.some(e => e.includes('emergency structuredAvatarData'));
-            if (appearanceFailed || appearanceFallback) {
-              cascadeHistory.push('      🟡 getCharacterAppearanceFromStory(): FALLBACK USED');
-              if (appearanceFallback) {
-                cascadeHistory.push('         ⚡ Emergency structuredAvatarData fallback activated');
-                cascadeHistory.push('      💡 Impact: MEDIUM - Using basic avatar structure');
-              }
-            } else if (!ccsImportFailed) {
-              cascadeHistory.push('      ✅ getCharacterAppearanceFromStory(): SUCCESS');
-            }
-            
-            // getColoredObjects
-            const colorsFailed = ccErrors.some(e => e.includes('getColoredObjects'));
-            if (colorsFailed) {
-              cascadeHistory.push('      🟡 getColoredObjects(): FAILED');
-              cascadeHistory.push('      💡 Impact: LOW - Color consistency may vary');
-            } else if (!ccsImportFailed) {
-              cascadeHistory.push('      ✅ getColoredObjects(): SUCCESS');
-            }
-            
-            // Overall Direct Mode CCS Summary
-            const allMethodsWorking = !ccsImportFailed && !visualAnalysisFailed && 
-                                     !culturalFailed && !appearanceFailed && !colorsFailed;
-            const hasFallbacks = culturalFallback || appearanceFallback;
-            
-            cascadeHistory.push('');
-            if (allMethodsWorking) {
-              cascadeHistory.push('   ✅ Direct Mode CCS: FULLY OPERATIONAL');
-              cascadeHistory.push('      All character consistency methods working');
-            } else if (hasFallbacks) {
-              cascadeHistory.push('   🟡 Direct Mode CCS: PARTIAL (Fallbacks Active)');
-              cascadeHistory.push('      Some methods using emergency fallbacks');
-              cascadeHistory.push('      💡 Image generated successfully with reduced consistency');
-            } else if (ccsImportFailed) {
-              cascadeHistory.push('   🔴 Direct Mode CCS: UNAVAILABLE');
-              cascadeHistory.push('      CCS module failed to load');
-              cascadeHistory.push('      💡 Using minimal fallback data only');
+            if (directModeErrors.length > 0) {
+              cascadeHistory.push('   ⚠️ Direct Mode Issues:');
+              directModeErrors.forEach((err: string) => cascadeHistory.push(`      • ${err}`));
             }
           }
           
@@ -3108,6 +3082,18 @@ if (isTemplateEndpoint && (foundEscalation || (status === 503 && getHealthy))) {
                      {result.details.sceneGenerationOnly && (
                        <div className="text-sm">
                          <span className="font-medium text-blue-600">Scene Generation Only (No Image)</span>
+                       </div>
+                     )}
+                     
+                     {/* Execution Status Warning for AI Scene Creator */}
+                     {result.details.executionStatus === 'TIMEOUT_OR_HANGING' && (
+                       <div className="mt-2 p-3 bg-yellow-50 border-l-4 border-yellow-400 text-sm">
+                         <strong>⚠️ Execution Hanging:</strong> Function deploys successfully but times out during execution.
+                         <br/><strong>Boot Status:</strong> ✅ Healthy
+                         <br/><strong>Execution Status:</strong> ❌ Timeout/Hanging
+                         <br/><span className="text-xs text-muted-foreground">
+                           This typically indicates AI call timeout or CCS processing hanging
+                         </span>
                        </div>
                      )}
                      

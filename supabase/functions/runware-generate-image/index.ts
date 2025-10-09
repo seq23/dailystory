@@ -62,6 +62,7 @@ interface TierContext {
     mainCharacterAppearance: any;
     structuredAvatarData: any;
   };
+  trace?: Array<{ tier: string; ms: number; ok: boolean; code?: string; details?: any }>;
   directMode?: {
     imageURL?: string;
     seed?: string;
@@ -1265,6 +1266,17 @@ const executeTier1: TierFn = async (ctx) => {
     const errorMessage = error instanceof Error ? error.message : String(error);
     ctx.tierLogger.failure("TIER_1", { error: errorMessage });
     
+    // Categorize failure for better diagnostics
+    const failureCategory = 
+      errorMessage.includes('NO_PRIMARY_SCENE') ? 'AI_SCENE_CREATOR_FAILED' :
+      errorMessage.includes('POOR_SCENE') ? 'SCENE_QUALITY_VALIDATION_FAILED' :
+      errorMessage.includes('GATE_DENIED') ? 'TIER_1_OVERLOADED' :
+      errorMessage.includes('TIMEOUT') ? 'AI_TIMEOUT' :
+      errorMessage.includes('CCS') || errorMessage.includes('Character') ? 'CCS_METHOD_FAILURE' :
+      errorMessage.includes('getSupabase') || errorMessage.includes('Database') ? 'DATABASE_CONNECTION_FAILED' :
+      errorMessage.includes('Import') || errorMessage.includes('CDN') ? 'MODULE_IMPORT_FAILED' :
+      'UNKNOWN_TIER_1_ERROR';
+    
     // Handle forceCompleteTier1 mode (return detailed diagnostics)
     if (ctx.payload.forceCompleteTier1) {
       return {
@@ -1273,13 +1285,25 @@ const executeTier1: TierFn = async (ctx) => {
         reason: errorMessage,
         details: {
           forceMode: true,
-          failureCategory: "CCS method failure",
+          failureCategory,
           componentHealth: errorMessage,
+          tier1Timeline: tier1ErrorLog,
         }
       };
     }
     
-    return { ok: false, code: "T1_FAILED", reason: errorMessage };
+    // CRITICAL FIX: Always return tier1ErrorLog for E2E diagnostics
+    return { 
+      ok: false, 
+      code: "T1_FAILED", 
+      reason: errorMessage,
+      details: {
+        failureCategory,
+        tier1Timeline: tier1ErrorLog,
+        failureStep: tier1ErrorLog[tier1ErrorLog.length - 1]?.step || 'unknown',
+        errorMessage: errorMessage.substring(0, 500),
+      }
+    };
     
   } finally {
     // CRITICAL: Always release gate
@@ -1327,6 +1351,10 @@ const executeDirectMode: TierFn = async (ctx) => {
       ctx.directMode = { imageURL: data.imageURL, seed: data.seed, primaryScene: data.primaryScene };
       ctx.tierLogger.success("DIRECT_MODE", { imageURL: data.imageURL });
       
+      // Check if Tier 1 failed and capture its details
+      const tier1Trace = ctx.trace?.find(t => t.tier === 'TIER_1');
+      const tier1FailureDetails = tier1Trace?.ok === false ? tier1Trace.details : null;
+
       return {
         ok: true,
         data: {
@@ -1334,7 +1362,14 @@ const executeDirectMode: TierFn = async (ctx) => {
           imageURL: data.imageURL,
           tier: "DIRECT_MODE",
           resultType: "DIRECT_MODE_SUCCESS",
-          metadata: { cascadeHistory: ["⚠️ Tier 1 Failed", "✅ Direct Mode Success"] },
+          metadata: { 
+            cascadeHistory: [
+              tier1FailureDetails ? `❌ Tier 1 Failed: ${tier1FailureDetails.failureCategory}` : "⚠️ Tier 1 Failed",
+              "✅ Direct Mode Success"
+            ],
+            tier1FailureDetails,
+            tier1Timeline: tier1FailureDetails?.tier1Timeline || [],
+          },
         },
         meta: { tier: "DIRECT_MODE", ms: Date.now() - startMs }
       };
@@ -1821,7 +1856,28 @@ async function runTierCascade(
       ms: result.ok ? (result.meta?.ms || 0) : 0,
       ok: result.ok,
       code: result.ok ? undefined : (result as ErrResult).code,
+      details: result.ok ? undefined : (result as ErrResult).details,
     });
+    
+    // Store trace in context for downstream tiers
+    ctx.trace = trace;
+    
+    // Check if force mode blocks cascade (after Tier 1 failure)
+    if (name === "TIER_1" && !result.ok && ctx.payload.forceCompleteTier1) {
+      console.log('🚫 forceCompleteTier1: Blocking Direct Mode fallback');
+      return {
+        ok: false,
+        code: "TIER_1_FORCED_FAILURE",
+        details: {
+          message: "Tier 1 failed in force mode - cascade blocked",
+          tier: "TIER_1",
+          templateStructure: "TIER_1_FORCED_FAILURE",
+          cascadeBlocked: true,
+          errorDetails: (result as ErrResult).details,
+          trace
+        }
+      };
+    }
     
     // Early return on success
     if (result.ok) {
