@@ -172,12 +172,23 @@ const safeImport = (path: string): Promise<any | null> =>
   import(path).then((m)=>m).catch(()=>null);
 
 type SafeJsonResult<T=any> = { ok: boolean; status: number; headers: Headers; json?: T; text?: string; error?: string; networkError?: string; timedOut?: boolean; };
-function safeFetchJson<T=any>(url: string, init: RequestInit = {}, timeoutMs = 15000): Promise<SafeJsonResult<T>> {
+function safeFetchJson<T=any>(url: string, init: RequestInit = {}, timeoutMs = 25000, externalSignal?: AbortSignal): Promise<SafeJsonResult<T>> {
+  const startTime = Date.now();
   const ctrl = new AbortController();
-  const id = setTimeout(()=>ctrl.abort(), timeoutMs);
+  const id = setTimeout(() => ctrl.abort(), timeoutMs);
+  
+  // Listen to external signal for early abort
+  if (externalSignal) {
+    externalSignal.addEventListener('abort', () => {
+      clearTimeout(id);
+      ctrl.abort();
+    });
+  }
+  
   return fetch(url, { ...init, signal: ctrl.signal })
     .then(async (res) => {
       clearTimeout(id);
+      logNetworkOperation(`fetch ${url.substring(0, 50)}`, startTime, res.ok);
       const ct = res.headers.get("content-type") || "";
       if (ct.includes("application/json")) {
         return res.json()
@@ -188,6 +199,7 @@ function safeFetchJson<T=any>(url: string, init: RequestInit = {}, timeoutMs = 1
     })
     .catch((err) => {
       clearTimeout(id);
+      logNetworkOperation(`fetch ${url.substring(0, 50)}`, startTime, false, err);
       const timedOut = err?.name === "AbortError";
       return { ok: false, status: 0, headers: new Headers(), error: String(err?.message || err), networkError: timedOut ? "timeout" : "network", timedOut };
     });
@@ -215,6 +227,172 @@ function emergencyHairFallback(skinTone: string): string {
   const normalized = (skinTone || 'medium').toLowerCase();
   const MAP: Record<string,string> = { pale:'strawberry blonde hair', light:'golden blonde hair', medium:'chestnut brown hair', olive:'jet black hair', dark:'beautiful dark hair' };
   return MAP[normalized] || MAP['medium'];
+}
+
+// ========== UNIFIED ERROR CATEGORIZATION ==========
+interface ErrorCategory {
+  type: 'NETWORK' | 'TIMEOUT' | 'API_ERROR' | 'VALIDATION' | 'INTERNAL';
+  shouldRetry: boolean;
+  escalate: boolean;
+  message: string;
+}
+
+function categorizeError(error: any): ErrorCategory {
+  const msg = error?.message || String(error);
+  
+  // Network errors (DNS, connection refused, etc.)
+  if (msg.includes('fetch') || msg.includes('ECONNREFUSED') || msg.includes('ENOTFOUND') || msg.includes('network')) {
+    return {
+      type: 'NETWORK',
+      shouldRetry: true,
+      escalate: true,
+      message: 'Network connectivity issue - unable to reach external service'
+    };
+  }
+  
+  // Timeout errors
+  if (msg.includes('timeout') || msg.includes('TIMEOUT') || error?.name === 'AbortError') {
+    return {
+      type: 'TIMEOUT',
+      shouldRetry: true,
+      escalate: true,
+      message: 'Operation exceeded time budget - service may be overloaded'
+    };
+  }
+  
+  // API errors (rate limits, auth, etc.)
+  if (msg.includes('429') || msg.includes('rate limit') || msg.includes('401') || msg.includes('403')) {
+    return {
+      type: 'API_ERROR',
+      shouldRetry: false,
+      escalate: true,
+      message: 'External API error - check credentials or rate limits'
+    };
+  }
+  
+  // Validation errors
+  if (msg.includes('validation') || msg.includes('invalid') || msg.includes('required')) {
+    return {
+      type: 'VALIDATION',
+      shouldRetry: false,
+      escalate: false,
+      message: 'Invalid request data - check input parameters'
+    };
+  }
+  
+  // Internal errors
+  return {
+    type: 'INTERNAL',
+    shouldRetry: false,
+    escalate: true,
+    message: msg.substring(0, 200)
+  };
+}
+
+// ========== NETWORK OPERATION LOGGING ==========
+interface NetworkMetric {
+  operation: string;
+  startTime: number;
+  endTime: number;
+  duration: number;
+  success: boolean;
+  error?: string;
+}
+
+const networkMetrics: NetworkMetric[] = [];
+
+function logNetworkOperation(
+  operation: string,
+  startTime: number,
+  success: boolean,
+  error?: any
+): void {
+  const endTime = Date.now();
+  const duration = endTime - startTime;
+  
+  networkMetrics.push({
+    operation,
+    startTime,
+    endTime,
+    duration,
+    success,
+    error: error?.message
+  });
+  
+  const status = success ? '✅' : '❌';
+  console.log(`${status} [NETWORK] ${operation}: ${duration}ms ${error ? `(${error.message})` : ''}`);
+  
+  // Keep last 20 metrics only
+  if (networkMetrics.length > 20) {
+    networkMetrics.shift();
+  }
+}
+
+// ========== LKG CACHE (5-minute validity) ==========
+interface CacheEntry {
+  data: any;
+  timestamp: number;
+  requestHash: string;
+}
+
+const lkgCache = new Map<string, CacheEntry>();
+const LKG_VALIDITY_MS = 5 * 60 * 1000; // 5 minutes
+
+function createRequestHash(body: any): string {
+  const storySnippet = body.storyText?.substring(0, 50) || body.pageText?.substring(0, 50) || '';
+  return `${storySnippet}_${body.pageNumber || 1}_${body.userInfo?.name || 'user'}`;
+}
+
+function getLKG(requestHash: string): any | null {
+  const cached = lkgCache.get(requestHash);
+  if (!cached) return null;
+  
+  const age = Date.now() - cached.timestamp;
+  if (age > LKG_VALIDITY_MS) {
+    lkgCache.delete(requestHash);
+    return null;
+  }
+  
+  console.log(`✅ [LKG] Serving cached result (age: ${Math.round(age / 1000)}s)`);
+  return cached.data;
+}
+
+function setLKG(requestHash: string, data: any): void {
+  lkgCache.set(requestHash, {
+    data,
+    timestamp: Date.now(),
+    requestHash
+  });
+  
+  // Keep cache size reasonable (last 100 entries)
+  if (lkgCache.size > 100) {
+    const oldestKey = Array.from(lkgCache.entries())
+      .sort((a, b) => a[1].timestamp - b[1].timestamp)[0][0];
+    lkgCache.delete(oldestKey);
+  }
+}
+
+// Execute with LKG fallback
+async function executeWithLKG<T>(
+  requestHash: string,
+  operation: () => Promise<T>
+): Promise<T> {
+  try {
+    const result = await operation();
+    setLKG(requestHash, result); // Cache successful result
+    return result;
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('❌ Operation failed, checking LKG cache:', errorMessage);
+    
+    const lkg = getLKG(requestHash);
+    if (lkg) {
+      console.log('✅ [LKG] Serving stale result due to error');
+      return lkg;
+    }
+    
+    throw error; // No LKG available
+  }
 }
 
 // ========= Provider Gate (unchanged structure) =========
@@ -544,7 +722,7 @@ Generate a comprehensive scene... The primaryScene must include the complete CHA
     return { systemPrompt, userPrompt, isNonEnglish, culturalContext };
   }
 
-  function callOpenAI(prompts: {systemPrompt:string; userPrompt:string}, attempt: number): Promise<{ ok:boolean; content?: string; status?: number }> {
+  function callOpenAI(prompts: {systemPrompt:string; userPrompt:string}, attempt: number, requestAbort?: AbortController): Promise<{ ok:boolean; content?: string; status?: number }> {
     if (!openaiApiKey) return Promise.resolve({ ok: false, status: 0 });
     return safeFetchJson<any>('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -555,7 +733,7 @@ Generate a comprehensive scene... The primaryScene must include the complete CHA
         max_tokens: 500,
         temperature: 0.7
       })
-    }, 20000).then((res) => {
+    }, 25000, requestAbort?.signal).then((res) => {
       const content = res.json?.choices?.[0]?.message?.content?.trim?.();
       return { ok: !!(res.ok && content), content, status: res.status };
     });
@@ -656,7 +834,7 @@ Generate a comprehensive scene... The primaryScene must include the complete CHA
       let attempt = 0;
       function loop(lastBackoff = false): Promise<{ ok:boolean; visual:any|null; upstreamBackoff:boolean }> {
         if (attempt >= 3) return Promise.resolve({ ok: false, visual: null, upstreamBackoff: lastBackoff });
-        return callOpenAI({ systemPrompt: prompts.systemPrompt, userPrompt: prompts.userPrompt }, attempt).then((res) => {
+        return callOpenAI({ systemPrompt: prompts.systemPrompt, userPrompt: prompts.userPrompt }, attempt, requestAbort).then((res) => {
           if (!res.ok || !res.content) {
             const isBackoff = res.status === 429 || res.status === 503;
             attempt++;
@@ -744,13 +922,13 @@ function generateCharacterSeed(sessionId: string, userInfo: any) {
 }
 
 // ========= External calls (no throw) =========
-function callRunwareTemplateCD(payload: any): Promise<{ ok:boolean; imageURL?: string; error?: string }> {
+function callRunwareTemplateCD(payload: any, requestAbort?: AbortController): Promise<{ ok:boolean; imageURL?: string; error?: string }> {
   const url = 'https://cpzeuogomaixamrtnnmj.supabase.co/functions/v1/runware-template-cd';
   return safeFetchJson<any>(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}` },
     body: JSON.stringify(payload)
-  }, 20000).then((res) => {
+  }, 15000, requestAbort?.signal).then((res) => {
     const ok = !!(res.ok && res.json?.success && res.json?.imageURL);
     return ok ? { ok: true, imageURL: res.json.imageURL } : { ok: false, error: `runware-template-cd failed (${res.status})` };
   });
@@ -788,6 +966,12 @@ serve((req) => {
     const gateStartTime = Date.now();
     let gateAcquired = false;
     let handlerSuccess = false;
+    
+    // Request-level abort controller with 30s budget
+    const requestAbort = new AbortController();
+    const budgetTimer = setTimeout(() => requestAbort.abort(), 30000);
+
+    try {
 
     // GATE acquire (non-blocking degradation)
     if (gatingEnabled) {
@@ -893,7 +1077,7 @@ serve((req) => {
           }
         };
 
-        const runware = await callRunwareTemplateCD(templatePayload);
+        const runware = await callRunwareTemplateCD(templatePayload, requestAbort);
         if (runware.ok) {
           imageURL = runware.imageURL;
           tier = 'DIRECT_MODE';
@@ -947,6 +1131,9 @@ serve((req) => {
       console.error('❌ [OUTER_ERROR] ai-visual-scene-creator top-level error:', String(outerErr?.message || outerErr));
       return corsResponse({ success:false, error:String(outerErr?.message || outerErr), tier:'ERROR' }, req, 500);
     }).finally(() => {
+      // Clear budget timer
+      clearTimeout(budgetTimer);
+      
       // GUARANTEED GATE RELEASE - executes regardless of success/failure/early-return
       if (gatingEnabled && gateAcquired) {
         release(gateKey, handlerSuccess);

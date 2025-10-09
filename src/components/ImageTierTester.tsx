@@ -212,7 +212,7 @@ export const ImageTierTester = () => {
   );
   
   // Timeout testing configuration
-  const [timeoutDuration, setTimeoutDuration] = useState(30000); // 30 seconds default
+  const [timeoutDuration, setTimeoutDuration] = useState(40000); // 40 seconds default (matches backend budget)
   const abortControllerRef = useRef<AbortController | null>(null);
   const abortControllersRef = useRef<AbortController[]>([]); // Track multiple controllers
 

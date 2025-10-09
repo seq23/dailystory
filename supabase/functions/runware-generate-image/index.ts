@@ -63,6 +63,7 @@ interface TierContext {
     structuredAvatarData: any;
   };
   trace?: Array<{ tier: string; ms: number; ok: boolean; code?: string; details?: any }>;
+  requestAbort?: AbortController;
   directMode?: {
     imageURL?: string;
     seed?: string;
@@ -94,6 +95,105 @@ interface GateState {
 }
 
 const gates = new Map<string, GateState>();
+
+// ========== UNIFIED ERROR CATEGORIZATION ==========
+interface ErrorCategory {
+  type: 'NETWORK' | 'TIMEOUT' | 'API_ERROR' | 'VALIDATION' | 'INTERNAL';
+  shouldRetry: boolean;
+  escalate: boolean;
+  message: string;
+}
+
+function categorizeError(error: any): ErrorCategory {
+  const msg = error?.message || String(error);
+  
+  // Network errors (DNS, connection refused, etc.)
+  if (msg.includes('fetch') || msg.includes('ECONNREFUSED') || msg.includes('ENOTFOUND') || msg.includes('network')) {
+    return {
+      type: 'NETWORK',
+      shouldRetry: true,
+      escalate: true,
+      message: 'Network connectivity issue - unable to reach external service'
+    };
+  }
+  
+  // Timeout errors
+  if (msg.includes('timeout') || msg.includes('TIMEOUT') || error?.name === 'AbortError') {
+    return {
+      type: 'TIMEOUT',
+      shouldRetry: true,
+      escalate: true,
+      message: 'Operation exceeded time budget - service may be overloaded'
+    };
+  }
+  
+  // API errors (rate limits, auth, etc.)
+  if (msg.includes('429') || msg.includes('rate limit') || msg.includes('401') || msg.includes('403')) {
+    return {
+      type: 'API_ERROR',
+      shouldRetry: false,
+      escalate: true,
+      message: 'External API error - check credentials or rate limits'
+    };
+  }
+  
+  // Validation errors
+  if (msg.includes('validation') || msg.includes('invalid') || msg.includes('required')) {
+    return {
+      type: 'VALIDATION',
+      shouldRetry: false,
+      escalate: false,
+      message: 'Invalid request data - check input parameters'
+    };
+  }
+  
+  // Internal errors
+  return {
+    type: 'INTERNAL',
+    shouldRetry: false,
+    escalate: true,
+    message: msg.substring(0, 200)
+  };
+}
+
+// ========== NETWORK OPERATION LOGGING ==========
+interface NetworkMetric {
+  operation: string;
+  startTime: number;
+  endTime: number;
+  duration: number;
+  success: boolean;
+  error?: string;
+}
+
+const networkMetrics: NetworkMetric[] = [];
+
+function logNetworkOperation(
+  operation: string,
+  startTime: number,
+  success: boolean,
+  error?: any
+): void {
+  const endTime = Date.now();
+  const duration = endTime - startTime;
+  
+  networkMetrics.push({
+    operation,
+    startTime,
+    endTime,
+    duration,
+    success,
+    error: error?.message
+  });
+  
+  const status = success ? '✅' : '❌';
+  console.log(`${status} [NETWORK] ${operation}: ${duration}ms ${error ? `(${error.message})` : ''}`);
+  
+  // Keep last 20 metrics only
+  if (networkMetrics.length > 20) {
+    networkMetrics.shift();
+  }
+}
 
 const DEFAULT_CONFIGS: Record<string, GateConfig> = {
   'T1:ai-visual-scene-creator': {
@@ -843,7 +943,7 @@ async function processInlinedTier1(
 
     // Use raw fetch with proper AbortController signal (supabase.functions.invoke ignores signal)
     const aiController = new AbortController();
-    const aiTimeout = setTimeout(() => aiController.abort(), 15000);
+    const aiTimeout = setTimeout(() => aiController.abort(), 25000); // CHANGED: 15s → 25s for AI processing
     
     let aiResult: any, aiError: any;
     try {
@@ -1231,7 +1331,7 @@ const executeTier1: TierFn = async (ctx) => {
         negativePrompt: tier1Result.enhancedPrompt.negativePrompt || "",
         parameters: { width: 1024, height: 1024, model: "runware:100@1", numberResults: 1, outputFormat: "WEBP" },
       }),
-      new Promise((_, reject) => setTimeout(() => reject(new Error("TIMEOUT")), 20000))
+      new Promise((_, reject) => setTimeout(() => reject(new Error("TIMEOUT")), 15000)) // CHANGED: 20s → 15s for consistency
     ]);
     
     if (!imageResult?.success || !imageResult?.imageURL) {
@@ -1948,6 +2048,10 @@ serve(async (req) => {
   let cachedPayload: any | null = null;
   const requestId = `mg1${Math.random().toString(36).substring(2)}`;
   
+  // Request-level abort controller with 40s budget (allows full cascade)
+  const requestAbort = new AbortController();
+  const budgetTimer = setTimeout(() => requestAbort.abort(), 40000);
+  
   for (let attempt = 0; attempt <= FAST_BOOT_SYNC.maxRetries; attempt++) {
     try {
       // PHASE 3: JSON parsing only once (cached for retries to prevent "Body already consumed" error)
@@ -2143,6 +2247,7 @@ serve(async (req) => {
         tierLogger,
         generateNuclearNegativePrompt,
         detectCulturalProfileForNegatives,
+        requestAbort, // ADD: Request-level abort signal
       };
       
       // 2. Define cascade (order matters!)
