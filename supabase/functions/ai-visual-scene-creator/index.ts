@@ -932,21 +932,18 @@ serve((req) => {
       };
 
       return corsResponse(response, req, 200);
+    }).then((result) => {
+      // Result handling within the promise chain
+      if (result instanceof Response) return result;
+      return corsResponse(result, req, 200);
+    }).catch((outerErr) => {
+      console.error('❌ [OUTER_ERROR] ai-visual-scene-creator top-level error:', String(outerErr?.message || outerErr));
+      return corsResponse({ success:false, error:String(outerErr?.message || outerErr), tier:'ERROR' }, req, 500);
+    }).finally(() => {
+      // GUARANTEED GATE RELEASE - executes regardless of success/failure/early-return
+      if (gatingEnabled && gateAcquired) {
+        release(gateKey, false);
+        gateAcquired = false;
+        console.log(`🔓 [GATE] ${gateKey} released in finally block`);
+      }
     });
-
-    // If result is already a Response (from the branch above), return it. Otherwise wrap.
-    if (result instanceof Response) return result;
-
-    // Safety: if Idempotency returned an object (shouldn’t), coerce.
-        return corsResponse(result, req, 200);
-  }).catch((outerErr) => {
-    console.error('❌ [OUTER_ERROR] ai-visual-scene-creator top-level error:', String(outerErr?.message || outerErr));
-    return corsResponse({ success:false, error:String(outerErr?.message || outerErr), tier:'ERROR' }, req, 500);
-  }).finally(() => {
-    // GUARANTEED GATE RELEASE - executes regardless of success/failure/early-return
-    if (gatingEnabled && gateAcquired) {
-      release(gateKey, false);
-      gateAcquired = false;
-      console.log(`🔓 [GATE] ${gateKey} released in finally block`);
-    }
-  });
