@@ -1,4 +1,4 @@
-// 🚀 DEPLOYMENT MARKER: v2025-01-08-TIER-2.5A-PURE-PRECOMPUTED-CCS
+// 🚀 DEPLOYMENT MARKER: v2025-10-09-FLAT-TIER-PRODUCTION (ZERO-NESTING)
 // Last deployed: 2025-01-08
 // Changes: Tier 2.5A now pure precomputedCCS consumer, escalates to 2.5B if missing
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
@@ -252,39 +252,39 @@ const gates = new Map<string, GateState>();
 
 const DEFAULT_CONFIGS: Record<string, GateConfig> = {
   'T1:ai-visual-scene-creator': {
-    maxConcurrency: parseInt(Deno.env.get('PROVIDER_CONCURRENCY_T1') || '6'),
-    failThreshold: parseInt(Deno.env.get('CIRCUIT_FAIL_THRESHOLD') || '5'),
-    cooldownMs: parseInt(Deno.env.get('CIRCUIT_COOLDOWN_MS') || '30000'),
+    maxConcurrency: parseInt(Deno.env.get('PROVIDER_CONCURRENCY_T1') || '6') || 6,
+    failThreshold: parseInt(Deno.env.get('CIRCUIT_FAIL_THRESHOLD') || '5') || 5,
+    cooldownMs: parseInt(Deno.env.get('CIRCUIT_COOLDOWN_MS') || '30000') || 30000,
     maxWaitMs: 2000
   },
   'DM:runware-template-cd': {
-    maxConcurrency: parseInt(Deno.env.get('PROVIDER_CONCURRENCY_RUNWARE') || '4'),
-    failThreshold: parseInt(Deno.env.get('CIRCUIT_FAIL_THRESHOLD') || '5'),
-    cooldownMs: parseInt(Deno.env.get('CIRCUIT_COOLDOWN_MS') || '45000'),
+    maxConcurrency: parseInt(Deno.env.get('PROVIDER_CONCURRENCY_RUNWARE') || '4') || 4,
+    failThreshold: parseInt(Deno.env.get('CIRCUIT_FAIL_THRESHOLD') || '5') || 5,
+    cooldownMs: parseInt(Deno.env.get('CIRCUIT_COOLDOWN_MS') || '45000') || 45000,
     maxWaitMs: 2000
   },
   'T25A:runware-template-ab': {
-    maxConcurrency: parseInt(Deno.env.get('PROVIDER_CONCURRENCY_RUNWARE') || '4'),
-    failThreshold: parseInt(Deno.env.get('CIRCUIT_FAIL_THRESHOLD') || '5'),
-    cooldownMs: parseInt(Deno.env.get('CIRCUIT_COOLDOWN_MS') || '45000'),
+    maxConcurrency: parseInt(Deno.env.get('PROVIDER_CONCURRENCY_RUNWARE') || '4') || 4,
+    failThreshold: parseInt(Deno.env.get('CIRCUIT_FAIL_THRESHOLD') || '5') || 5,
+    cooldownMs: parseInt(Deno.env.get('CIRCUIT_COOLDOWN_MS') || '45000') || 45000,
     maxWaitMs: 2000
   },
   'T25B:runware-template-ab': {
-    maxConcurrency: parseInt(Deno.env.get('PROVIDER_CONCURRENCY_RUNWARE') || '4'),
-    failThreshold: parseInt(Deno.env.get('CIRCUIT_FAIL_THRESHOLD') || '5'),
-    cooldownMs: parseInt(Deno.env.get('CIRCUIT_COOLDOWN_MS') || '45000'),
+    maxConcurrency: parseInt(Deno.env.get('PROVIDER_CONCURRENCY_RUNWARE') || '4') || 4,
+    failThreshold: parseInt(Deno.env.get('CIRCUIT_FAIL_THRESHOLD') || '5') || 5,
+    cooldownMs: parseInt(Deno.env.get('CIRCUIT_COOLDOWN_MS') || '45000') || 45000,
     maxWaitMs: 2000
   },
   'T25C:runware-template-cd': {
-    maxConcurrency: parseInt(Deno.env.get('PROVIDER_CONCURRENCY_RUNWARE') || '4'),
-    failThreshold: parseInt(Deno.env.get('CIRCUIT_FAIL_THRESHOLD') || '5'),
-    cooldownMs: parseInt(Deno.env.get('CIRCUIT_COOLDOWN_MS') || '45000'),
+    maxConcurrency: parseInt(Deno.env.get('PROVIDER_CONCURRENCY_RUNWARE') || '4') || 4,
+    failThreshold: parseInt(Deno.env.get('CIRCUIT_FAIL_THRESHOLD') || '5') || 5,
+    cooldownMs: parseInt(Deno.env.get('CIRCUIT_COOLDOWN_MS') || '45000') || 45000,
     maxWaitMs: 2000
   },
   'IMG:runware-generate-image': {
-    maxConcurrency: parseInt(Deno.env.get('PROVIDER_CONCURRENCY_RUNWARE') || '4'),
-    failThreshold: parseInt(Deno.env.get('CIRCUIT_FAIL_THRESHOLD') || '5'),
-    cooldownMs: parseInt(Deno.env.get('CIRCUIT_COOLDOWN_MS') || '45000'),
+    maxConcurrency: parseInt(Deno.env.get('PROVIDER_CONCURRENCY_RUNWARE') || '4') || 4,
+    failThreshold: parseInt(Deno.env.get('CIRCUIT_FAIL_THRESHOLD') || '5') || 5,
+    cooldownMs: parseInt(Deno.env.get('CIRCUIT_COOLDOWN_MS') || '45000') || 45000,
     maxWaitMs: 2000
   }
 };
@@ -958,53 +958,79 @@ serve(async (req) => {
   }
 
   if (req.method === "POST") {
-    // quick probe path without exceptions
-    const quickParsed = await req.clone().json().then(v => ({ ok: true as const, v })).catch(() => ({ ok: false as const }));
-    const hasStoryContent = quickParsed.ok
-      ? (quickParsed.v?.pageText || quickParsed.v?.storyText || quickParsed.v?.enhancedStoryData?.storyText)
-      : false;
-    if (!hasStoryContent) {
-      console.log('🔍 Runtime probe detected - returning success');
-      return withCors(createResponse({
-        success: true,
-        message: 'Template AB runtime OK',
-        service: SERVICE_NAME,
-        timestamp: new Date().toISOString()
-      }), req);
-    }
-
-    const gatingEnabled = Deno.env.get('DISABLE_PROVIDER_GATE') !== 'true';
-    let gateAcquired = false;
-
-    if (gatingEnabled) {
-      const gateResult = await acquire('T25A:runware-template-ab');
-      if (gateResult.acquired) {
-        console.log(`✅ [GATE] T25A:runware-template-ab acquired`);
-        gateAcquired = true;
-      } else {
-        console.warn(`⚠️ [GATE] Failed to acquire: ${gateResult.reason}, proceeding without gate`);
+    try {
+      // quick probe path without exceptions
+      const quickParsed = await req.clone().json().then(v => ({ ok: true as const, v })).catch(() => ({ ok: false as const }));
+      const hasStoryContent = quickParsed.ok
+        ? (quickParsed.v?.pageText || quickParsed.v?.storyText || quickParsed.v?.enhancedStoryData?.storyText)
+        : false;
+      if (!hasStoryContent) {
+        console.log('🔍 Runtime probe detected - returning success');
+        return withCors(createResponse({
+          success: true,
+          message: 'Template AB runtime OK',
+          service: SERVICE_NAME,
+          timestamp: new Date().toISOString()
+        }), req);
       }
-    } else {
-      console.log(`⏭️ [GATE] Provider gating DISABLED via env flag`);
-    }
 
-    const handler = await loadHandler();
-    if (!handler) {
-      if (gatingEnabled && gateAcquired) release('T25A:runware-template-ab', false);
+      const gatingEnabled = Deno.env.get('DISABLE_PROVIDER_GATE') !== 'true';
+      let gateAcquired = false;
+
+      if (gatingEnabled) {
+        const gateResult = await acquire('T25A:runware-template-ab');
+        if (gateResult.acquired) {
+          console.log(`✅ [GATE] T25A:runware-template-ab acquired`);
+          gateAcquired = true;
+        } else {
+          console.warn(`⚠️ [GATE] Failed to acquire: ${gateResult.reason}, proceeding without gate`);
+        }
+      } else {
+        console.log(`⏭️ [GATE] Provider gating DISABLED via env flag`);
+      }
+
+      const handler = await loadHandler();
+      if (!handler) {
+        if (gatingEnabled && gateAcquired) {
+          release('T25A:runware-template-ab', false);
+          gateAcquired = false;
+        }
+        return withCors(createResponse({
+          success: false,
+          error: "HANDLER_UNAVAILABLE",
+          service: SERVICE_NAME,
+          timestamp: new Date().toISOString()
+        }, 500), req);
+      }
+
+      return handler(req).then((result) => {
+        return withCors(result, req);
+      }).catch((handlerErr) => {
+        console.error('❌ [HANDLER_ERROR] runware-template-ab handler error:', String(handlerErr?.message || handlerErr));
+        return withCors(createResponse({
+          success: false,
+          error: String(handlerErr?.message || handlerErr),
+          service: SERVICE_NAME,
+          timestamp: new Date().toISOString()
+        }, 500), req);
+      }).finally(() => {
+        // GUARANTEED GATE RELEASE - executes regardless of success/failure/early-return
+        if (gatingEnabled && gateAcquired) {
+          release('T25A:runware-template-ab', false);
+          gateAcquired = false;
+          console.log(`🔓 [GATE] T25A:runware-template-ab released in finally block`);
+        }
+      });
+    } catch (outerErr) {
+      console.error('❌ [OUTER_ERROR] runware-template-ab catastrophic error:', String(outerErr?.message || outerErr));
       return withCors(createResponse({
         success: false,
-        error: "HANDLER_UNAVAILABLE",
+        error: 'CATASTROPHIC_FAILURE',
+        message: String(outerErr?.message || outerErr),
         service: SERVICE_NAME,
         timestamp: new Date().toISOString()
       }, 500), req);
     }
-
-    const result = await handler(req);
-    if (gatingEnabled && gateAcquired) {
-      const handlerSuccess = result instanceof Response && (result.status < 500 || result.status === 503);
-      release('T25A:runware-template-ab', handlerSuccess);
-    }
-    return withCors(result, req);
   }
 
   return withCors(createResponse({ error: "Method not allowed", allowed: ["GET", "HEAD", "POST", "OPTIONS"] }, 405), req);
