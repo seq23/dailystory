@@ -504,7 +504,7 @@ EXAMPLE: For a French speaker named Sarah playing in a park, generate:
 "Sarah with ${structuredAvatarData?.hairColor || 'natural hair'} and ${structuredAvatarData?.resolvedSkinTone || 'medium'} skin tone plays joyfully in a charming Parisian park near the Eiffel Tower, with the Seine River visible in the background, surrounded by elegant French gardens with lavender and a quaint café district with outdoor seating. Warm, sophisticated European aesthetic with golden afternoon light."
 
 Use cultural detail naturally without contradicting explicit story settings.
-` : '- Use universal child-friendly settings with warm, inviting atmospheres'}`
+` : '- Use universal child-friendly settings with warm, inviting atmospheres'}`;
 
     const previousBlock = prevData.previousPrimaryScene
       ? (prevData.previousVisualSchema
@@ -553,7 +553,7 @@ Generate a comprehensive scene... The primaryScene must include the complete CHA
         model: 'gpt-4o-mini',
         messages: [{ role: 'system', content: prompts.systemPrompt }, { role: 'user', content: prompts.userPrompt }],
         max_tokens: 500,
-        temperature: 0.7,
+        temperature: 0.7
       })
     }, 20000).then((res) => {
       const content = res.json?.choices?.[0]?.message?.content?.trim?.();
@@ -700,7 +700,7 @@ Generate a comprehensive scene... The primaryScene must include the complete CHA
     .catch((outerSchemaError) => {
       // OUTER SAFETY NET: If entire AI generation chain fails, use emergency fallback
       console.error(`❌ [SCHEMA_GENERATION] Complete failure, using emergency fallback:`, String(outerSchemaError?.message || outerSchemaError));
-      const emergencySchema = buildEmergencyVisualSchema(content, characterData, nativeLanguage);
+      const emergencySchema = buildEmergencyVisualSchema(storyText, characterData, nativeLanguage);
       const aiDebugSchema = {
         modelUsed: 'emergency-local-fallback-outer-safety-net',
         aiGenerationSucceeded: false,
@@ -708,9 +708,9 @@ Generate a comprehensive scene... The primaryScene must include the complete CHA
         outerError: String(outerSchemaError?.message || outerSchemaError),
         characterDataSent: characterData,
         structuredAvatarData: userInfo?.structuredAvatarData || null,
-        storyTextLength: content.length,
+        storyTextLength: storyText.length,
       };
-      return savePrimaryScene(true, emergencySchema).then(()=>({ ok:true, visualSchema: emergencySchema, aiDebugSchema, structuredAvatarData, upstreamBackoff: false }));
+      return savePrimaryScene(directMode, emergencySchema).then(()=>({ ok:true, visualSchema: emergencySchema, aiDebugSchema, structuredAvatarData, upstreamBackoff: false }));
     });
 }
 
