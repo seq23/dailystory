@@ -551,6 +551,8 @@ function validatePrimarySceneQuality(scene: string): boolean {
 
 // PHASE 1A: Lightning-Fast Input Validation (50ms max)
 // Accepts pageText OR storyText from root, bundle, or enhancedStoryData
+// Also accepts primaryScene for Direct Mode Simple (2.5C) payloads
+// This validation runs BEFORE any cascade tiers are attempted
 function validatePayloadFast(payload: any): boolean {
   if (!payload) throw new Error("PAYLOAD_NULL");
 
@@ -571,9 +573,27 @@ function validatePayloadFast(payload: any): boolean {
     payload.enhancedStoryData?.storyText &&
     typeof payload.enhancedStoryData.storyText === "string" &&
     payload.enhancedStoryData.storyText.trim().length > 0;
+  const hasPrimaryScene =
+    payload.primaryScene && 
+    typeof payload.primaryScene === "string" && 
+    payload.primaryScene.trim().length > 0;
 
-  if (!hasPageText && !hasStoryText && !hasBundlePageText && !hasBundleStoryText && !hasEnhancedStoryText) {
-    console.error("[runware-generate-image] Final error after retries: NO_STORY_CONTENT");
+  if (!hasPageText && !hasStoryText && !hasBundlePageText && !hasBundleStoryText && !hasEnhancedStoryText && !hasPrimaryScene) {
+    console.error("[runware-generate-image] ❌ VALIDATION FAILED: NO_STORY_CONTENT");
+    console.error("[runware-generate-image] Validation details:", {
+      hasPageText,
+      hasStoryText,
+      hasBundlePageText,
+      hasBundleStoryText,
+      hasEnhancedStoryText,
+      hasPrimaryScene,
+      payloadKeys: Object.keys(payload),
+      storyTextType: typeof payload.storyText,
+      storyTextLength: payload.storyText?.length || 0,
+      storyTextPreview: payload.storyText?.substring(0, 50),
+      bundleKeys: payload.bundle ? Object.keys(payload.bundle) : [],
+      enhancedStoryDataKeys: payload.enhancedStoryData ? Object.keys(payload.enhancedStoryData) : []
+    });
     throw new Error("NO_STORY_CONTENT");
   }
 
