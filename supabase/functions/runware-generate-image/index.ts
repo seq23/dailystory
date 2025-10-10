@@ -1558,11 +1558,11 @@ const executeDirectMode: TierFn = async (ctx) => {
       const { createVendorFirstSupabaseClient } = await ctx.memoizedImport("../_shared/resilientLoader.js");
       const supabase = await createVendorFirstSupabaseClient();
       
-      const { data, error } = await supabase.functions.invoke("runware-template-cd", {
+      // ✅ Call ai-visual-scene-creator for Direct Mode (AISC generates primaryScene + calls template-cd)
+      const { data, error } = await supabase.functions.invoke("ai-visual-scene-creator", {
         body: {
           ...ctx.payload,
-          directMode: true,
-          primaryScene: ctx.tier1?.primaryScene, // ✅ Use extracted primaryScene
+          directMode: true, // AISC handles: OpenAI primaryScene generation → template-cd with complexity C
         },
         signal: controller.signal,
       });
@@ -2777,15 +2777,17 @@ serve(async (req) => {
           { name: "T25D", fn: executeT25D }
         ];
       } else if (!aiVisualSceneCreatorHealthy) {
-        // Orchestrator dependencies unhealthy - skip Tier 1, try Direct Mode first
-        console.log(`⚠️ [${requestId}] AI Visual Scene Creator unhealthy - skipping Tier 1, routing to Direct Mode → 2.5C`);
+        // AISC unhealthy → skip Tier 1 AND Direct Mode (both depend on AISC); go straight to templates
+        console.log(`⚠️ [${requestId}] AI Visual Scene Creator unhealthy - skipping Tier 1 and Direct Mode, routing to templates`);
         tierLogger.attempt("TIER_1", { skipped: true, reason: "ai_visual_scene_creator_unhealthy" });
+        tierLogger.attempt("DIRECT_MODE", { skipped: true, reason: "ai_visual_scene_creator_unhealthy" });
         
-        healthRoutingDecision.routingStrategy = 'DIRECT_MODE_FIRST';
-        healthRoutingDecision.skippedTiers = ["TIER_1"];
+        healthRoutingDecision.routingStrategy = 'TEMPLATES_ONLY';
+        healthRoutingDecision.skippedTiers = ["TIER_1", "DIRECT_MODE"];
         
         tiers = [
-          { name: "DIRECT_MODE", fn: executeDirectMode },
+          { name: "T25A", fn: executeT25A, precondition: (ctx) => !!ctx.tier1?.characterSeed && !!ctx.tier1?.latestClothing },
+          { name: "T25B", fn: executeT25B },
           { name: "T25C", fn: executeT25C },
           { name: "T25D", fn: executeT25D }
         ];

@@ -31,9 +31,9 @@
     │   2.5A → 2.5B → 2.5C → 2.5D               │
     └───────────────────────────────────────────┘
     ┌───────────────────────────────────────────┐
-    │ Scenario 2: Orchestrator Unhealthy        │
-    │ Route: Direct Mode → 2.5C → 2.5D          │
-    │   (Skip Tier 1)                           │
+    │ Scenario 2: AISC Unhealthy                │
+    │ Route: 2.5A → 2.5B → 2.5C → 2.5D          │
+    │   (Skip Tier 1 and Direct Mode)           │
     └───────────────────────────────────────────┘
     ┌───────────────────────────────────────────┐
     │ Scenario 3: Both AI Systems Down          │
@@ -55,7 +55,9 @@ Tier 1: AI Generation via ai-visual-scene-creator
     ├─ Success (95%) → Return image
     └─ Failure (5%) ↓
         ↓
-Tier 1.5: Direct Mode (OpenAI direct call)
+Tier 1.5: Direct Mode (orchestrator → ai-visual-scene-creator → template-cd)
+    ├─ AISC generates primaryScene via OpenAI
+    ├─ AISC calls template-cd with complexity C (primaryScene + brand suffix)
     ├─ Success (80%) → Return image
     └─ Failure (20%) ↓
         ↓
@@ -100,7 +102,7 @@ Tier 2.5D: Template CD Emergency (Synthesized content)
 
 ### Key Decision Points
 
-**Direct Mode Trigger**: Automatically attempts after Tier 1 failure (no gate check, zero throttling)
+**Direct Mode Trigger**: Automatically attempts after Tier 1 failure (no gate check, zero throttling). Orchestrator calls `ai-visual-scene-creator` with `directMode: true`, which generates `primaryScene` via OpenAI and delegates to `runware-template-cd` with `templateComplexity: 'C'` for simplified image generation (primaryScene + brand suffix).
 
 **CCS_RETRY Trigger**: Runs when Direct Mode fails, attempts to populate `ctx.tier1` for Tier 2.5A
 

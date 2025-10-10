@@ -26,8 +26,8 @@ This document reflects the **actual codebase behavior** of the image generation 
 
 ### Flow 2: Direct Mode Success (5% of requests)
 1. **Tier 1** → ❌ Failed (AI timeout or error)
-2. **Direct Mode** → ✅ Success (simplified template with primaryScene)
-3. **Result:** Image generated with basic consistency
+2. **Direct Mode** → ✅ Success (orchestrator → ai-visual-scene-creator → template-cd with complexity C)
+3. **Result:** Image generated with primaryScene + brand suffix (simplified template)
 4. **Cascade stops:** Tier 2.5A never attempted
 
 ### Flow 3: CCS_RETRY Enables Tier 2.5A (3% of requests)
@@ -62,9 +62,10 @@ This document reflects the **actual codebase behavior** of the image generation 
 ## Critical Decision Points
 
 ### 1. Direct Mode Trigger
-- **Location:** Lines 1528-1596 (`executeDirectMode()`)
+- **Location:** Lines 1536-1616 (`executeDirectMode()`)
 - **Condition:** Tier 1 returns `{ ok: false }`
 - **Bypass:** None (always attempted after Tier 1 failure)
+- **Architecture:** Orchestrator calls `ai-visual-scene-creator` with `directMode: true`, which generates `primaryScene` via OpenAI and calls `runware-template-cd` with `templateComplexity: 'C'` (simplified template: primaryScene + brand suffix)
 - **Special behavior:** Shares 40s timeout budget with Tier 1
 
 ### 2. CCS_RETRY Trigger
@@ -129,14 +130,15 @@ Route: Full cascade
 
 **Scenario 2: AI Visual Scene Creator Unhealthy**
 ```
-Health Check → ai-visual-scene-creator UNHEALTHY, OpenAI HEALTHY
+Health Check → ai-visual-scene-creator UNHEALTHY
     ↓
-Route: Skip Tier 1, try Direct Mode
-  Direct Mode (uses OpenAI directly) →
-  Tier 2.5C (if Direct fails) →
-  Tier 2.5D (emergency)
+Route: Skip Tier 1 AND Direct Mode (both depend on AISC)
+  Tier 2.5A (Template AB with CCS, if preconditions met) →
+  Tier 2.5B (Template AB without CCS) →
+  Tier 2.5C (Template CD nuclear) →
+  Tier 2.5D (Template CD emergency)
 ```
-**Expected:** 80% success at Direct Mode, 20% at 2.5C
+**Expected:** Immediate template success (no AI wait time)
 
 **Scenario 3: Both AI Systems Down**
 ```
@@ -156,8 +158,8 @@ checkAIVisualSceneCreatorHealth() → HEAD /ai-visual-scene-creator
 checkOpenAIHealth() → Check OPENAI_API_KEY presence
 
 // Decision matrix
-if (!aiVisualSceneCreator && !openai) → Route: T25C
-else if (!aiVisualSceneCreator) → Route: DIRECT_MODE → T25C
+if (!aiVisualSceneCreator && !openai) → Route: T25C (skip all AI tiers)
+else if (!aiVisualSceneCreator) → Route: T25A/T25B/T25C (skip Tier 1 and Direct Mode, both depend on AISC)
 else → Route: TIER_1 (full cascade)
 ```
 
@@ -180,23 +182,29 @@ The existing "Test All Tiers (Real Routing)" button will automatically exercise 
 
 ### Direct Mode Logs
 ```typescript
-// Before attempt
+// Before attempt (orchestrator)
 🎯 [requestId] DIRECT_MODE: Attempting fallback after Tier 1 failure
 {
   tier1FailureReason: "T1_AI_TIMEOUT",
   hasPayload: true,
-  sessionId: "abc123",
-  hasPrimaryScene: true
+  sessionId: "abc123"
 }
 
-// Success
+// Success (orchestrator receives from ai-visual-scene-creator)
 ✅ [requestId] DIRECT_MODE: SUCCESS
 {
   imageURL: "https://...",
   seed: 12345,
   primaryScene: "A child playing...",
-  processingTimeMs: 1234
+  processingTimeMs: 1234,
+  tier: 'DIRECT_MODE',
+  provider: 'ai-visual-scene-creator'
 }
+
+// ai-visual-scene-creator internal logs
+🎨 [AISC] Direct Mode: Generated primaryScene via OpenAI
+🎯 [AISC] Direct Mode: Calling template-cd with complexity C
+✅ [AISC] Direct Mode: template-cd returned imageURL
 ```
 
 ### CCS_RETRY Logs
@@ -293,7 +301,7 @@ if (precondition && !precondition(ctx)) {
 ## Common Misconceptions
 
 ❌ **MYTH:** "Direct Mode is a separate tier service"  
-✅ **REALITY:** Direct Mode is a fallback path within the orchestrator (`runware-generate-image`)
+✅ **REALITY:** Direct Mode is an orchestrator fallback that delegates to `ai-visual-scene-creator` (which generates primaryScene + calls `runware-template-cd`)
 
 ❌ **MYTH:** "CCS_RETRY is optional"  
 ✅ **REALITY:** CCS_RETRY always runs when Direct Mode fails (but its failure is non-blocking)
