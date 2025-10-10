@@ -92,6 +92,8 @@ This document reflects the **actual codebase behavior** of the image generation 
 
 ## Timeout Budget Analysis (Updated October 2025)
 
+**📘 For detailed reliability improvements, see [IMAGE_GENERATION_RELIABILITY_IMPROVEMENTS_OCT_2025.md](./IMAGE_GENERATION_RELIABILITY_IMPROVEMENTS_OCT_2025.md)**
+
 ### Orchestrator Total: 40 seconds
 - **Tier 1:** Uses orchestrator's 40s budget
 - **Direct Mode:** 35s internal timeout (increased from 20s to accommodate OpenAI + processing: 17-21s typical)

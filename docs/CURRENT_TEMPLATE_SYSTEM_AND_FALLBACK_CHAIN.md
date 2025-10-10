@@ -143,6 +143,8 @@ Tier 2.5D: Template CD Emergency (Synthesized content)
 
 ## October 2025 Updates: Never-Show-Diagnostics Protection
 
+**📘 For detailed reliability improvements (timeout, retry, tracking), see [IMAGE_GENERATION_RELIABILITY_IMPROVEMENTS_OCT_2025.md](./IMAGE_GENERATION_RELIABILITY_IMPROVEMENTS_OCT_2025.md)**
+
 ### Key Changes
 1. **Emergency content treated as valid story** - Not an error state
 2. **Diagnostic UI gated** - Requires `window.__ENABLE_DIAGNOSTICS__ = true`
